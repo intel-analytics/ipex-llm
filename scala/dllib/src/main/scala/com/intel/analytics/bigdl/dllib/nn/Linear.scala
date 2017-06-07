@@ -46,14 +46,22 @@ class Linear[T: ClassTag](
   outputSize: Int,
   withBias: Boolean = true,
   wRegularizer: Regularizer[T] = null,
-  bRegularizer: Regularizer[T] = null
+  bRegularizer: Regularizer[T] = null,
+  initWeight: Tensor[T] = null,
+  initBias: Tensor[T] = null,
+  initGradWeight: Tensor[T] = null,
+  initGradBias: Tensor[T] = null
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
-  val weight: Tensor[T] = Tensor[T](outputSize, inputSize)
-  val bias: Tensor[T] = if (withBias) Tensor[T](outputSize) else null
+  val weight: Tensor[T] =
+    if (initWeight != null) initWeight else Tensor[T](outputSize, inputSize)
+  val bias: Tensor[T] =
+    if (initBias != null) initBias else if (withBias) Tensor[T](outputSize) else null
   val addBuffer: Tensor[T] = Tensor[T]()
 
-  val gradWeight: Tensor[T] = Tensor[T]()
-  val gradBias: Tensor[T] = if (withBias) Tensor[T]() else null
+  val gradWeight: Tensor[T] =
+    if (initGradWeight != null) initGradWeight else Tensor[T]()
+  val gradBias: Tensor[T] =
+    if (initGradBias != null) initGradBias else if (withBias) Tensor[T]() else null
 
   {
     val stdv = 1.0 / math.sqrt(weight.size(2))
@@ -63,8 +71,12 @@ class Linear[T: ClassTag](
   }
 
   override def reset(): Unit = {
-    weightInitMethod.init(weight, VariableFormat.OUT_IN)
-    Option(bias).foreach(biasInitMethod.init(_, VariableFormat.ONE_D))
+    if (initWeight == null) {
+      weightInitMethod.init(weight, VariableFormat.OUT_IN)
+    }
+    if (initBias == null) {
+      Option(bias).foreach(biasInitMethod.init(_, VariableFormat.ONE_D))
+    }
     zeroGradParameters()
   }
 
@@ -87,11 +99,11 @@ class Linear[T: ClassTag](
       }
 
       if (addBuffer.nElement() != nFrame) {
-        addBuffer.resize(Array(nFrame)).fill(ev.fromType[Int](1))
+        addBuffer.resize(Array(nFrame)).fill(ev.one)
       }
 
-      output.addmm(ev.fromType[Int](0), output, ev.fromType[Int](1), input, weight.t)
-      if (withBias) output.addr(ev.fromType[Int](1), addBuffer, bias)
+      output.addmm(ev.zero, output, ev.one, input, weight.t)
+      if (withBias) output.addr(ev.one, addBuffer, bias)
     }
     output
   }
@@ -223,9 +235,13 @@ object Linear {
       outputSize: Int,
       withBias: Boolean = true,
       wRegularizer: Regularizer[T] = null,
-      bRegularizer: Regularizer[T] = null
+      bRegularizer: Regularizer[T] = null,
+      initWeight: Tensor[T] = null,
+      initBias: Tensor[T] = null,
+      initGradWeight: Tensor[T] = null,
+      initGradBias: Tensor[T] = null
   )(implicit ev: TensorNumeric[T]) : Linear[T] = {
     new Linear[T](inputSize, outputSize,
-      withBias, wRegularizer, bRegularizer)
+      withBias, wRegularizer, bRegularizer, initWeight, initBias, initGradWeight, initGradBias)
   }
 }

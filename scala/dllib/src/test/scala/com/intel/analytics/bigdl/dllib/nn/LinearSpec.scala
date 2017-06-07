@@ -315,4 +315,49 @@ class LinearSpec extends FlatSpec with Matchers {
     val checker = new GradientChecker(1e-4, 1e-2)
     checker.checkLayer[Double](linear, input) should be(true)
   }
+
+  "Linear forward" should "be correct" in {
+    val linear = new Linear[Double](3, 2)
+    linear.weight.setValue(1, 1, 1.0)
+    linear.weight.setValue(1, 2, 2.0)
+    linear.weight.setValue(1, 3, 3.0)
+    linear.weight.setValue(2, 1, 4.0)
+    linear.weight.setValue(2, 2, 5.0)
+    linear.weight.setValue(2, 3, 6.0)
+    linear.bias.setValue(1, 7.0)
+    linear.bias.setValue(2, 8.0)
+
+    val input = Tensor[Double](T(0.1, 0.2, 0.3))
+    linear.forward(input) should be(Tensor[Double](T(8.4, 11.2)))
+  }
+
+  "Linear forward" should "be correct with given weight" in {
+    val weight = Tensor[Double](T(
+      T(1.0, 2.0, 3.0),
+      T(4.0, 5.0, 6.0)
+    ))
+    val bias = Tensor[Double](T(
+      T(7.0, 8.0)
+    ))
+    val linear = new Linear[Double](inputSize = 3, outputSize = 2,
+      initWeight = weight, initBias = bias)
+
+    val input = Tensor[Double](T(0.1, 0.2, 0.3))
+    linear.forward(input) should be(Tensor[Double](T(8.4, 11.2)))
+  }
+
+  "Linear forward" should "be correct in batch mode" in {
+    val linear = new Linear[Double](3, 2)
+    linear.weight.setValue(1, 1, 1.0)
+    linear.weight.setValue(1, 2, 2.0)
+    linear.weight.setValue(1, 3, 3.0)
+    linear.weight.setValue(2, 1, 4.0)
+    linear.weight.setValue(2, 2, 5.0)
+    linear.weight.setValue(2, 3, 6.0)
+    linear.bias.setValue(1, 7.0)
+    linear.bias.setValue(2, 8.0)
+
+    val input = Tensor[Double](T(T(0.1, 0.2, 0.3), T(0.2, 0.4, 0.6)))
+    linear.forward(input) should be(Tensor[Double](T(T(8.4, 11.2), T(9.8, 14.4))))
+  }
 }
