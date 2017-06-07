@@ -20,12 +20,12 @@ import itertools
 import re
 from optparse import OptionParser
 
-from dataset import news20
-from nn.layer import *
-from nn.criterion import *
-from optim.optimizer import *
-from util.common import *
-from util.common import Sample
+from bigdl.dataset import news20
+from bigdl.nn.layer import *
+from bigdl.nn.criterion import *
+from bigdl.optim.optimizer import *
+from bigdl.util.common import *
+from bigdl.util.common import Sample
 
 
 def text_to_words(review_text):

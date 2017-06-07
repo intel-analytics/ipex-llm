@@ -19,10 +19,10 @@ import os
 import sys
 from distutils.dir_util import mkpath
 
-from util.common import JavaValue
-from util.common import callBigDlFunc
-from util.common import callJavaFunc
-from util.common import get_spark_context
+from bigdl.util.common import JavaValue
+from bigdl.util.common import callBigDlFunc
+from bigdl.util.common import callJavaFunc
+from bigdl.util.common import get_spark_context
 
 if sys.version >= '3':
     long = int
@@ -216,7 +216,7 @@ class Optimizer(JavaValue):
         Do an optimization. 
         """
         jmodel = callJavaFunc(get_spark_context(), self.value.optimize)
-        from nn.layer import Model
+        from bigdl.nn.layer import Model
         return Model.of(jmodel)
 
     def set_train_summary(self, summary):
@@ -352,9 +352,9 @@ class ValidationSummary(JavaValue):
 def _test():
     import doctest
     from pyspark import SparkContext
-    from optim import optimizer
-    from util.common import init_engine
-    from util.common import create_spark_conf
+    from bigdl.optim import optimizer
+    from bigdl.util.common import init_engine
+    from bigdl.util.common import create_spark_conf
     globs = optimizer.__dict__.copy()
     sc = SparkContext(master="local[4]", appName="test optimizer",
                       conf=create_spark_conf())
