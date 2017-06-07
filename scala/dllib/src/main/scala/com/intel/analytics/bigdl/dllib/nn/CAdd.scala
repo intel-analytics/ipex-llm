@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
@@ -39,16 +39,19 @@ import scala.reflect.ClassTag
 @SerialVersionUID(3917196591309935383L)
 class CAdd[@specialized(Float, Double) T: ClassTag](
   val size: Array[Int])(
-  implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+  implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
   val bias: Tensor[T] = Tensor[T](size)
   val gradBias : Tensor[T] = Tensor[T](size)
 
-  reset()
+  {
+    val stdv = 1.0/math.sqrt(bias.nElement())
+    val bInit: InitializationMethod = RandomUniform(-stdv, stdv)
+    setInitMethod(biasInitMethod = bInit)
+  }
 
   override def reset(): Unit = {
-    val stdv = 1.0/math.sqrt(bias.nElement())
-    bias.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
+    biasInitMethod.init(bias, VariableFormat.ONE_D)
     zeroGradParameters()
   }
 

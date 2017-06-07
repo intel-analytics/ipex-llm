@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.utils.{Engine, T, Table}
@@ -52,7 +52,7 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
   val eps: Double = 1e-5, // avoid divde zero
   val momentum: Double = 0.1, // momentum for weight update
   val affine: Boolean = true // affine operation on output or not
-)(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+)(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
   require(nOutput > 0)
 
@@ -76,15 +76,19 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
   // if you want to do a gradcheck, you will need to fix those variables, otherwise not fix.
   private var needFix: Boolean = false
 
-  reset()
+  {
+    val wInit = RandomUniform(0, 1)
+    val bInit = Zeros
+    setInitMethod(wInit, bInit)
+  }
 
   override def reset(): Unit = {
     if (null != weight) {
-      weight.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1)))
+      weightInitMethod.init(weight, VariableFormat.ONE_D)
     }
 
     if (null != bias) {
-      bias.fill(ev.fromType[Int](0))
+      biasInitMethod.init(bias, VariableFormat.ONE_D)
     }
 
     runningMean.zero()

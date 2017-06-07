@@ -42,15 +42,14 @@ object Convolution {
      padH: Int = 0,
      nGroup: Int = 1,
      propagateBack: Boolean = true,
-     initMethod: InitializationMethod = Default,
      optnet: Boolean = true)
      (implicit ev: TensorNumeric[T]): SpatialConvolution[T] = {
     if (optnet) {
       SpatialShareConvolution[T](nInputPlane, nOutputPlane, kernelW, kernelH,
-        strideW, strideH, padW, padH, nGroup, propagateBack, initMethod)
+        strideW, strideH, padW, padH, nGroup, propagateBack)
     } else {
       SpatialConvolution[T](nInputPlane, nOutputPlane, kernelW, kernelH,
-        strideW, strideH, padW, padH, nGroup, propagateBack, initMethod)
+        strideW, strideH, padW, padH, nGroup, propagateBack)
     }
   }
 }
