@@ -92,6 +92,7 @@ object Train {
           validateSet, Array(new Top1Accuracy[Float]))
         .setEndWhen(Trigger.maxEpoch(maxEpoch))
         .optimize()
+      sc.stop()
 
     })
   }
