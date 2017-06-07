@@ -41,23 +41,21 @@ import scala.reflect.ClassTag
 class SmoothL1Criterion[@specialized(Float, Double) T: ClassTag](sizeAverage: Boolean = true)
                                     (implicit ev: TensorNumeric[T])
   extends TensorCriterion[T] {
-  @transient var buffer: Tensor[T] = null
+  val buffer: Tensor[T] = Tensor[T]()
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     require(input.nElement() == target.nElement())
-    if (buffer == null) {
-      buffer = Tensor[T]()
-    }
     buffer.resizeAs(input).copy(input)
     buffer.add(ev.fromType(-1), target).abs()
     val data = buffer.storage().array()
-    for (i <- 0 until data.length) {
+    var i = 0
+    while (i < buffer.nElement()) {
       if (ev.isGreater(ev.fromType(1), data(i))) {
         data(i) = ev.times(ev.fromType[Double](0.5), ev.times(data(i), data(i)))
-      }
-      else {
+      } else {
         data(i) = ev.minus(data(i), ev.fromType[Double](0.5))
       }
+      i += 1
     }
     var sum = buffer.sum()
     if (sizeAverage) {
@@ -70,22 +68,22 @@ class SmoothL1Criterion[@specialized(Float, Double) T: ClassTag](sizeAverage: Bo
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
     require(input.nElement() == target.nElement())
     val norm = ev.fromType(if (sizeAverage) 1.0 / input.nElement() else 1.0)
-    if (gradInput == null) {
-      gradInput = Tensor[T]()
-    }
     gradInput.resizeAs(input).copy(input)
     gradInput.add(ev.fromType(-1), target)
     val data = gradInput.storage().array()
-    for (i <- 0 until data.length) {
-      if (ev.isGreater(ev.fromType(-1), data(i))) {
-        data(i) = ev.negative(norm)
+    val offset = gradInput.storageOffset() - 1
+    var i = 0
+    while (i < gradInput.nElement()) {
+      if (ev.isGreater(ev.fromType(-1), data(i + offset))) {
+        data(i + offset) = ev.negative(norm)
       }
-      else if (ev.isGreater(data(i), ev.fromType(1))) {
-        data(i) = norm
+      else if (ev.isGreater(data(i + offset), ev.fromType(1))) {
+        data(i + offset) = norm
       }
       else {
-        data(i) = ev.times(norm, data(i))
+        data(i + offset) = ev.times(norm, data(i + offset))
       }
+      i += 1
     }
     gradInput
   }
