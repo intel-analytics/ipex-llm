@@ -24,7 +24,7 @@ import scala.reflect.ClassTag
 
 /**
  * Support disable backpropagation, a gradInput of null is returned if isPropagateBack = false
- * Usage: PropagateBackSwitch(module)
+ * Usage: BackwardSwitch(module)
  * @param module the module you want to control the back-propagation
  * @tparam T Numeric type. Only support float/double now
  */

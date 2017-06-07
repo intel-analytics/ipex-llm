@@ -27,7 +27,7 @@ import scala.util.Random
 
 class BackwardSwitchSpec extends FlatSpec with Matchers {
 
-  "PropagateBackSwitch" should "work properly" in {
+  "BackwardSwitch" should "work properly" in {
     val model = Sequential()
     model.add(Identity())
     model.add(ConcatTable().setName("ct").add(Identity().setName("i1"))
@@ -66,7 +66,7 @@ class BackwardSwitchSpec extends FlatSpec with Matchers {
   }
 
 
-  "Sequential with PropagateBackSwitch first layer" should "work properly" in {
+  "Sequential with BackwardSwitch first layer" should "work properly" in {
     val seed = 100
     RNG.setSeed(seed)
     val model = Sequential[Double]()
@@ -103,7 +103,7 @@ class BackwardSwitchSpec extends FlatSpec with Matchers {
     model
   }
 
-  "Sequential with PropagateBackSwitch in the middle" should "work properly" in {
+  "Sequential with BackwardSwitch in the middle" should "work properly" in {
     val seed = 100
     RNG.setSeed(seed)
     val model = Sequential[Double]()
