@@ -23,6 +23,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 import org.apache.log4j.Logger
 import org.apache.spark.{SparkConf, SparkContext}
 
+import com.intel.analytics.bigdl.mkl.MKL
+
 /**
  * define engine type trait
  */
@@ -44,12 +46,12 @@ object Engine {
     setNodeAndCore(nExecutor, executorCores)
     val res = if (onSpark) {
       require(localMode == false,
-        s"Engine.init: BIGDL_LOCAL_MODE should not be set while onSpark is " +
+        s"Engine.init: bigdl.localMode should not be set while onSpark is " +
           s"true. $ENV_VAR_ERROR")
       Some(createSparkConf())
     } else {
       require(localMode == true,
-        s"Engine.init: BIGDL_LOCAL_MODE should be set while onSpark is " +
+        s"Engine.init: bigdl.localMode should be set while onSpark is " +
           s"false. $ENV_VAR_ERROR")
       None
     }
@@ -90,9 +92,9 @@ object Engine {
    */
   def init: Unit = this.synchronized {
     if (localMode) {
-      logger.info("Detect BIGDL_LOCAL_MODE is set. Run workload without spark")
+      logger.info("Detect bigdl.localMode is set. Run workload without spark")
       // The physical core number should have been initialized by env variable in bigdl.sh
-      setNodeAndCore(1, getCoreNumberFromEnv)
+      setNodeAndCore(1, getCoreNumberFromProperty)
     } else {
       logger.info("Auto detect executor number and executor cores number")
       val (nExecutor, executorCores) = sparkExecutorAndCore().get
@@ -100,13 +102,22 @@ object Engine {
       setNodeAndCore(nExecutor, executorCores)
       checkSparkContext
     }
+
+    mklDisableFastMM()
   }
 
   private val logger = Logger.getLogger(getClass)
   private val singletonCounter = new AtomicBoolean()
-  private[bigdl] var localMode = System.getenv("BIGDL_LOCAL_MODE") != null
   private var physicalCoreNumber = -1
   private var nodeNum: Int = -1
+
+  private[bigdl] var localMode: Boolean = {
+    System.getProperty("bigdl.localMode", "false").toLowerCase(Locale.ROOT) match {
+      case "true" => true
+      case "fasle" => false
+      case option => throw new IllegalArgumentException(s"Unknown bigdl.localMode $option")
+    }
+  }
 
   private val NOT_INIT_ERROR =
     "Do you call Engine.init? See more at " +
@@ -133,14 +144,30 @@ object Engine {
     }
   }
 
+  /**
+   * disable fast mm in mkl by bigdl.mklDisableFastMM
+   */
+  private def mklDisableFastMM(): Unit = {
+    System.getProperty("bigdl.mklDisableFastMM", "true").toLowerCase(Locale.ROOT) match {
+      case "true" => MKL.disableFastMM()
+      case "fasle" =>
+      case option => throw new IllegalArgumentException(s"Unknown option of $option")
+    }
+  }
+
   // Thread pool for default use
   @volatile private var _default: ThreadPool = null
 
   // Thread pool for layer use
-  @volatile private var _model: ThreadPool = new ThreadPool(1).setMKLThread(1)
+  @volatile private var _model: ThreadPool = new ThreadPool(1)
 
-  private def getCoreNumberFromEnv : Int = {
-    Option(System.getenv("DL_CORE_NUMBER")).map(_.toInt).getOrElse(getNumMachineCores)
+  /**
+   * return core number user defined.
+   */
+  private def getCoreNumberFromProperty() = {
+    val coreNumber = System.getProperty("bigdl.coreNumber", getNumMachineCores.toString).toInt
+    if (coreNumber > getNumMachineCores) getNumMachineCores
+    else coreNumber
   }
 
   private def getNumMachineCores: Int = {
@@ -243,7 +270,6 @@ object Engine {
 
     if(_model == null || _model.getPoolSize != modelPoolSize) {
       _model = new ThreadPool(modelPoolSize)
-      _model.setMKLThread(1)
     }
   }
 
@@ -400,24 +426,4 @@ object Engine {
       throw new IllegalArgumentException(s"Engine.init: Unsupported master format $master")
     }
   }
-
-  private def checkSysEnv() : Unit = {
-    // bigdl.disableCheckSysEnv is only for test purpose
-    if (System.getProperty("bigdl.disableCheckSysEnv") != null) {
-      return
-    }
-
-    readConf
-      .filter(_._1.startsWith("spark.executorEnv."))
-      .map(c => (c._1.substring(18), c._2))
-      .foreach(env => {
-        require(System.getenv(env._1) != null,
-          s"Engine.init: Cannot find ${env._1} in environment variables. $ENV_VAR_ERROR")
-        require(System.getenv(env._1) == env._2,
-          s"Engine.init: Environment variable ${env._1} is ${System.getenv(env._1)}. " +
-          s"But it should be ${env._2}. $ENV_VAR_ERROR")
-    })
-  }
-
-  checkSysEnv()
 }

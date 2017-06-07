@@ -65,23 +65,6 @@ class ThreadPool(private var poolSize: Int) {
   def getPoolSize : Int = poolSize
 
   /**
-   * Set MKL thread pool size
-   *
-   * @param size
-   * @return
-   */
-  def setMKLThread(size: Int): this.type = this.synchronized {
-    require(MKL.isMKLLoaded)
-    mklPoolSize = Some(size)
-    (1 to poolSize).map(i => Future {
-      MKL.setNumThreads(size)
-      val tid = Thread.currentThread().getId()
-      logger.info(s"Set mkl threads to $size on thread $tid")
-    }(context)).foreach(Await.result(_, Duration.Inf))
-    this
-  }
-
-  /**
    * Invoke a batch of tasks and wait for all them finished
    *
    * @param tasks
@@ -189,9 +172,6 @@ class ThreadPool(private var poolSize: Int) {
     if (size != poolSize) {
       context = spawnThreadPool(size)
       poolSize = size
-      if(mklPoolSize.isDefined) {
-        this.setMKLThread(mklPoolSize.get)
-      }
     }
     this
   }

@@ -31,4 +31,5 @@ state*.[0-9]*
 # other
 nohup.out
 *.log
+*.un~
 .ipynb_checkpoints/
