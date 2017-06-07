@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Parallel
@@ -30,6 +31,32 @@ class BatchNormalizationSpec extends FlatSpec with Matchers {
     bn.bias(1) = 0.1
     bn.bias(2) = 0.2
     bn.bias(3) = 0.3
+    val input = Tensor[Double](3, 3)
+
+    var i = 0
+    input.apply1(e => {
+      i += 1; i
+    })
+    val output = bn.forward(input)
+
+    output.nDimension() should be(2)
+    output.size(1) should be(3)
+    output.size(2) should be(3)
+    output(Array(1, 1)) should be(-0.0225 +- 0.0001)
+    output(Array(1, 2)) should be(-0.0449 +- 0.0001)
+    output(Array(1, 3)) should be(-0.0674 +- 0.0001)
+    output(Array(2, 1)) should be(0.1 +- 0.0001)
+    output(Array(2, 2)) should be(0.2 +- 0.0001)
+    output(Array(2, 3)) should be(0.3 +- 0.0001)
+    output(Array(3, 1)) should be(0.2225 +- 0.0001)
+    output(Array(3, 2)) should be(0.4449 +- 0.0001)
+    output(Array(3, 3)) should be(0.6674 +- 0.0001)
+  }
+
+  "A BatchNormalization" should "generate correct output for given weight and bias" in {
+    val weight = Tensor[Double](T(0.1, 0.2, 0.3))
+    val bias = Tensor[Double](T(0.1, 0.2, 0.3))
+    val bn = new BatchNormalization[Double](nOutput = 3, initWeight = weight, initBias = bias)
     val input = Tensor[Double](3, 3)
 
     var i = 0

@@ -25,7 +25,7 @@ class MeanSpec extends TorchSpec {
 
   "An Mean()" should "generate correct output and grad" in {
     torchCheck()
-    val layer = new Mean[Double]()
+    val layer = Mean[Double]()
     val input = Tensor[Double](2, 2, 2)
     input.apply1(x => randomn())
     val gradOutput = Tensor[Double](1, 2, 2)
@@ -54,7 +54,7 @@ class MeanSpec extends TorchSpec {
 
   "An Mean(2, 1)" should "generate correct output and grad" in {
     torchCheck()
-    val layer = new Mean[Double](2, 1)
+    val layer = Mean[Double](2, 1)
     val input = Tensor[Double](2, 2, 2)
     input.apply1(x => randomn())
     val gradOutput = Tensor[Double](1, 2, 2)

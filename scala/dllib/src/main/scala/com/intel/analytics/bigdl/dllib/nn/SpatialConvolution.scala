@@ -51,19 +51,31 @@ class SpatialConvolution[T: ClassTag](
   val nGroup: Int = 1, // Kernel group number
   val propagateBack: Boolean = true, // propagate gradient back
   val wRegularizer: Regularizer[T] = null,
-  val bRegularizer: Regularizer[T] = null
+  val bRegularizer: Regularizer[T] = null,
+  val initWeight: Tensor[T] = null,
+  val initBias: Tensor[T] = null,
+  val initGradWeight: Tensor[T] = null,
+  val initGradBias: Tensor[T] = null
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
   require(nInputPlane % nGroup == 0, "Number of input channels should be multiples of group.")
   require(nOutputPlane % nGroup == 0, "Number of output channels should be multiples of group.")
 
-  val weight: Tensor[T] = Tensor[T](nGroup, nOutputPlane / nGroup,
-    nInputPlane / nGroup, kernelH, kernelW)
-  val bias: Tensor[T] = Tensor[T](nOutputPlane)
+  val weight: Tensor[T] = if (initWeight != null) {
+    initWeight
+  } else {
+    Tensor[T](nGroup, nOutputPlane / nGroup, nInputPlane / nGroup, kernelH, kernelW)
+  }
 
-  val gradWeight: Tensor[T] = Tensor[T](nGroup, nOutputPlane / nGroup, nInputPlane / nGroup,
-    kernelH, kernelW)
-  val gradBias: Tensor[T] = Tensor[T](nOutputPlane)
+  val bias: Tensor[T] = if (initBias != null) initBias else Tensor[T](nOutputPlane)
+
+  val gradWeight: Tensor[T] = if (initGradWeight != null) {
+    initGradWeight
+  } else {
+    Tensor[T](nGroup, nOutputPlane / nGroup, nInputPlane / nGroup, kernelH, kernelW)
+  }
+
+  val gradBias: Tensor[T] = if (initGradBias != null) initGradBias else Tensor[T](nOutputPlane)
 
   var fInput = Tensor[T]()
   var fGradInput = Tensor[T]()
@@ -100,8 +112,12 @@ class SpatialConvolution[T: ClassTag](
   protected var results: Array[Future[Unit]] = null
 
   override def reset(): Unit = {
-    weightInitMethod.init(weight, VariableFormat.GP_OUT_IN_KW_KH)
-    biasInitMethod.init(bias, VariableFormat.ONE_D)
+    if (initWeight == null) {
+      weightInitMethod.init(weight, VariableFormat.GP_OUT_IN_KW_KH)
+    }
+    if (initBias == null) {
+      biasInitMethod.init(bias, VariableFormat.ONE_D)
+    }
     zeroGradParameters()
   }
 
@@ -583,10 +599,14 @@ object SpatialConvolution {
       nGroup: Int = 1,
       propagateBack: Boolean = true,
       wRegularizer: Regularizer[T] = null,
-      bRegularizer: Regularizer[T] = null
+      bRegularizer: Regularizer[T] = null,
+      initWeight: Tensor[T] = null,
+      initBias: Tensor[T] = null,
+      initGradWeight: Tensor[T] = null,
+      initGradBias: Tensor[T] = null
   )(implicit ev: TensorNumeric[T]): SpatialConvolution[T] = {
     new SpatialConvolution[T](nInputPlane, nOutputPlane, kernelW, kernelH,
       strideW, strideH, padW, padH, nGroup, propagateBack,
-      wRegularizer, bRegularizer)
+      wRegularizer, bRegularizer, initWeight, initBias, initGradWeight, initGradBias)
   }
 }
