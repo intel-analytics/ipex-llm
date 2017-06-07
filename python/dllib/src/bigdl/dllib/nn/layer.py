@@ -2111,7 +2111,7 @@ class Scale(Model):
                                     size)
 
 
-class SelectTable(Container):
+class SelectTable(Model):
 
     '''
     Creates a module that takes a table as input and outputs the element at index `index`
