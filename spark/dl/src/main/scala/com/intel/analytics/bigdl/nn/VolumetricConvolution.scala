@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
@@ -48,7 +48,7 @@ class VolumetricConvolution[T: ClassTag](
   val kT: Int, val kW: Int, val kH: Int,
   val dT: Int = 1, val dW: Int = 1, val dH: Int = 1,
   val padT: Int = 0, val padW: Int = 0, val padH: Int = 0, withBias: Boolean = true
-)(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+)(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
   require(kT > 0 && kW > 0 && kH > 0, "kernel size should be greater than zero," +
     s" but got kT: $kT kH: $kH kW: $kW")
@@ -73,10 +73,10 @@ class VolumetricConvolution[T: ClassTag](
     val wInit: InitializationMethod = RandomUniform(-stdv, stdv)
     val bInit: InitializationMethod = RandomUniform(-stdv, stdv)
 
-    reset(wInit, bInit)
+    setInitMethod(wInit, bInit)
   }
 
-  override protected def resetInternal(): Unit = {
+  override def reset(): Unit = {
     weightInitMethod.init(weight, VariableFormat.OUT_IN_KT_KH_KW)
     Option(bias).foreach(biasInitMethod.init(_, VariableFormat.ONE_D))
     zeroGradParameters()

@@ -240,7 +240,7 @@ class Recurrent[T : ClassTag]()
     this
   }
 
-  override protected def resetInternal(): Unit = {
+  override def reset(): Unit = {
     require(modules != null && modules.length == 1,
       "Recurrent extend: should contain only one cell")
     require(modules.head.isInstanceOf[Cell[T]],

@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.{DenseTensorBLAS, DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -67,7 +67,7 @@ class SpatialDilatedConvolution[T: ClassTag](
   val dilationH: Int = 1,
   val wRegularizer: Regularizer[T] = null,
   val bRegularizer: Regularizer[T] = null
-)(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+)(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
   val weight: Tensor[T] = Tensor[T](nOutputPlane, nInputPlane, kH, kW)
   val gradWeight = Tensor[T](nOutputPlane, nInputPlane, kH, kW)
@@ -82,7 +82,7 @@ class SpatialDilatedConvolution[T: ClassTag](
     val wInit = RandomUniform(-stdv, stdv)
     val bInit = RandomUniform(-stdv, stdv)
 
-    reset(wInit, bInit)
+    setInitMethod(wInit, bInit)
   }
 
   private var im2colTime = 0L
@@ -92,7 +92,7 @@ class SpatialDilatedConvolution[T: ClassTag](
 
   def getCol2ImgTime(): Double = col2imTime
 
-  override protected def resetInternal(): Unit = {
+  override def reset(): Unit = {
     weightInitMethod.init(weight, VariableFormat.OUT_IN_KW_KH)
     biasInitMethod.init(bias, VariableFormat.ONE_D)
     zeroGradParameters()

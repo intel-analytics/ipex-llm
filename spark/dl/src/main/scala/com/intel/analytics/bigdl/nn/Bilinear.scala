@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Initializable}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -47,7 +47,7 @@ class Bilinear[T: ClassTag](
  val biasRes: Boolean = true,
  wRegularizer: Regularizer[T] = null,
  bRegularizer: Regularizer[T] = null
-)(implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T] {
+)(implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T] with Initializable {
 
   require((inputSize1 > 0) && (inputSize2 > 0) && (outputSize > 0),
     s"Bilinear: inputSize1 and inputSize2 and outputSize should be positive integer numbers," +
@@ -66,10 +66,10 @@ class Bilinear[T: ClassTag](
     val stdv = 1.0 / math.sqrt(weight.size(2))
     var wInit: InitializationMethod = RandomUniform(-stdv, stdv)
     var bInit: InitializationMethod = RandomUniform(-stdv, stdv)
-    reset(wInit, bInit)
+    setInitMethod(wInit, bInit)
   }
 
-  override protected def resetInternal(): Unit = {
+  override def reset(): Unit = {
     weightInitMethod.init(weight, VariableFormat.Default)
     Option(bias).foreach(biasInitMethod.init(_, VariableFormat.ONE_D))
     zeroGradParameters()

@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.utils.{RandomGenerator, T, Table}
 
 import scala.reflect.ClassTag
 import RandomGenerator._
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
 import com.intel.analytics.bigdl.optim.Regularizer
 
 /**
@@ -47,7 +47,7 @@ class Linear[T: ClassTag](
   withBias: Boolean = true,
   wRegularizer: Regularizer[T] = null,
   bRegularizer: Regularizer[T] = null
-)(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+)(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
   val weight: Tensor[T] = Tensor[T](outputSize, inputSize)
   val bias: Tensor[T] = if (withBias) Tensor[T](outputSize) else null
   val addBuffer: Tensor[T] = Tensor[T]()
@@ -59,10 +59,10 @@ class Linear[T: ClassTag](
     val stdv = 1.0 / math.sqrt(weight.size(2))
     val wInit: InitializationMethod = RandomUniform(-stdv, stdv)
     val bInit: InitializationMethod = RandomUniform(-stdv, stdv)
-    reset(wInit, bInit)
+    setInitMethod(wInit, bInit)
   }
 
-  override protected def resetInternal(): Unit = {
+  override def reset(): Unit = {
     weightInitMethod.init(weight, VariableFormat.OUT_IN)
     Option(bias).foreach(biasInitMethod.init(_, VariableFormat.ONE_D))
     zeroGradParameters()

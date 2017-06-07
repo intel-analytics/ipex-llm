@@ -244,10 +244,10 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def randn(): Tensor[T] = {
-    setNormal(0, 1)
+    randn(0, 1)
   }
 
-  override def setNormal(mean: Double, stdv: Double): Tensor[T] = {
+  override def randn(mean: Double, stdv: Double): Tensor[T] = {
     if (this.isContiguous()) {
       var i = 0
       val total = this.nElement()
@@ -300,9 +300,9 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
 
-  override def rand(): Tensor[T] = setUniform(0.0, 1.0)
+  override def rand(): Tensor[T] = rand(0.0, 1.0)
 
-  override def setUniform(lowerBound: Double, upperBound: Double): Tensor[T] = {
+  override def rand(lowerBound: Double, upperBound: Double): Tensor[T] = {
     if (this.isContiguous()) {
       var i = 0
       val total = this.nElement()

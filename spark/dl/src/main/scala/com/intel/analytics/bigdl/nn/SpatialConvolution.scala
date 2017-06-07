@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
@@ -52,7 +52,7 @@ class SpatialConvolution[T: ClassTag](
   val propagateBack: Boolean = true, // propagate gradient back
   val wRegularizer: Regularizer[T] = null,
   val bRegularizer: Regularizer[T] = null
-)(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+)(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
   require(nInputPlane % nGroup == 0, "Number of input channels should be multiples of group.")
   require(nOutputPlane % nGroup == 0, "Number of output channels should be multiples of group.")
@@ -86,7 +86,7 @@ class SpatialConvolution[T: ClassTag](
     val stdv = 1.0 / math.sqrt(kernelW * kernelH * nInputPlane)
     val wInit: InitializationMethod = RandomUniform(-stdv, stdv)
     val bInit: InitializationMethod = RandomUniform(-stdv, stdv)
-    reset(wInit, bInit)
+    setInitMethod(wInit, bInit)
   }
 
   protected var im2colTime = 0L
@@ -99,7 +99,7 @@ class SpatialConvolution[T: ClassTag](
   @transient
   protected var results: Array[Future[Unit]] = null
 
-  override protected def resetInternal(): Unit = {
+  override def reset(): Unit = {
     weightInitMethod.init(weight, VariableFormat.GP_OUT_IN_KW_KH)
     biasInitMethod.init(bias, VariableFormat.ONE_D)
     zeroGradParameters()

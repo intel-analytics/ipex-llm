@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
@@ -32,7 +32,8 @@ import scala.reflect.ClassTag
 
 @SerialVersionUID(1438188993718795033L)
 class Euclidean[T: ClassTag](val inputSize: Int, val outputSize: Int,
-  val fastBackward: Boolean = true)(implicit ev: TensorNumeric[T]) extends TensorModule[T]{
+  val fastBackward: Boolean = true)(implicit ev: TensorNumeric[T])
+  extends TensorModule[T] with Initializable {
 
   val weight = Tensor(inputSize, outputSize)
   val gradWeight = Tensor(inputSize, outputSize)
@@ -47,10 +48,10 @@ class Euclidean[T: ClassTag](val inputSize: Int, val outputSize: Int,
   {
     val stdv = 1 / math.sqrt(weight.size(1))
     val wInit: InitializationMethod = RandomUniform(-stdv, stdv)
-    reset(weightInitMethod = wInit)
+    setInitMethod(weightInitMethod = wInit)
   }
 
-  override protected def resetInternal(): Unit = {
+  override def reset(): Unit = {
     weightInitMethod.init(weight, VariableFormat.IN_OUT)
     zeroGradParameters()
   }

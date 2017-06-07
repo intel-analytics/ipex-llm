@@ -64,7 +64,7 @@ abstract class Container[A <: Activity : ClassTag,
     modules.foreach(_.updateParameters(learningRate))
   }
 
-  override protected def resetInternal(): Unit = {
+  override def reset(): Unit = {
     modules.foreach(_.reset())
   }
 

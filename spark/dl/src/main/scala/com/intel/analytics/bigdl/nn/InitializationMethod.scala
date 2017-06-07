@@ -167,7 +167,7 @@ case object RandomUniform extends InitializationMethod {
     val shape = variable.size()
     val fanIn = dataFormat.getFanIn(shape)
     val stdv = 1.0 / math.sqrt(fanIn)
-    variable.setUniform(-stdv, stdv)
+    variable.rand(-stdv, stdv)
   }
 
 }
@@ -182,7 +182,7 @@ case class RandomUniform(lower: Double, upper: Double) extends InitializationMet
 
   def init[T](variable: Tensor[T], dataFormat: VariableFormat = Default)
              (implicit ev: TensorNumeric[T]): Unit = {
-    variable.setUniform(lower, upper)
+    variable.rand(lower, upper)
   }
 
 }
@@ -198,7 +198,7 @@ case class RandomNormal(mean: Double, stdv: Double) extends InitializationMethod
 
   def init[T](variable: Tensor[T], dataFormat: VariableFormat = Default)
              (implicit ev: TensorNumeric[T]): Unit = {
-    variable.setNormal(mean, stdv)
+    variable.randn(mean, stdv)
   }
 
 }
@@ -264,7 +264,7 @@ case object Xavier extends InitializationMethod {
     val fanIn = dataFormat.getFanIn(shape)
     val fanOut = dataFormat.getFanOut(shape)
     val stdv = math.sqrt(6.0 / (fanIn + fanOut))
-    variable.setUniform(-stdv, stdv)
+    variable.rand(-stdv, stdv)
   }
 
 }

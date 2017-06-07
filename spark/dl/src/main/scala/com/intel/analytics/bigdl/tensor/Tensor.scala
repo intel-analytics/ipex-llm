@@ -111,7 +111,7 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
    *
    * @return current tensor
    */
-  def setNormal(mean: Double, stdv: Double): Tensor[T]
+  def randn(mean: Double, stdv: Double): Tensor[T]
 
   /**
    * Fill with random value(uniform distribution).
@@ -127,7 +127,7 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
    *
    * @return current tensor
    */
-  def setUniform(lowerBound: Double, upperBound: Double): Tensor[T]
+  def rand(lowerBound: Double, upperBound: Double): Tensor[T]
 
   /**
    * Fill with random value(bernoulli distribution).

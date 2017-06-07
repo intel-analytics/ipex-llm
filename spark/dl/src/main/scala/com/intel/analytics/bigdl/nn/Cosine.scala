@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
@@ -37,7 +37,7 @@ import scala.reflect.ClassTag
 
 @SerialVersionUID(- 8739169489135761430L)
 class Cosine[T: ClassTag](val inputSize : Int, val outputSize : Int)(
-  implicit ev: TensorNumeric[T]) extends TensorModule[T]{
+  implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
   val gradWeight = Tensor[T](outputSize, inputSize)
   val weight = Tensor[T](outputSize, inputSize)
@@ -58,10 +58,10 @@ class Cosine[T: ClassTag](val inputSize : Int, val outputSize : Int)(
   {
     val stdv = 1 / math.sqrt(weight.size(1))
     val wInit: InitializationMethod = RandomUniform(-stdv, stdv)
-    reset(weightInitMethod = wInit)
+    setInitMethod(weightInitMethod = wInit)
   }
 
-  override protected def resetInternal(): Unit = {
+  override def reset(): Unit = {
     weightInitMethod.init(weight, VariableFormat.OUT_IN)
     zeroGradParameters()
   }

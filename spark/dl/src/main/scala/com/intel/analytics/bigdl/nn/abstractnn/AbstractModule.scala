@@ -282,23 +282,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
     this.train
   }
 
-  protected var weightInitMethod: InitializationMethod = Zeros
-  protected var biasInitMethod: InitializationMethod = Zeros
-
-  def reset(weightInitMethod: InitializationMethod = null,
-            biasInitMethod: InitializationMethod = null): this.type = {
-    if (weightInitMethod != null) {
-      this.weightInitMethod = weightInitMethod
-    }
-
-    if (biasInitMethod != null) {
-      this.biasInitMethod = biasInitMethod
-    }
-    resetInternal()
-    this
-  }
-
-  protected def resetInternal(): Unit = {}
+  def reset(): Unit = {}
 
 
   protected var line = "\n"

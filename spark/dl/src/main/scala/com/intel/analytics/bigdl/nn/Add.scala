@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
@@ -30,7 +30,7 @@ import scala.reflect.ClassTag
  */
 @SerialVersionUID(4268487849759172896L)
 class Add[T: ClassTag](val inputSize: Int
-  )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+  )(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
   val bias = Tensor[T](inputSize)
 
@@ -41,10 +41,10 @@ class Add[T: ClassTag](val inputSize: Int
   {
     val stdv = 1 / math.sqrt(bias.size(1))
     val bInit: InitializationMethod = RandomUniform(-stdv, stdv)
-    reset(biasInitMethod = bInit)
+    setInitMethod(biasInitMethod = bInit)
   }
 
-  override protected def resetInternal(): Unit = {
+  override def reset(): Unit = {
     biasInitMethod.init(bias, VariableFormat.ONE_D)
     zeroGradParameters()
   }

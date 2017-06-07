@@ -56,7 +56,7 @@ class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
   reset()
 
   // todo write a new InitializationMethod to wrap the following procedure
-  override protected def resetInternal(): Unit = {
+  override def reset(): Unit = {
     val ninp = Tensor[T](this.nOutputPlane).zero()
     var i = 1
     while (i <= connTable.size(1)) {

@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, Initializable}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
@@ -81,7 +81,8 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
   val noBias: Boolean = false,
   val wRegularizer: Regularizer[T] = null,
   val bRegularizer: Regularizer[T] = null
-  )(implicit ev: TensorNumeric[T]) extends AbstractModule[A, Tensor[T], T]{
+  )(implicit ev: TensorNumeric[T])
+  extends AbstractModule[A, Tensor[T], T] with Initializable {
 
   require(adjW <= dW - 1 && adjH <= dH - 1,
     "SpatialFullConvolution: adjW=$adjW and adjH=$adjH must be smaller than " +
@@ -114,7 +115,7 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
     val wInit = RandomUniform(-stdv, stdv)
     val bInit = RandomUniform(-stdv, stdv)
 
-    reset(wInit, bInit)
+    setInitMethod(wInit, bInit)
   }
 
   private var im2colTime = 0L
@@ -124,7 +125,7 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
 
   def getCol2ImgTime(): Double = col2imTime
 
-  override protected def resetInternal(): Unit = {
+  override def reset(): Unit = {
     weightInitMethod.init(weight, VariableFormat.GP_IN_OUT_KW_KH)
     Option(bias).foreach(biasInitMethod.init(_, VariableFormat.ONE_D))
     zeroGradParameters()
