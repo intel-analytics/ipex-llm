@@ -196,7 +196,7 @@ class LSTM[T : ClassTag] (
   }
 
   override protected def resetInternal(): Unit = {
-    super.reset()
+    super.resetInternal()
     cell.reset()
   }
 

@@ -181,7 +181,7 @@ class Model(JavaValue):
         """
         Initialize the model weights.
         """
-        callJavaFunc(get_spark_context(), self.value.reset)
+        callJavaFunc(get_spark_context(), self.value.reset, None, None)
         return self
 
     def parameters(self):

@@ -32,7 +32,7 @@ import scala.reflect.ClassTag
  * @param inputSize1   dimension of input x_1
  * @param inputSize2   dimension of input x_2
  * @param outputSize   output dimension
- * @param biasRes      The layer can be trained without biases by setting bias = false. otherwise true
+ * @param biasRes  The layer can be trained without biases by setting bias = false. otherwise true
  * @param wRegularizer : instance of [[Regularizer]]
  *                     (eg. L1 or L2 regularization), applied to the input weights matrices.
  * @param bRegularizer : instance of [[Regularizer]]
@@ -41,13 +41,13 @@ import scala.reflect.ClassTag
 
 @SerialVersionUID(-4838965135083645415L)
 class Bilinear[T: ClassTag](
-                             val inputSize1: Int,
-                             val inputSize2: Int,
-                             val outputSize: Int,
-                             val biasRes: Boolean = true,
-                             wRegularizer: Regularizer[T] = null,
-                             bRegularizer: Regularizer[T] = null
-                           )(implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T] {
+ val inputSize1: Int,
+ val inputSize2: Int,
+ val outputSize: Int,
+ val biasRes: Boolean = true,
+ wRegularizer: Regularizer[T] = null,
+ bRegularizer: Regularizer[T] = null
+)(implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T] {
 
   require((inputSize1 > 0) && (inputSize2 > 0) && (outputSize > 0),
     s"Bilinear: inputSize1 and inputSize2 and outputSize should be positive integer numbers," +
@@ -247,13 +247,13 @@ class Bilinear[T: ClassTag](
 
 object Bilinear {
   def apply[@specialized(Float, Double) T: ClassTag](
-                                                      inputSize1: Int,
-                                                      inputSize2: Int,
-                                                      outputSize: Int,
-                                                      biasRes: Boolean = true,
-                                                      wRegularizer: Regularizer[T] = null,
-                                                      bRegularizer: Regularizer[T] = null
-                                                    )(implicit ev: TensorNumeric[T]): Bilinear[T] = {
+    inputSize1: Int,
+    inputSize2: Int,
+    outputSize: Int,
+    biasRes: Boolean = true,
+    wRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null
+   )(implicit ev: TensorNumeric[T]): Bilinear[T] = {
     new Bilinear[T](inputSize1, inputSize2, outputSize, biasRes,
       wRegularizer, bRegularizer)
   }
