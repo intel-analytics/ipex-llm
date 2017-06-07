@@ -16,7 +16,7 @@
 package com.intel.analytics.bigdl.nn
 
 import breeze.numerics.{abs, pow}
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -48,7 +48,7 @@ class LookupTable[T: ClassTag]
   shouldScaleGradByFreq: Boolean = false,
   wRegularizer: Regularizer[T] = null
 )
-(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
   val weight = Tensor[T](nIndex, nOutput)
   val gradWeight = Tensor[T](nIndex, nOutput).zero()
@@ -57,11 +57,13 @@ class LookupTable[T: ClassTag]
   private var normBuffer = Tensor[T]()
   private val countBuffer = Tensor[T]()
 
-  reset()
+  {
+    val wInit = RandomNormal(0, 1)
+    setInitMethod(weightInitMethod = wInit)
+  }
 
   override def reset(): Unit = {
-    // todo: stdv = stdv or 1
-    weight.apply1(_ => ev.fromType[Double](RNG.normal(0, 1)))
+    weightInitMethod.init(weight, VariableFormat.Default)
   }
 
   private def renorm(input : Tensor[T]): Unit = {

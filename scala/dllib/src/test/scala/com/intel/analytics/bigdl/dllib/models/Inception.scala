@@ -241,7 +241,7 @@ object Inception {
       val concat = Concat[D](2)
       val conv1 = Sequential[D]
       conv1.add(SpatialConvolution[D](inputSize,
-        config[Table](1)(1), 1, 1, 1, 1).setInitMethod(Xavier))
+        config[Table](1)(1), 1, 1, 1, 1).setInitMethod(weightInitMethod = Xavier))
       conv1.add(ReLU[D](true))
       concat.add(conv1)
 
@@ -250,7 +250,7 @@ object Inception {
         setInitMethod(Xavier))
       conv3.add(ReLU[D](true))
       conv3.add(SpatialConvolution[D](config[Table](2)(1),
-        config[Table](2)(2), 3, 3, 1, 1, 1, 1).setInitMethod(Xavier))
+        config[Table](2)(2), 3, 3, 1, 1, 1, 1).setInitMethod(weightInitMethod = Xavier))
       conv3.add(ReLU[D](true))
       concat.add(conv3)
 
@@ -259,7 +259,7 @@ object Inception {
         setInitMethod(Xavier))
       conv5.add(ReLU[D](true))
       conv5.add(SpatialConvolution[D](config[Table](3)(1),
-        config[Table](3)(2), 5, 5, 1, 1, 2, 2).setInitMethod(Xavier))
+        config[Table](3)(2), 5, 5, 1, 1, 2, 2).setInitMethod(weightInitMethod = Xavier))
       conv5.add(ReLU[D](true))
       concat.add(conv5)
 
@@ -273,13 +273,16 @@ object Inception {
     }
 
     val features = Sequential[D]
-    features.add(SpatialConvolution[D](3, 64, 7, 7, 2, 2, 3, 3).setInitMethod(Xavier))
+    features.add(SpatialConvolution[D](3, 64, 7, 7, 2, 2, 3, 3)
+      .setInitMethod(weightInitMethod = Xavier))
     features.add(ReLU[D](true))
     features.add(SpatialMaxPooling[D](3, 3, 2, 2, 1, 1))
     features.add(SpatialCrossMapLRN[D](5, 0.0001, 0.75))
-    features.add(SpatialConvolution[D](64, 64, 1, 1, 1, 1, 0, 0).setInitMethod(Xavier))
+    features.add(SpatialConvolution[D](64, 64, 1, 1, 1, 1, 0, 0)
+      .setInitMethod(weightInitMethod = Xavier))
     features.add(ReLU[D](true))
-    features.add(SpatialConvolution[D](64, 192, 3, 3, 1, 1, 1, 1).setInitMethod(Xavier))
+    features.add(SpatialConvolution[D](64, 192, 3, 3, 1, 1, 1, 1)
+      .setInitMethod(weightInitMethod = Xavier))
     features.add(ReLU[D](true))
     features.add(SpatialCrossMapLRN[D](5, 0.0001, 0.75))
     features.add(SpatialMaxPooling[D](3, 3, 2, 2, 1, 1))
@@ -299,7 +302,7 @@ object Inception {
     features.add(SpatialAveragePooling[D](7, 7, 1, 1))
     features.add(Dropout[D](0.4))
     features.add(View[D](1024).setNumInputDims(3))
-    features.add(Linear[D](1024, classNum).setInitMethod(Xavier))
+    features.add(Linear[D](1024, classNum).setInitMethod(weightInitMethod = Xavier))
     features.add(LogSoftMax[D])
     features.reset()
     features
