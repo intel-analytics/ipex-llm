@@ -124,6 +124,7 @@ object DistriOptimizerPerf {
       criterion
     )
     optimizer.setEndWhen(Trigger.maxEpoch(param.maxEpoch)).optimize()
+    sc.stop()
   }
 }
 
