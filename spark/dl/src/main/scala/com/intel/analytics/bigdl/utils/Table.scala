@@ -45,6 +45,18 @@ class Table private[bigdl](
     }
   }
 
+  /**
+    * Return false because it's not a Tensor
+    * @return
+    */
+  override def isTensor: Boolean = false
+
+  /**
+    * Return true because it's a Table implemented from [[Activity]]
+    * @return
+    */
+  override def isTable: Boolean = true
+
   private[bigdl] def getState(): ImmutableMap[Any, Any] = {
     return state.toMap
   }
