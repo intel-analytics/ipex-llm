@@ -17,88 +17,81 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.nn.Padding._
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 
 import scala.reflect.ClassTag
 
 /**
- * This module adds paddings to the input tensor.
+ * This module adds pad units of padding to dimension dim of the input. If pad is negative,
+ * padding is added to the left, otherwise, it is added to the right of the dimension.
  *
  * The input to this layer is expected to be a tensor, or a batch of tensors;
  * when using mini-batch, a batch of sample tensors will be passed to the layer and
  * the user need to specify the number of dimensions of each sample tensor in the
  * batch using nInputDims.
  *
- * @param paddings how to pad the input
- * @param nInputDim specify the number of dimensions that this module will work on
- *                  If it is not equal to the dimension number of input tensors, the first dimension
+ * @param dim the dimension to be applied padding operation
+ * @param pad num of the pad units
+ * @param nInputDim specify the number of dimensions that this module will receive
+ *                  If it is more than the dimension of input tensors, the first dimension
  *                  would be considered as batch size
  * @param value padding value
  */
 @SerialVersionUID(- 3401298839313169602L)
 class Padding[T: ClassTag](
-  val paddings: Array[PaddingInfo],
+  val dim: Int,
+  val pad: Int,
   val nInputDim: Int,
-  val value: Double = 0.0)(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+  val value: Double = 0.0,
+  val nIndex: Int = 1)(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+
+  var outputSize = Storage[Int]()
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    // Expand the output tensor
-    val batch = (nInputDim != input.nDimension())
-    inputs(0) = input
-    var i = 0
-    while(i < paddings.length) {
-      inputs(i + 1) = paddingOneDimForward(inputs(i), paddings(i), batch)
-      i += 1
-    }
-    output = inputs(i)
+    outputSize.resize(input.dim()).copy(Storage(input.size()))
+    val dim = if (input.dim() != nInputDim) this.dim + 1 else this.dim
 
+    outputSize(dim - 1) += math.abs(this.pad)
+    output.resize(outputSize.array()).fill(ev.fromType(value))
+
+    val index = if (this.pad > 0) input.size(dim) - nIndex + 2 else nIndex
+    val pad = if (this.pad > 0) this.pad else -this.pad
+
+    if (index == 1) {
+      output.narrow(dim, 1 + pad, input.size(dim)).copy(input)
+    } else if (index == (input.size(dim) + 1)) {
+      output.narrow(dim, 1, input.size(dim)).copy(input)
+    } else {
+      output.narrow(dim, 1, index - 1).copy(input.narrow(dim, 1, index - 1))
+      output.narrow(dim, index + pad, input.size(dim) - (index - 1)).
+        copy(input.narrow(dim, index, input.size(dim) - (index - 1)))
+    }
     output
   }
 
+
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    val batch = (nInputDim != input.nDimension())
-    // Copy the tensor content
-    var gradOutputDim = gradOutput
-    var i = 0
-    while(i < paddings.length) {
-      gradOutputDim = paddingOneDimBackward(inputs(paddings.length - i - 1),
-        gradOutputDim, paddings(paddings.length - i - 1), batch)
-      i += 1
-    }
+    gradInput.resizeAs(input)
 
-    gradInput = gradOutputDim
-    gradInput
-  }
+    val dim = if (input.dim() != nInputDim) this.dim + 1 else this.dim
+    val index = if (this.pad > 0) input.size(dim) - nIndex + 2 else nIndex
+    val pad = if (this.pad > 0) this.pad else -this.pad
 
-  private def paddingOneDimBackward(input: Tensor[T], gradOutput: Tensor[T],
-                                    padInfo: PaddingInfo, batch: Boolean): Tensor[T] = {
-    val gradInput = Tensor[T]().resizeAs(input)
-    val dim = if (batch) padInfo.dim + 1 else padInfo.dim
-    if(padInfo.leftStartIndex == 1 && padInfo.rightStartIndex == 1) {
-      gradInput.narrow(dim, 1, input.size(dim))
-        .copy(gradOutput.narrow(dim, padInfo.leftPadding + 1, input.size(dim)))
+    if (index == 1) {
+      gradInput.copy(gradOutput.narrow(dim, 1 + pad, input.size(dim)))
+    } else if (index == input.size(dim) + 1) {
+      gradInput.copy(gradOutput.narrow(dim, 1, input.size(dim)))
     } else {
-      val central = input.size(dim) - (padInfo.leftStartIndex - 1) - (padInfo.rightStartIndex - 1)
-      if(padInfo.leftStartIndex != 1) {
-        gradInput.narrow(dim, 1, padInfo.leftStartIndex - 1)
-          .copy(gradOutput.narrow(dim, 1, padInfo.leftStartIndex - 1))
-      }
-      if (central != 0) {
-        gradInput.narrow(dim, padInfo.leftStartIndex, central)
-          .copy(gradOutput.narrow(dim, padInfo.leftStartIndex + padInfo.leftPadding, central))
-      }
-      if(padInfo.rightStartIndex != 1) {
-        gradInput.narrow(dim, input.size(dim) - padInfo.rightStartIndex + 2,
-          padInfo.rightStartIndex - 1).copy(gradOutput.narrow(dim,
-          padInfo.leftStartIndex + central + padInfo.rightPadding, padInfo.rightStartIndex - 1))
-      }
+      gradInput.narrow(dim, 1, index - 1).
+        copy(gradOutput.narrow(dim, 1, index - 1))
+      gradInput.narrow(dim, index, input.size(dim) - (index - 1)).copy(
+        gradOutput.narrow(dim, index + pad, input.size(dim) - (index - 1)))
     }
     gradInput
   }
 
   override def toString(): String = {
-    s"${getPrintName}((${paddings.mkString(",")}), $nInputDim, $value)"
+    s"${getPrintName}($dim, $pad, $nInputDim, $value, $nIndex)"
   }
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[Padding[T]]
@@ -107,88 +100,27 @@ class Padding[T: ClassTag](
     case that: Padding[T] =>
       super.equals(that) &&
         (that canEqual this) &&
-        paddings == that.paddings &&
+        dim == that.dim &&
+        pad == that.pad &&
         nInputDim == that.nInputDim &&
-        value == that.value
+        value == that.value &&
+        nIndex == that.nIndex
     case _ => false
   }
 
   override def hashCode(): Int = {
     def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
-    val state = Seq(super.hashCode(), paddings, nInputDim, value)
+    val state = Seq(super.hashCode(), dim, pad, nInputDim, value, nIndex)
     state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
-  }
-
-  private val inputs = new Array[Tensor[T]](paddings.length + 1)
-  inputs.foreach(_ => Tensor[T]())
-
-  private def paddingOneDimForward(input: Tensor[T], padInfo: PaddingInfo,
-                                   batch: Boolean): Tensor[T] = {
-    // Expand the output tensor
-    val outputSize = input.size()
-    val dim = if (batch) padInfo.dim + 1 else padInfo.dim
-    outputSize(dim - 1) += padInfo.leftPadding + padInfo.rightPadding
-    val output = Tensor(outputSize).fill(ev.fromType(value))
-
-    // Copy the tensor content
-    if(padInfo.leftStartIndex == 1 && padInfo.rightStartIndex == 1) {
-      output.narrow(dim, padInfo.leftPadding + 1, input.size(dim))
-        .copy(input.narrow(dim, 1, input.size(dim)))
-    } else {
-      val central = input.size(dim) - (padInfo.leftStartIndex - 1) - (padInfo.rightStartIndex - 1)
-      if (padInfo.leftStartIndex != 1) {
-        output.narrow(dim, 1, padInfo.leftStartIndex - 1)
-          .copy(input.narrow(dim, 1, padInfo.leftStartIndex - 1))
-      }
-      if (central != 0) {
-        output.narrow(dim, padInfo.leftStartIndex + padInfo.leftPadding, central)
-          .copy(input.narrow(dim, padInfo.leftStartIndex, central))
-      }
-      if (padInfo.rightStartIndex != 1) {
-        output.narrow(dim,
-          outputSize(dim - 1) - padInfo.rightStartIndex + 2,
-          padInfo.rightStartIndex - 1).copy(input.narrow(dim,
-          input.size(dim) - padInfo.rightStartIndex + 2, padInfo.rightStartIndex - 1))
-      }
-    }
-    output
   }
 }
 
-object Padding {
-  /**
-   * Padding information. It define which dimensions to add padding
-   * @param dim the index of the dimension to add padding, start from 1
-   * @param leftPadding left padding length
-   * @param leftStartIndex left padding start index
-   * @param rightPadding right padding length
-   * @param rightStartIndex right padding start index
-   */
-  case class PaddingInfo(
+object Padding{
+  def apply[@specialized(Float, Double) T: ClassTag](
     dim: Int,
-    leftPadding: Int,
-    leftStartIndex: Int,
-    rightPadding: Int,
-    rightStartIndex: Int
-  )
-
-  def apply[T: ClassTag](
-      dim: Int,
-      pad: Int,
-      nInputDim: Int,
-      value: Double = 0.0,
-      nIndex: Int = 1)(implicit ev: TensorNumeric[T]): Padding[T] = {
-    if (pad > 0) {
-      new Padding[T](Array(PaddingInfo(dim, 0, 1, pad, nIndex)), nInputDim, value)
-    } else {
-      new Padding[T](Array(PaddingInfo(dim, -pad, nIndex, 0, 1)), nInputDim, value)
-    }
-  }
-
-  def apply[T: ClassTag](
-    paddings: Array[PaddingInfo],
+    pad: Int,
     nInputDim: Int,
-    value: Double)(implicit ev: TensorNumeric[T]) : Padding[T] = {
-    new Padding[T](paddings, nInputDim, value)
-  }
+    value: Double = 0.0,
+    nIndex: Int = 1)(implicit ev: TensorNumeric[T]) : Padding[T] =
+    new Padding[T](dim, pad, nInputDim, value, nIndex)
 }
