@@ -44,6 +44,7 @@ class SelectTable[T: ClassTag](
   }
 
   override def updateGradInput(input: Table, gradOutput: Activity): Table = {
+    if (gradOutput == null) return null
     Utils.zeroTableCopy(gradInput, input)
     val index = if (this.index < 0) {
       input.length() + this.index + 1

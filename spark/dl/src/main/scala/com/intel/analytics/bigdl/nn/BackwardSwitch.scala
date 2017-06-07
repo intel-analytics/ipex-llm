@@ -29,15 +29,21 @@ import scala.reflect.ClassTag
  * @tparam T Numeric type. Only support float/double now
  */
 @SerialVersionUID(-7754615386732745708L)
-class PropagateBackSwitch[T: ClassTag](module: Module[T])
+class BackwardSwitch[T: ClassTag](module: Module[T])
   (implicit ev: TensorNumeric[T]) extends Container[Activity, Activity, T] {
 
   add(module)
 
-  var isPropagateBack: Boolean = false
+  private var isPropagateBack: Boolean = false
+  private var isAccGradParams: Boolean = false
 
   def setPropagateBack(back: Boolean): this.type = {
     isPropagateBack = back
+    this
+  }
+
+  def setAccGradParams(isAcc: Boolean): this.type = {
+    isAccGradParams = isAcc
     this
   }
 
@@ -55,12 +61,27 @@ class PropagateBackSwitch[T: ClassTag](module: Module[T])
     gradInput
   }
 
+  override def accGradParameters(input: Activity, gradOutput: Activity, scale: Double): Unit = {
+    if (isAccGradParams) {
+      module.accGradParameters(input, gradOutput)
+    }
+  }
+
+  override def backward(input: Activity, gradOutput: Activity): Activity = {
+    if (isPropagateBack) {
+      gradInput = module.backward(input, gradOutput)
+    } else {
+      gradInput = null
+    }
+    gradInput
+  }
+
   override def toString: String = s"${ getPrintName }($isPropagateBack)"
 }
 
-object PropagateBackSwitch {
+object BackwardSwitch {
   def apply[@specialized(Float, Double) T: ClassTag](module: Module[T])
-    (implicit ev: TensorNumeric[T]): PropagateBackSwitch[T] = new PropagateBackSwitch(module)
+    (implicit ev: TensorNumeric[T]): BackwardSwitch[T] = new BackwardSwitch(module)
 }
 
 

@@ -25,22 +25,21 @@ import scala.reflect.ClassTag
  * This class is a container for a single module which will be applied
  * to all input elements. The member module is cloned as necessary to
  * process all input elements.
- *
  * @param module
  */
 
-@SerialVersionUID( 4403280698280280268L)
+@SerialVersionUID(4403280698280280268L)
 class MapTable[T: ClassTag](
   var module: AbstractModule[_ <: Activity, _ <: Activity, T] = null)
-  (implicit ev: TensorNumeric[T]) extends Container[Table, Table, T]  {
+  (implicit ev: TensorNumeric[T]) extends Container[Table, Table, T] {
 
   private def extend(n: Int): Unit = {
     modules.update(0, module.asInstanceOf[AbstractModule[Activity, Activity, T]])
     var i = 1
     while (i <= n && modules.size <= i) {
-        modules.append(module
-          .cloneModule()
-          .asInstanceOf[AbstractModule[Activity, Activity, T]])
+      modules.append(module
+        .cloneModule()
+        .asInstanceOf[AbstractModule[Activity, Activity, T]])
       i += 1
     }
   }
@@ -67,6 +66,7 @@ class MapTable[T: ClassTag](
   }
 
   override def updateGradInput(input: Table, gradOutput: Table): Table = {
+    if (gradOutput == null) return null
     extend(input.length())
     var i = 0
     while (i < input.length()) {
@@ -78,10 +78,11 @@ class MapTable[T: ClassTag](
 
   override def accGradParameters(input: Table, gradOutput: Table,
     scale: Double = 1.0): Unit = {
+    if (gradOutput == null) return
     extend(input.length())
     var i = 0
     while (i < input.length()) {
-        modules(i).accGradParameters(input(i + 1), gradOutput(i + 1), scale)
+      modules(i).accGradParameters(input(i + 1), gradOutput(i + 1), scale)
       i += 1
     }
   }
@@ -104,7 +105,7 @@ class MapTable[T: ClassTag](
     val tab = "  "
     val extlast = "       "
     val line = "\n"
-    var str = s"${getPrintName}"
+    var str = s"${ getPrintName }"
     if (module != null) {
       str += s"{$line$tab$module$line}"
     } else {
@@ -116,8 +117,8 @@ class MapTable[T: ClassTag](
 
 object MapTable {
   def apply[@specialized(Float, Double) T: ClassTag](
-      module: AbstractModule[_ <: Activity, _ <: Activity, T] = null
-  )(implicit ev: TensorNumeric[T]) : MapTable[T] = {
+    module: AbstractModule[_ <: Activity, _ <: Activity, T] = null
+  )(implicit ev: TensorNumeric[T]): MapTable[T] = {
     new MapTable[T](module)
   }
 }

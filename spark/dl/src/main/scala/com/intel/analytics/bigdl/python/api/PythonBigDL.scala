@@ -1243,8 +1243,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     SplitAndSelect(dimension, index, numSplit)
   }
 
-  def createPropagateBackSwitch(module: Module[T]): PropagateBackSwitch[T] = {
-    PropagateBackSwitch[T](module)
+  def createBackwardSwitch(module: Module[T]): BackwardSwitch[T] = {
+    BackwardSwitch[T](module)
   }
 
   def setModelSeed(seed: Long): Unit = {

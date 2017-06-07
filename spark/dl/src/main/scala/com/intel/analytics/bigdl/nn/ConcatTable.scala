@@ -106,13 +106,17 @@ class ConcatTable[T : ClassTag]
   }
 
   override def updateGradInput(input: Activity, gradOutput: Table): Activity = {
+    if (gradOutput == null) {
+      gradInput = null
+      return gradInput
+    }
     val isInputTable = input.isInstanceOf[Table]
     val wasGradInputTable = gradInput.isInstanceOf[Table]
 
     if (isInputTable) {
       var i = 0
       while (i < modules.length) {
-        if (gradOutput != null &&  gradOutput.toTable.contains(i + 1)) {
+        if (gradOutput.toTable.contains(i + 1)) {
           val currentGradInput = modules(i).updateGradInput(input,
             gradOutput.toTable(i + 1))
           if (currentGradInput != null) {
@@ -158,13 +162,17 @@ class ConcatTable[T : ClassTag]
   }
 
   override def backward(input: Activity, gradOutput: Table): Activity = {
+    if (gradOutput == null) {
+      gradInput = null
+      return gradInput
+    }
     val isInputTable = input.isInstanceOf[Table]
     val wasGradInputTable = gradInput.isInstanceOf[Table]
 
     if (isInputTable) {
       var i = 0
       while (i < modules.length) {
-        if (gradOutput != null &&  gradOutput.toTable.contains(i + 1)) {
+        if (gradOutput.toTable.contains(i + 1)) {
           val currentGradInput = modules(i).backward(input,
             gradOutput.toTable(i + 1))
           if (currentGradInput != null) {
@@ -212,6 +220,7 @@ class ConcatTable[T : ClassTag]
 
   override def accGradParameters(input: Activity, gradOutput: Table,
     scale: Double = 1.0): Unit = {
+    if (gradOutput == null) return
     var i = 0
     while (i < modules.length) {
       modules(i).accGradParameters(input, gradOutput.toTable(i + 1), scale)
