@@ -76,15 +76,19 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
   // if you want to do a gradcheck, you will need to fix those variables, otherwise not fix.
   private var needFix: Boolean = false
 
-  reset()
+  {
+    val wInit = RandomUniform(0, 1)
+    val bInit = Zeros
+    reset(wInit, bInit)
+  }
 
-  override def reset(): Unit = {
+  override protected def resetInternal(): Unit = {
     if (null != weight) {
-      weight.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1)))
+      weightInitMethod.init(weight, VariableFormat.ONE_D)
     }
 
     if (null != bias) {
-      bias.fill(ev.fromType[Int](0))
+      biasInitMethod.init(bias, VariableFormat.ONE_D)
     }
 
     runningMean.zero()

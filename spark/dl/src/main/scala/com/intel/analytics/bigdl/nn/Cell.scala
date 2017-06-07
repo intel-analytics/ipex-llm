@@ -133,7 +133,7 @@ abstract class Cell[T : ClassTag](
     cell.getParametersTable()
   }
 
-  override def reset(): Unit = {
+  override protected def resetInternal(): Unit = {
     cell.reset()
   }
 

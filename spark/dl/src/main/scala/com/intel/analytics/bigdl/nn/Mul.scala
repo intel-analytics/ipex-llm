@@ -33,12 +33,13 @@ class Mul[T: ClassTag](implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   val weight = Tensor[T](1)
   val gradWeight = Tensor[T](1)
 
-  private val stdv = 1.0
-  private var weightInitMethod: InitializationMethod = RandomUniform(stdv)
-  reset()
+  {
+    val wInit = RandomUniform(-1.0, 1.0)
+    reset(wInit)
+  }
 
-  override def reset(): Unit = {
-    weightInitMethod.init(weight)
+  override protected def resetInternal(): Unit = {
+    weightInitMethod.init(weight, VariableFormat.ONE_D)
     zeroGradParameters()
   }
 

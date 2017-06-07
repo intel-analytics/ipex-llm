@@ -47,12 +47,14 @@ class CMul[@specialized(Float, Double) T: ClassTag](
   private val _sum = Tensor[T]()
   private val _repeat = Tensor[T]()
 
-  private val stdv = 1 / math.sqrt(weight.nElement())
-  private var weightInitMethod: InitializationMethod = RandomUniform(stdv)
-  reset()
+  {
+    val stdv = 1 / math.sqrt(weight.nElement())
+    val wInit: InitializationMethod = RandomUniform(-stdv, stdv)
+    reset(weightInitMethod = wInit)
+  }
 
-  override def reset(): Unit = {
-    weightInitMethod.init(weight)
+  override protected def resetInternal(): Unit = {
+    weightInitMethod.init(weight, VariableFormat.ONE_D)
     zeroGradParameters()
   }
 

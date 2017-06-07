@@ -52,11 +52,13 @@ class PReLU[T: ClassTag](
     Tensor[T](nOutputPlane)
   }
 
-  private var weightInitMethod: InitializationMethod = Const(0.25)
-  reset()
+  {
+    val wInit = Const(0.25)
+    reset(wInit)
+  }
 
-  override def reset(): Unit = {
-    weightInitMethod.init(weight)
+  override protected def resetInternal(): Unit = {
+    weightInitMethod.init(weight, VariableFormat.ONE_D)
     zeroGradParameters()
   }
 

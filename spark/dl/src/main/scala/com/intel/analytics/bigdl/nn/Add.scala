@@ -38,12 +38,14 @@ class Add[T: ClassTag](val inputSize: Int
 
   val gradBias : Tensor[T] = Tensor[T](inputSize)
 
-  private val stdv = 1 / math.sqrt(bias.size(1))
-  private var weightInitMethod: InitializationMethod = RandomUniform(stdv)
-  reset()
+  {
+    val stdv = 1 / math.sqrt(bias.size(1))
+    val bInit: InitializationMethod = RandomUniform(-stdv, stdv)
+    reset(biasInitMethod = bInit)
+  }
 
-  override def reset(): Unit = {
-    weightInitMethod.init(bias)
+  override protected def resetInternal(): Unit = {
+    biasInitMethod.init(bias, VariableFormat.ONE_D)
     zeroGradParameters()
   }
 

@@ -201,7 +201,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                    initMethod: String, withBias: Boolean): Linear[T] = {
     val l = Linear[T](inputSize, outputSize, withBias)
     if (initMethod != "default") {
-      l.setInitMethod(weightInitMethod = PythonBigDL.getInitMethod(initMethod),
+      l.reset(weightInitMethod = PythonBigDL.getInitMethod(initMethod),
       biasInitMethod = Zeros)
     }
     l
@@ -304,7 +304,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       nGroup,
       propagateBack)
     if (initMethod != "default") {
-      s.setInitMethod(weightInitMethod = PythonBigDL.getInitMethod(initMethod),
+      s.reset(weightInitMethod = PythonBigDL.getInitMethod(initMethod),
         biasInitMethod = Zeros)
     }
     s
@@ -813,7 +813,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       dilationW,
       dilationH)
     if (initMethod != "default") {
-      s.setInitMethod(weightInitMethod = PythonBigDL.getInitMethod(initMethod),
+      s.reset(weightInitMethod = PythonBigDL.getInitMethod(initMethod),
         biasInitMethod = Zeros)
     }
     s
@@ -846,7 +846,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       nGroup,
       noBias)
     if (initMethod != "default") {
-      s.setInitMethod(weightInitMethod = PythonBigDL.getInitMethod(initMethod),
+      s.reset(weightInitMethod = PythonBigDL.getInitMethod(initMethod),
         biasInitMethod = Zeros)
     }
     s
@@ -875,7 +875,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       nGroup,
       propagateBack)
     if (initMethod != "default") {
-      s.setInitMethod(weightInitMethod = PythonBigDL.getInitMethod(initMethod),
+      s.reset(weightInitMethod = PythonBigDL.getInitMethod(initMethod),
         biasInitMethod = Zeros)
     }
     s
@@ -1060,7 +1060,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       padH,
       withBias)
     if (initMethod != "default") {
-      v.setInitMethod(weightInitMethod = PythonBigDL.getInitMethod(initMethod),
+      v.reset(weightInitMethod = PythonBigDL.getInitMethod(initMethod),
         biasInitMethod = Zeros)
     }
     v

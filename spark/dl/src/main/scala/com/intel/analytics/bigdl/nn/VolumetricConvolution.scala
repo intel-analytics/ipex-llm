@@ -68,28 +68,17 @@ class VolumetricConvolution[T: ClassTag](
   protected var weightMM: Tensor[T] = null
   protected var gradWeightMM: Tensor[T] = null
 
-  private val stdv = 1.0 / math.sqrt(kT * kW * kH * nInputPlane)
-  private var weightInitMethod: InitializationMethod = RandomUniform(stdv)
-  private var biasInitMethod: InitializationMethod = RandomUniform(stdv)
+  {
+    val stdv = 1.0 / math.sqrt(kT * kW * kH * nInputPlane)
+    val wInit: InitializationMethod = RandomUniform(-stdv, stdv)
+    val bInit: InitializationMethod = RandomUniform(-stdv, stdv)
 
-  reset()
-
-  def setInitMethod(weightInitMethod: InitializationMethod = null,
-                    biasInitMethod: InitializationMethod = null): this.type = {
-    if (weightInitMethod != null) {
-      this.weightInitMethod = weightInitMethod
-    }
-
-    if (biasInitMethod != null) {
-      this.biasInitMethod = biasInitMethod
-    }
-    reset()
-    this
+    reset(wInit, bInit)
   }
 
-  override def reset(): Unit = {
-    weightInitMethod.init(weight)
-    Option(bias).foreach(biasInitMethod.init(_))
+  override protected def resetInternal(): Unit = {
+    weightInitMethod.init(weight, VariableFormat.OUT_IN_KT_KH_KW)
+    Option(bias).foreach(biasInitMethod.init(_, VariableFormat.ONE_D))
     zeroGradParameters()
   }
 

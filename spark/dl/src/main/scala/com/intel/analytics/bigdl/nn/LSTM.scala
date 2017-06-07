@@ -195,7 +195,7 @@ class LSTM[T : ClassTag] (
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
 
-  override def reset(): Unit = {
+  override protected def resetInternal(): Unit = {
     super.reset()
     cell.reset()
   }

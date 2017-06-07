@@ -82,10 +82,13 @@ class SpatialConvolution[T: ClassTag](
     false
   }
 
-  private val stdv = 1.0 / math.sqrt(kernelW * kernelH * nInputPlane)
-  private var weightInitMethod: InitializationMethod = RandomUniform(stdv)
-  private var biasInitMethod: InitializationMethod = RandomUniform(stdv)
-  reset()
+  {
+    val stdv = 1.0 / math.sqrt(kernelW * kernelH * nInputPlane)
+    val wInit: InitializationMethod = RandomUniform(-stdv, stdv)
+    val bInit: InitializationMethod = RandomUniform(-stdv, stdv)
+    reset(wInit, bInit)
+  }
+
   protected var im2colTime = 0L
   protected var col2imTime = 0L
 
@@ -93,25 +96,12 @@ class SpatialConvolution[T: ClassTag](
 
   def getCol2ImgTime(): Double = col2imTime
 
-  def setInitMethod(weightInitMethod: InitializationMethod = null,
-                    biasInitMethod: InitializationMethod = null): this.type = {
-    if (weightInitMethod != null) {
-      this.weightInitMethod = weightInitMethod
-    }
-
-    if (biasInitMethod != null) {
-      this.biasInitMethod = biasInitMethod
-    }
-    reset()
-    this
-  }
-
   @transient
   protected var results: Array[Future[Unit]] = null
 
-  override def reset(): Unit = {
-    weightInitMethod.init(weight)
-    biasInitMethod.init(bias)
+  override protected def resetInternal(): Unit = {
+    weightInitMethod.init(weight, VariableFormat.GP_OUT_IN_KW_KH)
+    biasInitMethod.init(bias, VariableFormat.ONE_D)
     zeroGradParameters()
   }
 

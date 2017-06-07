@@ -16,30 +16,120 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.VariableFormat.Default
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 
 /**
- * DataFormat describe the dimension of weights
+ * VariableFormat describe the meaning of each dimension of the variable
  */
-sealed trait DataFormat
+trait VariableFormat {
+  def getFanIn(shape: Array[Int]): Int = {
+    throw new Exception("FanIn is not defined in this format")
+  }
+  def getFanOut(shape: Array[Int]): Int = {
+    throw new Exception("FanOut is not defined in this format")
+  }
+}
 
-/**
- * OutputFirst indicating that output is in the lower dimension
- * of the weight. Take 2 dimensional weight for example, the first
- * dimension is the output, and the second dimension is the input.
- */
-case object OutputFirst extends DataFormat
+object VariableFormat {
 
-/**
- * InputFirst indicating that input is in the lower dimension
- * of the weight. Take 2 dimensional weight for example, the first
- * dimension is the input, and the second dimension is the output.
- */
-case object InputFirst extends DataFormat
+  /**
+   * The default VariableFormat used when we do not care about
+   * the specified format of this variable.
+   */
+  case object Default extends VariableFormat
 
+  case object ONE_D extends VariableFormat {
+    override def getFanIn(shape: Array[Int]): Int = {
+      shape(0)
+    }
 
+    override def getFanOut(shape: Array[Int]): Int = {
+      1
+    }
+  }
+
+  case object IN_OUT extends VariableFormat {
+
+    override def getFanIn(shape: Array[Int]): Int = {
+      shape(0)
+    }
+
+    override def getFanOut(shape: Array[Int]): Int = {
+      shape(1)
+    }
+  }
+  case object OUT_IN extends VariableFormat {
+    override def getFanIn(shape: Array[Int]): Int = {
+      shape(1)
+    }
+
+    override def getFanOut(shape: Array[Int]): Int = {
+      shape(0)
+    }
+  }
+  case object IN_OUT_KW_KH extends VariableFormat {
+    override def getFanIn(shape: Array[Int]): Int = {
+      val receptiveFieldSize = shape(2) * shape(3)
+      shape(0) * receptiveFieldSize
+    }
+
+    override def getFanOut(shape: Array[Int]): Int = {
+      val receptiveFieldSize = shape(2) * shape(3)
+      shape(1) * receptiveFieldSize
+    }
+  }
+
+  case object OUT_IN_KW_KH extends VariableFormat {
+    override def getFanIn(shape: Array[Int]): Int = {
+      val receptiveFieldSize = shape(2) * shape(3)
+      shape(1) * receptiveFieldSize
+    }
+
+    override def getFanOut(shape: Array[Int]): Int = {
+      val receptiveFieldSize = shape(2) * shape(3)
+      shape(0) * receptiveFieldSize
+    }
+  }
+
+  case object GP_OUT_IN_KW_KH extends VariableFormat {
+    override def getFanIn(shape: Array[Int]): Int = {
+      val receptiveFieldSize = shape(0) * shape(2) * shape(3)
+      shape(2) * receptiveFieldSize
+    }
+
+    override def getFanOut(shape: Array[Int]): Int = {
+      val receptiveFieldSize = shape(0) * shape(2) * shape(3)
+      shape(1) * receptiveFieldSize
+    }
+  }
+
+  case object GP_IN_OUT_KW_KH extends VariableFormat {
+    override def getFanIn(shape: Array[Int]): Int = {
+      val receptiveFieldSize = shape(0) * shape(2) * shape(3)
+      shape(1) * receptiveFieldSize
+    }
+
+    override def getFanOut(shape: Array[Int]): Int = {
+      val receptiveFieldSize = shape(0) * shape(2) * shape(3)
+      shape(2) * receptiveFieldSize
+    }
+  }
+
+  case object OUT_IN_KT_KH_KW extends VariableFormat {
+    override def getFanIn(shape: Array[Int]): Int = {
+      val receptiveFieldSize = shape(2) * shape(3) * shape(4)
+      shape(1) * receptiveFieldSize
+    }
+
+    override def getFanOut(shape: Array[Int]): Int = {
+      val receptiveFieldSize = shape(2) * shape(3) * shape(4)
+      shape(0) * receptiveFieldSize
+    }
+  }
+
+}
 
 /**
  * Initialization method to initialize bias and weight.
@@ -53,56 +143,13 @@ trait InitializationMethod {
   /**
    * Initialize the given weight and bias.
    *
-   * @param weight    the weight to initialize
+   * @param variable    the weight to initialize
    * @param dataFormat       the data format of weight indicating the dimension order of
    *                  the weight. "output_first" means output is in the lower dimension
    *                  "input_first" means input is in the lower dimension.
    */
-  def init[T](weight: Tensor[T], dataFormat: DataFormat = OutputFirst)
+  def init[T](variable: Tensor[T], dataFormat: VariableFormat = Default)
              (implicit ev: TensorNumeric[T]): Unit
-
-  /**
-   * Get the fanIn and fanOut from shape.
-   *
-   * This method takes the following assumptions on shape.
-   *  1. If shape has 2 dimensions, these two dimensions are the input and output.
-   *  2. If shape has 4 dimensions (convolutional weight), the first two dimensions
-   *     are input and output. The 3th and 4th dimensions are the kernel width and kernel height.
-   *  3. If shape has 5 dimensions (convolutional weight), the first dimension is
-   *  group size, the 2nd and 3th dimensions are input and output, and the last two dimensions
-   *  are kernel width and kernel height.
-   *
-   * @param shape the shape of which to get the fans
-   * @param dataFormat the dimension order of the shape
-   * @return the (fanIn, fanOut) tuple
-   */
-  protected def getFans(shape: Shape, dataFormat: DataFormat = OutputFirst): (Int, Int) = {
-    val dims = shape.length
-    val (first, second) = dims match {
-      case 2 => (shape(0), shape(1))
-      case 4 =>
-        val receptiveFieldSize = shape(2) * shape(3)
-        (shape(0) * receptiveFieldSize, shape(1) * receptiveFieldSize)
-      case 5 =>
-        val receptiveFieldSize = shape(0) * shape(3) * shape(4)
-        (shape(1) * receptiveFieldSize, shape(2) * receptiveFieldSize)
-      case _ =>
-        val sqrtElem = Math.sqrt(shape.product).toInt
-        (sqrtElem, sqrtElem)
-    }
-    val (fanIn, fanOut) = dataFormat match {
-      case InputFirst => (first, second)
-      case OutputFirst => (second, first)
-      case _ =>
-        throw new IllegalArgumentException(s"Invalid inputFormat: $dataFormat")
-    }
-    (Math.max(1, fanIn), Math.max(1, fanOut))
-  }
-
-  protected def initWithUniform[T](tensor: Tensor[T], stdv: Double)
-                                  (implicit ev: TensorNumeric[T]): Unit = {
-    tensor.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
-  }
 }
 
 
@@ -115,12 +162,27 @@ trait InitializationMethod {
  */
 case object RandomUniform extends InitializationMethod {
 
-  def init[T](weight: Tensor[T], dataFormat: DataFormat = OutputFirst)
+  override def init[T](variable: Tensor[T], dataFormat: VariableFormat)
              (implicit ev: TensorNumeric[T]): Unit = {
-    val shape = weight.size()
-    val (fanIn, _) = getFans(shape, dataFormat)
+    val shape = variable.size()
+    val fanIn = dataFormat.getFanIn(shape)
     val stdv = 1.0 / math.sqrt(fanIn)
-    initWithUniform(weight, stdv)
+    variable.setUniform(-stdv, stdv)
+  }
+
+}
+
+/**
+ * Initializer that generates tensors with a uniform distribution.
+ *
+ * It draws samples form a uniform distribution within [lower, upper]
+ *
+ */
+case class RandomUniform(lower: Double, upper: Double) extends InitializationMethod {
+
+  def init[T](variable: Tensor[T], dataFormat: VariableFormat = Default)
+             (implicit ev: TensorNumeric[T]): Unit = {
+    variable.setUniform(lower, upper)
   }
 
 }
@@ -132,11 +194,11 @@ case object RandomUniform extends InitializationMethod {
  * where "limit" is specified by stdv
  *
  */
-case class RandomUniform(stdv: Double) extends InitializationMethod {
+case class RandomNormal(mean: Double, stdv: Double) extends InitializationMethod {
 
-  def init[T](weight: Tensor[T], dataFormat: DataFormat = OutputFirst)
+  def init[T](variable: Tensor[T], dataFormat: VariableFormat = Default)
              (implicit ev: TensorNumeric[T]): Unit = {
-    initWithUniform(weight, stdv)
+    variable.setNormal(mean, stdv)
   }
 
 }
@@ -146,9 +208,9 @@ case class RandomUniform(stdv: Double) extends InitializationMethod {
  */
 case object Zeros extends InitializationMethod {
 
-  def init[T](weight: Tensor[T], dataFormat: DataFormat = OutputFirst)
+  def init[T](variable: Tensor[T], dataFormat: VariableFormat = Default)
              (implicit ev: TensorNumeric[T]): Unit = {
-    weight.zero()
+    variable.zero()
   }
 
 }
@@ -158,9 +220,9 @@ case object Zeros extends InitializationMethod {
  */
 case object Ones extends InitializationMethod {
 
-  def init[T](weight: Tensor[T], dataFormat: DataFormat = OutputFirst)
+  def init[T](variable: Tensor[T], dataFormat: VariableFormat = Default)
              (implicit ev: TensorNumeric[T]): Unit = {
-    weight.fill(ev.one)
+    variable.fill(ev.one)
   }
 }
 
@@ -169,9 +231,9 @@ case object Ones extends InitializationMethod {
  */
 case class Const(value: Double) extends InitializationMethod {
 
-  def init[T](weight: Tensor[T], dataFormat: DataFormat = OutputFirst)
+  def init[T](variable: Tensor[T], dataFormat: VariableFormat = Default)
              (implicit ev: TensorNumeric[T]): Unit = {
-    weight.fill(ev.fromType(value))
+    variable.fill(ev.fromType(value))
   }
 }
 
@@ -196,12 +258,13 @@ case class Const(value: Double) extends InitializationMethod {
  *  (http://jmlr.org/proceedings/papers/v9/glorot10a/glorot10a.pdf)
  */
 case object Xavier extends InitializationMethod {
-  def init[T](weight: Tensor[T], dataFormat: DataFormat = OutputFirst)
+  def init[T](variable: Tensor[T], dataFormat: VariableFormat)
              (implicit ev: TensorNumeric[T]): Unit = {
-    val shape = weight.size()
-    val (fanIn, fanOut) = getFans(shape)
+    val shape = variable.size()
+    val fanIn = dataFormat.getFanIn(shape)
+    val fanOut = dataFormat.getFanOut(shape)
     val stdv = math.sqrt(6.0 / (fanIn + fanOut))
-    initWithUniform(weight, stdv)
+    variable.setUniform(-stdv, stdv)
   }
 
 }
@@ -210,12 +273,14 @@ case object Xavier extends InitializationMethod {
  * Initialize the weight with coefficients for bilinear interpolation.
  *
  * A common use case is with the DeconvolutionLayer acting as upsampling.
+ * The variable tensor passed in the init function should have 5 dimensions
+ * of format [nGroup, nInput, nOutput, kH, kW], and kH should be equal to kW
  *
  */
 case object BilinearFiller extends InitializationMethod {
-  def init[T](weight: Tensor[T], dataFormat: DataFormat = OutputFirst)
+  def init[T](variable: Tensor[T], dataFormat: VariableFormat = Default)
              (implicit ev: TensorNumeric[T]): Unit = {
-    val shape = weight.size()
+    val shape = variable.size()
     require(shape.length == 5, s"weight must be 5 dim, " +
       s"but got ${shape.length}")
     val kH = shape(3)
@@ -223,10 +288,10 @@ case object BilinearFiller extends InitializationMethod {
     require(kH == kW, s"Kernel $kH * $kW must be square")
     val f = Math.ceil(kW / 2.0).toInt
     val c = (2 * f - 1 - f % 2) / (2.0f * f)
-    val weightArray = weight.storage().array()
-    val weightOffset = weight.storageOffset() - 1
+    val weightArray = variable.storage().array()
+    val weightOffset = variable.storageOffset() - 1
     var i = 0
-    while(i < weight.nElement()) {
+    while(i < variable.nElement()) {
       val x : Float = i % kW
       val y : Float = (i / kW) % kH
       weightArray(i + weightOffset) = ev.fromType[Float](

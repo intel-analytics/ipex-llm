@@ -52,9 +52,11 @@ class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
   val bias: Tensor[T] = Tensor[T](nOutputPlane)
   val gradWeight: Tensor[T] = Tensor[T](connTable.size(1), kH, kW)
   val gradBias: Tensor[T] = Tensor[T](nOutputPlane)
+
   reset()
 
-  override def reset(): Unit = {
+  // todo write a new InitializationMethod to wrap the following procedure
+  override protected def resetInternal(): Unit = {
     val ninp = Tensor[T](this.nOutputPlane).zero()
     var i = 1
     while (i <= connTable.size(1)) {

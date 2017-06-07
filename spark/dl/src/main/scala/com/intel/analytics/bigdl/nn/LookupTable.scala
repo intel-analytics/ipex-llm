@@ -57,11 +57,13 @@ class LookupTable[T: ClassTag]
   private var normBuffer = Tensor[T]()
   private val countBuffer = Tensor[T]()
 
-  reset()
+  {
+    val wInit = RandomNormal(0, 1)
+    reset(weightInitMethod = wInit)
+  }
 
-  override def reset(): Unit = {
-    // todo: stdv = stdv or 1
-    weight.apply1(_ => ev.fromType[Double](RNG.normal(0, 1)))
+  override protected def resetInternal(): Unit = {
+    weightInitMethod.init(weight, VariableFormat.Default)
   }
 
   private def renorm(input : Tensor[T]): Unit = {

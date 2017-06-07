@@ -55,27 +55,16 @@ class Linear[T: ClassTag](
   val gradWeight: Tensor[T] = Tensor[T]()
   val gradBias: Tensor[T] = if (withBias) Tensor[T]() else null
 
-  private val stdv = 1.0 / math.sqrt(weight.size(2))
-  private var weightInitMethod: InitializationMethod = RandomUniform(stdv)
-  private var biasInitMethod: InitializationMethod = RandomUniform(stdv)
-  reset()
-
-  def setInitMethod(weightInitMethod: InitializationMethod = null,
-                   biasInitMethod: InitializationMethod = null): this.type = {
-    if (weightInitMethod != null) {
-      this.weightInitMethod = weightInitMethod
-    }
-
-    if (biasInitMethod != null) {
-      this.biasInitMethod = biasInitMethod
-    }
-    reset()
-    this
+  {
+    val stdv = 1.0 / math.sqrt(weight.size(2))
+    val wInit: InitializationMethod = RandomUniform(-stdv, stdv)
+    val bInit: InitializationMethod = RandomUniform(-stdv, stdv)
+    reset(wInit, bInit)
   }
 
-  override def reset(): Unit = {
-    weightInitMethod.init(weight)
-    Option(bias).foreach(biasInitMethod.init(_))
+  override protected def resetInternal(): Unit = {
+    weightInitMethod.init(weight, VariableFormat.OUT_IN)
+    Option(bias).foreach(biasInitMethod.init(_, VariableFormat.ONE_D))
     zeroGradParameters()
   }
 

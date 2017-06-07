@@ -55,12 +55,14 @@ class Cosine[T: ClassTag](val inputSize : Int, val outputSize : Int)(
   @transient
   var _gradOutput: Tensor[T] = null
 
-  private val stdv = 1 / math.sqrt(weight.size(1))
-  private var weightInitMethod: InitializationMethod = RandomUniform(stdv)
-  reset()
+  {
+    val stdv = 1 / math.sqrt(weight.size(1))
+    val wInit: InitializationMethod = RandomUniform(-stdv, stdv)
+    reset(weightInitMethod = wInit)
+  }
 
-  override def reset(): Unit = {
-    weightInitMethod.init(weight)
+  override protected def resetInternal(): Unit = {
+    weightInitMethod.init(weight, VariableFormat.OUT_IN)
     zeroGradParameters()
   }
 
