@@ -52,6 +52,8 @@ import scala.reflect.ClassTag
  *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
  * @param bRegularizer: instance of [[Regularizer]]
  *                    applied to the bias.
+ * @param scaleW: scale of gradWeight
+ * @param scaleB: scale of bias
  */
 
 @SerialVersionUID(- 933818099759912492L)
@@ -68,7 +70,9 @@ class SpatialDilatedConvolution[T: ClassTag](
   val dilationH: Int = 1,
   private var initMethod: InitializationMethod = Default,
   val wRegularizer: Regularizer[T] = null,
-  val bRegularizer: Regularizer[T] = null
+  val bRegularizer: Regularizer[T] = null,
+  val scaleW: Double = 1.0,
+  val scaleB: Double = 1.0
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   val weight: Tensor[T] = Tensor[T](nOutputPlane, nInputPlane, kH, kW)
@@ -437,7 +441,7 @@ class SpatialDilatedConvolution[T: ClassTag](
       DenseTensorBLAS.gemm[T](
         't', 'n',
         n, m, k,
-        ev.fromType[Double](scale),
+        ev.fromType[Double](scaleW),
         columns.storage().array(), columns.storageOffset() - 1, k,
         gradOutput_n.storage().array(), gradOutput_n.storageOffset() - 1, k,
         ev.fromType[Int](1),
@@ -454,7 +458,7 @@ class SpatialDilatedConvolution[T: ClassTag](
         ev.gemv(
           't',
           k, m,
-          ev.fromType[Double](scale),
+          ev.fromType[Double](scaleB),
           gradOutput_n.storage().array(), gradOutput_n.storageOffset() - 1, k,
           ones.storage().array(), ones.storageOffset() - 1, 1,
           ev.fromType[Int](1),
@@ -568,10 +572,11 @@ object SpatialDilatedConvolution {
       dilationH: Int = 1,
       initMethod: InitializationMethod = Default,
       wRegularizer: Regularizer[T] = null,
-      bRegularizer: Regularizer[T] = null
+      bRegularizer: Regularizer[T] = null,
+      scaleW: Double = 1.0, scaleB: Double = 1.0
   )(implicit ev: TensorNumeric[T]) : SpatialDilatedConvolution[T] = {
     new SpatialDilatedConvolution[T](nInputPlane, nOutputPlane, kW, kH, dW, dH,
       padW, padH, dilationW, dilationH, initMethod,
-      wRegularizer, bRegularizer)
+      wRegularizer, bRegularizer, scaleW, scaleB)
   }
 }
