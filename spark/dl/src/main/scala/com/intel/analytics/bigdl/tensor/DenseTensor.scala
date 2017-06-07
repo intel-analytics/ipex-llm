@@ -244,19 +244,23 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def randn(): Tensor[T] = {
+    randn(0, 1)
+  }
+
+  override def randn(mean: Double, stdv: Double): Tensor[T] = {
     if (this.isContiguous()) {
       var i = 0
       val total = this.nElement()
       val data = this.storage().array()
       val offset = this.storageOffset() - 1
       while (i < total) {
-        data(offset + i) = ev.randn()
+        data(offset + i) = ev.fromType(RNG.normal(mean, stdv))
         i += 1
       }
     } else {
       val func = new TensorFunc2[T] {
         override def apply(data: Array[T], index: Int): Unit = {
-          data(index) = ev.randn()
+          data(index) = ev.fromType(RNG.normal(mean, stdv))
         }
       }
       DenseTensorApply.apply1[T](this, func)
@@ -296,20 +300,22 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
 
-  override def rand(): Tensor[T] = {
+  override def rand(): Tensor[T] = rand(0.0, 1.0)
+
+  override def rand(lowerBound: Double, upperBound: Double): Tensor[T] = {
     if (this.isContiguous()) {
       var i = 0
       val total = this.nElement()
       val data = this.storage().array()
       val offset = this.storageOffset() - 1
       while (i < total) {
-        data(offset + i) = ev.rand()
+        data(offset + i) = ev.fromType(RNG.uniform(lowerBound, upperBound))
         i += 1
       }
     } else {
       val func = new TensorFunc2[T] {
         override def apply(data: Array[T], index: Int): Unit = {
-          data(index) = ev.rand()
+          data(index) = ev.fromType(RNG.uniform(lowerBound, upperBound))
         }
       }
       DenseTensorApply.apply1[T](this, func)

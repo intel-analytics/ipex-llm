@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.{DenseTensorBLAS, DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -47,7 +47,6 @@ import scala.reflect.ClassTag
  * @param padH The additional zeros added per height to the input planes. Default is 0.
  * @param dilationW The number of pixels to skip. Default is 1.
  * @param dilationH The number of pixels to skip. Default is 1.
- * @param initMethod Init method, Default, Xavier.
  * @param wRegularizer: instance of [[Regularizer]]
  *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
  * @param bRegularizer: instance of [[Regularizer]]
@@ -66,10 +65,9 @@ class SpatialDilatedConvolution[T: ClassTag](
   val padH: Int = 0,
   val dilationW: Int = 1,
   val dilationH: Int = 1,
-  private var initMethod: InitializationMethod = Default,
   val wRegularizer: Regularizer[T] = null,
   val bRegularizer: Regularizer[T] = null
-)(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+)(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
   val weight: Tensor[T] = Tensor[T](nOutputPlane, nInputPlane, kH, kW)
   val gradWeight = Tensor[T](nOutputPlane, nInputPlane, kH, kW)
@@ -79,7 +77,13 @@ class SpatialDilatedConvolution[T: ClassTag](
   @transient private var fInput: Tensor[T] = null
   @transient private var fGradInput: Tensor[T] = null
 
-  reset()
+  {
+    val stdv = 1.0 / math.sqrt(kW * kH * nInputPlane)
+    val wInit = RandomUniform(-stdv, stdv)
+    val bInit = RandomUniform(-stdv, stdv)
+
+    setInitMethod(wInit, bInit)
+  }
 
   private var im2colTime = 0L
   private var col2imTime = 0L
@@ -88,26 +92,9 @@ class SpatialDilatedConvolution[T: ClassTag](
 
   def getCol2ImgTime(): Double = col2imTime
 
-  def setInitMethod(initMethod: InitializationMethod): this.type = {
-    this.initMethod = initMethod
-    this
-  }
-
   override def reset(): Unit = {
-    initMethod match {
-      case Default =>
-        val stdv = 1.0 / math.sqrt(kW * kH * nInputPlane)
-        weight.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
-        bias.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
-      case Xavier =>
-        val fanIn = nInputPlane * kH * kW
-        val fanOut = nOutputPlane * kH * kW
-        val stdv = math.sqrt(6.0 / (fanIn + fanOut))
-        weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
-        bias.fill(ev.fromType(0))
-      case _ =>
-        throw new IllegalArgumentException(s"Unsupported initMethod type ${initMethod}")
-    }
+    weightInitMethod.init(weight, VariableFormat.OUT_IN_KW_KH)
+    biasInitMethod.init(bias, VariableFormat.ONE_D)
     zeroGradParameters()
   }
 
@@ -566,12 +553,11 @@ object SpatialDilatedConvolution {
       padH: Int = 0,
       dilationW: Int = 1,
       dilationH: Int = 1,
-      initMethod: InitializationMethod = Default,
       wRegularizer: Regularizer[T] = null,
       bRegularizer: Regularizer[T] = null
   )(implicit ev: TensorNumeric[T]) : SpatialDilatedConvolution[T] = {
     new SpatialDilatedConvolution[T](nInputPlane, nOutputPlane, kW, kH, dW, dH,
-      padW, padH, dilationW, dilationH, initMethod,
+      padW, padH, dilationW, dilationH,
       wRegularizer, bRegularizer)
   }
 }

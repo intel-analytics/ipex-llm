@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{DenseTensorApply, Tensor, TensorFunc4, TensorFunc6}
 import com.intel.analytics.bigdl.utils.{Engine, T, Table}
@@ -39,7 +39,7 @@ import scala.reflect.ClassTag
 @SerialVersionUID(- 877259619727212424L)
 class PReLU[T: ClassTag](
   val nOutputPlane: Int = 0)
-  (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+  (implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
   val weight = if (nOutputPlane == 0) {
     Tensor[T](1)
@@ -52,10 +52,13 @@ class PReLU[T: ClassTag](
     Tensor[T](nOutputPlane)
   }
 
-  reset()
+  {
+    val wInit = Const(0.25)
+    setInitMethod(wInit)
+  }
 
   override def reset(): Unit = {
-    weight.fill(ev.fromType[Double](0.25))
+    weightInitMethod.init(weight, VariableFormat.ONE_D)
     zeroGradParameters()
   }
 
