@@ -229,7 +229,7 @@ case object Ones extends InitializationMethod {
 /**
  * Initializer that generates tensors with certain constant double.
  */
-case class Const(value: Double) extends InitializationMethod {
+case class ConstInitMethod(value: Double) extends InitializationMethod {
 
   def init[T](variable: Tensor[T], dataFormat: VariableFormat = Default)
              (implicit ev: TensorNumeric[T]): Unit = {

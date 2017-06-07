@@ -599,10 +599,14 @@ object SpatialConvolution {
       nGroup: Int = 1,
       propagateBack: Boolean = true,
       wRegularizer: Regularizer[T] = null,
-      bRegularizer: Regularizer[T] = null
+      bRegularizer: Regularizer[T] = null,
+      initWeight: Tensor[T] = null,
+      initBias: Tensor[T] = null,
+      initGradWeight: Tensor[T] = null,
+      initGradBias: Tensor[T] = null
   )(implicit ev: TensorNumeric[T]): SpatialConvolution[T] = {
     new SpatialConvolution[T](nInputPlane, nOutputPlane, kernelW, kernelH,
       strideW, strideH, padW, padH, nGroup, propagateBack,
-      wRegularizer, bRegularizer)
+      wRegularizer, bRegularizer, initWeight, initBias, initGradWeight, initGradBias)
   }
 }

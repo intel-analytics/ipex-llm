@@ -19,30 +19,30 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
-class MeanSpec extends FlatSpec with Matchers {
+class SumSpec extends FlatSpec with Matchers {
 
-  "mean" should "work correctly" in {
+  "sum" should "work correctly" in {
     val input = Tensor[Float](T(
       T(1.0f, 2.0f),
       T(3.0f, 4.0f)
     ))
 
-    val layer = Mean[Float](dimension = 2)
+    val layer = Sum[Float](dimension = 2)
 
-    val expect = Tensor[Float](T(1.5f, 3.5f))
+    val expect = Tensor[Float](T(3.0f, 7.0f))
 
     layer.forward(input) should be(expect)
   }
 
-  "mean" should "work correctly without squeeze" in {
+  "sum" should "work correctly without squeeze" in {
     val input = Tensor[Float](T(
       T(1.0f, 2.0f),
       T(3.0f, 4.0f)
     ))
 
-    val layer = Mean[Float](dimension = 2, squeeze = false)
+    val layer = Sum[Float](dimension = 2, squeeze = false)
 
-    val expect = Tensor[Float](T(T(1.5f), T(3.5f)))
+    val expect = Tensor[Float](T(T(3.0f), T(7.0f)))
 
     layer.forward(input) should be(expect)
   }
