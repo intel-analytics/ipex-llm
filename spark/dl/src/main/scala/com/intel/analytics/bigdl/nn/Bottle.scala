@@ -24,6 +24,7 @@ import scala.reflect.ClassTag
 /**
  * Bottle allows varying dimensionality input to be forwarded through any module
  * that accepts input of nInputDim dimensions, and generates output of nOutputDim dimensions.
+ *
  * @param module transform module
  * @param nInputDim nInputDim dimensions of module
  * @param nOutputDim1 output of nOutputDim dimensions
@@ -34,7 +35,7 @@ class Bottle[T: ClassTag](
   val module: Module[T],
   val nInputDim: Int = 2,
   val nOutputDim1: Int = Int.MaxValue)
-  (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
+ (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
 
   private val nOutputDim = if (nOutputDim1 == Int.MaxValue) nInputDim else nOutputDim1
 
@@ -64,7 +65,7 @@ class Bottle[T: ClassTag](
       val newInput = input.view(inShape.storage().array().map(_.toInt))
       val output1 = modules(0).updateOutput(newInput).toTensor[T]
       require(output1.dim() == nOutputDim,
-        s"Bottle: output dims on module should be $nOutputDim, but get ${ output1.dim() }")
+        s"Bottle: output dims on module should be $nOutputDim, but get ${output1.dim()}")
 
       outShape.copy(Tensor[Double](Storage(output1.size.map(_.toDouble))))
 
@@ -117,7 +118,7 @@ class Bottle[T: ClassTag](
   }
 
   override def toString(): String = {
-    s"${ getPrintName }($module, $nInputDim, $nOutputDim1)"
+    s"${getPrintName}($module, $nInputDim, $nOutputDim1)"
   }
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[Bottle[T]]
@@ -143,7 +144,7 @@ object Bottle {
   def apply[@specialized(Float, Double) T: ClassTag](
     module: Module[T],
     nInputDim: Int = 2,
-    nOutputDim1: Int = Int.MaxValue)(implicit ev: TensorNumeric[T]): Bottle[T] = {
+    nOutputDim1: Int = Int.MaxValue)(implicit ev: TensorNumeric[T]) : Bottle[T] = {
     new Bottle[T](module, nInputDim, nOutputDim1)
   }
 }
