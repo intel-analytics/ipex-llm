@@ -127,6 +127,7 @@ object Train {
         .setOptimMethod(optimMethod)
         .setEndWhen(Trigger.maxEpoch(param.nEpochs))
         .optimize()
+      sc.stop()
     })
   }
 }

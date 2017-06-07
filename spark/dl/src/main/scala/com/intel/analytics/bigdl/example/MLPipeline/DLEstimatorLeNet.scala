@@ -123,6 +123,7 @@ object DLEstimatorLeNet {
         .foreach { case Row(data: DenseVector, predict: Int) =>
             println(data + "=>" + predict)
         }
+      sc.stop()
     })
 
   }

@@ -90,6 +90,7 @@ object Train {
         .setOptimMethod(optimMethod)
         .setEndWhen(Trigger.maxEpoch(param.maxEpoch))
         .optimize()
+      sc.stop()
     })
   }
 }
