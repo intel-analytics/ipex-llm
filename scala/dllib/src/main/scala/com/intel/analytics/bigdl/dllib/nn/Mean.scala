@@ -33,20 +33,24 @@ import scala.reflect.ClassTag
  * @param nInputDims specify the number of dimensions that this module will receive
  *                   If it is more than the dimension of input tensors, the first dimension
  *                   would be considered as batch size
+ * @param squeeze default is true, which will squeeze the sum dimension; set it to false to keep
+ *                the sum dimension
  */
 
 @SerialVersionUID(2995626598003841724L)
 class Mean[T: ClassTag](
-  dimension: Int = 1,
-  nInputDims: Int = -1)
-  (implicit ev: TensorNumeric[T]) extends Sum[T](dimension, nInputDims, true) {
+  val dimension: Int = 1,
+  nInputDims: Int = -1,
+  squeeze: Boolean = true)
+  (implicit ev: TensorNumeric[T]) extends Sum[T](dimension, nInputDims, true, squeeze) {
   override def toString: String = s"nn.Mean"
 }
 
 object Mean {
   def apply[@specialized(Float, Double) T: ClassTag](
       dimension: Int = 1,
-      nInputDims: Int = -1)(implicit ev: TensorNumeric[T]) : Mean[T] = {
-    new Mean[T](dimension, nInputDims)
+      nInputDims: Int = -1,
+      squeeze: Boolean = true)(implicit ev: TensorNumeric[T]) : Mean[T] = {
+    new Mean[T](dimension, nInputDims, squeeze)
   }
 }
