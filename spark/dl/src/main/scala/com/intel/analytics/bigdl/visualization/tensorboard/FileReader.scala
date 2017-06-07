@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.visualization.tensorboard
 
-import java.io.{BufferedInputStream, File, FileInputStream}
+import java.io.{BufferedInputStream}
 import java.nio.ByteBuffer
 
 import org.apache.hadoop.conf.Configuration
@@ -49,7 +49,7 @@ private[bigdl] object FileReader {
 
   /**
    * List all events file in path.
-   * @param path should be a folder.
+   * @param path should be a local/HDFS folder.
    * @return
    */
   def listFiles(path: String): Array[Path] = {
@@ -61,7 +61,7 @@ private[bigdl] object FileReader {
 
   /**
    * List all folders contains event files in path.
-   * @param path should be a folder.
+   * @param path should be a local/HDFS folder.
    * @return
    */
   def list(path: String): Array[String] = {
@@ -73,7 +73,7 @@ private[bigdl] object FileReader {
 
   /**
    * Read all scalar events named tag from a path.
-   * @param path should be a folder.
+   * @param path should be a local/HDFS folder.
    * @param tag tag name.
    * @return
    */
@@ -89,11 +89,12 @@ private[bigdl] object FileReader {
 
   /**
    * Read all scalar events named tag from a file.
-   * @param file
-   * @param tag
+   * @param file The path of file. Support local/HDFS path.
+   * @param tag tag name.
    * @return
    */
   def readScalar(file: Path, tag: String, fs: FileSystem): Array[(Long, Float, Double)] = {
+    require(fs.isFile(file), s"FileReader: ${file} should be a file")
     val bis = new BufferedInputStream(fs.open(file))
     val longBuffer = new Array[Byte](8)
     val crcBuffer = new Array[Byte](4)

@@ -25,7 +25,7 @@ import org.tensorflow.util.Event
 /**
  * Event writer, write event protocol buffers to file.
  *
- * @param logDir
+ * @param logDir Support local directory and HDFS directory
  * @param flushMillis
  */
 private[bigdl] class EventWriter(logDir: String,

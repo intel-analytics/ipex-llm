@@ -25,7 +25,7 @@ import org.tensorflow.util.Event
 
 /**
  * A writer to write event protobuf to file by tensorboard's format.
- * @param file
+ * @param file Support local path and HDFS path
  */
 private[bigdl] class RecordWriter(file: Path, fs: FileSystem) {
   val outputStream = if (file.toString.startsWith("hdfs://")) {

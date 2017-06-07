@@ -24,8 +24,8 @@ import org.tensorflow.util.Event
 
 /**
  * Writes Summary protocol buffers to event files.
- * @param logDirectory
- * @param flushMillis
+ * @param logDirectory Support local directory and HDFS directory
+ * @param flushMillis Interval to flush events queue.
  */
 private[bigdl] class FileWriter(val logDirectory : String, flushMillis: Int = 1000) {
   private val logPath = new Path(logDirectory)
