@@ -273,13 +273,16 @@ object Inception {
     }
 
     val features = Sequential[D]
-    features.add(SpatialConvolution[D](3, 64, 7, 7, 2, 2, 3, 3).setInitMethod(weightInitMethod = Xavier))
+    features.add(SpatialConvolution[D](3, 64, 7, 7, 2, 2, 3, 3)
+      .setInitMethod(weightInitMethod = Xavier))
     features.add(ReLU[D](true))
     features.add(SpatialMaxPooling[D](3, 3, 2, 2, 1, 1))
     features.add(SpatialCrossMapLRN[D](5, 0.0001, 0.75))
-    features.add(SpatialConvolution[D](64, 64, 1, 1, 1, 1, 0, 0).setInitMethod(weightInitMethod = Xavier))
+    features.add(SpatialConvolution[D](64, 64, 1, 1, 1, 1, 0, 0)
+      .setInitMethod(weightInitMethod = Xavier))
     features.add(ReLU[D](true))
-    features.add(SpatialConvolution[D](64, 192, 3, 3, 1, 1, 1, 1).setInitMethod(weightInitMethod = Xavier))
+    features.add(SpatialConvolution[D](64, 192, 3, 3, 1, 1, 1, 1)
+      .setInitMethod(weightInitMethod = Xavier))
     features.add(ReLU[D](true))
     features.add(SpatialCrossMapLRN[D](5, 0.0001, 0.75))
     features.add(SpatialMaxPooling[D](3, 3, 2, 2, 1, 1))
