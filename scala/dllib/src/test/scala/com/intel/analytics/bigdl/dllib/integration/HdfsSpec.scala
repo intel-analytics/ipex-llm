@@ -19,15 +19,17 @@ import java.nio.file.{Files, Paths}
 
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.nn.Module
-import com.intel.analytics.bigdl.utils.File
+import com.intel.analytics.bigdl.utils.{Engine, File}
+import com.intel.analytics.bigdl.visualization.Summary
+import com.intel.analytics.bigdl.visualization.tensorboard.{FileReader, FileWriter}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 
 @com.intel.analytics.bigdl.tags.Integration
 class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter{
 
-    val hdfs = System.getProperty("hdfsMaster")
-    val mnistFolder = System.getProperty("mnist")
+  val hdfs = System.getProperty("hdfsMaster")
+  val mnistFolder = System.getProperty("mnist")
 
   private def processPath(path: String): String = {
     if (path.contains(":")) {
@@ -60,5 +62,32 @@ class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter{
       Paths.get(processPath(resource.getPath()), "/t10k-images.idx3-ubyte"))
 
     hdfsData should be (localData)
+  }
+
+  "read/write event file from hdfs" should "work properly" in {
+    Engine.localMode = false
+    Engine.init(1, 4, true)
+    val logdir = hdfs + s"/${com.google.common.io.Files.createTempDir().getPath()}"
+    val writer = new FileWriter(logdir, 100)
+    for (i <- 0 to 9) {
+      val s = Summary.scalar("scalar", i)
+      writer.addSummary(s, i + 1)
+    }
+    for (i <- 10 to 19) {
+      val s = Summary.scalar("lr", i)
+      writer.addSummary(s, i + 1)
+    }
+    for (i <- 0 to 9) {
+      val s = Summary.scalar("lr", i)
+      writer.addSummary(s, i + 1)
+    }
+    Thread.sleep(1000) // Waiting for writer.
+    val tbReader = FileReader.list(logdir)
+    val result = FileReader.readScalar(tbReader(0), "lr")
+    result.length should be (20)
+    for (i <- 0 to 19) {
+      result(i)._1 should be (i + 1)
+      result(i)._2 should be (i)
+    }
   }
 }
