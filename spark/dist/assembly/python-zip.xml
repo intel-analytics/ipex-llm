@@ -11,8 +11,11 @@
             <includes>
                 <include>**/*.py</include>
             </includes>
+            <excludes>
+                <exclude>test/**</exclude>
+            </excludes>
             <outputDirectory>/..</outputDirectory>
-            <directory>${project.build.directory}/../../../pyspark/dl</directory>
+            <directory>${project.build.directory}/../../../pyspark</directory>
         </fileSet>
         <fileSet>
             <includes>

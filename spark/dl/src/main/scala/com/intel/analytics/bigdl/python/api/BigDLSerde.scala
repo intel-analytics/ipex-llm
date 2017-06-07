@@ -95,7 +95,7 @@ private[spark] abstract class BigDLSerDeBase {
  */
 object BigDLSerDe extends BigDLSerDeBase with Serializable {
 
-  val PYSPARK_PACKAGE = "util.common"
+  val PYSPARK_PACKAGE = "bigdl.util.common"
   val LATIN1 = "ISO-8859-1"
 
 
@@ -105,7 +105,7 @@ object BigDLSerDe extends BigDLSerDeBase with Serializable {
   private[python] abstract class BigDLBasePickler[T: ClassTag]
     extends IObjectPickler with IObjectConstructor {
 
-    val PYSPARK_PACKAGE = "util.common"
+    val PYSPARK_PACKAGE = "bigdl.util.common"
     val LATIN1 = "ISO-8859-1"
 
     private val cls = implicitly[ClassTag[T]].runtimeClass

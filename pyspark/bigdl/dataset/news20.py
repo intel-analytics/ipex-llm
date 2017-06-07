@@ -15,7 +15,7 @@
 #
 
 import tarfile
-from dataset import base
+from bigdl.dataset import base
 import os
 import sys
 

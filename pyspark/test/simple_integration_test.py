@@ -15,10 +15,10 @@
 #
 # Still in experimental stage!
 
-from nn.layer import *
-from nn.criterion import *
-from optim.optimizer import *
-from util.common import *
+from bigdl.nn.layer import *
+from bigdl.nn.criterion import *
+from bigdl.optim.optimizer import *
+from bigdl.util.common import *
 import numpy as np
 import unittest
 import tempfile
@@ -35,7 +35,7 @@ class TestWorkFlow(unittest.TestCase):
         self.sc.stop()
 
     def test_load_zip_conf(self):
-        from util.common import get_bigdl_conf
+        from bigdl.util.common import get_bigdl_conf
         import sys
         sys.path = [path for path in sys.path if "spark-bigdl.conf" not in path]
         sys.path.insert(0, os.path.join(os.path.split(__file__)[0], "resources/conf/python-api.zip"))  # noqa
@@ -126,7 +126,7 @@ class TestWorkFlow(unittest.TestCase):
             print(test_result)
 
     def test_forward_backward(self):
-        from nn.layer import Linear
+        from bigdl.nn.layer import Linear
         rng = RNG()
         rng.set_seed(100)
 
@@ -148,7 +148,7 @@ class TestWorkFlow(unittest.TestCase):
         l_grad_output = linear.backward(input, grad_output)
 
     def test_forward_multiple(self):
-        from nn.layer import Linear
+        from bigdl.nn.layer import Linear
         rng = RNG()
         rng.set_seed(100)
 
