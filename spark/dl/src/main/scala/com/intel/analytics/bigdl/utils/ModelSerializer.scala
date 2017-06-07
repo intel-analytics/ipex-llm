@@ -18,17 +18,21 @@ package com.intel.analytics.bigdl.utils
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, FileInputStream, FileOutputStream}
 
 import com.google.protobuf.CodedInputStream
-import com.intel.analytics.bigdl.nn.{Linear, Sequential}
+import com.intel.analytics.bigdl.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.nn._
 
 import scala.collection.JavaConverters._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.optim.{L1L2Regularizer, L1Regularizer, L2Regularizer, Regularizer}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.ModelSerializer.LinearSerializer.copyFromBigDL
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.IOUtils
+import serialization.Model
 import serialization.Model.BigDLModel.ModuleType
-import serialization.Model.{BigDLModel, BigDLTensor}
+import serialization.Model.{BigDLModel, BigDLTensor, LinearParam, RegularizerType}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -40,6 +44,12 @@ sealed abstract class ModelSerializer {
 
   def serializeModule[T: ClassTag](module : BigDLModule[T])
                                   (implicit ev: TensorNumeric[T]) : BigDLModel
+
+  /**
+   * copy serialized data (weight and bias if exist) to BigDL module
+   * @param model serialized module
+   * @param module  bigDL Module with relationships
+   */
   def copy2BigDL[T: ClassTag](model : BigDLModel, module : BigDLModule[T])
                              (implicit ev: TensorNumeric[T]): Unit = {
     val paramTable : Table = module.module.getParametersTable
@@ -70,6 +80,11 @@ sealed abstract class ModelSerializer {
     }
   }
 
+  /**
+    * copy BigDL module data (weight and bias if exist) to BigDL Model to be persisted
+    * @param modelBuilder serialized module builder
+    * @param module  bigDL Module with relationships
+    */
   def copyFromBigDL[T: ClassTag](module : BigDLModule[T], modelBuilder : BigDLModel.Builder)
                       (implicit ev : TensorNumeric[T]) : Unit = {
     val paramTable : Table = module.module.getParametersTable
@@ -105,67 +120,160 @@ sealed abstract class ModelSerializer {
     }
     tensor.size().foreach(_ => serializedTensor.addSize(_))
   }
+
+  protected def createBigDLModule[T: ClassTag](model : BigDLModel,
+    module : AbstractModule[Activity, Activity, T])(implicit ev: TensorNumeric[T])
+    : BigDLModule[T] = {
+    val tops = model.getTopsList.asScala
+    val bottoms = model.getBottomsList.asScala
+    val bigDLModule = BigDLModule(module, tops, bottoms)
+    module.setName(model.getName)
+    copy2BigDL(model, bigDLModule)
+    bigDLModule
+  }
+
+  protected def createSerializeBigDLModule[T: ClassTag](
+    modelBuilder : BigDLModel.Builder, module : BigDLModule[T])(implicit ev: TensorNumeric[T])
+  : BigDLModel = {
+    module.bottoms.foreach(bottom => modelBuilder.addBottoms(bottom))
+    module.tops.foreach(top => modelBuilder.addTops(top))
+    modelBuilder.setName(module.module.getName)
+    copyFromBigDL(module, modelBuilder)
+    modelBuilder.build
+  }
+
+  protected def createRegularizer[T: ClassTag]
+    (modelRegularizer : Model.Regularizer)(implicit ev: TensorNumeric[T]): Regularizer[T] = {
+    modelRegularizer.getRegularizerType match {
+      case RegularizerType.L1Regularizer => L1Regularizer(modelRegularizer.getRegularData(0))
+      case RegularizerType.L2Regularizer => L2Regularizer(modelRegularizer.getRegularData(0))
+      case RegularizerType.L1L2Regularizer => L1L2Regularizer(modelRegularizer.getRegularData(0),
+        modelRegularizer.getRegularData(1))
+      case _ => throw new IllegalArgumentException(s"${modelRegularizer.getRegularizerType}" +
+        s"cannot be recognized")
+    }
+  }
+
+  protected def createSerializeRegularizer[T: ClassTag]
+    (regularizer : Regularizer[T])(implicit ev: TensorNumeric[T]): Model.Regularizer = {
+    val builder = Model.Regularizer.newBuilder
+    regularizer match {
+      case reg : L1Regularizer[T] =>
+        builder.setRegularizerType(RegularizerType.L1Regularizer)
+        builder.addRegularData(regularizer.asInstanceOf[L1Regularizer[T]].l1)
+      case reg : L2Regularizer[T] =>
+        builder.setRegularizerType(RegularizerType.L2Regularizer)
+        builder.addRegularData(regularizer.asInstanceOf[L2Regularizer[T]].l2)
+      case reg : L1L2Regularizer[T] =>
+        builder.setRegularizerType(RegularizerType.L1L2Regularizer)
+        val l1l2 = regularizer.asInstanceOf[L1L2Regularizer[T]]
+        builder.addRegularData(l1l2.l1)
+        builder.addRegularData(l1l2.l2)
+    }
+    builder.build
+  }
+
+  protected def createInitMethod[T: ClassTag]
+    (initMethod : Model.InitMethod)(implicit ev: TensorNumeric[T]): InitializationMethod = {
+    initMethod match {
+      case Model.InitMethod.Default => Default
+      case Model.InitMethod.Xavier => Xavier
+      case Model.InitMethod.BilinearFiller => BilinearFiller
+      case _ => throw new IllegalArgumentException(s"${initMethod}" +
+        s"cannot be recognized")
+    }
+  }
+
+  protected def createSerializeInitMethod[T: ClassTag]
+  (initMethod : InitializationMethod)(implicit ev: TensorNumeric[T]): Model.InitMethod = {
+    initMethod match {
+      case Default => Model.InitMethod.Default
+      case Xavier => Model.InitMethod.Xavier
+      case  BilinearFiller => Model.InitMethod.BilinearFiller
+      case _ => throw new IllegalArgumentException(s"${initMethod}" +
+        s"cannot be recognized")
+    }
+  }
 }
+
 case class BigDLModule[T: ClassTag](module : AbstractModule[Activity, Activity, T],
-                               tops : ArrayBuffer[String], bottoms : ArrayBuffer[String])
+                               tops : Seq[String], bottoms : Seq[String])
+
 object ModelSerializer {
+
   private val serializerMap = new mutable.HashMap[String, ModelSerializer]()
   private val hdfsPrefix: String = "hdfs:"
+
   serializerMap("LINEAR") = LinearSerializer
   serializerMap("SEQUENTIAL") = SequentialSerializer
+  serializerMap("GRAPH") = GraphSerializer
+
   case object LinearSerializer extends ModelSerializer {
+
     override def loadModule[T: ClassTag](model : BigDLModel)(implicit ev: TensorNumeric[T])
       : BigDLModule[T] = {
-      val bottomList = model.getBottomsList.asScala
-      val topList = model.getTopsList.asScala
-      val params = model.getModuleParamsList.asScala
-      val name = model.getName
-      val inputSize = params(0).toInt
-      val outputSize = params(1).toInt
-      val linear = Linear[T](inputSize, outputSize).setName(name)
-      var tops = new ArrayBuffer[String]()
-      val bottoms = new ArrayBuffer[String]()
-      topList.foreach(top => tops.append(top))
-      bottomList.foreach(bottom => bottoms.append(bottom))
-      val bigDLModule = BigDLModule(linear, tops,
-        bottoms)
-      copy2BigDL(model, bigDLModule)
-      bigDLModule
+      createBigDLModule(model, createLinear(model).
+        asInstanceOf[AbstractModule[Activity, Activity, T]])
     }
+
     override def serializeModule[T: ClassTag](module : BigDLModule[T])
       (implicit ev: TensorNumeric[T]): BigDLModel = {
       val bigDLModelBuilder = BigDLModel.newBuilder
-      module.bottoms.foreach(_ => bigDLModelBuilder.addAllBottoms(_))
-      module.tops.foreach(_ => bigDLModelBuilder.addTops(_))
-      bigDLModelBuilder.setName(module.module.getName)
-      copyFromBigDL(module, bigDLModelBuilder)
       val linear = module.module.asInstanceOf[Linear[T]]
-      bigDLModelBuilder.addModuleParams(linear.inputSize)
-      bigDLModelBuilder.addModuleParams(linear.outputSize)
-      bigDLModelBuilder.setModuleType(ModuleType.LINEAR)
-      bigDLModelBuilder.build
+      createSerializeLinear(bigDLModelBuilder, linear)
+      createSerializeBigDLModule(bigDLModelBuilder, module)
+    }
+    private def createLinear[T: ClassTag](model : BigDLModel)(implicit ev: TensorNumeric[T]):
+      Linear[T] = {
+      val linearNarams = model.getLinearParam
+      val inputSize = linearNarams.getInputSize
+      val outputSize = linearNarams.getOutputSize
+      var initMethod : InitializationMethod = null
+      if (linearNarams.hasInitMethod) {
+        initMethod = createInitMethod(linearNarams.getInitMethod)
+      }
+      val withBias = if (linearNarams.hasWithBias) linearNarams.getWithBias else true
+      var wRegularizer : Regularizer[T] = null
+      if (linearNarams.hasWRegularizer) {
+        wRegularizer = createRegularizer(linearNarams.getWRegularizer)
+      }
+      var bRegularizer : Regularizer[T] = null
+      if (linearNarams.hasBRegularizer) {
+        bRegularizer = createRegularizer(linearNarams.getBRegularizer)
+      }
+      Linear[T](inputSize, outputSize, initMethod, withBias, wRegularizer, bRegularizer)
+    }
+
+    private def createSerializeLinear[T: ClassTag](
+      modelBuilder : BigDLModel.Builder, linear : Linear[T])
+      (implicit ev: TensorNumeric[T]): Unit = {
+      val linearParam = LinearParam.newBuilder
+      linearParam.setInputSize(linear.inputSize)
+      linearParam.setOutputSize(linear.outputSize)
+      linearParam.setWithBias(linear.withBias)
+      if (linear.wRegularizer != null) {
+        linearParam.setWRegularizer(createSerializeRegularizer(linear.wRegularizer))
+      }
+      if (linear.bRegularizer != null) {
+        linearParam.setBRegularizer(createSerializeRegularizer(linear.bRegularizer))
+      }
+      linearParam.setInitMethod(createSerializeInitMethod(linear.initMethod))
+      modelBuilder.setLinearParam(linearParam.build)
+      modelBuilder.setModuleType(ModuleType.LINEAR)
     }
   }
+
   case object SequentialSerializer extends ModelSerializer {
     override def loadModule[T: ClassTag](model : BigDLModel)(implicit ev: TensorNumeric[T])
     : BigDLModule[T] = {
-      val bottomList = model.getBottomsList.asScala
-      val topList = model.getTopsList.asScala
       val subModules = model.getSubModulesList.asScala
-      val name = model.getName
-      val sequantial = Sequential[T]().setName(name)
+      val sequantial = Sequential[T]()
       subModules.foreach(subModule => {
         val bigDLModule = load(subModule)
         sequantial.add(bigDLModule.module.
           asInstanceOf[AbstractModule[_ <: Activity, _ <: Activity, T]])
       })
-      var tops = new ArrayBuffer[String]()
-      val bottoms = new ArrayBuffer[String]()
-      topList.foreach(top => tops.append(top))
-      bottomList.foreach(bottom => bottoms.append(bottom))
-      val bigDLModule = BigDLModule(sequantial, tops, bottoms)
-      copy2BigDL(model, bigDLModule)
-      bigDLModule
+      createBigDLModule(model, sequantial)
     }
     override def serializeModule[T: ClassTag](module : BigDLModule[T])
       (implicit ev: TensorNumeric[T]): BigDLModel = {
@@ -173,17 +281,59 @@ object ModelSerializer {
       module.bottoms.foreach(_ => bigDLModelBuilder.addAllBottoms(_))
       module.tops.foreach(_ => bigDLModelBuilder.addTops(_))
       bigDLModelBuilder.setName(module.module.getName)
-      copyFromBigDL(module, bigDLModelBuilder)
       val sequential = module.module.asInstanceOf[Sequential[T]]
       sequential.modules.foreach(subModule => {
-        val subModel = serialize(BigDLModule(subModule,
-          new ArrayBuffer[String](), new ArrayBuffer[String]()))
+        val subModel = serialize(BigDLModule(subModule, module.tops, module.bottoms))
         bigDLModelBuilder.addSubModules(subModel)
       })
       bigDLModelBuilder.setModuleType(ModuleType.SEQUENTIAL)
       bigDLModelBuilder.build
     }
   }
+
+  case object GraphSerializer extends ModelSerializer {
+    override def loadModule[T: ClassTag](model : BigDLModel)(implicit ev: TensorNumeric[T])
+    : BigDLModule[T] = {
+      val subModules = model.getSubModulesList.asScala
+      val modules = new ArrayBuffer[ModuleNode[T]]()
+      // map all bottom modules to current module
+      val bottomToModules = new mutable.HashMap[String, ModuleNode[T]]()
+      subModules.foreach(subModule => {
+        val bigDLModule = load(subModule)
+        val moduleNode = bigDLModule.module.apply()
+        val tops = bigDLModule.tops
+        tops.foreach(top => {
+          if (bottomToModules.contains(top)) {
+            bottomToModules(top) -> moduleNode
+          }
+        })
+        val bottoms = bigDLModule.bottoms
+        bottoms.foreach(bottom => bottomToModules(bottom) = moduleNode)
+        modules.append(moduleNode)
+      })
+      val inputs = modules.filter(_.prevNodes.size == 0).toArray
+      val outputs = modules.filter(_.nextNodes.size == 0).toArray
+      val graph = Graph[T](inputs, outputs)
+      createBigDLModule(model, graph)
+    }
+    override def serializeModule[T: ClassTag](module : BigDLModule[T])
+                                             (implicit ev: TensorNumeric[T]): BigDLModel = {
+      val bigDLModelBuilder = BigDLModel.newBuilder
+      module.bottoms.foreach(_ => bigDLModelBuilder.addAllBottoms(_))
+      module.tops.foreach(_ => bigDLModelBuilder.addTops(_))
+      bigDLModelBuilder.setName(module.module.getName)
+      val graph = module.module.asInstanceOf[Graph[T]]
+      graph.getExecutions.foreach(execution => {
+        val tops = execution.prevNodes.map(_.element.getName)
+        val bottoms = execution.nextNodes.map(_.element.getName)
+        val subModel = serialize(BigDLModule(execution.element, tops, bottoms))
+        bigDLModelBuilder.addSubModules(subModel)
+      })
+      bigDLModelBuilder.setModuleType(ModuleType.GRAPH)
+      bigDLModelBuilder.build
+    }
+  }
+
   private def load[T: ClassTag](model: BigDLModel)
     (implicit ev: TensorNumeric[T]) : BigDLModule[T] = {
     serializerMap(model.getModuleType.toString).loadModule(model)
@@ -191,11 +341,12 @@ object ModelSerializer {
   private def serialize[T: ClassTag](bigDLModule : BigDLModule[T])
     (implicit ev: TensorNumeric[T])
     : BigDLModel = {
-    // serializerMap(module.getModuleType.toString).loadModule(model)
     val module = bigDLModule.module.asInstanceOf[AbstractModule[_, _, _]]
     val bigDLModel = module match {
       case linear : Linear[_] => LinearSerializer.serializeModule(bigDLModule)
       case sequantial : Sequential[_] => SequentialSerializer.serializeModule(bigDLModule)
+      case graph : Graph[_] => GraphSerializer.serializeModule(bigDLModule)
+      case _ => throw new IllegalArgumentException(s"$module serialization is not supported")
     }
     bigDLModel
   }

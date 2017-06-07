@@ -224,6 +224,10 @@ class Graph[T: ClassTag](inputs : Seq[ModuleNode[T]],
     t
   }
 
+  def getExecutions : Array[Node[AbstractModule[Activity, Tensor[T], T]]] = {
+    return executions
+  }
+
   private def inputData(
       node: Node[AbstractModule[Activity, Tensor[T], T]],
       input: Activity

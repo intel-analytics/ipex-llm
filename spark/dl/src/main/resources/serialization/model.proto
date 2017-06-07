@@ -2,20 +2,43 @@ package serialization;
 
 message BigDLModel
 {
+    enum ModuleType {
+        LINEAR = 1;
+        SEQUENTIAL = 2;
+        GRAPH = 3;
+    }
     optional string name = 1; //model name
     repeated BigDLModel subModules = 2; // sub modules
     optional BigDLTensor weight = 3; // double weight for each layer
     optional BigDLTensor bias = 4; // double bias for each layer
-    repeated double moduleParams = 5; //module layer construct params
-    repeated string tops = 6; //module layer construct params
-    repeated string bottoms = 7; //module layer construct params
-    enum ModuleType {
-        LINEAR = 1;
-        SEQUENTIAL = 2;
-    }
-    required ModuleType moduleType = 8; //module type
+    repeated string tops = 5; //module layer construct params
+    repeated string bottoms = 6; //module layer construct params
+    required ModuleType moduleType = 7; //module type
+    optional LinearParam linearParam = 9; // params for linear
+}
+enum InitMethod {
+    Default = 1;
+    Xavier = 2;
+    BilinearFiller = 3;
+}
+enum RegularizerType {
+    L1Regularizer = 2;
+    L2Regularizer = 3;
+    L1L2Regularizer = 1;
 }
 message BigDLTensor{
     repeated int32 size = 1; //size of tensor
     repeated double data = 2; //tensor element
+}
+message Regularizer {
+    required RegularizerType regularizerType = 1;
+    repeated double regularData = 2;
+}
+message LinearParam {
+    required int32 inputSize = 1;
+    required int32 outputSize = 2;
+    optional InitMethod initMethod = 3;
+    optional bool withBias = 4;
+    optional Regularizer wRegularizer = 5;
+    optional Regularizer bRegularizer = 6;
 }
