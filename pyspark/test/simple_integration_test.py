@@ -35,16 +35,25 @@ class TestWorkFlow(unittest.TestCase):
     def tearDown(self):
         self.sc.stop()
 
+    def test_load_model(self):
+        fc1 = Linear(4, 2)
+        fc1.set_weights([np.ones((4, 2)), np.ones((2, ))])
+        tmp_path = tempfile.mktemp()
+        fc1.save(tmp_path, True)
+        fc1_loaded = Model.load(tmp_path)
+        self.assertTrue(np.allclose(fc1_loaded.get_weights()[0],
+                                    fc1.get_weights()[0]))
+
     def test_create_node(self):
         import numpy as np
         fc1 = Linear(4, 2)()
         fc2 = Linear(4, 2)()
         cadd = CAddTable()([fc1, fc2])
         output1 = ReLU()(cadd)
-        graph = Graph([fc1, fc2], [output1])
+        model = Model([fc1, fc2], [output1])
         fc1.element().set_weights([np.ones((4, 2)), np.ones((2, ))])
         fc2.element().set_weights([np.ones((4, 2)), np.ones((2, ))])
-        output = graph.forward([np.array([0.1, 0.2, -0.3, -0.4]),
+        output = model.forward([np.array([0.1, 0.2, -0.3, -0.4]),
                                 np.array([0.5, 0.4, -0.2, -0.1])])
         self.assertTrue(np.allclose(output,
                                     np.array([2.2, 2.2])))
@@ -55,12 +64,12 @@ class TestWorkFlow(unittest.TestCase):
         cadd = CAddTable()([fc1, fc2])
         output1 = ReLU()(cadd)
         output2 = Threshold(10.0)(cadd)
-        graph = Graph([fc1, fc2], [output1, output2])
+        model = Model([fc1, fc2], [output1, output2])
         fc1.element().set_weights([np.ones((4, 2)), np.ones((2, ))])
         fc2.element().set_weights([np.ones((4, 2)) * 2, np.ones((2, )) * 2])
-        output = graph.forward([np.array([0.1, 0.2, -0.3, -0.4]),
+        output = model.forward([np.array([0.1, 0.2, -0.3, -0.4]),
                                 np.array([0.5, 0.4, -0.2, -0.1])])
-        gradInput = graph.backward([np.array([0.1, 0.2, -0.3, -0.4]),
+        gradInput = model.backward([np.array([0.1, 0.2, -0.3, -0.4]),
                                     np.array([0.5, 0.4, -0.2, -0.1])],
                                    [np.array([1.0, 2.0]),
                                     np.array([3.0, 4.0])])
