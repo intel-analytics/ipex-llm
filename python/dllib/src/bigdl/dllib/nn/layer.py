@@ -2983,6 +2983,56 @@ class SpatialSubtractiveNormalization(Model):
                                                               n_input_plane,
                                                               JTensor.from_ndarray(kernel))
 
+class Const(Model):
+    '''
+    Return a constant tensor defined by value when forward
+    '''
+
+    def __init__(self, value, bigdl_type="float"):
+        super(Const, self).__init__(None, bigdl_type, JTensor.from_ndarray(value))
+
+class Fill(Model):
+    '''
+    Return a constant tensor defined by value when forward
+    '''
+
+    def __init__(self, value, bigdl_type="float"):
+        super(Fill, self).__init__(None, bigdl_type, value)
+
+class Pack(Model):
+    '''
+    Stacks a list of n-dimensional tensors into one (n+1)-dimensional tensor.
+    '''
+
+    def __init__(self, dimension, bigdl_type="float"):
+        super(Pack, self).__init__(None, bigdl_type, dimension)
+
+class Shape(Model):
+    '''
+    Given input, return the shape of this input as a 1-D tensor
+    '''
+
+    def __init__(self, bigdl_type="float"):
+        super(Shape, self).__init__(None, bigdl_type)
+
+class SplitAndSelect(Model):
+    '''
+    First split the tensor along the [[dimension]] into [[numSplit]] sub tensors,
+    then select the [[index]]th one
+    '''
+
+    def __init__(self, dimension, index, num_split, bigdl_type="float"):
+        super(SplitAndSelect, self).__init__(None, bigdl_type, dimension, index, num_split)
+
+class StrideSlice(Model):
+    '''
+    Extracts a strided slice from a tensor.
+    '''
+
+    def __init__(self):
+        raise Exception('StrideSlice is not supported in python yet')
+
+
 
 def _test():
     import doctest
