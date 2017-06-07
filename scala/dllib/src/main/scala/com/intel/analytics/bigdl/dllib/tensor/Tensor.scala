@@ -105,12 +105,29 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
   def randn(): Tensor[T]
 
   /**
+   * Fill with random value(normal gaussian distribution with the specified mean
+   * and stdv).
+   * It will change the value of the current tensor and return itself
+   *
+   * @return current tensor
+   */
+  def randn(mean: Double, stdv: Double): Tensor[T]
+
+  /**
    * Fill with random value(uniform distribution).
    * It will change the value of the current tensor and return itself
    *
    * @return current tensor
    */
   def rand(): Tensor[T]
+
+  /**
+   * Fill with random value(uniform distribution between [lowerBound, upperBound])
+   * It will change the value of the current tensor and return itself
+   *
+   * @return current tensor
+   */
+  def rand(lowerBound: Double, upperBound: Double): Tensor[T]
 
   /**
    * Fill with random value(bernoulli distribution).
