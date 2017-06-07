@@ -36,13 +36,16 @@ import scala.reflect.ClassTag
  *                   If it is more than the dimension of input tensors, the first dimension
  *                   would be considered as batch size
  * @param sizeAverage default is false, if it is true, it will return the mean instead
+ * @param squeeze default is true, which will squeeze the sum dimension; set it to false to keep
+ *                the sum dimension
  */
 
 @SerialVersionUID(- 8025422596092583688L)
 class Sum[T: ClassTag](
   dimension: Int = 1,
   nInputDims: Int = -1,
-  sizeAverage: Boolean = false)
+  sizeAverage: Boolean = false,
+  squeeze: Boolean = true)
   (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   @transient
   private var _gradOutput: Tensor[T] = null
@@ -68,8 +71,9 @@ class Sum[T: ClassTag](
     if (sizeAverage) {
       output.div(ev.fromType[Int](input.size(dimension)))
     }
-    if (output.nDimension() > 1) {
-      output.set(output.select(dimension, 1))
+
+    if (output.nDimension() > 1 && squeeze) {
+      output.squeeze(dimension)
     }
 
     output
@@ -100,7 +104,8 @@ object Sum {
   def apply[@specialized(Float, Double) T: ClassTag](
       dimension: Int = 1,
       nInputDims: Int = -1,
-      sizeAverage: Boolean = false)(implicit ev: TensorNumeric[T]) : Sum[T] = {
-    new Sum[T](dimension, nInputDims, sizeAverage)
+      sizeAverage: Boolean = false,
+      squeeze: Boolean = true)(implicit ev: TensorNumeric[T]) : Sum[T] = {
+    new Sum[T](dimension, nInputDims, sizeAverage, squeeze)
   }
 }

@@ -53,7 +53,7 @@ class PReLU[T: ClassTag](
   }
 
   {
-    val wInit = Const(0.25)
+    val wInit = ConstInitMethod(0.25)
     setInitMethod(wInit)
   }
 
