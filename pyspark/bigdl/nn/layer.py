@@ -25,15 +25,12 @@ from bigdl.util.common import callBigDlFunc
 from bigdl.util.common import callJavaFunc
 from bigdl.util.common import get_spark_context
 from bigdl.util.common import to_list
+from bigdl.util.common import INTMAX, INTMIN, DOUBLEMAX
+from bigdl.optim.optimizer import L1Regularizer, L2Regularizer, L1L2Regularizer
 
 if sys.version >= '3':
     long = int
     unicode = str
-
-INTMAX = 2147483647
-INTMIN = -2147483648
-DOUBLEMAX = 1.7976931348623157E308
-
 
 class Node(JavaValue):
     """
@@ -418,20 +415,21 @@ class Linear(Layer):
     an input sample of given batch (the number of rows means the batch size and
     the number of columns should be equal to the `inputSize`).
 
-
-    :param input_size: the size the each input sample
-    :param output_size: the size of the module output of each sample
+    :param input_size the size the each input sample
+    :param output_size the size of the module output of each sample
     :param init_method: two initialized methods are supported here, which are [[Default]]and [[Xavier]], where [[Xavier]] set bias to zero here. For moredetailed information about `initMethod`, please refer to[[InitializationMethod]]
+    :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices.
+    :param bRegularizer: instance of [[Regularizer]]applied to the bias.
 
 
-    >>> linear = Linear(100, 10, "Xavier")
+    >>> linear = Linear(100, 10, "Xavier", True, L1Regularizer(0.5), L1Regularizer(0.5))
     creating: createLinear
     '''
 
-    def __init__(self, input_size, output_size, init_method="default", with_bias=True,
+    def __init__(self, input_size, output_size, init_method="default", with_bias=True, wRegularizer=None, bRegularizer=None,
                  bigdl_type="float"):
         super(Linear, self).__init__(None, bigdl_type, input_size, output_size,
-                                     init_method, with_bias)
+                                     init_method, with_bias, wRegularizer, bRegularizer)
 
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
@@ -532,21 +530,21 @@ class SpatialConvolution(Layer):
     The input tensor in forward(input) is expected to be
     a 3D tensor (nInputPlane x height x width).
 
+    :param n_input_plane The number of expected input planes in the image given into forward()
+    :param n_output_plane The number of output planes the convolution layer will produce.
+    :param kernel_w The kernel width of the convolution
+    :param kernel_h The kernel height of the convolution
+    :param stride_w The step of the convolution in the width dimension.
+    :param stride_h The step of the convolution in the height dimension
+    :param pad_w The additional zeros added per width to the input planes.
+    :param pad_h The additional zeros added per height to the input planes.
+    :param n_group Kernel group number
+    :param propagate_back Propagate gradient back
+    :param init_method Initialization method to initialize bias and weight
+    :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices.
+    :param bRegularizer: instance of [[Regularizer]]applied to the bias.
 
-    :param n_input_plane: The number of expected input planes in the image given into forward()
-    :param n_output_plane: The number of output planes the convolution layer will produce.
-    :param kernel_w: The kernel width of the convolution
-    :param kernel_h: The kernel height of the convolution
-    :param stride_w: The step of the convolution in the width dimension.
-    :param stride_h: The step of the convolution in the height dimension
-    :param pad_w: The additional zeros added per width to the input planes.
-    :param pad_h: The additional zeros added per height to the input planes.
-    :param n_group: Kernel group number
-    :param propagate_back: Propagate gradient back
-    :param init_method: Initialization method to initialize bias and weight
-
-
-    >>> spatialConvolution = SpatialConvolution(6, 12, 5, 5)
+    >>> spatialConvolution = SpatialConvolution(6, 12, 5, 5, 1, 1, 0, 0, 1, True, 'default', L1Regularizer(0.5), L1Regularizer(0.5))
     creating: createSpatialConvolution
     '''
 
@@ -562,6 +560,8 @@ class SpatialConvolution(Layer):
                  n_group=1,
                  propagate_back=True,
                  init_method="default",
+                 wRegularizer=None,
+                 bRegularizer=None,
                  bigdl_type="float"):
         super(SpatialConvolution, self).__init__(None, bigdl_type,
                                                  n_input_plane,
@@ -666,14 +666,17 @@ class LSTM(Layer):
     :param inputSize: the size of each input vector
     :param hiddenSize: Hidden unit size in the LSTM
     :param  p: is used for [[Dropout]] probability. For more details aboutRNN dropouts, please refer to[RnnDrop: A Novel Dropout for RNNs in ASR](http://www.stat.berkeley.edu/~tsmoon/files/Conference/asru2015.pdf)[A Theoretically Grounded Application of Dropout in Recurrent Neural Networks](https://arxiv.org/pdf/1512.05287.pdf)
+    :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices.
+    :param uRegularizer: instance [[Regularizer]](eg. L1 or L2 regularization), applied to the recurrent weights matrices.
+    :param bRegularizer: instance of [[Regularizer]]applied to the bias.
 
 
-    >>> lstm = LSTM(4, 3, 0.5)
+    >>> lstm = LSTM(4, 3, 0.5, L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
     creating: createLSTM
     '''
 
-    def __init__(self, input_size, hidden_size, p=0.0, bigdl_type="float"):
-        super(LSTM, self).__init__(None, bigdl_type, input_size, hidden_size, p)
+    def __init__(self, input_size, hidden_size, p=0.0, wRegularizer=None, uRegularizer=None, bRegularizer=None, bigdl_type="float"):
+        super(LSTM, self).__init__(None, bigdl_type, input_size, hidden_size, p, wRegularizer, uRegularizer, bRegularizer)
 
 
 class LSTMPeephole(Layer):
@@ -689,14 +692,16 @@ class LSTMPeephole(Layer):
     :param input_size: the size of each input vector
     :param hidden_size: Hidden unit size in the LSTM
     :param  p: is used for [[Dropout]] probability. For more details aboutRNN dropouts, please refer to[RnnDrop: A Novel Dropout for RNNs in ASR](http://www.stat.berkeley.edu/~tsmoon/files/Conference/asru2015.pdf)[A Theoretically Grounded Application of Dropout in Recurrent Neural Networks](https://arxiv.org/pdf/1512.05287.pdf)
+    :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices.
+    :param uRegularizer: instance [[Regularizer]](eg. L1 or L2 regularization), applied to the recurrent weights matrices.
+    :param bRegularizer: instance of [[Regularizer]]applied to the bias.
 
-
-    >>> lstm = LSTMPeephole(4, 3, 0.5)
+    >>> lstm = LSTMPeephole(4, 3, 0.5, L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
     creating: createLSTMPeephole
     '''
 
     def __init__(self, input_size, hidden_size, p=0.0, bigdl_type="float"):
-        super(LSTMPeephole, self).__init__(None, bigdl_type, input_size, hidden_size, p)
+        super(LSTMPeephole, self).__init__(None, bigdl_type, input_size, hidden_size, p, wRegularizer, uRegularizer, bRegularizer)
 
 
 class GRU(Layer):
@@ -713,14 +718,18 @@ class GRU(Layer):
     :param input_size: the size of each input vector
     :param hidden_size: Hidden unit size in GRU
     :param  p: is used for [[Dropout]] probability. For more details aboutRNN dropouts, please refer to[RnnDrop: A Novel Dropout for RNNs in ASR](http://www.stat.berkeley.edu/~tsmoon/files/Conference/asru2015.pdf)[A Theoretically Grounded Application of Dropout in Recurrent Neural Networks](https://arxiv.org/pdf/1512.05287.pdf)
+    :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices.
+    :param uRegularizer: instance [[Regularizer]](eg. L1 or L2 regularization), applied to the recurrent weights matrices.
+    :param bRegularizer: instance of [[Regularizer]]applied to the bias.
 
 
-    >>> gru = GRU(4, 3, 0.5)
+
+    >>> gru = GRU(4, 3, 0.5, L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
     creating: createGRU
     '''
 
-    def __init__(self,  input_size, hidden_size, p=0.0, bigdl_type="float"):
-        super(GRU, self).__init__(None, bigdl_type, input_size, hidden_size, p)
+    def __init__(self,  input_size, hidden_size, p=0.0, wRegularizer=None, uRegularizer=None, bRegularizer=None, bigdl_type="float"):
+        super(GRU, self).__init__(None, bigdl_type, input_size, hidden_size, p, wRegularizer, uRegularizer, bRegularizer)
 
 
 class RnnCell(Layer):
@@ -731,9 +740,12 @@ class RnnCell(Layer):
     :param input_size: the size of each input vector
     :param hidden_size: Hidden unit size in simple RNN
     :param activation: activation function
+    :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices.
+    :param uRegularizer: instance [[Regularizer]](eg. L1 or L2 regularization), applied to the recurrent weights matrices.
+    :param bRegularizer: instance of [[Regularizer]](../regularizers.md),applied to the bias.
 
 
-    >>> reshape = RnnCell(4, 3, Tanh())
+    >>> reshape = RnnCell(4, 3, Tanh(), L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
     creating: createTanh
     creating: createRnnCell
     '''
@@ -742,8 +754,11 @@ class RnnCell(Layer):
                  input_size,
                  hidden_size,
                  activation,
+                 wRegularizer=None,
+                 uRegularizer=None,
+                 bRegularizer=None,
                  bigdl_type="float"):
-        super(RnnCell, self).__init__(None, bigdl_type, input_size, hidden_size, activation)
+        super(RnnCell, self).__init__(None, bigdl_type, input_size, hidden_size, activation, wRegularizer, uRegularizer, bRegularizer)
 
 
 class TimeDistributed(Layer):
@@ -1085,14 +1100,14 @@ class Bilinear(Layer):
     The input tensor given in forward(input) is a table containing both inputs x_1 and x_2,
     which are tensors of size N x inputDimension1 and N x inputDimension2, respectively.
 
+    :param input_size1 input dimension of x_1
+    :param input_size2 input dimension of x_2
+    :param output_size output dimension
+    :param bias_res whether use bias
+    :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices.
+    :param bRegularizer: instance of [[Regularizer]]applied to the bias.
 
-    :param input_size1: input dimension of x_1
-    :param input_size2: input dimension of x_2
-    :param output_size: output dimension
-    :param bias_res: whether use bias
-
-
-    >>> bilinear = Bilinear(1, 1, 1, True)
+    >>> bilinear = Bilinear(1, 1, 1, True, L1Regularizer(0.5))
     creating: createBilinear
     '''
 
@@ -1101,12 +1116,16 @@ class Bilinear(Layer):
                  input_size2,
                  output_size,
                  bias_res=True,
+                 wRegularizer=None,
+                 bRegularizer=None,
                  bigdl_type="float"):
         super(Bilinear, self).__init__(None, bigdl_type,
                                        input_size1,
                                        input_size2,
                                        output_size,
-                                       bias_res)
+                                       bias_res,
+                                       wRegularizer,
+                                       bRegularizer)
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
@@ -1729,8 +1748,9 @@ class LookupTable(Layer):
     '''
     a convolution of width 1, commonly used for word embeddings
 
+    :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices.
 
-    >>> lookupTable = LookupTable(1, 1, 1e-5, 1e-5, 1e-5, True)
+    >>> lookupTable = LookupTable(1, 1, 1e-5, 1e-5, 1e-5, True, L1Regularizer(0.5))
     creating: createLookupTable
     '''
 
@@ -1741,6 +1761,7 @@ class LookupTable(Layer):
                  max_norm=DOUBLEMAX,
                  norm_type=2.0,
                  should_scale_grad_by_freq=False,
+                 wRegularizer=None,
                  bigdl_type="float"):
         super(LookupTable, self).__init__(None, bigdl_type,
                                           n_index,
@@ -1748,7 +1769,8 @@ class LookupTable(Layer):
                                           padding_value,
                                           max_norm,
                                           norm_type,
-                                          should_scale_grad_by_freq)
+                                          should_scale_grad_by_freq,
+                                          wRegularizer)
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
@@ -2503,9 +2525,11 @@ class SpatialDilatedConvolution(Layer):
     :param dilation_w: The number of pixels to skip. Default is 1.
     :param dilation_h: The number of pixels to skip. Default is 1.
     :param init_method: Init method, Default, Xavier.
+    :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices.
+    :param bRegularizer: instance of [[Regularizer]]applied to the bias.
 
 
-    >>> spatialDilatedConvolution = SpatialDilatedConvolution(1, 1, 1, 1)
+    >>> spatialDilatedConvolution = SpatialDilatedConvolution(1, 1, 1, 1, 1, 1, 0, 0, 1, 1, L1Regularizer(0.5), L1Regularizer(0.5))
     creating: createSpatialDilatedConvolution
     '''
 
@@ -2521,6 +2545,8 @@ class SpatialDilatedConvolution(Layer):
                  dilation_w=1,
                  dilation_h=1,
                  init_method='default',
+                 wRegularizer=None,
+                 bRegularizer=None,
                  bigdl_type="float"):
         super(SpatialDilatedConvolution, self).__init__(None, bigdl_type,
                                                         n_input_plane,
@@ -2564,23 +2590,24 @@ class SpatialFullConvolution(Layer):
     segmentation[C]//Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition.
     2015: 3431-3440.
 
+    :param nInputPlane The number of expected input planes in the image given into forward()
+    :param nOutputPlane The number of output planes the convolution layer will produce.
+    :param kW The kernel width of the convolution.
+    :param kH The kernel height of the convolution.
+    :param dW The step of the convolution in the width dimension. Default is 1.
+    :param dH The step of the convolution in the height dimension. Default is 1.
+    :param padW The additional zeros added per width to the input planes. Default is 0.
+    :param padH The additional zeros added per height to the input planes. Default is 0.
+    :param adjW Extra width to add to the output image. Default is 0.
+    :param adjH Extra height to add to the output image. Default is 0.
+    :param nGroup Kernel group number.
+    :param noBias If bias is needed.
+    :param initMethod Init method, Default, Xavier, Bilinear.
+    :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices.
+    :param bRegularizer: instance of [[Regularizer]]applied to the bias.
 
-    :param nInputPlane: The number of expected input planes in the image given into forward()
-    :param nOutputPlane: The number of output planes the convolution layer will produce.
-    :param kW: The kernel width of the convolution.
-    :param kH: The kernel height of the convolution.
-    :param dW: The step of the convolution in the width dimension. Default is 1.
-    :param dH: The step of the convolution in the height dimension. Default is 1.
-    :param padW: The additional zeros added per width to the input planes. Default is 0.
-    :param padH: The additional zeros added per height to the input planes. Default is 0.
-    :param adjW: Extra width to add to the output image. Default is 0.
-    :param adjH: Extra height to add to the output image. Default is 0.
-    :param nGroup: Kernel group number.
-    :param noBias: If bias is needed.
-    :param initMethod: Init method, Default, Xavier, Bilinear.
 
-
-    >>> spatialFullConvolution = SpatialFullConvolution(1, 1, 1, 1)
+    >>> spatialFullConvolution = SpatialFullConvolution(1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, False, 'default', L1Regularizer(0.5), L1Regularizer(0.5))
     creating: createSpatialFullConvolution
     '''
 
@@ -2598,6 +2625,8 @@ class SpatialFullConvolution(Layer):
                  n_group=1,
                  no_bias=False,
                  init_method='default',
+                 wRegularizer=None,
+                 bRegularizer=None,
                  bigdl_type="float"):
         super(SpatialFullConvolution, self).__init__(None, bigdl_type,
                                                      n_input_plane,
@@ -2612,7 +2641,9 @@ class SpatialFullConvolution(Layer):
                                                      adj_h,
                                                      n_group,
                                                      no_bias,
-                                                     init_method)
+                                                     init_method,
+                                                     wRegularizer,
+                                                     bRegularizer)
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
@@ -3127,9 +3158,11 @@ class SpatialConvolutionMap(Layer):
     It uses a generic connection table between input and output features.
     The SpatialConvolution is equivalent to using a full connection table.
 
+    :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices.
+    :param bRegularizer: instance of [[Regularizer]]applied to the bias.
 
     >>> ct = np.ones([9,9]).astype("float32")
-    >>> spatialConvolutionMap = SpatialConvolutionMap(ct, 9, 9)
+    >>> spatialConvolutionMap = SpatialConvolutionMap(ct, 9, 9, 1, 1, 0, 0, L1Regularizer(0.5), L1Regularizer(0.5))
     creating: createSpatialConvolutionMap
     '''
 
@@ -3141,6 +3174,8 @@ class SpatialConvolutionMap(Layer):
                  dh=1,
                  pad_w=0,
                  pad_h=0,
+                 wRegularizer=None,
+                 bRegularizer=None,
                  bigdl_type="float"):
         super(SpatialConvolutionMap, self).__init__(None, bigdl_type,
                                                     JTensor.from_ndarray(conn_table),
@@ -3149,7 +3184,9 @@ class SpatialConvolutionMap(Layer):
                                                     dw,
                                                     dh,
                                                     pad_w,
-                                                    pad_h)
+                                                    pad_h,
+                                                    wRegularizer,
+                                                    bRegularizer)
 
 
 class SpatialDivisiveNormalization(Layer):

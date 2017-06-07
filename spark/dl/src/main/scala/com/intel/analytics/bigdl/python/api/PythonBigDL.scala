@@ -1455,6 +1455,18 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     optimizer
   }
 
+  def createL1L2Regularizer(l1: Double, l2: Double): L1L2Regularizer[T] = {
+    L1L2Regularizer[T](l1, l2)
+  }
+
+  def createL1Regularizer(l1: Double): L1Regularizer[T] = {
+    L1Regularizer[T](l1)
+  }
+
+  def createL2Regularizer(l2: Double): L2Regularizer[T] = {
+    L2Regularizer[T](l2)
+  }
+
   def setValidation(optimizer: Optimizer[T, MiniBatch[T]],
                     batchSize: Int,
                     trigger: Trigger,
