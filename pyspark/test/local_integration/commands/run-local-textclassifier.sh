@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 #
 # Copyright 2016 The BigDL Authors.
 #
@@ -15,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-BASE="$(cd "`dirname $0`"; pwd)"
 
-$BASE/run-diff && $BASE/lint-python && $BASE/run-tests && $BASE/../local_integration/run-all-local.sh
+$PYTHON_EXECUTABLE ${BIGDL_HOME}/pyspark/bigdl/models/textclassifier/textclassifier.py \
+        --max_epoch 1 \
+        --model cnn

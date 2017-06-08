@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 #
 # Copyright 2016 The BigDL Authors.
 #
@@ -15,6 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-BASE="$(cd "`dirname $0`"; pwd)"
 
-$BASE/run-diff && $BASE/lint-python && $BASE/run-tests && $BASE/../local_integration/run-all-local.sh
+cd "`dirname $0`"
+
+($PYTHON_EXECUTABLE ${BIGDL_HOME}/pyspark/bigdl/models/lenet/lenet5.py \
+     --action train \
+     --endTriggerType epoch \
+     --endTriggerNum 1) && \
+
+($PYTHON_EXECUTABLE ${BIGDL_HOME}/pyspark/bigdl/models/lenet/lenet5.py \
+           --action test \
+           --modelPath $(find /tmp/lenet5 -name "model*" | head -n 1))
