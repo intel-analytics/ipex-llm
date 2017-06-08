@@ -33,8 +33,10 @@ class Sequential[T: ClassTag]
   private var evaluateOnly = false
 
   /**
-   * If evaluateOnly = true, then this sequential only works in evaluate mode, and not work in
-   * training mode
+   * If evaluateOnly = true,
+   * in training mode, the submodules will be skipped and input directly be passed to output;
+   * in evaluation mode, the modules will process the input tensors.
+   * If evaluateOnly = false, the modules will process the data in both mode.
    * @param status contral evaluateOnly
    * @return this
    */
