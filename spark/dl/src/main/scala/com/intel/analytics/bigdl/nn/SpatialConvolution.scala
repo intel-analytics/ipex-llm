@@ -136,8 +136,8 @@ class SpatialConvolution[T: ClassTag](
     val inputWidth = input.size(dimWidth)
     val inputHeight = input.size(dimHeight)
 
-    val outputWidth = (inputWidth + 2 * padW - kernelW) / strideW + 1
-    val outputHeight = (inputHeight + 2 * padH - kernelH) / strideH + 1
+    val outputWidth = (inputWidth + 2 * padW - kernelW) / (strideW + 1)
+    val outputHeight = (inputHeight + 2 * padH - kernelH) / (strideH + 1)
 
     require(outputWidth >= 1 && outputHeight >= 1,
       s"output size is too small. outputWidth: $outputWidth, outputHeight: $outputHeight")
