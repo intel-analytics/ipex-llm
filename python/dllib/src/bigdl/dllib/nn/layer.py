@@ -2753,26 +2753,6 @@ class ConcatTable(Container):
                  bigdl_type="float"):
         super(ConcatTable, self).__init__(None, bigdl_type)
 
-
-class CriterionTable(Model):
-    '''
-    Creates a module that wraps a Criterion so that it can accept a table of inputs.
-
-    :param criterion Criterion module
-
-    >>> from bigdl.nn.criterion import MSECriterion
-    >>> criterionTable = CriterionTable(MSECriterion())
-    creating: createMSECriterion
-    creating: createCriterionTable
-    '''
-
-    def __init__(self,
-                 criterion,
-                 bigdl_type="float"):
-        super(CriterionTable, self).__init__(None, bigdl_type,
-                                             criterion)
-
-
 class Identity(Model):
     '''
     Identity just return the input to output.
