@@ -21,7 +21,7 @@ if [ ! $isPy4jInstalled -eq 0 ]; then
  exit 1
 fi
 
-sphinx-apidoc -F -f -a -H BigDL -A Intel -o ./ ../dl
+sphinx-apidoc -F -f -a -H BigDL -A Intel -o ./ ../
 
 PYSPARK=$SPARK_HOME'/python/lib/pyspark.zip'
 if [ ! -f "$PYSPARK" ]; then
