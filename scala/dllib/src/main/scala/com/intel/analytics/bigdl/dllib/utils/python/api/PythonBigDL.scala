@@ -28,6 +28,7 @@ import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Table, _}
 import com.intel.analytics.bigdl.visualization.{Summary, TrainSummary, ValidationSummary}
+import com.intel.analytics.bigdl.nn.Zeros
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.rdd.RDD
 import java.lang.{Integer, Boolean => JBoolean}
@@ -1546,6 +1547,43 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     val result = Tensor[T]().resize(size.asScala.toArray)
     result.apply1(i => ev.fromType(RandomGenerator.RNG.uniform(a, b)))
     toJTensor(result)
+  }
+
+  def createZeros(): Zeros.type = {
+    Zeros
+  }
+
+  def createOnes(): Ones.type = {
+    Ones
+  }
+
+  def createConstInitMethod(value: Double): ConstInitMethod = {
+    ConstInitMethod(value)
+  }
+
+  def createRandomUniform(lower: Double, upper: Double): InitializationMethod = {
+    RandomUniform(lower, upper)
+  }
+
+  def createRandomUniform(): InitializationMethod = {
+    RandomUniform
+  }
+
+  def createRandomNormal(mean: Double, stdv: Double): RandomNormal = {
+    RandomNormal(mean, stdv)
+  }
+
+  def createXavier(): Xavier.type = {
+    Xavier
+  }
+
+  def createBilinearFiller(): BilinearFiller.type = {
+    BilinearFiller
+  }
+
+  def setInitMethod(layer: Initializable, weightInitMethod: InitializationMethod,
+                    biasInitMethod: InitializationMethod): layer.type = {
+    layer.setInitMethod(weightInitMethod, biasInitMethod)
   }
 }
 
