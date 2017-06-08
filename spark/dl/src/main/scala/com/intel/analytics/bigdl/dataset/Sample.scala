@@ -201,6 +201,10 @@ class ArrayTensorSample[T: ClassTag](
     features(0).size(1)
   }
 
+  def featuresLength(): Array[Int] = {
+    features.map(_.size(1))
+  }
+
   override def labelLength(): Int = {
     labels.size(1)
   }
