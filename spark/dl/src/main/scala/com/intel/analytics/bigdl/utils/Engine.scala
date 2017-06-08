@@ -103,7 +103,7 @@ object Engine {
       checkSparkContext
     }
 
-    mklDisableFastMM()
+    Env.setMKLEnv()
   }
 
   private val logger = Logger.getLogger(getClass)
@@ -141,17 +141,6 @@ object Engine {
     System.getProperty("bigdl.engineType", "mklblas").toLowerCase(Locale.ROOT) match {
       case "mklblas" => MklBlas
       case engineType => throw new IllegalArgumentException(s"Unknown engine type $engineType")
-    }
-  }
-
-  /**
-   * disable fast mm in mkl by bigdl.mklDisableFastMM
-   */
-  private def mklDisableFastMM(): Unit = {
-    System.getProperty("bigdl.mklDisableFastMM", "true").toLowerCase(Locale.ROOT) match {
-      case "true" => MKL.disableFastMM()
-      case "fasle" =>
-      case option => throw new IllegalArgumentException(s"Unknown option of $option")
     }
   }
 
@@ -425,5 +414,47 @@ object Engine {
     } else {
       throw new IllegalArgumentException(s"Engine.init: Unsupported master format $master")
     }
+  }
+}
+
+object Env {
+  val waitTimeMilliSec: Int = {
+    System.getProperty("bigdl.blockTime", "0").toLowerCase(Locale.ROOT) match {
+      case x if x.toInt >= 0 => x.toInt
+      case option =>
+        throw new IllegalArgumentException(s"Unknown option of $option for bigdl.blockTime")
+    }
+  }
+
+  val mklNumThreads: Int = {
+    System.getProperty("bigdl.mklNumThreads", "1").toLowerCase(Locale.ROOT) match {
+      case x if x.toInt > 0 => x.toInt
+      case option =>
+        throw new IllegalArgumentException(s"Unknown option of $option for bigdl.mklNumThreads")
+    }
+  }
+
+  def mklDisableFastMM(): Unit = {
+    System.getProperty("bigdl.mklDisableFastMM", "true").toLowerCase(Locale.ROOT) match {
+      case "true" => MKL.disableFastMM()
+      case "fasle" =>
+      case option =>
+        throw new IllegalArgumentException(s"Unknown option of $option for bigdl.mklDisableFastMM")
+    }
+  }
+
+  def waitPolicyPassive(): Unit = {
+    System.getProperty("bigdl.waitPolicy", "passive").toLowerCase(Locale.ROOT) match {
+      case "passive" => MKL.waitPolicyPasssive()
+      case option =>
+        throw new IllegalArgumentException(s"Unknown option of $option for bigdl.waitPolicy")
+    }
+  }
+
+  def setMKLEnv(): Unit = {
+    mklDisableFastMM()
+    MKL.setNumThreads(mklNumThreads)
+    MKL.setBlockTime(waitTimeMilliSec)
+    waitPolicyPassive()
   }
 }
