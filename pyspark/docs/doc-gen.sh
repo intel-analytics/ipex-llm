@@ -23,13 +23,17 @@ fi
 
 sphinx-apidoc -F -f -a -H BigDL -A Intel -o ./ ../
 
-PYSPARK=$SPARK_HOME'/python/lib/pyspark.zip'
-if [ ! -f "$PYSPARK" ]; then
-  echo "pyspark.zip for spark is not found."
-  echo "Please input the path of spark pyspark.zip."
-  echo "For example: spark-1.6.0-bin-hadoop2.6/python/lib/pyspark.zip"
-  read PYSPARK
+if [ ! $SPARK_HOME ] || [ -z $SPARK_HOME ]; then
+ echo 'Cannot find SPARK_HOME . Please set SPARK_HOME first.'
+ exit 1
 fi
+
+PYSPARK=$(find $SPARK_HOME -name pyspark.zip)
+if [ -z $PYSPARK ]; then
+ echo 'Cannot find pyspark.zip. Please set SPARK_HOME correctly'
+ exit 1
+fi
+
 sed -i "/sys.path.insert(0/i sys.path.insert(0, '.')\nsys.path.insert(0, u'$PYSPARK')" conf.py
 sed -i "/^extensions/s/^extensions *=/extensions +=/" conf.py
 sed -i "/^extensions/i extensions = ['sphinx.ext.autodoc', 'sphinx.ext.mathjax', 'bigdl_pytext']" conf.py
