@@ -25,11 +25,18 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
-
+/**
+ * An abstract class to define interfaces when loading from/to caffe models
+ * Caffe supports two kinds of layer definition LayerParameter & V1LayerParameter
+ * Implementation [[V1LayerConverter]] and [[LayerConverter]]
+ * V1LayerParameter is not recommended any more but we need to support old-versioned model
+ */
 abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
 
+  // support user to customized BigDL compatible module to support those we have not mappings now
   private var customizedLayer : Map[String, Seq[ModuleNode[T]]] = _
 
+  // a caffe type to converter function mappings
   private val caffe2BigDL = new mutable.HashMap[String, (GeneratedMessage) => Seq[ModuleNode[T]]]()
 
   init
@@ -61,7 +68,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
 
   protected def fromCaffeReLU(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val layerName = getLayerName(layer)
-    Seq(new ReLU(true).setName(layerName).apply())
+    Seq(ReLU(true).setName(layerName).apply())
   }
 
   private def fromCaffeLRN(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
@@ -71,7 +78,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
     val alpha = param.getAlpha
     val belta = param.getBeta
     val k = param.getK
-    Seq(new SpatialCrossMapLRN[T](localSize, alpha, belta, k).setName(layerName).apply())
+    Seq(SpatialCrossMapLRN[T](localSize, alpha, belta, k).setName(layerName).apply())
   }
 
   private def fromCaffePooling(layer : GeneratedMessage): Seq[ModuleNode[T]] = {
@@ -111,27 +118,27 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
     val param = getDropoutParam(layer).get
     val layerName = getLayerName(layer)
     val initP = param.getDropoutRatio
-    Seq(new Dropout[T](initP).setName(layerName).apply())
+    Seq(Dropout[T](initP).setName(layerName).apply())
   }
 
   private def fromCaffeSoftmax(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val layerName = getLayerName(layer)
-    Seq(new LogSoftMax().setName(layerName).apply())
+    Seq(LogSoftMax().setName(layerName).apply())
   }
 
   private def fromCaffeTanh(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val layerName = getLayerName(layer)
-    Seq(new Tanh[T]().setName(layerName).apply())
+    Seq(Tanh[T]().setName(layerName).apply())
   }
 
   private def fromCaffeSigmoid(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val layerName = getLayerName(layer)
-    Seq(new Sigmoid[T]().setName(layerName).apply())
+    Seq(Sigmoid[T]().setName(layerName).apply())
   }
 
   private def fromCaffeAbsVal(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val layerName = getLayerName(layer)
-    Seq(new Abs[T]().setName(layerName).apply())
+    Seq(Abs[T]().setName(layerName).apply())
   }
 
   private def fromCaffeConcat(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
@@ -199,7 +206,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
     val opsType = param.getOperation
     val coeff2 = param.getCoeff(1)
     val ops = opsType match {
-      case EltwiseOp.PROD => CMaxTable[T]().setName(layerName).apply()
+      case EltwiseOp.PROD => CMulTable[T]().setName(layerName).apply()
       case EltwiseOp.MAX => CMaxTable[T]().setName(layerName).apply()
       case EltwiseOp.SUM =>
         if (coeff2 < 0) {

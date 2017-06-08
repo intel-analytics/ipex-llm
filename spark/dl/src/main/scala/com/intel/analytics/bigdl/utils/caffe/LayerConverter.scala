@@ -30,7 +30,9 @@ import com.intel.analytics.bigdl.utils.Table
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
-
+/**
+ *  [[Converter]] implementation for caffe recommended LayerParameter conversion
+ */
 class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Converter[T]{
 
   override protected def fromCaffeConvolution(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {

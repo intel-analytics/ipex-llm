@@ -31,7 +31,9 @@ import com.intel.analytics.bigdl.utils.{Node, Table}
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
-
+/**
+ * [[Converter]] implementation for caffe deprecated LayerParameter conversion
+ */
 class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Converter[T] {
 
   override protected def fromCaffeConvolution(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
@@ -66,7 +68,7 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
         ph = pw
       }
     }
-    Seq(new SpatialConvolution[T](nInputPlane, nOutPlane, kw, kh, dw, dh, pw, ph, group)
+    Seq(SpatialConvolution[T](nInputPlane, nOutPlane, kw, kh, dw, dh, pw, ph, group)
       .setName(getLayerName(layer)).apply())
   }
 
@@ -91,7 +93,7 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
 
   // No implementation in V1
   override protected def fromCaffeBatchNormalization(layer : GeneratedMessage) :
-  Seq[ModuleNode[T]] = {
+    Seq[ModuleNode[T]] = {
     throw new UnsupportedOperationException("Batch normalizaton is not supported in V1 Layer")
   }
 
@@ -141,7 +143,7 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
   }
 
   override protected def getInnerProductParam(layer : GeneratedMessage):
-  Option[InnerProductParameter] = {
+    Option[InnerProductParameter] = {
     Some(layer.asInstanceOf[V1LayerParameter].getInnerProductParam)
   }
 

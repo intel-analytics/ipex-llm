@@ -196,7 +196,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
     copyParameters(module)
     (module, criterions)
   }
-
+  // create directed graph based on the module relationships
   private def createLayers() : ArrayBuffer[ModuleNode[T]] = {
     val layers = ArrayBuffer[ModuleNode[T]]()
     val layersMap = new mutable.HashMap[String, ModuleNode[T]]()
@@ -236,19 +236,18 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
       var name : String = null
       val topList = new ArrayBuffer[String]()
       val bottomList = new ArrayBuffer[String]()
-      if (layer.isInstanceOf[LayerParameter]) {
-        val layerParameter = layer.asInstanceOf[LayerParameter]
-        name = layerParameter.getName
-        layerParameter.getTopList.asScala.foreach(top => topList.append(top))
-        layerParameter.getBottomList.asScala.foreach(bottom => bottomList.append(bottom))
-      } else {
-        val layerParameter = layer.asInstanceOf[V1LayerParameter]
-        name = layerParameter.getName
-        layerParameter.getTopList.asScala.foreach(top => topList.append(top))
-        layerParameter.getBottomList.asScala.foreach(bottom => bottomList.append(bottom))
+      layer match {
+        case v2 : LayerParameter =>
+          name = v2.getName
+          topList ++= v2.getTopList.asScala
+          bottomList ++= v2.getBottomList.asScala
+        case v1 : V1LayerParameter =>
+          name = v1.getName
+          topList ++= v1.getTopList.asScala
+          bottomList ++= v1.getBottomList.asScala
       }
       val layerType = getLayerType(name).get.toUpperCase
-      if ("SPLIT".equals(layerType)) {
+      if ("SPLIT" == layerType) {
         // eliminate split layer in graph module, cache dependency only
         require(bottomList.size == 1, s"split dependency should only be one!")
         topList.foreach(top => {
@@ -257,6 +256,8 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
           }
         })
       } else {
+        // some criterion layers are not only for loss calculation,
+        // we need to separate it with loss function and module
         val isCriterionLayerOnly : Boolean = tryAddCriterion(layerType, name)
         if (!isCriterionLayerOnly) {
           var nodes = convertCaffeLayer(layer)
@@ -370,6 +371,14 @@ object CaffeLoader {
     caffeLoader.copyParameters(model)
   }
 
+/**
+ * load caffe model dynamically from binary and prototxt file
+ * @param defPath prototxt file which illustrate the caffe model structure
+ * @param modelPath binary file containing the weight and bias
+ * @param matchAll if match all modules for parameter copy
+ * @tparam T data type
+ * @return created module (graph) and criterion
+ */
   def loadDynamic[T: ClassTag](defPath: String, modelPath: String, matchAll: Boolean = true)
                               (implicit ev: TensorNumeric[T]): (Module[T], ParallelCriterion[T]) = {
     val caffeLoader = new CaffeLoader[T](defPath, modelPath, matchAll)
