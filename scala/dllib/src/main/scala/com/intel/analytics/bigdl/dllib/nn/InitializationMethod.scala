@@ -156,7 +156,7 @@ trait InitializationMethod {
 /**
  * Initializer that generates tensors with a uniform distribution.
  *
- * It draws samples form a uniform distribution within [-limit, limit]
+ * It draws samples from a uniform distribution within [-limit, limit]
  * where "limit" is "1/sqrt(fan_in)"
  *
  */
@@ -175,7 +175,7 @@ case object RandomUniform extends InitializationMethod {
 /**
  * Initializer that generates tensors with a uniform distribution.
  *
- * It draws samples form a uniform distribution within [lower, upper]
+ * It draws samples from a uniform distribution within [lower, upper]
  *
  */
 case class RandomUniform(lower: Double, upper: Double) extends InitializationMethod {
@@ -188,10 +188,7 @@ case class RandomUniform(lower: Double, upper: Double) extends InitializationMet
 }
 
 /**
- * Initializer that generates tensors with a uniform distribution.
- *
- * It draws samples form a uniform distribution within [-limit, limit]
- * where "limit" is specified by stdv
+ * Initializer that generates tensors with a normal distribution.
  *
  */
 case class RandomNormal(mean: Double, stdv: Double) extends InitializationMethod {
