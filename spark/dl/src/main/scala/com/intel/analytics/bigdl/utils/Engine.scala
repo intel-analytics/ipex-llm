@@ -148,7 +148,7 @@ object Engine {
   @volatile private var _default: ThreadPool = null
 
   // Thread pool for layer use
-  @volatile private var _model: ThreadPool = new ThreadPool(1)
+  @volatile private var _model: ThreadPool = new ThreadPool(1).setMKLThread(Env.mklNumThreads)
 
   /**
    * return core number user defined.
@@ -259,6 +259,7 @@ object Engine {
 
     if(_model == null || _model.getPoolSize != modelPoolSize) {
       _model = new ThreadPool(modelPoolSize)
+      _model.setMKLThread(Env.mklNumThreads)
     }
   }
 
