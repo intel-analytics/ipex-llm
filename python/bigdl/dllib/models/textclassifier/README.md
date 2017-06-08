@@ -43,12 +43,12 @@ bigdl.sh would setup the essential environment for you and it would accept a spa
             --executor-cores 4  \
             --executor-memory 20g \
             --conf spark.akka.frameSize=64 \
-            --py-files ${PYTHON_API_ZIP_PATH},${BigDL_HOME}/pyspark/dl/models/textclassifier/textclassifier.py  \
+            --py-files ${PYTHON_API_ZIP_PATH},${BigDL_HOME}/pyspark/bigdl/models/textclassifier/textclassifier.py  \
             --jars ${BigDL_JAR_PATH} \
             --conf spark.driver.extraClassPath=${BigDL_JAR_PATH} \
             --conf spark.executor.extraClassPath=bigdl-VERSION-jar-with-dependencies.jar \
             --conf spark.executorEnv.PYTHONHASHSEED=${PYTHONHASHSEED} \
-            ${BigDL_HOME}/pyspark/dl/models/textclassifier/textclassifier.py \
+            ${BigDL_HOME}/pyspark/bigdl/models/textclassifier/textclassifier.py \
              --max_epoch 3
              --model cnn
 ```
