@@ -39,6 +39,10 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
   override protected def fromCaffeConvolution(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val param = getConvolutionParam(layer).get
     val weightBlob = getBlob(layer, 0).get
+    val biasBlob = getBlob(layer, 1)
+    if (!biasBlob.isDefined) {
+      throw new RuntimeException(s"${getLayerName(layer)} without bias is not supported now")
+    }
     val group = if (param.getGroup == 0)  1 else param.getGroup
     val nInputPlane = weightBlob.getChannels * group
     val nOutPlane = weightBlob.getNum

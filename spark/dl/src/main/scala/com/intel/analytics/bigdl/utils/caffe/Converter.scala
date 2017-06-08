@@ -52,7 +52,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
     if (customizedLayer !=null && customizedLayer.contains(layerType)) {
       return customizedLayer(layerType)
     }
-    throw new UnsupportedOperationException(s"$layerType is not supported in BigDL fow now")
+    throw new UnsupportedOperationException(s"$layerType is not supported in BigDL for now")
   }
 
   def convertLayerFromCaffe(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {

@@ -40,6 +40,10 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
     val param = getConvolutionParam(layer).get
     val group = if (param.getGroup == 0)  1 else param.getGroup
     val  weightBlob = getBlob(layer, 0).get
+    val biasBlob = getBlob(layer, 1)
+    if (!biasBlob.isDefined) {
+      throw new RuntimeException(s"${getLayerName(layer)} without bias is not supported now")
+    }
     val nInputPlane = if (weightBlob.hasShape) weightBlob.getShape.getDim(1)
     else weightBlob.getChannels * group
     val nOutPlane = if (weightBlob.hasShape) weightBlob.getShape.getDim(0)
