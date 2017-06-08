@@ -39,12 +39,12 @@ We would train a LeNet model in spark local mode with the following commands and
         --executor-cores 2  \
         --executor-memory 4g \
         --conf spark.akka.frameSize=64 \
-        --py-files ${PYTHON_API_ZIP_PATH},${BigDL_HOME}/pyspark/dl/models/lenet/lenet5.py  \
+        --py-files ${PYTHON_API_ZIP_PATH},${BigDL_HOME}/pyspark/bigdl/models/lenet/lenet5.py  \
         --properties-file ${BigDL_HOME}/dist/conf/spark-bigdl.conf \
         --jars ${BigDL_JAR_PATH} \
         --conf spark.driver.extraClassPath=${BigDL_JAR_PATH} \
         --conf spark.executor.extraClassPath=bigdl-VERSION-jar-with-dependencies.jar \
-        ${BigDL_HOME}/pyspark/dl/models/lenet/lenet5.py \
+        ${BigDL_HOME}/pyspark/bigdl/models/lenet/lenet5.py \
         --action train
  ```
 
