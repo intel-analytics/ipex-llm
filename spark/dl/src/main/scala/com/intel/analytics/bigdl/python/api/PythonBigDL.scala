@@ -920,12 +920,6 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     ConcatTable[Activity, T]()
   }
 
-  def createCriterionTable(criterion: TensorCriterion[T])
-  : CriterionTable[T] = {
-    CriterionTable[T](criterion)
-  }
-
-
   def createIdentity()
   : Identity[T] = {
     Identity[T]()
