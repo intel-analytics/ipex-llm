@@ -355,6 +355,10 @@ class Linear(Model):
         super(Linear, self).__init__(None, bigdl_type, input_size, output_size,
                                      init_method, with_bias)
 
+    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+        callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
+                                   weight_init_method, bias_init_method)
+
 
 class ReLU(Model):
 
@@ -484,6 +488,9 @@ class SpatialConvolution(Model):
                                                  n_group,
                                                  propagate_back,
                                                  init_method)
+    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+        callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
+                  weight_init_method, bias_init_method)
 
 
 class SpatialMaxPooling(Model):
@@ -774,6 +781,10 @@ class SpatialBatchNormalization(Model):
                                                         momentum,
                                                         affine)
 
+    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+        callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
+                      weight_init_method, bias_init_method)
+
 
 class SpatialCrossMapLRN(Model):
 
@@ -888,6 +899,9 @@ class Add(Model):
                  bigdl_type="float"):
         super(Add, self).__init__(None, bigdl_type,
                                   input_size)
+    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+        callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
+                      weight_init_method, bias_init_method)
 
 
 class AddConstant(Model):
@@ -946,6 +960,9 @@ class BatchNormalization(Model):
                                                  eps,
                                                  momentum,
                                                  affine)
+    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+        callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
+                      weight_init_method, bias_init_method)
 
 
 class Bilinear(Model):
@@ -975,6 +992,9 @@ class Bilinear(Model):
                                        input_size2,
                                        output_size,
                                        bias_res)
+    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+        callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
+                      weight_init_method, bias_init_method)
 
 
 class Bottle(Container):
@@ -1023,6 +1043,10 @@ class CAdd(Model):
                  bigdl_type="float"):
         super(CAdd, self).__init__(None, bigdl_type,
                                    size)
+
+    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+        callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
+                      weight_init_method, bias_init_method)
 
 
 class CAddTable(Model):
@@ -1101,6 +1125,10 @@ class CMul(Model):
                  bigdl_type="float"):
         super(CMul, self).__init__(None, bigdl_type,
                                    size)
+
+    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+        callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
+                      weight_init_method, bias_init_method)
 
 
 class CMulTable(Model):
@@ -1192,6 +1220,9 @@ class Cosine(Model):
         super(Cosine, self).__init__(None, bigdl_type,
                                      input_size,
                                      output_size)
+    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+        callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
+                      weight_init_method, bias_init_method)
 
 
 class CosineDistance(Model):
@@ -1287,6 +1318,10 @@ class Euclidean(Model):
                                         input_size,
                                         output_size,
                                         fast_backward)
+
+    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+        callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
+                      weight_init_method, bias_init_method)
 
 
 class Exp(Model):
@@ -1584,6 +1619,9 @@ class LookupTable(Model):
                                           max_norm,
                                           norm_type,
                                           should_scale_grad_by_freq)
+    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+        callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
+                      weight_init_method, bias_init_method)
 
 
 class MM(Model):
@@ -1761,6 +1799,10 @@ class Mul(Model):
                  bigdl_type="float"):
         super(Mul, self).__init__(None, bigdl_type)
 
+    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+        callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
+                      weight_init_method, bias_init_method)
+
 
 class MulConstant(Model):
 
@@ -1871,6 +1913,10 @@ class PReLU(Model):
                  bigdl_type="float"):
         super(PReLU, self).__init__(None, bigdl_type,
                                     n_output_plane)
+
+    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+        callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
+                      weight_init_method, bias_init_method)
 
 
 class Padding(Model):
@@ -2295,6 +2341,10 @@ class SpatialDilatedConvolution(Model):
                                                         dilation_h,
                                                         init_method)
 
+    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+        callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
+                      weight_init_method, bias_init_method)
+
 
 class SpatialFullConvolution(Model):
     '''
@@ -2364,6 +2414,9 @@ class SpatialFullConvolution(Model):
                                                      n_group,
                                                      no_bias,
                                                      init_method)
+    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+        callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
+                      weight_init_method, bias_init_method)
 
 
 class SpatialShareConvolution(Model):
@@ -2398,6 +2451,9 @@ class SpatialShareConvolution(Model):
                                                       n_group,
                                                       propagate_back,
                                                       init_method)
+    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+        callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
+                      weight_init_method, bias_init_method)
 
 
 class VolumetricConvolution(Model):
@@ -2453,6 +2509,10 @@ class VolumetricConvolution(Model):
                                                     pad_h,
                                                     with_bias,
                                                     init_method)
+
+    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+        callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
+                      weight_init_method, bias_init_method)
 
 
 class VolumetricMaxPooling(Model):
