@@ -15,12 +15,15 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import java.nio.ByteOrder
+
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{CaffeLoader, File, TensorflowLoader}
+import com.intel.analytics.bigdl.utils.{CaffeLoader, File}
+import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowLoader}
 
 import scala.reflect.ClassTag
 
@@ -44,10 +47,17 @@ object Module {
    * @param file where is the protobuf model file
    * @param inputs input node names
    * @param outputs output node names, the output tensor order is same with the node order
+   * @param byteOrder byte order in the tensorflow file. The default value is little endian
+   * @param dataFormat the model dataFormat. Note that BigDL only support NCHW, so for NHWC
+   *                   tensorflow model, the model define will be converted to NCHW
    * @return BigDL model
    */
-  def loadTF(file: String, inputs: Seq[String], outputs: Seq[String]): Module[Float] = {
-    TensorflowLoader.load(file, inputs, outputs)
+  def loadTF[T: ClassTag](file: String, inputs: Seq[String], outputs: Seq[String],
+            byteOrder: ByteOrder = ByteOrder.LITTLE_ENDIAN,
+            dataFormat: TensorflowDataFormat = TensorflowDataFormat.NCHW)(
+    implicit ev: TensorNumeric[T]): Module[T] = {
+
+    TensorflowLoader.load(file, inputs, outputs, byteOrder, dataFormat)
   }
 
   def flatten[@specialized(Float, Double) T: ClassTag](parameters: Array[Tensor[T]])(

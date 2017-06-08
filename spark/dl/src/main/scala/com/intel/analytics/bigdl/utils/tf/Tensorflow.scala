@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.utils
+package com.intel.analytics.bigdl.utils.tf
 
 import java.nio.charset.Charset
 
@@ -30,45 +30,53 @@ sealed trait TensorflowDataFormat {
   def value : AttrValue
 }
 
-/**
- * Store the image data in tensor as batch, height, width, channel
- */
-object NHWC extends TensorflowDataFormat {
-  private val v = AttrValue.newBuilder().setS(ByteString
-    .copyFrom("NHWC", Charset.defaultCharset())).build()
+object TensorflowDataFormat {
+  /**
+   * Store the image data in tensor as batch, height, width, channel
+   */
+  object NHWC extends TensorflowDataFormat {
+    private val v = AttrValue.newBuilder().setS(ByteString
+      .copyFrom("NHWC", Charset.defaultCharset())).build()
 
-  override def value: AttrValue = v
+    override def value: AttrValue = v
+  }
+
+  /**
+   * Store the image data in tensor as batch, channel, height, width
+   */
+  object NCHW extends TensorflowDataFormat {
+    private val v = AttrValue.newBuilder().setS(ByteString
+      .copyFrom("NCHW", Charset.defaultCharset())).build()
+
+    override def value: AttrValue = v
+  }
 }
 
+/**
+ * Tensorflow padding type
+ */
 sealed trait PaddingType {
   def value : AttrValue
 }
 
-object PADDING_SAME extends PaddingType {
-  private val v = AttrValue.newBuilder().setS(ByteString
-    .copyFrom("SAME", Charset.defaultCharset())).build()
+object PaddingType {
 
-  override def value: AttrValue = v
+  object PADDING_SAME extends PaddingType {
+    private val v = AttrValue.newBuilder().setS(ByteString
+      .copyFrom("SAME", Charset.defaultCharset())).build()
+
+    override def value: AttrValue = v
+  }
+
+  object PADDING_VALID extends PaddingType {
+    private val v = AttrValue.newBuilder().setS(ByteString
+      .copyFrom("VALID", Charset.defaultCharset())).build()
+
+    override def value: AttrValue = v
+  }
 }
 
-object PADDING_VALID extends PaddingType {
-  private val v = AttrValue.newBuilder().setS(ByteString
-    .copyFrom("VALID", Charset.defaultCharset())).build()
-
-  override def value: AttrValue = v
-}
-
-/**
- * Store the image data in tensor as batch, channel, height, width
- */
-object NCHW extends TensorflowDataFormat {
-  private val v = AttrValue.newBuilder().setS(ByteString
-    .copyFrom("NCHW", Charset.defaultCharset())).build()
-
-  override def value: AttrValue = v
-}
-
-object TensorflowUtils {
+object Tensorflow {
   /**
    * Generate a placeholder tensorflow protobuf node
    * @param dtype numeric type
@@ -468,9 +476,9 @@ object TensorflowUtils {
   private def getPaddingType(padW: Int, padH: Int, kW: Int, kH: Int, sW: Int, sH: Int)
       : PaddingType = {
     if (padW == 0 && padH == 0) {
-      return PADDING_VALID
+      return PaddingType.PADDING_VALID
     } else if (2 * padW == (kW - sW) && 2 * padH == (kH - sH)) {
-      return PADDING_SAME
+      return PaddingType.PADDING_SAME
     } else {
       throw new IllegalArgumentException(
         s"Can not get padding type from given parameter " +

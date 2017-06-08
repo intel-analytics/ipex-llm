@@ -13,19 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.utils
+package com.intel.analytics.bigdl.utils.tf
 
 import java.io.{File => JFile}
+import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim.{DistriOptimizer, Trigger}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.utils._
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
-import com.intel.analytics.bigdl.utils.TestUtils.processPath
+import com.intel.analytics.bigdl.numeric.NumericFloat
+import scala.sys.process._
+
 import scala.math._
 
 object TensorflowLoaderSpec {
@@ -59,7 +63,7 @@ object TensorflowLoaderSpec {
 }
 
 @com.intel.analytics.bigdl.tags.Parallel
-class TensorflowLoaderSpec extends FlatSpec with Matchers with BeforeAndAfter {
+class TensorflowLoaderSpec extends TensorflowSpecHelper{
 
   Logger.getLogger("org").setLevel(Level.WARN)
   Logger.getLogger("akka").setLevel(Level.WARN)
@@ -131,7 +135,8 @@ class TensorflowLoaderSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val path = processPath(resource.getPath()) + JFile.separator + "test.pb"
     val results = TensorflowLoader.parse(path)
     val tfGraph = TensorflowLoader.buildTFGraph(results)
-    val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("Placeholder"), Seq("output"))
+    val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("Placeholder"), Seq("output"),
+      ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
     val container = model.asInstanceOf[Graph[Float]]
     container.modules.length should be(4)
     RandomGenerator.RNG.setSeed(100)
@@ -154,11 +159,13 @@ class TensorflowLoaderSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "Shared weights" should "be the same instance" in {
+    tfCheck()
     val resource = getClass().getClassLoader().getResource("tf")
     val path = processPath(resource.getPath()) + JFile.separator + "share_weight.pb"
     val results = TensorflowLoader.parse(path)
     val tfGraph = TensorflowLoader.buildTFGraph(results)
-    val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("Placeholder"), Seq("output"))
+    val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("Placeholder"), Seq("output"),
+      ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
     val container = model.asInstanceOf[Graph[Float]]
     container.modules.length should be(4)
     val l1 = container.modules(1).asInstanceOf[Linear[Float]]
@@ -172,7 +179,8 @@ class TensorflowLoaderSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val path = processPath(resource.getPath()) + JFile.separator + "share_weight.pb"
     val results = TensorflowLoader.parse(path)
     val tfGraph = TensorflowLoader.buildTFGraph(results)
-    val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("Placeholder"), Seq("output"))
+    val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("Placeholder"), Seq("output"),
+      ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
     val container = model.asInstanceOf[Graph[Float]]
 
     val optimizer = new DistriOptimizer[Float](container, dataSet, new MSECriterion[Float]())
@@ -192,7 +200,7 @@ class TensorflowLoaderSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val results = TensorflowLoader.parse(path)
     val tfGraph = TensorflowLoader.buildTFGraph(results)
     val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("Placeholder"),
-      Seq("output"))
+      Seq("output"), ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
     val input = Tensor[Float](4, 10).rand()
     val gradient = Tensor[Float](4, 5).rand()
     val result: Tensor[Float] = model.forward(input).asInstanceOf[Tensor[Float]]
@@ -209,7 +217,7 @@ class TensorflowLoaderSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val results = TensorflowLoader.parse(path)
     val tfGraph = TensorflowLoader.buildTFGraph(results)
     val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("Placeholder"),
-      Seq("output"))
+      Seq("output"), ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
 
     val input = Tensor[Float](4, 5, 10).rand()
     val gradient = Tensor[Float](4, 5).rand()
@@ -223,7 +231,7 @@ class TensorflowLoaderSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val results = TensorflowLoader.parse(path)
     val tfGraph = TensorflowLoader.buildTFGraph(results)
     val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("Placeholder"),
-      Seq("output"))
+      Seq("output"), ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
 
     val input = Tensor[Float](4, 5, 10).rand()
     val gradient = Tensor[Float](4, 5).rand()
@@ -237,7 +245,7 @@ class TensorflowLoaderSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val results = TensorflowLoader.parse(path)
     val tfGraph = TensorflowLoader.buildTFGraph(results)
     val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("Placeholder"),
-      Seq("alexnet_v2/fc8/squeezed"))
+      Seq("alexnet_v2/fc8/squeezed"), ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
     val input = Tensor[Float](4, 3, 224, 224).rand()
     val gradient = Tensor[Float](4, 1000).rand()
     model.forward(input)
@@ -250,7 +258,7 @@ class TensorflowLoaderSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val results = TensorflowLoader.parse(path)
     val tfGraph = TensorflowLoader.buildTFGraph(results)
     val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("Placeholder"),
-      Seq("vgg_a/fc8/squeezed"))
+      Seq("vgg_a/fc8/squeezed"), ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
     val input = Tensor[Float](4, 3, 224, 224).rand()
     val gradient = Tensor[Float](4, 1000).rand()
     model.forward(input)
@@ -263,7 +271,7 @@ class TensorflowLoaderSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val results = TensorflowLoader.parse(path)
     val tfGraph = TensorflowLoader.buildTFGraph(results)
     val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("Placeholder"),
-      Seq("vgg_16/fc8/squeezed"))
+      Seq("vgg_16/fc8/squeezed"), ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
     val input = Tensor[Float](4, 3, 224, 224).rand()
     val gradient = Tensor[Float](4, 1000).rand()
     model.forward(input)
@@ -276,7 +284,7 @@ class TensorflowLoaderSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val results = TensorflowLoader.parse(path)
     val tfGraph = TensorflowLoader.buildTFGraph(results)
     val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("Placeholder"),
-      Seq("vgg_19/fc8/squeezed"))
+      Seq("vgg_19/fc8/squeezed"), ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
     val input = Tensor[Float](2, 3, 224, 224).rand()
     val gradient = Tensor[Float](2, 1000).rand()
     model.forward(input)
@@ -289,7 +297,7 @@ class TensorflowLoaderSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val results = TensorflowLoader.parse(path)
     val tfGraph = TensorflowLoader.buildTFGraph(results)
     val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("Placeholder"),
-      Seq("LeNet/fc4/BiasAdd"))
+      Seq("LeNet/fc4/BiasAdd"), ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
     val input = Tensor[Float](4, 3, 32, 32).rand()
     val gradient = Tensor[Float](4, 10).rand()
     model.forward(input)
@@ -302,7 +310,7 @@ class TensorflowLoaderSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val results = TensorflowLoader.parse(path)
     val tfGraph = TensorflowLoader.buildTFGraph(results)
     val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("Placeholder"),
-      Seq("InceptionV3/Logits/SpatialSqueeze"))
+      Seq("InceptionV3/Logits/SpatialSqueeze"), ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
     val input = Tensor[Float](2, 3, 299, 299).rand()
     val gradient = Tensor[Float](2, 1000).rand()
     model.forward(input)
@@ -315,7 +323,7 @@ class TensorflowLoaderSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val results = TensorflowLoader.parse(path)
     val tfGraph = TensorflowLoader.buildTFGraph(results)
     val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("Placeholder"),
-      Seq("resnet_v1_101/SpatialSqueeze"))
+      Seq("resnet_v1_101/SpatialSqueeze"), ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
     val input = Tensor[Float](2, 3, 224, 224).rand()
     val gradient = Tensor[Float](2, 1000).rand()
     model.forward(input)
@@ -328,7 +336,7 @@ class TensorflowLoaderSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val results = TensorflowLoader.parse(path)
     val tfGraph = TensorflowLoader.buildTFGraph(results)
     val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("Placeholder"),
-      Seq("overfeat/fc8/squeezed"))
+      Seq("overfeat/fc8/squeezed"), ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
     val input = Tensor[Float](5, 3, 231, 231).rand()
     val gradient = Tensor[Float](5, 1000).rand()
     model.forward(input)
@@ -341,7 +349,8 @@ class TensorflowLoaderSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val results = TensorflowLoader.parse(path)
     val tfGraph = TensorflowLoader.buildTFGraph(results)
     val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("Placeholder"),
-      Seq("InceptionResnetV2/Logits/Predictions", "InceptionResnetV2/AuxLogits/Logits/BiasAdd"))
+      Seq("InceptionResnetV2/Logits/Predictions", "InceptionResnetV2/AuxLogits/Logits/BiasAdd"),
+      ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
     val input = Tensor[Float](5, 3, 299, 299).rand()
     val gradient1 = Tensor[Float](5, 1001).rand()
     val gradient2 = Tensor[Float](5, 1001).rand()
@@ -356,12 +365,13 @@ class TensorflowLoaderSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val results = TensorflowLoader.parse(path)
     val tfGraph = TensorflowLoader.buildTFGraph(results.subList(0, results.size()-1))
     val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("input"),
-      Seq("alexnet_v2/fc8/squeezed"))
-    val input = TFToBigDL.toTensor(results.get(0).getAttrMap.get("value").getTensor)
-      .transpose(2, 4).transpose(3, 4).contiguous()
+      Seq("alexnet_v2/fc8/squeezed"),
+      ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
+    val input = TensorflowToBigDL.toTensor(results.get(0).getAttrMap.get("value").getTensor,
+      ByteOrder.LITTLE_ENDIAN).transpose(2, 4).transpose(3, 4).contiguous()
     val gradient = Tensor[Float](1, 1000).rand()
-    val tfResult = TFToBigDL.toTensor(results.get(results.size()-1)
-      .getAttrMap.get("value").getTensor)
+    val tfResult = TensorflowToBigDL.toTensor(results.get(results.size()-1)
+      .getAttrMap.get("value").getTensor, ByteOrder.LITTLE_ENDIAN)
     val BigDLResult = model.forward(input)
 
     tfResult.map( BigDLResult.toTensor, (v1, v2) => {
@@ -379,12 +389,13 @@ class TensorflowLoaderSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val results = TensorflowLoader.parse(path)
     val tfGraph = TensorflowLoader.buildTFGraph(results.subList(0, results.size()-1))
     val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("input"),
-      Seq("vgg_a/fc8/squeezed"))
-    val input = TFToBigDL.toTensor(results.get(0).getAttrMap.get("value").getTensor)
+      Seq("vgg_a/fc8/squeezed"), ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
+    val input = TensorflowToBigDL.toTensor(results.get(0).getAttrMap.get("value").getTensor,
+      ByteOrder.LITTLE_ENDIAN)
       .transpose(2, 4).transpose(3, 4).contiguous()
     val gradient = Tensor[Float](1, 1000).rand()
-    val tfResult = TFToBigDL.toTensor(results.get(results.size()-1)
-      .getAttrMap.get("value").getTensor)
+    val tfResult = TensorflowToBigDL.toTensor(results.get(results.size()-1)
+      .getAttrMap.get("value").getTensor, ByteOrder.LITTLE_ENDIAN)
     val BigDLResult = model.forward(input)
 
     tfResult.map( BigDLResult.toTensor, (v1, v2) => {
@@ -401,12 +412,13 @@ class TensorflowLoaderSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val results = TensorflowLoader.parse(path)
     val tfGraph = TensorflowLoader.buildTFGraph(results.subList(0, results.size()-1))
     val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("input"),
-      Seq("vgg_16/fc8/squeezed"))
-    val input = TFToBigDL.toTensor(results.get(0).getAttrMap.get("value").getTensor)
+      Seq("vgg_16/fc8/squeezed"), ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
+    val input = TensorflowToBigDL.toTensor(results.get(0).getAttrMap.get("value").getTensor,
+      ByteOrder.LITTLE_ENDIAN)
       .transpose(2, 4).transpose(3, 4).contiguous()
     val gradient = Tensor[Float](1, 1000).rand()
-    val tfResult = TFToBigDL.toTensor(results.get(results.size()-1)
-      .getAttrMap.get("value").getTensor)
+    val tfResult = TensorflowToBigDL.toTensor(results.get(results.size()-1)
+      .getAttrMap.get("value").getTensor, ByteOrder.LITTLE_ENDIAN)
     val BigDLResult = model.forward(input)
 
     tfResult.map( BigDLResult.toTensor, (v1, v2) => {
@@ -423,12 +435,13 @@ class TensorflowLoaderSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val results = TensorflowLoader.parse(path)
     val tfGraph = TensorflowLoader.buildTFGraph(results.subList(0, results.size()-1))
     val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("input"),
-      Seq("vgg_19/fc8/squeezed"))
-    val input = TFToBigDL.toTensor(results.get(0).getAttrMap.get("value").getTensor)
+      Seq("vgg_19/fc8/squeezed"), ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
+    val input = TensorflowToBigDL.toTensor(results.get(0).getAttrMap.get("value").getTensor,
+      ByteOrder.LITTLE_ENDIAN)
       .transpose(2, 4).transpose(3, 4).contiguous()
     val gradient = Tensor[Float](1, 1000).rand()
-    val tfResult = TFToBigDL.toTensor(results.get(results.size()-1)
-      .getAttrMap.get("value").getTensor)
+    val tfResult = TensorflowToBigDL.toTensor(results.get(results.size()-1)
+      .getAttrMap.get("value").getTensor, ByteOrder.LITTLE_ENDIAN)
     val BigDLResult = model.forward(input)
 
     tfResult.map( BigDLResult.toTensor, (v1, v2) => {
@@ -445,12 +458,13 @@ class TensorflowLoaderSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val results = TensorflowLoader.parse(path)
     val tfGraph = TensorflowLoader.buildTFGraph(results.subList(0, results.size()-1))
     val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("input"),
-      Seq("overfeat/fc8/squeezed"))
-    val input = TFToBigDL.toTensor(results.get(0).getAttrMap.get("value").getTensor)
+      Seq("overfeat/fc8/squeezed"), ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
+    val input = TensorflowToBigDL.toTensor(results.get(0).getAttrMap.get("value").getTensor,
+      ByteOrder.LITTLE_ENDIAN)
       .transpose(2, 4).transpose(3, 4).contiguous()
     val gradient = Tensor[Float](1, 1000).rand()
-    val tfResult = TFToBigDL.toTensor(results.get(results.size()-1)
-      .getAttrMap.get("value").getTensor)
+    val tfResult = TensorflowToBigDL.toTensor(results.get(results.size()-1)
+      .getAttrMap.get("value").getTensor, ByteOrder.LITTLE_ENDIAN)
     val BigDLResult = model.forward(input)
 
     tfResult.map( BigDLResult.toTensor, (v1, v2) => {
@@ -467,12 +481,13 @@ class TensorflowLoaderSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val results = TensorflowLoader.parse(path)
     val tfGraph = TensorflowLoader.buildTFGraph(results.subList(0, results.size()-1))
     val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("input"),
-      Seq("InceptionV3/Logits/SpatialSqueeze"))
-    val input = TFToBigDL.toTensor(results.get(0).getAttrMap.get("value").getTensor)
+      Seq("InceptionV3/Logits/SpatialSqueeze"), ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
+    val input = TensorflowToBigDL.toTensor(results.get(0).getAttrMap.get("value").getTensor,
+      ByteOrder.LITTLE_ENDIAN)
       .transpose(2, 4).transpose(3, 4).contiguous()
     val gradient = Tensor[Float](1, 1000).rand()
-    val tfResult = TFToBigDL.toTensor(results.get(results.size()-1)
-      .getAttrMap.get("value").getTensor)
+    val tfResult = TensorflowToBigDL.toTensor(results.get(results.size()-1)
+      .getAttrMap.get("value").getTensor, ByteOrder.LITTLE_ENDIAN)
     val BigDLResult = model.forward(input)
 
     tfResult.map( BigDLResult.toTensor, (v1, v2) => {
@@ -489,12 +504,13 @@ class TensorflowLoaderSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val results = TensorflowLoader.parse(path)
     val tfGraph = TensorflowLoader.buildTFGraph(results.subList(0, results.size()-1))
     val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("input"),
-      Seq("resnet_v1_101/SpatialSqueeze"))
-    val input = TFToBigDL.toTensor(results.get(0).getAttrMap.get("value").getTensor)
+      Seq("resnet_v1_101/SpatialSqueeze"), ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
+    val input = TensorflowToBigDL.toTensor(results.get(0).getAttrMap.get("value").getTensor,
+      ByteOrder.LITTLE_ENDIAN)
       .transpose(2, 4).transpose(3, 4).contiguous()
     val gradient = Tensor[Float](2, 1000).rand()
-    val tfResult = TFToBigDL.toTensor(results.get(results.size()-1)
-      .getAttrMap.get("value").getTensor)
+    val tfResult = TensorflowToBigDL.toTensor(results.get(results.size()-1)
+      .getAttrMap.get("value").getTensor, ByteOrder.LITTLE_ENDIAN)
     val BigDLResult = model.forward(input)
 
     tfResult.map( BigDLResult.toTensor, (v1, v2) => {
@@ -504,6 +520,42 @@ class TensorflowLoaderSpec extends FlatSpec with Matchers with BeforeAndAfter {
     model.backward(input, gradient)
   }
 
+  "TensorFlow loader" should "run the python to save the modle and " +
+    "have the same inferrence result with tensorflow " +
+    "after loading slim inception_resnet_v2" in {
+    // check python path for tensorflow models
+    tfCheck()
+    (("python " + testScriptsPath("inception_resnet_v2.py")) !!)
+    val resource = getClass().getClassLoader().getResource("tf")
+    val path = processPath(resource.getPath()) + JFile.separator +
+      "loadTest" + JFile.separator + "inception_resnet_v2_save.pb"
+    val results = TensorflowLoader.parse(path)
+    val tfGraph = TensorflowLoader.buildTFGraph(results.subList(0, results.size()-2))
+    val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("input"),
+      Seq("InceptionResnetV2/Logits/Logits/BiasAdd", "InceptionResnetV2/AuxLogits/Logits/BiasAdd")
+      , ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
+    val input = TensorflowToBigDL.toTensor(results.get(0).getAttrMap.get("value").getTensor,
+      ByteOrder.LITTLE_ENDIAN)
+      .transpose(2, 4).transpose(3, 4).contiguous()
+    val gradient1 = Tensor[Float](2, 1001).rand()
+    val gradient2 = Tensor[Float](2, 1001).rand()
+    val tfResult1 = TensorflowToBigDL.toTensor(results.get(results.size()-2)
+      .getAttrMap.get("value").getTensor, ByteOrder.LITTLE_ENDIAN)
+    val tfResult2 = TensorflowToBigDL.toTensor(results.get(results.size()-1)
+      .getAttrMap.get("value").getTensor, ByteOrder.LITTLE_ENDIAN)
+    val BigDLResult = model.forward(input)
+
+    tfResult1.map( BigDLResult.toTable(1), (v1, v2) => {
+      assert(abs(v1 - v2) < 1e-7);
+      v2
+    })
+    tfResult2.map( BigDLResult.toTable(2), (v1, v2) => {
+      assert(abs(v1 - v2) < 1e-7);
+      v2
+    })
+    model.backward(input, T(gradient1, gradient2))
+  }
+
   "TensorFlow loader" should "have the same inferrence result with tensorflow " +
     "after loading slim inception_resnet_v2" in {
     val resource = getClass().getClassLoader().getResource("tf")
@@ -511,15 +563,17 @@ class TensorflowLoaderSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val results = TensorflowLoader.parse(path)
     val tfGraph = TensorflowLoader.buildTFGraph(results.subList(0, results.size()-2))
     val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("input"),
-      Seq("InceptionResnetV2/Logits/Logits/BiasAdd", "InceptionResnetV2/AuxLogits/Logits/BiasAdd"))
-    val input = TFToBigDL.toTensor(results.get(0).getAttrMap.get("value").getTensor)
+      Seq("InceptionResnetV2/Logits/Logits/BiasAdd", "InceptionResnetV2/AuxLogits/Logits/BiasAdd"),
+      ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
+    val input = TensorflowToBigDL.toTensor(results.get(0).getAttrMap.get("value").getTensor,
+      ByteOrder.LITTLE_ENDIAN)
       .transpose(2, 4).transpose(3, 4).contiguous()
     val gradient1 = Tensor[Float](2, 1001).rand()
     val gradient2 = Tensor[Float](2, 1001).rand()
-    val tfResult1 = TFToBigDL.toTensor(results.get(results.size()-2)
-      .getAttrMap.get("value").getTensor)
-    val tfResult2 = TFToBigDL.toTensor(results.get(results.size()-1)
-      .getAttrMap.get("value").getTensor)
+    val tfResult1 = TensorflowToBigDL.toTensor(results.get(results.size()-2)
+      .getAttrMap.get("value").getTensor, ByteOrder.LITTLE_ENDIAN)
+    val tfResult2 = TensorflowToBigDL.toTensor(results.get(results.size()-1)
+      .getAttrMap.get("value").getTensor, ByteOrder.LITTLE_ENDIAN)
     val BigDLResult = model.forward(input)
 
     tfResult1.map( BigDLResult.toTable(1), (v1, v2) => {
@@ -539,5 +593,11 @@ class TensorflowLoaderSpec extends FlatSpec with Matchers with BeforeAndAfter {
     } else {
       path
     }
+  }
+
+  private def testScriptsPath(script: String) : String = {
+    val resource = getClass().getClassLoader().getResource("tf")
+    processPath(resource.getPath()) + JFile.separator + "loadTest" +
+      JFile.separator + script
   }
 }

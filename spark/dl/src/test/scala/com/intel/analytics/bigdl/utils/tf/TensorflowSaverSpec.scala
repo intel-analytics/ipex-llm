@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.utils
+package com.intel.analytics.bigdl.utils.tf
 
-import com.intel.analytics.bigdl.nn.{Graph, Linear, ReLU}
-import org.scalatest.{FlatSpec, Matchers}
-import com.intel.analytics.bigdl.numeric.NumericFloat
-
-import scala.sys.process._
 import java.io.{File => JFile}
 
+import com.intel.analytics.bigdl.nn.{Graph, Linear, ReLU}
+import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.TestUtils.processPath
+import org.scalatest.{FlatSpec, Matchers}
+
+import scala.sys.process._
 
 class TensorflowSaverSpec extends FlatSpec with Matchers {
   "ReLU layer" should "be correctly saved" in {
@@ -30,7 +30,7 @@ class TensorflowSaverSpec extends FlatSpec with Matchers {
     val graph = Graph(relu, relu)
 
     val tmpFile = java.io.File.createTempFile("tensorflowSaverTest", "ReLU")
-    TensorFlowSaver.saveGraph(graph, Seq(("input", Seq(2, 4))), tmpFile.getPath)
+    TensorflowSaver.saveGraph(graph, Seq(("input", Seq(2, 4))), tmpFile.getPath)
     runPython(testScriptsPath("ReLUSaveTest.py ") + tmpFile) should be(true)
   }
 
@@ -38,7 +38,7 @@ class TensorflowSaverSpec extends FlatSpec with Matchers {
     val linear = Linear(3, 4).setName("linear").apply()
     val graph = Graph(linear, linear)
     val tmpFile = java.io.File.createTempFile("tensorflowSaverTest", "Linear")
-    TensorFlowSaver.saveGraph(graph, Seq(("input", Seq(2, 3))), tmpFile.getPath)
+    TensorflowSaver.saveGraph(graph, Seq(("input", Seq(2, 3))), tmpFile.getPath)
     println(tmpFile.getPath)
     // runPython(testScriptsPath("LinearSaveTest.py ") + tmpFile) should be(true)
   }
