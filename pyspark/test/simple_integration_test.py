@@ -19,6 +19,7 @@ from bigdl.nn.layer import *
 from bigdl.nn.criterion import *
 from bigdl.optim.optimizer import *
 from bigdl.util.common import *
+from bigdl.nn.initialization_method import *
 import numpy as np
 import unittest
 import tempfile
@@ -199,6 +200,65 @@ class TestWorkFlow(unittest.TestCase):
         module.add(linear2)
         module.forward(input)
         module.backward(input, grad_output)
+
+    def test_init_method(self):
+        initializers = [
+            Zeros(),
+            Ones(),
+            ConstInitMethod(5),
+            RandomUniform(-1, 1),
+            RandomNormal(0, 1),
+            None
+        ]
+        special_initializers = [
+            Xavier(),
+            RandomUniform(),
+        ]
+
+        layers = [
+            SpatialConvolution(6, 12, 5, 5),
+            SpatialShareConvolution(1, 1, 1, 1),
+            LookupTable(1, 1, 1e-5, 1e-5, 1e-5, True),
+            Bilinear(1, 1, 1, True),
+            Cosine(2, 3),
+            SpatialFullConvolution(1, 1, 1, 1),
+            Add(1),
+            Linear(100, 10),
+            CMul([1, 2]),
+            Mul(),
+            PReLU(1),
+            Euclidean(1, 1, True),
+            SpatialDilatedConvolution(1, 1, 1, 1),
+            SpatialBatchNormalization(1),
+            BatchNormalization(1, 1e-5, 1e-5, True),
+        ]
+
+        special_layers = [
+            SpatialConvolution(6, 12, 5, 5),
+            SpatialShareConvolution(1, 1, 1, 1),
+            Cosine(2, 3),
+            SpatialFullConvolution(1, 1, 1, 1),
+            Add(1),
+            Linear(100, 10),
+            CMul([1, 2]),
+            Mul(),
+            PReLU(1),
+            Euclidean(1, 1, True),
+            SpatialDilatedConvolution(1, 1, 1, 1),
+            SpatialBatchNormalization(1),
+            BatchNormalization(1, 1e-5, 1e-5, True),
+        ]
+        for layer in layers:
+            for init1 in initializers:
+                for init2 in initializers:
+                    layer.set_init_method(init1, init2)
+
+        for layer in special_layers:
+            for init1 in special_initializers:
+                for init2 in special_initializers:
+                    layer.set_init_method(init1, init2)
+
+        SpatialFullConvolution(1, 1, 1, 1).set_init_method(BilinearFiller(), Zeros())
 
     def test_predict(self):
         np.random.seed(100)
