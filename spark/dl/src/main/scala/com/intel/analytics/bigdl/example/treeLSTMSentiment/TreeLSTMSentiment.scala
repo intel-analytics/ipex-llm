@@ -21,10 +21,12 @@ import com.intel.analytics.bigdl.dataset.Sample
 import com.intel.analytics.bigdl.example.treeLSTMSentiment.TreeLSTMSentiment.TreeLSTMSentimentParam
 import com.intel.analytics.bigdl.example.utils._
 import com.intel.analytics.bigdl.example.utils.SimpleTokenizer._
+import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.optim.{Adagrad, Optimizer, Top1Accuracy, Trigger}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{Engine, T}
 import org.apache.spark.SparkContext
+import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable.ArrayBuffer
 import scala.io.Source
@@ -77,7 +79,7 @@ object TreeLSTMSentiment {
         .action((x, c) => c.copy(embLearningRate = x.toDouble))
     }
 
-    localParser.parse(args, TreeLSTMSentimentParam()).map { param =>
+    localParser.parse(args, TreeLSTMSentimentParam()).foreach { param =>
       log.info(s"Current parameters: $param")
       val treeLSTMSentiment = new TreeLSTMSentiment(param)
       treeLSTMSentiment.train()
@@ -85,7 +87,7 @@ object TreeLSTMSentiment {
   }
 
   case class TreeLSTMSentimentParam (
-    override val batchSize: Int = 25,
+    override val batchSize: Int = 24,
     override val baseDir: String = "/tmp/.bigdl/dataset/",
     hiddenSize: Int = 150,
     learningRate: Double = 0.05,
@@ -109,22 +111,6 @@ class TreeLSTMSentiment(param: TreeLSTMSentimentParam) extends Serializable {
     hiddenSize = param.hiddenSize
   )
 
-  def createSentimentModule(): Module[Float] = {
-    val sentimentModule = Sequential()
-
-    if (param.dropout) {
-      sentimentModule.add(Dropout())
-    }
-
-    sentimentModule
-      .add(Linear(param.hiddenSize, classNum))
-      .add(LogSoftMax())
-  }
-
-  def loadRawData(): Unit = {
-
-  }
-
   val readTree = (parents: Array[Int]) => {
     val size = parents.length
     val maxNumChildren = parents
@@ -132,23 +118,25 @@ class TreeLSTMSentiment(param: TreeLSTMSentimentParam) extends Serializable {
       .foldLeft(0)((maxNum, p) => scala.math.max(maxNum, p._2.length))
     val trees = new TensorTree(Tensor[Float](size, maxNumChildren + 1))
     for (i <- parents.indices) {
-      if (trees.noChild(i) && parents(i - 1) != -1) {
-        var idx = i
+      if (trees.noChild(i + 1) && parents(i) != -1) {
+        var idx = i + 1
         var prev = 0
-        while (true) {
-          val parent = parents(i - 1)
-          if (parent == -1) break
-          if (prev != 0) {
-            trees.addChild(idx, prev)
-          }
-          if (trees.hasChild(parent)) {
-            trees.addChild(parent, idx)
-          } else if (parent == 0) {
-            trees.markAsRoot(idx)
-            break()
-          } else {
-            prev = idx
-            idx = parent
+        breakable {
+          while (true) {
+            val parent = parents(idx - 1)
+            if (parent == -1) break
+            if (prev != 0) {
+              trees.addChild(idx, prev)
+            }
+            if (trees.exists(parent)) {
+              trees.addChild(parent, idx)
+            } else if (parent == 0) {
+              trees.markAsRoot(idx)
+              break
+            } else {
+              prev = idx
+              idx = parent
+            }
           }
         }
       }
@@ -172,41 +160,49 @@ class TreeLSTMSentiment(param: TreeLSTMSentimentParam) extends Serializable {
     val sc = new SparkContext(conf)
     Engine.init
     val sequenceLen = param.maxSequenceLength
-    val embeddingDim = param.embeddingDim
     val trainingSplit = param.trainingSplit
 
-    val treeRDD = sc.textFile("", param.partitionNum)
+    val treeRDD = sc.textFile(s"$DATA_DIR/sst/train/parents.txt", param.partitionNum)
       .map(line => line.split(" "))
       .map(_.map(_.toInt))
       .map(readTree)
-    val labelRDD = sc.textFile("", param.partitionNum)
+    print(s"treeRDD count: ${treeRDD.count()}")
+    val labelRDD = sc.textFile(s"$DATA_DIR/sst/train/labels.txt", param.partitionNum)
       .map(line => line.split(" "))
       .map(_.map(_.toFloat))
-    val sentenceRDD = sc.textFile("", param.partitionNum)
+    print(s"labelRDD count: ${labelRDD.count()}")
+    val sentenceRDD = sc.textFile(s"$DATA_DIR/sst/train/sents.txt", param.partitionNum)
+    print(s"sentenceRDD count: ${sentenceRDD.count()}")
+
 
 
     // For large dataset, you might want to get such RDD[(String, Float)] from HDFS
 //    val dataRdd = sc.parallelize(loadRawData(), param.partitionNum)
 //    val (word2Meta, wordVecMap) = textClassifier.analyzeTexts(dataRdd)
 
-    val filename = s"$DATA_DIR/sst/train/sents.txt"
-//    val gloveVocab = scala.collection.mutable.Map[String, Int]()
+    val gloveDir = s"$DATA_DIR/glove/glove.840B.300d.txt"
+    val gloveVocab = scala.collection.mutable.Map[String, Int]()
     val word2Vec = scala.collection.mutable.Map[String, Array[Float]]()
-    for (line <- Source.fromFile(filename, "ISO-8859-1").getLines) {
+    for (line <- Source.fromFile(gloveDir, "ISO-8859-1").getLines) {
       val values = line.split(" ")
       val word = values(0)
       val coefs = values.slice(1, values.length).map(_.toFloat)
       word2Vec += word -> coefs
     }
 
-    val word2VecTensor = Tensor(word2Vec.size, param.embeddingDim)
     val vocab = scala.collection.mutable.Map[String, Int]()
+
+    val paddingValue = 1
+    val oovChar = 2
+    val indexFrom = 3
     var i = 1
-    for (line <- Source.fromFile("vocab.cased.txt", "ISO-8859-1").getLines) {
-      if (word2Vec.contains(line)) {
-        word2VecTensor(i) = Tensor(Storage(word2Vec(line)))
+    val vocabLines = Source.fromFile(s"$DATA_DIR/sst/vocab-cased.txt", "ISO-8859-1").getLines.toList
+    val word2VecTensor = Tensor(vocabLines.length, 300)
+    for (line <- vocabLines) {
+      if (i < indexFrom || !word2Vec.contains(line)) {
+        word2VecTensor.select(1, i).apply1(_ => RNG.uniform(-0.05f, 0.05f).toFloat)
       } else {
-        word2VecTensor(i).uniform(-0.05f, 0.05f)
+        word2VecTensor.select(1, i).copy(Tensor(Storage(word2Vec(line))))
       }
       vocab += line -> i
       i += 1
@@ -222,29 +218,38 @@ class TreeLSTMSentiment(param: TreeLSTMSentimentParam) extends Serializable {
 
     val vocabBC = sc.broadcast(vocab)
     val word2VecBC = sc.broadcast(word2VecTensor)
-    val vecSentence = sentenceRDD
+    val vecSentence: RDD[Array[Int]] = sentenceRDD
       .map(line => line.split(" "))
-      .map(line => line.map(vocabBC.value(_)))
+      .map(line => line.map(vocabBC.value.getOrElse(_, oovChar)))
+    print(s"vecSentence count: ${vecSentence.count()}")
 
-    val sampleRDD = vecSentence.zip(labelRDD).zip(treeRDD)
+    def indexAndSort(rdd: RDD[_]) = rdd.zipWithIndex.map(_.swap).sortByKey()
+
+    val sampleRDD = indexAndSort(vecSentence)
+      .join(indexAndSort(labelRDD))
+      .join(indexAndSort(treeRDD))
+      .values
       .map { case ((input: Array[Int], label: Array[Float]), tree: Tensor[Float]) =>
       Sample(
-        featureTensor =
-          Tensor(input.map(_.toFloat), Array(sequenceLen))
-            .transpose(1, 2)
-            .contiguous(),
+        featureTensors =
+          Array(Tensor(input.map(_.toFloat), Array(input.length, 1)),
+        tree.resize(tree.size() ++ Array(1))),
         labelTensor =
           Tensor(label, Array(1)))
     }
 
     val Array(trainingRDD, valRDD) = sampleRDD.randomSplit(
       Array(trainingSplit, 1 - trainingSplit))
+    trainingRDD.count()
 
     val optimizer = Optimizer(
       model = buildModel(vocab.size, word2VecTensor),
       sampleRDD = trainingRDD,
-      criterion = new ClassNLLCriterion[Float](),
-      batchSize = param.batchSize
+      criterion = criterion,
+      batchSize = param.batchSize,
+      isInOrder = false,
+      featurePaddings = Some(Array(Tensor(T(paddingValue.toFloat)), Tensor(T(-1f)))),
+      labelPadding = Some(-1f)
     )
     val state = T("learningRate" -> 0.01, "learningRateDecay" -> 0.0002)
     optimizer
@@ -260,6 +265,7 @@ class TreeLSTMSentiment(param: TreeLSTMSentimentParam) extends Serializable {
     val embedding = LookupTable(vocabSize, param.embeddingDim)
     embedding.weight.set(word2VecTensor)
     Sequential()
+      .add(MapTable(Squeeze(3)))
       .add(ParallelTable()
         .add(embedding)
         .add(Identity()))

@@ -17,7 +17,6 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractCriterion, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
@@ -32,7 +31,7 @@ class BinaryTreeLSTM[T: ClassTag](
   gateOutput: Boolean = true
 )(implicit ev: TensorNumeric[T])
   extends TreeLSTM[T](inputSize, hiddenSize) {
-  val modules: ArrayBuffer[Module[T]] = ArrayBuffer[Module[T]]()
+//  val modules: ArrayBuffer[Module[T]] = ArrayBuffer[Module[T]]()
   val composers: ArrayBuffer[Module[T]] = ArrayBuffer[Module[T]]()
   val leafModules: ArrayBuffer[Module[T]] = ArrayBuffer[Module[T]]()
   val composer: Module[T] = createComposer()
@@ -112,7 +111,7 @@ class BinaryTreeLSTM[T: ClassTag](
         }
       }
     }
-    forward(input(1), tensorTree, tensorTree.getRoot())
+    recursiveForward(input(1), tensorTree, tensorTree.getRoot)
     output.resize(cells.size, hiddenSize)
     for (i <- 1 to cells.size) {
       output.select(1, i).copy(unpackState(cells(i - 1).output.toTable)._2)
@@ -120,14 +119,13 @@ class BinaryTreeLSTM[T: ClassTag](
     output
   }
 
-
-  def forward(input: Tensor[T], tree: TensorTree[T], nodeIndex: Int): Table = {
+  def recursiveForward(input: Tensor[T], tree: TensorTree[T], nodeIndex: Int): Table = {
     if (tree.noChild(nodeIndex)) {
       cells(nodeIndex - 1)
         .forward(input.select(1, tree.leafIndex(nodeIndex))).toTable
     } else {
-      val leftOut = forward(input, tree, tree.children(nodeIndex)(0))
-      val rigthOut = forward(input, tree, tree.children(nodeIndex)(1))
+      val leftOut = recursiveForward(input, tree, tree.children(nodeIndex)(0))
+      val rigthOut = recursiveForward(input, tree, tree.children(nodeIndex)(1))
       val (lc, lh) = unpackState(leftOut)
       val (rc, rh) = unpackState(rigthOut)
 
@@ -141,7 +139,7 @@ class BinaryTreeLSTM[T: ClassTag](
       tensorTree,
       gradOutput,
       T(memZero, memZero),
-      tensorTree.getRoot())
+      tensorTree.getRoot)
     gradInput
   }
 
@@ -152,7 +150,7 @@ class BinaryTreeLSTM[T: ClassTag](
     gradOutput: Table,
     nodeIndex: Int
   ): Unit = {
-    var outputGrad = outputGrads.select(1, nodeIndex)
+    val outputGrad = outputGrads.select(1, nodeIndex)
     gradInput[Tensor[T]](1).resizeAs(inputs)
 
     if (tree.noChild(nodeIndex)) {
@@ -201,6 +199,15 @@ class BinaryTreeLSTM[T: ClassTag](
       (state(1), state(2))
     }
   }
+
+  override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
+    val param = new ArrayBuffer[Tensor[T]]()
+    val gradParam = new ArrayBuffer[Tensor[T]]()
+    val (cp, cg) = composer.parameters()
+    val (lp, lg) = leafModule.parameters()
+
+    (cp ++ lg, cg ++ lg)
+  }
 }
 
 object BinaryTreeLSTM {
@@ -220,7 +227,7 @@ class TensorTree[T: ClassTag](val content: Tensor[T])
     content.select(1, index).toBreezeVector().toArray.map(ev.toType[Int])
 
   def addChild(parent: Int, child: T): Unit = {
-    for (i <- 1 to size(2)) {
+    for (i <- 1 to size(1)) {
       if (content(Array(parent, i)) == 0) {
         content.setValue(parent, i, child)
         break()
@@ -229,12 +236,12 @@ class TensorTree[T: ClassTag](val content: Tensor[T])
   }
 
   def markAsRoot(index: Int): Unit = {
-    content.setValue(index, size(2), ev.negative(ev.one))
+    content.setValue(index, size(1), ev.negative(ev.one))
   }
 
-  def getRoot(): Int = {
-    for (i <- 1 to size(1)) {
-      if (content(Array(i, size(2))) == -1) {
+  def getRoot: Int = {
+    for (i <- 1 to size(0)) {
+      if (content(Array(i, size(1))) == -1) {
         return i
       }
     }
@@ -243,11 +250,11 @@ class TensorTree[T: ClassTag](val content: Tensor[T])
   }
 
   def markAsLeaf(index: Int, leafIndex: Int): Unit = {
-    content.setValue(index, size(2), ev.fromType(leafIndex))
+    content.setValue(index, size(1), ev.fromType(leafIndex))
   }
 
   def leafIndex(index: Int): Int = {
-    ev.toType[Int](content(Array(index, size(2))))
+    ev.toType[Int](content(Array(index, size(1))))
   }
 
   def hasChild(index: Int): Boolean = {
@@ -256,6 +263,10 @@ class TensorTree[T: ClassTag](val content: Tensor[T])
 
   def noChild(index: Int): Boolean = {
     content(Array(index, 1)) == 0
+  }
+
+  def exists(index: Int): Boolean = {
+    index >= 1 && index <= size(0)
   }
 }
 

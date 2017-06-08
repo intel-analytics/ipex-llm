@@ -326,6 +326,24 @@ object Optimizer {
   }
 
   def apply[T: ClassTag](
+    model: Module[T],
+    sampleRDD: RDD[Sample[T]],
+    criterion: Criterion[T],
+    batchSize: Int,
+    isInOrder: Boolean,
+    featurePaddings : Option[Array[Tensor[T]]],
+    labelPadding : Option[T]
+  )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
+    new DistriOptimizer[T](
+      _model = model,
+      dataset = (DataSet.sortRDD(sampleRDD, isInOrder, batchSize) ->
+        SampleToMiniBatch(batchSize, featurePaddings, labelPadding, None))
+        .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
+      criterion = criterion
+    ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
+  }
+
+  def apply[T: ClassTag](
         model: Module[T],
         sampleRDD: RDD[Sample[T]],
         criterion: Criterion[T],

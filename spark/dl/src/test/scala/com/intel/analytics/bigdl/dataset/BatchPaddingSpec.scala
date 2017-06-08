@@ -197,7 +197,7 @@ class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val trainSet1 = DataSet.array(trainData)
       .transform(LabeledSentenceToSample(dictionaryLength))
       .transform(SampleToMiniBatch(batchSize, Some(featurePadding),
-        Some(3999), Some(trainMaxLength)))
+        Some(3999.0f), Some(trainMaxLength)))
 
     val trainSet2 = DataSet.array(trainData)
       .transform(LabeledSentenceToSample(dictionaryLength,

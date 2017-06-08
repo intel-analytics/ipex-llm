@@ -2245,7 +2245,9 @@ object DenseTensor {
 
   private[tensor] def copy[@specialized(Float, Double) T](
     self: DenseTensor[T], src: Tensor[T]): Unit = {
-    require(self.nElement() == src.nElement())
+    require(self.nElement() == src.nElement(),
+      s"self tensor size: ${self.size().mkString("*")}," +
+        s" src tensor size: ${src.size().mkString("*")}")
     if (self.nDimension == 0) {
       return
     }
