@@ -53,6 +53,7 @@ def download_glove_w2v(dest_dir):
 def get_news20(source_dir="/tmp/news20/"):
     """
     Parse or download news20 if source_dir is empty.
+
     :param source_dir: The directory storing news data.
     :return: A list of (tokens, label)
     """
@@ -81,6 +82,7 @@ def get_news20(source_dir="/tmp/news20/"):
 def get_glove_w2v(source_dir="/tmp/news20/", dim=100):
     """
     Parse or download the pre-trained glove word2vec if source_dir is empty.
+
     :param source_dir: The directory storing the pre-trained word2vec
     :param dim: The dimension of a vector
     :return: A dict mapping from word to vector
