@@ -239,58 +239,6 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     model.backward(input, gradient)
   }
 
-  "TensorFlow loader" should "be able to load slim alexnetv2" in {
-    val resource = getClass().getClassLoader().getResource("tf")
-    val path = processPath(resource.getPath()) + JFile.separator + "alexnet.pb"
-    val results = TensorflowLoader.parse(path)
-    val tfGraph = TensorflowLoader.buildTFGraph(results)
-    val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("Placeholder"),
-      Seq("alexnet_v2/fc8/squeezed"), ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
-    val input = Tensor[Float](4, 3, 224, 224).rand()
-    val gradient = Tensor[Float](4, 1000).rand()
-    model.forward(input)
-    model.backward(input, gradient)
-  }
-
-  "TensorFlow loader" should "be able to load slim vgga" in {
-    val resource = getClass().getClassLoader().getResource("tf")
-    val path = processPath(resource.getPath()) + JFile.separator + "vgga.pb"
-    val results = TensorflowLoader.parse(path)
-    val tfGraph = TensorflowLoader.buildTFGraph(results)
-    val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("Placeholder"),
-      Seq("vgg_a/fc8/squeezed"), ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
-    val input = Tensor[Float](4, 3, 224, 224).rand()
-    val gradient = Tensor[Float](4, 1000).rand()
-    model.forward(input)
-    model.backward(input, gradient)
-  }
-
-  "TensorFlow loader" should "be able to load slim vgg16" in {
-    val resource = getClass().getClassLoader().getResource("tf")
-    val path = processPath(resource.getPath()) + JFile.separator + "vgg16.pb"
-    val results = TensorflowLoader.parse(path)
-    val tfGraph = TensorflowLoader.buildTFGraph(results)
-    val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("Placeholder"),
-      Seq("vgg_16/fc8/squeezed"), ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
-    val input = Tensor[Float](4, 3, 224, 224).rand()
-    val gradient = Tensor[Float](4, 1000).rand()
-    model.forward(input)
-    model.backward(input, gradient)
-  }
-
-  "TensorFlow loader" should "be able to load slim vgg19" in {
-    val resource = getClass().getClassLoader().getResource("tf")
-    val path = processPath(resource.getPath()) + JFile.separator + "vgg19.pb"
-    val results = TensorflowLoader.parse(path)
-    val tfGraph = TensorflowLoader.buildTFGraph(results)
-    val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("Placeholder"),
-      Seq("vgg_19/fc8/squeezed"), ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
-    val input = Tensor[Float](2, 3, 224, 224).rand()
-    val gradient = Tensor[Float](2, 1000).rand()
-    model.forward(input)
-    model.backward(input, gradient)
-  }
-
   "TensorFlow loader" should "be able to load slim lenet" in {
     val resource = getClass().getClassLoader().getResource("tf")
     val path = processPath(resource.getPath()) + JFile.separator + "lenet.pb"
@@ -302,60 +250,6 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     val gradient = Tensor[Float](4, 10).rand()
     model.forward(input)
     model.backward(input, gradient)
-  }
-
-  "TensorFlow loader" should "be able to load slim inception_v3" in {
-    val resource = getClass().getClassLoader().getResource("tf")
-    val path = processPath(resource.getPath()) + JFile.separator + "inception_v3.pb"
-    val results = TensorflowLoader.parse(path)
-    val tfGraph = TensorflowLoader.buildTFGraph(results)
-    val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("Placeholder"),
-      Seq("InceptionV3/Logits/SpatialSqueeze"), ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
-    val input = Tensor[Float](2, 3, 299, 299).rand()
-    val gradient = Tensor[Float](2, 1000).rand()
-    model.forward(input)
-    model.backward(input, gradient)
-  }
-
-  "TensorFlow loader" should "be able to load slim resnet_v1" in {
-    val resource = getClass().getClassLoader().getResource("tf")
-    val path = processPath(resource.getPath()) + JFile.separator + "resnet_v1.pb"
-    val results = TensorflowLoader.parse(path)
-    val tfGraph = TensorflowLoader.buildTFGraph(results)
-    val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("Placeholder"),
-      Seq("resnet_v1_101/SpatialSqueeze"), ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
-    val input = Tensor[Float](2, 3, 224, 224).rand()
-    val gradient = Tensor[Float](2, 1000).rand()
-    model.forward(input)
-    model.backward(input, gradient)
-  }
-
-  "TensorFlow loader" should "be able to load slim overfeat" in {
-    val resource = getClass().getClassLoader().getResource("tf")
-    val path = processPath(resource.getPath()) + JFile.separator + "overfeat.pb"
-    val results = TensorflowLoader.parse(path)
-    val tfGraph = TensorflowLoader.buildTFGraph(results)
-    val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("Placeholder"),
-      Seq("overfeat/fc8/squeezed"), ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
-    val input = Tensor[Float](5, 3, 231, 231).rand()
-    val gradient = Tensor[Float](5, 1000).rand()
-    model.forward(input)
-    model.backward(input, gradient)
-  }
-
-  "TensorFlow loader" should "be able to load slim inception_resnet_v2" in {
-    val resource = getClass().getClassLoader().getResource("tf")
-    val path = processPath(resource.getPath()) + JFile.separator + "inception_resnet_v2.pb"
-    val results = TensorflowLoader.parse(path)
-    val tfGraph = TensorflowLoader.buildTFGraph(results)
-    val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("Placeholder"),
-      Seq("InceptionResnetV2/Logits/Predictions", "InceptionResnetV2/AuxLogits/Logits/BiasAdd"),
-      ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
-    val input = Tensor[Float](5, 3, 299, 299).rand()
-    val gradient1 = Tensor[Float](5, 1001).rand()
-    val gradient2 = Tensor[Float](5, 1001).rand()
-    model.forward(input)
-    model.backward(input, T(gradient1, gradient2))
   }
 
   "TensorFlow loader" should "run the python to save the modle and " +
