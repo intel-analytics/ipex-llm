@@ -93,7 +93,8 @@ object Engine {
   def init: Unit = this.synchronized {
     if (localMode) {
       logger.info("Detect bigdl.localMode is set. Run workload without spark")
-      // The physical core number should have been initialized by java property -Dbigdl.coreNumber=xx
+      // The physical core number should have been initialized
+      // by java property -Dbigdl.coreNumber=xx
       setNodeAndCore(1, getCoreNumberFromProperty)
     } else {
       logger.info("Auto detect executor number and executor cores number")
