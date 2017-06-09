@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.utils
 
-import com.intel.analytics.bigdl.nn.{Graph, Linear, Sequential}
+import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.numeric.NumericDouble
 import org.scalatest.{FlatSpec, Matchers}
@@ -23,6 +23,30 @@ import org.scalatest.{FlatSpec, Matchers}
 import scala.util.Random
 
 class ModelSerializerSpec extends FlatSpec with Matchers {
+
+  "Abs serializer" should "work properly" in {
+    val abs = Abs[Double]()
+    val tensor1 = Tensor[Double](10).apply1(_ => Random.nextDouble())
+    val tensor2 = Tensor[Double]()
+    val res1 = abs.forward(tensor1)
+    tensor2.resizeAs(tensor1).copy(tensor1)
+    ModelSerializer.saveToFile("/tmp/abs.bigdl", abs, true)
+    val loadedAbs = ModelSerializer.loadFromFile("/tmp/abs.bigdl")
+    val res2 = loadedAbs.forward(tensor2)
+    res1 should be (res2)
+  }
+
+  "Add serializer" should "work properly" in {
+    val add = Add[Double](5)
+    val tensor1 = Tensor[Double](5).apply1(_ => Random.nextDouble())
+    val tensor2 = Tensor[Double]()
+    val res1 = add.forward(tensor1)
+    tensor2.resizeAs(tensor1).copy(tensor1)
+    ModelSerializer.saveToFile("/tmp/add.bigdl", add, true)
+    val loadedAdd = ModelSerializer.loadFromFile("/tmp/add.bigdl")
+    val res2 = loadedAdd.forward(tensor2)
+    res1 should be (res2)
+  }
 
   "Linear serializer" should "work properly" in {
     val linear = Linear[Double](10, 2)

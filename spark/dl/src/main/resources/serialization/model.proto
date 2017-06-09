@@ -3,9 +3,11 @@ package serialization;
 message BigDLModel
 {
     enum ModuleType {
-        LINEAR = 1;
-        SEQUENTIAL = 2;
-        GRAPH = 3;
+        ABS = 1;
+        ADD = 2;
+        LINEAR = 3;
+        SEQUENTIAL = 4;
+        GRAPH = 5;
     }
     optional string name = 1; //model name
     repeated BigDLModel subModules = 2; // sub modules
@@ -14,6 +16,7 @@ message BigDLModel
     repeated string tops = 5; //module layer construct params
     repeated string bottoms = 6; //module layer construct params
     required ModuleType moduleType = 7; //module type
+    optional AddParam addParam = 8; //params for add layer
     optional LinearParam linearParam = 9; // params for linear
 }
 enum InitMethod {
@@ -33,6 +36,9 @@ message BigDLTensor{
 message Regularizer {
     required RegularizerType regularizerType = 1;
     repeated double regularData = 2;
+}
+message AddParam {
+    required int32 inputSize = 1;
 }
 message LinearParam {
     required int32 inputSize = 1;
