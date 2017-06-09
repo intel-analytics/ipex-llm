@@ -68,7 +68,7 @@ object Engine {
    * make the Spark conf values changes transparent to you. However, if you use spark-shell or
    * Jupyter notebook, as the Spark context is created before your code, you have to
    * set them directly (through command line options or properties file)
-   *
+   *false
    * @return
    */
   def createSparkConf(exisitingConf : SparkConf = null) : SparkConf = {
@@ -111,7 +111,7 @@ object Engine {
   private var physicalCoreNumber = -1
   private var nodeNum: Int = -1
 
-  private[bigdl] var localMode: Boolean = {
+  private[bigdl] def localMode: Boolean = {
     System.getProperty("bigdl.localMode", "false").toLowerCase(Locale.ROOT) match {
       case "true" => true
       case "false" => false
@@ -320,7 +320,6 @@ object Engine {
   private[bigdl] def reset : Unit = {
     nodeNum = 1
     physicalCoreNumber = 1
-    localMode = false
   }
 
   private def dynamicAllocationExecutor(conf: SparkConf): Option[Int] = {

@@ -28,8 +28,12 @@ import org.tensorflow.framework
 class SummarySpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   before {
-    Engine.localMode = false
+    System.setProperty("bigdl.localMode", "true")
     Engine.init(1, 4, true)
+  }
+
+  after {
+    System.clearProperty("bigdl.localMode")
   }
 
   "write scalar summary" should "work properly" in {
