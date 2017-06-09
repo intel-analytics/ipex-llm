@@ -201,7 +201,7 @@ class CaffeLoaderSpec extends FlatSpec with Matchers {
     val staticOutPut = staticModel.forward(staticInput)
 
     RandomGenerator.RNG.setSeed(1000)
-    val dynamicLoadedModule = CaffeLoader.loadDynamic(prototxt, modelPath)._1
+    val dynamicLoadedModule = CaffeLoader.loadCaffe(prototxt, modelPath)._1
 
     val dynamicOutput = dynamicLoadedModule.forward(dynamicInput)
 
@@ -215,7 +215,7 @@ class CaffeLoaderSpec extends FlatSpec with Matchers {
     val staticCriterion = ParallelCriterion[Double]()
     staticCriterion.add(criterion)
 
-    val (dynamicLoadedModule, dynamicLoadedCriterion) = CaffeLoader.loadDynamic(prototxt, modelPath)
+    val (dynamicLoadedModule, dynamicLoadedCriterion) = CaffeLoader.loadCaffe(prototxt, modelPath)
 
     val labelInput = Tensor[Double](1, 3, 5, 5).apply1(e => Random.nextDouble())
 

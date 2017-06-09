@@ -364,6 +364,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
 
 object CaffeLoader {
 
+  @deprecated
   def load[T: ClassTag](model: Module[T],
                         defPath: String, modelPath: String, matchAll: Boolean = true)
                        (implicit ev: TensorNumeric[T]): Module[T] = {
@@ -379,7 +380,7 @@ object CaffeLoader {
  * @tparam T data type
  * @return created module (graph) and criterion
  */
-  def loadDynamic[T: ClassTag](defPath: String, modelPath: String, matchAll: Boolean = true)
+  def loadCaffe[T: ClassTag](defPath: String, modelPath: String, matchAll: Boolean = true)
                               (implicit ev: TensorNumeric[T]): (Module[T], ParallelCriterion[T]) = {
     val caffeLoader = new CaffeLoader[T](defPath, modelPath, matchAll)
     caffeLoader.createCaffeModel()
