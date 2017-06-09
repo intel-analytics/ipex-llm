@@ -1049,12 +1049,12 @@ object PaddingTF extends TensorflowToBigDL{
 
     for(i <- 1 to paddings.size(1)) {
       if (paddings.valueAt(i, 1) != 0 || paddings.valueAt(i, 2) != 0 ) {
-        val dim = processDims(i, dataFormat)
+        val dim = processDims(i - 1, dataFormat) + 1
         if (paddings(Array(i, 1)) != 0) {
           padding.add(Padding[T](dim, -ev.toType[Int](paddings.valueAt(i, 1)), 4))
         }
         if (paddings(Array(i, 2)) != 0) {
-          padding.add(Padding[T](dim, ev.toType[Int](paddings.valueAt(i, 1)), 4))
+          padding.add(Padding[T](dim, ev.toType[Int](paddings.valueAt(i, 2)), 4))
         }
       }
     }
@@ -1083,7 +1083,7 @@ object MeanTF extends TensorflowToBigDL{
     val dim = ArrayBuffer[Int]()
     val mean = Sequential[T]()
     for (i <- 1 to dims.size(1)) {
-      dim += processDims(ev.toType[Int](dims.valueAt(i)) + 1, dataFormat)
+      dim += processDims(ev.toType[Int](dims.valueAt(i)), dataFormat) + 1
     }
     dim.foreach(i => mean.add(Mean[T](i, squeeze = false)))
     mean.asInstanceOf[AbstractModule[Activity, Tensor[T], T]]

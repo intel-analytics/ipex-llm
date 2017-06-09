@@ -17,20 +17,20 @@ import tensorflow as tf
 import numpy as np
 import os
 import slim.nets.overfeat as overfeat
+import merge_checkpoint as merge
 
 slim = tf.contrib.slim
 
 def main():
     """
-    Run this command to generate the pb file
+    You can also run these commands manually to generate the pb file
     1. git clone https://github.com/tensorflow/models.git
     2. export PYTHONPATH=Path_to_your_model_folder, eg. /home/models/
-    1. mkdir model
-    2. python overfeat.py
-    3. wget https://raw.githubusercontent.com/tensorflow/tensorflow/v1.0.0/tensorflow/python/tools/freeze_graph.py
-    4. python freeze_graph.py --input_graph model/overfeat.pbtxt --input_checkpoint model/overfeat.chkp --output_node_names="overfeat/fc8/squeezed,output" --output_graph overfeat_save.pb
+    3. python overfeat.py
     """
     dir = os.path.dirname(os.path.realpath(__file__))
+    if not os.path.isdir(dir + '/model'):
+        os.mkdir(dir + '/model')
     batch_size = 5
     height, width = 231, 231
     num_classes = 1000
@@ -48,5 +48,13 @@ def main():
         checkpointpath = saver.save(sess, dir + '/model/overfeat.chkp')
         tf.train.write_graph(sess.graph, dir + '/model', 'overfeat.pbtxt')
         tf.summary.FileWriter(dir + '/log', sess.graph)
+
+    input_graph = dir + "/model/overfeat.pbtxt"    
+    input_checkpoint = dir + "/model/overfeat.chkp"
+    output_node_names= "overfeat/fc8/squeezed,output"
+    output_graph = dir + "/overfeat_save.pb"
+
+    merge.merge_checkpoint(input_graph, input_checkpoint, output_node_names, output_graph)
+
 if __name__ == "__main__":
     main()

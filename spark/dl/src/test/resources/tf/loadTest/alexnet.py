@@ -16,33 +16,42 @@
 import tensorflow as tf
 import numpy as np
 import os
-import slim.nets.vgg as vgg
+import slim.nets.alexnet as alexnet
+
+import merge_checkpoint as merge
 
 def main():
     """
-    Run this command to generate the pb file
+    You can also run these commands manually to generate the pb file
     1. git clone https://github.com/tensorflow/models.git
     2. export PYTHONPATH=Path_to_your_model_folder
-    1. mkdir model
-    2. python vgg19.py
-    3. wget https://raw.githubusercontent.com/tensorflow/tensorflow/v1.0.0/tensorflow/python/tools/freeze_graph.py
-    4. python freeze_graph.py --input_graph model/vgg19.pbtxt --input_checkpoint model/vgg19.chkp --output_node_names="vgg_19/fc8/squeezed,output" --output_graph vgg19_save.pb
+    3. python alexnet.py
     """
     dir = os.path.dirname(os.path.realpath(__file__))
+    if not os.path.isdir(dir + '/model'):
+        os.mkdir(dir + '/model')
     batch_size = 5
     height, width = 224, 224
     #inputs = tf.placeholder(tf.float32, [None, height, width, 3])
     inputs = tf.Variable(tf.random_uniform((1, height, width, 3)), name='input')
-    net, end_points  = vgg.vgg_19(inputs, is_training = False)
+    net, end_points  = alexnet.alexnet_v2(inputs, is_training=False)
     output = tf.Variable(tf.random_uniform(tf.shape(net)),name='output')
     result = tf.assign(output,net)
     saver = tf.train.Saver()
     with tf.Session() as sess:
         init = tf.global_variables_initializer()
-        sess.run(init)
-        sess.run(result)
-        checkpointpath = saver.save(sess, dir + '/model/vgg19.chkp')
-        tf.train.write_graph(sess.graph, dir + '/model', 'vgg19.pbtxt')
+        sess.run(init)   
+        print(sess.run(result))
+        checkpointpath = saver.save(sess, dir + '/model/alexnet.chkp')
+        tf.train.write_graph(sess.graph, dir + '/model', 'alexnet.pbtxt')
         tf.summary.FileWriter(dir + '/log', sess.graph)
+
+    input_graph = dir + "/model/alexnet.pbtxt"    
+    input_checkpoint = dir + "/model/alexnet.chkp"
+    output_node_names= "alexnet_v2/fc8/squeezed,output"
+    output_graph = dir + "/alexnet_save.pb"
+
+    merge.merge_checkpoint(input_graph, input_checkpoint, output_node_names, output_graph)
+
 if __name__ == "__main__":
     main()

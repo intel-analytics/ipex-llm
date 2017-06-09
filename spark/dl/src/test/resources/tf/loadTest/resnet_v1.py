@@ -19,17 +19,18 @@ import os
 from nets import resnet_utils
 from nets import resnet_v1
 
+import merge_checkpoint as merge
+
 def main():
     """
-    Run this command to generate the pb file
+    You can run these commands manually to generate the pb file
     1. git clone https://github.com/tensorflow/models.git
     2. export PYTHONPATH=Path_to_your_model_folder/models/slim, eg. /home/tensorflow/models/slim/
-    1. mkdir model
-    2. python resnet_v1.py
-    3. wget https://raw.githubusercontent.com/tensorflow/tensorflow/v1.0.0/tensorflow/python/tools/freeze_graph.py
-    4. python freeze_graph.py --input_graph model/resnet_v1.pbtxt --input_checkpoint model/resnet_v1.chkp --output_node_names="resnet_v1_101/SpatialSqueeze,output" --output_graph resnet_v1_save.pb
+    3. python resnet_v1.py
     """
     dir = os.path.dirname(os.path.realpath(__file__))
+    if not os.path.isdir(dir + '/model'):
+        os.mkdir(dir + '/model')
     batch_size = 5
     height, width = 224, 224
     num_classes = 1000
@@ -46,5 +47,13 @@ def main():
         checkpointpath = saver.save(sess, dir + '/model/resnet_v1.chkp')
         tf.train.write_graph(sess.graph, dir + '/model', 'resnet_v1.pbtxt')
         tf.summary.FileWriter(dir + '/log', sess.graph)
+
+    input_graph = dir + "/model/resnet_v1.pbtxt"    
+    input_checkpoint = dir + "/model/resnet_v1.chkp"
+    output_node_names= "resnet_v1_101/SpatialSqueeze,output"
+    output_graph = dir + "/resnet_v1_save.pb"
+    
+    merge.merge_checkpoint(input_graph, input_checkpoint, output_node_names, output_graph)
+
 if __name__ == "__main__":
     main()

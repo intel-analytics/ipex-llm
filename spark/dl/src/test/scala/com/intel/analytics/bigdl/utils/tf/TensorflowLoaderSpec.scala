@@ -358,10 +358,14 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     model.backward(input, T(gradient1, gradient2))
   }
 
-  "TensorFlow loader" should "have the same inferrence result with tensorflow " +
+  "TensorFlow loader" should "run the python to save the modle and " +
+    "have the same inferrence result with tensorflow " +
     "after loading slim alexnet" in {
+    tfCheck()
+    (("python " + testScriptsPath("alexnet.py")) !!)
     val resource = getClass().getClassLoader().getResource("tf")
-    val path = processPath(resource.getPath()) + JFile.separator + "alexnet_save.pb"
+    val path = processPath(resource.getPath()) + JFile.separator +
+      "loadTest" + JFile.separator + "alexnet_save.pb"
     val results = TensorflowLoader.parse(path)
     val tfGraph = TensorflowLoader.buildTFGraph(results.subList(0, results.size()-1))
     val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("input"),
@@ -382,10 +386,14 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
   }
 
 
-  "TensorFlow loader" should "have the same inferrence result with tensorflow " +
-    "after loading slim vgga" in {
+  "TensorFlow loader" should "run the python to save the modle and " +
+    "have the same inferrence result with tensorflow " +
+    "after loading slim vgg_a" in {
+    tfCheck()
+    (("python " + testScriptsPath("vgga.py")) !!)
     val resource = getClass().getClassLoader().getResource("tf")
-    val path = processPath(resource.getPath()) + JFile.separator + "vgga_save.pb"
+    val path = processPath(resource.getPath()) + JFile.separator +
+      "loadTest" + JFile.separator + "vgga_save.pb"
     val results = TensorflowLoader.parse(path)
     val tfGraph = TensorflowLoader.buildTFGraph(results.subList(0, results.size()-1))
     val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("input"),
@@ -405,10 +413,14 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     model.backward(input, gradient)
   }
 
-  "TensorFlow loader" should "have the same inferrence result with tensorflow " +
+  "TensorFlow loader" should "run the python to save the modle and " +
+    "have the same inferrence result with tensorflow " +
     "after loading slim vgg_16" in {
+    tfCheck()
+    (("python " + testScriptsPath("vgg16.py")) !!)
     val resource = getClass().getClassLoader().getResource("tf")
-    val path = processPath(resource.getPath()) + JFile.separator + "vgg16_save.pb"
+    val path = processPath(resource.getPath()) + JFile.separator +
+      "loadTest" + JFile.separator + "vgg16_save.pb"
     val results = TensorflowLoader.parse(path)
     val tfGraph = TensorflowLoader.buildTFGraph(results.subList(0, results.size()-1))
     val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("input"),
@@ -428,10 +440,14 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     model.backward(input, gradient)
   }
 
-  "TensorFlow loader" should "have the same inferrence result with tensorflow " +
+  "TensorFlow loader" should "run the python to save the modle and " +
+    "have the same inferrence result with tensorflow " +
     "after loading slim vgg_19" in {
+    tfCheck()
+    (("python " + testScriptsPath("vgg19.py")) !!)
     val resource = getClass().getClassLoader().getResource("tf")
-    val path = processPath(resource.getPath()) + JFile.separator + "vgg19_save.pb"
+    val path = processPath(resource.getPath()) + JFile.separator +
+      "loadTest" + JFile.separator + "vgg19_save.pb"
     val results = TensorflowLoader.parse(path)
     val tfGraph = TensorflowLoader.buildTFGraph(results.subList(0, results.size()-1))
     val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("input"),
@@ -451,10 +467,14 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     model.backward(input, gradient)
   }
 
-  "TensorFlow loader" should "have the same inferrence result with tensorflow " +
+  "TensorFlow loader" should "run the python to save the modle and " +
+    "have the same inferrence result with tensorflow " +
     "after loading slim overfeat" in {
+    tfCheck()
+    (("python " + testScriptsPath("overfeat.py")) !!)
     val resource = getClass().getClassLoader().getResource("tf")
-    val path = processPath(resource.getPath()) + JFile.separator + "overfeat_save.pb"
+    val path = processPath(resource.getPath()) + JFile.separator +
+      "loadTest" + JFile.separator + "overfeat_save.pb"
     val results = TensorflowLoader.parse(path)
     val tfGraph = TensorflowLoader.buildTFGraph(results.subList(0, results.size()-1))
     val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("input"),
@@ -474,10 +494,14 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     model.backward(input, gradient)
   }
 
-  "TensorFlow loader" should "have the same inferrence result with tensorflow " +
+  "TensorFlow loader" should "run the python to save the modle and " +
+    "have the same inferrence result with tensorflow " +
     "after loading slim inception_v3" in {
+    tfCheck()
+    (("python " + testScriptsPath("inception_v3.py")) !!)
     val resource = getClass().getClassLoader().getResource("tf")
-    val path = processPath(resource.getPath()) + JFile.separator + "inception_v3_save.pb"
+    val path = processPath(resource.getPath()) + JFile.separator +
+      "loadTest" + JFile.separator + "inception_v3_save.pb"
     val results = TensorflowLoader.parse(path)
     val tfGraph = TensorflowLoader.buildTFGraph(results.subList(0, results.size()-1))
     val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("input"),
@@ -497,10 +521,14 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     model.backward(input, gradient)
   }
 
-  "TensorFlow loader" should "have the same inferrence result with tensorflow " +
+  "TensorFlow loader" should "run the python to save the modle and " +
+    "have the same inferrence result with tensorflow " +
     "after loading slim resnet_v1" in {
+    tfCheck()
+    (("python " + testScriptsPath("resnet_v1.py")) !!)
     val resource = getClass().getClassLoader().getResource("tf")
-    val path = processPath(resource.getPath()) + JFile.separator + "resnet_v1_save.pb"
+    val path = processPath(resource.getPath()) + JFile.separator +
+      "loadTest" + JFile.separator + "resnet_v1_save.pb"
     val results = TensorflowLoader.parse(path)
     val tfGraph = TensorflowLoader.buildTFGraph(results.subList(0, results.size()-1))
     val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("input"),
@@ -514,7 +542,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     val BigDLResult = model.forward(input)
 
     tfResult.map( BigDLResult.toTensor, (v1, v2) => {
-      assert(abs(v1 - v2) < 2e-7);
+      assert(abs(v1 - v2) < 1e-6);
       v2
     })
     model.backward(input, gradient)
@@ -523,7 +551,6 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
   "TensorFlow loader" should "run the python to save the modle and " +
     "have the same inferrence result with tensorflow " +
     "after loading slim inception_resnet_v2" in {
-    // check python path for tensorflow models
     tfCheck()
     (("python " + testScriptsPath("inception_resnet_v2.py")) !!)
     val resource = getClass().getClassLoader().getResource("tf")
@@ -534,37 +561,6 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("input"),
       Seq("InceptionResnetV2/Logits/Logits/BiasAdd", "InceptionResnetV2/AuxLogits/Logits/BiasAdd")
       , ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
-    val input = TensorflowToBigDL.toTensor(results.get(0).getAttrMap.get("value").getTensor,
-      ByteOrder.LITTLE_ENDIAN)
-      .transpose(2, 4).transpose(3, 4).contiguous()
-    val gradient1 = Tensor[Float](2, 1001).rand()
-    val gradient2 = Tensor[Float](2, 1001).rand()
-    val tfResult1 = TensorflowToBigDL.toTensor(results.get(results.size()-2)
-      .getAttrMap.get("value").getTensor, ByteOrder.LITTLE_ENDIAN)
-    val tfResult2 = TensorflowToBigDL.toTensor(results.get(results.size()-1)
-      .getAttrMap.get("value").getTensor, ByteOrder.LITTLE_ENDIAN)
-    val BigDLResult = model.forward(input)
-
-    tfResult1.map( BigDLResult.toTable(1), (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-7);
-      v2
-    })
-    tfResult2.map( BigDLResult.toTable(2), (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-7);
-      v2
-    })
-    model.backward(input, T(gradient1, gradient2))
-  }
-
-  "TensorFlow loader" should "have the same inferrence result with tensorflow " +
-    "after loading slim inception_resnet_v2" in {
-    val resource = getClass().getClassLoader().getResource("tf")
-    val path = processPath(resource.getPath()) + JFile.separator + "inception_resnet_v2_save.pb"
-    val results = TensorflowLoader.parse(path)
-    val tfGraph = TensorflowLoader.buildTFGraph(results.subList(0, results.size()-2))
-    val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("input"),
-      Seq("InceptionResnetV2/Logits/Logits/BiasAdd", "InceptionResnetV2/AuxLogits/Logits/BiasAdd"),
-      ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
     val input = TensorflowToBigDL.toTensor(results.get(0).getAttrMap.get("value").getTensor,
       ByteOrder.LITTLE_ENDIAN)
       .transpose(2, 4).transpose(3, 4).contiguous()
