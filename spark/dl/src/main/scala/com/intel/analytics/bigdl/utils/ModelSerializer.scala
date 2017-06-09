@@ -26,7 +26,6 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.optim.{L1L2Regularizer, L1Regularizer, L2Regularizer, Regularizer}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.ModelSerializer.LinearSerializer.copyFromBigDL
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.IOUtils
@@ -338,6 +337,7 @@ object ModelSerializer {
     (implicit ev: TensorNumeric[T]) : BigDLModule[T] = {
     serializerMap(model.getModuleType.toString).loadModule(model)
   }
+
   private def serialize[T: ClassTag](bigDLModule : BigDLModule[T])
     (implicit ev: TensorNumeric[T])
     : BigDLModel = {
@@ -367,8 +367,9 @@ object ModelSerializer {
     load(bigDLModel).module
   }
 
-  def saveToFile[T: ClassTag](modelPath : String, bigDLModule : BigDLModule[T],
+  def saveToFile[T: ClassTag](modelPath : String, module : AbstractModule[Activity, Activity, T],
     overwrite: Boolean = false)(implicit ev: TensorNumeric[T]) : Unit = {
+    val bigDLModule = BigDLModule(module, new ArrayBuffer[String](), new ArrayBuffer[String]())
     val bigDLModel = serialize(bigDLModule)
     if (modelPath.startsWith(hdfsPrefix)) {
       val binaryFile = new Path(modelPath)

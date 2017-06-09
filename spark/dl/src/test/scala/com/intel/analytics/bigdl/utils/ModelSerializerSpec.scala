@@ -1,0 +1,65 @@
+/*
+ * Copyright 2016 The BigDL Authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.intel.analytics.bigdl.utils
+
+import com.intel.analytics.bigdl.nn.{Graph, Linear, Sequential}
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.numeric.NumericDouble
+import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
+
+class ModelSerializerSpec extends FlatSpec with Matchers {
+
+  "Linear serializer" should "work properly" in {
+    val linear = Linear[Double](10, 2)
+    val tensor1 = Tensor[Double](10).apply1(_ => Random.nextDouble())
+    val tensor2 = Tensor[Double]()
+    val res1 = linear.forward(tensor1)
+    tensor2.resizeAs(tensor1).copy(tensor1)
+    ModelSerializer.saveToFile("/tmp/linear.bigdl", linear, true)
+    val loadedLinear = ModelSerializer.loadFromFile("/tmp/linear.bigdl")
+    val res2 = loadedLinear.forward(tensor2)
+    res1 should be (res2)
+   }
+
+  "Sequantial Container" should "work properly" in {
+    val sequential = Sequential[Double]()
+    val linear = Linear[Double](10, 2)
+    sequential.add(linear)
+    val tensor1 = Tensor[Double](10).apply1(_ => Random.nextDouble())
+    val tensor2 = Tensor[Double]()
+    val res1 = sequential.forward(tensor1)
+    tensor2.resizeAs(tensor1).copy(tensor1)
+    ModelSerializer.saveToFile("/tmp/sequential.bigdl", sequential, true)
+    val loadedSequential = ModelSerializer.loadFromFile("/tmp/sequential.bigdl")
+    val res2 = loadedSequential.forward(tensor2)
+    res1 should be (res2)
+  }
+
+  "Graph Container" should "work properly" in {
+    val linear = Linear[Double](10, 2).apply()
+    val graph = Graph(linear, linear)
+    val tensor1 = Tensor[Double](10).apply1(_ => Random.nextDouble())
+    val tensor2 = Tensor[Double]()
+    val res1 = graph.forward(tensor1)
+    tensor2.resizeAs(tensor1).copy(tensor1)
+    ModelSerializer.saveToFile("/tmp/graph.bigdl", graph, true)
+    val loadedGraph = ModelSerializer.loadFromFile("/tmp/graph.bigdl")
+    val res2 = loadedGraph.forward(tensor2)
+    res1 should be (res2)
+  }
+}
