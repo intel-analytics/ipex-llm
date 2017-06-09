@@ -40,7 +40,6 @@ The input text may look as follows:
 ## Train the Model
 Example command:
 ```bash
-./dist/bin/bigdl.sh -- \
 spark-submit \
 --master spark://... \
 --executor-cores cores_per_executor \
@@ -70,7 +69,6 @@ Each eye that saw him.
 ```
 Example command:
 ```bash
-./dist/bin/bigdl.sh -- \
 spark-submit \
 --master spark://... \
 --executor-cores cores_per_executor \
@@ -88,7 +86,6 @@ Please upload these two files onto HDFS and pass the host and path to the comman
 
 Example command:
 ```bash
-./dist/bin/bigdl.sh -- \
 spark-submit \
 --master spark://... \
 --executor-cores cores_per_executor \

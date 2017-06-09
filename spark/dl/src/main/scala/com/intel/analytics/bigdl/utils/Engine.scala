@@ -47,12 +47,12 @@ object Engine {
     val res = if (onSpark) {
       require(localMode == false,
         s"Engine.init: bigdl.localMode should not be set while onSpark is " +
-          s"true. $ENV_VAR_ERROR")
+          s"true. Please set correct java property.")
       Some(createSparkConf())
     } else {
       require(localMode == true,
         s"Engine.init: bigdl.localMode should be set while onSpark is " +
-          s"false. $ENV_VAR_ERROR")
+          s"false. Please set correct java property.")
       None
     }
     res
@@ -93,7 +93,7 @@ object Engine {
   def init: Unit = this.synchronized {
     if (localMode) {
       logger.info("Detect bigdl.localMode is set. Run workload without spark")
-      // The physical core number should have been initialized by env variable in bigdl.sh
+      // The physical core number should have been initialized by java property -Dbigdl.coreNumber=xx
       setNodeAndCore(1, getCoreNumberFromProperty)
     } else {
       logger.info("Auto detect executor number and executor cores number")
@@ -125,13 +125,6 @@ object Engine {
 
   private val SPARK_CONF_ERROR = "For details please check " +
     "https://github.com/intel-analytics/BigDL/wiki/Programming-Guide#engine"
-
-  private val ENV_VAR_ERROR =
-    "Do you run 'source bigdl.sh' before the program? Please use bigdl.sh to init the environment" +
-      ". See https://github.com/intel-analytics/BigDL/wiki/Getting-Started#before-running" +
-      "-a-bigdl-program. And init SparkConf by refering " +
-      "https://github.com/intel-analytics/BigDL/wiki/Programming-Guide#engine. " +
-      "For test purpose, set bigdl.disableCheckSysEnv to true"
 
   /**
    * Notice: Please use property bigdl.engineType to set engineType.

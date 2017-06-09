@@ -22,14 +22,14 @@ You can build one by refer to the
 ## Train on Spark:
 Spark local mode, example command:
 ```{r, engine='sh'}
-./dist/bin/bigdl.sh -- spark-submit --master local[physical_core_number]\
+spark-submit --master local[physical_core_number]\
   --class com.intel.analytics.bigdl.models.autoencoder.Train \
   ./dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
   -b batch_size -f $DATA_FOLDER
 ```
 Spark standalone mode, example command:
 ```{r, engine='sh'}
-./dist/bin/bigdl.sh -- spark-submit --master spark://... \
+spark-submit --master spark://... \
   --executor-cores cores_per_executor \
   --total-executor-cores total_cores_for_the_job \
   --class com.intel.analytics.bigdl.models.autoencoder.Train \
@@ -38,7 +38,7 @@ Spark standalone mode, example command:
 ```
 Spark yarn mode, example command:
 ```{r, engine='sh'}
-./dist/bin/bigdl.sh -- spark-submit --master yarn --deploy-mode client\
+spark-submit --master yarn --deploy-mode client\
   --executor-cores cores_per_executor \
   --num-executors executors_number \
   --class com.intel.analytics.bigdl.models.autoencoder.Train \
