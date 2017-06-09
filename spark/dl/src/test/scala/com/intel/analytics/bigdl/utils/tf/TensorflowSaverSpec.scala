@@ -20,7 +20,7 @@ import java.nio.ByteOrder
 import java.util.UUID
 
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
-import com.intel.analytics.bigdl.nn.{Graph, Linear, ReLU, SpatialAveragePooling}
+import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
@@ -52,12 +52,12 @@ class TensorflowSaverSpec extends TensorflowSpecHelper {
       T(1.0f, 2.0f, 5.0f),
       T(-3.0f, -4.0f, -7.0f)
     ))
-    test(layer, input, "/biasAdd") should be(true)
+    test(layer, input, false, "/biasAdd") should be(true)
   }
 
   "AvgPooling" should "be correctly saved" in {
     val layer = SpatialAveragePooling(2, 2)
-    val input = Tensor[Float](T(
+    val input = Tensor[Float](T(T(
       T(
         T(1.0f, 2.0f, 5.0f),
         T(-3.0f, -4.0f, -7.0f),
@@ -68,12 +68,43 @@ class TensorflowSaverSpec extends TensorflowSpecHelper {
         T(3.0f, 4.0f, 7.0f),
         T(4.0f, 2.0f, 1.0f)
       )
-    ))
+    )))
+    test(layer, input, true) should be(true)
+  }
+
+  "MaxPooling" should "be correctly saved" in {
+    val layer = SpatialMaxPooling(2, 2)
+    val input = Tensor[Float](T(T(
+      T(
+        T(1.0f, 2.0f, 5.0f),
+        T(-3.0f, -4.0f, -7.0f),
+        T(-4.0f, -2.0f, -1.0f)
+      ),
+      T(
+        T(-1.0f, -2.0f, -5.0f),
+        T(3.0f, 4.0f, 7.0f),
+        T(4.0f, 2.0f, 1.0f)
+      )
+    )))
+    test(layer, input, true) should be(true)
+  }
+
+  "Tanh" should "be correctly saved" in {
+    val layer = Tanh()
+    val input = Tensor[Float](4).rand()
     test(layer, input) should be(true)
   }
 
+  "Squeeze" should "be correctly saved" in {
+    val layer = Squeeze(3)
+    val input = Tensor[Float](4, 2, 1, 2).rand()
+    test(layer, input, true) should be(true)
+  }
+
   private def test(layer: AbstractModule[Tensor[Float], Tensor[Float], Float],
-                   inputTensor: Tensor[Float], outputSuffix: String = "") : Boolean = {
+                   inputTensor: Tensor[Float],
+                   convertNHWC: Boolean = false,
+                   outputSuffix: String = "") : Boolean = {
     tfCheck()
     val layerNode = layer.setName("output").apply()
     val graph = Graph(layerNode, layerNode)
@@ -81,13 +112,23 @@ class TensorflowSaverSpec extends TensorflowSpecHelper {
 
     val tmpFile = java.io.File.createTempFile("tensorflowSaverTest" + UUID.randomUUID(), "Layer")
     logger.info(s"Save model to ${tmpFile}")
+    val tfTensor = if (convertNHWC) {
+      inputTensor.transpose(2, 3).transpose(3, 4).contiguous()
+    } else {
+      inputTensor
+    }
+    val outputSave = if (convertNHWC) {
+      outputTensor.transpose(2, 3).transpose(3, 4).contiguous()
+    } else {
+      outputTensor
+    }
     TensorflowSaver.saveGraphWitNodeDef(
       graph,
-      Seq(Tensorflow.const(inputTensor, "input", ByteOrder.LITTLE_ENDIAN)),
+      Seq(Tensorflow.const(tfTensor, "input", ByteOrder.LITTLE_ENDIAN)),
       tmpFile.getPath,
       ByteOrder.LITTLE_ENDIAN,
       TensorflowDataFormat.NHWC,
-      Set(Tensorflow.const(outputTensor, "target", ByteOrder.LITTLE_ENDIAN))
+      Set(Tensorflow.const(outputSave, "target", ByteOrder.LITTLE_ENDIAN))
     )
     runPythonSaveTest(tmpFile.getPath, outputSuffix)
   }

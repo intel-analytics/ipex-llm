@@ -26,8 +26,6 @@ def main():
         with tf.Graph().as_default() as graph:
             tf.import_graph_def(graph_def, name='')
             sess = tf.Session()
-            for op in graph.get_operations():
-                print(op.name)
             output_suffix = ''
             if len(argv) == 3:
                 output_suffix = argv[2]
@@ -35,9 +33,11 @@ def main():
             target = graph.get_tensor_by_name('target:0')
             tf_output = sess.run(output)
             bigdl_output = sess.run(target)
+            print("Tensorflow output is:")
             print(tf_output)
+            print("BigDL output is:")
             print(bigdl_output)
-            np.testing.assert_equal(tf_output, bigdl_output)
+            np.testing.assert_almost_equal(tf_output, bigdl_output)
 
 if __name__ == "__main__":
     main()

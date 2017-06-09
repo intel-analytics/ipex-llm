@@ -42,15 +42,12 @@ class TensorflowSpecHelper extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   protected def runPython(cmd: String): Boolean = {
-    var result = ""
     try {
       logger.info("run command\n" + cmd)
-      result = (("python " + cmd) !!)
-      return true
+      val proc = s"python $cmd".run
+      return proc.exitValue() == 0
     } catch {
       case _: Throwable => false
-    } finally {
-      logger.info("stdout is \n" + result)
     }
   }
 

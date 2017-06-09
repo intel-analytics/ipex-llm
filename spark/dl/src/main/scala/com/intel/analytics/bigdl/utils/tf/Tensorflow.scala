@@ -247,9 +247,9 @@ object Tensorflow {
       .addInput(value.getName)
       .putAttr("T", getDataType(value))
       .putAttr("data_format", dataFormat.value)
-      .putAttr("ksize", listIntAttr(Seq(kH, kW)))
+      .putAttr("ksize", kernelAttr(kW, kH, dataFormat))
       .putAttr("padding", getPaddingType(pW, pH, kW, kH, sW, sH).value)
-      .putAttr("strides", listIntAttr(Seq(sH, sW)))
+      .putAttr("strides", strideAttr(sW, sH, dataFormat))
       .build()
   }
 
@@ -261,9 +261,9 @@ object Tensorflow {
       .putAttr("T", getDataType(value))
       .addInput(value.getName)
       .putAttr("data_format", dataFormat.value)
-      .putAttr("ksize", listIntAttr(Seq(kH, kW)))
+      .putAttr("ksize", kernelAttr(kW, kH, dataFormat))
       .putAttr("padding", getPaddingType(pW, pH, kW, kH, sW, sH).value)
-      .putAttr("strides", listIntAttr(Seq(sH, sW)))
+      .putAttr("strides", strideAttr(sW, sH, dataFormat))
       .build()
   }
 
@@ -565,4 +565,21 @@ object Tensorflow {
     }
   }
 
+  private def kernelAttr(kW: Int, kH: Int, dataFormat: TensorflowDataFormat): AttrValue = {
+    val kSize = if (dataFormat == TensorflowDataFormat.NHWC) {
+      Seq(1, kH, kW, 1)
+    } else {
+      Seq(1, 1, kH, kW)
+    }
+    listIntAttr(kSize)
+  }
+
+  private def strideAttr(sW: Int, sH: Int, dataFormat: TensorflowDataFormat): AttrValue = {
+    val sSize = if (dataFormat == TensorflowDataFormat.NHWC) {
+      Seq(1, sH, sW, 1)
+    } else {
+      Seq(1, 1, sH, sW)
+    }
+    listIntAttr(sSize)
+  }
 }
