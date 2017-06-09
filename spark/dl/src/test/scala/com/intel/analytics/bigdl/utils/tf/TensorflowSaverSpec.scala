@@ -15,46 +15,80 @@
  */
 package com.intel.analytics.bigdl.utils.tf
 
-import java.io.{File => JFile}
 
-import com.intel.analytics.bigdl.nn.{Graph, Linear, ReLU}
+import java.nio.ByteOrder
+import java.util.UUID
+
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.nn.{Graph, Linear, ReLU, SpatialAveragePooling}
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.utils.TestUtils.processPath
-import org.scalatest.{FlatSpec, Matchers}
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.T
+import org.apache.log4j.Logger
 
-import scala.sys.process._
+class TensorflowSaverSpec extends TensorflowSpecHelper {
 
-class TensorflowSaverSpec extends FlatSpec with Matchers {
+  private val logger = Logger.getLogger(getClass)
+
   "ReLU layer" should "be correctly saved" in {
-    val relu = ReLU().setName("relu").apply()
-    val graph = Graph(relu, relu)
-
-    val tmpFile = java.io.File.createTempFile("tensorflowSaverTest", "ReLU")
-    TensorflowSaver.saveGraph(graph, Seq(("input", Seq(2, 4))), tmpFile.getPath)
-    runPython(testScriptsPath("ReLUSaveTest.py ") + tmpFile) should be(true)
+    val inputTensor = Tensor[Float](T(
+      T(1.0f, 2.0f, 5.0f, 6.0f),
+      T(-3.0f, -4.0f, -7.0f, -8.0f)
+    ))
+    test(ReLU[Float](), inputTensor) should be(true)
   }
 
   "Linear layer" should "be correctly saved" in {
-    val linear = Linear(3, 4).setName("linear").apply()
-    val graph = Graph(linear, linear)
-    val tmpFile = java.io.File.createTempFile("tensorflowSaverTest", "Linear")
-    TensorflowSaver.saveGraph(graph, Seq(("input", Seq(2, 3))), tmpFile.getPath)
-    println(tmpFile.getPath)
-    // runPython(testScriptsPath("LinearSaveTest.py ") + tmpFile) should be(true)
+    val layer = Linear[Float](3, 4,
+      initWeight = Tensor(T(
+        T(1.0f, 2.0f, 3.0f),
+        T(4.0f, 5.0f, 6.0f),
+        T(7.0f, 8.0f, 9.0f),
+        T(10.0f, 11.0f, 12.0f)
+      )),
+      initBias = Tensor(T(1.0f, 2.0f, 3.0f, 4.0f))
+    )
+    val input = Tensor[Float](T(
+      T(1.0f, 2.0f, 5.0f),
+      T(-3.0f, -4.0f, -7.0f)
+    ))
+    test(layer, input, "/biasAdd") should be(true)
   }
 
-  private def testScriptsPath(script: String) : String = {
-    val resource = getClass().getClassLoader().getResource("tf")
-    processPath(resource.getPath()) + JFile.separator + "saveTest" +
-      JFile.separator + script
+  "AvgPooling" should "be correctly saved" in {
+    val layer = SpatialAveragePooling(2, 2)
+    val input = Tensor[Float](T(
+      T(
+        T(1.0f, 2.0f, 5.0f),
+        T(-3.0f, -4.0f, -7.0f),
+        T(-4.0f, -2.0f, -1.0f)
+      ),
+      T(
+        T(-1.0f, -2.0f, -5.0f),
+        T(3.0f, 4.0f, 7.0f),
+        T(4.0f, 2.0f, 1.0f)
+      )
+    ))
+    test(layer, input) should be(true)
   }
 
-  private def runPython(cmd: String): Boolean = {
-    try {
-      (("python " + cmd) !!)
-      return true
-    } catch {
-      case _: Throwable => false
-    }
+  private def test(layer: AbstractModule[Tensor[Float], Tensor[Float], Float],
+                   inputTensor: Tensor[Float], outputSuffix: String = "") : Boolean = {
+    tfCheck()
+    val layerNode = layer.setName("output").apply()
+    val graph = Graph(layerNode, layerNode)
+    val outputTensor = layer.forward(inputTensor)
+
+    val tmpFile = java.io.File.createTempFile("tensorflowSaverTest" + UUID.randomUUID(), "Layer")
+    logger.info(s"Save model to ${tmpFile}")
+    TensorflowSaver.saveGraphWitNodeDef(
+      graph,
+      Seq(Tensorflow.const(inputTensor, "input", ByteOrder.LITTLE_ENDIAN)),
+      tmpFile.getPath,
+      ByteOrder.LITTLE_ENDIAN,
+      TensorflowDataFormat.NHWC,
+      Set(Tensorflow.const(outputTensor, "target", ByteOrder.LITTLE_ENDIAN))
+    )
+    runPythonSaveTest(tmpFile.getPath, outputSuffix)
   }
 }

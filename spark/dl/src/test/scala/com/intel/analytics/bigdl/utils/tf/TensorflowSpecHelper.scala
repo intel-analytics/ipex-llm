@@ -15,11 +15,18 @@
  */
 package com.intel.analytics.bigdl.utils.tf
 
+import com.intel.analytics.bigdl.utils.TestUtils.processPath
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import java.io.{File => JFile}
+
+import org.apache.log4j.Logger
 
 import scala.sys.process._
 
 class TensorflowSpecHelper extends FlatSpec with Matchers with BeforeAndAfter {
+
+  private val logger = Logger.getLogger(getClass)
+
   protected def tfCheck(): Unit = {
     var exitValue : String = ""
     try {
@@ -32,5 +39,25 @@ class TensorflowSpecHelper extends FlatSpec with Matchers with BeforeAndAfter {
     if (!exitValue.contains("models")) {
       cancel("Tensorflow models path is not exported")
     }
+  }
+
+  protected def runPython(cmd: String): Boolean = {
+    var result = ""
+    try {
+      logger.info("run command\n" + cmd)
+      result = (("python " + cmd) !!)
+      return true
+    } catch {
+      case _: Throwable => false
+    } finally {
+      logger.info("stdout is \n" + result)
+    }
+  }
+
+  protected def runPythonSaveTest(graphPath: String, outputSuffix: String) : Boolean = {
+    val resource = getClass().getClassLoader().getResource("tf")
+    val path = processPath(resource.getPath()) + JFile.separator +
+      s"save_test.py $graphPath $outputSuffix"
+    runPython(path)
   }
 }

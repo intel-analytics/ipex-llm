@@ -473,7 +473,7 @@ class SpatialAveragePooling[@specialized(Float, Double) T: ClassTag](
 }
 
 object SpatialAveragePooling {
-  def apply[@specialized(Float, Double) T: ClassTag](
+  def apply[T: ClassTag](
       kW: Int,
       kH: Int,
       dW: Int = 1,

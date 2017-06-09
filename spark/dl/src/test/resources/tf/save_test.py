@@ -28,12 +28,16 @@ def main():
             sess = tf.Session()
             for op in graph.get_operations():
                 print(op.name)
-            prediction = graph.get_tensor_by_name('linear/biasAdd:0')
-            ix = graph.get_tensor_by_name('input:0')
-            test = np.matrix([[1, 2, 5], [-3, -4, -7]])
-            result = sess.run(prediction, {ix: test})
-    
-    #np.testing.assert_equal(result, np.array([[1, 2, 5, 6], [0, 0, 0, 0]]))
+            output_suffix = ''
+            if len(argv) == 3:
+                output_suffix = argv[2]
+            output = graph.get_tensor_by_name('output' + output_suffix + ':0')
+            target = graph.get_tensor_by_name('target:0')
+            tf_output = sess.run(output)
+            bigdl_output = sess.run(target)
+            print(tf_output)
+            print(bigdl_output)
+            np.testing.assert_equal(tf_output, bigdl_output)
 
 if __name__ == "__main__":
     main()

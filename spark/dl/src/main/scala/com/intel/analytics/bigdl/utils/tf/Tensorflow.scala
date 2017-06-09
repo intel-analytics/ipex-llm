@@ -15,6 +15,7 @@
  */
 package com.intel.analytics.bigdl.utils.tf
 
+import java.nio.{ByteBuffer, ByteOrder}
 import java.nio.charset.Charset
 
 import com.google.protobuf.ByteString
@@ -22,6 +23,8 @@ import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Tensor, TensorDa
 import org.tensorflow.framework.AttrValue.ListValue
 import org.tensorflow.framework._
 import org.tensorflow.framework.TensorShapeProto.Dim
+
+import scala.reflect.{ClassTag, classTag}
 
 /**
  * Tensorflow data format. It is mostly applied in processing image type data
@@ -99,12 +102,23 @@ object Tensorflow {
    * @param name
    * @return
    */
-  def const(value : Tensor[_], name : String, dtype: DataType = DataType.DT_FLOAT): NodeDef = {
+  def const[T: ClassTag](value : Tensor[T], name : String, byteOrder: ByteOrder,
+                         dataType: DataType = null): NodeDef = {
+    val dtype = if (dataType == null) {
+      if (value.getType() == DoubleType) {
+        DataType.DT_DOUBLE
+      } else {
+        DataType.DT_FLOAT
+      }
+    } else {
+      dataType
+    }
+
     NodeDef.newBuilder()
       .setName(name)
       .setOp("Const")
       .putAttr("dtype", AttrValue.newBuilder().setType(dtype).build())
-      .putAttr("value", tensorAttr(value, dtype))
+      .putAttr("value", tensorAttr(value, dtype, byteOrder))
       .build()
   }
 
@@ -421,14 +435,79 @@ object Tensorflow {
     AttrValue.newBuilder().setList(list).build()
   }
 
-  private def tensorAttr(value: Tensor[_], dtype: DataType): AttrValue = {
+  private def tensorAttr[T: ClassTag](value: Tensor[T], dtype: DataType,
+                                      byteOrder: ByteOrder): AttrValue = {
     val shape = TensorShapeProto.newBuilder()
     value.size().foreach(dim => {
       shape.addDim(Dim.newBuilder().setSize(dim))
     })
 
+    require(value.isContiguous(), "only support save a contiguous tensor")
+
+    val content = if (value.getType() == DoubleType) {
+      val array = value.asInstanceOf[Tensor[Double]].storage().array()
+      val offset = value.storageOffset() - 1
+      if (dtype == DataType.DT_INT32) {
+        val buffer = ByteBuffer.allocate(array.length * 4)
+        buffer.order(byteOrder)
+        var i = 0
+        while (i < value.nElement()) {
+          buffer.putInt(array(i + offset).toInt)
+          i += 1
+        }
+        buffer
+      } else if (dtype == DataType.DT_FLOAT) {
+        val buffer = ByteBuffer.allocate(array.length * 4)
+        buffer.order(byteOrder)
+        var i = 0
+        while (i < value.nElement()) {
+          buffer.putFloat(array(i + offset).toFloat)
+          i += 1
+        }
+        buffer
+      } else if (dtype == DataType.DT_DOUBLE) {
+        val buffer = ByteBuffer.allocate(array.length * 8)
+        buffer.order(byteOrder)
+        var i = 0
+        while (i < value.nElement()) {
+          buffer.putDouble(array(i + offset))
+          i += 1
+        }
+        buffer
+      } else {
+        throw new UnsupportedOperationException(s"data type ${dtype} is not supported currently")
+      }
+    } else {
+      val array = value.asInstanceOf[Tensor[Float]].storage().array()
+      val offset = value.storageOffset() - 1
+      if (dtype == DataType.DT_INT32) {
+        val buffer = ByteBuffer.allocate(array.length * 4)
+        buffer.order(byteOrder)
+        var i = 0
+        while (i < value.nElement()) {
+          buffer.putInt(array(i + offset).toInt)
+          i += 1
+        }
+        buffer
+      } else if (dtype == DataType.DT_FLOAT) {
+        val buffer = ByteBuffer.allocate(array.length * 4)
+        buffer.order(byteOrder)
+        var i = 0
+        while (i < value.nElement()) {
+          buffer.putFloat(array(i + offset))
+          i += 1
+        }
+        buffer
+      } else if (dtype == DataType.DT_DOUBLE) {
+        throw new IllegalArgumentException(s"can not convert a float tensor to double tensor")
+      } else {
+        throw new UnsupportedOperationException(s"data type ${dtype} is not supported currently")
+      }
+    }
+
     AttrValue.newBuilder().setTensor(
       TensorProto.newBuilder().setTensorShape(shape).setDtype(dtype)
+        .setTensorContent(ByteString.copyFrom(content.array()))
     ).build()
   }
 

@@ -38,6 +38,62 @@ object TensorflowSaver {
    * The order of the placeholde information should be same as the inputs of the graph model
    *
    * @param model graph model instance
+   * @param inputs input node defs
+   * @param path where to save
+   * @param byteOrder model byte order
+   * @param dataFormat model data format
+   * @tparam T
+   */
+  def saveGraphWitNodeDef[T](
+      model : Graph[T],
+      inputs : Seq[NodeDef],
+      path: String,
+      byteOrder: ByteOrder = ByteOrder.LITTLE_ENDIAN,
+      dataFormat: TensorflowDataFormat = TensorflowDataFormat.NHWC,
+      extraNodes: Set[NodeDef] = Set()): Unit = {
+    val inputNodeCache =
+      new mutable.HashMap[AbstractModule[Activity, Tensor[T], T], ArrayBuffer[NodeDef]]()
+    model.inputs.zip(inputs).foreach(n => {
+      inputNodeCache(n._1.element) = ArrayBuffer(n._2)
+    })
+
+    val graphBuilder = GraphDef.newBuilder()
+    inputs.foreach(graphBuilder.addNode(_))
+
+    model.executions.foreach(n => {
+      val nodeDefs = maps(n.element.getClass.getName).toTFDef(n.element, inputNodeCache(n.element),
+        byteOrder, dataFormat)
+      nodeDefs.foreach(nDef => {
+        graphBuilder.addNode(nDef)
+      })
+      n.nextNodes.foreach(n => {
+        val list = inputNodeCache.getOrElse(n.element, ArrayBuffer())
+        list.append(nodeDefs(0))
+      })
+    })
+
+    extraNodes.foreach(graphBuilder.addNode(_))
+
+    // Save to file
+    val os = new FileOutputStream(path)
+    val output = CodedOutputStream.newInstance(os)
+    val graph = graphBuilder.build()
+    logger.debug("Graph definition is:")
+    logger.debug(graph.toString)
+    graph.writeTo(output)
+    output.flush()
+    os.close()
+    logger.info(s"Save as tensorflow model file to $path")
+  }
+
+  /**
+   * Save a graph model to protobuf files so that it can be used in tensorflow inference.
+   *
+   * When save the model, placeholders will be added to the tf model as input nodes. So you need to
+   * pass in the names and shape for the placeholders. BigDL model doesn't have such information.
+   * The order of the placeholde information should be same as the inputs of the graph model
+   *
+   * @param model graph model instance
    * @param inputs placeholder information
    * @param path where to save
    * @param byteOrder model byte order
@@ -53,44 +109,40 @@ object TensorflowSaver {
     val inputNodeDefs = inputs.map(input =>
       placeholder(model.getNumericType(), input._2, input._1)
     )
-    val inputNodeCache =
-      new mutable.HashMap[AbstractModule[Activity, Tensor[T], T], ArrayBuffer[NodeDef]]()
-    model.inputs.zip(inputNodeDefs).foreach(n => {
-      inputNodeCache(n._1.element) = ArrayBuffer(n._2)
-    })
+    saveGraphWitNodeDef(model, inputNodeDefs, path, byteOrder, dataFormat)
+  }
 
-    val graphBuilder = GraphDef.newBuilder()
-    inputNodeDefs.foreach(graphBuilder.addNode(_))
-
-    model.executions.foreach(n => {
-      val nodeDefs = maps(n.element.getClass.getName).toTFDef(n.element, inputNodeCache(n.element),
-        byteOrder, dataFormat)
-      nodeDefs.foreach(nDef => {
-        graphBuilder.addNode(nDef)
-      })
-      n.nextNodes.foreach(n => {
-        val list = inputNodeCache.getOrElse(n.element, ArrayBuffer())
-        list.append(nodeDefs(0))
-      })
-    })
-
-    // Save to file
-    val os = new FileOutputStream(path)
-    val output = CodedOutputStream.newInstance(os)
-    val graph = graphBuilder.build()
-    logger.debug("Graph definition is:")
-    logger.debug(graph.toString)
-    graph.writeTo(output)
-    output.flush()
-    os.close()
-    logger.info(s"Save as tensorflow model file to $path")
+  /**
+   * Register a customized BigDL module saver.
+   * @param className class name of the BigDL module
+   * @param saver customized saver
+   */
+  def register(className : String, saver: BigDLToTensorflow): Unit = {
+    maps(className) = saver
   }
 
   private val logger = Logger.getLogger(getClass)
 
   private val maps = mutable.Map[String, BigDLToTensorflow](
     getNameFromObj(ReLU.getClass.getName) -> ReLUToTF,
-    getNameFromObj(Linear.getClass.getName) -> LinearToTF
+    getNameFromObj(Linear.getClass.getName) -> LinearToTF,
+    getNameFromObj(SpatialConvolution.getClass.getName) -> SpatialConvolutionToTF,
+    getNameFromObj(Squeeze.getClass.getName) -> SqueezeToTF,
+    getNameFromObj(Tanh.getClass.getName) -> TanhToTF,
+    getNameFromObj(Reshape.getClass.getName) -> ReshapeToTF,
+    getNameFromObj(View.getClass.getName) -> ViewToTF,
+    getNameFromObj(SpatialMaxPooling.getClass.getName) -> MaxpoolToTF,
+    getNameFromObj(Padding.getClass.getName) -> PaddingToTF,
+    getNameFromObj(SpatialAveragePooling.getClass.getName) -> AvgpoolToTF,
+    getNameFromObj(Sigmoid.getClass.getName) -> SigmoidToTF,
+    getNameFromObj(Dropout.getClass.getName) -> DropoutToTF,
+    getNameFromObj(CAddTable.getClass.getName) -> CAddTableToTF,
+    getNameFromObj(CMulTable.getClass.getName) -> CMultTableToTF,
+    getNameFromObj(JoinTable.getClass.getName) -> JoinTableToTF,
+    getNameFromObj(Mean.getClass.getName) -> MeanToTF,
+    getNameFromObj(SoftMax.getClass.getName) -> SoftMaxToTF,
+    getNameFromObj(LogSoftMax.getClass.getName) -> LogSoftMaxToTF,
+    getNameFromObj(SpatialBatchNormalization.getClass.getName) -> BatchNormToTF
   )
 
   private def getNameFromObj(name: String) : String = name.substring(0, name.length - 1)
