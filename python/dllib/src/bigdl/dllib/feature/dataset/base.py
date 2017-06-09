@@ -28,8 +28,9 @@ import numpy as np
 class Progbar(object):
     def __init__(self, target, width=30, verbose=1, interval=0.01):
         '''
-            @param target: total number of steps expected
-            @param interval: minimum visual progress update interval (in seconds)
+
+            :param target: total number of steps expected
+            :param interval: minimum visual progress update interval (in seconds)
         '''
         self.width = width
         self.target = target
@@ -44,10 +45,10 @@ class Progbar(object):
 
     def update(self, current, values=[], force=False):
         '''
-            @param current: index of current step
-            @param values: list of tuples (name, value_for_last_step).
-            The progress bar will display averages for these values.
-            @param force: force visual progress update
+
+            :param current: index of current step
+            :param values: list of tuples (name, value_for_last_step).The progress bar will display averages for these values.
+            :param force: force visual progress update
         '''
         for k, v in values:
             if k not in self.sum_values:
