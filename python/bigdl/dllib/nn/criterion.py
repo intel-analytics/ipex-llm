@@ -46,6 +46,7 @@ class Criterion(JavaValue):
         NB: It's for debug only, please use optimizer.optimize() in production.
         Takes an input object, and computes the corresponding loss of the criterion,
         compared with `target`
+
         :param input: ndarray or list of ndarray
         :param target: ndarray or list of ndarray
         :return: value of loss
@@ -61,6 +62,7 @@ class Criterion(JavaValue):
         """
         NB: It's for debug only, please use optimizer.optimize() in production.
         Performs a back-propagation step through the criterion, with respect to the given input.
+
         :param input: ndarray or list of ndarray
         :param target: ndarray or list of ndarray
         :return: ndarray
@@ -76,6 +78,7 @@ class Criterion(JavaValue):
     def of(cls, jcriterion, bigdl_type="float"):
         """
         Create a python Criterion by a java criterion object
+
         :param jcriterion: A java criterion object which created by Py4j
         :return: a criterion.
         """
@@ -93,8 +96,10 @@ class ClassNLLCriterion(Criterion):
     If provided, the optional argument weights should be a 1D Tensor
     assigning weight to each of the classes.
 
-    :param weights weights of each class
-    :param size_average whether to average or not
+
+    :param weights: weights of each class
+    :param size_average: whether to average or not
+
 
     >>> np.random.seed(123)
     >>> weights = np.random.uniform(0, 1, (2,)).astype("float32")
@@ -118,7 +123,10 @@ class MSECriterion(Criterion):
     '''
     Creates a criterion that measures the mean squared error between n elements
     in the input x and output y:
+```
     loss(x, y) = 1/n \sum |x_i - y_i|^2
+```
+
 
     If x and y are d-dimensional Tensors with a total of n elements,
     the sum operation still operates over all the elements, and divides by n.
@@ -126,6 +134,7 @@ class MSECriterion(Criterion):
     The division by n can be avoided if one sets the internal variable sizeAverage to false.
     By default, the losses are averaged over observations for each minibatch. However,
      if the field sizeAverage is set to false, the losses are instead summed.
+
 
     >>> mSECriterion = MSECriterion()
     creating: createMSECriterion
@@ -139,6 +148,7 @@ class AbsCriterion(Criterion):
 
     '''
     measures the mean absolute value of the element-wise difference between input
+
 
     >>> absCriterion = AbsCriterion(True)
     creating: createAbsCriterion
@@ -157,7 +167,9 @@ class ClassSimplexCriterion(Criterion):
     ClassSimplexCriterion implements a criterion for classification.
     It learns an embedding per class, where each class' embedding is a
     point on an (N-1)-dimensional simplex, where N is the number of classes.
-    :param nClasses the number of classes.
+
+    :param nClasses: the number of classes.
+
 
     >>> classSimplexCriterion = ClassSimplexCriterion(2)
     creating: createClassSimplexCriterion
@@ -176,7 +188,9 @@ class CosineEmbeddingCriterion(Criterion):
     Creates a criterion that measures the loss given an input x = {x1, x2},
     a table of two Tensors, and a Tensor label y with values 1 or -1.
 
-    :param margin a number from -1 to 1, 0 to 0.5 is suggested
+
+    :param margin: a number from -1 to 1, 0 to 0.5 is suggested
+
 
     >>> cosineEmbeddingCriterion = CosineEmbeddingCriterion(1e-5, True)
     creating: createCosineEmbeddingCriterion
@@ -196,7 +210,9 @@ class DistKLDivCriterion(Criterion):
     '''
     The Kullback-Leibler divergence criterion
 
-    :param sizeAverage
+
+    :param sizeAverage:
+
 
     >>> distKLDivCriterion = DistKLDivCriterion(True)
     creating: createDistKLDivCriterion
@@ -219,10 +235,12 @@ class HingeEmbeddingCriterion(Criterion):
     e.g. using the L1 pairwise distance, and is typically used for
     learning nonlinear embeddings or semi-supervised learning.
 
+
     If x and y are n-dimensional Tensors, the sum operation still operates
     over all the elements, and divides by n (this can be avoided if one sets
     the internal variable sizeAverage to false). The margin has a default
     value of 1, or can be set in the constructor.
+
 
     >>> hingeEmbeddingCriterion = HingeEmbeddingCriterion(1e-5, True)
     creating: createHingeEmbeddingCriterion
@@ -243,7 +261,9 @@ class L1HingeEmbeddingCriterion(Criterion):
     Creates a criterion that measures the loss given an input x = {x1, x2},
     a table of two Tensors, and a label y (1 or -1):
 
-    :param margin
+
+    :param margin:
+
 
     >>> l1HingeEmbeddingCriterion = L1HingeEmbeddingCriterion(1e-5)
     creating: createL1HingeEmbeddingCriterion
@@ -262,8 +282,10 @@ class MarginCriterion(Criterion):
     Creates a criterion that optimizes a two-class classification hinge loss (margin-based loss)
     between input x (a Tensor of dimension 1) and output y.
 
-    :param margin if unspecified, is by default 1.
+
+    :param margin: if unspecified, is by default 1.
     :param size_average: size average in a mini-batch
+
 
     >>> marginCriterion = MarginCriterion(1e-5, True)
     creating: createMarginCriterion
@@ -288,7 +310,9 @@ class MarginRankingCriterion(Criterion):
     If y == 1 then it assumed the first input should be ranked higher (have a larger value) than
     the second input, and vice-versa for y == -1.
 
-    :param margin
+
+    :param margin:
+
 
     >>> marginRankingCriterion = MarginRankingCriterion(1e-5, True)
     creating: createMarginRankingCriterion
@@ -308,6 +332,7 @@ class MultiCriterion(Criterion):
     '''
     a weighted sum of other criterions each applied to the same input and target
 
+
     >>> multiCriterion = MultiCriterion()
     creating: createMultiCriterion
     '''
@@ -323,7 +348,9 @@ class MultiLabelMarginCriterion(Criterion):
     Creates a criterion that optimizes a multi-class multi-classification hinge loss (
     margin-based loss) between input x and output y (which is a Tensor of target class indices)
 
+
     :param size_average: size average in a mini-batch
+
 
     >>> multiLabelMarginCriterion = MultiLabelMarginCriterion(True)
     creating: createMultiLabelMarginCriterion
@@ -342,9 +369,12 @@ class ParallelCriterion(Criterion):
     ParallelCriterion is a weighted sum of other criterions each applied to a different input
     and target. Set repeatTarget = true to share the target for criterions.
 
+
     Use add(criterion[, weight]) method to add criterion. Where weight is a scalar(default 1).
 
-    :param repeat_target Whether to share the target for all criterions.
+
+    :param repeat_target: Whether to share the target for all criterions.
+
 
     >>> parallelCriterion = ParallelCriterion(True)
     creating: createParallelCriterion
@@ -364,14 +394,18 @@ class SmoothL1Criterion(Criterion):
     It uses a squared term if the absolute element-wise error falls below 1.
     It is less sensitive to outliers than the MSECriterion and in some
     cases prevents exploding gradients (e.g. see "Fast R-CNN" paper by Ross Girshick).
+```
                           | 0.5 * (x_i - y_i)^2^, if |x_i - y_i| < 1
     loss(x, y) = 1/n \sum |
                           | |x_i - y_i| - 0.5,   otherwise
+```
     If x and y are d-dimensional Tensors with a total of n elements,
     the sum operation still operates over all the elements, and divides by n.
     The division by n can be avoided if one sets the internal variable sizeAverage to false
 
-    :param size_average whether to average the loss
+
+    :param size_average: whether to average the loss
+
 
     >>> smoothL1Criterion = SmoothL1Criterion(True)
     creating: createSmoothL1Criterion
@@ -392,11 +426,13 @@ class SmoothL1CriterionWithWeights(Criterion):
     It is less sensitive to outliers than the MSECriterion and in some cases
     prevents exploding gradients (e.g. see "Fast R-CNN" paper by Ross Girshick).
 
+```
    d = (x - y) * w_in
    loss(x, y, w_in, w_out)
               | 0.5 * (sigma * d_i)^2 * w_out          if |d_i| < 1 / sigma / sigma
    = 1/n \sum |
               | (|d_i| - 0.5 / sigma / sigma) * w_out   otherwise
+```
 
     >>> smoothL1CriterionWithWeights = SmoothL1CriterionWithWeights(1e-5, 1)
     creating: createSmoothL1CriterionWithWeights
@@ -418,9 +454,10 @@ class SoftmaxWithCriterion(Criterion):
     passing real-valued predictions through a softmax to get a probability distribution over classes.
     It should be preferred over separate SoftmaxLayer + MultinomialLogisticLossLayer
     as its gradient computation is more numerically stable.
-    :param ignoreLabel   (optional) Specify a label value that
-    should be ignored when computing the loss.
-    :param normalizeMode How to normalize the output loss.
+
+    :param ignoreLabel:   (optional) Specify a label value thatshould be ignored when computing the loss.
+    :param normalizeMode: How to normalize the output loss.
+
 
     >>> softmaxWithCriterion = SoftmaxWithCriterion()
     creating: createSoftmaxWithCriterion
@@ -442,8 +479,10 @@ class TimeDistributedCriterion(Criterion):
     This class is intended to support inputs with 3 or more dimensions.
     Apply Any Provided Criterion to every temporal slice of an input.
 
+
     :param criterion: embedded criterion
     :param size_average: whether to divide the sequence length
+
 
     >>> td = TimeDistributedCriterion(ClassNLLCriterion())
     creating: createClassNLLCriterion
@@ -459,7 +498,9 @@ class CrossEntropyCriterion(Criterion):
     """
     This criterion combines LogSoftMax and ClassNLLCriterion in one single class.
 
-    :param weights A tensor assigning weight to each of the classes
+
+    :param weights: A tensor assigning weight to each of the classes
+
 
     >>> np.random.seed(123)
     >>> weights = np.random.uniform(0, 1, (2,)).astype("float32")
@@ -484,8 +525,10 @@ class BCECriterion(Criterion):
     Creates a criterion that measures the Binary Cross Entropy
     between the target and the output
 
-    :param weights weights for each class
-    :param sizeAverage whether to average the loss or not
+
+    :param weights: weights for each class
+    :param sizeAverage: whether to average the loss or not
+
 
     >>> np.random.seed(123)
     >>> weights = np.random.uniform(0, 1, (2,)).astype("float32")
@@ -508,10 +551,14 @@ class MultiLabelSoftMarginCriterion(Criterion):
     '''
     A MultiLabel multiclass criterion based on sigmoid:
     the loss is:
+```
      l(x,y) = - sum_i y[i] * log(p[i]) + (1 - y[i]) * log (1 - p[i])
+```
     where p[i] = exp(x[i]) / (1 + exp(x[i]))
     and with weights:
+```
      l(x,y) = - sum_i weights[i] (y[i] * log(p[i]) + (1 - y[i]) * log (1 - p[i]))
+```
 
     >>> np.random.seed(123)
     >>> weights = np.random.uniform(0, 1, (2,)).astype("float32")
@@ -535,10 +582,12 @@ class MultiMarginCriterion(Criterion):
     Creates a criterion that optimizes a multi-class classification hinge loss (margin-based loss)
     between input x and output y (which is a target class index).
 
-    :param p
-    :param weights
-    :param margin
-    :param size_average
+
+    :param p:
+    :param weights:
+    :param margin:
+    :param size_average:
+
 
     >>> np.random.seed(123)
     >>> weights = np.random.uniform(0, 1, (2,)).astype("float32")
@@ -567,10 +616,12 @@ class SoftMarginCriterion(Criterion):
     between input x (a Tensor of dimension 1) and output y (which is a tensor
     containing either 1s or -1s).
 
+```
            loss(x, y) = sum_i (log(1 + exp(-y[i]*x[i]))) / x:nElement()
+```
 
-    :param sizeaverage The normalization by the number of elements in the input
-                       can be disabled by setting
+    :param sizeaverage: The normalization by the number of elements in the inputcan be disabled by setting
+
 
     >>> softMarginCriterion = SoftMarginCriterion(False)
     creating: createSoftMarginCriterion
