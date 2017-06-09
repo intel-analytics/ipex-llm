@@ -90,6 +90,7 @@ class TestResult():
     """
     def __init__(self, result, total_num, method):
         """
+
         :param result: the validation result. i.e: top1 accuracy percentage.
         :param total_num: the total processed records.
         :param method: the validation method. i.e: Top1Accuracy
@@ -110,6 +111,7 @@ class JTensor(object):
     """
     A wrapper to easy our work when need to pass or return Tensor to/from Scala.
 
+
     >>> import numpy as np
     >>> from bigdl.util.common import JTensor
     >>> np.random.seed(123)
@@ -124,6 +126,7 @@ class JTensor(object):
     def from_ndarray(cls, a_ndarray, bigdl_type="float"):
         """
         Convert a ndarray to Tensor which would be used in Java side.
+
         >>> import numpy as np
         >>> from bigdl.util.common import JTensor
         >>> from bigdl.util.common import callBigDlFunc
@@ -153,7 +156,9 @@ class JTensor(object):
     def flatten_ndarray(cls, a_ndarray):
         """
         Utility method to flatten a ndarray
-        :return (storage, shape)
+
+        :return: (storage, shape)
+        
         >>> from bigdl.util.common import JTensor
         >>> np.random.seed(123)
         >>> data = np.random.uniform(0, 1, (2, 3))
@@ -334,6 +339,7 @@ def callJavaFunc(sc, func, *args):
 
 def _to_java_object_rdd(rdd):
     """ Return a JavaRDD of Object by unpickling
+
 
     It will convert each Python object into Java object by Pyrolite, whenever
     the RDD is serialized in batch or not.
