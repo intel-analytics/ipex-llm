@@ -46,6 +46,7 @@ def get_minst(sc, data_type="train", location="/tmp/mnist"):
     """
     Get and normalize the mnist data. We would download it automatically
     if the data doesn't present at the specific location.
+
     :param sc: SparkContext
     :param data_type: training data or testing data
     :param location: Location storing the mnist
