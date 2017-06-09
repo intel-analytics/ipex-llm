@@ -26,7 +26,7 @@ import scala.util.Random
 @com.intel.analytics.bigdl.tags.Parallel
 class SpatialConvolutionMapSpec extends FlatSpec with Matchers {
 
-  "A SpatialConvolution 3D input" should "generate correct output" in {
+  "A SpatialConvolutionMap 3D input" should "generate correct output" in {
     val seed = 100
     RNG.setSeed(seed)
 
@@ -42,7 +42,7 @@ class SpatialConvolutionMapSpec extends FlatSpec with Matchers {
     Random.setSeed(seed)
     val input = Tensor[Double](3, 32, 32).apply1(e => Random.nextDouble())
 
-    layer2.setScaleW(2.0).setScaleB(2.0)
+    layer2.setScaleW(2.0).setScaleB(0.5)
 
     val output1 = layer1.forward(input)
     val output2 = layer2.forward(input)
@@ -56,6 +56,6 @@ class SpatialConvolutionMapSpec extends FlatSpec with Matchers {
     gradInput1 should be (gradInput2)
 
     layer2.gradWeight should be (layer1.gradWeight.mul(2))
-    layer2.gradBias should be (layer1.gradBias.mul(2))
+    layer2.gradBias should be (layer1.gradBias.mul(0.5))
   }
 }

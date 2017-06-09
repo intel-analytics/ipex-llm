@@ -40,7 +40,7 @@ class SpatialDilatedConvolutionSpec extends FlatSpec with Matchers {
     val layer1 = new SpatialDilatedConvolution[Double](nInputPlane, nOutputPlane,
       kW, kH, dW, dH, padW, padH)
     val layer2 = layer1.cloneModule().asInstanceOf[SpatialDilatedConvolution[Double]]
-    layer2.setScaleW(2).setScaleB(2)
+    layer2.setScaleW(2).setScaleB(0.5)
 
     val input = Tensor[Double](3, 3, 6, 6).apply1(e => Random.nextDouble())
 
@@ -54,7 +54,7 @@ class SpatialDilatedConvolutionSpec extends FlatSpec with Matchers {
     gradInput1 should be (gradInput2)
 
     layer2.gradWeight should be (layer1.gradWeight.mul(2))
-    layer2.gradBias should be (layer1.gradBias.mul(2))
+    layer2.gradBias should be (layer1.gradBias.mul(0.5))
 
   }
 
