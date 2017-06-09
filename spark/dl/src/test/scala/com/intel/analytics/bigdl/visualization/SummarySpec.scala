@@ -28,7 +28,7 @@ import org.tensorflow.framework
 class SummarySpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   before {
-    System.setProperty("bigdl.localMode", "true")
+    System.setProperty("bigdl.localMode", "false")
     Engine.init(1, 4, true)
   }
 

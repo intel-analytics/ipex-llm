@@ -419,7 +419,7 @@ object Engine {
 
 object Env {
   val waitTimeMilliSec: Int = {
-    System.getProperty("bigdl.blockTime", "0").toLowerCase(Locale.ROOT) match {
+    System.getProperty("bigdl.mklBlockTime", "0").toLowerCase(Locale.ROOT) match {
       case x if x.toInt >= 0 => x.toInt
       case option =>
         throw new IllegalArgumentException(s"Unknown option of $option for bigdl.blockTime")
@@ -444,7 +444,7 @@ object Env {
   }
 
   def waitPolicyPassive(): Unit = {
-    System.getProperty("bigdl.waitPolicy", "passive").toLowerCase(Locale.ROOT) match {
+    System.getProperty("bigdl.mklWaitPolicy", "passive").toLowerCase(Locale.ROOT) match {
       case "passive" => MKL.waitPolicyPassive()
       case option =>
         throw new IllegalArgumentException(s"Unknown option of $option for bigdl.waitPolicy")
