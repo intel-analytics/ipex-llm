@@ -446,7 +446,7 @@ object Env {
 
   def waitPolicyPassive(): Unit = {
     System.getProperty("bigdl.waitPolicy", "passive").toLowerCase(Locale.ROOT) match {
-      case "passive" => MKL.waitPolicyPasssive()
+      case "passive" => MKL.waitPolicyPassive()
       case option =>
         throw new IllegalArgumentException(s"Unknown option of $option for bigdl.waitPolicy")
     }
