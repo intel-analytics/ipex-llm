@@ -36,7 +36,7 @@ class BinaryTreeLSTM[T: ClassTag](
   val leafModules: ArrayBuffer[Module[T]] = ArrayBuffer[Module[T]]()
   val composer: Module[T] = createComposer()
   val leafModule: Module[T] = createLeafModule()
-  val cells = ArrayBuffer[Module[T]]()
+  val cells: ArrayBuffer[ArrayBuffer[Module[T]]] = ArrayBuffer[ArrayBuffer[Module[T]]]()
 
   def createLeafModule(): Module[T] = {
     val input = Identity().apply()
@@ -93,103 +93,139 @@ class BinaryTreeLSTM[T: ClassTag](
   }
 
   override def updateOutput(input: Table): Tensor[T] = {
-    val tensorTree = new TensorTree[T](input(2))
-    for (i <- 1 to tensorTree.size(1)) {
-      if (tensorTree.noChild(i)) {
-        val numLeafModules = leafModules.size
-        if (numLeafModules == 0) {
-          cells.append(createLeafModule())
-        } else {
-          cells.append(leafModules.remove(numLeafModules - 1))
-        }
-      } else {
-        val numComposers = composers.size
-        if (numComposers == 0) {
-          cells.append(createComposer())
-        } else {
-          cells.append(composers.remove(numComposers - 1))
+    val inputs = input[Tensor[T]](1)
+    val trees = input[Tensor[T]](2)
+    val batchSize = inputs.size(1)
+    val nodeSize = trees.size(2)
+    output.resize(batchSize, nodeSize, hiddenSize)
+    output.zero()
+
+    for (b <- 1 to batchSize) {
+      cells.append(ArrayBuffer[Module[T]]())
+    }
+
+    for (b <- 1 to batchSize) {
+      val tensorTree = new TensorTree[T](trees.select(1, b))
+      for (i <- 1 to tensorTree.size(0)) {
+        if (tensorTree.noChild(i)) {
+          val numLeafModules = leafModules.size
+          if (numLeafModules == 0) {
+            cells(b - 1).append(createLeafModule())
+          } else {
+            cells(b - 1).append(leafModules.remove(numLeafModules - 1))
+          }
+        } else if (tensorTree.hasChild(i)) {
+          val numComposers = composers.size
+          if (numComposers == 0) {
+            cells(b - 1).append(createComposer())
+          } else {
+            cells(b - 1).append(composers.remove(numComposers - 1))
+          }
         }
       }
-    }
-    recursiveForward(input(1), tensorTree, tensorTree.getRoot)
-    output.resize(cells.size, hiddenSize)
-    for (i <- 1 to cells.size) {
-      output.select(1, i).copy(unpackState(cells(i - 1).output.toTable)._2)
+      recursiveForward(b, inputs.select(1, b), tensorTree, tensorTree.getRoot)
+      output(b).resize(nodeSize, hiddenSize)
+      for (i <- 1 to cells(b - 1).size) {
+        output(b).select(1, i).copy(unpackState(cells(b - 1)(i - 1).output.toTable)._2)
+      }
     }
     output
   }
 
-  def recursiveForward(input: Tensor[T], tree: TensorTree[T], nodeIndex: Int): Table = {
+  def recursiveForward(
+    batch: Int,
+    input: Tensor[T],
+    tree: TensorTree[T],
+    nodeIndex: Int): Table = {
     if (tree.noChild(nodeIndex)) {
-      cells(nodeIndex - 1)
+      cells(batch - 1)(nodeIndex - 1)
         .forward(input.select(1, tree.leafIndex(nodeIndex))).toTable
     } else {
-      val leftOut = recursiveForward(input, tree, tree.children(nodeIndex)(0))
-      val rigthOut = recursiveForward(input, tree, tree.children(nodeIndex)(1))
+      val leftOut = recursiveForward(batch, input, tree, tree.children(nodeIndex)(0))
+      val rightOut = recursiveForward(batch, input, tree, tree.children(nodeIndex)(1))
       val (lc, lh) = unpackState(leftOut)
-      val (rc, rh) = unpackState(rigthOut)
+      val (rc, rh) = unpackState(rightOut)
 
-      cells(nodeIndex - 1).forward(T(lc, lh, rc, rh)).toTable
+      cells(batch - 1)(nodeIndex - 1).forward(T(lc, lh, rc, rh)).toTable
     }
   }
 
   override def updateGradInput(input: Table, gradOutput: Tensor[T]): Table = {
-    val tensorTree = new TensorTree[T](input(2))
-    recursiveBackward(input(1),
-      tensorTree,
-      gradOutput,
-      T(memZero, memZero),
-      tensorTree.getRoot)
+    if (!(gradInput.contains(1) || gradInput.contains(2))) {
+      gradInput = T(Tensor(), Tensor())
+    }
+
+    val inputs = input[Tensor[T]](1)
+    val trees = input[Tensor[T]](2)
+
+    gradInput[Tensor[T]](1).resizeAs(inputs)
+    gradInput[Tensor[T]](2).resizeAs(trees)
+
+    val batchSize = inputs.size(1)
+    val nodeSize = trees.size(2)
+
+    for (b <- 1 to batchSize) {
+      val tensorTree = new TensorTree[T](trees(b))
+      recursiveBackward(
+        b,
+        inputs(b),
+        tensorTree,
+        gradOutput(b),
+        T(memZero, memZero),
+        tensorTree.getRoot)
+    }
+    cells.clear()
+
     gradInput
   }
 
   def recursiveBackward(
+    batch: Int,
     inputs: Tensor[T],
     tree: TensorTree[T],
     outputGrads: Tensor[T],
     gradOutput: Table,
     nodeIndex: Int
   ): Unit = {
-    val outputGrad = outputGrads.select(1, nodeIndex)
-    gradInput[Tensor[T]](1).resizeAs(inputs)
+    val outputGrad = outputGrads(nodeIndex)
 
     if (tree.noChild(nodeIndex)) {
-      gradInput[Tensor[T]](1)
+      gradInput[Tensor[T]](1)(batch)
         .select(1, tree.leafIndex(nodeIndex))
         .copy(
-          cells(nodeIndex - 1)
+          cells(batch - 1)(nodeIndex - 1)
             .backward(
               inputs.select(1, tree.leafIndex(nodeIndex)),
               T(gradOutput(1), gradOutput[Tensor[T]](2) + outputGrad)
             ).toTensor)
 
-      leafModules.append(cells(nodeIndex - 1))
+      leafModules.append(cells(batch - 1)(nodeIndex - 1))
     } else {
       val children = tree.children(nodeIndex)
-      val (lc, lh) = unpackState(cells(children(0) - 1).output.toTable)
-      val (rc, rh) = unpackState(cells(children(1) - 1).output.toTable)
-      val composerGrad = cells(nodeIndex - 1)
+      val (lc, lh) = unpackState(cells(batch - 1)(children(0) - 1).output.toTable)
+      val (rc, rh) = unpackState(cells(batch - 1)(children(1) - 1).output.toTable)
+      val composerGrad = cells(batch - 1)(nodeIndex - 1)
         .backward(T(lc, lh, rc, rh), T(gradOutput(1), gradOutput[Tensor[T]](2) + outputGrad))
         .toTable
 
-      composers.append(cells(nodeIndex - 1))
+      composers.append(cells(batch - 1)(nodeIndex - 1))
       recursiveBackward(
+        batch,
         inputs,
         tree,
         outputGrads,
-        T(composerGrad(1),
-          composerGrad(2)),
+        T(composerGrad[Tensor[T]](1),
+          composerGrad[Tensor[T]](2)),
         children(0))
       recursiveBackward(
+        batch,
         inputs,
         tree,
         outputGrads,
-        T(composerGrad(3),
-          composerGrad(4)),
+        T(composerGrad[Tensor[T]](3),
+          composerGrad[Tensor[T]](4)),
         children(1))
     }
-
-    cells.clear()
   }
 
   def unpackState(state: Table): (Tensor[T], Tensor[T]) = {
@@ -227,10 +263,12 @@ class TensorTree[T: ClassTag](val content: Tensor[T])
     content.select(1, index).toBreezeVector().toArray.map(ev.toType[Int])
 
   def addChild(parent: Int, child: T): Unit = {
-    for (i <- 1 to size(1)) {
-      if (content(Array(parent, i)) == 0) {
-        content.setValue(parent, i, child)
-        break()
+    breakable {
+      for (i <- 1 to size(1)) {
+        if (content(Array(parent, i)) == ev.zero) {
+          content.setValue(parent, i, child)
+          break()
+        }
       }
     }
   }
@@ -241,7 +279,7 @@ class TensorTree[T: ClassTag](val content: Tensor[T])
 
   def getRoot: Int = {
     for (i <- 1 to size(0)) {
-      if (content(Array(i, size(1))) == -1) {
+      if (ev.toType[Int](content(Array(i, size(1)))) == -1) {
         return i
       }
     }
@@ -258,15 +296,19 @@ class TensorTree[T: ClassTag](val content: Tensor[T])
   }
 
   def hasChild(index: Int): Boolean = {
-    content(Array(index, 1)) != 0
+    ev.toType[Int](content(Array(index, 1))) > 0
   }
 
   def noChild(index: Int): Boolean = {
-    content(Array(index, 1)) == 0
+    ev.toType[Int](content(Array(index, 1))) == 0
   }
 
   def exists(index: Int): Boolean = {
     index >= 1 && index <= size(0)
+  }
+
+  def isPadding(index: Int): Boolean = {
+    ev.toType[Int](content(Array(index, 1))) == -1
   }
 }
 
