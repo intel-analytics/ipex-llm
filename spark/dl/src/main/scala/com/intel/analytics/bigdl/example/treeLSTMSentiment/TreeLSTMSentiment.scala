@@ -103,8 +103,9 @@ class TreeLSTMSentiment(param: TreeLSTMSentimentParam) extends Serializable {
   val log: Logger = LoggerFactory.getLogger(this.getClass)
   val DATA_DIR = param.baseDir
   val classNum = if (param.fineGrained) 5 else 3
-  val criterion = ClassNLLCriterion()
+  val criterion = TimeDistributedCriterion(CrossEntropyCriterion())
   val textClassifier = new TextClassifier(param)
+  val embeddingDim = 300
 
   val treeLSTM = BinaryTreeLSTM(
     inputSize = 10,
@@ -128,11 +129,13 @@ class TreeLSTMSentiment(param: TreeLSTMSentimentParam) extends Serializable {
             if (prev != 0) {
               trees.addChild(idx, prev)
             }
-            if (trees.exists(parent)) {
-              trees.addChild(parent, idx)
-            } else if (parent == 0) {
+
+            if (parent == 0) {
               trees.markAsRoot(idx)
-              break
+              break()
+            } else if (trees.hasChild(parent)) {
+              trees.addChild(parent, idx)
+              break()
             } else {
               prev = idx
               idx = parent
@@ -153,6 +156,20 @@ class TreeLSTMSentiment(param: TreeLSTMSentimentParam) extends Serializable {
     trees.content
   }
 
+  var remapLabel = (label: Float, fineGrained: Boolean) => {
+    if (fineGrained) {
+      label + 3
+    } else {
+      if (label < 0) {
+        1f
+      } else if (label == 0) {
+        2f
+      } else {
+        3f
+      }
+    }
+  }
+
   def train(): Unit = {
     val conf = Engine.createSparkConf()
       .setAppName("Text classification")
@@ -169,7 +186,7 @@ class TreeLSTMSentiment(param: TreeLSTMSentimentParam) extends Serializable {
     print(s"treeRDD count: ${treeRDD.count()}")
     val labelRDD = sc.textFile(s"$DATA_DIR/sst/train/labels.txt", param.partitionNum)
       .map(line => line.split(" "))
-      .map(_.map(_.toFloat))
+      .map(_.map(l => remapLabel(l.toFloat, param.fineGrained)))
     print(s"labelRDD count: ${labelRDD.count()}")
     val sentenceRDD = sc.textFile(s"$DATA_DIR/sst/train/sents.txt", param.partitionNum)
     print(s"sentenceRDD count: ${sentenceRDD.count()}")
@@ -197,7 +214,7 @@ class TreeLSTMSentiment(param: TreeLSTMSentimentParam) extends Serializable {
     val indexFrom = 3
     var i = 1
     val vocabLines = Source.fromFile(s"$DATA_DIR/sst/vocab-cased.txt", "ISO-8859-1").getLines.toList
-    val word2VecTensor = Tensor(vocabLines.length, 300)
+    val word2VecTensor = Tensor(vocabLines.length, embeddingDim)
     for (line <- vocabLines) {
       if (i < indexFrom || !word2Vec.contains(line)) {
         word2VecTensor.select(1, i).apply1(_ => RNG.uniform(-0.05f, 0.05f).toFloat)
@@ -207,14 +224,6 @@ class TreeLSTMSentiment(param: TreeLSTMSentimentParam) extends Serializable {
       vocab += line -> i
       i += 1
     }
-
-//    while (i <= wordVecMap.size) {
-//      val vector = wordVecMap(i)
-//      while (j <= param.embeddingDim) {
-//        wordVecTensor.setValue(i, j, vector(j))
-//      }
-//      i += 1
-//    }
 
     val vocabBC = sc.broadcast(vocab)
     val word2VecBC = sc.broadcast(word2VecTensor)
@@ -233,9 +242,9 @@ class TreeLSTMSentiment(param: TreeLSTMSentimentParam) extends Serializable {
       Sample(
         featureTensors =
           Array(Tensor(input.map(_.toFloat), Array(input.length, 1)),
-        tree.resize(tree.size() ++ Array(1))),
+        tree.resize(tree.size())),
         labelTensor =
-          Tensor(label, Array(1)))
+          Tensor(label, Array(label.length)))
     }
 
     val Array(trainingRDD, valRDD) = sampleRDD.randomSplit(
@@ -248,8 +257,8 @@ class TreeLSTMSentiment(param: TreeLSTMSentimentParam) extends Serializable {
       criterion = criterion,
       batchSize = param.batchSize,
       isInOrder = false,
-      featurePaddings = Some(Array(Tensor(T(paddingValue.toFloat)), Tensor(T(-1f)))),
-      labelPadding = Some(-1f)
+      featurePaddings = Some(Array(Tensor(T(paddingValue.toFloat)), Tensor(T(-1f, -1f, -1f)))),
+      labelPadding = Some(6f)
     )
     val state = T("learningRate" -> 0.01, "learningRateDecay" -> 0.0002)
     optimizer
@@ -262,7 +271,7 @@ class TreeLSTMSentiment(param: TreeLSTMSentimentParam) extends Serializable {
   }
 
   def buildModel(vocabSize: Int, word2VecTensor: Tensor[Float]): Module[Float] = {
-    val embedding = LookupTable(vocabSize, param.embeddingDim)
+    val embedding = LookupTable(vocabSize, embeddingDim)
     embedding.weight.set(word2VecTensor)
     Sequential()
       .add(MapTable(Squeeze(3)))
@@ -270,6 +279,7 @@ class TreeLSTMSentiment(param: TreeLSTMSentimentParam) extends Serializable {
         .add(embedding)
         .add(Identity()))
       .add(BinaryTreeLSTM(
-        param.embeddingDim, param.hiddenSize))
+        embeddingDim, param.hiddenSize))
+      .add(TimeDistributed(Linear(param.hiddenSize, classNum + 1)))
   }
 }

@@ -566,7 +566,9 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     if (_z < 0) {
       _z = this.size(dim) + _z + 1
     }
-    require(_z >= 0 && _z < this.size(dim), "index out of bound")
+    require(_z >= 0 && _z < this.size(dim),
+      s"index out of bound, index i = ${_z},"
+      + s" which should satisfy 0 <= i < ${this.size(dim)}")
     _z * this.stride(dim)
   }
 

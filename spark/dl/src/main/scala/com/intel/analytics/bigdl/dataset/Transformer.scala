@@ -811,7 +811,7 @@ object SampleToMiniBatch {
     inputs(0).resize(input1Size)
     var i = 1
     while (i < samples(0).features.length) {
-      inputs(i).resize(Array(samples.length) ++ samples(0).features(i).size())
+      inputs(i).resize(Array(samples.length) ++ samples(featureIndices(i)).features(i).size())
       i += 1
     }
     target.resize(targetSize)
