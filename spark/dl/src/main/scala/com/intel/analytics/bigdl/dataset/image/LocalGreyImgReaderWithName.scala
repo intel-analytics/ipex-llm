@@ -26,37 +26,38 @@ import scala.collection.Iterator
  * Read BGR images from given paths,
  * return LabeledBGRImage and the file name.
  */
-object LocalImgReaderWithName {
+object LocalGreyImgReaderWithName {
   Class.forName("javax.imageio.ImageIO")
-  Class.forName("java.awt.color.ICC_ColorSpace")
-  ColorSpace.getInstance(ColorSpace.CS_sRGB).toRGB(Array[Float](0, 0, 0))
+//  Class.forName("java.awt.color.ICC_ColorSpace")
+//  ColorSpace.getInstance(ColorSpace.CS_sRGB).toRGB(Array[Float](0, 0, 0))
 
   def apply(scaleTo: Int = Image.NO_SCALE, normalize: Float = 255f)
-  : Transformer[LocalLabeledImagePath, (LabeledBGRImage, String)]
-  = new LocalScaleImgWithName(scaleTo, normalize)
+  : Transformer[LocalLabeledImagePath, (LabeledGreyImage, String)]
+  = new LocalScaleGreyImgWithName(scaleTo, normalize)
 
   def apply(resizeW: Int, resizeH: Int, normalize: Float)
-  : Transformer[LocalLabeledImagePath, (LabeledBGRImage, String)]
-  = new LocalResizeImgWithName(resizeW, resizeH, normalize)
+  : Transformer[LocalLabeledImagePath, (LabeledGreyImage, String)]
+  = new LocalResizeGreyImgWithName(resizeW, resizeH, normalize)
 }
 
 /**
- * Read BGR images from given paths. After read the image, it will resize the shorted edge to the
+ * Read Grey images from given paths. After read the image, it will resize the shorted edge to the
  * given scale to value and resize the other edge properly. It will also divide the pixel value
  * by the given normalize value.
  * Besides, it will return the file name.
  * @param scaleTo
  * @param normalize
  */
-class LocalScaleImgWithName private[dataset](scaleTo: Int, normalize: Float)
-  extends Transformer[LocalLabeledImagePath, (LabeledBGRImage, String)] {
+class LocalScaleGreyImgWithName private[dataset](scaleTo: Int, normalize: Float)
+  extends Transformer[LocalLabeledImagePath, (LabeledGreyImage, String)] {
 
 
-  private val buffer = new LabeledBGRImage()
+  private val buffer = new LabeledGreyImage()
 
-  override def apply(prev: Iterator[LocalLabeledImagePath]): Iterator[(LabeledBGRImage, String)] = {
+  override def apply(prev: Iterator[LocalLabeledImagePath])
+  : Iterator[(LabeledGreyImage, String)] = {
     prev.map(data => {
-      val imgData = BGRImage.readImage(data.path, scaleTo)
+      val imgData = GreyImage.readImage(data.path, scaleTo)
       val label = data.label
       (buffer.copy(imgData, normalize).setLabel(label), data.path.getFileName.toString)
     })
@@ -64,22 +65,23 @@ class LocalScaleImgWithName private[dataset](scaleTo: Int, normalize: Float)
 }
 
 /**
- * Read BGR images from local given paths. After read the image, it will resize the images to the
+ * Read Grey images from local given paths. After read the image, it will resize the images to the
  * given width and height. It will also divide the pixel value by the given normalize value.
  * Besides, it will return the file name.
  * @param resizeW the given width to resize
  * @param resizeH the given hight to resize
  * @param normalize the value to normalize
  */
-class LocalResizeImgWithName private[dataset](resizeW: Int, resizeH: Int, normalize: Float)
-  extends Transformer[LocalLabeledImagePath, (LabeledBGRImage, String)] {
+class LocalResizeGreyImgWithName private[dataset](resizeW: Int, resizeH: Int, normalize: Float)
+  extends Transformer[LocalLabeledImagePath, (LabeledGreyImage, String)] {
 
 
-  private val buffer = new LabeledBGRImage()
+  private val buffer = new LabeledGreyImage()
 
-  override def apply(prev: Iterator[LocalLabeledImagePath]): Iterator[(LabeledBGRImage, String)] = {
+  override def apply(prev: Iterator[LocalLabeledImagePath])
+  : Iterator[(LabeledGreyImage, String)] = {
     prev.map(data => {
-      val imgData = BGRImage.readImage(data.path, resizeW, resizeH)
+      val imgData = GreyImage.readImage(data.path, resizeW, resizeH)
       val label = data.label
       (buffer.copy(imgData, normalize).setLabel(label), data.path.getFileName.toString)
     })

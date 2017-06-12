@@ -54,11 +54,17 @@ class GreyImage(
   protected var _height: Int
 ) extends Image {
 
-  def copy(source: Array[Byte], normalize: Float = 1.0f, offset: Int = 0): this.type = {
-    require(data.length + offset <= source.length)
+  def copy(source: Array[Byte], normalize: Float = 1.0f): this.type = {
+    val buffer = ByteBuffer.wrap(source)
+    _width = buffer.getInt
+    _height = buffer.getInt
+    require(source.length == 8 + _width * _height)
+    if (data.length != _height * _width) {
+      data = new Array[Float](_width * _height)
+    }
     var i = 0
     while (i < data.length) {
-      data(i) = (source(i + offset) & 0xff) / normalize
+      data(i) = (source(i + 8) & 0xff) / normalize
       i += 1
     }
     this
@@ -305,42 +311,42 @@ object BGRImage {
     }
   }
 
-  private def getWidthHeightAfterRatioScale(oriHeight: Int, oriWidth: Int,
-    scaleTo: Int): (Int, Int) = {
-    if (NO_SCALE == scaleTo) {
-      (oriHeight, oriWidth)
-    } else {
-      if (oriWidth < oriHeight) {
-        (scaleTo * oriHeight / oriWidth, scaleTo)
-      } else {
-        (scaleTo, scaleTo * oriWidth / oriHeight)
-      }
-    }
-  }
+//  private def getWidthHeightAfterRatioScale(oriHeight: Int, oriWidth: Int,
+//    scaleTo: Int): (Int, Int) = {
+//    if (NO_SCALE == scaleTo) {
+//      (oriHeight, oriWidth)
+//    } else {
+//      if (oriWidth < oriHeight) {
+//        (scaleTo * oriHeight / oriWidth, scaleTo)
+//      } else {
+//        (scaleTo, scaleTo * oriWidth / oriHeight)
+//      }
+//    }
+//  }
+//
+//  private def readRawImage(path: Path): BufferedImage = {
+//    var fis: FileInputStream = null
+//    try {
+//      fis = new FileInputStream(path.toString)
+//      val channel = fis.getChannel
+//      val byteArrayOutputStream = new ByteArrayOutputStream
+//      channel.transferTo(0, channel.size, Channels.newChannel(byteArrayOutputStream))
+//      val image = ImageIO.read(new ByteArrayInputStream(byteArrayOutputStream.toByteArray))
+//      require(image != null, "Can't read file " + path + ", ImageIO.read is null")
+//      image
+//    } catch {
+//      case ex: Exception =>
+//        ex.printStackTrace()
+//        System.err.println("Can't read file " + path)
+//        throw ex
+//    } finally {
+//      if (fis != null) {
+//        fis.close()
+//      }
+//    }
+//  }
 
-  private def readRawImage(path: Path): BufferedImage = {
-    var fis: FileInputStream = null
-    try {
-      fis = new FileInputStream(path.toString)
-      val channel = fis.getChannel
-      val byteArrayOutputStream = new ByteArrayOutputStream
-      channel.transferTo(0, channel.size, Channels.newChannel(byteArrayOutputStream))
-      val image = ImageIO.read(new ByteArrayInputStream(byteArrayOutputStream.toByteArray))
-      require(image != null, "Can't read file " + path + ", ImageIO.read is null")
-      image
-    } catch {
-      case ex: Exception =>
-        ex.printStackTrace()
-        System.err.println("Can't read file " + path)
-        throw ex
-    } finally {
-      if (fis != null) {
-        fis.close()
-      }
-    }
-  }
-
-  val NO_SCALE = -1
+//  val NO_SCALE = -1
 
   def resizeImage(img: BufferedImage, resizeWidth: Int, resizeHeight: Int): Array[Byte] = {
     var scaledImage: java.awt.Image = null
@@ -369,14 +375,115 @@ object BGRImage {
   }
 
   def readImage(path: Path, scaleTo: Int): Array[Byte] = {
-    val img: BufferedImage = readRawImage(path)
+    val img: BufferedImage = Image.readRawImage(path)
     val (heightAfterScale, widthAfterScale) =
-      getWidthHeightAfterRatioScale(img.getHeight, img.getWidth, scaleTo)
+      Image.getWidthHeightAfterRatioScale(img.getHeight, img.getWidth, scaleTo)
     resizeImage(img, widthAfterScale, heightAfterScale)
   }
 
   def readImage(path: Path, resizeWidth: Int, resizeHeight: Int): Array[Byte] = {
-    val img: BufferedImage = readRawImage(path)
+    val img: BufferedImage = Image.readRawImage(path)
+    resizeImage(img, resizeWidth, resizeHeight)
+  }
+}
+
+object Image {
+  val NO_SCALE = -1
+
+  def getWidthHeightAfterRatioScale(oriHeight: Int, oriWidth: Int,
+                                            scaleTo: Int): (Int, Int) = {
+    if (NO_SCALE == scaleTo) {
+      (oriHeight, oriWidth)
+    } else {
+      if (oriWidth < oriHeight) {
+        (scaleTo * oriHeight / oriWidth, scaleTo)
+      } else {
+        (scaleTo, scaleTo * oriWidth / oriHeight)
+      }
+    }
+  }
+
+  def readRawImage(path: Path): BufferedImage = {
+    var fis: FileInputStream = null
+    try {
+      fis = new FileInputStream(path.toString)
+      val channel = fis.getChannel
+      val byteArrayOutputStream = new ByteArrayOutputStream
+      channel.transferTo(0, channel.size, Channels.newChannel(byteArrayOutputStream))
+      val image = ImageIO.read(new ByteArrayInputStream(byteArrayOutputStream.toByteArray))
+      require(image != null, "Can't read file " + path + ", ImageIO.read is null")
+      image
+    } catch {
+      case ex: Exception =>
+        ex.printStackTrace()
+        System.err.println("Can't read file " + path)
+        throw ex
+    } finally {
+      if (fis != null) {
+        fis.close()
+      }
+    }
+  }
+}
+
+object GreyImage {
+  def hflip(data : Array[Float], height : Int, width : Int): Unit = {
+    var y = 0
+    while (y < height) {
+      var x = 0
+      while (x < width / 2) {
+        var swap = 0.0f
+        swap = data(y * width + x)
+        data(y * width + x) = data(y * width + width - x - 1)
+        data(y * width + width - x - 1) = swap
+
+        swap = data((y * width + x) + 1)
+        data((y * width + x) + 1) = data((y * width + width - x - 1) + 1)
+        data((y * width + width - x - 1) + 1) = swap
+
+        swap = data((y * width + x) + 2)
+        data((y * width + x) + 2) = data((y * width + width - x - 1) + 2)
+        data((y * width + width - x - 1) + 2) = swap
+        x += 1
+      }
+      y += 1
+    }
+  }
+
+  def resizeImage(img: BufferedImage, resizeWidth: Int, resizeHeight: Int): Array[Byte] = {
+    var scaledImage: java.awt.Image = null
+    // no scale
+    if ((resizeHeight == img.getHeight) && (resizeWidth == img.getWidth)) {
+      scaledImage = img
+    } else {
+      scaledImage =
+        img.getScaledInstance(resizeWidth, resizeHeight, java.awt.Image.SCALE_SMOOTH)
+    }
+
+    val imageBuff: BufferedImage =
+      new BufferedImage(resizeWidth, resizeHeight, BufferedImage.TYPE_BYTE_GRAY)
+    imageBuff.getGraphics.drawImage(scaledImage, 0, 0, new Color(0, 0, 0), null)
+    val pixels: Array[Byte] =
+      imageBuff.getRaster.getDataBuffer.asInstanceOf[DataBufferByte].getData
+
+    val bytes = new Array[Byte](8 + pixels.length)
+    val byteBuffer = ByteBuffer.wrap(bytes)
+    require(imageBuff.getWidth * imageBuff.getHeight == pixels.length)
+    byteBuffer.putInt(imageBuff.getWidth)
+    byteBuffer.putInt(imageBuff.getHeight)
+    System.arraycopy(pixels, 0, bytes, 8, pixels.length)
+    bytes
+  }
+
+  def readImage(path: Path, scaleTo: Int): Array[Byte] = {
+    val img: BufferedImage = Image.readRawImage(path)
+    val (heightAfterScale, widthAfterScale) =
+      Image.getWidthHeightAfterRatioScale(img.getHeight, img.getWidth, scaleTo)
+    resizeImage(img, widthAfterScale, heightAfterScale)
+  }
+
+  def readImage(path: Path, resizeWidth: Int, resizeHeight: Int): Array[Byte] = {
+    val img: BufferedImage = Image.readRawImage(path)
     resizeImage(img, resizeWidth, resizeHeight)
   }
 }

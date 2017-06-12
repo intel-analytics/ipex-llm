@@ -459,7 +459,7 @@ class TransformersSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "RGBImage To SeqFile without file name" should "be good" in {
     val resource = getClass().getClassLoader().getResource("imagenet")
-    val pathToImage = LocalImgReaderWithName(BGRImage.NO_SCALE)
+    val pathToImage = LocalImgReaderWithName(Image.NO_SCALE)
     val dataSet = DataSet.ImageFolder.paths(
       Paths.get(processPath(resource.getPath()))
     )
@@ -500,7 +500,7 @@ class TransformersSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "RGBImage To SeqFile with file name" should "be good" in {
     val resource = getClass().getClassLoader().getResource("imagenet")
-    val pathToImage = LocalImgReaderWithName(BGRImage.NO_SCALE)
+    val pathToImage = LocalImgReaderWithName(Image.NO_SCALE)
     val dataSet = DataSet.ImageFolder.paths(
       Paths.get(processPath(resource.getPath()))
     )
@@ -542,7 +542,7 @@ class TransformersSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
       while (reader.next(key, value) && data.hasNext) {
         val r = data.next()
-        val imgData = BGRImage.readImage(r.path, BGRImage.NO_SCALE)
+        val imgData = BGRImage.readImage(r.path, Image.NO_SCALE)
         SeqFileFolder.readName(key).toString should be (r.path.getFileName.toString)
         SeqFileFolder.readLabel(key).toFloat should be (r.label)
         value.copyBytes() should be (imgData)
