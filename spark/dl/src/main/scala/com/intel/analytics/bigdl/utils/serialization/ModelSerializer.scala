@@ -15,10 +15,8 @@
  */
 package com.intel.analytics.bigdl.utils.serialization
 
-import java.io._
 import scala.collection.JavaConverters._
 
-import com.google.protobuf.CodedInputStream
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
@@ -26,9 +24,6 @@ import com.intel.analytics.bigdl.optim.{L1L2Regularizer, L1Regularizer, L2Regula
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.Path
-import org.apache.hadoop.io.IOUtils
 import serialization.Model
 import serialization.Model.BigDLModel.ModuleType
 import serialization.Model._
@@ -37,179 +32,14 @@ import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
-sealed abstract class ModelSerializer {
-
-  def loadModule[T: ClassTag](model : BigDLModel)(implicit ev: TensorNumeric[T]) : BigDLModule[T]
-
-  def serializeModule[T: ClassTag](module : BigDLModule[T])
-                                  (implicit ev: TensorNumeric[T]) : BigDLModel
-
-  /**
-   * copy serialized data (weight and bias if exist) to BigDL module
-   * @param model serialized module
-   * @param module  bigDL Module with relationships
-   */
-  def copy2BigDL[T: ClassTag](model : BigDLModel, module : BigDLModule[T])
-                             (implicit ev: TensorNumeric[T]): Unit = {
-    val paramTable : Table = module.module.getParametersTable
-    if (paramTable != null && paramTable.contains(model.getName)) {
-      val modulePramTable : Table = paramTable(module.module.getName)
-      val weight : Tensor[T] = if (modulePramTable.contains("weight")) {
-        modulePramTable("weight") }
-       else null
-      val bias : Tensor[T] = if (modulePramTable.contains("bias")) {
-        modulePramTable("bias") }
-        else null
-      if (weight != null) copy2BigDLTensor(weight, model.getWeight)
-      if (bias != null) copy2BigDLTensor(bias, model.getBias)
-    }
-  }
-
-  private def copy2BigDLTensor[T: ClassTag](tensor : Tensor[T], serializedTensor : BigDLTensor)
-                                 (implicit ev: TensorNumeric[T]) : Unit = {
-    val serializedData = serializedTensor.getDataList
-    require(tensor.nElement() == serializedData.size(), "data size is not equal")
-    var i = 0
-    val tensorData = tensor.storage().array()
-    var offset = tensor.storageOffset() - 1
-    while (i < serializedData.size()) {
-      tensorData(offset) = ev.fromType[Double](serializedData.get(i))
-      offset += 1
-      i += 1
-    }
-  }
-
-  /**
-    * copy BigDL module data (weight and bias if exist) to BigDL Model to be persisted
-    * @param modelBuilder serialized module builder
-    * @param module  bigDL Module with relationships
-    */
-  def copyFromBigDL[T: ClassTag](module : BigDLModule[T], modelBuilder : BigDLModel.Builder)
-                      (implicit ev : TensorNumeric[T]) : Unit = {
-    val paramTable : Table = module.module.getParametersTable
-    if (paramTable != null && paramTable.contains(module.module.getName)) {
-      val modulePramTable : Table = paramTable(module.module.getName)
-      val weight : Tensor[T] = if (modulePramTable.contains("weight")) {
-        modulePramTable("weight") }
-      else null
-      val bias : Tensor[T] = if (modulePramTable.contains("bias")) {
-        modulePramTable("bias") }
-      else null
-      if (weight != null) {
-        val weightTensorBuilder = BigDLTensor.newBuilder
-        copyFromBigDLTensor(weight, weightTensorBuilder)
-        modelBuilder.setWeight(weightTensorBuilder.build)
-      }
-      if (bias != null) {
-        val biasTensorBuilder = BigDLTensor.newBuilder
-        copyFromBigDLTensor(bias, biasTensorBuilder)
-        modelBuilder.setBias(biasTensorBuilder.build)
-      }
-    }
-  }
-
-  private def copyFromBigDLTensor[T: ClassTag](tensor : Tensor[T],
-    serializedTensor : BigDLTensor.Builder)(implicit ev: TensorNumeric[T]) : Unit = {
-    var i = 0
-    val tensorData = tensor.storage().array()
-    var offset = tensor.storageOffset() - 1
-    while (i < tensorData.length) {
-      serializedTensor.addData(ev.toType[Double](tensorData(i)))
-      i += 1
-    }
-    tensor.size().foreach(_ => serializedTensor.addSize(_))
-  }
-
-  protected def createBigDLModule[T: ClassTag](model : BigDLModel,
-    module : AbstractModule[Activity, Activity, T])(implicit ev: TensorNumeric[T])
-    : BigDLModule[T] = {
-    val tops = model.getTopsList.asScala
-    val bottoms = model.getBottomsList.asScala
-    val bigDLModule = BigDLModule(module, tops, bottoms)
-    module.setName(model.getName)
-    copy2BigDL(model, bigDLModule)
-    bigDLModule
-  }
-
-  protected def createSerializeBigDLModule[T: ClassTag](
-    modelBuilder : BigDLModel.Builder, module : BigDLModule[T])(implicit ev: TensorNumeric[T])
-  : BigDLModel = {
-    module.bottoms.foreach(bottom => modelBuilder.addBottoms(bottom))
-    module.tops.foreach(top => modelBuilder.addTops(top))
-    modelBuilder.setName(module.module.getName)
-    copyFromBigDL(module, modelBuilder)
-    modelBuilder.build
-  }
-
-  protected def createRegularizer[T: ClassTag]
-    (modelRegularizer : Model.Regularizer)(implicit ev: TensorNumeric[T]): Regularizer[T] = {
-    modelRegularizer.getRegularizerType match {
-      case RegularizerType.L1Regularizer => L1Regularizer(modelRegularizer.getRegularData(0))
-      case RegularizerType.L2Regularizer => L2Regularizer(modelRegularizer.getRegularData(0))
-      case RegularizerType.L1L2Regularizer => L1L2Regularizer(modelRegularizer.getRegularData(0),
-        modelRegularizer.getRegularData(1))
-      case _ => throw new IllegalArgumentException(s"${modelRegularizer.getRegularizerType}" +
-        s"cannot be recognized")
-    }
-  }
-
-  protected def createSerializeRegularizer[T: ClassTag]
-    (regularizer : Regularizer[T])(implicit ev: TensorNumeric[T]): Model.Regularizer = {
-    val builder = Model.Regularizer.newBuilder
-    regularizer match {
-      case reg : L1Regularizer[T] =>
-        builder.setRegularizerType(RegularizerType.L1Regularizer)
-        builder.addRegularData(regularizer.asInstanceOf[L1Regularizer[T]].l1)
-      case reg : L2Regularizer[T] =>
-        builder.setRegularizerType(RegularizerType.L2Regularizer)
-        builder.addRegularData(regularizer.asInstanceOf[L2Regularizer[T]].l2)
-      case reg : L1L2Regularizer[T] =>
-        builder.setRegularizerType(RegularizerType.L1L2Regularizer)
-        val l1l2 = regularizer.asInstanceOf[L1L2Regularizer[T]]
-        builder.addRegularData(l1l2.l1)
-        builder.addRegularData(l1l2.l2)
-    }
-    builder.build
-  }
-
-  protected def createInitMethod[T: ClassTag]
-    (initMethod : Model.InitMethod)(implicit ev: TensorNumeric[T]): InitializationMethod = {
-    initMethod match {
-      case Model.InitMethod.Default => Default
-      case Model.InitMethod.Xavier => Xavier
-      case Model.InitMethod.BilinearFiller => BilinearFiller
-      case _ => throw new IllegalArgumentException(s"${initMethod}" +
-        s"cannot be recognized")
-    }
-  }
-
-  protected def createSerializeInitMethod[T: ClassTag]
-  (initMethod : InitializationMethod)(implicit ev: TensorNumeric[T]): Model.InitMethod = {
-    initMethod match {
-      case Default => Model.InitMethod.Default
-      case Xavier => Model.InitMethod.Xavier
-      case  BilinearFiller => Model.InitMethod.BilinearFiller
-      case _ => throw new IllegalArgumentException(s"${initMethod}" +
-        s"cannot be recognized")
-    }
-  }
-}
-
-case class BigDLModule[T: ClassTag](module : AbstractModule[Activity, Activity, T],
-                               tops : Seq[String], bottoms : Seq[String])
-
 object ModelSerializer {
 
-  private val serializerMap = new mutable.HashMap[String, ModelSerializer]()
+  private val serializerMap = new mutable.HashMap[String, AbstractModelSerializer]()
   private val hdfsPrefix: String = "hdfs:"
 
-  serializerMap("ABS") = AbsSerializer
-  serializerMap("ADD") = AddSerializer
-  serializerMap("LINEAR") = LinearSerializer
-  serializerMap("SEQUENTIAL") = SequentialSerializer
-  serializerMap("GRAPH") = GraphSerializer
+  init
 
-  case object AbsSerializer extends ModelSerializer {
+  case object AbsSerializer extends AbstractModelSerializer {
 
     override def loadModule[T: ClassTag](model : BigDLModel)(implicit ev: TensorNumeric[T])
     : BigDLModule[T] = {
@@ -225,7 +55,7 @@ object ModelSerializer {
     }
   }
 
-  case object AddSerializer extends ModelSerializer {
+  case object AddSerializer extends AbstractModelSerializer {
 
     override def loadModule[T: ClassTag](model : BigDLModel)(implicit ev: TensorNumeric[T])
     : BigDLModule[T] = {
@@ -248,7 +78,7 @@ object ModelSerializer {
     }
   }
 
-  case object LinearSerializer extends ModelSerializer {
+  case object LinearSerializer extends AbstractModelSerializer {
 
     override def loadModule[T: ClassTag](model : BigDLModel)(implicit ev: TensorNumeric[T])
       : BigDLModule[T] = {
@@ -303,7 +133,7 @@ object ModelSerializer {
     }
   }
 
-  case object SequentialSerializer extends ModelSerializer {
+  case object SequentialSerializer extends AbstractModelSerializer {
     override def loadModule[T: ClassTag](model : BigDLModel)(implicit ev: TensorNumeric[T])
     : BigDLModule[T] = {
       val subModules = model.getSubModulesList.asScala
@@ -331,7 +161,7 @@ object ModelSerializer {
     }
   }
 
-  case object GraphSerializer extends ModelSerializer {
+  case object GraphSerializer extends AbstractModelSerializer {
     override def loadModule[T: ClassTag](model : BigDLModel)(implicit ev: TensorNumeric[T])
     : BigDLModule[T] = {
       val subModules = model.getSubModulesList.asScala
@@ -376,12 +206,12 @@ object ModelSerializer {
     }
   }
 
-  private def load[T: ClassTag](model: BigDLModel)
+  def load[T: ClassTag](model: BigDLModel)
     (implicit ev: TensorNumeric[T]) : BigDLModule[T] = {
     serializerMap(model.getModuleType.toString).loadModule(model)
   }
 
-  private def serialize[T: ClassTag](bigDLModule : BigDLModule[T])
+  def serialize[T: ClassTag](bigDLModule : BigDLModule[T])
     (implicit ev: TensorNumeric[T])
     : BigDLModel = {
     val module = bigDLModule.module.asInstanceOf[AbstractModule[_, _, _]]
@@ -396,102 +226,12 @@ object ModelSerializer {
     bigDLModel
   }
 
-  def loadFromFile[T: ClassTag](modelPath : String)
-    (implicit ev: TensorNumeric[T]) : AbstractModule[_, _, _] = {
-    val modelBuilder = BigDLModel.newBuilder
-    var cis : CodedInputStream = null
-    if (modelPath.startsWith(hdfsPrefix)) {
-      val byteArrayOut = com.intel.analytics.bigdl.utils.File.readHdfsByte(modelPath)
-      cis = CodedInputStream.newInstance(new ByteArrayInputStream(byteArrayOut))
-    } else {
-      cis = CodedInputStream.newInstance(new FileInputStream(modelPath))
-    }
-    cis.setSizeLimit(Integer.MAX_VALUE)
-    modelBuilder.mergeFrom(cis)
-    val bigDLModel = modelBuilder.build()
-    load(bigDLModel).module
+  private  def init(): Unit = {
+    serializerMap("ABS") = AbsSerializer
+    serializerMap("ADD") = AddSerializer
+    serializerMap("LINEAR") = LinearSerializer
+    serializerMap("SEQUENTIAL") = SequentialSerializer
+    serializerMap("GRAPH") = GraphSerializer
   }
 
-  def saveToFile[T: ClassTag](modelPath : String, module : AbstractModule[_, _, T],
-    overwrite: Boolean = false)(implicit ev: TensorNumeric[T]) : Unit = {
-    val bigDLModule = BigDLModule(module, new ArrayBuffer[String](), new ArrayBuffer[String]())
-    val bigDLModel = serialize(bigDLModule)
-    if (modelPath.startsWith(hdfsPrefix)) {
-      val binaryFile = new Path(modelPath)
-      val fs = binaryFile.getFileSystem(new Configuration())
-      if (fs.exists(binaryFile)) {
-        if (overwrite) {
-          fs.delete(binaryFile, true)
-        } else {
-          throw new RuntimeException(s"file $modelPath already exists")
-        }
-      }
-      val out = fs.create(binaryFile)
-      val byteArrayOut = new ByteArrayOutputStream()
-      byteArrayOut.write(bigDLModel.toByteArray)
-      IOUtils.copyBytes(new ByteArrayInputStream(byteArrayOut.toByteArray), out, 1024, true)
-    } else {
-      val binaryFile = new java.io.File(modelPath)
-      if (binaryFile.exists()) {
-        if (overwrite) {
-          binaryFile.delete()
-        } else {
-          throw new RuntimeException(s"file $modelPath already exists")
-        }
-      }
-      val binaryWriter = new FileOutputStream(binaryFile)
-      binaryWriter.write(bigDLModel.toByteArray)
-      binaryWriter.close
-    }
-  }
-
-  def saveModelDefinitionToFile[T: ClassTag](definitionPath : String,
-    module : AbstractModule[Activity, Activity, T],
-    overwrite: Boolean = false)(implicit ev: TensorNumeric[T]) : Unit = {
-    val bigDLModule = BigDLModule(module, new ArrayBuffer[String](), new ArrayBuffer[String]())
-    val bigDLModel = serialize(bigDLModule)
-    val bigDLModelWithoutWeightsAndBias = BigDLModel.newBuilder(bigDLModel)
-    cleantWeightAndBias(bigDLModelWithoutWeightsAndBias)
-    val model = bigDLModelWithoutWeightsAndBias.build
-    if (definitionPath.startsWith(hdfsPrefix)) {
-      val prototxtFile = new Path(definitionPath)
-      val fs = prototxtFile.getFileSystem(new Configuration())
-      if (fs.exists(prototxtFile)) {
-        if (overwrite) {
-          fs.delete(prototxtFile, true)
-        } else {
-          throw new RuntimeException(s"file $definitionPath already exists")
-        }
-      }
-      val out = fs.create(prototxtFile)
-      val byteArrayOut = new ByteArrayOutputStream()
-      byteArrayOut.write(model.toString.getBytes)
-      IOUtils.copyBytes(new ByteArrayInputStream(byteArrayOut.toByteArray), out, 1024, true)
-    } else {
-      val prototxtFile = new java.io.File(definitionPath)
-      if (prototxtFile.exists()) {
-        if (overwrite) {
-          prototxtFile.delete()
-        } else {
-          throw new RuntimeException(s"file $definitionPath already exists")
-        }
-      }
-      val prototxtWriter = new OutputStreamWriter(new FileOutputStream(prototxtFile))
-      prototxtWriter.write(model.toString)
-      prototxtWriter.close
-    }
-  }
-
-  private def cleantWeightAndBias(modelBuilder : BigDLModel.Builder): Unit = {
-    modelBuilder.clearWeight
-    modelBuilder.clearBias
-    if (modelBuilder.getSubModulesCount > 0) {
-      modelBuilder.clearSubModules
-      modelBuilder.getSubModulesList.asScala.foreach(sub => {
-        val subModelBuilder = BigDLModel.newBuilder(sub)
-        cleantWeightAndBias(subModelBuilder)
-        modelBuilder.addSubModules(subModelBuilder.build)
-      })
-    }
-  }
 }
