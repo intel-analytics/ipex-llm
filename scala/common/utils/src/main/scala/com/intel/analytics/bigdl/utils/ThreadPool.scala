@@ -123,7 +123,13 @@ class ThreadPool(private var poolSize: Int) {
   def invoke2[T](tasks: Seq[() => T]): Seq[java.util.concurrent.Future[T]] = {
     tasks.map(task => new Callable[T] {
       override def call(): T = {
-        task()
+        try {
+          task()
+        } catch {
+          case t : Throwable =>
+            logger.error("Error: " + ExceptionUtils.getStackTrace(t))
+            throw t
+        }
       }
     }).map(threadPool.submit(_))
   }
@@ -152,7 +158,13 @@ class ThreadPool(private var poolSize: Int) {
    */
   def invoke[T](task: () => T): Future[T] = {
     Future {
-      task()
+      try {
+        task()
+      } catch {
+        case t : Throwable =>
+          logger.error("Error: " + ExceptionUtils.getStackTrace(t))
+          throw t
+      }
     }(context)
   }
 
