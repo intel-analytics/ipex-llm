@@ -13,19 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.utils
+package com.intel.analytics.bigdl.utils.serialization
 
 import java.io._
+import scala.collection.JavaConverters._
 
 import com.google.protobuf.CodedInputStream
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn._
-
-import scala.collection.JavaConverters._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.optim.{L1L2Regularizer, L1Regularizer, L2Regularizer, Regularizer}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.Table
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.IOUtils
@@ -366,7 +366,9 @@ object ModelSerializer {
       graph.getExecutions.foreach(execution => {
         val tops = execution.prevNodes.map(_.element.getName)
         val bottoms = execution.nextNodes.map(_.element.getName)
-        val subModel = serialize(BigDLModule(execution.element, tops, bottoms))
+        val subModel = serialize(BigDLModule(execution.element
+            .asInstanceOf[AbstractModule[Activity, Activity, T]],
+          tops, bottoms))
         bigDLModelBuilder.addSubModules(subModel)
       })
       bigDLModelBuilder.setModuleType(ModuleType.GRAPH)
@@ -410,7 +412,7 @@ object ModelSerializer {
     load(bigDLModel).module
   }
 
-  def saveToFile[T: ClassTag](modelPath : String, module : AbstractModule[Activity, Activity, T],
+  def saveToFile[T: ClassTag](modelPath : String, module : AbstractModule[_, _, T],
     overwrite: Boolean = false)(implicit ev: TensorNumeric[T]) : Unit = {
     val bigDLModule = BigDLModule(module, new ArrayBuffer[String](), new ArrayBuffer[String]())
     val bigDLModel = serialize(bigDLModule)

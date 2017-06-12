@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.utils
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.numeric.NumericDouble
+import com.intel.analytics.bigdl.utils.serialization.ModelSerializer
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random
@@ -31,7 +32,7 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     val res1 = abs.forward(tensor1)
     tensor2.resizeAs(tensor1).copy(tensor1)
     ModelSerializer.saveToFile("/tmp/abs.bigdl", abs, true)
-    val loadedAbs = ModelSerializer.loadFromFile("/tmp/abs.bigdl")
+    val loadedAbs = ModelSerializer.loadFromFile("/tmp/abs.bigdl").asInstanceOf[Abs[Double]]
     val res2 = loadedAbs.forward(tensor2)
     res1 should be (res2)
   }
@@ -44,7 +45,7 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     tensor2.resizeAs(tensor1).copy(tensor1)
     ModelSerializer.saveToFile("/tmp/add.bigdl", add, true)
     val loadedAdd = ModelSerializer.loadFromFile("/tmp/add.bigdl")
-    val res2 = loadedAdd.forward(tensor2)
+    val res2 = loadedAdd.asInstanceOf[Add[Double]].forward(tensor2)
     res1 should be (res2)
   }
 
@@ -56,7 +57,7 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     tensor2.resizeAs(tensor1).copy(tensor1)
     ModelSerializer.saveToFile("/tmp/linear.bigdl", linear, true)
     val loadedLinear = ModelSerializer.loadFromFile("/tmp/linear.bigdl")
-    val res2 = loadedLinear.forward(tensor2)
+    val res2 = loadedLinear.asInstanceOf[Linear[Double]].forward(tensor2)
     res1 should be (res2)
    }
 
@@ -70,7 +71,7 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     tensor2.resizeAs(tensor1).copy(tensor1)
     ModelSerializer.saveToFile("/tmp/sequential.bigdl", sequential, true)
     val loadedSequential = ModelSerializer.loadFromFile("/tmp/sequential.bigdl")
-    val res2 = loadedSequential.forward(tensor2)
+    val res2 = loadedSequential.asInstanceOf[Sequential[Double]].forward(tensor2)
     res1 should be (res2)
   }
 
@@ -83,7 +84,7 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     tensor2.resizeAs(tensor1).copy(tensor1)
     ModelSerializer.saveToFile("/tmp/graph.bigdl", graph, true)
     val loadedGraph = ModelSerializer.loadFromFile("/tmp/graph.bigdl")
-    val res2 = loadedGraph.forward(tensor2)
+    val res2 = loadedGraph.asInstanceOf[Graph[Double]].forward(tensor2)
     res1 should be (res2)
   }
 }
