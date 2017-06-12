@@ -5,9 +5,24 @@ message BigDLModel
     enum ModuleType {
         ABS = 1;
         ADD = 2;
-        LINEAR = 3;
-        SEQUENTIAL = 4;
-        GRAPH = 5;
+        ADDCONST = 3;
+        BATCHNORM = 4;
+        BILINEAR = 5;
+        BIRECURRENT = 6;
+        BOTTLE = 7;
+        CADD = 8;
+        CADDTABLE = 9;
+        CONCATTABLE = 10;
+        CDIVTABLE = 11;
+        CLAMP = 12;
+        CMAXTABLE = 13;
+        CMINTABLE = 14;
+        CMUL = 15;
+        CMULTABLE = 16;
+        CONCAT = 17;
+        LINEAR = 18;
+        SEQUENTIAL = 19;
+        GRAPH = 20;
     }
     optional string name = 1; //model name
     repeated BigDLModel subModules = 2; // sub modules
@@ -17,7 +32,17 @@ message BigDLModel
     repeated string bottoms = 6; //module layer construct params
     required ModuleType moduleType = 7; //module type
     optional AddParam addParam = 8; //params for add layer
-    optional LinearParam linearParam = 9; // params for linear
+    optional AddConstParam addConstParam = 9; //params for add const layer
+    optional BatchNormParam batchNormParam = 10; //params for batch normalization
+    optional BiLinearParam biLinearParam = 11; //params for bilinear
+    optional BiRecurrentParam biRecurrentParam = 12; //params for birecurrent
+    optional BottleParam bottleParam = 13; //params for bottle container
+    optional CaddParam caddParam = 14; //params for cadd
+    optional CaddTableParam cAddTableParam = 15; //params for concat add table
+    optional ClampParam clampParam = 16; // params for Clamp
+    optional CMulParam cmulParam = 17; //params for Cmul
+    optional ConcatParam concatParam = 18; //params for concat
+    optional LinearParam linearParam = 19; // params for linear
 }
 enum InitMethod {
     Default = 1;
@@ -40,11 +65,54 @@ message Regularizer {
 message AddParam {
     required int32 inputSize = 1;
 }
+message AddConstParam {
+    required double constScalar = 1;
+    optional bool inPlace = 2 [default = false];
+}
+message BatchNormParam {
+    required int32 nOutput = 1;
+    optional double eps = 2 [default = 1e-5];
+    optional double momentum = 3 [default = 0.1];
+    optional bool affine = 4 [default = true];
+}
+message BiLinearParam {
+    required int32 inputSize1 = 1;
+    required int32 inputSize2 = 2;
+    required int32 outputSize = 3;
+    optional bool biasRes = 4 [default = true];
+    optional Regularizer wRegularizer = 5;
+    optional Regularizer bRegularizer = 6;
+}
+message BiRecurrentParam {
+    optional BigDLModel merge = 1;
+}
+
+message BottleParam {
+    required BigDLModel module = 1;
+    required int32 nInputDim = 2;
+    optional int32 nOutputDim1 = 3;
+}
+message CaddParam {
+    repeated int32 size = 1;
+}
+message CaddTableParam {
+    optional bool inplace = 1 [default = false];
+}
+message ClampParam {
+    required int32 min = 1;
+    required int32 max = 2;
+}
+message CMulParam {
+    repeated int32 size = 1;
+}
+message ConcatParam {
+    required int32 dimension = 1;
+}
 message LinearParam {
     required int32 inputSize = 1;
     required int32 outputSize = 2;
     optional InitMethod initMethod = 3;
-    optional bool withBias = 4;
+    optional bool withBias = 4 [default = true];
     optional Regularizer wRegularizer = 5;
     optional Regularizer bRegularizer = 6;
 }

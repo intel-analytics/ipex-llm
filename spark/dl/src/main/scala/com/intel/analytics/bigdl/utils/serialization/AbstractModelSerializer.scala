@@ -31,7 +31,8 @@ import scala.reflect.ClassTag
 
 private[serialization] abstract class AbstractModelSerializer {
 
-  def loadModule[T: ClassTag](model : BigDLModel)(implicit ev: TensorNumeric[T]) : BigDLModule[T]
+  def loadModule[T: ClassTag](model : BigDLModel)
+    (implicit ev: TensorNumeric[T]) : BigDLModule[T]
 
   def serializeModule[T: ClassTag](module : BigDLModule[T])
                                   (implicit ev: TensorNumeric[T]) : BigDLModel
@@ -41,7 +42,7 @@ private[serialization] abstract class AbstractModelSerializer {
     * @param model serialized module
     * @param module  bigDL Module with relationships
     */
-  def copy2BigDL[T: ClassTag](model : BigDLModel, module : BigDLModule[T])
+  protected def copy2BigDL[T: ClassTag](model : BigDLModel, module : BigDLModule[T])
                              (implicit ev: TensorNumeric[T]): Unit = {
     val paramTable : Table = module.module.getParametersTable
     if (paramTable != null && paramTable.contains(model.getName)) {
@@ -76,8 +77,8 @@ private[serialization] abstract class AbstractModelSerializer {
     * @param modelBuilder serialized module builder
     * @param module  bigDL Module with relationships
     */
-  def copyFromBigDL[T: ClassTag](module : BigDLModule[T], modelBuilder : BigDLModel.Builder)
-                                (implicit ev : TensorNumeric[T]) : Unit = {
+  protected def copyFromBigDL[T: ClassTag](module : BigDLModule[T],
+    modelBuilder : BigDLModel.Builder)(implicit ev : TensorNumeric[T]) : Unit = {
     val paramTable : Table = module.module.getParametersTable
     if (paramTable != null && paramTable.contains(module.module.getName)) {
       val modulePramTable : Table = paramTable(module.module.getName)

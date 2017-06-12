@@ -45,8 +45,8 @@ class Bilinear[T: ClassTag](
   val inputSize2: Int,
   val outputSize: Int,
   val biasRes: Boolean = true,
-  wRegularizer: Regularizer[T] = null,
-  bRegularizer: Regularizer[T] = null
+  val wRegularizer: Regularizer[T] = null,
+  val bRegularizer: Regularizer[T] = null
  )(implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T] {
 
   require((inputSize1 > 0) && (inputSize2 > 0) && (outputSize > 0),
