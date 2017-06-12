@@ -311,4 +311,22 @@ class SGDSpec extends FlatSpec with Matchers {
       -config[Double]("clr") should be(0.1 * Math.pow(0.5, e))
     }
   }
+
+  "Natural Exp without table" should "generate correct learning rates" in {
+
+    val optimMethod = new SGD[Double](0.1)
+    optimMethod.learningRateSchedule = NaturalExp(1, 1)
+    def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
+      (0.1, Tensor[Double](Storage(Array(1.0, 1.0))))
+    }
+    val x = Tensor[Double](Storage(Array(10.0, 10.0)))
+    val state = T("epoch" -> 0, "evalCounter" -> 0)
+    optimMethod.state = state
+    optimMethod.optimize(feval, x)
+    optimMethod.learningRateSchedule.currentRate should be(-0.1)
+    optimMethod.optimize(feval, x)
+    optimMethod.learningRateSchedule.currentRate should be(-0.1 * math.exp(-1))
+    optimMethod.optimize(feval, x)
+    optimMethod.learningRateSchedule.currentRate should be(-0.1 * math.exp(-2))
+  }
 }
