@@ -35,10 +35,10 @@ private[ml] trait DLParams extends HasFeaturesCol with HasPredictionCol {
       new VectorUDT)
 
     // TODO use SchemaUtils.checkColumnTypes after convert to 2.0
-      val actualDataType = schema($(featuresCol)).dataType
-      require(dataTypes.exists(actualDataType.equals),
-        s"Column ${$(featuresCol)} must be of type equal to one of the following types: " +
-          s"${dataTypes.mkString("[", ", ", "]")} but was actually of type $actualDataType.")
+    val actualDataType = schema($(featuresCol)).dataType
+    require(dataTypes.exists(actualDataType.equals),
+      s"Column ${$(featuresCol)} must be of type equal to one of the following types: " +
+        s"${dataTypes.mkString("[", ", ", "]")} but was actually of type $actualDataType.")
 
     SchemaUtils.appendColumn(schema, $(predictionCol), new ArrayType(DoubleType, false))
   }
@@ -107,8 +107,10 @@ private[ml] abstract class DLEstimatorBase
    * validate both feature and label columns
    */
   protected override def validateAndTransformSchema(schema: StructType): StructType = {
+    // validate feature column
     super.validateAndTransformSchema(schema)
 
+    // validate label column
     val dataTypes = Seq(
       new ArrayType(DoubleType, false),
       new ArrayType(FloatType, false),
@@ -116,10 +118,10 @@ private[ml] abstract class DLEstimatorBase
       DoubleType)
 
     // TODO use SchemaUtils.checkColumnTypes after convert to 2.0
-      val actualDataType = schema($(labelCol)).dataType
-      require(dataTypes.exists(actualDataType.equals),
-        s"Column ${$(labelCol)} must be of type equal to one of the following types: " +
-          s"${dataTypes.mkString("[", ", ", "]")} but was actually of type $actualDataType.")
+    val actualDataType = schema($(labelCol)).dataType
+    require(dataTypes.exists(actualDataType.equals),
+      s"Column ${$(labelCol)} must be of type equal to one of the following types: " +
+        s"${dataTypes.mkString("[", ", ", "]")} but was actually of type $actualDataType.")
 
     SchemaUtils.appendColumn(schema, $(predictionCol), new ArrayType(DoubleType, false))
   }

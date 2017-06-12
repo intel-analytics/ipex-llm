@@ -16,7 +16,7 @@
 package com.intel.analytics.bigdl.example.MLPipeline
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.image.{BytesToGreyImg, GreyImgNormalizer}
+import com.intel.analytics.bigdl.dataset.image.{BytesToGreyImg, GreyImgNormalizer, GreyImgToBatch}
 import com.intel.analytics.bigdl.dataset.{DataSet, DistributedDataSet, MiniBatch, _}
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.models.lenet.Utils._
@@ -27,9 +27,9 @@ import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.apache.spark.ml.{DLEstimator, DLModel}
-import org.apache.spark.mllib.linalg.DenseVector
+import org.apache.spark.ml.linalg.DenseVector
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{DataFrame, Row, SQLContext}
+import org.apache.spark.sql.SQLContext
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -52,66 +52,47 @@ object DLEstimatorLeNet {
       val sqLContext = SQLContext.getOrCreate(sc)
       Engine.init
 
-      val trainData = param.folder + "/train-images-idx3-ubyte"
-      val trainLabel = param.folder + "/train-labels-idx1-ubyte"
-      val validationData = param.folder + "/t10k-images-idx3-ubyte"
-      val validationLabel = param.folder + "/t10k-labels-idx1-ubyte"
-
-      val model = LeNet5(classNum = 10)
+      val trainData = param.folder + "/train-images.idx3-ubyte"
+      val trainLabel = param.folder + "/train-labels.idx1-ubyte"
+      val validationData = param.folder + "/t10k-images.idx3-ubyte"
+      val validationLabel = param.folder + "/t10k-labels.idx1-ubyte"
 
       val trainSet = DataSet.array(load(trainData, trainLabel), sc) ->
-        BytesToGreyImg(28, 28) -> GreyImgNormalizer(trainMean, trainStd)
+        BytesToGreyImg(28, 28) -> GreyImgNormalizer(trainMean, trainStd) -> GreyImgToBatch(1)
 
-      val validationSet = DataSet.array(load(validationData, validationLabel), sc) ->
-        BytesToGreyImg(28, 28) -> GreyImgNormalizer(testMean, testStd)
-
-      val dataFrameRDD : RDD[MinibatchData[Float]] = trainSet.
+      val trainingRDD : RDD[Data[Float]] = trainSet.
         asInstanceOf[DistributedDataSet[TensorMiniBatch[Float]]].data(false).map(batch => {
-          val feature = batch.getInput.asInstanceOf[Tensor[Float]]
-          val label = batch.getTarget.asInstanceOf[Tensor[Float]]
-          MinibatchData[Float](feature.storage().array(), label.storage().array())
+          val feature = batch.getInput().asInstanceOf[Tensor[Float]]
+          val label = batch.getTarget().asInstanceOf[Tensor[Float]]
+          Data[Float](feature.storage().array(), label.storage().array())
         })
+      val trainingDF = sqLContext.createDataFrame(trainingRDD).toDF(inputs: _*)
 
-      var trainingDF : DataFrame = sqLContext.createDataFrame(dataFrameRDD).toDF(inputs : _*)
-
+      val model = LeNet5(classNum = 10)
       val criterion = ClassNLLCriterion[Float]()
-
       var featureSize = Array(28, 28)
-
-      var estimator = new DLEstimator[Float](model, criterion, featureSize, Array(1))
+      val estimator = new DLEstimator[Float](model, criterion, featureSize, Array(1))
         .setFeaturesCol(inputs(0))
         .setLabelCol(inputs(1))
-        .setBatchSize(10)
-
+        .setBatchSize(50)
       val transformer = estimator.fit(trainingDF).asInstanceOf[DLModel[Float]]
-      transformer.setFeaturesCol("features")
-        .setPredictionCol("predict")
 
-      val rdd: RDD[DenseVectorData] = validationSet.
-        asInstanceOf[DistributedDataSet[MiniBatch[Float]]].data(false).flatMap{batch => {
-          val buffer = new ArrayBuffer[DenseVectorData]()
-          val feature = batch.data.storage().toArray
-          var i = 0
-          while (i < 128) {
-            val next = new DenseVector(feature.
-             slice(i * 28 * 28, (i + 1) * 28 * 28).map(_.toDouble))
-            val data = DenseVectorData(next)
-            buffer.append(data)
-            i += 1
-          }
-          buffer.iterator
-          }
+      val validationSet = DataSet.array(load(validationData, validationLabel), sc) ->
+        BytesToGreyImg(28, 28) -> GreyImgNormalizer(testMean, testStd) -> GreyImgToBatch(1)
+
+      val validationRDD: RDD[Data[Float]] = validationSet.
+        asInstanceOf[DistributedDataSet[MiniBatch[Float]]].data(false).map{batch =>
+          val feature = batch.getInput().asInstanceOf[Tensor[Float]]
+          val label = batch.getTarget().asInstanceOf[Tensor[Float]]
+          Data[Float](feature.storage().array(), label.storage().array())
         }
-      val validationDF : DataFrame = sqLContext.createDataFrame(rdd).toDF("features")
+      val validationDF = sqLContext.createDataFrame(validationRDD).toDF(inputs: _*)
       val transformed = transformer.transform(validationDF)
-      transformed.select("features", "predict").collect()
-        .foreach { case Row(data: DenseVector, predict: Int) =>
-            println(data + "=>" + predict)
-        }
+      transformed.show()
       sc.stop()
     })
   }
 }
 
 private case class DenseVectorData(denseVector : DenseVector)
-private case class MinibatchData[T](featureData : Array[T], labelData : Array[T])
+private case class Data[T](featureData : Array[T], labelData : Array[T])

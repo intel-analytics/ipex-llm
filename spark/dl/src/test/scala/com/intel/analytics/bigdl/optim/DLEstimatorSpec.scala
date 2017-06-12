@@ -56,6 +56,7 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       .setBatchSize(2)
       .setFeaturesCol(inputs(0))
       .setLabelCol(inputs(1))
+      .setMaxEpoch(2)
 
     val featureData = Tensor(10)
     val labelData = Tensor(1).fill(1.0f)

@@ -18,10 +18,10 @@ package org.apache.spark.ml
 import scala.reflect.ClassTag
 import com.intel.analytics.bigdl.dataset.{DataSet, MiniBatch}
 import com.intel.analytics.bigdl.{Criterion, Module}
-import com.intel.analytics.bigdl.optim.Optimizer
+import com.intel.analytics.bigdl.optim.{Adam, Optimizer, Trigger}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import org.apache.spark.ml.param.ParamMap
+import org.apache.spark.ml.param.{IntParam, ParamMap, ParamValidators}
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types._
@@ -61,17 +61,24 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag](
 
   def setBatchSize(value: Int): this.type = set(batchSize, value)
 
+  val maxEpoch = new IntParam(this, "maxEpoch", "number of max Epoch", ParamValidators.gt(0))
+  setDefault(maxEpoch -> 20)
+
+  def getMaxEpoch: Int = $(maxEpoch)
+
+  def setMaxEpoch(value: Int): this.type = set(maxEpoch, value)
+
   override def transformSchema(schema : StructType): StructType = {
     validateAndTransformSchema(schema)
   }
 
   protected override def internalFit(dataFrame: DataFrame): DLTransformerBase = {
-    dataFrame.show()
-
     val batches = toMiniBatch(dataFrame)
     val dataset = DataSet.rdd(batches)
 
     val optimizer = Optimizer(model, dataset, criterion)
+      .setOptimMethod(new Adam[T]())
+      .setEndWhen(Trigger.maxEpoch($(maxEpoch)))
     val optimizedModel = optimizer.optimize()
 
     val dlModel = new DLModel[T](optimizedModel, featureSize)

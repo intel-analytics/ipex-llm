@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.tensor.Tensor
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.ml.{DLClassifier, DLModel}
+import org.apache.spark.ml.DLModel
 import org.apache.spark.sql.{Row, SQLContext}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -47,7 +47,6 @@ class DLClassifierSpec extends FlatSpec with Matchers {
       .setBatchSize(10)
 
     val tensorBuffer = new ArrayBuffer[Data]()
-    var m = 0
     // generate test data
     val input = Tensor[Float](10, 28, 28).apply1(e => Random.nextFloat())
     val target = model.forward(input).toTensor[Float]
