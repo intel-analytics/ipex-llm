@@ -37,7 +37,7 @@ def main():
             print(tf_output)
             print("BigDL output is:")
             print(bigdl_output)
-            np.testing.assert_almost_equal(tf_output, bigdl_output)
+            np.testing.assert_almost_equal(tf_output, bigdl_output, 4)
 
 if __name__ == "__main__":
     main()

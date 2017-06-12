@@ -116,7 +116,7 @@ class Padding[T: ClassTag](
 }
 
 object Padding{
-  def apply[@specialized(Float, Double) T: ClassTag](
+  def apply[T: ClassTag](
     dim: Int,
     pad: Int,
     nInputDim: Int,

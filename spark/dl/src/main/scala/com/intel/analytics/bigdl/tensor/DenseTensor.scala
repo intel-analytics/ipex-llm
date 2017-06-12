@@ -1906,6 +1906,8 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
         "corresponding module, please keep them same.")
     }
   }
+
+  override def getTensorNumeric(): TensorNumeric[T] = ev
 }
 
 object DenseTensor {

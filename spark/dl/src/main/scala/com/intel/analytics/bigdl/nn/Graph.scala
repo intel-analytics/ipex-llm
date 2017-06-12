@@ -325,6 +325,12 @@ class Input[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends TensorModule[T
     gradInput = gradOutput
     gradInput
   }
+  override def equals(other: Any): Boolean = {
+    if (!other.isInstanceOf[Input[_]]) return false
+    this.eq(other.asInstanceOf[Input[_]])
+  }
+
+  override def hashCode(): Int = System.identityHashCode(this)
 }
 
 object Input {

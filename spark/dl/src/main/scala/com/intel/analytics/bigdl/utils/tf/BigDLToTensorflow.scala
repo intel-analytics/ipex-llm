@@ -25,6 +25,8 @@ import Tensorflow._
 import BigDLToTensorflow._
 import org.tensorflow.framework.{DataType, NodeDef}
 
+import scala.collection.mutable.ArrayBuffer
+
 /**
  * Wrapper of logic to convert module to tensorflow node definition
  */
@@ -51,6 +53,15 @@ object BigDLToTensorflow {
   }
 }
 
+object InputToTF extends BigDLToTensorflow {
+  override def toTFDef(module: AbstractModule[_, _, _], inputs: Seq[NodeDef],
+                       byteOrder: ByteOrder, dataFormat: TensorflowDataFormat): Seq[NodeDef] = {
+    require(inputs.length == 1, "Input only accept one input")
+
+    Seq(identity(inputs(0), module.getName()))
+  }
+}
+
 object ReLUToTF extends BigDLToTensorflow {
   override def toTFDef(module: AbstractModule[_, _, _], inputs: Seq[NodeDef],
                        byteOrder: ByteOrder, dataFormat: TensorflowDataFormat): Seq[NodeDef] = {
@@ -67,7 +78,7 @@ object LinearToTF extends BigDLToTensorflow {
     val linear = module.asInstanceOf[Linear[_]]
     val weight = const(linear.weight.t().contiguous(), linear.getName() + "/weight", byteOrder)
     val weightReader = identity(weight, linear.getName() + "/weightReader")
-    val mm = matmul(inputs(0), weightReader, linear.getName() + "matmul")
+    val mm = matmul(inputs(0), weightReader, linear.getName() + "/matmul")
     val bias = const(linear.bias, linear.getName() + "/bias", byteOrder)
     val biasReader = identity(bias, linear.getName() + "/biasReader")
     val add = biasAdd(mm, biasReader, dataFormat, linear.getName() + "/biasAdd")
@@ -80,10 +91,16 @@ object SpatialConvolutionToTF extends BigDLToTensorflow {
                        byteOrder: ByteOrder, dataFormat: TensorflowDataFormat): Seq[NodeDef] = {
     require(inputs.length == 1, "SpatialConvolution only accept one input")
     val spatialConv = module.asInstanceOf[SpatialConvolution[_]]
-    val filter = const(spatialConv.weight, spatialConv.getName() + "/filter", byteOrder)
+    // squeeze will modify the weight tensor
+    // GOIHW -> HWIO
+    require(spatialConv.weight.size(1) == 1, "convolution group is not supported")
+    val filterTensor = spatialConv.weight.select(1, 1)
+      .transpose(2, 3).transpose(3, 4).transpose(1, 2).transpose(2, 3).transpose(3, 4).contiguous()
+
+    val filter = const(filterTensor, spatialConv.getName() + "/filter", byteOrder)
     val filterReader = identity(filter, spatialConv.getName() + "/filterReader")
-    val conv = conv2D(inputs(0), filterReader, spatialConv.strideH, spatialConv.strideW,
-      spatialConv.kernelW, spatialConv.kernelH, spatialConv.strideW, spatialConv.strideH,
+    val conv = conv2D(inputs(0), filterReader, spatialConv.strideW, spatialConv.strideH,
+      spatialConv.kernelW, spatialConv.kernelH, spatialConv.padW, spatialConv.padH,
       dataFormat, spatialConv.getName() + "/conv2D")
     val bias = const(spatialConv.bias, spatialConv.getName() + "/bias", byteOrder)
     val biasReader = identity(bias, spatialConv.getName() + "/biasReader")
@@ -121,7 +138,7 @@ object ReshapeToTF extends BigDLToTensorflow {
       size.setValue(i + 1, rh.size(i))
       i += 1
     }
-    val shape = const(size, rh.getName() + "/shape", byteOrder, DataType.DT_INT32)
+    val shape = const(size, rh.getName() + "/shape", byteOrder, false, DataType.DT_INT32)
     val reshapeNode = reshape(inputs(0), shape, rh.getName())
     Seq(reshapeNode, shape)
   }
@@ -138,7 +155,7 @@ object ViewToTF extends BigDLToTensorflow {
       size.setValue(i + 1, viewLayer.sizes(i))
       i += 1
     }
-    val shape = const(size, viewLayer.getName() + "/shape", byteOrder, DataType.DT_INT32)
+    val shape = const(size, viewLayer.getName() + "/shape", byteOrder, false, DataType.DT_INT32)
     val reshapeNode = reshape(inputs(0), shape, viewLayer.getName())
     Seq(reshapeNode, shape)
   }
@@ -159,16 +176,17 @@ object PaddingToTF extends BigDLToTensorflow {
                        byteOrder: ByteOrder, dataFormat: TensorflowDataFormat): Seq[NodeDef] = {
     require(inputs.length == 1, "Padding only accept one input")
     val layer = module.asInstanceOf[Padding[_]]
-    val padding = Tensor[Float](1, 2)
+    require(layer.nIndex == 1, "only support padding nIndex == 1")
+    require(layer.nInputDim > 0, "nInputDim must be explicit specified")
+    val padding = Tensor[Float](layer.nInputDim, 2).zero()
     if (layer.pad < 0) {
-      padding.setValue(1, 1, -layer.pad)
-      padding.setValue(1, 2, 0)
+      padding.setValue(layer.dim, 1, -layer.pad)
     }
     else {
-      padding.setValue(1, 1, 0)
-      padding.setValue(1, 2, layer.pad)
+      padding.setValue(layer.dim, 2, layer.pad)
     }
-    val paddingsNode = const(padding, layer.getName() + "/padding", byteOrder, DataType.DT_INT32)
+    val paddingsNode = const(padding, layer.getName() + "/padding", byteOrder,
+      false, DataType.DT_INT32)
     val padNode = pad(inputs(0), paddingsNode, layer.getName() + "/output")
     Seq(padNode, paddingsNode)
   }
@@ -197,20 +215,9 @@ object DropoutToTF extends BigDLToTensorflow {
                        byteOrder: ByteOrder, dataFormat: TensorflowDataFormat): Seq[NodeDef] = {
     require(inputs.length == 1, "Dropout only accept one input")
     val layer = module.asInstanceOf[Dropout[_]]
-    val shapeNode = shape(inputs(0), layer.getName() + "/shape")
-    val rand = randomUniform(shapeNode, layer.getName() + "/random")
-    val maxNode = const(Tensor[Float](T(1.0f)), layer.getName() + "/max", byteOrder)
-    val minNode = const(Tensor[Float](T(0.0f)), layer.getName() + "/max", byteOrder)
-    val sub = subtract(maxNode, minNode, layer.getName() + "/sub")
-    val mul = multiply(rand, sub, layer.getName() + "/mul")
-    val randOutput = add(minNode, mul, layer.getName() + "/rand_output")
-    val keepProb = const(Tensor[Float](T(0.5f)), layer.getName() + "/keep_prob", byteOrder)
-    val div1 = realdiv(keepProb, inputs(0), layer.getName() + "/div1")
-    val div2 = realdiv(keepProb, randOutput, layer.getName() + "/div2")
-    val floorNode = floor(div2, layer.getName() + "/floor")
-    val output = multiply(div1, floorNode, layer.getName() + "/output")
-    Seq(output, floorNode, div2, div1, keepProb, randOutput, mul, sub, minNode, maxNode,
-      rand, shapeNode)
+    require(layer.isTraining() == false, "only support evaluating mode dropout")
+    require(inputs.length == 1, "require only one tensor input")
+    Seq(identity(inputs(0), layer.getName()))
   }
 }
 
@@ -234,7 +241,12 @@ object JoinTableToTF extends BigDLToTensorflow {
   override def toTFDef(module: AbstractModule[_, _, _], inputs: Seq[NodeDef],
                        byteOrder: ByteOrder, dataFormat: TensorflowDataFormat): Seq[NodeDef] = {
     val layer = module.asInstanceOf[JoinTable[_]]
-    Seq(concat(inputs, layer.dimension - 1, layer.getName()))
+    val axis = const(Tensor[Float](T((layer.dimension - 1).toFloat)), layer.getName() + "/axis",
+      byteOrder, true, DataType.DT_INT32)
+    val updateInputs = new ArrayBuffer[NodeDef]()
+    updateInputs ++= inputs.reverse
+    updateInputs.append(axis)
+    Seq(concat(updateInputs, layer.dimension - 1, layer.getName()), axis)
   }
 }
 
@@ -243,10 +255,11 @@ object MeanToTF extends BigDLToTensorflow {
                        byteOrder: ByteOrder, dataFormat: TensorflowDataFormat): Seq[NodeDef] = {
     require(inputs.length == 1, "Mean only accept one input")
     val layer = module.asInstanceOf[Mean[_]]
+    require(layer.squeeze == true, "Mean must squeeze input")
     val dimsTensor = Tensor[Float](layer.dimension)
-    dimsTensor.setValue(1, layer.dimension)
+    dimsTensor.setValue(1, layer.dimension - 1)
 
-    val dims = const(dimsTensor, layer.getName() + "/dims", byteOrder)
+    val dims = const(dimsTensor, layer.getName() + "/dims", byteOrder, false, DataType.DT_INT32)
     val mean = reduceMean(inputs(0), dims, false, layer.getName() + "/output")
     Seq(mean, dims)
   }
@@ -268,20 +281,22 @@ object LogSoftMaxToTF extends BigDLToTensorflow {
   }
 }
 
-object BatchNormToTF extends BigDLToTensorflow {
+object BatchNorm2DToTF extends BigDLToTensorflow {
   override def toTFDef(module: AbstractModule[_, _, _], inputs: Seq[NodeDef],
                        byteOrder: ByteOrder, dataFormat: TensorflowDataFormat): Seq[NodeDef] = {
     require(inputs.length == 1, "BatchNorm only accept one input")
     val layer = module.asInstanceOf[SpatialBatchNormalization[_]]
-    val stdVar = const(layer.saveStd, layer.getName() + "/std", byteOrder)
-    val mean = const(layer.saveMean, layer.getName() + "/mean", byteOrder)
+    require(!layer.isTraining(), "Only support evaluate mode batch norm")
+    val varNode = const(layer.runningVar, layer.getName() + "/std", byteOrder)
+    val mean = const(layer.runningMean, layer.getName() + "/mean", byteOrder)
     val scale = const(layer.weight, layer.getName() + "/scale", byteOrder)
     val offset = const(layer.bias, layer.getName() + "/offset", byteOrder)
-    val div = realdiv(scale, stdVar, layer.getName() + "/div")
-    val mul1 = multiply(inputs(0), div, layer.getName() + "/mul1")
-    val mul2 = multiply(scale, div, layer.getName() + "/mul2")
-    val sub = multiply(offset, scale, layer.getName() + "/sub")
+    val sqrtVar = rsqrt(varNode, layer.getName() + "/stdvar")
+    val mul0 = multiply(scale, sqrtVar, layer.getName() + "/mul0")
+    val mul1 = multiply(inputs(0), mul0, layer.getName() + "/mul1")
+    val mul2 = multiply(mean, mul0, layer.getName() + "/mul2")
+    val sub = subtract(offset, mul2, layer.getName() + "/sub")
     val output = add(mul1, sub, layer.getName() + "/output")
-    Seq(output, sub, mul2, mul1, div, offset, scale, mean, stdVar)
+    Seq(output, sub, mul2, mul1, mul0, offset, scale, mean, sqrtVar, varNode)
   }
 }

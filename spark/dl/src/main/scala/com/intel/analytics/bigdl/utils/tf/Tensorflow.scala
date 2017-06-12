@@ -103,7 +103,7 @@ object Tensorflow {
    * @return
    */
   def const[T: ClassTag](value : Tensor[T], name : String, byteOrder: ByteOrder,
-                         dataType: DataType = null): NodeDef = {
+                         isScalar: Boolean = false, dataType: DataType = null): NodeDef = {
     val dtype = if (dataType == null) {
       if (value.getType() == DoubleType) {
         DataType.DT_DOUBLE
@@ -118,7 +118,7 @@ object Tensorflow {
       .setName(name)
       .setOp("Const")
       .putAttr("dtype", AttrValue.newBuilder().setType(dtype).build())
-      .putAttr("value", tensorAttr(value, dtype, byteOrder))
+      .putAttr("value", tensorAttr(value, dtype, byteOrder, isScalar))
       .build()
   }
 
@@ -199,12 +199,12 @@ object Tensorflow {
     NodeDef.newBuilder()
       .setName(name)
       .setOp("Conv2D")
-      .addInput(filter.getName)
       .addInput(input.getName)
+      .addInput(filter.getName)
       .putAttr("T", getDataType(input))
       .putAttr("data_format", dataFormat.value)
       .putAttr("padding", getPaddingType(pW, pH, kW, kH, sW, sH).value)
-      .putAttr("strides", listIntAttr(Seq(sH, sW)))
+      .putAttr("strides", strideAttr(sW, sH, dataFormat))
       .build()
   }
 
@@ -343,6 +343,7 @@ object Tensorflow {
       .putAttr("dtype", AttrValue.newBuilder().setType(dtype).build())
       .putAttr("seed", intAttr(seed))
       .putAttr("seed2", intAttr(seed))
+      .addInput(shape.getName)
       .build()
   }
 
@@ -363,7 +364,7 @@ object Tensorflow {
     val node = NodeDef.newBuilder()
       .setName(name)
       .setOp("ConcatV2")
-      .putAttr("N", intAttr(axis))
+      .putAttr("N", intAttr(inputs.length - 1))
       .putAttr("T", getDataType(inputs(0)))
       .putAttr("Tidx", AttrValue.newBuilder().setType(DataType.DT_INT32).build())
 
@@ -379,6 +380,7 @@ object Tensorflow {
       .putAttr("T", getDataType(tensor))
       .putAttr("Tpaddings", getDataType(paddings))
       .addInput(tensor.getName)
+      .addInput(paddings.getName)
       .build()
   }
 
@@ -436,12 +438,13 @@ object Tensorflow {
   }
 
   private def tensorAttr[T: ClassTag](value: Tensor[T], dtype: DataType,
-                                      byteOrder: ByteOrder): AttrValue = {
+                                      byteOrder: ByteOrder, isScalar: Boolean): AttrValue = {
     val shape = TensorShapeProto.newBuilder()
-    value.size().foreach(dim => {
-      shape.addDim(Dim.newBuilder().setSize(dim))
-    })
-
+    if (!isScalar) {
+      value.size().foreach(dim => {
+        shape.addDim(Dim.newBuilder().setSize(dim))
+      })
+    }
     require(value.isContiguous(), "only support save a contiguous tensor")
 
     val content = if (value.getType() == DoubleType) {
@@ -539,12 +542,17 @@ object Tensorflow {
   }
 
   private def getDataType(node: NodeDef): AttrValue = {
-    var attr = node.getAttrOrDefault("T", null)
+    var attr = node.getAttrOrDefault("dtype", null)
     if (attr != null) {
       return attr
     }
 
-    attr = node.getAttrOrDefault("dtype", null)
+    attr = node.getAttrOrDefault("out_type", null)
+    if (attr != null) {
+      return attr
+    }
+
+    attr = node.getAttrOrDefault("T", null)
     if (attr != null) {
       return attr
     }

@@ -40,8 +40,8 @@ import scala.reflect.ClassTag
 @SerialVersionUID(2995626598003841724L)
 class Mean[T: ClassTag](
   val dimension: Int = 1,
-  nInputDims: Int = -1,
-  squeeze: Boolean = true)
+  val nInputDims: Int = -1,
+  val squeeze: Boolean = true)
   (implicit ev: TensorNumeric[T]) extends Sum[T](dimension, nInputDims, true, squeeze) {
   override def toString: String = s"nn.Mean"
 }

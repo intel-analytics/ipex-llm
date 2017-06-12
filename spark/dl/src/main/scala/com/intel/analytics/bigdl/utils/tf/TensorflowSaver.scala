@@ -55,6 +55,7 @@ object TensorflowSaver {
       new mutable.HashMap[AbstractModule[Activity, Tensor[T], T], ArrayBuffer[NodeDef]]()
     model.inputs.zip(inputs).foreach(n => {
       inputNodeCache(n._1.element) = ArrayBuffer(n._2)
+      println()
     })
 
     val graphBuilder = GraphDef.newBuilder()
@@ -69,6 +70,7 @@ object TensorflowSaver {
       n.nextNodes.foreach(n => {
         val list = inputNodeCache.getOrElse(n.element, ArrayBuffer())
         list.append(nodeDefs(0))
+        inputNodeCache(n.element) = list
       })
     })
 
@@ -78,8 +80,8 @@ object TensorflowSaver {
     val os = new FileOutputStream(path)
     val output = CodedOutputStream.newInstance(os)
     val graph = graphBuilder.build()
-    logger.debug("Graph definition is:")
-    logger.debug(graph.toString)
+    logger.info("Graph definition is:")
+    logger.info(graph.toString)
     graph.writeTo(output)
     output.flush()
     os.close()
@@ -142,7 +144,9 @@ object TensorflowSaver {
     getNameFromObj(Mean.getClass.getName) -> MeanToTF,
     getNameFromObj(SoftMax.getClass.getName) -> SoftMaxToTF,
     getNameFromObj(LogSoftMax.getClass.getName) -> LogSoftMaxToTF,
-    getNameFromObj(SpatialBatchNormalization.getClass.getName) -> BatchNormToTF
+    getNameFromObj(SpatialBatchNormalization.getClass.getName) -> BatchNorm2DToTF,
+    getNameFromObj(Input.getClass.getName) -> InputToTF,
+    getNameFromObj(Sigmoid.getClass.getName) -> SigmoidToTF
   )
 
   private def getNameFromObj(name: String) : String = name.substring(0, name.length - 1)
