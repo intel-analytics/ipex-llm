@@ -31,9 +31,9 @@ import org.apache.spark.sql.types._
  * thus Spark users can conveniently fit BigDL into Spark ML pipeline.
  *
  * The feature column holds the storage (Spark Vectors or array of Floats or Doubles) of
- * the feature data, and user should specify the tensor size(dimensions) via the featureSize.
+ * the feature data, and user should specify the tensor size(dimensions) via param featureSize.
  * The label column holds the storage (Spark Vectors, array of Floats or Doubles, or Double) of
- * the label data, and user should specify the tensor size(dimensions) via the labelSize.
+ * the label data, and user should specify the tensor size(dimensions) via param labelSize.
  * Internally the feature and label data are converted to BigDL tensors, to further train a
  * BigDL model efficiently.
  *

@@ -27,11 +27,8 @@ import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.apache.spark.ml.{DLEstimator, DLModel}
-import org.apache.spark.ml.linalg.DenseVector
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
-
-import scala.collection.mutable.ArrayBuffer
 
 /**
  * An example to show how to use DLEstimator fit to be compatible with ML Pipeline
@@ -70,7 +67,7 @@ object DLEstimatorLeNet {
 
       val model = LeNet5(classNum = 10)
       val criterion = ClassNLLCriterion[Float]()
-      var featureSize = Array(28, 28)
+      val featureSize = Array(28, 28)
       val estimator = new DLEstimator[Float](model, criterion, featureSize, Array(1))
         .setFeaturesCol(inputs(0))
         .setLabelCol(inputs(1))
@@ -94,5 +91,4 @@ object DLEstimatorLeNet {
   }
 }
 
-private case class DenseVectorData(denseVector : DenseVector)
 private case class Data[T](featureData : Array[T], labelData : Array[T])
