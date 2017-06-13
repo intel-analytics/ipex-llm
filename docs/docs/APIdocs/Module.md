@@ -94,7 +94,7 @@ testSet = sc.parallelize(samples)
 
 //train a model or load an existing model...
 //model = ...
-evaluateResult = model.test(testSet, 1, [Top1Accuracy])
+evaluateResult = model.test(testSet, 1, ["Top1Accuracy"])
 ```
 
 

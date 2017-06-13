@@ -44,10 +44,7 @@ res12: Array[(com.intel.analytics.bigdl.optim.ValidationResult, com.intel.analyt
 ```
 
 **Python:**
-```python
-loss = Loss(cri)
-```
-example
+Just support setting string name "Loss", example code:
 ```
 from pyspark.context import SparkContext
 from bigdl.util.common import *
@@ -71,7 +68,7 @@ trainingData = sc.parallelize(range(0, data_len)).map(
 
 model = Sequential()
 model.add(Linear(4, 5))
-test_results = model.test(trainingData, batch_size, [Loss()])
+test_results = model.test(trainingData, batch_size, ["Loss"])
 
 >>> print test_results[0]
 Test result: 0.116546951234, total_num: 10, method: Loss
@@ -94,12 +91,9 @@ scala> result
 res13: Array[(com.intel.analytics.bigdl.optim.ValidationResult, com.intel.analytics.bigdl.optim.ValidationMethod[Float])] = Array((Accuracy(correct: 0, count: 10, accuracy: 0.0),Top1Accuracy))
 ```
 **Python:**
+set "Top1Accuracy", example code:
 ```python
-top1accuracy = Top1Accuracy()
-```
-
-```python
-test_results = model.test(trainingData, batch_size, [Top1Accuracy()])
+test_results = model.test(trainingData, batch_size, ["Top1Accuracy"])
 
 >>> print test_results[0]
 Test result: 0.0, total_num: 10, method: Top1Accuracy
@@ -122,11 +116,9 @@ scala> result
 res18: Array[(com.intel.analytics.bigdl.optim.ValidationResult, com.intel.analytics.bigdl.optim.ValidationMethod[Float])] = Array((Accuracy(correct: 10, count: 10, accuracy: 1.0),Top5Accuracy))
 ```
 **Python:**
+set "Top5Accuracy", example code:
 ```python
-top5accuracy = Top5Accuracy()
-```
-```python
-test_results = model.test(trainingData, batch_size, [Top5Accuracy()])
+test_results = model.test(trainingData, batch_size, ["Top5Accuracy"])
 
 >>> print test_results[1]
 Test result: 0.0, total_num: 10, method: Top5Accuracy

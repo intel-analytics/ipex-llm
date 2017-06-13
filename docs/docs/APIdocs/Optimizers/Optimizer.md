@@ -167,7 +167,7 @@ val optimizer = Optimizer(
   batchSize = batchSize
 ).setValidation(Trigger.everyEpoch, valRDD, Array(new Top1Accuracy), batchSize) // set validation method
   .setEndWhen(Trigger.maxEpoch(15)) // set end trigger
-  .setOptimMethod(new SGD(learningRate = 0.05)) // set optimize method, Since 0.2.0. Older version should use optimizer.setOptimMethod(new SGD()).setState(T("learningRate" -> 0.05))
+  .setState(T("learningRate" -> 0.05)) // set optimize method
 
 val trainedModel = optimizer.optimize()
 ```
@@ -182,7 +182,8 @@ optimizer =  Optimizer(model,
                  criterion,
                  end_trigger,
                  batch_size,
-                 optim_method=None,
+                 optim_method="SGD",
+                 state={},
                  bigdl_type="float")
 ```
 
@@ -191,7 +192,8 @@ optimizer =  Optimizer(model,
 `criterion`: the Loss function.  
 `end_trigger`: when to end the optimization.  
 `batch_size`: size of minibatch.  
-`optim_method`:  the algorithm to use for optimization, e.g. SGD, Adagrad, etc. If optim_method is None, the default algorithm is SGD.  
+`optim_method`: the algorithm to use for optimization, e.g. SGD, Adagrad, etc.
+`state`: a set of initial configurations for optimizer, provided as a dict e.g. configurable params include: learningRate, learningRateDecay,etc.
 `bigdl_type`: the numeric type(Float/Double).  
 
 ***Validation***
@@ -251,37 +253,20 @@ test_data = ...
 batch_size = 12
 # Create an Optimizer, Since 0.2.0
 optimizer = Optimizer(
-  model=lenet_model,
-  training_rdd=train_data,
-  criterion=ClassNLLCriterion(),
-  optim_method=SGD(learningrate=0.01, learningrate_decay=0.0002), # set optim method
-  end_trigger=MaxEpoch(15),
-  batch_size=batch_size)
-  
-# Older version, before 0.2.0, use following code: 
-# optimizer = Optimizer(
-#   model=model,
-#   training_rdd=train_data,
-#   criterion=ClassNLLCriterion(),
-#   optim_method="SGD",
-#   state={"learningRate": 0.05},
-#   end_trigger=MaxEpoch(training_epochs),
-#   batch_size=batch_size)
+   model=model,
+   training_rdd=train_data,
+   criterion=ClassNLLCriterion(),
+   optim_method="SGD",
+   state={"learningRate": 0.05},
+   end_trigger=MaxEpoch(training_epochs),
+   batch_size=batch_size)
 
 optimizer.set_validation(
     batch_size=2048,
     val_rdd=test_data,
     trigger=EveryEpoch(),
-    val_method=[Top1Accuracy()]
+    val_method=["Top1Accuracy"]
 )
-
-# Older version, before 0.2.0, use following code: 
-#optimizer.set_validation(
-#    batch_size=2048,
-#    val_rdd=test_data,
-#    trigger=EveryEpoch(),
-#    val_method=["Top1Accuracy"]
-#)
 
 trained_model = optimizer.optimize()
 
