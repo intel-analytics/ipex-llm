@@ -160,14 +160,15 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
 
   "Shared weights" should "be the same instance" in {
     tfCheck()
+    (("python " + testScriptsPath("share_weight.py")) !!)
     val resource = getClass().getClassLoader().getResource("tf")
-    val path = processPath(resource.getPath()) + JFile.separator + "share_weight.pb"
+    val path = processPath(resource.getPath()) + JFile.separator +
+      "loadTest" + JFile.separator + "share_weight.pb"
     val results = TensorflowLoader.parse(path)
     val tfGraph = TensorflowLoader.buildTFGraph(results)
     val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("Placeholder"), Seq("output"),
       ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
     val container = model.asInstanceOf[Graph[Float]]
-    container.modules.length should be(4)
     val l1 = container.modules(1).asInstanceOf[Linear[Float]]
     val l2 = container.modules(3).asInstanceOf[Linear[Float]]
     assert(l1.weight eq l2.weight)
@@ -175,12 +176,15 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
   }
 
   "Shared weights" should "be the same after running optimizer" in {
+    tfCheck()
+    (("python " + testScriptsPath("share_weight.py")) !!)
     val resource = getClass().getClassLoader().getResource("tf")
-    val path = processPath(resource.getPath()) + JFile.separator + "share_weight.pb"
+    val path = processPath(resource.getPath()) + JFile.separator +
+      "loadTest" + JFile.separator + "share_weight.pb"
     val results = TensorflowLoader.parse(path)
     val tfGraph = TensorflowLoader.buildTFGraph(results)
     val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("Placeholder"), Seq("output"),
-      ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
+      ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NCHW)
     val container = model.asInstanceOf[Graph[Float]]
 
     val optimizer = new DistriOptimizer[Float](container, dataSet, new MSECriterion[Float]())
@@ -194,49 +198,54 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     assert(l1.bias == l2.bias)
   }
 
-  "TensorFlow loader" should "be able to load rnn_cell with zero state" in {
+  "static simple rnn " should "have the same inference result as tensorflow" in {
+    tfCheck()
+    (("python " + testScriptsPath("rnn.py")) !!)
     val resource = getClass().getClassLoader().getResource("tf")
-    val path = processPath(resource.getPath()) + JFile.separator + "rnn_cell.pb"
+    val path = processPath(resource.getPath()) + JFile.separator +
+      "loadTest" + JFile.separator + "rnn.pb"
     val results = TensorflowLoader.parse(path)
-    val tfGraph = TensorflowLoader.buildTFGraph(results)
-    val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("Placeholder"),
-      Seq("output"), ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
-    val input = Tensor[Float](4, 10).rand()
+    val tfGraph = TensorflowLoader.buildTFGraph(results.subList(0, results.size()-1))
+    val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("input"),
+      Seq("output"),
+      ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NCHW)
+    val input = TensorflowToBigDL.toTensor(results.get(0).getAttrMap.get("value").getTensor,
+      ByteOrder.LITTLE_ENDIAN).contiguous()
+    val tfResult = TensorflowToBigDL.toTensor(results.get(results.size()-1)
+      .getAttrMap.get("value").getTensor, ByteOrder.LITTLE_ENDIAN)
+    val bigDLResult = model.forward(input)
     val gradient = Tensor[Float](4, 5).rand()
-    val result: Tensor[Float] = model.forward(input).asInstanceOf[Tensor[Float]]
-    val expectedResult = Tensor[Float](4, 5).fill(2.0f)
-    val expectedGrad = Tensor[Float](4, 10)
-    result should be(expectedResult)
-    val grad = model.backward(input, gradient)
-    grad should be(expectedGrad)
+
+    tfResult.map( bigDLResult.toTensor, (v1, v2) => {
+      assert(abs(v1 - v2) / v1 < 1e-6)
+      v2
+    })
+    model.backward(bigDLResult, gradient)
   }
 
-  "TensorFlow loader" should "be able to load static simple rnn model" in {
+  "static lstm rnn " should "have the same inference result as tensorflow" in {
+    tfCheck()
+    (("python " + testScriptsPath("rnn_lstm.py")) !!)
     val resource = getClass().getClassLoader().getResource("tf")
-    val path = processPath(resource.getPath()) + JFile.separator + "rnn.pb"
+    val path = processPath(resource.getPath()) + JFile.separator +
+      "loadTest" + JFile.separator + "lstm.pb"
     val results = TensorflowLoader.parse(path)
-    val tfGraph = TensorflowLoader.buildTFGraph(results)
-    val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("Placeholder"),
-      Seq("output"), ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
-
-    val input = Tensor[Float](4, 5, 10).rand()
+    val tfGraph = TensorflowLoader.buildTFGraph(results.subList(0, results.size()-1))
+    val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("input"),
+      Seq("output"),
+      ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NCHW)
+    val input = TensorflowToBigDL.toTensor(results.get(0).getAttrMap.get("value").getTensor,
+      ByteOrder.LITTLE_ENDIAN).contiguous()
+    val tfResult = TensorflowToBigDL.toTensor(results.get(results.size()-1)
+      .getAttrMap.get("value").getTensor, ByteOrder.LITTLE_ENDIAN)
+    val bigDLResult = model.forward(input)
     val gradient = Tensor[Float](4, 5).rand()
-    model.forward(input)
-    model.backward(input, gradient)
-  }
 
-  "TensorFlow loader" should "be able to load static lstm rnn model" in {
-    val resource = getClass().getClassLoader().getResource("tf")
-    val path = processPath(resource.getPath()) + JFile.separator + "lstm.pb"
-    val results = TensorflowLoader.parse(path)
-    val tfGraph = TensorflowLoader.buildTFGraph(results)
-    val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("Placeholder"),
-      Seq("output"), ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
-
-    val input = Tensor[Float](4, 5, 10).rand()
-    val gradient = Tensor[Float](4, 5).rand()
-    model.forward(input)
-    model.backward(input, gradient)
+    tfResult.map( bigDLResult.toTensor, (v1, v2) => {
+      assert(abs(v1 - v2)/ v1 < 1e-6, s"$v1, $v2")
+      v2
+    })
+    model.backward(bigDLResult, gradient)
   }
 
   "TensorFlow loader" should "be able to load slim lenet" in {

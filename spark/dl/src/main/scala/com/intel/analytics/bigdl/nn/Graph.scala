@@ -64,7 +64,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
     var i = 0
     while(i < executions.length) {
       val node = executions(i)
-      inputsBP(i) = if (node.prevNodes.isEmpty) {
+      inputsBP(i) = if (node.prevNodes.isEmpty && !node.element.isInstanceOf[WithoutInput]) {
         inputData(node, input)
       } else if (node.prevNodes.length == 1) {
         node.prevNodes.head.element.output.toTensor[T]
@@ -198,6 +198,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
 
   private def checkRoots : Unit = {
     val roots = executions.filter(_.prevNodes.size == 0)
+      .filter(node => !node.element.isInstanceOf[WithoutInput])
     require(roots.size == inputs.length,
       s"There're ${inputs.length} inputs, but graph has ${roots.size} roots")
     inputs.foreach(n =>

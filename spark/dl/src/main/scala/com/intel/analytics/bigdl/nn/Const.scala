@@ -22,13 +22,15 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
+trait WithoutInput
+
 /**
  * Return a constant tensor defined by value
  * @param value the constant tensor to be returned in forward
  */
 @SerialVersionUID(-4008935551091949324L)
 class Const[T: ClassTag](value: Tensor[T])(implicit ev: TensorNumeric[T])
-  extends AbstractModule[Activity, Tensor[T], T] {
+  extends AbstractModule[Activity, Tensor[T], T] with WithoutInput {
 
   output = value
 

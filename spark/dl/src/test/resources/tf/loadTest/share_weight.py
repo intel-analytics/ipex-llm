@@ -16,6 +16,7 @@
 import tensorflow as tf
 import numpy as np
 import os
+import merge_checkpoint as merge
 
 def main():
     """
@@ -43,5 +44,12 @@ def main():
         sess.run(init)
         checkpointpath = saver.save(sess, dir + '/model/share_weight.chkp')
         tf.train.write_graph(sess.graph, dir + '/model', 'share_weight.pbtxt')
+
+    input_graph = dir + "/model/share_weight.pbtxt"
+    input_checkpoint = dir + "/model/share_weight.chkp"
+    output_node_names= "output"
+    output_graph = dir + "/share_weight.pb"
+
+    merge.merge_checkpoint(input_graph, input_checkpoint, output_node_names, output_graph)
 if __name__ == "__main__":
     main()
