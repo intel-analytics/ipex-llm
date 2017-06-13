@@ -12,17 +12,22 @@ message BigDLModel
         BOTTLE = 7;
         CADD = 8;
         CADDTABLE = 9;
-        CONCATTABLE = 10;
-        CDIVTABLE = 11;
-        CLAMP = 12;
-        CMAXTABLE = 13;
-        CMINTABLE = 14;
-        CMUL = 15;
-        CMULTABLE = 16;
-        CONCAT = 17;
-        LINEAR = 18;
-        SEQUENTIAL = 19;
-        GRAPH = 20;
+        CDIVTABLE = 10;
+        CLAMP = 11;
+        CMAXTABLE = 12;
+        CMINTABLE = 13;
+        CMUL = 14;
+        CMULTABLE = 15;
+        CONCAT = 16;
+        CONCATTABLE = 17;
+        CONTIGUOUS = 18;
+        COSINE = 19;
+        COSINEDISTANCE = 20;
+        CSUBTABLE = 21;
+        DOTPRODUCT = 22;
+        LINEAR = 23;
+        SEQUENTIAL = 24;
+        GRAPH = 25;
     }
     optional string name = 1; //model name
     repeated BigDLModel subModules = 2; // sub modules
@@ -42,7 +47,8 @@ message BigDLModel
     optional ClampParam clampParam = 16; // params for Clamp
     optional CMulParam cmulParam = 17; //params for Cmul
     optional ConcatParam concatParam = 18; //params for concat
-    optional LinearParam linearParam = 19; // params for linear
+    optional CosineParam cosineParam = 19; // params for cosine
+    optional LinearParam linearParam = 20; // params for linear
 }
 enum InitMethod {
     Default = 1;
@@ -107,6 +113,10 @@ message CMulParam {
 }
 message ConcatParam {
     required int32 dimension = 1;
+}
+message CosineParam {
+    required int32 inputSize = 1;
+    required int32 outputSize = 2;
 }
 message LinearParam {
     required int32 inputSize = 1;

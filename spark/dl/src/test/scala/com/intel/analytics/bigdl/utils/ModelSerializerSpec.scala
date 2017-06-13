@@ -146,23 +146,6 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     res1 should be (res2)
   }
 
-
-  "ConcatTable serializer" should "work properly" in {
-    val concatTable = new ConcatTable[Double]()
-    concatTable.add(Linear[Double](10, 2))
-    concatTable.add(Linear[Double](10, 2))
-
-    val tensor1 = Tensor[Double](10).apply1(_ => Random.nextDouble())
-    val tensor2 = Tensor[Double]()
-    tensor2.resizeAs(tensor1).copy(tensor1)
-    val res1 = concatTable.forward(tensor1)
-
-    ModelPersister.saveToFile("/tmp/concatTable.bigdl", concatTable, true)
-    val loadedConcatTable = ModelLoader.loadFromFile("/tmp/concatTable.bigdl")
-    val res2 = loadedConcatTable.asInstanceOf[ConcatTable[Double]].forward(tensor2)
-    res1 should be (res2)
-  }
-
   "CDivTable serializer" should "work properly" in {
     val cdivTable = new CDivTable[Double]()
     val input1 = Tensor[Double](10).apply1(e => Random.nextDouble())
@@ -271,6 +254,103 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     ModelPersister.saveToFile("/tmp/concat.bigdl", concat, true)
     val loadedConcat = ModelLoader.loadFromFile("/tmp/concat.bigdl")
     val res2 = loadedConcat.asInstanceOf[Concat[Double]].forward(input2)
+    res1 should be (res2)
+  }
+
+  "ConcatTable serializer" should "work properly" in {
+    val concatTable = new ConcatTable[Double]()
+    concatTable.add(Linear[Double](10, 2))
+    concatTable.add(Linear[Double](10, 2))
+
+    val tensor1 = Tensor[Double](10).apply1(_ => Random.nextDouble())
+    val tensor2 = Tensor[Double]()
+    tensor2.resizeAs(tensor1).copy(tensor1)
+    val res1 = concatTable.forward(tensor1)
+
+    ModelPersister.saveToFile("/tmp/concatTable.bigdl", concatTable, true)
+    val loadedConcatTable = ModelLoader.loadFromFile("/tmp/concatTable.bigdl")
+    val res2 = loadedConcatTable.asInstanceOf[ConcatTable[Double]].forward(tensor2)
+    res1 should be (res2)
+  }
+
+  "Contiguous serializer" should "work properly" in {
+    val contiguous = new Contiguous[Double]()
+
+    val tensor1 = Tensor[Double](10).apply1(_ => Random.nextDouble())
+    val tensor2 = Tensor[Double]()
+    tensor2.resizeAs(tensor1).copy(tensor1)
+
+    val res1 = contiguous.forward(tensor1)
+
+    ModelPersister.saveToFile("/tmp/contiguous.bigdl", contiguous, true)
+    val loadedContiguous = ModelLoader.loadFromFile("/tmp/contiguous.bigdl")
+    val res2 = loadedContiguous.asInstanceOf[Contiguous[Double]].forward(tensor2)
+    res1 should be (res2)
+  }
+
+  "Cosine serializer" should "work properly" in {
+    val cosine = new Cosine[Double](5, 5)
+
+    val tensor1 = Tensor[Double](5).apply1(_ => Random.nextDouble())
+    val tensor2 = Tensor[Double]()
+    tensor2.resizeAs(tensor1).copy(tensor1)
+
+    val res1 = cosine.forward(tensor1)
+
+    ModelPersister.saveToFile("/tmp/cosine.bigdl", cosine, true)
+    val loadedCosine = ModelLoader.loadFromFile("/tmp/cosine.bigdl")
+    val res2 = loadedCosine.asInstanceOf[Cosine[Double]].forward(tensor2)
+    res1 should be (res2)
+  }
+
+  "CosineDistance serializer" should "work properly" in {
+    val cosineDistance = CosineDistance[Double]()
+
+    val input1 = Tensor[Double](5, 5).apply1(e => Random.nextDouble())
+    val input2 = Tensor[Double](5, 5).apply1(e => Random.nextDouble())
+    var input = new Table()
+    input(1.toDouble) = input1
+    input(2.toDouble) = input2
+
+    val res1 = cosineDistance.forward(input)
+
+    ModelPersister.saveToFile("/tmp/cosineDistance.bigdl", cosineDistance, true)
+    val loadedCosineDistance = ModelLoader.loadFromFile("/tmp/cosineDistance.bigdl")
+    val res2 = loadedCosineDistance.asInstanceOf[CosineDistance[Double]].forward(input)
+    res1 should be (res2)
+  }
+
+  "CSubTable serializer" should "work properly" in {
+    val csubTable = CSubTable[Double]()
+
+    val input1 = Tensor[Double](5, 5).apply1(e => Random.nextDouble())
+    val input2 = Tensor[Double](5, 5).apply1(e => Random.nextDouble())
+    var input = new Table()
+    input(1.toDouble) = input1
+    input(2.toDouble) = input2
+
+    val res1 = csubTable.forward(input)
+
+    ModelPersister.saveToFile("/tmp/csubTable.bigdl", csubTable, true)
+    val loadedCSubTable = ModelLoader.loadFromFile("/tmp/csubTable.bigdl")
+    val res2 = loadedCSubTable.asInstanceOf[CSubTable[Double]].forward(input)
+    res1 should be (res2)
+  }
+
+  "Dotproduct serializer" should "work properly" in {
+    val dotProduct = DotProduct[Double]()
+
+    val input1 = Tensor[Double](5, 5).apply1(e => Random.nextDouble())
+    val input2 = Tensor[Double](5, 5).apply1(e => Random.nextDouble())
+    var input = new Table()
+    input(1.toDouble) = input1
+    input(2.toDouble) = input2
+
+    val res1 = dotProduct.forward(input)
+
+    ModelPersister.saveToFile("/tmp/dotProduct.bigdl", dotProduct, true)
+    val loadedDotProduct = ModelLoader.loadFromFile("/tmp/dotProduct.bigdl")
+    val res2 = loadedDotProduct.asInstanceOf[DotProduct[Double]].forward(input)
     res1 should be (res2)
   }
 

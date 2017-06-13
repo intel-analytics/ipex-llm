@@ -296,31 +296,6 @@ private[serialization] object ModelSerializer {
     }
   }
 
-  case object ConcatTableSerializer extends AbstractModelSerializer {
-    override def loadModule[T: ClassTag](model : BigDLModel)(implicit ev: TensorNumeric[T])
-    : BigDLModule[T] = {
-      val subModules = model.getSubModulesList.asScala
-      val concatTable = new ConcatTable[T]()
-      subModules.foreach(subModule => {
-        val bigDLModule = load(subModule)
-        concatTable.add(bigDLModule.module.
-          asInstanceOf[AbstractModule[_ <: Activity, _ <: Activity, T]])
-      })
-      createBigDLModule(model, concatTable.asInstanceOf[AbstractModule[Activity, Activity, T]])
-    }
-    override def serializeModule[T: ClassTag](module : BigDLModule[T])
-                                             (implicit ev: TensorNumeric[T]): BigDLModel = {
-      val bigDLModelBuilder = BigDLModel.newBuilder
-      val concatTable = module.module.asInstanceOf[ConcatTable[T]]
-      concatTable.modules.foreach(subModule => {
-        val subModel = serialize(BigDLModule(subModule, module.tops, module.bottoms))
-        bigDLModelBuilder.addSubModules(subModel)
-      })
-      bigDLModelBuilder.setModuleType(ModuleType.CONCATTABLE)
-      bigDLModelBuilder.build
-    }
-  }
-
   case object CDivTableSerializer extends AbstractModelSerializer {
     override def loadModule[T: ClassTag](model : BigDLModel)(implicit ev: TensorNumeric[T])
     : BigDLModule[T] = {
@@ -440,6 +415,116 @@ private[serialization] object ModelSerializer {
       concatParam.setDimension(concat.dimension)
       bigDLModelBuilder.setConcatParam(concatParam.build)
       bigDLModelBuilder.setModuleType(ModuleType.CONCAT)
+      createSerializeBigDLModule(bigDLModelBuilder, module)
+    }
+  }
+
+  case object ConcatTableSerializer extends AbstractModelSerializer {
+    override def loadModule[T: ClassTag](model : BigDLModel)(implicit ev: TensorNumeric[T])
+    : BigDLModule[T] = {
+      val subModules = model.getSubModulesList.asScala
+      val concatTable = new ConcatTable[T]()
+      subModules.foreach(subModule => {
+        val bigDLModule = load(subModule)
+        concatTable.add(bigDLModule.module.
+          asInstanceOf[AbstractModule[_ <: Activity, _ <: Activity, T]])
+      })
+      createBigDLModule(model, concatTable.asInstanceOf[AbstractModule[Activity, Activity, T]])
+    }
+    override def serializeModule[T: ClassTag](module : BigDLModule[T])
+                                             (implicit ev: TensorNumeric[T]): BigDLModel = {
+      val bigDLModelBuilder = BigDLModel.newBuilder
+      val concatTable = module.module.asInstanceOf[ConcatTable[T]]
+      concatTable.modules.foreach(subModule => {
+        val subModel = serialize(BigDLModule(subModule, module.tops, module.bottoms))
+        bigDLModelBuilder.addSubModules(subModel)
+      })
+      bigDLModelBuilder.setModuleType(ModuleType.CONCATTABLE)
+      bigDLModelBuilder.build
+    }
+  }
+
+  case object ContiguousSerializer extends AbstractModelSerializer {
+
+    override def loadModule[T: ClassTag](model : BigDLModel)(implicit ev: TensorNumeric[T])
+    : BigDLModule[T] = {
+      createBigDLModule(model, Contiguous[T]().asInstanceOf[AbstractModule[Activity, Activity, T]])
+    }
+
+    override def serializeModule[T: ClassTag](module : BigDLModule[T])
+                                             (implicit ev: TensorNumeric[T]): BigDLModel = {
+      val bigDLModelBuilder = BigDLModel.newBuilder
+      bigDLModelBuilder.setModuleType(ModuleType.CONTIGUOUS)
+      createSerializeBigDLModule(bigDLModelBuilder, module)
+    }
+  }
+
+  case object CosineSerializer extends AbstractModelSerializer {
+
+    override def loadModule[T: ClassTag](model : BigDLModel)(implicit ev: TensorNumeric[T])
+    : BigDLModule[T] = {
+      val cosineParam = model.getCosineParam
+      createBigDLModule(model, Cosine[T](cosineParam.getInputSize,
+        cosineParam.getOutputSize).asInstanceOf[AbstractModule[Activity, Activity, T]])
+    }
+
+    override def serializeModule[T: ClassTag](module : BigDLModule[T])
+                                             (implicit ev: TensorNumeric[T]): BigDLModel = {
+      val bigDLModelBuilder = BigDLModel.newBuilder
+      val cosineParam = CosineParam.newBuilder
+      val cosine = module.module.asInstanceOf[Cosine[T]]
+      cosineParam.setInputSize(cosine.inputSize)
+      cosineParam.setOutputSize(cosine.outputSize)
+      bigDLModelBuilder.setCosineParam(cosineParam.build)
+      bigDLModelBuilder.setModuleType(ModuleType.COSINE)
+      createSerializeBigDLModule(bigDLModelBuilder, module)
+    }
+  }
+
+  case object CosineDistanceSerializer extends AbstractModelSerializer {
+
+    override def loadModule[T: ClassTag](model : BigDLModel)(implicit ev: TensorNumeric[T])
+    : BigDLModule[T] = {
+      createBigDLModule(model, CosineDistance[T]().
+        asInstanceOf[AbstractModule[Activity, Activity, T]])
+    }
+
+    override def serializeModule[T: ClassTag](module : BigDLModule[T])
+                                             (implicit ev: TensorNumeric[T]): BigDLModel = {
+      val bigDLModelBuilder = BigDLModel.newBuilder
+      bigDLModelBuilder.setModuleType(ModuleType.COSINEDISTANCE)
+      createSerializeBigDLModule(bigDLModelBuilder, module)
+    }
+  }
+
+  case object CSubTableDistanceSerializer extends AbstractModelSerializer {
+
+    override def loadModule[T: ClassTag](model : BigDLModel)(implicit ev: TensorNumeric[T])
+    : BigDLModule[T] = {
+      createBigDLModule(model, CSubTable[T]().
+        asInstanceOf[AbstractModule[Activity, Activity, T]])
+    }
+
+    override def serializeModule[T: ClassTag](module : BigDLModule[T])
+                                             (implicit ev: TensorNumeric[T]): BigDLModel = {
+      val bigDLModelBuilder = BigDLModel.newBuilder
+      bigDLModelBuilder.setModuleType(ModuleType.CSUBTABLE)
+      createSerializeBigDLModule(bigDLModelBuilder, module)
+    }
+  }
+
+  case object DotProductDistanceSerializer extends AbstractModelSerializer {
+
+    override def loadModule[T: ClassTag](model : BigDLModel)(implicit ev: TensorNumeric[T])
+    : BigDLModule[T] = {
+      createBigDLModule(model, DotProduct[T]().
+        asInstanceOf[AbstractModule[Activity, Activity, T]])
+    }
+
+    override def serializeModule[T: ClassTag](module : BigDLModule[T])
+                                             (implicit ev: TensorNumeric[T]): BigDLModel = {
+      val bigDLModelBuilder = BigDLModel.newBuilder
+      bigDLModelBuilder.setModuleType(ModuleType.DOTPRODUCT)
       createSerializeBigDLModule(bigDLModelBuilder, module)
     }
   }
@@ -596,6 +681,11 @@ private[serialization] object ModelSerializer {
       case cmul : CMul[_] => CMulSerializer.serializeModule(bigDLModule)
       case cmulTable : CMulTable[_] => CMulTableSerializer.serializeModule(bigDLModule)
       case concat : Concat[_] => ConcatSerializer.serializeModule(bigDLModule)
+      case contiguous : Contiguous[_] => ContiguousSerializer.serializeModule(bigDLModule)
+      case cosine : Cosine[_] => CosineSerializer.serializeModule(bigDLModule)
+      case cosineDis : CosineDistance[_] => CosineDistanceSerializer.serializeModule(bigDLModule)
+      case csubTable : CSubTable[_] => CSubTableDistanceSerializer.serializeModule(bigDLModule)
+      case dotProduct : DotProduct[_] => DotProductDistanceSerializer.serializeModule(bigDLModule)
       case linear : Linear[_] => LinearSerializer.serializeModule(bigDLModule)
       case sequantial : Sequential[_] => SequentialSerializer.serializeModule(bigDLModule)
       case graph : Graph[_] => GraphSerializer.serializeModule(bigDLModule)
@@ -622,6 +712,11 @@ private[serialization] object ModelSerializer {
     serializerMap("CMULTABLE") = CMulTableSerializer
     serializerMap("CMUL") = CMulSerializer
     serializerMap("CONCAT") = ConcatSerializer
+    serializerMap("CONTIGUOUS") = ContiguousSerializer
+    serializerMap("COSINE") = CosineSerializer
+    serializerMap("COSINEDISTANCE") = CosineDistanceSerializer
+    serializerMap("CSUBTABLE") = CSubTableDistanceSerializer
+    serializerMap("DOTPRODUCT") = DotProductDistanceSerializer
     serializerMap("LINEAR") = LinearSerializer
     serializerMap("SEQUENTIAL") = SequentialSerializer
     serializerMap("GRAPH") = GraphSerializer
