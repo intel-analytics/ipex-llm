@@ -34,8 +34,10 @@ object TrainInceptionV1 {
       val conf = Engine.createSparkConf().setAppName("BigDL Inception v1 Train Example")
         .set("spark.task.maxFailures", "1")
       val sc = new SparkContext(conf)
-      Engine.init
+      Engine.init(16, 1, true)
 
+Engine.setPartitionNumber(Some(448))
+      Engine.setCoreNumber(1)
       val trainSet = ImageNet2012(
         param.folder + "/train",
         sc,
@@ -73,6 +75,8 @@ object TrainInceptionV1 {
           "dampening" -> 0.0,
           "learingRateSchedule" -> SGD.Poly(0.5, math.ceil(1281167.toDouble / param.batchSize).toInt
             * param.maxEpoch.get))
+//          "learingRateSchedule" -> SGD.Poly(0.5, math.ceil(1281167.toDouble / 1704).toInt
+//            * param.maxEpoch.get))
       } else {
         T(
           "learningRate" -> param.learningRate,
@@ -108,6 +112,7 @@ object TrainInceptionV1 {
       }
 
       optimizer
+        .setOptimMethod(new SGD[Float]())
         .setState(state)
         .setValidation(testTrigger,
           valSet, Array(new Top1Accuracy[Float], new Top5Accuracy[Float]))

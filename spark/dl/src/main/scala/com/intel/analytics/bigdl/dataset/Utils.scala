@@ -24,8 +24,9 @@ object Utils {
 
   def getBatchSize(batchSize : Int, totalPartition: Option[Int] = None): Int = {
     val nodeNumber = Engine.nodeNumber()
-    val partitionNum = totalPartition.getOrElse(nodeNumber)
-    logger.debug(s"partition number: $partitionNum, node number: $nodeNumber")
+//    val partitionNum = totalPartition.getOrElse(nodeNumber)
+val partitionNum = Engine.partitionNumber().get
+    logger.info(s"partition number: $partitionNum, node number: $nodeNumber")
 
     require(partitionNum > 0,
       s"Utils.getBatchSize: partitionNum should be larger than 0, but get $partitionNum")

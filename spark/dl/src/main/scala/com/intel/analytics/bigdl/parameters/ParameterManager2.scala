@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.parameters
 
+import java.nio.ByteBuffer
 import java.util.concurrent.atomic.{AtomicInteger}
 import java.util.concurrent.{Callable, Executors, ThreadFactory}
 
@@ -122,11 +123,16 @@ class ParameterManager2(val id: Int, val executorId: Int,
   }
 
   /** Aggregate gradients hosted in one executor */
-  def aggregateLocalGradient[T: ClassTag]() : Tensor[T] = {
+  def aggregateLocalGradient[T: ClassTag]() : (Tensor[T], Int, Double) = {
+//  def aggregateLocalGradient[T: ClassTag]() : Tensor[T] = {
     val blockIds = master.getBlockId(executorId)
     val gradientBuffer = new Array[Tensor[T]](blockIds.size)
+    val lossArray = new Array[Array[Double]](blockIds.size)
     Engine.pmPool.invokeAndWait((0 until blockIds.size).map(tid => () => {
-      gradientBuffer(tid) = getLocalParameter(blockIds(tid))
+        val t = getLocalParameter2[T](blockIds(tid))
+      gradientBuffer(tid) = t._1
+      lossArray(tid) = t._2
+//      gradientBuffer(tid) = getLocalParameter(blockIds(tid))
     }))
 
     val poolSize = Engine.pmPool.getPoolSize
@@ -145,7 +151,8 @@ class ParameterManager2(val id: Int, val executorId: Int,
       }
     }))
     master.clearBlockId(executorId)
-    gradientBuffer(0)
+    (gradientBuffer(0), blockIds.size, lossArray.flatten.sum)
+//    gradientBuffer(0)
   }
 
   /** Split aggregated gradient into executor number and put them in blockmanager */
@@ -158,7 +165,16 @@ class ParameterManager2(val id: Int, val executorId: Int,
       val blockId = getGradientBlockId(executorId, pid)
       val fp16param = new FP16CompressedTensor[T](length)(_classTag)
       fp16param.compress(0, parameter, start, length)
-      BlockManagerWrapper.putBytes(blockId, fp16param.bytes(), StorageLevel.MEMORY_ONLY_SER)
+//      BlockManagerWrapper.putBytes(blockId, fp16param.bytes(), StorageLevel.MEMORY_ONLY_SER)
+      val block = SparkEnv.get.blockManager.getLocalBytes(blockId)
+      if (block.isDefined) {
+        block.get.put(fp16param.bytes())
+      } else {
+        val bytes = ByteBuffer.allocate(fp16param.bytes().limit)
+        bytes.put(fp16param.bytes())
+        BlockManagerWrapper.putBytes(blockId, bytes, StorageLevel.MEMORY_ONLY_SER)
+      }
+
       pid += 1
     }
   }
@@ -238,8 +254,17 @@ class ParameterManager2(val id: Int, val executorId: Int,
     val weightExecutor = getLocalParameter(weightExecutorId)
     val blockId = getWeightBlockId(executorId)
     BlockManagerWrapper.removeBlock(blockId)
-    BlockManagerWrapper.putBytes(blockId,
-      SerializerInstance.serialize(weightExecutor).bytes(), StorageLevel.MEMORY_ONLY_SER)
+    val data = SerializerInstance.serialize(weightExecutor)
+    val block = SparkEnv.get.blockManager.getLocalBytes(blockId)
+    if (block.isDefined) {
+      block.get.put(data.bytes())
+    } else {
+      val bytes = ByteBuffer.allocate(data.bytes().limit)
+      bytes.put(data.bytes())
+      BlockManagerWrapper.putBytes(blockId, bytes, StorageLevel.MEMORY_ONLY_SER)
+    }
+//    BlockManagerWrapper.putBytes(blockId,
+//      SerializerInstance.serialize(weightExecutor).bytes(), StorageLevel.MEMORY_ONLY_SER)
   }
 
   /** Get a block from local blockmanager */
@@ -247,6 +272,16 @@ class ParameterManager2(val id: Int, val executorId: Int,
     BlockManagerWrapper.getLocal(blockId).map(_.data.next()) match {
       case Some(x) =>
         x.asInstanceOf[Tensor[T]]
+
+      case None =>
+        throw new Exception("Please initialize AllReduceParameter first!!")
+    }
+  }
+  
+  def getLocalParameter2[T: ClassTag](blockId: BlockId): (Tensor[T], Array[Double]) = {
+    BlockManagerWrapper.getLocal(blockId).map(_.data.next()) match {
+      case Some(x) =>
+        x.asInstanceOf[(Tensor[T], Array[Double])]
 
       case None =>
         throw new Exception("Please initialize AllReduceParameter first!!")
@@ -264,16 +299,22 @@ class ParameterManager2(val id: Int, val executorId: Int,
   }
 
   /** Put a gradient in local blockmanager */
-  def sendGradientPartition[T: ClassTag](gradient: Tensor[T], pid: Int): Unit = {
+  def sendGradientPartition[T: ClassTag](gradient: Tensor[T], pid: Int, loss: Double): Unit = {
+//  def sendGradientPartition[T: ClassTag](gradient: Tensor[T], pid: Int): Unit = {
     val gradientsId = getGradientPartitionId(pid)
 
     BlockManagerWrapper.getLocal(gradientsId).map(_.data.next()) match {
       case Some(x) =>
-        val t = x.asInstanceOf[Tensor[T]]
+        val (t, loss2) = x.asInstanceOf[(Tensor[T], Array[Double])]
         t.copy(gradient)
+        loss2(0) = loss
+//        val t = x.asInstanceOf[Tensor[T]]
+//        t.copy(gradient)
+        
 
       case None =>
-        BlockManagerWrapper.putSingle(gradientsId, gradient,
+        BlockManagerWrapper.putSingle(gradientsId, (gradient, Array(loss)),
+//        BlockManagerWrapper.putSingle(gradientsId, gradient,
           StorageLevel.MEMORY_AND_DISK, tellMaster = false)
     }
     master.updateBlockId(executorId, gradientsId)

@@ -29,6 +29,7 @@ import scala.collection.mutable
 case class GetExecutorBlockList(executorId: Int)
 case class UpdateExecutorBlockList(executorId: Int, blockId: BlockId)
 case class ClearExecutorBlockList(executorId: Int)
+case class ResetTotal()
 
 /**
   * ParameterManagerMasterEndpoint is an [[ThreadSafeRpcEndpoint]] on the driver node to track statuses
@@ -50,6 +51,9 @@ class ParameterManagerMasterEndpoint(
 
     case ClearExecutorBlockList(executorId) =>
       context.reply(clearExecutorBlockList(executorId))
+
+    case ResetTotal() =>
+      context.reply(resetTotal())
   }
 
   /** Get block lists with a given executorId */
@@ -58,20 +62,44 @@ class ParameterManagerMasterEndpoint(
       blocks.get(executorId).toSeq
     } else Seq.empty
   }
+  
+  private var total = 0
+  
+  private def resetTotal(): Unit = {
+    total = 0
+  }
 
   /** Update block lists with a given executorId */
   private def updateExecutorBlockList(executorId: Int, blockId: BlockId): Unit = {
-    if (blocks.containsKey(executorId)) blocks.get(executorId).add(blockId)
-    else {
-      val hashset = new mutable.HashSet[BlockId]()
-      hashset.add(blockId)
-      blocks.put(executorId, hashset)
+    ParameterManagerMaster.synchronized {
+//      if (total < 426) {
+        if (blocks.containsKey(executorId)) {
+          blocks.get(executorId).add(blockId)
+        }
+        else {
+          val hashset = new mutable.HashSet[BlockId]()
+          hashset.add(blockId)
+          blocks.put(executorId, hashset)
+        }
+//        if (total >= 425) {
+//          println("total: " + total)
+//        }
+//        total += 1
+//    }
     }
   }
 
   /** Clear block lists with a given executorId */
   private def clearExecutorBlockList(executorId: Int) = {
-    if (blocks.containsKey(executorId)) blocks.get(executorId).clear()
+    ParameterManagerMaster.synchronized {
+      if (blocks.containsKey(executorId)) {
+//        total -= blocks.get(executorId).size
+        
+//        println("total: " + total)
+        
+        blocks.get(executorId).clear()
+      }
+    }
   }
 }
 
@@ -89,6 +117,10 @@ class ParameterManagerMaster(
 
   def clearBlockId(executorId: Int): Unit = {
     driverEndpoint.askWithRetry[Unit](ClearExecutorBlockList(executorId))
+  }
+
+  def resetTotal(): Unit = {
+    driverEndpoint.askWithRetry[Unit](ResetTotal())
   }
 }
 

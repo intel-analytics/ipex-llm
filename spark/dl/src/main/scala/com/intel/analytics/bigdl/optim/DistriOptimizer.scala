@@ -127,7 +127,6 @@ object DistriOptimizer {
     val maxDropPercentage = state.get[Double]("maxDropPercentage").get
     val driverSubModelNum = partitionNum * _subModelNumber
     var dropModelNumBatch = 0
-    var lossArray = new Array[Double](_subModelNumber)
 
     var epochStart = System.nanoTime()
     var dataRDD = dataset.data(train = true)
@@ -140,6 +139,7 @@ object DistriOptimizer {
     while (!endWhen(driverState)) {
       val _header = header(driverState[Int]("epoch"), accumulateCount, dataset.size(),
         driverState[Int]("neval"), wallClockTime)
+      var lossArray = new Array[Double](_subModelNumber)
       val lossSum = sc.accumulator(0.0, "loss sum")
       val recordsNum = sc.accumulator(0, "record number")
       metrics.set("computing time average", 0.0, sc, partitionNum)
@@ -224,8 +224,12 @@ object DistriOptimizer {
           val finishedThreads = trainingThreads.filter(!_.isCancelled).map(_.get())
           recordsNum += finishedThreads.size * tensorBuffer.head._2.size(1)
           var i = 0
+          
+          var testLosssum = 0.0
+          require(finishedThreads.size == 1)
           while (i < finishedThreads.size) {
             lossSum += lossArray(finishedThreads(i))
+            testLosssum += lossArray(finishedThreads(i))
             i += 1
           }
 
@@ -265,31 +269,45 @@ object DistriOptimizer {
           driverMetrics.add("aggregate gradient time", System.nanoTime() - time)
 
           time = System.nanoTime()
-          parameters.sendGradientPartition(cached.gradient, TaskContext.getPartitionId())
+          parameters.sendGradientPartition(cached.gradient, TaskContext.getPartitionId(),
+            testLosssum)
+//          parameters.sendGradientPartition(cached.gradient, TaskContext.getPartitionId())
           driverMetrics.add("send gradient partition", System.nanoTime() - time)
 
           Iterator.single(finishedThreads.size)
-        }).reduce(_ + _)
+        }).reduce(_ + _, true)
+//        }).reduce(_ + _)
 
       val job2start = System.nanoTime()
-      dummyRDD.mapPartitions { iter =>
+      val test22 = dummyRDD.mapPartitions { iter =>
+//      dummyRDD.mapPartitions { iter =>
         val executorId = SparkEnv.get.executorId
         val parameters = ParameterManager2.get(executorId)
         var t = System.nanoTime()
-        val gradient = parameters.aggregateLocalGradient()
+                val (gradient, blockSize, loss) = parameters.aggregateLocalGradient()
+//        val gradient = parameters.aggregateLocalGradient()
         driverMetrics.add("aggregate local gradient", System.nanoTime() - t)
 
         t = System.nanoTime()
         parameters.putGradients(gradient)
         driverMetrics.add("put gradient", System.nanoTime() - t)
         parameters.job1Start = false
-        Iterator.empty
-      }.count()
+                Iterator.single((blockSize, loss))
+              }.reduce((a, b) => (a._1 + b._1, a._2 + b._2))
+//        Iterator.empty
+//      }.count()
+      
       val job2end = System.nanoTime()
-
-      dropModelNumBatch += (driverSubModelNum - finishedModelNum)
-      if (dropPercentage == 0 || finishedModelNum >= driverSubModelNum * (1-maxDropPercentage)) {
-        val value = lossSum.value / finishedModelNum
+      val per = test22._1.toDouble / driverSubModelNum
+      println(s"finishedModule: $finishedModelNum actual: ${test22._1} driverSubModelNume: $driverSubModelNum")
+      println(s"loss ${test22._2} lossori: ${lossSum.value} per: ${per}")
+      
+//      dropModelNumBatch += (driverSubModelNum - finishedModelNum)
+      dropModelNumBatch += (driverSubModelNum - test22._1)
+//      if (dropPercentage == 0 || finishedModelNum >= driverSubModelNum * (1-maxDropPercentage)) {
+      if (dropPercentage == 0 || test22._1 >= driverSubModelNum * (1-maxDropPercentage)) {
+//        val value = lossSum.value / finishedModelNum
+        val value = test22._2 / test22._1
 
         val nodeNumber = Engine.nodeNumber()
         val job3start = System.nanoTime()
@@ -304,11 +322,15 @@ object DistriOptimizer {
 
           var time = System.nanoTime()
           val gradients = parameters.getLocalParameter[T](parameters.getGradientExecutorId())
-          gradients.div(ev.fromType(finishedModelNum))
+//          gradients.div(ev.fromType(finishedModelNum))
+          gradients.div(ev.fromType(test22._1))
           val weights = parameters.getLocalParameter[T](parameters.getWeightExecutorId())
           val state = parameters.getState()
           state("neval") = driverState[Int]("neval")
           state("epoch") = driverState[Int]("epoch")
+          
+//          state("per") = per
+          
           optimMethod.optimize(_ => (ev.fromType(value), gradients),
             weights, state, state)
           driverMetrics.add("compute weight average", System.nanoTime() - time)
@@ -319,20 +341,26 @@ object DistriOptimizer {
         }.count()
         val job3end = System.nanoTime()
 
-        accumulateCount += recordsNum.value
+//        accumulateCount += recordsNum.value
+        accumulateCount += (test22._1*4)
         val end = System.nanoTime()
         wallClockTime += end - start
         optimMethod.updateHyperParameter(state, driverState)
-        driverState("Loss") = lossSum.value.toFloat / finishedModelNum
-        driverState("Throughput") = recordsNum.value.toFloat / ((end - start) / 1e9f)
-        if (state.contains("clr")) driverState("LearningRate") = -state[Double]("clr").toFloat
-        logger.info(s"${_header} Train ${recordsNum.value} in ${(end - start) / 1e9}seconds. " +
+//        driverState("Loss") = lossSum.value.toFloat / finishedModelNum
+        driverState("Loss") = test22._2.toFloat / test22._1
+//        driverState("Throughput") = recordsNum.value.toFloat / ((end - start) / 1e9f)
+        driverState("Throughput") = (test22._1 * 4).toFloat / ((end - start) / 1e9f)
+//        if (state.contains("clr")) driverState("LearningRate") = -state[Double]("clr").toFloat
+//        logger.info(s"${_header} Train ${recordsNum.value} in ${(end - start) / 1e9}seconds. " +
+//          s"Throughput is ${driverState("Throughput")} records/second. Loss is ${
+//            driverState("Loss")}. ${optimMethod.getHyperParameter(state)}")
+        logger.info(s"${_header} Train ${test22._1} in ${(end - start) / 1e9}seconds. " +
           s"Throughput is ${driverState("Throughput")} records/second. Loss is ${
             driverState("Loss")}. ${optimMethod.getHyperParameter(state)}")
         logger.debug(s"job1 driver: ${(job2start-start)/1e9} " +
           s"job2 driver: ${(job2end-job2start)/1e9} job3 driver: ${(job3end-job3start)/1e9}")
-        logger.debug("\n" + metrics.summary())
-        logger.debug("Dropped modules: " + (driverSubModelNum - finishedModelNum))
+        logger.info("\n" + metrics.summary())
+        logger.info("Dropped modules: " + (driverSubModelNum - test22._1))
         lossArray = new Array[Double](_subModelNumber)
 
         // compute threshold
@@ -547,8 +575,8 @@ object DistriOptimizer {
     val actualPort = pm.master.driverEndpoint.address.port
     
     val nExecutor = Engine.nodeNumber()
-    val executorCores = Engine.coreNumber()    
-    
+    val executorCores = Engine.coreNumber()
+
     val models = dataset.originRDD().mapPartitions(_ => {
       val (broadcastModel, broadcastCriterion, broadcastState, broadcastMethod) = broadcast.value
       if (!Engine.checkSingleton()) {
@@ -783,6 +811,7 @@ class DistriOptimizer[T: ClassTag] (
     }.collect().distinct.size
     
     val coresPerNode = Engine.coreNumber()
+    println("core number: " + coresPerNode)
     Engine.setNodeNumber(actualNodeNumber)
     dataset.originRDD().sparkContext.getConf.setExecutorEnv("DL_NODE_NUMBER",
       actualNodeNumber.toString)
@@ -801,7 +830,7 @@ class DistriOptimizer[T: ClassTag] (
     }
 
     var retryNum = 0
-    val maxRetry = System.getProperty("bigdl.failure.retryTimes", "5").toInt
+    val maxRetry = System.getProperty("bigdl.failure.retryTimes", "1").toInt
     val retryTimeInterval = System.getProperty("bigdl.failure.retryTimeInterval", "120").toInt
     var lastFailureTimestamp = System.nanoTime()
     while (retryNum < maxRetry) {

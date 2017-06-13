@@ -462,4 +462,19 @@ object Engine {
   }
 
   checkSysEnv()
+
+  
+  var parNumber = 0
+  private[bigdl] def partitionNumber(): Option[Int] = {
+    Some(parNumber)
+  }
+
+  /**
+    * This method should only be used for test purpose.
+    *
+    * @param n
+    */
+  private[bigdl] def setPartitionNumber(n : Option[Int]): Unit = {
+    parNumber = n.get
+  }
 }
