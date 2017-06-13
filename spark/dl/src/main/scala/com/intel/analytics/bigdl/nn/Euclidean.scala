@@ -39,6 +39,7 @@ class Euclidean[T: ClassTag](val inputSize: Int, val outputSize: Int,
 
   // buffer
   var inputBuffer = Tensor[T]()
+  var outputBuffer = Tensor[T]()
   var weightBuffer = Tensor[T]()
   var repeatBuffer = Tensor[T]()
   var divBuffer = Tensor[T]()
@@ -99,8 +100,8 @@ class Euclidean[T: ClassTag](val inputSize: Int, val outputSize: Int,
       updateOutput(input)
     }
     // to prevent div by zero (NaN) bugs
-    inputBuffer.resizeAs(output).copy(output).add(ev.fromType(0.0000001))
-    divBuffer.resizeAs(gradOutput).cdiv(gradOutput, inputBuffer)
+    outputBuffer.resizeAs(output).copy(output).add(ev.fromType(0.0000001))
+    divBuffer.resizeAs(gradOutput).cdiv(gradOutput, outputBuffer)
     if (input.dim() == 1) {
       divBuffer.resize(1, outputSize)
       divBuffer.expandAs(weight)
@@ -150,6 +151,7 @@ class Euclidean[T: ClassTag](val inputSize: Int, val outputSize: Int,
     repeatBuffer.set()
     divBuffer.set()
     sumBuffer.set()
+    outputBuffer.set()
     this
   }
 
