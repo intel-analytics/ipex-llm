@@ -14,41 +14,26 @@
 # limitations under the License.
 #
 import tensorflow as tf
-import numpy as np
-import os
 from nets import vgg
-import merge_checkpoint as merge
+from sys import argv
+
+from util import run_model
+
 def main():
     """
     You can also run these commands manually to generate the pb file
     1. git clone https://github.com/tensorflow/models.git
     2. export PYTHONPATH=Path_to_your_model_folder
-    3. python vgg16.py
+    3. python alexnet.py
     """
-    dir = os.path.dirname(os.path.realpath(__file__))
-    if not os.path.isdir(dir + '/model'):
-        os.mkdir(dir + '/model')
-    batch_size = 5
     height, width = 224, 224
-    #inputs = tf.placeholder(tf.float32, [None, height, width, 3])
     inputs = tf.Variable(tf.random_uniform((1, height, width, 3)), name='input')
     net, end_points  = vgg.vgg_16(inputs, is_training = False)
-    output = tf.Variable(tf.random_uniform(tf.shape(net)),name='output')
-    result = tf.assign(output,net)
-    saver = tf.train.Saver()
-    with tf.Session() as sess:
-        init = tf.global_variables_initializer()
-        sess.run(init)
-        sess.run(result)
-        checkpointpath = saver.save(sess, dir + '/model/vgg16.chkp')
-        tf.train.write_graph(sess.graph, dir + '/model', 'vgg16.pbtxt')
-        tf.summary.FileWriter(dir + '/log', sess.graph)
+    print("nodes in the graph")
+    for n in end_points:
+        print(n + " => " + str(end_points[n]))
+    net_output = tf.get_default_graph().get_tensor_by_name(argv[2])
+    run_model(net_output, argv[1])
 
-    input_graph = dir + "/model/vgg16.pbtxt"    
-    input_checkpoint = dir + "/model/vgg16.chkp"
-    output_node_names= "vgg_16/fc8/squeezed,output"
-    output_graph = dir + "/vgg16_save.pb"
-
-    merge.merge_checkpoint(input_graph, input_checkpoint, output_node_names, output_graph)
 if __name__ == "__main__":
     main()

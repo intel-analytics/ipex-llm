@@ -20,6 +20,7 @@ from tensorflow.python.client import session
 from tensorflow.python.framework import graph_util
 from tensorflow.python.framework import importer
 from tensorflow.python.platform import gfile
+import tensorflow as tf
 
 def merge_checkpoint(input_graph,
                  input_checkpoint,
@@ -51,8 +52,25 @@ def merge_checkpoint(input_graph,
         output_graph_def = graph_util.convert_variables_to_constants(
             sess,
             input_graph_def,
-            output_node_names.split(","),
+            output_node_names,
             variable_names_blacklist="")
     with gfile.GFile(output_graph, "wb") as f:
         f.write(output_graph_def.SerializeToString())
+
+def run_model(end_point, output_path):
+    output=tf.Variable(tf.random_uniform(tf.shape(end_point)), name='output')
+    result = tf.assign(output, end_point, name = 'assign')
+    saver = tf.train.Saver()
+    with tf.Session() as sess:
+        init = tf.global_variables_initializer()
+        sess.run(init) 
+        sess.run(result)
+        saver.save(sess, output_path + '/model.chkp')
+        tf.train.write_graph(sess.graph, output_path, 'model.pbtxt')
+
+    input_graph = output_path + "/model.pbtxt"    
+    input_checkpoint = output_path + "/model.chkp"
+    output_file = output_path + "/model.pb"
+
+    merge_checkpoint(input_graph, input_checkpoint, ["assign"], output_file)
 

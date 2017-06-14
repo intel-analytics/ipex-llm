@@ -16,7 +16,7 @@
 import tensorflow as tf
 import numpy as np
 import os
-import slim.nets.vgg as vgg
+from nets import vgg
 import merge_checkpoint as merge
 def main():
     """

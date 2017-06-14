@@ -16,7 +16,7 @@
 import tensorflow as tf
 import numpy as np
 import os
-import slim.nets.alexnet as alexnet
+from nets import alexnet
 
 import merge_checkpoint as merge
 

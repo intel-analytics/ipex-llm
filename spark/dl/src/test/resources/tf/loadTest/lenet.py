@@ -16,29 +16,42 @@
 import tensorflow as tf
 import numpy as np
 import os
-import slim.nets.lenet as lenet
+from nets import lenet
+
+import merge_checkpoint as merge
 
 def main():
     """
-    Run this command to generate the pb file
+    You can also run these commands manually to generate the pb file
     1. git clone https://github.com/tensorflow/models.git
     2. export PYTHONPATH=Path_to_your_model_folder
-    1. mkdir model
-    2. python lenet.py
-    3. wget https://raw.githubusercontent.com/tensorflow/tensorflow/v1.0.0/tensorflow/python/tools/freeze_graph.py
-    4. python freeze_graph.py --input_graph model/lenet.pbtxt --input_checkpoint model/lenet.chkp --output_node_names="LeNet/fc4/BiasAdd" --output_graph lenet.pb
+    3. python alexnet.py
     """
     dir = os.path.dirname(os.path.realpath(__file__))
+    if not os.path.isdir(dir + '/model'):
+        os.mkdir(dir + '/model')
     batch_size = 5
     height, width = 32, 32
-    inputs = tf.placeholder(tf.float32, [None, height, width, 3])
+    inputs = tf.Variable(tf.random_uniform((1, height, width, 3)), name='input')
+    # inputs = tf.placeholder(tf.float32, [None, height, width, 3])
     net, end_points  = lenet.lenet(inputs)
+    output = tf.Variable(tf.random_uniform(tf.shape(net)),name='output')
+    result = tf.assign(output,net)
     saver = tf.train.Saver()
     with tf.Session() as sess:
         init = tf.global_variables_initializer()
         sess.run(init)
+        print(sess.run(result))
         checkpointpath = saver.save(sess, dir + '/model/lenet.chkp')
         tf.train.write_graph(sess.graph, dir + '/model', 'lenet.pbtxt')
         tf.summary.FileWriter(dir + '/log', sess.graph)
+
+    input_graph = dir + "/model/lenet.pbtxt"
+    input_checkpoint = dir + "/model/lenet.chkp"
+    output_node_names= "LeNet/pool2/MaxPool,output"
+    output_graph = dir + "/lenet.pb"
+
+    merge.merge_checkpoint(input_graph, input_checkpoint, output_node_names, output_graph)
+
 if __name__ == "__main__":
     main()

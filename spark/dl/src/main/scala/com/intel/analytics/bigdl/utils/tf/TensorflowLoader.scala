@@ -55,7 +55,7 @@ object TensorflowLoader{
     val nodeList = parse(graphPrototxt)
 
     // Construct tf node graph
-    val tfGraph = buildTFGraph(nodeList)
+    val tfGraph = buildTFGraph(nodeList, outputs)
 
     // Build BigDL model from the tf node graph
     buildBigDLModel(tfGraph, inputs, outputs, byteOrder, dataFormat)
@@ -80,9 +80,11 @@ object TensorflowLoader{
   /**
    * Build tf ops graph from a given node list
    * @param nodes
+   * @param outputNodeNames
    * @return
    */
-  private[bigdl] def buildTFGraph(nodes : List[NodeDef]): DirectedGraph[NodeDef] = {
+  private[bigdl] def buildTFGraph(nodes : List[NodeDef], outputNodeNames: Seq[String])
+  : DirectedGraph[NodeDef] = {
     import scala.collection.JavaConverters._
     var name2Node = nodes.asScala.map(n => n.getName -> new Node(n)).toMap
 
@@ -103,7 +105,15 @@ object TensorflowLoader{
     })
 
     // Build graph
-    val outputNodes = name2Node.valuesIterator.filter(_.nextNodes.length == 0)
+    val outputNodes = if (outputNodeNames == null) {
+      name2Node.valuesIterator.filter(_.nextNodes.length == 0).toArray
+    } else {
+      val results = name2Node.valuesIterator.toArray.filter(n =>
+        outputNodeNames.contains(n.element.getName))
+      require(results.length == outputNodeNames.length, "Invalid outputNode names")
+      results
+    }
+
     val dummyOutput = new Node[NodeDef](null)
     outputNodes.foreach(_ -> dummyOutput)
     dummyOutput.graph(reverse = true)

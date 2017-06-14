@@ -16,7 +16,7 @@
 import tensorflow as tf
 import numpy as np
 import os
-import slim.nets.inception_resnet_v2 as inception_resnet_v2
+from nets import inception_resnet_v2
 
 import merge_checkpoint as merge
 

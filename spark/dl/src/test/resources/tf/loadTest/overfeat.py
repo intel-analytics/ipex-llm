@@ -16,7 +16,7 @@
 import tensorflow as tf
 import numpy as np
 import os
-import slim.nets.overfeat as overfeat
+from nets import overfeat
 import merge_checkpoint as merge
 
 slim = tf.contrib.slim
