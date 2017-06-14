@@ -24,6 +24,8 @@ from os.path import isfile, join
 scala_nn_root = "./spark/dl/src/main/scala/com/intel/analytics/bigdl/nn/"
 python_nn_root = "./pyspark/bigdl/nn/"
 
+scala_to_python = {"Graph": "Model"}
+
 
 def extract_scala_class(class_path):
     exclude_key_words = set(["*", "abstract"])
@@ -43,7 +45,7 @@ def get_scala_classes(scala_nn_root):
 
 
 def get_python_classes(nn_root):
-    exclude_classes = set(["Criterion", "Model"])
+    exclude_classes = set(["Criterion"])
     raw_classes = []
     python_nn_layers = [join(nn_root, name) for name in os.listdir(nn_root) if isfile(join(nn_root, name)) and name.endswith('py') and "__" not in name]  # noqa
     for p in python_nn_layers:
@@ -59,17 +61,13 @@ python_layers = get_python_classes(python_nn_root)
 print "scala_layers: {0}, {1}".format(len(scala_layers), scala_layers)
 print("\n")
 print "python_layers: {0}, {1}".format(len(python_layers), python_layers)
-print "\nIn scala, not in python: ",
+
+print "In scala, not in python: ",
+diff_count = 0
 for name in scala_layers:
-    if name not in python_layers:
+    if name not in python_layers and scala_to_python[name] not in python_layers:
         print name,
+        diff_count += 1
 
-print "\n"
-
-print "In python, not in scala: ",
-for name in python_layers:
-    if name not in scala_layers:
-        print name,
-
-if len(scala_layers - python_layers) > 0:
+if diff_count > 0:
     raise Exception("There are difference between python and scala")
