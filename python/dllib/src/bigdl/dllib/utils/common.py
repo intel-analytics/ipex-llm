@@ -277,13 +277,13 @@ def create_spark_conf():
     return sparkConf
 
 
-def get_spark_context():
+def get_spark_context(conf = SparkConf()):
     if "getOrCreate" in SparkContext.__dict__:
-        return SparkContext.getOrCreate()
+        return SparkContext.getOrCreate(conf)
     else:
         with SparkContext._lock: # Compatible with Spark1.5.1
             if SparkContext._active_spark_context is None:
-                SparkContext(SparkConf())
+                SparkContext(conf)
             return SparkContext._active_spark_context
 
 

@@ -53,6 +53,14 @@ We would train a LeNet model in spark local mode with the following commands and
 
 * ```--batchSize``` option can be used to set batch size, the default value is 128.
 
+* ```--endTriggerType``` option can be used to control how to end the training process, the value can be "epoch" or "iteration" and default value is "epoch".
+
+* ```--endTriggerNum``` use together with ```endTriggerType```, the default value is 20.
+
+* ```--modelPath``` option can be used to set model path for testing, the default value is /tmp/lenet5/model.470.
+
+* ```--checkpointPath``` option can be used to set checkpoint path for saving model, the default value is /tmp/lenet5/.
+
 To verify the accuracy, search "accuracy" from log:
 
 ```

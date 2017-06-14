@@ -16,7 +16,6 @@
 # Still in experimental stage!
 
 from optparse import OptionParser
-
 from bigdl.dataset import mnist
 from bigdl.dataset.transformer import *
 from bigdl.nn.layer import *
@@ -65,7 +64,10 @@ if __name__ == "__main__":
     parser = OptionParser()
     parser.add_option("-a", "--action", dest="action", default="train")
     parser.add_option("-b", "--batchSize", type=int, dest="batchSize", default="128")
-    parser.add_option("-m", "--modelPath", dest="modelPath", default="")
+    parser.add_option("-o", "--modelPath", dest="modelPath", default="/tmp/lenet5/model.470")
+    parser.add_option("-c", "--checkpointPath", dest="checkpointPath", default="/tmp/lenet5")
+    parser.add_option("-t", "--endTriggerType", dest="endTriggerType", default="epoch")
+    parser.add_option("-n", "--endTriggerNum", type=int, dest="endTriggerNum", default="20")
 
     (options, args) = parser.parse_args(sys.argv)
 
@@ -73,16 +75,23 @@ if __name__ == "__main__":
     init_engine()
 
     if options.action == "train":
+        def get_end_trigger():
+            if options.endTriggerType.lower() == "epoch":
+                return MaxEpoch(options.endTriggerNum)
+            else:
+                return MaxIteration(options.endTriggerNum)
+
         train_data = get_minst(sc, "train").map(
             normalizer(mnist.TRAIN_MEAN, mnist.TRAIN_STD))
         test_data = get_minst(sc, "test").map(
             normalizer(mnist.TEST_MEAN, mnist.TEST_STD))
+
         optimizer = Optimizer(
             model=build_model(10),
             training_rdd=train_data,
             criterion=ClassNLLCriterion(),
             optim_method=SGD(learningrate=0.01, learningrate_decay=0.0002),
-            end_trigger=MaxEpoch(20),
+            end_trigger=get_end_trigger(),
             batch_size=options.batchSize)
         optimizer.set_validation(
             batch_size=options.batchSize,
@@ -90,7 +99,7 @@ if __name__ == "__main__":
             trigger=EveryEpoch(),
             val_method=["Top1Accuracy"]
         )
-        optimizer.set_checkpoint(EveryEpoch(), "/tmp/lenet5/")
+        optimizer.set_checkpoint(EveryEpoch(), options.checkpointPath)
         trained_model = optimizer.optimize()
         parameters = trained_model.parameters()
     elif options.action == "test":
@@ -101,3 +110,4 @@ if __name__ == "__main__":
         results = model.test(test_data, options.batchSize, ["Top1Accuracy"])
         for result in results:
             print(result)
+    sc.stop()
