@@ -15,8 +15,10 @@
  */
 package com.intel.analytics.bigdl.utils.serializer
 
-import scala.reflect.runtime.universe._
+import com.google.protobuf.Extension.MessageType
+import com.google.protobuf.{ExtensionRegistry, GeneratedMessage}
 
+import scala.reflect.runtime.universe._
 import com.intel.analytics.bigdl.nn.Abs
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -27,8 +29,9 @@ import scala.collection.mutable
 import scala.reflect.ClassTag
 
 object CustomizedDelegator extends AbstractModelSerializer {
-  val customizedModules = new mutable.HashMap[Class[_], String]()
-  val customizedSerializers = new mutable.HashMap[String, AbstractModelSerializer]()
+  private val customizedModules = new mutable.HashMap[Class[_], String]()
+  private val customizedSerializers = new mutable.HashMap[String, AbstractModelSerializer]()
+  private val registry = ExtensionRegistry.newInstance();
   override def loadModule[T: ClassTag](model : BigDLModel)(implicit ev: TensorNumeric[T])
   : BigDLModule[T] = {
     val moduleType = model.getCustomParam.getCustomType
@@ -54,10 +57,15 @@ object CustomizedDelegator extends AbstractModelSerializer {
     }
   }
   def registerCustomizedModule(cls : Class[_],
-    serializer: AbstractModelSerializer, customType : String): Unit = {
+    serializer: AbstractModelSerializer,
+    extension: GeneratedMessage.GeneratedExtension[_, _],
+    customType : String): Unit = {
     require(!customizedSerializers.contains(customType), s"$customType already exist!")
     customizedModules(cls) = customType
     customizedSerializers(customType) = serializer
+    registry.add(extension)
   }
+  def getRegistry(): ExtensionRegistry = registry
+
   def getTypeTag[T : TypeTag](a : T) : TypeTag[T] = typeTag[T]
 }

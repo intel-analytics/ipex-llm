@@ -403,7 +403,8 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
 
   "Customized Module " should "work properly" in {
     val testModule = new TestModule[Double](1.0)
-    CustomizedDelegator.registerCustomizedModule(testModule.getClass, TestSerializer, "Test")
+    CustomizedDelegator.registerCustomizedModule(testModule.getClass,
+      TestSerializer, Serialization.customizedData, "Test")
     val tensor1 = Tensor[Double](10).apply1(_ => Random.nextDouble())
     val tensor2 = Tensor[Double]()
     tensor2.resizeAs(tensor1).copy(tensor1)

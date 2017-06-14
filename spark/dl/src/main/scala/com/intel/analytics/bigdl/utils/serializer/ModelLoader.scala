@@ -36,6 +36,7 @@ object ModelLoader {
   def loadFromFile[T: ClassTag](modelPath : String)
                                (implicit ev: TensorNumeric[T]) : AbstractModule[_, _, _] = {
     val modelBuilder = BigDLModel.newBuilder
+    val registry = CustomizedDelegator.getRegistry
     var cis : CodedInputStream = null
     if (modelPath.startsWith(hdfsPrefix)) {
       val byteArrayOut = com.intel.analytics.bigdl.utils.File.readHdfsByte(modelPath)
@@ -44,7 +45,7 @@ object ModelLoader {
       cis = CodedInputStream.newInstance(new FileInputStream(modelPath))
     }
     cis.setSizeLimit(Integer.MAX_VALUE)
-    modelBuilder.mergeFrom(cis)
+    modelBuilder.mergeFrom(cis, registry)
     val bigDLModel = modelBuilder.build()
     ModelSerializer.load(bigDLModel).module
   }
@@ -89,7 +90,7 @@ object ModelPersister {
   }
 
   def saveModelDefinitionToFile[T: ClassTag](definitionPath : String,
-    module : AbstractModule[Activity, Activity, T],
+    module : AbstractModule[_, _, T],
     overwrite : Boolean = false)(implicit ev: TensorNumeric[T]) : Unit = {
     val bigDLModule = BigDLModule(module, new ArrayBuffer[String](), new ArrayBuffer[String]())
     val bigDLModel = ModelSerializer.serialize(bigDLModule)
