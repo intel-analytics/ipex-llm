@@ -20,7 +20,7 @@ import sys
 from bigdl.util.common import JavaValue
 from bigdl.util.common import callBigDlFunc
 from bigdl.util.common import JTensor
-from bigdl.nn.layer import Model
+from bigdl.nn.layer import Layer
 import numpy as np
 
 if sys.version >= '3':
@@ -54,8 +54,8 @@ class Criterion(JavaValue):
         output = callBigDlFunc(self.bigdl_type,
                                "criterionForward",
                                self.value,
-                               Model.check_input(input),
-                               Model.check_input(target))
+                               Layer.check_input(input),
+                               Layer.check_input(target))
         return output
 
     def backward(self, input, target):
@@ -70,9 +70,9 @@ class Criterion(JavaValue):
         output = callBigDlFunc(self.bigdl_type,
                                "criterionBackward",
                                self.value,
-                               Model.check_input(input),
-                               Model.check_input(target))
-        return Model.convert_output(output)
+                               Layer.check_input(input),
+                               Layer.check_input(target))
+        return Layer.convert_output(output)
 
     @classmethod
     def of(cls, jcriterion, bigdl_type="float"):
