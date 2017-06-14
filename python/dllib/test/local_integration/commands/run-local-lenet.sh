@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 #
 # Copyright 2016 The BigDL Authors.
 #
@@ -16,7 +14,13 @@
 # limitations under the License.
 #
 
-. `dirname $0`/prepare_env.sh
-
 cd "`dirname $0`"
-exec $BIGDL_HOME/scripts/bigdl.sh -- python -u ./run-tests.py "$@"
+
+($PYTHON_EXECUTABLE ${BIGDL_HOME}/pyspark/bigdl/models/lenet/lenet5.py \
+     --action train \
+     --endTriggerType epoch \
+     --endTriggerNum 1) && \
+
+($PYTHON_EXECUTABLE ${BIGDL_HOME}/pyspark/bigdl/models/lenet/lenet5.py \
+           --action test \
+           --modelPath $(find /tmp/lenet5 -name "model*" | head -n 1))
