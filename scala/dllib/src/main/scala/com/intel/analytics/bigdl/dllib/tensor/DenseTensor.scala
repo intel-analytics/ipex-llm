@@ -368,7 +368,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
       result
     } else {
       require(this.nDimension == 1, "empty tensor")
-      DenseTensor.get1dTensor(this, _sliceIndex)
+      this.narrow(1, index, 1)
     }
   }
 
