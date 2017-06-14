@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.visualization.Summary
 import com.intel.analytics.bigdl.visualization.tensorboard.{FileReader, FileWriter}
 import org.apache.commons.compress.utils.IOUtils
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.hadoop.fs.Path
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 
@@ -104,14 +104,12 @@ class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val hdfsDir = hdfs + s"/${ com.google.common.io.Files.createTempDir().getPath() }"
 
     def writeToHdfs(localFile: String, hdfsDir: String): Unit = {
-      val hadoopconf = new Configuration()
-      val fs = FileSystem.get(hadoopconf)
-
-      // Create output stream to HDFS file
-      val outFileStream = fs.create(new Path(hdfsDir))
-
-      // Create input stream from local file
-      val inStream = fs.open(new Path(localFile))
+      val src = new Path(localFile)
+      val fs = src.getFileSystem(new Configuration())
+      val inStream = fs.open(src)
+      val dest = new Path(hdfsDir)
+      val fsDest = dest.getFileSystem(new Configuration())
+      val outFileStream = fsDest.create(dest)
 
       IOUtils.copy(inStream, outFileStream)
 
