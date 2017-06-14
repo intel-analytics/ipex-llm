@@ -15,19 +15,17 @@
 #
 import tensorflow as tf
 import numpy as np
-import os
+from sys import argv
 from tensorflow.contrib import rnn
-import merge_checkpoint as merge
+from util import merge_checkpoint
 
 def main():
     """
     Run this command to generate the pb file
     1. mkdir model
-    2. python rnn.py
-    3. wget https://raw.githubusercontent.com/tensorflow/tensorflow/v1.0.0/tensorflow/python/tools/freeze_graph.py
-    4. python freeze_graph.py --input_graph model/rnn.pbtxt --input_checkpoint model/rnn.chkp --output_node_names=output --output_graph "rnn.pb"
+    2. python rnn_lstm.py
     """
-    dir = os.path.dirname(os.path.realpath(__file__))
+    dir = argv[1]
     n_steps = 2
     n_input = 10
     n_hidden = 20
@@ -39,29 +37,27 @@ def main():
 
     x = tf.unstack(xs, n_steps, 1)
 
-    cell = rnn.BasicRNNCell(n_hidden)
+    cell = rnn.BasicLSTMCell(n_hidden)
 
     output, states = rnn.static_rnn(cell, x, dtype=tf.float32)
 
     final = tf.nn.bias_add(tf.matmul(output[-1], weight), bias, name='output')
+
     output = tf.Variable(tf.random_uniform(tf.shape(final)),name='output_result')
     result = tf.assign(output, final)
-
-
     saver = tf.train.Saver()
     with tf.Session() as sess:
-        file_writer = tf.summary.FileWriter(dir + '/model/logs', sess.graph)
         init = tf.global_variables_initializer()
         sess.run(init)
         sess.run(result)
-        checkpointpath = saver.save(sess, dir + '/model/rnn.chkp')
-        tf.train.write_graph(sess.graph, dir + '/model', 'rnn.pbtxt')
+        checkpointpath = saver.save(sess, dir + '/model.chkp')
+        tf.train.write_graph(sess.graph, dir, 'model.pbtxt')
 
-    input_graph = dir + "/model/rnn.pbtxt"
-    input_checkpoint = dir + "/model/rnn.chkp"
-    output_node_names= "output,output_result"
-    output_graph = dir + "/rnn.pb"
+    input_graph = dir + "/model.pbtxt"
+    input_checkpoint = dir + "/model.chkp"
+    output_node_names= ["output", "output_result"]
+    output_graph = dir + "/model.pb"
 
-    merge.merge_checkpoint(input_graph, input_checkpoint, output_node_names, output_graph)
+    merge_checkpoint(input_graph, input_checkpoint, output_node_names, output_graph)
 if __name__ == "__main__":
     main()

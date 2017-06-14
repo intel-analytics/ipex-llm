@@ -57,14 +57,21 @@ def merge_checkpoint(input_graph,
     with gfile.GFile(output_graph, "wb") as f:
         f.write(output_graph_def.SerializeToString())
 
-def run_model(end_point, output_path):
-    output=tf.Variable(tf.random_uniform(tf.shape(end_point)), name='output')
-    result = tf.assign(output, end_point, name = 'assign')
+def run_model(end_points, output_path):
+    outputs = []
+    results = []
+    i = 0
+    for end_point in end_points:
+        output = tf.Variable(tf.random_uniform(tf.shape(end_point)), name='output' + str(i))
+        outputs.append(output)
+        results.append(tf.assign(output, end_point, name = 'assign' + str(i)))
+        i = i + 1
+
     saver = tf.train.Saver()
     with tf.Session() as sess:
         init = tf.global_variables_initializer()
         sess.run(init) 
-        sess.run(result)
+        sess.run(results)
         saver.save(sess, output_path + '/model.chkp')
         tf.train.write_graph(sess.graph, output_path, 'model.pbtxt')
 
@@ -72,5 +79,5 @@ def run_model(end_point, output_path):
     input_checkpoint = output_path + "/model.chkp"
     output_file = output_path + "/model.pb"
 
-    merge_checkpoint(input_graph, input_checkpoint, ["assign"], output_file)
+    merge_checkpoint(input_graph, input_checkpoint, map(lambda x: 'assign' + str(x), range(len(end_points))), output_file)
 

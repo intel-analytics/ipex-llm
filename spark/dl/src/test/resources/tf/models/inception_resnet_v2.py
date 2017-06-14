@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 import tensorflow as tf
-from nets import vgg
+from nets import inception_resnet_v2
 from sys import argv
 
 from util import run_model
@@ -26,13 +26,13 @@ def main():
     2. export PYTHONPATH=Path_to_your_model_folder
     3. python alexnet.py
     """
-    height, width = 224, 224
-    inputs = tf.Variable(tf.random_uniform((1, height, width, 3)), name='input')
-    net, end_points  = vgg.vgg_19(inputs, is_training = False)
+    height, width = 299, 299
+    inputs = tf.Variable(tf.random_uniform((2, height, width, 3)), name='input')
+    net, end_points = inception_resnet_v2.inception_resnet_v2(inputs,is_training = False)
     print("nodes in the graph")
     for n in end_points:
         print(n + " => " + str(end_points[n]))
-    net_outputs = map(lambda x: tf.get_default_graph().get_tensor_by_name(x), argv[2].split())
+    net_outputs = map(lambda x: tf.get_default_graph().get_tensor_by_name(x), argv[2].split(','))
     run_model(net_outputs, argv[1])
 
 if __name__ == "__main__":

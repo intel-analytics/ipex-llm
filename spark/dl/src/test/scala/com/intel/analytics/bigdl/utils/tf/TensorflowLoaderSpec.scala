@@ -159,11 +159,22 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
 
   "Shared weights" should "be the same instance" in {
     tfCheck()
-    (("python " + testScriptsPath("share_weight.py")) !!)
-    val resource = getClass().getClassLoader().getResource("tf")
-    val path = processPath(resource.getPath()) + JFile.separator +
-      "loadTest" + JFile.separator + "share_weight.pb"
-    val model = TensorflowLoader.load(path, Seq("Placeholder"), Seq("output"),
+    val modelName = "share_weight"
+    // Generate command and prepare the temp folder
+    val s = JFile.separator
+    val modelsFolder = processPath(getClass().getClassLoader().getResource("tf").getPath()) +
+      s + "models"
+    val modelScript = modelsFolder + s + s"$modelName.py"
+    val tmpLocation = java.io.File.createTempFile("tensorflowLoaderTest" + UUID.randomUUID(),
+      modelName)
+    tmpLocation.delete()
+    tmpLocation.mkdir()
+
+    require(runPython(s"$modelScript $tmpLocation"), "error when run the model script")
+
+    // Load the model and input/output tensors
+    val modelFile = tmpLocation + s + "model.pb"
+    val model = TensorflowLoader.load(modelFile, Seq("Placeholder"), Seq("output"),
       ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
     val container = model.asInstanceOf[Graph[Float]]
     val l1 = container.modules(1).asInstanceOf[Linear[Float]]
@@ -174,12 +185,23 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
 
   "Shared weights" should "be the same after running optimizer" in {
     tfCheck()
-    (("python " + testScriptsPath("share_weight.py")) !!)
-    val resource = getClass().getClassLoader().getResource("tf")
-    val path = processPath(resource.getPath()) + JFile.separator +
-      "loadTest" + JFile.separator + "share_weight.pb"
-    val model = TensorflowLoader.load(path, Seq("Placeholder"), Seq("output"),
-      ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NCHW)
+    val modelName = "share_weight"
+    // Generate command and prepare the temp folder
+    val s = JFile.separator
+    val modelsFolder = processPath(getClass().getClassLoader().getResource("tf").getPath()) +
+      s + "models"
+    val modelScript = modelsFolder + s + s"$modelName.py"
+    val tmpLocation = java.io.File.createTempFile("tensorflowLoaderTest" + UUID.randomUUID(),
+      modelName)
+    tmpLocation.delete()
+    tmpLocation.mkdir()
+
+    require(runPython(s"$modelScript $tmpLocation"), "error when run the model script")
+
+    // Load the model and input/output tensors
+    val modelFile = tmpLocation + s + "model.pb"
+    val model = TensorflowLoader.load(modelFile, Seq("Placeholder"), Seq("output"),
+      ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
     val container = model.asInstanceOf[Graph[Float]]
 
     val optimizer = new DistriOptimizer[Float](container, dataSet, new MSECriterion[Float]())
@@ -195,12 +217,25 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
 
   "static simple rnn " should "have the same inference result as tensorflow" in {
     tfCheck()
-    (("python " + testScriptsPath("rnn.py")) !!)
-    val resource = getClass().getClassLoader().getResource("tf")
-    val path = processPath(resource.getPath()) + JFile.separator +
-      "loadTest" + JFile.separator + "rnn.pb"
-    val results = TensorflowLoader.parse(path)
-    val tfGraph = TensorflowLoader.buildTFGraph(results.subList(0, results.size()-1), Seq("output"))
+    val modelName = "rnn"
+    // Generate command and prepare the temp folder
+    val s = JFile.separator
+    val modelsFolder = processPath(getClass().getClassLoader().getResource("tf").getPath()) +
+      s + "models"
+    val modelScript = modelsFolder + s + s"$modelName.py"
+    val tmpLocation = java.io.File.createTempFile("tensorflowLoaderTest" + UUID.randomUUID(),
+      modelName)
+    tmpLocation.delete()
+    tmpLocation.mkdir()
+
+    require(runPython(s"$modelScript $tmpLocation"), "error when run the model script")
+
+    // Load the model and input/output tensors
+    val modelFile = tmpLocation + s + "model.pb"
+
+
+    val results = TensorflowLoader.parse(modelFile)
+    val tfGraph = TensorflowLoader.buildTFGraph(results, Seq("output"))
     val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("input"),
       Seq("output"),
       ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NCHW)
@@ -209,22 +244,28 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     val tfResult = TensorflowToBigDL.toTensor(results.get(results.size()-1)
       .getAttrMap.get("value").getTensor, ByteOrder.LITTLE_ENDIAN)
     val bigDLResult = model.forward(input)
-    val gradient = Tensor[Float](4, 5).rand()
-
-    tfResult.map( bigDLResult.toTensor, (v1, v2) => {
-      assert(abs(v1 - v2) / v1 < 1e-6)
-      v2
-    })
-    model.backward(bigDLResult, gradient)
+    tfResult.almostEqual(bigDLResult.toTensor, 1e-6)
   }
 
   "static lstm rnn " should "have the same inference result as tensorflow" in {
     tfCheck()
-    (("python " + testScriptsPath("rnn_lstm.py")) !!)
-    val resource = getClass().getClassLoader().getResource("tf")
-    val path = processPath(resource.getPath()) + JFile.separator +
-      "loadTest" + JFile.separator + "lstm.pb"
-    val results = TensorflowLoader.parse(path)
+    val modelName = "rnn_lstm"
+    // Generate command and prepare the temp folder
+    val s = JFile.separator
+    val modelsFolder = processPath(getClass().getClassLoader().getResource("tf").getPath()) +
+      s + "models"
+    val modelScript = modelsFolder + s + s"$modelName.py"
+    val tmpLocation = java.io.File.createTempFile("tensorflowLoaderTest" + UUID.randomUUID(),
+      modelName)
+    tmpLocation.delete()
+    tmpLocation.mkdir()
+
+    require(runPython(s"$modelScript $tmpLocation"), "error when run the model script")
+
+    // Load the model and input/output tensors
+    val modelFile = tmpLocation + s + "model.pb"
+
+    val results = TensorflowLoader.parse(modelFile)
     val tfGraph = TensorflowLoader.buildTFGraph(results.subList(0, results.size()-1), Seq("output"))
     val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("input"),
       Seq("output"),
@@ -234,94 +275,77 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     val tfResult = TensorflowToBigDL.toTensor(results.get(results.size()-1)
       .getAttrMap.get("value").getTensor, ByteOrder.LITTLE_ENDIAN)
     val bigDLResult = model.forward(input)
-    val gradient = Tensor[Float](4, 5).rand()
-
-    tfResult.map( bigDLResult.toTensor, (v1, v2) => {
-      assert(abs(v1 - v2)/ v1 < 1e-6, s"$v1, $v2")
-      v2
-    })
-    model.backward(bigDLResult, gradient)
+    tfResult.almostEqual(bigDLResult.toTensor, 1e-5)
   }
 
   "Tensorflow lenet" should "be load correctly" in {
-    val (tf, bigdl) = testModel("lenet", "LeNet/pool2/MaxPool:0", true)
-    val transposed = bigdl.transpose(2, 3).transpose(3, 4)
-    tf.almostEqual(transposed, 1e-6) should be(true)
+    testModel("lenet", Seq("LeNet/pool2/MaxPool:0"), true).foreach {
+      case(tf, bigdl) =>
+        val transposed = bigdl.transpose(2, 3).transpose(3, 4)
+        tf.almostEqual(transposed, 1e-6) should be(true)
+    }
   }
 
   "Tensorflow Alexnet" should "be load correctly" in {
-    val (tf, bigdl) = testModel("alexnet", "alexnet_v2/fc8/squeezed:0", true)
-    tf.almostEqual(bigdl, 1e-7) should be(true)
+    testModel("alexnet", Seq("alexnet_v2/fc8/squeezed:0"), true).foreach {
+      case(tf, bigdl) =>
+        tf.almostEqual(bigdl, 1e-7) should be(true)
+    }
   }
 
   "TensorFlow vgg_a" should "be load correctly" in {
-    val (tf, bigdl) = testModel("vgga", "vgg_a/fc8/squeezed:0", true)
-    tf.almostEqual(bigdl, 1e-7) should be(true)
+    testModel("vgga", Seq("vgg_a/fc8/squeezed:0"), true).foreach {
+      case(tf, bigdl) =>
+        tf.almostEqual(bigdl, 1e-7) should be(true)
+    }
   }
 
   "TensorFlow vgg_16" should "be load correctly" in {
-    val (tf, bigdl) = testModel("vgg16", "vgg_16/fc8/squeezed:0", true)
-    tf.almostEqual(bigdl, 1e-7) should be(true)
+    testModel("vgg16", Seq("vgg_16/fc8/squeezed:0"), true).foreach {
+      case(tf, bigdl) =>
+        tf.almostEqual(bigdl, 1e-7) should be(true)
+    }
   }
 
   "TensorFlow vgg_19" should "be load correctly" in {
-    val (tf, bigdl) = testModel("vgg19", "vgg_19/fc8/squeezed:0", true)
-    tf.almostEqual(bigdl, 1e-7) should be(true)
+    testModel("vgg19", Seq("vgg_19/fc8/squeezed:0"), true).foreach {
+      case(tf, bigdl) =>
+        tf.almostEqual(bigdl, 1e-7) should be(true)
+    }
   }
 
   "TensorFlow overfeat" should "be load correctly" in {
-    val (tf, bigdl) = testModel("overfeat", "overfeat/fc8/squeezed:0", true)
-    tf.almostEqual(bigdl, 1e-7) should be(true)
+    testModel("overfeat", Seq("overfeat/fc8/squeezed:0"), true).foreach {
+      case(tf, bigdl) =>
+        tf.almostEqual(bigdl, 1e-7) should be(true)
+    }
   }
 
   "TensorFlow inception_v3" should "be load correctly" in {
-    val (tf, bigdl) = testModel("inception_v3", "InceptionV3/Logits/SpatialSqueeze:0", true)
-    tf.almostEqual(bigdl, 1e-7) should be(true)
+    testModel("inception_v3", Seq("InceptionV3/Logits/SpatialSqueeze:0"), true).foreach {
+      case(tf, bigdl) =>
+        tf.almostEqual(bigdl, 1e-7) should be(true)
+    }
   }
 
   "TensorFlow resnet_v1" should "be load correctly" in {
-    val (tf, bigdl) = testModel("resnet_v1", "resnet_v1_101/SpatialSqueeze:0", true)
-    tf.almostEqual(bigdl, 1e-6) should be(true)
+    testModel("resnet_v1", Seq("resnet_v1_101/SpatialSqueeze:0"), true).foreach {
+      case(tf, bigdl) =>
+        tf.almostEqual(bigdl, 1e-6) should be(true)
+    }
   }
 
-  "TensorFlow loader" should "run the python to save the modle and " +
-    "have the same inferrence result with tensorflow " +
-    "after loading slim inception_resnet_v2" in {
-    tfCheck()
-    (("python " + testScriptsPath("inception_resnet_v2.py")) !!)
-    val resource = getClass().getClassLoader().getResource("tf")
-    val path = processPath(resource.getPath()) + JFile.separator +
-      "loadTest" + JFile.separator + "inception_resnet_v2_save.pb"
-    val results = TensorflowLoader.parse(path)
-    val tfGraph = TensorflowLoader.buildTFGraph(results.subList(0, results.size()-2),
-      Seq("InceptionResnetV2/Logits/Logits/BiasAdd", "InceptionResnetV2/AuxLogits/Logits/BiasAdd"))
-    val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("input"),
-      Seq("InceptionResnetV2/Logits/Logits/BiasAdd", "InceptionResnetV2/AuxLogits/Logits/BiasAdd")
-      , ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
-    val input = TensorflowToBigDL.toTensor(results.get(0).getAttrMap.get("value").getTensor,
-      ByteOrder.LITTLE_ENDIAN)
-      .transpose(2, 4).transpose(3, 4).contiguous()
-    val gradient1 = Tensor[Float](2, 1001).rand()
-    val gradient2 = Tensor[Float](2, 1001).rand()
-    val tfResult1 = TensorflowToBigDL.toTensor(results.get(results.size()-2)
-      .getAttrMap.get("value").getTensor, ByteOrder.LITTLE_ENDIAN)
-    val tfResult2 = TensorflowToBigDL.toTensor(results.get(results.size()-1)
-      .getAttrMap.get("value").getTensor, ByteOrder.LITTLE_ENDIAN)
-    val BigDLResult = model.forward(input)
-
-    tfResult1.map( BigDLResult.toTable(1), (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-7);
-      v2
-    })
-    tfResult2.map( BigDLResult.toTable(2), (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-7);
-      v2
-    })
-    model.backward(input, T(gradient1, gradient2))
+  "TensorFlow inception_resnet_v2" should "be load correctly" in {
+    testModel("inception_resnet_v2", Seq("InceptionResnetV2/Logits/Logits/BiasAdd:0",
+      "InceptionResnetV2/AuxLogits/Logits/BiasAdd:0"), true).foreach {
+      case(tf, bigdl) =>
+        tf.almostEqual(bigdl, 1e-7) should be(true)
+    }
   }
 
-  private def testModel(modelName: String, endPoint: String, transInput: Boolean)
-  : (Tensor[Float], Tensor[Float]) = {
+
+  private def testModel(modelName: String, endPoints: Seq[String], transInput: Boolean)
+  : Seq[(Tensor[Float], Tensor[Float])] = {
 
     tfCheck()
     // Generate command and prepare the temp folder
@@ -334,21 +358,23 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     tmpLocation.delete()
     tmpLocation.mkdir()
 
-    require(runPython(s"$modelScript $tmpLocation $endPoint"), "error when run the model script")
+    require(runPython(s"$modelScript $tmpLocation ${endPoints.mkString(",")}"),
+      "error when run the model script")
 
     // Load the model and input/output tensors
     val modelFile = tmpLocation + s + "model.pb"
     val tfNodes = TensorflowLoader.parse(modelFile)
-    val tfGraph = TensorflowLoader.buildTFGraph(tfNodes, Seq(endPoint.split(":")(0)))
-    val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("input"), Seq(endPoint.split(":")(0)),
-      ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
+    val tfGraph = TensorflowLoader.buildTFGraph(tfNodes, endPoints.map(_.split(":")(0)))
+    val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("input"),
+      endPoints.map(_.split(":")(0)), ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
 
     import collection.JavaConverters._
     // Compare the tensor contents
     val tfInputTensor = tfNodes.asScala.filter(_.getName == "input")(0)
       .getAttrMap.get("value").getTensor
-    val tfOutputTensor = tfNodes.asScala.filter(_.getName == "output")(0)
-      .getAttrMap.get("value").getTensor
+
+    val tfOutputTensors = (0 until endPoints.length).map(
+      i => tfNodes.asScala.filter(_.getName == s"output$i")(0).getAttrMap.get("value").getTensor)
     val input = TensorflowToBigDL.toTensor(tfInputTensor,
       ByteOrder.LITTLE_ENDIAN)
 
@@ -358,8 +384,14 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
       input
     }
 
-    (TensorflowToBigDL.toTensor(tfOutputTensor, ByteOrder.LITTLE_ENDIAN),
-      model.forward(transposeInput).toTensor)
+    val bigdlOutputs = if (endPoints.length == 1) {
+      Seq(model.forward(transposeInput).toTensor)
+    } else {
+      val t = model.forward(transposeInput).toTable
+      (1 to endPoints.length).map(t[Tensor[Float]](_))
+    }
+    tfOutputTensors.zip(bigdlOutputs).map(x =>
+      (TensorflowToBigDL.toTensor(x._1, ByteOrder.LITTLE_ENDIAN), x._2))
   }
 
   private def processPath(path: String): String = {
@@ -368,11 +400,5 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     } else {
       path
     }
-  }
-
-  private def testScriptsPath(script: String) : String = {
-    val resource = getClass().getClassLoader().getResource("tf")
-    processPath(resource.getPath()) + JFile.separator + "loadTest" +
-      JFile.separator + script
   }
 }

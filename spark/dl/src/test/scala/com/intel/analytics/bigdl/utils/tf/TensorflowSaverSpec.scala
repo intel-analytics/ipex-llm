@@ -194,18 +194,12 @@ class TensorflowSaverSpec extends TensorflowSpecHelper {
     val pool1 = SpatialMaxPooling(2, 2, 2, 2).setName("pool1").apply(tanh1)
     val tanh2 = Tanh().setName("tanh2").apply(pool1)
     val conv2 = SpatialConvolution(6, 12, 5, 5).setName("conv2").apply(tanh2)
-    val pool2 = SpatialMaxPooling(2, 2, 2, 2).setName("pool2").apply(conv2)
-    val reshape = Reshape(Array(4, 12 * 4 * 4)).setName("reshape2").apply(pool2)
-    val fc1 = Linear(12 * 4 * 4, 100).setName("fc1").apply(reshape)
-    val tanh3 = Tanh().setName("tanh3").apply(fc1)
-    val fc2 = Linear(100, 10).setName("fc2").apply(tanh3)
-    val output = LogSoftMax().setName("output").apply(fc2)
+    val pool2 = SpatialMaxPooling(2, 2, 2, 2).setName("output").apply(conv2)
 
-    val funcModel = Graph(conv1, output)
+    val funcModel = Graph(conv1, pool2)
     val inputData = Tensor(4, 1, 28, 28).rand()
     val transInput = inputData.transpose(2, 3).transpose(3, 4).contiguous()
     val outputData = funcModel.forward(inputData).toTensor
-
 
     val tmpFile = java.io.File.createTempFile("tensorflowSaverTest" + UUID.randomUUID(), "lenet")
     TensorflowSaver.saveGraphWitNodeDef(
@@ -214,10 +208,11 @@ class TensorflowSaverSpec extends TensorflowSpecHelper {
       tmpFile.getPath,
       ByteOrder.LITTLE_ENDIAN,
       TensorflowDataFormat.NHWC,
-      Set(Tensorflow.const(outputData, "target", ByteOrder.LITTLE_ENDIAN))
+      Set(Tensorflow.const(outputData.transpose(2, 3).transpose(3, 4).contiguous(),
+        "target", ByteOrder.LITTLE_ENDIAN))
     )
 
-    runPythonSaveTest(tmpFile.getPath, "")
+    runPythonSaveTest(tmpFile.getPath, "") should be(true)
   }
 
   private def test(layer: AbstractModule[Tensor[Float], Tensor[Float], Float],
