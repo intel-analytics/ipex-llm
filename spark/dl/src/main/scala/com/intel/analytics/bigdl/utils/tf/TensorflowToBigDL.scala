@@ -121,7 +121,7 @@ object TensorflowToBigDL {
 
     require(
       tfTensor.getDtype == DataType.DT_FLOAT ||
-        tfTensor.getDtype == DataType.DT_FLOAT ||
+        tfTensor.getDtype == DataType.DT_DOUBLE ||
         tfTensor.getDtype == DataType.DT_INT32,
       s"Data type ${tfTensor.getDtype} is not supported now")
 
@@ -207,7 +207,7 @@ object TensorflowToBigDL {
         }
         Tensor(Storage(tmp), 1, shape).asInstanceOf[Tensor[T]]
       } else {
-        throw new IllegalArgumentException("Data type ${tfTensor.getDtype} is not supported now")
+        throw new IllegalArgumentException(s"Data type ${tfTensor.getDtype} is not supported now")
       }
     } else {
       throw new IllegalArgumentException("Only support Float/Double")
