@@ -18,15 +18,20 @@ package com.intel.analytics.bigdl.integration
 import java.nio.file.{Files, Paths}
 
 import com.intel.analytics.bigdl.models.lenet.LeNet5
-import com.intel.analytics.bigdl.nn.Module
-import com.intel.analytics.bigdl.utils.{Engine, File}
+import com.intel.analytics.bigdl.models.resnet.Convolution
+import com.intel.analytics.bigdl.nn.{Linear, Module, Sequential}
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericDouble
+import com.intel.analytics.bigdl.utils.{CaffeLoader, Engine, File}
 import com.intel.analytics.bigdl.visualization.Summary
 import com.intel.analytics.bigdl.visualization.tensorboard.{FileReader, FileWriter}
+import org.apache.commons.compress.utils.IOUtils
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{FileSystem, Path}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 
 @com.intel.analytics.bigdl.tags.Integration
-class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter{
+class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   val hdfs = System.getProperty("hdfsMaster")
   val mnistFolder = System.getProperty("mnist")
@@ -49,8 +54,8 @@ class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter{
     File.save(model, localPath, true)
     val localModel = Module.load(localPath)
 
-    hdfsModel should be (model)
-    hdfsModel should be (localModel)
+    hdfsModel should be(model)
+    hdfsModel should be(localModel)
   }
 
   "load minist from hdfs" should "be correct" in {
@@ -61,13 +66,13 @@ class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter{
     val localData = Files.readAllBytes(
       Paths.get(processPath(resource.getPath()), "/t10k-images.idx3-ubyte"))
 
-    hdfsData should be (localData)
+    hdfsData should be(localData)
   }
 
   "read/write event file from hdfs" should "work properly" in {
     Engine.localMode = false
     Engine.init(1, 4, true)
-    val logdir = hdfs + s"/${com.google.common.io.Files.createTempDir().getPath()}"
+    val logdir = hdfs + s"/${ com.google.common.io.Files.createTempDir().getPath() }"
     val writer = new FileWriter(logdir, 100)
     for (i <- 0 to 9) {
       val s = Summary.scalar("scalar", i)
@@ -84,10 +89,51 @@ class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter{
     Thread.sleep(1000) // Waiting for writer.
     val tbReader = FileReader.list(logdir)
     val result = FileReader.readScalar(tbReader(0), "lr")
-    result.length should be (20)
+    result.length should be(20)
     for (i <- 0 to 19) {
-      result(i)._1 should be (i + 1)
-      result(i)._2 should be (i)
+      result(i)._1 should be(i + 1)
+      result(i)._2 should be(i)
     }
+  }
+
+  "load caffe model from hdfs" should "work properly" in {
+    val resource = getClass().getClassLoader().getResource("caffe")
+
+    val prototxt = Paths.get(resource.getPath(), "test.prototxt").toString
+    val modelPath = Paths.get(resource.getPath(), "test.caffemodel").toString
+    val hdfsDir = hdfs + s"/${ com.google.common.io.Files.createTempDir().getPath() }"
+
+    def writeToHdfs(localFile: String, hdfsDir: String): Unit = {
+      val hadoopconf = new Configuration()
+      val fs = FileSystem.get(hadoopconf)
+
+      // Create output stream to HDFS file
+      val outFileStream = fs.create(new Path(hdfsDir))
+
+      // Create input stream from local file
+      val inStream = fs.open(new Path(localFile))
+
+      IOUtils.copy(inStream, outFileStream)
+
+      // Close both files
+      inStream.close()
+      outFileStream.close()
+    }
+
+    writeToHdfs(prototxt, hdfsDir + "/test.prototxt")
+    writeToHdfs(modelPath, hdfsDir + "/test.caffemodel")
+    val module = Sequential()
+      .add(Convolution(3, 4, 2, 2).setName("conv"))
+      .add(Convolution(4, 3, 2, 2).setName("conv2"))
+      .add(Linear(2, 27, withBias = false).setName("ip"))
+
+
+    val model = CaffeLoader.load[Double](module, prototxt, modelPath)
+
+    val modelFromHdfs = CaffeLoader.load[Double](module, hdfsDir + "/test.prototxt",
+      hdfsDir + "/test.caffemodel")
+
+    model.getParameters() should be (modelFromHdfs.getParameters())
+
   }
 }
