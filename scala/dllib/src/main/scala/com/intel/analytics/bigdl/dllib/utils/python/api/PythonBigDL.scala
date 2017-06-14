@@ -1299,16 +1299,6 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
 
-  def graphForward(graph: Graph[T],
-                   input: JList[JTensor]): JList[JTensor] = {
-    forward(input, graph.forward)
-  }
-
-  def graphBackward(graph: Graph[T],
-                    input: JList[JTensor], gradOutput: JList[JTensor]): JList[JTensor] = {
-    backward(input, gradOutput, graph.backward)
-  }
-
   private def forward(input: JList[JTensor], forward: (Activity) => Activity): JList[JTensor] = {
     val inputActivity = jTensorsToActivity(input)
     val outputActivity = forward(inputActivity)
@@ -1321,6 +1311,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     val gradOutputActivity = jTensorsToActivity(gradOutput)
     val outputActivity = backward(inputActivity, gradOutputActivity)
     activityToJTensors(outputActivity)
+  }
+
+  def modelSave(module: AbstractModule[Activity, Activity, T],
+                path: String, overWrite: Boolean): Unit = {
+    module.save(path, overWrite)
   }
 
   def criterionForward(criterion: AbstractCriterion[Activity, Activity, T],
@@ -1507,7 +1502,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     new ValidationSummary(logDir, appName)
   }
 
-  def createGraph(input: JList[ModuleNode[T]], output: JList[ModuleNode[T]]): Graph[T] = {
+  def createModel(input: JList[ModuleNode[T]], output: JList[ModuleNode[T]]): Graph[T] = {
     Graph(input.asScala.toArray, output.asScala.toArray)
   }
 
