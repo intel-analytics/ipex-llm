@@ -41,7 +41,6 @@ object TensorflowSaver {
    * @param inputs input node defs
    * @param path where to save
    * @param byteOrder model byte order
-   * @param dataFormat model data format
    * @tparam T
    */
   def saveGraphWitNodeDef[T](
@@ -49,7 +48,6 @@ object TensorflowSaver {
       inputs : Seq[NodeDef],
       path: String,
       byteOrder: ByteOrder = ByteOrder.LITTLE_ENDIAN,
-      dataFormat: TensorflowDataFormat = TensorflowDataFormat.NHWC,
       extraNodes: Set[NodeDef] = Set()): Unit = {
     val inputNodeCache =
       new mutable.HashMap[AbstractModule[Activity, Tensor[T], T], ArrayBuffer[NodeDef]]()
@@ -63,7 +61,7 @@ object TensorflowSaver {
 
     model.executions.foreach(n => {
       val nodeDefs = maps(n.element.getClass.getName).toTFDef(n.element, inputNodeCache(n.element),
-        byteOrder, dataFormat)
+        byteOrder)
       nodeDefs.foreach(nDef => {
         graphBuilder.addNode(nDef)
       })
@@ -111,7 +109,7 @@ object TensorflowSaver {
     val inputNodeDefs = inputs.map(input =>
       placeholder(model.getNumericType(), input._2, input._1)
     )
-    saveGraphWitNodeDef(model, inputNodeDefs, path, byteOrder, dataFormat)
+    saveGraphWitNodeDef(model, inputNodeDefs, path, byteOrder)
   }
 
   /**

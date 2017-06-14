@@ -91,12 +91,15 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     }
 
     Engine.model.setPoolSize(1)
+
+    System.setProperty("bigdl.enableNHWC", "true")
   }
 
   after {
     if (sc != null) {
       sc.stop()
     }
+    System.setProperty("bigdl.enableNHWC", "false")
   }
 
   "TensorFlow loader" should "read a list of nodes from pb file" in {
@@ -135,7 +138,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     val resource = getClass().getClassLoader().getResource("tf")
     val path = processPath(resource.getPath()) + JFile.separator + "test.pb"
     val model = TensorflowLoader.load(path, Seq("Placeholder"), Seq("output"),
-      ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
+      ByteOrder.LITTLE_ENDIAN)
     val container = model.asInstanceOf[Graph[Float]]
     container.modules.length should be(4)
     RandomGenerator.RNG.setSeed(100)
@@ -175,7 +178,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     // Load the model and input/output tensors
     val modelFile = tmpLocation + s + "model.pb"
     val model = TensorflowLoader.load(modelFile, Seq("Placeholder"), Seq("output"),
-      ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
+      ByteOrder.LITTLE_ENDIAN)
     val container = model.asInstanceOf[Graph[Float]]
     val l1 = container.modules(1).asInstanceOf[Linear[Float]]
     val l2 = container.modules(3).asInstanceOf[Linear[Float]]
@@ -201,7 +204,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     // Load the model and input/output tensors
     val modelFile = tmpLocation + s + "model.pb"
     val model = TensorflowLoader.load(modelFile, Seq("Placeholder"), Seq("output"),
-      ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
+      ByteOrder.LITTLE_ENDIAN)
     val container = model.asInstanceOf[Graph[Float]]
 
     val optimizer = new DistriOptimizer[Float](container, dataSet, new MSECriterion[Float]())
@@ -216,6 +219,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
   }
 
   "static simple rnn " should "have the same inference result as tensorflow" in {
+    System.setProperty("bigdl.enableNHWC", "false")
     tfCheck()
     val modelName = "rnn"
     // Generate command and prepare the temp folder
@@ -238,7 +242,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     val tfGraph = TensorflowLoader.buildTFGraph(results, Seq("output"))
     val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("input"),
       Seq("output"),
-      ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NCHW)
+      ByteOrder.LITTLE_ENDIAN)
     val input = TensorflowToBigDL.toTensor(results.get(0).getAttrMap.get("value").getTensor,
       ByteOrder.LITTLE_ENDIAN).contiguous()
     val tfResult = TensorflowToBigDL.toTensor(results.get(results.size()-1)
@@ -249,6 +253,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
 
   "static lstm rnn " should "have the same inference result as tensorflow" in {
     tfCheck()
+    System.setProperty("bigdl.enableNHWC", "false")
     val modelName = "rnn_lstm"
     // Generate command and prepare the temp folder
     val s = JFile.separator
@@ -269,7 +274,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     val tfGraph = TensorflowLoader.buildTFGraph(results.subList(0, results.size()-1), Seq("output"))
     val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("input"),
       Seq("output"),
-      ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NCHW)
+      ByteOrder.LITTLE_ENDIAN)
     val input = TensorflowToBigDL.toTensor(results.get(0).getAttrMap.get("value").getTensor,
       ByteOrder.LITTLE_ENDIAN).contiguous()
     val tfResult = TensorflowToBigDL.toTensor(results.get(results.size()-1)
@@ -366,7 +371,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     val tfNodes = TensorflowLoader.parse(modelFile)
     val tfGraph = TensorflowLoader.buildTFGraph(tfNodes, endPoints.map(_.split(":")(0)))
     val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("input"),
-      endPoints.map(_.split(":")(0)), ByteOrder.LITTLE_ENDIAN, TensorflowDataFormat.NHWC)
+      endPoints.map(_.split(":")(0)), ByteOrder.LITTLE_ENDIAN)
 
     import collection.JavaConverters._
     // Compare the tensor contents

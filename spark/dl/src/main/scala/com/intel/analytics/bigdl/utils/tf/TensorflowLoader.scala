@@ -45,11 +45,10 @@ object TensorflowLoader{
    * @param inputs input node names
    * @param outputs output node names
    * @param byteOrder file byteOrder
-   * @param dataFormat dataformat
    * @return
    */
   def load[T: ClassTag](graphPrototxt: String, inputs: Seq[String], outputs: Seq[String],
-        byteOrder: ByteOrder, dataFormat: TensorflowDataFormat)(
+        byteOrder: ByteOrder)(
     implicit ev: TensorNumeric[T]): Module[T] = {
     // Get node list
     val nodeList = parse(graphPrototxt)
@@ -58,7 +57,7 @@ object TensorflowLoader{
     val tfGraph = buildTFGraph(nodeList, outputs)
 
     // Build BigDL model from the tf node graph
-    buildBigDLModel(tfGraph, inputs, outputs, byteOrder, dataFormat)
+    buildBigDLModel(tfGraph, inputs, outputs, byteOrder)
   }
 
   /**
@@ -123,8 +122,7 @@ object TensorflowLoader{
       tfGraph: DirectedGraph[NodeDef],
       inputs: Seq[String],
       outputs: Seq[String],
-      byteOrder: ByteOrder,
-      dataFormat: TensorflowDataFormat
+      byteOrder: ByteOrder
     )(implicit ev: TensorNumeric[T]): Module[T] = {
     import scala.collection.JavaConverters._
 
@@ -143,7 +141,7 @@ object TensorflowLoader{
         // converted node, skip
       } else {
         val (module, nodes, inputNodes) =
-          extract[T](n.graph(reverse = true), context, byteOrder, dataFormat).getOrElse(
+          extract[T](n.graph(reverse = true), context, byteOrder).getOrElse(
             throw new UnsupportedOperationException(s"Can not find matched graph ${n}"))
 
         val node = new Node(module)
@@ -188,7 +186,7 @@ object TensorflowLoader{
    * @return
    */
   private[bigdl] def extract[T: ClassTag](graph: DirectedGraph[NodeDef],
-      context: Context[T], byteOrder: ByteOrder, dataFormat: TensorflowDataFormat)(
+      context: Context[T], byteOrder: ByteOrder)(
     implicit ev: TensorNumeric[T]): Option[(
     AbstractModule[Activity, Tensor[T], T],
       List[Node[NodeDef]],
@@ -200,7 +198,7 @@ object TensorflowLoader{
       val (result, inputs) = matchGraph(graph, patterns(i).topology)
       if (result.size != 0) {
         // get model
-        return Some(patterns(i).layer(graph, context, byteOrder, dataFormat), result, inputs)
+        return Some(patterns(i).layer(graph, context, byteOrder), result, inputs)
       }
       i += 1
     }

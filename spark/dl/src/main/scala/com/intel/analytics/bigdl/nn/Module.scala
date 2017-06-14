@@ -57,7 +57,7 @@ object Module {
             dataFormat: TensorflowDataFormat = TensorflowDataFormat.NCHW)(
     implicit ev: TensorNumeric[T]): Module[T] = {
 
-    TensorflowLoader.load(file, inputs, outputs, byteOrder, dataFormat)
+    TensorflowLoader.load(file, inputs, outputs, byteOrder)
   }
 
   def flatten[@specialized(Float, Double) T: ClassTag](parameters: Array[Tensor[T]])(

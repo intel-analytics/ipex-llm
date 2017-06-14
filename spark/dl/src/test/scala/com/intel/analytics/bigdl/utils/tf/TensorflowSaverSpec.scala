@@ -30,6 +30,14 @@ class TensorflowSaverSpec extends TensorflowSpecHelper {
 
   private val logger = Logger.getLogger(getClass)
 
+  before {
+    System.setProperty("bigdl.enableNHWC", "true")
+  }
+
+  after {
+    System.setProperty("bigdl.enableNHWC", "false")
+  }
+
   "ReLU layer" should "be correctly saved" in {
     val inputTensor = Tensor[Float](T(
       T(1.0f, 2.0f, 5.0f, 6.0f),
@@ -52,7 +60,7 @@ class TensorflowSaverSpec extends TensorflowSpecHelper {
       T(1.0f, 2.0f, 5.0f),
       T(-3.0f, -4.0f, -7.0f)
     ))
-    test(layer, input, false, TensorflowDataFormat.NHWC, "/biasAdd") should be(true)
+    test(layer, input, false, "/biasAdd") should be(true)
   }
 
   "AvgPooling" should "be correctly saved" in {
@@ -96,66 +104,67 @@ class TensorflowSaverSpec extends TensorflowSpecHelper {
   }
 
   "Squeeze" should "be correctly saved" in {
+    System.setProperty("bigdl.enableNHWC", "false")
     val layer = Squeeze(3)
     val input = Tensor[Float](4, 2, 1, 2).rand()
-    test(layer, input, false, TensorflowDataFormat.NCHW) should be(true)
+    test(layer, input, false) should be(true)
   }
 
   "CAddTableToTF" should "be correct" in {
     val layer = CAddTable[Float]()
     val input1 = Tensor[Float](4, 2, 2).rand()
     val input2 = Tensor[Float](4, 2, 2).rand()
-    testMultiInput(layer, Seq(input1, input2), false, TensorflowDataFormat.NCHW) should be(true)
+    testMultiInput(layer, Seq(input1, input2), false) should be(true)
   }
 
   "CMultToTF" should "be correct" in {
     val layer = CMulTable[Float]()
     val input1 = Tensor[Float](4, 2, 2).rand()
     val input2 = Tensor[Float](4, 2, 2).rand()
-    testMultiInput(layer, Seq(input1, input2), false, TensorflowDataFormat.NCHW) should be(true)
+    testMultiInput(layer, Seq(input1, input2), false) should be(true)
   }
 
   "JoinTableToTF" should "be correct" in {
     val layer = JoinTable[Float](3, -1)
     val input1 = Tensor[Float](4, 2, 2).rand()
     val input2 = Tensor[Float](4, 2, 2).rand()
-    testMultiInput(layer, Seq(input1, input2), false, TensorflowDataFormat.NCHW) should be(true)
+    testMultiInput(layer, Seq(input1, input2), false) should be(true)
   }
 
   "LogSoftMax" should "be correctly saved" in {
     val layer = LogSoftMax()
     val input = Tensor[Float](4, 5).rand()
-    test(layer, input, false, TensorflowDataFormat.NCHW) should be(true)
+    test(layer, input, false) should be(true)
   }
 
   "SoftMax" should "be correctly saved" in {
     val layer = SoftMax()
     val input = Tensor[Float](4, 5).rand()
-    test(layer, input, false, TensorflowDataFormat.NCHW) should be(true)
+    test(layer, input, false) should be(true)
   }
 
   "Sigmoid" should "be correctly saved" in {
     val layer = Sigmoid()
     val input = Tensor[Float](4, 5).rand()
-    test(layer, input, false, TensorflowDataFormat.NCHW) should be(true)
+    test(layer, input, false) should be(true)
   }
 
   "SpatialConvolution" should "be correctly saved" in {
     val layer = SpatialConvolution(3, 5, 2, 2)
     val input = Tensor[Float](4, 3, 5, 5).rand()
-    test(layer, input, true, TensorflowDataFormat.NHWC, "/biasAdd") should be(true)
+    test(layer, input, true, "/biasAdd") should be(true)
   }
 
   "Mean" should "be correctly saved" in {
     val layer = Mean(1, -1, true)
     val input = Tensor[Float](4, 5).rand()
-    test(layer, input, false, TensorflowDataFormat.NCHW, "/output") should be(true)
+    test(layer, input, false, "/output") should be(true)
   }
 
   "Padding" should "be correctly saved" in {
     val layer = Padding(1, 2, 2)
     val input = Tensor[Float](4, 5).rand()
-    test(layer, input, false, TensorflowDataFormat.NCHW, "/output") should be(true)
+    test(layer, input, false, "/output") should be(true)
   }
 
   "Batch Norm2D" should "be correctly saved" in {
@@ -166,26 +175,26 @@ class TensorflowSaverSpec extends TensorflowSpecHelper {
     layer.runningVar.rand(0.9, 1.1)
     layer.runningMean.rand()
     val input = Tensor[Float](3, 2, 4, 5).rand()
-    test(layer, input, true, TensorflowDataFormat.NHWC, "/output") should be(true)
+    test(layer, input, true, "/output") should be(true)
   }
 
   "Dropout" should "be correctly saved" in {
     val layer = Dropout()
     layer.evaluate()
     val input = Tensor[Float](3, 2).rand()
-    test(layer, input, false, TensorflowDataFormat.NCHW) should be(true)
+    test(layer, input, false) should be(true)
   }
 
   "View" should "be correctly saved" in {
     val layer = View(2, 4)
     val input = Tensor[Float](2, 2, 2).rand()
-    test(layer, input, false, TensorflowDataFormat.NCHW) should be(true)
+    test(layer, input, false) should be(true)
   }
 
   "Reshape" should "be correctly saved" in {
     val layer = Reshape(Array(2, 4))
     val input = Tensor[Float](2, 2, 2).rand()
-    test(layer, input, false, TensorflowDataFormat.NCHW) should be(true)
+    test(layer, input, false) should be(true)
   }
 
   "lenet" should "be correctly saved" in {
@@ -207,7 +216,6 @@ class TensorflowSaverSpec extends TensorflowSpecHelper {
       Seq(Tensorflow.const(transInput, "input", ByteOrder.LITTLE_ENDIAN)),
       tmpFile.getPath,
       ByteOrder.LITTLE_ENDIAN,
-      TensorflowDataFormat.NHWC,
       Set(Tensorflow.const(outputData.transpose(2, 3).transpose(3, 4).contiguous(),
         "target", ByteOrder.LITTLE_ENDIAN))
     )
@@ -218,8 +226,6 @@ class TensorflowSaverSpec extends TensorflowSpecHelper {
   private def test(layer: AbstractModule[Tensor[Float], Tensor[Float], Float],
                    inputTensor: Tensor[Float],
                    convertNHWC: Boolean = false,
-                   // The default is NHWC so we can test on CPU
-                   dataFormat: TensorflowDataFormat = TensorflowDataFormat.NHWC,
                    outputSuffix: String = "") : Boolean = {
     tfCheck()
     val layerNode = layer.setName("output").apply()
@@ -243,7 +249,6 @@ class TensorflowSaverSpec extends TensorflowSpecHelper {
       Seq(Tensorflow.const(tfTensor, "input", ByteOrder.LITTLE_ENDIAN)),
       tmpFile.getPath,
       ByteOrder.LITTLE_ENDIAN,
-      dataFormat,
       Set(Tensorflow.const(outputSave, "target", ByteOrder.LITTLE_ENDIAN))
     )
     runPythonSaveTest(tmpFile.getPath, outputSuffix)
@@ -252,8 +257,6 @@ class TensorflowSaverSpec extends TensorflowSpecHelper {
   private def testMultiInput(layer: AbstractModule[Table, Tensor[Float], Float],
                    inputTensors: Seq[Tensor[Float]],
                    convertNHWC: Boolean = false,
-                   // The default is NHWC so we can test on CPU
-                   dataFormat: TensorflowDataFormat = TensorflowDataFormat.NHWC,
                    outputSuffix: String = "") : Boolean = {
     tfCheck()
     val layerNode = layer.setName("output").apply()
@@ -284,7 +287,6 @@ class TensorflowSaverSpec extends TensorflowSpecHelper {
         Tensorflow.const(t._1, "input" + t._2, ByteOrder.LITTLE_ENDIAN)),
       tmpFile.getPath,
       ByteOrder.LITTLE_ENDIAN,
-      dataFormat,
       Set(Tensorflow.const(outputSave, "target", ByteOrder.LITTLE_ENDIAN))
     )
     runPythonSaveTest(tmpFile.getPath, outputSuffix)
