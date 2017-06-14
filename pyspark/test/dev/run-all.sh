@@ -17,4 +17,4 @@
 #
 BASE="$(cd "`dirname $0`"; pwd)"
 
-$BASE/run-diff && $BASE/lint-python && $BASE/run-tests && $BASE/../local_integration/run-all-local.sh
+$BASE/run-diff && $BASE/lint-python && $BASE/run-tests
