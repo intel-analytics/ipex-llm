@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.utils.serialization
+package com.intel.analytics.bigdl.utils.serializer
 
 import scala.collection.JavaConverters._
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
@@ -23,10 +23,7 @@ import com.intel.analytics.bigdl.optim.{L1L2Regularizer, L1Regularizer, L2Regula
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
-import com.intel.analytics.bigdl.utils.serialization.ModelSerializer.AddSerializer._
-import com.intel.analytics.bigdl.utils.serialization.ModelSerializer.BottleSerializer._
-import com.intel.analytics.bigdl.utils.serialization.ModelSerializer.LinearSerializer._
-import serialization.Model
+import com.intel.analytics.bigdl.utils.serializer.ModelSerializer.AbsSerializer.{createBigDLModule, createSerializeBigDLModule}
 import serialization.Model.BigDLModel.ModuleType
 import serialization.Model._
 
@@ -34,7 +31,7 @@ import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
-private[serialization] object ModelSerializer {
+private[serializer] object ModelSerializer {
 
   private val serializerMap = new mutable.HashMap[String, AbstractModelSerializer]()
   private val hdfsPrefix: String = "hdfs:"
@@ -666,7 +663,7 @@ private[serialization] object ModelSerializer {
     val bigDLModel = module match {
       case abs : Abs[_] => AbsSerializer.serializeModule(bigDLModule)
       case add : Add[_] => AddSerializer.serializeModule(bigDLModule)
-      case addConst : AddConstant[_] => AddConstantSerializer.serializeModule(bigDLModule)
+      // case addConst : AddConstant[_] => AddConstantSerializer.serializeModule(bigDLModule)
       case batchNorm : BatchNormalization[_] => BatchNormSerializer.serializeModule(bigDLModule)
       case biLinear : Bilinear[_] => BiLinearSerializer.serializeModule(bigDLModule)
       case biRecurrent : BiRecurrent[_] => BiRecurrentSerializer.serializeModule(bigDLModule)
@@ -689,7 +686,7 @@ private[serialization] object ModelSerializer {
       case linear : Linear[_] => LinearSerializer.serializeModule(bigDLModule)
       case sequantial : Sequential[_] => SequentialSerializer.serializeModule(bigDLModule)
       case graph : Graph[_] => GraphSerializer.serializeModule(bigDLModule)
-      case _ => throw new IllegalArgumentException(s"$module serialization is not supported")
+      case _ => CustomizedDelegator.serializeModule(bigDLModule)
     }
     bigDLModel
   }
@@ -720,6 +717,7 @@ private[serialization] object ModelSerializer {
     serializerMap("LINEAR") = LinearSerializer
     serializerMap("SEQUENTIAL") = SequentialSerializer
     serializerMap("GRAPH") = GraphSerializer
+    serializerMap("CUSTOMIZED") = CustomizedDelegator
   }
 
 }

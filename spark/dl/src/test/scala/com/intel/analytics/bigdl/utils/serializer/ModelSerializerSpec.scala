@@ -17,12 +17,20 @@ package com.intel.analytics.bigdl.utils
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.numeric.NumericDouble
-import com.intel.analytics.bigdl.utils.serialization.{ModelLoader, ModelPersister, ModelSerializer}
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer._
 import org.scalatest.{FlatSpec, Matchers}
+import serialization.Model.{BigDLModel, CustomParam}
+import serialization.Model.BigDLModel.ModuleType
+import serialization.Serialization
+import serialization.Serialization.TestParam
 
+import scala.reflect.ClassTag
 import scala.util.Random
+
 
 class ModelSerializerSpec extends FlatSpec with Matchers {
 
@@ -391,5 +399,46 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     val loadedGraph = ModelLoader.loadFromFile("/tmp/graph.bigdl")
     val res2 = loadedGraph.asInstanceOf[Graph[Double]].forward(tensor2)
     res1 should be (res2)
+  }
+
+  "Customized Module " should "work properly" in {
+    val testModule = new TestModule[Double](1.0)
+    CustomizedDelegator.registerCustomizedModule(testModule.getClass, TestSerializer, "Test")
+    val tensor1 = Tensor[Double](10).apply1(_ => Random.nextDouble())
+    val tensor2 = Tensor[Double]()
+    tensor2.resizeAs(tensor1).copy(tensor1)
+    val res1 = testModule.forward(tensor1)
+    ModelPersister.saveToFile("/tmp/testModule.bigdl", testModule, true)
+    ModelPersister.saveModelDefinitionToFile("/tmp/testModule.prototxt", testModule, true)
+    val loadedModule = ModelLoader.loadFromFile("/tmp/testModule.bigdl")
+    val res2 = loadedModule.asInstanceOf[TestModule[Double]].forward(tensor2)
+    res1 should be (res2)
+  }
+}
+class TestModule[T: ClassTag](override val constant_scalar: Double)
+  (implicit ev: TensorNumeric[T]) extends AddConstant[T](constant_scalar) {
+}
+case object TestSerializer extends AbstractModelSerializer {
+
+  override def loadModule[T: ClassTag](model : BigDLModel)(implicit ev: TensorNumeric[T])
+  : BigDLModule[T] = {
+    val customParam = model.getCustomParam
+    val customType = customParam.getCustomType
+    val customizedData = customParam.getExtension(Serialization.customizedData)
+    createBigDLModule(model, new TestModule(customizedData.getScalar).
+      asInstanceOf[AbstractModule[Activity, Activity, T]])
+  }
+
+  override def serializeModule[T: ClassTag](module : BigDLModule[T])
+                                           (implicit ev: TensorNumeric[T]): BigDLModel = {
+    val bigDLModelBuilder = BigDLModel.newBuilder
+    bigDLModelBuilder.setModuleType(ModuleType.CUSTOMIZED)
+    val customParam = CustomParam.newBuilder
+    customParam.setCustomType("Test")
+    val testParam = TestParam.newBuilder
+    testParam.setScalar(module.module.asInstanceOf[TestModule[T]].constant_scalar)
+    customParam.setExtension(Serialization.customizedData, testParam.build)
+    bigDLModelBuilder.setCustomParam(customParam.build)
+    createSerializeBigDLModule(bigDLModelBuilder, module)
   }
 }

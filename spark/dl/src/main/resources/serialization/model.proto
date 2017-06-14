@@ -28,6 +28,7 @@ message BigDLModel
         LINEAR = 23;
         SEQUENTIAL = 24;
         GRAPH = 25;
+        CUSTOMIZED = 26;
     }
     optional string name = 1; //model name
     repeated BigDLModel subModules = 2; // sub modules
@@ -49,6 +50,7 @@ message BigDLModel
     optional ConcatParam concatParam = 18; //params for concat
     optional CosineParam cosineParam = 19; // params for cosine
     optional LinearParam linearParam = 20; // params for linear
+    optional CustomParam customParam = 21; //extensible for custom params
 }
 enum InitMethod {
     Default = 1;
@@ -56,9 +58,9 @@ enum InitMethod {
     BilinearFiller = 3;
 }
 enum RegularizerType {
+    L1L2Regularizer = 1;
     L1Regularizer = 2;
     L2Regularizer = 3;
-    L1L2Regularizer = 1;
 }
 message BigDLTensor{
     repeated int32 size = 1; //size of tensor
@@ -125,4 +127,8 @@ message LinearParam {
     optional bool withBias = 4 [default = true];
     optional Regularizer wRegularizer = 5;
     optional Regularizer bRegularizer = 6;
+}
+message CustomParam {
+    required string customType = 1;
+    extensions 1000 to 10000;
 }

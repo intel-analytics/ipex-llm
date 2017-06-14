@@ -1,0 +1,8 @@
+import "main/resources/serialization/model.proto";
+package serialization;
+message TestParam {
+    required double scalar = 1;
+}
+extend CustomParam {
+    optional TestParam customizedData = 1000;
+}

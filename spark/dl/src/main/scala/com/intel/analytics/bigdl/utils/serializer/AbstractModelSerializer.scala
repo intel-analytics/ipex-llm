@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.utils.serialization
+package com.intel.analytics.bigdl.utils.serializer
 
 import scala.collection.JavaConverters._
 
@@ -29,7 +29,7 @@ import serialization.Model.{BigDLModel, BigDLTensor, RegularizerType}
 import scala.reflect.ClassTag
 
 
-private[serialization] abstract class AbstractModelSerializer {
+abstract class AbstractModelSerializer {
 
   def loadModule[T: ClassTag](model : BigDLModel)
     (implicit ev: TensorNumeric[T]) : BigDLModule[T]
@@ -189,6 +189,6 @@ private[serialization] abstract class AbstractModelSerializer {
   }
 }
 
-private[serialization] case class BigDLModule[T: ClassTag](
+case class BigDLModule[T: ClassTag](
   module : AbstractModule[Activity, Activity, T],
   tops : Seq[String], bottoms : Seq[String])

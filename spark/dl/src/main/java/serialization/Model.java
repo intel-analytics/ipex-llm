@@ -105,19 +105,23 @@ public final class Model {
   public enum RegularizerType
       implements com.google.protobuf.ProtocolMessageEnum {
     /**
+     * <code>L1L2Regularizer = 1;</code>
+     */
+    L1L2Regularizer(0, 1),
+    /**
      * <code>L1Regularizer = 2;</code>
      */
-    L1Regularizer(0, 2),
+    L1Regularizer(1, 2),
     /**
      * <code>L2Regularizer = 3;</code>
      */
-    L2Regularizer(1, 3),
+    L2Regularizer(2, 3),
+    ;
+
     /**
      * <code>L1L2Regularizer = 1;</code>
      */
-    L1L2Regularizer(2, 1),
-    ;
-
+    public static final int L1L2Regularizer_VALUE = 1;
     /**
      * <code>L1Regularizer = 2;</code>
      */
@@ -126,19 +130,15 @@ public final class Model {
      * <code>L2Regularizer = 3;</code>
      */
     public static final int L2Regularizer_VALUE = 3;
-    /**
-     * <code>L1L2Regularizer = 1;</code>
-     */
-    public static final int L1L2Regularizer_VALUE = 1;
 
 
     public final int getNumber() { return value; }
 
     public static RegularizerType valueOf(int value) {
       switch (value) {
+        case 1: return L1L2Regularizer;
         case 2: return L1Regularizer;
         case 3: return L2Regularizer;
-        case 1: return L1L2Regularizer;
         default: return null;
       }
     }
@@ -725,6 +725,31 @@ public final class Model {
      * </pre>
      */
     serialization.Model.LinearParamOrBuilder getLinearParamOrBuilder();
+
+    /**
+     * <code>optional .serialization.CustomParam customParam = 21;</code>
+     *
+     * <pre>
+     *extensible for custom params
+     * </pre>
+     */
+    boolean hasCustomParam();
+    /**
+     * <code>optional .serialization.CustomParam customParam = 21;</code>
+     *
+     * <pre>
+     *extensible for custom params
+     * </pre>
+     */
+    serialization.Model.CustomParam getCustomParam();
+    /**
+     * <code>optional .serialization.CustomParam customParam = 21;</code>
+     *
+     * <pre>
+     *extensible for custom params
+     * </pre>
+     */
+    serialization.Model.CustomParamOrBuilder getCustomParamOrBuilder();
   }
   /**
    * Protobuf type {@code serialization.BigDLModel}
@@ -1016,6 +1041,19 @@ public final class Model {
               bitField0_ |= 0x00010000;
               break;
             }
+            case 170: {
+              serialization.Model.CustomParam.Builder subBuilder = null;
+              if (((bitField0_ & 0x00020000) == 0x00020000)) {
+                subBuilder = customParam_.toBuilder();
+              }
+              customParam_ = input.readMessage(serialization.Model.CustomParam.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(customParam_);
+                customParam_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00020000;
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -1169,6 +1207,10 @@ public final class Model {
        * <code>GRAPH = 25;</code>
        */
       GRAPH(24, 25),
+      /**
+       * <code>CUSTOMIZED = 26;</code>
+       */
+      CUSTOMIZED(25, 26),
       ;
 
       /**
@@ -1271,6 +1313,10 @@ public final class Model {
        * <code>GRAPH = 25;</code>
        */
       public static final int GRAPH_VALUE = 25;
+      /**
+       * <code>CUSTOMIZED = 26;</code>
+       */
+      public static final int CUSTOMIZED_VALUE = 26;
 
 
       public final int getNumber() { return value; }
@@ -1302,6 +1348,7 @@ public final class Model {
           case 23: return LINEAR;
           case 24: return SEQUENTIAL;
           case 25: return GRAPH;
+          case 26: return CUSTOMIZED;
           default: return null;
         }
       }
@@ -2071,6 +2118,39 @@ public final class Model {
       return linearParam_;
     }
 
+    public static final int CUSTOMPARAM_FIELD_NUMBER = 21;
+    private serialization.Model.CustomParam customParam_;
+    /**
+     * <code>optional .serialization.CustomParam customParam = 21;</code>
+     *
+     * <pre>
+     *extensible for custom params
+     * </pre>
+     */
+    public boolean hasCustomParam() {
+      return ((bitField0_ & 0x00020000) == 0x00020000);
+    }
+    /**
+     * <code>optional .serialization.CustomParam customParam = 21;</code>
+     *
+     * <pre>
+     *extensible for custom params
+     * </pre>
+     */
+    public serialization.Model.CustomParam getCustomParam() {
+      return customParam_;
+    }
+    /**
+     * <code>optional .serialization.CustomParam customParam = 21;</code>
+     *
+     * <pre>
+     *extensible for custom params
+     * </pre>
+     */
+    public serialization.Model.CustomParamOrBuilder getCustomParamOrBuilder() {
+      return customParam_;
+    }
+
     private void initFields() {
       name_ = "";
       subModules_ = java.util.Collections.emptyList();
@@ -2092,6 +2172,7 @@ public final class Model {
       concatParam_ = serialization.Model.ConcatParam.getDefaultInstance();
       cosineParam_ = serialization.Model.CosineParam.getDefaultInstance();
       linearParam_ = serialization.Model.LinearParam.getDefaultInstance();
+      customParam_ = serialization.Model.CustomParam.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -2169,6 +2250,12 @@ public final class Model {
           return false;
         }
       }
+      if (hasCustomParam()) {
+        if (!getCustomParam().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -2235,6 +2322,9 @@ public final class Model {
       }
       if (((bitField0_ & 0x00010000) == 0x00010000)) {
         output.writeMessage(20, linearParam_);
+      }
+      if (((bitField0_ & 0x00020000) == 0x00020000)) {
+        output.writeMessage(21, customParam_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -2334,6 +2424,10 @@ public final class Model {
       if (((bitField0_ & 0x00010000) == 0x00010000)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(20, linearParam_);
+      }
+      if (((bitField0_ & 0x00020000) == 0x00020000)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(21, customParam_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -2460,6 +2554,7 @@ public final class Model {
           getConcatParamFieldBuilder();
           getCosineParamFieldBuilder();
           getLinearParamFieldBuilder();
+          getCustomParamFieldBuilder();
         }
       }
       private static Builder create() {
@@ -2572,6 +2667,12 @@ public final class Model {
           linearParamBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00080000);
+        if (customParamBuilder_ == null) {
+          customParam_ = serialization.Model.CustomParam.getDefaultInstance();
+        } else {
+          customParamBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00100000);
         return this;
       }
 
@@ -2747,6 +2848,14 @@ public final class Model {
         } else {
           result.linearParam_ = linearParamBuilder_.build();
         }
+        if (((from_bitField0_ & 0x00100000) == 0x00100000)) {
+          to_bitField0_ |= 0x00020000;
+        }
+        if (customParamBuilder_ == null) {
+          result.customParam_ = customParam_;
+        } else {
+          result.customParam_ = customParamBuilder_.build();
+        }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -2862,6 +2971,9 @@ public final class Model {
         if (other.hasLinearParam()) {
           mergeLinearParam(other.getLinearParam());
         }
+        if (other.hasCustomParam()) {
+          mergeCustomParam(other.getCustomParam());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -2933,6 +3045,12 @@ public final class Model {
         }
         if (hasLinearParam()) {
           if (!getLinearParam().isInitialized()) {
+            
+            return false;
+          }
+        }
+        if (hasCustomParam()) {
+          if (!getCustomParam().isInitialized()) {
             
             return false;
           }
@@ -5960,6 +6078,158 @@ public final class Model {
         return linearParamBuilder_;
       }
 
+      private serialization.Model.CustomParam customParam_ = serialization.Model.CustomParam.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          serialization.Model.CustomParam, serialization.Model.CustomParam.Builder, serialization.Model.CustomParamOrBuilder> customParamBuilder_;
+      /**
+       * <code>optional .serialization.CustomParam customParam = 21;</code>
+       *
+       * <pre>
+       *extensible for custom params
+       * </pre>
+       */
+      public boolean hasCustomParam() {
+        return ((bitField0_ & 0x00100000) == 0x00100000);
+      }
+      /**
+       * <code>optional .serialization.CustomParam customParam = 21;</code>
+       *
+       * <pre>
+       *extensible for custom params
+       * </pre>
+       */
+      public serialization.Model.CustomParam getCustomParam() {
+        if (customParamBuilder_ == null) {
+          return customParam_;
+        } else {
+          return customParamBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .serialization.CustomParam customParam = 21;</code>
+       *
+       * <pre>
+       *extensible for custom params
+       * </pre>
+       */
+      public Builder setCustomParam(serialization.Model.CustomParam value) {
+        if (customParamBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          customParam_ = value;
+          onChanged();
+        } else {
+          customParamBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00100000;
+        return this;
+      }
+      /**
+       * <code>optional .serialization.CustomParam customParam = 21;</code>
+       *
+       * <pre>
+       *extensible for custom params
+       * </pre>
+       */
+      public Builder setCustomParam(
+          serialization.Model.CustomParam.Builder builderForValue) {
+        if (customParamBuilder_ == null) {
+          customParam_ = builderForValue.build();
+          onChanged();
+        } else {
+          customParamBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00100000;
+        return this;
+      }
+      /**
+       * <code>optional .serialization.CustomParam customParam = 21;</code>
+       *
+       * <pre>
+       *extensible for custom params
+       * </pre>
+       */
+      public Builder mergeCustomParam(serialization.Model.CustomParam value) {
+        if (customParamBuilder_ == null) {
+          if (((bitField0_ & 0x00100000) == 0x00100000) &&
+              customParam_ != serialization.Model.CustomParam.getDefaultInstance()) {
+            customParam_ =
+              serialization.Model.CustomParam.newBuilder(customParam_).mergeFrom(value).buildPartial();
+          } else {
+            customParam_ = value;
+          }
+          onChanged();
+        } else {
+          customParamBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00100000;
+        return this;
+      }
+      /**
+       * <code>optional .serialization.CustomParam customParam = 21;</code>
+       *
+       * <pre>
+       *extensible for custom params
+       * </pre>
+       */
+      public Builder clearCustomParam() {
+        if (customParamBuilder_ == null) {
+          customParam_ = serialization.Model.CustomParam.getDefaultInstance();
+          onChanged();
+        } else {
+          customParamBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00100000);
+        return this;
+      }
+      /**
+       * <code>optional .serialization.CustomParam customParam = 21;</code>
+       *
+       * <pre>
+       *extensible for custom params
+       * </pre>
+       */
+      public serialization.Model.CustomParam.Builder getCustomParamBuilder() {
+        bitField0_ |= 0x00100000;
+        onChanged();
+        return getCustomParamFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .serialization.CustomParam customParam = 21;</code>
+       *
+       * <pre>
+       *extensible for custom params
+       * </pre>
+       */
+      public serialization.Model.CustomParamOrBuilder getCustomParamOrBuilder() {
+        if (customParamBuilder_ != null) {
+          return customParamBuilder_.getMessageOrBuilder();
+        } else {
+          return customParam_;
+        }
+      }
+      /**
+       * <code>optional .serialization.CustomParam customParam = 21;</code>
+       *
+       * <pre>
+       *extensible for custom params
+       * </pre>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          serialization.Model.CustomParam, serialization.Model.CustomParam.Builder, serialization.Model.CustomParamOrBuilder> 
+          getCustomParamFieldBuilder() {
+        if (customParamBuilder_ == null) {
+          customParamBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              serialization.Model.CustomParam, serialization.Model.CustomParam.Builder, serialization.Model.CustomParamOrBuilder>(
+                  getCustomParam(),
+                  getParentForChildren(),
+                  isClean());
+          customParam_ = null;
+        }
+        return customParamBuilder_;
+      }
+
       // @@protoc_insertion_point(builder_scope:serialization.BigDLModel)
     }
 
@@ -6889,7 +7159,7 @@ public final class Model {
     }
 
     private void initFields() {
-      regularizerType_ = serialization.Model.RegularizerType.L1Regularizer;
+      regularizerType_ = serialization.Model.RegularizerType.L1L2Regularizer;
       regularData_ = java.util.Collections.emptyList();
     }
     private byte memoizedIsInitialized = -1;
@@ -7051,7 +7321,7 @@ public final class Model {
 
       public Builder clear() {
         super.clear();
-        regularizerType_ = serialization.Model.RegularizerType.L1Regularizer;
+        regularizerType_ = serialization.Model.RegularizerType.L1L2Regularizer;
         bitField0_ = (bitField0_ & ~0x00000001);
         regularData_ = java.util.Collections.emptyList();
         bitField0_ = (bitField0_ & ~0x00000002);
@@ -7152,7 +7422,7 @@ public final class Model {
       }
       private int bitField0_;
 
-      private serialization.Model.RegularizerType regularizerType_ = serialization.Model.RegularizerType.L1Regularizer;
+      private serialization.Model.RegularizerType regularizerType_ = serialization.Model.RegularizerType.L1L2Regularizer;
       /**
        * <code>required .serialization.RegularizerType regularizerType = 1;</code>
        */
@@ -7182,7 +7452,7 @@ public final class Model {
        */
       public Builder clearRegularizerType() {
         bitField0_ = (bitField0_ & ~0x00000001);
-        regularizerType_ = serialization.Model.RegularizerType.L1Regularizer;
+        regularizerType_ = serialization.Model.RegularizerType.L1L2Regularizer;
         onChanged();
         return this;
       }
@@ -14840,6 +15110,507 @@ public final class Model {
     // @@protoc_insertion_point(class_scope:serialization.LinearParam)
   }
 
+  public interface CustomParamOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:serialization.CustomParam)
+      com.google.protobuf.GeneratedMessage.
+          ExtendableMessageOrBuilder<CustomParam> {
+
+    /**
+     * <code>required string customType = 1;</code>
+     */
+    boolean hasCustomType();
+    /**
+     * <code>required string customType = 1;</code>
+     */
+    java.lang.String getCustomType();
+    /**
+     * <code>required string customType = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getCustomTypeBytes();
+  }
+  /**
+   * Protobuf type {@code serialization.CustomParam}
+   */
+  public static final class CustomParam extends
+      com.google.protobuf.GeneratedMessage.ExtendableMessage<
+        CustomParam> implements
+      // @@protoc_insertion_point(message_implements:serialization.CustomParam)
+      CustomParamOrBuilder {
+    // Use CustomParam.newBuilder() to construct.
+    private CustomParam(com.google.protobuf.GeneratedMessage.ExtendableBuilder<serialization.Model.CustomParam, ?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private CustomParam(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final CustomParam defaultInstance;
+    public static CustomParam getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public CustomParam getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private CustomParam(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000001;
+              customType_ = bs;
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return serialization.Model.internal_static_serialization_CustomParam_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return serialization.Model.internal_static_serialization_CustomParam_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              serialization.Model.CustomParam.class, serialization.Model.CustomParam.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<CustomParam> PARSER =
+        new com.google.protobuf.AbstractParser<CustomParam>() {
+      public CustomParam parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new CustomParam(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<CustomParam> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    public static final int CUSTOMTYPE_FIELD_NUMBER = 1;
+    private java.lang.Object customType_;
+    /**
+     * <code>required string customType = 1;</code>
+     */
+    public boolean hasCustomType() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>required string customType = 1;</code>
+     */
+    public java.lang.String getCustomType() {
+      java.lang.Object ref = customType_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          customType_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>required string customType = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getCustomTypeBytes() {
+      java.lang.Object ref = customType_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        customType_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    private void initFields() {
+      customType_ = "";
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      if (!hasCustomType()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!extensionsAreInitialized()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      com.google.protobuf.GeneratedMessage
+        .ExtendableMessage<serialization.Model.CustomParam>.ExtensionWriter extensionWriter =
+          newExtensionWriter();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBytes(1, getCustomTypeBytes());
+      }
+      extensionWriter.writeUntil(10001, output);
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(1, getCustomTypeBytes());
+      }
+      size += extensionsSerializedSize();
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static serialization.Model.CustomParam parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static serialization.Model.CustomParam parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static serialization.Model.CustomParam parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static serialization.Model.CustomParam parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static serialization.Model.CustomParam parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static serialization.Model.CustomParam parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static serialization.Model.CustomParam parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static serialization.Model.CustomParam parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static serialization.Model.CustomParam parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static serialization.Model.CustomParam parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(serialization.Model.CustomParam prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code serialization.CustomParam}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.ExtendableBuilder<
+          serialization.Model.CustomParam, Builder> implements
+        // @@protoc_insertion_point(builder_implements:serialization.CustomParam)
+        serialization.Model.CustomParamOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return serialization.Model.internal_static_serialization_CustomParam_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return serialization.Model.internal_static_serialization_CustomParam_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                serialization.Model.CustomParam.class, serialization.Model.CustomParam.Builder.class);
+      }
+
+      // Construct using serialization.Model.CustomParam.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        customType_ = "";
+        bitField0_ = (bitField0_ & ~0x00000001);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return serialization.Model.internal_static_serialization_CustomParam_descriptor;
+      }
+
+      public serialization.Model.CustomParam getDefaultInstanceForType() {
+        return serialization.Model.CustomParam.getDefaultInstance();
+      }
+
+      public serialization.Model.CustomParam build() {
+        serialization.Model.CustomParam result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public serialization.Model.CustomParam buildPartial() {
+        serialization.Model.CustomParam result = new serialization.Model.CustomParam(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.customType_ = customType_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof serialization.Model.CustomParam) {
+          return mergeFrom((serialization.Model.CustomParam)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(serialization.Model.CustomParam other) {
+        if (other == serialization.Model.CustomParam.getDefaultInstance()) return this;
+        if (other.hasCustomType()) {
+          bitField0_ |= 0x00000001;
+          customType_ = other.customType_;
+          onChanged();
+        }
+        this.mergeExtensionFields(other);
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        if (!hasCustomType()) {
+          
+          return false;
+        }
+        if (!extensionsAreInitialized()) {
+          
+          return false;
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        serialization.Model.CustomParam parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (serialization.Model.CustomParam) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private java.lang.Object customType_ = "";
+      /**
+       * <code>required string customType = 1;</code>
+       */
+      public boolean hasCustomType() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>required string customType = 1;</code>
+       */
+      public java.lang.String getCustomType() {
+        java.lang.Object ref = customType_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            customType_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>required string customType = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getCustomTypeBytes() {
+        java.lang.Object ref = customType_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          customType_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>required string customType = 1;</code>
+       */
+      public Builder setCustomType(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        customType_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string customType = 1;</code>
+       */
+      public Builder clearCustomType() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        customType_ = getDefaultInstance().getCustomType();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string customType = 1;</code>
+       */
+      public Builder setCustomTypeBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        customType_ = value;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:serialization.CustomParam)
+    }
+
+    static {
+      defaultInstance = new CustomParam(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:serialization.CustomParam)
+  }
+
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_serialization_BigDLModel_descriptor;
   private static
@@ -14920,6 +15691,11 @@ public final class Model {
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_serialization_LinearParam_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_serialization_CustomParam_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_serialization_CustomParam_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -14929,7 +15705,7 @@ public final class Model {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\013model.proto\022\rserialization\"\351\t\n\nBigDLMo" +
+      "\n\013model.proto\022\rserialization\"\252\n\n\nBigDLMo" +
       "del\022\014\n\004name\030\001 \001(\t\022-\n\nsubModules\030\002 \003(\0132\031." +
       "serialization.BigDLModel\022*\n\006weight\030\003 \001(\013" +
       "2\032.serialization.BigDLTensor\022(\n\004bias\030\004 \001" +
@@ -14952,48 +15728,50 @@ public final class Model {
       " \001(\0132\032.serialization.ConcatParam\022/\n\013cosi" +
       "neParam\030\023 \001(\0132\032.serialization.CosinePara" +
       "m\022/\n\013linearParam\030\024 \001(\0132\032.serialization.L" +
-      "inearParam\"\343\002\n\nModuleType\022\007\n\003ABS\020\001\022\007\n\003AD" +
-      "D\020\002\022\014\n\010ADDCONST\020\003\022\r\n\tBATCHNORM\020\004\022\014\n\010BILI" +
-      "NEAR\020\005\022\017\n\013BIRECURRENT\020\006\022\n\n\006BOTTLE\020\007\022\010\n\004C" +
-      "ADD\020\010\022\r\n\tCADDTABLE\020\t\022\r\n\tCDIVTABLE\020\n\022\t\n\005C" +
-      "LAMP\020\013\022\r\n\tCMAXTABLE\020\014\022\r\n\tCMINTABLE\020\r\022\010\n\004" +
-      "CMUL\020\016\022\r\n\tCMULTABLE\020\017\022\n\n\006CONCAT\020\020\022\017\n\013CON" +
-      "CATTABLE\020\021\022\016\n\nCONTIGUOUS\020\022\022\n\n\006COSINE\020\023\022\022",
-      "\n\016COSINEDISTANCE\020\024\022\r\n\tCSUBTABLE\020\025\022\016\n\nDOT" +
-      "PRODUCT\020\026\022\n\n\006LINEAR\020\027\022\016\n\nSEQUENTIAL\020\030\022\t\n" +
-      "\005GRAPH\020\031\")\n\013BigDLTensor\022\014\n\004size\030\001 \003(\005\022\014\n" +
-      "\004data\030\002 \003(\001\"[\n\013Regularizer\0227\n\017regularize" +
-      "rType\030\001 \002(\0162\036.serialization.RegularizerT" +
-      "ype\022\023\n\013regularData\030\002 \003(\001\"\035\n\010AddParam\022\021\n\t" +
-      "inputSize\030\001 \002(\005\"<\n\rAddConstParam\022\023\n\013cons" +
-      "tScalar\030\001 \002(\001\022\026\n\007inPlace\030\002 \001(\010:\005false\"b\n" +
-      "\016BatchNormParam\022\017\n\007nOutput\030\001 \002(\005\022\022\n\003eps\030" +
-      "\002 \001(\001:\0051e-05\022\025\n\010momentum\030\003 \001(\001:\0030.1\022\024\n\006a",
-      "ffine\030\004 \001(\010:\004true\"\306\001\n\rBiLinearParam\022\022\n\ni" +
-      "nputSize1\030\001 \002(\005\022\022\n\ninputSize2\030\002 \002(\005\022\022\n\no" +
-      "utputSize\030\003 \002(\005\022\025\n\007biasRes\030\004 \001(\010:\004true\0220" +
-      "\n\014wRegularizer\030\005 \001(\0132\032.serialization.Reg" +
-      "ularizer\0220\n\014bRegularizer\030\006 \001(\0132\032.seriali" +
-      "zation.Regularizer\"<\n\020BiRecurrentParam\022(" +
-      "\n\005merge\030\001 \001(\0132\031.serialization.BigDLModel" +
-      "\"`\n\013BottleParam\022)\n\006module\030\001 \002(\0132\031.serial" +
-      "ization.BigDLModel\022\021\n\tnInputDim\030\002 \002(\005\022\023\n" +
-      "\013nOutputDim1\030\003 \001(\005\"\031\n\tCaddParam\022\014\n\004size\030",
-      "\001 \003(\005\"(\n\016CaddTableParam\022\026\n\007inplace\030\001 \001(\010" +
-      ":\005false\"&\n\nClampParam\022\013\n\003min\030\001 \002(\005\022\013\n\003ma" +
-      "x\030\002 \002(\005\"\031\n\tCMulParam\022\014\n\004size\030\001 \003(\005\" \n\013Co" +
-      "ncatParam\022\021\n\tdimension\030\001 \002(\005\"4\n\013CosinePa" +
+      "inearParam\022/\n\013customParam\030\025 \001(\0132\032.serial" +
+      "ization.CustomParam\"\363\002\n\nModuleType\022\007\n\003AB" +
+      "S\020\001\022\007\n\003ADD\020\002\022\014\n\010ADDCONST\020\003\022\r\n\tBATCHNORM\020" +
+      "\004\022\014\n\010BILINEAR\020\005\022\017\n\013BIRECURRENT\020\006\022\n\n\006BOTT" +
+      "LE\020\007\022\010\n\004CADD\020\010\022\r\n\tCADDTABLE\020\t\022\r\n\tCDIVTAB" +
+      "LE\020\n\022\t\n\005CLAMP\020\013\022\r\n\tCMAXTABLE\020\014\022\r\n\tCMINTA" +
+      "BLE\020\r\022\010\n\004CMUL\020\016\022\r\n\tCMULTABLE\020\017\022\n\n\006CONCAT",
+      "\020\020\022\017\n\013CONCATTABLE\020\021\022\016\n\nCONTIGUOUS\020\022\022\n\n\006C" +
+      "OSINE\020\023\022\022\n\016COSINEDISTANCE\020\024\022\r\n\tCSUBTABLE" +
+      "\020\025\022\016\n\nDOTPRODUCT\020\026\022\n\n\006LINEAR\020\027\022\016\n\nSEQUEN" +
+      "TIAL\020\030\022\t\n\005GRAPH\020\031\022\016\n\nCUSTOMIZED\020\032\")\n\013Big" +
+      "DLTensor\022\014\n\004size\030\001 \003(\005\022\014\n\004data\030\002 \003(\001\"[\n\013" +
+      "Regularizer\0227\n\017regularizerType\030\001 \002(\0162\036.s" +
+      "erialization.RegularizerType\022\023\n\013regularD" +
+      "ata\030\002 \003(\001\"\035\n\010AddParam\022\021\n\tinputSize\030\001 \002(\005" +
+      "\"<\n\rAddConstParam\022\023\n\013constScalar\030\001 \002(\001\022\026" +
+      "\n\007inPlace\030\002 \001(\010:\005false\"b\n\016BatchNormParam",
+      "\022\017\n\007nOutput\030\001 \002(\005\022\022\n\003eps\030\002 \001(\001:\0051e-05\022\025\n" +
+      "\010momentum\030\003 \001(\001:\0030.1\022\024\n\006affine\030\004 \001(\010:\004tr" +
+      "ue\"\306\001\n\rBiLinearParam\022\022\n\ninputSize1\030\001 \002(\005" +
+      "\022\022\n\ninputSize2\030\002 \002(\005\022\022\n\noutputSize\030\003 \002(\005" +
+      "\022\025\n\007biasRes\030\004 \001(\010:\004true\0220\n\014wRegularizer\030" +
+      "\005 \001(\0132\032.serialization.Regularizer\0220\n\014bRe" +
+      "gularizer\030\006 \001(\0132\032.serialization.Regulari" +
+      "zer\"<\n\020BiRecurrentParam\022(\n\005merge\030\001 \001(\0132\031" +
+      ".serialization.BigDLModel\"`\n\013BottleParam" +
+      "\022)\n\006module\030\001 \002(\0132\031.serialization.BigDLMo",
+      "del\022\021\n\tnInputDim\030\002 \002(\005\022\023\n\013nOutputDim1\030\003 " +
+      "\001(\005\"\031\n\tCaddParam\022\014\n\004size\030\001 \003(\005\"(\n\016CaddTa" +
+      "bleParam\022\026\n\007inplace\030\001 \001(\010:\005false\"&\n\nClam" +
+      "pParam\022\013\n\003min\030\001 \002(\005\022\013\n\003max\030\002 \002(\005\"\031\n\tCMul" +
+      "Param\022\014\n\004size\030\001 \003(\005\" \n\013ConcatParam\022\021\n\tdi" +
+      "mension\030\001 \002(\005\"4\n\013CosineParam\022\021\n\tinputSiz" +
+      "e\030\001 \002(\005\022\022\n\noutputSize\030\002 \002(\005\"\337\001\n\013LinearPa" +
       "ram\022\021\n\tinputSize\030\001 \002(\005\022\022\n\noutputSize\030\002 \002" +
-      "(\005\"\337\001\n\013LinearParam\022\021\n\tinputSize\030\001 \002(\005\022\022\n" +
-      "\noutputSize\030\002 \002(\005\022-\n\ninitMethod\030\003 \001(\0162\031." +
-      "serialization.InitMethod\022\026\n\010withBias\030\004 \001" +
-      "(\010:\004true\0220\n\014wRegularizer\030\005 \001(\0132\032.seriali" +
-      "zation.Regularizer\0220\n\014bRegularizer\030\006 \001(\013",
-      "2\032.serialization.Regularizer*9\n\nInitMeth" +
-      "od\022\013\n\007Default\020\001\022\n\n\006Xavier\020\002\022\022\n\016BilinearF" +
-      "iller\020\003*L\n\017RegularizerType\022\021\n\rL1Regulari" +
-      "zer\020\002\022\021\n\rL2Regularizer\020\003\022\023\n\017L1L2Regulari" +
-      "zer\020\001"
+      "(\005\022-\n\ninitMethod\030\003 \001(\0162\031.serialization.I" +
+      "nitMethod\022\026\n\010withBias\030\004 \001(\010:\004true\0220\n\014wRe",
+      "gularizer\030\005 \001(\0132\032.serialization.Regulari" +
+      "zer\0220\n\014bRegularizer\030\006 \001(\0132\032.serializatio" +
+      "n.Regularizer\")\n\013CustomParam\022\022\n\ncustomTy" +
+      "pe\030\001 \002(\t*\006\010\350\007\020\221N*9\n\nInitMethod\022\013\n\007Defaul" +
+      "t\020\001\022\n\n\006Xavier\020\002\022\022\n\016BilinearFiller\020\003*L\n\017R" +
+      "egularizerType\022\023\n\017L1L2Regularizer\020\001\022\021\n\rL" +
+      "1Regularizer\020\002\022\021\n\rL2Regularizer\020\003"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -15012,7 +15790,7 @@ public final class Model {
     internal_static_serialization_BigDLModel_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_serialization_BigDLModel_descriptor,
-        new java.lang.String[] { "Name", "SubModules", "Weight", "Bias", "Tops", "Bottoms", "ModuleType", "AddParam", "AddConstParam", "BatchNormParam", "BiLinearParam", "BiRecurrentParam", "BottleParam", "CaddParam", "CAddTableParam", "ClampParam", "CmulParam", "ConcatParam", "CosineParam", "LinearParam", });
+        new java.lang.String[] { "Name", "SubModules", "Weight", "Bias", "Tops", "Bottoms", "ModuleType", "AddParam", "AddConstParam", "BatchNormParam", "BiLinearParam", "BiRecurrentParam", "BottleParam", "CaddParam", "CAddTableParam", "ClampParam", "CmulParam", "ConcatParam", "CosineParam", "LinearParam", "CustomParam", });
     internal_static_serialization_BigDLTensor_descriptor =
       getDescriptor().getMessageTypes().get(1);
     internal_static_serialization_BigDLTensor_fieldAccessorTable = new
@@ -15103,6 +15881,12 @@ public final class Model {
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_serialization_LinearParam_descriptor,
         new java.lang.String[] { "InputSize", "OutputSize", "InitMethod", "WithBias", "WRegularizer", "BRegularizer", });
+    internal_static_serialization_CustomParam_descriptor =
+      getDescriptor().getMessageTypes().get(16);
+    internal_static_serialization_CustomParam_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_serialization_CustomParam_descriptor,
+        new java.lang.String[] { "CustomType", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

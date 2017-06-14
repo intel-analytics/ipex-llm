@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.utils.serialization
+package com.intel.analytics.bigdl.utils.serializer
 
 import java.io._
 import scala.collection.JavaConverters._
