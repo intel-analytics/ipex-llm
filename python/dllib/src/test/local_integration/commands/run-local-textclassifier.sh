@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 #
 # Copyright 2016 The BigDL Authors.
 #
@@ -16,7 +14,6 @@
 # limitations under the License.
 #
 
-. `dirname $0`/prepare_env.sh
-
-cd "`dirname $0`"
-exec $BIGDL_HOME/scripts/bigdl.sh -- python -u ./run-tests.py "$@"
+$PYTHON_EXECUTABLE ${BIGDL_HOME}/pyspark/bigdl/models/textclassifier/textclassifier.py \
+        --max_epoch 1 \
+        --model cnn

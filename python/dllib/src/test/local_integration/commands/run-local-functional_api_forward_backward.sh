@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 #
 # Copyright 2016 The BigDL Authors.
 #
@@ -16,7 +14,8 @@
 # limitations under the License.
 #
 
-. `dirname $0`/prepare_env.sh
-
 cd "`dirname $0`"
-exec $BIGDL_HOME/scripts/bigdl.sh -- python -u ./run-tests.py "$@"
+
+run_notebook $BIGDL_HOME/pyspark/example/functional_api_forward_backward.ipynb
+
+
