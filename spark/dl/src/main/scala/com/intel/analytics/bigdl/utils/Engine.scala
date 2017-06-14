@@ -68,7 +68,7 @@ object Engine {
    * make the Spark conf values changes transparent to you. However, if you use spark-shell or
    * Jupyter notebook, as the Spark context is created before your code, you have to
    * set them directly (through command line options or properties file)
-   *false
+   *
    * @return
    */
   def createSparkConf(exisitingConf : SparkConf = null) : SparkConf = {
@@ -103,8 +103,6 @@ object Engine {
       setNodeAndCore(nExecutor, executorCores)
       checkSparkContext
     }
-
-    Env.setMKLEnv()
   }
 
   private val logger = Logger.getLogger(getClass)
@@ -142,15 +140,22 @@ object Engine {
   @volatile private var _default: ThreadPool = null
 
   // Thread pool for layer use
-  @volatile private var _model: ThreadPool = new ThreadPool(1).setMKLThread(Env.mklNumThreads)
+  @volatile private var _model: ThreadPool = new ThreadPool(1).setMKLThread(MKL.getNumThreads)
 
   /**
-   * return core number user defined.
+   * If user undefine the property bigdl.coreNumber, it will return physical core number
+   * system has. The biggest number it supports is the physical cores number.
+   *
+   * Currently, it not support detect true physical cores number. Get it through
+   * Runtime.getRuntime().availableProcessors() / 2
    */
   private def getCoreNumberFromProperty() = {
     val coreNumber = System.getProperty("bigdl.coreNumber", getNumMachineCores.toString).toInt
-    if (coreNumber > getNumMachineCores) getNumMachineCores
-    else coreNumber
+    if (coreNumber > getNumMachineCores) {
+      getNumMachineCores
+    } else {
+      coreNumber
+    }
   }
 
   private def getNumMachineCores: Int = {
@@ -253,7 +258,7 @@ object Engine {
 
     if(_model == null || _model.getPoolSize != modelPoolSize) {
       _model = new ThreadPool(modelPoolSize)
-      _model.setMKLThread(Env.mklNumThreads)
+      _model.setMKLThread(MKL.getNumThreads)
     }
   }
 
@@ -408,47 +413,5 @@ object Engine {
     } else {
       throw new IllegalArgumentException(s"Engine.init: Unsupported master format $master")
     }
-  }
-}
-
-object Env {
-  val waitTimeMilliSec: Int = {
-    System.getProperty("bigdl.mklBlockTime", "0").toLowerCase(Locale.ROOT) match {
-      case x if x.toInt >= 0 => x.toInt
-      case option =>
-        throw new IllegalArgumentException(s"Unknown option of $option for bigdl.blockTime")
-    }
-  }
-
-  val mklNumThreads: Int = {
-    System.getProperty("bigdl.mklNumThreads", "1").toLowerCase(Locale.ROOT) match {
-      case x if x.toInt > 0 => x.toInt
-      case option =>
-        throw new IllegalArgumentException(s"Unknown option of $option for bigdl.mklNumThreads")
-    }
-  }
-
-  def mklDisableFastMM(): Unit = {
-    System.getProperty("bigdl.mklDisableFastMM", "true").toLowerCase(Locale.ROOT) match {
-      case "true" => MKL.disableFastMM()
-      case "fasle" =>
-      case option =>
-        throw new IllegalArgumentException(s"Unknown option of $option for bigdl.mklDisableFastMM")
-    }
-  }
-
-  def waitPolicyPassive(): Unit = {
-    System.getProperty("bigdl.mklWaitPolicy", "passive").toLowerCase(Locale.ROOT) match {
-      case "passive" => MKL.waitPolicyPassive()
-      case option =>
-        throw new IllegalArgumentException(s"Unknown option of $option for bigdl.waitPolicy")
-    }
-  }
-
-  def setMKLEnv(): Unit = {
-    mklDisableFastMM()
-    MKL.setNumThreads(mklNumThreads)
-    MKL.setBlockTime(waitTimeMilliSec)
-    waitPolicyPassive()
   }
 }
