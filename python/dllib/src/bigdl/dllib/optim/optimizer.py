@@ -417,8 +417,8 @@ class Optimizer(JavaValue):
         Do an optimization.
         """
         jmodel = callJavaFunc(get_spark_context(), self.value.optimize)
-        from bigdl.nn.layer import Model
-        return Model.of(jmodel)
+        from bigdl.nn.layer import Layer
+        return Layer.of(jmodel)
 
     def set_train_summary(self, summary):
         """
