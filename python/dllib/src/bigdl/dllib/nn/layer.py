@@ -181,6 +181,23 @@ class Layer(JavaValue):
                                self.check_input(grad_output))
         return self.convert_output(output)
 
+    def zero_grad_parameters(self):
+        """
+        NB: It's for debug only, please use optimizer.optimize() in production.
+        If the module has parameters, this will zero the accumulation of the gradients with respect
+        to these parameters. Otherwise, it does nothing.
+        """
+        callJavaFunc(get_spark_context(), self.value.zeroGradParameters)
+
+    def update_parameters(self, learning_rate):
+        """
+        NB: It's for debug only, please use optimizer.optimize() in production.
+        """
+        callBigDlFunc(self.bigdl_type,
+                      "updateParameters",
+                      self.value,
+                      learning_rate)
+
     def reset(self):
         """
         Initialize the model weights.
@@ -270,8 +287,13 @@ class Layer(JavaValue):
         ...     print(err.java_exception)
         ...
         java.lang.IllegalArgumentException: requirement failed: the number of input weight/bias is not consistant with number of weight/bias of this layer
+        >>> cAdd = CAdd([4, 1])
+        creating: createCAdd
+        >>> cAdd.set_weights(np.ones([4, 1]))
+        >>> (cAdd.get_weights()[0] == np.ones([4, 1])).all()
+        True
         """
-        tensors = [JTensor.from_ndarray(param, self.bigdl_type) for param in weights]
+        tensors = [JTensor.from_ndarray(param, self.bigdl_type) for param in to_list(weights)]
         callBigDlFunc(self.bigdl_type, "setWeights", self.value, tensors)
 
     def get_weights(self):
