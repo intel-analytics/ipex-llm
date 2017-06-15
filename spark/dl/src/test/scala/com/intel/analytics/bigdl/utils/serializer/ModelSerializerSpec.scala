@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, Tensor
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.numeric.NumericDouble
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.utils.serializer._
 import org.scalatest.{FlatSpec, Matchers}
 import serialization.Model.{BigDLModel, CustomParam}
@@ -362,7 +363,188 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     res1 should be (res2)
   }
 
-  "Linear serializer" should "work properly" in {
+  "Dropout serializer" should "work properly" in {
+    RNG.setSeed(100)
+    val dropout = Dropout[Double]()
+
+    val tensor1 = Tensor[Double](10).apply1(_ => Random.nextDouble())
+    val tensor2 = Tensor[Double]()
+    tensor2.resizeAs(tensor1).copy(tensor1)
+    val res1 = dropout.forward(tensor1)
+
+    ModelPersister.saveToFile("/tmp/dropout.bigdl", dropout, true)
+    RNG.setSeed(100)
+    val loadedDropout = ModelLoader.loadFromFile("/tmp/dropout.bigdl")
+    val res2 = loadedDropout.asInstanceOf[Dropout[Double]].forward(tensor2)
+    res1 should be (res2)
+  }
+
+  "ELU serializer" should "work properly" in {
+    val elu = ELU[Double]()
+
+    val tensor1 = Tensor[Double](10).apply1(_ => Random.nextDouble())
+    val tensor2 = Tensor[Double]()
+    tensor2.resizeAs(tensor1).copy(tensor1)
+    val res1 = elu.forward(tensor1)
+
+    ModelPersister.saveToFile("/tmp/elu.bigdl", elu, true)
+    val loadedElu = ModelLoader.loadFromFile("/tmp/elu.bigdl")
+    val res2 = loadedElu.asInstanceOf[ELU[Double]].forward(tensor2)
+    res1 should be (res2)
+  }
+
+  "Euclidena serializer" should "work properly" in {
+    val euclidean = Euclidean[Double](7, 7)
+
+    val tensor1 = Tensor[Double](8, 7).apply1(_ => Random.nextDouble())
+    val tensor2 = Tensor[Double]()
+    tensor2.resizeAs(tensor1).copy(tensor1)
+    val res1 = euclidean.forward(tensor1)
+
+    ModelPersister.saveToFile("/tmp/euclidean.bigdl", euclidean, true)
+    val loadedEuclidean = ModelLoader.loadFromFile("/tmp/euclidean.bigdl")
+    val res2 = loadedEuclidean.asInstanceOf[Euclidean[Double]].forward(tensor2)
+    res1 should be (res2)
+  }
+
+  "Exp serializer" should "work properly" in {
+    val exp = Exp[Double]()
+
+    val tensor1 = Tensor[Double](10).apply1(_ => Random.nextDouble())
+    val tensor2 = Tensor[Double]()
+    tensor2.resizeAs(tensor1).copy(tensor1)
+    val res1 = exp.forward(tensor1)
+
+    ModelPersister.saveToFile("/tmp/exp.bigdl", exp, true)
+    val loadedExp = ModelLoader.loadFromFile("/tmp/exp.bigdl")
+    val res2 = loadedExp.asInstanceOf[Exp[Double]].forward(tensor2)
+    res1 should be (res2)
+  }
+
+  "FlattenTable serializer" should "work properly" in {
+    val flattenTable = FlattenTable[Double]()
+
+    val input1 = Tensor[Double](5, 5).apply1(e => Random.nextDouble())
+    val input2 = Tensor[Double](5, 5).apply1(e => Random.nextDouble())
+    var input = new Table()
+    input(1.toDouble) = input1
+    input(2.toDouble) = input2
+
+    val res1 = flattenTable.forward(input)
+
+    ModelPersister.saveToFile("/tmp/flattenTable.bigdl", flattenTable, true)
+    val loadedFlattenTable = ModelLoader.loadFromFile("/tmp/flattenTable.bigdl")
+    val res2 = loadedFlattenTable.asInstanceOf[FlattenTable[Double]].forward(input)
+    res1 should be (res2)
+  }
+
+  "GradientReversal serializer" should "work properly" in {
+    val gradientReversal = GradientReversal[Double]()
+
+    val tensor1 = Tensor[Double](10).apply1(_ => Random.nextDouble())
+    val tensor2 = Tensor[Double]()
+    tensor2.resizeAs(tensor1).copy(tensor1)
+    val res1 = gradientReversal.forward(tensor1)
+
+    ModelPersister.saveToFile("/tmp/gradientReversal.bigdl", gradientReversal, true)
+    val loadedGradientReversal = ModelLoader.loadFromFile("/tmp/gradientReversal.bigdl")
+    val res2 = loadedGradientReversal.asInstanceOf[GradientReversal[Double]].forward(tensor2)
+    res1 should be (res2)
+  }
+
+  "Graph serializer " should "work properly" in {
+    val linear = Linear[Double](10, 2).apply()
+    val graph = Graph(linear, linear)
+    val tensor1 = Tensor[Double](10).apply1(_ => Random.nextDouble())
+    val tensor2 = Tensor[Double]()
+    val res1 = graph.forward(tensor1)
+    tensor2.resizeAs(tensor1).copy(tensor1)
+    ModelPersister.saveToFile("/tmp/graph.bigdl", graph, true)
+    val loadedGraph = ModelLoader.loadFromFile("/tmp/graph.bigdl")
+    val res2 = loadedGraph.asInstanceOf[Graph[Double]].forward(tensor2)
+    res1 should be (res2)
+  }
+/*
+  "GRU serializer " should "work properly" in {
+    val gru = GRU[Double](10, 10)
+    val input1 = Tensor[Double](10, 10).apply1(e => Random.nextDouble())
+    val input2 = Tensor[Double](10, 10).apply1(e => Random.nextDouble())
+    var input = new Table()
+    input(1.toDouble) = input1
+    input(2.toDouble) = input2
+    val res1 = gru.forward(input)
+    ModelPersister.saveToFile("/tmp/gru.bigdl", gru, true)
+    val loadedGRU = ModelLoader.loadFromFile("/tmp/gru.bigdl")
+    val res2 = loadedGRU.asInstanceOf[GRU[Double]].forward(input)
+    res1 should be (res2)
+  }
+*/
+  "HardShrink serializer" should "work properly" in {
+    val hardShrink = HardShrink[Double]()
+
+    val tensor1 = Tensor[Double](10).apply1(_ => Random.nextDouble())
+    val tensor2 = Tensor[Double]()
+    tensor2.resizeAs(tensor1).copy(tensor1)
+    val res1 = hardShrink.forward(tensor1)
+
+    ModelPersister.saveToFile("/tmp/hardShrink.bigdl", hardShrink, true)
+    val loadedHardShrink = ModelLoader.loadFromFile("/tmp/hardShrink.bigdl")
+    val res2 = loadedHardShrink.asInstanceOf[HardShrink[Double]].forward(tensor2)
+    res1 should be (res2)
+  }
+
+  "HardTanh serializer" should "work properly" in {
+    val hardTanh = HardTanh[Double]()
+
+    val tensor1 = Tensor[Double](10).apply1(_ => Random.nextDouble())
+    val tensor2 = Tensor[Double]()
+    tensor2.resizeAs(tensor1).copy(tensor1)
+    val res1 = hardTanh.forward(tensor1)
+
+    ModelPersister.saveToFile("/tmp/hardTanh.bigdl", hardTanh, true)
+    val loadedHardTanh = ModelLoader.loadFromFile("/tmp/hardTanh.bigdl")
+    val res2 = loadedHardTanh.asInstanceOf[HardTanh[Double]].forward(tensor2)
+    res1 should be (res2)
+  }
+
+  "Identity serializer" should "work properly" in {
+    val identity = Identity[Double]()
+
+    val tensor1 = Tensor[Double](10).apply1(_ => Random.nextDouble())
+    val tensor2 = Tensor[Double]()
+    tensor2.resizeAs(tensor1).copy(tensor1)
+    val res1 = identity.forward(tensor1)
+
+    ModelPersister.saveToFile("/tmp/identity.bigdl", identity, true)
+    val loadedIdentity = ModelLoader.loadFromFile("/tmp/identity.bigdl")
+    val res2 = loadedIdentity.asInstanceOf[Identity[Double]].forward(tensor2)
+    res1 should be (res2)
+  }
+
+  "Index serializer" should "work properly" in {
+    val index = Index[Double](1)
+
+    val input1 = Tensor[Double](3).apply1(e => Random.nextDouble())
+    val input2 = Tensor[Double](4)
+    input2(Array(1)) = 1
+    input2(Array(2)) = 2
+    input2(Array(3)) = 2
+    input2(Array(4)) = 3
+    val gradOutput = Tensor[Double](4).apply1(e => Random.nextDouble())
+
+    val input = new Table()
+    input(1.toDouble) = input1
+    input(2.toDouble) = input2
+
+    val res1 = index.forward(input)
+
+    ModelPersister.saveToFile("/tmp/index.bigdl", index, true)
+    val loadedIndex = ModelLoader.loadFromFile("/tmp/index.bigdl")
+    val res2 = loadedIndex.asInstanceOf[Index[Double]].forward(input)
+    res1 should be (res2)
+  }
+
+  "Linear serializer " should "work properly" in {
     val linear = Linear[Double](10, 2)
     val tensor1 = Tensor[Double](10).apply1(_ => Random.nextDouble())
     val tensor2 = Tensor[Double]()
@@ -388,19 +570,6 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     res1 should be (res2)
   }
 
-  "Graph Container" should "work properly" in {
-    val linear = Linear[Double](10, 2).apply()
-    val graph = Graph(linear, linear)
-    val tensor1 = Tensor[Double](10).apply1(_ => Random.nextDouble())
-    val tensor2 = Tensor[Double]()
-    val res1 = graph.forward(tensor1)
-    tensor2.resizeAs(tensor1).copy(tensor1)
-    ModelPersister.saveToFile("/tmp/graph.bigdl", graph, true)
-    val loadedGraph = ModelLoader.loadFromFile("/tmp/graph.bigdl")
-    val res2 = loadedGraph.asInstanceOf[Graph[Double]].forward(tensor2)
-    res1 should be (res2)
-  }
-
   "Customized Module " should "work properly" in {
     val testModule = new TestModule[Double](1.0)
     CustomizedDelegator.registerCustomizedModule(testModule.getClass,
@@ -416,8 +585,18 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     res1 should be (res2)
   }
 }
-class TestModule[T: ClassTag](override val constant_scalar: Double)
-  (implicit ev: TensorNumeric[T]) extends AddConstant[T](constant_scalar) {
+class TestModule[T: ClassTag](val constant_scalar: Double)
+  (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+  val addConst = AddConstant(constant_scalar)
+  override def updateOutput(input: Tensor[T]): Tensor[T] = {
+    output = addConst.forward(input).asInstanceOf[Tensor[T]]
+    output
+  }
+
+  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    gradInput = addConst.updateGradInput(input, gradOutput).asInstanceOf[Tensor[T]]
+    gradInput
+  }
 }
 case object TestSerializer extends AbstractModelSerializer {
 

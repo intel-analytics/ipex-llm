@@ -25,10 +25,21 @@ message BigDLModel
         COSINEDISTANCE = 20;
         CSUBTABLE = 21;
         DOTPRODUCT = 22;
-        LINEAR = 23;
-        SEQUENTIAL = 24;
-        GRAPH = 25;
-        CUSTOMIZED = 26;
+        DROPOUT = 23;
+        ELU = 24;
+        EUCLIDEAN = 25;
+        EXP = 26;
+        FLATTENTABLE = 27;
+        GRADIENTREVERSAL = 28;
+        GRAPH = 29;
+        GRU = 30;
+        HARDSHRINK = 31;
+        HARDTANH = 32;
+        IDENTITY = 33;
+        INDEX = 34;
+        LINEAR = 50;
+        SEQUENTIAL = 51;
+        CUSTOMIZED = 53;
     }
     optional string name = 1; //model name
     repeated BigDLModel subModules = 2; // sub modules
@@ -49,8 +60,15 @@ message BigDLModel
     optional CMulParam cmulParam = 17; //params for Cmul
     optional ConcatParam concatParam = 18; //params for concat
     optional CosineParam cosineParam = 19; // params for cosine
-    optional LinearParam linearParam = 20; // params for linear
-    optional CustomParam customParam = 21; //extensible for custom params
+    optional DropoutParam dropoutParam = 20; // params for dropout
+    optional EuclideanParam euclideanParam = 21; // params for euclidean
+    optional GradientReversalParam gradientReversalParam = 22; // params for gradient reversal
+    optional GRUParam gruParam = 23; // params for GRU
+    optional HardShrinkParam hardShrinkParam = 24; // params for HarkShrink
+    optional HardTanhParam hardTanhParam = 25; //params for HardTanh
+    optional IndexParam indexParam = 26; // params for Index
+    optional LinearParam linearParam = 50; // params for linear
+    optional CustomParam customParam = 51; //extensible for custom params
 }
 enum InitMethod {
     Default = 1;
@@ -119,6 +137,38 @@ message ConcatParam {
 message CosineParam {
     required int32 inputSize = 1;
     required int32 outputSize = 2;
+}
+message DropoutParam {
+    optional double initP = 1 [default = 0.5];
+    optional bool inPlace = 2 [default = false];
+    optional bool scale = 3 [default = true];
+}
+message EuclideanParam {
+    required int32 inputSize = 1;
+    required int32 outputSize = 2;
+    optional bool fastBackward = 3 [default= true];
+}
+message GradientReversalParam {
+    optional double lambda = 1 [default = 1.0];
+}
+message GRUParam {
+    required int32 inputSize = 1;
+    required int32 outputSize = 2;
+    optional double p = 3 [default = 0.0];
+    optional Regularizer wRegularizer = 4;
+    optional Regularizer uRegularizer = 5;
+    optional Regularizer bRegularizer = 6;
+}
+message HardShrinkParam {
+    optional double lambda = 1 [default = 0.5];
+}
+message HardTanhParam {
+    optional double minValue = 1 [default = -1.0];
+    optional double maxValue = 2 [default = 1.0];
+    optional bool inplace = 3 [default = false];
+}
+message IndexParam {
+    required int32 dimension = 1;
 }
 message LinearParam {
     required int32 inputSize = 1;

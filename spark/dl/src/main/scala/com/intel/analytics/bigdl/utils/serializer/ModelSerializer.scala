@@ -19,11 +19,10 @@ import scala.collection.JavaConverters._
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.optim.{L1L2Regularizer, L1Regularizer, L2Regularizer, Regularizer}
+import com.intel.analytics.bigdl.optim.{Regularizer}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
-import com.intel.analytics.bigdl.utils.serializer.ModelSerializer.AbsSerializer.{createBigDLModule, createSerializeBigDLModule}
 import serialization.Model.BigDLModel.ModuleType
 import serialization.Model._
 
@@ -31,9 +30,11 @@ import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
+
 private[serializer] object ModelSerializer {
 
-  private val serializerMap = new mutable.HashMap[String, AbstractModelSerializer]()
+  private val serializerMap = new mutable.HashMap[Class[_ <: AbstractModule[_, _, _]], AbstractModelSerializer]()
+  private val deSerializerMap = new mutable.HashMap[String, AbstractModelSerializer]()
   private val hdfsPrefix: String = "hdfs:"
 
   init
@@ -510,7 +511,7 @@ private[serializer] object ModelSerializer {
     }
   }
 
-  case object DotProductDistanceSerializer extends AbstractModelSerializer {
+  case object DotProductSerializer extends AbstractModelSerializer {
 
     override def loadModule[T: ClassTag](model : BigDLModel)(implicit ev: TensorNumeric[T])
     : BigDLModule[T] = {
@@ -522,6 +523,268 @@ private[serializer] object ModelSerializer {
                                              (implicit ev: TensorNumeric[T]): BigDLModel = {
       val bigDLModelBuilder = BigDLModel.newBuilder
       bigDLModelBuilder.setModuleType(ModuleType.DOTPRODUCT)
+      createSerializeBigDLModule(bigDLModelBuilder, module)
+    }
+  }
+
+  case object DropoutSerializer extends AbstractModelSerializer {
+
+    override def loadModule[T: ClassTag](model : BigDLModel)(implicit ev: TensorNumeric[T])
+    : BigDLModule[T] = {
+      val dropOutParam = model.getDropoutParam
+      val initP = if (dropOutParam.hasInitP) dropOutParam.getInitP else 0.5
+      val inPlace = if (dropOutParam.hasInPlace) dropOutParam.getInPlace else false
+      val scale = if (dropOutParam.hasScale) dropOutParam.getScale else true
+      createBigDLModule(model, Dropout[T](initP, inPlace, scale).
+        asInstanceOf[AbstractModule[Activity, Activity, T]])
+    }
+
+    override def serializeModule[T: ClassTag](module : BigDLModule[T])
+                                             (implicit ev: TensorNumeric[T]): BigDLModel = {
+      val bigDLModelBuilder = BigDLModel.newBuilder
+      val dropoutParam = DropoutParam.newBuilder
+      val dropout = module.module.asInstanceOf[Dropout[T]]
+      dropoutParam.setInitP(dropout.initP)
+      dropoutParam.setInPlace(dropout.inplace)
+      dropoutParam.setScale(dropout.scale)
+      bigDLModelBuilder.setDropoutParam(dropoutParam.build)
+      bigDLModelBuilder.setModuleType(ModuleType.DROPOUT)
+      createSerializeBigDLModule(bigDLModelBuilder, module)
+    }
+  }
+
+  case object ELUSerializer extends AbstractModelSerializer {
+
+    override def loadModule[T: ClassTag](model : BigDLModel)(implicit ev: TensorNumeric[T])
+    : BigDLModule[T] = {
+      createBigDLModule(model, ELU[T]().
+        asInstanceOf[AbstractModule[Activity, Activity, T]])
+    }
+
+    override def serializeModule[T: ClassTag](module : BigDLModule[T])
+                                             (implicit ev: TensorNumeric[T]): BigDLModel = {
+      val bigDLModelBuilder = BigDLModel.newBuilder
+      bigDLModelBuilder.setModuleType(ModuleType.ELU)
+      createSerializeBigDLModule(bigDLModelBuilder, module)
+    }
+  }
+
+  case object EuclideanSerializer extends AbstractModelSerializer {
+
+    override def loadModule[T: ClassTag](model : BigDLModel)(implicit ev: TensorNumeric[T])
+    : BigDLModule[T] = {
+      val euclideanParam = model.getEuclideanParam
+      val inputSize = euclideanParam.getInputSize
+      val outputSize = euclideanParam.getOutputSize
+      var fastBackward = true
+      if(euclideanParam.hasFastBackward) fastBackward = euclideanParam.getFastBackward
+      createBigDLModule(model, Euclidean[T](inputSize, outputSize, fastBackward).
+        asInstanceOf[AbstractModule[Activity, Activity, T]])
+    }
+
+    override def serializeModule[T: ClassTag](module : BigDLModule[T])
+                                             (implicit ev: TensorNumeric[T]): BigDLModel = {
+      val bigDLModelBuilder = BigDLModel.newBuilder
+      val euclideanParam = EuclideanParam.newBuilder
+      val bigDLModule = module.module.asInstanceOf[Euclidean[T]]
+      euclideanParam.setInputSize(bigDLModule.inputSize)
+      euclideanParam.setOutputSize(bigDLModule.outputSize)
+      euclideanParam.setFastBackward(bigDLModule.fastBackward)
+      bigDLModelBuilder.setEuclideanParam(euclideanParam.build)
+      bigDLModelBuilder.setModuleType(ModuleType.EUCLIDEAN)
+      createSerializeBigDLModule(bigDLModelBuilder, module)
+    }
+  }
+
+  case object ExpSerializer extends AbstractModelSerializer {
+
+    override def loadModule[T: ClassTag](model : BigDLModel)(implicit ev: TensorNumeric[T])
+    : BigDLModule[T] = {
+      createBigDLModule(model, Exp[T]().
+        asInstanceOf[AbstractModule[Activity, Activity, T]])
+    }
+
+    override def serializeModule[T: ClassTag](module : BigDLModule[T])
+                                             (implicit ev: TensorNumeric[T]): BigDLModel = {
+      val bigDLModelBuilder = BigDLModel.newBuilder
+      bigDLModelBuilder.setModuleType(ModuleType.EXP)
+      createSerializeBigDLModule(bigDLModelBuilder, module)
+    }
+  }
+
+  case object FlattenTableSerializer extends AbstractModelSerializer {
+
+    override def loadModule[T: ClassTag](model : BigDLModel)(implicit ev: TensorNumeric[T])
+    : BigDLModule[T] = {
+      createBigDLModule(model, FlattenTable[T]().
+        asInstanceOf[AbstractModule[Activity, Activity, T]])
+    }
+
+    override def serializeModule[T: ClassTag](module : BigDLModule[T])
+                                             (implicit ev: TensorNumeric[T]): BigDLModel = {
+      val bigDLModelBuilder = BigDLModel.newBuilder
+      bigDLModelBuilder.setModuleType(ModuleType.FLATTENTABLE)
+      createSerializeBigDLModule(bigDLModelBuilder, module)
+    }
+  }
+
+  case object GradientReversalSerializer extends AbstractModelSerializer {
+
+    override def loadModule[T: ClassTag](model : BigDLModel)(implicit ev: TensorNumeric[T])
+    : BigDLModule[T] = {
+      val gradientReversalParam = model.getGradientReversalParam
+      val lamda = if (gradientReversalParam.hasLambda) gradientReversalParam.getLambda else 1.0
+      createBigDLModule(model, GradientReversal[T](lamda).
+        asInstanceOf[AbstractModule[Activity, Activity, T]])
+    }
+
+    override def serializeModule[T: ClassTag](module : BigDLModule[T])
+                                             (implicit ev: TensorNumeric[T]): BigDLModel = {
+      val bigDLModelBuilder = BigDLModel.newBuilder
+      val gradientReversalParam = GradientReversalParam.newBuilder
+      gradientReversalParam.setLambda(module.module.asInstanceOf[GradientReversal[T]].lambda)
+      bigDLModelBuilder.setGradientReversalParam(gradientReversalParam.build)
+      bigDLModelBuilder.setModuleType(ModuleType.GRADIENTREVERSAL)
+      createSerializeBigDLModule(bigDLModelBuilder, module)
+    }
+  }
+
+  case object GRUSerializer extends AbstractModelSerializer {
+
+    override def loadModule[T: ClassTag](model : BigDLModel)(implicit ev: TensorNumeric[T])
+    : BigDLModule[T] = {
+      createBigDLModule(model, createGRU(model).
+        asInstanceOf[AbstractModule[Activity, Activity, T]])
+    }
+
+    override def serializeModule[T: ClassTag](module : BigDLModule[T])
+                                             (implicit ev: TensorNumeric[T]): BigDLModel = {
+      val bigDLModelBuilder = BigDLModel.newBuilder
+      val gru = module.module.asInstanceOf[GRU[T]]
+      createSerializeGRU(bigDLModelBuilder, gru)
+      createSerializeBigDLModule(bigDLModelBuilder, module)
+    }
+    private def createGRU[T: ClassTag](model : BigDLModel)(implicit ev: TensorNumeric[T]):
+    GRU[T] = {
+      val gruParam = model.getGruParam
+      val inputSize = gruParam.getInputSize
+      val outputSize = gruParam.getOutputSize
+      val p = if (gruParam.hasP) gruParam.getP else 0.0
+      var wRegularizer : Regularizer[T] = null
+      if (gruParam.hasWRegularizer) {
+        wRegularizer = createRegularizer(gruParam.getWRegularizer)
+      }
+      var uRegularizer : Regularizer[T] = null
+      if (gruParam.hasURegularizer) {
+        uRegularizer = createRegularizer(gruParam.getURegularizer)
+      }
+      var bRegularizer : Regularizer[T] = null
+      if (gruParam.hasBRegularizer) {
+        bRegularizer = createRegularizer(gruParam.getBRegularizer)
+      }
+      GRU[T](inputSize, outputSize, p, wRegularizer, uRegularizer, bRegularizer)
+    }
+
+    private def createSerializeGRU[T: ClassTag](
+      modelBuilder : BigDLModel.Builder, gru : GRU[T])
+      (implicit ev: TensorNumeric[T]): Unit = {
+      val gruParam = GRUParam.newBuilder
+      gruParam.setInputSize(gru.inputSize)
+      gruParam.setOutputSize(gru.outputSize)
+      gruParam.setP(gru.p)
+      if (gru.wRegularizer != null) {
+        gruParam.setWRegularizer(createSerializeRegularizer(gru.wRegularizer))
+      }
+      if (gru.uRegularizer != null) {
+        gruParam.setURegularizer(createSerializeRegularizer(gru.uRegularizer))
+      }
+      if (gru.bRegularizer != null) {
+        gruParam.setBRegularizer(createSerializeRegularizer(gru.bRegularizer))
+      }
+      modelBuilder.setGruParam(gruParam.build)
+      modelBuilder.setModuleType(ModuleType.GRU)
+    }
+  }
+
+  case object HardShrinkSerializer extends AbstractModelSerializer {
+
+    override def loadModule[T: ClassTag](model : BigDLModel)(implicit ev: TensorNumeric[T])
+    : BigDLModule[T] = {
+      val hardShrinkParam = model.getHardShrinkParam
+      val lamda = if (hardShrinkParam.hasLambda) hardShrinkParam.getLambda else 0.5
+      createBigDLModule(model, HardShrink[T](lamda).
+        asInstanceOf[AbstractModule[Activity, Activity, T]])
+    }
+
+    override def serializeModule[T: ClassTag](module : BigDLModule[T])
+                                             (implicit ev: TensorNumeric[T]): BigDLModel = {
+      val bigDLModelBuilder = BigDLModel.newBuilder
+      val hardShrinkParam = HardShrinkParam.newBuilder
+      hardShrinkParam.setLambda(module.module.asInstanceOf[HardShrink[T]].lambda)
+      bigDLModelBuilder.setHardShrinkParam(hardShrinkParam.build)
+      bigDLModelBuilder.setModuleType(ModuleType.HARDSHRINK)
+      createSerializeBigDLModule(bigDLModelBuilder, module)
+    }
+  }
+
+  case object HardTanhSerializer extends AbstractModelSerializer {
+
+    override def loadModule[T: ClassTag](model : BigDLModel)(implicit ev: TensorNumeric[T])
+    : BigDLModule[T] = {
+      val hardTanhParam = model.getHardTanhParam
+      val minValue = if (hardTanhParam.hasMinValue) hardTanhParam.getMinValue else -1.0
+      val maxValue = if (hardTanhParam.hasMaxValue) hardTanhParam.getMaxValue else 1.0
+      val inPalce = if (hardTanhParam.hasInplace) hardTanhParam.getInplace else false
+      createBigDLModule(model, HardTanh[T](minValue, maxValue, inPalce).
+        asInstanceOf[AbstractModule[Activity, Activity, T]])
+    }
+
+    override def serializeModule[T: ClassTag](module : BigDLModule[T])
+                                             (implicit ev: TensorNumeric[T]): BigDLModel = {
+      val bigDLModelBuilder = BigDLModel.newBuilder
+      val hardTanhParam = HardTanhParam.newBuilder
+      val hardTanh = module.module.asInstanceOf[HardTanh[T]]
+      hardTanhParam.setMinValue(hardTanh.minValue)
+      hardTanhParam.setMaxValue(hardTanh.maxValue)
+      hardTanhParam.setInplace(hardTanh.inplace)
+      bigDLModelBuilder.setHardTanhParam(hardTanhParam.build)
+      bigDLModelBuilder.setModuleType(ModuleType.HARDTANH)
+      createSerializeBigDLModule(bigDLModelBuilder, module)
+    }
+  }
+
+  case object IdentitySerializer extends AbstractModelSerializer {
+
+    override def loadModule[T: ClassTag](model : BigDLModel)(implicit ev: TensorNumeric[T])
+    : BigDLModule[T] = {
+      createBigDLModule(model, Identity[T]().
+        asInstanceOf[AbstractModule[Activity, Activity, T]])
+    }
+
+    override def serializeModule[T: ClassTag](module : BigDLModule[T])
+                                             (implicit ev: TensorNumeric[T]): BigDLModel = {
+      val bigDLModelBuilder = BigDLModel.newBuilder
+      bigDLModelBuilder.setModuleType(ModuleType.IDENTITY)
+      createSerializeBigDLModule(bigDLModelBuilder, module)
+    }
+  }
+
+  case object IndexSerializer extends AbstractModelSerializer {
+
+    override def loadModule[T: ClassTag](model : BigDLModel)(implicit ev: TensorNumeric[T])
+    : BigDLModule[T] = {
+      val indexParam = model.getIndexParam
+      createBigDLModule(model, Index[T](indexParam.getDimension).
+        asInstanceOf[AbstractModule[Activity, Activity, T]])
+    }
+
+    override def serializeModule[T: ClassTag](module : BigDLModule[T])
+                                             (implicit ev: TensorNumeric[T]): BigDLModel = {
+      val bigDLModelBuilder = BigDLModel.newBuilder
+      val indexParam = IndexParam.newBuilder
+      indexParam.setDimension(module.module.asInstanceOf[Index[T]].dimension)
+      bigDLModelBuilder.setIndexParam(indexParam.build)
+      bigDLModelBuilder.setModuleType(ModuleType.INDEX)
       createSerializeBigDLModule(bigDLModelBuilder, module)
     }
   }
@@ -653,7 +916,7 @@ private[serializer] object ModelSerializer {
 
   def load[T: ClassTag](model: BigDLModel)
     (implicit ev: TensorNumeric[T]) : BigDLModule[T] = {
-    serializerMap(model.getModuleType.toString).loadModule(model)
+    deSerializerMap(model.getModuleType.toString).loadModule(model)
   }
 
   def serialize[T: ClassTag](bigDLModule : BigDLModule[T])
@@ -663,7 +926,7 @@ private[serializer] object ModelSerializer {
     val bigDLModel = module match {
       case abs : Abs[_] => AbsSerializer.serializeModule(bigDLModule)
       case add : Add[_] => AddSerializer.serializeModule(bigDLModule)
-      // case addConst : AddConstant[_] => AddConstantSerializer.serializeModule(bigDLModule)
+      case addConst : AddConstant[_] => AddConstantSerializer.serializeModule(bigDLModule)
       case batchNorm : BatchNormalization[_] => BatchNormSerializer.serializeModule(bigDLModule)
       case biLinear : Bilinear[_] => BiLinearSerializer.serializeModule(bigDLModule)
       case biRecurrent : BiRecurrent[_] => BiRecurrentSerializer.serializeModule(bigDLModule)
@@ -682,42 +945,66 @@ private[serializer] object ModelSerializer {
       case cosine : Cosine[_] => CosineSerializer.serializeModule(bigDLModule)
       case cosineDis : CosineDistance[_] => CosineDistanceSerializer.serializeModule(bigDLModule)
       case csubTable : CSubTable[_] => CSubTableDistanceSerializer.serializeModule(bigDLModule)
-      case dotProduct : DotProduct[_] => DotProductDistanceSerializer.serializeModule(bigDLModule)
+      case dotProduct : DotProduct[_] => DotProductSerializer.serializeModule(bigDLModule)
+      case dropout : Dropout[_] => DropoutSerializer.serializeModule(bigDLModule)
+      case elu : ELU[_] => ELUSerializer.serializeModule(bigDLModule)
+      case euclidean : Euclidean[_] => EuclideanSerializer.serializeModule(bigDLModule)
+      case exp : Exp[_] => ExpSerializer.serializeModule(bigDLModule)
+      case flattenTable : FlattenTable[_] => FlattenTableSerializer.serializeModule(bigDLModule)
+      case gradientReversal : GradientReversal[_] => GradientReversalSerializer.
+        serializeModule(bigDLModule)
+      case graph : Graph[_] => GraphSerializer.serializeModule(bigDLModule)
+      case gru : GRU[_] => GRUSerializer.serializeModule(bigDLModule)
+      case hardShrink : HardShrink[_] => HardShrinkSerializer.serializeModule(bigDLModule)
+      case hardTanh : HardTanh[_] => HardTanhSerializer.serializeModule(bigDLModule)
+      case identity : Identity[_] => IdentitySerializer.serializeModule(bigDLModule)
+      case index : Index[_] => IndexSerializer.serializeModule(bigDLModule)
       case linear : Linear[_] => LinearSerializer.serializeModule(bigDLModule)
       case sequantial : Sequential[_] => SequentialSerializer.serializeModule(bigDLModule)
-      case graph : Graph[_] => GraphSerializer.serializeModule(bigDLModule)
       case _ => CustomizedDelegator.serializeModule(bigDLModule)
     }
     bigDLModel
   }
 
   private  def init(): Unit = {
-    serializerMap("ABS") = AbsSerializer
-    serializerMap("ADD") = AddSerializer
-    serializerMap("ADDCONST") = AddConstantSerializer
-    serializerMap("BATCHNORM") = BatchNormSerializer
-    serializerMap("BILINEAR") = BiLinearSerializer
-    serializerMap("BIRECURRENT") = BiRecurrentSerializer
-    serializerMap("BOTTLE") = BottleSerializer
-    serializerMap("CADD") = CaddSerializer
-    serializerMap("CADDTABLE") = CaddTableSerializer
-    serializerMap("CONCATTABLE") = ConcatTableSerializer
-    serializerMap("CDIVTABLE") = CDivTableSerializer
-    serializerMap("CLAMP") = ClampSerializer
-    serializerMap("CMAXTABLE") = CMaxTableSerializer
-    serializerMap("CMINTABLE") = CMinTableSerializer
-    serializerMap("CMULTABLE") = CMulTableSerializer
-    serializerMap("CMUL") = CMulSerializer
-    serializerMap("CONCAT") = ConcatSerializer
-    serializerMap("CONTIGUOUS") = ContiguousSerializer
-    serializerMap("COSINE") = CosineSerializer
-    serializerMap("COSINEDISTANCE") = CosineDistanceSerializer
-    serializerMap("CSUBTABLE") = CSubTableDistanceSerializer
-    serializerMap("DOTPRODUCT") = DotProductDistanceSerializer
-    serializerMap("LINEAR") = LinearSerializer
-    serializerMap("SEQUENTIAL") = SequentialSerializer
-    serializerMap("GRAPH") = GraphSerializer
-    serializerMap("CUSTOMIZED") = CustomizedDelegator
+    deSerializerMap("ABS") = AbsSerializer
+    deSerializerMap("ADD") = AddSerializer
+    deSerializerMap("ADDCONST") = AddConstantSerializer
+    deSerializerMap("BATCHNORM") = BatchNormSerializer
+    deSerializerMap("BILINEAR") = BiLinearSerializer
+    deSerializerMap("BIRECURRENT") = BiRecurrentSerializer
+    deSerializerMap("BOTTLE") = BottleSerializer
+    deSerializerMap("CADD") = CaddSerializer
+    deSerializerMap("CADDTABLE") = CaddTableSerializer
+    deSerializerMap("CONCATTABLE") = ConcatTableSerializer
+    deSerializerMap("CDIVTABLE") = CDivTableSerializer
+    deSerializerMap("CLAMP") = ClampSerializer
+    deSerializerMap("CMAXTABLE") = CMaxTableSerializer
+    deSerializerMap("CMINTABLE") = CMinTableSerializer
+    deSerializerMap("CMULTABLE") = CMulTableSerializer
+    deSerializerMap("CMUL") = CMulSerializer
+    deSerializerMap("CONCAT") = ConcatSerializer
+    deSerializerMap("CONTIGUOUS") = ContiguousSerializer
+    deSerializerMap("COSINE") = CosineSerializer
+    deSerializerMap("COSINEDISTANCE") = CosineDistanceSerializer
+    deSerializerMap("CSUBTABLE") = CSubTableDistanceSerializer
+    deSerializerMap("DOTPRODUCT") = DotProductSerializer
+    deSerializerMap("DROPOUT") = DropoutSerializer
+    deSerializerMap("ELU") = ELUSerializer
+    deSerializerMap("EUCLIDEAN") = EuclideanSerializer
+    deSerializerMap("EXP") = ExpSerializer
+    deSerializerMap("FLATTENTABLE") = FlattenTableSerializer
+    deSerializerMap("GRADIENTREVERSAL") = GradientReversalSerializer
+    deSerializerMap("GRAPH") = GraphSerializer
+    deSerializerMap("GRU") = GRUSerializer
+    deSerializerMap("HARDSHRINK") = HardShrinkSerializer
+    deSerializerMap("HARDTANH") = HardTanhSerializer
+    deSerializerMap("IDENTITY") = IdentitySerializer
+    deSerializerMap("INDEX") = IndexSerializer
+    deSerializerMap("LINEAR") = LinearSerializer
+    deSerializerMap("SEQUENTIAL") = SequentialSerializer
+    deSerializerMap("CUSTOMIZED") = CustomizedDelegator
+    // serializerMap(Abs[_].getClass) = AbsSerializer
   }
 
 }

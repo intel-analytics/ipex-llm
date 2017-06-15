@@ -15,24 +15,27 @@
  */
 package com.intel.analytics.bigdl.utils.serializer
 
-import com.google.protobuf.Extension.MessageType
 import com.google.protobuf.{ExtensionRegistry, GeneratedMessage}
 
 import scala.reflect.runtime.universe._
-import com.intel.analytics.bigdl.nn.Abs
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import serialization.Model.{BigDLModel, CustomParam}
-import serialization.Model.BigDLModel.ModuleType
+import serialization.Model.{BigDLModel}
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
 
+/**
+ * Delegator for users to register user-defined module into BigDL, registration is required
+ * while user need to serialize the model which contains the new layer
+ */
 object CustomizedDelegator extends AbstractModelSerializer {
+
   private val customizedModules = new mutable.HashMap[Class[_], String]()
   private val customizedSerializers = new mutable.HashMap[String, AbstractModelSerializer]()
-  private val registry = ExtensionRegistry.newInstance();
-  override def loadModule[T: ClassTag](model : BigDLModel)(implicit ev: TensorNumeric[T])
+  private val registry = ExtensionRegistry.newInstance()
+
+  override def loadModule[T: ClassTag](model : BigDLModel)
+    (implicit ev: TensorNumeric[T])
   : BigDLModule[T] = {
     val moduleType = model.getCustomParam.getCustomType
     if (customizedSerializers.contains(moduleType)) {
@@ -56,16 +59,26 @@ object CustomizedDelegator extends AbstractModelSerializer {
       throw new IllegalArgumentException(s"${module.module} is not supported")
     }
   }
+
+  /**
+   * Inteface for user to register user defined module into BigDL at Runtime
+   * @param cls class of user-defined module
+   * @param serializer serializer implemented for newly added module
+   * @param extension protobuf extension for this module, for serialization mapping
+   * @param customType unique identifier for new module
+   */
   def registerCustomizedModule(cls : Class[_],
     serializer: AbstractModelSerializer,
-    extension: GeneratedMessage.GeneratedExtension[_, _],
+    extension: GeneratedMessage.GeneratedExtension[_ <: GeneratedMessage, _],
     customType : String): Unit = {
     require(!customizedSerializers.contains(customType), s"$customType already exist!")
     customizedModules(cls) = customType
     customizedSerializers(customType) = serializer
-    registry.add(extension)
+    if (extension != null) {
+      registry.add(extension)
+    }
   }
-  def getRegistry(): ExtensionRegistry = registry
+  private[serializer] def getRegistry(): ExtensionRegistry = registry
 
-  def getTypeTag[T : TypeTag](a : T) : TypeTag[T] = typeTag[T]
+  private[serializer] def getTypeTag[T : TypeTag](a : T) : TypeTag[T] = typeTag[T]
 }

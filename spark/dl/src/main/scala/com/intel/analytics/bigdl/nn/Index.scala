@@ -29,7 +29,7 @@ import scala.reflect.ClassTag
  */
 
 @SerialVersionUID(2608373524149209793L)
-class Index[T: ClassTag](dimension: Int)(implicit ev: TensorNumeric[T])
+class Index[T: ClassTag](val dimension: Int)(implicit ev: TensorNumeric[T])
   extends AbstractModule[Table, Tensor[T], T]{
 
   override def updateOutput(input: Table): Tensor[T] = {
