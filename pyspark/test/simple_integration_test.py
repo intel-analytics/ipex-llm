@@ -35,6 +35,33 @@ class TestWorkFlow(unittest.TestCase):
     def tearDown(self):
         self.sc.stop()
 
+    def test_training(self):
+        cadd = CAdd([5, 1])
+        y = np.ones([5, 4])
+        bf = np.ones([5, 4])
+        for i in range(y.shape[0]):
+            bf[i] = i + 1
+
+        def grad_update(mlp, x, y, criterion, learning_rate):
+            pred = mlp.forward(x)
+            err = criterion.forward(pred, y)
+            grad_criterion = criterion.backward(pred, y)
+            mlp.zero_grad_parameters()
+            mlp.backward(x, grad_criterion)
+            mlp.update_parameters(learning_rate)
+            return err
+
+        mse = MSECriterion()
+        for i in range(0, 1000):
+            x = np.random.random((5, 4))
+            y = x.copy()
+            y = y + bf
+            err = grad_update(cadd, x, y, mse, 0.01)
+        print(cadd.get_weights()[0])
+        self.assertTrue(np.allclose(cadd.get_weights()[0],
+                                    np.array([1, 2, 3, 4, 5]).reshape((5, 1)),
+                                    rtol=1.e-1))
+
     def test_load_model(self):
         fc1 = Linear(4, 2)
         fc1.set_weights([np.ones((4, 2)), np.ones((2, ))])
