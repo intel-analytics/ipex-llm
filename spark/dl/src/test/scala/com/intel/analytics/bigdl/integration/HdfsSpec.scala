@@ -31,7 +31,7 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 
 @com.intel.analytics.bigdl.tags.Integration
-class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter {
+class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter{
 
   val hdfs = System.getProperty("hdfsMaster")
   val mnistFolder = System.getProperty("mnist")
@@ -54,8 +54,8 @@ class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter {
     File.save(model, localPath, true)
     val localModel = Module.load(localPath)
 
-    hdfsModel should be(model)
-    hdfsModel should be(localModel)
+    hdfsModel should be (model)
+    hdfsModel should be (localModel)
   }
 
   "load minist from hdfs" should "be correct" in {
@@ -66,13 +66,13 @@ class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val localData = Files.readAllBytes(
       Paths.get(processPath(resource.getPath()), "/t10k-images.idx3-ubyte"))
 
-    hdfsData should be(localData)
+    hdfsData should be (localData)
   }
 
   "read/write event file from hdfs" should "work properly" in {
     Engine.localMode = false
     Engine.init(1, 4, true)
-    val logdir = hdfs + s"/${ com.google.common.io.Files.createTempDir().getPath() }"
+    val logdir = hdfs + s"/${com.google.common.io.Files.createTempDir().getPath()}"
     val writer = new FileWriter(logdir, 100)
     for (i <- 0 to 9) {
       val s = Summary.scalar("scalar", i)
@@ -89,18 +89,17 @@ class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter {
     Thread.sleep(1000) // Waiting for writer.
     val tbReader = FileReader.list(logdir)
     val result = FileReader.readScalar(tbReader(0), "lr")
-    result.length should be(20)
+    result.length should be (20)
     for (i <- 0 to 19) {
-      result(i)._1 should be(i + 1)
-      result(i)._2 should be(i)
+      result(i)._1 should be (i + 1)
+      result(i)._2 should be (i)
     }
   }
 
   "load caffe model from hdfs" should "work properly" in {
-    val resource = getClass().getClassLoader().getResource("caffe")
+    val prototxt = getClass().getClassLoader().getResource("caffe/test.prototxt").getPath
+    val modelPath = getClass().getClassLoader().getResource("caffe/test.caffemodel").getPath
 
-    val prototxt = Paths.get(resource.getPath(), "test.prototxt").toString
-    val modelPath = Paths.get(resource.getPath(), "test.caffemodel").toString
     val hdfsDir = hdfs + s"/${ com.google.common.io.Files.createTempDir().getPath() }"
 
     def writeToHdfs(localFile: String, hdfsDir: String): Unit = {

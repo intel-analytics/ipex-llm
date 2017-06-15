@@ -60,7 +60,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
     }
   }
 
-  private def loadFromHdfs(fileName: String): FSDataInputStream = {
+  private def createHdfsInputStream(fileName: String): FSDataInputStream = {
     val src = new Path(fileName)
     val fs = src.getFileSystem(new Configuration())
     fs.open(src)
@@ -73,8 +73,8 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
       if (prototxtPath.startsWith(File.hdfsPrefix)) {
         require(modelPath.startsWith(File.hdfsPrefix), "If prototxt is saved in hdfs," +
           " model should also be saved in hdfs")
-        val prototxtStream = loadFromHdfs(prototxtPath)
-        modelStream = loadFromHdfs(modelPath)
+        val prototxtStream = createHdfsInputStream(prototxtPath)
+        modelStream = createHdfsInputStream(modelPath)
         prototxtReader = new InputStreamReader(prototxtStream, "ASCII")
       } else {
         val f = new java.io.File(prototxtPath)
