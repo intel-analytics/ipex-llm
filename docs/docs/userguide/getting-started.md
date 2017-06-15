@@ -96,8 +96,15 @@ You can run a BigDL program, e.g., the [VGG](https://github.com/intel-analytics/
   * -b: The mini-batch size. The mini-batch size is expected to be a multiple of *total cores* used in the job. In this example, the mini-batch size is suggested to be set to *total cores * 4*
 
 ## Next Steps
-* To learn the details of Python support in BigDL, you can check out the [Python Support Page](https://github.com/intel-analytics/BigDL/wiki/Python-Support)
-* To learn how to create practical neural networks using BigDL in a couple of minutes, you can check out the [Tutorials Page](https://github.com/intel-analytics/BigDL/wiki/Tutorials)
-* you can check out the [Document Page](https://github.com/intel-analytics/BigDL/wiki/Documents) for more details (including Tutorials, Examples, Programming Guide, etc.)
+* To learn the details of Python support in BigDL, you can check out the [Python Support Page][pythonsupport]
+
+* To learn how to create practical neural networks using BigDL in a couple of minutes, you can check out the [Examples Page][examples]
+
+* You can check out the [Documents Page](https://intel-analytics.github.io/bigdl-doc/) for more details (including Models, Examples, Programming Guide, etc.)
+
 * You can join the [BigDL Google Group](https://groups.google.com/forum/#!forum/bigdl-user-group) (or subscribe to the [mail list](mailto:bigdl-user-group+subscribe@googlegroups.com)) for more questions and discussions on BigDL
+
 * You can post bug reports and feature requests at the [Issue Page](https://github.com/intel-analytics/BigDL/issues)
+
+[pythonsupport]: ../pythonsupport/python-support
+[examples]: ../userguide/examples

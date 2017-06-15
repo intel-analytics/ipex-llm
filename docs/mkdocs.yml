@@ -23,7 +23,6 @@ pages:
 - API Docs:
   - Scala Docs: APIdocs/scaladoc.md
   - Python API Docs: APIdocs/python-api-doc.md
-
-
+  
 - Powered by: powered-by.md
 
