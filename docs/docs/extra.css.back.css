@@ -1,0 +1,69 @@
+.wy-side-nav-search {
+ z-index: 200;
+ background-color: #0071c5;
+ text-align: center;
+ padding: 0.809em;
+ display: block;
+ color: #fcfcfc;
+ margin-bottom: 0.809em;
+ font-size: 20pt
+} 
+
+h1{
+
+    color: #00002f;
+
+    font-size: 28pt;
+    font-style: 'Arial'
+
+    font-family: "Helvetica Neue",sans-serif,Helvetica,Arial;
+
+    background-color: #e8e9ea;
+
+
+
+}
+
+
+h2{
+
+
+   
+     color: #00004f;
+
+    font-size: 24pt;
+     font-style: 'Arial'
+
+    font-family: "Helvetica Neue",sans-serif,Helvetica,Arial;
+
+}
+
+h3{
+
+
+    color: #000040;
+
+    font-size: 20pt;
+     font-style: 'Arial'
+    font-family: "Helvetica Neue",sans-serif,Helvetica,Arial;
+
+}
+
+p{
+
+
+   color: #00002f;
+    font-size: 15pt;
+     font-style: 'sans-serif'
+   font-family: "Helvetica Neue",sans-serif,Helvetica,Arial;
+
+}
+
+li{
+
+   color: #00002f;
+    font-size: 15pt;
+     font-style: 'sans-serif'
+   font-family: "Helvetica Neue",sans-serif,Helvetica,Arial;
+
+}
