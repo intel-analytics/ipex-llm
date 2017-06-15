@@ -106,5 +106,5 @@ You can run a BigDL program, e.g., the [VGG](https://github.com/intel-analytics/
 
 * You can post bug reports and feature requests at the [Issue Page](https://github.com/intel-analytics/BigDL/issues)
 
-[pythonsupport]: ../pythonsupport/python-support
+[pythonsupport]: ../PythonSupport/python-support
 [examples]: ../userguide/examples
