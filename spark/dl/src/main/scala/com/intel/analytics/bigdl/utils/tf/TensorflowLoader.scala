@@ -217,7 +217,7 @@ object TensorflowLoader{
         // Normal operation node
         if (patternToGraph.get(patternNode).isEmpty) return (util.Collections.emptyList(), Seq())
 
-        val graphNode = patternToGraph.get(patternNode).get
+        val graphNode = patternToGraph(patternNode)
         // Operation type should match
         if (patternNode.element != graphNode.element.getOp) return (
           util.Collections.emptyList(), Seq())
@@ -251,7 +251,7 @@ object TensorflowLoader{
             val posGraph = { if (direction == 0) i else graphNode.prevNodes.length - 1 - j}
             val pn = patternNode.prevNodes(posPattern)
             val gn = graphNode.prevNodes(posGraph)
-            if (patternToGraph.keySet.contains(pn)) {
+            if (patternToGraph.contains(pn)) {
               if (!patternToGraph(pn).eq(gn)) return (util.Collections.emptyList(), Seq())
             } else {
               patternToGraph(pn) = gn

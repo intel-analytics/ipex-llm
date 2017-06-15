@@ -127,6 +127,9 @@ object TensorflowToBigDL {
 
     val shape = tfTensor.getTensorShape.getDimList.asScala.map(_.getSize.toInt).toArray
 
+    /**
+     * When there's one element in the tensor. You cannot get the value from byte string
+     */
     if (shape.product == 1) {
       if (classTag[T] == classTag[Float]) {
         if (tfTensor.getDtype == DataType.DT_FLOAT) {
@@ -220,7 +223,7 @@ object TensorflowToBigDL {
     res.append(
       FullConnectionTF, DropoutTF, AvgPoolingTF, MaxPoolingTF, ReshapeTF, InputTF,
       TanhTF, ReluTF, SigmoidTF, Conv2D, Placeholder, SqueezeTF, IdentityTF, ConcatTF,
-      BatchNormTF, AddConstTF1, AddConstTF2, AddTF, SoftMaxTF, MulTF, ElementWiseMulTF,
+      BatchNormTF, AddConstTF1, AddConstTF2, AddTF, SoftMaxTF, ElementWiseMulTF, MulTF,
       SplitTF, PaddingTF, MeanTF, UnpackTF, StrideSliceTF, ShapeTF, FillTF, PackTF, ConstTF
     )
     res
@@ -234,8 +237,19 @@ object TensorflowToBigDL {
    */
   private def sortPattern() : Unit = {
     // do not calculate size and edges of a graph every time
-    val topToNNodes = patternList.map(g => g -> g.topology.size).toMap
-    val topToNEdges = patternList.map(g => g -> g.topology.edges).toMap
+    val topToNNodes = patternList.map(g => {
+      val nodeSize = g.topology.BFS.count(n =>
+        n.element != INPUT_PLACEHOLDER && n.element != N_INPUT_PLACEHOLDER)
+      g -> nodeSize
+    }).toMap
+
+    val topToNEdges = patternList.map(g => {
+      val edgeSize = g.topology.BFS.filter(n =>
+        n.element != INPUT_PLACEHOLDER && n.element != N_INPUT_PLACEHOLDER)
+        .map(_.nextNodes.length).reduce(_ + _)
+      g -> edgeSize
+    }).toMap
+
     patternList = patternList.sortWith((l, r) => {
       if (topToNNodes(l) != topToNNodes(r)) {
         // graph with more nodes comes first
