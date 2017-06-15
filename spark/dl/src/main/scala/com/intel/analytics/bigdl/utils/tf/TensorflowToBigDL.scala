@@ -224,7 +224,8 @@ object TensorflowToBigDL {
       FullConnectionTF, DropoutTF, AvgPoolingTF, MaxPoolingTF, ReshapeTF, InputTF,
       TanhTF, ReluTF, SigmoidTF, Conv2D, Placeholder, SqueezeTF, IdentityTF, ConcatTF,
       BatchNormTF, AddConstTF1, AddConstTF2, AddTF, SoftMaxTF, ElementWiseMulTF, MulTF,
-      SplitTF, PaddingTF, MeanTF, UnpackTF, StrideSliceTF, ShapeTF, FillTF, PackTF, ConstTF
+      SplitTF, PaddingTF, MeanTF, UnpackTF, StrideSliceTF, ShapeTF, FillTF, PackTF, ConstTF,
+      Flatten
     )
     res
   }
@@ -872,6 +873,75 @@ object ConcatTF extends TensorflowToBigDL{
     val nInputDims = 4
 
     JoinTable[T](dimension = axis + 1, nInputDims = -1)
+      .asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+  }
+}
+
+object Flatten extends TensorflowToBigDL {
+  private val graph = {
+    val reshapeNode = Node("Reshape")
+    val concatNode = Node("ConcatV2")
+    val sliceNode = Node("Slice")
+    val expandNode = Node("ExpandDims")
+    val prodNode = Node("Prod")
+    val sliceNode1 = Node("Slice")
+    val shapeNode = Node("Const")
+    val beginNode = Node("Const")
+    val sizeNode = Node("Const")
+    val beginNode1 = Node("Const")
+    val sizeNode1 = Node("Const")
+    val constNode = Node("Const")
+    val dimNode = Node("Const")
+    val axisNode = Node("Const")
+
+    shapeNode -> sliceNode
+    beginNode -> sliceNode
+    sizeNode -> sliceNode
+
+    shapeNode -> sliceNode1
+    beginNode1 -> sliceNode1
+    sizeNode1 -> sliceNode1
+
+    sliceNode1 -> prodNode
+    constNode -> prodNode
+
+    prodNode -> expandNode
+    dimNode -> expandNode
+
+    sliceNode -> concatNode
+    expandNode -> concatNode
+    axisNode -> concatNode
+
+    Node("*") -> reshapeNode
+    concatNode -> reshapeNode
+    reshapeNode.graph(reverse = true)
+  }
+
+  override def topology: DirectedGraph[String] = graph
+
+  override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
+      context: Context[T],
+      byteOrder: ByteOrder)(
+    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+    val shapetfTensor = tfGraph.source.prevNodes(1).prevNodes(0).prevNodes(0).element
+      .getAttrMap.get("value").getTensor
+    val sizes = TensorflowToBigDL.toTensor(shapetfTensor, byteOrder)
+    val batchMode = false
+
+    val arraySize = Array(
+      ev.toType[Int](sizes.valueAt(1)),
+      {
+        var prod = 1
+        var i = 2
+        while(i <= sizes.nElement()) {
+          prod = prod * ev.toType[Int](sizes.valueAt(i))
+          i = i + 1
+        }
+        prod
+      }
+    )
+
+    Reshape[T](size = arraySize, Some(batchMode))
       .asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
   }
 }

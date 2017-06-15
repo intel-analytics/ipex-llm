@@ -142,7 +142,9 @@ object TensorflowLoader{
       } else {
         val (module, nodes, inputNodes) =
           extract[T](n.graph(reverse = true), context, byteOrder).getOrElse(
-            throw new UnsupportedOperationException(s"Can not find matched graph ${n}"))
+            throw new UnsupportedOperationException(s"Can not find matched graph \n${n}\n\n" +
+              s"Its inputs are\n ${n.prevNodes.mkString("\n")}")
+          )
 
         val node = new Node(module)
         nodes.asScala.foreach(m => {
