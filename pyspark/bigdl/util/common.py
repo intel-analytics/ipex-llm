@@ -277,7 +277,14 @@ def create_spark_conf():
     return sparkConf
 
 
-def get_spark_context(conf = SparkConf()):
+def get_spark_context(conf = None):
+    """
+    Get the current active spark context and create one if no active instance
+    :param conf: combining bigdl configs into spark conf
+    :return: SparkContext
+    """
+    if not conf:
+        conf = create_spark_conf()
     if "getOrCreate" in SparkContext.__dict__:
         return SparkContext.getOrCreate(conf)
     else:
