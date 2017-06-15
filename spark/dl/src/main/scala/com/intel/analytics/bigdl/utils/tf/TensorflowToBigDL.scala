@@ -963,11 +963,10 @@ object MulTF extends  TensorflowToBigDL{
                                   byteOrder: ByteOrder)(
     implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
 
-    val mul = Mul[T]()
     val scale = TensorflowToBigDL.toTensor(
       tfGraph.source.prevNodes(0).element.getAttrMap.get("value").getTensor, byteOrder)
     require(scale.dim() == 1 && scale.size(1) == 1, s"scale must be one number")
-    mul.weight.copy(scale)
+    val mul = MulConstant[T](ev.toType[Double](scale.valueAt(1)))
     mul.asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
   }
 }
