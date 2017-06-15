@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.utils.{RandomGenerator, T, Table}
 
 import scala.reflect.ClassTag
 import RandomGenerator._
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
 import com.intel.analytics.bigdl.optim.Regularizer
 
 /**
@@ -35,10 +35,6 @@ import com.intel.analytics.bigdl.optim.Regularizer
  *
  * @param inputSize the size the each input sample
  * @param outputSize the size of the module output of each sample
- * @param initMethod two initialized methods are supported here, which are [[Default]]
- *                   and [[Xavier]], where [[Xavier]] set bias to zero here. For more
- *                   detailed information about `initMethod`, please refer to
- *                   [[InitializationMethod]]
  * @param wRegularizer: instance of [[Regularizer]]
  *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
  * @param bRegularizer: instance of [[Regularizer]]
@@ -48,38 +44,38 @@ import com.intel.analytics.bigdl.optim.Regularizer
 class Linear[T: ClassTag](
   inputSize: Int,
   outputSize: Int,
-  private var initMethod: InitializationMethod = Default,
   withBias: Boolean = true,
   wRegularizer: Regularizer[T] = null,
-  bRegularizer: Regularizer[T] = null
-)(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
-  val weight: Tensor[T] = Tensor[T](outputSize, inputSize)
-  val bias: Tensor[T] = if (withBias) Tensor[T](outputSize) else null
+  bRegularizer: Regularizer[T] = null,
+  initWeight: Tensor[T] = null,
+  initBias: Tensor[T] = null,
+  initGradWeight: Tensor[T] = null,
+  initGradBias: Tensor[T] = null
+)(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
+  val weight: Tensor[T] =
+    if (initWeight != null) initWeight else Tensor[T](outputSize, inputSize)
+  val bias: Tensor[T] =
+    if (initBias != null) initBias else if (withBias) Tensor[T](outputSize) else null
   val addBuffer: Tensor[T] = Tensor[T]()
 
-  val gradWeight: Tensor[T] = Tensor[T]()
-  val gradBias: Tensor[T] = if (withBias) Tensor[T]() else null
-  reset()
+  val gradWeight: Tensor[T] =
+    if (initGradWeight != null) initGradWeight else Tensor[T]()
+  val gradBias: Tensor[T] =
+    if (initGradBias != null) initGradBias else if (withBias) Tensor[T]() else null
 
-  def setInitMethod(initMethod: InitializationMethod): this.type = {
-    this.initMethod = initMethod
-    this
+  {
+    val stdv = 1.0 / math.sqrt(weight.size(2))
+    val wInit: InitializationMethod = RandomUniform(-stdv, stdv)
+    val bInit: InitializationMethod = RandomUniform(-stdv, stdv)
+    setInitMethod(wInit, bInit)
   }
 
   override def reset(): Unit = {
-    initMethod match {
-      case Default =>
-        val stdv = 1.0 / math.sqrt(weight.size(2))
-        weight.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
-        if (withBias) bias.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
-      case Xavier =>
-        val fanIn = weight.size(2)
-        val fanOut = weight.size(1)
-        val stdv = math.sqrt(6.0 / (fanIn + fanOut))
-        weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
-        if (withBias) bias.fill(ev.fromType(0))
-      case _ =>
-        throw new IllegalArgumentException(s"Unsupported initMethod type ${initMethod}")
+    if (initWeight == null) {
+      weightInitMethod.init(weight, VariableFormat.OUT_IN)
+    }
+    if (initBias == null) {
+      Option(bias).foreach(biasInitMethod.init(_, VariableFormat.ONE_D))
     }
     zeroGradParameters()
   }
@@ -103,11 +99,11 @@ class Linear[T: ClassTag](
       }
 
       if (addBuffer.nElement() != nFrame) {
-        addBuffer.resize(Array(nFrame)).fill(ev.fromType[Int](1))
+        addBuffer.resize(Array(nFrame)).fill(ev.one)
       }
 
-      output.addmm(ev.fromType[Int](0), output, ev.fromType[Int](1), input, weight.t)
-      if (withBias) output.addr(ev.fromType[Int](1), addBuffer, bias)
+      output.addmm(ev.zero, output, ev.one, input, weight.t)
+      if (withBias) output.addr(ev.one, addBuffer, bias)
     }
     output
   }
@@ -237,12 +233,15 @@ object Linear {
   def apply[@specialized(Float, Double) T: ClassTag](
       inputSize: Int,
       outputSize: Int,
-      initMethod: InitializationMethod = Default,
       withBias: Boolean = true,
       wRegularizer: Regularizer[T] = null,
-      bRegularizer: Regularizer[T] = null
+      bRegularizer: Regularizer[T] = null,
+      initWeight: Tensor[T] = null,
+      initBias: Tensor[T] = null,
+      initGradWeight: Tensor[T] = null,
+      initGradBias: Tensor[T] = null
   )(implicit ev: TensorNumeric[T]) : Linear[T] = {
-    new Linear[T](inputSize, outputSize, initMethod,
-      withBias, wRegularizer, bRegularizer)
+    new Linear[T](inputSize, outputSize,
+      withBias, wRegularizer, bRegularizer, initWeight, initBias, initGradWeight, initGradBias)
   }
 }

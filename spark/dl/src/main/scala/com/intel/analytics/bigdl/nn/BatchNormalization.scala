@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.utils.{Engine, T, Table}
@@ -51,8 +51,12 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
   val nOutput: Int, // output feature map number
   val eps: Double = 1e-5, // avoid divde zero
   val momentum: Double = 0.1, // momentum for weight update
-  val affine: Boolean = true // affine operation on output or not
-)(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+  val affine: Boolean = true, // affine operation on output or not
+  initWeight: Tensor[T] = null,
+  initBias: Tensor[T] = null,
+  initGradWeight: Tensor[T] = null,
+  initGradBias: Tensor[T] = null
+)(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
   require(nOutput > 0)
 
@@ -62,11 +66,15 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
   val saveMean = Tensor[T](nOutput)
   val saveStd = Tensor[T](nOutput).fill(ev.fromType[Int](1))
 
-  val weight: Tensor[T] = if (affine) Tensor[T](nOutput) else null
-  val bias: Tensor[T] = if (affine) Tensor[T](nOutput) else null
+  val weight: Tensor[T] =
+    if (initWeight != null) initWeight else if (affine) Tensor[T](nOutput) else null
+  val bias: Tensor[T] =
+    if (initBias != null) initBias else if (affine) Tensor[T](nOutput) else null
 
-  val gradWeight: Tensor[T] = if (affine) Tensor[T](nOutput) else null
-  val gradBias: Tensor[T] = if (affine) Tensor[T](nOutput) else null
+  val gradWeight: Tensor[T] =
+    if (initGradWeight != null) initGradWeight else if (affine) Tensor[T](nOutput) else null
+  val gradBias: Tensor[T] =
+    if (initGradBias != null) initGradBias else if (affine) Tensor[T](nOutput) else null
 
   @transient
   private var results : Array[Future[_]] = null
@@ -76,15 +84,19 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
   // if you want to do a gradcheck, you will need to fix those variables, otherwise not fix.
   private var needFix: Boolean = false
 
-  reset()
+  {
+    val wInit = RandomUniform(0, 1)
+    val bInit = Zeros
+    setInitMethod(wInit, bInit)
+  }
 
   override def reset(): Unit = {
-    if (null != weight) {
-      weight.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1)))
+    if (null != weight && initWeight == null) {
+      weightInitMethod.init(weight, VariableFormat.ONE_D)
     }
 
-    if (null != bias) {
-      bias.fill(ev.fromType[Int](0))
+    if (null != bias && initBias == null) {
+      biasInitMethod.init(bias, VariableFormat.ONE_D)
     }
 
     runningMean.zero()
@@ -702,7 +714,12 @@ object BatchNormalization {
     nOutput: Int,
     eps: Double = 1e-5,
     momentum: Double = 0.1,
-    affine: Boolean = true)(implicit ev: TensorNumeric[T]): BatchNormalization[T] = {
-    new BatchNormalization[T](nOutput, eps, momentum, affine)
+    affine: Boolean = true,
+    initWeight: Tensor[T] = null,
+    initBias: Tensor[T] = null,
+    initGradWeight: Tensor[T] = null,
+    initGradBias: Tensor[T] = null)(implicit ev: TensorNumeric[T]): BatchNormalization[T] = {
+    new BatchNormalization[T](
+      nOutput, eps, momentum, affine, initWeight, initBias, initGradWeight, initGradBias)
   }
 }

@@ -143,6 +143,7 @@ object  StructuredStreamPredictor {
       aggQuery.awaitTermination()
       classifyQuery2.awaitTermination()
       filteredQuery2.awaitTermination()
+      sc.stop()
     }
   }
 }

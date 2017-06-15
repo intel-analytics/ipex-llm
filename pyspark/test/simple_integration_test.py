@@ -15,10 +15,11 @@
 #
 # Still in experimental stage!
 
-from nn.layer import *
-from nn.criterion import *
-from optim.optimizer import *
-from util.common import *
+from bigdl.nn.layer import *
+from bigdl.nn.criterion import *
+from bigdl.optim.optimizer import *
+from bigdl.util.common import *
+from bigdl.nn.initialization_method import *
 import numpy as np
 import unittest
 import tempfile
@@ -34,16 +35,52 @@ class TestWorkFlow(unittest.TestCase):
     def tearDown(self):
         self.sc.stop()
 
+    def test_training(self):
+        cadd = CAdd([5, 1])
+        y = np.ones([5, 4])
+        bf = np.ones([5, 4])
+        for i in range(y.shape[0]):
+            bf[i] = i + 1
+
+        def grad_update(mlp, x, y, criterion, learning_rate):
+            pred = mlp.forward(x)
+            err = criterion.forward(pred, y)
+            grad_criterion = criterion.backward(pred, y)
+            mlp.zero_grad_parameters()
+            mlp.backward(x, grad_criterion)
+            mlp.update_parameters(learning_rate)
+            return err
+
+        mse = MSECriterion()
+        for i in range(0, 1000):
+            x = np.random.random((5, 4))
+            y = x.copy()
+            y = y + bf
+            err = grad_update(cadd, x, y, mse, 0.01)
+        print(cadd.get_weights()[0])
+        self.assertTrue(np.allclose(cadd.get_weights()[0],
+                                    np.array([1, 2, 3, 4, 5]).reshape((5, 1)),
+                                    rtol=1.e-1))
+
+    def test_load_model(self):
+        fc1 = Linear(4, 2)
+        fc1.set_weights([np.ones((4, 2)), np.ones((2, ))])
+        tmp_path = tempfile.mktemp()
+        fc1.save(tmp_path, True)
+        fc1_loaded = Model.load(tmp_path)
+        self.assertTrue(np.allclose(fc1_loaded.get_weights()[0],
+                                    fc1.get_weights()[0]))
+
     def test_create_node(self):
         import numpy as np
         fc1 = Linear(4, 2)()
         fc2 = Linear(4, 2)()
         cadd = CAddTable()([fc1, fc2])
         output1 = ReLU()(cadd)
-        graph = Graph([fc1, fc2], [output1])
+        model = Model([fc1, fc2], [output1])
         fc1.element().set_weights([np.ones((4, 2)), np.ones((2, ))])
         fc2.element().set_weights([np.ones((4, 2)), np.ones((2, ))])
-        output = graph.forward([np.array([0.1, 0.2, -0.3, -0.4]),
+        output = model.forward([np.array([0.1, 0.2, -0.3, -0.4]),
                                 np.array([0.5, 0.4, -0.2, -0.1])])
         self.assertTrue(np.allclose(output,
                                     np.array([2.2, 2.2])))
@@ -54,12 +91,12 @@ class TestWorkFlow(unittest.TestCase):
         cadd = CAddTable()([fc1, fc2])
         output1 = ReLU()(cadd)
         output2 = Threshold(10.0)(cadd)
-        graph = Graph([fc1, fc2], [output1, output2])
+        model = Model([fc1, fc2], [output1, output2])
         fc1.element().set_weights([np.ones((4, 2)), np.ones((2, ))])
         fc2.element().set_weights([np.ones((4, 2)) * 2, np.ones((2, )) * 2])
-        output = graph.forward([np.array([0.1, 0.2, -0.3, -0.4]),
+        output = model.forward([np.array([0.1, 0.2, -0.3, -0.4]),
                                 np.array([0.5, 0.4, -0.2, -0.1])])
-        gradInput = graph.backward([np.array([0.1, 0.2, -0.3, -0.4]),
+        gradInput = model.backward([np.array([0.1, 0.2, -0.3, -0.4]),
                                     np.array([0.5, 0.4, -0.2, -0.1])],
                                    [np.array([1.0, 2.0]),
                                     np.array([3.0, 4.0])])
@@ -69,7 +106,7 @@ class TestWorkFlow(unittest.TestCase):
                                     np.array([6.0, 6.0, 6.0, 6.0])))
 
     def test_load_zip_conf(self):
-        from util.common import get_bigdl_conf
+        from bigdl.util.common import get_bigdl_conf
         import sys
         sys.path = [path for path in sys.path if "spark-bigdl.conf" not in path]
         sys.path.insert(0, os.path.join(os.path.split(__file__)[0], "resources/conf/python-api.zip"))  # noqa
@@ -159,7 +196,7 @@ class TestWorkFlow(unittest.TestCase):
             print(test_result)
 
     def test_forward_backward(self):
-        from nn.layer import Linear
+        from bigdl.nn.layer import Linear
         rng = RNG()
         rng.set_seed(100)
 
@@ -181,7 +218,7 @@ class TestWorkFlow(unittest.TestCase):
         l_grad_output = linear.backward(input, grad_output)
 
     def test_forward_multiple(self):
-        from nn.layer import Linear
+        from bigdl.nn.layer import Linear
         rng = RNG()
         rng.set_seed(100)
 
@@ -199,6 +236,65 @@ class TestWorkFlow(unittest.TestCase):
         module.add(linear2)
         module.forward(input)
         module.backward(input, grad_output)
+
+    def test_init_method(self):
+        initializers = [
+            Zeros(),
+            Ones(),
+            ConstInitMethod(5),
+            RandomUniform(-1, 1),
+            RandomNormal(0, 1),
+            None
+        ]
+        special_initializers = [
+            Xavier(),
+            RandomUniform(),
+        ]
+
+        layers = [
+            SpatialConvolution(6, 12, 5, 5),
+            SpatialShareConvolution(1, 1, 1, 1),
+            LookupTable(1, 1, 1e-5, 1e-5, 1e-5, True),
+            Bilinear(1, 1, 1, True),
+            Cosine(2, 3),
+            SpatialFullConvolution(1, 1, 1, 1),
+            Add(1),
+            Linear(100, 10),
+            CMul([1, 2]),
+            Mul(),
+            PReLU(1),
+            Euclidean(1, 1, True),
+            SpatialDilatedConvolution(1, 1, 1, 1),
+            SpatialBatchNormalization(1),
+            BatchNormalization(1, 1e-5, 1e-5, True),
+        ]
+
+        special_layers = [
+            SpatialConvolution(6, 12, 5, 5),
+            SpatialShareConvolution(1, 1, 1, 1),
+            Cosine(2, 3),
+            SpatialFullConvolution(1, 1, 1, 1),
+            Add(1),
+            Linear(100, 10),
+            CMul([1, 2]),
+            Mul(),
+            PReLU(1),
+            Euclidean(1, 1, True),
+            SpatialDilatedConvolution(1, 1, 1, 1),
+            SpatialBatchNormalization(1),
+            BatchNormalization(1, 1e-5, 1e-5, True),
+        ]
+        for layer in layers:
+            for init1 in initializers:
+                for init2 in initializers:
+                    layer.set_init_method(init1, init2)
+
+        for layer in special_layers:
+            for init1 in special_initializers:
+                for init2 in special_initializers:
+                    layer.set_init_method(init1, init2)
+
+        SpatialFullConvolution(1, 1, 1, 1).set_init_method(BilinearFiller(), Zeros())
 
     def test_predict(self):
         np.random.seed(100)

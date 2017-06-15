@@ -28,9 +28,11 @@ import scala.reflect.ClassTag
  * @param ev
  * @tparam T Numeric type. Only support float/double now
  */
-class Reverse[T: ClassTag](dim: Int = 1)
+class Reverse[T: ClassTag](dim: Int = 1, isInplace: Boolean = false)
   (implicit ev: TensorNumeric[T])
   extends TensorModule[T] {
+
+  var buffer: Tensor[T] = null
 
   /**
    * reverse the src Tensor and write it to target w.r.t given dim.
@@ -56,14 +58,51 @@ class Reverse[T: ClassTag](dim: Int = 1)
     target
   }
 
+  /**
+   * reverse the src Tensor given dim in-place.
+   * E.g. src: (1,2,3; 4,5,6) and dim = 1
+   *      => src: (4,5,6; 1,2,3)
+   * @param src
+   * @param dim
+   * @return
+   */
+  private def reverseTensor(src: Tensor[T], dim: Int): Tensor[T] = {
+    require(dim > 0 && dim <= src.dim,
+      s"Reverse: the designated dimension ${dim} to reverse input Tensor" +
+        s" is out of index. The input.dim = ${src.dim}")
+    if (buffer == null) buffer = Tensor[T]()
+
+    val time = src.size(dim)
+    val half = time >> 1
+    buffer.resizeAs(src.select(dim, 1))
+    var i = 1
+    while (i <= half) {
+      buffer.copy(src.select(dim, time - i + 1))
+      src.select(dim, time - i + 1).copy(src.select(dim, i))
+      src.select(dim, i).copy(buffer)
+      i += 1
+    }
+    src
+  }
+
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    if (output == null) output = Tensor[T]()
-    reverseTensor(input.toTensor[T], output.toTensor[T], dim)
+    if (isInplace) {
+      output = reverseTensor(input.toTensor[T], dim)
+    } else {
+      if (output == null) output = Tensor[T]()
+      reverseTensor(input.toTensor[T], output.toTensor[T], dim)
+    }
+    output
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    if (gradInput == null) gradInput = Tensor[T]()
-    reverseTensor(gradOutput.toTensor[T], gradInput.toTensor[T], dim)
+    if (isInplace) {
+      gradInput = reverseTensor(gradOutput.toTensor[T], dim)
+    } else {
+      if (gradInput == null) gradInput = Tensor[T]()
+      reverseTensor(gradOutput.toTensor[T], gradInput.toTensor[T], dim)
+    }
+    gradInput
   }
 
   override def toString: String = s"nn.Reverse"
@@ -78,7 +117,8 @@ class Reverse[T: ClassTag](dim: Int = 1)
 
 object Reverse {
   def apply[@specialized(Float, Double) T: ClassTag](
-    dimension: Int = 1)(implicit ev: TensorNumeric[T]) : Reverse[T] = {
-    new Reverse[T](dimension)
+    dimension: Int = 1, isInplace: Boolean = false)
+    (implicit ev: TensorNumeric[T]) : Reverse[T] = {
+    new Reverse[T](dimension, isInplace)
   }
 }
