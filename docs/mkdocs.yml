@@ -1,0 +1,27 @@
+site_name: BigDL Project
+extra_css: [extra.css]
+theme: readthedocs
+repo_name: 'GitHub '
+repo_url: 'https://github.com/intel-analytics/BigDL'
+
+
+pages:
+- Home: index.md 
+- Release: release.md
+- User Guide:
+  - Build: UserGuide/build.md
+  - Getting Started: UserGuide/getting-started.md
+  - Examples: UserGuide/examples.md
+  - Visualization With Tensorboard: UserGuide/visualization-with-tensorboard.md
+  - Running On EC2: UserGuide/running-on-EC2.md
+  - Models: UserGuide/models.md
+  - Programming Guide: UserGuide/programming-guide.md
+  - Known Issues: UserGuide/known-issues.md
+- Python Support: 
+  - Python Support: PythonSupport/python-support.md
+  - Python Tutorial: PythonSupport/Python-turtorial.md
+- API Docs:
+  - Scala Docs: APIdocs/scaladoc.md
+  - Python API Docs: APIdocs/python-api-doc.md  
+- Powered by: powered-by.md
+

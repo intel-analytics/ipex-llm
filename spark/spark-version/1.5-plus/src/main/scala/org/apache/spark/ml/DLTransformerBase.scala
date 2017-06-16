@@ -14,24 +14,30 @@
  * limitations under the License.
  */
 package org.apache.spark.ml
+
 import org.apache.spark.ml.param.ParamMap
+import org.apache.spark.sql.{DataFrame}
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{DataFrame, Dataset}
 
 /**
  * A wrapper for org.apache.spark.ml.Transformer.
  * Extends MlTransformer and override process to gain compatibility with
  * both spark 1.5 and spark 2.0.
  */
-abstract class DLTransformer extends Model[DLTransformer]{
+private[ml] abstract class DLTransformerBase
+  extends Model[DLTransformerBase] with DLParams {
 
-  def process(dataset: DataFrame): DataFrame
+  protected def internalTransform(dataset: DataFrame): DataFrame
 
-  override def transform(dataset: Dataset[_]): DataFrame = {
-    process(dataset.toDF())
+  override def transform(dataset: DataFrame): DataFrame = {
+    transformSchema(dataset.schema, logging = true)
+    internalTransform(toArrayType(dataset.toDF()))
   }
 
-  override def transformSchema(schema: StructType): StructType = schema
+  override def transformSchema(schema : StructType): StructType = {
+    validateAndTransformSchema(schema)
+  }
 
-  override def copy(extra: ParamMap): DLTransformer = defaultCopy(extra)
+  override def copy(extra: ParamMap): DLTransformerBase = defaultCopy(extra)
+
 }
