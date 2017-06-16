@@ -300,6 +300,14 @@ class TestWorkFlow(unittest.TestCase):
         data2 = result2
         for i in range(0, 2):
             self.assertTrue(np.allclose(data[i], data2[i]))
+	
+    def test_movielens(self):
+	movielens_data = read_data_sets("./tmp/movielens/")
+	ground_label = np.array([['1','1193'],
+				 ['1','661']])
+	
+	for i in range(0,2):
+	    self.assertTrue(np.allclose(movielens_data[i], ground_label[i], atol=1e-6, rtol=0))
 
 if __name__ == "__main__":
     unittest.main(failfast=True)
