@@ -37,11 +37,11 @@ You may want to write your deep learning programs using BigDL if:
 
 * You can post bug reports and feature requests at the [Issue Page](https://github.com/intel-analytics/BigDL/issues)
 
-[build]: userguide/build
-[gettingstarted]: userguide/getting-started
+[build]: UserGuide/build
+[gettingstarted]: UserGuide/getting-started
 [pythonsupport]: pythonsupport/python-support
-[runningonEC2]: userguide/running-on-ec2
-[examples]: userguide/examples
+[runningonEC2]: UserGuide/running-on-ec2
+[examples]: UserGuide/examples
 
 
 

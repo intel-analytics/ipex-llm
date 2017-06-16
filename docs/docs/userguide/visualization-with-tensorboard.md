@@ -76,8 +76,8 @@ After that, navigate to the TensorBoard dashboard using a browser. You can find 
 
 ### **Visualizations in TensorBoard**
 Within the TensorBoard dashboard, you will be able to read the visualizations of each run, including the “Loss” and “Throughput” curves under the SCALARS tab (as illustrated below):
-![Scalar](/tensorboard_scalar.png)
+![Scalar](../Image/tensorboard_scalar.png)
 
 And “weights”, “bias”, “gradientWeights” and “gradientBias” under the DISTRIBUTIONS and HISTOGRAMS tabs (as illustrated below):
-![histogram1](/tensorboard_histo1.png)
-![histogram2](/tensorboard_histo2.png)
+![histogram1](../Image/tensorboard_histo1.png)
+![histogram2](../Image/tensorboard_histo2.png)
