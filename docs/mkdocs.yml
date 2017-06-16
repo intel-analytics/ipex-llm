@@ -16,7 +16,7 @@ pages:
   - Running On EC2: UserGuide/running-on-EC2.md
   - Models: UserGuide/models.md
   - Programming Guide: UserGuide/programming-guide.md
-  - FAQ: UserGuide/faq.md
+  - Known Issues: UserGuide/known-issues.md
 - Python Support: 
   - Python Support: PythonSupport/python-support.md
   - Python Tutorial: PythonSupport/Python-turtorial.md
