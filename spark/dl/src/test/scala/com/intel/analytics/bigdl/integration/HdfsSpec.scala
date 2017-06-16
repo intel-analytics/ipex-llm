@@ -21,7 +21,8 @@ import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.models.resnet.Convolution
 import com.intel.analytics.bigdl.nn.{Linear, Module, Sequential}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericDouble
-import com.intel.analytics.bigdl.utils.{CaffeLoader, Engine, File}
+import com.intel.analytics.bigdl.utils.caffe.CaffeLoader
+import com.intel.analytics.bigdl.utils.{Engine, File}
 import com.intel.analytics.bigdl.visualization.Summary
 import com.intel.analytics.bigdl.visualization.tensorboard.{FileReader, FileWriter}
 import org.apache.commons.compress.utils.IOUtils
