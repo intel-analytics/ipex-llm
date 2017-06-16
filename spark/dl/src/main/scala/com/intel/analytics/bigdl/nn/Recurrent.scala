@@ -42,9 +42,25 @@ class Recurrent[T : ClassTag]()
   private val timeDim = 2
   private val inputDim = 1
   private val hidDim = 2
+  private var cellAppendStart = 0
   private var (batchSize, times) = (0, 0)
   private val dropouts: ArrayBuffer[Array[Dropout[T]]] =
     new ArrayBuffer[Array[Dropout[T]]]
+
+  /**
+   * copy type
+   * @param typeId type id
+   */
+  sealed abstract class SetType(typeId: Int)
+    extends Serializable
+
+  /**
+   *  define some dataset type
+   */
+  object SetType {
+    case object Output extends SetType(0)
+    case object GradInput extends SetType(1)
+  }
 
   override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): Recurrent.this.type = {
     require(module.isInstanceOf[Cell[T]],
@@ -86,6 +102,7 @@ class Recurrent[T : ClassTag]()
       gradHidden = hidden
     }
     var t = cells.length
+    cellAppendStart = t
     if (t < times) {
       val cloneCell = cells.head.cloneModule()
       cloneCell.parameters()._1.map(_.set())
@@ -96,6 +113,59 @@ class Recurrent[T : ClassTag]()
         t += 1
       }
       share(cells)
+    }
+  }
+
+  /**
+   * set the cells' output and gradInput to recurrent's output and gradInput
+   * to decrease the copy expense.
+   * @param setType
+   */
+  private def set(setType: SetType): Unit = {
+    if (setType == SetType.Output) {
+      if (cells.head.output.toTable(inputDim)
+          .asInstanceOf[Tensor[T]]
+          .storage.eq(output.select(timeDim, 1).storage)) {
+        var t = cellAppendStart + 1
+        while (t <= times) {
+          cells(t - 1).output.toTable(inputDim)
+            .asInstanceOf[Tensor[T]]
+            .set(output.select(timeDim, t))
+          t += 1
+        }
+      } else {
+        var t = 1
+        while (t <= times) {
+          output.select(timeDim, t).copy(cells(t - 1).output.toTable(inputDim))
+          t += 1
+        }
+        cells.head.output.toTable(inputDim)
+          .asInstanceOf[Tensor[T]]
+          .set(output.select(timeDim, 1))
+        set(setType)
+      }
+    } else if (setType == SetType.GradInput) {
+      if (cells.head.gradInput.toTable(inputDim)
+          .asInstanceOf[Tensor[T]]
+          .storage.eq(gradInput.select(timeDim, 1).storage)) {
+        var t = cellAppendStart + 1
+        while (t <= times) {
+          cells(t - 1).gradInput.toTable(inputDim)
+            .asInstanceOf[Tensor[T]]
+            .set(gradInput.select(timeDim, t))
+          t += 1
+        }
+      } else {
+        var t = 1
+        while (t <= times) {
+          gradInput.select(timeDim, t).copy(cells(t - 1).gradInput.toTable(inputDim))
+          t += 1
+        }
+        cells.head.gradInput.toTable(inputDim)
+          .asInstanceOf[Tensor[T]]
+          .set(gradInput.select(timeDim, 1))
+        set(setType)
+      }
     }
   }
 
@@ -174,10 +244,10 @@ class Recurrent[T : ClassTag]()
     while (i <= times) {
       currentInput(inputDim) = input.select(timeDim, i)
       cells(i - 1).updateOutput(currentInput)
-      output.select(timeDim, i).copy(cells(i - 1).output.toTable(inputDim))
       currentInput(hidDim) = cells(i - 1).output.toTable(hidDim)
       i += 1
     }
+    set(SetType.Output)
     output
   }
 
@@ -221,10 +291,10 @@ class Recurrent[T : ClassTag]()
         else hidden
       _input(inputDim) = input.select(timeDim, i)
       cells(i - 1).updateGradInput(_input, currentGradOutput)
-      gradInput.select(timeDim, i).copy(cells(i - 1).gradInput.toTable(inputDim))
       currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
       i -= 1
     }
+    set(SetType.GradInput)
     gradInput
   }
 
