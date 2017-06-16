@@ -171,17 +171,16 @@ object SequencePreprocess {
     sc: SparkContext,
     sentBin: Option[String],
     tokenBin: Option[String])
-  : DataSet[Array[String]] = {
+  : RDD[Array[String]] = {
 
     val sentenceSplitter = SentenceSplitter(sentBin)
     val sentenceTokenizer = SentenceTokenizer(tokenBin)
     val lines = load(fileName)
     val tokens = DataSet.array(lines, sc)
       .transform(sentenceSplitter).toDistributed().data(false)
-      .collect().flatten
-    DataSet.array(tokens, sc)
-      .transform(SentenceBiPadding())
-      .transform(sentenceTokenizer)
+      .flatMap(x => x).mapPartitions(x => SentenceBiPadding().apply(x))
+      .mapPartitions(x => sentenceTokenizer.apply(x))
+    tokens
   }
 
   private[bigdl] def load(fileName: String): Array[String] = {

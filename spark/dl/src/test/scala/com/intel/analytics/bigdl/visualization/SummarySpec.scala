@@ -146,7 +146,7 @@ class SummarySpec extends FlatSpec with Matchers with BeforeAndAfter {
     tbFiles.length should be (2)
     val tbFolder = FileReader.list(logdir.getPath)
     tbFolder.length should be (1)
-    tbFolder(0) should be (logdir.getPath)
+    tbFolder(0).replace("file:", "") should be (logdir.getPath)
   }
 
   "FileReader read from five Files" should "work properly" in {
@@ -166,7 +166,7 @@ class SummarySpec extends FlatSpec with Matchers with BeforeAndAfter {
     tbFiles.length should be (numFile)
     val tbFolder = FileReader.list(logdir.getPath)
     tbFolder.length should be (1)
-    tbFolder(0) should be (logdir.getPath)
+    tbFolder(0).replace("file:", "") should be (logdir.getPath)
     for (i <- 1 to numFile) {
       val result = FileReader.readScalar(tbFolder(0), s"scalar$i")
       result.length should be (i + 1)

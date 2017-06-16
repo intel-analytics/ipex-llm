@@ -24,9 +24,11 @@ import com.google.protobuf.{CodedInputStream, GeneratedMessage, TextFormat}
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.tensor.{Tensor}
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.{File, Table}
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{FSDataInputStream, Path}
 import org.apache.log4j.Logger
 
 import scala.collection.mutable
@@ -34,7 +36,8 @@ import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
- * load caffe model parameters to defined bigdl model
+ * An utility to load pre-trained caffe model from prototxt and binary
+ * and convert it to BigDL equivalent modules
  * @param prototxtPath caffe model define prototxt path
  * @param modelPath    caffe serialized binary model path
  * @param matchAll     if match all modules with parameters
@@ -46,7 +49,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
 
   private val hdfsPrefix: String = "hdfs:"
 
-  val logger = Logger.getLogger(getClass)
+  private val logger = Logger.getLogger(getClass)
 
   private var netparam: Caffe.NetParameter = _
   private var name2LayerV1: Map[String, V1LayerParameter] = _
@@ -57,6 +60,10 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
 
   private var criterions = ParallelCriterion[T]()
 
+  /**
+   * set customized layers mapping which are not supported now in BigDL
+   * @param map a caffe layer type to BigDL module mapping
+   */
   def setCustomizedLayer(map : Map[String, Seq[ModuleNode[T]]]) : Unit = {
     layerConverter.setCustomizedLayer(map)
     v1layerConverter.setCustomizedLayer(map)
@@ -76,30 +83,41 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
     }
   }
 
+  private def createHdfsInputStream(fileName: String): FSDataInputStream = {
+    val src = new Path(fileName)
+    val fs = src.getFileSystem(new Configuration())
+    fs.open(src)
+  }
+
   private def loadBinary(prototxtPath: String, modelPath: String): Caffe.NetParameter = {
-    var reader : InputStreamReader = null
-    if (prototxtPath.startsWith(hdfsPrefix)) {
-      val byteArrayOut = com.intel.analytics.bigdl.utils.File.readHdfsByte(prototxtPath)
-      reader = new InputStreamReader(new ByteArrayInputStream(byteArrayOut))
-    } else {
-      val f = new java.io.File(prototxtPath)
-      require(f.exists(), prototxtPath + " does not exists")
-      reader = new InputStreamReader(new FileInputStream(f), "ASCII")
+    var prototxtReader: InputStreamReader = null
+    var modelStream: InputStream = null
+    try {
+      if (prototxtPath.startsWith(File.hdfsPrefix)) {
+        require(modelPath.startsWith(File.hdfsPrefix), "If prototxt is saved in hdfs," +
+          " model should also be saved in hdfs")
+        val prototxtStream = createHdfsInputStream(prototxtPath)
+        modelStream = createHdfsInputStream(modelPath)
+        prototxtReader = new InputStreamReader(prototxtStream, "ASCII")
+      } else {
+        val f = new java.io.File(prototxtPath)
+        require(f.exists(), prototxtPath + " does not exists")
+        prototxtReader = new InputStreamReader(new FileInputStream(f), "ASCII")
+        modelStream = new FileInputStream(modelPath)
+      }
+
+      val builder = NetParameter.newBuilder
+      TextFormat.merge(prototxtReader, builder)
+      logger.info(s"start loading caffe model from $modelPath")
+      val cis = CodedInputStream.newInstance(modelStream)
+      cis.setSizeLimit(Integer.MAX_VALUE)
+      builder.mergeFrom(cis)
+      logger.info("load caffe model done")
+      builder.build()
+    } finally {
+      prototxtReader.close()
+      modelStream.close()
     }
-    val builder = NetParameter.newBuilder
-    TextFormat.merge(reader, builder)
-    logger.info(s"start loading caffe model from $modelPath")
-    var cis : CodedInputStream = null
-    if (modelPath.startsWith(hdfsPrefix)) {
-      val byteArrayOut = com.intel.analytics.bigdl.utils.File.readHdfsByte(modelPath)
-      cis = CodedInputStream.newInstance(new ByteArrayInputStream(byteArrayOut))
-    } else {
-      cis = CodedInputStream.newInstance(new FileInputStream(modelPath))
-    }
-    cis.setSizeLimit(Integer.MAX_VALUE)
-    builder.mergeFrom(cis)
-    logger.info("load caffe model done")
-    builder.build()
   }
 
   private def getBlob(name: String, ind: Int): Option[Caffe.BlobProto] = {
@@ -183,7 +201,6 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
 /**
  * Load caffe model from prototxt file and binary pre-trained model and converted
  * to BigDL graph module
- * Pre-defined module structure is not needed, it will be created dynamically
  * @return BigDL model and criterion
  */
   def createCaffeModel(): (Module[T], ParallelCriterion[T]) = {
@@ -364,7 +381,6 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
 
 object CaffeLoader {
 
-  @deprecated
   def load[T: ClassTag](model: Module[T],
                         defPath: String, modelPath: String, matchAll: Boolean = true)
                        (implicit ev: TensorNumeric[T]): Module[T] = {
