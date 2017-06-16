@@ -199,7 +199,7 @@ class Recurrent[T : ClassTag]()
     }
     if (cellAppendStartIdx == 0 || cellAppendStartIdx < times) {
       set(cells.slice(cellAppendStartIdx, times)
-        .map(x => x.output.toTable(inputDim).asInstanceOf[Tensor[T]]),
+        .map(x => x.output.toTable[Tensor[T]](inputDim)),
         output,
         cellAppendStartIdx)
     }
@@ -252,7 +252,7 @@ class Recurrent[T : ClassTag]()
     }
     if (cellAppendStartIdx == 0 || cellAppendStartIdx < times) {
       set(cells.slice(cellAppendStartIdx, times)
-        .map(x => x.gradInput.toTable(inputDim).asInstanceOf[Tensor[T]]),
+        .map(x => x.gradInput.toTable[Tensor[T]](inputDim)),
         gradInput,
         cellAppendStartIdx)
     }
