@@ -14,110 +14,136 @@
  * limitations under the License.
  */
 package org.apache.spark.ml
+
+import scala.reflect.ClassTag
 import com.intel.analytics.bigdl.dataset.{DataSet, MiniBatch}
 import com.intel.analytics.bigdl.{Criterion, Module}
-import com.intel.analytics.bigdl.optim.Optimizer
+import com.intel.analytics.bigdl.optim.{Adam, Optimizer, Trigger}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import org.apache.spark.ml.param.shared.{HasFeaturesCol, HasInputCols, HasLabelCol}
-import org.apache.spark.ml.param.{Param, ParamMap, Params}
+import org.apache.spark.ml.param.{IntParam, ParamMap, ParamValidators}
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.types.{ArrayType, StructType}
-
-import scala.collection.mutable
-import scala.reflect.ClassTag
+import org.apache.spark.sql.types._
 
 /**
- * A wrapper of Optimizer to support fit() in ML Pipelines as an Estimator
- * feature column name and label column name should be provided in training Dataframe
- * Model to be trained, Feature size, label size, batch shap must also be provided
+ * [[DLEstimator]] helps to train a BigDL Model with the Spark ML Estimator/Transfomer pattern,
+ * thus Spark users can conveniently fit BigDL into Spark ML pipeline.
+ *
+ * The feature column holds the storage (Spark Vectors or array of Floats or Doubles) of
+ * the feature data, and user should specify the tensor size(dimensions) via param featureSize.
+ * The label column holds the storage (Spark Vectors, array of Floats or Doubles, or Double) of
+ * the label data, and user should specify the tensor size(dimensions) via param labelSize.
+ * Internally the feature and label data are converted to BigDL tensors, to further train a
+ * BigDL model efficiently.
+ *
  * For details usage, please refer to example :
  * [[com.intel.analytics.bigdl.example.MLPipeline.DLEstimatorLeNet]]
  *
- * @param modelTrain module to be optimized
+ * @param model module to be optimized
  * @param criterion  criterion method
- * @param batchShape batch shape for DLClassifier transformation input
+ * @param featureSize The size (Tensor dimensions) of the feature data.
+ * @param labelSize The size (Tensor dimensions) of the label data.
  */
-class DLEstimator[@specialized(Float, Double) T: ClassTag]
-(val modelTrain : Module[T], val criterion : Criterion[T], val batchShape : Array[Int],
- override val uid: String = "DLEstimator")
-(implicit ev: TensorNumeric[T])
-  extends DLEstimatorBase with HasFeaturesCol with HasLabelCol with DLDataParams[T] {
+class DLEstimator[@specialized(Float, Double) T: ClassTag](
+    val model: Module[T],
+    val criterion : Criterion[T],
+    val featureSize : Array[Int],
+    val labelSize : Array[Int],
+    override val uid: String = "DLEstimator"
+  )(implicit ev: TensorNumeric[T]) extends DLEstimatorBase with DLParams with HasBatchSize {
 
   def setFeaturesCol(featuresColName: String): this.type = set(featuresCol, featuresColName)
 
   def setLabelCol(labelColName : String) : this.type = set(labelCol, labelColName)
 
-  private def validateInput(schema : StructType): Unit = {
-    require(isDefined(featuresCol),
-      "DLEstimator: features data must not be null")
-    require(isDefined(featureSize),
-      "DLEstimator: features size col must not be null")
-    require(isDefined(labelCol),
-      "DLEstimator: label data must not be null")
-    require(isDefined(labelSize),
-      "DLEstimator: label size must not be null")
-    val featureIndex = schema.fieldIndex($(featuresCol))
-    val featureField = schema.fields(featureIndex)
-    require(featureField.dataType.isInstanceOf[ArrayType], "Feature data should be of array type")
-    val labelIndex = schema.fieldIndex($(labelCol))
-    val labelField = schema.fields(labelIndex)
-    require(labelField.dataType.isInstanceOf[ArrayType], "Label data should be of array type")
+  def setPredictionCol(value: String): this.type = set(predictionCol, value)
+
+  def setBatchSize(value: Int): this.type = set(batchSize, value)
+
+  val maxEpoch = new IntParam(this, "maxEpoch", "number of max Epoch", ParamValidators.gt(0))
+  setDefault(maxEpoch -> 20)
+
+  def getMaxEpoch: Int = $(maxEpoch)
+
+  def setMaxEpoch(value: Int): this.type = set(maxEpoch, value)
+
+  override def transformSchema(schema : StructType): StructType = {
+    validateAndTransformSchema(schema)
   }
 
-  override protected def process(dataFrame: DataFrame): DLTransformer = {
-
-    validateInput(dataFrame.schema)
-
+  protected override def internalFit(dataFrame: DataFrame): DLTransformerBase = {
     val batches = toMiniBatch(dataFrame)
-
     val dataset = DataSet.rdd(batches)
 
-    val optimizer = Optimizer(modelTrain, dataset, criterion)
+    val optimizer = Optimizer(model, dataset, criterion)
+      .setOptimMethod(new Adam[T]())
+      .setEndWhen(Trigger.maxEpoch($(maxEpoch)))
+    val optimizedModel = optimizer.optimize()
 
-    var optimizedModule = modelTrain
-
-    optimizedModule = optimizer.optimize()
-
-    var classifier = new DLClassifier[T]()
-
-    val paramsTrans = ParamMap(
-      classifier.modelTrain -> optimizedModule,
-      classifier.batchShape -> batchShape)
-
-    classifier = classifier.copy(paramsTrans)
-
-    classifier
+    val dlModel = new DLModel[T](optimizedModel, featureSize)
+    copyValues(dlModel.setParent(this))
   }
 
+  /**
+   * Extract and reassemble data according to batchSize
+   */
   private def toMiniBatch(dataFrame: DataFrame) : RDD[MiniBatch[T]] = {
+    val featureArrayCol = if (dataFrame.schema($(featuresCol)).dataType.isInstanceOf[ArrayType]) {
+      $(featuresCol)
+    } else {
+      getFeatureArrayCol
+    }
+    val featureColIndex = dataFrame.schema.fieldIndex(featureArrayCol)
 
-    val data = dataFrame.rdd
-    val batchs = data.map(row => {
-      val featureData = row.getAs[mutable.WrappedArray[T]]($(featuresCol)).toArray
-      val labelData = row.getAs[mutable.WrappedArray[T]]($(labelCol)).toArray
-      MiniBatch[T](Tensor(featureData, $(featureSize)), Tensor(labelData, $(labelSize)))
-    })
-    batchs
+    val labelArrayCol = if (dataFrame.schema($(labelCol)).dataType.isInstanceOf[ArrayType]) {
+      $(labelCol)
+    } else {
+      getLabelArrayCol
+    }
+    val labelColIndex = dataFrame.schema.fieldIndex(labelArrayCol)
+
+    val featureType = dataFrame.schema(featureArrayCol).dataType.asInstanceOf[ArrayType].elementType
+    val labelType = dataFrame.schema(labelArrayCol).dataType.asInstanceOf[ArrayType].elementType
+
+    /**
+     * since model data type (float or double) and feature data element type does not necessarily
+     * comply, we need to extract data from feature column and convert according to model type.
+     */
+    val featureAndLabelData = dataFrame.rdd.map { row =>
+      val featureData = featureType match {
+        case DoubleType =>
+          row.getSeq[Double](featureColIndex).toArray.map(ev.fromType(_))
+        case FloatType =>
+          row.getSeq[Float](featureColIndex).toArray.map(ev.fromType(_))
+      }
+      require(featureData.length == featureSize.product, s"Data length mismatch:" +
+        s" feature data length ${featureData.length}, featureSize: ${featureSize.mkString(", ")}")
+
+      val labelData = labelType match {
+        case DoubleType =>
+          row.getSeq[Double](labelColIndex).toArray.map(ev.fromType(_))
+        case FloatType =>
+          row.getSeq[Float](labelColIndex).toArray.map(ev.fromType(_))
+      }
+      require(featureData.length == featureSize.product, s"Data length mismatch:" +
+        s" label data length ${featureData.length}, labelSize: ${featureSize.mkString(", ")}")
+      (featureData, labelData)
+    }
+
+    featureAndLabelData.mapPartitions { rows =>
+      val batches = rows.grouped($(batchSize)).map { batch =>
+        val featureData = batch.flatMap(_._1).toArray
+        val labelData = batch.flatMap(_._2).toArray
+        MiniBatch[T](
+          Tensor(featureData, Array(batch.length) ++ featureSize),
+          Tensor(labelData, Array(batch.length) ++ labelSize))
+      }
+      batches
+    }
   }
 
   override def copy(extra: ParamMap): DLEstimator[T] = {
-    copyValues(new DLEstimator(modelTrain, criterion, batchShape), extra)
+    copyValues(new DLEstimator(model, criterion, featureSize, labelSize), extra)
   }
 }
-
-private[ml] trait DLDataParams[@specialized(Float, Double) T] extends Params {
-
-  final val featureSize = new Param[Array[Int]](this, "feature size", "feature input size")
-
-  final val labelSize = new Param[Array[Int]](this, "label size", "label input size")
-
-  final def getFeatureSize : Array[Int] = $(featureSize)
-
-  final def getLabelSize : Array[Int] = $(labelSize)
-
-}
-
-
-
