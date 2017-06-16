@@ -47,21 +47,6 @@ class Recurrent[T : ClassTag]()
   private val dropouts: ArrayBuffer[Array[Dropout[T]]] =
     new ArrayBuffer[Array[Dropout[T]]]
 
-  /**
-   * copy type
-   * @param typeId type id
-   */
-  sealed abstract class SetType(typeId: Int)
-    extends Serializable
-
-  /**
-   *  define some dataset type
-   */
-  object SetType {
-    case object Output extends SetType(0)
-    case object GradInput extends SetType(1)
-  }
-
   override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): Recurrent.this.type = {
     require(module.isInstanceOf[Cell[T]],
       "Recurrent: contained module should be Cell type")
@@ -119,52 +104,20 @@ class Recurrent[T : ClassTag]()
   /**
    * set the cells' output and gradInput to recurrent's output and gradInput
    * to decrease the copy expense.
-   * @param setType
+   * @param src
+   * @param dst
    */
-  private def set(setType: SetType): Unit = {
-    if (setType == SetType.Output) {
-      if (cells.head.output.toTable(inputDim)
-          .asInstanceOf[Tensor[T]]
-          .storage.eq(output.select(timeDim, 1).storage)) {
-        var t = cellAppendStart + 1
-        while (t <= times) {
-          cells(t - 1).output.toTable(inputDim)
-            .asInstanceOf[Tensor[T]]
-            .set(output.select(timeDim, t))
-          t += 1
-        }
-      } else {
-        var t = 1
-        while (t <= times) {
-          output.select(timeDim, t).copy(cells(t - 1).output.toTable(inputDim))
-          t += 1
-        }
-        cells.head.output.toTable(inputDim)
-          .asInstanceOf[Tensor[T]]
-          .set(output.select(timeDim, 1))
-        set(setType)
+  private def set(src: ArrayBuffer[Tensor[T]], dst: Tensor[T], offset: Int): Unit = {
+    if (offset == 1 || offset < times) {
+      var t = 0
+      while ((t + offset) <= times) {
+        dst.select(timeDim, t + offset).copy(src(t))
+        t += 1
       }
-    } else if (setType == SetType.GradInput) {
-      if (cells.head.gradInput.toTable(inputDim)
-          .asInstanceOf[Tensor[T]]
-          .storage.eq(gradInput.select(timeDim, 1).storage)) {
-        var t = cellAppendStart + 1
-        while (t <= times) {
-          cells(t - 1).gradInput.toTable(inputDim)
-            .asInstanceOf[Tensor[T]]
-            .set(gradInput.select(timeDim, t))
-          t += 1
-        }
-      } else {
-        var t = 1
-        while (t <= times) {
-          gradInput.select(timeDim, t).copy(cells(t - 1).gradInput.toTable(inputDim))
-          t += 1
-        }
-        cells.head.gradInput.toTable(inputDim)
-          .asInstanceOf[Tensor[T]]
-          .set(gradInput.select(timeDim, 1))
-        set(setType)
+      t = 0
+      while ((t + offset) <= times) {
+        src(t).set(dst.select(timeDim, t + offset))
+        t += 1
       }
     }
   }
@@ -247,7 +200,10 @@ class Recurrent[T : ClassTag]()
       currentInput(hidDim) = cells(i - 1).output.toTable(hidDim)
       i += 1
     }
-    set(SetType.Output)
+    set(cells.slice(cellAppendStart - 1, times)
+             .map(x => x.output.toTable(inputDim).asInstanceOf[Tensor[T]]),
+      output,
+      cellAppendStart)
     output
   }
 
@@ -294,7 +250,10 @@ class Recurrent[T : ClassTag]()
       currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
       i -= 1
     }
-    set(SetType.GradInput)
+    set(cells.slice(cellAppendStart - 1, times)
+             .map(x => x.gradInput.toTable(inputDim).asInstanceOf[Tensor[T]]),
+      gradInput,
+      cellAppendStart)
     gradInput
   }
 
