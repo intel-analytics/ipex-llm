@@ -198,6 +198,7 @@ class TensorflowSaverSpec extends TensorflowSpecHelper {
   }
 
   "lenet" should "be correctly saved" in {
+    tfCheck()
     val conv1 = SpatialConvolution(1, 6, 5, 5).setName("conv1").apply()
     val tanh1 = Tanh().setName("tanh1").apply(conv1)
     val pool1 = SpatialMaxPooling(2, 2, 2, 2).setName("pool1").apply(tanh1)

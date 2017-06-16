@@ -27,11 +27,8 @@ import com.intel.analytics.bigdl.utils._
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 
-import scala.sys.process._
-import scala.math._
 
 object TensorflowLoaderSpec {
   private val data1 = Array(0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.1f)
@@ -63,7 +60,6 @@ object TensorflowLoaderSpec {
   }
 }
 
-@com.intel.analytics.bigdl.tags.Parallel
 class TensorflowLoaderSpec extends TensorflowSpecHelper{
 
   Logger.getLogger("org").setLevel(Level.WARN)
