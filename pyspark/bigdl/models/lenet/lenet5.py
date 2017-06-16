@@ -41,7 +41,7 @@ def build_model(class_num):
     return model
 
 
-def get_minst(sc, data_type="train", location="/tmp/mnist"):
+def get_mnist(sc, data_type="train", location="/tmp/mnist"):
     """
     Get and normalize the mnist data. We would download it automatically
     if the data doesn't present at the specific location.
@@ -81,9 +81,9 @@ if __name__ == "__main__":
             else:
                 return MaxIteration(options.endTriggerNum)
 
-        train_data = get_minst(sc, "train").map(
+        train_data = get_mnist(sc, "train").map(
             normalizer(mnist.TRAIN_MEAN, mnist.TRAIN_STD))
-        test_data = get_minst(sc, "test").map(
+        test_data = get_mnist(sc, "test").map(
             normalizer(mnist.TEST_MEAN, mnist.TEST_STD))
 
         optimizer = Optimizer(

@@ -5,7 +5,7 @@ please refer to <http://yann.lecun.com/exdb/lenet/>.
 
 ## How to run this example:
 
-Program would download the minst data into ```/tmp/mnist``` automatically by default.
+Program would download the mnist data into ```/tmp/mnist``` automatically by default.
 
 ```
 /tmp/mnist$ tree .
