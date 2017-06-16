@@ -26,10 +26,9 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class CaffeLoaderSpec extends FlatSpec with Matchers {
 
-  val resource = getClass().getClassLoader().getResource("caffe")
+  val prototxt = getClass().getClassLoader().getResource("caffe/test.prototxt").getPath
+  val modelPath = getClass().getClassLoader().getResource("caffe/test.caffemodel").getPath
 
-  val prototxt = Paths.get(resource.getPath(), "test.prototxt").toString
-  val modelPath = Paths.get(resource.getPath(), "test.caffemodel").toString
   "load caffe match all parameters" should "work properly" in {
     val module = Sequential()
       .add(Convolution(3, 4, 2, 2).setName("conv"))

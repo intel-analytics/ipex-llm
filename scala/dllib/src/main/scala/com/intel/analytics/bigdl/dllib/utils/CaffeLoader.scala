@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.utils
 
-import java.io.{FileInputStream, InputStreamReader}
+import java.io._
 
 import caffe.Caffe
 import caffe.Caffe.{LayerParameter, NetParameter, V1LayerParameter}
@@ -25,6 +25,8 @@ import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import org.apache.log4j.Logger
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{FSDataInputStream, Path}
 
 import scala.reflect.ClassTag
 
@@ -58,18 +60,41 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
     }
   }
 
+  private def createHdfsInputStream(fileName: String): FSDataInputStream = {
+    val src = new Path(fileName)
+    val fs = src.getFileSystem(new Configuration())
+    fs.open(src)
+  }
+
   private def loadBinary(prototxtPath: String, modelPath: String): Caffe.NetParameter = {
-    val f = new java.io.File(prototxtPath)
-    require(f.exists(), prototxtPath + " does not exists")
-    val reader = new InputStreamReader(new FileInputStream(f), "ASCII")
-    val builder = NetParameter.newBuilder
-    TextFormat.merge(reader, builder)
-    logger.info(s"start loading caffe model from $modelPath")
-    val cis = CodedInputStream.newInstance(new FileInputStream(modelPath))
-    cis.setSizeLimit(Integer.MAX_VALUE)
-    builder.mergeFrom(cis)
-    logger.info("load caffe model done")
-    builder.build()
+    var prototxtReader: InputStreamReader = null
+    var modelStream: InputStream = null
+    try {
+      if (prototxtPath.startsWith(File.hdfsPrefix)) {
+        require(modelPath.startsWith(File.hdfsPrefix), "If prototxt is saved in hdfs," +
+          " model should also be saved in hdfs")
+        val prototxtStream = createHdfsInputStream(prototxtPath)
+        modelStream = createHdfsInputStream(modelPath)
+        prototxtReader = new InputStreamReader(prototxtStream, "ASCII")
+      } else {
+        val f = new java.io.File(prototxtPath)
+        require(f.exists(), prototxtPath + " does not exists")
+        prototxtReader = new InputStreamReader(new FileInputStream(f), "ASCII")
+        modelStream = new FileInputStream(modelPath)
+      }
+
+      val builder = NetParameter.newBuilder
+      TextFormat.merge(prototxtReader, builder)
+      logger.info(s"start loading caffe model from $modelPath")
+      val cis = CodedInputStream.newInstance(modelStream)
+      cis.setSizeLimit(Integer.MAX_VALUE)
+      builder.mergeFrom(cis)
+      logger.info("load caffe model done")
+      builder.build()
+    } finally {
+      prototxtReader.close()
+      modelStream.close()
+    }
   }
 
   private def getBlob(name: String, ind: Int): Option[Caffe.BlobProto] = {
