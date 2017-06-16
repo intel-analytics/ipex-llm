@@ -5,7 +5,7 @@
 | ------------- | --------- | 
 |[BigDL Nightly Build Download](#bigdl-nightly-build)|[latest Docs](https://intel-analytics.github.io/bigdl-doc/)|
 |[BigDL 0.1.1 Download](#bigdl-011)| [BigDL 0.1.1 Docs](https://intel-analytics.github.io/bigdl-doc/0.1.1)|
-|[BigDL 0.1.0 Download](#bigdl-010)| [BigDL 0.1.0 Docs](https://intel-analytics.github.io/bigdl-doc/0.1.0)|
+|[BigDL 0.1.0 Download](#bigdl-010)|  N/A |
 
 These are built BigDL packages including dependency and python files. You can download these packages instead of building them by yourself. This is useful when you want to do something like run some examples or develop python code.
 
