@@ -12,17 +12,9 @@ This page shows how to run a BigDL program, including
 ## **Before running a BigDL program**
 Before running a BigDL program, you need to set proper environment variables first.
 
-### **Setting Environment Variables**
-To achieve high performance, BigDL uses Intel MKL and multi-threaded programming; therefore, you need to first set the environment variables by running the provided script in `PATH_To_BigDL/bin/bigdl.sh` as follows:
-```sbt
-$ source PATH_To_BigDL/bin/bigdl.sh
-```
-Alternatively, you can also use the `PATH_To_BigDL/bin/bigdl.sh` script to launch your BigDL program; see the details below.
-
 ## **Interactive Spark shell**
 You can quickly experiment with BigDL codes as a Spark program using the interactive Spark shell by running:
 ```sbt
-$ source PATH_To_BigDL/bin/bigdl.sh
 $ SPARK_HOME/bin/spark-shell --properties-file dist/conf/spark-bigdl.conf    \
   --jars bigdl-VERSION-jar-with-dependencies.jar
 ```
@@ -59,18 +51,14 @@ You can run a BigDL program, e.g., the [VGG](https://github.com/intel-analytics/
 
 1. Download the CIFAR-10 data from [here](https://www.cs.toronto.edu/%7Ekriz/cifar.html). Remember to choose the binary version.
 
-2. Use the `bigdl.sh` script to launch the example as a Spark program as follows:
-
 ```
   # Spark local mode
-  ./dist/bin/bigdl.sh -- \
   spark-submit --master local[core_number] --class com.intel.analytics.bigdl.models.vgg.Train \
   dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
   -f path_to_your_cifar_folder \
   -b batch_size
 
   # Spark standalone mode
-  ./dist/bin/bigdl.sh -- \
   spark-submit --master spark://... --executor-cores cores_per_executor \
   --total-executor-cores total_cores_for_the_job \
   --class com.intel.analytics.bigdl.models.vgg.Train \
@@ -79,7 +67,6 @@ You can run a BigDL program, e.g., the [VGG](https://github.com/intel-analytics/
   -b batch_size
 
   # Spark yarn mode
-  ./dist/bin/bigdl.sh -- \
   spark-submit --master yarn --deploy-mode client \
   --executor-cores cores_per_executor \
   --num-executors executors_number \
