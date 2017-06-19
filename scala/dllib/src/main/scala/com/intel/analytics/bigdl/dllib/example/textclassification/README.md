@@ -32,13 +32,12 @@
     ```
 
 4.  Run the commands:
-    * bigdl.sh would setup the essential environment for you and it would accept a spark-submit command as an input parameter.
     * Spark local:
       * Execute:
 
         ```shell
         BASE_DIR=${PWD} # where is the data
-        ./bigdl.sh -- spark-submit --master "local[physical_core_number]" --driver-memory 20g                     \
+        spark-submit --master "local[physical_core_number]" --driver-memory 20g                     \
                    --class com.intel.analytics.bigdl.example.textclassification.TextClassifier \
                    bigdl-VERSION-jar-with-dependencies.jar --batchSize 128              \
                    --baseDir ${BASE_DIR} --partitionNum 4
@@ -50,7 +49,7 @@
         ```shell
         MASTER=xxx.xxx.xxx.xxx:xxxx
         BASE_DIR=${PWD} # where is the data
-        ./bigdl.sh -- spark-submit --master ${MASTER} --driver-memory 5g --executor-memory 5g  \
+        spark-submit --master ${MASTER} --driver-memory 5g --executor-memory 5g  \
                    --total-executor-cores 32 --executor-cores 8                                \
                    --class com.intel.analytics.bigdl.example.textclassification.TextClassifier \
                    bigdl-VERSION-jar-with-dependencies.jar --batchSize 128              \
@@ -60,7 +59,7 @@
         
                 ```shell
                 BASE_DIR=${PWD} # where is the data
-                ./bigdl.sh -- spark-submit --master yarn --driver-memory 5g --executor-memory 5g  \
+                spark-submit --master yarn --driver-memory 5g --executor-memory 5g  \
                            --num-executor 4 --executor-cores 8                                \
                            --class com.intel.analytics.bigdl.example.textclassification.TextClassifier \
                            bigdl-VERSION-jar-with-dependencies.jar --batchSize 128              \

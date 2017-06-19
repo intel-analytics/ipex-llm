@@ -21,11 +21,8 @@ You can build one by refer to the
 [Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page) from the source code.
 
 ## Training
-* bigdl.sh would setup the essential environment for you and it would accept a spark-submit command as an input parameter.
-
 * Spark local, example command
 ```shell
-dist/bin/bigdl.sh -- \
 spark-submit --master local[physical_core_number] \
 --class com.intel.analytics.bigdl.models.resnet.Train \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
@@ -35,7 +32,6 @@ dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 ```
 * Spark standalone, example command
 ```shell
-dist/bin/bigdl.sh -- \
 spark-submit --master spark://xxx.xxx.xxx.xxx:xxxx \
 --driver-memory 5g --executor-memory 5g \
 --total-executor-cores 32 --executor-cores 8 \
@@ -47,7 +43,6 @@ dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 ```
 * Spark yarn client, example command
 ```shell
-dist/bin/bigdl.sh -- \
 spark-submit --master yarn \
 --driver-memory 5g --executor-memory 5g \
 --num-executors 4 --executor-cores 8 \

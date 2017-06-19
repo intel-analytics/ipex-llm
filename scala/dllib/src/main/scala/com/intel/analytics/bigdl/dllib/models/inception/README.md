@@ -43,7 +43,6 @@ It will generate the hadoop sequence files in the output folder.
 ## Train the Model
 * Spark standalone, example command
 ```bash
-./dist/bin/bigdl.sh -- \
 spark-submit \
 --master spark://xxx.xxx.xxx.xxx:xxxx \
 --executor-cores cores_per_executor \
@@ -58,7 +57,6 @@ dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 ```
 * Spark yarn client mode, example command
 ```bash
-./dist/bin/bigdl.sh -- \
 spark-submit \
 --master yarn \
 --deploy-mode client \
@@ -91,7 +89,6 @@ policy.
 ## Test the Model
 * Spark standalone, example command
 ```bash
-./dist/bin/bigdl.sh -- \
 spark-submit \
 --master spark://xxx.xxx.xxx.xxx:xxxx \
 --executor-cores cores_per_executor \
@@ -105,7 +102,6 @@ dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 ```
 * Spark yarn client mode, example command
 ```bash
-./dist/bin/bigdl.sh -- \
 spark-submit \
 --master yarn \
 --deploy-mode client \
