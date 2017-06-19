@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.{Activity, AbstractModule}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
@@ -44,10 +44,18 @@ class Sequential[T: ClassTag]
 
   override def updateGradInput(input: Activity, nextError: Activity): Activity = {
     var i = modules.length - 1
-    var error = nextError.asInstanceOf[Activity]
+    var error = nextError
+    if (error == null) {
+      gradInput = null
+      return gradInput
+    }
     while (i > 0) {
       val input = modules(i - 1).output
       error = modules(i).updateGradInput(input, error)
+      if (error == null) {
+        gradInput = null
+        return gradInput
+      }
       i -= 1
     }
     error = modules(0).updateGradInput(input, error)
@@ -65,19 +73,26 @@ class Sequential[T: ClassTag]
     var currentGradOutput = gradOutput
     while (i > 0) {
       val previousModule = modules(i - 1)
-      currentModule.accGradParameters(previousModule.output, currentGradOutput, scale)
+      if (currentGradOutput != null) {
+        currentModule.accGradParameters(previousModule.output, currentGradOutput, scale)
+      }
       currentGradOutput = currentModule.gradInput
       currentModule = previousModule
       i -= 1
     }
-
-    currentModule.accGradParameters(input, currentGradOutput, scale)
+    if (currentGradOutput != null) {
+      currentModule.accGradParameters(input, currentGradOutput, scale)
+    }
   }
 
   override def backward(input: Activity, nextError: Activity): Activity = {
     var i = modules.length - 1
-    var error = nextError.asInstanceOf[Activity]
+    var error = nextError
     while (i > 0) {
+      if (error == null) {
+        gradInput = null
+        return gradInput
+      }
       val input = modules(i - 1).output
       error = modules(i).backward(input, error)
       i -= 1

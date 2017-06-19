@@ -111,7 +111,10 @@ class Concat[T: ClassTag](val dimension: Int)(
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    var before = System.nanoTime()
+    if (gradOutput == null) {
+      gradInput = null
+      return gradInput
+    }
     this.gradInput.resizeAs(input)
     var offset = 1
     if (gradouts == null || gradouts.length != this.modules.length) {
@@ -168,6 +171,7 @@ class Concat[T: ClassTag](val dimension: Int)(
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
     scale: Double = 1.0): Unit = {
+    if (gradOutput == null) return
     var offset = 1
     var i = 0
     while (i < this.modules.length) {
@@ -183,6 +187,10 @@ class Concat[T: ClassTag](val dimension: Int)(
   }
 
   override def backward(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    if (gradOutput == null) {
+      gradInput = null
+      return gradInput
+    }
     var before = System.nanoTime()
     this.gradInput.resizeAs(input)
     var offset = 1
@@ -219,12 +227,11 @@ class Concat[T: ClassTag](val dimension: Int)(
     offset = 1
     while (i < this.modules.length) {
       val currentOutput = this.modules(i).output.asInstanceOf[Tensor[T]]
-      val currentGradInput = this.modules(i)
-        .backward(input.asInstanceOf[Activity], gradouts(i).asInstanceOf[Activity])
-        .asInstanceOf[Tensor[T]]
+      this.modules(i).backward(input.asInstanceOf[Activity], gradouts(i).asInstanceOf[Activity])
 
       before = System.nanoTime()
-      if (currentGradInput != null) {
+      if (this.modules(i).gradInput != null) {
+        val currentGradInput = this.modules(i).gradInput.toTensor[T]
         if (i == 0) {
           require(this.gradInput.isContiguous())
           require(currentGradInput.isContiguous())

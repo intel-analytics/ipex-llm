@@ -67,6 +67,7 @@ class MapTable[T: ClassTag](
   }
 
   override def updateGradInput(input: Table, gradOutput: Table): Table = {
+    if (gradOutput == null) return null
     extend(input.length())
     var i = 0
     while (i < input.length()) {
@@ -78,6 +79,7 @@ class MapTable[T: ClassTag](
 
   override def accGradParameters(input: Table, gradOutput: Table,
     scale: Double = 1.0): Unit = {
+    if (gradOutput == null) return
     extend(input.length())
     var i = 0
     while (i < input.length()) {

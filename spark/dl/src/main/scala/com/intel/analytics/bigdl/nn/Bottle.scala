@@ -81,20 +81,33 @@ class Bottle[T: ClassTag](
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    if (gradOutput == null) {
+      gradInput = null
+      return gradInput
+    }
     if (input.dim() > nInputDim) {
       val input_ = input.view(inShape.storage().array().map(_.toInt))
       val gradOutput_ = gradOutput.view(outShape.storage().array().map(_.toInt))
       modules(0).updateGradInput(input_, gradOutput_)
-      val t2 = modules(0).gradInput.toTensor[T].resizeAs(input)
-      gradInput.set(t2)
+      if (modules(0).gradInput != null) {
+        val t2 = modules(0).gradInput.toTensor[T].resizeAs(input)
+        gradInput.set(t2)
+      } else {
+        gradInput = null
+      }
     } else {
-      val t1 = modules(0).updateGradInput(input, gradOutput).toTensor[T]
-      gradInput.set(t1)
+      val t1 = modules(0).updateGradInput(input, gradOutput)
+      if (t1 != null) {
+        gradInput.set(t1.toTensor[T])
+      } else {
+        gradInput = null
+      }
     }
     gradInput
   }
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T], scale: Double): Unit = {
+    if (gradOutput == null) return
     if (input.dim() > nInputDim) {
       val input_ = input.view(inShape.storage().array().map(_.toInt))
       val gradOutput_ = gradOutput.view(outShape.storage().array().map(_.toInt))

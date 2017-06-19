@@ -3256,6 +3256,19 @@ class SpatialSubtractiveNormalization(Layer):
                                                               n_input_plane,
                                                               JTensor.from_ndarray(kernel))
 
+class BackwardSwitch(Container):
+    '''
+    Support disable backpropagation, a gradInput of null is returned if isPropagateBack = false
+    :param module the module you want to control the back-propagation
+    >>> identity = Identity()
+    creating: createIdentity
+    >>> propagateSwitch = BackwardSwitch(identity)
+    creating: createBackwardSwitch
+    '''
+
+    def __init__(self, model, bigdl_type="float"):
+        super(BackwardSwitch, self).__init__(None, bigdl_type, model)
+
 class Const(Model):
     '''
     Return a constant tensor defined by value when forward
