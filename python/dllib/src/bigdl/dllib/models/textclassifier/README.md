@@ -23,8 +23,6 @@ $ [/tmp/news20]$ tree . -L 1
 
 then running the flowing script would automatically download the data during the first run.
 
-bigdl.sh would setup the essential environment for you and it would accept a spark-submit command as an input parameter.
-
 ```{r, engine='sh'}
         PYTHONHASHSEED=...
         BigDL_HOME=...
@@ -33,7 +31,6 @@ bigdl.sh would setup the essential environment for you and it would accept a spa
         PYTHON_API_ZIP_PATH=${BigDL_HOME}/dist/lib/bigdl-VERSION-python-api.zip
         BigDL_JAR_PATH=${BigDL_HOME}/dist/lib/bigdl-VERSION-jar-with-dependencies.jar
         PYTHONPATH=${PYTHON_API_ZIP_PATH}:$PYTHONPATH
-        source ${BigDL_HOME}/dist/bin/bigdl.sh
 
         ${SPARK_HOME}/bin/spark-submit \
             --master ${MASTER} \
