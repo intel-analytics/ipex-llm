@@ -208,7 +208,7 @@ class Recurrent[T : ClassTag]()
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
                                  scale: Double = 1.0): Unit = {
-    cellAppendStartIdx = times
+    cellAppendStartIdx = cells.length
     currentGradOutput(hidDim) = gradHidden
     /**
      * Since we clone module along the time dimension, the output of each
