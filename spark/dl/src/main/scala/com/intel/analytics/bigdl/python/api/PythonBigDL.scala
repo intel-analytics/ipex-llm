@@ -1538,6 +1538,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     }
   }
 
+  def updateParameters(model: AbstractModule[Activity, Activity, T], lr: Double): Unit = {
+    model.updateParameters(ev.fromType(lr))
+  }
+
   def uniform(a: Double, b: Double, size: JList[Int]): JTensor = {
     val result = Tensor[T]().resize(size.asScala.toArray)
     result.apply1(i => ev.fromType(RandomGenerator.RNG.uniform(a, b)))

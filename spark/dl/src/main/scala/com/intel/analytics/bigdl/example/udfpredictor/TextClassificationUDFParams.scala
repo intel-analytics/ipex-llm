@@ -33,12 +33,3 @@ case class TextClassificationUDFParams(
                                         testDir: String = "./")
   extends AbstractTextClassificationParams
 
-/**
- * Text parquet producer parameters
- */
-case class TextProducerParquetParams(
-                                      srcFolder: String = "./",
-                                      destFolder: String = "./",
-                                      batchsize: Int = 2,
-                                      interval: Long = 5)
-
