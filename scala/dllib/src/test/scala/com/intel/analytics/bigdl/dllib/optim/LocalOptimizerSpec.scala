@@ -120,8 +120,12 @@ class LocalOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter{
   val coreNumber = 4
 
   before {
-    Engine.localMode = true
+    System.setProperty("bigdl.localMode", "true")
     Engine.init(nodeNumber, coreNumber, false)
+  }
+
+  after {
+    System.clearProperty("bigdl.localMode")
   }
 
   "Train model with CrossEntropy and SGD" should "be good" in {
