@@ -68,7 +68,7 @@ Please build the source code with your specific version of spark referring the
    ```shell
    BASE_DIR=${PWD} # where is the data
    MASTER=local[*] # the master url
-   ./dist/bin/bigdl.sh -- spark-submit --master $MASTER --driver-memory 20g \
+   spark-submit --master $MASTER --driver-memory 20g \
        --class com.intel.analytics.bigdl.example.udfpredictor.DataframePredictor \
          ./dist/lib/bigdl-$VERSION-jar-with-dependencies.jar \
        --batchSize 32 \
@@ -98,7 +98,7 @@ Please build the source code with your specific version of spark referring the
    ```shell
    BASE_DIR=${PWD} # where is the data
    MASTER=xxx.xxx.xxx.xxx:xxxx # the master url
-   ./dist/bin/bigdl.sh -- spark-submit --master $MASTER --driver-memory 20g \
+   spark-submit --master $MASTER --driver-memory 20g \
        --executor-cores 8 \
        --total-executor-cores 32 \
        --class com.intel.analytics.bigdl.example.udfpredictor.DataframePredictor \
@@ -117,7 +117,7 @@ Please build the source code with your specific version of spark referring the
    ```shell
    BASE_DIR=${PWD} # where is the data
    MASTER=local[*] # the master url
-   ./bigdl.sh -- spark-submit --master $MASTER --driver-memory 5g \
+   spark-submit --master $MASTER --driver-memory 5g \
               --class com.intel.analytics.bigdl.example.udfpredictor.DataframePredictor \
                 bigdl-$VERSION-jar-with-dependencies.jar \
               --baseDir $BASE_DIR \
