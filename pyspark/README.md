@@ -36,8 +36,6 @@ This Python binding has been tested with Python 2.7 and Spark 1.6.0 / Spark 2.0.
     BigDL_JAR_PATH=${BigDL_HOME}/dist/lib/bigdl-VERSION-jar-with-dependencies.jar
     PYTHONPATH=${PYTHON_API_ZIP_PATH}:$PYTHONPATH
     
-    source ${BigDL_HOME}/dist/bin/bigdl.sh
-    
     ${SPARK_HOME}/bin/spark-submit \
         --master ${MASTER} \
         --driver-cores 5  \
@@ -68,8 +66,6 @@ details can be found at: [LeNet5](https://github.com/intel-analytics/BigDL/tree/
     export PYSPARK_DRIVER_PYTHON=jupyter
     export PYSPARK_DRIVER_PYTHON_OPTS="notebook --notebook-dir=./  --ip=* --no-browser"
     
-    source ${BigDL_HOME}/dist/bin/bigdl.sh
-
     ${SPARK_HOME}/bin/pyspark \
         --master ${MASTER} \
         --properties-file ${BigDL_HOME}/dist/conf/spark-bigdl.conf \

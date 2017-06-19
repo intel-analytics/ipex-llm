@@ -17,14 +17,10 @@ Program would download the minst data into ```/tmp/mnist``` automatically by def
 
 ```
 
-**Source bigdl.sh fisrt which would setup the essential environment for you, otherwise program would fail fast.**
-
 We would train a LeNet model in spark local mode with the following commands and you can distribute it across cluster by modifying the spark master and the executor cores.
 
 ```
     BigDL_HOME=...
-
-    source $BigDL_HOME/dist/bin/bigdl.sh
 
     SPARK_HOME=...
     MASTER=local[*]
