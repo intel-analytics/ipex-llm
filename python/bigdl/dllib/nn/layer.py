@@ -1360,29 +1360,6 @@ class CosineDistance(Layer):
                  bigdl_type="float"):
         super(CosineDistance, self).__init__(None, bigdl_type)
 
-class DiceCoefficientCriterion(Layer):
-
-    '''
-    The Dice-Coefficient criterion
-    input: Tensor,target: Tensor
-
-```
-    return:      2 * (input intersection target)
-            1 - ----------------------------------
-                    input union target
-```
-
-    >>> diceCoefficientCriterion = DiceCoefficientCriterion(size_average = True, epsilon = 1.0)
-    creating: createDiceCoefficientCriterion
-    '''
-
-    def __init__(self,
-                 size_average,
-                 epsilon,
-                 bigdl_type="float"):
-        super(DiceCoefficientCriterion, self).__init__(None, bigdl_type,
-                                                       size_average,
-                                                       epsilon)
 
 class DotProduct(Layer):
 
@@ -1499,10 +1476,12 @@ class GradientReversal(Layer):
 
     >>> gradientReversal = GradientReversal(1e-5)
     creating: createGradientReversal
+    >>> gradientReversal = GradientReversal()
+    creating: createGradientReversal
     '''
 
     def __init__(self,
-                 the_lambda=1,
+                 the_lambda=1.0,
                  bigdl_type="float"):
         super(GradientReversal, self).__init__(None, bigdl_type,
                                                the_lambda)
@@ -1550,11 +1529,13 @@ class HardTanh(Layer):
 
     >>> hardTanh = HardTanh(1e-5, 1e5, True)
     creating: createHardTanh
+    >>> hardTanh = HardTanh()
+    creating: createHardTanh
     '''
 
     def __init__(self,
-                 min_value=-1,
-                 max_value=1,
+                 min_value=-1.0,
+                 max_value=1.0,
                  inplace=False,
                  bigdl_type="float"):
         super(HardTanh, self).__init__(None, bigdl_type,
@@ -1644,20 +1625,6 @@ class JoinTable(Layer):
         super(JoinTable, self).__init__(None, bigdl_type,
                                         dimension,
                                         n_input_dims)
-
-
-class L1Cost(Layer):
-
-    '''
-    compute L1 norm for input, and sign of input
-
-    >>> l1Cost = L1Cost()
-    creating: createL1Cost
-    '''
-
-    def __init__(self,
-                 bigdl_type="float"):
-        super(L1Cost, self).__init__(None, bigdl_type)
 
 
 class L1Penalty(Layer):
