@@ -388,8 +388,8 @@ class ParallelCriterion(Criterion):
     creating: createParallelCriterion
     >>> mSECriterion = MSECriterion()
     creating: createMSECriterion
-    >>> multiCriterion = multiCriterion.add(mSECriterion)
-    >>> multiCriterion = multiCriterion.add(mSECriterion)
+    >>> parallelCriterion = parallelCriterion.add(mSECriterion)
+    >>> parallelCriterion = parallelCriterion.add(mSECriterion)
     '''
 
     def __init__(self,
