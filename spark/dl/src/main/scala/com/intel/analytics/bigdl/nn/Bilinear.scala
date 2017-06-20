@@ -179,10 +179,10 @@ class Bilinear[T: ClassTag](
     if(null != bias) gradBias.add(ev.fromType[Double](scaleB), gradOutput.sum(1))
 
     if (wRegularizer != null) {
-      wRegularizer.accRegularization(weight, gradWeight)
+      wRegularizer.accRegularization(weight, gradWeight, scaleW)
     }
     if (bRegularizer != null) {
-      bRegularizer.accRegularization(bias, gradBias)
+      bRegularizer.accRegularization(bias, gradBias, scaleB)
     }
   }
 

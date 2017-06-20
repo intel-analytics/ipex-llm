@@ -231,7 +231,7 @@ class LookupTable[T: ClassTag]
     }
 
     if (null != wRegularizer) {
-      wRegularizer.accRegularization(weight, gradWeight)
+      wRegularizer.accRegularization(weight, gradWeight, scaleW)
     }
   }
 

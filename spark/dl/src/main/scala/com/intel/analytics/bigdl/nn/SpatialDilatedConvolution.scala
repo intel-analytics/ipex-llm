@@ -457,10 +457,10 @@ class SpatialDilatedConvolution[T: ClassTag](
     }
 
     if (null != wRegularizer) {
-      wRegularizer.accRegularization(weight, gradWeight)
+      wRegularizer.accRegularization(weight, gradWeight, scaleW)
     }
     if (null != bRegularizer) {
-      bRegularizer.accRegularization(bias, gradBias)
+      bRegularizer.accRegularization(bias, gradBias, scaleB)
     }
   }
 
