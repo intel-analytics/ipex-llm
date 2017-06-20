@@ -48,13 +48,10 @@ object Module {
    * @param inputs input node names
    * @param outputs output node names, the output tensor order is same with the node order
    * @param byteOrder byte order in the tensorflow file. The default value is little endian
-   * @param dataFormat the model dataFormat. Note that BigDL only support NCHW, so for NHWC
-   *                   tensorflow model, the model define will be converted to NCHW
    * @return BigDL model
    */
   def loadTF[T: ClassTag](file: String, inputs: Seq[String], outputs: Seq[String],
-            byteOrder: ByteOrder = ByteOrder.LITTLE_ENDIAN,
-            dataFormat: TensorflowDataFormat = TensorflowDataFormat.NCHW)(
+            byteOrder: ByteOrder = ByteOrder.LITTLE_ENDIAN)(
     implicit ev: TensorNumeric[T]): Module[T] = {
 
     TensorflowLoader.load(file, inputs, outputs, byteOrder)
