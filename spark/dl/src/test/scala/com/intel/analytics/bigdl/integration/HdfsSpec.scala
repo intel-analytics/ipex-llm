@@ -70,7 +70,7 @@ class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter{
   }
 
   "read/write event file from hdfs" should "work properly" in {
-    Engine.localMode = false
+    System.setProperty("bigdl.localMode", "true")
     Engine.init(1, 4, true)
     val logdir = hdfs + s"/${com.google.common.io.Files.createTempDir().getPath()}"
     val writer = new FileWriter(logdir, 100)
@@ -94,6 +94,7 @@ class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter{
       result(i)._1 should be (i + 1)
       result(i)._2 should be (i)
     }
+    System.clearProperty("bigdl.localMode")
   }
 
   "load caffe model from hdfs" should "work properly" in {

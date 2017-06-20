@@ -19,4 +19,4 @@
 . `dirname $0`/prepare_env.sh
 
 cd "`dirname $0`"
-exec $BIGDL_HOME/scripts/bigdl.sh -- python -u ./run-tests.py "$@"
+exec python -u ./run-tests.py "$@"

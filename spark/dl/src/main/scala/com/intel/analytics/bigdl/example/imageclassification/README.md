@@ -35,7 +35,6 @@ mv val/*.seq predict/
 
 Command to run the example in Spark local mode:
 ```
-./dist/bin/bigdl.sh -- \
 spark-submit \
 --master local[physcial_core_number] \
 --driver-memory 10g --executor-memory 20g \
@@ -49,7 +48,6 @@ spark-submit \
 ```
 Command to run the example in Spark standalone mode:
 ```
-./dist/bin/bigdl.sh -- \
 spark-submit \
 --master spark://... \
 --executor-cores 8 \
@@ -64,7 +62,6 @@ spark-submit \
 ```
 Command to run the example in Spark yarn mode:
 ```
-./dist/bin/bigdl.sh -- \
 spark-submit \
 --master yarn \
 --deploy-mode client \

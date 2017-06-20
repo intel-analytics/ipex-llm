@@ -20,7 +20,6 @@ You can build one by refer to the
 ### Use Apache Spark
 Local mode, example command
 ```
-./dist/bin/bigdl.sh -- \
 spark-submit \
 --master local[physical_core_number] \
 --driver-class-path dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
@@ -32,7 +31,6 @@ dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 ```
 Standalone cluster mode, example command
 ```
-./dist/bin/bigdl.sh -- \
 spark-submit \
 --master spark://... \
 --executor-cores cores_per_executor \
@@ -46,7 +44,6 @@ dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 ```
 Yarn cluster mode, example command
 ```
-./dist/bin/bigdl.sh -- \
 spark-submit \
 --master yarn \
 --deploy-mode client \
@@ -74,7 +71,6 @@ use the model to do a validation.
 
 Spark local mode, example command
 ```
-./dist/bin/bigdl.sh -- \
 spark-submit \
 --master local[physical_core_number] \
 --class com.intel.analytics.bigdl.models.lenet.Test \
@@ -85,7 +81,6 @@ dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 ```
 Standalone cluster mode, example command
 ```
-./dist/bin/bigdl.sh -- \
 spark-submit \
 --master spark://... \
 --executor-cores cores_per_executor \
@@ -98,7 +93,6 @@ dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 ```
 Yarn cluster mode, example command
 ```
-./dist/bin/bigdl.sh -- \
 spark-submit \
 --master yarn \
 --deploy-mode client \

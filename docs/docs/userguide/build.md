@@ -124,7 +124,6 @@ Once downloaded, you can build BigDL with the following commands:
 $ bash make-dist.sh
 ```
 After that, you can find a `dist` folder, which contains all the needed files to run a BigDL program. The files in `dist` include:
-* **dist/bin/bigdl.sh**: A script used to set up proper environment variables and launch the BigDL program.
 * **dist/lib/bigdl-VERSION-jar-with-dependencies.jar**: This jar package contains all dependencies except Spark classes.
 * **dist/lib/bigdl-VERSION-python-api.zip**: This zip package contains all Python files of BigDL.
 * **dist/conf/spark-bigdl.conf**: This file contains necessary property configurations. ```Engine.createSparkConf``` will populate these properties, so try to use that method in your code. Or you need to pass the file to Spark with the "--properties-file" option. 

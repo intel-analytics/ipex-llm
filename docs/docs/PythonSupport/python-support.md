@@ -86,8 +86,6 @@ PYTHON_API_PATH=${BigDL_HOME}/dist/lib/bigdl-VERSION-python-api.zip
 BigDL_JAR_PATH=${BigDL_HOME}/dist/lib/bigdl-VERSION-jar-with-dependencies.jar
 PYTHONPATH=${PYTHON_API_ZIP_PATH}:$PYTHONPATH
    
-source ${BigDL_HOME}/dist/bin/bigdl.sh
-   
 ${SPARK_HOME}/bin/spark-submit \
     --master ${MASTER} \
     --driver-memory 10g  \
@@ -124,8 +122,6 @@ BigDL_JAR_PATH=${BigDL_HOME}/dist/lib/bigdl-0.1.0-jar-with-dependencies.jar
 export PYTHONPATH=${PYTHON_API_PATH}:$PYTHONPATH
 export PYSPARK_DRIVER_PYTHON=jupyter
 export PYSPARK_DRIVER_PYTHON_OPTS="notebook --notebook-dir=./ --ip=* --no-browser"
-
-source ${BigDL_HOME}/dist/bin/bigdl.sh
 
 ${SPARK_HOME}/bin/pyspark \
   --master ${MASTER} \

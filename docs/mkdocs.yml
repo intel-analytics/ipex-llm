@@ -1,6 +1,7 @@
 site_name: BigDL Project
 extra_css: [extra.css]
-theme: readthedocs
+theme: null
+theme_dir: readthedocs
 repo_name: 'GitHub '
 repo_url: 'https://github.com/intel-analytics/BigDL'
 
