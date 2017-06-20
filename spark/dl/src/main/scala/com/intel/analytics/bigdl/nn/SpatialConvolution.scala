@@ -50,8 +50,8 @@ class SpatialConvolution[T: ClassTag](
   val padH: Int = 0, // The additional zeros added per height to the input planes.
   val nGroup: Int = 1, // Kernel group number
   val propagateBack: Boolean = true, // propagate gradient back
-  val wRegularizer: Regularizer[T] = null,
-  val bRegularizer: Regularizer[T] = null,
+  var wRegularizer: Regularizer[T] = null,
+  var bRegularizer: Regularizer[T] = null,
   val initWeight: Tensor[T] = null,
   val initBias: Tensor[T] = null,
   val initGradWeight: Tensor[T] = null,
