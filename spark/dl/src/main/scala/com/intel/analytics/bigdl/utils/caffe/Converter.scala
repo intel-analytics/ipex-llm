@@ -34,7 +34,8 @@ import scala.reflect.ClassTag
 abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
 
   // support user to customized BigDL compatible module to support those we have no mappings now
-  private val customizedConverter = new mutable.HashMap[String, (GeneratedMessage) => Seq[ModuleNode[T]]]()
+  private val customizedConverter =
+    new mutable.HashMap[String, (GeneratedMessage) => Seq[ModuleNode[T]]]()
 
   // a caffe type to converter function mappings
   private val caffe2BigDL = new mutable.HashMap[String, (GeneratedMessage) => Seq[ModuleNode[T]]]()
