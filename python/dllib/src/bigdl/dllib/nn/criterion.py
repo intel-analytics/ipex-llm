@@ -247,7 +247,7 @@ class HingeEmbeddingCriterion(Criterion):
     '''
 
     def __init__(self,
-                 margin=1,
+                 margin=1.0,
                  size_average=True,
                  bigdl_type="float"):
         super(HingeEmbeddingCriterion, self).__init__(None, bigdl_type,
@@ -267,10 +267,12 @@ class L1HingeEmbeddingCriterion(Criterion):
 
     >>> l1HingeEmbeddingCriterion = L1HingeEmbeddingCriterion(1e-5)
     creating: createL1HingeEmbeddingCriterion
+    >>> l1HingeEmbeddingCriterion = L1HingeEmbeddingCriterion()
+    creating: createL1HingeEmbeddingCriterion
     '''
 
     def __init__(self,
-                 margin=1,
+                 margin=1.0,
                  bigdl_type="float"):
         super(L1HingeEmbeddingCriterion, self).__init__(None, bigdl_type,
                                                         margin)
@@ -633,6 +635,44 @@ class SoftMarginCriterion(Criterion):
                  size_average=True,
                  bigdl_type="float"):
         super(SoftMarginCriterion, self).__init__(None, bigdl_type, size_average)
+
+
+class DiceCoefficientCriterion(Criterion):
+
+    '''
+    The Dice-Coefficient criterion
+    input: Tensor,target: Tensor
+
+```
+    return:      2 * (input intersection target)
+            1 - ----------------------------------
+                    input union target
+```
+
+    >>> diceCoefficientCriterion = DiceCoefficientCriterion(size_average = True, epsilon = 1.0)
+    creating: createDiceCoefficientCriterion
+    '''
+
+    def __init__(self,
+                 size_average,
+                 epsilon,
+                 bigdl_type="float"):
+        super(DiceCoefficientCriterion, self).__init__(None, bigdl_type,
+                                                       size_average,
+                                                       epsilon)
+
+class L1Cost(Criterion):
+
+    '''
+    compute L1 norm for input, and sign of input
+
+    >>> l1Cost = L1Cost()
+    creating: createL1Cost
+    '''
+
+    def __init__(self,
+                 bigdl_type="float"):
+        super(L1Cost, self).__init__(None, bigdl_type)
 
 def _test():
     import doctest
