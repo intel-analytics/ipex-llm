@@ -73,7 +73,8 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
         "ClassNLLCriterion: " + ErrorInfo.constrainInputDimSameAsTarget +
           s" Input dimension is: ${ input.dim() } , target dimension is: ${ target.dim() }")
       val curTarget = ev.toType[Int](target.valueAt(1))
-      assert(curTarget >= 1 && curTarget <= nClasses)
+      assert(curTarget >= 1 && curTarget <= nClasses,
+        s"curTarget ${curTarget} is out of range, should be 1 to ${nClasses}")
       total_weight = if (weights != null) weights(Array(curTarget)) else ev.fromType[Int](1)
       output = ev.times(ev.negative(input.valueAt(curTarget)), total_weight)
     } else if (input.dim() == 2) {
