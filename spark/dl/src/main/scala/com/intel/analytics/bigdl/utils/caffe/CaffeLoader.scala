@@ -41,11 +41,13 @@ import scala.reflect.ClassTag
  * @param prototxtPath caffe model define prototxt path
  * @param modelPath    caffe serialized binary model path
  * @param matchAll     if match all modules with parameters
+ * @param customizedConverters customized converter
  * @tparam T type
  */
 class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
-                               matchAll: Boolean = true
-                              )(implicit ev: TensorNumeric[T]) {
+  matchAll: Boolean = true,
+  customizedConverters : mutable.HashMap[String, (GeneratedMessage) => Seq[ModuleNode[T]]] = null
+  )(implicit ev: TensorNumeric[T]) {
 
   private val hdfsPrefix: String = "hdfs:"
 
@@ -60,13 +62,16 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
 
   private var criterions = ParallelCriterion[T]()
 
-  /**
-   * set customized layers mapping which are not supported now in BigDL
-   * @param map a caffe layer type to BigDL module mapping
-   */
-  def setCustomizedLayer(map : Map[String, Seq[ModuleNode[T]]]) : Unit = {
-    layerConverter.setCustomizedLayer(map)
-    v1layerConverter.setCustomizedLayer(map)
+
+  registerCustomizedConverter
+
+  private def registerCustomizedConverter() : Unit = {
+    if (customizedConverters != null) {
+      customizedConverters.foreach(entry => {
+        layerConverter.registerCutomizedConverter(entry._1, entry._2)
+        v1layerConverter.registerCutomizedConverter(entry._1, entry._2)
+      })
+    }
   }
 
   private def loadCaffe(prototxtPath: String, modelPath: String): Unit = {
@@ -393,12 +398,14 @@ object CaffeLoader {
  * @param defPath prototxt file which illustrate the caffe model structure
  * @param modelPath binary file containing the weight and bias
  * @param matchAll if match all modules for parameter copy
+ * @param customizedConverters customized layer converter
  * @tparam T data type
  * @return created module (graph) and criterion
  */
-  def loadCaffe[T: ClassTag](defPath: String, modelPath: String, matchAll: Boolean = true)
+  def loadCaffe[T: ClassTag](defPath: String, modelPath: String, matchAll: Boolean = true,
+    customizedConverters : mutable.HashMap[String, (GeneratedMessage) => Seq[ModuleNode[T]]] = null)
                               (implicit ev: TensorNumeric[T]): (Module[T], ParallelCriterion[T]) = {
-    val caffeLoader = new CaffeLoader[T](defPath, modelPath, matchAll)
+    val caffeLoader = new CaffeLoader[T](defPath, modelPath, matchAll, customizedConverters)
     caffeLoader.createCaffeModel()
   }
 }

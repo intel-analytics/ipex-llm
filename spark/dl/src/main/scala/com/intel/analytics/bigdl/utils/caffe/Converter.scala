@@ -33,24 +33,28 @@ import scala.reflect.ClassTag
  */
 abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
 
-  // support user to customized BigDL compatible module to support those we have not mappings now
-  private var customizedLayer : Map[String, Seq[ModuleNode[T]]] = _
+  // support user to customized BigDL compatible module to support those we have no mappings now
+  private val customizedConverter = new mutable.HashMap[String, (GeneratedMessage) => Seq[ModuleNode[T]]]()
 
   // a caffe type to converter function mappings
   private val caffe2BigDL = new mutable.HashMap[String, (GeneratedMessage) => Seq[ModuleNode[T]]]()
 
   init
 
-  def setCustomizedLayer(map : Map[String, Seq[ModuleNode[T]]]) : this.type = {
-    customizedLayer = map
-    this
+  def registerCutomizedConverter(layerType : String,
+    converter : (GeneratedMessage) => Seq[ModuleNode[T]])
+    : Unit = {
+    require(!caffe2BigDL.contains(layerType), s"$layerType is already supported")
+    require(!customizedConverter.contains(layerType), s"$layerType is already customized")
+    customizedConverter(layerType) = converter
   }
   /**
    * Support customized layer mapping implemented by user for specific type
    */
-  private def fitCustomizedLayer(layerType : String) : Seq[ModuleNode[T]] = {
-    if (customizedLayer !=null && customizedLayer.contains(layerType)) {
-      return customizedLayer(layerType)
+  private def tryCustomizedConverter(layerType : String, layer : GeneratedMessage) :
+    Seq[ModuleNode[T]] = {
+    if (customizedConverter.contains(layerType)) {
+      return customizedConverter(layerType)(layer)
     }
     throw new UnsupportedOperationException(s"$layerType is not supported in BigDL for now")
   }
@@ -62,7 +66,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
       if (caffe2BigDL(layerType) != null) caffe2BigDL(layerType)(layer)
       else null
     } else {
-      fitCustomizedLayer(layerType)
+      tryCustomizedConverter(layerType, layer)
     }
   }
 

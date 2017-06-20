@@ -51,9 +51,15 @@ layer {
   }
 }
 layer {
+ name : "customized"
+ type : "Dummy"
+ bottom : "out"
+ top : "dummy"
+}
+layer {
   name: "loss"
   type: "SoftmaxWithLoss"
-  bottom: "out"
+  bottom: "dummy"
   top: "loss"
 }
 

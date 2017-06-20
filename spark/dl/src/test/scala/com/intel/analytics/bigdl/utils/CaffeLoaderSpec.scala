@@ -18,19 +18,36 @@ package com.intel.analytics.bigdl.utils
 
 import java.nio.file.Paths
 
+import com.google.protobuf.GeneratedMessage
 import com.intel.analytics.bigdl.models.resnet.Convolution
+import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericDouble
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.caffe.CaffeLoader
 import org.scalatest.{FlatSpec, Matchers}
 
+import scala.collection.mutable
+import scala.reflect.ClassTag
 import scala.util.Random
 
 class CaffeLoaderSpec extends FlatSpec with Matchers {
 
   val prototxt = getClass().getClassLoader().getResource("caffe/test.prototxt").getPath
   val modelPath = getClass().getClassLoader().getResource("caffe/test.caffemodel").getPath
+
+  val dummyConverter = (layer : GeneratedMessage) => {
+    Identity[Double].apply()
+  }
+
+  private def loadDummy[T : ClassTag](message : GeneratedMessage)(implicit ev: TensorNumeric[T])
+    : Seq[ModuleNode[T]] = {
+    Seq(Identity[T].setName("Dummy").apply())
+  }
+
+  val convertMap = new mutable.HashMap[String, (GeneratedMessage) => Seq[ModuleNode[Double]]]()
+  convertMap("DUMMY") = loadDummy[Double]
 
   "load caffe match all parameters" should "work properly" in {
     val module = Sequential()
@@ -200,7 +217,8 @@ class CaffeLoaderSpec extends FlatSpec with Matchers {
     val staticOutPut = staticModel.forward(staticInput)
 
     RandomGenerator.RNG.setSeed(1000)
-    val dynamicLoadedModule = CaffeLoader.loadCaffe(prototxt, modelPath)._1
+    val dynamicLoadedModule = CaffeLoader.loadCaffe(prototxt, modelPath,
+      customizedConverters = convertMap)._1
 
     val dynamicOutput = dynamicLoadedModule.forward(dynamicInput)
 
@@ -214,7 +232,8 @@ class CaffeLoaderSpec extends FlatSpec with Matchers {
     val staticCriterion = ParallelCriterion[Double]()
     staticCriterion.add(criterion)
 
-    val (dynamicLoadedModule, dynamicLoadedCriterion) = CaffeLoader.loadCaffe(prototxt, modelPath)
+    val (dynamicLoadedModule, dynamicLoadedCriterion) = CaffeLoader.loadCaffe(prototxt, modelPath,
+      customizedConverters = convertMap)
 
     val labelInput = Tensor[Double](1, 3, 5, 5).apply1(e => Random.nextDouble())
 
@@ -240,6 +259,13 @@ class CaffeLoaderSpec extends FlatSpec with Matchers {
     val res2 = dynamicLoadedCriterion.forward(input2, target2)
 
     res1 should be (res2)
+  }
+  "Customized converter with existing type" should " throw exception " in {
+    convertMap("INNERPRODUCT") = loadDummy[Double]
+    intercept[IllegalArgumentException] {
+      val (dynamicLoadedModule, dynamicLoadedCriterion) = CaffeLoader.loadCaffe(prototxt, modelPath,
+        customizedConverters = convertMap)
+    }
   }
 
 }
