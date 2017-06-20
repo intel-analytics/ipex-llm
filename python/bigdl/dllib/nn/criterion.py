@@ -51,11 +51,15 @@ class Criterion(JavaValue):
         :param target: ndarray or list of ndarray
         :return: value of loss
         """
+        jinput, input_is_table = Layer.check_input(input)
+        jtarget, target_is_table = Layer.check_input(target)
         output = callBigDlFunc(self.bigdl_type,
                                "criterionForward",
                                self.value,
-                               Layer.check_input(input),
-                               Layer.check_input(target))
+                               jinput,
+                               input_is_table,
+                               jtarget,
+                               target_is_table)
         return output
 
     def backward(self, input, target):
@@ -67,11 +71,15 @@ class Criterion(JavaValue):
         :param target: ndarray or list of ndarray
         :return: ndarray
         """
+        jinput, input_is_table = Layer.check_input(input)
+        jtarget, target_is_table = Layer.check_input(target)
         output = callBigDlFunc(self.bigdl_type,
                                "criterionBackward",
                                self.value,
-                               Layer.check_input(input),
-                               Layer.check_input(target))
+                               jinput,
+                               input_is_table,
+                               jtarget,
+                               target_is_table)
         return Layer.convert_output(output)
 
     @classmethod
@@ -184,7 +192,7 @@ class ClassSimplexCriterion(Criterion):
 
 class CosineEmbeddingCriterion(Criterion):
 
-    '''
+    """
     Creates a criterion that measures the loss given an input x = {x1, x2},
     a table of two Tensors, and a Tensor label y with values 1 or -1.
 
@@ -194,7 +202,11 @@ class CosineEmbeddingCriterion(Criterion):
 
     >>> cosineEmbeddingCriterion = CosineEmbeddingCriterion(1e-5, True)
     creating: createCosineEmbeddingCriterion
-    '''
+    >>> cosineEmbeddingCriterion.forward([np.array([1.0, 2.0, 3.0, 4.0, 5.0]),
+    ...                                   np.array([5.0, 4.0, 3.0, 2.0, 1.0])],
+    ...                                 [np.ones(5)])
+    0.0
+    """
 
     def __init__(self,
                  margin=0.0,
