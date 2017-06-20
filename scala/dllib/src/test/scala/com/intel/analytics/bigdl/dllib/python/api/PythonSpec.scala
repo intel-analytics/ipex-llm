@@ -63,7 +63,8 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val pythonBigDL = PythonBigDL.ofFloat()
     val mse = new MSECriterion[Float]
     val joutput = pythonBigDL.modelForward(linear,
-      List(pythonBigDL.toJTensor(input)).asJava
+      List(pythonBigDL.toJTensor(input)).asJava,
+      false
     ).iterator().next()
     val expectedOutput = linear.forward(input)
     require(pythonBigDL.toTensor(joutput) == expectedOutput, "forward output should be the same")
@@ -73,7 +74,9 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val expectedLinearGradOutput = linear.backward(input, mseGradOutput)
     val jLinearGradOutput = pythonBigDL.modelBackward(linear,
       List(pythonBigDL.toJTensor(input)).asJava,
-      List(pythonBigDL.toJTensor(mseGradOutput)).asJava
+      false,
+      List(pythonBigDL.toJTensor(mseGradOutput)).asJava,
+      false
     ).iterator().next()
     require(pythonBigDL.toTensor(jLinearGradOutput) == expectedLinearGradOutput,
       "backward output should be the same")
@@ -101,17 +104,17 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     module.add(linear1)
     module.add(linear2)
 
-    val mapOutput = pythonBigDL.modelForward(module, pythonBigDL.activityToJTensors(input))
-    val mapOutputActivity = pythonBigDL.jTensorsToActivity(mapOutput)
+    val mapOutput = pythonBigDL.modelForward(module, pythonBigDL.activityToJTensors(input), true)
+    val mapOutputActivity = pythonBigDL.jTensorsToActivity(mapOutput, true)
     mapOutputActivity.toTable should equal (expectedOutput)
 
     val expectedGradInput = T(
       linear1.updateGradInput(input(1), gradOutput(1)),
       linear2.updateGradInput(input(2), gradOutput(2)))
     val mapGradInput = pythonBigDL.modelBackward(module,
-      pythonBigDL.activityToJTensors(input),
-      pythonBigDL.activityToJTensors(gradOutput))
-    val mapGradInputActivity = pythonBigDL.jTensorsToActivity(mapGradInput)
+      pythonBigDL.activityToJTensors(input), true,
+      pythonBigDL.activityToJTensors(gradOutput), true)
+    val mapGradInputActivity = pythonBigDL.jTensorsToActivity(mapGradInput, true)
 
     mapGradInputActivity.toTable should equal (expectedGradInput)
 

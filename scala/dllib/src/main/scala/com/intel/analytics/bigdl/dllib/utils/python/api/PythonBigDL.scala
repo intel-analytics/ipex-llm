@@ -90,14 +90,18 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     cls.getSimpleName
   }
 
-  def jTensorsToActivity(input: JList[JTensor]): Activity = {
-    val inputActivity = input.size() match {
-      case 0 => throw new IllegalArgumentException("Invalid input")
-      case 1 => toTensor(input.iterator().next())
-      case _ =>
-        input.asScala.foldLeft(new Table())((t, jtensor) => t.insert(toTensor(jtensor)))
+  private def toTable(input: JList[JTensor]): Table = {
+    input.asScala.foldLeft(new Table())((t, jtensor) => t.insert(toTensor(jtensor)))
+  }
+  def jTensorsToActivity(input: JList[JTensor], isTable: Boolean): Activity = {
+    if (input.isEmpty) {
+      throw new IllegalArgumentException("Empty input")
     }
-    inputActivity
+   if(isTable) {
+      toTable(input)
+    } else {
+      toTensor(input.iterator().next())
+    }
   }
 
   def activityToJTensors(outputActivity: Activity): JList[JTensor] = {
@@ -1289,29 +1293,24 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def modelForward(model: AbstractModule[Activity, Activity, T],
-                   input: JList[JTensor]): JList[JTensor] = {
-    forward(input, model.forward)
+                   input: JList[JTensor],
+                   inputIsTable: Boolean): JList[JTensor] = {
+    val inputActivity = jTensorsToActivity(input, inputIsTable)
+    val outputActivity = model.forward(inputActivity)
+    activityToJTensors(outputActivity)
   }
 
   def modelBackward(model: AbstractModule[Activity, Activity, T],
-                    input: JList[JTensor], gradOutput: JList[JTensor]): JList[JTensor] = {
-    backward(input, gradOutput, model.backward)
-  }
-
-
-  private def forward(input: JList[JTensor], forward: (Activity) => Activity): JList[JTensor] = {
-    val inputActivity = jTensorsToActivity(input)
-    val outputActivity = forward(inputActivity)
+                    input: JList[JTensor],
+                    inputIsTable: Boolean,
+                    gradOutput: JList[JTensor],
+                    gradOutputIsTable: Boolean): JList[JTensor] = {
+    val inputActivity = jTensorsToActivity(input, inputIsTable)
+    val gradOutputActivity = jTensorsToActivity(gradOutput, gradOutputIsTable)
+    val outputActivity = model.backward(inputActivity, gradOutputActivity)
     activityToJTensors(outputActivity)
   }
 
-  private def backward(input: JList[JTensor], gradOutput: JList[JTensor],
-                       backward: (Activity, Activity) => Activity): JList[JTensor] = {
-    val inputActivity = jTensorsToActivity(input)
-    val gradOutputActivity = jTensorsToActivity(gradOutput)
-    val outputActivity = backward(inputActivity, gradOutputActivity)
-    activityToJTensors(outputActivity)
-  }
 
   def modelSave(module: AbstractModule[Activity, Activity, T],
                 path: String, overWrite: Boolean): Unit = {
@@ -1319,16 +1318,22 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def criterionForward(criterion: AbstractCriterion[Activity, Activity, T],
-                       input: JList[JTensor], target: JList[JTensor]): T = {
-    val inputActivity = jTensorsToActivity(input)
-    val targetActivity = jTensorsToActivity(target)
+                       input: JList[JTensor],
+                       inputIsTable: Boolean,
+                       target: JList[JTensor],
+                       targetIsTable: Boolean): T = {
+    val inputActivity = jTensorsToActivity(input, inputIsTable)
+    val targetActivity = jTensorsToActivity(target, targetIsTable)
     return criterion.forward(inputActivity, targetActivity)
   }
 
   def criterionBackward(criterion: AbstractCriterion[Activity, Activity, T],
-                        input: JList[JTensor], target: JList[JTensor]): JList[JTensor] = {
-    val inputActivity = jTensorsToActivity(input)
-    val targetActivity = jTensorsToActivity(target)
+                        input: JList[JTensor],
+                        inputIsTable: Boolean,
+                        target: JList[JTensor],
+                        targetIsTable: Boolean): JList[JTensor] = {
+    val inputActivity = jTensorsToActivity(input, inputIsTable)
+    val targetActivity = jTensorsToActivity(target, targetIsTable)
     val outputActivity = criterion.backward(inputActivity, targetActivity)
     activityToJTensors(outputActivity)
   }
