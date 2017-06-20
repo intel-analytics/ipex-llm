@@ -155,7 +155,7 @@ class GRU[T : ClassTag] (
             .add(SelectTable(2))
             .add(SelectTable(4)))
           .add(CMulTable())))
-      .add(CAddTable(true))
+      .add(CAddTable(false))
       .add(ConcatTable()
         .add(Identity[T]())
         .add(Identity[T]()))
