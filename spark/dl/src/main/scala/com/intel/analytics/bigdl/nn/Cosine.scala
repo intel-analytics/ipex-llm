@@ -142,7 +142,7 @@ class Cosine[T: ClassTag](val inputSize : Int, val outputSize : Int)(
     require(input.dim() == 1 || input.dim() == 2,
       "Cosine: " + ErrorInfo.constrainInputAsVectorOrBatch)
 
-    if (input.dim() == 1) {
+    if (input.dim() == 1 && scaleW != 0) {
       _gradOutput.resizeAs(gradOutput).copy(gradOutput)
 
       var weightNorm = Tensor[T]()

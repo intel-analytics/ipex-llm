@@ -213,6 +213,10 @@ class PReLU[T: ClassTag](
     require(gradOutput.isContiguous(), "gradOuput must be contiguous")
     require(input.nElement() == gradOutput.nElement())
 
+    if (scaleW == 0) {
+      return
+    }
+
     if (nOutputPlane == 0) {
       // todo : the performance of contiguous tensor should be optimize
       var sum = ev.fromType[Int](0)

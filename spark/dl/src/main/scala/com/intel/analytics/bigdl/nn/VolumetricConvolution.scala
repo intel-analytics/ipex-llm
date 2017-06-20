@@ -281,8 +281,10 @@ class VolumetricConvolution[T: ClassTag](
     val gradOutput2d = gradOutput.view(gradOutput.size(1), gradOutput.size(2) *
       gradOutput.size(3) * gradOutput.size(4))
     val fInputT = fInput.transpose(1, 2)
-    gradWeight.addmm(ev.one, gradWeight, scaleW, gradOutput2d, fInputT)
-    if (withBias) {
+    if (scaleW != 0) {
+      gradWeight.addmm(ev.one, gradWeight, scaleW, gradOutput2d, fInputT)
+    }
+    if (withBias && scaleB != 0) {
       var i = 0
       while (i < gradBias.size(1)) {
         var sum = ev.zero

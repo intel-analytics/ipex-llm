@@ -510,40 +510,44 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
     }
     im2colTime += System.nanoTime() - before
 
-    // M,N,K are dims of matrix A and B
-    // (see https://software.intel.com/en-us/node/468480)
-    val n = columns.size(1)   // nOutputPlane * kh * kw
-    var m = input.size(1)   // nInputPlane
-    var k = columns.size(2)   // inputHeight * inputWidth
+    if (scaleW != 0) {
+      // M,N,K are dims of matrix A and B
+      // (see https://software.intel.com/en-us/node/468480)
+      val n = columns.size(1)   // nOutputPlane * kh * kw
+      var m = input.size(1)   // nInputPlane
+      var k = columns.size(2)   // inputHeight * inputWidth
 
-    // Do GEMM (note: this is a bit confusing because gemm assumes column-major matrices)
-    DenseTensorBLAS.gemm[T](
-      'T', 'N',
-      n, m, k,
-      scaleW,
-      columns.storage().array(), columns.storageOffset() - 1, k,
-      input.storage().array(), input.storageOffset() - 1, k,
-      ev.one,
-      gradWeight.storage().array(), gradWeight.storageOffset() - 1, n
-    )
-
-    // Do Bias:
-    // M,N,K are dims of matrix A and B
-    // (see https://software.intel.com/en-us/node/468480)
-    m = gradOutput.size(1)
-    k = outputHeight * outputWidth
-
-    // Do GEMV (note: this is a bit confusing because gemv assumes column-major matrices)
-    if (null != gradBias) {
-      ev.gemv(
-        'T',
-        k, m,
-        scaleB,
-        gradOutput.storage().array(), gradOutput.storageOffset() - 1, k,
-        ones.storage().array(), ones.storageOffset() - 1, 1,
+      // Do GEMM (note: this is a bit confusing because gemm assumes column-major matrices)
+      DenseTensorBLAS.gemm[T](
+        'T', 'N',
+        n, m, k,
+        scaleW,
+        columns.storage().array(), columns.storageOffset() - 1, k,
+        input.storage().array(), input.storageOffset() - 1, k,
         ev.one,
-        gradBias.storage().array(), gradBias.storageOffset() - 1, 1
+        gradWeight.storage().array(), gradWeight.storageOffset() - 1, n
       )
+    }
+
+    if (scaleB != 0) {
+      // Do Bias:
+      // M,N,K are dims of matrix A and B
+      // (see https://software.intel.com/en-us/node/468480)
+      val m = gradOutput.size(1)
+      val k = outputHeight * outputWidth
+
+      // Do GEMV (note: this is a bit confusing because gemv assumes column-major matrices)
+      if (null != gradBias) {
+        ev.gemv(
+          'T',
+          k, m,
+          scaleB,
+          gradOutput.storage().array(), gradOutput.storageOffset() - 1, k,
+          ones.storage().array(), ones.storageOffset() - 1, 1,
+          ev.one,
+          gradBias.storage().array(), gradBias.storageOffset() - 1, 1
+        )
+      }
     }
   }
 

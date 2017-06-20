@@ -70,16 +70,18 @@ class Add[T: ClassTag](val inputSize: Int
   }
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
-
-    if (gradBias.size(1) == 1) {
-      gradBias(1) = gradBias(1).add(ev.times(ev.fromType[Double](scaleB), gradOutput.sum()))
-    } else {
-      if (input.isSameSizeAs(bias)) {
-        gradBias.add(ev.fromType[Double](scaleB), gradOutput)
+    if (scaleB != 0) {
+      if (gradBias.size(1) == 1) {
+        gradBias(1) = gradBias(1).add(ev.times(ev.fromType[Double](scaleB), gradOutput.sum()))
       } else {
-        val gradOutputLocal = gradOutput.view(input.size(1), gradOutput.size.product/input.size(1))
-        gradBias.view(gradBias.size().product).addmv(ev.fromType[Double](scaleB),
-          gradOutputLocal.t(), ones)
+        if (input.isSameSizeAs(bias)) {
+          gradBias.add(ev.fromType[Double](scaleB), gradOutput)
+        } else {
+          val gradOutputLocal = gradOutput.view(input.size(1),
+            gradOutput.size.product/input.size(1))
+          gradBias.view(gradBias.size().product).addmv(ev.fromType[Double](scaleB),
+            gradOutputLocal.t(), ones)
+        }
       }
     }
   }

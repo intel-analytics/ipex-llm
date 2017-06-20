@@ -131,6 +131,9 @@ class Euclidean[T: ClassTag](val inputSize: Int, val outputSize: Int,
 
     require(input.dim() == 1 || input.dim() == 2,
       "Euclidean: " + ErrorInfo.constrainInputAsVectorOrBatch)
+    if (scaleW == 0) {
+      return
+    }
     if (input.dim() == 1) {
       gradWeight.add(ev.fromType[Double](-scaleW), repeatBuffer)
     } else if (input.dim() == 2) {

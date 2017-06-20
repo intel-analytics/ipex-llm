@@ -122,6 +122,9 @@ class CMul[@specialized(Float, Double) T: ClassTag](
   }
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
+    if (scaleW == 0) {
+      return
+    }
 
     if (weight.nElement() == gradOutput.nElement()) {
       gradWeight.addcmul(ev.fromType[Double](scaleW), input, gradOutput)

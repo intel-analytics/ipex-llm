@@ -102,6 +102,9 @@ class CAdd[@specialized(Float, Double) T: ClassTag](
   }
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
+    if (scaleB == 0) {
+      return
+    }
     if (bias.nElement() == gradOutput.nElement()) {
       gradBias.add(ev.fromType[Double](scaleB), gradOutput)
     } else {

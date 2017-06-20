@@ -136,20 +136,28 @@ class Linear[T: ClassTag](
     }
 
     if (input.dim() == 1) {
-      gradWeight.addr(ev.fromType[Double](scaleW), gradOutput, input)
-      if (withBias) {
+      if (scaleW != 0) {
+        gradWeight.addr(ev.fromType[Double](scaleW), gradOutput, input)
+      }
+
+      if (withBias && scaleB != 0) {
         gradBias.add(ev.fromType[Double](scaleB), gradOutput)
       }
     }
     else if (input.dim() == 2) {
-      gradWeight.addmm(ev.fromType[Double](scaleW), gradOutput.t, input)
-      if (withBias) gradBias.addmv(ev.fromType[Double](scaleB), gradOutput.t, addBuffer)
+      if (scaleW != 0) {
+        gradWeight.addmm(ev.fromType[Double](scaleW), gradOutput.t, input)
+      }
+
+      if (withBias && scaleB != 0) {
+        gradBias.addmv(ev.fromType[Double](scaleB), gradOutput.t, addBuffer)
+      }
     }
 
-    if (null != wRegularizer) {
+    if (null != wRegularizer && scaleW != 0) {
       wRegularizer.accRegularization(weight, gradWeight, scaleW)
     }
-    if (null != bRegularizer) {
+    if (null != bRegularizer && scaleB != 0) {
       bRegularizer.accRegularization(bias, gradBias, scaleB)
     }
   }
