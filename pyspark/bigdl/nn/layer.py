@@ -128,23 +128,29 @@ class Layer(JavaValue):
 
     @staticmethod
     def check_input(input):
+        """
+        :param input: ndarray or list of ndarray
+        :return: (list of JTensor, isTable)
+        """
         if type(input) is list:
             if len(input) == 0:
                 raise Exception('Error when checking: empty input')
             if not hasattr(input[0], 'shape'):
                 raise Exception(
                     'Error when checking: expecting list of ndarray')
-            return [JTensor.from_ndarray(i) for i in input]
+            return [JTensor.from_ndarray(i) for i in input], True
         else:
             if not hasattr(input, 'shape'):
                 raise Exception(
                     'Error when checking: expecting list of ndarray')
-            return [JTensor.from_ndarray(input)]
+            return [JTensor.from_ndarray(input)], False
 
     @staticmethod
     def convert_output(output):
         if type(output) is JTensor:
             return output.to_ndarray()
+        elif(len(output) == 1):
+            return output[0].to_ndarray()
         else:
             return [x.to_ndarray() for x in output]
 
@@ -156,10 +162,12 @@ class Layer(JavaValue):
         :param input: ndarray or list of ndarray
         :return: ndarray or list of ndarray
         """
+        jinput, input_is_table = self.check_input(input)
         output = callBigDlFunc(self.bigdl_type,
                                "modelForward",
                                self.value,
-                               self.check_input(input))
+                               jinput,
+                               input_is_table)
         return self.convert_output(output)
 
     def backward(self, input, grad_output):
@@ -174,11 +182,15 @@ class Layer(JavaValue):
         :param grad_output: ndarray or list of ndarray
         :return: ndarray or list of ndarray
         """
+        jinput, input_is_table = self.check_input(input)
+        jgrad_output, grad_output_is_table = self.check_input(grad_output)
         output = callBigDlFunc(self.bigdl_type,
                                "modelBackward",
                                self.value,
-                               self.check_input(input),
-                               self.check_input(grad_output))
+                               jinput,
+                               input_is_table,
+                               jgrad_output,
+                               grad_output_is_table)
         return self.convert_output(output)
 
     def zero_grad_parameters(self):
