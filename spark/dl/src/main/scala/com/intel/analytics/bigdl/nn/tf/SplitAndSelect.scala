@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn
+package com.intel.analytics.bigdl.nn.tf
 
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
@@ -26,7 +26,7 @@ import scala.reflect.ClassTag
  * then select the [[index]]th one
  */
 @SerialVersionUID(-9096120159559947483L)
-class SplitAndSelect[T: ClassTag](dimension: Int, index: Int, numSplit: Int)
+private[bigdl] class SplitAndSelect[T: ClassTag](dimension: Int, index: Int, numSplit: Int)
                          (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
@@ -53,7 +53,7 @@ class SplitAndSelect[T: ClassTag](dimension: Int, index: Int, numSplit: Int)
   }
 }
 
-object SplitAndSelect {
+private[bigdl] object SplitAndSelect {
   def apply[T: ClassTag](
       dimension: Int,
       index: Int,

@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import org.tensorflow.framework.{DataType, NodeDef, TensorProto}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.tf._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{DirectedGraph, Node, T}
 import com.intel.analytics.bigdl.utils.tf.TensorflowLoader.Context

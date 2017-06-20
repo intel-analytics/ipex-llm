@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn
+package com.intel.analytics.bigdl.nn.tf
 
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -26,7 +26,7 @@ import scala.reflect.ClassTag
  * @param sliceSpecs Array(dim, begin_index, end_index, stride)
  */
 @SerialVersionUID(4436600172725317184L)
-class StrideSlice[T: ClassTag](sliceSpecs: Array[(Int, Int, Int, Int)])
+private[bigdl] class StrideSlice[T: ClassTag](sliceSpecs: Array[(Int, Int, Int, Int)])
                 (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   require(sliceSpecs.map(_._4 == 1).reduce(_ && _), "only support stride 1 for now")
@@ -57,7 +57,7 @@ class StrideSlice[T: ClassTag](sliceSpecs: Array[(Int, Int, Int, Int)])
 
 }
 
-object StrideSlice {
+private[bigdl] object StrideSlice {
   def apply[T: ClassTag](sliceSpecs: Array[(Int, Int, Int, Int)])
        (implicit ev: TensorNumeric[T]) : StrideSlice[T] = {
     new StrideSlice[T](sliceSpecs)

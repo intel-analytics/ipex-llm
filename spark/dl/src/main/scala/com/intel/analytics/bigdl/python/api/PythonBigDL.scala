@@ -34,6 +34,7 @@ import org.apache.spark.rdd.RDD
 import java.lang.{Integer, Boolean => JBoolean}
 
 import com.intel.analytics.bigdl.nn.Graph._
+import com.intel.analytics.bigdl.nn.tf.{Const, Fill, Shape, SplitAndSelect}
 
 import scala.collection.JavaConverters._
 import scala.language.existentials
