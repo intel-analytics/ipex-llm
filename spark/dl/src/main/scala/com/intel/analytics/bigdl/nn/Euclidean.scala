@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 import scala.reflect.ClassTag
 
 /**
- * Outputs the Euclidean distance of the input to outputSize centers
+ * Outputs the Euclidean distance of the input to `outputSize` centers
  * @param inputSize inputSize
  * @param outputSize outputSize
  * @tparam T Numeric type. Only support float/double now

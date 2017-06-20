@@ -363,7 +363,7 @@ class Optimizer(JavaValue):
 
 
        :param model: the neural net model
-       :param traiing_rdd: the training dataset
+       :param training_rdd: the training dataset
        :param criterion: the loss function
        :param optim_method: the algorithm to use for optimization, 
           e.g. SGD, Adagrad, etc. If optim_method is None, the default algorithm is SGD.
@@ -423,7 +423,7 @@ class Optimizer(JavaValue):
     def set_train_summary(self, summary):
         """
         Set train summary. A TrainSummary object contains information
-        necesary for the optimizer to know how often the logs are recorded,
+        necessary for the optimizer to know how often the logs are recorded,
         where to store the logs and how to retrieve them, etc. For details,
         refer to the docs of TrainSummary.
 
@@ -437,7 +437,7 @@ class Optimizer(JavaValue):
     def set_val_summary(self, summary):
         """
         Set validation summary. A ValidationSummary object contains information
-        necesary for the optimizer to know how often the logs are recorded,
+        necessary for the optimizer to know how often the logs are recorded,
         where to store the logs and how to retrieve them, etc. For details,
         refer to the docs of ValidationSummary.
 

@@ -26,8 +26,9 @@ import scala.reflect.ClassTag
 
 /**
  * Dropout masks(set to zero) parts of input using a bernoulli distribution.
- * Each input element has a probability initP of being dropped. If scale is
- * set, the outputs are scaled by a factor of 1/(1-initP) during training.
+ * Each input element has a probability initP of being dropped. If `scale` is
+ * true(true by default), the outputs are scaled by a factor of `1/(1-initP)`
+ * during training.
  * During evaluating, output is the same as input.
  *
  * It has been proven an effective approach for regularization and preventing
