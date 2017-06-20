@@ -31,7 +31,7 @@ def main():
         sess.run(init)
         tensorflow_result = sess.run(output, {input: tensor})
         bigdl_model = convert([input], [output], sess)
-        bigdl_result = bigdl_model.forward(tensor)[0]
+        bigdl_result = bigdl_model.forward(tensor)
 
         print("Tensorflow forward result is " + str(tensorflow_result))
         print("BigDL forward result is " + str(bigdl_result))
