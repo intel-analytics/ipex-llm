@@ -423,6 +423,8 @@ class Linear(Layer):
 
 
     >>> linear = Linear(100, 10, "Xavier", True, L1Regularizer(0.5), L1Regularizer(0.5))
+    creating: createL1Regularizer
+    creating: createL1Regularizer
     creating: createLinear
     '''
 
@@ -544,7 +546,7 @@ class SpatialConvolution(Layer):
     :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices.
     :param bRegularizer: instance of [[Regularizer]]applied to the bias.
 
-    >>> spatialConvolution = SpatialConvolution(6, 12, 5, 5, 1, 1, 0, 0, 1, True, 'default', L1Regularizer(0.5), L1Regularizer(0.5))
+    >>> spatialConvolution = SpatialConvolution(6, 12, 5, 5)
     creating: createSpatialConvolution
     '''
 
@@ -574,7 +576,9 @@ class SpatialConvolution(Layer):
                                                  pad_h,
                                                  n_group,
                                                  propagate_back,
-                                                 init_method)
+                                                 init_method,
+                                                 wRegularizer,
+                                                 bRegularizer)
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                   weight_init_method, bias_init_method)
@@ -672,6 +676,9 @@ class LSTM(Layer):
 
 
     >>> lstm = LSTM(4, 3, 0.5, L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
+    creating: createL1Regularizer
+    creating: createL1Regularizer
+    creating: createL1Regularizer
     creating: createLSTM
     '''
 
@@ -697,10 +704,13 @@ class LSTMPeephole(Layer):
     :param bRegularizer: instance of [[Regularizer]]applied to the bias.
 
     >>> lstm = LSTMPeephole(4, 3, 0.5, L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
+    creating: createL1Regularizer
+    creating: createL1Regularizer
+    creating: createL1Regularizer
     creating: createLSTMPeephole
     '''
 
-    def __init__(self, input_size, hidden_size, p=0.0, bigdl_type="float"):
+    def __init__(self, input_size, hidden_size, p=0.0, wRegularizer=None, uRegularizer=None, bRegularizer=None, bigdl_type="float"):
         super(LSTMPeephole, self).__init__(None, bigdl_type, input_size, hidden_size, p, wRegularizer, uRegularizer, bRegularizer)
 
 
@@ -725,6 +735,9 @@ class GRU(Layer):
 
 
     >>> gru = GRU(4, 3, 0.5, L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
+    creating: createL1Regularizer
+    creating: createL1Regularizer
+    creating: createL1Regularizer
     creating: createGRU
     '''
 
@@ -747,6 +760,9 @@ class RnnCell(Layer):
 
     >>> reshape = RnnCell(4, 3, Tanh(), L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
     creating: createTanh
+    creating: createL1Regularizer
+    creating: createL1Regularizer
+    creating: createL1Regularizer
     creating: createRnnCell
     '''
 
@@ -1108,6 +1124,7 @@ class Bilinear(Layer):
     :param bRegularizer: instance of [[Regularizer]]applied to the bias.
 
     >>> bilinear = Bilinear(1, 1, 1, True, L1Regularizer(0.5))
+    creating: createL1Regularizer
     creating: createBilinear
     '''
 
@@ -1751,6 +1768,7 @@ class LookupTable(Layer):
     :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices.
 
     >>> lookupTable = LookupTable(1, 1, 1e-5, 1e-5, 1e-5, True, L1Regularizer(0.5))
+    creating: createL1Regularizer
     creating: createLookupTable
     '''
 
@@ -2529,7 +2547,7 @@ class SpatialDilatedConvolution(Layer):
     :param bRegularizer: instance of [[Regularizer]]applied to the bias.
 
 
-    >>> spatialDilatedConvolution = SpatialDilatedConvolution(1, 1, 1, 1, 1, 1, 0, 0, 1, 1, L1Regularizer(0.5), L1Regularizer(0.5))
+    >>> spatialDilatedConvolution = SpatialDilatedConvolution(1, 1, 1, 1)
     creating: createSpatialDilatedConvolution
     '''
 
@@ -2559,8 +2577,10 @@ class SpatialDilatedConvolution(Layer):
                                                         pad_h,
                                                         dilation_w,
                                                         dilation_h,
-                                                        init_method)
-
+                                                        init_method,
+                                                        wRegularizer,
+                                                        bRegularizer)
+                                                        
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
@@ -2607,7 +2627,7 @@ class SpatialFullConvolution(Layer):
     :param bRegularizer: instance of [[Regularizer]]applied to the bias.
 
 
-    >>> spatialFullConvolution = SpatialFullConvolution(1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, False, 'default', L1Regularizer(0.5), L1Regularizer(0.5))
+    >>> spatialFullConvolution = SpatialFullConvolution(1, 1, 1, 1)
     creating: createSpatialFullConvolution
     '''
 
@@ -3162,7 +3182,7 @@ class SpatialConvolutionMap(Layer):
     :param bRegularizer: instance of [[Regularizer]]applied to the bias.
 
     >>> ct = np.ones([9,9]).astype("float32")
-    >>> spatialConvolutionMap = SpatialConvolutionMap(ct, 9, 9, 1, 1, 0, 0, L1Regularizer(0.5), L1Regularizer(0.5))
+    >>> spatialConvolutionMap = SpatialConvolutionMap(ct, 9, 9)
     creating: createSpatialConvolutionMap
     '''
 

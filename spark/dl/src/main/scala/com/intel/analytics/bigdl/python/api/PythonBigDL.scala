@@ -61,7 +61,7 @@ case class JTensor(storage: JList[Any], shape: JList[Int], bigdlType: String)
  * @param totalNum total number
  * @param method method name
  */
-case class TestResult(val result: Float, totalNum: Int, val method: String)
+case class TestResult(val result: Float, totalNum: Int,   method: String)
 
 
 object PythonBigDL {
@@ -203,8 +203,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createLinear(inputSize: Int, outputSize: Int,
-                   initMethod: String, withBias: Boolean): Linear[T] = {
-    val l = Linear[T](inputSize, outputSize, withBias)
+                   initMethod: String, withBias: Boolean, 
+                   wRegularizer: Regularizer[T] = null,
+                   bRegularizer: Regularizer[T] = null): Linear[T] = {
+      val l = Linear[T](inputSize, outputSize, withBias, wRegularizer, bRegularizer)
     if (initMethod != "default") {
       l.setInitMethod(weightInitMethod = PythonBigDL.getInitMethod(initMethod),
       biasInitMethod = Zeros)
@@ -226,8 +228,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def createRnnCell(inputSize: Int,
                     hiddenSize: Int,
-                    activation: TensorModule[T]): RnnCell[T] = {
-    RnnCell[T](inputSize, hiddenSize, activation)
+                    activation: TensorModule[T],
+                    wRegularizer: Regularizer[T] = null,
+                    uRegularizer: Regularizer[T] = null,
+                    bRegularizer: Regularizer[T] = null): RnnCell[T] = {
+    RnnCell[T](inputSize, hiddenSize, activation, wRegularizer, uRegularizer, bRegularizer)
   }
 
   def createTimeDistributedCriterion(critrn: TensorCriterion[T],
@@ -238,22 +243,31 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def createGRU(
     inputSize: Int,
     outputSize: Int,
-    p: Double = 0): GRU[T] = {
-    GRU[T](inputSize, outputSize, p)
+    p: Double = 0,
+    wRegularizer: Regularizer[T] = null,
+    uRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null): GRU[T] = {
+    GRU[T](inputSize, outputSize, p, wRegularizer, uRegularizer, bRegularizer)
   }
 
   def createLSTM(
     inputSize: Int,
     hiddenSize: Int,
-    p: Double = 0): LSTM[T] = {
-    LSTM[T](inputSize, hiddenSize, p)
+    p: Double = 0,
+    wRegularizer: Regularizer[T] = null,
+    uRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null): LSTM[T] = {
+    LSTM[T](inputSize, hiddenSize, p, wRegularizer, uRegularizer, bRegularizer)
   }
 
   def createLSTMPeephole(
     inputSize: Int,
     hiddenSize: Int,
-    p: Double = 0): LSTMPeephole[T] = {
-    LSTMPeephole[T](inputSize, hiddenSize, p)
+    p: Double = 0,
+    wRegularizer: Regularizer[T] = null,
+    uRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null): LSTMPeephole[T] = {
+    LSTMPeephole[T](inputSize, hiddenSize, p, wRegularizer, uRegularizer, bRegularizer)
   }
 
   def createRecurrent(): Recurrent[T] = {
@@ -296,7 +310,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                                padH: Int = 0,
                                nGroup: Int = 1,
                                propagateBack: Boolean = true,
-                               initMethod: String = "default")
+                               initMethod: String = "default",
+                               wRegularizer: Regularizer[T] = null,
+                               bRegularizer: Regularizer[T] = null)
   : SpatialConvolution[T] = {
     val s = SpatialConvolution[T](nInputPlane,
       nOutputPlane,
@@ -307,7 +323,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       padW,
       padH,
       nGroup,
-      propagateBack)
+      propagateBack,
+      wRegularizer,
+      bRegularizer)
     if (initMethod != "default") {
       s.setInitMethod(weightInitMethod = PythonBigDL.getInitMethod(initMethod),
         biasInitMethod = Zeros)
@@ -400,12 +418,16 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def createBilinear(inputSize1: Int,
                      inputSize2: Int,
                      outputSize: Int,
-                     biasRes: Boolean = true)
+                     biasRes: Boolean = true,
+                     wRegularizer: Regularizer[T] = null,
+                     bRegularizer: Regularizer[T] = null)
   : Bilinear[T] = {
     Bilinear[T](inputSize1,
       inputSize2,
       outputSize,
-      biasRes)
+      biasRes,
+      wRegularizer,
+      bRegularizer)
   }
 
   def createBottle(module: AbstractModule[Activity, Activity, T],
@@ -588,14 +610,16 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def createLookupTable(nIndex: Int, nOutput: Int,
                         paddingValue: Double = 0, maxNorm: Double = Double.MaxValue,
-                        normType: Double = 2.0, shouldScaleGradByFreq: Boolean = false)
+                        normType: Double = 2.0, shouldScaleGradByFreq: Boolean = false,
+                        wRegularizer: Regularizer[T] = null)
   : LookupTable[T] = {
     LookupTable[T](nIndex,
       nOutput,
       paddingValue,
       maxNorm,
       normType,
-      shouldScaleGradByFreq)
+      shouldScaleGradByFreq,
+      wRegularizer)
   }
 
   def createMM(transA: Boolean = false,
@@ -805,7 +829,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                                       padH: Int = 0,
                                       dilationW: Int = 1,
                                       dilationH: Int = 1,
-                                      initMethod: String = "default")
+                                      initMethod: String = "default",
+                                      wRegularizer: Regularizer[T] = null,
+                                      bRegularizer: Regularizer[T] = null)
   : SpatialDilatedConvolution[T] = {
     val s = SpatialDilatedConvolution[T](nInputPlane,
       nOutputPlane,
@@ -816,7 +842,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       padW,
       padH,
       dilationW,
-      dilationH)
+      dilationH,
+      wRegularizer,
+      bRegularizer)
     if (initMethod != "default") {
       s.setInitMethod(weightInitMethod = PythonBigDL.getInitMethod(initMethod),
         biasInitMethod = Zeros)
@@ -836,7 +864,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                                    adjH: Int = 0,
                                    nGroup: Int = 1,
                                    noBias: Boolean = false,
-                                   initMethod: String = "default")
+                                   initMethod: String = "default",
+                                   wRegularizer: Regularizer[T] = null,
+                                   bRegularizer: Regularizer[T] = null)
   : SpatialFullConvolution[Activity, T] = {
     val s = SpatialFullConvolution[Activity, T](nInputPlane,
       nOutputPlane,
@@ -849,7 +879,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       adjW,
       adjH,
       nGroup,
-      noBias)
+      noBias,
+      wRegularizer,
+      bRegularizer)
     if (initMethod != "default") {
       s.setInitMethod(weightInitMethod = PythonBigDL.getInitMethod(initMethod),
         biasInitMethod = Zeros)
@@ -1021,7 +1053,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                                   dW: Int = 1,
                                   dH: Int = 1,
                                   padW: Int = 0,
-                                  padH: Int = 0)
+                                  padH: Int = 0,
+                                  wRegularizer: Regularizer[T] = null,
+                                  bRegularizer: Regularizer[T] = null)
   : SpatialConvolutionMap[T] = {
     SpatialConvolutionMap[T](if (connTable == null) null else toTensor(connTable),
       kW,
@@ -1029,7 +1063,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       dW,
       dH,
       padW,
-      padH)
+      padH,
+      wRegularizer,
+      bRegularizer)
   }
 
   def createVolumetricConvolution(nInputPlane: Int,

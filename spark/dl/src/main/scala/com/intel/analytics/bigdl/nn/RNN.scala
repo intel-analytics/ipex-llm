@@ -108,7 +108,10 @@ object RnnCell {
   def apply[@specialized(Float, Double) T: ClassTag](
     inputSize: Int = 4,
     hiddenSize: Int = 3,
-    activation: TensorModule[T])
+    activation: TensorModule[T],
+    wRegularizer: Regularizer[T] = null,
+    uRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null)
    (implicit ev: TensorNumeric[T]) : RnnCell[T] = {
     new RnnCell[T](inputSize, hiddenSize, activation)
   }
