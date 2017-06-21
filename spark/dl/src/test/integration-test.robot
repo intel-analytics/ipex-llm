@@ -65,7 +65,10 @@ Yarn Test Suite
    Set Environment Variable         PYSPARK_DRIVER_PYTHON    /var/jenkins_home/venv/bin/python
    Set Environment Variable         PYSPARK_PYTHON           ./venv.zip/venv/bin/python      
    Run Shell                        ${submit} --master yarn --deploy-mode client --executor-memory 2g --driver-memory 2g --executor-cores 10 --num-executors 2 --properties-file ${curdir}/dist/conf/spark-bigdl.conf --jars ${jar_path} --py-files ${curdir}/dist/lib/bigdl-${version}-python-api.zip --archives /var/jenkins_home/venv.zip --conf spark.driver.extraClassPath=${jar_path} --conf spark.executor.extraClassPath=bigdl-${version}-jar-with-dependencies.jar ${curdir}/pyspark/bigdl/models/lenet/lenet5.py -b 200
-   Remove Environment Variable      http_proxy                https_proxy              PYSPARK_DRIVER_PYTHON            PYSPARK_PYTHON
+   Remove Environment Variable      http_proxy
+   Remove Environment Variable      https_proxy
+   Remove Environment Variable      PYSPARK_DRIVER_PYTHON
+   Remove Environment Variable      PYSPARK_PYTHON
 
 
 PySpark2.1 Test Suite
