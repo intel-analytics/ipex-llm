@@ -407,6 +407,16 @@ class Model(Container):
         jmodel = callBigDlFunc(bigdl_type, "loadCaffe", model, defPath, modelPath, match_all)
         return Layer.of(jmodel)
 
+    @staticmethod
+    def load_tensorflow(path, inputs, outputs, byte_order = "little_endian", bigdl_type="float"):
+        """
+        Load a pre-trained Tensorflow model.
+        :param path: The path containing the pre-trained model.
+        :return: A pre-trained model.
+        """
+        jmodel = callBigDlFunc(bigdl_type, "loadTF", path, inputs, outputs, byte_order)
+        return Model.of(jmodel)
+
 
 class Linear(Layer):
 
