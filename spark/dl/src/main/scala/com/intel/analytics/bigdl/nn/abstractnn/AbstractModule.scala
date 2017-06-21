@@ -27,6 +27,8 @@ import org.apache.spark.rdd.RDD
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.dataset.Sample
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
+import serialization.Model.BigDLModel
 
 import scala.reflect.ClassTag
 
@@ -49,7 +51,7 @@ abstract class TensorModule[T: ClassTag]
  */
 abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
 @specialized(Float, Double) T: ClassTag](
-  implicit ev: TensorNumeric[T]) extends Serializable {
+  implicit ev: TensorNumeric[T]) extends Serializable with ModuleSerializer{
 
   private val namePostfix = Integer.toHexString(java.util.UUID.randomUUID().hashCode())
   /**
@@ -431,4 +433,5 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
     Evaluator(this).test(dataset, vMethods, batchSize)
   }
 }
+
 
