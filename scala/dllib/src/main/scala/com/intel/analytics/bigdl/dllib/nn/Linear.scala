@@ -26,8 +26,8 @@ import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
 import com.intel.analytics.bigdl.optim.Regularizer
 
 /**
- * The [[Linear]] module applies a linear transformation to the input data,
- * i.e. `y = Wx + b`. The input given in `forward(input)` must be either
+ * The `Linear` module applies a linear transformation to the input data,
+ * i.e. `y = Wx + b`. The `input` given in `forward(input)` must be either
  * a vector (1D tensor) or matrix (2D tensor). If the input is a vector, it must
  * have the size of `inputSize`. If it is a matrix, then each row is assumed to be
  * an input sample of given batch (the number of rows means the batch size and
