@@ -38,6 +38,7 @@ import scala.reflect.ClassTag
  * The backward() operation assumes that forward() has been called before.
  * For reference see [Empirical Evaluation of Rectified Activations in Convolutional
  * Network](http://arxiv.org/abs/1505.00853).
+ *
  * @param lower   lower boundary of uniform random distribution
  * @param upper   upper boundary of uniform random distribution
  * @param inplace optionally do its operation in-place without using extra state memory

@@ -815,6 +815,9 @@ class TimeDistributed(Layer):
 
     For instance, The TimeDistributed Layer can feed each time slice of input tensor
     to the Linear layer.
+    
+    The input data format is [Batch, Time, Other dims]. For the contained layer, it must not change
+    the Other dims length.
 
 
     >>> td = TimeDistributed(Linear(2, 3))
