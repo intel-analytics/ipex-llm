@@ -26,7 +26,6 @@ import com.intel.analytics.bigdl.utils.T
 class CAddSpec extends TorchSpec {
   "CAdd L2 regularizer" should "works correctly" in {
     import com.intel.analytics.bigdl.numeric.NumericDouble
-    torchCheck()
 
     val state1 = T("learningRate" -> 0.1, "learningRateDecay" -> 5e-7,
       "weightDecay" -> 0.1, "momentum" -> 0.002)
