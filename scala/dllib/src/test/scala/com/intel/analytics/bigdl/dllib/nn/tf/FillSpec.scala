@@ -13,30 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn
+package com.intel.analytics.bigdl.nn.tf
 
-import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import org.scalatest.{FlatSpec, Matchers}
 
-class ShapeSpec extends FlatSpec with Matchers {
+class FillSpec extends FlatSpec with Matchers {
 
-  "Shape forward" should "be success" in {
-    val layer = Shape()
-    val input = Tensor(T(T(0.1f, 0.2f), T(0.1f, 0.2f), T(0.1f, 0.2f)))
-    layer.forward(input) should be(Tensor(T(3.0f, 2.0f)))
+  "Fill forward" should "be correct" in {
+    val layer = Fill(0.1)
+    val shape = Tensor(T(2.0f, 3.0f))
+    layer.forward(shape) should be(Tensor(T(T(0.1f, 0.1f, 0.1f), T(0.1f, 0.1f, 0.1f))))
   }
 
-  "Shape backward" should "be correct" in {
-    val layer = Shape()
-    val input = Tensor(T(T(0.1f, 0.2f), T(0.1f, 0.2f), T(0.1f, 0.2f)))
-    val gradOutput = Tensor(T(3.0f, 2.0f))
-    layer.forward(input) should be(Tensor(T(3.0f, 2.0f)))
-    layer.backward(input, gradOutput) should be(Tensor(T(
-      T(0.0f, 0.0f),
-      T(0.0f, 0.0f),
-      T(0.0f, 0.0f)
-    )))
+  "Fill backward" should "be correct" in {
+    val layer = Fill(0.1)
+    val shape = Tensor(T(2.0f, 3.0f))
+    val gradOutput = Tensor(2, 3).rand()
+    layer.forward(shape) should be(Tensor(T(T(0.1f, 0.1f, 0.1f), T(0.1f, 0.1f, 0.1f))))
+    layer.backward(shape, gradOutput) should be(Tensor(T(0.0f, 0.0f)))
   }
 }
