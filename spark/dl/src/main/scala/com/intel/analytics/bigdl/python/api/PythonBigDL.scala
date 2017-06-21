@@ -1229,24 +1229,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     SoftmaxWithCriterion[T](labelToIgnore, normM)
   }
 
-  def createConst(value: JTensor): Const[T] = {
-    Const(toTensor(value))
-  }
-
-  def createFill(value: Double): Fill[T] = {
-    Fill(value)
-  }
-
   def createPack(dimension: Int): Pack[T] = {
     Pack(dimension)
-  }
-
-  def createShape(): Shape[T] = {
-    Shape()
-  }
-
-  def createSplitAndSelect(dimension: Int, index: Int, numSplit: Int): SplitAndSelect[T] = {
-    SplitAndSelect(dimension, index, numSplit)
   }
 
   def setModelSeed(seed: Long): Unit = {
