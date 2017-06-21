@@ -61,8 +61,8 @@ case class JTensor(storage: JList[Any], shape: JList[Int], bigdlType: String)
  * @param totalNum total number
  * @param method method name
  */
-case class TestResult(val result: Float, totalNum: Int,   method: String)
 
+case class TestResult(val result: Float, totalNum: Int,   method: String)
 
 object PythonBigDL {
 
@@ -206,7 +206,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                    initMethod: String, withBias: Boolean, 
                    wRegularizer: Regularizer[T] = null,
                    bRegularizer: Regularizer[T] = null): Linear[T] = {
-      val l = Linear[T](inputSize, outputSize, withBias, wRegularizer, bRegularizer)
+    val l = Linear[T](inputSize, outputSize, withBias, wRegularizer, bRegularizer)
     if (initMethod != "default") {
       l.setInitMethod(weightInitMethod = PythonBigDL.getInitMethod(initMethod),
       biasInitMethod = Zeros)
