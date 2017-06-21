@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericF
 import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
-import org.apache.spark.ml.{DLEstimator, DLModel}
+import org.apache.spark.ml.{DLClassifier, DLEstimator, DLModel}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 
@@ -68,7 +68,7 @@ object DLEstimatorLeNet {
       val model = LeNet5(classNum = 10)
       val criterion = ClassNLLCriterion[Float]()
       val featureSize = Array(28, 28)
-      val estimator = new DLEstimator[Float](model, criterion, featureSize, Array(1))
+      val estimator = new DLClassifier[Float](model, criterion, featureSize)
         .setFeaturesCol(inputs(0))
         .setLabelCol(inputs(1))
         .setBatchSize(50)

@@ -15,20 +15,20 @@
  */
 package org.apache.spark.ml
 
-import org.apache.spark.ml.linalg.{Vector, VectorUDT}
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.param.shared.{HasFeaturesCol, HasLabelCol, HasPredictionCol}
-import org.apache.spark.ml.util.SchemaUtils
-import org.apache.spark.sql.functions.{col, udf}
-import org.apache.spark.sql.{DataFrame, Dataset}
-import org.apache.spark.sql.types.{ArrayType, DoubleType, FloatType, StructType}
+import org.apache.spark.ml.linalg.{Vector, VectorUDT}
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.types._
+import org.apache.spark.sql.{DataFrame, Dataset, Row}
+
 
 private[ml] trait DLParams extends HasFeaturesCol with HasPredictionCol {
 
   /**
-   * validate feature columns data format
+   * only validate feature columns here
    */
-  protected def validateAndTransformSchema(schema: StructType): StructType = {
+  protected def validateSchema(schema: StructType): Unit = {
     val dataTypes = Seq(
       new ArrayType(DoubleType, false),
       new ArrayType(FloatType, false),
@@ -39,31 +39,27 @@ private[ml] trait DLParams extends HasFeaturesCol with HasPredictionCol {
     require(dataTypes.exists(actualDataType.equals),
       s"Column ${$(featuresCol)} must be of type equal to one of the following types: " +
         s"${dataTypes.mkString("[", ", ", "]")} but was actually of type $actualDataType.")
-
-    SchemaUtils.appendColumn(schema, $(predictionCol), new ArrayType(DoubleType, false))
   }
 
-  /**
-   * convert feature columns to array columns if necessary
-   */
-  protected def toArrayType(dataset: DataFrame): DataFrame = {
-    val toArray = udf { (vector: Vector) => vector.toArray }
-    var converted = dataset
-    if (converted.schema($(featuresCol)).dataType.sameType(new VectorUDT)) {
-      val newFeatureCol = getFeatureArrayCol
-      converted = converted.withColumn(newFeatureCol, toArray(col($(featuresCol))))
+  def supportedTypesToSeq(row: Row, colType: DataType, index: Int): Seq[AnyVal] = {
+    val featureArr = if (colType == new VectorUDT) {
+      row.getAs[Vector](index).toArray.toSeq
+    } else if (colType == ArrayType(DoubleType, false)) {
+      row.getSeq[Double](index)
+    } else if (colType == ArrayType(FloatType, false)) {
+      row.getSeq[Float](index)
+    } else if (colType == DoubleType) {
+      Seq[Double](row.getDouble(index))
     }
-
-    converted
+    featureArr.asInstanceOf[Seq[AnyVal]]
   }
 
   protected def getFeatureArrayCol: String = $(featuresCol) + "_Array"
-
 }
 
 
 /**
- * A wrapper from org.apache.spark.ml.Estimator
+ *A wrapper from org.apache.spark.ml.Estimator
  * Extends MLEstimator and override process to gain compatibility with
  * both spark 1.5 and spark 2.0.
  */
@@ -72,43 +68,35 @@ private[ml] abstract class DLEstimatorBase
 
   protected def getLabelArrayCol: String = $(labelCol) + "_Array"
 
-  protected def internalFit(dataset: DataFrame): DLTransformerBase
+  protected def internalFit(featureAndLabel: RDD[(Seq[AnyVal], Seq[AnyVal])]): DLTransformerBase
 
   override def fit(dataset: Dataset[_]): DLTransformerBase = {
     transformSchema(dataset.schema, logging = true)
     internalFit(toArrayType(dataset.toDF()))
   }
 
-  override def transformSchema(schema : StructType): StructType = {
-    validateAndTransformSchema(schema)
-  }
-
   /**
-   * convert feature and label columns to array columns
-   */
-  protected override def toArrayType(dataset: DataFrame): DataFrame = {
-    var converted = super.toArrayType(dataset)
+    * convert feature and label columns to array data
+    */
+  protected def toArrayType(dataset: DataFrame): RDD[(Seq[AnyVal], Seq[AnyVal])] = {
+    val featureType = dataset.schema($(featuresCol)).dataType
+    val featureColIndex = dataset.schema.fieldIndex($(featuresCol))
+    val labelType = dataset.schema($(labelCol)).dataType
+    val labelColIndex = dataset.schema.fieldIndex($(labelCol))
 
-    // convert label column to array type
-    val vec2Array = udf { (vector: Vector) => vector.toArray }
-    val num2Array = udf { (d: Double) => Array(d) }
-    val labelType = converted.schema($(labelCol)).dataType
-    val newLabelCol = getLabelArrayCol
-
-    if (labelType.sameType(new VectorUDT)) {
-      converted = converted.withColumn(newLabelCol, vec2Array(col($(labelCol))))
-    } else if (labelType.sameType(DoubleType)) {
-      converted = converted.withColumn(newLabelCol, num2Array(col($(labelCol))))
+    dataset.rdd.map { row =>
+      val features = supportedTypesToSeq(row, featureType, featureColIndex)
+      val labels = supportedTypesToSeq(row, labelType, labelColIndex)
+      (features, labels)
     }
-    converted
   }
 
   /**
    * validate both feature and label columns
    */
-  protected override def validateAndTransformSchema(schema: StructType): StructType = {
+  protected override def validateSchema(schema: StructType): Unit = {
     // validate feature column
-    super.validateAndTransformSchema(schema)
+    super.validateSchema(schema)
 
     // validate label column
     val dataTypes = Seq(
@@ -122,9 +110,10 @@ private[ml] abstract class DLEstimatorBase
     require(dataTypes.exists(actualDataType.equals),
       s"Column ${$(labelCol)} must be of type equal to one of the following types: " +
         s"${dataTypes.mkString("[", ", ", "]")} but was actually of type $actualDataType.")
-
-    SchemaUtils.appendColumn(schema, $(predictionCol), new ArrayType(DoubleType, false))
   }
 
   override def copy(extra: ParamMap): DLEstimatorBase = defaultCopy(extra)
 }
+
+
+
