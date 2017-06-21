@@ -349,11 +349,19 @@ class MultiCriterion(Criterion):
 
     >>> multiCriterion = MultiCriterion()
     creating: createMultiCriterion
+    >>> mSECriterion = MSECriterion()
+    creating: createMSECriterion
+    >>> multiCriterion = multiCriterion.add(mSECriterion)
+    >>> multiCriterion = multiCriterion.add(mSECriterion)
     '''
 
     def __init__(self,
                  bigdl_type="float"):
         super(MultiCriterion, self).__init__(None, bigdl_type)
+
+    def add(self, criterion, weight=1.0):
+        self.value.add(criterion.value, weight)
+        return self
 
 
 class MultiLabelMarginCriterion(Criterion):
@@ -392,6 +400,10 @@ class ParallelCriterion(Criterion):
 
     >>> parallelCriterion = ParallelCriterion(True)
     creating: createParallelCriterion
+    >>> mSECriterion = MSECriterion()
+    creating: createMSECriterion
+    >>> parallelCriterion = parallelCriterion.add(mSECriterion)
+    >>> parallelCriterion = parallelCriterion.add(mSECriterion)
     '''
 
     def __init__(self,
@@ -399,6 +411,10 @@ class ParallelCriterion(Criterion):
                  bigdl_type="float"):
         super(ParallelCriterion, self).__init__(None, bigdl_type,
                                                 repeat_target)
+
+    def add(self, criterion, weight=1.0):
+        self.value.add(criterion.value, weight)
+        return self
 
 
 class SmoothL1Criterion(Criterion):
