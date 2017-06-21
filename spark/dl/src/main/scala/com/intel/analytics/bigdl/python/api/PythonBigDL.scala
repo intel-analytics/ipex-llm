@@ -203,9 +203,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createLinear(inputSize: Int, outputSize: Int,
-                   initMethod: String, withBias: Boolean, 
+                   initMethod: String, withBias: Boolean,
                    wRegularizer: Regularizer[T] = null,
-                   bRegularizer: Regularizer[T] = null):Linear[T] = {
+                   bRegularizer: Regularizer[T] = null) :Linear[T] = {
     val l = Linear[T](inputSize, outputSize, withBias, wRegularizer, bRegularizer)
     if (initMethod != "default") {
       l.setInitMethod(weightInitMethod = PythonBigDL.getInitMethod(initMethod),
