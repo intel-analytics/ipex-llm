@@ -28,7 +28,12 @@ import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import com.intel.analytics.bigdl.numeric.NumericFloat
+import org.tensorflow.framework.NodeDef
 
+import scala.collection.mutable
+import scala.sys.process._
+import scala.math._
+import scala.reflect.ClassTag
 
 object TensorflowLoaderSpec {
   private val data1 = Array(0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.1f)
@@ -280,64 +285,86 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
   }
 
   "Tensorflow lenet" should "be load correctly" in {
-    testModel("lenet", Seq("LeNet/pool2/MaxPool:0"), true).foreach {
+    testModelForward("lenet", Seq("LeNet/pool2/MaxPool:0"), true).foreach {
       case(tf, bigdl) =>
-        val transposed = bigdl.transpose(2, 3).transpose(3, 4)
-        tf.almostEqual(transposed, 1e-6) should be(true)
+        val transpose = bigdl.transpose(2, 3).transpose(3, 4)
+        tf.almostEqual(transpose, 1e-6) should be(true)
+    }
+    testModelBackward("lenet", Seq("LeNet/pool2/MaxPool:0"), true,
+      Seq((4, 3), (3, 2))).foreach {
+      case(tf, bigdl) =>
+        if (tf.dim() == 4) {
+          val trans = tf.transpose(1, 4).transpose(2, 3).transpose(3, 4).contiguous()
+          trans.almostEqual(bigdl, 1e-4) should be(true)
+        }
+        else {
+          tf.almostEqual(bigdl, 1e-4) should be(true)
+        }
     }
   }
 
   "Tensorflow Alexnet" should "be load correctly" in {
-    testModel("alexnet", Seq("alexnet_v2/fc8/squeezed:0"), true).foreach {
+    testModelForward("alexnet", Seq("alexnet_v2/fc8/squeezed:0"), true).foreach {
       case(tf, bigdl) =>
         tf.almostEqual(bigdl, 1e-7) should be(true)
+    }
+    testModelBackward("alexnet", Seq("alexnet_v2/fc8/squeezed:0"), true,
+      Seq.empty).foreach {
+      case(tf, bigdl) =>
+        if (tf.dim() == 4) {
+          val trans = tf.transpose(1, 4).transpose(2, 3).transpose(3, 4).contiguous()
+          trans.almostEqual(bigdl, 1e-4) should be(true)
+        }
+        else {
+          tf.almostEqual(bigdl, 1e-4) should be(true)
+        }
     }
   }
 
   "TensorFlow vgg_a" should "be load correctly" in {
-    testModel("vgga", Seq("vgg_a/fc8/squeezed:0"), true).foreach {
+    testModelForward("vgga", Seq("vgg_a/fc8/squeezed:0"), true).foreach {
       case(tf, bigdl) =>
         tf.almostEqual(bigdl, 1e-7) should be(true)
     }
   }
 
   "TensorFlow vgg_16" should "be load correctly" in {
-    testModel("vgg16", Seq("vgg_16/fc8/squeezed:0"), true).foreach {
+    testModelForward("vgg16", Seq("vgg_16/fc8/squeezed:0"), true).foreach {
       case(tf, bigdl) =>
         tf.almostEqual(bigdl, 1e-7) should be(true)
     }
   }
 
   "TensorFlow vgg_19" should "be load correctly" in {
-    testModel("vgg19", Seq("vgg_19/fc8/squeezed:0"), true).foreach {
+    testModelForward("vgg19", Seq("vgg_19/fc8/squeezed:0"), true).foreach {
       case(tf, bigdl) =>
         tf.almostEqual(bigdl, 1e-7) should be(true)
     }
   }
 
   "TensorFlow overfeat" should "be load correctly" in {
-    testModel("overfeat", Seq("overfeat/fc8/squeezed:0"), true).foreach {
+    testModelForward("overfeat", Seq("overfeat/fc8/squeezed:0"), true).foreach {
       case(tf, bigdl) =>
         tf.almostEqual(bigdl, 1e-7) should be(true)
     }
   }
 
   "TensorFlow inception_v3" should "be load correctly" in {
-    testModel("inception_v3", Seq("InceptionV3/Logits/SpatialSqueeze:0"), true).foreach {
+    testModelForward("inception_v3", Seq("InceptionV3/Logits/SpatialSqueeze:0"), true).foreach {
       case(tf, bigdl) =>
         tf.almostEqual(bigdl, 1e-7) should be(true)
     }
   }
 
   "TensorFlow resnet_v1" should "be load correctly" in {
-    testModel("resnet_v1", Seq("resnet_v1_101/SpatialSqueeze:0"), true).foreach {
+    testModelForward("resnet_v1", Seq("resnet_v1_101/SpatialSqueeze:0"), true).foreach {
       case(tf, bigdl) =>
         tf.almostEqual(bigdl, 1e-6) should be(true)
     }
   }
 
   "TensorFlow inception_resnet_v2" should "be load correctly" in {
-    testModel("inception_resnet_v2", Seq("InceptionResnetV2/Logits/Logits/BiasAdd:0",
+    testModelForward("inception_resnet_v2", Seq("InceptionResnetV2/Logits/Logits/BiasAdd:0",
       "InceptionResnetV2/AuxLogits/Logits/BiasAdd:0"), true).foreach {
       case(tf, bigdl) =>
         tf.almostEqual(bigdl, 1e-7) should be(true)
@@ -345,7 +372,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
   }
 
 
-  private def testModel(modelName: String, endPoints: Seq[String], transInput: Boolean)
+  private def testModelForward(modelName: String, endPoints: Seq[String], transInput: Boolean)
   : Seq[(Tensor[Float], Tensor[Float])] = {
 
     tfCheck()
@@ -363,13 +390,16 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
       "error when run the model script")
 
     // Load the model and input/output tensors
+    import collection.JavaConverters._
     val modelFile = tmpLocation + s + "model.pb"
     val tfNodes = TensorflowLoader.parse(modelFile)
-    val tfGraph = TensorflowLoader.buildTFGraph(tfNodes, endPoints.map(_.split(":")(0)))
-    val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("input"),
-      endPoints.map(_.split(":")(0)), ByteOrder.LITTLE_ENDIAN)
 
-    import collection.JavaConverters._
+    // filter node for gradient computing
+    val tfGraph = TensorflowLoader.buildTFGraph(tfNodes, endPoints.map(_.split(":")(0)))
+    val context = new mutable.HashMap[NodeDef, (Tensor[Float], Tensor[Float])]
+    val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("input"),
+      endPoints.map(_.split(":")(0)), ByteOrder.LITTLE_ENDIAN, Some(context))
+
     // Compare the tensor contents
     val tfInputTensor = tfNodes.asScala.filter(_.getName == "input")(0)
       .getAttrMap.get("value").getTensor
@@ -391,9 +421,117 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
       val t = model.forward(transposeInput).toTable
       (1 to endPoints.length).map(t[Tensor[Float]](_))
     }
-    tfOutputTensors.zip(bigdlOutputs).map(x =>
-      (TensorflowToBigDL.toTensor(x._1, ByteOrder.LITTLE_ENDIAN), x._2))
+
+    val comparePair = tfOutputTensors.zip(bigdlOutputs).map{
+      x =>
+        val tensor = TensorflowToBigDL.toTensor(x._1, ByteOrder.LITTLE_ENDIAN)
+        (tensor, x._2)
+    }
+    tmpLocation.deleteOnExit()
+    comparePair
   }
+
+  private def testModelBackward(
+    modelName: String,
+    endPoints: Seq[String],
+    transInput: Boolean,
+    transOutputSeq: Seq[(Int, Int)]): Seq[(Tensor[Float], Tensor[Float])] = {
+
+    tfCheck()
+    // Generate command and prepare the temp folder
+    val s = JFile.separator
+    val modelsFolder = processPath(getClass().getClassLoader().getResource("tf").getPath()) +
+      s + "models"
+    val modelScript = modelsFolder + s + s"$modelName.py"
+    val tmpLocation = java.io.File.createTempFile("tensorflowLoaderTest" + UUID.randomUUID(),
+      modelName)
+    tmpLocation.delete()
+    tmpLocation.mkdir()
+
+    require(runPython(s"$modelScript $tmpLocation ${endPoints.mkString(",")}"),
+      "error when run the model script")
+
+    // Load the model and input/output tensors
+    import collection.JavaConverters._
+    val modelFile = tmpLocation + s + "model.pb"
+    val tfNodes = TensorflowLoader.parse(modelFile)
+
+    // filter node for gradient computing
+    val tfGraph = TensorflowLoader.buildTFGraph(tfNodes, endPoints.map(_.split(":")(0)))
+    val context = new mutable.HashMap[NodeDef, (Tensor[Float], Tensor[Float])]
+    val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("input"),
+      endPoints.map(_.split(":")(0)), ByteOrder.LITTLE_ENDIAN, Some(context))
+
+    // Compare the tensor contents
+    val tfInputTensor = tfNodes.asScala.filter(_.getName == "input")(0)
+      .getAttrMap.get("value").getTensor
+
+    val input = TensorflowToBigDL.toTensor(tfInputTensor,
+      ByteOrder.LITTLE_ENDIAN)
+
+    val transposeInput = if (transInput) {
+      input.transpose(2, 4).transpose(3, 4).contiguous()
+    } else {
+      input
+    }
+
+    val bigdlOutputs = if (endPoints.length == 1) {
+      Seq(model.forward(transposeInput).toTensor)
+    } else {
+      val t = model.forward(transposeInput).toTable
+      (1 to endPoints.length).map(t[Tensor[Float]](_))
+    }
+
+    // get gradient input of tensorflow
+    val gradInputs = (0 until endPoints.length).map{
+      i =>
+        val t = tfNodes.asScala.filter(_.getName == s"grad_input$i")(0)
+          .getAttrMap.get("value").getTensor
+        var tensor = TensorflowToBigDL.toTensor(t, ByteOrder.LITTLE_ENDIAN)
+        for (trans <- transOutputSeq) {
+          tensor = tensor.transpose(trans._1, trans._2)
+        }
+        tensor.contiguous()
+    }
+
+    // check shape equality here
+    for (i <- 0 until endPoints.length) {
+      bigdlOutputs(i).size() should be(gradInputs(i).size())
+    }
+
+    // find all gradients tensor in tensorflow graph
+    val tfGradTensorsMap = context.keySet.map{
+      node =>
+        val t = tfNodes.asScala.filter(_.getName.contains(node.getName + "_grad"))(0)
+        t.getName ->
+          TensorflowToBigDL.toTensor(t.getAttrMap.get("value").getTensor, ByteOrder.LITTLE_ENDIAN)
+    }.toMap
+
+
+    val comparePair = new mutable.ArrayBuffer[(Tensor[Float], Tensor[Float])]()
+
+    // do backward for each output and its corresponding gradient input
+    for (i <- 0 until gradInputs.length) {
+      // println(s"grad $i")
+      model.backward(transposeInput, gradInputs(i))
+      val pairs = context.keySet.map{
+        x =>
+          val name = s"${x.getName}_grad$i"
+          // if (tfGradTensorsMap.contains(name)) {
+          //   println(x.getName)
+          //   context(x)._2.size().foreach(println(_))
+          //   println(name)
+          //   tfGradTensorsMap(name).size().foreach(println(_))
+          // }
+          (tfGradTensorsMap.get(name).getOrElse(null), context(x)._2)
+      }.toSeq.filter(_._2 != null)
+      comparePair ++= pairs
+    }
+    println(s"Compare ${comparePair.length} pairs of gradient vars in this graph")
+    tmpLocation.deleteOnExit()
+    comparePair
+  }
+
 
   private def processPath(path: String): String = {
     if (path.contains(":")) {

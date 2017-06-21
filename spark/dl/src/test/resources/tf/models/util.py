@@ -57,14 +57,36 @@ def merge_checkpoint(input_graph,
     with gfile.GFile(output_graph, "wb") as f:
         f.write(output_graph_def.SerializeToString())
 
-def run_model(end_points, output_path):
+def run_model(end_points, output_path, model_scope=None):
     outputs = []
     results = []
+    grad_inputs = []
+    grad_vars = []
+    grad_results = []
+    trainable_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope=model_scope)
     i = 0
+    opt = tf.train.GradientDescentOptimizer(0.01)
     for end_point in end_points:
         output = tf.Variable(tf.random_uniform(tf.shape(end_point)), name='output' + str(i))
         outputs.append(output)
         results.append(tf.assign(output, end_point, name = 'assign' + str(i)))
+
+        # set up backward variables
+        # filter None tensor
+        tmp_vars = filter(lambda x: tf.gradients(end_point, x) != [None], trainable_vars)
+        # set up random gradient input
+        grad_input = tf.Variable(tf.random_uniform(tf.shape(end_point)), name='grad_input' + str(i))
+        grad_inputs.append(grad_input)
+        # compute gradients with random input
+        backward = opt.compute_gradients(end_point, var_list=tmp_vars, grad_loss=grad_input)
+        j = 0
+        for gradients, tensor in backward:
+            grad_var = tf.Variable(tf.random_uniform(tf.shape(tensor)), 
+                name='{}_grad{}'.format(tensor.name[:-2], i))
+            grad_vars.append(grad_var)
+            grad_result = tf.assign(grad_var, gradients, name='grad_assign' + str((i+1)*j))
+            grad_results.append(grad_result)
+            j = j + 1
         i = i + 1
 
     saver = tf.train.Saver()
@@ -72,12 +94,19 @@ def run_model(end_points, output_path):
         init = tf.global_variables_initializer()
         sess.run(init) 
         sess.run(results)
+        sess.run(grad_results)
         saver.save(sess, output_path + '/model.chkp')
         tf.train.write_graph(sess.graph, output_path, 'model.pbtxt')
+        # tf.summary.FileWriter(output_path + '/log', sess.graph)
 
     input_graph = output_path + "/model.pbtxt"    
     input_checkpoint = output_path + "/model.chkp"
     output_file = output_path + "/model.pb"
 
-    merge_checkpoint(input_graph, input_checkpoint, map(lambda x: 'assign' + str(x), range(len(end_points))), output_file)
+    output_nodes = map(lambda x: 'assign' + str(x), range(len(end_points)))
+    grades_nodes = map(lambda x: 'grad_assign' + str(x), range(len(grad_results)))
+    output_nodes.extend(grades_nodes)
+
+    # merge_checkpoint(input_graph, input_checkpoint, map(lambda x: 'assign' + str(x), range(len(end_points))), output_file)
+    merge_checkpoint(input_graph, input_checkpoint, output_nodes, output_file)
 
