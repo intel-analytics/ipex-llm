@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
+import com.intel.analytics.bigdl.nn.tf.WithoutInput
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Node, T, Table}
@@ -64,7 +65,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
     var i = 0
     while(i < executions.length) {
       val node = executions(i)
-      inputsBP(i) = if (node.prevNodes.isEmpty) {
+      inputsBP(i) = if (node.prevNodes.isEmpty && !node.element.isInstanceOf[WithoutInput]) {
         inputData(node, input)
       } else if (node.prevNodes.length == 1) {
         node.prevNodes.head.element.output.toTensor[T]
@@ -198,6 +199,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
 
   private def checkRoots : Unit = {
     val roots = executions.filter(_.prevNodes.size == 0)
+      .filter(node => !node.element.isInstanceOf[WithoutInput])
     require(roots.size == inputs.length,
       s"There're ${inputs.length} inputs, but graph has ${roots.size} roots")
     inputs.foreach(n =>
@@ -325,6 +327,12 @@ class Input[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends TensorModule[T
     gradInput = gradOutput
     gradInput
   }
+  override def equals(other: Any): Boolean = {
+    if (!other.isInstanceOf[Input[_]]) return false
+    this.eq(other.asInstanceOf[Input[_]])
+  }
+
+  override def hashCode(): Int = System.identityHashCode(this)
 }
 
 object Input {
