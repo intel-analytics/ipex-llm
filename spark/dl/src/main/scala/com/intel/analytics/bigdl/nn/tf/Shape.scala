@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn
+package com.intel.analytics.bigdl.nn.tf
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, TensorModule}
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -25,7 +25,7 @@ import scala.reflect.ClassTag
  * Given input, return the shape of this input as a 1-D tensor
  */
 @SerialVersionUID(-907995771209831179L)
-class Shape[T: ClassTag](implicit ev: TensorNumeric[T])
+private[bigdl] class Shape[T: ClassTag](implicit ev: TensorNumeric[T])
   extends AbstractModule[Tensor[T], Tensor[T], T] {
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
@@ -40,7 +40,7 @@ class Shape[T: ClassTag](implicit ev: TensorNumeric[T])
   }
 }
 
-object Shape {
+private[bigdl] object Shape {
   def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): Shape[T] = {
     new Shape[T]()
   }
