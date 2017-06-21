@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn
+package com.intel.analytics.bigdl.nn.tf
 
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -27,7 +27,7 @@ import scala.reflect.ClassTag
  * @param value the scalar value to be filled.
  */
 @SerialVersionUID(-471757174144422555L)
-class Fill[T: ClassTag](value: T) (implicit ev: TensorNumeric[T])
+private[bigdl] class Fill[T: ClassTag](value: T) (implicit ev: TensorNumeric[T])
   extends TensorModule[T] {
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
@@ -44,7 +44,7 @@ class Fill[T: ClassTag](value: T) (implicit ev: TensorNumeric[T])
 
 }
 
-object Fill {
+private[bigdl] object Fill {
   def apply[T: ClassTag](value: Double)
        (implicit ev: TensorNumeric[T]) : Fill[T] = {
     new Fill[T](ev.fromType(value))

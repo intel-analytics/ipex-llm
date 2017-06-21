@@ -128,7 +128,7 @@ class Reshape[@specialized(Float, Double) T: ClassTag](
 }
 
 object Reshape {
-  def apply[@specialized(Float, Double) T: ClassTag](
+  def apply[T: ClassTag](
       size: Array[Int],
       batchMode: Option[Boolean] = None)(implicit ev: TensorNumeric[T]) : Reshape[T] = {
     new Reshape[T](size, batchMode)

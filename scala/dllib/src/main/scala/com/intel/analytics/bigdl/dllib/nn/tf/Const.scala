@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn
+package com.intel.analytics.bigdl.nn.tf
 
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -22,13 +22,15 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
+private[bigdl] trait WithoutInput
+
 /**
  * Return a constant tensor defined by value
  * @param value the constant tensor to be returned in forward
  */
 @SerialVersionUID(-4008935551091949324L)
-class Const[T: ClassTag](value: Tensor[T])(implicit ev: TensorNumeric[T])
-  extends AbstractModule[Activity, Tensor[T], T] {
+private[bigdl] class Const[T: ClassTag](value: Tensor[T])(implicit ev: TensorNumeric[T])
+  extends AbstractModule[Activity, Tensor[T], T] with WithoutInput {
 
   output = value
 
@@ -59,7 +61,7 @@ class Const[T: ClassTag](value: Tensor[T])(implicit ev: TensorNumeric[T])
   }
 }
 
-object Const {
+private[bigdl] object Const {
   def apply[T: ClassTag](value: Tensor[T])
       (implicit ev: TensorNumeric[T]): Const[T] = {
     new Const[T](value)
