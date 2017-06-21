@@ -129,7 +129,7 @@ abstract class Optimizer[T: ClassTag, D](
    * Set a check point saved at `path` triggered by `trigger`
    *
    * @param path the directory to save
-   * @param trigger how offten to save the check point
+   * @param trigger how often to save the check point
    * @return the optimizer
    */
   def setCheckpoint(path: String, trigger: Trigger): this.type = {
