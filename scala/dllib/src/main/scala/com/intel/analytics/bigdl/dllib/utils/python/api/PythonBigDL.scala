@@ -32,8 +32,10 @@ import com.intel.analytics.bigdl.nn.Zeros
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.rdd.RDD
 import java.lang.{Integer, Boolean => JBoolean}
+import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.nn.Graph._
+import com.intel.analytics.bigdl.nn.tf.{Const, Fill, Shape, SplitAndSelect}
 
 import scala.collection.JavaConverters._
 import scala.language.existentials
@@ -1278,6 +1280,16 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                 modelPath: String,
                 matchAll: Boolean = true): AbstractModule[Activity, Activity, T] = {
     Module.loadCaffe[T](model, defPath, modelPath, matchAll)
+  }
+
+  def loadTF(path: String, inputs: JList[String], outputs: JList[String],
+             byteOrder: String): AbstractModule[Activity, Activity, T] = {
+    val order = byteOrder match {
+      case "little_endian" => ByteOrder.LITTLE_ENDIAN
+      case "big_endian" => ByteOrder.BIG_ENDIAN
+      case _ => throw new IllegalArgumentException(s"No support byte order $byteOrder")
+    }
+    Module.loadTF[T](path, inputs.asScala, outputs.asScala, order)
   }
 
   def modelPredictRDD(model: AbstractModule[Activity, Activity, T],
