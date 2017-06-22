@@ -1294,7 +1294,7 @@ class CMinTable(Layer):
     '''
     Takes a table of Tensors and outputs the min of all of them.
 
-    >>> cMinTable = CMinTable.md()
+    >>> cMinTable = CMinTable()
     creating: createCMinTable
     '''
 
