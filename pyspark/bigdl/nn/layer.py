@@ -576,6 +576,8 @@ class SpatialConvolution(Layer):
     creating: createSpatialConvolution
     >>> spatialConvolution.setWRegularizer(L1Regularizer(0.5))
     creating: createL1Regularizer
+    >>> spatialConvolution.setBRegularizer(L1Regularizer(0.5))
+    creating: createL1Regularizer
     '''
 
     def __init__(self,
