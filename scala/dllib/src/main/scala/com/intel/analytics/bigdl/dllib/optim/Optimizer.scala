@@ -223,7 +223,7 @@ abstract class Optimizer[T: ClassTag, D](
    * @param warmupIteration how may iteration to warm up
    * @return this optimizer
    */
-  def setDropMoudleProperty(dropPercentage: Double, maxDropPercentage: Double,
+  def setDropModuleProperty(dropPercentage: Double, maxDropPercentage: Double,
     batchsize: Int = 100, warmupIteration: Int = 200): this.type = {
     this.dropPercentage = dropPercentage
     this.maxDropPercentage = maxDropPercentage
