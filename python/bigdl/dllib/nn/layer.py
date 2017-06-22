@@ -323,6 +323,22 @@ class Layer(JavaValue):
         callBigDlFunc(self.bigdl_type, "modelSave", self.value, path,
                       over_write)
 
+    def setWRegularizer(self, wRegularizer):
+        '''
+        set weight regularizer
+        :param wRegularizer: weight regularizer
+        :return:
+        '''
+        self.value.wRegularizer = wRegularizer.value
+
+    def setBRegularizer(self, bRegularizer):
+        '''
+        set bias regularizer
+        :param wRegularizer: bias regularizer
+        :return:
+        '''
+        self.value.bRegularizer = bRegularizer.value
+
 
 class Container(Layer):
     '''
@@ -558,6 +574,10 @@ class SpatialConvolution(Layer):
 
     >>> spatialConvolution = SpatialConvolution(6, 12, 5, 5)
     creating: createSpatialConvolution
+    >>> spatialConvolution.setWRegularizer(L1Regularizer(0.5))
+    creating: createL1Regularizer
+    >>> spatialConvolution.setBRegularizer(L1Regularizer(0.5))
+    creating: createL1Regularizer
     '''
 
     def __init__(self,
@@ -1197,6 +1217,7 @@ class CAdd(Layer):
 
 
     :param size: the size of the bias
+    :param bRegularizer: instance of [[Regularizer]]applied to the bias.
 
 
     >>> cAdd = CAdd([1,2])
@@ -1204,10 +1225,10 @@ class CAdd(Layer):
     '''
 
     def __init__(self,
-                 size,
+                 size, bRegularizer=None,
                  bigdl_type="float"):
         super(CAdd, self).__init__(None, bigdl_type,
-                                   size)
+                                   size, bRegularizer)
 
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
@@ -1294,9 +1315,10 @@ class CMul(Layer):
 
     def __init__(self,
                  size,
+                 wRegularizer=None,
                  bigdl_type="float"):
         super(CMul, self).__init__(None, bigdl_type,
-                                   size)
+                                   size, wRegularizer)
 
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
