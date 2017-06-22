@@ -584,7 +584,7 @@ class SpatialConvolution[T: ClassTag](
         }
 
         if (scaleB != 0) {
-          gradBias.asInstanceOf[Tensor[Double]].addmv(0.0, 1.0, gradOutput2d,
+          gradBias.asInstanceOf[Tensor[Double]].addmv(0.0, ev.toType[Double](scaleB), gradOutput2d,
             ones.asInstanceOf[Tensor[Double]])
         }
 
@@ -600,7 +600,7 @@ class SpatialConvolution[T: ClassTag](
         }
 
         if (scaleB != 0) {
-          gradBias.asInstanceOf[Tensor[Float]].addmv(0.0f, 1.0f, gradOutput2d,
+          gradBias.asInstanceOf[Tensor[Float]].addmv(0.0f, ev.toType[Float](scaleB), gradOutput2d,
             ones.asInstanceOf[Tensor[Float]])
         }
 

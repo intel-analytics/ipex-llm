@@ -134,7 +134,7 @@ class L1L2Regularizer[T: ClassTag](
     gradParameter: Tensor[T],
     scale: Double
   ): Unit = {
-    if (alpha != 0) gradParameter.add(ev.fromType(alpha*scale),
+    if (alpha != 0 && scale != 0) gradParameter.add(ev.fromType(alpha*scale),
       l1SignBuffer.resizeAs(parameter).copy(parameter).sign())
   }
 
@@ -155,7 +155,7 @@ class L1L2Regularizer[T: ClassTag](
     gradParameter: Tensor[T],
     scale: Double
   ): Unit = {
-    if (alpha != 0) gradParameter.add(ev.fromType(alpha* scale), parameter)
+    if (alpha != 0 && scale != 0) gradParameter.add(ev.fromType(alpha* scale), parameter)
   }
 }
 

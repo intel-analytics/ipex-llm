@@ -557,11 +557,11 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
           }
         }
 
-        if (null != gradWeight) {
+        if (null != gradWeight && scaleW != 0) {
           gradWeight(_f - 1 + gradWeightOffset) += scaleW * dotp * invstd
         }
 
-        if (null != gradBias) {
+        if (null != gradBias && scaleB != 0) {
           gradBias(_f - 1 + gradBiasOffset) += scaleB * sum
         }
       })
@@ -645,11 +645,11 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
           }
         }
 
-        if (null != gradWeight) {
+        if (null != gradWeight && scaleW != 0) {
           gradWeight(_f - 1 + gradWeightOffset) += scaleW * dotp * invstd
         }
 
-        if (null != gradBias) {
+        if (null != gradBias && scaleB != 0) {
           gradBias(_f - 1 + gradBiasOffset) += scaleB * sum
         }
       })

@@ -69,19 +69,37 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
   protected var scaleW: Double = 1.0
   protected var scaleB: Double = 1.0
 
+  /**
+    * Get the scale of gradientWeight
+    */
   def getScaleW(): Double = {
     scaleW
   }
 
+  /**
+    * Get the scale of gradientBias
+    */
   def getScaleB(): Double = {
     scaleB
   }
 
+  /**
+    * Set the scale of gradientWeight
+    *
+    * @param w the value of the scale of gradientWeight
+    * @return this
+    */
   def setScaleW(w: Double): this.type = {
     scaleW = w
     this
   }
 
+  /**
+    * Set the scale of gradientBias
+    *
+    * @param b the value of the scale of gradientBias
+    * @return this
+    */
   def setScaleB(b: Double): this.type = {
     scaleB = b
     this

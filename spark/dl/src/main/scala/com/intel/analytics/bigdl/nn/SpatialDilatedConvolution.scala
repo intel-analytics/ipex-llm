@@ -419,16 +419,19 @@ class SpatialDilatedConvolution[T: ClassTag](
       val n = nInputPlane*kW*kH
       var k = columns.size(2)
 
-      // Do GEMM (note: this is a bit confusing because gemm assumes column-major matrices)
-      DenseTensorBLAS.gemm[T](
-        't', 'n',
-        n, m, k,
-        ev.fromType[Double](scaleW),
-        columns.storage().array(), columns.storageOffset() - 1, k,
-        gradOutput_n.storage().array(), gradOutput_n.storageOffset() - 1, k,
-        ev.fromType[Int](1),
-        gradWeight.storage().array(), gradWeight.storageOffset() - 1, n
-      )
+      if (scaleW != 0) {
+        // Do GEMM (note: this is a bit confusing because gemm assumes column-major matrices)
+        DenseTensorBLAS.gemm[T](
+          't', 'n',
+          n, m, k,
+          ev.fromType[Double](scaleW),
+          columns.storage().array(), columns.storageOffset() - 1, k,
+          gradOutput_n.storage().array(), gradOutput_n.storageOffset() - 1, k,
+          ev.fromType[Int](1),
+          gradWeight.storage().array(), gradWeight.storageOffset() - 1, n
+        )
+      }
+
 
       // Do Bias:
       // M,N,K are dims of matrix A and B
@@ -436,7 +439,7 @@ class SpatialDilatedConvolution[T: ClassTag](
       k = outputHeight * outputWidth
 
       // Do GEMV (note: this is a bit confusing because gemv assumes column-major matrices)
-      if (null != gradBias) {
+      if (null != gradBias && scaleB != 0) {
         ev.gemv(
           't',
           k, m,
