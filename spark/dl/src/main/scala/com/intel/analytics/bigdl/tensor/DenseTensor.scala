@@ -2254,8 +2254,13 @@ object DenseTensor {
       return
     }
     if (self.isContiguous() && src.isContiguous() && sameStride(self.stride(), src.stride())) {
-      System.arraycopy(src.storage().array(), src.storageOffset - 1, self.storage().array(),
-        self.storageOffset - 1, self.nElement())
+      val srcArray = src.storage().array()
+      val srcStart = src.storageOffset - 1
+      val selfArray = self.storage().array()
+      val selfStart = self.storageOffset() - 1
+      val selfNElement = self.nElement()
+      System.arraycopy(srcArray, srcStart, selfArray,
+        selfStart, selfNElement)
       return
     }
     val func2 = new TensorFunc4[T] {

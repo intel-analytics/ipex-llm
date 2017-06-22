@@ -110,6 +110,10 @@ class TimeDistributed[T : ClassTag] (layer: TensorModule[T])
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
                                  scale: Double = 1.0): Unit = {
     layer.accGradParameters(fInput, fGradOutput)
+//    println("Time Distributed parameters: ",
+//      if (layer.isInstanceOf[Linear[T]]) layer.parameters()._1(0))
+//    println("Time Distributed grad: ",
+//      if (layer.isInstanceOf[Linear[T]]) layer.parameters()._2(0))
   }
 
   /**
