@@ -79,8 +79,8 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
   var adjH: Int = 0,
   val nGroup: Int = 1,
   val noBias: Boolean = false,
-  val wRegularizer: Regularizer[T] = null,
-  val bRegularizer: Regularizer[T] = null
+  var wRegularizer: Regularizer[T] = null,
+  var bRegularizer: Regularizer[T] = null
   )(implicit ev: TensorNumeric[T])
   extends AbstractModule[A, Tensor[T], T] with Initializable {
 
