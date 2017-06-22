@@ -33,7 +33,7 @@ Status Equal
 
 BigDL Test
    [Arguments]         ${run_keyword}      ${verticals}
-   @{verticalList}= 	 Split String 	     ${verticals}       separator=,
+   @{verticalList}=    Split String        ${verticals}       separator=,
    :FOR                ${vertical}         IN                 @{verticalList}  
    \                   Operate Vertical    ${vertical}        start              running
    \                   Run KeyWord         ${run_keyword}
@@ -41,6 +41,7 @@ BigDL Test
 
 Stop Verticals
    [Arguments]         @{verticalList}
+   Remove Environment Variable             http_proxy
    :FOR                ${vertical}         IN                @{verticalList}
    \                   Operate Vertical    ${vertical}       stop               deployed/stopped
 
