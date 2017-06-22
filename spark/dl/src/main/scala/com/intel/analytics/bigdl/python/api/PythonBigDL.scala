@@ -441,9 +441,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       nOutputDim1)
   }
 
-  def createCAdd(size: JList[Int])
+  def createCAdd(size: JList[Int],
+    bRegularizer: Regularizer[T] = null)
   : CAdd[T] = {
-    CAdd[T](size.asScala.toArray)
+    CAdd[T](size.asScala.toArray, bRegularizer)
   }
 
   def createCAddTable(inplace: Boolean = false)
@@ -466,9 +467,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     CMinTable[T]()
   }
 
-  def createCMul(size: JList[Int])
+  def createCMul(size: JList[Int],
+    wRegularizer: Regularizer[T] = null)
   : CMul[T] = {
-    CMul[T](size.asScala.toArray)
+    CMul[T](size.asScala.toArray, wRegularizer)
   }
 
   def createCMulTable()

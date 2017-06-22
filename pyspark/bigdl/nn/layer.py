@@ -1217,6 +1217,7 @@ class CAdd(Layer):
 
 
     :param size: the size of the bias
+    :param bRegularizer: instance of [[Regularizer]]applied to the bias.
 
 
     >>> cAdd = CAdd([1,2])
