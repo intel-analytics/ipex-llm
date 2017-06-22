@@ -125,6 +125,20 @@ abstract class Optimizer[T: ClassTag, D](
     this
   }
 
+  def setValidation(trigger: Trigger, sampleRDD: RDD[Sample[T]],
+    vMethods : Array[ValidationMethod[T]], batchSize: Int,
+    featurePaddings : Option[Array[Tensor[T]]],
+    labelPadding : Option[T])
+  : this.type = {
+    this.validationTrigger = Some(trigger)
+    val dataSet =
+      (DataSet.rdd(sampleRDD) -> SampleToMiniBatch(batchSize, featurePaddings, labelPadding, None))
+        .asInstanceOf[DistributedDataSet[MiniBatch[T]]]
+    this.validationDataSet = Some(dataSet)
+    this.validationMethods = Some(vMethods)
+    this
+  }
+
   /**
    * Set a check point saved at `path` triggered by `trigger`
    *
