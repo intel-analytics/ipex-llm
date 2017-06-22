@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
+import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
@@ -38,7 +39,8 @@ import scala.reflect.ClassTag
  */
 @SerialVersionUID(3917196591309935383L)
 class CAdd[@specialized(Float, Double) T: ClassTag](
-  val size: Array[Int])(
+  val size: Array[Int],
+  var bRegularizer: Regularizer[T] = null)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
   val bias: Tensor[T] = Tensor[T](size)
@@ -132,6 +134,9 @@ class CAdd[@specialized(Float, Double) T: ClassTag](
         expand.add(ev.fromType[Double](scale), gradOutput)
       }
     }
+    if (null != bRegularizer) {
+      bRegularizer.accRegularization(bias, gradBias)
+    }
   }
 
   override def updateParameters(learningRate: T): Unit = {
@@ -185,8 +190,9 @@ class CAdd[@specialized(Float, Double) T: ClassTag](
 
 object CAdd {
   def apply[@specialized(Float, Double) T: ClassTag](
-    size: Array[Int]
+    size: Array[Int],
+    bRegularizer: Regularizer[T] = null
   )(implicit ev: TensorNumeric[T]) : CAdd[T] = {
-    new CAdd[T](size)
+    new CAdd[T](size, bRegularizer)
   }
 }
