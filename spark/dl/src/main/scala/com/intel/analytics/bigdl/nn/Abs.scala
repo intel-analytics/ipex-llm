@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 import scala.reflect.ClassTag
 
@@ -70,7 +71,7 @@ class Abs[T: ClassTag]
   }
 }
 
-object Abs {
+object Abs extends ModuleSerializable{
   def apply[@specialized(Float, Double) T: ClassTag]()
       (implicit ev: TensorNumeric[T]) : Abs[T] = {
     new Abs[T]()

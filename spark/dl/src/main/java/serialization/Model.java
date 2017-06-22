@@ -4420,6 +4420,15 @@ public final class Model {
      */
     serialization.Model.NameAttrListOrBuilder getAttrListOrBuilder();
 
+    /**
+     * <code>.serialization.AttrValue.DataType dataType = 12;</code>
+     */
+    int getDataTypeValue();
+    /**
+     * <code>.serialization.AttrValue.DataType dataType = 12;</code>
+     */
+    serialization.Model.AttrValue.DataType getDataType();
+
     public serialization.Model.AttrValue.ValueCase getValueCase();
   }
   /**
@@ -4434,6 +4443,7 @@ public final class Model {
       super(builder);
     }
     private AttrValue() {
+      dataType_ = 0;
     }
 
     @java.lang.Override
@@ -4563,6 +4573,12 @@ public final class Model {
               valueCase_ = 11;
               break;
             }
+            case 96: {
+              int rawValue = input.readEnum();
+
+              dataType_ = rawValue;
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -4584,6 +4600,176 @@ public final class Model {
       return serialization.Model.internal_static_serialization_AttrValue_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               serialization.Model.AttrValue.class, serialization.Model.AttrValue.Builder.class);
+    }
+
+    /**
+     * Protobuf enum {@code serialization.AttrValue.DataType}
+     */
+    public enum DataType
+        implements com.google.protobuf.ProtocolMessageEnum {
+      /**
+       * <code>INT32 = 0;</code>
+       */
+      INT32(0),
+      /**
+       * <code>INT64 = 1;</code>
+       */
+      INT64(1),
+      /**
+       * <code>FLOAT = 2;</code>
+       */
+      FLOAT(2),
+      /**
+       * <code>DOUBLE = 3;</code>
+       */
+      DOUBLE(3),
+      /**
+       * <code>STRING = 4;</code>
+       */
+      STRING(4),
+      /**
+       * <code>BOOL = 5;</code>
+       */
+      BOOL(5),
+      /**
+       * <code>TENSOR = 6;</code>
+       */
+      TENSOR(6),
+      /**
+       * <code>MODULE = 7;</code>
+       */
+      MODULE(7),
+      /**
+       * <code>INITMETHOD = 8;</code>
+       */
+      INITMETHOD(8),
+      /**
+       * <code>REGULARIZER = 9;</code>
+       */
+      REGULARIZER(9),
+      UNRECOGNIZED(-1),
+      ;
+
+      /**
+       * <code>INT32 = 0;</code>
+       */
+      public static final int INT32_VALUE = 0;
+      /**
+       * <code>INT64 = 1;</code>
+       */
+      public static final int INT64_VALUE = 1;
+      /**
+       * <code>FLOAT = 2;</code>
+       */
+      public static final int FLOAT_VALUE = 2;
+      /**
+       * <code>DOUBLE = 3;</code>
+       */
+      public static final int DOUBLE_VALUE = 3;
+      /**
+       * <code>STRING = 4;</code>
+       */
+      public static final int STRING_VALUE = 4;
+      /**
+       * <code>BOOL = 5;</code>
+       */
+      public static final int BOOL_VALUE = 5;
+      /**
+       * <code>TENSOR = 6;</code>
+       */
+      public static final int TENSOR_VALUE = 6;
+      /**
+       * <code>MODULE = 7;</code>
+       */
+      public static final int MODULE_VALUE = 7;
+      /**
+       * <code>INITMETHOD = 8;</code>
+       */
+      public static final int INITMETHOD_VALUE = 8;
+      /**
+       * <code>REGULARIZER = 9;</code>
+       */
+      public static final int REGULARIZER_VALUE = 9;
+
+
+      public final int getNumber() {
+        if (this == UNRECOGNIZED) {
+          throw new java.lang.IllegalArgumentException(
+              "Can't get the number of an unknown enum value.");
+        }
+        return value;
+      }
+
+      /**
+       * @deprecated Use {@link #forNumber(int)} instead.
+       */
+      @java.lang.Deprecated
+      public static DataType valueOf(int value) {
+        return forNumber(value);
+      }
+
+      public static DataType forNumber(int value) {
+        switch (value) {
+          case 0: return INT32;
+          case 1: return INT64;
+          case 2: return FLOAT;
+          case 3: return DOUBLE;
+          case 4: return STRING;
+          case 5: return BOOL;
+          case 6: return TENSOR;
+          case 7: return MODULE;
+          case 8: return INITMETHOD;
+          case 9: return REGULARIZER;
+          default: return null;
+        }
+      }
+
+      public static com.google.protobuf.Internal.EnumLiteMap<DataType>
+          internalGetValueMap() {
+        return internalValueMap;
+      }
+      private static final com.google.protobuf.Internal.EnumLiteMap<
+          DataType> internalValueMap =
+            new com.google.protobuf.Internal.EnumLiteMap<DataType>() {
+              public DataType findValueByNumber(int number) {
+                return DataType.forNumber(number);
+              }
+            };
+
+      public final com.google.protobuf.Descriptors.EnumValueDescriptor
+          getValueDescriptor() {
+        return getDescriptor().getValues().get(ordinal());
+      }
+      public final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptorForType() {
+        return getDescriptor();
+      }
+      public static final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptor() {
+        return serialization.Model.AttrValue.getDescriptor().getEnumTypes().get(0);
+      }
+
+      private static final DataType[] VALUES = values();
+
+      public static DataType valueOf(
+          com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+        if (desc.getType() != getDescriptor()) {
+          throw new java.lang.IllegalArgumentException(
+            "EnumValueDescriptor is not for this type.");
+        }
+        if (desc.getIndex() == -1) {
+          return UNRECOGNIZED;
+        }
+        return VALUES[desc.getIndex()];
+      }
+
+      private final int value;
+
+      private DataType(int value) {
+        this.value = value;
+      }
+
+      // @@protoc_insertion_point(enum_scope:serialization.AttrValue.DataType)
     }
 
     public interface ListValueOrBuilder extends
@@ -7844,6 +8030,22 @@ public final class Model {
       return serialization.Model.NameAttrList.getDefaultInstance();
     }
 
+    public static final int DATATYPE_FIELD_NUMBER = 12;
+    private int dataType_;
+    /**
+     * <code>.serialization.AttrValue.DataType dataType = 12;</code>
+     */
+    public int getDataTypeValue() {
+      return dataType_;
+    }
+    /**
+     * <code>.serialization.AttrValue.DataType dataType = 12;</code>
+     */
+    public serialization.Model.AttrValue.DataType getDataType() {
+      serialization.Model.AttrValue.DataType result = serialization.Model.AttrValue.DataType.valueOf(dataType_);
+      return result == null ? serialization.Model.AttrValue.DataType.UNRECOGNIZED : result;
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -7892,6 +8094,9 @@ public final class Model {
       }
       if (valueCase_ == 11) {
         output.writeMessage(11, (serialization.Model.NameAttrList) value_);
+      }
+      if (dataType_ != serialization.Model.AttrValue.DataType.INT32.getNumber()) {
+        output.writeEnum(12, dataType_);
       }
     }
 
@@ -7947,6 +8152,10 @@ public final class Model {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(11, (serialization.Model.NameAttrList) value_);
       }
+      if (dataType_ != serialization.Model.AttrValue.DataType.INT32.getNumber()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(12, dataType_);
+      }
       memoizedSize = size;
       return size;
     }
@@ -7963,6 +8172,7 @@ public final class Model {
       serialization.Model.AttrValue other = (serialization.Model.AttrValue) obj;
 
       boolean result = true;
+      result = result && dataType_ == other.dataType_;
       result = result && getValueCase().equals(
           other.getValueCase());
       if (!result) return false;
@@ -8026,6 +8236,8 @@ public final class Model {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (37 * hash) + DATATYPE_FIELD_NUMBER;
+      hash = (53 * hash) + dataType_;
       switch (valueCase_) {
         case 1:
           hash = (37 * hash) + STRINGVALUE_FIELD_NUMBER;
@@ -8195,6 +8407,8 @@ public final class Model {
       }
       public Builder clear() {
         super.clear();
+        dataType_ = 0;
+
         valueCase_ = 0;
         value_ = null;
         return this;
@@ -8272,6 +8486,7 @@ public final class Model {
             result.value_ = attrListBuilder_.build();
           }
         }
+        result.dataType_ = dataType_;
         result.valueCase_ = valueCase_;
         onBuilt();
         return result;
@@ -8314,6 +8529,9 @@ public final class Model {
 
       public Builder mergeFrom(serialization.Model.AttrValue other) {
         if (other == serialization.Model.AttrValue.getDefaultInstance()) return this;
+        if (other.dataType_ != 0) {
+          setDataTypeValue(other.getDataTypeValue());
+        }
         switch (other.getValueCase()) {
           case STRINGVALUE: {
             valueCase_ = 1;
@@ -9556,6 +9774,50 @@ public final class Model {
         onChanged();;
         return attrListBuilder_;
       }
+
+      private int dataType_ = 0;
+      /**
+       * <code>.serialization.AttrValue.DataType dataType = 12;</code>
+       */
+      public int getDataTypeValue() {
+        return dataType_;
+      }
+      /**
+       * <code>.serialization.AttrValue.DataType dataType = 12;</code>
+       */
+      public Builder setDataTypeValue(int value) {
+        dataType_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.serialization.AttrValue.DataType dataType = 12;</code>
+       */
+      public serialization.Model.AttrValue.DataType getDataType() {
+        serialization.Model.AttrValue.DataType result = serialization.Model.AttrValue.DataType.valueOf(dataType_);
+        return result == null ? serialization.Model.AttrValue.DataType.UNRECOGNIZED : result;
+      }
+      /**
+       * <code>.serialization.AttrValue.DataType dataType = 12;</code>
+       */
+      public Builder setDataType(serialization.Model.AttrValue.DataType value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        
+        dataType_ = value.getNumber();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.serialization.AttrValue.DataType dataType = 12;</code>
+       */
+      public Builder clearDataType() {
+        
+        dataType_ = 0;
+        onChanged();
+        return this;
+      }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return this;
@@ -10480,7 +10742,7 @@ public final class Model {
       "AttrValue:\0028\001\")\n\013BigDLTensor\022\014\n\004size\030\001 \003",
       "(\005\022\014\n\004data\030\002 \003(\001\"[\n\013Regularizer\0227\n\017regul" +
       "arizerType\030\001 \001(\0162\036.serialization.Regular" +
-      "izerType\022\023\n\013regularData\030\002 \003(\001\"\244\005\n\tAttrVa" +
+      "izerType\022\023\n\013regularData\030\002 \003(\001\"\342\006\n\tAttrVa" +
       "lue\022\025\n\013stringValue\030\001 \001(\tH\000\022\024\n\nint32Value" +
       "\030\002 \001(\005H\000\022\024\n\nint64Value\030\003 \001(\003H\000\022\024\n\nfloatV" +
       "alue\030\004 \001(\002H\000\022\023\n\tboolValue\030\005 \001(\010H\000\0221\n\013ten" +
@@ -10491,21 +10753,25 @@ public final class Model {
       "larizerValue\030\t \001(\0132\032.serialization.Regul" +
       "arizerH\000\0227\n\tlistValue\030\n \001(\0132\".serializat" +
       "ion.AttrValue.ListValueH\000\022/\n\010attrList\030\013 " +
-      "\001(\0132\033.serialization.NameAttrListH\000\032\336\001\n\tL" +
-      "istValue\022\013\n\003str\030\001 \003(\t\022\013\n\003i32\030\002 \003(\005\022\013\n\003i6" +
-      "4\030\003 \003(\003\022\013\n\003flt\030\004 \003(\002\022\017\n\007boolean\030\005 \003(\010\022*\n" +
-      "\006tensor\030\006 \003(\0132\032.serialization.BigDLTenso" +
-      "r\022-\n\nbigDLModel\030\007 \003(\0132\031.serialization.Bi" +
-      "gDLModel\0221\n\014nameAttrList\030\010 \003(\0132\033.seriali" +
-      "zation.NameAttrListB\007\n\005value\"\230\001\n\014NameAtt",
-      "rList\022\014\n\004name\030\001 \001(\t\0223\n\004attr\030\002 \003(\0132%.seri" +
-      "alization.NameAttrList.AttrEntry\032E\n\tAttr" +
-      "Entry\022\013\n\003key\030\001 \001(\t\022\'\n\005value\030\002 \001(\0132\030.seri" +
-      "alization.AttrValue:\0028\001*9\n\nInitMethod\022\013\n" +
-      "\007Default\020\000\022\n\n\006Xavier\020\001\022\022\n\016BilinearFiller" +
-      "\020\002*L\n\017RegularizerType\022\023\n\017L1L2Regularizer" +
-      "\020\000\022\021\n\rL1Regularizer\020\001\022\021\n\rL2Regularizer\020\002" +
-      "b\006proto3"
+      "\001(\0132\033.serialization.NameAttrListH\000\0223\n\010da" +
+      "taType\030\014 \001(\0162!.serialization.AttrValue.D" +
+      "ataType\032\336\001\n\tListValue\022\013\n\003str\030\001 \003(\t\022\013\n\003i3" +
+      "2\030\002 \003(\005\022\013\n\003i64\030\003 \003(\003\022\013\n\003flt\030\004 \003(\002\022\017\n\007boo" +
+      "lean\030\005 \003(\010\022*\n\006tensor\030\006 \003(\0132\032.serializati" +
+      "on.BigDLTensor\022-\n\nbigDLModel\030\007 \003(\0132\031.ser" +
+      "ialization.BigDLModel\0221\n\014nameAttrList\030\010 ",
+      "\003(\0132\033.serialization.NameAttrList\"\206\001\n\010Dat" +
+      "aType\022\t\n\005INT32\020\000\022\t\n\005INT64\020\001\022\t\n\005FLOAT\020\002\022\n" +
+      "\n\006DOUBLE\020\003\022\n\n\006STRING\020\004\022\010\n\004BOOL\020\005\022\n\n\006TENS" +
+      "OR\020\006\022\n\n\006MODULE\020\007\022\016\n\nINITMETHOD\020\010\022\017\n\013REGU" +
+      "LARIZER\020\tB\007\n\005value\"\230\001\n\014NameAttrList\022\014\n\004n" +
+      "ame\030\001 \001(\t\0223\n\004attr\030\002 \003(\0132%.serialization." +
+      "NameAttrList.AttrEntry\032E\n\tAttrEntry\022\013\n\003k" +
+      "ey\030\001 \001(\t\022\'\n\005value\030\002 \001(\0132\030.serialization." +
+      "AttrValue:\0028\001*9\n\nInitMethod\022\013\n\007Default\020\000" +
+      "\022\n\n\006Xavier\020\001\022\022\n\016BilinearFiller\020\002*L\n\017Regu",
+      "larizerType\022\023\n\017L1L2Regularizer\020\000\022\021\n\rL1Re" +
+      "gularizer\020\001\022\021\n\rL2Regularizer\020\002b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -10548,7 +10814,7 @@ public final class Model {
     internal_static_serialization_AttrValue_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_serialization_AttrValue_descriptor,
-        new java.lang.String[] { "StringValue", "Int32Value", "Int64Value", "FloatValue", "BoolValue", "TensorValue", "BigDLModleValue", "InitMethodValue", "RegularizerValue", "ListValue", "AttrList", "Value", });
+        new java.lang.String[] { "StringValue", "Int32Value", "Int64Value", "FloatValue", "BoolValue", "TensorValue", "BigDLModleValue", "InitMethodValue", "RegularizerValue", "ListValue", "AttrList", "DataType", "Value", });
     internal_static_serialization_AttrValue_ListValue_descriptor =
       internal_static_serialization_AttrValue_descriptor.getNestedTypes().get(0);
     internal_static_serialization_AttrValue_ListValue_fieldAccessorTable = new

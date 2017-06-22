@@ -21,6 +21,7 @@ enum RegularizerType {
     L1Regularizer = 1;
     L2Regularizer = 2;
 }
+
 message BigDLTensor{
     repeated int32 size = 1; //size of tensor
     repeated double data = 2; //tensor element
@@ -40,6 +41,18 @@ message AttrValue {
         repeated BigDLModel bigDLModel = 7; // "list(BigDLModel)"
         repeated NameAttrList nameAttrList = 8; //
     }
+    enum DataType {
+        INT32 = 0;
+        INT64 = 1;
+        FLOAT = 2;
+        DOUBLE = 3;
+        STRING = 4;
+        BOOL = 5;
+        TENSOR = 6;
+        MODULE = 7;
+        INITMETHOD = 8;
+        REGULARIZER = 9;
+    }
     oneof value {
         string stringValue = 1; // string value
         int32 int32Value = 2; // int32 value
@@ -53,6 +66,7 @@ message AttrValue {
         ListValue listValue = 10; // list value of any type
         NameAttrList attrList = 11; // name attribute list
     }
+    DataType dataType = 12;
 }
 message NameAttrList {
     string name = 1;
