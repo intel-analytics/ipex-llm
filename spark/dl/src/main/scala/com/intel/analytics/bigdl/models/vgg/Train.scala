@@ -35,8 +35,11 @@ object Train {
     trainParser.parse(args, new TrainParams()).map(param => {
       val conf = Engine.createSparkConf().setAppName("Train Vgg on Cifar10")
       val sc = new SparkContext(conf)
-      Engine.init
+//      Engine.init
+      Engine.init(param.nodeNum, param.corePerTask, true)
 
+      Engine.setPartitionNumber(Some(param.partitionNum))
+      Engine.setCoreNumber(param.corePerTask)
       val trainDataSet = DataSet.array(Utils.loadTrain(param.folder), sc) ->
         BytesToBGRImg() -> BGRImgNormalizer(trainMean, trainStd) ->
         BGRImgToBatch(param.batchSize)

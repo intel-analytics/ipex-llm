@@ -37,7 +37,10 @@ object Utils {
     stateSnapshot: Option[String] = None,
     batchSize: Int = 112,
     maxEpoch: Int = 90,
-    overWriteCheckpoint: Boolean = false
+    overWriteCheckpoint: Boolean = false,
+    partitionNum: Int = -1,
+    nodeNum: Int = -1,
+    corePerTask: Int = -1
   )
 
   val trainParser = new OptionParser[TrainParams]("BigDL Vgg on Cifar10 Example") {
@@ -62,6 +65,18 @@ object Utils {
     opt[Unit]("overWrite")
       .text("overwrite checkpoint files")
       .action( (_, c) => c.copy(overWriteCheckpoint = true) )
+    opt[Int]("partitionNum")
+      .text("partition number")
+      .action((x, c) => c.copy(partitionNum = x))
+      .required()
+    opt[Int]("nodeNum")
+      .text("node number")
+      .action((x, c) => c.copy(nodeNum = x))
+      .required()
+    opt[Int]("corePerTask")
+      .text("core number per task")
+      .action((x, c) => c.copy(corePerTask = x))
+      .required()
   }
 
   case class TestParams(

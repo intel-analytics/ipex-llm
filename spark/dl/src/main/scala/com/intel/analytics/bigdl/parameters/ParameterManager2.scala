@@ -123,16 +123,16 @@ class ParameterManager2(val id: Int, val executorId: Int,
   }
 
   /** Aggregate gradients hosted in one executor */
-  def aggregateLocalGradient[T: ClassTag]() : (Tensor[T], Int, Double) = {
-//  def aggregateLocalGradient[T: ClassTag]() : Tensor[T] = {
+//  def aggregateLocalGradient[T: ClassTag]() : (Tensor[T], Int, Double) = {
+  def aggregateLocalGradient[T: ClassTag]() : Tensor[T] = {
     val blockIds = master.getBlockId(executorId)
     val gradientBuffer = new Array[Tensor[T]](blockIds.size)
     val lossArray = new Array[Array[Double]](blockIds.size)
     Engine.pmPool.invokeAndWait((0 until blockIds.size).map(tid => () => {
-        val t = getLocalParameter2[T](blockIds(tid))
-      gradientBuffer(tid) = t._1
-      lossArray(tid) = t._2
-//      gradientBuffer(tid) = getLocalParameter(blockIds(tid))
+//        val t = getLocalParameter2[T](blockIds(tid))
+//      gradientBuffer(tid) = t._1
+//      lossArray(tid) = t._2
+      gradientBuffer(tid) = getLocalParameter(blockIds(tid))
     }))
 
     val poolSize = Engine.pmPool.getPoolSize
@@ -151,8 +151,8 @@ class ParameterManager2(val id: Int, val executorId: Int,
       }
     }))
     master.clearBlockId(executorId)
-    (gradientBuffer(0), blockIds.size, lossArray.flatten.sum)
-//    gradientBuffer(0)
+//    (gradientBuffer(0), blockIds.size, lossArray.flatten.sum)
+    gradientBuffer(0)
   }
 
   /** Split aggregated gradient into executor number and put them in blockmanager */
@@ -299,22 +299,22 @@ class ParameterManager2(val id: Int, val executorId: Int,
   }
 
   /** Put a gradient in local blockmanager */
-  def sendGradientPartition[T: ClassTag](gradient: Tensor[T], pid: Int, loss: Double): Unit = {
-//  def sendGradientPartition[T: ClassTag](gradient: Tensor[T], pid: Int): Unit = {
+//  def sendGradientPartition[T: ClassTag](gradient: Tensor[T], pid: Int, loss: Double): Unit = {
+  def sendGradientPartition[T: ClassTag](gradient: Tensor[T], pid: Int): Unit = {
     val gradientsId = getGradientPartitionId(pid)
 
     BlockManagerWrapper.getLocal(gradientsId).map(_.data.next()) match {
       case Some(x) =>
-        val (t, loss2) = x.asInstanceOf[(Tensor[T], Array[Double])]
-        t.copy(gradient)
-        loss2(0) = loss
-//        val t = x.asInstanceOf[Tensor[T]]
+//        val (t, loss2) = x.asInstanceOf[(Tensor[T], Array[Double])]
 //        t.copy(gradient)
+//        loss2(0) = loss
+        val t = x.asInstanceOf[Tensor[T]]
+        t.copy(gradient)
         
 
       case None =>
-        BlockManagerWrapper.putSingle(gradientsId, (gradient, Array(loss)),
-//        BlockManagerWrapper.putSingle(gradientsId, gradient,
+//        BlockManagerWrapper.putSingle(gradientsId, (gradient, Array(loss)),
+        BlockManagerWrapper.putSingle(gradientsId, gradient,
           StorageLevel.MEMORY_AND_DISK, tellMaster = false)
     }
     master.updateBlockId(executorId, gradientsId)

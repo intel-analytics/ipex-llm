@@ -33,7 +33,10 @@ object Options {
     maxEpoch: Option[Int] = None,
     maxIteration: Int = 62000,
     weightDecay: Double = 0.0001,
-    checkpointIteration: Int = 620
+    checkpointIteration: Int = 620,
+    partitionNum: Int = -1,
+    nodeNum: Int = -1,
+    corePerTask: Int = -1
   )
 
   val trainParser = new OptionParser[TrainParams]("BigDL Inception Example") {
@@ -75,7 +78,18 @@ object Options {
     opt[Int]("checkpointIteration")
       .text("checkpoint interval of iterations")
       .action((x, c) => c.copy(checkpointIteration = x))
-
+    opt[Int]("partitionNum")
+      .text("partition number")
+      .action((x, c) => c.copy(partitionNum = x))
+      .required()
+    opt[Int]("nodeNum")
+      .text("node number")
+      .action((x, c) => c.copy(nodeNum = x))
+      .required()
+    opt[Int]("corePerTask")
+      .text("core number per task")
+      .action((x, c) => c.copy(corePerTask = x))
+      .required()
   }
 
   case class TestParams(
