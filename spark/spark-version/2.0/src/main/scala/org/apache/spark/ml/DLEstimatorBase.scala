@@ -76,8 +76,8 @@ private[ml] abstract class DLEstimatorBase
   }
 
   /**
-    * convert feature and label columns to array data
-    */
+   * convert feature and label columns to array data
+   */
   protected def toArrayType(dataset: DataFrame): RDD[(Seq[AnyVal], Seq[AnyVal])] = {
     val featureType = dataset.schema($(featuresCol)).dataType
     val featureColIndex = dataset.schema.fieldIndex($(featuresCol))
