@@ -75,7 +75,6 @@ class DLClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val dlModel = classifier.fit(df)
     dlModel.isInstanceOf[DLClassifierModel[_]] should be(true)
-    dlModel.transform(df).show()
 
     assert(dlModel.transform(df).where("prediction=label").count() > nRecords * 0.8)
   }
@@ -127,7 +126,6 @@ class DLClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
       val pipelineModel = pipeline.fit(df)
       pipelineModel.isInstanceOf[PipelineModel] should be(true)
-      pipelineModel.transform(df).show()
       assert(pipelineModel.transform(df).where("prediction=label").count() > nRecords * 0.8)
     }
   }
