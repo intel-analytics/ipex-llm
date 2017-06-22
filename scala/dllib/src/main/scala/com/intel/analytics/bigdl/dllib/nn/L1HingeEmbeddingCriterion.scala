@@ -32,7 +32,7 @@ import scala.reflect.ClassTag
 
 @SerialVersionUID(- 1765228642089353823L)
 class L1HingeEmbeddingCriterion[@specialized(Float, Double) T: ClassTag](val margin: Double = 1)
- (implicit ev: TensorNumeric[T]) extends AbstractCriterion[Table, Table, T]{
+ (implicit ev: TensorNumeric[T]) extends AbstractCriterion[Table, Tensor[T], T]{
 
   private def mathSign(t: T): T = {
     var res = 0
@@ -46,8 +46,10 @@ class L1HingeEmbeddingCriterion[@specialized(Float, Double) T: ClassTag](val mar
     ev.fromType(res)
   }
 
-  override def updateOutput(input: Table, target: Table): T = {
-    val y = target[T](1.0)
+  override def updateOutput(input: Table, target: Tensor[T]): T = {
+    require(target.dim() == 1 && target.nElement() == 1,
+      "L1HingeEmbeddingCriterion.updateOutput: target should be vector with one element")
+    val y = target.valueAt(1)
     val input1 = input[Tensor[T]](1)
     val input2 = input[Tensor[T]](2)
 
@@ -58,8 +60,10 @@ class L1HingeEmbeddingCriterion[@specialized(Float, Double) T: ClassTag](val mar
     output
   }
 
-  override def updateGradInput(input: Table, target: Table): Table = {
-    val y = target[T](1)
+  override def updateGradInput(input: Table, target: Tensor[T]): Table = {
+    require(target.dim() == 1 && target.nElement() == 1,
+      "L1HingeEmbeddingCriterion.updateGradInput: target should be vector with one element")
+    val y = target.valueAt(1)
     if (!gradInput.contains(1)) gradInput.insert(1, Tensor[T])
     if (!gradInput.contains(2)) gradInput.insert(2, Tensor[T])
 
