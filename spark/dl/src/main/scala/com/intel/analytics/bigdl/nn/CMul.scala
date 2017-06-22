@@ -150,8 +150,8 @@ class CMul[@specialized(Float, Double) T: ClassTag](
       }
 
     }
-    if (null != wRegularizer) {
-      wRegularizer.accRegularization(weight, gradWeight)
+    if (null != wRegularizer && scaleW != 0) {
+      wRegularizer.accRegularization(weight, gradWeight, scaleW)
     }
   }
 

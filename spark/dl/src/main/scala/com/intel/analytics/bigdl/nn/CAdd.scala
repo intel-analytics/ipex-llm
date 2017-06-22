@@ -137,7 +137,7 @@ class CAdd[@specialized(Float, Double) T: ClassTag](
       }
     }
     if (null != bRegularizer) {
-      bRegularizer.accRegularization(bias, gradBias)
+      bRegularizer.accRegularization(bias, gradBias, scaleB)
     }
   }
 
