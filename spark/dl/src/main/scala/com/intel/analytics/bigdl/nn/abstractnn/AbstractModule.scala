@@ -62,44 +62,44 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
    */
   var gradInput: A = Activity[A, T]()
 
-  /*
-  * The scale of gradient weight and gradient bias
-  * before gradParameters being accumulated.
-  */
+  /**
+   * The scale of gradient weight and gradient bias
+   * before gradParameters being accumulated.
+   */
   protected var scaleW: Double = 1.0
   protected var scaleB: Double = 1.0
 
   /**
-    * Get the scale of gradientWeight
-    */
+   * Get the scale of gradientWeight
+   */
   def getScaleW(): Double = {
     scaleW
   }
 
   /**
-    * Get the scale of gradientBias
-    */
+   * Get the scale of gradientBias
+   */
   def getScaleB(): Double = {
     scaleB
   }
 
   /**
-    * Set the scale of gradientWeight
-    *
-    * @param w the value of the scale of gradientWeight
-    * @return this
-    */
+   * Set the scale of gradientWeight
+   *
+   * @param w the value of the scale of gradientWeight
+   * @return this
+   */
   def setScaleW(w: Double): this.type = {
     scaleW = w
     this
   }
 
   /**
-    * Set the scale of gradientBias
-    *
-    * @param b the value of the scale of gradientBias
-    * @return this
-    */
+   * Set the scale of gradientBias
+   *
+   * @param b the value of the scale of gradientBias
+   * @return this
+   */
   def setScaleB(b: Double): this.type = {
     scaleB = b
     this

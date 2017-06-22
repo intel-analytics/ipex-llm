@@ -237,10 +237,10 @@ object Utils {
   }
 
   /**
-    * get whether the module is layerwise scaled
-    * @param model input module
-    * @return whether the module is layerwise scaled
-    */
+   * get whether the module is layerwise scaled
+   * @param model input module
+   * @return whether the module is layerwise scaled
+   */
   def isLayerwiseScaled[T](model: Module[T]): Boolean = model match {
     case m: Container[Activity, Activity, T] =>
       var i = 0
