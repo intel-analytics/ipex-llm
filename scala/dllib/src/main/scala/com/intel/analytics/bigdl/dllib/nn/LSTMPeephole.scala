@@ -51,9 +51,9 @@ class LSTMPeephole[T : ClassTag] (
   val inputSize: Int,
   val hiddenSize: Int,
   val p: Double = 0.0,
-  val wRegularizer: Regularizer[T] = null,
-  val uRegularizer: Regularizer[T] = null,
-  val bRegularizer: Regularizer[T] = null
+  var wRegularizer: Regularizer[T] = null,
+  var uRegularizer: Regularizer[T] = null,
+  var bRegularizer: Regularizer[T] = null
 )
   (implicit ev: TensorNumeric[T])
   extends Cell[T](

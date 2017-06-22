@@ -46,7 +46,7 @@ class LookupTable[T: ClassTag]
   val maxNorm: Double = Double.MaxValue,
   val normType: Double = 2.0,
   shouldScaleGradByFreq: Boolean = false,
-  wRegularizer: Regularizer[T] = null
+  var wRegularizer: Regularizer[T] = null
 )
 (implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
