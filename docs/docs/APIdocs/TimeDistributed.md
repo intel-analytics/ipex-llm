@@ -67,5 +67,41 @@ Its output should be
 
 **Python example:**
 ```python
-Python Code
+from bigdl.nn.layer import TimeDistributed,Sum
+import numpy as np
+
+layer = TimeDistributed(Sum(1, squeeze = False, n_input_dims = 2))
+
+input = np.array([[
+  [
+    [1.0, 2.0],
+    [3.0, 4.0]
+  ],
+  [
+    [2.0, 3.0],
+    [4.0, 5.0]
+  ]
+]])
+layer.forward(input)
+layer.backward(input, np.array([[
+  [
+    [0.1, 0.2]
+  ],
+  [
+    [0.3, 0.4]
+  ]
+]]))
+```
+
+Its output should be
+```
+array([[[[ 4.,  6.]],
+
+        [[ 6.,  8.]]]], dtype=float32)
+        
+array([[[[ 0.1       ,  0.2       ],
+         [ 0.1       ,  0.2       ]],
+
+        [[ 0.30000001,  0.40000001],
+         [ 0.30000001,  0.40000001]]]], dtype=float32)
 ```

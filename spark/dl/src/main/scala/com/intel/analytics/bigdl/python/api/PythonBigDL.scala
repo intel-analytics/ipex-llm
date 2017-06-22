@@ -959,11 +959,15 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def createSum(dimension: Int = 1,
                 nInputDims: Int = -1,
-                sizeAverage: Boolean = false)
+                sizeAverage: Boolean = false,
+                squeeze: Boolean = true
+               )
   : Sum[T] = {
     Sum[T](dimension,
       nInputDims,
-      sizeAverage)
+      sizeAverage,
+      squeeze
+    )
   }
 
   def createTanhShrink()

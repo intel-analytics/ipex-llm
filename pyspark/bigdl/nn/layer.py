@@ -2997,10 +2997,12 @@ class Sum(Layer):
                  dimension=1,
                  n_input_dims=-1,
                  size_average=False,
+                 squeeze=True,
                  bigdl_type="float"):
         super(Sum, self).__init__(None, bigdl_type,
                                   dimension,
                                   n_input_dims,
+                                  squeeze,
                                   size_average)
 
 
