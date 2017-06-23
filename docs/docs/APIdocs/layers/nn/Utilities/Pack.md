@@ -61,7 +61,7 @@ input2 = np.random.randn(2, 2)
 input = [input1, input2]
 output = module.forward(input)
 
-> print input
+> input
 [array([[ 0.92741416, -3.29826586],
        [-0.03147819, -0.10049306]]), array([[-0.27146461, -0.25729802],
        [ 0.1316149 ,  1.27620145]])]
