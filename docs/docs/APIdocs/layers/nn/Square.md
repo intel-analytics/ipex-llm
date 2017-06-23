@@ -13,7 +13,12 @@ Apply an element-wise square operation.
 
 **Scala example:**
 ```scala
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor._
+
 val module = Square()
+
 println(module.forward(Tensor.range(1, 6, 1)))
 ```
 Output is
@@ -31,6 +36,9 @@ com.intel.analytics.bigdl.tensor.Tensor[Float] =
 
 **Python example:**
 ```python
+from bigdl.nn.layer import *
+import numpy as np
+
 module = Square()
 print(module.forward(np.arange(1, 7, 1)))
 ```
