@@ -20,6 +20,10 @@ Notice: No memory copy, it set the stride along the `dim`-th dimension to zero.
 
 **Scala example:**
 ```scala
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor._
+
 val module = Replicate(4, 1, 2)
 
 println(module.forward(Tensor.range(1, 6, 1).resize(1, 2, 3)))
@@ -48,6 +52,9 @@ com.intel.analytics.bigdl.tensor.Tensor[Float] =
 
 **Python example:**
 ```python
+from bigdl.nn.layer import *
+import numpy as np
+
 module = Replicate(4, 1, 2)
 
 print(module.forward(np.arange(1, 7, 1).reshape(1, 2, 3)))
