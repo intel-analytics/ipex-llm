@@ -38,12 +38,12 @@ class CaffeLoaderSpec extends FlatSpec with Matchers {
   val modelPath = getClass().getClassLoader().getResource("caffe/test.caffemodel").getPath
 
   val dummyConverter = (layer : GeneratedMessage) => {
-    Identity[Double].apply()
+    Identity[Double].inputs()
   }
 
   private def loadDummy[T : ClassTag](message : GeneratedMessage)(implicit ev: TensorNumeric[T])
     : Seq[ModuleNode[T]] = {
-    Seq(Identity[T].setName("Dummy").apply())
+    Seq(Identity[T].setName("Dummy").inputs())
   }
 
   val convertMap = new mutable.HashMap[String, (GeneratedMessage) => Seq[ModuleNode[Double]]]()
