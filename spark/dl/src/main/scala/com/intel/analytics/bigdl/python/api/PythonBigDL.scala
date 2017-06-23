@@ -769,7 +769,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       nDim)
   }
 
-  def createRoiPooling(pooled_w: Int, pooled_h: Int, spatial_scale: T)
+  def createRoiPooling(pooled_w: Int, pooled_h: Int, spatial_scale: Double)
   : RoiPooling[T] = {
     RoiPooling[T](pooled_w,
       pooled_h,
