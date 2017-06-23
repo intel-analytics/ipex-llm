@@ -39,7 +39,7 @@ import scala.reflect._
  * @param spatialScale spatial scale
  * @tparam T Numeric type. Only support float/double now
  */
-class RoiPooling[T: ClassTag](val pooledW: Int, val pooledH: Int, val spatialScale: T)
+class RoiPooling[T: ClassTag](val pooledW: Int, val pooledH: Int, val spatialScale: Double)
   (implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T] {
 
   private val argmax: Tensor[T] = Tensor[T]
@@ -73,7 +73,7 @@ class RoiPooling[T: ClassTag](val pooledW: Int, val pooledH: Int, val spatialSca
           inputData, dataSize, dataOffset,
           argmaxData, argmaxOffset,
           outputData, outputOffset,
-          roisOffset, ev.toType[Double](spatialScale))
+          roisOffset, spatialScale)
         n += 1
       }
     } else if (classTag[T] == classTag[Float]) {
@@ -86,7 +86,7 @@ class RoiPooling[T: ClassTag](val pooledW: Int, val pooledH: Int, val spatialSca
           inputData, dataSize, dataOffset,
           argmaxData, argmaxOffset,
           outputData, outputOffset,
-          roisOffset, ev.toType[Float](spatialScale))
+          roisOffset, spatialScale.toFloat)
         n += 1
       }
     } else {
@@ -357,6 +357,6 @@ class RoiPooling[T: ClassTag](val pooledW: Int, val pooledH: Int, val spatialSca
 
 object RoiPooling {
   def apply[@specialized(Float, Double) T: ClassTag](
-    pooled_w: Int, pooled_h: Int, spatial_scale: T)(implicit ev: TensorNumeric[T]): RoiPooling[T] =
+    pooled_w: Int, pooled_h: Int, spatial_scale: Double)(implicit ev: TensorNumeric[T]): RoiPooling[T] =
     new RoiPooling[T](pooled_w, pooled_h, spatial_scale)
 }
