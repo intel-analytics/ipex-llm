@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.nn.{Abs, Add, AddConstant}
 import scala.collection.JavaConverters._
 import scala.reflect.runtime.universe
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{DoubleType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
 import serialization.Model.AttrValue.DataType
@@ -165,27 +165,32 @@ object ModuleSerializer extends ModuleSerializable{
 
   override def loadModule[T: ClassTag](model : BigDLModel)
     (implicit ev: TensorNumeric[T]) : BigDLModule[T] = {
+    val dataType = ev.getType
+    val evidence = if (dataType == DoubleType) classManifest[Double] else classManifest[Float]
     val modelAttributes = model.getAttrMap
     val moduleType = model.getModuleType
     val cls = ModuleSerializer.getModuleClsByType(moduleType)
     val constructors = cls.getConstructors()
     require(constructors.length == 1, "only support one constructor")
     val constructor = constructors(0)
-    val args = new Array[Object](constructor.getParameterCount)
-    val constructorParamNames = getParamList(cls)
-    var i = 0
-    constructorParamNames.foreach(paramName => {
-      require(modelAttributes.containsKey(paramName), s"$paramName value cannot be found")
-      val attribute = modelAttributes.get(paramName)
-      args(i) = getAttributeValue(attribute)
-      i += 1
+    val constructorParams = getConstructorParams(cls)
+    val args = new Array[Object](constructorParams.size)
+    var i = 0;
+    constructorParams.foreach(param => {
+      val name = param._1
+      val ptype = param._2
+      if (ptype.toString == "scala.reflect.ClassTag[T]") {
+          args(i) = evidence
+      } else if (ptype.toString ==
+        "com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric[T]") {
+          args(i) = ev
+      } else {
+        require(modelAttributes.containsKey(name), s"$name value cannot be found")
+        val attribute = modelAttributes.get(name)
+        args(i) = getAttributeValue(attribute)
+      }
+      i+= 1
     })
-    // if constructor list is greater than paramList, it means there are Typed parameters
-    while(i < constructor.getParameterCount - 1) {
-      args(i) = ClassTag.AnyRef
-      i += 1
-    }
-    args(i) = ev
     val module = constructor.newInstance(args : _*).
       asInstanceOf[AbstractModule[Activity, Activity, T]]
     createBigDLModule(model, module)
@@ -273,6 +278,16 @@ object ModuleSerializer extends ModuleSerializable{
   def getModuleTypeByCls(cls : Class[_]) : String = {
     require(classMaps.contains(cls), s"$cls is not supported")
     classMaps(cls)
+  }
+
+  def getConstructorParams(clazz : Class[_]): Map[String, universe.Type] = {
+    val tpe = universe.runtimeMirror(clazz.getClassLoader).classSymbol(clazz).toType
+    var list : List[universe.Symbol] = List()
+    list = list ++ tpe.member(universe.termNames.CONSTRUCTOR).asMethod.paramLists(0)
+    list = list ++ tpe.member(universe.termNames.CONSTRUCTOR).asMethod.paramLists(1)
+    list.foldLeft(Map(): Map[String, universe.Type])((p, a) => {
+      p + (a.name.decodedName.toString -> a.typeSignature)
+    })
   }
 
   def getParamList(clazz : Class[_]): Seq[String] = {
