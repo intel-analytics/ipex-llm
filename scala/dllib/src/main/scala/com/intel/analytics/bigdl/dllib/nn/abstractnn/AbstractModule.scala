@@ -394,7 +394,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
    * @param nodes upstream module nodes
    * @return node containing current module
    */
-  def apply(nodes : ModuleNode[T]*): ModuleNode[T] = {
+  def inputs(nodes : ModuleNode[T]*): ModuleNode[T] = {
     require(this.isInstanceOf[AbstractModule[_, Tensor[T], T]],
       "AbstractModule: Only module with tensor output can be added into a graph node")
     val curNode = new ModuleNode[T](this.asInstanceOf[AbstractModule[Activity, Tensor[T], T]])
