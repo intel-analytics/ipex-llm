@@ -13,13 +13,20 @@ FlattenTable takes an arbitrarily deep table of Tensors (potentially nested) as 
 
 **Scala example:**
 ```scala
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericDouble
+
 val module = FlattenTable()
 val t1 = Tensor(3).randn()
 val t2 = Tensor(3).randn()
 val t3 = Tensor(3).randn()
 val input = T(t1, T(t2, T(t3)))
 
-> print input
+val output = module.forward(input)
+
+> input
  {
 	2:  {
 	   	2:  {
@@ -39,7 +46,7 @@ val input = T(t1, T(t2, T(t3)))
 	   [com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 3]
  }
 
-> module.forward(input)
+> output
 {
 	2: -5.671122490419898E-4
 	   -0.0464522284021047
@@ -59,6 +66,9 @@ val input = T(t1, T(t2, T(t3)))
 
 **Python example:**
 ```python
+from bigdl.nn.layer import *
+import numpy as np
+
 module = Sequential()
 # this will create a nested table
 nested = ConcatTable().add(Identity()).add(Identity())
@@ -66,11 +76,12 @@ module.add(nested).add(FlattenTable())
 t1 = np.random.randn(3)
 t2 = np.random.randn(3)
 input = [t1, t2]
+output = module.forward(input)
 
-> print input
+> input
 [array([-2.21080689, -0.48928043, -0.26122161]), array([-0.8499716 ,  1.63694575, -0.31109292])]
 
-> module.forward(input)
+> output
 [array([-2.21080685, -0.48928043, -0.26122162], dtype=float32),
  array([-0.84997159,  1.63694572, -0.31109291], dtype=float32),
  array([-2.21080685, -0.48928043, -0.26122162], dtype=float32),
