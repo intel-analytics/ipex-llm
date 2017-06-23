@@ -1560,9 +1560,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def createNode(module: AbstractModule[Activity, Activity, T],
                  x: JList[ModuleNode[T]]): ModuleNode[T] = {
     if (null == x || x.isEmpty) {
-      module.apply()
+      module.inputs()
     } else {
-      module.apply(x.asScala : _*)
+      module.inputs(x.asScala : _*)
     }
   }
 
