@@ -26,6 +26,10 @@ the number of columns should be equal to the `inputSize`).
 
 **Scala example:**
 ```scala
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor._
+
 val module = Linear(3, 5)
 
 println(module.forward(Tensor.range(1, 3, 1)))
@@ -42,6 +46,9 @@ Output is
 
 **Python example:**
 ```python
+from bigdl.nn.layer import *
+import numpy as np
+
 module = Linear(3, 5)
 
 print(module.forward(np.arange(1, 4, 1)))
