@@ -27,6 +27,10 @@ co-adaptation of feature detectors. For more details, plese see
 
 **Scala example:**
 ```scala
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor._
+
 val module = Dropout()
 val x = Tensor.range(1, 8, 1).resize(2, 4)
 
@@ -48,6 +52,9 @@ com.intel.analytics.bigdl.tensor.Tensor[Float] =
 
 **Python example:**
 ```python
+from bigdl.nn.layer import *
+import numpy as np
+
 module = Dropout()
 x = np.arange(1, 9, 1).reshape(2, 4)
 
