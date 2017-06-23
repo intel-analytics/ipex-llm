@@ -18,16 +18,36 @@ package com.intel.analytics.bigdl.utils
 
 import java.nio.file.Paths
 
+import com.google.protobuf.GeneratedMessage
 import com.intel.analytics.bigdl.models.resnet.Convolution
-import com.intel.analytics.bigdl.nn.{Linear, Sequential}
+import com.intel.analytics.bigdl.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericDouble
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.utils.caffe.CaffeLoader
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.collection.mutable
+import scala.reflect.ClassTag
+import scala.util.Random
 
 class CaffeLoaderSpec extends FlatSpec with Matchers {
 
   val prototxt = getClass().getClassLoader().getResource("caffe/test.prototxt").getPath
   val modelPath = getClass().getClassLoader().getResource("caffe/test.caffemodel").getPath
+
+  val dummyConverter = (layer : GeneratedMessage) => {
+    Identity[Double].apply()
+  }
+
+  private def loadDummy[T : ClassTag](message : GeneratedMessage)(implicit ev: TensorNumeric[T])
+    : Seq[ModuleNode[T]] = {
+    Seq(Identity[T].setName("Dummy").apply())
+  }
+
+  val convertMap = new mutable.HashMap[String, (GeneratedMessage) => Seq[ModuleNode[Double]]]()
+  convertMap("DUMMY") = loadDummy[Double]
 
   "load caffe match all parameters" should "work properly" in {
     val module = Sequential()
@@ -175,6 +195,77 @@ class CaffeLoaderSpec extends FlatSpec with Matchers {
         assert(Math.abs(a - b) < 1e-6)
         a
       })
+  }
+
+  "Dynamic loaded module" should "have the same result as static one" in {
+    val module = Sequential()
+      .add(Convolution(3, 4, 2, 2).setName("conv"))
+      .add(Convolution(4, 3, 2, 2).setName("conv2"))
+      .add(View(27)).setName("view")
+      .add(Linear(27, 2, withBias = false).setName("ip"))
+      .add(LogSoftMax().setName("softmax"))
+
+    val staticInput = Tensor[Double](1, 3, 5, 5).apply1( e => Random.nextDouble())
+
+    val dynamicInput = Tensor[Double]()
+
+    dynamicInput.resizeAs(staticInput).copy(staticInput)
+
+    RandomGenerator.RNG.setSeed(1000)
+    val staticModel = CaffeLoader.load[Double](module, prototxt, modelPath)
+
+    val staticOutPut = staticModel.forward(staticInput)
+
+    RandomGenerator.RNG.setSeed(1000)
+    val dynamicLoadedModule = CaffeLoader.loadCaffe(prototxt, modelPath,
+      customizedConverters = convertMap)._1
+
+    val dynamicOutput = dynamicLoadedModule.forward(dynamicInput)
+
+    staticOutPut should be (dynamicOutput)
+  }
+
+  "Dynamic loaded criterion" should "have the same criterion as static one" in {
+
+    val criterion = ClassNLLCriterion[Double]()
+
+    val staticCriterion = ParallelCriterion[Double]()
+    staticCriterion.add(criterion)
+
+    val (dynamicLoadedModule, dynamicLoadedCriterion) = CaffeLoader.loadCaffe(prototxt, modelPath,
+      customizedConverters = convertMap)
+
+    val labelInput = Tensor[Double](1, 3, 5, 5).apply1(e => Random.nextDouble())
+
+    val target = dynamicLoadedModule.forward(labelInput).toTensor[Double].max(1)
+      ._2.squeeze().storage().array()
+
+    val inputTensor1 = Tensor[Double](2).apply1(e => Random.nextDouble())
+
+    val inputTensor2 = Tensor[Double]()
+
+    inputTensor2.resizeAs(inputTensor1).copy(inputTensor1)
+
+    val input1 = T(inputTensor1)
+
+    val input2 = T(inputTensor2)
+
+    val target1 = T(Tensor[Double](Storage(target)))
+
+    val target2 = T(Tensor[Double](Storage(target)))
+
+    val res1 = staticCriterion.forward(input1, target1)
+
+    val res2 = dynamicLoadedCriterion.forward(input2, target2)
+
+    res1 should be (res2)
+  }
+  "Customized converter with existing type" should " throw exception " in {
+    convertMap("INNERPRODUCT") = loadDummy[Double]
+    intercept[IllegalArgumentException] {
+      val (dynamicLoadedModule, dynamicLoadedCriterion) = CaffeLoader.loadCaffe(prototxt, modelPath,
+        customizedConverters = convertMap)
+    }
   }
 
 }
