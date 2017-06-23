@@ -1,0 +1,46 @@
+## MultiLabelMarginCriterion ##
+
+**Scala:**
+```scala
+val multiLabelMarginCriterion = MultiLabelMarginCriterion(sizeAverage)
+```
+**Python:**
+```python
+multiLabelMarginCriterion = MultiLabelMarginCriterion(size_average)
+```
+MultiLabelMarginCriterion creates a criterion that optimizes a multi-class multi-classification hinge loss (margin-based loss) between input x and output y 
+
+**Scala example:**
+```scala
+val multiLabelMarginCriterion = MultiLabelMarginCriterion(false)
+val input = Tensor(4).rand()
+val target = Tensor(4)
+target(Array(1)) = 3
+target(Array(2)) = 2
+target(Array(3)) = 1
+target(Array(4)) = 0
+
+> print(multiLabelMarginCriterion.forward(input, target))
+0.91859895
+
+print(multiLabelMarginCriterion.backward(input, target))
+-0.25
+-0.25
+-0.25
+0.75
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 4]
+
+```
+
+**Python example:**
+```python
+multiLabelMarginCriterion = MultiLabelMarginCriterion(False)
+
+> multiLabelMarginCriterion.forward(np.array([0.3, 0.4, 0.2, 0.6]), np.array([3, 2, 1, 0]))
+0.975
+
+> multiLabelMarginCriterion.backward(np.array([0.3, 0.4, 0.2, 0.6]), np.array([3, 2, 1, 0]))
+[array([-0.25, -0.25, -0.25,  0.75], dtype=float32)]
+
+```
+
