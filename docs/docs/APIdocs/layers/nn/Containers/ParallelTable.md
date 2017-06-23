@@ -19,8 +19,8 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T 
 
 val module = ParallelTable[Double]()
-val log = new Log[Double]()
-val exp = new Exp[Double]()
+val log = Log[Double]()
+val exp = Exp[Double]()
 module.add(log)
 module.add(exp)
 val input1 = Tensor[Double](3, 3).rand(0, 1)

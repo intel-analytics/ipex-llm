@@ -48,7 +48,7 @@ The operation implemented is:
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
 
-val layer = new SpatialBatchNormalization[Float](3, 1e-3)
+val layer = SpatialBatchNormalization[Float](3, 1e-3)
 val input = Tensor[Float](2, 3, 2, 2).randn()
 > print(layer.forward(input))
 (1,1,.,.) =
