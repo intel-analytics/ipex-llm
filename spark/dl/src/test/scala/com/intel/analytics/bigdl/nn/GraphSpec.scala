@@ -621,7 +621,8 @@ object ModelUntils {
       val useConv = shortcutType == "C" || (shortcutType == "B" && nInputPlane != nOutputPlane)
 
       if (useConv) {
-        val conv1 = SpatialConvolution(nInputPlane, nOutputPlane, 1, 1, stride, stride).inputs(input)
+        val conv1 = SpatialConvolution(nInputPlane, nOutputPlane, 1, 1, stride, stride)
+          .inputs(input)
         val bn1 = SpatialBatchNormalization(nOutputPlane).inputs(conv1)
         bn1
       } else if (nInputPlane != nOutputPlane) {
