@@ -13,6 +13,10 @@ CAddTable merges the input tensors in the input table by element-wise adding. Th
 
 **Scala example:**
 ```scala
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor._
+
 val mlp = Sequential()
 mlp.add(ConcatTable().add(Identity()).add(Identity()))
 mlp.add(CAddTable())
@@ -30,6 +34,9 @@ com.intel.analytics.bigdl.nn.abstractnn.Activity =
 
 **Python example:**
 ```python
+from bigdl.nn.layer import *
+import numpy as np
+
 mlp = Sequential()
 mlp.add(ConcatTable().add(Identity()).add(Identity()))
 mlp.add(CAddTable())
