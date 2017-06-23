@@ -2,17 +2,21 @@
 
 **Scala:**
 ```scala
-Scala code, how to new an instance
+val module = MultiCriterion()
 ```
 **Python:**
 ```python
-Python cod, how to new an instance
+module = MultiCriterion()
 ```
 
 MultiCriterion is a weighted sum of other criterions each applied to the same input and target
 
 **Scala example:**
 ```scala
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericDouble
+
 val module = MultiCriterion()
 val nll = ClassNLLCriterion()
 val mse = MSECriterion()
@@ -27,7 +31,9 @@ target(Array(3)) = 3
 target(Array(4)) = 2
 target(Array(5)) = 1
 
-> println(input)
+val output = module.forward(input, target)
+
+> input
 0.9682213801388531
 0.35258855644097503
 0.04584479998452568
@@ -35,12 +41,15 @@ target(Array(5)) = 1
 -1.02721844006879
 [com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 5]
 
-> module.forward(input, target)
+> output
 res0: Double = 3.609954360965033
 ```
 
 **Python example:**
 ```python
+from bigdl.nn.criterion import *
+import numpy as np
+
 module = MultiCriterion()
 nll = ClassNLLCriterion()
 mse = MSECriterion()
@@ -54,6 +63,8 @@ input = np.array([0.9682213801388531,
 -1.02721844006879])
 target = np.array([1, 2, 3, 2, 1])
 
-> module.forward(input, target)
+output = module.forward(input, target)
+
+> output
 3.6099546
 ```
