@@ -2,7 +2,7 @@
 
 **Scala:**
 ```scala
-val module = PReLU(nOutputPlane)
+val module = PReLU(nOutputPlane: Int = 0)
 ```
 **Python:**
 ```python
@@ -21,10 +21,15 @@ Notice: Please don't use weight decay on this.
 
 **Scala example:**
 ```scala
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericDouble
+
 val module = PReLU(2)
 val input = Tensor(2, 2, 3).randn()
+val output = module.forward(input)
 
-> println(input)
+> input
 (1,.,.) =
 -0.23766282164468486	0.08258852394948468	-0.804304177394607
 0.3995815815850318	0.9888332241871451	0.4517745538140694
@@ -35,7 +40,7 @@ val input = Tensor(2, 2, 3).randn()
 
 [com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 2x2x3]
 
-> module.forward(input)
+> output
 (1,.,.) =
 -0.059415705411171214	0.08258852394948468	-0.20107604434865176
 0.3995815815850318	0.9888332241871451	0.4517745538140694
@@ -49,17 +54,21 @@ val input = Tensor(2, 2, 3).randn()
 
 **Python example:**
 ```python
+from bigdl.nn.layer import *
+import numpy as np
+
 module = PReLU(2)
 input = np.random.randn(2, 2, 3)
+output = module.forward(input)
 
-> print input
+> input
 [[[ 2.50596953 -0.06593339 -1.90273409]
   [ 0.2464341   0.45941315 -0.41977094]]
 
  [[-0.8584367   2.19389229  0.93136755]
   [-0.39209027  0.16507514 -0.35850447]]]
   
-> module.forward(input)
+> output
 [array([[[ 2.50596952, -0.01648335, -0.47568351],
          [ 0.24643411,  0.45941314, -0.10494273]],
  
