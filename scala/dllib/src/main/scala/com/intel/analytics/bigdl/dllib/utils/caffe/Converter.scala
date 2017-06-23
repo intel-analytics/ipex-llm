@@ -73,7 +73,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
 
   protected def fromCaffeReLU(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val layerName = getLayerName(layer)
-    Seq(ReLU(true).setName(layerName).apply())
+    Seq(ReLU(true).setName(layerName).inputs())
   }
 
   private def fromCaffeLRN(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
@@ -83,7 +83,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
     val alpha = param.getAlpha
     val belta = param.getBeta
     val k = param.getK
-    Seq(SpatialCrossMapLRN[T](localSize, alpha, belta, k).setName(layerName).apply())
+    Seq(SpatialCrossMapLRN[T](localSize, alpha, belta, k).setName(layerName).inputs())
   }
 
   private def fromCaffePooling(layer : GeneratedMessage): Seq[ModuleNode[T]] = {
@@ -111,9 +111,9 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
     // caffe use ceil model
     val pooling = poolingType match {
       case PoolMethod.MAX => SpatialMaxPooling[T](kw, kh, dw, dh, pw, ph).ceil().
-        setName(layerName).apply()
+        setName(layerName).inputs()
       case PoolMethod.AVE => SpatialAveragePooling[T](kw, kh, dw, dh, pw, ph).ceil().
-        setName(layerName).apply()
+        setName(layerName).inputs()
       case _ => null
     }
     Seq(pooling)
@@ -123,44 +123,44 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
     val param = getDropoutParam(layer).get
     val layerName = getLayerName(layer)
     val initP = param.getDropoutRatio
-    Seq(Dropout[T](initP).setName(layerName).apply())
+    Seq(Dropout[T](initP).setName(layerName).inputs())
   }
 
   private def fromCaffeSoftmax(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val layerName = getLayerName(layer)
-    Seq(LogSoftMax().setName(layerName).apply())
+    Seq(LogSoftMax().setName(layerName).inputs())
   }
 
   private def fromCaffeTanh(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val layerName = getLayerName(layer)
-    Seq(Tanh[T]().setName(layerName).apply())
+    Seq(Tanh[T]().setName(layerName).inputs())
   }
 
   private def fromCaffeSigmoid(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val layerName = getLayerName(layer)
-    Seq(Sigmoid[T]().setName(layerName).apply())
+    Seq(Sigmoid[T]().setName(layerName).inputs())
   }
 
   private def fromCaffeAbsVal(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val layerName = getLayerName(layer)
-    Seq(Abs[T]().setName(layerName).apply())
+    Seq(Abs[T]().setName(layerName).inputs())
   }
 
   private def fromCaffeConcat(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val layerName = getLayerName(layer)
     val param = getConcatParam(layer)
     val dim = param.get.getAxis
-    Seq(JoinTable[T](dim + 1, 0).setName(layerName).apply())
+    Seq(JoinTable[T](dim + 1, 0).setName(layerName).inputs())
   }
 
   private def fromCaffeFlatten(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val layerName = getLayerName(layer)
-    Seq(FlattenTable[T].setName(layerName).apply())
+    Seq(FlattenTable[T].setName(layerName).inputs())
   }
 
   private def fromCaffeLog(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val layerName = getLayerName(layer)
-    Seq(Log[T]().setName(layerName).apply())
+    Seq(Log[T]().setName(layerName).inputs())
   }
 
   private def fromCaffePower(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
@@ -171,17 +171,17 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
     var shift = 0.0
     if (param.hasScale) scale = param.getScale
     if (param.hasShift) shift = param.getShift
-    Seq(Power[T](power, scale, shift).setName(layerName).apply())
+    Seq(Power[T](power, scale, shift).setName(layerName).inputs())
   }
 
   private def fromCaffePreLU(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val layerName = getLayerName(layer)
-    Seq(PReLU[T]().setName(layerName).apply())
+    Seq(PReLU[T]().setName(layerName).inputs())
   }
 
   private def fromCaffeRecurrent(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val layerName = getLayerName(layer)
-    Seq(Recurrent[T]().setName(layerName).apply())
+    Seq(Recurrent[T]().setName(layerName).inputs())
   }
 
   private def fromCaffeThreshold(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
@@ -190,19 +190,19 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
     if (param.hasThreshold) {
       threshold = param.getThreshold
     }
-    Seq(Threshold[T](threshold).setName(getLayerName(layer)).apply())
+    Seq(Threshold[T](threshold).setName(getLayerName(layer)).inputs())
   }
 
   private def fromCaffeExp(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val layerName = getLayerName(layer)
-    Seq(Exp[T]().setName(layerName).apply())
+    Seq(Exp[T]().setName(layerName).inputs())
   }
 
   private def fromCaffeSlice(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val param = getSliceParam(layer)
     val layerName = getLayerName(layer)
     val axis = param.get.getAxis
-    Seq(SplitTable[T](axis).setName(layerName).apply())
+    Seq(SplitTable[T](axis).setName(layerName).inputs())
   }
 
   private def fromCaffeEltwise(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
@@ -211,13 +211,13 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
     val opsType = param.getOperation
     val coeff2 = param.getCoeff(1)
     val ops = opsType match {
-      case EltwiseOp.PROD => CMulTable[T]().setName(layerName).apply()
-      case EltwiseOp.MAX => CMaxTable[T]().setName(layerName).apply()
+      case EltwiseOp.PROD => CMulTable[T]().setName(layerName).inputs()
+      case EltwiseOp.MAX => CMaxTable[T]().setName(layerName).inputs()
       case EltwiseOp.SUM =>
         if (coeff2 < 0) {
-          CAddTable[T]().setName(layerName).apply()
+          CAddTable[T]().setName(layerName).inputs()
         } else {
-          CSubTable[T]().setName(layerName).apply()
+          CSubTable[T]().setName(layerName).inputs()
         }
       case _ => null
     }
