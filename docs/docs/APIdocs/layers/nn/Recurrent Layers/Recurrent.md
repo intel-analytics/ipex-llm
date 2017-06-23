@@ -13,6 +13,10 @@ Recurrent module is a container of rnn cells. Different types of rnn cells can b
 
 **Scala example:**
 ```scala
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericDouble
+
 val hiddenSize = 4
 val inputSize = 5
 val module = Recurrent().add(RnnCell(inputSize, hiddenSize, Tanh()))
@@ -22,7 +26,9 @@ for (i <- 1 to 5) {
   input.setValue(1, i, rdmInput, 1.0)
 }
 
-> println(input)
+val output = module.forward(input)
+
+> input
 (1,.,.) =
 0.0	0.0	0.0	0.0	1.0
 1.0	0.0	0.0	0.0	0.0
@@ -32,7 +38,7 @@ for (i <- 1 to 5) {
 
 [com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 1x5x5]
 
-> module.forward(input)
+> output
 (1,.,.) =
 0.10226295303128596	-0.43567883708825395	-0.033399659962837426	0.32833409681802717
 -0.01870846466991851	0.057665379700306454	0.47425303013686954	0.0767218304897101
@@ -45,6 +51,9 @@ for (i <- 1 to 5) {
 
 **Python example:**
 ```python
+from bigdl.nn.layer import *
+import numpy as np
+
 hiddenSize = 4
 inputSize = 5
 module = Recurrent().add(RnnCell(inputSize, hiddenSize, Tanh()))
@@ -55,7 +64,9 @@ input[0][2][4] = 1
 input[0][3][3] = 1
 input[0][4][0] = 1
 
-> module.forward(input)
+output = module.forward(input)
+
+> output
 [array([[[ 0.7526533 ,  0.29162994, -0.28749418, -0.11243925],
          [ 0.33291328, -0.07243762, -0.38017112,  0.53216213],
          [ 0.83854133,  0.07213539, -0.34503224,  0.33690596],
