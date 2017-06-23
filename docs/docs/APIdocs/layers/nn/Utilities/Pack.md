@@ -2,7 +2,7 @@
 
 **Scala:**
 ```scala
-val module = Pack(dim)
+val module = Pack(dim: Int)
 ```
 **Python:**
 ```python
@@ -13,12 +13,19 @@ Pack is used to stack a list of n-dimensional tensors into one (n+1)-dimensional
 
 **Scala example:**
 ```scala
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericDouble
+
 val module = Pack(2)
 val input1 = Tensor(2, 2).randn()
 val input2 = Tensor(2, 2).randn()
 val input = T()
 input(1) = input1
 input(2) = input2
+
+val output = module.forward(input)
 
 > input
  {
@@ -30,7 +37,7 @@ input(2) = input2
 	   [com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 2x2]
  }
  
-> module.forward(input)
+> output
 (1,.,.) =
 -1.2156987233048036	-1.9014829828283455
 -0.6625016209189003	2.703488979320708
@@ -45,17 +52,21 @@ input(2) = input2
 
 **Python example:**
 ```python
+from bigdl.nn.layer import *
+import numpy as np
+
 module = Pack(2)
 input1 = np.random.randn(2, 2)
 input2 = np.random.randn(2, 2)
 input = [input1, input2]
+output = module.forward(input)
 
 > print input
 [array([[ 0.92741416, -3.29826586],
        [-0.03147819, -0.10049306]]), array([[-0.27146461, -0.25729802],
        [ 0.1316149 ,  1.27620145]])]
        
-> module.forward(input)
+> output
 array([[[ 0.92741418, -3.29826593],
         [-0.27146462, -0.25729802]],
 
