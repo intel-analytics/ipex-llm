@@ -12,6 +12,8 @@ mod = MapTable(module)
 This class is a container for a single module which will be applied
 to all input elements. The member module is cloned as necessary to
 process all input elements.
+
+`module` a member module.  
  
 **Scala example:**
 ```scala
@@ -19,7 +21,8 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T 
 
-val map = MapTable[Float](Linear(10, 3))
+val map = MapTable[Float]()
+map.add(Linear(10, 3))
 val input = T(
       Tensor[Float](10).randn(),
       Tensor[Float](10).randn())
@@ -40,7 +43,8 @@ val input = T(
 ```python
 from bigdl.nn.layer import *
 
-map = MapTable(Linear(10, 3))
+map = MapTable()
+map.add(Linear(10, 3))
 input = [np.random.rand(10), np.random.rand(10)]
 >map.forward(input)
 [array([ 0.69586945, -0.70547599, -0.05802459], dtype=float32),

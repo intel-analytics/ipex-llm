@@ -24,7 +24,7 @@ will be add to the first dimension before the expand.
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
 
-val layer = new CMul[Double](Array(2, 1))
+val layer = CMul[Double](Array(2, 1))
 val input = Tensor[Double](2, 3)
 var i = 0
 input.apply1(_ => {i += 1; i})
