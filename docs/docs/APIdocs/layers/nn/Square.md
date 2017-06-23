@@ -9,7 +9,7 @@ val module = Square()
 module = Square()
 ```
 
-Apply an element-wise square operation.
+Square apply an element-wise square operation.
 
 **Scala example:**
 ```scala
