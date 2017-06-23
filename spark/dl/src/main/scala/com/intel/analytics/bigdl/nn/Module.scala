@@ -46,7 +46,7 @@ object Module {
 
   def loadCaffeDynamic[T: ClassTag](defPath: String, modelPath: String, matchAll: Boolean = true)(
     implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
-    CaffeLoader.loadCaffe[T](defPath, modelPath, matchAll)._1 
+    CaffeLoader.loadCaffe[T](defPath, modelPath, matchAll)._1
   }
   /**
    * Load tensorflow model from its saved protobuf file.
