@@ -2367,8 +2367,12 @@ class RoiPooling(Layer):
     :param spatial_scale: spatial scale
 
 
-    >>> roiPooling = RoiPooling(1, 1, 1e-5)
+    >>> import numpy as np
+    >>> input_data = np.random.rand(2,2,6,8)
+    >>> input_rois = np.array([0, 0, 0, 7, 5, 1, 6, 2, 7, 5, 1, 3, 1, 6, 4, 0, 3, 3, 3, 3],dtype='float64').reshape(4,5)
+    >>> m = RoiPooling(3,2,1.0)
     creating: createRoiPooling
+    >>> out = m.forward([input_data,input_rois])
     '''
 
     def __init__(self,
