@@ -47,6 +47,10 @@ val conn = SpatialConvolutionMap.random(nin: Int, nout: Int, nto: Int)
 
 **Scala example:**
 ```scala
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor._
+
 val conn = SpatialConvolutionMap.oneToOne(3)
 ```
 `conn` is
@@ -86,6 +90,9 @@ com.intel.analytics.bigdl.tensor.Tensor[Float] =
 
 **Python example:**
 ```python
+from bigdl.nn.layer import *
+import numpy as np
+
 module = SpatialConvolutionMap(np.array([(1, 1), (2, 2), (3, 3)]), 2, 2)
 
 print(module.forward(np.arange(1, 49, 1).reshape(3, 4, 4)))
