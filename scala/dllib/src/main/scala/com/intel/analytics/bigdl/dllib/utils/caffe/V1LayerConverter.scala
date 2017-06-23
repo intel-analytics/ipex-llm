@@ -73,7 +73,7 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
       }
     }
     Seq(SpatialConvolution[T](nInputPlane, nOutPlane, kw, kh, dw, dh, pw, ph, group)
-      .setName(getLayerName(layer)).apply())
+      .setName(getLayerName(layer)).inputs())
   }
 
   override protected def fromCaffeInnerProduct(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
@@ -84,10 +84,10 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
     var nInputPlane = weightBlob.getWidth
     val nOutputPlane = param.getNumOutput
     val linear = Linear[T](nInputPlane, nOutputPlane, withBias = withBias).setName(layerName)
-    val node = linear.apply()
+    val node = linear.inputs()
     if(nInputPlane != nOutputPlane) {
       // Construct a view layer in between
-      val view = View[T](nInputPlane).apply()
+      val view = View[T](nInputPlane).inputs()
       view -> node
       Seq(view, node)
     } else {

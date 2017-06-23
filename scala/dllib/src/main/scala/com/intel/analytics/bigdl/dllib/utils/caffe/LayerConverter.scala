@@ -75,7 +75,7 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
       }
     }
     Seq(SpatialConvolution[T](nInputPlane.toInt, nOutPlane.toInt,
-      kw, kh, dw, dh, pw, ph, group).setName(getLayerName(layer)).apply())
+      kw, kh, dw, dh, pw, ph, group).setName(getLayerName(layer)).inputs())
   }
 
   override protected def fromCaffeInnerProduct(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
@@ -92,10 +92,10 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
     }
     val nOutputPlane = param.getNumOutput
     val linear = Linear[T](nInputPlane, nOutputPlane, withBias = withBias).setName(layerName)
-    val node = linear.apply()
+    val node = linear.inputs()
     if(nInputPlane != nOutputPlane) {
       // Construct a view layer in between
-      val view = View[T](nInputPlane).apply()
+      val view = View[T](nInputPlane).inputs()
       view -> node
       Seq(view, node)
     } else {
@@ -107,20 +107,20 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
   Seq[ModuleNode[T]] = {
     val param = layer.asInstanceOf[LayerParameter].getBatchNormParam
     val eps = param.getEps
-    Seq(BatchNormalization[T](3, eps).apply())
+    Seq(BatchNormalization[T](3, eps).inputs())
   }
 
   override protected def fromCaffeELU(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val param = layer.asInstanceOf[LayerParameter].getEluParam
     var alpha = 1.0
     if (param.hasAlpha) alpha = param.getAlpha
-    Seq(ELU[T](alpha).apply())
+    Seq(ELU[T](alpha).inputs())
   }
 
   override protected def fromCaffeReshape(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val param = layer.asInstanceOf[LayerParameter].getReshapeParam
     val shapeSize = param.getShape.getDimList.toArray.asInstanceOf[Array[Int]]
-    Seq(Reshape[T](shapeSize).setName(getLayerName(layer)).apply())
+    Seq(Reshape[T](shapeSize).setName(getLayerName(layer)).inputs())
   }
 
   override protected def fromCaffeScale(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
@@ -131,7 +131,7 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
     if (weightBlob.isDefined) {
       val blob = weightBlob.get
       val size = blob.getShape.getDimList.toArray.asInstanceOf[Array[Int]]
-      Seq(Scale[T](size).setName(layerName).apply())
+      Seq(Scale[T](size).setName(layerName).inputs())
     } else {
       val inputBlob = getBlob(layer, 0).get
       val shape = inputBlob.getShape
@@ -143,7 +143,7 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
         numOfAxis = numOfAxis + axis
       }
       val size = shape.getDimList.subList(axis, numOfAxis).asInstanceOf[Array[Int]]
-      Seq(Scale[T](size).setName(layerName).apply())
+      Seq(Scale[T](size).setName(layerName).inputs())
     }
   }
 
@@ -152,14 +152,14 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
     // input blob
     val weightBlob = getBlob(layer, 0)
     val size = weightBlob.get.getShape.getDimList.toArray().asInstanceOf[Array[Int]].product
-    Seq(Add[T](size).setName(getLayerName(layer)).apply())
+    Seq(Add[T](size).setName(getLayerName(layer)).inputs())
   }
 
   override protected def fromCaffeTile(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val param = layer.asInstanceOf[LayerParameter].getTileParam
     val axis = param.getAxis
     val tiles = param.getTiles
-    Seq(Replicate[T](tiles, axis).setName(getLayerName(layer)).apply())
+    Seq(Replicate[T](tiles, axis).setName(getLayerName(layer)).inputs())
   }
 
   override protected def getLayerName(layer : GeneratedMessage) : String = {
