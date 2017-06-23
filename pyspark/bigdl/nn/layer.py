@@ -2984,7 +2984,6 @@ class Sum(Layer):
                  dimension=1,
                  n_input_dims=-1,
                  size_average=False,
-
                  bigdl_type="float"):
         super(Sum, self).__init__(None, bigdl_type,
                                   dimension,
