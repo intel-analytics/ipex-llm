@@ -16,6 +16,11 @@ It is a module to perform matrix vector multiplication on two mini-batch inputs,
 
 **Scala example:**
 ```scala
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.utils.T
+
 val module = MV()
 
 println(module.forward(T(Tensor.range(1, 12, 1).resize(2, 2, 3), Tensor.range(1, 6, 1).resize(2, 3))))
