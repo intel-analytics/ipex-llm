@@ -2,7 +2,7 @@
 
 **Scala:**
 ```scala
-val module = Transpose(permutations)
+val module = Transpose(permutations: Array[(Int, Int)])
 ```
 **Python:**
 ```python
@@ -14,15 +14,20 @@ permutations are dimension pairs that need to swap.
 
 **Scala example:**
 ```scala
-> val input = Tensor(2, 3).rand()
-> val layer = Transpose(Array((1, 2)))
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+
+val input = Tensor(2, 3).rand()
+val layer = Transpose(Array((1, 2)))
+val output = layer.forward(input)
 
 > input
 0.6653826	0.25350887	0.33434764	
 0.9618287	0.5484164	0.64844745	
 [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x3]
 
-> layer.forward(input)
+> output
 0.6653826	0.9618287	
 0.25350887	0.5484164	
 0.33434764	0.64844745	
@@ -32,10 +37,14 @@ permutations are dimension pairs that need to swap.
 
 **Python example:**
 ```python
-> layer = Transpose([(1,2)])
-> input = np.array([[0.6653826, 0.25350887, 0.33434764], [0.9618287, 0.5484164, 0.64844745]])
+from bigdl.nn.layer import *
+import numpy as np
 
-> layer.forward(input)
+layer = Transpose([(1,2)])
+input = np.array([[0.6653826, 0.25350887, 0.33434764], [0.9618287, 0.5484164, 0.64844745]])
+output = layer.forward(input)
+
+> output
 [array([[ 0.66538262,  0.96182871],
        [ 0.25350887,  0.54841638],
        [ 0.33434764,  0.64844745]], dtype=float32)]
