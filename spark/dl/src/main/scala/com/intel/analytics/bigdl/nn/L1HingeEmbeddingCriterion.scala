@@ -54,7 +54,7 @@ class L1HingeEmbeddingCriterion[@specialized(Float, Double) T: ClassTag](val mar
     val input2 = input[Tensor[T]](2)
 
     output = (input1 -input2).abs().sum()
-    if (y.asInstanceOf[Double] == -1) {
+    if (y == -1) {
       output = ev.max(ev.fromType(0), ev.minus(ev.fromType(margin), output))
     }
     output

@@ -281,6 +281,13 @@ class L1HingeEmbeddingCriterion(Criterion):
     creating: createL1HingeEmbeddingCriterion
     >>> l1HingeEmbeddingCriterion = L1HingeEmbeddingCriterion()
     creating: createL1HingeEmbeddingCriterion
+    >>> input1 = np.array([2.1, -2.2])
+    >>> input2 = np.array([-0.55, 0.298])
+    >>> input = [input1, input2]
+    >>> target = np.array([1.0])
+    >>> result = l1HingeEmbeddingCriterion.forward(input, target)
+    >>> (result == 5.148)
+    True
     '''
 
     def __init__(self,
