@@ -18,6 +18,10 @@ Outputs the Euclidean distance of the input to `outputSize` centers.
 
 **Scala example:**
 ```scala
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor._
+
 val module = Euclidean(3, 3)
 
 println(module.forward(Tensor.range(1, 3, 1)))
@@ -33,6 +37,9 @@ com.intel.analytics.bigdl.tensor.Tensor[Float] =
 
 **Python example:**
 ```python
+from bigdl.nn.layer import *
+import numpy as np
+
 module = Euclidean(3, 3)
 
 print(module.forward(np.arange(1, 4, 1)))
