@@ -24,6 +24,10 @@ concatenated.
 
 **Scala example:**
 ```scala
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor._
+
 val mlp = Concat(2)
 mlp.add(Linear(3,2))
 mlp.add(Linear(3,4))
@@ -39,6 +43,9 @@ Output is
 
 **Python example:**
 ```python
+from bigdl.nn.layer import *
+import numpy as np
+
 mlp = Concat(2)
 mlp.add(Linear(3,2))
 mlp.add(Linear(3,4))
