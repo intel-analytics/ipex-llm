@@ -2,11 +2,23 @@
 
 **Scala:**
 ```scala
-val model = LSTMPeephole[Float](inputSize, hiddenSize)
+val model = LSTMPeephole(
+  inputSize = 4,
+  hiddenSize = 3,
+  p = 0.0,
+  wRegularizer = null,
+  uRegularizer = null,
+  bRegularizer = null)
 ```
 **Python:**
 ```python
-model = LSTMPeephole(inputSize, hiddenSize)
+model = LSTMPeephole(
+  input_size,
+  hidden_size,
+  p=0.0,
+  wRegularizer=None,
+  uRegularizer=None,
+  bRegularizer=None)
 ```
 
 Long Short Term Memory architecture with peephole.
@@ -32,6 +44,7 @@ D. https://github.com/wojzaremba/lstm
 
 **Scala example:**
 ```scala
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
@@ -42,7 +55,7 @@ val outputSize = 5
 val seqLength = 5
 val batchSize = 1
                
-val input = Tensor[Float](Array(batchSize, seqLength, inputSize))
+val input = Tensor(Array(batchSize, seqLength, inputSize))
 for (b <- 1 to batchSize) {
   for (i <- 1 to seqLength) {
     val rdmInput = Math.ceil(RNG.uniform(0.0, 1.0) * inputSize).toInt
@@ -50,25 +63,35 @@ for (b <- 1 to batchSize) {
   }
 }
 
-val rec = Recurrent[Float](hiddenSize)
-val model = Sequential[Float]().add(rec.add(LSTMPeephole[Float](inputSize, hiddenSize))).add(TimeDistributed[Float](Linear[Float](hiddenSize, outputSize)))
+val rec = Recurrent(hiddenSize)
+val model = Sequential().add(rec.add(LSTMPeephole(inputSize, hiddenSize))).add(TimeDistributed(Linear(hiddenSize, outputSize)))
 val output = model.forward(input).toTensor
-```
-output is
-```
-output: com.intel.analytics.bigdl.tensor.Tensor[Float] = 
+
+scala> print(input)
 (1,.,.) =
-0.35383725	-0.22476536	-0.46047324	-0.26038578	-0.21095484	
-0.3409024	-0.22834192	-0.41133574	-0.27646995	-0.23721263	
-0.39881697	-0.18804908	-0.48271912	-0.29778507	-0.14873621	
-0.43038777	-0.16956224	-0.46273726	-0.30802295	-0.12813234	
-0.32592735	-0.24277578	-0.42178982	-0.27876818	-0.23236775	
+1.0	0.0	0.0	0.0	0.0	0.0	
+0.0	0.0	0.0	0.0	0.0	1.0	
+0.0	1.0	0.0	0.0	0.0	0.0	
+0.0	0.0	0.0	0.0	0.0	1.0	
+1.0	0.0	0.0	0.0	0.0	0.0	
+
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 1x5x6]
+
+scala> print(output)
+(1,.,.) =
+0.34764957	-0.31453514	-0.45646006	-0.42966008	-0.13651063	
+0.3624894	-0.2926056	-0.4347164	-0.40951455	-0.1775867	
+0.33391106	-0.29304913	-0.4748538	-0.45285955	-0.14919288	
+0.35499972	-0.29385415	-0.4419502	-0.42135617	-0.17544147	
+0.32911295	-0.30237123	-0.47175884	-0.4409852	-0.15733294	
 
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 1x5x5]
-
 ```
 **Python example:**
 ```python
+from bigdl.nn.layer import *
+import numpy as np
+
 hiddenSize = 4
 inputSize = 6
 outputSize = 5
@@ -79,12 +102,18 @@ input = np.random.randn(batchSize, seqLength, inputSize)
 rec = Recurrent(hiddenSize)
 model = Sequential().add(rec.add(LSTMPeephole(inputSize, hiddenSize))).add(TimeDistributed(Linear(hiddenSize, outputSize)))
 output = model.forward(input)
-```
-output is
-```
-array([[[ 0.38146877,  0.08686808, -0.16959271, -0.13243586, -0.02830471],
-        [ 0.26316535,  0.06359337, -0.22447851, -0.06319767, -0.13872764],
-        [ 0.42890453,  0.17883307, -0.20073381, -0.06245731, -0.04297322],
-        [ 0.29129934,  0.17688879, -0.2768988 ,  0.11385346, -0.23123962],
-        [ 0.40386844,  0.21273491, -0.2435573 , -0.05527414, -0.04689732]]], dtype=float32)
+
+>>> print(input)
+[[[ 0.73624017 -0.91135209 -0.30627796 -1.07902111 -1.13549159  0.52868762]
+  [-0.07251559 -0.45596589  1.64020513  0.53218623  1.37993166 -0.47724947]
+  [-1.24958366 -1.22220259 -0.52454306  0.17382396  1.77666173 -1.2961758 ]
+  [ 0.45407533  0.82944329  0.02155243  1.82168093 -0.06022129  2.23823013]
+  [ 1.09100802  0.28555387 -0.94312648  0.55774033 -0.54895792  0.79885853]]]
+  
+>>> print(output)
+[[[ 0.4034881  -0.26156989  0.46799076  0.06283229  0.11794794]
+  [ 0.37359846 -0.17925361  0.31623816  0.06038529  0.10813089]
+  [ 0.34150451 -0.16565879  0.25264332  0.1187657   0.05118144]
+  [ 0.40773875 -0.2028828   0.24765283  0.0986848   0.12132661]
+  [ 0.40263647 -0.22403356  0.38489845  0.04720671  0.1686969 ]]]
 ```
