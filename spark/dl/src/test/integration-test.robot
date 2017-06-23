@@ -58,8 +58,8 @@ Hdfs Test Suite
 Yarn Test Suite
    Build SparkJar                   spark_2.x 
    Set Environment Variable         SPARK_HOME               /opt/work/spark-2.0.0-bin-hadoop2.7  
-   Set Environment Variable         http_proxy               http://child-prc.intel.com:913
-   Set Environment Variable         https_proxy              https://child-prc.intel.com:913
+   Set Environment Variable         http_proxy               ${http_proxy}
+   Set Environment Variable         https_proxy              ${https_proxy}
    ${submit}=                       Catenate                 SEPARATOR=/    /opt/work/spark-2.0.0-bin-hadoop2.7/bin    spark-submit
    Run Shell                        ${submit} --master yarn --deploy-mode client --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --executor-cores 10 --num-executors 3 --driver-memory 150g --class com.intel.analytics.bigdl.models.lenet.Train ${jar_path} -f ${mnist_data_source} -b 120 -e 3
    Set Environment Variable         PYSPARK_DRIVER_PYTHON    /var/jenkins_home/venv/bin/python
