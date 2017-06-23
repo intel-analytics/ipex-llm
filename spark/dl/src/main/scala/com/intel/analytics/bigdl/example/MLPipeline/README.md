@@ -25,7 +25,6 @@ For more detail, please refer to the download page.
 
 Command to run the example in Spark local mode:
 ```
-./dist/bin/bigdl.sh -- \
 spark-submit \
 --master local[physcial_core_number] \
 --class com.intel.analytics.bigdl.example.MLPipeline.DLEstimatorLeNet \
@@ -35,7 +34,6 @@ spark-submit \
 ```
 Command to run the example in Spark standalone mode:
 ```
-./dist/bin/bigdl.sh -- \
 spark-submit \
 --master spark://... \
 --executor-cores cores_per_executor \
@@ -48,7 +46,6 @@ dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
 ```
 Command to run the example in Spark yarn mode:
 ```
-./dist/bin/bigdl.sh -- \
 --master yarn \
 --deploy-mode client \
 --executor-cores cores_per_executor \

@@ -51,11 +51,15 @@ class Criterion(JavaValue):
         :param target: ndarray or list of ndarray
         :return: value of loss
         """
+        jinput, input_is_table = Layer.check_input(input)
+        jtarget, target_is_table = Layer.check_input(target)
         output = callBigDlFunc(self.bigdl_type,
                                "criterionForward",
                                self.value,
-                               Layer.check_input(input),
-                               Layer.check_input(target))
+                               jinput,
+                               input_is_table,
+                               jtarget,
+                               target_is_table)
         return output
 
     def backward(self, input, target):
@@ -67,11 +71,15 @@ class Criterion(JavaValue):
         :param target: ndarray or list of ndarray
         :return: ndarray
         """
+        jinput, input_is_table = Layer.check_input(input)
+        jtarget, target_is_table = Layer.check_input(target)
         output = callBigDlFunc(self.bigdl_type,
                                "criterionBackward",
                                self.value,
-                               Layer.check_input(input),
-                               Layer.check_input(target))
+                               jinput,
+                               input_is_table,
+                               jtarget,
+                               target_is_table)
         return Layer.convert_output(output)
 
     @classmethod
@@ -184,7 +192,7 @@ class ClassSimplexCriterion(Criterion):
 
 class CosineEmbeddingCriterion(Criterion):
 
-    '''
+    """
     Creates a criterion that measures the loss given an input x = {x1, x2},
     a table of two Tensors, and a Tensor label y with values 1 or -1.
 
@@ -194,7 +202,11 @@ class CosineEmbeddingCriterion(Criterion):
 
     >>> cosineEmbeddingCriterion = CosineEmbeddingCriterion(1e-5, True)
     creating: createCosineEmbeddingCriterion
-    '''
+    >>> cosineEmbeddingCriterion.forward([np.array([1.0, 2.0, 3.0, 4.0, 5.0]),
+    ...                                   np.array([5.0, 4.0, 3.0, 2.0, 1.0])],
+    ...                                 [np.ones(5)])
+    0.0
+    """
 
     def __init__(self,
                  margin=0.0,
@@ -247,7 +259,7 @@ class HingeEmbeddingCriterion(Criterion):
     '''
 
     def __init__(self,
-                 margin=1,
+                 margin=1.0,
                  size_average=True,
                  bigdl_type="float"):
         super(HingeEmbeddingCriterion, self).__init__(None, bigdl_type,
@@ -267,10 +279,12 @@ class L1HingeEmbeddingCriterion(Criterion):
 
     >>> l1HingeEmbeddingCriterion = L1HingeEmbeddingCriterion(1e-5)
     creating: createL1HingeEmbeddingCriterion
+    >>> l1HingeEmbeddingCriterion = L1HingeEmbeddingCriterion()
+    creating: createL1HingeEmbeddingCriterion
     '''
 
     def __init__(self,
-                 margin=1,
+                 margin=1.0,
                  bigdl_type="float"):
         super(L1HingeEmbeddingCriterion, self).__init__(None, bigdl_type,
                                                         margin)
@@ -335,11 +349,19 @@ class MultiCriterion(Criterion):
 
     >>> multiCriterion = MultiCriterion()
     creating: createMultiCriterion
+    >>> mSECriterion = MSECriterion()
+    creating: createMSECriterion
+    >>> multiCriterion = multiCriterion.add(mSECriterion)
+    >>> multiCriterion = multiCriterion.add(mSECriterion)
     '''
 
     def __init__(self,
                  bigdl_type="float"):
         super(MultiCriterion, self).__init__(None, bigdl_type)
+
+    def add(self, criterion, weight=1.0):
+        self.value.add(criterion.value, weight)
+        return self
 
 
 class MultiLabelMarginCriterion(Criterion):
@@ -378,6 +400,10 @@ class ParallelCriterion(Criterion):
 
     >>> parallelCriterion = ParallelCriterion(True)
     creating: createParallelCriterion
+    >>> mSECriterion = MSECriterion()
+    creating: createMSECriterion
+    >>> parallelCriterion = parallelCriterion.add(mSECriterion)
+    >>> parallelCriterion = parallelCriterion.add(mSECriterion)
     '''
 
     def __init__(self,
@@ -385,6 +411,10 @@ class ParallelCriterion(Criterion):
                  bigdl_type="float"):
         super(ParallelCriterion, self).__init__(None, bigdl_type,
                                                 repeat_target)
+
+    def add(self, criterion, weight=1.0):
+        self.value.add(criterion.value, weight)
+        return self
 
 
 class SmoothL1Criterion(Criterion):
@@ -633,6 +663,44 @@ class SoftMarginCriterion(Criterion):
                  size_average=True,
                  bigdl_type="float"):
         super(SoftMarginCriterion, self).__init__(None, bigdl_type, size_average)
+
+
+class DiceCoefficientCriterion(Criterion):
+
+    '''
+    The Dice-Coefficient criterion
+    input: Tensor,target: Tensor
+
+```
+    return:      2 * (input intersection target)
+            1 - ----------------------------------
+                    input union target
+```
+
+    >>> diceCoefficientCriterion = DiceCoefficientCriterion(size_average = True, epsilon = 1.0)
+    creating: createDiceCoefficientCriterion
+    '''
+
+    def __init__(self,
+                 size_average,
+                 epsilon,
+                 bigdl_type="float"):
+        super(DiceCoefficientCriterion, self).__init__(None, bigdl_type,
+                                                       size_average,
+                                                       epsilon)
+
+class L1Cost(Criterion):
+
+    '''
+    compute L1 norm for input, and sign of input
+
+    >>> l1Cost = L1Cost()
+    creating: createL1Cost
+    '''
+
+    def __init__(self,
+                 bigdl_type="float"):
+        super(L1Cost, self).__init__(None, bigdl_type)
 
 def _test():
     import doctest

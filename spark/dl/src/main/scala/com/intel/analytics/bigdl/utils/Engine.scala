@@ -23,6 +23,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 import org.apache.log4j.Logger
 import org.apache.spark.{SparkConf, SparkContext}
 
+import com.intel.analytics.bigdl.mkl.MKL
+
 /**
  * define engine type trait
  */
@@ -44,13 +46,13 @@ object Engine {
     setNodeAndCore(nExecutor, executorCores)
     val res = if (onSpark) {
       require(localMode == false,
-        s"Engine.init: BIGDL_LOCAL_MODE should not be set while onSpark is " +
-          s"true. $ENV_VAR_ERROR")
+        s"Engine.init: bigdl.localMode should not be set while onSpark is " +
+          s"true. Please set correct java property.")
       Some(createSparkConf())
     } else {
       require(localMode == true,
-        s"Engine.init: BIGDL_LOCAL_MODE should be set while onSpark is " +
-          s"false. $ENV_VAR_ERROR")
+        s"Engine.init: bigdl.localMode should be set while onSpark is " +
+          s"false. Please set correct java property.")
       None
     }
     res
@@ -90,9 +92,10 @@ object Engine {
    */
   def init: Unit = this.synchronized {
     if (localMode) {
-      logger.info("Detect BIGDL_LOCAL_MODE is set. Run workload without spark")
-      // The physical core number should have been initialized by env variable in bigdl.sh
-      setNodeAndCore(1, getCoreNumberFromEnv)
+      logger.info("Detect bigdl.localMode is set. Run workload without spark")
+      // The physical core number should have been initialized
+      // by java property -Dbigdl.coreNumber=xx
+      setNodeAndCore(1, getCoreNumberFromProperty)
     } else {
       logger.info("Auto detect executor number and executor cores number")
       val (nExecutor, executorCores) = sparkExecutorAndCore().get
@@ -104,9 +107,16 @@ object Engine {
 
   private val logger = Logger.getLogger(getClass)
   private val singletonCounter = new AtomicBoolean()
-  private[bigdl] var localMode = System.getenv("BIGDL_LOCAL_MODE") != null
   private var physicalCoreNumber = -1
   private var nodeNum: Int = -1
+
+  private[bigdl] def localMode: Boolean = {
+    System.getProperty("bigdl.localMode", "false").toLowerCase(Locale.ROOT) match {
+      case "true" => true
+      case "false" => false
+      case option => throw new IllegalArgumentException(s"Unknown bigdl.localMode $option")
+    }
+  }
 
   private val NOT_INIT_ERROR =
     "Do you call Engine.init? See more at " +
@@ -114,13 +124,6 @@ object Engine {
 
   private val SPARK_CONF_ERROR = "For details please check " +
     "https://github.com/intel-analytics/BigDL/wiki/Programming-Guide#engine"
-
-  private val ENV_VAR_ERROR =
-    "Do you run 'source bigdl.sh' before the program? Please use bigdl.sh to init the environment" +
-      ". See https://github.com/intel-analytics/BigDL/wiki/Getting-Started#before-running" +
-      "-a-bigdl-program. And init SparkConf by refering " +
-      "https://github.com/intel-analytics/BigDL/wiki/Programming-Guide#engine. " +
-      "For test purpose, set bigdl.disableCheckSysEnv to true"
 
   /**
    * Notice: Please use property bigdl.engineType to set engineType.
@@ -137,10 +140,22 @@ object Engine {
   @volatile private var _default: ThreadPool = null
 
   // Thread pool for layer use
-  @volatile private var _model: ThreadPool = new ThreadPool(1).setMKLThread(1)
+  @volatile private var _model: ThreadPool = new ThreadPool(1).setMKLThread(MKL.getNumThreads)
 
-  private def getCoreNumberFromEnv : Int = {
-    Option(System.getenv("DL_CORE_NUMBER")).map(_.toInt).getOrElse(getNumMachineCores)
+  /**
+   * If user undefine the property bigdl.coreNumber, it will return physical core number
+   * system has. The biggest number it supports is the physical cores number.
+   *
+   * Currently, it not support detect true physical cores number. Get it through
+   * Runtime.getRuntime().availableProcessors() / 2
+   */
+  private def getCoreNumberFromProperty() = {
+    val coreNumber = System.getProperty("bigdl.coreNumber", getNumMachineCores.toString).toInt
+    if (coreNumber > getNumMachineCores) {
+      getNumMachineCores
+    } else {
+      coreNumber
+    }
   }
 
   private def getNumMachineCores: Int = {
@@ -243,7 +258,7 @@ object Engine {
 
     if(_model == null || _model.getPoolSize != modelPoolSize) {
       _model = new ThreadPool(modelPoolSize)
-      _model.setMKLThread(1)
+      _model.setMKLThread(MKL.getNumThreads)
     }
   }
 
@@ -304,7 +319,6 @@ object Engine {
   private[bigdl] def reset : Unit = {
     nodeNum = 1
     physicalCoreNumber = 1
-    localMode = false
   }
 
   private def dynamicAllocationExecutor(conf: SparkConf): Option[Int] = {
@@ -400,24 +414,4 @@ object Engine {
       throw new IllegalArgumentException(s"Engine.init: Unsupported master format $master")
     }
   }
-
-  private def checkSysEnv() : Unit = {
-    // bigdl.disableCheckSysEnv is only for test purpose
-    if (System.getProperty("bigdl.disableCheckSysEnv") != null) {
-      return
-    }
-
-    readConf
-      .filter(_._1.startsWith("spark.executorEnv."))
-      .map(c => (c._1.substring(18), c._2))
-      .foreach(env => {
-        require(System.getenv(env._1) != null,
-          s"Engine.init: Cannot find ${env._1} in environment variables. $ENV_VAR_ERROR")
-        require(System.getenv(env._1) == env._2,
-          s"Engine.init: Environment variable ${env._1} is ${System.getenv(env._1)}. " +
-          s"But it should be ${env._2}. $ENV_VAR_ERROR")
-    })
-  }
-
-  checkSysEnv()
 }

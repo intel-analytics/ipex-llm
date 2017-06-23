@@ -15,12 +15,16 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import java.nio.ByteOrder
+
+import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.File
 import com.intel.analytics.bigdl.utils.caffe.CaffeLoader
+import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowLoader}
 
 import scala.reflect.ClassTag
 
@@ -42,7 +46,21 @@ object Module {
 
   def loadCaffeDynamic[T: ClassTag](defPath: String, modelPath: String, matchAll: Boolean = true)(
     implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
-    CaffeLoader.loadCaffe[T](defPath, modelPath, matchAll)._1
+    CaffeLoader.loadCaffe[T](defPath, modelPath, matchAll)._1 
+  }
+  /**
+   * Load tensorflow model from its saved protobuf file.
+   * @param file where is the protobuf model file
+   * @param inputs input node names
+   * @param outputs output node names, the output tensor order is same with the node order
+   * @param byteOrder byte order in the tensorflow file. The default value is little endian
+   * @return BigDL model
+   */
+  def loadTF[T: ClassTag](file: String, inputs: Seq[String], outputs: Seq[String],
+            byteOrder: ByteOrder = ByteOrder.LITTLE_ENDIAN)(
+    implicit ev: TensorNumeric[T]): Module[T] = {
+
+    TensorflowLoader.load(file, inputs, outputs, byteOrder)
   }
 
   def flatten[@specialized(Float, Double) T: ClassTag](parameters: Array[Tensor[T]])(

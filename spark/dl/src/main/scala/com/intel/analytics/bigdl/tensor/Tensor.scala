@@ -646,6 +646,31 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
    * @return false
    */
   override def isTable: Boolean = false
+
+  /**
+   * Return tensor numeric
+   * @return
+   */
+  def getTensorNumeric(): TensorNumeric[T]
+
+  /**
+   * Compare with other tensor. The shape of the other tensor must be same with this tensor.
+   * If element wise difference is less than delta, return true.
+   * @param other
+   * @param delta
+   * @return
+   */
+  def almostEqual(other: Tensor[T], delta : Double): Boolean = {
+    var result = true
+    this.map(other, (a, b) => {
+      val tn = getTensorNumeric()
+      if (tn.isGreater(tn.abs(tn.minus(a, b)), tn.fromType(delta))) {
+        result = false
+      }
+      a
+    })
+    return result
+  }
 }
 
 /**

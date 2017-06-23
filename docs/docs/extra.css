@@ -1,0 +1,14 @@
+.wy-side-nav-search {
+ z-index: 200;
+ background-color: #0071c5;
+ text-align: center;
+ padding: 0.809em;
+ display: block;
+ color: #fcfcfc;
+ margin-bottom: 0.809em;
+ font-size: 16pt
+} 
+
+body {
+ font-size: 16px;   
+}

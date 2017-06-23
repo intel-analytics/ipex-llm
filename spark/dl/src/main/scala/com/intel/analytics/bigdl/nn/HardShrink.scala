@@ -71,6 +71,6 @@ class HardShrink[T: ClassTag](lambda: Double = 0.5)
 object HardShrink {
   def apply[@specialized(Float, Double) T: ClassTag](
       lambda: Double = 0.5)(implicit ev: TensorNumeric[T]) : HardShrink[T] = {
-    new HardShrink[T]()
+    new HardShrink[T](lambda)
   }
 }

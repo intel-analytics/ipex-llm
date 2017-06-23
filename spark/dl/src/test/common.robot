@@ -41,6 +41,7 @@ BigDL Test
 
 Stop Verticals
    [Arguments]         @{verticalList}
+   Remove Environment Variable             http_proxy
    :FOR                ${vertical}         IN                @{verticalList}
    \                   Operate Vertical    ${vertical}       stop               deployed/stopped
 

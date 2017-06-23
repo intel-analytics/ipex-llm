@@ -19,7 +19,7 @@ import os
 import sys
 from distutils.dir_util import mkpath
 
-from bigdl.nn.layer import DOUBLEMAX
+from bigdl.util.common import DOUBLEMAX
 from bigdl.util.common import JTensor
 from bigdl.util.common import JavaValue
 from bigdl.util.common import callBigDlFunc
@@ -363,7 +363,7 @@ class Optimizer(JavaValue):
 
 
        :param model: the neural net model
-       :param traiing_rdd: the training dataset
+       :param training_rdd: the training dataset
        :param criterion: the loss function
        :param optim_method: the algorithm to use for optimization, 
           e.g. SGD, Adagrad, etc. If optim_method is None, the default algorithm is SGD.
@@ -423,7 +423,7 @@ class Optimizer(JavaValue):
     def set_train_summary(self, summary):
         """
         Set train summary. A TrainSummary object contains information
-        necesary for the optimizer to know how often the logs are recorded,
+        necessary for the optimizer to know how often the logs are recorded,
         where to store the logs and how to retrieve them, etc. For details,
         refer to the docs of TrainSummary.
 
@@ -437,7 +437,7 @@ class Optimizer(JavaValue):
     def set_val_summary(self, summary):
         """
         Set validation summary. A ValidationSummary object contains information
-        necesary for the optimizer to know how often the logs are recorded,
+        necessary for the optimizer to know how often the logs are recorded,
         where to store the logs and how to retrieve them, etc. For details,
         refer to the docs of ValidationSummary.
 
@@ -547,6 +547,40 @@ class ValidationSummary(JavaValue):
         """
         return callBigDlFunc(self.bigdl_type, "summaryReadScalar", self.value,
                              tag)
+
+
+class L1L2Regularizer(JavaValue):
+    """
+    Apply both L1 and L2 regularization
+
+    :param l1 l1 regularization rate
+    :param l2 l2 regularization rate
+
+    """
+    def __init__(self, l1, l2, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type, l1, l2)
+
+
+class L1Regularizer(JavaValue):
+    """
+    Apply L1 regularization
+
+    :param l1 l1 regularization rate
+
+    """
+    def __init__(self, l1, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type, l1)
+
+
+class L2Regularizer(JavaValue):
+    """
+    Apply L2 regularization
+
+    :param l2 l2 regularization rate
+
+    """
+    def __init__(self, l2, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type, l2)
 
 
 def _test():

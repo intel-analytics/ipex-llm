@@ -32,7 +32,6 @@ export PYTHONPATH=$PYSPARK_ZIP:$DL_PYTHON_HOME:$DL_PYTHON_HOME/:$DL_PYTHON_HOME/
 
 export SPARK_CLASSPATH=$(find $BIGDL_HOME/spark/dl/target/ -name "*with-dependencies.jar" | head -n 1)
 echo "SPARK_CLASSPATH": $SPARK_CLASSPATH
-source $BIGDL_HOME/scripts/bigdl.sh
 
 export PYTHON_EXECUTABLES=("python2" "python3")
 

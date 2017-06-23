@@ -5,7 +5,7 @@ please refer to <http://yann.lecun.com/exdb/lenet/>.
 
 ## How to run this example:
 
-Program would download the minst data into ```/tmp/mnist``` automatically by default.
+Program would download the mnist data into ```/tmp/mnist``` automatically by default.
 
 ```
 /tmp/mnist$ tree .
@@ -17,14 +17,10 @@ Program would download the minst data into ```/tmp/mnist``` automatically by def
 
 ```
 
-**Source bigdl.sh fisrt which would setup the essential environment for you, otherwise program would fail fast.**
-
 We would train a LeNet model in spark local mode with the following commands and you can distribute it across cluster by modifying the spark master and the executor cores.
 
 ```
     BigDL_HOME=...
-
-    source $BigDL_HOME/dist/bin/bigdl.sh
 
     SPARK_HOME=...
     MASTER=local[*]

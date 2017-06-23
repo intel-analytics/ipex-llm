@@ -27,6 +27,10 @@ from pyspark import SparkConf
 import numpy as np
 import threading
 
+INTMAX = 2147483647
+INTMIN = -2147483648
+DOUBLEMAX = 1.7976931348623157E308
+
 if sys.version >= '3':
     long = int
     unicode = str
