@@ -23,10 +23,10 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import scala.reflect.ClassTag
 
 /**
- * Reshape the input tensor with supporting automatic size inference.
+ * Reshape the input tensor with automatic size inference support.
  * Positive numbers in the `size` argument are used to reshape the input to the
  * corresponding dimension size.
- * There are also two special values allowable in `size`:
+ * There are also two special values allowed in `size`:
  *    a. `0` means keep the corresponding dimension size of the input unchanged.
  *       i.e., if the 1st dimension size of the input is 2,
  *       the 1st dimension size of output will be set as 2 as well.
