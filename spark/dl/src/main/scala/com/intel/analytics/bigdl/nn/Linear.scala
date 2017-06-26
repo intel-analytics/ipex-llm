@@ -42,9 +42,9 @@ import com.intel.analytics.bigdl.optim.Regularizer
  */
 @SerialVersionUID( 359656776803598943L)
 class Linear[T: ClassTag](
-  inputSize: Int,
-  outputSize: Int,
-  withBias: Boolean = true,
+  val inputSize: Int,
+  val outputSize: Int,
+  val withBias: Boolean = true,
   var wRegularizer: Regularizer[T] = null,
   var bRegularizer: Regularizer[T] = null,
   initWeight: Tensor[T] = null,
