@@ -61,16 +61,16 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     val labels = Tensor[Double](4).rand()
 
     val model1 = Sequential()
-     .add(new SpatialConvolution[Double](nInputPlane, nOutputPlane,
-       kW, kH, dW, dH, padW, padH))
-     .add(Sigmoid())
+      .add(new SpatialConvolution[Double](nInputPlane, nOutputPlane,
+        kW, kH, dW, dH, padW, padH))
+      .add(Sigmoid())
     val (weights1, grad1) = model1.getParameters()
 
     val model2 = Sequential()
-     .add(new SpatialConvolution[Double](nInputPlane, nOutputPlane,
-       kW, kH, dW, dH, padW, padH,
-       wRegularizer = L2Regularizer(0.1), bRegularizer = L2Regularizer(0.1)))
-     .add(Sigmoid())
+      .add(new SpatialConvolution[Double](nInputPlane, nOutputPlane,
+        kW, kH, dW, dH, padW, padH,
+        wRegularizer = L2Regularizer(0.1), bRegularizer = L2Regularizer(0.1)))
+      .add(Sigmoid())
     val (weights2, grad2) = model2.getParameters()
     weights2.copy(weights1.clone())
     grad2.copy(grad1.clone())
