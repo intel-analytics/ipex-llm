@@ -12,9 +12,9 @@ Apply the soft shrinkage function element-wise to the input Tensor
 
   SoftShrinkage operator:
 ```
-           ⎧ x - lambda, if x >  lambda
+       ⎧ x - lambda, if x >  lambda
 f(x) = ⎨ x + lambda, if x < -lambda
-           ⎩ 0, otherwise
+       ⎩ 0, otherwise
 ```
 
 **Parameters:**

@@ -11,9 +11,9 @@ activation = HardTanh()
 
 Applies non-linear function HardTanh to each element of input, HardTanh is defined:
 ```
-               ⎧  maxValue, if x > maxValue
+           ⎧  maxValue, if x > maxValue
     f(x) = ⎨  minValue, if x < minValue
-               ⎩  x, otherwise
+           ⎩  x, otherwise
 ```
 
 **Parameters:**
