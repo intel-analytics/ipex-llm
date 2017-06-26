@@ -3449,7 +3449,8 @@ class ConvLSTMPeephole(Layer):
     :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices
     :param uRegularizer: instance [[Regularizer]](eg. L1 or L2 regularization), applied to the recurrent weights matrices
     :param bRegularizer: instance of [[Regularizer]]applied to the bias.
- 
+    :param with_peephold: whether use last cell status control a gate.
+
     >>> convlstm = ConvLSTMPeephole(4, 3, 3, 3, 1, L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
     creating: createL1Regularizer
     creating: createL1Regularizer
