@@ -83,7 +83,7 @@ class ConvLSTMPeepholeSpec extends FlatSpec with BeforeAndAfter with Matchers {
     )
     val input = Tensor[Double](inputData, Array(batchSize, seqLength, inputSize, 3, 3))
 
-    val rec = Recurrent[Double](hiddenSize)
+    val rec = Recurrent[Double]()
     val model = Sequential[Double]()
       .add(rec
         .add(ConvLSTMPeephole[Double](inputSize, hiddenSize, 3, 3, 1, withPeephole = false)))
@@ -422,7 +422,7 @@ class ConvLSTMPeepholeSpec extends FlatSpec with BeforeAndAfter with Matchers {
       0.8807161778981778, 0.10209784975052816, 0.37642364632639536, 0.6049083416711989)
     val input = Tensor[Double](inputData, Array(batchSize, seqLength, inputSize, 3, 4))
 
-    val rec = Recurrent[Double](hiddenSize)
+    val rec = Recurrent[Double]()
     val model = Sequential[Double]()
       .add(rec
         .add(ConvLSTMPeephole[Double](inputSize, hiddenSize, 3, 3, 1, withPeephole = false)))
