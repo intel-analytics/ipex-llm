@@ -165,15 +165,15 @@ class ParameterManager2(val id: Int, val executorId: Int,
       val blockId = getGradientBlockId(executorId, pid)
       val fp16param = new FP16CompressedTensor[T](length)(_classTag)
       fp16param.compress(0, parameter, start, length)
-//      BlockManagerWrapper.putBytes(blockId, fp16param.bytes(), StorageLevel.MEMORY_ONLY_SER)
-      val block = SparkEnv.get.blockManager.getLocalBytes(blockId)
-      if (block.isDefined) {
-        block.get.put(fp16param.bytes())
-      } else {
-        val bytes = ByteBuffer.allocate(fp16param.bytes().limit)
-        bytes.put(fp16param.bytes())
-        BlockManagerWrapper.putBytes(blockId, bytes, StorageLevel.MEMORY_ONLY_SER)
-      }
+      BlockManagerWrapper.putBytes(blockId, fp16param.bytes(), StorageLevel.MEMORY_ONLY_SER)
+//      val block = SparkEnv.get.blockManager.getLocalBytes(blockId)
+//      if (block.isDefined) {
+//        block.get.put(fp16param.bytes())
+//      } else {
+//        val bytes = ByteBuffer.allocate(fp16param.bytes().limit)
+//        bytes.put(fp16param.bytes())
+//        BlockManagerWrapper.putBytes(blockId, bytes, StorageLevel.MEMORY_ONLY_SER)
+//      }
 
       pid += 1
     }
@@ -254,17 +254,17 @@ class ParameterManager2(val id: Int, val executorId: Int,
     val weightExecutor = getLocalParameter(weightExecutorId)
     val blockId = getWeightBlockId(executorId)
     BlockManagerWrapper.removeBlock(blockId)
-    val data = SerializerInstance.serialize(weightExecutor)
-    val block = SparkEnv.get.blockManager.getLocalBytes(blockId)
-    if (block.isDefined) {
-      block.get.put(data.bytes())
-    } else {
-      val bytes = ByteBuffer.allocate(data.bytes().limit)
-      bytes.put(data.bytes())
-      BlockManagerWrapper.putBytes(blockId, bytes, StorageLevel.MEMORY_ONLY_SER)
-    }
-//    BlockManagerWrapper.putBytes(blockId,
-//      SerializerInstance.serialize(weightExecutor).bytes(), StorageLevel.MEMORY_ONLY_SER)
+//    val data = SerializerInstance.serialize(weightExecutor)
+//    val block = SparkEnv.get.blockManager.getLocalBytes(blockId)
+//    if (block.isDefined) {
+//      block.get.put(data.bytes())
+//    } else {
+//      val bytes = ByteBuffer.allocate(data.bytes().limit)
+//      bytes.put(data.bytes())
+//      BlockManagerWrapper.putBytes(blockId, bytes, StorageLevel.MEMORY_ONLY_SER)
+//    }
+    BlockManagerWrapper.putBytes(blockId,
+      SerializerInstance.serialize(weightExecutor).bytes(), StorageLevel.MEMORY_ONLY_SER)
   }
 
   /** Get a block from local blockmanager */

@@ -27,7 +27,6 @@ object RpcEnvWrapper {
     conf: SparkConf,
     securityManager: SecurityManager,
     clientMode: Boolean = false): RpcEnv = {
-    println("hehe")
     RpcEnv.create(name, host, port, conf, securityManager)
   }
 
