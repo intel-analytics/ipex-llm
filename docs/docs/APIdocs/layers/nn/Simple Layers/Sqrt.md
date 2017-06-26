@@ -13,7 +13,8 @@ val sqrt = new Sqrt
 sqrt = Sqrt()
 ```
 
-Description
+Apply an element-wise sqrt operation.
+
 
 **Scala example:**
 ```scala

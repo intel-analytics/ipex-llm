@@ -12,7 +12,7 @@ val contiguous = Contiguous()
 contiguous = Contiguous()
 ```
 
-Description
+Used to make input, gradOutput both contiguous
 
 **Scala example:**
 ```scala

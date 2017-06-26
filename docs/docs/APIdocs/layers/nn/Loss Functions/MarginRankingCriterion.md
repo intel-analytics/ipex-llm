@@ -31,10 +31,10 @@ import com.intel.analytics.bigdl.utils.T
 
 import scala.util.Random
 
-val input1Arr = Array(0.20028763,  0.27957329,  0.05694006,  0.38143176,  0.02489306)
-val input2Arr = Array(0.20028763,  0.47957329,  0.05694006,  0.58143176,  0.02489306)
+val input1Arr = Array(1, 2, 3, 4, 5)
+val input2Arr = Array(5, 4, 3, 2, 1)
 
-val target1Arr = Array(0.10028763,  0.27957329,  0.05694006,  0.38143176,  0.12489306)
+val target1Arr = Array(-1, 1, -1, 1, 1)
 
 val input1 = Tensor(Storage(input1Arr.map(x => x.toFloat)))
 val input2 = Tensor(Storage(input2Arr.map(x => x.toFloat)))
@@ -56,28 +56,27 @@ println(gradInput)
 The output will be,
 
 ```
-1.0264403
-
+output: Float = 0.8                                                                                                                                                                    [21/154]
 ```
 
 The gradInput will be,
 
 ```
+gradInput: com.intel.analytics.bigdl.utils.Table =
  {
-        2: 0.020057527
-           0.05591466
-           0.011388012
-           0.07628635
-           0.024978613
+        2: -0.0
+           0.2
+           -0.2
+           0.0
+           0.0
            [com.intel.analytics.bigdl.tensor.DenseTensor of size 5]
-        1: -0.020057527
-           -0.05591466
-           -0.011388012
-           -0.07628635
-           -0.024978613
+        1: 0.0
+           -0.2
+           0.2
+           -0.0
+           -0.0
            [com.intel.analytics.bigdl.tensor.DenseTensor of size 5]
  }
-
 ```
 
 **Python example:**
@@ -88,28 +87,31 @@ from bigdl.nn.criterion import *
 from bigdl.optim.optimizer import *
 from bigdl.util.common import *
 
-mrc = MarginRankingCriterion()
+mse = MarginRankingCriterion()
 
-input1 = np.array([0.20028763,  0.27957329,  0.05694006,  0.38143176,  0.02489306]).astype("float32")
-input2 = np.array([0.20028763,  0.47957329,  0.05694006,  0.58143176,  0.02489306]).astype("float32")
+input1 = np.array([1, 2, 3, 4, 5]).astype("float32")
+input2 = np.array([5, 4, 3, 2, 1]).astype("float32")
 input = [input1, input2]
 
-target1 = np.array([0.10028763,  0.27957329,  0.05694006,  0.38143176,  0.12489306]).astype("float32")
-target = [target1]
+target1 = np.array([-1, 1, -1, 1, 1]).astype("float32")
+target = [target1, target1]
 
-output = mrc.forward(input, target)
-gradInput = mrc.backward(input, target)
+output = mse.forward(input, target)
+gradInput = mse.backward(input, target)
 
-print "output = \n %s" % output
-print "gradInput = \n %s " % gradInput
+print output
+print gradInput
 ```
 
 The output will be,
 
 ```
-output = 
- 1.0264403
-gradInput = 
- [array([-0.02005753, -0.05591466, -0.01138801, -0.07628635, -0.02497861], dtype=float32), array([ 0.02005753,  0.05591466,  0.01138801,  0.07628635,  0.02497861], dtype=float32)] 
+0.8
+```
+
+The gradInput will be,
+
+```
+[array([ 0. , -0.2,  0.2, -0. , -0. ], dtype=float32), array([-0. ,  0.2, -0.2,  0. ,  0. ], dtype=float32)] 
 ```
 
