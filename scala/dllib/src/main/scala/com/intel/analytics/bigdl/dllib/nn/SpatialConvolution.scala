@@ -363,7 +363,6 @@ class SpatialConvolution[T: ClassTag](
     if (null != wRegularizer) {
       wRegularizer.accRegularization(weight, gradWeight, scaleW)
     }
-
     if (withBias && null != bRegularizer) {
       bRegularizer.accRegularization(bias, gradBias, scaleB)
     }
@@ -637,6 +636,7 @@ class SpatialConvolution[T: ClassTag](
           gradBias.asInstanceOf[Tensor[Float]].addmv(0.0f, ev.toType[Float](scaleB), gradOutput2d,
             ones.asInstanceOf[Tensor[Float]])
         }
+
       case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
     }
   }
