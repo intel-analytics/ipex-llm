@@ -3,7 +3,7 @@
 
 **Scala:**
 ```scala
-val layer = new HardShrink[Double](5)
+HardShrink[T](lambda: Double = 0.5)
 ```
 **Python:**
 ```python
