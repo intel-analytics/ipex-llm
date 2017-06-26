@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, T, Table}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 
-object TrainInceptionV1 {
+object TrainInception {
   LoggerFilter.redirectSparkInfoLogs()
   Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
 
@@ -31,7 +31,7 @@ object TrainInceptionV1 {
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {
       val imageSize = 224
-      val conf = Engine.createSparkConf().setAppName("BigDL Inception v1 Train Example")
+      val conf = Engine.createSparkConf().setAppName("BigDL Inception Train Example")
         .set("spark.task.maxFailures", "1")
       val sc = new SparkContext(conf)
       Engine.init
@@ -59,10 +59,14 @@ object TrainInceptionV1 {
 
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
-      } else {
+      } else if (param.modelName.equals("InceptionV1")) {
         Inception_v1_NoAuxClassifier(classNum = param.classNumber)
+      } else if (param.modelName.equals("InceptionV2")) {
+        Inception_v2_NoAuxClassifier(classNum = param.classNumber)
+      } else {
+        throw new UnsupportedOperationException(
+          "Currently only support InceptionV1 and InceptionV2")
       }
-
       val optimMethod = if (param.stateSnapshot.isDefined) {
         OptimMethod.load[Float](param.stateSnapshot.get)
       } else if (param.maxEpoch.isDefined) {

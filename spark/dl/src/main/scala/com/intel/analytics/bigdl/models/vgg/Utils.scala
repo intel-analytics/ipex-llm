@@ -39,7 +39,9 @@ object Utils {
     stateSnapshot: Option[String] = None,
     batchSize: Int = 112,
     maxEpoch: Int = 90,
-    overWriteCheckpoint: Boolean = false
+    overWriteCheckpoint: Boolean = false,
+    learningRate: Double = 0.01,
+    weightDecay: Double = 0.0005
   )
 
   val trainParser = new OptionParser[TrainParams]("BigDL Vgg on Cifar10 Example") {
@@ -64,6 +66,12 @@ object Utils {
     opt[Unit]("overWrite")
       .text("overwrite checkpoint files")
       .action( (_, c) => c.copy(overWriteCheckpoint = true) )
+    opt[Double]("weightDecay")
+      .text("weight decay")
+      .action((x, c) => c.copy(weightDecay = x))
+    opt[Double]('l', "learningRate")
+      .text("inital learning rate")
+      .action((x, c) => c.copy(learningRate = x))
   }
 
   case class TestParams(
