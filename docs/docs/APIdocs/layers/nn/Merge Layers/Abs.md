@@ -1,8 +1,5 @@
 ## Abs ##
 
-An element-wise abs operation.
-
-
 **Scala:**
 ```scala
 abs = Abs[T]()
@@ -11,6 +8,8 @@ abs = Abs[T]()
 ```python
 abs = Abs()
 ```
+
+An element-wise abs operation.
 
 
 **Scala example:**

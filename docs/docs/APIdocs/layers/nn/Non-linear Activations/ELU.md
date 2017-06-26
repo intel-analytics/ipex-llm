@@ -1,16 +1,5 @@
 ## ELU ##
 
-Applies exponential linear unit (`ELU`), which parameter a varies the convergence value of the exponential function below zero:
-
-`ELU` is defined as:
-
-```lua
-f(x) = max(0, x) + min(0, alpha * (exp(x) - 1))
-```
-
-The output dimension is always equal to input dimension.
-
-For reference see [Fast and Accurate Deep Network Learning by Exponential Linear Units (ELUs)](http://arxiv.org/abs/1511.07289).
 
 **Scala:**
 
@@ -21,6 +10,19 @@ ELU[Float](alpha: Double = 1.0, inplace: Boolean = false)
 ```python
 ELU(alpha=1.0, inplace=False, bigdl_type="float")
 ```
+
+
+Applies exponential linear unit (`ELU`), which parameter a varies the convergence value of the exponential function below zero:
+
+`ELU` is defined as:
+
+```
+f(x) = max(0, x) + min(0, alpha * (exp(x) - 1))
+```
+
+The output dimension is always equal to input dimension.
+
+For reference see [Fast and Accurate Deep Network Learning by Exponential Linear Units (ELUs)](http://arxiv.org/abs/1511.07289).
 
 
 **Scala example:**

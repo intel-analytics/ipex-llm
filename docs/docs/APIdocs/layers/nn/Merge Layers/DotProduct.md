@@ -1,6 +1,4 @@
 ## DotProduct ##
-outputs the dot product (similarity) between inputs
-
 
 **Scala:**
 
@@ -12,6 +10,8 @@ DotProduct[T]()
 DotProduct(bigdl_type="float")
 ```
 
+Outputs the dot product (similarity) between inputs
+
 
 **Scala example:**
 ```scala
@@ -21,14 +21,28 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.utils.{T, Table}
 
 val mlp = DotProduct[Double]()
-val x = Tensor[Double](2, 3).fill(1)
-val y = Tensor[Double](2, 3).fill(2)
-print(mlp.forward(T(x, y)))
+val x = Tensor[Double](3).fill(1)
+val y = Tensor[Double](3).fill(2)
+println("input:")
+println(x)
+println(y)
+println("output:")
+println(mlp.forward(T(x, y)))
 ```
 ```
+input:
+1.0
+1.0
+1.0
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 3]
+2.0
+2.0
+2.0
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 3]
+output:
 6.0
-6.0
-[com.intel.analytics.bigdl.tensor.DenseTensor of size 2]
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 1]
+
 ```
 
 **Python example:**
@@ -38,16 +52,21 @@ import numpy as np
 from bigdl.nn.layer import *
 
 mlp = DotProduct()
-x = np.array([1, 2, 3])
-y = np.array([4, 5, 6])
-
+x = np.array([1, 1, 1])
+y = np.array([2, 2, 2])
+print("input:")
+print(x)
+print(y)
+print("output:")
 print(mlp.forward([x, y]))
-print(mlp.forward([np.ones((2, 3)), np.full((2, 3), 2)]))
 
 ```
 ```
-output is:
-[array([ 32.], dtype=float32)]
-[array([ 6.,  6.], dtype=float32)]
+creating: createDotProduct
+input:
+[1 1 1]
+[2 2 2]
+output:
+[ 6.]
 ```
 
