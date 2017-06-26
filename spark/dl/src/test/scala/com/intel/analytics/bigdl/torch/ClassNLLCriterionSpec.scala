@@ -16,11 +16,42 @@
 
 package com.intel.analytics.bigdl.torch
 
-import com.intel.analytics.bigdl.nn.ClassNLLCriterion
+import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
+import org.apache.spark.sql.catalyst.plans.logical.Join
 
 @com.intel.analytics.bigdl.tags.Serial
 class ClassNLLCriterionSpec extends TorchSpec {
+  "a" should "a" in {
+    import com.intel.analytics.bigdl.nn.Narrow
+    import com.intel.analytics.bigdl.tensor.Tensor
+    import com.intel.analytics.bigdl.numeric.NumericFloat
+    import com.intel.analytics.bigdl.utils.T
+
+    val layer = Narrow(2, 2)
+    val input = Tensor(T(
+      T(-1f, 2f, 3f),
+      T(-2f, 3f, 4f),
+      T(-3f, 4f, 5f)
+    ))
+
+    val gradOutput = Tensor(T(3f, 4f, 5f))
+
+    val output = layer.forward(input)
+    val grad = layer.backward(input, gradOutput)
+
+    println(output)
+//    -0.3132617	-0.12692802	-0.04858735
+//    -0.12692802	-0.04858735	-0.01814993
+//    -0.04858735	-0.01814993	-0.0067153485
+//      [com.intel.analytics.bigdl.tensor.DenseTensor of size 3x3]
+
+    println(grad)
+//    0.8068244	0.47681168	0.23712938
+//    0.23840584	0.14227761	0.07194484
+//    0.047425874	0.03597242	0.020078553
+//      [com.intel.analytics.bigdl.tensor.DenseTensor of size 3x3]
+  }
     "A ClassNLL Criterion " should "generate correct output and grad" in {
     torchCheck()
     val criterion = new ClassNLLCriterion[Double]()
