@@ -41,7 +41,7 @@ input: com.intel.analytics.bigdl.utils.Table =
 output: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 0.9746319
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 1]
-input
+
 ```
 
 **Python example:**
