@@ -22,6 +22,8 @@ from tensorflow.python.framework import importer
 from tensorflow.python.platform import gfile
 import tensorflow as tf
 
+import time
+
 def merge_checkpoint(input_graph,
                  input_checkpoint,
                  output_node_names,
@@ -57,44 +59,54 @@ def merge_checkpoint(input_graph,
     with gfile.GFile(output_graph, "wb") as f:
         f.write(output_graph_def.SerializeToString())
 
-def run_model(end_points, output_path, model_scope=None):
+def run_model(end_points, output_path, model_scope=None, backward=True):
     outputs = []
     results = []
     grad_inputs = []
+    grad_inputs_assign = []
     grad_vars = []
     grad_results = []
-    trainable_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope=model_scope)
+    # trainable_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope=model_scope)
     i = 0
-    opt = tf.train.GradientDescentOptimizer(0.01)
     for end_point in end_points:
         output = tf.Variable(tf.random_uniform(tf.shape(end_point)), name='output' + str(i))
         outputs.append(output)
         results.append(tf.assign(output, end_point, name = 'assign' + str(i)))
-
-        # set up backward variables
-        # filter None tensor
-        tmp_vars = filter(lambda x: tf.gradients(end_point, x) != [None], trainable_vars)
-        # set up random gradient input
-        grad_input = tf.Variable(tf.random_uniform(tf.shape(end_point)), name='grad_input' + str(i))
-        grad_inputs.append(grad_input)
-        # compute gradients with random input
-        backward = opt.compute_gradients(end_point, var_list=tmp_vars, grad_loss=grad_input)
-        j = 0
-        for gradients, tensor in backward:
-            grad_var = tf.Variable(tf.random_uniform(tf.shape(tensor)), 
-                name='{}_grad{}'.format(tensor.name[:-2], i))
-            grad_vars.append(grad_var)
-            grad_result = tf.assign(grad_var, gradients, name='grad_assign' + str((i+1)*j))
-            grad_results.append(grad_result)
-            j = j + 1
         i = i + 1
+
+    if backward:
+        loss = reduce(lambda x, y: tf.abs(x - y), end_points)
+        loss = loss * loss
+        for i in range(len(end_points)):
+            grad_input = tf.Variable(tf.random_uniform(tf.shape(end_point), minval=0.5, maxval=1),
+                                     name='grad_input' + str(i))
+            grad_inputs.append(grad_input)
+            grad_input_endpoint = tf.gradients(loss, end_points[i])[0]
+            grad_inputs_assign.append(tf.assign(grad_input, grad_input_endpoint, name = 'grad_input_assign' + str(i)))
+        t = time.time()
+        opt = tf.train.GradientDescentOptimizer(0.01)
+        backward_vars = opt.compute_gradients(loss)
+        tt = (time.time() - t) * 1000
+        k = 0
+        for gradients, tensor in backward_vars:
+            if gradients is None:
+                continue
+            grad_var = tf.Variable(tf.random_uniform(tf.shape(tensor)),
+                name='{}_grad'.format(tensor.name[:-2]))
+            grad_vars.append(grad_var)
+            grad_result = tf.assign(grad_var, gradients, name='grad_assign' + str(k))
+            grad_results.append(grad_result)
+            k = k + 1
+        print 'Compute {} variables for backward in {} ms'.format(k, tt)
 
     saver = tf.train.Saver()
     with tf.Session() as sess:
         init = tf.global_variables_initializer()
         sess.run(init) 
         sess.run(results)
-        sess.run(grad_results)
+        if backward:
+            sess.run(grad_results)
+            sess.run(grad_inputs_assign)
         saver.save(sess, output_path + '/model.chkp')
         tf.train.write_graph(sess.graph, output_path, 'model.pbtxt')
         # tf.summary.FileWriter(output_path + '/log', sess.graph)
@@ -104,8 +116,11 @@ def run_model(end_points, output_path, model_scope=None):
     output_file = output_path + "/model.pb"
 
     output_nodes = map(lambda x: 'assign' + str(x), range(len(end_points)))
-    grades_nodes = map(lambda x: 'grad_assign' + str(x), range(len(grad_results)))
-    output_nodes.extend(grades_nodes)
+    if backward:
+        grades_nodes = map(lambda x: 'grad_assign' + str(x), range(len(grad_results)))
+        grades_input_nodes = map(lambda x: 'grad_input_assign' + str(x), range(len(grad_inputs)))
+        output_nodes.extend(grades_nodes)
+        output_nodes.extend(grades_input_nodes)
 
     # merge_checkpoint(input_graph, input_checkpoint, map(lambda x: 'assign' + str(x), range(len(end_points))), output_file)
     merge_checkpoint(input_graph, input_checkpoint, output_nodes, output_file)
