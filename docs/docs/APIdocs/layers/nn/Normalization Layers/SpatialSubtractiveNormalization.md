@@ -2,11 +2,11 @@
 
 **Scala:**
 ```scala
-val spatialSubtractiveNormalization = SpatialSubtractiveNormalization(nInputPlane, kernel)
+val spatialSubtractiveNormalization = SpatialSubtractiveNormalization(val nInputPlane: Int = 1, var kernel: Tensor[T] = null)
 ```
 **Python:**
 ```python
-spatialSubtractiveNormalization = SpatialSubtractiveNormalization(nInputPlane, kernel)
+spatialSubtractiveNormalization = SpatialSubtractiveNormalization(n_input_plane=1, kernel=None)
 ```
 
 SpatialSubtractiveNormalization applies a spatial subtraction operation on a series of 2D inputs using kernel for computing the weighted average in a neighborhood.The neighborhood is defined for a local spatial region that is the size as kernel and across all features. For an input image, since there is only one feature, the region is only spatial. For an RGB image, the weighted average is taken over RGB channels and a spatial region.
@@ -25,6 +25,9 @@ kernel : kernel tensor, default is a 9 x 9 tensor.
 
 **Scala example:**
 ```scala
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor._
 val kernel = Tensor(3, 3).rand()
 val spatialSubtractiveNormalization = SpatialSubtractiveNormalization(4, kernel)
 
@@ -48,6 +51,7 @@ val spatialSubtractiveNormalization = SpatialSubtractiveNormalization(4, kernel)
 
 **Python example:**
 ```python
+from bigdl.nn.layer import *
 kernel=np.array([[1, 2, 3],[4, 5, 6],[7, 8, 9]])
 spatialSubtractiveNormalization = SpatialSubtractiveNormalization(1, kernel)
 >  spatialSubtractiveNormalization.forward(np.array([[[[1, 2, 3, 4, 5]]]]))

@@ -2,15 +2,20 @@
 
 **Scala:**
 ```scala
-val adagrad = new Adagrad(learningRate, learningRateDecay, weightDecay)
+val adagrad = new Adagrad(var learningRate: Double = 1e-3,
+                          var learningRateDecay: Double = 0.0,
+                          var weightDecay: Double = 0.0)
 adagrad.optimize(feval, x, config, state)
 ```
 
  An implementation of Adagrad. See the original paper:
  <http://jmlr.org/papers/volume12/duchi11a/duchi11a.pdf>
- 
+
 **Scala example:**
 ```scala
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.optim._
+import com.intel.analytics.bigdl.tensor._
 val adagrad = Adagrad(0.01, 0.0, 0.0)
     def feval(x: Tensor[Float]): (Float, Tensor[Float]) = {
       // (1) compute f(x)
@@ -52,3 +57,4 @@ x after optimize: 0.27779138
 0.07226955
 [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2]
 ```
+

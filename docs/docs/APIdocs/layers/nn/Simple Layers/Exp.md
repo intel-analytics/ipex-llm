@@ -10,12 +10,13 @@ module = Exp()
 ```
 
 Exp applies element-wise exp operation to input tensor
-```
-output = java.lang.Math.exp(input)
-```
+
 
 **Scala example:**
 ```scala
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor._
 val exp = Exp()
 
 > print(exp.forward(Tensor(3, 3).rand()))
@@ -28,6 +29,7 @@ val exp = Exp()
 
 **Python example:**
 ```python
+from bigdl.nn.layer import *
 exp = Exp()
 > exp.forward(np.array([[1, 2, 3],[1, 2, 3]]))
 [array([[  2.71828175,   7.38905621,  20.08553696],

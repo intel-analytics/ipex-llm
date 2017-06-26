@@ -10,12 +10,13 @@ tanhShrink = TanhShrink()
 ```
 TanhShrink applies element-wise Tanh and Shrink function to the input
 
-```
-TanhShrink function : f(x) = scala.math.tanh(x) - 1
-```
+TanhShrink function : `f(x) = scala.math.tanh(x) - 1`
 
 **Scala example:**
 ```scala
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor._
 val tanhShrink = TanhShrink()
 
 >  print(tanhShrink.forward(Tensor(3, 3).rand()))
@@ -28,6 +29,7 @@ val tanhShrink = TanhShrink()
 
 **Python example:**
 ```python
+from bigdl.nn.layer import *
 tanhShrink = TanhShrink()
 
 >  tanhShrink.forward(np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))

@@ -2,7 +2,7 @@
 
 **Scala:**
 ```scala
-val spatialZeroPadding = SpatialZeroPadding(padLeft, padRight, padTop, padBottom)
+val spatialZeroPadding = SpatialZeroPadding(padLeft: Int, padRight: Int, padTop: Int, padBottom: Int)
 ```
 **Python:**
 ```python
@@ -15,6 +15,9 @@ If padding values are negative, then input will be cropped.
 
 **Scala example:**
 ```scala
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor._
 val spatialZeroPadding = SpatialZeroPadding(1, 0, -1, 0)
 
 > print(spatialZeroPadding.forward(Tensor(3, 3, 3).rand()))
@@ -37,6 +40,7 @@ val spatialZeroPadding = SpatialZeroPadding(1, 0, -1, 0)
 
 **Python example:**
 ```python
+from bigdl.nn.layer import *
 spatialZeroPadding = SpatialZeroPadding(1, 0, -1, 0)
 > spatialZeroPadding.forward(np.array([[[1, 2],[3, 4]],[[1, 2],[3, 4]]]))
 [array([[[ 0.,  3.,  4.]],

@@ -2,17 +2,20 @@
 
 **Scala:**
 ```scala
-val cosineEmbeddingCriterion = CosineEmbeddingCriterion(margin, sizeAverage)
+val cosineEmbeddingCriterion = CosineEmbeddingCriterion(val margin: Double = 0.0, val sizeAverage: Boolean = true)
 ```
 **Python:**
 ```python
-cosineEmbeddingCriterion = CosineEmbeddingCriterion(margin, size_average)
+cosineEmbeddingCriterion = CosineEmbeddingCriterion( margin=0.0,size_average=True)
 ```
 CosineEmbeddingCriterion creates a criterion that measures the loss given an input x = {x1, x2},
 a table of two Tensors, and a Tensor label y with values 1 or -1.
 
 **Scala example:**
 ```scala
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor._
 val cosineEmbeddingCriterion = CosineEmbeddingCriterion(0.0, false)
 val input1 = Tensor(5).rand()
 val input2 = Tensor(5).rand()
@@ -45,8 +48,8 @@ target(1.0) = target1
 
 **Python example:**
 ```python
+from bigdl.nn.layer import *
 cosineEmbeddingCriterion = CosineEmbeddingCriterion(0.0, False)
-
 > cosineEmbeddingCriterion.forward([np.array([1.0, 2.0, 3.0, 4.0 ,5.0]),np.array([5.0, 4.0, 3.0, 2.0, 1.0])],[np.array(-0.5)])
 0.6363636
 > cosineEmbeddingCriterion.backward([np.array([1.0, 2.0, 3.0, 4.0 ,5.0]),np.array([5.0, 4.0, 3.0, 2.0, 1.0])],[np.array(-0.5)])

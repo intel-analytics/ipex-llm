@@ -13,6 +13,9 @@ Identity just return input as the output which is useful in same parallel contai
 
 **Scala example:**
 ```scala
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor._
 val identity = Identity()
 
 val input = Tensor(3, 3).rand()
@@ -33,6 +36,7 @@ input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 
 **Python example:**
 ```python
+from bigdl.nn.layer import *
 identity = Identity()
 >  identity.forward(np.array([[1, 2, 3], [4, 5, 6]]))
 [array([[ 1.,  2.,  3.],

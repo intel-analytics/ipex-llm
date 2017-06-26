@@ -10,12 +10,15 @@ softSign = SoftSign()
 ```
 
 SoftSign applies SoftSign function to the input tensor
-```
-SoftSign function: f_i(x) = x_i / (1+|x_i|)
-```
+
+SoftSign function: `f_i(x) = x_i / (1+|x_i|)`
+
 
 **Scala example:**
 ```scala
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor._
 val softSign = SoftSign()
 
 > print(softSign.forward(Tensor(3, 3).rand()))
@@ -28,10 +31,10 @@ val softSign = SoftSign()
 
 **Python example:**
 ```python
+from bigdl.nn.layer import *
 softSign=SoftSign()
 > softSign.forward(np.array([[1, 2, 4],[-1, -2, -4]]))
 [array([[ 0.5       ,  0.66666669,  0.80000001],
        [-0.5       , -0.66666669, -0.80000001]], dtype=float32)]
 
 ```
-
