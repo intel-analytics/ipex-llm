@@ -84,6 +84,14 @@ class CaffePersisterSpec extends FlatSpec with Matchers{
       graph, useV2 = false, overwrite = true)
   }
 
+  "Persist V2 module" should "works properly" in {
+    val module = new ModuleNode(Linear[Double](100, 10).
+      setName("simple linear").asInstanceOf[AbstractModule[Activity, Tensor[Double], Double]])
+    val graph = Graph(module, module)
+    CaffePersister.persist("/tmp/v2.prototxt", "/tmp/v2.caffemodel",
+      graph, useV2 = true, overwrite = true)
+  }
+
   "A saved module" should "have same result as pre-saved one" in {
 
     val input1 = Tensor[Double](1, 3, 5, 5).apply1( e => Random.nextDouble())

@@ -36,7 +36,7 @@ import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.IOUtils
 import org.apache.log4j.Logger
 /**
- * An utility to convert BigDL model into caffe format and persist into local/hdfs file system
+ * A utility to convert BigDL model into caffe format and persist into local/hdfs file system
  *
  * @param prototxtPath  path to store model definition file
  * @param modelPath  path to store model weights and bias
