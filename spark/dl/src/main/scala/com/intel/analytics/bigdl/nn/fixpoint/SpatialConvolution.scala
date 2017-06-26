@@ -17,8 +17,8 @@
 package com.intel.analytics.bigdl.nn.fixpoint
 
 import com.intel.analytics.bigdl.fixpoint.FixPoint
-import com.intel.analytics.bigdl.nn.{Default, ErrorInfo, InitializationMethod, Xavier,
-                                     SpatialConvolution => NNSpatialConvolution}
+import com.intel.analytics.bigdl.nn.{ErrorInfo, VariableFormat, SpatialConvolution => NNSpatialConvolution}
+import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils._
@@ -38,7 +38,12 @@ class SpatialConvolution[T: ClassTag](
   padH: Int = 0, // The additional zeros added per height to the input planes.
   nGroup: Int = 1, // Kernel group number
   propagateBack: Boolean = false, // propagate gradient back
-  private var initMethod: InitializationMethod = Default
+  wRegularizer: Regularizer[T] = null,
+  bRegularizer: Regularizer[T] = null,
+  initWeight: Tensor[T] = null,
+  initBias: Tensor[T] = null,
+  initGradWeight: Tensor[T] = null,
+  initGradBias: Tensor[T] = null
 )(implicit ev: TensorNumeric[T]) extends NNSpatialConvolution[T](
   nInputPlane,
   nOutputPlane,
@@ -50,7 +55,12 @@ class SpatialConvolution[T: ClassTag](
   padH,
   nGroup,
   propagateBack,
-  initMethod
+  wRegularizer,
+  bRegularizer,
+  initWeight,
+  initBias,
+  initGradWeight,
+  initGradBias
 ) {
 
   require(nInputPlane % nGroup == 0, "Number of input channels should be multiples of group.")
@@ -63,29 +73,14 @@ class SpatialConvolution[T: ClassTag](
   @transient
   var desc = 0L
 
-  override def setInitMethod(initMethod: InitializationMethod): this.type = {
-    this.initMethod = initMethod
-    this
-  }
-
   override def reset(): Unit = {
-    initMethod match {
-      case Default =>
-        val stdv = 1.0 / math.sqrt(kernelW * kernelH * nInputPlane)
-        weight.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
-        bias.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
-      case Xavier =>
-        val fanIn = nInputPlane * kernelH * kernelW
-        val fanOut = nOutputPlane * kernelH * kernelW
-        val stdv = math.sqrt(6.0 / (fanIn + fanOut))
-        weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
-        bias.fill(ev.fromType(0))
-      case _ => throw new IllegalArgumentException()
+    if (initWeight == null) {
+      weightInitMethod.init(weight, VariableFormat.GP_OUT_IN_KW_KH)
+    }
+    if (initBias == null) {
+      biasInitMethod.init(bias, VariableFormat.ONE_D)
     }
     zeroGradParameters()
-    if (desc != 0) {
-      release()
-    }
   }
 
   private def init(): Unit = {
