@@ -312,14 +312,14 @@ object Optimizer {
     criterion: Criterion[T],
     batchSize: Int,
     isInOrder: Boolean,
-    featurePadding : Option[Tensor[T]] = None,
-    labelPadding : Option[T] = None,
-    fixedLength: Option[Int] = None
+    featurePadding : Option[Tensor[T]],
+    labelPadding : Option[T],
+    fixedLength: Option[Int]
   )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
     new DistriOptimizer[T](
       _model = model,
       dataset = (DataSet.sortRDD(sampleRDD, isInOrder, batchSize) ->
-        SampleToMiniBatch(batchSize, featurePadding, labelPadding, fixedLength))
+        SampleToBatch(batchSize, featurePadding, labelPadding, fixedLength))
         .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
       criterion = criterion
     ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
@@ -331,12 +331,37 @@ object Optimizer {
         criterion: Criterion[T],
         batchSize: Int,
         isInOrder: Boolean,
-        toMiniBatch: (Array[Sample[T]], Array[Tensor[T]], Array[Tensor[T]]) => MiniBatch[T]
+        featurePadding: Option[Array[Tensor[T]]] = None,
+        featureFixedLength: Option[Array[Int]] = None,
+        featureIncrement: Option[Array[Int]] = None,
+        labelPadding: Option[Array[T]] = None,
+        labelFixedLength: Option[Array[Int]] = None,
+        labelIncrement: Option[Array[Int]] = None,
+        partitionNum: Option[Int] = None
   )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
     new DistriOptimizer[T](
       _model = model,
       dataset = (DataSet.sortRDD(sampleRDD, isInOrder, batchSize) ->
-        SampleToMiniBatch(batchSize, toMiniBatch))
+        SampleToMiniBatch(batchSize, featurePadding, featureFixedLength, featureIncrement,
+          labelPadding, labelFixedLength, labelIncrement, partitionNum))
+        .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
+      criterion = criterion
+    ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
+  }
+
+  def apply[T: ClassTag](
+          model: Module[T],
+          sampleRDD: RDD[Sample[T]],
+          criterion: Criterion[T],
+          batchSize: Int,
+          isInOrder: Boolean,
+          miniBatch: MiniBatch[T],
+          partitionNum: Option[Int]
+        )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
+    new DistriOptimizer[T](
+      _model = model,
+      dataset = (DataSet.sortRDD(sampleRDD, isInOrder, batchSize) ->
+        SampleToMiniBatch(batchSize, miniBatch, partitionNum))
         .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
       criterion = criterion
     ).asInstanceOf[Optimizer[T, MiniBatch[T]]]

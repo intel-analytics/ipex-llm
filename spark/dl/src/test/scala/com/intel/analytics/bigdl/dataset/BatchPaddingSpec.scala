@@ -55,7 +55,9 @@ class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val trainData =
       Array[Sample[Float]](sample1, sample2, sample3, sample3, sample3, sample3)
     val trainSet = DataSet.array(trainData)
-      .transform(SampleToMiniBatch[Float](batchSize, Some(featurePadding), Some(10.0f)))
+      .transform(SampleToMiniBatch[Float](batchSize,
+        featurePadding = Some(featurePadding),
+        labelPadding = Some(10.0f)))
 
     val iter = trainSet.toLocal().data(train = false)
 
@@ -168,6 +170,9 @@ class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
     while (data1.hasNext && data2.hasNext) {
       val batch1 = data1.next()
       val batch2 = data2.next()
+      if (batch1.getInput() != batch2.getInput()) {
+        println
+      }
       batch1.getInput should be (batch2.getInput)
       batch1.getTarget should be (batch2.getTarget)
     }

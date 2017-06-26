@@ -53,7 +53,7 @@ class MiniBatchSpec extends FlatSpec with Matchers {
     val a1 = Tensor[Float](3, 4).range(1, 12, 1)
     val a2 = Tensor[Float](3, 2).range(1, 6, 1)
     val b = Tensor[Float](3).range(1, 3, 1)
-    val miniBatch = MiniBatch(T(a1, a2), b)
+    val miniBatch = MiniBatch(Array(a1, a2), b)
     miniBatch.size() should be (3)
   }
 
@@ -61,7 +61,7 @@ class MiniBatchSpec extends FlatSpec with Matchers {
     val a1 = Tensor[Float](3, 4).range(1, 12, 1)
     val a2 = Tensor[Float](3, 2).range(1, 6, 1)
     val b = Tensor[Float](3).range(1, 3, 1)
-    val miniBatch = MiniBatch(T(a1, a2), b)
+    val miniBatch = MiniBatch(Array(a1, a2), b)
     miniBatch.getInput() should be (T(a1, a2))
     miniBatch.getTarget() should be (b)
   }
@@ -70,7 +70,7 @@ class MiniBatchSpec extends FlatSpec with Matchers {
     val a1 = Tensor[Float](3, 2, 2).range(1, 12, 1)
     val a2 = Tensor[Float](3, 2).range(1, 6, 1)
     val b = Tensor[Float](3).range(1, 3, 1)
-    val miniBatch = MiniBatch(T(a1, a2), b)
+    val miniBatch = MiniBatch(Array(a1, a2), b)
 
     miniBatch.slice(1, 1).getInput() should be (T(Tensor[Float](1, 2, 2).range(1, 4, 1),
       Tensor[Float](1, 2).range(1, 2, 1)))
