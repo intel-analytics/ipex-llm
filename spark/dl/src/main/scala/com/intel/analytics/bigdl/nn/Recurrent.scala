@@ -84,7 +84,8 @@ class Recurrent[T : ClassTag]()
    * @param batchSize
    * @param hiddenSize
    */
-  private def extend(times: Int, batchSize: Int, hiddenSize: Int): Unit = {
+  private def extend(times: Int, batchSize: Int, hiddenSize: Int,
+    rows: Int = 1, columns: Int = 1): Unit = {
     if (hidden == null) {
       require((preTopology == null && modules.length == 1) ||
         (topology != null && preTopology != null && modules.length == 2),
@@ -96,7 +97,7 @@ class Recurrent[T : ClassTag]()
       val cell = cells.head
 
       // The cell will help initialize or resize the hidden variable.
-      hidden = cell.hidResize(hidden = null, size = batchSize)
+      hidden = cell.hidResize(hidden = null, size = batchSize, rows, columns)
 
       /*
        * Since the gradHidden is only used as an empty Tensor or Table during
@@ -105,7 +106,7 @@ class Recurrent[T : ClassTag]()
        */
       gradHidden = hidden
     } else {
-      cells.head.hidResize(hidden = hidden, size = batchSize)
+      cells.head.hidResize(hidden = hidden, size = batchSize, rows, columns)
       gradHidden = hidden
     }
     var t = cells.length
@@ -191,8 +192,8 @@ class Recurrent[T : ClassTag]()
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.dim == 3,
-      "Recurrent: input should be a 3D Tensor, e.g [batch, times, nDim], " +
+    require(input.dim == 3 || input.dim == 5,
+      "Recurrent: input should be a 3D or 5D Tensor, e.g [batch, times, nDim], " +
         s"current input.dim = ${input.dim}")
 
     outputCell = if (preTopology != null) {
@@ -204,11 +205,16 @@ class Recurrent[T : ClassTag]()
     batchSize = outputCell.size(batchDim)
     times = outputCell.size(timeDim)
 
-    val hiddenSize = topology.hiddensShape(0)
-    output.resize(batchSize, times, hiddenSize)
-
-    // Clone N modules along the sequence dimension.
-    extend(times, batchSize, hiddenSize)
+    val hiddenSize = modules.last.asInstanceOf[Cell[T]].hiddensShape(0)
+    if (input.dim() == 3) {
+      output.resize(batchSize, times, hiddenSize)
+      // Clone N modules along the sequence dimension.
+      extend(times, batchSize, hiddenSize)
+    } else if (input.dim() == 5) {
+      output.resize(batchSize, times, hiddenSize, input.size(4), input.size(5))
+      // Clone N modules along the sequence dimension.
+      extend(times, batchSize, hiddenSize, input.size(4), input.size(5))
+    }
 
     /**
      * currentInput forms a T() type. It contains two elements, hidden and input.
