@@ -1647,21 +1647,27 @@ class Index(Layer):
 class InferReshape(Layer):
 
     '''
-    Reshape with the support of infered size,
-    Positive numbers are used directly, setting the corresponding dimension of the output tensor.
-    In addition, two special values are accepted:
-    0 means "copy the respective dimension of the input".
-    i.e., if the input has 2 as its 1st dimension,
-    the output will have 2 as its 1st dimension as well
-    -1 stands for "infer this from the other dimensions"
-    this dimension is calculated to keep the overall element count the same as in the input.
-    At most one -1 can be used in a reshape operation.
-    For example, (4, 5, 6, 7) -> InferReshape (4, 0, 3, -1) -> (4, 5, 3, 14)
-    with 1st and 3rd dim same as given size, with 2nd dim same as input, and the infered dim is 14
+    Reshape the input tensor with automatic size inference support.
+    Positive numbers in the `size` argument are used to reshape the input to the
+    corresponding dimension size.
+    There are also two special values allowed in `size`:
+       a. `0` means keep the corresponding dimension size of the input unchanged.
+          i.e., if the 1st dimension size of the input is 2,
+          the 1st dimension size of output will be set as 2 as well.
+       b. `-1` means infer this dimension size from other dimensions.
+          This dimension size is calculated by keeping the amount of output elements
+          consistent with the input.
+          Only one `-1` is allowable in `size`.
 
+    For example,
+       Input tensor with size: (4, 5, 6, 7)
+       -> InferReshape(Array(4, 0, 3, -1))
+       Output tensor with size: (4, 5, 3, 14)
+    The 1st and 3rd dim are set to given sizes, keep the 2nd dim unchanged,
+    and inferred the last dim as 14.
 
-    :param size:      the target tensor size
-    :param batch_mode: whether in batch mode
+     :param size:      the target tensor size
+     :param batch_mode: whether in batch mode
 
 
     >>> inferReshape = InferReshape([4, 0, 3, -1], False)
