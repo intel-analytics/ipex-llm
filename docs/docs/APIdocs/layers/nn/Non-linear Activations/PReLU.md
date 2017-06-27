@@ -23,7 +23,7 @@ Notice: Please don't use weight decay on this.
 ```scala
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericDouble
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
 val module = PReLU(2)
 val input = Tensor(2, 2, 3).randn()
@@ -31,23 +31,23 @@ val output = module.forward(input)
 
 > input
 (1,.,.) =
--0.23766282164468486	0.08258852394948468	-0.804304177394607
-0.3995815815850318	0.9888332241871451	0.4517745538140694
+-0.17810068	-0.69607687	0.25582042
+-1.2140307	-1.5410945	1.0209005
 
 (2,.,.) =
--0.9939365711806359	1.0791891423077893	-1.3737202982964998
-0.32055129748031275	-0.49188155050769183	-2.192822226186369
+0.2826971	0.6370953	0.21471702
+-0.16203058	-0.5643519	0.816576
 
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 2x2x3]
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x2x3]
 
 > output
 (1,.,.) =
--0.059415705411171214	0.08258852394948468	-0.20107604434865176
-0.3995815815850318	0.9888332241871451	0.4517745538140694
+-0.04452517	-0.17401922	0.25582042
+-0.3035077	-0.38527364	1.0209005
 
 (2,.,.) =
--0.24848414279515899	1.0791891423077893	-0.34343007457412494
-0.32055129748031275	-0.12297038762692296	-0.5482055565465922
+0.2826971	0.6370953	0.21471702
+-0.040507644	-0.14108798	0.816576
 
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x3]
 ```
