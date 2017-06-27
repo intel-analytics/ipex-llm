@@ -39,7 +39,7 @@ class DLClassifier[@specialized(Float, Double) T: ClassTag](
     override val featureSize : Array[Int],
     override val uid: String = "DLClassifier"
   )(implicit ev: TensorNumeric[T])
-  extends DLEstimator[T](model, criterion, featureSize, Array(1)) with DLParams with HasBatchSize {
+  extends DLEstimator[T](model, criterion, featureSize, Array(1)) {
 
   override protected def wrapBigDLModel(
       m: Module[T], featureSize: Array[Int]): DLTransformerBase = {
