@@ -155,6 +155,10 @@ object DistriOptimizer {
         (data, modelIter) => {
           val cached = modelIter.next()
           val syWStart = System.nanoTime()
+          /*
+            Note: All models in `cached` share the same storage for weights, so we only need to
+            copy the weights from parameter server into the first model's weights.
+           */
           val weightsResult = parameters.getWeights(cached.modelWeights.head)
           val miniBatchBuffer = new Array[MiniBatch[T]](_subModelNumber)
           val batch = data.next()
@@ -258,7 +262,7 @@ object DistriOptimizer {
         val value = lossSum.value / finishedModelNum
         models.mapPartitions(modelIter => {
           val modelCache = modelIter.next()
-          parameters.aggregrateGradientPartition()
+          parameters.aggregateGradientPartition()
           parameters.gradientPartition.div(ev.fromType(finishedModelNum))
           modelCache.optimMethod.state.update("epoch", driverState[Int]("epoch"))
           modelCache.optimMethod.state.update("neval", driverState[Int]("neval"))
