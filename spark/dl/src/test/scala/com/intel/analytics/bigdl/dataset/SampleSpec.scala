@@ -48,9 +48,9 @@ class SampleSpec extends FlatSpec with Matchers {
     val tensorLabel1 = Tensor[Float](Storage[Float](label1.content), 1, Array(3, 32, 32))
     tensorInput1.rand()
     tensorLabel1.rand()
-    val sample = new TensorSample[Float](tensorInput1, tensorLabel1)
-    sample.featureTensor should be (tensorInput1)
-    sample.labelTensor should be (tensorLabel1)
+    val sample = Sample[Float](tensorInput1, tensorLabel1)
+    sample.feature should be (tensorInput1)
+    sample.label should be (tensorLabel1)
   }
 
   "TensorSample" should "clone well" in {
@@ -60,10 +60,10 @@ class SampleSpec extends FlatSpec with Matchers {
     val tensorLabel1 = Tensor[Float](Storage[Float](label1.content), 1, Array(3, 32, 32))
     tensorInput1.rand()
     tensorLabel1.rand()
-    val sample = new TensorSample[Float](tensorInput1, tensorLabel1)
+    val sample = Sample[Float](tensorInput1, tensorLabel1)
     val otherSample = sample.clone()
-    sample.featureTensor should be (otherSample.featureTensor)
-    sample.labelTensor should be (otherSample.labelTensor)
+    sample.feature should be (otherSample.feature)
+    sample.label should be (otherSample.label)
   }
 
   "SampleSpec with Float Tensor input and Tensor label" should "set well" in {

@@ -20,7 +20,6 @@ import java.util
 import java.util.{List => JList, Map => JMap}
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.TensorSample
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim.{Loss, SGD, Top1Accuracy, Trigger}
 import com.intel.analytics.bigdl.utils.{Engine, T}

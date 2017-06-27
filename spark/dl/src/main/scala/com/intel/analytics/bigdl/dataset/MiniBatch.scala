@@ -406,7 +406,7 @@ object MiniBatch {
       length: Int,
       dest: Tensor[T],
       paddingTensor: Tensor[T] = null)(implicit ev: TensorNumeric[T]): Unit = {
-    arrayCopy(src,
+    ev.arraycopy(src,
       offset,
       dest.storage().array(),
       dest.storageOffset() - 1,
@@ -414,32 +414,10 @@ object MiniBatch {
     if (null != paddingTensor) {
       var j = length
       while (j < dest.nElement()) {
-        arrayCopy(paddingTensor.storage().array(), paddingTensor.storageOffset() - 1,
+        ev.arraycopy(paddingTensor.storage().array(), paddingTensor.storageOffset() - 1,
           dest.storage().array(), dest.storageOffset() - 1 + j, paddingTensor.nElement())
         j += paddingTensor.nElement()
       }
-    }
-  }
-
-  /**
-   * A wrapper for System.arraycopy
-   */
-  private def arrayCopy[T: ClassTag](
-      src: AnyRef,
-      srcPos: Int,
-      dest: AnyRef,
-      destPos: Int,
-      length: Int)(implicit ev: TensorNumeric[T]): Unit = {
-    ev.getType() match {
-      case DoubleType => Array.copy(src
-        .asInstanceOf[Array[Double]],
-        srcPos, dest
-          .asInstanceOf[Array[Double]], destPos, length)
-      case FloatType => System.arraycopy(src
-        .asInstanceOf[Array[Float]],
-        srcPos, dest
-          .asInstanceOf[Array[Float]], destPos, length)
-      case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
     }
   }
 }

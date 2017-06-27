@@ -813,9 +813,9 @@ class TransformersSpec extends FlatSpec with Matchers with BeforeAndAfter {
       Array(2.0, 1, 5)), 1, Array(3))
     val tensorTarget3 = Tensor[Double](Storage(
       Array(5.0, 2, 1)), 1, Array(3))
-    val sample1 = new TensorSample[Double](tensorInput1, tensorTarget1)
-    val sample2 = new TensorSample[Double](tensorInput2, tensorTarget2)
-    val sample3 = new TensorSample[Double](tensorInput3, tensorTarget3)
+    val sample1 = Sample[Double](tensorInput1, tensorTarget1)
+    val sample2 = Sample[Double](tensorInput2, tensorTarget2)
+    val sample3 = Sample[Double](tensorInput3, tensorTarget3)
 
     val dataSet = new LocalArrayDataSet[Sample[Double]](Array(sample1,
       sample2, sample3))
