@@ -110,10 +110,6 @@ class TimeDistributed[T : ClassTag] (layer: TensorModule[T])
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
                                  scale: Double = 1.0): Unit = {
     layer.accGradParameters(fInput, fGradOutput)
-//    println("Time Distributed parameters: ",
-//      if (layer.isInstanceOf[Linear[T]]) layer.parameters()._1(0))
-//    println("Time Distributed grad: ",
-//      if (layer.isInstanceOf[Linear[T]]) layer.parameters()._2(0))
   }
 
   /**
@@ -209,9 +205,10 @@ class TimeDistributed[T : ClassTag] (layer: TensorModule[T])
   }
 
   override def hashCode(): Int = {
+    def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
     val state = Seq(super.hashCode(),
       layer, fInput, fGradOutput, inputSize, gradOutputSize, outputSize)
-    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+    state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
 

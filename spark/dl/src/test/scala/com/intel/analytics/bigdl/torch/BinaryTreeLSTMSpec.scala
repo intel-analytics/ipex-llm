@@ -152,8 +152,10 @@ class BinaryTreeLSTMSpec extends FlatSpec with Matchers {
     val state = T("learningRate" -> 0.1)
     val (weights, grad) = model.getParameters()
 
+    println(s"hashcode: ${model.hashCode()}")
+
     val start = System.nanoTime()
-    val epoch = 10
+    val epoch = 2
     for (i <- 1 to epoch) {
       println(s"epoch $i")
       for (j <- trees.indices) {

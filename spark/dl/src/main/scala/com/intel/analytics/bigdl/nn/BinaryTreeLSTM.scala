@@ -31,7 +31,6 @@ class BinaryTreeLSTM[T: ClassTag](
   gateOutput: Boolean = true
 )(implicit ev: TensorNumeric[T])
   extends TreeLSTM[T](inputSize, hiddenSize) {
-  //  val modules: ArrayBuffer[Module[T]] = ArrayBuffer[Module[T]]()
   val composers: ArrayBuffer[Module[T]] = ArrayBuffer[Module[T]]()
   val leafModules: ArrayBuffer[Module[T]] = ArrayBuffer[Module[T]]()
   val composer: Module[T] = createComposer()
@@ -86,7 +85,7 @@ class BinaryTreeLSTM[T: ClassTag](
     leafModule
   }
 
-  def createComposer(): Module[T] = {
+  def createComposer1(): Module[T] = {
     def newGate(): Module[T] =
       Sequential()
         .add(ParallelTable()
@@ -159,7 +158,7 @@ class BinaryTreeLSTM[T: ClassTag](
     composer
   }
 
-  def createComposer1(): Module[T] = {
+  def createComposer(): Module[T] = {
     val (lc, lh) = (Identity().apply(), Identity().apply())
     val (rc, rh) = (Identity().apply(), Identity().apply())
 
@@ -194,16 +193,9 @@ class BinaryTreeLSTM[T: ClassTag](
     composer
   }
 
-  //  var flag = true
   override def updateOutput(input: Table): Tensor[T] = {
     val inputs = input[Tensor[T]](1)
     val trees = input[Tensor[T]](2)
-    //    if (flag) {
-    //      println(s"input is ${inputs(1)(2)}")
-    //    }
-    //    flag = false
-    //
-    //    println(s"tree is ${trees(1)}")
     val batchSize = inputs.size(1)
     val nodeSize = trees.size(2)
     output.resize(batchSize, nodeSize, hiddenSize)
@@ -234,8 +226,6 @@ class BinaryTreeLSTM[T: ClassTag](
       }
       recursiveForward(b, inputs.select(1, b), tensorTree, tensorTree.getRoot)
       output(b).resize(nodeSize, hiddenSize)
-      //      println("output size ", output(b).size(1))
-      //      println("cells size ", cells(b - 1).size)
       for (i <- 1 to cells(b - 1).size) {
         output(b)(i).copy(unpackState(cells(b - 1)(i - 1).output.toTable)._2)
       }
@@ -256,17 +246,9 @@ class BinaryTreeLSTM[T: ClassTag](
       val rightOut = recursiveForward(batch, input, tree, tree.children(nodeIndex)(1))
       val (lc, lh) = unpackState(leftOut)
       val (rc, rh) = unpackState(rightOut)
-//      println("lc: ", lc(1)(1))
-//      println("lh: ", lh(1)(1))
-//      println("rc: ", rc(1)(1))
-//      println("rh: ", rh(1)(1))
       cells(batch - 1)(nodeIndex - 1).forward(T(lc, lh, rc, rh)).toTable
-      val (c, h) = unpackState(cells(batch - 1)(nodeIndex - 1).output.toTable)
-//      println("c: ", c(1)(1))
-//      println("h: ", h(1)(1))
       cells(batch - 1)(nodeIndex - 1).output.toTable
     }
-    //    println("binary tree output", out[Tensor[T]](1)(1), out[Tensor[T]](2)(1))
     out
   }
 
@@ -282,7 +264,6 @@ class BinaryTreeLSTM[T: ClassTag](
     gradInput[Tensor[T]](2).resizeAs(trees)
 
     val batchSize = inputs.size(1)
-    val nodeSize = trees.size(2)
 
     for (b <- 1 to batchSize) {
       val tensorTree = new TensorTree[T](trees(b))
@@ -294,27 +275,7 @@ class BinaryTreeLSTM[T: ClassTag](
         T(memZero, memZero),
         tensorTree.getRoot)
     }
-    //    val p1 = cells(0)(0).getParameters()
-    //    val p2 = cells(0)(1).getParameters()
-    //    val p3 = cells(0)(2).getParameters()
-    //    val p4 = cells(0)(3).getParameters()
-    //    val p5 = cells(0)(4).getParameters()
-    //    val p6 = cells(0)(5).getParameters()
-    //    val p7 = cells(0)(6).getParameters()
-    //    val p8 = cells(0)(7).getParameters()
-    //    val p9 = cells(0)(8).getParameters()
-    //    val p10 = cells(0)(9).getParameters()
     cells.clear()
-//    println("lp: ", leafModule.parameters()._1(0)(1)(1))
-//    println("lg: ", leafModule.parameters()._2(0)(1))
-//    println("cp: ", composer.parameters()._1(0)(1))
-//    println("cg: ", composer.parameters()._2(0))
-
-    //    println(s"gradInput: ${leafModule.getParameters()._2(1)}")
-    //    val (cp, cg) = composer.getParameters()
-    //    val (lp, lg) = leafModule.getParameters()
-    //    println("composer weight gradient", cg.select(1, 1))
-    //    println("leafModule weight gradient", lg.select(1, 1))
     gradInput
   }
 
@@ -327,7 +288,6 @@ class BinaryTreeLSTM[T: ClassTag](
     nodeIndex: Int
   ): Unit = {
     val outputGrad = outputGrads(nodeIndex)
-//        println("gradOutput ", outputGrad(1))
 
     if (tree.noChild(nodeIndex)) {
       gradInput[Tensor[T]](1)(batch)(tree.leafIndex(nodeIndex))
@@ -338,7 +298,6 @@ class BinaryTreeLSTM[T: ClassTag](
               T(gradOutput(1), gradOutput[Tensor[T]](2) + outputGrad)
             ).toTensor)
 
-//      println("gradInput ", gradInput[Tensor[T]](1)(batch)(tree.leafIndex(nodeIndex))(1))
       leafModules.append(cells(batch - 1)(nodeIndex - 1))
     } else {
       val children = tree.children(nodeIndex)
@@ -377,26 +336,50 @@ class BinaryTreeLSTM[T: ClassTag](
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
-    val param = new ArrayBuffer[Tensor[T]]()
-    val gradParam = new ArrayBuffer[Tensor[T]]()
     val (cp, cg) = composer.parameters()
     val (lp, lg) = leafModule.parameters()
-//    cp.foreach(param += _)
-//    lp.foreach(param += _)
-//    cg.foreach(gradParam += _)
-//    lg.foreach(gradParam += _)
-//    param += cp
-//    println("params", lp(1)(1))
-//    println("params", leafModule.getParameters()._1(1))
-//    println("grad_params", lg(1)(1))
     (cp ++ lp, cg ++ lg)
-//    (param.toArray, gradParam.toArray)
   }
 
+  override def updateParameters(learningRate: T): Unit = {
+    composer.updateParameters(learningRate)
+    leafModule.updateParameters(learningRate)
+  }
+
+  override def getParametersTable(): Table = {
+    val pt = T()
+    val t1 = composer.getParametersTable()
+    val t2 = leafModule.getParametersTable()
+    t1.keySet.foreach(key => pt(key) = t1(key))
+    t2.keySet.foreach(key => pt(key) = t2(key))
+    pt
+  }
 
   override def zeroGradParameters(): Unit = {
     composer.zeroGradParameters()
     leafModule.zeroGradParameters()
+  }
+
+  override def reset(): Unit = {
+    composer.reset()
+    leafModule.reset()
+  }
+
+  override def hashCode(): Int = {
+    def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
+    val state = Seq(super.hashCode(), composer, leafModule)
+    state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
+  }
+
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[BinaryTreeLSTM[T]]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: BinaryTreeLSTM[T] =>
+      super.equals(that) &&
+        (that canEqual this) &&
+        composer == that.composer &&
+        leafModule == that.leafModule
+    case _ => false
   }
 }
 
