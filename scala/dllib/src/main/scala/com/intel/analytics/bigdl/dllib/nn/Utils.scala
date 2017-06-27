@@ -237,6 +237,22 @@ object Utils {
   }
 
   /**
+   * get whether the module is layerwise scaled
+   * @param model input module
+   * @return whether the module is layerwise scaled
+   */
+  def isLayerwiseScaled[T](model: Module[T]): Boolean = model match {
+    case m: Container[Activity, Activity, T] =>
+      var i = 0
+      while (i < m.modules.length) {
+        if (isLayerwiseScaled(m.modules(i))) return true
+        i += 1
+      }
+      false
+    case m: Module[T] => (m.getScaleB() != 1) || (m.getScaleW() != 1)
+  }
+
+  /**
    * get the inner loop size and outer loop size given a pivot dim
    * @param pivotDim is the dim whose value larger than 1
    * @return inner loop size and outer loop size

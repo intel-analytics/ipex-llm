@@ -352,8 +352,7 @@ class SpatialDilatedConvolution[T: ClassTag](
     gradInput
   }
 
-  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
-                                 scale: Double = 1.0): Unit = {
+  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
     shapeCheck(input, gradOutput, gradWeight, gradBias,
       kH, kW, dH, dW, padH, padW, dilationH, dilationW)
 
@@ -420,16 +419,19 @@ class SpatialDilatedConvolution[T: ClassTag](
       val n = nInputPlane*kW*kH
       var k = columns.size(2)
 
-      // Do GEMM (note: this is a bit confusing because gemm assumes column-major matrices)
-      DenseTensorBLAS.gemm[T](
-        't', 'n',
-        n, m, k,
-        ev.fromType[Double](scale),
-        columns.storage().array(), columns.storageOffset() - 1, k,
-        gradOutput_n.storage().array(), gradOutput_n.storageOffset() - 1, k,
-        ev.fromType[Int](1),
-        gradWeight.storage().array(), gradWeight.storageOffset() - 1, n
-      )
+      if (scaleW != 0) {
+        // Do GEMM (note: this is a bit confusing because gemm assumes column-major matrices)
+        DenseTensorBLAS.gemm[T](
+          't', 'n',
+          n, m, k,
+          ev.fromType[Double](scaleW),
+          columns.storage().array(), columns.storageOffset() - 1, k,
+          gradOutput_n.storage().array(), gradOutput_n.storageOffset() - 1, k,
+          ev.fromType[Int](1),
+          gradWeight.storage().array(), gradWeight.storageOffset() - 1, n
+        )
+      }
+
 
       // Do Bias:
       // M,N,K are dims of matrix A and B
@@ -437,11 +439,11 @@ class SpatialDilatedConvolution[T: ClassTag](
       k = outputHeight * outputWidth
 
       // Do GEMV (note: this is a bit confusing because gemv assumes column-major matrices)
-      if (null != gradBias) {
+      if (null != gradBias && scaleB != 0) {
         ev.gemv(
           't',
           k, m,
-          ev.fromType[Double](scale),
+          ev.fromType[Double](scaleB),
           gradOutput_n.storage().array(), gradOutput_n.storageOffset() - 1, k,
           ones.storage().array(), ones.storageOffset() - 1, 1,
           ev.fromType[Int](1),
@@ -458,10 +460,10 @@ class SpatialDilatedConvolution[T: ClassTag](
     }
 
     if (null != wRegularizer) {
-      wRegularizer.accRegularization(weight, gradWeight)
+      wRegularizer.accRegularization(weight, gradWeight, scaleW)
     }
     if (null != bRegularizer) {
-      bRegularizer.accRegularization(bias, gradBias)
+      bRegularizer.accRegularization(bias, gradBias, scaleB)
     }
   }
 

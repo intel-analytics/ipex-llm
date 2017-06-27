@@ -138,25 +138,24 @@ class Cosine[T: ClassTag](val inputSize : Int, val outputSize : Int)(
     gradInput
   }
 
-  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
-   scale: Double = 1.0): Unit = {
+  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
     require(input.dim() == 1 || input.dim() == 2,
       "Cosine: " + ErrorInfo.constrainInputAsVectorOrBatch)
 
-    if (input.dim() == 1) {
+    if (input.dim() == 1 && scaleW != 0) {
       _gradOutput.resizeAs(gradOutput).copy(gradOutput)
 
       var weightNorm = Tensor[T]()
       weightNorm = _weightNorm.view(outputSize)
       _gradOutput.cdiv(weightNorm)
-      gradWeight.addr(ev.divide(ev.fromType(scale), __norm), _gradOutput, input)
+      gradWeight.addr(ev.divide(ev.fromType[Double](scaleW), __norm), _gradOutput, input)
 
       _gradOutput.cdiv(weightNorm)
       _gradOutput.cmul(output)
 
       _weight.resizeAs(weight).copy(weight)
       _weight.cmul(_gradOutput.view(outputSize, 1).expandAs(weight))
-      gradWeight.add(ev.fromType(-1), _weight)
+      gradWeight.add(ev.fromType[Double](-scaleW), _weight)
     } else if (input.dim() == 2) {
       _weight.resizeAs(weight).copy(weight)
       _gradOutput.resizeAs(gradOutput).copy(gradOutput)

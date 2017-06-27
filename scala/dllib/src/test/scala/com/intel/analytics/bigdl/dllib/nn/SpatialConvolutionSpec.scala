@@ -23,6 +23,9 @@ import scala.math._
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.optim.{L2Regularizer, SGD}
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.RandomGenerator._
+
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class SpatialConvolutionSpec extends FlatSpec with Matchers {
@@ -2754,5 +2757,36 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     val checker = new GradientChecker(1e-4, 1e-2)
     checker.checkLayer[Double](layer, input) should be(true)
 
+  }
+
+  "A SpatialConvolution with scaleW and scaleB" should "generate correct gradWeight gradBias" in {
+    val seed = 100
+    RNG.setSeed(seed)
+    val nInputPlane = 3
+    val nOutputPlane = 64
+    val kW = 11
+    val kH = 11
+    val dW = 4
+    val dH = 4
+    val padW = 2
+    val padH = 2
+    val layer1 = new SpatialConvolution[Double](nInputPlane, nOutputPlane,
+      kW, kH, dW, dH, padW, padH)
+    val layer2 = layer1.cloneModule().asInstanceOf[SpatialConvolution[Double]]
+    layer2.setScaleW(2).setScaleB(0.5)
+
+    val input = Tensor[Double](16, 3, 224, 224).apply1(e => Random.nextDouble())
+
+    val output1 = layer1.forward(input)
+    val output2 = layer2.forward(input)
+    output1 should be (output2)
+
+    val gradOutput = Tensor[Double]().resizeAs(output1).apply1(e => Random.nextDouble())
+    val gradInput1 = layer1.backward(input, gradOutput)
+    val gradInput2 = layer2.backward(input, gradOutput)
+    gradInput1 should be (gradInput2)
+
+    layer2.gradWeight should be (layer1.gradWeight.mul(2))
+    layer2.gradBias should be (layer1.gradBias.mul(0.5))
   }
 }

@@ -277,12 +277,14 @@ class VolumetricConvolution[T: ClassTag](
   }
 
   def accGradParametersFrame(gradOutput: Tensor[T], gradWeight: Tensor[T], gradBias: Tensor[T],
-    fInput: Tensor[T], scale: Double): Unit = {
+    fInput: Tensor[T], scaleW: T, scaleB: T): Unit = {
     val gradOutput2d = gradOutput.view(gradOutput.size(1), gradOutput.size(2) *
       gradOutput.size(3) * gradOutput.size(4))
     val fInputT = fInput.transpose(1, 2)
-    gradWeight.addmm(ev.one, gradWeight, ev.fromType(scale), gradOutput2d, fInputT)
-    if (withBias) {
+    if (scaleW != 0) {
+      gradWeight.addmm(ev.one, gradWeight, scaleW, gradOutput2d, fInputT)
+    }
+    if (withBias && scaleB != 0) {
       var i = 0
       while (i < gradBias.size(1)) {
         var sum = ev.zero
@@ -294,27 +296,29 @@ class VolumetricConvolution[T: ClassTag](
           k += 1
         }
         gradBias.setValue(i + 1, ev.plus(gradBias.valueAt(i + 1),
-          ev.times(ev.fromType(scale), sum)))
+          ev.times(scaleB, sum)))
         i += 1
       }
     }
   }
 
-  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T], scale: Double): Unit = {
+  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
     require(input.isContiguous(), "input should be contiguous")
     require(gradOutput.isContiguous(), "gradOutput should be contiguous")
     if (gradWeightMM == null || gradWeightMM.storage().isEmpty) {
       gradWeightMM = gradWeight.view(nOutputPlane, nInputPlane * kT * kH * kW)
     }
     if (input.dim() == 4) {
-      accGradParametersFrame(gradOutput, gradWeightMM, gradBias, fInput, scale)
+      accGradParametersFrame(gradOutput, gradWeightMM, gradBias, fInput,
+        ev.fromType[Double](scaleW), ev.fromType[Double](scaleB))
     } else {
       // batch mode
       var t = 1
       while (t < input.size(1)) {
         val gradOutputT = gradOutput.select(1, t)
         val fInputT = fInput.select(1, t)
-        accGradParametersFrame(gradOutputT, gradWeightMM, gradBias, fInputT, scale)
+        accGradParametersFrame(gradOutputT, gradWeightMM, gradBias, fInputT,
+          ev.fromType[Double](scaleW), ev.fromType[Double](scaleB))
         t += 1
       }
     }
