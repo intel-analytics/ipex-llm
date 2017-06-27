@@ -16,7 +16,7 @@ FlattenTable takes an arbitrarily deep table of Tensors (potentially nested) as 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericDouble
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
 val module = FlattenTable()
 val t1 = Tensor(3).randn()
@@ -30,36 +30,37 @@ val output = module.forward(input)
  {
 	2:  {
 	   	2:  {
-	   	   	1: -0.7738335778343488
-	   	   	   1.0884042854505709
-	   	   	   -1.0361592723999347
-	   	   	   [com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 3]
+	   	   	1: 0.5521984
+	   	   	   -0.4160644
+	   	   	   -0.698762
+	   	   	   [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3]
 	   	    }
-	   	1: -5.671122490419898E-4
-	   	   -0.0464522284021047
-	   	   0.391028022141935
-	   	   [com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 3]
+	   	1: -1.7380241
+	   	   0.60336906
+	   	   -0.8751049
+	   	   [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3]
 	    }
-	1: 0.3199535448955691
-	   1.4756887991498508
-	   -1.0647405816201285
-	   [com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 3]
+	1: 1.0529885
+	   -0.792229
+	   0.8395628
+	   [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3]
  }
+
 
 > output
 {
-	2: -5.671122490419898E-4
-	   -0.0464522284021047
-	   0.391028022141935
-	   [com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 3]
-	1: 0.3199535448955691
-	   1.4756887991498508
-	   -1.0647405816201285
-	   [com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 3]
-	3: -0.7738335778343488
-	   1.0884042854505709
-	   -1.0361592723999347
-	   [com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 3]
+	2: -1.7380241
+	   0.60336906
+	   -0.8751049
+	   [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3]
+	1: 1.0529885
+	   -0.792229
+	   0.8395628
+	   [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3]
+	3: 0.5521984
+	   -0.4160644
+	   -0.698762
+	   [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3]
  }
 
 ```
