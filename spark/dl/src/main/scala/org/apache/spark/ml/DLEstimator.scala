@@ -15,34 +15,39 @@
  */
 package org.apache.spark.ml
 
-import scala.reflect.ClassTag
-import com.intel.analytics.bigdl.dataset.{DataSet, MiniBatch}
 import com.intel.analytics.bigdl.{Criterion, Module}
-import com.intel.analytics.bigdl.optim.{Adam, Optimizer, Trigger}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.dataset.{DataSet, MiniBatch}
+import com.intel.analytics.bigdl.models.utils.ModelBroadcast
+import com.intel.analytics.bigdl.optim.{Adam, LBFGS, Optimizer, Trigger}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import org.apache.spark.ml.param.{IntParam, ParamMap, ParamValidators}
-import org.apache.spark.sql.DataFrame
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import org.apache.spark.ml.param.{IntParam, ParamMap, ParamValidators, _}
+import org.apache.spark.ml.util.SchemaUtils
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types._
+import org.apache.spark.sql.{DataFrame, Row}
+
+import scala.reflect.ClassTag
 
 /**
  * [[DLEstimator]] helps to train a BigDL Model with the Spark ML Estimator/Transfomer pattern,
  * thus Spark users can conveniently fit BigDL into Spark ML pipeline.
  *
- * The feature column holds the storage (Spark Vectors or array of Floats or Doubles) of
- * the feature data, and user should specify the tensor size(dimensions) via param featureSize.
- * The label column holds the storage (Spark Vectors, array of Floats or Doubles, or Double) of
- * the label data, and user should specify the tensor size(dimensions) via param labelSize.
- * Internally the feature and label data are converted to BigDL tensors, to further train a
- * BigDL model efficiently.
+ * [[DLEstimator]] supports feature and label data in the format of Array[Double], Array[Float],
+ * org.apache.spark.mllib.linalg.{Vector, VectorUDT} for Spark 1.5, 1.6 and
+ * org.apache.spark.ml.linalg.{Vector, VectorUDT} for Spark 2.0+. Also label data can be of
+ * DoubleType.
+ * User should specify the feature data dimensions and label data dimensions via the constructor
+ * parameters featureSize and labelSize respectively. Internally the feature and label data are
+ * converted to BigDL tensors, to further train a BigDL model efficiently.
  *
- * For details usage, please refer to example :
- * [[com.intel.analytics.bigdl.example.MLPipeline.DLEstimatorLeNet]]
+ * For details usage, please refer to examples in package
+ * com.intel.analytics.bigdl.example.MLPipeline
  *
- * @param model module to be optimized
- * @param criterion  criterion method
- * @param featureSize The size (Tensor dimensions) of the feature data.
+ * @param model BigDL module to be optimized
+ * @param criterion  BigDL criterion method
+ * @param featureSize The size (Tensor dimensions) of the feature data. e.g. an image may be with
+ * width * height = 28 * 28, featureSize = Array(28, 28).
  * @param labelSize The size (Tensor dimensions) of the label data.
  */
 class DLEstimator[@specialized(Float, Double) T: ClassTag](
@@ -61,19 +66,24 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag](
 
   def setBatchSize(value: Int): this.type = set(batchSize, value)
 
+  /**
+   * number of max Epoch for the training
+   */
   val maxEpoch = new IntParam(this, "maxEpoch", "number of max Epoch", ParamValidators.gt(0))
-  setDefault(maxEpoch -> 20)
+  setDefault(maxEpoch -> 100)
 
   def getMaxEpoch: Int = $(maxEpoch)
 
   def setMaxEpoch(value: Int): this.type = set(maxEpoch, value)
 
   override def transformSchema(schema : StructType): StructType = {
-    validateAndTransformSchema(schema)
+    validateSchema(schema)
+    SchemaUtils.appendColumn(schema, $(predictionCol), ArrayType(DoubleType, false))
   }
 
-  protected override def internalFit(dataFrame: DataFrame): DLTransformerBase = {
-    val batches = toMiniBatch(dataFrame)
+  protected override def internalFit(
+      featureAndLabel: RDD[(Seq[AnyVal], Seq[AnyVal])]): DLTransformerBase = {
+    val batches = toMiniBatch(featureAndLabel).cache()
     val dataset = DataSet.rdd(batches)
 
     val optimizer = Optimizer(model, dataset, criterion)
@@ -81,57 +91,36 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag](
       .setEndWhen(Trigger.maxEpoch($(maxEpoch)))
     val optimizedModel = optimizer.optimize()
 
-    val dlModel = new DLModel[T](optimizedModel, featureSize)
+    batches.unpersist(false)
+    wrapBigDLModel(optimizedModel, featureSize)
+  }
+
+  /**
+   * sub classes can extend the method and return required model for different transform tasks
+   */
+  protected def wrapBigDLModel(m: Module[T], featureSize: Array[Int]): DLTransformerBase = {
+    val dlModel = new DLModel[T](m, featureSize)
     copyValues(dlModel.setParent(this))
   }
 
   /**
    * Extract and reassemble data according to batchSize
    */
-  private def toMiniBatch(dataFrame: DataFrame) : RDD[MiniBatch[T]] = {
-    val featureArrayCol = if (dataFrame.schema($(featuresCol)).dataType.isInstanceOf[ArrayType]) {
-      $(featuresCol)
-    } else {
-      getFeatureArrayCol
-    }
-    val featureColIndex = dataFrame.schema.fieldIndex(featureArrayCol)
+  private def toMiniBatch(featureAndLabel: RDD[(Seq[AnyVal], Seq[AnyVal])]): RDD[MiniBatch[T]] = {
 
-    val labelArrayCol = if (dataFrame.schema($(labelCol)).dataType.isInstanceOf[ArrayType]) {
-      $(labelCol)
-    } else {
-      getLabelArrayCol
-    }
-    val labelColIndex = dataFrame.schema.fieldIndex(labelArrayCol)
-
-    val featureType = dataFrame.schema(featureArrayCol).dataType.asInstanceOf[ArrayType].elementType
-    val labelType = dataFrame.schema(labelArrayCol).dataType.asInstanceOf[ArrayType].elementType
-
-    /**
-     * since model data type (float or double) and feature data element type does not necessarily
-     * comply, we need to extract data from feature column and convert according to model type.
-     */
-    val featureAndLabelData = dataFrame.rdd.map { row =>
-      val featureData = featureType match {
-        case DoubleType =>
-          row.getSeq[Double](featureColIndex).toArray.map(ev.fromType(_))
-        case FloatType =>
-          row.getSeq[Float](featureColIndex).toArray.map(ev.fromType(_))
+    featureAndLabel.map { case (f, l) =>
+      // convert feature and label data type to the same type with model
+      val feature = f.head match {
+        case dd: Double => f.asInstanceOf[Seq[Double]].map(ev.fromType(_))
+        case ff: Float => f.asInstanceOf[Seq[Float]].map(ev.fromType(_))
       }
-      require(featureData.length == featureSize.product, s"Data length mismatch:" +
-        s" feature data length ${featureData.length}, featureSize: ${featureSize.mkString(", ")}")
-
-      val labelData = labelType match {
-        case DoubleType =>
-          row.getSeq[Double](labelColIndex).toArray.map(ev.fromType(_))
-        case FloatType =>
-          row.getSeq[Float](labelColIndex).toArray.map(ev.fromType(_))
+      val label = l.head match {
+        case dd: Double => l.asInstanceOf[Seq[Double]].map(ev.fromType(_))
+        case ff: Float => l.asInstanceOf[Seq[Float]].map(ev.fromType(_))
       }
-      require(featureData.length == featureSize.product, s"Data length mismatch:" +
-        s" label data length ${featureData.length}, labelSize: ${featureSize.mkString(", ")}")
-      (featureData, labelData)
-    }
-
-    featureAndLabelData.mapPartitions { rows =>
+      (feature, label)
+    }.mapPartitions { rows =>
+      // combine records according to batchSize
       val batches = rows.grouped($(batchSize)).map { batch =>
         val featureData = batch.flatMap(_._1).toArray
         val labelData = batch.flatMap(_._2).toArray
@@ -146,4 +135,110 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag](
   override def copy(extra: ParamMap): DLEstimator[T] = {
     copyValues(new DLEstimator(model, criterion, featureSize, labelSize), extra)
   }
+}
+
+
+/**
+ * [[DLModel]] helps embedding a BigDL model into a Spark Transformer, thus Spark users can
+ * conveniently merge BigDL into Spark ML pipeline.
+ * [[DLModel]] supports feature data in the format of Array[Double], Array[Float],
+ * org.apache.spark.mllib.linalg.{Vector, VectorUDT} for Spark 1.5, 1.6 and
+ * org.apache.spark.ml.linalg.{Vector, VectorUDT} for Spark 2.0+.
+ * Internally [[DLModel]] use features column as storage of the feature data, and create
+ * Tensors according to the constructor parameter featureSize.
+ *
+ * [[DLModel]] is compatible with both spark 1.5-plus and 2.0 by extending ML Transformer.
+ * @param model trainned BigDL models to use in prediction.
+ * @param featureSize The size (Tensor dimensions) of the feature data. (e.g. an image may be with
+ * featureSize = 28 * 28).
+ */
+class DLModel[@specialized(Float, Double) T: ClassTag](
+    val model: Module[T],
+    var featureSize : Array[Int],
+    override val uid: String = "DLModel"
+    )(implicit ev: TensorNumeric[T])
+  extends DLTransformerBase with DLParams with HasBatchSize {
+
+  def setFeaturesCol(featuresColName: String): this.type = set(featuresCol, featuresColName)
+
+  def setPredictionCol(value: String): this.type = set(predictionCol, value)
+
+  def setFeatureSize(value: Array[Int]): this.type = {
+    this.featureSize = value
+    this
+  }
+
+  def setBatchSize(value: Int): this.type = set(batchSize, value)
+
+  def getFeatureSize: Array[Int] = this.featureSize
+
+  /**
+   * Perform a prediction on featureCol, and write result to the predictionCol.
+   * @param featureData featureData in the format of Seq
+   * @return output DataFrame
+   */
+  protected override def internalTransform(
+      featureData: RDD[Seq[AnyVal]], dataset: DataFrame): DataFrame = {
+
+    model.evaluate()
+    val modelBroadCast = ModelBroadcast[T].broadcast(featureData.sparkContext, model)
+    val predictRdd = featureData.map { f =>
+      // convert feature data type to the same type with model
+      f.head match {
+        case dd: Double => f.asInstanceOf[Seq[Double]].map(ev.fromType(_))
+        case ff: Float => f.asInstanceOf[Seq[Float]].map(ev.fromType(_))
+      }
+    }.mapPartitions { feature =>
+      val localModel = modelBroadCast.value()
+      val tensorBuffer = Tensor[T](Array($(batchSize)) ++ featureSize)
+      val batches = feature.grouped($(batchSize))
+      batches.flatMap { batch =>
+        var i = 1
+        // Notice: if the last batch is smaller than the batchSize, we still continue
+        // to use this tensorBuffer, but only add the meaningful parts to the result Array.
+        batch.foreach { row =>
+          tensorBuffer.select(1, i).copy(Tensor(Storage(row.toArray)))
+          i += 1
+        }
+        val output = localModel.forward(tensorBuffer).toTensor[T]
+        val predict = batchOutputToPrediction(output)
+        predict.take(batch.length)
+      }
+    }
+
+    val resultRDD = dataset.rdd.zip(predictRdd).map { case (row, predict) =>
+      Row.fromSeq(row.toSeq ++ Seq(predict))
+    }
+    val resultSchema = transformSchema(dataset.schema)
+    dataset.sqlContext.createDataFrame(resultRDD, resultSchema)
+  }
+
+  protected def batchOutputToPrediction(output: Tensor[T]): Iterable[_] = {
+    val predict = output.split(1)
+    predict.map(p => p.clone().storage().toArray.map(ev.toType[Double]))
+  }
+
+  override def transformSchema(schema : StructType): StructType = {
+    validateSchema(schema)
+    SchemaUtils.appendColumn(schema, $(predictionCol), ArrayType(DoubleType, false))
+  }
+
+  override def copy(extra: ParamMap): DLModel[T] = {
+    val copied = new DLModel(model, featureSize, uid).setParent(parent)
+    copyValues(copied, extra).asInstanceOf[DLModel[T]]
+  }
+}
+
+// TODO, add save/load
+object DLModel {
+
+
+}
+
+trait HasBatchSize extends Params {
+
+  final val batchSize: Param[Int] = new Param[Int](this, "batchSize", "batchSize")
+  setDefault(batchSize -> 1)
+
+  final def getBatchSize: Int = $(batchSize)
 }
