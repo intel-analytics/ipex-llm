@@ -183,4 +183,29 @@ class BatchNormalizationSpec extends FlatSpec with Matchers {
     output.valueAt(2) should be(0.6 +- 0.00001)
     output.valueAt(3) should be(1.2 +- 0.00001)
   }
+
+  "A BatchNormalization with scaleW and scaleB" should "generate correct output" in {
+    val weight = Tensor[Double](T(0.1, 0.2, 0.3))
+    val bias = Tensor[Double](T(0.1, 0.2, 0.3))
+    val bn1 = new BatchNormalization[Double](nOutput = 3, initWeight = weight, initBias = bias)
+    val bn2 = bn1.cloneModule().asInstanceOf[BatchNormalization[Double]].setScaleW(0.5).setScaleB(2)
+    val input = Tensor[Double](3, 3)
+
+    var i = 0
+    input.apply1(e => {
+      i += 1; i
+    })
+    val output1 = bn1.forward(input)
+    val output2 = bn2.forward(input)
+    output1 should be(output2)
+
+    val gradOutput = Tensor(output1)
+    val gradInput1 = bn1.backward(input, gradOutput)
+    val gradInput2 = bn2.backward(input, gradOutput)
+    gradInput1 should be(gradInput2)
+
+    bn2.gradWeight should be(bn1.gradWeight.mul(0.5))
+    bn2.gradBias should be(bn1.gradBias.mul(2))
+
+  }
 }

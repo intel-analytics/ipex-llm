@@ -62,9 +62,8 @@ class BiRecurrent[T : ClassTag] (
     output
   }
 
-  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
-                                 scale: Double = 1.0): Unit = {
-    birnn.accGradParameters(input, gradOutput, scale)
+  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
+    birnn.accGradParameters(input, gradOutput)
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {

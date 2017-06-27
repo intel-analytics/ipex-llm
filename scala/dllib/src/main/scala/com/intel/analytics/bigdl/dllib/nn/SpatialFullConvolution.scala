@@ -486,7 +486,7 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
       input: Tensor[T], gradOutput: Tensor[T], gradWeight: Tensor[T],
       gradBias: Tensor[T], columns: Tensor[T],
       outputHeight: Int, outputWidth: Int,
-      scale: T)(implicit ev: TensorNumeric[T]): Unit = {
+      scaleW: T, scaleB: T)(implicit ev: TensorNumeric[T]): Unit = {
     // Extract columns:
     val before = System.nanoTime()
     ev.getType() match {
@@ -516,29 +516,29 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
     var m = input.size(1)   // nInputPlane
     var k = columns.size(2)   // inputHeight * inputWidth
 
-    // Do GEMM (note: this is a bit confusing because gemm assumes column-major matrices)
-    DenseTensorBLAS.gemm[T](
-      'T', 'N',
-      n, m, k,
-      scale,
-      columns.storage().array(), columns.storageOffset() - 1, k,
-      input.storage().array(), input.storageOffset() - 1, k,
-      ev.one,
-      gradWeight.storage().array(), gradWeight.storageOffset() - 1, n
-    )
-
+    if (scaleW != 0) {
+      // Do GEMM (note: this is a bit confusing because gemm assumes column-major matrices)
+      DenseTensorBLAS.gemm[T](
+        'T', 'N',
+        n, m, k,
+        scaleW,
+        columns.storage().array(), columns.storageOffset() - 1, k,
+        input.storage().array(), input.storageOffset() - 1, k,
+        ev.one,
+        gradWeight.storage().array(), gradWeight.storageOffset() - 1, n
+      )
+    }
     // Do Bias:
     // M,N,K are dims of matrix A and B
     // (see https://software.intel.com/en-us/node/468480)
     m = gradOutput.size(1)
     k = outputHeight * outputWidth
-
     // Do GEMV (note: this is a bit confusing because gemv assumes column-major matrices)
-    if (null != gradBias) {
+    if (null != gradBias && scaleB != 0) {
       ev.gemv(
         'T',
         k, m,
-        scale,
+        scaleB,
         gradOutput.storage().array(), gradOutput.storageOffset() - 1, k,
         ones.storage().array(), ones.storageOffset() - 1, 1,
         ev.one,
@@ -548,8 +548,7 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
   }
 
 
-  override def accGradParameters(input: A, gradOutput: Tensor[T],
-                                 scale: Double = 1.0): Unit = {
+  override def accGradParameters(input: A, gradOutput: Tensor[T]): Unit = {
     val inputTensor: Tensor[T] = if (input.isInstanceOf[Table]) {
       val targetTensor: Tensor[T] = input.toTable[Tensor[T]](2)
       val tDims = targetTensor.dim()
@@ -623,7 +622,8 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
           gradBias_G,
           column_n.select(1, g + 1),
           outputHeight, outputWidth,
-          ev.fromType[Double](scale))
+          ev.fromType[Double](scaleW),
+          ev.fromType[Double](scaleB))
         g += 1
       }
 
@@ -643,10 +643,10 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
     }
 
     if (null != wRegularizer) {
-      wRegularizer.accRegularization(weight, gradWeight)
+      wRegularizer.accRegularization(weight, gradWeight, scaleW)
     }
     if (null != bRegularizer) {
-      bRegularizer.accRegularization(bias, gradBias)
+      bRegularizer.accRegularization(bias, gradBias, scaleB)
     }
   }
 

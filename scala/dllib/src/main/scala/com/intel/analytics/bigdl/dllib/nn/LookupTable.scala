@@ -184,8 +184,7 @@ class LookupTable[T: ClassTag]
     gradInput
   }
 
-  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
-    scale: Double = 1.0): Unit = {
+  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
     inputBuffer = input.contiguous()
     require(gradWeight.isContiguous(), "LookupTable: gradWeight must be contiguous")
     require(inputBuffer.dim() == 1 || inputBuffer.dim() == 2,
@@ -214,24 +213,26 @@ class LookupTable[T: ClassTag]
         "LookupTable: elements of input should be greater than or equal to 1")
       i += 1
     }
+    if (scaleW != 0) {
+      val gw = gradWeight.storage().array()
+      val go = _gradOutput.storage().array()
+      val stride = gradWeight.stride(1)
 
-    val gw = gradWeight.storage().array()
-    val go = _gradOutput.storage().array()
-    val stride = gradWeight.stride(1)
-
-    i = 0
-    while (i < numEle) {
-      if (input_data(i + input_offset) != paddingValue) {
-        val k = ev.toType[Int](input_data(i + input_offset)) - 1
-        val scale_ = if (null != count_data) scale / ev.toType[Double](count_data(k)) else scale
-        ev.axpy(stride, ev.fromType(scale_), go, i*stride + _gradOutput.storageOffset() - 1, 1,
-          gw, k*stride + gradWeight.storageOffset() - 1, 1)
+      i = 0
+      while (i < numEle) {
+        if (input_data(i + input_offset) != paddingValue) {
+          val k = ev.toType[Int](input_data(i + input_offset)) - 1
+          val scale_ = if (null != count_data) scaleW /
+            ev.toType[Double](count_data(k)) else scaleW
+          ev.axpy(stride, ev.fromType(scale_), go, i * stride + _gradOutput.storageOffset() - 1, 1,
+            gw, k * stride + gradWeight.storageOffset() - 1, 1)
+        }
+        i += 1
       }
-      i += 1
-    }
 
-    if (null != wRegularizer) {
-      wRegularizer.accRegularization(weight, gradWeight)
+      if (null != wRegularizer) {
+        wRegularizer.accRegularization(weight, gradWeight, scaleW)
+      }
     }
   }
 
