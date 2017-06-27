@@ -26,7 +26,7 @@ Threshold is defined as:
 ```scala
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericDouble
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
 val module = Threshold(1, 0.8)
 val input = Tensor(2, 2, 2).randn()
@@ -34,23 +34,24 @@ val output = module.forward(input)
 
 > input
 (1,.,.) =
--0.434537336599261	-0.6828445288964555
--0.35512836122326524	-0.8929415402541729
+2.0502799	-0.37522468
+-1.2704345	-0.22533786
 
 (2,.,.) =
--1.7305306749849203	1.2890098173738842
-0.3670954060449931	-0.14960101290137673
+1.1959263	1.6670992
+-0.24333914	1.4424673
 
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x2]
 
 > output
 (1,.,.) =
-0.8	0.8
+(1,.,.) =
+2.0502799	0.8
 0.8	0.8
 
 (2,.,.) =
-0.8	1.2890098173738842
-0.8	0.8
+1.1959263	1.6670992
+0.8	1.4424673
 
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x2]
 
