@@ -36,10 +36,11 @@ message AttrValue {
         repeated int32 i32 = 2;                        // "list(int32)"
         repeated int64 i64 = 3 ;        // "list(int64)"
         repeated float flt = 4 ;        // "list(float)"
-        repeated bool boolean = 5 ;         // "list(bool)"
-        repeated BigDLTensor tensor = 6;         // "list(BigDLTensor)"
-        repeated BigDLModel bigDLModel = 7; // "list(BigDLModel)"
-        repeated NameAttrList nameAttrList = 8; //
+        repeated double dbl = 5 ;        // "list(double)"
+        repeated bool boolean = 6 ;         // "list(bool)"
+        repeated BigDLTensor tensor = 7;         // "list(BigDLTensor)"
+        repeated BigDLModel bigDLModel = 8; // "list(BigDLModel)"
+        repeated NameAttrList nameAttrList = 9; //
     }
     enum DataType {
         INT32 = 0;
@@ -52,21 +53,23 @@ message AttrValue {
         MODULE = 7;
         INITMETHOD = 8;
         REGULARIZER = 9;
+        LISTVALUE = 10;
     }
     oneof value {
         string stringValue = 1; // string value
         int32 int32Value = 2; // int32 value
         int64 int64Value = 3; //int64 value
         float floatValue = 4; //float value
-        bool boolValue = 5; // bool value
-        BigDLTensor tensorValue = 6; //tensor value
-        BigDLModel bigDLModleValue = 7; // big DL module
-        InitMethod initMethodValue = 8; // init method
-        Regularizer regularizerValue = 9; // Regularizer
-        ListValue listValue = 10; // list value of any type
-        NameAttrList attrList = 11; // name attribute list
+        double doubleValue = 5; //float value
+        bool boolValue = 6; // bool value
+        BigDLTensor tensorValue = 7; //tensor value
+        BigDLModel bigDLModleValue = 8; // big DL module
+        InitMethod initMethodValue = 9; // init method
+        Regularizer regularizerValue = 10; // Regularizer
+        ListValue listValue = 11; // list value of any type
+        NameAttrList attrList = 12; // name attribute list
     }
-    DataType dataType = 12;
+    DataType dataType = 13;
 }
 message NameAttrList {
     string name = 1;

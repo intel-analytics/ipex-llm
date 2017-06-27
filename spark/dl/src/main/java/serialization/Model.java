@@ -4311,10 +4311,19 @@ public final class Model {
 
     /**
      * <pre>
+     *float value
+     * </pre>
+     *
+     * <code>double doubleValue = 5;</code>
+     */
+    double getDoubleValue();
+
+    /**
+     * <pre>
      * bool value
      * </pre>
      *
-     * <code>bool boolValue = 5;</code>
+     * <code>bool boolValue = 6;</code>
      */
     boolean getBoolValue();
 
@@ -4323,7 +4332,7 @@ public final class Model {
      *tensor value
      * </pre>
      *
-     * <code>.serialization.BigDLTensor tensorValue = 6;</code>
+     * <code>.serialization.BigDLTensor tensorValue = 7;</code>
      */
     serialization.Model.BigDLTensor getTensorValue();
     /**
@@ -4331,7 +4340,7 @@ public final class Model {
      *tensor value
      * </pre>
      *
-     * <code>.serialization.BigDLTensor tensorValue = 6;</code>
+     * <code>.serialization.BigDLTensor tensorValue = 7;</code>
      */
     serialization.Model.BigDLTensorOrBuilder getTensorValueOrBuilder();
 
@@ -4340,7 +4349,7 @@ public final class Model {
      * big DL module
      * </pre>
      *
-     * <code>.serialization.BigDLModel bigDLModleValue = 7;</code>
+     * <code>.serialization.BigDLModel bigDLModleValue = 8;</code>
      */
     serialization.Model.BigDLModel getBigDLModleValue();
     /**
@@ -4348,7 +4357,7 @@ public final class Model {
      * big DL module
      * </pre>
      *
-     * <code>.serialization.BigDLModel bigDLModleValue = 7;</code>
+     * <code>.serialization.BigDLModel bigDLModleValue = 8;</code>
      */
     serialization.Model.BigDLModelOrBuilder getBigDLModleValueOrBuilder();
 
@@ -4357,7 +4366,7 @@ public final class Model {
      * init method
      * </pre>
      *
-     * <code>.serialization.InitMethod initMethodValue = 8;</code>
+     * <code>.serialization.InitMethod initMethodValue = 9;</code>
      */
     int getInitMethodValueValue();
     /**
@@ -4365,7 +4374,7 @@ public final class Model {
      * init method
      * </pre>
      *
-     * <code>.serialization.InitMethod initMethodValue = 8;</code>
+     * <code>.serialization.InitMethod initMethodValue = 9;</code>
      */
     serialization.Model.InitMethod getInitMethodValue();
 
@@ -4374,7 +4383,7 @@ public final class Model {
      * Regularizer
      * </pre>
      *
-     * <code>.serialization.Regularizer regularizerValue = 9;</code>
+     * <code>.serialization.Regularizer regularizerValue = 10;</code>
      */
     serialization.Model.Regularizer getRegularizerValue();
     /**
@@ -4382,7 +4391,7 @@ public final class Model {
      * Regularizer
      * </pre>
      *
-     * <code>.serialization.Regularizer regularizerValue = 9;</code>
+     * <code>.serialization.Regularizer regularizerValue = 10;</code>
      */
     serialization.Model.RegularizerOrBuilder getRegularizerValueOrBuilder();
 
@@ -4391,7 +4400,7 @@ public final class Model {
      * list value of any type
      * </pre>
      *
-     * <code>.serialization.AttrValue.ListValue listValue = 10;</code>
+     * <code>.serialization.AttrValue.ListValue listValue = 11;</code>
      */
     serialization.Model.AttrValue.ListValue getListValue();
     /**
@@ -4399,7 +4408,7 @@ public final class Model {
      * list value of any type
      * </pre>
      *
-     * <code>.serialization.AttrValue.ListValue listValue = 10;</code>
+     * <code>.serialization.AttrValue.ListValue listValue = 11;</code>
      */
     serialization.Model.AttrValue.ListValueOrBuilder getListValueOrBuilder();
 
@@ -4408,7 +4417,7 @@ public final class Model {
      * name attribute list
      * </pre>
      *
-     * <code>.serialization.NameAttrList attrList = 11;</code>
+     * <code>.serialization.NameAttrList attrList = 12;</code>
      */
     serialization.Model.NameAttrList getAttrList();
     /**
@@ -4416,16 +4425,16 @@ public final class Model {
      * name attribute list
      * </pre>
      *
-     * <code>.serialization.NameAttrList attrList = 11;</code>
+     * <code>.serialization.NameAttrList attrList = 12;</code>
      */
     serialization.Model.NameAttrListOrBuilder getAttrListOrBuilder();
 
     /**
-     * <code>.serialization.AttrValue.DataType dataType = 12;</code>
+     * <code>.serialization.AttrValue.DataType dataType = 13;</code>
      */
     int getDataTypeValue();
     /**
-     * <code>.serialization.AttrValue.DataType dataType = 12;</code>
+     * <code>.serialization.AttrValue.DataType dataType = 13;</code>
      */
     serialization.Model.AttrValue.DataType getDataType();
 
@@ -4492,14 +4501,19 @@ public final class Model {
               value_ = input.readFloat();
               break;
             }
-            case 40: {
+            case 41: {
               valueCase_ = 5;
+              value_ = input.readDouble();
+              break;
+            }
+            case 48: {
+              valueCase_ = 6;
               value_ = input.readBool();
               break;
             }
-            case 50: {
+            case 58: {
               serialization.Model.BigDLTensor.Builder subBuilder = null;
-              if (valueCase_ == 6) {
+              if (valueCase_ == 7) {
                 subBuilder = ((serialization.Model.BigDLTensor) value_).toBuilder();
               }
               value_ =
@@ -4508,12 +4522,12 @@ public final class Model {
                 subBuilder.mergeFrom((serialization.Model.BigDLTensor) value_);
                 value_ = subBuilder.buildPartial();
               }
-              valueCase_ = 6;
+              valueCase_ = 7;
               break;
             }
-            case 58: {
+            case 66: {
               serialization.Model.BigDLModel.Builder subBuilder = null;
-              if (valueCase_ == 7) {
+              if (valueCase_ == 8) {
                 subBuilder = ((serialization.Model.BigDLModel) value_).toBuilder();
               }
               value_ =
@@ -4522,18 +4536,18 @@ public final class Model {
                 subBuilder.mergeFrom((serialization.Model.BigDLModel) value_);
                 value_ = subBuilder.buildPartial();
               }
-              valueCase_ = 7;
+              valueCase_ = 8;
               break;
             }
-            case 64: {
+            case 72: {
               int rawValue = input.readEnum();
-              valueCase_ = 8;
+              valueCase_ = 9;
               value_ = rawValue;
               break;
             }
-            case 74: {
+            case 82: {
               serialization.Model.Regularizer.Builder subBuilder = null;
-              if (valueCase_ == 9) {
+              if (valueCase_ == 10) {
                 subBuilder = ((serialization.Model.Regularizer) value_).toBuilder();
               }
               value_ =
@@ -4542,12 +4556,12 @@ public final class Model {
                 subBuilder.mergeFrom((serialization.Model.Regularizer) value_);
                 value_ = subBuilder.buildPartial();
               }
-              valueCase_ = 9;
+              valueCase_ = 10;
               break;
             }
-            case 82: {
+            case 90: {
               serialization.Model.AttrValue.ListValue.Builder subBuilder = null;
-              if (valueCase_ == 10) {
+              if (valueCase_ == 11) {
                 subBuilder = ((serialization.Model.AttrValue.ListValue) value_).toBuilder();
               }
               value_ =
@@ -4556,12 +4570,12 @@ public final class Model {
                 subBuilder.mergeFrom((serialization.Model.AttrValue.ListValue) value_);
                 value_ = subBuilder.buildPartial();
               }
-              valueCase_ = 10;
+              valueCase_ = 11;
               break;
             }
-            case 90: {
+            case 98: {
               serialization.Model.NameAttrList.Builder subBuilder = null;
-              if (valueCase_ == 11) {
+              if (valueCase_ == 12) {
                 subBuilder = ((serialization.Model.NameAttrList) value_).toBuilder();
               }
               value_ =
@@ -4570,10 +4584,10 @@ public final class Model {
                 subBuilder.mergeFrom((serialization.Model.NameAttrList) value_);
                 value_ = subBuilder.buildPartial();
               }
-              valueCase_ = 11;
+              valueCase_ = 12;
               break;
             }
-            case 96: {
+            case 104: {
               int rawValue = input.readEnum();
 
               dataType_ = rawValue;
@@ -4647,6 +4661,10 @@ public final class Model {
        * <code>REGULARIZER = 9;</code>
        */
       REGULARIZER(9),
+      /**
+       * <code>LISTVALUE = 10;</code>
+       */
+      LISTVALUE(10),
       UNRECOGNIZED(-1),
       ;
 
@@ -4690,6 +4708,10 @@ public final class Model {
        * <code>REGULARIZER = 9;</code>
        */
       public static final int REGULARIZER_VALUE = 9;
+      /**
+       * <code>LISTVALUE = 10;</code>
+       */
+      public static final int LISTVALUE_VALUE = 10;
 
 
       public final int getNumber() {
@@ -4720,6 +4742,7 @@ public final class Model {
           case 7: return MODULE;
           case 8: return INITMETHOD;
           case 9: return REGULARIZER;
+          case 10: return LISTVALUE;
           default: return null;
         }
       }
@@ -4888,10 +4911,35 @@ public final class Model {
 
       /**
        * <pre>
+       * "list(double)"
+       * </pre>
+       *
+       * <code>repeated double dbl = 5;</code>
+       */
+      java.util.List<java.lang.Double> getDblList();
+      /**
+       * <pre>
+       * "list(double)"
+       * </pre>
+       *
+       * <code>repeated double dbl = 5;</code>
+       */
+      int getDblCount();
+      /**
+       * <pre>
+       * "list(double)"
+       * </pre>
+       *
+       * <code>repeated double dbl = 5;</code>
+       */
+      double getDbl(int index);
+
+      /**
+       * <pre>
        * "list(bool)"
        * </pre>
        *
-       * <code>repeated bool boolean = 5;</code>
+       * <code>repeated bool boolean = 6;</code>
        */
       java.util.List<java.lang.Boolean> getBooleanList();
       /**
@@ -4899,7 +4947,7 @@ public final class Model {
        * "list(bool)"
        * </pre>
        *
-       * <code>repeated bool boolean = 5;</code>
+       * <code>repeated bool boolean = 6;</code>
        */
       int getBooleanCount();
       /**
@@ -4907,7 +4955,7 @@ public final class Model {
        * "list(bool)"
        * </pre>
        *
-       * <code>repeated bool boolean = 5;</code>
+       * <code>repeated bool boolean = 6;</code>
        */
       boolean getBoolean(int index);
 
@@ -4916,7 +4964,7 @@ public final class Model {
        * "list(BigDLTensor)"
        * </pre>
        *
-       * <code>repeated .serialization.BigDLTensor tensor = 6;</code>
+       * <code>repeated .serialization.BigDLTensor tensor = 7;</code>
        */
       java.util.List<serialization.Model.BigDLTensor> 
           getTensorList();
@@ -4925,7 +4973,7 @@ public final class Model {
        * "list(BigDLTensor)"
        * </pre>
        *
-       * <code>repeated .serialization.BigDLTensor tensor = 6;</code>
+       * <code>repeated .serialization.BigDLTensor tensor = 7;</code>
        */
       serialization.Model.BigDLTensor getTensor(int index);
       /**
@@ -4933,7 +4981,7 @@ public final class Model {
        * "list(BigDLTensor)"
        * </pre>
        *
-       * <code>repeated .serialization.BigDLTensor tensor = 6;</code>
+       * <code>repeated .serialization.BigDLTensor tensor = 7;</code>
        */
       int getTensorCount();
       /**
@@ -4941,7 +4989,7 @@ public final class Model {
        * "list(BigDLTensor)"
        * </pre>
        *
-       * <code>repeated .serialization.BigDLTensor tensor = 6;</code>
+       * <code>repeated .serialization.BigDLTensor tensor = 7;</code>
        */
       java.util.List<? extends serialization.Model.BigDLTensorOrBuilder> 
           getTensorOrBuilderList();
@@ -4950,7 +4998,7 @@ public final class Model {
        * "list(BigDLTensor)"
        * </pre>
        *
-       * <code>repeated .serialization.BigDLTensor tensor = 6;</code>
+       * <code>repeated .serialization.BigDLTensor tensor = 7;</code>
        */
       serialization.Model.BigDLTensorOrBuilder getTensorOrBuilder(
           int index);
@@ -4960,7 +5008,7 @@ public final class Model {
        * "list(BigDLModel)"
        * </pre>
        *
-       * <code>repeated .serialization.BigDLModel bigDLModel = 7;</code>
+       * <code>repeated .serialization.BigDLModel bigDLModel = 8;</code>
        */
       java.util.List<serialization.Model.BigDLModel> 
           getBigDLModelList();
@@ -4969,7 +5017,7 @@ public final class Model {
        * "list(BigDLModel)"
        * </pre>
        *
-       * <code>repeated .serialization.BigDLModel bigDLModel = 7;</code>
+       * <code>repeated .serialization.BigDLModel bigDLModel = 8;</code>
        */
       serialization.Model.BigDLModel getBigDLModel(int index);
       /**
@@ -4977,7 +5025,7 @@ public final class Model {
        * "list(BigDLModel)"
        * </pre>
        *
-       * <code>repeated .serialization.BigDLModel bigDLModel = 7;</code>
+       * <code>repeated .serialization.BigDLModel bigDLModel = 8;</code>
        */
       int getBigDLModelCount();
       /**
@@ -4985,7 +5033,7 @@ public final class Model {
        * "list(BigDLModel)"
        * </pre>
        *
-       * <code>repeated .serialization.BigDLModel bigDLModel = 7;</code>
+       * <code>repeated .serialization.BigDLModel bigDLModel = 8;</code>
        */
       java.util.List<? extends serialization.Model.BigDLModelOrBuilder> 
           getBigDLModelOrBuilderList();
@@ -4994,7 +5042,7 @@ public final class Model {
        * "list(BigDLModel)"
        * </pre>
        *
-       * <code>repeated .serialization.BigDLModel bigDLModel = 7;</code>
+       * <code>repeated .serialization.BigDLModel bigDLModel = 8;</code>
        */
       serialization.Model.BigDLModelOrBuilder getBigDLModelOrBuilder(
           int index);
@@ -5003,7 +5051,7 @@ public final class Model {
        * <pre>
        * </pre>
        *
-       * <code>repeated .serialization.NameAttrList nameAttrList = 8;</code>
+       * <code>repeated .serialization.NameAttrList nameAttrList = 9;</code>
        */
       java.util.List<serialization.Model.NameAttrList> 
           getNameAttrListList();
@@ -5011,21 +5059,21 @@ public final class Model {
        * <pre>
        * </pre>
        *
-       * <code>repeated .serialization.NameAttrList nameAttrList = 8;</code>
+       * <code>repeated .serialization.NameAttrList nameAttrList = 9;</code>
        */
       serialization.Model.NameAttrList getNameAttrList(int index);
       /**
        * <pre>
        * </pre>
        *
-       * <code>repeated .serialization.NameAttrList nameAttrList = 8;</code>
+       * <code>repeated .serialization.NameAttrList nameAttrList = 9;</code>
        */
       int getNameAttrListCount();
       /**
        * <pre>
        * </pre>
        *
-       * <code>repeated .serialization.NameAttrList nameAttrList = 8;</code>
+       * <code>repeated .serialization.NameAttrList nameAttrList = 9;</code>
        */
       java.util.List<? extends serialization.Model.NameAttrListOrBuilder> 
           getNameAttrListOrBuilderList();
@@ -5033,7 +5081,7 @@ public final class Model {
        * <pre>
        * </pre>
        *
-       * <code>repeated .serialization.NameAttrList nameAttrList = 8;</code>
+       * <code>repeated .serialization.NameAttrList nameAttrList = 9;</code>
        */
       serialization.Model.NameAttrListOrBuilder getNameAttrListOrBuilder(
           int index);
@@ -5054,6 +5102,7 @@ public final class Model {
         i32_ = java.util.Collections.emptyList();
         i64_ = java.util.Collections.emptyList();
         flt_ = java.util.Collections.emptyList();
+        dbl_ = java.util.Collections.emptyList();
         boolean_ = java.util.Collections.emptyList();
         tensor_ = java.util.Collections.emptyList();
         bigDLModel_ = java.util.Collections.emptyList();
@@ -5157,20 +5206,41 @@ public final class Model {
                 input.popLimit(limit);
                 break;
               }
-              case 40: {
+              case 41: {
                 if (!((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
-                  boolean_ = new java.util.ArrayList<java.lang.Boolean>();
+                  dbl_ = new java.util.ArrayList<java.lang.Double>();
                   mutable_bitField0_ |= 0x00000010;
                 }
-                boolean_.add(input.readBool());
+                dbl_.add(input.readDouble());
                 break;
               }
               case 42: {
                 int length = input.readRawVarint32();
                 int limit = input.pushLimit(length);
                 if (!((mutable_bitField0_ & 0x00000010) == 0x00000010) && input.getBytesUntilLimit() > 0) {
-                  boolean_ = new java.util.ArrayList<java.lang.Boolean>();
+                  dbl_ = new java.util.ArrayList<java.lang.Double>();
                   mutable_bitField0_ |= 0x00000010;
+                }
+                while (input.getBytesUntilLimit() > 0) {
+                  dbl_.add(input.readDouble());
+                }
+                input.popLimit(limit);
+                break;
+              }
+              case 48: {
+                if (!((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
+                  boolean_ = new java.util.ArrayList<java.lang.Boolean>();
+                  mutable_bitField0_ |= 0x00000020;
+                }
+                boolean_.add(input.readBool());
+                break;
+              }
+              case 50: {
+                int length = input.readRawVarint32();
+                int limit = input.pushLimit(length);
+                if (!((mutable_bitField0_ & 0x00000020) == 0x00000020) && input.getBytesUntilLimit() > 0) {
+                  boolean_ = new java.util.ArrayList<java.lang.Boolean>();
+                  mutable_bitField0_ |= 0x00000020;
                 }
                 while (input.getBytesUntilLimit() > 0) {
                   boolean_.add(input.readBool());
@@ -5178,28 +5248,28 @@ public final class Model {
                 input.popLimit(limit);
                 break;
               }
-              case 50: {
-                if (!((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
+              case 58: {
+                if (!((mutable_bitField0_ & 0x00000040) == 0x00000040)) {
                   tensor_ = new java.util.ArrayList<serialization.Model.BigDLTensor>();
-                  mutable_bitField0_ |= 0x00000020;
+                  mutable_bitField0_ |= 0x00000040;
                 }
                 tensor_.add(
                     input.readMessage(serialization.Model.BigDLTensor.parser(), extensionRegistry));
                 break;
               }
-              case 58: {
-                if (!((mutable_bitField0_ & 0x00000040) == 0x00000040)) {
+              case 66: {
+                if (!((mutable_bitField0_ & 0x00000080) == 0x00000080)) {
                   bigDLModel_ = new java.util.ArrayList<serialization.Model.BigDLModel>();
-                  mutable_bitField0_ |= 0x00000040;
+                  mutable_bitField0_ |= 0x00000080;
                 }
                 bigDLModel_.add(
                     input.readMessage(serialization.Model.BigDLModel.parser(), extensionRegistry));
                 break;
               }
-              case 66: {
-                if (!((mutable_bitField0_ & 0x00000080) == 0x00000080)) {
+              case 74: {
+                if (!((mutable_bitField0_ & 0x00000100) == 0x00000100)) {
                   nameAttrList_ = new java.util.ArrayList<serialization.Model.NameAttrList>();
-                  mutable_bitField0_ |= 0x00000080;
+                  mutable_bitField0_ |= 0x00000100;
                 }
                 nameAttrList_.add(
                     input.readMessage(serialization.Model.NameAttrList.parser(), extensionRegistry));
@@ -5226,15 +5296,18 @@ public final class Model {
             flt_ = java.util.Collections.unmodifiableList(flt_);
           }
           if (((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
-            boolean_ = java.util.Collections.unmodifiableList(boolean_);
+            dbl_ = java.util.Collections.unmodifiableList(dbl_);
           }
           if (((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
-            tensor_ = java.util.Collections.unmodifiableList(tensor_);
+            boolean_ = java.util.Collections.unmodifiableList(boolean_);
           }
           if (((mutable_bitField0_ & 0x00000040) == 0x00000040)) {
-            bigDLModel_ = java.util.Collections.unmodifiableList(bigDLModel_);
+            tensor_ = java.util.Collections.unmodifiableList(tensor_);
           }
           if (((mutable_bitField0_ & 0x00000080) == 0x00000080)) {
+            bigDLModel_ = java.util.Collections.unmodifiableList(bigDLModel_);
+          }
+          if (((mutable_bitField0_ & 0x00000100) == 0x00000100)) {
             nameAttrList_ = java.util.Collections.unmodifiableList(nameAttrList_);
           }
           makeExtensionsImmutable();
@@ -5402,14 +5475,49 @@ public final class Model {
       }
       private int fltMemoizedSerializedSize = -1;
 
-      public static final int BOOLEAN_FIELD_NUMBER = 5;
+      public static final int DBL_FIELD_NUMBER = 5;
+      private java.util.List<java.lang.Double> dbl_;
+      /**
+       * <pre>
+       * "list(double)"
+       * </pre>
+       *
+       * <code>repeated double dbl = 5;</code>
+       */
+      public java.util.List<java.lang.Double>
+          getDblList() {
+        return dbl_;
+      }
+      /**
+       * <pre>
+       * "list(double)"
+       * </pre>
+       *
+       * <code>repeated double dbl = 5;</code>
+       */
+      public int getDblCount() {
+        return dbl_.size();
+      }
+      /**
+       * <pre>
+       * "list(double)"
+       * </pre>
+       *
+       * <code>repeated double dbl = 5;</code>
+       */
+      public double getDbl(int index) {
+        return dbl_.get(index);
+      }
+      private int dblMemoizedSerializedSize = -1;
+
+      public static final int BOOLEAN_FIELD_NUMBER = 6;
       private java.util.List<java.lang.Boolean> boolean_;
       /**
        * <pre>
        * "list(bool)"
        * </pre>
        *
-       * <code>repeated bool boolean = 5;</code>
+       * <code>repeated bool boolean = 6;</code>
        */
       public java.util.List<java.lang.Boolean>
           getBooleanList() {
@@ -5420,7 +5528,7 @@ public final class Model {
        * "list(bool)"
        * </pre>
        *
-       * <code>repeated bool boolean = 5;</code>
+       * <code>repeated bool boolean = 6;</code>
        */
       public int getBooleanCount() {
         return boolean_.size();
@@ -5430,21 +5538,21 @@ public final class Model {
        * "list(bool)"
        * </pre>
        *
-       * <code>repeated bool boolean = 5;</code>
+       * <code>repeated bool boolean = 6;</code>
        */
       public boolean getBoolean(int index) {
         return boolean_.get(index);
       }
       private int booleanMemoizedSerializedSize = -1;
 
-      public static final int TENSOR_FIELD_NUMBER = 6;
+      public static final int TENSOR_FIELD_NUMBER = 7;
       private java.util.List<serialization.Model.BigDLTensor> tensor_;
       /**
        * <pre>
        * "list(BigDLTensor)"
        * </pre>
        *
-       * <code>repeated .serialization.BigDLTensor tensor = 6;</code>
+       * <code>repeated .serialization.BigDLTensor tensor = 7;</code>
        */
       public java.util.List<serialization.Model.BigDLTensor> getTensorList() {
         return tensor_;
@@ -5454,7 +5562,7 @@ public final class Model {
        * "list(BigDLTensor)"
        * </pre>
        *
-       * <code>repeated .serialization.BigDLTensor tensor = 6;</code>
+       * <code>repeated .serialization.BigDLTensor tensor = 7;</code>
        */
       public java.util.List<? extends serialization.Model.BigDLTensorOrBuilder> 
           getTensorOrBuilderList() {
@@ -5465,7 +5573,7 @@ public final class Model {
        * "list(BigDLTensor)"
        * </pre>
        *
-       * <code>repeated .serialization.BigDLTensor tensor = 6;</code>
+       * <code>repeated .serialization.BigDLTensor tensor = 7;</code>
        */
       public int getTensorCount() {
         return tensor_.size();
@@ -5475,7 +5583,7 @@ public final class Model {
        * "list(BigDLTensor)"
        * </pre>
        *
-       * <code>repeated .serialization.BigDLTensor tensor = 6;</code>
+       * <code>repeated .serialization.BigDLTensor tensor = 7;</code>
        */
       public serialization.Model.BigDLTensor getTensor(int index) {
         return tensor_.get(index);
@@ -5485,21 +5593,21 @@ public final class Model {
        * "list(BigDLTensor)"
        * </pre>
        *
-       * <code>repeated .serialization.BigDLTensor tensor = 6;</code>
+       * <code>repeated .serialization.BigDLTensor tensor = 7;</code>
        */
       public serialization.Model.BigDLTensorOrBuilder getTensorOrBuilder(
           int index) {
         return tensor_.get(index);
       }
 
-      public static final int BIGDLMODEL_FIELD_NUMBER = 7;
+      public static final int BIGDLMODEL_FIELD_NUMBER = 8;
       private java.util.List<serialization.Model.BigDLModel> bigDLModel_;
       /**
        * <pre>
        * "list(BigDLModel)"
        * </pre>
        *
-       * <code>repeated .serialization.BigDLModel bigDLModel = 7;</code>
+       * <code>repeated .serialization.BigDLModel bigDLModel = 8;</code>
        */
       public java.util.List<serialization.Model.BigDLModel> getBigDLModelList() {
         return bigDLModel_;
@@ -5509,7 +5617,7 @@ public final class Model {
        * "list(BigDLModel)"
        * </pre>
        *
-       * <code>repeated .serialization.BigDLModel bigDLModel = 7;</code>
+       * <code>repeated .serialization.BigDLModel bigDLModel = 8;</code>
        */
       public java.util.List<? extends serialization.Model.BigDLModelOrBuilder> 
           getBigDLModelOrBuilderList() {
@@ -5520,7 +5628,7 @@ public final class Model {
        * "list(BigDLModel)"
        * </pre>
        *
-       * <code>repeated .serialization.BigDLModel bigDLModel = 7;</code>
+       * <code>repeated .serialization.BigDLModel bigDLModel = 8;</code>
        */
       public int getBigDLModelCount() {
         return bigDLModel_.size();
@@ -5530,7 +5638,7 @@ public final class Model {
        * "list(BigDLModel)"
        * </pre>
        *
-       * <code>repeated .serialization.BigDLModel bigDLModel = 7;</code>
+       * <code>repeated .serialization.BigDLModel bigDLModel = 8;</code>
        */
       public serialization.Model.BigDLModel getBigDLModel(int index) {
         return bigDLModel_.get(index);
@@ -5540,20 +5648,20 @@ public final class Model {
        * "list(BigDLModel)"
        * </pre>
        *
-       * <code>repeated .serialization.BigDLModel bigDLModel = 7;</code>
+       * <code>repeated .serialization.BigDLModel bigDLModel = 8;</code>
        */
       public serialization.Model.BigDLModelOrBuilder getBigDLModelOrBuilder(
           int index) {
         return bigDLModel_.get(index);
       }
 
-      public static final int NAMEATTRLIST_FIELD_NUMBER = 8;
+      public static final int NAMEATTRLIST_FIELD_NUMBER = 9;
       private java.util.List<serialization.Model.NameAttrList> nameAttrList_;
       /**
        * <pre>
        * </pre>
        *
-       * <code>repeated .serialization.NameAttrList nameAttrList = 8;</code>
+       * <code>repeated .serialization.NameAttrList nameAttrList = 9;</code>
        */
       public java.util.List<serialization.Model.NameAttrList> getNameAttrListList() {
         return nameAttrList_;
@@ -5562,7 +5670,7 @@ public final class Model {
        * <pre>
        * </pre>
        *
-       * <code>repeated .serialization.NameAttrList nameAttrList = 8;</code>
+       * <code>repeated .serialization.NameAttrList nameAttrList = 9;</code>
        */
       public java.util.List<? extends serialization.Model.NameAttrListOrBuilder> 
           getNameAttrListOrBuilderList() {
@@ -5572,7 +5680,7 @@ public final class Model {
        * <pre>
        * </pre>
        *
-       * <code>repeated .serialization.NameAttrList nameAttrList = 8;</code>
+       * <code>repeated .serialization.NameAttrList nameAttrList = 9;</code>
        */
       public int getNameAttrListCount() {
         return nameAttrList_.size();
@@ -5581,7 +5689,7 @@ public final class Model {
        * <pre>
        * </pre>
        *
-       * <code>repeated .serialization.NameAttrList nameAttrList = 8;</code>
+       * <code>repeated .serialization.NameAttrList nameAttrList = 9;</code>
        */
       public serialization.Model.NameAttrList getNameAttrList(int index) {
         return nameAttrList_.get(index);
@@ -5590,7 +5698,7 @@ public final class Model {
        * <pre>
        * </pre>
        *
-       * <code>repeated .serialization.NameAttrList nameAttrList = 8;</code>
+       * <code>repeated .serialization.NameAttrList nameAttrList = 9;</code>
        */
       public serialization.Model.NameAttrListOrBuilder getNameAttrListOrBuilder(
           int index) {
@@ -5634,21 +5742,28 @@ public final class Model {
         for (int i = 0; i < flt_.size(); i++) {
           output.writeFloatNoTag(flt_.get(i));
         }
-        if (getBooleanList().size() > 0) {
+        if (getDblList().size() > 0) {
           output.writeUInt32NoTag(42);
+          output.writeUInt32NoTag(dblMemoizedSerializedSize);
+        }
+        for (int i = 0; i < dbl_.size(); i++) {
+          output.writeDoubleNoTag(dbl_.get(i));
+        }
+        if (getBooleanList().size() > 0) {
+          output.writeUInt32NoTag(50);
           output.writeUInt32NoTag(booleanMemoizedSerializedSize);
         }
         for (int i = 0; i < boolean_.size(); i++) {
           output.writeBoolNoTag(boolean_.get(i));
         }
         for (int i = 0; i < tensor_.size(); i++) {
-          output.writeMessage(6, tensor_.get(i));
+          output.writeMessage(7, tensor_.get(i));
         }
         for (int i = 0; i < bigDLModel_.size(); i++) {
-          output.writeMessage(7, bigDLModel_.get(i));
+          output.writeMessage(8, bigDLModel_.get(i));
         }
         for (int i = 0; i < nameAttrList_.size(); i++) {
-          output.writeMessage(8, nameAttrList_.get(i));
+          output.writeMessage(9, nameAttrList_.get(i));
         }
       }
 
@@ -5706,6 +5821,17 @@ public final class Model {
         }
         {
           int dataSize = 0;
+          dataSize = 8 * getDblList().size();
+          size += dataSize;
+          if (!getDblList().isEmpty()) {
+            size += 1;
+            size += com.google.protobuf.CodedOutputStream
+                .computeInt32SizeNoTag(dataSize);
+          }
+          dblMemoizedSerializedSize = dataSize;
+        }
+        {
+          int dataSize = 0;
           dataSize = 1 * getBooleanList().size();
           size += dataSize;
           if (!getBooleanList().isEmpty()) {
@@ -5717,15 +5843,15 @@ public final class Model {
         }
         for (int i = 0; i < tensor_.size(); i++) {
           size += com.google.protobuf.CodedOutputStream
-            .computeMessageSize(6, tensor_.get(i));
+            .computeMessageSize(7, tensor_.get(i));
         }
         for (int i = 0; i < bigDLModel_.size(); i++) {
           size += com.google.protobuf.CodedOutputStream
-            .computeMessageSize(7, bigDLModel_.get(i));
+            .computeMessageSize(8, bigDLModel_.get(i));
         }
         for (int i = 0; i < nameAttrList_.size(); i++) {
           size += com.google.protobuf.CodedOutputStream
-            .computeMessageSize(8, nameAttrList_.get(i));
+            .computeMessageSize(9, nameAttrList_.get(i));
         }
         memoizedSize = size;
         return size;
@@ -5751,6 +5877,8 @@ public final class Model {
             .equals(other.getI64List());
         result = result && getFltList()
             .equals(other.getFltList());
+        result = result && getDblList()
+            .equals(other.getDblList());
         result = result && getBooleanList()
             .equals(other.getBooleanList());
         result = result && getTensorList()
@@ -5784,6 +5912,10 @@ public final class Model {
         if (getFltCount() > 0) {
           hash = (37 * hash) + FLT_FIELD_NUMBER;
           hash = (53 * hash) + getFltList().hashCode();
+        }
+        if (getDblCount() > 0) {
+          hash = (37 * hash) + DBL_FIELD_NUMBER;
+          hash = (53 * hash) + getDblList().hashCode();
         }
         if (getBooleanCount() > 0) {
           hash = (37 * hash) + BOOLEAN_FIELD_NUMBER;
@@ -5930,23 +6062,25 @@ public final class Model {
           bitField0_ = (bitField0_ & ~0x00000004);
           flt_ = java.util.Collections.emptyList();
           bitField0_ = (bitField0_ & ~0x00000008);
-          boolean_ = java.util.Collections.emptyList();
+          dbl_ = java.util.Collections.emptyList();
           bitField0_ = (bitField0_ & ~0x00000010);
+          boolean_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000020);
           if (tensorBuilder_ == null) {
             tensor_ = java.util.Collections.emptyList();
-            bitField0_ = (bitField0_ & ~0x00000020);
+            bitField0_ = (bitField0_ & ~0x00000040);
           } else {
             tensorBuilder_.clear();
           }
           if (bigDLModelBuilder_ == null) {
             bigDLModel_ = java.util.Collections.emptyList();
-            bitField0_ = (bitField0_ & ~0x00000040);
+            bitField0_ = (bitField0_ & ~0x00000080);
           } else {
             bigDLModelBuilder_.clear();
           }
           if (nameAttrListBuilder_ == null) {
             nameAttrList_ = java.util.Collections.emptyList();
-            bitField0_ = (bitField0_ & ~0x00000080);
+            bitField0_ = (bitField0_ & ~0x00000100);
           } else {
             nameAttrListBuilder_.clear();
           }
@@ -5994,32 +6128,37 @@ public final class Model {
           }
           result.flt_ = flt_;
           if (((bitField0_ & 0x00000010) == 0x00000010)) {
-            boolean_ = java.util.Collections.unmodifiableList(boolean_);
+            dbl_ = java.util.Collections.unmodifiableList(dbl_);
             bitField0_ = (bitField0_ & ~0x00000010);
+          }
+          result.dbl_ = dbl_;
+          if (((bitField0_ & 0x00000020) == 0x00000020)) {
+            boolean_ = java.util.Collections.unmodifiableList(boolean_);
+            bitField0_ = (bitField0_ & ~0x00000020);
           }
           result.boolean_ = boolean_;
           if (tensorBuilder_ == null) {
-            if (((bitField0_ & 0x00000020) == 0x00000020)) {
+            if (((bitField0_ & 0x00000040) == 0x00000040)) {
               tensor_ = java.util.Collections.unmodifiableList(tensor_);
-              bitField0_ = (bitField0_ & ~0x00000020);
+              bitField0_ = (bitField0_ & ~0x00000040);
             }
             result.tensor_ = tensor_;
           } else {
             result.tensor_ = tensorBuilder_.build();
           }
           if (bigDLModelBuilder_ == null) {
-            if (((bitField0_ & 0x00000040) == 0x00000040)) {
+            if (((bitField0_ & 0x00000080) == 0x00000080)) {
               bigDLModel_ = java.util.Collections.unmodifiableList(bigDLModel_);
-              bitField0_ = (bitField0_ & ~0x00000040);
+              bitField0_ = (bitField0_ & ~0x00000080);
             }
             result.bigDLModel_ = bigDLModel_;
           } else {
             result.bigDLModel_ = bigDLModelBuilder_.build();
           }
           if (nameAttrListBuilder_ == null) {
-            if (((bitField0_ & 0x00000080) == 0x00000080)) {
+            if (((bitField0_ & 0x00000100) == 0x00000100)) {
               nameAttrList_ = java.util.Collections.unmodifiableList(nameAttrList_);
-              bitField0_ = (bitField0_ & ~0x00000080);
+              bitField0_ = (bitField0_ & ~0x00000100);
             }
             result.nameAttrList_ = nameAttrList_;
           } else {
@@ -6106,10 +6245,20 @@ public final class Model {
             }
             onChanged();
           }
+          if (!other.dbl_.isEmpty()) {
+            if (dbl_.isEmpty()) {
+              dbl_ = other.dbl_;
+              bitField0_ = (bitField0_ & ~0x00000010);
+            } else {
+              ensureDblIsMutable();
+              dbl_.addAll(other.dbl_);
+            }
+            onChanged();
+          }
           if (!other.boolean_.isEmpty()) {
             if (boolean_.isEmpty()) {
               boolean_ = other.boolean_;
-              bitField0_ = (bitField0_ & ~0x00000010);
+              bitField0_ = (bitField0_ & ~0x00000020);
             } else {
               ensureBooleanIsMutable();
               boolean_.addAll(other.boolean_);
@@ -6120,7 +6269,7 @@ public final class Model {
             if (!other.tensor_.isEmpty()) {
               if (tensor_.isEmpty()) {
                 tensor_ = other.tensor_;
-                bitField0_ = (bitField0_ & ~0x00000020);
+                bitField0_ = (bitField0_ & ~0x00000040);
               } else {
                 ensureTensorIsMutable();
                 tensor_.addAll(other.tensor_);
@@ -6133,7 +6282,7 @@ public final class Model {
                 tensorBuilder_.dispose();
                 tensorBuilder_ = null;
                 tensor_ = other.tensor_;
-                bitField0_ = (bitField0_ & ~0x00000020);
+                bitField0_ = (bitField0_ & ~0x00000040);
                 tensorBuilder_ = 
                   com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                      getTensorFieldBuilder() : null;
@@ -6146,7 +6295,7 @@ public final class Model {
             if (!other.bigDLModel_.isEmpty()) {
               if (bigDLModel_.isEmpty()) {
                 bigDLModel_ = other.bigDLModel_;
-                bitField0_ = (bitField0_ & ~0x00000040);
+                bitField0_ = (bitField0_ & ~0x00000080);
               } else {
                 ensureBigDLModelIsMutable();
                 bigDLModel_.addAll(other.bigDLModel_);
@@ -6159,7 +6308,7 @@ public final class Model {
                 bigDLModelBuilder_.dispose();
                 bigDLModelBuilder_ = null;
                 bigDLModel_ = other.bigDLModel_;
-                bitField0_ = (bitField0_ & ~0x00000040);
+                bitField0_ = (bitField0_ & ~0x00000080);
                 bigDLModelBuilder_ = 
                   com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                      getBigDLModelFieldBuilder() : null;
@@ -6172,7 +6321,7 @@ public final class Model {
             if (!other.nameAttrList_.isEmpty()) {
               if (nameAttrList_.isEmpty()) {
                 nameAttrList_ = other.nameAttrList_;
-                bitField0_ = (bitField0_ & ~0x00000080);
+                bitField0_ = (bitField0_ & ~0x00000100);
               } else {
                 ensureNameAttrListIsMutable();
                 nameAttrList_.addAll(other.nameAttrList_);
@@ -6185,7 +6334,7 @@ public final class Model {
                 nameAttrListBuilder_.dispose();
                 nameAttrListBuilder_ = null;
                 nameAttrList_ = other.nameAttrList_;
-                bitField0_ = (bitField0_ & ~0x00000080);
+                bitField0_ = (bitField0_ & ~0x00000100);
                 nameAttrListBuilder_ = 
                   com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                      getNameAttrListFieldBuilder() : null;
@@ -6633,11 +6782,105 @@ public final class Model {
           return this;
         }
 
+        private java.util.List<java.lang.Double> dbl_ = java.util.Collections.emptyList();
+        private void ensureDblIsMutable() {
+          if (!((bitField0_ & 0x00000010) == 0x00000010)) {
+            dbl_ = new java.util.ArrayList<java.lang.Double>(dbl_);
+            bitField0_ |= 0x00000010;
+           }
+        }
+        /**
+         * <pre>
+         * "list(double)"
+         * </pre>
+         *
+         * <code>repeated double dbl = 5;</code>
+         */
+        public java.util.List<java.lang.Double>
+            getDblList() {
+          return java.util.Collections.unmodifiableList(dbl_);
+        }
+        /**
+         * <pre>
+         * "list(double)"
+         * </pre>
+         *
+         * <code>repeated double dbl = 5;</code>
+         */
+        public int getDblCount() {
+          return dbl_.size();
+        }
+        /**
+         * <pre>
+         * "list(double)"
+         * </pre>
+         *
+         * <code>repeated double dbl = 5;</code>
+         */
+        public double getDbl(int index) {
+          return dbl_.get(index);
+        }
+        /**
+         * <pre>
+         * "list(double)"
+         * </pre>
+         *
+         * <code>repeated double dbl = 5;</code>
+         */
+        public Builder setDbl(
+            int index, double value) {
+          ensureDblIsMutable();
+          dbl_.set(index, value);
+          onChanged();
+          return this;
+        }
+        /**
+         * <pre>
+         * "list(double)"
+         * </pre>
+         *
+         * <code>repeated double dbl = 5;</code>
+         */
+        public Builder addDbl(double value) {
+          ensureDblIsMutable();
+          dbl_.add(value);
+          onChanged();
+          return this;
+        }
+        /**
+         * <pre>
+         * "list(double)"
+         * </pre>
+         *
+         * <code>repeated double dbl = 5;</code>
+         */
+        public Builder addAllDbl(
+            java.lang.Iterable<? extends java.lang.Double> values) {
+          ensureDblIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, dbl_);
+          onChanged();
+          return this;
+        }
+        /**
+         * <pre>
+         * "list(double)"
+         * </pre>
+         *
+         * <code>repeated double dbl = 5;</code>
+         */
+        public Builder clearDbl() {
+          dbl_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000010);
+          onChanged();
+          return this;
+        }
+
         private java.util.List<java.lang.Boolean> boolean_ = java.util.Collections.emptyList();
         private void ensureBooleanIsMutable() {
-          if (!((bitField0_ & 0x00000010) == 0x00000010)) {
+          if (!((bitField0_ & 0x00000020) == 0x00000020)) {
             boolean_ = new java.util.ArrayList<java.lang.Boolean>(boolean_);
-            bitField0_ |= 0x00000010;
+            bitField0_ |= 0x00000020;
            }
         }
         /**
@@ -6645,7 +6888,7 @@ public final class Model {
          * "list(bool)"
          * </pre>
          *
-         * <code>repeated bool boolean = 5;</code>
+         * <code>repeated bool boolean = 6;</code>
          */
         public java.util.List<java.lang.Boolean>
             getBooleanList() {
@@ -6656,7 +6899,7 @@ public final class Model {
          * "list(bool)"
          * </pre>
          *
-         * <code>repeated bool boolean = 5;</code>
+         * <code>repeated bool boolean = 6;</code>
          */
         public int getBooleanCount() {
           return boolean_.size();
@@ -6666,7 +6909,7 @@ public final class Model {
          * "list(bool)"
          * </pre>
          *
-         * <code>repeated bool boolean = 5;</code>
+         * <code>repeated bool boolean = 6;</code>
          */
         public boolean getBoolean(int index) {
           return boolean_.get(index);
@@ -6676,7 +6919,7 @@ public final class Model {
          * "list(bool)"
          * </pre>
          *
-         * <code>repeated bool boolean = 5;</code>
+         * <code>repeated bool boolean = 6;</code>
          */
         public Builder setBoolean(
             int index, boolean value) {
@@ -6690,7 +6933,7 @@ public final class Model {
          * "list(bool)"
          * </pre>
          *
-         * <code>repeated bool boolean = 5;</code>
+         * <code>repeated bool boolean = 6;</code>
          */
         public Builder addBoolean(boolean value) {
           ensureBooleanIsMutable();
@@ -6703,7 +6946,7 @@ public final class Model {
          * "list(bool)"
          * </pre>
          *
-         * <code>repeated bool boolean = 5;</code>
+         * <code>repeated bool boolean = 6;</code>
          */
         public Builder addAllBoolean(
             java.lang.Iterable<? extends java.lang.Boolean> values) {
@@ -6718,11 +6961,11 @@ public final class Model {
          * "list(bool)"
          * </pre>
          *
-         * <code>repeated bool boolean = 5;</code>
+         * <code>repeated bool boolean = 6;</code>
          */
         public Builder clearBoolean() {
           boolean_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000010);
+          bitField0_ = (bitField0_ & ~0x00000020);
           onChanged();
           return this;
         }
@@ -6730,9 +6973,9 @@ public final class Model {
         private java.util.List<serialization.Model.BigDLTensor> tensor_ =
           java.util.Collections.emptyList();
         private void ensureTensorIsMutable() {
-          if (!((bitField0_ & 0x00000020) == 0x00000020)) {
+          if (!((bitField0_ & 0x00000040) == 0x00000040)) {
             tensor_ = new java.util.ArrayList<serialization.Model.BigDLTensor>(tensor_);
-            bitField0_ |= 0x00000020;
+            bitField0_ |= 0x00000040;
            }
         }
 
@@ -6744,7 +6987,7 @@ public final class Model {
          * "list(BigDLTensor)"
          * </pre>
          *
-         * <code>repeated .serialization.BigDLTensor tensor = 6;</code>
+         * <code>repeated .serialization.BigDLTensor tensor = 7;</code>
          */
         public java.util.List<serialization.Model.BigDLTensor> getTensorList() {
           if (tensorBuilder_ == null) {
@@ -6758,7 +7001,7 @@ public final class Model {
          * "list(BigDLTensor)"
          * </pre>
          *
-         * <code>repeated .serialization.BigDLTensor tensor = 6;</code>
+         * <code>repeated .serialization.BigDLTensor tensor = 7;</code>
          */
         public int getTensorCount() {
           if (tensorBuilder_ == null) {
@@ -6772,7 +7015,7 @@ public final class Model {
          * "list(BigDLTensor)"
          * </pre>
          *
-         * <code>repeated .serialization.BigDLTensor tensor = 6;</code>
+         * <code>repeated .serialization.BigDLTensor tensor = 7;</code>
          */
         public serialization.Model.BigDLTensor getTensor(int index) {
           if (tensorBuilder_ == null) {
@@ -6786,7 +7029,7 @@ public final class Model {
          * "list(BigDLTensor)"
          * </pre>
          *
-         * <code>repeated .serialization.BigDLTensor tensor = 6;</code>
+         * <code>repeated .serialization.BigDLTensor tensor = 7;</code>
          */
         public Builder setTensor(
             int index, serialization.Model.BigDLTensor value) {
@@ -6807,7 +7050,7 @@ public final class Model {
          * "list(BigDLTensor)"
          * </pre>
          *
-         * <code>repeated .serialization.BigDLTensor tensor = 6;</code>
+         * <code>repeated .serialization.BigDLTensor tensor = 7;</code>
          */
         public Builder setTensor(
             int index, serialization.Model.BigDLTensor.Builder builderForValue) {
@@ -6825,7 +7068,7 @@ public final class Model {
          * "list(BigDLTensor)"
          * </pre>
          *
-         * <code>repeated .serialization.BigDLTensor tensor = 6;</code>
+         * <code>repeated .serialization.BigDLTensor tensor = 7;</code>
          */
         public Builder addTensor(serialization.Model.BigDLTensor value) {
           if (tensorBuilder_ == null) {
@@ -6845,7 +7088,7 @@ public final class Model {
          * "list(BigDLTensor)"
          * </pre>
          *
-         * <code>repeated .serialization.BigDLTensor tensor = 6;</code>
+         * <code>repeated .serialization.BigDLTensor tensor = 7;</code>
          */
         public Builder addTensor(
             int index, serialization.Model.BigDLTensor value) {
@@ -6866,7 +7109,7 @@ public final class Model {
          * "list(BigDLTensor)"
          * </pre>
          *
-         * <code>repeated .serialization.BigDLTensor tensor = 6;</code>
+         * <code>repeated .serialization.BigDLTensor tensor = 7;</code>
          */
         public Builder addTensor(
             serialization.Model.BigDLTensor.Builder builderForValue) {
@@ -6884,7 +7127,7 @@ public final class Model {
          * "list(BigDLTensor)"
          * </pre>
          *
-         * <code>repeated .serialization.BigDLTensor tensor = 6;</code>
+         * <code>repeated .serialization.BigDLTensor tensor = 7;</code>
          */
         public Builder addTensor(
             int index, serialization.Model.BigDLTensor.Builder builderForValue) {
@@ -6902,7 +7145,7 @@ public final class Model {
          * "list(BigDLTensor)"
          * </pre>
          *
-         * <code>repeated .serialization.BigDLTensor tensor = 6;</code>
+         * <code>repeated .serialization.BigDLTensor tensor = 7;</code>
          */
         public Builder addAllTensor(
             java.lang.Iterable<? extends serialization.Model.BigDLTensor> values) {
@@ -6921,12 +7164,12 @@ public final class Model {
          * "list(BigDLTensor)"
          * </pre>
          *
-         * <code>repeated .serialization.BigDLTensor tensor = 6;</code>
+         * <code>repeated .serialization.BigDLTensor tensor = 7;</code>
          */
         public Builder clearTensor() {
           if (tensorBuilder_ == null) {
             tensor_ = java.util.Collections.emptyList();
-            bitField0_ = (bitField0_ & ~0x00000020);
+            bitField0_ = (bitField0_ & ~0x00000040);
             onChanged();
           } else {
             tensorBuilder_.clear();
@@ -6938,7 +7181,7 @@ public final class Model {
          * "list(BigDLTensor)"
          * </pre>
          *
-         * <code>repeated .serialization.BigDLTensor tensor = 6;</code>
+         * <code>repeated .serialization.BigDLTensor tensor = 7;</code>
          */
         public Builder removeTensor(int index) {
           if (tensorBuilder_ == null) {
@@ -6955,7 +7198,7 @@ public final class Model {
          * "list(BigDLTensor)"
          * </pre>
          *
-         * <code>repeated .serialization.BigDLTensor tensor = 6;</code>
+         * <code>repeated .serialization.BigDLTensor tensor = 7;</code>
          */
         public serialization.Model.BigDLTensor.Builder getTensorBuilder(
             int index) {
@@ -6966,7 +7209,7 @@ public final class Model {
          * "list(BigDLTensor)"
          * </pre>
          *
-         * <code>repeated .serialization.BigDLTensor tensor = 6;</code>
+         * <code>repeated .serialization.BigDLTensor tensor = 7;</code>
          */
         public serialization.Model.BigDLTensorOrBuilder getTensorOrBuilder(
             int index) {
@@ -6980,7 +7223,7 @@ public final class Model {
          * "list(BigDLTensor)"
          * </pre>
          *
-         * <code>repeated .serialization.BigDLTensor tensor = 6;</code>
+         * <code>repeated .serialization.BigDLTensor tensor = 7;</code>
          */
         public java.util.List<? extends serialization.Model.BigDLTensorOrBuilder> 
              getTensorOrBuilderList() {
@@ -6995,7 +7238,7 @@ public final class Model {
          * "list(BigDLTensor)"
          * </pre>
          *
-         * <code>repeated .serialization.BigDLTensor tensor = 6;</code>
+         * <code>repeated .serialization.BigDLTensor tensor = 7;</code>
          */
         public serialization.Model.BigDLTensor.Builder addTensorBuilder() {
           return getTensorFieldBuilder().addBuilder(
@@ -7006,7 +7249,7 @@ public final class Model {
          * "list(BigDLTensor)"
          * </pre>
          *
-         * <code>repeated .serialization.BigDLTensor tensor = 6;</code>
+         * <code>repeated .serialization.BigDLTensor tensor = 7;</code>
          */
         public serialization.Model.BigDLTensor.Builder addTensorBuilder(
             int index) {
@@ -7018,7 +7261,7 @@ public final class Model {
          * "list(BigDLTensor)"
          * </pre>
          *
-         * <code>repeated .serialization.BigDLTensor tensor = 6;</code>
+         * <code>repeated .serialization.BigDLTensor tensor = 7;</code>
          */
         public java.util.List<serialization.Model.BigDLTensor.Builder> 
              getTensorBuilderList() {
@@ -7031,7 +7274,7 @@ public final class Model {
             tensorBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
                 serialization.Model.BigDLTensor, serialization.Model.BigDLTensor.Builder, serialization.Model.BigDLTensorOrBuilder>(
                     tensor_,
-                    ((bitField0_ & 0x00000020) == 0x00000020),
+                    ((bitField0_ & 0x00000040) == 0x00000040),
                     getParentForChildren(),
                     isClean());
             tensor_ = null;
@@ -7042,9 +7285,9 @@ public final class Model {
         private java.util.List<serialization.Model.BigDLModel> bigDLModel_ =
           java.util.Collections.emptyList();
         private void ensureBigDLModelIsMutable() {
-          if (!((bitField0_ & 0x00000040) == 0x00000040)) {
+          if (!((bitField0_ & 0x00000080) == 0x00000080)) {
             bigDLModel_ = new java.util.ArrayList<serialization.Model.BigDLModel>(bigDLModel_);
-            bitField0_ |= 0x00000040;
+            bitField0_ |= 0x00000080;
            }
         }
 
@@ -7056,7 +7299,7 @@ public final class Model {
          * "list(BigDLModel)"
          * </pre>
          *
-         * <code>repeated .serialization.BigDLModel bigDLModel = 7;</code>
+         * <code>repeated .serialization.BigDLModel bigDLModel = 8;</code>
          */
         public java.util.List<serialization.Model.BigDLModel> getBigDLModelList() {
           if (bigDLModelBuilder_ == null) {
@@ -7070,7 +7313,7 @@ public final class Model {
          * "list(BigDLModel)"
          * </pre>
          *
-         * <code>repeated .serialization.BigDLModel bigDLModel = 7;</code>
+         * <code>repeated .serialization.BigDLModel bigDLModel = 8;</code>
          */
         public int getBigDLModelCount() {
           if (bigDLModelBuilder_ == null) {
@@ -7084,7 +7327,7 @@ public final class Model {
          * "list(BigDLModel)"
          * </pre>
          *
-         * <code>repeated .serialization.BigDLModel bigDLModel = 7;</code>
+         * <code>repeated .serialization.BigDLModel bigDLModel = 8;</code>
          */
         public serialization.Model.BigDLModel getBigDLModel(int index) {
           if (bigDLModelBuilder_ == null) {
@@ -7098,7 +7341,7 @@ public final class Model {
          * "list(BigDLModel)"
          * </pre>
          *
-         * <code>repeated .serialization.BigDLModel bigDLModel = 7;</code>
+         * <code>repeated .serialization.BigDLModel bigDLModel = 8;</code>
          */
         public Builder setBigDLModel(
             int index, serialization.Model.BigDLModel value) {
@@ -7119,7 +7362,7 @@ public final class Model {
          * "list(BigDLModel)"
          * </pre>
          *
-         * <code>repeated .serialization.BigDLModel bigDLModel = 7;</code>
+         * <code>repeated .serialization.BigDLModel bigDLModel = 8;</code>
          */
         public Builder setBigDLModel(
             int index, serialization.Model.BigDLModel.Builder builderForValue) {
@@ -7137,7 +7380,7 @@ public final class Model {
          * "list(BigDLModel)"
          * </pre>
          *
-         * <code>repeated .serialization.BigDLModel bigDLModel = 7;</code>
+         * <code>repeated .serialization.BigDLModel bigDLModel = 8;</code>
          */
         public Builder addBigDLModel(serialization.Model.BigDLModel value) {
           if (bigDLModelBuilder_ == null) {
@@ -7157,7 +7400,7 @@ public final class Model {
          * "list(BigDLModel)"
          * </pre>
          *
-         * <code>repeated .serialization.BigDLModel bigDLModel = 7;</code>
+         * <code>repeated .serialization.BigDLModel bigDLModel = 8;</code>
          */
         public Builder addBigDLModel(
             int index, serialization.Model.BigDLModel value) {
@@ -7178,7 +7421,7 @@ public final class Model {
          * "list(BigDLModel)"
          * </pre>
          *
-         * <code>repeated .serialization.BigDLModel bigDLModel = 7;</code>
+         * <code>repeated .serialization.BigDLModel bigDLModel = 8;</code>
          */
         public Builder addBigDLModel(
             serialization.Model.BigDLModel.Builder builderForValue) {
@@ -7196,7 +7439,7 @@ public final class Model {
          * "list(BigDLModel)"
          * </pre>
          *
-         * <code>repeated .serialization.BigDLModel bigDLModel = 7;</code>
+         * <code>repeated .serialization.BigDLModel bigDLModel = 8;</code>
          */
         public Builder addBigDLModel(
             int index, serialization.Model.BigDLModel.Builder builderForValue) {
@@ -7214,7 +7457,7 @@ public final class Model {
          * "list(BigDLModel)"
          * </pre>
          *
-         * <code>repeated .serialization.BigDLModel bigDLModel = 7;</code>
+         * <code>repeated .serialization.BigDLModel bigDLModel = 8;</code>
          */
         public Builder addAllBigDLModel(
             java.lang.Iterable<? extends serialization.Model.BigDLModel> values) {
@@ -7233,12 +7476,12 @@ public final class Model {
          * "list(BigDLModel)"
          * </pre>
          *
-         * <code>repeated .serialization.BigDLModel bigDLModel = 7;</code>
+         * <code>repeated .serialization.BigDLModel bigDLModel = 8;</code>
          */
         public Builder clearBigDLModel() {
           if (bigDLModelBuilder_ == null) {
             bigDLModel_ = java.util.Collections.emptyList();
-            bitField0_ = (bitField0_ & ~0x00000040);
+            bitField0_ = (bitField0_ & ~0x00000080);
             onChanged();
           } else {
             bigDLModelBuilder_.clear();
@@ -7250,7 +7493,7 @@ public final class Model {
          * "list(BigDLModel)"
          * </pre>
          *
-         * <code>repeated .serialization.BigDLModel bigDLModel = 7;</code>
+         * <code>repeated .serialization.BigDLModel bigDLModel = 8;</code>
          */
         public Builder removeBigDLModel(int index) {
           if (bigDLModelBuilder_ == null) {
@@ -7267,7 +7510,7 @@ public final class Model {
          * "list(BigDLModel)"
          * </pre>
          *
-         * <code>repeated .serialization.BigDLModel bigDLModel = 7;</code>
+         * <code>repeated .serialization.BigDLModel bigDLModel = 8;</code>
          */
         public serialization.Model.BigDLModel.Builder getBigDLModelBuilder(
             int index) {
@@ -7278,7 +7521,7 @@ public final class Model {
          * "list(BigDLModel)"
          * </pre>
          *
-         * <code>repeated .serialization.BigDLModel bigDLModel = 7;</code>
+         * <code>repeated .serialization.BigDLModel bigDLModel = 8;</code>
          */
         public serialization.Model.BigDLModelOrBuilder getBigDLModelOrBuilder(
             int index) {
@@ -7292,7 +7535,7 @@ public final class Model {
          * "list(BigDLModel)"
          * </pre>
          *
-         * <code>repeated .serialization.BigDLModel bigDLModel = 7;</code>
+         * <code>repeated .serialization.BigDLModel bigDLModel = 8;</code>
          */
         public java.util.List<? extends serialization.Model.BigDLModelOrBuilder> 
              getBigDLModelOrBuilderList() {
@@ -7307,7 +7550,7 @@ public final class Model {
          * "list(BigDLModel)"
          * </pre>
          *
-         * <code>repeated .serialization.BigDLModel bigDLModel = 7;</code>
+         * <code>repeated .serialization.BigDLModel bigDLModel = 8;</code>
          */
         public serialization.Model.BigDLModel.Builder addBigDLModelBuilder() {
           return getBigDLModelFieldBuilder().addBuilder(
@@ -7318,7 +7561,7 @@ public final class Model {
          * "list(BigDLModel)"
          * </pre>
          *
-         * <code>repeated .serialization.BigDLModel bigDLModel = 7;</code>
+         * <code>repeated .serialization.BigDLModel bigDLModel = 8;</code>
          */
         public serialization.Model.BigDLModel.Builder addBigDLModelBuilder(
             int index) {
@@ -7330,7 +7573,7 @@ public final class Model {
          * "list(BigDLModel)"
          * </pre>
          *
-         * <code>repeated .serialization.BigDLModel bigDLModel = 7;</code>
+         * <code>repeated .serialization.BigDLModel bigDLModel = 8;</code>
          */
         public java.util.List<serialization.Model.BigDLModel.Builder> 
              getBigDLModelBuilderList() {
@@ -7343,7 +7586,7 @@ public final class Model {
             bigDLModelBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
                 serialization.Model.BigDLModel, serialization.Model.BigDLModel.Builder, serialization.Model.BigDLModelOrBuilder>(
                     bigDLModel_,
-                    ((bitField0_ & 0x00000040) == 0x00000040),
+                    ((bitField0_ & 0x00000080) == 0x00000080),
                     getParentForChildren(),
                     isClean());
             bigDLModel_ = null;
@@ -7354,9 +7597,9 @@ public final class Model {
         private java.util.List<serialization.Model.NameAttrList> nameAttrList_ =
           java.util.Collections.emptyList();
         private void ensureNameAttrListIsMutable() {
-          if (!((bitField0_ & 0x00000080) == 0x00000080)) {
+          if (!((bitField0_ & 0x00000100) == 0x00000100)) {
             nameAttrList_ = new java.util.ArrayList<serialization.Model.NameAttrList>(nameAttrList_);
-            bitField0_ |= 0x00000080;
+            bitField0_ |= 0x00000100;
            }
         }
 
@@ -7367,7 +7610,7 @@ public final class Model {
          * <pre>
          * </pre>
          *
-         * <code>repeated .serialization.NameAttrList nameAttrList = 8;</code>
+         * <code>repeated .serialization.NameAttrList nameAttrList = 9;</code>
          */
         public java.util.List<serialization.Model.NameAttrList> getNameAttrListList() {
           if (nameAttrListBuilder_ == null) {
@@ -7380,7 +7623,7 @@ public final class Model {
          * <pre>
          * </pre>
          *
-         * <code>repeated .serialization.NameAttrList nameAttrList = 8;</code>
+         * <code>repeated .serialization.NameAttrList nameAttrList = 9;</code>
          */
         public int getNameAttrListCount() {
           if (nameAttrListBuilder_ == null) {
@@ -7393,7 +7636,7 @@ public final class Model {
          * <pre>
          * </pre>
          *
-         * <code>repeated .serialization.NameAttrList nameAttrList = 8;</code>
+         * <code>repeated .serialization.NameAttrList nameAttrList = 9;</code>
          */
         public serialization.Model.NameAttrList getNameAttrList(int index) {
           if (nameAttrListBuilder_ == null) {
@@ -7406,7 +7649,7 @@ public final class Model {
          * <pre>
          * </pre>
          *
-         * <code>repeated .serialization.NameAttrList nameAttrList = 8;</code>
+         * <code>repeated .serialization.NameAttrList nameAttrList = 9;</code>
          */
         public Builder setNameAttrList(
             int index, serialization.Model.NameAttrList value) {
@@ -7426,7 +7669,7 @@ public final class Model {
          * <pre>
          * </pre>
          *
-         * <code>repeated .serialization.NameAttrList nameAttrList = 8;</code>
+         * <code>repeated .serialization.NameAttrList nameAttrList = 9;</code>
          */
         public Builder setNameAttrList(
             int index, serialization.Model.NameAttrList.Builder builderForValue) {
@@ -7443,7 +7686,7 @@ public final class Model {
          * <pre>
          * </pre>
          *
-         * <code>repeated .serialization.NameAttrList nameAttrList = 8;</code>
+         * <code>repeated .serialization.NameAttrList nameAttrList = 9;</code>
          */
         public Builder addNameAttrList(serialization.Model.NameAttrList value) {
           if (nameAttrListBuilder_ == null) {
@@ -7462,7 +7705,7 @@ public final class Model {
          * <pre>
          * </pre>
          *
-         * <code>repeated .serialization.NameAttrList nameAttrList = 8;</code>
+         * <code>repeated .serialization.NameAttrList nameAttrList = 9;</code>
          */
         public Builder addNameAttrList(
             int index, serialization.Model.NameAttrList value) {
@@ -7482,7 +7725,7 @@ public final class Model {
          * <pre>
          * </pre>
          *
-         * <code>repeated .serialization.NameAttrList nameAttrList = 8;</code>
+         * <code>repeated .serialization.NameAttrList nameAttrList = 9;</code>
          */
         public Builder addNameAttrList(
             serialization.Model.NameAttrList.Builder builderForValue) {
@@ -7499,7 +7742,7 @@ public final class Model {
          * <pre>
          * </pre>
          *
-         * <code>repeated .serialization.NameAttrList nameAttrList = 8;</code>
+         * <code>repeated .serialization.NameAttrList nameAttrList = 9;</code>
          */
         public Builder addNameAttrList(
             int index, serialization.Model.NameAttrList.Builder builderForValue) {
@@ -7516,7 +7759,7 @@ public final class Model {
          * <pre>
          * </pre>
          *
-         * <code>repeated .serialization.NameAttrList nameAttrList = 8;</code>
+         * <code>repeated .serialization.NameAttrList nameAttrList = 9;</code>
          */
         public Builder addAllNameAttrList(
             java.lang.Iterable<? extends serialization.Model.NameAttrList> values) {
@@ -7534,12 +7777,12 @@ public final class Model {
          * <pre>
          * </pre>
          *
-         * <code>repeated .serialization.NameAttrList nameAttrList = 8;</code>
+         * <code>repeated .serialization.NameAttrList nameAttrList = 9;</code>
          */
         public Builder clearNameAttrList() {
           if (nameAttrListBuilder_ == null) {
             nameAttrList_ = java.util.Collections.emptyList();
-            bitField0_ = (bitField0_ & ~0x00000080);
+            bitField0_ = (bitField0_ & ~0x00000100);
             onChanged();
           } else {
             nameAttrListBuilder_.clear();
@@ -7550,7 +7793,7 @@ public final class Model {
          * <pre>
          * </pre>
          *
-         * <code>repeated .serialization.NameAttrList nameAttrList = 8;</code>
+         * <code>repeated .serialization.NameAttrList nameAttrList = 9;</code>
          */
         public Builder removeNameAttrList(int index) {
           if (nameAttrListBuilder_ == null) {
@@ -7566,7 +7809,7 @@ public final class Model {
          * <pre>
          * </pre>
          *
-         * <code>repeated .serialization.NameAttrList nameAttrList = 8;</code>
+         * <code>repeated .serialization.NameAttrList nameAttrList = 9;</code>
          */
         public serialization.Model.NameAttrList.Builder getNameAttrListBuilder(
             int index) {
@@ -7576,7 +7819,7 @@ public final class Model {
          * <pre>
          * </pre>
          *
-         * <code>repeated .serialization.NameAttrList nameAttrList = 8;</code>
+         * <code>repeated .serialization.NameAttrList nameAttrList = 9;</code>
          */
         public serialization.Model.NameAttrListOrBuilder getNameAttrListOrBuilder(
             int index) {
@@ -7589,7 +7832,7 @@ public final class Model {
          * <pre>
          * </pre>
          *
-         * <code>repeated .serialization.NameAttrList nameAttrList = 8;</code>
+         * <code>repeated .serialization.NameAttrList nameAttrList = 9;</code>
          */
         public java.util.List<? extends serialization.Model.NameAttrListOrBuilder> 
              getNameAttrListOrBuilderList() {
@@ -7603,7 +7846,7 @@ public final class Model {
          * <pre>
          * </pre>
          *
-         * <code>repeated .serialization.NameAttrList nameAttrList = 8;</code>
+         * <code>repeated .serialization.NameAttrList nameAttrList = 9;</code>
          */
         public serialization.Model.NameAttrList.Builder addNameAttrListBuilder() {
           return getNameAttrListFieldBuilder().addBuilder(
@@ -7613,7 +7856,7 @@ public final class Model {
          * <pre>
          * </pre>
          *
-         * <code>repeated .serialization.NameAttrList nameAttrList = 8;</code>
+         * <code>repeated .serialization.NameAttrList nameAttrList = 9;</code>
          */
         public serialization.Model.NameAttrList.Builder addNameAttrListBuilder(
             int index) {
@@ -7624,7 +7867,7 @@ public final class Model {
          * <pre>
          * </pre>
          *
-         * <code>repeated .serialization.NameAttrList nameAttrList = 8;</code>
+         * <code>repeated .serialization.NameAttrList nameAttrList = 9;</code>
          */
         public java.util.List<serialization.Model.NameAttrList.Builder> 
              getNameAttrListBuilderList() {
@@ -7637,7 +7880,7 @@ public final class Model {
             nameAttrListBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
                 serialization.Model.NameAttrList, serialization.Model.NameAttrList.Builder, serialization.Model.NameAttrListOrBuilder>(
                     nameAttrList_,
-                    ((bitField0_ & 0x00000080) == 0x00000080),
+                    ((bitField0_ & 0x00000100) == 0x00000100),
                     getParentForChildren(),
                     isClean());
             nameAttrList_ = null;
@@ -7701,13 +7944,14 @@ public final class Model {
       INT32VALUE(2),
       INT64VALUE(3),
       FLOATVALUE(4),
-      BOOLVALUE(5),
-      TENSORVALUE(6),
-      BIGDLMODLEVALUE(7),
-      INITMETHODVALUE(8),
-      REGULARIZERVALUE(9),
-      LISTVALUE(10),
-      ATTRLIST(11),
+      DOUBLEVALUE(5),
+      BOOLVALUE(6),
+      TENSORVALUE(7),
+      BIGDLMODLEVALUE(8),
+      INITMETHODVALUE(9),
+      REGULARIZERVALUE(10),
+      LISTVALUE(11),
+      ATTRLIST(12),
       VALUE_NOT_SET(0);
       private final int value;
       private ValueCase(int value) {
@@ -7727,13 +7971,14 @@ public final class Model {
           case 2: return INT32VALUE;
           case 3: return INT64VALUE;
           case 4: return FLOATVALUE;
-          case 5: return BOOLVALUE;
-          case 6: return TENSORVALUE;
-          case 7: return BIGDLMODLEVALUE;
-          case 8: return INITMETHODVALUE;
-          case 9: return REGULARIZERVALUE;
-          case 10: return LISTVALUE;
-          case 11: return ATTRLIST;
+          case 5: return DOUBLEVALUE;
+          case 6: return BOOLVALUE;
+          case 7: return TENSORVALUE;
+          case 8: return BIGDLMODLEVALUE;
+          case 9: return INITMETHODVALUE;
+          case 10: return REGULARIZERVALUE;
+          case 11: return LISTVALUE;
+          case 12: return ATTRLIST;
           case 0: return VALUE_NOT_SET;
           default: return null;
         }
@@ -7845,31 +8090,46 @@ public final class Model {
       return 0F;
     }
 
-    public static final int BOOLVALUE_FIELD_NUMBER = 5;
+    public static final int DOUBLEVALUE_FIELD_NUMBER = 5;
+    /**
+     * <pre>
+     *float value
+     * </pre>
+     *
+     * <code>double doubleValue = 5;</code>
+     */
+    public double getDoubleValue() {
+      if (valueCase_ == 5) {
+        return (java.lang.Double) value_;
+      }
+      return 0D;
+    }
+
+    public static final int BOOLVALUE_FIELD_NUMBER = 6;
     /**
      * <pre>
      * bool value
      * </pre>
      *
-     * <code>bool boolValue = 5;</code>
+     * <code>bool boolValue = 6;</code>
      */
     public boolean getBoolValue() {
-      if (valueCase_ == 5) {
+      if (valueCase_ == 6) {
         return (java.lang.Boolean) value_;
       }
       return false;
     }
 
-    public static final int TENSORVALUE_FIELD_NUMBER = 6;
+    public static final int TENSORVALUE_FIELD_NUMBER = 7;
     /**
      * <pre>
      *tensor value
      * </pre>
      *
-     * <code>.serialization.BigDLTensor tensorValue = 6;</code>
+     * <code>.serialization.BigDLTensor tensorValue = 7;</code>
      */
     public serialization.Model.BigDLTensor getTensorValue() {
-      if (valueCase_ == 6) {
+      if (valueCase_ == 7) {
          return (serialization.Model.BigDLTensor) value_;
       }
       return serialization.Model.BigDLTensor.getDefaultInstance();
@@ -7879,25 +8139,25 @@ public final class Model {
      *tensor value
      * </pre>
      *
-     * <code>.serialization.BigDLTensor tensorValue = 6;</code>
+     * <code>.serialization.BigDLTensor tensorValue = 7;</code>
      */
     public serialization.Model.BigDLTensorOrBuilder getTensorValueOrBuilder() {
-      if (valueCase_ == 6) {
+      if (valueCase_ == 7) {
          return (serialization.Model.BigDLTensor) value_;
       }
       return serialization.Model.BigDLTensor.getDefaultInstance();
     }
 
-    public static final int BIGDLMODLEVALUE_FIELD_NUMBER = 7;
+    public static final int BIGDLMODLEVALUE_FIELD_NUMBER = 8;
     /**
      * <pre>
      * big DL module
      * </pre>
      *
-     * <code>.serialization.BigDLModel bigDLModleValue = 7;</code>
+     * <code>.serialization.BigDLModel bigDLModleValue = 8;</code>
      */
     public serialization.Model.BigDLModel getBigDLModleValue() {
-      if (valueCase_ == 7) {
+      if (valueCase_ == 8) {
          return (serialization.Model.BigDLModel) value_;
       }
       return serialization.Model.BigDLModel.getDefaultInstance();
@@ -7907,25 +8167,25 @@ public final class Model {
      * big DL module
      * </pre>
      *
-     * <code>.serialization.BigDLModel bigDLModleValue = 7;</code>
+     * <code>.serialization.BigDLModel bigDLModleValue = 8;</code>
      */
     public serialization.Model.BigDLModelOrBuilder getBigDLModleValueOrBuilder() {
-      if (valueCase_ == 7) {
+      if (valueCase_ == 8) {
          return (serialization.Model.BigDLModel) value_;
       }
       return serialization.Model.BigDLModel.getDefaultInstance();
     }
 
-    public static final int INITMETHODVALUE_FIELD_NUMBER = 8;
+    public static final int INITMETHODVALUE_FIELD_NUMBER = 9;
     /**
      * <pre>
      * init method
      * </pre>
      *
-     * <code>.serialization.InitMethod initMethodValue = 8;</code>
+     * <code>.serialization.InitMethod initMethodValue = 9;</code>
      */
     public int getInitMethodValueValue() {
-      if (valueCase_ == 8) {
+      if (valueCase_ == 9) {
         return (java.lang.Integer) value_;
       }
       return 0;
@@ -7935,10 +8195,10 @@ public final class Model {
      * init method
      * </pre>
      *
-     * <code>.serialization.InitMethod initMethodValue = 8;</code>
+     * <code>.serialization.InitMethod initMethodValue = 9;</code>
      */
     public serialization.Model.InitMethod getInitMethodValue() {
-      if (valueCase_ == 8) {
+      if (valueCase_ == 9) {
         serialization.Model.InitMethod result = serialization.Model.InitMethod.valueOf(
             (java.lang.Integer) value_);
         return result == null ? serialization.Model.InitMethod.UNRECOGNIZED : result;
@@ -7946,16 +8206,16 @@ public final class Model {
       return serialization.Model.InitMethod.Default;
     }
 
-    public static final int REGULARIZERVALUE_FIELD_NUMBER = 9;
+    public static final int REGULARIZERVALUE_FIELD_NUMBER = 10;
     /**
      * <pre>
      * Regularizer
      * </pre>
      *
-     * <code>.serialization.Regularizer regularizerValue = 9;</code>
+     * <code>.serialization.Regularizer regularizerValue = 10;</code>
      */
     public serialization.Model.Regularizer getRegularizerValue() {
-      if (valueCase_ == 9) {
+      if (valueCase_ == 10) {
          return (serialization.Model.Regularizer) value_;
       }
       return serialization.Model.Regularizer.getDefaultInstance();
@@ -7965,25 +8225,25 @@ public final class Model {
      * Regularizer
      * </pre>
      *
-     * <code>.serialization.Regularizer regularizerValue = 9;</code>
+     * <code>.serialization.Regularizer regularizerValue = 10;</code>
      */
     public serialization.Model.RegularizerOrBuilder getRegularizerValueOrBuilder() {
-      if (valueCase_ == 9) {
+      if (valueCase_ == 10) {
          return (serialization.Model.Regularizer) value_;
       }
       return serialization.Model.Regularizer.getDefaultInstance();
     }
 
-    public static final int LISTVALUE_FIELD_NUMBER = 10;
+    public static final int LISTVALUE_FIELD_NUMBER = 11;
     /**
      * <pre>
      * list value of any type
      * </pre>
      *
-     * <code>.serialization.AttrValue.ListValue listValue = 10;</code>
+     * <code>.serialization.AttrValue.ListValue listValue = 11;</code>
      */
     public serialization.Model.AttrValue.ListValue getListValue() {
-      if (valueCase_ == 10) {
+      if (valueCase_ == 11) {
          return (serialization.Model.AttrValue.ListValue) value_;
       }
       return serialization.Model.AttrValue.ListValue.getDefaultInstance();
@@ -7993,25 +8253,25 @@ public final class Model {
      * list value of any type
      * </pre>
      *
-     * <code>.serialization.AttrValue.ListValue listValue = 10;</code>
+     * <code>.serialization.AttrValue.ListValue listValue = 11;</code>
      */
     public serialization.Model.AttrValue.ListValueOrBuilder getListValueOrBuilder() {
-      if (valueCase_ == 10) {
+      if (valueCase_ == 11) {
          return (serialization.Model.AttrValue.ListValue) value_;
       }
       return serialization.Model.AttrValue.ListValue.getDefaultInstance();
     }
 
-    public static final int ATTRLIST_FIELD_NUMBER = 11;
+    public static final int ATTRLIST_FIELD_NUMBER = 12;
     /**
      * <pre>
      * name attribute list
      * </pre>
      *
-     * <code>.serialization.NameAttrList attrList = 11;</code>
+     * <code>.serialization.NameAttrList attrList = 12;</code>
      */
     public serialization.Model.NameAttrList getAttrList() {
-      if (valueCase_ == 11) {
+      if (valueCase_ == 12) {
          return (serialization.Model.NameAttrList) value_;
       }
       return serialization.Model.NameAttrList.getDefaultInstance();
@@ -8021,25 +8281,25 @@ public final class Model {
      * name attribute list
      * </pre>
      *
-     * <code>.serialization.NameAttrList attrList = 11;</code>
+     * <code>.serialization.NameAttrList attrList = 12;</code>
      */
     public serialization.Model.NameAttrListOrBuilder getAttrListOrBuilder() {
-      if (valueCase_ == 11) {
+      if (valueCase_ == 12) {
          return (serialization.Model.NameAttrList) value_;
       }
       return serialization.Model.NameAttrList.getDefaultInstance();
     }
 
-    public static final int DATATYPE_FIELD_NUMBER = 12;
+    public static final int DATATYPE_FIELD_NUMBER = 13;
     private int dataType_;
     /**
-     * <code>.serialization.AttrValue.DataType dataType = 12;</code>
+     * <code>.serialization.AttrValue.DataType dataType = 13;</code>
      */
     public int getDataTypeValue() {
       return dataType_;
     }
     /**
-     * <code>.serialization.AttrValue.DataType dataType = 12;</code>
+     * <code>.serialization.AttrValue.DataType dataType = 13;</code>
      */
     public serialization.Model.AttrValue.DataType getDataType() {
       serialization.Model.AttrValue.DataType result = serialization.Model.AttrValue.DataType.valueOf(dataType_);
@@ -8074,29 +8334,33 @@ public final class Model {
             4, (float)((java.lang.Float) value_));
       }
       if (valueCase_ == 5) {
-        output.writeBool(
-            5, (boolean)((java.lang.Boolean) value_));
+        output.writeDouble(
+            5, (double)((java.lang.Double) value_));
       }
       if (valueCase_ == 6) {
-        output.writeMessage(6, (serialization.Model.BigDLTensor) value_);
+        output.writeBool(
+            6, (boolean)((java.lang.Boolean) value_));
       }
       if (valueCase_ == 7) {
-        output.writeMessage(7, (serialization.Model.BigDLModel) value_);
+        output.writeMessage(7, (serialization.Model.BigDLTensor) value_);
       }
       if (valueCase_ == 8) {
-        output.writeEnum(8, ((java.lang.Integer) value_));
+        output.writeMessage(8, (serialization.Model.BigDLModel) value_);
       }
       if (valueCase_ == 9) {
-        output.writeMessage(9, (serialization.Model.Regularizer) value_);
+        output.writeEnum(9, ((java.lang.Integer) value_));
       }
       if (valueCase_ == 10) {
-        output.writeMessage(10, (serialization.Model.AttrValue.ListValue) value_);
+        output.writeMessage(10, (serialization.Model.Regularizer) value_);
       }
       if (valueCase_ == 11) {
-        output.writeMessage(11, (serialization.Model.NameAttrList) value_);
+        output.writeMessage(11, (serialization.Model.AttrValue.ListValue) value_);
+      }
+      if (valueCase_ == 12) {
+        output.writeMessage(12, (serialization.Model.NameAttrList) value_);
       }
       if (dataType_ != serialization.Model.AttrValue.DataType.INT32.getNumber()) {
-        output.writeEnum(12, dataType_);
+        output.writeEnum(13, dataType_);
       }
     }
 
@@ -8125,36 +8389,41 @@ public final class Model {
       }
       if (valueCase_ == 5) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(
-              5, (boolean)((java.lang.Boolean) value_));
+          .computeDoubleSize(
+              5, (double)((java.lang.Double) value_));
       }
       if (valueCase_ == 6) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(6, (serialization.Model.BigDLTensor) value_);
+          .computeBoolSize(
+              6, (boolean)((java.lang.Boolean) value_));
       }
       if (valueCase_ == 7) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(7, (serialization.Model.BigDLModel) value_);
+          .computeMessageSize(7, (serialization.Model.BigDLTensor) value_);
       }
       if (valueCase_ == 8) {
         size += com.google.protobuf.CodedOutputStream
-          .computeEnumSize(8, ((java.lang.Integer) value_));
+          .computeMessageSize(8, (serialization.Model.BigDLModel) value_);
       }
       if (valueCase_ == 9) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(9, (serialization.Model.Regularizer) value_);
+          .computeEnumSize(9, ((java.lang.Integer) value_));
       }
       if (valueCase_ == 10) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(10, (serialization.Model.AttrValue.ListValue) value_);
+          .computeMessageSize(10, (serialization.Model.Regularizer) value_);
       }
       if (valueCase_ == 11) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(11, (serialization.Model.NameAttrList) value_);
+          .computeMessageSize(11, (serialization.Model.AttrValue.ListValue) value_);
+      }
+      if (valueCase_ == 12) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(12, (serialization.Model.NameAttrList) value_);
       }
       if (dataType_ != serialization.Model.AttrValue.DataType.INT32.getNumber()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeEnumSize(12, dataType_);
+          .computeEnumSize(13, dataType_);
       }
       memoizedSize = size;
       return size;
@@ -8196,30 +8465,36 @@ public final class Model {
                   other.getFloatValue()));
           break;
         case 5:
+          result = result && (
+              java.lang.Double.doubleToLongBits(getDoubleValue())
+              == java.lang.Double.doubleToLongBits(
+                  other.getDoubleValue()));
+          break;
+        case 6:
           result = result && (getBoolValue()
               == other.getBoolValue());
           break;
-        case 6:
+        case 7:
           result = result && getTensorValue()
               .equals(other.getTensorValue());
           break;
-        case 7:
+        case 8:
           result = result && getBigDLModleValue()
               .equals(other.getBigDLModleValue());
           break;
-        case 8:
+        case 9:
           result = result && getInitMethodValueValue()
               == other.getInitMethodValueValue();
           break;
-        case 9:
+        case 10:
           result = result && getRegularizerValue()
               .equals(other.getRegularizerValue());
           break;
-        case 10:
+        case 11:
           result = result && getListValue()
               .equals(other.getListValue());
           break;
-        case 11:
+        case 12:
           result = result && getAttrList()
               .equals(other.getAttrList());
           break;
@@ -8258,31 +8533,36 @@ public final class Model {
               getFloatValue());
           break;
         case 5:
+          hash = (37 * hash) + DOUBLEVALUE_FIELD_NUMBER;
+          hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+              java.lang.Double.doubleToLongBits(getDoubleValue()));
+          break;
+        case 6:
           hash = (37 * hash) + BOOLVALUE_FIELD_NUMBER;
           hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
               getBoolValue());
           break;
-        case 6:
+        case 7:
           hash = (37 * hash) + TENSORVALUE_FIELD_NUMBER;
           hash = (53 * hash) + getTensorValue().hashCode();
           break;
-        case 7:
+        case 8:
           hash = (37 * hash) + BIGDLMODLEVALUE_FIELD_NUMBER;
           hash = (53 * hash) + getBigDLModleValue().hashCode();
           break;
-        case 8:
+        case 9:
           hash = (37 * hash) + INITMETHODVALUE_FIELD_NUMBER;
           hash = (53 * hash) + getInitMethodValueValue();
           break;
-        case 9:
+        case 10:
           hash = (37 * hash) + REGULARIZERVALUE_FIELD_NUMBER;
           hash = (53 * hash) + getRegularizerValue().hashCode();
           break;
-        case 10:
+        case 11:
           hash = (37 * hash) + LISTVALUE_FIELD_NUMBER;
           hash = (53 * hash) + getListValue().hashCode();
           break;
-        case 11:
+        case 12:
           hash = (37 * hash) + ATTRLIST_FIELD_NUMBER;
           hash = (53 * hash) + getAttrList().hashCode();
           break;
@@ -8449,37 +8729,40 @@ public final class Model {
           result.value_ = value_;
         }
         if (valueCase_ == 6) {
+          result.value_ = value_;
+        }
+        if (valueCase_ == 7) {
           if (tensorValueBuilder_ == null) {
             result.value_ = value_;
           } else {
             result.value_ = tensorValueBuilder_.build();
           }
         }
-        if (valueCase_ == 7) {
+        if (valueCase_ == 8) {
           if (bigDLModleValueBuilder_ == null) {
             result.value_ = value_;
           } else {
             result.value_ = bigDLModleValueBuilder_.build();
           }
         }
-        if (valueCase_ == 8) {
+        if (valueCase_ == 9) {
           result.value_ = value_;
         }
-        if (valueCase_ == 9) {
+        if (valueCase_ == 10) {
           if (regularizerValueBuilder_ == null) {
             result.value_ = value_;
           } else {
             result.value_ = regularizerValueBuilder_.build();
           }
         }
-        if (valueCase_ == 10) {
+        if (valueCase_ == 11) {
           if (listValueBuilder_ == null) {
             result.value_ = value_;
           } else {
             result.value_ = listValueBuilder_.build();
           }
         }
-        if (valueCase_ == 11) {
+        if (valueCase_ == 12) {
           if (attrListBuilder_ == null) {
             result.value_ = value_;
           } else {
@@ -8549,6 +8832,10 @@ public final class Model {
           }
           case FLOATVALUE: {
             setFloatValue(other.getFloatValue());
+            break;
+          }
+          case DOUBLEVALUE: {
+            setDoubleValue(other.getDoubleValue());
             break;
           }
           case BOOLVALUE: {
@@ -8852,13 +9139,55 @@ public final class Model {
 
       /**
        * <pre>
+       *float value
+       * </pre>
+       *
+       * <code>double doubleValue = 5;</code>
+       */
+      public double getDoubleValue() {
+        if (valueCase_ == 5) {
+          return (java.lang.Double) value_;
+        }
+        return 0D;
+      }
+      /**
+       * <pre>
+       *float value
+       * </pre>
+       *
+       * <code>double doubleValue = 5;</code>
+       */
+      public Builder setDoubleValue(double value) {
+        valueCase_ = 5;
+        value_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *float value
+       * </pre>
+       *
+       * <code>double doubleValue = 5;</code>
+       */
+      public Builder clearDoubleValue() {
+        if (valueCase_ == 5) {
+          valueCase_ = 0;
+          value_ = null;
+          onChanged();
+        }
+        return this;
+      }
+
+      /**
+       * <pre>
        * bool value
        * </pre>
        *
-       * <code>bool boolValue = 5;</code>
+       * <code>bool boolValue = 6;</code>
        */
       public boolean getBoolValue() {
-        if (valueCase_ == 5) {
+        if (valueCase_ == 6) {
           return (java.lang.Boolean) value_;
         }
         return false;
@@ -8868,10 +9197,10 @@ public final class Model {
        * bool value
        * </pre>
        *
-       * <code>bool boolValue = 5;</code>
+       * <code>bool boolValue = 6;</code>
        */
       public Builder setBoolValue(boolean value) {
-        valueCase_ = 5;
+        valueCase_ = 6;
         value_ = value;
         onChanged();
         return this;
@@ -8881,10 +9210,10 @@ public final class Model {
        * bool value
        * </pre>
        *
-       * <code>bool boolValue = 5;</code>
+       * <code>bool boolValue = 6;</code>
        */
       public Builder clearBoolValue() {
-        if (valueCase_ == 5) {
+        if (valueCase_ == 6) {
           valueCase_ = 0;
           value_ = null;
           onChanged();
@@ -8899,16 +9228,16 @@ public final class Model {
        *tensor value
        * </pre>
        *
-       * <code>.serialization.BigDLTensor tensorValue = 6;</code>
+       * <code>.serialization.BigDLTensor tensorValue = 7;</code>
        */
       public serialization.Model.BigDLTensor getTensorValue() {
         if (tensorValueBuilder_ == null) {
-          if (valueCase_ == 6) {
+          if (valueCase_ == 7) {
             return (serialization.Model.BigDLTensor) value_;
           }
           return serialization.Model.BigDLTensor.getDefaultInstance();
         } else {
-          if (valueCase_ == 6) {
+          if (valueCase_ == 7) {
             return tensorValueBuilder_.getMessage();
           }
           return serialization.Model.BigDLTensor.getDefaultInstance();
@@ -8919,7 +9248,7 @@ public final class Model {
        *tensor value
        * </pre>
        *
-       * <code>.serialization.BigDLTensor tensorValue = 6;</code>
+       * <code>.serialization.BigDLTensor tensorValue = 7;</code>
        */
       public Builder setTensorValue(serialization.Model.BigDLTensor value) {
         if (tensorValueBuilder_ == null) {
@@ -8931,7 +9260,7 @@ public final class Model {
         } else {
           tensorValueBuilder_.setMessage(value);
         }
-        valueCase_ = 6;
+        valueCase_ = 7;
         return this;
       }
       /**
@@ -8939,7 +9268,7 @@ public final class Model {
        *tensor value
        * </pre>
        *
-       * <code>.serialization.BigDLTensor tensorValue = 6;</code>
+       * <code>.serialization.BigDLTensor tensorValue = 7;</code>
        */
       public Builder setTensorValue(
           serialization.Model.BigDLTensor.Builder builderForValue) {
@@ -8949,7 +9278,7 @@ public final class Model {
         } else {
           tensorValueBuilder_.setMessage(builderForValue.build());
         }
-        valueCase_ = 6;
+        valueCase_ = 7;
         return this;
       }
       /**
@@ -8957,11 +9286,11 @@ public final class Model {
        *tensor value
        * </pre>
        *
-       * <code>.serialization.BigDLTensor tensorValue = 6;</code>
+       * <code>.serialization.BigDLTensor tensorValue = 7;</code>
        */
       public Builder mergeTensorValue(serialization.Model.BigDLTensor value) {
         if (tensorValueBuilder_ == null) {
-          if (valueCase_ == 6 &&
+          if (valueCase_ == 7 &&
               value_ != serialization.Model.BigDLTensor.getDefaultInstance()) {
             value_ = serialization.Model.BigDLTensor.newBuilder((serialization.Model.BigDLTensor) value_)
                 .mergeFrom(value).buildPartial();
@@ -8970,12 +9299,12 @@ public final class Model {
           }
           onChanged();
         } else {
-          if (valueCase_ == 6) {
+          if (valueCase_ == 7) {
             tensorValueBuilder_.mergeFrom(value);
           }
           tensorValueBuilder_.setMessage(value);
         }
-        valueCase_ = 6;
+        valueCase_ = 7;
         return this;
       }
       /**
@@ -8983,17 +9312,17 @@ public final class Model {
        *tensor value
        * </pre>
        *
-       * <code>.serialization.BigDLTensor tensorValue = 6;</code>
+       * <code>.serialization.BigDLTensor tensorValue = 7;</code>
        */
       public Builder clearTensorValue() {
         if (tensorValueBuilder_ == null) {
-          if (valueCase_ == 6) {
+          if (valueCase_ == 7) {
             valueCase_ = 0;
             value_ = null;
             onChanged();
           }
         } else {
-          if (valueCase_ == 6) {
+          if (valueCase_ == 7) {
             valueCase_ = 0;
             value_ = null;
           }
@@ -9006,7 +9335,7 @@ public final class Model {
        *tensor value
        * </pre>
        *
-       * <code>.serialization.BigDLTensor tensorValue = 6;</code>
+       * <code>.serialization.BigDLTensor tensorValue = 7;</code>
        */
       public serialization.Model.BigDLTensor.Builder getTensorValueBuilder() {
         return getTensorValueFieldBuilder().getBuilder();
@@ -9016,13 +9345,13 @@ public final class Model {
        *tensor value
        * </pre>
        *
-       * <code>.serialization.BigDLTensor tensorValue = 6;</code>
+       * <code>.serialization.BigDLTensor tensorValue = 7;</code>
        */
       public serialization.Model.BigDLTensorOrBuilder getTensorValueOrBuilder() {
-        if ((valueCase_ == 6) && (tensorValueBuilder_ != null)) {
+        if ((valueCase_ == 7) && (tensorValueBuilder_ != null)) {
           return tensorValueBuilder_.getMessageOrBuilder();
         } else {
-          if (valueCase_ == 6) {
+          if (valueCase_ == 7) {
             return (serialization.Model.BigDLTensor) value_;
           }
           return serialization.Model.BigDLTensor.getDefaultInstance();
@@ -9033,13 +9362,13 @@ public final class Model {
        *tensor value
        * </pre>
        *
-       * <code>.serialization.BigDLTensor tensorValue = 6;</code>
+       * <code>.serialization.BigDLTensor tensorValue = 7;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
           serialization.Model.BigDLTensor, serialization.Model.BigDLTensor.Builder, serialization.Model.BigDLTensorOrBuilder> 
           getTensorValueFieldBuilder() {
         if (tensorValueBuilder_ == null) {
-          if (!(valueCase_ == 6)) {
+          if (!(valueCase_ == 7)) {
             value_ = serialization.Model.BigDLTensor.getDefaultInstance();
           }
           tensorValueBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
@@ -9049,7 +9378,7 @@ public final class Model {
                   isClean());
           value_ = null;
         }
-        valueCase_ = 6;
+        valueCase_ = 7;
         onChanged();;
         return tensorValueBuilder_;
       }
@@ -9061,16 +9390,16 @@ public final class Model {
        * big DL module
        * </pre>
        *
-       * <code>.serialization.BigDLModel bigDLModleValue = 7;</code>
+       * <code>.serialization.BigDLModel bigDLModleValue = 8;</code>
        */
       public serialization.Model.BigDLModel getBigDLModleValue() {
         if (bigDLModleValueBuilder_ == null) {
-          if (valueCase_ == 7) {
+          if (valueCase_ == 8) {
             return (serialization.Model.BigDLModel) value_;
           }
           return serialization.Model.BigDLModel.getDefaultInstance();
         } else {
-          if (valueCase_ == 7) {
+          if (valueCase_ == 8) {
             return bigDLModleValueBuilder_.getMessage();
           }
           return serialization.Model.BigDLModel.getDefaultInstance();
@@ -9081,7 +9410,7 @@ public final class Model {
        * big DL module
        * </pre>
        *
-       * <code>.serialization.BigDLModel bigDLModleValue = 7;</code>
+       * <code>.serialization.BigDLModel bigDLModleValue = 8;</code>
        */
       public Builder setBigDLModleValue(serialization.Model.BigDLModel value) {
         if (bigDLModleValueBuilder_ == null) {
@@ -9093,7 +9422,7 @@ public final class Model {
         } else {
           bigDLModleValueBuilder_.setMessage(value);
         }
-        valueCase_ = 7;
+        valueCase_ = 8;
         return this;
       }
       /**
@@ -9101,7 +9430,7 @@ public final class Model {
        * big DL module
        * </pre>
        *
-       * <code>.serialization.BigDLModel bigDLModleValue = 7;</code>
+       * <code>.serialization.BigDLModel bigDLModleValue = 8;</code>
        */
       public Builder setBigDLModleValue(
           serialization.Model.BigDLModel.Builder builderForValue) {
@@ -9111,7 +9440,7 @@ public final class Model {
         } else {
           bigDLModleValueBuilder_.setMessage(builderForValue.build());
         }
-        valueCase_ = 7;
+        valueCase_ = 8;
         return this;
       }
       /**
@@ -9119,11 +9448,11 @@ public final class Model {
        * big DL module
        * </pre>
        *
-       * <code>.serialization.BigDLModel bigDLModleValue = 7;</code>
+       * <code>.serialization.BigDLModel bigDLModleValue = 8;</code>
        */
       public Builder mergeBigDLModleValue(serialization.Model.BigDLModel value) {
         if (bigDLModleValueBuilder_ == null) {
-          if (valueCase_ == 7 &&
+          if (valueCase_ == 8 &&
               value_ != serialization.Model.BigDLModel.getDefaultInstance()) {
             value_ = serialization.Model.BigDLModel.newBuilder((serialization.Model.BigDLModel) value_)
                 .mergeFrom(value).buildPartial();
@@ -9132,12 +9461,12 @@ public final class Model {
           }
           onChanged();
         } else {
-          if (valueCase_ == 7) {
+          if (valueCase_ == 8) {
             bigDLModleValueBuilder_.mergeFrom(value);
           }
           bigDLModleValueBuilder_.setMessage(value);
         }
-        valueCase_ = 7;
+        valueCase_ = 8;
         return this;
       }
       /**
@@ -9145,17 +9474,17 @@ public final class Model {
        * big DL module
        * </pre>
        *
-       * <code>.serialization.BigDLModel bigDLModleValue = 7;</code>
+       * <code>.serialization.BigDLModel bigDLModleValue = 8;</code>
        */
       public Builder clearBigDLModleValue() {
         if (bigDLModleValueBuilder_ == null) {
-          if (valueCase_ == 7) {
+          if (valueCase_ == 8) {
             valueCase_ = 0;
             value_ = null;
             onChanged();
           }
         } else {
-          if (valueCase_ == 7) {
+          if (valueCase_ == 8) {
             valueCase_ = 0;
             value_ = null;
           }
@@ -9168,7 +9497,7 @@ public final class Model {
        * big DL module
        * </pre>
        *
-       * <code>.serialization.BigDLModel bigDLModleValue = 7;</code>
+       * <code>.serialization.BigDLModel bigDLModleValue = 8;</code>
        */
       public serialization.Model.BigDLModel.Builder getBigDLModleValueBuilder() {
         return getBigDLModleValueFieldBuilder().getBuilder();
@@ -9178,13 +9507,13 @@ public final class Model {
        * big DL module
        * </pre>
        *
-       * <code>.serialization.BigDLModel bigDLModleValue = 7;</code>
+       * <code>.serialization.BigDLModel bigDLModleValue = 8;</code>
        */
       public serialization.Model.BigDLModelOrBuilder getBigDLModleValueOrBuilder() {
-        if ((valueCase_ == 7) && (bigDLModleValueBuilder_ != null)) {
+        if ((valueCase_ == 8) && (bigDLModleValueBuilder_ != null)) {
           return bigDLModleValueBuilder_.getMessageOrBuilder();
         } else {
-          if (valueCase_ == 7) {
+          if (valueCase_ == 8) {
             return (serialization.Model.BigDLModel) value_;
           }
           return serialization.Model.BigDLModel.getDefaultInstance();
@@ -9195,13 +9524,13 @@ public final class Model {
        * big DL module
        * </pre>
        *
-       * <code>.serialization.BigDLModel bigDLModleValue = 7;</code>
+       * <code>.serialization.BigDLModel bigDLModleValue = 8;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
           serialization.Model.BigDLModel, serialization.Model.BigDLModel.Builder, serialization.Model.BigDLModelOrBuilder> 
           getBigDLModleValueFieldBuilder() {
         if (bigDLModleValueBuilder_ == null) {
-          if (!(valueCase_ == 7)) {
+          if (!(valueCase_ == 8)) {
             value_ = serialization.Model.BigDLModel.getDefaultInstance();
           }
           bigDLModleValueBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
@@ -9211,7 +9540,7 @@ public final class Model {
                   isClean());
           value_ = null;
         }
-        valueCase_ = 7;
+        valueCase_ = 8;
         onChanged();;
         return bigDLModleValueBuilder_;
       }
@@ -9221,10 +9550,10 @@ public final class Model {
        * init method
        * </pre>
        *
-       * <code>.serialization.InitMethod initMethodValue = 8;</code>
+       * <code>.serialization.InitMethod initMethodValue = 9;</code>
        */
       public int getInitMethodValueValue() {
-        if (valueCase_ == 8) {
+        if (valueCase_ == 9) {
           return ((java.lang.Integer) value_).intValue();
         }
         return 0;
@@ -9234,10 +9563,10 @@ public final class Model {
        * init method
        * </pre>
        *
-       * <code>.serialization.InitMethod initMethodValue = 8;</code>
+       * <code>.serialization.InitMethod initMethodValue = 9;</code>
        */
       public Builder setInitMethodValueValue(int value) {
-        valueCase_ = 8;
+        valueCase_ = 9;
         value_ = value;
         onChanged();
         return this;
@@ -9247,10 +9576,10 @@ public final class Model {
        * init method
        * </pre>
        *
-       * <code>.serialization.InitMethod initMethodValue = 8;</code>
+       * <code>.serialization.InitMethod initMethodValue = 9;</code>
        */
       public serialization.Model.InitMethod getInitMethodValue() {
-        if (valueCase_ == 8) {
+        if (valueCase_ == 9) {
           serialization.Model.InitMethod result = serialization.Model.InitMethod.valueOf(
               (java.lang.Integer) value_);
           return result == null ? serialization.Model.InitMethod.UNRECOGNIZED : result;
@@ -9262,13 +9591,13 @@ public final class Model {
        * init method
        * </pre>
        *
-       * <code>.serialization.InitMethod initMethodValue = 8;</code>
+       * <code>.serialization.InitMethod initMethodValue = 9;</code>
        */
       public Builder setInitMethodValue(serialization.Model.InitMethod value) {
         if (value == null) {
           throw new NullPointerException();
         }
-        valueCase_ = 8;
+        valueCase_ = 9;
         value_ = value.getNumber();
         onChanged();
         return this;
@@ -9278,10 +9607,10 @@ public final class Model {
        * init method
        * </pre>
        *
-       * <code>.serialization.InitMethod initMethodValue = 8;</code>
+       * <code>.serialization.InitMethod initMethodValue = 9;</code>
        */
       public Builder clearInitMethodValue() {
-        if (valueCase_ == 8) {
+        if (valueCase_ == 9) {
           valueCase_ = 0;
           value_ = null;
           onChanged();
@@ -9296,16 +9625,16 @@ public final class Model {
        * Regularizer
        * </pre>
        *
-       * <code>.serialization.Regularizer regularizerValue = 9;</code>
+       * <code>.serialization.Regularizer regularizerValue = 10;</code>
        */
       public serialization.Model.Regularizer getRegularizerValue() {
         if (regularizerValueBuilder_ == null) {
-          if (valueCase_ == 9) {
+          if (valueCase_ == 10) {
             return (serialization.Model.Regularizer) value_;
           }
           return serialization.Model.Regularizer.getDefaultInstance();
         } else {
-          if (valueCase_ == 9) {
+          if (valueCase_ == 10) {
             return regularizerValueBuilder_.getMessage();
           }
           return serialization.Model.Regularizer.getDefaultInstance();
@@ -9316,7 +9645,7 @@ public final class Model {
        * Regularizer
        * </pre>
        *
-       * <code>.serialization.Regularizer regularizerValue = 9;</code>
+       * <code>.serialization.Regularizer regularizerValue = 10;</code>
        */
       public Builder setRegularizerValue(serialization.Model.Regularizer value) {
         if (regularizerValueBuilder_ == null) {
@@ -9328,7 +9657,7 @@ public final class Model {
         } else {
           regularizerValueBuilder_.setMessage(value);
         }
-        valueCase_ = 9;
+        valueCase_ = 10;
         return this;
       }
       /**
@@ -9336,7 +9665,7 @@ public final class Model {
        * Regularizer
        * </pre>
        *
-       * <code>.serialization.Regularizer regularizerValue = 9;</code>
+       * <code>.serialization.Regularizer regularizerValue = 10;</code>
        */
       public Builder setRegularizerValue(
           serialization.Model.Regularizer.Builder builderForValue) {
@@ -9346,7 +9675,7 @@ public final class Model {
         } else {
           regularizerValueBuilder_.setMessage(builderForValue.build());
         }
-        valueCase_ = 9;
+        valueCase_ = 10;
         return this;
       }
       /**
@@ -9354,11 +9683,11 @@ public final class Model {
        * Regularizer
        * </pre>
        *
-       * <code>.serialization.Regularizer regularizerValue = 9;</code>
+       * <code>.serialization.Regularizer regularizerValue = 10;</code>
        */
       public Builder mergeRegularizerValue(serialization.Model.Regularizer value) {
         if (regularizerValueBuilder_ == null) {
-          if (valueCase_ == 9 &&
+          if (valueCase_ == 10 &&
               value_ != serialization.Model.Regularizer.getDefaultInstance()) {
             value_ = serialization.Model.Regularizer.newBuilder((serialization.Model.Regularizer) value_)
                 .mergeFrom(value).buildPartial();
@@ -9367,12 +9696,12 @@ public final class Model {
           }
           onChanged();
         } else {
-          if (valueCase_ == 9) {
+          if (valueCase_ == 10) {
             regularizerValueBuilder_.mergeFrom(value);
           }
           regularizerValueBuilder_.setMessage(value);
         }
-        valueCase_ = 9;
+        valueCase_ = 10;
         return this;
       }
       /**
@@ -9380,17 +9709,17 @@ public final class Model {
        * Regularizer
        * </pre>
        *
-       * <code>.serialization.Regularizer regularizerValue = 9;</code>
+       * <code>.serialization.Regularizer regularizerValue = 10;</code>
        */
       public Builder clearRegularizerValue() {
         if (regularizerValueBuilder_ == null) {
-          if (valueCase_ == 9) {
+          if (valueCase_ == 10) {
             valueCase_ = 0;
             value_ = null;
             onChanged();
           }
         } else {
-          if (valueCase_ == 9) {
+          if (valueCase_ == 10) {
             valueCase_ = 0;
             value_ = null;
           }
@@ -9403,7 +9732,7 @@ public final class Model {
        * Regularizer
        * </pre>
        *
-       * <code>.serialization.Regularizer regularizerValue = 9;</code>
+       * <code>.serialization.Regularizer regularizerValue = 10;</code>
        */
       public serialization.Model.Regularizer.Builder getRegularizerValueBuilder() {
         return getRegularizerValueFieldBuilder().getBuilder();
@@ -9413,13 +9742,13 @@ public final class Model {
        * Regularizer
        * </pre>
        *
-       * <code>.serialization.Regularizer regularizerValue = 9;</code>
+       * <code>.serialization.Regularizer regularizerValue = 10;</code>
        */
       public serialization.Model.RegularizerOrBuilder getRegularizerValueOrBuilder() {
-        if ((valueCase_ == 9) && (regularizerValueBuilder_ != null)) {
+        if ((valueCase_ == 10) && (regularizerValueBuilder_ != null)) {
           return regularizerValueBuilder_.getMessageOrBuilder();
         } else {
-          if (valueCase_ == 9) {
+          if (valueCase_ == 10) {
             return (serialization.Model.Regularizer) value_;
           }
           return serialization.Model.Regularizer.getDefaultInstance();
@@ -9430,13 +9759,13 @@ public final class Model {
        * Regularizer
        * </pre>
        *
-       * <code>.serialization.Regularizer regularizerValue = 9;</code>
+       * <code>.serialization.Regularizer regularizerValue = 10;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
           serialization.Model.Regularizer, serialization.Model.Regularizer.Builder, serialization.Model.RegularizerOrBuilder> 
           getRegularizerValueFieldBuilder() {
         if (regularizerValueBuilder_ == null) {
-          if (!(valueCase_ == 9)) {
+          if (!(valueCase_ == 10)) {
             value_ = serialization.Model.Regularizer.getDefaultInstance();
           }
           regularizerValueBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
@@ -9446,7 +9775,7 @@ public final class Model {
                   isClean());
           value_ = null;
         }
-        valueCase_ = 9;
+        valueCase_ = 10;
         onChanged();;
         return regularizerValueBuilder_;
       }
@@ -9458,16 +9787,16 @@ public final class Model {
        * list value of any type
        * </pre>
        *
-       * <code>.serialization.AttrValue.ListValue listValue = 10;</code>
+       * <code>.serialization.AttrValue.ListValue listValue = 11;</code>
        */
       public serialization.Model.AttrValue.ListValue getListValue() {
         if (listValueBuilder_ == null) {
-          if (valueCase_ == 10) {
+          if (valueCase_ == 11) {
             return (serialization.Model.AttrValue.ListValue) value_;
           }
           return serialization.Model.AttrValue.ListValue.getDefaultInstance();
         } else {
-          if (valueCase_ == 10) {
+          if (valueCase_ == 11) {
             return listValueBuilder_.getMessage();
           }
           return serialization.Model.AttrValue.ListValue.getDefaultInstance();
@@ -9478,7 +9807,7 @@ public final class Model {
        * list value of any type
        * </pre>
        *
-       * <code>.serialization.AttrValue.ListValue listValue = 10;</code>
+       * <code>.serialization.AttrValue.ListValue listValue = 11;</code>
        */
       public Builder setListValue(serialization.Model.AttrValue.ListValue value) {
         if (listValueBuilder_ == null) {
@@ -9490,7 +9819,7 @@ public final class Model {
         } else {
           listValueBuilder_.setMessage(value);
         }
-        valueCase_ = 10;
+        valueCase_ = 11;
         return this;
       }
       /**
@@ -9498,7 +9827,7 @@ public final class Model {
        * list value of any type
        * </pre>
        *
-       * <code>.serialization.AttrValue.ListValue listValue = 10;</code>
+       * <code>.serialization.AttrValue.ListValue listValue = 11;</code>
        */
       public Builder setListValue(
           serialization.Model.AttrValue.ListValue.Builder builderForValue) {
@@ -9508,7 +9837,7 @@ public final class Model {
         } else {
           listValueBuilder_.setMessage(builderForValue.build());
         }
-        valueCase_ = 10;
+        valueCase_ = 11;
         return this;
       }
       /**
@@ -9516,11 +9845,11 @@ public final class Model {
        * list value of any type
        * </pre>
        *
-       * <code>.serialization.AttrValue.ListValue listValue = 10;</code>
+       * <code>.serialization.AttrValue.ListValue listValue = 11;</code>
        */
       public Builder mergeListValue(serialization.Model.AttrValue.ListValue value) {
         if (listValueBuilder_ == null) {
-          if (valueCase_ == 10 &&
+          if (valueCase_ == 11 &&
               value_ != serialization.Model.AttrValue.ListValue.getDefaultInstance()) {
             value_ = serialization.Model.AttrValue.ListValue.newBuilder((serialization.Model.AttrValue.ListValue) value_)
                 .mergeFrom(value).buildPartial();
@@ -9529,12 +9858,12 @@ public final class Model {
           }
           onChanged();
         } else {
-          if (valueCase_ == 10) {
+          if (valueCase_ == 11) {
             listValueBuilder_.mergeFrom(value);
           }
           listValueBuilder_.setMessage(value);
         }
-        valueCase_ = 10;
+        valueCase_ = 11;
         return this;
       }
       /**
@@ -9542,17 +9871,17 @@ public final class Model {
        * list value of any type
        * </pre>
        *
-       * <code>.serialization.AttrValue.ListValue listValue = 10;</code>
+       * <code>.serialization.AttrValue.ListValue listValue = 11;</code>
        */
       public Builder clearListValue() {
         if (listValueBuilder_ == null) {
-          if (valueCase_ == 10) {
+          if (valueCase_ == 11) {
             valueCase_ = 0;
             value_ = null;
             onChanged();
           }
         } else {
-          if (valueCase_ == 10) {
+          if (valueCase_ == 11) {
             valueCase_ = 0;
             value_ = null;
           }
@@ -9565,7 +9894,7 @@ public final class Model {
        * list value of any type
        * </pre>
        *
-       * <code>.serialization.AttrValue.ListValue listValue = 10;</code>
+       * <code>.serialization.AttrValue.ListValue listValue = 11;</code>
        */
       public serialization.Model.AttrValue.ListValue.Builder getListValueBuilder() {
         return getListValueFieldBuilder().getBuilder();
@@ -9575,13 +9904,13 @@ public final class Model {
        * list value of any type
        * </pre>
        *
-       * <code>.serialization.AttrValue.ListValue listValue = 10;</code>
+       * <code>.serialization.AttrValue.ListValue listValue = 11;</code>
        */
       public serialization.Model.AttrValue.ListValueOrBuilder getListValueOrBuilder() {
-        if ((valueCase_ == 10) && (listValueBuilder_ != null)) {
+        if ((valueCase_ == 11) && (listValueBuilder_ != null)) {
           return listValueBuilder_.getMessageOrBuilder();
         } else {
-          if (valueCase_ == 10) {
+          if (valueCase_ == 11) {
             return (serialization.Model.AttrValue.ListValue) value_;
           }
           return serialization.Model.AttrValue.ListValue.getDefaultInstance();
@@ -9592,13 +9921,13 @@ public final class Model {
        * list value of any type
        * </pre>
        *
-       * <code>.serialization.AttrValue.ListValue listValue = 10;</code>
+       * <code>.serialization.AttrValue.ListValue listValue = 11;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
           serialization.Model.AttrValue.ListValue, serialization.Model.AttrValue.ListValue.Builder, serialization.Model.AttrValue.ListValueOrBuilder> 
           getListValueFieldBuilder() {
         if (listValueBuilder_ == null) {
-          if (!(valueCase_ == 10)) {
+          if (!(valueCase_ == 11)) {
             value_ = serialization.Model.AttrValue.ListValue.getDefaultInstance();
           }
           listValueBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
@@ -9608,7 +9937,7 @@ public final class Model {
                   isClean());
           value_ = null;
         }
-        valueCase_ = 10;
+        valueCase_ = 11;
         onChanged();;
         return listValueBuilder_;
       }
@@ -9620,16 +9949,16 @@ public final class Model {
        * name attribute list
        * </pre>
        *
-       * <code>.serialization.NameAttrList attrList = 11;</code>
+       * <code>.serialization.NameAttrList attrList = 12;</code>
        */
       public serialization.Model.NameAttrList getAttrList() {
         if (attrListBuilder_ == null) {
-          if (valueCase_ == 11) {
+          if (valueCase_ == 12) {
             return (serialization.Model.NameAttrList) value_;
           }
           return serialization.Model.NameAttrList.getDefaultInstance();
         } else {
-          if (valueCase_ == 11) {
+          if (valueCase_ == 12) {
             return attrListBuilder_.getMessage();
           }
           return serialization.Model.NameAttrList.getDefaultInstance();
@@ -9640,7 +9969,7 @@ public final class Model {
        * name attribute list
        * </pre>
        *
-       * <code>.serialization.NameAttrList attrList = 11;</code>
+       * <code>.serialization.NameAttrList attrList = 12;</code>
        */
       public Builder setAttrList(serialization.Model.NameAttrList value) {
         if (attrListBuilder_ == null) {
@@ -9652,7 +9981,7 @@ public final class Model {
         } else {
           attrListBuilder_.setMessage(value);
         }
-        valueCase_ = 11;
+        valueCase_ = 12;
         return this;
       }
       /**
@@ -9660,7 +9989,7 @@ public final class Model {
        * name attribute list
        * </pre>
        *
-       * <code>.serialization.NameAttrList attrList = 11;</code>
+       * <code>.serialization.NameAttrList attrList = 12;</code>
        */
       public Builder setAttrList(
           serialization.Model.NameAttrList.Builder builderForValue) {
@@ -9670,7 +9999,7 @@ public final class Model {
         } else {
           attrListBuilder_.setMessage(builderForValue.build());
         }
-        valueCase_ = 11;
+        valueCase_ = 12;
         return this;
       }
       /**
@@ -9678,11 +10007,11 @@ public final class Model {
        * name attribute list
        * </pre>
        *
-       * <code>.serialization.NameAttrList attrList = 11;</code>
+       * <code>.serialization.NameAttrList attrList = 12;</code>
        */
       public Builder mergeAttrList(serialization.Model.NameAttrList value) {
         if (attrListBuilder_ == null) {
-          if (valueCase_ == 11 &&
+          if (valueCase_ == 12 &&
               value_ != serialization.Model.NameAttrList.getDefaultInstance()) {
             value_ = serialization.Model.NameAttrList.newBuilder((serialization.Model.NameAttrList) value_)
                 .mergeFrom(value).buildPartial();
@@ -9691,12 +10020,12 @@ public final class Model {
           }
           onChanged();
         } else {
-          if (valueCase_ == 11) {
+          if (valueCase_ == 12) {
             attrListBuilder_.mergeFrom(value);
           }
           attrListBuilder_.setMessage(value);
         }
-        valueCase_ = 11;
+        valueCase_ = 12;
         return this;
       }
       /**
@@ -9704,17 +10033,17 @@ public final class Model {
        * name attribute list
        * </pre>
        *
-       * <code>.serialization.NameAttrList attrList = 11;</code>
+       * <code>.serialization.NameAttrList attrList = 12;</code>
        */
       public Builder clearAttrList() {
         if (attrListBuilder_ == null) {
-          if (valueCase_ == 11) {
+          if (valueCase_ == 12) {
             valueCase_ = 0;
             value_ = null;
             onChanged();
           }
         } else {
-          if (valueCase_ == 11) {
+          if (valueCase_ == 12) {
             valueCase_ = 0;
             value_ = null;
           }
@@ -9727,7 +10056,7 @@ public final class Model {
        * name attribute list
        * </pre>
        *
-       * <code>.serialization.NameAttrList attrList = 11;</code>
+       * <code>.serialization.NameAttrList attrList = 12;</code>
        */
       public serialization.Model.NameAttrList.Builder getAttrListBuilder() {
         return getAttrListFieldBuilder().getBuilder();
@@ -9737,13 +10066,13 @@ public final class Model {
        * name attribute list
        * </pre>
        *
-       * <code>.serialization.NameAttrList attrList = 11;</code>
+       * <code>.serialization.NameAttrList attrList = 12;</code>
        */
       public serialization.Model.NameAttrListOrBuilder getAttrListOrBuilder() {
-        if ((valueCase_ == 11) && (attrListBuilder_ != null)) {
+        if ((valueCase_ == 12) && (attrListBuilder_ != null)) {
           return attrListBuilder_.getMessageOrBuilder();
         } else {
-          if (valueCase_ == 11) {
+          if (valueCase_ == 12) {
             return (serialization.Model.NameAttrList) value_;
           }
           return serialization.Model.NameAttrList.getDefaultInstance();
@@ -9754,13 +10083,13 @@ public final class Model {
        * name attribute list
        * </pre>
        *
-       * <code>.serialization.NameAttrList attrList = 11;</code>
+       * <code>.serialization.NameAttrList attrList = 12;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
           serialization.Model.NameAttrList, serialization.Model.NameAttrList.Builder, serialization.Model.NameAttrListOrBuilder> 
           getAttrListFieldBuilder() {
         if (attrListBuilder_ == null) {
-          if (!(valueCase_ == 11)) {
+          if (!(valueCase_ == 12)) {
             value_ = serialization.Model.NameAttrList.getDefaultInstance();
           }
           attrListBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
@@ -9770,20 +10099,20 @@ public final class Model {
                   isClean());
           value_ = null;
         }
-        valueCase_ = 11;
+        valueCase_ = 12;
         onChanged();;
         return attrListBuilder_;
       }
 
       private int dataType_ = 0;
       /**
-       * <code>.serialization.AttrValue.DataType dataType = 12;</code>
+       * <code>.serialization.AttrValue.DataType dataType = 13;</code>
        */
       public int getDataTypeValue() {
         return dataType_;
       }
       /**
-       * <code>.serialization.AttrValue.DataType dataType = 12;</code>
+       * <code>.serialization.AttrValue.DataType dataType = 13;</code>
        */
       public Builder setDataTypeValue(int value) {
         dataType_ = value;
@@ -9791,14 +10120,14 @@ public final class Model {
         return this;
       }
       /**
-       * <code>.serialization.AttrValue.DataType dataType = 12;</code>
+       * <code>.serialization.AttrValue.DataType dataType = 13;</code>
        */
       public serialization.Model.AttrValue.DataType getDataType() {
         serialization.Model.AttrValue.DataType result = serialization.Model.AttrValue.DataType.valueOf(dataType_);
         return result == null ? serialization.Model.AttrValue.DataType.UNRECOGNIZED : result;
       }
       /**
-       * <code>.serialization.AttrValue.DataType dataType = 12;</code>
+       * <code>.serialization.AttrValue.DataType dataType = 13;</code>
        */
       public Builder setDataType(serialization.Model.AttrValue.DataType value) {
         if (value == null) {
@@ -9810,7 +10139,7 @@ public final class Model {
         return this;
       }
       /**
-       * <code>.serialization.AttrValue.DataType dataType = 12;</code>
+       * <code>.serialization.AttrValue.DataType dataType = 13;</code>
        */
       public Builder clearDataType() {
         
@@ -10742,36 +11071,38 @@ public final class Model {
       "AttrValue:\0028\001\")\n\013BigDLTensor\022\014\n\004size\030\001 \003",
       "(\005\022\014\n\004data\030\002 \003(\001\"[\n\013Regularizer\0227\n\017regul" +
       "arizerType\030\001 \001(\0162\036.serialization.Regular" +
-      "izerType\022\023\n\013regularData\030\002 \003(\001\"\342\006\n\tAttrVa" +
+      "izerType\022\023\n\013regularData\030\002 \003(\001\"\225\007\n\tAttrVa" +
       "lue\022\025\n\013stringValue\030\001 \001(\tH\000\022\024\n\nint32Value" +
       "\030\002 \001(\005H\000\022\024\n\nint64Value\030\003 \001(\003H\000\022\024\n\nfloatV" +
-      "alue\030\004 \001(\002H\000\022\023\n\tboolValue\030\005 \001(\010H\000\0221\n\013ten" +
-      "sorValue\030\006 \001(\0132\032.serialization.BigDLTens" +
-      "orH\000\0224\n\017bigDLModleValue\030\007 \001(\0132\031.serializ" +
-      "ation.BigDLModelH\000\0224\n\017initMethodValue\030\010 " +
-      "\001(\0162\031.serialization.InitMethodH\000\0226\n\020regu",
-      "larizerValue\030\t \001(\0132\032.serialization.Regul" +
-      "arizerH\000\0227\n\tlistValue\030\n \001(\0132\".serializat" +
-      "ion.AttrValue.ListValueH\000\022/\n\010attrList\030\013 " +
-      "\001(\0132\033.serialization.NameAttrListH\000\0223\n\010da" +
-      "taType\030\014 \001(\0162!.serialization.AttrValue.D" +
-      "ataType\032\336\001\n\tListValue\022\013\n\003str\030\001 \003(\t\022\013\n\003i3" +
-      "2\030\002 \003(\005\022\013\n\003i64\030\003 \003(\003\022\013\n\003flt\030\004 \003(\002\022\017\n\007boo" +
-      "lean\030\005 \003(\010\022*\n\006tensor\030\006 \003(\0132\032.serializati" +
-      "on.BigDLTensor\022-\n\nbigDLModel\030\007 \003(\0132\031.ser" +
-      "ialization.BigDLModel\0221\n\014nameAttrList\030\010 ",
-      "\003(\0132\033.serialization.NameAttrList\"\206\001\n\010Dat" +
-      "aType\022\t\n\005INT32\020\000\022\t\n\005INT64\020\001\022\t\n\005FLOAT\020\002\022\n" +
-      "\n\006DOUBLE\020\003\022\n\n\006STRING\020\004\022\010\n\004BOOL\020\005\022\n\n\006TENS" +
-      "OR\020\006\022\n\n\006MODULE\020\007\022\016\n\nINITMETHOD\020\010\022\017\n\013REGU" +
-      "LARIZER\020\tB\007\n\005value\"\230\001\n\014NameAttrList\022\014\n\004n" +
-      "ame\030\001 \001(\t\0223\n\004attr\030\002 \003(\0132%.serialization." +
-      "NameAttrList.AttrEntry\032E\n\tAttrEntry\022\013\n\003k" +
-      "ey\030\001 \001(\t\022\'\n\005value\030\002 \001(\0132\030.serialization." +
-      "AttrValue:\0028\001*9\n\nInitMethod\022\013\n\007Default\020\000" +
-      "\022\n\n\006Xavier\020\001\022\022\n\016BilinearFiller\020\002*L\n\017Regu",
-      "larizerType\022\023\n\017L1L2Regularizer\020\000\022\021\n\rL1Re" +
-      "gularizer\020\001\022\021\n\rL2Regularizer\020\002b\006proto3"
+      "alue\030\004 \001(\002H\000\022\025\n\013doubleValue\030\005 \001(\001H\000\022\023\n\tb" +
+      "oolValue\030\006 \001(\010H\000\0221\n\013tensorValue\030\007 \001(\0132\032." +
+      "serialization.BigDLTensorH\000\0224\n\017bigDLModl" +
+      "eValue\030\010 \001(\0132\031.serialization.BigDLModelH" +
+      "\000\0224\n\017initMethodValue\030\t \001(\0162\031.serializati",
+      "on.InitMethodH\000\0226\n\020regularizerValue\030\n \001(" +
+      "\0132\032.serialization.RegularizerH\000\0227\n\tlistV" +
+      "alue\030\013 \001(\0132\".serialization.AttrValue.Lis" +
+      "tValueH\000\022/\n\010attrList\030\014 \001(\0132\033.serializati" +
+      "on.NameAttrListH\000\0223\n\010dataType\030\r \001(\0162!.se" +
+      "rialization.AttrValue.DataType\032\353\001\n\tListV" +
+      "alue\022\013\n\003str\030\001 \003(\t\022\013\n\003i32\030\002 \003(\005\022\013\n\003i64\030\003 " +
+      "\003(\003\022\013\n\003flt\030\004 \003(\002\022\013\n\003dbl\030\005 \003(\001\022\017\n\007boolean" +
+      "\030\006 \003(\010\022*\n\006tensor\030\007 \003(\0132\032.serialization.B" +
+      "igDLTensor\022-\n\nbigDLModel\030\010 \003(\0132\031.seriali",
+      "zation.BigDLModel\0221\n\014nameAttrList\030\t \003(\0132" +
+      "\033.serialization.NameAttrList\"\225\001\n\010DataTyp" +
+      "e\022\t\n\005INT32\020\000\022\t\n\005INT64\020\001\022\t\n\005FLOAT\020\002\022\n\n\006DO" +
+      "UBLE\020\003\022\n\n\006STRING\020\004\022\010\n\004BOOL\020\005\022\n\n\006TENSOR\020\006" +
+      "\022\n\n\006MODULE\020\007\022\016\n\nINITMETHOD\020\010\022\017\n\013REGULARI" +
+      "ZER\020\t\022\r\n\tLISTVALUE\020\nB\007\n\005value\"\230\001\n\014NameAt" +
+      "trList\022\014\n\004name\030\001 \001(\t\0223\n\004attr\030\002 \003(\0132%.ser" +
+      "ialization.NameAttrList.AttrEntry\032E\n\tAtt" +
+      "rEntry\022\013\n\003key\030\001 \001(\t\022\'\n\005value\030\002 \001(\0132\030.ser" +
+      "ialization.AttrValue:\0028\001*9\n\nInitMethod\022\013",
+      "\n\007Default\020\000\022\n\n\006Xavier\020\001\022\022\n\016BilinearFille" +
+      "r\020\002*L\n\017RegularizerType\022\023\n\017L1L2Regularize" +
+      "r\020\000\022\021\n\rL1Regularizer\020\001\022\021\n\rL2Regularizer\020" +
+      "\002b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -10814,13 +11145,13 @@ public final class Model {
     internal_static_serialization_AttrValue_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_serialization_AttrValue_descriptor,
-        new java.lang.String[] { "StringValue", "Int32Value", "Int64Value", "FloatValue", "BoolValue", "TensorValue", "BigDLModleValue", "InitMethodValue", "RegularizerValue", "ListValue", "AttrList", "DataType", "Value", });
+        new java.lang.String[] { "StringValue", "Int32Value", "Int64Value", "FloatValue", "DoubleValue", "BoolValue", "TensorValue", "BigDLModleValue", "InitMethodValue", "RegularizerValue", "ListValue", "AttrList", "DataType", "Value", });
     internal_static_serialization_AttrValue_ListValue_descriptor =
       internal_static_serialization_AttrValue_descriptor.getNestedTypes().get(0);
     internal_static_serialization_AttrValue_ListValue_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_serialization_AttrValue_ListValue_descriptor,
-        new java.lang.String[] { "Str", "I32", "I64", "Flt", "Boolean", "Tensor", "BigDLModel", "NameAttrList", });
+        new java.lang.String[] { "Str", "I32", "I64", "Flt", "Dbl", "Boolean", "Tensor", "BigDLModel", "NameAttrList", });
     internal_static_serialization_NameAttrList_descriptor =
       getDescriptor().getMessageTypes().get(4);
     internal_static_serialization_NameAttrList_fieldAccessorTable = new
