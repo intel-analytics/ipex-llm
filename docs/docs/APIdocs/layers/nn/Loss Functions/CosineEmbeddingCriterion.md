@@ -16,6 +16,7 @@ a table of two Tensors, and a Tensor label y with values 1 or -1.
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor._
+impot com.intel.analytics.bigdl.utils.T
 val cosineEmbeddingCriterion = CosineEmbeddingCriterion(0.0, false)
 val input1 = Tensor(5).rand()
 val input2 = Tensor(5).rand()
@@ -26,24 +27,41 @@ val target1 = Tensor(Storage(Array(-0.5f)))
 val target = T()
 target(1.0) = target1
 
+> print(input)
+ {
+	2.0: 0.4110882
+	     0.57726574
+	     0.1949834
+	     0.67670715
+	     0.16984987
+	     [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 5]
+	1.0: 0.16878392
+	     0.24124223
+	     0.8964794
+	     0.11156334
+	     0.5101486
+	     [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 5]
+ }
+
 > print(cosineEmbeddingCriterion.forward(input, target))
-0.7708353
+0.49919847
 
 > print(cosineEmbeddingCriterion.backward(input, target))
  {
-	2: 0.22197613
-	   0.3816089
-	   0.113743804
-	   0.020715533
-	   -0.14027478
+	2: -0.045381278
+	   -0.059856333
+	   0.72547954
+	   -0.2268434
+	   0.3842142
 	   [com.intel.analytics.bigdl.tensor.DenseTensor of size 5]
-	1: -0.1818499
-	   -0.31850398
-	   0.083632
-	   0.15572566
-	   0.35671195
+	1: 0.30369008
+	   0.42463788
+	   -0.20637506
+	   0.5712836
+	   -0.06355385
 	   [com.intel.analytics.bigdl.tensor.DenseTensor of size 5]
  }
+
 ```
 
 **Python example:**

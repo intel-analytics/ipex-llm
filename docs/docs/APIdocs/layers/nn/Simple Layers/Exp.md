@@ -2,11 +2,11 @@
 
 **Scala:**
 ```scala
-val module = Exp()
+val exp = Exp()
 ```
 **Python:**
 ```python
-module = Exp()
+exp = Exp()
 ```
 
 Exp applies element-wise exp operation to input tensor
@@ -18,11 +18,16 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericF
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor._
 val exp = Exp()
-
-> print(exp.forward(Tensor(3, 3).rand()))
-2.117167441009217	1.3348497682757767	2.597868000359312	
-2.3517183035087625	1.2622098046468193	1.3445996186474545	
-1.4186639561465524	2.1381977568275885	1.866953124359979	
+val input = Tensor(3, 3).rand()
+> print(input)
+0.0858663	0.28117087	0.85724664	
+0.62026995	0.29137492	0.07581586	
+0.22099794	0.45131826	0.78286386	
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3x3]
+> print(exp.forward(input))
+1.0896606	1.32468		2.356663	
+1.85943		1.3382663	1.078764	
+1.2473209	1.5703809	2.1877286	
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 3x3]
 
 ```

@@ -23,15 +23,17 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor._
 val relu = ReLU(false)
 
-val input = T()
-input(1.0) = Tensor(1, 1).rand()
-input(2.0) = Tensor(2, 2).rand()
-input(3.0) = Tensor(3, 3).rand()
+val input = Tensor(3, 3).rand()
+> print(input)
+0.13486342	0.8986828	0.2648762	
+0.56467545	0.7727274	0.65959305	
+0.01554346	0.9552375	0.2434533	
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3x3]
 
-> print(relu.forward(Tensor(3, 3).rand()))
-0.14756441	0.6177869	0.21481016	
-0.98840165	0.95527816	0.17846434	
-0.8655564	0.66041255	0.63329965	
+> print(relu.forward(input))
+0.13486342	0.8986828	0.2648762	
+0.56467545	0.7727274	0.65959305	
+0.01554346	0.9552375	0.2434533	
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 3x3]
 
 

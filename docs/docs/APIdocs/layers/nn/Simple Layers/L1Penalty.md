@@ -19,11 +19,20 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericF
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor._
 val l1Penalty = L1Penalty(1, true, true)
+val input = Tensor(3, 3).rand()
 
-> print(l1Penalty.forward(Tensor(3, 3).rand()))
-0.782725	0.5012295	0.7882566	
-0.76761246	0.9085081	0.7406898	
-0.62426275	0.9409664	0.3315808	
+> print(input)
+0.0370419	0.03080979	0.22083037	
+0.1547358	0.018475588	0.8102709	
+0.86393493	0.7081842	0.13717912	
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3x3]
+
+
+> print(l1Penalty.forward(input))
+0.0370419	0.03080979	0.22083037	
+0.1547358	0.018475588	0.8102709	
+0.86393493	0.7081842	0.13717912	
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3x3]	
 
 ```
 

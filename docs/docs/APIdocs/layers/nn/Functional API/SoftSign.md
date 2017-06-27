@@ -20,12 +20,19 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericF
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor._
 val softSign = SoftSign()
+val input = Tensor(3, 3).rand()
 
-> print(softSign.forward(Tensor(3, 3).rand()))
-0.45222705028881033	0.1911821164520032	0.3135549602242586	
-0.43199253473543525	0.4627414232312455	0.12919941223249864	
-0.20673001813061254	0.15548499588691123	0.3566450036430123	
+> print(input)
+0.6733504	0.7566517	0.43793806	
+0.09683273	0.05829774	0.4567967	
+0.20021072	0.11158377	0.31668025
+
+> print(softSign.forward(input))
+0.40239656	0.4307352	0.30455974	
+0.08828395	0.05508633	0.31356242	
+0.16681297	0.10038269	0.24051417	
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 3x3]
+
 
 ```
 

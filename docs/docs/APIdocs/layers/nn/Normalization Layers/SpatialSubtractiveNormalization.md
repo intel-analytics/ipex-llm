@@ -29,23 +29,30 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericF
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor._
 val kernel = Tensor(3, 3).rand()
-val spatialSubtractiveNormalization = SpatialSubtractiveNormalization(4, kernel)
 
-> print(spatialSubtractiveNormalization.forward(Tensor(3, 4, 5, 5).rand()))
+> print(kernel)
+0.56141114	0.76815456	0.29409808	
+0.3599753	0.17142025	0.5243272	
+0.62450963	0.28084084	0.17154165	
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3x3]
+
+
+val spatialSubtractiveNormalization = SpatialSubtractiveNormalization(1, kernel)
+
+val input = Tensor(1, 1, 1, 5).rand()
+
+> print(input)
 (1,1,.,.) =
--0.23341611	0.3344916	0.23259735	-0.30317286	0.0602113	
-0.2494207	-0.09478736	0.43968314	0.015044361	0.08818066	
-0.19935995	0.22641534	-0.16797271	0.028918773	0.02103293	
-0.34971905	-0.36060834	0.35384625	0.37494865	-0.21338695	
-0.3034316	0.18821329	0.24799132	-0.47940618	0.102709115	
+0.122356184	0.44442436	0.6394927	0.9349956	0.8226007	
 
-(1,2,.,.) =
--0.39597827	-0.14664972	0.17417371	-0.17144218	0.42531347	
-0.17727757	-0.064986885	0.32195455	-0.30659157	0.28571957	
-0.18861032	-0.24977896	0.16757923	-0.20946856	0.22372705	
-0.35106254	0.14381915	-0.329951	0.48048618	0.44545975	
-0.24326172	0.08867538	-0.46260777	-0.24209261	0.0938741	
-.......
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 1x1x1x5]
+
+> print(spatialSubtractiveNormalization.forward(input))
+(1,1,.,.) =
+-0.2427161	0.012936085	-0.08024883	0.15658027	-0.07613802	
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x1x1x5]
+
 
 ```
 

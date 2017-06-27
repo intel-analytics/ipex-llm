@@ -19,7 +19,7 @@ import com.intel.analytics.bigdl.tensor._
 val identity = Identity()
 
 val input = Tensor(3, 3).rand()
-input: com.intel.analytics.bigdl.tensor.Tensor[Float] = 
+> print(input)
 0.043098174	0.1035049	0.7522675	
 0.9999951	0.794151	0.18344955	
 0.9419861	0.02398399	0.6228095	

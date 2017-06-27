@@ -23,15 +23,22 @@ target(Array(2)) = 2
 target(Array(3)) = 1
 target(Array(4)) = 0
 
-> print(multiLabelMarginCriterion.forward(input, target))
-0.91859895
+> print(input)
+0.40267515
+0.5913795
+0.84936756
+0.05999674
 
-print(multiLabelMarginCriterion.backward(input, target))
+>  print(multiLabelMarginCriterion.forward(input, target))
+0.33414197
+
+> print(multiLabelMarginCriterion.backward(input, target))
 -0.25
 -0.25
 -0.25
 0.75
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 4]
+
 
 ```
 
