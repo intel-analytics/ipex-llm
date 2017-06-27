@@ -349,7 +349,7 @@ class SGDSpec extends FlatSpec with Matchers {
 
   "ExponentailDecay Staircase" should "generate correct learning rates" in {
     val optimMethod = new SGD[Double](0.05)
-    optimMethod.learningRateSchedule = Exponential(10, 0.96)
+    optimMethod.learningRateSchedule = Exponential(10, 0.96, true)
     def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
       (0.1, Tensor[Double](Storage(Array(1.0, 1.0))))
     }
