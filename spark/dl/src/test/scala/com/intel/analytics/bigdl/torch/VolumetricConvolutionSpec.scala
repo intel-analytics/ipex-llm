@@ -49,7 +49,6 @@ class VolumetricConvolutionSpec extends TorchSpec {
     val layer = new VolumetricConvolution[Double](from, to, kt, ki, kj, st, si, sj,
       padT, padW, padH)
 
-//    Random.setSeed(seed)
     val input = Tensor[Double](3, 100, 56, 56).apply1(e => Random.nextDouble())
 
     val output = layer.updateOutput(input)
