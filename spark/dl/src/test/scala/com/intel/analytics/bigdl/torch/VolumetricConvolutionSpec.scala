@@ -29,27 +29,27 @@ class VolumetricConvolutionSpec extends TorchSpec {
     torchCheck()
     val seed = 100
     RNG.setSeed(seed)
-    val from = RNG.uniform(2, 4).toInt
-    val to = RNG.uniform(1, 4).toInt
-    val kt = RNG.uniform(1, 4).toInt
-    val ki = RNG.uniform(1, 4).toInt
-    val kj = RNG.uniform(1, 4).toInt
-    val st = RNG.uniform(1, 3).toInt
-    val si = RNG.uniform(1, 3).toInt
-    val sj = RNG.uniform(1, 3).toInt
-    val padT = RNG.uniform(0, 2).toInt
-    val padW = RNG.uniform(0, 2).toInt
-    val padH = RNG.uniform(0, 2).toInt
-    val outt = RNG.uniform(5, 7).toInt
-    val outi = RNG.uniform(5, 7).toInt
-    val outj = RNG.uniform(5, 7).toInt
+    val from = 3
+    val to = 2
+    val kt = 2
+    val ki = 2
+    val kj = 2
+    val st = 2
+    val si = 2
+    val sj = 2
+    val padT = 1
+    val padW = 1
+    val padH = 1
+    val outt = 6
+    val outi = 6
+    val outj = 6
     val int = (outt - 1) * st + kt - padT * 2
     val ini = (outi - 1) * si + ki - padW * 2
     val inj = (outj - 1) * sj + kj - padH * 2
     val layer = new VolumetricConvolution[Double](from, to, kt, ki, kj, st, si, sj,
       padT, padW, padH)
 
-    Random.setSeed(seed)
+//    Random.setSeed(seed)
     val input = Tensor[Double](3, 100, 56, 56).apply1(e => Random.nextDouble())
 
     val output = layer.updateOutput(input)
@@ -71,36 +71,35 @@ class VolumetricConvolutionSpec extends TorchSpec {
     val weight = layer.weight
     val bias = layer.bias
 
-    weight should be equals luaWeight
-    bias should be equals luaBias
-    output should be equals luaOutput
+    weight should be (luaWeight)
+    bias should be (luaBias)
+    output should be (luaOutput)
   }
 
   "A VolumetricConvolution without bias" should "generate correct output" in {
     torchCheck()
     val seed = 100
     RNG.setSeed(seed)
-    val from = RNG.uniform(2, 4).toInt
-    val to = RNG.uniform(1, 4).toInt
-    val kt = RNG.uniform(1, 4).toInt
-    val ki = RNG.uniform(1, 4).toInt
-    val kj = RNG.uniform(1, 4).toInt
-    val st = RNG.uniform(1, 3).toInt
-    val si = RNG.uniform(1, 3).toInt
-    val sj = RNG.uniform(1, 3).toInt
-    val padT = RNG.uniform(0, 2).toInt
-    val padW = RNG.uniform(0, 2).toInt
-    val padH = RNG.uniform(0, 2).toInt
-    val outt = RNG.uniform(5, 7).toInt
-    val outi = RNG.uniform(5, 7).toInt
-    val outj = RNG.uniform(5, 7).toInt
+    val from = 3
+    val to = 2
+    val kt = 2
+    val ki = 2
+    val kj = 2
+    val st = 2
+    val si = 2
+    val sj = 2
+    val padT = 1
+    val padW = 1
+    val padH = 1
+    val outt = 6
+    val outi = 6
+    val outj = 6
     val int = (outt - 1) * st + kt - padT * 2
     val ini = (outi - 1) * si + ki - padW * 2
     val inj = (outj - 1) * sj + kj - padH * 2
     val layer = new VolumetricConvolution[Double](from, to, kt, ki, kj, st, si, sj,
       padT, padW, padH, withBias = false)
 
-    Random.setSeed(seed)
     val input = Tensor[Double](3, 100, 56, 56).apply1(e => Random.nextDouble())
 
     val output = layer.updateOutput(input)
@@ -122,9 +121,9 @@ class VolumetricConvolutionSpec extends TorchSpec {
     val weight = layer.weight
     val bias = layer.bias
 
-    weight should be equals luaWeight
-    bias should be equals luaBias
-    output should be equals luaOutput
+    weight should be (luaWeight)
+    bias should be (luaBias)
+    output should be (luaOutput)
   }
 
 
@@ -132,28 +131,27 @@ class VolumetricConvolutionSpec extends TorchSpec {
     torchCheck()
     val seed = 100
     RNG.setSeed(seed)
-    val from = RNG.uniform(2, 10).toInt
-    val to = RNG.uniform(1, 10).toInt
-    val kt = RNG.uniform(1, 6).toInt
-    val ki = RNG.uniform(1, 6).toInt
-    val kj = RNG.uniform(1, 6).toInt
-    val st = RNG.uniform(1, 7).toInt
-    val si = RNG.uniform(1, 7).toInt
-    val sj = RNG.uniform(1, 7).toInt
-    val padT = RNG.uniform(0, 2).toInt
-    val padW = RNG.uniform(0, 2).toInt
-    val padH = RNG.uniform(0, 2).toInt
-    val outt = RNG.uniform(5, 7).toInt
-    val outi = RNG.uniform(5, 7).toInt
-    val outj = RNG.uniform(5, 7).toInt
+    val from = 3
+    val to = 2
+    val kt = 2
+    val ki = 2
+    val kj = 2
+    val st = 2
+    val si = 2
+    val sj = 2
+    val padT = 1
+    val padW = 1
+    val padH = 1
+    val outt = 6
+    val outi = 6
+    val outj = 6
     val int = (outt - 1) * st + kt - padT * 2
     val ini = (outi - 1) * si + ki - padW * 2
     val inj = (outj - 1) * sj + kj - padH * 2
-    val batch = RNG.uniform(2, 10).toInt
+    val batch = 3
     val layer = new VolumetricConvolution[Double](from, to, kt, ki, kj, st, si, sj,
       padT, padW, padH)
 
-    Random.setSeed(seed)
     val input = Tensor[Double](batch, from, int, inj, ini).apply1(e => Random.nextDouble())
 
     val output = layer.updateOutput(input)
@@ -175,37 +173,36 @@ class VolumetricConvolutionSpec extends TorchSpec {
     val weight = layer.weight
     val bias = layer.bias
 
-    weight should be equals luaWeight
-    bias should be equals luaBias
-    output should be equals luaOutput
+    weight should be (luaWeight)
+    bias should be (luaBias)
+    output shouldEqual luaOutput
   }
 
   "A VolumetricConvolution with batch input no bias" should "generate correct output" in {
     torchCheck()
     val seed = 100
     RNG.setSeed(seed)
-    val from = RNG.uniform(2, 10).toInt
-    val to = RNG.uniform(1, 10).toInt
-    val kt = RNG.uniform(1, 6).toInt
-    val ki = RNG.uniform(1, 6).toInt
-    val kj = RNG.uniform(1, 6).toInt
-    val st = RNG.uniform(1, 7).toInt
-    val si = RNG.uniform(1, 7).toInt
-    val sj = RNG.uniform(1, 7).toInt
-    val padT = RNG.uniform(0, 2).toInt
-    val padW = RNG.uniform(0, 2).toInt
-    val padH = RNG.uniform(0, 2).toInt
-    val outt = RNG.uniform(5, 7).toInt
-    val outi = RNG.uniform(5, 7).toInt
-    val outj = RNG.uniform(5, 7).toInt
+    val from = 3
+    val to = 2
+    val kt = 2
+    val ki = 2
+    val kj = 2
+    val st = 2
+    val si = 2
+    val sj = 2
+    val padT = 1
+    val padW = 1
+    val padH = 1
+    val outt = 6
+    val outi = 6
+    val outj = 6
     val int = (outt - 1) * st + kt - padT * 2
     val ini = (outi - 1) * si + ki - padW * 2
     val inj = (outj - 1) * sj + kj - padH * 2
-    val batch = RNG.uniform(2, 10).toInt
+    val batch = 3
     val layer = new VolumetricConvolution[Double](from, to, kt, ki, kj, st, si, sj,
       padT, padW, padH, withBias = false)
 
-    Random.setSeed(seed)
     val input = Tensor[Double](batch, from, int, inj, ini).apply1(e => Random.nextDouble())
 
     val output = layer.updateOutput(input)
@@ -227,9 +224,9 @@ class VolumetricConvolutionSpec extends TorchSpec {
     val weight = layer.weight
     val bias = layer.bias
 
-    weight should be equals luaWeight
-    bias should be equals luaBias
-    output should be equals luaOutput
+    weight should be (luaWeight)
+    bias should be (luaBias)
+    output should be (luaOutput)
   }
 
   "A VolumetricConvolution" should "be good in gradient check for input" in {
