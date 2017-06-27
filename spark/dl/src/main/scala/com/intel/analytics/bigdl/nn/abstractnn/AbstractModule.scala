@@ -432,6 +432,56 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
   }
 
   /**
+   * save weights and bias to file
+   * @param path file to save
+   * @param overWrite whether to overwrite or not
+   */
+  def saveWeights(path: String, overWrite: Boolean): Unit = {
+    val parameterTable = getParametersTable()
+    val weightsBiasTable = T()
+    parameterTable.foreach {
+      case (name: String, params: Table) =>
+        val wb = T()
+        if (params.contains("weight")) {
+          wb("weight") = params("weight")
+        }
+        if (params.contains("bias")) {
+          wb("bias") = params("bias")
+        }
+        weightsBiasTable(name) = wb
+      case _ => throw new UnsupportedOperationException("invalid parameter table")
+    }
+    weightsBiasTable.save(path, overWrite)
+  }
+
+  /**
+   * load pretrained weights and bias to current module
+   * @param path file to store weights and bias
+   * @param matchAll whether to match all layers' weights and bias,
+   *                 if not, only load existing pretrained weights and bias
+   * @return current module
+   */
+  def loadWeights(path: String, matchAll: Boolean = true): this.type = {
+    val pretrained = File.load[Table](path)
+    val parameterTable = getParametersTable()
+    parameterTable.foreach {
+      case (name: String, targetParams: Table) =>
+        if (pretrained.contains(name)) {
+          val srcParams = pretrained[Table](name)
+          if (srcParams.contains("weight")) {
+            targetParams[Tensor[T]]("weight").set(srcParams[Tensor[T]]("weight"))
+          }
+          if (srcParams.contains("bias")) {
+            targetParams[Tensor[T]]("bias").set(srcParams[Tensor[T]]("bias"))
+          }
+        } else {
+          if (matchAll) new Exception(s"module $name cannot find corresponding weight bias")
+        }
+    }
+    this
+  }
+
+  /**
    * Some other modules point to current module
    * @param nodes upstream module nodes
    * @return node containing current module
