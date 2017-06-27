@@ -46,8 +46,8 @@ class SpatialAveragePooling[@specialized(Float, Double) T: ClassTag](
   val kH: Int,
   val dW: Int = 1,
   val dH: Int = 1,
-  private var padW: Int = 0,
-  private var padH: Int = 0,
+  val padW: Int = 0,
+  val padH: Int = 0,
   private var ceilMode: Boolean = false,
   private var countIncludePad: Boolean = true,
   private var divide: Boolean = true
@@ -473,7 +473,7 @@ class SpatialAveragePooling[@specialized(Float, Double) T: ClassTag](
 }
 
 object SpatialAveragePooling {
-  def apply[@specialized(Float, Double) T: ClassTag](
+  def apply[T: ClassTag](
       kW: Int,
       kH: Int,
       dW: Int = 1,

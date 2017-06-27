@@ -290,8 +290,8 @@ object SpatialMaxPooling {
   def apply[@specialized(Float, Double) T: ClassTag](
       kW: Int,
       kH: Int,
-      dW: Int,
-      dH: Int,
+      dW: Int = 1,
+      dH: Int = 1,
       padW: Int = 0,
       padH: Int = 0)(implicit ev: TensorNumeric[T]): SpatialMaxPooling[T] = {
     new SpatialMaxPooling[T](kW, kH, dW, dH, padW, padH)

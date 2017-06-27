@@ -43,8 +43,8 @@ class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
   val dH: Int = 1, // The step of the convolution in the height dimension
   val padW: Int = 0, // The additional zeros added per width to the input planes.
   val padH: Int = 0, // The additional zeros added per height to the input planes.
-  val wRegularizer: Regularizer[T] = null,
-  val bRegularizer: Regularizer[T] = null
+  var wRegularizer: Regularizer[T] = null,
+  var bRegularizer: Regularizer[T] = null
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T]  {
   val nInputPlane = ev.toType[Int](connTable.select(2, 1).max())
   val nOutputPlane = ev.toType[Int](connTable.select(2, 2).max())
@@ -52,8 +52,10 @@ class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
   val bias: Tensor[T] = Tensor[T](nOutputPlane)
   val gradWeight: Tensor[T] = Tensor[T](connTable.size(1), kH, kW)
   val gradBias: Tensor[T] = Tensor[T](nOutputPlane)
+
   reset()
 
+  // todo write a new InitializationMethod to wrap the following procedure
   override def reset(): Unit = {
     val ninp = Tensor[T](this.nOutputPlane).zero()
     var i = 1

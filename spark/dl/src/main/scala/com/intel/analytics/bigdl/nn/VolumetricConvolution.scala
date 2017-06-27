@@ -16,11 +16,12 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.{T, Table}
+import org.apache.spark.sql.catalyst.optimizer.OptimizeIn
 
 import scala.reflect.ClassTag
 
@@ -40,16 +41,14 @@ import scala.reflect.ClassTag
  * @param padW The additional zeros added per width to the input planes.
  * @param padH The additional zeros added per height to the input planes.
  * @param withBias whether with bias
- * @param initMethod Init method, Default, Xavier, Bilinear.
  * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
  */
 class VolumetricConvolution[T: ClassTag](
   val nInputPlane: Int, val nOutputPlane: Int,
   val kT: Int, val kW: Int, val kH: Int,
   val dT: Int = 1, val dW: Int = 1, val dH: Int = 1,
-  val padT: Int = 0, val padW: Int = 0, val padH: Int = 0, withBias: Boolean = true,
-  private var initMethod: InitializationMethod = Default
-)(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+  val padT: Int = 0, val padW: Int = 0, val padH: Int = 0, withBias: Boolean = true
+)(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
   require(kT > 0 && kW > 0 && kH > 0, "kernel size should be greater than zero," +
     s" but got kT: $kT kH: $kH kW: $kW")
@@ -69,18 +68,17 @@ class VolumetricConvolution[T: ClassTag](
   protected var weightMM: Tensor[T] = null
   protected var gradWeightMM: Tensor[T] = null
 
-  reset()
+  {
+    val stdv = 1.0 / math.sqrt(kT * kW * kH * nInputPlane)
+    val wInit: InitializationMethod = RandomUniform(-stdv, stdv)
+    val bInit: InitializationMethod = RandomUniform(-stdv, stdv)
+
+    setInitMethod(wInit, bInit)
+  }
 
   override def reset(): Unit = {
-    initMethod match {
-      case Default =>
-        val stdv = 1.0 / math.sqrt(kT * kW * kH * nInputPlane)
-        weight.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
-        if (withBias) {
-          bias.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
-        }
-      case _ => throw new IllegalArgumentException()
-    }
+    weightInitMethod.init(weight, VariableFormat.OUT_IN_KT_KH_KW)
+    Option(bias).foreach(biasInitMethod.init(_, VariableFormat.ONE_D))
     zeroGradParameters()
   }
 
@@ -333,10 +331,9 @@ object VolumetricConvolution {
     nInputPlane: Int, nOutputPlane: Int,
     kT: Int, kW: Int, kH: Int,
     dT: Int = 1, dW: Int = 1, dH: Int = 1,
-    padT: Int = 0, padW: Int = 0, padH: Int = 0, withBias: Boolean = true,
-    initMethod: InitializationMethod = Default
+    padT: Int = 0, padW: Int = 0, padH: Int = 0, withBias: Boolean = true
   )(implicit ev: TensorNumeric[T]): VolumetricConvolution[T] = {
     new VolumetricConvolution[T](nInputPlane, nOutputPlane, kT, kW, kH,
-      dT, dW, dH, padT, padW, padH, withBias, initMethod)
+      dT, dW, dH, padT, padW, padH, withBias)
   }
 }

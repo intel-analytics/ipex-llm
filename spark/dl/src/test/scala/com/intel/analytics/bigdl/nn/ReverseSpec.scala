@@ -24,6 +24,34 @@ import scala.collection.mutable
 @com.intel.analytics.bigdl.tags.Serial
 class ReverseSpec extends FlatSpec with Matchers {
 
+  "A Reverse()" should "generate correct output and grad for Tensor input dim1 inplace" in {
+    def randomn(): Double = RandomGenerator.RNG.uniform(-10, 10)
+    val layer = new Reverse[Double](1)
+
+    val input = Tensor[Double](4, 3)
+    input.apply1(x => randomn())
+    val expectedOutput = Tensor[Double]().resizeAs(input)
+    expectedOutput.select(1, 1).copy(input(4))
+    expectedOutput.select(1, 2).copy(input(3))
+    expectedOutput.select(1, 3).copy(input(2))
+    expectedOutput.select(1, 4).copy(input(1))
+
+    val gradOutput = Tensor[Double](4, 3)
+    gradOutput.apply1(x => randomn())
+    val expectedGradInput = Tensor[Double]().resizeAs(gradOutput)
+    expectedGradInput(1).copy(gradOutput(4))
+    expectedGradInput(2).copy(gradOutput(3))
+    expectedGradInput(3).copy(gradOutput(2))
+    expectedGradInput(4).copy(gradOutput(1))
+
+    val output = layer.forward(input)
+    val gradInput = layer.backward(input, gradOutput)
+
+    output should be (expectedOutput)
+    gradInput should be (expectedGradInput)
+
+  }
+
   "A Reverse()" should "generate correct output and grad for Tensor input dim1" in {
     def randomn(): Double = RandomGenerator.RNG.uniform(-10, 10)
     val layer = new Reverse[Double](1)

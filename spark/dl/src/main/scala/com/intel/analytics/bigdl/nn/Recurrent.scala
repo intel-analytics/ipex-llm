@@ -42,6 +42,7 @@ class Recurrent[T : ClassTag]()
   private val timeDim = 2
   private val inputDim = 1
   private val hidDim = 2
+  private var cellAppendStartIdx = 0
   private var (batchSize, times) = (0, 0)
   private val dropouts: ArrayBuffer[Array[Dropout[T]]] =
     new ArrayBuffer[Array[Dropout[T]]]
@@ -96,6 +97,25 @@ class Recurrent[T : ClassTag]()
         t += 1
       }
       share(cells)
+    }
+  }
+
+  /**
+   * set the cells' output and gradInput to recurrent's output and gradInput
+   * to decrease the copy expense.
+   * @param src
+   * @param dst
+   */
+  private def set(src: ArrayBuffer[Tensor[T]], dst: Tensor[T], offset: Int): Unit = {
+    var t = 1
+    while ((t + offset) <= times) {
+      dst.select(timeDim, t + offset).copy(src(t - 1))
+      t += 1
+    }
+    t = 1
+    while ((t + offset) <= times) {
+      src(t - 1).set(dst.select(timeDim, t + offset))
+      t += 1
     }
   }
 
@@ -174,15 +194,21 @@ class Recurrent[T : ClassTag]()
     while (i <= times) {
       currentInput(inputDim) = input.select(timeDim, i)
       cells(i - 1).updateOutput(currentInput)
-      output.select(timeDim, i).copy(cells(i - 1).output.toTable(inputDim))
       currentInput(hidDim) = cells(i - 1).output.toTable(hidDim)
       i += 1
+    }
+    if (cellAppendStartIdx == 0 || cellAppendStartIdx < times) {
+      set(cells.slice(cellAppendStartIdx, times)
+        .map(x => x.output.toTable[Tensor[T]](inputDim)),
+        output,
+        cellAppendStartIdx)
     }
     output
   }
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
                                  scale: Double = 1.0): Unit = {
+    cellAppendStartIdx = cells.length
     currentGradOutput(hidDim) = gradHidden
     /**
      * Since we clone module along the time dimension, the output of each
@@ -221,9 +247,14 @@ class Recurrent[T : ClassTag]()
         else hidden
       _input(inputDim) = input.select(timeDim, i)
       cells(i - 1).updateGradInput(_input, currentGradOutput)
-      gradInput.select(timeDim, i).copy(cells(i - 1).gradInput.toTable(inputDim))
       currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
       i -= 1
+    }
+    if (cellAppendStartIdx == 0 || cellAppendStartIdx < times) {
+      set(cells.slice(cellAppendStartIdx, times)
+        .map(x => x.gradInput.toTable[Tensor[T]](inputDim)),
+        gradInput,
+        cellAppendStartIdx)
     }
     gradInput
   }

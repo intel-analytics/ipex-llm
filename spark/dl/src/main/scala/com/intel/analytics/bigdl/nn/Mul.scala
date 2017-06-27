@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
@@ -28,17 +28,19 @@ import scala.reflect.ClassTag
  */
 
 @SerialVersionUID(7706562484586989118L)
-class Mul[T: ClassTag](implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+class Mul[T: ClassTag](implicit ev: TensorNumeric[T])
+  extends TensorModule[T] with Initializable {
 
   val weight = Tensor[T](1)
   val gradWeight = Tensor[T](1)
 
-  reset()
+  {
+    val wInit = RandomUniform(-1.0, 1.0)
+    setInitMethod(wInit)
+  }
 
   override def reset(): Unit = {
-    // stdv should be 1 / math.sqrt(weight.size(1)), as weight's size(1) is 1, so stdv is 1.0
-    val stdv = 1.0
-    weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
+    weightInitMethod.init(weight, VariableFormat.ONE_D)
     zeroGradParameters()
   }
 

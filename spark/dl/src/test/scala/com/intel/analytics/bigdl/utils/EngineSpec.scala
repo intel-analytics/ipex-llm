@@ -37,9 +37,10 @@ class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "Engine" should "be inited correct under no spark environment" in {
-    Engine.localMode = true
+    System.setProperty("bigdl.localMode", "true")
     Engine.init
     Engine.nodeNumber should be(1)
+    System.clearProperty("bigdl.localMode")
   }
 
   it should "be inited correct under spark local environment" in {
@@ -48,6 +49,31 @@ class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
     Engine.init
     Engine.nodeNumber should be(1)
     Engine.coreNumber should be(4)
+  }
+
+  it should "be inited correct localmode under no spark environment with java property" in {
+    val property = "bigdl.localMode"
+    System.setProperty(property, "true")
+    Engine.init
+    Engine.nodeNumber should be(1)
+    System.clearProperty(property)
+  }
+
+  it should "be inited correct coreNumber under no spark environment with java property" in {
+    val localMode = "bigdl.localMode"
+    val coreNumber = "bigdl.coreNumber"
+    System.setProperty("bigdl.localMode", "true")
+    System.setProperty(coreNumber, "3")
+
+    val tmp = System.getProperty("bigdl.localMode")
+
+    Engine.init
+    Engine.localMode should be(true)
+    Engine.nodeNumber should be(1)
+    Engine.coreNumber should be(3)
+
+    System.clearProperty("bigdl.localMode")
+    System.clearProperty(coreNumber)
   }
 
   it should "be inited with correct value under spark local environment" in {
@@ -105,14 +131,6 @@ class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "readConf" should "be right" in {
     val conf = Engine.readConf
     val target = Map(
-      "spark.executorEnv.MKL_DISABLE_FAST_MM" -> "1",
-      "spark.executorEnv.KMP_BLOCKTIME" -> "0",
-      "spark.executorEnv.OMP_WAIT_POLICY" -> "passive",
-      "spark.executorEnv.OMP_NUM_THREADS" -> "1",
-      "spark.yarn.appMasterEnv.MKL_DISABLE_FAST_MM" -> "1",
-      "spark.yarn.appMasterEnv.KMP_BLOCKTIME" -> "0",
-      "spark.yarn.appMasterEnv.OMP_WAIT_POLICY" -> "passive",
-      "spark.yarn.appMasterEnv.OMP_NUM_THREADS" -> "1",
       "spark.shuffle.reduceLocality.enabled" -> "false",
       "spark.shuffle.blockTransferService" -> "nio",
       "spark.scheduler.minRegisteredResourcesRatio" -> "1.0"
@@ -125,15 +143,17 @@ class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "LocalMode" should "false if onSpark" in {
     intercept[IllegalArgumentException] {
-      Engine.localMode = true
+      System.setProperty("bigdl.localMode", "true")
       Engine.init(1, 1, true)
+      System.clearProperty("bigdl.localMode")
     }
   }
 
   "LocalMode" should "true if not onSpark" in {
     intercept[IllegalArgumentException] {
-      Engine.localMode = false
+      System.setProperty("bigdl.localMode", "false")
       Engine.init(1, 1, false)
+      System.clearProperty("bigdl.localMode")
     }
   }
 

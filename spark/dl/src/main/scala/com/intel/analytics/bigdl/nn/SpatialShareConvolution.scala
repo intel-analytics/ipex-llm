@@ -34,11 +34,11 @@ class SpatialShareConvolution[T: ClassTag](
   padW: Int = 0, // The additional zeros added per width to the input planes.
   padH: Int = 0, // The additional zeros added per height to the input planes.
   nGroup: Int = 1, // Kernel group number
-  propagateBack: Boolean = true, // propagate gradient back
-  private var initMethod: InitializationMethod = Default)
+  propagateBack: Boolean = true // propagate gradient back
+  )
   (implicit ev: TensorNumeric[T]) extends SpatialConvolution[T](
   nInputPlane, nOutputPlane, kernelW, kernelH, strideW, strideH,
-  padW, padH, nGroup, propagateBack, initMethod) {
+  padW, padH, nGroup, propagateBack) {
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim() == 3 || input.dim() == 4,
@@ -390,10 +390,10 @@ object SpatialShareConvolution {
     padW: Int = 0,
     padH: Int = 0,
     nGroup: Int = 1,
-    propagateBack: Boolean = true,
-    initMethod: InitializationMethod = Default)
+    propagateBack: Boolean = true)
     (implicit ev: TensorNumeric[T]): SpatialShareConvolution[T] = {
     new SpatialShareConvolution[T](nInputPlane, nOutputPlane, kernelW, kernelH,
-      strideW, strideH, padW, padH, nGroup, propagateBack, initMethod)
+      strideW, strideH, padW, padH, nGroup,
+      propagateBack)
   }
 }

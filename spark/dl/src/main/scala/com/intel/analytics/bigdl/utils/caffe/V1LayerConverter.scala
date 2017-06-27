@@ -31,12 +31,18 @@ import com.intel.analytics.bigdl.utils.{Node, Table}
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
-
+/**
+ * [[Converter]] implementation for caffe deprecated LayerParameter conversion
+ */
 class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Converter[T] {
 
   override protected def fromCaffeConvolution(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val param = getConvolutionParam(layer).get
     val weightBlob = getBlob(layer, 0).get
+    val biasBlob = getBlob(layer, 1)
+    if (!biasBlob.isDefined) {
+      throw new RuntimeException(s"${getLayerName(layer)} without bias is not supported now")
+    }
     val group = if (param.getGroup == 0)  1 else param.getGroup
     val nInputPlane = weightBlob.getChannels * group
     val nOutPlane = weightBlob.getNum
@@ -66,8 +72,8 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
         ph = pw
       }
     }
-    Seq(new SpatialConvolution[T](nInputPlane, nOutPlane, kw, kh, dw, dh, pw, ph, group)
-      .setName(getLayerName(layer)).apply())
+    Seq(SpatialConvolution[T](nInputPlane, nOutPlane, kw, kh, dw, dh, pw, ph, group)
+      .setName(getLayerName(layer)).inputs())
   }
 
   override protected def fromCaffeInnerProduct(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
@@ -78,10 +84,10 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
     var nInputPlane = weightBlob.getWidth
     val nOutputPlane = param.getNumOutput
     val linear = Linear[T](nInputPlane, nOutputPlane, withBias = withBias).setName(layerName)
-    val node = linear.apply()
+    val node = linear.inputs()
     if(nInputPlane != nOutputPlane) {
       // Construct a view layer in between
-      val view = View[T](nInputPlane).apply()
+      val view = View[T](nInputPlane).inputs()
       view -> node
       Seq(view, node)
     } else {
@@ -91,7 +97,7 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
 
   // No implementation in V1
   override protected def fromCaffeBatchNormalization(layer : GeneratedMessage) :
-  Seq[ModuleNode[T]] = {
+    Seq[ModuleNode[T]] = {
     throw new UnsupportedOperationException("Batch normalizaton is not supported in V1 Layer")
   }
 
@@ -141,7 +147,7 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
   }
 
   override protected def getInnerProductParam(layer : GeneratedMessage):
-  Option[InnerProductParameter] = {
+    Option[InnerProductParameter] = {
     Some(layer.asInstanceOf[V1LayerParameter].getInnerProductParam)
   }
 

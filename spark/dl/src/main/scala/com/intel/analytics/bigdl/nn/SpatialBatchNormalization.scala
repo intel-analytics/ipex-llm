@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
@@ -37,9 +38,14 @@ import scala.reflect.ClassTag
  */
 @SerialVersionUID(- 9106336963903528047L)
 class SpatialBatchNormalization[T: ClassTag](
-  nOutput: Int, eps: Double = 1e-5, momentum: Double = 0.1, affine: Boolean = true)(
+  nOutput: Int, eps: Double = 1e-5, momentum: Double = 0.1, affine: Boolean = true,
+  initWeight: Tensor[T] = null,
+  initBias: Tensor[T] = null,
+  initGradWeight: Tensor[T] = null,
+  initGradBias: Tensor[T] = null)(
   implicit ev: TensorNumeric[T])
-  extends BatchNormalization[T](nOutput, eps, momentum, affine) {
+  extends BatchNormalization[T](nOutput, eps, momentum, affine,
+    initWeight, initBias, initGradWeight, initGradBias) {
   override val nDim = 4
 
   override def toString(): String = {
@@ -52,7 +58,13 @@ object SpatialBatchNormalization {
       nOutput: Int,
       eps: Double = 1e-5,
       momentum: Double = 0.1,
-      affine: Boolean = true)(implicit ev: TensorNumeric[T]) : SpatialBatchNormalization[T] = {
-    new SpatialBatchNormalization[T](nOutput, eps, momentum, affine)
+      affine: Boolean = true,
+      initWeight: Tensor[T] = null,
+      initBias: Tensor[T] = null,
+      initGradWeight: Tensor[T] = null,
+      initGradBias: Tensor[T] = null)(implicit ev: TensorNumeric[T])
+  : SpatialBatchNormalization[T] = {
+    new SpatialBatchNormalization[T](nOutput, eps, momentum, affine,
+      initWeight, initBias, initGradWeight, initGradBias)
   }
 }

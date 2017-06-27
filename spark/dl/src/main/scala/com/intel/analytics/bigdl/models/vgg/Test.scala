@@ -49,6 +49,7 @@ object Test {
       val result = model.evaluate(evaluationSet,
         Array(new Top1Accuracy[Float]), Some(param.batchSize))
       result.foreach(r => println(s"${r._2} is ${r._1}"))
+      sc.stop()
     }
   }
 }

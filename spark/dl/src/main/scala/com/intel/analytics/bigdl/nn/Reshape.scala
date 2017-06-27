@@ -39,7 +39,7 @@ import scala.reflect.ClassTag
  */
 @SerialVersionUID(- 830146931795053244L)
 class Reshape[@specialized(Float, Double) T: ClassTag](
-  size: Array[Int], var batchMode: Option[Boolean] = None)(
+  val size: Array[Int], var batchMode: Option[Boolean] = None)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T]  {
   val batchSize = new Array[Int](size.length + 1)
   var nElement: Int = 1
@@ -128,7 +128,7 @@ class Reshape[@specialized(Float, Double) T: ClassTag](
 }
 
 object Reshape {
-  def apply[@specialized(Float, Double) T: ClassTag](
+  def apply[T: ClassTag](
       size: Array[Int],
       batchMode: Option[Boolean] = None)(implicit ev: TensorNumeric[T]) : Reshape[T] = {
     new Reshape[T](size, batchMode)

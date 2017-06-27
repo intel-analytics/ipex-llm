@@ -106,6 +106,7 @@ object TrainInceptionV1 {
           valSet, Array(new Top1Accuracy[Float], new Top5Accuracy[Float]))
         .setEndWhen(endTrigger)
         .optimize()
+      sc.stop()
     })
   }
 }

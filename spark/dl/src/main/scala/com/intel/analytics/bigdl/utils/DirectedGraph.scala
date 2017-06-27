@@ -30,15 +30,29 @@ import scala.collection.mutable.ArrayBuffer
  * @param reverse use the original direction or the reversed direction
  * @tparam T Node element type
  */
-class DirectedGraph[T](source : Node[T], reverse : Boolean = false) {
+@SerialVersionUID(- 6252604964316218479L)
+class DirectedGraph[T](val source : Node[T], val reverse : Boolean = false) extends Serializable {
+
+  /**
+   * How many nodes in the graph
+   * @return
+   */
+  def size : Int = BFS.size
+
+  /**
+   * How many edges in the graph
+   * @return
+   */
+  def edges : Int = BFS.map(_.nextNodes.length).reduce(_ + _)
 
   /**
    * Topology sort.
    * @return A sequence of sorted graph nodes
    */
   def topologySort : Array[Node[T]] = {
-    // Build indegree list
-    val inDegrees = new mutable.HashMap[Node[T], Int]()
+    // Build indegree list, LinkedHashMap can preserve the order of the keys, so it's good to
+    // write unittest.
+    val inDegrees = new mutable.LinkedHashMap[Node[T], Int]()
     inDegrees(source) = 0
     DFS.foreach(n => {
       val nextNodes = if (!reverse) n.nextNodes else n.prevNodes
@@ -117,7 +131,8 @@ class DirectedGraph[T](source : Node[T], reverse : Boolean = false) {
  * @param element element
  * @tparam T element type
  */
-class Node[T](val element: T) {
+@SerialVersionUID(- 6021651923538325999L)
+class Node[T](val element: T) extends Serializable {
   /**
    * The nodes pointed by current node
    * @return
@@ -167,4 +182,8 @@ class Node[T](val element: T) {
 
   private val nexts = new ArrayBuffer[Node[T]]()
   private val prevs = new ArrayBuffer[Node[T]]()
+}
+
+object Node {
+  def apply[T](element : T) : Node[T] = new Node(element)
 }

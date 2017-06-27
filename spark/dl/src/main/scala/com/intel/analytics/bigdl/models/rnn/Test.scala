@@ -92,6 +92,7 @@ object Test {
 
       val results = flow.map(x => x.map(t => vocab.getWord(t)))
       results.foreach(x => logger.info(x.mkString(" ")))
+      sc.stop()
     }
   }
 }

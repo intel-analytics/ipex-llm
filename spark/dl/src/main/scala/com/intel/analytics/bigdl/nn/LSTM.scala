@@ -52,9 +52,9 @@ class LSTM[T : ClassTag] (
   val inputSize: Int,
   val hiddenSize: Int,
   val p: Double = 0,
-  val wRegularizer: Regularizer[T] = null,
-  val uRegularizer: Regularizer[T] = null,
-  val bRegularizer: Regularizer[T] = null
+  var wRegularizer: Regularizer[T] = null,
+  var uRegularizer: Regularizer[T] = null,
+  var bRegularizer: Regularizer[T] = null
 )
   (implicit ev: TensorNumeric[T])
   extends Cell[T](
@@ -117,7 +117,7 @@ class LSTM[T : ClassTag] (
       .add(ParallelTable()
         .add(i2g)
         .add(h2g))
-      .add(CAddTable())
+      .add(CAddTable(true))
       .add(Reshape(Array(4, hiddenSize)))
       .add(SplitTable(1, 2))
       .add(ParallelTable()
@@ -150,7 +150,7 @@ class LSTM[T : ClassTag] (
             .add(SelectTable(3))
             .add(SelectTable(5)))
           .add(CMulTable())))
-      .add(CAddTable())
+      .add(CAddTable(true))
 
     lstm
       .add(ConcatTable()

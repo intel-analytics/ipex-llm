@@ -79,14 +79,20 @@ class Concat[T: ClassTag](val dimension: Int)(
       results(i) = Engine.model.invoke(() => {
         val target = this.output.narrow(this.dimension, _offset,
           currentOutput.size(this.dimension))
-        var f = 1
-        while (f <= target.size(1)) {
-          val curFrame = target.select(1, f)
-          val outputFrame = currentOutput.select(1, f)
-          require(curFrame.isContiguous())
-          require(outputFrame.isContiguous())
-          curFrame.copy(outputFrame)
-          f += 1
+        if (target.isContiguous()) {
+          // Copy directly when target is Contiguous
+          target.copy(currentOutput)
+        } else {
+          // Divide target into contiguous frames when target isn't contiguous
+          var f = 1
+          while (f <= target.size(1)) {
+            val curFrame = target.select(1, f)
+            val outputFrame = currentOutput.select(1, f)
+            require(curFrame.isContiguous())
+            require(outputFrame.isContiguous())
+            curFrame.copy(outputFrame)
+            f += 1
+          }
         }
       })
       i += 1

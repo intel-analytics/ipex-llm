@@ -210,6 +210,7 @@ object Utils {
     def getModules(module: Module[T]): Unit = {
       module match {
         case m: Container[_, _, T] =>
+          namedModules += (module.getName() -> module)
           for (m <- module.asInstanceOf[Container[_, _, T]].modules) getModules(m)
         case _ => namedModules += (module.getName() -> module)
       }

@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import org.scalatest.{FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Parallel
@@ -36,6 +37,18 @@ class ConcatSpec extends FlatSpec with Matchers {
 
     println(concat)
 
+  }
+
+  "Concat forward/backward 1D input/output" should "return good result" in {
+    val model = Concat[Float](1)
+    model.add(Identity[Float]())
+    model.add(Identity[Float]())
+    val input = Tensor[Float].range(1, 3, 1)
+    val gradOutput = Tensor[Float].range(1, 6, 1)
+    val output = model.forward(input)
+    val gradInput = model.backward(input, gradOutput)
+    output should be (Tensor(Storage(Array[Float](1, 2, 3, 1, 2, 3))))
+    gradInput should be (Tensor(Storage(Array[Float](5, 7, 9))))
   }
 
 }

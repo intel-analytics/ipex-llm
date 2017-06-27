@@ -138,6 +138,7 @@ object ModelValidator {
       result.foreach(r => {
         logger.info(s"${ r._2 } is ${ r._1 }")
       })
+      sc.stop()
     })
   }
 }

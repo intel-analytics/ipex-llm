@@ -15,9 +15,9 @@
 #
 # Still in experimental stage!
 
-from nn.layer import *
-from optim.optimizer import *
-from util.common import *
+from bigdl.nn.layer import *
+from bigdl.optim.optimizer import *
+from bigdl.util.common import *
 import numpy as np
 import unittest
 

@@ -30,8 +30,8 @@ import scala.reflect.ClassTag
 @com.intel.analytics.bigdl.tags.Parallel
 class GraphSpec extends FlatSpec with Matchers {
   "Graph init" should "throw exceptions when there's cycle" in {
-    val fc1 = Linear(4, 2).apply()
-    val relu1 = ReLU().apply(fc1)
+    val fc1 = Linear(4, 2).inputs()
+    val relu1 = ReLU().inputs(fc1)
     relu1 -> fc1
 
     intercept[IllegalArgumentException] {
@@ -40,7 +40,7 @@ class GraphSpec extends FlatSpec with Matchers {
   }
 
   "Graph init" should "be successful when inputs node are same with outputs node" in {
-    val fc1 = Linear(4, 2).apply()
+    val fc1 = Linear(4, 2).inputs()
     val graph = Graph(fc1, fc1)
 
     val inputData = Tensor(4, 4)
@@ -49,9 +49,9 @@ class GraphSpec extends FlatSpec with Matchers {
   }
 
   "Graph init" should "throw exceptions when some inputs are ignored" in {
-    val fc1 = Linear(4, 2).apply()
-    val fc2 = Linear(4, 2).apply()
-    val output = CAddTable().apply(fc1, fc2)
+    val fc1 = Linear(4, 2).inputs()
+    val fc2 = Linear(4, 2).inputs()
+    val output = CAddTable().inputs(fc1, fc2)
 
     intercept[IllegalArgumentException] {
       Graph(fc1, output)
@@ -59,11 +59,11 @@ class GraphSpec extends FlatSpec with Matchers {
   }
 
   "Graph init" should "be successful output are ignored" in {
-    val fc1 = Linear(4, 2).apply()
-    val fc2 = Linear(4, 2).apply()
-    val cadd = CAddTable().apply(fc1, fc2)
-    val output1 = ReLU().apply(cadd)
-    val output2 = ReLU().apply(cadd)
+    val fc1 = Linear(4, 2).inputs()
+    val fc2 = Linear(4, 2).inputs()
+    val cadd = CAddTable().inputs(fc1, fc2)
+    val output1 = ReLU().inputs(cadd)
+    val output2 = ReLU().inputs(cadd)
 
     val graph = Graph(Array(fc1, fc2), Array(output1))
     fc1.element.getParameters()._1.apply1(_ => 1.0f)
@@ -74,11 +74,11 @@ class GraphSpec extends FlatSpec with Matchers {
   }
 
   "Graph init" should "throw exceptions when input a tensor while a table is required" in {
-    val fc1 = Linear(4, 2).apply()
-    val fc2 = Linear(4, 2).apply()
-    val cadd = CAddTable().apply(fc1, fc2)
-    val output1 = ReLU().apply(cadd)
-    val output2 = ReLU().apply(cadd)
+    val fc1 = Linear(4, 2).inputs()
+    val fc2 = Linear(4, 2).inputs()
+    val cadd = CAddTable().inputs(fc1, fc2)
+    val output1 = ReLU().inputs(cadd)
+    val output2 = ReLU().inputs(cadd)
 
     val graph = Graph(Array(fc1, fc2), Array(output1, output2))
     intercept[IllegalArgumentException] {
@@ -87,14 +87,14 @@ class GraphSpec extends FlatSpec with Matchers {
   }
 
   "Graph init" should "throw exceptions when inputs has pre-nodes" in {
-    val fc1 = Linear(4, 2).apply()
-    val fc2 = Linear(4, 2).apply()
-    val tanh1 = Tanh().apply(fc1)
-    val tanh2 = Tanh().apply(fc2)
+    val fc1 = Linear(4, 2).inputs()
+    val fc2 = Linear(4, 2).inputs()
+    val tanh1 = Tanh().inputs(fc1)
+    val tanh2 = Tanh().inputs(fc2)
 
-    val cadd = CAddTable().apply(tanh1, tanh2)
-    val output1 = ReLU().apply(cadd)
-    val output2 = ReLU().apply(cadd)
+    val cadd = CAddTable().inputs(tanh1, tanh2)
+    val output1 = ReLU().inputs(cadd)
+    val output2 = ReLU().inputs(cadd)
 
     intercept[IllegalArgumentException] {
       Graph(Array(tanh1, tanh2), Array(output1, output2))
@@ -103,16 +103,16 @@ class GraphSpec extends FlatSpec with Matchers {
 
   "Graph init" should "throw exceptions when inputs has nothing to do with the graph but same " +
     "number with the roots node in the graph" in {
-    val fc1 = Linear(4, 2).apply()
-    val fc2 = Linear(4, 2).apply()
-    val fc3 = Linear(4, 2).apply()
-    val fc4 = Linear(4, 2).apply()
-    val tanh1 = Tanh().apply(fc1)
-    val tanh2 = Tanh().apply(fc2)
+    val fc1 = Linear(4, 2).inputs()
+    val fc2 = Linear(4, 2).inputs()
+    val fc3 = Linear(4, 2).inputs()
+    val fc4 = Linear(4, 2).inputs()
+    val tanh1 = Tanh().inputs(fc1)
+    val tanh2 = Tanh().inputs(fc2)
 
-    val cadd = CAddTable().apply(tanh1, tanh2)
-    val output1 = ReLU().apply(cadd)
-    val output2 = ReLU().apply(cadd)
+    val cadd = CAddTable().inputs(tanh1, tanh2)
+    val output1 = ReLU().inputs(cadd)
+    val output2 = ReLU().inputs(cadd)
 
     intercept[IllegalArgumentException] {
       Graph(Array(fc3, fc4), Array(output1, output2))
@@ -120,11 +120,11 @@ class GraphSpec extends FlatSpec with Matchers {
   }
 
   "Graph forward" should "be successful" in {
-    val fc1 = Linear(4, 2).apply()
-    val fc2 = Linear(4, 2).apply()
-    val cadd = CAddTable().apply(fc1, fc2)
-    val output1 = ReLU().apply(cadd)
-    val output2 = Threshold(10.0).apply(cadd)
+    val fc1 = Linear(4, 2).inputs()
+    val fc2 = Linear(4, 2).inputs()
+    val cadd = CAddTable().inputs(fc1, fc2)
+    val output1 = ReLU().inputs(cadd)
+    val output2 = Threshold(10.0).inputs(cadd)
 
     val graph = Graph(Array(fc1, fc2), Array(output1, output2))
     fc1.element.getParameters()._1.apply1(_ => 1.0f)
@@ -135,8 +135,8 @@ class GraphSpec extends FlatSpec with Matchers {
   }
 
   "Graph forward" should "throw exceptions when input a table while a tensor is required" in {
-    val fc1 = Linear(4, 2).apply()
-    val output1 = ReLU().apply(fc1)
+    val fc1 = Linear(4, 2).inputs()
+    val output1 = ReLU().inputs(fc1)
 
     val graph = Graph(Array(fc1), Array(output1))
 
@@ -149,7 +149,7 @@ class GraphSpec extends FlatSpec with Matchers {
   "Graph forward" should "be successful when first node accept multiple tensors input" in {
     val input1 = Input()
     val input2 = Input()
-    val cadd = CAddTable().apply(input1, input2)
+    val cadd = CAddTable().inputs(input1, input2)
     val graph = Graph(Array(input1, input2), cadd)
     val output = graph.forward(T(Tensor(T(0.1f, 0.2f, -0.3f, -0.4f)),
       Tensor(T(0.5f, 0.4f, -0.2f, -0.1f))))
@@ -157,11 +157,11 @@ class GraphSpec extends FlatSpec with Matchers {
   }
 
   "Graph forward" should "be successful when exchange input order" in {
-    val fc1 = Linear(4, 2).apply()
-    val fc2 = Linear(4, 2).apply()
-    val cadd = CAddTable().apply(fc1, fc2)
-    val output1 = ReLU().apply(cadd)
-    val output2 = Threshold(10.0).apply(cadd)
+    val fc1 = Linear(4, 2).inputs()
+    val fc2 = Linear(4, 2).inputs()
+    val cadd = CAddTable().inputs(fc1, fc2)
+    val output1 = ReLU().inputs(cadd)
+    val output2 = Threshold(10.0).inputs(cadd)
 
     val graph = Graph(Array(fc2, fc1), Array(output1, output2))
     fc1.element.getParameters()._1.apply1(_ => 1.0f)
@@ -172,15 +172,15 @@ class GraphSpec extends FlatSpec with Matchers {
   }
 
   "Graph forward" should "be successful when paths has different length" in {
-    val fc1 = Linear(4, 2).apply()
-    val thd1 = Threshold(-10.0).apply(fc1)
-    val thd2 = Threshold(-10.0).apply(thd1)
-    val thd3 = Threshold(-10.0).apply(thd2)
-    val thd4 = Threshold(-10.0).apply(thd3)
-    val fc2 = Linear(4, 2).apply()
-    val cadd = CAddTable().apply(thd4, fc2)
-    val output1 = ReLU().apply(cadd)
-    val output2 = Threshold(10.0).apply(cadd)
+    val fc1 = Linear(4, 2).inputs()
+    val thd1 = Threshold(-10.0).inputs(fc1)
+    val thd2 = Threshold(-10.0).inputs(thd1)
+    val thd3 = Threshold(-10.0).inputs(thd2)
+    val thd4 = Threshold(-10.0).inputs(thd3)
+    val fc2 = Linear(4, 2).inputs()
+    val cadd = CAddTable().inputs(thd4, fc2)
+    val output1 = ReLU().inputs(cadd)
+    val output2 = Threshold(10.0).inputs(cadd)
 
     val graph = Graph(Array(fc1, fc2), Array(output1, output2))
     fc1.element.getParameters()._1.apply1(_ => 1.0f)
@@ -191,11 +191,11 @@ class GraphSpec extends FlatSpec with Matchers {
   }
 
   "Graph forward" should "be successful when exchange output order" in {
-    val fc1 = Linear(4, 2).apply()
-    val fc2 = Linear(4, 2).apply()
-    val cadd = CAddTable().apply(fc1, fc2)
-    val output1 = ReLU().apply(cadd)
-    val output2 = Threshold(10.0).apply(cadd)
+    val fc1 = Linear(4, 2).inputs()
+    val fc2 = Linear(4, 2).inputs()
+    val cadd = CAddTable().inputs(fc1, fc2)
+    val output1 = ReLU().inputs(cadd)
+    val output2 = Threshold(10.0).inputs(cadd)
 
     val graph = Graph(Array(fc1, fc2), Array(output2, output1))
     fc1.element.getParameters()._1.apply1(_ => 1.0f)
@@ -206,11 +206,11 @@ class GraphSpec extends FlatSpec with Matchers {
   }
 
   "Graph backward" should "be successful" in {
-    val fc1 = Linear(4, 2).apply()
-    val fc2 = Linear(4, 2).apply()
-    val cadd = CAddTable().apply(fc1, fc2)
-    val output1 = ReLU().apply(cadd)
-    val output2 = Threshold(10.0).apply(cadd)
+    val fc1 = Linear(4, 2).inputs()
+    val fc2 = Linear(4, 2).inputs()
+    val cadd = CAddTable().inputs(fc1, fc2)
+    val output1 = ReLU().inputs(cadd)
+    val output2 = Threshold(10.0).inputs(cadd)
 
     val graph = Graph(Array(fc1, fc2), Array(output1, output2))
     fc1.element.getParameters()._1.apply1(_ => 1.0f)
@@ -232,7 +232,7 @@ class GraphSpec extends FlatSpec with Matchers {
   "Graph backward" should "be successful when first node accept multiple tensors input" in {
     val input1 = Input()
     val input2 = Input()
-    val cadd = CAddTable().apply(input1, input2)
+    val cadd = CAddTable().inputs(input1, input2)
     val graph = Graph(Array(input1, input2), cadd)
     val output = graph.forward(T(Tensor(T(0.1f, 0.2f, -0.3f, -0.4f)),
       Tensor(T(0.5f, 0.4f, -0.2f, -0.1f))))
@@ -243,15 +243,15 @@ class GraphSpec extends FlatSpec with Matchers {
   }
 
   "Graph backward" should "be successful when paths have different length" in {
-    val fc1 = Linear(4, 2).apply()
-    val thd1 = Threshold(-10.0).apply(fc1)
-    val thd2 = Threshold(-10.0).apply(thd1)
-    val thd3 = Threshold(-10.0).apply(thd2)
-    val thd4 = Threshold(-10.0).apply(thd3)
-    val fc2 = Linear(4, 2).apply()
-    val cadd = CAddTable().apply(thd4, fc2)
-    val output1 = ReLU().apply(cadd)
-    val output2 = Threshold(10.0).apply(cadd)
+    val fc1 = Linear(4, 2).inputs()
+    val thd1 = Threshold(-10.0).inputs(fc1)
+    val thd2 = Threshold(-10.0).inputs(thd1)
+    val thd3 = Threshold(-10.0).inputs(thd2)
+    val thd4 = Threshold(-10.0).inputs(thd3)
+    val fc2 = Linear(4, 2).inputs()
+    val cadd = CAddTable().inputs(thd4, fc2)
+    val output1 = ReLU().inputs(cadd)
+    val output2 = Threshold(10.0).inputs(cadd)
 
     val graph = Graph(Array(fc1, fc2), Array(output1, output2))
     fc1.element.getParameters()._1.apply1(_ => 1.0f)
@@ -271,11 +271,11 @@ class GraphSpec extends FlatSpec with Matchers {
   }
 
   "Graph backward" should "be successful when exchange input order" in {
-    val fc1 = Linear(4, 2).apply()
-    val fc2 = Linear(4, 2).apply()
-    val cadd = CAddTable().apply(fc1, fc2)
-    val output1 = ReLU().apply(cadd)
-    val output2 = Threshold(10.0).apply(cadd)
+    val fc1 = Linear(4, 2).inputs()
+    val fc2 = Linear(4, 2).inputs()
+    val cadd = CAddTable().inputs(fc1, fc2)
+    val output1 = ReLU().inputs(cadd)
+    val output2 = Threshold(10.0).inputs(cadd)
 
     val graph = Graph(Array(fc2, fc1), Array(output1, output2))
     fc1.element.getParameters()._1.apply1(_ => 1.0f)
@@ -294,11 +294,11 @@ class GraphSpec extends FlatSpec with Matchers {
   }
 
   "Graph backward" should "be successful when exchange output order" in {
-    val fc1 = Linear(4, 2).apply()
-    val fc2 = Linear(4, 2).apply()
-    val cadd = CAddTable().apply(fc1, fc2)
-    val output1 = ReLU().apply(cadd)
-    val output2 = Threshold(10.0).apply(cadd)
+    val fc1 = Linear(4, 2).inputs()
+    val fc2 = Linear(4, 2).inputs()
+    val cadd = CAddTable().inputs(fc1, fc2)
+    val output1 = ReLU().inputs(cadd)
+    val output2 = Threshold(10.0).inputs(cadd)
 
     val graph = Graph(Array(fc1, fc2), Array(output2, output1))
     fc1.element.getParameters()._1.apply1(_ => 1.0f)
@@ -319,9 +319,9 @@ class GraphSpec extends FlatSpec with Matchers {
   "Graph forward/backward" should "be successful when there's output from internal node" in {
     val input1 = Input()
     val input2 = Input()
-    val add = CAddTable().apply(input1, input2)
-    val add2 = AddConstant(2.0f).apply(add)
-    val relu = ReLU().apply(add2)
+    val add = CAddTable().inputs(input1, input2)
+    val add2 = AddConstant(2.0f).inputs(add)
+    val relu = ReLU().inputs(add2)
     val graph = Graph[Float](Array(input1, input2), Array(add, relu))
 
     val input = T(Tensor(T(1.0f, 2.0f)), Tensor(T(-2.0f, -1.0f)))
@@ -351,18 +351,18 @@ class GraphSpec extends FlatSpec with Matchers {
       .add(LogSoftMax())
 
     RandomGenerator.RNG.setSeed(1000)
-    val input = Reshape(Array(1, 28, 28)).apply()
-    val conv1 = SpatialConvolution(1, 6, 5, 5).apply(input)
-    val tanh1 = Tanh().apply(conv1)
-    val pool1 = SpatialMaxPooling(2, 2, 2, 2).apply(tanh1)
-    val tanh2 = Tanh().apply(pool1)
-    val conv2 = SpatialConvolution(6, 12, 5, 5).apply(tanh2)
-    val pool2 = SpatialMaxPooling(2, 2, 2, 2).apply(conv2)
-    val reshape = Reshape(Array(12 * 4 * 4)).apply(pool2)
-    val fc1 = Linear(12 * 4 * 4, 100).apply(reshape)
-    val tanh3 = Tanh().apply(fc1)
-    val fc2 = Linear(100, 10).apply(tanh3)
-    val output = LogSoftMax().apply(fc2)
+    val input = Reshape(Array(1, 28, 28)).inputs()
+    val conv1 = SpatialConvolution(1, 6, 5, 5).inputs(input)
+    val tanh1 = Tanh().inputs(conv1)
+    val pool1 = SpatialMaxPooling(2, 2, 2, 2).inputs(tanh1)
+    val tanh2 = Tanh().inputs(pool1)
+    val conv2 = SpatialConvolution(6, 12, 5, 5).inputs(tanh2)
+    val pool2 = SpatialMaxPooling(2, 2, 2, 2).inputs(conv2)
+    val reshape = Reshape(Array(12 * 4 * 4)).inputs(pool2)
+    val fc1 = Linear(12 * 4 * 4, 100).inputs(reshape)
+    val tanh3 = Tanh().inputs(fc1)
+    val fc2 = Linear(100, 10).inputs(tanh3)
+    val output = LogSoftMax().inputs(fc2)
 
     val funcModel = Graph(input, output)
 
@@ -390,7 +390,7 @@ class GraphSpec extends FlatSpec with Matchers {
   }
 
   "shift" should "be correct" in {
-    val node = Reshape(Array(1, 28, 28)).apply()
+    val node = Reshape(Array(1, 28, 28)).inputs()
     val test = Graph(node, node)
     test.shift(Array(1, 2, 3, 4), 1, 1) should be(Array(1, 2, 3, 4))
     test.shift(Array(1, 2, 3, 4), 1, 3) should be(Array(1, 3, 4, 2))
@@ -402,7 +402,7 @@ class GraphSpec extends FlatSpec with Matchers {
     val seqModel = ModelUntils.ResNet.basicBlockSeq(16, 16, 1, "A")
     RandomGenerator.RNG.setSeed(1000)
     val input = Input()
-    val output = ModelUntils.ResNet.basicBlockSeq(16, 16, 1, "A")(input)
+    val output = ModelUntils.ResNet.basicBlockSeq(16, 16, 1, "A").inputs(input)
     val funcModel = Graph(input, output)
 
     println(seqModel)
@@ -434,7 +434,7 @@ class GraphSpec extends FlatSpec with Matchers {
     val seqModel = ModelUntils.ResNet.basicBlockSeq(16, 16, 1, "C")
     RandomGenerator.RNG.setSeed(1000)
     val input = Input()
-    val output = ModelUntils.ResNet.basicBlockSeq(16, 16, 1, "C")(input)
+    val output = ModelUntils.ResNet.basicBlockSeq(16, 16, 1, "C").inputs(input)
     val funcModel = Graph(input, output)
 
     println(seqModel)
@@ -526,32 +526,32 @@ object ModelUntils {
     def inceptionLayerV1Func(inputSize: Int, config: Table)(input : ModuleNode[Float])
     : ModuleNode[Float] = {
       val conv1x1 = SpatialConvolution(inputSize, config[Table](1)(1), 1, 1, 1, 1)
-        .setName("conv1x1").apply(input)
-      val relu1x1 = ReLU(true).apply(conv1x1)
+        .setName("conv1x1").inputs(input)
+      val relu1x1 = ReLU(true).inputs(conv1x1)
 
       val conv3x3_1 = SpatialConvolution(inputSize, config[Table](2)(1), 1, 1, 1, 1)
-        .setName("conv3x3_1").apply(input)
-      val relu3x3_1 = ReLU(true).apply(conv3x3_1)
+        .setName("conv3x3_1").inputs(input)
+      val relu3x3_1 = ReLU(true).inputs(conv3x3_1)
       val conv3x3_2 = SpatialConvolution(
         config[Table](2)(1), config[Table](2)(2), 3, 3, 1, 1, 1, 1)
-        .setName("conv3x3_2").apply(relu3x3_1)
-      val relu3x3_2 = ReLU(true).apply(conv3x3_2)
+        .setName("conv3x3_2").inputs(relu3x3_1)
+      val relu3x3_2 = ReLU(true).inputs(conv3x3_2)
 
       val conv5x5_1 = SpatialConvolution(inputSize, config[Table](3)(1), 1, 1, 1, 1)
-        .setName("conv5x5_1").apply(input)
-      val relu5x5_1 = ReLU(true).apply(conv5x5_1)
+        .setName("conv5x5_1").inputs(input)
+      val relu5x5_1 = ReLU(true).inputs(conv5x5_1)
       val conv5x5_2 = SpatialConvolution(
         config[Table](3)(1), config[Table](3)(2), 5, 5, 1, 1, 2, 2)
-        .setName("conv5x5_2").apply(relu5x5_1)
-      val relu5x5_2 = ReLU(true).apply(conv5x5_2)
+        .setName("conv5x5_2").inputs(relu5x5_1)
+      val relu5x5_2 = ReLU(true).inputs(conv5x5_2)
 
       val pool = SpatialMaxPooling(3, 3, 1, 1, 1, 1).ceil()
-        .setName("pool").apply(input)
+        .setName("pool").inputs(input)
       val convPool = SpatialConvolution(inputSize, config[Table](4)(1), 1, 1, 1, 1)
-        .setName("pool_conv").apply(pool)
-      val reluPool = ReLU(true).apply(convPool)
+        .setName("pool_conv").inputs(pool)
+      val reluPool = ReLU(true).inputs(convPool)
 
-      JoinTable(2, 4).apply(relu1x1, relu3x3_2, relu5x5_2, reluPool)
+      JoinTable(2, 4).inputs(relu1x1, relu3x3_2, relu5x5_2, reluPool)
     }
     def inceptionLayerV1Seq(inputSize: Int, config: Table) : Module[Float] = {
       val concat = Concat(2)
@@ -588,14 +588,14 @@ object ModelUntils {
   object ResNet {
     def basicBlockFunc(nInputPlane: Int, n: Int, stride: Int, shortcutType : String)(
       input : ModuleNode[Float]) : ModuleNode[Float] = {
-      val conv1 = SpatialConvolution(nInputPlane, n, 3, 3, stride, stride, 1, 1).apply(input)
-      val bn1 = SpatialBatchNormalization(n).apply(conv1)
-      val relu1 = ReLU(true).apply(bn1)
-      val conv2 = SpatialConvolution(n, n, 3, 3, 1, 1, 1, 1).apply(relu1)
-      val bn2 = SpatialBatchNormalization(n).apply(conv2)
+      val conv1 = SpatialConvolution(nInputPlane, n, 3, 3, stride, stride, 1, 1).inputs(input)
+      val bn1 = SpatialBatchNormalization(n).inputs(conv1)
+      val relu1 = ReLU(true).inputs(bn1)
+      val conv2 = SpatialConvolution(n, n, 3, 3, 1, 1, 1, 1).inputs(relu1)
+      val bn2 = SpatialBatchNormalization(n).inputs(conv2)
       val shortcut = shortcutFunc(nInputPlane, n, stride, shortcutType)(input)
-      val add = CAddTable(true).apply(bn2, shortcut)
-      val output = ReLU(true).apply(add)
+      val add = CAddTable(true).inputs(bn2, shortcut)
+      val output = ReLU(true).inputs(add)
       output
     }
 
@@ -621,13 +621,14 @@ object ModelUntils {
       val useConv = shortcutType == "C" || (shortcutType == "B" && nInputPlane != nOutputPlane)
 
       if (useConv) {
-        val conv1 = SpatialConvolution(nInputPlane, nOutputPlane, 1, 1, stride, stride).apply(input)
-        val bn1 = SpatialBatchNormalization(nOutputPlane).apply(conv1)
+        val conv1 = SpatialConvolution(nInputPlane, nOutputPlane, 1, 1, stride, stride)
+          .inputs(input)
+        val bn1 = SpatialBatchNormalization(nOutputPlane).inputs(conv1)
         bn1
       } else if (nInputPlane != nOutputPlane) {
-        val pool1 = SpatialAveragePooling(1, 1, stride, stride).apply(input)
-        val mul1 = MulConstant(0f).apply(pool1)
-        val concat = JoinTable(2, 3).apply(pool1, mul1)
+        val pool1 = SpatialAveragePooling(1, 1, stride, stride).inputs(input)
+        val mul1 = MulConstant(0f).inputs(pool1)
+        val concat = JoinTable(2, 3).inputs(pool1, mul1)
         concat
       } else {
         input

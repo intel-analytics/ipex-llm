@@ -208,23 +208,4 @@ object Utils {
       .text("Text dir containing the text data")
       .action((x, c) => c.copy(testDir = x))
   }
-
-  val parquetProducerParser
-  = new OptionParser[TextProducerParquetParams]("BigDL Streaming Example") {
-    opt[String]('s', "srcFolder")
-      .required()
-      .text("Base dir containing the text data")
-      .action((x, c) => c.copy(srcFolder = x))
-    opt[String]('d', "destFolder")
-      .required()
-      .text("Destination parquet dir containing the text data")
-      .action((x, c) => c.copy(destFolder = x))
-    opt[Int]('b', "batchsize")
-      .text("produce batchsize")
-      .action((x, c) => c.copy(batchsize = x))
-    opt[Long]('i', "interval")
-      .text("produce interval")
-      .action((x, c) => c.copy(interval = x))
-  }
-
 }

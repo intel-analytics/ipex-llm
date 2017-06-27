@@ -16,30 +16,19 @@
 
 package com.intel.analytics.bigdl.utils
 
+import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
+import scala.util.Random
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.tensor.Tensor
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.ml.DLClassifier
-import org.apache.spark.ml.param.ParamMap
-import org.apache.spark.mllib.linalg.DenseVector
-import org.apache.spark.mllib.regression.LabeledPoint
+import org.apache.spark.ml.DLModel
 import org.apache.spark.sql.{Row, SQLContext}
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.collection.mutable.ArrayBuffer
-import scala.util.Random
-
 @com.intel.analytics.bigdl.tags.Parallel
-class DLClassifierSpec extends FlatSpec with Matchers{
-
-  private def processPath(path: String): String = {
-    if (path.contains(":")) {
-      path.substring(1)
-    } else {
-      path
-    }
-  }
+class DLClassifierSpec extends FlatSpec with Matchers {
 
   "DLClassifier" should "get good result" in {
     Logger.getLogger("org").setLevel(Level.WARN)
@@ -52,41 +41,37 @@ class DLClassifierSpec extends FlatSpec with Matchers{
     val model = LeNet5(10)
 
     // init
-    val valTrans = new DLClassifier[Float]().setInputCol("features").setOutputCol("predict")
-    val paramsTrans = ParamMap(valTrans.modelTrain -> model,
-      valTrans.batchShape -> Array(10, 28, 28))
+    val valTrans = new DLModel[Float](model, Array(28, 28))
+      .setFeaturesCol("features")
+      .setPredictionCol("predict")
+      .setBatchSize(10)
 
-    val tensorBuffer = new ArrayBuffer[LabeledPoint]()
-    var m = 0
-    while (m < 10) {
-      // generate test data
-      val input = Tensor[Float](10, 28, 28).apply1(e => Random.nextFloat())
-      val target = model.forward(input).toTensor[Float]
+    val tensorBuffer = new ArrayBuffer[Data]()
+    // generate test data
+    val input = Tensor[Float](10, 28, 28).apply1(e => Random.nextFloat())
+    val target = model.forward(input).toTensor[Float]
 
-      val inputArr = input.storage().array()
-      val targetArr = target.max(2)._2.squeeze().storage().array()
+    val inputArr = input.storage().array()
+    val targetArr = target.max(2)._2.squeeze().storage().array()
 
-      var i = 0
-      while (i < batchSize) {
-        tensorBuffer.append(new LabeledPoint(targetArr(i),
-          new DenseVector(inputArr.slice(i * 28 * 28, (i + 1) * 28 * 28).map(_.toDouble))))
-        i += 1
+    (0 until batchSize).foreach(i =>
+      tensorBuffer.append(
+        Data(targetArr(i), inputArr.slice(i * 28 * 28, (i + 1) * 28 * 28).map(_.toDouble))))
+
+    val rowRDD = sc.parallelize(tensorBuffer)
+    val testData = sqlContext.createDataFrame(rowRDD)
+
+    valTrans.transform(testData)
+      .select("label", "predict")
+      .collect()
+      .foreach { case Row(label: Double, predict: mutable.WrappedArray[Double]) =>
+        label should be(predict.head)
       }
 
-      val rowRDD = sc.parallelize(tensorBuffer)
-      val testData = sqlContext.createDataFrame(rowRDD)
-
-      valTrans.transform(testData, paramsTrans)
-        .select("label", "predict")
-        .collect()
-        .foreach { case Row(label: Double, predict: Int) =>
-          label.toInt should be(predict)
-        }
-
-      tensorBuffer.clear()
-      m += 1
-    }
+    tensorBuffer.clear()
     sc.stop()
   }
 }
+
+case class Data(label: Double, features: Array[Double])
 

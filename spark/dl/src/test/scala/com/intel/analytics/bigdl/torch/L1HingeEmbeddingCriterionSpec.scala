@@ -37,8 +37,8 @@ class L1HingeEmbeddingCriterionSpec extends TorchSpec {
     input(1.0) = input1
     input(2.0) = input2
 
-    val target = new Table()
-    target(1.0) = 1.0
+    val target = Tensor[Double](1)
+    target(Array(1)) = 1.0
 
     val start = System.nanoTime()
     val output = module.forward(input, target)
@@ -74,8 +74,8 @@ class L1HingeEmbeddingCriterionSpec extends TorchSpec {
     input(1.0) = input1
     input(2.0) = input2
 
-    val target = new Table()
-    target(1.0) = -1.0
+    val target = Tensor[Double](1)
+    target(Array(1)) = -1.0
 
     val start = System.nanoTime()
     val output = module.forward(input, target)
