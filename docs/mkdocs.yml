@@ -20,7 +20,7 @@ pages:
   - Known Issues: UserGuide/known-issues.md
 - Python Support: 
   - Python Support: PythonSupport/python-support.md
-  - Python Tutorial: PythonSupport/Python-turtorial.md
+  - Python Tutorial: PythonSupport/python-turtorial.md
 - API Docs:
   - Scala Docs: APIdocs/scaladoc.md
   - Python API Docs: APIdocs/python-api-doc.md  
