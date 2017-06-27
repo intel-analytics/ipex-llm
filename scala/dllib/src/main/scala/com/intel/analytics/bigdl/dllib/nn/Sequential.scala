@@ -58,20 +58,19 @@ class Sequential[T: ClassTag]
 
   override def accGradParameters(
     input: Activity,
-    gradOutput: Activity,
-    scale: Double = 1.0): Unit = {
+    gradOutput: Activity): Unit = {
     var i = modules.length - 1
     var currentModule = modules(i)
     var currentGradOutput = gradOutput
     while (i > 0) {
       val previousModule = modules(i - 1)
-      currentModule.accGradParameters(previousModule.output, currentGradOutput, scale)
+      currentModule.accGradParameters(previousModule.output, currentGradOutput)
       currentGradOutput = currentModule.gradInput
       currentModule = previousModule
       i -= 1
     }
 
-    currentModule.accGradParameters(input, currentGradOutput, scale)
+    currentModule.accGradParameters(input, currentGradOutput)
   }
 
   override def backward(input: Activity, nextError: Activity): Activity = {

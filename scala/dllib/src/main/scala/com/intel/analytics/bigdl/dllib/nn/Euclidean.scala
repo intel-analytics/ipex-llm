@@ -127,17 +127,19 @@ class Euclidean[T: ClassTag](val inputSize: Int, val outputSize: Int,
     gradInput
   }
 
-  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
-    scale: Double = 1.0): Unit = {
+  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
 
     require(input.dim() == 1 || input.dim() == 2,
       "Euclidean: " + ErrorInfo.constrainInputAsVectorOrBatch)
+    if (scaleW == 0) {
+      return
+    }
     if (input.dim() == 1) {
-      gradWeight.add(ev.fromType(-scale), repeatBuffer)
+      gradWeight.add(ev.fromType[Double](-scaleW), repeatBuffer)
     } else if (input.dim() == 2) {
       sumBuffer.sum(repeatBuffer, 1)
       sumBuffer.resizeAs(weight)
-      gradWeight.add(ev.fromType(-scale), sumBuffer)
+      gradWeight.add(ev.fromType[Double](-scaleW), sumBuffer)
     }
   }
 

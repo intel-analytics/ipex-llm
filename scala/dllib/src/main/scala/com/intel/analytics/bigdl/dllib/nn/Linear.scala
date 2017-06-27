@@ -126,8 +126,7 @@ class Linear[T: ClassTag](
     gradInput
   }
 
-  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
-    scale: Double = 1.0): Unit = {
+  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
     require(input.dim() == 1 || input.dim() == 2,
       "Linear: " + ErrorInfo.constrainInputAsVectorOrBatch)
 
@@ -136,23 +135,30 @@ class Linear[T: ClassTag](
       gradBias.resize(outputSize)
     }
 
-    val value = ev.fromType[Double](scale)
     if (input.dim() == 1) {
-      gradWeight.addr(value, gradOutput, input)
-      if (withBias) {
-        gradBias.add(value, gradOutput)
+      if (scaleW != 0) {
+        gradWeight.addr(ev.fromType[Double](scaleW), gradOutput, input)
+      }
+
+      if (withBias && scaleB != 0) {
+        gradBias.add(ev.fromType[Double](scaleB), gradOutput)
       }
     }
     else if (input.dim() == 2) {
-      gradWeight.addmm(value, gradOutput.t, input)
-      if (withBias) gradBias.addmv(value, gradOutput.t, addBuffer)
+      if (scaleW != 0) {
+        gradWeight.addmm(ev.fromType[Double](scaleW), gradOutput.t, input)
+      }
+
+      if (withBias && scaleB != 0) {
+        gradBias.addmv(ev.fromType[Double](scaleB), gradOutput.t, addBuffer)
+      }
     }
 
-    if (null != wRegularizer) {
-      wRegularizer.accRegularization(weight, gradWeight)
+    if (null != wRegularizer && scaleW != 0) {
+      wRegularizer.accRegularization(weight, gradWeight, scaleW)
     }
-    if (null != bRegularizer) {
-      bRegularizer.accRegularization(bias, gradBias)
+    if (null != bRegularizer && scaleB != 0) {
+      bRegularizer.accRegularization(bias, gradBias, scaleB)
     }
   }
 
