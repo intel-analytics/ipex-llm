@@ -36,8 +36,7 @@ private[bigdl] class CellUnit[T : ClassTag] (hidSize: Int)
     T()
   }
 
-  override def accGradParameters(input: Table, gradOutput: Table,
-                                 scale: Double = 1.0): Unit = {}
+  override def accGradParameters(input: Table, gradOutput: Table): Unit = {}
 
   override var cell: AbstractModule[Activity, Activity, T] = _
 }
@@ -61,5 +60,6 @@ class CellSpec extends FlatSpec with Matchers {
     hidden2(1).asInstanceOf[Tensor[Double]].size should be (Array(5, 4))
     hidden2(2).asInstanceOf[Tensor[Double]].size should be (Array(5, 4))
     hidden2(3).asInstanceOf[Tensor[Double]].size should be (Array(5, 4))
+
   }
 }

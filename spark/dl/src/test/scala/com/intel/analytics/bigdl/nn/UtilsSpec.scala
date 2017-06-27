@@ -33,4 +33,20 @@ class UtilsSpec extends FlatSpec with Matchers {
     namedMudules("relu").isInstanceOf[ReLU[Float]] should be (true)
   }
 
+  "isLayerwised" should "work properly" in {
+    val model = Sequential[Double]().add(Identity()).add(ReLU())
+    Utils.isLayerwiseScaled(model) should be (false)
+    model.setScaleB(2.0)
+    Utils.isLayerwiseScaled(model) should be (true)
+
+    val model2 = Sequential[Double]().add(SpatialConvolution[Double](2, 2, 2, 2)
+      .setScaleW(3.0)).add(ReLU())
+    Utils.isLayerwiseScaled(model2) should be (true)
+
+    val model3 = Sequential[Double]().add(SpatialConvolution[Double](2, 2, 2, 2)
+      .setScaleB(2.0)).add(ReLU())
+    Utils.isLayerwiseScaled(model3) should be (true)
+
+  }
+
 }

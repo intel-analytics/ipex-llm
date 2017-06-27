@@ -74,6 +74,10 @@ class SGD[@specialized(Float, Double) T: ClassTag](
 
     var (fx, dfdx) = feval(x)
 
+    if (wd != 0 || wds != null) {
+      require(!state.get[Boolean]("isLayerwiseScaled").getOrElse(false),
+        "SGD: Can't set layerwise scale and weight decay at the same time")
+    }
     if (wd != 0) {
       dfdx.add(ev.fromType[Double](wd), x)
     } else if (wds != null) {

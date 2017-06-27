@@ -198,8 +198,7 @@ class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
     gradInput
   }
 
-  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
-    scale: Double = 1.0): Unit = {
+  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
     val dimw = if (input.dim() == 4) 4 else 3
     val dimh = if (input.dim() == 4) 3 else 2
     val nbatch = if (input.dim() == 4) input.size(1) else 1
@@ -220,64 +219,69 @@ class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
     }
 
     var m = 1
-    val gradOutputIndex = new Array[Int](4)
-    val gradBiasIndex = new Array[Int](1)
-    while (m <= nbatch) {
-      gradOutputIndex(0) = m
-      var k = 1
-      while (k <= nOutputPlane) {
-        gradOutputIndex(1) = k
-        gradBiasIndex(0) = k
-        var l = 1
-        while (l <= outputH) {
-          gradOutputIndex(2) = l
-          var n = 1
-          while (n <= outputW) {
-            gradOutputIndex(3) = n
-            gradBias(gradBiasIndex) = ev.plus(gradBias(gradBiasIndex),
-              ev.times(ev.fromType[Double](scale), gradOutput(gradOutputIndex)))
-            n += 1
+    if (scaleB != 0) {
+      val gradOutputIndex = new Array[Int](4)
+      val gradBiasIndex = new Array[Int](1)
+      while (m <= nbatch) {
+        gradOutputIndex(0) = m
+        var k = 1
+        while (k <= nOutputPlane) {
+          gradOutputIndex(1) = k
+          gradBiasIndex(0) = k
+          var l = 1
+          while (l <= outputH) {
+            gradOutputIndex(2) = l
+            var n = 1
+            while (n <= outputW) {
+              gradOutputIndex(3) = n
+              gradBias(gradBiasIndex) = ev.plus(gradBias(gradBiasIndex),
+                ev.times(ev.fromType[Double](scaleB), gradOutput(gradOutputIndex)))
+              n += 1
+            }
+            l += 1
           }
-          l += 1
+          k += 1
         }
-        k += 1
+        m += 1
       }
-      m += 1
     }
 
-    val nkernel = connTable.size(1)
-    val connTableIndex = new Array[Int](2)
     m = 0
-    while (m < nbatch) {
-      var k = 1
-      while (k <= nkernel) {
-        connTableIndex(0) = k
-        connTableIndex(1) = 2
-        val o = ev.toType[Int](connTable(connTableIndex))
-        connTableIndex(1) = 1
-        val i = ev.toType[Int](connTable(connTableIndex))
+    if (scaleW != 0) {
+      val nkernel = connTable.size(1)
+      val connTableIndex = new Array[Int](2)
+      while (m < nbatch) {
+        var k = 1
+        while (k <= nkernel) {
+          connTableIndex(0) = k
+          connTableIndex(1) = 2
+          val o = ev.toType[Int](connTable(connTableIndex))
+          connTableIndex(1) = 1
+          val i = ev.toType[Int](connTable(connTableIndex))
 
-        DenseTensorConv.validXCorr2DRevptr(gradWeight.storage(),
-          gradWeight.storageOffset() - 1 + (k - 1) * weightH * weightW,
-          ev.fromType[Double](scale), input.storage(),
-          input.storageOffset() - 1 + (i - 1 + m * nInputPlane) * inputW * inputH,
-          inputH, inputW, gradOutput.storage(),
-          gradOutput.storageOffset() - 1 + (o - 1 + m * nOutputPlane) * outputW * outputH,
-          outputH, outputW, dH, dW)
-        k += 1
+          DenseTensorConv.validXCorr2DRevptr(gradWeight.storage(),
+            gradWeight.storageOffset() - 1 + (k - 1) * weightH * weightW,
+            ev.fromType[Double](scaleW), input.storage(),
+            input.storageOffset() - 1 + (i - 1 + m * nInputPlane) * inputW * inputH,
+            inputH, inputW, gradOutput.storage(),
+            gradOutput.storageOffset() - 1 + (o - 1 + m * nOutputPlane) * outputW * outputH,
+            outputH, outputW, dH, dW)
+          k += 1
+        }
+        m += 1
       }
-      m += 1
     }
+
 
     if (forceBatch) {
       gradOutput.squeeze(1)
     }
 
-    if (null != wRegularizer) {
-      wRegularizer.accRegularization(weight, gradWeight)
+    if (null != wRegularizer && scaleW != 0) {
+      wRegularizer.accRegularization(weight, gradWeight, scaleW)
     }
-    if (null != bRegularizer) {
-      bRegularizer.accRegularization(bias, gradBias)
+    if (null != bRegularizer && scaleB != 0) {
+      bRegularizer.accRegularization(bias, gradBias, scaleB)
     }
   }
 

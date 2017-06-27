@@ -274,8 +274,7 @@ class SpatialConvolution[T: ClassTag](
     return gradInput
   }
 
-  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
-    scale: Double = 1.0): Unit = {
+  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
     require(input.nDimension() == 3 || input.nDimension() == 4, "Only support 3D or 4D input")
     require(gradOutput.isContiguous())
 
@@ -291,7 +290,8 @@ class SpatialConvolution[T: ClassTag](
           gradWeightMM.select(1, g + 1),
           gradBias.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
           fInput.select(1, g + 1),
-          ev.fromType[Double](scale))
+          ev.fromType[Double](scaleW),
+          ev.fromType[Double](scaleB))
         g += 1
       }
     } else {
@@ -324,7 +324,8 @@ class SpatialConvolution[T: ClassTag](
               gradientBiasMT.select(1, _i).narrow(1, g * nOutputPlane / nGroup + 1,
                 nOutputPlane / nGroup),
               fInputT.select(1, g + 1),
-              ev.fromType[Double](scale))
+              ev.fromType[Double](scaleW),
+              ev.fromType[Double](scaleB))
             g += 1
           }
         })
@@ -341,10 +342,10 @@ class SpatialConvolution[T: ClassTag](
     }
 
     if (null != wRegularizer) {
-      wRegularizer.accRegularization(weight, gradWeight)
+      wRegularizer.accRegularization(weight, gradWeight, scaleW)
     }
     if (null != bRegularizer) {
-      bRegularizer.accRegularization(bias, gradBias)
+      bRegularizer.accRegularization(bias, gradBias, scaleB)
     }
   }
 
@@ -500,64 +501,74 @@ class SpatialConvolution[T: ClassTag](
   }
 
   protected def accGradParametersFrame(gradOutput: Tensor[T], gradWeight: Tensor[T],
-    gradBias: Tensor[T], fInput: Tensor[T], scale: T)(implicit ev: TensorNumeric[T]): Unit = {
+    gradBias: Tensor[T], fInput: Tensor[T],
+    scaleW: T, scaleB: T)(implicit ev: TensorNumeric[T]): Unit = {
 
     ev.getType() match {
       case DoubleType =>
         val gradOutput2d = Tensor[Double](gradOutput.storage().asInstanceOf[Storage[Double]],
           gradOutput.storageOffset(),
           Array(gradOutput.size(1), gradOutput.size(2) * gradOutput.size(3)))
+        if (scaleW !=0 ) {
+          gradWeight.asInstanceOf[Tensor[Double]].addmm(1.0,
+            gradWeight.asInstanceOf[Tensor[Double]],
+            ev.toType[Double](scaleW), gradOutput2d,
+            fInput.t.asInstanceOf[Tensor[Double]])
+        }
 
-        gradWeight.asInstanceOf[Tensor[Double]].addmm(1.0, gradWeight.asInstanceOf[Tensor[Double]],
-          ev.toType[Double](scale), gradOutput2d,
-          fInput.t.asInstanceOf[Tensor[Double]])
-
-        var i = 0
-        while (i < gradBias.size(1)) {
-          var sum = 0.0
-          val data = gradOutput2d.storage().array()
-          val offset = gradOutput2d.storageOffset() - 1 + i * gradOutput2d.stride(1)
-          var k = 0
-          while (k < gradOutput2d.size(2)) {
-            sum += data(k + offset)
-            k += 1
+        if (scaleB != 0) {
+          var i = 0
+          while (i < gradBias.size(1)) {
+            var sum = 0.0
+            val data = gradOutput2d.storage().array()
+            val offset = gradOutput2d.storageOffset() - 1 + i * gradOutput2d.stride(1)
+            var k = 0
+            while (k < gradOutput2d.size(2)) {
+              sum += data(k + offset)
+              k += 1
+            }
+            gradBias.asInstanceOf[Tensor[Double]].setValue(
+              i + 1, gradBias.asInstanceOf[Tensor[Double]].valueAt(i + 1) +
+                (ev.toType[Double](scaleB) * sum))
+            i += 1
           }
-          gradBias.asInstanceOf[Tensor[Double]].setValue(
-            i + 1, gradBias.asInstanceOf[Tensor[Double]].valueAt(i + 1) +
-              (ev.toType[Double](scale) * sum))
-          i += 1
         }
       case FloatType =>
         val gradOutput2d = Tensor[Float](gradOutput.storage().asInstanceOf[Storage[Float]],
           gradOutput.storageOffset(),
           Array(gradOutput.size(1), gradOutput.size(2) * gradOutput.size(3)))
-
-        gradWeight.asInstanceOf[Tensor[Float]].addmm(1.0f, gradWeight.asInstanceOf[Tensor[Float]],
-          ev.toType[Float](scale), gradOutput2d,
-          fInput.t.asInstanceOf[Tensor[Float]])
-
-        var i = 0
-        while (i < gradBias.size(1)) {
-          var sum = 0.0f
-          val data = gradOutput2d.storage().array()
-          val offset = gradOutput2d.storageOffset() - 1 + i * gradOutput2d.stride(1)
-          var k = 0
-          while (k < gradOutput2d.size(2)) {
-            sum += data(k + offset)
-            k += 1
-          }
-          gradBias.asInstanceOf[Tensor[Float]].setValue(
-            i + 1, gradBias.asInstanceOf[Tensor[Float]].valueAt(i + 1) +
-              (ev.toType[Float](scale) * sum))
-          i += 1
+        if (scaleW != 0) {
+          gradWeight.asInstanceOf[Tensor[Float]].addmm(1.0f,
+            gradWeight.asInstanceOf[Tensor[Float]],
+            ev.toType[Float](scaleW), gradOutput2d,
+            fInput.t.asInstanceOf[Tensor[Float]])
         }
+
+        if (scaleB != 0) {
+          var i = 0
+          while (i < gradBias.size(1)) {
+            var sum = 0.0f
+            val data = gradOutput2d.storage().array()
+            val offset = gradOutput2d.storageOffset() - 1 + i * gradOutput2d.stride(1)
+            var k = 0
+            while (k < gradOutput2d.size(2)) {
+              sum += data(k + offset)
+              k += 1
+            }
+            gradBias.asInstanceOf[Tensor[Float]].setValue(
+              i + 1, gradBias.asInstanceOf[Tensor[Float]].valueAt(i + 1) +
+                (ev.toType[Float](scaleB) * sum))
+            i += 1
+          }
+        }
+
       case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
     }
   }
 
   protected def calcGradParametersFrame(gradOutput: Tensor[T], gradWeight: Tensor[T],
     gradBias: Tensor[T],
-    fInput: Tensor[T], scale: T)(implicit ev: TensorNumeric[T]): Unit = {
+    fInput: Tensor[T], scaleW: T, scaleB: T)(implicit ev: TensorNumeric[T]): Unit = {
 
     ev.getType() match {
       case DoubleType =>
@@ -565,22 +576,34 @@ class SpatialConvolution[T: ClassTag](
           gradOutput.storageOffset(),
           Array(gradOutput.size(1), gradOutput.size(2) * gradOutput.size(3)))
 
-        gradWeight.asInstanceOf[Tensor[Double]].addmm(0.0, gradWeight.asInstanceOf[Tensor[Double]],
-          ev.toType[Double](scale), gradOutput2d,
-          fInput.t.asInstanceOf[Tensor[Double]])
-        gradBias.asInstanceOf[Tensor[Double]].addmv(0.0, 1.0, gradOutput2d,
-          ones.asInstanceOf[Tensor[Double]])
+        if (scaleW != 0) {
+          gradWeight.asInstanceOf[Tensor[Double]].addmm(0.0,
+            gradWeight.asInstanceOf[Tensor[Double]],
+            ev.toType[Double](scaleW), gradOutput2d,
+            fInput.t.asInstanceOf[Tensor[Double]])
+        }
+
+        if (scaleB != 0) {
+          gradBias.asInstanceOf[Tensor[Double]].addmv(0.0, ev.toType[Double](scaleB), gradOutput2d,
+            ones.asInstanceOf[Tensor[Double]])
+        }
+
       case FloatType =>
         val gradOutput2d = Tensor[Float](gradOutput.storage().asInstanceOf[Storage[Float]],
           gradOutput.storageOffset(),
           Array(gradOutput.size(1), gradOutput.size(2) * gradOutput.size(3)))
+        if (scaleW != 0) {
+            gradWeight.asInstanceOf[Tensor[Float]].addmm(0.0f,
+              gradWeight.asInstanceOf[Tensor[Float]],
+              ev.toType[Float](scaleW), gradOutput2d,
+              fInput.t.asInstanceOf[Tensor[Float]])
+        }
 
-        gradWeight.asInstanceOf[Tensor[Float]].addmm(0.0f, gradWeight.asInstanceOf[Tensor[Float]],
-          ev.toType[Float](scale), gradOutput2d,
-          fInput.t.asInstanceOf[Tensor[Float]])
+        if (scaleB != 0) {
+          gradBias.asInstanceOf[Tensor[Float]].addmv(0.0f, ev.toType[Float](scaleB), gradOutput2d,
+            ones.asInstanceOf[Tensor[Float]])
+        }
 
-        gradBias.asInstanceOf[Tensor[Float]].addmv(0.0f, 1.0f, gradOutput2d,
-          ones.asInstanceOf[Tensor[Float]])
       case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
     }
   }

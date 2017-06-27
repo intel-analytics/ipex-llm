@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch}
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn.Utils
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -81,6 +82,7 @@ class LocalOptimizer[T: ClassTag] private[optim](
     optimMethod.loadFromTable(state)
     state("epoch") = state.get[Int]("epoch").getOrElse(1)
     state("neval") = state.get[Int]("neval").getOrElse(1)
+    state("isLayerwiseScaled") = Utils.isLayerwiseScaled(model)
     dataset.shuffle()
     var iter = dataset.data(train = true)
     logger.info("model thread pool size is " + Engine.model.getPoolSize)

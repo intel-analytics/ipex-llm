@@ -107,8 +107,7 @@ class TimeDistributed[T : ClassTag] (layer: TensorModule[T])
     gradInput
   }
 
-  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
-                                 scale: Double = 1.0): Unit = {
+  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
     layer.accGradParameters(fInput, fGradOutput)
   }
 

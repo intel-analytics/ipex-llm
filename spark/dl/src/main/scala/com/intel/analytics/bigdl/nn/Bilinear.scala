@@ -160,7 +160,7 @@ class Bilinear[T: ClassTag](
     gradInput
   }
 
-  override def accGradParameters(input: Table, gradOutput: Tensor[T], scale: Double = 1.0): Unit = {
+  override def accGradParameters(input: Table, gradOutput: Tensor[T]): Unit = {
     val res1 = input[Tensor[T]](1)
     val res2 = input[Tensor[T]](2)
 
@@ -169,20 +169,23 @@ class Bilinear[T: ClassTag](
     buff1.resizeAs(res1)
 
     // accumulate parameter gradients:
-    var k = 1
-    while (k < (weight.size(1) + 1)) {
-      buff1.zero()
-      buff1.cmul(res1, gradOutput.narrow(2, k, 1).expandAs(res1))
-      gradWeight.select(1, k).addmm(buff1.t(), input(2))
-      k += 1
+    if (scaleW !=0 ) {
+      var k = 1
+      while (k < (weight.size(1) + 1)) {
+        buff1.zero()
+        buff1.cmul(res1, gradOutput.narrow(2, k, 1).expandAs(res1))
+        gradWeight.select(1, k).addmm(ev.fromType[Double](scaleW), buff1.t(), input(2))
+        k += 1
+      }
     }
-    if (null != bias) gradBias.add(ev.fromType(scale), gradOutput.sum(1))
 
-    if (wRegularizer != null) {
-      wRegularizer.accRegularization(weight, gradWeight)
+    if(null != bias && scaleB != 0) gradBias.add(ev.fromType[Double](scaleB), gradOutput.sum(1))
+
+    if (wRegularizer != null && scaleW != 0) {
+      wRegularizer.accRegularization(weight, gradWeight, scaleW)
     }
-    if (bRegularizer != null) {
-      bRegularizer.accRegularization(bias, gradBias)
+    if (bRegularizer != null && scaleB != 0) {
+      bRegularizer.accRegularization(bias, gradBias, scaleB)
     }
   }
 
