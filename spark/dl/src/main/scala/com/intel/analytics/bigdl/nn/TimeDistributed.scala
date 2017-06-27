@@ -224,6 +224,7 @@ class TimeDistributed[T : ClassTag] (layer: TensorModule[T])
   }
 
   override def hashCode(): Int = {
+    def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
     val state = Seq(super.hashCode(),
       layer, inputSize, gradOutputSize, outputSize)
     state.filter(_ != null).map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
