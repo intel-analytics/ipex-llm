@@ -24,20 +24,20 @@ l(x,y) = - sum_i y[i] * log(p[i]) + (1 - y[i]) * log (1 - p[i])
 ```scala
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericDouble
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
 val criterion = MultiLabelSoftMarginCriterion()
 val input = Tensor(3)
-input(Array(1)) = 0.4
-input(Array(2)) = 0.5
-input(Array(3)) = 0.6
+input(Array(1)) = 0.4f
+input(Array(2)) = 0.5f
+input(Array(3)) = 0.6f
 val target = Tensor(3)
 target(Array(1)) = 0
 target(Array(2)) = 1
 target(Array(3)) = 1
 
 > criterion.forward(input, target)
-res0: Double = 0.608193395686766
+res0: Float = 0.6081934
 ```
 
 **Python example:**
