@@ -15,7 +15,8 @@ Recurrent module is a container of rnn cells. Different types of rnn cells can b
 ```scala
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericDouble
+import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
 val hiddenSize = 4
 val inputSize = 5
@@ -23,28 +24,28 @@ val module = Recurrent().add(RnnCell(inputSize, hiddenSize, Tanh()))
 val input = Tensor(Array(1, 5, inputSize))
 for (i <- 1 to 5) {
   val rdmInput = Math.ceil(RNG.uniform(0.0, 1.0)*inputSize).toInt
-  input.setValue(1, i, rdmInput, 1.0)
+  input.setValue(1, i, rdmInput, 1.0f)
 }
 
 val output = module.forward(input)
 
 > input
 (1,.,.) =
-0.0	0.0	0.0	0.0	1.0
-1.0	0.0	0.0	0.0	0.0
-0.0	0.0	0.0	0.0	1.0
-0.0	0.0	0.0	1.0	0.0
-1.0	0.0	0.0	0.0	0.0
+0.0	1.0	0.0	0.0	0.0
+0.0	1.0	0.0	0.0	0.0
+0.0	0.0	1.0	0.0	0.0
+0.0	1.0	0.0	0.0	0.0
+0.0	0.0	1.0	0.0	0.0
 
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 1x5x5]
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 1x5x5]
 
 > output
 (1,.,.) =
-0.10226295303128596	-0.43567883708825395	-0.033399659962837426	0.32833409681802717
--0.01870846466991851	0.057665379700306454	0.47425303013686954	0.0767218304897101
-0.18271574194672333	-0.2966927770463621	0.09941498264638175	0.5322285899549288
-0.06866567023106811	-0.1500855579951187	0.12970184870169252	0.7074263452022179
-0.13436141442319888	0.01611326977077796	0.3959061031798656	0.2517894887859813
+-0.44992247	-0.50529593	-0.033753205	-0.29562786
+-0.19734861	-0.5647412	0.07520321	-0.35515767
+-0.6771096	-0.4985356	-0.5806829	-0.47552463
+-0.06949129	-0.53153497	0.11510986	-0.34098053
+-0.71635246	-0.5226476	-0.5929389	-0.46533492
 
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 1x5x4]
 ```
