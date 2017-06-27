@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.dataset.image
 
-import com.intel.analytics.bigdl.dataset.{Sample, Transformer}
+import com.intel.analytics.bigdl.dataset.{Sample, TensorSample, Transformer}
 import com.intel.analytics.bigdl.tensor.Tensor
 
 import scala.collection.Iterator
@@ -32,18 +32,19 @@ object BGRImgToSample {
  */
 class BGRImgToSample(toRGB: Boolean = true) extends Transformer[LabeledBGRImage, Sample[Float]] {
 
-  private val featureBuffer = Tensor[Float]()
-  private val labelBuffer = Tensor[Float](1)
-  private val buffer = Sample[Float](featureBuffer, labelBuffer)
+  private val featureBuffer = Array(Tensor[Float]())
+  private val labelBuffer = Array(Tensor[Float](1))
+  private val buffer = Sample[Float]()
 
   override def apply(prev: Iterator[LabeledBGRImage]): Iterator[Sample[Float]] = {
     prev.map(img => {
-      labelBuffer.storage.array()(0) = img.label()
-      if (featureBuffer.nElement() != 3 * img.height() * img.width()) {
-        featureBuffer.resize(3, img.height(), img.width())
+      labelBuffer(0).storage.array()(0) = img.label()
+      if (featureBuffer(0).nElement() != 3 * img.height() * img.width()) {
+        featureBuffer(0).resize(3, img.height(), img.width())
       }
 
-      img.copyTo(featureBuffer.storage().array(), 0, toRGB)
+      img.copyTo(featureBuffer(0).storage().array(), 0, toRGB)
+      buffer.set(featureBuffer, labelBuffer)
       buffer
     })
   }

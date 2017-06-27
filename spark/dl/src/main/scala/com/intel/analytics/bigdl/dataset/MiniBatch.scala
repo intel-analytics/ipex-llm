@@ -129,13 +129,13 @@ class ArrayTensorMiniBatch[T: ClassTag](
     labelFixedLength: Option[Array[Int]] = None,
     labelIncrement: Option[Array[Int]] = None) extends MiniBatch[T]{
   require(inputData.length > 0, "Input data in MiniBatch is empty.")
-  val input: Activity = if (inputData.length == 1) {
+  private lazy val input: Activity = if (inputData.length == 1) {
     inputData(0)
   } else {
     T.array(inputData.map(_.asInstanceOf[Any]))
   }
 
-  val target: Activity = if (targetData.length == 0) {
+  private lazy val target: Activity = if (targetData.length == 0) {
     null
   } else if (targetData.length == 1) {
     targetData(0)
@@ -150,14 +150,14 @@ class ArrayTensorMiniBatch[T: ClassTag](
   override def slice(offset: Int, length: Int): MiniBatch[T] = {
     val is = new Array[Tensor[T]](inputData.length)
     val ts = new Array[Tensor[T]](targetData.length)
-    var b = 1
-    while(b <= inputData.size) {
+    var b = 0
+    while(b < inputData.size) {
       is(b) = inputData(b).narrow(1, offset, length)
       b += 1
     }
-    b = 1
-    while(b <= targetData.size) {
-      ts(b) = inputData(b).narrow(1, offset, length)
+    b = 0
+    while(b < targetData.size) {
+      ts(b) = targetData(b).narrow(1, offset, length)
       b += 1
     }
 

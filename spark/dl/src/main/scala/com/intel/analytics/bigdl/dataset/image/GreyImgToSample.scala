@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.dataset.image
 
-import com.intel.analytics.bigdl.dataset.{Sample, Transformer}
+import com.intel.analytics.bigdl.dataset.{Sample, TensorSample, Transformer}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 
 import scala.collection.Iterator
@@ -32,19 +32,19 @@ object GreyImgToSample {
  */
 class GreyImgToSample() extends Transformer[LabeledGreyImage, Sample[Float]] {
 
-  private val featureBuffer = Tensor[Float]()
-  private val labelBuffer = Tensor[Float](1)
+  private val featureBuffer = Array(Tensor[Float]())
+  private val labelBuffer = Array(Tensor[Float](1))
   private val featureSize = new Array[Int](2)
-  private val buffer = Sample[Float](featureBuffer, labelBuffer)
+  private val buffer = Sample[Float]()
 
   override def apply(prev: Iterator[LabeledGreyImage]): Iterator[Sample[Float]] = {
     prev.map(img => {
-      labelBuffer.storage.array()(0) = img.label()
+      labelBuffer(0).storage.array()(0) = img.label()
       featureSize(0) = img.height()
       featureSize(1) = img.width()
-      featureBuffer.set(Storage(img.content), sizes = featureSize)
+      featureBuffer(0).set(Storage(img.content), sizes = featureSize)
 
-      buffer
+      buffer.set(featureBuffer, labelBuffer)
     })
   }
 }

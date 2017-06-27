@@ -104,6 +104,9 @@ abstract class Sample[T: ClassTag] extends Serializable {
     sample.labelTensor.set(Storage[T](labelData), 1, labelSize)
     sample
   }
+
+  def set(features: Array[Tensor[T]], labels: Array[Tensor[T]]
+         )(implicit ev: TensorNumeric[T]): Sample[T]
 }
 
 
@@ -111,10 +114,10 @@ abstract class Sample[T: ClassTag] extends Serializable {
  */
 class ArraySample[T: ClassTag](
       private var data: Array[T],
-      val featureSize: Array[Int],
-      val numberFeature: Int,
-      val labelSize: Array[Int],
-      val numberLabel: Int) extends Sample[T] {
+      private var featureSize: Array[Int],
+      private var numberFeature: Int,
+      private var labelSize: Array[Int],
+      private var numberLabel: Int) extends Sample[T] {
 
   def getData(): Array[T] = data
 
@@ -205,6 +208,60 @@ class ArraySample[T: ClassTag](
     numberLabel
   }
 
+  override def set(
+        features: Array[Tensor[T]],
+        labels: Array[Tensor[T]])(implicit ev: TensorNumeric[T]): Sample[T] = {
+    // Resize
+    val totalDataSize = features.map(_.nElement()).sum + labels.map(_.nElement()).sum
+    if (data.length < totalDataSize) {
+      data = new Array[T](totalDataSize)
+    }
+    val totalFeatureSize = features.map(_.dim()).sum + features.length
+    if (featureSize.length < totalFeatureSize) {
+      featureSize = new Array[Int](totalFeatureSize)
+    }
+    val totalLabelSize = labels.map(_.dim()).sum + labels.length
+    if (labelSize.length < totalLabelSize) {
+      labelSize = new Array[Int](totalLabelSize)
+    }
+
+    // Deep copy
+    var dataOffset = 0
+    var sizeOffset = 0
+    var i = 0
+    while(i < features.length) {
+      val f = features(i)
+      require(f.isContiguous())
+      // copy data
+      ev.arraycopy(f.storage().array(), f.storageOffset() - 1, data, dataOffset, f.nElement())
+      // copy size
+      featureSize(sizeOffset) = f.dim()
+      System.arraycopy(f.size(), 0, featureSize, sizeOffset + 1, f.dim())
+
+      dataOffset += f.nElement()
+      sizeOffset += f.dim() + 1
+      i += 1
+    }
+    i = 0
+    sizeOffset = 0
+    while(i < labels.length) {
+      val l = labels(i)
+      require(l.isContiguous())
+      // Copy data
+      ev.arraycopy(l.storage().array(), l.storageOffset() - 1, data, dataOffset, l.nElement())
+      // Copy size
+      labelSize(sizeOffset) = l.dim()
+      System.arraycopy(l.size(), 0, labelSize, sizeOffset + 1, l.dim())
+      dataOffset += l.nElement()
+      sizeOffset += l.dim()
+      i += 1
+    }
+    numberFeature = features.length
+    numberLabel = labels.length
+
+    this
+  }
+
   @deprecated("Old interface", "0.2.0")
   override def feature()(implicit ev: TensorNumeric[T]): Tensor[T] = {
     require(numberFeature == 1)
@@ -214,7 +271,7 @@ class ArraySample[T: ClassTag](
   @deprecated("Old interface", "0.2.0")
   override def label()(implicit ev: TensorNumeric[T]): Tensor[T] = {
     require(numberLabel == 1)
-    Tensor[T](Storage(data), getFeatureSize(0).product + 1,
+    Tensor[T](Storage(data), getFeatureSize().map(_.product).sum + 1,
       labelSize.slice(1, labelSize.length))
   }
 
@@ -223,10 +280,10 @@ class ArraySample[T: ClassTag](
   override def equals(other: Any): Boolean = other match {
     case that: ArraySample[T] =>
       (that canEqual this) &&
-        data == that.data &&
-        featureSize == that.featureSize &&
+        data.sameElements(that.data) &&
+        featureSize.sameElements(that.featureSize) &&
         numberFeature == that.numberFeature &&
-        labelSize == that.labelSize &&
+        labelSize.sameElements(that.labelSize) &&
         numberLabel == that.numberLabel
     case _ => false
   }
@@ -273,6 +330,30 @@ class TensorSample[T: ClassTag](
 
   def numLabel(): Int = 1
 
+  override def set(
+        features: Array[Tensor[T]],
+        labels: Array[Tensor[T]])(implicit ev: TensorNumeric[T]): Sample[T] = {
+    require(features.length == 1 && labels.length == 1)
+
+    val l = labels(0)
+    require(l.isContiguous())
+    labelTensor.resizeAs(l).copy(l)
+
+    val f = features(0)
+    require(f.isContiguous())
+    featureTensor.resizeAs(f).copy(f)
+
+    this
+  }
+
+  def setLabel(labels: Array[Tensor[T]])(implicit ev: TensorNumeric[T]): Sample[T] = {
+    require(labels.length == 1)
+    val l = labels(0)
+    require(l.isContiguous())
+    labelTensor.resizeAs(l).copy(l)
+    this
+  }
+
   def canEqual(other: Any): Boolean = other.isInstanceOf[TensorSample[T]]
 
   override def equals(other: Any): Boolean = other match {
@@ -291,19 +372,23 @@ class TensorSample[T: ClassTag](
 
 
 object Sample {
-
   def apply[T: ClassTag](
         featureTensor: Tensor[T],
         labelTensor: Tensor[T])(implicit ev: TensorNumeric[T]) : Sample[T] = {
-    new ArraySample[T](featureTensor.storage().array ++ labelTensor.storage().array(),
+    require(featureTensor.isContiguous() && labelTensor.isContiguous())
+    val data = new Array[T](featureTensor.nElement() + labelTensor.nElement())
+    ev.arraycopy(featureTensor.storage().array(), featureTensor.storageOffset() - 1,
+      data, 0, featureTensor.nElement())
+    ev.arraycopy(labelTensor.storage().array(), labelTensor.storageOffset() - 1,
+      data, featureTensor.nElement(), labelTensor.nElement())
+    new ArraySample[T](data,
       embeddingSize(featureTensor), 1,
       embeddingSize(labelTensor), 1)
   }
 
-  @deprecated("Old interface", "0.2.0")
   def apply[@specialized(Float, Double) T: ClassTag]()(
         implicit ev: TensorNumeric[T]) : Sample[T] = {
-    new TensorSample[T](Tensor[T](), Tensor[T]())
+    new ArraySample[T](Array[T](), Array[Int](), 0, Array[Int](), 0)
   }
 
   def apply[T: ClassTag](
@@ -325,7 +410,8 @@ object Sample {
   def apply[T: ClassTag](
         featureTensors: Array[Tensor[T]],
         labelTensors: Array[Tensor[T]])(implicit ev: TensorNumeric[T]) : Sample[T] = {
-    new ArraySample[T]((featureTensors ++ labelTensors).flatMap(_.storage().array),
+    new ArraySample[T]((featureTensors ++ labelTensors).filter(_.dim() != 0)
+      .flatMap(_.storage().array),
       embeddingSize(featureTensors), featureTensors.length,
       embeddingSize(labelTensors), labelTensors.length)
   }
@@ -344,11 +430,11 @@ object Sample {
       null, 0)
   }
 
-  private def embeddingSize[T: ClassTag](tensors: Array[Tensor[T]]): Array[Int] = {
+  private[bigdl] def embeddingSize[T: ClassTag](tensors: Array[Tensor[T]]): Array[Int] = {
     tensors.map(_.size).flatMap(s => Array(s.length) ++ s)
   }
 
-  private def embeddingSize[T: ClassTag](tensor: Tensor[T]): Array[Int] = {
+  private[bigdl] def embeddingSize[T: ClassTag](tensor: Tensor[T]): Array[Int] = {
     Array(tensor.dim()) ++ tensor.size()
   }
 }

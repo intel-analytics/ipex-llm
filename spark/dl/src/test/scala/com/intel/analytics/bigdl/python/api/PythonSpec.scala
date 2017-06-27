@@ -210,20 +210,16 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val localData = data.collect()
     pp.toTensor(preResult.get(0)) should be
-    (trainedModel.forward(pp.toSample(localData(0))
-      .asInstanceOf[TensorSample[Float]].featureTensor))
+    (trainedModel.forward(pp.toSample(localData(0)).feature))
 
     pp.toTensor(preResult.get(25)) should be
-    (trainedModel.forward(pp.toSample(localData(25))
-      .asInstanceOf[TensorSample[Float]].featureTensor))
+    (trainedModel.forward(pp.toSample(localData(25)).feature))
 
     pp.toTensor(preResult.get(55)) should be
-    (trainedModel.forward(pp.toSample(localData(55))
-      .asInstanceOf[TensorSample[Float]].featureTensor))
+    (trainedModel.forward(pp.toSample(localData(55)).feature))
 
     pp.toTensor(preResult.get(75)) should be
-    (trainedModel.forward(pp.toSample(localData(75))
-      .asInstanceOf[TensorSample[Float]].featureTensor))
+    (trainedModel.forward(pp.toSample(localData(75)).feature))
 
     // TODO: verify the parameters result
     val parameters = pp.modelGetParameters(trainedModel)

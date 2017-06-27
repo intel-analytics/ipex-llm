@@ -213,8 +213,7 @@ class SampleToBatch[T: ClassTag]
       private var labelData: Array[T] = null
       private val batchSize = batchSizePerPartition
 
-      private val sampleData = Array.tabulate(batchSize)(_ =>
-        Sample(Tensor(), Tensor()))
+      private val sampleData = new Array[Sample[T]](batchSize)
       private var featureSize: Array[Int] = null
       private var labelSize: Array[Int] = null
       private var oneFeatureElement: Int = 0
@@ -233,7 +232,11 @@ class SampleToBatch[T: ClassTag]
             val sample = prev.next()
             require(sample.feature().isContiguous() && sample.label().isContiguous(),
               "SampleToBatch: Only support contiguous tensor")
-            sampleData(i).copy(sample)
+            if (null == sampleData(i)) {
+              sampleData(i) = sample.clone()
+            } else {
+              sampleData(i).copy(sample)
+            }
             featureIndex = getLarger(sampleData(featureIndex).feature().nElement(),
               featureIndex, sample.feature().nElement(), i)
             labelIndex = getLarger(sampleData(labelIndex).label().nElement(),
@@ -291,7 +294,7 @@ class SampleToBatch[T: ClassTag]
           }
           featureTensor.set(Storage[T](featureData), storageOffset = 1, sizes = featureSize)
           labelTensor.set(Storage[T](labelData), storageOffset = 1, sizes = labelSize)
-          MiniBatch(featureTensor, labelTensor)
+          new TensorMiniBatch(featureTensor, labelTensor)
         } else {
           null
         }
