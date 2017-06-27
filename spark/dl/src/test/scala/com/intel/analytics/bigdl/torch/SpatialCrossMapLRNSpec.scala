@@ -41,7 +41,7 @@ class SpatialCrossMapLRNSpec extends TorchSpec {
     val torchResult = TH.run(code, Map("input" -> input), Array("output"))._2
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
 
-    output should be equals luaOutput
+    output shouldEqual luaOutput
   }
 
   it should "generate correct output when feature map number is large" in {
@@ -60,7 +60,7 @@ class SpatialCrossMapLRNSpec extends TorchSpec {
     val torchResult = TH.run(code, Map("input" -> input), Array("output"))._2
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
 
-    output should be equals luaOutput
+    output shouldEqual luaOutput
   }
 
   it should "generate correct gradInput" in {
@@ -83,7 +83,7 @@ class SpatialCrossMapLRNSpec extends TorchSpec {
       Array("gradInput"))._2
     val luaOutput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
 
-    output should be equals luaOutput
+    output shouldEqual luaOutput
   }
 
   it should "generate correct gradInput when feature map number is large" in {
@@ -106,7 +106,7 @@ class SpatialCrossMapLRNSpec extends TorchSpec {
       Array("gradInput"))._2
     val luaOutput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
 
-    output should be equals luaOutput
+    output shouldEqual luaOutput
   }
 
   "SpatialCrossMapLRN module" should "be good in gradient check for input" in {

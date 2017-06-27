@@ -172,7 +172,7 @@ class InceptionSpec extends TorchSpec {
     val gradparameters = model.getParameters()._2.asInstanceOf[Tensor[Double]]
     require(gradparameters == gradGarametersInitTorch, "gradparameter compare failed")
     val parametersTorch = TH.map("parameters").asInstanceOf[Tensor[Double]]
-    parameters should be equals parametersTorch
+    parameters shouldEqual parametersTorch
 
     val (weights, grad) = model.getParameters()
     val criterion = new ClassNLLCriterion[Double]()
@@ -192,7 +192,7 @@ class InceptionSpec extends TorchSpec {
     model.zeroGradParameters()
     val outputTest = model.forward(input).toTensor[Double]
     val outputTorch = TH.map("output").asInstanceOf[Tensor[Double]]
-    outputTest should be equals outputTorch
+    outputTest shouldEqual outputTorch
 
     val errTorch = TH.map("err").asInstanceOf[Table][Double](1)
     val errTest = criterion.forward(outputTest, labels)
@@ -202,12 +202,12 @@ class InceptionSpec extends TorchSpec {
     val gradOutputTorch = TH.map("gradOutput").asInstanceOf[Tensor[Double]]
     val gradOutputTest = criterion.backward(outputTest, labels)
     model.backward(input, gradOutputTest)
-    gradOutputTest should be equals gradOutputTorch
+    gradOutputTest shouldEqual gradOutputTorch
 
     val gradParametersTorch = TH.map("gradParameters").asInstanceOf[Tensor[Double]]
 
     sgd.optimize(_ => (errTest, grad), weights, state, state)
-    grad should be equals gradParametersTorch
+    grad shouldEqual gradParametersTorch
   }
 
   "Inception" should "generate correct output" in {
@@ -366,7 +366,7 @@ class InceptionSpec extends TorchSpec {
 
     val gradparameters = model.getParameters()._2.asInstanceOf[Tensor[Double]]
     val parametersTorch = TH.map("parameters").asInstanceOf[Tensor[Double]]
-    parameters should be equals parametersTorch
+    parameters shouldEqual parametersTorch
     val gradparameterTorch = TH.map("gradParameters_initial").asInstanceOf[Tensor[Double]]
     require(gradparameters == gradparameterTorch, "gradparameter compare failed")
 
@@ -404,10 +404,10 @@ class InceptionSpec extends TorchSpec {
 
     val gradOutputTest = criterion.backward(outputTest, labels)
     val gradOutputTorch = TH.map("gradOutput").asInstanceOf[Tensor[Double]]
-    gradOutputTest should be equals gradOutputTorch
+    gradOutputTest shouldEqual gradOutputTorch
 
     val gradInput = model.backward(input, gradOutputTest)
-    gradInput should be equals gradInputTorch
+    gradInput shouldEqual gradInputTorch
     sgd.optimize(_ => (errTest, grad), weights, state, state)
   }
 
@@ -557,7 +557,7 @@ class InceptionSpec extends TorchSpec {
     val gradparameters = model.getParameters()._2.asInstanceOf[Tensor[Double]]
     require(gradparameters == gradGarametersInitTorch, "gradparameter compare failed")
     val parametersTorch = TH.map("parameters").asInstanceOf[Tensor[Double]]
-    parameters should be equals parametersTorch
+    parameters shouldEqual parametersTorch
 
     val (weights, grad) = model.getParameters()
     val criterion = new ClassNLLCriterion[Double]()
@@ -577,7 +577,7 @@ class InceptionSpec extends TorchSpec {
     model.zeroGradParameters()
     val outputTest = model.forward(input)
     val outputTorch = TH.map("output").asInstanceOf[Tensor[Double]]
-    outputTest should be equals outputTorch
+    outputTest shouldEqual outputTorch
 
     val errTorch = TH.map("err").asInstanceOf[Table][Double](1)
     val errTest = criterion.forward(outputTest, labels)
@@ -587,12 +587,12 @@ class InceptionSpec extends TorchSpec {
     val gradOutputTorch = TH.map("gradOutput").asInstanceOf[Tensor[Double]]
     val gradOutputTest = criterion.backward(outputTest, labels)
     model.backward(input, gradOutputTest)
-    gradOutputTest should be equals gradOutputTorch
+    gradOutputTest shouldEqual gradOutputTorch
 
     val gradParametersTorch = TH.map("gradParameters").asInstanceOf[Tensor[Double]]
 
     sgd.optimize(_ => (errTest, grad), weights, state, state)
-    grad should be equals gradParametersTorch
+    grad shouldEqual gradParametersTorch
   }
 
   "load torch's Inception+bn float version" should "generate correct output" in {
