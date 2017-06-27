@@ -20,15 +20,13 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.{Tensor, TensorDataType}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
-import com.intel.analytics.bigdl.nn.Module
+import com.intel.analytics.bigdl.nn.{InitializationMethod, Module, Zeros}
 import com.intel.analytics.bigdl.utils.TorchObject.TYPE_MODULE
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.spark.rdd.RDD
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.dataset.Sample
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
-import serialization.Model.BigDLModel
 
 import scala.reflect.ClassTag
 
@@ -51,7 +49,7 @@ abstract class TensorModule[T: ClassTag]
  */
 abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
 @specialized(Float, Double) T: ClassTag](
-  implicit ev: TensorNumeric[T]) extends Serializable with ModuleSerializer{
+  implicit ev: TensorNumeric[T]) extends Serializable {
 
   private val namePostfix = Integer.toHexString(java.util.UUID.randomUUID().hashCode())
   /**
@@ -286,6 +284,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
 
   def reset(): Unit = {}
 
+
   protected var line = "\n"
 
   def setLine(line: String): this.type = {
@@ -395,7 +394,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
    * @param nodes upstream module nodes
    * @return node containing current module
    */
-  def apply(nodes : ModuleNode[T]*): ModuleNode[T] = {
+  def inputs(nodes : ModuleNode[T]*): ModuleNode[T] = {
     require(this.isInstanceOf[AbstractModule[_, Tensor[T], T]],
       "AbstractModule: Only module with tensor output can be added into a graph node")
     val curNode = new ModuleNode[T](this.asInstanceOf[AbstractModule[Activity, Tensor[T], T]])
@@ -433,5 +432,4 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
     Evaluator(this).test(dataset, vMethods, batchSize)
   }
 }
-
 
