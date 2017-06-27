@@ -15,7 +15,7 @@ MultiCriterion is a weighted sum of other criterions each applied to the same in
 ```scala
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericDouble
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
 val module = MultiCriterion()
 val nll = ClassNLLCriterion()
@@ -34,15 +34,16 @@ target(Array(5)) = 1
 val output = module.forward(input, target)
 
 > input
-0.9682213801388531
-0.35258855644097503
-0.04584479998452568
--0.21781499692588918
--1.02721844006879
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 5]
+1.0641425
+-0.33507252
+1.2345984
+0.08065767
+0.531199
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 5]
+
 
 > output
-res0: Double = 3.609954360965033
+res7: Float = 1.9633228
 ```
 
 **Python example:**
