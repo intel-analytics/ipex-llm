@@ -16,7 +16,8 @@
 package com.intel.analytics.bigdl.parameters
 
 import java.util.concurrent.atomic.AtomicLong
-import java.util.concurrent.{Callable, Executors, Future, ThreadFactory}
+import java.util.concurrent.{Callable, Executors, ExecutorService, Future, ThreadFactory}
+
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -31,11 +32,10 @@ import scala.collection.JavaConverters._
 import scala.reflect._
 
 object AllReduceParameter {
-  private val syncPoolSize: Int = System.getProperty(
-    "bigdl.Parameter.syncPoolSize", "4").toInt
+  private val syncPoolSize: Int = System.getProperty("bigdl.Parameter.syncPoolSize", "4").toInt
 
-  val logger = Logger.getLogger(getClass)
-  val syncPool = Executors.newFixedThreadPool(syncPoolSize, new ThreadFactory {
+  val logger: Logger = Logger.getLogger(getClass)
+  val syncPool: ExecutorService = Executors.newFixedThreadPool(syncPoolSize, new ThreadFactory {
     override def newThread(r: Runnable): Thread = {
       val t = Executors.defaultThreadFactory().newThread(r)
       t.setDaemon(true)
@@ -51,16 +51,21 @@ object AllReduceParameter {
 }
 
 /**
- * Represent a parameter stored on block manager. In distributed optimization, we put parameter
- * on block manager of spark. Each worker sync parameter through block manager. Block manager
- * here serve as a parameter server.
+ * Represent a parameter stored on block manager. In distributed optimization, we put parameters
+ * on block manager of spark. Each worker syncs parameters through the block manager. Block manager
+ * here serves as a parameter server.
+ *
+ * A Tensor is sliced into `partitionNum` chunks and each chunk is assigned to a particular node
+ * (Spark executor). Likewise, gradients for each chunk are also assigned and stored on separate
+ * nodes. In this way, gradient aggregation and parameter updates can be performed independently for
+ * each chunk on separate nodes.
+ *
  * @param id distinguish from other parameters
  * @param partitionNum how many partitions will use this parameter
- * @param size size of the parameter(1D vector)
- * @tparam T
+ * @param size size of the parameter (1D vector)
+ * @tparam T Tensor element type
  */
-class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int,
-  size: Int) extends Serializable {
+class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) extends Serializable {
   import AllReduceParameter._
 
   @transient private var taskSize = 0
@@ -68,10 +73,14 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int,
   @transient private var partitionId: Int = 0
 
   @transient lazy val parameterBuffer: CompressedTensor[T] = readParameterBuffer()
-  @transient lazy val weightPartition: Tensor[T] = readWeightParititon()
+  @transient lazy val weightPartition: Tensor[T] = readWeightPartition()
   @transient lazy val gradientPartition: Tensor[T] = readGradientPartition()
 
-  private def readObject(in: java.io.ObjectInputStream) = {
+  /**
+   * This is used by [[java.io.Serializable]] to update some class members when the object is
+   * deserialized.
+   */
+  private def readObject(in: java.io.ObjectInputStream): Unit = {
     in.defaultReadObject()
     taskSize = size / partitionNum
     extraSize = size % partitionNum
@@ -79,39 +88,46 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int,
   }
 
   def readParameterBuffer(): CompressedTensor[T] = {
-    new FP16SplitsCompressedTensor[T](size,
-      partitionNum).asInstanceOf[CompressedTensor[T]]
+    new FP16SplitsCompressedTensor[T](size, partitionNum).asInstanceOf[CompressedTensor[T]]
   }
 
-  def readWeightParititon(): Tensor[T] = {
+  /**
+   * Reads the portion of the weights assigned to this node from the local block manager.
+   * @return Tensor containing a slice of the overall model weights.
+   */
+  def readWeightPartition(): Tensor[T] = {
     val blockId = getWeightPartitionId()
-    BlockManagerWrapper.getLocal(blockId).map(_.data.next()) match {
-      case Some(x) =>
-        x.asInstanceOf[Tensor[T]]
-
-      case None =>
-        throw new Exception("Please initialize AllReduceParameter first!!")
-    }
+    BlockManagerWrapper.getLocal(blockId)
+      .map(_.data.next().asInstanceOf[Tensor[T]])
+      .getOrElse(throw new IllegalStateException("Please initialize AllReduceParameter first!"))
   }
 
+  /**
+   * Reads the portion of the gradients assigned to this node from the local block manager.
+   * @return Tensor containing a slice of the overall model gradients.
+   */
   def readGradientPartition(): Tensor[T] = {
     val blockId = getGradientPartitionId()
-    BlockManagerWrapper.getLocal(blockId).map(_.data.next()) match {
-      case Some(x) =>
-        x.asInstanceOf[Tensor[T]]
-
-      case None =>
-        throw new Exception("Please initialize AllReduceParameter first!!")
-    }
+    BlockManagerWrapper.getLocal(blockId)
+      .map(_.data.next().asInstanceOf[Tensor[T]])
+      .getOrElse(throw new IllegalStateException("Please initialize AllReduceParameter first!"))
   }
 
+  /**
+   * This method should be called on each RDD partition before parameter synchronization begins.
+   * An empty gradient tensor is placed in the block manager that can be used to store gradients.
+   * A 1 / numPartition fraction of the `parameter` tensor is copied to the block manager as a
+   * compressed tensor.
+   *
+   * @param parameter A tensor representing the initial underlying weights of this
+   *                  `AllReduceParameter`
+   */
   def init(parameter: Tensor[T])(implicit ev: TensorNumeric[T]): Unit = {
     val _classTag = classTag[T]
     val start = partitionId * taskSize + math.min(partitionId, extraSize)
     val length = taskSize + (if (partitionId < extraSize) 1 else 0)
 
-    val _weights = Tensor[T](length)(_classTag, ev).copy(parameter.narrow(1,
-      start + 1, length))
+    val _weights = Tensor[T](length)(_classTag, ev).copy(parameter.narrow(1, start + 1, length))
     val _gradients = Tensor[T](length)(_classTag, ev)
 
     BlockManagerWrapper.removeBlock(getWeightPartitionId())
@@ -126,54 +142,69 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int,
     BlockManagerWrapper.putBytes(blockId, fp16param.bytes(), StorageLevel.MEMORY_ONLY_SER)
   }
 
-  def getWeightBlockId(pid : Int): BlockId = {
+  def getWeightBlockId(pid: Int): BlockId = {
     SparkExtension.getLocalBlockId(id + "weightBytes" + pid)
   }
 
-  def getWeightPartitionId(): BlockId = {
+  private def getWeightPartitionId(): BlockId = {
     SparkExtension.getLocalBlockId(id + "weights" + partitionId)
   }
 
-  def getGradientPartitionId(): BlockId = {
+  private def getGradientPartitionId(): BlockId = {
     SparkExtension.getLocalBlockId(id + "gradients" + partitionId)
   }
 
-  def getGradientBlockId(pidFrom : Int, pidTo : Int): BlockId = {
+  def getGradientBlockId(pidFrom: Int, pidTo: Int): BlockId = {
     SparkExtension.getLocalBlockId(id.toString + pidTo + "gradientBytes" + pidFrom)
   }
 
+  /**
+   * Use a fixed thread pool to launch a thread for each partition of the weights. Each thread
+   * requests a partition of the weights from the Spark block manager and copies it into
+   * `localParameter`.
+   *
+   * @param localParameter The Tensor that will hold the retrieved weights.
+   * @return A `FutureResult` which contains futures for each thread.
+   */
   def getWeights(localParameter: Tensor[T]): FutureResult[Int] = {
-  val bm = SparkEnv.get.blockManager
-    val tasks = (0 until partitionNum).map(pid => {
-      syncPool.submit(new Callable[Int] {
-        override def call(): Int = {
-          try {
-            val blockId = getWeightBlockId(pid)
-            val localBuffer = BlockManagerWrapper.byteBufferConvert(
-              bm.getLocalBytes(blockId).getOrElse(bm.getRemoteBytes(blockId)
-                .get))
-            val start = pid * taskSize + math.min(pid, extraSize)
-            val length = taskSize + (if (pid < extraSize) 1 else 0)
-            require(localBuffer.array().length == length * 2)
-            SerializerInstance.serialize(localBuffer).deCompress(0, localParameter, start, length)
-            BlockManagerWrapper.unlock(blockId)
-            pid
-          } catch {
-            case t : Throwable =>
-              logger.error("Error: " + ExceptionUtils.getStackTrace(t))
-              throw t
+    val bm = SparkEnv.get.blockManager
+    val tasks = (0 until partitionNum).map { pid =>
+      syncPool.submit {
+        new Callable[Int] {
+          override def call(): Int = {
+            try {
+              val blockId = getWeightBlockId(pid)
+              val localBuffer = BlockManagerWrapper.byteBufferConvert(
+                bm.getLocalBytes(blockId).getOrElse(bm.getRemoteBytes(blockId).get))
+              val start = pid * taskSize + math.min(pid, extraSize)
+              val length = taskSize + (if (pid < extraSize) 1 else 0)
+              require(localBuffer.array().length == length * 2)
+              SerializerInstance.serialize(localBuffer).deCompress(0, localParameter, start, length)
+              BlockManagerWrapper.unlock(blockId)
+              pid
+            } catch {
+              case t: Throwable =>
+                logger.error("Error: " + ExceptionUtils.getStackTrace(t))
+                throw t
+            }
           }
         }
-      })
-    })
+      }
+    }
     new FutureResult(tasks)
   }
 
-  def aggregrateGradientPartition(): Unit = {
+  /**
+   * Retrieve gradients for the slice of the model that this node is responsible for from all the
+   * other nodes. A new thread is created for each separate node. The gradients are then summed
+   * and then stored in decompressed form in `gradientPartition`.
+   */
+  def aggregateGradientPartition(): Unit = {
     val bm = SparkEnv.get.blockManager
-    require(partitionId < partitionNum)
+    require(partitionId < partitionNum, s"This parameter was created with $partitionNum " +
+      s"partitions. It cannot be used on RDDs with >$partitionNum partitions.")
     val params = new Array[CompressedTensor[T]](partitionNum)
-    val sgThreads = (0 until partitionNum).map(pid => {
+    val sgThreads = (0 until partitionNum).map { pid =>
       new Callable[Int] {
         override def call(): Int = {
           try {
@@ -184,13 +215,13 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int,
             BlockManagerWrapper.unlock(blockId)
             pid
           } catch {
-            case t : Throwable =>
+            case t: Throwable =>
               logger.error("Error: " + ExceptionUtils.getStackTrace(t))
               throw t
           }
         }
       }
-    })
+    }
     syncPool.invokeAll(sgThreads.asJava)
 
     val length = taskSize + (if (partitionId < extraSize) 1 else 0)
@@ -198,41 +229,55 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int,
     val innerTaskSize = length / poolSize
     val innerExtraSize = length % poolSize
     val availableTask = if (innerTaskSize == 0) innerExtraSize else poolSize
-    Engine.default.invokeAndWait2((0 until availableTask).map(tid => () => {
-      val innerStart = tid * innerTaskSize + math.min(innerExtraSize, tid)
-      val innerLength = innerTaskSize + (if (tid < innerExtraSize) 1 else 0)
-      params.reduce((l, r) => l.add(r.bytes(innerStart, innerLength), innerStart,
-        innerLength))
-      tid
-    }))
-
+    Engine.default.invokeAndWait2 {
+      (0 until availableTask).map { tid =>
+        () => {
+          val innerStart = tid * innerTaskSize + math.min(innerExtraSize, tid)
+          val innerLength = innerTaskSize + (if (tid < innerExtraSize) 1 else 0)
+          params.reduce { (l, r) =>
+            l.add(r.bytes(innerStart, innerLength), innerStart, innerLength)
+          }
+          tid
+        }
+      }
+    }
     params.head.deCompress(gradientPartition)
   }
 
+  /**
+   * Slice gradients learned from this partition of data into chunks, and mark each chunk to be sent
+   * to the appropriate parameter node, and put it in the block manager.
+   *
+   * @param parameter A Tensor that contains gradients computed on the entire model on a single
+   *                  partition of data.
+   */
   def putGradients(parameter: Tensor[T]): Unit = {
     var pid = 0
-    val bm = SparkEnv.get.blockManager
-    require(parameterBuffer != null)
+    require(parameterBuffer != null, "TODO")
     parameterBuffer.compress(parameter)
     while (pid < partitionNum) {
       val start = pid * taskSize + math.min(pid, extraSize)
       val length = taskSize + (if (pid < extraSize) 1 else 0)
       val blockId = getGradientBlockId(partitionId, pid)
       BlockManagerWrapper.putBytes(
-        blockId, parameterBuffer.bytes(start, length),
-        StorageLevel.MEMORY_ONLY_SER)
+        blockId, parameterBuffer.bytes(start, length), StorageLevel.MEMORY_ONLY_SER)
       pid += 1
     }
   }
 
+  /**
+   * Put the portion of the weights that this partition is responsible for to the block manager.
+   * Weights are placed locally, then pulled when needed by other partitions.
+   */
   def sendWeightPartition(): Unit = {
     val blockId = getWeightBlockId(partitionId)
     val weightsId = getWeightPartitionId()
-    require(weightPartition != null)
+    require(weightPartition != null, "Cannot send the weights for this partition until they have" +
+      "been updated by the optimizer!")
     BlockManagerWrapper.removeBlock(blockId)
     BlockManagerWrapper.unlock(weightsId)
     BlockManagerWrapper.removeBlock(weightsId)
-    BlockManagerWrapper.putSingle((weightsId),
+    BlockManagerWrapper.putSingle(weightsId,
       weightPartition, StorageLevel.MEMORY_AND_DISK, tellMaster = false)
     BlockManagerWrapper.putBytes(blockId,
       SerializerInstance.serialize(weightPartition).bytes(), StorageLevel.MEMORY_ONLY_SER)
@@ -240,7 +285,5 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int,
 }
 
 private[bigdl] class FutureResult[T](private val futures: Seq[Future[T]]) {
-  def waitResult(): Seq[T] = {
-    futures.map(_.get())
-  }
+  def waitResult(): Seq[T] = futures.map(_.get())
 }
