@@ -18,7 +18,6 @@ package com.intel.analytics.bigdl.parameters
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.{Callable, Executors, ExecutorService, Future, ThreadFactory}
 
-
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Engine
@@ -142,7 +141,7 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) ex
     BlockManagerWrapper.putBytes(blockId, fp16param.bytes(), StorageLevel.MEMORY_ONLY_SER)
   }
 
-  def getWeightBlockId(pid: Int): BlockId = {
+  private def getWeightBlockId(pid: Int): BlockId = {
     SparkExtension.getLocalBlockId(id + "weightBytes" + pid)
   }
 
@@ -154,7 +153,7 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) ex
     SparkExtension.getLocalBlockId(id + "gradients" + partitionId)
   }
 
-  def getGradientBlockId(pidFrom: Int, pidTo: Int): BlockId = {
+  private def getGradientBlockId(pidFrom: Int, pidTo: Int): BlockId = {
     SparkExtension.getLocalBlockId(id.toString + pidTo + "gradientBytes" + pidFrom)
   }
 
@@ -253,7 +252,7 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) ex
    */
   def putGradients(parameter: Tensor[T]): Unit = {
     var pid = 0
-    require(parameterBuffer != null, "TODO")
+    require(parameterBuffer != null)
     parameterBuffer.compress(parameter)
     while (pid < partitionNum) {
       val start = pid * taskSize + math.min(pid, extraSize)
