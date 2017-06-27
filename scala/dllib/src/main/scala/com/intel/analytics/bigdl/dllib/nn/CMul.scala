@@ -121,11 +121,13 @@ class CMul[@specialized(Float, Double) T: ClassTag](
     gradInput
   }
 
-  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
-    scale: Double = 1.0): Unit = {
+  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
+    if (scaleW == 0) {
+      return
+    }
 
     if (weight.nElement() == gradOutput.nElement()) {
-      gradWeight.addcmul(ev.fromType[Double](scale), input, gradOutput)
+      gradWeight.addcmul(ev.fromType[Double](scaleW), input, gradOutput)
     } else {
       if (weight.dim() == input.dim()) {
         _repeat.resizeAs(input).cmul(input, gradOutput)
@@ -140,16 +142,16 @@ class CMul[@specialized(Float, Double) T: ClassTag](
           }
           i += 1
         }
-        gradWeight.add(ev.fromType[Double](scale), sumFrom)
+        gradWeight.add(ev.fromType[Double](scaleW), sumFrom)
       } else {
         _repeat.resizeAs(input).cmul(input, gradOutput)
         _sum.sum(_repeat, 1)
-        gradWeight.add(ev.fromType[Double](scale), _sum)
+        gradWeight.add(ev.fromType[Double](scaleW), _sum)
       }
 
     }
-    if (null != wRegularizer) {
-      wRegularizer.accRegularization(weight, gradWeight)
+    if (null != wRegularizer && scaleW != 0) {
+      wRegularizer.accRegularization(weight, gradWeight, scaleW)
     }
   }
 

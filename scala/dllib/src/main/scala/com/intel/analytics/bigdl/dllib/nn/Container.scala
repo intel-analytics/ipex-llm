@@ -172,6 +172,16 @@ abstract class Container[A <: Activity : ClassTag,
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
 
+  override def setScaleW(w: Double): this.type = {
+    modules.foreach(_.setScaleW(w))
+    this
+  }
+
+  override def setScaleB(b: Double): this.type = {
+    modules.foreach(_.setScaleB(b))
+    this
+  }
+
   override def apply(name : String): Option[AbstractModule[Activity, Activity, T]] = {
     if (this.getName() == name) {
       Some(this)
