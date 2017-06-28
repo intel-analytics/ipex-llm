@@ -18,7 +18,7 @@ package org.apache.spark.ml
 import com.intel.analytics.bigdl.{Criterion, Module}
 import com.intel.analytics.bigdl.dataset.{DataSet, MiniBatch}
 import com.intel.analytics.bigdl.models.utils.ModelBroadcast
-import com.intel.analytics.bigdl.optim.{Adam, LBFGS, Optimizer, Trigger}
+import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import org.apache.spark.ml.param.{IntParam, ParamMap, ParamValidators, _}
@@ -83,15 +83,15 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag](
 
   protected override def internalFit(
       featureAndLabel: RDD[(Seq[AnyVal], Seq[AnyVal])]): DLTransformerBase = {
-    val batches = toMiniBatch(featureAndLabel).cache()
+    val batches = toMiniBatch(featureAndLabel)
     val dataset = DataSet.rdd(batches)
 
     val optimizer = Optimizer(model, dataset, criterion)
-      .setOptimMethod(new Adam[T]())
+      .setOptimMethod(new SGD[T]())
       .setEndWhen(Trigger.maxEpoch($(maxEpoch)))
     val optimizedModel = optimizer.optimize()
 
-    batches.unpersist(false)
+    dataset.unpersist()
     wrapBigDLModel(optimizedModel, featureSize)
   }
 

@@ -23,9 +23,9 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericF
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.ml.feature.MinMaxScaler
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.SparkContext
 import org.apache.spark.ml._
-import org.apache.spark.sql.{DataFrame, Row, SQLContext}
+import org.apache.spark.sql.{DataFrame, SQLContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer
@@ -36,7 +36,7 @@ class DLClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
   var sqlContext : SQLContext = _
   var smallData: Seq[(Array[Double], Double)] = _
   val nRecords = 100
-  val maxEpoch = 100
+  val maxEpoch = 30
 
   before {
     val conf = Engine.createSparkConf().setAppName("Test DLEstimator").setMaster("local[1]")
@@ -54,7 +54,6 @@ class DLClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "An DLClassifier" should "has correct default params" in {
-
     val model = Linear[Float](10, 1)
     val criterion = ClassNLLCriterion[Float]()
     val estimator = new DLClassifier[Float](model, criterion, Array(10))
@@ -71,7 +70,7 @@ class DLClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
       .setBatchSize(2)
       .setMaxEpoch(maxEpoch)
     val data = sc.parallelize(smallData)
-    val df: DataFrame = sqlContext.createDataFrame(data).toDF("features", "label")
+    val df = sqlContext.createDataFrame(data).toDF("features", "label")
 
     val dlModel = classifier.fit(df)
     dlModel.isInstanceOf[DLClassifierModel[_]] should be(true)

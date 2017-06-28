@@ -34,7 +34,7 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
   var sqlContext : SQLContext = _
   var smallData: Seq[(Array[Double], Double)] = _
   val nRecords = 100
-  val maxEpoch = 100
+  val maxEpoch = 30
 
   before {
     val conf = Engine.createSparkConf().setAppName("Test DLEstimator").setMaster("local[1]")
@@ -52,7 +52,6 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "An Estimator" should "has correct default params" in {
-
     val model = Linear[Float](10, 1)
     val criterion = ClassNLLCriterion[Float]()
     val estimator = new DLEstimator[Float](model, criterion, Array(10), Array(1))
@@ -69,7 +68,7 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       .setBatchSize(2)
       .setMaxEpoch(maxEpoch)
     val data = sc.parallelize(smallData)
-    val df: DataFrame = sqlContext.createDataFrame(data).toDF("features", "label")
+    val df = sqlContext.createDataFrame(data).toDF("features", "label")
 
     val dlModel = estimator.fit(df)
     dlModel.isInstanceOf[DLModel[_]] should be(true)
@@ -173,7 +172,7 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val criterion = ClassNLLCriterion[Float]()
     val estimator = new DLEstimator[Float](model, criterion, Array(6), Array(1))
       .setBatchSize(3)
-      .setMaxEpoch(maxEpoch)
+      .setMaxEpoch(50)
     val data = sc.parallelize(smallData)
     val df: DataFrame = sqlContext.createDataFrame(data).toDF("features", "label")
 
