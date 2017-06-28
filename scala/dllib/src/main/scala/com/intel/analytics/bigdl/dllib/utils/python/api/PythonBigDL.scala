@@ -1153,6 +1153,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     SGD.MultiStep(stepSizes.asScala.toArray, gamma)
   }
 
+  def createExponential(decayStep: Int, decayRate: Double,
+    stairCase: Boolean = false): SGD.Exponential = {
+    SGD.Exponential(decayStep, decayRate, stairCase)
+  }
+
   def createDefault(): SGD.Default = {
     SGD.Default()
   }
