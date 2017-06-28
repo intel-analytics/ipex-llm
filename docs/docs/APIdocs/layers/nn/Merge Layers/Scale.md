@@ -4,7 +4,7 @@
 **Scala:**
 
 ```scala
-Scale[T](Array(2, 1))
+Scale(Array(2, 1))
 ```
 **Python:**
 ```python
@@ -23,13 +23,14 @@ import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
-val input = Tensor[Float](2, 3).fill(1)
+val input = Tensor(2, 3).fill(1f)
 println("input:")
 println(input)
-val scale = Scale[Float](Array(2, 1))
-val weight = Tensor[Float](2, 1).fill(2)
-val bias = Tensor[Float](2, 1).fill(3)
+val scale = Scale(Array(2, 1))
+val weight = Tensor(2, 1).fill(2f)
+val bias = Tensor(2, 1).fill(3f)
 scale.setWeightsBias(Array(weight, bias))
 println("Weight:")
 println(weight)

@@ -3,7 +3,7 @@
 
 **Scala:**
 ```scala
-Reverse[T](dim: Int = 1, isInplace: Boolean = false)
+Reverse(dim: Int = 1, isInplace: Boolean = false)
 ```
 **Python:**
 ```python
@@ -17,13 +17,16 @@ Reverse(dimension=1, bigdl_type="float")
 **Scala example:**
 ```scala
 import com.intel.analytics.bigdl.utils._
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
 def randomn(): Float = RandomGenerator.RNG.uniform(0, 1)
-val input = Tensor[Float](2, 3)
-input.apply1(x => randomn())
+val input = Tensor(2, 3)
+input.apply1(x => randomn().toFloat)
 println("input:")
 println(input)
-val layer = new Reverse[Float](1)
+val layer = new Reverse(1)
 println("output:")
 println(layer.forward(input))
 ```

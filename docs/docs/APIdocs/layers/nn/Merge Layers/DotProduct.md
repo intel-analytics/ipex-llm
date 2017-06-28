@@ -3,7 +3,7 @@
 **Scala:**
 
 ```scala
-DotProduct[T]()
+DotProduct()
 ```
 **Python:**
 ```python
@@ -19,10 +19,11 @@ import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
-val mlp = DotProduct[Float]()
-val x = Tensor[Float](3).fill(1)
-val y = Tensor[Float](3).fill(2)
+val mlp = DotProduct()
+val x = Tensor(3).fill(1f)
+val y = Tensor(3).fill(2f)
 println("input:")
 println(x)
 println(y)

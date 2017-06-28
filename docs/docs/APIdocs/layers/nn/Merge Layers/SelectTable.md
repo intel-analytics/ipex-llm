@@ -2,7 +2,7 @@
 
 **Scala:**
 ```scala
-SelectTable[T](index: Int)
+SelectTable(index: Int)
 ```
 **Python:**
 ```python
@@ -21,15 +21,15 @@ import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
-import com.intel.analytics.bigdl.utils.{T, Table}
-val input = T(Tensor[Float](2,3).randn(), Tensor[Float](2,3).randn())
+val input = T(Tensor(2,3).randn(), Tensor(2,3).randn())
 
 println("input: ")
 println(input)
 println("output:")
-println(SelectTable[Float](1).forward(input)) // Select and output the first element of the input which shape is (2, 3)
-println(SelectTable[Float](2).forward(input)) // Select and output the second element of the input which shape is (2, 3)
+println(SelectTable(1).forward(input)) // Select and output the first element of the input which shape is (2, 3)
+println(SelectTable(2).forward(input)) // Select and output the second element of the input which shape is (2, 3)
 
 ```
 ```

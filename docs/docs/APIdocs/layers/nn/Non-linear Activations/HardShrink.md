@@ -3,7 +3,7 @@
 
 **Scala:**
 ```scala
-HardShrink[T](lambda: Double = 0.5)
+HardShrink(lambda: Double = 0.5)
 ```
 **Python:**
 ```python
@@ -27,15 +27,15 @@ f(x) = ⎨ x, if x < -lambda
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.nn._
-
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
 import com.intel.analytics.bigdl.utils._
 
 def randomn(): Float = RandomGenerator.RNG.uniform(-10, 10)
-val input = Tensor[Float](3, 4)
-input.apply1(x => randomn())
+val input = Tensor(3, 4)
+input.apply1(x => randomn().toFloat)
 
-val layer = new HardShrink[Float](8)
+val layer = new HardShrink(8)
 println("input:")
 println(input)
 println("output:")

@@ -28,15 +28,16 @@ import com.intel.analytics.bigdl.utils.{T}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.utils.{T}
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
 val loss = HingeEmbeddingCriterion[Float](1, sizeAverage = false)
-val input = Tensor[Float](T(0.1, 2.0, 2.0, 2.0))
+val input = Tensor(T(0.1f, 2.0f, 2.0f, 2.0f))
 println("input: \n" + input)
 println("ouput: ")
 
-println("Target=1: " + loss.forward(input, Tensor[Float](4, 1).fill(1)))
+println("Target=1: " + loss.forward(input, Tensor(4, 1).fill(1f)))
 
-println("Target=-1: " + loss.forward(input, Tensor[Float](4, 1).fill(-1)))
+println("Target=-1: " + loss.forward(input, Tensor(4, 1).fill(-1f)))
 ```
 
 ```

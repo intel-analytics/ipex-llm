@@ -4,7 +4,7 @@
 **Scala:**
 
 ```scala
-ELU[Float](alpha: Double = 1.0, inplace: Boolean = false)
+ELU(alpha: Double = 1.0, inplace: Boolean = false)
 ```
 **Python:**
 ```python
@@ -30,10 +30,11 @@ For reference see [Fast and Accurate Deep Network Learning by Exponential Linear
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
-val xs = Tensor[Float](4).randn()
+val xs = Tensor(4).randn()
 println(xs)
-println(ELU[Float](4).forward(xs))
+println(ELU(4).forward(xs))
 ```
 ```
 1.0217569

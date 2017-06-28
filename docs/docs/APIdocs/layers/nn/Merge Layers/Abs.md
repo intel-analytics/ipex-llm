@@ -2,7 +2,7 @@
 
 **Scala:**
 ```scala
-abs = Abs[T]()
+abs = Abs()
 ```
 **Python:**
 ```python
@@ -14,10 +14,15 @@ An element-wise abs operation.
 
 **Scala example:**
 ```scala
-val abs = new Abs[Float]
-val input = Tensor[Float](2)
-input(1) = 21
-input(2) = -29
+import com.intel.analytics.bigdl.utils._
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+
+val abs = new Abs
+val input = Tensor(2)
+input(1) = 21f
+input(2) = -29f
 print(abs.forward(input))
 ```
 `output is:　21.0　29.0`
