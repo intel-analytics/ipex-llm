@@ -51,7 +51,7 @@ This Python binding has been tested with Python 2.7 and Spark 1.6.0 / Spark 2.0.
         --conf spark.executor.extraClassPath=bigdl-VERSION-jar-with-dependencies.jar \
         ${BigDL_HOME}/pyspark/dl/models/lenet/lenet5.py
  ```
-details can be found at: [LeNet5](https://github.com/intel-analytics/BigDL/tree/master/pyspark/dl/models/lenet/README.md).
+details can be found at: [LeNet5](https://github.com/intel-analytics/BigDL/tree/master/pyspark/bigdl/models/lenet/README.md).
 
 ## Launch Jupyter on standalone cluster
 
@@ -83,4 +83,4 @@ details can be found at: [LeNet5](https://github.com/intel-analytics/BigDL/tree/
 
 ## Run a CNN/LSTM/GRU Text Classifier example on standalone cluster
 Please refer to the page
-[python text classifier](https://github.com/intel-analytics/BigDL/tree/master/pyspark/dl/models/textclassifier/README.md).
+[python text classifier](https://github.com/intel-analytics/BigDL/tree/master/pyspark/bigdl/models/textclassifier/README.md).
