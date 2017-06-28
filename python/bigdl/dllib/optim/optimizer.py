@@ -135,6 +135,22 @@ class Poly(JavaValue):
             JavaValue.__init__(self, None, bigdl_type, power, max_iteration)
 
 
+class Exponential(JavaValue):
+    """
+    [[Exponential]] is a learning rate schedule, which rescale the learning rate by
+    lr_{n + 1} = lr * decayRate `^` (iter / decayStep)
+    :param decay_step the inteval for lr decay
+    :param decay_rate decay rate
+    :param stair_case if true, iter / decayStep is an integer division
+                     and the decayed learning rate follows a staircase function.
+
+    >>> exponential = Exponential(100, 0.1)
+    creating: createExponential
+    """
+    def __init__(self, decay_step, decay_rate, stair_case=False, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type, decay_step, decay_rate, stair_case)
+
+
 class Step(JavaValue):
     """
     A learning rate decay policy, where the effective learning rate is
