@@ -329,4 +329,44 @@ class SGDSpec extends FlatSpec with Matchers {
     optimMethod.optimize(feval, x)
     optimMethod.learningRateSchedule.currentRate should be(-0.1 * math.exp(-2))
   }
+
+  "ExponentailDecay Continous" should "generate correct learning rates" in {
+    val optimMethod = new SGD[Double](0.05)
+    optimMethod.learningRateSchedule = Exponential(10, 0.96)
+    def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
+      (0.1, Tensor[Double](Storage(Array(1.0, 1.0))))
+    }
+    val x = Tensor[Double](Storage(Array(10.0, 10.0)))
+    val state = T("epoch" -> 0, "evalCounter" -> 0)
+    optimMethod.state = state
+    optimMethod.optimize(feval, x)
+    (1 to 5).foreach(i => {
+      optimMethod.optimize(feval, x)
+      optimMethod.learningRateSchedule.currentRate should be(-0.05 * Math.pow(0.96, i / 10.0))
+    })
+
+  }
+
+  "ExponentailDecay Staircase" should "generate correct learning rates" in {
+    val optimMethod = new SGD[Double](0.05)
+    optimMethod.learningRateSchedule = Exponential(10, 0.96, true)
+    def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
+      (0.1, Tensor[Double](Storage(Array(1.0, 1.0))))
+    }
+    val x = Tensor[Double](Storage(Array(10.0, 10.0)))
+    val state = T("epoch" -> 0, "evalCounter" -> 0)
+    optimMethod.state = state
+    (1 to 10).foreach(_ => {
+      optimMethod.optimize(feval, x)
+      optimMethod.learningRateSchedule.currentRate should be(-0.05)
+    })
+    (1 to 10).foreach(_ => {
+      optimMethod.optimize(feval, x)
+      optimMethod.learningRateSchedule.currentRate should be(-0.05 * Math.pow(0.96, 1))
+    })
+    (1 to 10).foreach(_ => {
+      optimMethod.optimize(feval, x)
+      optimMethod.learningRateSchedule.currentRate should be(-0.05 * Math.pow(0.96, 2))
+    })
+  }
 }
