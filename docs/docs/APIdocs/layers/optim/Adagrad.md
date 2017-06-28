@@ -2,9 +2,9 @@
 
 **Scala:**
 ```scala
-val adagrad = new Adagrad(var learningRate: Double = 1e-3,
-                          var learningRateDecay: Double = 0.0,
-                          var weightDecay: Double = 0.0)
+val adagrad = new Adagrad(learningRate = 1e-3,
+                          learningRateDecay = 0.0,
+                          weightDecay = 0.0)
 
 ```
 
