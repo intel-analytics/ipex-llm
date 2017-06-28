@@ -199,12 +199,12 @@ class TensorflowSaverSpec extends TensorflowSpecHelper {
 
   "lenet" should "be correctly saved" in {
     tfCheck()
-    val conv1 = SpatialConvolution(1, 6, 5, 5).setName("conv1").apply()
-    val tanh1 = Tanh().setName("tanh1").apply(conv1)
-    val pool1 = SpatialMaxPooling(2, 2, 2, 2).setName("pool1").apply(tanh1)
-    val tanh2 = Tanh().setName("tanh2").apply(pool1)
-    val conv2 = SpatialConvolution(6, 12, 5, 5).setName("conv2").apply(tanh2)
-    val pool2 = SpatialMaxPooling(2, 2, 2, 2).setName("output").apply(conv2)
+    val conv1 = SpatialConvolution(1, 6, 5, 5).setName("conv1").inputs()
+    val tanh1 = Tanh().setName("tanh1").inputs(conv1)
+    val pool1 = SpatialMaxPooling(2, 2, 2, 2).setName("pool1").inputs(tanh1)
+    val tanh2 = Tanh().setName("tanh2").inputs(pool1)
+    val conv2 = SpatialConvolution(6, 12, 5, 5).setName("conv2").inputs(tanh2)
+    val pool2 = SpatialMaxPooling(2, 2, 2, 2).setName("output").inputs(conv2)
 
     val funcModel = Graph(conv1, pool2)
     val inputData = Tensor(4, 1, 28, 28).rand()
@@ -229,7 +229,7 @@ class TensorflowSaverSpec extends TensorflowSpecHelper {
                    convertNHWC: Boolean = false,
                    outputSuffix: String = "") : Boolean = {
     tfCheck()
-    val layerNode = layer.setName("output").apply()
+    val layerNode = layer.setName("output").inputs()
     val graph = Graph(layerNode, layerNode)
     val outputTensor = layer.forward(inputTensor)
 
@@ -260,7 +260,7 @@ class TensorflowSaverSpec extends TensorflowSpecHelper {
                    convertNHWC: Boolean = false,
                    outputSuffix: String = "") : Boolean = {
     tfCheck()
-    val layerNode = layer.setName("output").apply()
+    val layerNode = layer.setName("output").inputs()
     val inputNodes = inputTensors.map(_ => Input[Float]()).toArray
     inputNodes.foreach(_ -> layerNode)
     inputNodes.zipWithIndex.foreach(n => n._1.element.setName("inputNode" + n._2))

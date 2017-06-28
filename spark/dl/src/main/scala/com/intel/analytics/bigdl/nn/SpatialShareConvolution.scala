@@ -193,8 +193,7 @@ class SpatialShareConvolution[T: ClassTag](
     return gradInput
   }
 
-  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
-                                 scale: Double = 1.0): Unit = {
+  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
     require(input.nDimension() == 3 || input.nDimension() == 4, "Only support 3D or 4D input")
     require(gradOutput.isContiguous())
 
@@ -220,7 +219,8 @@ class SpatialShareConvolution[T: ClassTag](
           gradWeightMM.select(1, g + 1),
           gradBias.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
           fInput.select(1, g + 1),
-          ev.fromType[Double](scale))
+          ev.fromType[Double](scaleW),
+          ev.fromType[Double](scaleB))
         g += 1
       }
     } else {
@@ -275,7 +275,8 @@ class SpatialShareConvolution[T: ClassTag](
                 gradientBiasMT.select(1, _i + indexStart).narrow(1, g * nOutputPlane / nGroup + 1,
                   nOutputPlane / nGroup),
                 fInputT.select(1, g + 1),
-                ev.fromType[Double](scale))
+                ev.fromType[Double](scaleW),
+                ev.fromType[Double](scaleB))
               g += 1
             }
             _i += 1

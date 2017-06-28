@@ -74,6 +74,10 @@ class SGD[@specialized(Float, Double) T: ClassTag](
 
     var (fx, dfdx) = feval(x)
 
+    if (wd != 0 || wds != null) {
+      require(!state.get[Boolean]("isLayerwiseScaled").getOrElse(false),
+        "SGD: Can't set layerwise scale and weight decay at the same time")
+    }
     if (wd != 0) {
       dfdx.add(ev.fromType[Double](wd), x)
     } else if (wds != null) {
@@ -448,6 +452,29 @@ object SGD {
       val p = nevals / decay_step
       optimMethod.state("evalCounter") = nevals + 1
       val clr = -lr * math.exp(-gamma * p)
+      currentRate = clr
+    }
+  }
+
+  /**
+   * [[Exponential]] is a learning rate schedule, which rescale the learning rate by
+   * lr_{n + 1} = lr * decayRate `^` (iter / decayStep)
+   * @param decayStep the inteval for lr decay
+   * @param decayRate decay rate
+   * @param stairCase if true, iter / decayStep is an integer division
+   *                  and the decayed learning rate follows a staircase function.
+   */
+  case class Exponential(decayStep: Int, decayRate: Double,
+    stairCase: Boolean = false) extends LearningRateSchedule {
+    override def updateHyperParameter[T](optimMethod: SGD[T]): Unit = {
+      val lr = optimMethod.learningRate
+      val nevals = optimMethod.state.get[Int]("evalCounter").getOrElse(0)
+      var p = nevals / decayStep.toDouble
+      if (stairCase) {
+        p = p.floor
+      }
+      val clr = -lr * Math.pow(decayRate, p)
+      optimMethod.state("evalCounter") = nevals + 1
       currentRate = clr
     }
   }
