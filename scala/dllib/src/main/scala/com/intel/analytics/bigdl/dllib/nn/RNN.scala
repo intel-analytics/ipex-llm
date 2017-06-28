@@ -122,6 +122,6 @@ object RnnCell {
     uRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null)
    (implicit ev: TensorNumeric[T]) : RnnCell[T] = {
-    new RnnCell[T](inputSize, hiddenSize, activation)
+    new RnnCell[T](inputSize, hiddenSize, activation, wRegularizer, uRegularizer, bRegularizer)
   }
 }
