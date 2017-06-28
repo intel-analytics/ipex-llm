@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
+import java.nio.ByteBuffer
 import java.util
 
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -1751,5 +1752,187 @@ private[nn] object NNPrimitive {
       }
       c += 1
     }
+  }
+}
+
+object Quantize{
+  def findMax(src: Array[Float], start: Int, end: Int): Float = {
+    src.slice(start, end).max
+  }
+
+  def findMin(src: Array[Float], start: Int, end: Int): Float = {
+    src.slice(start, end).min
+  }
+
+  def quantize(value: Float, max: Float, min: Float): Byte = {
+    Math.round(1.0 * (value - min) / (max - min) * Byte.MaxValue).toByte
+  }
+
+  def dequantize(byte: Byte, max: Float, min: Float): Float = {
+    byte.toFloat / Byte.MaxValue * (max - min) + min
+  }
+
+  def quantize(src: Array[Float], start: Int, end: Int, dst: ByteBuffer,
+    dstOffset: Int): (Float, Float) = {
+    var max = findMax(src, start, end)
+    val min = findMin(src, start, end)
+
+    max = Math.max(Math.abs(max), Math.abs(min))
+
+    for (i <- 0 until end - start) {
+      dst.put(dstOffset + i, quantize(src(start + i), max, min))
+    }
+
+    (max, min)
+  }
+
+  def dequantize(src: Array[Float], start: Int, end: Int, dst: ByteBuffer, dstOffset: Int,
+    max: Float, min: Float): Unit = {
+    require(src.length >= end, s"you write too much elements")
+
+    for (i <- 0 until end - start) {
+      src(start + i) = dequantize(dst.get(dstOffset + i), max, min)
+    }
+  }
+
+  def quantize(src: Array[Float], start: Int, end: Int, dst: ByteBuffer, dstOffset: Int,
+    size: Array[Int]): (Array[Float], Array[Float]) = {
+    require(size.length == 2, s"only support 2-dim matrix")
+    require(size.product == (end - start), s"number of elements does not match")
+
+    val height = size(0)
+    val width = size(1)
+
+    val max = new Array[Float](height)
+    val min = new Array[Float](height)
+
+    for (i <- 0 until height) {
+      val maxAndMin = quantize(src, start + i * width, start + (i + 1) * width, dst,
+        dstOffset + i * width)
+
+      max(i) = maxAndMin._1
+      min(i) = maxAndMin._2
+    }
+
+    (max, min)
+  }
+
+  def dequantize(data: Array[Float], start: Int, end: Int, quantizedData: ByteBuffer, offset: Int,
+    max: Array[Float], min: Array[Float], size: Array[Int]): Unit = {
+    require(max.length == min.length, s"the number of max doesn't match with the number of min")
+    require(max.length == size.length, s"the number of max doesn't match the size")
+
+    require(size.length == 2, s"only support 2-dim matrix")
+    require(size.product == (end - start), s"number of elements does not match")
+
+    val height = size(0)
+    val width = size(1)
+
+    for (i <- 0 until height) {
+      dequantize(data, start + i * width, start + (i + 1) * width,
+        quantizedData, offset + i * width, max(i), min(i))
+    }
+  }
+
+  private[bigdl] def get2Dim(shape: Array[Int]): Array[Int] = {
+    require(shape.length > 1, s"error size dimension, which must be great than 1")
+    val first = shape(0)
+    val last = shape.slice(1, shape.length).product
+    Array(first, last)
+  }
+
+  def quantize(input: Tensor[Float], buffer: ByteBuffer, offset: Int): Unit = {
+    val length = input.size().product
+
+    input.dim() match {
+      case 1 => quantize(input.storage().array(), input.storageOffset() - 1, length, buffer, offset)
+      case x if x > 1 =>
+        val size = get2Dim(input.size())
+        quantize(input.storage().array(), input.storageOffset() - 1, length, buffer, offset, size)
+      case _ => throw new UnsupportedOperationException(s"unsupported input")
+    }
+  }
+
+  def dequantize(input: Tensor[Float], buffer: ByteBuffer, offset: Int, max: Array[Float],
+    min: Array[Float]): Unit = {
+    val length = input.size().product
+
+    input.dim() match {
+      case 1 => dequantize(input.storage().array(), input.storageOffset() - 1, length, buffer,
+        offset, max(0), min(0))
+      case 2 =>
+        val shape = get2Dim(input.size())
+        dequantize(input.storage().array(), input.storageOffset() - 1, length, buffer,
+          offset, max, min, shape)
+    }
+  }
+
+  def loss(before: Array[Float], after: Array[Float], start: Int, end: Int): Double = {
+    var lossValue = 0.0
+
+    for (i <- start until end) {
+      lossValue += (before(i) - after(i))
+    }
+
+    lossValue
+  }
+
+  def testQuantizeMatrix(): Unit = {
+    val src = Array(0.1f, 0.2f, 0.3f, 0.4f, 0.5f,
+      0.6f, 0.4f, 0.3f, 0.2f, 0.1f)
+    val dst = ByteBuffer.allocate(src.length)
+    dst.clear()
+
+    val (max, min) = quantize(src, 0, src.length, dst, 0, Array(2, 5))
+
+    for (i <- src.indices) {
+      println(dst.get(i))
+    }
+
+    val before = src.clone()
+    for (i <- src.indices) {
+      src(i) = 0f
+    }
+
+    dequantize(src, 0, src.length, dst, 0, max, min, Array(2, 5))
+    for (i <- src.indices) {
+      println(src(i))
+    }
+    val after = src.clone()
+
+    println(loss(before, after, 0, src.length))
+  }
+
+  def testArray(): Unit = {
+    val src = Array[Float](0.6f, 0.4f, -0.3f, 0.2f, 0.1f)
+
+    val dst = ByteBuffer.allocate(src.length)
+    dst.clear()
+
+    val (max, min) = quantize(src, 0, src.length, dst, 0)
+    println(dst)
+
+    for (i <- src.indices) {
+      println(dst.get(i))
+    }
+
+    val before = src.clone()
+    for (i <- src.indices) {
+      src(i) = 0f
+    }
+
+    dequantize(src, 0, src.length, dst, 0, max, min)
+    for (i <- src.indices) {
+      println(src(i))
+    }
+
+    val after = src.clone()
+
+    println(loss(before, after, 0, src.length))
+  }
+
+  def main(args: Array[String]): Unit = {
+    testArray()
+    //    testQuantizeMatrix()
   }
 }

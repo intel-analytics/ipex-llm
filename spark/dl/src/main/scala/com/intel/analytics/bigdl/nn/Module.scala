@@ -146,4 +146,49 @@ object Module {
 
     return Tensor(storage)
   }
+
+  def quantize[@specialized(Float) T: ClassTag](model: AbstractModule[Activity, Activity, T])(
+    implicit ev: TensorNumeric[T]): Module[T] = {
+    def substitute(model: Module[T]): Module[T] = {
+      model match {
+        case container: Container[Activity, Activity, T] =>
+          // do with container
+          for (i <- container.modules.indices) {
+            container.modules(i) = substitute(container.modules(i))
+          }
+          container
+        case normalConv if normalConv.isInstanceOf[SpatialConvolution[T]] =>
+          // do with normal convolution
+          val conv = normalConv.asInstanceOf[SpatialConvolution[T]]
+          val quantizedConv = new fixpoint.SpatialConvolution[T](
+            conv.nInputPlane,
+            conv.nOutputPlane,
+            conv.kernelW,
+            conv.kernelH,
+            conv.strideW,
+            conv.strideH,
+            conv.padW,
+            conv.padH,
+            conv.nGroup,
+            conv.propagateBack,
+            conv.wRegularizer,
+            conv.bRegularizer,
+            conv.weight,
+            conv.bias,
+            conv.gradWeight,
+            conv.gradBias)
+          quantizedConv.init()
+        case dilatedConv if dilatedConv.isInstanceOf[SpatialDilatedConvolution[T]] =>
+          // do with dilated convolution
+          dilatedConv
+        case linear if linear.isInstanceOf[Linear[T]] =>
+          // do with linear
+          linear
+        case _ => model
+      }
+    }
+
+    // deep copy a new model then substitute with all quantized version models
+    substitute(model.cloneModule())
+  }
 }

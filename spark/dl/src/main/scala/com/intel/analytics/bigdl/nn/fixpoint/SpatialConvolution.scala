@@ -83,7 +83,7 @@ class SpatialConvolution[T: ClassTag](
     zeroGradParameters()
   }
 
-  private def init(): Unit = {
+  def init(): this.type = {
     desc = FixPoint.FixConvOpCreate(0)
     ev.getType() match {
       case FloatType =>
@@ -94,6 +94,7 @@ class SpatialConvolution[T: ClassTag](
       case _ => throw new UnsupportedOperationException(s"only support float")
     }
     FixPoint.FixConvOpQuantizeKernel(desc, 64.0f)
+    this
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
