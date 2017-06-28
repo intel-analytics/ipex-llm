@@ -457,6 +457,29 @@ object SGD {
   }
 
   /**
+   * [[Exponential]] is a learning rate schedule, which rescale the learning rate by
+   * lr_{n + 1} = lr * decayRate `^` (iter / decayStep)
+   * @param decayStep the inteval for lr decay
+   * @param decayRate decay rate
+   * @param stairCase if true, iter / decayStep is an integer division
+   *                  and the decayed learning rate follows a staircase function.
+   */
+  case class Exponential(decayStep: Int, decayRate: Double,
+    stairCase: Boolean = false) extends LearningRateSchedule {
+    override def updateHyperParameter[T](optimMethod: SGD[T]): Unit = {
+      val lr = optimMethod.learningRate
+      val nevals = optimMethod.state.get[Int]("evalCounter").getOrElse(0)
+      var p = nevals / decayStep.toDouble
+      if (stairCase) {
+        p = p.floor
+      }
+      val clr = -lr * Math.pow(decayRate, p)
+      optimMethod.state("evalCounter") = nevals + 1
+      currentRate = clr
+    }
+  }
+
+  /**
    * It is the default learning rate schedule.
    * For each iteration, the learning rate would
    * update with the following formula:
