@@ -87,7 +87,7 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag](
     val dataset = DataSet.rdd(batches)
 
     val optimizer = Optimizer(model, dataset, criterion)
-      .setOptimMethod(new SGD[T]())
+      .setOptimMethod(new LBFGS[T]())
       .setEndWhen(Trigger.maxEpoch($(maxEpoch)))
     val optimizedModel = optimizer.optimize()
 
