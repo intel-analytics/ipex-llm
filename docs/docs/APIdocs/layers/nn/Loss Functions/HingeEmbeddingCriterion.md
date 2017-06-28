@@ -29,14 +29,14 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.utils.{T}
 
-val loss = HingeEmbeddingCriterion[Double](1, sizeAverage = false)
-val input = Tensor[Double](T(0.1, 2.0, 2.0, 2.0))
+val loss = HingeEmbeddingCriterion[Float](1, sizeAverage = false)
+val input = Tensor[Float](T(0.1, 2.0, 2.0, 2.0))
 println("input: \n" + input)
 println("ouput: ")
 
-println("Target=1: " + loss.forward(input, Tensor[Double](4, 1).fill(1)))
+println("Target=1: " + loss.forward(input, Tensor[Float](4, 1).fill(1)))
 
-println("Target=-1: " + loss.forward(input, Tensor[Double](4, 1).fill(-1)))
+println("Target=-1: " + loss.forward(input, Tensor[Float](4, 1).fill(-1)))
 ```
 
 ```

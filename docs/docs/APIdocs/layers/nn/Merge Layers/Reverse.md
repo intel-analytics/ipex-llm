@@ -18,12 +18,12 @@ Reverse(dimension=1, bigdl_type="float")
 ```scala
 import com.intel.analytics.bigdl.utils._
 
-def randomn(): Double = RandomGenerator.RNG.uniform(0, 1)
-val input = Tensor[Double](2, 3)
+def randomn(): Float = RandomGenerator.RNG.uniform(0, 1)
+val input = Tensor[Float](2, 3)
 input.apply1(x => randomn())
 println("input:")
 println(input)
-val layer = new Reverse[Double](1)
+val layer = new Reverse[Float](1)
 println("output:")
 println(layer.forward(input))
 ```

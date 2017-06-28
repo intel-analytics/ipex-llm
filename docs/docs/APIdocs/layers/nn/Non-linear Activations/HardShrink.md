@@ -31,11 +31,11 @@ import com.intel.analytics.bigdl.nn._
 
 import com.intel.analytics.bigdl.utils._
 
-def randomn(): Double = RandomGenerator.RNG.uniform(-10, 10)
-val input = Tensor[Double](3, 4)
+def randomn(): Float = RandomGenerator.RNG.uniform(-10, 10)
+val input = Tensor[Float](3, 4)
 input.apply1(x => randomn())
 
-val layer = new HardShrink[Double](8)
+val layer = new HardShrink[Float](8)
 println("input:")
 println(input)
 println("output:")

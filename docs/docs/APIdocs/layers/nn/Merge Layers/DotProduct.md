@@ -20,9 +20,9 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.utils.{T, Table}
 
-val mlp = DotProduct[Double]()
-val x = Tensor[Double](3).fill(1)
-val y = Tensor[Double](3).fill(2)
+val mlp = DotProduct[Float]()
+val x = Tensor[Float](3).fill(1)
+val y = Tensor[Float](3).fill(2)
 println("input:")
 println(x)
 println(y)

@@ -24,12 +24,12 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.utils.{T, Table}
 
-val input = Tensor[Double](2, 3).fill(1)
+val input = Tensor[Float](2, 3).fill(1)
 println("input:")
 println(input)
-val scale = Scale[Double](Array(2, 1))
-val weight = Tensor[Double](2, 1).fill(2)
-val bias = Tensor[Double](2, 1).fill(3)
+val scale = Scale[Float](Array(2, 1))
+val weight = Tensor[Float](2, 1).fill(2)
+val bias = Tensor[Float](2, 1).fill(3)
 scale.setWeightsBias(Array(weight, bias))
 println("Weight:")
 println(weight)
