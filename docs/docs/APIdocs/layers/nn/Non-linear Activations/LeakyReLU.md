@@ -2,11 +2,11 @@
 
 **Scala:**
 ```scala
-layer = LeakyReLU()
+layer = LeakyReLU(negval=0.01,inplace=false)
 ```
 **Python:**
 ```python
-layer = LeakyReLU()
+layer = LeakyReLU(negval=0.01,inplace=False,bigdl_type="float")
 ```
 
 It is a transfer module that applies LeakyReLU, which parameter
@@ -20,28 +20,32 @@ negval sets the slope of the negative part:
 
 **Scala example:**
 ```scala
-val layer = LeakyReLU[Double]()
-val input = Tensor[Double](3, 2).rand(-1, 1)
-input: com.intel.analytics.bigdl.tensor.Tensor[Double] =
-0.7173410640098155      -0.885859833098948
--0.700249251909554      0.8654347104020417
--0.2802117452956736     -0.09387178346514702
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 3x2]
+val layer = LeakyReLU[Float](negval=0.01,inplace=false)
+val input = Tensor[Float](3, 2).rand(-1, 1)
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+-0.6923256      -0.14086828
+0.029539397     0.477964
+0.5202874       0.10458552
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3x2]
 
 layer.forward(input)
-0.7173410640098155      -0.00885859833098948
--0.00700249251909554    0.8654347104020417
--0.002802117452956736   -9.387178346514702E-4
+res7: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+-0.006923256    -0.0014086828
+0.029539397     0.477964
+0.5202874       0.10458552
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 3x2]
 ```
 
 **Python example:**
 ```python
-layer = LeakyReLU()
+layer = LeakyReLU(negval=0.01,inplace=False,bigdl_type="float")
 input = np.random.rand(3, 2)
+array([[ 0.19502378,  0.40498206],
+       [ 0.97056004,  0.35643192],
+       [ 0.25075111,  0.18904582]])
+
 layer.forward(input)
-[array([
-[ 0.4860383 ,  0.70988643],
-[ 0.85360128,  0.70210862],
-[ 0.12464172,  0.90051508]], dtype=float32)]
+array([[ 0.19502378,  0.40498206],
+       [ 0.97056001,  0.35643193],
+       [ 0.25075111,  0.18904583]], dtype=float32)
 ```

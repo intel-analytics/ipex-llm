@@ -2,11 +2,11 @@
 
 **Scala:**
 ```scala
-criterion = MarginCriterion()
+criterion = MarginCriterion(margin=1.0, sizeAverage=true)
 ```
 **Python:**
 ```python
-criterion = MarginCriterion()
+criterion = MarginCriterion(margin=1.0, sizeAverage=true, bigdl_type="float")
 ```
 
 Creates a criterion that optimizes a two-class classification hinge loss (margin-based loss) between input x (a Tensor of dimension 1) and output y.
@@ -15,30 +15,39 @@ Creates a criterion that optimizes a two-class classification hinge loss (margin
 
 **Scala example:**
 ```scala
-val criterion = MarginCriterion[Double]()
-val input = Tensor[Double](3, 2).rand()
-input: com.intel.analytics.bigdl.tensor.Tensor[Double] =
-0.544831171631813       0.677923800656572
-0.10097078117541969     0.7837557627353817
-0.9371688910759985      0.065070073120296
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 3x2]
+val criterion = MarginCriterion[Float](margin=1.0, sizeAverage=true)
 
-val target = Tensor[Double](3, 2).rand()
-target: com.intel.analytics.bigdl.tensor.Tensor[Double] =
-0.07769605284556746     0.2338713244535029
-0.5209604250267148      0.03824349492788315
-0.7666055841837078      0.9896160187199712
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 3x2]
+val input = Tensor[Float](3, 2).rand()
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+0.33753583      0.3575501
+0.23477706      0.7240361
+0.92835575      0.4737949
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3x2]
+
+val target = Tensor[Float](3, 2).rand()
+target: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+0.27280563      0.7022703
+0.3348442       0.43332106
+0.08935371      0.17876455
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3x2]
 
 criterion.forward(input, target)
-res0: Double = 0.8222855331373905
+res5: Float = 0.84946966
 ```
 
 **Python example:**
 ```python
-criterion = MarginCriterion()
+criterion = MarginCriterion(margin=1.0,size_average=True,bigdl_type="float")
 input = np.random.rand(3, 2)
+array([[ 0.20824672,  0.67299837],
+       [ 0.80561452,  0.19564743],
+       [ 0.42501441,  0.19408184]])
+       
 target = np.random.rand(3, 2)
+array([[ 0.67882632,  0.61257846],
+       [ 0.10111138,  0.75225082],
+       [ 0.60404296,  0.31373273]])
+       
 criterion.forward(input, target)
-0.8955021
+0.8166871
 ```

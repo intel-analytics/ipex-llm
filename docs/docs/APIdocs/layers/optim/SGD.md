@@ -2,8 +2,18 @@
 
 **Scala:**
 ```scala
-val optimMethod = SGD()
-optimMethod.optimize(feval, x, config, state)
+val optimMethod = SGD(learningRate= 1e-3,learningRateDecay=0.0,
+                      weightDecay=0.0,momentum=0.0,dampening=Double.MaxValue,
+                      nesterov=false,learningRateSchedule=Default(),
+                      learningRates=null,weightDecays=null)
+```
+
+**Python:**
+```python
+optim_method = SGD(learningrate=1e-3,learningrate_decay=0.0,weightdecay=0.0,
+                   momentum=0.0,dampening=DOUBLEMAX,nesterov=False,
+                   leaningrate_schedule=None,learningrates=None,
+                   weightdecays=None,bigdl_type="float")
 ```
 
 A plain implementation of SGD which provides optimize method. After setting 
@@ -12,20 +22,25 @@ each iteration.
  
 **Scala example:**
 ```scala
-val optimMethod = new SGD[Double]
-def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
-  val r = x.clone()
-  r.apply1(2 * _)
-  val v = x(Array(1))
-  return (v * v, r)
-}
-val x = Tensor[Double](1)
-x.fill(10)
-val config = T("learningRate" -> 1e-3)
-for (i <- 1 to 10) {
-  optimMethod.optimize(feval, x, config, config)
-}
-println("x after optimize: " + x)
-x after optimize: 9.801790433519495
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 1]
+val optimMethod = new SGD[Float](learningRate= 1e-3,learningRateDecay=0.0,
+                               weightDecay=0.0,momentum=0.0,dampening=Double.MaxValue,
+                               nesterov=false,learningRateSchedule=Default(),
+                               learningRates=null,weightDecays=null)
+optimizer.setOptimMethod(optimMethod)
+```
+
+**Python example:**
+```python
+optim_method = SGD(learningrate=1e-3,learningrate_decay=0.0,weightdecay=0.0,
+                  momentum=0.0,dampening=DOUBLEMAX,nesterov=False,
+                  leaningrate_schedule=None,learningrates=None,
+                  weightdecays=None,bigdl_type="float")
+                  
+optimizer = Optimizer(
+    model=mlp_model,
+    training_rdd=train_data,
+    criterion=ClassNLLCriterion(),
+    optim_method=optim_method,
+    end_trigger=MaxEpoch(20),
+    batch_size=32)
 ```

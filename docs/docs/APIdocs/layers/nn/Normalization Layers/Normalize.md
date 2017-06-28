@@ -2,11 +2,11 @@
 
 **Scala:**
 ```scala
-val module = Normalize(p)
+val module = Normalize(p,eps=1e-10)
 ```
 **Python:**
 ```python
-module = Normalize(p)
+module = Normalize(p,eps=1e-10,bigdl_type="float")
 ```
 
 Normalizes the input Tensor to have unit L_p norm. The smoothing parameter eps prevents
@@ -18,23 +18,23 @@ c is the channel number, h is the height and w is the width
 
 **Scala example:**
 ```scala
-val module = Normalize[Double](2.0)
-val input = Tensor[Double](2,3).rand()
-input: com.intel.analytics.bigdl.tensor.Tensor[Double] =
-0.8007086841389537      0.19004820031113923     0.8484807822387666
-0.5260537276044488      0.44199418602511287     0.7931551630608737
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 2x3]
+val module = Normalize[Float](2.0,eps=1e-10)
+val input = Tensor[Float](2,3).rand()
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+0.7075603       0.084298864     0.91339105
+0.22373432      0.8704987       0.6936567
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x3]
 
 module.forward(input)
-res4: com.intel.analytics.bigdl.tensor.Tensor[Double] =
-0.6774067923765057      0.16078249720513227     0.7178224196575933
-0.5013022611934496      0.4211978230774036      0.755836249902305
+res8: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+0.6107763       0.072768        0.7884524
+0.19706465      0.76673317      0.61097115
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
 ```
 
 **Python example:**
 ```python
-module = Normalize(2.0)
+module = Normalize(2.0,eps=1e-10,bigdl_type="float")
 input = np.array([[1, 2, 3],[4, 5, 6]])
 module.forward(input)
 [array([
