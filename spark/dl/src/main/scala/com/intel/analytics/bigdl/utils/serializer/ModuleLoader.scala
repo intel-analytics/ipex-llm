@@ -34,7 +34,7 @@ object ModuleLoader {
   private val hdfsPrefix: String = "hdfs:"
 
   def loadFromFile[T: ClassTag](modelPath : String)
-                               (implicit ev: TensorNumeric[T]) : AbstractModule[_, _, _] = {
+                               (implicit ev: TensorNumeric[T]) : AbstractModule[_, _, T] = {
     val modelBuilder = BigDLModel.newBuilder
     var cis : CodedInputStream = null
     if (modelPath.startsWith(hdfsPrefix)) {

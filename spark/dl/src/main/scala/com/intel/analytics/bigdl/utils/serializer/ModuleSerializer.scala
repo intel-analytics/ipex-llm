@@ -53,8 +53,8 @@ object ModuleSerializer extends ModuleSerializable{
     var i = 0;
     constructorFullParams.foreach(map => {
       map.foreach(param => {
-        val name = param._1
-        val ptype = param._2
+        val name = param.name.decodedName.toString
+        val ptype = param.typeSignature
         if (ptype.toString == "scala.reflect.ClassTag[T]") {
           args(i) = evidence
         } else if (ptype.toString ==
@@ -86,13 +86,13 @@ object ModuleSerializer extends ModuleSerializable{
     val fullParams = getCostructorFullParams(cls)
     val constructorParams = fullParams(0)
     constructorParams.foreach(param => {
-      val paramName = param._1
-      println(s"finding declaration $paramName")
+      val paramName = param.name.decodedName.toString
+      val ptype = param.typeSignature
       val attrBuilder = AttrValue.newBuilder
       val field = cls.getDeclaredField(paramName)
       field.setAccessible(true)
       val fieldValue = field.get(module.module)
-      DataConverter.setAttributeValue(attrBuilder, fieldValue)
+      DataConverter.setAttributeValue(attrBuilder, fieldValue, ptype)
       bigDLModelBuilder.putAttr(paramName, attrBuilder.build)
     })
     copyFromBigDL(module, bigDLModelBuilder)
@@ -130,38 +130,23 @@ object ModuleSerializer extends ModuleSerializable{
     classMaps(cls)
   }
 
-  def getConstructorParams(clazz : Class[_]): Map[String, universe.Type] = {
-    val tpe = universe.runtimeMirror(clazz.getClassLoader).classSymbol(clazz).toType
-    var list : List[universe.Symbol] = List()
-    list = list ++ tpe.member(universe.termNames.CONSTRUCTOR).asMethod.paramLists(0)
-    list = list ++ tpe.member(universe.termNames.CONSTRUCTOR).asMethod.paramLists(1)
-    list.foldLeft(Map(): Map[String, universe.Type])((p, a) => {
-      p + (a.name.decodedName.toString -> a.typeSignature)
-    })
-  }
-
-  def getParamList(clazz : Class[_]): Seq[String] = {
-    val tpe = universe.runtimeMirror(clazz.getClassLoader).classSymbol(clazz).toType
-    tpe.
-      member(universe.termNames.CONSTRUCTOR).
-      asMethod.paramLists(0).map(_.name.decodedName.toString)
-  }
-
-  def getCostructorFullParams[T : ClassTag](cls : Class[_]) : List[Map[String, universe.Type]] = {
+  def getCostructorFullParams[T : ClassTag](cls : Class[_]) : List[List[universe.Symbol]] = {
     val m = universe.runtimeMirror(getClass.getClassLoader)
     val clsSymbol = m.classSymbol(cls)
     val cm = m.reflectClass(clsSymbol)
     // to make it compatible with both 2.11 and 2.10
     val ctorC = clsSymbol.toType.declaration(universe.nme.CONSTRUCTOR).asMethod
-    var list : List[universe.Symbol] = List()
     val ctorm = cm.reflectConstructor(ctorC)
+    /*
     val params0 = ctorm.symbol.paramss(0).foldLeft(Map(): Map[String, universe.Type])((p, a) => {
       p + (a.name.decodedName.toString -> a.typeSignature)
     })
     val params1 = ctorm.symbol.paramss(1).foldLeft(Map(): Map[String, universe.Type])((p, a) => {
       p + (a.name.decodedName.toString -> a.typeSignature)
     })
-    List(params0, params1)
+    */
+   // List(params0, params1)
+    ctorm.symbol.paramss
   }
 
   def init() : Unit = {

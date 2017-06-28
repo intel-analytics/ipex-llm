@@ -42,15 +42,15 @@ import com.intel.analytics.bigdl.optim.Regularizer
  */
 @SerialVersionUID( 359656776803598943L)
 class Linear[T: ClassTag](
-  inputSize: Int,
-  outputSize: Int,
-  withBias: Boolean = true,
+  val inputSize: Int,
+  val outputSize: Int,
+  val withBias: Boolean = true,
   var wRegularizer: Regularizer[T] = null,
   var bRegularizer: Regularizer[T] = null,
-  initWeight: Tensor[T] = null,
-  initBias: Tensor[T] = null,
-  initGradWeight: Tensor[T] = null,
-  initGradBias: Tensor[T] = null
+  val initWeight: Tensor[T] = null,
+  val initBias: Tensor[T] = null,
+  val initGradWeight: Tensor[T] = null,
+  val initGradBias: Tensor[T] = null
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
   val weight: Tensor[T] =
     if (initWeight != null) initWeight else Tensor[T](outputSize, inputSize)
