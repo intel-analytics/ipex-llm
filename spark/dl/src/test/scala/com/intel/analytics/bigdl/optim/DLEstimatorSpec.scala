@@ -35,7 +35,7 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
   var sqlContext : SQLContext = _
   var smallData: Seq[(Array[Double], Double)] = _
   val nRecords = 100
-  val maxEpoch = 2
+  val maxEpoch = 20
 
   before {
     Random.setSeed(42)
@@ -68,7 +68,7 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
     val criterion = ClassNLLCriterion[Float]()
     val estimator = new DLEstimator[Float](model, criterion, Array(6), Array(1))
-      .setBatchSize(2)
+      .setBatchSize(nRecords)
       .setMaxEpoch(maxEpoch)
     val data = sc.parallelize(smallData)
     val df = sqlContext.createDataFrame(data).toDF("features", "label")
@@ -79,14 +79,14 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       case Row(label: Double, prediction: Seq[Double]) =>
         label == prediction.indexOf(prediction.max) + 1
     }.count()
-    // assert(correct > nRecords * 0.8)
+    assert(correct > nRecords * 0.8)
   }
 
   "An DLEstimator" should "fit on feature(one dimension Array[Float]) and label(Double)" in {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
     val criterion = ClassNLLCriterion[Float]()
     val estimator = new DLEstimator[Float](model, criterion, Array(6), Array(1))
-      .setBatchSize(2)
+      .setBatchSize(nRecords)
       // intentionally set low since this only validates data format compatibitliy
       .setMaxEpoch(1)
     val data = sc.parallelize(smallData.map(p => (p._1.map(_.toFloat), p._2)))
@@ -102,9 +102,9 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
     val criterion = MultiLabelSoftMarginCriterion[Float]()
     val estimator = new DLEstimator[Float](model, criterion, Array(6), Array(2))
-      .setBatchSize(2)
       // intentionally set low since this only validates data format compatibitliy
       .setMaxEpoch(1)
+      .setBatchSize(nRecords)
     val data = sc.parallelize(
       smallData.map(p => (p._1, if (p._2 == 1.0) Array(0.0, 1.0) else Array(1.0, 0.0))))
     val df: DataFrame = sqlContext.createDataFrame(data).toDF("features", "label")
@@ -118,9 +118,9 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
     val criterion = MultiLabelSoftMarginCriterion[Float]()
     val estimator = new DLEstimator[Float](model, criterion, Array(6), Array(2))
-      .setBatchSize(2)
       // intentionally set low since this only validates data format compatibitliy
       .setMaxEpoch(1)
+      .setBatchSize(nRecords)
     val data = sc.parallelize(
       smallData.map(p => (p._1.map(_.toFloat),
         if (p._2 == 1.0) Array(0.0f, 1.0f) else Array(1.0f, 0.0f))))
@@ -136,8 +136,8 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val model = Linear[Float](10, 1)
     val criterion = ClassNLLCriterion[Float]()
     val estimator = new DLEstimator[Float](model, criterion, Array(10), Array(1))
-      .setBatchSize(2)
       .setMaxEpoch(1)
+      .setBatchSize(nRecords)
 
     val featureData = Tensor(10)
     val labelData = Tensor(1).fill(1.0f)
@@ -157,9 +157,9 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
       val criterion = ClassNLLCriterion[Float]()
       val estimator = new DLEstimator[Float](model, criterion, Array(6), Array(1))
-        .setBatchSize(2)
         // intentionally set low since this only validates data format compatibitliy
         .setMaxEpoch(1)
+        .setBatchSize(nRecords)
       val data = sc.parallelize(
         smallData.map(p => (org.apache.spark.mllib.linalg.Vectors.dense(p._1), p._2)))
       val df: DataFrame = sqlContext.createDataFrame(data).toDF("features", "label")
@@ -175,18 +175,14 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
     val criterion = ClassNLLCriterion[Float]()
     val estimator = new DLEstimator[Float](model, criterion, Array(6), Array(1))
-      .setBatchSize(3)
-      .setMaxEpoch(50)
+      .setBatchSize(51)
+      .setMaxEpoch(maxEpoch)
     val data = sc.parallelize(smallData)
     val df: DataFrame = sqlContext.createDataFrame(data).toDF("features", "label")
 
     val dlModel = estimator.fit(df)
     dlModel.isInstanceOf[DLModel[_]] should be(true)
-    val correct = dlModel.transform(df).select("label", "prediction").rdd.filter {
-      case Row(label: Double, prediction: Seq[Double]) =>
-        label == prediction.indexOf(prediction.max) + 1
-    }.count()
-    // assert(correct > nRecords * 0.8)
+    dlModel.transform(df).count()
   }
 
   "An DLEstimator" should "throws exception without correct inputs" in {
@@ -221,7 +217,7 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
       val criterion = ClassNLLCriterion[Float]()
       val estimator = new DLEstimator[Float](model, criterion, Array(6), Array(1))
-        .setBatchSize(2)
+        .setBatchSize(nRecords)
         // intentionally set low since this only validates data format compatibitliy
         .setMaxEpoch(maxEpoch)
         .setFeaturesCol("scaled")
@@ -234,7 +230,7 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
         case Row(label: Double, prediction: Seq[Double]) =>
           label == prediction.indexOf(prediction.max) + 1
       }.count()
-      // assert(correct > nRecords * 0.8)
+      assert(correct > nRecords * 0.8)
     }
   }
 }
@@ -242,7 +238,6 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
 private case class MinibatchData[T](featureData : Array[T], labelData : Array[T])
 
 object DLEstimatorSpec {
-
   // Generate noisy input of the form Y = signum(x.dot(weights) + intercept + noise)
   def generateTestInput(
       numRecords: Int,
@@ -260,5 +255,4 @@ object DLEstimatorSpec {
       }
     data
   }
-
 }

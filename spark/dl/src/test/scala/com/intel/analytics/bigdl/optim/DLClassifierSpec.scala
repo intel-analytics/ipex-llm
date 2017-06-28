@@ -37,7 +37,7 @@ class DLClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
   var sqlContext : SQLContext = _
   var smallData: Seq[(Array[Double], Double)] = _
   val nRecords = 100
-  val maxEpoch = 2
+  val maxEpoch = 20
 
   before {
     val conf = Engine.createSparkConf().setAppName("Test DLEstimator").setMaster("local[1]")
@@ -70,14 +70,14 @@ class DLClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
     val criterion = ClassNLLCriterion[Float]()
     val classifier = new DLClassifier[Float](model, criterion, Array(6))
-      .setBatchSize(2)
+      .setBatchSize(nRecords)
       .setMaxEpoch(maxEpoch)
     val data = sc.parallelize(smallData)
     val df = sqlContext.createDataFrame(data).toDF("features", "label")
 
     val dlModel = classifier.fit(df)
     dlModel.isInstanceOf[DLClassifierModel[_]] should be(true)
-    // assert(dlModel.transform(df).where("prediction=label").count() > nRecords * 0.8)
+    assert(dlModel.transform(df).where("prediction=label").count() > nRecords * 0.8)
   }
 
   "An DLClassifier" should "get the same classification result with BigDL model" in {
@@ -119,7 +119,7 @@ class DLClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
       val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
       val criterion = ClassNLLCriterion[Float]()
       val estimator = new DLClassifier[Float](model, criterion, Array(6))
-        .setBatchSize(2)
+        .setBatchSize(nRecords)
         // intentionally set low since this only validates data format compatibitliy
         .setMaxEpoch(maxEpoch)
         .setFeaturesCol("scaled")
@@ -127,7 +127,7 @@ class DLClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
       val pipelineModel = pipeline.fit(df)
       pipelineModel.isInstanceOf[PipelineModel] should be(true)
-      // assert(pipelineModel.transform(df).where("prediction=label").count() > nRecords * 0.8)
+      assert(pipelineModel.transform(df).where("prediction=label").count() > nRecords * 0.8)
     }
   }
 }
