@@ -19,10 +19,12 @@ where shift = max_i(x_i).
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.tensor.Tensor
-val layer = SoftMax[Float]()
-val input = Tensor[Float](3)
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+
+val layer = SoftMax()
+val input = Tensor(3)
 input.apply1(_ => 1.0f * 10)
-val target = Tensor[Float](T(
+val target = Tensor(T(
 1.0f,
 0.0f,
 0.0f

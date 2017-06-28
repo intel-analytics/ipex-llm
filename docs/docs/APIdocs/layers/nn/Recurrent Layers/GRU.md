@@ -2,11 +2,11 @@
 
 **Scala:**
 ```scala
-val gru = GRU(inputSize, ouputSize)
+val gru = GRU(inputSize, outputSize, p, wRegularizer, uRegularizer, bRegularizer)
 ```
 **Python:**
 ```python
-gru = GRU(inputSize, outputSize)
+gru = GRU(inputSize, outputSize, p, w_regularizer, u_regularizer, b_regularizer)
 ```
 
 Gated Recurrent Units architecture. The first input in sequence uses zero value for cell and hidden state.
@@ -32,23 +32,25 @@ Ref.
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+
 val hiddenSize = 2
 val inputSize = 2
 val outputSize = 2
 val seqLength = 2
-val input = Tensor[Float](T(
+val input = Tensor(T(
   T(1.0f, 2.0f),
   T(2.0f, 3.0f)
 )).resize(Array(1, seqLength, inputSize))
-val target = Tensor[Float](T(
+val target = Tensor(T(
   T(2.0f, 3.0f),
   T(4.0f, 5.0f)
 )).resize(Array(1, seqLength, inputSize))
-val rec = Recurrent[Float]()
+val rec = Recurrent()
 
-val model = Sequential[Float]()
-    .add(rec.add(GRU[Float](inputSize, hiddenSize)))
-    .add(TimeDistributed[Float](Linear[Float](hiddenSize, outputSize)))
+val model = Sequential()
+    .add(rec.add(GRU(inputSize, hiddenSize)))
+    .add(TimeDistributed(Linear(hiddenSize, outputSize)))
 val output = model.forward(input)
 val gradient = model.backward(input, target)
 

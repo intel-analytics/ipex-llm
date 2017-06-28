@@ -21,12 +21,14 @@ point on an (N-1)-dimensional simplex, where N is the number of classes.
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.tensor.Tensor
-val criterion = ClassSimplexCriterion[Float](5)
-val input = Tensor[Float](T(
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+
+val criterion = ClassSimplexCriterion(5)
+val input = Tensor(T(
  T(1.0f, 2.0f, 3.0f, 4.0f, 5.0f),
  T(4.0f, 5.0f, 6.0f, 7.0f, 8.0f)
 ))
-val target = Tensor[Float](2)
+val target = Tensor(2)
 target(Array(1)) = 2.0f
 target(Array(2)) = 1.0f
 val output = criterion.forward(input, target)

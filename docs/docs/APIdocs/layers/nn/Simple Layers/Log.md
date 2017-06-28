@@ -16,9 +16,11 @@ The Log module applies a log transformation to the input data
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.tensor.Tensor
-val log = Log[Float]()
-val input = Tensor[Float](T(1.0f, Math.E.toFloat))
-val target = Tensor[Float](T(1.0f, 1.0f))
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+
+val log = Log()
+val input = Tensor(T(1.0f, Math.E.toFloat))
+val target = Tensor(T(1.0f, 1.0f))
 val output = log.forward(input)
 val gradient = log.backward(input, target)
 -> print(output)

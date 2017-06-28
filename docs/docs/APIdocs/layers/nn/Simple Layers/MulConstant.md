@@ -2,11 +2,11 @@
 
 **Scala:**
 ```scala
-val layer = MulConstant(const)
+val layer = MulConstant(scalar, inplace)
 ```
 **Python:**
 ```python
-layer = MulConstant(const)
+layer = MulConstant(const, inplace)
 ```
 
 Multiplies input Tensor by a (non-learnable) scalar constant.
@@ -21,16 +21,18 @@ This module is sometimes useful for debugging purposes.
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.tensor.Tensor
-val input = Tensor[Float](T(
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+
+val input = Tensor(T(
  T(1.0f, 2.0f),
  T(3.0f, 4.0f))
 )
-val target = Tensor[Float](T(
+val target = Tensor(T(
  T(1.0f, 1.0f),
  T(1.0f, 1.0f))
 )
 val scalar = 2.0
-val module = MulConstant[Float](scalar)
+val module = MulConstant(scalar)
 val output = module.forward(input)
 val gradient = module.backward(input, target)
 -> print(output)

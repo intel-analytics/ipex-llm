@@ -2,11 +2,11 @@
 
 **Scala:**
 ```scala
-val criterion = SoftMarginCriterion()
+val criterion = SoftMarginCriterion(sizeAverage)
 ```
 **Python:**
 ```python
-criterion = SoftMarginCriterion()
+criterion = SoftMarginCriterion(size_average)
 ```
 
 Creates a criterion that optimizes a two-class classification logistic loss between
@@ -25,12 +25,14 @@ loss(x, y) = sum_i (log(1 + exp(-y[i]*x[i]))) / x:nElement()
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.tensor.Tensor
-val criterion = SoftMarginCriterion[Float]()
-val input = Tensor[Float](T(
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+
+val criterion = SoftMarginCriterion()
+val input = Tensor(T(
  T(1.0f, 2.0f),
  T(3.0f, 4.0f))
 )
-val target = Tensor[Float](T(
+val target = Tensor(T(
  T(1.0f, -1.0f),
  T(-1.0f, 1.0f))
 )
