@@ -2,7 +2,7 @@
 
 **Scala:**
 ```scala
-val criterion = MSECriterion[Float]()
+val criterion = MSECriterion()
 ```
 **Python:**
 ```python
@@ -24,12 +24,14 @@ loss(a, b) = 1/n * sum(|a_i - b_i|^2)
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.tensor.Tensor
-val criterion = MSECriterion[Float]()
-val input = Tensor[Float](T(
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+
+val criterion = MSECriterion()
+val input = Tensor(T(
  T(1.0f, 2.0f),
  T(3.0f, 4.0f))
 )
-val target = Tensor[Float](T(
+val target = Tensor(T(
  T(2.0f, 3.0f),
  T(4.0f, 5.0f))
 )

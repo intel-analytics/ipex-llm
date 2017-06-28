@@ -2,11 +2,11 @@
 
 **Scala:**
 ```scala
-val reshape = Reshape(size)
+val reshape = Reshape(size, batchMode)
 ```
 **Python:**
 ```python
-reshape = Reshape(size)
+reshape = Reshape(size, batch_mode)
 ```
 
 The `forward(input)` reshape the input tensor into `size(0) * size(1) * ...` tensor,
@@ -28,8 +28,10 @@ taking the elements row-wise.
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.tensor.Tensor
-val reshape = Reshape[Float](Array(3, 2))
-val input = Tensor[Float](2, 2, 3).rand()
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+
+val reshape = Reshape(Array(3, 2))
+val input = Tensor(2, 2, 3).rand()
 val output = reshape.forward(input)
 -> print(output.size().toList)      
 List(2, 3, 2)

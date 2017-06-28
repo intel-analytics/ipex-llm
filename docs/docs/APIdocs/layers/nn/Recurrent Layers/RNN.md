@@ -2,11 +2,11 @@
 
 **Scala:**
 ```scala
-val rnnCell = RnnCell[Double](inputSize, hiddenSize, Tanh())
+val rnnCell = RnnCell[Double](inputSize, hiddenSize, activation, wRegularizer, uRegularizer, bRegularizer)
 ```
 **Python:**
 ```python
-rnnCell = RnnCell(input_size, hidden_size, Tanh())
+rnnCell = RnnCell(input_size, hidden_size, Tanh(), w_regularizer, u_regularizer, b_regularizer)
 ```
 
 Implementation of vanilla recurrent neural network cell
@@ -28,23 +28,25 @@ h_t = f(i2h * x_t + h2h * h_{t-1})
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+
 val hiddenSize = 2
 val inputSize = 2
 val outputSize = 2
 val seqLength = 2
-val input = Tensor[Float](T(
+val input = Tensor(T(
   T(1.0f, 2.0f),
   T(2.0f, 3.0f)
 )).resize(Array(1, seqLength, inputSize))
-val target = Tensor[Float](T(
+val target = Tensor(T(
   T(2.0f, 3.0f),
   T(4.0f, 5.0f)
 )).resize(Array(1, seqLength, inputSize))
-val rec = Recurrent[Float]()
+val rec = Recurrent()
 
-val model = Sequential[Float]()
-    .add(rec.add(RnnCell[Float](inputSize, hiddenSize, Tanh())))
-    .add(TimeDistributed[Float](Linear[Float](hiddenSize, outputSize)))
+val model = Sequential()
+    .add(rec.add(RnnCell(inputSize, hiddenSize, Tanh())))
+    .add(TimeDistributed(Linear(hiddenSize, outputSize)))
 val output = model.forward(input)
 val gradient = model.backward(input, target)
 -> print(output)

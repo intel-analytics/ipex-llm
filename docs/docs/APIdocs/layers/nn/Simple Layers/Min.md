@@ -2,11 +2,11 @@
 
 **Scala:**
 ```scala
-val min = Min(dim)
+val min = Min(dim, numInputDims)
 ```
 **Python:**
 ```python
-min = Min(dim)
+min = Min(dim, num_input_dims)
 ```
 
 Applies a min operation over dimension `dim`.
@@ -21,12 +21,14 @@ Applies a min operation over dimension `dim`.
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.tensor.Tensor
-val min = Min[Float](2)
-val input = Tensor[Float](T(
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+
+val min = Min(2)
+val input = Tensor(T(
  T(1.0f, 2.0f),
  T(3.0f, 4.0f))
 )
-val target = Tensor[Float](T(
+val target = Tensor(T(
  1.0f,
  1.0f
 ))

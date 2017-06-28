@@ -2,11 +2,11 @@
 
 **Scala:**
 ```scala
-val bn = BatchNormalization(nOutput)
+val bn = BatchNormalization(nOutput, eps, momentum, affine)
 ```
 **Python:**
 ```python
-bn = BatchNormalization(n_output)
+bn = BatchNormalization(n_output, eps, momentum, affine)
 ```
 
 This layer implements Batch Normalization as described in the paper:
@@ -35,12 +35,14 @@ where gamma and beta are learnable parameters.The learning of gamma and beta is 
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.tensor.Tensor
-val bn = BatchNormalization[Float](2)
-val input = Tensor[Float](T(
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+
+val bn = BatchNormalization(2)
+val input = Tensor(T(
              T(1.0f, 2.0f),
              T(3.0f, 6.0f))
             )
-val target = Tensor[Float](T(
+val target = Tensor(T(
              T(1.0f, 2.0f),
              T(3.0f, 6.0f))
 )

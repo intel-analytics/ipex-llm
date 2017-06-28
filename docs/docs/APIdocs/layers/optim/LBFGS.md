@@ -5,7 +5,7 @@ val optimMethod = new LBFGS(maxIter)
 
 **Python:**
 ```python
-val optim_method = LBFGS(maxIter)
+val optim_method = LBFGS(maxIter, maxEval, tolFun, tolX, learningRate, lineSearch, lineSearchOptions)
 ```
 
 This implementation of L-BFGS relies on a user-provided line search function
