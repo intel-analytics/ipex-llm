@@ -2,7 +2,7 @@
 
 **Scala:**
 ```scala
-val l1Penalty = L1Penalty(val l1weight: Int, val sizeAverage: Boolean = false,val provideOutput: Boolean = true)
+val l1Penalty = L1Penalty(l1weight, sizeAverage = false, provideOutput = true)
 ```
 **Python:**
 ```python

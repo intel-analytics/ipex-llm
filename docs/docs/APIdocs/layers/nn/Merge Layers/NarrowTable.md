@@ -2,7 +2,7 @@
 
 **Scala:**
 ```scala
-val narrowTable = NarrowTable(var offset: Int, val length: Int = 1)
+val narrowTable = NarrowTable(offset, length = 1)
 ```
 **Python:**
 ```python

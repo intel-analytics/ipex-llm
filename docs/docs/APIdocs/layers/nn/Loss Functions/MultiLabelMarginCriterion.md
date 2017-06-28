@@ -2,7 +2,7 @@
 
 **Scala:**
 ```scala
-val multiLabelMarginCriterion = MultiLabelMarginCriterion(val sizeAverage: Boolean = true)
+val multiLabelMarginCriterion = MultiLabelMarginCriterion(sizeAverage = true)
 ```
 **Python:**
 ```python

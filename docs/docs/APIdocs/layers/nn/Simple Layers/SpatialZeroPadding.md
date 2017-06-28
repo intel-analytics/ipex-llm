@@ -2,7 +2,7 @@
 
 **Scala:**
 ```scala
-val spatialZeroPadding = SpatialZeroPadding(padLeft: Int, padRight: Int, padTop: Int, padBottom: Int)
+val spatialZeroPadding = SpatialZeroPadding(padLeft, padRight, padTop, padBottom)
 ```
 **Python:**
 ```python

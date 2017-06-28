@@ -5,7 +5,7 @@
 val adagrad = new Adagrad(var learningRate: Double = 1e-3,
                           var learningRateDecay: Double = 0.0,
                           var weightDecay: Double = 0.0)
-adagrad.optimize(feval, x, config, state)
+
 ```
 
  An implementation of Adagrad. See the original paper:

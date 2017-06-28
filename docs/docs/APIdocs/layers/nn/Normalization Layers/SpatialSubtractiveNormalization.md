@@ -2,7 +2,7 @@
 
 **Scala:**
 ```scala
-val spatialSubtractiveNormalization = SpatialSubtractiveNormalization(val nInputPlane: Int = 1, var kernel: Tensor[T] = null)
+val spatialSubtractiveNormalization = SpatialSubtractiveNormalization(nInputPlane = 1, kernel = null)
 ```
 **Python:**
 ```python

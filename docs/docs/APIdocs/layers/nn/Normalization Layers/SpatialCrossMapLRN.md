@@ -2,11 +2,11 @@
 
 **Scala:**
 ```scala
-val spatialCrossMapLRN = SpatialCrossMapLRN(val size: Int = 5, val alpha: Double = 1.0, val beta: Double = 0.75, val k: Double = 1.0)
+val spatialCrossMapLRN = SpatialCrossMapLRN(size = 5, alpha  = 1.0, beta = 0.75, k = 1.0)
 ```
 **Python:**
 ```python
-spatialCrossMapLRN = SpatialCrossMapLRN(size=5,alpha=1.0,beta=0.75,k=1.0)
+spatialCrossMapLRN = SpatialCrossMapLRN(size=5, alpha=1.0, beta=0.75, k=1.0)
 ```
 
 SpatialCrossMapLRN applies Spatial Local Response Normalization between different feature maps

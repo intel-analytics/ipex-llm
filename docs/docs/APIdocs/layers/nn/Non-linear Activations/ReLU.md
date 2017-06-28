@@ -2,7 +2,7 @@
 
 **Scala:**
 ```scala
-val relu = ReLU(ip: Boolean = false)
+val relu = ReLU(ip = false)
 ```
 **Python:**
 ```python

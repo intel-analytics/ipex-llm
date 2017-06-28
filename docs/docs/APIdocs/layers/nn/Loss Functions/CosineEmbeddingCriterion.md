@@ -2,7 +2,7 @@
 
 **Scala:**
 ```scala
-val cosineEmbeddingCriterion = CosineEmbeddingCriterion(val margin: Double = 0.0, val sizeAverage: Boolean = true)
+val cosineEmbeddingCriterion = CosineEmbeddingCriterion(margin  = 0.0, sizeAverage = true)
 ```
 **Python:**
 ```python
