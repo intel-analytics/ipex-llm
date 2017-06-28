@@ -2,11 +2,11 @@
 
 **Scala:**
 ```scala
-val pd = PairwiseDistance()
+val pd = PairwiseDistance(norm=2)
 ```
 **Python:**
 ```python
-pd = PairwiseDistance()
+pd = PairwiseDistance(norm=2)
 ```
 
 It is a module that takes a table of two vectors as input and outputs

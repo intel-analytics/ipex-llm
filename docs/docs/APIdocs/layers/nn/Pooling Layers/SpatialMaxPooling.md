@@ -2,11 +2,11 @@
 
 **Scala:**
 ```scala
-val mp = SpatialMaxPooling(2, 2, 2, 2)
+val mp = SpatialMaxPooling(2, 2, dW=2, dH=2, padW=0, padH=0)
 ```
 **Python:**
 ```python
-mp = SpatialMaxPooling(2, 2, 2, 2)
+mp = SpatialMaxPooling(2, 2, dw=2, dh=2, pad_w=0, pad_h=0, to_ceil=false)
 ```
 
 Applies 2D max-pooling operation in kWxkH regions by step size dWxdH steps.

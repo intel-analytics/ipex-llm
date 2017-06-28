@@ -3,13 +3,13 @@
 **Scala:**
 
 ```scala
-val mse = new MarginRankingCriterion()
+val mse = new MarginRankingCriterion(margin=1.0, sizeAverage=true)
 ```
 
 **Python:**
 
 ```python
-mse = MarginRankingCriterion()
+mse = MarginRankingCriterion(margin=1.0, size_average=true)
 ```
 
 Creates a criterion that measures the loss given an input x = {x1, x2},

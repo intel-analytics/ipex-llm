@@ -2,11 +2,11 @@
 
 **Scala:**
 ```scala
-val slc = SmoothL1Criterion()
+val slc = SmoothL1Criterion(sizeAverage=true)
 ```
 **Python:**
 ```python
-slc = SmoothL1Criterion()
+slc = SmoothL1Criterion(size_average=True)
 ```
 Creates a criterion that can be thought of as a smooth version of the AbsCriterion.
 It uses a squared term if the absolute element-wise error falls below 1.

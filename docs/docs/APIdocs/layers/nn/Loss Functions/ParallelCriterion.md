@@ -3,13 +3,13 @@
 **Scala:**
 
 ```scala
-val pc = ParallelCriterion()
+val pc = ParallelCriterion(repeatTarget=false)
 ```
 
 **Python:**
 
 ```python
-pc = ParallelCriterion()
+pc = ParallelCriterion(repeat_target=False)
 ```
 
 ParallelCriterion is a weighted sum of other criterions each applied to a different input
