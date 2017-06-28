@@ -2,11 +2,11 @@
 
 **Scala:**
 ```scala
-val module = CAdd(size)
+val module = CAdd(size,bRegularizer=null)
 ```
 **Python:**
 ```python
-module = CAdd(size)
+module = CAdd(size,bRegularizer=None,bigdl_type="float")
 ```
 
 This layer has a bias tensor with given size. The bias will be added element wise to the input
@@ -20,26 +20,28 @@ dimension before the expand.
 
 **Scala example:**
 ```scala
-val module = CAdd[Double](Array(2, 1))
-val input = Tensor[Double](2, 3).rand()
-input: com.intel.analytics.bigdl.tensor.Tensor[Double] =
-0.8605319228954613      0.6784247003961354      0.8780337024945766
-0.06954618194140494     0.7573000222910196      0.739172674715519
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 2x3]
+val module = CAdd[Float](Array(2, 1),bRegularizer=null)
+val input = Tensor[Float](2, 3).rand()
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+0.52146345      0.86262375      0.74210143
+0.15882674      0.026310394     0.28394955
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x3]
 
 module.forward(input)
-res6: com.intel.analytics.bigdl.tensor.Tensor[Double] =
-0.6545348415630962      0.4724276190637703      0.6720366211622114
--0.39672035572006964    0.291033484629545       0.2729061370540444
+res12: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+0.97027373      1.311434        1.1909117
+-0.047433108    -0.17994945     0.07768971
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
 ```
 
 **Python example:**
 ```python
-module = CAdd([2, 1])
+module = CAdd([2, 1],bRegularizer=None,bigdl_type="float")
 input = np.random.rand(2, 3)
+array([[ 0.71239789,  0.65869477,  0.50425182],
+       [ 0.40333312,  0.64843273,  0.07286636]])
+
 module.forward(input)
-[array([
-[ 0.68064338,  0.48737401,  0.54009759],
-[-0.23572761, -0.58774257, -0.03442413]], dtype=float32)]
+array([[ 0.89537328,  0.84167016,  0.68722725],
+       [ 0.1290929 ,  0.37419251, -0.20137388]], dtype=float32)
 ```

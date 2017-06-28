@@ -9,27 +9,26 @@ val module = CDivTable()
 module = CDivTable()
 ```
 
-Description
 Takes a table with two Tensor and returns the component-wise division between them.
 
 **Scala example:**
 ```scala
-val module = CDivTable[Double]()
-val input = T(1 -> Tensor[Double](2,3).rand(), 2 -> Tensor[Double](2,3).rand())
+val module = CDivTable[Float]()
+val input = T(1 -> Tensor[Float](2,3).rand(), 2 -> Tensor[Float](2,3).rand())
 input: com.intel.analytics.bigdl.utils.Table =
  {
-        2: 0.6415986611973494   0.02757258014753461     0.8064426234923303
-           0.7248881512787193   0.7607566525693983      0.2164502516388893
-           [com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 2x3]
-        1: 0.4365965509787202   0.8974416423588991      0.7740533400792629
-           0.6623019925318658   0.2667063446715474      0.22057452122680843
-           [com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 2x3]
+        2: 0.802295     0.7113872       0.29395157
+           0.6562403    0.06519115      0.20099664
+           [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x3]
+        1: 0.7435388    0.59126955      0.10225375
+           0.46819785   0.10572237      0.9861797
+           [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x3]
  }
 
 module.forward(input)
-res1: com.intel.analytics.bigdl.tensor.Tensor[Double] =
-0.6804823285696155      32.54833742641758       0.9598368408743024
-0.9136609439174167      0.35058036465506653     1.0190541223985259
+res6: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+0.9267648       0.8311501       0.34785917
+0.7134549       1.6217289       4.906449
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
 ```
 

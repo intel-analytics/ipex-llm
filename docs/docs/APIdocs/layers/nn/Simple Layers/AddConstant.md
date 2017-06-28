@@ -2,11 +2,11 @@
 
 **Scala:**
 ```scala
-val module = AddConstant(constant_scalar)
+val module = AddConstant(constant_scalar,inplace= false)
 ```
 **Python:**
 ```python
-module = AddConstant(constant_scalar)
+module = AddConstant(constant_scalar,inplace=False,bigdl_type="float")
 ```
 
 Element wise add a constant scalar to input tensor
@@ -15,23 +15,24 @@ Element wise add a constant scalar to input tensor
  
 **Scala example:**
 ```scala
-val module = AddConstant[Double](3.0)
-val input = Tensor[Double](2,3).rand()
-input: com.intel.analytics.bigdl.tensor.Tensor[Double] =
-0.7599249668419361      0.8327403955627233      0.7157071044202894
-0.7422519933898002      0.09718431462533772     0.3686083541251719
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 2x3]
+val module = AddConstant[Float](3.0)
+val input = Tensor[Float](2,3).rand()
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+0.40684703      0.077655114     0.42314094
+0.55392265      0.8650696       0.3621729
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x3]
 
 module.forward(input)
-res5: com.intel.analytics.bigdl.tensor.Tensor[Double] =
-3.759924966841936       3.8327403955627233      3.7157071044202894
-3.7422519933898 3.0971843146253377      3.368608354125172
+res11: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+3.406847        3.077655        3.423141
+3.5539227       3.8650696       3.3621728
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
+
 ```
 
 **Python example:**
 ```python
-module = AddConstant(3.0)
+module = AddConstant(3.0,inplace=False,bigdl_type="float")
 input = np.array([[1, 2, 3],[4, 5, 6]])
 module.forward(input)
 [array([
