@@ -15,8 +15,8 @@ Element wise add a constant scalar to input tensor
  
 **Scala example:**
 ```scala
-val module = AddConstant[Float](3.0)
-val input = Tensor[Float](2,3).rand()
+val module = AddConstant(3.0)
+val input = Tensor(2,3).rand()
 input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 0.40684703      0.077655114     0.42314094
 0.55392265      0.8650696       0.3621729

@@ -25,8 +25,8 @@ batch using nInputDims.
 
 **Scala example:**
 ```scala
-val module = Padding[Float](1,-1,3,value=0.0,nIndex=1)
-val input = Tensor[Float](3,2,1).rand()
+val module = Padding(1,-1,3,value=0.0,nIndex=1)
+val input = Tensor(3,2,1).rand()
 input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 (1,.,.) =
 0.673425

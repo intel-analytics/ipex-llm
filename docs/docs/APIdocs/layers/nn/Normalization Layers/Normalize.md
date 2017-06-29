@@ -18,8 +18,8 @@ c is the channel number, h is the height and w is the width
 
 **Scala example:**
 ```scala
-val module = Normalize[Float](2.0,eps=1e-10)
-val input = Tensor[Float](2,3).rand()
+val module = Normalize(2.0,eps=1e-10)
+val input = Tensor(2,3).rand()
 input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 0.7075603       0.084298864     0.91339105
 0.22373432      0.8704987       0.6936567

@@ -14,9 +14,9 @@ This layer implement a bidirectional recurrent neural network
 
 **Scala example:**
 ```scala
-val module = BiRecurrent[Float](CAddTable[Float]())
-.add(RnnCell[Float](6, 4, Sigmoid[Float]()))
-val input = Tensor[Float](Array(1, 2, 6)).rand()
+val module = BiRecurrent(CAddTable())
+.add(RnnCell(6, 4, Sigmoid()))
+val input = Tensor(Array(1, 2, 6)).rand()
 input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 (1,.,.) =
 0.55511624      0.44330198      0.9025551       0.26096714      0.3434667       0.20060952

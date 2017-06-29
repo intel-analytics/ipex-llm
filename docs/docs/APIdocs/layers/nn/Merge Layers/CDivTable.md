@@ -13,8 +13,8 @@ Takes a table with two Tensor and returns the component-wise division between th
 
 **Scala example:**
 ```scala
-val module = CDivTable[Float]()
-val input = T(1 -> Tensor[Float](2,3).rand(), 2 -> Tensor[Float](2,3).rand())
+val module = CDivTable()
+val input = T(1 -> Tensor(2,3).rand(), 2 -> Tensor(2,3).rand())
 input: com.intel.analytics.bigdl.utils.Table =
  {
         2: 0.802295     0.7113872       0.29395157

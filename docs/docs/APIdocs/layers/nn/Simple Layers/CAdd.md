@@ -20,8 +20,8 @@ dimension before the expand.
 
 **Scala example:**
 ```scala
-val module = CAdd[Float](Array(2, 1),bRegularizer=null)
-val input = Tensor[Float](2, 3).rand()
+val module = CAdd(Array(2, 1),bRegularizer=null)
+val input = Tensor(2, 3).rand()
 input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 0.52146345      0.86262375      0.74210143
 0.15882674      0.026310394     0.28394955
