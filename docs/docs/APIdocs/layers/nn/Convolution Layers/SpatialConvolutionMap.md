@@ -9,7 +9,9 @@ val layer = SpatialConvolutionMap(
   dW = 1,
   dH = 1,
   padW = 0,
-  padH = 0)
+  padH = 0,
+  wRegularizer = null,
+  bRegularizer = null)
 ```
 **Python:**
 ```python
@@ -20,7 +22,9 @@ layer = SpatialConvolutionMap(
   dw=1,
   dh=1,
   pad_w=0,
-  pad_h=0)
+  pad_h=0,
+  wRegularizer=None,
+  bRegularizer=None)
 ```
 
 This class is a generalization of SpatialConvolution.
