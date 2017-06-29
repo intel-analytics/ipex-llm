@@ -3,9 +3,9 @@
 **Scala:**
 ```scala
 val module = Replicate(
-  nFeatures : Int,
-  dim : Int = 1,
-  nDim : Int = Int.MaxValue)
+  nFeatures,
+  dim = 1,
+  nDim = Int.MaxValue)
 ```
 **Python:**
 ```python
