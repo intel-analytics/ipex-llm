@@ -37,6 +37,8 @@ class Recurrent[T : ClassTag]()
   private var hiddenShape: Array[Int] = null
   private val currentInput = T()
   private val currentGradOutput = T()
+  private val gradInputCell = Tensor[T]()
+  private var outputCell = Tensor[T]()
   private val _input = T()
   private val batchDim = 1
   private val timeDim = 2
@@ -44,13 +46,20 @@ class Recurrent[T : ClassTag]()
   private val hidDim = 2
   private var cellAppendStartIdx = 0
   private var (batchSize, times) = (0, 0)
+  private var topology: Cell[T] = null
+  private var preTopology: AbstractModule[Activity, Activity, T] = null
   private val dropouts: ArrayBuffer[Array[Dropout[T]]] =
     new ArrayBuffer[Array[Dropout[T]]]
 
   override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): Recurrent.this.type = {
     require(module.isInstanceOf[Cell[T]],
       "Recurrent: contained module should be Cell type")
-    modules += module.asInstanceOf[Cell[T]]
+    topology = module.asInstanceOf[Cell[T]]
+    preTopology = topology.preTopology
+    if (preTopology != null) {
+      modules += preTopology
+    }
+    modules += topology
     this
   }
 
@@ -66,11 +75,12 @@ class Recurrent[T : ClassTag]()
    */
   private def extend(times: Int, batchSize: Int, hiddenSize: Int): Unit = {
     if (hidden == null) {
-      require(modules != null && modules.length == 1,
-        "Recurrent extend: should contain only one cell")
+      require(topology != null && modules != null && modules.length <= 2,
+        "Recurrent extend: should contain only one cell or plus a pre-topology" +
+          " to process input")
 
       cells.clear()
-      cells += modules.head.asInstanceOf[Cell[T]]
+      cells += topology
       val cell = cells.head
 
       // The cell will help initialize or resize the hidden variable.
@@ -173,10 +183,16 @@ class Recurrent[T : ClassTag]()
       "Recurrent: input should be a 3D Tensor, e.g [batch, times, nDim], " +
         s"current input.dim = ${input.dim}")
 
-    batchSize = input.size(batchDim)
-    times = input.size(timeDim)
+    outputCell = if (preTopology != null) {
+      preTopology.updateOutput(input).toTensor[T]
+    } else {
+      input
+    }
 
-    val hiddenSize = modules.last.asInstanceOf[Cell[T]].hiddensShape(0)
+    batchSize = outputCell.size(batchDim)
+    times = outputCell.size(timeDim)
+
+    val hiddenSize = topology.hiddensShape(0)
     output.resize(batchSize, times, hiddenSize)
 
     // Clone N modules along the sequence dimension.
@@ -192,7 +208,7 @@ class Recurrent[T : ClassTag]()
     currentInput(hidDim) = hidden
     var i = 1
     while (i <= times) {
-      currentInput(inputDim) = input.select(timeDim, i)
+      currentInput(inputDim) = outputCell.select(timeDim, i)
       cells(i - 1).updateOutput(currentInput)
       currentInput(hidDim) = cells(i - 1).output.toTable(hidDim)
       i += 1
@@ -219,12 +235,13 @@ class Recurrent[T : ClassTag]()
      * of Cell(i)
      * The first module in the cells array accepts zero hidden parameter.
      */
+
     var i = times
     while (i >= 1) {
       currentGradOutput(inputDim) = gradOutput.select(timeDim, i)
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
         else hidden
-      _input(inputDim) = input.select(timeDim, i)
+      _input(inputDim) = outputCell.select(timeDim, i)
       if (i == 1) {
         cells(i - 1).regluarized(true)
       } else {
@@ -234,17 +251,26 @@ class Recurrent[T : ClassTag]()
       currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
       i -= 1
     }
+    if (preTopology != null) {
+      preTopology.accGradParameters(input, gradInputCell)
+    }
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    gradInput.resizeAs(input)
+
+    gradInput = if (preTopology != null) {
+      preTopology.gradInput.toTensor[T]
+    } else {
+      gradInputCell
+    }
+    gradInputCell.resizeAs(outputCell)
     currentGradOutput(hidDim) = gradHidden
     var i = times
     while (i >= 1) {
       currentGradOutput(inputDim) = gradOutput.select(timeDim, i)
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
         else hidden
-      _input(inputDim) = input.select(timeDim, i)
+      _input(inputDim) = outputCell.select(timeDim, i)
       cells(i - 1).updateGradInput(_input, currentGradOutput)
       currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
       i -= 1
@@ -252,8 +278,11 @@ class Recurrent[T : ClassTag]()
     if (cellAppendStartIdx == 0 || cellAppendStartIdx < times) {
       set(cells.slice(cellAppendStartIdx, times)
         .map(x => x.gradInput.toTable[Tensor[T]](inputDim)),
-        gradInput,
+        gradInputCell,
         cellAppendStartIdx)
+    }
+    if (preTopology != null) {
+      gradInput = preTopology.updateGradInput(input, gradInputCell).toTensor[T]
     }
     gradInput
   }
@@ -271,9 +300,10 @@ class Recurrent[T : ClassTag]()
   }
 
   override def reset(): Unit = {
-    require(modules != null && modules.length == 1,
-      "Recurrent extend: should contain only one cell")
-    require(modules.head.isInstanceOf[Cell[T]],
+    require(topology != null && modules != null && modules.length <= 2,
+      "Recurrent extend: should contain only one cell or plus a pre-topology" +
+        " to process input.")
+    require(topology.isInstanceOf[Cell[T]],
       "Recurrent: should contain module with Cell type")
 
     modules.foreach(_.reset())

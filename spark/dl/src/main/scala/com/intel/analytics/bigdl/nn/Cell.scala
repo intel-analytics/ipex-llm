@@ -60,6 +60,8 @@ abstract class Cell[T : ClassTag](
    */
   var cell: AbstractModule[Activity, Activity, T]
 
+  def preTopology: AbstractModule[Activity, Activity, T] = null
+
   /**
    * resize the hidden parameters wrt the batch size, hiddens shapes.
    *
