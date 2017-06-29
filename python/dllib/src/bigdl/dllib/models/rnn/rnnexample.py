@@ -28,8 +28,8 @@ from bigdl.util.common import *
 from bigdl.util.common import Sample
 
 def prepare_data(sc, folder, vocabsize):
-    train_file = folder + "train_test.txt"
-    val_file = folder + "val_test.txt"
+    train_file = folder + "train.txt"
+    val_file = folder + "val.txt"
 
     train_sentences_rdd = sc.textFile(train_file) \
         .map(lambda line: sentence.sentences_split(line))
