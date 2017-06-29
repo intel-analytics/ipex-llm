@@ -2,7 +2,7 @@
 
 **Scala:**
 ```scala
-val layer = SpatialShareConvolution[Double](nInputPlane, nOutputPlane, kW, kH, dW, dH,
+val layer = SpatialShareConvolution[Float](nInputPlane, nOutputPlane, kW, kH, dW, dH,
       padW, padH)
 ```
 **Python:**
@@ -27,7 +27,7 @@ layer = SpatialShareConvolution(nInputPlane, nOutputPlane, kW, kH, dW, dH, padW,
     val dH = 1
     val padW = 0
     val padH = 0
-    val layer = SpatialShareConvolution[Double](nInputPlane, nOutputPlane, kW, kH, dW, dH,
+    val layer = SpatialShareConvolution[Float](nInputPlane, nOutputPlane, kW, kH, dW, dH,
       padW, padH)
 
     val inputData = Array(
@@ -49,15 +49,15 @@ layer = SpatialShareConvolution(nInputPlane, nOutputPlane, kW, kH, dW, dH, padW,
 
     val biasData = Array(0.0)
 
-    layer.weight.copy(Tensor[Double](Storage(kernelData), 1,
+    layer.weight.copy(Tensor[Float](Storage(kernelData), 1,
       Array(nOutputPlane, nInputPlane, kH, kW)))
-    layer.bias.copy(Tensor[Double](Storage(biasData), 1, Array(nOutputPlane)))
+    layer.bias.copy(Tensor[Float](Storage(biasData), 1, Array(nOutputPlane)))
 
-    val input = Tensor[Double](Storage(inputData), 1, Array(3, 1, 3, 4))
+    val input = Tensor[Float](Storage(inputData), 1, Array(3, 1, 3, 4))
     val output = layer.updateOutput(input)
  
     > output
-res2: com.intel.analytics.bigdl.tensor.Tensor[Double] =
+res2: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 (1,1,.,.) =
 49.0    63.0    38.0
 91.0    105.0   56.0

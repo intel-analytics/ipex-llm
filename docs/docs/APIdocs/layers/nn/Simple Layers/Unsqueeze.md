@@ -10,13 +10,7 @@ layer = Unsqueeze(dim)
 ```
 
 Insert singleton dim (i.e., dimension 1) at position pos. For an input with dim = input.dim(),
-there are dim + 1 possible positions to insert the singleton dimension.
-
-```
-                   +----Unsqueeze----+
- input -----+---->  input.size: [2, 2, 2] => output.size: [2, 1, 2, 2]  -----+----> output
-            
-```
+there are dim + 1 possible positions to insert the singleton dimension. The dim starts from 1.
 
 **Scala example:**
 ```scala

@@ -2,8 +2,13 @@
 
 **Scala:**
 ```scala
-val layer = LookupTable[Float](nIndex, nOutput, paddingValue, maxNorm, normType, shouldScaleGradByFreq)
+val layer = LookupTable[Float](nIndex: Int, nOutput: Int, paddingValue: Double = 0,
+                                 maxNorm: Double = Double.MaxValue,
+                                 normType: Double = 2.0,
+                                 shouldScaleGradByFreq: Boolean = false,
+                                 wRegularizer: Regularizer[T] = null)
 ```
+
 **Python:**
 ```python
 layer = LookupTable(nIndex, nOutput, paddingValue, maxNorm, normType, shouldScaleGradByFreq)

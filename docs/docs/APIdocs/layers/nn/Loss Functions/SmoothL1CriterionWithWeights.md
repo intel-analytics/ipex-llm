@@ -2,7 +2,7 @@
 
 **Scala:**
 ```scala
-val smcod = SmoothL1CriterionWithWeights[Float](sigma, num)
+val smcod = SmoothL1CriterionWithWeights[Float](sigma: Float = 2.4f, num: Int = 2)
 ```
 **Python:**
 ```python
