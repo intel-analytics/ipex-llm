@@ -1,5 +1,5 @@
 ## Summary
-This example demonstrates how to use BigDL with Spark ML pipeline to train and predict LeNet5 model on MNIST dataset.
+DLClassifierLeNet example demonstrates how to use BigDL with Spark ML pipeline to train and predict LeNet5 model on MNIST dataset.
 
 Learn more about Spark ML please refer to <http://spark.apache.org/docs/latest/api/scala/org/apache/spark/ml/Pipeline.html>
 ## Preparation

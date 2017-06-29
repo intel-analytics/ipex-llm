@@ -26,15 +26,15 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericF
 import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
-import org.apache.spark.ml.{DLClassifier, DLEstimator, DLModel}
+import org.apache.spark.ml.{DLClassifier, DLModel}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 
 /**
  * An example to show how to use DLEstimator fit to be compatible with ML Pipeline
- * refer to README.md on how to run this example
+ * refer to ./README.md on how to run this example
  */
-object DLEstimatorLeNet {
+object DLClassifierLeNet {
 
   LoggerFilter.redirectSparkInfoLogs()
   Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
