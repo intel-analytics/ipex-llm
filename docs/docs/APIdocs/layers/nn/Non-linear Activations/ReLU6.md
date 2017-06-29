@@ -2,7 +2,7 @@
 
 **Scala:**
 ```scala
-val module = ReLU6(inplace: Boolean = false)
+val module = ReLU6(inplace = false)
 ```
 **Python:**
 ```python
