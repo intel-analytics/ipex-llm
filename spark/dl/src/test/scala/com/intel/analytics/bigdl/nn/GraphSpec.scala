@@ -335,6 +335,24 @@ class GraphSpec extends FlatSpec with Matchers {
     gradient should be(T(Tensor(T(-1.0f, 1.0f)), Tensor(T(-1.0f, 1.0f))))
   }
 
+  "Graph forward/backward time" should "be recorded" in {
+    val input1 = Input()
+    val input2 = Input()
+    val add = CAddTable().inputs(input1, input2)
+    val add2 = AddConstant(2.0f).inputs(add)
+    val relu = ReLU().inputs(add2)
+    val graph = Graph[Float](Array(input1, input2), Array(add, relu))
+
+    val input = T(Tensor(T(1.0f, 2.0f)), Tensor(T(-2.0f, -1.0f)))
+    graph.forward(input)
+    graph.backward(input, T(Tensor(T(1.0f, 2.0f)), Tensor(T(-2.0f, -1.0f))))
+    graph.getTimes().foreach {
+      case (_, forward, backward) =>
+        forward should not be(0.0)
+        backward should not be(0.0)
+    }
+  }
+
   "lenet" should "be same with sequential model" in {
     RandomGenerator.RNG.setSeed(1000)
     val seqModel = Sequential().add(Reshape(Array(1, 28, 28)))
