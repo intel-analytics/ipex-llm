@@ -66,7 +66,7 @@ import scala.reflect.ClassTag
  */
 
 @SerialVersionUID(- 3110412775551642284L)
-class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
+class SpatialFullConvolution[T: ClassTag](
   val nInputPlane: Int,
   val nOutputPlane: Int,
   val kW: Int,
@@ -82,7 +82,7 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
   var wRegularizer: Regularizer[T] = null,
   var bRegularizer: Regularizer[T] = null
   )(implicit ev: TensorNumeric[T])
-  extends AbstractModule[A, Tensor[T], T] with Initializable {
+  extends AbstractModule[Activity, Tensor[T], T] with Initializable {
 
   require(adjW <= dW - 1 && adjH <= dH - 1,
     "SpatialFullConvolution: adjW=$adjW and adjH=$adjH must be smaller than " +
@@ -249,8 +249,11 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
     }
   }
 
-  override def updateOutput(input: A): Tensor[T] = {
+  override def updateOutput(input: Activity): Tensor[T] = {
     val inputTensor: Tensor[T] = if (input.isInstanceOf[Table]) {
+      if (gradInput == null || !gradInput.isInstanceOf[Table]) {
+        gradInput = T()
+      }
       val targetTensor: Tensor[T] = input.toTable[Tensor[T]](2)
       val tDims = targetTensor.dim()
       val tH = targetTensor.size(tDims - 1)
@@ -259,6 +262,9 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
       adjH = calculateAdj(tH, kH, padH, dH)
       input.toTable[Tensor[T]](1)
     } else {
+      if (gradInput == null || gradInput.isInstanceOf[Table]) {
+        gradInput = Tensor[T]()
+      }
       input.toTensor[T]
     }
 
@@ -396,7 +402,7 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
 
   }
 
-  override def updateGradInput(input: A, gradOutput: Tensor[T]): A = {
+  override def updateGradInput(input: Activity, gradOutput: Tensor[T]): Activity = {
     val inputTensor: Tensor[T] = if (input.isInstanceOf[Table]) {
       input.toTable[Tensor[T]](1)
     } else {
@@ -548,7 +554,7 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
   }
 
 
-  override def accGradParameters(input: A, gradOutput: Tensor[T]): Unit = {
+  override def accGradParameters(input: Activity, gradOutput: Tensor[T]): Unit = {
     val inputTensor: Tensor[T] = if (input.isInstanceOf[Table]) {
       val targetTensor: Tensor[T] = input.toTable[Tensor[T]](2)
       val tDims = targetTensor.dim()
@@ -700,10 +706,10 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
       return false
     }
 
-    if (!obj.isInstanceOf[SpatialFullConvolution[A, T]]) {
+    if (!obj.isInstanceOf[SpatialFullConvolution[T]]) {
       return false
     }
-    val other = obj.asInstanceOf[SpatialFullConvolution[A, T]]
+    val other = obj.asInstanceOf[SpatialFullConvolution[T]]
     if (this.eq(other)) {
       return true
     }
@@ -752,7 +758,7 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
 }
 
 object SpatialFullConvolution {
-  def apply[A <: Activity : ClassTag, @specialized(Float, Double) T: ClassTag](
+  def apply[@specialized(Float, Double) T: ClassTag](
       nInputPlane: Int,
       nOutputPlane: Int,
       kW: Int,
@@ -767,8 +773,8 @@ object SpatialFullConvolution {
       noBias: Boolean = false,
       wRegularizer: Regularizer[T] = null,
       bRegularizer: Regularizer[T] = null
-  )(implicit ev: TensorNumeric[T]) : SpatialFullConvolution[A, T] = {
-    new SpatialFullConvolution[A, T](nInputPlane, nOutputPlane, kW, kH, dW, dH,
+  )(implicit ev: TensorNumeric[T]) : SpatialFullConvolution[T] = {
+    new SpatialFullConvolution[T](nInputPlane, nOutputPlane, kW, kH, dW, dH,
       padW, padH, adjW, adjH, nGroup, noBias,
       wRegularizer, bRegularizer)
   }
