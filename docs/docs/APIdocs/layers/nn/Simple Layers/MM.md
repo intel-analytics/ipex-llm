@@ -2,7 +2,7 @@
 
 **Scala:**
 ```scala
-val m = MM[T](transA,transB)
+val m = MM(transA=false,transB=false)
 ```
 **Python:**
 ```python
@@ -14,57 +14,40 @@ MM is a module that performs matrix multiplication on two mini-batch inputs, pro
 
 **Scala example:**
 ```scala
-scala> import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.Tensor
-
-scala> val input1 = Tensor[Double](3, 3).randn()
-input1: com.intel.analytics.bigdl.tensor.Tensor[Double] =
-0.33005356046941803     -0.07133566759754373    0.05536829452879413
-1.0303293572634165      -0.15012021729192965    -0.08028050633121839
-0.3629008132461407      -0.6745486660318222     -0.3050064227992411
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 3x3]
-
-scala> val input2 = Tensor[Double](3, 3).randn()
-input2: com.intel.analytics.bigdl.tensor.Tensor[Double] =
--1.3057598149580452     0.5381646377557673      0.5735132633784201
--0.2851610351201496     -0.9109467904336456     -0.26243469354703053
-0.6654744830248029      0.4493973747597665      -0.09718550515980719
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 3x3]
-
-scala> import com.intel.analytics.bigdl.utils.T
+scala>
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils.T
 
-scala> val input = T(1 -> input1, 2 -> input2)
-input: com.intel.analytics.bigdl.utils.Table =
+val input = T(1 -> Tensor(3, 3).randn(), 2 -> Tensor(3, 3).randn())
+val m1 = MM()
+val output1 = m1.forward(input)
+val m2 = MM(true,true)
+val output2 = m2.forward(input)
+
+scala> print(input)
  {
-        2: -1.3057598149580452  0.5381646377557673      0.5735132633784201
-           -0.2851610351201496  -0.9109467904336456     -0.26243469354703053
-           0.6654744830248029   0.4493973747597665      -0.09718550515980719
-           [com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 3x3]
-        1: 0.33005356046941803  -0.07133566759754373    0.05536829452879413
-           1.0303293572634165   -0.15012021729192965    -0.08028050633121839
-           0.3629008132461407   -0.6745486660318222     -0.3050064227992411
-           [com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 3x3]
+        2: -0.62020904  -0.18690863     0.34132162
+           -0.5359324   -0.09937895     0.86147165
+           -2.6607985   -1.426654       2.3428898
+           [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3x3]
+        1: -1.3087689   0.048720464     0.69583243
+           -0.52055264  -1.5275089      -1.1569321
+           0.28093573   -0.29353273     -0.9505267
+           [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3x3]
  }
 
-scala> val m1 = MM[Double]()
-m1: com.intel.analytics.bigdl.nn.MM[Double] = MM()
-
-scala> m1.forward(input)
-res4: com.intel.analytics.bigdl.tensor.Tensor[Double] =
--0.3737823360541745     0.26748851845761507     0.20263005294579903
--1.3559788627784288     0.6551605066524494      0.6381064068212379
--0.48448029443942375    0.6727092413240219      0.41479560541682625
+scala> print(output1)
+-1.0658705      -0.7529337      1.225519
+4.2198563       1.8996398       -4.204146
+2.512235        1.3327343       -2.38396
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 3x3]
 
-scala> val m2 = MM[Double](true,true)
-m2: com.intel.analytics.bigdl.nn.MM[Double] = MM()
-
-scala> m2.forward(input)
-res3: com.intel.analytics.bigdl.tensor.Tensor[Double] =
-0.33164457896348454     -1.1279313997494393     0.6474008319577473
--0.3745047510001215     0.33411865538700675     -0.049379345201886776
--0.2904270525180214     0.13738665649333798     0.030410541664609925
+scala> print(output2)
+1.0048954       0.99516183      4.8832207
+0.15509865      -0.12717877     1.3618765
+-0.5397563      -1.0767963      -2.4279075
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 3x3]
 
 ```

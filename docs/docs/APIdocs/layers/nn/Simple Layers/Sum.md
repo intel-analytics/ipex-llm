@@ -2,11 +2,11 @@
 
 **Scala:**
 ```scala
-val m = Sum[T](dimension,nInputDims,sizeAverage,squeeze)
+val m = Sum(dimension=1,nInputDims=-1,sizeAverage=false,squeeze=true)
 ```
 **Python:**
 ```python
-m = Sum(dimension,n_input_dims,size_average)
+m = Sum(dimension=1,n_input_dims=-1,size_average=False)
 ```
 
 Sum is a module that simply applies a sum operation over the given dimension - specified by the argument `dimension` (starting from 1). 
@@ -15,35 +15,39 @@ The input is expected to be either one tensor, or a batch of tensors (in mini-ba
 
 **Scala example:**
 ```scala
-scala> val input = Tensor[Double](2, 2, 2).randn()
-input: com.intel.analytics.bigdl.tensor.Tensor[Double] =
+
+scala> 
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor._
+
+val input = Tensor(2, 2, 2).randn()
+val m1 = Sum(2)
+val output1 = m1.forward(input)
+val m2 = Sum(2, 1, true)
+val output2 = m2.forward(input)
+
+scala> print(input)
 (1,.,.) =
-1.5835003800372862      0.9237150600038898
-0.5103501798991353      -0.6014806933883298
+-0.003314678    0.96401167
+0.79000163      0.78624517
 
 (2,.,.) =
--0.05068578108652042    0.8339699884635934
--1.7135159288916593     0.1351458541052799
+-0.29975495     0.24742787
+0.8709072       0.4381108
 
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 2x2x2]
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x2x2]
 
-scala> val m = Sum[Double](2)
-m: com.intel.analytics.bigdl.nn.Sum[Double] = nn.Sum
-
-scala> m.forward(input)
-res12: com.intel.analytics.bigdl.tensor.Tensor[Double] =
-2.0938505599364214      0.32223436661556004
--1.7642017099781797     0.9691158425688733
+scala> print(output1)
+0.78668696      1.7502568
+0.5711522       0.68553865
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2]
 
-scala> val m2 = Sum[Double](2, 1, true)
-m2: com.intel.analytics.bigdl.nn.Sum[Double] = nn.Sum
-
-scala> m2.forward(input)
-res13: com.intel.analytics.bigdl.tensor.Tensor[Double] =
-1.0469252799682107      0.16111718330778002
--0.8821008549890899     0.48455792128443664
+scala> print(output2)
+0.39334348      0.8751284
+0.2855761       0.34276932
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2]
+
 ```
 
 **Python example:**

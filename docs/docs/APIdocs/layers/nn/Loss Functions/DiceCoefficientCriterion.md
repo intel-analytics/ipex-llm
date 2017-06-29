@@ -2,7 +2,7 @@
 
 **Scala:**
 ```scala
-val loss = DiceCoefficientCriterion[T](sizeAverage, epsilon)
+val loss = DiceCoefficientCriterion(sizeAverage=true, epsilon=1.0f)
 ```
 **Python:**
 ```python
@@ -16,28 +16,36 @@ Both `forward` and `backward` accept two tensors : input and target. The `forwar
 
 **Scala example:**
 ```scala
-scala> val input = Tensor[Double](2).randn()
-input: com.intel.analytics.bigdl.tensor.Tensor[Double] =
--1.6529486997146012
--0.16373539545619223
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 2]
 
-scala> val target = Tensor[Double](Storage[Double](Array(2.0d, 1.0d)))
-target: com.intel.analytics.bigdl.tensor.Tensor[Double] =
+scala>
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.Storage
+
+val input = Tensor(2).randn()
+val target = Tensor(Storage(Array(2.0f, 1.0f)))
+val loss = DiceCoefficientCriterion(epsilon = 1.0f)
+val output = loss.forward(input,target)
+val grad = loss.backward(input,target)
+
+scala> print(input)
+-0.50278
+0.51387966
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2]
+
+scala> print(target)
 2.0
 1.0
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 2]
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2]
 
-scala> val loss = DiceCoefficientCriterion[Double](epsilon = 1.0f)
-loss: com.intel.analytics.bigdl.nn.DiceCoefficientCriterion[Double] = nn.DiceCoefficientCriterion
+scala> print(output)
+0.9958517
 
-scala> loss.forward(input,target)
-res28: Double = 3.7202960307456734
-
-scala> loss.backward(input,target)
-res29: com.intel.analytics.bigdl.tensor.Tensor[Double] =
--3.0780227524020987     -2.16198490575963
+scala> print(grad)
+-0.99619853     -0.49758217
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 1x2]
+
 ```
 
 **Python example:**

@@ -2,55 +2,61 @@
 
 **Scala:**
 ```scala
-val m = SpatialAveragePooling[T](kW, kH, dW, dH, padW, padH, ceilMode, countIncludePad, divide)
+val m = SpatialAveragePooling(kW, kH, dW=1, dH=1, padW=0, padH=0, ceilMode=false, countIncludePad=true, divide=true)
 ```
 **Python:**
 ```python
 m = SpatialAveragePooling(kw, kh, dw=1, dh=1, pad_w=0, pad_h=0,ceil_mode=False, count_include_pad=True, divide=True)
 ```
 
-SpatialAveragePooling is a module that applies 2D average-pooling operation in kWxkH regions by step size dWxdH.
+SpatialAveragePooling is a module that applies 2D average-pooling operation in `kW`x`kH` regions by step size `dW`x`dH`.
 
 The number of output features is equal to the number of input planes.
 
 **Scala example:**
 ```scala
-scala> val input = Tensor[Double](1, 3, 3).randn()
-input: com.intel.analytics.bigdl.tensor.Tensor[Double] =
+scala> 
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor._
+
+val input = Tensor(1, 3, 3).randn()
+val m = SpatialAveragePooling(3, 2, 2, 1)
+val output = m.forward(input)
+val gradOut = Tensor(1, 2, 1).randn()
+val gradIn = m.backward(input,gradOut)
+
+scala> print(input)
 (1,.,.) =
--0.432000902270295      0.028882976042042544    1.066722105416054
-1.5154048822103217      2.6621710182077405      -0.33727350742325946
-0.04048038473302521     -0.5231959373696738     1.952579854364095
+0.9916249       1.0299556       0.5608558
+-0.1664829      1.5031902       0.48598626
+0.37362042      -0.0966136      -1.4257964
 
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 1x3x3]
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 1x3x3]
 
-scala> val m = SpatialAveragePooling[Double](3, 2, 2, 1)
-m: com.intel.analytics.bigdl.nn.SpatialAveragePooling[Double] = SpatialAveragePooling$mcD$sp[27778a9e](3, 2, 2, 1, 0, 0)
-
-scala> m.forward(input)
-res12: com.intel.analytics.bigdl.tensor.Tensor[Double] =
+scala> print(output)
 (1,.,.) =
-0.7506510953637674
-0.8850277824537081
+0.7341883
+0.1123173
 
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 1x2x1]
 
-scala> val gradOutput = Tensor[Double](1, 2, 1).randn()
-gradOutput: com.intel.analytics.bigdl.tensor.Tensor[Double] =
+scala> print(gradOut)
 (1,.,.) =
--0.26737872039319
--0.1198219665838401
+-0.42837557
+-1.5104272
 
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 1x2x1]
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 1x2x1]
 
-scala> m.backward(input,gradOut)
-res13: com.intel.analytics.bigdl.tensor.Tensor[Double] =
+scala> print(gradIn)
 (1,.,.) =
-0.016666666666666666    0.016666666666666666    0.016666666666666666
-0.03333333333333333     0.03333333333333333     0.03333333333333333
-0.016666666666666666    0.016666666666666666    0.016666666666666666
+-0.071395926    -0.071395926    -0.071395926
+-0.3231338      -0.3231338      -0.3231338
+-0.25173786     -0.25173786     -0.25173786
 
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 1x3x3]
+
+
 ```
 
 **Python example:**

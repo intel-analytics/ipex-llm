@@ -2,7 +2,7 @@
 
 **Scala:**
 ```scala
-val loss = DistKLDivCriterion[T](sizeAverage)
+val loss = DistKLDivCriterion[T](sizeAverage=true)
 ```
 **Python:**
 ```python
@@ -13,29 +13,37 @@ DistKLDivCriterion is the Kullback–Leibler divergence loss.
 
 **Scala example:**
 ```scala
-scala> val input = Tensor[Double](2).randn()
-input: com.intel.analytics.bigdl.tensor.Tensor[Double] =
-1.2477045608450934
--0.481583389657839
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 2]
 
-scala> val target = Tensor[Double](2).randn()
-target: com.intel.analytics.bigdl.tensor.Tensor[Double] =
-0.4163043798676898
--0.4280601053062339
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 2]
+scala>
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.Storage
 
-scala> val loss = DistKLDivCriterion[Double]()
-loss: com.intel.analytics.bigdl.nn.DistKLDivCriterion[Double] = nn.DistKLDivCriterion (true)
+val input = Tensor(2).randn()
+val target = Tensor(Storage(Array(2.0f, 1.0f)))
+val loss = DistKLDivCriterion()
+val output = loss.forward(input,target)
+val grad = loss.backward(input,target)
 
-scala> loss.forward(input,target)
-res30: Double = -0.44212423625480407
+scala> print(input)
+-0.3854126
+-0.7707398
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2]
 
-scala> loss.backward(input,target)
-res31: com.intel.analytics.bigdl.tensor.Tensor[Double] =
--0.2081521899338449
-0.0
+scala> print(target)
+2.0
+1.0
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2]
+
+scala> print(output)
+1.4639297
+
+scala> print(grad)
+-1.0
+-0.5
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 2]
+
 ```
 
 **Python example:**
@@ -44,7 +52,7 @@ from bigdl.nn.criterion import *
 import numpy as np
 
 input  = np.random.randn(2)
-target = np.array([2,1],dtype='float64')
+target = np.array([2,1])
 
 print "input=", input
 print "target=", target
@@ -57,9 +65,9 @@ print "grad out of loss is :",grad_out
 ```
 produces output:
 ```python
-input= [ 0.89250893  0.70999532]
-target= [ 2.  1.]
+input= [-1.14333924  0.97662296]
+target= [2 1]
 creating: createDistKLDivCriterion
-output of loss is : -0.55435944
+output of loss is : 1.348175
 grad out of loss is : [-1.  -0.5]
 ```

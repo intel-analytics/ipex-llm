@@ -2,7 +2,7 @@
 
 **Scala:**
 ```scala
-val m = CMaxTable[T]()
+val m = CMaxTable()
 ```
 **Python:**
 ```python
@@ -14,63 +14,54 @@ CMaxTable is a module that takes a table of Tensors and outputs the max of all o
 
 **Scala example:**
 ```scala
-scala>  val input1 = Tensor[Double](3).randn()
-input1: com.intel.analytics.bigdl.tensor.Tensor[Double] =
--1.1299893907930936
--0.6668428117053015
--1.4320595866536823
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 3]
 
-scala> val input2 =  Tensor[Double](3).randn()
-input2: com.intel.analytics.bigdl.tensor.Tensor[Double] =
--0.10728239839248666
--0.3271036764589023
-0.8346568193290994
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 3]
-
-scala> import com.intel.analytics.bigdl.utils.T
+scala> 
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils.T
 
-scala> val input = T(input1, input2)
-input: com.intel.analytics.bigdl.utils.Table =
- {
-        2: -0.10728239839248666
-           -0.3271036764589023
-           0.8346568193290994
-           [com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 3]
-        1: -1.1299893907930936
-           -0.6668428117053015
-           -1.4320595866536823
-           [com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 3]
- }
- 
-scala> val m = CMaxTable[Double]()
-m: com.intel.analytics.bigdl.nn.CMaxTable[Double] = CMaxTable[90ae67e9]
+val input1 = Tensor(3).randn()
+val input2 =  Tensor(3).randn()
+val input = T(input1, input2)
+val m = CMaxTable()
+val output = m.forward(input)
+val gradOut = Tensor(3).randn()
+val gradIn = m.backward(input,gradOut)
 
-scala> m.forward(input)
-res2: com.intel.analytics.bigdl.tensor.Tensor[Double] =
--0.10728239839248666
--0.3271036764589023
-0.8346568193290994
+scala> print(input)
+ {
+        2: -0.38613814
+           0.74074316
+           -1.753783
+           [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3]
+        1: -1.6037064
+           -2.3297918
+           -0.7160026
+           [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3]
+ }
+
+scala> print(output)
+-0.38613814
+0.74074316
+-0.7160026
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 3]
 
-scala> val gradOut = Tensor[Double](3).randn()
-gradOut: com.intel.analytics.bigdl.tensor.Tensor[Double] =
--1.0821492051923274
-0.8070753324099773
--2.9081447772149924
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 3]
+scala> print(gradOut)
+-1.4526331
+0.7070323
+0.29294914
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3]
 
-scala> m.backward(input,gradOut)
-res3: com.intel.analytics.bigdl.utils.Table =
+scala> print(gradIn)
  {
-        2: -1.0821492051923274
-           0.8070753324099773
-           -2.9081447772149924
+        2: -1.4526331
+           0.7070323
+           0.0
            [com.intel.analytics.bigdl.tensor.DenseTensor of size 3]
         1: 0.0
            0.0
-           0.0
+           0.29294914
            [com.intel.analytics.bigdl.tensor.DenseTensor of size 3]
  }
 

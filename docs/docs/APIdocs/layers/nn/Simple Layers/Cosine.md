@@ -2,7 +2,7 @@
 
 **Scala:**
 ```scala
-val m = Cosine[T](inputSize, outputSize)
+val m = Cosine(inputSize, outputSize)
 ```
 **Python:**
 ```python
@@ -18,21 +18,25 @@ vector, it must have the size of `inputSize`. If it is a matrix, then each row i
 	
 **Scala example:**
 ```scala
-scala> val input = Tensor[Double](3, 2).rand()
-input: com.intel.analytics.bigdl.tensor.Tensor[Double] =
-0.7678213366307318      0.27321007940918207
-0.13674732483923435     0.05386950820684433
-0.6806434956379235      0.827141807647422
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 3x2]
+scala>
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor._
 
-scala> val m = Cosine[Double](2, 3)
-m: com.intel.analytics.bigdl.nn.Cosine[Double] = Cosine[168435a9](2, 3)
+val m = Cosine(2, 3)
+val input = Tensor(3, 2).rand()
+val output = m.forward(input)
 
-scala> m.forward(input)
-res5: com.intel.analytics.bigdl.tensor.Tensor[Double] =
-0.5517294422782427      0.4692623535624056      -0.8678327249076271
-0.5235603322968813      0.4395011979673559      -0.8839462296536033
-0.044021543454757596    -0.05192204006469456    -0.9997913572841641
+scala> print(input)
+0.48958543      0.38529378
+0.28814933      0.66979927
+0.3581584       0.67365724
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3x2]
+
+scala> print(output)
+0.998335        0.9098057       -0.71862763
+0.8496431       0.99756527      -0.2993874
+0.8901594       0.9999207       -0.37689084
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 3x3]
 ```
 

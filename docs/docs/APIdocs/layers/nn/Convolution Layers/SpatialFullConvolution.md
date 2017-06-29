@@ -2,15 +2,15 @@
 
 **Scala:**
 ```scala
-val m  = SpatialFullConvolution[Tensor[T], T](nInputPlane, nOutputPlane, kW, kH, dW, dH, padW, padH, adjW, adjH,nGroup, noBias,wRegularizer,bRegularizer)
+val m  = SpatialFullConvolution[Tensor[T], T](nInputPlane, nOutputPlane, kW, kH, dW=1, dH=1, padW=0, padH=0, adjW=0, adjH=0,nGroup=1, noBias=false,wRegularizer=null,bRegularizer=null)
 ```
 or
 ```scala
-val m = SpatialFullConvolution[Table, T](InputPlane, nOutputPlane, kW, kH, dW, dH, padW, padH, adjW, adjH,nGroup, noBias,wRegularizer,bRegularizer)
+val m = SpatialFullConvolution[Table, T](InputPlane, nOutputPlane, kW, kH, dW=1, dH=1, padW=0, padH=0, adjW=0, adjH=0,nGroup=1, noBias=false,wRegularizer=null,bRegularizer=null)
 ```
 **Python:**
 ```python
-m = SpatialFullConvolution(n_input_plane,n_output_plane,kw,kh,dw=1,dh=1,pad_w=0,pad_h=0,adj_w=0,adj_h=0,n_group=1,no_bias=False,init_method='default',wRegularizer=None,bRegularizer=None,)
+m = SpatialFullConvolution(n_input_plane,n_output_plane,kw,kh,dw=1,dh=1,pad_w=0,pad_h=0,adj_w=0,adj_h=0,n_group=1,no_bias=False,init_method='default',wRegularizer=None,bRegularizer=None)
 ```
 
 SpatialFullConvolution is a module that applies a 2D full convolution over an input image. 
@@ -30,68 +30,68 @@ Other frameworks may call this operation "In-network Upsampling", "Fractionally-
  
 Reference: Long J, Shelhamer E, Darrell T. Fully convolutional networks for semantic segmentation[C]//Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition. 2015: 3431-3440.
 
+Detailed explaination of arguments in constructor. 
+
+ * param nInputPlane The number of expected input planes in the image given into forward()
+ * param nOutputPlane The number of output planes the convolution layer will produce.
+ * param kW The kernel width of the convolution.
+ * param kH The kernel height of the convolution.
+ * param dW The step of the convolution in the width dimension. Default is 1.
+ * param dH The step of the convolution in the height dimension. Default is 1.
+ * param padW The additional zeros added per width to the input planes. Default is 0.
+ * param padH The additional zeros added per height to the input planes. Default is 0.
+ * param adjW Extra width to add to the output image. Default is 0.
+ * param adjH Extra height to add to the output image. Default is 0.
+ * param nGroup Kernel group number.
+ * param noBias If bias is needed.
+ * param wRegularizer: instance of [[Regularizer]]
+ *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
+ * param bRegularizer: instance of [[Regularizer]]
+ *                    applied to the bias.
+ 
 **Scala example:**
 
 Tensor Input example: 
 
 ```scala
-scala> val input = Tensor[Double](1,1,3,3).randn()
-input: com.intel.analytics.bigdl.tensor.Tensor[Double] =
+
+scala>
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.Storage
+
+val m = SpatialFullConvolution[Tensor[Float],Float](1, 2, 2, 2, 1, 1,0, 0, 0, 0, 1, false)
+
+val input = Tensor(1,1,3,3).randn()
+val output = m.forward(input)
+val gradOut = Tensor(1,2,4,4).fill(0.1f)
+val gradIn = m.backward(input,gradOut)
+
+scala> print(input)
 (1,1,.,.) =
--0.038629937205745556   0.3184910844608199      -0.373807857057525
-0.8239576087536957      -1.351254567086673      -1.4313258833988647
-0.3927705082229262      -0.7216666620001434     1.1648889003942786
+0.18219171      1.3252861       -1.3991559
+0.82611334      1.0313315       0.6075537
+-0.7336061      0.3156875       -0.70616096
 
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 1x1x3x3]
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 1x1x3x3]
 
-scala> val m = SpatialFullConvolution[Tensor[Double], Double](1, 2, 2, 2, 1, 1,0, 0, 0, 0, 1, false)
-m: com.intel.analytics.bigdl.nn.SpatialFullConvolution[com.intel.analytics.bigdl.tensor.Tensor[Double],Double] = SpatialFullConvolution[1c6402e1](1 -> 2, 2 x 2, 1, 1, 0, 0, 0, 0)
-
-scala> m.setInitMethod(weightInitMethod = BilinearFiller, biasInitMethod = Zeros)
-res3: m.type = SpatialFullConvolution[1c6402e1](1 -> 2, 2 x 2, 1, 1, 0, 0, 0, 0)
-
-scala> m.getParameters()
-res4: (com.intel.analytics.bigdl.tensor.Tensor[Double], com.intel.analytics.bigdl.tensor.Tensor[Double]) =
-(1.0
-0.0
-0.0
-0.0
-1.0
-0.0
-0.0
-0.0
-0.0
-0.0
-[com.intel.analytics.bigdl.tensor.DenseTensor of size 10],0.0
-0.0
-0.0
-0.0
-0.0
-0.0
-0.0
-0.0
-0.0
-0.0
-[com.intel.analytics.bigdl.tensor.DenseTensor of size 10])
-
-scala> m.forward(input)
-res7: com.intel.analytics.bigdl.tensor.Tensor[Double] =
+scala> print(output)
 (1,1,.,.) =
--0.038629937205745556   0.3184910844608199      -0.373807857057525      0.0
-0.8239576087536957      -1.351254567086673      -1.4313258833988647     0.0
-0.3927705082229262      -0.7216666620001434     1.1648889003942786      0.0
-0.0     0.0     0.0     0.0
+-0.49278542     -0.5823938      -0.8304068      -0.077556044
+-0.5028842      -0.7281958      -1.1927067      -0.34262076
+-0.41680115     -0.41400516     -0.7599415      -0.42024887
+-0.5286566      -0.30015367     -0.5997892      -0.32439864
 
 (1,2,.,.) =
--0.038629937205745556   0.3184910844608199      -0.373807857057525      0.0
-0.8239576087536957      -1.351254567086673      -1.4313258833988647     0.0
-0.3927705082229262      -0.7216666620001434     1.1648889003942786      0.0
-0.0     0.0     0.0     0.0
+-0.13131973     -0.5770084      1.1069719       -0.6003375
+-0.40302444     -0.07293816     -0.2654545      0.39749345
+0.37311426      -0.49090374     0.3088816       -0.41700447
+-0.12861171     0.09394867      -0.17229918     0.05556257
 
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 1x2x4x4]
 
-scala> val gradOut = Tensor[Double](1,2,4,4).fill(0.1)
-gradOut: com.intel.analytics.bigdl.tensor.Tensor[Double] =
+scala> print(gradOut)
 (1,1,.,.) =
 0.1     0.1     0.1     0.1
 0.1     0.1     0.1     0.1
@@ -104,102 +104,147 @@ gradOut: com.intel.analytics.bigdl.tensor.Tensor[Double] =
 0.1     0.1     0.1     0.1
 0.1     0.1     0.1     0.1
 
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 1x2x4x4]
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 1x2x4x4]
 
-scala> m.backward(input,gradOut)
-res8: com.intel.analytics.bigdl.tensor.Tensor[Double] =
+scala> print(gradIn)
 (1,1,.,.) =
-0.2     0.2     0.2
-0.2     0.2     0.2
-0.2     0.2     0.2
+-0.05955213     -0.05955213     -0.05955213
+-0.05955213     -0.05955213     -0.05955213
+-0.05955213     -0.05955213     -0.05955213
 
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 1x1x3x3]
 
-scala> m.getParameters()
-res10: (com.intel.analytics.bigdl.tensor.Tensor[Double], com.intel.analytics.bigdl.tensor.Tensor[Double]) =
-(1.0
-0.0
-0.0
-0.0
-1.0
-0.0
-0.0
-0.0
-0.0
-0.0
-[com.intel.analytics.bigdl.tensor.DenseTensor of size 10],-0.12165768049172312
--0.12165768049172312
--0.12165768049172312
--0.12165768049172312
--0.12165768049172312
--0.12165768049172312
--0.12165768049172312
--0.12165768049172312
-1.6
-1.6
-[com.intel.analytics.bigdl.tensor.DenseTensor of size 10])
 	
 ```
 
 Table input Example
 ```scala
-scala> val input1 = Tensor[Double](1, 3, 3).randn()
-input1: com.intel.analytics.bigdl.tensor.Tensor[Double] =
-(1,.,.) =
-0.30435155168071043     1.3692609090335266      -0.8471308763085015
--0.6010343097036569     -0.16001902365874854    0.7600208146441209
-0.09163405381781076     2.36238256006474        1.5839981410098911
 
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 1x3x3]
+scala>
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.utils.{T, Table}
 
-scala> val input2 = Tensor[Double](3, 3).fill(2)
-input2: com.intel.analytics.bigdl.tensor.Tensor[Double] =
-2.0     2.0     2.0
-2.0     2.0     2.0
-2.0     2.0     2.0
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 3x3]
+val m = SpatialFullConvolution[Table, Float](1, 2, 2, 2, 1, 1,0, 0, 0, 0, 1, false)
 
-scala> import com.intel.analytics.bigdl.utils.T
-import com.intel.analytics.bigdl.utils.T
+val input1 = Tensor(1, 3, 3).randn()
+val input2 = Tensor(3, 3).fill(2.0f)
+val input = T(input1, input2)
+val output = m.forward(input)
+val gradOut = Tensor(2,4,4).fill(0.1f)
+val gradIn = m.backward(input,gradOut)
 
-scala> val input = T(input1, input2)
-input: com.intel.analytics.bigdl.utils.Table =
+scala> print(input)
  {
         2: 2.0  2.0     2.0
            2.0  2.0     2.0
            2.0  2.0     2.0
-           [com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 3x3]
+           [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3x3]
         1: (1,.,.) =
-           0.30435155168071043  1.3692609090335266      -0.8471308763085015
-           -0.6010343097036569  -0.16001902365874854    0.7600208146441209
-           0.09163405381781076  2.36238256006474        1.5839981410098911
+           1.276177     0.62761325      0.2715257
+           -0.030832397 0.5046206       0.6835176
+           -0.5832693   0.17266633      0.7461992
 
-           [com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 1x3x3]
+           [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 1x3x3]
  }
- 
-scala> val m = SpatialFullConvolution[Tensor[Double], Double](1, 2, 2, 2, 1, 1,0, 0, 0, 0, 1, false)
-2017-06-22 01:37:09 INFO  ThreadPool$:79 - Set mkl threads to 1 on thread 1
-m: com.intel.analytics.bigdl.nn.SpatialFullConvolution[com.intel.analytics.bigdl.tensor.Tensor[Double],Double] = SpatialFullConvolution[985189f4](1 -> 2, 2 x 2, 1, 1, 0, 0, 0, 0)
 
-scala> m.forward(input)
-res1: com.intel.analytics.bigdl.nn.abstractnn.Activity =
+scala> print(output)
 (1,.,.) =
-0.2602668232495975      -0.259424377873712      0.3402447511722818      0.6245106622771603
-0.7626053209853888      1.100473402288004       -0.8007068522894367     0.5075845979676633
-0.08234152211299228     -0.4329573387855421     -0.532326738356816      -0.3696785916677314
-0.4244334729683819      1.3869784890191517      0.13534571019355257     -0.25005341061617825
+-0.18339296     0.04208675      -0.17708774     -0.30901802
+-0.1484881      0.23592418      0.115615785     -0.11288056
+-0.47266048     -0.41772115     0.07501307      0.041751802
+-0.4851033      -0.5427048      -0.18293871     -0.12682784
 
 (2,.,.) =
--0.08801024988174377    -0.04770658226342539    0.30212159978923975     -0.293649207253451
--0.14838633925904215    -0.7479004865288426     -0.37400557503044185    0.41727630735837096
-0.10152105767196751     0.12475137015155185     0.29686019364250515     0.0575891353298002
--0.10507232658518488    -0.8254006905535733     -1.3951301984761595     -0.6392103148890831
+0.6391188       0.845774        0.41208875      0.13754106
+-0.45785713     0.31221163      0.6006259       0.36563575
+-0.24076991     -0.31931365     0.31651747      0.4836449
+0.24247466      -0.16731171     -0.20887817     0.19513035
 
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x4x4]
+
+scala> print(gradOut)
+(1,.,.) =
+0.1     0.1     0.1     0.1
+0.1     0.1     0.1     0.1
+0.1     0.1     0.1     0.1
+0.1     0.1     0.1     0.1
+
+(2,.,.) =
+0.1     0.1     0.1     0.1
+0.1     0.1     0.1     0.1
+0.1     0.1     0.1     0.1
+0.1     0.1     0.1     0.1
+
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x4x4]
+
+scala> print(gradIn)
+ {
+        2: 0.0  0.0     0.0
+           0.0  0.0     0.0
+           0.0  0.0     0.0
+           [com.intel.analytics.bigdl.tensor.DenseTensor of size 3x3]
+        1: (1,.,.) =
+           0.16678208   0.16678208      0.16678208
+           0.16678208   0.16678208      0.16678208
+           0.16678208   0.16678208      0.16678208
+
+           [com.intel.analytics.bigdl.tensor.DenseTensor of size 1x3x3]
+ }
+ 
 ```
 
 **Python example:**
 ```python
-model = Sequential()
-model.add(SpatialFullConvolution(1, 1, 1, 1).set_init_method(BilinearFiller(), Zeros()))
+from bigdl.nn.layer import *
+import numpy as np
+
+m = SpatialFullConvolution(1, 2, 2, 2, 1, 1,0, 0, 0, 0, 1, False)
+
+print "--------- tensor input---------"
+tensor_input = np.random.rand(1,3,3)
+print "input is :",tensor_input
+out = m.forward(tensor_input)
+print "output m is :",out
+
+print "----------- table input --------"
+adj_input=np.empty([3,3])
+adj_input.fill(2.0)
+table_input = [tensor_input,adj_input]
+print "input is :",table_input
+out = m.forward(table_input)
+print "output m is :",out
+```
+produces output:
+```python
+creating: createSpatialFullConvolution
+--------- tensor input---------
+input is : [[[  9.03998497e-01   4.43054896e-01   6.19571211e-01]
+  [  4.24573060e-01   3.29886286e-04   5.48427154e-02]
+  [  8.99004782e-01   3.25514441e-01   6.85294650e-01]]]
+output m is : [[[-0.04712385  0.21949144  0.0843184   0.14336972]
+  [-0.28748769  0.39192575  0.00372696  0.27235305]
+  [-0.16292028  0.41943201  0.03476509  0.18813471]
+  [-0.28051955  0.29929382 -0.0689255   0.28749463]]
+
+ [[-0.21336153 -0.35994443 -0.29239666 -0.38612381]
+  [-0.33000433 -0.41727966 -0.36827195 -0.34524575]
+  [-0.2410759  -0.38439807 -0.27613443 -0.39401439]
+  [-0.38188276 -0.36746511 -0.37627563 -0.34141305]]]
+----------- table input --------
+input is : [array([[[  9.03998497e-01,   4.43054896e-01,   6.19571211e-01],
+        [  4.24573060e-01,   3.29886286e-04,   5.48427154e-02],
+        [  8.99004782e-01,   3.25514441e-01,   6.85294650e-01]]]), array([[ 2.,  2.,  2.],
+       [ 2.,  2.,  2.],
+       [ 2.,  2.,  2.]])]
+output m is : [[[-0.04712385  0.21949144  0.0843184   0.14336972]
+  [-0.28748769  0.39192575  0.00372696  0.27235305]
+  [-0.16292028  0.41943201  0.03476509  0.18813471]
+  [-0.28051955  0.29929382 -0.0689255   0.28749463]]
+
+ [[-0.21336153 -0.35994443 -0.29239666 -0.38612381]
+  [-0.33000433 -0.41727966 -0.36827195 -0.34524575]
+  [-0.2410759  -0.38439807 -0.27613443 -0.39401439]
+  [-0.38188276 -0.36746511 -0.37627563 -0.34141305]]]
 ```

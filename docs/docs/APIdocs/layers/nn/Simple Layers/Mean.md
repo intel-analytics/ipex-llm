@@ -2,7 +2,7 @@
 
 **Scala:**
 ```scala
-val m = Mean[T](dimension, nInputDims, squeeze)
+val m = Mean(dimension=1, nInputDims=-1, squeeze=true)
 ```
 **Python:**
 ```python
@@ -16,55 +16,38 @@ The input is expected to be either one tensor, or a batch of tensors (in mini-ba
 
 **Scala example:**
 ```scala
-scala> val input = Tensor[Double](2, 2, 2).randn()
-input: com.intel.analytics.bigdl.tensor.Tensor[Double] =
+scala> 
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor._
+
+val input = Tensor(2, 2, 2).randn()
+val m1 = Mean()
+val output1 = m1.forward(input)
+val m2 = Mean(2,1,true)
+val output2 = m2.forward(input)
+
+scala> print(input)
 (1,.,.) =
--0.5626799108296029     0.957065578369325
--0.5762423042889069     -1.9603044731082844
+-0.52021635     -1.8250599
+-0.2321481      -2.5672712
 
 (2,.,.) =
-0.779739764009551       -1.4229048510049056
--2.234790207521405      0.8517850653822254
+4.007425        -0.8705412
+1.6506456       -0.2470611
 
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 2x2x2]
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x2x2]
 
-scala> val m1 = Mean[Double]()
-m1: com.intel.analytics.bigdl.nn.Mean[Double] = nn.Mean
-
-scala> m1.forward(input)
-res16: com.intel.analytics.bigdl.tensor.Tensor[Double] =
-0.10852992658997407     -0.23291963631779028
--1.4055162559051557     -0.5542597038630295
+scala> print(output1)
+1.7436042       -1.3478005
+0.7092488       -1.4071661
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2]
 
-scala> val gradOutput = Tensor[Double](1,2,2).randn()
-gradOutput: com.intel.analytics.bigdl.tensor.Tensor[Double] =
-(1,.,.) =
--0.570538239463982      1.608700755043723
--1.961741280513029      0.56076196585716
-
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 1x2x2]
-
-scala> m1.backward(input,gradOutput)
-res17: com.intel.analytics.bigdl.tensor.Tensor[Double] =
-(1,.,.) =
--0.285269119731991      0.8043503775218614
--0.9808706402565145     0.28038098292858
-
-(2,.,.) =
--0.285269119731991      0.8043503775218614
--0.9808706402565145     0.28038098292858
-
-[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x2]
-
-scala> val m2 = Mean[Double](2,1,true)
-m2: com.intel.analytics.bigdl.nn.Mean[Double] = nn.Mean
-
-scala> m2.forward(input)
-res15: com.intel.analytics.bigdl.tensor.Tensor[Double] =
--0.5694611075592548     -0.5016194473694797
--0.7275252217559269     -0.2855598928113401
+scala> print(output2)
+-0.37618223     -2.1961656
+2.8290353       -0.5588012
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2]
+
 ```
 
 **Python example:**
@@ -78,9 +61,6 @@ print "input is :",input
 m1 = Mean()
 out = m1.forward(input)
 print "output m1 is :",out
-grad_out = np.random.rand(1,2,2)
-grad_in = m1.backward(input,grad_out)
-print "grad input of m1 is :",grad_in
 
 m2 = Mean(2,1,True)
 out = m2.forward(input)
@@ -96,11 +76,6 @@ input is : [[[ 0.01990713  0.37740696]
 creating: createMean
 output m1 is : [array([[ 0.23837869,  0.48367909],
        [ 0.50547862,  0.77033514]], dtype=float32)]
-grad input of m1 is : [array([[[ 0.29744586,  0.06938463],
-        [ 0.44958934,  0.29279572]],
-
-       [[ 0.29744586,  0.06938463],
-        [ 0.44958934,  0.29279572]]], dtype=float32)]
 creating: createMean
 output m2 is : [array([[ 0.34840336,  0.527282  ],
        [ 0.39545399,  0.72673225]], dtype=float32)]
