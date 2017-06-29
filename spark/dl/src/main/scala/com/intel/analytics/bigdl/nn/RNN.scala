@@ -56,7 +56,7 @@ class RnnCell[T : ClassTag] (
   val parallelTable = ParallelTable[T]()
   val i2h = Identity[T]()
   val h2h = Linear[T](hiddenSize, hiddenSize,
-    wRegularizer = uRegularizer).setName("h2h")
+    wRegularizer = uRegularizer)
   parallelTable.add(i2h)
   parallelTable.add(h2h)
   val cAddTable = CAddTable[T](false)

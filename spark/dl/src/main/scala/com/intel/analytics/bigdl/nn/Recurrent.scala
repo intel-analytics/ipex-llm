@@ -75,7 +75,8 @@ class Recurrent[T : ClassTag]()
    */
   private def extend(times: Int, batchSize: Int, hiddenSize: Int): Unit = {
     if (hidden == null) {
-      require(topology != null && modules != null && modules.length <= 2,
+      require((preTopology != null && modules.length == 1) ||
+        (topology != null && modules != null && modules.length <= 2),
         "Recurrent extend: should contain only one cell or plus a pre-topology" +
           " to process input")
 
@@ -300,7 +301,8 @@ class Recurrent[T : ClassTag]()
   }
 
   override def reset(): Unit = {
-    require(topology != null && modules != null && modules.length <= 2,
+    require((preTopology != null && modules.length == 1) ||
+      (topology != null && modules != null && modules.length <= 2),
       "Recurrent extend: should contain only one cell or plus a pre-topology" +
         " to process input.")
     require(topology.isInstanceOf[Cell[T]],
