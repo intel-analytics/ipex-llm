@@ -20,8 +20,8 @@ negval sets the slope of the negative part:
 
 **Scala example:**
 ```scala
-val layer = LeakyReLU[Float](negval=0.01,inplace=false)
-val input = Tensor[Float](3, 2).rand(-1, 1)
+val layer = LeakyReLU(negval=0.01,inplace=false)
+val input = Tensor(3, 2).rand(-1, 1)
 input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 -0.6923256      -0.14086828
 0.029539397     0.477964

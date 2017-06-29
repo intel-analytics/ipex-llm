@@ -13,8 +13,8 @@ This module is for debug purpose, which can print activation and gradient size i
 
 **Scala example:**
 ```scala
-val module = Echo[Float]()
-val input = Tensor[Float](3, 2).rand()
+val module = Echo()
+val input = Tensor(3, 2).rand()
 input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 0.24058184      0.22737113
 0.0028103297    0.18359558

@@ -15,16 +15,16 @@ Creates a criterion that optimizes a two-class classification hinge loss (margin
 
 **Scala example:**
 ```scala
-val criterion = MarginCriterion[Float](margin=1.0, sizeAverage=true)
+val criterion = MarginCriterion(margin=1.0, sizeAverage=true)
 
-val input = Tensor[Float](3, 2).rand()
+val input = Tensor(3, 2).rand()
 input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 0.33753583      0.3575501
 0.23477706      0.7240361
 0.92835575      0.4737949
 [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3x2]
 
-val target = Tensor[Float](3, 2).rand()
+val target = Tensor(3, 2).rand()
 target: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 0.27280563      0.7022703
 0.3348442       0.43332106
