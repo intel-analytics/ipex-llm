@@ -2,11 +2,11 @@
 
 **Scala:**
 ```scala
-val layer = Max(2, 2)
+val layer = Max(dim = 1, numInputDims = Int.MinValue)
 ```
 **Python:**
 ```python
-layer = Max(2, 2)
+layer = Max(dim, num_input_dims=INTMIN)
 ```
 
 Applies a max operation over dimension `dim`.

@@ -2,11 +2,17 @@
 
 **Scala:**
 ```scala
-val activation = HardTanh()
+val activation = HardTanh(
+    minValue = -1,
+    maxValue = 1,
+    inplace = false)
 ```
 **Python:**
 ```python
-activation = HardTanh()
+activation = HardTanh(
+    min_value=-1.0,
+    max_value=1.0,
+    inplace=False)
 ```
 
 Applies non-linear function HardTanh to each element of input, HardTanh is defined:

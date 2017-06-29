@@ -1,11 +1,11 @@
 ## JoinTable
 **Scala:**
 ```scala
-val layer = JoinTable(2, 2)
+val layer = JoinTable(dimension, nInputDims)
 ```
 **Python:**
 ```python
-layer = JoinTable(2, 2)
+layer = JoinTable(dimension, n_input_dims)
 ```
 
 It is a table module which takes a table of Tensors as input and

@@ -2,11 +2,11 @@
 
 **Scala:**
 ```scala
-val layer = InferReshape(Array(0, 4, -1, 0))
+val layer = InferReshape(size, batchMode = false)
 ```
 **Python:**
 ```python
-layer = InferReshape([0, 4, -1, 0])
+layer = InferReshape(size, batch_mode=False)
 ```
 
 Reshape the input tensor with automatic size inference support.

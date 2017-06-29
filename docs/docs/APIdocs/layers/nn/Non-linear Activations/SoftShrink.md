@@ -1,11 +1,11 @@
 ## SoftShrink
 **Scala:**
 ```scala
-val layer = SoftShrink(2, 2)
+val layer = SoftShrink(lambda = 0.5)
 ```
 **Python:**
 ```python
-layer = SoftShrink(2, 2)
+layer = SoftShrink(the_lambda=0.5)
 ```
 
 Apply the soft shrinkage function element-wise to the input Tensor

@@ -2,11 +2,11 @@
 
 **Scala:**
 ```scala
-val layer = Narrow(2, 2)
+val layer = Narrow(dimension, offset, length = 1)
 ```
 **Python:**
 ```python
-layer = Narrow(2, 2)
+layer = Narrow(dimension, offset, length=1)
 ```
 
 Narrow is an application of narrow operation in a module.

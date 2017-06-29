@@ -2,11 +2,23 @@
 
 **Scala:**
 ```scala
-val layer = BiLinear(3, 2, 3)
+val layer = BiLinear(
+  inputSize1,
+  inputSize2,
+  outputSize,
+  biasRes = true,
+  wRegularizer = null,
+  bRegularizer = null)
 ```
 **Python:**
 ```python
-layer = BiLinear(3, 2, 3)
+layer = BiLinear(
+    input_size1,
+    input_size2,
+    output_size,
+    bias_res=True,
+    wRegularizer=None,
+    bRegularizer=None)
 ```
 
 A bilinear transformation with sparse inputs.
