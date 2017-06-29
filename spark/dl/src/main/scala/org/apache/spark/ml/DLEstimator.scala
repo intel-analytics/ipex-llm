@@ -139,7 +139,7 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag](
 
 
 /**
- * [[DLModel]] helps embedding a BigDL model into a Spark Transformer, thus Spark users can
+ * [[DLModel]] helps embed a BigDL model into a Spark Transformer, thus Spark users can
  * conveniently merge BigDL into Spark ML pipeline.
  * [[DLModel]] supports feature data in the format of Array[Double], Array[Float],
  * org.apache.spark.mllib.linalg.{Vector, VectorUDT} for Spark 1.5, 1.6 and
