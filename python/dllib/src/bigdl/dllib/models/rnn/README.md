@@ -40,8 +40,7 @@ The input text may look as follows:
 ## Preprocessing
 
 The <code>sentences_split</code>, <code>sentence_tokenizer</code> use [NLTK Toolkit](http://www.nltk.org/). NLTK is included
-in prepared virtual env. As Nltk expected english.pickle to tokenizer in the current location under
-tokenizers/punkt/english.pickle. we need download punkt and navigate into the folder for packaging
+in created virtual env(see ${BigDL_HOME}/pyspark/python_package/README.md to see how to create virtual env). As NLTK expects english.pickle to tokenizer, we need download punkt and navigate into the folder for packaging
 ```
 $python
 >>> import nltk
@@ -76,7 +75,6 @@ BigDL_JAR_PATH=${BigDL_HOME}/dist/lib/bigdl-VERSION-jar-with-dependencies.jar
 PYTHONPATH=${PYTHON_API_PATH}:$PYTHONPATH
 # set http_proxy if you need proxy to access internet
 http_proxy=...
-# Please refer ${BigDL_HOME}/pyspark/python_package/README.md to see how to create virtual env
 PYSPARK_DRIVER_PYTHON=./venv/bin/python PYSPARK_PYTHON=./venv.zip/venv/bin/python ${SPARK_HOME}/bin/spark-submit \
        --master ${MASTER} \
        --deploy-mode client \
