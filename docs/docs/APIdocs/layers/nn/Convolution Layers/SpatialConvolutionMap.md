@@ -3,13 +3,13 @@
 **Scala:**
 ```scala
 val layer = SpatialConvolutionMap(
-  connTable: Tensor[T],
-  kW: Int,
-  kH: Int,
-  dW: Int = 1,
-  dH: Int = 1,
-  padW: Int = 0,
-  padH: Int = 0)
+  connTable,
+  kW,
+  kH,
+  dW = 1,
+  dH = 1,
+  padW = 0,
+  padH = 0)
 ```
 **Python:**
 ```python
