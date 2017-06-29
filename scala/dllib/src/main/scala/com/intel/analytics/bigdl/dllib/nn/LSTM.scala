@@ -17,7 +17,6 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -65,31 +64,36 @@ class LSTM[T : ClassTag] (
   var cellLayer: Sequential[T] = _
   override var cell: AbstractModule[Activity, Activity, T] = buildLSTM()
 
+  override def preTopology: AbstractModule[Activity, Activity, T] = if (p != 0) {
+    Sequential()
+      .add(ConcatTable()
+        .add(Dropout(p))
+        .add(Dropout(p))
+        .add(Dropout(p))
+        .add(Dropout(p)))
+      .add(ParallelTable()
+        .add(TimeDistributed[T](Linear(inputSize, hiddenSize,
+          wRegularizer = wRegularizer, bRegularizer = bRegularizer)))
+        .add(TimeDistributed[T](Linear(inputSize, hiddenSize,
+          wRegularizer = wRegularizer, bRegularizer = bRegularizer)))
+        .add(TimeDistributed[T](Linear(inputSize, hiddenSize,
+          wRegularizer = wRegularizer, bRegularizer = bRegularizer)))
+        .add(TimeDistributed[T](Linear(inputSize, hiddenSize,
+          wRegularizer = wRegularizer, bRegularizer = bRegularizer))))
+      .add(JoinTable(1, 1))
+  } else {
+    TimeDistributed[T](Linear(inputSize, 4 * hiddenSize,
+      wRegularizer = wRegularizer, bRegularizer = bRegularizer))
+  }
+
   def buildGates(): Sequential[T] = {
     val gates = Sequential()
       .add(NarrowTable(1, 2))
 
-    var i2g: AbstractModule[_, _, T] = null
+    val i2g: AbstractModule[_, _, T] = Identity[T]()
     var h2g: AbstractModule[_, _, T] = null
 
     if (p != 0) {
-      i2g = Sequential()
-        .add(ConcatTable()
-          .add(Dropout(p))
-          .add(Dropout(p))
-          .add(Dropout(p))
-          .add(Dropout(p)))
-        .add(ParallelTable()
-          .add(Linear(inputSize, hiddenSize,
-            wRegularizer = wRegularizer, bRegularizer = bRegularizer))
-          .add(Linear(inputSize, hiddenSize,
-            wRegularizer = wRegularizer, bRegularizer = bRegularizer))
-          .add(Linear(inputSize, hiddenSize,
-            wRegularizer = wRegularizer, bRegularizer = bRegularizer))
-          .add(Linear(inputSize, hiddenSize,
-            wRegularizer = wRegularizer, bRegularizer = bRegularizer)))
-        .add(JoinTable(1, 1))
-
       h2g = Sequential()
         .add(ConcatTable()
           .add(Dropout(p))
@@ -107,8 +111,6 @@ class LSTM[T : ClassTag] (
             withBias = false, wRegularizer = uRegularizer)))
         .add(JoinTable(1, 1))
     } else {
-      i2g = Linear(inputSize, 4 * hiddenSize,
-        wRegularizer = wRegularizer, bRegularizer = bRegularizer)
       h2g = Linear(hiddenSize, 4 * hiddenSize,
         withBias = false, wRegularizer = uRegularizer)
     }
@@ -117,7 +119,7 @@ class LSTM[T : ClassTag] (
       .add(ParallelTable()
         .add(i2g)
         .add(h2g))
-      .add(CAddTable(true))
+      .add(CAddTable(false))
       .add(Reshape(Array(4, hiddenSize)))
       .add(SplitTable(1, 2))
       .add(ParallelTable()
