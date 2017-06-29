@@ -3,9 +3,9 @@
 **Scala:**
 ```scala
 val module = Euclidean(
-  inputSize: Int,
-  outputSize: Int,
-  fastBackward: Boolean = true)
+  inputSize,
+  outputSize,
+  fastBackward = true)
 ```
 **Python:**
 ```python
