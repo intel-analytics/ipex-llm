@@ -3,9 +3,9 @@
 **Scala:**
 ```scala
 val module = Dropout(
-  initP: Double = 0.5,
-  inplace: Boolean = false,
-  scale: Boolean = true)
+  initP = 0.5,
+  inplace = false,
+  scale = true)
 ```
 **Python:**
 ```python
