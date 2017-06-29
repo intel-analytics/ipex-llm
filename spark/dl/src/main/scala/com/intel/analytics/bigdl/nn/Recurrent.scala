@@ -51,6 +51,17 @@ class Recurrent[T : ClassTag]()
   private val dropouts: ArrayBuffer[Array[Dropout[T]]] =
     new ArrayBuffer[Array[Dropout[T]]]
 
+  /**
+   *
+   *  modules: -- preTopology
+   *           |- topology (cell)
+   *
+   * The topology (or cell) will be cloned for N times w.r.t the time dimension.
+   * The preTopology will be execute only once before the recurrence.
+   *
+   * @param module module to be add
+   * @return this container
+   */
   override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): Recurrent.this.type = {
     require(module.isInstanceOf[Cell[T]],
       "Recurrent: contained module should be Cell type")
