@@ -1310,7 +1310,6 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   : JList[TestResult] = {
     val resultArray = model.evaluate(valRDD.rdd.map(toSample(_)),
       valMethods.asScala.toArray, Some(batchSize))
-
     val testResultArray = resultArray.map { result =>
       TestResult(result._1.result()._1, result._1.result()._2,
         result._2.toString())
