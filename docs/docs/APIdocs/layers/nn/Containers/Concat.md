@@ -2,7 +2,7 @@
 
 **Scala:**
 ```scala
-val module = Concat(dimension: Int)
+val module = Concat(dimension)
 ```
 **Python:**
 ```python
