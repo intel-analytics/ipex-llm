@@ -12,7 +12,7 @@ m = SpatialConvolution(n_input_plane,n_output_plane,kernel_w,kernel_h,stride_w=1
 SpatialConvolution is a module that applies a 2D convolution over an input image.
 
 The input tensor in `forward(input)` is expected to be
-either a 4D tensor (`batch x nInputPlane x height x width`) or a 3D tensor (`batch x height x width`). The convolution is performed on the last two dimensions.
+either a 4D tensor (`batch x nInputPlane x height x width`) or a 3D tensor (` nInputPlane x height x width`). The convolution is performed on the last two dimensions.
 
 Detailed paramter explaination for the constructor.
  

@@ -16,7 +16,7 @@ m = SpatialFullConvolution(n_input_plane,n_output_plane,kw,kh,dw=1,dh=1,pad_w=0,
 SpatialFullConvolution is a module that applies a 2D full convolution over an input image. 
 
 The input tensor in `forward(input)` is expected to be
-either a 4D tensor (`batch x nInputPlane x height x width`) or a 3D tensor (`batch x height x width`). The convolution is performed on the last two dimensions. `adjW` and `adjH` are used to adjust the size of the output image. The size of output tensor of `forward` will be :
+either a 4D tensor (`batch x nInputPlane x height x width`) or a 3D tensor (`nInputPlane x height x width`). The convolution is performed on the last two dimensions. `adjW` and `adjH` are used to adjust the size of the output image. The size of output tensor of `forward` will be :
 ```
   output width  = (width  - 1) * dW - 2*padW + kW + adjW
   output height = (height - 1) * dH - 2*padH + kH + adjH
