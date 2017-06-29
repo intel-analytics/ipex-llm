@@ -33,3 +33,6 @@ nohup.out
 *.log
 *.un~
 .ipynb_checkpoints/
+pyspark/dist/
+pyspark/build/
+
