@@ -104,7 +104,7 @@ if __name__ == "__main__":
         parameters = trained_model.parameters()
     elif options.action == "test":
         # Load a pre-trained model and then validate it through top1 accuracy.
-        test_data = get_minst(sc, "test").map(
+        test_data = get_mnist(sc, "test").map(
             normalizer(mnist.TEST_MEAN, mnist.TEST_STD))
         model = Model.load(options.modelPath)
         results = model.test(test_data, options.batchSize, ["Top1Accuracy"])
