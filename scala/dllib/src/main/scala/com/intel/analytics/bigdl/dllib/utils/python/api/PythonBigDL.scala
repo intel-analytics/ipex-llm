@@ -110,7 +110,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   private def toValidationMethod(vMethods: JList[String], criterion: String = null,
     embeddedCri: String = null):
     Array[ValidationMethod[T]] = {
-    
+
     vMethods.toArray.map {
       case "Top1Accuracy" => new Top1Accuracy[T]()
       case "Top5Accuracy" => new Top5Accuracy[T]()
