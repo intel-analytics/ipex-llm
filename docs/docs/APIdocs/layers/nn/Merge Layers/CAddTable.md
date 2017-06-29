@@ -2,11 +2,11 @@
 
 **Scala:**
 ```scala
-val module = CAddTable()
+val module = CAddTable(inplace = false)
 ```
 **Python:**
 ```python
-module = CAddTable()
+module = CAddTable(inplace=False)
 ```
 
 CAddTable merges the input tensors in the input table by element-wise adding. The input table is actually an array of tensor with same size.
