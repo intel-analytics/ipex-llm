@@ -11,17 +11,36 @@ message BigDLModel
     string moduleType = 7; //module type
     map<string, AttrValue> attr = 8; // module attribute map
 }
-enum InitMethod {
-    Default = 0;
-    Xavier = 1;
-    BilinearFiller = 2;
+enum ValFormat {
+    DEFAULT = 0;
+    ONE_D = 1;
+    IN_OUT = 2;
+    OUT_IN = 3;
+    IN_OUT_KW_KH = 4;
+    OUT_IN_KW_KH = 5;
+    GP_OUT_IN_KW_KH = 6;
+    GP_IN_OUT_KW_KH = 7;
+    OUT_IN_KT_KH_KW = 8;
+}
+enum InitMethodType {
+    RANDOM_UNIFORM = 0;
+    RANDOM_UNIFORM_PARAM = 1;
+    RANDOM_NORMAL = 2;
+    ZEROS = 3;
+    ONES = 4;
+    CONST = 5;
+    XAVIER = 6;
+    BILINEARFILLER = 7;
 }
 enum RegularizerType {
     L1L2Regularizer = 0;
     L1Regularizer = 1;
     L2Regularizer = 2;
 }
-
+message InitMethod {
+    InitMethodType methodType = 1;
+    repeated double data = 2;
+}
 message BigDLTensor{
     repeated int32 size = 1; //size of tensor
     repeated double data = 2; //tensor element
@@ -32,15 +51,19 @@ message Regularizer {
 }
 message AttrValue {
     message ListValue {
-        repeated string str = 1;                        // "list(string)"
-        repeated int32 i32 = 2;                        // "list(int32)"
-        repeated int64 i64 = 3 ;        // "list(int64)"
-        repeated float flt = 4 ;        // "list(float)"
-        repeated double dbl = 5 ;        // "list(double)"
+        repeated int32 i32 = 1;                         // "list(int32)"
+        repeated int64 i64 = 2 ;        // "list(int64)"
+        repeated float flt = 3 ;        // "list(float)"
+        repeated double dbl = 4 ;        // "list(double)"
+        repeated string str = 5;                        // "list(string)"
         repeated bool boolean = 6 ;         // "list(bool)"
-        repeated BigDLTensor tensor = 7;         // "list(BigDLTensor)"
-        repeated BigDLModel bigDLModel = 8; // "list(BigDLModel)"
-        repeated NameAttrList nameAttrList = 9; //
+        repeated Regularizer  Regularizer = 7 ;         // "list(Regularizer)"
+        repeated BigDLTensor tensor = 8;         // "list(BigDLTensor)"
+        repeated ValFormat variableFormat = 9; // "list(VariableFormat)"
+        repeated InitMethod initMethod = 10;         // "list(BigDLTensor)"
+        repeated BigDLModel bigDLModel = 11; // "list(BigDLModel)"
+        repeated NameAttrList nameAttrList = 12; //
+        DataType datatype = 13;
     }
     enum DataType {
         INT32 = 0;
@@ -49,27 +72,30 @@ message AttrValue {
         DOUBLE = 3;
         STRING = 4;
         BOOL = 5;
-        TENSOR = 6;
-        MODULE = 7;
-        INITMETHOD = 8;
-        REGULARIZER = 9;
-        LISTVALUE = 10;
+        REGULARIZER = 6;
+        TENSOR = 7;
+        VARIABLE_FORMAT= 8;
+        INITMETHOD = 9;
+        MODULE = 10;
+        NAME_ATTR_LIST = 11;
+        LIST_VALUE = 12;
     }
     oneof value {
-        string stringValue = 1; // string value
-        int32 int32Value = 2; // int32 value
-        int64 int64Value = 3; //int64 value
-        float floatValue = 4; //float value
-        double doubleValue = 5; //float value
+        int32 int32Value = 1; // int32 value
+        int64 int64Value = 2; //int64 value
+        float floatValue = 3; //float value
+        double doubleValue = 4; //float value
+        string stringValue = 5; // string value
         bool boolValue = 6; // bool value
-        BigDLTensor tensorValue = 7; //tensor value
-        BigDLModel bigDLModleValue = 8; // big DL module
-        InitMethod initMethodValue = 9; // init method
-        Regularizer regularizerValue = 10; // Regularizer
-        ListValue listValue = 11; // list value of any type
-        NameAttrList attrList = 12; // name attribute list
+        Regularizer regularizerValue = 7; // Regularizer
+        BigDLTensor tensorValue = 8; //tensor value
+        ValFormat variableFormatValue= 9; //Variable format
+        InitMethod initMethodValue = 10; // init method
+        BigDLModel bigDLModleValue = 11; // big DL module
+        NameAttrList nameAttrListValue = 12; // name attribute list
+        ListValue listValue = 13; // list value of any type
     }
-    DataType dataType = 13;
+    DataType dataType = 14;
 }
 message NameAttrList {
     string name = 1;
