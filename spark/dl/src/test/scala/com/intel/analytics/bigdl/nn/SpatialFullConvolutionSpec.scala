@@ -168,9 +168,9 @@ class SpatialFullConvolutionSpec extends FlatSpec with Matchers {
     val dH = 1
     val padW = 2
     val padH = 2
-    val layer = new SpatialFullConvolution[Tensor[Double], Double](nInputPlane, nOutputPlane,
+    val layer = new SpatialFullConvolution[Double](nInputPlane, nOutputPlane,
       kW, kH, dW, dH, padW, padH)
-    val layer2 = layer.cloneModule().asInstanceOf[SpatialFullConvolution[Tensor[Double], Double]]
+    val layer2 = layer.cloneModule().asInstanceOf[SpatialFullConvolution[Double]]
       .setScaleW(0.5).setScaleB(2.0)
     Random.setSeed(100)
     val input = Tensor[Double](3, 3, 6, 6).apply1(e => Random.nextDouble())
