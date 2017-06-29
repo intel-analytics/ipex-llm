@@ -14,7 +14,9 @@
 # limitations under the License.
 #
 
+import os
 import sys
+import glob
 from py4j.protocol import Py4JJavaError
 from py4j.java_gateway import JavaObject
 from py4j.java_collections import ListConverter, JavaArray, JavaList, JavaMap
@@ -26,6 +28,7 @@ from pyspark.mllib.common import callJavaFunc
 from pyspark import SparkConf
 import numpy as np
 import threading
+from bigdl.util.engine import prepare_env
 
 INTMAX = 2147483647
 INTMIN = -2147483648
@@ -162,7 +165,7 @@ class JTensor(object):
         Utility method to flatten a ndarray
 
         :return: (storage, shape)
-        
+
         >>> from bigdl.util.common import JTensor
         >>> np.random.seed(123)
         >>> data = np.random.uniform(0, 1, (2, 3))
@@ -287,15 +290,10 @@ def get_spark_context(conf = None):
     :param conf: combining bigdl configs into spark conf
     :return: SparkContext
     """
-    if not conf:
-        conf = create_spark_conf()
-    if "getOrCreate" in SparkContext.__dict__:
-        return SparkContext.getOrCreate(conf)
-    else:
-        with SparkContext._lock: # Compatible with Spark1.5.1
-            if SparkContext._active_spark_context is None:
-                SparkContext(conf)
-            return SparkContext._active_spark_context
+    with SparkContext._lock:  # Compatible with Spark1.5.1
+        if SparkContext._active_spark_context is None:
+            SparkContext(conf=conf or create_spark_conf())
+        return SparkContext._active_spark_context
 
 
 def get_spark_sql_context(sc):
