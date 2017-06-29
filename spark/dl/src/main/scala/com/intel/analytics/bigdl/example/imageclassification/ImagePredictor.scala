@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
-import org.apache.spark.ml.{DLClassifier => SparkDLClassifier}
+import org.apache.spark.ml.DLClassifierModel
 import org.apache.spark.sql.SQLContext
 
 /**
@@ -43,7 +43,7 @@ object ImagePredictor {
 
       val partitionNum = Engine.nodeNumber() * Engine.coreNumber()
       val model = loadModel(param)
-      val valTrans = new SparkDLClassifier(model, Array(3, imageSize, imageSize))
+      val valTrans = new DLClassifierModel(model, Array(3, imageSize, imageSize))
         .setBatchSize(param.batchSize)
         .setFeaturesCol("features")
         .setPredictionCol("predict")
