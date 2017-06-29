@@ -2,7 +2,7 @@
 
 **Scala:**
 ```scala
-val module = MV(trans: Boolean = false)
+val module = MV(trans = false)
 ```
 **Python:**
 ```python
