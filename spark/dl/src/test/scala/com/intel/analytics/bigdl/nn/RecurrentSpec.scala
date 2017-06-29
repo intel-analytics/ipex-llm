@@ -37,7 +37,7 @@ class RecurrentSpec extends FlatSpec with Matchers {
     RNG.setSeed(seed)
 
     val model = Sequential[Double]()
-      .add(Recurrent[Double](hiddenSize)
+      .add(Recurrent[Double]()
         .add(RnnCell[Double](inputSize, hiddenSize, Tanh[Double]())))
       .add(Select(1, 1))
       .add(Linear[Double](hiddenSize, outputSize))
@@ -94,7 +94,7 @@ class RecurrentSpec extends FlatSpec with Matchers {
     RNG.setSeed(seed)
 
     val model = Sequential[Double]()
-      .add(Recurrent[Double](hiddenSize)
+      .add(Recurrent[Double]()
         .add(RnnCell[Double](inputSize, hiddenSize, Tanh())))
       .add(Select(2, nWords))
       .add(Linear[Double](hiddenSize, outputSize))
@@ -151,7 +151,7 @@ class RecurrentSpec extends FlatSpec with Matchers {
     RNG.setSeed(seed)
 
     val model = Sequential[Double]()
-      .add(Recurrent[Double](hiddenSize)
+      .add(Recurrent[Double]()
         .add(RnnCell[Double](inputSize, hiddenSize, Tanh())))
       .add(Select(1, 1))
       .add(Linear[Double](hiddenSize, outputSize))
@@ -192,7 +192,7 @@ class RecurrentSpec extends FlatSpec with Matchers {
 
     println(input)
     val gru = GRU[Double](inputSize, hiddenSize, 0.2)
-    val model = Recurrent[Double](hiddenSize).add(gru)
+    val model = Recurrent[Double]().add(gru)
 
     val field = model.getClass.getDeclaredField("cells")
     field.setAccessible(true)

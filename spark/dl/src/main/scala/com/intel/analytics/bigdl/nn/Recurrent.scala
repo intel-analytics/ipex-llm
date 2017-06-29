@@ -298,7 +298,7 @@ class Recurrent[T : ClassTag]()
 }
 
 object Recurrent {
-  def apply[@specialized(Float, Double) T: ClassTag]
+  def apply[@specialized(Float, Double) T: ClassTag]()
     (implicit ev: TensorNumeric[T]) : Recurrent[T] = {
     new Recurrent[T]()
   }
