@@ -258,10 +258,10 @@ def get_bigdl_conf():
                     "#" not in line and line.strip())
 
     for p in sys.path:
-        if bigdl_conf_file in p:
+        if bigdl_conf_file in p and os.path.isfile(p):
             with open(p) if sys.version_info < (3,) else open(p, encoding='latin-1') as conf_file: # noqa
                 return load_conf(conf_file.read())
-        if bigdl_python_wrapper in p:
+        if bigdl_python_wrapper in p and os.path.isfile(p):
             import zipfile
             with zipfile.ZipFile(p, 'r') as zip_conf:
                 content = zip_conf.read(bigdl_conf_file)
