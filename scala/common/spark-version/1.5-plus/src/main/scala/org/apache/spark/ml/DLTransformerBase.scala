@@ -16,8 +16,8 @@
 package org.apache.spark.ml
 
 import org.apache.spark.ml.param.ParamMap
-import org.apache.spark.sql.{DataFrame}
-import org.apache.spark.sql.types.StructType
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.DataFrame
 
 /**
  * A wrapper for org.apache.spark.ml.Transformer.
@@ -27,17 +27,29 @@ import org.apache.spark.sql.types.StructType
 private[ml] abstract class DLTransformerBase
   extends Model[DLTransformerBase] with DLParams {
 
-  protected def internalTransform(dataset: DataFrame): DataFrame
+  /**
+   * convert feature columns(MLlib Vectors or Array) to Seq format
+   */
+  protected def internalTransform(featureData: RDD[Seq[AnyVal]], dataset: DataFrame): DataFrame
 
   override def transform(dataset: DataFrame): DataFrame = {
     transformSchema(dataset.schema, logging = true)
-    internalTransform(toArrayType(dataset.toDF()))
+    internalTransform(toArrayType(dataset), dataset)
   }
 
-  override def transformSchema(schema : StructType): StructType = {
-    validateAndTransformSchema(schema)
+  /**
+   * convert feature columns to Seq format
+   */
+  protected def toArrayType(dataset: DataFrame): RDD[Seq[AnyVal]] = {
+
+    val featureType = dataset.schema($(featuresCol)).dataType
+    val featureColIndex = dataset.schema.fieldIndex($(featuresCol))
+
+    dataset.rdd.map { row =>
+      val features = supportedTypesToSeq(row, featureType, featureColIndex)
+      features
+    }
   }
 
   override def copy(extra: ParamMap): DLTransformerBase = defaultCopy(extra)
-
 }
