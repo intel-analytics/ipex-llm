@@ -3,10 +3,15 @@
 **Scala:**
 ```scala
 val module = Linear(
-  inputSize: Int,
-  outputSize: Int,
-  initMethod: InitializationMethod = Default,
-  withBias: Boolean = true)
+  inputSize,
+  outputSize,
+  withBias = true,
+  wRegularizer = null,
+  bRegularizer = null,
+  initWeight = null,
+  initBias = null,
+  initGradWeight = null,
+  initGradBias = null)
 ```
 **Python:**
 ```python
@@ -14,7 +19,9 @@ module = Linear(
   input_size,
   output_size,
   init_method="default",
-  with_bias=True)
+  with_bias=True,
+  wRegularizer=None,
+  bRegularizer=None)
 ```
 
 The `Linear` module applies a linear transformation to the input data,
