@@ -19,8 +19,10 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.optim.Regularizer
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
@@ -52,13 +54,20 @@ class RnnCell[T : ClassTag] (
   extends Cell[T](Array(hiddenSize)) {
 
   val parallelTable = ParallelTable[T]()
-  val i2h = Linear[T](inputSize, hiddenSize,
-    wRegularizer = wRegularizer, bRegularizer = bRegularizer)
+  val i2h = Identity[T]()
   val h2h = Linear[T](hiddenSize, hiddenSize,
     wRegularizer = uRegularizer)
   parallelTable.add(i2h)
   parallelTable.add(h2h)
-  val cAddTable = CAddTable[T](true)
+  val cAddTable = CAddTable[T](false)
+
+  override def preTopology: AbstractModule[Activity, Activity, T] =
+    TimeDistributed[T](
+      Linear[T](inputSize,
+        hiddenSize,
+        wRegularizer = wRegularizer,
+        bRegularizer = bRegularizer))
+    .asInstanceOf[AbstractModule[Activity, Activity, T]]
 
   override var cell: AbstractModule[Activity, Activity, T] =
     Sequential[T]()
