@@ -61,6 +61,19 @@ abstract class Cell[T : ClassTag](
   var cell: AbstractModule[Activity, Activity, T]
 
   /**
+   * The preTopology defines operations to pre-process the input when it is not dependent
+   * on the time dimension. For example, the i2h in SimpleRNN Cell can be calculated before
+   * the recurrence since all the input slices are independent.
+   *
+   * This is particular useful to boost the performance of the recurrent layer.
+   *
+   * Please define your own preTopology according to your Cell structure.
+   * Please refer to SimpleRNN or LSTM for reference.
+   * @return
+   */
+  def preTopology: AbstractModule[Activity, Activity, T] = null
+
+  /**
    * resize the hidden parameters wrt the batch size, hiddens shapes.
    *
    * e.g. RnnCell contains 1 hidden parameter (H), thus it will return Tensor(size)
