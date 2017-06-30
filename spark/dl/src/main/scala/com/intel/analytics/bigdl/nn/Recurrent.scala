@@ -271,6 +271,9 @@ class Recurrent[T : ClassTag]()
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
 
     gradInput = if (preTopology != null) {
+      if (preTopology.gradInput == null) {
+        preTopology.gradInput = Tensor[T]()
+      }
       preTopology.gradInput.toTensor[T]
     } else {
       gradInputCell

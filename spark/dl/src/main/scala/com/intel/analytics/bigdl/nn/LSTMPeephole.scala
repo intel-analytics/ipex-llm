@@ -67,13 +67,30 @@ class LSTMPeephole[T : ClassTag] (
   var cellLayer: Sequential[T] = _
   override var cell: AbstractModule[Activity, Activity, T] = buildLSTM()
 
-  def buildGate(): Sequential[T] = {
+  override def preTopology: AbstractModule[Activity, Activity, T] =
+    Sequential()
+      .add(ConcatTable()
+        .add(Identity())
+        .add(Sequential()
+          .add(Dropout(p))
+          .add(TimeDistributed[T](Linear(inputSize, hiddenSize, wRegularizer = wRegularizer,
+            bRegularizer = bRegularizer)))))
+      .add(JoinTable(3, 1))
+
+  def buildGate(dimension: Int, offset: Int, length: Int, preTopo: Boolean = true):
+  Sequential[T] = {
     val gate = Sequential()
 
     val i2g = Sequential()
-      .add(Dropout(p))
-      .add(Linear(inputSize, hiddenSize, wRegularizer = wRegularizer,
-        bRegularizer = bRegularizer))
+    if (preTopo) {
+      i2g.add(Narrow(dimension, offset, length))
+    } else {
+      i2g
+        .add(Narrow(dimension, offset, length))
+        .add(Dropout(p))
+        .add(Linear(inputSize, hiddenSize, wRegularizer = wRegularizer,
+          bRegularizer = bRegularizer))
+    }
     val h2g = Sequential()
       .add(Dropout(p))
       .add(Linear(hiddenSize, hiddenSize,
@@ -89,17 +106,17 @@ class LSTMPeephole[T : ClassTag] (
   }
 
   def buildInputGate(): Sequential[T] = {
-    inputGate = buildGate()
+    inputGate = buildGate(2, 1, inputSize, false)
     inputGate
   }
 
   def buildForgetGate(): Sequential[T] = {
-    forgetGate = buildGate()
+    forgetGate = buildGate(2, 1 + inputSize, hiddenSize, true)
     forgetGate
   }
 
   def buildOutputGate(): Sequential[T] = {
-    outputGate = buildGate()
+    outputGate = buildGate(2, 1, inputSize, false)
     outputGate
   }
 
@@ -108,6 +125,7 @@ class LSTMPeephole[T : ClassTag] (
       .add(NarrowTable(1, 2))
 
     val i2h = Sequential()
+      .add(Narrow(2, 1, inputSize))
       .add(Dropout(p))
       .add(Linear(inputSize, hiddenSize, wRegularizer = wRegularizer,
         bRegularizer = bRegularizer))
