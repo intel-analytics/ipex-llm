@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.{DoubleType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.serializer.TestSerialization.getClass
 import serialization.Model.AttrValue.DataType
 import serialization.Model.{AttrValue, BigDLModel, BigDLTensor}
 
@@ -84,10 +85,11 @@ object ModuleSerializer extends ModuleSerializable{
     require(constructors.length == 1, "only support one constructor")
     val constructor = constructors(0)
     val fullParams = getCostructorFullParams(cls)
+    val clsTag = scala.reflect.classTag[T]
     val constructorParams = fullParams(0)
     constructorParams.foreach(param => {
       val paramName = param.name.decodedName.toString
-      val ptype = param.typeSignature
+      var ptype = param.typeSignature
       val attrBuilder = AttrValue.newBuilder
       val field = cls.getDeclaredField(paramName)
       field.setAccessible(true)
@@ -98,6 +100,7 @@ object ModuleSerializer extends ModuleSerializable{
     copyFromBigDL(module, bigDLModelBuilder)
     createSerializeBigDLModule(bigDLModelBuilder, module)
   }
+
 
   def serialize[T: ClassTag](bigDLModule : BigDLModule[T])
                             (implicit ev: TensorNumeric[T])

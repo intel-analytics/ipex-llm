@@ -112,9 +112,9 @@ object DataConverter extends DataConverter{
       NameListConverter.setAttributeValue(attributeBuilder, value)
     } else if (valueType == universe.typeOf[List[Any]]) {
       ListConverter.setAttributeValue(attributeBuilder, value)
-    } else if (valueType.toString == "com.intel.analytics.bigdl.optim.Regularizer[T]") {
+    } else if (valueType.toString.startsWith("com.intel.analytics.bigdl.optim.Regularizer")) {
       RegularizerConverter.setAttributeValue(attributeBuilder, value)
-    } else if (valueType.toString == "com.intel.analytics.bigdl.tensor.Tensor[T]") {
+    } else if (valueType.toString.startsWith("com.intel.analytics.bigdl.tensor.Tensor")) {
       TensorConverter.setAttributeValue(attributeBuilder, value)
     } else if (valueType.toString.
       startsWith("com.intel.analytics.bigdl.nn.abstractnn.AbstractModule")) {
