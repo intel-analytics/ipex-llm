@@ -2,11 +2,11 @@
 
 **Scala:**
 ```scala
-val module = MultiLabelSoftMarginCriterion(weights: Tensor[T] = null, sizeAverage: Boolean = true)
+val criterion = MultiLabelSoftMarginCriterion(weights = null, sizeAverage = true)
 ```
 **Python:**
 ```python
-module = MultiLabelSoftMarginCriterion(weights=None, size_average=True)
+criterion = MultiLabelSoftMarginCriterion(weights=None, size_average=True)
 ```
 
 MultiLabelSoftMarginCriterion is a multiLabel multiclass criterion based on sigmoid:
