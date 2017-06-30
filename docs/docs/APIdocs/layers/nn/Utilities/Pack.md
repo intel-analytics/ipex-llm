@@ -2,7 +2,7 @@
 
 **Scala:**
 ```scala
-val module = Pack(dim: Int)
+val module = Pack(dim)
 ```
 **Python:**
 ```python
