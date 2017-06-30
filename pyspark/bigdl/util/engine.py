@@ -55,6 +55,11 @@ def __prepare_bigdl_env():
         append_path("SPARK_CLASSPATH", jar_paths[0])
         print("Prepending %s to sys.path" % conf_paths[0])
         sys.path.insert(0, conf_paths[0])
+    # Get rid of source bigdl.sh and These have been remove in master branch
+    os.environ['OMP_NUM_THREADS'] = '1'
+    os.environ['KMP_BLOCKTIME'] = '0'
+    os.environ['OMP_WAIT_POLICY'] = 'passive'
+    os.environ['MKL_DISABLE_FAST_MM'] = '1'
 
 
 def prepare_env():
