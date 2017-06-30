@@ -2,11 +2,11 @@
 
 **Scala:**
 ```scala
-val module = PReLU(nOutputPlane: Int = 0)
+val module = PReLU(nOutputPlane = 0)
 ```
 **Python:**
 ```python
-module = PReLU(nOutputPlane)
+module = PReLU(nOutputPlane=0)
 ```
 
 Applies parametric ReLU, which parameter varies the slope of the negative part.
