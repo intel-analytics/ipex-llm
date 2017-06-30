@@ -14,5 +14,4 @@
 # limitations under the License.
 #
 
-from bigdl.util.engine import prepare_env
-prepare_env()
+__version__ = "0.1.1rc"
