@@ -2,7 +2,7 @@
 
 **Scala:**
 ```scala
-val module = Transpose(permutations: Array[(Int, Int)])
+val module = Transpose(permutations)
 ```
 **Python:**
 ```python
