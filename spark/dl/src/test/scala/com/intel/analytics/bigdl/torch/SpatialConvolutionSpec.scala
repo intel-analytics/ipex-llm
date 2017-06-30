@@ -64,9 +64,10 @@ class SpatialConvolutionSpec extends TorchSpec {
     val weight = layer.weight
     val bias = layer.bias
 
-    weight should be equals luaWeight
-    bias should be equals luaBias
-    output should be equals luaOutput
+    // weight's size is different from torch's weight, as we support ngroup.
+    weight shouldEqual luaWeight.resizeAs(weight)
+    bias shouldEqual luaBias.resizeAs(bias)
+    output shouldEqual luaOutput
   }
 
 
@@ -113,9 +114,10 @@ class SpatialConvolutionSpec extends TorchSpec {
     val weight = layer.weight
     val bias = layer.bias
 
-    weight should be equals luaWeight
-    bias should be equals luaBias
-    output should be equals luaOutput
+    // weight's size is different from torch's weight, as we support ngroup.
+    weight shouldEqual luaWeight.resizeAs(weight)
+    bias shouldEqual luaBias.resizeAs(bias)
+    output shouldEqual luaOutput
 
   }
 
