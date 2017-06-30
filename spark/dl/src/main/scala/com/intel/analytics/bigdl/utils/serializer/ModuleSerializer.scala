@@ -41,7 +41,7 @@ object ModuleSerializer extends ModuleSerializable{
   override def loadModule[T: ClassTag](model : BigDLModel)
     (implicit ev: TensorNumeric[T]) : BigDLModule[T] = {
     val dataType = ev.getType
-    val evidence = if (dataType == DoubleType) classManifest[Double] else classManifest[Float]
+    val evidence = scala.reflect.classTag[T]
     val modelAttributes = model.getAttrMap
     val moduleType = model.getModuleType
     val cls = ModuleSerializer.getModuleClsByType(moduleType)

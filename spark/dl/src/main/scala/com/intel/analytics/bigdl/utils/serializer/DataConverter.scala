@@ -50,7 +50,7 @@ trait DataConverter {
  * @param value the value to be written to protobuf file
  * @param valueType the type of the value to help set the data type
  */
-  def setAttributeValue[T : ClassTag](attributeBuilder : AttrValue.Builder, value: AnyRef,
+  def setAttributeValue[T : ClassTag](attributeBuilder : AttrValue.Builder, value: Any,
                                       valueType : universe.Type = null)
     (implicit ev: TensorNumeric[T]) : Unit
 }
@@ -59,6 +59,8 @@ trait DataConverter {
  * General implementation of [[DataConverter]], it provides the conversion entry for all types
  */
 object DataConverter extends DataConverter{
+
+  private def getTypeTag[T : universe.TypeTag](a : T) : universe.TypeTag[T] = universe.typeTag[T]
 
   def getAttributeValue[T : ClassTag](attribute: AttrValue)
     (implicit ev: TensorNumeric[T]) : AnyRef = {
@@ -82,7 +84,7 @@ object DataConverter extends DataConverter{
   }
 
   def setAttributeValue[T : ClassTag](
-    attributeBuilder : AttrValue.Builder, value: AnyRef, valueType : universe.Type)
+    attributeBuilder : AttrValue.Builder, value: Any, valueType : universe.Type)
     (implicit ev: TensorNumeric[T]): Unit = {
     if (valueType == universe.typeOf[Int]) {
       attributeBuilder.setDataType(DataType.INT32)
@@ -106,9 +108,9 @@ object DataConverter extends DataConverter{
       VariableFormatConverter.setAttributeValue(attributeBuilder, value)
     } else if (valueType == universe.typeOf[InitializationMethod]) {
       InitMethodConverter.setAttributeValue(attributeBuilder, value)
-    } else if (valueType == universe.typeOf[Map[String, AnyRef]]) {
+    } else if (valueType == universe.typeOf[Map[String, Any]]) {
       NameListConverter.setAttributeValue(attributeBuilder, value)
-    } else if (valueType == universe.typeOf[List[AnyRef]]) {
+    } else if (valueType == universe.typeOf[List[Any]]) {
       ListConverter.setAttributeValue(attributeBuilder, value)
     } else if (valueType.toString == "com.intel.analytics.bigdl.optim.Regularizer[T]") {
       RegularizerConverter.setAttributeValue(attributeBuilder, value)
@@ -142,7 +144,7 @@ object DataConverter extends DataConverter{
     }
 
     override def setAttributeValue[T : ClassTag]
-    (attributeBuilder: AttrValue.Builder, value: AnyRef,
+    (attributeBuilder: AttrValue.Builder, value: Any,
      valueType : universe.Type = null)
     (implicit ev: TensorNumeric[T]): Unit = {
       attributeBuilder.setDataType(DataType.REGULARIZER)
@@ -194,7 +196,7 @@ object DataConverter extends DataConverter{
     }
 
     override def setAttributeValue[T: ClassTag]
-      (attributeBuilder: AttrValue.Builder, value: AnyRef,
+      (attributeBuilder: AttrValue.Builder, value: Any,
        valueType : universe.Type = null)
       (implicit ev: TensorNumeric[T]): Unit = {
       attributeBuilder.setDataType(DataType.TENSOR)
@@ -231,7 +233,7 @@ object DataConverter extends DataConverter{
     }
 
     override def setAttributeValue[T: ClassTag](attributeBuilder: AttrValue.Builder,
-      value: AnyRef, valueType: universe.Type = null)(implicit ev: TensorNumeric[T]): Unit = {
+      value: Any, valueType: universe.Type = null)(implicit ev: TensorNumeric[T]): Unit = {
       attributeBuilder.setDataType(DataType.VARIABLE_FORMAT)
       val format = value.asInstanceOf[VariableFormat]
       val formatValue = format match {
@@ -273,7 +275,7 @@ object DataConverter extends DataConverter{
    }
 
     override def setAttributeValue[T: ClassTag](attributeBuilder: AttrValue.Builder,
-      value: AnyRef, valueType: universe.Type = null)(implicit ev: TensorNumeric[T]): Unit = {
+      value: Any, valueType: universe.Type = null)(implicit ev: TensorNumeric[T]): Unit = {
       attributeBuilder.setDataType(DataType.INITMETHOD)
       val initMethodBuilder = InitMethod.newBuilder
       val initMethod = value.asInstanceOf[InitializationMethod]
@@ -316,7 +318,7 @@ object DataConverter extends DataConverter{
    }
 
     override def setAttributeValue[T: ClassTag](attributeBuilder: AttrValue.Builder,
-      value: AnyRef, valueType: universe.Type = null)(implicit ev: TensorNumeric[T]): Unit = {
+      value: Any, valueType: universe.Type = null)(implicit ev: TensorNumeric[T]): Unit = {
       attributeBuilder.setDataType(DataType.MODULE)
       val module = value.asInstanceOf[AbstractModule[Activity, Activity, T]]
      val serializableModule = ModuleSerializer.
@@ -332,8 +334,8 @@ object DataConverter extends DataConverter{
 
     override def getAttributeValue[T: ClassTag]
       (attribute: AttrValue)(implicit ev: TensorNumeric[T]): AnyRef = {
-      val nameListMap = new mutable.HashMap[String, mutable.Map[String, AnyRef]]()
-      val listMap = new mutable.HashMap[String, AnyRef]()
+      val nameListMap = new mutable.HashMap[String, mutable.Map[String, Any]]()
+      val listMap = new mutable.HashMap[String, Any]()
       val nameAttrListValue = attribute.getNameAttrListValue
       val listName = nameAttrListValue.getName
       nameAttrListValue.getAttrMap.asScala.foreach(attributePair => {
@@ -347,9 +349,9 @@ object DataConverter extends DataConverter{
     }
 
     override def setAttributeValue[T: ClassTag](attributeBuilder: AttrValue.Builder,
-      value: AnyRef, valueType: universe.Type = null)(implicit ev: TensorNumeric[T]): Unit = {
+      value: Any, valueType: universe.Type = null)(implicit ev: TensorNumeric[T]): Unit = {
       attributeBuilder.setDataType(DataType.NAME_ATTR_LIST)
-      val listMap = value.asInstanceOf[Map[String, mutable.Map[String, AnyRef]]]
+      val listMap = value.asInstanceOf[Map[String, mutable.Map[String, Any]]]
       val (name, nameListMap) = listMap.head
       val nameAttrList = NameAttrList.newBuilder
       nameAttrList.setName(name)
@@ -375,7 +377,7 @@ object DataConverter extends DataConverter{
 
     override def getAttributeValue[T: ClassTag]
       (attribute: AttrValue)(implicit ev: TensorNumeric[T]): AnyRef = {
-      val list = List[AnyRef]()
+      val list = List[Any]()
       val valueList = attribute.getListValue
       val listType = valueList.getDatatype
       listType match {
@@ -444,7 +446,7 @@ object DataConverter extends DataConverter{
     }
 
     override def setAttributeValue[T: ClassTag](attributeBuilder: AttrValue.Builder,
-      value: AnyRef, valueType: universe.Type = null)(implicit ev: TensorNumeric[T]): Unit = {
+      value: Any, valueType: universe.Type = null)(implicit ev: TensorNumeric[T]): Unit = {
       attributeBuilder.setDataType(DataType.LIST_VALUE)
       val listBuilder = ListValue.newBuilder
       if (value.isInstanceOf[List[Int]]) {
@@ -500,9 +502,9 @@ object DataConverter extends DataConverter{
           ModuleConverter.setAttributeValue(attrValueBuilder, module)
           listBuilder.addBigDLModel(attrValueBuilder.getBigDLModleValue)
         })
-      } else if (value.isInstanceOf[List[Map[String, AnyRef]]]) {
+      } else if (value.isInstanceOf[List[Map[String, Any]]]) {
         listBuilder.setDatatype(DataType.NAME_ATTR_LIST)
-        value.asInstanceOf[List[Map[String, AnyRef]]].foreach(map => {
+        value.asInstanceOf[List[Map[String, Any]]].foreach(map => {
           val attrValueBuilder = AttrValue.newBuilder
           NameListConverter.setAttributeValue(attrValueBuilder, map)
           listBuilder.addNameAttrList(attrValueBuilder.getNameAttrListValue)
