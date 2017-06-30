@@ -44,7 +44,7 @@ object Module {
     CaffeLoader.load[T](model, defPath, modelPath, matchAll)
   }
 
-  def loadCaffeDynamic[T: ClassTag](defPath: String, modelPath: String, matchAll: Boolean = true)(
+  def loadCaffeModel[T: ClassTag](defPath: String, modelPath: String, matchAll: Boolean = true)(
     implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
     CaffeLoader.loadCaffe[T](defPath, modelPath, matchAll)._1
   }
