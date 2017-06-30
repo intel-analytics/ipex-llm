@@ -59,6 +59,7 @@ def __prepare_bigdl_env():
     os.environ['OMP_NUM_THREADS'] = '1'
     os.environ['KMP_BLOCKTIME'] = '0'
     os.environ['OMP_WAIT_POLICY'] = 'passive'
+    os.environ['DL_ENGINE_TYPE'] = 'mklblas'
     os.environ['MKL_DISABLE_FAST_MM'] = '1'
 
 
