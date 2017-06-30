@@ -2,11 +2,11 @@
 
 **Scala:**
 ```scala
-val module = MultiCriterion()
+val criterion = MultiCriterion()
 ```
 **Python:**
 ```python
-module = MultiCriterion()
+criterion = MultiCriterion()
 ```
 
 MultiCriterion is a weighted sum of other criterions each applied to the same input and target
@@ -17,11 +17,11 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
-val module = MultiCriterion()
+val criterion = MultiCriterion()
 val nll = ClassNLLCriterion()
 val mse = MSECriterion()
-module.add(nll, 0.5)
-module.add(mse)
+criterion.add(nll, 0.5)
+criterion.add(mse)
 
 val input = Tensor(5).randn()
 val target = Tensor(5)
@@ -31,7 +31,7 @@ target(Array(3)) = 3
 target(Array(4)) = 2
 target(Array(5)) = 1
 
-val output = module.forward(input, target)
+val output = criterion.forward(input, target)
 
 > input
 1.0641425
@@ -51,11 +51,11 @@ res7: Float = 1.9633228
 from bigdl.nn.criterion import *
 import numpy as np
 
-module = MultiCriterion()
+criterion = MultiCriterion()
 nll = ClassNLLCriterion()
 mse = MSECriterion()
-module.add(nll, 0.5)
-module.add(mse)
+criterion.add(nll, 0.5)
+criterion.add(mse)
 
 input = np.array([0.9682213801388531,
 0.35258855644097503,
@@ -64,7 +64,7 @@ input = np.array([0.9682213801388531,
 -1.02721844006879])
 target = np.array([1, 2, 3, 2, 1])
 
-output = module.forward(input, target)
+output = criterion.forward(input, target)
 
 > output
 3.6099546
