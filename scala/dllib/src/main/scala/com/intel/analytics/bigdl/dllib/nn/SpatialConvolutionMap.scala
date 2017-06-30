@@ -326,12 +326,12 @@ object SpatialConvolutionMap {
     implicit ev: TensorNumeric[T]): Tensor[T] = {
     val ft = Tensor[T](nin * nout, 2)
     var p = 1
-    var i = 1
     var j = 1
     while (j <= nout) {
+      var i = 1
       while (i <= nin) {
-        ft(p)(1) = ev.fromType[Int](i)
-        ft(p)(2) = ev.fromType[Int](j)
+        ft.setValue(p, 1, ev.fromType[Int](i))
+        ft.setValue(p, 2, ev.fromType[Int](j))
         p = p + 1
         i = i + 1
       }

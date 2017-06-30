@@ -2275,13 +2275,13 @@ object DenseTensor {
     }
 
     // Randomly exchange the elements
-    i = size - 1
-    while (i > 0) {
-      val rand = Math.floor(RNG.uniform(0, size)).toInt
+    i = 0
+    while (i < size - 1) {
+      val rand = Math.floor(RNG.random() % (size - i)).toInt
       val tmp = array(i)
-      array(i) = array(rand)
-      array(rand) = tmp
-      i = i - 1
+      array(i) = array(rand + i)
+      array(rand + i) = tmp
+      i += 1
     }
 
     Tensor(new ArrayStorage(array))
