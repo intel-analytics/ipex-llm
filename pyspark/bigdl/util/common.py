@@ -264,7 +264,7 @@ def create_spark_conf():
     return sparkConf
 
 
-def get_spark_context():
+def get_spark_context(conf = None):
     with SparkContext._lock:  # Compatible with Spark1.5.1
         if SparkContext._active_spark_context is None:
             SparkContext(conf=conf or create_spark_conf())
