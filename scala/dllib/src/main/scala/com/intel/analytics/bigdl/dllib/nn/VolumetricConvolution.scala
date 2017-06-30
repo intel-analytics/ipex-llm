@@ -200,7 +200,7 @@ class VolumetricConvolution[T: ClassTag](
       output.resize(input.size(1), nOutputPlane, outputDepth, outputHeight, outputWidth)
 
       var t = 1
-      while (t < input.size(1)) {
+      while (t <= input.size(1)) {
         val inputT = input.select(1, t)
         val outputT = output.select(1, t)
         val fInputT = fInput.select(1, t)
@@ -262,7 +262,7 @@ class VolumetricConvolution[T: ClassTag](
     } else {
       // batch mode
       var t = 1
-      while (t < input.size(1)) {
+      while (t <= input.size(1)) {
         val gradInputT = gradInput.select(1, t)
         val gradOutputT = gradOutput.select(1, t)
         val fGradInputT = fGradInput.select(1, t)
@@ -314,7 +314,7 @@ class VolumetricConvolution[T: ClassTag](
     } else {
       // batch mode
       var t = 1
-      while (t < input.size(1)) {
+      while (t <= input.size(1)) {
         val gradOutputT = gradOutput.select(1, t)
         val fInputT = fInput.select(1, t)
         accGradParametersFrame(gradOutputT, gradWeightMM, gradBias, fInputT,
