@@ -14,7 +14,9 @@
 # limitations under the License.
 #
 
+import os
 import sys
+import glob
 from py4j.protocol import Py4JJavaError
 from py4j.java_gateway import JavaObject
 from py4j.java_collections import ListConverter, JavaArray, JavaList, JavaMap
@@ -263,13 +265,10 @@ def create_spark_conf():
 
 
 def get_spark_context():
-    if "getOrCreate" in SparkContext.__dict__:
-        return SparkContext.getOrCreate()
-    else:
-        with SparkContext._lock: # Compatible with Spark1.5.1
-            if SparkContext._active_spark_context is None:
-                SparkContext(SparkConf())
-            return SparkContext._active_spark_context
+    with SparkContext._lock:  # Compatible with Spark1.5.1
+        if SparkContext._active_spark_context is None:
+            SparkContext(conf=conf or create_spark_conf())
+    return SparkContext._active_spark_context
 
 
 def get_spark_sql_context(sc):

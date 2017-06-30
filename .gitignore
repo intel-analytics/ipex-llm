@@ -31,3 +31,7 @@ state*.[0-9]*
 # other
 nohup.out
 *.log
+
+pyspark/dist/
+pyspark/build/
+
