@@ -6,7 +6,7 @@ SelectTable(index: Int)
 ```
 **Python:**
 ```python
-SelectTable(dimension, bigdl_type="float")
+SelectTable(dimension)
 ```
 
 Select one element from a table by a given index.

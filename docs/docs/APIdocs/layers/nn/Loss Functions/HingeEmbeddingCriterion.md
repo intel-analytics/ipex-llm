@@ -3,11 +3,11 @@
 
 **Scala:**
 ``` scala
-criterion = HingeEmbeddingCriterion(margin: Double = 1, sizeAverage: Boolean =true)
+val criterion = HingeEmbeddingCriterion(margin = 1, sizeAverage = true)
 ```
 **Python:**
 ```python
-HingeEmbeddingCriterion(margin=1, size_average=True, bigdl_type="float")
+m = HingeEmbeddingCriterion(margin=1, size_average=True)
 ```
 
 
@@ -30,7 +30,7 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.utils.{T}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
-val loss = HingeEmbeddingCriterion[Float](1, sizeAverage = false)
+val loss = HingeEmbeddingCriterion(1, sizeAverage = false)
 val input = Tensor(T(0.1f, 2.0f, 2.0f, 2.0f))
 println("input: \n" + input)
 println("ouput: ")

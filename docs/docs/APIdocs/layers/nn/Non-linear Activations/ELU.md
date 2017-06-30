@@ -4,11 +4,11 @@
 **Scala:**
 
 ```scala
-ELU(alpha: Double = 1.0, inplace: Boolean = false)
+ELU(alpha = 1.0, inplace = false)
 ```
 **Python:**
 ```python
-ELU(alpha=1.0, inplace=False, bigdl_type="float")
+ELU(alpha=1.0, inplace=False)
 ```
 
 
@@ -76,6 +76,6 @@ plt.legend(loc='best', shadow=True, fancybox=True)
 plt.show()
 
 ```
-![](ELU.png)
+![](../../../../Image/ELU.png)
 
 

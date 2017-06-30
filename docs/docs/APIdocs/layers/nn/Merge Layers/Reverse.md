@@ -3,11 +3,11 @@
 
 **Scala:**
 ```scala
-Reverse(dim: Int = 1, isInplace: Boolean = false)
+Reverse(dim = 1, isInplace = false)
 ```
 **Python:**
 ```python
-Reverse(dimension=1, bigdl_type="float")
+Reverse(dimension=1)
 ```
 
  Reverse the input w.r.t given dimension.

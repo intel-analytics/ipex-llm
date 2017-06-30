@@ -7,11 +7,11 @@ http://arxiv.org/abs/1212.5701.
 
 **Scala:**
 ```scala
-Adadelta(decayRate: Double = 0.9, Epsilon: Double = 1e-10)
+Adadelta(decayRate = 0.9, Epsilon = 1e-10)
 ```
 **Python:**
 ```python
-AdaDelta(decayrate = 0.9, epsilon = 1e-10, bigdl_type="float")
+AdaDelta(decayrate = 0.9, epsilon = 1e-10)
 ```
 
 

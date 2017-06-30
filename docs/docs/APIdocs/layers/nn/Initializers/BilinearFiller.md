@@ -8,7 +8,7 @@ val initMethod = BilinearFiller
 ```
 **Python:**
 ```python
-init_method = BilinearFiller(bigdl_type="float")
+init_method = BilinearFiller()
 ```
 
 Initialize the weight with coefficients for bilinear interpolation. A common use case is with the DeconvolutionLayer acting as upsampling. This initialization method can only be used in the weight initialization of SpatialFullConvolution.
@@ -20,8 +20,9 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
 val weightInitMethod = BilinearFiller
+val biasInitMethod - Zeros
 val model = SpatialFullConvolution(2, 3, 2, 2).setName("sfconv")
-model.setInitMethod(weightInitMethod, Zeros)
+model.setInitMethod(weightInitMethod, biasInitMethod)
 println(model.getParametersTable().get("sfconv").get)
 ```
 

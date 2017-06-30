@@ -7,7 +7,7 @@ DotProduct()
 ```
 **Python:**
 ```python
-DotProduct(bigdl_type="float")
+DotProduct()
 ```
 
 Outputs the dot product (similarity) between inputs

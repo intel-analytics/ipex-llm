@@ -3,12 +3,12 @@
 
 **Scala:**
 ``` scala
-val initMethod = RandomUniform(lower: Double, upper: Double)
+val initMethod = RandomUniform(lower, upper)
 
 ```
 **Python:**
 ```python
-init_method = RandomUniform(upper=None, lower=None, bigdl_type="float")
+init_method = RandomUniform(upper=None, lower=None)
 ```
 
 This initialization method draws samples from a uniform distribution. If the lower bound and upper bound of this uniform distribution is not specified, it will be set to [-limit, limit) where limit = 1/sqrt(fanIn).
