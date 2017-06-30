@@ -25,6 +25,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.{Engine, T}
 
+import scala.collection.mutable.ArrayBuffer
 import scala.sys.process._
 
 @com.intel.analytics.bigdl.tags.Serial
@@ -168,6 +169,34 @@ class GRUSpec  extends TorchSpec {
 
     val (weights, grad) = model.getParameters()
 
+
+    /*
+    * Since we changed the structure of GRU, we have to rearrange the parameters.
+    */
+
+    val (weightsArray1, gradArray) = model.parameters()
+    val weightsArray = weightsArray1.clone
+    val weightsTorch = new ArrayBuffer[Tensor[Double]]()
+
+    val i2g12 = weightsArray(0).narrow(1, 1, 2 * hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g12).copy(i2g12)
+    val i2g12bias = weightsArray(1).narrow(1, 1, 2 * hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g12bias).copy(i2g12bias)
+    val h2g12 = weightsArray(2)
+    weightsTorch += Tensor().resizeAs(h2g12).copy(h2g12)
+    val i2g3 = weightsArray(0).narrow(1, 1 + 2 * hiddenSize, hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g3).copy(i2g3)
+    val i2g3bias = weightsArray(1).narrow(1, 1 + 2 * hiddenSize, hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g3bias).copy(i2g3bias)
+    val h2g3 = weightsArray(3)
+    weightsTorch += Tensor().resizeAs(h2g3).copy(h2g3)
+
+    weightsTorch += Tensor().resizeAs(weightsArray(4)).copy(weightsArray(4))
+    weightsTorch += Tensor().resizeAs(weightsArray(5)).copy(weightsArray(5))
+
+    val (weights2Torch, grad2Torch) =
+      (Module.flatten[Double](weightsTorch.toArray), Module.flatten[Double](gradArray))
+
     val code =
       s"""
          |
@@ -229,7 +258,7 @@ class GRUSpec  extends TorchSpec {
          |return err1, gradParameters
          |end
          |
-      |for i = 1,100,1 do
+      |for i = 1,50,1 do
          |   optim.sgd(feval, parameters, state)
          |end
          |
@@ -241,7 +270,7 @@ class GRUSpec  extends TorchSpec {
     """.stripMargin
 
     val (luaTime, torchResult) = TH.run(code,
-      Map("input" -> input.transpose(1, 2), "weights" -> weights,
+      Map("input" -> input.transpose(1, 2), "weights" -> weights2Torch,
         "labels" -> SplitTable[Double](1).forward(labels.t())),
       Array("output", "err", "parameters", "gradParameters", "output2", "gradInput", "err2"))
 
@@ -265,7 +294,7 @@ class GRUSpec  extends TorchSpec {
 
     val start = System.nanoTime()
     var loss: Array[Double] = null
-    for (i <- 1 to 100) {
+    for (i <- 1 to 50) {
       loss = sgd.optimize(feval, weights, state)._2
       println(s"${i}-th loss = ${loss(0)}")
     }
@@ -400,6 +429,34 @@ class GRUSpec  extends TorchSpec {
 
     val (weights, grad) = model.getParameters()
 
+
+    /*
+    * Since we changed the structure of GRU, we have to rearrange the parameters.
+    */
+
+    val (weightsArray1, gradArray) = model.parameters()
+    val weightsArray = weightsArray1.clone
+    val weightsTorch = new ArrayBuffer[Tensor[Double]]()
+
+    val i2g12 = weightsArray(0).narrow(1, 1, 2 * hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g12).copy(i2g12)
+    val i2g12bias = weightsArray(1).narrow(1, 1, 2 * hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g12bias).copy(i2g12bias)
+    val h2g12 = weightsArray(2)
+    weightsTorch += Tensor().resizeAs(h2g12).copy(h2g12)
+    val i2g3 = weightsArray(0).narrow(1, 1 + 2 * hiddenSize, hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g3).copy(i2g3)
+    val i2g3bias = weightsArray(1).narrow(1, 1 + 2 * hiddenSize, hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g3bias).copy(i2g3bias)
+    val h2g3 = weightsArray(3)
+    weightsTorch += Tensor().resizeAs(h2g3).copy(h2g3)
+
+    weightsTorch += Tensor().resizeAs(weightsArray(4)).copy(weightsArray(4))
+    weightsTorch += Tensor().resizeAs(weightsArray(5)).copy(weightsArray(5))
+
+    val (weights2Torch, grad2Torch) =
+      (Module.flatten[Double](weightsTorch.toArray), Module.flatten[Double](gradArray))
+
     val code =
       s"""
          |
@@ -464,7 +521,7 @@ class GRUSpec  extends TorchSpec {
     """.stripMargin
 
     val (luaTime, torchResult) = TH.run(code,
-      Map("input" -> input.transpose(1, 2), "weights" -> weights,
+      Map("input" -> input.transpose(1, 2), "weights" -> weights2Torch,
         "labels" -> SplitTable[Double](1).forward(labels.t())),
       Array("output", "err", "parameters", "gradParameters", "output2", "gradInput", "err2"))
 
