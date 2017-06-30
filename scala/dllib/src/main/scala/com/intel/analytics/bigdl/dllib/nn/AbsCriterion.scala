@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import scala.reflect.ClassTag
 
 /**
- * measures the mean absolute value of the element-wise difference between input
+ * measures the mean absolute value of the element-wise difference between input and target
  */
 @SerialVersionUID( - 7860793007567513758L)
 class AbsCriterion[@specialized(Float, Double) T: ClassTag](val sizeAverage: Boolean = true)
