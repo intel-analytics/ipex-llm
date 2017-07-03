@@ -129,7 +129,6 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     val cadd = CAdd(Array(5, 1))
     val res1 = cadd.forward(input1)
     ModulePersister.saveToFile("/tmp/cadd.bigdl", cadd, true)
-    ModulePersister.saveModelDefinitionToFile("/tmp/cadd.prototxt", cadd, true)
     val loadedCadd = ModuleLoader.loadFromFile("/tmp/cadd.bigdl")
     val res2 = loadedCadd.forward(input2)
     res1 should be (res2)
@@ -258,6 +257,7 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
 
     val res1 = concat.forward(input1)
     ModulePersister.saveToFile("/tmp/concat.bigdl", concat, true)
+    ModulePersister.saveModelDefinitionToFile("/tmp/concat.prototxt", concat, true)
     val loadedConcat = ModuleLoader.loadFromFile("/tmp/concat.bigdl")
     val res2 = loadedConcat.forward(input2)
     res1 should be (res2)

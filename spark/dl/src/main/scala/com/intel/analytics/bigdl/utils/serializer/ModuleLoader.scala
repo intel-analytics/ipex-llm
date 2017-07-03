@@ -129,8 +129,9 @@ object ModulePersister {
     modelBuilder.clearWeight
     modelBuilder.clearBias
     if (modelBuilder.getSubModulesCount > 0) {
+      val subModules = modelBuilder.getSubModulesList
       modelBuilder.clearSubModules
-      modelBuilder.getSubModulesList.asScala.foreach(sub => {
+      subModules.asScala.foreach(sub => {
         val subModelBuilder = BigDLModule.newBuilder(sub)
         cleantWeightAndBias(subModelBuilder)
         modelBuilder.addSubModules(subModelBuilder.build)
