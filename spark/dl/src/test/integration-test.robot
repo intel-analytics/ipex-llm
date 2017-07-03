@@ -54,6 +54,7 @@ Spark2.1 Test Suite
 
 Hdfs Test Suite
    Run Shell      mvn clean test -Dsuites=com.intel.analytics.bigdl.integration.HdfsSpec -DhdfsMaster=${hdfs_264_3_master} -Dmnist=${mnist_data_source} -P integration-test -DforkMode=never
+   Run Shell      mvn clean test -Dsuites=com.intel.analytics.bigdl.integration.S3Spec -Ds3aPath=${s3a_path} -P integration-test -DforkMode=never
 
 Yarn Test Suite
    Build SparkJar                   spark_2.x 
