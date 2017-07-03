@@ -15,6 +15,8 @@
  */
 package com.intel.analytics.bigdl.utils.serializer
 
+import com.intel.analytics.bigdl.nn.Container
+
 import scala.collection.JavaConverters._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -24,6 +26,7 @@ import com.intel.analytics.bigdl.utils.serializer.DataConverter.RegularizerConve
 import serialization.Model.AttrValue.DataType
 import serialization.Model.{AttrValue, BigDLModule, BigDLTensor}
 
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
@@ -142,6 +145,35 @@ trait ModuleSerializable extends Loadable with Savable{
   }
 
 }
+
+trait ContainerSerializable extends ModuleSerializable {
+
+  override def loadModule[T: ClassTag](model : BigDLModule)
+                                      (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
+    val moduleData = ModuleSerializer.loadModule(model)
+    val container = moduleData.module.asInstanceOf[Container[Activity, Activity, T]]
+    val subModules = model.getSubModulesList.asScala
+    subModules.foreach(module => {
+      val subModuleData = ModuleSerializer.loadModule(module)
+      container.add(subModuleData.module)
+    })
+    moduleData
+  }
+
+  override def serializeModule[T: ClassTag](module : ModuleData[T])
+                                           (implicit ev: TensorNumeric[T]) : BigDLModule = {
+    val bigDLModule = ModuleSerializer.serializeModule(module)
+    val containerBuilder = BigDLModule.newBuilder(bigDLModule)
+    val subModulesData = module.module.asInstanceOf[Container[Activity, Activity, T]].modules
+    subModulesData.foreach(module => {
+      val subModule = ModuleSerializer.serialize(ModuleData(module,
+        new ArrayBuffer[String](), new ArrayBuffer[String]()))
+      containerBuilder.addSubModules(subModule)
+    })
+    containerBuilder.build
+  }
+}
+
 case class ModuleData[T: ClassTag](module : AbstractModule[Activity, Activity, T],
                                     pre : Seq[String], next : Seq[String])
 trait Loadable {

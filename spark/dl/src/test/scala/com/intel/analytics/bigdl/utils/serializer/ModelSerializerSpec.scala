@@ -228,40 +228,41 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     val res2 = loadedCmul.forward(input2)
     res1 should be (res2)
   }
-/*
-  "CMulTable serializer" should "work properly" in {
-    val input1 = Tensor[Double](5, 5).apply1(e => Random.nextDouble())
-    val input2 = Tensor[Double](5, 5).apply1(e => Random.nextDouble())
-    var input = new Table()
-    input(1.toDouble) = input1
-    input(2.toDouble) = input2
 
-    val cmulTable = CMulTable[Double]()
+  "CMulTable serializer" should "work properly" in {
+    val input1 = Tensor(5, 5).apply1(e => Random.nextFloat())
+    val input2 = Tensor(5, 5).apply1(e => Random.nextFloat())
+    var input = new Table()
+    input(1.toFloat) = input1
+    input(2.toFloat) = input2
+
+    val cmulTable = CMulTable()
 
     val res1 = cmulTable.forward(input)
-    ModelPersister.saveToFile("/tmp/cmulTable.bigdl", cmulTable, true)
-    val loadedCmulTable = ModelLoader.loadFromFile("/tmp/cmulTable.bigdl")
-    val res2 = loadedCmulTable.asInstanceOf[CMulTable[Double]].forward(input)
+    ModulePersister.saveToFile("/tmp/cmulTable.bigdl", cmulTable, true)
+    val loadedCmulTable = ModuleLoader.loadFromFile("/tmp/cmulTable.bigdl")
+    val res2 = loadedCmulTable.forward(input)
     res1 should be (res2)
   }
+
 
   "Concatserializer" should "work properly" in {
-    val input1 = Tensor[Double](2, 2, 2).apply1(e => Random.nextDouble())
-    val input2 = Tensor[Double]()
+    val input1 = Tensor(2, 2, 2).apply1(e => Random.nextFloat())
+    val input2 = Tensor()
     input2.resizeAs(input1).copy(input1)
 
-    val concat = Concat[Double](2)
+    val concat = Concat(2)
 
-    concat.add(Abs[Double]())
-    concat.add(Abs[Double]())
+    concat.add(Abs())
+    concat.add(Abs())
 
     val res1 = concat.forward(input1)
-    ModelPersister.saveToFile("/tmp/concat.bigdl", concat, true)
-    val loadedConcat = ModelLoader.loadFromFile("/tmp/concat.bigdl")
-    val res2 = loadedConcat.asInstanceOf[Concat[Double]].forward(input2)
+    ModulePersister.saveToFile("/tmp/concat.bigdl", concat, true)
+    val loadedConcat = ModuleLoader.loadFromFile("/tmp/concat.bigdl")
+    val res2 = loadedConcat.forward(input2)
     res1 should be (res2)
   }
-
+/*
   "ConcatTable serializer" should "work properly" in {
     val concatTable = new ConcatTable[Double]()
     concatTable.add(Linear[Double](10, 2))

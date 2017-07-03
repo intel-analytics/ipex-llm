@@ -158,6 +158,9 @@ object ModuleSerializer extends ModuleSerializable{
     registerModule("CMaxTable", Class.forName("com.intel.analytics.bigdl.nn.CMaxTable"), CMaxTable)
     registerModule("CMinTable", Class.forName("com.intel.analytics.bigdl.nn.CMinTable"), CMinTable)
     registerModule("CMul", Class.forName("com.intel.analytics.bigdl.nn.CMul"), CMul)
+    registerModule("CMulTable", Class.forName("com.intel.analytics.bigdl.nn.CMulTable"), CMulTable)
+    registerModule("Concat", Class.forName("com.intel.analytics.bigdl.nn.Concat"), Concat)
+
     registerModule("Linear", Class.forName("com.intel.analytics.bigdl.nn.Linear"), Linear)
   }
 }
