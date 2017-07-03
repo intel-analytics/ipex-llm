@@ -15,13 +15,18 @@
  */
 package com.intel.analytics.bigdl.utils.serializer
 
+import com.intel.analytics.bigdl.nn.{InitializationMethod, RandomUniform, VariableFormat}
+import com.intel.analytics.bigdl.nn.VariableFormat.{Default, ONE_D}
 import com.intel.analytics.bigdl.optim.{L1L2Regularizer, L1Regularizer, L2Regularizer}
+import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 import serialization.Model.AttrValue
 
 import scala.reflect.runtime.universe
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import serialization.Model.AttrValue.DataType
+
+import scala.util.Random
 
 
 class DataConverterSpec extends FlatSpec with Matchers{
@@ -124,6 +129,84 @@ class DataConverterSpec extends FlatSpec with Matchers{
     val attr = attriBulder.build
     val retrievedValue = DataConverter.getAttributeValue(attr)
     attr.getDataType should be (DataType.REGULARIZER)
-    retrievedValue should be (null)
+    retrievedValue should be (regularizer)
+  }
+
+  "Tensor conversion " should " work properly" in {
+    val tensor = Tensor(5, 5).apply1(e => Random.nextFloat())
+    val attriBulder = AttrValue.newBuilder
+    val cls = Class.forName("com.intel.analytics.bigdl.tensor.Tensor")
+    val tpe = universe.runtimeMirror(cls.getClassLoader).classSymbol(cls).toType
+    DataConverter.setAttributeValue(attriBulder, tensor, tpe)
+    val attr = attriBulder.build
+    val retrievedValue = DataConverter.getAttributeValue(attr)
+    attr.getDataType should be (DataType.TENSOR)
+    retrievedValue should be (tensor)
+  }
+
+  "Empty Tensor conversion " should " work properly" in {
+    val tensor : Tensor[Float] = null
+    val attriBulder = AttrValue.newBuilder
+    val cls = Class.forName("com.intel.analytics.bigdl.tensor.Tensor")
+    val tpe = universe.runtimeMirror(cls.getClassLoader).classSymbol(cls).toType
+    DataConverter.setAttributeValue(attriBulder, tensor, tpe)
+    val attr = attriBulder.build
+    val retrievedValue = DataConverter.getAttributeValue(attr)
+    attr.getDataType should be (DataType.TENSOR)
+    retrievedValue should be (tensor)
+  }
+
+  "VariableFormat conversion " should " work properly" in {
+    val format : VariableFormat = Default
+    val attriBulder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(attriBulder, format, universe.typeOf[VariableFormat])
+    val attr = attriBulder.build
+    val retrievedValue = DataConverter.getAttributeValue(attr)
+    attr.getDataType should be (DataType.VARIABLE_FORMAT)
+    retrievedValue should be (format)
+  }
+
+  "VariableFormat conversion With Param " should " work properly" in {
+    val format : VariableFormat = ONE_D
+    val attriBulder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(attriBulder, format, universe.typeOf[VariableFormat])
+    val attr = attriBulder.build
+    val retrievedValue = DataConverter.getAttributeValue(attr)
+    attr.getDataType should be (DataType.VARIABLE_FORMAT)
+    retrievedValue should be (format)
+  }
+
+
+  "Empty VariableFormat conversion " should " work properly" in {
+    val format : VariableFormat = null
+    val attriBulder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(attriBulder, format, universe.typeOf[VariableFormat])
+    val attr = attriBulder.build
+    val retrievedValue = DataConverter.getAttributeValue(attr)
+    attr.getDataType should be (DataType.VARIABLE_FORMAT)
+    retrievedValue should be (format)
+  }
+
+  "Init Method conversion " should " work properly" in {
+    val initMethod = RandomUniform
+    val attriBulder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(attriBulder, initMethod, universe.typeOf[InitializationMethod])
+    val attr = attriBulder.build
+    val retrievedValue = DataConverter.getAttributeValue(attr)
+    attr.getDataType should be (DataType.INITMETHOD)
+    retrievedValue should be (initMethod)
+  }
+
+  "Empty Init Method conversion " should " work properly" in {
+    val initMethod = RandomUniform
+    val attriBulder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(attriBulder, initMethod, universe.typeOf[InitializationMethod])
+    val attr = attriBulder.build
+    val retrievedValue = DataConverter.getAttributeValue(attr)
+    attr.getDataType should be (DataType.INITMETHOD)
+    retrievedValue should be (initMethod)
+  }
+
+  "Module Conversion " should " work properly" in {
   }
 }

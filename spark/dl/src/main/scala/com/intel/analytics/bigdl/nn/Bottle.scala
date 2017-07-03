@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 import scala.reflect.ClassTag
 
@@ -127,7 +128,7 @@ class Bottle[T: ClassTag](
   }
 }
 
-object Bottle {
+object Bottle extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
     module: Module[T],
     nInputDim: Int = 2,

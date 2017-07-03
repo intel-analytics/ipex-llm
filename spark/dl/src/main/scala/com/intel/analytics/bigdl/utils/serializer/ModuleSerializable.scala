@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
 import com.intel.analytics.bigdl.utils.serializer.DataConverter.RegularizerConverter
 import serialization.Model.AttrValue.DataType
-import serialization.Model.{AttrValue, BigDLModel, BigDLTensor}
+import serialization.Model.{AttrValue, BigDLModule, BigDLTensor}
 
 import scala.reflect.ClassTag
 
@@ -33,31 +33,31 @@ import scala.reflect.ClassTag
  */
 trait ModuleSerializable extends Loadable with Savable{
 
-  override def loadModule[T: ClassTag](model : BigDLModel)
-                                      (implicit ev: TensorNumeric[T]) : BigDLModule[T] = {
+  override def loadModule[T: ClassTag](model : BigDLModule)
+                                      (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
     ModuleSerializer.loadModule(model)
   }
 
-  override def serializeModule[T: ClassTag](module : BigDLModule[T])
-                                           (implicit ev: TensorNumeric[T]) : BigDLModel = {
+  override def serializeModule[T: ClassTag](module : ModuleData[T])
+                                           (implicit ev: TensorNumeric[T]) : BigDLModule = {
     ModuleSerializer.serializeModule(module)
   }
 
-  protected def createBigDLModule[T: ClassTag](model : BigDLModel,
+  protected def createBigDLModule[T: ClassTag](model : BigDLModule,
                                                module : AbstractModule[Activity, Activity, T])
                                               (implicit ev: TensorNumeric[T])
-  : BigDLModule[T] = {
+  : ModuleData[T] = {
     val preModules = model.getPreModulesList.asScala
     val nextModules = model.getNextModulesList.asScala
-    val bigDLModule = BigDLModule(module, preModules, nextModules)
+    val bigDLModule = ModuleData(module, preModules, nextModules)
     module.setName(model.getName)
     copy2BigDL(model, bigDLModule)
     bigDLModule
   }
 
   protected def createSerializeBigDLModule[T: ClassTag](
-    modelBuilder : BigDLModel.Builder, module : BigDLModule[T])(implicit ev: TensorNumeric[T])
-  : BigDLModel = {
+    modelBuilder : BigDLModule.Builder, module : ModuleData[T])(implicit ev: TensorNumeric[T])
+  : BigDLModule = {
     module.pre.foreach(pre => modelBuilder.addPreModules(pre))
     module.next.foreach(next => modelBuilder.addNextModules(next))
     modelBuilder.setName(module.module.getName)
@@ -70,7 +70,7 @@ trait ModuleSerializable extends Loadable with Savable{
    * @param model serialized module
    * @param module  bigDL Module with relationships
    */
-  protected def copy2BigDL[T: ClassTag](model : BigDLModel, module : BigDLModule[T])
+  protected def copy2BigDL[T: ClassTag](model : BigDLModule, module : ModuleData[T])
                                        (implicit ev: TensorNumeric[T]): Unit = {
     val paramTable : Table = module.module.getParametersTable
     if (paramTable != null && paramTable.contains(model.getName)) {
@@ -105,8 +105,8 @@ trait ModuleSerializable extends Loadable with Savable{
    * @param modelBuilder serialized module builder
    * @param module  bigDL Module with relationships
    */
-  protected def copyFromBigDL[T: ClassTag](module : BigDLModule[T],
-    modelBuilder : BigDLModel.Builder)(implicit ev : TensorNumeric[T]) : Unit = {
+  protected def copyFromBigDL[T: ClassTag](module : ModuleData[T],
+    modelBuilder : BigDLModule.Builder)(implicit ev : TensorNumeric[T]) : Unit = {
     val paramTable : Table = module.module.getParametersTable
     if (paramTable != null && paramTable.contains(module.module.getName)) {
       val modulePramTable : Table = paramTable(module.module.getName)
@@ -142,15 +142,15 @@ trait ModuleSerializable extends Loadable with Savable{
   }
 
 }
-case class BigDLModule[T: ClassTag](module : AbstractModule[Activity, Activity, T],
+case class ModuleData[T: ClassTag](module : AbstractModule[Activity, Activity, T],
                                     pre : Seq[String], next : Seq[String])
 trait Loadable {
 
-  def loadModule[T: ClassTag](model : BigDLModel)
-                             (implicit ev: TensorNumeric[T]) : BigDLModule[T]
+  def loadModule[T: ClassTag](model : BigDLModule)
+                             (implicit ev: TensorNumeric[T]) : ModuleData[T]
 }
 trait Savable {
 
-  def serializeModule[T: ClassTag](module : BigDLModule[T])
-                                  (implicit ev: TensorNumeric[T]) : BigDLModel
+  def serializeModule[T: ClassTag](module : ModuleData[T])
+                                  (implicit ev: TensorNumeric[T]) : BigDLModule
 }

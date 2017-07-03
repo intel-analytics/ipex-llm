@@ -24,6 +24,7 @@ import scala.reflect.ClassTag
 import RandomGenerator._
 import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
 import com.intel.analytics.bigdl.optim.Regularizer
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 /**
  * The `Linear` module applies a linear transformation to the input data,
@@ -229,7 +230,7 @@ class Linear[T: ClassTag](
   }
 }
 
-object Linear {
+object Linear extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
       inputSize: Int,
       outputSize: Int,

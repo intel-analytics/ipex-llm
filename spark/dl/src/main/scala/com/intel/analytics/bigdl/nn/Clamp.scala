@@ -16,6 +16,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 import scala.reflect.ClassTag
 
@@ -34,7 +35,7 @@ class Clamp[T: ClassTag](val minV: Int, val maxV: Int)(
   }
 }
 
-object Clamp {
+object Clamp extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
       min: Int,
       max: Int)(implicit ev: TensorNumeric[T]) : Clamp[T] = {

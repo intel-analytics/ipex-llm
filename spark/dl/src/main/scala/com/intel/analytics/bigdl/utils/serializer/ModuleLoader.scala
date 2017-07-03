@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.IOUtils
-import serialization.Model.BigDLModel
+import serialization.Model.BigDLModule
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -35,7 +35,7 @@ object ModuleLoader {
 
   def loadFromFile[T: ClassTag](modelPath : String)
                                (implicit ev: TensorNumeric[T]) : AbstractModule[_, _, T] = {
-    val modelBuilder = BigDLModel.newBuilder
+    val modelBuilder = BigDLModule.newBuilder
     var cis : CodedInputStream = null
     if (modelPath.startsWith(hdfsPrefix)) {
       val byteArrayOut = com.intel.analytics.bigdl.utils.File.readHdfsByte(modelPath)
@@ -56,7 +56,7 @@ object ModulePersister {
 
   def saveToFile[T: ClassTag](modelPath: String, module: AbstractModule[_, _, T],
                               overwrite: Boolean = false)(implicit ev: TensorNumeric[T]): Unit = {
-    val bigDLModule = BigDLModule(module.asInstanceOf[AbstractModule[Activity, Activity, T]]
+    val bigDLModule = ModuleData(module.asInstanceOf[AbstractModule[Activity, Activity, T]]
       , new ArrayBuffer[String](), new ArrayBuffer[String]())
     val bigDLModel = ModuleSerializer.serialize(bigDLModule)
     if (modelPath.startsWith(hdfsPrefix)) {
@@ -91,9 +91,9 @@ object ModulePersister {
   def saveModelDefinitionToFile[T: ClassTag](definitionPath : String,
                                              module : AbstractModule[_, _, T],
     overwrite : Boolean = false)(implicit ev: TensorNumeric[T]) : Unit = {
-    val bigDLModule = BigDLModule(module, new ArrayBuffer[String](), new ArrayBuffer[String]())
+    val bigDLModule = ModuleData(module, new ArrayBuffer[String](), new ArrayBuffer[String]())
     val bigDLModel = ModuleSerializer.serialize(bigDLModule)
-    val bigDLModelWithoutWeightsAndBias = BigDLModel.newBuilder(bigDLModel)
+    val bigDLModelWithoutWeightsAndBias = BigDLModule.newBuilder(bigDLModel)
     cleantWeightAndBias(bigDLModelWithoutWeightsAndBias)
     val model = bigDLModelWithoutWeightsAndBias.build
     if (definitionPath.startsWith(hdfsPrefix)) {
@@ -125,13 +125,13 @@ object ModulePersister {
     }
   }
 
-  private def cleantWeightAndBias(modelBuilder : BigDLModel.Builder): Unit = {
+  private def cleantWeightAndBias(modelBuilder : BigDLModule.Builder): Unit = {
     modelBuilder.clearWeight
     modelBuilder.clearBias
     if (modelBuilder.getSubModulesCount > 0) {
       modelBuilder.clearSubModules
       modelBuilder.getSubModulesList.asScala.foreach(sub => {
-        val subModelBuilder = BigDLModel.newBuilder(sub)
+        val subModelBuilder = BigDLModule.newBuilder(sub)
         cleantWeightAndBias(subModelBuilder)
         modelBuilder.addSubModules(subModelBuilder.build)
       })

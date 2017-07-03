@@ -15,17 +15,13 @@
  */
 package com.intel.analytics.bigdl.utils.serializer
 
-import com.intel.analytics.bigdl.nn.{Abs, Add, AddConstant}
+import com.intel.analytics.bigdl.nn._
 
 import scala.collection.JavaConverters._
 import scala.reflect.runtime.universe
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.tensor.{DoubleType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Table
-import com.intel.analytics.bigdl.utils.serializer.TestSerialization.getClass
-import serialization.Model.AttrValue.DataType
-import serialization.Model.{AttrValue, BigDLModel, BigDLTensor}
+import serialization.Model.{AttrValue, BigDLModule}
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
@@ -39,8 +35,8 @@ object ModuleSerializer extends ModuleSerializable{
 
   init
 
-  override def loadModule[T: ClassTag](model : BigDLModel)
-    (implicit ev: TensorNumeric[T]) : BigDLModule[T] = {
+  override def loadModule[T: ClassTag](model : BigDLModule)
+    (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
     val dataType = ev.getType
     val evidence = scala.reflect.classTag[T]
     val modelAttributes = model.getAttrMap
@@ -64,7 +60,8 @@ object ModuleSerializer extends ModuleSerializable{
         } else {
           require(modelAttributes.containsKey(name), s"$name value cannot be found")
           val attribute = modelAttributes.get(name)
-          args(i) = DataConverter.getAttributeValue(attribute)
+          val value = DataConverter.getAttributeValue(attribute)
+          args(i) = value
         }
         i+= 1
       })
@@ -75,11 +72,11 @@ object ModuleSerializer extends ModuleSerializable{
     createBigDLModule(model, module)
   }
 
-  override def serializeModule[T: ClassTag](module : BigDLModule[T])
-                                           (implicit ev: TensorNumeric[T]) : BigDLModel = {
-    val bigDLModelBuilder = BigDLModel.newBuilder
+  override def serializeModule[T: ClassTag](module : ModuleData[T])
+                                           (implicit ev: TensorNumeric[T]) : BigDLModule = {
+    val bigDLModelBuilder = BigDLModule.newBuilder
     val cls = module.module.getClass
-    val moduleType = getModuleTypeByCls(module.module.getClass)
+    val moduleType = getModuleTypeByCls(cls)
     bigDLModelBuilder.setModuleType(moduleType)
     val constructors = cls.getConstructors()
     require(constructors.length == 1, "only support one constructor")
@@ -102,14 +99,16 @@ object ModuleSerializer extends ModuleSerializable{
   }
 
 
-  def serialize[T: ClassTag](bigDLModule : BigDLModule[T])
+  def serialize[T: ClassTag](bigDLModule : ModuleData[T])
                             (implicit ev: TensorNumeric[T])
-    : BigDLModel = {
-    serializerMaps(bigDLModule.module.getClass).serializeModule(bigDLModule)
+    : BigDLModule = {
+    val module = bigDLModule.module
+    val cls = module.getClass
+    serializerMaps(cls).serializeModule(bigDLModule)
   }
 
-  def load[T: ClassTag](model: BigDLModel)
-                       (implicit ev: TensorNumeric[T]) : BigDLModule[T] = {
+  def load[T: ClassTag](model: BigDLModule)
+                       (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
     deserializerMaps(model.getModuleType).loadModule(model)
   }
 
@@ -140,23 +139,25 @@ object ModuleSerializer extends ModuleSerializable{
     // to make it compatible with both 2.11 and 2.10
     val ctorC = clsSymbol.toType.declaration(universe.nme.CONSTRUCTOR).asMethod
     val ctorm = cm.reflectConstructor(ctorC)
-    /*
-    val params0 = ctorm.symbol.paramss(0).foldLeft(Map(): Map[String, universe.Type])((p, a) => {
-      p + (a.name.decodedName.toString -> a.typeSignature)
-    })
-    val params1 = ctorm.symbol.paramss(1).foldLeft(Map(): Map[String, universe.Type])((p, a) => {
-      p + (a.name.decodedName.toString -> a.typeSignature)
-    })
-    */
-   // List(params0, params1)
     ctorm.symbol.paramss
   }
 
-  def init() : Unit = {
-    registerModule("ADD", Class.forName("com.intel.analytics.bigdl.nn.Add"), Add)
-    registerModule("ADDCONSTANT", Class.forName("com.intel.analytics.bigdl.nn.AddConstant"),
+  private def init() : Unit = {
+    registerModule("Abs", Class.forName("com.intel.analytics.bigdl.nn.Abs"), Abs)
+    registerModule("Add", Class.forName("com.intel.analytics.bigdl.nn.Add"), Add)
+    registerModule("AddConstant", Class.forName("com.intel.analytics.bigdl.nn.AddConstant"),
       AddConstant)
-    registerModule("LINEAR", Class.forName("com.intel.analytics.bigdl.nn.Linear"),
-      AddConstant)
+    registerModule("BatchNormalization",
+      Class.forName("com.intel.analytics.bigdl.nn.BatchNormalization"), BatchNormalization)
+    registerModule("Bilinear", Class.forName("com.intel.analytics.bigdl.nn.Bilinear"), Bilinear)
+    registerModule("Bottle", Class.forName("com.intel.analytics.bigdl.nn.Bottle"), Bottle)
+    registerModule("CAdd", Class.forName("com.intel.analytics.bigdl.nn.CAdd"), CAdd)
+    registerModule("CAddTable", Class.forName("com.intel.analytics.bigdl.nn.CAddTable"), CAddTable)
+    registerModule("CDivTable", Class.forName("com.intel.analytics.bigdl.nn.CDivTable"), CDivTable)
+    registerModule("Clamp", Class.forName("com.intel.analytics.bigdl.nn.Clamp"), Clamp)
+    registerModule("CMaxTable", Class.forName("com.intel.analytics.bigdl.nn.CMaxTable"), CMaxTable)
+    registerModule("CMinTable", Class.forName("com.intel.analytics.bigdl.nn.CMinTable"), CMinTable)
+    registerModule("CMul", Class.forName("com.intel.analytics.bigdl.nn.CMul"), CMul)
+    registerModule("Linear", Class.forName("com.intel.analytics.bigdl.nn.Linear"), Linear)
   }
 }
