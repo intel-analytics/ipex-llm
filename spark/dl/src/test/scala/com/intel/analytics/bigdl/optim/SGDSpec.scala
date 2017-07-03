@@ -369,4 +369,5 @@ class SGDSpec extends FlatSpec with Matchers {
       optimMethod.learningRateSchedule.currentRate should be(-0.05 * Math.pow(0.96, 2))
     })
   }
+
 }

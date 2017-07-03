@@ -17,9 +17,9 @@
 package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.optim.SGD.{Default, LearningRateSchedule}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
@@ -154,13 +154,19 @@ class SGD[@specialized(Float, Double) T: ClassTag](
     val nesterov = this.nesterov
     val lrs = this.learningRates
     val wds = this.weightDecays
-    s"Current learning rate is $clr. " +
-      {if (wd != 0) s"Current weight decay is $wd. " else ""} +
-      {if (mom != 0) s"Current momentum is $mom. " else ""} +
-      {if (damp != 0) s"Current dampening is $damp. " else ""} +
-      {if (nesterov) s"Current nesterov is true. " else ""} +
-      {if (null != lrs) s"Current learningRates is a Tensor. " else ""} +
-      {if (null != wds) s"Current weightDecays is a Tensor. " else ""}
+    s"Current learning rate is $clr. " + {
+      if (wd != 0) s"Current weight decay is $wd. " else ""
+    } + {
+      if (mom != 0) s"Current momentum is $mom. " else ""
+    } + {
+      if (damp != 0) s"Current dampening is $damp. " else ""
+    } + {
+      if (nesterov) s"Current nesterov is true. " else ""
+    } + {
+      if (null != lrs) s"Current learningRates is a Tensor. " else ""
+    } + {
+      if (null != wds) s"Current weightDecays is a Tensor. " else ""
+    }
   }
 
   override def updateHyperParameter(): Unit = {
@@ -178,13 +184,19 @@ class SGD[@specialized(Float, Double) T: ClassTag](
     val nesterov = config.get[Boolean]("nesterov").getOrElse(false)
     val lrs = config.get[Tensor[T]]("learningRates").getOrElse(null)
     val wds = config.get[Tensor[T]]("weightDecays").getOrElse(null)
-    s"Current learning rate is $clr. " +
-      {if (wd != 0) s"Current weight decay is $wd. " else ""} +
-      {if (mom != 0) s"Current momentum is $mom. " else ""} +
-      {if (damp != 0) s"Current dampening is $damp. " else ""} +
-      {if (nesterov) s"Current nesterov is true. " else ""} +
-      {if (null != lrs) s"Current learningRates is a Tensor. " else ""} +
-      {if (null != wds) s"Current weightDecays is a Tensor. " else ""}
+    s"Current learning rate is $clr. " + {
+      if (wd != 0) s"Current weight decay is $wd. " else ""
+    } + {
+      if (mom != 0) s"Current momentum is $mom. " else ""
+    } + {
+      if (damp != 0) s"Current dampening is $damp. " else ""
+    } + {
+      if (nesterov) s"Current nesterov is true. " else ""
+    } + {
+      if (null != lrs) s"Current learningRates is a Tensor. " else ""
+    } + {
+      if (null != wds) s"Current weightDecays is a Tensor. " else ""
+    }
   }
 
   override def updateHyperParameter(config: Table, state: Table): Unit = {
@@ -205,12 +217,12 @@ object SGD {
      * update learning rate by config table and state table
      * @param optimMethod init optiMethod.
      */
-    def updateHyperParameter[T](optimMethod : SGD[T]) : Unit
+    def updateHyperParameter[T](optimMethod: SGD[T]): Unit
 
     @deprecated("Please input SGD instead of Table", "0.2.0")
-    def updateHyperParameter(config : Table, state : Table) : Unit = {}
+    def updateHyperParameter(config: Table, state: Table): Unit = {}
 
-    var currentRate : Double = 0.0
+    var currentRate: Double = 0.0
   }
 
   /**
@@ -218,10 +230,9 @@ object SGD {
    * rate according to some pre-defined [[Regime]]. If the running epoch is within
    * the interval of a regime `r` [r.startEpoch, r.endEpoch], then the learning
    * rate will take the "learningRate" in r.config.
-   *
    * @param regimes an array of pre-defined [[Regime]].
    */
-  case class EpochSchedule(regimes : Array[Regime]) extends LearningRateSchedule {
+  case class EpochSchedule(regimes: Array[Regime]) extends LearningRateSchedule {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val epoch = state[Int]("epoch")
       for (r <- regimes) {
@@ -260,7 +271,7 @@ object SGD {
               case "weightDecays" =>
                 optimMethod.weightDecays = config.get[Tensor[T]](keys(i)).get
               case _ => throw new IllegalArgumentException(
-                s"EpochSchedule: ${keys(i)} is not a member of SGD")
+                s"EpochSchedule: ${ keys(i) } is not a member of SGD")
             }
             i += 1
           }
@@ -274,11 +285,10 @@ object SGD {
    * A learning rate decay policy, where the effective learning rate
    * follows a polynomial decay, to be zero by the max_iteration.
    * Calculation: base_lr (1 - iter/maxIteration) `^` (power)
-   *
    * @param power coeffient of decay, refer to calculation formula
    * @param maxIteration max iteration when lr becomes zero
    */
-  case class Poly(power : Double, maxIteration : Int) extends LearningRateSchedule {
+  case class Poly(power: Double, maxIteration: Int) extends LearningRateSchedule {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val lr = config.get[Double]("learningRate").getOrElse(1e-3)
       val nevals = state.get[Int]("evalCounter").getOrElse(0)
@@ -287,7 +297,7 @@ object SGD {
       } else {
         -lr * math.pow(1.0 - nevals.toDouble / maxIteration, power)
       }
-      println(s"iteration is : ${nevals}. current learning rate is $clr")
+      println(s"iteration is : ${ nevals }. current learning rate is $clr")
       state("evalCounter") = nevals + 1
       config("clr") = clr
     }
@@ -300,26 +310,26 @@ object SGD {
       } else {
         -lr * math.pow(1.0 - nevals.toDouble / maxIteration, power)
       }
-      println(s"iteration is : ${nevals}. current learning rate is $clr")
+      println(s"iteration is : ${ nevals }. current learning rate is $clr")
       optimMethod.state("evalCounter") = nevals + 1
       currentRate = clr
     }
   }
+
   /**
    * A learning rate decay policy, where the effective learning rate
    * is calculated as base_lr * gamma `^` (floor(iter / stepSize))
-   *
    * @param stepSize the inteval for lr decay
    * @param gamma coefficient of decay, refer to calculation formula
    */
 
-  case class Step(stepSize : Int, gamma : Double) extends LearningRateSchedule {
+  case class Step(stepSize: Int, gamma: Double) extends LearningRateSchedule {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val lr = config.get[Double]("learningRate").getOrElse(1e-3)
       var clr = -lr
       val nevals = state.get[Int]("evalCounter").getOrElse(0)
       var i = 0
-      while(i < nevals / stepSize) {
+      while (i < nevals / stepSize) {
         clr *= gamma
         i += 1
       }
@@ -332,7 +342,7 @@ object SGD {
       var clr = -lr
       val nevals = optimMethod.state.get[Int]("evalCounter").getOrElse(0)
       var i = 0
-      while(i < nevals / stepSize) {
+      while (i < nevals / stepSize) {
         clr *= gamma
         i += 1
       }
@@ -346,7 +356,7 @@ object SGD {
    * @param stepSizes the series of step sizes used for lr decay
    * @param gamma coefficient of decay
    */
-  case class MultiStep(stepSizes : Array[Int], gamma : Double) extends LearningRateSchedule {
+  case class MultiStep(stepSizes: Array[Int], gamma: Double) extends LearningRateSchedule {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val lr = config.get[Double]("learningRate").getOrElse(1e-3)
       var clr = -lr
@@ -379,7 +389,6 @@ object SGD {
    * The learning rate decays through a function argument on number of run epochs
    *
    * l_{n + 1} = l_{n} * 0.1 `^` decayType(epoch)
-   *
    * @param decayType is a function with number of run epochs as the argument
    */
   case class EpochDecay(decayType: (Int) => Double) extends LearningRateSchedule {
@@ -405,17 +414,16 @@ object SGD {
   /**
    * [[EpochStep]] is a learning rate schedule, which rescale the learning rate by `gamma`
    * for each `stepSize` epochs.
-   *
    * @param stepSize For how many epochs to update the learning rate once
    * @param gamma the rescale factor
    */
-  case class EpochStep(stepSize : Int, gamma : Double) extends LearningRateSchedule {
+  case class EpochStep(stepSize: Int, gamma: Double) extends LearningRateSchedule {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val lr = config.get[Double]("learningRate").getOrElse(1e-3)
       var clr = -lr
       val epoch = state[Int]("epoch")
       var i = 0
-      while(i < epoch / stepSize) {
+      while (i < epoch / stepSize) {
         clr *= gamma
         i += 1
       }
@@ -427,7 +435,7 @@ object SGD {
       var clr = -lr
       val epoch = optimMethod.state[Int]("epoch")
       var i = 0
-      while(i < epoch / stepSize) {
+      while (i < epoch / stepSize) {
         clr *= gamma
         i += 1
       }
@@ -439,11 +447,10 @@ object SGD {
    * [[NaturalExp]] is a learning rate schedule, which rescale the learning rate by
    * exp ( -decay_rate * iter / decay_step )
    * referring to tensorflow's learning rate decay # natural_exp_decay
-   *
    * @param decay_step how often to apply decay
    * @param gamma the decay rate. e.g. 0.96
    */
-  case class NaturalExp(decay_step : Int, gamma : Double)
+  case class NaturalExp(decay_step: Int, gamma: Double)
     extends LearningRateSchedule {
 
     override def updateHyperParameter[T](optimMethod: SGD[T]): Unit = {
@@ -462,7 +469,7 @@ object SGD {
    * @param decayStep the inteval for lr decay
    * @param decayRate decay rate
    * @param stairCase if true, iter / decayStep is an integer division
-   *                  and the decayed learning rate follows a staircase function.
+   * and the decayed learning rate follows a staircase function.
    */
   case class Exponential(decayStep: Int, decayRate: Double,
     stairCase: Boolean = false) extends LearningRateSchedule {
@@ -514,4 +521,53 @@ object SGD {
    * @param config config table contains hyper parameters
    */
   case class Regime(startEpoch: Int, endEpoch: Int, config: Table)
+
+  case class Plateau(monitor: String = "val_acc", factor: Float = 0.1f,
+    patience: Int = 10, mode: String = "auto", epsilon: Float = 1e-4f,
+    cooldown: Int = 0, minLr: Float = 0) extends LearningRateSchedule {
+    require(factor < 1, "Plateau does not support a factor >= 1.0")
+    require(mode == "auto" || mode == "min" || mode == "max",
+      s"Learning Rate Plateau Reducing mode ${ mode } is unknown, please use auto | min | max")
+    var (monitorOp, best) = if (mode == "min" || (mode == "auto" && monitor.contains("acc"))) {
+      ((a: Float, b: Float) => a < b - epsilon, Float.PositiveInfinity)
+    } else {
+      ((a: Float, b: Float) => a > b + epsilon, Float.NegativeInfinity)
+    }
+    private var cooldownCounter: Int = 0
+    private var waitCounter: Int = 0
+    private val lrEpsilon: Float = minLr * 1e-4f
+    private var curEpoch = 1
+
+
+    /**
+     * update learning rate by config table and state table
+     * @param optimMethod init optiMethod.
+     */
+    override def updateHyperParameter[T](optimMethod: SGD[T]): Unit = {
+      val epoch = optimMethod.state[Int]("epoch")
+      if (epoch == 1) currentRate = -optimMethod.learningRate
+      if (epoch == curEpoch) return
+      curEpoch = epoch
+      val current = optimMethod.state.get[Float](monitor)
+      require(current.isDefined, s"Learning Rate Plateau Reducing requires ${monitor} available!")
+      if (cooldownCounter > 0) {
+        cooldownCounter -= 1
+        waitCounter = 0
+      }
+      if (monitorOp(current.get, best)) {
+        best = current.get
+        waitCounter = 0
+      } else if (cooldownCounter <= 0) {
+        if (waitCounter >= patience) {
+          if (currentRate.abs > minLr + lrEpsilon) {
+            currentRate = - Math.max(currentRate.abs * factor, minLr)
+            cooldownCounter = cooldown
+            waitCounter = 0
+          }
+        }
+        waitCounter += 1
+      }
+    }
+  }
+
 }
