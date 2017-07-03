@@ -4,11 +4,11 @@
 **Scala:**
 
 ```scala
-ELU(alpha = 1.0, inplace = false)
+val m = ELU(alpha = 1.0, inplace = false)
 ```
 **Python:**
 ```python
-ELU(alpha=1.0, inplace=False)
+m = ELU(alpha=1.0, inplace=False)
 ```
 
 

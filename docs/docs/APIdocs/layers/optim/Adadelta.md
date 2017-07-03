@@ -7,11 +7,11 @@ http://arxiv.org/abs/1212.5701.
 
 **Scala:**
 ```scala
-Adadelta(decayRate = 0.9, Epsilon = 1e-10)
+val optimMethod = Adadelta(decayRate = 0.9, Epsilon = 1e-10)
 ```
 **Python:**
 ```python
-AdaDelta(decayrate = 0.9, epsilon = 1e-10)
+optim_method = AdaDelta(decayrate = 0.9, epsilon = 1e-10)
 ```
 
 

@@ -4,11 +4,11 @@
 **Scala:**
 
 ```scala
-Scale(Array(2, 1))
+val m = Scale(Array(2, 1))
 ```
 **Python:**
 ```python
-scale = Scale([2, 1])
+m = scale = Scale([2, 1])
 ```
 
 Scale is the combination of cmul and cadd. `Scale(size).forward(input) == CAdd(size).forward(CMul(size).forward(input))`

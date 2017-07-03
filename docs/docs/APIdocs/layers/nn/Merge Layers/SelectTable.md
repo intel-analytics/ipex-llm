@@ -2,11 +2,11 @@
 
 **Scala:**
 ```scala
-SelectTable(index: Int)
+val m = SelectTable(index: Int)
 ```
 **Python:**
 ```python
-SelectTable(dimension)
+m = SelectTable(dimension)
 ```
 
 Select one element from a table by a given index.

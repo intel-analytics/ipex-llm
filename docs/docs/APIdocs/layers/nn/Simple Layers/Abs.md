@@ -2,11 +2,11 @@
 
 **Scala:**
 ```scala
-abs = Abs()
+val m = Abs()
 ```
 **Python:**
 ```python
-abs = Abs()
+m = Abs()
 ```
 
 An element-wise abs operation.

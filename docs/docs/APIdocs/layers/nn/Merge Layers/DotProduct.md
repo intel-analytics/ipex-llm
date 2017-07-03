@@ -3,11 +3,11 @@
 **Scala:**
 
 ```scala
-DotProduct()
+val m = DotProduct()
 ```
 **Python:**
 ```python
-DotProduct()
+m = DotProduct()
 ```
 
 Outputs the dot product (similarity) between inputs

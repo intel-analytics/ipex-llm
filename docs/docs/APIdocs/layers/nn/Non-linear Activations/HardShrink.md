@@ -3,11 +3,11 @@
 
 **Scala:**
 ```scala
-HardShrink(lambda = 0.5)
+val m = HardShrink(lambda = 0.5)
 ```
 **Python:**
 ```python
-HardShrink(the_lambda=0.5)
+m = HardShrink(the_lambda=0.5)
 ```
 
 Applies the hard shrinkage function element-wise to the input Tensor. lambda is set to 0.5 by default.

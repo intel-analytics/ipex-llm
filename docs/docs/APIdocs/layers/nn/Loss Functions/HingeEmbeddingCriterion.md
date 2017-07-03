@@ -3,7 +3,7 @@
 
 **Scala:**
 ``` scala
-val criterion = HingeEmbeddingCriterion(margin = 1, sizeAverage = true)
+val m = HingeEmbeddingCriterion(margin = 1, sizeAverage = true)
 ```
 **Python:**
 ```python
