@@ -125,6 +125,19 @@ class LogSoftMax[T: ClassTag](
 
     gradInput
   }
+
+  override def hashCode(): Int = {
+    def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
+    val state = Seq(super.hashCode())
+    state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
+  }
+
+  override def equals(other: Any): Boolean = other match {
+    case that: Bilinear[T] =>
+      super.equals(that) &&
+        (that canEqual this)
+    case _ => false
+  }
 }
 
 object LogSoftMax {
