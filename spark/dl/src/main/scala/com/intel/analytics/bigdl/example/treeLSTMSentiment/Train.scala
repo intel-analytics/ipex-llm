@@ -42,7 +42,7 @@ object Train {
   def train(param: TreeLSTMSentimentParam): Unit = {
     val DATA_DIR = param.baseDir
     val classNum = if (param.fineGrained) 5 else 3
-    val criterion = TimeDistributedCriterion(CrossEntropyCriterion())
+    val criterion = TimeDistributedCriterion(ClassNLLCriterion())
     val conf = Engine.createSparkConf()
       .setAppName("Text classification")
       .set("spark.task.maxFailures", "1")
@@ -52,6 +52,7 @@ object Train {
     val paddingValue = 1
     val oovChar = 2
     val indexFrom = 3
+    val labelPadding = if (param.fineGrained) 4f else 3f
     val glovePath = s"$DATA_DIR/glove/glove.840B.300d.txt"
     val vocabPath = s"$DATA_DIR/sst/vocab-cased.txt"
     val (word2VecTensor, vocab) =
@@ -88,8 +89,8 @@ object Train {
          |dev sentenceRDD count: ${devSentenceRDD.count()}
       """.stripMargin)
 
-    val trainRDD = toSample(trainTreeRDD, trainLabelRDD, trainSentenceRDD)
-    val devRDD = toSample(devTreeRDD, devLabelRDD, devSentenceRDD)
+    val trainRDD = toSample(trainTreeRDD, trainLabelRDD, trainSentenceRDD, param.fineGrained)
+    val devRDD = toSample(devTreeRDD, devLabelRDD, devSentenceRDD, param.fineGrained)
 
     val optimizer = Optimizer(
       model = TreeLSTMSentiment(word2VecTensor, param.hiddenSize, classNum),
@@ -98,18 +99,20 @@ object Train {
       batchSize = param.batchSize,
       isInOrder = false,
       featurePaddings = Some(Array(Tensor(T(paddingValue.toFloat)), Tensor(T(-1f, -1f, -1f)))),
-      labelPadding = Some(6f)
+      labelPadding = Some(labelPadding)
     )
     optimizer
-      .setOptimMethod(new Adagrad(learningRate = 0.1))
-//      .setValidation(
-//        Trigger.everyEpoch,
-//        devRDD,
-//        Array(new Top1Accuracy[Float]),
-//        param.batchSize,
-//        featurePaddings =
-//          Some(Array(Tensor(T(paddingValue.toFloat)), Tensor(T(-1f, -1f, -1f)))),
-//        labelPadding = Some(6f))
+      .setOptimMethod(new Adagrad(
+        learningRate = param.learningRate,
+        weightDecay = param.regRate))
+      .setValidation(
+        Trigger.everyEpoch,
+        devRDD,
+        Array(new TreeNNAccuracy(param.fineGrained)),
+        param.batchSize,
+        featurePaddings =
+          Some(Array(Tensor(T(paddingValue.toFloat)), Tensor(T(-1f, -1f, -1f)))),
+        labelPadding = Some(labelPadding))
       .setEndWhen(Trigger.maxEpoch(20))
       .optimize()
     sc.stop()

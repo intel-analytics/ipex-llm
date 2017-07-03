@@ -42,9 +42,11 @@ class MapTable[T: ClassTag](
     }
     var i = 1
     while (i <= n && modules.size <= i) {
+      if (modules.length <= i) {
         modules.append(module
           .cloneModule()
           .asInstanceOf[AbstractModule[Activity, Activity, T]])
+      }
       i += 1
     }
   }
@@ -114,6 +116,11 @@ class MapTable[T: ClassTag](
       str += " { }"
     }
     str
+  }
+
+  override def clearState(): this.type = {
+    modules.clear()
+    this
   }
 }
 

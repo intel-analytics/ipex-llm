@@ -18,7 +18,8 @@ package com.intel.analytics.bigdl.torch
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.numeric.NumericDouble
-import com.intel.analytics.bigdl.optim.Adagrad
+import com.intel.analytics.bigdl.optim.{Adagrad, TreeNNAccuracy}
+import com.intel.analytics.bigdl.example.treeLSTMSentiment.Utils._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.TorchObject.TYPE_FLOAT_TENSOR
@@ -30,7 +31,53 @@ import scala.io.Source
 import scala.util.control.Breaks._
 
 class BinaryTreeLSTMSpec extends FlatSpec with Matchers {
-  val readTree = (parents: Array[Int]) => {
+//    val readTree = (parents: Array[Int]) => {
+//      val size = parents.length
+//      val maxNumChildren = parents
+//        .groupBy(x => x)
+//        .foldLeft(0)((maxNum, p) => scala.math.max(maxNum, p._2.length))
+//      val trees = new TensorTree(Tensor[Double](size, maxNumChildren + 1))
+//      for (i <- parents.indices) {
+//        if (trees.noChild(i + 1) && parents(i) != -1) {
+//          var idx = i + 1
+//          var prev = 0
+//          breakable {
+//            while (true) {
+//              val parent = parents(idx - 1)
+//              if (parent == -1) break
+//              if (prev != 0) {
+//                trees.addChild(idx, prev)
+//              }
+//
+//              if (parent == 0) {
+//                trees.markAsRoot(idx)
+//                break()
+//              } else if (trees.hasChild(parent)) {
+//                trees.addChild(parent, idx)
+//                break()
+//              } else {
+//                prev = idx
+//                idx = parent
+//              }
+//            }
+//          }
+//        }
+//      }
+//
+//      var leafIdx = 1
+//      for (i <- 1 to size) {
+//        if (trees.noChild(i)) {
+//          trees.markAsLeaf(i, leafIdx)
+//          leafIdx += 1
+//        }
+//      }
+//
+//      trees.content
+//    }
+
+  def readTree(
+    parents: Array[Int]
+  ): Tensor[Double] = {
     val size = parents.length
     val maxNumChildren = parents
       .groupBy(x => x)
@@ -42,17 +89,24 @@ class BinaryTreeLSTMSpec extends FlatSpec with Matchers {
         var prev = 0
         breakable {
           while (true) {
-            val parent = parents(idx - 1)
-            if (parent == -1) break
-            if (prev != 0) {
-              trees.addChild(idx, prev)
+            var parent =
+              if (idx != 0) parents(idx - 1)
+              else -1
+//
+//            if (parent == 0) parent = -1
+            if (parent == parents.length) parent = 0
+            if (prev != 0 && parent != -1) {
+              trees.addChild(idx + 1, prev + 1)
             }
 
-            if (parent == 0) {
-              trees.markAsRoot(idx)
+            if (parent == -1) {
+              trees.markAsRoot(1)
+              if (prev != 0) {
+                trees.addChild(1, prev + 1)
+              }
               break()
-            } else if (trees.hasChild(parent)) {
-              trees.addChild(parent, idx)
+            } else if (trees.hasChild(parent + 1)) {
+              trees.addChild(parent + 1, idx + 1)
               break()
             } else {
               prev = idx
@@ -64,7 +118,7 @@ class BinaryTreeLSTMSpec extends FlatSpec with Matchers {
     }
 
     var leafIdx = 1
-    for (i <- 1 to size) {
+    for (i <- 2 to size) {
       if (trees.noChild(i)) {
         trees.markAsLeaf(i, leafIdx)
         leafIdx += 1
@@ -134,6 +188,7 @@ class BinaryTreeLSTMSpec extends FlatSpec with Matchers {
     val trees = Source.fromFile(s"$DATA_DIR/sst/train/parents.txt").getLines().toList
       .map(line => line.split(" "))
       .map(_.map(_.toInt))
+//      .map(x => readTree(x))
       .map(readTree)
       .map(line => line.resize(Array(1) ++ line.size()))
     val sentences = Source.fromFile(s"$DATA_DIR/sst/train/sents.txt").getLines().toList
@@ -145,6 +200,7 @@ class BinaryTreeLSTMSpec extends FlatSpec with Matchers {
     val labels = Source.fromFile(s"$DATA_DIR/sst/train/labels.txt").getLines().toList
       .map(line => line.split(" "))
       .map(_.map(l => remapLabel(l.toDouble, true)))
+      .map(line => rotate(line, 1))
       .map(line => Tensor(Storage(line)))
       .map(line => line.resize(Array(1) ++ line.size()))
 
@@ -155,7 +211,7 @@ class BinaryTreeLSTMSpec extends FlatSpec with Matchers {
     println(s"hashcode: ${model.hashCode()}")
 
     val start = System.nanoTime()
-    val epoch = 2
+    val epoch = 10
     for (i <- 1 to epoch) {
       println(s"epoch $i")
       for (j <- trees.indices) {
@@ -163,6 +219,7 @@ class BinaryTreeLSTMSpec extends FlatSpec with Matchers {
           model.zeroGradParameters()
           val input = T(sentences(j), trees(j))
           val output = model.forward(input)
+          println("accuracy", new TreeNNAccuracy(true).apply(output, labels(j)).result())
           val _loss = criterion.forward(output, labels(j))
           val gradInput = criterion.backward(output, labels(j))
           model.backward(input, gradInput)

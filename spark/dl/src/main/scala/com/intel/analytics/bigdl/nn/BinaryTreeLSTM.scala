@@ -25,10 +25,18 @@ import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 import scala.util.control.Breaks._
 
+/**
+ * This class is an implementation of Binary TreeLSTM (Constituency Tree LSTM).
+ * @param inputSize input units size
+ * @param hiddenSize hidden units size
+ * @param gateOutput whether gate output
+ * @param withGraph whether create lstms with [[Graph]], the default value is true.
+ */
 class BinaryTreeLSTM[T: ClassTag](
   inputSize: Int,
   hiddenSize: Int,
-  gateOutput: Boolean = true
+  gateOutput: Boolean = true,
+  withGraph: Boolean = false
 )(implicit ev: TensorNumeric[T])
   extends TreeLSTM[T](inputSize, hiddenSize) {
   val composers: ArrayBuffer[Module[T]] = ArrayBuffer[Module[T]]()
@@ -38,13 +46,23 @@ class BinaryTreeLSTM[T: ClassTag](
   val cells: ArrayBuffer[ArrayBuffer[Module[T]]] = ArrayBuffer[ArrayBuffer[Module[T]]]()
 
   def createLeafModule(): Module[T] = {
-    val input = Identity().apply()
-    val c = Linear(inputSize, hiddenSize).apply(input)
+    if (withGraph) createLeafModuleWithGraph()
+    else createLeafModuleWithSequential()
+  }
+
+  def createComposer(): Module[T] = {
+    if (withGraph) createComposerWithGraph()
+    else createComposerWithSequential()
+  }
+
+  def createLeafModuleWithGraph(): Module[T] = {
+    val input = Identity().inputs()
+    val c = Linear(inputSize, hiddenSize).inputs(input)
     val h: ModuleNode[T] = if (gateOutput) {
-      val o = Sigmoid().apply(Linear(inputSize, hiddenSize).apply(input))
-      CMulTable().apply(o, Tanh().apply(c))
+      val o = Sigmoid().inputs(Linear(inputSize, hiddenSize).inputs(input))
+      CMulTable().inputs(o, Tanh().inputs(c))
     } else {
-      Tanh().apply(c)
+      Tanh().inputs(c)
     }
 
     val leafModule = Graph(Array(input), Array(c, h))
@@ -56,7 +74,42 @@ class BinaryTreeLSTM[T: ClassTag](
     leafModule
   }
 
-  def createLeafModule1(): Module[T] = {
+  def createComposerWithGraph(): Module[T] = {
+    val (lc, lh) = (Identity().inputs(), Identity().inputs())
+    val (rc, rh) = (Identity().inputs(), Identity().inputs())
+
+    def newGate(): ModuleNode[T] = CAddTable().inputs(
+      Linear(hiddenSize, hiddenSize).inputs(lh),
+      Linear(hiddenSize, hiddenSize).inputs(rh)
+    )
+
+    val i = Sigmoid().inputs(newGate())
+    val lf = Sigmoid().inputs(newGate())
+    val rf = Sigmoid().inputs(newGate())
+    val update = Tanh().inputs(newGate())
+    val c = CAddTable().inputs(
+      CMulTable().inputs(i, update),
+      CMulTable().inputs(lf, lc),
+      CMulTable().inputs(rf, rc)
+    )
+
+    val h = if (this.gateOutput) {
+      val o = Sigmoid().inputs(newGate())
+      CMulTable().inputs(o, Tanh().inputs(c))
+    } else {
+      Tanh().inputs(c)
+    }
+
+    val composer = Graph(Array(lc, lh, rc, rh), Array(c, h))
+
+    if (this.composer != null) {
+      shareParams(composer, this.composer)
+    }
+
+    composer
+  }
+
+  def createLeafModuleWithSequential(): Module[T] = {
     val gate = ConcatTable()
       .add(Sequential()
         .add(Linear(inputSize, hiddenSize))
@@ -85,7 +138,7 @@ class BinaryTreeLSTM[T: ClassTag](
     leafModule
   }
 
-  def createComposer1(): Module[T] = {
+  def createComposerWithSequential(): Module[T] = {
     def newGate(): Module[T] =
       Sequential()
         .add(ParallelTable()
@@ -158,42 +211,8 @@ class BinaryTreeLSTM[T: ClassTag](
     composer
   }
 
-  def createComposer(): Module[T] = {
-    val (lc, lh) = (Identity().apply(), Identity().apply())
-    val (rc, rh) = (Identity().apply(), Identity().apply())
-
-    def newGate(): ModuleNode[T] = CAddTable().apply(
-      Linear(hiddenSize, hiddenSize).apply(lh),
-      Linear(hiddenSize, hiddenSize).apply(rh)
-    )
-
-    val i = Sigmoid().apply(newGate())
-    val lf = Sigmoid().apply(newGate())
-    val rf = Sigmoid().apply(newGate())
-    val update = Tanh().apply(newGate())
-    val c = CAddTable().apply(
-      CMulTable().apply(i, update),
-      CMulTable().apply(lf, lc),
-      CMulTable().apply(rf, rc)
-    )
-
-    val h = if (this.gateOutput) {
-      val o = Sigmoid().apply(newGate())
-      CMulTable().apply(o, Tanh().apply(c))
-    } else {
-      Tanh().apply(c)
-    }
-
-    val composer = Graph(Array(lc, lh, rc, rh), Array(c, h))
-
-    if (this.composer != null) {
-      shareParams(composer, this.composer)
-    }
-
-    composer
-  }
-
   override def updateOutput(input: Table): Tensor[T] = {
+    cells.clear()
     val inputs = input[Tensor[T]](1)
     val trees = input[Tensor[T]](2)
     val batchSize = inputs.size(1)
@@ -209,18 +228,22 @@ class BinaryTreeLSTM[T: ClassTag](
       val tensorTree = new TensorTree[T](trees(b))
       for (i <- 1 to tensorTree.size(0)) {
         if (tensorTree.noChild(i)) {
-          val numLeafModules = leafModules.size
-          if (numLeafModules == 0) {
-            cells(b - 1).append(createLeafModule())
+//          val numLeafModules = leafModules.size
+          if (leafModules.length < i) {
+            val leafModule = createLeafModule()
+            cells(b - 1).append(leafModule)
+            leafModules.append(leafModule)
           } else {
-            cells(b - 1).append(leafModules.remove(numLeafModules - 1))
+            cells(b - 1).append(leafModules(i - 1))
           }
         } else if (tensorTree.hasChild(i)) {
-          val numComposers = composers.size
-          if (numComposers == 0) {
-            cells(b - 1).append(createComposer())
+//          val numComposers = composers.size
+          if (composers.length < i) {
+            val composer = createComposer()
+            cells(b - 1).append(composer)
+            composers.append(composer)
           } else {
-            cells(b - 1).append(composers.remove(numComposers - 1))
+            cells(b - 1).append(composers(i - 1))
           }
         }
       }
@@ -246,8 +269,9 @@ class BinaryTreeLSTM[T: ClassTag](
       val rightOut = recursiveForward(batch, input, tree, tree.children(nodeIndex)(1))
       val (lc, lh) = unpackState(leftOut)
       val (rc, rh) = unpackState(rightOut)
-      cells(batch - 1)(nodeIndex - 1).forward(T(lc, lh, rc, rh)).toTable
-      cells(batch - 1)(nodeIndex - 1).output.toTable
+      val cell = cells(batch - 1)(nodeIndex - 1)
+      cell.forward(T(lc, lh, rc, rh)).toTable
+//      cells(batch - 1)(nodeIndex - 1).output.toTable
     }
     out
   }
@@ -275,7 +299,6 @@ class BinaryTreeLSTM[T: ClassTag](
         T(memZero, memZero),
         tensorTree.getRoot)
     }
-    cells.clear()
     gradInput
   }
 
@@ -298,7 +321,6 @@ class BinaryTreeLSTM[T: ClassTag](
               T(gradOutput(1), gradOutput[Tensor[T]](2) + outputGrad)
             ).toTensor)
 
-      leafModules.append(cells(batch - 1)(nodeIndex - 1))
     } else {
       val children = tree.children(nodeIndex)
       val (lc, lh) = unpackState(cells(batch - 1)(children(0) - 1).output.toTable)
@@ -307,7 +329,6 @@ class BinaryTreeLSTM[T: ClassTag](
         .backward(T(lc, lh, rc, rh), T(gradOutput(1), gradOutput[Tensor[T]](2) + outputGrad))
         .toTable
 
-      composers.append(cells(batch - 1)(nodeIndex - 1))
       recursiveBackward(
         batch,
         inputs,

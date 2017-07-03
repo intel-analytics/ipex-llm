@@ -46,17 +46,24 @@ object Utils {
         var prev = 0
         breakable {
           while (true) {
-            val parent = parents(idx - 1)
-            if (parent == -1) break
-            if (prev != 0) {
-              trees.addChild(idx, prev)
+            var parent =
+              if (idx != 0) parents(idx - 1)
+              else -1
+            //
+            //            if (parent == 0) parent = -1
+            if (parent == parents.length) parent = 0
+            if (prev != 0 && parent != -1) {
+              trees.addChild(idx + 1, prev + 1)
             }
 
-            if (parent == 0) {
-              trees.markAsRoot(idx)
+            if (parent == -1) {
+              trees.markAsRoot(1)
+              if (prev != 0) {
+                trees.addChild(1, prev + 1)
+              }
               break()
-            } else if (trees.hasChild(parent)) {
-              trees.addChild(parent, idx)
+            } else if (trees.hasChild(parent + 1)) {
+              trees.addChild(parent + 1, idx + 1)
               break()
             } else {
               prev = idx
@@ -68,7 +75,7 @@ object Utils {
     }
 
     var leafIdx = 1
-    for (i <- 1 to size) {
+    for (i <- 2 to size) {
       if (trees.noChild(i)) {
         trees.markAsLeaf(i, leafIdx)
         leafIdx += 1
@@ -95,6 +102,43 @@ object Utils {
     }
   }
 
+  /**
+   * Rotate an array `arr` from `offset` distance to the end
+   *
+   * @param arr Given array
+   * @param offset right rotate how many elements
+   */
+  def rotate[D](arr: Array[D], offset: Int): Array[D] = {
+    if (arr == null || arr.length==0 || offset < 0) {
+      throw new IllegalArgumentException("Illegal argument!")
+    }
+
+    val newOffset = if (offset > arr.length) offset % arr.length else offset
+
+    val index = arr.length - newOffset
+
+    reverse(arr, 0, index - 1)
+    reverse(arr, index, arr.length - 1)
+    reverse(arr, 0, arr.length - 1)
+
+    arr
+  }
+
+  def reverse[D](arr: Array[D], l: Int, r: Int): Unit = {
+    var left = l
+    var right = r
+
+    if(arr == null || arr.length == 1) return
+
+    while(left < right) {
+      val temp = arr(left)
+      arr(left) = arr(right)
+      arr(right) = temp
+      left += 1
+      right -= 1
+    }
+  }
+
   def preProcessData(
     sc: SparkContext,
     vocabBC: Broadcast[Map[String, Int]],
@@ -111,6 +155,7 @@ object Utils {
     val labelRDD = sc.textFile(labelPath, 4)
       .map(line => line.split(" "))
       .map(_.map(l => remapLabel(l.toFloat, fineGrained)))
+      .map(line => rotate(line, 1))
     val sentenceRDD = sc.textFile(sentencePath, 4)
       .map(line => line.split(" "))
       .map(line => line.map(vocabBC.value.getOrElse(_, oovChar)))
@@ -121,15 +166,19 @@ object Utils {
   def toSample(
     treeRDD: RDD[Tensor[Float]],
     labelRDD: RDD[Array[Float]],
-    sentenceRDD: RDD[Array[Int]]
+    sentenceRDD: RDD[Array[Int]],
+    fineGrained: Boolean
   ): RDD[Sample[Float]] = {
     def indexAndSort(rdd: RDD[_]) = rdd.zipWithIndex.map(_.swap).sortByKey()
 
-    indexAndSort(sentenceRDD)
+    var samples = indexAndSort(sentenceRDD)
       .join(indexAndSort(labelRDD))
       .join(indexAndSort(treeRDD))
       .values
-      .map { case ((input: Array[Int], label: Array[Float]), tree: Tensor[Float]) =>
+
+    if(!fineGrained) samples = samples.filter{case ((_, label: Array[Float]), _) => label(0) != 2f}
+
+    samples.map { case ((input: Array[Int], label: Array[Float]), tree: Tensor[Float]) =>
         Sample(
           featureTensors =
             Array(Tensor(input.map(_.toFloat), Array(input.length, 1)),
@@ -183,6 +232,9 @@ object Utils {
       opt[String]('b', "baseDir")
         .text("Base dir containing the training and word2Vec data")
         .action((x, c) => c.copy(baseDir = x))
+      opt[String]('f', "fineGrained")
+        .text("If fineGrained, 5 classes, else binary classification")
+        .action((x, c) => c.copy(fineGrained = x.toBoolean))
       opt[String]('b', "batchSize")
         .text("batchSize")
         .action((x, c) => c.copy(batchSize = x.toInt))
@@ -199,7 +251,7 @@ object Utils {
 
   case class TreeLSTMSentimentParam (
     override val baseDir: String = "/tmp/.bigdl/dataset/",
-    override val batchSize: Int = 64,
+    override val batchSize: Int = 32,
     hiddenSize: Int = 150,
     learningRate: Double = 0.1,
     regRate: Double = 1e-4,

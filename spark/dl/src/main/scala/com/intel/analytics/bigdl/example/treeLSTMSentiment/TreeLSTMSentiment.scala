@@ -39,6 +39,7 @@ object TreeLSTMSentiment {
         embeddingDim, hiddenSize))
       .add(Dropout())
       .add(TimeDistributed(Linear(hiddenSize, classNum + 1)))
+      .add(TimeDistributed(LogSoftMax()))
 
     Sequential()
       .add(MapTable(Squeeze(3)))
