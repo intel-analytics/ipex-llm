@@ -70,7 +70,7 @@ object File {
     save(obj, fileName, isOverwrite, conf)
   }
 
-  private def getConfiguration(fileName: String): Configuration = {
+  private[bigdl] def getConfiguration(fileName: String): Configuration = {
     if (fileName.startsWith(File.hdfsPrefix) || fileName.startsWith(s3aPrefix)) {
       new Configuration()
     } else {

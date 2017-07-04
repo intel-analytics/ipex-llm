@@ -16,7 +16,13 @@
 package com.intel.analytics.bigdl.integration
 
 import com.intel.analytics.bigdl.models.lenet.LeNet5
-import com.intel.analytics.bigdl.nn.Module
+import com.intel.analytics.bigdl.models.resnet.Convolution
+import com.intel.analytics.bigdl.nn.{Linear, Module, Sequential}
+import com.intel.analytics.bigdl.utils.caffe.CaffeLoader
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericDouble
+import org.apache.commons.compress.utils.IOUtils
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.Path
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Integration
@@ -31,7 +37,7 @@ class S3Spec extends FlatSpec with Matchers with BeforeAndAfter{
     }
   }
 
-  "save and load model from hdfs" should "be correct" in {
+  "save and load model from s3" should "be correct" in {
     val path = s3aPath + "/lenet.obj"
     val model = LeNet5(10)
     model.save(path, true)
@@ -39,4 +45,41 @@ class S3Spec extends FlatSpec with Matchers with BeforeAndAfter{
     lenet should be (model)
   }
 
+  "load caffe model from s3" should "work properly" in {
+    val prototxt = getClass().getClassLoader().getResource("caffe/test.prototxt").getPath
+    val modelPath = getClass().getClassLoader().getResource("caffe/test.caffemodel").getPath
+
+    val hdfsDir = s3aPath + s"/${ com.google.common.io.Files.createTempDir().getPath() }"
+
+    def writeToHdfs(localFile: String, hdfsDir: String): Unit = {
+      val src = new Path(localFile)
+      val fs = src.getFileSystem(new Configuration(false))
+      val inStream = fs.open(src)
+      val dest = new Path(hdfsDir)
+      val fsDest = dest.getFileSystem(new Configuration())
+      val outFileStream = fsDest.create(dest)
+
+      IOUtils.copy(inStream, outFileStream)
+
+      // Close both files
+      inStream.close()
+      outFileStream.close()
+    }
+
+    writeToHdfs(prototxt, hdfsDir + "/test.prototxt")
+    writeToHdfs(modelPath, hdfsDir + "/test.caffemodel")
+    val module = Sequential()
+      .add(Convolution(3, 4, 2, 2).setName("conv"))
+      .add(Convolution(4, 3, 2, 2).setName("conv2"))
+      .add(Linear(2, 27, withBias = false).setName("ip"))
+
+
+    val model = CaffeLoader.load[Double](module, prototxt, modelPath)
+
+    val modelFromHdfs = CaffeLoader.load[Double](module, hdfsDir + "/test.prototxt",
+      hdfsDir + "/test.caffemodel")
+
+    model.getParameters() should be (modelFromHdfs.getParameters())
+
+  }
 }
