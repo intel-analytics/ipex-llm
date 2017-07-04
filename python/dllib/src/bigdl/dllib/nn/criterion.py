@@ -686,11 +686,13 @@ class DiceCoefficientCriterion(Criterion):
 
     >>> diceCoefficientCriterion = DiceCoefficientCriterion(size_average = True, epsilon = 1.0)
     creating: createDiceCoefficientCriterion
+    >>> diceCoefficientCriterion = DiceCoefficientCriterion()
+    creating: createDiceCoefficientCriterion
     '''
 
     def __init__(self,
-                 size_average,
-                 epsilon,
+                 size_average=True,
+                 epsilon=1.0,
                  bigdl_type="float"):
         super(DiceCoefficientCriterion, self).__init__(None, bigdl_type,
                                                        size_average,
