@@ -7,15 +7,14 @@ from subprocess import Popen, PIPE
 import subprocess
 
 
-def run_cmd(cmds, err_msg):
+def run_cmd(cmds, err_msg, s=False):
+    cmd = cmds
+    if s:
+        cmd = ' '.join(cmds) 
     try:
-        # p = Popen(cmds, stdout=PIPE, stderr=PIPE)
-        p = Popen(cmds)
+        # print cmd
+        p = Popen(cmd, shell=s)
         p.communicate()
-        # if len(stdout) > 0:
-        #     print stdout
-        # if len(stderr) > 0:
-        #     print stderr
         if p.returncode != 0:
             print err_msg
             sys.exit()
@@ -31,7 +30,9 @@ parser.add_argument('-s', '--scaladocs',
 parser.add_argument('-p', '--pythondocs',
     required=True, type=str, dest='pythondocsflag', 
     help='Add python doc to site? Y/y or N/n')
-
+parser.add_argument('-m', '--startmkdocserve',
+    required=True, type=str, dest='mkdocserveflag', 
+    help='Start mkdoc server? Y/y or N/n')
 
 args = parser.parse_args()
 
@@ -52,6 +53,16 @@ elif args.pythondocsflag == 'n' or args.pythondocsflag == 'N':
 else:
     parser.print_help()
     sys.exit()
+
+mkdoc_serve = False
+if args.mkdocserveflag == 'y' or args.mkdocserveflag == 'Y':
+    mkdoc_serve = True
+elif args.mkdocserveflag == 'n' or args.mkdocserveflag == 'N':
+    mkdoc_serve = False 
+else:
+    parser.print_help()
+    sys.exit()
+
 
 script_path = os.path.realpath(__file__)
 dir_name = os.path.dirname(script_path)
@@ -85,15 +96,20 @@ if scaladocs:
     bigdl_dir = os.path.dirname(dir_name)
     os.chdir(bigdl_dir)
     run_cmd(['mvn', 'scala:doc'], 'Build scala doc error')
-    scaladocs_dir = bigdl_dir + '/spark/dl/target/site/scaladocs'
-    target_dir = dir_name + '/site/APIdocs/scaladoc'
+    scaladocs_dir = bigdl_dir + '/spark/dl/target/site/scaladocs/*'
+    target_dir = dir_name + '/site/APIdocs/scaladoc/'
     run_cmd(['cp', '-r', scaladocs_dir, target_dir],
-        'mv scaladocs error')
+        'mv scaladocs error', s=True)
 
 if pythondocs:
     print 'build python'
+    bigdl_dir = os.path.dirname(dir_name)
+    os.chdir(bigdl_dir)
 
 os.chdir(dir_name)
-run_cmd(['mkdocs', 'serve'], 
-    'mkdocs start serve error')
 
+if mkdoc_serve:
+    print 'start mkdoc server'
+    run_cmd(['mkdocs', 'serve'], 
+        'mkdocs start serve error')
+   
