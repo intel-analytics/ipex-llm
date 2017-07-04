@@ -6,7 +6,7 @@ val loss = DiceCoefficientCriterion(sizeAverage=true, epsilon=1.0f)
 ```
 **Python:**
 ```python
-loss = DiceCoefficientCriterion(size_average,epsilon)
+loss = DiceCoefficientCriterion(size_average=True,epsilon=1.0)
 ```
 
 DiceCoefficientCriterion is the Dice-Coefficient objective function. 

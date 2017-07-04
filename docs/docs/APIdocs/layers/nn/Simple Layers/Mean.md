@@ -6,7 +6,7 @@ val m = Mean(dimension=1, nInputDims=-1, squeeze=true)
 ```
 **Python:**
 ```python
-m = Mean(dimension=1,n_input_dims=-1)
+m = Mean(dimension=1,n_input_dims=-1, squeeze=True)
 ```
 
 Mean is a module that simply applies a mean operation over the given dimension - specified by `dimension` (starting from 1).

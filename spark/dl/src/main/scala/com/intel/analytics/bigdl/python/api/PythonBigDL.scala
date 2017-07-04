@@ -205,15 +205,15 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createLinear(inputSize: Int, outputSize: Int,
-                   initMethod: String, withBias: Boolean,
+                   withBias: Boolean,
                    wRegularizer: Regularizer[T] = null,
-                   bRegularizer: Regularizer[T] = null): Linear[T] = {
-    val l = Linear[T](inputSize, outputSize, withBias, wRegularizer, bRegularizer)
-    if (initMethod != "default") {
-      l.setInitMethod(weightInitMethod = PythonBigDL.getInitMethod(initMethod),
-      biasInitMethod = Zeros)
-    }
-    l
+                   bRegularizer: Regularizer[T] = null,
+                   initWeight: Tensor[T] = null,
+                   initBias: Tensor[T] = null,
+                   initGradWeight: Tensor[T] = null,
+                   initGradBias: Tensor[T] = null): Linear[T] = {
+    Linear[T](inputSize, outputSize, withBias, wRegularizer, bRegularizer,
+      initWeight, initBias, initGradWeight, initGradBias)
   }
 
   def createReLU(ip: Boolean = false): ReLU[T] = {
@@ -314,9 +314,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                                propagateBack: Boolean = true,
                                initMethod: String = "default",
                                wRegularizer: Regularizer[T] = null,
-                               bRegularizer: Regularizer[T] = null)
+                               bRegularizer: Regularizer[T] = null,
+                               initWeight: Tensor[T] = null,
+                               initBias: Tensor[T] = null,
+                               initGradWeight: Tensor[T] = null,
+                               initGradBias: Tensor[T] = null
+                              )
   : SpatialConvolution[T] = {
-    val s = SpatialConvolution[T](nInputPlane,
+    SpatialConvolution[T](nInputPlane,
       nOutputPlane,
       kernelW,
       kernelH,
@@ -327,12 +332,12 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       nGroup,
       propagateBack,
       wRegularizer,
-      bRegularizer)
-    if (initMethod != "default") {
-      s.setInitMethod(weightInitMethod = PythonBigDL.getInitMethod(initMethod),
-        biasInitMethod = Zeros)
-    }
-    s
+      bRegularizer,
+      initWeight,
+      initBias,
+      initGradWeight,
+      initGradBias
+    )
   }
 
   def createReshape(size: JList[Int], batchMode: JBoolean = null): Reshape[T] = {
@@ -656,10 +661,12 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createMean(dimension: Int = 1,
-                 nInputDims: Int = -1)
+                 nInputDims: Int = -1,
+                 squeeze: Boolean = true)
   : Mean[T] = {
     Mean[T](dimension,
-      nInputDims)
+      nInputDims,
+      squeeze)
   }
 
   def createMin(dim: Int = 1,

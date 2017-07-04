@@ -6,7 +6,7 @@ val m = Sum(dimension=1,nInputDims=-1,sizeAverage=false,squeeze=true)
 ```
 **Python:**
 ```python
-m = Sum(dimension=1,n_input_dims=-1,size_average=False)
+m = Sum(dimension=1,n_input_dims=-1,size_average=False,squeeze=True)
 ```
 
 Sum is a module that simply applies a sum operation over the given dimension - specified by the argument `dimension` (starting from 1). 
