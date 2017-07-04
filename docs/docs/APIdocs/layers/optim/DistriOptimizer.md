@@ -19,7 +19,7 @@ you can use DataFrame, Please check the BigDL pipeline example.
 
 The element in the RDD is Sample, which is actually a sequence of
 Tensors. You need to convert your data record(image, audio, text)
-to Tensors before you feed them into Optimizer. We also provides
+to Tensors before you feed them into Optimizer. We also provide
 many utilities to do it.
 
 * **loss function**
@@ -27,7 +27,7 @@ many utilities to do it.
 In supervised machine learning, loss function compare the output of
 the model with the ground truth(the labels of the training data). It
 outputs a loss value to measure how good the model is(the lower the
-better). It also provide a gradient to indicate how to tune the model.
+better). It also provides a gradient to indicate how to tune the model.
 
 In BigDL, all loss functions are subclass of Criterion.
 
@@ -35,7 +35,7 @@ In BigDL, all loss functions are subclass of Criterion.
 
 Training is an iterative process. In each iteration, only a batch of data
 is used for training the model. You need to specify the batch size. Please note, 
-the batch size should be divided by the total cores number.
+the batch size should be divisible by the total cores number.
 
 Here's an example of how to train a Linear classification model
 
@@ -114,7 +114,7 @@ data you want to process, a.k.a epoch.
 
 **scala**
 ```scala
-// The define endWhen in scala is 100 iterations
+// The default endWhen in scala is 100 iterations
 optimizer.setEndWhen(Trigger.maxEpoch(10))  // Change to 10 epoch
 ```
 
@@ -125,13 +125,13 @@ optimizer = Optimizer(model, train_data, MSECriterion(), MaxIteration(100), 4)
 ```
 
 ### Change the optimization algorithm
-Gradient based optimization algorithm is the most popular algorithms to train the neural
+Gradient based optimization algorithms are the most popular algorithms to train the neural
 network model. The most famous one is SGD. SGD has many variants, adagrad, adam, etc.
 
 **scala**
 ```scala
-// The define is SGD
-optimizer.setOptimMethod(new Adam())  // Change to 10 epoch
+// The default is SGD
+optimizer.setOptimMethod(new Adam())  // Change to adam
 ```
 
 **python**
@@ -142,7 +142,7 @@ optimizer = Optimizer(model, train_data, MSECriterion(), MaxIteration(100), 4, o
 
 ### Validate your model in training
 Sometimes, people want to evaluate the model being trained with a seperated dataset. When model
-perform well on train dataset, but bad on validation dataset, we call the model is overfit or
+performs well on train dataset, but bad on validation dataset, we call the model is overfit or
 weak generalization. People may want to evaluate the model every serveral iterations or 
 epochs. BigDL can easily do this by
 

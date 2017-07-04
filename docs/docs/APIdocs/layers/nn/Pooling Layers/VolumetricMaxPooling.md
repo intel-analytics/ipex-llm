@@ -17,7 +17,7 @@ layer = VolumetricMaxPooling(
 )
 ```
 
-Applies 3D max-pooling operation in kT x kW x kH regions by step size dT x dW x dH steps.
+Applies 3D max-pooling operation in kT x kW x kH regions by step size dT x dW x dH.
 The number of output features is equal to the number of input planes / dT.
 The input can optionally be padded with zeros. Padding should be smaller than
 half of kernel size. That is, padT < kT/2, padW < kW/2 and padH < kH/2

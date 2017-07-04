@@ -14,7 +14,7 @@ thus outputting a Tensor of the same dimension. Informally the RReLU is also kno
 
 RReLU is defined as: f(x) = max(0,x) + a * min(0, x) where a ~ U(l, u).
 
-In training mode negative inputs are multiplied by a factor a drawn from a uniform random
+In training mode negative inputs are multiplied by a factor drawn from a uniform random
 distribution U(l, u). In evaluation mode a RReLU behaves like a LeakyReLU with a constant mean
 factor a = (l + u) / 2.
 

@@ -10,12 +10,12 @@ layer = SplitTable(dim)
 ```
 
 SplitTable takes a Tensor as input and outputs several tables,
-splitting the Tensor along the specified dimension `dimension`. Please not
-the dimension start from 1.
+splitting the Tensor along the specified dimension `dimension`. Please note
+the dimension starts from 1.
 
 The input to this layer is expected to be a tensor, or a batch of tensors;
 when using mini-batch, a batch of sample tensors will be passed to the layer and
-the user need to specify the number of dimensions of each sample tensor in a
+the user needs to specify the number of dimensions of each sample tensor in a
 batch using `nInputDims`.
 
 **Scala example:**
