@@ -42,12 +42,12 @@ val input = Tensor(T(
              T(1.0f, 2.0f),
              T(3.0f, 6.0f))
             )
-val target = Tensor(T(
+val gradOutput = Tensor(T(
              T(1.0f, 2.0f),
              T(3.0f, 6.0f))
 )
 val output = bn.forward(input)
-val gradient = bn.backward(input, target)
+val gradient = bn.backward(input, gradOutput)
 -> print(output) 
 # There's random factor. An output could be
 -0.46433213     -0.2762179      
@@ -70,12 +70,12 @@ input = np.array([
   [1.0, 2.0],
   [3.0, 6.0]
 ])
-target = np.array([
+grad_output = np.array([
            [2.0, 3.0],
            [4.0, 5.0]
          ])
 output = bn.forward(input)
-gradient = bn.backward(input, target)
+gradient = bn.backward(input, grad_output)
 -> print output
 # There's random factor. An output could be
 [[-0.99583918 -0.13030811]

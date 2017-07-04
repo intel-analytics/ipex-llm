@@ -28,12 +28,12 @@ val input = Tensor(T(
  T(1.0f, 2.0f),
  T(3.0f, 4.0f))
 )
-val target = Tensor(T(
+val gradOutput = Tensor(T(
  1.0f,
  1.0f
 ))
 val output = min.forward(input)
-val gradient = min.backward(input, target)
+val gradient = min.backward(input, gradOutput)
 -> print(output)
 1.0
 3.0
@@ -56,9 +56,9 @@ input = np.array([
   [3.0, 4.0]
 ])
 
-target = np.array([1.0, 1.0])
+grad_output = np.array([1.0, 1.0])
 output = min.forward(input)
-gradient = min.backward(input, target)
+gradient = min.backward(input, grad_output)
 -> print output
 [ 1.  3.]
 -> print gradient

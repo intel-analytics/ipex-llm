@@ -42,7 +42,7 @@ val input = Tensor(T(
   T(1.0f, 2.0f),
   T(2.0f, 3.0f)
 )).resize(Array(1, seqLength, inputSize))
-val target = Tensor(T(
+val gradOutput = Tensor(T(
   T(2.0f, 3.0f),
   T(4.0f, 5.0f)
 )).resize(Array(1, seqLength, inputSize))
@@ -52,7 +52,7 @@ val model = Sequential()
     .add(rec.add(GRU(inputSize, hiddenSize)))
     .add(TimeDistributed(Linear(hiddenSize, outputSize)))
 val output = model.forward(input)
-val gradient = model.backward(input, target)
+val gradient = model.backward(input, gradOutput)
 
 -> print(output)
 # There's random factor. An output could be
@@ -84,7 +84,7 @@ input = np.array([[
   [1.0, 2.0],
   [2.0, 3.0]
 ]])
-target = np.array([[
+grad_output = np.array([[
   [2.0, 3.0],
   [4.0, 5.0]
 ]])
@@ -94,7 +94,7 @@ model = Sequential() \
     .add(rec.add(GRU(input_size, hidden_size))) \
     .add(TimeDistributed(Linear(hidden_size, output_size)))
 output = model.forward(input)
-gradient = model.backward(input, target)
+gradient = model.backward(input, grad_output)
 -> print output
 # There's random factor. An output could be
 [[[ 0.27857888  0.20263115]

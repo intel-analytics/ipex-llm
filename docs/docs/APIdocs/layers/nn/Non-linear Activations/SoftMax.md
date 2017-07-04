@@ -24,13 +24,13 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericF
 val layer = SoftMax()
 val input = Tensor(3)
 input.apply1(_ => 1.0f * 10)
-val target = Tensor(T(
+val gradOutput = Tensor(T(
 1.0f,
 0.0f,
 0.0f
 ))
 val output = layer.forward(input)
-val gradient = layer.backward(input, target)
+val gradient = layer.backward(input, gradOutput)
 -> print(output)
 0.33333334
 0.33333334
@@ -50,9 +50,9 @@ from bigdl.nn.criterion import *
 import numpy as np
 layer = SoftMax()
 input = np.ones(3)*10
-target = np.array([1.0, 0.0, 0.0])
+grad_output = np.array([1.0, 0.0, 0.0])
 output = layer.forward(input)
-gradient = layer.backward(input, target)
+gradient = layer.backward(input, grad_output)
 -> print output
 [ 0.33333334  0.33333334  0.33333334]
 -> print gradient
