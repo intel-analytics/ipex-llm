@@ -115,7 +115,7 @@ class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter{
 
     def writeToHdfs(localFile: String, hdfsDir: String): Unit = {
       val src = new Path(localFile)
-      val fs = src.getFileSystem(new Configuration())
+      val fs = src.getFileSystem(new Configuration(false))
       val inStream = fs.open(src)
       val dest = new Path(hdfsDir)
       val fsDest = dest.getFileSystem(new Configuration())
