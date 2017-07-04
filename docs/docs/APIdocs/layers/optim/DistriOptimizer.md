@@ -8,14 +8,14 @@ You need at least provide model, data, loss function and batch size.
 
 * **model**
 
-A neural network model. May a layer, a sequence of layers or a
+A neural network model. May be a layer, a sequence of layers or a
 graph of layers.
 
 * **data**
 
 Your training data. As we train models on Spark, one of
-the most common distributed data structure is RDD.Of course
-you can use DataFrame, Please check the BigDL pipeline example.
+the most common distributed data structures is RDD. Of course
+you can use DataFrame. Please check the BigDL pipeline example.
 
 The element in the RDD is Sample, which is actually a sequence of
 Tensors. You need to convert your data record(image, audio, text)
@@ -24,7 +24,7 @@ many utilities to do it.
 
 * **loss function**
 
-In supervised machine learning, loss function compare the output of
+In supervised machine learning, loss function compares the output of
 the model with the ground truth(the labels of the training data). It
 outputs a loss value to measure how good the model is(the lower the
 better). It also provides a gradient to indicate how to tune the model.
@@ -136,12 +136,12 @@ optimizer.setOptimMethod(new Adam())  // Change to adam
 
 **python**
 ```
-# Python need to define in the constructor
+# Python need to define the optimization algorithm in the constructor
 optimizer = Optimizer(model, train_data, MSECriterion(), MaxIteration(100), 4, optim_method = Adam())
 ```
 
 ### Validate your model in training
-Sometimes, people want to evaluate the model being trained with a seperated dataset. When model
+Sometimes, people want to evaluate the model with a seperated dataset. When model
 performs well on train dataset, but bad on validation dataset, we call the model is overfit or
 weak generalization. People may want to evaluate the model every serveral iterations or 
 epochs. BigDL can easily do this by

@@ -10,7 +10,7 @@ layer = Select(dim, index)
 ```
 
 A Simple layer selecting an index of the input tensor in the given dimension.
-Please note that the start index and dimension is from 1.
+Please note that the index and dimension start from 1.
 
 **Scala example:**
 ```scala
