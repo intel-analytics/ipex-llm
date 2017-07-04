@@ -21,7 +21,11 @@ module = Linear(
   init_method="default",
   with_bias=True,
   wRegularizer=None,
-  bRegularizer=None)
+  bRegularizer=None,
+  init_weight=None,
+  init_bias=None,
+  init_grad_weight=None,
+  init_grad_bias=None)
 ```
 
 The `Linear` module applies a linear transformation to the input data,

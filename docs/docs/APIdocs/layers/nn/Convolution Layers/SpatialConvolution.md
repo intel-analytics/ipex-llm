@@ -6,7 +6,7 @@ val m = SpatialConvolution(nInputPlane,nOutputPlane,kernelW,kernelH,strideW=1,st
 ```
 **Python:**
 ```python
-m = SpatialConvolution(n_input_plane,n_output_plane,kernel_w,kernel_h,stride_w=1,stride_h=1,pad_w=0,pad_h=0,n_group=1,propagate_back=True,init_method="default")
+m = SpatialConvolution(n_input_plane,n_output_plane,kernel_w,kernel_h,stride_w=1,stride_h=1,pad_w=0,pad_h=0,n_group=1,propagate_back=True,wRegularizer=None,bRegularizer=None,init_weight=None,init_bias=None,init_grad_weight=None,init_grad_bias=None)
 ```
 
 SpatialConvolution is a module that applies a 2D convolution over an input image.
