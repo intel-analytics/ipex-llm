@@ -815,6 +815,9 @@ class TimeDistributed(Layer):
 
     For instance, The TimeDistributed Layer can feed each time slice of input tensor
     to the Linear layer.
+    
+    The input data format is [Batch, Time, Other dims]. For the contained layer, it must not change
+    the Other dims length.
 
 
     >>> td = TimeDistributed(Linear(2, 3))
@@ -2265,7 +2268,7 @@ class RReLU(Layer):
         f(x) = max(0,x) + a * min(0, x) where a ~ U(l, u).
 ```
 
-    In training mode negative inputs are multiplied by a factor a drawn from a uniform random
+    In training mode negative inputs are multiplied by a factor drawn from a uniform random
     distribution U(l, u).
 
 
@@ -2812,7 +2815,7 @@ class VolumetricConvolution(Layer):
 class VolumetricMaxPooling(Layer):
 
     '''
-    Applies 3D max-pooling operation in kTxkWxkH regions by step size dTxdWxdH steps.
+    Applies 3D max-pooling operation in kTxkWxkH regions by step size dTxdWxdH.
     The number of output features is equal to the number of input planes / dT.
     The input can optionally be padded with zeros. Padding should be smaller than
     half of kernel size. That is, padT < kT/2, padW < kW/2 and padH < kH/2
@@ -2889,12 +2892,12 @@ class SplitTable(Layer):
     '''
     Creates a module that takes a Tensor as input and
     outputs several tables, splitting the Tensor along
-    the specified dimension `dimension`.
+    the specified dimension `dimension`. Please note the dimension starts from 1.
 
 
     The input to this layer is expected to be a tensor, or a batch of tensors;
     when using mini-batch, a batch of sample tensors will be passed to the layer and
-    the user need to specify the number of dimensions of each sample tensor in a
+    the user needs to specify the number of dimensions of each sample tensor in a
     batch using `nInputDims`.
 
 
@@ -2994,10 +2997,12 @@ class Sum(Layer):
                  dimension=1,
                  n_input_dims=-1,
                  size_average=False,
+                 squeeze=True,
                  bigdl_type="float"):
         super(Sum, self).__init__(None, bigdl_type,
                                   dimension,
                                   n_input_dims,
+                                  squeeze,
                                   size_average)
 
 
