@@ -443,25 +443,33 @@ class Linear(Layer):
 
     :param input_size the size the each input sample
     :param output_size the size of the module output of each sample
-    :param init_method: two initialized methods are supported here, which are [[Default]]and [[Xavier]], where [[Xavier]] set bias to zero here. For moredetailed information about `initMethod`, please refer to[[InitializationMethod]]
     :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices.
     :param bRegularizer: instance of [[Regularizer]]applied to the bias.
+    :param init_weight: the optional initial value for the weight
+    :param init_bias: the optional initial value for the bias
+    :param init_grad_weight: the optional initial value for the grad_weight
+    :param init_grad_bias: the optional initial value for the grad_bias
 
 
-    >>> linear = Linear(100, 10, "Xavier", True, L1Regularizer(0.5), L1Regularizer(0.5))
+    >>> linear = Linear(100, 10, True, L1Regularizer(0.5), L1Regularizer(0.5))
     creating: createL1Regularizer
     creating: createL1Regularizer
     creating: createLinear
     '''
 
-    def __init__(self, input_size, output_size, init_method="default", with_bias=True, wRegularizer=None, bRegularizer=None,
-                 bigdl_type="float"):
+    def __init__(self, input_size, output_size, with_bias=True, wRegularizer=None, bRegularizer=None,
+                 init_weight=None, init_bias=None, init_grad_weight=None, init_grad_bias=None, bigdl_type="float"):
         super(Linear, self).__init__(None, bigdl_type, input_size, output_size,
-                                     init_method, with_bias, wRegularizer, bRegularizer)
+                                     with_bias, wRegularizer, bRegularizer,
+                                     JTensor.from_ndarray(init_weight),
+                                     JTensor.from_ndarray(init_bias),
+                                     JTensor.from_ndarray(init_grad_weight),
+                                     JTensor.from_ndarray(init_grad_bias))
 
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                                    weight_init_method, bias_init_method)
+        return self
 
 
 class ReLU(Layer):
@@ -568,9 +576,12 @@ class SpatialConvolution(Layer):
     :param pad_h The additional zeros added per height to the input planes.
     :param n_group Kernel group number
     :param propagate_back Propagate gradient back
-    :param init_method Initialization method to initialize bias and weight
     :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices.
     :param bRegularizer: instance of [[Regularizer]]applied to the bias.
+    :param init_weight: the optional initial value for the weight
+    :param init_bias: the optional initial value for the bias
+    :param init_grad_weight: the optional initial value for the grad_weight
+    :param init_grad_bias: the optional initial value for the grad_bias
 
     >>> spatialConvolution = SpatialConvolution(6, 12, 5, 5)
     creating: createSpatialConvolution
@@ -594,6 +605,10 @@ class SpatialConvolution(Layer):
                  init_method="default",
                  wRegularizer=None,
                  bRegularizer=None,
+                 init_weight=None,
+                 init_bias=None,
+                 init_grad_weight=None,
+                 init_grad_bias=None,
                  bigdl_type="float"):
         super(SpatialConvolution, self).__init__(None, bigdl_type,
                                                  n_input_plane,
@@ -608,10 +623,15 @@ class SpatialConvolution(Layer):
                                                  propagate_back,
                                                  init_method,
                                                  wRegularizer,
-                                                 bRegularizer)
+                                                 bRegularizer,
+                                                 JTensor.from_ndarray(init_weight),
+                                                 JTensor.from_ndarray(init_bias),
+                                                 JTensor.from_ndarray(init_grad_weight),
+                                                 JTensor.from_ndarray(init_grad_bias))
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                   weight_init_method, bias_init_method)
+        return self
 
 
 class SpatialMaxPooling(Layer):
@@ -943,6 +963,7 @@ class SpatialBatchNormalization(Layer):
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
+        return self
 
 
 class SpatialCrossMapLRN(Layer):
@@ -1071,6 +1092,7 @@ class Add(Layer):
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
+        return self
 
 
 class AddConstant(Layer):
@@ -1140,6 +1162,7 @@ class BatchNormalization(Layer):
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
+        return self
 
 
 class Bilinear(Layer):
@@ -1179,6 +1202,7 @@ class Bilinear(Layer):
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
+        return self
 
 
 class Bottle(Container):
@@ -1236,6 +1260,7 @@ class CAdd(Layer):
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
+        return self
 
 
 class CAddTable(Layer):
@@ -1326,6 +1351,7 @@ class CMul(Layer):
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
+        return self
 
 
 class CMulTable(Layer):
@@ -1427,6 +1453,7 @@ class Cosine(Layer):
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
+        return self
 
 
 class CosineDistance(Layer):
@@ -1510,6 +1537,7 @@ class Euclidean(Layer):
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
+        return self
 
 
 class Exp(Layer):
@@ -1833,6 +1861,7 @@ class LookupTable(Layer):
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
+        return self
 
 
 class MM(Layer):
@@ -1948,19 +1977,21 @@ class Mean(Layer):
 
     :param dimension: the dimension to be applied mean operation
     :param n_input_dims: specify the number of dimensions that this module will receiveIf it is more than the dimension of input tensors, the first dimension would be consideredas batch size
+    :param squeeze: default is true, which will squeeze the sum dimension; set it to false to keep the sum dimension 
 
-
-    >>> mean = Mean(1, 1)
+    >>> mean = Mean(1, 1, True)
     creating: createMean
     '''
 
     def __init__(self,
                  dimension=1,
                  n_input_dims=-1,
+                 squeeze=True,
                  bigdl_type="float"):
         super(Mean, self).__init__(None, bigdl_type,
                                    dimension,
-                                   n_input_dims)
+                                   n_input_dims,
+                                   squeeze)
 
 
 class Min(Layer):
@@ -2025,6 +2056,7 @@ class Mul(Layer):
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
+        return self
 
 
 class MulConstant(Layer):
@@ -2151,6 +2183,7 @@ class PReLU(Layer):
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
+        return self
 
 
 class Padding(Layer):
@@ -2629,6 +2662,7 @@ class SpatialDilatedConvolution(Layer):
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
+        return self
 
 
 class SpatialFullConvolution(Layer):
@@ -2712,6 +2746,7 @@ class SpatialFullConvolution(Layer):
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
+        return self
 
 
 class SpatialShareConvolution(Layer):
@@ -2750,6 +2785,7 @@ class SpatialShareConvolution(Layer):
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
+        return self
 
 
 class VolumetricConvolution(Layer):
@@ -2810,6 +2846,7 @@ class VolumetricConvolution(Layer):
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
+        return self
 
 
 class VolumetricMaxPooling(Layer):
@@ -2987,9 +3024,10 @@ class Sum(Layer):
     :param dimension: the dimension to be applied sum operation
     :param n_input_dims: specify the number of dimensions that this module will receiveIf it is more than the dimension of input tensors, the first dimensionwould be considered as batch size
     :param size_average: default is false, if it is true, it will return the mean instead
+    :param squeeze: default is true, which will squeeze the sum dimension; set it to false to keep the sum dimension
 
 
-    >>> sum = Sum(1, 1, True)
+    >>> sum = Sum(1, 1, True, True)
     creating: createSum
     '''
 
