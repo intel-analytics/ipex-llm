@@ -29,8 +29,8 @@ val input = Tensor(T(
  T(4.0f, 5.0f, 6.0f, 7.0f, 8.0f)
 ))
 val target = Tensor(2)
-target(Array(1)) = 2.0f
-target(Array(2)) = 1.0f
+target(1) = 2.0f
+target(2) = 1.0f
 val output = criterion.forward(input, target)
 val gradient = criterion.backward(input, target)
 -> print(output)

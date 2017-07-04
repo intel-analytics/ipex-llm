@@ -20,9 +20,9 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericF
 
 val log = Log()
 val input = Tensor(T(1.0f, Math.E.toFloat))
-val target = Tensor(T(1.0f, 1.0f))
+val gradOutput = Tensor(T(1.0f, 1.0f))
 val output = log.forward(input)
-val gradient = log.backward(input, target)
+val gradient = log.backward(input, gradOutput)
 -> print(output)
 0.0
 1.0
@@ -42,9 +42,9 @@ import numpy as np
 import math
 log = Log()
 input = np.array([1.0, math.e])
-target = np.array([1.0, 1.0])
+grad_output = np.array([1.0, 1.0])
 output = log.forward(input)
-gradient = log.backward(input, target)
+gradient = log.backward(input, grad_output)
 
 -> print output
 [ 0.  1.]

@@ -27,14 +27,14 @@ val input = Tensor(T(
  T(1.0f, 2.0f),
  T(3.0f, 4.0f))
 )
-val target = Tensor(T(
+val gradOutput = Tensor(T(
  T(1.0f, 1.0f),
  T(1.0f, 1.0f))
 )
 val scalar = 2.0
 val module = MulConstant(scalar)
 val output = module.forward(input)
-val gradient = module.backward(input, target)
+val gradient = module.backward(input, gradOutput)
 -> print(output)
 2.0     4.0     
 6.0     8.0     
@@ -55,14 +55,14 @@ input = np.array([
           [1.0, 2.0],
           [3.0, 4.0]
         ])
-target = np.array([
+grad_output = np.array([
            [1.0, 1.0],
            [1.0, 1.0]
          ])
 scalar = 2.0
 module = MulConstant(scalar)
 output = module.forward(input)
-gradient = module.backward(input, target)
+gradient = module.backward(input, grad_output)
 -> print output
 [[ 2.  4.]
  [ 6.  8.]]
