@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>bigdl</artifactId>
+    <artifactId>bigdl-SPARK_2.1</artifactId>
     <packaging>jar</packaging>
 
     <properties>

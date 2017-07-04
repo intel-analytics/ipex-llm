@@ -522,13 +522,13 @@ object SGD {
    */
   case class Regime(startEpoch: Int, endEpoch: Int, config: Table)
 
-  case class Plateau(monitor: String = "val_acc", factor: Float = 0.1f,
-    patience: Int = 10, mode: String = "auto", epsilon: Float = 1e-4f,
+  case class Plateau(monitor: String, factor: Float = 0.1f,
+    patience: Int = 10, mode: String = "min", epsilon: Float = 1e-4f,
     cooldown: Int = 0, minLr: Float = 0) extends LearningRateSchedule {
     require(factor < 1, "Plateau does not support a factor >= 1.0")
     require(mode == "auto" || mode == "min" || mode == "max",
-      s"Learning Rate Plateau Reducing mode ${ mode } is unknown, please use auto | min | max")
-    var (monitorOp, best) = if (mode == "min" || (mode == "auto" && monitor.contains("acc"))) {
+      s"Learning Rate Plateau Reducing mode ${ mode } is unknown, please use min | max")
+    var (monitorOp, best) = if (mode == "min") {
       ((a: Float, b: Float) => a < b - epsilon, Float.PositiveInfinity)
     } else {
       ((a: Float, b: Float) => a > b + epsilon, Float.NegativeInfinity)
