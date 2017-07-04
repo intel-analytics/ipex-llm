@@ -278,10 +278,10 @@ class Loss[@specialized(Float, Double)T: ClassTag](
  */
 class MAE[@specialized(Float, Double)T: ClassTag]()
 (implicit ev: TensorNumeric[T]) extends ValidationMethod[T] {
-  var criterion = AbsCriterion[T]()
+  private val criterion = AbsCriterion[T]()
   override def apply(output: Activity, target: Activity): LossResult = {
     val _output = output.asInstanceOf[Tensor[T]]
-    var (max_prob, max_index) = _output.max(2)
+    val (max_prob, max_index) = _output.max(2)
     val _target = target.asInstanceOf[Tensor[T]]
     val loss = ev.toType[Float](criterion.forward(max_index, _target))
     val count = 1

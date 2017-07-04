@@ -188,7 +188,7 @@ class ValidationSpec extends FlatSpec with Matchers {
 
     val validation = new MAE[Double]()
     val result = validation(output, target)
-    val test = new LossResult(6, 4)
+    val test = new LossResult(1.5f, 1)
     result should be(test)
   }
 }
