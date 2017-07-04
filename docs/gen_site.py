@@ -42,6 +42,16 @@ pythondocs = args.pythondocsflag
 
 mkdoc_serve = args.mkdocserveflag
 
+mkdoc_serve = False
+if args.mkdocserveflag == 'y' or args.mkdocserveflag == 'Y':
+    mkdoc_serve = True
+elif args.mkdocserveflag == 'n' or args.mkdocserveflag == 'N':
+    mkdoc_serve = False 
+else:
+    parser.print_help()
+    sys.exit()
+
+
 script_path = os.path.realpath(__file__)
 dir_name = os.path.dirname(script_path)
 os.chdir(dir_name)
