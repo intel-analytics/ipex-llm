@@ -30,6 +30,9 @@ import scala.reflect.ClassTag
  * For instance, The TimeDistributed Layer can feed each time slice of input tensor
  * to the Linear layer.
  *
+ * The input data format is [Batch, Time, Other dims]. For the contained layer, it must not change
+ * the Other dims length.
+ *
  * @tparam T data type, which can be [[Double]] or [[Float]]
  */
 
