@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 
 @com.intel.analytics.bigdl.tags.Serial
 class ClassNLLCriterionSpec extends TorchSpec {
-    "A ClassNLL Criterion " should "generate correct output and grad" in {
+  "A ClassNLL Criterion " should "generate correct output and grad" in {
     torchCheck()
     val criterion = new ClassNLLCriterion[Double]()
     val input = Tensor[Double](3, 3)
