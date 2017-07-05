@@ -117,7 +117,7 @@ object SampleToBatch {
 }
 
 /**
- * Convert a sequence of [[TensorSample]] to a sequence of [[TensorMiniBatch]],
+ * Convert a sequence of single-feature and single-label Sample to a sequence of MiniBatch,
  * optionally padding all the features (or labels) in the mini-batch to the same length
  *
  * @param totalBatch total batch size
@@ -359,6 +359,8 @@ object SampleToMiniBatch {
    * Apply an SampleToMiniBatch transformer.
    *
    * @param batchSize total batch size
+   * @param paddingParam padding strategy, see [[com.intel.analytics.bigdl.dataset.PaddingParam]]
+   *                     for details.
    * @param partitionNum partition number of dataset, default means partitionNum
    *                       equals Engine.nodeNumber()
    * @return
@@ -370,6 +372,15 @@ object SampleToMiniBatch {
     new SampleToMiniBatch[T](batchSize, None, paddingParam, partitionNum)
   }
 
+  /**
+   * Apply an SampleToMiniBatch transformer with UDF MiniBatch.
+   *
+   * @param batchSize total batch size
+   * @param miniBatch An User-Defined MiniBatch to construct a mini batch.
+   * @param partitionNum partition number of dataset, default means partitionNum
+   *                       equals Engine.nodeNumber()
+   * @return
+   */
   def apply[T: ClassTag](
         batchSize : Int,
         miniBatch: MiniBatch[T],
@@ -377,6 +388,21 @@ object SampleToMiniBatch {
     new SampleToMiniBatch[T](batchSize, Some(miniBatch), partitionNum = partitionNum)
   }
 
+  /**
+   * Apply an SampleToMiniBatch transformer.
+   *
+   * @param batchSize total batch size
+   * @param featurePadding feature padding value on the first feature tensor
+   *                       (by default None, meaning no feature padding)
+   * @param labelPadding label padding value (by default None, meaning no label padding)
+   * @param fixedLength if padding, it specifies the second dimension of feature/label
+   *                    after padding. If has multi feature tensor, only pad the first one.
+   *                    (by default None, meaning the length after padding is set to the max
+   *                    length of feature/label in a mini-batch)
+   * @param partitionNum partition number of dataset, default means partitionNum
+   *                     equals Engine.nodeNumber()
+   * @return
+   */
   def apply[T: ClassTag](
         batchSize : Int,
         featurePadding : Option[Tensor[T]] = None,
@@ -394,110 +420,4 @@ object SampleToMiniBatch {
     SampleToMiniBatch(batchSize, Some(PaddingParam[T](featurePadding = fp, featureFixedLength = fl,
       labelPadding = lp, labelFixedLength = ll)), partitionNum = partitionNum)
   }
-
-//  /**
-//   * Apply an SampleToMiniBatch transformer.
-//   *
-//   * @param batchSize total batch size
-//   * @param toMiniBatch array[Sample] to MiniBatch function
-//   * @return
-//   */
-//  def apply[T: ClassTag](
-//        batchSize : Int,
-//        miniBatch: MiniBatch[T]
-//  )(implicit ev: TensorNumeric[T]): SampleToMiniBatch[T] = {
-//    new SampleToMiniBatch[T](batchSize, miniBatch)
-//  }
-//
-//  /**
-//   * Apply an SampleToMiniBatch transformer.
-//   *
-//   * @param batchSize total batch size
-//   * @param toMiniBatch array[Sample] to MiniBatch function
-//   * @param partitionNum partition number of dataset, default means partitionNum
-//   *                     equals Engine.nodeNumber()
-//   * @return
-//   */
-//  def apply[T: ClassTag](
-//      batchSize : Int,
-//      toMiniBatch : (Array[Sample[T]], Array[Tensor[T]], Array[Tensor[T]]) => MiniBatch[T],
-//      partitionNum: Option[Int]
-//  )(implicit ev: TensorNumeric[T]): SampleToMiniBatch[T] = {
-//    new SampleToMiniBatch[T](batchSize, partitionNum, toMiniBatch)
-//  }
-//
-//  /**
-//   * Apply an SampleToMiniBatch transformer.
-//   *
-//   * @param batchSize total batch size
-//   * @param featurePadding feature padding value on the first feature tensor
-//   *                       (by default None, meaning no feature padding)
-//   * @param labelPadding label padding value (by default None, meaning no label padding)
-//   * @param fixedLength if padding, it specifies the second dimension of feature/label
-//   *                    after padding. If has multi feature tensor, only pad the first one.
-//   *                    (by default None, meaning the length after padding is set to the max
-//   *                    length of feature/label in a mini-batch)
-//   * @param partitionNum partition number of dataset, default means partitionNum
-//   *                     equals Engine.nodeNumber()
-//   * @return
-//   */
-//  def apply[T: ClassTag](
-//        batchSize : Int,
-//        featurePadding : Option[Tensor[T]],
-//        labelPadding : Option[T] = None,
-//        fixedLength: Option[Int] = None,
-//        partitionNum: Option[Int] = None)(implicit ev: TensorNumeric[T]): SampleToMiniBatch[T] = {
-//    val fp = if (featurePadding.isDefined) Some(Array(featurePadding.get)) else None
-//    val lp = if (labelPadding.isDefined) Some(Array(labelPadding.get)) else None
-//    val fl = if (fixedLength.isDefined) Some(Array(fixedLength.get)) else None
-//    new SampleToMiniBatch(batchSize, featurePadding = fp, labelPadding = lp,
-//      featureFixedLength = fl, partitionNum = partitionNum)
-//  }
-
-//  /**
-//   * Convert a Array[Sample] to MiniBatch. This is the default toMiniBatch in SampleToMiniBatch.
-//   *
-//   * For example, we have 3 sample tensors, and convert them to a MiniBatch.
-//   * Sample1's feature is a 2*3 tensor {1, 2, 3,
-//   *                                    4, 5, 6}
-//   *
-//   * Sample2's feature is a 1*3 tensor {7, 8, 9}
-//   *
-//   * Sample3's feature is a 3*3 tensor {10, 11, 12,
-//   *                                    13, 14, 15,
-//   *                                    16, 17, 18}
-//   *
-//   * And the featurePadding is {0, 0, 0}, fixedLength is 4, the MiniBatch will be
-//   * a tensor of 3*4*3:
-//   * {1, 2, 3,
-//   *  4, 5, 6,
-//   *  0, 0, 0
-//   *  0, 0, 0,
-//   *
-//   *  7, 8, 9,
-//   *  0, 0, 0,
-//   *  0, 0, 0,
-//   *  0, 0, 0,
-//   *
-//   *  10, 11, 12,
-//   *  13, 14, 15,
-//   *  16, 17, 18
-//   *  0, 0, 0}
-//   *
-//   *  Notice: If the sample has multi feature tensors, this function only pad the first one.
-//   *
-//   * @param samples inputs, a array of Sample
-//   * @param buf1 input buffer, cache the data for input in MiniBatch.
-//   * @param buf2 target buffer, cache the data for target in MiniBatch
-//   * @param featurePadding feature padding value on the first feature tensor
-//   *                       (by default None, meaning no feature padding)
-//   * @param labelPadding label padding value (by default None, meaning no label padding)
-//   * @param fixedLength if padding, it specifies the second dimension of feature/label
-//   *                    after padding. If has multi feature tensor, only pad the first one.
-//   *                    (by default None, meaning the length after padding is set to the max
-//   *                    length of feature/label in a mini-batch)
-//   * @param ev numeric operator
-//   * @tparam T numeric type
-//   * @return MiniBatch
-//   */
 }

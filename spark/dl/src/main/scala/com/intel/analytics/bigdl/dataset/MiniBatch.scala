@@ -83,13 +83,10 @@ trait MiniBatch[T] extends Serializable{
  * `targetData` store the target tensors, if `targetData.length == 1`, `getTarget()` will return
  * a tensor; If `targetData.length > 1`, `getTarget()` will return a table.
  *
- * Notice: a feature is a input tensor of model.
- * featureFixedLength's priority is higher than featureIncrement. Also
- * labelFixedLength and featureIncrement.
- *
  * @param inputData a set of input tensor
  * @param targetData a set of target tensor
- * @param paddingParam padding parameter
+ * @param paddingParam padding strategy, see [[com.intel.analytics.bigdl.dataset.PaddingParam]]
+ *                     for details.
  * @tparam T Numeric type
  * @since 0.2.0
  */
