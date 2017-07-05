@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.nn.fixpoint
 
 import com.intel.analytics.bigdl.fixpoint.FixPoint
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.nn.{ErrorInfo, VariableFormat, SpatialConvolution => NNSpatialConvolution}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -35,52 +36,34 @@ class SpatialConvolution[T: ClassTag](
   strideH: Int = 1, // The step of the convolution in the height dimension
   padW: Int = 0, // The additional zeros added per width to the input planes.
   padH: Int = 0, // The additional zeros added per height to the input planes.
-  nGroup: Int = 1, // Kernel group number
-  propagateBack: Boolean = false, // propagate gradient back
-  wRegularizer: Regularizer[T] = null,
-  bRegularizer: Regularizer[T] = null,
-  initWeight: Tensor[T] = null,
-  initBias: Tensor[T] = null,
-  initGradWeight: Tensor[T] = null,
-  initGradBias: Tensor[T] = null
-)(implicit ev: TensorNumeric[T]) extends NNSpatialConvolution[T](
-  nInputPlane,
-  nOutputPlane,
-  kernelW,
-  kernelH,
-  strideW,
-  strideH,
-  padW,
-  padH,
-  nGroup,
-  propagateBack,
-  wRegularizer,
-  bRegularizer,
-  initWeight,
-  initBias,
-  initGradWeight,
-  initGradBias
-) {
+  nGroup: Int = 1 // Kernel group number
+)(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   require(nInputPlane % nGroup == 0, "Number of input channels should be multiples of group.")
   require(nOutputPlane % nGroup == 0, "Number of output channels should be multiples of group.")
 
-  reset()
+  var weight = 0L
+  var weightSum = 0L
+  var data = 0L
+
+  val bias = Tensor[T](nOutputPlane)
+  val weightSumFP32 = Tensor() // TODO
+
+  val FAULT_TOLERANCE = 0.5f
+  var THRESHOLD = 127.0f
+  val DILATION_HEIGHT = 1
+  val DILATION_WIDTH = 1
 
   @transient var _init = false
-  @transient var desc = 0L
-
-  override def reset(): Unit = {
-    if (initWeight == null) {
-      weightInitMethod.init(weight, VariableFormat.GP_OUT_IN_KW_KH)
-    }
-    if (initBias == null) {
-      biasInitMethod.init(bias, VariableFormat.ONE_D)
-    }
-    zeroGradParameters()
-  }
-
-  def init(): this.type = {
+  def init(weightFP32: Tensor[Float]): this.type = {
+    weight = FixPoint.FixConvKernelDescInit(nOutputPlane, nInputPlane, kernelH, kernelW)
+    FixPoint.FixConvKernelInit(weight, weightFP32.storage().array(),
+      weightFP32.storageOffset() - 1,
+      nOutputPlane, nInputPlane, kernelH, kernelW, 64.0f, FixPoint.NCHW)
+    weightSum = FixPoint.FixConvKernelSumDescInit(nOutputPlane)
+    FixPoint.FixConvKernelSumInit(weightSum, weightFP32.storage().array(),
+      weightFP32.storageOffset() - 1,
+      nOutputPlane, nInputPlane, kernelH, kernelW)
     this
   }
 
@@ -89,10 +72,53 @@ class SpatialConvolution[T: ClassTag](
       "SpatialConvolution: " + ErrorInfo.constrainInputAs3DOrBatch)
     require(input.isContiguous())
 
-    if (!_init) {
-      init()
-      _init = true
+    FixPoint.printHello()
+
+    val batchSize = input.size(1)
+
+    // TODO if the input size has changed, we should renew one
+    if (data == 0) {
+      data = FixPoint.FixConvDataDescInit(
+        nInputPlane,
+        kernelH,
+        kernelW,
+        strideH,
+        strideW,
+        padH,
+        padW,
+        DILATION_HEIGHT,
+        DILATION_WIDTH,
+        batchSize,
+        input.size(2),
+        input.size(3))
     }
+
+    FixPoint.FixConvDataInit(data, input.storage().array().asInstanceOf[Array[Float]],
+      input.storageOffset() - 1,
+      nInputPlane,
+      kernelH,
+      kernelW,
+      strideH,
+      strideW,
+      padH,
+      padW,
+      DILATION_HEIGHT,
+      DILATION_WIDTH,
+      input.size(1),
+      input.size(2),
+      input.size(3),
+      THRESHOLD,
+      FixPoint.NCHW)
+
+    FixPoint.InternalMixPrecisionConvolutionGEMM(
+      FixPoint.NCHW,
+      weight, data,
+      output.storage().array().asInstanceOf[Array[Float]], output.storageOffset() - 1,
+      nOutputPlane, batchSize, nInputPlane,
+      weightSum,
+      bias.storage().array().asInstanceOf[Array[Float]], bias.storageOffset() - 1,
+      input.size(1), input.size(2)/nGroup, output.size(3), output.size(4),
+      FAULT_TOLERANCE)
 
     output
   }
@@ -112,12 +138,11 @@ class SpatialConvolution[T: ClassTag](
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
-    (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
+    (Array(Tensor(), Tensor()), Array(Tensor(), Tensor()))
   }
 
   override def getParametersTable(): Table = {
-    T(getName() -> T("weight" -> weight, "bias" -> bias,
-      "gradWeight" -> gradWeight, "gradBias" -> gradBias))
+    T(getName() -> T("weight" -> weight, "bias" -> bias))
   }
 
   override def equals(obj: Any): Boolean = {
@@ -145,9 +170,7 @@ class SpatialConvolution[T: ClassTag](
       nGroup == other.nGroup &&
       propagateBack == other.propagateBack &&
       weight == other.weight &&
-      bias == other.bias &&
-      gradWeight == other.gradWeight &&
-      gradBias == other.gradBias
+      bias == other.bias
   }
 
   override def hashCode(): Int = {
@@ -163,8 +186,6 @@ class SpatialConvolution[T: ClassTag](
     hash = hash * seed + padH.hashCode()
     hash = hash * seed + weight.hashCode()
     hash = hash * seed + bias.hashCode()
-    hash = hash * seed + gradWeight.hashCode()
-    hash = hash * seed + gradBias.hashCode()
 
     hash
   }
@@ -182,3 +203,16 @@ class SpatialConvolution[T: ClassTag](
   def release(): Unit = {
   }
 }
+
+object SpatialConvolution {
+}
+
+object TestFPConv {
+  def main(args: Array[String]): Unit = {
+    val conv = new SpatialConvolution[Float](1, 1, 3, 3, 1, 1, 2, 2, 1)
+    val input = Tensor[Float]()
+
+    conv.updateOutput(input)
+  }
+}
+
