@@ -346,7 +346,6 @@ object DistriOptimizer {
           models,
           wallClockTime,
           driverState,
-          optimMethod.state,
           validationSummary
         )
 
@@ -570,7 +569,6 @@ object DistriOptimizer {
     models: RDD[Cache[T]],
     wallClockTime: Long,
     state: Table,
-    optimMethodState: Table,
     validationSummary: Option[ValidationSummary]
   ): Unit = {
     if (validationTrigger.isEmpty || validationDataSet.isEmpty) {
@@ -626,7 +624,7 @@ object DistriOptimizer {
     results.foreach(r => {
       logger.info(s"${r._2} is ${r._1}")
     })
-    optimMethodState("score") = results(0)._1.result._1
+    state("score") = results(0)._1.result._1
     if(validationSummary.isDefined) {
       results.foreach { r =>
         val result = r._1.result
