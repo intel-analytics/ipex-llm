@@ -37,12 +37,16 @@ class SpatialShareConvolution[T: ClassTag](
         padH: Int = 0, // The additional zeros added per height to the input planes.
         nGroup: Int = 1, // Kernel group number
         propagateBack: Boolean = true, // propagate gradient back
-        private var initMethod: InitializationMethod = Default,
         wRegularizer: Regularizer[T] = null,
-        bRegularizer: Regularizer[T] = null
+        bRegularizer: Regularizer[T] = null,
+        initWeight: Tensor[T] = null,
+        initBias: Tensor[T] = null,
+        initGradWeight: Tensor[T] = null,
+        initGradBias: Tensor[T] = null
       )(implicit ev: TensorNumeric[T]) extends SpatialConvolution[T](
   nInputPlane, nOutputPlane, kernelW, kernelH, strideW, strideH,
-  padW, padH, nGroup, propagateBack, initMethod, wRegularizer, bRegularizer) {
+  padW, padH, nGroup, propagateBack, wRegularizer, bRegularizer,
+  initWeight, initBias, initGradWeight, initGradBias) {
 
   require(Engine.model.getPoolSize == 1, "Don't support single model multi thread.")
 
@@ -312,11 +316,17 @@ object SpatialShareConvolution {
     padW: Int = 0,
     padH: Int = 0,
     nGroup: Int = 1,
-    propagateBack: Boolean = true)
+    propagateBack: Boolean = true,
+    wRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null,
+    initWeight: Tensor[T] = null,
+    initBias: Tensor[T] = null,
+    initGradWeight: Tensor[T] = null,
+    initGradBias: Tensor[T] = null)
     (implicit ev: TensorNumeric[T]): SpatialShareConvolution[T] = {
     new SpatialShareConvolution[T](nInputPlane, nOutputPlane, kernelW, kernelH,
-      strideW, strideH, padW, padH, nGroup,
-      propagateBack)
+      strideW, strideH, padW, padH, nGroup, propagateBack, wRegularizer, bRegularizer,
+      initWeight, initBias, initGradWeight, initGradBias)
   }
 
   def apply[@specialized(Float, Double) T: ClassTag](
@@ -327,7 +337,6 @@ object SpatialShareConvolution {
       conv.strideW, conv.strideH,
       conv.padW, conv.padH,
       conv.nGroup, conv.propagateBack,
-      Default,
       conv.wRegularizer, conv.bRegularizer
     )
     sConv.weight.copy(conv.weight)
