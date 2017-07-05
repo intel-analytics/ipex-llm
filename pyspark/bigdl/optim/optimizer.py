@@ -60,7 +60,7 @@ class Loss(JavaValue):
     """
     This evaluation method is calculate loss of output with respect to target
     >>> from bigdl.nn.criterion import ClassNLLCriterion
-    >>> loss = Loss(ClassNLLCriterion())
+    >>> loss = Loss()
     creating: createClassNLLCriterion
     creating: createLoss
 
