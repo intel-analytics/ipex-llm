@@ -25,7 +25,7 @@ val mlp = ConcatTable()
 mlp.add(Linear(3, 2))
 mlp.add(Linear(3, 4))
 
-> print(mlp.forward(Tensor[Float](2, 3).rand()))
+> print(mlp.forward(Tensor(2, 3).rand()))
 
 {
 	2: -0.37111914	0.8542446	-0.362602	-0.75522065	

@@ -66,7 +66,7 @@ def rosenBrock(x: Tensor[Float]): (Float, Tensor[Float]) = {
     dxout.narrow(1, 2, d - 1).add(x0)
 
     (fout, dxout)
-  }
+  }  
 val x = Tensor(2).fill(0)
 > print(optm.optimize(rosenBrock, x))
 (0.0019999996
