@@ -17,7 +17,7 @@ layer = LookupTable(nIndex, nOutput, paddingValue, maxNorm, normType, shouldScal
 This layer is a particular case of a convolution, where the width of the convolution would be 1.
 Input should be a 1D or 2D tensor filled with indices. Indices are corresponding to the position
 in weight. For each index element of input, it outputs the selected index part of weight.
-This layer is often used in word embedding.
+This layer is often used in word embedding. In collaborative filtering, it can be used together with Select to create embeddings for users or items. 
 
 **Scala example:**
 ```scala
