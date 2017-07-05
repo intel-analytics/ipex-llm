@@ -2,11 +2,11 @@
 
 **Scala:**
 ```scala
-val mod = MapTable(module)
+val mod = MapTable(module=null)
 ```
 **Python:**
 ```python
-mod = MapTable(module)
+mod = MapTable(module=None)
 ```
 
 This class is a container for a single module which will be applied
@@ -17,11 +17,12 @@ process all input elements.
  
 **Scala example:**
 ```scala
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T 
 
-val map = MapTable[Float]()
+val map = MapTable()
 map.add(Linear(10, 3))
 val input = T(
       Tensor[Float](10).randn(),

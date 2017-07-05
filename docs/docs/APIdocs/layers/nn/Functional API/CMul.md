@@ -2,11 +2,11 @@
 
 **Scala:**
 ```scala
-val module = CMul(size)
+val module = CMul(size, wRegularizer = null)
 ```
 **Python:**
 ```python
-module = CMul(size)
+module = CMul(size, wRegularizer=None)
 ```
 
 This layer has a weight tensor with given size. The weight will be multiplied element wise to
@@ -23,14 +23,15 @@ will be add to the first dimension before the expand.
 ```scala
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
-val layer = CMul[Double](Array(2, 1))
-val input = Tensor[Double](2, 3)
+val layer = CMul(Array(2, 1))
+val input = Tensor(2, 3)
 var i = 0
 input.apply1(_ => {i += 1; i})
 > print(layer.forward(input))
-0.30990566481876525	0.6198113296375305	0.9297169944562957	
-2.5069653021328255	3.133706627666032	3.7604479531992383	
+-0.29362988     -0.58725977     -0.88088965
+1.9482219       2.4352775       2.9223328
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
 ```
 

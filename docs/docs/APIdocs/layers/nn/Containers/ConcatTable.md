@@ -19,8 +19,9 @@ ConcateTable usually works with CAddTable and CMulTable to
 ```scala
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
-val mlp = ConcatTable[Activity, Float]()
+val mlp = ConcatTable()
 mlp.add(Linear(3, 2))
 mlp.add(Linear(3, 4))
 
