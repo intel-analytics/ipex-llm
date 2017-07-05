@@ -1,4 +1,4 @@
-## Trigger ##
+## Triggers ##
 
 **Scala:**
 ```scala

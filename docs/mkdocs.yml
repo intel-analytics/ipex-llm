@@ -24,5 +24,33 @@ pages:
 - API Docs:
   - Scala Docs: APIdocs/scaladoc.md
   - Python API Docs: APIdocs/python-api-doc.md  
+  - Model:
+    - Sequential Model: APIdocs/Model/SequentialModel.md
+    - Functional API: APIdocs/Model/FunctionalAPI.md
+  - Layers: 
+    - Containers:  APIdocs/Layers/Containers/_merged_Containers.md
+    - Simple Layers: APIdocs/Layers/Simple_Layers/_merged_Simple_Layers.md
+    - Convolution Layers: APIdocs/Layers/Convolution_Layers/_merged_Convolution_Layers.md
+    - Pooling Layers:  APIdocs/Layers/Pooling_Layers/_merged_Pooling_Layers.md
+    - Linear Layers:  APIdocs/Layers/Linear_Layers/_merged_Linear_Layers.md
+    - Non-linear Activations: APIdocs/Layers/Non-linear_Activations/_merged_Non-linear_Activations.md
+    - Embedding Layers: APIdocs/Layers/Embedding_Layers/_merged_Embedding_Layers.md
+    - Merge/Split Layers: APIdocs/Layers/MergeSplit_Layers/_merged_MergeSplit_Layers.md
+    - Math Layers: APIdocs/Layers/Math_Layers/_merged_Math_Layers.md
+    - Padding Layers: APIdocs/Layers/Padding_Layers/_merged_Padding_Layers.md
+    - Normalization Layers:  APIdocs/Layers/Normalization_Layers/_merged_Normalization_Layers.md
+    - Dropout Layers: APIdocs/Layers/Dropout_Layers/_merged_Dropout_Layers.md
+    - Distance Layers: APIdocs/Layers/Distance_Layers/_merged_Distance_Layers.md
+    - Recurrent Layers:  APIdocs/Layers/Recurrent_Layers/_merged_Recurrent_Layers.md
+    - Utilities: APIdocs/Layers/Utilities/_merged_Utilities.md
+  - Losses: APIdocs/Losses/_merged_Losses.md
+  - Optimizers: 
+    - Optimizer: APIdocs/Optimizers/Optimizer.md
+    - DistriOptimizer: APIdocs/Optimizers/DistriOptimizer.md
+    - Optim Methods: APIdocs/Optimizers/Optim_Methods/_merged_Optim_Methods.md
+    - Triggers: APIdocs/Optimizers/Triggers.md
+  - Initalizers: APIdocs/Initializers/_merged_Initializers.md
+  - Regularizers: APIdocs/Regularizers/_merged_Regularizers.md
+  - Metrics:  APIdocs/Metrics/_merged_Metrics.md
 - Powered by: powered-by.md
 
