@@ -535,7 +535,7 @@ object SGD {
     patience: Int = 10, mode: String = "min", epsilon: Float = 1e-4f,
     cooldown: Int = 0, minLr: Float = 0) extends LearningRateSchedule {
     require(factor < 1, "Plateau does not support a factor >= 1.0")
-    require(mode == "auto" || mode == "min" || mode == "max",
+    require(mode == "min" || mode == "max",
       s"Learning Rate Plateau Reducing mode ${ mode } is unknown, please use min | max")
     var (monitorOp, best) = if (mode == "min") {
       ((a: Float, b: Float) => a < b - epsilon, Float.PositiveInfinity)
