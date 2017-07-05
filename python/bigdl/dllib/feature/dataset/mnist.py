@@ -38,18 +38,9 @@ def _read32(bytestream):
 def extract_images(f):
     """Extract the images into a 4D uint8 numpy array [index, y, x, depth].
 
-
-    Args:
-      f: A file object that can be passed into a gzip reader.
-
-
-    Returns:
-      data: A 4D unit8 numpy array [index, y, x, depth].
-
-
-    Raises:
-      ValueError: If the bytestream does not start with 2051.
-
+    :param: f: A file object that can be passed into a gzip reader.
+    :return: data: A 4D unit8 numpy array [index, y, x, depth].
+    :raise: ValueError: If the bytestream does not start with 2051.
 
     """
     print('Extracting', f.name)
@@ -86,13 +77,18 @@ def read_data_sets(train_dir, data_type="train"):
     """
     Parse or download mnist data if train_dir is empty.
 
-    :param train_dir: The directory storing the mnist data
-    :param data_type: Reading training set or testing set.It can be either "train" or "test"
-    :return: (ndarray, ndarray) representing (features, labels)
-            features is a 4D unit8 numpy array [index, y, x, depth]
-            representing each pixel valued from 0 to 255. labels
-            is 1D unit8 nunpy array representing the label valued
-             from 0 to 9.
+    :param: train_dir: The directory storing the mnist data
+
+    :param: data_type: Reading training set or testing set.It can be either "train" or "test"
+
+    :return:
+
+    ```
+    (ndarray, ndarray) representing (features, labels)
+    features is a 4D unit8 numpy array [index, y, x, depth] representing each pixel valued from 0 to 255.
+    labels is 1D unit8 nunpy array representing the label valued from 0 to 9.
+    ```
+
     """
     TRAIN_IMAGES = 'train-images-idx3-ubyte.gz'
     TRAIN_LABELS = 'train-labels-idx1-ubyte.gz'
