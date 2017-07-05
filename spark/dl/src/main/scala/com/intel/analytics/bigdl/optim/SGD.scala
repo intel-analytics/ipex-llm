@@ -518,7 +518,7 @@ object SGD {
   /**
    * Plateau is the learning rate schedule when a metric has stopped improving.
    * Models often benefit from reducing the learning rate by a factor of 2-10
-   * once learning stagnates. This callback monitors a quantity and if no improvement
+   * once learning stagnates. It monitors a quantity and if no improvement
    * is seen for a 'patience' number of epochs, the learning rate is reduced.
    * @param monitor quantity to be monitored, can be Loss or score
    * @param factor factor by which the learning rate will be reduced. new_lr = lr * factor
