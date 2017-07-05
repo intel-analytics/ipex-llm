@@ -77,12 +77,12 @@ class GRU[T : ClassTag] (
           .add(Dropout(p))
           .add(Dropout(p)))
         .add(ParallelTable()
-          .add(Linear(inputSize, outputSize,
-            wRegularizer = wRegularizer, bRegularizer = bRegularizer))
-          .add(Linear(inputSize, outputSize,
-            wRegularizer = wRegularizer, bRegularizer = bRegularizer))
-          .add(Linear(inputSize, outputSize,
+          .add(TimeDistributed(Linear(inputSize, outputSize,
             wRegularizer = wRegularizer, bRegularizer = bRegularizer)))
+          .add(TimeDistributed(Linear(inputSize, outputSize,
+            wRegularizer = wRegularizer, bRegularizer = bRegularizer)))
+          .add(TimeDistributed(Linear(inputSize, outputSize,
+            wRegularizer = wRegularizer, bRegularizer = bRegularizer))))
         .add(JoinTable(3, 1))
     } else {
       TimeDistributed[T](Linear(inputSize, 3 * outputSize,

@@ -192,25 +192,23 @@ class RecurrentSpec extends FlatSpec with Matchers {
 
     println(input)
     val gru = GRU[Double](inputSize, hiddenSize, 0.2)
-    val model = Recurrent[Double](hiddenSize).add(gru)
+    val model = Recurrent[Double]().add(gru)
 
     val field = model.getClass.getDeclaredField("cells")
     field.setAccessible(true)
     val cells = field.get(model).asInstanceOf[ArrayBuffer[Cell[Double]]]
 
-    val dropouts = gru.cell.asInstanceOf[Container[_, _, Double]].findModules("Dropout")
+    val dropoutsRecurrent = model.asInstanceOf[Container[_, _, Double]].findModules("Dropout")
+    val dropoutsCell = gru.cell.asInstanceOf[Container[_, _, Double]].findModules("Dropout")
+    val dropouts = dropoutsRecurrent ++ dropoutsCell
     dropouts.size should be (6)
 
-    val gruOutput = gru.forward(T(
-      Tensor[Double](Array(1, inputSize)),
-      Tensor[Double](Array(1, hiddenSize))
-      ))
-
     val output = model.forward(input)
-    val noises = dropouts.map(d => d.asInstanceOf[Dropout[Double]].noise.clone())
-    noises(0) should not be noises(1)
+    val noises1 = dropouts.map(d => d.asInstanceOf[Dropout[Double]].noise.clone())
+    noises1(0) should not be noises1(1)
 
-    for (i <- dropouts.indices) {
+    val noises = dropoutsCell.map(d => d.asInstanceOf[Dropout[Double]].noise.clone())
+    for (i <- dropoutsCell.indices) {
       cells.foreach(c => {
         val noise = c.cell.asInstanceOf[Container[_, _, Double]]
           .findModules("Dropout")(i)
@@ -224,7 +222,7 @@ class RecurrentSpec extends FlatSpec with Matchers {
     model.forward(input)
 
     var flag = true
-    for (i <- dropouts.indices) {
+    for (i <- dropoutsCell.indices) {
       cells.foreach(c => {
         val newNoises = c.cell.asInstanceOf[Container[_, _, Double]]
           .findModules("Dropout")
