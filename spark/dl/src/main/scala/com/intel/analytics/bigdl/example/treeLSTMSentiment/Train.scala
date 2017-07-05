@@ -52,7 +52,7 @@ object Train {
     val paddingValue = 1
     val oovChar = 2
     val indexFrom = 3
-    val labelPadding = if (param.fineGrained) 4f else 3f
+    val labelPadding = -1f
     val glovePath = s"$DATA_DIR/glove/glove.840B.300d.txt"
     val vocabPath = s"$DATA_DIR/sst/vocab-cased.txt"
     val (word2VecTensor, vocab) =
@@ -113,7 +113,7 @@ object Train {
         featurePaddings =
           Some(Array(Tensor(T(paddingValue.toFloat)), Tensor(T(-1f, -1f, -1f)))),
         labelPadding = Some(labelPadding))
-      .setEndWhen(Trigger.maxEpoch(20))
+      .setEndWhen(Trigger.maxEpoch(10))
       .optimize()
     sc.stop()
   }

@@ -219,7 +219,7 @@ class Top1Accuracy[T](
     new AccuracyResult(correct, count)
   }
 
-  override def format(): String = "Top1Accuracy"
+  override def format(): String = "TreeNNAccuracy"
 }
 
 /**

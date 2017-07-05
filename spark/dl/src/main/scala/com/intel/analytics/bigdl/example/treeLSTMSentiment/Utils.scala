@@ -251,7 +251,7 @@ object Utils {
 
   case class TreeLSTMSentimentParam (
     override val baseDir: String = "/tmp/.bigdl/dataset/",
-    override val batchSize: Int = 32,
+    override val batchSize: Int = 64,
     hiddenSize: Int = 150,
     learningRate: Double = 0.1,
     regRate: Double = 1e-4,

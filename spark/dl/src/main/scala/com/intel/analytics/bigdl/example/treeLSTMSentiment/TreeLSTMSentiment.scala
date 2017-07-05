@@ -36,9 +36,9 @@ object TreeLSTMSentiment {
 
     val treeLSTMModule = Sequential()
       .add(BinaryTreeLSTM(
-        embeddingDim, hiddenSize))
+        embeddingDim, hiddenSize, withGraph = true))
       .add(Dropout())
-      .add(TimeDistributed(Linear(hiddenSize, classNum + 1)))
+      .add(TimeDistributed(Linear(hiddenSize, classNum)))
       .add(TimeDistributed(LogSoftMax()))
 
     Sequential()

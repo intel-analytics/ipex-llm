@@ -73,10 +73,11 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
         "ClassNLLCriterion: " + ErrorInfo.constrainInputDimSameAsTarget +
           s" Input dimension is: ${ input.dim() } , target dimension is: ${ target.dim() }")
       val curTarget = ev.toType[Int](target.valueAt(1))
-      assert(curTarget >= 1 && curTarget <= nClasses,
+      assert(curTarget >= 1 && curTarget <= nClasses || curTarget == -1,
         s"curTarget ${curTarget} is out of range, should be 1 to ${nClasses}")
       total_weight = if (weights != null) weights(Array(curTarget)) else ev.fromType[Int](1)
-      output = ev.times(ev.negative(input.valueAt(curTarget)), total_weight)
+      output = if (curTarget == -1) ev.zero
+      else ev.times(ev.negative(input.valueAt(curTarget)), total_weight)
     } else if (input.dim() == 2) {
       val batchSize = input.size(1)
       val targetSize = target.size()
@@ -93,10 +94,13 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
         val _i = i
         results(_i - 1) = Engine.model.invoke( () => {
           val curTarget = ev.toType[Int](target.valueAt(_i))
-          assert(curTarget >= 1 && curTarget <= nClasses,
+          assert(curTarget >= 1 && curTarget <= nClasses || curTarget == -1,
             s"curTarget ${curTarget} is out of range 1 to ${nClasses}")
-          val curWeight = if (weights != null) weights.valueAt(curTarget) else ev.fromType[Int](1)
-          (ev.times(input.valueAt(_i, curTarget), curWeight), curWeight)
+          if (curTarget == -1) (ev.zero, ev.one)
+          else {
+            val curWeight = if (weights != null) weights.valueAt(curTarget) else ev.fromType[Int](1)
+            (ev.times(input.valueAt(_i, curTarget), curWeight), curWeight)
+          }
         })
         i += 1
       }
@@ -128,6 +132,7 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
         "ClassNLLCriterion: " + ErrorInfo.constrainInputDimSameAsTarget +
           s" Input dimension is: ${ input.dim() } , target dimension is: ${ target.dim() }")
       val curTarget = ev.toType[Int](target.valueAt(1))
+      if (curTarget == -1) return gradInput
       gradInput.setValue(curTarget, if (weights != null) ev.times(ev.fromType[Int](-1),
         weights.valueAt(curTarget))
       else ev.fromType[Int](-1))
@@ -147,11 +152,13 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
         val _i = i
         resultsBackward(_i - 1) = Engine.model.invoke(() => {
           val curTarget = ev.toType[Int](target.valueAt(_i))
-          gradInput.setValue(_i, curTarget, if (weights != null) ev.times(ev.fromType[Int](-1),
-            weights.valueAt(curTarget))
-          else ev.fromType[Int](-1))
-          if (sizeAverage) gradInput.setValue(_i, curTarget, ev.divide(gradInput.valueAt(_i,
-            curTarget), total_weight))
+          if (curTarget != -1) {
+            gradInput.setValue(_i, curTarget, if (weights != null) ev.times(ev.fromType[Int](-1),
+              weights.valueAt(curTarget))
+            else ev.fromType[Int](-1))
+            if (sizeAverage) gradInput.setValue(_i, curTarget, ev.divide(gradInput.valueAt(_i,
+              curTarget), total_weight))
+          }
         })
         i += 1
       }

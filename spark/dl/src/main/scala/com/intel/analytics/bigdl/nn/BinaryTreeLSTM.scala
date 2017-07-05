@@ -36,7 +36,7 @@ class BinaryTreeLSTM[T: ClassTag](
   inputSize: Int,
   hiddenSize: Int,
   gateOutput: Boolean = true,
-  withGraph: Boolean = false
+  withGraph: Boolean = true
 )(implicit ev: TensorNumeric[T])
   extends TreeLSTM[T](inputSize, hiddenSize) {
   val composers: ArrayBuffer[Module[T]] = ArrayBuffer[Module[T]]()
@@ -224,31 +224,32 @@ class BinaryTreeLSTM[T: ClassTag](
       cells.append(ArrayBuffer[Module[T]]())
     }
 
+    var leafIndex = 0
+    var composerIndex = 0
     for (b <- 1 to batchSize) {
       val tensorTree = new TensorTree[T](trees(b))
       for (i <- 1 to tensorTree.size(0)) {
         if (tensorTree.noChild(i)) {
-//          val numLeafModules = leafModules.size
-          if (leafModules.length < i) {
+          if (leafIndex > leafModules.length - 1) {
             val leafModule = createLeafModule()
             cells(b - 1).append(leafModule)
             leafModules.append(leafModule)
           } else {
-            cells(b - 1).append(leafModules(i - 1))
+            cells(b - 1).append(leafModules(leafIndex))
           }
+          leafIndex += 1
         } else if (tensorTree.hasChild(i)) {
-//          val numComposers = composers.size
-          if (composers.length < i) {
+          if (composerIndex > composers.length - 1) {
             val composer = createComposer()
             cells(b - 1).append(composer)
             composers.append(composer)
           } else {
-            cells(b - 1).append(composers(i - 1))
+            cells(b - 1).append(composers(composerIndex))
           }
+          composerIndex += 1
         }
       }
       recursiveForward(b, inputs.select(1, b), tensorTree, tensorTree.getRoot)
-      output(b).resize(nodeSize, hiddenSize)
       for (i <- 1 to cells(b - 1).size) {
         output(b)(i).copy(unpackState(cells(b - 1)(i - 1).output.toTable)._2)
       }
@@ -408,9 +409,10 @@ object BinaryTreeLSTM {
   def apply[@specialized(Float, Double) T: ClassTag](
     inputSize: Int,
     hiddenSize: Int,
-    gateOutput: Boolean = true
+    gateOutput: Boolean = true,
+    withGraph: Boolean = true
   )(implicit ev: TensorNumeric[T]): BinaryTreeLSTM[T] =
-    new BinaryTreeLSTM[T](inputSize, hiddenSize, gateOutput)
+    new BinaryTreeLSTM[T](inputSize, hiddenSize, gateOutput, withGraph)
 }
 
 class TensorTree[T: ClassTag](val content: Tensor[T])
