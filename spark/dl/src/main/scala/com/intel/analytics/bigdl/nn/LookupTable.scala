@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
@@ -45,7 +46,7 @@ class LookupTable[T: ClassTag]
 (val nIndex: Int, val nOutput: Int, val paddingValue: Double = 0,
   val maxNorm: Double = Double.MaxValue,
   val normType: Double = 2.0,
-  shouldScaleGradByFreq: Boolean = false,
+  val shouldScaleGradByFreq: Boolean = false,
   var wRegularizer: Regularizer[T] = null
 )
 (implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
@@ -283,7 +284,7 @@ class LookupTable[T: ClassTag]
   }
 }
 
-object LookupTable {
+object LookupTable extends ModuleSerializable {
   def apply[@specialized(Float, Double)T: ClassTag](
     nIndex: Int, nOutput: Int,
     paddingValue: Double = 0, maxNorm: Double = Double.MaxValue,

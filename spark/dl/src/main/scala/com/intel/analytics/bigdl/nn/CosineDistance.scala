@@ -19,6 +19,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 import scala.reflect.ClassTag
 
@@ -135,7 +136,7 @@ class CosineDistance[T: ClassTag](
   }
 }
 
-object CosineDistance {
+object CosineDistance extends  ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag]()
       (implicit ev: TensorNumeric[T]) : CosineDistance[T] = {
     new CosineDistance[T]()

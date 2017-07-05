@@ -131,24 +131,22 @@ class DataConverterSpec extends FlatSpec with Matchers{
     attr.getDataType should be (DataType.REGULARIZER)
     retrievedValue should be (regularizer)
   }
-
   "Tensor conversion " should " work properly" in {
     val tensor = Tensor(5, 5).apply1(e => Random.nextFloat())
     val attriBulder = AttrValue.newBuilder
     val cls = Class.forName("com.intel.analytics.bigdl.tensor.Tensor")
-    val tpe = universe.runtimeMirror(cls.getClassLoader).classSymbol(cls).toType
+    val tpe = universe.runtimeMirror(cls.getClassLoader).classSymbol(cls).selfType
     DataConverter.setAttributeValue(attriBulder, tensor, tpe)
     val attr = attriBulder.build
     val retrievedValue = DataConverter.getAttributeValue(attr)
     attr.getDataType should be (DataType.TENSOR)
     retrievedValue should be (tensor)
   }
-
   "Empty Tensor conversion " should " work properly" in {
     val tensor : Tensor[Float] = null
     val attriBulder = AttrValue.newBuilder
     val cls = Class.forName("com.intel.analytics.bigdl.tensor.Tensor")
-    val tpe = universe.runtimeMirror(cls.getClassLoader).classSymbol(cls).toType
+    var tpe = universe.runtimeMirror(cls.getClassLoader).classSymbol(cls).selfType
     DataConverter.setAttributeValue(attriBulder, tensor, tpe)
     val attr = attriBulder.build
     val retrievedValue = DataConverter.getAttributeValue(attr)

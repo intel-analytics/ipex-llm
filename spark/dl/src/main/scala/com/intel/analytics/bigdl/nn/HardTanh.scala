@@ -19,6 +19,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 import scala.concurrent.Future
 import scala.reflect.ClassTag
@@ -185,7 +186,7 @@ class HardTanh[T: ClassTag](
   }
 }
 
-object HardTanh {
+object HardTanh extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
       minValue: Double = -1,
       maxValue: Double = 1,

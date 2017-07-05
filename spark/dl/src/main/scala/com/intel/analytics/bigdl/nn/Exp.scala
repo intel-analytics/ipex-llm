@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 import scala.reflect.ClassTag
 
@@ -25,7 +26,7 @@ import scala.reflect.ClassTag
  * Applies element-wise exp to input tensor.
  */
 @SerialVersionUID(4918769744611296463L)
-class Exp[@specialized(Float, Double) T: ClassTag] (implicit ev: TensorNumeric[T])
+class Exp[T: ClassTag] (implicit ev: TensorNumeric[T])
   extends TensorModule[T] {
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
@@ -39,7 +40,7 @@ class Exp[@specialized(Float, Double) T: ClassTag] (implicit ev: TensorNumeric[T
   }
 }
 
-object Exp {
+object Exp extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag]()
       (implicit ev: TensorNumeric[T]) : Exp[T] = {
     new Exp[T]()

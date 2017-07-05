@@ -115,14 +115,12 @@ object DataConverter extends DataConverter{
       ListConverter.setAttributeValue(attributeBuilder, value)
     } else if (value.isInstanceOf[Array[_ <: Any]]) {
       ArrayConverter.setAttributeValue(attributeBuilder, value)
-    } else if (valueType.toString.startsWith("com.intel.analytics.bigdl.optim.Regularizer")) {
+    } else if (valueType.toString == ModuleSerializer.regularizerType.toString) {
       RegularizerConverter.setAttributeValue(attributeBuilder, value)
-    } else if (valueType.toString.startsWith("com.intel.analytics.bigdl.tensor.Tensor")) {
+    } else if (valueType.toString == ModuleSerializer.tensorType.toString) {
       TensorConverter.setAttributeValue(attributeBuilder, value)
-    } else if (valueType.toString.
-      startsWith("com.intel.analytics.bigdl.nn.abstractnn.AbstractModule") ||
-      valueType.toString.
-        startsWith("com.intel.analytics.bigdl.Module")) {
+    } else if (valueType.toString == ModuleSerializer.abstractModuleType.toString
+      || valueType.toString.startsWith("com.intel.analytics.bigdl.Module")) {
       ModuleConverter.setAttributeValue(attributeBuilder, value)
     }
   }

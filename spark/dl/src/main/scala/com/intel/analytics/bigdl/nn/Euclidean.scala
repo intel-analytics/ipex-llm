@@ -19,6 +19,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
@@ -189,7 +190,7 @@ class Euclidean[T: ClassTag](val inputSize: Int, val outputSize: Int,
   }
 }
 
-object Euclidean {
+object Euclidean extends  ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
     inputSize: Int,
     outputSize: Int,

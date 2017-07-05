@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.nn._
 import scala.collection.JavaConverters._
 import scala.reflect.runtime.universe
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.tensor.{Tensor, TensorNumericMath}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import serialization.Model.{AttrValue, BigDLModule}
 
@@ -28,16 +29,26 @@ import scala.reflect.ClassTag
 
 object ModuleSerializer extends ModuleSerializable{
 
+  val runtimeMirror = universe.runtimeMirror(getClass.getClassLoader)
+
   private val moduleMaps = new mutable.HashMap[String, Class[_]]()
   private val classMaps = new mutable.HashMap[Class[_], String]()
   private val deserializerMaps = new mutable.HashMap[String, ModuleSerializable]()
   private val serializerMaps = new mutable.HashMap[Class[_], ModuleSerializable]()
 
+  // generic type definition for type matching
+
+  var tensorNumericType : universe.Type = null
+  var tensorType : universe.Type = null
+  var regularizerType : universe.Type = null
+  var abstractModuleType : universe.Type = null
+  var moduleType : universe.Type = null
+
   init
 
   override def loadModule[T: ClassTag](model : BigDLModule)
     (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
-    val dataType = ev.getType
+
     val evidence = scala.reflect.classTag[T]
     val modelAttributes = model.getAttrMap
     val moduleType = model.getModuleType
@@ -55,7 +66,7 @@ object ModuleSerializer extends ModuleSerializable{
         if (ptype.toString == "scala.reflect.ClassTag[T]") {
           args(i) = evidence
         } else if (ptype.toString ==
-          "com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric[T]") {
+          tensorNumericType.toString) {
           args(i) = ev
         } else {
           require(modelAttributes.containsKey(name), s"$name value cannot be found")
@@ -133,9 +144,9 @@ object ModuleSerializer extends ModuleSerializable{
   }
 
   def getCostructorFullParams[T : ClassTag](cls : Class[_]) : List[List[universe.Symbol]] = {
-    val m = universe.runtimeMirror(getClass.getClassLoader)
-    val clsSymbol = m.classSymbol(cls)
-    val cm = m.reflectClass(clsSymbol)
+
+    val clsSymbol = runtimeMirror.classSymbol(cls)
+    val cm = runtimeMirror.reflectClass(clsSymbol)
     // to make it compatible with both 2.11 and 2.10
     val ctorC = clsSymbol.toType.declaration(universe.nme.CONSTRUCTOR).asMethod
     val ctorm = cm.reflectConstructor(ctorC)
@@ -143,6 +154,11 @@ object ModuleSerializer extends ModuleSerializable{
   }
 
   private def init() : Unit = {
+    registerAllModules
+    initializeDeclaredTypes
+  }
+
+  private def registerAllModules : Unit = {
     registerModule("Abs", Class.forName("com.intel.analytics.bigdl.nn.Abs"), Abs)
     registerModule("Add", Class.forName("com.intel.analytics.bigdl.nn.Add"), Add)
     registerModule("AddConstant", Class.forName("com.intel.analytics.bigdl.nn.AddConstant"),
@@ -150,6 +166,7 @@ object ModuleSerializer extends ModuleSerializable{
     registerModule("BatchNormalization",
       Class.forName("com.intel.analytics.bigdl.nn.BatchNormalization"), BatchNormalization)
     registerModule("Bilinear", Class.forName("com.intel.analytics.bigdl.nn.Bilinear"), Bilinear)
+    // Place holder for birecurrent
     registerModule("Bottle", Class.forName("com.intel.analytics.bigdl.nn.Bottle"), Bottle)
     registerModule("CAdd", Class.forName("com.intel.analytics.bigdl.nn.CAdd"), CAdd)
     registerModule("CAddTable", Class.forName("com.intel.analytics.bigdl.nn.CAddTable"), CAddTable)
@@ -160,7 +177,75 @@ object ModuleSerializer extends ModuleSerializable{
     registerModule("CMul", Class.forName("com.intel.analytics.bigdl.nn.CMul"), CMul)
     registerModule("CMulTable", Class.forName("com.intel.analytics.bigdl.nn.CMulTable"), CMulTable)
     registerModule("Concat", Class.forName("com.intel.analytics.bigdl.nn.Concat"), Concat)
-
+    registerModule("ConcatTable", Class.forName("com.intel.analytics.bigdl.nn.ConcatTable"),
+      ConcatTable)
+    registerModule("Contiguous", Class.forName("com.intel.analytics.bigdl.nn.Contiguous"),
+      Contiguous)
+    registerModule("Cosine", Class.forName("com.intel.analytics.bigdl.nn.Cosine"),
+      Cosine)
+    registerModule("CosineDistance", Class.forName("com.intel.analytics.bigdl.nn.CosineDistance"),
+      CosineDistance)
+    registerModule("CSubTable", Class.forName("com.intel.analytics.bigdl.nn.CSubTable"),
+      CSubTable)
+    registerModule("DotProduct", Class.forName("com.intel.analytics.bigdl.nn.DotProduct"),
+      DotProduct)
+    registerModule("Dropout", Class.forName("com.intel.analytics.bigdl.nn.Dropout"),
+      Dropout)
+    registerModule("Echo", Class.forName("com.intel.analytics.bigdl.nn.Echo"),
+      Echo)
+    registerModule("ELU", Class.forName("com.intel.analytics.bigdl.nn.ELU"),
+      ELU)
+    registerModule("Euclidean", Class.forName("com.intel.analytics.bigdl.nn.Euclidean"),
+      Euclidean)
+    registerModule("Exp", Class.forName("com.intel.analytics.bigdl.nn.Exp"),
+      Exp)
+    registerModule("FlattenTable", Class.forName("com.intel.analytics.bigdl.nn.FlattenTable"),
+      FlattenTable)
+    registerModule("GradientReversal", Class.forName
+    ("com.intel.analytics.bigdl.nn.GradientReversal"), GradientReversal)
+    // palce holder for Graph
+    registerModule("GRU", Class.forName("com.intel.analytics.bigdl.nn.GRU"), GRU)
+    registerModule("HardShrink", Class.forName("com.intel.analytics.bigdl.nn.HardShrink"),
+      HardShrink)
+    registerModule("HardTanh", Class.forName("com.intel.analytics.bigdl.nn.HardTanh"), HardTanh)
+    registerModule("Identity", Class.forName("com.intel.analytics.bigdl.nn.Identity"), Identity)
+    registerModule("Index", Class.forName("com.intel.analytics.bigdl.nn.Index"), Index)
+    registerModule("InferReshape", Class.forName("com.intel.analytics.bigdl.nn.InferReshape"),
+      InferReshape)
+    registerModule("JoinTable", Class.forName("com.intel.analytics.bigdl.nn.JoinTable"), JoinTable)
+    registerModule("L1Penalty", Class.forName("com.intel.analytics.bigdl.nn.L1Penalty"), L1Penalty)
+    registerModule("LeakyReLU", Class.forName("com.intel.analytics.bigdl.nn.LeakyReLU"), LeakyReLU)
     registerModule("Linear", Class.forName("com.intel.analytics.bigdl.nn.Linear"), Linear)
+    registerModule("Log", Class.forName("com.intel.analytics.bigdl.nn.Log"), Log)
+    registerModule("LogSigmoid", Class.forName("com.intel.analytics.bigdl.nn.LogSigmoid"),
+      LogSigmoid)
+    registerModule("LogSoftMax", Class.forName("com.intel.analytics.bigdl.nn.LogSoftMax"),
+      LogSoftMax)
+    registerModule("LookupTable", Class.forName("com.intel.analytics.bigdl.nn.LookupTable"),
+      LookupTable)
+    registerModule("LSTM", Class.forName("com.intel.analytics.bigdl.nn.LSTM"),
+      LSTM)
+
+  }
+
+  private def initializeDeclaredTypes() : Unit = {
+
+    val tensorNumericCls = Class.
+      forName("com.intel.analytics.bigdl.tensor.TensorNumericMath$TensorNumeric")
+    tensorNumericType = runtimeMirror.
+      classSymbol(tensorNumericCls).selfType
+
+    val tensorCls = Class.forName("com.intel.analytics.bigdl.tensor.Tensor")
+    tensorType = runtimeMirror.
+      classSymbol(tensorCls).selfType
+
+    val regularizerCls = Class.forName("com.intel.analytics.bigdl.optim.Regularizer")
+    regularizerType = runtimeMirror.
+      classSymbol(regularizerCls).selfType
+
+    val abstractModuleCls = Class.forName("com.intel.analytics.bigdl.nn.abstractnn.AbstractModule")
+    abstractModuleType = runtimeMirror.classSymbol(abstractModuleCls).selfType
+
   }
 }
+
