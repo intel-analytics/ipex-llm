@@ -308,7 +308,7 @@ class SampleToBatch[T: ClassTag]
  *
  * @param totalBatch total batch size
  * @param partitionNum partition number of dataset, default means partitionNum
- *                     equals Engine.nodeNumber()
+ *                     equals executor number.
  * @param toMiniBatch toMiniBatch is an function convert an Array[Sample] to a MiniBatch[T], defined
  *                    as (Array[Sample[T]], Array[Tensor[T]], Array[Tensor[T]]) => MiniBatch[T]).
  *                    The two array[Tensor] are input buffers and target buffers, their lengths

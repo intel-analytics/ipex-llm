@@ -80,12 +80,28 @@ abstract class Sample[T: ClassTag] extends Serializable {
   override def clone(): this.type =
     SerializationUtils.clone(this)
 
+  /**
+   * Get feature tensor, for one feature Sample only.
+   * @return feature tensor
+   */
   @deprecated("Old interface", "0.2.0")
   def feature()(implicit ev: TensorNumeric[T]): Tensor[T]
 
+  /**
+   * Get label tensor, for one label Sample only.
+   * @return label tensor
+   */
   @deprecated("Old interface", "0.2.0")
   def label()(implicit ev: TensorNumeric[T]): Tensor[T]
 
+  /**
+   * Set data of feature and label.
+   * @param featureData
+   * @param labelData
+   * @param featureSize
+   * @param labelSize
+   * @return
+   */
   @deprecated("Old interface", "0.2.0")
   def set(
         featureData: Array[T],
@@ -93,14 +109,21 @@ abstract class Sample[T: ClassTag] extends Serializable {
         featureSize: Array[Int],
         labelSize: Array[Int])(implicit ev: TensorNumeric[T]): Sample[T]
 
+  /**
+   * Set sample's data with a set of features and labels.
+   * @param features a set of features
+   * @param labels a set of labels
+   * @return this
+   */
   def set(features: Array[Tensor[T]], labels: Array[Tensor[T]]
          )(implicit ev: TensorNumeric[T]): Sample[T]
 }
 
 
 /**
+ * A kind of sample who use only one array
  */
-class ArraySample[T: ClassTag](
+private[bigdl] class ArraySample[T: ClassTag](
       private var data: Array[T],
       private var featureSize: Array[Int],
       private var numberFeature: Int,

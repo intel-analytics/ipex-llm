@@ -58,7 +58,7 @@ object DLClassifierLeNet {
         BytesToGreyImg(28, 28) -> GreyImgNormalizer(trainMean, trainStd) -> GreyImgToBatch(1)
 
       val trainingRDD : RDD[Data[Float]] = trainSet.
-        asInstanceOf[DistributedDataSet[TensorMiniBatch[Float]]].data(false).map(batch => {
+        asInstanceOf[DistributedDataSet[MiniBatch[Float]]].data(false).map(batch => {
           val feature = batch.getInput().asInstanceOf[Tensor[Float]]
           val label = batch.getTarget().asInstanceOf[Tensor[Float]]
           Data[Float](feature.storage().array(), label.storage().array())

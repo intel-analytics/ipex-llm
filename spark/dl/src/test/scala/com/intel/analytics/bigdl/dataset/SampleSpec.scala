@@ -159,7 +159,7 @@ class SampleSpec extends FlatSpec with Matchers {
     samples(1) = Sample[Float](Tensor[Float](2, 3).range(10, 15, 1), Tensor[Float](2).fill(2))
     samples(2) = Sample[Float](Tensor[Float](3, 3).range(19, 27, 1), Tensor[Float](3).fill(3))
     val result = newMiniBatch[Float](samples, featurePadding = featurePadding,
-      featureFixedLength = Some(Array(4, 3)), labelPadding = Some(Array(-1)),
+      featureFixedLength = Some(Array(4)), labelPadding = Some(Array(-1)),
       labelFixedLength = Some(Array(4)))
     val exceptedInput = Tensor[Float](Storage(Array[Float](
       1, 2, 3,
@@ -177,6 +177,44 @@ class SampleSpec extends FlatSpec with Matchers {
       25, 26, 27,
       -1f, -2f, -3f
     )), 1, Array(3, 4, 3))
+    val exceptedTarget = Tensor[Float](Storage(Array[Float](
+      1, -1, -1, -1,
+      2, 2, -1, -1,
+      3, 3, 3, -1
+    )), 1, Array(3, 4))
+
+    result.getInput() should be (exceptedInput)
+    result.getTarget() should be (exceptedTarget)
+  }
+
+  "Array[TensorSample] toMiniBatch with increment" should "return right result" in {
+    val featurePadding = Some(Array(Tensor[Float](Storage(Array(-1f, -2f, -3f)))))
+    val samples: Array[Sample[Float]] = new Array[Sample[Float]](3)
+    samples(0) = Sample[Float](Tensor[Float](1, 3).range(1, 3, 1), Tensor[Float](1).fill(1))
+    samples(1) = Sample[Float](Tensor[Float](2, 3).range(10, 15, 1), Tensor[Float](2).fill(2))
+    samples(2) = Sample[Float](Tensor[Float](3, 3).range(19, 27, 1), Tensor[Float](3).fill(3))
+    val result = newMiniBatch[Float](samples, featurePadding = featurePadding,
+      featureIncrement = Some(Array(2)), labelPadding = Some(Array(-1)),
+      labelIncrement = Some(Array(1)))
+    val exceptedInput = Tensor[Float](Storage(Array[Float](
+      1, 2, 3,
+      -1f, -2f, -3f,
+      -1f, -2f, -3f,
+      -1f, -2f, -3f,
+      -1f, -2f, -3f,
+
+      10, 11, 12,
+      13, 14, 15,
+      -1f, -2f, -3f,
+      -1f, -2f, -3f,
+      -1f, -2f, -3f,
+
+      19, 20, 21,
+      22, 23, 24,
+      25, 26, 27,
+      -1f, -2f, -3f,
+      -1f, -2f, -3f
+    )), 1, Array(3, 5, 3))
     val exceptedTarget = Tensor[Float](Storage(Array[Float](
       1, -1, -1, -1,
       2, 2, -1, -1,
@@ -388,6 +426,52 @@ class SampleSpec extends FlatSpec with Matchers {
       2, 2, -1, -1,
       3, 3, 3, -1
     )), 1, Array(3, 4))
+
+    result.getInput() should be (exceptedInput)
+    result.getTarget() should be (exceptedTarget)
+  }
+
+  "Array[ArrayTensorSample] toMiniBatch with fixedlength(4, -1)" should "return right result" in {
+    val featurePadding = Some(Array(Tensor[Float](Storage(Array(-1f, -2f, -3f))),
+      Tensor[Float](1)))
+    val samples: Array[Sample[Float]] = new Array[Sample[Float]](3)
+    samples(0) = Sample[Float](Array(Tensor[Float](1, 3).range(1, 3, 1),
+      Tensor[Float](3).fill(1)), Tensor[Float](1).fill(1))
+    samples(1) = Sample[Float](Array(Tensor[Float](2, 3).range(10, 15, 1),
+      Tensor[Float](3).fill(2)), Tensor[Float](2).fill(2))
+    samples(2) = Sample[Float](Array(Tensor[Float](3, 3).range(19, 27, 1),
+      Tensor[Float](3).fill(3)), Tensor[Float](3).fill(3))
+    val result = newMiniBatch[Float](
+      samples, featurePadding,
+      Some(Array(4, -1)),
+      None,
+      Some(Array(-1)),
+      Some(Array(-1))
+    )
+    val exceptedInput = T(Tensor[Float](Storage(Array[Float](
+      1, 2, 3,
+      -1f, -2f, -3f,
+      -1f, -2f, -3f,
+      -1f, -2f, -3f,
+
+      10, 11, 12,
+      13, 14, 15,
+      -1f, -2f, -3f,
+      -1f, -2f, -3f,
+
+      19, 20, 21,
+      22, 23, 24,
+      25, 26, 27,
+      -1f, -2f, -3f
+    )), 1, Array(3, 4, 3)), Tensor[Float](3, 3))
+    exceptedInput[Tensor[Float]](2)(1).fill(1)
+    exceptedInput[Tensor[Float]](2)(2).fill(2)
+    exceptedInput[Tensor[Float]](2)(3).fill(3)
+    val exceptedTarget = Tensor[Float](Storage(Array[Float](
+      1, -1, -1,
+      2, 2, -1,
+      3, 3, 3
+    )), 1, Array(3, 3))
 
     result.getInput() should be (exceptedInput)
     result.getTarget() should be (exceptedTarget)

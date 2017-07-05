@@ -866,7 +866,7 @@ class TransformersSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val sampleDataSet = dataSet -> sampleToBatch
     val iter = sampleDataSet.toLocal().data(train = false)
 
-    val batch1 = iter.next().asInstanceOf[TensorMiniBatch[Float]]
+    val batch1 = iter.next()
 
     val batch1Data = Tensor[Float](Array(2, 3, 5))
     batch1Data(1).resizeAs(tensorInput1).copy(tensorInput1)
@@ -874,16 +874,16 @@ class TransformersSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val batch1Label = Tensor[Float](Array(2, 3))
     batch1Label(1).resizeAs(tensorTarget1).copy(tensorTarget1)
     batch1Label(2).resizeAs(tensorTarget2).copy(tensorTarget2)
-    batch1.input should be (batch1Data)
-    batch1.target should be (batch1Label)
+    batch1.getInput should be (batch1Data)
+    batch1.getTarget should be (batch1Label)
 
-    val batch2 = iter.next().asInstanceOf[TensorMiniBatch[Float]]
+    val batch2 = iter.next()
     val batch2Data = Tensor[Float](Array(1, 3, 5))
     batch2Data(1).resizeAs(tensorInput3).copy(tensorInput3)
     val batch2Label = Tensor[Float](Array(1, 3))
     batch2Label(1).resizeAs(tensorTarget3).copy(tensorTarget3)
-    batch2.input should be (batch2Data)
-    batch2.target should be (batch2Label)
+    batch2.getInput should be (batch2Data)
+    batch2.getTarget should be (batch2Label)
   }
   "SampleToBatchSpec" should "be good with TensorBatch2" in {
     Engine.setNodeAndCore(1, 1)
@@ -909,7 +909,7 @@ class TransformersSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val sampleDataSet = dataSet -> sampleToBatch
     val iter = sampleDataSet.toLocal().data(train = true)
 
-    val batch1 = iter.next().asInstanceOf[TensorMiniBatch[Float]]
+    val batch1 = iter.next()
 
     val batch1Data = Tensor[Float](Array(2, 3, 5))
     batch1Data(1).resizeAs(tensorInput1).copy(tensorInput1)
@@ -917,18 +917,18 @@ class TransformersSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val batch1Label = Tensor[Float](Array(2, 3))
     batch1Label(1).resizeAs(tensorTarget1).copy(tensorTarget1)
     batch1Label(2).resizeAs(tensorTarget2).copy(tensorTarget2)
-    batch1.input should be (batch1Data)
-    batch1.target should be (batch1Label)
+    batch1.getInput should be (batch1Data)
+    batch1.getTarget should be (batch1Label)
 
-    val batch2 = iter.next().asInstanceOf[TensorMiniBatch[Float]]
+    val batch2 = iter.next()
     val batch2Data = Tensor[Float](Array(2, 3, 5))
     batch2Data(1).resizeAs(tensorInput3).copy(tensorInput3)
     batch2Data(2).resizeAs(tensorInput1).copy(tensorInput1)
     val batch2Label = Tensor[Float](Array(2, 3))
     batch2Label(1).resizeAs(tensorTarget3).copy(tensorTarget3)
     batch2Label(2).resizeAs(tensorTarget1).copy(tensorTarget1)
-    batch2.input should be (batch2Data)
-    batch2.target should be (batch2Label)
+    batch2.getInput should be (batch2Data)
+    batch2.getTarget should be (batch2Label)
   }
 
   "SampleToMiniBatchSpec" should "be good with TensorBatch1 Double" in {

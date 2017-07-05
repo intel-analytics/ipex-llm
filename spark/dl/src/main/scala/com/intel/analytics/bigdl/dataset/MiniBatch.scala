@@ -71,6 +71,11 @@ trait MiniBatch[T] extends Serializable{
     this.asInstanceOf[TensorMiniBatch[T]].input
   }
 
+  /**
+   * Set values to this miniBatch with a set of Sample.
+   * @param samples a set of Sample
+   * @return self
+   */
   def setValue(samples: Array[Sample[T]])(implicit ev: TensorNumeric[T]): this.type
 }
 
@@ -119,7 +124,7 @@ class TensorMiniBatch[T: ClassTag](
  * @tparam T Numeric type
  * @since 0.2.0
  */
-class ArrayTensorMiniBatch[T: ClassTag](
+private[bigdl] class ArrayTensorMiniBatch[T: ClassTag](
     val inputData: Array[Tensor[T]],
     val targetData: Array[Tensor[T]],
     featurePadding: Option[Array[Tensor[T]]] = None,
@@ -242,9 +247,11 @@ object MiniBatch {
     while (i < inputSize.length) {
       if (dataFixedLength.isDefined) {
         val fixedLength = dataFixedLength.get(i)
-        require(fixedLength >= inputSize(i)(1),
+        require(fixedLength >= inputSize(i)(1) || fixedLength < 0,
           s"${i}th FixedLength=${fixedLength} is smaller than its FeatureLength=${inputSize(i)(1)}")
-        inputSize(i)(1) = fixedLength
+        if (fixedLength >= inputSize(i)(1)) {
+          inputSize(i)(1) = fixedLength
+        }
       } else if (dataIncrement.isDefined) {
         val increment = dataIncrement.get(i)
         inputSize(i)(1) += increment
@@ -255,7 +262,7 @@ object MiniBatch {
 
   }
 
-  def arraySampleToMiniBatch[T: ClassTag](
+  private[bigdl] def arraySampleToMiniBatch[T: ClassTag](
       samples: Array[ArraySample[T]],
       miniBatch: ArrayTensorMiniBatch[T],
       longestFeature: Array[Int],
