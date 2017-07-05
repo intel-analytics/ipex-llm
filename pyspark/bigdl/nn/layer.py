@@ -591,6 +591,7 @@ class SpatialConvolution(Layer):
     :param init_bias: the optional initial value for the bias
     :param init_grad_weight: the optional initial value for the grad_weight
     :param init_grad_bias: the optional initial value for the grad_bias
+    :param with_bias: the optional initial value for if need bias
 
     >>> spatialConvolution = SpatialConvolution(6, 12, 5, 5)
     creating: createSpatialConvolution
@@ -626,6 +627,7 @@ class SpatialConvolution(Layer):
                  init_bias=None,
                  init_grad_weight=None,
                  init_grad_bias=None,
+                 with_bias=True,
                  bigdl_type="float"):
         super(SpatialConvolution, self).__init__(None, bigdl_type,
                                                  n_input_plane,
@@ -643,7 +645,8 @@ class SpatialConvolution(Layer):
                                                  JTensor.from_ndarray(init_weight),
                                                  JTensor.from_ndarray(init_bias),
                                                  JTensor.from_ndarray(init_grad_weight),
-                                                 JTensor.from_ndarray(init_grad_bias))
+                                                 JTensor.from_ndarray(init_grad_bias),
+                                                 with_bias)
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                   weight_init_method, bias_init_method)

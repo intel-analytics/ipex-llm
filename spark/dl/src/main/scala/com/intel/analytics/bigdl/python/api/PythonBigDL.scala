@@ -292,7 +292,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                                initWeight: JTensor = null,
                                initBias: JTensor = null,
                                initGradWeight: JTensor = null,
-                               initGradBias: JTensor = null
+                               initGradBias: JTensor = null,
+                               withBias: Boolean = true
                               )
   : SpatialConvolution[T] = {
     SpatialConvolution[T](nInputPlane,
@@ -310,7 +311,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       toTensor(initWeight),
       toTensor(initBias),
       toTensor(initGradWeight),
-      toTensor(initGradBias)
+      toTensor(initGradBias),
+      withBias
     )
   }
 

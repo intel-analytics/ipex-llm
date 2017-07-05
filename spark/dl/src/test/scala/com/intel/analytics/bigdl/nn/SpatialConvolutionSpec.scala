@@ -2789,4 +2789,37 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     layer2.gradWeight should be (layer1.gradWeight.mul(2))
     layer2.gradBias should be (layer1.gradBias.mul(0.5))
   }
+
+  "A SpatialConvolution layer without bias" should "generate correct output" in {
+    val nInputPlane = 1
+    val nOutputPlane = 1
+    val kW = 2
+    val kH = 2
+    val dW = 1
+    val dH = 1
+    val padW = 0
+    val padH = 0
+    val layer = new SpatialConvolution[Double](nInputPlane, nOutputPlane,
+      kW, kH, dW, dH, padW, padH, withBias = false)
+
+    val inputData = Array(
+      1.0, 2, 3,
+      4, 5, 6,
+      7, 8, 9
+    )
+
+    val kernelData = Array(
+      2.0, 3,
+      4, 5
+    )
+
+    layer.weight.copy(Tensor[Double](Storage(kernelData), 1, Array(nOutputPlane,
+      nInputPlane, kH, kW)))
+    val input = Tensor[Double](Storage(inputData), 1, Array(1, 3, 3))
+    val output = layer.updateOutput(input)
+    output(Array(1, 1, 1)) should be(49)
+    output(Array(1, 1, 2)) should be(63)
+    output(Array(1, 2, 1)) should be(91)
+    output(Array(1, 2, 2)) should be(105)
+  }
 }
