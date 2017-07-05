@@ -42,37 +42,37 @@ class Top1Accuracy(JavaValue):
     """
     def __init__(self, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type)
-#
-#
-# class Top5Accuracy(JavaValue):
-#     """
-#     Caculate the percentage that output's max probability index equals target.
-#
-#     >>> top5 = Top5Accuracy()
-#     creating: createTop5Accuracy
-#     """
-#     def __init__(self, bigdl_type="float"):
-#         JavaValue.__init__(self, None, bigdl_type)
-#
-#
-# class Loss(JavaValue):
-#
-#     """
-#     This evaluation method is calculate loss of output with respect to target
-#     >>> from bigdl.nn.criterion import ClassNLLCriterion
-#     >>> loss = Loss(ClassNLLCriterion())
-#     creating: createClassNLLCriterion
-#     creating: createLoss
-#
-#     >>> loss = Loss(ClassNLLCriterion())
-#     creating: createClassNLLCriterion
-#     creating: createLoss
-#     """
-#     def __init__(self, cri=None, bigdl_type="float"):
-#         from bigdl.nn.criterion import ClassNLLCriterion
-#         if cri is None:
-#             cri = ClassNLLCriterion()
-#         JavaValue.__init__(self, None, bigdl_type, cri)
+
+
+class Top5Accuracy(JavaValue):
+    """
+    Caculate the percentage that output's max probability index equals target.
+
+    >>> top5 = Top5Accuracy()
+    creating: createTop5Accuracy
+    """
+    def __init__(self, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type)
+
+
+class Loss(JavaValue):
+
+    """
+    This evaluation method is calculate loss of output with respect to target
+    >>> from bigdl.nn.criterion import ClassNLLCriterion
+    >>> loss = Loss(ClassNLLCriterion())
+    creating: createClassNLLCriterion
+    creating: createLoss
+
+    >>> loss = Loss(ClassNLLCriterion())
+    creating: createClassNLLCriterion
+    creating: createLoss
+    """
+    def __init__(self, cri=None, bigdl_type="float"):
+        from bigdl.nn.criterion import ClassNLLCriterion
+        if cri is None:
+            cri = ClassNLLCriterion()
+        JavaValue.__init__(self, None, bigdl_type, cri)
 
 
 class MaxIteration(JavaValue):
