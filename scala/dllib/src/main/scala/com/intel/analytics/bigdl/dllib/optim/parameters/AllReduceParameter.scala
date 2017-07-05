@@ -173,8 +173,13 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) ex
           override def call(): Int = {
             try {
               val blockId = getWeightBlockId(pid)
-              val localBuffer = BlockManagerWrapper.byteBufferConvert(
-                bm.getLocalBytes(blockId).getOrElse(bm.getRemoteBytes(blockId).get))
+              val weightBuffer = bm.getLocalBytes(blockId).getOrElse {
+                bm.getRemoteBytes(blockId).getOrElse {
+                  throw new RuntimeException(s"Didn't find weight block $blockId in the block " +
+                    s"manager. Did you initialize this AllReduceParameter on every executor?")
+                }
+              }
+              val localBuffer = BlockManagerWrapper.byteBufferConvert(weightBuffer)
               val start = pid * taskSize + math.min(pid, extraSize)
               val length = taskSize + (if (pid < extraSize) 1 else 0)
               require(localBuffer.array().length == length * 2)
@@ -252,7 +257,7 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) ex
    */
   def putGradients(parameter: Tensor[T]): Unit = {
     var pid = 0
-    require(parameterBuffer != null)
+    require(parameterBuffer != null, )
     parameterBuffer.compress(parameter)
     while (pid < partitionNum) {
       val start = pid * taskSize + math.min(pid, extraSize)
@@ -272,7 +277,7 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) ex
     val blockId = getWeightBlockId(partitionId)
     val weightsId = getWeightPartitionId()
     require(weightPartition != null, "Cannot send the weights for this partition until they have" +
-      "been updated by the optimizer!")
+      " been updated by the optimizer!")
     BlockManagerWrapper.removeBlock(blockId)
     BlockManagerWrapper.unlock(weightsId)
     BlockManagerWrapper.removeBlock(weightsId)
