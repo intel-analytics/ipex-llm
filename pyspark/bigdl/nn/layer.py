@@ -760,7 +760,7 @@ class LSTMPeephole(Layer):
     creating: createLSTMPeephole
     '''
 
-    def __init__(self, input_size, hidden_size, p=0.0, wRegularizer=None, uRegularizer=None, bRegularizer=None, bigdl_type="float"):
+    def __init__(self, input_size=4, hidden_size=3, p=0.0, wRegularizer=None, uRegularizer=None, bRegularizer=None, bigdl_type="float"):
         super(LSTMPeephole, self).__init__(None, bigdl_type, input_size, hidden_size, p, wRegularizer, uRegularizer, bRegularizer)
 
 
