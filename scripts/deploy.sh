@@ -72,17 +72,17 @@ cd ../../
 
 # Deploy bigdl-1.6
 cat spark/dl/pom.xml.origin | sed 's/<artifactId>bigdl<\/artifactId>/<artifactId>bigdl-SPARK_1.6<\/artifactId>/' > spark/dl/pom.xml
-mvn clean package -DskipTests -P spark_1.6 -Dspark.version=1.6.2
+mvn clean package -DskipTests -P spark_1.6 -Dspark.version=1.6.3
 cd spark/dl/
-mvn clean deploy -DskipTests -P sign -P spark_1.6 -Dspark.version=1.6.2
+mvn clean deploy -DskipTests -P sign -P spark_1.6 -Dspark.version=1.6.3
 # Upload package to download for bigdl-1.6
 cd ../dist/
-mvn clean deploy -DskipTests -P sign -P spark_1.6 -Dspark.version=1.6.2
+mvn clean deploy -DskipTests -P sign -P spark_1.6 -Dspark.version=1.6.3
 cd ../../
 # Upload package to download for bigdl-1.6 on mac
-mvn clean package -DskipTests -P mac -P spark_1.6 -Dspark.version=1.6.2
+mvn clean package -DskipTests -P mac -P spark_1.6 -Dspark.version=1.6.3
 cd spark/dist/
-mvn clean deploy -DskipTests -P sign -P mac -P spark_1.6 -Dspark.version=1.6.2
+mvn clean deploy -DskipTests -P sign -P mac -P spark_1.6 -Dspark.version=1.6.3
 cd ../../
 
 # Deploy spark-2.0 project
