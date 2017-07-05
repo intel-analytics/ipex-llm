@@ -39,14 +39,16 @@ if [ ! $isPy4jInstalled -eq 0 ]; then
  exit 1
 fi
 
-sphinx-apidoc -F -f -a -H BigDL -A Intel -o ./ ../
+DOCS_DIR="$( cd "$( dirname "$0" )" && pwd)"
+
+sphinx-apidoc -F -f -a -H BigDL -A Intel -o ./ ../ ${DOCS_DIR}/../test/* ${DOCS_DIR}/../setup.py
 
 if [ ! $SPARK_HOME ] || [ -z $SPARK_HOME ]; then
  echo 'Cannot find SPARK_HOME . Please set SPARK_HOME first.'
  exit 1
 fi
 
-PYSPARK=$(find $SPARK_HOME -name pyspark.zip)
+PYSPARK=$(find -L $SPARK_HOME -name pyspark.zip)
 if [ -z $PYSPARK ]; then
  echo 'Cannot find pyspark.zip. Please set SPARK_HOME correctly'
  exit 1
