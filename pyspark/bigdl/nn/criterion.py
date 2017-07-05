@@ -713,13 +713,11 @@ class L1Cost(Criterion):
 
 def _test():
     import doctest
-    from pyspark import SparkContext
     from bigdl.nn import criterion
     from bigdl.util.common import init_engine
-    from bigdl.util.common import create_spark_conf
+    from bigdl.util.common import get_spark_context
     globs = criterion.__dict__.copy()
-    sc = SparkContext(master="local[4]", appName="test criterion",
-                      conf=create_spark_conf())
+    sc = get_spark_context()
     globs['sc'] = sc
     init_engine()
 
