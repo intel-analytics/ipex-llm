@@ -138,8 +138,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def toTensor(jTensor: JTensor): Tensor[T] = {
-    Tensor(jTensor.storage.asScala.map(_.asInstanceOf[T]).toArray,
-      jTensor.shape.asScala.toArray)
+    if (jTensor == null) null else {
+      Tensor(jTensor.storage.asScala.map(_.asInstanceOf[T]).toArray,
+        jTensor.shape.asScala.toArray)
+    }
   }
 
   def toJTensor(tensor: Tensor[T]): JTensor = {
@@ -199,12 +201,12 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                    withBias: Boolean,
                    wRegularizer: Regularizer[T] = null,
                    bRegularizer: Regularizer[T] = null,
-                   initWeight: Tensor[T] = null,
-                   initBias: Tensor[T] = null,
-                   initGradWeight: Tensor[T] = null,
-                   initGradBias: Tensor[T] = null): Linear[T] = {
+                   initWeight: JTensor = null,
+                   initBias: JTensor = null,
+                   initGradWeight: JTensor = null,
+                   initGradBias: JTensor = null): Linear[T] = {
     Linear[T](inputSize, outputSize, withBias, wRegularizer, bRegularizer,
-      initWeight, initBias, initGradWeight, initGradBias)
+      toTensor(initWeight), toTensor(initBias), toTensor(initGradWeight), toTensor(initGradBias))
   }
 
   def createReLU(ip: Boolean = false): ReLU[T] = {
@@ -305,10 +307,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                                propagateBack: Boolean = true,
                                wRegularizer: Regularizer[T] = null,
                                bRegularizer: Regularizer[T] = null,
-                               initWeight: Tensor[T] = null,
-                               initBias: Tensor[T] = null,
-                               initGradWeight: Tensor[T] = null,
-                               initGradBias: Tensor[T] = null
+                               initWeight: JTensor = null,
+                               initBias: JTensor = null,
+                               initGradWeight: JTensor = null,
+                               initGradBias: JTensor = null
                               )
   : SpatialConvolution[T] = {
     SpatialConvolution[T](nInputPlane,
@@ -323,10 +325,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       propagateBack,
       wRegularizer,
       bRegularizer,
-      initWeight,
-      initBias,
-      initGradWeight,
-      initGradBias
+      toTensor(initWeight),
+      toTensor(initBias),
+      toTensor(initGradWeight),
+      toTensor(initGradBias)
     )
   }
 
@@ -360,13 +362,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                                       eps: Double = 1e-5,
                                       momentum: Double = 0.1,
                                       affine: Boolean = true,
-                                      initWeight: Tensor[T] = null,
-                                      initBias: Tensor[T] = null,
-                                      initGradWeight: Tensor[T] = null,
-                                      initGradBias: Tensor[T] = null)
+                                      initWeight: JTensor = null,
+                                      initBias: JTensor = null,
+                                      initGradWeight: JTensor = null,
+                                      initGradBias: JTensor = null)
   : SpatialBatchNormalization[T] = {
     SpatialBatchNormalization[T](nOutput, eps, momentum, affine,
-    initWeight, initBias, initGradWeight, initBias)
+    toTensor(initWeight), toTensor(initBias), toTensor(initGradWeight), toTensor(initBias))
   }
 
   def createSpatialCrossMapLRN(size: Int = 5,
@@ -410,19 +412,19 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                                eps: Double = 1e-5,
                                momentum: Double = 0.1,
                                affine: Boolean = true,
-                               initWeight: Tensor[T] = null,
-                               initBias: Tensor[T] = null,
-                               initGradWeight: Tensor[T] = null,
-                               initGradBias: Tensor[T] = null)
+                               initWeight: JTensor = null,
+                               initBias: JTensor = null,
+                               initGradWeight: JTensor = null,
+                               initGradBias: JTensor = null)
   : BatchNormalization[T] = {
     BatchNormalization[T](nOutput,
       eps,
       momentum,
       affine,
-      initWeight,
-      initBias,
-      initGradWeight,
-      initGradBias)
+      toTensor(initWeight),
+      toTensor(initBias),
+      toTensor(initGradWeight),
+      toTensor(initGradBias))
   }
 
   def createBilinear(inputSize1: Int,

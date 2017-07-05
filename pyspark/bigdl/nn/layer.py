@@ -455,6 +455,15 @@ class Linear(Layer):
     creating: createL1Regularizer
     creating: createL1Regularizer
     creating: createLinear
+    >>> import numpy as np
+    >>> init_weight = np.random.randn(10, 100)
+    >>> init_bias = np.random.randn(10)
+    >>> init_grad_weight = np.zeros([10, 100])
+    >>> init_grad_bias = np.zeros([10])
+    >>> linear = Linear(100, 10, True, L1Regularizer(0.5), L1Regularizer(0.5), init_weight, init_bias, init_grad_weight, init_grad_bias)
+    creating: createL1Regularizer
+    creating: createL1Regularizer
+    creating: createLinear
     '''
 
     def __init__(self, input_size, output_size, with_bias=True, wRegularizer=None, bRegularizer=None,
@@ -589,6 +598,15 @@ class SpatialConvolution(Layer):
     creating: createL1Regularizer
     >>> spatialConvolution.setBRegularizer(L1Regularizer(0.5))
     creating: createL1Regularizer
+    >>> import numpy as np
+    >>> init_weight = np.random.randn(1, 12, 6, 5, 5)
+    >>> init_bias = np.random.randn(12)
+    >>> init_grad_weight = np.zeros([1, 12, 6, 5, 5])
+    >>> init_grad_bias = np.zeros([12])
+    >>> spatialConvolution = SpatialConvolution(6, 12, 5, 5, 1, 1, 0, 0, 1, True, L1Regularizer(0.5), L1Regularizer(0.5), init_weight, init_bias, init_grad_weight, init_grad_bias)
+    creating: createL1Regularizer
+    creating: createL1Regularizer
+    creating: createSpatialConvolution
     '''
 
     def __init__(self,
@@ -944,6 +962,13 @@ class SpatialBatchNormalization(Layer):
 
     >>> spatialBatchNormalization = SpatialBatchNormalization(1)
     creating: createSpatialBatchNormalization
+    >>> import numpy as np
+    >>> init_weight = np.array([1.0])
+    >>> init_grad_weight = np.array([0.0])
+    >>> init_bias = np.array([0.0])
+    >>> init_grad_bias = np.array([0.0])
+    >>> spatialBatchNormalization = SpatialBatchNormalization(1, 1e-5, 0.1, True, init_weight, init_bias, init_grad_weight, init_grad_bias)
+    creating: createSpatialBatchNormalization
     '''
 
     def __init__(self,
@@ -961,10 +986,10 @@ class SpatialBatchNormalization(Layer):
                                                         eps,
                                                         momentum,
                                                         affine,
-                                                        init_weight,
-                                                        init_bias,
-                                                        init_grad_weight,
-                                                        init_grad_bias)
+                                                        JTensor.from_ndarray(init_weight),
+                                                        JTensor.from_ndarray(init_bias),
+                                                        JTensor.from_ndarray(init_grad_weight),
+                                                        JTensor.from_ndarray(init_grad_bias))
 
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
@@ -1153,6 +1178,13 @@ class BatchNormalization(Layer):
 
     >>> batchNormalization = BatchNormalization(1, 1e-5, 1e-5, True)
     creating: createBatchNormalization
+    >>> import numpy as np
+    >>> init_weight = np.random.randn(2)
+    >>> init_grad_weight = np.zeros([2])
+    >>> init_bias = np.zeros([2])
+    >>> init_grad_bias = np.zeros([2])
+    >>> batchNormalization = BatchNormalization(2, 1e-5, 1e-5, True, init_weight, init_bias, init_grad_weight, init_grad_bias)
+    creating: createBatchNormalization
     '''
     def __init__(self,
                  n_output,
@@ -1169,10 +1201,10 @@ class BatchNormalization(Layer):
                                                  eps,
                                                  momentum,
                                                  affine,
-                                                 init_weight,
-                                                 init_bias,
-                                                 init_grad_weight,
-                                                 init_grad_bias)
+                                                 JTensor.from_ndarray(init_weight),
+                                                 JTensor.from_ndarray(init_bias),
+                                                 JTensor.from_ndarray(init_grad_weight),
+                                                 JTensor.from_ndarray(init_grad_bias))
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
@@ -3203,6 +3235,8 @@ class Reverse(Layer):
 
 
     >>> reverse = Reverse()
+    creating: createReverse
+    >>> reverse = Reverse(1, False)
     creating: createReverse
     '''
 
