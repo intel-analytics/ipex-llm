@@ -67,17 +67,25 @@ class LSTMPeephole[T : ClassTag] (
   var cellLayer: Sequential[T] = _
   override var cell: AbstractModule[Activity, Activity, T] = buildLSTM()
 
-  def buildGate(): Sequential[T] = {
+  override def preTopology: AbstractModule[Activity, Activity, T] =
+    Sequential()
+    .add(Dropout(p))
+    .add(TimeDistributed(Linear(inputSize, hiddenSize * 4, wRegularizer = wRegularizer,
+      bRegularizer = bRegularizer).setName("i2g1234")))
+
+  def buildGate(dimension: Int, offset: Int, length: Int, name: String): Sequential[T] = {
     val gate = Sequential()
 
-    val i2g = Sequential()
-      .add(Dropout(p))
-      .add(Linear(inputSize, hiddenSize, wRegularizer = wRegularizer,
-        bRegularizer = bRegularizer))
+    val i2g = Narrow(dimension, offset, length)
+//      Sequential()
+//      .add(Dropout(p))
+//      .add(Linear(inputSize, hiddenSize, wRegularizer = wRegularizer,
+//        bRegularizer = bRegularizer))
+
     val h2g = Sequential()
       .add(Dropout(p))
       .add(Linear(hiddenSize, hiddenSize,
-        withBias = false, wRegularizer = uRegularizer))
+        withBias = false, wRegularizer = uRegularizer).setName(name))
 
     gate
       .add(ParallelTable()
@@ -89,17 +97,17 @@ class LSTMPeephole[T : ClassTag] (
   }
 
   def buildInputGate(): Sequential[T] = {
-    inputGate = buildGate()
+    inputGate = buildGate(2, 1, hiddenSize, "inputGate")
     inputGate
   }
 
   def buildForgetGate(): Sequential[T] = {
-    forgetGate = buildGate()
+    forgetGate = buildGate(2, 1 + hiddenSize, hiddenSize, "forgetGate")
     forgetGate
   }
 
   def buildOutputGate(): Sequential[T] = {
-    outputGate = buildGate()
+    outputGate = buildGate(2, 1 + 3 * hiddenSize, hiddenSize, "outputGate")
     outputGate
   }
 
@@ -107,14 +115,16 @@ class LSTMPeephole[T : ClassTag] (
     val hidden = Sequential()
       .add(NarrowTable(1, 2))
 
-    val i2h = Sequential()
-      .add(Dropout(p))
-      .add(Linear(inputSize, hiddenSize, wRegularizer = wRegularizer,
-        bRegularizer = bRegularizer))
+    val i2h = Narrow(2, 1 + 2 * hiddenSize, hiddenSize)
+//      Sequential()
+//      .add(Dropout(p))
+//      .add(Linear(inputSize, hiddenSize, wRegularizer = wRegularizer,
+//        bRegularizer = bRegularizer))
+
     val h2h = Sequential()
       .add(Dropout(p))
       .add(Linear(hiddenSize, hiddenSize, withBias = false,
-        wRegularizer = uRegularizer))
+        wRegularizer = uRegularizer).setName("hiddenGate"))
 
     hidden
       .add(ParallelTable()
