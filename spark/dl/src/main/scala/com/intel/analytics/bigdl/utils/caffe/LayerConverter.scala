@@ -105,9 +105,12 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
 
   override protected def fromCaffeBatchNormalization(layer : GeneratedMessage) :
   Seq[ModuleNode[T]] = {
+    val  weightBlob = getBlob(layer, 0).get
+    val nOutPlane = if (weightBlob.hasShape) weightBlob.getShape.getDim(0)
+    else weightBlob.getNum
     val param = layer.asInstanceOf[LayerParameter].getBatchNormParam
     val eps = param.getEps
-    Seq(BatchNormalization[T](3, eps).inputs())
+    Seq(BatchNormalization[T](nOutPlane.toInt, eps).inputs())
   }
 
   override protected def fromCaffeELU(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
@@ -355,7 +358,7 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
   override protected def toCaffeTanh(module : AbstractModule[Activity, Tensor[T], T],
     bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage] = {
 
-    Seq(toCaffeWithWeightAndBiasOnly(module, bottoms, nextSize).setType("TANH").build)
+    Seq(toCaffeWithWeightAndBiasOnly(module, bottoms, nextSize).setType("TanH").build)
   }
 
   override protected def toCaffeSigmoid(module : AbstractModule[Activity, Tensor[T], T],
@@ -365,7 +368,7 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
 
   override protected def toCaffeAbs(module : AbstractModule[Activity, Tensor[T], T],
     bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage] = {
-    Seq(toCaffeWithWeightAndBiasOnly(module, bottoms, nextSize).setType("Abs").build)
+    Seq(toCaffeWithWeightAndBiasOnly(module, bottoms, nextSize).setType("AbsVal").build)
   }
 
   override protected def toCaffeBatchNormalization(module : AbstractModule[Activity, Tensor[T], T],
@@ -392,14 +395,14 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
   override protected def toCaffeElu(module : AbstractModule[Activity, Tensor[T], T],
     bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage] = {
     val layerParameter = toCaffeWithWeightAndBiasOnly(module, bottoms, nextSize).
-      setType("Concat")
+      setType("ELU")
     layerParameter.setEluParam(toCaffeEluParam(module))
     Seq(layerParameter.build)
   }
 
   override protected def toCaffeFlattern(module : AbstractModule[Activity, Tensor[T], T],
     bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage] = {
-    Seq(toCaffeWithWeightAndBiasOnly(module, bottoms, nextSize).setType("Flattern").build)
+    Seq(toCaffeWithWeightAndBiasOnly(module, bottoms, nextSize).setType("Flatten").build)
   }
 
   override protected def toCaffeLog(module : AbstractModule[Activity, Tensor[T], T],

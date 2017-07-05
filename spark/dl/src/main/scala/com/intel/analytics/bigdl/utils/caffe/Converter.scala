@@ -282,7 +282,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
       case tanh : Tanh[_] => toCaffeTanh(moduleNode, bottoms, nextSize)
       case sigmoid : Sigmoid[_] => toCaffeSigmoid(moduleNode, bottoms, nextSize)
       case abs : Abs[_] => toCaffeAbs(moduleNode, bottoms, nextSize)
-      case bartchNorm : BatchNormalization[_] =>
+      case bartchNorm : SpatialBatchNormalization[_] =>
         toCaffeBatchNormalization(moduleNode, bottoms, nextSize)
       case joinTable : JoinTable[_] => toCaffeConcat(moduleNode, bottoms, nextSize)
       case elu : ELU[_] => toCaffeElu(moduleNode, bottoms, nextSize)
