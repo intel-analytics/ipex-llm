@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
@@ -179,6 +180,12 @@ class TimeDistributed[T : ClassTag] (layer: TensorModule[T])
    * @return
    */
   override def getParameters(): (Tensor[T], Tensor[T]) = layer.getParameters()
+
+  /**
+   * This method will return a table indicating the name and corresponding parameters.
+   * @return Table
+   */
+  override def getParametersTable(): Table = layer.getParametersTable()
 
   /**
    * Copy the useful running status from src to this.
