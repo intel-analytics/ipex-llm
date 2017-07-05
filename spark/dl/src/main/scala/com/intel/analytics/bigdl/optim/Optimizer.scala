@@ -306,61 +306,65 @@ object Optimizer {
     ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
   }
 
-  def apply[T: ClassTag](
-    model: Module[T],
-    sampleRDD: RDD[Sample[T]],
-    criterion: Criterion[T],
-    batchSize: Int,
-    isInOrder: Boolean,
-    featurePadding : Option[Tensor[T]],
-    labelPadding : Option[T],
-    fixedLength: Option[Int]
-  )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
-    new DistriOptimizer[T](
-      _model = model,
-      dataset = (DataSet.sortRDD(sampleRDD, isInOrder, batchSize) ->
-        SampleToBatch(batchSize, featurePadding, labelPadding, fixedLength))
-        .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
-      criterion = criterion
-    ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
-  }
-
+  /**
+   * A apply an Optimizer who could apply padding to the Samples.
+   *
+   * Notice: featureFixedLength's priority is higher than featureIncrement. Also
+   * labelFixedLength and featureIncrement
+   *
+   * @param model model will be optimizied
+   * @param sampleRDD training Samples
+   * @param criterion loss function
+   * @param batchSize mini batch size
+   * @param ascending if sort by featureLength in an ascending order
+   * @param partitionNum partition number of dataset, default means partitionNum
+   *                       equals Engine.nodeNumber()
+   * @return An optimizer
+   */
   def apply[T: ClassTag](
         model: Module[T],
         sampleRDD: RDD[Sample[T]],
         criterion: Criterion[T],
         batchSize: Int,
-        isInOrder: Boolean,
-        featurePadding: Option[Array[Tensor[T]]] = None,
-        featureFixedLength: Option[Array[Int]] = None,
-        featureIncrement: Option[Array[Int]] = None,
-        labelPadding: Option[Array[T]] = None,
-        labelFixedLength: Option[Array[Int]] = None,
-        labelIncrement: Option[Array[Int]] = None,
+        ascending: Boolean = false,
+        paddingParam: Option[PaddingParam[T]] = None,
         partitionNum: Option[Int] = None
   )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
     new DistriOptimizer[T](
       _model = model,
-      dataset = (DataSet.sortRDD(sampleRDD, isInOrder, batchSize) ->
-        SampleToMiniBatch(batchSize, featurePadding, featureFixedLength, featureIncrement,
-          labelPadding, labelFixedLength, labelIncrement, partitionNum))
+      dataset = (DataSet.sortRDD(sampleRDD, ascending, batchSize) ->
+        SampleToMiniBatch(batchSize, paddingParam, partitionNum))
         .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
       criterion = criterion
     ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
   }
 
+  /**
+   * Apply an optimizer with User-Defined MiniBatch.
+   * A apply an Optimizer who could apply padding to the Samples.
+   *
+   * @param model model will be optimizied
+   * @param sampleRDD training Samples
+   * @param criterion loss function
+   * @param batchSize mini batch size
+   * @param ascending if sort by featureLength in an ascending order
+   * @param miniBatch An User-Defined MiniBatch to construct MiniBatch.
+   * @param partitionNum partition number of dataset, None is recommended.
+   *                     None will use Engine.nodeNumber().
+   * @return an Optimizer
+   */
   def apply[T: ClassTag](
           model: Module[T],
           sampleRDD: RDD[Sample[T]],
           criterion: Criterion[T],
           batchSize: Int,
-          isInOrder: Boolean,
+          ascending: Boolean,
           miniBatch: MiniBatch[T],
           partitionNum: Option[Int]
         )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
     new DistriOptimizer[T](
       _model = model,
-      dataset = (DataSet.sortRDD(sampleRDD, isInOrder, batchSize) ->
+      dataset = (DataSet.sortRDD(sampleRDD, ascending, batchSize) ->
         SampleToMiniBatch(batchSize, miniBatch, partitionNum))
         .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
       criterion = criterion

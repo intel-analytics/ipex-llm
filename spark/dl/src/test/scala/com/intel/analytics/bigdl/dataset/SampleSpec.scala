@@ -37,8 +37,8 @@ class SampleSpec extends FlatSpec with Matchers {
         implicit ev: TensorNumeric[T]): MiniBatch[T] = {
 
     MiniBatch[T](samples(0).numFeature(), samples(0).numLabel(),
-      featurePadding, featureFixedLength, featureIncrement,
-      labelPadding, labelFixedLength, labelIncrement).setValue(samples)
+      Some(PaddingParam(featurePadding, featureFixedLength, featureIncrement,
+      labelPadding, labelFixedLength, labelIncrement))).setValue(samples)
   }
 
   "SampleSpec with Float Tensor input and Tensor label" should "initialize well" in {

@@ -59,16 +59,12 @@ trait MiniBatch[T] extends Serializable{
 
   @deprecated("Old interface", "0.2.0")
   def data(): Tensor[T] = {
-    require(this.isInstanceOf[TensorMiniBatch[T]], "Deprecated method," +
-      " Only support TensorMiniBatch.")
-    this.asInstanceOf[TensorMiniBatch[T]].input
+    throw new UnsupportedOperationException("MiniBatch.data(): unimplemented deprecated method")
   }
 
   @deprecated("Old interface", "0.2.0")
   def labels(): Tensor[T] = {
-    require(this.isInstanceOf[TensorMiniBatch[T]], "Deprecated method," +
-      " Only support TensorMiniBatch.")
-    this.asInstanceOf[TensorMiniBatch[T]].input
+    throw new UnsupportedOperationException("MiniBatch.labels(): unimplemented deprecated method")
   }
 
   /**
@@ -80,59 +76,27 @@ trait MiniBatch[T] extends Serializable{
 }
 
 /**
- * A MiniBatch with [[Tensor]] input and [[Tensor]] target.
- * The size of first dimension in input and target should be the mini-batch size.
+ * Default type of MiniBatch in BigDL.
+ * This MiniBatch support both single/multi inputs and single/multi targets.
+ * `inputData` store the input tensors, if `inputData.length == 1`, `getInput()` will return
+ * a tensor; If `inputData.length > 1`, `getInput()` will return a table.
+ * `targetData` store the target tensors, if `targetData.length == 1`, `getTarget()` will return
+ * a tensor; If `targetData.length > 1`, `getTarget()` will return a table.
  *
- * @param input input Tensor
- * @param target target Tensor
- * @tparam T Numeric type
- */
-class TensorMiniBatch[T: ClassTag](
-      val input: Tensor[T],
-      val target: Tensor[T]) extends MiniBatch[T]{
-  require(input.size(1) == target.size(1))
-
-  override def size(): Int = {
-    input.size(1)
-  }
-
-  override def slice(offset: Int, length: Int): MiniBatch[T] = {
-    MiniBatch(input.narrow(1, offset, length), target.narrow(1, offset, length))
-  }
-
-  override def getInput(): Activity = {
-    input
-  }
-
-  override def getTarget(): Activity = {
-    target
-  }
-
-  override def setValue(samples: Array[Sample[T]])(implicit ev: TensorNumeric[T]): this.type = {
-    // todo
-    throw new UnsupportedOperationException("unimplemented")
-  }
-
-}
-
-/**
- * A MiniBatch with [[com.intel.analytics.bigdl.utils.Table]] input and [[Tensor]] target.
- * The size of first dimension in input's first tensor and target is the mini-batch size.
+ * Notice: a feature is a input tensor of model.
+ * featureFixedLength's priority is higher than featureIncrement. Also
+ * labelFixedLength and featureIncrement.
  *
- * @param inputData input Table
- * @param targetData target Tensor
+ * @param inputData a set of input tensor
+ * @param targetData a set of target tensor
+ * @param paddingParam padding parameter
  * @tparam T Numeric type
  * @since 0.2.0
  */
 private[bigdl] class ArrayTensorMiniBatch[T: ClassTag](
     val inputData: Array[Tensor[T]],
     val targetData: Array[Tensor[T]],
-    featurePadding: Option[Array[Tensor[T]]] = None,
-    featureFixedLength: Option[Array[Int]] = None,
-    featureIncrement: Option[Array[Int]] = None,
-    labelPadding: Option[Array[T]] = None,
-    labelFixedLength: Option[Array[Int]] = None,
-    labelIncrement: Option[Array[Int]] = None) extends MiniBatch[T]{
+    paddingParam: Option[PaddingParam[T]] = None) extends MiniBatch[T]{
   require(inputData.length > 0, "Input data in MiniBatch is empty.")
   private lazy val input: Activity = if (inputData.length == 1) {
     inputData(0)
@@ -177,37 +141,54 @@ private[bigdl] class ArrayTensorMiniBatch[T: ClassTag](
     target
   }
 
-  def setValue(samples: Array[Sample[T]])(implicit ev: TensorNumeric[T]): this.type = {
+  override def setValue(samples: Array[Sample[T]])(implicit ev: TensorNumeric[T]): this.type = {
     require(samples.length > 0)
-    require(samples(0).isInstanceOf[ArraySample[T]],
-      "ArrayTensorMiniBatch: Only support ArraySample")
+    samples.foreach(s => require(s.isInstanceOf[ArraySample[T]],
+      "ArrayTensorMiniBatch: Only support ArraySample"))
     val s = samples.map(_.asInstanceOf[ArraySample[T]])
 
     val longestFeature = MiniBatch.findLongestFeatures(samples)
     val longestLabel = MiniBatch.findLongestLabels(samples)
 
-    MiniBatch.arraySampleToMiniBatch(s, this, longestFeature, longestLabel, featurePadding,
-      featureFixedLength, featureIncrement, labelPadding, labelFixedLength, labelIncrement)
+    if (paddingParam.isDefined) {
+      val padding = paddingParam.get
+      MiniBatch.arraySampleToMiniBatch(s, this, longestFeature, longestLabel,
+        padding.featurePadding, padding.featureFixedLength, padding.featureIncrement,
+        padding.labelPadding, padding.labelFixedLength, padding.labelIncrement)
+    }
     this
+  }
+
+  @deprecated("Old interface", "0.2.0")
+  override def data(): Tensor[T] = {
+    require(targetData.length == 1, "Deprecated method," +
+      " Only support TensorMiniBatch.")
+    input.asInstanceOf[Tensor[T]]
+  }
+
+  @deprecated("Old interface", "0.2.0")
+  override def labels(): Tensor[T] = {
+    require(inputData.length == 1, "Deprecated method," +
+      " Only support TensorMiniBatch.")
+    target.asInstanceOf[Tensor[T]]
   }
 }
 
 object MiniBatch {
+  /**
+   * MiniBatch factory method
+   * @param nInputs number of inputs
+   * @param nTargets number of targets
+   * @return
+   */
   def apply[T: ClassTag](
     nInputs: Int,
     nTargets: Int,
-    featurePadding: Option[Array[Tensor[T]]],
-    featureFixedLength: Option[Array[Int]],
-    featureIncrement: Option[Array[Int]],
-    labelPadding: Option[Array[T]],
-    labelFixedLength: Option[Array[Int]],
-    labelIncrement: Option[Array[Int]])(
+    paddingParam: Option[PaddingParam[T]] = None)(
     implicit ev: TensorNumeric[T]): MiniBatch[T] = {
-
     new ArrayTensorMiniBatch[T](Array.tabulate(nInputs)(_ => Tensor[T]()),
       Array.tabulate(nTargets)(_ => Tensor[T]()),
-      featurePadding, featureFixedLength, featureIncrement,
-      labelPadding, labelFixedLength, labelIncrement)
+      paddingParam)
   }
 
   def apply[T: ClassTag](input: Tensor[T], target: Tensor[T]): MiniBatch[T] = {
@@ -259,7 +240,6 @@ object MiniBatch {
       data(i).resize(inputSize(i))
       i += 1
     }
-
   }
 
   private[bigdl] def arraySampleToMiniBatch[T: ClassTag](
@@ -365,7 +345,7 @@ object MiniBatch {
   /**
    * Find Sample in Array[Sample] who has the biggest featureLength
    */
-  def findLongestFeatures[T: ClassTag](
+  private[bigdl] def findLongestFeatures[T: ClassTag](
         samples: Array[Sample[T]])(implicit ev: TensorNumeric[T]): Array[Int] = {
     val featureIndices =
       new Array[Int](samples(0).featureLength().length).map(_ => 0)
@@ -386,7 +366,7 @@ object MiniBatch {
   /**
    * Find Sample in Array[Sample] who has the biggest labelLength
    */
-  def findLongestLabels[T: ClassTag](
+  private[bigdl] def findLongestLabels[T: ClassTag](
         samples: Array[Sample[T]])(implicit ev: TensorNumeric[T]): Array[Int] = {
     val labelIndices =
       new Array[Int](samples(0).labelLength().length).map(_ => 0)
@@ -429,3 +409,30 @@ object MiniBatch {
   }
 }
 
+/**
+ * Padding param for ArrayTensorMiniBatch.
+ * Notice: featureFixedLength's priority is higher than featureIncrement. Also
+ * labelFixedLength and featureIncrement.
+ *
+ * @param featurePadding feature paddings for each input tensor(by default None,
+ *                       meaning zero padding)
+ * @param featureFixedLength it specifies the length of each input after padding (by default
+ *                           None, meaning using the longest input length in the mini Batch)
+ * @param featureIncrement it specifies adding an constant length to the longest length
+ *                         of each target in each MiniBatch.
+ *                         (by default None, meaning no increment)
+ * @param labelPadding feature paddings for each target (by default None, meaning zero padding)
+ * @param labelFixedLength it specifies the length of each target after padding (by default
+ *                         None, meaning using the longest target length in the mini Batch)
+ * @param labelIncrement it specifies adding an constant length to the longest length
+ *                       of each target in each MiniBatch.
+ *                       (by default None, meaning no increment)
+ * @tparam T numeric type
+ */
+case class PaddingParam[T: ClassTag](
+      featurePadding: Option[Array[Tensor[T]]] = None,
+      featureFixedLength: Option[Array[Int]] = None,
+      featureIncrement: Option[Array[Int]] = None,
+      labelPadding: Option[Array[T]] = None,
+      labelFixedLength: Option[Array[Int]] = None,
+      labelIncrement: Option[Array[Int]] = None)

@@ -294,7 +294,7 @@ class SampleToBatch[T: ClassTag]
           }
           featureTensor.set(Storage[T](featureData), storageOffset = 1, sizes = featureSize)
           labelTensor.set(Storage[T](labelData), storageOffset = 1, sizes = labelSize)
-          new TensorMiniBatch(featureTensor, labelTensor)
+          MiniBatch(featureTensor, labelTensor)
         } else {
           null
         }
@@ -305,24 +305,11 @@ class SampleToBatch[T: ClassTag]
 
 /**
  * Convert a sequence of [[Sample]] to a sequence of [[MiniBatch]] through function toMiniBatch.
- *
- * @param totalBatch total batch size
- * @param partitionNum partition number of dataset, default means partitionNum
- *                     equals executor number.
- * @param toMiniBatch toMiniBatch is an function convert an Array[Sample] to a MiniBatch[T], defined
- *                    as (Array[Sample[T]], Array[Tensor[T]], Array[Tensor[T]]) => MiniBatch[T]).
- *                    The two array[Tensor] are input buffers and target buffers, their lengths
- *                    equal to the Sample's numFeature and numLabel.
  */
-class SampleToMiniBatch[T: ClassTag](
+private[bigdl] class SampleToMiniBatch[T: ClassTag](
     totalBatch: Int,
     miniBatch: Option[MiniBatch[T]] = None,
-    featurePadding: Option[Array[Tensor[T]]] = None,
-    featureFixedLength: Option[Array[Int]] = None,
-    featureIncrement: Option[Array[Int]] = None,
-    labelPadding: Option[Array[T]] = None,
-    labelFixedLength: Option[Array[Int]] = None,
-    labelIncrement: Option[Array[Int]] = None,
+    paddingParam: Option[PaddingParam[T]] = None,
     partitionNum: Option[Int] = None)
     (implicit ev: TensorNumeric[T]) extends Transformer[Sample[T], MiniBatch[T]] {
 
@@ -351,8 +338,7 @@ class SampleToMiniBatch[T: ClassTag](
           }
           if (null == miniBatchBuffer) {
             miniBatchBuffer = MiniBatch(sampleData(0).numFeature(), sampleData(0).numLabel(),
-            featurePadding, featureFixedLength, featureIncrement,
-            labelPadding, labelFixedLength, labelIncrement)
+              paddingParam)
           }
 
           if (i < batchSize) {
@@ -373,20 +359,15 @@ object SampleToMiniBatch {
    * Apply an SampleToMiniBatch transformer.
    *
    * @param batchSize total batch size
+   * @param partitionNum partition number of dataset, default means partitionNum
+   *                       equals Engine.nodeNumber()
    * @return
    */
   def apply[T: ClassTag](
         batchSize : Int,
-        featurePadding: Option[Array[Tensor[T]]],
-        featureFixedLength: Option[Array[Int]],
-        featureIncrement: Option[Array[Int]],
-        labelPadding: Option[Array[T]],
-        labelFixedLength: Option[Array[Int]],
-        labelIncrement: Option[Array[Int]],
+        paddingParam: Option[PaddingParam[T]],
         partitionNum: Option[Int])(implicit ev: TensorNumeric[T]): SampleToMiniBatch[T] = {
-    new SampleToMiniBatch[T](batchSize, None,
-      featurePadding, featureFixedLength, featureIncrement,
-      labelPadding, labelFixedLength, labelIncrement, partitionNum)
+    new SampleToMiniBatch[T](batchSize, None, paddingParam, partitionNum)
   }
 
   def apply[T: ClassTag](
@@ -410,8 +391,8 @@ object SampleToMiniBatch {
     } else {
       None
     }
-    new SampleToMiniBatch(batchSize, featurePadding = fp, featureFixedLength = fl,
-      labelPadding = lp, labelFixedLength = ll, partitionNum = partitionNum)
+    SampleToMiniBatch(batchSize, Some(PaddingParam[T](featurePadding = fp, featureFixedLength = fl,
+      labelPadding = lp, labelFixedLength = ll)), partitionNum = partitionNum)
   }
 
 //  /**
