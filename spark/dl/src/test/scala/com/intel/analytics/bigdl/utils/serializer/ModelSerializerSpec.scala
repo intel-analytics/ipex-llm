@@ -466,20 +466,37 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     val res2 = loadedGradientReversal.forward(tensor2)
     res1 should be (res2)
   }
-/*
+
   "Graph serializer " should "work properly" in {
-    val linear = Linear[Double](10, 2).apply()
+    val linear = Linear(10, 2).inputs()
     val graph = Graph(linear, linear)
-    val tensor1 = Tensor[Double](10).apply1(_ => Random.nextDouble())
-    val tensor2 = Tensor[Double]()
+    val tensor1 = Tensor(10).apply1(_ => Random.nextFloat())
+    val tensor2 = Tensor()
     val res1 = graph.forward(tensor1)
     tensor2.resizeAs(tensor1).copy(tensor1)
-    ModelPersister.saveToFile("/tmp/graph.bigdl", graph, true)
-    val loadedGraph = ModelLoader.loadFromFile("/tmp/graph.bigdl")
-    val res2 = loadedGraph.asInstanceOf[Graph[Double]].forward(tensor2)
+    ModulePersister.saveToFile("/tmp/graph.bigdl", graph, true)
+    val loadedGraph = ModuleLoader.loadFromFile("/tmp/graph.bigdl")
+    val res2 = loadedGraph.forward(tensor2)
     res1 should be (res2)
   }
-  */
+
+  "Graph with variables serializer " should "work properly" in {
+    val linear = Linear(2, 2)
+    val linearNode = linear.inputs()
+    val linearWeight = linear.weight
+    val linearBias = linear.bias
+    val variables = Some(Array(linearWeight), Array(linearBias))
+    val graph = Graph(Array(linearNode), Array(linearNode), variables)
+    val tensor1 = Tensor(2).apply1(_ => Random.nextFloat())
+    val tensor2 = Tensor()
+    val res1 = graph.forward(tensor1)
+    tensor2.resizeAs(tensor1).copy(tensor1)
+    ModulePersister.saveToFile("/tmp/graph.bigdl", graph, true)
+    ModulePersister.saveModelDefinitionToFile("/tmp/graph.prototxt", graph, true)
+    val loadedGraph = ModuleLoader.loadFromFile("/tmp/graph.bigdl")
+    val res2 = loadedGraph.forward(tensor2)
+    res1 should be (res2)
+  }
 /*
   "GRU serializer " should "work properly" in {
     val gru = GRU(10, 10)

@@ -90,7 +90,7 @@ class DataConverterSpec extends FlatSpec with Matchers{
     val regularizer = L1L2Regularizer(1.0, 2.0)
     val attriBulder = AttrValue.newBuilder
     val cls = Class.forName("com.intel.analytics.bigdl.optim.Regularizer")
-    val tpe = universe.runtimeMirror(cls.getClassLoader).classSymbol(cls).toType
+    val tpe = universe.runtimeMirror(cls.getClassLoader).classSymbol(cls).selfType
     DataConverter.setAttributeValue(attriBulder, regularizer, tpe)
     val retrievedValue = DataConverter.getAttributeValue(attriBulder.build)
     retrievedValue.isInstanceOf[L1L2Regularizer[Float]] should be (true)
@@ -102,7 +102,7 @@ class DataConverterSpec extends FlatSpec with Matchers{
     val regularizer = L1Regularizer(1.0)
     val attriBulder = AttrValue.newBuilder
     val cls = Class.forName("com.intel.analytics.bigdl.optim.Regularizer")
-    val tpe = universe.runtimeMirror(cls.getClassLoader).classSymbol(cls).toType
+    val tpe = universe.runtimeMirror(cls.getClassLoader).classSymbol(cls).selfType
     DataConverter.setAttributeValue(attriBulder, regularizer, tpe)
     val retrievedValue = DataConverter.getAttributeValue(attriBulder.build)
     retrievedValue.isInstanceOf[L1Regularizer[Float]] should be (true)
@@ -113,7 +113,7 @@ class DataConverterSpec extends FlatSpec with Matchers{
     val regularizer = L2Regularizer(1.0)
     val attriBulder = AttrValue.newBuilder
     val cls = Class.forName("com.intel.analytics.bigdl.optim.Regularizer")
-    val tpe = universe.runtimeMirror(cls.getClassLoader).classSymbol(cls).toType
+    val tpe = universe.runtimeMirror(cls.getClassLoader).classSymbol(cls).selfType
     DataConverter.setAttributeValue(attriBulder, regularizer, tpe)
     val retrievedValue = DataConverter.getAttributeValue(attriBulder.build)
     retrievedValue.isInstanceOf[L2Regularizer[Float]] should be (true)
@@ -206,5 +206,34 @@ class DataConverterSpec extends FlatSpec with Matchers{
   }
 
   "Module Conversion " should " work properly" in {
+  }
+
+  "Array of int32 conversion " should " work properly " in {
+    val arry = Array[Int](1, 2, 3)
+    val attriBulder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(attriBulder, arry)
+    val attr = attriBulder.build
+    val retrievedValue = DataConverter.getAttributeValue(attr)
+    retrievedValue should be (arry)
+  }
+
+  "Array of int64 conversion " should " work properly " in {
+    val arry = Array[Long](1L, 2L, 3L)
+    val attriBulder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(attriBulder, arry)
+    val attr = attriBulder.build
+    val retrievedValue = DataConverter.getAttributeValue(attr)
+    retrievedValue should be (arry)
+  }
+
+  "Array of Tensor conversion " should " work properly" in {
+    val tensor1 = Tensor(2, 3).apply1(_ => Random.nextFloat())
+    val tensor2 = Tensor(2, 3).apply1(_ => Random.nextFloat())
+    val tensorArray = Array(tensor1, tensor2)
+    val attriBulder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(attriBulder, tensorArray)
+    val attr = attriBulder.build
+    val retrievedValue = DataConverter.getAttributeValue(attr)
+    retrievedValue.isInstanceOf[Array[Tensor[Float]]] should be (true)
   }
 }

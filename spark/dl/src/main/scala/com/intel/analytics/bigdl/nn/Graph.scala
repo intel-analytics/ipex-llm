@@ -15,13 +15,18 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import scala.collection.JavaConverters._
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.nn.tf.WithoutInput
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.{ContainerSerializable, DataConverter, ModuleData, ModuleSerializer}
 import com.intel.analytics.bigdl.utils.{Node, T, Table}
+import serialization.Model.{AttrValue, BigDLModule}
 
+import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
@@ -56,8 +61,8 @@ import scala.reflect.ClassTag
  */
 @SerialVersionUID(- 2896121321564992779L)
 class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
-    outputs : Seq[ModuleNode[T]],
-    variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None)
+    val outputs : Seq[ModuleNode[T]],
+    val variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None)
     (implicit ev: TensorNumeric[T])
     extends Container[Activity, Activity, T]{
 
@@ -262,7 +267,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
   }
 }
 
-object Graph {
+object Graph extends ContainerSerializable {
   /**
    * Node for graph container. The module should have a tensor/table input while a tensor output
    * @tparam T
@@ -312,6 +317,70 @@ object Graph {
   def apply[T: ClassTag](input : ModuleNode[T], output : ModuleNode[T])
     (implicit ev: TensorNumeric[T]) : Graph[T] = {
     new Graph[T](Array(input), Array(output))
+  }
+
+
+  override def loadModule[T: ClassTag](module : BigDLModule)
+                                      (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
+    val subModules = module.getSubModulesList.asScala
+    val modules = new ArrayBuffer[ModuleNode[T]]()
+    // map all bottom modules to current module
+    val bottomToModules = new mutable.HashMap[String, ModuleNode[T]]()
+    subModules.foreach(subModule => {
+      val bigDLModule = ModuleSerializer.load(subModule)
+      val moduleNode = bigDLModule.module.inputs()
+      val preNodes = bigDLModule.pre
+      preNodes.foreach(pre => {
+        if (bottomToModules.contains(pre)) {
+          bottomToModules(pre) -> moduleNode
+        }
+      })
+      val nextNodes = bigDLModule.next
+      nextNodes.foreach(next => bottomToModules(next) = moduleNode)
+      modules.append(moduleNode)
+    })
+    val inputs = modules.filter(_.prevNodes.size == 0).toArray
+    val outputs = modules.filter(_.nextNodes.size == 0).toArray
+    val attributes = module.getAttrMap
+    var sharedVariables : Option[(Array[Tensor[T]], Array[Tensor[T]])] = None
+    if (attributes.containsKey("sharedWeight") && attributes.containsKey("sharedBias")) {
+      val weights = attributes.get("sharedWeight")
+      val biases = attributes.get("sharedBias")
+      val weightArray = DataConverter.getAttributeValue(weights).asInstanceOf[Array[Tensor[T]]]
+      val biasArray = DataConverter.getAttributeValue(biases).asInstanceOf[Array[Tensor[T]]]
+      sharedVariables = Some(weightArray, biasArray)
+    }
+    val graph = Graph[T](inputs, outputs, sharedVariables)
+    createBigDLModule(module, graph)
+  }
+
+  override def serializeModule[T: ClassTag](module : ModuleData[T])
+                                           (implicit ev: TensorNumeric[T]) : BigDLModule = {
+    val bigDLModelBuilder = BigDLModule.newBuilder
+    module.next.foreach(_ => bigDLModelBuilder.addAllPreModules(_))
+    module.pre.foreach(_ => bigDLModelBuilder.addAllNextModules(_))
+    bigDLModelBuilder.setName(module.module.getName)
+    val graph = module.module.asInstanceOf[Graph[T]]
+    graph.getExecutions.foreach(execution => {
+      val nextNodes = execution.prevNodes.map(_.element.getName)
+      val preNodex = execution.nextNodes.map(_.element.getName)
+      val subModel = ModuleSerializer.serialize(ModuleData(execution.element
+        .asInstanceOf[AbstractModule[Activity, Activity, T]],
+        nextNodes, preNodex))
+      bigDLModelBuilder.addSubModules(subModel)
+    })
+    if (graph.variables.isDefined) {
+      val (weights, bias) = graph.variables.get
+      val weightAttrBuilder = AttrValue.newBuilder
+      DataConverter.setAttributeValue(weightAttrBuilder, weights)
+      bigDLModelBuilder.putAttr("sharedWeight", weightAttrBuilder.build)
+
+      val biasAttrBuilder = AttrValue.newBuilder
+      DataConverter.setAttributeValue(biasAttrBuilder, bias)
+      bigDLModelBuilder.putAttr("sharedBias", biasAttrBuilder.build)
+    }
+    bigDLModelBuilder.setModuleType(ModuleSerializer.getModuleTypeByCls(graph.getClass))
+    bigDLModelBuilder.build
   }
 }
 

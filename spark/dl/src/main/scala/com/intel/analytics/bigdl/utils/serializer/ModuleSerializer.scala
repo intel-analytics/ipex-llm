@@ -203,7 +203,7 @@ object ModuleSerializer extends ModuleSerializable{
       FlattenTable)
     registerModule("GradientReversal", Class.forName
     ("com.intel.analytics.bigdl.nn.GradientReversal"), GradientReversal)
-    // palce holder for Graph
+    registerModule("Graph", Class.forName("com.intel.analytics.bigdl.nn.Graph"), Graph)
     registerModule("GRU", Class.forName("com.intel.analytics.bigdl.nn.GRU"), GRU)
     registerModule("HardShrink", Class.forName("com.intel.analytics.bigdl.nn.HardShrink"),
       HardShrink)
