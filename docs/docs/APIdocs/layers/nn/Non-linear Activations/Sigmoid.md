@@ -19,9 +19,10 @@ Sigmoid is defined as: f(x) = 1 / (1 + exp(-x))
 ```scala
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
-val layer = new Sigmoid[Float]()
-val input = Tensor[Float](2, 3)
+val layer = new Sigmoid()
+val input = Tensor(2, 3)
 var i = 0
 input.apply1(_ => {i += 1; i})
 > print(layer.forward(input))

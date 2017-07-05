@@ -25,8 +25,8 @@ import com.intel.analytics.bigdl.utils.T
 val map = MapTable()
 map.add(Linear(10, 3))
 val input = T(
-      Tensor[Float](10).randn(),
-      Tensor[Float](10).randn())
+      Tensor(10).randn(),
+      Tensor(10).randn())
 > print(map.forward(input))
 {
 	2: 0.2444828
