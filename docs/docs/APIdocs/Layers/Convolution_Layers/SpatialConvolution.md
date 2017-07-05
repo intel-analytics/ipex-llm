@@ -2,11 +2,11 @@
 
 **Scala:**
 ```scala
-val m = SpatialConvolution(nInputPlane,nOutputPlane,kernelW,kernelH,strideW=1,strideH=1,padW=0,padH=0,nGroup=1,propagateBack=true,wRegularizer=null,bRegularizer=null,initWeight=null, initBias=null, initGradWeight=null, initGradBias=null)
+val m = SpatialConvolution(nInputPlane,nOutputPlane,kernelW,kernelH,strideW=1,strideH=1,padW=0,padH=0,nGroup=1,propagateBack=true,wRegularizer=null,bRegularizer=null,initWeight=null, initBias=null, initGradWeight=null, initGradBias=null, withBias=true)
 ```
 **Python:**
 ```python
-m = SpatialConvolution(n_input_plane,n_output_plane,kernel_w,kernel_h,stride_w=1,stride_h=1,pad_w=0,pad_h=0,n_group=1,propagate_back=True,wRegularizer=None,bRegularizer=None,init_weight=None,init_bias=None,init_grad_weight=None,init_grad_bias=None)
+m = SpatialConvolution(n_input_plane,n_output_plane,kernel_w,kernel_h,stride_w=1,stride_h=1,pad_w=0,pad_h=0,n_group=1,propagate_back=True,wRegularizer=None,bRegularizer=None,init_weight=None,init_bias=None,init_grad_weight=None,init_grad_bias=None,with_bias=True)
 ```
 
 SpatialConvolution is a module that applies a 2D convolution over an input image.
@@ -32,6 +32,7 @@ Detailed paramter explaination for the constructor.
  * param initBias:  bias initializer
  * param initGradWeight: weight gradient initializer
  * param initGradBias: bias gradient initializer
+ * param with_bias: if need bias
  
 **Scala example:**
 ```scala
