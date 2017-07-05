@@ -6,7 +6,7 @@ val m = SelectTable(index: Int)
 ```
 **Python:**
 ```python
-m = SelectTable(dimension)
+m = SelectTable(index)
 ```
 
 Select one element from a table by a given index.

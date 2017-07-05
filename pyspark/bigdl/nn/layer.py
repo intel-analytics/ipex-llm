@@ -602,7 +602,6 @@ class SpatialConvolution(Layer):
                  pad_h=0,
                  n_group=1,
                  propagate_back=True,
-                 init_method="default",
                  wRegularizer=None,
                  bRegularizer=None,
                  init_weight=None,
@@ -621,7 +620,6 @@ class SpatialConvolution(Layer):
                                                  pad_h,
                                                  n_group,
                                                  propagate_back,
-                                                 init_method,
                                                  wRegularizer,
                                                  bRegularizer,
                                                  JTensor.from_ndarray(init_weight),
@@ -953,12 +951,20 @@ class SpatialBatchNormalization(Layer):
                  eps=1e-5,
                  momentum=0.1,
                  affine=True,
+                 init_weight=None,
+                 init_bias=None,
+                 init_grad_weight=None,
+                 init_grad_bias=None,
                  bigdl_type="float"):
         super(SpatialBatchNormalization, self).__init__(None, bigdl_type,
                                                         n_output,
                                                         eps,
                                                         momentum,
-                                                        affine)
+                                                        affine,
+                                                        init_weight,
+                                                        init_bias,
+                                                        init_grad_weight,
+                                                        init_grad_bias)
 
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
@@ -1153,12 +1159,20 @@ class BatchNormalization(Layer):
                  eps=1e-5,
                  momentum=0.1,
                  affine=True,
+                 init_weight=None,
+                 init_bias=None,
+                 init_grad_weight=None,
+                 init_grad_bias=None,
                  bigdl_type="float"):
         super(BatchNormalization, self).__init__(None, bigdl_type,
                                                  n_output,
                                                  eps,
                                                  momentum,
-                                                 affine)
+                                                 affine,
+                                                 init_weight,
+                                                 init_bias,
+                                                 init_grad_weight,
+                                                 init_grad_bias)
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
@@ -2009,7 +2023,7 @@ class Min(Layer):
     '''
 
     def __init__(self,
-                 dim,
+                 dim=1,
                  num_input_dims=INTMIN,
                  bigdl_type="float"):
         super(Min, self).__init__(None, bigdl_type,
@@ -2461,7 +2475,7 @@ class SelectTable(Layer):
     internally to do so is recursive.
 
 
-    :param dimension: the dimension to be selected
+    :param index: the index to be selected
 
 
     >>> selectTable = SelectTable(1)
@@ -2469,10 +2483,10 @@ class SelectTable(Layer):
     '''
 
     def __init__(self,
-                 dimension,
+                 index,
                  bigdl_type="float"):
         super(SelectTable, self).__init__(None, bigdl_type,
-                                          dimension)
+                                          index)
 
 
 class Sigmoid(Layer):
@@ -2640,7 +2654,6 @@ class SpatialDilatedConvolution(Layer):
                  pad_h=0,
                  dilation_w=1,
                  dilation_h=1,
-                 init_method='default',
                  wRegularizer=None,
                  bRegularizer=None,
                  bigdl_type="float"):
@@ -2655,7 +2668,6 @@ class SpatialDilatedConvolution(Layer):
                                                         pad_h,
                                                         dilation_w,
                                                         dilation_h,
-                                                        init_method,
                                                         wRegularizer,
                                                         bRegularizer)
                                                         
@@ -2723,7 +2735,6 @@ class SpatialFullConvolution(Layer):
                  adj_h=0,
                  n_group=1,
                  no_bias=False,
-                 init_method='default',
                  wRegularizer=None,
                  bRegularizer=None,
                  bigdl_type="float"):
@@ -2740,7 +2751,6 @@ class SpatialFullConvolution(Layer):
                                                      adj_h,
                                                      n_group,
                                                      no_bias,
-                                                     init_method,
                                                      wRegularizer,
                                                      bRegularizer)
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
@@ -2768,7 +2778,6 @@ class SpatialShareConvolution(Layer):
                  pad_h=0,
                  n_group=1,
                  propagate_back=True,
-                 init_method='default',
                  bigdl_type="float"):
         super(SpatialShareConvolution, self).__init__(None, bigdl_type,
                                                       n_input_plane,
@@ -2780,8 +2789,7 @@ class SpatialShareConvolution(Layer):
                                                       pad_w,
                                                       pad_h,
                                                       n_group,
-                                                      propagate_back,
-                                                      init_method)
+                                                      propagate_back)
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
@@ -2826,7 +2834,6 @@ class VolumetricConvolution(Layer):
                  pad_w=0,
                  pad_h=0,
                  with_bias=True,
-                 init_method="default",
                  bigdl_type="float"):
         super(VolumetricConvolution, self).__init__(None, bigdl_type,
                                                     n_input_plane,
@@ -2840,8 +2847,7 @@ class VolumetricConvolution(Layer):
                                                     pad_t,
                                                     pad_w,
                                                     pad_h,
-                                                    with_bias,
-                                                    init_method)
+                                                    with_bias)
 
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
@@ -3202,9 +3208,11 @@ class Reverse(Layer):
 
     def __init__(self,
                  dimension=1,
+                 is_inplace=False,
                  bigdl_type="float"):
         super(Reverse, self).__init__(None, bigdl_type,
-                                      dimension)
+                                      dimension,
+                                      is_inplace)
 
 
 class Transpose(Layer):

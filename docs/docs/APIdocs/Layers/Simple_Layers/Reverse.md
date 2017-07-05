@@ -7,7 +7,7 @@ val m = Reverse(dim = 1, isInplace = false)
 ```
 **Python:**
 ```python
-m = Reverse(dimension=1)
+m = Reverse(dimension=1, is_inplace=False)
 ```
 
  Reverse the input w.r.t given dimension.
