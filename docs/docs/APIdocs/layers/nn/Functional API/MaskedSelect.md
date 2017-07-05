@@ -17,12 +17,13 @@ Performs a torch.MaskedSelect on a Tensor. The mask is supplied as a tabular arg
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import scala.util.Random
 
 
-val layer = MaskedSelect[Double]()
-val input1 = Tensor[Double](2, 2).apply1(e => Random.nextDouble())
-val mask = Tensor[Double](2, 2)
+val layer = MaskedSelect()
+val input1 = Tensor(2, 2).apply1(e => Random.nextFloat())
+val mask = Tensor(2, 2)
 mask(Array(1, 1)) = 1
 mask(Array(1, 2)) = 0
 mask(Array(2, 1)) = 0
@@ -31,8 +32,8 @@ val input = T()
 input(1.0) = input1
 input(2.0) = mask
 > print(layer.forward(input))
-0.23306825631652572
-0.4864940702311894
+0.2577119
+0.5061479
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 2]
 ```
 

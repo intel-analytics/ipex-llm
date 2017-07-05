@@ -1883,7 +1883,7 @@ class MapTable(Container):
     '''
 
     def __init__(self,
-                 module,
+                 module=None,
                  bigdl_type="float"):
         super(MapTable, self).__init__(None, bigdl_type,
                                        module)

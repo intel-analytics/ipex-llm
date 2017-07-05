@@ -2,11 +2,11 @@
 
 **Scala:**
 ```scala
-val module = Power(power, scale, shift)
+val module = Power(power, scale=1, shift=0)
 ```
 **Python:**
 ```python
-module = Power(power, scale, shift)
+module = Power(power, scale=1.0, shift=0.0)
 ```
 
  Apply an element-wise power operation with scale and shift.
@@ -22,9 +22,10 @@ module = Power(power, scale, shift)
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.Storage
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
-val power = Power[Double](2, 1, 1)
-val input = Tensor(Storage[Double](Array(0.0, 1, 2, 3, 4, 5)), 1, Array(2, 3))
+val power = Power(2, 1, 1)
+val input = Tensor(Storage(Array(0.0, 1, 2, 3, 4, 5)), 1, Array(2, 3))
 > print(power.forward(input))
 1.0	    4.0	     9.0	
 16.0	    25.0     36.0	

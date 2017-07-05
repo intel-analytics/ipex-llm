@@ -2,11 +2,11 @@
 
 **Scala:**
 ```scala
-val optim = Adam(learningRate, learningRateDecay, beta1, beta2, Epsilon)
+val optim = new Adam(learningRate=1e-3, learningRateDecay=0.0, beta1=0.9, beta2=0.999, Epsilon=1e-8)
 ```
 **Python:**
 ```python
-optim = Adam(learningRate, learningRateDecay, beta1, beta2, Epsilon)
+optim = Adam(learningRate=1e-3, learningRateDecay-0.0, beta1=0.9, beta2=0.999, Epsilon=1e-8, bigdl_type="float")
 ```
 
 An implementation of Adam optimization, first-order gradient-based optimization of stochastic  objective  functions. http://arxiv.org/pdf/1412.6980.pdf
@@ -26,22 +26,23 @@ An implementation of Adam optimization, first-order gradient-based optimization 
 ```scala
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.utils.T
 
-val optm = new Adam[Double]
-def rosenBrock(x: Tensor[Double]): (Double, Tensor[Double]) = {
+val optm = new Adam(learningRate=0.002)
+def rosenBrock(x: Tensor[Float]): (Float, Tensor[Float]) = {
     // (1) compute f(x)
     val d = x.size(1)
 
     // x1 = x(i)
-    val x1 = Tensor[Double](d - 1).copy(x.narrow(1, 1, d - 1))
+    val x1 = Tensor[Float](d - 1).copy(x.narrow(1, 1, d - 1))
     // x(i + 1) - x(i)^2
     x1.cmul(x1).mul(-1).add(x.narrow(1, 2, d - 1))
     // 100 * (x(i + 1) - x(i)^2)^2
     x1.cmul(x1).mul(100)
 
     // x0 = x(i)
-    val x0 = Tensor[Double](d - 1).copy(x.narrow(1, 1, d - 1))
+    val x0 = Tensor[Float](d - 1).copy(x.narrow(1, 1, d - 1))
     // 1-x(i)
     x0.mul(-1).add(1)
     x0.cmul(x0)
@@ -51,7 +52,7 @@ def rosenBrock(x: Tensor[Double]): (Double, Tensor[Double]) = {
     val fout = x1.sum()
 
     // (2) compute f(x)/dx
-    val dxout = Tensor[Double]().resizeAs(x).zero()
+    val dxout = Tensor[Float]().resizeAs(x).zero()
     // df(1:D-1) = - 400*x(1:D-1).*(x(2:D)-x(1:D-1).^2) - 2*(1-x(1:D-1));
     x1.copy(x.narrow(1, 1, d - 1))
     x1.cmul(x1).mul(-1).add(x.narrow(1, 2, d - 1)).cmul(x.narrow(1, 1, d - 1)).mul(-400)
@@ -66,10 +67,22 @@ def rosenBrock(x: Tensor[Double]): (Double, Tensor[Double]) = {
 
     (fout, dxout)
   }
-val x = Tensor[Double](2).fill(0)
-val config = T("learningRate" -> 0.002)
-> print(optm.optimize(rosenBrock, x, config))
-(0.001999999683772284
+val x = Tensor(2).fill(0)
+> print(optm.optimize(rosenBrock, x))
+(0.0019999996
 0.0
 [com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 2],[D@302d88d8)
+```
+**Python example:**
+```python
+optim_method = Adam(learningrate=0.002)
+                  
+optimizer = Optimizer(
+    model=mlp_model,
+    training_rdd=train_data,
+    criterion=ClassNLLCriterion(),
+    optim_method=optim_method,
+    end_trigger=MaxEpoch(20),
+    batch_size=32)
+
 ```

@@ -2,13 +2,13 @@
 
 **Scala:**
 ```scala
-val module = SpatialBatchNormalization(nOutput, eps, momentum, affine,
-                                           initWeight, initBias, initGradWeight, initGradBias)
+val module = SpatialBatchNormalization(nOutput, eps=1e-5, momentum=0.1, affine=true,
+                                           initWeight=null, initBias=null, initGradWeight=null, initGradBias=null)
 ```
 **Python:**
 ```python
-module = SpatialBatchNormalization(nOutput, eps, momentum, affine,
-                                       initWeight, initBias, initGradWeight, initGradBias)
+module = SpatialBatchNormalization(nOutput, eps=1e-5, momentum=0.1, affine=True)
+
 ```
 
 This file implements Batch Normalization as described in the paper:
@@ -47,9 +47,10 @@ The operation implemented is:
 ```scala
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
-val layer = SpatialBatchNormalization[Float](3, 1e-3)
-val input = Tensor[Float](2, 3, 2, 2).randn()
+val layer = SpatialBatchNormalization(3, 1e-3)
+val input = Tensor(2, 3, 2, 2).randn()
 > print(layer.forward(input))
 (1,1,.,.) =
 -0.21939678	-0.64394164	
