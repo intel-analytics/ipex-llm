@@ -100,24 +100,22 @@ object Trigger {
     }
   }
 
-  def maxScore(max: Float, scoreName: String): Trigger = {
+  /**
+   * A trigger that triggers an action when validation score larger than "max" score
+   * @param max max score
+   */
+  def maxScore(max: Float): Trigger = {
     new Trigger() {
       override def apply(state: Table): Boolean = {
-        require(state.contains(scoreName), s"$scoreName does not exist in state table")
-        state[Float](scoreName) > max
+        state[Float]("score") > max
       }
     }
   }
 
-  def minScore(min: Float, scoreName: String): Trigger = {
-    new Trigger() {
-      override def apply(state: Table): Boolean = {
-        require(state.contains(scoreName), s"$scoreName does not exist in state table")
-        state[Float](scoreName) < min
-      }
-    }
-  }
-
+  /**
+   * A trigger that triggers an action when training loss less than "min" loss
+   * @param min min loss
+   */
   def minLoss(min: Float): Trigger = {
     new Trigger() {
       override def apply(state: Table): Boolean = {

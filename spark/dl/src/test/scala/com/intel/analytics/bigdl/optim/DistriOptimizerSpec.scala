@@ -473,15 +473,43 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
       dataset = dataSet,
       criterion = new MSECriterion[Double]()
     )
-    //    val optimizer = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
-    //      .setState(T("learningRate" -> 20.0))
-    //      .setEndWhen(Trigger.maxEpoch(5))
 
     val optimMethod = new SGD[Double](learningRate = 20.0, learningRateSchedule =
-      SGD.Plateau("Loss", epsilon = 10, patience = 1, cooldown = 5))
+      SGD.Plateau("Loss", epsilon = 0, patience = 1, mode = "min"))
 
     optimizer.setOptimMethod(optimMethod)
       .setEndWhen(Trigger.maxEpoch(10))
+    val model = optimizer.optimize()
+
+    val result1 = model.forward(input1).asInstanceOf[Tensor[Double]]
+    result1(Array(1)) should be(0.0 +- 5e-2)
+
+    val result2 = model.forward(input2).asInstanceOf[Tensor[Double]]
+    result2(Array(1)) should be(1.0 +- 5e-2)
+  }
+
+  "Train with Plateau Score" should "work properly" in {
+    LoggerFilter.redirectSparkInfoLogs()
+    Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+    Logger.getLogger("com.intel.analytics.bigdl").setLevel(Level.INFO)
+
+    RandomGenerator.RNG.setSeed(10)
+    val logdir = com.google.common.io.Files.createTempDir()
+    val mm = mse
+    mm.getParameters()._1.fill(0.125)
+    val optimizer = new DistriOptimizer[Double](
+      _model = mm,
+      dataset = dataSet,
+      criterion = new MSECriterion[Double]()
+    )
+
+    val optimMethod = new SGD[Double](learningRate = 20.0, learningRateSchedule =
+      SGD.Plateau("score", epsilon = 0, patience = 1, mode = "max"))
+
+    optimizer.setOptimMethod(optimMethod)
+      .setEndWhen(Trigger.maxEpoch(10))
+    optimizer.setValidation(Trigger.everyEpoch, dataSet,
+      Array(new Top1Accuracy[Double]()))
     val model = optimizer.optimize()
 
     val result1 = model.forward(input1).asInstanceOf[Tensor[Double]]

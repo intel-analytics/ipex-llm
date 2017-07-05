@@ -109,7 +109,9 @@ object DistriOptimizer {
     var wallClockTime = 0L
     var lastEpochTime = 0L
     val driverState = T("epoch" -> optimMethod.state.get[Int]("epoch").getOrElse(1),
-      "neval" -> optimMethod.state.get[Int]("neval").getOrElse(1))
+      "neval" -> optimMethod.state.get[Int]("neval").getOrElse(1),
+      "Loss" -> optimMethod.state.get[Float]("Loss").getOrElse(Float.PositiveInfinity),
+      "score" -> optimMethod.state.get[Float]("score").getOrElse(0f))
     val _subModelNumber = Engine.getEngineType match {
       case MklBlas => coresPerNode
       case _ => throw new IllegalArgumentException()
@@ -264,7 +266,10 @@ object DistriOptimizer {
           parameters.gradientPartition.div(ev.fromType(finishedModelNum))
           modelCache.optimMethod.state.update("epoch", driverState[Int]("epoch"))
           modelCache.optimMethod.state.update("neval", driverState[Int]("neval"))
-          modelCache.optimMethod.state("Loss") = driverState("Loss")
+          modelCache.optimMethod.state.update("Loss", driverState[Float]("Loss"))
+          if (validationMethods.isDefined) {
+            modelCache.optimMethod.state.update("score", driverState[Float]("score"))
+          }
           modelCache.optimMethod.optimize(_ => (ev.fromType(value), parameters.gradientPartition),
             parameters.weightPartition)
 
@@ -274,7 +279,10 @@ object DistriOptimizer {
 
         optimMethod.state.update("epoch", driverState[Int]("epoch"))
         optimMethod.state.update("neval", driverState[Int]("neval"))
-        optimMethod.state("Loss") = driverState("Loss")
+        optimMethod.state.update("Loss", driverState[Float]("Loss"))
+        if (validationMethods.isDefined) {
+          optimMethod.state.update("score", driverState[Float]("score"))
+        }
         optimMethod.updateHyperParameter()
 
         accumulateCount += recordsNum.value
@@ -620,8 +628,8 @@ object DistriOptimizer {
     }).zip(vMethods)
     results.foreach(r => {
       logger.info(s"${r._2} is ${r._1}")
-      optimMethodState(r._2.toString()) = r._1.result._1
     })
+    optimMethodState("score") = results(0)._1.result._1
     if(validationSummary.isDefined) {
       results.foreach { r =>
         val result = r._1.result
