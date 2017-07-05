@@ -25,44 +25,22 @@ def run_cmd(cmds, err_msg, s=False):
 
 parser = argparse.ArgumentParser(description='Process BigDL docs.')
 parser.add_argument('-s', '--scaladocs',
-    required=True, type=str, dest='scaladocsflag', 
-    help='Add scala doc to site? Y/y or N/n')
+    dest='scaladocsflag', action='store_true', 
+    help='Add scala doc to site')
 parser.add_argument('-p', '--pythondocs',
-    required=True, type=str, dest='pythondocsflag', 
-    help='Add python doc to site? Y/y or N/n')
+    dest='pythondocsflag', action='store_true',
+    help='Add python doc to site')
 parser.add_argument('-m', '--startmkdocserve',
-    required=True, type=str, dest='mkdocserveflag', 
-    help='Start mkdoc server? Y/y or N/n')
+    dest='mkdocserveflag', action='store_true',
+    help='Start mkdoc server after build')
 
 args = parser.parse_args()
 
-scaladocs = False
-if args.scaladocsflag == 'y' or args.scaladocsflag == 'Y':
-    scaladocs = True
-elif args.scaladocsflag == 'n' or args.scaladocsflag == 'N':
-    scaladocs = False
-else:
-    parser.print_help()
-    sys.exit() 
+scaladocs = args.scaladocsflag
 
-pythondocs = False
-if args.pythondocsflag == 'y' or args.pythondocsflag == 'Y':
-    pythondocs = True
-elif args.pythondocsflag == 'n' or args.pythondocsflag == 'N':
-    pythondocs = False 
-else:
-    parser.print_help()
-    sys.exit()
+pythondocs = args.scaladocsflag 
 
-mkdoc_serve = False
-if args.mkdocserveflag == 'y' or args.mkdocserveflag == 'Y':
-    mkdoc_serve = True
-elif args.mkdocserveflag == 'n' or args.mkdocserveflag == 'N':
-    mkdoc_serve = False 
-else:
-    parser.print_help()
-    sys.exit()
-
+mkdoc_serve = args.mkdocserveflag
 
 script_path = os.path.realpath(__file__)
 dir_name = os.path.dirname(script_path)
