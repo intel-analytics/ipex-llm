@@ -71,21 +71,16 @@ class LSTMPeephole[T : ClassTag] (
     Sequential()
     .add(Dropout(p))
     .add(TimeDistributed(Linear(inputSize, hiddenSize * 4, wRegularizer = wRegularizer,
-      bRegularizer = bRegularizer).setName("i2g1234")))
+      bRegularizer = bRegularizer)))
 
-  def buildGate(dimension: Int, offset: Int, length: Int, name: String): Sequential[T] = {
+  def buildGate(dimension: Int, offset: Int, length: Int): Sequential[T] = {
     val gate = Sequential()
 
     val i2g = Narrow(dimension, offset, length)
-//      Sequential()
-//      .add(Dropout(p))
-//      .add(Linear(inputSize, hiddenSize, wRegularizer = wRegularizer,
-//        bRegularizer = bRegularizer))
-
     val h2g = Sequential()
       .add(Dropout(p))
       .add(Linear(hiddenSize, hiddenSize,
-        withBias = false, wRegularizer = uRegularizer).setName(name))
+        withBias = false, wRegularizer = uRegularizer))
 
     gate
       .add(ParallelTable()
@@ -97,17 +92,17 @@ class LSTMPeephole[T : ClassTag] (
   }
 
   def buildInputGate(): Sequential[T] = {
-    inputGate = buildGate(2, 1, hiddenSize, "inputGate")
+    inputGate = buildGate(2, 1, hiddenSize)
     inputGate
   }
 
   def buildForgetGate(): Sequential[T] = {
-    forgetGate = buildGate(2, 1 + hiddenSize, hiddenSize, "forgetGate")
+    forgetGate = buildGate(2, 1 + hiddenSize, hiddenSize)
     forgetGate
   }
 
   def buildOutputGate(): Sequential[T] = {
-    outputGate = buildGate(2, 1 + 3 * hiddenSize, hiddenSize, "outputGate")
+    outputGate = buildGate(2, 1 + 3 * hiddenSize, hiddenSize)
     outputGate
   }
 
@@ -116,15 +111,11 @@ class LSTMPeephole[T : ClassTag] (
       .add(NarrowTable(1, 2))
 
     val i2h = Narrow(2, 1 + 2 * hiddenSize, hiddenSize)
-//      Sequential()
-//      .add(Dropout(p))
-//      .add(Linear(inputSize, hiddenSize, wRegularizer = wRegularizer,
-//        bRegularizer = bRegularizer))
 
     val h2h = Sequential()
       .add(Dropout(p))
       .add(Linear(hiddenSize, hiddenSize, withBias = false,
-        wRegularizer = uRegularizer).setName("hiddenGate"))
+        wRegularizer = uRegularizer))
 
     hidden
       .add(ParallelTable()
