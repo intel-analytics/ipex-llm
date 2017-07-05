@@ -18,5 +18,32 @@ package com.intel.analytics.bigdl.tensor
 
 import java.nio.ByteBuffer
 
-object QuantizeTensor {
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+
+import scala.reflect.ClassTag
+
+private[bigdl] class QuantizeTensor[@specialized(Float) T: ClassTag]()
+  (implicit ev: TensorNumeric[T]) {
+  @transient
+  private var storageInJni = 0L
+  private var realSize = 0L
+
+  @transient
+  private var interStorage: ByteBuffer = _
+
+  def setBufferFromInterStorage(): Unit = {
+
+  }
+
+  def setStorageInJni(ptr: Long): Unit = {
+
+  }
+
+  def getStorageInJni(ptr: Long): Unit = {
+
+  }
+
+  def release(): Unit = {
+
+  }
 }

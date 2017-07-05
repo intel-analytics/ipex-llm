@@ -22,7 +22,6 @@ import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils._
-import com.intel.analytics.bigdl.utils.RandomGenerator._
 
 import scala.reflect.ClassTag
 
@@ -68,10 +67,8 @@ class SpatialConvolution[T: ClassTag](
 
   reset()
 
-  @transient
-  var _init = false
-  @transient
-  var desc = 0L
+  @transient var _init = false
+  @transient var desc = 0L
 
   override def reset(): Unit = {
     if (initWeight == null) {
@@ -84,16 +81,6 @@ class SpatialConvolution[T: ClassTag](
   }
 
   def init(): this.type = {
-    desc = FixPoint.FixConvOpCreate(0)
-    ev.getType() match {
-      case FloatType =>
-        FixPoint.FixConvOpSetupConvParameter(desc, nOutputPlane, nInputPlane, nGroup,
-          kernelH, kernelW, strideH, strideW, 1, 1, padH, padW,
-          weight.storage().array().asInstanceOf[Array[Float]], weight.storageOffset() - 1,
-          true, bias.storage().array().asInstanceOf[Array[Float]], bias.storageOffset() - 1, false)
-      case _ => throw new UnsupportedOperationException(s"only support float")
-    }
-    FixPoint.FixConvOpQuantizeKernel(desc, 64.0f)
     this
   }
 
@@ -105,43 +92,6 @@ class SpatialConvolution[T: ClassTag](
     if (!_init) {
       init()
       _init = true
-    }
-
-    val dimWidth = if (input.dim() == 3) 3 else 4
-    val dimHeight = if (input.dim() == 3) 2 else 3
-    val dimChannel = if (input.dim() == 3) 1 else 2
-    val batchSize = if (input.dim() == 3)  1 else input.size(1)
-    val inputWidth = input.size(dimWidth)
-    val inputHeight = input.size(dimHeight)
-    val outputWidth = (inputWidth + 2 * padW - kernelW) / strideW + 1
-    val outputHeight = (inputHeight + 2 * padH - kernelH) / strideH + 1
-
-    if (input.dim() == 3) {
-      output.resize(Array(nOutputPlane, outputHeight, outputWidth))
-    } else {
-      output.resize(Array(batchSize, nOutputPlane, outputHeight, outputWidth))
-    }
-
-/*
-    ev.getType() match {
-      case FloatType =>
-        FixPoint.FixConvOpSetupTargetBuffer(desc,
-          output.storage().array().asInstanceOf[Array[Float]],
-          output.storageOffset() - 1)
-        FixPoint.FixConvOpQuantizeData(desc,
-          batchSize, input.size(dimChannel), input.size(dimHeight), input.size(dimWidth),
-          input.storage().array().asInstanceOf[Array[Float]], input.storageOffset() - 1, 127.0f)
-      case _ => throw new UnsupportedOperationException(s"only support float")
-    }
-    FixPoint.FixConvOpExecute(desc, 0.5f)
-*/
-    ev.getType() match {
-      case FloatType =>
-        FixPoint.FixConvOpExecuteAll(desc, batchSize, input.size(dimChannel), input.size(dimHeight),
-          input.size(dimWidth), input.storage().array().asInstanceOf[Array[Float]],
-          input.storageOffset() - 1, 127.0f, output.storage().array().asInstanceOf[Array[Float]],
-          output.storageOffset() - 1, 0.5f)
-      case _ => throw new UnsupportedOperationException(s"only support float")
     }
 
     output
@@ -230,9 +180,5 @@ class SpatialConvolution[T: ClassTag](
   }
 
   def release(): Unit = {
-    if (desc != 0) {
-      FixPoint.FixConvOpFree(desc)
-      desc = 0L
-    }
   }
 }
