@@ -341,9 +341,17 @@ object SpatialShareConvolution {
     )
     sConv.weight.copy(conv.weight)
     sConv.bias.copy(conv.bias)
+    sConv.setScaleW(conv.getScaleW())
+    sConv.setScaleB(conv.getScaleB())
     sConv
   }
 
+  /**
+   * Replace all the SpatialConvolution in `model` with SpatialSharedConvolution,
+   * and shared the fInput and fGradInput in all SpatialSharedConvolution.
+   * @param model a Module
+   * @return model sharedConvolution.
+   */
   def shareConvolution[T: ClassTag](model: Module[T])(implicit ev: TensorNumeric[T]): Module[T] = {
     val fInputCache = Tensor[T](1)
     val fGradInputCache = Tensor[T](1)
@@ -351,7 +359,7 @@ object SpatialShareConvolution {
     model
   }
 
-  def shareConvolution[T: ClassTag](
+  private def shareConvolution[T: ClassTag](
         model: Module[T],
         fInputCache: Tensor[T],
         fGradInputCache: Tensor[T])(implicit ev: TensorNumeric[T]): Unit = {
