@@ -118,7 +118,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     dataSet = new DistributedDataSet[MiniBatch[Double]] {
       override def originRDD(): RDD[_] = rdd
 
-      override def data(train: Boolean): RDD[MiniBatch[Double]] = rdd
+      override def data(train : Boolean): RDD[MiniBatch[Double]] = rdd
 
       override def size(): Long = 256 * nodeNumber
 
@@ -268,10 +268,10 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val model = optimizer.optimize()
     val batchNormalization = model.asInstanceOf[Sequential[Double]].modules(1).
       asInstanceOf[BatchNormalization[Double]]
-    batchNormalization.runningMean.storage().array() should be(
+    batchNormalization.runningMean.storage().array() should be (
       Array(0.37499998210083496, 0.37499998210083496)
     )
-    batchNormalization.runningVar.storage().array() should be(
+    batchNormalization.runningVar.storage().array() should be (
       Array(1188.2811870277535, 1188.2811870277535)
     )
   }
@@ -286,7 +286,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val dataSet = new DistributedDataSet[MiniBatch[Double]] {
       override def originRDD(): RDD[_] = rdd
 
-      override def data(train: Boolean): RDD[MiniBatch[Double]] = rdd
+      override def data(train : Boolean): RDD[MiniBatch[Double]] = rdd
 
       override def size(): Long = 256 * nodeNumber
 
@@ -314,15 +314,15 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
       new ClassNLLCriterion[Double]()
     )
     optimizer.setState(T("learningRate" -> 20.0))
-      .setCheckpoint(filePath, Trigger.everyEpoch)
-      .setEndWhen(Trigger.maxEpoch(1))
-      .optimize()
+    .setCheckpoint(filePath, Trigger.everyEpoch)
+    .setEndWhen(Trigger.maxEpoch(1))
+    .optimize()
 
     val optimMethod =
       OptimMethod.load[Double](optimizer.getCheckpointPath().get + "/optimMethod.33")
 
-    optimMethod.state.get[Int]("epoch").get should be(2)
-    optimMethod.state.get[Int]("neval").get should be(33)
+    optimMethod.state.get[Int]("epoch").get should be (2)
+    optimMethod.state.get[Int]("neval").get should be (33)
   }
 
   "TrainSummary with MSE and LBFGS" should "work correctly" in {
@@ -342,7 +342,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val result2 = model.forward(input2).asInstanceOf[Tensor[Double]]
     result2(Array(1)) should be(1.0 +- 1e-2)
-    trainSummary.readScalar("Loss").last._2 should be(0.0f +- 1e-3f)
+    trainSummary.readScalar("Loss").last._2 should be (0.0f +- 1e-3f)
     trainSummary.close()
   }
 
@@ -363,7 +363,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val result2 = model.forward(input2).asInstanceOf[Tensor[Double]]
     result2(Array(1)) should be(1.0 +- 5e-2)
-    trainSummary.readScalar("Loss").last._2 should be(0.0f +- 1e-3f)
+    trainSummary.readScalar("Loss").last._2 should be (0.0f +- 1e-3f)
     trainSummary.close()
   }
 
@@ -385,7 +385,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val result2 = model.forward(input2).asInstanceOf[Tensor[Double]]
     result2(Array(1)) should be(1.0 +- 5e-2)
-    trainSummary.readScalar("Loss").last._2 should be(0.0f +- 1e-3f)
+    trainSummary.readScalar("Loss").last._2 should be (0.0f +- 1e-3f)
     trainSummary.close()
   }
 

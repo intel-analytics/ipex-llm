@@ -255,8 +255,6 @@ object DistriOptimizer {
           Iterator.single(finishedThreads.size)
         }).reduce(_ + _)
 
-      driverState("Loss") = lossSum.value.toFloat / finishedModelNum
-
       dropModelNumBatch += (driverSubModelNum - finishedModelNum)
       if (dropPercentage == 0 || finishedModelNum >= driverSubModelNum * (1-maxDropPercentage)) {
         val value = lossSum.value / finishedModelNum
@@ -277,23 +275,22 @@ object DistriOptimizer {
           Iterator.empty
         }).count()
 
+        accumulateCount += recordsNum.value
+        val end = System.nanoTime()
+        wallClockTime += end - start
         optimMethod.state.update("epoch", driverState[Int]("epoch"))
         optimMethod.state.update("neval", driverState[Int]("neval"))
+        driverState("Loss") = lossSum.value.toFloat / finishedModelNum
         optimMethod.state.update("Loss", driverState[Float]("Loss"))
         if (validationMethods.isDefined) {
           optimMethod.state.update("score", driverState[Float]("score"))
         }
         optimMethod.updateHyperParameter()
-
-        accumulateCount += recordsNum.value
-        val end = System.nanoTime()
-        wallClockTime += end - start
         driverState("Throughput") = recordsNum.value.toFloat / ((end - start) / 1e9f)
         driverState("LearningRate") = -optimMethod.getLearningRate().toFloat
         logger.info(s"${_header} Train ${recordsNum.value} in ${(end - start) / 1e9}seconds. " +
           s"Throughput is ${driverState("Throughput")} records/second. Loss is ${
             driverState("Loss")}. ${optimMethod.getHyperParameter()}")
-
         logger.debug("\n" + metrics.summary())
         logger.debug("Dropped modules: " + (driverSubModelNum - finishedModelNum))
         lossArray = new Array[Double](_subModelNumber)
