@@ -15,13 +15,7 @@ Please build BigDL referring to [Build Page](https://github.com/intel-analytics/
 ## Prepare the Input Data
 You can download the Tiny Shakespeare Texts corpus from [here](https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt).
 
-After downloading the text, separate it into train.txt and val.txt. In our case, we just select 80 percentage of the input to be train and remaining 20 percentage to be val.
-Please upload the directory will contains train.txt and val.txt to hdfs. The program will later read in the original text file from hdfs.
-```shell
-export LANG=en_US.UTF-8
-head -n 8000 input.txt > val.txt
-tail -n +8000 input.txt > train.txt
-```
+If you run on spark local mode, you can skip this step, we will download the file for you.
 
 ### Sample Text
 
@@ -63,9 +57,8 @@ $ cd ../../
 ```
 
 ## Train the Model
-Example command:
+Example command in yarn:
 ```bash
-./dist/bin/bigdl.sh -- \
 
 BigDL_HOME=...
 SPARK_HOME=...
@@ -90,7 +83,7 @@ PYSPARK_DRIVER_PYTHON=./venv/bin/python PYSPARK_PYTHON=./venv.zip/venv/bin/pytho
        --conf spark.executor.extraClassPath=bigdl-version-jar-with-dependencies.jar \
        --conf spark.yarn.appMasterEnv.NLTK_DATA=./ \
        --num-executors 1 \
-       ${BigDL_HOME}/pyspark/dl/models/rnn/rnnexample.py --folder hdfs://almaren-node-001:9000/rnn/ --batchSize 12
+       ${BigDL_HOME}/pyspark/dl/models/rnn/rnnexample.py --folder hdfs://xxx:9000/rnn/ --batchSize 12
 ```
 
 * `--folder` hdfs directory where train.txt and val.txt are located
