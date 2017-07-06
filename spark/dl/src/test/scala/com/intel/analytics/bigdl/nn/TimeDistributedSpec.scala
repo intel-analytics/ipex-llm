@@ -21,6 +21,27 @@ import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.scalatest.{FlatSpec, Matchers}
 
 class TimeDistributedSpec extends FlatSpec with Matchers {
+  "A TimeDistributed Module" should " reset correctly" in {
+    RNG.setSeed(100)
+    val batchSize = 5
+    val times = 5
+    val inputDim = 3
+    val outputDim = 4
+    val timeDim = 1
+    val input = Tensor[Float](Array(batchSize, times, inputDim)).randn()
+    val gradOutput = Tensor[Float](Array(batchSize, times, outputDim)).randn()
+    val linear = Linear[Float](inputDim, outputDim)
+    val model = TimeDistributed[Float](linear)
+
+    val output = model.forward(input)
+    val gradInput = model.backward(input, gradOutput)
+
+    model.reset()
+
+    gradOutput should not be (null)
+    gradInput should not be (null)
+  }
+
   "A TimeDistributed Module" should " hash code correctly" in {
     RNG.setSeed(100)
     val batchSize = 5
