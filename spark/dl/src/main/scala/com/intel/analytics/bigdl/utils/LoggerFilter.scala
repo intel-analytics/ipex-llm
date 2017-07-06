@@ -77,17 +77,17 @@ object LoggerFilter {
    * 1. redirect all logs of Spark to file, which can be set by `-Dbigdl.utils.LoggerFilter.logFile`
    * the default file is under current workspace named `bigdl.log`.
    * 2. `-Dbigdl.utils.LoggerFilter.disable=true` will disable redirection.
-   * and add an console appender for `com.intel.analytics.bigdl.optim`, because we set the threshold
-   * to ERROR first.
+   * 3. `-Dbigdl.utils.LoggerFilter.enableSparkLog=false` will not output spark log to file
    */
   def redirectSparkInfoLogs(): Unit = {
     val disable = System.getProperty("bigdl.utils.LoggerFilter.disable", "false")
-    if (disable.equalsIgnoreCase("false")) {
-      val optimClass = "com.intel.analytics.bigdl.optim"
+    val enableSparkLog = System.getProperty("bigdl.utils.LoggerFilter.enableSparkLog", "true")
+
+    def getLogFile: String = {
       val default = Paths.get(System.getProperty("user.dir"), "bigdl.log").toString
       val logFile = System.getProperty("bigdl.utils.LoggerFilter.logFile", default)
 
-      // If file doesn't exist, create a new one. If it's a directory, throw an error.
+      // If the file doesn't exist, create a new one. If it's a directory, throw an error.
       val logFilePath = Paths.get(logFile)
       if (!Files.exists(logFilePath)) {
         Files.createFile(logFilePath)
@@ -96,17 +96,27 @@ object LoggerFilter {
           .error(s"$logFile exists and is an directory. Can't redirect to it.")
       }
 
+      logFile
+    }
+
+    if (disable.equalsIgnoreCase("false")) {
+      val logFile = getLogFile
+
+      val optimClass = "com.intel.analytics.bigdl.optim"
       val defaultClasses = List("org", "akka", "breeze")
 
       for (clz <- defaultClasses) {
         classLogToAppender(clz, consoleAppender(Level.ERROR))
         Logger.getLogger(clz).setAdditivity(false)
       }
-
+      // it should be set to WARN for the progress bar
       Logger.getLogger("org.apache.spark.SparkContext").setLevel(Level.WARN)
 
-      for (clz <- optimClass :: defaultClasses) {
-        classLogToAppender(clz, fileAppender(logFile, Level.INFO))
+      classLogToAppender(optimClass, fileAppender(logFile, Level.INFO))
+      if (enableSparkLog.equalsIgnoreCase("true")) {
+        for (clz <- defaultClasses) {
+          classLogToAppender(clz, fileAppender(logFile, Level.INFO))
+        }
       }
     }
   }
