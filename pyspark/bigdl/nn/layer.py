@@ -376,6 +376,16 @@ class Layer(JavaValue):
         '''
         self.value.bRegularizer = bRegularizer.value
 
+    def set_trainable(self, trainable):
+        '''
+        set trainable
+        :param trainable: whether this layer is trainable
+        '''
+        callBigDlFunc(self.bigdl_type,
+                        "setLayerTrainable", self.value, trainable)
+        return self
+
+
 
 class Container(Layer):
     '''
@@ -490,6 +500,36 @@ class Model(Container):
         """
         jmodel = callBigDlFunc(bigdl_type, "loadTF", path, inputs, outputs, byte_order)
         return Model.of(jmodel)
+
+    def set_freeze(self, freeze_layers, bigdl_type="float"):
+        """
+        set an array of layers to be freezed, the rest of layers are trainable
+        :param freeze_layers: an array of layer names
+        :param bigdl_type:
+        :return:
+        """
+        callBigDlFunc(bigdl_type, "setFreeze", self.value, freeze_layers)
+        return self
+
+    def set_trainable(self, trainable_layers, bigdl_type="float"):
+        """
+        set an array of layers to be trainable, the rest of layers are freezed
+        :param trainable_layers:  an array of layer names
+        :param bigdl_type:
+        :return:
+        """
+        callBigDlFunc(bigdl_type, "setTrainable", self.value, trainable_layers)
+        return self
+
+    def unfreeze(self, bigdl_type="float"):
+        """
+        set all layers to be trainable
+        :param bigdl_type:
+        :return:
+        """
+        callBigDlFunc(bigdl_type, "unFreeze", self.value)
+        return self
+
 
 
 class Linear(Layer):

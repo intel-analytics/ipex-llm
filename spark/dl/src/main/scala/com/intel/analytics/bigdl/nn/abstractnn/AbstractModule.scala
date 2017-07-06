@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.tensor.{Tensor, TensorDataType}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.nn.{Graph, InitializationMethod, Module, Zeros}
+import com.intel.analytics.bigdl.nn.{Module, Utils}
 import com.intel.analytics.bigdl.utils.TorchObject.TYPE_MODULE
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.spark.rdd.RDD
@@ -202,6 +203,29 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
   def resetTimes(): Unit = {
     forwardTime = 0
     backwardTime = 0
+  }
+
+  /**
+   * set trainable
+   * @param trainable whether this layer is trainable
+   */
+  def setTrainable(trainable: Boolean): this.type = {
+    if (!trainable) {
+      scaleW = 0
+      scaleB = 0
+    }
+    this
+  }
+
+  private var _stopGrad: Boolean = false
+
+  def isStopGrad(): Boolean = {
+    _stopGrad
+  }
+
+  def setStopGrad(isStop: Boolean = true): this.type = {
+    _stopGrad = isStop
+    this
   }
 
   /**

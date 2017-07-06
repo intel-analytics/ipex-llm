@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -201,5 +202,23 @@ abstract class Container[A <: Activity : ClassTag,
         None
       }
     }
+  }
+
+  /**
+    * get all submodules map, use the module name as key
+    */
+  def getSubModules(): Map[String, Module[T]] = {
+    val nameToSubModules = Utils.getNamedModules(this)
+    nameToSubModules
+  }
+
+  /**
+    * get submodule by module name
+    */
+  def getSubModule(name: String): Option[Module[T]] = {
+    val subModules = getSubModules()
+    if (subModules.contains(name)) {
+      Some(subModules(name))
+    } else None
   }
 }
