@@ -117,24 +117,6 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
 
-  private def toValidationMethod(vMethods: JList[String]): Array[ValidationMethod[T]] = {
-    vMethods.toArray.map {
-      case "Top1Accuracy" => new Top1Accuracy[T]()
-      case "Top5Accuracy" => new Top5Accuracy[T]()
-      case "Loss" => new Loss[T]()
-      case m: String => throw new RuntimeException(s"not supported validation method: $m")
-    }
-  }
-
-  private def validationMethodToStr(method: ValidationMethod[T]): String = {
-    method match {
-      case _: Top1Accuracy[T] => "Top1Accuracy"
-      case _: Top5Accuracy[T] => "Top5Accuracy"
-      case _: Loss[T] => "loss"
-      case _ => throw new RuntimeException(s"not supported validation method: $method")
-    }
-  }
-
   def toPySample(sample: JSample[T]): Sample = {
     val featureList = sample.feature().contiguous().storage().toArray[T].toList.asJava
     val labelList = sample.label().contiguous().storage().toArray[T].toList.asJava
@@ -1294,13 +1276,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def modelTest(model: AbstractModule[Activity, Activity, T],
                 valRDD: JavaRDD[Sample],
                 batchSize: Int,
-                valMethods: JList[String])
+                valMethods: JList[ValidationMethod[T]])
   : JList[TestResult] = {
     val resultArray = model.evaluate(valRDD.rdd.map(toSample(_)),
-      toValidationMethod(valMethods), Some(batchSize))
+      valMethods.asScala.toArray, Some(batchSize))
     val testResultArray = resultArray.map { result =>
       TestResult(result._1.result()._1, result._1.result()._2,
-        validationMethodToStr(result._2))
+        result._2.toString())
     }
     testResultArray.toList.asJava
   }
@@ -1418,6 +1400,18 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Trigger.maxIteration(max)
   }
 
+  def createTop1Accuracy(): ValidationMethod[T] = {
+    new Top1Accuracy()
+  }
+
+  def createTop5Accuracy(): ValidationMethod[T] = {
+    new Top1Accuracy()
+  }
+
+  def createLoss(criterion: Criterion[T]): ValidationMethod[T] = {
+    new Loss(criterion)
+  }
+
   def createSGD(learningRate: Double = 1e-3,
     learningRateDecay: Double = 0.0,
     weightDecay: Double = 0.0,
@@ -1521,9 +1515,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                     batchSize: Int,
                     trigger: Trigger,
                     valRdd: JavaRDD[Sample],
-                    vMethods: JList[String]): Unit = {
-    optimizer.setValidation(trigger, batching(valRdd, batchSize.toInt),
-      toValidationMethod(vMethods))
+                    vMethods: JList[ValidationMethod[T]]): Unit = {
+    optimizer.setValidation(trigger, batching(valRdd, batchSize.toInt), vMethods.asScala.toArray)
   }
 
   def setCheckPoint(optimizer: Optimizer[T, MiniBatch[T]],
