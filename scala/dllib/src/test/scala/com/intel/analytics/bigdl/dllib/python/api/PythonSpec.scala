@@ -22,8 +22,7 @@ import java.util.{List => JList, Map => JMap}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.TensorSample
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.optim.SGD
-import com.intel.analytics.bigdl.optim.Trigger
+import com.intel.analytics.bigdl.optim.{Loss, SGD, Top1Accuracy, Trigger}
 import com.intel.analytics.bigdl.utils.{Engine, T}
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import org.apache.log4j.{Level, Logger}
@@ -188,7 +187,7 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
       batchSize = batchSize,
       trigger = Trigger.severalIteration(10),
       valRdd = data.toJavaRDD(),
-      vMethods = util.Arrays.asList("Top1Accuracy", "Loss"))
+      vMethods = util.Arrays.asList(new Top1Accuracy(), new Loss()))
 
     val logdir = com.google.common.io.Files.createTempDir()
     val trainSummary = TrainSummary(logdir.getPath, "lenet")
@@ -232,7 +231,7 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val testResult = pp.modelTest(trainedModel,
       data.toJavaRDD(),
       batchSize = 32,
-      valMethods = util.Arrays.asList("Top1Accuracy"))
+      valMethods = util.Arrays.asList(new Top1Accuracy()))
     println(testResult)
   }
 }
