@@ -42,5 +42,14 @@ s reached.
     A trigger that triggers an action when training reaches
     the number of iterations specified by "max".
     Usually used in Optimizer.setEndWhen.
+    
+5. maxScore
+   
+    A trigger that triggers an action when validation score
+    larger than "max" score
 
+6. minLoss
+   
+    A trigger that triggers an action when training loss
+    less than "min" loss
 
