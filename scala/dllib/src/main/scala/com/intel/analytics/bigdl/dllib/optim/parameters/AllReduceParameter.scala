@@ -50,7 +50,7 @@ object AllReduceParameter {
 }
 
 /**
- * Represent a parameter stored on block manager. In distributed optimization, we put parameters
+ * Represent parameters stored on the block manager. In distributed optimization, we put parameters
  * on block manager of spark. Each worker syncs parameters through the block manager. Block manager
  * here serves as a parameter server.
  *
@@ -71,8 +71,13 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) ex
   @transient private var extraSize = 0
   @transient private var partitionId: Int = 0
 
-  @transient lazy val parameterBuffer: CompressedTensor[T] = readParameterBuffer()
+  /** Compressed tensor to store/compress raw parameters before shipping them around the cluster. */
+  @transient private lazy val parameterBuffer: CompressedTensor[T] = readParameterBuffer()
+
+  /** Tensor to hold a slice of the global weights. */
   @transient lazy val weightPartition: Tensor[T] = readWeightPartition()
+
+  /** Tensor to hold a slice of the global gradients. */
   @transient lazy val gradientPartition: Tensor[T] = readGradientPartition()
 
   /**
@@ -86,15 +91,20 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) ex
     partitionId = TaskContext.getPartitionId()
   }
 
-  def readParameterBuffer(): CompressedTensor[T] = {
+  /**
+   * Create an empty [[CompressedTensor]] for parameter compression.
+   */
+  private def readParameterBuffer(): CompressedTensor[T] = {
     new FP16SplitsCompressedTensor[T](size, partitionNum).asInstanceOf[CompressedTensor[T]]
   }
 
   /**
-   * Reads the portion of the weights assigned to this node from the local block manager.
+   * Reads the portion of the weights assigned to this node from the local block manager. The
+   * `init` method must be called before calling this method.
+   *
    * @return Tensor containing a slice of the overall model weights.
    */
-  def readWeightPartition(): Tensor[T] = {
+  private def readWeightPartition(): Tensor[T] = {
     val blockId = getWeightPartitionId()
     BlockManagerWrapper.getLocal(blockId)
       .map(_.data.next().asInstanceOf[Tensor[T]])
@@ -102,10 +112,12 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) ex
   }
 
   /**
-   * Reads the portion of the gradients assigned to this node from the local block manager.
+   * Reads the portion of the gradients assigned to this node from the local block manager. The
+   * `init` method must be called before calling this method.
+   *
    * @return Tensor containing a slice of the overall model gradients.
    */
-  def readGradientPartition(): Tensor[T] = {
+  private def readGradientPartition(): Tensor[T] = {
     val blockId = getGradientPartitionId()
     BlockManagerWrapper.getLocal(blockId)
       .map(_.data.next().asInstanceOf[Tensor[T]])
@@ -163,7 +175,7 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) ex
    * `localParameter`.
    *
    * @param localParameter The Tensor that will hold the retrieved weights.
-   * @return A `FutureResult` which contains futures for each thread.
+   * @return A [[FutureResult]] which contains a [[Future]] for each thread.
    */
   def getWeights(localParameter: Tensor[T]): FutureResult[Int] = {
     val bm = SparkEnv.get.blockManager
@@ -206,7 +218,7 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) ex
   def aggregateGradientPartition(): Unit = {
     val bm = SparkEnv.get.blockManager
     require(partitionId < partitionNum, s"This parameter was created with $partitionNum " +
-      s"partitions. It cannot be used on RDDs with >$partitionNum partitions.")
+      s"partitions. It cannot be used on RDDs with > $partitionNum partitions.")
     val params = new Array[CompressedTensor[T]](partitionNum)
     val sgThreads = (0 until partitionNum).map { pid =>
       new Callable[Int] {
@@ -257,7 +269,8 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) ex
    */
   def putGradients(parameter: Tensor[T]): Unit = {
     var pid = 0
-    require(parameterBuffer != null, )
+    require(parameterBuffer != null, "The parameter buffer is null. Has this AllReduceParameter" +
+      " been initialized on each partition?")
     parameterBuffer.compress(parameter)
     while (pid < partitionNum) {
       val start = pid * taskSize + math.min(pid, extraSize)
