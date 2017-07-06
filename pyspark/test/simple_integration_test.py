@@ -165,7 +165,7 @@ class TestWorkFlow(unittest.TestCase):
             batch_size=batch_size,
             val_rdd=trainingData,
             trigger=EveryEpoch(),
-            val_method=["Top1Accuracy"]
+            val_method=[Top1Accuracy()]
         )
 
         optimizer.optimize()
@@ -197,7 +197,7 @@ class TestWorkFlow(unittest.TestCase):
             print(str(i) + "\n")
         print(len(p))
 
-        test_results = trained_model.test(trainingData, 32, ["Top1Accuracy"])
+        test_results = trained_model.test(trainingData, 32, [Top1Accuracy()])
         for test_result in test_results:
             print(test_result)
 

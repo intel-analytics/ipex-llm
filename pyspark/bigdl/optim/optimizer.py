@@ -25,10 +25,54 @@ from bigdl.util.common import JavaValue
 from bigdl.util.common import callBigDlFunc
 from bigdl.util.common import callJavaFunc
 from bigdl.util.common import get_spark_context
+from bigdl.util.common import to_list
+
 
 if sys.version >= '3':
     long = int
     unicode = str
+
+
+class Top1Accuracy(JavaValue):
+    """
+    Caculate the percentage that output's max probability index equals target.
+
+    >>> top1 = Top1Accuracy()
+    creating: createTop1Accuracy
+    """
+    def __init__(self, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type)
+
+
+class Top5Accuracy(JavaValue):
+    """
+    Caculate the percentage that output's max probability index equals target.
+
+    >>> top5 = Top5Accuracy()
+    creating: createTop5Accuracy
+    """
+    def __init__(self, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type)
+
+
+class Loss(JavaValue):
+
+    """
+    This evaluation method is calculate loss of output with respect to target
+    >>> from bigdl.nn.criterion import ClassNLLCriterion
+    >>> loss = Loss()
+    creating: createClassNLLCriterion
+    creating: createLoss
+
+    >>> loss = Loss(ClassNLLCriterion())
+    creating: createClassNLLCriterion
+    creating: createLoss
+    """
+    def __init__(self, cri=None, bigdl_type="float"):
+        from bigdl.nn.criterion import ClassNLLCriterion
+        if cri is None:
+            cri = ClassNLLCriterion()
+        JavaValue.__init__(self, None, bigdl_type, cri)
 
 
 class MaxIteration(JavaValue):
@@ -390,7 +434,7 @@ class Optimizer(JavaValue):
                            training_rdd, criterion,
                           optim_method if optim_method else SGD(), end_trigger, batch_size)
 
-    def set_validation(self, batch_size, val_rdd, trigger, val_method=["Top1Accuracy"]):
+    def set_validation(self, batch_size, val_rdd, trigger, val_method=None):
         """
         Configure validation settings.
 
@@ -400,8 +444,10 @@ class Optimizer(JavaValue):
         :param trigger: validation interval
         :param val_method: the ValidationMethod to use,e.g. "Top1Accuracy", "Top5Accuracy", "Loss"
         """
+        if val_method is None:
+            val_method = [Top1Accuracy()]
         callBigDlFunc(self.bigdl_type, "setValidation", self.value, batch_size,
-                      trigger, val_rdd, val_method)
+                      trigger, val_rdd, to_list(val_method))
 
     def set_model(self, model):
         """
