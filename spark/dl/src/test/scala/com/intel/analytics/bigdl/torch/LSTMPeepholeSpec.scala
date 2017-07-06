@@ -24,6 +24,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.T
 
+import scala.collection.mutable.ArrayBuffer
 import scala.sys.process._
 
 @com.intel.analytics.bigdl.tags.Serial
@@ -42,6 +43,41 @@ class LSTMPeepholeSpec  extends TorchSpec {
     if (!existsRNN.contains("true")) {
       cancel("Torch rnn is not installed")
     }
+  }
+
+  "A LSTMPeephole" should " be fast" in {
+    val inputSize = 300
+    val hiddenSize = 300
+    val batchSize = 12
+    val time = 200
+    val seed = 100
+    RNG.setSeed(seed)
+    val input = Tensor[Float](batchSize, time, inputSize).rand
+    val gradOutput = Tensor[Float](batchSize, time, hiddenSize).rand
+
+    val model = Recurrent[Float]()
+        .add(LSTMPeephole[Float](inputSize, hiddenSize))
+
+    var startTime = System.nanoTime()
+    var duration = (System.nanoTime() - startTime) / 1e9
+    var sum = 0.0
+
+    println("warmup ..")
+    for (i <- 1 to 5) {
+      model.forward(input)
+      model.backward(input, gradOutput)
+    }
+
+    val n = 5
+    for (i <- 1 to n) {
+      startTime = System.nanoTime()
+      model.forward(input)
+      model.backward(input, gradOutput)
+      duration = (System.nanoTime() - startTime) / 1e9
+      sum += duration
+      println(s"iteration-${i}, elapsed time = ${duration}")
+    }
+    println(s"average elapsed time = ${sum / n}")
   }
 
   "A LSTMPeepwhole " should "has same loss as torch rnn" in {
@@ -84,6 +120,47 @@ class LSTMPeepholeSpec  extends TorchSpec {
     val logSoftMax = TimeDistributed[Double](LogSoftMax[Double]())
 
     val (weights, grad) = model.getParameters()
+
+    /*
+     * Since we changed the structure of LSTMPeephole, we have to rearrange the parameters.
+     */
+    val (weightsArray, gradArray) = model.parameters()
+    val weightsArrayTorch = weightsArray.clone
+
+    val weightsTorch = new ArrayBuffer[Tensor[Double]]()
+
+    val i2g2 = weightsArrayTorch(0).narrow(1, 1 + hiddenSize, hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g2).copy(i2g2)
+    val i2g2bias = weightsArrayTorch(1).narrow(1, 1 + hiddenSize, hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g2bias).copy(i2g2bias)
+    weightsTorch += Tensor().resizeAs(weightsArrayTorch(2)).copy(weightsArrayTorch(2))
+    weightsTorch += Tensor().resizeAs(weightsArrayTorch(3)).copy(weightsArrayTorch(3))
+    val i2g1 = weightsArrayTorch(0).narrow(1, 1, hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g1).copy(i2g1)
+    val i2g1bias = weightsArrayTorch(1).narrow(1, 1, hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g1bias).copy(i2g1bias)
+    weightsTorch += Tensor().resizeAs(weightsArrayTorch(4)).copy(weightsArrayTorch(4))
+    weightsTorch += Tensor().resizeAs(weightsArrayTorch(5)).copy(weightsArrayTorch(5))
+
+    val i2g3 = weightsArrayTorch(0).narrow(1, 1 + 2 * hiddenSize, hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g3).copy(i2g3)
+    val i2g3bias = weightsArrayTorch(1).narrow(1, 1 + 2 * hiddenSize, hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g3bias).copy(i2g3bias)
+
+    weightsTorch += Tensor().resizeAs(weightsArrayTorch(6)).copy(weightsArrayTorch(6))
+
+    val i2g4 = weightsArrayTorch(0).narrow(1, 1 + 3 * hiddenSize, hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g4).copy(i2g4)
+    val i2g4bias = weightsArrayTorch(1).narrow(1, 1 + 3 * hiddenSize, hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g4bias).copy(i2g4bias)
+
+    weightsTorch += Tensor().resizeAs(weightsArrayTorch(7)).copy(weightsArrayTorch(7))
+    weightsTorch += Tensor().resizeAs(weightsArrayTorch(8)).copy(weightsArrayTorch(8))
+    weightsTorch += Tensor().resizeAs(weightsArrayTorch(9)).copy(weightsArrayTorch(9))
+    weightsTorch += Tensor().resizeAs(weightsArrayTorch(10)).copy(weightsArrayTorch(10))
+
+    val (weights2Torch, grad2Torch) =
+      (Module.flatten[Double](weightsTorch.toArray), Module.flatten[Double](gradArray))
 
     val code =
       s"""
@@ -159,7 +236,7 @@ class LSTMPeepholeSpec  extends TorchSpec {
     """.stripMargin
 
     val (luaTime, torchResult) = TH.run(code,
-      Map("input" -> input.transpose(1, 2), "weights" -> weights,
+      Map("input" -> input.transpose(1, 2), "weights" -> weights2Torch,
         "labels" -> SplitTable[Double](1).forward(labels.t())),
       Array("output", "err", "parameters", "gradParameters", "output2", "gradInput", "err2"))
 
@@ -319,6 +396,48 @@ class LSTMPeepholeSpec  extends TorchSpec {
 
     val (weights, grad) = model.getParameters()
 
+
+    /*
+     * Since we changed the structure of LSTMPeephole, we have to rearrange the parameters.
+     */
+    val (weightsArray, gradArray) = model.parameters()
+    val weightsArrayTorch = weightsArray.clone
+
+    val weightsTorch = new ArrayBuffer[Tensor[Float]]()
+
+    val i2g2 = weightsArrayTorch(0).narrow(1, 1 + hiddenSize, hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g2).copy(i2g2)
+    val i2g2bias = weightsArrayTorch(1).narrow(1, 1 + hiddenSize, hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g2bias).copy(i2g2bias)
+    weightsTorch += Tensor().resizeAs(weightsArrayTorch(2)).copy(weightsArrayTorch(2))
+    weightsTorch += Tensor().resizeAs(weightsArrayTorch(3)).copy(weightsArrayTorch(3))
+    val i2g1 = weightsArrayTorch(0).narrow(1, 1, hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g1).copy(i2g1)
+    val i2g1bias = weightsArrayTorch(1).narrow(1, 1, hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g1bias).copy(i2g1bias)
+    weightsTorch += Tensor().resizeAs(weightsArrayTorch(4)).copy(weightsArrayTorch(4))
+    weightsTorch += Tensor().resizeAs(weightsArrayTorch(5)).copy(weightsArrayTorch(5))
+
+    val i2g3 = weightsArrayTorch(0).narrow(1, 1 + 2 * hiddenSize, hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g3).copy(i2g3)
+    val i2g3bias = weightsArrayTorch(1).narrow(1, 1 + 2 * hiddenSize, hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g3bias).copy(i2g3bias)
+
+    weightsTorch += Tensor().resizeAs(weightsArrayTorch(6)).copy(weightsArrayTorch(6))
+
+    val i2g4 = weightsArrayTorch(0).narrow(1, 1 + 3 * hiddenSize, hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g4).copy(i2g4)
+    val i2g4bias = weightsArrayTorch(1).narrow(1, 1 + 3 * hiddenSize, hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g4bias).copy(i2g4bias)
+
+    weightsTorch += Tensor().resizeAs(weightsArrayTorch(7)).copy(weightsArrayTorch(7))
+    weightsTorch += Tensor().resizeAs(weightsArrayTorch(8)).copy(weightsArrayTorch(8))
+    weightsTorch += Tensor().resizeAs(weightsArrayTorch(9)).copy(weightsArrayTorch(9))
+    weightsTorch += Tensor().resizeAs(weightsArrayTorch(10)).copy(weightsArrayTorch(10))
+
+    val (weights2Torch, grad2Torch) =
+      (Module.flatten[Float](weightsTorch.toArray), Module.flatten[Float](gradArray))
+
     val code =
       s"""
          |
@@ -385,7 +504,7 @@ class LSTMPeepholeSpec  extends TorchSpec {
     scala.Seq
 
     val (luaTime, torchResult) = TH.run(code,
-      Map("input" -> input.transpose(1, 2), "weights" -> weights,
+      Map("input" -> input.transpose(1, 2), "weights" -> weights2Torch,
         "labels" -> SplitTable[Double](1).forward(labels.t())),
       Array("output", "err", "parameters", "gradParameters", "output2", "gradInput", "err2"))
 
