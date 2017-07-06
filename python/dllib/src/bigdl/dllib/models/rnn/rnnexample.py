@@ -20,6 +20,7 @@ import itertools
 import re
 from optparse import OptionParser
 
+from bigdl.dataset import base
 from bigdl.dataset import sentence
 from bigdl.nn.layer import *
 from bigdl.nn.criterion import *
@@ -27,26 +28,30 @@ from bigdl.optim.optimizer import *
 from bigdl.util.common import *
 from bigdl.util.common import Sample
 
-def prepare_data(sc, folder, vocabsize):
-    train_file = folder + "train.txt"
-    val_file = folder + "val.txt"
+def download_data(dest_dir):
+    TINYSHAKESPEARE_URL = 'https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt'  # noqa
+    file_name = "input.txt"
+    file_abs_path = base.maybe_download(file_name, dest_dir, TINYSHAKESPEARE_URL)
+    return file_abs_path
 
-    train_sentences_rdd = sc.textFile(train_file) \
+def prepare_data(sc, folder, vocabsize, training_split):
+    if not folder.startswith( 'hdfs://' ):
+        file = download_data(folder)
+    else:
+        file = folder
+    sentences_rdd = sc.textFile(file) \
         .map(lambda line: sentence.sentences_split(line))
-    pad_sent = train_sentences_rdd.flatMap(lambda x: x). \
+    pad_sent = sentences_rdd.flatMap(lambda x: x). \
         map(lambda sent: sentence.sentences_bipadding(sent))
     tokens = pad_sent.map(lambda pad: sentence.sentence_tokenizer(pad))
-    max_len = tokens.map(lambda x: len(x)).max()
+    train_tokens, val_tokens = tokens.randomSplit([training_split, 1 - training_split])
+
+    max_len = train_tokens.map(lambda x: len(x)).max()
     print("max length %s" % max_len)
 
-    words = tokens.flatMap(lambda x: x)
-    print("%s words and %s sentences processed in train data" % (words.count(), tokens.count()))
+    words = train_tokens.flatMap(lambda x: x)
+    print("%s words and %s sentences processed in train data" % (words.count(), train_tokens.count()))
 
-    val_sentences_rdd = sc.textFile(val_file) \
-        .map(lambda line: sentence.sentences_split(line))
-    val_pad_sent = val_sentences_rdd.flatMap(lambda x: x). \
-        map(lambda sent: sentence.sentences_bipadding(sent))
-    val_tokens = val_pad_sent.map(lambda pad: sentence.sentence_tokenizer(pad))
     val_max_len = val_tokens.map(lambda x: len(x)).max()
     print("val max length %s" % val_max_len)
 
@@ -120,7 +125,7 @@ def build_model(input_size, hidden_size, output_size):
 if __name__ == "__main__":
     parser = OptionParser()
 
-    parser.add_option("-f", "--folder", dest="folder", default="./")
+    parser.add_option("-f", "--folder", dest="folder", default="/tmp/rnn")
     parser.add_option("-b", "--batchSize", dest="batchSize", default="128")
     parser.add_option("--learningRate", dest="learningrate", default="0.1")
     parser.add_option("--momentum", dest="momentum", default="0.0")
@@ -141,12 +146,13 @@ if __name__ == "__main__":
     vob_size = int(options.vob_size)
     max_epoch = int(options.max_epoch)
     folder = options.folder
+    training_split = 0.8
 
     sc = SparkContext(appName="simplernn_example",
                       conf=create_spark_conf())
     init_engine()
 
-    (train_rdd, val_rdd, vob_size) = prepare_data(sc, folder, vob_size)
+    (train_rdd, val_rdd, vob_size) = prepare_data(sc, folder, vob_size, training_split)
 
     optimizer = Optimizer(
         model=build_model(vob_size, hidden_size, vob_size),
