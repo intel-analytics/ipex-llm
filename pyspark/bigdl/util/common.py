@@ -393,7 +393,7 @@ def _test():
     from pyspark import SparkContext
     from bigdl.nn import layer
     globs = layer.__dict__.copy()
-    sc = get_spark_context()
+    sc = SparkContext(master="local[2]", appName="test common utility")
     globs['sc'] = sc
     (failure_count, test_count) = doctest.testmod(globs=globs,
                                                   optionflags=doctest.ELLIPSIS)

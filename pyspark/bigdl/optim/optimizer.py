@@ -647,12 +647,13 @@ class L2Regularizer(JavaValue):
 
 def _test():
     import doctest
+    from pyspark import SparkContext
     from bigdl.optim import optimizer
     from bigdl.util.common import init_engine
-    from bigdl.util.common import get_spark_context
-
+    from bigdl.util.common import create_spark_conf
     globs = optimizer.__dict__.copy()
-    sc = get_spark_context()
+    sc = SparkContext(master="local[4]", appName="test optimizer",
+                      conf=create_spark_conf())
     init_engine()
     globs['sc'] = sc
     (failure_count, test_count) = doctest.testmod(globs=globs,
