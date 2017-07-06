@@ -1,8 +1,23 @@
-## Summary
-This example demonstrates how to use BigDL with Spark ML pipeline to train and predict LeNet5 model on MNIST dataset.
+## DLClassifierLogisticRegression
+
+DLClassifierLogisticRegression example demonstrates how to use BigDL DLClassifier to train a
+Logistic Regression Model. DLClassifier extends Spark Estimator and can act as a stage in a
+ML Pipeline. The feature column can be Array or Spark Vectors, while the label column data should
+be Double.
+
+## DLEstimatorMultiLabelLR
+
+DLEstimatorMultiLabelLR example demonstrates how to use BigDL DLEstimator to train a
+multi-label Logistic Regression Model. DLEstimator extends Spark Estimator and can act as a
+stage in a ML Pipeline. Both the feature and label column can be Array or Spark Vectors. The
+feature column may also be Double.
+
+
+## DLClassifierLeNet
+DLClassifierLeNet example demonstrates how to use BigDL with Spark ML pipeline to train and predict LeNet5 model on MNIST dataset.
 
 Learn more about Spark ML please refer to <http://spark.apache.org/docs/latest/api/scala/org/apache/spark/ml/Pipeline.html>
-## Preparation
+### Preparation
 
 To start with this example, you need prepare your dataset.
 
@@ -21,7 +36,7 @@ There're four files.
  
 For more detail, please refer to the download page.
 
-## Run this example
+### Run this example
 
 Command to run the example in Spark local mode:
 ```
