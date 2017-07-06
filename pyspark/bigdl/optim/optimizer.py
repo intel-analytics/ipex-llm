@@ -280,7 +280,7 @@ class Plateau(JavaValue):
                     after lr has been reduced.
     :param min_lr lower bound on the learning rate.
 
-    >>> plateau = Plateau()
+    >>> plateau = Plateau("score")
     creating: createPlateau
     """
     def __init__(self,
