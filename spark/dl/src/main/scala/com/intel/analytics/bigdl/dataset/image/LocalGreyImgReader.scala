@@ -24,14 +24,27 @@ import scala.collection.Iterator
 
 object LocalGreyImgReader {
   Class.forName("javax.imageio.ImageIO")
-//  Class.forName("java.awt.color.ICC_ColorSpace")
-  // Class.forName("sun.java2d.cmm.lcms.LCMS")
-//  ColorSpace.getInstance(ColorSpace.CS_GRAY).toRGB(Array[Float](0, 0, 0))
 
+  /**
+    * Create grey image reader transformer to resize the shorted edge to the given scale to
+    * value and resize the other edge properly. Also divide the pixel value by
+    * the given normalize value
+    * @param scaleTo scale to value
+    * @param normalize the value to normalize
+    * @return grey image reader transformer
+    */
   def apply(scaleTo: Int = Image.NO_SCALE, normalize: Float = 255f)
   : Transformer[LocalLabeledImagePath, LabeledGreyImage]
   = new LocalScaleGreyImgReader(scaleTo, normalize)
 
+  /**
+    * Create grey image reader transformer to resize the images to the given width and height.
+    * And also divide the pixel value by the given normalize value.
+    * @param resizeW the given width to resize
+    * @param resizeH the given hight to resize
+    * @param normalize the value to normalize
+    * @return grey image reader transformer
+    */
   def apply(resizeW: Int, resizeH: Int, normalize: Float)
   : Transformer[LocalLabeledImagePath, LabeledGreyImage]
   = new LocalResizeGreyImgReader(resizeW, resizeH, normalize)

@@ -311,43 +311,6 @@ object BGRImage {
     }
   }
 
-//  private def getWidthHeightAfterRatioScale(oriHeight: Int, oriWidth: Int,
-//    scaleTo: Int): (Int, Int) = {
-//    if (NO_SCALE == scaleTo) {
-//      (oriHeight, oriWidth)
-//    } else {
-//      if (oriWidth < oriHeight) {
-//        (scaleTo * oriHeight / oriWidth, scaleTo)
-//      } else {
-//        (scaleTo, scaleTo * oriWidth / oriHeight)
-//      }
-//    }
-//  }
-//
-//  private def readRawImage(path: Path): BufferedImage = {
-//    var fis: FileInputStream = null
-//    try {
-//      fis = new FileInputStream(path.toString)
-//      val channel = fis.getChannel
-//      val byteArrayOutputStream = new ByteArrayOutputStream
-//      channel.transferTo(0, channel.size, Channels.newChannel(byteArrayOutputStream))
-//      val image = ImageIO.read(new ByteArrayInputStream(byteArrayOutputStream.toByteArray))
-//      require(image != null, "Can't read file " + path + ", ImageIO.read is null")
-//      image
-//    } catch {
-//      case ex: Exception =>
-//        ex.printStackTrace()
-//        System.err.println("Can't read file " + path)
-//        throw ex
-//    } finally {
-//      if (fis != null) {
-//        fis.close()
-//      }
-//    }
-//  }
-
-//  val NO_SCALE = -1
-
   def resizeImage(img: BufferedImage, resizeWidth: Int, resizeHeight: Int): Array[Byte] = {
     var scaledImage: java.awt.Image = null
     // no scale
