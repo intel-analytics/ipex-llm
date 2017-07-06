@@ -10,7 +10,7 @@ val m = SpatialFullConvolution[Table, T](InputPlane, nOutputPlane, kW, kH, dW=1,
 ```
 **Python:**
 ```python
-m = SpatialFullConvolution(n_input_plane,n_output_plane,kw,kh,dw=1,dh=1,pad_w=0,pad_h=0,adj_w=0,adj_h=0,n_group=1,no_bias=False,init_method='default',wRegularizer=None,bRegularizer=None)
+m = SpatialFullConvolution(n_input_plane,n_output_plane,kw,kh,dw=1,dh=1,pad_w=0,pad_h=0,adj_w=0,adj_h=0,n_group=1,no_bias=False,wRegularizer=None,bRegularizer=None)
 ```
 
 SpatialFullConvolution is a module that applies a 2D full convolution over an input image. 
