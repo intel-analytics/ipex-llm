@@ -18,7 +18,8 @@ pages:
   - Models: UserGuide/models.md
   - Programming Guide: UserGuide/programming-guide.md
   - Known Issues: UserGuide/known-issues.md
-- Python Support: 
+- Python Support:
+  - Install via pip: PythonSupport/Install-via-pip.md
   - Python Support: PythonSupport/python-support.md
   - Python Tutorial: PythonSupport/python-turtorial.md
 - API Docs:
