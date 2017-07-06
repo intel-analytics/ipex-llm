@@ -65,6 +65,7 @@ class GRU[T : ClassTag] (
   var i2g: AbstractModule[_, _, T] = _
   var h2g: AbstractModule[_, _, T] = _
   var gates: AbstractModule[_, _, T] = _
+  val timeDim = 2
   override var cell: AbstractModule[Activity, Activity, T] = buildGRU()
 
   var linear: AbstractModule[Activity, Activity, T] = null
@@ -106,7 +107,7 @@ class GRU[T : ClassTag] (
             wRegularizer = uRegularizer)))
         .add(JoinTable(1, 1))
     } else {
-      i2g = Narrow[T](2, 1, 2 * outputSize)
+      i2g = Narrow[T](timeDim, 1, 2 * outputSize)
       h2g = Linear(outputSize, 2 * outputSize, withBias = false,
         wRegularizer = uRegularizer)
     }
@@ -138,7 +139,7 @@ class GRU[T : ClassTag] (
       .add(ConcatTable()
         .add(Sequential()
           .add(SelectTable(1))
-          .add(Narrow(2, 1 + 2 * outputSize, outputSize)))
+          .add(Narrow(timeDim, 1 + 2 * outputSize, outputSize)))
         .add(Sequential()
         .add(NarrowTable(2, 2))
         .add(CMulTable())))

@@ -48,6 +48,41 @@ class GRUSpec  extends TorchSpec {
     }
   }
 
+  "A GRU" should " be fast" in {
+    val inputSize = 1000
+    val hiddenSize = 1000
+    val batchSize = 12
+    val time = 200
+    val seed = 100
+    RNG.setSeed(seed)
+    val input = Tensor[Float](batchSize, time, inputSize).rand
+    val gradOutput = Tensor[Float](batchSize, time, hiddenSize).rand
+
+    val model = Recurrent[Float]()
+      .add(GRU[Float](inputSize, hiddenSize))
+
+    var startTime = System.nanoTime()
+    var duration = (System.nanoTime() - startTime) / 1e9
+    var sum = 0.0
+
+    println("warmup ..")
+    for (i <- 1 to 5) {
+      model.forward(input)
+      model.backward(input, gradOutput)
+    }
+
+    val n = 5
+    for (i <- 1 to n) {
+      startTime = System.nanoTime()
+      model.forward(input)
+      model.backward(input, gradOutput)
+      duration = (System.nanoTime() - startTime) / 1e9
+      sum += duration
+      println(s"iteration-${i} = ${duration}")
+    }
+    println(s"average = ${sum / n}")
+  }
+
   "A LSTM L2 regularizer" should "works correctly" in {
     import com.intel.analytics.bigdl.numeric.NumericDouble
     val hiddenSize = 4
