@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 import scala.reflect.ClassTag
 
@@ -100,7 +101,7 @@ class Sum[T: ClassTag](
   override def toString: String = s"nn.Sum"
 }
 
-object Sum {
+object Sum extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
       dimension: Int = 1,
       nInputDims: Int = -1,

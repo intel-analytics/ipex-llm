@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 import scala.reflect.ClassTag
 
@@ -104,7 +105,7 @@ class Min[T: ClassTag](
   }
 }
 
-object Min {
+object Min extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
       dim : Int = 1,
       numInputDims: Int = Int.MinValue)(implicit ev: TensorNumeric[T]) : Min[T] = {

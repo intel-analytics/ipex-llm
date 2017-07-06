@@ -15,10 +15,16 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.Graph.{ModuleNode, createBigDLModule}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.serializer._
+import serialization.Model.{AttrValue, BigDLModule}
 
+import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
@@ -114,10 +120,30 @@ class MapTable[T: ClassTag](
   }
 }
 
-object MapTable {
+object MapTable extends ContainerSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
       module: AbstractModule[_ <: Activity, _ <: Activity, T] = null
   )(implicit ev: TensorNumeric[T]) : MapTable[T] = {
     new MapTable[T](module)
+  }
+
+  override def loadModule[T: ClassTag](model : BigDLModule)
+                                      (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
+    val moduleData = super.loadModule(model)
+    val mapTable = moduleData.module.asInstanceOf[MapTable[T]]
+    require(mapTable.modules.size >=1, "sub module should not be empty")
+    mapTable.add(mapTable.modules(0))
+    moduleData
+  }
+
+  override def serializeModule[T: ClassTag](module : ModuleData[T])
+                                           (implicit ev: TensorNumeric[T]) : BigDLModule = {
+    val mapTable = module.module.asInstanceOf[MapTable[T]]
+    val subModules = mapTable.modules
+    require(subModules.size >=1, "sub module should not be empty")
+    val singleModule = subModules(0)
+    mapTable.modules.clear()
+    mapTable.modules.append(singleModule)
+    super.serializeModule(module)
   }
 }

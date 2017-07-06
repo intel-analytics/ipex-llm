@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
@@ -155,7 +156,7 @@ class MM[T: ClassTag](
   }
 }
 
-object MM {
+object MM extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
       transA: Boolean = false,
       transB: Boolean = false)(implicit ev: TensorNumeric[T]) : MM[T] = {

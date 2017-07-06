@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.ContainerSerializable
 import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.collection.mutable.ArrayBuffer
@@ -297,7 +298,7 @@ class Recurrent[T : ClassTag]()
   }
 }
 
-object Recurrent {
+object Recurrent extends ContainerSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
     hiddenSize: Int = 3)
     (implicit ev: TensorNumeric[T]) : Recurrent[T] = {

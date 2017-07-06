@@ -15,6 +15,8 @@
  */
 package com.intel.analytics.bigdl.utils.serializer
 
+import java.lang.reflect.Field
+
 import com.intel.analytics.bigdl.nn._
 
 import scala.collection.JavaConverters._
@@ -23,6 +25,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.{Tensor, TensorNumericMath}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import serialization.Model.{AttrValue, BigDLModule}
+import spire.syntax.field
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
@@ -99,7 +102,13 @@ object ModuleSerializer extends ModuleSerializable{
       val paramName = param.name.decodedName.toString
       var ptype = param.typeSignature
       val attrBuilder = AttrValue.newBuilder
-      val field = cls.getDeclaredField(paramName)
+      var field : Field = null
+      try {
+        field = cls.getDeclaredField(paramName)
+      } catch {
+        case e : NoSuchFieldException =>
+          field = cls.getSuperclass.getDeclaredField(paramName)
+      }
       field.setAccessible(true)
       val fieldValue = field.get(module.module)
       DataConverter.setAttributeValue(attrBuilder, fieldValue, ptype)
@@ -223,8 +232,44 @@ object ModuleSerializer extends ModuleSerializable{
       LogSoftMax)
     registerModule("LookupTable", Class.forName("com.intel.analytics.bigdl.nn.LookupTable"),
       LookupTable)
-    registerModule("LSTM", Class.forName("com.intel.analytics.bigdl.nn.LSTM"),
-      LSTM)
+    registerModule("LSTM", Class.forName("com.intel.analytics.bigdl.nn.LSTM"), LSTM)
+    registerModule("LSTMPeephole", Class.forName("com.intel.analytics.bigdl.nn.LSTMPeephole"),
+      LSTMPeephole)
+    registerModule("MapTable", Class.forName("com.intel.analytics.bigdl.nn.MapTable"), MapTable)
+    registerModule("MaskedSelect", Class.forName("com.intel.analytics.bigdl.nn.MaskedSelect"),
+      MaskedSelect)
+    registerModule("Max", Class.forName("com.intel.analytics.bigdl.nn.Max"), Max)
+    registerModule("Mean", Class.forName("com.intel.analytics.bigdl.nn.Mean"), Mean)
+    registerModule("Min", Class.forName("com.intel.analytics.bigdl.nn.Min"), Min)
+    registerModule("MixtureTable", Class.forName("com.intel.analytics.bigdl.nn.MixtureTable"),
+      MixtureTable)
+    registerModule("MM", Class.forName("com.intel.analytics.bigdl.nn.MM"), MM)
+    registerModule("Mul", Class.forName("com.intel.analytics.bigdl.nn.Mul"), Mul)
+    registerModule("MulConstant", Class.forName("com.intel.analytics.bigdl.nn.MulConstant"),
+      MulConstant)
+    registerModule("MV", Class.forName("com.intel.analytics.bigdl.nn.MV"), MV)
+    registerModule("Narrow", Class.forName("com.intel.analytics.bigdl.nn.Narrow"), Narrow)
+    registerModule("NarrowTable", Class.forName("com.intel.analytics.bigdl.nn.NarrowTable"),
+      NarrowTable)
+    registerModule("Normalize", Class.forName("com.intel.analytics.bigdl.nn.Normalize"),
+      Normalize)
+    registerModule("Pack", Class.forName("com.intel.analytics.bigdl.nn.Pack"), Pack)
+    registerModule("Padding", Class.forName("com.intel.analytics.bigdl.nn.Padding"), Padding)
+    registerModule("PairwiseDistance",
+      Class.forName("com.intel.analytics.bigdl.nn.PairwiseDistance"), PairwiseDistance)
+    registerModule("ParallelTable", Class.forName("com.intel.analytics.bigdl.nn.ParallelTable"),
+      ParallelTable)
+    registerModule("Power", Class.forName("com.intel.analytics.bigdl.nn.Power"), Power)
+    registerModule("PReLU", Class.forName("com.intel.analytics.bigdl.nn.PReLU"), PReLU)
+    registerModule("Recurrent", Class.forName("com.intel.analytics.bigdl.nn.Recurrent"), Recurrent)
+    registerModule("ReLU", Class.forName("com.intel.analytics.bigdl.nn.ReLU"), ReLU)
+
+
+
+    registerModule("Sum", Class.forName("com.intel.analytics.bigdl.nn.Sum"), Sum)
+
+    registerModule("Threshold", Class.forName("com.intel.analytics.bigdl.nn.Threshold"), Threshold)
+
 
   }
 

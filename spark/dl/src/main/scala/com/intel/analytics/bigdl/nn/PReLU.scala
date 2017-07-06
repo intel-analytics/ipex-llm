@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{DenseTensorApply, Tensor, TensorFunc4, TensorFunc6}
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 import com.intel.analytics.bigdl.utils.{Engine, T, Table}
 
 import scala.concurrent.Future
@@ -311,7 +312,7 @@ class PReLU[T: ClassTag](
   }
 }
 
-object PReLU {
+object PReLU extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
       nOutputPlane: Int = 0)(implicit ev: TensorNumeric[T]) : PReLU[T] = {
     new PReLU[T](nOutputPlane)

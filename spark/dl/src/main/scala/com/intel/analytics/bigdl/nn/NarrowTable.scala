@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
@@ -96,7 +97,7 @@ class NarrowTable[T: ClassTag](var offset: Int, val length: Int = 1)
   }
 }
 
-object NarrowTable {
+object NarrowTable extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
     offset: Int,
     length: Int = 1)(implicit ev: TensorNumeric[T]) : NarrowTable[T] = {

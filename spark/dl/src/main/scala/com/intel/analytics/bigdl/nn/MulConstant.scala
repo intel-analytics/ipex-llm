@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 import scala.reflect.ClassTag
 
@@ -30,7 +31,7 @@ import scala.reflect.ClassTag
  */
 
 @SerialVersionUID(- 8747642888169310696L)
-class MulConstant[@specialized(Float, Double) T: ClassTag](
+class MulConstant[T: ClassTag](
   val constant : Double, val inplace : Boolean = false)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T]  {
   val scalar = ev.fromType[Double](constant)
@@ -81,7 +82,7 @@ class MulConstant[@specialized(Float, Double) T: ClassTag](
   }
 }
 
-object MulConstant {
+object MulConstant extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
       scalar : Double,
       inplace : Boolean = false)(implicit ev: TensorNumeric[T]) : MulConstant[T] = {

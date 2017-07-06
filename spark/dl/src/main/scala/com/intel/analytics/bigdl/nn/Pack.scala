@@ -19,6 +19,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 import scala.reflect.ClassTag
 
@@ -97,7 +98,7 @@ class Pack[T: ClassTag] (val dimension: Int)(implicit ev: TensorNumeric[T])
   }
 }
 
-object Pack {
+object Pack extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
         dimension: Int)(implicit ev: TensorNumeric[T]): Pack[T] = {
     new Pack[T](dimension)

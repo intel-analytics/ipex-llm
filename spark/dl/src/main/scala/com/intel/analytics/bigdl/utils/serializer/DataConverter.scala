@@ -116,7 +116,8 @@ object DataConverter extends DataConverter{
     } else if (valueType.toString == ModuleSerializer.tensorType.toString) {
       TensorConverter.setAttributeValue(attributeBuilder, value)
     } else if (valueType.toString == ModuleSerializer.abstractModuleType.toString
-      || valueType.toString.startsWith("com.intel.analytics.bigdl.Module")) {
+      || valueType.toString.startsWith("com.intel.analytics.bigdl.Module")
+      || valueType.toString.startsWith("com.intel.analytics.bigdl.nn.abstractnn.AbstractModule")) {
       ModuleConverter.setAttributeValue(attributeBuilder, value)
     } else if (value.isInstanceOf[Map[String, _ <: Any]]) {
       NameListConverter.setAttributeValue(attributeBuilder, value)
