@@ -38,7 +38,7 @@ args = parser.parse_args()
 
 scaladocs = args.scaladocsflag
 
-pythondocs = args.scaladocsflag 
+pythondocs = args.pythondocsflag
 
 mkdoc_serve = args.mkdocserveflag
 
@@ -81,8 +81,13 @@ if scaladocs:
 
 if pythondocs:
     print 'build python'
-    bigdl_dir = os.path.dirname(dir_name)
-    os.chdir(bigdl_dir)
+    pyspark_dir = os.path.dirname(dir_name) + '/pyspark/docs/'
+    target_dir = dir_name + '/site/APIdocs/python-api-doc/'
+    os.chdir(pyspark_dir)
+    run_cmd(['./doc-gen.sh'], 'Build python doc error')
+    pythondocs_dir = pyspark_dir + '_build/html/*'
+    run_cmd(['cp', '-r', pythondocs_dir, target_dir],
+        'mv scaladocs error', s=True)
 
 os.chdir(dir_name)
 
