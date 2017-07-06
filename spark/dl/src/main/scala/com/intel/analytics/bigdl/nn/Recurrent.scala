@@ -205,7 +205,7 @@ class Recurrent[T : ClassTag]()
     batchSize = outputCell.size(batchDim)
     times = outputCell.size(timeDim)
 
-    val hiddenSize = modules.last.asInstanceOf[Cell[T]].hiddensShape(0)
+    val hiddenSize = topology.hiddensShape(0)
     if (input.dim() == 3) {
       output.resize(batchSize, times, hiddenSize)
       // Clone N modules along the sequence dimension.
