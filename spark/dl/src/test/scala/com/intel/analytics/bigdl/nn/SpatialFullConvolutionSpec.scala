@@ -58,13 +58,13 @@ class SpatialFullConvolutionSpec extends FlatSpec with Matchers {
     val labels = Tensor[Double](16).rand()
 
     val model1 = Sequential()
-      .add(SpatialFullConvolution[Tensor[Double], Double](nInputPlane, nOutputPlane,
+      .add(SpatialFullConvolution[Double](nInputPlane, nOutputPlane,
         kW, kH, dW, dH, padW, padH))
       .add(Sigmoid())
     val (weights1, grad1) = model1.getParameters()
 
     val model2 = Sequential()
-      .add(SpatialFullConvolution[Tensor[Double], Double](nInputPlane, nOutputPlane,
+      .add(SpatialFullConvolution[Double](nInputPlane, nOutputPlane,
         kW, kH, dW, dH, padW, padH,
         wRegularizer = L2Regularizer(0.1), bRegularizer = L2Regularizer(0.1)))
       .add(Sigmoid())
@@ -111,7 +111,7 @@ class SpatialFullConvolutionSpec extends FlatSpec with Matchers {
   }
 
   "A SpatialFullConvolution BilinearFiller" should "generate correct parameter" in {
-    val conv = new SpatialFullConvolution[Tensor[Double], Double](3, 6, 3, 3, 2, 2,
+    val conv = new SpatialFullConvolution[Double](3, 6, 3, 3, 2, 2,
       0, 0, 0, 0, 1, false)
     conv.setInitMethod(weightInitMethod = BilinearFiller, biasInitMethod = Zeros)
 
@@ -140,7 +140,7 @@ class SpatialFullConvolutionSpec extends FlatSpec with Matchers {
   }
 
   "A SpatialFullConvolution BilinearFiller(1, 2, 4, 4)" should "generate correct parameter" in {
-    val conv = new SpatialFullConvolution[Tensor[Double], Double](1, 2, 4, 4, 2, 2,
+    val conv = new SpatialFullConvolution[Double](1, 2, 4, 4, 2, 2,
       0, 0, 0, 0, 1, false)
     conv.setInitMethod(weightInitMethod = BilinearFiller, biasInitMethod = Zeros)
 
@@ -168,9 +168,9 @@ class SpatialFullConvolutionSpec extends FlatSpec with Matchers {
     val dH = 1
     val padW = 2
     val padH = 2
-    val layer = new SpatialFullConvolution[Tensor[Double], Double](nInputPlane, nOutputPlane,
+    val layer = new SpatialFullConvolution[Double](nInputPlane, nOutputPlane,
       kW, kH, dW, dH, padW, padH)
-    val layer2 = layer.cloneModule().asInstanceOf[SpatialFullConvolution[Tensor[Double], Double]]
+    val layer2 = layer.cloneModule().asInstanceOf[SpatialFullConvolution[Double]]
       .setScaleW(0.5).setScaleB(2.0)
     Random.setSeed(100)
     val input = Tensor[Double](3, 3, 6, 6).apply1(e => Random.nextDouble())
