@@ -35,14 +35,21 @@ class MVSpec extends TorchSpec {
     val module = new MV[Double]()
 
     val start = System.nanoTime()
-    val output = module.forward(input)
-    val gradInput = module.backward(input, gradOutput)
+    var output = Tensor[Double]()
+    var gradInput = T()
+
+    for (i <- 1 to 5) {
+      output = module.forward(input)
+      gradInput = module.backward(input, gradOutput)
+    }
     val end = System.nanoTime()
     val scalaTime = end - start
 
     val code = "module = nn.MV()\n" +
-      "output = module:forward(input)\n " +
-      "gradInput = module:backward(input, gradOutput)"
+      "for i = 1,5,1 do\n" +
+        "output = module:forward(input)\n " +
+        "gradInput = module:backward(input, gradOutput)\n" +
+      "end"
 
 
     val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
