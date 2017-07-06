@@ -2,9 +2,9 @@
 
 **Scala:**
 ```scala
-val l1Regularizer = L1Regularizer(l1: Double)
-val l2Regularizer = L2Regularizer(l2: Double)
-val l1l2Regularizer = L1L2Regularizer(l1: Double, l2: Double)
+val l1Regularizer = L1Regularizer(l1)
+val l2Regularizer = L2Regularizer(l2)
+val l1l2Regularizer = L1L2Regularizer(l1, l2)
 ```
 **Python:**
 ```python
@@ -22,11 +22,12 @@ L1 and L2 regularizers are used to avoid overfitting.
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.optim._
+import com.intel.analytics.bigdl.numeric.NumericFloat
 
 RNG.setSeed(100)
 
-val input = Tensor[Float](3, 5).rand
-val linear = Linear[Float](5, 5, wRegularizer = L2Regularizer(0.1), bRegularizer = L2Regularizer(0.1))
+val input = Tensor(3, 5).rand
+val linear = Linear(5, 5, wRegularizer = L2Regularizer(0.1), bRegularizer = L2Regularizer(0.1))
 
 val output = linear.forward(input)
 
