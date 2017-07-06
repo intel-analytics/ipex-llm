@@ -32,7 +32,7 @@ parser.add_argument('-p', '--pythondocs',
     help='Add python doc to site')
 parser.add_argument('-m', '--startmkdocserve',
     dest='mkdocserveflag', action='store_true',
-    help='Start mkdoc server after build')
+    help=argparse.SUPPRESS)
 
 args = parser.parse_args()
 
