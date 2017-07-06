@@ -858,8 +858,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                                    noBias: Boolean = false,
                                    wRegularizer: Regularizer[T] = null,
                                    bRegularizer: Regularizer[T] = null)
-  : SpatialFullConvolution[Activity, T] = {
-    SpatialFullConvolution[Activity, T](nInputPlane,
+  : SpatialFullConvolution[T] = {
+    SpatialFullConvolution[T](nInputPlane,
       nOutputPlane,
       kW,
       kH,

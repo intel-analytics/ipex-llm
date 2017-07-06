@@ -38,7 +38,7 @@ class SpatialFullConvolutionSpec extends TorchSpec {
     val dH = 1
     val padW = 2
     val padH = 2
-    val layer = new SpatialFullConvolution[Tensor[Double], Double](nInputPlane, nOutputPlane,
+    val layer = new SpatialFullConvolution[Double](nInputPlane, nOutputPlane,
       kW, kH, dW, dH, padW, padH)
 
     Random.setSeed(seed)
@@ -80,7 +80,7 @@ class SpatialFullConvolutionSpec extends TorchSpec {
     val dH = 2
     val padW = 1
     val padH = 1
-    val layer = new SpatialFullConvolution[Tensor[Double], Double](nInputPlane, nOutputPlane,
+    val layer = new SpatialFullConvolution[Double](nInputPlane, nOutputPlane,
       kW, kH, dW, dH, padW, padH)
 
     Random.setSeed(seed)
@@ -121,7 +121,7 @@ class SpatialFullConvolutionSpec extends TorchSpec {
     val dH = 1
     val padW = 2
     val padH = 2
-    val layer = new SpatialFullConvolution[Tensor[Double], Double](nInputPlane, nOutputPlane,
+    val layer = new SpatialFullConvolution[Double](nInputPlane, nOutputPlane,
       kW, kH, dW, dH, padW, padH)
     val model = new Sequential[Double]()
     model.add(layer)
@@ -183,7 +183,7 @@ class SpatialFullConvolutionSpec extends TorchSpec {
     val dH = 2
     val padW = 1
     val padH = 1
-    val layer = new SpatialFullConvolution[Tensor[Double], Double](nInputPlane, nOutputPlane,
+    val layer = new SpatialFullConvolution[Double](nInputPlane, nOutputPlane,
       kW, kH, dW, dH, padW, padH)
     val model = new Sequential[Double]()
     model.add(layer)
@@ -245,7 +245,7 @@ class SpatialFullConvolutionSpec extends TorchSpec {
     val dH = 2
     val padW = 1
     val padH = 1
-    val layer = new SpatialFullConvolution[Tensor[Double], Double](nInputPlane, nOutputPlane,
+    val layer = new SpatialFullConvolution[Double](nInputPlane, nOutputPlane,
       kW, kH, dW, dH, padW, padH, 0, 0, 1, true)
     val model = new Sequential[Double]()
     model.add(layer)
@@ -304,7 +304,7 @@ class SpatialFullConvolutionSpec extends TorchSpec {
     val dH = 2
     val padW = 1
     val padH = 1
-    val layer = new SpatialFullConvolution[Table, Double](nInputPlane, nOutputPlane,
+    val layer = new SpatialFullConvolution[Double](nInputPlane, nOutputPlane,
       kW, kH, dW, dH, padW, padH)
 
     Random.setSeed(3)
@@ -369,7 +369,7 @@ class SpatialFullConvolutionSpec extends TorchSpec {
     val kH = 3
     val dW = 1
     val dH = 1
-    val layer = new SpatialFullConvolution[Tensor[Double], Double](nInputPlane, nOutputPlane,
+    val layer = new SpatialFullConvolution[Double](nInputPlane, nOutputPlane,
       kW, kH, dW, dH, 0, 0, 0, 0, 6)
     Random.setSeed(3)
     val input = Tensor[Double](6, 5, 5).apply1(e => Random.nextDouble())
@@ -427,7 +427,7 @@ class SpatialFullConvolutionSpec extends TorchSpec {
     val dH = 1
     val padW = 2
     val padH = 2
-    val layer = new SpatialFullConvolution[Tensor[Double], Double](nInputPlane, nOutputPlane,
+    val layer = new SpatialFullConvolution[Double](nInputPlane, nOutputPlane,
       kW, kH, dW, dH, padW, padH)
     val model = new Sequential[Double]()
     model.add(layer)
