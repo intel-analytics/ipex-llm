@@ -155,17 +155,20 @@ private[bigdl] class ArraySample[T: ClassTag](
   }
 
   override def copy(other: Sample[T]): this.type = {
-    require(other.isInstanceOf[ArraySample[T]], "Sample.copy: sample type not match.")
-    val s = other.asInstanceOf[ArraySample[T]]
-    require(
-      featureSize.length == s.featureSize.length,
-      labelSize.length == s.labelSize.length)
-    if (data.length < s.getData().length) {
-      data = new Array[T](s.getData().length)
+    require(other.isInstanceOf[ArraySample[T]], "Sample.copy: sample type does not match.")
+    val that = other.asInstanceOf[ArraySample[T]]
+    val thatDataLength = that.featureSize.map(_.product).sum +
+      that.labelSize.map(_.product).sum
+    require(Sample.sameSize(featureSize, that.featureSize), "Sample.copy: featureSize " +
+      "doesn't match")
+    require(Sample.sameSize(labelSize, that.labelSize), "Sample.copy: labelSize " +
+      "doesn't match")
+    if (data.length < thatDataLength) {
+      data = new Array[T](thatDataLength)
     }
-    System.arraycopy(s.data, 0, this.data, 0, s.getData().length)
-    System.arraycopy(s.featureSize, 0, this.featureSize, 0, this.featureSize.length)
-    System.arraycopy(s.labelSize, 0, this.labelSize, 0, this.labelSize.length)
+    System.arraycopy(that.data, 0, this.data, 0, thatDataLength)
+    System.arraycopy(that.featureSize, 0, this.featureSize, 0, this.featureSize.length)
+    System.arraycopy(that.labelSize, 0, this.labelSize, 0, this.labelSize.length)
     this
   }
 
@@ -263,10 +266,17 @@ private[bigdl] class ArraySample[T: ClassTag](
 
   override def equals(other: Any): Boolean = other match {
     case that: ArraySample[T] =>
-      (that canEqual this) &&
-        data.sameElements(that.data) &&
-        featureSize.sameElements(that.featureSize) &&
-        labelSize.sameElements(that.labelSize)
+      if (!(that canEqual this) ||
+        !(labelSize.deep == that.labelSize.deep) ||
+        !(featureSize.deep == that.featureSize.deep)) {
+        return false
+      }
+      var i = labelSize.map(_.product).sum + featureSize.map(_.product).sum - 1
+      while (i >= 0) {
+        if (data(i) != that.data(i)) return false
+        i -= 1
+      }
+      true
     case _ => false
   }
 
@@ -334,5 +344,15 @@ object Sample {
 
   private[bigdl] def getSize[T: ClassTag](tensor: Tensor[T]): Array[Array[Int]] = {
     Array(tensor.size())
+  }
+
+  private[bigdl] def sameSize(a: Array[Array[Int]], b: Array[Array[Int]]): Boolean = {
+    if (a.length != b.length) return false
+    var i = 0
+    while (i < a.length) {
+      if (a(i).length != b(i).length) return false
+      i += 1
+    }
+    true
   }
 }

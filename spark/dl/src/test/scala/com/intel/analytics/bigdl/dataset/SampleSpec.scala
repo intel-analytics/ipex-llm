@@ -82,6 +82,35 @@ class SampleSpec extends FlatSpec with Matchers {
     sample.label() should be(tensorLabel1)
   }
 
+  "Sample.equals" should "return right result" in {
+    val sample1 = Sample[Float](Tensor[Float](2, 3).range(1, 6, 1), Tensor[Float](1).fill(1))
+    val sample2 = Sample[Float](Tensor[Float](2, 3).range(1, 6, 1), Tensor[Float](1).fill(1))
+    sample1.equals(sample2) should be (true)
+
+    val sample3 = Sample[Float](Tensor[Float](3, 3).range(1, 9, 1), Tensor[Float](1).fill(10))
+    val sample4 = Sample[Float](Tensor[Float](2, 3).range(1, 6, 1),
+      Tensor[Float](4).range(7, 10, 1))
+    sample3.equals(sample4) should be (false)
+  }
+
+  "Sample.copy" should "return right result" in {
+    val sample1 = Sample[Float](Tensor[Float](2, 3).range(1, 6, 1), Tensor[Float](1).fill(1))
+    val sample2 = Sample[Float](Tensor[Float](3, 3), Tensor[Float](1))
+    sample2.copy(sample1)
+    sample1.equals(sample2) should be (true)
+
+    val sample3 = Sample[Float](
+      Array(Tensor[Float](3, 3).range(1, 9, 1),
+        Tensor[Float](3, 3).range(1, 9, 1),
+        Tensor[Float](3, 3).range(1, 9, 1)), Tensor[Float](1).fill(10))
+    val sample4 = Sample[Float](
+      Array(Tensor[Float](1, 3).range(1, 3, 1),
+        Tensor[Float](2, 3).range(1, 6, 1),
+        Tensor[Float](3, 3).range(1, 9, 1)), Tensor[Float](1).fill(10))
+    sample4.copy(sample3)
+    sample3.equals(sample4) should be (true)
+  }
+
   "Array[TensorSample] toMiniBatch" should "return right result" in {
     val samples: Array[Sample[Float]] = new Array[Sample[Float]](3)
     samples(0) = Sample[Float](Tensor[Float](2, 3).range(1, 6, 1), Tensor[Float](1).fill(1))
