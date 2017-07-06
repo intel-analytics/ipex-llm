@@ -97,7 +97,7 @@ if __name__ == "__main__":
             batch_size=options.batchSize,
             val_rdd=test_data,
             trigger=EveryEpoch(),
-            val_method=["Top1Accuracy"]
+            val_method=[Top1Accuracy()]
         )
         optimizer.set_checkpoint(EveryEpoch(), options.checkpointPath)
         trained_model = optimizer.optimize()
@@ -107,7 +107,7 @@ if __name__ == "__main__":
         test_data = get_mnist(sc, "test").map(
             normalizer(mnist.TEST_MEAN, mnist.TEST_STD))
         model = Model.load(options.modelPath)
-        results = model.test(test_data, options.batchSize, ["Top1Accuracy"])
+        results = model.test(test_data, options.batchSize, [Top1Accuracy()])
         for result in results:
             print(result)
     sc.stop()
