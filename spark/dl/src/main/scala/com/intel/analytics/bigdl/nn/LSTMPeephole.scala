@@ -65,7 +65,7 @@ class LSTMPeephole[T : ClassTag] (
   var outputGate: Sequential[T] = _
   var hiddenLayer: Sequential[T] = _
   var cellLayer: Sequential[T] = _
-  val timeDim = 2
+  val featDim = 2
   override var cell: AbstractModule[Activity, Activity, T] = buildLSTM()
 
   override def preTopology: AbstractModule[Activity, Activity, T] =
@@ -93,17 +93,17 @@ class LSTMPeephole[T : ClassTag] (
   }
 
   def buildInputGate(): Sequential[T] = {
-    inputGate = buildGate(timeDim, 1, hiddenSize)
+    inputGate = buildGate(featDim, 1, hiddenSize)
     inputGate
   }
 
   def buildForgetGate(): Sequential[T] = {
-    forgetGate = buildGate(timeDim, 1 + hiddenSize, hiddenSize)
+    forgetGate = buildGate(featDim, 1 + hiddenSize, hiddenSize)
     forgetGate
   }
 
   def buildOutputGate(): Sequential[T] = {
-    outputGate = buildGate(timeDim, 1 + 3 * hiddenSize, hiddenSize)
+    outputGate = buildGate(featDim, 1 + 3 * hiddenSize, hiddenSize)
     outputGate
   }
 
@@ -111,7 +111,7 @@ class LSTMPeephole[T : ClassTag] (
     val hidden = Sequential()
       .add(NarrowTable(1, 2))
 
-    val i2h = Narrow(timeDim, 1 + 2 * hiddenSize, hiddenSize)
+    val i2h = Narrow(featDim, 1 + 2 * hiddenSize, hiddenSize)
 
     val h2h = Sequential()
       .add(Dropout(p))
