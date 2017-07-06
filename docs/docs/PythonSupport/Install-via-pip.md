@@ -36,7 +36,7 @@ creating: createLinear
 tar -zxvf spark-2.1.0-bin-hadoop2.7.tgz
 export SPARK_HOME=path to spark-2.1.0-bin-hadoop2.7
 ```
-3. Install BigDL 0.1.1 release via pip (we tested this on pip 9.0.1)
+3. Install BigDL release via pip (we tested this on pip 9.0.1)
 ```
 pip install --upgrade pip
 pip install BigDL==0.1.1rc0     # for Python 2.7
@@ -53,7 +53,7 @@ pip3 install BigDL==0.1.1rc0  # for Python 3.n
 tar -zxvf spark-2.1.0-bin-hadoop2.7.tgz
 export SPARK_HOME=path to spark-2.1.0-bin-hadoop2.7
 ```
-3. Install BigDL 0.1.1 release via pip (we tested this on pip 9.0.1)
+3. Install BigDL release via pip (we tested this on pip 9.0.1)
 ```
 pip install --upgrade pip
 pip install BigDL==0.2.0.dev2     # for Python 2.7
