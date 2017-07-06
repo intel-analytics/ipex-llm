@@ -68,7 +68,7 @@ class SpatialConvolution[T: ClassTag](
     Tensor[T](nGroup, nOutputPlane / nGroup, nInputPlane / nGroup, kernelH, kernelW)
   }
 
-  val bias: Tensor[T] = if (!withBias) Tensor[T]()
+  val bias: Tensor[T] = if (!withBias) null
     else if (initBias != null) initBias else Tensor[T](nOutputPlane)
 
   val gradWeight: Tensor[T] = if (initGradWeight != null) {
@@ -77,16 +77,16 @@ class SpatialConvolution[T: ClassTag](
     Tensor[T](nGroup, nOutputPlane / nGroup, nInputPlane / nGroup, kernelH, kernelW)
   }
 
-  val gradBias: Tensor[T] = if (!withBias) Tensor[T]
+  val gradBias: Tensor[T] = if (!withBias) null
     else if (initGradBias != null) initGradBias else Tensor[T](nOutputPlane)
 
   var fInput = Tensor[T]()
   var fGradInput = Tensor[T]()
   protected val ones = Tensor[T]()
   protected val onesBatch = Tensor[T]()
-  protected val onesBias = Tensor[T]()
+  protected val onesBias = if (withBias) Tensor[T]() else null
   protected var weightMM: Tensor[T] = null
-  protected val gradientBiasMT: Tensor[T] = Tensor[T]()
+  protected val gradientBiasMT: Tensor[T] = if (withBias) Tensor[T]() else null
   protected var gradWeightMM: Tensor[T] = null
   @transient
   protected var gradWeightMMInBatch: Tensor[T] = null
@@ -166,7 +166,7 @@ class SpatialConvolution[T: ClassTag](
       while (g < nGroup) {
         val biasUse = if (withBias) {
           bias.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup)
-        } else bias
+        } else null
         updateOutputFrame(
           input.narrow(1, g * nInputPlane / nGroup + 1, nInputPlane / nGroup),
           output.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
@@ -208,7 +208,7 @@ class SpatialConvolution[T: ClassTag](
           while (g < nGroup) {
             val biasUse = if (withBias) {
               bias.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup)
-            } else bias
+            } else null
             updateOutputFrame(
               inputT.narrow(1, g * nInputPlane / nGroup + 1, nInputPlane / nGroup),
               outputT.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
@@ -297,7 +297,7 @@ class SpatialConvolution[T: ClassTag](
       while (g < nGroup) {
         val gradBiasUse = if (withBias) {
           gradBias.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup)
-        } else gradBias
+        } else null
 
         accGradParametersFrame(
           gradOutput.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
@@ -335,7 +335,7 @@ class SpatialConvolution[T: ClassTag](
             val gradientBiasMTUse = if (withBias) {
               gradientBiasMT.select(1, _i).narrow(1, g * nOutputPlane / nGroup + 1,
                 nOutputPlane / nGroup)
-            } else gradientBiasMT
+            } else null
             calcGradParametersFrame(
               gradOutputT.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
               gradWeightMMInBatch.select(1, _i).select(1, g + 1),
