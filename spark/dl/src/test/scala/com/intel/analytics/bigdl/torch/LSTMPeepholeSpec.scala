@@ -45,6 +45,41 @@ class LSTMPeepholeSpec  extends TorchSpec {
     }
   }
 
+  "A LSTMPeephole" should " be fast" in {
+    val inputSize = 300
+    val hiddenSize = 300
+    val batchSize = 12
+    val time = 200
+    val seed = 100
+    RNG.setSeed(seed)
+    val input = Tensor[Float](batchSize, time, inputSize).rand
+    val gradOutput = Tensor[Float](batchSize, time, hiddenSize).rand
+
+    val model = Recurrent[Float]()
+        .add(LSTMPeephole[Float](inputSize, hiddenSize))
+
+    var startTime = System.nanoTime()
+    var duration = (System.nanoTime() - startTime) / 1e9
+    var sum = 0.0
+
+    println("warmup ..")
+    for (i <- 1 to 5) {
+      model.forward(input)
+      model.backward(input, gradOutput)
+    }
+
+    val n = 5
+    for (i <- 1 to n) {
+      startTime = System.nanoTime()
+      model.forward(input)
+      model.backward(input, gradOutput)
+      duration = (System.nanoTime() - startTime) / 1e9
+      sum += duration
+      println(s"iteration-${i}, elapsed time = ${duration}")
+    }
+    println(s"average elapsed time = ${sum / n}")
+  }
+
   "A LSTMPeepwhole " should "has same loss as torch rnn" in {
     torchCheck()
 
