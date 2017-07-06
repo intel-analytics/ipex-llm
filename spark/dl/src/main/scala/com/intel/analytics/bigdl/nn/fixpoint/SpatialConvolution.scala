@@ -16,27 +16,27 @@
 
 package com.intel.analytics.bigdl.nn.fixpoint
 
-import com.intel.analytics.bigdl.fixpoint.FixPoint
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
-import com.intel.analytics.bigdl.nn.{ErrorInfo, VariableFormat, SpatialConvolution => NNSpatialConvolution}
-import com.intel.analytics.bigdl.optim.Regularizer
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.{T, Table}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.tensor._
-import com.intel.analytics.bigdl.utils._
+
+import com.intel.analytics.bigdl.nn.ErrorInfo
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.fixpoint.FixPoint
 
 import scala.reflect.ClassTag
 
 @SerialVersionUID(- 8008252944905538960L)
 class SpatialConvolution[T: ClassTag](
-  nInputPlane: Int, // The number of expected input planes in the image given into forward()
-  nOutputPlane: Int, // The number of output planes the convolution layer will produce.
-  kernelW: Int, // The kernel width of the convolution
-  kernelH: Int, // The kernel height of the convolution
-  strideW: Int = 1, // The step of the convolution in the width dimension.
-  strideH: Int = 1, // The step of the convolution in the height dimension
-  padW: Int = 0, // The additional zeros added per width to the input planes.
-  padH: Int = 0, // The additional zeros added per height to the input planes.
-  nGroup: Int = 1 // Kernel group number
+  val nInputPlane: Int, // The number of expected input planes in the image given into forward()
+  val nOutputPlane: Int, // The number of output planes the convolution layer will produce.
+  val kernelW: Int, // The kernel width of the convolution
+  val kernelH: Int, // The kernel height of the convolution
+  val strideW: Int = 1, // The step of the convolution in the width dimension.
+  val strideH: Int = 1, // The step of the convolution in the height dimension
+  val padW: Int = 0, // The additional zeros added per width to the input planes.
+  val padH: Int = 0, // The additional zeros added per height to the input planes.
+  val nGroup: Int = 1 // Kernel group number
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   require(nInputPlane % nGroup == 0, "Number of input channels should be multiples of group.")
@@ -47,9 +47,9 @@ class SpatialConvolution[T: ClassTag](
   var data = 0L
 
   val bias = Tensor[T](nOutputPlane)
-  val weightSumFP32 = Tensor() // TODO
 
   val FAULT_TOLERANCE = 0.5f
+  val WEIGHT_THRESHOLD = 64.0f
   var THRESHOLD = 127.0f
   val DILATION_HEIGHT = 1
   val DILATION_WIDTH = 1
@@ -57,14 +57,21 @@ class SpatialConvolution[T: ClassTag](
   @transient var _init = false
   def init(weightFP32: Tensor[Float]): this.type = {
     weight = FixPoint.FixConvKernelDescInit(nOutputPlane, nInputPlane, kernelH, kernelW)
-    FixPoint.FixConvKernelInit(weight, weightFP32.storage().array(),
-      weightFP32.storageOffset() - 1,
-      nOutputPlane, nInputPlane, kernelH, kernelW, 64.0f, FixPoint.NCHW)
+    FixPoint.FixConvKernelInit(
+      weight, weightFP32.storage().array(), weightFP32.storageOffset() - 1,
+      nOutputPlane, nInputPlane, kernelH, kernelW,
+      WEIGHT_THRESHOLD, FixPoint.NCHW)
+
     weightSum = FixPoint.FixConvKernelSumDescInit(nOutputPlane)
-    FixPoint.FixConvKernelSumInit(weightSum, weightFP32.storage().array(),
-      weightFP32.storageOffset() - 1,
+    FixPoint.FixConvKernelSumInit(
+      weightSum, weightFP32.storage().array(), weightFP32.storageOffset() - 1,
       nOutputPlane, nInputPlane, kernelH, kernelW)
+
     this
+  }
+
+  private def outputSize(input: Int, pad: Int, kernel: Int, stride: Int): Int = {
+    (input + 2 * pad - kernel) / stride + 1
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
@@ -74,7 +81,12 @@ class SpatialConvolution[T: ClassTag](
 
     FixPoint.printHello()
 
-    val batchSize = input.size(1)
+    val (batchSize, inputHeight, inputWidth) = (input.size(1), input.size(3), input.size(4))
+    val outputHeight = outputSize(inputHeight, padH, kernelH, strideH)
+    val outputWidth = outputSize(inputWidth, padW, kernelW, strideW)
+
+    // TODO 3-D
+    output.resize(Array(batchSize, nOutputPlane, outputHeight, outputWidth))
 
     // TODO if the input size has changed, we should renew one
     if (data == 0) {
@@ -89,12 +101,13 @@ class SpatialConvolution[T: ClassTag](
         DILATION_HEIGHT,
         DILATION_WIDTH,
         batchSize,
-        input.size(2),
-        input.size(3))
+        inputHeight,
+        inputWidth)
     }
 
-    FixPoint.FixConvDataInit(data, input.storage().array().asInstanceOf[Array[Float]],
-      input.storageOffset() - 1,
+    FixPoint.FixConvDataInit(
+      data,
+      input.storage().array().asInstanceOf[Array[Float]], input.storageOffset() - 1,
       nInputPlane,
       kernelH,
       kernelW,
@@ -104,9 +117,9 @@ class SpatialConvolution[T: ClassTag](
       padW,
       DILATION_HEIGHT,
       DILATION_WIDTH,
-      input.size(1),
-      input.size(2),
-      input.size(3),
+      batchSize,
+      inputHeight,
+      inputWidth,
       THRESHOLD,
       FixPoint.NCHW)
 
@@ -168,7 +181,6 @@ class SpatialConvolution[T: ClassTag](
       padW == other.padW &&
       padH == other.padH &&
       nGroup == other.nGroup &&
-      propagateBack == other.propagateBack &&
       weight == other.weight &&
       bias == other.bias
   }
@@ -184,7 +196,6 @@ class SpatialConvolution[T: ClassTag](
     hash = hash * seed + strideH.hashCode()
     hash = hash * seed + padW.hashCode()
     hash = hash * seed + padH.hashCode()
-    hash = hash * seed + weight.hashCode()
     hash = hash * seed + bias.hashCode()
 
     hash
@@ -201,6 +212,13 @@ class SpatialConvolution[T: ClassTag](
   }
 
   def release(): Unit = {
+    val FIX_TENSOR = 0
+    val FP_TENSOR = 1
+
+    FixPoint.FreeMemory(weight, FIX_TENSOR)
+    FixPoint.FreeMemory(data, FIX_TENSOR)
+
+    FixPoint.FreeMemory(weightSum, FP_TENSOR)
   }
 }
 
@@ -209,10 +227,24 @@ object SpatialConvolution {
 
 object TestFPConv {
   def main(args: Array[String]): Unit = {
-    val conv = new SpatialConvolution[Float](1, 1, 3, 3, 1, 1, 2, 2, 1)
-    val input = Tensor[Float]()
+    import com.intel.analytics.bigdl.nn.{SpatialConvolution => NNSpatialConvolution}
+    val test = TestCase(1, 1, 3, 3, 1, 1, 2, 2, 1, 1, 0, 0, "case1")
+    val nnConv = new NNSpatialConvolution[Float](test.inputChannel, test.outputChannel,
+      test.kernelHeight, test.kernelWidth, test.strideHeight, test.strideWidth,
+      test.padHeight, test.padWidth, test.group)
 
-    conv.updateOutput(input)
+    val input = Tensor[Float]().resize(Array(test.batchSize, test.inputChannel,
+      test.inputHeight, test.inputWidth)).rand()
+
+    val quantizedConv = new SpatialConvolution[Float](test.inputChannel, test.outputChannel,
+      test.kernelHeight, test.kernelWidth, test.strideHeight, test.strideWidth,
+      test.padHeight, test.padWidth, test.group)
+
+    nnConv.updateOutput(input)
+    quantizedConv.init(nnConv.weight)
+    quantizedConv.updateOutput(input)
+
+    quantizedConv.release()
   }
 }
 

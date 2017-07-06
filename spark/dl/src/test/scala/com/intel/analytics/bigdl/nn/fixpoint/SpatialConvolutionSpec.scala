@@ -62,7 +62,7 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
         nn.weight.storage().array()(i) = i % 32
       }
 
-      fp.weight.copy(nn.weight)
+//      fp.weight.copy(nn.weight)
       fp.bias.copy(nn.bias)
 
       val input = Tensor[Float]().resize(Array(test.batchSize, test.inputChannel,

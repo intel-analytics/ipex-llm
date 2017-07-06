@@ -169,15 +169,8 @@ object Module {
             conv.strideH,
             conv.padW,
             conv.padH,
-            conv.nGroup,
-            conv.propagateBack,
-            conv.wRegularizer,
-            conv.bRegularizer,
-            conv.weight,
-            conv.bias,
-            conv.gradWeight,
-            conv.gradBias)
-          quantizedConv.init()
+            conv.nGroup)
+          quantizedConv.init(Tensor[Float]())
         case dilatedConv if dilatedConv.isInstanceOf[SpatialDilatedConvolution[T]] =>
           // do with dilated convolution
           dilatedConv

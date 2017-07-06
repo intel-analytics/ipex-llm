@@ -74,9 +74,9 @@ object Test {
         test.inputHeight, test.inputWidth)).randn()
 
       val nnCosts = perfOne(nn, input)
-      val fpCosts = perfOne(fp, input)
+//      val fpCosts = perfOne(fp, input)
 
-      println(s"$nnCosts, $fpCosts")
+//      println(s"$nnCosts, $fpCosts")
 
       fp.release()
     }
