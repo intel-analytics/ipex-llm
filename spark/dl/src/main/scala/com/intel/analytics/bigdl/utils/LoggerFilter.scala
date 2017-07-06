@@ -109,7 +109,6 @@ object LoggerFilter {
     if (disable.equalsIgnoreCase("false")) {
       val logFile = getLogFile
 
-      val optimClass = "com.intel.analytics.bigdl.optim"
       val defaultClasses = List("org", "akka", "breeze")
 
       for (clz <- defaultClasses) {
@@ -119,7 +118,11 @@ object LoggerFilter {
       // it should be set to WARN for the progress bar
       Logger.getLogger("org.apache.spark.SparkContext").setLevel(Level.WARN)
 
-      classLogToAppender(optimClass, fileAppender(logFile, Level.INFO))
+      // set all logs to file
+      Logger.getRootLogger.addAppender(fileAppender(logFile, Level.INFO))
+
+      // because we have set all defaultClasses loggers additivity to false
+      // so we should reconfigure them.
       if (enableSparkLog.equalsIgnoreCase("true")) {
         for (clz <- defaultClasses) {
           classLogToAppender(clz, fileAppender(logFile, Level.INFO))
