@@ -144,7 +144,7 @@ def train(sc,
         batch_size=batch_size,
         val_rdd=val_rdd,
         trigger=EveryEpoch(),
-        val_method=["Top1Accuracy"]
+        val_method=[Top1Accuracy()]
     )
     train_model = optimizer.optimize()
 
