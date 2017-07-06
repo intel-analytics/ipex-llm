@@ -111,7 +111,7 @@ model.add(CAddTable())
 To merge the outputs of the branches by an add operation, we use CAddTable. It
 takes a list of tensors from the previous layer, and merge the tensors by adding them together.
 
-BigDL provides many merge layers. These layers are all named with a Table suffix. They all
+BigDL provides many merge layers. Please check Merge layers document page. They all
 take a list of tensors as input and merge the tensors by some operation.
 
 ## Define a model with multiple inputs
