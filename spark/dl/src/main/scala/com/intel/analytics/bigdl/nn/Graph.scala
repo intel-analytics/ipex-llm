@@ -62,6 +62,14 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
     extends Container[Activity, Activity, T]{
 
   override def updateOutput(input: Activity): Activity = {
+    val output = doForward(input) { (element, forwardInput) =>
+      element.updateOutput(forwardInput)
+    }
+    output
+  }
+
+  private def doForward(input: Activity)
+    (action: (AbstractModule[Activity, Tensor[T], T], Activity) => Unit): Activity = {
     var i = 0
     while(i < executions.length) {
       val node = executions(i)
@@ -72,7 +80,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
       } else {
         seqToTable(node.prevNodes.map(_.element.output))
       }
-      node.element.forward(inputsBP(i))
+      action(node.element, inputsBP(i))
       i += 1
     }
 
