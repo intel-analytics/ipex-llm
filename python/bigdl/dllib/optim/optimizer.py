@@ -522,8 +522,6 @@ class Optimizer(JavaValue):
         :param val_rdd: validation dataset
         :param trigger: validation interval
         :param val_method: the ValidationMethod to use,e.g. "Top1Accuracy", "Top5Accuracy", "Loss"
-        :param criterion: used criterion
-        :param embedded_cri: embedded criterion
         """
         if val_method is None:
             val_method = [Top1Accuracy()]
