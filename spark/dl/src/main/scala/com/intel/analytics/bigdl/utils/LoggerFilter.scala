@@ -18,11 +18,18 @@ package com.intel.analytics.bigdl.utils
 
 import org.apache.log4j._
 import java.nio.file.{Paths, Files}
-import scala.collection.JavaConverters._
+
+ // scalastyle:off
+ // | Property Name                           | Default            | Meaning                                      |
+ // |-----------------------------------------+--------------------+----------------------------------------------|
+ // | bigdl.utils.LoggerFilter.disable        | false              | Disable redirecting logs of Spark and BigDL. |
+ // |                                         |                    | Output location depends on log4j.properties  |
+ // | bigdl.utils.LoggerFilter.logFile        | user.dir/bigdl.log | The log file user defined.                   |
+ // | bigdl.utils.LoggerFilter.enableSparkLog | true               | Enable redirecting logs of Spark to logFile  |
+ // scalastyle:on
 
 /**
  * logger filter, which will filter the log of Spark(org, breeze, akka) to file.
- * it could be set by user through `-Dbigdl.utils.LoggerFilter.logFile`
  */
 object LoggerFilter {
 
@@ -74,8 +81,8 @@ object LoggerFilter {
   }
 
   /**
-   * 1. redirect all logs of Spark to file, which can be set by `-Dbigdl.utils.LoggerFilter.logFile`
-   * the default file is under current workspace named `bigdl.log`.
+   * 1. redirect all spark log to file, which can be set by `-Dbigdl.utils.LoggerFilter.logFile`
+   *    the default file is under current workspace named `bigdl.log`.
    * 2. `-Dbigdl.utils.LoggerFilter.disable=true` will disable redirection.
    * 3. `-Dbigdl.utils.LoggerFilter.enableSparkLog=false` will not output spark log to file
    */
