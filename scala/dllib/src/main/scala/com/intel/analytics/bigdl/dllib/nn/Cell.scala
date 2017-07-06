@@ -87,7 +87,7 @@ abstract class Cell[T : ClassTag](
   def hidResize(hidden: Activity, size: Int, rows: Int = 1, columns: Int = 1): Activity = {
     if (hidden == null) {
       if (hiddensShape.length == 1) {
-        hidResize(Tensor[T](), size)
+        hidResize(Tensor[T](), size, rows, columns)
       } else {
         val _hidden = T()
         var i = 1
