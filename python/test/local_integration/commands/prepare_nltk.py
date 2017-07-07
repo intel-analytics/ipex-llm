@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-export SPARK_DRIVER_MEMORY=20g
-$PYTHON_EXECUTABLE prepare_nltk.py
-$PYTHON_EXECUTABLE ${BIGDL_HOME}/pyspark/bigdl/models/rnn/rnnexample.py \
-        --maxEpoch 1
+import nltk
+nltk.download('punkt')
+ 
