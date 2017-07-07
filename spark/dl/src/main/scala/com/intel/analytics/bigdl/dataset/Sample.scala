@@ -220,9 +220,17 @@ private[bigdl] class ArraySample[T: ClassTag](
 
 object Sample {
   def apply[T: ClassTag](
+      data: Array[T],
+      featureSize: Array[Array[Int]],
+      labelSize: Array[Array[Int]]): Sample[T] = {
+    new ArraySample(data, featureSize, labelSize)
+  }
+
+  def apply[T: ClassTag](
         featureTensor: Tensor[T],
         labelTensor: Tensor[T])(implicit ev: TensorNumeric[T]) : Sample[T] = {
-    require(featureTensor.isContiguous() && labelTensor.isContiguous())
+    require(featureTensor.isContiguous(), "featureTensor is not contiguous")
+    require(labelTensor.isContiguous(), "labelTensor is not contiguous")
     val data = new Array[T](featureTensor.nElement() + labelTensor.nElement())
     ev.arraycopy(featureTensor.storage().array(), featureTensor.storageOffset() - 1,
       data, 0, featureTensor.nElement())
@@ -234,44 +242,63 @@ object Sample {
   def apply[T: ClassTag](
         featureTensor: Tensor[T],
         label: T)(implicit ev: TensorNumeric[T]) : Sample[T] = {
-    require(featureTensor.isContiguous())
+    require(featureTensor.isContiguous(), "featureTensor is not contiguous")
     val data = new Array[T](featureTensor.nElement() + 1)
     ev.arraycopy(featureTensor.storage().array(), featureTensor.storageOffset() - 1,
       data, 0, featureTensor.nElement())
     data(featureTensor.nElement()) = label
-    new ArraySample[T](data,
-      getSize(featureTensor), Array(Array(1)))
+    new ArraySample[T](data, getSize(featureTensor), Array(Array(1)))
   }
 
   def apply[T: ClassTag](
         featureTensors: Array[Tensor[T]],
         labelTensor: Tensor[T])(implicit ev: TensorNumeric[T]) : Sample[T] = {
-    featureTensors.foreach{feature =>
-      require(feature.isContiguous())
-    }
-    labelTensor.isContiguous()
-    new ArraySample[T]((featureTensors ++ Array(labelTensor)).flatMap(_.storage().array),
-      getSize(featureTensors), getSize(labelTensor))
+    val tensors = featureTensors ++ Array(labelTensor)
+    val data = new Array[T](tensors.map(_.nElement()).sum)
+    copy(data, tensors)
+    new ArraySample[T](data, getSize(featureTensors), getSize(labelTensor))
   }
 
   def apply[T: ClassTag](
         featureTensors: Array[Tensor[T]],
         labelTensors: Array[Tensor[T]])(implicit ev: TensorNumeric[T]) : Sample[T] = {
-    new ArraySample[T]((featureTensors ++ labelTensors).filter(_.dim() != 0)
-      .flatMap(_.storage().array),
-      getSize(featureTensors), getSize(labelTensors))
+    val tensors = featureTensors ++ labelTensors
+    val data = new Array[T](tensors.map(_.nElement()).sum)
+    copy(data, tensors)
+    new ArraySample[T](data, getSize(featureTensors), getSize(labelTensors))
   }
 
   def apply[T: ClassTag](
         featureTensor: Tensor[T])(implicit ev: TensorNumeric[T]) : Sample[T] = {
-    new ArraySample[T](featureTensor.storage().array(),
-      getSize(featureTensor), null)
+    require(featureTensor.isContiguous(), "featureTensor is not contiguous")
+    val data = new Array[T](featureTensor.nElement())
+    ev.arraycopy(featureTensor.storage().array(), featureTensor.storageOffset() - 1,
+      data, 0, featureTensor.nElement())
+    new ArraySample[T](data, getSize(featureTensor), null)
   }
 
   def apply[T: ClassTag](
         featureTensors: Array[Tensor[T]])(implicit ev: TensorNumeric[T]) : Sample[T] = {
+    val data = new Array[T](featureTensors.map(_.nElement()).sum)
+    copy(data, featureTensors)
     new ArraySample[T](featureTensors.flatMap(_.storage().array()),
       getSize(featureTensors), null)
+  }
+
+  private def copy[T: ClassTag](
+      data: Array[T],
+      tensors: Array[Tensor[T]])(implicit ev: TensorNumeric[T]) : Array[T] = {
+    var offset = 0
+    var i = 0
+    while (i < tensors.length) {
+      val tensor = tensors(i)
+      require(tensor.isContiguous(), s"${i}-th tensor is not contiguous")
+      ev.arraycopy(tensor.storage().array(), tensor.storageOffset() - 1,
+        data, offset, tensor.nElement())
+      offset += tensor.nElement()
+      i += 1
+    }
+    data
   }
 
   private[bigdl] def getSize[T: ClassTag](tensors: Array[Tensor[T]]): Array[Array[Int]] = {
