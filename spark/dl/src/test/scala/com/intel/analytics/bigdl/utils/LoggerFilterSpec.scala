@@ -24,7 +24,9 @@ import com.intel.analytics.bigdl.nn.{Linear, MSECriterion, Sequential}
 import com.intel.analytics.bigdl.dataset.{DataSet, MiniBatch, Sample, SampleToMiniBatch}
 
 import java.io.StringWriter
+import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
+
 import org.apache.spark.SparkContext
 import org.apache.log4j.{Level, Logger, PatternLayout, WriterAppender}
 
@@ -266,7 +268,7 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
     Logger.getLogger(getClass).warn(warn)
     Logger.getLogger(getClass).error(error)
 
-    val lines = Files.readAllLines(Paths.get(defaultFile))
+    val lines = Files.readAllLines(Paths.get(defaultFile), StandardCharsets.UTF_8)
 
     lines.size() should be (3)
     lines.get(0).contains(info) should be (true)
@@ -292,7 +294,7 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val data = sc.parallelize(List("bigdl", "spark", "deep", "learning"))
     val y = data.map(x => (x, x.length)).count()
 
-    val lines = Files.readAllLines(Paths.get(defaultFile)).asScala
+    val lines = Files.readAllLines(Paths.get(defaultFile), StandardCharsets.UTF_8).asScala
     lines.exists(_.contains("DAGScheduler")) should be (false)
 
     Files.deleteIfExists(Paths.get(defaultFile))
