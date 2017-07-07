@@ -64,8 +64,8 @@ class LSTMSpec  extends TorchSpec {
     }
 
     println(input)
-    val rec1 = Recurrent[Double](hiddenSize)
-    val rec2 = Recurrent[Double](hiddenSize)
+    val rec1 = Recurrent[Double]()
+    val rec2 = Recurrent[Double]()
 
     val model1 = Sequential[Double]()
       .add(rec1
@@ -150,7 +150,7 @@ class LSTMSpec  extends TorchSpec {
     }
 
 //    println(input)
-    val rec = Recurrent[Double](hiddenSize)
+    val rec = Recurrent[Double]()
 
     val model = Sequential[Double]()
       .add(rec
@@ -320,7 +320,7 @@ class LSTMSpec  extends TorchSpec {
         labels.setValue(b, i, rdmLabel)
       }
     }
-    val rec = Recurrent[Double](hiddenSize)
+    val rec = Recurrent[Double]()
 
     val model = Sequential[Double]()
       .add(rec
@@ -473,7 +473,7 @@ class LSTMSpec  extends TorchSpec {
 
     println(input)
     RNG.setSeed(seed)
-    val rec = Recurrent[Double](hiddenSize)
+    val rec = Recurrent[Double]()
 
     val model = Sequential[Double]()
       .add(rec
@@ -538,7 +538,7 @@ class LSTMSpec  extends TorchSpec {
     }
 
     println(input)
-    val rec = Recurrent[Double](hiddenSize)
+    val rec = Recurrent[Double]()
 
     val model = Sequential[Double]()
       .add(rec
