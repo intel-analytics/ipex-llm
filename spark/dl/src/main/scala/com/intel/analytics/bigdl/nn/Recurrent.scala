@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer.{ContainerSerializable, DataConverter, ModuleData, ModuleSerializer}
@@ -54,10 +54,12 @@ class Recurrent[T : ClassTag]()
     new ArrayBuffer[Array[Dropout[T]]]
   private val timeBuffer =
     new ArrayBuffer[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)]
+  private var layer: TensorModule[T] = null
 
   /**
    *
    *  modules: -- preTopology
+   *           |- BatchNormalization (optional)
    *           |- topology (cell)
    *
    * The topology (or cell) will be cloned for N times w.r.t the time dimension.
@@ -69,12 +71,57 @@ class Recurrent[T : ClassTag]()
   override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): Recurrent.this.type = {
     require(module.isInstanceOf[Cell[T]],
       "Recurrent: contained module should be Cell type")
+
     topology = module.asInstanceOf[Cell[T]]
     preTopology = topology.preTopology
+
+    if (layer != null && preTopology == null) {
+      throw new IllegalArgumentException(
+        s"${topology.getName} does not support BatchNormalization." +
+          s" Please add preTopology for it. You can simply using: " +
+          s"override def preTopology: AbstractModule[Activity, Activity, T] = Sequential()")
+    }
+
+    preTopology = preTopology match {
+      case sequential: Sequential[T] =>
+        if (layer != null) {
+          sequential.add(layer)
+        } else if (sequential.modules.length == 0) {
+          null
+        } else {
+          sequential
+        }
+      case module: AbstractModule[Activity, Activity, T] =>
+        val sequential = Sequential[T]()
+        if (layer != null) {
+          sequential.add(layer)
+        }
+        sequential.add(module)
+      case _ => null
+    }
+
     if (preTopology != null) {
       modules += preTopology
     }
     modules += topology
+    this
+  }
+
+  /**
+   * Add a preprocess layer to process input.
+   *
+   * For example, add a BatchNormalization layer to calculate the
+   * normalization of the output of preTopology layer.
+   *
+   *         h_t = f(U * h_t-1 + W * x + b)
+   *
+   * ===>    h_t = f(U * h_t-1 + Norm(W * x) + b)
+   *
+   * @param addLayer
+   * @return
+   */
+  def addPreprocessInputLayer(addLayer: TensorModule[T]): Recurrent.this.type = {
+    layer = addLayer
     this
   }
 
@@ -308,7 +355,9 @@ class Recurrent[T : ClassTag]()
     copy(cells.map(x => x.gradInput.toTable[Tensor[T]](inputDim)),
         gradInputCell, 0)
     if (preTopology != null) {
-      gradInput = preTopology.updateGradInput(input, gradInputCell).toTensor[T]
+      preTopology.updateGradInput(input, gradInputCell)
+      gradInput = preTopology.gradInput.toTensor[T]
+      // gradInput = preTopology.updateGradInput(input, gradInputCell).toTensor[T]
     }
     gradInput
   }

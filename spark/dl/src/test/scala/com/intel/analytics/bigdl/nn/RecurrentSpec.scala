@@ -97,9 +97,10 @@ class RecurrentSpec extends FlatSpec with Matchers {
 
     val model = Sequential[Double]()
       .add(Recurrent[Double]()
+
         .add(LSTM[Double](inputSize, hiddenSize)))
       .add(Select(2, 1))
-//      .add(Linear[Double](hiddenSize, outputSize))
+    //      .add(Linear[Double](hiddenSize, outputSize))
 
     val input = Tensor[Double](Array(batchSize1, time, inputSize)).rand
     val gradOutput = Tensor[Double](batchSize1, outputSize).rand
@@ -140,6 +141,34 @@ class RecurrentSpec extends FlatSpec with Matchers {
 
     assert(abs((etaForward - forwardSum) / etaForward) < 0.1)
     assert(abs((etaBackward - backwardSum) / etaBackward) < 0.1)
+  }
+
+  "A Recurrent with SimpleRNN cell " should " add batchNormalization correctly" in {
+    val hiddenSize = 4
+    val inputSize = 5
+    val outputSize = 5
+    val batchSize = 4
+    val time = 2
+    val batchSize1 = 5
+    val batchSize2 = 8
+    val seed = 100
+    RNG.setSeed(seed)
+
+    val model = Sequential[Double]()
+      .add(Recurrent[Double]()
+        .addPreprocessInputLayer(TimeDistributed[Double](BatchNormalization[Double](inputSize)))
+        .add(RnnCell[Double](inputSize, hiddenSize, Tanh[Double]())))
+      .add(TimeDistributed[Double](Linear[Double](hiddenSize, outputSize)))
+
+    println(model)
+
+    val input = Tensor[Double](batchSize, time, inputSize)
+    val gradOutput = Tensor[Double](batchSize, time, outputSize)
+
+    val output = model.forward(input)
+    val gradInput = model.backward(input, gradOutput)
+
+    println("add normalization")
   }
 
   "A Recurrent" should " converge when batchSize changes" in {
