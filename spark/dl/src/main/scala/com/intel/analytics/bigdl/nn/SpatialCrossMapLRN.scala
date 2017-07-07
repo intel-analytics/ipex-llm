@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 import scala.concurrent.Future
 import scala.reflect._
@@ -41,7 +42,7 @@ import scala.reflect._
  * @param k
  */
 @SerialVersionUID(3641570491004969703L)
-class SpatialCrossMapLRN[@specialized(Float, Double) T: ClassTag]
+class SpatialCrossMapLRN[T: ClassTag]
 (val size: Int = 5, val alpha: Double = 1.0, val beta: Double = 0.75, val k: Double = 1.0)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
@@ -161,7 +162,7 @@ class SpatialCrossMapLRN[@specialized(Float, Double) T: ClassTag]
   }
 }
 
-object SpatialCrossMapLRN {
+object SpatialCrossMapLRN extends ModuleSerializable {
 
   def apply[@specialized(Float, Double) T: ClassTag](
       size: Int = 5,

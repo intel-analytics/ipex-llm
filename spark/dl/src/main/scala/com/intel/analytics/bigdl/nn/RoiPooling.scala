@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 import scala.reflect._
 
@@ -355,7 +356,7 @@ class RoiPooling[T: ClassTag](val pooledW: Int, val pooledH: Int, val spatialSca
   }
 }
 
-object RoiPooling {
+object RoiPooling extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
     pooled_w: Int, pooled_h: Int, spatial_scale: T)(implicit ev: TensorNumeric[T]): RoiPooling[T] =
     new RoiPooling[T](pooled_w, pooled_h, spatial_scale)

@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 import scala.reflect.ClassTag
 
@@ -77,7 +78,7 @@ class SelectTable[T: ClassTag](
   }
 }
 
-object SelectTable {
+object SelectTable extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
     dimension: Int)(implicit ev: TensorNumeric[T]) : SelectTable[T] = {
     new SelectTable[T](dimension)

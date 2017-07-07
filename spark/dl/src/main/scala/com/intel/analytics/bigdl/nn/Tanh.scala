@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.math.tanh
 import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 import scala.reflect.ClassTag
 
@@ -29,7 +30,7 @@ import scala.reflect.ClassTag
  * Tanh is defined as f(x) = (exp(x)-exp(-x))/(exp(x)+exp(-x)).
  */
 @SerialVersionUID(9062199894710333035L)
-class Tanh[@specialized(Float, Double) T: ClassTag](
+class Tanh[T: ClassTag](
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     output.resizeAs(input)
@@ -47,7 +48,7 @@ class Tanh[@specialized(Float, Double) T: ClassTag](
 }
 
 
-object Tanh {
+object Tanh extends ModuleSerializable {
   def apply[T: ClassTag]()
       (implicit ev: TensorNumeric[T]) : Tanh[T] = {
     new Tanh[T]()

@@ -16,6 +16,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 import scala.reflect.ClassTag
 
@@ -27,7 +28,7 @@ import scala.reflect.ClassTag
 class Sqrt[T: ClassTag](implicit ev: TensorNumeric[T]) extends Power[T](0.5, 1, 0) {
 }
 
-object Sqrt {
+object Sqrt extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag]()
       (implicit ev: TensorNumeric[T]) : Sqrt[T] = {
     new Sqrt[T]()

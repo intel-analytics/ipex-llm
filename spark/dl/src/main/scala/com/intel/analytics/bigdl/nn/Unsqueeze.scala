@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 import scala.reflect.ClassTag
 
@@ -88,7 +89,7 @@ class Unsqueeze[T: ClassTag](
   }
 }
 
-object Unsqueeze {
+object Unsqueeze extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
       pos: Int,
       numInputDims: Int = Int.MinValue)(implicit ev: TensorNumeric[T]) : Unsqueeze[T] = {

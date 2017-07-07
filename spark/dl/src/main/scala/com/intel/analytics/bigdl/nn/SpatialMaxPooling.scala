@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 import scala.reflect._
 
@@ -286,7 +287,7 @@ class SpatialMaxPooling[T: ClassTag](
   }
 }
 
-object SpatialMaxPooling {
+object SpatialMaxPooling extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
       kW: Int,
       kH: Int,

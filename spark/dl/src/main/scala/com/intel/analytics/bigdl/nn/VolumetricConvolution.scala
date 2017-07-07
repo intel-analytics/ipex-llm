@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 import com.intel.analytics.bigdl.utils.{T, Table}
 import org.apache.spark.sql.catalyst.optimizer.OptimizeIn
 
@@ -326,7 +327,7 @@ class VolumetricConvolution[T: ClassTag](
   }
 }
 
-object VolumetricConvolution {
+object VolumetricConvolution extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
     nInputPlane: Int, nOutputPlane: Int,
     kT: Int, kW: Int, kH: Int,

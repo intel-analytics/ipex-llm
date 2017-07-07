@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{DenseTensorApply, Tensor, TensorFunc4, TensorFunc6}
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 import scala.reflect.ClassTag
 
@@ -75,7 +76,7 @@ class SoftShrink[T: ClassTag](
   }
 }
 
-object SoftShrink {
+object SoftShrink extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
       lambda: Double = 0.5)(implicit ev: TensorNumeric[T]) : SoftShrink[T] = {
     new SoftShrink[T](lambda)

@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 import scala.reflect.ClassTag
 
@@ -28,7 +29,7 @@ import scala.reflect.ClassTag
  * @param ev
  * @tparam T Numeric type. Only support float/double now
  */
-class Reverse[T: ClassTag](dim: Int = 1, isInplace: Boolean = false)
+class Reverse[T: ClassTag](val dim: Int = 1, val isInplace: Boolean = false)
   (implicit ev: TensorNumeric[T])
   extends TensorModule[T] {
 
@@ -115,7 +116,7 @@ class Reverse[T: ClassTag](dim: Int = 1, isInplace: Boolean = false)
 
 }
 
-object Reverse {
+object Reverse extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
     dimension: Int = 1, isInplace: Boolean = false)
     (implicit ev: TensorNumeric[T]) : Reverse[T] = {

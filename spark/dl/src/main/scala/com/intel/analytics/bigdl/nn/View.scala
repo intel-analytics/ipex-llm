@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 import scala.reflect.ClassTag
 
@@ -128,7 +129,7 @@ class View[T: ClassTag](val sizes: Array[Int])(
   }
 }
 
-object View {
+object View extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
       sizes: Int*)(implicit ev: TensorNumeric[T]) : View[T] = {
     new View[T](sizes.toArray)

@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 import scala.reflect.ClassTag
 
@@ -30,8 +31,8 @@ import scala.reflect.ClassTag
 
 @SerialVersionUID(1581502108010704056L)
 class Select[T: ClassTag](
-  dimension: Int,
-  index: Int
+  val dimension: Int,
+  val index: Int
 )(implicit ev: TensorNumeric[T])
   extends TensorModule[T] {
   def getPositiveDimAndIndex(input: Tensor[T]): (Int, Int) = {
@@ -68,7 +69,7 @@ class Select[T: ClassTag](
   override def toString: String = s"nn.Select"
 }
 
-object Select {
+object Select extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
       dimension: Int,
       index: Int)(implicit ev: TensorNumeric[T]) : Select[T] = {

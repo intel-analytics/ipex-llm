@@ -45,7 +45,7 @@ object ModuleSerializer extends ModuleSerializable{
   var tensorType : universe.Type = null
   var regularizerType : universe.Type = null
   var abstractModuleType : universe.Type = null
-  var moduleType : universe.Type = null
+  var tensorModuleType : universe.Type = null
 
   init
 
@@ -102,6 +102,7 @@ object ModuleSerializer extends ModuleSerializable{
       val paramName = param.name.decodedName.toString
       var ptype = param.typeSignature
       val attrBuilder = AttrValue.newBuilder
+      // For some modules, fields are declared inside but passed to Super directly
       var field : Field = null
       try {
         field = cls.getDeclaredField(paramName)
@@ -263,12 +264,78 @@ object ModuleSerializer extends ModuleSerializable{
     registerModule("PReLU", Class.forName("com.intel.analytics.bigdl.nn.PReLU"), PReLU)
     registerModule("Recurrent", Class.forName("com.intel.analytics.bigdl.nn.Recurrent"), Recurrent)
     registerModule("ReLU", Class.forName("com.intel.analytics.bigdl.nn.ReLU"), ReLU)
-
-
-
+    registerModule("ReLU6", Class.forName("com.intel.analytics.bigdl.nn.ReLU6"), ReLU6)
+    registerModule("Replicate", Class.forName("com.intel.analytics.bigdl.nn.Replicate"), Replicate)
+    registerModule("Reshape", Class.forName("com.intel.analytics.bigdl.nn.Reshape"), Reshape)
+    registerModule("Reverse", Class.forName("com.intel.analytics.bigdl.nn.Reverse"), Reverse)
+    registerModule("RnnCell", Class.forName("com.intel.analytics.bigdl.nn.RnnCell"), RnnCell)
+    registerModule("RoiPooling", Class.forName("com.intel.analytics.bigdl.nn.RoiPooling"),
+      RoiPooling)
+    registerModule("RReLU", Class.forName("com.intel.analytics.bigdl.nn.RReLU"), RReLU)
+    registerModule("Scale", Class.forName("com.intel.analytics.bigdl.nn.Scale"), Scale)
+    registerModule("Select", Class.forName("com.intel.analytics.bigdl.nn.Select"), Select)
+    registerModule("SelectTable", Class.forName("com.intel.analytics.bigdl.nn.SelectTable"),
+      SelectTable)
+    registerModule("Sequential", Class.forName("com.intel.analytics.bigdl.nn.Sequential"),
+      Sequential)
+    registerModule("Sigmoid", Class.forName("com.intel.analytics.bigdl.nn.Sigmoid"), Sigmoid)
+    registerModule("SoftMax", Class.forName("com.intel.analytics.bigdl.nn.SoftMax"), SoftMax)
+    registerModule("SoftMin", Class.forName("com.intel.analytics.bigdl.nn.SoftMin"), SoftMin)
+    registerModule("SoftPlus", Class.forName("com.intel.analytics.bigdl.nn.SoftPlus"), SoftPlus)
+    registerModule("SoftShrink", Class.forName("com.intel.analytics.bigdl.nn.SoftShrink"),
+      SoftShrink)
+    registerModule("SoftSign", Class.forName("com.intel.analytics.bigdl.nn.SoftSign"),
+      SoftSign)
+    registerModule("SpatialAveragePooling",
+      Class.forName("com.intel.analytics.bigdl.nn.SpatialAveragePooling"), SpatialAveragePooling)
+    registerModule("SpatialBatchNormalization",
+      Class.forName("com.intel.analytics.bigdl.nn.SpatialBatchNormalization"),
+      SpatialBatchNormalization)
+    registerModule("SpatialContrastiveNormalization",
+      Class.forName("com.intel.analytics.bigdl.nn.SpatialContrastiveNormalization"),
+      SpatialContrastiveNormalization)
+    registerModule("SpatialConvolution",
+      Class.forName("com.intel.analytics.bigdl.nn.SpatialConvolution"), SpatialConvolution)
+    registerModule("SpatialConvolutionMap",
+      Class.forName("com.intel.analytics.bigdl.nn.SpatialConvolutionMap"), SpatialConvolutionMap)
+    registerModule("SpatialCrossMapLRN",
+      Class.forName("com.intel.analytics.bigdl.nn.SpatialCrossMapLRN"), SpatialCrossMapLRN)
+    registerModule("SpatialDilatedConvolution",
+      Class.forName("com.intel.analytics.bigdl.nn.SpatialDilatedConvolution"),
+      SpatialDilatedConvolution)
+    registerModule("SpatialDivisiveNormalization",
+      Class.forName("com.intel.analytics.bigdl.nn.SpatialDivisiveNormalization"),
+      SpatialDivisiveNormalization)
+    // place holder for spatial full convolution
+    registerModule("SpatialMaxPooling",
+      Class.forName("com.intel.analytics.bigdl.nn.SpatialMaxPooling"), SpatialMaxPooling)
+    registerModule("SpatialShareConvolution",
+      Class.forName("com.intel.analytics.bigdl.nn.SpatialShareConvolution"),
+      SpatialShareConvolution)
+    registerModule("SpatialSubtractiveNormalization",
+      Class.forName("com.intel.analytics.bigdl.nn.SpatialSubtractiveNormalization"),
+      SpatialSubtractiveNormalization)
+    registerModule("SpatialZeroPadding",
+      Class.forName("com.intel.analytics.bigdl.nn.SpatialZeroPadding"), SpatialZeroPadding)
+    registerModule("SplitTable", Class.forName("com.intel.analytics.bigdl.nn.SplitTable"),
+      SplitTable)
+    registerModule("Sqrt", Class.forName("com.intel.analytics.bigdl.nn.Sqrt"), Sqrt)
+    registerModule("Square", Class.forName("com.intel.analytics.bigdl.nn.Square"), Square)
+    registerModule("Squeeze", Class.forName("com.intel.analytics.bigdl.nn.Squeeze"), Squeeze)
     registerModule("Sum", Class.forName("com.intel.analytics.bigdl.nn.Sum"), Sum)
-
+    registerModule("Tanh", Class.forName("com.intel.analytics.bigdl.nn.Tanh"), Tanh)
+    registerModule("TanhShrink", Class.forName("com.intel.analytics.bigdl.nn.TanhShrink"),
+      TanhShrink)
     registerModule("Threshold", Class.forName("com.intel.analytics.bigdl.nn.Threshold"), Threshold)
+    registerModule("TimeDistributed", Class.forName("com.intel.analytics.bigdl.nn.TimeDistributed"),
+      TimeDistributed)
+    registerModule("Transpose", Class.forName("com.intel.analytics.bigdl.nn.Transpose"), Transpose)
+    registerModule("Unsqueeze", Class.forName("com.intel.analytics.bigdl.nn.Unsqueeze"), Unsqueeze)
+    registerModule("View", Class.forName("com.intel.analytics.bigdl.nn.View"), View)
+    registerModule("VolumetricConvolution",
+      Class.forName("com.intel.analytics.bigdl.nn.VolumetricConvolution"), VolumetricConvolution)
+    registerModule("VolumetricMaxPooling",
+      Class.forName("com.intel.analytics.bigdl.nn.VolumetricMaxPooling"), VolumetricMaxPooling)
 
 
   }
@@ -291,6 +358,8 @@ object ModuleSerializer extends ModuleSerializable{
     val abstractModuleCls = Class.forName("com.intel.analytics.bigdl.nn.abstractnn.AbstractModule")
     abstractModuleType = runtimeMirror.classSymbol(abstractModuleCls).selfType
 
+    val tensorModuleCls = Class.forName("com.intel.analytics.bigdl.nn.abstractnn.TensorModule")
+    tensorModuleType = runtimeMirror.classSymbol(tensorModuleCls).selfType
   }
 }
 

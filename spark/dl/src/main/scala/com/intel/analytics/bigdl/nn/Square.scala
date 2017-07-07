@@ -16,6 +16,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 import scala.reflect.ClassTag
 
@@ -27,7 +28,7 @@ import scala.reflect.ClassTag
 class Square[T: ClassTag](implicit ev: TensorNumeric[T]) extends Power[T](2, 1, 0) {
 }
 
-object Square {
+object Square extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag]()
       (implicit ev: TensorNumeric[T]) : Square[T] = {
     new Square[T]()

@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils.{T, Table}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 import scala.concurrent.Future
 import scala.reflect.ClassTag
@@ -751,7 +752,7 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
   }
 }
 
-object SpatialFullConvolution {
+object SpatialFullConvolution extends ModuleSerializable {
   def apply[A <: Activity : ClassTag, @specialized(Float, Double) T: ClassTag](
       nInputPlane: Int,
       nOutputPlane: Int,
