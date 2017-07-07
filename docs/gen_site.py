@@ -17,11 +17,11 @@ def run_cmd(cmds, err_msg, s=False):
         p.communicate()
         if p.returncode != 0:
             print err_msg
-            sys.exit()
+            sys.exit(1)
     except OSError as e:
         print err_msg
         print e.strerror
-        sys.exit()
+        sys.exit(1)
 
 parser = argparse.ArgumentParser(description='Process BigDL docs.')
 parser.add_argument('-s', '--scaladocs',
