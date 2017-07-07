@@ -26,6 +26,7 @@ def __prepare_spark_env():
             raise ValueError(
                 """Could not find Spark. Pls make sure SPARK_HOME env is set:
                    export SPARK_HOME=path to your spark home directory""")
+        print("Using %s" % spark_home)
         py4j = glob.glob(os.path.join(spark_home, 'python/lib', 'py4j-*.zip'))[0]
         pyspark = glob.glob(os.path.join(spark_home, 'python/lib', 'pyspark*.zip'))[0]
         sys.path.insert(0, py4j)
@@ -33,13 +34,13 @@ def __prepare_spark_env():
 
 
 def __prepare_bigdl_env():
-    import bigdl.nn.layer
-    jar_dir = os.path.abspath(bigdl.nn.layer.__file__ + "/../../")
+    jar_dir = os.path.abspath(__file__ + "/../../")
     jar_paths = glob.glob(os.path.join(jar_dir, "share/lib/*.jar"))
     conf_paths = glob.glob(os.path.join(jar_dir, "share/conf/*.conf"))
 
     def append_path(env_var_name, path):
         try:
+            print("Adding %s to %s" % (jar_paths[0], env_var_name))
             os.environ[env_var_name] = path + ":" + os.environ[
                 env_var_name]  # noqa
         except KeyError:
@@ -48,10 +49,6 @@ def __prepare_bigdl_env():
     if conf_paths and conf_paths:
         assert len(conf_paths) == 1, "Expecting one jar: %s" % len(jar_paths)
         assert len(conf_paths) == 1, "Expecting one conf: %s" % len(conf_paths)
-        print("Adding %s to spark.driver.extraClassPath" % jar_paths[0])
-        print("Adding %s to spark.executor.extraClassPath" % jar_paths[0])
-        append_path("spark.driver.extraClassPath", jar_paths[0])
-        append_path("spark.executor.extraClassPath", jar_paths[0])
         append_path("SPARK_CLASSPATH", jar_paths[0])
         print("Prepending %s to sys.path" % conf_paths[0])
         sys.path.insert(0, conf_paths[0])
