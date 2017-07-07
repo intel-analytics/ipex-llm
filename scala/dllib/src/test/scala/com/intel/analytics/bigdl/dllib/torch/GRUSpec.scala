@@ -102,8 +102,8 @@ class GRUSpec  extends TorchSpec {
     }
 
     println(input)
-    val rec1 = Recurrent[Double](hiddenSize)
-    val rec2 = Recurrent[Double](hiddenSize)
+    val rec1 = Recurrent[Double]()
+    val rec2 = Recurrent[Double]()
 
     val model1 = Sequential[Double]()
       .add(rec1
@@ -188,7 +188,7 @@ class GRUSpec  extends TorchSpec {
     }
 
     println(input)
-    val rec = Recurrent[Double](hiddenSize)
+    val rec = Recurrent[Double]()
 
     val model = Sequential[Double]()
       .add(rec
@@ -385,7 +385,7 @@ class GRUSpec  extends TorchSpec {
 
     println(input)
     // RNG.setSeed(seed)
-    val rec = Recurrent[Double](hiddenSize)
+    val rec = Recurrent[Double]()
 
     val model = Sequential[Double]()
       .add(rec
@@ -451,7 +451,7 @@ class GRUSpec  extends TorchSpec {
     }
 
     println(input)
-    val rec = Recurrent[Double](hiddenSize)
+    val rec = Recurrent[Double]()
 
     val model = Sequential[Double]()
       .add(rec
@@ -637,7 +637,7 @@ class GRUSpec  extends TorchSpec {
     }
 
     println(input)
-    val rec = Recurrent[Double](hiddenSize)
+    val rec = Recurrent[Double]()
 
     val model = Sequential[Double]()
       .add(rec
@@ -689,7 +689,7 @@ class GRUSpec  extends TorchSpec {
     RNG.setSeed(seed)
 
     val model = Sequential[Double]()
-      .add(Recurrent[Double](hiddenSize)
+      .add(Recurrent[Double]()
         .add(GRU[Double](inputSize, hiddenSize)))
       .add(Select(1, 1))
       .add(Linear[Double](hiddenSize, outputSize))
