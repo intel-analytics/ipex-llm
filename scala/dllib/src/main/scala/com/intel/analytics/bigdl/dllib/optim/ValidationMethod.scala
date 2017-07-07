@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.ClassNLLCriterion
+import com.intel.analytics.bigdl.nn.AbsCriterion
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -269,4 +270,24 @@ class Loss[@specialized(Float, Double)T: ClassTag](
   }
 
   override def format(): String = "Loss"
+}
+
+/**
+ * This evaluation method is calculate mean absolute error of output with respect to target
+ *
+ */
+class MAE[@specialized(Float, Double)T: ClassTag]()
+(implicit ev: TensorNumeric[T]) extends ValidationMethod[T] {
+  private val criterion = AbsCriterion[T]()
+  override def apply(output: Activity, target: Activity): LossResult = {
+    val _output = output.asInstanceOf[Tensor[T]]
+    val (max_prob, max_index) = _output.max(2)
+    val _target = target.asInstanceOf[Tensor[T]]
+    val loss = ev.toType[Float](criterion.forward(max_index, _target))
+    val count = 1
+
+    new LossResult(loss, count)
+  }
+
+  override def format(): String = "MAE"
 }
