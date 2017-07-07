@@ -62,13 +62,18 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
     extends Container[Activity, Activity, T]{
 
   override def updateOutput(input: Activity): Activity = {
-    val output = doForward(input) { (element, forwardInput) =>
+    forwardExecution(input) { (element, forwardInput) =>
       element.updateOutput(forwardInput)
     }
-    output
   }
 
-  private def doForward(input: Activity)
+  override def forward(input: Activity): Activity = {
+    forwardExecution(input) { (element, forwardInput) =>
+      element.forward(forwardInput)
+    }
+  }
+
+  private def forwardExecution(input: Activity)
     (action: (AbstractModule[Activity, Tensor[T], T], Activity) => Unit): Activity = {
     var i = 0
     while(i < executions.length) {
