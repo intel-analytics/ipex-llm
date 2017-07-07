@@ -445,7 +445,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     }
     for (i <- output.length until comparePairs.length) {
       val (tf, bigdl) = comparePairs(i)
-      tf.almostEqual(bigdl, 1e-2) should be(true)
+      tf.almostEqual(bigdl, 1e-1) should be(true)
     }
   }
 
