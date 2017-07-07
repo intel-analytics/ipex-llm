@@ -45,9 +45,11 @@ def prepare_data(sc, folder, vocabsize, training_split):
         map(lambda sent: sentence.sentences_bipadding(sent))
     tokens = pad_sent.map(lambda pad: sentence.sentence_tokenizer(pad))
     train_tokens, val_tokens = tokens.randomSplit([training_split, 1 - training_split])
+    train_tokens.cache()
+    val_tokens.cache()
 
-    max_len = train_tokens.map(lambda x: len(x)).max()
-    print("max length %s" % max_len)
+    train_max_len = train_tokens.map(lambda x: len(x)).max()
+    print("max length %s" % train_max_len)
 
     words = train_tokens.flatMap(lambda x: x)
     print("%s words and %s sentences processed in train data" % (words.count(), train_tokens.count()))
@@ -93,16 +95,15 @@ def prepare_data(sc, folder, vocabsize, training_split):
             feature_onehot[i, el] = 1
         return feature_onehot, label
 
-    def padding(features, label):
-        pad_len = max_len - len(label)
-        print("max_len: %s pad_len: %s" % (max_len, pad_len))
-        padded_label = (label + [startIdx] * max_len)[:max_len]
+    def padding(features, label, length):
+        pad_len = length - len(label)
+        padded_label = (label + [startIdx] * length)[:length]
         feature_padding = np.zeros((pad_len, total_vocab_len), dtype=np.int)
         feature_padding[:, endIdx + 1] = np.ones(pad_len)
         padded_feautres = np.concatenate((features, feature_padding), axis=0)
         return padded_feautres, padded_label
 
-    sample_rdd = tokens.map(lambda sentence_te: text2labeled(sentence_te)) \
+    sample_rdd = train_tokens.map(lambda sentence_te: text2labeled(sentence_te)) \
         .map(lambda labeled_sent: labeled2onehotformat(labeled_sent)) \
         .map(lambda x: padding(x[0], x[1], train_max_len)) \
         .map(lambda vectors_label: Sample.from_ndarray(vectors_label[0],
@@ -170,9 +171,7 @@ if __name__ == "__main__":
         batch_size=batch_size,
         val_rdd=val_rdd,
         trigger=EveryEpoch(),
-        val_method=["Loss"],
-        criterion="TimeDistributedCriterion",
-        embedded_cri="CrossEntropyCriterion"
+        val_method=[Loss(TimeDistributedCriterion(CrossEntropyCriterion(), size_average=True))]
     )
 
     train_model = optimizer.optimize()
