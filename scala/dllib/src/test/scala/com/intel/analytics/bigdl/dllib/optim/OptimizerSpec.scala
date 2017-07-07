@@ -107,6 +107,38 @@ class OptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     dummyOptimizer.optimize()
   }
 
+  it should "be triggered when loss smaller than 0.1" in {
+    val dummyOptimizer = new Optimizer[Float, Float](model, null, null) {
+      override def optimize(): Module[Float] = {
+        val state = T("Loss" -> 1f)
+        endWhen(state) should be(false)
+        state("Loss") = 0.6f
+        endWhen(state) should be(false)
+        state("Loss") = 0.1f
+        endWhen(state) should be(true)
+        model
+      }
+    }
+    dummyOptimizer.setEndWhen(Trigger.minLoss(0.5f))
+    dummyOptimizer.optimize()
+  }
+
+  it should "be triggered when score larger than 0.5" in {
+    val dummyOptimizer = new Optimizer[Float, Float](model, null, null) {
+      override def optimize(): Module[Float] = {
+        val state = T("score" -> 0f)
+        endWhen(state) should be(false)
+        state("score") = 0.4f
+        endWhen(state) should be(false)
+        state("score") = 0.6f
+        endWhen(state) should be(true)
+        model
+      }
+    }
+    dummyOptimizer.setEndWhen(Trigger.maxScore(0.5f))
+    dummyOptimizer.optimize()
+  }
+
   it should "save model to given path" in {
     val filePath = java.io.File.createTempFile("OptimizerSpec", "model").getAbsolutePath
     Files.delete(Paths.get(filePath))

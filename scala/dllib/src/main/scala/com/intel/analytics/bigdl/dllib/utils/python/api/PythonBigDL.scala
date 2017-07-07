@@ -1138,6 +1138,12 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     SGD.Default()
   }
 
+  def createPlateau(monitor: String, factor: Float = 0.1f,
+    patience: Int = 10, mode: String = "min", epsilon: Float = 1e-4f,
+    cooldown: Int = 0, minLr: Float = 0): SGD.Plateau = {
+    SGD.Plateau(monitor, factor, patience, mode, epsilon, cooldown, minLr)
+  }
+
   def createClassNLLCriterion(weights: JTensor = null,
                               sizeAverage: Boolean = true)
   : ClassNLLCriterion[T] = {
@@ -1381,6 +1387,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def createMaxIteration(max: Int): Trigger = {
     Trigger.maxIteration(max)
+  }
+
+  def createMaxScore(max: Float): Trigger = {
+    Trigger.maxScore(max)
+  }
+
+  def createMinLoss(min: Float): Trigger = {
+    Trigger.minLoss(min)
   }
 
   def createTop1Accuracy(): ValidationMethod[T] = {
