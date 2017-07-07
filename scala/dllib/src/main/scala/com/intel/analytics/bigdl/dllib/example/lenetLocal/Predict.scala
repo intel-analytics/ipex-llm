@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.example.localJVM
+package com.intel.analytics.bigdl.example.lenetLocal
 import com.intel.analytics.bigdl.dataset.image.{BytesToGreyImg, GreyImgNormalizer, GreyImgToSample}
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.optim.{LocalPredictor, Top1Accuracy, Validator}
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.utils.{Engine, LocalModule}
 import com.intel.analytics.bigdl.dataset.Sample
 import org.apache.log4j.{Level, Logger}
-
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -34,10 +33,11 @@ object Predict {
   import Utils._
 
   def main(args: Array[String]): Unit = {
-    testParser.parse(args, new TestParams()).foreach { param =>
+    predictParser.parse(args, new PredictParams()).foreach { param =>
 
       System.setProperty("bigdl.localMode", "true")
-      System.setProperty("bigdl.coreNumber", "4")
+      System.setProperty("bigdl.coreNumber",
+        (Runtime.getRuntime().availableProcessors() / 2).toString)
       Engine.init
 
       val validationData = param.folder + "/t10k-images-idx3-ubyte"
@@ -56,11 +56,9 @@ object Predict {
       val samples = samplesBuffer.toArray
 
       val model = Module.load[Float](param.model)
-      val weightsBias = LocalPredictor.getAndClearWeightBias(model.parameters())
-      val predictor = LocalPredictor(model, weightsBias)
-
-      val result = predictor.predict(samples)
-      val result_class = predictor.predictClass(samples)
+      val localModel = LocalModule(model)
+      val result = localModel.predict(samples)
+      val result_class = localModel.predictClass(samples)
       result_class.foreach(r => println(s"${r}"))
     }
   }
