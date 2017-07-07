@@ -107,34 +107,6 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     }
   }
 
-  private def toValidationMethod(vMethods: JList[String], criterion: String = null,
-    embeddedCri: String = null):
-    Array[ValidationMethod[T]] = {
-
-    vMethods.toArray.map {
-      case "Top1Accuracy" => new Top1Accuracy[T]()
-      case "Top5Accuracy" => new Top5Accuracy[T]()
-      case "Loss" =>
-          if (criterion == null) new Loss[T]()
-          else if (criterion.equals("TimeDistributedCriterion") &&
-            embeddedCri.equals("CrossEntropyCriterion")) {
-              new Loss[T](TimeDistributedCriterion[T](CrossEntropyCriterion[T](), true)) }
-          else throw new RuntimeException(s"not supported validation method")
-
-      case m: String => throw new RuntimeException(s"not supported validation method: $m")
-    }
-  }
-
-  private def validationMethodToStr(method: ValidationMethod[T]): String = {
-    method match {
-      case _: Top1Accuracy[T] => "Top1Accuracy"
-      case _: Top5Accuracy[T] => "Top5Accuracy"
-      case _: Loss[T] => "loss"
-      case _ => throw new RuntimeException(s"not supported validation method: $method")
-    }
-  }
-
->>>>>>> add python simple rnn example
   def toPySample(sample: JSample[T]): Sample = {
     val featureList = sample.feature().contiguous().storage().toArray[T].toList.asJava
     val labelList = sample.label().contiguous().storage().toArray[T].toList.asJava
