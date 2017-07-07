@@ -104,13 +104,15 @@ def prepare_data(sc, folder, vocabsize, training_split):
 
     sample_rdd = tokens.map(lambda sentence_te: text2labeled(sentence_te)) \
         .map(lambda labeled_sent: labeled2onehotformat(labeled_sent)) \
-        .map(lambda x: padding(x[0], x[1])) \
-        .map(lambda vectors_label: Sample.from_ndarray(vectors_label[0], np.array(vectors_label[1])))
+        .map(lambda x: padding(x[0], x[1], train_max_len)) \
+        .map(lambda vectors_label: Sample.from_ndarray(vectors_label[0],
+                                                       np.array(vectors_label[1]))).cache()
 
     val_sample_rdd = val_tokens.map(lambda sentence_t: text2labeled(sentence_t)) \
         .map(lambda labeled_sent: labeled2onehotformat(labeled_sent)) \
-        .map(lambda x: padding(x[0], x[1])) \
-        .map(lambda vectors_label: Sample.from_ndarray(vectors_label[0], np.array(vectors_label[1])))
+        .map(lambda x: padding(x[0], x[1], val_max_len)) \
+        .map(lambda vectors_label: Sample.from_ndarray(vectors_label[0],
+                                                       np.array(vectors_label[1]))).cache()
 
     return sample_rdd, val_sample_rdd, total_vocab_len
 
@@ -126,7 +128,7 @@ if __name__ == "__main__":
     parser = OptionParser()
 
     parser.add_option("-f", "--folder", dest="folder", default="/tmp/rnn")
-    parser.add_option("-b", "--batchSize", dest="batchSize", default="128")
+    parser.add_option("-b", "--batchSize", dest="batchSize", default="12")
     parser.add_option("--learningRate", dest="learningrate", default="0.1")
     parser.add_option("--momentum", dest="momentum", default="0.0")
     parser.add_option("--weightDecay", dest="weight_decay", default="0.0")
