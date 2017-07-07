@@ -52,8 +52,8 @@ object Train {
       val optimMethod = if (param.stateSnapshot.isDefined) {
         OptimMethod.load[Float](param.stateSnapshot.get)
       } else {
-        new SGD[Float](learningRate = 0.01, learningRateDecay = 0.0,
-          weightDecay = 0.0005, momentum = 0.9, dampening = 0.0, nesterov = false,
+        new SGD[Float](learningRate = param.learningRate, learningRateDecay = 0.0,
+          weightDecay = param.weightDecay, momentum = 0.9, dampening = 0.0, nesterov = false,
           learningRateSchedule = SGD.EpochStep(25, 0.5))
       }
 
