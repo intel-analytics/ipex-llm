@@ -1402,11 +1402,15 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createTop5Accuracy(): ValidationMethod[T] = {
-    new Top1Accuracy()
+    new Top5Accuracy()
   }
 
   def createLoss(criterion: Criterion[T]): ValidationMethod[T] = {
     new Loss(criterion)
+  }
+
+  def createMAE(): ValidationMethod[T] = {
+    new MAE()
   }
 
   def createSGD(learningRate: Double = 1e-3,
