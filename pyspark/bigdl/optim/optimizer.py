@@ -74,6 +74,15 @@ class Loss(JavaValue):
             cri = ClassNLLCriterion()
         JavaValue.__init__(self, None, bigdl_type, cri)
 
+class MAE(JavaValue):
+    """
+    This evaluation method calculates the mean absolute error of output with respect to target.
+
+    >>> mae = MAE()
+    creating: createMAE
+    """
+    def __init__(self, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type)
 
 class MaxIteration(JavaValue):
     """
