@@ -93,10 +93,11 @@ class Recurrent[T : ClassTag]()
         }
       case module: AbstractModule[Activity, Activity, T] =>
         val sequential = Sequential[T]()
+        sequential.add(module)
         if (layer != null) {
           sequential.add(layer)
         }
-        sequential.add(module)
+        sequential
       case _ => null
     }
 

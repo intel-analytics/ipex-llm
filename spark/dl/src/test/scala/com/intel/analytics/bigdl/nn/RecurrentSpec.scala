@@ -156,7 +156,7 @@ class RecurrentSpec extends FlatSpec with Matchers {
 
     val model = Sequential[Double]()
       .add(Recurrent[Double]()
-        .addPreprocessInputLayer(TimeDistributed[Double](BatchNormalization[Double](inputSize)))
+        .addPreprocessInputLayer(TimeDistributed[Double](BatchNormalization[Double](hiddenSize)))
         .add(RnnCell[Double](inputSize, hiddenSize, Tanh[Double]())))
       .add(TimeDistributed[Double](Linear[Double](hiddenSize, outputSize)))
 
