@@ -409,23 +409,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
   def predictClass(dataset: RDD[Sample[T]]): RDD[Int] = {
     Predictor(this).predictClass(dataset)
   }
-
-  /**
-    * module predict, return the probability distribution
-    * @param dataset dataset for prediction
-    */
-//  def predict(dataset: Array[Sample[T]]): Array[Activity] = {
-//    LocalPredictor(this).predict(dataset)
-//  }
-//
-//  /**
-//    * module predict, return the predict label
-//    * @param dataset dataset for prediction
-//    */
-//  def predictClass(dataset: Array[Sample[T]]): Array[Int] = {
-//    LocalPredictor(this).predictClass(dataset)
-//  }
-
+  
   /**
    * Set weight and bias for the module
    * @param newWeights array of weights and bias
