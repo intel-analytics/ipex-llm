@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.example.localJVM
+package com.intel.analytics.bigdl.example.lenetLocal
 
-import com.intel.analytics.bigdl.dataset.DataSet
+import com.intel.analytics.bigdl.dataset.{DataSet, SampleToBatch}
 import com.intel.analytics.bigdl.dataset.image.{BytesToGreyImg, GreyImgNormalizer, GreyImgToSample}
 import com.intel.analytics.bigdl.nn.Module
-import com.intel.analytics.bigdl.optim.{Top1Accuracy, Validator}
+import com.intel.analytics.bigdl.optim.{Top1Accuracy, ValidationMethod, Validator}
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.{Level, Logger}
 
@@ -34,19 +34,21 @@ object Test {
   def main(args: Array[String]): Unit = {
     testParser.parse(args, new TestParams()).foreach { param =>
       System.setProperty("bigdl.localMode", "true")
-      System.setProperty("bigdl.coreNumber", "4")
       Engine.init
 
       val validationData = param.folder + "/t10k-images-idx3-ubyte"
       val validationLabel = param.folder + "/t10k-labels-idx1-ubyte"
 
-      val partitionNum = Engine.nodeNumber() * Engine.coreNumber()
       val evaluationSet = DataSet.array(load(validationData, validationLabel)) ->
-        BytesToGreyImg(28, 28) -> GreyImgNormalizer(trainMean, trainStd) -> GreyImgToSample()
+        BytesToGreyImg(28, 28) ->
+        GreyImgNormalizer(trainMean, trainStd) ->
+        GreyImgToSample() -> SampleToBatch(
+        batchSize = param.batchSize, None, None, None,
+        partitionNum = Some(1))
 
       val model = Module.load[Float](param.model)
-      val validator = Validator(model, evaluationSet)
-      val result = validator.test(Array(new Top1Accuracy[Float]))
+      val result = model.evaluate(evaluationSet.toLocal(),
+        Array(new Top1Accuracy[Float].asInstanceOf[ValidationMethod[Float]]))
       result.foreach(r => println(s"${r._2} is ${r._1}"))
     }
   }
