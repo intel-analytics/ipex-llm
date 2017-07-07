@@ -56,10 +56,8 @@ object ModuleSerializer extends ModuleSerializable{
     val modelAttributes = model.getAttrMap
     val moduleType = model.getModuleType
     val cls = ModuleSerializer.getModuleClsByType(moduleType)
-    val constructors = cls.getConstructors()
-    require(constructors.length == 1, "only support one constructor")
-    val constructor = constructors(0)
-    val constructorFullParams = getCostructorFullParams(cls)
+    val constructorMirror = getCostructorMirror(cls)
+    val constructorFullParams = constructorMirror.symbol.paramss
     val args = new Array[Object](constructorFullParams(0).size + constructorFullParams(1).size)
     var i = 0;
     constructorFullParams.foreach(map => {
@@ -80,8 +78,7 @@ object ModuleSerializer extends ModuleSerializable{
         i+= 1
       })
     })
-
-    val module = constructor.newInstance(args : _*).
+    val module = constructorMirror.apply(args : _*).
       asInstanceOf[AbstractModule[Activity, Activity, T]]
     createBigDLModule(model, module)
   }
@@ -95,7 +92,7 @@ object ModuleSerializer extends ModuleSerializable{
     val constructors = cls.getConstructors()
     require(constructors.length == 1, "only support one constructor")
     val constructor = constructors(0)
-    val fullParams = getCostructorFullParams(cls)
+    val fullParams = getCostructorMirror(cls).symbol.paramss
     val clsTag = scala.reflect.classTag[T]
     val constructorParams = fullParams(0)
     constructorParams.foreach(param => {
@@ -153,14 +150,13 @@ object ModuleSerializer extends ModuleSerializable{
     classMaps(cls)
   }
 
-  def getCostructorFullParams[T : ClassTag](cls : Class[_]) : List[List[universe.Symbol]] = {
+  def getCostructorMirror[T : ClassTag](cls : Class[_]) : universe.MethodMirror = {
 
     val clsSymbol = runtimeMirror.classSymbol(cls)
     val cm = runtimeMirror.reflectClass(clsSymbol)
     // to make it compatible with both 2.11 and 2.10
     val ctorC = clsSymbol.toType.declaration(universe.nme.CONSTRUCTOR).asMethod
-    val ctorm = cm.reflectConstructor(ctorC)
-    ctorm.symbol.paramss
+    cm.reflectConstructor(ctorC)
   }
 
   private def init() : Unit = {
