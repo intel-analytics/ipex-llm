@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.example.localJVM
+package com.intel.analytics.bigdl.example.lenetLocal
 
 import java.nio.ByteBuffer
 import java.nio.file.{Files, Paths}
@@ -39,8 +39,7 @@ object Utils {
     learningRate: Double = 0.05,
     learningRateDecay: Double = 0.0,
     maxEpoch: Int = 5,
-    coreNumber: Int = -1,
-    nodeNumber: Int = -1,
+    coreNumber: Int = Runtime.getRuntime().availableProcessors() / 2,
     overWriteCheckpoint: Boolean = false
   )
 
@@ -75,6 +74,9 @@ object Utils {
     opt[Unit]("overWrite")
       .text("overwrite checkpoint files")
       .action( (_, c) => c.copy(overWriteCheckpoint = true) )
+    opt[Int]('c', "coreNumber")
+      .text("core numbers")
+      .action((x, c) => c.copy(coreNumber = x))
   }
 
   case class TestParams(
@@ -84,6 +86,28 @@ object Utils {
   )
 
   val testParser = new OptionParser[TestParams]("BigDL Lenet Test Example") {
+    opt[String]('f', "folder")
+      .text("where you put the MNIST data")
+      .action((x, c) => c.copy(folder = x))
+
+    opt[String]("model")
+      .text("model snapshot location")
+      .action((x, c) => c.copy(model = x))
+      .required()
+      .required()
+    opt[Int]('b', "batchSize")
+      .text("batch size")
+      .action((x, c) => c.copy(batchSize = x))
+  }
+
+
+  case class PredictParams(
+                         folder: String = "./",
+                         model: String = "",
+                         batchSize: Int = 128
+                       )
+
+  val predictParser = new OptionParser[PredictParams]("BigDL Lenet Test Example") {
     opt[String]('f', "folder")
       .text("where you put the MNIST data")
       .action((x, c) => c.copy(folder = x))
