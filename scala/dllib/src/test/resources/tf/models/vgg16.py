@@ -32,8 +32,8 @@ def main():
     print("nodes in the graph")
     for n in end_points:
         print(n + " => " + str(end_points[n]))
-    net_outputs = map(lambda x: tf.get_default_graph().get_tensor_by_name(x), argv[2].split())
-    run_model(net_outputs, argv[1])
+    net_outputs = map(lambda x: tf.get_default_graph().get_tensor_by_name(x), argv[2].split(','))
+    run_model(net_outputs, argv[1], 'vgg_16', argv[3] == 'True')
 
 if __name__ == "__main__":
     main()
