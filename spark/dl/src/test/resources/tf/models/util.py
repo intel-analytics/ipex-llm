@@ -66,7 +66,6 @@ def run_model(end_points, output_path, model_scope=None, backward=True):
     grad_inputs_assign = []
     grad_vars = []
     grad_results = []
-    # trainable_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope=model_scope)
     i = 0
     for end_point in end_points:
         output = tf.Variable(tf.random_uniform(tf.shape(end_point)), name='output' + str(i))
@@ -122,6 +121,5 @@ def run_model(end_points, output_path, model_scope=None, backward=True):
         output_nodes.extend(grades_nodes)
         output_nodes.extend(grades_input_nodes)
 
-    # merge_checkpoint(input_graph, input_checkpoint, map(lambda x: 'assign' + str(x), range(len(end_points))), output_file)
     merge_checkpoint(input_graph, input_checkpoint, output_nodes, output_file)
 
