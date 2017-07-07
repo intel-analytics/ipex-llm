@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import org.scalatest.exceptions.TestCanceledException
 
 import scala.reflect.ClassTag
 
@@ -37,6 +38,15 @@ object TestUtils {
       path.substring(1)
     } else {
       path
+    }
+  }
+
+  /**
+   * Some test case cannot run on windows, cancel such test cases
+   */
+  def cancelOnWindows(): Unit = {
+    if (System.getProperty("os.name").toLowerCase().contains("win")) {
+      throw new TestCanceledException("This case should not be run on windows", 3)
     }
   }
 
