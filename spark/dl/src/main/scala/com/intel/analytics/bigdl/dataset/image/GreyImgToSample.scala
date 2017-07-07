@@ -32,19 +32,18 @@ object GreyImgToSample {
  */
 class GreyImgToSample() extends Transformer[LabeledGreyImage, Sample[Float]] {
 
-  private val featureBuffer = Array(Tensor[Float]())
-  private val labelBuffer = Array(Tensor[Float](1))
+  private val featureBuffer = Tensor[Float]()
+  private val labelBuffer = Tensor[Float](1)
   private val featureSize = new Array[Int](2)
-  private val buffer = Sample[Float]()
 
   override def apply(prev: Iterator[LabeledGreyImage]): Iterator[Sample[Float]] = {
     prev.map(img => {
-      labelBuffer(0).storage.array()(0) = img.label()
+      labelBuffer.storage.array()(0) = img.label()
       featureSize(0) = img.height()
       featureSize(1) = img.width()
-      featureBuffer(0).set(Storage(img.content), sizes = featureSize)
+      featureBuffer.set(Storage(img.content), sizes = featureSize)
 
-      buffer.set(featureBuffer, labelBuffer)
+      Sample(featureBuffer, labelBuffer)
     })
   }
 }

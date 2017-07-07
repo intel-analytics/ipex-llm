@@ -232,11 +232,7 @@ class SampleToBatch[T: ClassTag]
             val sample = prev.next()
             require(sample.feature().isContiguous() && sample.label().isContiguous(),
               "SampleToBatch: Only support contiguous tensor")
-            if (null == sampleData(i)) {
-              sampleData(i) = sample.clone()
-            } else {
-              sampleData(i).copy(sample)
-            }
+            sampleData(i) = sample
             featureIndex = getLarger(sampleData(featureIndex).feature().nElement(),
               featureIndex, sample.feature().nElement(), i)
             labelIndex = getLarger(sampleData(labelIndex).label().nElement(),
@@ -309,11 +305,12 @@ class SampleToBatch[T: ClassTag]
 private[bigdl] class SampleToMiniBatch[T: ClassTag](
     totalBatch: Int,
     miniBatch: Option[MiniBatch[T]] = None,
-    paddingParam: Option[PaddingParam[T]] = None,
+    featurePaddingParam: Option[FeaturePaddingParam[T]] = None,
+    labelPaddingParam: Option[LabelPaddingParam[T]] = None,
     partitionNum: Option[Int] = None)
     (implicit ev: TensorNumeric[T]) extends Transformer[Sample[T], MiniBatch[T]] {
 
-  private val batchPerPartition = Utils.getBatchSize(totalBatch)
+  private val batchPerPartition = Utils.getBatchSize(totalBatch, partitionNum)
   var miniBatchBuffer = miniBatch.orNull
 
   override def apply(prev: Iterator[Sample[T]]): Iterator[MiniBatch[T]] = {
@@ -329,16 +326,12 @@ private[bigdl] class SampleToMiniBatch[T: ClassTag](
           var i = 0
           while (i < batchSize && prev.hasNext) {
             val sample = prev.next()
-            if (null == sampleData(i)) {
-              sampleData(i) = sample.clone()
-            } else {
-              sampleData(i).copy(sample)
-            }
+            sampleData(i) = sample
             i += 1
           }
           if (null == miniBatchBuffer) {
             miniBatchBuffer = MiniBatch(sampleData(0).numFeature(), sampleData(0).numLabel(),
-              paddingParam)
+              featurePaddingParam, labelPaddingParam)
           }
 
           if (i < batchSize) {
@@ -358,18 +351,20 @@ object SampleToMiniBatch {
   /**
    * Apply an SampleToMiniBatch transformer.
    *
-   * @param batchSize total batch size
-   * @param paddingParam padding strategy, see [[com.intel.analytics.bigdl.dataset.PaddingParam]]
-   *                     for details.
-   * @param partitionNum partition number of dataset, default means partitionNum
-   *                       equals Engine.nodeNumber()
+   * @param batchSize           total batch size
+   * @param featurePaddingParam feature padding strategy, see
+   *                       [[com.intel.analytics.bigdl.dataset.FeaturePaddingParam]] for details.
+   * @param labelPaddingParam   label padding strategy, see
+   *                       [[com.intel.analytics.bigdl.dataset.LabelPaddingParam]] for details.
    * @return
    */
   def apply[T: ClassTag](
-        batchSize : Int,
-        paddingParam: Option[PaddingParam[T]],
-        partitionNum: Option[Int])(implicit ev: TensorNumeric[T]): SampleToMiniBatch[T] = {
-    new SampleToMiniBatch[T](batchSize, None, paddingParam, partitionNum)
+       batchSize : Int,
+       featurePaddingParam: Option[FeaturePaddingParam[T]] = None,
+       labelPaddingParam: Option[LabelPaddingParam[T]] = None,
+       partitionNum: Option[Int] = None
+        )(implicit ev: TensorNumeric[T]): SampleToMiniBatch[T] = {
+    new SampleToMiniBatch[T](batchSize, None, featurePaddingParam, labelPaddingParam, partitionNum)
   }
 
   /**
@@ -377,47 +372,12 @@ object SampleToMiniBatch {
    *
    * @param batchSize total batch size
    * @param miniBatch An User-Defined MiniBatch to construct a mini batch.
-   * @param partitionNum partition number of dataset, default means partitionNum
-   *                       equals Engine.nodeNumber()
    * @return
    */
   def apply[T: ClassTag](
-        batchSize : Int,
         miniBatch: MiniBatch[T],
+        batchSize : Int,
         partitionNum: Option[Int])(implicit ev: TensorNumeric[T]): SampleToMiniBatch[T] = {
     new SampleToMiniBatch[T](batchSize, Some(miniBatch), partitionNum = partitionNum)
-  }
-
-  /**
-   * Apply an SampleToMiniBatch transformer.
-   *
-   * @param batchSize total batch size
-   * @param featurePadding feature padding value on the first feature tensor
-   *                       (by default None, meaning no feature padding)
-   * @param labelPadding label padding value (by default None, meaning no label padding)
-   * @param fixedLength if padding, it specifies the second dimension of feature/label
-   *                    after padding. If has multi feature tensor, only pad the first one.
-   *                    (by default None, meaning the length after padding is set to the max
-   *                    length of feature/label in a mini-batch)
-   * @param partitionNum partition number of dataset, default means partitionNum
-   *                     equals Engine.nodeNumber()
-   * @return
-   */
-  def apply[T: ClassTag](
-        batchSize : Int,
-        featurePadding : Option[Tensor[T]] = None,
-        labelPadding : Option[T] = None,
-        fixedLength: Option[Int] = None,
-        partitionNum: Option[Int] = None)(implicit ev: TensorNumeric[T]): SampleToMiniBatch[T] = {
-    val fp = if (featurePadding.isDefined) Some(Array(featurePadding.get)) else None
-    val fl = if (fixedLength.isDefined) Some(Array(fixedLength.get)) else None
-    val lp = if (labelPadding.isDefined) Some(Array(labelPadding.get)) else None
-    val ll = if (labelPadding.isDefined && fixedLength.isDefined) {
-      Some(Array(fixedLength.get))
-    } else {
-      None
-    }
-    SampleToMiniBatch(batchSize, Some(PaddingParam[T](featurePadding = fp, featureFixedLength = fl,
-      labelPadding = lp, labelFixedLength = ll)), partitionNum = partitionNum)
   }
 }

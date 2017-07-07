@@ -18,8 +18,7 @@ package com.intel.analytics.bigdl.dataset
 
 
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Storage, Tensor}
-import org.apache.commons.lang3.SerializationUtils
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 
 import scala.reflect.ClassTag
 
@@ -30,28 +29,20 @@ import scala.reflect.ClassTag
  */
 abstract class Sample[T: ClassTag] extends Serializable {
   /**
-   * Length of the features.
+   * First dimension length of index-th feature.
    * This function could be used to sort samples in [[DataSet]].
    *
    * @return
    */
-  def featureLength(): Array[Int]
+  def featureLength(index: Int): Int
 
   /**
-   * Length of the labels.
+   * First dimension length of index-th label.
    * This function could be used to find the longest label.
    *
    * @return
    */
-  def labelLength(): Array[Int]
-
-  /**
-   * Copy other Sample's data to this Sample
-   *
-   * @param other Sample to be copied.
-   * @return this
-   */
-  def copy(other: Sample[T]): this.type
+  def labelLength(index: Int): Int
 
   /**
    * Number of tensors in feature
@@ -68,15 +59,9 @@ abstract class Sample[T: ClassTag] extends Serializable {
   def numLabel(): Int
 
   /**
-   * Deep clone
-   *
-   * @return a deep clone
-   */
-  override def clone(): this.type =
-    SerializationUtils.clone(this)
-
-  /**
    * Get feature tensor, for one feature Sample only.
+   * You don't need to override this, because we have add
+   * a default implement to throw exception.
    * @return feature tensor
    */
   @deprecated("Old interface", "0.2.0")
@@ -86,6 +71,8 @@ abstract class Sample[T: ClassTag] extends Serializable {
 
   /**
    * Get label tensor, for one label Sample only.
+   * You don't need to override this, because we have add
+   * a default implement to throw exception.
    * @return label tensor
    */
   @deprecated("Old interface", "0.2.0")
@@ -109,13 +96,23 @@ abstract class Sample[T: ClassTag] extends Serializable {
         labelSize: Array[Int])(implicit ev: TensorNumeric[T]): Sample[T]
 
   /**
-   * Set sample's data with a set of features and labels.
-   * @param features a set of features
-   * @param labels a set of labels
-   * @return this
+   * Get feature sizes
+   * @return feature sizes
    */
-  def set(features: Array[Tensor[T]], labels: Array[Tensor[T]]
-         )(implicit ev: TensorNumeric[T]): Sample[T]
+  def getFeatureSize(): Array[Array[Int]]
+
+
+  /**
+   * Get label sizes
+   * @return label sizes
+   */
+  def getLabelSize(): Array[Array[Int]]
+
+  /**
+   * Get data
+   * @return data
+   */
+  def getData(): Array[T]
 }
 
 
@@ -123,53 +120,35 @@ abstract class Sample[T: ClassTag] extends Serializable {
  * A kind of sample who use only one array
  */
 private[bigdl] class ArraySample[T: ClassTag](
-      private var data: Array[T],
-      private var featureSize: Array[Array[Int]],
-      private var labelSize: Array[Array[Int]]) extends Sample[T] {
+      private val data: Array[T],
+      private val featureSize: Array[Array[Int]],
+      private val labelSize: Array[Array[Int]]) extends Sample[T] {
 
-  def getData(): Array[T] = data
+  override def getData(): Array[T] = data
 
-  override def featureLength(): Array[Int] = {
+  override def featureLength(index: Int): Int = {
     require(null != featureSize, "featureSize is empty")
-    featureSize.map(_.product)
+    featureSize(index)(0)
   }
 
-  override def labelLength(): Array[Int] = {
+  override def labelLength(index: Int): Int = {
     if (null == labelSize) {
-      Array(0)
+      0
     } else {
-      labelSize.map(_.product)
+      labelSize(index)(0)
     }
   }
 
-  def getFeatureSize(): Array[Array[Int]] = {
+  override def getFeatureSize(): Array[Array[Int]] = {
     featureSize
   }
 
-  def getLabelSize(): Array[Array[Int]] = {
+  override def getLabelSize(): Array[Array[Int]] = {
     if (null != labelSize) {
       labelSize
     } else {
       Array(Array(0))
     }
-  }
-
-  override def copy(other: Sample[T]): this.type = {
-    require(other.isInstanceOf[ArraySample[T]], "Sample.copy: sample type does not match.")
-    val that = other.asInstanceOf[ArraySample[T]]
-    val thatDataLength = that.featureSize.map(_.product).sum +
-      that.labelSize.map(_.product).sum
-    require(Sample.sameSize(featureSize, that.featureSize), "Sample.copy: featureSize " +
-      "doesn't match")
-    require(Sample.sameSize(labelSize, that.labelSize), "Sample.copy: labelSize " +
-      "doesn't match")
-    if (data.length < thatDataLength) {
-      data = new Array[T](thatDataLength)
-    }
-    System.arraycopy(that.data, 0, this.data, 0, thatDataLength)
-    System.arraycopy(that.featureSize, 0, this.featureSize, 0, this.featureSize.length)
-    System.arraycopy(that.labelSize, 0, this.labelSize, 0, this.labelSize.length)
-    this
   }
 
   override def numFeature(): Int = {
@@ -185,65 +164,19 @@ private[bigdl] class ArraySample[T: ClassTag](
     }
   }
 
-  override def set(
-        features: Array[Tensor[T]],
-        labels: Array[Tensor[T]])(implicit ev: TensorNumeric[T]): Sample[T] = {
-    // Resize
-    resize(features.map(_.nElement()).sum + labels.map(_.nElement()).sum,
-      features.map(_.size()), labels.map(_.size()))
-
-    // Deep copy
-    var dataOffset = 0
-    var sizeOffset = 0
-    var i = 0
-    while(i < features.length) {
-      val f = features(i)
-      require(f.isContiguous())
-      // copy data
-      ev.arraycopy(f.storage().array(), f.storageOffset() - 1, data, dataOffset, f.nElement())
-
-      dataOffset += f.nElement()
-      sizeOffset += f.dim() + 1
-      i += 1
-    }
-    i = 0
-    sizeOffset = 0
-    while(i < labels.length) {
-      val l = labels(i)
-      require(l.isContiguous())
-      // Copy data
-      ev.arraycopy(l.storage().array(), l.storageOffset() - 1, data, dataOffset, l.nElement())
-
-      dataOffset += l.nElement()
-      sizeOffset += l.dim()
-      i += 1
-    }
-
-    this
-  }
-
   @deprecated("Old interface", "0.2.0")
   override def feature()(implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(featureSize.length == 1)
+    require(featureSize.length == 1, "Old interface for 1 feature Sample. " +
+      s"got ${featureSize.length} feature Sample")
     Tensor[T](Storage(data), 1, getFeatureSize()(0))
   }
 
   @deprecated("Old interface", "0.2.0")
   override def label()(implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(labelSize.length == 1)
+    require(labelSize.length == 1, "Old interface for 1 label Sample. " +
+      s"got ${labelSize.length} label Sample")
     Tensor[T](Storage(data), getFeatureSize().map(_.product).sum + 1,
       labelSize(0))
-  }
-
-  private def resize(
-        dataLength: Int,
-        featureSize: Array[Array[Int]],
-        labelSize: Array[Array[Int]]): Unit = {
-    if (data == null || data.length < dataLength) {
-      data = new Array[T](dataLength)
-    }
-    this.featureSize = featureSize
-    this.labelSize = labelSize
   }
 
   @deprecated("Old interface", "0.2.0")
@@ -252,10 +185,9 @@ private[bigdl] class ArraySample[T: ClassTag](
            labelData: Array[T],
            featureSize: Array[Int],
            labelSize: Array[Int])(implicit ev: TensorNumeric[T]): Sample[T] = {
-    // Resize
-    resize(featureData.length + labelData.length,
-      Array(featureSize),
-      Array(labelSize))
+    require(featureSize.sameElements(this.featureSize(0)) &&
+      labelSize.sameElements(this.labelSize(0)), "size not match")
+
     ev.arraycopy(featureData, 0, data, 0, featureData.length)
     ev.arraycopy(labelData, 0, data, featureData.length, labelData.length)
 
@@ -299,21 +231,25 @@ object Sample {
     new ArraySample[T](data, getSize(featureTensor), getSize(labelTensor))
   }
 
-  def apply[@specialized(Float, Double) T: ClassTag]()(
-        implicit ev: TensorNumeric[T]) : Sample[T] = {
-    new ArraySample[T](Array[T](), null, null)
-  }
-
   def apply[T: ClassTag](
         featureTensor: Tensor[T],
         label: T)(implicit ev: TensorNumeric[T]) : Sample[T] = {
-    new ArraySample[T](featureTensor.storage().array ++ Array(label),
+    require(featureTensor.isContiguous())
+    val data = new Array[T](featureTensor.nElement() + 1)
+    ev.arraycopy(featureTensor.storage().array(), featureTensor.storageOffset() - 1,
+      data, 0, featureTensor.nElement())
+    data(featureTensor.nElement()) = label
+    new ArraySample[T](data,
       getSize(featureTensor), Array(Array(1)))
   }
 
   def apply[T: ClassTag](
         featureTensors: Array[Tensor[T]],
         labelTensor: Tensor[T])(implicit ev: TensorNumeric[T]) : Sample[T] = {
+    featureTensors.foreach{feature =>
+      require(feature.isContiguous())
+    }
+    labelTensor.isContiguous()
     new ArraySample[T]((featureTensors ++ Array(labelTensor)).flatMap(_.storage().array),
       getSize(featureTensors), getSize(labelTensor))
   }

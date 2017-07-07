@@ -52,8 +52,7 @@ class Predictor[T: ClassTag] private[optim](
     val modelBroad = ModelBroadcast[T].broadcast(dataSet.sparkContext, model.evaluate())
     val partitionNum = dataSet.partitions.length
     val otherBroad = dataSet.sparkContext.broadcast(SampleToMiniBatch(
-      batchSize = batchPerPartition * partitionNum, None, None, None,
-      partitionNum = Some(partitionNum)))
+      batchSize = batchPerPartition * partitionNum))
     dataSet.mapPartitions { partition =>
       val localModel = modelBroad.value()
       val localTransformer = otherBroad.value.cloneTransformer()

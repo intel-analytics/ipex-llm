@@ -26,7 +26,7 @@ import scala.reflect.ClassTag
 
 @com.intel.analytics.bigdl.tags.Parallel
 class SampleSpec extends FlatSpec with Matchers {
-  def newMiniBatch[T: ClassTag](
+  private def newMiniBatch[T: ClassTag](
         samples: Array[Sample[T]],
         featurePadding: Option[Array[Tensor[T]]] = None,
         featureFixedLength: Option[Array[Int]] = None,
@@ -35,10 +35,24 @@ class SampleSpec extends FlatSpec with Matchers {
         labelFixedLength: Option[Array[Int]] = None,
         labelIncrement: Option[Array[Int]] = None)(
         implicit ev: TensorNumeric[T]): MiniBatch[T] = {
+    val featureParam = if (featureFixedLength.isDefined) {
+      FeaturePaddingParam(featurePadding, Some(FixedLength(featureFixedLength.get)))
+    } else if (featureIncrement.isDefined) {
+      FeaturePaddingParam(featurePadding, Some(PaddingLongest(featureIncrement.get)))
+    } else {
+      FeaturePaddingParam(featurePadding)
+    }
+
+    val labelParam = if (labelFixedLength.isDefined) {
+      LabelPaddingParam(labelPadding, Some(FixedLength(labelFixedLength.get)))
+    } else if (labelIncrement.isDefined) {
+      LabelPaddingParam(labelPadding, Some(PaddingLongest(labelIncrement.get)))
+    } else {
+      LabelPaddingParam(labelPadding)
+    }
 
     MiniBatch[T](samples(0).numFeature(), samples(0).numLabel(),
-      Some(PaddingParam(featurePadding, featureFixedLength, featureIncrement,
-      labelPadding, labelFixedLength, labelIncrement))).setValue(samples)
+      Some(featureParam), Some(labelParam)).setValue(samples)
   }
 
   "SampleSpec with Float Tensor input and Tensor label" should "initialize well" in {
@@ -53,19 +67,6 @@ class SampleSpec extends FlatSpec with Matchers {
     sample.label should be (tensorLabel1)
   }
 
-  "TensorSample" should "clone well" in {
-    val input1 = new LabeledBGRImage(32, 32)
-    val label1 = new LabeledBGRImage(32, 32)
-    val tensorInput1 = Tensor[Float](Storage[Float](input1.content), 1, Array(3, 32, 32))
-    val tensorLabel1 = Tensor[Float](Storage[Float](label1.content), 1, Array(3, 32, 32))
-    tensorInput1.rand()
-    tensorLabel1.rand()
-    val sample = Sample[Float](tensorInput1, tensorLabel1)
-    val otherSample = sample.clone()
-    sample.feature should be (otherSample.feature)
-    sample.label should be (otherSample.label)
-  }
-
   "SampleSpec with Float Tensor input and Tensor label" should "set well" in {
     val input1 = new LabeledBGRImage(32, 32)
     val label1 = new LabeledBGRImage(32, 32)
@@ -73,7 +74,7 @@ class SampleSpec extends FlatSpec with Matchers {
     val tensorLabel1 = Tensor[Float](Storage[Float](label1.content), 1, Array(3, 32, 32))
     tensorInput1.rand()
     tensorLabel1.rand()
-    val sample = Sample[Float]()
+    val sample = Sample[Float](Tensor[Float](3, 32, 32), Tensor[Float](3, 32, 32))
     sample.set(tensorInput1.storage().array(),
       tensorLabel1.storage().array(),
       tensorInput1.size,
@@ -91,24 +92,6 @@ class SampleSpec extends FlatSpec with Matchers {
     val sample4 = Sample[Float](Tensor[Float](2, 3).range(1, 6, 1),
       Tensor[Float](4).range(7, 10, 1))
     sample3.equals(sample4) should be (false)
-  }
-
-  "Sample.copy" should "return right result" in {
-    val sample1 = Sample[Float](Tensor[Float](2, 3).range(1, 6, 1), Tensor[Float](1).fill(1))
-    val sample2 = Sample[Float](Tensor[Float](3, 3), Tensor[Float](1))
-    sample2.copy(sample1)
-    sample1.equals(sample2) should be (true)
-
-    val sample3 = Sample[Float](
-      Array(Tensor[Float](3, 3).range(1, 9, 1),
-        Tensor[Float](3, 3).range(1, 9, 1),
-        Tensor[Float](3, 3).range(1, 9, 1)), Tensor[Float](1).fill(10))
-    val sample4 = Sample[Float](
-      Array(Tensor[Float](1, 3).range(1, 3, 1),
-        Tensor[Float](2, 3).range(1, 6, 1),
-        Tensor[Float](3, 3).range(1, 9, 1)), Tensor[Float](1).fill(10))
-    sample4.copy(sample3)
-    sample3.equals(sample4) should be (true)
   }
 
   "Array[TensorSample] toMiniBatch" should "return right result" in {

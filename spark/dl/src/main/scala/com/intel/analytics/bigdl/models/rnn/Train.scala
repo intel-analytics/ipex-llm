@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.models.rnn
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.{DataSet, SampleToMiniBatch}
+import com.intel.analytics.bigdl.dataset.{DataSet, FixedLength, FeaturePaddingParam, SampleToMiniBatch}
 import com.intel.analytics.bigdl.dataset.text.LabeledSentenceToSample
 import com.intel.analytics.bigdl.dataset.text._
 import com.intel.analytics.bigdl.dataset.text.utils.SentenceToken
@@ -71,22 +71,23 @@ object Train {
       val padFeature = Tensor[Float]().resize(totalVocabLength)
       padFeature.setValue(endIdx + 1, 1.0f)
       val padLabel = startIdx
+      val featurePadding = FeaturePaddingParam(Some(Array(padFeature)),
+        Some(FixedLength(Array(maxTrainLength))))
 
       val trainSet = DataSet.rdd(tokens)
         .transform(TextToLabeledSentence[Float](dictionary))
         .transform(LabeledSentenceToSample[Float](totalVocabLength))
-        .transform(SampleToMiniBatch(batchSize = param.batchSize,
-          featurePadding = Some(padFeature),
-          labelPadding = Some(padLabel),
-          fixedLength = Some(maxTrainLength)))
+        .transform(SampleToMiniBatch[Float](param.batchSize,
+          Some(featurePadding), None))
+//          featurePadding = Some(padFeature),
+//          labelPadding = Some(padLabel),
+//          fixedLength = Some(maxTrainLength)))
 
       val validationSet = DataSet.rdd(valtokens)
         .transform(TextToLabeledSentence[Float](dictionary))
         .transform(LabeledSentenceToSample[Float](totalVocabLength))
-        .transform(SampleToMiniBatch(batchSize = param.batchSize,
-          featurePadding = Some(padFeature),
-          labelPadding = Some(padLabel),
-          fixedLength = Some(maxValLength)))
+        .transform(SampleToMiniBatch[Float](param.batchSize,
+          Some(featurePadding), None))
 
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)

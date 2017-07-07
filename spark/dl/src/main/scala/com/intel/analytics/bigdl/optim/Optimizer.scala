@@ -307,60 +307,31 @@ object Optimizer {
   }
 
   /**
-   * A apply an Optimizer who could apply padding to the Samples.
-   *
-   * @param model model will be optimizied
-   * @param sampleRDD training Samples
-   * @param criterion loss function
-   * @param batchSize mini batch size
-   * @param ascending if sort by featureLength in an ascending order
-   * @param paddingParam padding strategy, see [[com.intel.analytics.bigdl.dataset.PaddingParam]]
-   *                     for details.
-   * @param partitionNum partition number of dataset, None is recommended.
-   *                     None will use Engine.nodeNumber().
-   * @return An optimizer
-   */
-  def apply[T: ClassTag](
-        model: Module[T],
-        sampleRDD: RDD[Sample[T]],
-        criterion: Criterion[T],
-        batchSize: Int,
-        ascending: Boolean = false,
-        paddingParam: PaddingParam[T],
-        partitionNum: Option[Int]
-  )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
-    new DistriOptimizer[T](
-      _model = model,
-      dataset = (DataSet.sortRDD(sampleRDD, ascending, batchSize) ->
-        SampleToMiniBatch(batchSize, Some(paddingParam), partitionNum))
-        .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
-      criterion = criterion
-    ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
-  }
-
-  /**
    * Apply an Optimizer who could apply padding to the Samples
    * with a padding strategy.
    *
-   * @param model model will be optimizied
-   * @param sampleRDD training Samples
-   * @param criterion loss function
-   * @param batchSize mini batch size
-   * @param paddingParam padding strategy, see [[com.intel.analytics.bigdl.dataset.PaddingParam]]
-   *                     for details.
+   * @param model               model will be optimizied
+   * @param sampleRDD           training Samples
+   * @param criterion           loss function
+   * @param batchSize           mini batch size
+   * @param featurePaddingParam feature padding strategy, see
+   *                       [[com.intel.analytics.bigdl.dataset.FeaturePaddingParam]] for details.
+   * @param labelPaddingParam   label padding strategy, see
+   *                       [[com.intel.analytics.bigdl.dataset.LabelPaddingParam]] for details.
    * @return An optimizer
    */
   def apply[T: ClassTag](
-           model: Module[T],
-           sampleRDD: RDD[Sample[T]],
-           criterion: Criterion[T],
-           batchSize: Int,
-           paddingParam: PaddingParam[T]
+                          model: Module[T],
+                          sampleRDD: RDD[Sample[T]],
+                          criterion: Criterion[T],
+                          batchSize: Int,
+                          featurePaddingParam: Option[FeaturePaddingParam[T]],
+                          labelPaddingParam: Option[LabelPaddingParam[T]]
          )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
     new DistriOptimizer[T](
       _model = model,
       dataset = (DataSet.rdd(sampleRDD) ->
-        SampleToMiniBatch(batchSize, Some(paddingParam), None))
+        SampleToMiniBatch(batchSize, featurePaddingParam, labelPaddingParam))
         .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
       criterion = criterion
     ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
@@ -386,7 +357,7 @@ object Optimizer {
     new DistriOptimizer[T](
       _model = model,
       dataset = (DataSet.rdd(sampleRDD) ->
-        SampleToMiniBatch(batchSize, miniBatch, None))
+        SampleToMiniBatch(miniBatch, batchSize, None))
         .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
       criterion = criterion
     ).asInstanceOf[Optimizer[T, MiniBatch[T]]]

@@ -54,7 +54,7 @@ class Evaluator[T: ClassTag] private[optim](model: Module[T])(implicit ev: Tenso
 
     val totalBatch = batchSize.getOrElse(batchPerPartition * partitionNum)
     val otherBroad = dataset.sparkContext.broadcast(vMethods, SampleToMiniBatch(
-      batchSize = totalBatch, partitionNum = Some(partitionNum)))
+      batchSize = totalBatch))
 
     dataset.mapPartitions(partition => {
       val localModel = modelBroad.value()
