@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.utils.TorchObject.TYPE_MODULE
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.spark.rdd.RDD
 import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.dataset.Sample
+import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch, Sample}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 
 import scala.reflect.ClassTag
@@ -411,6 +411,22 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
   }
 
   /**
+    * module predict, return the probability distribution
+    * @param dataset dataset for prediction
+    */
+//  def predict(dataset: Array[Sample[T]]): Array[Activity] = {
+//    LocalPredictor(this).predict(dataset)
+//  }
+//
+//  /**
+//    * module predict, return the predict label
+//    * @param dataset dataset for prediction
+//    */
+//  def predictClass(dataset: Array[Sample[T]]): Array[Int] = {
+//    LocalPredictor(this).predictClass(dataset)
+//  }
+
+  /**
    * Set weight and bias for the module
    * @param newWeights array of weights and bias
    * @return
@@ -549,6 +565,13 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
    vMethods: Array[ValidationMethod[T]],
    batchSize: Option[Int] = None): Array[(ValidationResult, ValidationMethod[T])] = {
     Evaluator(this).test(dataset, vMethods, batchSize)
+  }
+
+
+  def evaluate(dataSet: LocalDataSet[MiniBatch[T]],
+               vMethods: Array[ValidationMethod[T]]
+              ): Array[(ValidationResult, ValidationMethod[T])] = {
+    Validator(this, dataSet).test(vMethods)
   }
 }
 
