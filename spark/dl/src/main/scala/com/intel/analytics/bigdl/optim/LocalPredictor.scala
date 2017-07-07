@@ -70,7 +70,7 @@ class LocalPredictor[T: ClassTag] private[optim](model: Module[T], weightsBias: 
     case _ => throw new IllegalArgumentException
   }
 
-  private val batchSize = 8
+  private val batchPerCore = 4
 
   def predictClass(dataSet: Array[Sample[T]]): Array[Int] = {
     val result = predict(dataSet)
@@ -82,7 +82,7 @@ class LocalPredictor[T: ClassTag] private[optim](model: Module[T], weightsBias: 
     })
   }
 
-  def predictClass(dataSet: LocalDataSet[Sample[T]]): Array[Int] = {
+  def predictClass(dataSet: LocalDataSet[MiniBatch[T]]): Array[Int] = {
     val result = predict(dataSet)
     result.map(output => {
       val _output = output.toTensor[T]
@@ -92,18 +92,14 @@ class LocalPredictor[T: ClassTag] private[optim](model: Module[T], weightsBias: 
     })
   }
 
-  def predict(dataSet: LocalDataSet[Sample[T]]): Array[Activity] = {
-    val dataset = dataSet.transform(SampleToBatch[T](
-      batchSize = batchSize, None, None, None,
-      partitionNum = Some(1))).asInstanceOf[LocalDataSet[MiniBatch[T]]]
-    val dataIter = dataset.data(train = false)
+  def predict(dataSet: LocalDataSet[MiniBatch[T]]): Array[Activity] = {
+    val dataIter = dataSet.data(train = false)
 
     val workingModels = (1 to subModelNumber).map(_ => {
       val submodel = model.cloneModule().evaluate()
       putWeightBias(weightsBias, submodel)
       submodel
     }).toArray
-
     dataIter.map(batch => {
       println("Enter map")
       val stackSize = batch.size() / subModelNumber
@@ -131,7 +127,7 @@ class LocalPredictor[T: ClassTag] private[optim](model: Module[T], weightsBias: 
   def predict(dataSet: Array[Sample[T]]): Array[Activity] = {
     val iter = dataSet.iterator
     val transformer = SampleToBatch[T](
-      batchSize = batchSize, None, None, None,
+      batchSize = batchPerCore * subModelNumber, None, None, None,
       partitionNum = Some(1))
     val dataIter = transformer(iter)
 
