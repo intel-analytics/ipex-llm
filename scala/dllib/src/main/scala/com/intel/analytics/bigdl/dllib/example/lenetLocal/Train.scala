@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.example.localJVM
+package com.intel.analytics.bigdl.example.lenetLocal
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.DataSet
@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Module}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter}
+import com.intel.analytics.bigdl.models.lenet.LeNet5
 import org.apache.log4j.{Level, Logger}
 
 
@@ -36,7 +37,7 @@ object Train {
     trainParser.parse(args, new TrainParams()).map(param => {
 
       System.setProperty("bigdl.localMode", "true")
-      System.setProperty("bigdl.coreNumber", "4")
+      System.setProperty("bigdl.coreNumber", param.coreNumber.toString)
       Engine.init
 
       val trainData = param.folder + "/train-images-idx3-ubyte"

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.example.localJVM
+package com.intel.analytics.bigdl.example.lenetLocal
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn._
