@@ -356,9 +356,7 @@ class Recurrent[T : ClassTag]()
     copy(cells.map(x => x.gradInput.toTable[Tensor[T]](inputDim)),
         gradInputCell, 0)
     if (preTopology != null) {
-      preTopology.updateGradInput(input, gradInputCell)
-      gradInput = preTopology.gradInput.toTensor[T]
-      // gradInput = preTopology.updateGradInput(input, gradInputCell).toTensor[T]
+      gradInput = preTopology.updateGradInput(input, gradInputCell).toTensor[T]
     }
     gradInput
   }
