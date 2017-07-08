@@ -25,6 +25,27 @@ import com.intel.analytics.bigdl.utils.Engine
 import scala.concurrent.Future
 import scala.reflect.ClassTag
 
+/**
+ * Applies a 1D convolution over an input sequence composed of nInputFrame frames..
+ *   The input tensor in `forward(input)` is expected to be a 2D tensor
+ *   (`nInputFrame` x `inputFrameSize`) or a 3D tensor
+ *   (`nBatchFrame` x `nInputFrame` x `inputFrameSize`).
+ *
+ * @param inputFrameSize The input frame size expected in sequences given into `forward()`.
+ * @param outputFrameSize The output frame size the convolution layer will produce.
+ * @param kernelW The kernel width of the convolution
+ * @param strideW The step of the convolution in the width dimension.
+ * @param propagateBack Whether propagate gradient back, default is true.
+ * @param wRegularizer instance of [[Regularizer]]
+ *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
+ * @param bRegularizer instance of [[Regularizer]]
+ *                    applied to the bias.
+ * @param initWeight Initial weight
+ * @param initBias Initial bias
+ * @param initGradWeight Initial gradient weight
+ * @param initGradBias Initial gradient bias
+ * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
+ */
 class TemporalConvolution[T: ClassTag](
   val inputFrameSize: Int,
   val outputFrameSize: Int,
@@ -334,6 +355,13 @@ class TemporalConvolution[T: ClassTag](
         i += 1
       }
     }
+
+    if (null != wRegularizer) {
+      wRegularizer.accRegularization(weight, gradWeight, scaleW)
+    }
+    if (null != bRegularizer) {
+      bRegularizer.accRegularization(bias, gradBias, scaleB)
+    }
   }
 
   override def updateParameters(learningRate: T): Unit = {
@@ -404,7 +432,6 @@ object TemporalConvolution {
     outputFrameSize: Int,
     kernelW: Int,
     strideW: Int = 1,
-    nGroup: Int = 1,
     propagateBack: Boolean = true,
     wRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,

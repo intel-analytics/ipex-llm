@@ -558,6 +558,65 @@ class Sequential(Container):
     def __init__(self, bigdl_type="float"):
         super(Sequential, self).__init__(None, bigdl_type)
 
+class TemporalConvolution(Layer):
+
+    '''
+    Applies a 1D convolution over an input sequence composed of nInputFrame frames..
+    The input tensor in `forward(input)` is expected to be a 2D tensor
+    (`nInputFrame` x `inputFrameSize`) or a 3D tensor
+    (`nBatchFrame` x `nInputFrame` x `inputFrameSize`).
+
+    :param input_frame_size The input frame size expected in sequences given into `forward()`
+    :param output_frame_size The output frame size the convolution layer will produce.
+    :param kernel_w The kernel width of the convolution
+    :param stride_w The step of the convolution in the width dimension.
+    :param propagate_back Whether propagate gradient back, default is true.
+    :param weight_regularizer instance of [[Regularizer]]
+                        (eg. L1 or L2 regularization), applied to the input weights matrices.
+    :param bias_regularizer instance of [[Regularizer]]
+                         applied to the bias.
+    :param init_weight Initial weight
+    :param init_bias Initial bias
+    :param init_grad_weight Initial gradient weight
+    :param init_grad_bias Initial gradient bias
+
+    >>> spatialConvolution = TemporalConvolution(6, 12, 5, 5)
+    creating: createSpatialConvolution
+    >>> spatialConvolution.setWRegularizer(L1Regularizer(0.5))
+    creating: createL1Regularizer
+    >>> spatialConvolution.setBRegularizer(L1Regularizer(0.5))
+    creating: createL1Regularizer
+    '''
+
+    def __init__(self,
+                 input_frame_size,
+                 output_frame_size,
+                 kernel_w,
+                 stride_w=1,
+                 propagate_back=True,
+                 weight_regularizer=None,
+                 bias_regularizer=None,
+                 init_weight=None,
+                 init_bias=None,
+                 init_grad_weight=None,
+                 init_grad_bias=None,
+                 bigdl_type="float"):
+        super(TemporalConvolution, self).__init__(None, bigdl_type,
+                                                 input_frame_size,
+                                                 output_frame_size,
+                                                 kernel_w,
+                                                 stride_w,
+                                                 propagate_back,
+                                                 weight_regularizer,
+                                                 bias_regularizer,
+                                                 JTensor.from_ndarray(init_weight),
+                                                 JTensor.from_ndarray(init_bias),
+                                                 JTensor.from_ndarray(init_grad_weight),
+                                                 JTensor.from_ndarray(init_grad_bias))
+    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+        callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
+                      weight_init_method, bias_init_method)
+        return self
 
 class SpatialConvolution(Layer):
 
