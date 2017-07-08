@@ -37,6 +37,7 @@ import scala.reflect.ClassTag
  * pre-process steps. User needn't write them every time, but can reuse others work.
  *
  * Transformer can be used with RDD(rdd.mapPartition), iterator and DataSet.
+ *
  * @tparam A
  * @tparam B
  */
@@ -58,6 +59,7 @@ trait Transformer[A, B] extends Serializable {
 
   /**
    * Apply this transformer to rdd
+   *
    * @param dataset
    */
   def apply(dataset: RDD[A])(implicit evidence: ClassTag[B]): RDD[B] = {
@@ -74,6 +76,7 @@ trait Transformer[A, B] extends Serializable {
 /**
  * A transformer chain two transformer together. The output type of the first transformer should be
  * same with the input type of the second transformer.
+ *
  * @param first first transformer
  * @param last last transformer
  * @tparam A input type of the first transformer
@@ -195,6 +198,7 @@ class SampleToBatch[T: ClassTag]
 
   /**
    * compare a and b, then return the larger one's index
+   *
    * @param i the index of a
    * @param j the index of b
    */
@@ -303,11 +307,11 @@ class SampleToBatch[T: ClassTag]
  * Convert a sequence of [[Sample]] to a sequence of [[MiniBatch]] through function toMiniBatch.
  */
 private[bigdl] class SampleToMiniBatch[T: ClassTag](
-    totalBatch: Int,
-    miniBatch: Option[MiniBatch[T]] = None,
-    featurePaddingParam: Option[FeaturePaddingParam[T]] = None,
-    labelPaddingParam: Option[LabelPaddingParam[T]] = None,
-    partitionNum: Option[Int] = None)
+                                                     totalBatch: Int,
+                                                     miniBatch: Option[MiniBatch[T]] = None,
+                                                     featurePaddingParam: Option[PaddingParam[T]] = None,
+                                                     labelPaddingParam: Option[PaddingParam[T]] = None,
+                                                     partitionNum: Option[Int] = None)
     (implicit ev: TensorNumeric[T]) extends Transformer[Sample[T], MiniBatch[T]] {
 
   private val batchPerPartition = Utils.getBatchSize(totalBatch, partitionNum)
@@ -335,9 +339,9 @@ private[bigdl] class SampleToMiniBatch[T: ClassTag](
           }
 
           if (i < batchSize) {
-            miniBatchBuffer.setValue(sampleData.slice(0, i))
+            miniBatchBuffer.set(sampleData.slice(0, i))
           } else {
-            miniBatchBuffer.setValue(sampleData)
+            miniBatchBuffer.set(sampleData)
           }
         } else {
           null
@@ -353,16 +357,16 @@ object SampleToMiniBatch {
    *
    * @param batchSize           total batch size
    * @param featurePaddingParam feature padding strategy, see
-   *                       [[com.intel.analytics.bigdl.dataset.FeaturePaddingParam]] for details.
+   *                            [[com.intel.analytics.bigdl.dataset.PaddingParam]] for details.
    * @param labelPaddingParam   label padding strategy, see
-   *                       [[com.intel.analytics.bigdl.dataset.LabelPaddingParam]] for details.
+   *                            [[com.intel.analytics.bigdl.dataset.PaddingParam]] for details.
    * @return
    */
   def apply[T: ClassTag](
-       batchSize : Int,
-       featurePaddingParam: Option[FeaturePaddingParam[T]] = None,
-       labelPaddingParam: Option[LabelPaddingParam[T]] = None,
-       partitionNum: Option[Int] = None
+                          batchSize : Int,
+                          featurePaddingParam: Option[PaddingParam[T]] = None,
+                          labelPaddingParam: Option[PaddingParam[T]] = None,
+                          partitionNum: Option[Int] = None
         )(implicit ev: TensorNumeric[T]): SampleToMiniBatch[T] = {
     new SampleToMiniBatch[T](batchSize, None, featurePaddingParam, labelPaddingParam, partitionNum)
   }

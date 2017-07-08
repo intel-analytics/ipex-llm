@@ -32,20 +32,15 @@ import scala.reflect.ClassTag
  */
 trait MiniBatch[T] extends Serializable{
   /**
-   * Set a batchSize of this miniBatch.
-   * @param batchSize batch Size
-   * @return this
-   */
-  def setBatchSize(batchSize: Int): this.type
-
-  /**
    * Get the number of samples in this MiniBatch
+   *
    * @return size How many samples in this MiniBatch
    */
   def size(): Int
 
   /**
    * Slice this MiniBatch to a smaller MiniBatch with offset and length
+   *
    * @param offset offset, counted from 1
    * @param length length
    * @return A smaller MiniBatch
@@ -54,12 +49,14 @@ trait MiniBatch[T] extends Serializable{
 
   /**
    * Get input in this MiniBatch.
+   *
    * @return input Activity
    */
   def getInput(): Activity
 
   /**
    * Get target in this MiniBatch
+   *
    * @return target Activity
    */
   def getTarget(): Activity
@@ -86,10 +83,11 @@ trait MiniBatch[T] extends Serializable{
 
   /**
    * Replace the original content of the miniBatch with a set of Sample.
+   *
    * @param samples a set of Sample
    * @return self
    */
-  def setValue(samples: Seq[Sample[T]])(implicit ev: TensorNumeric[T]): this.type
+  def set(samples: Seq[Sample[T]])(implicit ev: TensorNumeric[T]): this.type
 }
 
 /**
@@ -100,44 +98,39 @@ trait MiniBatch[T] extends Serializable{
  * `targetData` store the target tensors, if `targetData.length == 1`, `getTarget()` will return
  * a tensor; If `targetData.length > 1`, `getTarget()` will return a table.
  *
- * @param inputData a set of input tensor
- * @param targetData a set of target tensor
+ * @param inputData           a set of input tensor
+ * @param targetData          a set of target tensor
  * @param featurePaddingParam feature padding strategy, see
- *                       [[com.intel.analytics.bigdl.dataset.FeaturePaddingParam]] for details.
+ *                            [[com.intel.analytics.bigdl.dataset.PaddingParam]] for details.
  * @param labelPaddingParam   label padding strategy, see
- *                       [[com.intel.analytics.bigdl.dataset.LabelPaddingParam]] for details.
+ *                            [[com.intel.analytics.bigdl.dataset.PaddingParam]] for details.
  * @tparam T Numeric type
  * @since 0.2.0
  */
 private[bigdl] class ArrayTensorMiniBatch[T: ClassTag](
       val inputData: Array[Tensor[T]],
       val targetData: Array[Tensor[T]],
-      featurePaddingParam: Option[FeaturePaddingParam[T]] = None,
-      labelPaddingParam: Option[LabelPaddingParam[T]] = None) extends MiniBatch[T]{
+      featurePaddingParam: Option[PaddingParam[T]] = None,
+      labelPaddingParam: Option[PaddingParam[T]] = None) extends MiniBatch[T]{
   require(inputData.length > 0, "Input data in MiniBatch is empty.")
   private var batchSize = 0
-
-  def setBatchSize(batchSize: Int): this.type = {
-    require(batchSize > 0, s"Illegal batch size ${batchSize}")
-    this.batchSize = batchSize
-    this
-  }
+  private var unlabeled = false
 
   val (featurePadding, featurePaddingStrategy) = if (featurePaddingParam.isDefined) {
     (featurePaddingParam.get.paddingTensor, featurePaddingParam.get.paddingStrategy)
   } else {
-    (None, None)
+    (None, new DefaultPadding)
   }
 
   val (labelPadding, labelPaddingStrategy) = if (labelPaddingParam.isDefined) {
-    (labelPaddingParam.get.paddingValue, labelPaddingParam.get.paddingStrategy)
+    (labelPaddingParam.get.paddingTensor, labelPaddingParam.get.paddingStrategy)
   } else {
-    (None, None)
+    (None, new DefaultPadding)
   }
 
 
   private val input: Activity = if (inputData.length == 1) {
-    inputData(0)
+    inputData.head
   } else {
     T.array(inputData.map(_.asInstanceOf[Any]))
   }
@@ -145,16 +138,16 @@ private[bigdl] class ArrayTensorMiniBatch[T: ClassTag](
   private val target: Activity = if (targetData.length == 0) {
     null
   } else if (targetData.length == 1) {
-    targetData(0)
+    targetData.head
   } else {
     T.array(targetData.map(_.asInstanceOf[Any]))
   }
 
   override def size(): Int = {
-    if (inputData(0).nElement() == 0) {
+    if (inputData.head.nElement() == 0) {
       0
     } else {
-      inputData(0).size(1)
+      inputData.head.size(1)
     }
   }
 
@@ -183,21 +176,37 @@ private[bigdl] class ArrayTensorMiniBatch[T: ClassTag](
     target
   }
 
-  override def setValue(samples: Seq[Sample[T]])(implicit ev: TensorNumeric[T]): this.type = {
+  override def set(samples: Seq[Sample[T]])(implicit ev: TensorNumeric[T]): this.type = {
     require(samples.length > 0, "samples is empty")
     require(batchSize == 0 || samples.length <= batchSize, "setValue: samples's size doesn't " +
       s"match mini batch size, excepted ${size()} got ${samples.length}")
-
-    if (featurePaddingParam.isDefined || labelPaddingParam.isDefined) {
-      val longestFeature = MiniBatch.findLongestFeatures(samples)
-      val longestLabel = MiniBatch.findLongestLabels(samples)
-
-      MiniBatch.arraySampleToMiniBatch[T](samples, this,
-        Some(longestFeature), Some(longestLabel),
-        featurePadding, featurePaddingStrategy, labelPadding, labelPaddingStrategy)
-    } else {
-      MiniBatch.arraySampleToMiniBatch[T](samples, this)
+    val resize = batchSize != samples.length || featurePaddingParam.isDefined ||
+      labelPaddingParam.isDefined
+    if (batchSize == 0) {
+      batchSize = samples.length // set a batchSize when set data.
+      unlabeled = samples.head.numLabel() == 0
     }
+
+    val longestFeature = if (featurePaddingParam.isDefined) {
+      Some(MiniBatch.findLongestFeatures(samples))
+    } else {
+      None
+    }
+
+    val longestLabel = if (featurePaddingParam.isDefined) {
+      Some(MiniBatch.findLongestLabels(samples))
+    } else {
+      None
+    }
+
+    if (resize) {
+      MiniBatch.resize(samples, this, featurePaddingStrategy,
+        labelPaddingStrategy, featurePadding, labelPadding,
+        longestFeature, longestLabel)
+    }
+
+    MiniBatch.copyWithPadding[T](samples, this, unlabeled,
+      featurePadding, labelPadding)
     this
   }
 
@@ -219,15 +228,16 @@ private[bigdl] class ArrayTensorMiniBatch[T: ClassTag](
 object MiniBatch {
   /**
    * MiniBatch factory method
+ *
    * @param nInputs number of inputs
    * @param nTargets number of targets
    * @return
    */
   def apply[T: ClassTag](
-        nInputs: Int,
-        nTargets: Int,
-        featurePaddingParam: Option[FeaturePaddingParam[T]] = None,
-        labelPaddingParam: Option[LabelPaddingParam[T]] = None)(
+                          nInputs: Int,
+                          nTargets: Int,
+                          featurePaddingParam: Option[PaddingParam[T]] = None,
+                          labelPaddingParam: Option[PaddingParam[T]] = None)(
     implicit ev: TensorNumeric[T]): MiniBatch[T] = {
     new ArrayTensorMiniBatch[T](Array.tabulate(nInputs)(_ => Tensor[T]()),
       Array.tabulate(nTargets)(_ => Tensor[T]()),
@@ -259,11 +269,12 @@ object MiniBatch {
         // 1st Seq is batchSize, 2nd Array is number of features, 3th Array is feature size
         sampleSize: Seq[Array[Array[Int]]],
         longestData: Option[Array[Int]],
-        paddingStrategy: Option[PaddingStrategy] = None): Unit = {
+        paddingStrategy: PaddingStrategy,
+        paddingTensor: Option[Array[Tensor[T]]]): Unit = {
     // Size of input data. 1st Array is number of input, 2nd Array is input size.
-    val finalSizes = if (longestData.isDefined) {
+    val sizes = new Array[Array[Int]](sampleSize.head.length)
+    if (longestData.isDefined) {
       val longest = longestData.get
-      val sizes = new Array[Array[Int]](longest.length)
 
       var i = 0
       while (i < sizes.length) {
@@ -272,40 +283,36 @@ object MiniBatch {
         i += 1
       }
 
-      if (paddingStrategy.isDefined) {
-        paddingStrategy.get.padding(sizes)
-      }
-      sizes
+      paddingStrategy.paddingSize(sizes)
     } else {
-      val sizes = new Array[Array[Int]](sampleSize(0).length)
       var i = 0
       while (i < sizes.length) {
         // Set i-th input's size
-        sizes(i) = Array(sampleSize.length) ++ sampleSize(0)(i)
+        sizes(i) = Array(sampleSize.length) ++ sampleSize.head(i)
         i += 1
       }
-      sizes
-
     }
 
     // resize
     var i = 0
-    while (i < finalSizes.length) {
-      data(i).resize(finalSizes(i))
+    while (i < sizes.length) {
+      data(i).resize(sizes(i))
+      if (paddingTensor.isEmpty) data(i).zero()
       i += 1
     }
 
   }
 
-  private[bigdl] def arraySampleToMiniBatch[T: ClassTag](
-      samples: Seq[Sample[T]],
-      miniBatch: ArrayTensorMiniBatch[T],
-      longestFeature: Option[Array[Int]] = None,
-      longestLabel: Option[Array[Int]] = None,
-      featurePadding: Option[Array[Tensor[T]]] = None,
-      featurePaddingStrategy: Option[PaddingStrategy] = None,
-      labelPadding: Option[Array[T]] = None,
-      labelPaddingStrategy: Option[PaddingStrategy] = None
+  // resize miniBatch, and zero miniBatch if paddingTensor is undefined.
+  private[bigdl] def resize[T: ClassTag](
+        samples: Seq[Sample[T]],
+        miniBatch: ArrayTensorMiniBatch[T],
+        featurePaddingStrategy: PaddingStrategy,
+        labelPaddingStrategy: PaddingStrategy,
+        featurePaddingTensor: Option[Array[Tensor[T]]] = None,
+        labelPaddingTensor: Option[Array[Tensor[T]]] = None,
+        longestFeature: Option[Array[Int]] = None,
+        longestLabel: Option[Array[Int]] = None
       )(implicit ev: TensorNumeric[T]): MiniBatch[T] = {
     val inputs = miniBatch.inputData
     val targets = miniBatch.targetData
@@ -314,11 +321,24 @@ object MiniBatch {
     val labelSizes = samples.map(_.getLabelSize())
     val unlabeled = if (labelSizes.flatMap(_.flatMap(_.toIterator)).product == 0) true else false
     resizeData(inputs, featureSizes,
-      longestFeature, featurePaddingStrategy)
+      longestFeature, featurePaddingStrategy, featurePaddingTensor)
     if (!unlabeled) {
       resizeData(targets, labelSizes,
-        longestLabel, labelPaddingStrategy)
+        longestLabel, labelPaddingStrategy, labelPaddingTensor)
     }
+
+    miniBatch
+  }
+
+  private[bigdl] def copyWithPadding[T: ClassTag](
+      samples: Seq[Sample[T]],
+      miniBatch: ArrayTensorMiniBatch[T],
+      unlabeled: Boolean,
+      featurePadding: Option[Array[Tensor[T]]] = None,
+      labelPadding: Option[Array[Tensor[T]]] = None
+      )(implicit ev: TensorNumeric[T]): MiniBatch[T] = {
+    val inputs = miniBatch.inputData
+    val targets = miniBatch.targetData
 
     if (featurePadding.isDefined) {
       // check if featurePadding is right.
@@ -341,37 +361,22 @@ object MiniBatch {
       }
     }
 
-    // init input and target
-    if (labelPadding.isDefined) {
-      // fill target with labelPadding first.
-      var l = 0
-      while(l < targets.length) {
-        targets(l).fill(labelPadding.get(l))
-        l += 1
-      }
-    } else {
-      targets.foreach(_.zero())
-    }
-    if (!featurePadding.isDefined) {
-      inputs.foreach(_.zero())
-    }
-
     // Copy sample data to miniBatch
     var s = 0
     while (s < samples.length) {
       var f = 0
       var offset = 0
-      val featureSize = featureSizes(s)
+      val sample = samples(s)
+      val sampleData = sample.getData()
       while (f < inputs.length) {
-        val length = featureSize(f).product
+        val length = sample.getFeatureSize()(f).product
         if (featurePadding.isDefined) {
           // copy data
-          copy(samples(s).getData(), offset,
+          copy(sampleData, offset,
             length, inputs(f)(s + 1), featurePadding.get(f))
         } else {
           // copy data without padding.
-          copy(samples(s).getData(), offset,
-            length, inputs(f)(s + 1))
+          copy(sampleData, offset, length, inputs(f)(s + 1))
         }
         f += 1
         offset += length
@@ -379,11 +384,16 @@ object MiniBatch {
 
       if (!unlabeled) {
         var l = 0
-        val labelSize = labelSizes(s)
         while (l < targets.length) {
-          val length = labelSize(l).product
-          copy(samples(s).getData(), offset,
-            length, targets(l)(s + 1))
+          val length = sample.getLabelSize()(l).product
+          if (labelPadding.isDefined) {
+            // copy data
+            copy(sampleData, offset,
+              length, targets(l)(s + 1), labelPadding.get(l))
+          } else {
+            // copy data without padding.
+            copy(sampleData, offset, length, targets(l)(s + 1))
+          }
           l += 1
           offset += length
         }
@@ -401,7 +411,7 @@ object MiniBatch {
   private[bigdl] def findLongestFeatures[T: ClassTag](
         samples: Seq[Sample[T]])(implicit ev: TensorNumeric[T]): Array[Int] = {
     val featureIndices =
-      new Array[Int](samples(0).numFeature())
+      new Array[Int](samples.head.numFeature())
     var i = 1
     while (i < samples.length) {
       var j = 0
@@ -422,7 +432,7 @@ object MiniBatch {
   private[bigdl] def findLongestLabels[T: ClassTag](
         samples: Seq[Sample[T]])(implicit ev: TensorNumeric[T]): Array[Int] = {
     val labelIndices =
-      new Array[Int](samples(0).numLabel())
+      new Array[Int](samples.head.numLabel())
     var i = 1
     while (i < samples.length) {
       var j = 0
@@ -509,52 +519,28 @@ object MiniBatch {
  * @param paddingStrategy See [[PaddingLongest]], [[FixedLength]]
  * @tparam T numeric type
  */
-case class FeaturePaddingParam[T: ClassTag](
+case class PaddingParam[T: ClassTag](
       paddingTensor: Option[Array[Tensor[T]]] = None,
-      paddingStrategy: Option[PaddingStrategy] = None)
-
-/**
- * Label Padding param for MiniBatch.
- *
- * For constructing a mini batch, we need to make sure all samples' feature and label
- * in this mini batch have the same size. If the size is different, we will pad them
- * to the same size.
- *
- * By default, we will pad the first dimension to the longest size with zero in the MiniBatch.
- * If you want to specify the padding values, you can set `paddingValue`; If you want to specify
- * the padding length, you can use `PaddingLongest` or `FixedLength`.
- *
- * For example, we have 3 Sample, and convert them into a MiniBatch.
- * Sample1's label is a tensor {1}
- *
- * Sample2's label is a tensor {2, 3}
- *
- * Sample3's feature is a tensor {4, 5, 6}
- *
- * And the paddingValue is `0`, fixedLength is 4, the MiniBatch will be
- * a tensor of 3*4:
- * {1, 0, 0, 0
- *  2, 3, 0, 0
- *  4, 5, 6, 0}
- *
- * @param paddingValue padding value
- * @param paddingStrategy padding strategy
- */
-case class LabelPaddingParam[T: ClassTag](
-      paddingValue: Option[Array[T]] = None,
-      paddingStrategy: Option[PaddingStrategy] = None)
+      paddingStrategy: PaddingStrategy = new DefaultPadding)
 
 abstract class PaddingStrategy {
-  def padding(sizes: Seq[Array[Int]]): Seq[Array[Int]]
+  def paddingSize(sizes: Seq[Array[Int]]): Seq[Array[Int]]
+}
+
+class DefaultPadding extends PaddingStrategy {
+  def paddingSize(sizes: Seq[Array[Int]]): Seq[Array[Int]] = {
+    sizes
+  }
 }
 
 /**
  * Add an constant length to longest feature in the first dimension
+ *
  * @param paddingLength
  */
 case class PaddingLongest(
       paddingLength: Array[Int]) extends PaddingStrategy {
-    def padding(sizes: Seq[Array[Int]]): Seq[Array[Int]] = {
+    def paddingSize(sizes: Seq[Array[Int]]): Seq[Array[Int]] = {
       var i = 0
       while (i < sizes.length) {
           // Add an constant length to the first dimension's length(besides mini batch size).
@@ -568,10 +554,11 @@ case class PaddingLongest(
 
 /**
  * Set the first dimension's length to fixed length.
+ *
  * @param fixedLength fixed length
  */
 case class FixedLength(fixedLength: Array[Int]) extends PaddingStrategy {
-  def padding(sizes: Seq[Array[Int]]): Seq[Array[Int]] = {
+  def paddingSize(sizes: Seq[Array[Int]]): Seq[Array[Int]] = {
     var i = 0
     while (i < sizes.length) {
         // Set the first dimension's length(besides mini batch size) to fixed length.

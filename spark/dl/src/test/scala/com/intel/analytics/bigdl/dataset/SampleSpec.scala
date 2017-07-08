@@ -36,23 +36,29 @@ class SampleSpec extends FlatSpec with Matchers {
         labelIncrement: Option[Array[Int]] = None)(
         implicit ev: TensorNumeric[T]): MiniBatch[T] = {
     val featureParam = if (featureFixedLength.isDefined) {
-      FeaturePaddingParam(featurePadding, Some(FixedLength(featureFixedLength.get)))
+      PaddingParam(featurePadding, FixedLength(featureFixedLength.get))
     } else if (featureIncrement.isDefined) {
-      FeaturePaddingParam(featurePadding, Some(PaddingLongest(featureIncrement.get)))
+      PaddingParam(featurePadding, PaddingLongest(featureIncrement.get))
     } else {
-      FeaturePaddingParam(featurePadding)
+      PaddingParam(featurePadding)
+    }
+
+    val newLabelPadding = if (labelPadding.isDefined) {
+      Some(labelPadding.get.map(v => Tensor[T](1).fill(v)))
+    } else {
+      None
     }
 
     val labelParam = if (labelFixedLength.isDefined) {
-      LabelPaddingParam(labelPadding, Some(FixedLength(labelFixedLength.get)))
+      PaddingParam(newLabelPadding, FixedLength(labelFixedLength.get))
     } else if (labelIncrement.isDefined) {
-      LabelPaddingParam(labelPadding, Some(PaddingLongest(labelIncrement.get)))
+      PaddingParam(newLabelPadding, PaddingLongest(labelIncrement.get))
     } else {
-      LabelPaddingParam(labelPadding)
+      PaddingParam(newLabelPadding)
     }
 
     MiniBatch[T](samples(0).numFeature(), samples(0).numLabel(),
-      Some(featureParam), Some(labelParam)).setValue(samples)
+      Some(featureParam), Some(labelParam)).set(samples)
   }
 
   "SampleSpec with Float Tensor input and Tensor label" should "initialize well" in {

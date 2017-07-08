@@ -315,23 +315,39 @@ object Optimizer {
    * @param criterion           loss function
    * @param batchSize           mini batch size
    * @param featurePaddingParam feature padding strategy, see
-   *                       [[com.intel.analytics.bigdl.dataset.FeaturePaddingParam]] for details.
+   *                            [[com.intel.analytics.bigdl.dataset.PaddingParam]] for details.
    * @param labelPaddingParam   label padding strategy, see
-   *                       [[com.intel.analytics.bigdl.dataset.LabelPaddingParam]] for details.
+   *                            [[com.intel.analytics.bigdl.dataset.PaddingParam]] for details.
    * @return An optimizer
    */
   def apply[T: ClassTag](
-                          model: Module[T],
-                          sampleRDD: RDD[Sample[T]],
-                          criterion: Criterion[T],
-                          batchSize: Int,
-                          featurePaddingParam: Option[FeaturePaddingParam[T]],
-                          labelPaddingParam: Option[LabelPaddingParam[T]]
+      model: Module[T],
+      sampleRDD: RDD[Sample[T]],
+      criterion: Criterion[T],
+      batchSize: Int,
+      featurePaddingParam: PaddingParam[T],
+      labelPaddingParam: PaddingParam[T]
          )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
     new DistriOptimizer[T](
       _model = model,
       dataset = (DataSet.rdd(sampleRDD) ->
-        SampleToMiniBatch(batchSize, featurePaddingParam, labelPaddingParam))
+        SampleToMiniBatch(batchSize, Some(featurePaddingParam), Some(labelPaddingParam)))
+        .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
+      criterion = criterion
+    ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
+  }
+
+  def apply[T: ClassTag](
+        model: Module[T],
+        sampleRDD: RDD[Sample[T]],
+        criterion: Criterion[T],
+        batchSize: Int,
+        featurePaddingParam: PaddingParam[T]
+      )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
+    new DistriOptimizer[T](
+      _model = model,
+      dataset = (DataSet.rdd(sampleRDD) ->
+        SampleToMiniBatch(batchSize, Some(featurePaddingParam)))
         .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
       criterion = criterion
     ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
