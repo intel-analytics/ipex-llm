@@ -410,6 +410,18 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       inplace)
   }
 
+  def createBinaryTreeLSTM(
+    inputSize: Int,
+    hiddenSize: Int,
+    gateOutput: Boolean = true,
+    withGraph: Boolean = true)
+  : BinaryTreeLSTM[T] = {
+    BinaryTreeLSTM[T](
+      inputSize,
+      hiddenSize,
+      gateOutput,
+      withGraph)
+  }
 
   def createBatchNormalization(nOutput: Int,
                                eps: Double = 1e-5,

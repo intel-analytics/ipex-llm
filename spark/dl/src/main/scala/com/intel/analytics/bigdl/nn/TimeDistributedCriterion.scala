@@ -124,9 +124,6 @@ class TimeDistributedCriterion[T : ClassTag](
         fTarget = target.select(timeDim, _i)
         _gradInput = gradInput.select(timeDim, _i)
         _gradInput.copy(cells(_i - 1).updateGradInput(fInput, fTarget).toTensor[T])
-//        println(s"input $fInput")
-//        println(s"target $fTarget")
-//        println(s"gradInput ${_gradInput}")
         if (sizeAverage) {
           _gradInput = _gradInput.div(ev.fromType[Int](nstep))
         }
