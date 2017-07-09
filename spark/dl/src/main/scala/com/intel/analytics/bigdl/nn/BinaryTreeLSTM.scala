@@ -39,10 +39,10 @@ class BinaryTreeLSTM[T: ClassTag](
   withGraph: Boolean = true
 )(implicit ev: TensorNumeric[T])
   extends TreeLSTM[T](inputSize, hiddenSize) {
-  val composers: ArrayBuffer[Module[T]] = ArrayBuffer[Module[T]]()
-  val leafModules: ArrayBuffer[Module[T]] = ArrayBuffer[Module[T]]()
   val composer: Module[T] = createComposer()
   val leafModule: Module[T] = createLeafModule()
+  val composers: ArrayBuffer[Module[T]] = ArrayBuffer[Module[T]](composer)
+  val leafModules: ArrayBuffer[Module[T]] = ArrayBuffer[Module[T]](leafModule)
   val cells: ArrayBuffer[ArrayBuffer[Module[T]]] = ArrayBuffer[ArrayBuffer[Module[T]]]()
 
   def createLeafModule(): Module[T] = {
@@ -56,7 +56,7 @@ class BinaryTreeLSTM[T: ClassTag](
   }
 
   def createLeafModuleWithGraph(): Module[T] = {
-    val input = Identity().inputs()
+    val input = Input()
     val c = Linear(inputSize, hiddenSize).inputs(input)
     val h: ModuleNode[T] = if (gateOutput) {
       val o = Sigmoid().inputs(Linear(inputSize, hiddenSize).inputs(input))
@@ -75,8 +75,8 @@ class BinaryTreeLSTM[T: ClassTag](
   }
 
   def createComposerWithGraph(): Module[T] = {
-    val (lc, lh) = (Identity().inputs(), Identity().inputs())
-    val (rc, rh) = (Identity().inputs(), Identity().inputs())
+    val (lc, lh) = (Input(), Input())
+    val (rc, rh) = (Input(), Input())
 
     def newGate(): ModuleNode[T] = CAddTable().inputs(
       Linear(hiddenSize, hiddenSize).inputs(lh),
@@ -228,7 +228,7 @@ class BinaryTreeLSTM[T: ClassTag](
     var composerIndex = 0
     for (b <- 1 to batchSize) {
       val tensorTree = new TensorTree[T](trees(b))
-      for (i <- 1 to tensorTree.size(0)) {
+      for (i <- 1 to tensorTree.nodeNumber) {
         if (tensorTree.noChild(i)) {
           if (leafIndex > leafModules.length - 1) {
             val leafModule = createLeafModule()
@@ -272,7 +272,6 @@ class BinaryTreeLSTM[T: ClassTag](
       val (rc, rh) = unpackState(rightOut)
       val cell = cells(batch - 1)(nodeIndex - 1)
       cell.forward(T(lc, lh, rc, rh)).toTable
-//      cells(batch - 1)(nodeIndex - 1).output.toTable
     }
     out
   }
@@ -415,16 +414,55 @@ object BinaryTreeLSTM {
     new BinaryTreeLSTM[T](inputSize, hiddenSize, gateOutput, withGraph)
 }
 
+/**
+ * [[TensorTree]] class is used to decode a tensor to a tree structure.
+ * The given input `content` is a tensor which encodes a constituency parse tree.
+ * The tensor should have the following structure:
+ *
+ * Each row of the tensor represents a tree node and the row number is node number
+ * For each row, except the last column, all other columns represent the children
+ * node number of this node. Assume the value of a certain column of the row is not zero,
+ * the value `p` means this node has a child whose node number is `p` (lies in the `p`-th)
+ * row. Each leaf has a leaf number, in the tensor, the last column represents the leaf number.
+ * Each leaf does not have any children, so all the columns of a leaf except the last should
+ * be zero. If a node is the root, the last column should equal to `-1`.
+ *
+ * Note: if any row for padding, the padding rows should be placed at the last rows with all
+ * elements equal to `-1`.
+ *
+ * eg. a tensor represents a binary tree:
+ *
+ * [11, 10, -1;
+ *  0, 0, 1;
+ *  0, 0, 2;
+ *  0, 0, 3;
+ *  0, 0, 4;
+ *  0, 0, 5;
+ *  0, 0, 6;
+ *  4, 5, 0;
+ *  6, 7, 0;
+ *  8, 9, 0;
+ *  2, 3, 0;
+ *  -1, -1, -1;
+ *  -1, -1, -1]
+ *
+ * @param content the tensor to be encoded
+ * @param ev  implicit tensor numeric
+ * @tparam T  Numeric type [[Float]] or [[Double]]
+ */
 class TensorTree[T: ClassTag](val content: Tensor[T])
   (implicit ev: TensorNumeric[T]) extends Serializable {
+  require(content.dim() == 2, "The content of TensorTree should be a two-dimensional tensor")
   def size: Array[Int] = content.size()
+
+  def nodeNumber: Int = size(0)
 
   def children(index: Int): Array[Int] =
     content.select(1, index).toBreezeVector().toArray.map(ev.toType[Int])
 
   def addChild(parent: Int, child: T): Unit = {
     breakable {
-      for (i <- 1 to size(1)) {
+      for (i <- 1 until size(1)) {
         if (content(Array(parent, i)) == ev.zero) {
           content.setValue(parent, i, child)
           break()
@@ -444,7 +482,7 @@ class TensorTree[T: ClassTag](val content: Tensor[T])
       }
     }
 
-    -1
+    throw new RuntimeException("There is no root in the tensor tree")
   }
 
   def markAsLeaf(index: Int, leafIndex: Int): Unit = {

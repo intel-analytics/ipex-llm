@@ -89,20 +89,14 @@ class TimeDistributedCriterion[T : ClassTag](
         fInput = input.select(timeDim, _i)
         fTarget = target.select(timeDim, _i)
         cells(_i - 1).updateOutput(fInput, fTarget)
-//        println(s"input $fInput")
-//        println(s"target $fTarget")
-        //        println(s"gradInput ${_gradInput}")
       })
       i += 1
     }
     Engine.model.sync(results)
 
-    println("start")
     (0 until nstep).foreach(b => {
       output = ev.plus(output, cells(b).output)
-//      println(s"element loss is ${cells(b).output}")
     })
-    println("end")
 
     if (sizeAverage) {
       output = ev.divide(output, ev.fromType[Int](nstep))

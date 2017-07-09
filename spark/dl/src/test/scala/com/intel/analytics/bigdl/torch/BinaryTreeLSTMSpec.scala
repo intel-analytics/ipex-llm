@@ -178,7 +178,7 @@ class BinaryTreeLSTMSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val embedding = LookupTable(vocabSize, embeddingDim)
     embedding.weight.copy(emb)
     val treeLSTM = BinaryTreeLSTM(
-      embeddingDim, 150, withGraph = false)
+      embeddingDim, 150, withGraph = true)
     val outputModule = Linear(150, classNum)
     val treeLSTMModule = Sequential()
       .add(treeLSTM)

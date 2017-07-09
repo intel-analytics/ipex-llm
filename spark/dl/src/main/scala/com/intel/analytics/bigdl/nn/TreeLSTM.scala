@@ -45,16 +45,4 @@ abstract class TreeLSTM[T: ClassTag](
       i += 1
     }
   }
-
-  def shareParams(
-    cell: Graph[T],
-    src: Graph[T]
-  ): Unit = {
-    val cellData = cell.inputs
-    val srcData = src.inputs
-    cell.inputs.indices.foreach(i => {
-      shareParams(cellData(i).element, srcData(i).element)
-    })
-  }
-
 }
