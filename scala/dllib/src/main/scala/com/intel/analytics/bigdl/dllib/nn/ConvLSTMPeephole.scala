@@ -62,18 +62,38 @@ class ConvLSTMPeephole[T : ClassTag] (
   var outputGate: Sequential[T] = _
   var hiddenLayer: Sequential[T] = _
   var cellLayer: Sequential[T] = _
+  val joinDim = 3
+  val numDim = 5
   override var cell: AbstractModule[Activity, Activity, T] = buildConvLSTM()
 
-  def buildGate(): Sequential[T] = {
-    val i2g = Sequential()
-      .add(Contiguous())
-      .add(SpatialConvolution(inputSize, hiddenSize, kernelI, kernelI,
-      stride, stride, kernelI/2, kernelI/2, wRegularizer = wRegularizer,
-        bRegularizer = bRegularizer))
+  override def preTopology: AbstractModule[Activity, Activity, T] =
+    Sequential()
+//      .add(Contiguous())
+      .add(ConcatTable()
+        .add(Identity[T]())
+        .add(Identity[T]())
+        .add(Identity[T]())
+        .add(Identity[T]()))
+      .add(ParallelTable()
+        .add(TimeDistributed(SpatialConvolution(inputSize, hiddenSize, kernelI, kernelI,
+          stride, stride, kernelI/2, kernelI/2, wRegularizer = wRegularizer,
+          bRegularizer = bRegularizer).setName("forgetGi2g")))
+        .add(TimeDistributed(SpatialConvolution(inputSize, hiddenSize, kernelI, kernelI,
+          stride, stride, kernelI/2, kernelI/2, wRegularizer = wRegularizer,
+          bRegularizer = bRegularizer).setName("inputGi2g")))
+        .add(TimeDistributed(SpatialConvolution(inputSize, hiddenSize, kernelI, kernelI,
+          stride, stride, kernelI/2, kernelI/2, wRegularizer = wRegularizer,
+          bRegularizer = bRegularizer)setName("hidGi2g")))
+        .add(TimeDistributed(SpatialConvolution(inputSize, hiddenSize, kernelI, kernelI,
+          stride, stride, kernelI/2, kernelI/2, wRegularizer = wRegularizer,
+          bRegularizer = bRegularizer)setName("outputGi2g"))))
+      .add(JoinTable(joinDim, numDim))
 
+  def buildGate(offset: Int, length: Int, name: String): Sequential[T] = {
+    val i2g = Narrow(joinDim-1, offset, length)
     val h2g = SpatialConvolution(hiddenSize, hiddenSize, kernelC, kernelC,
       stride, stride, kernelC/2, kernelC/2, withBias = false,
-      wRegularizer = uRegularizer)
+      wRegularizer = uRegularizer).setName(name + "h2g")
 
     val gate = Sequential()
     if (withPeephole) {
@@ -95,17 +115,19 @@ class ConvLSTMPeephole[T : ClassTag] (
   }
 
   def buildInputGate(): Sequential[T] = {
-    inputGate = buildGate()
+//    inputGate = buildGate(1, hiddenSize, "input2G")
+    inputGate = buildGate(1 + hiddenSize, hiddenSize, "input2G")
     inputGate
   }
 
   def buildForgetGate(): Sequential[T] = {
-    forgetGate = buildGate()
+    forgetGate = buildGate(1, hiddenSize, "forget2G")
+//    forgetGate = buildGate(1 + hiddenSize, hiddenSize, "forget2G")
     forgetGate
   }
 
   def buildOutputGate(): Sequential[T] = {
-    outputGate = buildGate()
+    outputGate = buildGate(1 + 3 * hiddenSize, hiddenSize, "output2G")
     outputGate
   }
 
@@ -113,14 +135,10 @@ class ConvLSTMPeephole[T : ClassTag] (
     val hidden = Sequential()
       .add(NarrowTable(1, 2))
 
-    val i2h = Sequential()
-      .add(Contiguous())
-      .add(SpatialConvolution(inputSize, hiddenSize, kernelI, kernelI,
-      stride, stride, kernelI/2, kernelI/2, wRegularizer = wRegularizer,
-      bRegularizer = bRegularizer))
+    val i2h = Narrow(joinDim-1, 1 + 2 * hiddenSize, hiddenSize)
     val h2h = SpatialConvolution(hiddenSize, hiddenSize, kernelC, kernelC,
       stride, stride, kernelC/2, kernelC/2, withBias = false,
-      wRegularizer = uRegularizer)
+      wRegularizer = uRegularizer).setName("hidGh2h")
 
     hidden
       .add(ParallelTable()
