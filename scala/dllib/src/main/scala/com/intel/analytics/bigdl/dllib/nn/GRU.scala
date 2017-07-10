@@ -70,19 +70,7 @@ class GRU[T : ClassTag] (
 
   override def preTopology: AbstractModule[Activity, Activity, T] =
     if (p != 0) {
-      Sequential()
-        .add(ConcatTable()
-          .add(Dropout(p))
-          .add(Dropout(p))
-          .add(Dropout(p)))
-        .add(ParallelTable()
-          .add(TimeDistributed(Linear(inputSize, outputSize,
-            wRegularizer = wRegularizer, bRegularizer = bRegularizer)))
-          .add(TimeDistributed(Linear(inputSize, outputSize,
-            wRegularizer = wRegularizer, bRegularizer = bRegularizer)))
-          .add(TimeDistributed(Linear(inputSize, outputSize,
-            wRegularizer = wRegularizer, bRegularizer = bRegularizer))))
-        .add(JoinTable(3, 1))
+      null
     } else {
       TimeDistributed[T](Linear(inputSize, 3 * outputSize,
         wRegularizer = wRegularizer, bRegularizer = bRegularizer))
@@ -91,8 +79,15 @@ class GRU[T : ClassTag] (
   def buildGates(): AbstractModule[Activity, Activity, T] = {
     if (p != 0) {
       i2g = Sequential()
-        .add(Narrow[T](2, 1, 2 * outputSize))
-        .add(Reshape(Array(2, outputSize)))
+        .add(ConcatTable()
+          .add(Dropout(p))
+          .add(Dropout(p)))
+        .add(ParallelTable()
+          .add(Linear(inputSize, outputSize,
+            wRegularizer = wRegularizer, bRegularizer = bRegularizer))
+          .add(Linear(inputSize, outputSize,
+            wRegularizer = wRegularizer, bRegularizer = bRegularizer)))
+        .add(JoinTable(2, 0))
 
       h2g = Sequential()
         .add(ConcatTable()
@@ -103,7 +98,7 @@ class GRU[T : ClassTag] (
             wRegularizer = uRegularizer))
           .add(Linear(outputSize, outputSize, withBias = false,
             wRegularizer = uRegularizer)))
-        .add(JoinTable(1, 1))
+        .add(JoinTable(2, 0))
     } else {
       i2g = Narrow[T](featDim, 1, 2 * outputSize)
       h2g = Linear(outputSize, 2 * outputSize, withBias = false,
@@ -133,11 +128,20 @@ class GRU[T : ClassTag] (
         .add(gates))
       .add(FlattenTable()) // x(t), h(t - 1), r(t), z(t)
 
+    val f2g = if (p != 0) {
+      Sequential()
+        .add(Dropout(p))
+        .add(Linear(inputSize, outputSize,
+            wRegularizer = wRegularizer, bRegularizer = bRegularizer))
+    } else {
+      Narrow(featDim, 1 + 2 * outputSize, outputSize)
+    }
+
     val h_hat = Sequential()
       .add(ConcatTable()
         .add(Sequential()
           .add(SelectTable(1))
-          .add(Narrow(featDim, 1 + 2 * outputSize, outputSize)))
+          .add(f2g))
         .add(Sequential()
         .add(NarrowTable(2, 2))
         .add(CMulTable())))

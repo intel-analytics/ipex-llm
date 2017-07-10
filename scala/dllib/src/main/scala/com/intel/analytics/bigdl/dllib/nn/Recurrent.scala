@@ -196,14 +196,14 @@ class Recurrent[T : ClassTag]()
       "Recurrent: input should be a 3D or 5D Tensor, e.g [batch, times, nDim], " +
         s"current input.dim = ${input.dim}")
 
+    batchSize = input.size(batchDim)
+    times = input.size(timeDim)
+
     outputCell = if (preTopology != null) {
       preTopology.updateOutput(input).toTensor[T]
     } else {
       input
     }
-
-    batchSize = outputCell.size(batchDim)
-    times = outputCell.size(timeDim)
 
     val hiddenSize = topology.hiddensShape(0)
     if (input.dim() == 3) {
