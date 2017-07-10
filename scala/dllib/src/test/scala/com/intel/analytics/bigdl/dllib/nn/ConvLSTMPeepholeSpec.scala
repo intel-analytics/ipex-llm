@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.torch
 
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
@@ -331,7 +332,7 @@ class ConvLSTMPeepholeSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     val weightsOri = new ArrayBuffer[Tensor[Double]]()
     val weightsNew = new ArrayBuffer[Tensor[Double]]()
-    
+
     val sizeI = hiddenSize * inputSize * 3 * 3
     val sizeH = hiddenSize * hiddenSize * 3 * 3
     var next = 0
@@ -349,15 +350,27 @@ class ConvLSTMPeepholeSpec extends FlatSpec with BeforeAndAfter with Matchers {
       weightsOri += Tensor[Double]().resizeAs(h2g).copy(h2g)
       next += sizeH
     }
-    
-    weightsNew += weightsOri(0)
-    weightsNew += weightsOri(1)
-    weightsNew += weightsOri(3)
-    weightsNew += weightsOri(4)
-    weightsNew += weightsOri(6)
-    weightsNew += weightsOri(7)
-    weightsNew += weightsOri(9)
-    weightsNew += weightsOri(10)
+
+    // weightsOri(0) -----> forgetGatei2g.weight
+    // weightsOri(3) -----> inputGatei2g.weight
+    // weightsOri(6) -----> hiddeni2g.weight
+    // weightsOri(9) -----> outputGatei2g.weight
+    val weightsTable = T(weightsOri(0), weightsOri(3), weightsOri(6), weightsOri(9))
+    val joinWeights = JoinTable[Double](2, 5)
+    weightsNew += joinWeights.forward(weightsTable)
+
+    // weightsOri(1) -----> forgetGatei2g.bias
+    // weightsOri(4) -----> inputGatei2g.bias
+    // weightsOri(7) -----> hiddeni2g.bias
+    // weightsOri(10) -----> outputGatei2g.bias
+    val biasTable = T(weightsOri(1), weightsOri(4), weightsOri(7), weightsOri(10))
+    val joinBias = JoinTable[Double](1, 1)
+    weightsNew += joinBias.forward(biasTable)
+
+    // weightsOri(2) -----> forgetGateh2g
+    // weightsOri(5) -----> inputGateh2g
+    // weightsOri(8) -----> hiddenh2h
+    // weightsOri(11) -----> outputGateh2g
     weightsNew += weightsOri(2)
     weightsNew += weightsOri(5)
     weightsNew += weightsOri(8)
@@ -616,7 +629,7 @@ class ConvLSTMPeepholeSpec extends FlatSpec with BeforeAndAfter with Matchers {
       -0.054477777, 0.059936292, -0.077277765, 0.019922124, -0.15395634, 0.0088137, 0.036947053,
       -0.11207754, 0.042513624, -0.05665606, -0.015827265, 0.12174054
     )
-    val (weights, gradients) = model.getParameters()
+    val weights = model.getParameters()._1
 
     val weightsOri = new ArrayBuffer[Tensor[Double]]()
     val weightsNew = new ArrayBuffer[Tensor[Double]]()
@@ -639,14 +652,14 @@ class ConvLSTMPeepholeSpec extends FlatSpec with BeforeAndAfter with Matchers {
       next += sizeH
     }
 
-    weightsNew += weightsOri(0)
-    weightsNew += weightsOri(1)
-    weightsNew += weightsOri(3)
-    weightsNew += weightsOri(4)
-    weightsNew += weightsOri(6)
-    weightsNew += weightsOri(7)
-    weightsNew += weightsOri(9)
-    weightsNew += weightsOri(10)
+    val weightsTable = T(weightsOri(0), weightsOri(3), weightsOri(6), weightsOri(9))
+    val joinWeights = JoinTable[Double](2, 5)
+    weightsNew += joinWeights.forward(weightsTable)
+
+    val biasTable = T(weightsOri(1), weightsOri(4), weightsOri(7), weightsOri(10))
+    val joinBias = JoinTable[Double](1, 1)
+    weightsNew += joinBias.forward(biasTable)
+
     weightsNew += weightsOri(2)
     weightsNew += weightsOri(5)
     weightsNew += weightsOri(8)
