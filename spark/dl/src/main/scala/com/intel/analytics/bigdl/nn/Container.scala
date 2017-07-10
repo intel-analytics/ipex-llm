@@ -98,7 +98,6 @@ abstract class Container[A <: Activity : ClassTag,
     val weights = new ArrayBuffer[Tensor[T]]()
     val gradWeights = new ArrayBuffer[Tensor[T]]()
     modules.foreach(m => {
-      println("module name:" + m.getName())
       val params = m.parameters()
       if (params != null) {
         params._1.foreach(weights += _)
