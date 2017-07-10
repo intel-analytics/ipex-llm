@@ -189,6 +189,26 @@ class ClassSimplexCriterion(Criterion):
         super(ClassSimplexCriterion, self).__init__(None, bigdl_type,
                                                     n_classes)
 
+class CosineDistanceCriterion(Criterion):
+
+    """
+    Creates a criterion that measures the loss given an input and target,
+    Loss = 1 - cos(x, y)
+
+
+    >>> cosineDistanceCriterion = CosineDistanceCriterion(True)
+    creating: createCosineEmbeddingCriterion
+    >>> cosineDistanceCriterion.forward(np.array([1.0, 2.0, 3.0, 4.0, 5.0]),
+    ...                                   np.array([5.0, 4.0, 3.0, 2.0, 1.0]))
+    0.0
+    """
+
+    def __init__(self,
+                 size_average=True,
+                 bigdl_type="float"):
+        super(CosineDistanceCriterion, self).__init__(None, bigdl_type,
+                                                       size_average)
+
 
 class CosineEmbeddingCriterion(Criterion):
 
