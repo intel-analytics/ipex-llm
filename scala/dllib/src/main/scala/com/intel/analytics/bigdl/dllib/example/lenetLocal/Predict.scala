@@ -17,7 +17,6 @@
 package com.intel.analytics.bigdl.example.lenetLocal
 import com.intel.analytics.bigdl.dataset.image.{BytesToGreyImg, GreyImgNormalizer, GreyImgToSample}
 import com.intel.analytics.bigdl.nn.Module
-import com.intel.analytics.bigdl.optim.{LocalPredictor, Top1Accuracy, Validator}
 import com.intel.analytics.bigdl.utils.{Engine, LocalModule}
 import com.intel.analytics.bigdl.dataset.Sample
 import org.apache.log4j.{Level, Logger}
@@ -36,8 +35,7 @@ object Predict {
     predictParser.parse(args, new PredictParams()).foreach { param =>
 
       System.setProperty("bigdl.localMode", "true")
-      System.setProperty("bigdl.coreNumber",
-        (Runtime.getRuntime().availableProcessors() / 2).toString)
+      System.setProperty("bigdl.coreNumber", (param.coreNumber.toString))
       Engine.init
 
       val validationData = param.folder + "/t10k-images-idx3-ubyte"
@@ -46,7 +44,7 @@ object Predict {
       val rawData = load(validationData, validationLabel)
       val iter = rawData.iterator
       val sampleIter = GreyImgToSample()(
-        GreyImgNormalizer(trainMean, trainStd)(
+          GreyImgNormalizer(trainMean, trainStd)(
           BytesToGreyImg(28, 28)(iter)))
       var samplesBuffer = ArrayBuffer[Sample[Float]]()
       while (sampleIter.hasNext) {

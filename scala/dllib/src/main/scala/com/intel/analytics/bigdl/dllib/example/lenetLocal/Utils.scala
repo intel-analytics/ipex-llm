@@ -82,7 +82,8 @@ object Utils {
   case class TestParams(
     folder: String = "./",
     model: String = "",
-    batchSize: Int = 128
+    batchSize: Int = 128,
+    coreNumber: Int = Runtime.getRuntime().availableProcessors() / 2
   )
 
   val testParser = new OptionParser[TestParams]("BigDL Lenet Test Example") {
@@ -94,32 +95,32 @@ object Utils {
       .text("model snapshot location")
       .action((x, c) => c.copy(model = x))
       .required()
-      .required()
     opt[Int]('b', "batchSize")
       .text("batch size")
       .action((x, c) => c.copy(batchSize = x))
+    opt[Int]('c', "coreNumber")
+      .text("core numbers")
+      .action((x, c) => c.copy(coreNumber = x))
   }
 
 
   case class PredictParams(
                          folder: String = "./",
                          model: String = "",
-                         batchSize: Int = 128
+                         coreNumber: Int = Runtime.getRuntime().availableProcessors() / 2
                        )
 
   val predictParser = new OptionParser[PredictParams]("BigDL Lenet Test Example") {
     opt[String]('f', "folder")
       .text("where you put the MNIST data")
       .action((x, c) => c.copy(folder = x))
-
     opt[String]("model")
       .text("model snapshot location")
       .action((x, c) => c.copy(model = x))
       .required()
-      .required()
-    opt[Int]('b', "batchSize")
-      .text("batch size")
-      .action((x, c) => c.copy(batchSize = x))
+    opt[Int]('c', "coreNumber")
+      .text("core numbers")
+      .action((x, c) => c.copy(coreNumber = x))
   }
 
   /**
