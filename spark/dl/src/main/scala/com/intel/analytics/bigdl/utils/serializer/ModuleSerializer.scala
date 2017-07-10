@@ -179,7 +179,8 @@ object ModuleSerializer extends ModuleSerializable{
     registerModule("BatchNormalization",
       Class.forName("com.intel.analytics.bigdl.nn.BatchNormalization"), BatchNormalization)
     registerModule("Bilinear", Class.forName("com.intel.analytics.bigdl.nn.Bilinear"), Bilinear)
-    // Place holder for birecurrent
+    registerModule("BiRecurrent", Class.forName("com.intel.analytics.bigdl.nn.BiRecurrent"),
+      BiRecurrent)
     registerModule("Bottle", Class.forName("com.intel.analytics.bigdl.nn.Bottle"), Bottle)
     registerModule("CAdd", Class.forName("com.intel.analytics.bigdl.nn.CAdd"), CAdd)
     registerModule("CAddTable", Class.forName("com.intel.analytics.bigdl.nn.CAddTable"), CAddTable)
@@ -341,7 +342,6 @@ object ModuleSerializer extends ModuleSerializable{
       Class.forName("com.intel.analytics.bigdl.nn.VolumetricConvolution"), VolumetricConvolution)
     registerModule("VolumetricMaxPooling",
       Class.forName("com.intel.analytics.bigdl.nn.VolumetricMaxPooling"), VolumetricMaxPooling)
-
 
   }
 

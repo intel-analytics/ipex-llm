@@ -828,7 +828,6 @@ object SpatialFullConvolution extends ModuleSerializable {
       ModuleSerializer.regularizerType)
     bigDLModuleBuilder.putAttr("bRegularizer", bRegularizerBuilder.build)
 
-    copyFromBigDL(module, bigDLModuleBuilder)
     createSerializeBigDLModule(bigDLModuleBuilder, module)
   }
 }

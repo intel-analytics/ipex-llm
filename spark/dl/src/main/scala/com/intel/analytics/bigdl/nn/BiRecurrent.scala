@@ -20,7 +20,9 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer._
 import com.intel.analytics.bigdl.utils.{T, Table}
+import serialization.Model.{AttrValue, BigDLModule}
 
 import scala.reflect.ClassTag
 
@@ -31,13 +33,13 @@ import scala.reflect.ClassTag
  * @tparam T numeric type
  */
 class BiRecurrent[T : ClassTag] (
-  merge: AbstractModule[Table, Tensor[T], T] = null)
+  val merge: AbstractModule[Table, Tensor[T], T] = null)
   (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
 
   val timeDim = 2
   val layer: Recurrent[T] = Recurrent[T]()
   val revLayer: Recurrent[T] = Recurrent[T]()
-  val birnn = Sequential[T]()
+  var birnn = Sequential[T]()
       .add(ConcatTable()
         .add(Identity[T]())
         .add(Identity[T]()))
@@ -136,10 +138,51 @@ class BiRecurrent[T : ClassTag] (
   }
 }
 
-object BiRecurrent {
+object BiRecurrent extends ContainerSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
     merge: AbstractModule[Table, Tensor[T], T] = null)
     (implicit ev: TensorNumeric[T]) : BiRecurrent[T] = {
     new BiRecurrent[T](merge)
+  }
+
+  override def loadModule[T: ClassTag](model : BigDLModule)
+                                      (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
+
+    val attrMap = model.getAttrMap
+
+    val merge = DataConverter.
+      getAttributeValue(attrMap.get("merge")).
+      asInstanceOf[AbstractModule[Table, Tensor[T], T]]
+
+    val biRecurrent = BiRecurrent(merge)
+
+    biRecurrent.birnn = DataConverter.
+      getAttributeValue(attrMap.get("birnn")).
+      asInstanceOf[Sequential[T]]
+
+    createBigDLModule(model, biRecurrent)
+  }
+
+  override def serializeModule[T: ClassTag](module : ModuleData[T])
+                                           (implicit ev: TensorNumeric[T]) : BigDLModule = {
+    val biRecurrentCls = Class.forName("com.intel.analytics.bigdl.nn.BiRecurrent")
+    val birecurrentModule = module.module.
+      asInstanceOf[BiRecurrent[T]]
+    val birecurrentBuilder = BigDLModule.newBuilder
+    birecurrentBuilder.setModuleType(ModuleSerializer.getModuleTypeByCls(biRecurrentCls))
+
+    val mergeBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(mergeBuilder,
+      birecurrentModule.merge,
+      ModuleSerializer.tensorModuleType)
+    birecurrentBuilder.putAttr("merge", mergeBuilder.build)
+
+    val birnnBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(birnnBuilder,
+      birecurrentModule.birnn,
+      ModuleSerializer.tensorModuleType)
+    birecurrentBuilder.putAttr("birnn", birnnBuilder.build)
+
+    createSerializeBigDLModule(birecurrentBuilder, module)
   }
 }

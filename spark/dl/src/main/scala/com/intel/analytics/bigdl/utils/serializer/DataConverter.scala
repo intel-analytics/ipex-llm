@@ -340,16 +340,22 @@ object DataConverter extends DataConverter{
     override def getAttributeValue[T: ClassTag](attribute: AttrValue)
      (implicit ev: TensorNumeric[T]): AnyRef = {
      val serializedModule = attribute.getBigDLModuleValue
-     ModuleSerializer.load(serializedModule).module
+      if (serializedModule.getModuleType != null && serializedModule.getModuleType != "") {
+        ModuleSerializer.load(serializedModule).module
+      } else {
+        null
+      }
    }
 
     override def setAttributeValue[T: ClassTag](attributeBuilder: AttrValue.Builder,
       value: Any, valueType: universe.Type = null)(implicit ev: TensorNumeric[T]): Unit = {
       attributeBuilder.setDataType(DataType.MODULE)
-      val module = value.asInstanceOf[AbstractModule[Activity, Activity, T]]
-     val serializableModule = ModuleSerializer.
-       serialize(ModuleData(module, Seq[String](), Seq[String]()))
-      attributeBuilder.setBigDLModuleValue(serializableModule)
+      if (value != null) {
+        val module = value.asInstanceOf[AbstractModule[Activity, Activity, T]]
+        val serializableModule = ModuleSerializer.
+          serialize(ModuleData(module, Seq[String](), Seq[String]()))
+        attributeBuilder.setBigDLModuleValue(serializableModule)
+      }
     }
   }
 
