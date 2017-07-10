@@ -111,7 +111,7 @@ The following instructions are aligned with master code.
 Maven 3 is needed to build BigDL, you can download it from the [maven website](https://maven.apache.org/download.cgi).
 
 After installing Maven 3, please set the environment variable MAVEN_OPTS as follows:
-```{r, engine='sh'}
+```sbt
 $ export MAVEN_OPTS="-Xmx2g -XX:ReservedCodeCacheSize=512m"
 ```
 When compiling with Java 7, you need to add the option “-XX:MaxPermSize=1G”. 
@@ -151,7 +151,7 @@ Note that the instructions above will skip the build of native library code, and
 1.  Download and install [Intel Parallel Studio XE](https://software.intel.com//qualify-for-free-software/opensourcecontributor) in your Linux box.
 
 2.  Prepare build environment as follows:
-    ```{r, engine='sh'}
+    ```sbt
     $ source <install-dir>/bin/compilervars.sh intel64
     $ source PATH_TO_MKL/bin/mklvars.sh intel64
     ```
@@ -160,20 +160,20 @@ Note that the instructions above will skip the build of native library code, and
 3. Full build
    
    Clone BigDL as follows:
-   ```{r, engine='sh'}
+   ```sbt
    git clone git@github.com:intel-analytics/BigDL.git --recursive 
    ```
    For already cloned repos, just use:
-   ```{r, engine='sh'}
+   ```sbt
    git submodule update --init --recursive 
    ```
    If the Intel MKL is not installed to the default path `/opt/intel`, please pass your libiomp5.so's directory path to
    the `make-dist.sh` script:
-   ```{r, engine='sh'}
+   ```sbt
    $ bash make-dist.sh -P full-build -DiompLibDir=<PATH_TO_LIBIOMP5_DIR> 
    ```
    Otherwise, only pass `-P full-build` to the `make-dist.sh` script:
-   ```{r, engine='sh'}
+   ```sbt
    $ bash make-dist.sh -P full-build
    ```
     
