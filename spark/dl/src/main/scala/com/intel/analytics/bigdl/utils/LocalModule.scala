@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.utils
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch, Sample}
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.optim.LocalPredictor
 
@@ -26,9 +26,34 @@ import scala.reflect.ClassTag
 
 
 object LocalModule {
+  def getAndClearWeightBias[T: ClassTag](parameters: (Array[Tensor[T]], Array[Tensor[T]]))
+                                        (implicit ev: TensorNumeric[T]): Array[Tensor[T]] = {
+    var i = 0
+    val weightsBias = new Array[Tensor[T]](parameters._1.length)
+    while (i < parameters._1.length) {
+      if (parameters._1(i) != null) {
+        val wb = parameters._1(i)
+        weightsBias(i) = Tensor[T](Storage(wb.storage().array()),
+          wb.storageOffset(), wb.size(), wb.stride())
+      }
+      i += 1
+    }
+    i = 0
+    while (i < parameters._1.length) {
+      if (parameters._1(i) != null) {
+        parameters._1(i).set()
+      }
+      if (parameters._2(i) != null) {
+        parameters._2(i).set()
+      }
+      i += 1
+    }
+    weightsBias
+  }
+
   def apply[T: ClassTag](model: Module[T])
                         (implicit ev: TensorNumeric[T]): LocalModule[T] = {
-    val weightsBias = LocalPredictor.getAndClearWeightBias(model.parameters())
+    val weightsBias = getAndClearWeightBias(model.parameters())
     new LocalModule[T](model, weightsBias)
   }
 }
