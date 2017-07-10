@@ -464,7 +464,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
   def loadWeights(weightPath: String, matchAll: Boolean = true): this.type = {
     val srcParameter = File.load[Table](weightPath)
     val targetParameter = getParametersTable()
-    copyWeights(targetParameter, srcParameter)
+    copyWeights(targetParameter, srcParameter, matchAll)
     this
   }
 
@@ -475,13 +475,13 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
    * @return current module
    */
   def loadModelWeights(srcModel: Module[Float], matchAll: Boolean = true): this.type = {
-    val srcParameters = srcModel.getParametersTable()
-    val parameterTable = getParametersTable()
-    copyWeights(parameterTable, srcParameters, matchAll)
+    val srcParameter = srcModel.getParametersTable()
+    val targetParameter = getParametersTable()
+    copyWeights(targetParameter, srcParameter, matchAll)
     this
   }
 
-  private def copyWeights(target: Table, src: Table, matchAll: Boolean = true): Unit = {
+  private def copyWeights(target: Table, src: Table, matchAll: Boolean): Unit = {
     target.foreach {
       case (name: String, targetParams: Table) =>
         if (src.contains(name)) {
