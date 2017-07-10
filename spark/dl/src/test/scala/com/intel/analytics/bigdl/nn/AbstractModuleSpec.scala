@@ -172,4 +172,37 @@ class AbstractModuleSpec extends FlatSpec with Matchers {
 
     module.parameters()._1 should be(module2.parameters()._1)
   }
+
+  "loadModelWeights" should "work properly" in {
+    val module = Sequential()
+
+    module.add(SpatialConvolution(1, 6, 5, 5).setName("conv1"))
+    module.add(Tanh())
+    module.add(SpatialMaxPooling(2, 2, 2, 2))
+    // stage 2 : filter bank -> squashing -> max pooling
+    module.add(SpatialConvolution(6, 12, 5, 5).setName("conv2"))
+    module.add(Tanh())
+    module.add(SpatialMaxPooling(2, 2, 2, 2))
+    // stage 3 : standard 2-layer neural network
+    module.add(Reshape(Array(12 * 5 * 5)))
+    module.add(Linear(12 * 5 * 5, 100).setName("l1"))
+    module.add(Tanh())
+    module.add(Linear(100, 6).setName("l2"))
+    module.add(LogSoftMax())
+
+    val module2 = Sequential()
+
+    module2.add(SpatialConvolution(1, 6, 5, 5).setName("conv1"))
+    module2.add(SpatialMaxPooling(2, 2, 2, 2))
+    // stage 2 : filter bank -> squashing -> max pooling
+    module2.add(SpatialConvolution(6, 12, 5, 5).setName("conv2"))
+    module2.add(SpatialMaxPooling(2, 2, 2, 2))
+    // stage 3 : standard 2-layer neural network
+    module2.add(Reshape(Array(12 * 5 * 5)))
+    module2.add(Linear(12 * 5 * 5, 100).setName("l1"))
+    module2.add(Linear(100, 6).setName("l2"))
+    module.loadModelWeights(module2)
+
+    module.parameters()._1 should be(module2.parameters()._1)
+  }
 }

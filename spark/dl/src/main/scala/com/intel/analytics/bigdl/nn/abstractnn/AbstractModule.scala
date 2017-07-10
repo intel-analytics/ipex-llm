@@ -456,29 +456,48 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
 
   /**
    * load pretrained weights and bias to current module
-   * @param path file to store weights and bias
+   * @param weightPath file to store weights and bias
    * @param matchAll whether to match all layers' weights and bias,
    *                 if not, only load existing pretrained weights and bias
    * @return current module
    */
-  def loadWeights(path: String, matchAll: Boolean = true): this.type = {
-    val pretrained = File.load[Table](path)
+  def loadWeights(weightPath: String, matchAll: Boolean = true): this.type = {
+    val srcParameter = File.load[Table](weightPath)
+    val targetParameter = getParametersTable()
+    copyWeights(targetParameter, srcParameter)
+    this
+  }
+
+  /**
+   * copy weights from another model, mapping by layer name
+   * @param srcModel model to copy from
+   * @param matchAll whether to match all layers' weights and bias,
+   * @return current module
+   */
+  def loadModelWeights(srcModel: Module[Float], matchAll: Boolean = true): this.type = {
+    val srcParameters = srcModel.getParametersTable()
     val parameterTable = getParametersTable()
-    parameterTable.foreach {
+    copyWeights(parameterTable, srcParameters, matchAll)
+    this
+  }
+
+  private def copyWeights(target: Table, src: Table, matchAll: Boolean = true): Unit = {
+    target.foreach {
       case (name: String, targetParams: Table) =>
-        if (pretrained.contains(name)) {
-          val srcParams = pretrained[Table](name)
+        if (src.contains(name)) {
+          val srcParams = src[Table](name)
           if (srcParams.contains("weight")) {
-            targetParams[Tensor[T]]("weight").set(srcParams[Tensor[T]]("weight"))
+            val w = srcParams[Tensor[T]]("weight")
+            targetParams[Tensor[T]]("weight").resizeAs(w).copy(w)
           }
           if (srcParams.contains("bias")) {
-            targetParams[Tensor[T]]("bias").set(srcParams[Tensor[T]]("bias"))
+            val b = srcParams[Tensor[T]]("bias")
+            targetParams[Tensor[T]]("bias").resizeAs(b).copy(b)
           }
         } else {
           if (matchAll) new Exception(s"module $name cannot find corresponding weight bias")
         }
     }
-    this
   }
 
   /**
