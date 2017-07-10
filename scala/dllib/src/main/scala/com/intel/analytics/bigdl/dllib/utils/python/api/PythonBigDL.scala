@@ -252,7 +252,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def createConvLSTMPeephole(
     inputSize: Int,
-    hiddenSize: Int,
+    outputSize: Int,
     kernelI: Int,
     kernelC: Int,
     stride: Int = 1,
@@ -260,7 +260,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     uRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
     withPeephole: Boolean = true): ConvLSTMPeephole[T] = {
-    ConvLSTMPeephole[T](inputSize, hiddenSize, kernelI, kernelC, stride,
+    ConvLSTMPeephole[T](inputSize, outputSize, kernelI, kernelC, stride,
       wRegularizer, uRegularizer, bRegularizer, withPeephole)
   }
 
