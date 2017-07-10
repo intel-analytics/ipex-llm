@@ -124,6 +124,8 @@ Once downloaded, you can build BigDL with the following commands:
 $ bash make-dist.sh
 ```
 After that, you can find a `dist` folder, which contains all the needed files to run a BigDL program. The files in `dist` include:
+
+* **dist/bin/bigdl.sh**: A script used to set up proper environment variables and launch the BigDL program. 
 * **dist/lib/bigdl-VERSION-jar-with-dependencies.jar**: This jar package contains all dependencies except Spark classes.
 * **dist/lib/bigdl-VERSION-python-api.zip**: This zip package contains all Python files of BigDL.
 * **dist/conf/spark-bigdl.conf**: This file contains necessary property configurations. ```Engine.createSparkConf``` will populate these properties, so try to use that method in your code. Or you need to pass the file to Spark with the "--properties-file" option. 
@@ -148,34 +150,33 @@ By default, `make-dist.sh` uses Scala 2.10 for Spark 1.5.x or 1.6.x, and Scala 2
 
 Note that the instructions above will skip the build of native library code, and pull the corresponding libraries from Maven Central. If you want to build the the native library code by yourself, follow the steps below:
 
-1.  Download and install [Intel Parallel Studio XE](https://software.intel.com//qualify-for-free-software/opensourcecontributor) in your Linux box.
+1.Download and install [Intel Parallel Studio XE](https://software.intel.com//qualify-for-free-software/opensourcecontributor) in your Linux box.
 
-2.  Prepare build environment as follows:
-    ```sbt
+2.Prepare build environment as follows:
+```sbt
     $ source <install-dir>/bin/compilervars.sh intel64
     $ source PATH_TO_MKL/bin/mklvars.sh intel64
-    ```
-    where the `PATH_TO_MKL` is the installation directory of the MKL.
+```
+where the `PATH_TO_MKL` is the installation directory of the MKL.
     
 3. Full build
-   
-   Clone BigDL as follows:
-   ```sbt
+Clone BigDL as follows:
+```sbt
    git clone git@github.com:intel-analytics/BigDL.git --recursive 
-   ```
-   For already cloned repos, just use:
-   ```sbt
+```
+For already cloned repos, just use:
+```sbt
    git submodule update --init --recursive 
-   ```
-   If the Intel MKL is not installed to the default path `/opt/intel`, please pass your libiomp5.so's directory path to
+```
+If the Intel MKL is not installed to the default path `/opt/intel`, please pass your libiomp5.so's directory path to
    the `make-dist.sh` script:
-   ```sbt
+```sbt
    $ bash make-dist.sh -P full-build -DiompLibDir=<PATH_TO_LIBIOMP5_DIR> 
-   ```
-   Otherwise, only pass `-P full-build` to the `make-dist.sh` script:
-   ```sbt
+```
+Otherwise, only pass `-P full-build` to the `make-dist.sh` script:
+```sbt
    $ bash make-dist.sh -P full-build
-   ```
+```
     
 
 ### **Build with Maven**
