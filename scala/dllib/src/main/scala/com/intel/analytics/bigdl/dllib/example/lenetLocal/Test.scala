@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.example.lenetLocal
 import com.intel.analytics.bigdl.dataset.{DataSet, SampleToBatch}
 import com.intel.analytics.bigdl.dataset.image.{BytesToGreyImg, GreyImgNormalizer, GreyImgToSample}
 import com.intel.analytics.bigdl.nn.Module
-import com.intel.analytics.bigdl.optim.{Top1Accuracy, ValidationMethod, Validator}
+import com.intel.analytics.bigdl.optim.{Top1Accuracy, ValidationMethod}
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.{Level, Logger}
 
@@ -34,6 +34,7 @@ object Test {
   def main(args: Array[String]): Unit = {
     testParser.parse(args, new TestParams()).foreach { param =>
       System.setProperty("bigdl.localMode", "true")
+      System.setProperty("bigdl.coreNumber", param.coreNumber.toString)
       Engine.init
 
       val validationData = param.folder + "/t10k-images-idx3-ubyte"
