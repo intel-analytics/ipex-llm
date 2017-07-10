@@ -46,9 +46,9 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
     val gradInput1 = bnNCHW.backward(inputsNCHW, gradOutput).transpose(2, 4).transpose(2, 3)
     val gradInput2 = bnNHWC.backward(inputsNHWC, gradOutputNHWC)
 
-    (output1.abs().sum() - output2.abs().sum()) should be < 1e-5
+    (output1.abs().sum() - output2.abs().sum()) should be < 1e-6
 
-    (gradInput1.abs().sum() - gradInput2.abs().sum()) should be < 1e-5
+    (gradInput1.abs().sum() - gradInput2.abs().sum()) should be < 1e-6
 
     val output11 = bnNCHW.forward(inputsNCHW).transpose(2, 4).transpose(2, 3)
     val output22 = bnNHWC.forward(inputsNHWC)
