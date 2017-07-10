@@ -17,17 +17,11 @@ package com.intel.analytics.bigdl.torch
 
 import com.intel.analytics.bigdl.nn.Abs
 import com.intel.analytics.bigdl.tensor.Tensor
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Serial
-class AbsSpec extends FlatSpec with BeforeAndAfter with Matchers {
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
-
-  "A Abs Module " should "generate correct output and grad" in {
+class AbsSpec extends TorchSpec {
+    "A Abs Module " should "generate correct output and grad" in {
+    torchCheck()
     val module = new Abs[Double]
     val input = Tensor[Double](2, 1, 2)
     input(Array(1, 1, 1)) = 21

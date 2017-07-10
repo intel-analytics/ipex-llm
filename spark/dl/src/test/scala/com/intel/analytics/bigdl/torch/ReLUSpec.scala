@@ -19,21 +19,15 @@ package com.intel.analytics.bigdl.torch
 import com.intel.analytics.bigdl.nn.{GradientChecker, ReLU}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.math._
 import scala.util.Random
 import com.intel.analytics.bigdl._
 
 @com.intel.analytics.bigdl.tags.Serial
-class ReLUSpec extends FlatSpec with BeforeAndAfter with Matchers {
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
-
-  "A ReLU Module " should "generate correct output and grad" in {
+class ReLUSpec extends TorchSpec {
+    "A ReLU Module " should "generate correct output and grad" in {
+    torchCheck()
     val module = new ReLU[Double]()
     val input = Tensor[Double](2, 2, 2)
     input(Array(1, 1, 1)) = -0.97008799016476
@@ -82,6 +76,7 @@ class ReLUSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "ReLU module" should "be good in gradient check for input" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
     val layer = new ReLU[Double]()

@@ -61,10 +61,6 @@ class SoftMax[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends TensorModule
     SoftMax.updateGradInput[T](input, gradOutput, gradInput, output, results)
     gradInput
   }
-
-  override def toString(): String = {
-    s"nn.SoftMax"
-  }
 }
 
 object SoftMax{

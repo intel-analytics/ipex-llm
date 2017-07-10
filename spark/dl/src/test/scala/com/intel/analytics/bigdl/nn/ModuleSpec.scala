@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{RandomGenerator, Table}
 import org.scalatest.{FlatSpec, Matchers}
@@ -72,13 +73,13 @@ class ModuleSpec extends FlatSpec with Matchers {
   "getParameter" should "behave correctly" in {
     val module = Sequential[Double]
     val subModule1 = Linear[Double](2, 3)
-    val subModule2 = Linear[Double](4, 5, Default, false)
+    val subModule2 = Linear[Double](4, 5, withBias = false)
     val subModule3 = BatchNormalization[Double](5)
     val subModule4 = BatchNormalization[Double](5, 1e-5, 0.1, false)
     val subModule5 = Bilinear[Double](1, 2, 3)
     val subModule6 = Bilinear[Double](1, 2, 3, false)
-    val subModule7 = SpatialFullConvolution[Tensor[Double], Double](1, 2, 3, 4)
-    val subModule8 = SpatialFullConvolution[Tensor[Double], Double](1, 2, 3, 4,
+    val subModule7 = SpatialFullConvolution[Double](1, 2, 3, 4)
+    val subModule8 = SpatialFullConvolution[Double](1, 2, 3, 4,
       1, 1, 0, 0, 0, 0, 1, true
     )
 

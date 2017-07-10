@@ -43,8 +43,8 @@ class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
   val dH: Int = 1, // The step of the convolution in the height dimension
   val padW: Int = 0, // The additional zeros added per width to the input planes.
   val padH: Int = 0, // The additional zeros added per height to the input planes.
-  val wRegularizer: Regularizer[T] = null,
-  val bRegularizer: Regularizer[T] = null
+  var wRegularizer: Regularizer[T] = null,
+  var bRegularizer: Regularizer[T] = null
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T]  {
   val nInputPlane = ev.toType[Int](connTable.select(2, 1).max())
   val nOutputPlane = ev.toType[Int](connTable.select(2, 2).max())
@@ -52,8 +52,10 @@ class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
   val bias: Tensor[T] = Tensor[T](nOutputPlane)
   val gradWeight: Tensor[T] = Tensor[T](connTable.size(1), kH, kW)
   val gradBias: Tensor[T] = Tensor[T](nOutputPlane)
+
   reset()
 
+  // todo write a new InitializationMethod to wrap the following procedure
   override def reset(): Unit = {
     val ninp = Tensor[T](this.nOutputPlane).zero()
     var i = 1
@@ -196,8 +198,7 @@ class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
     gradInput
   }
 
-  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
-    scale: Double = 1.0): Unit = {
+  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
     val dimw = if (input.dim() == 4) 4 else 3
     val dimh = if (input.dim() == 4) 3 else 2
     val nbatch = if (input.dim() == 4) input.size(1) else 1
@@ -218,64 +219,69 @@ class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
     }
 
     var m = 1
-    val gradOutputIndex = new Array[Int](4)
-    val gradBiasIndex = new Array[Int](1)
-    while (m <= nbatch) {
-      gradOutputIndex(0) = m
-      var k = 1
-      while (k <= nOutputPlane) {
-        gradOutputIndex(1) = k
-        gradBiasIndex(0) = k
-        var l = 1
-        while (l <= outputH) {
-          gradOutputIndex(2) = l
-          var n = 1
-          while (n <= outputW) {
-            gradOutputIndex(3) = n
-            gradBias(gradBiasIndex) = ev.plus(gradBias(gradBiasIndex),
-              ev.times(ev.fromType[Double](scale), gradOutput(gradOutputIndex)))
-            n += 1
+    if (scaleB != 0) {
+      val gradOutputIndex = new Array[Int](4)
+      val gradBiasIndex = new Array[Int](1)
+      while (m <= nbatch) {
+        gradOutputIndex(0) = m
+        var k = 1
+        while (k <= nOutputPlane) {
+          gradOutputIndex(1) = k
+          gradBiasIndex(0) = k
+          var l = 1
+          while (l <= outputH) {
+            gradOutputIndex(2) = l
+            var n = 1
+            while (n <= outputW) {
+              gradOutputIndex(3) = n
+              gradBias(gradBiasIndex) = ev.plus(gradBias(gradBiasIndex),
+                ev.times(ev.fromType[Double](scaleB), gradOutput(gradOutputIndex)))
+              n += 1
+            }
+            l += 1
           }
-          l += 1
+          k += 1
         }
-        k += 1
+        m += 1
       }
-      m += 1
     }
 
-    val nkernel = connTable.size(1)
-    val connTableIndex = new Array[Int](2)
     m = 0
-    while (m < nbatch) {
-      var k = 1
-      while (k <= nkernel) {
-        connTableIndex(0) = k
-        connTableIndex(1) = 2
-        val o = ev.toType[Int](connTable(connTableIndex))
-        connTableIndex(1) = 1
-        val i = ev.toType[Int](connTable(connTableIndex))
+    if (scaleW != 0) {
+      val nkernel = connTable.size(1)
+      val connTableIndex = new Array[Int](2)
+      while (m < nbatch) {
+        var k = 1
+        while (k <= nkernel) {
+          connTableIndex(0) = k
+          connTableIndex(1) = 2
+          val o = ev.toType[Int](connTable(connTableIndex))
+          connTableIndex(1) = 1
+          val i = ev.toType[Int](connTable(connTableIndex))
 
-        DenseTensorConv.validXCorr2DRevptr(gradWeight.storage(),
-          gradWeight.storageOffset() - 1 + (k - 1) * weightH * weightW,
-          ev.fromType[Double](scale), input.storage(),
-          input.storageOffset() - 1 + (i - 1 + m * nInputPlane) * inputW * inputH,
-          inputH, inputW, gradOutput.storage(),
-          gradOutput.storageOffset() - 1 + (o - 1 + m * nOutputPlane) * outputW * outputH,
-          outputH, outputW, dH, dW)
-        k += 1
+          DenseTensorConv.validXCorr2DRevptr(gradWeight.storage(),
+            gradWeight.storageOffset() - 1 + (k - 1) * weightH * weightW,
+            ev.fromType[Double](scaleW), input.storage(),
+            input.storageOffset() - 1 + (i - 1 + m * nInputPlane) * inputW * inputH,
+            inputH, inputW, gradOutput.storage(),
+            gradOutput.storageOffset() - 1 + (o - 1 + m * nOutputPlane) * outputW * outputH,
+            outputH, outputW, dH, dW)
+          k += 1
+        }
+        m += 1
       }
-      m += 1
     }
+
 
     if (forceBatch) {
       gradOutput.squeeze(1)
     }
 
-    if (null != wRegularizer) {
-      wRegularizer.accRegularization(weight, gradWeight)
+    if (null != wRegularizer && scaleW != 0) {
+      wRegularizer.accRegularization(weight, gradWeight, scaleW)
     }
-    if (null != bRegularizer) {
-      bRegularizer.accRegularization(bias, gradBias)
+    if (null != bRegularizer && scaleB != 0) {
+      bRegularizer.accRegularization(bias, gradBias, scaleB)
     }
   }
 
@@ -320,12 +326,12 @@ object SpatialConvolutionMap {
     implicit ev: TensorNumeric[T]): Tensor[T] = {
     val ft = Tensor[T](nin * nout, 2)
     var p = 1
-    var i = 1
     var j = 1
     while (j <= nout) {
+      var i = 1
       while (i <= nin) {
-        ft(p)(1) = ev.fromType[Int](i)
-        ft(p)(2) = ev.fromType[Int](j)
+        ft.setValue(p, 1, ev.fromType[Int](i))
+        ft.setValue(p, 2, ev.fromType[Int](j))
         p = p + 1
         i = i + 1
       }

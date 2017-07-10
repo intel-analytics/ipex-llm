@@ -76,7 +76,7 @@ class NarrowTable[T: ClassTag](var offset: Int, val length: Int = 1)
   }
 
   override def toString(): String = {
-    s"nn.NarrowTable($offset, $length)"
+    s"${getPrintName}($offset, $length)"
   }
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[NarrowTable[T]]

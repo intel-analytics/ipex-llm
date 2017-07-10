@@ -50,3 +50,16 @@ layer {
     bias_term: false
   }
 }
+layer {
+ name : "customized"
+ type : "Dummy"
+ bottom : "out"
+ top : "dummy"
+}
+layer {
+  name: "loss"
+  type: "SoftmaxWithLoss"
+  bottom: "dummy"
+  top: "loss"
+}
+

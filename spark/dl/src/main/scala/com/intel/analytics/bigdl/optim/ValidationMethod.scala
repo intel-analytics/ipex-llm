@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.ClassNLLCriterion
+import com.intel.analytics.bigdl.nn.AbsCriterion
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -113,7 +114,9 @@ class AccuracyResult(private var correct: Int, private var count: Int)
 /**
  * Caculate the percentage that output's max probability index equals target
  */
-class Top1Accuracy[T] extends ValidationMethod[T] {
+class Top1Accuracy[T](
+  implicit ev: TensorNumeric[T])
+  extends ValidationMethod[T] {
   override def apply(output: Activity, target: Activity):
   ValidationResult = {
     var correct = 0
@@ -122,7 +125,11 @@ class Top1Accuracy[T] extends ValidationMethod[T] {
     val _output = output.asInstanceOf[Tensor[T]]
     val _target = target.asInstanceOf[Tensor[T]]
     if (_output.dim() == 2) {
-      _output.max(2)._2.squeeze().map(_target, (a, b) => {
+      (if (_output.size(2) == 1) {
+        _output.apply1(x => if (ev.isGreater(ev.fromType(0.5), x)) ev.zero else ev.one)
+      } else {
+        _output.max(2)._2.squeeze()
+      }).map(_target, (a, b) => {
         if (a == b) {
           correct += 1
         }
@@ -131,7 +138,11 @@ class Top1Accuracy[T] extends ValidationMethod[T] {
       count += _output.size(1)
     } else if (_output.dim == 1) {
       require(_target.size(1) == 1)
-      _output.max(1)._2.map(_target, (a, b) => {
+      (if (_output.size(1) == 1) {
+        _output.apply1(x => if (ev.isGreater(ev.fromType(0.5), x)) ev.zero else ev.one)
+      } else {
+        _output.max(1)._2
+      }).map(_target, (a, b) => {
         if (a == b) {
           correct += 1
         }
@@ -259,4 +270,24 @@ class Loss[@specialized(Float, Double)T: ClassTag](
   }
 
   override def format(): String = "Loss"
+}
+
+/**
+ * This evaluation method is calculate mean absolute error of output with respect to target
+ *
+ */
+class MAE[@specialized(Float, Double)T: ClassTag]()
+(implicit ev: TensorNumeric[T]) extends ValidationMethod[T] {
+  private val criterion = AbsCriterion[T]()
+  override def apply(output: Activity, target: Activity): LossResult = {
+    val _output = output.asInstanceOf[Tensor[T]]
+    val (max_prob, max_index) = _output.max(2)
+    val _target = target.asInstanceOf[Tensor[T]]
+    val loss = ev.toType[Float](criterion.forward(max_index, _target))
+    val count = 1
+
+    new LossResult(loss, count)
+  }
+
+  override def format(): String = "MAE"
 }

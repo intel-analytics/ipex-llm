@@ -31,6 +31,12 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     t.nDimension should be(0)
   }
 
+  "Test type of Activity" should "be correct" in {
+    val t: Tensor[Double] = new DenseTensor[Double]()
+    t.isTensor should be(true)
+    t.isTable should be(false)
+  }
+
   "Construct with dimension list" should "return correct value" in {
     val t: Tensor[Double] = new DenseTensor[Double](1, 2, 3)
     t.nDimension should be(3)

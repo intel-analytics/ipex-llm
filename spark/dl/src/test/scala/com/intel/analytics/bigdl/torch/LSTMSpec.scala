@@ -24,13 +24,12 @@ import com.intel.analytics.bigdl.optim.{L2Regularizer, SGD}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.T
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.sys.process._
 
 @com.intel.analytics.bigdl.tags.Serial
-class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
-  before {
+class LSTMSpec  extends TorchSpec {
+  override def torchCheck(): Unit = {
     if (!TH.hasTorch()) {
       cancel("Torch is not installed")
     }
@@ -65,8 +64,8 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     }
 
     println(input)
-    val rec1 = Recurrent[Double](hiddenSize)
-    val rec2 = Recurrent[Double](hiddenSize)
+    val rec1 = Recurrent[Double]()
+    val rec2 = Recurrent[Double]()
 
     val model1 = Sequential[Double]()
       .add(rec1
@@ -131,6 +130,7 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A LSTM " should "has same loss as torch rnn" in {
+    torchCheck()
 
     val hiddenSize = 4
     val inputSize = 6
@@ -150,7 +150,7 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     }
 
 //    println(input)
-    val rec = Recurrent[Double](hiddenSize)
+    val rec = Recurrent[Double]()
 
     val model = Sequential[Double]()
       .add(rec
@@ -298,6 +298,7 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
 
 
   "A LSTM " should "has same loss as torch rnn in batch mode" in {
+    torchCheck()
 
     val hiddenSize = 4
     val inputSize = 6
@@ -319,7 +320,7 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
         labels.setValue(b, i, rdmLabel)
       }
     }
-    val rec = Recurrent[Double](hiddenSize)
+    val rec = Recurrent[Double]()
 
     val model = Sequential[Double]()
       .add(rec
@@ -452,6 +453,7 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A LSTM " should "converge" in {
+    torchCheck()
 
     val hiddenSize = 4
     val inputSize = 6
@@ -471,7 +473,7 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
 
     println(input)
     RNG.setSeed(seed)
-    val rec = Recurrent[Double](hiddenSize)
+    val rec = Recurrent[Double]()
 
     val model = Sequential[Double]()
       .add(rec
@@ -513,6 +515,7 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A LSTM " should "converge in batch mode" in {
+    torchCheck()
 
     val hiddenSize = 4
     val inputSize = 6
@@ -535,7 +538,7 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     }
 
     println(input)
-    val rec = Recurrent[Double](hiddenSize)
+    val rec = Recurrent[Double]()
 
     val model = Sequential[Double]()
       .add(rec

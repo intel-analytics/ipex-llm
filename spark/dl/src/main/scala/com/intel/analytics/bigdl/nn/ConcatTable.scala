@@ -151,13 +151,67 @@ class ConcatTable[T : ClassTag]
     gradInput
   }
 
-  override def accGradParameters(input: Activity, gradOutput: Table,
-    scale: Double = 1.0): Unit = {
+  override def backward(input: Activity, gradOutput: Table): Activity = {
+    val isInputTable = input.isInstanceOf[Table]
+    val wasGradInputTable = gradInput.isInstanceOf[Table]
+
+    if (isInputTable) {
+      var i = 0
+      while (i < modules.length) {
+        val currentGradInput = modules(i).backward(input,
+          gradOutput.toTable(i + 1))
+        require(currentGradInput.isInstanceOf[Table],
+          "currentGradInput is not a table!")
+        if (i == 0) {
+          if (!wasGradInputTable ||
+            gradInput.toTable.length() != currentGradInput.toTable.length()) {
+            // We need deep copy here.
+            gradInput = cloneTable(currentGradInput)
+          } else {
+            copyTable(gradInput, currentGradInput)
+          }
+        } else {
+          addTable(gradInput, currentGradInput)
+        }
+        i += 1
+      }
+
+    } else {
+      var i = 0
+      while (i < modules.length) {
+        val currentGradInput = modules(i).backward(input,
+          gradOutput.toTable(i + 1)).toTensor[T]
+        if (i == 0) {
+          if (wasGradInputTable) {
+            gradInput = currentGradInput.clone()
+          } else {
+            gradInput.toTensor[T].resizeAs(
+              currentGradInput).copy(currentGradInput)
+          }
+        } else {
+          gradInput.toTensor[T].add(currentGradInput)
+        }
+        i += 1
+      }
+    }
+    gradInput
+  }
+
+  override def accGradParameters(input: Activity, gradOutput: Table): Unit = {
     var i = 0
     while (i < modules.length) {
-      modules(i).accGradParameters(input, gradOutput.toTable(i + 1), scale)
+      modules(i).accGradParameters(input, gradOutput.toTable(i + 1))
       i += 1
     }
+  }
+
+  override def clearState(): ConcatTable.this.type = {
+    super.clearState()
+    modules.foreach(_.clearState())
+    if (gradInput.isInstanceOf[Table]) {
+      gradInput.toTable.clear()
+    }
+    this
   }
 
   override def toString(): String = {
@@ -168,7 +222,7 @@ class ConcatTable[T : ClassTag]
     val ext = "  |    "
     val extlast = "       "
     val last = "   ... -> "
-    var str = "nn.ConcatTable"
+    var str = s"${getPrintName}"
     str = str + " {" + line + tab + "input"
     var i = 1
     while (i <= modules.length) {

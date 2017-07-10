@@ -62,9 +62,9 @@ class Evaluator[T: ClassTag] private[optim](model: Module[T])(implicit ev: Tenso
       val localTransformer = otherBroad.value._2.cloneTransformer()
       val miniBatch = localTransformer(partition)
       miniBatch.map(batch => {
-        val output = localModel.forward(batch.data)
+        val output = localModel.forward(batch.getInput())
         localMethod.map(validation => {
-          validation(output, batch.labels)
+          validation(output, batch.getTarget())
         })
       })
     }).reduce((left, right) => {

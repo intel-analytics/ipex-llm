@@ -68,7 +68,7 @@ class Index[T: ClassTag](dimension: Int)(implicit ev: TensorNumeric[T])
   }
 
   override def toString(): String = {
-    s"nn.Index($dimension)"
+    s"${getPrintName}($dimension)"
   }
 }
 

@@ -12,7 +12,6 @@ You can build one by refer to the
 ## Train Model on Spark
 Example command for running in Spark cluster mode
 ```
-./dist/bin/bigdl.sh -- \
 spark-submit --master local[physical_core_number] \
 --class com.intel.analytics.bigdl.models.vgg.Train \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
@@ -23,7 +22,6 @@ dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 
 Standalone cluster mode, example command
 ```
-./dist/bin/bigdl.sh -- \
 spark-submit \
 --master spark://... \
 --executor-cores cores_per_executor \
@@ -36,7 +34,6 @@ dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 ```
 Yarn cluster mode, example command
 ```
-./dist/bin/bigdl.sh -- \
 spark-submit \
 --master yarn \
 --deploy-mode client \
@@ -60,7 +57,6 @@ safety of your model files.
 ## Test Model
 Example command for running in Spark local mode
 ```
-./dist/bin/bigdl.sh -- \
 spark-submit --master local[physical_core_number] \
 --class com.intel.analytics.bigdl.models.vgg.Test \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
@@ -71,7 +67,6 @@ dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 
 Standalone cluster mode, example command
 ```
-./dist/bin/bigdl.sh -- \
 spark-submit \
 --master spark://... \
 --executor-cores cores_per_executor \
@@ -84,7 +79,6 @@ dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 ```
 Yarn cluster mode, example command
 ```
-./dist/bin/bigdl.sh -- \
 spark-submit \
 --master yarn \
 --deploy-mode client \

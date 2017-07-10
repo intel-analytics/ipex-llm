@@ -99,5 +99,29 @@ object Trigger {
       }
     }
   }
+
+  /**
+   * A trigger that triggers an action when validation score larger than "max" score
+   * @param max max score
+   */
+  def maxScore(max: Float): Trigger = {
+    new Trigger() {
+      override def apply(state: Table): Boolean = {
+        state[Float]("score") > max
+      }
+    }
+  }
+
+  /**
+   * A trigger that triggers an action when training loss less than "min" loss
+   * @param min min loss
+   */
+  def minLoss(min: Float): Trigger = {
+    new Trigger() {
+      override def apply(state: Table): Boolean = {
+        state[Float]("Loss") < min
+      }
+    }
+  }
 }
 

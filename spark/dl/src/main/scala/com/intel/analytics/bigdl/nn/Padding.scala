@@ -91,7 +91,7 @@ class Padding[T: ClassTag](
   }
 
   override def toString(): String = {
-    s"nn.Padding ($dim, $pad, $nInputDim, $value, $nIndex)"
+    s"${getPrintName}($dim, $pad, $nInputDim, $value, $nIndex)"
   }
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[Padding[T]]
@@ -116,7 +116,7 @@ class Padding[T: ClassTag](
 }
 
 object Padding{
-  def apply[@specialized(Float, Double) T: ClassTag](
+  def apply[T: ClassTag](
     dim: Int,
     pad: Int,
     nInputDim: Int,

@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{DenseTensorApply, Tensor, TensorFunc4, TensorFunc6}
 import com.intel.analytics.bigdl.utils.{Engine, T, Table}
@@ -39,7 +39,7 @@ import scala.reflect.ClassTag
 @SerialVersionUID(- 877259619727212424L)
 class PReLU[T: ClassTag](
   val nOutputPlane: Int = 0)
-  (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+  (implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
   val weight = if (nOutputPlane == 0) {
     Tensor[T](1)
@@ -52,10 +52,13 @@ class PReLU[T: ClassTag](
     Tensor[T](nOutputPlane)
   }
 
-  reset()
+  {
+    val wInit = ConstInitMethod(0.25)
+    setInitMethod(wInit)
+  }
 
   override def reset(): Unit = {
-    weight.fill(ev.fromType[Double](0.25))
+    weightInitMethod.init(weight, VariableFormat.ONE_D)
     zeroGradParameters()
   }
 
@@ -205,11 +208,14 @@ class PReLU[T: ClassTag](
     gradInput
   }
 
-  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
-                                 scale: Double = 1.0): Unit = {
+  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
     require(input.isContiguous(), "input must be contiguous")
     require(gradOutput.isContiguous(), "gradOuput must be contiguous")
     require(input.nElement() == gradOutput.nElement())
+
+    if (scaleW == 0) {
+      return
+    }
 
     if (nOutputPlane == 0) {
       // todo : the performance of contiguous tensor should be optimize
@@ -222,7 +228,7 @@ class PReLU[T: ClassTag](
         }
       }
       DenseTensorApply.apply2[T](input, gradOutput, func)
-      gradWeight.add(ev.times(ev.fromType[Double](scale), sum))
+      gradWeight.add(ev.times(ev.fromType[Double](scaleW), sum))
     } else {
       require(input.nDimension() <= 4, s"${input.nDimension()}D input not supported")
       require(input.size((input.nDimension() + 1) % 2 + 1) == nOutputPlane,
@@ -262,7 +268,7 @@ class PReLU[T: ClassTag](
               k += 1
             }
             gradWeightArray(gradWeightOffset + j) = ev.plus(gradWeightArray(gradWeightOffset + j),
-              ev.times(ev.fromType[Double](scale), sum))
+              ev.times(ev.fromType[Double](scaleW), sum))
             nInputOffset += ks
             nGradOutputOffset += ks
             j += 1
@@ -287,7 +293,7 @@ class PReLU[T: ClassTag](
   }
 
   override def toString(): String = {
-    s"nn.PReLU($nOutputPlane)"
+    s"${getPrintName}($nOutputPlane)"
   }
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[PReLU[T]]

@@ -45,10 +45,6 @@ class CSubTable[T: ClassTag]()(
     gradInput
   }
 
-  override def toString(): String = {
-    s"nn.CSubTable"
-  }
-
   override def canEqual(other: Any): Boolean = other.isInstanceOf[CSubTable[T]]
 
   override def equals(other: Any): Boolean = other match {

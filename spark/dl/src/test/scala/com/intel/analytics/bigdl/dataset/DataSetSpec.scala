@@ -264,7 +264,7 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "image preprocess" should "be same with torch result" in {
     val originMode = Engine.localMode
-    Engine.localMode = true
+    System.setProperty("bigdl.localMode", "true")
     Engine.init(nodeNumber, coreNumber, false)
     val resourceImageNet = getClass().getClassLoader().getResource("imagenet")
     def test(imgFolder: String, imgFileName: String, tensorFile: String): Unit = {
@@ -276,7 +276,7 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
         -> BGRImgNormalizer((0.4, 0.5, 0.6), (0.1, 0.2, 0.3))
         -> BGRImgToBatch(1)
         ).toLocal().data(train = false)
-      val image1 = iter.next().data
+      val image1 = iter.next().getInput.toTensor[Float]
 
       val resourceTorch = getClass().getClassLoader().getResource("torch")
       val tensor1Path = Paths.get(processPath(resourceTorch.getPath()), tensorFile)
@@ -296,7 +296,7 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
     test("n15075141", "n15075141_38508.JPEG", "n15075141_38508.t7")
     RandomGenerator.RNG.setSeed(100)
     test("n99999999", "n03000134_4970.JPEG", "n03000134_4970.t7")
-    Engine.localMode = false
+    System.clearProperty("bigdl.localMode")
   }
 
   "RDD from DataSet" should "give different position every time" in {
@@ -349,7 +349,7 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val rdd = dataSet.toDistributed().data(train = true)
     rdd.partitions.size should be (partitionNum)
     val rddData = rdd.mapPartitions(iter => {
-      Iterator.single(iter.next().labels)
+      Iterator.single(iter.next().getTarget.toTensor[Float])
     })
 
     i = 0
@@ -378,8 +378,7 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     i = 0
     while (i < localData.length) {
-      localData(i).label() should be (data(i).label)
-      localData(i).feature() should be (data(i).feature())
+      localData(i) should be (data(i))
       i += 1
     }
   }

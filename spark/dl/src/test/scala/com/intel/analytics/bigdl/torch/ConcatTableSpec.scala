@@ -20,19 +20,13 @@ import com.intel.analytics.bigdl.nn.{ConcatTable, Linear}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class ConcatTableSpec extends FlatSpec with BeforeAndAfter with Matchers {
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
-
-  "ConcatTable forward tensor" should "return right output" in {
+class ConcatTableSpec extends TorchSpec {
+    "ConcatTable forward tensor" should "return right output" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 

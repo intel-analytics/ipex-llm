@@ -192,7 +192,7 @@ class MixtureTable[T: ClassTag](var dim: Int = Int.MaxValue)
   }
 
   override def toString(): String = {
-    s"nn.MixtureTable($dim)"
+    s"${getPrintName}($dim)"
   }
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[MixtureTable[T]]

@@ -42,7 +42,7 @@ import scala.reflect.ClassTag
  */
 abstract class Cell[T : ClassTag](
   val hiddensShape: Array[Int],
-  val regularizers: Array[Regularizer[T]] = null
+  var regularizers: Array[Regularizer[T]] = null
 )(implicit ev: TensorNumeric[T])
   extends AbstractModule[Table, Table, T] {
 
@@ -61,6 +61,19 @@ abstract class Cell[T : ClassTag](
   var cell: AbstractModule[Activity, Activity, T]
 
   /**
+   * The preTopology defines operations to pre-process the input when it is not dependent
+   * on the time dimension. For example, the i2h in SimpleRNN Cell can be calculated before
+   * the recurrence since all the input slices are independent.
+   *
+   * This is particular useful to boost the performance of the recurrent layer.
+   *
+   * Please define your own preTopology according to your Cell structure.
+   * Please refer to SimpleRNN or LSTM for reference.
+   * @return
+   */
+  def preTopology: AbstractModule[Activity, Activity, T] = null
+
+  /**
    * resize the hidden parameters wrt the batch size, hiddens shapes.
    *
    * e.g. RnnCell contains 1 hidden parameter (H), thus it will return Tensor(size)
@@ -71,10 +84,10 @@ abstract class Cell[T : ClassTag](
    * @param size batchSize
    * @return
    */
-  def hidResize(hidden: Activity, size: Int): Activity = {
+  def hidResize(hidden: Activity, size: Int, rows: Int = 1, columns: Int = 1): Activity = {
     if (hidden == null) {
       if (hiddensShape.length == 1) {
-        hidResize(Tensor[T](), size)
+        hidResize(Tensor[T](), size, rows, columns)
       } else {
         val _hidden = T()
         var i = 1
@@ -82,7 +95,7 @@ abstract class Cell[T : ClassTag](
           _hidden(i) = Tensor[T]()
           i += 1
         }
-        hidResize(_hidden, size)
+        hidResize(_hidden, size, rows, columns)
       }
     } else {
       if (hidden.isInstanceOf[Tensor[T]]) {
@@ -93,9 +106,16 @@ abstract class Cell[T : ClassTag](
         require(hidden.isInstanceOf[Table],
           "Cell: hidden should be a Table")
         var i = 1
-        while (i <= hidden.toTable.length()) {
-          hidden.toTable[Tensor[T]](i).resize(size, hiddensShape(i - 1))
-          i += 1
+        if (rows== 1 && columns==1) {
+          while (i <= hidden.toTable.length()) {
+            hidden.toTable[Tensor[T]](i).resize(size, hiddensShape(i - 1))
+            i += 1
+          }
+        } else {
+          while (i <= hidden.toTable.length()) {
+            hidden.toTable[Tensor[T]](i).resize(size, hiddensShape(i - 1), rows, columns)
+            i += 1
+          }
         }
         hidden
       }
@@ -112,9 +132,8 @@ abstract class Cell[T : ClassTag](
     gradInput
   }
 
-  override def accGradParameters(input: Table, gradOutput: Table,
-    scale: Double = 1.0): Unit = {
-    cell.accGradParameters(input, gradOutput, scale)
+  override def accGradParameters(input: Table, gradOutput: Table): Unit = {
+    cell.accGradParameters(input, gradOutput)
   }
 
   override def updateParameters(learningRate: T): Unit = {

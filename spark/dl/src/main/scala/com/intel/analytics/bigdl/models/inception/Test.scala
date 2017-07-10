@@ -59,6 +59,7 @@ object Test {
         Array(new Top1Accuracy[Float], new Top5Accuracy[Float]), param.batchSize)
 
       result.foreach(r => println(s"${r._2} is ${r._1}"))
+      sc.stop()
     }
   }
 }

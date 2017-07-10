@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 import scala.reflect.ClassTag
 
 /**
- * Outputs the Euclidean distance of the input to outputSize centers
+ * Outputs the Euclidean distance of the input to `outputSize` centers
  * @param inputSize inputSize
  * @param outputSize outputSize
  * @tparam T Numeric type. Only support float/double now
@@ -32,23 +32,29 @@ import scala.reflect.ClassTag
 
 @SerialVersionUID(1438188993718795033L)
 class Euclidean[T: ClassTag](val inputSize: Int, val outputSize: Int,
-  val fastBackward: Boolean = true)(implicit ev: TensorNumeric[T]) extends TensorModule[T]{
+  val fastBackward: Boolean = true)(implicit ev: TensorNumeric[T])
+  extends TensorModule[T] with Initializable {
 
   val weight = Tensor(inputSize, outputSize)
   val gradWeight = Tensor(inputSize, outputSize)
 
   // buffer
   var inputBuffer = Tensor[T]()
+  var outputBuffer = Tensor[T]()
   var weightBuffer = Tensor[T]()
   val repeatBuffer = Tensor[T]()
   val divBuffer = Tensor[T]()
   val sumBuffer = Tensor[T]()
 
-  reset()
+  {
+    val stdv = 1 / math.sqrt(weight.size(1))
+    val wInit: InitializationMethod = RandomUniform(-stdv, stdv)
+    setInitMethod(weightInitMethod = wInit)
+  }
 
   override def reset(): Unit = {
-    val stdv = 1 / math.sqrt(weight.size(1))
-    weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
+    weightInitMethod.init(weight, VariableFormat.IN_OUT)
+    zeroGradParameters()
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
@@ -99,8 +105,8 @@ class Euclidean[T: ClassTag](val inputSize: Int, val outputSize: Int,
       updateOutput(input)
     }
     // to prevent div by zero (NaN) bugs
-    inputBuffer.resizeAs(output).copy(output).add(ev.fromType(0.0000001))
-    divBuffer.resizeAs(gradOutput).cdiv(gradOutput, inputBuffer)
+    outputBuffer.resizeAs(output).copy(output).add(ev.fromType(0.0000001))
+    divBuffer.resizeAs(gradOutput).cdiv(gradOutput, outputBuffer)
     if (input.dim() == 1) {
       divBuffer.resize(1, outputSize)
       divBuffer.expandAs(weight)
@@ -121,22 +127,24 @@ class Euclidean[T: ClassTag](val inputSize: Int, val outputSize: Int,
     gradInput
   }
 
-  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
-    scale: Double = 1.0): Unit = {
+  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
 
     require(input.dim() == 1 || input.dim() == 2,
       "Euclidean: " + ErrorInfo.constrainInputAsVectorOrBatch)
+    if (scaleW == 0) {
+      return
+    }
     if (input.dim() == 1) {
-      gradWeight.add(ev.fromType(-scale), repeatBuffer)
+      gradWeight.add(ev.fromType[Double](-scaleW), repeatBuffer)
     } else if (input.dim() == 2) {
       sumBuffer.sum(repeatBuffer, 1)
       sumBuffer.resizeAs(weight)
-      gradWeight.add(ev.fromType(-scale), sumBuffer)
+      gradWeight.add(ev.fromType[Double](-scaleW), sumBuffer)
     }
   }
 
   override def toString(): String = {
-    s"nn.Euclidean($inputSize, $outputSize)"
+    s"${getPrintName}($inputSize, $outputSize)"
   }
 
   override def zeroGradParameters(): Unit = {
@@ -150,6 +158,7 @@ class Euclidean[T: ClassTag](val inputSize: Int, val outputSize: Int,
     repeatBuffer.set()
     divBuffer.set()
     sumBuffer.set()
+    outputBuffer.set()
     this
   }
 

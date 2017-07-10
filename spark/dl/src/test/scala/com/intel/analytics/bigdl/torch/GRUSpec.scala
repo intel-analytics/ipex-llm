@@ -24,15 +24,15 @@ import com.intel.analytics.bigdl.optim.{L2Regularizer, SGD}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.{Engine, T}
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
+import scala.collection.mutable.ArrayBuffer
 import scala.sys.process._
 
 @com.intel.analytics.bigdl.tags.Serial
-class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
+class GRUSpec  extends TorchSpec {
   System.setProperty("bigdl.disableCheckSysEnv", "true")
   Engine.init(1, 1, true)
-  before {
+  override def torchCheck(): Unit = {
     if (!TH.hasTorch()) {
       cancel("Torch is not installed")
     }
@@ -46,6 +46,41 @@ class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     if (!existsRNN.contains("true")) {
       cancel("Torch rnn is not installed")
     }
+  }
+
+  "A GRU" should " be fast" in {
+    val inputSize = 1000
+    val hiddenSize = 1000
+    val batchSize = 12
+    val time = 200
+    val seed = 100
+    RNG.setSeed(seed)
+    val input = Tensor[Float](batchSize, time, inputSize).rand
+    val gradOutput = Tensor[Float](batchSize, time, hiddenSize).rand
+
+    val model = Recurrent[Float]()
+      .add(GRU[Float](inputSize, hiddenSize))
+
+    var startTime = System.nanoTime()
+    var duration = (System.nanoTime() - startTime) / 1e9
+    var sum = 0.0
+
+    println("warmup ..")
+    for (i <- 1 to 5) {
+      model.forward(input)
+      model.backward(input, gradOutput)
+    }
+
+    val n = 5
+    for (i <- 1 to n) {
+      startTime = System.nanoTime()
+      model.forward(input)
+      model.backward(input, gradOutput)
+      duration = (System.nanoTime() - startTime) / 1e9
+      sum += duration
+      println(s"iteration-${i} = ${duration}")
+    }
+    println(s"average = ${sum / n}")
   }
 
   "A LSTM L2 regularizer" should "works correctly" in {
@@ -67,8 +102,8 @@ class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     }
 
     println(input)
-    val rec1 = Recurrent[Double](hiddenSize)
-    val rec2 = Recurrent[Double](hiddenSize)
+    val rec1 = Recurrent[Double]()
+    val rec2 = Recurrent[Double]()
 
     val model1 = Sequential[Double]()
       .add(rec1
@@ -133,6 +168,7 @@ class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A GRU " should "has same loss as torch rnn" in {
+    torchCheck()
 
     val hiddenSize = 4
     val inputSize = 5
@@ -152,7 +188,7 @@ class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     }
 
     println(input)
-    val rec = Recurrent[Double](hiddenSize)
+    val rec = Recurrent[Double]()
 
     val model = Sequential[Double]()
       .add(rec
@@ -167,6 +203,34 @@ class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     val logSoftMax = TimeDistributed[Double](LogSoftMax[Double]())
 
     val (weights, grad) = model.getParameters()
+
+
+    /*
+    * Since we changed the structure of GRU, we have to rearrange the parameters.
+    */
+
+    val (weightsArray1, gradArray) = model.parameters()
+    val weightsArray = weightsArray1.clone
+    val weightsTorch = new ArrayBuffer[Tensor[Double]]()
+
+    val i2g12 = weightsArray(0).narrow(1, 1, 2 * hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g12).copy(i2g12)
+    val i2g12bias = weightsArray(1).narrow(1, 1, 2 * hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g12bias).copy(i2g12bias)
+    val h2g12 = weightsArray(2)
+    weightsTorch += Tensor().resizeAs(h2g12).copy(h2g12)
+    val i2g3 = weightsArray(0).narrow(1, 1 + 2 * hiddenSize, hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g3).copy(i2g3)
+    val i2g3bias = weightsArray(1).narrow(1, 1 + 2 * hiddenSize, hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g3bias).copy(i2g3bias)
+    val h2g3 = weightsArray(3)
+    weightsTorch += Tensor().resizeAs(h2g3).copy(h2g3)
+
+    weightsTorch += Tensor().resizeAs(weightsArray(4)).copy(weightsArray(4))
+    weightsTorch += Tensor().resizeAs(weightsArray(5)).copy(weightsArray(5))
+
+    val (weights2Torch, grad2Torch) =
+      (Module.flatten[Double](weightsTorch.toArray), Module.flatten[Double](gradArray))
 
     val code =
       s"""
@@ -229,7 +293,7 @@ class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
          |return err1, gradParameters
          |end
          |
-      |for i = 1,100,1 do
+      |for i = 1,50,1 do
          |   optim.sgd(feval, parameters, state)
          |end
          |
@@ -241,7 +305,7 @@ class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     """.stripMargin
 
     val (luaTime, torchResult) = TH.run(code,
-      Map("input" -> input.transpose(1, 2), "weights" -> weights,
+      Map("input" -> input.transpose(1, 2), "weights" -> weights2Torch,
         "labels" -> SplitTable[Double](1).forward(labels.t())),
       Array("output", "err", "parameters", "gradParameters", "output2", "gradInput", "err2"))
 
@@ -265,7 +329,7 @@ class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
 
     val start = System.nanoTime()
     var loss: Array[Double] = null
-    for (i <- 1 to 100) {
+    for (i <- 1 to 50) {
       loss = sgd.optimize(feval, weights, state)._2
       println(s"${i}-th loss = ${loss(0)}")
     }
@@ -300,6 +364,7 @@ class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
 
 
   "A GRU " should "converge" in {
+    torchCheck()
 
     val hiddenSize = 4
     val inputSize = 5
@@ -320,7 +385,7 @@ class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
 
     println(input)
     // RNG.setSeed(seed)
-    val rec = Recurrent[Double](hiddenSize)
+    val rec = Recurrent[Double]()
 
     val model = Sequential[Double]()
       .add(rec
@@ -363,6 +428,7 @@ class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
 
 
   "A GRU " should "has same loss as torch rnn in batch mode" in {
+    torchCheck()
 
     val hiddenSize = 4
     val inputSize = 5
@@ -385,7 +451,7 @@ class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     }
 
     println(input)
-    val rec = Recurrent[Double](hiddenSize)
+    val rec = Recurrent[Double]()
 
     val model = Sequential[Double]()
       .add(rec
@@ -397,6 +463,34 @@ class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     val logSoftMax = TimeDistributed[Double](LogSoftMax[Double]())
 
     val (weights, grad) = model.getParameters()
+
+
+    /*
+    * Since we changed the structure of GRU, we have to rearrange the parameters.
+    */
+
+    val (weightsArray1, gradArray) = model.parameters()
+    val weightsArray = weightsArray1.clone
+    val weightsTorch = new ArrayBuffer[Tensor[Double]]()
+
+    val i2g12 = weightsArray(0).narrow(1, 1, 2 * hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g12).copy(i2g12)
+    val i2g12bias = weightsArray(1).narrow(1, 1, 2 * hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g12bias).copy(i2g12bias)
+    val h2g12 = weightsArray(2)
+    weightsTorch += Tensor().resizeAs(h2g12).copy(h2g12)
+    val i2g3 = weightsArray(0).narrow(1, 1 + 2 * hiddenSize, hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g3).copy(i2g3)
+    val i2g3bias = weightsArray(1).narrow(1, 1 + 2 * hiddenSize, hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g3bias).copy(i2g3bias)
+    val h2g3 = weightsArray(3)
+    weightsTorch += Tensor().resizeAs(h2g3).copy(h2g3)
+
+    weightsTorch += Tensor().resizeAs(weightsArray(4)).copy(weightsArray(4))
+    weightsTorch += Tensor().resizeAs(weightsArray(5)).copy(weightsArray(5))
+
+    val (weights2Torch, grad2Torch) =
+      (Module.flatten[Double](weightsTorch.toArray), Module.flatten[Double](gradArray))
 
     val code =
       s"""
@@ -462,7 +556,7 @@ class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     """.stripMargin
 
     val (luaTime, torchResult) = TH.run(code,
-      Map("input" -> input.transpose(1, 2), "weights" -> weights,
+      Map("input" -> input.transpose(1, 2), "weights" -> weights2Torch,
         "labels" -> SplitTable[Double](1).forward(labels.t())),
       Array("output", "err", "parameters", "gradParameters", "output2", "gradInput", "err2"))
 
@@ -520,6 +614,7 @@ class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
 
 
   "A GRU " should "converge in batch mode" in {
+    torchCheck()
 
     val hiddenSize = 4
     val inputSize = 5
@@ -542,7 +637,7 @@ class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     }
 
     println(input)
-    val rec = Recurrent[Double](hiddenSize)
+    val rec = Recurrent[Double]()
 
     val model = Sequential[Double]()
       .add(rec
@@ -584,6 +679,7 @@ class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A GRU " should "perform correct gradient check" in {
+    torchCheck()
 
     val hiddenSize = 4
     val inputSize = 5
@@ -593,7 +689,7 @@ class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     RNG.setSeed(seed)
 
     val model = Sequential[Double]()
-      .add(Recurrent[Double](hiddenSize)
+      .add(Recurrent[Double]()
         .add(GRU[Double](inputSize, hiddenSize)))
       .add(Select(1, 1))
       .add(Linear[Double](hiddenSize, outputSize))

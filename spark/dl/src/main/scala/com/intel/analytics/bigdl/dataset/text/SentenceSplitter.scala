@@ -17,10 +17,12 @@
 package com.intel.analytics.bigdl.dataset.text
 
 import java.io.FileInputStream
-import java.net.URL
+import java.net.{URI, URL}
 
 import com.intel.analytics.bigdl.dataset.Transformer
 import opennlp.tools.sentdetect.{SentenceDetector, SentenceDetectorME, SentenceModel}
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{FileSystem, Path}
 
 import scala.collection.Iterator
 
@@ -57,8 +59,11 @@ class SentenceSplitter(sentFile: Option[String] = None)
         x.split('.')
       } else {
         if (sentenceDetector == null) {
-          modelIn = new FileInputStream(sentFile.getOrElse(""))
-          model = new SentenceModel(modelIn)
+          val src: Path = new Path(sentFile.get)
+          val fs = src.getFileSystem(new Configuration())
+          val in = fs.open(src)
+
+          model = new SentenceModel(in)
           sentenceDetector = new SentenceDetectorME(model)
         }
         sentenceDetector.sentDetect(x)
@@ -70,7 +75,7 @@ object SentenceSplitter {
   def apply(sentFile: Option[String] = None):
     SentenceSplitter = new SentenceSplitter(sentFile)
   def apply(sentFileURL: URL):
-    SentenceSplitter = new SentenceSplitter((sentFileURL))
+    SentenceSplitter = new SentenceSplitter(sentFileURL)
   def apply(sentFile: String):
-  SentenceSplitter = new SentenceSplitter((sentFile))
+  SentenceSplitter = new SentenceSplitter(sentFile)
 }

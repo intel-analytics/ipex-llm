@@ -116,6 +116,7 @@ object DataframePredictor {
         .sql("SELECT filename, textClassifier(text) AS textType_sql, text " +
           "FROM textTable WHERE textClassifier(text) = 9")
       filteredDF2.show()
+      sc.stop()
     }
 
   }

@@ -89,7 +89,7 @@ class SpatialCrossMapLRN[@specialized(Float, Double) T: ClassTag]
   }
 
   override def toString(): String = {
-    s"nn.LocalResponseNormalizationAcrossChannels($size, $alpha, $beta, $k)"
+    s"${getPrintName}($size, $alpha, $beta, $k)"
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {

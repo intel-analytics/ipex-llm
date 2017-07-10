@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.{Module, _}
 import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch}
-import com.intel.analytics.bigdl.nn.Module
+import com.intel.analytics.bigdl.nn.{Container, Module, Utils}
 import com.intel.analytics.bigdl.parameters.AllReduceParameter
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -109,7 +109,9 @@ object DistriOptimizer {
     var wallClockTime = 0L
     var lastEpochTime = 0L
     val driverState = T("epoch" -> optimMethod.state.get[Int]("epoch").getOrElse(1),
-      "neval" -> optimMethod.state.get[Int]("neval").getOrElse(1))
+      "neval" -> optimMethod.state.get[Int]("neval").getOrElse(1),
+      "Loss" -> optimMethod.state.get[Float]("Loss").getOrElse(Float.PositiveInfinity),
+      "score" -> optimMethod.state.get[Float]("score").getOrElse(0f))
     val _subModelNumber = Engine.getEngineType match {
       case MklBlas => coresPerNode
       case _ => throw new IllegalArgumentException()
@@ -155,25 +157,26 @@ object DistriOptimizer {
         (data, modelIter) => {
           val cached = modelIter.next()
           val syWStart = System.nanoTime()
+          /*
+            Note: All models in `cached` share the same storage for weights, so we only need to
+            copy the weights from parameter server into the first model's weights.
+           */
           val weightsResult = parameters.getWeights(cached.modelWeights.head)
-          val tensorBuffer = new Array[(Tensor[T], Tensor[T])](_subModelNumber)
+          val miniBatchBuffer = new Array[MiniBatch[T]](_subModelNumber)
+          val batch = data.next()
+          val stackSize = batch.size() / _subModelNumber
           tasks += Engine.default.invoke(() => {
-            val batch = data.next()
             var b = 0
-            require(batch.data.size(1) == batch.labels.size(1),
-              "data and label batch size not match")
-            require((batch.data.size(1) >= _subModelNumber) &&
-              (batch.data.size(1) % _subModelNumber == 0), "total batch size: " +
-              s"${batch.data.size(1)} should be divided by total core number: ${_subModelNumber}")
-            if (batch.data.size(1) < _subModelNumber * 2) {
+            require((batch.size() >= _subModelNumber) &&
+              (batch.size() % _subModelNumber == 0), "total batch size: " +
+              s"${batch.size()} should be divided by total core number: ${_subModelNumber}")
+            if (batch.size() < _subModelNumber * 2) {
               logger.warn("Warning: for better training speed, " +
                 "total batch size is recommended to be at least two times of core number" +
-                  s"${_subModelNumber}, please tune your batch size accordingly")
+                s"${_subModelNumber}, please tune your batch size accordingly")
             }
-            val stackSize = batch.data.size(1) / _subModelNumber
             while (b < _subModelNumber) {
-              tensorBuffer(b) = (batch.data.narrow(1, b * stackSize + 1, stackSize),
-                batch.labels.narrow(1, b * stackSize + 1, stackSize))
+              miniBatchBuffer(b) = batch.slice(b * stackSize + 1, stackSize)
               b += 1
             }
           })
@@ -196,7 +199,8 @@ object DistriOptimizer {
               val localModel = cached.localModels(i)
               localModel.training()
               val localCriterion = cached.localCriterions(i)
-              val (input, target) = tensorBuffer(i)
+              val input = miniBatchBuffer(i).getInput()
+              val target = miniBatchBuffer(i).getTarget()
               val output = localModel.forward(input)
               lossArray(i) = ev.toType[Double](localCriterion.forward(output, target))
               val errors = localCriterion.backward(output, target)
@@ -210,7 +214,7 @@ object DistriOptimizer {
           driverMetrics.add("computing time for each node", computingTime)
 
           val finishedThreads = trainingThreads.filter(!_.isCancelled).map(_.get())
-          recordsNum += finishedThreads.size * tensorBuffer.head._2.size(1)
+          recordsNum += finishedThreads.size * stackSize
           var i = 0
           while (i < finishedThreads.size) {
             lossSum += lossArray(finishedThreads(i))
@@ -260,10 +264,14 @@ object DistriOptimizer {
         val value = lossSum.value / finishedModelNum
         models.mapPartitions(modelIter => {
           val modelCache = modelIter.next()
-          parameters.aggregrateGradientPartition()
+          parameters.aggregateGradientPartition()
           parameters.gradientPartition.div(ev.fromType(finishedModelNum))
           modelCache.optimMethod.state.update("epoch", driverState[Int]("epoch"))
           modelCache.optimMethod.state.update("neval", driverState[Int]("neval"))
+          modelCache.optimMethod.state.update("Loss", driverState[Float]("Loss"))
+          if (validationMethods.isDefined) {
+            modelCache.optimMethod.state.update("score", driverState[Float]("score"))
+          }
           modelCache.optimMethod.optimize(_ => (ev.fromType(value), parameters.gradientPartition),
             parameters.weightPartition)
 
@@ -276,8 +284,12 @@ object DistriOptimizer {
         wallClockTime += end - start
         optimMethod.state.update("epoch", driverState[Int]("epoch"))
         optimMethod.state.update("neval", driverState[Int]("neval"))
-        optimMethod.updateHyperParameter()
         driverState("Loss") = lossSum.value.toFloat / finishedModelNum
+        optimMethod.state.update("Loss", driverState[Float]("Loss"))
+        if (validationMethods.isDefined) {
+          optimMethod.state.update("score", driverState[Float]("score"))
+        }
+        optimMethod.updateHyperParameter()
         driverState("Throughput") = recordsNum.value.toFloat / ((end - start) / 1e9f)
         driverState("LearningRate") = -optimMethod.getLearningRate().toFloat
         logger.info(s"${_header} Train ${recordsNum.value} in ${(end - start) / 1e9}seconds. " +
@@ -584,17 +596,17 @@ object DistriOptimizer {
 
       workingModels.foreach(_.evaluate())
       dataIter.map(batch => {
-        require(batch.data.size(1) == batch.labels.size(1))
-        val stackSize = batch.data.size(1) / _subModelNumber
-        val extraSize = batch.data.size(1) % _subModelNumber
+        val stackSize = batch.size() / _subModelNumber
+        val extraSize = batch.size() % _subModelNumber
         val parallelism = if (stackSize == 0) extraSize else _subModelNumber
         Engine.default.invokeAndWait(
           (0 until parallelism).map(b =>
             () => {
-              val offset = b * stackSize + math.min(b, extraSize)
+              val offset = b * stackSize + math.min(b, extraSize) + 1
               val length = stackSize + (if (b < extraSize) 1 else 0)
-              val input = batch.data.narrow(1, offset + 1, length)
-              val target = batch.labels.narrow(1, offset + 1, length)
+              val miniBatch = batch.slice(offset, length)
+              val input = miniBatch.getInput()
+              val target = miniBatch.getTarget()
               val output = workingModels(b).forward(input)
               val validatMethods = vMethodsArr(b).get
               validatMethods.map(validation => {
@@ -616,6 +628,7 @@ object DistriOptimizer {
     results.foreach(r => {
       logger.info(s"${r._2} is ${r._1}")
     })
+    state("score") = results(0)._1.result._1
     if(validationSummary.isDefined) {
       results.foreach { r =>
         val result = r._1.result
@@ -713,6 +726,7 @@ class DistriOptimizer[T: ClassTag] (
     state("warmupIterationNum") = warmupIterationNum
     state("computeThresholdbatchSize") = computeThresholdbatchSize
     state("maxDropPercentage") = maxDropPercentage
+    state("isLayerwiseScaled") = Utils.isLayerwiseScaled(_model)
 
     val nodeNumber = Engine.nodeNumber()
     val coresPerNode = Engine.coreNumber()
@@ -796,9 +810,7 @@ class DistriOptimizer[T: ClassTag] (
             models = DistriOptimizer.initThreadModels(newModel, dataset, criterion, state,
               nodeNumber, coresPerNode, checkSingleton, parameters, validationMethods, optimMethod)
           } else {
-            retryNum = Int.MaxValue
-            DistriOptimizer.logger.info("Failed to recover since no model snapshot" +
-              "checkpoint path is not set")
+            throw t
           }
       }
     }

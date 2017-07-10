@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.utils
 
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.numeric.NumericDouble
 import com.intel.analytics.bigdl.optim.{Optimizer, SGD, Trigger}
 import com.intel.analytics.bigdl.nn.{Linear, MSECriterion, Sequential}
@@ -84,7 +85,7 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val data = sc.range(0, recordSize, 1, 1).map { _ =>
       val featureTensor = Tensor(inputDim).rand()
       val labelTensor = Tensor(1).rand()
-      new Sample[Double](featureTensor, labelTensor)
+      Sample[Double](featureTensor, labelTensor)
     }
 
     val trainSet = DataSet.rdd(data).transform(SampleToBatch(recordSize/2))
@@ -95,7 +96,9 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
       )
     val criterion = MSECriterion()
 
-    val optimizer = Optimizer[Double, MiniBatch[Double]](model, trainSet, criterion)
+    val optimizer = Optimizer(model = model,
+      dataset = trainSet,
+      criterion = criterion)
 
     optimizer.
       setState(state).

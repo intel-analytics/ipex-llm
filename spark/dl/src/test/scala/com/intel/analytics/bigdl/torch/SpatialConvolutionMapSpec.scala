@@ -26,16 +26,10 @@ import com.intel.analytics.bigdl.utils.T
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class SpatialConvolutionMapSpec extends FlatSpec with BeforeAndAfter with Matchers {
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
-
+class SpatialConvolutionMapSpec extends TorchSpec {
   "SpatialConvolution L2 regularizer" should "works correctly" in {
     import com.intel.analytics.bigdl.numeric.NumericDouble
-
+    torchCheck()
     val nInputPlane = 1
     val nOutputPlane = 1
     val kW = 2
@@ -118,7 +112,8 @@ class SpatialConvolutionMapSpec extends FlatSpec with BeforeAndAfter with Matche
     loss1 should be(loss2)
   }
 
-  "A SpatialConvolution" should "generate correct output" in {
+  "A SpatialConvolution with full table" should "generate correct output" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -127,7 +122,7 @@ class SpatialConvolutionMapSpec extends FlatSpec with BeforeAndAfter with Matche
     val kW = 5
     val kH = 5
     val layer = new SpatialConvolutionMap[Double](
-      SpatialConvolutionMap.random[Double](nInputPlane, nOutputPlane, 1), kW, kH)
+      SpatialConvolutionMap.full[Double](nInputPlane, nOutputPlane), kW, kH)
 
     Random.setSeed(seed)
     val input = Tensor[Double](16, 3, 32, 32).apply1(e => Random.nextDouble())
@@ -135,7 +130,7 @@ class SpatialConvolutionMapSpec extends FlatSpec with BeforeAndAfter with Matche
     val output = layer.updateOutput(input)
 
     val code = "torch.manualSeed(" + seed + ")\n" +
-      "layer = nn.SpatialConvolutionMap(nn.tables.random(3,16,1), 5, 5)\n" +
+      "layer = nn.SpatialConvolutionMap(nn.tables.full(3,16), 5, 5)\n" +
       "weight = layer.weight\n" +
       "bias = layer.bias \n" +
       "output = layer:forward(input) "
@@ -150,12 +145,13 @@ class SpatialConvolutionMapSpec extends FlatSpec with BeforeAndAfter with Matche
     val weight = layer.weight
     val bias = layer.bias
 
-    weight should be equals luaWeight
-    bias should be equals luaBias
-    output should be equals luaOutput
+    weight shouldEqual luaWeight
+    bias shouldEqual luaBias
+    output shouldEqual luaOutput
   }
 
-  "A SpatialConvolution 3D input" should "generate correct output" in {
+  "A SpatialConvolution with random table" should "generate correct output" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -187,9 +183,47 @@ class SpatialConvolutionMapSpec extends FlatSpec with BeforeAndAfter with Matche
     val weight = layer.weight
     val bias = layer.bias
 
-    weight should be equals luaWeight
-    bias should be equals luaBias
-    output should be equals luaOutput
+    weight shouldEqual luaWeight
+    bias shouldEqual luaBias
+    output shouldEqual luaOutput
+  }
+
+  "A SpatialConvolution with oneToOne table" should "generate correct output" in {
+    torchCheck()
+    val seed = 100
+    RNG.setSeed(seed)
+
+    val nInputPlane = 3
+    val nOutputPlane = 3
+    val kW = 5
+    val kH = 5
+    val layer = new SpatialConvolutionMap[Double](
+      SpatialConvolutionMap.oneToOne[Double](nInputPlane), kW, kH)
+
+    Random.setSeed(seed)
+    val input = Tensor[Double](3, 32, 32).apply1(e => Random.nextDouble())
+
+    val output = layer.updateOutput(input)
+
+    val code = "torch.manualSeed(" + seed + ")\n" +
+      "layer = nn.SpatialConvolutionMap(nn.tables.oneToOne(3), 5, 5)\n" +
+      "weight = layer.weight\n" +
+      "bias = layer.bias \n" +
+      "output = layer:forward(input) "
+
+    val (luaTime, torchResult) = TH.run(code, Map("input" -> input),
+      Array("weight", "bias", "output"))
+
+    val luaWeight = torchResult("weight").asInstanceOf[Tensor[Double]]
+    val luaBias = torchResult("bias").asInstanceOf[Tensor[Double]]
+    val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
+
+    val weight = layer.weight
+    val bias = layer.bias
+
+    weight shouldEqual luaWeight
+    bias shouldEqual luaBias
+    output shouldEqual luaOutput
   }
 
 }

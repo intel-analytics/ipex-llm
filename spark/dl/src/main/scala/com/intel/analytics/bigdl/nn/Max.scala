@@ -77,7 +77,7 @@ class Max[T: ClassTag](
   }
 
   override def toString(): String = {
-    s"nn.Max($dim${if (numInputDims != Int.MinValue) ", " + numInputDims else ""})"
+    s"${getPrintName}($dim${if (numInputDims != Int.MinValue) ", " + numInputDims else ""})"
   }
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[Max[T]]

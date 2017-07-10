@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.dataset
 
 import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import org.apache.commons.lang3.SerializationUtils
 import java.util
 
@@ -114,8 +115,9 @@ object SampleToBatch {
 }
 
 /**
- * Convert a sequence of Sample to a sequence of MiniBatch,
+ * Convert a sequence of [[TensorSample]] to a sequence of [[TensorMiniBatch]],
  * optionally padding all the features (or labels) in the mini-batch to the same length
+ *
  * @param totalBatch total batch size
  * @param featurePadding feature padding value (by default None, meaning no feature padding)
  * @param labelPadding label padding value (by default None, meaning no label padding)
@@ -125,7 +127,6 @@ object SampleToBatch {
  * @param partitionNum partition number of dataset, default means partitionNum
  *                     equals Engine.nodeNumber()
  */
-
 class SampleToBatch[T: ClassTag]
 (totalBatch : Int,
  featurePadding : Option[Tensor[T]] = None,
@@ -154,6 +155,25 @@ class SampleToBatch[T: ClassTag]
         util.Arrays.fill(data.asInstanceOf[Array[Float]], start, end, ev.toType[Float](padValue))
       case _ => throw new UnsupportedOperationException(
         "SampleToBatch: Only Float/Double supported")
+    }
+  }
+
+  private def copyArray(
+      src: Array[T],
+      srcPos: Int,
+      dest: Array[T],
+      destPos: Int,
+      length: Int): Unit = {
+    ev.getType() match {
+      case DoubleType => Array.copy(src
+        .asInstanceOf[Array[Double]],
+        srcPos, dest
+          .asInstanceOf[Array[Double]], destPos, length)
+      case FloatType => System.arraycopy(src
+        .asInstanceOf[Array[Float]],
+        srcPos, dest
+          .asInstanceOf[Array[Float]], destPos, length)
+      case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
     }
   }
 
@@ -190,7 +210,8 @@ class SampleToBatch[T: ClassTag]
       private var labelData: Array[T] = null
       private val batchSize = batchSizePerPartition
 
-      private val sampleData = Array.tabulate(batchSize)(_ => Sample())
+      private val sampleData = Array.tabulate(batchSize)(_ =>
+        Sample(Tensor(), Tensor()))
       private var featureSize: Array[Int] = null
       private var labelSize: Array[Int] = null
       private var oneFeatureElement: Int = 0
@@ -251,12 +272,14 @@ class SampleToBatch[T: ClassTag]
           i = 0
           while (i < batchLength) {
             val sample = sampleData(i)
-            sample.copyFromFeature(featureData, i * oneFeatureElement, sample.feature().nElement())
+            copyArray(sample.feature().storage().array(), sample.feature().storageOffset() - 1,
+              featureData, i * oneFeatureElement, sample.feature().nElement())
             if (padFeature) {
               paddingTensor(featureData, featurePadding.get,
                 i * oneFeatureElement + sample.feature().nElement(), (i + 1) * oneFeatureElement)
             }
-            sample.copyFromLabel(labelData, i * oneLabelElement, sample.label().nElement())
+            copyArray(sample.label().storage().array(), sample.label().storageOffset() - 1,
+              labelData, i * oneLabelElement, sample.label().nElement())
             if (padLabel) {
               paddingValue(labelData, labelPadding.get,
                 i * oneLabelElement + sample.label().nElement(), (i + 1) * oneLabelElement)

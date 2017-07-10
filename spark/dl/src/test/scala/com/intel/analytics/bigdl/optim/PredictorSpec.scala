@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.dataset.Sample
+import com.intel.analytics.bigdl.dataset.{Sample, TensorSample}
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Engine
@@ -57,12 +57,12 @@ class PredictorSpec extends FlatSpec with Matchers with BeforeAndAfter{
     val result = model.predict(dataSet)
 
     val prob = result.map(_.toTensor[Float].clone()).collect()
-    prob(0) should be (model.forward(data(0).feature()))
-    prob(11) should be (model.forward(data(11).feature()))
-    prob(31) should be (model.forward(data(31).feature()))
-    prob(51) should be (model.forward(data(51).feature()))
-    prob(71) should be (model.forward(data(71).feature()))
-    prob(91) should be (model.forward(data(91).feature()))
+    prob(0) should be (model.forward(data(0).asInstanceOf[TensorSample[Float]].featureTensor))
+    prob(11) should be (model.forward(data(11).asInstanceOf[TensorSample[Float]].featureTensor))
+    prob(31) should be (model.forward(data(31).asInstanceOf[TensorSample[Float]].featureTensor))
+    prob(51) should be (model.forward(data(51).asInstanceOf[TensorSample[Float]].featureTensor))
+    prob(71) should be (model.forward(data(71).asInstanceOf[TensorSample[Float]].featureTensor))
+    prob(91) should be (model.forward(data(91).asInstanceOf[TensorSample[Float]].featureTensor))
   }
 
   "model.predictClass" should "be correct" in {
@@ -82,16 +82,22 @@ class PredictorSpec extends FlatSpec with Matchers with BeforeAndAfter{
 
     val prob = result.collect()
     prob(0) should be
-    (model.forward(data(0).feature()).toTensor[Float].max(1)._2.valueAt(1).toInt)
+    (model.forward(data(0).asInstanceOf[TensorSample[Float]].featureTensor
+    ).toTensor[Float].max(1)._2.valueAt(1).toInt)
     prob(11) should be
-    (model.forward(data(11).feature()).toTensor[Float].max(1)._2.valueAt(1).toInt)
+    (model.forward(data(11).asInstanceOf[TensorSample[Float]].featureTensor
+    ).toTensor[Float].max(1)._2.valueAt(1).toInt)
     prob(31) should be
-    (model.forward(data(31).feature()).toTensor[Float].max(1)._2.valueAt(1).toInt)
+    (model.forward(data(31).asInstanceOf[TensorSample[Float]].featureTensor
+    ).toTensor[Float].max(1)._2.valueAt(1).toInt)
     prob(51) should be
-    (model.forward(data(51).feature()).toTensor[Float].max(1)._2.valueAt(1).toInt)
+    (model.forward(data(51).asInstanceOf[TensorSample[Float]].featureTensor
+    ).toTensor[Float].max(1)._2.valueAt(1).toInt)
     prob(71) should be
-    (model.forward(data(71).feature()).toTensor[Float].max(1)._2.valueAt(1).toInt)
+    (model.forward(data(71).asInstanceOf[TensorSample[Float]].featureTensor
+    ).toTensor[Float].max(1)._2.valueAt(1).toInt)
     prob(91) should be
-    (model.forward(data(91).feature()).toTensor[Float].max(1)._2.valueAt(1).toInt)
+    (model.forward(data(91).asInstanceOf[TensorSample[Float]].featureTensor
+    ).toTensor[Float].max(1)._2.valueAt(1).toInt)
   }
 }

@@ -69,7 +69,7 @@ object Test {
 
       val flow = rdd.mapPartitions(iter => {
         iter.map(batch => {
-          var curInput = batch.data
+          var curInput = batch.getInput().toTensor[Float]
           // Iteratively output predicted words
           for (i <- 1 to param.numOfWords.getOrElse(0)) {
             val input = curInput.max(featDim)._2
@@ -92,6 +92,7 @@ object Test {
 
       val results = flow.map(x => x.map(t => vocab.getWord(t)))
       results.foreach(x => logger.info(x.mkString(" ")))
+      sc.stop()
     }
   }
 }

@@ -18,20 +18,14 @@ package com.intel.analytics.bigdl.torch
 import com.intel.analytics.bigdl.nn.MixtureTable
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Table
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.mutable.HashMap
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class MixtureTableSpec extends FlatSpec with BeforeAndAfter with Matchers {
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
-
-  "A MixtureTable " should "generate correct output and grad with table expertInput" in {
+class MixtureTableSpec extends TorchSpec {
+    "A MixtureTable " should "generate correct output and grad with table expertInput" in {
+    torchCheck()
     val mse = new MixtureTable[Double]
 
     val expertInput = Tensor[Double](5, 3, 6).apply1(e => Random.nextDouble())
@@ -70,6 +64,7 @@ class MixtureTableSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A MixtureTable " should "generate correct output and grad with tensor expertInput" in {
+    torchCheck()
     val mse = new MixtureTable[Double]
 
     val expertInput = Tensor[Double](5, 3, 6).apply1(e => Random.nextDouble())

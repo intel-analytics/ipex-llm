@@ -50,6 +50,36 @@ class ValidationSpec extends FlatSpec with Matchers {
     result should be(test)
   }
 
+
+  "top1 accuracy" should "be correct on 2d tensor for binary inputs" in {
+    val output = Tensor(Storage(Array[Double](
+      0,
+      0,
+      1,
+      0,
+      1,
+      0,
+      0,
+      0
+    )), 1, Array(8, 1))
+
+    val target = Tensor(Storage(Array[Double](
+      1,
+      0,
+      1,
+      1,
+      0,
+      0,
+      1,
+      1
+    )))
+
+    val validation = new Top1Accuracy[Double]()
+    val result = validation(output, target)
+    val test = new AccuracyResult(3, 8)
+    result should be(test)
+  }
+
   it should "be correct on 1d tensor" in {
     val output = Tensor(Storage(Array[Double](
       0, 0, 0, 1
@@ -139,5 +169,26 @@ class ValidationSpec extends FlatSpec with Matchers {
     val result4 = validation(output, target4)
     val test4 = new AccuracyResult(1, 1)
     result4 should be(test4)
+  }
+
+  "MAE" should "be correct on 2d tensor" in {
+    val output = Tensor(Storage(Array[Double](
+      0.1, 0.15, 0.7, 0.1, 0.05,
+      0.1, 0.6, 0.1, 0.1, 0.1,
+      0.8, 0.05, 0.05, 0.05, 0.05,
+      0.1, 0.05, 0.7, 0.1, 0.05
+    )), 1, Array(4, 5))
+
+    val target = Tensor(Storage(Array[Double](
+      4,
+      3,
+      4,
+      2
+    )))
+
+    val validation = new MAE[Double]()
+    val result = validation(output, target)
+    val test = new LossResult(1.5f, 1)
+    result should be(test)
   }
 }

@@ -75,7 +75,6 @@ object Options {
     opt[Int]("checkpointIteration")
       .text("checkpoint interval of iterations")
       .action((x, c) => c.copy(checkpointIteration = x))
-
   }
 
   case class TestParams(

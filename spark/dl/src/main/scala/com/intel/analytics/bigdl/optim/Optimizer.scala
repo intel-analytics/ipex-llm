@@ -129,7 +129,7 @@ abstract class Optimizer[T: ClassTag, D](
    * Set a check point saved at `path` triggered by `trigger`
    *
    * @param path the directory to save
-   * @param trigger how offten to save the check point
+   * @param trigger how often to save the check point
    * @return the optimizer
    */
   def setCheckpoint(path: String, trigger: Trigger): this.type = {
@@ -223,7 +223,7 @@ abstract class Optimizer[T: ClassTag, D](
    * @param warmupIteration how may iteration to warm up
    * @return this optimizer
    */
-  def setDropMoudleProperty(dropPercentage: Double, maxDropPercentage: Double,
+  def setDropModuleProperty(dropPercentage: Double, maxDropPercentage: Double,
     batchsize: Int = 100, warmupIteration: Int = 200): this.type = {
     this.dropPercentage = dropPercentage
     this.maxDropPercentage = maxDropPercentage

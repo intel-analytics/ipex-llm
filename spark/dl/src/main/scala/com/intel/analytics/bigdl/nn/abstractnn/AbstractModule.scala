@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.{Tensor, TensorDataType}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
-import com.intel.analytics.bigdl.nn.Module
+import com.intel.analytics.bigdl.nn.{InitializationMethod, Module, Zeros}
 import com.intel.analytics.bigdl.utils.TorchObject.TYPE_MODULE
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.spark.rdd.RDD
@@ -61,6 +61,49 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
    * The cached gradient of activities. So we don't compute it again when need it
    */
   var gradInput: A = Activity[A, T]()
+
+  /**
+   * The scale of gradient weight and gradient bias
+   * before gradParameters being accumulated.
+   */
+  protected var scaleW: Double = 1.0
+  protected var scaleB: Double = 1.0
+
+  /**
+   * Get the scale of gradientWeight
+   */
+  def getScaleW(): Double = {
+    scaleW
+  }
+
+  /**
+   * Get the scale of gradientBias
+   */
+  def getScaleB(): Double = {
+    scaleB
+  }
+
+  /**
+   * Set the scale of gradientWeight
+   *
+   * @param w the value of the scale of gradientWeight
+   * @return this
+   */
+  def setScaleW(w: Double): this.type = {
+    scaleW = w
+    this
+  }
+
+  /**
+   * Set the scale of gradientBias
+   *
+   * @param b the value of the scale of gradientBias
+   * @return this
+   */
+  def setScaleB(b: Double): this.type = {
+    scaleB = b
+    this
+  }
 
   /**
    * Copy the useful running status from src to this.
@@ -125,11 +168,23 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
    */
   def getName() : String = {
     if (this.name == null) {
-      s"${this.getClass.getName}@${namePostfix}"
+      s"${this.getClass.getSimpleName}@${namePostfix}"
     } else {
       this.name
     }
   }
+
+  protected def getPrintName(): String = {
+    val postfix = if (name == null) {
+      namePostfix
+    } else {
+      name
+    }
+    s"${this.getClass.getSimpleName}[${postfix}]"
+
+  }
+
+  override def toString(): String = getPrintName
 
   protected var forwardTime = 0L
 
@@ -205,9 +260,8 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
    *
    * @param input
    * @param gradOutput
-   * @param scale
    */
-  def accGradParameters(input: A, gradOutput: B, scale: Double = 1.0): Unit = {}
+  def accGradParameters(input: A, gradOutput: B): Unit = {}
 
   /**
    * If the module has parameters, this will zero the accumulation of the gradients with respect
@@ -271,6 +325,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
   }
 
   def reset(): Unit = {}
+
 
   protected var line = "\n"
 
@@ -381,7 +436,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
    * @param nodes upstream module nodes
    * @return node containing current module
    */
-  def apply(nodes : ModuleNode[T]*): ModuleNode[T] = {
+  def inputs(nodes : ModuleNode[T]*): ModuleNode[T] = {
     require(this.isInstanceOf[AbstractModule[_, Tensor[T], T]],
       "AbstractModule: Only module with tensor output can be added into a graph node")
     val curNode = new ModuleNode[T](this.asInstanceOf[AbstractModule[Activity, Tensor[T], T]])
