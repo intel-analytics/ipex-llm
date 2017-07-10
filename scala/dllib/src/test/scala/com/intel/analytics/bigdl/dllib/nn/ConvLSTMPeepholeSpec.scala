@@ -26,6 +26,33 @@ import scala.math._
 
 @com.intel.analytics.bigdl.tags.Parallel
 class ConvLSTMPeepholeSpec extends FlatSpec with BeforeAndAfter with Matchers {
+
+  "A convLstm" should " work in BatchMode" in {
+    val hiddenSize = 5
+    val inputSize = 3
+    val seqLength = 4
+    val batchSize = 2
+    val kernalW = 3
+    val kernalH = 3
+    val rec = Recurrent[Double]()
+    val model = Sequential[Double]()
+      .add(rec
+        .add(ConvLSTMPeephole[Double](
+            inputSize,
+            hiddenSize,
+            kernalW, kernalH,
+            1,
+            withPeephole = false)))
+     .add(View(hiddenSize * kernalH * kernalW))
+
+    val input = Tensor[Double](batchSize, seqLength, inputSize, kernalW, kernalH).rand
+    val output = model.forward(input).toTensor[Double]
+    for (i <- 1 to 3) {
+      val output = model.forward(input)
+      model.backward(input, output)
+    }
+  }
+
   "A ConvLSTMPeepwhole " should "generate corrent output" in {
     val hiddenSize = 5
     val inputSize = 3
