@@ -3441,8 +3441,8 @@ class ConvLSTMPeephole(Layer):
 |   Ref. A.: https://arxiv.org/abs/1506.04214 (blueprint for this module)
 |   B. https://github.com/viorik/ConvLSTM
 
-    :param input_size: the size of each input
-    :param hidden_size: Hidden unit size in the LSTM
+    :param input_size: number of input planes in the image given into forward()
+    :param output_size: number of output planes the convolution layer will produce
     :param kernel_i Convolutional filter size to convolve input
     :param kernel_c Convolutional filter size to convolve cell
     :param stride The step of the convolution
@@ -3458,9 +3458,9 @@ class ConvLSTMPeephole(Layer):
     creating: createConvLSTMPeephole
     '''
 
-    def __init__(self, input_size, hidden_size, kernel_i, kernel_c, stride, wRegularizer=None, uRegularizer=None,
-                 bRegularizer=None, with_peephole=False, bigdl_type="float"):
-        super(ConvLSTMPeephole, self).__init__(None, bigdl_type, input_size, hidden_size, kernel_i, kernel_c, stride,
+    def __init__(self, input_size, output_size, kernel_i, kernel_c, stride, wRegularizer=None, uRegularizer=None,
+                 bRegularizer=None, with_peephole=True, bigdl_type="float"):
+        super(ConvLSTMPeephole, self).__init__(None, bigdl_type, input_size, output_size, kernel_i, kernel_c, stride,
                                                wRegularizer, uRegularizer, bRegularizer, with_peephole)
 
 def _test():
