@@ -561,7 +561,6 @@ class SpatialConvolution[T: ClassTag](
         }
         output2d.addmm(ev.fromType[Int](0), output2d, ev.fromType[Int](1), weight, fInput)
         if (withBias) output2d.addr(ev.fromType(1), bias, onesBias)
-        output2d.addr(ev.fromType(1), bias, onesBias)
       case DataFormat.NHWC =>
         val output2d = output.view(outputHeight * outputWidth, nOutputPlane)
         if (!_1x1) {
