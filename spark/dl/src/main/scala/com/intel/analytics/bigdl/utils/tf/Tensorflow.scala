@@ -19,6 +19,7 @@ import java.nio.{ByteBuffer, ByteOrder}
 import java.nio.charset.Charset
 
 import com.google.protobuf.ByteString
+import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Tensor, TensorDataType}
 import org.tensorflow.framework.AttrValue.ListValue
 import org.tensorflow.framework._
@@ -80,6 +81,11 @@ object PaddingType {
 }
 
 object Tensorflow {
+
+  private def toAttrValue(value: String) = {
+    AttrValue.newBuilder().setS(ByteString
+      .copyFrom(value, Charset.defaultCharset())).build()
+  }
   /**
    * Generate a placeholder tensorflow protobuf node
    * @param dtype numeric type
@@ -167,16 +173,19 @@ object Tensorflow {
    * @param name
    * @return
    */
-  def biasAdd(value: NodeDef, bias: NodeDef, dataFormat: TensorflowDataFormat,
+  def biasAdd(value: NodeDef, bias: NodeDef, dataFormat: DataFormat,
               name: String): NodeDef = {
-    NodeDef.newBuilder()
+    val builder = NodeDef.newBuilder()
       .setName(name)
       .setOp("BiasAdd")
       .addInput(value.getName)
       .addInput(bias.getName)
       .putAttr("T", getDataType(value))
-      .putAttr("data_format", dataFormat.value)
-      .build()
+    if (dataFormat != null) {
+      builder.putAttr("data_format", toAttrValue(dataFormat.value))
+    }
+
+    builder.build()
   }
 
   /**
@@ -195,14 +204,14 @@ object Tensorflow {
   }
 
   def conv2D(input: NodeDef, filter: NodeDef, sW: Int, sH: Int, kW: Int, kH: Int, pW: Int, pH: Int,
-             dataFormat: TensorflowDataFormat, name: String): NodeDef = {
+             dataFormat: DataFormat, name: String): NodeDef = {
     NodeDef.newBuilder()
       .setName(name)
       .setOp("Conv2D")
       .addInput(input.getName)
       .addInput(filter.getName)
       .putAttr("T", getDataType(input))
-      .putAttr("data_format", dataFormat.value)
+      .putAttr("data_format", toAttrValue(dataFormat.value))
       .putAttr("padding", getPaddingType(pW, pH, kW, kH, sW, sH).value)
       .putAttr("strides", strideAttr(sW, sH, dataFormat))
       .build()
@@ -240,13 +249,13 @@ object Tensorflow {
   }
 
   def maxPool(value: NodeDef, kW: Int, kH: Int, pW: Int, pH: Int, sW: Int, sH: Int,
-              dataFormat: TensorflowDataFormat, name: String): NodeDef = {
+              dataFormat: DataFormat, name: String): NodeDef = {
     NodeDef.newBuilder()
       .setName(name)
       .setOp("MaxPool")
       .addInput(value.getName)
       .putAttr("T", getDataType(value))
-      .putAttr("data_format", dataFormat.value)
+      .putAttr("data_format", toAttrValue(dataFormat.value))
       .putAttr("ksize", kernelAttr(kW, kH, dataFormat))
       .putAttr("padding", getPaddingType(pW, pH, kW, kH, sW, sH).value)
       .putAttr("strides", strideAttr(sW, sH, dataFormat))
@@ -254,13 +263,13 @@ object Tensorflow {
   }
 
   def avgPool(value: NodeDef, kW: Int, kH: Int, pW: Int, pH: Int, sW: Int, sH: Int,
-              dataFormat: TensorflowDataFormat, name: String): NodeDef = {
+              dataFormat: DataFormat, name: String): NodeDef = {
     NodeDef.newBuilder()
       .setName(name)
       .setOp("AvgPool")
       .putAttr("T", getDataType(value))
       .addInput(value.getName)
-      .putAttr("data_format", dataFormat.value)
+      .putAttr("data_format", toAttrValue(dataFormat.value))
       .putAttr("ksize", kernelAttr(kW, kH, dataFormat))
       .putAttr("padding", getPaddingType(pW, pH, kW, kH, sW, sH).value)
       .putAttr("strides", strideAttr(sW, sH, dataFormat))
@@ -573,8 +582,8 @@ object Tensorflow {
     }
   }
 
-  private def kernelAttr(kW: Int, kH: Int, dataFormat: TensorflowDataFormat): AttrValue = {
-    val kSize = if (dataFormat == TensorflowDataFormat.NHWC) {
+  private def kernelAttr(kW: Int, kH: Int, dataFormat: DataFormat): AttrValue = {
+    val kSize = if (dataFormat == DataFormat.NHWC) {
       Seq(1, kH, kW, 1)
     } else {
       Seq(1, 1, kH, kW)
@@ -582,8 +591,8 @@ object Tensorflow {
     listIntAttr(kSize)
   }
 
-  private def strideAttr(sW: Int, sH: Int, dataFormat: TensorflowDataFormat): AttrValue = {
-    val sSize = if (dataFormat == TensorflowDataFormat.NHWC) {
+  private def strideAttr(sW: Int, sH: Int, dataFormat: DataFormat): AttrValue = {
+    val sSize = if (dataFormat == DataFormat.NHWC) {
       Seq(1, sH, sW, 1)
     } else {
       Seq(1, 1, sH, sW)

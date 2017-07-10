@@ -98,6 +98,7 @@ def run_model(end_points, output_path, model_scope=None, backward=True):
             k = k + 1
         print 'Compute {} variables for backward in {} ms'.format(k, tt)
 
+
     saver = tf.train.Saver()
     with tf.Session() as sess:
         init = tf.global_variables_initializer()
