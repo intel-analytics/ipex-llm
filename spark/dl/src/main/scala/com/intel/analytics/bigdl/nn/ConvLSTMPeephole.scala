@@ -177,10 +177,9 @@ class ConvLSTMPeephole[T : ClassTag] (
             .add(outputGate)
             .add(Sequential()
               .add(SelectTable(3))
-              .add(Tanh())
-            )
-          )
-          .add(CMulTable()))
+              .add(Tanh())))
+          .add(CMulTable())
+          .add(Contiguous()))
         .add(SelectTable(3)))
 
       .add(ConcatTable()
