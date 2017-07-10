@@ -157,11 +157,11 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A LoggerFilter generate log " should "under the place user gived" in {
-    val logFile = "/tmp/bigdl.log"
+    val logFile = Paths.get(System.getProperty("java.io.tmpdir"), "bigdl.log").toString
     val optimClz = "com.intel.analytics.bigdl.optim"
     val defaultFile = Paths.get(System.getProperty("user.dir"), "bigdl.log").toString
 
-    System.setProperty("bigdl.utils.LoggerFilter.logFile", "/tmp/bigdl.log")
+    System.setProperty("bigdl.utils.LoggerFilter.logFile", logFile)
 
     Files.deleteIfExists(Paths.get(defaultFile))
     Files.deleteIfExists(Paths.get(logFile))
