@@ -159,7 +159,7 @@ Note that the instructions above will skip the build of native library code, and
 ```
 where the `PATH_TO_MKL` is the installation directory of the MKL.
     
-3. Full build
+3.Full build
 Clone BigDL as follows:
 ```sbt
    git clone git@github.com:intel-analytics/BigDL.git --recursive 
