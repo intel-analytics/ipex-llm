@@ -154,7 +154,7 @@ trait ContainerSerializable extends ModuleSerializable {
     val container = moduleData.module.asInstanceOf[Container[Activity, Activity, T]]
     val subModules = model.getSubModulesList.asScala
     subModules.foreach(module => {
-      val subModuleData = ModuleSerializer.loadModule(module)
+      val subModuleData = ModuleSerializer.load(module)
       container.add(subModuleData.module)
     })
     moduleData

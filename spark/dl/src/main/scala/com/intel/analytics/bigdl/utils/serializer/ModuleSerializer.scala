@@ -21,7 +21,8 @@ import com.intel.analytics.bigdl.nn._
 
 import scala.collection.JavaConverters._
 import scala.reflect.runtime.universe
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
+import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.{Tensor, TensorNumericMath}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import serialization.Model.{AttrValue, BigDLModule}
@@ -46,6 +47,7 @@ object ModuleSerializer extends ModuleSerializable{
   var regularizerType : universe.Type = null
   var abstractModuleType : universe.Type = null
   var tensorModuleType : universe.Type = null
+  var tType : universe.Type = null
 
   init
 
@@ -89,9 +91,9 @@ object ModuleSerializer extends ModuleSerializable{
     val cls = module.module.getClass
     val moduleType = getModuleTypeByCls(cls)
     bigDLModelBuilder.setModuleType(moduleType)
-    val constructors = cls.getConstructors()
-    require(constructors.length == 1, "only support one constructor")
-    val constructor = constructors(0)
+   // val constructors = cls.getConstructors()
+//    require(constructors.length == 1, "only support one constructor")
+   // val constructor = constructors(0)
     val fullParams = getCostructorMirror(cls).symbol.paramss
     val clsTag = scala.reflect.classTag[T]
     val constructorParams = fullParams(0)
@@ -155,8 +157,13 @@ object ModuleSerializer extends ModuleSerializable{
     val clsSymbol = runtimeMirror.classSymbol(cls)
     val cm = runtimeMirror.reflectClass(clsSymbol)
     // to make it compatible with both 2.11 and 2.10
-    val ctorC = clsSymbol.toType.declaration(universe.nme.CONSTRUCTOR).asMethod
-    cm.reflectConstructor(ctorC)
+    // val ctorC = clsSymbol.toType.declaration(universe.nme.CONSTRUCTOR).asMethod
+    val ctorCs = clsSymbol.toType.declaration(universe.nme.CONSTRUCTOR)
+    val primary : Option[universe.MethodSymbol] = ctorCs.asTerm.alternatives.collectFirst{
+      case cstor : universe.MethodSymbol if cstor.isPrimaryConstructor => cstor
+    }
+    // cm.reflectConstructor(ctorC)
+    cm.reflectConstructor(primary.get)
   }
 
   private def init() : Unit = {
@@ -302,7 +309,9 @@ object ModuleSerializer extends ModuleSerializable{
     registerModule("SpatialDivisiveNormalization",
       Class.forName("com.intel.analytics.bigdl.nn.SpatialDivisiveNormalization"),
       SpatialDivisiveNormalization)
-    // place holder for spatial full convolution
+    registerModule("SpatialFullConvolution",
+      Class.forName("com.intel.analytics.bigdl.nn.SpatialFullConvolution"),
+      SpatialFullConvolution)
     registerModule("SpatialMaxPooling",
       Class.forName("com.intel.analytics.bigdl.nn.SpatialMaxPooling"), SpatialMaxPooling)
     registerModule("SpatialShareConvolution",
@@ -338,6 +347,7 @@ object ModuleSerializer extends ModuleSerializable{
 
   private def initializeDeclaredTypes() : Unit = {
 
+    /*
     val tensorNumericCls = Class.
       forName("com.intel.analytics.bigdl.tensor.TensorNumericMath$TensorNumeric")
     tensorNumericType = runtimeMirror.
@@ -356,6 +366,38 @@ object ModuleSerializer extends ModuleSerializable{
 
     val tensorModuleCls = Class.forName("com.intel.analytics.bigdl.nn.abstractnn.TensorModule")
     tensorModuleType = runtimeMirror.classSymbol(tensorModuleCls).selfType
+    */
+    var wrapperCls = Class.forName("com.intel.analytics.bigdl.utils.serializer.GenericTypeWrapper")
+    val fullParams = getCostructorMirror(wrapperCls).symbol.paramss
+    fullParams.foreach(map => {
+      map.foreach(param => {
+        val name = param.name.decodedName.toString
+        val ptype = param.typeSignature
+        if (name == "tensor") {
+          tensorType = ptype
+        } else if (name == "regularizer") {
+          regularizerType = ptype
+        } else if (name == "abstractModule") {
+          abstractModuleType = ptype
+        } else if (name == "tensorModule") {
+          tensorModuleType = ptype
+        } else if (name == "ev") {
+          tensorNumericType = ptype
+        } else if (name == "ttpe") {
+          tType = ptype
+        }
+      })
+    })
   }
+}
+
+private class GenericTypeWrapper[T: ClassTag](tensor : Tensor[T],
+                                              regularizer : Regularizer[T],
+                                              abstractModule: AbstractModule[Activity, Activity, T],
+                                              tensorModule : TensorModule[T],
+                                              ttpe : T
+                                             )
+(implicit ev: TensorNumeric[T]) {
+
 }
 

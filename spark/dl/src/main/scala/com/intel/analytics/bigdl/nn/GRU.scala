@@ -183,7 +183,7 @@ class GRU[T : ClassTag] (
   }
 }
 
-object GRU extends  ModuleSerializable {
+object GRU extends  CellSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
     inputSize: Int = 4,
     outputSize: Int = 3,

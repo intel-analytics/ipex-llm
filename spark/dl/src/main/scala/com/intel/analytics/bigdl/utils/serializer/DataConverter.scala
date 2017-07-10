@@ -115,6 +115,14 @@ object DataConverter extends DataConverter{
       RegularizerConverter.setAttributeValue(attributeBuilder, value)
     } else if (valueType.toString == ModuleSerializer.tensorType.toString) {
       TensorConverter.setAttributeValue(attributeBuilder, value)
+    } else if (valueType.toString == ModuleSerializer.tType.toString) {
+      if (ev == com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericDouble) {
+        attributeBuilder.setDataType(DataType.DOUBLE)
+        attributeBuilder.setDoubleValue(value.asInstanceOf[Double])
+      } else {
+        attributeBuilder.setDataType(DataType.FLOAT)
+        attributeBuilder.setFloatValue(value.asInstanceOf[Float])
+      }
     } else if (valueType.toString == ModuleSerializer.abstractModuleType.toString
       || valueType.toString == ModuleSerializer.tensorModuleType.toString
       || valueType.toString.startsWith("com.intel.analytics.bigdl.Module")
@@ -332,7 +340,7 @@ object DataConverter extends DataConverter{
     override def getAttributeValue[T: ClassTag](attribute: AttrValue)
      (implicit ev: TensorNumeric[T]): AnyRef = {
      val serializedModule = attribute.getBigDLModuleValue
-     ModuleSerializer.loadModule(serializedModule).module
+     ModuleSerializer.load(serializedModule).module
    }
 
     override def setAttributeValue[T: ClassTag](attributeBuilder: AttrValue.Builder,
@@ -340,7 +348,7 @@ object DataConverter extends DataConverter{
       attributeBuilder.setDataType(DataType.MODULE)
       val module = value.asInstanceOf[AbstractModule[Activity, Activity, T]]
      val serializableModule = ModuleSerializer.
-        serializeModule(ModuleData(module, Seq[String](), Seq[String]()))
+       serialize(ModuleData(module, Seq[String](), Seq[String]()))
       attributeBuilder.setBigDLModuleValue(serializableModule)
     }
   }

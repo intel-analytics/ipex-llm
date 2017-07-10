@@ -205,7 +205,7 @@ class LSTM[T : ClassTag] (
   override def toString: String = s"LSTM($inputSize, $hiddenSize, $p)"
 }
 
-object LSTM extends ModuleSerializable {
+object LSTM extends CellSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
     inputSize: Int,
     hiddenSize: Int,

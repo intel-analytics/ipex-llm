@@ -43,9 +43,9 @@ import scala.reflect.ClassTag
             applied to the bias.
  */
 class RnnCell[T : ClassTag] (
-  inputSize: Int = 4,
-  hiddenSize: Int = 3,
-  activation: TensorModule[T],
+  val inputSize: Int = 4,
+  val hiddenSize: Int = 3,
+  val activation: TensorModule[T],
   var wRegularizer: Regularizer[T] = null,
   var uRegularizer: Regularizer[T] = null,
   var bRegularizer: Regularizer[T] = null)
@@ -105,7 +105,7 @@ class RnnCell[T : ClassTag] (
   }
 }
 
-object RnnCell extends ModuleSerializable {
+object RnnCell extends CellSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
     inputSize: Int = 4,
     hiddenSize: Int = 3,

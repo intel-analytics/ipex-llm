@@ -194,6 +194,7 @@ class Recurrent[T : ClassTag]()
     var i = 1
     while (i <= times) {
       currentInput(inputDim) = input.select(timeDim, i)
+      currentInput(1.0).asInstanceOf[Tensor[T]].size().foreach(print)
       cells(i - 1).updateOutput(currentInput)
       currentInput(hidDim) = cells(i - 1).output.toTable(hidDim)
       i += 1

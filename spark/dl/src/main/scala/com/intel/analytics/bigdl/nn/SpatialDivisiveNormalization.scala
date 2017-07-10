@@ -16,11 +16,12 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.T
-import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
+import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData, ModuleSerializable, ModuleSerializer}
+import serialization.Model.{AttrValue, BigDLModule}
 
 import scala.reflect.ClassTag
 
@@ -70,7 +71,7 @@ class SpatialDivisiveNormalization[T: ClassTag](
   }
 
   // create convolutional mean estimator
-  private val meanestimator = new Sequential[T]()
+  private var meanestimator = new Sequential[T]()
   meanestimator.add(new SpatialZeroPadding(padW, padW, padH, padH))
   if (kdim == 2) {
     meanestimator.add(new SpatialConvolution(nInputPlane, 1, kernel.size(2), kernel.size(1)))
@@ -82,7 +83,7 @@ class SpatialDivisiveNormalization[T: ClassTag](
   meanestimator.add(new Replicate(nInputPlane, 1, 3))
 
   // create convolutional std estimator
-  private val stdestimator = new Sequential[T]()
+  private var stdestimator = new Sequential[T]()
   stdestimator.add(new Square())
   stdestimator.add(new SpatialZeroPadding(padW, padW, padH, padH))
   if (kdim == 2) {
@@ -119,9 +120,9 @@ class SpatialDivisiveNormalization[T: ClassTag](
   }
 
   // other operation
-  private val normalizer = new CDivTable()
-  private val divider = new CDivTable()
-  private val thresholder = new Threshold(threshold, thresval)
+  private var normalizer = new CDivTable()
+  private var divider = new CDivTable()
+  private var thresholder = new Threshold(threshold, thresval)
 
   // coefficient array, to adjust side effects
   private var coef: Tensor[T] = Tensor(1, 1, 1)
@@ -228,5 +229,70 @@ object SpatialDivisiveNormalization extends ModuleSerializable {
       thresval: Double = 1e-4)(
       implicit ev: TensorNumeric[T]) : SpatialDivisiveNormalization[T] = {
     new SpatialDivisiveNormalization[T](nInputPlane, kernel, threshold, thresval)
+  }
+
+  override def loadModule[T: ClassTag](model : BigDLModule)
+                                      (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
+    val moduleData = ModuleSerializer.loadModule(model)
+    val spatialDivisiveNormModule = moduleData.module.
+      asInstanceOf[SpatialDivisiveNormalization[T]]
+    // val eanestimator = spatialDivisiveNormModule.cell
+    val attrMap = model.getAttrMap
+
+    spatialDivisiveNormModule.meanestimator = DataConverter.
+      getAttributeValue(attrMap.get("meanestimator")).
+      asInstanceOf[Sequential[T]]
+
+    spatialDivisiveNormModule.stdestimator = DataConverter.
+      getAttributeValue(attrMap.get("stdestimator")).
+      asInstanceOf[Sequential[T]]
+
+    spatialDivisiveNormModule.normalizer = DataConverter.
+      getAttributeValue(attrMap.get("normalizer")).
+      asInstanceOf[CDivTable[T]]
+
+    spatialDivisiveNormModule.divider = DataConverter.
+      getAttributeValue(attrMap.get("divider")).
+      asInstanceOf[CDivTable[T]]
+
+    spatialDivisiveNormModule.thresholder = DataConverter.
+      getAttributeValue(attrMap.get("thresholder")).
+      asInstanceOf[Threshold[T]]
+
+    moduleData
+  }
+
+  override def serializeModule[T: ClassTag](module : ModuleData[T])
+                                           (implicit ev: TensorNumeric[T]) : BigDLModule = {
+    val bigDLModule = ModuleSerializer.serializeModule(module)
+    val spatialDivisiveNormModule = module.module.asInstanceOf[SpatialDivisiveNormalization[T]]
+    val spatialDivisiveNormBuilder = BigDLModule.newBuilder(bigDLModule)
+
+    val meanestimatorBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(meanestimatorBuilder, spatialDivisiveNormModule.meanestimator,
+      ModuleSerializer.tensorModuleType)
+    spatialDivisiveNormBuilder.putAttr("meanestimator", meanestimatorBuilder.build)
+
+    val stdestimatorBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(stdestimatorBuilder, spatialDivisiveNormModule.stdestimator,
+      ModuleSerializer.tensorModuleType)
+    spatialDivisiveNormBuilder.putAttr("stdestimator", stdestimatorBuilder.build)
+
+    val normalizerBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(normalizerBuilder, spatialDivisiveNormModule.normalizer,
+      ModuleSerializer.tensorModuleType)
+    spatialDivisiveNormBuilder.putAttr("normalizer", normalizerBuilder.build)
+
+    val dividerBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(dividerBuilder, spatialDivisiveNormModule.divider,
+      ModuleSerializer.tensorModuleType)
+    spatialDivisiveNormBuilder.putAttr("divider", dividerBuilder.build)
+
+    val thresholderBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(thresholderBuilder, spatialDivisiveNormModule.thresholder,
+      ModuleSerializer.tensorModuleType)
+    spatialDivisiveNormBuilder.putAttr("thresholder", thresholderBuilder.build)
+
+    spatialDivisiveNormBuilder.build
   }
 }

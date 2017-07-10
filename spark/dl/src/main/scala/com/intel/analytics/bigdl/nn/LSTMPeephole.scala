@@ -207,7 +207,7 @@ class LSTMPeephole[T : ClassTag] (
   override def toString: String = s"LSTMPeephole($inputSize, $hiddenSize, $p)"
 }
 
-object LSTMPeephole extends ModuleSerializable {
+object LSTMPeephole extends CellSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
     inputSize: Int = 4,
     hiddenSize: Int = 3,
