@@ -64,6 +64,10 @@ class TemporalConvolution[T: ClassTag](
   val bias: Tensor[T] = Tensor[T](outputFrameSize)
   val gradWeight: Tensor[T] = Tensor[T](outputFrameSize, inputFrameSize * kernelW)
   val gradBias: Tensor[T] = Tensor[T](outputFrameSize)
+  @transient val inputWindow = Tensor[T]()
+  @transient var outputWindow = Tensor[T]()
+  @transient val gradInputWindow = Tensor[T]()
+  @transient val gradOutputWindow = Tensor[T]()
 
   {
     val stdv = 1.0 / math.sqrt(kernelW * inputFrameSize)
@@ -77,7 +81,7 @@ class TemporalConvolution[T: ClassTag](
 
   override def reset(): Unit = {
     if (initWeight == null) {
-      weightInitMethod.init(weight, VariableFormat.GP_OUT_IN_KW_KH)
+      weightInitMethod.init(weight, VariableFormat.OUT_IN)
     }
     if (initBias == null) {
       biasInitMethod.init(bias, VariableFormat.ONE_D)
@@ -105,8 +109,6 @@ class TemporalConvolution[T: ClassTag](
 
     val nInputFrame = input.size(dimSeq)
     var nOutputFrame = (nInputFrame - kernelW) / strideW + 1
-    val inputWindow = Tensor[T]()
-    var outputWindow = Tensor[T]()
 
     // Shape check on input with inputFrameSize and kernelW
     require(input.size(dimFeat) == inputFrameSize, "Invalid input frame size. Got: " +
@@ -117,7 +119,7 @@ class TemporalConvolution[T: ClassTag](
     val weightT = weight.transpose(1, 2)
 
     if (input.dim() == 2) {
-      output.resize(Array(nOutputFrame, outputFrameSize))
+      output.resize(nOutputFrame, outputFrameSize)
       // Add bias first
       var j = 1
       while (j <= nOutputFrame) {
@@ -146,7 +148,7 @@ class TemporalConvolution[T: ClassTag](
       }
     } else {
       val batchSize = input.size(1)
-      output.resize(Array(batchSize, nOutputFrame, outputFrameSize))
+      output.resize(batchSize, nOutputFrame, outputFrameSize)
       if (results == null || results.length != batchSize) {
         results = new Array[Future[Unit]](batchSize)
       }
@@ -205,9 +207,6 @@ class TemporalConvolution[T: ClassTag](
     val dimFeat = if (input.dim() == 2) 2 else 3
     val nInputFrame = input.size(dimSeq)
     var nOutputFrame = (nInputFrame - kernelW) / strideW + 1
-
-    val gradInputWindow = Tensor[T]()
-    val gradOutputWindow = Tensor[T]()
 
     // Shape check on input with inputFrameSize and kernelW
     require(input.size(dimFeat) == inputFrameSize, "Invalid input frame size. Got: " +
@@ -285,13 +284,10 @@ class TemporalConvolution[T: ClassTag](
     val nInputFrame = input.size(dimSeq)
     var nOutputFrame = (nInputFrame - kernelW) / strideW + 1
 
-    var gradOutputWindow = Tensor[T]()
-    val inputWindow = Tensor[T]()
-
     if (input.nDimension() == 2) {
       var j = 0
       while (j < nOutputFrame) {
-        gradOutputWindow = gradOutput.select(1, j + 1)
+        gradOutputWindow.set(gradOutput.select(1, j + 1))
         gradBias.add(gradBias, ev.fromType[Double](scaleB), gradOutputWindow)
         j += 1
       }
@@ -326,7 +322,7 @@ class TemporalConvolution[T: ClassTag](
           var nOutputSampleFrame = nOutputFrame
           var j = 0
           while (j < nOutputFrame) {
-            gradOutputWindow = gradOutputSample.select(1, j + 1)
+            gradOutputWindow.set(gradOutputSample.select(1, j + 1))
             gradBias.add(gradBias, ev.fromType[Double](scaleB), gradOutputWindow)
             j += 1
           }

@@ -299,6 +299,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       padW,
       padH)
     if (ceilMode) maxpooling.ceil()
+    else maxpooling
   }
 
   def createSpatialConvolution(nInputPlane: Int,
