@@ -521,9 +521,9 @@ object MiniBatch {
  */
 case class PaddingParam[T: ClassTag](
       paddingTensor: Option[Array[Tensor[T]]] = None,
-      paddingStrategy: PaddingStrategy = new DefaultPadding)
+      paddingStrategy: PaddingStrategy = new DefaultPadding) extends Serializable
 
-abstract class PaddingStrategy {
+abstract class PaddingStrategy extends Serializable {
   def paddingSize(sizes: Seq[Array[Int]]): Seq[Array[Int]]
 }
 

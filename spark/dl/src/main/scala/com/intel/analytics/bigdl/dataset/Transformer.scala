@@ -307,11 +307,11 @@ class SampleToBatch[T: ClassTag]
  * Convert a sequence of [[Sample]] to a sequence of [[MiniBatch]] through function toMiniBatch.
  */
 private[bigdl] class SampleToMiniBatch[T: ClassTag](
-                                                     totalBatch: Int,
-                                                     miniBatch: Option[MiniBatch[T]] = None,
-                                                     featurePaddingParam: Option[PaddingParam[T]] = None,
-                                                     labelPaddingParam: Option[PaddingParam[T]] = None,
-                                                     partitionNum: Option[Int] = None)
+      totalBatch: Int,
+      miniBatch: Option[MiniBatch[T]] = None,
+      featurePaddingParam: Option[PaddingParam[T]] = None,
+      labelPaddingParam: Option[PaddingParam[T]] = None,
+      partitionNum: Option[Int] = None)
     (implicit ev: TensorNumeric[T]) extends Transformer[Sample[T], MiniBatch[T]] {
 
   private val batchPerPartition = Utils.getBatchSize(totalBatch, partitionNum)
