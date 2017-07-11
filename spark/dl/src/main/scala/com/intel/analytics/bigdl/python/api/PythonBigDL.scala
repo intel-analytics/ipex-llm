@@ -871,10 +871,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     propagateBack: Boolean = true,
     wRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
-    initWeight: Tensor[T] = null,
-    initBias: Tensor[T] = null,
-    initGradWeight: Tensor[T] = null,
-    initGradBias: Tensor[T] = null
+    initWeight: JTensor = null,
+    initBias: JTensor = null,
+    initGradWeight: JTensor = null,
+    initGradBias: JTensor = null
   )
   : TemporalConvolution[T] = {
     TemporalConvolution[T](
@@ -885,10 +885,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       propagateBack,
       wRegularizer,
       bRegularizer,
-      initWeight,
-      initBias,
-      initGradWeight,
-      initGradBias
+      toTensor(initWeight),
+      toTensor(initBias),
+      toTensor(initGradWeight),
+      toTensor(initGradBias)
     )
   }
 

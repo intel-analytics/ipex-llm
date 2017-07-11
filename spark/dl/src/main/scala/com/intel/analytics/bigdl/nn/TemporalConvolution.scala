@@ -60,10 +60,30 @@ class TemporalConvolution[T: ClassTag](
   val initGradBias: Tensor[T] = null
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T]  with Initializable {
 
-  val weight: Tensor[T] = Tensor[T](outputFrameSize, inputFrameSize * kernelW)
-  val bias: Tensor[T] = Tensor[T](outputFrameSize)
-  val gradWeight: Tensor[T] = Tensor[T](outputFrameSize, inputFrameSize * kernelW)
-  val gradBias: Tensor[T] = Tensor[T](outputFrameSize)
+  val weight: Tensor[T] = if (initWeight != null) {
+    initWeight
+  } else {
+    Tensor[T](outputFrameSize, inputFrameSize * kernelW)
+  }
+
+  val bias: Tensor[T] = if (initBias != null) {
+    initBias
+  } else {
+    Tensor[T](outputFrameSize)
+  }
+
+  val gradWeight: Tensor[T] = if (initGradWeight != null) {
+    initGradWeight
+  } else {
+    Tensor[T](outputFrameSize, inputFrameSize * kernelW)
+  }
+
+  val gradBias: Tensor[T] = if (initBias != null) {
+    initGradBias
+  } else {
+    Tensor[T](outputFrameSize)
+  }
+
   @transient val inputWindow = Tensor[T]()
   @transient var outputWindow = Tensor[T]()
   @transient val gradInputWindow = Tensor[T]()
