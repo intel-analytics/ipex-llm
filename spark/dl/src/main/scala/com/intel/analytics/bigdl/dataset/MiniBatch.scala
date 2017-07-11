@@ -318,11 +318,11 @@ object MiniBatch {
     val targets = miniBatch.targetData
 
     val featureSizes = samples.map(_.getFeatureSize())
-    val labelSizes = samples.map(_.getLabelSize())
-    val unlabeled = if (labelSizes.flatMap(_.flatMap(_.toIterator)).product == 0) true else false
+    val unlabeled = samples.head.numLabel() == 0
     resizeData(inputs, featureSizes,
       longestFeature, featurePaddingStrategy, featurePaddingTensor)
     if (!unlabeled) {
+      val labelSizes = samples.map(_.getLabelSize())
       resizeData(targets, labelSizes,
         longestLabel, labelPaddingStrategy, labelPaddingTensor)
     }

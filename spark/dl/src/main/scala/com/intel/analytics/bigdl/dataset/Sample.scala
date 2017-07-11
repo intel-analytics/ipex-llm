@@ -123,6 +123,7 @@ private[bigdl] class ArraySample[T: ClassTag](
       private val data: Array[T],
       private val featureSize: Array[Array[Int]],
       private val labelSize: Array[Array[Int]]) extends Sample[T] {
+  require(featureSize != null, "Feature couldn't be empty")
 
   override def getData(): Array[T] = data
 
@@ -132,10 +133,10 @@ private[bigdl] class ArraySample[T: ClassTag](
   }
 
   override def labelLength(index: Int): Int = {
-    if (null == labelSize) {
-      0
-    } else {
+    if (null != labelSize) {
       labelSize(index)(0)
+    } else {
+      0
     }
   }
 
@@ -144,11 +145,8 @@ private[bigdl] class ArraySample[T: ClassTag](
   }
 
   override def getLabelSize(): Array[Array[Int]] = {
-    if (null != labelSize) {
-      labelSize
-    } else {
-      Array(Array(0))
-    }
+    require(null != labelSize, "Sample doesn't have label")
+    labelSize
   }
 
   override def numFeature(): Int = {
