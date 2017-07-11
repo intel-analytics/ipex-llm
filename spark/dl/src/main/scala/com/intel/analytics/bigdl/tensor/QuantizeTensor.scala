@@ -18,32 +18,49 @@ package com.intel.analytics.bigdl.tensor
 
 import java.nio.ByteBuffer
 
+import com.intel.analytics.bigdl.fixpoint.FixPoint
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
-private[bigdl] class QuantizeTensor[@specialized(Float) T: ClassTag]()
-  (implicit ev: TensorNumeric[T]) {
-  @transient
-  private var storageInJni = 0L
+@SerialVersionUID(- 1766499387282335147L)
+private[bigdl] class QuantizeTensor[@specialized(Float) T: ClassTag](val tensorType: Int)
+  (implicit ev: TensorNumeric[T]) extends Serializable {
   private var realSize = 0L
 
-  @transient
-  private var interStorage: ByteBuffer = _
+  @transient private var desc = 0L
+  private var interStorage: Option[Array[Byte]] = None
 
-  def setBufferFromInterStorage(): Unit = {
+  def setBufferFromInterStorage(buffer: ByteBuffer): Unit = {
+    interStorage = Some(buffer.array())
+  }
 
+  def getBufferFromInterStorage: Option[Array[Byte]] = {
+    interStorage
   }
 
   def setStorageInJni(ptr: Long): Unit = {
-
+    desc = ptr
   }
 
-  def getStorageInJni(ptr: Long): Unit = {
+  def getStorageInJni: Long = {
+    desc
+  }
 
+  def isInitialized: Boolean = {
+    if (desc == 0) {
+      false
+    } else {
+      true
+    }
   }
 
   def release(): Unit = {
-
+    FixPoint.FreeMemory(desc, tensorType)
   }
+}
+
+object QuantizeTensor {
+  def apply[@specialized(Float, Double) T: ClassTag](tensorType: Int)(
+    implicit ev: TensorNumeric[T]): QuantizeTensor[T] = new QuantizeTensor[T](tensorType)
 }
