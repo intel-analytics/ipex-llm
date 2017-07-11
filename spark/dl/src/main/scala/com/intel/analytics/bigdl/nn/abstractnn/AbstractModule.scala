@@ -367,6 +367,14 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
     state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
   }
 
+  /**
+   * Save this module to path.
+   * @param path path to save module, local file system, HDFS and Amazon S3 is supported.
+   *             HDFS path should be like "hdfs://[host]:[port]/xxx"
+   *             Amazon S3 path should be like "s3a://bucket/xxx"
+   * @param overWrite if overwrite
+   * @return self
+   */
   def save(path : String, overWrite: Boolean = false) : this.type = {
     this.clearState()
     File.save(this, path, overWrite)
@@ -428,6 +436,75 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
       parameters()._1
     } else {
       null
+    }
+  }
+
+  /**
+   * save weights and bias to file
+   * @param path file to save
+   * @param overWrite whether to overwrite or not
+   */
+  def saveWeights(path: String, overWrite: Boolean): Unit = {
+    val parameterTable = getParametersTable()
+    val weightsBiasTable = T()
+    parameterTable.foreach {
+      case (name: String, params: Table) =>
+        val wb = T()
+        if (params.contains("weight")) {
+          wb("weight") = params("weight")
+        }
+        if (params.contains("bias")) {
+          wb("bias") = params("bias")
+        }
+        weightsBiasTable(name) = wb
+      case _ => throw new UnsupportedOperationException("invalid parameter table")
+    }
+    weightsBiasTable.save(path, overWrite)
+  }
+
+  /**
+   * load pretrained weights and bias to current module
+   * @param weightPath file to store weights and bias
+   * @param matchAll whether to match all layers' weights and bias,
+   *                 if not, only load existing pretrained weights and bias
+   * @return current module
+   */
+  def loadWeights(weightPath: String, matchAll: Boolean = true): this.type = {
+    val srcParameter = File.load[Table](weightPath)
+    val targetParameter = getParametersTable()
+    copyWeights(targetParameter, srcParameter, matchAll)
+    this
+  }
+
+  /**
+   * copy weights from another model, mapping by layer name
+   * @param srcModel model to copy from
+   * @param matchAll whether to match all layers' weights and bias,
+   * @return current module
+   */
+  def loadModelWeights(srcModel: Module[Float], matchAll: Boolean = true): this.type = {
+    val srcParameter = srcModel.getParametersTable()
+    val targetParameter = getParametersTable()
+    copyWeights(targetParameter, srcParameter, matchAll)
+    this
+  }
+
+  private def copyWeights(target: Table, src: Table, matchAll: Boolean): Unit = {
+    target.foreach {
+      case (name: String, targetParams: Table) =>
+        if (src.contains(name)) {
+          val srcParams = src[Table](name)
+          if (srcParams.contains("weight")) {
+            val w = srcParams[Tensor[T]]("weight")
+            targetParams[Tensor[T]]("weight").resizeAs(w).copy(w)
+          }
+          if (srcParams.contains("bias")) {
+            val b = srcParams[Tensor[T]]("bias")
+            targetParams[Tensor[T]]("bias").resizeAs(b).copy(b)
+          }
+        } else {
+          if (matchAll) new Exception(s"module $name cannot find corresponding weight bias")
+        }
     }
   }
 

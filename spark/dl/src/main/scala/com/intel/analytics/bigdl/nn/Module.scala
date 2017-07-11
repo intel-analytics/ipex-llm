@@ -29,6 +29,15 @@ import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowLoade
 import scala.reflect.ClassTag
 
 object Module {
+  /**
+   * Load model from path.
+   *
+   * @param path path to save module, local file system, HDFS and Amazon S3 is supported.
+   *             HDFS path should be like "hdfs://[host]:[port]/xxx"
+   *             Amazon S3 path should be like "s3a://bucket/xxx"
+   * @tparam T numeric type
+   * @return model loaded from path
+   */
   def load[T: ClassTag](path : String) : AbstractModule[Activity, Activity, T] = {
     File.load[AbstractModule[Activity, Activity, T]](path)
   }
@@ -44,7 +53,13 @@ object Module {
     CaffeLoader.load[T](model, defPath, modelPath, matchAll)
   }
 
-  def loadCaffeDynamic[T: ClassTag](defPath: String, modelPath: String, matchAll: Boolean = true)(
+  /**
+   * Loaf caffe trained model from prototxt and weight files
+   * @param defPath  caffe model definition file path
+   * @param modelPath caffe model binary file containing weight and bias
+   * @param matchAll  if layer on layer checking needed between caffe and bigdl
+   */
+  def loadCaffeModel[T: ClassTag](defPath: String, modelPath: String, matchAll: Boolean = true)(
     implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
     CaffeLoader.loadCaffe[T](defPath, modelPath, matchAll)._1
   }

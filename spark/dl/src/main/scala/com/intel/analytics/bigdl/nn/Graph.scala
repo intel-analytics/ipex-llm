@@ -256,6 +256,10 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
       input.toTable[Tensor[T]](i + 1)
     }
   }
+
+  def getExecutions : Array[Node[AbstractModule[Activity, Tensor[T], T]]] = {
+    return executions
+  }
 }
 
 object Graph {
