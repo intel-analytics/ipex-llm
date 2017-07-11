@@ -114,7 +114,7 @@ class TemporalConvolutionSpec extends FlatSpec with BeforeAndAfter with Matchers
     gradInput should be equals luaGradInput
   }
 
-  "A SpatialConvolution" should "be good in gradient check for input" in {
+  "A TemporalConvolution" should "be good in gradient check for input" in {
     val seed = 100
     RNG.setSeed(seed)
     val layer = TemporalConvolution[Double](10, 8, 5, 2)
@@ -124,7 +124,7 @@ class TemporalConvolutionSpec extends FlatSpec with BeforeAndAfter with Matchers
     checker.checkLayer(layer, input, 1e-3) should be(true)
   }
 
-  "A SpatialConvolution" should "be good in gradient check for weight" in {
+  "A TemporalConvolution" should "be good in gradient check for weight" in {
     val seed = 100
     RNG.setSeed(seed)
     val layer = TemporalConvolution[Double](10, 8, 5, 2)
