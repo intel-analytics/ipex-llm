@@ -110,14 +110,14 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
     else weightBlob.getNum
     val param = layer.asInstanceOf[LayerParameter].getBatchNormParam
     val eps = param.getEps
-    Seq(BatchNormalization[T](nOutPlane.toInt, eps).inputs())
+    Seq(SpatialBatchNormalization[T](nOutPlane.toInt, eps).setName(getLayerName(layer)).inputs())
   }
 
   override protected def fromCaffeELU(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val param = layer.asInstanceOf[LayerParameter].getEluParam
     var alpha = 1.0
     if (param.hasAlpha) alpha = param.getAlpha
-    Seq(ELU[T](alpha).inputs())
+    Seq(ELU[T](alpha).setName(getLayerName(layer)).inputs())
   }
 
   override protected def fromCaffeReshape(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
@@ -608,6 +608,9 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
           weightBlobBuilder.addData(ev.toType[Float](weightData(i)))
           i += 1
         }
+        val weightShape = BlobShape.newBuilder
+        weight.size().foreach(dim => weightShape.addDim(dim.toLong))
+        weightBlobBuilder.setShape(weightShape.build)
       }
       if (params.contains("bias")) {
         biasBlobBuilder = BlobProto.newBuilder()
@@ -618,6 +621,9 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
           biasBlobBuilder.addData(ev.toType[Float](biasData(i)))
           i += 1
         }
+        val biasShape = BlobShape.newBuilder
+        bias.size().foreach(dim => biasShape.addDim(dim.toLong))
+        biasBlobBuilder.setShape(biasShape.build)
       }
     }
     (weightBlobBuilder, biasBlobBuilder)

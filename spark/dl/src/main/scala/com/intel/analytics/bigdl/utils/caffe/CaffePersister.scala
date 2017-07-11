@@ -57,7 +57,7 @@ class CaffePersister[T: ClassTag](val prototxtPath: String,
 
   private var netparam: NetParameter.Builder = NetParameter.newBuilder
 
-  def saveAsCaffe() : Unit = {
+  private def saveAsCaffe() : Unit = {
     convertToCaffe
     saveBinary
     savePrototext

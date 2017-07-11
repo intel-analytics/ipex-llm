@@ -44,6 +44,12 @@ object Module {
     CaffeLoader.load[T](model, defPath, modelPath, matchAll)
   }
 
+  /**
+   * Loaf caffe trained model from prototxt and weight files
+   * @param defPath  caffe model definition file path
+   * @param modelPath caffe model binary file containing weight and bias
+   * @param matchAll  if layer on layer checking needed between caffe and bigdl
+   */
   def loadCaffeModel[T: ClassTag](defPath: String, modelPath: String, matchAll: Boolean = true)(
     implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
     CaffeLoader.loadCaffe[T](defPath, modelPath, matchAll)._1
