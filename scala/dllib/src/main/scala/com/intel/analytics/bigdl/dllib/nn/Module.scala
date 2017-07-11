@@ -29,6 +29,15 @@ import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowLoade
 import scala.reflect.ClassTag
 
 object Module {
+  /**
+   * Load model from path.
+   *
+   * @param path path to save module, local file system, HDFS and Amazon S3 is supported.
+   *             HDFS path should be like "hdfs://[host]:[port]/xxx"
+   *             Amazon S3 path should be like "s3a://bucket/xxx"
+   * @tparam T numeric type
+   * @return model loaded from path
+   */
   def load[T: ClassTag](path : String) : AbstractModule[Activity, Activity, T] = {
     File.load[AbstractModule[Activity, Activity, T]](path)
   }
