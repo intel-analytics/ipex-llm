@@ -143,6 +143,81 @@ class RecurrentSpec extends FlatSpec with Matchers {
     assert(abs((etaBackward - backwardSum) / etaBackward) < 0.1)
   }
 
+  "A Recurrent with LSTMPeephole cell " should " add batchNormalization correctly" in {
+    val hiddenSize = 4
+    val inputSize = 5
+    val outputSize = 5
+    val batchSize = 4
+    val time = 2
+    val seed = 100
+    RNG.setSeed(seed)
+
+    val model = Sequential[Double]()
+      .add(Recurrent[Double](BatchNormParams())
+        .add(LSTMPeephole[Double](inputSize, hiddenSize)))
+      .add(TimeDistributed[Double](Linear[Double](hiddenSize, outputSize)))
+
+    println(model)
+
+    val input = Tensor[Double](batchSize, time, inputSize)
+    val gradOutput = Tensor[Double](batchSize, time, outputSize)
+
+    val output = model.forward(input)
+    val gradInput = model.backward(input, gradOutput)
+
+    println("add normalization")
+  }
+
+  "A Recurrent with GRU cell " should " add batchNormalization correctly" in {
+    val hiddenSize = 4
+    val inputSize = 5
+    val outputSize = 5
+    val batchSize = 4
+    val time = 2
+    val seed = 100
+    RNG.setSeed(seed)
+
+    val model = Sequential[Double]()
+      .add(Recurrent[Double](BatchNormParams())
+        .add(GRU[Double](inputSize, hiddenSize)))
+      .add(TimeDistributed[Double](Linear[Double](hiddenSize, outputSize)))
+
+    println(model)
+
+    val input = Tensor[Double](batchSize, time, inputSize)
+    val gradOutput = Tensor[Double](batchSize, time, outputSize)
+
+    val output = model.forward(input)
+    val gradInput = model.backward(input, gradOutput)
+
+    println("add normalization")
+  }
+
+  "A Recurrent with LSTM cell " should " add batchNormalization correctly" in {
+    val hiddenSize = 4
+    val inputSize = 5
+    val outputSize = 5
+    val batchSize = 4
+    val time = 2
+    val seed = 100
+    RNG.setSeed(seed)
+
+    val model = Sequential[Double]()
+      .add(Recurrent[Double](BatchNormParams())
+        .add(LSTM[Double](inputSize, hiddenSize)))
+      .add(TimeDistributed[Double](Linear[Double](hiddenSize, outputSize)))
+
+    println(model)
+
+    val input = Tensor[Double](batchSize, time, inputSize)
+    val gradOutput = Tensor[Double](batchSize, time, outputSize)
+
+    val output = model.forward(input)
+    val gradInput = model.backward(input, gradOutput)
+
+    println("add normalization")
+  }
+
   "A Recurrent with SimpleRNN cell " should " add batchNormalization correctly" in {
     val hiddenSize = 4
     val inputSize = 5
@@ -155,8 +230,7 @@ class RecurrentSpec extends FlatSpec with Matchers {
     RNG.setSeed(seed)
 
     val model = Sequential[Double]()
-      .add(Recurrent[Double]()
-        .addPreprocessInputLayer(TimeDistributed[Double](BatchNormalization[Double](hiddenSize)))
+      .add(Recurrent[Double](BatchNormParams())
         .add(RnnCell[Double](inputSize, hiddenSize, Tanh[Double]())))
       .add(TimeDistributed[Double](Linear[Double](hiddenSize, outputSize)))
 

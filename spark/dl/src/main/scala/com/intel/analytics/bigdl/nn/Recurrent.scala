@@ -32,7 +32,7 @@ import scala.reflect.ClassTag
  * [[Recurrent]] module is a container of rnn cells
  * Different types of rnn cells can be added using add() function
  */
-class Recurrent[T : ClassTag]()
+class Recurrent[T : ClassTag](batchNormParams: BatchNormParams[T] = null)
   (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
 
   private var hidden: Activity = null
@@ -75,11 +75,19 @@ class Recurrent[T : ClassTag]()
     topology = module.asInstanceOf[Cell[T]]
     preTopology = topology.preTopology
 
-    if (layer != null && preTopology == null) {
+    if (batchNormParams != null && preTopology == null) {
       throw new IllegalArgumentException(
         s"${topology.getName} does not support BatchNormalization." +
           s" Please add preTopology for it. You can simply using: " +
           s"override def preTopology: AbstractModule[Activity, Activity, T] = Sequential()")
+    }
+
+    if (batchNormParams != null) {
+      require(topology.getPreTopologyNOutput > 0,
+        s"In ${topology.getName}, def getPreTopologyNOutput = 0. Please override this method")
+      layer = batchNormalization(
+        topology.getPreTopologyNOutput,
+        batchNormParams)
     }
 
     preTopology = preTopology match {
@@ -108,23 +116,16 @@ class Recurrent[T : ClassTag]()
     this
   }
 
-  /**
-   * Add a preprocess layer to process input.
-   *
-   * For example, add a BatchNormalization layer to calculate the
-   * normalization of the output of preTopology layer.
-   *
-   *         h_t = f(U * h_t-1 + W * x + b)
-   *
-   * ===>    h_t = f(U * h_t-1 + Norm(W * x) + b)
-   *
-   * @param addLayer
-   * @return
-   */
-  def addPreprocessInputLayer(addLayer: TensorModule[T]): Recurrent.this.type = {
-    layer = addLayer
-    this
-  }
+  private def batchNormalization(nOutput: Int, batchNormParams: BatchNormParams[T]) =
+    TimeDistributed[T](BatchNormalization[T](
+      nOutput,
+      batchNormParams.eps,
+      batchNormParams.momentum,
+      batchNormParams.affine,
+      batchNormParams.initWeight,
+      batchNormParams.initBias,
+      batchNormParams.initGradWeight,
+      batchNormParams.initGradBias))
 
   // list of cell modules cloned from added modules
   private val cells: ArrayBuffer[Cell[T]]
@@ -506,9 +507,10 @@ class Recurrent[T : ClassTag]()
 }
 
 object Recurrent extends ContainerSerializable {
-  def apply[@specialized(Float, Double) T: ClassTag]()
+  def apply[@specialized(Float, Double) T: ClassTag](
+    batchNormParams: BatchNormParams[T] = null)
     (implicit ev: TensorNumeric[T]) : Recurrent[T] = {
-    new Recurrent[T]()
+    new Recurrent[T](batchNormParams)
   }
 
   override def doLoadModule[T: ClassTag](model : BigDLModule)
@@ -547,3 +549,12 @@ object Recurrent extends ContainerSerializable {
 
   }
 }
+
+case class BatchNormParams[T : ClassTag](
+             val eps: Double = 1e-5, // avoid divde zero
+             val momentum: Double = 0.1, // momentum for weight update
+             val affine: Boolean = true, // affine operation on output or not
+             val initWeight: Tensor[T] = null,
+             val initBias: Tensor[T] = null,
+             val initGradWeight: Tensor[T] = null,
+             val initGradBias: Tensor[T] = null)(implicit ev: TensorNumeric[T])
