@@ -17,11 +17,16 @@ package com.intel.analytics.bigdl.integration
 
 import java.nio.file.{Files, Paths}
 
+import com.google.protobuf.GeneratedMessage
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.models.resnet.Convolution
-import com.intel.analytics.bigdl.nn.{Linear, Module, Sequential}
+import com.intel.analytics.bigdl.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericDouble
-import com.intel.analytics.bigdl.utils.caffe.CaffeLoader
+import com.intel.analytics.bigdl.utils.caffe.{CaffeLoader, CaffePersister}
 import com.intel.analytics.bigdl.utils.{Engine, File}
 import com.intel.analytics.bigdl.visualization.Summary
 import com.intel.analytics.bigdl.visualization.tensorboard.{FileReader, FileWriter}
@@ -29,6 +34,10 @@ import org.apache.commons.compress.utils.IOUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+
+import scala.collection.mutable
+import scala.reflect.ClassTag
+import scala.util.Random
 
 
 @com.intel.analytics.bigdl.tags.Integration
@@ -133,6 +142,43 @@ class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter{
       hdfsDir + "/test.caffemodel")
 
     model.getParameters() should be (modelFromHdfs.getParameters())
+
+  }
+
+  "Persist and Load Caffe to/from HDFS" should "works properly" in {
+
+    val input1 = Tensor(10).apply1( e => Random.nextDouble())
+
+    val input2 = Tensor()
+
+    input2.resizeAs(input1).copy(input1)
+
+    val linear = Linear(10, 10)
+
+    // caffe only supports float, In order to compare the results, here we manually
+    // set weight and bias to ensure there is no accurancy loss
+    val weightTensor = Tensor(10, 10).fill(0.5)
+    val biasTensor = Tensor(10).fill(0.1)
+    linear.setWeightsBias(Array(weightTensor, biasTensor))
+
+    val inputNode = linear.inputs()
+
+    val graph = Graph(inputNode, inputNode)
+
+    val hdfsDir = hdfs + s"/${ com.google.common.io.Files.createTempDir().getPath() }"
+
+
+    val res1 = graph.forward(input1)
+
+    CaffePersister.persist(hdfsDir + "/test.prototxt", hdfsDir + "/test.caffemodel",
+      graph, overwrite = true)
+
+    val modelFromHdfs = CaffeLoader.loadCaffe[Double](hdfsDir + "/test.prototxt",
+      hdfsDir + "/test.caffemodel")._1
+
+    val res2 = modelFromHdfs.forward(input2)
+
+    res1 should be (res2)
 
   }
 }
