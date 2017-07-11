@@ -189,6 +189,7 @@ class ClassSimplexCriterion(Criterion):
         super(ClassSimplexCriterion, self).__init__(None, bigdl_type,
                                                     n_classes)
 
+
 class CosineDistanceCriterion(Criterion):
 
     """
@@ -207,7 +208,7 @@ class CosineDistanceCriterion(Criterion):
                  size_average=True,
                  bigdl_type="float"):
         super(CosineDistanceCriterion, self).__init__(None, bigdl_type,
-                                                       size_average)
+                                                      size_average)
 
 
 class CosineEmbeddingCriterion(Criterion):
