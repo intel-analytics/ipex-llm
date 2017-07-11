@@ -1,12 +1,11 @@
 /*
- * Licensed to Intel Corporation under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * Intel Corporation licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2016 The BigDL Authors.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
@@ -84,10 +84,10 @@ class TemporalConvolution[T: ClassTag](
     Tensor[T](outputFrameSize)
   }
 
-  @transient val inputWindow = Tensor[T]()
-  @transient var outputWindow = Tensor[T]()
-  @transient val gradInputWindow = Tensor[T]()
-  @transient val gradOutputWindow = Tensor[T]()
+  @transient protected var inputWindow: Tensor[T] = _
+  @transient protected var outputWindow: Tensor[T] = _
+  @transient protected var gradInputWindow: Tensor[T] = _
+  @transient protected var gradOutputWindow: Tensor[T] = _
 
   {
     val stdv = 1.0 / math.sqrt(kernelW * inputFrameSize)
@@ -129,6 +129,9 @@ class TemporalConvolution[T: ClassTag](
 
     val nInputFrame = input.size(dimSeq)
     var nOutputFrame = (nInputFrame - kernelW) / strideW + 1
+
+    if (inputWindow == null) inputWindow = Tensor[T]()
+    if (outputWindow == null) outputWindow = Tensor[T]()
 
     // Shape check on input with inputFrameSize and kernelW
     require(input.size(dimFeat) == inputFrameSize, "Invalid input frame size. Got: " +
@@ -228,6 +231,9 @@ class TemporalConvolution[T: ClassTag](
     val nInputFrame = input.size(dimSeq)
     var nOutputFrame = (nInputFrame - kernelW) / strideW + 1
 
+    if (gradInputWindow == null) gradInputWindow = Tensor[T]()
+    if (gradOutputWindow == null) gradOutputWindow = Tensor[T]()
+
     // Shape check on input with inputFrameSize and kernelW
     require(input.size(dimFeat) == inputFrameSize, "Invalid input frame size. Got: " +
       s"${input.size(dimFeat)}, Expected: $inputFrameSize")
@@ -303,6 +309,9 @@ class TemporalConvolution[T: ClassTag](
     val dimFeat = if (input.dim() == 2) 2 else 3
     val nInputFrame = input.size(dimSeq)
     var nOutputFrame = (nInputFrame - kernelW) / strideW + 1
+
+    if (gradOutputWindow == null) gradOutputWindow = Tensor[T]()
+    if (inputWindow == null) inputWindow = Tensor[T]()
 
     if (input.nDimension() == 2) {
       var j = 0
