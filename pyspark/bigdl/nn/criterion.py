@@ -197,7 +197,7 @@ class CosineDistanceCriterion(Criterion):
 
 
     >>> cosineDistanceCriterion = CosineDistanceCriterion(True)
-    creating: createCosineEmbeddingCriterion
+    creating: createCosineDistanceCriterion
     >>> cosineDistanceCriterion.forward(np.array([1.0, 2.0, 3.0, 4.0, 5.0]),
     ...                                   np.array([5.0, 4.0, 3.0, 2.0, 1.0]))
     0.07272728
