@@ -1,17 +1,9 @@
 ---
-# **Examples**
+
+This section is a short introduction of some classic examples/tutorials. They can give you a clear idea of how to build simple deep learning programs using BigDL. Besides these examples, BigDL also provides plenty of models ready for re-use and examples in both Scala and Python - refer to [Resources](resources.md) section for details. 
+
 ---
-
-This page shows how to build simple deep learning programs using BigDL, including:
-
-1. [Training LeNet on MNIST](#training-lenet-on-mnist) - the "hello world" for deep learning
-2. [Text Classification](#text-classification---working-with-spark-rdd) - working with Spark RDD transformations
-3. [Image Classification](#image-classification---working-with-spark-dataframe-and-ml-pipeline) - working with Spark DataFrame and ML pipeline
-4. [Python Text Classifier](#tutorial-text-classification-using-bigdl-python-api) - text classification using BigDL Python APIs
-5. [BigDL Tutorials Notebooks](https://github.com/intel-analytics/BigDL-Tutorials) - A series of notebooks that step-by-step introduce you how to do data science on Apache Spark and BigDL framework
-6. [Jupyter Notebook Tutorial](https://github.com/intel-analytics/BigDL/blob/branch-0.1/pyspark/dl/example/tutorial/simple_text_classification/text_classfication.ipynb) - using BigDL Python APIs in Jupyter notebook
-
-## **Training LeNet on MNIST**
+## **Training LeNet on MNIST - The "hello world" for deep learning**
 This tutorial is an explanation of what is happening in the [lenet](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/lenet/Train.scala) example, which trains [LeNet-5](http://yann.lecun.com/exdb/lenet/) on the [MNIST data](http://yann.lecun.com/exdb/mnist/) using BigDL.
 
 A BigDL program starts with `import com.intel.analytics.bigdl._`; it then _**creates the `SparkContext`**_ using the `SparkConf` returned by the `Engine`; after that, it _**initializes the `Engine`**_.
@@ -74,6 +66,7 @@ Finally (after optionally specifying the validation data and methods for the ```
     .optimize()
 ````
 
+---
 ## Text Classification - Working with Spark RDD
 This tutorial describes the [text_classification](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/example/textclassification) example, which builds a text classifier using a simple convolutional neural network (CNN) model. (It was first described by [this Keras tutorial](https://blog.keras.io/using-pre-trained-word-embeddings-in-a-keras-model.html)).
 
@@ -121,6 +114,7 @@ After that, the [example](https://github.com/intel-analytics/BigDL/blob/master/s
     .optimize()
 ````
 
+---
 ## **Image Classification** - Working with Spark DataFrame and ML pipeline
 This tutorial describes the [image_classification](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/example/imageclassification) example, which loads a BigDL ([Inception](http://arxiv.org/abs/1409.4842)) model or Torch ([Resnet](https://arxiv.org/abs/1512.03385)) model that is trained on [ImageNet](http://image-net.org/download-images) data, and then applies the loaded model to predict the contents of a set of images using BigDL and Spark [ML pipeline](https://spark.apache.org/docs/1.6.3/ml-guide.html).
 
@@ -168,72 +162,4 @@ After that, the [example](https://github.com/intel-analytics/BigDL/blob/master/s
       .select("imageName", "predict")
       .show(param.showNum)
 ````
-## **Tutorial: Text Classification using BigDL Python API**  
 
-This tutorial describes the [textclassifier](https://github.com/intel-analytics/BigDL/tree/master/pyspark/dl/models/textclassifier) example written using BigDL Python API, which builds a text classifier using a CNN (convolutional neural network) or LSTM or GRU model (as specified by the user). (It was first described by [this Keras tutorial](https://blog.keras.io/using-pre-trained-word-embeddings-in-a-keras-model.html))
-
-The example first creates the `SparkContext` using the SparkConf` return by the `create_spark_conf()` method, and then initialize the engine:
-```python
-  sc = SparkContext(appName="text_classifier",
-                    conf=create_spark_conf())
-  init_engine()
-```
-
-It then loads the [20 Newsgroup dataset](http://www.cs.cmu.edu/afs/cs.cmu.edu/project/theo-20/www/data/news20.html) into RDD, and transforms the input data into an RDD of `Sample`. (Each `Sample` in essence contains a tuple of two NumPy ndarray representing the feature and label).
-
-```python
-  texts = news20.get_news20()
-  data_rdd = sc.parallelize(texts, 2)
-  ...
-  sample_rdd = vector_rdd.map(
-      lambda (vectors, label): to_sample(vectors, label, embedding_dim))
-  train_rdd, val_rdd = sample_rdd.randomSplit(
-      [training_split, 1-training_split])   
-```
-
-After that, the example creates the neural network model as follows:
-```python
-def build_model(class_num):
-    model = Sequential()
-
-    if model_type.lower() == "cnn":
-        model.add(Reshape([embedding_dim, 1, sequence_len]))
-        model.add(SpatialConvolution(embedding_dim, 128, 5, 1))
-        model.add(ReLU())
-        model.add(SpatialMaxPooling(5, 1, 5, 1))
-        model.add(SpatialConvolution(128, 128, 5, 1))
-        model.add(ReLU())
-        model.add(SpatialMaxPooling(5, 1, 5, 1))
-        model.add(Reshape([128]))
-    elif model_type.lower() == "lstm":
-        model.add(Recurrent()
-                  .add(LSTM(embedding_dim, 128)))
-        model.add(Select(2, -1))
-    elif model_type.lower() == "gru":
-        model.add(Recurrent()
-                  .add(GRU(embedding_dim, 128)))
-        model.add(Select(2, -1))
-    else:
-        raise ValueError('model can only be cnn, lstm, or gru')
-
-    model.add(Linear(128, 100))
-    model.add(Linear(100, class_num))
-    model.add(LogSoftMax())
-    return model
-```
-Finally the example creates the `Optimizer` (which accepts both the model and the training Sample RDD) and trains the model by calling `Optimizer.optimize()`:
-
-```python
-optimizer = Optimizer(
-    model=build_model(news20.CLASS_NUM),
-    training_rdd=train_rdd,
-    criterion=ClassNLLCriterion(),
-    end_trigger=MaxEpoch(max_epoch),
-    batch_size=batch_size,
-    optim_method="Adagrad",
-    state=state)
-...
-train_model = optimizer.optimize()
-```
-
----

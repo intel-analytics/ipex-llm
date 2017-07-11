@@ -1,9 +1,9 @@
-## DistriOptimizer ##
+## Optimizer ##
 
-You can use DistriOptimizer to distributed train your model with
+You can use Optimizer to distributed train your model with
 a spark cluster.
 
-### How to use DistriOptimizer 
+### How to use Optimizer 
 You need at least provide model, data, loss function and batch size.
 
 * **model**

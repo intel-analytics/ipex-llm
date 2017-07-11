@@ -2,11 +2,15 @@
 
 **Scala:**
 ```scala
-val m  = SpatialFullConvolution[T](nInputPlane, nOutputPlane, kW, kH, dW=1, dH=1, padW=0, padH=0, adjW=0, adjH=0,nGroup=1, noBias=false,wRegularizer=null,bRegularizer=null)
+val m  = SpatialFullConvolution[Tensor[T], T](nInputPlane, nOutputPlane, kW, kH, dW=1, dH=1, padW=0, padH=0, adjW=0, adjH=0,nGroup=1, noBias=false,wRegularizer=null,bRegularizer=null)
+```
+or
+```scala
+val m = SpatialFullConvolution[Table, T](InputPlane, nOutputPlane, kW, kH, dW=1, dH=1, padW=0, padH=0, adjW=0, adjH=0,nGroup=1, noBias=false,wRegularizer=null,bRegularizer=null)
 ```
 **Python:**
 ```python
-m = SpatialFullConvolution(n_input_plane,n_output_plane,kw,kh,dw=1,dh=1,pad_w=0,pad_h=0,adj_w=0,adj_h=0,n_group=1,no_bias=False,wRegularizer=None,bRegularizer=None)
+m = SpatialFullConvolution(n_input_plane,n_output_plane,kw,kh,dw=1,dh=1,pad_w=0,pad_h=0,adj_w=0,adj_h=0,n_group=1,no_bias=False,init_method='default',wRegularizer=None,bRegularizer=None)
 ```
 
 SpatialFullConvolution is a module that applies a 2D full convolution over an input image. 
@@ -52,12 +56,12 @@ Tensor Input example:
 ```scala
 
 scala>
-import com.intel.analytics.bigdl.numeric.NumericFloat
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.tensor.Storage
 
-val m = SpatialFullConvolution(1, 2, 2, 2, 1, 1,0, 0, 0, 0, 1, false)
+val m = SpatialFullConvolution[Tensor[Float],Float](1, 2, 2, 2, 1, 1,0, 0, 0, 0, 1, false)
 
 val input = Tensor(1,1,3,3).randn()
 val output = m.forward(input)
