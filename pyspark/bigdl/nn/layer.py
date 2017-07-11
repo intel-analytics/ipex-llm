@@ -580,11 +580,11 @@ class TemporalConvolution(Layer):
     :param init_grad_weight Initial gradient weight
     :param init_grad_bias Initial gradient bias
 
-    >>> spatialConvolution = TemporalConvolution(6, 12, 5, 5)
-    creating: createSpatialConvolution
-    >>> spatialConvolution.setWRegularizer(L1Regularizer(0.5))
+    >>> temporalConvolution = TemporalConvolution(6, 12, 5, 5)
+    creating: createTemporalConvolution
+    >>> temporalConvolution.setWRegularizer(L1Regularizer(0.5))
     creating: createL1Regularizer
-    >>> spatialConvolution.setBRegularizer(L1Regularizer(0.5))
+    >>> temporalConvolution.setBRegularizer(L1Regularizer(0.5))
     creating: createL1Regularizer
     '''
 
