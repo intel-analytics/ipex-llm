@@ -86,20 +86,17 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
     }
   }
 
-  private def createInputStream(fileName: String): InputStream = {
-    val src = new Path(fileName)
-    val fs = src.getFileSystem(File.getConfiguration(fileName))
-    require(fs.exists(src), src + " does not exists")
-    fs.open(src)
-  }
-
   private def loadBinary(prototxtPath: String, modelPath: String): Caffe.NetParameter = {
-    var prototxtReader: InputStreamReader = null
+    var modelFs: org.apache.hadoop.fs.FileSystem = null
+    var prototxtFs: org.apache.hadoop.fs.FileSystem = null
     var modelStream: InputStream = null
     var prototxtStream: InputStream = null
+    var prototxtReader: InputStreamReader = null
     try {
-      prototxtStream = createInputStream(prototxtPath)
-      modelStream = createInputStream(modelPath)
+      modelFs = File.getFileSystem(prototxtPath)
+      prototxtFs = File.getFileSystem(prototxtPath)
+      modelStream = modelFs.open(new Path(modelPath))
+      prototxtStream = modelFs.open(new Path(prototxtPath))
       prototxtReader = new InputStreamReader(prototxtStream, "ASCII")
 
       val builder = NetParameter.newBuilder
@@ -111,6 +108,8 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
       logger.info("load caffe model done")
       builder.build()
     } finally {
+      if (modelFs != null) modelFs.close()
+      if (prototxtFs != null) prototxtFs.close()
       if (null != prototxtReader) prototxtReader.close()
       if (null != modelStream) modelStream.close()
       if (null != prototxtStream) prototxtStream.close()

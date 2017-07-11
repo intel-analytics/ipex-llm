@@ -367,6 +367,14 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
     state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
   }
 
+  /**
+   * Save this module to path.
+   * @param path path to save module, local file system, HDFS and Amazon S3 is supported.
+   *             HDFS path should be like "hdfs://[host]:[port]/xxx"
+   *             Amazon S3 path should be like "s3a://bucket/xxx"
+   * @param overWrite if overwrite
+   * @return self
+   */
   def save(path : String, overWrite: Boolean = false) : this.type = {
     this.clearState()
     File.save(this, path, overWrite)

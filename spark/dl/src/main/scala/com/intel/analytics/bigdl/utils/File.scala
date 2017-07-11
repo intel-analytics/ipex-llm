@@ -70,6 +70,13 @@ object File {
     save(obj, fileName, isOverwrite, conf)
   }
 
+  private[bigdl] def getFileSystem(fileName: String): org.apache.hadoop.fs.FileSystem = {
+    val src = new Path(fileName)
+    val fs = src.getFileSystem(File.getConfiguration(fileName))
+    require(fs.exists(src), src + " does not exists")
+    fs
+  }
+
   private[bigdl] def getConfiguration(fileName: String): Configuration = {
     if (fileName.startsWith(File.hdfsPrefix) || fileName.startsWith(s3aPrefix)) {
       new Configuration()
