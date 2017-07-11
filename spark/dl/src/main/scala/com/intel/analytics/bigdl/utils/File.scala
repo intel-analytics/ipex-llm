@@ -105,8 +105,6 @@ object File {
       objFile = new ObjectOutputStream(byteArrayOut)
       objFile.writeObject(obj)
       IOUtils.copyBytes(new ByteArrayInputStream(byteArrayOut.toByteArray), out, 1024, true)
-      objFile.close()
-      out.close()
     } finally {
       if (null != objFile) objFile.close()
       if (null != out) out.close()
@@ -141,8 +139,6 @@ object File {
       objFile = new ObjectOutputStream(byteArrayOut)
       objFile.writeObject(obj)
       IOUtils.copyBytes(new ByteArrayInputStream(byteArrayOut.toByteArray), out, 1024, true)
-      objFile.close()
-      out.close()
     } finally {
       if (null != objFile) objFile.close()
       if (null != out) out.close()
@@ -199,8 +195,6 @@ object File {
       in = fs.open(src)
       val byteArrayOut = new ByteArrayOutputStream()
       IOUtils.copyBytes(in, byteArrayOut, 1024, true)
-      in.close()
-      fs.close()
       objFile = new ObjectInputStream(new ByteArrayInputStream(byteArrayOut.toByteArray))
       val result = objFile.readObject()
       result.asInstanceOf[T]
@@ -225,8 +219,6 @@ object File {
       in = fs.open(src)
       val byteArrayOut = new ByteArrayOutputStream()
       IOUtils.copyBytes(in, byteArrayOut, 1024, true)
-      in.close()
-      fs.close()
       byteArrayOut.toByteArray
     } finally {
       if (null != in) in.close()
