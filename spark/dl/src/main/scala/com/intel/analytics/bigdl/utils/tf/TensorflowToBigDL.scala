@@ -363,9 +363,7 @@ object Conv2D extends TensorflowToBigDL{
     }
     val (pW, pH) =
       if (attributes.get("padding").getS.toString(Charset.defaultCharset()) == "SAME") {
-        require((kernelW - strideW) % 2 == 0)
-        require((kernelH - strideH) % 2 == 0)
-        ((kernelW - strideW) / 2, (kernelH - strideH) / 2)
+        (-1, -1)
       } else {
         (0, 0)
       }

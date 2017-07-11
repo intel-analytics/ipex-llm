@@ -249,7 +249,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     val tfResult = TensorflowToBigDL.toTensor(results.get(results.size()-1)
       .getAttrMap.get("value").getTensor, ByteOrder.LITTLE_ENDIAN)
     val bigDLResult = model.forward(input)
-    tfResult.almostEqual(bigDLResult.toTensor, 1e-6)
+    tfResult.almostEqualRelative(bigDLResult.toTensor, 1e-6)
   }
 
   "static lstm rnn " should "have the same inference result as tensorflow" in {
@@ -281,7 +281,20 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     val tfResult = TensorflowToBigDL.toTensor(results.get(results.size()-1)
       .getAttrMap.get("value").getTensor, ByteOrder.LITTLE_ENDIAN)
     val bigDLResult = model.forward(input)
-    tfResult.almostEqual(bigDLResult.toTensor, 1e-5)
+    tfResult.almostEqualRelative(bigDLResult.toTensor, 1e-5)
+  }
+
+  "convolution with SAME padding" should "be load correctly" in {
+    val output = Seq("output:0")
+    val comparePairs = testModel("padding", output, true)
+    for (i <- 0 until output.length) {
+      val (tf, bigdl) = comparePairs(i)
+      tf.almostEqualRelative(bigdl, 1e-6) should be(true)
+    }
+    for (i <- output.length until comparePairs.length) {
+      val (tf, bigdl) = comparePairs(i)
+      tf.almostEqualRelative(bigdl, 1e-4) should be(true)
+    }
   }
 
   "Tensorflow lenet" should "be load correctly" in {

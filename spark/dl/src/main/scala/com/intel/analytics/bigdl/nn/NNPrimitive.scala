@@ -22,12 +22,12 @@ import com.intel.analytics.bigdl.tensor.Tensor
 
 object NNPrimitive {
   def im2colDouble(
-    fInput: Tensor[Double], input: Tensor[Double],
-    kW: Int, kH: Int,
-    dW: Int, dH: Int,
-    padW: Int, padH: Int,
-    nInputPlane: Int, inputWidth: Int, inputHeight: Int,
-    outputWidth: Int, outputHeight: Int): Unit = {
+                    fInput: Tensor[Double], input: Tensor[Double],
+                    kW: Int, kH: Int,
+                    dW: Int, dH: Int,
+                    padLeft: Int, padTop: Int,
+                    nInputPlane: Int, inputWidth: Int, inputHeight: Int,
+                    outputWidth: Int, outputHeight: Int): Unit = {
 
     val inputData = input.storage().array()
     val fInputData = fInput.storage().array()
@@ -40,18 +40,18 @@ object NNPrimitive {
       val kw = rest % kW
       val dstOffset = k * outputHeight * outputWidth + fInput.storageOffset() - 1
       val srcOffset = nip * inputWidth * inputHeight + input.storageOffset() - 1
-      if (padW > 0 || padH > 0) {
+      if (padLeft > 0 || padTop > 0) {
         var y = 0
         while (y < outputHeight) {
-          val iy = y * dH - padH + kh
+          val iy = y * dH - padTop + kh
           if (iy < 0 || iy >= inputHeight) {
             util.Arrays.fill(fInputData, dstOffset + y * outputWidth,
               dstOffset + (y + 1) * outputWidth, 0)
           } else {
             if (dW == 1) {
-              val ix = 0 - padW + kw
-              val lpad = Math.max(0, padW - kw)
-              val rpad = Math.max(0, padW - (kW - kw - 1))
+              val ix = 0 - padLeft + kw
+              val lpad = Math.max(0, padLeft - kw)
+              val rpad = Math.max(0, padLeft - (kW - kw - 1))
               if (outputWidth - rpad - lpad <= 0) {
                 util.Arrays.fill(fInputData, dstOffset + y * outputWidth,
                   dstOffset + (y + 1) * outputWidth, 0)
@@ -66,7 +66,7 @@ object NNPrimitive {
             } else {
               var x = 0
               while (x < outputWidth) {
-                val ix = x * dW - padW + kw
+                val ix = x * dW - padLeft + kw
                 if (ix < 0 || ix >= inputWidth) {
                   fInputData(dstOffset + y * outputWidth + x) = 0
                 } else {
@@ -103,12 +103,12 @@ object NNPrimitive {
   }
 
   def im2colFloat(
-    fInput: Tensor[Float], input: Tensor[Float],
-    kW: Int, kH: Int,
-    dW: Int, dH: Int,
-    padW: Int, padH: Int,
-    nInputPlane: Int, inputWidth: Int, inputHeight: Int,
-    outputWidth: Int, outputHeight: Int): Unit = {
+                   fInput: Tensor[Float], input: Tensor[Float],
+                   kW: Int, kH: Int,
+                   dW: Int, dH: Int,
+                   padLeft: Int, padTop: Int,
+                   nInputPlane: Int, inputWidth: Int, inputHeight: Int,
+                   outputWidth: Int, outputHeight: Int): Unit = {
 
     val inputData = input.storage().array()
     val fInputData = fInput.storage().array()
@@ -121,18 +121,18 @@ object NNPrimitive {
       val kw = rest % kW
       val dstOffset = k * outputHeight * outputWidth + fInput.storageOffset() - 1
       val srcOffset = nip * inputWidth * inputHeight + input.storageOffset() - 1
-      if (padW > 0 || padH > 0) {
+      if (padLeft > 0 || padTop > 0) {
         var y = 0
         while (y < outputHeight) {
-          val iy = y * dH - padH + kh
+          val iy = y * dH - padTop + kh
           if (iy < 0 || iy >= inputHeight) {
             util.Arrays.fill(fInputData, dstOffset + y * outputWidth,
               dstOffset + (y + 1) * outputWidth, 0)
           } else {
             if (dW == 1) {
-              val ix = 0 - padW + kw
-              val lpad = Math.max(0, padW - kw)
-              val rpad = Math.max(0, padW - (kW - kw - 1))
+              val ix = 0 - padLeft + kw
+              val lpad = Math.max(0, padLeft - kw)
+              val rpad = Math.max(0, padLeft - (kW - kw - 1))
               if (outputWidth - rpad - lpad <= 0) {
                 util.Arrays.fill(fInputData, dstOffset + y * outputWidth,
                   dstOffset + (y + 1) * outputWidth, 0)
@@ -147,7 +147,7 @@ object NNPrimitive {
             } else {
               var x = 0
               while (x < outputWidth) {
-                val ix = x * dW - padW + kw
+                val ix = x * dW - padLeft + kw
                 if (ix < 0 || ix >= inputWidth) {
                   fInputData(dstOffset + y * outputWidth + x) = 0
                 } else {
@@ -187,7 +187,7 @@ object NNPrimitive {
                         fInput: Tensor[Double], input: Tensor[Double],
                         kW: Int, kH: Int,
                         dW: Int, dH: Int,
-                        padW: Int, padH: Int,
+                        padLeft: Int, padTop: Int,
                         nInputPlane: Int, inputWidth: Int, inputHeight: Int,
                         outputWidth: Int, outputHeight: Int): Unit = {
 
@@ -197,11 +197,11 @@ object NNPrimitive {
     val srcOffset = input.storageOffset()
     val destOffset = fInput.storageOffset()
 
-    var hPad = -padH
+    var hPad = -padTop
     var fInputCount = 0
     var h = 0
     while (h < outputHeight) {
-      var wPad = -padW
+      var wPad = -padLeft
       var w = 0
       while (w < outputWidth) {
         var ih = hPad
@@ -235,7 +235,7 @@ object NNPrimitive {
                        fInput: Tensor[Float], input: Tensor[Float],
                        kW: Int, kH: Int,
                        dW: Int, dH: Int,
-                       padW: Int, padH: Int,
+                       padLeft: Int, padTop: Int,
                        nInputPlane: Int, inputWidth: Int, inputHeight: Int,
                        outputWidth: Int, outputHeight: Int): Unit = {
 
@@ -245,11 +245,11 @@ object NNPrimitive {
     val srcOffset = input.storageOffset()
     val destOffset = fInput.storageOffset()
 
-    var hPad = -padH
+    var hPad = -padTop
     var fInputCount = 0
     var h = 0
     while (h < outputHeight) {
-      var wPad = -padW
+      var wPad = -padLeft
       var w = 0
       while (w < outputWidth) {
         var ih = hPad
@@ -283,7 +283,7 @@ object NNPrimitive {
                         fInput: Tensor[Double], input: Tensor[Double],
                         kW: Int, kH: Int,
                         dW: Int, dH: Int,
-                        padW: Int, padH: Int,
+                        padLeft: Int, padTop: Int,
                         nInputPlane: Int,
                         inputWidth: Int, inputHeight: Int,
                         outputWidth: Int, outputHeight: Int
@@ -292,11 +292,11 @@ object NNPrimitive {
     val inputOffset = input.storageOffset()
     val fInputData = fInput.storage().array()
     val fInputOffset = fInput.storageOffset()
-    var hPad = -padH
+    var hPad = -padTop
     var h = 0
     var fInputCount = 0
     while (h < outputHeight) {
-      var wPad = -padW
+      var wPad = -padLeft
       var w = 0
       while (w < outputWidth) {
         var ih = hPad
@@ -327,23 +327,23 @@ object NNPrimitive {
   }
 
   def col2imFloatNHWC(
-                        fInput: Tensor[Float], input: Tensor[Float],
-                        kW: Int, kH: Int,
-                        dW: Int, dH: Int,
-                        padW: Int, padH: Int,
-                        nInputPlane: Int,
-                        inputWidth: Int, inputHeight: Int,
-                        outputWidth: Int, outputHeight: Int
+                       fInput: Tensor[Float], input: Tensor[Float],
+                       kW: Int, kH: Int,
+                       dW: Int, dH: Int,
+                       padLeft: Int, padTop: Int,
+                       nInputPlane: Int,
+                       inputWidth: Int, inputHeight: Int,
+                       outputWidth: Int, outputHeight: Int
                       ): Unit = {
     val inputData = input.storage().array()
     val inputOffset = input.storageOffset()
     val fInputData = fInput.storage().array()
     val fInputOffset = fInput.storageOffset()
-    var hPad = -padH
+    var hPad = -padTop
     var h = 0
     var fInputCount = 0
     while (h < outputHeight) {
-      var wPad = -padW
+      var wPad = -padLeft
       var w = 0
       while (w < outputWidth) {
         var ih = hPad
@@ -374,13 +374,13 @@ object NNPrimitive {
   }
 
   def col2imDouble(
-    fInput: Tensor[Double], input: Tensor[Double],
-    kW: Int, kH: Int,
-    dW: Int, dH: Int,
-    padW: Int, padH: Int,
-    nInputPlane: Int,
-    inputWidth: Int, inputHeight: Int,
-    outputWidth: Int, outputHeight: Int
+                    fInput: Tensor[Double], input: Tensor[Double],
+                    kW: Int, kH: Int,
+                    dW: Int, dH: Int,
+                    padLeft: Int, padTop: Int,
+                    nInputPlane: Int,
+                    inputWidth: Int, inputHeight: Int,
+                    outputWidth: Int, outputHeight: Int
   ): Unit = {
 
     val inputData = input.storage().array()
@@ -395,15 +395,15 @@ object NNPrimitive {
             kh * (kW * outputHeight * outputWidth) +
             kw * (outputHeight * outputWidth) + fInput.storageOffset() - 1
           val dstOffset = nPlane * (inputHeight * inputWidth) + input.storageOffset() - 1
-          if (padW > 0 || padH > 0) {
+          if (padLeft > 0 || padTop > 0) {
             var y = 0
             while (y < outputHeight) {
-              val iy = y * dH - padH + kh
+              val iy = y * dH - padTop + kh
               if (iy >= 0 && iy < inputHeight) {
                 if (dW == 1) {
-                  val ix = 0 - padW + kw
-                  val lPad = Math.max(0, padW - kw)
-                  val rPad = Math.max(0, padW - (kW - kw - 1))
+                  val ix = 0 - padLeft + kw
+                  val lPad = Math.max(0, padLeft - kw)
+                  val rPad = Math.max(0, padLeft - (kW - kw - 1))
                   val inputDataOffset = dstOffset + iy * inputWidth + ix + lPad
                   val fInputDataOffset = srcOffset + y * outputWidth + lPad
                   val n = outputWidth - lPad - rPad
@@ -415,7 +415,7 @@ object NNPrimitive {
                 } else {
                   var x = 0
                   while (x < outputWidth) {
-                    val ix = x * dW - padW + kw
+                    val ix = x * dW - padLeft + kw
                     if (ix >= 0 && ix < inputWidth) {
                       inputData(dstOffset + iy * inputWidth + ix) +=
                         fInputData(srcOffset + y * outputWidth + x)
@@ -459,13 +459,13 @@ object NNPrimitive {
   }
 
   def col2imFloat(
-    fInput: Tensor[Float], input: Tensor[Float],
-    kW: Int, kH: Int,
-    dW: Int, dH: Int,
-    padW: Int, padH: Int,
-    nInputPlane: Int,
-    inputWidth: Int, inputHeight: Int,
-    outputWidth: Int, outputHeight: Int
+                   fInput: Tensor[Float], input: Tensor[Float],
+                   kW: Int, kH: Int,
+                   dW: Int, dH: Int,
+                   padLeft: Int, padTop: Int,
+                   nInputPlane: Int,
+                   inputWidth: Int, inputHeight: Int,
+                   outputWidth: Int, outputHeight: Int
   ): Unit = {
 
     val inputData = input.storage().array()
@@ -480,15 +480,15 @@ object NNPrimitive {
             (kW * outputHeight * outputWidth) +
             kw * (outputHeight * outputWidth) + fInput.storageOffset() - 1
           val dstOffset = nPlane * (inputHeight * inputWidth) + input.storageOffset() - 1
-          if (padW > 0 || padH > 0) {
+          if (padLeft > 0 || padTop > 0) {
             var y = 0
             while (y < outputHeight) {
-              val iy = y * dH - padH + kh
+              val iy = y * dH - padTop + kh
               if (iy >= 0 && iy < inputHeight) {
                 if (dW == 1) {
-                  val ix = 0 - padW + kw
-                  val lPad = Math.max(0, padW - kw)
-                  val rPad = Math.max(0, padW - (kW - kw - 1))
+                  val ix = 0 - padLeft + kw
+                  val lPad = Math.max(0, padLeft - kw)
+                  val rPad = Math.max(0, padLeft - (kW - kw - 1))
                   val inputDataOffset = dstOffset + iy * inputWidth + ix + lPad
                   val fInputDataOffset = srcOffset + y * outputWidth + lPad
                   val n = outputWidth - lPad - rPad
@@ -500,7 +500,7 @@ object NNPrimitive {
                 } else {
                   var x = 0
                   while (x < outputWidth) {
-                    val ix = x * dW - padW + kw
+                    val ix = x * dW - padLeft + kw
                     if (ix >= 0 && ix < inputWidth) {
                       inputData(dstOffset + iy * inputWidth + ix) +=
                         fInputData(srcOffset + y * outputWidth + x)

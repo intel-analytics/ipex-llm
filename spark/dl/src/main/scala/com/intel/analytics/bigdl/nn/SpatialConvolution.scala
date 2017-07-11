@@ -30,6 +30,18 @@ import scala.reflect.ClassTag
  * The input tensor in forward(input) is expected to be
  * a 3D tensor (nInputPlane x height x width).
  *
+ * When padW and padH are both -1, we use a padding algorithm similar to the "SAME"
+ * padding of tensorflow. That is
+ *
+ * outHeight = Math.ceil(inHeight.toFloat/strideH.toFloat)
+ * outWidth = Math.ceil(inWidth.toFloat/strideW.toFloat)
+ *
+ * padAlongHeight = (outHeight - 1) * strideH + kernelH - inHeight
+ * padAlongWidth = (outWidth - 1) * strideW + kernelW - inWidth
+ *
+ * padTop = padAlongHeight / 2
+ * padLeft = padAlongWidth / 2
+ *
  * @param wRegularizer: instance of [[Regularizer]]
  *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
  * @param bRegularizer: instance of [[Regularizer]]
@@ -200,8 +212,19 @@ class SpatialConvolution[T: ClassTag](
     val inputWidth = input.size(dimWidth)
     val inputHeight = input.size(dimHeight)
 
-    val outputWidth = (inputWidth + 2 * padW - kernelW) / strideW + 1
-    val outputHeight = (inputHeight + 2 * padH - kernelH) / strideH + 1
+    val (padTop, padDown, padLeft, padRight) = if (padW == -1 && padH == -1) {
+      val oW = Math.ceil(inputWidth.toFloat / strideW.toFloat).toInt
+      val oH = Math.ceil(inputHeight.toFloat / strideH.toFloat).toInt
+      val padAlongWidth = (oW -1) * strideW + kernelW - inputWidth
+      val padAlongHeight = (oH - 1) * strideH + kernelH - inputHeight
+      (padAlongHeight/2, padAlongHeight - padAlongHeight/2,
+        padAlongWidth/2, padAlongWidth - padAlongWidth/2)
+    } else {
+      (padH, padH, padW, padW)
+    }
+
+    val outputWidth = (inputWidth + padLeft + padRight - kernelW) / strideW + 1
+    val outputHeight = (inputHeight + padTop + padDown - kernelH) / strideH + 1
 
     require(outputWidth >= 1 && outputHeight >= 1,
       s"output size is too small. outputWidth: $outputWidth, outputHeight: $outputHeight")
@@ -231,7 +254,7 @@ class SpatialConvolution[T: ClassTag](
           biasUse,
           fInput.select(1, g + 1),
           kernelW, kernelH, strideW, strideH,
-          padW, padH,
+          padLeft, padTop,
           nInputPlane / nGroup, inputWidth, inputHeight,
           nOutputPlane / nGroup, outputWidth, outputHeight)
         g += 1
@@ -270,7 +293,7 @@ class SpatialConvolution[T: ClassTag](
               biasUse,
               fInputT.select(1, g + 1),
               kernelW, kernelH, strideW, strideH,
-              padW, padH,
+              padLeft, padTop,
               nInputPlane / nGroup, inputWidth, inputHeight,
               nOutputPlane / nGroup, outputWidth, outputHeight)
             g += 1
@@ -292,6 +315,20 @@ class SpatialConvolution[T: ClassTag](
     val oh = gradOutput.size(ohDim)
     val ow = gradOutput.size(owDim)
 
+    val inputWidth = input.size(owDim)
+    val inputHeight = input.size(ohDim)
+
+    val (padTop, padDown, padLeft, padRight) = if (padW == -1 && padH == -1) {
+      val oW = Math.ceil(inputWidth.toFloat / strideW.toFloat).toInt
+      val oH = Math.ceil(inputHeight.toFloat / strideH.toFloat).toInt
+      val padAlongWidth = (oW -1) * strideW + kernelW - inputWidth
+      val padAlongHeight = (oH - 1) * strideH + kernelH - inputHeight
+      (padAlongHeight/2, padAlongHeight - padAlongHeight/2,
+        padAlongWidth/2, padAlongWidth - padAlongWidth/2)
+    } else {
+      (padH, padH, padW, padW)
+    }
+
     require(input.nDimension() == 3 || input.nDimension() == 4, "Only support 3D or 4D input")
     gradInput.resizeAs(input)
     if (_1x1) {
@@ -310,7 +347,7 @@ class SpatialConvolution[T: ClassTag](
           gradOutput.narrow(cDim, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
           weightMM.select(1, g + 1).transpose(1, 2),
           fGradInput.select(1, g + 1),
-          kernelW, kernelH, strideW, strideH, padW, padH)
+          kernelW, kernelH, strideW, strideH, padLeft, padTop)
         g += 1
       }
     } else {
@@ -330,7 +367,7 @@ class SpatialConvolution[T: ClassTag](
               gradOutputT.narrow(cDim - 1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
               weightMM.select(1, g + 1).transpose(1, 2),
               fgradInputT.select(1, g + 1),
-              kernelW, kernelH, strideW, strideH, padW, padH)
+              kernelW, kernelH, strideW, strideH, padLeft, padTop)
             g += 1
           }
         })
@@ -532,11 +569,12 @@ class SpatialConvolution[T: ClassTag](
       s" $kernelH, $strideW, $strideH, $padW, $padH)"
   }
 
-  protected def updateOutputFrame(input: Tensor[T], output: Tensor[T], weight: Tensor[T],
-    bias: Tensor[T], fInput: Tensor[T],
-    kW: Int, kH: Int, dW: Int, dH: Int, padW: Int, padH: Int,
-    nInputPlane: Int, inputWidth: Int, inputHeight: Int,
-    nOutputPlane: Int, outputWidth: Int, outputHeight: Int)(
+  protected def updateOutputFrame(
+     input: Tensor[T], output: Tensor[T], weight: Tensor[T],
+     bias: Tensor[T], fInput: Tensor[T],
+     kW: Int, kH: Int, dW: Int, dH: Int, padLeft: Int, padTop: Int,
+     nInputPlane: Int, inputWidth: Int, inputHeight: Int,
+     nOutputPlane: Int, outputWidth: Int, outputHeight: Int)(
     implicit ev: TensorNumeric[T]): Unit = {
 
     format match {
@@ -547,13 +585,13 @@ class SpatialConvolution[T: ClassTag](
             case DoubleType =>
               val before = System.nanoTime()
               NNPrimitive.im2colDouble(fInput.asInstanceOf[Tensor[Double]],
-                input.asInstanceOf[Tensor[Double]], kW, kH, dW, dH, padW, padH, nInputPlane,
+                input.asInstanceOf[Tensor[Double]], kW, kH, dW, dH, padLeft, padTop, nInputPlane,
                 inputWidth, inputHeight, outputWidth, outputHeight)
               im2colTime += System.nanoTime() - before
             case FloatType =>
               val before = System.nanoTime()
               NNPrimitive.im2colFloat(fInput.asInstanceOf[Tensor[Float]],
-                input.asInstanceOf[Tensor[Float]], kW, kH, dW, dH, padW, padH, nInputPlane,
+                input.asInstanceOf[Tensor[Float]], kW, kH, dW, dH, padLeft, padTop, nInputPlane,
                 inputWidth, inputHeight, outputWidth, outputHeight)
               im2colTime += System.nanoTime() - before
             case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
@@ -568,13 +606,13 @@ class SpatialConvolution[T: ClassTag](
             case DoubleType =>
               val before = System.nanoTime()
               NNPrimitive.im2colDoubleNHWC(fInput.asInstanceOf[Tensor[Double]],
-                input.asInstanceOf[Tensor[Double]], kW, kH, dW, dH, padW, padH, nInputPlane,
+                input.asInstanceOf[Tensor[Double]], kW, kH, dW, dH, padLeft, padTop, nInputPlane,
                 inputWidth, inputHeight, outputWidth, outputHeight)
               im2colTime += System.nanoTime() - before
             case FloatType =>
               val before = System.nanoTime()
               NNPrimitive.im2colFloatNHWC(fInput.asInstanceOf[Tensor[Float]],
-                input.asInstanceOf[Tensor[Float]], kW, kH, dW, dH, padW, padH, nInputPlane,
+                input.asInstanceOf[Tensor[Float]], kW, kH, dW, dH, padLeft, padTop, nInputPlane,
                 inputWidth, inputHeight, outputWidth, outputHeight)
               im2colTime += System.nanoTime() - before
             case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
@@ -585,9 +623,10 @@ class SpatialConvolution[T: ClassTag](
     }
   }
 
-  protected def updateGradInputFrame(gradInput: Tensor[T], gradOutput: Tensor[T],
+  protected def updateGradInputFrame(
+     gradInput: Tensor[T], gradOutput: Tensor[T],
      weight: Tensor[T], fgradInput: Tensor[T], kW: Int, kH: Int, dW: Int, dH: Int,
-     padW: Int, padH: Int)(implicit ev: TensorNumeric[T]): Unit = {
+     padLeft: Int, padTop: Int)(implicit ev: TensorNumeric[T]): Unit = {
     ev.getType() match {
       case DoubleType =>
         val gradOutDouble = gradOutput.asInstanceOf[Tensor[Double]]
@@ -605,7 +644,7 @@ class SpatialConvolution[T: ClassTag](
               gradInputDouble.zero()
               val before = System.nanoTime()
               NNPrimitive.col2imDouble(fGradInDouble,
-                gradInputDouble, kW, kH, dW, dH, padW, padH, gradInput.size(1),
+                gradInputDouble, kW, kH, dW, dH, padLeft, padTop, gradInput.size(1),
                 gradInput.size(3), gradInput.size(2),
                 gradOutput.size(3), gradOutput.size(2))
               col2imTime += System.nanoTime() - before
@@ -620,7 +659,7 @@ class SpatialConvolution[T: ClassTag](
               gradInputDouble.zero()
               val before = System.nanoTime()
               NNPrimitive.col2imDoubleNHWC(fGradInDouble,
-                gradInputDouble, kW, kH, dW, dH, padW, padH, gradInput.size(3),
+                gradInputDouble, kW, kH, dW, dH, padLeft, padTop, gradInput.size(3),
                 gradInput.size(2), gradInput.size(1),
                 gradOutput.size(2), gradOutput.size(1))
               col2imTime += System.nanoTime() - before
@@ -642,7 +681,7 @@ class SpatialConvolution[T: ClassTag](
               gradInputFloat.zero()
               val before = System.nanoTime()
               NNPrimitive.col2imFloat(fGradInFloat,
-                gradInputFloat, kW, kH, dW, dH, padW, padH, gradInput.size(1),
+                gradInputFloat, kW, kH, dW, dH, padLeft, padTop, gradInput.size(1),
                 gradInput.size(3), gradInput.size(2),
                 gradOutput.size(3), gradOutput.size(2))
               col2imTime += System.nanoTime() - before
@@ -657,7 +696,7 @@ class SpatialConvolution[T: ClassTag](
               gradInputFloat.zero()
               val before = System.nanoTime()
               NNPrimitive.col2imFloatNHWC(fGradInFloat,
-                gradInputFloat, kW, kH, dW, dH, padW, padH, gradInput.size(3),
+                gradInputFloat, kW, kH, dW, dH, padLeft, padTop, gradInput.size(3),
                 gradInput.size(2), gradInput.size(1),
                 gradOutput.size(2), gradOutput.size(1))
               col2imTime += System.nanoTime() - before

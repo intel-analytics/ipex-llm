@@ -671,6 +671,19 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
     })
     return result
   }
+
+  def almostEqualRelative(other: Tensor[T], delta: Double): Boolean = {
+    var result = true
+    this.map(other, (a, b) => {
+      val tn = getTensorNumeric()
+      if (tn.isGreater(tn.abs(tn.divide(tn.minus(a, b), tn.divide(tn.plus(a, b), tn.fromType(2)))),
+        tn.fromType(delta))) {
+        result = false
+      }
+      a
+    })
+    result
+  }
 }
 
 /**
