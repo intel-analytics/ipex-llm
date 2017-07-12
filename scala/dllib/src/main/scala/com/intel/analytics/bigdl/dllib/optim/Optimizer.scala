@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.optim
 import java.nio.file.{Files, Paths}
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.{DataSet, _}
+import com.intel.analytics.bigdl.dataset.{DataSet, SampleToMiniBatch, _}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
@@ -100,6 +100,35 @@ abstract class Optimizer[T: ClassTag, D](
   : this.type = {
     this.validationTrigger = Some(trigger)
     this.validationDataSet = Some(dataset)
+    this.validationMethods = Some(vMethods)
+    this
+  }
+
+  /**
+   * Set a validate evaluation
+   *
+   * @param trigger how often to evaluation validation set
+   * @param sampleRDD validate data set in type of [[RDD]] of [[Sample]]
+   * @param vMethods a set of validation method [[ValidationMethod]]
+   * @param batchSize batch size
+   * @param featurePaddingParam feature padding strategy, see
+   *                            [[com.intel.analytics.bigdl.dataset.PaddingParam]] for details.
+   * @param labelPaddingParam   label padding strategy, see
+   *                            [[com.intel.analytics.bigdl.dataset.PaddingParam]] for details.
+   *
+   * @return this optimizer
+   */
+  def setValidation(trigger: Trigger, sampleRDD: RDD[Sample[T]],
+    vMethods : Array[ValidationMethod[T]], batchSize: Int,
+    featurePaddingParam: PaddingParam[T],
+    labelPaddingParam: PaddingParam[T]
+  ): this.type = {
+    this.validationTrigger = Some(trigger)
+    val dataSet =
+      (DataSet.rdd(sampleRDD) ->
+        SampleToMiniBatch(batchSize, Some(featurePaddingParam), Some(labelPaddingParam)))
+        .asInstanceOf[DistributedDataSet[MiniBatch[T]]]
+    this.validationDataSet = Some(dataSet)
     this.validationMethods = Some(vMethods)
     this
   }
