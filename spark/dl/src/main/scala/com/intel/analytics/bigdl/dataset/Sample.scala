@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.dataset
 
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import org.apache.commons.lang3.SerializationUtils
 
 import scala.reflect.ClassTag
 
@@ -57,6 +58,14 @@ abstract class Sample[T: ClassTag] extends Serializable {
    * @return number of tensors in label
    */
   def numLabel(): Int
+
+  /**
+    * Deep clone
+    *
+    * @return a deep clone
+    */
+  override def clone(): this.type =
+    SerializationUtils.clone(this)
 
   /**
    * Get feature tensor, for one feature Sample only.
