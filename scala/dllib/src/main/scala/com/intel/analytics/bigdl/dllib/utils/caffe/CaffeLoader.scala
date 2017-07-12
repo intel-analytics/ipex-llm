@@ -108,11 +108,11 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
       logger.info("load caffe model done")
       builder.build()
     } finally {
-      if (modelFs != null) modelFs.close()
-      if (prototxtFs != null) prototxtFs.close()
       if (null != prototxtReader) prototxtReader.close()
       if (null != modelStream) modelStream.close()
       if (null != prototxtStream) prototxtStream.close()
+      if (modelFs != null) modelFs.close()
+      if (prototxtFs != null) prototxtFs.close()
     }
   }
 
