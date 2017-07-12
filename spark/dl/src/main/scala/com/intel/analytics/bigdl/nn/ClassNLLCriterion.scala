@@ -45,7 +45,7 @@ import com.intel.analytics.bigdl.utils.Engine
  * calculating losses in non-batch mode.
  *
  * Note that if the target is `-1`, the training process will skip this sample.
- * In other will, the forward process will return zero output and the backward process
+ * In other words, the forward process will return zero output and the backward process
  * will also return zero `gradInput`.
  *
  * By default, the losses are averaged over observations for each minibatch. However, if the field
