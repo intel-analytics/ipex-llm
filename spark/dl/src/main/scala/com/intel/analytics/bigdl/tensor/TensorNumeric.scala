@@ -130,6 +130,9 @@ object TensorNumericMath {
 
     def sum(n: Int, a: Array[T], aOffset: Int, stride: Int): T
 
+    def arraycopy(src: Array[T], srcPos: Int,
+                  dest: Array[T], destPos: Int, length: Int): Unit
+
     def getType(): TensorDataType
   }
 
@@ -339,6 +342,15 @@ object TensorNumericMath {
         }
         r
       }
+
+      override def arraycopy(
+            src: Array[Float],
+            srcPos: Int,
+            dest: Array[Float],
+            destPos: Int,
+            length: Int): Unit = {
+        System.arraycopy(src, srcPos, dest, destPos, length)
+      }
     }
 
     implicit object NumericDouble extends TensorNumeric[Double] {
@@ -531,6 +543,15 @@ object TensorNumericMath {
           i += 1
         }
         r
+      }
+
+      override def arraycopy(
+            src: Array[Double],
+            srcPos: Int,
+            dest: Array[Double],
+            destPos: Int,
+            length: Int): Unit = {
+        System.arraycopy(src, srcPos, dest, destPos, length)
       }
     }
   }
