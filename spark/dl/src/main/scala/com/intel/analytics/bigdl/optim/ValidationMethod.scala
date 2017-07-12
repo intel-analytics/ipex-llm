@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.nn.AbsCriterion
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.T
 import org.apache.commons.lang3.SerializationUtils
 
 import scala.reflect.ClassTag
@@ -114,6 +115,69 @@ class AccuracyResult(private var correct: Int, private var count: Int)
 /**
  * Caculate the percentage that output's max probability index equals target
  */
+class TreeNNAccuracy[T: ClassTag](fineGrained: Boolean)(
+  implicit ev: TensorNumeric[T])
+  extends ValidationMethod[T] {
+  override def apply(output: Activity, target: Activity):
+  ValidationResult = {
+    var correct = 0
+    var count = 0
+
+    var _output = output.asInstanceOf[Tensor[T]]
+    val _target = target.asInstanceOf[Tensor[T]].select(2, 1)
+    if (_output.dim() == 3) {
+      _output = _output.select(2, 1)
+      (if (_output.size(2) == 1) {
+        _output.apply1(x => if (ev.isGreater(ev.fromType(0.5), x)) ev.zero else ev.one)
+      } else {
+        if (fineGrained) { _output.max(2)._2.squeeze() }
+        else {
+          val result = Tensor[T](Array[Int](_output.size(1)))
+          for (i <- 1 to _output.size(1)) {
+            result.setValue(i,
+              if (ev.isGreater(_output(Array(2, 1)), _output(Array(2, 3)))) ev.one
+              else ev.fromType[Int](3))
+          }
+          result
+        }
+      }).map(_target, (a, b) => {
+        if (a == b) {
+          correct += 1
+        }
+        a
+      })
+      count += _output.size(1)
+    } else if (_output.dim == 2) {
+      _output = _output.select(1, 2)
+      require(_target.size(1) == 1)
+      (if (_output.size(1) == 1) {
+        _output.apply1(x => if (ev.isGreater(ev.fromType(0.5), x)) ev.zero else ev.one)
+      } else {
+        if (fineGrained) { _output.max(1)._2.squeeze() }
+        else {
+          Tensor[T](
+              T(if (ev.isGreater(_output(Array(1, 1)), _output(Array(1, 3)))) ev.one
+              else ev.fromType[Int](3)))
+        }
+      }).map(_target, (a, b) => {
+        if (a == b) {
+          correct += 1
+        }
+        a
+      })
+      count += 1
+    } else {
+      throw new IllegalArgumentException
+    }
+
+    new AccuracyResult(correct, count)
+  }
+
+  override def format(): String = "Top1Accuracy"
+}
+/**
+ * Caculate the percentage that output's max probability index equals target
+ */
 class Top1Accuracy[T](
   implicit ev: TensorNumeric[T])
   extends ValidationMethod[T] {
@@ -156,7 +220,7 @@ class Top1Accuracy[T](
     new AccuracyResult(correct, count)
   }
 
-  override def format(): String = "Top1Accuracy"
+  override def format(): String = "TreeNNAccuracy"
 }
 
 /**

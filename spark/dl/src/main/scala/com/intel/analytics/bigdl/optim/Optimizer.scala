@@ -118,7 +118,21 @@ abstract class Optimizer[T: ClassTag, D](
   : this.type = {
     this.validationTrigger = Some(trigger)
     val dataSet =
-      (DataSet.rdd(sampleRDD) -> SampleToBatch(batchSize))
+      (DataSet.rdd(sampleRDD) -> SampleToMiniBatch(batchSize))
+        .asInstanceOf[DistributedDataSet[MiniBatch[T]]]
+    this.validationDataSet = Some(dataSet)
+    this.validationMethods = Some(vMethods)
+    this
+  }
+
+  def setValidation(trigger: Trigger, sampleRDD: RDD[Sample[T]],
+    vMethods : Array[ValidationMethod[T]], batchSize: Int,
+    featurePaddings : Option[Array[Tensor[T]]],
+    labelPadding : Option[T])
+  : this.type = {
+    this.validationTrigger = Some(trigger)
+    val dataSet =
+      (DataSet.rdd(sampleRDD) -> SampleToMiniBatch(batchSize, featurePaddings, labelPadding, None))
         .asInstanceOf[DistributedDataSet[MiniBatch[T]]]
     this.validationDataSet = Some(dataSet)
     this.validationMethods = Some(vMethods)
@@ -300,7 +314,7 @@ object Optimizer {
       )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
     new DistriOptimizer[T](
       _model = model,
-      dataset = (DataSet.rdd(sampleRDD) -> SampleToBatch(batchSize))
+      dataset = (DataSet.rdd(sampleRDD) -> SampleToMiniBatch(batchSize))
         .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
       criterion = criterion
     ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
@@ -319,7 +333,42 @@ object Optimizer {
     new DistriOptimizer[T](
       _model = model,
       dataset = (DataSet.sortRDD(sampleRDD, isInOrder, batchSize) ->
-        SampleToBatch(batchSize, featurePadding, labelPadding, fixedLength))
+        SampleToMiniBatch(batchSize, featurePadding, labelPadding, fixedLength))
+        .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
+      criterion = criterion
+    ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
+  }
+
+  def apply[T: ClassTag](
+    model: Module[T],
+    sampleRDD: RDD[Sample[T]],
+    criterion: Criterion[T],
+    batchSize: Int,
+    isInOrder: Boolean,
+    featurePaddings : Option[Array[Tensor[T]]],
+    labelPadding : Option[T]
+  )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
+    new DistriOptimizer[T](
+      _model = model,
+      dataset = (DataSet.sortRDD(sampleRDD, isInOrder, batchSize) ->
+        SampleToMiniBatch(batchSize, featurePaddings, labelPadding, None))
+        .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
+      criterion = criterion
+    ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
+  }
+
+  def apply[T: ClassTag](
+        model: Module[T],
+        sampleRDD: RDD[Sample[T]],
+        criterion: Criterion[T],
+        batchSize: Int,
+        isInOrder: Boolean,
+        toMiniBatch: (Array[Sample[T]], Array[Tensor[T]], Array[Tensor[T]]) => MiniBatch[T]
+  )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
+    new DistriOptimizer[T](
+      _model = model,
+      dataset = (DataSet.sortRDD(sampleRDD, isInOrder, batchSize) ->
+        SampleToMiniBatch(batchSize, toMiniBatch))
         .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
       criterion = criterion
     ).asInstanceOf[Optimizer[T, MiniBatch[T]]]

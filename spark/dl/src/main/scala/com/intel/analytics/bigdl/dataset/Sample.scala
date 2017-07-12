@@ -35,6 +35,13 @@ abstract class Sample[T: ClassTag] extends Serializable {
   def featureLength(): Int
 
   /**
+   * Length of the feature.
+   * This function could be used to find the longest label.
+   * @return
+   */
+  def labelLength(): Int
+
+  /**
    * Copy other Sample's data to this Sample
    * @param other Sample to be copied.
    * @return this
@@ -104,6 +111,10 @@ class TensorSample[T: ClassTag](
     featureTensor.size(1)
   }
 
+  override def labelLength(): Int = {
+    labelTensor.size(1)
+  }
+
   override def copy(other: Sample[T]): this.type = {
     require(other.isInstanceOf[TensorSample[T]], "Sample.copy: sample type not match.")
     val s = other.asInstanceOf[TensorSample[T]]
@@ -132,8 +143,191 @@ class TensorSample[T: ClassTag](
   }
 }
 
+/**
+ * A kind of sample. Feature is a tensor, and label is a double/float.
+ * @param featureTensor feature tensor
+ * @param labelValue label
+ * @tparam T numeric type
+ */
+class TensorTSample[T: ClassTag](
+    val featureTensor: Tensor[T],
+    var labelValue: T) extends Sample[T]{
+  override def featureLength(): Int = {
+    featureTensor.size(1)
+  }
+
+  override def labelLength(): Int = {
+    1
+  }
+
+  override def copy(other: Sample[T]): this.type = {
+    require(other.isInstanceOf[TensorTSample[T]], "Sample.copy: sample type not match.")
+    val s = other.asInstanceOf[TensorTSample[T]]
+    featureTensor.resizeAs(s.featureTensor).copy(s.featureTensor)
+    labelValue = s.labelValue
+    this
+  }
+
+  def numFeature(): Int = 1
+
+  def numLabel(): Int = 1
+
+  def canEqual(other: Any): Boolean = other.isInstanceOf[TensorTSample[T]]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: TensorTSample[T] =>
+      (that canEqual this) &&
+        featureTensor == that.featureTensor &&
+        labelValue == that.labelValue
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    val state = Seq(featureTensor, labelValue)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
+}
+
+/**
+ * A kind of sample. Feature is an Array[Tensor], and label is a tensor too.
+ * @param features array of tensor
+ * @param labels label tensor
+ * @tparam T numeric type
+ */
+class ArrayTensorSample[T: ClassTag](
+    val features: Array[Tensor[T]],
+    val labels: Tensor[T]) extends Sample[T] {
+  override def featureLength(): Int = {
+    features(0).size(1)
+  }
+
+  def featuresLength(): Array[Int] = {
+    features.map(_.size(1))
+  }
+
+  override def labelLength(): Int = {
+    labels.size(1)
+  }
+
+  override def copy(other: Sample[T]): this.type = {
+    require(other.isInstanceOf[ArrayTensorSample[T]], "Sample.copy: sample type not match.")
+    val s = other.asInstanceOf[ArrayTensorSample[T]]
+    require(s.features.length == features.length, "Sample.copy: sample type not match.")
+    var i = 0
+    while (i < features.length) {
+      features(i).resizeAs(s.features(i)).copy(s.features(i))
+      i += 1
+    }
+    labels.resizeAs(s.labels).copy(s.labels)
+    this
+  }
+
+  def numFeature(): Int = features.length
+
+  def numLabel(): Int = 1
+
+  def canEqual(other: Any): Boolean = other.isInstanceOf[ArrayTensorSample[T]]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: ArrayTensorSample[T] =>
+      (that canEqual this) &&
+        features == that.features &&
+        labels == that.labels
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    val state = Seq(features, labels)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
+}
+
+/**
+ * A kind of sample doesn't contain label. Feature is a Tensor.
+ * @param featureTensor feature tensor
+ * @tparam T numeric type
+ */
+class UnlabeledTensorSample[T: ClassTag](
+      val featureTensor: Tensor[T]) extends Sample[T]{
+  override def featureLength(): Int = {
+    featureTensor.size(1)
+  }
+
+  override def labelLength(): Int = 0
+
+  override def copy(other: Sample[T]): this.type = {
+    require(other.isInstanceOf[UnlabeledTensorSample[T]], "Sample.copy: sample type not match.")
+    val s = other.asInstanceOf[UnlabeledTensorSample[T]]
+    featureTensor.resizeAs(s.featureTensor).copy(s.featureTensor)
+    this
+  }
+
+  def numFeature(): Int = 1
+
+  def numLabel(): Int = 0
+
+  def canEqual(other: Any): Boolean = other.isInstanceOf[UnlabeledTensorSample[T]]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: TensorTSample[T] =>
+      (that canEqual this) &&
+        featureTensor == that.featureTensor
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    val state = Seq(featureTensor)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
+}
+
+/**
+ * A kind of sample doesn't contain label. Feature is an Array[Tensor].
+ * @param features array of tensor
+ * @tparam T numeric type
+ */
+class UnlabeledArrayTensorSample[T: ClassTag](
+      val features: Array[Tensor[T]]) extends Sample[T] {
+  override def featureLength(): Int = {
+    features(0).size(1)
+  }
+
+  override def labelLength(): Int = 0
+
+  override def copy(other: Sample[T]): this.type = {
+    require(other.isInstanceOf[UnlabeledArrayTensorSample[T]],
+      "Sample.copy: sample type not match.")
+    val s = other.asInstanceOf[UnlabeledArrayTensorSample[T]]
+    require(s.features.length == features.length, "Sample.copy: sample type not match.")
+    var i = 0
+    while (i < features.length) {
+      features(i).resizeAs(s.features(i)).copy(s.features(i))
+      i += 1
+    }
+    this
+  }
+
+  def numFeature(): Int = features.length
+
+  def numLabel(): Int = 0
+
+  def canEqual(other: Any): Boolean = other.isInstanceOf[UnlabeledArrayTensorSample[T]]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: UnlabeledArrayTensorSample[T] =>
+      (that canEqual this) &&
+        features == that.features
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    val state = Seq(features)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
+}
+
 object Sample {
-  def apply[@specialized(Float, Double) T: ClassTag](
+  def apply[T: ClassTag](
         featureTensor: Tensor[T],
         labelTensor: Tensor[T])(implicit ev: TensorNumeric[T]) : Sample[T] = {
     new TensorSample[T](featureTensor, labelTensor)
@@ -143,5 +337,27 @@ object Sample {
   def apply[@specialized(Float, Double) T: ClassTag]()(
         implicit ev: TensorNumeric[T]) : Sample[T] = {
     new TensorSample[T](Tensor[T](), Tensor[T]())
+  }
+
+  def apply[T: ClassTag](
+        featureTensor: Tensor[T],
+        label: T)(implicit ev: TensorNumeric[T]) : Sample[T] = {
+    new TensorTSample[T](featureTensor, label)
+  }
+
+  def apply[T: ClassTag](
+        featureTensors: Array[Tensor[T]],
+        labelTensor: Tensor[T])(implicit ev: TensorNumeric[T]) : Sample[T] = {
+    new ArrayTensorSample[T](featureTensors, labelTensor)
+  }
+
+  def apply[T: ClassTag](
+        featureTensor: Tensor[T])(implicit ev: TensorNumeric[T]) : Sample[T] = {
+    new UnlabeledTensorSample[T](featureTensor)
+  }
+
+  def apply[T: ClassTag](
+        featureTensors: Array[Tensor[T]])(implicit ev: TensorNumeric[T]) : Sample[T] = {
+    new UnlabeledArrayTensorSample[T](featureTensors)
   }
 }

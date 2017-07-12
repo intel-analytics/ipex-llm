@@ -566,7 +566,9 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     if (_z < 0) {
       _z = this.size(dim) + _z + 1
     }
-    require(_z >= 0 && _z < this.size(dim), "index out of bound")
+    require(_z >= 0 && _z < this.size(dim),
+      s"index out of bound, index i = ${_z},"
+      + s" which should satisfy 0 <= i < ${this.size(dim)}")
     _z * this.stride(dim)
   }
 
@@ -2245,13 +2247,20 @@ object DenseTensor {
 
   private[tensor] def copy[@specialized(Float, Double) T](
     self: DenseTensor[T], src: Tensor[T]): Unit = {
-    require(self.nElement() == src.nElement())
+    require(self.nElement() == src.nElement(),
+      s"self tensor size: ${self.size().mkString("*")}," +
+        s" src tensor size: ${src.size().mkString("*")}")
     if (self.nDimension == 0) {
       return
     }
     if (self.isContiguous() && src.isContiguous() && sameStride(self.stride(), src.stride())) {
-      System.arraycopy(src.storage().array(), src.storageOffset - 1, self.storage().array(),
-        self.storageOffset - 1, self.nElement())
+      val srcArray = src.storage().array()
+      val srcStart = src.storageOffset - 1
+      val selfArray = self.storage().array()
+      val selfStart = self.storageOffset() - 1
+      val selfNElement = self.nElement()
+      System.arraycopy(srcArray, srcStart, selfArray,
+        selfStart, selfNElement)
       return
     }
     val func2 = new TensorFunc4[T] {

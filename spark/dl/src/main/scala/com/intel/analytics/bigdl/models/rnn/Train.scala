@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.models.rnn
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.{DataSet, SampleToBatch}
+import com.intel.analytics.bigdl.dataset.{DataSet, SampleToMiniBatch}
 import com.intel.analytics.bigdl.dataset.text.LabeledSentenceToSample
 import com.intel.analytics.bigdl.dataset.text._
 import com.intel.analytics.bigdl.dataset.text.utils.SentenceToken
@@ -75,7 +75,7 @@ object Train {
       val trainSet = DataSet.rdd(tokens)
         .transform(TextToLabeledSentence[Float](dictionary))
         .transform(LabeledSentenceToSample[Float](totalVocabLength))
-        .transform(SampleToBatch[Float](batchSize = param.batchSize,
+        .transform(SampleToMiniBatch(batchSize = param.batchSize,
           featurePadding = Some(padFeature),
           labelPadding = Some(padLabel),
           fixedLength = Some(maxTrainLength)))
@@ -83,7 +83,7 @@ object Train {
       val validationSet = DataSet.rdd(valtokens)
         .transform(TextToLabeledSentence[Float](dictionary))
         .transform(LabeledSentenceToSample[Float](totalVocabLength))
-        .transform(SampleToBatch[Float](batchSize = param.batchSize,
+        .transform(SampleToMiniBatch(batchSize = param.batchSize,
           featurePadding = Some(padFeature),
           labelPadding = Some(padLabel),
           fixedLength = Some(maxValLength)))
