@@ -588,6 +588,12 @@
             </properties>
         </profile>
         <profile>
+            <id>win64</id>
+            <properties>
+                <mkl-java-os-version>mkl-java-win64</mkl-java-os-version>
+            </properties>
+        </profile>
+        <profile>
             <id>sign</id>
             <build>
                 <plugins>

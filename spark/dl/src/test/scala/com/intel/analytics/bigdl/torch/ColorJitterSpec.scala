@@ -30,13 +30,10 @@ import com.intel.analytics.bigdl.utils.RandomGenerator
 
 @com.intel.analytics.bigdl.tags.Serial
 class ColorJitterSpec extends FlatSpec with BeforeAndAfter with Matchers {
-  before {
+  "A ColorJitter" should "blend image correctly" in {
     if (!TH.hasTorch()) {
       cancel("Torch is not installed")
     }
-  }
-
-  "A ColorJitter" should "blend image correctly" in {
 
     val seed = 1000
     RNG.setSeed(seed)
