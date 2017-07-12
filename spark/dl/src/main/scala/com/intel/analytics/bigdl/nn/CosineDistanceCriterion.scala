@@ -24,6 +24,13 @@ import scala.reflect.ClassTag
 
 /**
  * Creates a criterion that measures the loss given an input tensor and target tensor.
+ *
+ * The input and target are two tensors with same size.
+ * For instance:
+ *
+ * x = Tensor[Double](Storage(Array(0.1, 0.2, 0.3)))
+ * y = Tensor[Double](Storage(Array(0.15, 0.25, 0.35)))
+ *
  * loss(x, y) = 1 - cos(x, y)
  */
 

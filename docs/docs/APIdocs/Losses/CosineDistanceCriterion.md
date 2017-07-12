@@ -6,7 +6,7 @@ val criterion = CosineDistanceCriterion()
 ```
 **Python:**
 ```python
-criterion = CosineDistanceCriterion()
+criterion = CosineDistanceCriterion(size_average = True)
 ```
 
  This loss function measures the Cosine Distance between the target and the output
@@ -49,26 +49,18 @@ from bigdl.nn.criterion import *
 from bigdl.optim.optimizer import *
 from bigdl.util.common import *
 
-criterion = CosineDistanceCriterion()
-input = np.random.uniform(0, 1, (5, 1)).astype("float32")
-target = np.random.uniform(0, 1, (5, 1)).astype("float32")
+criterion = CosineDistanceCriterion(size_average = True)
+input = np.random.uniform(0, 1, (1, 5)).astype("float32")
+target = np.random.uniform(0, 1, (1, 5)).astype("float32")
 loss = criterion.forward(input, target)
 
 > input
-array([[ 0.92156637],
-       [ 0.72886127],
-       [ 0.49714726],
-       [ 0.74645835],
-       [ 0.16812921]], dtype=float32)
+array([[ 0.34291017,  0.95894575,  0.23869193,  0.42518589,  0.73902631]], dtype=float32)
 
 > target 
-array([[ 0.83094525],
-       [ 0.95740199],
-       [ 0.86036712],
-       [ 0.84625793],
-       [ 0.0625345 ]], dtype=float32)
+array([[ 0.00489056,  0.7253111 ,  0.94344038,  0.69811821,  0.45532107]], dtype=float32)
 
 > loss
--1.1920929e-08
+0.20651573
 
 ```
