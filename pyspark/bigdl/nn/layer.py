@@ -627,6 +627,30 @@ class TemporalConvolution(Layer):
                       weight_init_method, bias_init_method)
         return self
 
+class BinaryTreeLSTM(Layer):
+    '''
+    This class is an implementation of Binary TreeLSTM (Constituency Tree LSTM).
+    :param inputSize input units size
+    :param hiddenSize hidden units size
+    :param gateOutput whether gate output
+    :param withGraph whether create lstms with [[Graph]], the default value is true.
+    >>> treeLSTM = BinaryTreeLSTM()
+    creating: BinaryTreeLSTM
+    '''
+
+    def __init__(self,
+                 input_size,
+                 hidden_size,
+                 gate_output=True,
+                 with_graph=True,
+                 bigdl_type="float"):
+        super(BinaryTreeLSTM, self).__init__(None,
+                                             bigdl_type,
+                                             input_size,
+                                             hidden_size,
+                                             gate_output,
+                                             with_graph)
+
 class SpatialConvolution(Layer):
 
     '''

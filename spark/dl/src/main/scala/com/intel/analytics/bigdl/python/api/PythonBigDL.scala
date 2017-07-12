@@ -886,6 +886,18 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       toTensor(initGradWeight),
       toTensor(initGradBias)
     )
+
+  def createBinaryTreeLSTM(
+    inputSize: Int,
+    hiddenSize: Int,
+    gateOutput: Boolean = true,
+    withGraph: Boolean = true)
+  : BinaryTreeLSTM[T] = {
+    BinaryTreeLSTM[T](
+      inputSize,
+      hiddenSize,
+      gateOutput,
+      withGraph)
   }
 
   def createSpatialFullConvolution(nInputPlane: Int,
@@ -1441,6 +1453,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def createTop1Accuracy(): ValidationMethod[T] = {
     new Top1Accuracy()
+  }
+
+  def createTreeNNAccuracy(): ValidationMethod[T] = {
+    new TreeNNAccuracy()
   }
 
   def createTop5Accuracy(): ValidationMethod[T] = {

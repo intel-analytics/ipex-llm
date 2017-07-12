@@ -140,7 +140,7 @@ class TreeNNAccuracy[T: ClassTag]()(
       })
       count += _output.size(1)
     } else if (_output.dim == 2) {
-      _output = _output.select(1, 2)
+      _output = _output.select(1, 1)
       require(_target.size(1) == 1)
       (if (_output.size(1) == 1) {
         _output.apply1(x => if (ev.isGreater(ev.fromType(0.5), x)) ev.zero else ev.one)

@@ -43,6 +43,15 @@ class Top1Accuracy(JavaValue):
     def __init__(self, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type)
 
+class TreeNNAccuracy(JavaValue):
+    """
+    Caculate the percentage that output's max probability index equals target.
+
+    >>> top1 = TreeNNAccuracy()
+    creating: createTop1Accuracy
+    """
+    def __init__(self, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type)
 
 class Top5Accuracy(JavaValue):
     """
