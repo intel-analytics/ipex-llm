@@ -22,7 +22,7 @@ import java.util.concurrent.{Callable, Executors}
 
 import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator}
+import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, TestUtils}
 import org.apache.hadoop.io.Text
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -192,6 +192,7 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "imagenet sequence data source" should "load image correct" in {
+    TestUtils.cancelOnWindows()
     val resource = getClass().getClassLoader().getResource("imagenet")
     val tmpFile = java.io.File.createTempFile("UnitTest", System.nanoTime().toString)
     require(tmpFile.delete())
@@ -384,6 +385,7 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "transformRDD" should "be correct" in {
+    TestUtils.cancelOnWindows()
     val resource = getClass().getClassLoader().getResource("imagenet")
     val tmpFile = java.io.File.createTempFile("UnitTest", System.nanoTime().toString)
     require(tmpFile.delete())

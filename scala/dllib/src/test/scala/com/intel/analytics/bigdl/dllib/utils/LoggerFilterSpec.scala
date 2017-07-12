@@ -58,6 +58,7 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A LoggerFilter" should "output correct info on console and bigdl.log" in {
+    TestUtils.cancelOnWindows()
     val logFile = Paths.get(System.getProperty("user.dir"), "bigdl.log").toString
     val optimClz = "com.intel.analytics.bigdl.optim"
 
@@ -117,7 +118,7 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
     {
       val pattern = ".*INFO.*DistriOptimizer.*caching training rdd ..."
       val firstLine = allString.split('\n')(0)
-      require(firstLine.matches(pattern), s"output can't matchs the specific output")
+      require(firstLine.matches(pattern), s"output can't matchs the specific output\n")
     }
 
     {
@@ -132,6 +133,7 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A LoggerFilter generate log " should "in correct place" in {
+    TestUtils.cancelOnWindows()
     val logFile = Paths.get(System.getProperty("user.dir"), "bigdl.log").toString
     val optimClz = "com.intel.analytics.bigdl.optim"
 
@@ -157,6 +159,7 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A LoggerFilter generate log " should "under the place user gived" in {
+    TestUtils.cancelOnWindows()
     val logFile = Paths.get(System.getProperty("java.io.tmpdir"), "bigdl.log").toString
     val optimClz = "com.intel.analytics.bigdl.optim"
     val defaultFile = Paths.get(System.getProperty("user.dir"), "bigdl.log").toString
@@ -189,6 +192,7 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A LoggerFilter generate log" should "not modify log level user defined" in {
+    TestUtils.cancelOnWindows()
     val optimClz = "com.intel.analytics.bigdl.optim"
     val defaultFile = Paths.get(System.getProperty("user.dir"), "bigdl.log").toString
 
@@ -280,6 +284,7 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A LoggerFilter disable spark log" should "not generate spark logs in file" in {
+    TestUtils.cancelOnWindows()
     val defaultFile = Paths.get(System.getProperty("user.dir"), "bigdl.log").toString
     System.setProperty("bigdl.utils.LoggerFilter.enableSparkLog", "false")
     LoggerFilter.redirectSparkInfoLogs()
