@@ -99,9 +99,11 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     val input1 = Tensor(1, 5, 6).apply1(e => Random.nextFloat()).transpose(1, 2)
     val input2 = Tensor()
     input2.resizeAs(input1).copy(input1)
+    RNG.setSeed(100)
     val biRecurrent = BiRecurrent().add(RnnCell(6, 4, Sigmoid()))
     val res1 = biRecurrent.forward(input1)
     ModulePersister.saveToFile("/tmp/biRecurrent.bigdl", biRecurrent, true)
+    RNG.setSeed(100)
     val loadedRecurent = ModuleLoader.loadFromFile("/tmp/biRecurrent.bigdl")
     val res2 = loadedRecurent.forward(input2)
     res1 should be (res2)
@@ -492,19 +494,12 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
 
   "GRU serializer " should "work properly" in {
     RNG.setSeed(100)
-    val gru = GRU(2, 2)
-    val input11 = Tensor(2, 2).apply1(e => Random.nextFloat())
-    val input21 = Tensor(2, 2)
-    input21.copy(input11)
-    val input12 = Tensor(2, 2).apply1(e => Random.nextFloat())
-    val input22 = Tensor(2, 2)
-    input22.copy(input12)
-    var input1 = new Table()
-    input1(1.0f) = input11
-    input1(2.0f) = input12
-    var input2 = new Table()
-    input2(1.0f) = input21
-    input2(2.0f) = input22
+    //val gru = GRU(1000, 1000)
+    val gru = Recurrent().add(GRU(100, 100))
+    val input1 = Tensor(2, 20, 100).apply1(e => Random.nextFloat())
+    val input2 = Tensor(2, 20, 100)
+    input2.copy(input1)
+
     RNG.setSeed(100)
     val res1 = gru.forward(input1)
     ModulePersister.saveToFile("/tmp/gru.bigdl", gru, true)
@@ -715,49 +710,33 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
 
   "LSTM serializer " should " work properly" in {
 
-    val lstm = LSTM(6, 4)
+    val lstm = Recurrent().add(LSTM(6, 4))
 
-    val input1 = Tensor(Array(1, 6)).apply1(_ => Random.nextFloat())
+    val input1 = Tensor(Array(1, 5, 6)).apply1(_ => Random.nextFloat())
+    val input2 = Tensor(1, 5, 6)
+    input2.copy(input1)
 
-    val input2 = Tensor(Array(1, 4)).apply1(_ => Random.nextFloat())
-    val input3 = Tensor(Array(1, 4)).apply1(_ => Random.nextFloat())
-
-    val nestedT = T()
-    nestedT(1.0f) = input2
-    nestedT(2.0f) = input3
-
-    val input = T()
-    input(1.0f) = input1
-    input(2.0f) = nestedT
-    val res1 = lstm.forward(input)
+    val res1 = lstm.forward(input1)
 
     ModulePersister.saveToFile("/tmp/lstm.bigdl", lstm, true)
     val loadedLSTM = ModuleLoader.loadFromFile("/tmp/lstm.bigdl")
-    val res2 = loadedLSTM.forward(input)
+    val res2 = loadedLSTM.forward(input1)
     res1 should be (res2)
 
   }
 
   "LSTMPeephole serializer " should " work properly" in {
-    val lstmPeephole = LSTMPeephole(6, 4)
+    val lstmPeephole = Recurrent().add(LSTMPeephole(6, 4))
 
-    val input1 = Tensor(Array(1, 6)).apply1(_ => Random.nextFloat())
+    val input1 = Tensor(Array(1, 5, 6)).apply1(_ => Random.nextFloat())
+    val input2 = Tensor(1, 5, 6)
+    input2.copy(input1)
 
-    val input2 = Tensor(Array(1, 4)).apply1(_ => Random.nextFloat())
-    val input3 = Tensor(Array(1, 4)).apply1(_ => Random.nextFloat())
-
-    val nestedT = T()
-    nestedT(1.0f) = input2
-    nestedT(2.0f) = input3
-
-    val input = T()
-    input(1.0f) = input1
-    input(2.0f) = nestedT
-    val res1 = lstmPeephole.forward(input)
+    val res1 = lstmPeephole.forward(input1)
 
     ModulePersister.saveToFile("/tmp/lstmPeephole.bigdl", lstmPeephole, true)
     val loadedLSTMPeephole = ModuleLoader.loadFromFile("/tmp/lstmPeephole.bigdl")
-    val res2 = loadedLSTMPeephole.forward(input)
+    val res2 = loadedLSTMPeephole.forward(input2)
     res1 should be (res2)
 
   }
@@ -1686,6 +1665,7 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     val res2 = loadedModule.forward(tensor2)
     res1 should be (res2)
   }
+
 }
 
 class TestModule[T: ClassTag](val constant_scalar: Double)

@@ -366,10 +366,15 @@ object Recurrent extends ContainerSerializable {
     val moduleData = super.loadModule(model)
     val recurrent = moduleData.module.asInstanceOf[Recurrent[T]]
     val attrMap = model.getAttrMap
+
     val topologyAttr = attrMap.get("topology")
     recurrent.topology = DataConverter.getAttributeValue(topologyAttr).
       asInstanceOf[Cell[T]]
-    recurrent.preTopology = recurrent.topology.preTopology
+
+    val preTopologyAttr = attrMap.get("preTopology")
+    recurrent.preTopology = DataConverter.getAttributeValue(preTopologyAttr).
+      asInstanceOf[AbstractModule[Activity, Activity, T]]
+
     moduleData
   }
 
@@ -377,11 +382,19 @@ object Recurrent extends ContainerSerializable {
                                            (implicit ev: TensorNumeric[T]) : BigDLModule = {
     val containerBuilder = BigDLModule.newBuilder(super.serializeModule(module))
 
+    val recurrent = module.module.asInstanceOf[Recurrent[T]]
+
     val topologyBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(topologyBuilder,
-      module.module.asInstanceOf[Recurrent[T]].topology,
+    DataConverter.setAttributeValue(topologyBuilder, recurrent.topology,
       ModuleSerializer.abstractModuleType)
     containerBuilder.putAttr("topology", topologyBuilder.build)
+
+    val preTopologyBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(preTopologyBuilder,
+      recurrent.preTopology, ModuleSerializer.abstractModuleType)
+    containerBuilder.putAttr("preTopology", preTopologyBuilder.build)
+
+
     containerBuilder.build
   }
 }
