@@ -26,9 +26,7 @@ from tensorflow.python.framework import graph_util
 from tensorflow.python.framework import importer
 from tensorflow.python.platform import gfile
 
-from bigdl.nn.layer import Model
-
-def convert(input_ops, output_ops, sess):
+def generate_graph_file(input_ops, output_ops):
     """
     Convert tensorflow model to bigdl model
     :param input_ops: operation list used for input, should be placeholders
@@ -36,6 +34,10 @@ def convert(input_ops, output_ops, sess):
     :param sess: current tensorflow session
     :return: bigdl model
     """
+    sess = tf.Session()
+    init = tf.global_variables_initializer()
+    sess.run(init)
+
     input_names = map(lambda x: x.name.split(":")[0], input_ops)
     output_names = map(lambda x: x.name.split(":")[0], output_ops)
     temp = tempfile.mkdtemp()
@@ -48,7 +50,8 @@ def convert(input_ops, output_ops, sess):
                      temp + '/model.chkp',
                      output_names,
                      temp + '/model.pb', sess)
-    return Model.load_tensorflow(temp + '/model.pb', input_names, output_names)
+
+    return temp, input_names, output_names
 
 def merge_checkpoint(input_graph,
                      checkpoint,

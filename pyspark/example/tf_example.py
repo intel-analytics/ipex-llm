@@ -16,9 +16,10 @@
 
 import tensorflow as tf
 import numpy as np
-from bigdl.util.tf_utils import convert
+from bigdl.nn.layer import Model
 
 def main():
+    tf.set_random_seed(1234)
     input = tf.placeholder(tf.float32, [None, 5])
     weight = tf.Variable(tf.random_uniform([5, 10]))
     bias = tf.Variable(tf.random_uniform([10]))
@@ -30,7 +31,7 @@ def main():
         init = tf.global_variables_initializer()
         sess.run(init)
         tensorflow_result = sess.run(output, {input: tensor})
-        bigdl_model = convert([input], [output], sess)
+        bigdl_model = Model(input, output)
         bigdl_result = bigdl_model.forward(tensor)
 
         print("Tensorflow forward result is " + str(tensorflow_result))

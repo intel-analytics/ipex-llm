@@ -1580,6 +1580,16 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Graph(input.asScala.toArray, output.asScala.toArray)
   }
 
+  def createModel(path: String, inputs: JList[String], outputs: JList[String],
+             byteOrder: String): Graph[T] = {
+    val order = byteOrder match {
+      case "little_endian" => ByteOrder.LITTLE_ENDIAN
+      case "big_endian" => ByteOrder.BIG_ENDIAN
+      case _ => throw new IllegalArgumentException(s"No support byte order $byteOrder")
+    }
+    Module.loadTF[T](path, inputs.asScala, outputs.asScala, order).asInstanceOf[Graph[T]]
+  }
+
   def createNode(module: AbstractModule[Activity, Activity, T],
                  x: JList[ModuleNode[T]]): ModuleNode[T] = {
     if (null == x || x.isEmpty) {
