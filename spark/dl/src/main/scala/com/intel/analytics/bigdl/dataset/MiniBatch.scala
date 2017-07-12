@@ -181,7 +181,7 @@ private[bigdl] class ArrayTensorMiniBatch[T: ClassTag](
     require(batchSize == 0 || samples.length <= batchSize, "setValue: samples's size doesn't " +
       s"match mini batch size, excepted ${size()} got ${samples.length}")
     val resize = batchSize != samples.length || featurePaddingParam.isDefined ||
-      labelPaddingParam.isDefined
+      labelPaddingParam.isDefined || size() != samples.length
     if (batchSize == 0) {
       batchSize = samples.length // set a batchSize when set data.
       unlabeled = samples.head.numLabel() == 0
