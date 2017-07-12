@@ -48,7 +48,7 @@ class TreeNNAccuracy(JavaValue):
     Caculate the percentage that output's max probability index equals target.
 
     >>> top1 = TreeNNAccuracy()
-    creating: createTop1Accuracy
+    creating: createTreeNNAccuracy
     """
     def __init__(self, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type)
