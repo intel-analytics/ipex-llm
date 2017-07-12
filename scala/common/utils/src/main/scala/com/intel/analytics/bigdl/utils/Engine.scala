@@ -150,12 +150,7 @@ object Engine {
    * Runtime.getRuntime().availableProcessors() / 2
    */
   private def getCoreNumberFromProperty() = {
-    val coreNumber = System.getProperty("bigdl.coreNumber", getNumMachineCores.toString).toInt
-    if (coreNumber > getNumMachineCores) {
-      getNumMachineCores
-    } else {
-      coreNumber
-    }
+    System.getProperty("bigdl.coreNumber", getNumMachineCores.toString).toInt
   }
 
   private def getNumMachineCores: Int = {

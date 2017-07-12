@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.dataset.text.{LabeledSentence, LabeledSentenceToSample}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
-import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator}
+import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, TestUtils}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.{SequenceFile, Text}
@@ -464,6 +464,7 @@ class TransformersSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "RGBImage To SeqFile without file name" should "be good" in {
+    TestUtils.cancelOnWindows()
     val resource = getClass().getClassLoader().getResource("imagenet")
     val pathToImage = LocalImgReaderWithName(BGRImage.NO_SCALE)
     val dataSet = DataSet.ImageFolder.paths(
@@ -505,6 +506,7 @@ class TransformersSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "RGBImage To SeqFile with file name" should "be good" in {
+    TestUtils.cancelOnWindows()
     val resource = getClass().getClassLoader().getResource("imagenet")
     val pathToImage = LocalImgReaderWithName(BGRImage.NO_SCALE)
     val dataSet = DataSet.ImageFolder.paths(
