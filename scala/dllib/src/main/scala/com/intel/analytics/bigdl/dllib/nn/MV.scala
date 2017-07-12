@@ -56,7 +56,7 @@ class MV[T: ClassTag](val trans: Boolean = false)
       }
       require(m.size(2) == v.size(1), "matrix row count and vector length do not match")
 
-      output.resize(m.size(1))
+      output.resize(m.size(1)).zero()
       output.mv(m, v)
     } else {
       require(v.dim() == 2, "vector must be 2D (batch dimension)")
@@ -67,7 +67,7 @@ class MV[T: ClassTag](val trans: Boolean = false)
       }
       require(m.size(3) == v.size(2), "matrix row count and vector length do not match")
 
-      output.resize(m.size(1), m.size(2), 1)
+      output.resize(m.size(1), m.size(2), 1).zero()
       output.bmm(m, v.view(v.size(1), v.size(2), 1)).resize(m.size(1), m.size(2))
     }
 
@@ -77,8 +77,8 @@ class MV[T: ClassTag](val trans: Boolean = false)
   override def updateGradInput(input: Table, gradOutput: Tensor[T]): Table = {
     val (m, v) = checkInputFormat(input)
 
-    gradInput[Tensor[T]](1).resizeAs(m)
-    gradInput[Tensor[T]](2).resizeAs(v)
+    gradInput[Tensor[T]](1).resizeAs(m).zero()
+    gradInput[Tensor[T]](2).resizeAs(v).zero()
 
     require(gradOutput.dim() == 1 || gradOutput.dim() == 2,
       "arguments must be a 1D or 2D Tensor")
