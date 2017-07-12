@@ -236,11 +236,11 @@ object Utils {
 
   case class TreeLSTMSentimentParam (
     override val baseDir: String = "/tmp/.bigdl/dataset/",
-    override val batchSize: Int = 64,
-    hiddenSize: Int = 150,
-    learningRate: Double = 0.1,
+    override val batchSize: Int = 128,
+    hiddenSize: Int = 250,
+    learningRate: Double = 0.05,
     regRate: Double = 1e-4,
-    p: Double = 0.5,
+    p: Double = 0,
     epoch: Int = 10
   ) extends AbstractTextClassificationParams
 }

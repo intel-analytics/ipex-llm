@@ -634,7 +634,7 @@ class BinaryTreeLSTM(Layer):
     :param hiddenSize hidden units size
     :param gateOutput whether gate output
     :param withGraph whether create lstms with [[Graph]], the default value is true.
-    >>> treeLSTM = BinaryTreeLSTM()
+    >>> treeLSTM = BinaryTreeLSTM(100, 200)
     creating: BinaryTreeLSTM
     '''
 
