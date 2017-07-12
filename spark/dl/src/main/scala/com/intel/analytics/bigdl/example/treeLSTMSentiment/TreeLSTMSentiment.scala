@@ -27,7 +27,8 @@ object TreeLSTMSentiment {
   def apply(
     word2VecTensor: Tensor[Float],
     hiddenSize: Int,
-    classNum: Int
+    classNum: Int,
+    p: Double = 0.5
   ): Module[Float] = {
     val vocabSize = word2VecTensor.size(1)
     val embeddingDim = word2VecTensor.size(2)
@@ -37,7 +38,7 @@ object TreeLSTMSentiment {
     val treeLSTMModule = Sequential()
       .add(BinaryTreeLSTM(
         embeddingDim, hiddenSize, withGraph = true))
-      .add(Dropout())
+      .add(Dropout(p))
       .add(TimeDistributed(Linear(hiddenSize, classNum)))
       .add(TimeDistributed(LogSoftMax()))
 

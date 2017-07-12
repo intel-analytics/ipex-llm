@@ -41,7 +41,7 @@ object Train {
 
   def train(param: TreeLSTMSentimentParam): Unit = {
     val DATA_DIR = param.baseDir
-    val classNum = if (param.fineGrained) 5 else 3
+    val classNum = 5
     val criterion = TimeDistributedCriterion(ClassNLLCriterion())
     val conf = Engine.createSparkConf()
       .setAppName("Text classification")
@@ -62,7 +62,6 @@ object Train {
     val (trainTreeRDD, trainLabelRDD, trainSentenceRDD) = preProcessData(
       sc,
       vocabBC,
-      param.fineGrained,
       oovChar,
       s"$DATA_DIR/sst/train/parents.txt",
       s"$DATA_DIR/sst/train/labels.txt",
@@ -77,7 +76,6 @@ object Train {
     val (devTreeRDD, devLabelRDD, devSentenceRDD) = preProcessData(
       sc,
       vocabBC,
-      param.fineGrained,
       oovChar,
       s"$DATA_DIR/sst/dev/parents.txt",
       s"$DATA_DIR/sst/dev/labels.txt",
@@ -89,11 +87,11 @@ object Train {
          |dev sentenceRDD count: ${devSentenceRDD.count()}
       """.stripMargin)
 
-    val trainRDD = toSample(trainTreeRDD, trainLabelRDD, trainSentenceRDD, param.fineGrained)
-    val devRDD = toSample(devTreeRDD, devLabelRDD, devSentenceRDD, param.fineGrained)
+    val trainRDD = toSample(trainTreeRDD, trainLabelRDD, trainSentenceRDD)
+    val devRDD = toSample(devTreeRDD, devLabelRDD, devSentenceRDD)
 
     val optimizer = Optimizer(
-      model = TreeLSTMSentiment(word2VecTensor, param.hiddenSize, classNum),
+      model = TreeLSTMSentiment(word2VecTensor, param.hiddenSize, classNum, param.p),
       sampleRDD = trainRDD,
       criterion = criterion,
       batchSize = param.batchSize,
@@ -108,7 +106,7 @@ object Train {
       .setValidation(
         Trigger.everyEpoch,
         devRDD,
-        Array(new TreeNNAccuracy(param.fineGrained)),
+        Array(new TreeNNAccuracy()),
         param.batchSize,
         featurePaddings =
           Some(Array(Tensor(T(paddingValue.toFloat)), Tensor(T(-1f, -1f, -1f)))),

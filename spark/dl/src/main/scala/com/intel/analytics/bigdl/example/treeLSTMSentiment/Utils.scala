@@ -49,8 +49,6 @@ object Utils {
             var parent =
               if (idx != 0) parents(idx - 1)
               else -1
-            //
-            //            if (parent == 0) parent = -1
             if (parent == parents.length) parent = 0
             if (prev != 0 && parent != -1) {
               trees.addChild(idx + 1, prev + 1)
@@ -86,20 +84,9 @@ object Utils {
   }
 
   def remapLabel(
-    label: Float,
-    fineGrained: Boolean
+    label: Float
   ): Float = {
-    if (fineGrained) {
-      label + 3
-    } else {
-      if (label < 0) {
-        1f
-      } else if (label == 0) {
-        2f
-      } else {
-        3f
-      }
-    }
+    label + 3
   }
 
   /**
@@ -142,7 +129,6 @@ object Utils {
   def preProcessData(
     sc: SparkContext,
     vocabBC: Broadcast[Map[String, Int]],
-    fineGrained: Boolean,
     oovChar: Int,
     treePath: String,
     labelPath: String,
@@ -154,7 +140,7 @@ object Utils {
       .map(readTree)
     val labelRDD = sc.textFile(labelPath, 4)
       .map(line => line.split(" "))
-      .map(_.map(l => remapLabel(l.toFloat, fineGrained)))
+      .map(_.map(l => remapLabel(l.toFloat)))
       .map(line => rotate(line, 1))
     val sentenceRDD = sc.textFile(sentencePath, 4)
       .map(line => line.split(" "))
@@ -166,19 +152,15 @@ object Utils {
   def toSample(
     treeRDD: RDD[Tensor[Float]],
     labelRDD: RDD[Array[Float]],
-    sentenceRDD: RDD[Array[Int]],
-    fineGrained: Boolean
+    sentenceRDD: RDD[Array[Int]]
   ): RDD[Sample[Float]] = {
     def indexAndSort(rdd: RDD[_]) = rdd.zipWithIndex.map(_.swap).sortByKey()
 
-    var samples = indexAndSort(sentenceRDD)
+    indexAndSort(sentenceRDD)
       .join(indexAndSort(labelRDD))
       .join(indexAndSort(treeRDD))
       .values
-
-    if(!fineGrained) samples = samples.filter{case ((_, label: Array[Float]), _) => label(0) != 2f}
-
-    samples.map { case ((input: Array[Int], label: Array[Float]), tree: Tensor[Float]) =>
+      .map { case ((input: Array[Int], label: Array[Float]), tree: Tensor[Float]) =>
         Sample(
           featureTensors =
             Array(Tensor(input.map(_.toFloat), Array(input.length, 1)),
@@ -232,10 +214,7 @@ object Utils {
       opt[String]('b', "baseDir")
         .text("Base dir containing the training and word2Vec data")
         .action((x, c) => c.copy(baseDir = x))
-      opt[String]('f', "fineGrained")
-        .text("If fineGrained, 5 classes, else binary classification")
-        .action((x, c) => c.copy(fineGrained = x.toBoolean))
-      opt[String]('b', "batchSize")
+      opt[String]('i', "batchSize")
         .text("batchSize")
         .action((x, c) => c.copy(batchSize = x.toInt))
       opt[String]('h', "hiddenSize")
@@ -247,15 +226,17 @@ object Utils {
       opt[String]('r', "regRate")
         .text("regularization rate")
         .action((x, c) => c.copy(regRate = x.toDouble))
+      opt[String]('p', "p")
+        .text("dropout rate")
+        .action((x, c) => c.copy(p = x.toDouble))
     }
 
   case class TreeLSTMSentimentParam (
     override val baseDir: String = "/tmp/.bigdl/dataset/",
-    override val batchSize: Int = 64,
+    override val batchSize: Int = 100,
     hiddenSize: Int = 150,
-    learningRate: Double = 0.1,
+    learningRate: Double = 0.05,
     regRate: Double = 1e-4,
-    fineGrained: Boolean = true,
-    dropout: Boolean = true
+    p: Double = 0.5
   ) extends AbstractTextClassificationParams
 }

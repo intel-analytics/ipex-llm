@@ -106,8 +106,8 @@ class BinaryTreeLSTMSpec extends FlatSpec with Matchers with BeforeAndAfter {
 //            var parent =
 //              if (idx != 0) parents(idx - 1)
 //              else -1
-////
-////            if (parent == 0) parent = -1
+//
+//            if (parent == 0) parent = -1
 //            if (parent == parents.length) parent = 0
 //            if (prev != 0 && parent != -1) {
 //              trees.addChild(idx + 1, prev + 1)
@@ -142,18 +142,8 @@ class BinaryTreeLSTMSpec extends FlatSpec with Matchers with BeforeAndAfter {
 //    trees.content
 //  }
 
-  var remapLabel = (label: Double, fineGrained: Boolean) => {
-    if (fineGrained) {
+  var remapLabel = (label: Double) => {
       label + 3
-    } else {
-      if (label < 0) {
-        1f
-      } else if (label == 0) {
-        2f
-      } else {
-        3f
-      }
-    }
   }
 
   "BinaryTreeLSTM" should "works correctly" in {
@@ -178,7 +168,7 @@ class BinaryTreeLSTMSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val embedding = LookupTable(vocabSize, embeddingDim)
     embedding.weight.copy(emb)
     val treeLSTM = BinaryTreeLSTM(
-      embeddingDim, 150, withGraph = true)
+      embeddingDim, 150, withGraph = false)
     val outputModule = Linear(150, classNum)
     val treeLSTMModule = Sequential()
       .add(treeLSTM)
@@ -229,7 +219,7 @@ class BinaryTreeLSTMSpec extends FlatSpec with Matchers with BeforeAndAfter {
       .map(line => line.map(vocab.getOrElse(_, 1)))
     val trainLabels = Source.fromFile(s"$DATA_DIR/sst/train/labels.txt").getLines().toList
       .map(line => line.split(" "))
-      .map(_.map(l => remapLabel(l.toDouble, true)))
+      .map(_.map(l => remapLabel(l.toDouble)))
       .map(line => rotate(line, 1))
 
     val testTrees = Source.fromFile(s"$DATA_DIR/sst/dev/parents.txt").getLines().toList
@@ -241,7 +231,7 @@ class BinaryTreeLSTMSpec extends FlatSpec with Matchers with BeforeAndAfter {
       .map(line => line.map(vocab.getOrElse(_, 1)))
     val testLabels = Source.fromFile(s"$DATA_DIR/sst/dev/labels.txt").getLines().toList
       .map(line => line.split(" "))
-      .map(_.map(l => remapLabel(l.toDouble, true)))
+      .map(_.map(l => remapLabel(l.toDouble)))
       .map(line => rotate(line, 1))
 
     val trainList = toSample(trainTrees, trainLabels, trainSentences)
@@ -274,7 +264,7 @@ class BinaryTreeLSTMSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     println(s"hashcode: ${model.hashCode()}")
 
-    val epoch = 1
+    val epoch = 10
     var j = 1
 
     for (i <- 1 to epoch) {
@@ -300,13 +290,20 @@ class BinaryTreeLSTMSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
 
     var accuracy = 0f
+    var accuracy1 = 0f
     for (batch <- testArray) {
       val input = batch.getInput()
       val output = model.forward(input)
-      accuracy += new TreeNNAccuracy(true)
+      accuracy += new TreeNNAccuracy()
         .apply(output, batch.getTarget().asInstanceOf[Tensor[Double]]).result()._1
+//      accuracy += new TreeNNAccuracy(true)
+//        .apply(output, batch.getTarget().asInstanceOf[Tensor[Double]]).result()._1
+//      accuracy1 += new TreeNNAccuracy(false)
+//        .apply(output, batch.getTarget().asInstanceOf[Tensor[Double]]).result()._1
     }
     accuracy /= testArray.length
+//    accuracy1 /= testArray.length
     println(s"Accuracy: ${accuracy}")
+//    println(s"Accuracy1: ${accuracy1}")
   }
 }

@@ -112,9 +112,10 @@ class AccuracyResult(private var correct: Int, private var count: Int)
 }
 
 /**
- * Caculate the percentage that output's max probability index equals target
+ * This is a metric to measure the accuracy of Tree Neural Network/Recursive Neural Network
+ *
  */
-class TreeNNAccuracy[T: ClassTag](fineGrained: Boolean)(
+class TreeNNAccuracy[T: ClassTag]()(
   implicit ev: TensorNumeric[T])
   extends ValidationMethod[T] {
   override def apply(output: Activity, target: Activity):
@@ -124,21 +125,13 @@ class TreeNNAccuracy[T: ClassTag](fineGrained: Boolean)(
 
     var _output = output.asInstanceOf[Tensor[T]]
     val _target = target.asInstanceOf[Tensor[T]].select(2, 1)
+
     if (_output.dim() == 3) {
       _output = _output.select(2, 1)
       (if (_output.size(2) == 1) {
         _output.apply1(x => if (ev.isGreater(ev.fromType(0.5), x)) ev.zero else ev.one)
       } else {
-        if (fineGrained) { _output.max(2)._2.squeeze() }
-        else {
-          val result = Tensor[T](Array[Int](_output.size(1)))
-          for (i <- 1 to _output.size(1)) {
-            result.setValue(i,
-              if (ev.isGreater(_output(Array(2, 1)), _output(Array(2, 3)))) ev.one
-              else ev.fromType[Int](3))
-          }
-          result
-        }
+        _output.max(2)._2.squeeze()
       }).map(_target, (a, b) => {
         if (a == b) {
           correct += 1
@@ -152,12 +145,7 @@ class TreeNNAccuracy[T: ClassTag](fineGrained: Boolean)(
       (if (_output.size(1) == 1) {
         _output.apply1(x => if (ev.isGreater(ev.fromType(0.5), x)) ev.zero else ev.one)
       } else {
-        if (fineGrained) { _output.max(1)._2.squeeze() }
-        else {
-          Tensor[T](
-              T(if (ev.isGreater(_output(Array(1, 1)), _output(Array(1, 3)))) ev.one
-              else ev.fromType[Int](3)))
-        }
+         _output.max(1)._2.squeeze()
       }).map(_target, (a, b) => {
         if (a == b) {
           correct += 1
@@ -172,10 +160,12 @@ class TreeNNAccuracy[T: ClassTag](fineGrained: Boolean)(
     new AccuracyResult(correct, count)
   }
 
-  override def format(): String = "Top1Accuracy"
+  override def format(): String =
+    s"TreeNNAccuracy()"
 }
+
 /**
- * Caculate the percentage that output's max probability index equals target
+ * Calculate the percentage that output's max probability index equals target
  */
 class Top1Accuracy[T](
   implicit ev: TensorNumeric[T])
@@ -219,7 +209,7 @@ class Top1Accuracy[T](
     new AccuracyResult(correct, count)
   }
 
-  override def format(): String = "TreeNNAccuracy"
+  override def format(): String = "Top1Accuracy"
 }
 
 /**
