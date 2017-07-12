@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericF
 import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
-import org.apache.spark.ml.{DLClassifier, DLEstimator, DLModel}
+import org.apache.spark.ml.{DLClassifier, DLModel}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 
@@ -34,7 +34,7 @@ import org.apache.spark.sql.SQLContext
  * An example to show how to use DLEstimator fit to be compatible with ML Pipeline
  * refer to README.md on how to run this example
  */
-object DLEstimatorLeNet {
+object DLClassifierLeNet {
 
   LoggerFilter.redirectSparkInfoLogs()
   Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
@@ -58,7 +58,7 @@ object DLEstimatorLeNet {
         BytesToGreyImg(28, 28) -> GreyImgNormalizer(trainMean, trainStd) -> GreyImgToBatch(1)
 
       val trainingRDD : RDD[Data[Float]] = trainSet.
-        asInstanceOf[DistributedDataSet[TensorMiniBatch[Float]]].data(false).map(batch => {
+        asInstanceOf[DistributedDataSet[MiniBatch[Float]]].data(false).map(batch => {
           val feature = batch.getInput().asInstanceOf[Tensor[Float]]
           val label = batch.getTarget().asInstanceOf[Tensor[Float]]
           Data[Float](feature.storage().array(), label.storage().array())

@@ -74,6 +74,15 @@ class Loss(JavaValue):
             cri = ClassNLLCriterion()
         JavaValue.__init__(self, None, bigdl_type, cri)
 
+class MAE(JavaValue):
+    """
+    This evaluation method calculates the mean absolute error of output with respect to target.
+
+    >>> mae = MAE()
+    creating: createMAE
+    """
+    def __init__(self, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type)
 
 class MaxIteration(JavaValue):
     """
@@ -161,6 +170,42 @@ class SeveralIteration(JavaValue):
         JavaValue.__init__(self, None, bigdl_type, interval)
 
 
+class MaxScore(JavaValue):
+    """
+    A trigger that triggers an action when validation score larger than "max" score
+
+
+    >>> maxScore = MaxScore(0.4)
+    creating: createMaxScore
+    """
+    def __init__(self, max, bigdl_type="float"):
+        """
+        Create a MaxScore trigger.
+
+
+        :param max: max score
+        """
+        JavaValue.__init__(self, None, bigdl_type, max)
+
+
+class MinLoss(JavaValue):
+    """
+    A trigger that triggers an action when training loss less than "min" loss
+
+
+    >>> minLoss = MinLoss(0.1)
+    creating: createMinLoss
+    """
+    def __init__(self, min, bigdl_type="float"):
+        """
+        Create a MinLoss trigger.
+
+
+        :param min: min loss
+        """
+        JavaValue.__init__(self, None, bigdl_type, min)
+
+
 class Poly(JavaValue):
     """
     A learning rate decay policy, where the effective learning rate
@@ -224,6 +269,40 @@ class Default(JavaValue):
     """
     def __init__(self, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type)
+
+
+class Plateau(JavaValue):
+    """
+    Plateau is the learning rate schedule when a metric has stopped improving.
+    Models often benefit from reducing the learning rate by a factor of 2-10
+    once learning stagnates. It monitors a quantity and if no improvement
+    is seen for a 'patience' number of epochs, the learning rate is reduced.
+
+    :param monitor quantity to be monitored, can be Loss or score
+    :param factor factor by which the learning rate will be reduced. new_lr = lr * factor
+    :param patience number of epochs with no improvement after which learning rate will be reduced.
+    :param mode one of {min, max}.
+                In min mode, lr will be reduced when the quantity monitored has stopped decreasing;
+                in max mode it will be reduced when the quantity monitored has stopped increasing
+    :param epsilon threshold for measuring the new optimum, to only focus on significant changes.
+    :param cooldown number of epochs to wait before resuming normal operation
+                    after lr has been reduced.
+    :param min_lr lower bound on the learning rate.
+
+    >>> plateau = Plateau("score")
+    creating: createPlateau
+    """
+    def __init__(self,
+                 monitor,
+                 factor=0.1,
+                 patience=10,
+                 mode="min",
+                 epsilon=1e-4,
+                 cooldown=0,
+                 min_lr=0.0,
+                 bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type, monitor, factor, patience, mode, epsilon,
+                           cooldown, min_lr)
 
 class SGD(JavaValue):
     """

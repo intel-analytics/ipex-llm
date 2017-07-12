@@ -21,14 +21,16 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.numeric.NumericDouble
 import com.intel.analytics.bigdl.optim.{Optimizer, SGD, Trigger}
 import com.intel.analytics.bigdl.nn.{Linear, MSECriterion, Sequential}
-import com.intel.analytics.bigdl.dataset.{DataSet, MiniBatch, Sample, SampleToBatch}
+import com.intel.analytics.bigdl.dataset.{DataSet, MiniBatch, Sample, SampleToMiniBatch}
 
-import scala.io.Source
 import java.io.StringWriter
+import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
+
 import org.apache.spark.SparkContext
 import org.apache.log4j.{Level, Logger, PatternLayout, WriterAppender}
 
+import scala.collection.JavaConverters._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Serial
@@ -88,7 +90,7 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
       Sample[Double](featureTensor, labelTensor)
     }
 
-    val trainSet = DataSet.rdd(data).transform(SampleToBatch(recordSize/2))
+    val trainSet = DataSet.rdd(data).transform(SampleToMiniBatch(recordSize/2))
 
     val state =
       T(
@@ -155,11 +157,11 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A LoggerFilter generate log " should "under the place user gived" in {
-    val logFile = "/tmp/bigdl.log"
+    val logFile = Paths.get(System.getProperty("java.io.tmpdir"), "bigdl.log").toString
     val optimClz = "com.intel.analytics.bigdl.optim"
     val defaultFile = Paths.get(System.getProperty("user.dir"), "bigdl.log").toString
 
-    System.setProperty("bigdl.utils.LoggerFilter.logFile", "/tmp/bigdl.log")
+    System.setProperty("bigdl.utils.LoggerFilter.logFile", logFile)
 
     Files.deleteIfExists(Paths.get(defaultFile))
     Files.deleteIfExists(Paths.get(logFile))
@@ -252,5 +254,51 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     Files.exists(Paths.get(defaultFile)) should be (false)
     System.clearProperty("bigdl.utils.LoggerFilter.disable")
+  }
+
+  "A LoggerFilter user's log" should "be in log file" in {
+    val defaultFile = Paths.get(System.getProperty("user.dir"), "bigdl.log").toString
+    LoggerFilter.redirectSparkInfoLogs()
+
+    val info = "bigdl info message"
+    val warn = "bigdl warn message"
+    val error = "bigdl error message"
+
+    Logger.getLogger(getClass).info(info)
+    Logger.getLogger(getClass).warn(warn)
+    Logger.getLogger(getClass).error(error)
+
+    val lines = Files.readAllLines(Paths.get(defaultFile), StandardCharsets.UTF_8)
+
+    lines.size() should be (3)
+    lines.get(0).contains(info) should be (true)
+    lines.get(1).contains(warn) should be (true)
+    lines.get(2).contains(error) should be (true)
+
+    Files.deleteIfExists(Paths.get(defaultFile))
+    Files.exists(Paths.get(defaultFile)) should be (false)
+  }
+
+  "A LoggerFilter disable spark log" should "not generate spark logs in file" in {
+    val defaultFile = Paths.get(System.getProperty("user.dir"), "bigdl.log").toString
+    System.setProperty("bigdl.utils.LoggerFilter.enableSparkLog", "false")
+    LoggerFilter.redirectSparkInfoLogs()
+
+    sc = new SparkContext(
+      Engine.init(1, 1, true).get
+        .setAppName(s"LoggerFilter test")
+        .set("spark.task.maxFailures", "1")
+        .setMaster("local[1]")
+    )
+
+    val data = sc.parallelize(List("bigdl", "spark", "deep", "learning"))
+    val y = data.map(x => (x, x.length)).count()
+
+    val lines = Files.readAllLines(Paths.get(defaultFile), StandardCharsets.UTF_8).asScala
+    lines.exists(_.contains("DAGScheduler")) should be (false)
+
+    Files.deleteIfExists(Paths.get(defaultFile))
+    Files.exists(Paths.get(defaultFile)) should be (false)
+    System.clearProperty("bigdl.utils.LoggerFilter.enableSparkLog")
   }
 }

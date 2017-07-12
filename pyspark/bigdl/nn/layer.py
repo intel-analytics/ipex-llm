@@ -455,6 +455,15 @@ class Linear(Layer):
     creating: createL1Regularizer
     creating: createL1Regularizer
     creating: createLinear
+    >>> import numpy as np
+    >>> init_weight = np.random.randn(10, 100)
+    >>> init_bias = np.random.randn(10)
+    >>> init_grad_weight = np.zeros([10, 100])
+    >>> init_grad_bias = np.zeros([10])
+    >>> linear = Linear(100, 10, True, L1Regularizer(0.5), L1Regularizer(0.5), init_weight, init_bias, init_grad_weight, init_grad_bias)
+    creating: createL1Regularizer
+    creating: createL1Regularizer
+    creating: createLinear
     '''
 
     def __init__(self, input_size, output_size, with_bias=True, wRegularizer=None, bRegularizer=None,
@@ -582,6 +591,7 @@ class SpatialConvolution(Layer):
     :param init_bias: the optional initial value for the bias
     :param init_grad_weight: the optional initial value for the grad_weight
     :param init_grad_bias: the optional initial value for the grad_bias
+    :param with_bias: the optional initial value for if need bias
 
     >>> spatialConvolution = SpatialConvolution(6, 12, 5, 5)
     creating: createSpatialConvolution
@@ -589,6 +599,15 @@ class SpatialConvolution(Layer):
     creating: createL1Regularizer
     >>> spatialConvolution.setBRegularizer(L1Regularizer(0.5))
     creating: createL1Regularizer
+    >>> import numpy as np
+    >>> init_weight = np.random.randn(1, 12, 6, 5, 5)
+    >>> init_bias = np.random.randn(12)
+    >>> init_grad_weight = np.zeros([1, 12, 6, 5, 5])
+    >>> init_grad_bias = np.zeros([12])
+    >>> spatialConvolution = SpatialConvolution(6, 12, 5, 5, 1, 1, 0, 0, 1, True, L1Regularizer(0.5), L1Regularizer(0.5), init_weight, init_bias, init_grad_weight, init_grad_bias)
+    creating: createL1Regularizer
+    creating: createL1Regularizer
+    creating: createSpatialConvolution
     '''
 
     def __init__(self,
@@ -602,13 +621,13 @@ class SpatialConvolution(Layer):
                  pad_h=0,
                  n_group=1,
                  propagate_back=True,
-                 init_method="default",
                  wRegularizer=None,
                  bRegularizer=None,
                  init_weight=None,
                  init_bias=None,
                  init_grad_weight=None,
                  init_grad_bias=None,
+                 with_bias=True,
                  bigdl_type="float"):
         super(SpatialConvolution, self).__init__(None, bigdl_type,
                                                  n_input_plane,
@@ -621,13 +640,13 @@ class SpatialConvolution(Layer):
                                                  pad_h,
                                                  n_group,
                                                  propagate_back,
-                                                 init_method,
                                                  wRegularizer,
                                                  bRegularizer,
                                                  JTensor.from_ndarray(init_weight),
                                                  JTensor.from_ndarray(init_bias),
                                                  JTensor.from_ndarray(init_grad_weight),
-                                                 JTensor.from_ndarray(init_grad_bias))
+                                                 JTensor.from_ndarray(init_grad_bias),
+                                                 with_bias)
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                   weight_init_method, bias_init_method)
@@ -946,6 +965,13 @@ class SpatialBatchNormalization(Layer):
 
     >>> spatialBatchNormalization = SpatialBatchNormalization(1)
     creating: createSpatialBatchNormalization
+    >>> import numpy as np
+    >>> init_weight = np.array([1.0])
+    >>> init_grad_weight = np.array([0.0])
+    >>> init_bias = np.array([0.0])
+    >>> init_grad_bias = np.array([0.0])
+    >>> spatialBatchNormalization = SpatialBatchNormalization(1, 1e-5, 0.1, True, init_weight, init_bias, init_grad_weight, init_grad_bias)
+    creating: createSpatialBatchNormalization
     '''
 
     def __init__(self,
@@ -953,12 +979,20 @@ class SpatialBatchNormalization(Layer):
                  eps=1e-5,
                  momentum=0.1,
                  affine=True,
+                 init_weight=None,
+                 init_bias=None,
+                 init_grad_weight=None,
+                 init_grad_bias=None,
                  bigdl_type="float"):
         super(SpatialBatchNormalization, self).__init__(None, bigdl_type,
                                                         n_output,
                                                         eps,
                                                         momentum,
-                                                        affine)
+                                                        affine,
+                                                        JTensor.from_ndarray(init_weight),
+                                                        JTensor.from_ndarray(init_bias),
+                                                        JTensor.from_ndarray(init_grad_weight),
+                                                        JTensor.from_ndarray(init_grad_bias))
 
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
@@ -1147,18 +1181,33 @@ class BatchNormalization(Layer):
 
     >>> batchNormalization = BatchNormalization(1, 1e-5, 1e-5, True)
     creating: createBatchNormalization
+    >>> import numpy as np
+    >>> init_weight = np.random.randn(2)
+    >>> init_grad_weight = np.zeros([2])
+    >>> init_bias = np.zeros([2])
+    >>> init_grad_bias = np.zeros([2])
+    >>> batchNormalization = BatchNormalization(2, 1e-5, 1e-5, True, init_weight, init_bias, init_grad_weight, init_grad_bias)
+    creating: createBatchNormalization
     '''
     def __init__(self,
                  n_output,
                  eps=1e-5,
                  momentum=0.1,
                  affine=True,
+                 init_weight=None,
+                 init_bias=None,
+                 init_grad_weight=None,
+                 init_grad_bias=None,
                  bigdl_type="float"):
         super(BatchNormalization, self).__init__(None, bigdl_type,
                                                  n_output,
                                                  eps,
                                                  momentum,
-                                                 affine)
+                                                 affine,
+                                                 JTensor.from_ndarray(init_weight),
+                                                 JTensor.from_ndarray(init_bias),
+                                                 JTensor.from_ndarray(init_grad_weight),
+                                                 JTensor.from_ndarray(init_grad_bias))
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
@@ -2009,7 +2058,7 @@ class Min(Layer):
     '''
 
     def __init__(self,
-                 dim,
+                 dim=1,
                  num_input_dims=INTMIN,
                  bigdl_type="float"):
         super(Min, self).__init__(None, bigdl_type,
@@ -2461,7 +2510,7 @@ class SelectTable(Layer):
     internally to do so is recursive.
 
 
-    :param dimension: the dimension to be selected
+    :param index: the index to be selected
 
 
     >>> selectTable = SelectTable(1)
@@ -2469,10 +2518,10 @@ class SelectTable(Layer):
     '''
 
     def __init__(self,
-                 dimension,
+                 index,
                  bigdl_type="float"):
         super(SelectTable, self).__init__(None, bigdl_type,
-                                          dimension)
+                                          index)
 
 
 class Sigmoid(Layer):
@@ -2640,7 +2689,6 @@ class SpatialDilatedConvolution(Layer):
                  pad_h=0,
                  dilation_w=1,
                  dilation_h=1,
-                 init_method='default',
                  wRegularizer=None,
                  bRegularizer=None,
                  bigdl_type="float"):
@@ -2655,7 +2703,6 @@ class SpatialDilatedConvolution(Layer):
                                                         pad_h,
                                                         dilation_w,
                                                         dilation_h,
-                                                        init_method,
                                                         wRegularizer,
                                                         bRegularizer)
                                                         
@@ -2723,7 +2770,6 @@ class SpatialFullConvolution(Layer):
                  adj_h=0,
                  n_group=1,
                  no_bias=False,
-                 init_method='default',
                  wRegularizer=None,
                  bRegularizer=None,
                  bigdl_type="float"):
@@ -2740,7 +2786,6 @@ class SpatialFullConvolution(Layer):
                                                      adj_h,
                                                      n_group,
                                                      no_bias,
-                                                     init_method,
                                                      wRegularizer,
                                                      bRegularizer)
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
@@ -2768,7 +2813,6 @@ class SpatialShareConvolution(Layer):
                  pad_h=0,
                  n_group=1,
                  propagate_back=True,
-                 init_method='default',
                  bigdl_type="float"):
         super(SpatialShareConvolution, self).__init__(None, bigdl_type,
                                                       n_input_plane,
@@ -2780,8 +2824,7 @@ class SpatialShareConvolution(Layer):
                                                       pad_w,
                                                       pad_h,
                                                       n_group,
-                                                      propagate_back,
-                                                      init_method)
+                                                      propagate_back)
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
@@ -2826,7 +2869,6 @@ class VolumetricConvolution(Layer):
                  pad_w=0,
                  pad_h=0,
                  with_bias=True,
-                 init_method="default",
                  bigdl_type="float"):
         super(VolumetricConvolution, self).__init__(None, bigdl_type,
                                                     n_input_plane,
@@ -2840,8 +2882,7 @@ class VolumetricConvolution(Layer):
                                                     pad_t,
                                                     pad_w,
                                                     pad_h,
-                                                    with_bias,
-                                                    init_method)
+                                                    with_bias)
 
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
@@ -3198,13 +3239,17 @@ class Reverse(Layer):
 
     >>> reverse = Reverse()
     creating: createReverse
+    >>> reverse = Reverse(1, False)
+    creating: createReverse
     '''
 
     def __init__(self,
                  dimension=1,
+                 is_inplace=False,
                  bigdl_type="float"):
         super(Reverse, self).__init__(None, bigdl_type,
-                                      dimension)
+                                      dimension,
+                                      is_inplace)
 
 
 class Transpose(Layer):
@@ -3389,6 +3434,34 @@ class Pack(Layer):
     def __init__(self, dimension, bigdl_type="float"):
         super(Pack, self).__init__(None, bigdl_type, dimension)
 
+class ConvLSTMPeephole(Layer):
+    '''
+    
+|   Convolution Long Short Term Memory architecture with peephole.
+|   Ref. A.: https://arxiv.org/abs/1506.04214 (blueprint for this module)
+|   B. https://github.com/viorik/ConvLSTM
+
+    :param input_size: number of input planes in the image given into forward()
+    :param output_size: number of output planes the convolution layer will produce
+    :param kernel_i Convolutional filter size to convolve input
+    :param kernel_c Convolutional filter size to convolve cell
+    :param stride The step of the convolution
+    :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices
+    :param uRegularizer: instance [[Regularizer]](eg. L1 or L2 regularization), applied to the recurrent weights matrices
+    :param bRegularizer: instance of [[Regularizer]]applied to the bias.
+    :param with_peephold: whether use last cell status control a gate.
+
+    >>> convlstm = ConvLSTMPeephole(4, 3, 3, 3, 1, L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
+    creating: createL1Regularizer
+    creating: createL1Regularizer
+    creating: createL1Regularizer
+    creating: createConvLSTMPeephole
+    '''
+
+    def __init__(self, input_size, output_size, kernel_i, kernel_c, stride, wRegularizer=None, uRegularizer=None,
+                 bRegularizer=None, with_peephole=True, bigdl_type="float"):
+        super(ConvLSTMPeephole, self).__init__(None, bigdl_type, input_size, output_size, kernel_i, kernel_c, stride,
+                                               wRegularizer, uRegularizer, bRegularizer, with_peephole)
 
 def _test():
     import doctest

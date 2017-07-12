@@ -49,8 +49,6 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
   customizedConverters : mutable.HashMap[String, (GeneratedMessage) => Seq[ModuleNode[T]]] = null
   )(implicit ev: TensorNumeric[T]) {
 
-  private val hdfsPrefix: String = "hdfs:"
-
   private val logger = Logger.getLogger(getClass)
 
   private var netparam: Caffe.NetParameter = _
@@ -88,28 +86,18 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
     }
   }
 
-  private def createHdfsInputStream(fileName: String): FSDataInputStream = {
-    val src = new Path(fileName)
-    val fs = src.getFileSystem(new Configuration())
-    fs.open(src)
-  }
-
   private def loadBinary(prototxtPath: String, modelPath: String): Caffe.NetParameter = {
-    var prototxtReader: InputStreamReader = null
+    var modelFs: org.apache.hadoop.fs.FileSystem = null
+    var prototxtFs: org.apache.hadoop.fs.FileSystem = null
     var modelStream: InputStream = null
+    var prototxtStream: InputStream = null
+    var prototxtReader: InputStreamReader = null
     try {
-      if (prototxtPath.startsWith(File.hdfsPrefix)) {
-        require(modelPath.startsWith(File.hdfsPrefix), "If prototxt is saved in hdfs," +
-          " model should also be saved in hdfs")
-        val prototxtStream = createHdfsInputStream(prototxtPath)
-        modelStream = createHdfsInputStream(modelPath)
-        prototxtReader = new InputStreamReader(prototxtStream, "ASCII")
-      } else {
-        val f = new java.io.File(prototxtPath)
-        require(f.exists(), prototxtPath + " does not exists")
-        prototxtReader = new InputStreamReader(new FileInputStream(f), "ASCII")
-        modelStream = new FileInputStream(modelPath)
-      }
+      modelFs = File.getFileSystem(prototxtPath)
+      prototxtFs = File.getFileSystem(prototxtPath)
+      modelStream = modelFs.open(new Path(modelPath))
+      prototxtStream = modelFs.open(new Path(prototxtPath))
+      prototxtReader = new InputStreamReader(prototxtStream, "ASCII")
 
       val builder = NetParameter.newBuilder
       TextFormat.merge(prototxtReader, builder)
@@ -120,8 +108,11 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
       logger.info("load caffe model done")
       builder.build()
     } finally {
-      prototxtReader.close()
-      modelStream.close()
+      if (modelFs != null) modelFs.close()
+      if (prototxtFs != null) prototxtFs.close()
+      if (null != prototxtReader) prototxtReader.close()
+      if (null != modelStream) modelStream.close()
+      if (null != prototxtStream) prototxtStream.close()
     }
   }
 

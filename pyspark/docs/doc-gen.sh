@@ -57,6 +57,6 @@ fi
 sed -i "/sys.path.insert(0/i sys.path.insert(0, '.')\nsys.path.insert(0, u'$PYSPARK')" conf.py
 sed -i "/^extensions/s/^extensions *=/extensions +=/" conf.py
 sed -i "/^extensions/i extensions = ['sphinx.ext.autodoc', 'sphinx.ext.mathjax', 'bigdl_pytext']" conf.py
-sed -i "/^html_theme/c html_theme = 'sphinxdoc'" conf.py
+# sed -i "/^html_theme/c html_theme = 'sphinxdoc'" conf.py
 
 make clean; make html;

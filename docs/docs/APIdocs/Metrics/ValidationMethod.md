@@ -6,24 +6,30 @@ The trait can be extended by user-defined method. Now we have defined Top1Accura
 #### Top1Accuracy ####
 
 Caculate the percentage that output's max probability index equals target.
-
-val top1accuracy = new Top1Accuracy()
+**Scala:**
+```val top1accuracy = new Top1Accuracy()```
+**Python:**
+```top1accuracy = Top1Accuracy()```
 
 #### Top5Accuracy ####
 
 Caculate the percentage that target in output's top5 probability indexes.
-
-val top5accuracy = new Top5Accuracy()
+**Scala:**
+```val top5accuracy = new Top5Accuracy()```
+**Python:**
+```top5accuracy = Top5Accuracy()```
 
 #### Loss ####
 
 Calculate loss of output and target with criterion. The default criterion is ClassNLLCriterion.
-
-val loss = new Loss(criterion)
+**Scala:**
+```val loss = new Loss(criterion)```
+**Python:**
+```loss = Loss(cri)```
 
 #### Example code ####
 
-Followings are examples to evaluate LeNet5 model with Top1Accuracy, Top5Accuracy, Loss validation method.
+Followings are examples to evaluate model with Top1Accuracy, Top5Accuracy, Loss validation method.
 
 Scala example code:
 
@@ -64,7 +70,7 @@ Python example code:
 from pyspark.context import SparkContext
 from bigdl.util.common import *
 from bigdl.nn.layer import *
-from bigdl.models.lenet.lenet5 import *
+from bigdl.optim.optimizer import *
 
 sc = get_spark_context(conf=create_spark_conf())
 init_engine()
@@ -83,7 +89,7 @@ trainingData = sc.parallelize(range(0, data_len)).map(
 
 model = Sequential()
 model.add(Linear(4, 5))
-test_results = model.test(trainingData, batch_size, ["Top1Accuracy", "Top5Accuracy", "Loss"])
+test_results = model.test(trainingData, batch_size, [Top1Accuracy(), Top5Accuracy(), Loss()])
 ```
 result is
 ```
@@ -92,6 +98,6 @@ Test result: 0.0, total_num: 10, method: Top1Accuracy
 >>> print test_results[1]
 Test result: 0.0, total_num: 10, method: Top5Accuracy
 >>> print test_results[2]
-Test result: 0.0870719999075, total_num: 10, method: loss
+Test result: 0.116546951234, total_num: 10, method: Loss
 ```
 
