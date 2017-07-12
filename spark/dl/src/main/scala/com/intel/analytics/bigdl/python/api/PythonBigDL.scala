@@ -40,10 +40,8 @@ import com.intel.analytics.bigdl.nn.tf.{Const, Fill, Shape, SplitAndSelect}
 import scala.collection.JavaConverters._
 import scala.language.existentials
 import scala.reflect.ClassTag
-
-import org.apache.spark.ml.DLClassifier
+import org.apache.spark.ml.{DLClassifier, DLClassifierModel, DLEstimator, DLModel}
 import org.apache.spark.ml.param.ParamMap
-
 import org.apache.spark.sql.DataFrame
 
 /**
@@ -1661,6 +1659,37 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def setInitMethod(layer: Initializable, weightInitMethod: InitializationMethod,
                     biasInitMethod: InitializationMethod): layer.type = {
     layer.setInitMethod(weightInitMethod, biasInitMethod)
+  }
+
+  def createDLEstimator(model: Module[T],
+                        criterion : Criterion[T],
+                        featureSize : JList[Int],
+                        labelSize : JList[Int]): DLEstimator[T] = {
+    new DLEstimator(model, criterion, featureSize.asScala.toArray, labelSize.asScala.toArray)
+  }
+
+  def fit(estimator: DLEstimator[T], dataset: DataFrame): DLModel[T] = {
+    estimator.fit(dataset).asInstanceOf[DLModel[T]]
+  }
+
+  def createDLModel(model: Module[T],
+                              featureSize : JList[Int]): DLModel[T] = {
+    new DLModel(model, featureSize.asScala.toArray)
+  }
+
+  def createDLClassifier(model: Module[T],
+                        criterion : Criterion[T],
+                        featureSize : JList[Int]): DLClassifier[T] = {
+    new DLClassifier(model, criterion, featureSize.asScala.toArray)
+  }
+
+  def fit(classifier: DLClassifier[T], dataset: DataFrame): DLClassifierModel[T] = {
+    classifier.fit(dataset).asInstanceOf[DLClassifierModel[T]]
+  }
+
+  def createDLClassifierModel(model: Module[T],
+                         featureSize : JList[Int]): DLClassifierModel[T] = {
+    new DLClassifierModel(model, featureSize.asScala.toArray)
   }
 }
 

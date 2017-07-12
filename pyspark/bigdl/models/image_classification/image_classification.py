@@ -24,8 +24,7 @@ from dataset import imagenet
 
 from dataset.transformer import *
 from nn.layer import *
-from util.common import *
-from pyspark.sql import *
+
 from ml.dl_classifier import *
 
 
@@ -52,8 +51,8 @@ if __name__ == "__main__":
         data_rdd = imagenet.read_local_with_name(sc, options.folder, 255.0, False)
     # transform to vectors
     val_transformer = ImgTransformer([Crop(image_size, image_size, "random"),
-                                   ChannelNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225),
-                                   TransposeToTensor()
+                                      ChannelNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225),
+                                      TransposeToTensor()
                                    ])
     if version.startswith("1.5") or version.startswith("1.6"):
         from pyspark.mllib.linalg import Vectors
@@ -76,9 +75,13 @@ if __name__ == "__main__":
         print("Unsupported model type")
         sys.exit(0)
     # get DL classifier
-    classifier = DLClassifier(model, (3, image_size, image_size)).setInputCol("features").setOutputCol("predict")
+    transformer = DLClassifierModel(model, [3, image_size, image_size])\
+        .setBatchSize(options.batchSize)\
+        .setFeaturesCol("features")\
+        .setPredictionCol("predict")
+    # classifier = DLClassifier(model, (3, image_size, image_size)).setInputCol("features").setOutputCol("predict")
     # predict
-    classifier.transform(val_df)\
+    transformer.transform(val_df)\
         .select("image_name", "predict") \
         .show(options.show_num, False)
     sc.stop()
