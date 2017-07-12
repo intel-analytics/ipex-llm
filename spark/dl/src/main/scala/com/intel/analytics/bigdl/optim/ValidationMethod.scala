@@ -112,6 +112,59 @@ class AccuracyResult(private var correct: Int, private var count: Int)
 }
 
 /**
+ * This is a metric to measure the accuracy of Tree Neural Network/Recursive Neural Network
+ *
+ */
+class TreeNNAccuracy[T: ClassTag]()(
+  implicit ev: TensorNumeric[T])
+  extends ValidationMethod[T] {
+  override def apply(output: Activity, target: Activity):
+  ValidationResult = {
+    var correct = 0
+    var count = 0
+
+    var _output = output.asInstanceOf[Tensor[T]]
+    val _target = target.asInstanceOf[Tensor[T]].select(2, 1)
+
+    if (_output.dim() == 3) {
+      _output = _output.select(2, 1)
+      (if (_output.size(2) == 1) {
+        _output.apply1(x => if (ev.isGreater(ev.fromType(0.5), x)) ev.zero else ev.one)
+      } else {
+        _output.max(2)._2.squeeze()
+      }).map(_target, (a, b) => {
+        if (a == b) {
+          correct += 1
+        }
+        a
+      })
+      count += _output.size(1)
+    } else if (_output.dim == 2) {
+      _output = _output.select(1, 2)
+      require(_target.size(1) == 1)
+      (if (_output.size(1) == 1) {
+        _output.apply1(x => if (ev.isGreater(ev.fromType(0.5), x)) ev.zero else ev.one)
+      } else {
+        _output.max(1)._2.squeeze()
+      }).map(_target, (a, b) => {
+        if (a == b) {
+          correct += 1
+        }
+        a
+      })
+      count += 1
+    } else {
+      throw new IllegalArgumentException
+    }
+
+    new AccuracyResult(correct, count)
+  }
+
+  override def format(): String =
+    s"TreeNNAccuracy()"
+}
+
+/**
  * Caculate the percentage that output's max probability index equals target
  */
 class Top1Accuracy[T](
