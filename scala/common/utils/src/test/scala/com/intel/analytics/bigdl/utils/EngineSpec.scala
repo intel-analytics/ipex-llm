@@ -141,8 +141,8 @@ class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
     })
   }
 
-  "readConf" should "skip blockTransferService if bigdl.nio.force is set to false" in {
-    System.setProperty("bigdl.nio.force", "false")
+  "readConf" should "skip blockTransferService if bigdl.network.nio is set to false" in {
+    System.setProperty("bigdl.network.nio", "false")
     val conf = Engine.readConf
     val target = Map(
       "spark.shuffle.reduceLocality.enabled" -> "false",
@@ -152,7 +152,7 @@ class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
     conf.foreach(s => {
       s._2 should be(target(s._1))
     })
-    System.clearProperty("bigdl.nio.force")
+    System.clearProperty("bigdl.network.nio")
   }
 
   "LocalMode" should "false if onSpark" in {
