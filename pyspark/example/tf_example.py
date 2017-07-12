@@ -31,7 +31,7 @@ def main():
         init = tf.global_variables_initializer()
         sess.run(init)
         tensorflow_result = sess.run(output, {input: tensor})
-        bigdl_model = Model(input, output)
+        bigdl_model = Model(input, output, node_type="tensorflow")
         bigdl_result = bigdl_model.forward(tensor)
 
         print("Tensorflow forward result is " + str(tensorflow_result))

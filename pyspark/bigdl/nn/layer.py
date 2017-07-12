@@ -392,8 +392,8 @@ class Model(Container):
                                     to_list(inputs),
                                     to_list(outputs))
         else:
-            from bigdl.util.tf_utils import convert
-            path, input_names, output_names = convert(to_list(inputs), to_list(outputs))
+            from bigdl.util.tf_utils import generate_graph_file
+            path, input_names, output_names = generate_graph_file(to_list(inputs), to_list(outputs))
             super(Model, self).__init__(None, bigdl_type,
                                         path + '/model.pb',
                                         input_names,
