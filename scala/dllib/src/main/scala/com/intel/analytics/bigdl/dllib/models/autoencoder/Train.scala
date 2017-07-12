@@ -30,11 +30,13 @@ import com.intel.analytics.bigdl.utils.{Engine, T, Table}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 
+import scala.reflect.ClassTag
+
 object toAutoencoderBatch {
   def apply(): toAutoencoderBatch[Float] = new toAutoencoderBatch[Float]()
 }
 
-class toAutoencoderBatch[T](implicit ev: TensorNumeric[T]
+class toAutoencoderBatch[T: ClassTag](implicit ev: TensorNumeric[T]
       )extends Transformer[MiniBatch[T], MiniBatch[T]] {
   override def apply(prev: Iterator[MiniBatch[T]]): Iterator[MiniBatch[T]] = {
     prev.map(batch => {

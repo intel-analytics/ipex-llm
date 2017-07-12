@@ -61,7 +61,6 @@ class LabeledSentenceToSample[T: ClassTag](vocabLength: Int,
 
   private val feature: Tensor[T] = Tensor()
   private val label: Tensor[T] = Tensor()
-  private val buffer = Sample[T](feature, label)
 
   override def apply(prev: Iterator[LabeledSentence[T]]): Iterator[Sample[T]] = {
     prev.map(sentence => {
@@ -116,7 +115,7 @@ class LabeledSentenceToSample[T: ClassTag](vocabLength: Int,
         i += 1
       }
 
-      buffer
+      Sample[T](feature, label)
     })
   }
 }
