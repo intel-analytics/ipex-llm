@@ -1,14 +1,82 @@
 ---
-# **Running on EC2**
+
+## **Use an Interactive Shell**
+You can quickly experiment with BigDL codes as a Spark program using the interactive Spark shell by running:
+```sbt
+$ SPARK_HOME/bin/spark-shell --properties-file dist/conf/spark-bigdl.conf    \
+  --jars bigdl-VERSION-jar-with-dependencies.jar
+```
+Then you can see something like:
+```
+Welcome to
+      ____              __
+     / __/__  ___ _____/ /__
+    _\ \/ _ \/ _ `/ __/  '_/
+   /___/ .__/\_,_/_/ /_/\_\   version 1.6.0
+      /_/
+
+Using Scala version 2.10.5 (Java HotSpot(TM) 64-Bit Server VM, Java 1.7.0_79)
+Spark context available as sc.
+scala> 
+```
+
+
+For instance, to experiment with the ````Tensor```` APIs in BigDL, you may then try:
+```scala
+scala> import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.Tensor
+
+scala> Tensor[Double](2,2).fill(1.0)
+res9: com.intel.analytics.bigdl.tensor.Tensor[Double] =
+1.0     1.0
+1.0     1.0
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2]
+```
+For more details about the BigDL APIs, please refer to the [Programming Guide](https://github.com/intel-analytics/BigDL/wiki/Programming-Guide).
+
 ---
 
-* [1. AMI](#1-ami)
-* [2. Before You Start](#2-before-you-start)
-* [3. Run BigDL examples](#3-run-bigdl-examples)
-    * [3.1 Run the "inception-v1" example](#31-run-the-inception-v1-example)
-    * [3.2 Run the "perf" example](#32-run-the-perf-example)
+## Run a BigDL Program
+You can run a BigDL program, e.g., the [VGG](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/vgg) training, as a standard Spark program (running in either local mode or cluster mode) as follows:
 
-## **1. AMI**
+1. Download the CIFAR-10 data from [here](https://www.cs.toronto.edu/%7Ekriz/cifar.html). Remember to choose the binary version.
+
+```
+  # Spark local mode
+  spark-submit --master local[core_number] --class com.intel.analytics.bigdl.models.vgg.Train \
+  dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
+  -f path_to_your_cifar_folder \
+  -b batch_size
+
+  # Spark standalone mode
+  spark-submit --master spark://... --executor-cores cores_per_executor \
+  --total-executor-cores total_cores_for_the_job \
+  --class com.intel.analytics.bigdl.models.vgg.Train \
+  dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
+  -f path_to_your_cifar_folder \
+  -b batch_size
+
+  # Spark yarn mode
+  spark-submit --master yarn --deploy-mode client \
+  --executor-cores cores_per_executor \
+  --num-executors executors_number \
+  --class com.intel.analytics.bigdl.models.vgg.Train \
+  dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
+  -f path_to_your_cifar_folder \
+  -b batch_size
+```
+
+  The parameters used in the above command are:
+
+  * -f: The folder where your put the CIFAR-10 data set. Note in this example, this is just a local file folder on the Spark driver; as the CIFAR-10 data is somewhat small (about 120MB), we will directly send it from the driver to executors in the example.
+
+  * -b: The mini-batch size. The mini-batch size is expected to be a multiple of *total cores* used in the job. In this example, the mini-batch size is suggested to be set to *total cores * 4*
+
+## **Running on EC2**
+
+
+ * **AMI**
+
 To make it easier to try out BigDL examples on Spark using EC2, a public AMI is provided. It will automatically retrieve the latest BigDL package, download the necessary input data, and then run the specified BigDL example (using Java 8 on a Spark cluster). The details of the public AMI are shown in the table below.
 
 |BigDL version |AMI version|Date        |AMI ID      |AMI Name          |Region               |Status    |
@@ -26,11 +94,12 @@ After launching the AMI on EC2, please log on to the instance and run a "bootstr
 ```bash
 ./bootstrap.sh
 ```
+ * **Before You Start**
 
-## **2. Before You Start**
 Before running the BigDL examples, you need to launch a Spark cluster on EC2 (you may refer to [https://github.com/amplab/spark-ec2](https://github.com/amplab/spark-ec2) for more instructions). In addition, to run the Inception-v1 example, you also need to start a HDFS cluster on EC2 to store the input image data.
 
-## **3. Run BigDL examples**
+ * **Run BigDL examples**
+
 You can run BigDL examples using the `run.example.sh` script in home directory of your BigDL Client instance (e.g. `/home/ubuntu/`) with the following parameters:
 * Mandatory parameters:
   * `-m|--model` which model to train, including
@@ -59,12 +128,13 @@ You can run BigDL examples using the `run.example.sh` script in home directory o
   * `-l|--learning-rate` by default the the example will use an initial learning rate of "0.01"; you can specify a different value here
 
 After the training, you can check the log files and generated models in the home directory (e.g., `/home/ubuntu/`).  
-  
-### **3.1 Run the "inception-v1" example**
+
+--- 
+* **Run the "inception-v1" example**
 
 You can refer to the [Inception v1](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/inception) example to prepare the input [ImageNet](http://image-net.org/index) data here. Alternatively, you may also download just a small set of images (with dummy labels) to run the example as follows, which can be useful if you only want to try it out to see the training speed on a Spark cluster.
 
-* Download and prepare the input image data (a subset of the [Flickr Style](http://sergeykarayev.com/files/1311.3715v3.pdf) data)
+ * Download and prepare the input image data (a subset of the [Flickr Style](http://sergeykarayev.com/files/1311.3715v3.pdf) data)
 
 ```bash
   ./download.sh $HDFS-NAMENODE
@@ -72,7 +142,7 @@ You can refer to the [Inception v1](https://github.com/intel-analytics/BigDL/tre
 
   After the download completes, the downloaded images are stored in `hdfs://HDFS-NAMENODE:9000/seq`. (If the download fails with error "Unable to establish SSL connection." please check your network connection and retry this later.)
 
-* To run the "inception-v1" example on a 4-worker Spark cluster (using, say, the "m4.10xlarge" instance), run the example command below: 
+ * To run the "inception-v1" example on a 4-worker Spark cluster (using, say, the "m4.10xlarge" instance), run the example command below: 
 
 ```
   nohup bash ./run.example.sh --model inception-v1  \
@@ -93,7 +163,8 @@ You can refer to the [Inception v1](https://github.com/intel-analytics/BigDL/tre
   2017-01-10 10:04:03 INFO  DistriOptimizer$:241 - [Epoch 1 1536/5000][Iteration 4][Wall Clock XXX] Train 512 in XXXseconds. Throughput is XXX records/second. Loss is XXX.
   2017-01-10 10:04:05 INFO  DistriOptimizer$:241 - [Epoch 1 2048/5000][Iteration 5][Wall Clock XXX] Train 512 in XXXseconds. Throughput is XXX records/second. Loss is XXX.
 ```  
-### **3.2 Run the "perf" example**
+
+* **Run the "perf" example**
 
 To run the "perf" example on a 4-worker Spark cluster (using, say, the "m4.10xlarge" instance), you may try the example command below: 
 

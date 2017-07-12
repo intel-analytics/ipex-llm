@@ -1,5 +1,6 @@
 import sys
 import os
+import re
 
 script_path = os.path.realpath(__file__)
 dir_name = os.path.dirname(script_path)
@@ -7,18 +8,19 @@ doc_dir = dir_name + '/docs/APIdocs'
 
 def clean_merged():
     for root, dirs, files in os.walk(doc_dir):
-        merged_filename = '_merged_' + root[root.rfind('/')+1:] + '.md'
-        if merged_filename in files:
-            os.remove(os.path.join(root, merged_filename))
+        p = "^merged-.*\.md$"
+        for f in filter (lambda fn: re.match(p,fn),files):
+            print "cleaning",f
+            os.remove(os.path.join(root, f))
 
 def merge_mds():
     for root, dirs, files in os.walk(doc_dir):
-        merged_filename = '_merged_' + root[root.rfind('/')+1:] + '.md'
+        merged_filename = 'merged-' + root[root.rfind('/')+1:] + '.md'
         #remove merged md if exists
         if merged_filename in files:
             os.remove(os.path.join(root, merged_filename))
         #only merge normal md's
-        md_files = filter(lambda x: os.path.splitext(x)[1] == '.md' and not '_merged_' in x, files)
+        md_files = filter(lambda x: os.path.splitext(x)[1] == '.md' and not 'merged-' in x, files)
         #if no md's, skip this folder
         if len(md_files) == 0:
             continue

@@ -2,11 +2,11 @@
 
 **Scala:**
 ```scala
-val min = Min(dim=1, numInputDims=Int.MinValue)
+val min = Min(dim, numInputDims)
 ```
 **Python:**
 ```python
-min = Min(dim=1, num_input_dims=INTMIN)
+min = Min(dim, num_input_dims)
 ```
 
 Applies a min operation over dimension `dim`.
