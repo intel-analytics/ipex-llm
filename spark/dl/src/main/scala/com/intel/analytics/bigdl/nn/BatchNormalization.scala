@@ -65,10 +65,10 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
   }
 
   val nDim = 2
-  val runningMean = Tensor[T](nOutput)
-  val runningVar = Tensor[T](nOutput).fill(ev.fromType[Int](1))
-  val saveMean = Tensor[T](nOutput)
-  val saveStd = Tensor[T](nOutput).fill(ev.fromType[Int](1))
+  val runningMean = Tensor[T]()
+  val runningVar = Tensor[T]()
+  val saveMean = Tensor[T]()
+  val saveStd = Tensor[T]()
 
   val weight: Tensor[T] =
     if (initWeight != null) initWeight else if (affine) Tensor[T](nOutput) else null
@@ -103,8 +103,6 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
       biasInitMethod.init(bias, VariableFormat.ONE_D)
     }
 
-    runningMean.zero()
-    runningVar.fill(ev.fromType[Int](1))
     zeroGradParameters()
   }
 
@@ -119,9 +117,6 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
   private def checkInputDim(input: Tensor[T]): Unit = {
     require(input.dim() == nDim || (input.dim() == nDim - 1 && train == false),
       s"only mini-batch supported (${nDim}D tensor), got ${input.dim()}D tensor instead")
-    val featDim = if (input.dim() == nDim - 1) 1 else 2
-    require(input.size(featDim) == runningMean.nElement(),
-      s"got ${input.size(featDim)}-feature tensor, expected ${runningMean.nElement()}")
   }
 
   @inline
@@ -133,15 +128,26 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
     }
   }
 
+  @inline
+  private def initializeBuffer(nOutput: Int): Unit = {
+    runningMean.resize(nOutput).zero
+    runningVar.resize(nOutput).fill(ev.fromType[Int](1))
+    saveMean.resizeAs(runningMean).zero
+    saveStd.resizeAs(runningVar).fill(ev.fromType[Int](1))
+  }
+
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     checkInputDim(input)
 
     output.resizeAs(input)
-    saveMean.resizeAs(runningMean)
-    saveStd.resizeAs(runningVar)
 
     val _input = makeBatch(input)
     val nInput = _input.size(2)
+
+    if (runningMean.nElement == 0 || runningMean.nElement < nInput) {
+      initializeBuffer(nInput)
+    }
+
     if (results == null || results.length > nInput) {
       results = new Array[Future[_]](nInput)
     }
