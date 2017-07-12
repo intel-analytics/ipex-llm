@@ -635,7 +635,7 @@ class BinaryTreeLSTM(Layer):
     :param gateOutput whether gate output
     :param withGraph whether create lstms with [[Graph]], the default value is true.
     >>> treeLSTM = BinaryTreeLSTM(100, 200)
-    creating: BinaryTreeLSTM
+creating: createBinaryTreeLSTM
     '''
 
     def __init__(self,
