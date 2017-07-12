@@ -89,6 +89,7 @@ class ConcatSpec extends TorchSpec {
 
   "A Concat Container updateGradInput and acc with Linear" should
     "generate correct output and grad " in {
+    torchCheck()
     val seed = 2
     RNG.setSeed(seed)
     val module = new Concat[Double](2)

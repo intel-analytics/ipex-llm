@@ -22,7 +22,7 @@ import java.util.{List => JList, Map => JMap}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim.{Loss, SGD, Top1Accuracy, Trigger}
-import com.intel.analytics.bigdl.utils.{Engine, T}
+import com.intel.analytics.bigdl.utils.{Engine, T, TestUtils}
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
@@ -139,6 +139,7 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "Double prototype" should "be test" in {
+    TestUtils.cancelOnWindows()
 
     Logger.getLogger("org").setLevel(Level.WARN)
     Logger.getLogger("akka").setLevel(Level.WARN)
