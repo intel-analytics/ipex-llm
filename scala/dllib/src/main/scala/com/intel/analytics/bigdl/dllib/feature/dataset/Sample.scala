@@ -60,10 +60,8 @@ abstract class Sample[T: ClassTag] extends Serializable {
   def numLabel(): Int
 
   /**
-    * Deep clone
-    *
-    * @return a deep clone
-    */
+   *@return A deep clone
+   */
   override def clone(): this.type =
     SerializationUtils.clone(this)
 
