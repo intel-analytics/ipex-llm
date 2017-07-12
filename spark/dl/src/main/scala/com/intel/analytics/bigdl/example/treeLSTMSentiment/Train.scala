@@ -96,12 +96,12 @@ object Train {
       sampleRDD = trainRDD,
       criterion = criterion,
       batchSize = param.batchSize,
-      featurePaddingParam = PaddingParam(
+      featurePaddingParam = PaddingParam[Float](
         paddingTensor =
           Some(Array(Tensor(T(paddingValue.toFloat)), Tensor(T(-1f, -1f, -1f))))),
-      labelPaddingParam = PaddingParam(
+      labelPaddingParam = PaddingParam[Float](
         paddingTensor =
-          Some(Array(Tensor(T(paddingValue.toFloat)), Tensor(T(-1f))))))
+          Some(Array(Tensor(T(-1f))))))
 
     optimizer
       .setOptimMethod(new Adagrad(
@@ -112,13 +112,13 @@ object Train {
         devRDD,
         Array(new TreeNNAccuracy()),
         param.batchSize,
-        PaddingParam(
+        PaddingParam[Float](
           paddingTensor =
             Some(Array(Tensor(T(paddingValue.toFloat)), Tensor(T(-1f, -1f, -1f))))),
-        PaddingParam(
+        PaddingParam[Float](
           paddingTensor =
-            Some(Array(Tensor(T(paddingValue.toFloat)), Tensor(T(-1f))))))
-      .setEndWhen(Trigger.maxEpoch(10))
+            Some(Array(Tensor(T(-1f))))))
+      .setEndWhen(Trigger.maxEpoch(param.epoch))
       .optimize()
     sc.stop()
   }

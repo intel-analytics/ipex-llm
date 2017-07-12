@@ -886,6 +886,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       toTensor(initGradWeight),
       toTensor(initGradBias)
     )
+  }
 
   def createBinaryTreeLSTM(
     inputSize: Int,

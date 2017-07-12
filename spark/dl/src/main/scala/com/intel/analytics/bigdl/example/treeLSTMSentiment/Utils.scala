@@ -229,14 +229,18 @@ object Utils {
     opt[String]('p', "p")
       .text("dropout rate")
       .action((x, c) => c.copy(p = x.toDouble))
+    opt[String]('e', "epoch")
+      .text("max epoch")
+      .action((x, c) => c.copy(epoch = x.toInt))
   }
 
   case class TreeLSTMSentimentParam (
     override val baseDir: String = "/tmp/.bigdl/dataset/",
-    override val batchSize: Int = 100,
+    override val batchSize: Int = 64,
     hiddenSize: Int = 150,
-    learningRate: Double = 0.05,
+    learningRate: Double = 0.1,
     regRate: Double = 1e-4,
-    p: Double = 0.5
+    p: Double = 0.5,
+    epoch: Int = 10
   ) extends AbstractTextClassificationParams
 }
