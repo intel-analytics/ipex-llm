@@ -30,7 +30,10 @@ parser.add_argument('-s', '--scaladocs',
 parser.add_argument('-p', '--pythondocs',
     dest='pythondocsflag', action='store_true',
     help='Add python doc to site')
-parser.add_argument('-m', '--startmkdocserve',
+parser.add_argument('-m', '--startserver',
+    dest='port', type=int,
+    help='Start server at PORT after building')
+parser.add_argument('-d', '--startmkdocserve',
     dest='mkdocserveflag', action='store_true',
     help=argparse.SUPPRESS)
 
@@ -92,8 +95,17 @@ if pythondocs:
 
 os.chdir(dir_name)
 
+if mkdoc_serve and args.port != None:
+    print 'Cannot start http server in debug mode'
+    sys.exit()
+
 if mkdoc_serve:
     print 'start mkdoc server'
     run_cmd(['mkdocs', 'serve'], 
         'mkdocs start serve error')
+
+if args.port != None:
+    os.chdir(dir_name + '/site')
+    run_cmd(['python', '-m', 'SimpleHTTPServer', '{}'.format(args.port)],
+        'start http server error')
    
