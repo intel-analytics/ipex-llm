@@ -118,7 +118,7 @@ abstract class Optimizer[T: ClassTag, D](
   : this.type = {
     this.validationTrigger = Some(trigger)
     val dataSet =
-      (DataSet.rdd(sampleRDD) -> SampleToBatch(batchSize))
+      (DataSet.rdd(sampleRDD) -> SampleToMiniBatch(batchSize))
         .asInstanceOf[DistributedDataSet[MiniBatch[T]]]
     this.validationDataSet = Some(dataSet)
     this.validationMethods = Some(vMethods)
@@ -300,26 +300,80 @@ object Optimizer {
       )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
     new DistriOptimizer[T](
       _model = model,
-      dataset = (DataSet.rdd(sampleRDD) -> SampleToBatch(batchSize))
+      dataset = (DataSet.rdd(sampleRDD) -> SampleToMiniBatch(batchSize))
+        .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
+      criterion = criterion
+    ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
+  }
+
+  /**
+   * Apply an Optimizer who could apply padding to the Samples
+   * with a padding strategy.
+   *
+   * @param model               model will be optimizied
+   * @param sampleRDD           training Samples
+   * @param criterion           loss function
+   * @param batchSize           mini batch size
+   * @param featurePaddingParam feature padding strategy, see
+   *                            [[com.intel.analytics.bigdl.dataset.PaddingParam]] for details.
+   * @param labelPaddingParam   label padding strategy, see
+   *                            [[com.intel.analytics.bigdl.dataset.PaddingParam]] for details.
+   * @return An optimizer
+   */
+  def apply[T: ClassTag](
+      model: Module[T],
+      sampleRDD: RDD[Sample[T]],
+      criterion: Criterion[T],
+      batchSize: Int,
+      featurePaddingParam: PaddingParam[T],
+      labelPaddingParam: PaddingParam[T]
+         )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
+    new DistriOptimizer[T](
+      _model = model,
+      dataset = (DataSet.rdd(sampleRDD) ->
+        SampleToMiniBatch(batchSize, Some(featurePaddingParam), Some(labelPaddingParam)))
         .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
       criterion = criterion
     ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
   }
 
   def apply[T: ClassTag](
-    model: Module[T],
-    sampleRDD: RDD[Sample[T]],
-    criterion: Criterion[T],
-    batchSize: Int,
-    isInOrder: Boolean,
-    featurePadding : Option[Tensor[T]] = None,
-    labelPadding : Option[T] = None,
-    fixedLength: Option[Int] = None
-  )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
+        model: Module[T],
+        sampleRDD: RDD[Sample[T]],
+        criterion: Criterion[T],
+        batchSize: Int,
+        featurePaddingParam: PaddingParam[T]
+      )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
     new DistriOptimizer[T](
       _model = model,
-      dataset = (DataSet.sortRDD(sampleRDD, isInOrder, batchSize) ->
-        SampleToBatch(batchSize, featurePadding, labelPadding, fixedLength))
+      dataset = (DataSet.rdd(sampleRDD) ->
+        SampleToMiniBatch(batchSize, Some(featurePaddingParam)))
+        .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
+      criterion = criterion
+    ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
+  }
+
+  /**
+   * Apply an optimizer with User-Defined MiniBatch.
+   *
+   * @param model model will be optimizied
+   * @param sampleRDD training Samples
+   * @param criterion loss function
+   * @param batchSize mini batch size
+   * @param miniBatch An User-Defined MiniBatch to construct a mini batch.
+   * @return an Optimizer
+   */
+  def apply[T: ClassTag](
+          model: Module[T],
+          sampleRDD: RDD[Sample[T]],
+          criterion: Criterion[T],
+          batchSize: Int,
+          miniBatch: MiniBatch[T]
+        )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
+    new DistriOptimizer[T](
+      _model = model,
+      dataset = (DataSet.rdd(sampleRDD) ->
+        SampleToMiniBatch(miniBatch, batchSize, None))
         .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
       criterion = criterion
     ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
