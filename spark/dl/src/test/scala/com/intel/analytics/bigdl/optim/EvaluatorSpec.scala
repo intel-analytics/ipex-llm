@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.dataset.{DataSet, Sample, SampleToBatch}
+import com.intel.analytics.bigdl.dataset.{DataSet, Sample}
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.nn.CrossEntropyCriterion
 import com.intel.analytics.bigdl.tensor.Tensor

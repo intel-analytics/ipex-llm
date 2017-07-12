@@ -71,15 +71,6 @@ object PythonBigDL {
   def ofFloat(): PythonBigDL[Float] = new PythonBigDL[Float]()
 
   def ofDouble(): PythonBigDL[Double] = new PythonBigDL[Double]()
-
-  def getInitMethod(initMethod: String): InitializationMethod = {
-    initMethod.toLowerCase() match {
-      case "xavier" => Xavier
-      case "randomUniform" => RandomUniform
-      case "bilinearfiller" => BilinearFiller
-      case m: String => throw new IllegalArgumentException(s"Not supported init method: ${m}")
-    }
-  }
 }
 
 /**
@@ -116,25 +107,6 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     }
   }
 
-
-  private def toValidationMethod(vMethods: JList[String]): Array[ValidationMethod[T]] = {
-    vMethods.toArray.map {
-      case "Top1Accuracy" => new Top1Accuracy[T]()
-      case "Top5Accuracy" => new Top5Accuracy[T]()
-      case "Loss" => new Loss[T]()
-      case m: String => throw new RuntimeException(s"not supported validation method: $m")
-    }
-  }
-
-  private def validationMethodToStr(method: ValidationMethod[T]): String = {
-    method match {
-      case _: Top1Accuracy[T] => "Top1Accuracy"
-      case _: Top5Accuracy[T] => "Top5Accuracy"
-      case _: Loss[T] => "loss"
-      case _ => throw new RuntimeException(s"not supported validation method: $method")
-    }
-  }
-
   def toPySample(sample: JSample[T]): Sample = {
     val featureList = sample.feature().contiguous().storage().toArray[T].toList.asJava
     val labelList = sample.label().contiguous().storage().toArray[T].toList.asJava
@@ -147,8 +119,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def toTensor(jTensor: JTensor): Tensor[T] = {
-    Tensor(jTensor.storage.asScala.map(_.asInstanceOf[T]).toArray,
-      jTensor.shape.asScala.toArray)
+    if (jTensor == null) null else {
+      Tensor(jTensor.storage.asScala.map(_.asInstanceOf[T]).toArray,
+        jTensor.shape.asScala.toArray)
+    }
   }
 
   def toJTensor(tensor: Tensor[T]): JTensor = {
@@ -196,7 +170,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   private def batching(rdd: RDD[Sample], batchSize: Int)
   : DistributedDataSet[MiniBatch[T]] = {
     val recordRDD = rdd.map(toSample(_))
-    (DataSet.rdd(recordRDD) -> new SampleToBatch[T](batchSize))
+    (DataSet.rdd(recordRDD) -> SampleToMiniBatch[T](batchSize))
       .asInstanceOf[DistributedDataSet[MiniBatch[T]]]
   }
 
@@ -205,15 +179,15 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createLinear(inputSize: Int, outputSize: Int,
-                   initMethod: String, withBias: Boolean,
+                   withBias: Boolean,
                    wRegularizer: Regularizer[T] = null,
-                   bRegularizer: Regularizer[T] = null): Linear[T] = {
-    val l = Linear[T](inputSize, outputSize, withBias, wRegularizer, bRegularizer)
-    if (initMethod != "default") {
-      l.setInitMethod(weightInitMethod = PythonBigDL.getInitMethod(initMethod),
-      biasInitMethod = Zeros)
-    }
-    l
+                   bRegularizer: Regularizer[T] = null,
+                   initWeight: JTensor = null,
+                   initBias: JTensor = null,
+                   initGradWeight: JTensor = null,
+                   initGradBias: JTensor = null): Linear[T] = {
+    Linear[T](inputSize, outputSize, withBias, wRegularizer, bRegularizer,
+      toTensor(initWeight), toTensor(initBias), toTensor(initGradWeight), toTensor(initGradBias))
   }
 
   def createReLU(ip: Boolean = false): ReLU[T] = {
@@ -276,6 +250,20 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Recurrent[T]()
   }
 
+  def createConvLSTMPeephole(
+    inputSize: Int,
+    outputSize: Int,
+    kernelI: Int,
+    kernelC: Int,
+    stride: Int = 1,
+    wRegularizer: Regularizer[T] = null,
+    uRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null,
+    withPeephole: Boolean = true): ConvLSTMPeephole[T] = {
+    ConvLSTMPeephole[T](inputSize, outputSize, kernelI, kernelC, stride,
+      wRegularizer, uRegularizer, bRegularizer, withPeephole)
+  }
+
   def createEcho(): Echo[T] = {
     Echo[T]()
   }
@@ -312,11 +300,16 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                                padH: Int = 0,
                                nGroup: Int = 1,
                                propagateBack: Boolean = true,
-                               initMethod: String = "default",
                                wRegularizer: Regularizer[T] = null,
-                               bRegularizer: Regularizer[T] = null)
+                               bRegularizer: Regularizer[T] = null,
+                               initWeight: JTensor = null,
+                               initBias: JTensor = null,
+                               initGradWeight: JTensor = null,
+                               initGradBias: JTensor = null,
+                               withBias: Boolean = true
+                              )
   : SpatialConvolution[T] = {
-    val s = SpatialConvolution[T](nInputPlane,
+    SpatialConvolution[T](nInputPlane,
       nOutputPlane,
       kernelW,
       kernelH,
@@ -327,12 +320,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       nGroup,
       propagateBack,
       wRegularizer,
-      bRegularizer)
-    if (initMethod != "default") {
-      s.setInitMethod(weightInitMethod = PythonBigDL.getInitMethod(initMethod),
-        biasInitMethod = Zeros)
-    }
-    s
+      bRegularizer,
+      toTensor(initWeight),
+      toTensor(initBias),
+      toTensor(initGradWeight),
+      toTensor(initGradBias),
+      withBias
+    )
   }
 
   def createReshape(size: JList[Int], batchMode: JBoolean = null): Reshape[T] = {
@@ -364,9 +358,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def createSpatialBatchNormalization(nOutput: Int,
                                       eps: Double = 1e-5,
                                       momentum: Double = 0.1,
-                                      affine: Boolean = true)
+                                      affine: Boolean = true,
+                                      initWeight: JTensor = null,
+                                      initBias: JTensor = null,
+                                      initGradWeight: JTensor = null,
+                                      initGradBias: JTensor = null)
   : SpatialBatchNormalization[T] = {
-    SpatialBatchNormalization[T](nOutput, eps, momentum, affine)
+    SpatialBatchNormalization[T](nOutput, eps, momentum, affine,
+    toTensor(initWeight), toTensor(initBias), toTensor(initGradWeight), toTensor(initBias))
   }
 
   def createSpatialCrossMapLRN(size: Int = 5,
@@ -409,12 +408,20 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def createBatchNormalization(nOutput: Int,
                                eps: Double = 1e-5,
                                momentum: Double = 0.1,
-                               affine: Boolean = true)
+                               affine: Boolean = true,
+                               initWeight: JTensor = null,
+                               initBias: JTensor = null,
+                               initGradWeight: JTensor = null,
+                               initGradBias: JTensor = null)
   : BatchNormalization[T] = {
     BatchNormalization[T](nOutput,
       eps,
       momentum,
-      affine)
+      affine,
+      toTensor(initWeight),
+      toTensor(initBias),
+      toTensor(initGradWeight),
+      toTensor(initGradBias))
   }
 
   def createBilinear(inputSize1: Int,
@@ -656,10 +663,12 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createMean(dimension: Int = 1,
-                 nInputDims: Int = -1)
+                 nInputDims: Int = -1,
+                 squeeze: Boolean = true)
   : Mean[T] = {
     Mean[T](dimension,
-      nInputDims)
+      nInputDims,
+      squeeze)
   }
 
   def createMin(dim: Int = 1,
@@ -833,11 +842,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                                       padH: Int = 0,
                                       dilationW: Int = 1,
                                       dilationH: Int = 1,
-                                      initMethod: String = "default",
                                       wRegularizer: Regularizer[T] = null,
                                       bRegularizer: Regularizer[T] = null)
   : SpatialDilatedConvolution[T] = {
-    val s = SpatialDilatedConvolution[T](nInputPlane,
+    SpatialDilatedConvolution[T](nInputPlane,
       nOutputPlane,
       kW,
       kH,
@@ -849,11 +857,6 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       dilationH,
       wRegularizer,
       bRegularizer)
-    if (initMethod != "default") {
-      s.setInitMethod(weightInitMethod = PythonBigDL.getInitMethod(initMethod),
-        biasInitMethod = Zeros)
-    }
-    s
   }
 
   def createSpatialFullConvolution(nInputPlane: Int,
@@ -868,11 +871,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                                    adjH: Int = 0,
                                    nGroup: Int = 1,
                                    noBias: Boolean = false,
-                                   initMethod: String = "default",
                                    wRegularizer: Regularizer[T] = null,
                                    bRegularizer: Regularizer[T] = null)
-  : SpatialFullConvolution[Activity, T] = {
-    val s = SpatialFullConvolution[Activity, T](nInputPlane,
+  : SpatialFullConvolution[T] = {
+    SpatialFullConvolution[T](nInputPlane,
       nOutputPlane,
       kW,
       kH,
@@ -886,11 +888,6 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       noBias,
       wRegularizer,
       bRegularizer)
-    if (initMethod != "default") {
-      s.setInitMethod(weightInitMethod = PythonBigDL.getInitMethod(initMethod),
-        biasInitMethod = Zeros)
-    }
-    s
   }
 
   def createSpatialShareConvolution(nInputPlane: Int,
@@ -902,10 +899,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                                     padW: Int = 0,
                                     padH: Int = 0,
                                     nGroup: Int = 1,
-                                    propagateBack: Boolean = true,
-                                    initMethod: String = "default")
+                                    propagateBack: Boolean = true)
   : SpatialShareConvolution[T] = {
-    val s = SpatialShareConvolution[T](nInputPlane,
+    SpatialShareConvolution[T](nInputPlane,
       nOutputPlane,
       kernelW,
       kernelH,
@@ -915,11 +911,6 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       padH,
       nGroup,
       propagateBack)
-    if (initMethod != "default") {
-      s.setInitMethod(weightInitMethod = PythonBigDL.getInitMethod(initMethod),
-        biasInitMethod = Zeros)
-    }
-    s
   }
 
   def createSpatialZeroPadding(padLeft: Int,
@@ -959,11 +950,15 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def createSum(dimension: Int = 1,
                 nInputDims: Int = -1,
-                sizeAverage: Boolean = false)
+                sizeAverage: Boolean = false,
+                squeeze: Boolean = true
+               )
   : Sum[T] = {
     Sum[T](dimension,
       nInputDims,
-      sizeAverage)
+      sizeAverage,
+      squeeze
+    )
   }
 
   def createTanhShrink()
@@ -1027,9 +1022,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       sizeAverage)
   }
 
-  def createReverse(dimension: Int = 1)
+  def createReverse(dimension: Int = 1, isInplace: Boolean = false)
   : Reverse[T] = {
-    Reverse[T](dimension)
+    Reverse[T](dimension, isInplace)
   }
 
   def createTranspose(permutations: JList[JList[Int]])
@@ -1083,10 +1078,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                                   padT: Int = 0,
                                   padW: Int = 0,
                                   padH: Int = 0,
-                                  withBias: Boolean = true,
-                                  initMethod: String = "default")
+                                  withBias: Boolean = true)
   : VolumetricConvolution[T] = {
-    val v = VolumetricConvolution[T](nInputPlane,
+    VolumetricConvolution[T](nInputPlane,
       nOutputPlane,
       kT,
       kW,
@@ -1098,11 +1092,6 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       padW,
       padH,
       withBias)
-    if (initMethod != "default") {
-      v.setInitMethod(weightInitMethod = PythonBigDL.getInitMethod(initMethod),
-        biasInitMethod = Zeros)
-    }
-    v
   }
 
   def createVolumetricMaxPooling(kT: Int,
@@ -1153,8 +1142,19 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     SGD.MultiStep(stepSizes.asScala.toArray, gamma)
   }
 
+  def createExponential(decayStep: Int, decayRate: Double,
+    stairCase: Boolean = false): SGD.Exponential = {
+    SGD.Exponential(decayStep, decayRate, stairCase)
+  }
+
   def createDefault(): SGD.Default = {
     SGD.Default()
+  }
+
+  def createPlateau(monitor: String, factor: Float = 0.1f,
+    patience: Int = 10, mode: String = "min", epsilon: Float = 1e-4f,
+    cooldown: Int = 0, minLr: Float = 0): SGD.Plateau = {
+    SGD.Plateau(monitor, factor, patience, mode, epsilon, cooldown, minLr)
   }
 
   def createClassNLLCriterion(weights: JTensor = null,
@@ -1278,13 +1278,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def modelTest(model: AbstractModule[Activity, Activity, T],
                 valRDD: JavaRDD[Sample],
                 batchSize: Int,
-                valMethods: JList[String])
+                valMethods: JList[ValidationMethod[T]])
   : JList[TestResult] = {
     val resultArray = model.evaluate(valRDD.rdd.map(toSample(_)),
-      toValidationMethod(valMethods), Some(batchSize))
+      valMethods.asScala.toArray, Some(batchSize))
     val testResultArray = resultArray.map { result =>
       TestResult(result._1.result()._1, result._1.result()._2,
-        validationMethodToStr(result._2))
+        result._2.toString())
     }
     testResultArray.toList.asJava
   }
@@ -1402,6 +1402,30 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Trigger.maxIteration(max)
   }
 
+  def createMaxScore(max: Float): Trigger = {
+    Trigger.maxScore(max)
+  }
+
+  def createMinLoss(min: Float): Trigger = {
+    Trigger.minLoss(min)
+  }
+
+  def createTop1Accuracy(): ValidationMethod[T] = {
+    new Top1Accuracy()
+  }
+
+  def createTop5Accuracy(): ValidationMethod[T] = {
+    new Top5Accuracy()
+  }
+
+  def createLoss(criterion: Criterion[T]): ValidationMethod[T] = {
+    new Loss(criterion)
+  }
+
+  def createMAE(): ValidationMethod[T] = {
+    new MAE()
+  }
+
   def createSGD(learningRate: Double = 1e-3,
     learningRateDecay: Double = 0.0,
     weightDecay: Double = 0.0,
@@ -1505,9 +1529,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                     batchSize: Int,
                     trigger: Trigger,
                     valRdd: JavaRDD[Sample],
-                    vMethods: JList[String]): Unit = {
-    optimizer.setValidation(trigger, batching(valRdd, batchSize.toInt),
-      toValidationMethod(vMethods))
+                    vMethods: JList[ValidationMethod[T]]): Unit = {
+    optimizer.setValidation(trigger, batching(valRdd, batchSize.toInt), vMethods.asScala.toArray)
   }
 
   def setCheckPoint(optimizer: Optimizer[T, MiniBatch[T]],

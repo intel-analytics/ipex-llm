@@ -39,14 +39,16 @@ if [ ! $isPy4jInstalled -eq 0 ]; then
  exit 1
 fi
 
-sphinx-apidoc -F -f -a -H BigDL -A Intel -o ./ ../
+DOCS_DIR="$( cd "$( dirname "$0" )" && pwd)"
+
+sphinx-apidoc -F -f -a -H BigDL -A Intel -o ./ ../ ${DOCS_DIR}/../test/* ${DOCS_DIR}/../setup.py
 
 if [ ! $SPARK_HOME ] || [ -z $SPARK_HOME ]; then
  echo 'Cannot find SPARK_HOME . Please set SPARK_HOME first.'
  exit 1
 fi
 
-PYSPARK=$(find $SPARK_HOME -name pyspark.zip)
+PYSPARK=$(find -L $SPARK_HOME -name pyspark.zip)
 if [ -z $PYSPARK ]; then
  echo 'Cannot find pyspark.zip. Please set SPARK_HOME correctly'
  exit 1
@@ -55,6 +57,6 @@ fi
 sed -i "/sys.path.insert(0/i sys.path.insert(0, '.')\nsys.path.insert(0, u'$PYSPARK')" conf.py
 sed -i "/^extensions/s/^extensions *=/extensions +=/" conf.py
 sed -i "/^extensions/i extensions = ['sphinx.ext.autodoc', 'sphinx.ext.mathjax', 'bigdl_pytext']" conf.py
-sed -i "/^html_theme/c html_theme = 'sphinxdoc'" conf.py
+# sed -i "/^html_theme/c html_theme = 'sphinxdoc'" conf.py
 
 make clean; make html;

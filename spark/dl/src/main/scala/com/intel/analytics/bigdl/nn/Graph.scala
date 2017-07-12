@@ -159,7 +159,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
     gradInput
   }
 
-  override def accGradParameters(input: Activity, gradOutput: Activity, scale: Double): Unit = {
+  override def accGradParameters(input: Activity, gradOutput: Activity): Unit = {
     var i = executions.length - 1
     while(i >= 0) {
       val curNode = executions(i)
@@ -265,6 +265,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
       input.toTable[Tensor[T]](i + 1)
     }
   }
+  
 }
 
 object Graph extends ContainerSerializable {

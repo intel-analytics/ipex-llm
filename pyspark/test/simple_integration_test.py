@@ -16,6 +16,7 @@
 # Still in experimental stage!
 
 from bigdl.nn.layer import *
+from bigdl.nn.initialization_method import *
 from bigdl.nn.criterion import *
 from bigdl.optim.optimizer import *
 from bigdl.util.common import *
@@ -111,12 +112,15 @@ class TestWorkFlow(unittest.TestCase):
         import sys
         sys.path = [path for path in sys.path if "spark-bigdl.conf" not in path]
         sys.path.insert(0, os.path.join(os.path.split(__file__)[0], "resources/conf/python-api.zip"))  # noqa
+        sys.path.insert(0, os.path.join(os.path.split(__file__)[0], "resources/conf/invalid-python-api.zip"))  # noqa
         result = get_bigdl_conf()
         self.assertTrue(result.get("spark.executorEnv.OMP_WAIT_POLICY"), "passive")
 
     def test_set_seed(self):
-        l1 = Linear(10, 20, "Xavier").set_name("linear1").set_seed(1234).reset()  # noqa
-        l2 = Linear(10, 20, "Xavier").set_name("linear2").set_seed(1234).reset()  # noqa
+        w_init = Xavier()
+        b_init = Zeros()
+        l1 = Linear(10, 20).set_init_method(w_init, b_init).set_name("linear1").set_seed(1234).reset()  # noqa
+        l2 = Linear(10, 20).set_init_method(w_init, b_init).set_name("linear2").set_seed(1234).reset()  # noqa
         p1 = l1.parameters()
         p2 = l2.parameters()
         self.assertTrue((p1["linear1"]["weight"] == p2["linear2"]["weight"]).all())  # noqa
@@ -136,13 +140,14 @@ class TestWorkFlow(unittest.TestCase):
             lambda i: gen_rand_sample())
 
         model_test = Sequential()
-        l1_test = Linear(FEATURES_DIM, 1, "Xavier").set_name("linear1_test")
+        l1_test = Linear(FEATURES_DIM, 1).set_init_method(Xavier(), Zeros())\
+            .set_name("linear1_test")
         self.assertEqual("linear1_test", l1_test.name())
         model_test.add(l1_test)
         model_test.add(Sigmoid())
 
         model = Sequential()
-        l1 = Linear(FEATURES_DIM, 1, "Xavier").set_name("linear1")
+        l1 = Linear(FEATURES_DIM, 1).set_init_method(Xavier(), Zeros()).set_name("linear1")
         self.assertEqual("linear1", l1.name())
         model.add(l1)
 
@@ -160,7 +165,7 @@ class TestWorkFlow(unittest.TestCase):
             batch_size=batch_size,
             val_rdd=trainingData,
             trigger=EveryEpoch(),
-            val_method=["Top1Accuracy"]
+            val_method=[Top1Accuracy()]
         )
 
         optimizer.optimize()
@@ -192,7 +197,7 @@ class TestWorkFlow(unittest.TestCase):
             print(str(i) + "\n")
         print(len(p))
 
-        test_results = trained_model.test(trainingData, 32, ["Top1Accuracy"])
+        test_results = trained_model.test(trainingData, 32, [Top1Accuracy()])
         for test_result in test_results:
             print(test_result)
 
@@ -304,7 +309,8 @@ class TestWorkFlow(unittest.TestCase):
         label = (features).sum() + 0.4
         predict_data = self.sc.parallelize(range(0, total_length)).map(
             lambda i: Sample.from_ndarray(features[i], label))
-        model = Linear(2, 1, "Xavier").set_name("linear1").set_seed(1234).reset()
+        model = Linear(2, 1).set_init_method(Xavier(), Zeros())\
+            .set_name("linear1").set_seed(1234).reset()
         predict_result = model.predict(predict_data)
         p = predict_result.take(6)
         ground_label = np.array([[-0.47596836], [-0.37598032], [-0.00492062],
@@ -331,9 +337,16 @@ class TestWorkFlow(unittest.TestCase):
 
     def test_movielens(self):
         movielens_data = movielens.read_data_sets("/tmp/movielens/")
-        ground_label = np.array([[1, 1193], [1, 661]])
+        id_pairs = movielens.get_id_pairs("/tmp/movielens/")
+        id_ratings = movielens.get_id_ratings("/tmp/movielens/")
+
+        ground_data = np.array([[1, 1193, 5, 978300760], [1, 661, 3, 978302109]])
+        ground_pairs = np.array([[1, 1193], [1, 661]])
+        ground_ratings = np.array([[1, 1193, 5], [1, 661, 3]])
         for i in range(0, 2):
-            self.assertTrue(np.allclose(movielens_data[i], ground_label[i], atol=1e-6, rtol=0))
+            self.assertTrue(np.allclose(movielens_data[i], ground_data[i], atol=1e-6, rtol=0))
+            self.assertTrue(np.allclose(id_pairs[i], ground_pairs[i], atol=1e-6, rtol=0))
+            self.assertTrue(np.allclose(id_ratings[i], ground_ratings[i], atol=1e-6, rtol=0))
 
 if __name__ == "__main__":
     unittest.main(failfast=True)

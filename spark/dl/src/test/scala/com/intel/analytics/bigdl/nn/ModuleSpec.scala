@@ -78,8 +78,8 @@ class ModuleSpec extends FlatSpec with Matchers {
     val subModule4 = BatchNormalization[Double](5, 1e-5, 0.1, false)
     val subModule5 = Bilinear[Double](1, 2, 3)
     val subModule6 = Bilinear[Double](1, 2, 3, false)
-    val subModule7 = SpatialFullConvolution[Tensor[Double], Double](1, 2, 3, 4)
-    val subModule8 = SpatialFullConvolution[Tensor[Double], Double](1, 2, 3, 4,
+    val subModule7 = SpatialFullConvolution[Double](1, 2, 3, 4)
+    val subModule8 = SpatialFullConvolution[Double](1, 2, 3, 4,
       1, 1, 0, 0, 0, 0, 1, true
     )
 

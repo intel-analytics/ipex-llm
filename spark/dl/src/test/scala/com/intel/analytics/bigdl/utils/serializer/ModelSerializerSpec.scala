@@ -1053,7 +1053,7 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
 
 
   "Recurrent serializer " should " work properly" in {
-    val recurrent = Recurrent(4)
+    val recurrent = Recurrent()
       .add(RnnCell(5, 4, Tanh()))
     val input1 = Tensor(Array(10, 5, 5))
 
@@ -1131,10 +1131,10 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
   }
 
   "RnnCell serializer " should " work properly " in {
+
     val rnnCell = RnnCell(6, 4, Sigmoid())
 
-
-    val input1 = Tensor(Array(1, 6)).apply1(_ => Random.nextFloat())
+    val input1 = Tensor(Array(1, 4)).apply1(_ => Random.nextFloat())
 
     val input2 = Tensor(Array(1, 4)).apply1(_ => Random.nextFloat())
 
@@ -1419,7 +1419,7 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
 
   "SpatialFullConvolution serializer " should " work properly" in {
 
-    val spatialFullConvolution = SpatialFullConvolution[Tensor[Float], Float](1, 1,
+    val spatialFullConvolution = SpatialFullConvolution(1, 1,
       2, 2, 1, 1, 0, 0)
     val input1 = Tensor(1, 3, 3).apply1(e => Random.nextFloat())
     val input2 = Tensor(1, 3, 3)

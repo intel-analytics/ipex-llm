@@ -25,11 +25,64 @@ from bigdl.util.common import JavaValue
 from bigdl.util.common import callBigDlFunc
 from bigdl.util.common import callJavaFunc
 from bigdl.util.common import get_spark_context
+from bigdl.util.common import to_list
+
 
 if sys.version >= '3':
     long = int
     unicode = str
 
+
+class Top1Accuracy(JavaValue):
+    """
+    Caculate the percentage that output's max probability index equals target.
+
+    >>> top1 = Top1Accuracy()
+    creating: createTop1Accuracy
+    """
+    def __init__(self, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type)
+
+
+class Top5Accuracy(JavaValue):
+    """
+    Caculate the percentage that output's max probability index equals target.
+
+    >>> top5 = Top5Accuracy()
+    creating: createTop5Accuracy
+    """
+    def __init__(self, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type)
+
+
+class Loss(JavaValue):
+
+    """
+    This evaluation method is calculate loss of output with respect to target
+    >>> from bigdl.nn.criterion import ClassNLLCriterion
+    >>> loss = Loss()
+    creating: createClassNLLCriterion
+    creating: createLoss
+
+    >>> loss = Loss(ClassNLLCriterion())
+    creating: createClassNLLCriterion
+    creating: createLoss
+    """
+    def __init__(self, cri=None, bigdl_type="float"):
+        from bigdl.nn.criterion import ClassNLLCriterion
+        if cri is None:
+            cri = ClassNLLCriterion()
+        JavaValue.__init__(self, None, bigdl_type, cri)
+
+class MAE(JavaValue):
+    """
+    This evaluation method calculates the mean absolute error of output with respect to target.
+
+    >>> mae = MAE()
+    creating: createMAE
+    """
+    def __init__(self, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type)
 
 class MaxIteration(JavaValue):
     """
@@ -117,6 +170,42 @@ class SeveralIteration(JavaValue):
         JavaValue.__init__(self, None, bigdl_type, interval)
 
 
+class MaxScore(JavaValue):
+    """
+    A trigger that triggers an action when validation score larger than "max" score
+
+
+    >>> maxScore = MaxScore(0.4)
+    creating: createMaxScore
+    """
+    def __init__(self, max, bigdl_type="float"):
+        """
+        Create a MaxScore trigger.
+
+
+        :param max: max score
+        """
+        JavaValue.__init__(self, None, bigdl_type, max)
+
+
+class MinLoss(JavaValue):
+    """
+    A trigger that triggers an action when training loss less than "min" loss
+
+
+    >>> minLoss = MinLoss(0.1)
+    creating: createMinLoss
+    """
+    def __init__(self, min, bigdl_type="float"):
+        """
+        Create a MinLoss trigger.
+
+
+        :param min: min loss
+        """
+        JavaValue.__init__(self, None, bigdl_type, min)
+
+
 class Poly(JavaValue):
     """
     A learning rate decay policy, where the effective learning rate
@@ -133,6 +222,22 @@ class Poly(JavaValue):
     """
     def __init__(self, power, max_iteration, bigdl_type="float"):
             JavaValue.__init__(self, None, bigdl_type, power, max_iteration)
+
+
+class Exponential(JavaValue):
+    """
+    [[Exponential]] is a learning rate schedule, which rescale the learning rate by
+    lr_{n + 1} = lr * decayRate `^` (iter / decayStep)
+    :param decay_step the inteval for lr decay
+    :param decay_rate decay rate
+    :param stair_case if true, iter / decayStep is an integer division
+                     and the decayed learning rate follows a staircase function.
+
+    >>> exponential = Exponential(100, 0.1)
+    creating: createExponential
+    """
+    def __init__(self, decay_step, decay_rate, stair_case=False, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type, decay_step, decay_rate, stair_case)
 
 
 class Step(JavaValue):
@@ -164,6 +269,40 @@ class Default(JavaValue):
     """
     def __init__(self, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type)
+
+
+class Plateau(JavaValue):
+    """
+    Plateau is the learning rate schedule when a metric has stopped improving.
+    Models often benefit from reducing the learning rate by a factor of 2-10
+    once learning stagnates. It monitors a quantity and if no improvement
+    is seen for a 'patience' number of epochs, the learning rate is reduced.
+
+    :param monitor quantity to be monitored, can be Loss or score
+    :param factor factor by which the learning rate will be reduced. new_lr = lr * factor
+    :param patience number of epochs with no improvement after which learning rate will be reduced.
+    :param mode one of {min, max}.
+                In min mode, lr will be reduced when the quantity monitored has stopped decreasing;
+                in max mode it will be reduced when the quantity monitored has stopped increasing
+    :param epsilon threshold for measuring the new optimum, to only focus on significant changes.
+    :param cooldown number of epochs to wait before resuming normal operation
+                    after lr has been reduced.
+    :param min_lr lower bound on the learning rate.
+
+    >>> plateau = Plateau("score")
+    creating: createPlateau
+    """
+    def __init__(self,
+                 monitor,
+                 factor=0.1,
+                 patience=10,
+                 mode="min",
+                 epsilon=1e-4,
+                 cooldown=0,
+                 min_lr=0.0,
+                 bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type, monitor, factor, patience, mode, epsilon,
+                           cooldown, min_lr)
 
 class SGD(JavaValue):
     """
@@ -374,7 +513,7 @@ class Optimizer(JavaValue):
                            training_rdd, criterion,
                           optim_method if optim_method else SGD(), end_trigger, batch_size)
 
-    def set_validation(self, batch_size, val_rdd, trigger, val_method=["Top1Accuracy"]):
+    def set_validation(self, batch_size, val_rdd, trigger, val_method=None):
         """
         Configure validation settings.
 
@@ -384,8 +523,10 @@ class Optimizer(JavaValue):
         :param trigger: validation interval
         :param val_method: the ValidationMethod to use,e.g. "Top1Accuracy", "Top5Accuracy", "Loss"
         """
+        if val_method is None:
+            val_method = [Top1Accuracy()]
         callBigDlFunc(self.bigdl_type, "setValidation", self.value, batch_size,
-                      trigger, val_rdd, val_method)
+                      trigger, val_rdd, to_list(val_method))
 
     def set_model(self, model):
         """

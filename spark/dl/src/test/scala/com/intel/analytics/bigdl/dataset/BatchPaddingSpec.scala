@@ -52,10 +52,14 @@ class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val featurePadding = Tensor[Float](dictionaryLength).fill(100.0f)
 
+    val featurePaddingParam = PaddingParam(Some(Array(featurePadding)))
+    val labelPaddingParam = PaddingParam[Float](Some(Array(Tensor[Float](1).fill(10.0f))))
+
     val trainData =
       Array[Sample[Float]](sample1, sample2, sample3, sample3, sample3, sample3)
     val trainSet = DataSet.array(trainData)
-      .transform(SampleToBatch[Float](batchSize, Some(featurePadding), Some(10.0f)))
+      .transform(SampleToMiniBatch[Float](batchSize,
+        Some(featurePaddingParam), Some(labelPaddingParam)))
 
     val iter = trainSet.toLocal().data(train = false)
 
@@ -100,12 +104,18 @@ class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val sample2 = Sample[Float](input2, target2)
     val sample3 = Sample[Float](input3, target3)
 
-    val featurePadding = Tensor[Float](dictionaryLength).fill(100.0f)
+    val featurePadding = Tensor[Float](dictionaryLength).fill(100f)
+
+    val featurePaddingParam = PaddingParam(Some(Array(featurePadding)),
+      FixedLength(Array(10)))
+    val labelPaddingParam = PaddingParam[Float](Some(Array(Tensor[Float](1).fill(80f))),
+      FixedLength(Array(10)))
 
     val trainData =
       Array[Sample[Float]](sample1, sample2, sample3, sample3, sample3, sample3)
     val trainSet = DataSet.array(trainData).transform(
-      SampleToBatch[Float](batchSize, Some(featurePadding), Some(80.0f), Some(10)))
+      SampleToMiniBatch[Float](batchSize,
+        Some(featurePaddingParam), Some(labelPaddingParam)))
 
     val iter = trainSet.toLocal().data(train = false)
 
@@ -146,7 +156,7 @@ class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
     data should be (tensorInput2)
   }
 
-  "SampleToBatchPadding " should "be same to SampleToBatch when no padding" in {
+  "SampleToBatchPadding " should "be same to SampleToMiniBatch when no padding" in {
     val batchSize = 3
     val totalCount = 100
     val trainData = new Array[Sample[Float]](totalCount)
@@ -158,7 +168,7 @@ class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
       i += 1
     }
     val trainSet1 = DataSet.array(trainData)
-      .transform(SampleToBatch[Float](batchSize))
+      .transform(SampleToMiniBatch[Float](batchSize))
     val trainSet2 = DataSet.array(trainData)
       .transform(SampleToBatchNoPadding(batchSize))
 
@@ -168,6 +178,9 @@ class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
     while (data1.hasNext && data2.hasNext) {
       val batch1 = data1.next()
       val batch2 = data2.next()
+      if (batch1.getInput() != batch2.getInput()) {
+        println
+      }
       batch1.getInput should be (batch2.getInput)
       batch1.getTarget should be (batch2.getTarget)
     }
@@ -175,7 +188,7 @@ class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
     data2.hasNext should be (false)
   }
 
-  "SampleToBatchPadding " should "be same to LabeledSentenceToSample and SampleToBatch " +
+  "SampleToBatchPadding " should "be same to LabeledSentenceToSample and SampleToMiniBatch " +
     "when padding" in {
     val batchSize = 3
     val totalCount = 9
@@ -194,10 +207,16 @@ class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val trainMaxLength = 10
     val featurePadding = Tensor[Float](dictionaryLength).fill(0.0f)
     featurePadding(4000) = 1
+
+    val featurePaddingParam = PaddingParam(Some(Array(featurePadding)),
+      FixedLength(Array(trainMaxLength)))
+    val labelPaddingParam = PaddingParam[Float](Some(Array(Tensor[Float](1).fill(3999f))),
+      FixedLength(Array(trainMaxLength)))
+
     val trainSet1 = DataSet.array(trainData)
       .transform(LabeledSentenceToSample(dictionaryLength))
-      .transform(SampleToBatch[Float]
-        (batchSize, Some(featurePadding), Some(3999), Some(trainMaxLength)))
+      .transform(SampleToMiniBatch[Float](batchSize,
+        Some(featurePaddingParam), Some(labelPaddingParam)))
 
     val trainSet2 = DataSet.array(trainData)
       .transform(LabeledSentenceToSample(dictionaryLength,

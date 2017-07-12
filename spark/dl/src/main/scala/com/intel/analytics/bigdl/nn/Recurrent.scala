@@ -18,10 +18,12 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.serializer.ContainerSerializable
+import com.intel.analytics.bigdl.utils.serializer.{ContainerSerializable, DataConverter, ModuleData, ModuleSerializer}
 import com.intel.analytics.bigdl.utils.{T, Table}
+import serialization.Model.{AttrValue, BigDLModule}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -38,6 +40,8 @@ class Recurrent[T : ClassTag]()
   private var hiddenShape: Array[Int] = null
   private val currentInput = T()
   private val currentGradOutput = T()
+  private val gradInputCell = Tensor[T]()
+  private var outputCell = Tensor[T]()
   private val _input = T()
   private val batchDim = 1
   private val timeDim = 2
@@ -45,13 +49,31 @@ class Recurrent[T : ClassTag]()
   private val hidDim = 2
   private var cellAppendStartIdx = 0
   private var (batchSize, times) = (0, 0)
+  private var topology: Cell[T] = null
+  private var preTopology: AbstractModule[Activity, Activity, T] = null
   private val dropouts: ArrayBuffer[Array[Dropout[T]]] =
     new ArrayBuffer[Array[Dropout[T]]]
 
+  /**
+   *
+   *  modules: -- preTopology
+   *           |- topology (cell)
+   *
+   * The topology (or cell) will be cloned for N times w.r.t the time dimension.
+   * The preTopology will be execute only once before the recurrence.
+   *
+   * @param module module to be add
+   * @return this container
+   */
   override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): Recurrent.this.type = {
     require(module.isInstanceOf[Cell[T]],
       "Recurrent: contained module should be Cell type")
-    modules += module.asInstanceOf[Cell[T]]
+    topology = module.asInstanceOf[Cell[T]]
+    preTopology = topology.preTopology
+    if (preTopology != null) {
+      modules += preTopology
+    }
+    modules += topology
     this
   }
 
@@ -65,17 +87,20 @@ class Recurrent[T : ClassTag]()
    * @param batchSize
    * @param hiddenSize
    */
-  private def extend(times: Int, batchSize: Int, hiddenSize: Int): Unit = {
+  private def extend(times: Int, batchSize: Int, hiddenSize: Int,
+    rows: Int = 1, columns: Int = 1): Unit = {
     if (hidden == null) {
-      require(modules != null && modules.length == 1,
-        "Recurrent extend: should contain only one cell")
+      require((preTopology == null && modules.length == 1) ||
+        (topology != null && preTopology != null && modules.length == 2),
+        "Recurrent extend: should contain only one cell or plus a pre-topology" +
+          " to process input")
 
       cells.clear()
-      cells += modules.head.asInstanceOf[Cell[T]]
+      cells += topology
       val cell = cells.head
 
       // The cell will help initialize or resize the hidden variable.
-      hidden = cell.hidResize(hidden = null, size = batchSize)
+      hidden = cell.hidResize(hidden = null, size = batchSize, rows, columns)
 
       /*
        * Since the gradHidden is only used as an empty Tensor or Table during
@@ -84,7 +109,7 @@ class Recurrent[T : ClassTag]()
        */
       gradHidden = hidden
     } else {
-      cells.head.hidResize(hidden = hidden, size = batchSize)
+      cells.head.hidResize(hidden = hidden, size = batchSize, rows, columns)
       gradHidden = hidden
     }
     var t = cells.length
@@ -170,18 +195,29 @@ class Recurrent[T : ClassTag]()
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.dim == 3,
-      "Recurrent: input should be a 3D Tensor, e.g [batch, times, nDim], " +
+    require(input.dim == 3 || input.dim == 5,
+      "Recurrent: input should be a 3D or 5D Tensor, e.g [batch, times, nDim], " +
         s"current input.dim = ${input.dim}")
 
     batchSize = input.size(batchDim)
     times = input.size(timeDim)
 
-    val hiddenSize = modules.last.asInstanceOf[Cell[T]].hiddensShape(0)
-    output.resize(batchSize, times, hiddenSize)
+    outputCell = if (preTopology != null) {
+      preTopology.updateOutput(input).toTensor[T]
+    } else {
+      input
+    }
 
-    // Clone N modules along the sequence dimension.
-    extend(times, batchSize, hiddenSize)
+    val hiddenSize = topology.hiddensShape(0)
+    if (input.dim() == 3) {
+      output.resize(batchSize, times, hiddenSize)
+      // Clone N modules along the sequence dimension.
+      extend(times, batchSize, hiddenSize)
+    } else if (input.dim() == 5) {
+      output.resize(batchSize, times, hiddenSize, input.size(4), input.size(5))
+      // Clone N modules along the sequence dimension.
+      extend(times, batchSize, hiddenSize, input.size(4), input.size(5))
+    }
 
     /**
      * currentInput forms a T() type. It contains two elements, hidden and input.
@@ -193,8 +229,7 @@ class Recurrent[T : ClassTag]()
     currentInput(hidDim) = hidden
     var i = 1
     while (i <= times) {
-      currentInput(inputDim) = input.select(timeDim, i)
-      currentInput(1.0).asInstanceOf[Tensor[T]].size().foreach(print)
+      currentInput(inputDim) = outputCell.select(timeDim, i)
       cells(i - 1).updateOutput(currentInput)
       currentInput(hidDim) = cells(i - 1).output.toTable(hidDim)
       i += 1
@@ -208,8 +243,7 @@ class Recurrent[T : ClassTag]()
     output
   }
 
-  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
-                                 scale: Double = 1.0): Unit = {
+  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
     cellAppendStartIdx = cells.length
     currentGradOutput(hidDim) = gradHidden
     /**
@@ -222,32 +256,49 @@ class Recurrent[T : ClassTag]()
      * of Cell(i)
      * The first module in the cells array accepts zero hidden parameter.
      */
+
     var i = times
     while (i >= 1) {
       currentGradOutput(inputDim) = gradOutput.select(timeDim, i)
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
         else hidden
-      _input(inputDim) = input.select(timeDim, i)
+      _input(inputDim) = outputCell.select(timeDim, i)
       if (i == 1) {
         cells(i - 1).regluarized(true)
       } else {
         cells(i - 1).regluarized(false)
       }
-      cells(i - 1).accGradParameters(_input, currentGradOutput, scale)
+      cells(i - 1).accGradParameters(_input, currentGradOutput)
       currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
       i -= 1
+    }
+    if (preTopology != null) {
+      preTopology.accGradParameters(input, gradInputCell)
     }
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    gradInput.resizeAs(input)
+
+    gradInput = if (preTopology != null) {
+      /**
+       * if preTopology is Sequential, it has not created gradInput.
+       * Thus, it needs to create a new Tensor.
+       */
+      if (preTopology.gradInput == null) {
+        preTopology.gradInput = Tensor[T]()
+      }
+      preTopology.gradInput.toTensor[T]
+    } else {
+      gradInputCell
+    }
+    gradInputCell.resizeAs(outputCell)
     currentGradOutput(hidDim) = gradHidden
     var i = times
     while (i >= 1) {
       currentGradOutput(inputDim) = gradOutput.select(timeDim, i)
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
         else hidden
-      _input(inputDim) = input.select(timeDim, i)
+      _input(inputDim) = outputCell.select(timeDim, i)
       cells(i - 1).updateGradInput(_input, currentGradOutput)
       currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
       i -= 1
@@ -255,8 +306,11 @@ class Recurrent[T : ClassTag]()
     if (cellAppendStartIdx == 0 || cellAppendStartIdx < times) {
       set(cells.slice(cellAppendStartIdx, times)
         .map(x => x.gradInput.toTable[Tensor[T]](inputDim)),
-        gradInput,
+        gradInputCell,
         cellAppendStartIdx)
+    }
+    if (preTopology != null) {
+      gradInput = preTopology.updateGradInput(input, gradInputCell).toTensor[T]
     }
     gradInput
   }
@@ -274,9 +328,11 @@ class Recurrent[T : ClassTag]()
   }
 
   override def reset(): Unit = {
-    require(modules != null && modules.length == 1,
-      "Recurrent extend: should contain only one cell")
-    require(modules.head.isInstanceOf[Cell[T]],
+    require((preTopology == null && modules.length == 1) ||
+      (topology != null && preTopology != null && modules.length == 2),
+      "Recurrent extend: should contain only one cell or plus a pre-topology" +
+        " to process input.")
+    require(topology.isInstanceOf[Cell[T]],
       "Recurrent: should contain module with Cell type")
 
     modules.foreach(_.reset())
@@ -300,9 +356,32 @@ class Recurrent[T : ClassTag]()
 }
 
 object Recurrent extends ContainerSerializable {
-  def apply[@specialized(Float, Double) T: ClassTag](
-    hiddenSize: Int = 3)
+  def apply[@specialized(Float, Double) T: ClassTag]()
     (implicit ev: TensorNumeric[T]) : Recurrent[T] = {
     new Recurrent[T]()
+  }
+
+  override def loadModule[T: ClassTag](model : BigDLModule)
+                                      (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
+    val moduleData = super.loadModule(model)
+    val recurrent = moduleData.module.asInstanceOf[Recurrent[T]]
+    val attrMap = model.getAttrMap
+    val topologyAttr = attrMap.get("topology")
+    recurrent.topology = DataConverter.getAttributeValue(topologyAttr).
+      asInstanceOf[Cell[T]]
+    recurrent.preTopology = recurrent.topology.preTopology
+    moduleData
+  }
+
+  override def serializeModule[T: ClassTag](module : ModuleData[T])
+                                           (implicit ev: TensorNumeric[T]) : BigDLModule = {
+    val containerBuilder = BigDLModule.newBuilder(super.serializeModule(module))
+
+    val topologyBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(topologyBuilder,
+      module.module.asInstanceOf[Recurrent[T]].topology,
+      ModuleSerializer.abstractModuleType)
+    containerBuilder.putAttr("topology", topologyBuilder.build)
+    containerBuilder.build
   }
 }

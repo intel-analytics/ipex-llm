@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.dataset.{DataSet, Sample, SampleToBatch}
+import com.intel.analytics.bigdl.dataset.{DataSet, Sample, SampleToMiniBatch}
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.nn.CrossEntropyCriterion
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -64,7 +64,7 @@ class ValidatorSpec extends FlatSpec with Matchers with BeforeAndAfter{
       i += 1
     }
     val model = LeNet5(classNum = 10)
-    val dataSet = DataSet.array(tmp, sc).transform(SampleToBatch(1))
+    val dataSet = DataSet.array(tmp, sc).transform(SampleToMiniBatch(1))
     val validator = Validator(model, dataSet)
 
     val result = validator.test(Array(new Top1Accuracy[Float](), new Top5Accuracy[Float](),
@@ -89,7 +89,7 @@ class ValidatorSpec extends FlatSpec with Matchers with BeforeAndAfter{
       i += 1
     }
     val model = LeNet5(classNum = 10)
-    val dataSet = DataSet.array(tmp).transform(SampleToBatch(1))
+    val dataSet = DataSet.array(tmp).transform(SampleToMiniBatch(1))
     val validator = Validator(model, dataSet)
 
     val result = validator.test(Array(new Top1Accuracy[Float](), new Top5Accuracy[Float](),
