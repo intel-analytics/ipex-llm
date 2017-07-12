@@ -63,7 +63,7 @@ The above commands will use the model in specified path(--checkpoint)to do a pre
 
 Example command
 ```
-java -cp dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
+java -cp spark/dl/target/bigdl-VERSION-jar-with-dependencies-and-spark.jar \
 com.intel.analytics.bigdl.example.lenetLocal.Predict \
 -f path_to_mnist_folder \
 -c core_number \
