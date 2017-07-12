@@ -859,6 +859,35 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       bRegularizer)
   }
 
+  def createTemporalConvolution(
+    inputFrameSize: Int,
+    outputFrameSize: Int,
+    kernelW: Int,
+    strideW: Int = 1,
+    propagateBack: Boolean = true,
+    wRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null,
+    initWeight: JTensor = null,
+    initBias: JTensor = null,
+    initGradWeight: JTensor = null,
+    initGradBias: JTensor = null
+  )
+  : TemporalConvolution[T] = {
+    TemporalConvolution[T](
+      inputFrameSize,
+      outputFrameSize,
+      kernelW,
+      strideW,
+      propagateBack,
+      wRegularizer,
+      bRegularizer,
+      toTensor(initWeight),
+      toTensor(initBias),
+      toTensor(initGradWeight),
+      toTensor(initGradBias)
+    )
+  }
+
   def createSpatialFullConvolution(nInputPlane: Int,
                                    nOutputPlane: Int,
                                    kW: Int,
