@@ -18,8 +18,8 @@ package org.apache.spark.ml
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.{Criterion, Module}
-import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util.SchemaUtils
+import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.types._
 
 import scala.reflect.ClassTag
@@ -42,18 +42,19 @@ class DLClassifier[@specialized(Float, Double) T: ClassTag](
   extends DLEstimator[T](model, criterion, featureSize, Array(1)) {
 
   override protected def wrapBigDLModel(
-      m: Module[T], featureSize: Array[Int]): DLTransformerBase = {
+      m: Module[T], featureSize: Array[Int]): DLClassifierModel[T] = {
     val dlModel = new DLClassifierModel[T](m, featureSize)
-    copyValues(dlModel.setParent(this))
+    copyValues(dlModel.setParent(this)).asInstanceOf[DLClassifierModel[T]]
+  }
+
+  override def fit(dataset: DataFrame): DLClassifierModel[T] = {
+    transformSchema(dataset.schema, logging = true)
+    internalFit(toArrayType(dataset)).asInstanceOf[DLClassifierModel[T]]
   }
 
   override def transformSchema(schema : StructType): StructType = {
     validateSchema(schema)
     SchemaUtils.appendColumn(schema, $(predictionCol), DoubleType)
-  }
-
-  override def copy(extra: ParamMap): DLClassifier[T] = {
-    copyValues(new DLClassifier(model, criterion, featureSize), extra)
   }
 }
 
