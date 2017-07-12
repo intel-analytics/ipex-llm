@@ -27,6 +27,10 @@ criterion expects a class index (1 to the number of class) as target when callin
  Due to the behaviour of the backend code, it is necessary to set sizeAverage to false when
  calculating losses in non-batch mode.
 
+ Note that if the target is `-1`, the training process will skip this sample.
+ In other words, the forward process will return zero output and the backward process
+ will also return zero `gradInput`.
+
  By default, the losses are averaged over observations for each minibatch. However, if the field
  `sizeAverage` is set to false, the losses are instead summed for each minibatch.
 
