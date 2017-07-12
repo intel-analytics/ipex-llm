@@ -54,7 +54,7 @@ pages:
     - Triggers: APIdocs/Optimizers/Triggers.md
     - Resume Training: APIdocs/Optimizers/ResumeTraining.md
   - Metrics:  APIdocs/Metrics/merged-Metrics.md
-  - Visualization: ProgrammingGuide/visualization-with-tensorboard.md
+  - Visualization: ProgrammingGuide/visualization.md
   - MLPipeline: APIdocs/MLPipeline/merged-MLPipeline.md
 - Powered by: powered-by.md
 - Known Issues: known-issues.md

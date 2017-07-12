@@ -1,12 +1,12 @@
 ---
 
 ## **Use an Interactive Shell**
-You can quickly experiment with BigDL codes as a Spark program using the interactive Spark shell by running:
-```sbt
+You can try BigDL easily using the Spark interactive shell. Run below command to start spark shell with BigDL support:
+```bash
 $ SPARK_HOME/bin/spark-shell --properties-file dist/conf/spark-bigdl.conf    \
   --jars bigdl-VERSION-jar-with-dependencies.jar
 ```
-Then you can see something like:
+You will see a welcome message looking like below:
 ```
 Welcome to
       ____              __
@@ -20,8 +20,14 @@ Spark context available as sc.
 scala> 
 ```
 
+To use BigDL, you should first initialize the engine as below. 
+```scala
+scala>import com.intel.analytics.bigdl.utils.Engine
+scala>Engine.init
+```
 
-For instance, to experiment with the ````Tensor```` APIs in BigDL, you may then try:
+Once the engine is successfully initialted, you'll be able to play with BigDL API's. 
+For instance, to experiment with the ````Tensor```` APIs in BigDL, you may try below code:
 ```scala
 scala> import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -32,7 +38,6 @@ res9: com.intel.analytics.bigdl.tensor.Tensor[Double] =
 1.0     1.0
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2]
 ```
-For more details about the BigDL APIs, please refer to the [Programming Guide](https://github.com/intel-analytics/BigDL/wiki/Programming-Guide).
 
 ---
 
@@ -71,6 +76,15 @@ You can run a BigDL program, e.g., the [VGG](https://github.com/intel-analytics/
   * -f: The folder where your put the CIFAR-10 data set. Note in this example, this is just a local file folder on the Spark driver; as the CIFAR-10 data is somewhat small (about 120MB), we will directly send it from the driver to executors in the example.
 
   * -b: The mini-batch size. The mini-batch size is expected to be a multiple of *total cores* used in the job. In this example, the mini-batch size is suggested to be set to *total cores * 4*
+
+If you are to run your own program, do remember to create SparkContext and initialize the engine before call other BigDL API's, as shown below. 
+```scala
+ // Scala code example
+ val conf = Engine.createSparkConf()
+ val sc = new SparkContext(conf)
+ Engine.init
+```
+
 
 ## **Running on EC2**
 
