@@ -13,17 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.utils
+package com.intel.analytics.bigdl.utils.serializer
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.models.resnet.Convolution
 import com.intel.analytics.bigdl.nn.{PairwiseDistance, ParallelTable, SpatialAveragePooling, TimeDistributed, VolumetricConvolution, _}
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.nn.abstractnn.{TensorModule}
+import com.intel.analytics.bigdl.tensor.{Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
-import com.intel.analytics.bigdl.utils.serializer._
+import com.intel.analytics.bigdl.utils.{T, Table}
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.reflect.ClassTag
@@ -91,7 +90,6 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     val biLinear = Bilinear(5, 3, 2)
     val res1 = biLinear.forward(input)
     ModulePersister.saveToFile("/tmp/biLinear.bigdl", biLinear, true)
-    ModulePersister.saveModelDefinitionToFile("/tmp/biLinear.prototxt", biLinear, true)
     val loadedBiLinear = ModuleLoader.loadFromFile("/tmp/biLinear.bigdl")
     val res2 = loadedBiLinear.forward(input)
     res1 should be (res2)
@@ -104,7 +102,6 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     val biRecurrent = BiRecurrent().add(RnnCell(6, 4, Sigmoid()))
     val res1 = biRecurrent.forward(input1)
     ModulePersister.saveToFile("/tmp/biRecurrent.bigdl", biRecurrent, true)
-    ModulePersister.saveModelDefinitionToFile("/tmp/biRecurrent.prototxt", biRecurrent, true)
     val loadedRecurent = ModuleLoader.loadFromFile("/tmp/biRecurrent.bigdl")
     val res2 = loadedRecurent.forward(input2)
     res1 should be (res2)
@@ -247,7 +244,6 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     res1 should be (res2)
   }
 
-
   "Concatserializer" should "work properly" in {
     val input1 = Tensor(2, 2, 2).apply1(e => Random.nextFloat())
     val input2 = Tensor()
@@ -276,7 +272,6 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     val res1 = concatTable.forward(tensor1)
 
     ModulePersister.saveToFile("/tmp/concatTable.bigdl", concatTable, true)
-    ModulePersister.saveModelDefinitionToFile("/tmp/concatTable.prototxt", concatTable, true)
     val loadedConcatTable = ModuleLoader.loadFromFile("/tmp/concatTable.bigdl")
     val res2 = loadedConcatTable.forward(tensor2)
     res1 should be (res2)
@@ -451,7 +446,6 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     res1 should be (res2)
   }
 
-
   "GradientReversal serializer" should "work properly" in {
     val gradientReversal = GradientReversal()
 
@@ -491,7 +485,6 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     val res1 = graph.forward(tensor1)
     tensor2.resizeAs(tensor1).copy(tensor1)
     ModulePersister.saveToFile("/tmp/graph.bigdl", graph, true)
-    ModulePersister.saveModelDefinitionToFile("/tmp/graph.prototxt", graph, true)
     val loadedGraph = ModuleLoader.loadFromFile("/tmp/graph.bigdl")
     val res2 = loadedGraph.forward(tensor2)
     res1 should be (res2)
@@ -515,7 +508,6 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     RNG.setSeed(100)
     val res1 = gru.forward(input1)
     ModulePersister.saveToFile("/tmp/gru.bigdl", gru, true)
-    ModulePersister.saveModelDefinitionToFile("/tmp/gru.prototxt", gru, true)
     RNG.setSeed(100)
     val loadedGRU = ModuleLoader.loadFromFile("/tmp/gru.bigdl")
     RNG.setSeed(100)
@@ -720,6 +712,7 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     val res2 = loadedLookupTable.forward(tensor2)
     res1 should be (res2)
   }
+
   "LSTM serializer " should " work properly" in {
 
     val lstm = LSTM(6, 4)
@@ -1069,24 +1062,24 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     val res1 = recurrent.forward(input1)
 
     ModulePersister.saveToFile("/tmp/recurrent.bigdl", recurrent, true)
-    val loadedRecurrent= ModuleLoader.loadFromFile("/tmp/recurrent.bigdl")
+    val loadedRecurrent = ModuleLoader.loadFromFile("/tmp/recurrent.bigdl")
     val res2 = loadedRecurrent.forward(input1)
     res1 should be (res2)
 
   }
 
- "ReLU serializer " should " work properly" in {
-   val relu = ReLU()
-   val input1 = Tensor(5, 5).apply1(_ => Random.nextFloat())
-   val input2 = Tensor(5, 5)
-   input2.copy(input1)
-   val res1 = relu.forward(input1)
+  "ReLU serializer " should " work properly" in {
+    val relu = ReLU()
+    val input1 = Tensor(5, 5).apply1(_ => Random.nextFloat())
+    val input2 = Tensor(5, 5)
+    input2.copy(input1)
+    val res1 = relu.forward(input1)
 
-   ModulePersister.saveToFile("/tmp/relu.bigdl", relu, true)
-   val loadedReLU = ModuleLoader.loadFromFile("/tmp/relu.bigdl")
-   val res2 = loadedReLU.forward(input1)
-   res1 should be (res2)
- }
+     ModulePersister.saveToFile("/tmp/relu.bigdl", relu, true)
+     val loadedReLU = ModuleLoader.loadFromFile("/tmp/relu.bigdl")
+    val res2 = loadedReLU.forward(input1)
+    res1 should be (res2)
+  }
 
   "ReLU6 serializer" should " work properly " in {
     val relu6 = ReLU6(false)
@@ -1137,7 +1130,6 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     res1 should be (res2)
   }
 
-
   "RnnCell serializer " should " work properly " in {
     val rnnCell = RnnCell(6, 4, Sigmoid())
 
@@ -1157,7 +1149,6 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     res1 should be (res2)
   }
 
-
   "RoiPooling serializer " should " work properly " in {
     val input1 = T()
     val input2 = T()
@@ -1176,7 +1167,6 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     val res1 = roiPooling.forward(input1)
     val res3 = roiPooling.forward(input1)
     ModulePersister.saveToFile("/tmp/roiPooling.bigdl", roiPooling, true)
-    ModulePersister.saveModelDefinitionToFile("/tmp/roiPooling.prototxt", roiPooling, true)
     val loadedRoiPooling = ModuleLoader.loadFromFile("/tmp/roiPooling.bigdl")
     val res2 = loadedRoiPooling.forward(input2)
     res1 should be (res2)
@@ -1412,7 +1402,7 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
   }
 
   "SpatialDivisiveNormalization serializer " should " work properly" in {
-    val spatialDivisiveNormalization  = SpatialDivisiveNormalization()
+    val spatialDivisiveNormalization = SpatialDivisiveNormalization()
     val input1 = Tensor(1, 5, 5).apply1(e => Random.nextFloat())
     val input2 = Tensor(1, 5, 5)
     input2.copy(input1)
@@ -1426,7 +1416,6 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     res1 should be (res2)
 
   }
-
 
   "SpatialFullConvolution serializer " should " work properly" in {
 
@@ -1444,7 +1433,6 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     val res2 = loadedSpatialFullConvolution.forward(input2)
     res1 should be (res2)
   }
-
 
   "SpatialMaxPooling serializer " should " work properly " in {
     val spatialMaxPooling = SpatialMaxPooling(2, 2, 2, 2)
@@ -1617,7 +1605,6 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     res1 should be (res2)
   }
 
-
   "Transpose serializer " should " work properly" in {
     val transpose = Transpose(Array((1, 2)))
     val input1 = Tensor().resize(Array(2, 3)).apply1(_ => Random.nextFloat())
@@ -1627,8 +1614,7 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     val res1 = transpose.forward(input1)
 
     ModulePersister.saveToFile("/tmp/transpose.bigdl", transpose, true)
-    ModulePersister.saveModelDefinitionToFile("/tmp/transpose.prototxt", transpose, true)
-    val loadedTranspose= ModuleLoader.loadFromFile("/tmp/transpose.bigdl")
+    val loadedTranspose = ModuleLoader.loadFromFile("/tmp/transpose.bigdl")
     val res2 = loadedTranspose.forward(input1)
     res1 should be (res2)
 
@@ -1687,59 +1673,33 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     res1 should be (res2)
   }
 
-  /*
-
-    "Customized Module " should "work properly" in {
-      val testModule = new TestModule[Double](1.0)
-      CustomizedDelegator.registerCustomizedModule(testModule.getClass,
-        TestSerializer, Serialization.customizedData, "Test")
-      val tensor1 = Tensor[Double](10).apply1(_ => Random.nextDouble())
-      val tensor2 = Tensor[Double]()
-      tensor2.resizeAs(tensor1).copy(tensor1)
-      val res1 = testModule.forward(tensor1)
-      ModelPersister.saveToFile("/tmp/testModule.bigdl", testModule, true)
-      ModelPersister.saveModelDefinitionToFile("/tmp/testModule.prototxt", testModule, true)
-      val loadedModule = ModelLoader.loadFromFile("/tmp/testModule.bigdl")
-      val res2 = loadedModule.asInstanceOf[TestModule[Double]].forward(tensor2)
-      res1 should be (res2)
-    }
+  "Customized Module " should "work properly" in {
+    val testModule = new TestModule(1.0)
+    ModuleSerializer.registerModule("test module",
+      Class.forName("com.intel.analytics.bigdl.utils.serializer.TestModule"), TestSerializer)
+    val tensor1 = Tensor(10).apply1(_ => Random.nextFloat())
+    val tensor2 = Tensor()
+    tensor2.resizeAs(tensor1).copy(tensor1)
+    val res1 = testModule.forward(tensor1)
+    ModulePersister.saveToFile("/tmp/testModule.bigdl", testModule, true)
+    val loadedModule = ModuleLoader.loadFromFile("/tmp/testModule.bigdl")
+    val res2 = loadedModule.forward(tensor2)
+    res1 should be (res2)
   }
-  class TestModule[T: ClassTag](val constant_scalar: Double)
-    (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
-    val addConst = AddConstant(constant_scalar)
-    override def updateOutput(input: Tensor[T]): Tensor[T] = {
-      output = addConst.forward(input).asInstanceOf[Tensor[T]]
-      output
-    }
-
-    override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-      gradInput = addConst.updateGradInput(input, gradOutput).asInstanceOf[Tensor[T]]
-      gradInput
-    }
-  }
-  case object TestSerializer extends AbstractModelSerializer {
-
-    override def loadModule[T: ClassTag](model : BigDLModel)(implicit ev: TensorNumeric[T])
-    : BigDLModule[T] = {
-      val customParam = model.getCustomParam
-      val customType = customParam.getCustomType
-      val customizedData = customParam.getExtension(Serialization.customizedData)
-      createBigDLModule(model, new TestModule(customizedData.getScalar).
-        asInstanceOf[AbstractModule[Activity, Activity, T]])
-    }
-
-    override def serializeModule[T: ClassTag](module : BigDLModule[T])
-                                             (implicit ev: TensorNumeric[T]): BigDLModel = {
-      val bigDLModelBuilder = BigDLModel.newBuilder
-      bigDLModelBuilder.setModuleType(ModuleType.CUSTOMIZED)
-      val customParam = CustomParam.newBuilder
-      customParam.setCustomType("Test")
-      val testParam = TestParam.newBuilder
-      testParam.setScalar(module.module.asInstanceOf[TestModule[T]].constant_scalar)
-      customParam.setExtension(Serialization.customizedData, testParam.build)
-      bigDLModelBuilder.setCustomParam(customParam.build)
-      createSerializeBigDLModule(bigDLModelBuilder, module)
-    }
-    */
-
 }
+
+class TestModule[T: ClassTag](val constant_scalar: Double)
+  (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+  val addConst = AddConstant(constant_scalar)
+  override def updateOutput(input: Tensor[T]): Tensor[T] = {
+    output = addConst.forward(input).asInstanceOf[Tensor[T]]
+    output
+  }
+
+  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    gradInput = addConst.updateGradInput(input, gradOutput).asInstanceOf[Tensor[T]]
+    gradInput
+  }
+}
+
+case object TestSerializer extends ModuleSerializable

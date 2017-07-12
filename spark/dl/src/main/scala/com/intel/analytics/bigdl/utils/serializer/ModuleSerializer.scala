@@ -26,7 +26,6 @@ import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.{Tensor, TensorNumericMath}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import serialization.Model.{AttrValue, BigDLModule}
-import spire.syntax.field
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
@@ -91,9 +90,6 @@ object ModuleSerializer extends ModuleSerializable{
     val cls = module.module.getClass
     val moduleType = getModuleTypeByCls(cls)
     bigDLModelBuilder.setModuleType(moduleType)
-   // val constructors = cls.getConstructors()
-//    require(constructors.length == 1, "only support one constructor")
-   // val constructor = constructors(0)
     val fullParams = getCostructorMirror(cls).symbol.paramss
     val clsTag = scala.reflect.classTag[T]
     val constructorParams = fullParams(0)
@@ -157,12 +153,10 @@ object ModuleSerializer extends ModuleSerializable{
     val clsSymbol = runtimeMirror.classSymbol(cls)
     val cm = runtimeMirror.reflectClass(clsSymbol)
     // to make it compatible with both 2.11 and 2.10
-    // val ctorC = clsSymbol.toType.declaration(universe.nme.CONSTRUCTOR).asMethod
     val ctorCs = clsSymbol.toType.declaration(universe.nme.CONSTRUCTOR)
     val primary : Option[universe.MethodSymbol] = ctorCs.asTerm.alternatives.collectFirst{
       case cstor : universe.MethodSymbol if cstor.isPrimaryConstructor => cstor
     }
-    // cm.reflectConstructor(ctorC)
     cm.reflectConstructor(primary.get)
   }
 
@@ -347,26 +341,6 @@ object ModuleSerializer extends ModuleSerializable{
 
   private def initializeDeclaredTypes() : Unit = {
 
-    /*
-    val tensorNumericCls = Class.
-      forName("com.intel.analytics.bigdl.tensor.TensorNumericMath$TensorNumeric")
-    tensorNumericType = runtimeMirror.
-      classSymbol(tensorNumericCls).selfType
-
-    val tensorCls = Class.forName("com.intel.analytics.bigdl.tensor.Tensor")
-    tensorType = runtimeMirror.
-      classSymbol(tensorCls).selfType
-
-    val regularizerCls = Class.forName("com.intel.analytics.bigdl.optim.Regularizer")
-    regularizerType = runtimeMirror.
-      classSymbol(regularizerCls).selfType
-
-    val abstractModuleCls = Class.forName("com.intel.analytics.bigdl.nn.abstractnn.AbstractModule")
-    abstractModuleType = runtimeMirror.classSymbol(abstractModuleCls).selfType
-
-    val tensorModuleCls = Class.forName("com.intel.analytics.bigdl.nn.abstractnn.TensorModule")
-    tensorModuleType = runtimeMirror.classSymbol(tensorModuleCls).selfType
-    */
     var wrapperCls = Class.forName("com.intel.analytics.bigdl.utils.serializer.GenericTypeWrapper")
     val fullParams = getCostructorMirror(wrapperCls).symbol.paramss
     fullParams.foreach(map => {
@@ -391,13 +365,10 @@ object ModuleSerializer extends ModuleSerializable{
   }
 }
 
-private class GenericTypeWrapper[T: ClassTag](tensor : Tensor[T],
+private case class GenericTypeWrapper[T: ClassTag](tensor : Tensor[T],
                                               regularizer : Regularizer[T],
                                               abstractModule: AbstractModule[Activity, Activity, T],
                                               tensorModule : TensorModule[T],
                                               ttpe : T
-                                             )
-(implicit ev: TensorNumeric[T]) {
-
-}
+                                             )(implicit ev: TensorNumeric[T])
 

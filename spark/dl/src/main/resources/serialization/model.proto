@@ -68,21 +68,6 @@ message AttrValue {
         int32 size = 13;
         DataType datatype = 14;
     }
-    message ListValue {
-        repeated int32 i32 = 1;                         // "list(int32)"
-        repeated int64 i64 = 2 ;        // "list(int64)"
-        repeated float flt = 3 ;        // "list(float)"
-        repeated double dbl = 4 ;        // "list(double)"
-        repeated string str = 5;                        // "list(string)"
-        repeated bool boolean = 6 ;         // "list(bool)"
-        repeated Regularizer  Regularizer = 7 ;         // "list(Regularizer)"
-        repeated BigDLTensor tensor = 8;         // "list(BigDLTensor)"
-        repeated ValFormat variableFormat = 9; // "list(VariableFormat)"
-        repeated InitMethod initMethod = 10;         // "list(BigDLTensor)"
-        repeated BigDLModule bigDLModule = 11; // "list(BigDLModel)"
-        repeated NameAttrList nameAttrList = 12; //
-        DataType datatype = 13;
-    }
     enum DataType {
         INT32 = 0;
         INT64 = 1;
@@ -97,7 +82,6 @@ message AttrValue {
         MODULE = 10;
         NAME_ATTR_LIST = 11;
         ARRAY_VALUE = 12;
-        LIST_VALUE = 13;
     }
     oneof value {
         int32 int32Value = 1; // int32 value
@@ -112,10 +96,9 @@ message AttrValue {
         InitMethod initMethodValue = 10; // init method
         BigDLModule bigDLModuleValue = 11; // big DL module
         NameAttrList nameAttrListValue = 12; // name attribute list
-        ListValue listValue = 13; // list value of any type
-        ArrayValue arrayValue = 14; //array value of any type
+        ArrayValue arrayValue = 13; //array value of any type
     }
-    DataType dataType = 15;
+    DataType dataType = 14;
 }
 message NameAttrList {
     string name = 1;
