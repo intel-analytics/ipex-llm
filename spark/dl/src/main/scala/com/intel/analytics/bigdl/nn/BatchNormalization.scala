@@ -60,10 +60,6 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
 
   require(nOutput > 0)
 
-  def this(affine: Option[Int])(implicit ev: TensorNumeric[T]) {
-    this(nOutput = affine.getOrElse(1), affine = affine.isDefined)
-  }
-
   val nDim = 2
   val runningMean = if (affine) Tensor[T](nOutput) else Tensor[T]()
   val runningVar = if (affine) Tensor[T](nOutput).fill(ev.fromType[Int](1)) else Tensor[T]()
@@ -746,6 +742,6 @@ object BatchNormalization {
   }
   def apply[@specialized(Float, Double) T: ClassTag](
     affine: Option[Int])(implicit ev: TensorNumeric[T]): BatchNormalization[T] = {
-    new BatchNormalization[T](affine)
+    new BatchNormalization[T](nOutput = affine.getOrElse(1), affine = affine.isDefined)
   }
 }
