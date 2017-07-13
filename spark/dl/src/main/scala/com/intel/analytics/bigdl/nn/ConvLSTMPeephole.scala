@@ -62,17 +62,23 @@ class ConvLSTMPeephole[T : ClassTag] (
   var outputGate: Sequential[T] = _
   var hiddenLayer: Sequential[T] = _
   var cellLayer: Sequential[T] = _
-  val joinDim = 2
+//  val joinDim = 2
   override var cell: AbstractModule[Activity, Activity, T] = buildConvLSTM()
 
-  override def preTopology: AbstractModule[Activity, Activity, T] =
-    Sequential()
-        .add(TimeDistributed(SpatialConvolution(inputSize, outputSize*4, kernelI, kernelI,
-          stride, stride, kernelI/2, kernelI/2, wRegularizer = wRegularizer,
-          bRegularizer = bRegularizer)))
+//  override def preTopology: AbstractModule[Activity, Activity, T] =
+//    Sequential()
+//        .add(TimeDistributed(SpatialConvolution(inputSize, outputSize*4, kernelI, kernelI,
+//          stride, stride, kernelI/2, kernelI/2, wRegularizer = wRegularizer,
+//          bRegularizer = bRegularizer)))
 
-  def buildGate(offset: Int, length: Int): Sequential[T] = {
-    val i2g = Narrow(joinDim, offset, length)
+//  def buildGate(offset: Int, length: Int): Sequential[T] = {
+//    val i2g = Narrow(joinDim, offset, length)
+  def buildGate(): Sequential[T] = {
+    val i2g = Sequential()
+      .add(Contiguous())
+      .add(SpatialConvolution(inputSize, outputSize, kernelI, kernelI,
+        stride, stride, kernelI/2, kernelI/2, wRegularizer = wRegularizer,
+        bRegularizer = bRegularizer))
     val h2g = SpatialConvolution(outputSize, outputSize, kernelC, kernelC,
       stride, stride, kernelC/2, kernelC/2, withBias = false,
       wRegularizer = uRegularizer)
@@ -97,17 +103,20 @@ class ConvLSTMPeephole[T : ClassTag] (
   }
 
   def buildInputGate(): Sequential[T] = {
-    inputGate = buildGate(1 + outputSize, outputSize)
+//    inputGate = buildGate(1 + outputSize, outputSize)
+    inputGate = buildGate()
     inputGate
   }
 
   def buildForgetGate(): Sequential[T] = {
-    forgetGate = buildGate(1, outputSize)
+//    forgetGate = buildGate(1, outputSize)
+    forgetGate = buildGate()
     forgetGate
   }
 
   def buildOutputGate(): Sequential[T] = {
-    outputGate = buildGate(1 + 3 * outputSize, outputSize)
+//    outputGate = buildGate(1 + 3 * outputSize, outputSize)
+    outputGate = buildGate()
     outputGate
   }
 
@@ -115,7 +124,12 @@ class ConvLSTMPeephole[T : ClassTag] (
     val hidden = Sequential()
       .add(NarrowTable(1, 2))
 
-    val i2h = Narrow(joinDim, 1 + 2 * outputSize, outputSize)
+//    val i2h = Narrow(joinDim, 1 + 2 * outputSize, outputSize)
+    val i2h = Sequential()
+      .add(Contiguous())
+      .add(SpatialConvolution(inputSize, outputSize, kernelI, kernelI,
+        stride, stride, kernelI/2, kernelI/2, wRegularizer = wRegularizer,
+        bRegularizer = bRegularizer))
     val h2h = SpatialConvolution(outputSize, outputSize, kernelC, kernelC,
       stride, stride, kernelC/2, kernelC/2, withBias = false,
       wRegularizer = uRegularizer)
