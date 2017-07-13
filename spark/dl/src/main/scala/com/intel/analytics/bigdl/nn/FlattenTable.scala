@@ -47,7 +47,7 @@ class FlattenTable[T: ClassTag] (implicit ev: TensorNumeric[T])
   }
 }
 
-object FlattenTable extends  ModuleSerializable {
+object FlattenTable extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag]()
       (implicit ev: TensorNumeric[T]) : FlattenTable[T] = {
     new FlattenTable[T]()

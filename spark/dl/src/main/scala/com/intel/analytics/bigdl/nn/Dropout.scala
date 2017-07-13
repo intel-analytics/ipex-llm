@@ -208,7 +208,7 @@ class Dropout[T: ClassTag](
   }
 }
 
-object Dropout extends  ModuleSerializable {
+object Dropout extends ModuleSerializable {
   def apply[T: ClassTag](
     initP: Double = 0.5,
     inplace: Boolean = false,

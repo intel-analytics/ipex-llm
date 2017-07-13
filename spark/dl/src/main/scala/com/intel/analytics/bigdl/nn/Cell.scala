@@ -184,11 +184,10 @@ trait CellSerializable extends ModuleSerializable {
 
   override def loadModule[T: ClassTag](model : BigDLModule)
                                       (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
-    val moduleData = ModuleSerializer.loadModule(model)
+    val moduleData = super.loadModule(model)
     val cellModule = moduleData.module.asInstanceOf[Cell[T]]
-    val cell = cellModule.cell
-    val attrMap = model.getAttrMap
 
+    val attrMap = model.getAttrMap
     cellModule.cell = DataConverter.getAttributeValue(attrMap.get("cell")).
       asInstanceOf[AbstractModule[Activity, Activity, T]]
 
@@ -197,11 +196,11 @@ trait CellSerializable extends ModuleSerializable {
 
   override def serializeModule[T: ClassTag](module : ModuleData[T])
                                            (implicit ev: TensorNumeric[T]) : BigDLModule = {
-    val bigDLModule = ModuleSerializer.serializeModule(module)
+    val bigDLModule = super.serializeModule(module)
     val cellModule = module.module.asInstanceOf[Cell[T]]
     val cellModuleBuilder = BigDLModule.newBuilder(bigDLModule)
-    val cellBuilder = AttrValue.newBuilder
 
+    val cellBuilder = AttrValue.newBuilder
     DataConverter.setAttributeValue(cellBuilder, cellModule.cell,
       ModuleSerializer.abstractModuleType)
     cellModuleBuilder.putAttr("cell", cellBuilder.build)

@@ -42,7 +42,7 @@ class Identity[T: ClassTag]()
   }
 }
 
-object Identity extends  ModuleSerializable {
+object Identity extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag]()
       (implicit ev: TensorNumeric[T]) : Identity[T] = {
     new Identity[T]()

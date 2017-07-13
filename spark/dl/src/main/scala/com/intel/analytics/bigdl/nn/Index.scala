@@ -73,7 +73,7 @@ class Index[T: ClassTag](val dimension: Int)(implicit ev: TensorNumeric[T])
   }
 }
 
-object Index extends  ModuleSerializable {
+object Index extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
       dimension: Int)(implicit ev: TensorNumeric[T]) : Index[T] = {
     new Index[T](dimension)

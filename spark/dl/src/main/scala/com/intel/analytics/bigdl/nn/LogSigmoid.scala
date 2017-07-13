@@ -74,7 +74,7 @@ class LogSigmoid[T: ClassTag] (implicit ev: TensorNumeric[T])
   }
 }
 
-object LogSigmoid extends  ModuleSerializable {
+object LogSigmoid extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag]()
       (implicit ev: TensorNumeric[T]) : LogSigmoid[T] = {
     new LogSigmoid[T]()

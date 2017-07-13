@@ -401,7 +401,7 @@ class Threshold[T: ClassTag](
   }
 }
 
-object Threshold  extends  ModuleSerializable {
+object Threshold extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
       th: Double = 1e-6,
       v: Double = 0.0,

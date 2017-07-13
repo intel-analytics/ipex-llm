@@ -15,6 +15,8 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.BiRecurrent.createSerializeBigDLModule
+
 import scala.collection.JavaConverters._
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
@@ -357,10 +359,10 @@ object Graph extends ContainerSerializable {
 
   override def serializeModule[T: ClassTag](module : ModuleData[T])
                                            (implicit ev: TensorNumeric[T]) : BigDLModule = {
-    val bigDLModelBuilder = BigDLModule.newBuilder
-    module.next.foreach(_ => bigDLModelBuilder.addAllPreModules(_))
-    module.pre.foreach(_ => bigDLModelBuilder.addAllNextModules(_))
-    bigDLModelBuilder.setName(module.module.getName)
+    val graphBuilder = BigDLModule.newBuilder
+    module.next.foreach(_ => graphBuilder.addAllPreModules(_))
+    module.pre.foreach(_ => graphBuilder.addAllNextModules(_))
+    graphBuilder.setName(module.module.getName)
     val graph = module.module.asInstanceOf[Graph[T]]
     graph.getExecutions.foreach(execution => {
       val nextNodes = execution.prevNodes.map(_.element.getName)
@@ -368,20 +370,21 @@ object Graph extends ContainerSerializable {
       val subModel = ModuleSerializer.serialize(ModuleData(execution.element
         .asInstanceOf[AbstractModule[Activity, Activity, T]],
         nextNodes, preNodex))
-      bigDLModelBuilder.addSubModules(subModel)
+      graphBuilder.addSubModules(subModel)
     })
     if (graph.variables.isDefined) {
       val (weights, bias) = graph.variables.get
       val weightAttrBuilder = AttrValue.newBuilder
       DataConverter.setAttributeValue(weightAttrBuilder, weights)
-      bigDLModelBuilder.putAttr("sharedWeight", weightAttrBuilder.build)
+      graphBuilder.putAttr("sharedWeight", weightAttrBuilder.build)
 
       val biasAttrBuilder = AttrValue.newBuilder
       DataConverter.setAttributeValue(biasAttrBuilder, bias)
-      bigDLModelBuilder.putAttr("sharedBias", biasAttrBuilder.build)
+      graphBuilder.putAttr("sharedBias", biasAttrBuilder.build)
     }
-    bigDLModelBuilder.setModuleType(ModuleSerializer.getModuleTypeByCls(graph.getClass))
-    bigDLModelBuilder.build
+
+    graphBuilder.setModuleType(ModuleSerializer.getModuleTypeByCls(graph.getClass))
+    graphBuilder.build
   }
 }
 

@@ -192,7 +192,7 @@ class Euclidean[T: ClassTag](val inputSize: Int, val outputSize: Int,
   }
 }
 
-object Euclidean extends  ModuleSerializable {
+object Euclidean extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
     inputSize: Int,
     outputSize: Int,

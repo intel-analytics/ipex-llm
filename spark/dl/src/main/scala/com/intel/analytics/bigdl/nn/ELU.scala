@@ -89,7 +89,7 @@ class ELU[T: ClassTag](
   }
 }
 
-object ELU  extends ModuleSerializable {
+object ELU extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
       alpha: Double = 1.0,
       inplace: Boolean = false)(implicit ev: TensorNumeric[T]) : ELU[T] = {

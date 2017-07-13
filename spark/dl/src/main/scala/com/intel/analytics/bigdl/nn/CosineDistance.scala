@@ -136,7 +136,7 @@ class CosineDistance[T: ClassTag](
   }
 }
 
-object CosineDistance extends  ModuleSerializable {
+object CosineDistance extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag]()
       (implicit ev: TensorNumeric[T]) : CosineDistance[T] = {
     new CosineDistance[T]()

@@ -34,7 +34,7 @@ class ReLU[T: ClassTag](ip: Boolean = false)(
   implicit ev: TensorNumeric[T]) extends Threshold[T](0, 0, ip) {
 }
 
-object ReLU extends  ModuleSerializable {
+object ReLU extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
       ip: Boolean = false)(implicit ev: TensorNumeric[T]) : ReLU[T] = {
     new ReLU[T](ip)

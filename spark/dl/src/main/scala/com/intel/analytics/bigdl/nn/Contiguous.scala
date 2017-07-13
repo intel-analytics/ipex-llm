@@ -60,7 +60,7 @@ class Contiguous[T: ClassTag]
   }
 }
 
-object Contiguous extends  ModuleSerializable {
+object Contiguous extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag]()
       (implicit ev: TensorNumeric[T]) : Contiguous[T] = {
     new Contiguous[T]()

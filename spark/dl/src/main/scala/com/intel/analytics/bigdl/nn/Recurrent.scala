@@ -394,7 +394,6 @@ object Recurrent extends ContainerSerializable {
       recurrent.preTopology, ModuleSerializer.abstractModuleType)
     containerBuilder.putAttr("preTopology", preTopologyBuilder.build)
 
-
     containerBuilder.build
   }
 }

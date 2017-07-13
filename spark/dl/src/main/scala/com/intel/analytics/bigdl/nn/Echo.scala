@@ -43,7 +43,7 @@ class Echo[T: ClassTag] (implicit ev: TensorNumeric[T])
   }
 }
 
-object Echo extends  ModuleSerializable {
+object Echo extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag]()
       (implicit ev: TensorNumeric[T]) : Echo[T] = {
     new Echo[T]()

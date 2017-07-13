@@ -64,7 +64,7 @@ class SoftMax[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends TensorModule
   }
 }
 
-object SoftMax extends  ModuleSerializable {
+object SoftMax extends ModuleSerializable {
 
   def apply[@specialized(Float, Double) T: ClassTag]()
       (implicit ev: TensorNumeric[T]) : SoftMax[T] = {
