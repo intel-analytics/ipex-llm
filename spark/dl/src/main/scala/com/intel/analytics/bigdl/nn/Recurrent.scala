@@ -83,11 +83,7 @@ class Recurrent[T : ClassTag](batchNormParams: BatchNormParams[T] = null)
     }
 
     if (batchNormParams != null) {
-      require(topology.getPreTopologyNOutput > 0,
-        s"In ${topology.getName}, def getPreTopologyNOutput = 0. Please override this method")
-      layer = batchNormalization(
-        topology.getPreTopologyNOutput,
-        batchNormParams)
+      layer = batchNormalization(batchNormParams)
     }
 
     preTopology = preTopology match {
@@ -116,12 +112,12 @@ class Recurrent[T : ClassTag](batchNormParams: BatchNormParams[T] = null)
     this
   }
 
-  private def batchNormalization(nOutput: Int, batchNormParams: BatchNormParams[T]) =
+  private def batchNormalization(batchNormParams: BatchNormParams[T]) =
     TimeDistributed[T](BatchNormalization[T](
-      nOutput,
+      nOutput = 1,
       batchNormParams.eps,
       batchNormParams.momentum,
-      batchNormParams.affine,
+      affine = false,
       batchNormParams.initWeight,
       batchNormParams.initBias,
       batchNormParams.initGradWeight,
@@ -553,7 +549,6 @@ object Recurrent extends ContainerSerializable {
 case class BatchNormParams[T : ClassTag](
              val eps: Double = 1e-5, // avoid divde zero
              val momentum: Double = 0.1, // momentum for weight update
-             val affine: Boolean = true, // affine operation on output or not
              val initWeight: Tensor[T] = null,
              val initBias: Tensor[T] = null,
              val initGradWeight: Tensor[T] = null,

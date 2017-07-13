@@ -83,17 +83,6 @@ abstract class Cell[T : ClassTag](
   def preTopology: AbstractModule[Activity, Activity, T] = null
 
   /**
-   * A method that returns the nOutput of the preToplogy sequential
-   * for BatchNormalization.
-   * @return
-   */
-  def getPreTopologyNOutput: Int = if (hiddensShape.length == 0) {
-    0
-  } else {
-    hiddensShape(0)
-  }
-
-  /**
    * resize the hidden parameters wrt the batch size, hiddens shapes.
    *
    * e.g. RnnCell contains 1 hidden parameter (H), thus it will return Tensor(size)
