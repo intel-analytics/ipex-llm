@@ -374,15 +374,26 @@ class Model(Container):
     All inputs should be able to connect to outputs through some paths in the graph.
     It is allowed that some successors of the inputs node are not connect to outputs.
     If so, these nodes will be excluded in the computation.
+    
+    We also support initialzing a Graph directly from a tensorflow module. In this case, you should
+    pass your tensorflow nodes as inputs and outputs and also specify the byte_order parameter ("little_endian"
+     or "big_endian") and node_type parameter ("bigdl" or "tensorflow")
+    node_type parameter.
     """
 
     def __init__(self,
                  inputs,
                  outputs,
-                 bigdl_type="float"):
-        super(Model, self).__init__(None, bigdl_type,
+                 bigdl_type="float", byte_order="little_endian", model_type="bigdl"):
+        if model_type == "bigdl":
+            super(Model, self).__init__(None, bigdl_type,
                                     to_list(inputs),
                                     to_list(outputs))
+        else:
+            from bigdl.util.tf_utils import convert
+            model = convert(to_list(inputs), to_list(outputs), byte_order, bigdl_type)
+            super(Model, self).__init__(model, bigdl_type)
+
 
     @staticmethod
     def load(path, bigdl_type="float"):
