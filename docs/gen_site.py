@@ -30,7 +30,10 @@ parser.add_argument('-s', '--scaladocs',
 parser.add_argument('-p', '--pythondocs',
     dest='pythondocsflag', action='store_true',
     help='Add python doc to site')
-parser.add_argument('-m', '--startmkdocserve',
+parser.add_argument('-m', '--startserver',
+    dest='port', type=int,
+    help='Start server at PORT after building')
+parser.add_argument('-d', '--startmkdocserve',
     dest='mkdocserveflag', action='store_true',
     help=argparse.SUPPRESS)
 
@@ -46,8 +49,9 @@ mkdoc_serve = args.mkdocserveflag
 script_path = os.path.realpath(__file__)
 dir_name = os.path.dirname(script_path)
 os.chdir(dir_name)
-run_cmd(['rm', '-rf', '{}/readthedocs'.format(dir_name)],
-    'rm readthedocs error')
+
+run_cmd(['rm', '-rf', '{}/mkdocs_windmill'.format(dir_name)],
+    'rm theme folder error')
 
 # check if mkdoc is installed
 run_cmd(['mkdocs', '--version'], 
@@ -55,16 +59,24 @@ run_cmd(['mkdocs', '--version'],
 
 # git clone docs
 run_cmd(['rm', '-rf', '/tmp/bigdl-doc'],
-    'rm readthedocs error')
+    'rm theme repo error')
 
-run_cmd(['git', 'clone', 'https://github.com/helenlly/bigdl-project.github.io.git', '/tmp/bigdl-doc'],
-    'git clone readthedocs error')
+# run_cmd(['git', 'clone', 'https://github.com/helenlly/bigdl-project.github.io.git', '/tmp/bigdl-doc'],
+#     'git clone readthedocs error')
+# 
+run_cmd(['git', 'clone', 'https://github.com/bigdl-project/bigdl-project.github.io.git', '/tmp/bigdl-doc'],
+    'git clone theme repo error')
 
-run_cmd(['mv', '/tmp/bigdl-doc/readthedocs', dir_name],
-    'mv readthedocs error')
+run_cmd(['mv', '/tmp/bigdl-doc/mkdocs_windmill', dir_name],
+    'mv theme foler error')
 
 run_cmd(['rm', '-rf', '/tmp/bigdl-doc'],
-    'rm readthedocs error')
+    'rm theme folder error')
+
+# merge md files
+script_path = dir_name + '/merge_md.py'
+run_cmd(['python', script_path],
+    'merge md files error')
 
 # mkdocs build
 run_cmd(['mkdocs', 'build'], 
@@ -92,8 +104,17 @@ if pythondocs:
 
 os.chdir(dir_name)
 
+if mkdoc_serve and args.port != None:
+    print 'Cannot start http server in debug mode'
+    sys.exit()
+
 if mkdoc_serve:
     print 'start mkdoc server'
     run_cmd(['mkdocs', 'serve'], 
         'mkdocs start serve error')
+
+if args.port != None:
+    os.chdir(dir_name + '/site')
+    run_cmd(['python', '-m', 'SimpleHTTPServer', '{}'.format(args.port)],
+        'start http server error')
    
