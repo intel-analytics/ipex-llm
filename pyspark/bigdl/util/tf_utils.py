@@ -17,6 +17,7 @@
 import tempfile
 
 import tensorflow as tf
+import shutil
 
 from google.protobuf import text_format
 
@@ -25,8 +26,9 @@ from tensorflow.python.client import session
 from tensorflow.python.framework import graph_util
 from tensorflow.python.framework import importer
 from tensorflow.python.platform import gfile
+from bigdl.nn.layer import Model
 
-def generate_graph_file(input_ops, output_ops):
+def convert(input_ops, output_ops, byte_order, bigdl_type):
     """
     Convert tensorflow model to bigdl model
     :param input_ops: operation list used for input, should be placeholders
@@ -51,7 +53,15 @@ def generate_graph_file(input_ops, output_ops):
                      output_names,
                      temp + '/model.pb', sess)
 
-    return temp, input_names, output_names
+    model = Model.load_tensorflow(temp + '/model.pb', input_names, output_names, byte_order, bigdl_type)
+
+    try:
+        shutil.rmtree(temp)
+    except OSError as e:
+        if e.errno != errno.ENOENT:
+            raise
+
+    return model
 
 def merge_checkpoint(input_graph,
                      checkpoint,

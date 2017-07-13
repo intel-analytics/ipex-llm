@@ -140,38 +140,3 @@ model = Model(Seq[linear1, linear2], Seq[add])
 In the above code, we define two input nodes linear1 and linear2 and put them
 into the first parameter when create the graph model.
 
-## Construct a model using tensorflow api
-
-NOTE: Only python api support this feature
-
-In BigDL api, you can construct your BigDL directly from an existing
-tensorflow model. That is to say, you can use tensorflow to define
-a model and use BigDL to run it.
-
-**Python:**
-```python
-import tensorflow as tf
-import numpy as np
-
-tf.set_random_seed(1234)
-input = tf.placeholder(tf.float32, [None, 5])
-weight = tf.Variable(tf.random_uniform([5, 10]))
-bias = tf.Variable(tf.random_uniform([10]))
-middle = tf.nn.bias_add(tf.matmul(input, weight), bias)
-output = tf.nn.tanh(middle)
-
-tensor = np.random.rand(5, 5)
-with tf.Session() as sess:
-    init = tf.global_variables_initializer()
-    sess.run(init)
-    tensorflow_result = sess.run(output, {input: tensor})
-    
-    bigdl_model = Model(input, output)
-    bigdl_result = bigdl_model.forward(tensor)
-
-    print("Tensorflow forward result is " + str(tensorflow_result))
-    print("BigDL forward result is " + str(bigdl_result))
-
-    np.testing.assert_almost_equal(tensorflow_result, bigdl_result, 6)
-    print("The results are almost equal in 6 decimals")
-```

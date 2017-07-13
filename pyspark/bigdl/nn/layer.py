@@ -16,8 +16,6 @@
 
 
 import sys
-import shutil
-import tempfile
 
 import numpy as np
 
@@ -386,25 +384,15 @@ class Model(Container):
     def __init__(self,
                  inputs,
                  outputs,
-                 bigdl_type="float", byte_order="little_endian", node_type="bigdl"):
-        if node_type == "bigdl":
+                 bigdl_type="float", byte_order="little_endian", model_type="bigdl"):
+        if model_type == "bigdl":
             super(Model, self).__init__(None, bigdl_type,
                                     to_list(inputs),
                                     to_list(outputs))
         else:
-            from bigdl.util.tf_utils import generate_graph_file
-            path, input_names, output_names = generate_graph_file(to_list(inputs), to_list(outputs))
-            super(Model, self).__init__(None, bigdl_type,
-                                        path + '/model.pb',
-                                        input_names,
-                                        output_names,
-                                        byte_order)
-            try:
-                shutil.rmtree(path)
-            except OSError as e:
-                if e.errno != errno.ENOENT:
-                    raise
-
+            from bigdl.util.tf_utils import convert
+            model = convert(to_list(inputs), to_list(outputs), byte_order, bigdl_type)
+            super(Model, self).__init__(model, bigdl_type)
 
 
     @staticmethod
