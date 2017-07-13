@@ -3,7 +3,7 @@
 
 You can use Python without pip install. Pip install only supports certain Spark versions and platforms now. You can always use Python this way if pip support is missing.   
 
-First of all, you need to obtain the BigDL libs. You can either download pre-built libs or build from source code. Refer to [Install](../UserGuide/install.md) for details. 
+First of all, you need to obtain the BigDL libs. You can either download pre-built libs or build from source code. Refer to [Use pre-built libs](../UserGuide/install-pre-built.md) and [Build from Source](../UserGuide/install-build-src.md) for details. 
 
 Then you can either use an interactive shell, run a python program on commandline, or use jupyter notebook. Refer to below sections for details. 
 
