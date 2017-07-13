@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.example.loadmodel.AlexNet_OWT
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.optim.SGD
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.{Tensor, _}
 import com.intel.analytics.bigdl.torch.{TH, TorchSpec}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.T
@@ -306,5 +306,34 @@ gradInput = model.gradInput
       abss += tmp
     }
     assert(abss < 2e-2)
+  }
+
+
+  "ALexNet graph" should "be same with original one" in {
+    Random.setSeed(1)
+    val batchSize = 4
+    val input = Tensor[Float](batchSize, 3, 224, 224).apply1(e => Random.nextFloat())
+    val gradOutput = Tensor[Float](batchSize, 1000).apply1(e => Random.nextFloat())
+
+    RNG.setSeed(1000)
+    val model = AlexNet_OWT(1000, false, true)
+    RNG.setSeed(1000)
+    val graphModel = AlexNet_OWT.graph(1000, false, true)
+
+    var output1: Tensor[Float] = null
+    var output2: Tensor[Float] = null
+    for (i <- 1 to 2) {
+      output1 = model.forward(input).toTensor[Float]
+      output2 = graphModel.forward(input).toTensor[Float]
+    }
+    output1 should be(output2)
+
+    var gradInput1: Tensor[Float] = null
+    var gradInput2: Tensor[Float] = null
+    for (i <- 1 to 2) {
+      gradInput1 = model.backward(input, gradOutput).toTensor[Float]
+      gradInput2 = graphModel.backward(input, gradOutput).toTensor[Float]
+    }
+    gradInput1 should be(gradInput2)
   }
 }

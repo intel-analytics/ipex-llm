@@ -49,6 +49,35 @@ object AlexNet_OWT {
     model.add(LogSoftMax().setName("logsoftmax"))
     model
   }
+
+  def graph(classNum: Int, hasDropout : Boolean = true, firstLayerPropagateBack :
+  Boolean = false): Module[Float] = {
+    val input = Input()
+    val conv1 = SpatialConvolution(3, 64, 11, 11, 4, 4, 2, 2, 1, firstLayerPropagateBack)
+      .setName("conv1").inputs(input)
+    val relu1 = ReLU(true).setName("relu1").inputs(conv1)
+    val pool1 = SpatialMaxPooling(3, 3, 2, 2).setName("pool1").inputs(relu1)
+    val conv2 = SpatialConvolution(64, 192, 5, 5, 1, 1, 2, 2).setName("conv2").inputs(pool1)
+    val relu2 = ReLU(true).setName("relu2").inputs(conv2)
+    val pool2 = SpatialMaxPooling(3, 3, 2, 2).setName("pool2").inputs(relu2)
+    val conv3 = SpatialConvolution(192, 384, 3, 3, 1, 1, 1, 1).setName("conv3").inputs(pool2)
+    val relu3 = ReLU(true).setName("relu3").inputs(conv3)
+    val conv4 = SpatialConvolution(384, 256, 3, 3, 1, 1, 1, 1).setName("conv4").inputs(relu3)
+    val relu4 = ReLU(true).setName("relu4").inputs(conv4)
+    val conv5 = SpatialConvolution(256, 256, 3, 3, 1, 1, 1, 1).setName("conv5").inputs(relu4)
+    val relu5 = ReLU(true).setName("relu5").inputs(conv5)
+    val pool5 = SpatialMaxPooling(3, 3, 2, 2).setName("poo5").inputs(relu5)
+    val view1 = View(256 * 6 * 6).inputs(pool5)
+    val fc6 = Linear(256 * 6 * 6, 4096).setName("fc6").inputs(view1)
+    val relu6 = ReLU(true).setName("relu6").inputs(fc6)
+    val drop6 = if (hasDropout) Dropout(0.5).setName("drop6").inputs(relu6) else relu6
+    val fc7 = Linear(4096, 4096).setName("fc7").inputs(drop6)
+    val relu7 = ReLU(true).setName("relu7").inputs(fc7)
+    val drop7 = if (hasDropout) Dropout(0.5).setName("drop7").inputs(relu7) else relu7
+    val fc8 = Linear(4096, classNum).setName("fc8").inputs(drop7)
+    val output = LogSoftMax().inputs(fc8)
+    Graph(input, output)
+  }
 }
 
 object AlexNet {

@@ -16,14 +16,16 @@
 
 package com.intel.analytics.bigdl.models
 
-import com.intel.analytics.bigdl.models.inception.Inception_v1
-import com.intel.analytics.bigdl.nn.ClassNLLCriterion
+import com.intel.analytics.bigdl.models.inception.{Inception_Layer_v1, Inception_v1, Inception_v1_NoAuxClassifier}
+import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Input}
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.torch.{TH, TorchSpec}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.nn.{Graph, _}
+import com.intel.analytics.bigdl.numeric.NumericFloat
 
 import scala.math._
 import scala.util.Random
@@ -774,5 +776,61 @@ class InceptionSpec extends TorchSpec {
 
     // since we already set the seed, the loss should match exactly
     loss should be (6.901158f)
+  }
+
+  "Inception_Layer_V1 graph" should "be correct" in {
+    val batchSize = 8
+    RNG.setSeed(1000)
+    val model = Inception_Layer_v1(2, T(T(4), T(96, 128), T(16, 32), T(32)))
+    RNG.setSeed(1000)
+    val input = Input()
+    val f1 = Inception_Layer_v1(input, 2, T(T(4), T(96, 128), T(16, 32), T(32)), "graph")
+    val graphModel = Graph(input, f1)
+
+    val inputData = Tensor(batchSize, 2, 4, 4).rand()
+    val gradOutput = Tensor(batchSize, 256, 4, 4).rand()
+
+    var output1: Tensor[Float] = null
+    var output2: Tensor[Float] = null
+    for (i <- 1 to 2) {
+      output1 = model.forward(inputData).toTensor[Float]
+      output2 = graphModel.forward(inputData).toTensor[Float]
+    }
+    output1 should be(output2)
+
+    var gradInput1: Tensor[Float] = null
+    var gradInput2: Tensor[Float] = null
+    for (i <- 1 to 2) {
+      gradInput1 = model.backward(inputData, gradOutput).toTensor[Float]
+      gradInput2 = graphModel.backward(inputData, gradOutput).toTensor[Float]
+    }
+    gradInput1 should be(gradInput2)
+  }
+
+  "Inception graph" should "be correct" in {
+    val batchSize = 2
+    RNG.setSeed(1000)
+    val model = Inception_v1_NoAuxClassifier(1000, false)
+    RNG.setSeed(1000)
+    val graphModel = Inception_v1_NoAuxClassifier.graph(1000, false)
+
+    val input = Tensor[Float](batchSize, 3, 224, 224).apply1(e => Random.nextFloat())
+    val gradOutput = Tensor[Float](batchSize, 2000).apply1(e => Random.nextFloat())
+
+    var output1: Tensor[Float] = null
+    var output2: Tensor[Float] = null
+    for (i <- 1 to 2) {
+      output1 = model.forward(input).toTensor[Float]
+      output2 = graphModel.forward(input).toTensor[Float]
+    }
+    output1 should be(output2)
+
+    var gradInput1: Tensor[Float] = null
+    var gradInput2: Tensor[Float] = null
+    for (i <- 1 to 2) {
+      gradInput1 = model.backward(input, gradOutput).toTensor[Float]
+      gradInput2 = graphModel.backward(input, gradOutput).toTensor[Float]
+    }
+    gradInput1 should be(gradInput2)
   }
 }

@@ -95,7 +95,7 @@ object Inception_Layer_v1 {
 }
 
 object Inception_v1_NoAuxClassifier {
-  def apply(classNum: Int): Module[Float] = {
+  def apply(classNum: Int, hasDropout: Boolean = true): Module[Float] = {
     val model = Sequential()
     model.add(SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3, 1, false)
       .setInitMethod(weightInitMethod = Xavier, Zeros)
@@ -123,7 +123,7 @@ object Inception_v1_NoAuxClassifier {
     model.add(Inception_Layer_v1(832, T(T(256), T(160, 320), T(32, 128), T(128)), "inception_5a/"))
     model.add(Inception_Layer_v1(832, T(T(384), T(192, 384), T(48, 128), T(128)), "inception_5b/"))
     model.add(SpatialAveragePooling(7, 7, 1, 1).setName("pool5/7x7_s1"))
-    model.add(Dropout(0.4).setName("pool5/drop_7x7_s1"))
+    if (hasDropout) model.add(Dropout(0.4).setName("pool5/drop_7x7_s1"))
     model.add(View(1024).setNumInputDims(3))
     model.add(Linear(1024, classNum)
       .setInitMethod(weightInitMethod = Xavier, Zeros).setName("loss3/classifier"))
@@ -131,7 +131,7 @@ object Inception_v1_NoAuxClassifier {
     model
   }
 
-  def graph(classNum: Int): Module[Float] = {
+  def graph(classNum: Int, hasDropout: Boolean = true): Module[Float] = {
     val input = Input()
     val conv1 = SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3, 1, false)
       .setInitMethod(weightInitMethod = Xavier).setName("conv1/7x7_s2").inputs(input)
@@ -168,14 +168,13 @@ object Inception_v1_NoAuxClassifier {
     val inception_5b = Inception_Layer_v1(inception_5a,
       832, T(T(384), T(192, 384), T(48, 128), T(128)), "inception_5b/")
     val pool5 = SpatialAveragePooling(7, 7, 1, 1).setName("pool5/7x7_s1").inputs(inception_5b)
-    val drop = Dropout(0.4).setName("pool5/drop_7x7_s1").inputs(pool5)
+    val drop = if (hasDropout) Dropout(0.4).setName("pool5/drop_7x7_s1").inputs(pool5) else pool5
     val view = View(1024).setNumInputDims(3).inputs(drop)
     val classifier = Linear(1024, classNum).setInitMethod(weightInitMethod = Xavier)
       .setName("loss3/classifier").inputs(view)
     val loss = LogSoftMax().setName("loss3/loss3").inputs(classifier)
 
     val model = Graph(input, loss)
-    model.reset()
     model
   }
 }
