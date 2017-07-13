@@ -407,7 +407,7 @@ class GraphSpec extends FlatSpec with Matchers {
     val seqModel = ModelUntils.ResNet.basicBlockSeq(16, 16, 1, "A")
     RandomGenerator.RNG.setSeed(1000)
     val input = Input()
-    val output = ModelUntils.ResNet.basicBlockSeq(16, 16, 1, "A").inputs(input)
+    val output = ModelUntils.ResNet.basicBlockFunc(16, 16, 1, "A")(input)
     val funcModel = Graph(input, output)
 
     println(seqModel)
