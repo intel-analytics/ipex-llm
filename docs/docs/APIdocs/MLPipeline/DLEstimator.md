@@ -10,17 +10,17 @@ val estimator = new DLEstimator[Float](
   )
 ```
 
-[[DLEstimator]] helps to train a BigDL Model with the Spark ML Estimator/Transfomer pattern,
+`DLEstimator` helps to train a BigDL Model with the Spark ML `Estimator`/`Transfomer` pattern,
 thus Spark users can conveniently fit BigDL into Spark ML pipeline.
 
-[[DLEstimator]] supports feature and label data in the format of Array[Double], Array[Float],
-org.apache.spark.mllib.linalg.{Vector, VectorUDT} for Spark 1.5, 1.6 and
-org.apache.spark.ml.linalg.{Vector, VectorUDT} for Spark 2.0+. Also label data can be of
-DoubleType.
+`DLEstimator` supports feature and label data in the format of `Array[Double], Array[Float],
+org.apache.spark.mllib.linalg.{Vector, VectorUDT}` for Spark 1.5, 1.6 and
+`org.apache.spark.ml.linalg.{Vector, VectorUDT}` for Spark 2.0+. Also label data can be of
+Double type.
 User should specify the feature data dimensions and label data dimensions via the constructor
-parameters featureSize and labelSize respectively. E.g., a sample from
-[MNist](http://yann.lecun.com/exdb/mnist/) may have the featureSize as Array(28, 28) and
-labelSize as Array(1). And the feature column contains an array
+parameters `featureSize` and `labelSize` respectively. E.g., a sample from
+[MNist](http://yann.lecun.com/exdb/mnist/) may have the `featureSize` as Array(28, 28) and
+`labelSize` as Array(1). And the feature column contains an array
 or a vector of 576 numbers. Internally the feature and label data are converted to BigDL
 tensors, to further train a BigDL model efficiently.
 

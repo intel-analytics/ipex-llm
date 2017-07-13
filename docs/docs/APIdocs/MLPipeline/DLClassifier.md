@@ -9,9 +9,9 @@ val classifier = new DLClassifier(
   )
 ```
 
-[[DLClassifier]] is a specialized [[DLEstimator]] that simplifies the data format for
+`DLClassifier` is a specialized `DLEstimator` that simplifies the data format for
 classification tasks. It only supports label column of DoubleType, and the fitted
-[[DLClassifierModel]] will have the prediction column of DoubleType.
+`DLClassifierModel` will have the prediction column of DoubleType.
 
 **Scala example:**
 ```scala
