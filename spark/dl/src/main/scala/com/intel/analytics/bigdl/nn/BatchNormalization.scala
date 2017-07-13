@@ -65,10 +65,10 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
   }
 
   val nDim = 2
-  val runningMean = Tensor[T]()
-  val runningVar = Tensor[T]()
-  val saveMean = Tensor[T]()
-  val saveStd = Tensor[T]()
+  val runningMean = if (affine) Tensor[T](nOutput) else Tensor[T]()
+  val runningVar = if (affine) Tensor[T](nOutput).fill(ev.fromType[Int](1)) else Tensor[T]()
+  val saveMean = if (affine) Tensor[T](nOutput) else Tensor[T]()
+  val saveStd = if (affine) Tensor[T](nOutput).fill(ev.fromType[Int](1)) else Tensor[T]()
 
   val weight: Tensor[T] =
     if (initWeight != null) initWeight else if (affine) Tensor[T](nOutput) else null
@@ -132,8 +132,6 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
   private def initializeBuffer(nOutput: Int): Unit = {
     runningMean.resize(nOutput).zero
     runningVar.resize(nOutput).fill(ev.fromType[Int](1))
-    saveMean.resizeAs(runningMean).zero
-    saveStd.resizeAs(runningVar).fill(ev.fromType[Int](1))
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
@@ -147,6 +145,9 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
     if (runningMean.nElement == 0 || runningMean.nElement < nInput) {
       initializeBuffer(nInput)
     }
+
+    saveMean.resizeAs(runningMean).zero
+    saveStd.resizeAs(runningVar).fill(ev.fromType[Int](1))
 
     if (results == null || results.length > nInput) {
       results = new Array[Future[_]](nInput)
