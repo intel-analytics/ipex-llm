@@ -161,7 +161,7 @@ class Concat[T: ClassTag](val dimension: Int)(
         }
       })
       i += 1
-      offset += currentOutput.size(dimension)
+      offset += currentOutput.size(dimension)*afterSize
     }
     Engine.model.sync(results)
 
@@ -235,7 +235,7 @@ class Concat[T: ClassTag](val dimension: Int)(
         }
       })
       i += 1
-      offset += currentOutput.size(dimension)
+      offset += currentOutput.size(dimension)*afterSize
     }
     Engine.model.sync(results)
     backwardTime += System.nanoTime() - before
