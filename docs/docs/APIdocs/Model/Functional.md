@@ -139,3 +139,4 @@ model = Model(Seq[linear1, linear2], Seq[add])
 ```
 In the above code, we define two input nodes linear1 and linear2 and put them
 into the first parameter when create the graph model.
+

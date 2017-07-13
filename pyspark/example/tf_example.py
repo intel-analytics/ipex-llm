@@ -16,29 +16,33 @@
 
 import tensorflow as tf
 import numpy as np
-from bigdl.util.tf_utils import convert
+from bigdl.nn.layer import Model
+
 
 def main():
+    tf.set_random_seed(1234)
     input = tf.placeholder(tf.float32, [None, 5])
     weight = tf.Variable(tf.random_uniform([5, 10]))
     bias = tf.Variable(tf.random_uniform([10]))
     middle = tf.nn.bias_add(tf.matmul(input, weight), bias)
-    output= tf.nn.tanh(middle)
+    output = tf.nn.tanh(middle)
 
     tensor = np.random.rand(5, 5)
+    # construct BigDL model and get the result form
+    bigdl_model = Model(input, output, model_type="tensorflow")
+    bigdl_result = bigdl_model.forward(tensor)
+
+    # get result from tensorflow and compare
     with tf.Session() as sess:
         init = tf.global_variables_initializer()
         sess.run(init)
         tensorflow_result = sess.run(output, {input: tensor})
-        bigdl_model = convert([input], [output], sess)
-        bigdl_result = bigdl_model.forward(tensor)
 
         print("Tensorflow forward result is " + str(tensorflow_result))
         print("BigDL forward result is " + str(bigdl_result))
 
         np.testing.assert_almost_equal(tensorflow_result, bigdl_result, 6)
         print("The results are almost equal in 6 decimals")
-
 
 if __name__ == "__main__":
     main()
