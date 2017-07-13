@@ -45,6 +45,29 @@ class DirectedGraph[T](val source : Node[T], val reverse : Boolean = false) exte
    */
   def edges : Int = BFS.map(_.nextNodes.length).reduce(_ + _)
 
+  private def nodeHash(n: Node[T]): Int = {
+    n.hashCode()
+  }
+
+  private def equivalent(n1: Node[T], n2: Node[T]): Boolean = {
+    nodeHash(n1) == nodeHash(n2)
+  }
+
+  def cse: Array[Node[T]] = {
+    val available = new mutable.HashMap[Int, Node[T]]()
+
+    DFS.foreach(n => {
+      val h = nodeHash(n)
+      if (available.contains(h) && equivalent(n, available(h))) {
+        // substitute or prune node here
+      } else if (!available.contains(h)) {
+        available.put(h, n)
+      }
+    })
+
+    topologySort
+  }
+
   /**
    * Topology sort.
    * @return A sequence of sorted graph nodes
