@@ -1,5 +1,5 @@
 ---
-**What is BigDL**
+## What is BigDL
 
 BigDL is a distributed deep learning library for Apache Spark; with BigDL, users can write their deep learning applications as standard Spark programs, which can directly run on top of existing Spark or Hadoop clusters.
 
@@ -11,7 +11,7 @@ BigDL is a distributed deep learning library for Apache Spark; with BigDL, users
 
 
 ---
-**Why BigDL?**
+## Why BigDL?
 
 You may want to write your deep learning programs using BigDL if:
 
@@ -22,7 +22,8 @@ You may want to write your deep learning programs using BigDL if:
 * You want to leverage existing Hadoop/Spark clusters to run your deep learning applications, which can be then dynamically shared with other workloads (e.g., ETL, data warehouse, feature engineering, classical machine learning, graph analytics, etc.)
 
 ---
-**Getting Help**
+
+##Getting Help
 
 * You can join the [BigDL Google Group](https://groups.google.com/forum/#!forum/bigdl-user-group) (or subscribe to the [Mail List](mailto:bigdl-user-group+subscribe@googlegroups.com)) for more questions and discussions on BigDL
 

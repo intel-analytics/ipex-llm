@@ -14,7 +14,9 @@ pages:
 - Releases: release.md
 - Getting Started: getting-started.md
 - User Guide: 
-  - Install: UserGuide/install.md
+  - Install: 
+    - Use Pre-built Libs: UserGuide/install-pre-built.md
+    - Build from Source Code: UserGuide/install-build-src.md 
   - Run : UserGuide/run.md
   - Examples: UserGuide/examples.md
   - More Resources: UserGuide/resources.md
@@ -55,7 +57,6 @@ pages:
     - Optimizer: APIdocs/Optimizers/DistriOptimizer.md
     - Optimization Algorithms: APIdocs/Optimizers/Optim-Methods/merged-Optim-Methods.md
     - Triggers: APIdocs/Optimizers/Triggers.md
-    - Resume Training: APIdocs/Optimizers/ResumeTraining.md
   - Metrics:  APIdocs/Metrics/merged-Metrics.md
   - Visualization: ProgrammingGuide/visualization.md
   - MLPipeline: APIdocs/MLPipeline/merged-MLPipeline.md

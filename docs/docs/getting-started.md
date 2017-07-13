@@ -1,7 +1,7 @@
 ---
 ## Before using BigDL
 
-To use BigDL *Scala* API, the first thing is to obtain the BigDL libraries. You can either download the pre-built BigDL libs ([available here](release.md)), or build the libs from source code (available at [BigDL Github](https://github.com/intel-analytics/BigDL)). When writing programs, you need to ensure the SparkContext is created successfully and initialize BigDL engine before calling BigDL APIs. Refer to [Install](UserGuide/install.md) and [Run](UserGuide/run.md) for details about how to build BigDL and run a program in Scala.  
+To use BigDL *Scala* API, the first thing is to obtain the BigDL libraries. You can either download the pre-built BigDL libs ([available here](release.md)), or build the libs from source code (available at [BigDL Github](https://github.com/intel-analytics/BigDL)). When writing programs, you need to ensure the SparkContext is created successfully and initialize BigDL engine before calling BigDL APIs. Refer to [Use Prebuild Libs](UserGuide/install-pre-built.md), [Build from Source](UserGuide/install-build-src.md), and [Run](UserGuide/run.md) for details about how to build BigDL and run a program in Scala.  
 
 To use BigDL *Python* API, besides using pre-built BigDL libs or building from source, you can also install BigDL python via pip (only support some spark versions). You may use Python API in an interactive shell, or run a program in commandline, or use Jupyter notebooks. Before calling BigDL API's in your program, you have to ensure the SparkContext is succesfully created and initialize BigDL engine. Refer to [Python Install](PythonSupport/python-install.md) and [Python Run](PythonSupport/python-run.md) for details about how to install python and run python programs.
 

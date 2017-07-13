@@ -88,8 +88,9 @@ If you are to run your own program, do remember to create SparkContext and initi
 
 ## **Running on EC2**
 
-
- * **AMI**
+<br/>
+<span style="font-size: 1.5em; font-weight:bold">1. AMI</span>
+<br/>
 
 To make it easier to try out BigDL examples on Spark using EC2, a public AMI is provided. It will automatically retrieve the latest BigDL package, download the necessary input data, and then run the specified BigDL example (using Java 8 on a Spark cluster). The details of the public AMI are shown in the table below.
 
@@ -108,11 +109,17 @@ After launching the AMI on EC2, please log on to the instance and run a "bootstr
 ```bash
 ./bootstrap.sh
 ```
- * **Before You Start**
+<br/>
+<span style="font-size: 1.5em; font-weight:bold">2. Before You Start</span>
+<br/>
 
 Before running the BigDL examples, you need to launch a Spark cluster on EC2 (you may refer to [https://github.com/amplab/spark-ec2](https://github.com/amplab/spark-ec2) for more instructions). In addition, to run the Inception-v1 example, you also need to start a HDFS cluster on EC2 to store the input image data.
 
- * **Run BigDL examples**
+
+ <br/>
+ <span style="font-size: 1.5em; font-weight:bold">3. Run BigDL Examples</span>
+ <br/>
+
 
 You can run BigDL examples using the `run.example.sh` script in home directory of your BigDL Client instance (e.g. `/home/ubuntu/`) with the following parameters:
 * Mandatory parameters:
@@ -143,8 +150,10 @@ You can run BigDL examples using the `run.example.sh` script in home directory o
 
 After the training, you can check the log files and generated models in the home directory (e.g., `/home/ubuntu/`).  
 
---- 
-* **Run the "inception-v1" example**
+
+  <br/>
+  <span style="font-size: 1.5em; font-weight:bold">4. Run the "inception-v1" example</span>
+  <br/> 
 
 You can refer to the [Inception v1](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/inception) example to prepare the input [ImageNet](http://image-net.org/index) data here. Alternatively, you may also download just a small set of images (with dummy labels) to run the example as follows, which can be useful if you only want to try it out to see the training speed on a Spark cluster.
 
@@ -178,7 +187,9 @@ You can refer to the [Inception v1](https://github.com/intel-analytics/BigDL/tre
   2017-01-10 10:04:05 INFO  DistriOptimizer$:241 - [Epoch 1 2048/5000][Iteration 5][Wall Clock XXX] Train 512 in XXXseconds. Throughput is XXX records/second. Loss is XXX.
 ```  
 
-* **Run the "perf" example**
+  <br/>
+   <span style="font-size: 1.5em; font-weight:bold">5. Run the "perf" example</  span>
+   <br/>
 
 To run the "perf" example on a 4-worker Spark cluster (using, say, the "m4.10xlarge" instance), you may try the example command below: 
 
