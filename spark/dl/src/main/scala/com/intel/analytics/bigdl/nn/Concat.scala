@@ -49,6 +49,22 @@ class Concat[T: ClassTag](val dimension: Int)(
 
   protected var forwardTimeOverhead = 0L
 
+
+  private def getBeforeAndAfterSize = {
+    var beforeSize: Int = 1
+    var afterSize: Int = 1
+    var i = 0
+    while (i < this.size.length) {
+      if (i < this.dimension - 1) {
+        beforeSize = beforeSize * this.size(i)
+      } else if (i > this.dimension - 1) {
+        afterSize = afterSize * this.size(i)
+      }
+      i = i + 1
+    }
+    (beforeSize, afterSize)
+  }
+
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     val outs = new Array[Tensor[T]](this.modules.length)
     var i = 0
@@ -65,11 +81,18 @@ class Concat[T: ClassTag](val dimension: Int)(
       }
       i += 1
     }
+
     val before = System.nanoTime()
+
+    val (beforeSize, afterSize) = getBeforeAndAfterSize
+
     this.output.resize(this.size)
     if (results == null || results.length != this.modules.length) {
       results = new Array[Future[Unit]](this.modules.length)
     }
+
+    val output2d = this.output.view(beforeSize,
+      this.output.size(this.dimension) * afterSize)
 
     var offset = 1
     i = 0
@@ -77,26 +100,23 @@ class Concat[T: ClassTag](val dimension: Int)(
       val currentOutput = outs(i)
       val _offset = offset
       results(i) = Engine.model.invoke(() => {
-        val target = this.output.narrow(this.dimension, _offset,
-          currentOutput.size(this.dimension))
-        if (target.isContiguous()) {
-          // Copy directly when target is Contiguous
-          target.copy(currentOutput)
-        } else {
-          // Divide target into contiguous frames when target isn't contiguous
-          var f = 1
-          while (f <= target.size(1)) {
-            val curFrame = target.select(1, f)
-            val outputFrame = currentOutput.select(1, f)
-            require(curFrame.isContiguous())
-            require(outputFrame.isContiguous())
-            curFrame.copy(outputFrame)
-            f += 1
-          }
+        val target = output2d.narrow(2, _offset,
+          currentOutput.size(this.dimension)*afterSize)
+        val currentOutput2d = currentOutput.view(beforeSize,
+          currentOutput.size(this.dimension) * afterSize)
+        var j = 1
+        while (j <= currentOutput2d.size(1)) {
+          val currentFrame = currentOutput2d.select(1, j)
+          val targetFrame = target.select(1, j)
+          require(currentFrame.isContiguous())
+          require(targetFrame.isContiguous())
+          targetFrame.copy(currentFrame)
+          j = j + 1
         }
+
       })
       i += 1
-      offset += currentOutput.size(this.dimension)
+      offset += currentOutput.size(this.dimension) * afterSize
     }
 
     Engine.model.sync(results)
@@ -113,6 +133,8 @@ class Concat[T: ClassTag](val dimension: Int)(
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     var before = System.nanoTime()
     this.gradInput.resizeAs(input)
+    val (beforeSize, afterSize) = getBeforeAndAfterSize
+    val gradOutput2d = gradOutput.view(beforeSize, gradOutput.size(dimension) * afterSize)
     var offset = 1
     if (gradouts == null || gradouts.length != this.modules.length) {
       gradouts = new Array[Tensor[T]](this.modules.length)
@@ -123,18 +145,19 @@ class Concat[T: ClassTag](val dimension: Int)(
       val _offset = offset
       val _i = i
       results(i) = Engine.model.invoke( () => {
-        val narrowedTensor = gradOutput.narrow(dimension, _offset,
-          currentOutput.size(dimension))
-        if(dimension == 2) {
-          gradouts(_i) = Tensor[T]().resizeAs(narrowedTensor)
-          var b = 1
-          val firstSize = narrowedTensor.size(1)
-          while(b <= firstSize) {
-            gradouts(_i).select(1, b).copy(narrowedTensor.select(1, b))
-            b += 1
-          }
-        } else {
-          gradouts(_i) = narrowedTensor.contiguous()
+        val narrowedTensor = gradOutput2d.narrow(2, _offset,
+          currentOutput.size(dimension) * afterSize)
+        gradouts(_i) = Tensor[T]().resizeAs(currentOutput)
+        val gradouts2d = gradouts(_i).view(beforeSize, currentOutput.size(dimension)*afterSize)
+        var b = 1
+        val firstSize = narrowedTensor.size(1)
+        while (b <= firstSize) {
+          val currentTarget = gradouts2d.select(1, b)
+          val currentSource = narrowedTensor.select(1, b)
+          require(currentTarget.isContiguous())
+          require(currentSource.isContiguous())
+          currentTarget.copy(currentSource)
+          b += 1
         }
       })
       i += 1
