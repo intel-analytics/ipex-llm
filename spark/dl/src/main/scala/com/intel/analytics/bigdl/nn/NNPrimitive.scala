@@ -1765,19 +1765,17 @@ object Quantize{
   }
 
   def quantize(value: Float, max: Float, min: Float): Byte = {
-    Math.round(1.0 * (value - min) / (max - min) * Byte.MaxValue).toByte
+    Math.round(1.0 * value / Math.max(max, min) * Byte.MaxValue).toByte
   }
 
   def dequantize(byte: Byte, max: Float, min: Float): Float = {
-    byte.toFloat / Byte.MaxValue * (max - min) + min
+    byte.toFloat / Byte.MaxValue * Math.max(max, min)
   }
 
   def quantize(src: Array[Float], start: Int, end: Int, dst: ByteBuffer,
     dstOffset: Int): (Float, Float) = {
-    var max = findMax(src, start, end)
-    val min = findMin(src, start, end)
-
-    max = Math.max(Math.abs(max), Math.abs(min))
+    val max = Math.abs(findMax(src, start, end))
+    val min = Math.abs(findMin(src, start, end))
 
     for (i <- 0 until end - start) {
       dst.put(dstOffset + i, quantize(src(start + i), max, min))
@@ -1820,9 +1818,10 @@ object Quantize{
   def dequantize(data: Array[Float], start: Int, end: Int, quantizedData: ByteBuffer, offset: Int,
     max: Array[Float], min: Array[Float], size: Array[Int]): Unit = {
     require(max.length == min.length, s"the number of max doesn't match with the number of min")
-    require(max.length == size.length, s"the number of max doesn't match the size")
-
     require(size.length == 2, s"only support 2-dim matrix")
+    require(max.length == size(0),
+      s"the number of max(${max.length}) doesn't match the size(${size(1)})")
+
     require(size.product == (end - start), s"number of elements does not match")
 
     val height = size(0)
@@ -1841,29 +1840,39 @@ object Quantize{
     Array(first, last)
   }
 
-  def quantize(input: Tensor[Float], buffer: ByteBuffer, offset: Int): Unit = {
-    val length = input.size().product
+  def quantize(input: Tensor[Float], buffer: ByteBuffer,
+    offset: Int): (Array[Float], Array[Float]) = {
+    val length = input.nElement()
 
     input.dim() match {
-      case 1 => quantize(input.storage().array(), input.storageOffset() - 1, length, buffer, offset)
+      case 1 =>
+        val (max, min) = quantize(input.storage().array(), input.storageOffset() - 1,
+          length, buffer, offset)
+        (Array(max), Array(min))
       case x if x > 1 =>
         val size = get2Dim(input.size())
-        quantize(input.storage().array(), input.storageOffset() - 1, length, buffer, offset, size)
+        val start = input.storageOffset() - 1
+        val end = start + length
+        val (max, min) = quantize(input.storage().array(), start, end, buffer, offset, size)
+        (max, min)
       case _ => throw new UnsupportedOperationException(s"unsupported input")
     }
   }
 
   def dequantize(input: Tensor[Float], buffer: ByteBuffer, offset: Int, max: Array[Float],
     min: Array[Float]): Unit = {
-    val length = input.size().product
+    val start = input.storageOffset() - 1
+    val end = start + input.nElement()
 
     input.dim() match {
-      case 1 => dequantize(input.storage().array(), input.storageOffset() - 1, length, buffer,
+      case 1 => dequantize(input.storage().array(), start, end, buffer,
         offset, max(0), min(0))
-      case 2 =>
-        val shape = get2Dim(input.size())
-        dequantize(input.storage().array(), input.storageOffset() - 1, length, buffer,
-          offset, max, min, shape)
+      case x if x > 1 =>
+        dequantize(input.storage().array(), start, end, buffer,
+          offset, max, min, get2Dim(input.size()))
+      case _ => throw new UnsupportedOperationException {
+        s"unsupported input dim ${input.dim()}"
+      }
     }
   }
 

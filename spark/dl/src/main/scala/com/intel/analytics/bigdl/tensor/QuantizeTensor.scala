@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import scala.reflect.ClassTag
 
 @SerialVersionUID(- 1766499387282335147L)
-private[bigdl] class QuantizeTensor[@specialized(Float) T: ClassTag](val tensorType: Int)
+private[bigdl] class QuantizeTensor[@specialized(Float) T: ClassTag]()
   (implicit ev: TensorNumeric[T]) extends Serializable {
   private var realSize = 0L
 
@@ -56,11 +56,11 @@ private[bigdl] class QuantizeTensor[@specialized(Float) T: ClassTag](val tensorT
   }
 
   def release(): Unit = {
-    FixPoint.FreeMemory(desc, tensorType)
+    FixPoint.FreeMemory(desc, 0)
   }
 }
 
 object QuantizeTensor {
-  def apply[@specialized(Float, Double) T: ClassTag](tensorType: Int)(
-    implicit ev: TensorNumeric[T]): QuantizeTensor[T] = new QuantizeTensor[T](tensorType)
+  def apply[@specialized(Float, Double) T: ClassTag]()(
+    implicit ev: TensorNumeric[T]): QuantizeTensor[T] = new QuantizeTensor[T]()
 }

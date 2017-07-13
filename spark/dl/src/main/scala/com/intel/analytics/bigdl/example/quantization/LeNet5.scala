@@ -17,6 +17,8 @@
 package com.intel.analytics.bigdl.example.quantization
 
 import com.intel.analytics.bigdl.nn.Module
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import scopt.OptionParser
 
 case class Params(
@@ -34,6 +36,20 @@ object LeNet5 {
       param => {
         val model = Module.load[Float](param.modelSnapshot.get)
         val quantizedModel = Module.quantize(model)
+
+        val input = Tensor[Float](1, 1, 28, 28).fill(1.0f)
+
+        for (i <- 0 until input.nElement()) {
+          input.storage().array()(i) = i % 32
+        }
+
+        model.updateOutput(input)
+        quantizedModel.updateOutput(input)
+
+        println(model.output)
+        println(quantizedModel.output)
+        println(model.output.toTensor.max())
+        println(quantizedModel.output.toTensor.max())
 
         println(model)
         println("=" * 80)

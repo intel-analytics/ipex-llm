@@ -16,11 +16,14 @@
 
 package com.intel.analytics.bigdl.models.lenet
 
+import java.nio.ByteBuffer
 import java.nio.file.Paths
 
+import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dataset.DataSet
 import com.intel.analytics.bigdl.dataset.image.{BytesToGreyImg, GreyImgNormalizer, GreyImgToSample}
-import com.intel.analytics.bigdl.nn.Module
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.nn.{Container, Module, Quantize, SpatialConvolution}
 import com.intel.analytics.bigdl.optim.Top1Accuracy
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.{Level, Logger}
@@ -34,11 +37,33 @@ object Test {
 
   import Utils._
 
+  def substitute(model: Module[Float]): Module[Float] = {
+    model match {
+      case container: Container[Activity, Activity, Float] =>
+        // do with container
+        for (i <- container.modules.indices) {
+          container.modules(i) = substitute(container.modules(i))
+        }
+        container
+      case normalConv if normalConv.isInstanceOf[SpatialConvolution[Float]] =>
+        // do with normal convolution
+        val conv = normalConv.asInstanceOf[SpatialConvolution[Float]]
+        val weight = conv.weight
+        val buffer = ByteBuffer.allocate(weight.nElement())
+        val (max, min) = Quantize.quantize(weight, buffer, 0)
+        weight.apply1(_ => 0f)
+        Quantize.dequantize(weight, buffer, 0, max, min)
+        conv
+      case _ => model
+    }
+  }
+
   def main(args: Array[String]): Unit = {
     testParser.parse(args, new TestParams()).foreach { param =>
       val conf = Engine.createSparkConf().setAppName("Test Lenet on MNIST")
         .set("spark.akka.frameSize", 64.toString)
         .set("spark.task.maxFailures", "1")
+        .setMaster("local[1]")
       val sc = new SparkContext(conf)
       Engine.init
 
@@ -52,10 +77,24 @@ object Test {
       val evaluationSet = transformer(rddData)
 
       val model = Module.load[Float](param.model)
-      val result = model.evaluate(evaluationSet,
-        Array(new Top1Accuracy[Float]), Some(param.batchSize))
+//      substitute(model)
 
-      result.foreach(r => println(s"${r._2} is ${r._1}"))
+      val quantizedModel = Module.quantize(model)
+      println(quantizedModel)
+      val clone = quantizedModel.cloneModule()
+
+      {
+        val result = quantizedModel.evaluate(evaluationSet,
+          Array(new Top1Accuracy[Float]), Some(param.batchSize))
+
+        result.foreach(r => println(s"${r._2} is ${r._1}"))
+      }
+      {
+        val result = model.evaluate(evaluationSet,
+          Array(new Top1Accuracy[Float]), Some(param.batchSize))
+
+        result.foreach(r => println(s"${r._2} is ${r._1}"))
+      }
       sc.stop()
     }
   }
