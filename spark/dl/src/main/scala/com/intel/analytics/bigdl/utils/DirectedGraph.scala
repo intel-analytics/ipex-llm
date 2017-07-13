@@ -16,6 +16,7 @@
 package com.intel.analytics.bigdl.utils
 
 import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -46,7 +47,16 @@ class DirectedGraph[T](val source : Node[T], val reverse : Boolean = false) exte
   def edges : Int = BFS.map(_.nextNodes.length).reduce(_ + _)
 
   private def nodeHash(n: Node[T]): Int = {
-    n.hashCode()
+    var a = 0
+    a += n.element.asInstanceOf[AbstractModule[_, _, T]]
+      .output.hashCode
+    n.prevNodes.foreach(x => {
+      a += x.element.asInstanceOf[AbstractModule[_, _, T]]
+        .output.hashCode
+    })
+    a += n.element.asInstanceOf[AbstractModule[_, _, T]]
+      .hashCode()
+    a
   }
 
   private def equivalent(n1: Node[T], n2: Node[T]): Boolean = {
@@ -58,8 +68,14 @@ class DirectedGraph[T](val source : Node[T], val reverse : Boolean = false) exte
 
     DFS.foreach(n => {
       val h = nodeHash(n)
-      if (available.contains(h) && equivalent(n, available(h))) {
-        // substitute or prune node here
+      val candidate = available.getOrElse(h, null)
+      if (candidate == null) {
+        available.put(h, n)
+      } else if (equivalent(n, candidate)) {
+        for (e <- n.nextNodes) {
+          candidate -> e
+        }
+        // TODO: remove n
       } else if (!available.contains(h)) {
         available.put(h, n)
       }
