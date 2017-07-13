@@ -17,14 +17,13 @@
 package com.intel.analytics.bigdl.models
 
 import com.intel.analytics.bigdl.models.inception.{Inception_Layer_v1, Inception_v1, Inception_v1_NoAuxClassifier}
-import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Input}
+import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Graph, Input}
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.torch.{TH, TorchSpec}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.{T, Table}
-import com.intel.analytics.bigdl.nn.{Graph, _}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 
 import scala.math._
@@ -781,10 +780,10 @@ class InceptionSpec extends TorchSpec {
   "Inception_Layer_V1 graph" should "be correct" in {
     val batchSize = 8
     RNG.setSeed(1000)
-    val model = Inception_Layer_v1(2, T(T(4), T(96, 128), T(16, 32), T(32)))
+    val model = Inception_Layer_v1(2, T(T(4), T(96, 128), T(16, 32), T(32)), "conv")
     RNG.setSeed(1000)
     val input = Input()
-    val f1 = Inception_Layer_v1(input, 2, T(T(4), T(96, 128), T(16, 32), T(32)), "graph")
+    val f1 = Inception_Layer_v1(input, 2, T(T(4), T(96, 128), T(16, 32), T(32)), "conv")
     val graphModel = Graph(input, f1)
 
     val inputData = Tensor(batchSize, 2, 4, 4).rand()
@@ -805,6 +804,30 @@ class InceptionSpec extends TorchSpec {
       gradInput2 = graphModel.backward(inputData, gradOutput).toTensor[Float]
     }
     gradInput1 should be(gradInput2)
+
+    model.getParametersTable()[Table]("conv1x1")[Tensor[Float]]("gradWeight") should be(
+      graphModel.getParametersTable()[Table]("conv1x1")[Tensor[Float]]("gradWeight")
+    )
+
+    model.getParametersTable()[Table]("conv3x3_reduce")[Tensor[Float]]("gradWeight") should be(
+      graphModel.getParametersTable()[Table]("conv3x3_reduce")[Tensor[Float]]("gradWeight")
+    )
+
+    model.getParametersTable()[Table]("conv3x3")[Tensor[Float]]("gradWeight") should be(
+      graphModel.getParametersTable()[Table]("conv3x3")[Tensor[Float]]("gradWeight")
+    )
+
+    model.getParametersTable()[Table]("conv5x5_reduce")[Tensor[Float]]("gradWeight") should be(
+      graphModel.getParametersTable()[Table]("conv5x5_reduce")[Tensor[Float]]("gradWeight")
+    )
+
+    model.getParametersTable()[Table]("conv5x5")[Tensor[Float]]("gradWeight") should be(
+      graphModel.getParametersTable()[Table]("conv5x5")[Tensor[Float]]("gradWeight")
+    )
+
+    model.getParametersTable()[Table]("convpool_proj")[Tensor[Float]]("gradWeight") should be(
+      graphModel.getParametersTable()[Table]("convpool_proj")[Tensor[Float]]("gradWeight")
+    )
   }
 
   "Inception graph" should "be correct" in {
@@ -815,7 +838,7 @@ class InceptionSpec extends TorchSpec {
     val graphModel = Inception_v1_NoAuxClassifier.graph(1000, false)
 
     val input = Tensor[Float](batchSize, 3, 224, 224).apply1(e => Random.nextFloat())
-    val gradOutput = Tensor[Float](batchSize, 2000).apply1(e => Random.nextFloat())
+    val gradOutput = Tensor[Float](batchSize, 1000).apply1(e => Random.nextFloat())
 
     var output1: Tensor[Float] = null
     var output2: Tensor[Float] = null
@@ -832,5 +855,7 @@ class InceptionSpec extends TorchSpec {
       gradInput2 = graphModel.backward(input, gradOutput).toTensor[Float]
     }
     gradInput1 should be(gradInput2)
+
+    model.getParametersTable().equals(graphModel.getParametersTable()) should be (true)
   }
 }

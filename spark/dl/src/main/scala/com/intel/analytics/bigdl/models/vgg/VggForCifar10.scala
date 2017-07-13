@@ -16,11 +16,12 @@
 package com.intel.analytics.bigdl.models.vgg
 
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.numeric.NumericFloat
 
 object VggForCifar10 {
-  def apply(classNum: Int): Module[Float] = {
+  def apply(classNum: Int, hasDropout: Boolean = true): Module[Float] = {
     val vggBnDo = Sequential[Float]()
 
     def convBNReLU(nInputPlane: Int, nOutPutPlane: Int)
@@ -30,41 +31,101 @@ object VggForCifar10 {
       vggBnDo.add(ReLU(true))
       vggBnDo
     }
-    convBNReLU(3, 64).add(Dropout((0.3)))
+    convBNReLU(3, 64)
+    if (hasDropout) vggBnDo.add(Dropout((0.3)))
     convBNReLU(64, 64)
     vggBnDo.add(SpatialMaxPooling(2, 2, 2, 2).ceil())
 
-    convBNReLU(64, 128).add(Dropout(0.4))
+    convBNReLU(64, 128)
+    if (hasDropout) vggBnDo.add(Dropout(0.4))
     convBNReLU(128, 128)
     vggBnDo.add(SpatialMaxPooling(2, 2, 2, 2).ceil())
 
-    convBNReLU(128, 256).add(Dropout(0.4))
-    convBNReLU(256, 256).add(Dropout(0.4))
+    convBNReLU(128, 256)
+    if (hasDropout) vggBnDo.add(Dropout(0.4))
+    convBNReLU(256, 256)
+    if (hasDropout) vggBnDo.add(Dropout(0.4))
     convBNReLU(256, 256)
     vggBnDo.add(SpatialMaxPooling(2, 2, 2, 2).ceil())
 
-    convBNReLU(256, 512).add(Dropout(0.4))
-    convBNReLU(512, 512).add(Dropout(0.4))
+    convBNReLU(256, 512)
+    if (hasDropout) vggBnDo.add(Dropout(0.4))
+    convBNReLU(512, 512)
+    if (hasDropout) vggBnDo.add(Dropout(0.4))
     convBNReLU(512, 512)
     vggBnDo.add(SpatialMaxPooling(2, 2, 2, 2).ceil())
 
-    convBNReLU(512, 512).add(Dropout(0.4))
-    convBNReLU(512, 512).add(Dropout(0.4))
+    convBNReLU(512, 512)
+    if (hasDropout) vggBnDo.add(Dropout(0.4))
+    convBNReLU(512, 512)
+    if (hasDropout) vggBnDo.add(Dropout(0.4))
     convBNReLU(512, 512)
     vggBnDo.add(SpatialMaxPooling(2, 2, 2, 2).ceil())
     vggBnDo.add(View(512))
 
     val classifier = Sequential[Float]()
-    classifier.add(Dropout(0.5))
+    if (hasDropout) classifier.add(Dropout(0.5))
     classifier.add(Linear(512, 512))
     classifier.add(BatchNormalization(512))
     classifier.add(ReLU(true))
-    classifier.add(Dropout(0.5))
+    if (hasDropout) classifier.add(Dropout(0.5))
     classifier.add(Linear(512, classNum))
     classifier.add(LogSoftMax())
     vggBnDo.add(classifier)
 
     vggBnDo
+  }
+
+  def graph(classNum: Int, hasDropout: Boolean = true): Module[Float] = {
+    val vggBnDo = Sequential[Float]()
+
+    val input = Input()
+    def convBNReLU(nInputPlane: Int, nOutPutPlane: Int)(input: ModuleNode[Float])
+    : ModuleNode[Float] = {
+      val conv = SpatialConvolution(nInputPlane, nOutPutPlane, 3, 3, 1, 1, 1, 1).inputs(input)
+      val bn = SpatialBatchNormalization(nOutPutPlane, 1e-3).inputs(conv)
+      ReLU(true).inputs(bn)
+    }
+    val relu1 = convBNReLU(3, 64)(input)
+    val drop1 = if (hasDropout) Dropout(0.3).inputs(relu1) else relu1
+    val relu2 = convBNReLU(64, 64)(drop1)
+    val pool1 = SpatialMaxPooling(2, 2, 2, 2).ceil().inputs(relu2)
+
+    val relu3 = convBNReLU(64, 128)(pool1)
+    val drop2 = if (hasDropout) Dropout(0.4).inputs(relu3) else relu3
+    val relu4 = convBNReLU(128, 128)(drop2)
+    val pool2 = SpatialMaxPooling(2, 2, 2, 2).ceil().inputs(relu4)
+
+    val relu5 = convBNReLU(128, 256)(pool2)
+    val drop3 = if (hasDropout) Dropout(0.4).inputs(relu5) else relu5
+    val relu6 = convBNReLU(256, 256)(drop3)
+    val drop4 = if (hasDropout) Dropout(0.4).inputs(relu6) else relu6
+    val relu7 = convBNReLU(256, 256)(drop4)
+    val pool3 = SpatialMaxPooling(2, 2, 2, 2).ceil().inputs(relu7)
+
+    val relu8 = convBNReLU(256, 512)(pool3)
+    val drop5 = if (hasDropout) Dropout(0.4).inputs(relu8) else relu8
+    val relu9 = convBNReLU(512, 512)(drop5)
+    val drop6 = if (hasDropout) Dropout(0.4).inputs(relu9) else relu9
+    val relu10 = convBNReLU(512, 512)(drop6)
+    val pool4 = SpatialMaxPooling(2, 2, 2, 2).ceil().inputs(relu10)
+
+    val relu11 = convBNReLU(512, 512)(pool4)
+    val drop7 = if (hasDropout) Dropout(0.4).inputs(relu11) else relu11
+    val relu12 = convBNReLU(512, 512)(drop7)
+    val drop8 = if (hasDropout) Dropout(0.4).inputs(relu12) else relu12
+    val relu13 = convBNReLU(512, 512)(drop8)
+    val pool5 = SpatialMaxPooling(2, 2, 2, 2).ceil().inputs(relu13)
+    val view = View(512).inputs(pool5)
+
+    val drop9 = if (hasDropout) Dropout(0.5).inputs(view) else view
+    val linear1 = Linear(512, 512).inputs(drop9)
+    val bn = BatchNormalization(512).inputs(linear1)
+    val relu = ReLU(true).inputs(bn)
+    val drop10 = if (hasDropout) Dropout(0.5).inputs(relu) else relu
+    val linear2 = Linear(512, classNum).inputs(drop10)
+    val output = LogSoftMax().inputs(linear2)
+    Graph(input, output)
   }
 }
 

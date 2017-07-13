@@ -65,29 +65,29 @@ object Inception_Layer_v1 {
   def apply(input: ModuleNode[Float], inputSize: Int, config: Table, namePrefix : String)
   : ModuleNode[Float] = {
     val conv1x1 = SpatialConvolution(inputSize, config[Table](1)(1), 1, 1, 1, 1)
-        .setInitMethod(weightInitMethod = Xavier).setName(namePrefix + "1x1").inputs(input)
+        .setInitMethod(weightInitMethod = Xavier, Zeros).setName(namePrefix + "1x1").inputs(input)
     val relu1x1 = ReLU(true).setName(namePrefix + "relu_1x1").inputs(conv1x1)
 
-    val conv3x3_1 = SpatialConvolution(inputSize, config[Table](2)(1), 1, 1, 1, 1)
-      .setInitMethod(weightInitMethod = Xavier).setName(namePrefix + "3x3_reduce").inputs(input)
+    val conv3x3_1 = SpatialConvolution(inputSize, config[Table](2)(1), 1, 1, 1, 1).setInitMethod(
+      weightInitMethod = Xavier, Zeros).setName(namePrefix + "3x3_reduce").inputs(input)
     val relu3x3_1 = ReLU(true).setName(namePrefix + "relu_3x3_reduce").inputs(conv3x3_1)
     val conv3x3_2 = SpatialConvolution(
       config[Table](2)(1), config[Table](2)(2), 3, 3, 1, 1, 1, 1)
-      .setInitMethod(weightInitMethod = Xavier).setName(namePrefix + "3x3").inputs(relu3x3_1)
+      .setInitMethod(weightInitMethod = Xavier, Zeros).setName(namePrefix + "3x3").inputs(relu3x3_1)
     val relu3x3_2 = ReLU(true).setName(namePrefix + "relu_3x3").inputs(conv3x3_2)
 
-    val conv5x5_1 = SpatialConvolution(inputSize, config[Table](3)(1), 1, 1, 1, 1)
-      .setInitMethod(weightInitMethod = Xavier).setName("conv5x5_1").inputs(input)
-    val relu5x5_1 = ReLU(true).inputs(conv5x5_1)
+    val conv5x5_1 = SpatialConvolution(inputSize, config[Table](3)(1), 1, 1, 1, 1).setInitMethod(
+      weightInitMethod = Xavier, Zeros).setName(namePrefix + "5x5_reduce").inputs(input)
+    val relu5x5_1 = ReLU(true).setName(namePrefix + "relu_5x5_reduce").inputs(conv5x5_1)
     val conv5x5_2 = SpatialConvolution(
       config[Table](3)(1), config[Table](3)(2), 5, 5, 1, 1, 2, 2)
-      .setInitMethod(weightInitMethod = Xavier).setName(namePrefix + "5x5_reduce").inputs(relu5x5_1)
+      .setInitMethod(weightInitMethod = Xavier, Zeros).setName(namePrefix + "5x5").inputs(relu5x5_1)
     val relu5x5_2 = ReLU(true).setName(namePrefix + "relu_5x5").inputs(conv5x5_2)
 
     val pool = SpatialMaxPooling(3, 3, 1, 1, 1, 1).ceil()
       .setName(namePrefix + "pool").inputs(input)
-    val convPool = SpatialConvolution(inputSize, config[Table](4)(1), 1, 1, 1, 1)
-      .setInitMethod(weightInitMethod = Xavier).setName(namePrefix + "pool_proj").inputs(pool)
+    val convPool = SpatialConvolution(inputSize, config[Table](4)(1), 1, 1, 1, 1).setInitMethod(
+      weightInitMethod = Xavier, Zeros).setName(namePrefix + "pool_proj").inputs(pool)
     val reluPool = ReLU(true).setName(namePrefix + "relu_pool_proj").inputs(convPool)
 
     JoinTable(2, 4).inputs(relu1x1, relu3x3_2, relu5x5_2, reluPool)
@@ -132,17 +132,16 @@ object Inception_v1_NoAuxClassifier {
   }
 
   def graph(classNum: Int, hasDropout: Boolean = true): Module[Float] = {
-    val input = Input()
-    val conv1 = SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3, 1, false)
-      .setInitMethod(weightInitMethod = Xavier).setName("conv1/7x7_s2").inputs(input)
-    val conv1_relu = ReLU(true).setName("conv1/relu_7x7").inputs(conv1)
+   val input = SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3, 1, false)
+      .setInitMethod(weightInitMethod = Xavier, Zeros).setName("conv1/7x7_s2").inputs()
+    val conv1_relu = ReLU(true).setName("conv1/relu_7x7").inputs(input)
     val pool1_s2 = SpatialMaxPooling(3, 3, 2, 2).ceil().setName("pool1/3x3_s2").inputs(conv1_relu)
     val pool1_norm1 = SpatialCrossMapLRN(5, 0.0001, 0.75).setName("pool1/norm1").inputs(pool1_s2)
-    val conv2 = SpatialConvolution(64, 64, 1, 1, 1, 1).setInitMethod(weightInitMethod = Xavier)
-      .setName("conv2/3x3_reduce").inputs(pool1_norm1)
+    val conv2 = SpatialConvolution(64, 64, 1, 1, 1, 1).setInitMethod(weightInitMethod = Xavier,
+      Zeros).setName("conv2/3x3_reduce").inputs(pool1_norm1)
     val conv2_relu = ReLU(true).setName("conv2/relu_3x3_reduce").inputs(conv2)
     val conv2_3x3 = SpatialConvolution(64, 192, 3, 3, 1, 1, 1, 1)
-      .setInitMethod(weightInitMethod = Xavier).setName("conv2/3x3").inputs(conv2_relu)
+      .setInitMethod(weightInitMethod = Xavier, Zeros).setName("conv2/3x3").inputs(conv2_relu)
     val conv2_relu_3x3 = ReLU(true).setName("conv2/relu_3x3").inputs(conv2_3x3)
     val conv2_norm2 = SpatialCrossMapLRN(5, 0.0001, 0.75)
       .setName("conv2/norm2").inputs(conv2_relu_3x3)
@@ -170,7 +169,7 @@ object Inception_v1_NoAuxClassifier {
     val pool5 = SpatialAveragePooling(7, 7, 1, 1).setName("pool5/7x7_s1").inputs(inception_5b)
     val drop = if (hasDropout) Dropout(0.4).setName("pool5/drop_7x7_s1").inputs(pool5) else pool5
     val view = View(1024).setNumInputDims(3).inputs(drop)
-    val classifier = Linear(1024, classNum).setInitMethod(weightInitMethod = Xavier)
+    val classifier = Linear(1024, classNum).setInitMethod(weightInitMethod = Xavier, Zeros)
       .setName("loss3/classifier").inputs(view)
     val loss = LogSoftMax().setName("loss3/loss3").inputs(classifier)
 
