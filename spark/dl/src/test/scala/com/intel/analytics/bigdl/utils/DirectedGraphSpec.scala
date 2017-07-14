@@ -15,9 +15,47 @@
  */
 package com.intel.analytics.bigdl.utils
 
+import com.intel.analytics.bigdl.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 
 class DirectedGraphSpec extends FlatSpec with Matchers {
+
+
+  "Graph" should " performs cse corretly" in {
+    val fc1 = Linear[Double](4, 2).inputs()
+    val fc2 = Linear[Double](4, 2).inputs()
+    val fc3 = CAddTable[Double]().inputs(fc1, fc2)
+    val fc4 = Identity[Double]().inputs(fc3)
+    val fc5 = Identity[Double]().inputs(fc3)
+
+    val sink = new ModuleNode[Double](new Dummy[Double]())
+    fc4 -> sink
+    fc5 -> sink
+
+    val graph = sink.graph(reverse = true)
+
+    var numOfIdentity = 0
+    graph.topologySort.foreach(n => {
+      if (n.element.isInstanceOf[Identity[Double]]) {
+          numOfIdentity += 1
+      }
+    })
+
+    graph.cse
+
+    var numOfIdentityCSE = 0
+    graph.topologySort.foreach(n => {
+      if (n.element.isInstanceOf[Identity[Double]]) {
+        numOfIdentityCSE += 1
+      }
+    })
+
+    numOfIdentity should be (2)
+    numOfIdentityCSE should be (1)
+  }
+
   "Node add" should "be correct" in {
     val nodeA = new Node("A")
     val nodeB = new Node("B")

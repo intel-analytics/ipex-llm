@@ -47,26 +47,58 @@ class DirectedGraph[T](val source : Node[T], val reverse : Boolean = false) exte
   def edges : Int = BFS.map(_.nextNodes.length).reduce(_ + _)
 
   private def nodeHash(n: Node[T]): Int = {
-    var a = 0
-    a += n.element.asInstanceOf[AbstractModule[_, _, T]]
-      .output.hashCode
+    val module = n.element.asInstanceOf[AbstractModule[_, _, T]]
+    var a = module.hashCode
+//    a += module.output.getClass.hashCode
+    a += n.prevNodes.length.hashCode
     n.prevNodes.foreach(x => {
-      a += x.element.asInstanceOf[AbstractModule[_, _, T]]
-        .output.hashCode
+      a += x
+        .element
+        .asInstanceOf[AbstractModule[_, _, T]]
+        .hashCode
     })
-    a += n.element.asInstanceOf[AbstractModule[_, _, T]]
-      .hashCode()
     a
   }
 
-  private def equivalent(n1: Node[T], n2: Node[T]): Boolean = {
-    nodeHash(n1) == nodeHash(n2)
+  private def reversePostOrder: Iterator[Node[T]] = {
+    new Iterator[Node[T]] {
+      val order = new mutable.Stack[Node[T]]()
+      DFS.foreach(n => order.push(n))
+
+      override def hasNext: Boolean = !order.isEmpty
+
+      override def next(): Node[T] = {
+        order.pop()
+      }
+    }
   }
 
-  def cse: Array[Node[T]] = {
+  private def equivalent(n1: Node[T], n2: Node[T]): Boolean = {
+
+     if (n1.element.getClass != n2.element.getClass) {
+      return false
+    }
+
+    if (n1.prevNodes.length != n2.prevNodes.length) {
+      return false
+    }
+
+    true
+  }
+
+  private def removeNode(n: Node[T]): Unit = {
+    for (e <- n.prevNodes) {
+      n.delete(e)
+    }
+    for (e <- n.nextNodes) {
+      n.delete(e)
+    }
+  }
+
+  def cse: Unit = {
     val available = new mutable.HashMap[Int, Node[T]]()
 
-    DFS.foreach(n => {
+    reversePostOrder.foreach(n => {
       val h = nodeHash(n)
       val candidate = available.getOrElse(h, null)
       if (candidate == null) {
@@ -75,13 +107,9 @@ class DirectedGraph[T](val source : Node[T], val reverse : Boolean = false) exte
         for (e <- n.nextNodes) {
           candidate -> e
         }
-        // TODO: remove n
-      } else if (!available.contains(h)) {
-        available.put(h, n)
+        removeNode(n)
       }
     })
-
-    topologySort
   }
 
   /**
