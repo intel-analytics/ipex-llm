@@ -32,8 +32,7 @@ Next just run the following command to run the code:
 ```
 
 * Spark cluster:
-      
-      * Standalone:
+    * Standalone:
       
             ```{r, engine='sh'}
             MASTER=xxx.xxx.xxx.xxx:xxxx
@@ -43,7 +42,7 @@ Next just run the following command to run the code:
                    bigdl-VERSION-jar-with-dependencies.jar --batchSize 128           
             ```
         
-       * Yarn client:
+    * Yarn client:
         
             ```{r, engine='sh'}
             spark-submit --master yarn --driver-memory 5g --executor-memory 5g           \
@@ -52,7 +51,7 @@ Next just run the following command to run the code:
                    bigdl-VERSION-jar-with-dependencies.jar --batchSize 128           
             ```
       
-      * NOTE: The total batch is: 128 and the batch per node is 128/nodeNum.
+    * NOTE: The total batch is: 128 and the batch per node is 128/nodeNum.
             You can also have also set regularizer rate, learning rate, lstm hiddensize,
             dropout probability and epoch number by adding one of the options below:          
 
