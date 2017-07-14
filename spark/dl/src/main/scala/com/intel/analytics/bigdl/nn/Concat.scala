@@ -80,7 +80,8 @@ class Concat[T: ClassTag](val dimension: Int)(
         val target = this.output.narrow(this.dimension, _offset,
           currentOutput.size(this.dimension))
         if (target.isContiguous() || this.dimension > 2) {
-          // Copy directly when target is Contiguous
+          // Copy directly when target is Contiguous or dimension is larger than 2
+          // in which case the contiguous region in target tensor is fairly small in practice
           target.copy(currentOutput)
         } else {
           // Divide target into contiguous frames when target isn't contiguous
