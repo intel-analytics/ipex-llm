@@ -25,37 +25,37 @@ Next just run the following command to run the code:
 
 * Spark local:
 
-        ```{r, engine='sh'}
+```{r, engine='sh'}
         spark-submit --master "local[physical_core_number]" --driver-memory 20g      \
                    --class com.intel.analytics.bigdl.example.treeLSTMSentiment.Train \
                    bigdl-VERSION-jar-with-dependencies.jar --batchSize 128           
-        ```
+```
 
 * Spark cluster:
       * Standalone:
 
-        ```{r, engine='sh'}
+```{r, engine='sh'}
         MASTER=xxx.xxx.xxx.xxx:xxxx
         spark-submit --master ${MASTER} --driver-memory 5g --executor-memory 5g      \
                    --total-executor-cores 32 --executor-cores 8                      \
                    --class com.intel.analytics.bigdl.example.treeLSTMSentiment.Train \
                    bigdl-VERSION-jar-with-dependencies.jar --batchSize 128           
-        ```
+```
         
        * Yarn client:
         
-                ```{r, engine='sh'}
+```{r, engine='sh'}
                 spark-submit --master yarn --driver-memory 5g --executor-memory 5g           \
                            --num-executor 4 --executor-cores 8                               \
                            --class com.intel.analytics.bigdl.example.treeLSTMSentiment.Train \
                            bigdl-VERSION-jar-with-dependencies.jar --batchSize 128           
-                ```
+```
 
       * NOTE: The total batch is: 128 and the batch per node is 128/nodeNum.
             You can also have also set regularizer rate, learning rate, lstm hiddensize,
             dropout probability and epoch number by adding one of the options below:
             
-             ```{r, engine='sh'}
+```{r, engine='sh'}
              --baseDir           # where is the data, default is '/tmp/.bigdl/dataset/'
              --batchSize         # number of batch size, default is 128             
              --hiddenSize        # number of TreeLSTM hidden size, default is 250
@@ -63,5 +63,5 @@ Next just run the following command to run the code:
              --regRate           # number of L2 regularization rate, default is 1e-4
              --p                 # number of dropout probability rate, default is 0
              --epoch             # number of epochs, default is 10
-             ```
+```
 
