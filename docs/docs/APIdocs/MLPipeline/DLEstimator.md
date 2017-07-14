@@ -2,7 +2,7 @@
 
 **Scala:**
 ```scala
-val estimator = new DLEstimator[Float](
+val estimator = new DLEstimator(
     model,
     criterion,
     featureSize,
