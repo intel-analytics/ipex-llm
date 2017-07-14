@@ -73,5 +73,4 @@ class ConcatSpec extends FlatSpec with Matchers {
     output should be (expectedOutput)
     gradInput should be (expectedGradInput)
   }
-
 }
