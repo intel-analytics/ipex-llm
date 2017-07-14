@@ -3,7 +3,6 @@
 OptimMethod is used to update model gradient parameters.We have defined SGD method, Adagrad method, etc.
 Details about those optim methods, you can refer to [Optim-Methods](https://github.com/intel-analytics/BigDL/tree/master/docs/docs/APIdocs/Optimizers/Optim-Methods).
 Now, method construct parameters(e.g."learningRate") and internal training parameters(e.g."epoch") store in optim method instead of state(since version 0.2.0)
-
 Here is mainly to describe how to use those methods when training
 ### Set method ###
 **scala**
