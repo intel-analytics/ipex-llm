@@ -11,6 +11,16 @@ Linear -> Sigmoid -> Softmax
 
 **Scala:**
 
+Import necessary dependencies
+
+```scala
+import com.intel.analytics.bigdl.dataset.Sample
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.numeric.NumericFloat
+import com.intel.analytics.bigdl.optim.Top1Accuracy
+import com.intel.analytics.bigdl.tensor.Tensor
+```
+
 ###### Define the model
 
 ```scala
@@ -48,7 +58,7 @@ val label = Tensor(1).apply1(e => Random.nextFloat())
 
 val testSample = Sample(feature, label)
     
-val testSet : RDD[Sample[Float]] = sc.parallelize(Seq(testSample))
+val testSet = sc.parallelize(Seq(testSample))
 ```
 In above code, `sc` is the SparkContxt instance
 
@@ -67,7 +77,7 @@ val label = Tensor(1).apply1(e => Random.nextFloat())
 
 val predictSample = Sample(feature, label)
     
-val predictSet : RDD[Sample[Float]] = sc.parallelize(Seq(predictSample))
+val predictSet = sc.parallelize(Seq(predictSample))
 ```
 
 Predict with the data set
@@ -77,6 +87,12 @@ val preductResult = model.predict(predictSet)
 
 **Python:**
 
+```python
+from bigdl.nn.layer import *
+from bigdl.util.common import *
+from bigdl.optim.optimizer import *
+import numpy as np
+```
 ###### Define the model
 ```python
 model = Sequential().add(Linear(10, 5)).add(Sigmoid()).add(SoftMax())
