@@ -1,4 +1,4 @@
-BigDL provide model API to faciliate user's requirement to save module to specific path, load module from given path, evaluate module and predict with module ,etc.
+BigDL provides model API to faciliate user's requirement to save module to specific path, load module from given path, evaluate module and predict with module, etc.
 
 Here we introduce how to leverage this APIs
 
@@ -11,7 +11,7 @@ Linear -> Sigmoid -> Softmax
 
 **Scala:**
 
-Import necessary dependencies
+###### Import necessary dependencies
 
 ```scala
 import com.intel.analytics.bigdl.dataset.Sample
@@ -86,6 +86,8 @@ val preductResult = model.predict(predictSet)
 ```
 
 **Python:**
+
+###### Import necessary dependencies
 
 ```python
 from bigdl.nn.layer import *
