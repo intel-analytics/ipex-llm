@@ -113,7 +113,7 @@ if mkdoc_serve and args.port != None:
 
 if mkdoc_serve:
     print 'start mkdoc server'
-    run_cmd(['mkdocs', 'serve'], 
+    run_cmd(['mkdocs', 'serve', '--dev-addr=*:8000'], 
         'mkdocs start serve error')
 
 if args.port != None:
