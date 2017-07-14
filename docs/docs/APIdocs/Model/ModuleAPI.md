@@ -3,8 +3,6 @@ BigDL provide model API to faciliate user's requirement to save module to specif
 Here we introduce how to leverage this APIs
 
 
-#### Save a model
-
 Suppose we have a sequential model defined as below : 
 
 ```
@@ -13,13 +11,13 @@ Linear -> Sigmoid -> Softmax
 
 **Scala:**
 
-######Define the model
+###### Define the model
 
 ```scala
 val model = Sequential().add(Linear(10, 5)).add(Sigmoid()).add(SoftMax())
 ```
 
-######Save model to specific path
+###### Save model to specific path
 
 BigDL supports different file systems like Linux file system, HDFS and AWS S3, Assume we want to save to local file system
 ```scala
@@ -28,7 +26,7 @@ model.save("/tmp/model.bigdl", true)
 
 In the above code , the first parameter is the path where we want to save our model, the second paramter is to specify if we need to overwrite the file if it already exists, it's set to false by default
 
-######Load model from given path
+###### Load model from given path
 
 We just need to specify the model path where we previously saved the model to load it to memory for resume training or prediction purpose
 
@@ -37,7 +35,7 @@ val loadedModel = Module.load("/tmp/model.bigdl")
 ```
 `Module` above is a utilily  to manipulate module APIs
 
-######Evaluate model with test set
+###### Evaluate model with test set
 
 Evaluation needs real test data set, here we just simulate some dummy data for function introduction purpose
 
@@ -60,7 +58,7 @@ Use the test dataset to evaluate the model
 val evaluateResult = model.evaluate(testSet, Array(new Top1Accuracy))
 ```
 
-######Predict with model
+###### Predict with model
 Similar to above, we create input data first
 ```scala
 val feature = Tensor(10).apply1(e => Random.nextFloat())
@@ -79,16 +77,16 @@ val preductResult = model.predict(predictSet)
 
 **Python:**
 
-######Define the model
+###### Define the model
 ```python
 model = Sequential().add(Linear(10, 5)).add(Sigmoid()).add(SoftMax())
 ```
-######Save model to specific path
+###### Save model to specific path
 
 ```python
 model.save("/tmp/model.bigdl", True)
 ```
-######Load model from given path
+###### Load model from given path
 
 ```python
 model = Model.load("/tmp/model.bigdl")
@@ -96,12 +94,12 @@ model = Model.load("/tmp/model.bigdl")
 
 `Model` is a utility for python mirroring `Module` in scala
 
-######Evaluate model with test set
+###### Evaluate model with test set
 
 Create dummy test data set 
 
 ```python
-samples=[Sample.from_ndarray(np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]), np.array([2.0]))]
+samples=[Sample.from_ndarray(np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]), np.array([2.0]))]
 
 testSet = sc.parallelize(samples)
 
@@ -111,14 +109,14 @@ testSet = sc.parallelize(samples)
 Use the test data to evaluate the model
 
 ```python
-evaluateResult = model.evaluate(testSet, 8, [Top1Accuracy()])
+evaluateResult = model.evaluate(testSet, 1, [Top1Accuracy])
 ```
 
-######Predict with model
+###### Predict with model
 
 Create predict dummy data set
 ```python
-samples=[Sample.from_ndarray(np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]), np.array([2.0]))]
+samples=[Sample.from_ndarray(np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]), np.array([2.0]))]
 
 predictSet = sc.parallelize(samples)
 ```
