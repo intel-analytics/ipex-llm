@@ -1,4 +1,4 @@
-BigDL provides model API to faciliate user's requirement to save module to specific path, load module from given path, evaluate module and predict with module, etc.
+BigDL provides model API to faciliate user's requirement to save model to specific path, load model from given path, evaluate model and predict with model, etc.
 
 Here we introduce how to leverage this APIs
 
