@@ -26,11 +26,13 @@ import scala.reflect.ClassTag
  * Adadelta implementation for SGD: http://arxiv.org/abs/1212.5701
  * @param decayRate decayRate, also called interpolation parameter rho
  * @param Epsilon for numerical stability
+ * @param weightDecay weight decay
  * @tparam T
  */
 class Adadelta[@specialized(Float, Double) T: ClassTag](
    var decayRate: Double = 0.9,
-   var Epsilon: Double = 1e-10
+   var Epsilon: Double = 1e-10,
+   var weightDecay: Double = 0.0
  )(implicit ev: TensorNumeric[T])
   extends OptimMethod[T] {
 
@@ -50,8 +52,14 @@ class Adadelta[@specialized(Float, Double) T: ClassTag](
     val nevals = state.getOrElse[Int]("evalCounter", 0)
     val dr = this.decayRate
     val eps = this.Epsilon
+    val wd = this.weightDecay
 
     val (fx, dfdx) = feval(parameter)
+
+    // weight decay
+    if (wd != 0.0) {
+      dfdx.add(ev.fromType[Double](wd), parameter)
+    }
 
     val (_paramVariance, _paramStd, _delta, _accDelta) =
       if (state.get[Tensor[T]]("paramVariance").isDefined) {
@@ -80,6 +88,7 @@ class Adadelta[@specialized(Float, Double) T: ClassTag](
   override def loadFromTable(config: Table): this.type = {
     this.decayRate = config.get[Double]("decayRate").getOrElse(this.decayRate)
     this.Epsilon = config.get[Double]("Epsilon").getOrElse(this.Epsilon)
+    this.weightDecay = config.get[Double]("weightDecay").getOrElse(this.weightDecay)
     this
   }
 

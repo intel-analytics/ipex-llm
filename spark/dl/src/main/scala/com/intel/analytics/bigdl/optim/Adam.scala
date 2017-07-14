@@ -31,6 +31,7 @@ import scala.reflect.ClassTag
  * @param beta1 first moment coefficient
  * @param beta2 second moment coefficient
  * @param Epsilon for numerical stability
+ * @param weightDecay weight decay
  * @tparam T
  */
 class Adam[@specialized(Float, Double) T: ClassTag](
@@ -38,7 +39,8 @@ class Adam[@specialized(Float, Double) T: ClassTag](
  var learningRateDecay: Double = 0.0,
  var beta1: Double = 0.9,
  var beta2: Double = 0.999,
- var Epsilon: Double = 1e-8)(implicit ev: TensorNumeric[T]) extends OptimMethod[T] {
+ var Epsilon: Double = 1e-8,
+ var weightDecay: Double = 0.0)(implicit ev: TensorNumeric[T]) extends OptimMethod[T] {
 
   /**
    * An implementation of Adam http://arxiv.org/pdf/1412.6980.pdf
@@ -56,8 +58,14 @@ class Adam[@specialized(Float, Double) T: ClassTag](
     val beta1 = this.beta1
     val beta2 = this.beta2
     val eps = this.Epsilon
+    val wd = this.weightDecay
 
     val (fx, dfdx) = feval(parameter)
+
+    // weight decay
+    if (wd != 0.0) {
+      dfdx.add(ev.fromType[Double](wd), parameter)
+    }
 
     var timestep = state.getOrElse[Int]("evalCounter", 0)
 
@@ -96,6 +104,7 @@ class Adam[@specialized(Float, Double) T: ClassTag](
     this.beta1 = config.get[Double]("beta1").getOrElse(this.beta1)
     this.beta2 = config.get[Double]("beta2").getOrElse(this.beta2)
     this.Epsilon = config.get[Double]("Epsilon").getOrElse(this.Epsilon)
+    this.weightDecay = config.get[Double]("weightDecay").getOrElse(this.weightDecay)
     this
   }
 

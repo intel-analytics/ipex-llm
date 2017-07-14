@@ -28,13 +28,15 @@ import scala.reflect.ClassTag
  * @param learningRateDecay learning rate decay
  * @param decayRate decayRate, also called rho
  * @param Epsilon for numerical stability
+ * @param weightDecay weight decay
  * @tparam T
  */
 class RMSprop[@specialized(Float, Double) T: ClassTag](
     var learningRate: Double = 1e-2,
     var learningRateDecay: Double = 0.0,
     var decayRate: Double = 0.99,
-    var Epsilon: Double = 1e-8
+    var Epsilon: Double = 1e-8,
+    var weightDecay: Double = 0.0
   )(implicit ev: TensorNumeric[T])
   extends OptimMethod[T] {
 
@@ -53,8 +55,14 @@ class RMSprop[@specialized(Float, Double) T: ClassTag](
     val dr = this.decayRate
     val eps = this.Epsilon
     val nevals = state.getOrElse[Int]("evalCounter", 0)
+    val wd = this.weightDecay
 
     val (fx, dfdx) = feval(parameter)
+
+    // weight decay
+    if (wd != 0.0) {
+      dfdx.add(ev.fromType[Double](wd), parameter)
+    }
 
     val clr = lr / (1 + nevals * lrd)
 
@@ -82,6 +90,7 @@ class RMSprop[@specialized(Float, Double) T: ClassTag](
       .getOrElse(this.learningRateDecay)
     this.decayRate = config.get[Double]("decayRate").getOrElse(this.decayRate)
     this.Epsilon = config.get[Double]("Epsilon").getOrElse(this.Epsilon)
+    this.weightDecay = config.get[Double]("weightDecay").getOrElse(this.weightDecay)
     this
   }
 
