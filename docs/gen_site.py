@@ -70,6 +70,9 @@ run_cmd(['git', 'clone', 'https://github.com/bigdl-project/bigdl-project.github.
 run_cmd(['mv', '/tmp/bigdl-doc/mkdocs_windmill', dir_name],
     'mv theme foler error')
 
+run_cmd(['mv', '/tmp/bigdl-doc/extra.css', '{}/docs'.format(dir_name)],
+    'mv theme foler error')
+
 run_cmd(['rm', '-rf', '/tmp/bigdl-doc'],
     'rm theme folder error')
 
@@ -110,7 +113,7 @@ if mkdoc_serve and args.port != None:
 
 if mkdoc_serve:
     print 'start mkdoc server'
-    run_cmd(['mkdocs', 'serve', '--dev-addr=*:8000'], 
+    run_cmd(['mkdocs', 'serve'], 
         'mkdocs start serve error')
 
 if args.port != None:
