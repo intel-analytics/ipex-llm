@@ -26,16 +26,14 @@ import scala.reflect.ClassTag
 @SerialVersionUID(- 1766499387282335147L)
 private[bigdl] class QuantizeTensor[@specialized(Float) T: ClassTag]()
   (implicit ev: TensorNumeric[T]) extends Serializable {
-  private var realSize = 0L
-
   @transient private var desc = 0L
   private var interStorage: Option[Array[Byte]] = None
 
-  def setBufferFromInterStorage(buffer: ByteBuffer): Unit = {
+  def setStorage(buffer: ByteBuffer): Unit = {
     interStorage = Some(buffer.array())
   }
 
-  def getBufferFromInterStorage: Option[Array[Byte]] = {
+  def getStorage: Option[Array[Byte]] = {
     interStorage
   }
 
@@ -56,7 +54,28 @@ private[bigdl] class QuantizeTensor[@specialized(Float) T: ClassTag]()
   }
 
   def release(): Unit = {
-    FixPoint.FreeMemory(desc, 0)
+    FixPoint.FreeMemory(desc)
+  }
+
+  override def equals(obj: Any): Boolean = {
+    if (!super.equals(obj)) {
+      return false
+    }
+    val other = obj.asInstanceOf[QuantizeTensor[T]]
+    if (this.eq(other)) {
+      return true
+    }
+
+    desc == other.desc
+  }
+
+  override def hashCode(): Int = {
+    val seed = 37
+    var hash = super.hashCode()
+    hash = hash * seed + desc.hashCode()
+    hash = hash * seed + interStorage.hashCode()
+
+    hash
   }
 }
 

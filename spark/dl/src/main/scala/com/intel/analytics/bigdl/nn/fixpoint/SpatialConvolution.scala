@@ -18,14 +18,13 @@ package com.intel.analytics.bigdl.nn.fixpoint
 
 import java.nio.ByteBuffer
 import java.nio.file.{Files, Paths}
-import scala.reflect.ClassTag
 
+import scala.reflect.ClassTag
 import com.intel.analytics.bigdl.utils.{T, Table}
-import com.intel.analytics.bigdl.tensor.{QuantizeTensor, Tensor}
+import com.intel.analytics.bigdl.tensor.{FloatType, QuantizeTensor, Tensor}
 import com.intel.analytics.bigdl.nn.{ErrorInfo, Module, Quantize}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
-
 import com.intel.analytics.bigdl.fixpoint.FixPoint
 
 @SerialVersionUID(- 8008252944905538960L)
@@ -44,13 +43,11 @@ class SpatialConvolution[T: ClassTag](
   require(nInputPlane % nGroup == 0, "Number of input channels should be multiples of group.")
   require(nOutputPlane % nGroup == 0, "Number of output channels should be multiples of group.")
 
-  val FIX_TENSOR = 0
-
   var weight: QuantizeTensor[T] = QuantizeTensor[T]()
   var data: QuantizeTensor[T] = QuantizeTensor[T]()
 
   val bias: Tensor[T] = Tensor[T](nOutputPlane)
-  var weightSum: Array[T] = _
+  var weightSum: Array[T] = new Array[T](nOutputPlane)
 
   val FAULT_TOLERANCE = 0.5f
   val WEIGHT_THRESHOLD = 64.0f
@@ -61,30 +58,29 @@ class SpatialConvolution[T: ClassTag](
   val min = new Array[T](nInputPlane * kernelH * kernelW)
   val max = new Array[T](nInputPlane * kernelH * kernelW)
 
-  val gradWeight = Tensor[T](nGroup, nOutputPlane / nGroup,
-    nInputPlane / nGroup, kernelH, kernelW)
-  val gradBias = Tensor[T](nOutputPlane)
-
   @transient var _init = false
 
-  private def getWeightSum(weight: Tensor[T]): Array[T] = {
-    val array = new Array[T](nOutputPlane)
+  private def setWeightSum(weight: Tensor[T], weightSum: Array[T]): Unit = {
     for (i <- 1 to nOutputPlane) {
       val singleRow = weight.select(1, i)
-      array(i - 1) = singleRow.sum()
+      weightSum(i - 1) = singleRow.sum()
     }
-
-    array
   }
 
-  def init(weightFP32: Tensor[T], biasFP32: Tensor[T]): this.type = {
-    weight.setStorageInJni(
-      FixPoint.FixConvKernelDescInit(nOutputPlane, nInputPlane, kernelH, kernelW))
+  private def outputSize(input: Int, pad: Int, kernel: Int, stride: Int): Int = {
+    (input + 2 * pad - kernel) / stride + 1
+  }
 
-    bias.copy(biasFP32)
+
+  def initWeightAndBias(weightFP32: Tensor[T], biasFP32: Tensor[T]): this.type = {
+    if (biasFP32 != null) {
+      bias.copy(biasFP32)
+    } else {
+      bias.fill(ev.fromType(0)) // TODO bias may be null, at that time, we should not initialize it
+    }
 
     val weightFP32Tmp = weightFP32.view(Array(nOutputPlane, nInputPlane, kernelH, kernelW))
-    weightSum = getWeightSum(weightFP32Tmp)
+    setWeightSum(weightFP32Tmp, weightSum)
 
     for (i <- 1 to nOutputPlane) {
       val singleRow = weightFP32Tmp.select(1, i)
@@ -92,30 +88,38 @@ class SpatialConvolution[T: ClassTag](
       max(i - 1) = singleRow.max()
     }
 
+    val bufferOffset = 0
     val buffer = ByteBuffer.allocate(weightFP32.nElement())
-    Quantize.quantize(weightFP32.asInstanceOf[Tensor[Float]], buffer, 0)
+    val weightFP32Tensor = weightFP32.asInstanceOf[Tensor[Float]]
+    Quantize.quantize(weightFP32Tensor, buffer, bufferOffset)
 
-    weight.setBufferFromInterStorage(buffer)
+    weight.setStorage(buffer)
 
-    val byteBuffer = buffer.array()
-    val charArray = new Array[Char](buffer.remaining())
-
-    FixPoint.FixConvKernelLoadFromModel(
-      weight.getStorageInJni, byteBuffer, 0,
-      min.asInstanceOf[Array[Float]], max.asInstanceOf[Array[Float]], nOutputPlane, nInputPlane,
-      kernelH, kernelW, WEIGHT_THRESHOLD, FixPoint.NCHW)
-
-//    FixPoint.FixConvKernelInit(weight.getStorageInJni,
-//      weightFP32.storage().array().asInstanceOf[Array[Float]], weightFP32.storageOffset() - 1,
-//      nOutputPlane, nInputPlane, kernelH, kernelW, WEIGHT_THRESHOLD, FixPoint.NCHW)
-
-    _init = true
+    init()
 
     this
   }
 
-  private def outputSize(input: Int, pad: Int, kernel: Int, stride: Int): Int = {
-    (input + 2 * pad - kernel) / stride + 1
+  private def init(): this.type = {
+    val byteArrayOfWeight = weight.getStorage.get
+    weight.setStorageInJni(
+      FixPoint.FixConvKernelDescInit(nOutputPlane, nInputPlane, kernelH, kernelW))
+
+    ev.getType() match {
+      case FloatType =>
+        val minArray = min.asInstanceOf[Array[Float]]
+        val maxArray = max.asInstanceOf[Array[Float]]
+        val byteOffset = 0
+
+        FixPoint.FixConvKernelLoadFromModel(weight.getStorageInJni, byteArrayOfWeight, byteOffset,
+          minArray, maxArray, nOutputPlane, nInputPlane, kernelH, kernelW, WEIGHT_THRESHOLD,
+          FixPoint.NCHW)
+      case _ => throw new UnsupportedOperationException(s"Only support Float for quantized model")
+    }
+
+    _init = true
+
+    this
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
@@ -123,102 +127,75 @@ class SpatialConvolution[T: ClassTag](
       "SpatialConvolution: " + ErrorInfo.constrainInputAs3DOrBatch)
     require(input.isContiguous())
 
-    if (!_init && weight.getBufferFromInterStorage.isDefined) {
-      val byteArrayOfWeight = weight.getBufferFromInterStorage.get
-      weight.setStorageInJni(
-        FixPoint.FixConvKernelDescInit(nOutputPlane, nInputPlane, kernelH, kernelW))
-
-      FixPoint.FixConvKernelLoadFromModel(
-        weight.getStorageInJni, byteArrayOfWeight, 0,
-        min.asInstanceOf[Array[Float]], max.asInstanceOf[Array[Float]], nOutputPlane, nInputPlane,
-        kernelH, kernelW, WEIGHT_THRESHOLD, FixPoint.NCHW)
-
-      _init = true
+    if (!_init && weight.getStorage.isDefined) {
+      init()
     }
 
-    val (batchSize, inputHeight, inputWidth) = (input.size(1), input.size(3), input.size(4))
+    // compute attributes of input and output
+    val (batchSize, inputHeight, inputWidth) = if (input.dim() == 3) {
+      (1, input.size(2), input.size(3))
+    } else {
+      (input.size(1), input.size(3), input.size(4))
+    }
+
     val outputHeight = outputSize(inputHeight, padH, kernelH, strideH)
     val outputWidth = outputSize(inputWidth, padW, kernelW, strideW)
 
-    // TODO 3-D
     output.resize(Array(batchSize, nOutputPlane, outputHeight, outputWidth))
 
-    // TODO if the input size has changed, we should renew one
     if (!data.isInitialized) {
-      data.setStorageInJni(FixPoint.FixConvDataDescInit(
-        nInputPlane,
-        kernelH,
-        kernelW,
-        strideH,
-        strideW,
-        padH,
-        padW,
-        DILATION_HEIGHT,
-        DILATION_WIDTH,
-        batchSize,
-        inputHeight,
-        inputWidth))
+      data.setStorageInJni(FixPoint.FixConvDataDescInit(nInputPlane, kernelH, kernelW,
+        strideH, strideW, padH, padW, DILATION_HEIGHT, DILATION_WIDTH, batchSize,
+        inputHeight, inputWidth))
     }
 
-    FixPoint.FixConvDataInit(
-      data.getStorageInJni,
-      input.storage().array().asInstanceOf[Array[Float]], input.storageOffset() - 1,
-      nInputPlane,
-      kernelH,
-      kernelW,
-      strideH,
-      strideW,
-      padH,
-      padW,
-      DILATION_HEIGHT,
-      DILATION_WIDTH,
-      batchSize,
-      inputHeight,
-      inputWidth,
-      THRESHOLD,
-      FixPoint.NCHW)
+    ev.getType() match {
+      case FloatType => im2ColAndGemmFloat()
+      case _ => throw new UnsupportedOperationException(s"Only support Float for quantized model")
+    }
 
-    FixPoint.InternalMixPrecisionConvolutionGEMM(
-      FixPoint.NCHW,
-      weight.getStorageInJni, data.getStorageInJni,
-      output.storage().array().asInstanceOf[Array[Float]], output.storageOffset() - 1,
-      nOutputPlane, batchSize, nInputPlane,
-      weightSum.asInstanceOf[Array[Float]],
-      bias.storage().array().asInstanceOf[Array[Float]], bias.storageOffset() - 1,
-      input.size(1), nOutputPlane / nGroup, output.size(3), output.size(4),
-      FAULT_TOLERANCE)
+    @inline def im2ColAndGemmFloat(): Unit = {
+      val inputArray = input.storage().array().asInstanceOf[Array[Float]]
+      val inputOffset = input.storageOffset() - 1
+
+      FixPoint.FixConvDataInit(
+        data.getStorageInJni, inputArray, inputOffset,
+        nInputPlane, kernelH, kernelW, strideH, strideW, padH, padW,
+        DILATION_HEIGHT, DILATION_WIDTH, batchSize, inputHeight, inputWidth, THRESHOLD,
+        FixPoint.NCHW)
+
+      val outputArray = output.storage().array().asInstanceOf[Array[Float]]
+      val outputOffset = output.storageOffset() - 1
+      val weightSumArray = weightSum.asInstanceOf[Array[Float]]
+      val biasArray = bias.storage().array().asInstanceOf[Array[Float]]
+      val biasOffset = bias.storageOffset() - 1
+
+      FixPoint.InternalMixPrecisionConvolutionGEMM(
+        FixPoint.NCHW, weight.getStorageInJni, data.getStorageInJni, outputArray, outputOffset,
+        nOutputPlane, batchSize, nInputPlane, weightSumArray, biasArray, biasOffset,
+        batchSize, nOutputPlane / nGroup, outputHeight, outputWidth,
+        FAULT_TOLERANCE)
+    }
 
     output
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    gradInput
-  }
-
-  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
-  }
-
-  override def updateParameters(learningRate: T): Unit = {
-  }
-
-  override def zeroGradParameters(): Unit = {
+    throw new UnsupportedOperationException(s"Doesn't updateGradInput for quantized model")
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
-    (Array(Tensor(1), Tensor(1)), Array(Tensor(1), Tensor(1)))
+    (Array(null, null), Array(null, null))
   }
 
   override def getParametersTable(): Table = {
-    T(getName() -> T("weight" -> weight, "bias" -> bias,
-      "gradWeight" -> gradWeight, "gradBias" -> gradBias))
+    T(getName() -> T("weight" -> weight, "bias" -> bias))
   }
 
   override def equals(obj: Any): Boolean = {
-
     if (!super.equals(obj)) {
       return false
     }
-
     if (!obj.isInstanceOf[SpatialConvolution[T]]) {
       return false
     }
@@ -252,6 +229,7 @@ class SpatialConvolution[T: ClassTag](
     hash = hash * seed + padW.hashCode()
     hash = hash * seed + padH.hashCode()
     hash = hash * seed + bias.hashCode()
+    hash = hash * seed + weight.hashCode()
 
     hash
   }
@@ -299,23 +277,62 @@ object TestFPConv {
       test.padHeight, test.padWidth, test.group)
 
     nnConv.updateOutput(input)
-    quantizedConv.init(nnConv.weight, nnConv.bias)
+    quantizedConv.initWeightAndBias(nnConv.weight, nnConv.bias)
     quantizedConv.updateOutput(input)
 
-//    println(nnConv.output)
-    println("="*80)
-    println(quantizedConv.output)
+    Files.deleteIfExists(Paths.get("/tmp/quantizedConv"))
+    quantizedConv.save("/tmp/quantizedConv")
 
-//    quantizedConv.release()
-//    Files.deleteIfExists(Paths.get("/tmp/quantizedConv"))
-//    quantizedConv.save("/tmp/quantizedConv")
-//    val tmp = Module.load("/tmp/quantizedConv").asInstanceOf[SpatialConvolution[Float]]
-//    println(tmp)
-//    tmp.updateOutput(input)
-//    nnConv.save("/tmp/nnConv")
-//    println("="*80)
-//    println(tmp.output)
-//    println("="*80)
+    val tmp = Module.load("/tmp/quantizedConv").asInstanceOf[SpatialConvolution[Float]]
+    println(tmp)
+    tmp.updateOutput(input)
+
+    Files.deleteIfExists(Paths.get("/tmp/nnConv"))
+    nnConv.save("/tmp/nnConv")
+
+    val newInput = Tensor[Float]().resize(Array(test.batchSize, test.inputChannel,
+      test.inputHeight, test.inputWidth))
+    for (i <- 0 until input.nElement()) {
+      newInput.storage().array()(i) = i % 32
+    }
+
+    quantizedConv.updateOutput(newInput)
+    nnConv.updateOutput(newInput)
+    tmp.updateOutput(newInput)
+
+    println(tmp.output.nElement())
+    println(quantizedConv.output.nElement())
+    println(nnConv.output.nElement())
+
+    require(tmp.output.nElement() == quantizedConv.output.nElement(),
+      s"elements number should be the same")
+
+    for (i <- 0 until tmp.output.nElement()) {
+      val ori = quantizedConv.output.storage().array()(i)
+      val ser = tmp.output.storage().array()(i)
+
+      require(Math.abs(ori - ser) < 0.1, s"values should be the same.")
+    }
+
+    quantizedConv.release()
+
+  }
+}
+
+object SpatialConvolution {
+  def apply[@specialized(Float) T: ClassTag](
+    nInputPlane: Int,
+    nOutputPlane: Int,
+    kernelW: Int,
+    kernelH: Int,
+    strideW: Int = 1,
+    strideH: Int = 1,
+    padW: Int = 0,
+    padH: Int = 0,
+    nGroup: Int = 1
+  )(implicit ev: TensorNumeric[T]): SpatialConvolution[T] = {
+    new SpatialConvolution[T](nInputPlane, nOutputPlane, kernelW, kernelH,
+      strideW, strideH, padW, padH, nGroup)
   }
 }
 

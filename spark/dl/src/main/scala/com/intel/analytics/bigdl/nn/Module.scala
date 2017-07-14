@@ -170,7 +170,7 @@ object Module {
             conv.padW,
             conv.padH,
             conv.nGroup)
-          quantizedConv.init(conv.weight, conv.bias)
+          quantizedConv.initWeightAndBias(conv.weight, conv.bias)
         case dilatedConv if dilatedConv.isInstanceOf[SpatialDilatedConvolution[T]] =>
           // do with dilated convolution
           dilatedConv
