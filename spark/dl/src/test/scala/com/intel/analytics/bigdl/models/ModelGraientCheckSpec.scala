@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.models
 
 import com.intel.analytics.bigdl.nn.GradientChecker
+import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -38,6 +39,36 @@ class ModelGraientCheckSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     val checker = new GradientChecker(1e-4).setType(checkModel)
     checker.checkLayer(model, input, 1e-2) should be(true)
+    val scalaTime = System.nanoTime() - start
+    println("Test Scala time : " + scalaTime / 1e9 + " s")
+  }
+
+  "GoogleNet_v1 model in batch mode" should "perf good" in {
+    val seed = 100
+    RNG.setSeed(seed)
+
+    val input = Tensor[Double](4, 3, 224, 224).apply1(e => Random.nextDouble())
+    val model = GoogleNet_v1_test(1000, DataFormat.NCHW)
+
+    println("start warm up")
+    var i = 0
+    while (i < 10) {
+      val output = model.forward(input)
+      model.backward(input, output)
+      i = i + 1
+    }
+    println("start test")
+    val start = System.nanoTime()
+    i = 0
+    while (i < 100) {
+      val output = model.forward(input)
+      model.backward(input, output)
+      i = i + 1
+    }
+//    model.zeroGradParameters()
+//
+//    val checker = new GradientChecker(1e-4).setType(checkModel)
+//    checker.checkLayer(model, input, 1e-2) should be(true)
     val scalaTime = System.nanoTime() - start
     println("Test Scala time : " + scalaTime / 1e9 + " s")
   }

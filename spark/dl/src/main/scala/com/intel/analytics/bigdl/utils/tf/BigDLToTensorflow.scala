@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.utils.tf
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, DataFormat}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import Tensorflow._
@@ -97,7 +97,7 @@ object LinearToTF extends BigDLToTensorflow {
     val mm = matmul(inputs(0), weightReader, linear.getName() + "/matmul")
     val bias = const(linear.bias, linear.getName() + "/bias", byteOrder)
     val biasReader = identity(bias, linear.getName() + "/biasReader")
-    val add = biasAdd(mm, biasReader, getDataFormat(), linear.getName() + "/biasAdd")
+    val add = biasAdd(mm, biasReader, null, linear.getName() + "/biasAdd")
     Seq(add, biasReader, bias, mm, weightReader, weight)
   }
 }
@@ -110,17 +110,22 @@ object SpatialConvolutionToTF extends BigDLToTensorflow {
     // squeeze will modify the weight tensor
     // GOIHW -> HWIO
     require(spatialConv.weight.size(1) == 1, "convolution group is not supported")
-    val filterTensor = spatialConv.weight.select(1, 1)
-      .transpose(2, 3).transpose(3, 4).transpose(1, 2).transpose(2, 3).transpose(3, 4).contiguous()
+    val filterTensor = spatialConv.format match {
+      case DataFormat.NCHW =>
+        spatialConv.weight.select(1, 1).transpose(2, 3).transpose(3, 4)
+          .transpose(1, 2).transpose(2, 3).transpose(3, 4).contiguous()
+      case DataFormat.NHWC =>
+        spatialConv.weight.select(1, 1)
+    }
 
     val filter = const(filterTensor, spatialConv.getName() + "/filter", byteOrder)
     val filterReader = identity(filter, spatialConv.getName() + "/filterReader")
     val conv = conv2D(inputs(0), filterReader, spatialConv.strideW, spatialConv.strideH,
       spatialConv.kernelW, spatialConv.kernelH, spatialConv.padW, spatialConv.padH,
-      getDataFormat(), spatialConv.getName() + "/conv2D")
+      spatialConv.format, spatialConv.getName() + "/conv2D")
     val bias = const(spatialConv.bias, spatialConv.getName() + "/bias", byteOrder)
     val biasReader = identity(bias, spatialConv.getName() + "/biasReader")
-    val add = biasAdd(conv, biasReader, getDataFormat(),
+    val add = biasAdd(conv, biasReader, spatialConv.format,
       spatialConv.getName() + "/biasAdd")
     Seq(add, biasReader, bias, conv, filterReader, filter)
   }
@@ -131,7 +136,7 @@ object SqueezeToTF extends BigDLToTensorflow {
                        byteOrder: ByteOrder): Seq[NodeDef] = {
     require(inputs.length == 1, "Squeeze only accept one input")
     val sq = module.asInstanceOf[Squeeze[_]]
-    Seq(squeeze(inputs(0), sq.dims.map(processSaveDim(_) - 1), sq.getName()))
+    Seq(squeeze(inputs(0), sq.dims.map(_ - 1), sq.getName()))
   }
 }
 
@@ -183,7 +188,7 @@ object MaxpoolToTF extends BigDLToTensorflow {
     require(inputs.length == 1, "Maxpool only accept one input")
     val layer = module.asInstanceOf[SpatialMaxPooling[_]]
     Seq(maxPool(inputs(0), layer.kW, layer.kH, layer.padW, layer.padH,
-      layer.dW, layer.dH, getDataFormat(), layer.getName()))
+      layer.dW, layer.dH, layer.format, layer.getName()))
   }
 }
 
@@ -214,7 +219,7 @@ object AvgpoolToTF extends BigDLToTensorflow {
     require(inputs.length == 1, "Avgpool only accept one input")
     val layer = module.asInstanceOf[SpatialAveragePooling[_]]
     Seq(avgPool(inputs(0), layer.kW, layer.kH, layer.padW, layer.padH,
-      layer.dW, layer.dH, getDataFormat(), layer.getName()))
+      layer.dW, layer.dH, layer.format, layer.getName()))
   }
 }
 

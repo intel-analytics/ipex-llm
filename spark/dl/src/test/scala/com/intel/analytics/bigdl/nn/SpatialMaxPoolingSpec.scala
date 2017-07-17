@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.utils.RandomGenerator
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.tensor.Tensor
 
@@ -67,6 +68,37 @@ class SpatialMaxPoolingSpec extends FlatSpec with Matchers {
     assert(input == inputOrg)
     assert(gradOutput == gradOutputOrg)
   }
+
+
+  "A SpatialMaxPoolingNHWC" should "generate correct output and gradInput" in {
+
+    import tensor.TensorNumericMath.TensorNumeric.NumericFloat
+    val module = new SpatialMaxPooling(2, 2, 2, 2)
+    val moduleNHWC = new SpatialMaxPooling(2, 2, 2, 2, format = DataFormat.NHWC)
+    val input = Tensor(2, 4, 3, 3).randn()
+    val gradOutput = Tensor(2, 4, 1, 1).randn()
+
+    val inputNHWC = Tensor(input.size()).copy(input)
+      .transpose(2, 4).transpose(2, 3).contiguous()
+     val gradOutputNHWC = Tensor(gradOutput.size()).copy(gradOutput)
+      .transpose(2, 4).transpose(2, 3)
+
+    val expectedOutput = module.forward(input)
+    val expectedGrad = module.backward(input, gradOutput)
+
+    val output = moduleNHWC.forward(inputNHWC)
+    val gradInput = moduleNHWC.backward(inputNHWC, gradOutputNHWC)
+    expectedOutput.map(output.transpose(2, 4).transpose(3, 4), (v1, v2) => {
+      assert(abs(v1 - v2) < 1e-6)
+      v1
+    })
+
+    expectedGrad.map(gradInput.transpose(2, 4).transpose(3, 4), (v1, v2) => {
+      assert(abs(v1 - v2) < 1e-6)
+      v1
+    })
+  }
+
 
   "A SpatialMaxPooling of float" should "generate correct output and gradInput" in {
     val module = new SpatialMaxPooling[Float](2, 2)

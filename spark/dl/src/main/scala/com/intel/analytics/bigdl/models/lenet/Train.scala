@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.models.lenet
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.DataSet
 import com.intel.analytics.bigdl.dataset.image.{BytesToGreyImg, GreyImgNormalizer, GreyImgToBatch}
+import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Module}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.optim._
@@ -48,7 +49,7 @@ object Train {
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
       } else {
-        LeNet5(classNum = 10)
+        LeNet5(classNum = 10, DataFormat.getFormat(param.format))
       }
 
       val optimMethod = if (param.stateSnapshot.isDefined) {
