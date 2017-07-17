@@ -61,6 +61,78 @@ class SampleSpec extends FlatSpec with Matchers {
       Some(featureParam), Some(labelParam)).set(samples)
   }
 
+  "Hashcode" should "work fine" in {
+    val sample1 = Sample[Float](Tensor[Float](2, 3).range(1, 6, 1), Tensor[Float](1).fill(1))
+    println(sample1.hashCode())
+
+    val sample2 = Sample[Float](Array(Tensor[Float](2, 3).range(1, 6, 1),
+      Tensor[Float](3).fill(1)), Tensor[Float](1).fill(1))
+    println(sample2.hashCode())
+
+    val sample3 = Sample[Float](Tensor[Float](2, 3).range(1, 6, 1))
+    println(sample3.hashCode())
+
+    val sample4 = Sample[Float](Array(Tensor[Float](2, 3).range(1, 6, 1),
+      Tensor[Float](3).fill(1)))
+    println(sample4.hashCode())
+
+    val sample5 = Sample[Float](Tensor[Float](2, 3).range(1, 6, 1), 1f)
+    println(sample5.hashCode())
+  }
+
+  "equals" should "work fine" in {
+    var sample1 = Sample[Float](Tensor[Float](2, 3).range(1, 6, 1), Tensor[Float](1).fill(1))
+    var sample2 = Sample[Float](Tensor[Float](2, 3).range(1, 6, 1), Tensor[Float](1).fill(1))
+    sample1.equals(sample2) should be(true)
+
+    sample1 = Sample[Float](Array(Tensor[Float](2, 3).range(1, 6, 1),
+      Tensor[Float](3).fill(1)), Tensor[Float](1).fill(1))
+    sample2 = Sample[Float](Array(Tensor[Float](2, 3).range(1, 6, 1),
+      Tensor[Float](3).fill(1)), Tensor[Float](1).fill(1))
+    sample1.equals(sample2) should be(true)
+
+    sample1 = Sample[Float](Tensor[Float](2, 3).range(1, 6, 1))
+    sample2 = Sample[Float](Tensor[Float](2, 3).range(1, 6, 1))
+    sample1.equals(sample2) should be(true)
+
+    sample1 = Sample[Float](Array(Tensor[Float](2, 3).range(1, 6, 1),
+      Tensor[Float](3).fill(1)))
+    sample2 = Sample[Float](Array(Tensor[Float](2, 3).range(1, 6, 1),
+      Tensor[Float](3).fill(1)))
+    sample1.equals(sample2) should be(true)
+
+    sample1 = Sample[Float](Tensor[Float](2, 3).range(1, 6, 1), 1f)
+    sample2 = Sample[Float](Tensor[Float](2, 3).range(1, 6, 1), 1f)
+    sample1.equals(sample2) should be(true)
+  }
+
+  "equals" should "work fine2" in {
+    var sample1 = Sample[Float](Tensor[Float](2, 3).range(1, 6, 1), Tensor[Float](1).fill(1))
+    var  sample2 = Sample[Float](Tensor[Float](2, 3).range(1, 6, 1), Tensor[Float](1).fill(2))
+    sample1.equals(sample2) should be (false)
+
+    sample1 = Sample[Float](Array(Tensor[Float](2, 3).range(1, 6, 1),
+      Tensor[Float](3).fill(1)))
+    sample2 = Sample[Float](Array(Tensor[Float](2, 3).range(1, 6, 1),
+      Tensor[Float](3).fill(1)), Tensor[Float](1).fill(1))
+    sample1.equals(sample2) should be (false)
+
+    sample1 = Sample[Float](Tensor[Float](2, 3).range(2, 7, 1))
+    sample2 = Sample[Float](Tensor[Float](2, 3).range(1, 6, 1))
+    sample1.equals(sample2) should be (false)
+
+    sample1 = Sample[Float](Array(Tensor[Float](3, 2).range(1, 6, 1),
+      Tensor[Float](3).fill(1)))
+    sample2 = Sample[Float](Array(Tensor[Float](2, 3).range(1, 6, 1),
+      Tensor[Float](3).fill(1)))
+    sample1.equals(sample2) should be (false)
+
+    sample1 = Sample[Float](Tensor[Float](2, 3).range(1, 6, 1), 2f)
+    sample2 = Sample[Float](Tensor[Float](2, 3).range(1, 6, 1), 1f)
+    sample1.equals(sample2) should be (false)
+
+  }
+
   "SampleSpec with Float Tensor input and Tensor label" should "initialize well" in {
     val input1 = new LabeledBGRImage(32, 32)
     val label1 = new LabeledBGRImage(32, 32)
