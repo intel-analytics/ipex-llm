@@ -1,36 +1,21 @@
 ## Optimizer ##
 
-An optimizer is in general to minimize any function with respect to a set of parameters. In case of training a neural network, an optimizer tries to minimize the loss of the neural net with respect to its weights/biases, over the training set.
+You can use Optimizer to distributed train your model with
+a spark cluster.
 
-### Scala API ###
+### How to use Optimizer 
+You need at least provide model, data, loss function and batch size.
 
-***Factory method***
+* **model**
 
-```scala
-val optimizer = Opimizer[T: ClassTag](
-  model: Module[T],
-  sampleRDD: RDD[Sample[T]],
-  criterion: Criterion[T],
-  batchSize: Int)
-```
-`T`: the numeric type(Float/Double).  
-`model`: the model will be optimized.  
-`sampleRDD`: an RDD of training Sample.  
-`criterion`: the Loss function.  
-`batchSize`: size of minibatch. 
+A neural network model. May be a layer, a sequence of layers or a
+graph of layers.
 
+* **data**
 
-```scala
-val optimizer = Opimizer[T: ClassTag, D](
-  model: Module[T],
-  dataset: DataSet[D],
-  criterion: Criterion[T])
-```
-`T`: the numeric type(Float/Double).  
-`D`: should be a kind of MiniBatch.  
-`model`: the model will be optimized.  
-`dataset`: the training DataSet.  
-`criterion`: the Loss function.
+Your training data. As we train models on Spark, one of
+the most common distributed data structures is RDD. Of course
+you can use DataFrame. Please check the BigDL pipeline example.
 
 ```scala
 def apply[T: ClassTag](
@@ -68,221 +53,145 @@ Apply an optimizer with User-Defined `MiniBatch`.
 
 ***Validation***
 
-Function setValidation is to set a validate evaluation in the `optimizer`.
+* **loss function**
+
+In supervised machine learning, loss function compares the output of
+the model with the ground truth(the labels of the training data). It
+outputs a loss value to measure how good the model is(the lower the
+better). It also provides a gradient to indicate how to tune the model.
+
+In BigDL, all loss functions are subclass of Criterion.
+
+* **batch size**
+
+Training is an iterative process. In each iteration, only a batch of data
+is used for training the model. You need to specify the batch size. Please note, 
+the batch size should be divisible by the total cores number.
+
+Here's an example of how to train a Linear classification model
+
+**scala**
 ```scala
-optimizer.setValidation(
-  trigger: Trigger,
-  dataset: DataSet[MiniBatch[T]],
-  vMethods : Array[ValidationMethod[T])
-```
-`trigger`: how often to evaluation validation set.  
-`dataset`: validate data set in type of DataSet[MiniBatch].  
-`vMethods`: a set of ValidationMethod.  
- <br>
-```scala
-optimizer.setValidation(
-  trigger: Trigger,
-  sampleRDD: RDD[Sample[T]],
-  vMethods: Array[ValidationMethod[T]],
-  batchSize: Int)
-```
-`trigger`: how often to evaluation validation set.  
-`sampleRDD`: validate data set in type of RDD[Sample].  
-`vMethods`: a set of ValidationMethod.  
-`batchSize`: size of mini batch.
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.utils._
+import com.intel.analytics.bigdl.dataset._
+import com.intel.analytics.bigdl.optim._
+import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.tensor.Tensor
 
-***Checkpoint***
-```scala
-optimizer.setCheckpoint(path: String, trigger: Trigger)
-```
-Function setCheckPoint is used to set a check point saved at `path` triggered by `trigger`.  
-`path`: a local/HDFS directory to save checkpoint.  
-`trigger`: how often to save the check point.  
- <br>
-```scala
-val path = optimizer.getCheckpointPath()
-```
-Function getCheckpointPath is used to get the directory of saving checkpoint.  
- <br>
-```scala
-optimizer.overWriteCheckpoint()
-```
-Function overWriteCheckpoint is enable overwrite saving checkpoint.  
+// Define the model
+val model = Linear[Float](2, 1)
+model.bias.zero()
 
-***Summary***
-
-```scala
-optimizer.setTrainSummary(trainSummary: TrainSummary)
-```
-Function setTrainSummary is used to enable train summary in this optimizer.  
-`trainSummary`: an instance of TrainSummary.  
- <br>
-```scala
-optimizer.setValidationSummary(validationSummary: ValidationSummary)
-```
-Function setValidationSummary is used to enable validation summary in this optimizer.  
-`validationSummary`: an instance of ValidationSummary.  
-
-***Other important API***
-```scala
-val trainedModel = optimizer.optimize()
-```
-Function optimize will start the training.  
- <br>
-```scala
-optimizer.setModel(newModel: Module[T])
-```
-Function setModel will set a new model to the optimizer.  
-`newModel`: a model will replace the old model in optimizer.  
- <br>
-```scala
-optimizer.setState(state: Table)
-```
-Function setState is used to set a state(learning rate, epochs...) to the `optimizer`.  
-`state`: the state to be saved.  
- <br>
-```scala
-optimizer.setOptimMethod(method : OptimMethod[T])
-```
-Function setOptimMethod is used to set an optimization method in this `optimizer`.  
-`method`: the method the optimize the model in this `optimizer`.  
- <br>
-```scala
-optimizer.setEndWhen(endWhen: Trigger)
-```
-Function setEndWhen is used to declare when to stop the training invoked by `optimize()`.  
-`endWhen`: a trigger to stop the training.
-
-### Scala example ###
-Here is an example to new an Optimizer with SGD for optimizing LeNet5 model.
-```scala
-val trainingRDD = ...
-val valRDD = ...
-val batchSize = 12
-// Create an optimizer
-val optimizer = Optimizer(
-  model = LeNet5(classNum = 10),
-  sampleRDD = trainingRDD,
-  criterion = ClassNLLCriterion(),
-  batchSize = batchSize
-).setValidation(Trigger.everyEpoch, valRDD, Array(new Top1Accuracy), batchSize) // set validation method
-  .setEndWhen(Trigger.maxEpoch(15)) // set end trigger
-  .setOptimMethod(new SGD(learningRate = 0.05)) // set optimize method, Since 0.2.0. Older version should use optimizer.setOptimMethod(new SGD()).setState(T("learningRate" -> 0.05))
-
-val trainedModel = optimizer.optimize()
-```
-
-### Python API ###
-
-***Factory method***
-
-```python
-optimizer =  Optimizer(model,
-                 training_rdd,
-                 criterion,
-                 end_trigger,
-                 batch_size,
-                 optim_method=None,
-                 bigdl_type="float")
-```
-
-`model`: the model will be optimized.  
-`training_rdd`: the training dataset.  
-`criterion`: the Loss function.  
-`end_trigger`: when to end the optimization.  
-`batch_size`: size of minibatch.  
-`optim_method`:  the algorithm to use for optimization, e.g. SGD, Adagrad, etc. If optim_method is None, the default algorithm is SGD.  
-`bigdl_type`: the numeric type(Float/Double).  
-
-***Validation***
-
-Function setValidation is to set a validate evaluation in the `optimizer`.
-
-```python
-optimizer.set_validation(batch_size, val_rdd, trigger, val_method=["Top1Accuracy"])
-```
-`trigger`: how often to evaluation validation set.  
-`val_rdd`: validate data set in type of RDD[Sample].  
-`val_method`: a list of ValidationMethod, e.g. "Top1Accuracy", "Top5Accuracy", "Loss".  
-`batch_size`: size of mini batch.
-
-***Checkpoint***
-```python
-optimizer.set_checkpoint(checkpoint_trigger,
-                      checkpoint_path, isOverWrite=True)
-```
-Function setCheckPoint is used to set a check point saved at `path` triggered by `trigger`.  
-`checkpoint_trigger`: how often to save the check point.
-`checkpoint_path`: a local/HDFS directory to save checkpoint.  
-`isOverWrite`: whether to overwrite existing snapshots in path.default is True
-
-***Summary***
-
-```python
-optimizer.set_train_summary(summary)
-```
-Set train summary. A TrainSummary object contains information necessary for the optimizer to know how often the logs are recorded, where to store the logs and how to retrieve them, etc. For details, refer to the docs of TrainSummary.
-`summary`: an instance of TrainSummary.
-
-```python
-optimizer.set_validation_summary(summary)
-```
-Function setValidationSummary is used to set validation summary. A ValidationSummary object contains information necessary for the optimizer to know how often the logs are recorded, where to store the logs and how to retrieve them, etc. For details, refer to the docs of ValidationSummary.
-`summary`: an instance of ValidationSummary.
-
-***Start Training***
-```python
-trained_model = optimizer.optimize()
-```
-Function optimize will start the training.
-
-***Set Model***
-```python
-optimizer.set_model(model)
-```
-Function setModel will set a new model to the optimizer.  
-`model`: a model will replace the old model in optimizer.
-
-### Python example ###
-Here is an example to new an Optimizer with SGD for optimizing LeNet5 model.
-```python
-train_data = ...
-test_data = ...
-batch_size = 12
-# Create an Optimizer, Since 0.2.0
-optimizer = Optimizer(
-  model=lenet_model,
-  training_rdd=train_data,
-  criterion=ClassNLLCriterion(),
-  optim_method=SGD(learningrate=0.01, learningrate_decay=0.0002), # set optim method
-  end_trigger=MaxEpoch(15),
-  batch_size=batch_size)
-  
-# Older version, before 0.2.0, use following code: 
-# optimizer = Optimizer(
-#   model=model,
-#   training_rdd=train_data,
-#   criterion=ClassNLLCriterion(),
-#   optim_method="SGD",
-#   state={"learningRate": 0.05},
-#   end_trigger=MaxEpoch(training_epochs),
-#   batch_size=batch_size)
-
-optimizer.set_validation(
-    batch_size=2048,
-    val_rdd=test_data,
-    trigger=EveryEpoch(),
-    val_method=[Top1Accuracy()]
+// Generate 2D dummy data, y = 0.1 * x[1] + 0.3 * x[2]
+val samples = Seq(
+  Sample[Float](Tensor[Float](T(5f, 5f)), Tensor[Float](T(2.0f))),
+  Sample[Float](Tensor[Float](T(-5f, -5f)), Tensor[Float](T(-2.0f))),
+  Sample[Float](Tensor[Float](T(-2f, 5f)), Tensor[Float](T(1.3f))),
+  Sample[Float](Tensor[Float](T(-5f, 2f)), Tensor[Float](T(0.1f))),
+  Sample[Float](Tensor[Float](T(5f, -2f)), Tensor[Float](T(-0.1f))),
+  Sample[Float](Tensor[Float](T(2f, -5f)), Tensor[Float](T(-1.3f)))
 )
+val trainData = sc.parallelize(samples, 1)
 
-# Older version, before 0.2.0, use following code: 
-#optimizer.set_validation(
-#    batch_size=2048,
-#    val_rdd=test_data,
-#    trigger=EveryEpoch(),
-#    val_method=["Top1Accuracy"]
-#)
-
-trained_model = optimizer.optimize()
-
+// Define the model
+val optimizer = Optimizer[Float](model, trainData, MSECriterion[Float](), 4)
+Engine.init
+optimizer.optimize()
+println(model.weight)
 ```
+
+The weight of linear is init randomly. But the output should be like
+```
+scala> println(model.weight)
+0.09316949      0.2887804
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x2]
+```
+
+**python**
+```
+from bigdl.nn.layer import Linear
+from bigdl.util.common import *
+from bigdl.nn.criterion import MSECriterion
+from bigdl.optim.optimizer import Optimizer, MaxIteration
+import numpy as np
+
+model = Linear(2, 1)
+samples = [
+  Sample.from_ndarray(np.array([5, 5]), np.array([2.0])),
+  Sample.from_ndarray(np.array([-5, -5]), np.array([-2.0])),
+  Sample.from_ndarray(np.array([-2, 5]), np.array([1.3])),
+  Sample.from_ndarray(np.array([-5, 2]), np.array([0.1])),
+  Sample.from_ndarray(np.array([5, -2]), np.array([-0.1])),
+  Sample.from_ndarray(np.array([2, -5]), np.array([-1.3]))
+]
+train_data = sc.parallelize(samples, 1)
+init_engine()
+optimizer = Optimizer(model, train_data, MSECriterion(), MaxIteration(100), 4)
+optimizer.optimize()
+model.get_weights()[0]
+```
+
+The output should be like
+```
+array([[ 0.11578175,  0.28315681]], dtype=float32)
+```
+
+You can see the model is trained.
+
+### Define when to end the training
+You need define when to end the training. It can be several iterations, or how many round
+data you want to process, a.k.a epoch.
+
+**scala**
+```scala
+// The default endWhen in scala is 100 iterations
+optimizer.setEndWhen(Trigger.maxEpoch(10))  // Change to 10 epoch
+```
+
+**python**
+```
+# Python need to define in the constructor
+optimizer = Optimizer(model, train_data, MSECriterion(), MaxIteration(100), 4)
+```
+
+### Change the optimization algorithm
+Gradient based optimization algorithms are the most popular algorithms to train the neural
+network model. The most famous one is SGD. SGD has many variants, adagrad, adam, etc.
+
+**scala**
+```scala
+// The default is SGD
+optimizer.setOptimMethod(new Adam())  // Change to adam
+```
+
+**python**
+```
+# Python need to define the optimization algorithm in the constructor
+optimizer = Optimizer(model, train_data, MSECriterion(), MaxIteration(100), 4, optim_method = Adam())
+```
+
+### Validate your model in training
+Sometimes, people want to evaluate the model with a seperated dataset. When model
+performs well on train dataset, but bad on validation dataset, we call the model is overfit or
+weak generalization. People may want to evaluate the model every serveral iterations or 
+epochs. BigDL can easily do this by
+
+**scala**
+```scala
+optimizer.setValidation(trigger, testData, validationMethod, batchSize)
+```
+
+```python
+optimizer.set_validation(batch_size, val_rdd, trigger, validationMethod)
+```
+
+For validation, you need to provide
+
+* trigger: how often to do validation, maybe each several iterations or epochs
+* test data: the seperate dataset for test
+* validation method: how to evaluate the model, maybe top1 accuracy, etc.
+* batch size: how many data evaluate in one time
+
+### Visualize training process
+See [Visualization with TensorBoard](https://bigdl-project.github.io/UserGuide/visualization-with-tensorboard/)

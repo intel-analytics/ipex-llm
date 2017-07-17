@@ -1,5 +1,3 @@
-## DLClassifier ##
-
 **Scala:**
 ```scala
 val classifier = new DLClassifier(

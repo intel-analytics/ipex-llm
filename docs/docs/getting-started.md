@@ -18,7 +18,7 @@ Below are several data structures that you need to know when using BigDL.
  
 * `Sample` is a **(feature, label)** pair. A `Sample` can be created from two `Tensors` (in Scala) or two `numpy arrays` (in Python). Refer to [Sample API doc](APIdocs/Data/merged-Data#sample) for detailed usage.
 
-You need to convert your dataset into `RDD` of `Samples` (both Scala and Python), and then feed your data into Optimizer for training, validation or prediction. Refer to [Optimizer docs](APIdocs/Optimizers/DistriOptimizer.md) for details.
+You need to convert your dataset into `RDD` of `Samples` (both Scala and Python), and then feed your data into Optimizer for training, validation or prediction. Refer to [Optimizer docs](APIdocs/Optimizers/Optimizer.md) for details.
 
 
 ---
@@ -29,12 +29,12 @@ If you have an existing model and want to use BigDL only for prediction, you nee
 
 BigDL supports loading models trained and saved in BigDL, or a trained Tensorflow model. 
 
-* To load a BigDL model, you can use `Module.load` interface (Scala). Refer to [Module API docs](APIdocs/Model/ModuleAPI.md) for details.  
-* To load a Tensorflow model, refer to [Tensorflow Support](PythonSupport/tensorflow-support.md) for details.
+* To load a BigDL model, you can use `Module.load` interface (Scala). Refer to [Module API docs](APIdocs/Module/Module.md) for details.  
+* To load a Tensorflow model, refer to [Tensorflow Support](ProgrammingGuide/tensorflow-support.md) for details.
 
 Once you have a loaded model, you can call `Module.predict()` to do predictions. Note that you need to convert your input data into proper format which `predict` accepts. For how to prepare your data, refer to section [Prepare your Data](#prepare-your-data). 
 
-If you are using predicted result as a component inside a Spark ML pipeline, refer to [MLPipeline](APIdocs/MLPipeline/merged-MLPipeline.md) for usage. 
+If you are using predicted result as a component inside a Spark ML pipeline, refer to [DLEsitimator API](ProgrammingGuide/MLPipeline/DLEstimator.md) and [DLClassifier API](ProgrammingGuide/MLPipeline/DLClassifier.md) for usage. 
 
 ---
 
@@ -51,23 +51,23 @@ Before training models, please make sure BigDL is installed, BigDL engine initia
 
 The most recommended way to create your first model is to modify from an existing one. BigDL provides plenty of models for you to refer to. See [Scala Models/Examples](UserGuide/resources.md) and [Python Models/Examples and Tutorials](PythonSupport/python-resources.md). 
 
-To define a model, you can either use the Sequential API or Functional API. The Functional API is more flexible than Sequential API. Refer to [Sequential API](APIdocs/Model/Sequential.md) and [Functional API](APIdocs/Model/Functional.md) for how to define models in different shapes. Navigate to *Programming Guide/Layers* on the side bar to find the documenations of available layers and activation.
+To define a model, you can either use the Sequential API or Functional API. The Functional API is more flexible than Sequential API. Refer to [Sequential API](ProgrammingGuide/Model/Sequential.md) and [Functional API](ProgrammingGuide/Model/Functional.md) for how to define models in different shapes. Navigate to *Programming Guide/Layers* on the side bar to find the documenations of available layers and activation.
 
 After creating the model, you will have to deside which loss function to use in training. Find the details of losses defined in BigDL in [Losses](APIdocs/Losses/merged-Losses.md).  
 
-Now you create an `Optimizer` and set the loss function, input dataset along with other hyper parameters into the Optimizer. Then call `Optimizer.optimize` to train. Refer to [Optimizer docs](APIdocs/Optimizers/DistriOptimizer.md) for details. 
+Now you create an `Optimizer` and set the loss function, input dataset along with other hyper parameters into the Optimizer. Then call `Optimizer.optimize` to train. Refer to [Optimizer docs](APIdocs/Optimizers/Optimizer.md) for details. 
 
 Evaluation can be performed periodically during a training. Before calling `Optimizer.optimize`, use `Optimizer.setValidation` (in Scala) or `Optimizer.set_validation` (in Python) to set validation configurations, e.g. validation dataset, validation metrics, etc. For a list of defined metrics, refer to [Metrics](APIdocs/Metrics/merged-Metrics.md).
 
-When `Optimizer.optimize` finishes, it will return a trained model. You can then use `module.predict` for predictions. Refer to [Module API docs](APIdocs/Model/ModuleAPI.md) for detailed usage.    
+When `Optimizer.optimize` finishes, it will return a trained model. You can then use `module.predict` for predictions. Refer to [Module API docs](APIdocs/Module/Module.md) for detailed usage.    
 
 ## **Stop and Resume a Training**
 
 Training a deep learning model sometimes takes a very long time. It may be stopped or interrupted and we need the training to resume from where we have left. 
 
-To enable this, you have to configure `Optimizer` to periodically dump the optimized model and optimization state into snapshot files. Use `Optimizer.setCheckpoint` (in Scala) or `optimizer.set_checkpoint` (in Python) to configure the frequency and paths of writing snapshots. Then during your training, you will find several snapshot files written in the checkpoint path. Refer to [Optimizer API](APIdocs/Optimizers/DistriOptimizer.md) for details. 
+To enable this, you have to configure `Optimizer` to periodically dump the optimized model and optimization state into snapshot files. Use `Optimizer.setCheckpoint` (in Scala) or `optimizer.set_checkpoint` (in Python) to configure the frequency and paths of writing snapshots. Then during your training, you will find several snapshot files written in the checkpoint path. Refer to [Optimizer API](APIdocs/Optimizers/Optimizer.md) for details. 
 
-Later, after the training stops, you can resume from any saved point. Choose one of the model snapshots and the corresponding optimization state to resume (the iteration number of the the snapshots is in the file name suffix). Use `Module.load` to load the model snapshot into an object, and `OptimMethod.load` to load optimization state into an object. Then create a new `Optimizer` with the loaded model and optim method. Call `Optimizer.optimize`, you will resume from the point where the snapshot is taken. Refer to [OptimMethod API]() and [Module API](APIdocs/Model/ModuleAPI.md) for details.
+Later, after the training stops, you can resume from any saved point. Choose one of the model snapshots and the corresponding optimization state to resume (the iteration number of the the snapshots is in the file name suffix). Use `Module.load` to load the model snapshot into an object, and `OptimMethod.load` to load optimization state into an object. Then create a new `Optimizer` with the loaded model and optim method. Call `Optimizer.optimize`, you will resume from the point where the snapshot is taken. Refer to [OptimMethod API]() and [Module API](APIdocs/Module/Module.md) for details.
  
 You can also resume training without loading the optimization state, if you intend to change the learning rate schedule or even optimization method. Just create an `Optimizer` with loaded model and a new instance of OptimMethod. 
 
@@ -78,7 +78,7 @@ You can also resume training without loading the optimization state, if you inte
 
 Pre-train is a useful strategy when training deep learning models. You may use the pre-trained features (e.g. embeddings) in your model, or do a fine-tuning for a different dataset or target.
  
-To use a learnt model as a whole, you can use `Module.load` to load the entire model, Then create an `Optimizer` with the loaded model set into it. Refer to [Optmizer API](APIdocs/Optimizers/DistriOptimizer.md) and [Module API](APIdocs/Model/ModuleAPI.md) for details. 
+To use a learnt model as a whole, you can use `Module.load` to load the entire model, Then create an `Optimizer` with the loaded model set into it. Refer to [Optmizer API](APIdocs/Optimizers/Optimizer.md) and [Module API](APIdocs/Module/Module.md) for details. 
 
 Instead of using an entire model, you can also use pre-trained weights/biases in certain layers. After a `Module`(Scala) or `Layer`(Python) is created, use `Module.setWeightsBias` (in Scala) or `layer.set_weights` (in Python) to initialize the weights with pre-trained weights. Then continue to train your model as usual. 
 
