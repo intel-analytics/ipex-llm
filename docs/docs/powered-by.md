@@ -1,4 +1,6 @@
 
+
+---
 * [Intel’s BigDL on Databricks](https://databricks.com/blog/2017/02/09/intels-bigdl-databricks.html)
 * [Use BigDL on AZure HDInsight](https://azure.microsoft.com/en-us/blog/use-bigdl-on-hdinsight-spark-for-distributed-deep-learning/)
     * A more detailed post:  [How to use BigDL on Apache Spark for Azure HDInsight](https://blogs.msdn.microsoft.com/azuredatalake/2017/03/17/how-to-use-bigdl-on-apache-spark-for-azure-hdinsight/)
