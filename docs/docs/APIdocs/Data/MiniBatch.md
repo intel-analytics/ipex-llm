@@ -1,7 +1,7 @@
 ## MiniBatch
 `MiniBatch` is a data structure to feed input/target to model in `Optimizer`. It provide `getInput()` and `getTarget()` function to get the input and target in this `MiniBatch`.
 
-In almost all the cases, BigDL's default `MiniBatch` class can fit user's requirement. User can implement their own `MiniBatch` class by extends [MiniBatch](https://github.com/intel-analytics/BigDL/blob/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/dataset/MiniBatch.scala).
+In almost all the cases, BigDL's default `MiniBatch` class can fit user's requirement. Just create your `RDD[Sample]` and pass it to `Optimizer`. If `MiniBatch` can't meet your requirement, you can implement your own `MiniBatch` class by extends [MiniBatch](https://github.com/intel-analytics/BigDL/blob/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/dataset/MiniBatch.scala).
 
 `MiniBatch` can be created by `MiniBatch(nInputs: Int, nOutputs: Int)`, `nInputs` means number of inputs, `nOutputs` means number of outputs. And you can use `set(samples: Seq[Sample[T])` to fill the content in this MiniBatch. If you `Sample`s are not the same size, you can use `PaddingParam` to pad the `Sample`s to the same size.
 
