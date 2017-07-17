@@ -32,7 +32,7 @@ Since currently only BigDL 0.1.0 is released, ${BIGDL_VERSION} must be set to 0.
 ```
 
 SBT developers can use
-```sbt
+```bash
 libraryDependencies += "com.intel.analytics.bigdl" % "bigdl-SPARK_2.0" % "${BIGDL_VERSION}"
 ```
 
@@ -51,7 +51,7 @@ If your project runs on MacOS, you should add the dependency below,
 </dependency>
 ```
 SBT developers can use
-```sbt
+```bash
 libraryDependencies += "com.intel.analytics.bigdl.native" % "mkl-java-mac" % "${BIGDL_VERSION}" from "http://repo1.maven.org/maven2/com/intel/analytics/bigdl/native/mkl-java-mac/${BIGDL_VERSION}/mkl-java-mac-${BIGDL_VERSION}.jar"
 ```
 
@@ -77,7 +77,7 @@ To link your application with the latest BigDL development version, you should a
 ```
 
 SBT developers can use
-```sbt
+```bash
 resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 ```
 
@@ -88,7 +88,7 @@ resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repos
 
 BigDL source code is available at [GitHub](https://github.com/intel-analytics/BigDL)
 
-```sbt
+```bash
 $ git clone https://github.com/intel-analytics/BigDL.git
 ```
 
@@ -113,7 +113,7 @@ When compiling with Java 7, you need to add the option “-XX:MaxPermSize=1G”.
 It is highly recommended that you build BigDL using the [make-dist.sh script](https://github.com/intel-analytics/BigDL/blob/master/make-dist.sh). And it will handle the MAVEN_OPTS variable.
 
 Once downloaded, you can build BigDL with the following commands:
-```sbt
+```bash
 $ bash make-dist.sh
 ```
 After that, you can find a `dist` folder, which contains all the needed files to run a BigDL program. The files in `dist` include:
@@ -127,7 +127,7 @@ After that, you can find a `dist` folder, which contains all the needed files to
 * **Build for macOS**
 
 The instructions above will only build for Linux. To build BigDL for macOS, pass `-P mac` to the `make-dist.sh` script as follows:
-```sbt
+```bash
 $ bash make-dist.sh -P mac
 ```
 
@@ -135,7 +135,7 @@ $ bash make-dist.sh -P mac
 * **Build for Spark 2.0 and above**
 
 The instructions above will build BigDL with Spark 1.5.x or 1.6.x (using Scala 2.10); to build for Spark 2.0 and above (which uses Scala 2.11 by default), pass `-P spark_2.x` to the `make-dist.sh` script:
-```sbt
+```bash
 $ bash make-dist.sh -P spark_2.x
 ```
 
@@ -154,7 +154,7 @@ Note that the instructions above will skip the build of native library code, and
  1.  Download and install [Intel Parallel Studio XE](https://software.intel.com//qualify-for-free-software/opensourcecontributor) in your Linux box.
 
  2.  Prepare build environment as follows:
-    ```{r, engine='sh'}
+    ```bash
     $ source <install-dir>/bin/compilervars.sh intel64
     $ source PATH_TO_MKL/bin/mklvars.sh intel64
     ```
@@ -162,21 +162,20 @@ Note that the instructions above will skip the build of native library code, and
     
  3. Full build
    
-   Clone BigDL as follows:
-```sbt
+Clone BigDL as follows:
+```bash
    git clone git@github.com:intel-analytics/BigDL.git --recursive 
 ```
-   For already cloned repos, just use:
-```sbt
+For already cloned repos, just use:
+```bash
    git submodule update --init --recursive 
 ```
-   If the Intel MKL is not installed to the default path `/opt/intel`, please pass your libiomp5.so's directory path to
-   the `make-dist.sh` script:
-```sbt
+If the Intel MKL is not installed to the default path `/opt/intel`, please pass your libiomp5.so's directory path to the `make-dist.sh` script:
+```bash
    $ bash make-dist.sh -P full-build -DiompLibDir=<PATH_TO_LIBIOMP5_DIR> 
 ```
-   Otherwise, only pass `-P full-build` to the `make-dist.sh` script:
-```sbt
+Otherwise, only pass `-P full-build` to the `make-dist.sh` script:
+```bash
    $ bash make-dist.sh -P full-build
 ```
     
@@ -185,7 +184,7 @@ Note that the instructions above will skip the build of native library code, and
 
 To build BigDL directly using Maven, run the command below:
 
-```sbt
+```bash
 $ mvn clean package -DskipTests
 ```
 After that, you can find that the three jar packages in `PATH_To_BigDL`/target/, where `PATH_To_BigDL` is the path to the directory of the BigDL. 
