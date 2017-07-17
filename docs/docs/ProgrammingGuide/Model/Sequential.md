@@ -2,7 +2,8 @@ BigDL supports two different model definition styles: Sequential API and Functio
 
 Here we introduce how to define a model in Sequential API.
 
-## Define a simple model
+---
+## **Define a simple model**
 Suppose we want to define a model with three layers
 ```
 Linear -> Sigmoid -> Softmax
@@ -33,7 +34,8 @@ looks very straightforward.
 BigDL provides multiple types of contianers allow user to define complex model in sequential
 style. We will take a look at it.
 
-## Define a model with branches
+---
+## **Define a model with branches**
 Suppose we want to define a model like this
 ```
 Linear -> ReLU --> Linear -> ReLU
@@ -73,7 +75,8 @@ but will become a new branch.
 
 The input of the model is a tensor and the output of the model is two tensors.
 
-## Define a model with merged branch
+---
+## **Define a model with merged branch**
 Suppose we want to define a model like this
 ```
 Linear -> ReLU --> Linear -> ReLU ----> Add
@@ -114,7 +117,8 @@ takes a list of tensors from the previous layer, and merge the tensors by adding
 BigDL provides many merge layers. Please check Merge layers document page. They all
 take a list of tensors as input and merge the tensors by some operation.
 
-## Define a model with multiple inputs
+---
+## **Define a model with multiple inputs**
 We have already seen how to define branches in model and how to merge branches.
 What if we have multiple input? Suppose we want to define a model like this
 ```

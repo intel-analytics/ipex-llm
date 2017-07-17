@@ -2,7 +2,7 @@
 
 **Scala:**
 ```scala
-val layer = SpatialDilatedConvolution[T](
+val layer = SpatialDilatedConvolution(
   inputPlanes,
   outputPlanes,
   kernelW,
@@ -67,22 +67,23 @@ arXiv preprint arXiv:1511.07122, 2015.
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
-val layer = SpatialDilatedConvolution[Float](1, 1, 2, 2, 1, 1, 0, 0, 2, 2)
-val input = Tensor[Float](T(T(
+val layer = SpatialDilatedConvolution(1, 1, 2, 2, 1, 1, 0, 0, 2, 2)
+val input = Tensor(T(T(
   T(1.0f, 2.0f, 3.0f, 4.0f),
   T(5.0f, 6.0f, 7.0f, 8.0f),
   T(9.0f, 1.0f, 2.0f, 3.0f),
   T(4.0f, 5.0f, 6.0f, 7.0f)
 )))
-val filter = Tensor[Float](T(T(T(
+val filter = Tensor(T(T(T(
   T(1.0f, 1.0f),
   T(1.0f, 1.0f)
 ))))
 layer.weight.copy(filter)
 layer.bias.zero()
 layer.forward(input)
-layer.backward(input, Tensor[Float](T(T(
+layer.backward(input, Tensor(T(T(
   T(0.1f, 0.2f),
   T(0.3f, 0.4f)
 ))))

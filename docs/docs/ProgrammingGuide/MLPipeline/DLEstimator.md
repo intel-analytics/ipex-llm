@@ -1,5 +1,3 @@
-## DLEstimator ##
-
 **Scala:**
 ```scala
 val estimator = new DLEstimator(

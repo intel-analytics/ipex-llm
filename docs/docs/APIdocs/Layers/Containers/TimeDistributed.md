@@ -2,7 +2,7 @@
 
 **Scala:**
 ```scala
-val layer = TimeDistributed[T](layer)
+val layer = TimeDistributed(layer)
 ```
 **Python:**
 ```python
@@ -20,9 +20,10 @@ the Other dims length.
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
-val layer = TimeDistributed[Float](Sum[Float](1, squeeze = false, nInputDims = 2))
-val input = Tensor[Float](T(T(
+val layer = TimeDistributed(Sum(1, squeeze = false, nInputDims = 2))
+val input = Tensor(T(T(
   T(
     T(1.0f, 2.0f),
     T(3.0f, 4.0f)
@@ -33,7 +34,7 @@ val input = Tensor[Float](T(T(
   )
 )))
 layer.forward(input)
-layer.backward(input, Tensor[Float](T(T(
+layer.backward(input, Tensor(T(T(
   T(
     T(0.1f, 0.2f)
   ),

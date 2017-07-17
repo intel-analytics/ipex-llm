@@ -27,11 +27,11 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.tensor.Storage
 
-val input_data = Tensor[Float](2,2,6,8).randn()
+val input_data = Tensor(2,2,6,8).randn()
 val rois = Array(0, 0, 0, 7, 5, 1, 6, 2, 7, 5, 1, 3, 1, 6, 4, 0, 3, 3, 3, 3)
 val input_rois = Tensor(Storage(rois.map(x => x.toFloat))).resize(4, 5)
 val input = T(input_data,input_rois)
-val m = RoiPooling[Float](3, 2, 1)
+val m = RoiPooling(3, 2, 1)
 val output = m.forward(input)
 
 scala> print(input)

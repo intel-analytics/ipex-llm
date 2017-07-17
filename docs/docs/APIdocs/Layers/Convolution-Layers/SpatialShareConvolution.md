@@ -2,7 +2,7 @@
 
 **Scala:**
 ```scala
-val layer = SpatialShareConvolution[Float](nInputPlane, nOutputPlane, kW, kH, dW, dH,
+val layer = SpatialShareConvolution(nInputPlane, nOutputPlane, kW, kH, dW, dH,
       padW, padH)
 ```
 **Python:**
@@ -19,6 +19,11 @@ layer = SpatialShareConvolution(nInputPlane, nOutputPlane, kW, kH, dW, dH, padW,
 
 **Scala example:**
 ```scala
+
+    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+    import com.intel.analytics.bigdl.nn._
+    import com.intel.analytics.bigdl.tensor._
+
     val nInputPlane = 1
     val nOutputPlane = 1
     val kW = 2
@@ -27,7 +32,7 @@ layer = SpatialShareConvolution(nInputPlane, nOutputPlane, kW, kH, dW, dH, padW,
     val dH = 1
     val padW = 0
     val padH = 0
-    val layer = SpatialShareConvolution[Float](nInputPlane, nOutputPlane, kW, kH, dW, dH,
+    val layer = SpatialShareConvolution(nInputPlane, nOutputPlane, kW, kH, dW, dH,
       padW, padH)
 
     val inputData = Array(
@@ -49,11 +54,11 @@ layer = SpatialShareConvolution(nInputPlane, nOutputPlane, kW, kH, dW, dH, padW,
 
     val biasData = Array(0.0)
 
-    layer.weight.copy(Tensor[Float](Storage(kernelData), 1,
+    layer.weight.copy(Tensor(Storage(kernelData), 1,
       Array(nOutputPlane, nInputPlane, kH, kW)))
-    layer.bias.copy(Tensor[Float](Storage(biasData), 1, Array(nOutputPlane)))
+    layer.bias.copy(Tensor(Storage(biasData), 1, Array(nOutputPlane)))
 
-    val input = Tensor[Float](Storage(inputData), 1, Array(3, 1, 3, 4))
+    val input = Tensor(Storage(inputData), 1, Array(3, 1, 3, 4))
     val output = layer.updateOutput(input)
  
     > output

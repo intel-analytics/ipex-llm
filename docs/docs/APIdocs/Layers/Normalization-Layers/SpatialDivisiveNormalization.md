@@ -2,7 +2,7 @@
 
 **Scala:**
 ```scala
-val layer = SpatialDivisiveNormalization[Float]()
+val layer = SpatialDivisiveNormalization()
 ```
 **Python:**
 ```python
@@ -25,9 +25,13 @@ a uniform average is used since the weighting across features is not known.
 **Scala example:**
 ```scala
 
-val layer = SpatialDivisiveNormalization[Float]()
-val input = Tensor[Float](1, 5, 5).rand
-val gradOutput = Tensor[Float](1, 5, 5).rand
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor._
+
+val layer = SpatialDivisiveNormalization()
+val input = Tensor(1, 5, 5).rand
+val gradOutput = Tensor(1, 5, 5).rand
 
 val output = layer.forward(input)
 val gradInput = layer.backward(input, gradOutput)
@@ -69,6 +73,9 @@ res21: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 
 **Python example:**
 ```python
+from bigdl.nn.layer import *
+import numpy as np
+
 layer = SpatialDivisiveNormalization()
 input = np.random.uniform(0, 1, (1, 5, 5)).astype("float32")
 gradOutput = np.random.uniform(0, 1, (1, 5, 5)).astype("float32")

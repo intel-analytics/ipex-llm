@@ -14,27 +14,31 @@ pages:
 - Overview: index.md 
 - Releases: release.md
 - Getting Started: getting-started.md
-- User Guide: 
+- Scala User Guide: 
   - Install: 
     - Use Pre-built Libs: UserGuide/install-pre-built.md
     - Build from Source Code: UserGuide/install-build-src.md 
   - Run : UserGuide/run.md
   - Examples: UserGuide/examples.md
   - More Resources: UserGuide/resources.md
-- Python Support: 
+- Python User Guide: 
   - Install: PythonSupport/python-install.md
   - Run: PythonSupport/python-run.md
   - Examples: PythonSupport/python-examples.md
   - More Examples and Tutorials: PythonSupport/python-resources.md
-  - Tensorflow Support: PythonSupport/tensorflow-support.md
 - Programming Guide:
-  - Scala Docs: APIdocs/scaladoc.md
-  - Python API Docs: APIdocs/python-api-doc.md
+  - Define a Model:
+    - Using Sequential API: ProgrammingGuide/Model/Sequential.md
+    - Using Functional API: ProgrammingGuide/Model/Functional.md
+  - Optimization: ProgrammingGuide/optimization.md
+  - Use MLPipeline: 
+    - DLEstimator: ProgrammingGuide/MLPipeline/DLEstimator.md
+    - DLClassifier: ProgrammingGuide/MLPipeline/DLClassifier.md
+  - Visualization: ProgrammingGuide/visualization.md
+  - Tensorflow Support: ProgrammingGuide/tensorflow-support.md
+- API Guide:
   - Data: APIdocs/Data/merged-Data.md
-  - Model:
-    - Sequential Model: APIdocs/Model/Sequential.md
-    - Functional API: APIdocs/Model/Functional.md
-    - Module API: APIdocs/Model/ModuleAPI.md
+  - Module: APIdocs/Module/Module.md
   - Layers: 
     - Containers:  APIdocs/Layers/Containers/merged-Containers.md
     - Simple Layers: APIdocs/Layers/Simple-Layers/merged-Simple-Layers.md
@@ -54,13 +58,14 @@ pages:
   - Losses: APIdocs/Losses/merged-Losses.md
   - Initalizers: APIdocs/Initializers/merged-Initializers.md
   - Regularizers: APIdocs/Regularizers/merged-Regularizers.md
-  - Optimization: 
-    - Optimizer: APIdocs/Optimizers/DistriOptimizer.md
+  - Optimizer: APIdocs/Optimizers/Optimizer.md
+  - Optimization Methods:
+    - OptimMethod: APIdocs/Optimizers/OptimMethod.md 
     - Optimization Algorithms: APIdocs/Optimizers/Optim-Methods/merged-Optim-Methods.md
-    - Triggers: APIdocs/Optimizers/Triggers.md
+  - Triggers: APIdocs/Optimizers/Triggers.md
   - Metrics:  APIdocs/Metrics/merged-Metrics.md
-  - Visualization: ProgrammingGuide/visualization.md
-  - MLPipeline: APIdocs/MLPipeline/merged-MLPipeline.md
+  - Full API docs:
+    - Scala Docs: APIdocs/scaladoc.md
+    - Python API Docs: APIdocs/python-api-doc.md
 - Powered by: powered-by.md
 - Known Issues: known-issues.md
-- Version: version.md 
