@@ -22,6 +22,7 @@ import com.google.protobuf.CodedOutputStream
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.File
 import org.apache.log4j.Logger
 import org.tensorflow.framework._
 
@@ -75,13 +76,15 @@ object TensorflowSaver {
     extraNodes.foreach(graphBuilder.addNode(_))
 
     // Save to file
-    val os = new FileOutputStream(path)
+    val os = File.getOutputStream(path, true).getOrElse(null)
+    require(os != null, s"Open ${path} failed")
     val output = CodedOutputStream.newInstance(os)
     val graph = graphBuilder.build()
     logger.debug("Graph definition is:")
     logger.debug(graph.toString)
     graph.writeTo(output)
     output.flush()
+    os.flush()
     os.close()
     logger.info(s"Save as tensorflow model file to $path")
   }

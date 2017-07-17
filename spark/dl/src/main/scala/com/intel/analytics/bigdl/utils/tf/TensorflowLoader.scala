@@ -30,6 +30,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{DirectedGraph, Node}
 import com.intel.analytics.bigdl.utils.tf.TensorflowToBigDL._
+import com.intel.analytics.bigdl.utils.File
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -66,13 +67,14 @@ object TensorflowLoader{
    * @return
    */
   private[bigdl] def parse(graphProtoTxt: String) : List[NodeDef] = {
-    val f = new java.io.File(graphProtoTxt)
-    require(f.exists(), graphProtoTxt + " does not exists")
+    val f = File.getInputStream(graphProtoTxt).getOrElse(null)
+    require(f != null, graphProtoTxt + " does not exists")
 
-    val reader = CodedInputStream.newInstance(new DataInputStream(new FileInputStream(f)))
+    val reader = CodedInputStream.newInstance(new DataInputStream(f))
     reader.setSizeLimit(0x7fffffff)
 
     val graph = GraphDef.parseFrom(reader)
+    f.close()
     graph.getNodeList
   }
 

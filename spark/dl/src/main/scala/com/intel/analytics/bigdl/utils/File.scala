@@ -83,7 +83,6 @@ object File {
     } finally {
       if (null != objFile) objFile.close()
       if (null != out) out.close()
-      if (null != fw) fw.close()
     }
   }
 
@@ -102,6 +101,33 @@ object File {
     }
   }
 
+
+  /**
+   * Open a file from local/HDFS/s3 for writing
+   *
+   * Notice: This should be closed by caller
+   *
+   * @param fileName
+   * @return Option[OutputStream]
+   */
+  def getOutputStream(fileName: String, overwrite: Boolean): Option[OutputStream] = {
+    val conf = getConfiguration(fileName)
+    val dest: Path = new Path(fileName)
+    var fs: FileSystem = null
+    var out: FSDataOutputStream = null
+    fs = dest.getFileSystem(conf)
+    if (fs.exists(dest) && overwrite) {
+      if (overwrite) {
+        fs.delete(dest, true)
+      } else {
+        return None
+      }
+    }
+    out = fs.create(dest)
+    Some(out)
+  }
+
+
   /**
    * Write file to HDFS.
    * @param obj
@@ -111,28 +137,28 @@ object File {
   def saveToHdfs(obj: Serializable, fileName: String, overwrite: Boolean): Unit = {
     require(fileName.startsWith(File.hdfsPrefix),
       s"hdfs path ${fileName} should have prefix 'hdfs:'")
-    val dest = new Path(fileName)
+    save(obj, fileName, overwrite)
+  }
+
+  /**
+   * Open a file from local/HDFS/s3 for reading
+   *
+   * Notice: This should be closed by caller
+   *
+   * @param fileName
+   * @return Option[InputStream]
+   */
+  def getInputStream(fileName: String): Option[InputStream] = {
+    val conf = getConfiguration(fileName)
+    val src: Path = new Path(fileName)
     var fs: FileSystem = null
-    var out: FSDataOutputStream = null
-    var objFile: ObjectOutputStream = null
-    try {
-      fs = dest.getFileSystem(new Configuration())
-      if (fs.exists(dest)) {
-        if (overwrite) {
-          fs.delete(dest, true)
-        } else {
-          throw new RuntimeException(s"file $fileName already exists")
-        }
-      }
-      out = fs.create(dest)
-      val byteArrayOut = new ByteArrayOutputStream()
-      objFile = new ObjectOutputStream(byteArrayOut)
-      objFile.writeObject(obj)
-      IOUtils.copyBytes(new ByteArrayInputStream(byteArrayOut.toByteArray), out, 1024, true)
-    } finally {
-      if (null != objFile) objFile.close()
-      if (null != out) out.close()
-      if (null != fs) fs.close()
+    var in: FSDataInputStream = null
+    fs = src.getFileSystem(conf)
+    if (fs.exists(src)) {
+      in = fs.open(src)
+      Some(in)
+    } else {
+      None
     }
   }
 
@@ -176,15 +202,15 @@ object File {
     var fr: FileReader = null
     var in: InputStream = null
     var objFile: ObjectInputStream = null
+    var in: InputStream = null
     try {
-      fr = FileReader(fileName)
-      in = fr.open()
+      in = getInputStream(fileName).getOrElse(null)
+      require(in != null, fileName + " does not exists")
       val byteArrayOut = new ByteArrayOutputStream()
       IOUtils.copyBytes(in, byteArrayOut, 1024, true)
       byteArrayOut.toByteArray
     } finally {
       if (null != in) in.close()
-      if (null != fr) fr.close()
       if (null != objFile) objFile.close()
     }
   }
@@ -195,18 +221,17 @@ object File {
    * @return
    */
   def readHdfsByte(fileName: String): Array[Byte] = {
-    val src: Path = new Path(fileName)
-    var fs: FileSystem = null
-    var in: FSDataInputStream = null
+    require(fileName.startsWith(File.hdfsPrefix),
+      s"hdfs path ${fileName} should have prefix 'hdfs:'")
+    var in: InputStream = null
     try {
-      fs = src.getFileSystem(new Configuration())
-      in = fs.open(src)
+      in = getInputStream(fileName).getOrElse(null)
+      require(in != null, fileName + " does not exists")
       val byteArrayOut = new ByteArrayOutputStream()
       IOUtils.copyBytes(in, byteArrayOut, 1024, true)
       byteArrayOut.toByteArray
     } finally {
       if (null != in) in.close()
-      if (null != fs) fs.close()
     }
   }
 }
