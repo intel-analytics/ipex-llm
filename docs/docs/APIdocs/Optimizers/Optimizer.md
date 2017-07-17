@@ -41,13 +41,13 @@ def apply[T: ClassTag](
       featurePaddingParam: PaddingParam[T],
       labelPaddingParam: PaddingParam[T])
 ```
-Apply an Optimizer who could apply padding to the Samples with a padding strategy.
-`model`               model will be optimizied
-`sampleRDD`           training Samples
-`criterion`           loss function
-`batchSize`           mini batch size
-`featurePaddingParam` feature padding strategy.
-`labelPaddingParam`   label padding strategy.
+Apply an Optimizer who could apply padding to the Samples with a padding strategy.  
+`model`: model will be optimizied.  
+`sampleRDD`: training Samples.  
+`criterion`: loss function.  
+`batchSize`: mini batch size.  
+`featurePaddingParam`: feature padding strategy.  
+`labelPaddingParam`: label padding strategy.
 
 
 
@@ -59,11 +59,11 @@ def apply[T: ClassTag](
       batchSize: Int,
       miniBatch: MiniBatch[T])
 ```
-Apply an optimizer with User-Defined MiniBatch.
-`model`: model will be optimizied
-`sampleRDD`: training Samples
-`criterion`: loss function
-`batchSize`: mini batch size
+Apply an optimizer with User-Defined `MiniBatch`.  
+`model`: model will be optimizied.  
+`sampleRDD`: training Samples.  
+`criterion`: loss function.  
+`batchSize`: mini batch size.  
 `miniBatch`: An User-Defined MiniBatch to construct a mini batch.
 
 ***Validation***
