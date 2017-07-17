@@ -71,9 +71,9 @@ val evaluateResult = model.evaluate(testSet, Array(new Top1Accuracy))
 ###### Predict with model
 Similar to above, we create input data first
 ```scala
-val feature = Tensor(10).apply1(e => Random.nextFloat())
+val feature = Tensor(10).rand()
 
-val label = Tensor(1).apply1(e => Random.nextFloat())
+val label = Tensor(1).randn()
 
 val predictSample = Sample(feature, label)
     
