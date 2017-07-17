@@ -30,6 +30,7 @@ pages:
   - Define a Model:
     - Using Sequential API: ProgrammingGuide/Model/Sequential.md
     - Using Functional API: ProgrammingGuide/Model/Functional.md
+  - Optimization: ProgrammingGuide/optimization.md
   - Use MLPipeline: 
     - DLEstimator: ProgrammingGuide/MLPipeline/DLEstimator.md
     - DLClassifier: ProgrammingGuide/MLPipeline/DLClassifier.md

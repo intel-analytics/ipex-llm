@@ -6,14 +6,31 @@ An optimizer is in general to minimize any function with respect to a set of par
 
 ***Factory method***
 
-A neural network model. May be a layer, a sequence of layers or a
-graph of layers.
+```scala
+val optimizer = Opimizer[T: ClassTag](
+  model: Module[T],
+  sampleRDD: RDD[Sample[T]],
+  criterion: Criterion[T],
+  batchSize: Int)
+```
+`T`: the numeric type(Float/Double).  
+`model`: the model will be optimized.  
+`sampleRDD`: an RDD of training Sample.  
+`criterion`: the Loss function.  
+`batchSize`: size of minibatch. 
 
-* **data**
 
-Your training data. As we train models on Spark, one of
-the most common distributed data structures is RDD. Of course
-you can use DataFrame. Please check the BigDL pipeline example.
+```scala
+val optimizer = Opimizer[T: ClassTag, D](
+  model: Module[T],
+  dataset: DataSet[D],
+  criterion: Criterion[T])
+```
+`T`: the numeric type(Float/Double).  
+`D`: should be a kind of MiniBatch.  
+`model`: the model will be optimized.  
+`dataset`: the training DataSet.  
+`criterion`: the Loss function.
 
 ```scala
 def apply[T: ClassTag](
@@ -48,21 +65,6 @@ Apply an optimizer with User-Defined `MiniBatch`.
 `criterion`: loss function.  
 `batchSize`: mini batch size.  
 `miniBatch`: An User-Defined MiniBatch to construct a mini batch.
-
-***Validation***
-
-
-```scala
-val optimizer = Opimizer[T: ClassTag, D](
-  model: Module[T],
-  dataset: DataSet[D],
-  criterion: Criterion[T])
-```
-`T`: the numeric type(Float/Double).  
-`D`: should be a kind of MiniBatch.  
-`model`: the model will be optimized.  
-`dataset`: the training DataSet.  
-`criterion`: the Loss function.
 
 ***Validation***
 
