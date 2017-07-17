@@ -33,7 +33,7 @@ Tree-LSTM is a kind of recursive neural networks, as described in the paper
 
 **Scala example:**
 ```scala
-    import com.intel.analytics.bigdl.numeric.NumericDouble
+    import com.intel.analytics.bigdl.numeric.NumericFloat
     import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 
     RNG.setSeed(100)
