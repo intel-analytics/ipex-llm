@@ -2,7 +2,7 @@
 
 **Scala:**
 ```scala
-val layer = CMinTable[T]()
+val layer = CMinTable()
 ```
 **Python:**
 ```python
@@ -18,18 +18,19 @@ and use the min value.
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
-val layer = CMinTable[Float]()
+val layer = CMinTable()
 layer.forward(T(
-  Tensor[Float](T(1.0f, 5.0f, 2.0f)),
-  Tensor[Float](T(3.0f, 4.0f, -1.0f)),
-  Tensor[Float](T(5.0f, 7.0f, -5.0f))
+  Tensor(T(1.0f, 5.0f, 2.0f)),
+  Tensor(T(3.0f, 4.0f, -1.0f)),
+  Tensor(T(5.0f, 7.0f, -5.0f))
 ))
 layer.backward(T(
-  Tensor[Float](T(1.0f, 5.0f, 2.0f)),
-  Tensor[Float](T(3.0f, 4.0f, -1.0f)),
-  Tensor[Float](T(5.0f, 7.0f, -5.0f))
-), Tensor[Float](T(0.1f, 0.2f, 0.3f)))
+  Tensor(T(1.0f, 5.0f, 2.0f)),
+  Tensor(T(3.0f, 4.0f, -1.0f)),
+  Tensor(T(5.0f, 7.0f, -5.0f))
+), Tensor(T(0.1f, 0.2f, 0.3f)))
 ```
 Its output should be
 ```

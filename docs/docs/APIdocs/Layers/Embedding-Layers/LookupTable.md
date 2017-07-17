@@ -2,7 +2,7 @@
 
 **Scala:**
 ```scala
-val layer = LookupTable[Float](nIndex: Int, nOutput: Int, paddingValue: Double = 0,
+val layer = LookupTable(nIndex: Int, nOutput: Int, paddingValue: Double = 0,
                                  maxNorm: Double = Double.MaxValue,
                                  normType: Double = 2.0,
                                  shouldScaleGradByFreq: Boolean = false,
@@ -21,9 +21,12 @@ This layer is often used in word embedding. In collaborative filtering, it can b
 
 **Scala example:**
 ```scala
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor._
 
-val layer = LookupTable[Float](9, 4, 2, 0.1, 2.0, true)
-val input = Tensor[Float](Storage(Array(5.0f, 2.0f, 6.0f, 9.0f, 4.0f)), 1, Array(5))
+val layer = LookupTable(9, 4, 2, 0.1, 2.0, true)
+val input = Tensor(Storage(Array(5.0f, 2.0f, 6.0f, 9.0f, 4.0f)), 1, Array(5))
 
 val output = layer.forward(input)
 val gradInput = layer.backward(input, output)

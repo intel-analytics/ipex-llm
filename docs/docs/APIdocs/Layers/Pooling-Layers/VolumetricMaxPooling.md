@@ -2,7 +2,7 @@
 
 **Scala:**
 ```scala
-val layer = VolumetricMaxPooling[T](
+val layer = VolumetricMaxPooling(
   kernelT, kernelW, kernelH,
   strideT, strideW, strideH,
   paddingT, paddingW, paddingH
@@ -29,14 +29,15 @@ The input layout should be [batch, plane, time, height, width] or [plane, time, 
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
-val layer = VolumetricMaxPooling[Float](
+val layer = VolumetricMaxPooling(
   2, 2, 2,
   1, 1, 1,
   0, 0, 0
 )
 
-val input = Tensor[Float](T(T(
+val input = Tensor(T(T(
   T(
     T(1.0f, 2.0f, 3.0f),
     T(4.0f, 5.0f, 6.0f),
@@ -49,7 +50,7 @@ val input = Tensor[Float](T(T(
   )
 )))
 layer.forward(input)
-layer.backward(input, Tensor[Float](T(T(T(
+layer.backward(input, Tensor(T(T(T(
   T(0.1f, 0.2f),
   T(0.3f, 0.4f)
 )))))

@@ -2,7 +2,7 @@
 
 **Scala:**
 ```scala
-val module = Mul[Float]()
+val module = Mul()
 ```
 **Python:**
 ```python
@@ -18,7 +18,12 @@ Multiply a singla scalar factor to the incoming data
 
 **Scala example:**
 ```scala
-val mul = Mul[Float]()
+
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor._
+
+val mul = Mul()
 
 > print(mul.forward(Tensor(1, 5).rand()))
 -0.03212923     -0.019040342    -9.136753E-4    -0.014459004    -0.04096878
@@ -27,6 +32,9 @@ val mul = Mul[Float]()
 
 **Python example:**
 ```python
+from bigdl.nn.layer import *
+import numpy as np
+
 mul = Mul()
 input = np.random.uniform(0, 1, (1, 5)).astype("float32")
 

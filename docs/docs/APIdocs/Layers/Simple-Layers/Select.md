@@ -2,7 +2,7 @@
 
 **Scala:**
 ```scala
-val layer = Select[T](dim, index)
+val layer = Select(dim, index)
 ```
 **Python:**
 ```python
@@ -17,19 +17,20 @@ Please note that the index and dimension start from 1. In collaborative filterin
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
-val layer = Select[Float](1, 2)
-layer.forward(Tensor[Float](T(
+val layer = Select(1, 2)
+layer.forward(Tensor(T(
   T(1.0f, 2.0f, 3.0f),
   T(4.0f, 5.0f, 6.0f),
   T(7.0f, 8.0f, 9.0f)
 )))
 
-layer.backward(Tensor[Float](T(
+layer.backward(Tensor(T(
   T(1.0f, 2.0f, 3.0f),
   T(4.0f, 5.0f, 6.0f),
   T(7.0f, 8.0f, 9.0f)
-)), Tensor[Float](T(0.1f, 0.2f, 0.3f)))
+)), Tensor(T(0.1f, 0.2f, 0.3f)))
 ```
 
 Its output should be

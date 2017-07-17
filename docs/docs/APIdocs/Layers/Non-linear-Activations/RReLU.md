@@ -2,7 +2,7 @@
 
 **Scala:**
 ```scala
-val layer = RReLU[T](lower, upper, inPlace)
+val layer = RReLU(lower, upper, inPlace)
 ```
 **Python:**
 ```python
@@ -31,11 +31,11 @@ For reference see [Empirical Evaluation of Rectified Activations in Convolutiona
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
-val layer = RReLU[Float]()
-layer.forward(Tensor[Float](T(1.0f, 2.0f, -1.0f, -2.0f)))
-layer.backward(Tensor[Float](T(1.0f, 2.0f, -1.0f, -2.0f)),
-Tensor[Float](T(0.1f, 0.2f, -0.1f, -0.2f)))
+val layer = RReLU()
+layer.forward(Tensor(T(1.0f, 2.0f, -1.0f, -2.0f)))
+layer.backward(Tensor(T(1.0f, 2.0f, -1.0f, -2.0f)),Tensor(T(0.1f, 0.2f, -0.1f, -0.2f)))
 ```
 
 There's random factor. An output is like

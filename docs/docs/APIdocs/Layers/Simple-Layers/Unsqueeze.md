@@ -2,7 +2,7 @@
 
 **Scala:**
 ```scala
-val layer = Unsqueeze[Float](dim)
+val layer = Unsqueeze(dim)
 ```
 **Python:**
 ```python
@@ -14,10 +14,13 @@ there are dim + 1 possible positions to insert the singleton dimension. The dim 
 
 **Scala example:**
 ```scala
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor._
 
-val layer = Unsqueeze[Float](2)
-val input = Tensor[Float](2, 2, 2).rand
-val gradOutput = Tensor[Float](2, 1, 2, 2).rand
+val layer = Unsqueeze(2)
+val input = Tensor(2, 2, 2).rand
+val gradOutput = Tensor(2, 1, 2, 2).rand
 val output = layer.forward(input)
 val gradInput = layer.backward(input, gradOutput)
 
@@ -37,6 +40,9 @@ val gradInput = layer.backward(input, gradOutput)
 
 **Python example:**
 ```python
+from bigdl.nn.layer import *
+import numpy as np
+
 layer = Unsqueeze(2)
 input = np.random.uniform(0, 1, (2, 2, 2)).astype("float32")
 gradOutput = np.random.uniform(0, 1, (2, 1, 2, 2)).astype("float32")

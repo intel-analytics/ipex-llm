@@ -2,7 +2,7 @@
 
 **Scala:**
 ```scala
-val addLayer = Add[T](inputSize)
+val addLayer = Add(inputSize)
 ```
 **Python:**
 ```python
@@ -22,12 +22,13 @@ Please note that the parameter will be trained in the back propagation.
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
-val addLayer = Add[Float](4)
-addLayer.bias.set(Tensor[Float](T(1.0f, 2.0f, 3.0f, 4.0f)))
-addLayer.forward(Tensor[Float](T(T(1.0f, 1.0f, 1.0f, 1.0f), T(3.0f, 3.0f, 3.0f, 3.0f))))
-addLayer.backward(Tensor[Float](T(T(1.0f, 1.0f, 1.0f, 1.0f), T(3.0f, 3.0f, 3.0f, 3.0f))),
-    Tensor[Float](T(T(0.1f, 0.1f, 0.1f, 0.1f), T(0.3f, 0.3f, 0.3f, 0.3f))))
+val addLayer = Add(4)
+addLayer.bias.set(Tensor(T(1.0f, 2.0f, 3.0f, 4.0f)))
+addLayer.forward(Tensor(T(T(1.0f, 1.0f, 1.0f, 1.0f), T(3.0f, 3.0f, 3.0f, 3.0f))))
+addLayer.backward(Tensor(T(T(1.0f, 1.0f, 1.0f, 1.0f), T(3.0f, 3.0f, 3.0f, 3.0f))),
+    Tensor(T(T(0.1f, 0.1f, 0.1f, 0.1f), T(0.3f, 0.3f, 0.3f, 0.3f))))
 ```
 Its output should be
 ```

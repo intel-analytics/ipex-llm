@@ -2,7 +2,7 @@
 
 **Scala:**
 ```scala
-val layer = SplitTable[T](dim)
+val layer = SplitTable(dim)
 ```
 **Python:**
 ```python
@@ -33,8 +33,9 @@ batch using `nInputDims`.
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
-val layer = SplitTable[Float](2)
+val layer = SplitTable(2)
 layer.forward(Tensor(T(
   T(1.0f, 2.0f, 3.0f),
   T(4.0f, 5.0f, 6.0f),
@@ -45,9 +46,9 @@ layer.backward(Tensor(T(
   T(4.0f, 5.0f, 6.0f),
   T(7.0f, 8.0f, 9.0f)
 )), T(
-  Tensor[Float](T(0.1f, 0.2f, 0.3f)),
-  Tensor[Float](T(0.4f, 0.5f, 0.6f)),
-  Tensor[Float](T(0.7f, 0.8f, 0.9f))
+  Tensor(T(0.1f, 0.2f, 0.3f)),
+  Tensor(T(0.4f, 0.5f, 0.6f)),
+  Tensor(T(0.7f, 0.8f, 0.9f))
 ))
 ```
 
