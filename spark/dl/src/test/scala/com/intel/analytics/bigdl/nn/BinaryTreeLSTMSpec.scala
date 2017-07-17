@@ -13,16 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.torch
+package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 class BinaryTreeLSTMSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "BinaryTreeLSTM" should "works correctly" in {
-    import com.intel.analytics.bigdl.numeric.NumericDouble
+    import com.intel.analytics.bigdl.numeric.NumericFloat
     import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 
     RNG.setSeed(100)
@@ -32,52 +31,52 @@ class BinaryTreeLSTMSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val inputs =
       Tensor(
-        T(T(T(1.0, 2.0),
-          T(2.0, 3.0),
-          T(4.0, 5.0))))
+        T(T(T(1f, 2f),
+          T(2f, 3f),
+          T(4f, 5f))))
 
     val tree =
       Tensor(
-        T(T(T(2.0, 5.0, -1.0),
-          T(0.0, 0.0, 1.0),
-          T(0.0, 0.0, 2.0),
-          T(0.0, 0.0, 3.0),
-          T(3.0, 4.0, 0.0))))
+        T(T(T(2f, 5f, -1f),
+          T(0f, 0f, 1f),
+          T(0f, 0f, 2f),
+          T(0f, 0f, 3f),
+          T(3f, 4f, 0f))))
 
     val input = T(inputs, tree)
 
     val gradOutput =
       Tensor(
-        T(T(T(2.0, 5.0),
-          T(2.0, 3.0),
-          T(4.0, 5.0),
-          T(2.0, 3.0),
-          T(4.0, 5.0),
-          T(6.0, 7.0))))
+        T(T(T(2f, 5f),
+          T(2f, 3f),
+          T(4f, 5f),
+          T(2f, 3f),
+          T(4f, 5f),
+          T(6f, 7f))))
 
     val expectOutput =
       Tensor(
-        T(T(T(-0.07799374051859737, -0.14419464399333934),
-          T(-0.2349552348774636, -0.04679071771123799),
-          T(-0.1594515102098235, -0.026039638054106272),
-          T(-0.04540739978946999, -0.0070662412123771254),
-          T(-0.05869603467391258, -0.13559056761784405))))
+        T(T(T(-0.07799374051859737f, -0.14419464399333934f),
+          T(-0.2349552348774636f, -0.04679071771123799f),
+          T(-0.1594515102098235f, -0.026039638054106272f),
+          T(-0.04540739978946999f, -0.0070662412123771254f),
+          T(-0.05869603467391258f, -0.13559056761784405f))))
 
     val expectGradInputs =
       Tensor(
         T(T(
-          T(0.5614597104995146, -0.3383652016018004),
-          T(0.8172036851171792, -0.46767634057453855),
-          T(0.37739630380493044, -0.2335553148048936))))
+          T(0.5614597104995146f, -0.3383652016018004f),
+          T(0.8172036851171792f, -0.46767634057453855f),
+          T(0.37739630380493044f, -0.2335553148048936f))))
 
     val expectGradTree =
       Tensor(
         T(T(
-          T(0.0, 0.0, 0.0),
-          T(0.0, 0.0, 0.0),
-          T(0.0, 0.0, 0.0),
-          T(0.0, 0.0, 0.0),
-          T(0.0, 0.0, 0.0))))
+          T(0f, 0f, 0f),
+          T(0f, 0f, 0f),
+          T(0f, 0f, 0f),
+          T(0f, 0f, 0f),
+          T(0f, 0f, 0f))))
 
     val expectGradInput = T(expectGradInputs, expectGradTree)
 

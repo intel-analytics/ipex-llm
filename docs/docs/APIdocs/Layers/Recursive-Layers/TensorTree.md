@@ -4,7 +4,7 @@ TensorTree class is used to decode a tensor to a tree structure.
 The given input `content` is a tensor which encodes a constituency parse tree.
 The tensor should have the following structure:
 
-Each row of the tensor represents a tree node and the row number is node number
+Each row of the tensor represents a tree node and the row number is node number.
 For each row, except the last column, all other columns represent the children
 node number of this node. Assume the value of a certain column of the row is not zero,
 the value `p` means this node has a child whose node number is `p` (lies in the `p`-th)

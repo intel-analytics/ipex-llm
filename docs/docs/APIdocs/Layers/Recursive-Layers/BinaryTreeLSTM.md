@@ -20,7 +20,7 @@ tree_lstm = BinaryTreeLSTM(
 
 This class is an implementation of Binary TreeLSTM (Constituency Tree LSTM)
 receiving [Constituency-based parse trees](https://en.wikipedia.org/wiki/Parse_tree#Constituency-based_parse_trees).
-Tree-LSTM is a kind of recursive neural networks, which describes in the paper 
+Tree-LSTM is a kind of recursive neural networks, as described in the paper 
 [Improved Semantic Representations From Tree-Structured Long Short-Term Memory Networks](https://arxiv.org/abs/1503.00075)
  by Kai Sheng Tai, Richard Socher, and Christopher Manning.
 
@@ -43,60 +43,60 @@ Tree-LSTM is a kind of recursive neural networks, which describes in the paper
 
     val inputs =
       Tensor(
-        T(T(T(1.0, 2.0),
-          T(2.0, 3.0),
-          T(4.0, 5.0))))
+        T(T(T(1f, 2f),
+          T(2f, 3f),
+          T(4f, 5f))))
 
     val tree =
       Tensor(
-        T(T(T(2.0, 5.0, -1.0),
-          T(0.0, 0.0, 1.0),
-          T(0.0, 0.0, 2.0),
-          T(0.0, 0.0, 3.0),
-          T(3.0, 4.0, 0.0))))
+        T(T(T(2f, 5f, -1f),
+          T(0f, 0f, 1f),
+          T(0f, 0f, 2f),
+          T(0f, 0f, 3f),
+          T(3f, 4f, 0f))))
 
     val input = T(inputs, tree)
 
     val gradOutput =
       Tensor(
-        T(T(T(2.0, 5.0),
-          T(2.0, 3.0),
-          T(4.0, 5.0),
-          T(2.0, 3.0),
-          T(4.0, 5.0),
-          T(6.0, 7.0))))
+        T(T(T(2f, 5f),
+          T(2f, 3f),
+          T(4f, 5f),
+          T(2f, 3f),
+          T(4f, 5f),
+          T(6f, 7f))))
 
     val model = BinaryTreeLSTM(inputSize, hiddenSize)
 
     val output = model.forward(input)
     println(output)
     (1,.,.) =
-    -0.07799374051859737	-0.14419464399333934	
-    -0.2349552348774636	-0.04679071771123799	
-    -0.1594515102098235	-0.026039638054106272	
-    -0.04540739978946999	-0.0070662412123771254	
-    -0.05869603467391258	-0.13559056761784405
-
-    [com.intel.analytics.bigdl.tensor.DenseTensor of size 1x5x2]  
+    -0.07799375	-0.14419462	
+    -0.23495524	-0.04679072	
+    -0.15945151	-0.026039641	
+    -0.0454074	-0.007066241	
+    -0.058696028	-0.13559057	
+    
+    [com.intel.analytics.bigdl.tensor.DenseTensor of size 1x5x2]
     
     val gradInput = model.backward(input, gradOutput)
     println(gradInput)
-     {
-    	2: (1,.,.) =
-    	   0.0	0.0	0.0	
-    	   0.0	0.0	0.0	
-    	   0.0	0.0	0.0	
-    	   0.0	0.0	0.0	
-    	   0.0	0.0	0.0	
-    	   
-    	   [com.intel.analytics.bigdl.tensor.DenseTensor of size 1x5x3]
-    	1: (1,.,.) =
-    	   0.5614597104995146	-0.3383652016018004	
-    	   0.8172036851171792	-0.46767634057453855	
-    	   0.37739630380493044	-0.2335553148048936	
-    	   
-    	   [com.intel.analytics.bigdl.tensor.DenseTensor of size 1x3x2]
-     }
+      {
+     	2: (1,.,.) =
+     	   0.0	0.0	0.0	
+     	   0.0	0.0	0.0	
+     	   0.0	0.0	0.0	
+     	   0.0	0.0	0.0	
+     	   0.0	0.0	0.0	
+     	   
+     	   [com.intel.analytics.bigdl.tensor.DenseTensor of size 1x5x3]
+     	1: (1,.,.) =
+     	   0.56145966	-0.3383652	
+     	   0.81720364	-0.46767634	
+     	   0.37739626	-0.23355529	
+     	   
+     	   [com.intel.analytics.bigdl.tensor.DenseTensor of size 1x3x2]
+      }
 ```
 
 **Python example:**
