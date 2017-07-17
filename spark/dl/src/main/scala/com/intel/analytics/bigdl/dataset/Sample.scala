@@ -205,16 +205,15 @@ private[bigdl] class ArraySample[T: ClassTag](
   override def equals(other: Any): Boolean = other match {
     case that: ArraySample[T] =>
       if (!(that canEqual this) ||
-        !(labelSize.deep == that.labelSize.deep) ||
+        !(data.deep == that.data.deep) ||
         !(featureSize.deep == that.featureSize.deep)) {
         return false
       }
-      var i = labelSize.map(_.product).sum + featureSize.map(_.product).sum - 1
-      while (i >= 0) {
-        if (data(i) != that.data(i)) return false
-        i -= 1
+      if (null != featureSize && null != that.featureSize) {
+        featureSize.deep == that.featureSize.deep
+      } else {
+        null == featureSize & null == that.featureSize
       }
-      true
     case _ => false
   }
 
