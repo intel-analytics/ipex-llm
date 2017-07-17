@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.models
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.numeric.NumericDouble
 import com.intel.analytics.bigdl.utils.{T, Table}
 
@@ -26,29 +27,29 @@ import com.intel.analytics.bigdl.utils.{T, Table}
  */
 @com.intel.analytics.bigdl.tags.Serial
 object GoogleNet_v1_test {
-  def apply(classNum: Int): Module[Double] = {
+  def apply(classNum: Int, format: DataFormat = DataFormat.NCHW): Module[Double] = {
     val feature1 = Sequential()
-    feature1.add(SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3, 1, true)
+    feature1.add(SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3, 1, true, format = format)
       .setInitMethod(weightInitMethod = Xavier).setName("conv1/7x7_s2"))
     feature1.add(ReLU(true).setName("conv1/relu_7x7"))
-    feature1.add(SpatialMaxPooling(3, 3, 2, 2).ceil().setName("pool1/3x3_s2"))
+    feature1.add(SpatialMaxPooling(3, 3, 2, 2, format = format).ceil().setName("pool1/3x3_s2"))
     feature1.add(SpatialCrossMapLRN(5, 0.0001, 0.75).setName("pool1/norm1"))
-    feature1.add(SpatialConvolution(64, 64, 1, 1, 1, 1).setInitMethod(weightInitMethod = Xavier)
+    feature1.add(SpatialConvolution(64, 64, 1, 1, 1, 1, format = format).setInitMethod(weightInitMethod = Xavier)
       .setName("conv2/3x3_reduce"))
     feature1.add(ReLU(true).setName("conv2/relu_3x3_reduce"))
-    feature1.add(SpatialConvolution(64, 192, 3, 3, 1, 1, 1, 1)
+    feature1.add(SpatialConvolution(64, 192, 3, 3, 1, 1, 1, 1, format = format)
       .setInitMethod(weightInitMethod = Xavier).setName("conv2/3x3"))
     feature1.add(ReLU(true).setName("conv2/relu_3x3"))
     feature1.add(SpatialCrossMapLRN(5, 0.0001, 0.75). setName("conv2/norm2"))
-    feature1.add(SpatialMaxPooling(3, 3, 2, 2).ceil().setName("pool2/3x3_s2"))
-    feature1.add(inception(192, T(T(64), T(96, 128), T(16, 32), T(32)), "inception_3a/"))
-    feature1.add(inception(256, T(T(128), T(128, 192), T(32, 96), T(64)), "inception_3b/"))
-    feature1.add(SpatialMaxPooling(3, 3, 2, 2).ceil().setName("pool3/3x3_s2"))
-    feature1.add(inception(480, T(T(192), T(96, 208), T(16, 48), T(64)), "inception_4a/"))
+    feature1.add(SpatialMaxPooling(3, 3, 2, 2, format = format).ceil().setName("pool2/3x3_s2"))
+    feature1.add(inception(192, T(T(64), T(96, 128), T(16, 32), T(32)), "inception_3a/", format = format))
+    feature1.add(inception(256, T(T(128), T(128, 192), T(32, 96), T(64)), "inception_3b/", format = format))
+    feature1.add(SpatialMaxPooling(3, 3, 2, 2, format = format).ceil().setName("pool3/3x3_s2"))
+    feature1.add(inception(480, T(T(192), T(96, 208), T(16, 48), T(64)), "inception_4a/", format = format))
 
     val output1 = Sequential()
-    output1.add(SpatialAveragePooling(5, 5, 3, 3).ceil().setName("loss1/ave_pool"))
-    output1.add(SpatialConvolution(512, 128, 1, 1, 1, 1).setName("loss1/conv"))
+    output1.add(SpatialAveragePooling(5, 5, 3, 3, format = format).ceil().setName("loss1/ave_pool"))
+    output1.add(SpatialConvolution(512, 128, 1, 1, 1, 1, format = format).setName("loss1/conv"))
     output1.add(ReLU(true).setName("loss1/relu_conv"))
     output1.add(View(128 * 4 * 4).setNumInputDims(3))
     output1.add(Linear(128 * 4 * 4, 1024).setName("loss1/fc"))
@@ -58,13 +59,13 @@ object GoogleNet_v1_test {
     output1.add(LogSoftMax().setName("loss1/loss"))
 
     val feature2 = Sequential()
-    feature2.add(inception(512, T(T(160), T(112, 224), T(24, 64), T(64)), "inception_4b/"))
-    feature2.add(inception(512, T(T(128), T(128, 256), T(24, 64), T(64)), "inception_4c/"))
-    feature2.add(inception(512, T(T(112), T(144, 288), T(32, 64), T(64)), "inception_4d/"))
+    feature2.add(inception(512, T(T(160), T(112, 224), T(24, 64), T(64)), "inception_4b/", format = format))
+    feature2.add(inception(512, T(T(128), T(128, 256), T(24, 64), T(64)), "inception_4c/", format = format))
+    feature2.add(inception(512, T(T(112), T(144, 288), T(32, 64), T(64)), "inception_4d/", format = format))
 
     val output2 = Sequential()
-    output2.add(SpatialAveragePooling(5, 5, 3, 3).setName("loss2/ave_pool"))
-    output2.add(SpatialConvolution(528, 128, 1, 1, 1, 1).setName("loss2/conv"))
+    output2.add(SpatialAveragePooling(5, 5, 3, 3, format = format).setName("loss2/ave_pool"))
+    output2.add(SpatialConvolution(528, 128, 1, 1, 1, 1, format = format).setName("loss2/conv"))
     output2.add(ReLU(true).setName("loss2/relu_conv"))
     output2.add(View(128 * 4 * 4).setNumInputDims(3))
     output2.add(Linear(128 * 4 * 4, 1024).setName("loss2/fc"))
@@ -74,11 +75,11 @@ object GoogleNet_v1_test {
     output2.add(LogSoftMax().setName("loss2/loss"))
 
     val output3 = Sequential()
-    output3.add(inception(528, T(T(256), T(160, 320), T(32, 128), T(128)), "inception_4e/"))
-    output3.add(SpatialMaxPooling(3, 3, 2, 2).ceil().setName("pool4/3x3_s2"))
-    output3.add(inception(832, T(T(256), T(160, 320), T(32, 128), T(128)), "inception_5a/"))
-    output3.add(inception(832, T(T(384), T(192, 384), T(48, 128), T(128)), "inception_5b/"))
-    output3.add(SpatialAveragePooling(7, 7, 1, 1).setName("pool5/7x7_s1"))
+    output3.add(inception(528, T(T(256), T(160, 320), T(32, 128), T(128)), "inception_4e/", format = format))
+    output3.add(SpatialMaxPooling(3, 3, 2, 2, format = format).ceil().setName("pool4/3x3_s2"))
+    output3.add(inception(832, T(T(256), T(160, 320), T(32, 128), T(128)), "inception_5a/", format = format))
+    output3.add(inception(832, T(T(384), T(192, 384), T(48, 128), T(128)), "inception_5b/", format = format))
+    output3.add(SpatialAveragePooling(7, 7, 1, 1, format = format).setName("pool5/7x7_s1"))
     // output3.add(Dropout(0.4).setName("pool5/drop_7x7_s1"))
     output3.add(View(1024).setNumInputDims(3))
     output3.add(Linear(1024, classNum).setInitMethod(weightInitMethod = Xavier)
@@ -106,32 +107,37 @@ object GoogleNet_v1_test {
     model
   }
 
-  def inception(inputSize: Int, config: Table, namePrefix : String = "") : Module[Double] = {
-    val concat = Concat(2)
+  def inception(inputSize: Int, config: Table, namePrefix : String = "",
+                format: DataFormat) : Module[Double] = {
+    val concat = format match {
+      case DataFormat.NCHW => Concat(2)
+      case DataFormat.NHWC => Concat(4)
+    }
     val conv1 = Sequential()
-    conv1.add(SpatialConvolution(inputSize, config[Table](1)(1), 1, 1, 1, 1)
-      .setInitMethod(weightInitMethod = Xavier).setName(namePrefix + "1x1"))
+    val conv = SpatialConvolution(inputSize, config[Table](1)[Int](1), 1, 1, 1, 1, format = format)
+      .setInitMethod(weightInitMethod = Xavier).setName(namePrefix + "1x1")
+    conv1.add(conv)
     conv1.add(ReLU(true).setName(namePrefix + "relu_1x1"))
     concat.add(conv1)
     val conv3 = Sequential()
-    conv3.add(SpatialConvolution(inputSize, config[Table](2)(1), 1, 1, 1, 1)
+    conv3.add(SpatialConvolution(inputSize, config[Table](2)[Int](1), 1, 1, 1, 1, format = format)
       .setInitMethod(weightInitMethod = Xavier).setName(namePrefix + "3x3_reduce"))
     conv3.add(ReLU(true).setName(namePrefix + "relu_3x3_reduce"))
-    conv3.add(SpatialConvolution(config[Table](2)(1), config[Table](2)(2), 3, 3, 1, 1, 1, 1)
+    conv3.add(SpatialConvolution(config[Table](2)[Int](1), config[Table](2)[Int](2), 3, 3, 1, 1, 1, 1, format = format)
       .setInitMethod(weightInitMethod = Xavier).setName(namePrefix + "3x3"))
     conv3.add(ReLU(true).setName(namePrefix + "relu_3x3"))
     concat.add(conv3)
     val conv5 = Sequential()
-    conv5.add(SpatialConvolution(inputSize, config[Table](3)(1), 1, 1, 1, 1)
+    conv5.add(SpatialConvolution(inputSize, config[Table](3)[Int](1), 1, 1, 1, 1, format = format)
       .setInitMethod(weightInitMethod = Xavier).setName(namePrefix + "5x5_reduce"))
     conv5.add(ReLU(true).setName(namePrefix + "relu_5x5_reduce"))
-    conv5.add(SpatialConvolution(config[Table](3)(1), config[Table](3)(2), 5, 5, 1, 1, 2, 2)
+    conv5.add(SpatialConvolution(config[Table](3)[Int](1), config[Table](3)[Int](2), 5, 5, 1, 1, 2, 2, format = format)
       .setInitMethod(weightInitMethod = Xavier).setName(namePrefix + "5x5"))
     conv5.add(ReLU(true).setName(namePrefix + "relu_5x5"))
     concat.add(conv5)
     val pool = Sequential()
-    pool.add(SpatialMaxPooling(3, 3, 1, 1, 1, 1).ceil().setName(namePrefix + "pool"))
-    pool.add(SpatialConvolution(inputSize, config[Table](4)(1), 1, 1, 1, 1)
+    pool.add(SpatialMaxPooling(3, 3, 1, 1, 1, 1, format = format).ceil().setName(namePrefix + "pool"))
+    pool.add(SpatialConvolution(inputSize, config[Table](4)[Int](1), 1, 1, 1, 1, format = format)
       .setInitMethod(weightInitMethod = Xavier).setName(namePrefix + "pool_proj"))
     pool.add(ReLU(true).setName(namePrefix + "relu_pool_proj"))
     concat.add(pool).setName(namePrefix + "output")

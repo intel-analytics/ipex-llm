@@ -140,8 +140,8 @@ class SpatialConvolution[T: ClassTag](
     setInitMethod(wInit, bInit)
   }
 
-  protected var im2colTime = 0L
-  protected var col2imTime = 0L
+  var im2colTime = 0L
+  var col2imTime = 0L
 
   def getIm2ColTime(): Double = im2colTime
 

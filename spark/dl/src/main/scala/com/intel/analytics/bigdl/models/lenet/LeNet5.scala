@@ -19,17 +19,22 @@ package com.intel.analytics.bigdl.models.lenet
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 
 object LeNet5 {
-  def apply(classNum: Int): Module[Float] = {
+  def apply(classNum: Int, format: DataFormat = DataFormat.NCHW): Module[Float] = {
+    val inputLayer = format match {
+      case DataFormat.NCHW => Reshape(Array(1, 28, 28))
+      case DataFormat.NHWC => Reshape(Array(28, 28, 1))
+    }
     val model = Sequential()
-    model.add(Reshape(Array(1, 28, 28)))
-      .add(SpatialConvolution(1, 6, 5, 5).setName("conv1_5x5"))
+    model.add(inputLayer)
+      .add(SpatialConvolution(1, 6, 5, 5, format = format).setName("conv1_5x5"))
       .add(Tanh())
-      .add(SpatialMaxPooling(2, 2, 2, 2))
+      .add(SpatialMaxPooling(2, 2, 2, 2, format = format))
       .add(Tanh())
-      .add(SpatialConvolution(6, 12, 5, 5).setName("conv2_5x5"))
-      .add(SpatialMaxPooling(2, 2, 2, 2))
+      .add(SpatialConvolution(6, 12, 5, 5, format = format).setName("conv2_5x5"))
+      .add(SpatialMaxPooling(2, 2, 2, 2, format = format))
       .add(Reshape(Array(12 * 4 * 4)))
       .add(Linear(12 * 4 * 4, 100).setName("fc1"))
       .add(Tanh())
