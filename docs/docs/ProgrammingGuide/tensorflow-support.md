@@ -1,7 +1,13 @@
 ## **Loading a tensorflow model from tensorflow model file**
 
 If you have a pre-trained tensorflow model saved in a ".pb" file. You load it
-into BigDL using `Model.load_tensorflow` api.
+into BigDL using `Model.load_tensorflow` api. 
+
+For more information on how to generate
+the ".pb" file, you can refer to [A Tool Developer's Guide to TensorFlow Model Files](https://www.tensorflow.org/extend/tool_developers/).
+Specifically, you should generate a model definition file and a set of checkpoints, then use the [freeze_graph](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/tools/freeze_graph.py)
+script to freeze the graph definition and weights in checkpoints into a single file. This [example](https://github.com/intel-analytics/BigDL/blob/master/spark/dl/src/test/resources/tf/test.py)
+can also give you a good sense of how to generate your own ".pb" file.
 
 **Python:**
 ```python
