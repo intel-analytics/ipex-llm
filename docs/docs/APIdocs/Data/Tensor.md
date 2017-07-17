@@ -39,7 +39,7 @@ b: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 3.0	2.0	1.0
 [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x3]
 ```
-`+` `-` `*` `/` can be applied to tensor. When the second parameter is a constant value, `+` `-` `*` `*` is element-wise operation. But when the second parameter is a tensor, `+` `-` `/` is element-wise operation to the tensor also, but `*` is a matrix multipy on two 2D tensors. 
+`+` `-` `*` `/` can be applied to tensor. When the second parameter is a constant value, `+` `-` `*` `*` is element-wise operation. But when the second parameter is a tensor, `+` `-` `/` is element-wise operation to the tensor too, but `*` is a matrix multipy on two 2D tensors. 
 ```scala
 scala> a + 1
 res: com.intel.analytics.bigdl.tensor.Tensor[Float] =
