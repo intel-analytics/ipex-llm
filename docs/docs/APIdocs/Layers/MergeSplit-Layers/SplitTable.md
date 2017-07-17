@@ -18,6 +18,16 @@ when using mini-batch, a batch of sample tensors will be passed to the layer and
 the user needs to specify the number of dimensions of each sample tensor in a
 batch using `nInputDims`.
 
+```
+    +----------+         +-----------+
+    | input[1] +---------> {member1, |
+  +----------+-+         |           |
+  | input[2] +----------->  member2, |
++----------+-+           |           |
+| input[3] +------------->  member3} |
++----------+             +-----------+
+```
+
 **Scala example:**
 ```scala
 import com.intel.analytics.bigdl.nn._
