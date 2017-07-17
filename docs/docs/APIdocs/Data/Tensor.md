@@ -1,4 +1,4 @@
-## **Tensor**
+## Tensor
 
 Modeled after the [Tensor](https://github.com/torch/torch7/blob/master/doc/tensor.md) class in [Torch](http://torch.ch/  ), the ```Tensor``` [package](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/tensor) (written in Scala and leveraging [Intel MKL](https://software.intel.com/en-us/intel-mkl)) in BigDL provides numeric computing support for the deep learning applications (e.g., the input, output, weight, bias and   gradient of the neural networks).
 
@@ -6,6 +6,7 @@ A ```Tensor``` is essentially a multi-dimensional array of numeric types (```Flo
 
 
 **Scala example:**
+
 You may check it out in the interactive Scala shell (by typing ```scala -cp bigdl_SPARKVERSION-BIGDLVERSION-SNAPSHOT-jar-with-dependencies.jar```), for instance:
 
 ```scala
@@ -64,4 +65,6 @@ res: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 ```
 For more API, please visit [bigdl scala doc](https://bigdl-project.github.io/latest/#APIdocs/scaladoc/)
 
+**Python user:**
+Python use numpy instead of `Tensor`, see [numpy](http://www.numpy.org/)
 
