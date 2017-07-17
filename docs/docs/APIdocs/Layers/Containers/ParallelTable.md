@@ -12,7 +12,7 @@ module = ParallelTable()
 It is a container module that applies the i-th member module to the i-th
  input, and outputs an output in the form of Table
  
- ```
+```
 +----------+         +-----------+
 | {input1, +---------> {member1, |
 |          |         |           |
@@ -20,6 +20,7 @@ It is a container module that applies the i-th member module to the i-th
 |          |         |           |
 |  input3} +--------->  member3} |
 +----------+         +-----------+
+
 ```
  
 **Scala example:**
