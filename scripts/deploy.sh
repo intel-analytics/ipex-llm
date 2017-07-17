@@ -72,7 +72,7 @@ cd ../../
 
 # Deploy bigdl-1.6
 cat spark/dl/pom.xml.origin | sed 's/<artifactId>bigdl<\/artifactId>/<artifactId>bigdl-SPARK_1.6<\/artifactId>/' > spark/dl/pom.xml
-mvn clean package -DskipTests -P spark_1.6 -Dspark.version=1.6.3
+mvn clean install -DskipTests -P spark_1.6 -Dspark.version=1.6.3
 cd spark/dl/
 mvn clean deploy -DskipTests -P sign -P spark_1.6 -Dspark.version=1.6.3
 # Upload package to download for bigdl-1.6
@@ -92,7 +92,7 @@ cd ../../../
 
 # Deploy bigdl-2.0
 cat spark/dl/pom.xml.origin | sed 's/<artifactId>bigdl<\/artifactId>/<artifactId>bigdl-SPARK_2.0<\/artifactId>/' > spark/dl/pom.xml
-mvn clean package -DskipTests -P spark_2.0 -Dspark.version=2.0.2
+mvn clean install -DskipTests -P spark_2.0 -Dspark.version=2.0.2
 cd spark/dl/
 mvn clean deploy -DskipTests -P sign -P spark_2.0 -Dspark.version=2.0.2
 # Upload package to download for bigdl-2.0
@@ -107,7 +107,7 @@ cd ../../
 
 # Deploy bigdl-2.1
 cat spark/dl/pom.xml.origin | sed 's/<artifactId>bigdl<\/artifactId>/<artifactId>bigdl-SPARK_2.1<\/artifactId>/' > spark/dl/pom.xml
-mvn clean package -DskipTests -P spark_2.1 -Dspark.version=2.1.1
+mvn clean install -DskipTests -P spark_2.1 -Dspark.version=2.1.1
 cd spark/dl/
 mvn clean deploy -DskipTests -P sign -P spark_2.1 -Dspark.version=2.1.1
 # Upload package to download for bigdl-2.1
