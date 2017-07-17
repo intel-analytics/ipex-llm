@@ -126,6 +126,9 @@ class LSTMPeepholeSpec  extends TorchSpec {
     /*
      * Since we changed the structure of LSTMPeephole, we have to rearrange the parameters.
      */
+
+    val parametersTable = model.getParametersTable()
+
     val (weightsArray, gradArray) = model.parameters()
     val weightsArrayTorch = weightsArray.clone
 
@@ -135,14 +138,18 @@ class LSTMPeepholeSpec  extends TorchSpec {
     weightsTorch += Tensor().resizeAs(i2g2).copy(i2g2)
     val i2g2bias = weightsArrayTorch(1).narrow(1, 1 + hiddenSize, hiddenSize)
     weightsTorch += Tensor().resizeAs(i2g2bias).copy(i2g2bias)
-    weightsTorch += Tensor().resizeAs(weightsArrayTorch(2)).copy(weightsArrayTorch(2))
+
     weightsTorch += Tensor().resizeAs(weightsArrayTorch(3)).copy(weightsArrayTorch(3))
+
+    weightsTorch += Tensor().resizeAs(weightsArrayTorch(2)).copy(weightsArrayTorch(2))
+
     val i2g1 = weightsArrayTorch(0).narrow(1, 1, hiddenSize)
     weightsTorch += Tensor().resizeAs(i2g1).copy(i2g1)
     val i2g1bias = weightsArrayTorch(1).narrow(1, 1, hiddenSize)
     weightsTorch += Tensor().resizeAs(i2g1bias).copy(i2g1bias)
-    weightsTorch += Tensor().resizeAs(weightsArrayTorch(4)).copy(weightsArrayTorch(4))
+
     weightsTorch += Tensor().resizeAs(weightsArrayTorch(5)).copy(weightsArrayTorch(5))
+    weightsTorch += Tensor().resizeAs(weightsArrayTorch(4)).copy(weightsArrayTorch(4))
 
     val i2g3 = weightsArrayTorch(0).narrow(1, 1 + 2 * hiddenSize, hiddenSize)
     weightsTorch += Tensor().resizeAs(i2g3).copy(i2g3)
@@ -156,8 +163,8 @@ class LSTMPeepholeSpec  extends TorchSpec {
     val i2g4bias = weightsArrayTorch(1).narrow(1, 1 + 3 * hiddenSize, hiddenSize)
     weightsTorch += Tensor().resizeAs(i2g4bias).copy(i2g4bias)
 
-    weightsTorch += Tensor().resizeAs(weightsArrayTorch(7)).copy(weightsArrayTorch(7))
     weightsTorch += Tensor().resizeAs(weightsArrayTorch(8)).copy(weightsArrayTorch(8))
+    weightsTorch += Tensor().resizeAs(weightsArrayTorch(7)).copy(weightsArrayTorch(7))
     weightsTorch += Tensor().resizeAs(weightsArrayTorch(9)).copy(weightsArrayTorch(9))
     weightsTorch += Tensor().resizeAs(weightsArrayTorch(10)).copy(weightsArrayTorch(10))
 
@@ -411,14 +418,18 @@ class LSTMPeepholeSpec  extends TorchSpec {
     weightsTorch += Tensor().resizeAs(i2g2).copy(i2g2)
     val i2g2bias = weightsArrayTorch(1).narrow(1, 1 + hiddenSize, hiddenSize)
     weightsTorch += Tensor().resizeAs(i2g2bias).copy(i2g2bias)
-    weightsTorch += Tensor().resizeAs(weightsArrayTorch(2)).copy(weightsArrayTorch(2))
+
     weightsTorch += Tensor().resizeAs(weightsArrayTorch(3)).copy(weightsArrayTorch(3))
+
+    weightsTorch += Tensor().resizeAs(weightsArrayTorch(2)).copy(weightsArrayTorch(2))
+
     val i2g1 = weightsArrayTorch(0).narrow(1, 1, hiddenSize)
     weightsTorch += Tensor().resizeAs(i2g1).copy(i2g1)
     val i2g1bias = weightsArrayTorch(1).narrow(1, 1, hiddenSize)
     weightsTorch += Tensor().resizeAs(i2g1bias).copy(i2g1bias)
-    weightsTorch += Tensor().resizeAs(weightsArrayTorch(4)).copy(weightsArrayTorch(4))
+
     weightsTorch += Tensor().resizeAs(weightsArrayTorch(5)).copy(weightsArrayTorch(5))
+    weightsTorch += Tensor().resizeAs(weightsArrayTorch(4)).copy(weightsArrayTorch(4))
 
     val i2g3 = weightsArrayTorch(0).narrow(1, 1 + 2 * hiddenSize, hiddenSize)
     weightsTorch += Tensor().resizeAs(i2g3).copy(i2g3)
@@ -432,13 +443,14 @@ class LSTMPeepholeSpec  extends TorchSpec {
     val i2g4bias = weightsArrayTorch(1).narrow(1, 1 + 3 * hiddenSize, hiddenSize)
     weightsTorch += Tensor().resizeAs(i2g4bias).copy(i2g4bias)
 
-    weightsTorch += Tensor().resizeAs(weightsArrayTorch(7)).copy(weightsArrayTorch(7))
     weightsTorch += Tensor().resizeAs(weightsArrayTorch(8)).copy(weightsArrayTorch(8))
+    weightsTorch += Tensor().resizeAs(weightsArrayTorch(7)).copy(weightsArrayTorch(7))
     weightsTorch += Tensor().resizeAs(weightsArrayTorch(9)).copy(weightsArrayTorch(9))
     weightsTorch += Tensor().resizeAs(weightsArrayTorch(10)).copy(weightsArrayTorch(10))
 
     val (weights2Torch, grad2Torch) =
       (Module.flatten[Float](weightsTorch.toArray), Module.flatten[Float](gradArray))
+
 
     val code =
       s"""
