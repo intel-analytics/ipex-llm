@@ -23,6 +23,16 @@ batch using `nInputDims`.
 
 **nInputDims** - specify the number of dimensions that this module will receiveIf it is more than the dimension of input tensors, the first dimensionwould be considered as batch size
 
+```
++----------+             +-----------+
+| {input1, +-------------> output[1] |
+|          |           +-----------+-+
+|  input2, +-----------> output[2] |
+|          |         +-----------+-+
+|  input3} +---------> output[3] |
++----------+         +-----------+
+```
+
 **Scala example:**
 ```scala
 import com.intel.analytics.bigdl.nn.JoinTable
