@@ -14,8 +14,8 @@ to each member module, input can be a tensor or a table.
 
 ConcateTable usually works with CAddTable and CMulTable to
  implement element wise add/multiply on outputs of two modules.
- 
- ```
+
+```
                    +-----------+
              +----> {member1, |
 +-------+    |    |           |
@@ -24,7 +24,7 @@ ConcateTable usually works with CAddTable and CMulTable to
    or        +---->  member3} |
  {input}          +-----------+
  
- ```
+```
 
 **Scala example:**
 ```scala
