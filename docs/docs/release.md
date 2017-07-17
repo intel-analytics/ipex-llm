@@ -1,6 +1,5 @@
----
-## Download
 
+##  **Download**
 
 |         Download      | Docs |
 | ------------- | --------- | 
@@ -11,7 +10,7 @@
 These are built BigDL packages including dependency and python files. You can download these packages instead of building them by yourself. This is useful when you want to do something like run some examples or develop python code.
 
 ---
-## BigDL Nightly Build
+## **BigDL Nightly Build**
 
 Here are the folders for nightly build packages. The packages are built from latest master code. You can download the .zip files with a timestamp suffix in the name. 
 
@@ -24,7 +23,7 @@ Here are the folders for nightly build packages. The packages are built from lat
 
 
 ---
-## BigDL 0.1.1
+## **BigDL 0.1.1**
 
 |               | Linux x64 | Mac |
 | ------------- | --------- | ------ |
@@ -34,7 +33,7 @@ Here are the folders for nightly build packages. The packages are built from lat
 | Spark 2.1.0   | [download](https://repo1.maven.org/maven2/com/intel/analytics/bigdl/dist-spark-2.1.0-scala-2.11.8-linux64/0.1.1/dist-spark-2.1.0-scala-2.11.8-linux64-0.1.1-dist.zip) | [download](https://repo1.maven.org/maven2/com/intel/analytics/bigdl/dist-spark-2.1.0-scala-2.11.8-mac/0.1.1/dist-spark-2.1.0-scala-2.11.8-mac-0.1.1-dist.zip) |
 
 ---
-## BigDL 0.1.0
+## **BigDL 0.1.0**
 
 |               | Linux x64 | Mac |
 | ------------- | --------- | ------ |
