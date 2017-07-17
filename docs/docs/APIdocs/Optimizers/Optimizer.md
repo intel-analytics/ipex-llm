@@ -32,6 +32,40 @@ val optimizer = Opimizer[T: ClassTag, D](
 `dataset`: the training DataSet.  
 `criterion`: the Loss function.
 
+```scala
+def apply[T: ClassTag](
+      model: Module[T],
+      sampleRDD: RDD[Sample[T]],
+      criterion: Criterion[T],
+      batchSize: Int,
+      featurePaddingParam: PaddingParam[T],
+      labelPaddingParam: PaddingParam[T])
+```
+Apply an Optimizer who could apply padding to the Samples with a padding strategy.  
+`model`: model will be optimizied.  
+`sampleRDD`: training Samples.  
+`criterion`: loss function.  
+`batchSize`: mini batch size.  
+`featurePaddingParam`: feature padding strategy.  
+`labelPaddingParam`: label padding strategy.
+
+
+
+```scala
+def apply[T: ClassTag](
+      model: Module[T],
+      sampleRDD: RDD[Sample[T]],
+      criterion: Criterion[T],
+      batchSize: Int,
+      miniBatch: MiniBatch[T])
+```
+Apply an optimizer with User-Defined `MiniBatch`.  
+`model`: model will be optimizied.  
+`sampleRDD`: training Samples.  
+`criterion`: loss function.  
+`batchSize`: mini batch size.  
+`miniBatch`: An User-Defined MiniBatch to construct a mini batch.
+
 ***Validation***
 
 Function setValidation is to set a validate evaluation in the `optimizer`.
