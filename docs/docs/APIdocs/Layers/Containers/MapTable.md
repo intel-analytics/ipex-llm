@@ -14,8 +14,19 @@ to all input elements. The member module is cloned as necessary to
 process all input elements.
 
 `module` a member module.  
+
+```
++----------+         +-----------+
+| {input1, +---------> {member,  |
+|          |         |           |
+|  input2, +--------->  clone,   |
+|          |         |           |
+|  input3} +--------->  clone}   |
++----------+         +-----------+
+```
  
 **Scala example:**
+
 ```scala
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.nn._
