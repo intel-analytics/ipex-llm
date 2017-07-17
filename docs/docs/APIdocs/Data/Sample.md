@@ -4,7 +4,7 @@ A `Sample` represent one record of your data set. One record contains feature an
 
 Every Sample is actually a set of tensors, and them will be transformed to the input/output of the model. For example, in the case of image classification, a Sample have two tensors. One is 3D tensor representing a image, another is a 1-element tensor representing its category. For the 1-element label, you also can use a `T` instead of tensor.
 
-** Scala example:
+**Scala example:**
 ```scala
 import com.intel.analytics.bigdl.dataset.Sample
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -15,7 +15,7 @@ val label = 1f
 val sample = Sample(image, label)
 ```
 
-** Python example
+**Python example:**
 ```python
 from bigdl.util.common import Sample
 import numpy as np
