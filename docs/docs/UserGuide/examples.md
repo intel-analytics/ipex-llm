@@ -67,7 +67,8 @@ Finally (after optionally specifying the validation data and methods for the ```
 ````
 
 ---
-## Text Classification - Working with Spark RDD
+## **Text Classification - Working with Spark RDD**
+
 This tutorial describes the [text_classification](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/example/textclassification) example, which builds a text classifier using a simple convolutional neural network (CNN) model. (It was first described by [this Keras tutorial](https://blog.keras.io/using-pre-trained-word-embeddings-in-a-keras-model.html)).
 
 After importing ```com.intel.analytics.bigdl._``` and some initialization, the [example](https://github.com/intel-analytics/BigDL/blob/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/example/textclassification/TextClassifier.scala) broadcasts the pre-trained world embedding and loads the input data using RDD transformations:

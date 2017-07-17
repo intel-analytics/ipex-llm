@@ -13,47 +13,67 @@ Then you can either use an interactive shell, run a python program on commandlin
 
 ---
 
-## Install BigDL-0.1.1 via pip##
+You can run the following commands to install and play with BigDL locally and this package support both linux and mac platform.
 
-Note: Only Spark 2.x is supported.
+## Installation ##
+  * [BigDL-0.1.2](#BigDL-0.1.2)
+  * [BigDL-0.2.0-snapshot](#BigDL-0.2.0-snapshot)
+  
+## Usage ##
 
-1. Download Spark2.x:  
-```bash
-wget https://d3kbcqa49mib13.cloudfront.net/spark-2.1.0-bin-hadoop2.7.tgz 
+* Launch with Python REPL
+```
+>>> from bigdl.util.common import *
+>>> init_engine()
+>>> import bigdl.version
+>>> bigdl.version.__version__
+'0.1.1rc0'
+>>> from bigdl.nn.layer import *
+>>> linear = Linear(2, 3)
+creating: createLinear
+>>> continue your experiment....
+```
+* Launch with jupyter:
+   * jupyter notebook --notebook-dir=./ --ip=* --no-browser
+   * You need to create SparkContext in this way as we start jupyter without pyspark scripts:
+```
+      from bigdl.util.common import *
+      sc = get_spark_context()
 ```
 
-2. Extract the tar ball and set `SPARK_HOME`
-```bash
- tar -zxvf spark-2.1.0-bin-hadoop2.7.tgz
- export SPARK_HOME=path to spark-2.1.0-bin-hadoop2.7
+<a name="BigDL-0.1.2"></a>
+### Install BigDL-0.1.2 ###
+
+1. Download Spark1.6.3:  
+```wget https://d3kbcqa49mib13.cloudfront.net/spark-1.6.3-bin-hadoop2.6.tgz ```
+2. Extract the tar ball and set SPARK_HOME
+```
+tar -zxvf spark-1.6.3-bin-hadoop2.6.tgz
+export SPARK_HOME=path to spark-1.6.3-bin-hadoop2.6.tgz
 ```
 3. Install BigDL release via pip (we tested this on pip 9.0.1)
-```bash
+```
 pip install --upgrade pip
-pip install BigDL==0.1.1rc0     # for Python 2.7
-pip3 install BigDL==0.1.1rc0  # for Python 3.n
+pip install BigDL==0.1.2     # for Python 2.7
+pip3 install BigDL==0.1.2  # for Python 3.n
 ```
 
----
+<a name="BigDL-0.2.0-snapshot"></a>
+### Install BigDL-0.2.0-snapshot ###
 
-## Install BigDL-0.2.0-snapshot via pip
-
-Note: Only Spark 2.x is supported.
-
-1. Download Spark2.x:  
-```bash
-wget https://d3kbcqa49mib13.cloudfront.net/spark-2.1.0-bin-hadoop2.7.tgz
+1. Download Spark1.6.3:  
+```wget https://d3kbcqa49mib13.cloudfront.net/spark-1.6.3-bin-hadoop2.6.tgz ```
+2. Extract the tar ball and set SPARK_HOME
 ```
-2. Extract the tar ball and set `SPARK_HOME`
-```bash
-tar -zxvf spark-2.1.0-bin-hadoop2.7.tgz
-export SPARK_HOME=path to spark-2.1.0-bin-hadoop2.7
+tar -zxvf spark-1.6.3-bin-hadoop2.6.tgz
+export SPARK_HOME=path to spark-1.6.3-bin-hadoop2.6
 ```
 3. Install BigDL release via pip (we tested this on pip 9.0.1)
-```bash
-pip install --upgrade pip
-pip install BigDL==0.2.0.dev2   # for Python 2.7
-pip3 install BigDL==0.2.0.dev2  # for Python 3.n
 ```
+pip install --upgrade pip
+pip install BigDL==0.2.0.dev3     # for Python 2.7
+pip3 install BigDL==0.2.0.dev3  # for Python 3.n
+```
+
 
 

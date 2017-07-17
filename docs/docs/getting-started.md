@@ -1,5 +1,5 @@
 ---
-## Before using BigDL
+## **Before using BigDL**
 
 To use BigDL *Scala* API, the first thing is to obtain the BigDL libraries. You can either download the pre-built BigDL libs ([available here](release.md)), or build the libs from source code (available at [BigDL Github](https://github.com/intel-analytics/BigDL)). When writing programs, you need to ensure the SparkContext is created successfully and initialize BigDL engine before calling BigDL APIs. Refer to [Use Prebuild Libs](UserGuide/install-pre-built.md), [Build from Source](UserGuide/install-build-src.md), and [Run](UserGuide/run.md) for details about how to build BigDL and run a program in Scala.  
 
@@ -7,7 +7,7 @@ To use BigDL *Python* API, besides using pre-built BigDL libs or building from s
 
 ---
 
-## Prepare your Data
+## **Prepare your Data**
 
 You data need to be transformed into specific data structures in order to be fed into BigDL for training, evaluation and prediction.
  
@@ -23,7 +23,7 @@ You need to convert your dataset into `RDD` of `Samples` (both Scala and Python)
 
 ---
 
-## Use BigDL for Prediction only
+## **Use BigDL for Prediction only**
 
 If you have an existing model and want to use BigDL only for prediction, you need to first load the model, and then do prediction or evaluation. 
 
@@ -38,7 +38,7 @@ If you are using predicted result as a component inside a Spark ML pipeline, ref
 
 ---
 
-## Train a Model from Scratch
+## **Train a Model from Scratch**
 
 The procedure of training a model from scratch usually involves following steps:
 
@@ -61,7 +61,7 @@ Evaluation can be performed periodically during a training. Before calling `Opti
 
 When `Optimizer.optimize` finishes, it will return a trained model. You can then use `module.predict` for predictions. Refer to [Module API docs](APIdocs/Model/ModuleAPI.md) for detailed usage.    
 
-## Stop and Resume a Training
+## **Stop and Resume a Training**
 
 Training a deep learning model sometimes takes a very long time. It may be stopped or interrupted and we need the training to resume from where we have left. 
 
@@ -74,7 +74,7 @@ You can also resume training without loading the optimization state, if you inte
 
 --- 
 
-## Use Pre-trained Models/Layers
+## **Use Pre-trained Models/Layers**
 
 Pre-train is a useful strategy when training deep learning models. You may use the pre-trained features (e.g. embeddings) in your model, or do a fine-tuning for a different dataset or target.
  
@@ -85,7 +85,7 @@ Instead of using an entire model, you can also use pre-trained weights/biases in
 
 ---
 
-## Monitor your training
+## **Monitor your training**
 
 
  * Visualization
@@ -117,7 +117,7 @@ You can set where the `bigdl.log` will be generated with `-Dbigdl.utils.LoggerFi
 
 ---
 
-## Tuning
+## **Tuning**
 
 There're several strategies that may be useful when tuning an optimization. 
 

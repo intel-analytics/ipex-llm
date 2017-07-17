@@ -1,4 +1,4 @@
-## Loading a tensorflow model from tensorflow model file
+## **Loading a tensorflow model from tensorflow model file**
 
 If you have a pre-trained tensorflow model saved in a ".pb" file. You load it
 into BigDL using `Model.load_tensorflow` api.
@@ -10,8 +10,8 @@ inputs = ["your_input_node"]
 outputs = ["your_output_node"]
 model = Model.load_tensorflow(path, inputs, outputs, byte_order = "little_endian", bigdl_type="float")
 ```
-
-## Build model using tensorflow and train with BigDL
+---
+## **Build model using tensorflow and train with BigDL**
 
 You can construct your BigDL model directly from the input and output nodes of
 tensorflow model. That is to say, you can use tensorflow to define

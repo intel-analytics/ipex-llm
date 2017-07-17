@@ -1,4 +1,4 @@
----
+
 
 ## **Use an Interactive Shell**
 You can try BigDL easily using the Spark interactive shell. Run below command to start spark shell with BigDL support:
@@ -41,7 +41,7 @@ res9: com.intel.analytics.bigdl.tensor.Tensor[Double] =
 
 ---
 
-## Run a BigDL Program
+## **Run a BigDL Program**
 You can run a BigDL program, e.g., the [VGG](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/vgg) training, as a standard Spark program (running in either local mode or cluster mode) as follows:
 
 1. Download the CIFAR-10 data from [here](https://www.cs.toronto.edu/%7Ekriz/cifar.html). Remember to choose the binary version.
@@ -85,7 +85,7 @@ If you are to run your own program, do remember to create SparkContext and initi
  Engine.init
 ```
 
-
+---
 ## **Running on EC2**
 
 <br/>
