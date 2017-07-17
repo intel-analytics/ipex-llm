@@ -15,6 +15,9 @@ You may check it out in the interactive Scala shell (by typing ```scala -cp bigd
  
  scala> import com.intel.analytics.bigdl.numeric.NumericFloat
  import com.intel.analytics.bigdl.numeric.NumericFloat
+ 
+ scala> import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.T
 
  scala> val tensor = Tensor(2, 3)
  tensor: com.intel.analytics.bigdl.tensor.Tensor =
@@ -24,21 +27,26 @@ You may check it out in the interactive Scala shell (by typing ```scala -cp bigd
 ```
 Tensor can be created with existing data.
 ```scala
-scala> val a = Tensor(Array(1f, 2, 3, 4, 5, 6), Array(2, 3))
+scala> val a = Tensor(T(1f, 2f, 3f, 4f, 5f, 6f)).resize(2, 3)
 a: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 1.0	2.0	3.0
 4.0	5.0	6.0
 [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x3]
 
-
-scala> val b = Tensor(Array(6f, 5, 4, 3, 2, 1), Array(2, 3))
+scala> val b = Tensor(T(6f, 5f, 4f, 3f, 2f, 1f)).resize(2, 3)
 b: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 6.0	5.0	4.0
 3.0	2.0	1.0
 [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x3]
 ```
-`+` `-` `*` `/` can be applied to tensors.
+`+` `-` `*` `/` can be applied to tensor. When the second parameter is a constant value, `+` `-` `*` `*` is element-wise operation. But when the second parameter is a tensor, `+` `-` `/` is element-wise operation to the tensor also, but `*` is a matrix multipy on two 2D tensors. 
 ```scala
+scala> a + 1
+res: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+2.0	3.0	4.0
+5.0	6.0	7.0
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x3]
+
 scala> a + b
 res: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 7.0	7.0	7.0
