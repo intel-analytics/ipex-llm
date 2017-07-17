@@ -5,10 +5,11 @@ word embedding vectors.   Tree-LSTM is a kind of recursive neural networks, whic
 [Improved Semantic Representations From Tree-Structured Long Short-Term Memory Networks](https://arxiv.org/abs/1503.00075)
  by Kai Sheng Tai, Richard Socher, and Christopher Manning.
 
-The dataset is a corpus of ~10K one-sentence movie reviews from Rotten Tomatoes. Each sentence has been parsed into constituency trees, which is
+The dataset is a corpus of ~10K one-sentence movie reviews from Rotten Tomatoes. Each sentence has been parsed into
+[constituency-based parse trees](https://en.wikipedia.org/wiki/Parse_tree#Constituency-based_parse_trees), which is
 kind of binary trees with a word at each leaf. After pre-processing, every node has been tagged a label whose range from -2 to 2, representing 
 the sentiment of the word or phrase. The value from -2 to 2 corresponds to highly negative, moderately negative, neutral, moderately positive and
-highly positive. The root of the tree represents the sentiment of the entire sentence.
+highly positive respectively. The root of the tree represents the sentiment of the entire sentence.
 
 ## Steps to run this example:
 First run the following script
