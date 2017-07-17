@@ -65,7 +65,3 @@ res: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 ```
 For more API, please visit [bigdl scala doc](https://bigdl-project.github.io/latest/#APIdocs/scaladoc/)
 
-**Python API:**
-
-Python API use numpy instead of `Tensor`, see [numpy](http://www.numpy.org/) for details.
-
