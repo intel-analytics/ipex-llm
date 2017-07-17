@@ -130,7 +130,8 @@ private[bigdl] class ArraySample[T: ClassTag](
       private val data: Array[T],
       private val featureSize: Array[Array[Int]],
       private val labelSize: Array[Array[Int]]) extends Sample[T] {
-  require(featureSize != null, "Feature couldn't be empty")
+  require(data != null, "Sample's Data couldn't be empty")
+  require(featureSize != null, "Sample's Feature couldn't be empty")
 
   override def getData(): Array[T] = data
 
@@ -218,7 +219,7 @@ private[bigdl] class ArraySample[T: ClassTag](
   }
 
   override def hashCode(): Int = {
-    val state = Seq(data, featureSize, labelSize)
+    val state = if (null == labelSize) Seq(data, featureSize) else Seq(data, featureSize, labelSize)
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
 }

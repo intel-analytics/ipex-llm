@@ -61,6 +61,25 @@ class SampleSpec extends FlatSpec with Matchers {
       Some(featureParam), Some(labelParam)).set(samples)
   }
 
+  "Hashcode" should "work fine" in {
+    val sample1 = Sample[Float](Tensor[Float](2, 3).range(1, 6, 1), Tensor[Float](1).fill(1))
+    println(sample1.hashCode())
+
+    val sample2 = Sample[Float](Array(Tensor[Float](2, 3).range(1, 6, 1),
+      Tensor[Float](3).fill(1)), Tensor[Float](1).fill(1))
+    println(sample2.hashCode())
+
+    val sample3 = Sample[Float](Tensor[Float](2, 3).range(1, 6, 1))
+    println(sample3.hashCode())
+
+    val sample4 = Sample[Float](Array(Tensor[Float](2, 3).range(1, 6, 1),
+      Tensor[Float](3).fill(1)))
+    println(sample4.hashCode())
+
+    val sample5 = Sample[Float](Tensor[Float](2, 3).range(1, 6, 1), 1f)
+    println(sample5.hashCode())
+  }
+
   "SampleSpec with Float Tensor input and Tensor label" should "initialize well" in {
     val input1 = new LabeledBGRImage(32, 32)
     val label1 = new LabeledBGRImage(32, 32)
