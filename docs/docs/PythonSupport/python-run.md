@@ -1,4 +1,4 @@
----
+
 
 ## **Use an Interactive Shell (W/ pip install)**
  * type `python` in commandline to start a REPL
@@ -89,7 +89,7 @@ init_engine()
 
 ---
 
-## Use Jupyter Notebook (W/ pip install)
+## **Use Jupyter Notebook (W/ pip install)**
 
 * Start jupyter notebook as you normally did, e.g.
 ```bash
@@ -115,7 +115,7 @@ sc = get_spark_context()
 
 ---
 
-## Use Jupyter Notebook (W/O pip install)
+## **Use Jupyter Notebook (W/O pip install)**
 
 With the full Python API support in BigDL, users can now use BigDL together with powerful notebooks (such as Jupyter notebook) in a distributed fashion across the cluster, combining Python libraries, Spark SQL / dataframes and MLlib, deep learning models in BigDL, as well as interactive visualization tools.
 
