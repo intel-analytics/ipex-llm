@@ -5,15 +5,37 @@ into BigDL using `Model.load_tensorflow` api.
 
 For more information on how to generate
 the ".pb" file, you can refer to [A Tool Developer's Guide to TensorFlow Model Files](https://www.tensorflow.org/extend/tool_developers/).
-Specifically, you should generate a model definition file and a set of checkpoints, then use the [freeze_graph](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/tools/freeze_graph.py)
-script to freeze the graph definition and weights in checkpoints into a single file. This [example](https://github.com/intel-analytics/BigDL/blob/master/spark/dl/src/test/resources/tf/test.py)
-can also give you a good sense of how to generate your own ".pb" file.
+Specifically, you should generate a model definition file and a set of checkpoints, then use the [freeze_graph](https://github.com/tensorflow/tensorflow/blob/v1.0.0/tensorflow/python/tools/freeze_graph.py)
+script to freeze the graph definition and weights in checkpoints into a single file.
 
-**Python:**
+**Generate model definition file and checkpoints (in python)**
 ```python
-path = "your/path/to/tensorflow_model.pb"
-inputs = ["your_input_node"]
-outputs = ["your_output_node"]
+import tensorflow as tf
+xs = tf.placeholder(tf.float32, [None, 1])
+W1 = tf.Variable(tf.zeros([1,10])+0.2)
+b1 = tf.Variable(tf.zeros([10])+0.1)
+Wx_plus_b1 = tf.nn.bias_add(tf.matmul(xs,W1), b1)
+output = tf.nn.tanh(Wx_plus_b1, name="output")
+
+saver = tf.train.Saver()
+with tf.Session() as sess:
+    init = tf.global_variables_initializer()
+    sess.run(init)
+    checkpointpath = saver.save(sess, '/tmp/model/test.chkp')
+    tf.train.write_graph(sess.graph, '/tmp/model', 'test.pbtxt')
+```
+
+**Freeze graph definition and checkpoints into a single ".pb" file (in shell)**
+```shell
+wget https://raw.githubusercontent.com/tensorflow/tensorflow/v1.0.0/tensorflow/python/tools/freeze_graph.py
+python freeze_graph.py --input_graph /tmp/model/test.pbtxt --input_checkpoint /tmp/model/test.chkp --output_node_names=output --output_graph "/tmp/model/test.pb"
+```
+
+**Load tensorflow model (in python)**
+```python
+path = "/tmp/model/test.pb"
+inputs = ["Placeholder"]
+outputs = ["output"]
 model = Model.load_tensorflow(path, inputs, outputs, byte_order = "little_endian", bigdl_type="float")
 ```
 ---
