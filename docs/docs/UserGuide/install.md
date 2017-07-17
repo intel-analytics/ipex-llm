@@ -1,5 +1,5 @@
 
-## Use a Pre-Built Package
+## **Use a Pre-Built Package**
 
 * **Download a pre-built library**
 
@@ -82,8 +82,7 @@ resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repos
 ```
 
 ---
-
-## Build from BigDL source
+## **Build from BigDL source**
 
 * **Download BigDL Source**
 
@@ -118,6 +117,8 @@ Once downloaded, you can build BigDL with the following commands:
 $ bash make-dist.sh
 ```
 After that, you can find a `dist` folder, which contains all the needed files to run a BigDL program. The files in `dist` include:
+
+* **dist/bin/bigdl.sh**: A script used to set up proper environment variables and launch the BigDL program.
 * **dist/lib/bigdl-VERSION-jar-with-dependencies.jar**: This jar package contains all dependencies except Spark classes.
 * **dist/lib/bigdl-VERSION-python-api.zip**: This zip package contains all Python files of BigDL.
 * **dist/conf/spark-bigdl.conf**: This file contains necessary property configurations. ```Engine.createSparkConf``` will populate these properties, so try to use that method in your code. Or you need to pass the file to Spark with the "--properties-file" option. 
@@ -162,22 +163,22 @@ Note that the instructions above will skip the build of native library code, and
  3. Full build
    
    Clone BigDL as follows:
-   ```{r, engine='sh'}
+```sbt
    git clone git@github.com:intel-analytics/BigDL.git --recursive 
-   ```
+```
    For already cloned repos, just use:
-   ```{r, engine='sh'}
+```sbt
    git submodule update --init --recursive 
-   ```
+```
    If the Intel MKL is not installed to the default path `/opt/intel`, please pass your libiomp5.so's directory path to
    the `make-dist.sh` script:
-   ```{r, engine='sh'}
+```sbt
    $ bash make-dist.sh -P full-build -DiompLibDir=<PATH_TO_LIBIOMP5_DIR> 
-   ```
+```
    Otherwise, only pass `-P full-build` to the `make-dist.sh` script:
-   ```{r, engine='sh'}
+```sbt
    $ bash make-dist.sh -P full-build
-   ```
+```
     
 ---
 * **Build with Maven**
