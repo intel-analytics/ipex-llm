@@ -59,9 +59,9 @@ import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.numeric.NumericFloat
 
-val sample1 = Sample(Tensor(T(1f, 2f, 3f, 4f, 5f, 6f)).resize(2, 3), 1f)
-val sample2 = Sample(Tensor(T(7f, 8f, 9f)).resize(1, 3), 2f)
-val sample3 = Sample(Tensor(T(10f, 11f, 12f, 13f, 14f, 15f, 16f, 17f, 18f)).resize(3, 3), 3f)
+val sample1 = Sample(Tensor.range(1, 6, 1).resize(2, 3), 1f)
+val sample2 = Sample(Tensor.range(7, 9, 1).resize(1, 3), 2f)
+val sample3 = Sample(Tensor.range(10, 18, 1).resize(3, 3), 3f)
 val samples = Array(sample1, sample2, sample3)
 val featurePadding = PaddingParam(Some(Array(Tensor(T(-1f, -2f, -3f)))), FixedLength(Array(4)))
 val labelPadding = PaddingParam[Float](None, FixedLength(Array(4)))
