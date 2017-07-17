@@ -27,13 +27,17 @@ import com.intel.analytics.bigdl.utils.T
 ```
 Tensor can be created with existing data.
 ```scala
-scala> val a = Tensor(T(1f, 2f, 3f, 4f, 5f, 6f)).resize(2, 3)
+scala> val a = Tensor(T(
+     | T(1f, 2f, 3f),
+     | T(4f, 5f, 6f)))
 a: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 1.0	2.0	3.0
 4.0	5.0	6.0
 [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x3]
 
-scala> val b = Tensor(T(6f, 5f, 4f, 3f, 2f, 1f)).resize(2, 3)
+scala> val b = Tensor(T(
+     | T(6f, 5f, 4f),
+     | T(3f, 2f, 1f)))
 b: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 6.0	5.0	4.0
 3.0	2.0	1.0
