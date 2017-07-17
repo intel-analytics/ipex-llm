@@ -8,9 +8,9 @@ Every Sample is actually a set of tensors, and them will be transformed to the i
 ```scala
 import com.intel.analytics.bigdl.dataset.Sample
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.numeric.NumericFloat
 
-val image = Tensor(3, 32, 32)
+val image = Tensor(3, 32, 32).rand
 val label = 1f
 val sample = Sample(image, label)
 ```
