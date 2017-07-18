@@ -55,6 +55,40 @@ class JoinTableSpec extends TorchSpec {
     println("Test case : JoinTable, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
   }
 
+  "A JoinTable() with dimension=2" should "generate correct output and grad" in {
+    torchCheck()
+    def randomn(): Double = RandomGenerator.RNG.uniform(-10, 10)
+    val layer = new JoinTable[Double](2, 2)
+
+    val input1 = Tensor[Double](3, 3)
+    input1.apply1(x => randomn())
+    val input2 = Tensor[Double](3, 3)
+    input2.apply1(x => randomn())
+    val input = T(input1, input2)
+    val gradOutput = Tensor[Double](3, 6)
+    gradOutput.apply1(x => randomn())
+
+    val start = System.nanoTime()
+    val output = layer.forward(input)
+    val gradInput = layer.backward(input, gradOutput)
+    val end = System.nanoTime()
+    val scalaTime = end - start
+
+    val code = "module = nn.JoinTable(2, 2)\n" +
+      "output = module:forward(input)\n" +
+      "gradInput = module:backward(input,gradOutput)"
+
+    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+      Array("output", "gradInput"))
+    val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
+    val luaGradInput = torchResult("gradInput").asInstanceOf[Table]
+
+    output should be (luaOutput)
+    gradInput should be (luaGradInput)
+
+    println("Test case : JoinTable, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+  }
+
   "JoinTable" should "work properly after clearState()" in {
     import com.intel.analytics.bigdl.numeric.NumericFloat
     val model = Sequential[Float]()
