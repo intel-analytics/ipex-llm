@@ -15,7 +15,7 @@ highly positive respectively. The root of the tree represents the sentiment of t
 First run the following script
 
 ```{r, engine='sh'}
-./fetch_and_preprocess.sh
+python fetch_and_preprocess.py
 ```
 
 The treebank dataset and the Glove word embedding vectors will be downloaded to
