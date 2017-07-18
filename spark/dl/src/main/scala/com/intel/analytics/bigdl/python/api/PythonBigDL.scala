@@ -36,6 +36,7 @@ import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn.tf.{Const, Fill, Shape, SplitAndSelect}
+import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowSaver}
 
 import scala.collection.JavaConverters._
 import scala.language.existentials
@@ -1354,6 +1355,31 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       case _ => throw new IllegalArgumentException(s"No support byte order $byteOrder")
     }
     Module.loadTF[T](path, inputs.asScala, outputs.asScala, order)
+  }
+
+  def saveTF(model: Graph[T],
+             inputs: JList[Any],
+             path: String,
+             byteOrder: String,
+             dataFormat: String): Unit = {
+    val order = byteOrder.toLowerCase match {
+      case "little_endian" => ByteOrder.LITTLE_ENDIAN
+      case "big_endian" => ByteOrder.BIG_ENDIAN
+      case _ => throw new IllegalArgumentException(s"Unknown byte order $byteOrder")
+    }
+
+    val format = dataFormat.toLowerCase match {
+      case "nhwc" => TensorflowDataFormat.NHWC
+      case "nchw" => TensorflowDataFormat.NCHW
+      case _ => throw new IllegalArgumentException(s"Unknown format $dataFormat")
+    }
+    val scalaInputs = inputs.asScala.map { elem =>
+      val array = elem.asInstanceOf[JList[Any]]
+      val name = array.get(0).asInstanceOf[String]
+      val shape = array.get(1).asInstanceOf[JList[Int]]
+      (name, shape.asScala)
+    }
+    TensorflowSaver.saveGraph(model, scalaInputs, path, order, format)
   }
 
   def modelPredictRDD(model: AbstractModule[Activity, Activity, T],
