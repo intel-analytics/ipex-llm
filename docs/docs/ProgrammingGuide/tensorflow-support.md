@@ -8,7 +8,7 @@ the ".pb" file, you can refer to [A Tool Developer's Guide to TensorFlow Model F
 Specifically, you should generate a model definition file and a set of checkpoints, then use the [freeze_graph](https://github.com/tensorflow/tensorflow/blob/v1.0.0/tensorflow/python/tools/freeze_graph.py)
 script to freeze the graph definition and weights in checkpoints into a single file.
 
-**Generate model definition file and checkpoints in Tensorflow**
+### Generate model definition file and checkpoints in Tensorflow
 
 **Python**
 ```python
@@ -27,7 +27,7 @@ with tf.Session() as sess:
     tf.train.write_graph(sess.graph, '/tmp/model', 'test.pbtxt')
 ```
 
-**Freeze graph definition and checkpoints into a single ".pb" file**
+### Freeze graph definition and checkpoints into a single ".pb" file
 
 **Shell**
 ```shell
@@ -35,7 +35,7 @@ wget https://raw.githubusercontent.com/tensorflow/tensorflow/v1.0.0/tensorflow/p
 python freeze_graph.py --input_graph /tmp/model/test.pbtxt --input_checkpoint /tmp/model/test.chkp --output_node_names=output --output_graph "/tmp/model/test.pb"
 ```
 
-**Load Tensorflow model in BigDL**
+### Load Tensorflow model in BigDL
 
 **Scala**
 ```scala
@@ -96,7 +96,6 @@ model_original = Model([linear], [softmax])
 # save it to Tensorflow model file
 Model.save_tensorflow(model_original, [("input", [4, 10])], "/tmp/model.pb")
 ```
-
 
 ---
 ## **Build Tensorflow model and run on BigDL**
