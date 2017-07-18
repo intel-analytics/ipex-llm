@@ -17,8 +17,8 @@ Apache Spark DataFrame/Dataset.
 Different from many algorithms in MLlib, `DLEstimator` supports more data types for the
 label column. In many deep learning applications, the label data could be a sequence
 or other data collection. `DLEstimator` supports feature and label data in the format
-of `Array[Double], Array[Float], org.apache.spark.mllib.linalg.Vector` for Apache
-Spark 1.5, 1.6 and `org.apache.spark.ml.linalg.Vector` for Apache Spark 2.0+. Also label
+of `Array[Double]`, `Array[Float]`, `org.apache.spark.mllib.linalg.Vector` (for Apache
+Spark 1.5, 1.6) and `org.apache.spark.ml.linalg.Vector` (for Apache Spark 2.0+). Also label
 data can be of Double type.
 
 To use `DLEstimator` for training, user should specify
