@@ -39,7 +39,7 @@ BigDL supports loading models trained and saved in BigDL, or a trained Tensorflo
 
 Once you have a loaded model, you can call `model.predict()` to do predictions (refer to [Model Predict](APIdocs/Module/#model-prediction) for details). Note that you need to convert your input data into proper format which `predict` accepts. For how to prepare your data, refer to section [Prepare your Data](#prepare-your-data). 
 
-If you are using predicted result as a component inside a Spark ML pipeline, refer to [DLEsitimator API](ProgrammingGuide/MLPipeline/DLEstimator.md) and [DLClassifier API](ProgrammingGuide/MLPipeline/DLClassifier.md) for usage. 
+If you are using predicted result as a component inside a Spark ML pipeline, refer to [DLEstimator API](ProgrammingGuide/MLPipeline/MLPipeline.md) and [DLClassifier API](ProgrammingGuide/MLPipeline/MLPipeline.md) for usage. 
 
 ---
 

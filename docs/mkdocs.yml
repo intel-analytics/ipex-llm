@@ -33,9 +33,8 @@ pages:
     - Using Sequential API: ProgrammingGuide/Model/Sequential.md
     - Using Functional API: ProgrammingGuide/Model/Functional.md
   - Optimization: ProgrammingGuide/optimization.md
-  - Use MLPipeline: 
-    - DLEstimator: ProgrammingGuide/MLPipeline/DLEstimator.md
-    - DLClassifier: ProgrammingGuide/MLPipeline/DLClassifier.md
+  - Use MLPipeline:
+    - MLPipeline: ProgrammingGuide/MLPipeline/MLPipeline.md
   - Visualization: ProgrammingGuide/visualization.md
   - Run on Amazon EC2: ProgrammingGuide/run-on-ec2.md 
   - Tensorflow Support: ProgrammingGuide/tensorflow-support.md
