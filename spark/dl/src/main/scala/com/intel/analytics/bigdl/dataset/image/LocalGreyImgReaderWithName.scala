@@ -28,13 +28,27 @@ import scala.collection.Iterator
  */
 object LocalGreyImgReaderWithName {
   Class.forName("javax.imageio.ImageIO")
-//  Class.forName("java.awt.color.ICC_ColorSpace")
-//  ColorSpace.getInstance(ColorSpace.CS_sRGB).toRGB(Array[Float](0, 0, 0))
 
+  /**
+   * Create grey image reader transformer to resize the shorted edge to the given scale to
+   * value and resize the other edge properly. Also divide the pixel value by
+   * the given normalize value. Besides, the transformer will return the file name too.
+   * @param scaleTo scale to value
+   * @param normalize the value to normalize
+   * @return grey image reader transformer
+   */
   def apply(scaleTo: Int = Image.NO_SCALE, normalize: Float = 255f)
   : Transformer[LocalLabeledImagePath, (LabeledGreyImage, String)]
   = new LocalScaleGreyImgWithName(scaleTo, normalize)
 
+  /**
+   * Read Grey images from local given paths. After read the image, it will resize the images to the
+   * given width and height. It will also divide the pixel value by the given normalize value.
+   * Besides, it will return the file name.Besides, the transformer will return the file name too.
+   * @param resizeW the given width to resize
+   * @param resizeH the given height to resize
+   * @param normalize the value to normalize
+   */
   def apply(resizeW: Int, resizeH: Int, normalize: Float)
   : Transformer[LocalLabeledImagePath, (LabeledGreyImage, String)]
   = new LocalResizeGreyImgWithName(resizeW, resizeH, normalize)
@@ -45,8 +59,8 @@ object LocalGreyImgReaderWithName {
  * given scale to value and resize the other edge properly. It will also divide the pixel value
  * by the given normalize value.
  * Besides, it will return the file name.
- * @param scaleTo
- * @param normalize
+ * @param scaleTo scale to value
+ * @param normalize the value to normalize
  */
 class LocalScaleGreyImgWithName private[dataset](scaleTo: Int, normalize: Float)
   extends Transformer[LocalLabeledImagePath, (LabeledGreyImage, String)] {
@@ -69,7 +83,7 @@ class LocalScaleGreyImgWithName private[dataset](scaleTo: Int, normalize: Float)
  * given width and height. It will also divide the pixel value by the given normalize value.
  * Besides, it will return the file name.
  * @param resizeW the given width to resize
- * @param resizeH the given hight to resize
+ * @param resizeH the given height to resize
  * @param normalize the value to normalize
  */
 class LocalResizeGreyImgWithName private[dataset](resizeW: Int, resizeH: Int, normalize: Float)
