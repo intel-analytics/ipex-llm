@@ -90,3 +90,10 @@ test_load_caffe = Module(
         "test.load_caffe_test"
     ]
 )
+
+test_tensorflow = Module(
+    name="tensorflow_test",
+    python_test_goals=[
+        "test.tensorflow_test"
+    ]
+)
