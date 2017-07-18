@@ -1,22 +1,48 @@
-## Regularizers ##
+---
+Regularizers are used to avoid overfitting. 
+
+---
+## L1 Regularizer
+
+L1 Regularizer.
 
 **Scala:**
 ```scala
-val l1Regularizer = L1Regularizer(l1)
-val l2Regularizer = L2Regularizer(l2)
-val l1l2Regularizer = L1L2Regularizer(l1, l2)
+val l1Regularizer = L1Regularizer(rate)
 ```
 **Python:**
 ```python
-regularizerl1 = L1Regularizer(0.1)
-regularizerl2 = L2Regularizer(0.1)
-regularizerl1l2 = L1L2Regularizer(0.1, 0.1)
+regularizerl1 = L1Regularizer(rate)
+```
+---
+## L2 Regularizer 
+
+L2 Regularizer.
+
+**Scala:**
+```scala
+val l2Regularizer = L2Regularizer(rate)
+```
+**Python:**
+```python
+regularizerl2 = L2Regularizer(rate)
+```
+---
+## L1L2 Regularizer
+
+L1L2 Regularizer.
+ 
+**Scala:**
+```scala
+val l1l2Regularizer = L1L2Regularizer(l1rate, l2rate)
+```
+**Python:**
+```python
+regularizerl1l2 = L1L2Regularizer(l1rate, l2rate)
 ```
 
-L1 and L2 regularizers are used to avoid overfitting.
-
-
-**Scala example:**
+---
+## Scala Example
 ```scala
 
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
@@ -46,8 +72,8 @@ output: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 -0.21293467     -0.16091438     -0.15637109     0.12860553      0.2332296
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 3x5]
 ```
-
-**Python example:**
+---
+## Python Example
 ```python
 from bigdl.nn.layer import *
 from bigdl.nn.criterion import *

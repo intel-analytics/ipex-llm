@@ -1,33 +1,3 @@
-## CustomizedInitializer ##
-
-All customizedInitializer should implement the `InitializationMethod` trait
-
-```scala
-/**
- * Initialization method to initialize bias and weight.
- * The init method will be called in Module.reset()
- */
-
-trait InitializationMethod {
-
-  type Shape = Array[Int]
-
-  /**
-   * Initialize the given variable
-   *
-   * @param variable    the variable to initialize
-   * @param dataFormat  describe the meaning of each dimension of the variable
-   */
-  def init[T](variable: Tensor[T], dataFormat: VariableFormat)
-             (implicit ev: TensorNumeric[T]): Unit
-}
-```
-The [RandomUniform](https://github.com/intel-analytics/BigDL/blob/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/nn/InitializationMethod.scala#L163)
-code should give you a good sense of how to implement this trait.
-
-
-### Python
-Custom initialization method in python is not supported right now.
 
 
 ## Zeros ##
@@ -45,9 +15,6 @@ init_method = Zeros()
 
 
 Initialization method that set tensor to zeros.
-
-
-
 
 
 **Scala example:**
@@ -103,6 +70,151 @@ weight:
 bias: 
 [ 0.  0.]
 ```
+
+---
+## Ones ##
+
+
+**Scala:**
+``` scala
+val initMethod = Ones
+
+```
+**Python:**
+```python
+init_method = Ones()
+```
+
+Initialization method that set tensor to be ones.
+
+
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+
+val weightInitMethod = Ones
+val biasInitMethod = Ones
+val model = Linear(3, 2).setName("linear1")
+model.setInitMethod(weightInitMethod, biasInitMethod)
+println(model.getParametersTable().get("linear1").get)
+```
+
+```
+ {
+	weight: 1.0	1.0	1.0	
+	        1.0	1.0	1.0	
+	        [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
+	bias: 1.0
+	      1.0
+	      [com.intel.analytics.bigdl.tensor.DenseTensor of size 2]
+	gradBias: 0.0
+	          0.0
+	          [com.intel.analytics.bigdl.tensor.DenseTensor of size 2]
+	gradWeight: 0.0	0.0	0.0	
+	            0.0	0.0	0.0	
+	            [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
+ }
+
+
+```
+
+**Python example:**
+```python
+from bigdl.nn.initialization_method import *
+weight_init = Ones()
+bias_init = Ones()
+model = Linear(3, 2)
+model.set_init_method(weight_init, bias_init)
+print("weight:")
+print(model.get_weights()[0])
+print("bias: ")
+print(model.get_weights()[1])
+```
+```
+creating: createOnes
+creating: createOnes
+creating: createLinear
+weight:
+[[ 1.  1.  1.]
+ [ 1.  1.  1.]]
+bias: 
+[ 1.  1.]
+
+```
+
+## ConstInitMethod ##
+
+
+**Scala:**
+``` scala
+val initMethod = ConstInitMethod(value: Double)
+
+```
+**Python:**
+```python
+init_method = ConstInitMethod(value)
+```
+
+Initialization method that set tensor to the specified constant value.
+
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+
+
+val weightInitMethod = ConstInitMethod(0.2)
+val biasInitMethod = ConstInitMethod(0.2)
+val linear = Linear(3, 2).setName("linear1")
+linear.setInitMethod(weightInitMethod, biasInitMethod)
+println(linear.getParametersTable().get("linear1").get)
+```
+
+```
+ {
+	weight: 0.2	0.2	0.2
+	        0.2	0.2	0.2
+	        [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
+	bias: 0.2
+	      0.2
+	      [com.intel.analytics.bigdl.tensor.DenseTensor of size 2]
+	gradBias: 0.0
+	          0.0
+	          [com.intel.analytics.bigdl.tensor.DenseTensor of size 2]
+	gradWeight: 0.0	0.0	0.0
+	            0.0	0.0	0.0
+	            [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
+ }
+
+```
+
+**Python example:**
+```python
+from bigdl.nn.initialization_method import *
+weight_init = ConstInitMethod(0.2)
+bias_init = ConstInitMethod(0.2)
+linear = Linear(3, 2)
+linear.set_init_method(weight_init, bias_init)
+print("weight:")
+print(linear.get_weights()[0])
+print("bias: ")
+print(linear.get_weights()[1])
+```
+```
+creating: createConstInitMethod
+creating: createConstInitMethod
+creating: createLinear
+weight:
+[[ 0.2  0.2  0.2]
+ [ 0.2  0.2  0.2]]
+bias:
+[ 0.2  0.2]
+
+```
+
 
 
 ## Xavier ##
@@ -387,149 +499,6 @@ bias:
 ```
 
 
-## Ones ##
-
-
-**Scala:**
-``` scala
-val initMethod = Ones
-
-```
-**Python:**
-```python
-init_method = Ones()
-```
-
-Initialization method that set tensor to be ones.
-
-
-
-**Scala example:**
-```scala
-import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
-
-val weightInitMethod = Ones
-val biasInitMethod = Ones
-val model = Linear(3, 2).setName("linear1")
-model.setInitMethod(weightInitMethod, biasInitMethod)
-println(model.getParametersTable().get("linear1").get)
-```
-
-```
- {
-	weight: 1.0	1.0	1.0	
-	        1.0	1.0	1.0	
-	        [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
-	bias: 1.0
-	      1.0
-	      [com.intel.analytics.bigdl.tensor.DenseTensor of size 2]
-	gradBias: 0.0
-	          0.0
-	          [com.intel.analytics.bigdl.tensor.DenseTensor of size 2]
-	gradWeight: 0.0	0.0	0.0	
-	            0.0	0.0	0.0	
-	            [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
- }
-
-
-```
-
-**Python example:**
-```python
-from bigdl.nn.initialization_method import *
-weight_init = Ones()
-bias_init = Ones()
-model = Linear(3, 2)
-model.set_init_method(weight_init, bias_init)
-print("weight:")
-print(model.get_weights()[0])
-print("bias: ")
-print(model.get_weights()[1])
-```
-```
-creating: createOnes
-creating: createOnes
-creating: createLinear
-weight:
-[[ 1.  1.  1.]
- [ 1.  1.  1.]]
-bias: 
-[ 1.  1.]
-
-```
-
-
-## ConstInitMethod ##
-
-
-**Scala:**
-``` scala
-val initMethod = ConstInitMethod(value: Double)
-
-```
-**Python:**
-```python
-init_method = ConstInitMethod(value)
-```
-
-Initialization method that set tensor to the specified constant value.
-
-
-**Scala example:**
-```scala
-import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
-
-
-val weightInitMethod = ConstInitMethod(0.2)
-val biasInitMethod = ConstInitMethod(0.2)
-val linear = Linear(3, 2).setName("linear1")
-linear.setInitMethod(weightInitMethod, biasInitMethod)
-println(linear.getParametersTable().get("linear1").get)
-```
-
-```
- {
-	weight: 0.2	0.2	0.2
-	        0.2	0.2	0.2
-	        [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
-	bias: 0.2
-	      0.2
-	      [com.intel.analytics.bigdl.tensor.DenseTensor of size 2]
-	gradBias: 0.0
-	          0.0
-	          [com.intel.analytics.bigdl.tensor.DenseTensor of size 2]
-	gradWeight: 0.0	0.0	0.0
-	            0.0	0.0	0.0
-	            [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
- }
-
-```
-
-**Python example:**
-```python
-from bigdl.nn.initialization_method import *
-weight_init = ConstInitMethod(0.2)
-bias_init = ConstInitMethod(0.2)
-linear = Linear(3, 2)
-linear.set_init_method(weight_init, bias_init)
-print("weight:")
-print(linear.get_weights()[0])
-print("bias: ")
-print(linear.get_weights()[1])
-```
-```
-creating: createConstInitMethod
-creating: createConstInitMethod
-creating: createLinear
-weight:
-[[ 0.2  0.2  0.2]
- [ 0.2  0.2  0.2]]
-bias:
-[ 0.2  0.2]
-
-```
 
 
 ## RandomUniform ##
@@ -604,3 +573,33 @@ bias:
 ```
 
 
+## Define your own Initializer ##
+
+All customizedInitializer should implement the `InitializationMethod` trait
+
+```scala
+/**
+ * Initialization method to initialize bias and weight.
+ * The init method will be called in Module.reset()
+ */
+
+trait InitializationMethod {
+
+  type Shape = Array[Int]
+
+  /**
+   * Initialize the given variable
+   *
+   * @param variable    the variable to initialize
+   * @param dataFormat  describe the meaning of each dimension of the variable
+   */
+  def init[T](variable: Tensor[T], dataFormat: VariableFormat)
+             (implicit ev: TensorNumeric[T]): Unit
+}
+```
+The [RandomUniform](https://github.com/intel-analytics/BigDL/blob/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/nn/InitializationMethod.scala#L163)
+code should give you a good sense of how to implement this trait.
+
+
+_**Python**
+Custom initialization method in python is not supported right now.

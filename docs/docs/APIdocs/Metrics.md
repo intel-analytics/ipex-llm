@@ -1,40 +1,55 @@
 
-## ValidationMethod ##
-
+---
 ValidationMethod is a method to validate the model during model trainning or evaluation.
 The trait can be extended by user-defined method. Now we have defined Top1Accuracy, Top5Accuracy, Loss.
 
-#### Top1Accuracy ####
+---
+## Loss ####
 
-Caculate the percentage that output's max probability index equals target.
 **Scala:**
-```val top1accuracy = new Top1Accuracy()```
+```scala
+val loss = new Loss(criterion)
+```
 **Python:**
-```top1accuracy = Top1Accuracy()```
-
-#### Top5Accuracy ####
-
-Caculate the percentage that target in output's top5 probability indexes.
-**Scala:**
-```val top5accuracy = new Top5Accuracy()```
-**Python:**
-```top5accuracy = Top5Accuracy()```
-
-#### Loss ####
+```python
+loss = Loss(cri)
+```
 
 Calculate loss of output and target with criterion. The default criterion is ClassNLLCriterion.
+
+
+---
+## Top1Accuracy ##
+
+Caculate the percentage that output's max probability index equals target.
+
 **Scala:**
-```val loss = new Loss(criterion)```
-**Python:**
-```loss = Loss(cri)```
-
-#### Example code ####
-
-Followings are examples to evaluate model with Top1Accuracy, Top5Accuracy, Loss validation method.
-
-Scala example code:
-
+```scala
+val top1accuracy = new Top1Accuracy()
 ```
+**Python:**
+```python
+top1accuracy = Top1Accuracy()
+```
+
+---
+## Top5Accuracy ##
+
+Caculate the percentage that target in output's top5 probability indexes.
+
+**Scala:**
+```scala
+val top5accuracy = new Top5Accuracy()
+```
+**Python:**
+```python
+top5accuracy = Top5Accuracy()
+```
+
+---
+## Scala Example ##
+
+```scala
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.optim._
@@ -66,7 +81,8 @@ result is
 result: Array[(com.intel.analytics.bigdl.optim.ValidationResult, com.intel.analytics.bigdl.optim.ValidationMethod[Float])] = Array((Accuracy(correct: 0, count: 10, accuracy: 0.0),Top1Accuracy), (Accuracy(correct: 10, count: 10, accuracy: 1.0),Top5Accuracy), ((Loss: 9.21948, count: 4, Average Loss: 2.30487),Loss))
 ```
 
-Python example code:
+## Python Example:
+
 ```
 from pyspark.context import SparkContext
 from bigdl.util.common import *
