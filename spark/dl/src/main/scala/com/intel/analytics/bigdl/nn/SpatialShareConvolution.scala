@@ -42,11 +42,12 @@ class SpatialShareConvolution[T: ClassTag](
         initWeight: Tensor[T] = null,
         initBias: Tensor[T] = null,
         initGradWeight: Tensor[T] = null,
-        initGradBias: Tensor[T] = null
+        initGradBias: Tensor[T] = null,
+        withBias: Boolean = true
       )(implicit ev: TensorNumeric[T]) extends SpatialConvolution[T](
   nInputPlane, nOutputPlane, kernelW, kernelH, strideW, strideH,
   padW, padH, nGroup, propagateBack, wRegularizer, bRegularizer,
-  initWeight, initBias, initGradWeight, initGradBias) {
+  initWeight, initBias, initGradWeight, initGradBias, withBias) {
 
   require(Engine.model.getPoolSize == 1, "Don't support single model multi thread.")
 
@@ -67,14 +68,14 @@ class SpatialShareConvolution[T: ClassTag](
       require(outputWidth >= 1 && outputHeight >= 1,
         s"output size is too small. outputWidth: $outputWidth, outputHeight: $outputHeight")
 
-      if (onesBias.dim() != 1 || onesBias.size(1) != outputHeight * outputWidth) {
-        onesBias.resize(Array(outputHeight * outputWidth)).fill(ev.fromType(1.0))
+      if (withBias && onesBias.dim() != 1 || onesBias.size(1) != outputHeight * outputWidth) {
+        onesBias.resize(outputHeight * outputWidth).fill(ev.fromType(1.0))
       }
       require(input.size(2) == nInputPlane)
       val batchSize = input.size(1)
-      output.resize(Array(batchSize, nOutputPlane, outputHeight, outputWidth))
-      fInput.resize(Array(nGroup, kernelW * kernelH * nInputPlane / nGroup,
-        outputHeight * outputWidth))
+      output.resize(batchSize, nOutputPlane, outputHeight, outputWidth)
+      fInput.resize(nGroup, kernelW * kernelH * nInputPlane / nGroup,
+        outputHeight * outputWidth)
 
       var i = 1
       while (i <= batchSize) {
@@ -83,11 +84,14 @@ class SpatialShareConvolution[T: ClassTag](
         val outputT = output.select(1, i)
         var g = 0
         while (g < nGroup) {
+          val biasUse = if (withBias) {
+            bias.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup)
+          } else null
           updateOutputFrame(
             inputT.narrow(1, g * nInputPlane / nGroup + 1, nInputPlane / nGroup),
             outputT.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
             weightMM.select(1, g + 1),
-            bias.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
+            biasUse,
             fInput.select(1, g + 1),
             kernelW, kernelH, strideW, strideH,
             padW, padH,
@@ -142,18 +146,18 @@ class SpatialShareConvolution[T: ClassTag](
     } else {
       val batchSize = input.size(1)
       if (gradWeightMMInBatch == null) {
-        gradWeightMMInBatch = Tensor[T]().resize(Array(batchSize, nGroup, nOutputPlane / nGroup,
-          nInputPlane * kernelH * kernelW / nGroup))
+        gradWeightMMInBatch = Tensor[T](batchSize, nGroup, nOutputPlane / nGroup,
+          nInputPlane * kernelH * kernelW / nGroup)
       }
-      if(gradientBiasMT.nElement() == 0) {
-        gradientBiasMT.resize(Array(batchSize, nOutputPlane))
+      if(withBias && gradientBiasMT.nElement() == 0) {
+        gradientBiasMT.resize(batchSize, nOutputPlane)
       }
       if (ones.dim() != 1 || ones.size(1) != gradOutput.size(3) * gradOutput.size(4)) {
-        ones.resize(Array(gradOutput.size(3) * gradOutput.size(4))).fill(ev.fromType(1.0))
+        ones.resize(gradOutput.size(3) * gradOutput.size(4)).fill(ev.fromType(1.0))
       }
 
       if (onesBatch.dim() != 1 || onesBatch.size(1) != batchSize) {
-        onesBatch.resize(Array(batchSize)).fill(ev.fromType(1.0))
+        onesBatch.resize(batchSize).fill(ev.fromType(1.0))
       }
       val (outputWidth, outputHeight, inputWidth, inputHeight) = calcOutputWH(input)
       var i = 1
@@ -170,11 +174,14 @@ class SpatialShareConvolution[T: ClassTag](
               nInputPlane / nGroup, inputWidth, inputHeight,
               nOutputPlane / nGroup, outputWidth, outputHeight)
 
+            val gradientBiasMTUse = if (withBias) {
+              gradientBiasMT.select(1, i).narrow(1, g * nOutputPlane / nGroup + 1,
+                nOutputPlane / nGroup)
+            } else null
             calcGradParametersFrame(
               gradOutputT.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
               gradWeightMMInBatch.select(1, i).select(1, g + 1),
-              gradientBiasMT.select(1, i).narrow(1, g * nOutputPlane / nGroup + 1,
-                nOutputPlane / nGroup),
+              gradientBiasMTUse,
               fInput.select(1, g + 1),
               ev.fromType[Double](scaleW),
               ev.fromType[Double](scaleB)
@@ -188,79 +195,16 @@ class SpatialShareConvolution[T: ClassTag](
         nOutputPlane * nInputPlane * kernelH * kernelW / nGroup).t
       val grad = gradWeight.view(nOutputPlane * nInputPlane * kernelH * kernelW / nGroup)
       grad.addmv(ev.fromType(1.0), ev.fromType(1.0), gradView, onesBatch)
-      gradBias.addmv(ev.fromType(1.0), ev.fromType(1.0), gradientBiasMT.t, onesBatch)
+      if (withBias) {
+        gradBias.addmv(ev.fromType(1.0), ev.fromType(1.0), gradientBiasMT.t, onesBatch)
+      }
       if (null != wRegularizer) {
         wRegularizer.accRegularization(weight, gradWeight, scaleW)
       }
-      if (null != bRegularizer) {
+      if (withBias && null != bRegularizer) {
         bRegularizer.accRegularization(bias, gradBias, scaleB)
       }
     }
-  }
-
-  override def equals(obj: Any): Boolean = {
-
-    if (!super.equals(obj)) {
-      return false
-    }
-
-    if (!obj.isInstanceOf[SpatialShareConvolution[T]]) {
-      return false
-    }
-    val other = obj.asInstanceOf[SpatialShareConvolution[T]]
-    if (this.eq(other)) {
-      return true
-    }
-
-    nInputPlane == other.nInputPlane &&
-      nOutputPlane == other.nOutputPlane &&
-      kernelW == other.kernelW &&
-      kernelH == other.kernelH &&
-      strideW == other.strideW &&
-      strideH == other.strideH &&
-      padW == other.padW &&
-      padH == other.padH &&
-      nGroup == other.nGroup &&
-      propagateBack == other.propagateBack &&
-      weight == other.weight &&
-      bias == other.bias &&
-      gradWeight == other.gradWeight &&
-      gradBias == other.gradBias
-  }
-
-  override def hashCode(): Int = {
-    val seed = 37
-    var hash = super.hashCode()
-    hash = hash * seed + nInputPlane.hashCode()
-    hash = hash * seed + nOutputPlane.hashCode()
-    hash = hash * seed + kernelW.hashCode()
-    hash = hash * seed + kernelH.hashCode()
-    hash = hash * seed + strideW.hashCode()
-    hash = hash * seed + strideH.hashCode()
-    hash = hash * seed + padW.hashCode()
-    hash = hash * seed + padH.hashCode()
-    hash = hash * seed + weight.hashCode()
-    hash = hash * seed + bias.hashCode()
-    hash = hash * seed + gradWeight.hashCode()
-    hash = hash * seed + gradBias.hashCode()
-
-    hash
-  }
-
-  override def clearState() : this.type = {
-    super.clearState()
-    fInput.set()
-    fGradInput.set()
-    ones.set()
-    onesBatch.set()
-    onesBias.set()
-    gradientBiasMT.set()
-    this
-  }
-
-  override def toString(): String = {
-    s"${getPrintName}($nInputPlane -> $nOutputPlane, $kernelW x" +
-      s" $kernelH, $strideW, $strideH, $padW, $padH)"
   }
 
   @inline
@@ -322,11 +266,12 @@ object SpatialShareConvolution {
     initWeight: Tensor[T] = null,
     initBias: Tensor[T] = null,
     initGradWeight: Tensor[T] = null,
-    initGradBias: Tensor[T] = null)
+    initGradBias: Tensor[T] = null,
+    withBias: Boolean = true)
     (implicit ev: TensorNumeric[T]): SpatialShareConvolution[T] = {
     new SpatialShareConvolution[T](nInputPlane, nOutputPlane, kernelW, kernelH,
       strideW, strideH, padW, padH, nGroup, propagateBack, wRegularizer, bRegularizer,
-      initWeight, initBias, initGradWeight, initGradBias)
+      initWeight, initBias, initGradWeight, initGradBias, withBias)
   }
 
   def apply[@specialized(Float, Double) T: ClassTag](
@@ -337,12 +282,17 @@ object SpatialShareConvolution {
       conv.strideW, conv.strideH,
       conv.padW, conv.padH,
       conv.nGroup, conv.propagateBack,
-      conv.wRegularizer, conv.bRegularizer
+      conv.wRegularizer, conv.bRegularizer, withBias = conv.withBias
     )
     sConv.weight.copy(conv.weight)
-    sConv.bias.copy(conv.bias)
+    sConv.gradWeight.copy(conv.gradWeight)
+    if (conv.withBias) {
+      sConv.gradBias.copy(conv.gradBias)
+      sConv.bias.copy(conv.bias)
+    }
     sConv.setScaleW(conv.getScaleW())
     sConv.setScaleB(conv.getScaleB())
+    sConv.setName(conv.getName())
     sConv
   }
 
