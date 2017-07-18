@@ -149,7 +149,7 @@ class SpatialShareConvolution[T: ClassTag](
         gradWeightMMInBatch = Tensor[T](batchSize, nGroup, nOutputPlane / nGroup,
           nInputPlane * kernelH * kernelW / nGroup)
       }
-      if(withBias && gradientBiasMT.nElement() == 0) {
+      if (withBias && gradientBiasMT.nElement() == 0) {
         gradientBiasMT.resize(batchSize, nOutputPlane)
       }
       if (ones.dim() != 1 || ones.size(1) != gradOutput.size(3) * gradOutput.size(4)) {
