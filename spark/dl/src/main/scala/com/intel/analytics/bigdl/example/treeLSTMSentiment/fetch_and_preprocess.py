@@ -315,6 +315,18 @@ def load_dependency_tree(parents):
                     idx = parent
     return root
 
+def build_vocab(filepaths, dst_path, lowercase=True):
+    vocab = set()
+    for filepath in filepaths:
+        with open(filepath) as f:
+            for line in f:
+                if lowercase:
+                    line = line.lower()
+                vocab |= set(line.split())
+    with open(dst_path, 'w') as f:
+        for w in sorted(vocab):
+            f.write(w + '\n')
+
 def load_dictionary(dirpath):
     labels = []
     with open(os.path.join(dirpath, 'sentiment_labels.txt')) as labelsfile:
@@ -370,6 +382,7 @@ if __name__ == '__main__':
     # produce train/dev/test splits
     split(sst_dir, train_dir, dev_dir, test_dir)
     sent_paths = glob.glob(os.path.join(sst_dir, '*/sents.txt'))
+    build_vocab(sent_paths, os.path.join(sst_dir, 'vocab-cased.txt'), lowercase=False)
 
     # write sentiment labels for nodes in trees
     dictionary = load_dictionary(sst_dir)
