@@ -99,7 +99,7 @@ class TestLoadCaffe(unittest.TestCase):
             -0.3027454615, 0.1254911423, 0.2114857137, 0.0392392874,
             0.1668677032, 0.0506658256, 0.1139862537, 0.2874754369,
             -0.3273061812, 0.2115428150, -0.2002333999, -0.1621897519,
-            0.0032395422, 0.2072965205]).astype("float").reshape((27, 2))
+            0.0032395422, 0.2072965205]).astype("float").reshape((2, 27))
 
         self.assertTrue(np.allclose(parameters["conv"]["weight"],
                                     conv1_weight, atol=1e-6, rtol=0))
