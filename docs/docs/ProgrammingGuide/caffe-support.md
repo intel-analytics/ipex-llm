@@ -1,9 +1,7 @@
-## **Load and Save a Caffe Model**
-
-If you have a pretrained caffe model(model definition prototxt and model binary file), you can load it into BigDL model.
+If you have a pretrained caffe model(model definition prototxt and model binary file), you can load it as BigDL model.
 You can also convert a BigDL model to caffe model.
 
-### Load Caffe Model
+## **Load Caffe Model**
 
 Assume you have a ```caffe.prototxt``` and ```caffe.model```,
 you can load it into BigDL by calling ```Module.loadCaffeModel``` (scala) or ```Model.load_caffe_model``` (python).
@@ -20,7 +18,7 @@ val model = Module.loadCaffeModel(caffe.prototxt, caffe.model)
 model = Model.load_caffe_model(caffe.prototxt, caffe.model)
 ```
 
-### Load Caffe Model Weights to Predefined BigDL Model
+## **Load Caffe Model Weights to Predefined BigDL Model**
  
 If you have a predefined BigDL model, and want to load caffe model weights into BigDl model
 
@@ -29,14 +27,15 @@ If you have a predefined BigDL model, and want to load caffe model weights into 
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 val model = Module.loadCaffe(bigdlModel, caffe.prototxt, caffe.model, matchAll = true)
 ```
-Note that if ```matchAll = false```, then only layers with same name will be loaded, the rest will use initialized parameters.
 
 * Python Example
 ```python
 model = Model.load_caffe_model(bigdlModel, caffe.prototxt, caffe.model, match_all=True)
 ```
 
-### Save BigDL Model to Caffe Model
+Note that if ```matchAll/match_all = false```, then only layers with same name will be loaded, the rest will use initialized parameters.
+
+## **Save BigDL Model to Caffe Model**
 * Scala Example
 ```scala
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
@@ -47,5 +46,9 @@ bigdlModel.saveCaffe(prototxtPath, modelPath, useV2 = true, overwrite = false)
 ```python
 bigdl_model.save_caffe(prototxt_path, model_path, use_v2 = True, overwrite = False)
 ```
-Note: only graph model can be saved to caffe model
+In the above examples, if ```useV2/use_v2 = true```, it will convert to caffe V2 layer,
+ otherwise, it will convert to caffe V1 layer.
+If ```overwrite = true```, it will overwrite the existing files.
+
+Note: only graph model can be saved to caffe model.
 
