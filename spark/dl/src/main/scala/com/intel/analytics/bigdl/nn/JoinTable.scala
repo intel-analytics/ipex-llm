@@ -130,6 +130,12 @@ class JoinTable[T: ClassTag] (
     val state = Seq(super.hashCode(), dimension, nInputDims)
     state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
   }
+
+  override def clearState(): this.type = {
+    super.clearState()
+    gradInput.clear()
+    this
+  }
 }
 
 object JoinTable {
