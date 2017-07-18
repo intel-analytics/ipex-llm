@@ -212,7 +212,7 @@ class TensorflowSaverSpec extends TensorflowSpecHelper {
     val outputData = funcModel.forward(inputData).toTensor
 
     val tmpFile = java.io.File.createTempFile("tensorflowSaverTest" + UUID.randomUUID(), "lenet")
-    TensorflowSaver.saveGraphWitNodeDef(
+    TensorflowSaver.saveGraphWithNodeDef(
       funcModel,
       Seq(Tensorflow.const(transInput, "input", ByteOrder.LITTLE_ENDIAN)),
       tmpFile.getPath,
@@ -245,7 +245,7 @@ class TensorflowSaverSpec extends TensorflowSpecHelper {
     } else {
       outputTensor
     }
-    TensorflowSaver.saveGraphWitNodeDef(
+    TensorflowSaver.saveGraphWithNodeDef(
       graph,
       Seq(Tensorflow.const(tfTensor, "input", ByteOrder.LITTLE_ENDIAN)),
       tmpFile.getPath,
@@ -282,7 +282,7 @@ class TensorflowSaverSpec extends TensorflowSpecHelper {
       outputTensor
     }
 
-    TensorflowSaver.saveGraphWitNodeDef(
+    TensorflowSaver.saveGraphWithNodeDef(
       graph,
       tfTensors.zipWithIndex.map(t =>
         Tensorflow.const(t._1, "input" + t._2, ByteOrder.LITTLE_ENDIAN)),
