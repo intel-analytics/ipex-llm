@@ -502,7 +502,7 @@ object MaxPoolingTF extends TensorflowToBigDL {
         attributes.get("ksize").getList.getI(2).toInt
       )
     } else if (attributes.get("data_format").getS.toString(Charset.defaultCharset()) == "NCHW") {
-      require(attributes.get("strides").getList.getI(2).toInt == 1, s"not support strides on depth")
+      require(attributes.get("strides").getList.getI(1).toInt == 1, s"not support strides on depth")
       (
         attributes.get("strides").getList.getI(2).toInt,
         attributes.get("strides").getList.getI(3).toInt,
@@ -551,7 +551,7 @@ object AvgPoolingTF extends TensorflowToBigDL{
         attributes.get("ksize").getList.getI(2).toInt
       )
     } else if (attributes.get("data_format").getS.toString(Charset.defaultCharset()) == "NCHW") {
-      require(attributes.get("strides").getList.getI(2).toInt == 1, s"not support strides on depth")
+      require(attributes.get("strides").getList.getI(1).toInt == 1, s"not support strides on depth")
       (
         attributes.get("strides").getList.getI(2).toInt,
         attributes.get("strides").getList.getI(3).toInt,
