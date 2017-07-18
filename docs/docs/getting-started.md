@@ -13,10 +13,10 @@ You data need to be transformed into specific data structures in order to be fed
  
 Below are several data structures that you need to know when using BigDL. 
 
-* ```Tensor``` is a multi-dimensional array of basic numeric types (e.g., ```Int```, ```Float```,       ```Double```, etc.) It is the most essential data structure in BigDL, composing the basic data flow inside the nerual network (i.e. the input, output, weight, bias and gradient of many layers). Refer to [Tensor API doc](APIdocs/Data/merged-Data#tensor) for details about the numeric computation functions provided in BigDL. 
+* ```Tensor``` is a multi-dimensional array of basic numeric types (e.g., ```Int```, ```Float```,       ```Double```, etc.) It is the most essential data structure in BigDL, composing the basic data flow inside the nerual network (i.e. the input, output, weight, bias and gradient of many layers). Refer to [Tensor API doc](APIdocs/Data.md#tensor) for details about the numeric computation functions provided in BigDL. 
 * `Table` is key-value map. Usually we use Tables to map from digits to Tensors. Some of the layers has `Table` as input or output (e.g. [ConcatTable](APIdocs/Layers/Containers/merged-Containers/#concattable)). You can also use ```T()``` to create Tables in BigDL - just a syntax sugar. Refer to [Table API doc](APIdocs/Data/merged-Data#table) for detailed usage.
  
-* `Sample` is a **(feature, label)** pair. A `Sample` can be created from two `Tensors` (in Scala) or two `numpy arrays` (in Python). Refer to [Sample API doc](APIdocs/Data/merged-Data#sample) for detailed usage.
+* `Sample` is a **(feature, label)** pair. A `Sample` can be created from two `Tensors` (in Scala) or two `numpy arrays` (in Python). Refer to [Sample API doc](APIdocs/Data.md#sample) for detailed usage.
 
 You need to convert your dataset into `RDD` of `Samples` (both Scala and Python), and then feed your data into Optimizer for training, validation or prediction. Refer to [Optimizer docs](APIdocs/Optimizers/Optimizer.md) for details.
 
@@ -29,7 +29,7 @@ If you have an existing model and want to use BigDL only for prediction, you nee
 
 BigDL supports loading models trained and saved in BigDL, or a trained Tensorflow model. 
 
-* To load a BigDL model, you can use `Module.load` interface (Scala). Refer to [Module API docs](APIdocs/Module/Module.md) for details.  
+* To load a BigDL model, you can use `Module.load` interface (Scala). Refer to [Module API docs](APIdocs/Module.md) for details.  
 * To load a Tensorflow model, refer to [Tensorflow Support](ProgrammingGuide/tensorflow-support.md) for details.
 
 Once you have a loaded model, you can call `Module.predict()` to do predictions. Note that you need to convert your input data into proper format which `predict` accepts. For how to prepare your data, refer to section [Prepare your Data](#prepare-your-data). 
@@ -53,13 +53,13 @@ The most recommended way to create your first model is to modify from an existin
 
 To define a model, you can either use the Sequential API or Functional API. The Functional API is more flexible than Sequential API. Refer to [Sequential API](ProgrammingGuide/Model/Sequential.md) and [Functional API](ProgrammingGuide/Model/Functional.md) for how to define models in different shapes. Navigate to *Programming Guide/Layers* on the side bar to find the documenations of available layers and activation.
 
-After creating the model, you will have to deside which loss function to use in training. Find the details of losses defined in BigDL in [Losses](APIdocs/Losses/merged-Losses.md).  
+After creating the model, you will have to deside which loss function to use in training. Find the details of losses defined in BigDL in [Losses](APIdocs/Losses.md).  
 
 Now you create an `Optimizer` and set the loss function, input dataset along with other hyper parameters into the Optimizer. Then call `Optimizer.optimize` to train. Refer to [Optimizer docs](APIdocs/Optimizers/Optimizer.md) for details. 
 
-Evaluation can be performed periodically during a training. Before calling `Optimizer.optimize`, use `Optimizer.setValidation` (in Scala) or `Optimizer.set_validation` (in Python) to set validation configurations, e.g. validation dataset, validation metrics, etc. For a list of defined metrics, refer to [Metrics](APIdocs/Metrics/merged-Metrics.md).
+Evaluation can be performed periodically during a training. Before calling `Optimizer.optimize`, use `Optimizer.setValidation` (in Scala) or `Optimizer.set_validation` (in Python) to set validation configurations, e.g. validation dataset, validation metrics, etc. For a list of defined metrics, refer to [Metrics](APIdocs/Metrics.md).
 
-When `Optimizer.optimize` finishes, it will return a trained model. You can then use `module.predict` for predictions. Refer to [Module API docs](APIdocs/Module/Module.md) for detailed usage.    
+When `Optimizer.optimize` finishes, it will return a trained model. You can then use `module.predict` for predictions. Refer to [Module API docs](APIdocs/Module.md) for detailed usage.    
 
 ## **Stop and Resume a Training**
 
@@ -67,7 +67,7 @@ Training a deep learning model sometimes takes a very long time. It may be stopp
 
 To enable this, you have to configure `Optimizer` to periodically dump the optimized model and optimization state into snapshot files. Use `Optimizer.setCheckpoint` (in Scala) or `optimizer.set_checkpoint` (in Python) to configure the frequency and paths of writing snapshots. Then during your training, you will find several snapshot files written in the checkpoint path. Refer to [Optimizer API](APIdocs/Optimizers/Optimizer.md) for details. 
 
-Later, after the training stops, you can resume from any saved point. Choose one of the model snapshots and the corresponding optimization state to resume (the iteration number of the the snapshots is in the file name suffix). Use `Module.load` to load the model snapshot into an object, and `OptimMethod.load` to load optimization state into an object. Then create a new `Optimizer` with the loaded model and optim method. Call `Optimizer.optimize`, you will resume from the point where the snapshot is taken. Refer to [OptimMethod API]() and [Module API](APIdocs/Module/Module.md) for details.
+Later, after the training stops, you can resume from any saved point. Choose one of the model snapshots and the corresponding optimization state to resume (the iteration number of the the snapshots is in the file name suffix). Use `Module.load` to load the model snapshot into an object, and `OptimMethod.load` to load optimization state into an object. Then create a new `Optimizer` with the loaded model and optim method. Call `Optimizer.optimize`, you will resume from the point where the snapshot is taken. Refer to [OptimMethod API]() and [Module API](APIdocs/Module.md) for details.
  
 You can also resume training without loading the optimization state, if you intend to change the learning rate schedule or even optimization method. Just create an `Optimizer` with loaded model and a new instance of OptimMethod. 
 
@@ -78,7 +78,7 @@ You can also resume training without loading the optimization state, if you inte
 
 Pre-train is a useful strategy when training deep learning models. You may use the pre-trained features (e.g. embeddings) in your model, or do a fine-tuning for a different dataset or target.
  
-To use a learnt model as a whole, you can use `Module.load` to load the entire model, Then create an `Optimizer` with the loaded model set into it. Refer to [Optmizer API](APIdocs/Optimizers/Optimizer.md) and [Module API](APIdocs/Module/Module.md) for details. 
+To use a learnt model as a whole, you can use `Module.load` to load the entire model, Then create an `Optimizer` with the loaded model set into it. Refer to [Optmizer API](APIdocs/Optimizers/Optimizer.md) and [Module API](APIdocs/Module.md) for details. 
 
 Instead of using an entire model, you can also use pre-trained weights/biases in certain layers. After a `Module`(Scala) or `Layer`(Python) is created, use `Module.setWeightsBias` (in Scala) or `layer.set_weights` (in Python) to initialize the weights with pre-trained weights. Then continue to train your model as usual. 
 
@@ -121,7 +121,7 @@ You can set where the `bigdl.log` will be generated with `-Dbigdl.utils.LoggerFi
 
 There're several strategies that may be useful when tuning an optimization. 
 
- * Change the learning Rate Schedule in SGD. Refer to [SGD docs](APIdocs/Optimizers/Optim-Methods/merged-Optim-Methods.md#sgd) for details. 
- * If overfit is seen, try use Regularization. Refer to [Regularizers](APIdocs/Regularizers/merged-Regularizers.md). 
- * Try change the initialization methods. Refer to [Initailizers](APIdocs/Initializers/merged-Initializers.md).
- * Try Adam or Adagrad at the first place. If they can't achive a good score, use SGD and find a proper learning rate schedule - it usually takes time, though. RMSProp is recommended for RNN models. Refer to [Optimization Algorithms](APIdocs/Optimizers/Optim-Methods/merged-Optim-Methods.md) for a list of supported optimization methods. 
+ * Change the learning Rate Schedule in SGD. Refer to [SGD docs](APIdocs/Optimizers/Optim-Methods.md#sgd) for details. 
+ * If overfit is seen, try use Regularization. Refer to [Regularizers](APIdocs/Regularizers.md). 
+ * Try change the initialization methods. Refer to [Initailizers](APIdocs/Initializers.md).
+ * Try Adam or Adagrad at the first place. If they can't achive a good score, use SGD and find a proper learning rate schedule - it usually takes time, though. RMSProp is recommended for RNN models. Refer to [Optimization Algorithms](APIdocs/Optimizers/Optim-Methods.md) for a list of supported optimization methods. 
