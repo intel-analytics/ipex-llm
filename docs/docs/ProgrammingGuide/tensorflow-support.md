@@ -1,6 +1,6 @@
-## **Loading a Tensorflow model from Tensorflow model file**
+## **Loading a Tensorflow model into BigDL**
 
-If you have a pre-trained Tensorflow model saved in a ".pb" file. You can load it
+If you have a pre-trained Tensorflow model saved in a ".pb" file, you can load it
 into BigDL.
 
 For more information on how to generate
@@ -9,6 +9,8 @@ Specifically, you should generate a model definition file and a set of checkpoin
 script to freeze the graph definition and weights in checkpoints into a single file.
 
 **Generate model definition file and checkpoints in Tensorflow**
+
+**Python**
 ```python
 import tensorflow as tf
 xs = tf.placeholder(tf.float32, [None, 1])
@@ -26,12 +28,16 @@ with tf.Session() as sess:
 ```
 
 **Freeze graph definition and checkpoints into a single ".pb" file**
+
+**Shell**
 ```shell
 wget https://raw.githubusercontent.com/tensorflow/tensorflow/v1.0.0/tensorflow/python/tools/freeze_graph.py
 python freeze_graph.py --input_graph /tmp/model/test.pbtxt --input_checkpoint /tmp/model/test.chkp --output_node_names=output --output_graph "/tmp/model/test.pb"
 ```
 
 **Load Tensorflow model in BigDL**
+
+**Scala**
 ```scala
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.nn.Module
@@ -41,6 +47,7 @@ val outputs = Seq("output")
 val model = Module.loadTF(path, Seq("Placeholder"), Seq("output"), ByteOrder.LITTLE_ENDIAN)
 ```
 
+**Python**
 ```python
 from bigdl.nn.layer import *
 path = "/tmp/model/test.pb"
@@ -50,9 +57,9 @@ model = Model.load_tensorflow(path, inputs, outputs, byte_order = "little_endian
 ```
 ---
 
-## **Saving a BigDL Graph model to Tensorflow model file**
+## **Saving a BigDL functional model to Tensorflow model file**
 
-You can also save a graph model to protobuf files so that it can be used in Tensorflow inference.
+You can also save a [functional model](./Model/Functional.md) to protobuf files so that it can be used in Tensorflow inference.
 
 When saving the model, placeholders will be added to the tf model as input nodes. So
 you need to pass in the names and shapes of the placeholders. BigDL model does not have
@@ -92,7 +99,7 @@ Model.save_tensorflow(model_original, [("input", [4, 10])], "/tmp/model.pb")
 
 
 ---
-## **Build model using Tensorflow and train with BigDL**
+## **Build Tensorflow model and run on BigDL**
 
 You can construct your BigDL model directly from the input and output nodes of
 Tensorflow model. That is to say, you can use Tensorflow to define
