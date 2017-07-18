@@ -102,6 +102,7 @@ a model and use BigDL to run it.
 ```python
 import tensorflow as tf
 import numpy as np
+from bigdl.nn.layer import *
 
 tf.set_random_seed(1234)
 input = tf.placeholder(tf.float32, [None, 5])
