@@ -47,11 +47,6 @@ class DLClassifier[@specialized(Float, Double) T: ClassTag](
     copyValues(dlModel.setParent(this)).asInstanceOf[DLClassifierModel[T]]
   }
 
-  override def fit(dataset: DataFrame): DLClassifierModel[T] = {
-    transformSchema(dataset.schema, logging = true)
-    internalFit(toArrayType(dataset)).asInstanceOf[DLClassifierModel[T]]
-  }
-
   override def transformSchema(schema : StructType): StructType = {
     validateSchema(schema)
     SchemaUtils.appendColumn(schema, $(predictionCol), DoubleType)
