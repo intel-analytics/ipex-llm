@@ -47,4 +47,5 @@ bigdlModel.saveCaffe(prototxtPath, modelPath, useV2 = true, overwrite = false)
 ```python
 bigdl_model.save_caffe(prototxt_path, model_path, use_v2 = True, overwrite = False)
 ```
+Note: only graph model can be saved to caffe model
 
