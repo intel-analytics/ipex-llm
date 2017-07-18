@@ -44,7 +44,7 @@ class TestTensorflow(unittest.TestCase):
 
         temp = tempfile.mkdtemp()
 
-        Model.save_tensorflow(model_original, [("input", [4, 10])], temp + "/model.pb")
+        model_original.save_tensorflow([("input", [4, 10])], temp + "/model.pb")
 
         model_loaded = Model.load_tensorflow(temp + "/model.pb", ["input"], ["output"])
         expected_output = model_original.forward(input)

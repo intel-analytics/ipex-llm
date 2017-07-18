@@ -41,6 +41,8 @@ python freeze_graph.py --input_graph /tmp/model/test.pbtxt --input_checkpoint /t
 ```scala
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.nn.Module
+import java.nio.ByteOrder
+
 val path = "/tmp/model/test.pb"
 val inputs = Seq("Placeholder")
 val outputs = Seq("output")
@@ -75,10 +77,10 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericF
 val linear = Linear(10, 2).inputs()
 val sigmoid = Sigmoid().inputs(linear)
 val softmax = SoftMax().inputs(sigmoid)
-val model = Graph(Seq[linear], Seq[softmax])
+val model = Graph(Array(linear), Array(softmax))
 
 // save it to Tensorflow model file
-TensorflowSaver.saveGraph(model, Seq(("input", Seq(4, 10))), "/tmp/model.pb")
+model.saveTF(Seq(("input", Seq(4, 10))), "/tmp/model.pb")
 ```
 
 **Python**
@@ -91,10 +93,10 @@ from bigdl.util.common import *
 linear = Linear(10, 2)()
 sigmoid = Sigmoid()(linear)
 softmax = SoftMax()(sigmoid)
-model_original = Model([linear], [softmax])
+model = Model([linear], [softmax])
 
 # save it to Tensorflow model file
-Model.save_tensorflow(model_original, [("input", [4, 10])], "/tmp/model.pb")
+model.save_tensorflow([("input", [4, 10])], "/tmp/model.pb")
 ```
 
 ---
@@ -117,7 +119,6 @@ bias = tf.Variable(tf.random_uniform([10]))
 middle = tf.nn.bias_add(tf.matmul(input, weight), bias)
 output = tf.nn.tanh(middle)
 
-tensor = np.random.rand(5, 5)
 # construct BigDL model and get the result form 
 bigdl_model = Model(input, output, model_type="tensorflow")
 ```
