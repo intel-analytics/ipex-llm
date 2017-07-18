@@ -116,7 +116,7 @@ class TestLoadCaffe(unittest.TestCase):
         module = Sequential()\
             .add(SpatialConvolution(3, 4, 2, 2).set_name("conv"))\
             .add(SpatialConvolution(4, 3, 2, 2).set_name("conv3"))\
-            .add(Linear(2, 27, with_bias=False).set_name("ip"))
+            .add(Linear(27, 2, with_bias=False).set_name("ip"))
 
         model = Model.load_caffe(module, proto_txt, model_path, match_all=False)
 
