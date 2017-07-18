@@ -268,10 +268,6 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Echo[T]()
   }
 
-  def createInput(): Input[T] = {
-    new Input[T]()
-  }
-
   def createLogSoftMax(): LogSoftMax[T] = {
     LogSoftMax[T]()
   }

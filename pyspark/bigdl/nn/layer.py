@@ -1630,7 +1630,7 @@ class CosineDistance(Layer):
                  bigdl_type="float"):
         super(CosineDistance, self).__init__(None, bigdl_type)
 
-class Input(Layer):
+class Input(Node):
 
     '''
     Input layer do nothing to the input tensors, just pass them. It should be used as input node
@@ -1643,13 +1643,12 @@ class Input(Layer):
     Please note that the return is not a layer but a Node containing input layer.
 
     >>> input = Input()
-    creating: createCosineDistance
+    creating: createInput
     '''
 
     def __init__(self,
                  bigdl_type="float"):
-        layer = super(Input, self).__init__(None, bigdl_type)
-        layer()
+        super(Input, self).__init__(None, bigdl_type)
 
 
 class DotProduct(Layer):

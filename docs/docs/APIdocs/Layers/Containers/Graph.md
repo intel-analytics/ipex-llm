@@ -39,6 +39,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
+
 val input1 = Input()
 val input2 = Input()
 val cadd = CAddTable().inputs(input1, input2)
@@ -79,28 +80,31 @@ gradInput: com.intel.analytics.bigdl.nn.abstractnn.Activity =
 
 **Python example:**
 ```python
+from bigdl.nn.layer import *
 import numpy as np
+
 
 input1 = Input()
 input2 = Input()
-cadd = CAddTable()(input1, input2)
+cadd = CAddTable()([input1, input2])
 model = Model([input1, input2], [cadd])
-
 output = model.forward([
-    np.ndarray([0.1, 0.2, -0.3, -0.4]),
-    np.ndarray([0.5, 0.4, -0.2, -0.1])])
-
-gradInput = graph.backward([
-    np.ndarray([0.1, 0.2, -0.3, -0.4]),
-    np.ndarray([0.5, 0.4, -0.2, -0.1])],
-    np.ndarray([0.1, 0.2, 0.3, 0.4])
-)
+    np.array([0.1, 0.2, -0.3, -0.4]),
+    np.array([0.5, 0.4, -0.2, -0.1])])
 
 > output
-[array([ 3.79999971,  3.79999971], dtype=float32),
- array([ 0.,  0.], dtype=float32)]
+array([ 0.60000002,  0.60000002, -0.5       , -0.5       ], dtype=float32)
+
+gradInput = model.backward([
+        np.array([0.1, 0.2, -0.3, -0.4]),
+        np.array([0.5, 0.4, -0.2, -0.1])
+    ],
+    np.array([0.1, 0.2, 0.3, 0.4])
+)
+
 > gradInput
-[array([ 3.,  3.,  3.,  3.], dtype=float32),
- array([ 6.,  6.,  6.,  6.], dtype=float32)]
+[array([ 0.1       ,  0.2       ,  0.30000001,  0.40000001], dtype=float32),
+    array([ 0.1       ,  0.2       ,  0.30000001,  0.40000001], dtype=float32)]
+
 
 ```
