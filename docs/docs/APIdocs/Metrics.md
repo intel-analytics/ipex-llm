@@ -1,3 +1,4 @@
+
 ## ValidationMethod ##
 
 ValidationMethod is a method to validate the model during model trainning or evaluation.
@@ -100,4 +101,5 @@ Test result: 0.0, total_num: 10, method: Top5Accuracy
 >>> print test_results[2]
 Test result: 0.116546951234, total_num: 10, method: Loss
 ```
+
 
