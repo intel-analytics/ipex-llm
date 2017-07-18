@@ -79,7 +79,7 @@ class DLClassifier(DLEstimator):
 
 class DLClassifierModel(DLModel):
     def __init__(self,  model, featureSize, bigdl_type="float"):
-        super(DLClassifierModel, self).__init__(None, bigdl_type, model, featureSize)
+        super(DLClassifierModel, self).__init__(model, featureSize, bigdl_type)
 
 
 # class DLClassifier(Transformer, HasInputCol, HasOutputCol, Param):

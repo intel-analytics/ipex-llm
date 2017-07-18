@@ -35,6 +35,7 @@ if __name__ == "__main__":
     parser.add_option("-f", "--folder", type=str, dest="folder", default="./")
     parser.add_option("--modelPath", type=str, dest="model_path", default="")
     parser.add_option("--modelType", type=str, dest="model_type", default="")
+    parser.add_option("-b", "--batchSize", type=int, dest="batch_size", default=100)
     parser.add_option("--showNum", type=int, dest="show_num", default=100)
 
 
@@ -76,7 +77,7 @@ if __name__ == "__main__":
         sys.exit(0)
     # get DL classifier
     transformer = DLClassifierModel(model, [3, image_size, image_size])\
-        .setBatchSize(options.batchSize)\
+        .setBatchSize(options.batch_size)\
         .setFeaturesCol("features")\
         .setPredictionCol("predict")
     # classifier = DLClassifier(model, (3, image_size, image_size)).setInputCol("features").setOutputCol("predict")
