@@ -1,9 +1,9 @@
 
-## Use BigDL with Spark ML pipeline ##
+## Use BigDL with Apache Spark ML pipeline ##
 
-BigDL provides `DLEstimator` and `DLClassifier` for users with Spark MLlib experience, which
-provides high level API for training a BigDL Model with the Spark ML `Estimator`/`Transfomer`
-pattern, thus Spark users can conveniently fit BigDL into Spark ML pipeline.
+BigDL provides `DLEstimator` and `DLClassifier` for users with Apache Spark MLlib experience, which
+provides high level API for training a BigDL Model with the Apache Spark `Estimator`/`Transfomer`
+pattern, thus users can conveniently fit BigDL into a ML pipeline.
 
 Currently only scala interface are implemented for `DLEstimator` and `DLClassifier`. Python
 support will be added soon.
@@ -11,15 +11,15 @@ support will be added soon.
 
 ## DLEstimator ##
 
-`DLEstimator` extends spark `Estimator` and can be used to fit model from DataFrame/Dataset.
-Some changes were introduced to better support deep learning applications. `DLEstimator`
-supports more data types for the label column. E.g. in many applications, the label
-data would be a sequence (text or audio).
-
-`DLEstimator` supports feature and label data in the format of `Array[Double], Array[Float],
-org.apache.spark.mllib.linalg.Vector` for Spark 1.5, 1.6 and
-`org.apache.spark.ml.linalg.Vector` for Spark 2.0+. Also label data can be of
-Double type.
+`DLEstimator` extends `org.apache.spark.ml.Estimator` and supports model training from
+Apache Spark DataFrame/Dataset. 
+ 
+Different from many algorithms in MLlib, `DLEstimator` supports more data types for the
+label column. In many deep learning applications, the label data could be a sequence
+or other data collection. `DLEstimator` supports feature and label data in the format
+of `Array[Double], Array[Float], org.apache.spark.mllib.linalg.Vector` for Apache
+Spark 1.5, 1.6 and `org.apache.spark.ml.linalg.Vector` for Apache Spark 2.0+. Also label
+data can be of Double type.
 
 To use `DLEstimator` for training, user should specify
 1. the model structure constructed from BigDL layers. You can also use some predefined model
@@ -33,7 +33,7 @@ Internally the feature and label data are converted to BigDL tensors, to further
 BigDL model efficiently.
 
 The return result of `fit` function in `DLEstimator` is a `DLModel`, which contains the
-trained BigDL models and extends Spark `org.apache.spark.ml.Transformer` to be used in prediction.
+trained BigDL models and extends `org.apache.spark.ml.Transformer` to be used in prediction.
 
 
 **Scala example:**
