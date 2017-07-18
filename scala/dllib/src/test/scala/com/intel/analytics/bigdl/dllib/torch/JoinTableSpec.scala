@@ -15,11 +15,9 @@
  */
 package com.intel.analytics.bigdl.torch
 
-import com.intel.analytics.bigdl.nn.JoinTable
+import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{RandomGenerator, T, Table}
-
-import scala.collection.mutable
 
 @com.intel.analytics.bigdl.tags.Serial
 class JoinTableSpec extends TorchSpec {
@@ -55,5 +53,22 @@ class JoinTableSpec extends TorchSpec {
     gradInput should be (luaGradInput)
 
     println("Test case : JoinTable, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+  }
+
+  "JoinTable" should "work properly after clearState()" in {
+    import com.intel.analytics.bigdl.numeric.NumericFloat
+    val model = Sequential[Float]()
+    model.add(ConcatTable().add(Identity()).add(Identity()))
+    model.add(ParallelTable().add(Reshape(Array(3, 2))).add(Reshape(Array(3, 2))))
+    model.add(JoinTable(1, 1))
+    val input = Tensor[Float](2, 3)
+    model.forward(input)
+    model.backward(input, model.output)
+
+    model.clearState()
+    model.modules(2).clearState()
+    val input2 = Tensor[Float](2, 3)
+    model.forward(input2)
+    model.backward(input2, model.output)
   }
 }
