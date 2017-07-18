@@ -1,6 +1,7 @@
-## **Loading a caffe model**
+## **Load and Save a Caffe Model**
 
 If you have a pretrained caffe model(model definition prototxt and model binary file), you can load it into BigDL model.
+You can also convert a BigDL model to caffe model.
 
 ### Load Caffe Model
 
@@ -30,8 +31,20 @@ val model = Module.loadCaffe(bigdlModel, caffe.prototxt, caffe.model, matchAll =
 ```
 Note that if ```matchAll = false```, then only layers with same name will be loaded, the rest will use initialized parameters.
 
-### Load Caffe Model Weights to BigDL Model
 * Python Example
 ```python
 model = Model.load_caffe_model(bigdlModel, caffe.prototxt, caffe.model, match_all=True)
 ```
+
+### Save BigDL Model to Caffe Model
+* Scala Example
+```scala
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+bigdlModel.saveCaffe(prototxtPath, modelPath, useV2 = true, overwrite = false)
+```
+
+* Python Example
+```python
+bigdl_model.save_caffe(prototxt_path, model_path, use_v2 = True, overwrite = False)
+```
+

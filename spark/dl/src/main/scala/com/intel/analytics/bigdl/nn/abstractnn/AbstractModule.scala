@@ -27,6 +27,7 @@ import org.apache.spark.rdd.RDD
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch, Sample}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.utils.caffe.CaffePersister
 
 import scala.reflect.ClassTag
 
@@ -384,6 +385,13 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
   def saveTorch(path : String, overWrite: Boolean = false) : this.type = {
     this.clearState()
     File.saveTorch(this, path, TYPE_MODULE, overWrite)
+    this
+  }
+
+  def saveCaffe(prototxtPath: String, modelPath: String,
+    useV2 : Boolean = true, overwrite : Boolean = false) : this.type = {
+    this.clearState()
+    CaffePersister.persist[T](prototxtPath, modelPath, this, useV2, overwrite)
     this
   }
 

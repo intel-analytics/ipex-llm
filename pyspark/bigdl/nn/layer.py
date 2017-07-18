@@ -323,6 +323,10 @@ class Layer(JavaValue):
         callBigDlFunc(self.bigdl_type, "modelSave", self.value, path,
                       over_write)
 
+    def save_caffe(self, prototxt_path, model_path, use_v2 = True, overwrite = False):
+        callBigDlFunc(self.bigdl_type, "saveCaffe", self.value, prototxt_path,
+                      model_path, use_v2, overwrite)
+
     def setWRegularizer(self, wRegularizer):
         '''
         set weight regularizer
