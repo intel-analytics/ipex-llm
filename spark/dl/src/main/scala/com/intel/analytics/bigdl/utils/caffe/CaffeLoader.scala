@@ -87,16 +87,16 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
   }
 
   private def loadBinary(prototxtPath: String, modelPath: String): Caffe.NetParameter = {
-    var modelFs: org.apache.hadoop.fs.FileSystem = null
-    var prototxtFs: org.apache.hadoop.fs.FileSystem = null
+    var modelFs: File = null
+    var prototxtFs: File = null
     var modelStream: InputStream = null
     var prototxtStream: InputStream = null
     var prototxtReader: InputStreamReader = null
     try {
-      modelFs = File.getFileSystem(prototxtPath)
-      prototxtFs = File.getFileSystem(prototxtPath)
-      modelStream = modelFs.open(new Path(modelPath))
-      prototxtStream = modelFs.open(new Path(prototxtPath))
+      modelFs = File(modelPath)
+      prototxtFs = File(prototxtPath)
+      modelStream = modelFs.open()
+      prototxtStream = prototxtFs.open()
       prototxtReader = new InputStreamReader(prototxtStream, "ASCII")
 
       val builder = NetParameter.newBuilder

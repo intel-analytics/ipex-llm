@@ -97,7 +97,7 @@ object TorchFile {
       fileName: String,
       objectType: TorchObject,
       overWrite: Boolean = false): Unit = {
-    val file = new File(fileName)
+    val file = new java.io.File(fileName)
     if (file.exists()) {
       require(file.isFile(), s"$fileName is not a file")
       if (!overWrite) {

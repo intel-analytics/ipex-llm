@@ -17,15 +17,69 @@
 package com.intel.analytics.bigdl.utils
 
 import java.io._
-import java.nio.file.{Files, Paths}
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FSDataInputStream, FSDataOutputStream, FileSystem, Path}
 import org.apache.hadoop.io.IOUtils
 
+import scala.collection.mutable.ArrayBuffer
+
+/**
+ * A uniform approach to get Input/Output stream in BigDL.
+ * @param fileName
+ */
+private[bigdl] class File(fileName: String) {
+  private val inputStreams: ArrayBuffer[InputStream] = new ArrayBuffer[InputStream]()
+  private var outputStream: OutputStream = null
+  private val conf = File.getConfiguration(fileName)
+  private val path = new Path(fileName)
+  private val fs: FileSystem = path.getFileSystem(conf)
+
+  /**
+   * get an InputStream
+   * @return
+   */
+  def open(): InputStream = {
+    require(fs.exists(path), s"$fileName is empty!")
+    val inputStream = fs.open(path)
+    inputStreams.append(inputStream)
+    inputStream
+  }
+
+  /**
+   * get an OutputStream
+   * @param overwrite if overwrite
+   * @return
+   */
+  def create(overwrite: Boolean = false): OutputStream = {
+    require(outputStream == null, s"File $fileName has been opened already.")
+    if (!overwrite) {
+      require(!fs.exists(path), s"$fileName already exists!")
+    }
+    outputStream = fs.create(path, overwrite)
+    outputStream
+  }
+
+  /**
+   * close the resources.
+   */
+  def close(): Unit = {
+    if (inputStreams.nonEmpty) inputStreams.foreach { stream =>
+      if (null != stream) stream.close()
+    }
+    if (null != outputStream) outputStream.close()
+    fs.close()
+  }
+
+}
+
 object File {
   private[bigdl] val hdfsPrefix: String = "hdfs:"
   private[bigdl] val s3aPrefix: String = "s3a:"
+
+  private[bigdl] def apply(fileName: String): File = {
+    new File(fileName)
+  }
 
   /**
    * Load torch object from a torch binary file
@@ -66,8 +120,21 @@ object File {
    * @param isOverwrite if overwrite.
    */
   def save(obj: Serializable, fileName: String, isOverwrite: Boolean = false): Unit = {
-    val conf = getConfiguration(fileName)
-    save(obj, fileName, isOverwrite, conf)
+    var fs: File = null
+    var out: OutputStream = null
+    var objFile: ObjectOutputStream = null
+    try {
+      fs = File(fileName)
+      out = fs.create(isOverwrite)
+      val byteArrayOut = new ByteArrayOutputStream()
+      objFile = new ObjectOutputStream(byteArrayOut)
+      objFile.writeObject(obj)
+      IOUtils.copyBytes(new ByteArrayInputStream(byteArrayOut.toByteArray), out, 1024, true)
+    } finally {
+      if (null != objFile) objFile.close()
+      if (null != out) out.close()
+      if (null != fs) fs.close()
+    }
   }
 
   private[bigdl] def getFileSystem(fileName: String): org.apache.hadoop.fs.FileSystem = {
@@ -82,33 +149,6 @@ object File {
       new Configuration()
     } else {
       new Configuration(false)
-    }
-  }
-
-  private def save(obj: Serializable, fileName: String, overwrite: Boolean,
-                   conf: Configuration): Unit = {
-    val dest = new Path(fileName)
-    var fs: FileSystem = null
-    var out: FSDataOutputStream = null
-    var objFile: ObjectOutputStream = null
-    try {
-      fs = dest.getFileSystem(conf)
-      if (fs.exists(dest)) {
-        if (overwrite) {
-          fs.delete(dest, true)
-        } else {
-          throw new RuntimeException(s"file $fileName already exists")
-        }
-      }
-      out = fs.create(dest)
-      val byteArrayOut = new ByteArrayOutputStream()
-      objFile = new ObjectOutputStream(byteArrayOut)
-      objFile.writeObject(obj)
-      IOUtils.copyBytes(new ByteArrayInputStream(byteArrayOut.toByteArray), out, 1024, true)
-    } finally {
-      if (null != objFile) objFile.close()
-      if (null != out) out.close()
-      if (null != fs) fs.close()
     }
   }
 
@@ -175,24 +215,12 @@ object File {
    * @param fileName file name.
    */
   def load[T](fileName: String): T = {
-    val conf = getConfiguration(fileName)
-    load[T](fileName, conf)
-  }
-
-  /**
-   * Load a scala object from a local/hdfs/s3 path.
-   *
-   * @param fileName file name.
-   * @param conf hadoop Configuration.
-   */
-  private def load[T](fileName: String, conf: Configuration): T = {
-    val src: Path = new Path(fileName)
-    var fs: FileSystem = null
-    var in: FSDataInputStream = null
+    var fs: File = null
+    var in: InputStream = null
     var objFile: ObjectInputStream = null
     try {
-      fs = src.getFileSystem(conf)
-      in = fs.open(src)
+      fs = File(fileName)
+      in = fs.open()
       val byteArrayOut = new ByteArrayOutputStream()
       IOUtils.copyBytes(in, byteArrayOut, 1024, true)
       objFile = new ObjectInputStream(new ByteArrayInputStream(byteArrayOut.toByteArray))
