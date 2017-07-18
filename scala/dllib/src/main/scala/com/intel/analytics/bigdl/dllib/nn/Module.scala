@@ -57,11 +57,10 @@ object Module {
    * Loaf caffe trained model from prototxt and weight files
    * @param defPath  caffe model definition file path
    * @param modelPath caffe model binary file containing weight and bias
-   * @param matchAll  if layer on layer checking needed between caffe and bigdl
    */
-  def loadCaffeModel[T: ClassTag](defPath: String, modelPath: String, matchAll: Boolean = true)(
+  def loadCaffeModel[T: ClassTag](defPath: String, modelPath: String)(
     implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
-    CaffeLoader.loadCaffe[T](defPath, modelPath, matchAll)._1
+    CaffeLoader.loadCaffe[T](defPath, modelPath)._1
   }
   /**
    * Load tensorflow model from its saved protobuf file.

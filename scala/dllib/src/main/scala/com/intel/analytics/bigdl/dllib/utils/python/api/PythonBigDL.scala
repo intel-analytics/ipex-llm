@@ -1346,6 +1346,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Module.loadCaffe[T](model, defPath, modelPath, matchAll)
   }
 
+  def loadCaffeModel(defPath: String, modelPath: String): AbstractModule[Activity, Activity, T] = {
+    Module.loadCaffeModel[T](defPath, modelPath)
+  }
+
   def loadTF(path: String, inputs: JList[String], outputs: JList[String],
              byteOrder: String): AbstractModule[Activity, Activity, T] = {
     val order = byteOrder match {
@@ -1391,6 +1395,12 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def modelSave(module: AbstractModule[Activity, Activity, T],
                 path: String, overWrite: Boolean): Unit = {
     module.save(path, overWrite)
+  }
+
+  def saveCaffe(module: AbstractModule[Activity, Activity, T],
+    prototxtPath: String, modelPath: String,
+    useV2 : Boolean = true, overwrite : Boolean = false): Unit = {
+    module.saveCaffe(prototxtPath, modelPath, useV2, overwrite)
   }
 
   def criterionForward(criterion: AbstractCriterion[Activity, Activity, T],
