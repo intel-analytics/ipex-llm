@@ -133,6 +133,20 @@ class TestLoadCaffe(unittest.TestCase):
         self.assertTrue(np.allclose(parameters["ip"]["weight"],
                                     linear_weight, atol=1e-6, rtol=0))
 
+        # test load caffe dynamically
+        model = Model.load_caffe_model(proto_txt, model_path, bigdl_type="float")
+        parameters = model.parameters()
+        self.assertTrue(np.allclose(parameters["conv"]["weight"],
+                                    conv1_weight, atol=1e-6, rtol=0))
+        self.assertTrue(np.allclose(parameters["conv"]["bias"],
+                                    conv1_bias, atol=1e-6, rtol=0))
+        self.assertTrue(np.allclose(parameters["conv2"]["weight"],
+                                    conv2_weight, atol=1e-6, rtol=0))
+        self.assertTrue(np.allclose(parameters["conv2"]["bias"],
+                                    conv2_bias, atol=1e-6, rtol=0))
+        self.assertTrue(np.allclose(parameters["ip"]["weight"],
+                                    linear_weight, atol=1e-6, rtol=0))
+
 
 if __name__ == "__main__":
     unittest.main()
