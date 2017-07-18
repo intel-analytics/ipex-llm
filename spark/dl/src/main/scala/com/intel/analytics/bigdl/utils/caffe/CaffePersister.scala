@@ -45,7 +45,7 @@ import org.apache.log4j.Logger
  * @param overwrite whether to overwirte existing caffe files
  */
 class CaffePersister[T: ClassTag](val prototxtPath: String,
-      val modelPath: String, val module : Container[Activity, Activity, T],
+      val modelPath: String, val module : AbstractModule[Activity, Activity, T],
       useV2 : Boolean = true, overwrite : Boolean = false)(implicit ev: TensorNumeric[T]) {
 
   private val logger = Logger.getLogger(getClass)
@@ -260,7 +260,7 @@ class CaffePersister[T: ClassTag](val prototxtPath: String,
 
 object CaffePersister{
   def persist[T: ClassTag](prototxtPath: String,
-               modelPath: String, module : Container[Activity, Activity, T],
+               modelPath: String, module : AbstractModule[Activity, Activity, T],
   useV2 : Boolean = true, overwrite : Boolean = false)(implicit ev: TensorNumeric[T]) : Unit = {
     val caffePersist = new CaffePersister[T](prototxtPath, modelPath, module, useV2, overwrite)
     caffePersist.saveAsCaffe()

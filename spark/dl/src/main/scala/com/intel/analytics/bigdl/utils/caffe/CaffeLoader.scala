@@ -388,15 +388,14 @@ object CaffeLoader {
  * load caffe model dynamically from binary and prototxt file
  * @param defPath prototxt file which illustrate the caffe model structure
  * @param modelPath binary file containing the weight and bias
- * @param matchAll if match all modules for parameter copy
  * @param customizedConverters customized layer converter
  * @tparam T data type
  * @return created module (graph) and criterion
  */
-  def loadCaffe[T: ClassTag](defPath: String, modelPath: String, matchAll: Boolean = true,
+  def loadCaffe[T: ClassTag](defPath: String, modelPath: String,
     customizedConverters : mutable.HashMap[String, (GeneratedMessage) => Seq[ModuleNode[T]]] = null)
                               (implicit ev: TensorNumeric[T]): (Module[T], ParallelCriterion[T]) = {
-    val caffeLoader = new CaffeLoader[T](defPath, modelPath, matchAll, customizedConverters)
+    val caffeLoader = new CaffeLoader[T](defPath, modelPath, true, customizedConverters)
     caffeLoader.createCaffeModel()
   }
 }

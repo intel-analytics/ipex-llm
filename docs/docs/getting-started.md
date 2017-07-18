@@ -31,6 +31,7 @@ BigDL supports loading models trained and saved in BigDL, or a trained Tensorflo
 
 * To load a BigDL model, you can use `Module.load` interface (Scala). Refer to [Module API docs](APIdocs/Module.md) for details.  
 * To load a Tensorflow model, refer to [Tensorflow Support](ProgrammingGuide/tensorflow-support.md) for details.
+* To load a Caffe model, refer to [Caffe Support](ProgrammingGuide/caffe-support.md) for details.
 
 Once you have a loaded model, you can call `Module.predict()` to do predictions. Note that you need to convert your input data into proper format which `predict` accepts. For how to prepare your data, refer to section [Prepare your Data](#prepare-your-data). 
 
