@@ -31,9 +31,9 @@ like LetNet or ResNet.
 3. the feature data dimensions and label data dimensions (the constructor
 parameters `featureSize` and `labelSize` respectively). E.g., a sample from
 [MNist](http://yann.lecun.com/exdb/mnist/) may have the `featureSize` as Array(28, 28) and
-`labelSize` as Array(1). And the feature column contains an array or a `Vector` of 576 numbers.
-Internally the feature and label data are converted to BigDL tensors, to further train a
-BigDL model efficiently.
+`labelSize` as Array(1). And the feature column contains an array or a `Vector` of 784 (28 * 28)
+numbers. Internally the feature and label data are converted to BigDL tensors, to further train
+a BigDL model efficiently.
 
 The return result of `fit` function in `DLEstimator` is a `DLModel`, which contains the
 trained BigDL models and extends `org.apache.spark.ml.Transformer` to be used in prediction.
@@ -43,22 +43,39 @@ trained BigDL models and extends `org.apache.spark.ml.Transformer` to be used in
 ```scala
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.utils.Engine
+import org.apache.spark.SparkContext
 import org.apache.spark.ml.DLEstimator
+import org.apache.spark.sql.SQLContext
 
-val model = Sequential().add(Linear(2, 2))
-val criterion = MSECriterion()
-val estimator = new DLEstimator(model, criterion, Array(2), Array(2))
-  .setBatchSize(4)
-  .setMaxEpoch(10)
-val data = sc.parallelize(Seq(
-  (Array(2.0, 1.0), Array(1.0, 2.0)),
-  (Array(1.0, 2.0), Array(2.0, 1.0)),
-  (Array(2.0, 1.0), Array(1.0, 2.0)),
-  (Array(1.0, 2.0), Array(2.0, 1.0))))
-val df: DataFrame = sqlContext.createDataFrame(data).toDF("features", "label")
+/**
+ *  Multi-label regression with BigDL layers and DLEstimator
+ */
+object DLEstimatorMultiLabelLR {
 
-val dlModel = estimator.fit(df)
-dlModel.transform(df).show(false)
+  def main(args: Array[String]): Unit = {
+    val conf = Engine.createSparkConf()
+      .setAppName("DLEstimatorMultiLabelLR")
+      .setMaster("local[1]")
+    val sc = new SparkContext(conf)
+    val sqlContext = SQLContext.getOrCreate(sc)
+    Engine.init
+
+    val model = Sequential().add(Linear(2, 2))
+    val criterion = MSECriterion()
+    val estimator = new DLEstimator(model, criterion, Array(2), Array(2))
+      .setBatchSize(4)
+      .setMaxEpoch(10)
+    val data = sc.parallelize(Seq(
+      (Array(2.0, 1.0), Array(1.0, 2.0)),
+      (Array(1.0, 2.0), Array(2.0, 1.0)),
+      (Array(2.0, 1.0), Array(1.0, 2.0)),
+      (Array(1.0, 2.0), Array(2.0, 1.0))))
+    val df = sqlContext.createDataFrame(data).toDF("features", "label")
+    val dlModel = estimator.fit(df)
+    dlModel.transform(df).show(false)
+  }
+}
 
 ```
 Output is
@@ -79,24 +96,41 @@ classification tasks. It only supports label column of DoubleType, and the fitte
 
 **Scala example:**
 ```scala
-import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Linear, LogSoftMax, Sequential}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.utils.Engine
+import org.apache.spark.SparkContext
 import org.apache.spark.ml.DLClassifier
+import org.apache.spark.sql.SQLContext
 
-val model = Sequential().add(Linear(2, 2)).add(LogSoftMax())
-val criterion = ClassNLLCriterion()
-val estimator = new DLClassifier(model, criterion, Array(2))
-  .setBatchSize(4)
-  .setMaxEpoch(10)
-val data = sc.parallelize(Seq(
-  (Array(0.0, 1.0), 1.0),
-  (Array(1.0, 0.0), 2.0),
-  (Array(0.0, 1.0), 1.0),
-  (Array(1.0, 0.0), 2.0)))
-val df: DataFrame = sqlContext.createDataFrame(data).toDF("features", "label")
+/**
+ * Logistic Regression with BigDL layers and DLClassifier
+ */
+object DLClassifierLogisticRegression {
 
-val dlModel = estimator.fit(df)
-dlModel.transform(df).show(false)
+  def main(args: Array[String]): Unit = {
+    val conf = Engine.createSparkConf()
+      .setAppName("DLClassifierLogisticRegression")
+      .setMaster("local[1]")
+    val sc = new SparkContext(conf)
+    val sqlContext = SQLContext.getOrCreate(sc)
+    Engine.init
+
+    val model = Sequential().add(Linear(2, 2)).add(LogSoftMax())
+    val criterion = ClassNLLCriterion()
+    val estimator = new DLClassifier(model, criterion, Array(2))
+      .setBatchSize(4)
+      .setMaxEpoch(10)
+    val data = sc.parallelize(Seq(
+      (Array(0.0, 1.0), 1.0),
+      (Array(1.0, 0.0), 2.0),
+      (Array(0.0, 1.0), 1.0),
+      (Array(1.0, 0.0), 2.0)))
+    val df = sqlContext.createDataFrame(data).toDF("features", "label")
+    val dlModel = estimator.fit(df)
+    dlModel.transform(df).show(false)
+  }
+}
 ```
 Output is
 

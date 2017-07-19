@@ -30,7 +30,7 @@ object DLEstimatorMultiLabelLR {
   def main(args: Array[String]): Unit = {
     val conf = Engine.createSparkConf()
       .setAppName("DLEstimatorMultiLabelLR")
-      .set("spark.task.maxFailures", "1")
+      .setMaster("local[1]")
     val sc = new SparkContext(conf)
     val sqlContext = SQLContext.getOrCreate(sc)
     Engine.init
@@ -41,10 +41,10 @@ object DLEstimatorMultiLabelLR {
       .setBatchSize(4)
       .setMaxEpoch(10)
     val data = sc.parallelize(Seq(
-      (Array(0.0, 1.0), Array(1.0, 0.0)),
-      (Array(1.0, 0.0), Array(0.0, 1.0)),
-      (Array(0.0, 1.0), Array(1.0, 0.0)),
-      (Array(1.0, 0.0), Array(0.0, 1.0))))
+      (Array(2.0, 1.0), Array(1.0, 2.0)),
+      (Array(1.0, 2.0), Array(2.0, 1.0)),
+      (Array(2.0, 1.0), Array(1.0, 2.0)),
+      (Array(1.0, 2.0), Array(2.0, 1.0))))
     val df = sqlContext.createDataFrame(data).toDF("features", "label")
     val dlModel = estimator.fit(df)
     dlModel.transform(df).show(false)
