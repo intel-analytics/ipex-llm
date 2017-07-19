@@ -70,7 +70,7 @@ object Train {
       val endIdx = dictionary.getIndex(SentenceToken.end)
       val padFeature = Tensor[Float]().resize(totalVocabLength)
       padFeature.setValue(endIdx + 1, 1.0f)
-      val padLabel = Tensor[Float](Storage(Array[Float](startIdx)), 1, Array(1))
+      val padLabel = Tensor[Float](T(startIdx.toFloat + 1.0f))
       val featurePadding = PaddingParam(Some(Array(padFeature)),
         FixedLength(Array(maxTrainLength)))
       val labelPadding = PaddingParam(Some(Array(padLabel)),
