@@ -20,8 +20,8 @@ model = Model([Node], [Node])
  applied to the gradient from the module in the back propagation.
  
  All of the input modules must accept a tensor input. If your input module accept multiple
- tensors as input, you should add some Input module before it as input nodes and connect the
- output of the Input modules to that module.
+ tensors as input, you should add some [Input layer](APIdocs/Layers/Utilities/Input.md) before
+ it as input nodes and connect the output of the Input modules to that module.
  
  If there's one output, the module output is a tensor. If there're multiple outputs, the module
  output is a table, which is actually an sequence of tensor. The order of the output tensors is
@@ -46,10 +46,10 @@ val cadd = CAddTable().inputs(input1, input2)
 val graph = Graph(Array(input1, input2), cadd)
 
 val output = graph.forward(T(Tensor(T(0.1f, 0.2f, -0.3f, -0.4f)),
-                             Tensor(T(0.5f, 0.4f, -0.2f, -0.1f))))
+    Tensor(T(0.5f, 0.4f, -0.2f, -0.1f))))
 val gradInput = graph.backward(T(Tensor(T(0.1f, 0.2f, -0.3f, -0.4f)),
-                                 Tensor(T(0.5f, 0.4f, -0.2f, -0.1f))),
-							   Tensor(T(0.1f, 0.2f, 0.3f, 0.4f)))
+    Tensor(T(0.5f, 0.4f, -0.2f, -0.1f))),
+    Tensor(T(0.1f, 0.2f, 0.3f, 0.4f)))
 
 > println(output)
 output: com.intel.analytics.bigdl.nn.abstractnn.Activity =

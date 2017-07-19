@@ -1633,8 +1633,9 @@ class CosineDistance(Layer):
 class Input(Node):
 
     '''
-    Input layer do nothing to the input tensors, just pass them. It should be used as input node
-    when the first layer of your module accepts multiple tensors as inputs.
+    Input layer do nothing to the input tensors, just passing them through. It is used as input to
+    the Graph container (add a link) when the first layer of the graph container accepts multiple
+    tensors as inputs.
 
     Each input node of the graph container should accept one tensor as input. If you want a module
     accepting multiple tensors as input, you should add some Input module before it and connect
