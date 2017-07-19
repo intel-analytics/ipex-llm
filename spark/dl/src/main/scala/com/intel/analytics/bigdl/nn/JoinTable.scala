@@ -96,6 +96,7 @@ class JoinTable[T: ClassTag] (
             val outputFrame = currentOutput.select(1, f)
             require(curFrame.isContiguous())
             require(outputFrame.isContiguous())
+            println(s"${curFrame.nElement()}" + s" and ${outputFrame.nElement()}")
             curFrame.copy(outputFrame)
             f += 1
           }

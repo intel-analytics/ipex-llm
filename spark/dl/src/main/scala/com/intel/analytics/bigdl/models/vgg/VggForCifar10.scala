@@ -130,7 +130,7 @@ object VggForCifar10 {
 }
 
 object Vgg_16 {
-  def apply(classNum: Int): Module[Float] = {
+  def apply(classNum: Int, hasDropout: Boolean = true): Module[Float] = {
     val model = Sequential()
     model.add(SpatialConvolution(3, 64, 3, 3, 1, 1, 1, 1))
     model.add(ReLU(true))
@@ -171,19 +171,70 @@ object Vgg_16 {
     model.add(View(512 * 7 * 7))
     model.add(Linear(512 * 7 * 7, 4096))
     model.add(Threshold(0, 1e-6))
-    model.add(Dropout(0.5))
+    if (hasDropout) model.add(Dropout(0.5))
     model.add(Linear(4096, 4096))
     model.add(Threshold(0, 1e-6))
-    model.add(Dropout(0.5))
+    if (hasDropout) model.add(Dropout(0.5))
     model.add(Linear(4096, classNum))
     model.add(LogSoftMax())
 
     model
   }
+
+  def graph(classNum: Int, hasDropout: Boolean = true): Module[Float] = {
+    val input = Input()
+    val conv1 = SpatialConvolution(3, 64, 3, 3, 1, 1, 1, 1).inputs(input)
+    val relu1 = ReLU(true).inputs(conv1)
+    val conv2 = SpatialConvolution(64, 64, 3, 3, 1, 1, 1, 1).inputs(relu1)
+    val relu2 = ReLU(true).inputs(conv2)
+    val pool1 = SpatialMaxPooling(2, 2, 2, 2).inputs(relu2)
+
+    val conv3 = SpatialConvolution(64, 128, 3, 3, 1, 1, 1, 1).inputs(pool1)
+    val relu3 = ReLU(true).inputs(conv3)
+    val conv4 = SpatialConvolution(128, 128, 3, 3, 1, 1, 1, 1).inputs(relu3)
+    val relu4 = ReLU(true).inputs(conv4)
+    val pool2 = SpatialMaxPooling(2, 2, 2, 2).inputs(relu4)
+
+    val conv5 = SpatialConvolution(128, 256, 3, 3, 1, 1, 1, 1).inputs(pool2)
+    val relu5 = ReLU(true).inputs(conv5)
+    val conv6 = SpatialConvolution(256, 256, 3, 3, 1, 1, 1, 1).inputs(relu5)
+    val relu6 = ReLU(true).inputs(conv6)
+    val conv7 = SpatialConvolution(256, 256, 3, 3, 1, 1, 1, 1).inputs(relu6)
+    val relu7 = ReLU(true).inputs(conv7)
+    val pool3 = SpatialMaxPooling(2, 2, 2, 2).inputs(relu7)
+
+    val conv8 = SpatialConvolution(256, 512, 3, 3, 1, 1, 1, 1).inputs(pool3)
+    val relu8 = ReLU(true).inputs(conv8)
+    val conv9 = SpatialConvolution(512, 512, 3, 3, 1, 1, 1, 1).inputs(relu8)
+    val relu9 = ReLU(true).inputs(conv9)
+    val conv10 = SpatialConvolution(512, 512, 3, 3, 1, 1, 1, 1).inputs(relu9)
+    val relu10 = ReLU(true).inputs(conv10)
+    val pool4 = SpatialMaxPooling(2, 2, 2, 2).inputs(relu10)
+
+    val conv11 = SpatialConvolution(512, 512, 3, 3, 1, 1, 1, 1).inputs(pool4)
+    val relu11 = ReLU(true).inputs(conv11)
+    val conv12 = SpatialConvolution(512, 512, 3, 3, 1, 1, 1, 1).inputs(relu11)
+    val relu12 = ReLU(true).inputs(conv12)
+    val conv13 = SpatialConvolution(512, 512, 3, 3, 1, 1, 1, 1).inputs(relu12)
+    val relu13 = ReLU(true).inputs(conv13)
+    val pool5 = SpatialMaxPooling(2, 2, 2, 2).inputs(relu13)
+
+    val view1 = View(512 * 7 * 7).inputs(pool5)
+    val linear1 = Linear(512 * 7 * 7, 4096).inputs(view1)
+    val th1 = Threshold(0, 1e-6).inputs(linear1)
+    val drop1 = if (hasDropout) Dropout(0.5).inputs(th1) else th1
+    val linear2 = Linear(4096, 4096).inputs(drop1)
+    val th2 = Threshold(0, 1e-6).inputs(linear2)
+    val drop2 = if (hasDropout) Dropout(0.5).inputs(th2) else th2
+    val linear3 = Linear(4096, classNum).inputs(drop2)
+    val output = LogSoftMax().inputs(linear3)
+
+    Graph(input, output)
+  }
 }
 
 object Vgg_19 {
-  def apply(classNum: Int): Module[Float] = {
+  def apply(classNum: Int, hasDropout: Boolean = true): Module[Float] = {
     val model = Sequential()
     model.add(SpatialConvolution(3, 64, 3, 3, 1, 1, 1, 1))
     model.add(ReLU(true))
@@ -230,13 +281,70 @@ object Vgg_19 {
     model.add(View(512 * 7 * 7))
     model.add(Linear(512 * 7 * 7, 4096))
     model.add(Threshold(0, 1e-6))
-    model.add(Dropout(0.5))
+    if (hasDropout) model.add(Dropout(0.5))
     model.add(Linear(4096, 4096))
     model.add(Threshold(0, 1e-6))
-    model.add(Dropout(0.5))
+    if (hasDropout) model.add(Dropout(0.5))
     model.add(Linear(4096, classNum))
     model.add(LogSoftMax())
 
     model
+  }
+
+  def graph(classNum: Int, hasDropout: Boolean = true): Module[Float] = {
+    val input = Input()
+    val conv1 = SpatialConvolution(3, 64, 3, 3, 1, 1, 1, 1).inputs(input)
+    val relu1 = ReLU(true).inputs(conv1)
+    val conv2 = SpatialConvolution(64, 64, 3, 3, 1, 1, 1, 1).inputs(relu1)
+    val relu2 = ReLU(true).inputs(conv2)
+    val pool1 = SpatialMaxPooling(2, 2, 2, 2).inputs(relu2)
+
+    val conv3 = SpatialConvolution(64, 128, 3, 3, 1, 1, 1, 1).inputs(pool1)
+    val relu3 = ReLU(true).inputs(conv3)
+    val conv4 = SpatialConvolution(128, 128, 3, 3, 1, 1, 1, 1).inputs(relu3)
+    val relu4 = ReLU(true).inputs(conv4)
+    val pool2 = SpatialMaxPooling(2, 2, 2, 2).inputs(relu4)
+
+    val conv5 = SpatialConvolution(128, 256, 3, 3, 1, 1, 1, 1).inputs(pool2)
+    val relu5 = ReLU(true).inputs(conv5)
+    val conv6 = SpatialConvolution(256, 256, 3, 3, 1, 1, 1, 1).inputs(relu5)
+    val relu6 = ReLU(true).inputs(conv6)
+    val conv7 = SpatialConvolution(256, 256, 3, 3, 1, 1, 1, 1).inputs(relu6)
+    val relu7 = ReLU(true).inputs(conv7)
+    val conv8 = SpatialConvolution(256, 256, 3, 3, 1, 1, 1, 1).inputs(relu7)
+    val relu8 = ReLU(true).inputs(conv8)
+    val pool3 = SpatialMaxPooling(2, 2, 2, 2).inputs(relu8)
+
+    val conv9 = SpatialConvolution(256, 512, 3, 3, 1, 1, 1, 1).inputs(pool3)
+    val relu9 = ReLU(true).inputs(conv9)
+    val conv10 = SpatialConvolution(512, 512, 3, 3, 1, 1, 1, 1).inputs(relu9)
+    val relu10 = ReLU(true).inputs(conv10)
+    val conv11 = SpatialConvolution(512, 512, 3, 3, 1, 1, 1, 1).inputs(relu10)
+    val relu11 = ReLU(true).inputs(conv11)
+    val conv12 = SpatialConvolution(512, 512, 3, 3, 1, 1, 1, 1).inputs(relu11)
+    val relu12 = ReLU(true).inputs(conv12)
+    val pool4 = SpatialMaxPooling(2, 2, 2, 2).inputs(relu12)
+
+    val conv13 = SpatialConvolution(512, 512, 3, 3, 1, 1, 1, 1).inputs(pool4)
+    val relu13 = ReLU(true).inputs(conv13)
+    val conv14 = SpatialConvolution(512, 512, 3, 3, 1, 1, 1, 1).inputs(relu13)
+    val relu14 = ReLU(true).inputs(conv14)
+    val conv15 = SpatialConvolution(512, 512, 3, 3, 1, 1, 1, 1).inputs(relu14)
+    val relu15 = ReLU(true).inputs(conv15)
+    val conv16 = SpatialConvolution(512, 512, 3, 3, 1, 1, 1, 1).inputs(relu15)
+    val relu16 = ReLU(true).inputs(conv16)
+    val pool5 = SpatialMaxPooling(2, 2, 2, 2).inputs(relu16)
+
+    val view1 = View(512 * 7 * 7).inputs(pool5)
+    val linear1 = Linear(512 * 7 * 7, 4096).inputs(view1)
+    val th1 = Threshold(0, 1e-6).inputs(linear1)
+    val drop1 = if (hasDropout) Dropout(0.5).inputs(th1) else th1
+    val linear2 = Linear(4096, 4096).inputs(drop1)
+    val th2 = Threshold(0, 1e-6).inputs(linear2)
+    val drop2 = if (hasDropout) Dropout(0.5).inputs(th2) else th2
+    val linear3 = Linear(4096, classNum).inputs(drop2)
+    val output = LogSoftMax().inputs(linear3)
+
+    Graph(input, output)
   }
 }
