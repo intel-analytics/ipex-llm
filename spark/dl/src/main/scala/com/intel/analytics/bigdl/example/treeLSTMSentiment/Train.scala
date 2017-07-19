@@ -57,7 +57,7 @@ object Train {
     val glovePath = s"$DATA_DIR/glove/glove.840B.300d.txt"
     val vocabPath = s"$DATA_DIR/sst/vocab-cased.txt"
     val (word2VecTensor, vocab) =
-      loadEmbeddingAndVocabulary(glovePath, vocabPath, indexFrom)
+      loadEmbeddingAndVocabulary(sc, glovePath, vocabPath, indexFrom)
 
     val vocabBC = sc.broadcast(vocab)
     val (trainTreeRDD, trainLabelRDD, trainSentenceRDD) = preProcessData(
