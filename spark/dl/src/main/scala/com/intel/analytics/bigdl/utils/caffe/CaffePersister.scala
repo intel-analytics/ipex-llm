@@ -21,7 +21,7 @@ import scala.collection.JavaConverters._
 import caffe.Caffe.{LayerParameter, NetParameter, V1LayerParameter}
 import com.intel.analytics.bigdl.nn.{Container, Graph, Sequential, View}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{File, Node}
+import com.intel.analytics.bigdl.utils.{File, FileWriter, Node}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -169,9 +169,9 @@ class CaffePersister[T: ClassTag](val prototxtPath: String,
 
   private def saveBinary() : Unit = {
     // save binary
-    var binaryFile: File = null
+    var binaryFile: FileWriter = null
     try {
-      binaryFile = File(modelPath)
+      binaryFile = FileWriter(modelPath)
       val out = binaryFile.create(overwrite)
       val byteArrayOut = new ByteArrayOutputStream()
       byteArrayOut.write(netparam.build.toByteArray)
@@ -211,9 +211,9 @@ class CaffePersister[T: ClassTag](val prototxtPath: String,
       })
     }
 
-    var prototxtFile: File = null
+    var prototxtFile: FileWriter = null
     try {
-      prototxtFile = File(prototxtPath)
+      prototxtFile = FileWriter(prototxtPath)
       val out = prototxtFile.create(overwrite)
       val byteArrayOut = new ByteArrayOutputStream()
       byteArrayOut.write(netParameterWithoutData.build().toString.getBytes)

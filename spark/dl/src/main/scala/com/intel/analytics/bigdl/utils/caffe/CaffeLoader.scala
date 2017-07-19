@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{File, Table}
+import com.intel.analytics.bigdl.utils.{File, FileReader, Table}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FSDataInputStream, Path}
 import org.apache.log4j.Logger
@@ -87,14 +87,14 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
   }
 
   private def loadBinary(prototxtPath: String, modelPath: String): Caffe.NetParameter = {
-    var modelFs: File = null
-    var prototxtFs: File = null
+    var modelFs: FileReader = null
+    var prototxtFs: FileReader = null
     var modelStream: InputStream = null
     var prototxtStream: InputStream = null
     var prototxtReader: InputStreamReader = null
     try {
-      modelFs = File(modelPath)
-      prototxtFs = File(prototxtPath)
+      modelFs = FileReader(modelPath)
+      prototxtFs = FileReader(prototxtPath)
       modelStream = modelFs.open()
       prototxtStream = prototxtFs.open()
       prototxtReader = new InputStreamReader(prototxtStream, "ASCII")

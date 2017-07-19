@@ -22,64 +22,9 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FSDataInputStream, FSDataOutputStream, FileSystem, Path}
 import org.apache.hadoop.io.IOUtils
 
-import scala.collection.mutable.ArrayBuffer
-
-/**
- * A uniform approach to get Input/Output stream in BigDL.
- * @param fileName
- */
-private[bigdl] class File(fileName: String) {
-  private val inputStreams: ArrayBuffer[InputStream] = new ArrayBuffer[InputStream]()
-  private var outputStream: OutputStream = null
-  private val conf = File.getConfiguration(fileName)
-  private val path = new Path(fileName)
-  private val fs: FileSystem = path.getFileSystem(conf)
-
-  /**
-   * get an InputStream
-   * @return
-   */
-  def open(): InputStream = {
-    require(fs.exists(path), s"$fileName is empty!")
-    val inputStream = fs.open(path)
-    inputStreams.append(inputStream)
-    inputStream
-  }
-
-  /**
-   * get an OutputStream
-   * @param overwrite if overwrite
-   * @return
-   */
-  def create(overwrite: Boolean = false): OutputStream = {
-    require(outputStream == null, s"File $fileName has been opened already.")
-    if (!overwrite) {
-      require(!fs.exists(path), s"$fileName already exists!")
-    }
-    outputStream = fs.create(path, overwrite)
-    outputStream
-  }
-
-  /**
-   * close the resources.
-   */
-  def close(): Unit = {
-    if (inputStreams.nonEmpty) inputStreams.foreach { stream =>
-      if (null != stream) stream.close()
-    }
-    if (null != outputStream) outputStream.close()
-    fs.close()
-  }
-
-}
-
 object File {
   private[bigdl] val hdfsPrefix: String = "hdfs:"
   private[bigdl] val s3aPrefix: String = "s3a:"
-
-  private[bigdl] def apply(fileName: String): File = {
-    new File(fileName)
-  }
 
   /**
    * Load torch object from a torch binary file
@@ -120,11 +65,11 @@ object File {
    * @param isOverwrite if overwrite.
    */
   def save(obj: Serializable, fileName: String, isOverwrite: Boolean = false): Unit = {
-    var fs: File = null
+    var fs: FileWriter = null
     var out: OutputStream = null
     var objFile: ObjectOutputStream = null
     try {
-      fs = File(fileName)
+      fs = FileWriter(fileName)
       out = fs.create(isOverwrite)
       val byteArrayOut = new ByteArrayOutputStream()
       objFile = new ObjectOutputStream(byteArrayOut)
@@ -215,11 +160,11 @@ object File {
    * @param fileName file name.
    */
   def load[T](fileName: String): T = {
-    var fs: File = null
+    var fs: FileReader = null
     var in: InputStream = null
     var objFile: ObjectInputStream = null
     try {
-      fs = File(fileName)
+      fs = FileReader(fileName)
       in = fs.open()
       val byteArrayOut = new ByteArrayOutputStream()
       IOUtils.copyBytes(in, byteArrayOut, 1024, true)
@@ -254,3 +199,79 @@ object File {
     }
   }
 }
+
+/**
+ * FileReader in BigDL.
+ * @param fileName
+ */
+private[bigdl] class FileReader(fileName: String) {
+  private var inputStream: InputStream = null
+  private val conf = File.getConfiguration(fileName)
+  private val path = new Path(fileName)
+  private val fs: FileSystem = path.getFileSystem(conf)
+
+  /**
+   * get an InputStream
+   * @return
+   */
+  def open(): InputStream = {
+    require(inputStream == null, s"File $fileName has been opened already.")
+    require(fs.exists(path), s"$fileName is empty!")
+    inputStream = fs.open(path)
+    inputStream
+  }
+
+  /**
+   * close the resources.
+   */
+  def close(): Unit = {
+    if (null != inputStream) inputStream.close()
+    fs.close()
+  }
+}
+
+object FileReader {
+  private[bigdl] def apply(fileName: String): FileReader = {
+    new FileReader(fileName)
+  }
+}
+
+/**
+ * FileWriter in BigDL.
+ * @param fileName
+ */
+private[bigdl] class FileWriter(fileName: String) {
+  private var outputStream: OutputStream = null
+  private val conf = File.getConfiguration(fileName)
+  private val path = new Path(fileName)
+  private val fs: FileSystem = path.getFileSystem(conf)
+
+  /**
+   * get an OutputStream
+   * @param overwrite if overwrite
+   * @return
+   */
+  def create(overwrite: Boolean = false): OutputStream = {
+    require(outputStream == null, s"File $fileName has been created already.")
+    if (!overwrite) {
+      require(!fs.exists(path), s"$fileName already exists!")
+    }
+    outputStream = fs.create(path, overwrite)
+    outputStream
+  }
+
+  /**
+   * close the resources.
+   */
+  def close(): Unit = {
+    if (null != outputStream) outputStream.close()
+    fs.close()
+  }
+}
+
+object FileWriter {
+  private[bigdl] def apply(fileName: String): FileWriter = {
+    new FileWriter(fileName)
+  }
+}
+
