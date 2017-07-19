@@ -3,7 +3,10 @@
 
 BigDL provides `DLEstimator` and `DLClassifier` for users with Apache Spark MLlib experience, which
 provides high level API for training a BigDL Model with the Apache Spark `Estimator`/`Transfomer`
-pattern, thus users can conveniently fit BigDL into a ML pipeline.
+pattern, thus users can conveniently fit BigDL into a ML pipeline. The fitted model `DLModel` and
+`DLClassiferModel` contains the trained BigDL model and extends the Spark ML `Model` class.
+Alternatively users may also construct a `DLModel` with a pre-trained BigDL model to use it in
+Spark ML Pipeline for prediction.
 
 Currently only scala interface are implemented for `DLEstimator` and `DLClassifier`. Python
 support will be added soon.
@@ -14,7 +17,7 @@ support will be added soon.
 `DLEstimator` extends `org.apache.spark.ml.Estimator` and supports model training from
 Apache Spark DataFrame/Dataset. 
  
-Different from many algorithms in MLlib, `DLEstimator` supports more data types for the
+Different from many algorithms in Spark MLlib, `DLEstimator` supports more data types for the
 label column. In many deep learning applications, the label data could be a sequence
 or other data collection. `DLEstimator` supports feature and label data in the format
 of `Array[Double]`, `Array[Float]`, `org.apache.spark.mllib.linalg.Vector` (for Apache
