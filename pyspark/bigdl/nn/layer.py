@@ -1648,6 +1648,27 @@ class CosineDistance(Layer):
                  bigdl_type="float"):
         super(CosineDistance, self).__init__(None, bigdl_type)
 
+class Input(Node):
+
+    '''
+    Input layer do nothing to the input tensors, just passing them through. It is used as input to
+    the Graph container (add a link) when the first layer of the graph container accepts multiple
+    tensors as inputs.
+
+    Each input node of the graph container should accept one tensor as input. If you want a module
+    accepting multiple tensors as input, you should add some Input module before it and connect
+    the outputs of the Input nodes to it.
+
+    Please note that the return is not a layer but a Node containing input layer.
+
+    >>> input = Input()
+    creating: createInput
+    '''
+
+    def __init__(self,
+                 bigdl_type="float"):
+        super(Input, self).__init__(None, bigdl_type)
+
 
 class DotProduct(Layer):
 
