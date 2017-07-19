@@ -226,7 +226,7 @@ object TensorflowToBigDL {
       TanhTF, ReluTF, SigmoidTF, Conv2D, Placeholder, SqueezeTF, IdentityTF, ConcatTF,
       BatchNormTF, AddConstTF1, AddConstTF2, AddTF, SoftMaxTF, ElementWiseMulTF, MulTF,
       SplitTF, PaddingTF, MeanTF, UnpackTF, StrideSliceTF, ShapeTF, FillTF, PackTF, ConstTF,
-      Flatten
+      Flatten, Conv2D2
     )
     res
   }
@@ -343,6 +343,79 @@ object Conv2D extends TensorflowToBigDL{
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
                                   context: Context[T],
                                   byteOrder: ByteOrder)(
+    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+
+
+    val attributes = tfGraph.source.prevNodes(0).element.getAttrMap
+    require(attributes.get("strides").getList.getI(0).toInt == 1, s"not support strides on batch")
+
+    val (strideH, strideW) = if (attributes.get("data_format").getS
+      .toString(Charset.defaultCharset()) == "NHWC") {
+      require(System.getProperty("bigdl.enableNHWC", "false").toBoolean, "Not support NHWC")
+      require(attributes.get("strides").getList.getI(3).toInt == 1, s"not support strides on depth")
+      (attributes.get("strides").getList.getI(1).toInt,
+        attributes.get("strides").getList.getI(2).toInt)
+    } else if (attributes.get("data_format").getS.toString(Charset.defaultCharset()) == "NCHW") {
+      require(attributes.get("strides").getList.getI(2).toInt == 1, s"not support strides on depth")
+      (attributes.get("strides").getList.getI(2).toInt,
+        attributes.get("strides").getList.getI(3).toInt)
+    } else {
+      throw new IllegalArgumentException("no supported data format")
+    }
+    val biasNode = tfGraph.source.prevNodes(1).prevNodes.head.element
+    val (bias, gradBias) = getOrSetTensor(biasNode, context, byteOrder)(t => t)
+
+    val weightNode = tfGraph.source.prevNodes.head.prevNodes(1).prevNodes.head.element
+    val (weights, gradWeights) = getOrSetTensor(weightNode, context, byteOrder) { t =>
+      t.transpose(1, 4).transpose(2, 3).transpose(3, 4)
+    }
+
+    val nOuputPlane = weights.size(1)
+    val nInputPlane = weights.size(2)
+    val kernelH = weights.size(3)
+    val kernelW = weights.size(4)
+
+    val (pW, pH) =
+      if (attributes.get("padding").getS.toString(Charset.defaultCharset()) == "SAME") {
+        require((kernelW - strideW) % 2 == 0)
+        require((kernelH - strideH) % 2 == 0)
+        ((kernelW - strideW) / 2, (kernelH - strideH) / 2)
+      } else {
+        (0, 0)
+      }
+
+    SpatialConvolution[T](
+      nInputPlane = nInputPlane, nOutputPlane = nOuputPlane,
+      kernelW = kernelW, kernelH = kernelH,
+      strideW = strideW, strideH = strideH,
+      padW = pW, padH = pH,
+      initWeight = weights,
+      initBias = bias,
+      initGradWeight = gradWeights,
+      initGradBias = gradBias).asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+  }
+}
+
+object Conv2D2 extends TensorflowToBigDL{
+  private val graph = {
+    val add = Node("Add")
+    val conv = Node("Conv2D")
+    val reshape = Node("Reshape")
+
+    Node("*") -> conv
+    Node("Const") -> Node("Identity") -> conv -> add
+    Node("Const") -> reshape
+    Node("Const") -> Node("Identity") -> reshape
+    reshape -> add
+
+    add.graph(reverse = true)
+  }
+
+  override def topology: DirectedGraph[String] = graph
+
+  override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
+    context: Context[T],
+    byteOrder: ByteOrder)(
     implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
 
 
