@@ -19,6 +19,7 @@ pages:
     - Use Pre-built Libs: UserGuide/install-pre-built.md
     - Build from Source Code: UserGuide/install-build-src.md 
   - Run : UserGuide/run.md
+  - Run as a local Java/Scala program: UserGuide/run-local.md
   - Examples: UserGuide/examples.md
   - More Resources: UserGuide/resources.md
 - Python User Guide: 
