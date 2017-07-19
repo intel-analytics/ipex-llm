@@ -65,12 +65,12 @@ object File {
    * @param isOverwrite if overwrite.
    */
   def save(obj: Serializable, fileName: String, isOverwrite: Boolean = false): Unit = {
-    var fs: FileWriter = null
+    var fw: FileWriter = null
     var out: OutputStream = null
     var objFile: ObjectOutputStream = null
     try {
-      fs = FileWriter(fileName)
-      out = fs.create(isOverwrite)
+      fw = FileWriter(fileName)
+      out = fw.create(isOverwrite)
       val byteArrayOut = new ByteArrayOutputStream()
       objFile = new ObjectOutputStream(byteArrayOut)
       objFile.writeObject(obj)
@@ -78,7 +78,7 @@ object File {
     } finally {
       if (null != objFile) objFile.close()
       if (null != out) out.close()
-      if (null != fs) fs.close()
+      if (null != fw) fw.close()
     }
   }
 
@@ -160,12 +160,12 @@ object File {
    * @param fileName file name.
    */
   def load[T](fileName: String): T = {
-    var fs: FileReader = null
+    var fr: FileReader = null
     var in: InputStream = null
     var objFile: ObjectInputStream = null
     try {
-      fs = FileReader(fileName)
-      in = fs.open()
+      fr = FileReader(fileName)
+      in = fr.open()
       val byteArrayOut = new ByteArrayOutputStream()
       IOUtils.copyBytes(in, byteArrayOut, 1024, true)
       objFile = new ObjectInputStream(new ByteArrayInputStream(byteArrayOut.toByteArray))
@@ -173,7 +173,7 @@ object File {
       result.asInstanceOf[T]
     } finally {
       if (null != in) in.close()
-      if (null != fs) fs.close()
+      if (null != fr) fr.close()
       if (null != objFile) objFile.close()
     }
   }

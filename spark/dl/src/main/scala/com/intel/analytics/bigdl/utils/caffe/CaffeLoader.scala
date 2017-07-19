@@ -87,16 +87,16 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
   }
 
   private def loadBinary(prototxtPath: String, modelPath: String): Caffe.NetParameter = {
-    var modelFs: FileReader = null
-    var prototxtFs: FileReader = null
+    var modelFr: FileReader = null
+    var prototxtFr: FileReader = null
     var modelStream: InputStream = null
     var prototxtStream: InputStream = null
     var prototxtReader: InputStreamReader = null
     try {
-      modelFs = FileReader(modelPath)
-      prototxtFs = FileReader(prototxtPath)
-      modelStream = modelFs.open()
-      prototxtStream = prototxtFs.open()
+      modelFr = FileReader(modelPath)
+      prototxtFr = FileReader(prototxtPath)
+      modelStream = modelFr.open()
+      prototxtStream = prototxtFr.open()
       prototxtReader = new InputStreamReader(prototxtStream, "ASCII")
 
       val builder = NetParameter.newBuilder
@@ -111,8 +111,8 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
       if (null != prototxtReader) prototxtReader.close()
       if (null != modelStream) modelStream.close()
       if (null != prototxtStream) prototxtStream.close()
-      if (modelFs != null) modelFs.close()
-      if (prototxtFs != null) prototxtFs.close()
+      if (modelFr != null) modelFr.close()
+      if (prototxtFr != null) prototxtFr.close()
     }
   }
 
