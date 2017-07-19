@@ -15,14 +15,15 @@
  */
 package com.intel.analytics.bigdl.example.MLPipeline
 
-import com.intel.analytics.bigdl.nn.{Linear, LogSoftMax, MultiLabelSoftMarginCriterion, Sequential}
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.spark.SparkContext
 import org.apache.spark.ml.DLEstimator
 import org.apache.spark.sql.SQLContext
 
 /**
- *  Multi-label Logistic Regression with BigDL layers and DLEstimator
+ *  Multi-label regression with BigDL layers and DLEstimator
  */
 object DLEstimatorMultiLabelLR {
 
@@ -34,9 +35,9 @@ object DLEstimatorMultiLabelLR {
     val sqlContext = SQLContext.getOrCreate(sc)
     Engine.init
 
-    val model = new Sequential[Float]().add(Linear[Float](2, 2)).add(LogSoftMax[Float])
-    val criterion = MultiLabelSoftMarginCriterion[Float]()
-    val estimator = new DLEstimator[Float](model, criterion, Array(2), Array(2))
+    val model = Sequential().add(Linear(2, 2))
+    val criterion = MSECriterion()
+    val estimator = new DLEstimator(model, criterion, Array(2), Array(2))
       .setBatchSize(4)
       .setMaxEpoch(10)
     val data = sc.parallelize(Seq(
@@ -48,5 +49,4 @@ object DLEstimatorMultiLabelLR {
     val dlModel = estimator.fit(df)
     dlModel.transform(df).show(false)
   }
-
 }

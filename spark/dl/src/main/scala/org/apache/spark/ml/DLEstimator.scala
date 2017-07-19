@@ -47,7 +47,7 @@ import scala.reflect.ClassTag
  * @param model BigDL module to be optimized
  * @param criterion  BigDL criterion method
  * @param featureSize The size (Tensor dimensions) of the feature data. e.g. an image may be with
- * width * height = 28 * 28, featureSize = Array(28, 28).
+ *                    width * height = 28 * 28, featureSize = Array(28, 28).
  * @param labelSize The size (Tensor dimensions) of the label data.
  */
 class DLEstimator[@specialized(Float, Double) T: ClassTag](
@@ -55,8 +55,8 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag](
     val criterion : Criterion[T],
     val featureSize : Array[Int],
     val labelSize : Array[Int],
-    override val uid: String = "DLEstimator"
-  )(implicit ev: TensorNumeric[T]) extends DLEstimatorBase with DLParams with HasBatchSize {
+    override val uid: String = "DLEstimator")(implicit ev: TensorNumeric[T])
+  extends DLEstimatorBase[DLEstimator[T], DLModel[T]] with DLParams with HasBatchSize {
 
   def setFeaturesCol(featuresColName: String): this.type = set(featuresCol, featuresColName)
 
@@ -82,7 +82,7 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag](
   }
 
   protected override def internalFit(
-      featureAndLabel: RDD[(Seq[AnyVal], Seq[AnyVal])]): DLTransformerBase = {
+      featureAndLabel: RDD[(Seq[AnyVal], Seq[AnyVal])]): DLModel[T] = {
     val batches = toMiniBatch(featureAndLabel)
     val dataset = DataSet.rdd(batches)
 
@@ -98,7 +98,7 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag](
   /**
    * sub classes can extend the method and return required model for different transform tasks
    */
-  protected def wrapBigDLModel(m: Module[T], featureSize: Array[Int]): DLTransformerBase = {
+  protected def wrapBigDLModel(m: Module[T], featureSize: Array[Int]): DLModel[T] = {
     val dlModel = new DLModel[T](m, featureSize)
     copyValues(dlModel.setParent(this))
   }
@@ -157,7 +157,7 @@ class DLModel[@specialized(Float, Double) T: ClassTag](
     var featureSize : Array[Int],
     override val uid: String = "DLModel"
     )(implicit ev: TensorNumeric[T])
-  extends DLTransformerBase with DLParams with HasBatchSize {
+  extends DLTransformerBase[DLModel[T]] with DLParams with HasBatchSize {
 
   def setFeaturesCol(featuresColName: String): this.type = set(featuresCol, featuresColName)
 
@@ -225,7 +225,7 @@ class DLModel[@specialized(Float, Double) T: ClassTag](
 
   override def copy(extra: ParamMap): DLModel[T] = {
     val copied = new DLModel(model, featureSize, uid).setParent(parent)
-    copyValues(copied, extra).asInstanceOf[DLModel[T]]
+    copyValues(copied, extra)
   }
 }
 
