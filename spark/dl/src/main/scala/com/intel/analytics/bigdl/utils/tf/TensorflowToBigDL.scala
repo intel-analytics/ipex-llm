@@ -356,7 +356,7 @@ object Conv2D extends TensorflowToBigDL{
       (attributes.get("strides").getList.getI(1).toInt,
         attributes.get("strides").getList.getI(2).toInt)
     } else if (attributes.get("data_format").getS.toString(Charset.defaultCharset()) == "NCHW") {
-      require(attributes.get("strides").getList.getI(2).toInt == 1, s"not support strides on depth")
+      require(attributes.get("strides").getList.getI(1).toInt == 1, s"not support strides on depth")
       (attributes.get("strides").getList.getI(2).toInt,
         attributes.get("strides").getList.getI(3).toInt)
     } else {
@@ -404,8 +404,8 @@ object Conv2D2 extends TensorflowToBigDL{
 
     Node("*") -> conv
     Node("Const") -> Node("Identity") -> conv -> add
-    Node("Const") -> reshape
     Node("Const") -> Node("Identity") -> reshape
+    Node("Const") -> reshape
     reshape -> add
 
     add.graph(reverse = true)
@@ -418,24 +418,16 @@ object Conv2D2 extends TensorflowToBigDL{
     byteOrder: ByteOrder)(
     implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
 
-
     val attributes = tfGraph.source.prevNodes(0).element.getAttrMap
     require(attributes.get("strides").getList.getI(0).toInt == 1, s"not support strides on batch")
+    require(attributes.get("data_format").getS.toString(Charset.defaultCharset()) == "NCHW",
+      "NCHW should be used for this sub-graph")
 
-    val (strideH, strideW) = if (attributes.get("data_format").getS
-      .toString(Charset.defaultCharset()) == "NHWC") {
-      require(System.getProperty("bigdl.enableNHWC", "false").toBoolean, "Not support NHWC")
-      require(attributes.get("strides").getList.getI(3).toInt == 1, s"not support strides on depth")
-      (attributes.get("strides").getList.getI(1).toInt,
-        attributes.get("strides").getList.getI(2).toInt)
-    } else if (attributes.get("data_format").getS.toString(Charset.defaultCharset()) == "NCHW") {
-      require(attributes.get("strides").getList.getI(2).toInt == 1, s"not support strides on depth")
-      (attributes.get("strides").getList.getI(2).toInt,
-        attributes.get("strides").getList.getI(3).toInt)
-    } else {
-      throw new IllegalArgumentException("no supported data format")
-    }
-    val biasNode = tfGraph.source.prevNodes(1).prevNodes.head.element
+    require(attributes.get("strides").getList.getI(2).toInt == 1, s"not support strides on depth")
+    val (strideH, strideW) = (attributes.get("strides").getList.getI(2).toInt,
+      attributes.get("strides").getList.getI(3).toInt)
+
+    val biasNode = tfGraph.source.prevNodes(1).prevNodes(0).prevNodes.head.element
     val (bias, gradBias) = getOrSetTensor(biasNode, context, byteOrder)(t => t)
 
     val weightNode = tfGraph.source.prevNodes.head.prevNodes(1).prevNodes.head.element

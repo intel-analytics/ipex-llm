@@ -18,10 +18,17 @@ package com.intel.analytics.bigdl.example.tensorflow
 
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.numeric.NumericFloat
+import com.intel.analytics.bigdl.tensor.Tensor
 
+/**
+ * This example show how to load a tensorflow model defined in slim and
+ * use it to do prediction
+ */
 object Load {
   def main(args: Array[String]): Unit = {
     require(args.length == 1, "Please input the model path as the first argument")
-    Module.loadTF(args(0), Seq("Placeholder"), Seq("LeNet/fc4/BiasAdd"))
+    val model = Module.loadTF(args(0), Seq("Placeholder"), Seq("LeNet/fc4/BiasAdd"))
+    val result = model.forward(Tensor(1, 1, 28, 28).rand())
+    println(result)
   }
 }

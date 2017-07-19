@@ -357,13 +357,14 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
       (that canEqual this) &&
         (that.getClass equals this.getClass) &&
         output == that.output &&
-        gradInput == that.gradInput
+        gradInput == that.gradInput &&
+        name == that.name
     case _ => false
   }
 
   override def hashCode(): Int = {
     def getHashCode(a: Object): Int = if (a == null) 0 else a.hashCode()
-    val state = Seq(output, gradInput, this.getClass)
+    val state = Seq(output, gradInput, this.getClass, this.name)
     state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
   }
 

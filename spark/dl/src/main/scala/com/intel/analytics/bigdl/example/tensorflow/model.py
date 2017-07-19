@@ -31,10 +31,6 @@ def main():
         saver.save(sess, 'model/model.chkp')
         tf.train.write_graph(sess.graph, 'model', 'model.pbtxt')
 
-        #input_data = np.ndarray(shape=(1, 1, 28, 28))
-        #input_data.fill(1.0)
-        #sess.run(net, feed_dict = {inputs : input_data})
-
 def lenet(images):
     end_points = {}
     num_classes=10

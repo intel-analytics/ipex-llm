@@ -22,5 +22,22 @@ python freeze_graph.py --input_graph model/model.pbtxt --input_checkpoint model/
 
 3. Run BigDL
 ```bash
+spark-submit --master local[1] --class com.intel.analytics.bigdl.example.tensorflow.Load BigDL_jar_file ./model.pb
+```
 
+## Save BigDL model as tensorflow model
+1. Run BigDL
+```bash
+spark-submit --master local[1] --class com.intel.analytics.bigdl.example.tensorflow.Save BigDL_jar_file
+```
+
+2. Generate summary file, you can find the dump_tf_graph.py in the bin folder of the dist package, or script folder of
+the code
+```bash
+python dump_tf_graph.py model.pb
+```
+
+3. See the saved model via tensorboard
+```bash
+tensorboard --logdir ./log
 ```
