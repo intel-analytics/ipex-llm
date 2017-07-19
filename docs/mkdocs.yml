@@ -12,7 +12,9 @@ extra:
 
 pages:
 - Overview: index.md 
-- Releases: release.md
+- Releases: 
+  - Download: release-download.md 
+  - Documentation: release-docs.md
 - Getting Started: getting-started.md
 - Scala User Guide: 
   - Install: 
