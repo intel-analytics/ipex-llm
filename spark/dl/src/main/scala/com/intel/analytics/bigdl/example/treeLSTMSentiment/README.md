@@ -36,7 +36,7 @@ Next just run the following command to run the code:
     * Standalone:
       
     ```{r, engine='sh'}
-            MASTER=xxx.xxx.xxx.xxx:xxxx
+            MASTER=spark://xxx.xxx.xxx.xxx:xxxx
             spark-submit --master ${MASTER} --driver-memory 20g --executor-memory 10g      \
                    --total-executor-cores 32 --executor-cores 8                      \
                    --class com.intel.analytics.bigdl.example.treeLSTMSentiment.Train \
@@ -46,6 +46,7 @@ Next just run the following command to run the code:
     * Yarn client:
         
     ```{r, engine='sh'}
+            MASTER=spark://xxx.xxx.xxx.xxx:xxxx
             spark-submit --master yarn --driver-memory 20g --executor-memory 10g           \
                    --num-executor 4 --executor-cores 8                               \
                    --class com.intel.analytics.bigdl.example.treeLSTMSentiment.Train \
@@ -62,7 +63,7 @@ Next just run the following command to run the code:
              --hiddenSize        # number of TreeLSTM hidden size, default is 250
              --learingRate       # number of learning rate, default is 0.05
              --regRate           # number of L2 regularization rate, default is 1e-4
-             --p                 # number of dropout probability rate, default is 0
-             --epoch             # number of epochs, default is 10
+             --p                 # number of dropout probability rate, default is 0.5
+             --epoch             # number of epochs, default is 5
     ```
 

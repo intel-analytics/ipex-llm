@@ -239,7 +239,7 @@ object Utils {
     hiddenSize: Int = 250,
     learningRate: Double = 0.05,
     regRate: Double = 1e-4,
-    p: Double = 0,
-    epoch: Int = 8
+    p: Double = 0.5,
+    epoch: Int = 5
   ) extends AbstractTextClassificationParams
 }
