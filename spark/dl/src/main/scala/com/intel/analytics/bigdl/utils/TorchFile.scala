@@ -103,7 +103,7 @@ object TorchFile {
       if (!overWrite) {
         throw new FileAlreadyExistsException(fileName)
       } else { // clear the file
-        val fw = new FileWriter(file)
+        val fw = new java.io.FileWriter(file)
         fw.write("")
         fw.close()
       }
