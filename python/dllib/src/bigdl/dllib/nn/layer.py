@@ -327,6 +327,23 @@ class Layer(JavaValue):
         callBigDlFunc(self.bigdl_type, "saveCaffe", self.value, prototxt_path,
                       model_path, use_v2, overwrite)
 
+    def save_tensorflow(self, inputs, path, byte_order="little_endian", data_format="nhwc"):
+        """
+        Save a model to protobuf files so that it can be used in tensorflow inference.
+
+        When saving the model, placeholders will be added to the tf model as input nodes. So
+        you need to pass in the names and shapes of the placeholders. BigDL model doesn't have
+        such information. The order of the placeholder information should be same as the inputs
+        of the graph model.
+        :param inputs: placeholder information, should be an array of tuples (input_name, shape)
+                       where 'input_name' is a string and shape is an array of integer
+        :param path: the path to be saved to
+        :param byte_order: model byte order
+        :param data_format: model data format, should be "nhwc" or "nchw"
+        """
+        callBigDlFunc(self.bigdl_type, "saveTF", self.value, inputs, path, byte_order, data_format)
+
+
     def setWRegularizer(self, wRegularizer):
         '''
         set weight regularizer
@@ -457,24 +474,6 @@ class Model(Container):
         """
         jmodel = callBigDlFunc(bigdl_type, "loadTF", path, inputs, outputs, byte_order)
         return Model.of(jmodel)
-
-    @staticmethod
-    def save_tensorflow(model, inputs, path, byte_order="little_endian", data_format="nhwc"):
-        """
-        Save a model to protobuf files so that it can be used in tensorflow inference.
-
-        When saving the model, placeholders will be added to the tf model as input nodes. So
-        you need to pass in the names and shapes of the placeholders. BigDL model doesn't have
-        such information. The order of the placeholder information should be same as the inputs
-        of the graph model.
-        :param model: the model to be saved
-        :param inputs: placeholder information, should be an array of tuples (input_name, shape)
-                       where 'input_name' is a string and shape is an array of integer
-        :param path: the path to be saved to
-        :param byte_order: model byte order
-        :param data_format: model data format, should be "nhwc" or "nchw"
-        """
-        callBigDlFunc(model.bigdl_type, "saveTF", model, inputs, path, byte_order, data_format)
 
 
 class Linear(Layer):
