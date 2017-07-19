@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.dataset.text._
 import com.intel.analytics.bigdl.dataset.text.utils.SentenceToken
 import com.intel.analytics.bigdl.nn.{CrossEntropyCriterion, Module, TimeDistributedCriterion}
 import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{Engine, T, Table}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 import org.apache.log4j.{Level, Logger}
@@ -70,21 +70,25 @@ object Train {
       val endIdx = dictionary.getIndex(SentenceToken.end)
       val padFeature = Tensor[Float]().resize(totalVocabLength)
       padFeature.setValue(endIdx + 1, 1.0f)
-      val padLabel = startIdx
+      val padLabel = Tensor[Float](Storage(Array[Float](startIdx)), 1, Array(1))
       val featurePadding = PaddingParam(Some(Array(padFeature)),
+        FixedLength(Array(maxTrainLength)))
+      val labelPadding = PaddingParam(Some(Array(padLabel)),
         FixedLength(Array(maxTrainLength)))
 
       val trainSet = DataSet.rdd(tokens)
         .transform(TextToLabeledSentence[Float](dictionary))
         .transform(LabeledSentenceToSample[Float](totalVocabLength))
-        .transform(SampleToMiniBatch[Float](param.batchSize,
-          Some(featurePadding), None))
+        .transform(SampleToMiniBatch[Float](
+          param.batchSize,
+          Some(featurePadding),
+          Some(labelPadding)))
 
       val validationSet = DataSet.rdd(valtokens)
         .transform(TextToLabeledSentence[Float](dictionary))
         .transform(LabeledSentenceToSample[Float](totalVocabLength))
         .transform(SampleToMiniBatch[Float](param.batchSize,
-          Some(featurePadding), None))
+          Some(featurePadding), Some(labelPadding)))
 
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
