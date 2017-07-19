@@ -169,15 +169,15 @@ class CaffePersister[T: ClassTag](val prototxtPath: String,
 
   private def saveBinary() : Unit = {
     // save binary
-    var binaryFile: FileWriter = null
+    var binaryFileWriter: FileWriter = null
     try {
-      binaryFile = FileWriter(modelPath)
-      val out = binaryFile.create(overwrite)
+      binaryFileWriter = FileWriter(modelPath)
+      val out = binaryFileWriter.create(overwrite)
       val byteArrayOut = new ByteArrayOutputStream()
       byteArrayOut.write(netparam.build.toByteArray)
       IOUtils.copyBytes(new ByteArrayInputStream(byteArrayOut.toByteArray), out, 1024, true)
     } finally {
-      binaryFile.close()
+      binaryFileWriter.close()
     }
   }
 
@@ -211,15 +211,15 @@ class CaffePersister[T: ClassTag](val prototxtPath: String,
       })
     }
 
-    var prototxtFile: FileWriter = null
+    var prototxtFileWriter: FileWriter = null
     try {
-      prototxtFile = FileWriter(prototxtPath)
-      val out = prototxtFile.create(overwrite)
+      prototxtFileWriter = FileWriter(prototxtPath)
+      val out = prototxtFileWriter.create(overwrite)
       val byteArrayOut = new ByteArrayOutputStream()
       byteArrayOut.write(netParameterWithoutData.build().toString.getBytes)
       IOUtils.copyBytes(new ByteArrayInputStream(byteArrayOut.toByteArray), out, 1024, true)
     } finally {
-      prototxtFile.close()
+      prototxtFileWriter.close()
     }
   }
 }
