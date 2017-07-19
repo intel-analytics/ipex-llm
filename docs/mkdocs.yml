@@ -35,7 +35,9 @@ pages:
     - DLEstimator: ProgrammingGuide/MLPipeline/DLEstimator.md
     - DLClassifier: ProgrammingGuide/MLPipeline/DLClassifier.md
   - Visualization: ProgrammingGuide/visualization.md
+  - Run on Amazon EC2: ProgrammingGuide/run-on-ec2.md 
   - Tensorflow Support: ProgrammingGuide/tensorflow-support.md
+  - Caffe Support: ProgrammingGuide/caffe-support.md
 - API Guide:
   - Data: APIdocs/Data.md
   - Module: APIdocs/Module.md
