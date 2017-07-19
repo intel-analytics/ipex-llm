@@ -1376,7 +1376,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Module.loadTF[T](path, inputs.asScala, outputs.asScala, order)
   }
 
-  def saveTF(model: Graph[T],
+  def saveTF(model: AbstractModule[Activity, Activity, T],
              inputs: JList[Any],
              path: String,
              byteOrder: String,
@@ -1398,7 +1398,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       val shape = array.get(1).asInstanceOf[JList[Int]]
       (name, shape.asScala)
     }
-    TensorflowSaver.saveGraph(model, scalaInputs, path, order, format)
+    model.saveTF(scalaInputs, path, order, format)
   }
 
   def modelPredictRDD(model: AbstractModule[Activity, Activity, T],
