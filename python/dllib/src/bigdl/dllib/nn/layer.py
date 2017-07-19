@@ -2929,6 +2929,15 @@ class SpatialShareConvolution(Layer):
 
     >>> spatialShareConvolution = SpatialShareConvolution(1, 1, 1, 1)
     creating: createSpatialShareConvolution
+    >>> import numpy as np
+    >>> init_weight = np.random.randn(1, 12, 6, 5, 5)
+    >>> init_bias = np.random.randn(12)
+    >>> init_grad_weight = np.zeros([1, 12, 6, 5, 5])
+    >>> init_grad_bias = np.zeros([12])
+    >>> conv = SpatialShareConvolution(6, 12, 5, 5, 1, 1, 0, 0, 1, True, L1Regularizer(0.5), L1Regularizer(0.5), init_weight, init_bias, init_grad_weight, init_grad_bias)
+    creating: createL1Regularizer
+    creating: createL1Regularizer
+    creating: createSpatialShareConvolution
     '''
 
     def __init__(self,
@@ -2942,6 +2951,13 @@ class SpatialShareConvolution(Layer):
                  pad_h=0,
                  n_group=1,
                  propagate_back=True,
+                 wRegularizer=None,
+                 bRegularizer=None,
+                 init_weight=None,
+                 init_bias=None,
+                 init_grad_weight=None,
+                 init_grad_bias=None,
+                 with_bias=True,
                  bigdl_type="float"):
         super(SpatialShareConvolution, self).__init__(None, bigdl_type,
                                                       n_input_plane,
@@ -2953,7 +2969,14 @@ class SpatialShareConvolution(Layer):
                                                       pad_w,
                                                       pad_h,
                                                       n_group,
-                                                      propagate_back)
+                                                      propagate_back,
+                                                      wRegularizer,
+                                                      bRegularizer,
+                                                      JTensor.from_ndarray(init_weight),
+                                                      JTensor.from_ndarray(init_bias),
+                                                      JTensor.from_ndarray(init_grad_weight),
+                                                      JTensor.from_ndarray(init_grad_bias),
+                                                      with_bias)
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
