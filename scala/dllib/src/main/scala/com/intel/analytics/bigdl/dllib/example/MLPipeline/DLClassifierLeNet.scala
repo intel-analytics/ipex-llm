@@ -72,7 +72,7 @@ object DLClassifierLeNet {
         .setFeaturesCol(inputs(0))
         .setLabelCol(inputs(1))
         .setBatchSize(50)
-      val transformer = estimator.fit(trainingDF).asInstanceOf[DLModel[Float]]
+      val transformer = estimator.fit(trainingDF)
 
       val validationSet = DataSet.array(load(validationData, validationLabel), sc) ->
         BytesToGreyImg(28, 28) -> GreyImgNormalizer(testMean, testStd) -> GreyImgToBatch(1)

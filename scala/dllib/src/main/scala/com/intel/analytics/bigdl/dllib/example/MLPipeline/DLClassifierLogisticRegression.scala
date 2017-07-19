@@ -16,6 +16,7 @@
 package com.intel.analytics.bigdl.example.MLPipeline
 
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Linear, LogSoftMax, Sequential}
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.spark.SparkContext
 import org.apache.spark.ml.DLClassifier
@@ -34,9 +35,9 @@ object DLClassifierLogisticRegression {
     val sqlContext = SQLContext.getOrCreate(sc)
     Engine.init
 
-    val model = new Sequential[Float]().add(Linear[Float](2, 2)).add(LogSoftMax[Float])
-    val criterion = ClassNLLCriterion[Float]()
-    val estimator = new DLClassifier[Float](model, criterion, Array(2))
+    val model = Sequential().add(Linear(2, 2)).add(LogSoftMax())
+    val criterion = ClassNLLCriterion()
+    val estimator = new DLClassifier(model, criterion, Array(2))
       .setBatchSize(4)
       .setMaxEpoch(10)
     val data = sc.parallelize(Seq(
