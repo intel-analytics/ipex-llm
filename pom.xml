@@ -591,6 +591,7 @@
             <id>win64</id>
             <properties>
                 <mkl-java-os-version>mkl-java-win64</mkl-java-os-version>
+                <os-flag>win64</os-flag>
             </properties>
         </profile>
         <profile>
