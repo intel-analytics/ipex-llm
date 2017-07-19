@@ -18,7 +18,7 @@ You data need to be transformed into specific data structures in order to be fed
 Below are several data structures that you need to know when using BigDL. 
 
 * ```Tensor``` is a multi-dimensional array of basic numeric types (e.g., ```Int```, ```Float```,       ```Double```, etc.) It is the most essential data structure in BigDL, composing the basic data flow inside the nerual network (i.e. the input, output, weight, bias and gradient of many layers). Refer to [Tensor API doc](APIdocs/Data.md#tensor) for details about the numeric computation functions provided in BigDL. 
-* `Table` is key-value map. Usually we use Tables to map from digits to Tensors. Some of the layers has `Table` as input or output (e.g. [ConcatTable](APIdocs/Layers/Containers/merged-Containers/#concattable)). You can also use ```T()``` to create Tables in BigDL - just a syntax sugar. Refer to [Table API doc](APIdocs/Data.md#table) for detailed usage.
+* `Table` is key-value map. Usually we use Tables to map from digits to Tensors. Some of the layers has `Table` as input or output (e.g. [ConcatTable](APIdocs/Layers/Containers.md#concattable)). You can also use ```T()``` to create Tables in BigDL - just a syntax sugar. Refer to [Table API doc](APIdocs/Data.md#table) for detailed usage.
  
 * `Sample` is usually a **(feature, label)** pair. A `Sample` can be created from two `Tensors` (in Scala) or two `numpy arrays` (in Python). Refer to [Sample API doc](APIdocs/Data.md#sample) for detailed usage.
 
@@ -56,7 +56,7 @@ Before training models, please make sure BigDL is installed, BigDL engine initia
 
 The most recommended way to create your first model is to modify from an existing one. BigDL provides plenty of models for you to refer to. See [Scala Models/Examples](UserGuide/resources.md) and [Python Models/Examples and Tutorials](PythonSupport/python-resources.md). 
 
-To define a model, you can either use the Sequential API or Functional API. The Functional API is more flexible than Sequential API. Refer to [Sequential API](ProgrammingGuide/Model/Sequential.md) and [Functional API](ProgrammingGuide/Model/Functional.md) for how to define models in different shapes. Navigate to *Programming Guide/Layers* on the side bar to find the documenations of available layers and activation.
+To define a model, you can either use the Sequential API or Functional API. The Functional API is more flexible than Sequential API. Refer to [Sequential API](ProgrammingGuide/Model/Sequential.md) and [Functional API](ProgrammingGuide/Model/Functional.md) for how to define models in different shapes. Navigate to *API Guide/Layers* on the side bar to find the documenations of available layers and activation.
 
 After creating the model, you will have to deside which loss function to use in training. Find the details of losses defined in BigDL in [Losses](APIdocs/Losses.md).  
 
