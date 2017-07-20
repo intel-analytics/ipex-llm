@@ -887,3 +887,112 @@ Output is
         [ 0.86757064,  0.91269422,  0.95781779]]], dtype=float32)]
 ```
 
+## TemporalConvolution ##
+
+**Scala:**
+```scala
+val module = TemporalConvolution(
+  inputFrameSize, outputFrameSize, kernelW, strideW = 1, propagateBack = true,
+  wRegularizer = null, bRegularizer = null, initWeight = null, initBias = null,
+  initGradWeight = null, initGradBias = null
+  )
+```
+**Python:**
+```python
+module = TemporalConvolution(
+  input_frame_size, output_frame_size, kernel_w, stride_w = 1, propagate_back = True,
+  w_regularizer = None, b_regularizer = None, init_weight = None, init_bias = None,
+  init_grad_weight = None, init_grad_bias = None
+  )
+```
+
+Applies a 1D convolution over an input sequence composed of nInputFrame frames..
+The input tensor in `forward(input)` is expected to be a 2D tensor
+(`nInputFrame` x `inputFrameSize`) or a 3D tensor
+(`nBatchFrame` x `nInputFrame` x `inputFrameSize`).
+
+ * @param inputFrameSize The input frame size expected in sequences given into `forward()`.
+ * @param outputFrameSize The output frame size the convolution layer will produce.
+ * @param kernelW The kernel width of the convolution
+ * @param strideW The step of the convolution in the width dimension.
+ * @param propagateBack Whether propagate gradient back, default is true.
+ * @param wRegularizer instance of `Regularizer`
+                     (eg. L1 or L2 regularization), applied to the input weights matrices.
+ * @param bRegularizer instance of `Regularizer`
+                     applied to the bias.
+ * @param initWeight Initial weight
+ * @param initBias Initial bias
+ * @param initGradWeight Initial gradient weight
+ * @param initGradBias Initial gradient bias
+ * @tparam T The numeric type in the criterion, usually which are `Float` or `Double`
+ 
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.numeric.NumericDouble
+val seed = 100
+RNG.setSeed(seed)
+val inputFrameSize = 5
+val outputFrameSize = 3
+val kW = 5
+val dW = 2
+val layer = TemporalConvolution(inputFrameSize, outputFrameSize, kW, dW)
+
+Random.setSeed(seed)
+val input = Tensor(10, 5).apply1(e => Random.nextDouble())
+val gradOutput = Tensor(3, 3).apply1(e => Random.nextDouble())
+
+val output = layer.updateOutput(input)
+println(output)
+-0.46563127839495466	0.013695616322773968	-0.43273799278822744
+-0.1533250673179169	-0.04438171389050036	-0.7511583415829347
+-0.6131689030252309	-0.050553649561625946	-0.9389273227418238
+  [com.intel.analytics.bigdl.tensor.DenseTensor of size 3x3]
+
+val gradInput = layer.updateGradInput(input, gradOutput)
+println(gradInput)
+-0.009572257943311123	-0.18823937289128437	-0.36172316763980045	-0.10005666946020048	-0.15554310756650214
+0.2060395566423548	0.3132859941014649	-0.08751837181823585	-0.38016365172711447	-0.156857069156403
+-0.1827793915298305	-0.01961859278200985	-0.22231712464522513	-0.24295660550299444	-0.10152199059063097
+0.05471372377621043	0.18728801339596463	0.0614925534402292	-0.39158461265944894	-0.17545014799280984
+0.1562856400001907	-0.36233070774098963	-0.13831654314551048	-0.2433956053116482	-0.1897324066712781
+0.10128394533484554	0.06037494182802123	0.18464792191467272	-0.21973489164601162	-0.21737611736972462
+0.14394621614396086	-0.004332649683832851	-0.08190276456697157	-0.09643254407079335	-0.1622353637475946
+-0.028785663591757247	-7.471897211673287E-5	0.12643994842206718	-0.021775720291914047	0.03021322398053564
+0.18927190370956923	-0.09223731706582469	-0.009355636209847022	-0.03904491365552621	-0.07096226413225268
+0.0	0.0	0.0	0.0	0.0
+  [com.intel.analytics.bigdl.tensor.DenseTensor of size 10x5]
+```
+
+**Python example:**
+```python
+from bigdl.nn.layer import TemporalConvolution
+import numpy as np
+inputFrameSize = 5
+outputFrameSize = 3
+kW = 5
+dW = 2
+layer = TemporalConvolution(inputFrameSize, outputFrameSize, kW, dW)
+
+input = np.random.rand(10, 5)
+gradOutput = np.random.rand(3, 3)
+
+output = layer.forward(input)
+print(output)
+[[ 0.43262666  0.52964264 -0.09026626]
+ [ 0.46828389  0.3391096   0.04789509]
+ [ 0.37985104  0.13899082 -0.05767119]]
+ 
+gradInput = layer.backward(input, gradOutput)
+print(gradInput)
+[[-0.08801709  0.03619258  0.06944641 -0.01570761  0.00682773]
+ [-0.02754797  0.07474414 -0.08249797  0.04756897  0.0096445 ]
+ [-0.14383194  0.05168077  0.27049363  0.10419817  0.05263135]
+ [ 0.12452157 -0.02296585  0.14436334  0.02482709 -0.12260982]
+ [ 0.04890725 -0.19043611  0.2909058  -0.10708418  0.07759682]
+ [ 0.05745121  0.10499261  0.02989995  0.13047372  0.09119483]
+ [-0.09693538 -0.12962547  0.22133902 -0.09149387  0.29208034]
+ [ 0.2622599  -0.12875232  0.21714815  0.11484481 -0.00040091]
+ [ 0.07558989  0.00072951  0.12860702 -0.27085134  0.10740379]
+ [ 0.          0.          0.          0.          0.        ]]
+
+```
