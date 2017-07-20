@@ -43,7 +43,6 @@ This Python binding has been tested with Python 2.7 and Spark 1.6.0 / Spark 2.0.
        --total-executor-cores 80  \
        --executor-cores 10  \
        --executor-memory 20g \
-       --conf spark.akka.frameSize=64 \
         --py-files ${PYTHON_API_ZIP_PATH},${BigDL_HOME}/pyspark/dl/models/lenet/lenet5.py  \
         --properties-file ${BigDL_HOME}/dist/conf/spark-bigdl.conf \
         --jars ${BigDL_JAR_PATH} \

@@ -24,7 +24,7 @@ $ [/tmp/news20]$ tree . -L 1
 then running the flowing script would automatically download the data during the first run.
 
 ```{r, engine='sh'}
-        PYTHONHASHSEED=...
+        PYTHONHASHSEED=0
         BigDL_HOME=...
         SPARK_HOME=...
         MASTER=...
@@ -39,7 +39,6 @@ then running the flowing script would automatically download the data during the
             --total-executor-cores 4  \
             --executor-cores 4  \
             --executor-memory 20g \
-            --conf spark.akka.frameSize=64 \
             --py-files ${PYTHON_API_ZIP_PATH},${BigDL_HOME}/pyspark/bigdl/models/textclassifier/textclassifier.py  \
             --jars ${BigDL_JAR_PATH} \
             --conf spark.driver.extraClassPath=${BigDL_JAR_PATH} \
