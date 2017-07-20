@@ -1,3 +1,5 @@
+
+---
 ## SoftSign ##
 
 **Scala:**
@@ -45,7 +47,7 @@ softSign=SoftSign()
        [-0.5       , -0.66666669, -0.80000001]], dtype=float32)]
 
 ```
-
+---
 ## ReLU6 ##
 
 **Scala:**
@@ -71,7 +73,7 @@ val module = ReLU6()
 
 println(module.forward(Tensor.range(-2, 8, 1)))
 ```
-Output is
+Gives the output,
 ```
 com.intel.analytics.bigdl.tensor.Tensor[Float] =
 0.0
@@ -87,7 +89,7 @@ com.intel.analytics.bigdl.tensor.Tensor[Float] =
 6.0
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 11]
 ```
-
+---
 **Python example:**
 ```python
 from bigdl.nn.layer import *
@@ -97,11 +99,11 @@ module = ReLU6()
 
 print(module.forward(np.arange(-2, 9, 1)))
 ```
-Output is
+Gives the output,
 ```
 [array([ 0.,  0.,  0.,  1.,  2.,  3.,  4.,  5.,  6.,  6.,  6.], dtype=float32)]
 ```
-
+---
 ## TanhShrink ##
 
 **Scala:**
@@ -149,7 +151,7 @@ tanhShrink = TanhShrink()
        [ 6.00000191,  7.        ,  8.        ]], dtype=float32)]
 
 ```
-
+---
 
 ## SoftMax ##
 
@@ -164,8 +166,8 @@ layer = SoftMax()
 
 Applies the SoftMax function to an n-dimensional input Tensor, rescaling them so that the
 elements of the n-dimensional output Tensor lie in the range (0, 1) and sum to 1.
-Softmax is defined as: f_i(x) = exp(x_i - shift) / sum_j exp(x_j - shift)
-where shift = max_i(x_i).
+Softmax is defined as:`f_i(x) = exp(x_i - shift) / sum_j exp(x_j - shift)`
+where `shift = max_i(x_i)`.
 
 **Scala example:**
 ```scala
@@ -211,7 +213,7 @@ gradient = layer.backward(input, grad_output)
 -> print gradient
 [ 0.22222221 -0.11111112 -0.11111112]
 ```
-
+---
 ## PReLU ##
 
 **Scala:**
@@ -289,7 +291,7 @@ output = module.forward(input)
         [[-0.21460918,  2.19389224,  0.93136758],
          [-0.09802257,  0.16507514, -0.08962612]]], dtype=float32)]
 ```
-
+---
 ## ReLU ##
 
 **Scala:**
@@ -305,7 +307,7 @@ ReLU applies the element-wise rectified linear unit (ReLU) function to the input
 
 `ip` illustrate if the ReLU fuction is done on the origin input
 ```
-ReLU function : `f(x) = max(0, x)`
+ReLU function : f(x) = max(0, x)
 ```
 
 **Scala example:**
@@ -342,7 +344,7 @@ relu = ReLU(False)
      
 ```
 
-
+---
 ## SoftMin ##
 
 **Scala:**
@@ -356,8 +358,8 @@ sm = SoftMin()
 
 Applies the SoftMin function to an n-dimensional input Tensor, rescaling them so that the
 elements of the n-dimensional output Tensor lie in the range (0,1) and sum to 1.
-Softmin is defined as: f_i(x) = exp(-x_i - shift) / sum_j exp(-x_j - shift)
-where shift = max_i(-x_i).
+Softmin is defined as: `f_i(x) = exp(-x_i - shift) / sum_j exp(-x_j - shift)`
+where `shift = max_i(-x_i)`.
 
 **Scala example:**
 
@@ -376,9 +378,7 @@ val gradOutput = Tensor(3, 3).range(1, 3 * 3).apply1(x => (x / 10.0).toFloat)
 val gradInput = sm.backward(input, gradOutput)
 
 ```
-
-The output will be,
-
+Gives the output,
 ```
 output: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 0.66524094      0.24472848      0.09003057
@@ -387,7 +387,7 @@ output: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 3x3]
 ```
 
-The gradInput will be,
+Gives the gradInput,
 
 ```
 gradInput: com.intel.analytics.bigdl.tensor.Tensor[Float] =
@@ -422,7 +422,7 @@ gradInput = sm.backward(input, gradOutput)
 print gradInput
 
 ```
-
+---
 ## ELU ##
 
 
@@ -501,10 +501,8 @@ plt.legend(loc='best', shadow=True, fancybox=True)
 plt.show()
 
 ```
-![](../../../../Image/ELU.png)
-
-
-
+![ELU](../../Image/ELU.png)
+---
 ## SoftShrink
 **Scala:**
 ```scala
@@ -524,9 +522,9 @@ f(x) = ⎨ x + lambda, if x < -lambda
        ⎩ 0, otherwise
 ```
 
-**Parameters:**
+Parameters:
 
-**lambda**     - a factor, default is 0.5
+`lambda`    - a factor, default is 0.5
 
 **Scala example:**
 ```scala
@@ -592,7 +590,7 @@ print grad
  [ 1.  2.  5.]]
 ```
 
-
+---
 ## Sigmoid ##
 
 **Scala:**
@@ -607,7 +605,7 @@ module = Sigmoid()
 Applies the Sigmoid function element-wise to the input Tensor,
 thus outputting a Tensor of the same dimension.
 
-Sigmoid is defined as: f(x) = 1 / (1 + exp(-x))
+Sigmoid is defined as: `f(x) = 1 / (1 + exp(-x))`
   
 
 **Scala example:**
@@ -636,7 +634,8 @@ input = np.array([[1, 2, 3], [4, 5, 6]])
 array([[ 0.7310586 ,  0.88079703,  0.95257413],
        [ 0.98201376,  0.99330717,  0.99752742]], dtype=float32)
 ```
-## Tanh
+---
+## Tanh ##
 **Scala:**
 ```scala
 val activation = Tanh()
@@ -717,6 +716,7 @@ print grad
  [  1.41301632e-01   2.95979977e-02   5.36346436e-03]
  [  9.86599922e-03   2.68173218e-03   9.07778740e-04]]
 ```
+---
 ## SoftPlus ##
 
 **Scala:**
@@ -796,7 +796,7 @@ output = model.forward(input)
   [ 0.56160825  0.43842646  1.12523568  0.70202816]
   [ 1.0598278   1.99521446  0.2539995   2.24475574]]]
 ```
-
+---
 ## L1Penalty ##
 
 **Scala:**
@@ -846,10 +846,8 @@ l1Penalty = L1Penalty(1, True, True)
        [ 7.,  8.,  9.]], dtype=float32)]
 
 ```
-
-
+---
 ## HardShrink ##
-
 
 **Scala:**
 ```scala
@@ -931,7 +929,7 @@ output:
  
 ```
 
-
+---
 ## RReLU ##
 
 **Scala:**
@@ -946,13 +944,13 @@ layer = RReLU(lower, upper, inPlace)
 Applies the randomized leaky rectified linear unit (RReLU) element-wise to the input Tensor,
 thus outputting a Tensor of the same dimension. Informally the RReLU is also known as 'insanity' layer.
 
-RReLU is defined as: f(x) = max(0,x) + a * min(0, x) where a ~ U(l, u).
+RReLU is defined as: `f(x) = max(0,x) + a * min(0, x) where a ~ U(l, u)`.
 
 In training mode negative inputs are multiplied by a factor drawn from a uniform random
 distribution U(l, u). In evaluation mode a RReLU behaves like a LeakyReLU with a constant mean
-factor a = (l + u) / 2.
+factor `a = (l + u) / 2`.
 
-By default, l = 1/8 and u = 1/3. If l == u a RReLU effectively becomes a LeakyReLU.
+By default, `l = 1/8` and `u = 1/3`. If `l == u` a RReLU effectively becomes a LeakyReLU.
 
 Regardless of operating in in-place mode a RReLU will internally allocate an input-sized noise tensor to store random factors for negative inputs.
 
@@ -972,7 +970,7 @@ layer.forward(Tensor(T(1.0f, 2.0f, -1.0f, -2.0f)))
 layer.backward(Tensor(T(1.0f, 2.0f, -1.0f, -2.0f)),Tensor(T(0.1f, 0.2f, -0.1f, -0.2f)))
 ```
 
-There's random factor. An output is like
+There's random factor. Gives the output,
 ```
 1.0
 2.0
@@ -998,13 +996,13 @@ layer.backward(np.array([1.0, 2.0, -1.0, -2.0]),
   np.array([0.1, 0.2, -0.1, -0.2]))
 ```
 
-There's random factor. An output is like
+There's random factor. Gives the ouput like
 ```
 array([ 1.,  2., -0.15329693, -0.40423378], dtype=float32)
 
 array([ 0.1, 0.2, -0.01532969, -0.04042338], dtype=float32)
 ```
-
+---
 ## HardTanh
 
 **Scala:**
@@ -1029,13 +1027,13 @@ Applies non-linear function HardTanh to each element of input, HardTanh is defin
            ⎩  x, otherwise
 ```
 
-**Parameters:**
+Parameters:
 
-**minValue** - minValue in f(x), default is -1.
+`minValue` - minValue in f(x), default is -1.
 
-**maxValue** - maxValue in f(x), default is 1.
+`maxValue` - maxValue in f(x), default is 1.
 
-**inplace**  - weather inplace update output from input. default is false.
+`inplace`  - weather inplace update output from input. default is false.
 
 **Scala example:**
 ```scala
@@ -1101,7 +1099,7 @@ print grad
  [ 0.  0.  0.]
  [ 0.  0.  0.]]
 ```
-
+---
 ## LeakyReLU ##
 
 **Scala:**
@@ -1116,10 +1114,10 @@ layer = LeakyReLU(negval=0.01,inplace=False,bigdl_type="float")
 It is a transfer module that applies LeakyReLU, which parameter
 negval sets the slope of the negative part:
  LeakyReLU is defined as:
-  f(x) = max(0, x) + negval * min(0, x)
+  `f(x) = max(0, x) + negval * min(0, x)`
 
- * @param negval sets the slope of the negative partl, default is 0.01
- * @param inplace if it is true, doing the operation in-place without
+ *  `negval` sets the slope of the negative partl, default is 0.01
+ *  `inplace` if it is true, doing the operation in-place without
                 using extra state memory, default is false
 
 **Scala example:**
@@ -1153,8 +1151,8 @@ array([[ 0.19502378,  0.40498206],
        [ 0.97056001,  0.35643193],
        [ 0.25075111,  0.18904583]], dtype=float32)
 ```
-
-## LogSigmoid
+---
+## LogSigmoid ##
 **Scala:**
 ```scala
 val activation = LogSigmoid()
@@ -1233,8 +1231,7 @@ print grad
  [ 0.23840584  0.14227761  0.07194484]
  [ 0.04742587  0.03597242  0.03346425]]
 ```
-
-
+---
 ## LogSoftMax ##
 
 **Scala:**
@@ -1302,7 +1299,7 @@ output = model.forward(input)
  [-3.23354769 -2.30859375 -2.83227396 -0.6580956  -2.47832203 -4.79128981
   -3.940907   -2.79481697 -2.5146203  -3.47925234]]
 ```
-
+---
 ## Threshold ##
 
 **Scala:**
