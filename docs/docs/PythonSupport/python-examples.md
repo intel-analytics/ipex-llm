@@ -62,8 +62,7 @@ optimizer = Optimizer(
     criterion=ClassNLLCriterion(),
     end_trigger=MaxEpoch(max_epoch),
     batch_size=batch_size,
-    optim_method="Adagrad",
-    state=state)
+    optim_method=Adagrad())
 ...
 train_model = optimizer.optimize()
 ```
