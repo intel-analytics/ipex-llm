@@ -130,7 +130,11 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
     val weightBlob = getBlob(layer, 1)
     if (weightBlob.isDefined) {
       val blob = weightBlob.get
-      val size = blob.getShape.getDimList.asScala.map(_.toInt).toArray
+      val size : Array[Int] = if (blob.getShape.getDimCount == 1) {
+        Array(1, blob.getShape.getDim(0).toInt, 1, 1)
+      } else {
+        blob.getShape.getDimList.asScala.map(_.toInt).toArray
+      }
       Seq(Scale[T](size).setName(layerName).inputs())
     } else {
       val inputBlob = getBlob(layer, 0).get
