@@ -49,77 +49,32 @@ if [ $MVN_INSTALL -eq 0 ]; then
   exit 1
 fi
 
-# Remove dist module
-mv spark/pom.xml spark/pom.xml.origin
-cat spark/pom.xml.origin | sed 's/<module>dist<\/module>//' > spark/pom.xml
+cd spark
+# Append Spark platform variable to bigdl artifact name and spark-version artifact name
+mv dl/pom.xml dl/pom.xml.origin
+cat dl/pom.xml.origin | sed 's/<artifactId>bigdl<\/artifactId>/<artifactId>bigdl-${SPARK_PLATFORM}<\/artifactId>/' | \
+    sed 's/<artifactId>${spark-version.project}<\/artifactId>/<artifactId>${spark-version.project}-${SPARK_PLATFORM}<\/artifactId>/' > dl/pom.xml
+mv spark-version/1.5-plus/pom.xml spark-version/1.5-plus/pom.xml.origin
+cat spark-version/1.5-plus/pom.xml.origin | sed 's/<artifactId>1.5-plus<\/artifactId>/<artifactId>1.5-plus-${SPARK_PLATFORM}<\/artifactId>/' > spark-version/1.5-plus/pom.xml
+mv spark-version/2.0/pom.xml spark-version/2.0/pom.xml.origin
+cat spark-version/2.0/pom.xml.origin | sed 's/<artifactId>2.0<\/artifactId>/<artifactId>2.0-${SPARK_PLATFORM}<\/artifactId>/' > spark-version/2.0/pom.xml
 
-# Backup the origin bigdl pom.xml
-mv spark/dl/pom.xml spark/dl/pom.xml.origin
+function deploy {
+    mvn clean install -DskipTests -P sign -Dspark.version=$1 -DSPARK_PLATFORM=$2 $3
+    cd spark-version && mvn deploy -DskipTests -P sign -Dspark.version=$1 -DSPARK_PLATFORM=$2 $3 && cd ..
+    cd dl && mvn deploy -DskipTests -P sign -Dspark.version=$1 -DSPARK_PLATFORM=$2 $3 && cd ..
+    cd dist && mvn deploy -DskipTests -P sign -Dspark.version=$1 -DSPARK_PLATFORM=$2 $3 && cd ..
+    mvn clean install -DskipTests -P sign -Dspark.version=$1 -DSPARK_PLATFORM=$2 -P mac $3
+    cd dist && mvn deploy -DskipTests -P sign -Dspark.version=$1 -DSPARK_PLATFORM=$2 -P mac $3 && cd ..
+    mvn clean install -DskipTests -P sign -Dspark.version=$1 -DSPARK_PLATFORM=$2 -P win64 $3
+    cd dist && mvn deploy -DskipTests -P sign -Dspark.version=$1 -DSPARK_PLATFORM=$2 -P win64 $3 && cd ..
+}
 
-# Deploy common modules and bigdl-1.5
-cat spark/dl/pom.xml.origin | sed 's/<artifactId>bigdl<\/artifactId>/<artifactId>bigdl-SPARK_1.5<\/artifactId>/' > spark/dl/pom.xml
-mvn clean deploy -DskipTests -P sign -Dspark.version=1.5.2
-# Upload package to download for bigdl-1.5
-cd spark/dist/
-mvn clean deploy -DskipTests -P sign -Dspark.version=1.5.2
-cd ../../
-# Upload package to download for bigdl-1.5 on mac
-mvn clean package -DskipTests -P mac -Dspark.version=1.5.2
-cd spark/dist/
-mvn clean deploy -DskipTests -P sign -P mac -Dspark.version=1.5.2
-cd ../../
+deploy 1.5.2 SPARK_1.5 ''
+deploy 1.6.2 SPARK_1.6 ''
+deploy 2.0.2 SPARK_2.0 '-P spark_2.x'
+deploy 2.1.1 SPARK_2.1 '-P spark_2.x'
 
-
-# Deploy bigdl-1.6
-cat spark/dl/pom.xml.origin | sed 's/<artifactId>bigdl<\/artifactId>/<artifactId>bigdl-SPARK_1.6<\/artifactId>/' > spark/dl/pom.xml
-mvn clean package -DskipTests -P spark_1.6 -Dspark.version=1.6.3
-cd spark/dl/
-mvn clean deploy -DskipTests -P sign -P spark_1.6 -Dspark.version=1.6.3
-# Upload package to download for bigdl-1.6
-cd ../dist/
-mvn clean deploy -DskipTests -P sign -P spark_1.6 -Dspark.version=1.6.3
-cd ../../
-# Upload package to download for bigdl-1.6 on mac
-mvn clean package -DskipTests -P mac -P spark_1.6 -Dspark.version=1.6.3
-cd spark/dist/
-mvn clean deploy -DskipTests -P sign -P mac -P spark_1.6 -Dspark.version=1.6.3
-cd ../../
-
-# Deploy spark-2.0 project
-cd spark/spark-version/2.0/
-mvn clean deploy -DskipTests -P sign -P spark_2.x
-cd ../../../
-
-# Deploy bigdl-2.0
-cat spark/dl/pom.xml.origin | sed 's/<artifactId>bigdl<\/artifactId>/<artifactId>bigdl-SPARK_2.0<\/artifactId>/' > spark/dl/pom.xml
-mvn clean package -DskipTests -P spark_2.x -Dspark.version=2.0.2
-cd spark/dl/
-mvn clean deploy -DskipTests -P sign -P spark_2.x -Dspark.version=2.0.2
-# Upload package to download for bigdl-2.0
-cd ../dist/
-mvn clean deploy -DskipTests -P sign -P spark_2.x -Dspark.version=2.0.2
-cd ../../
-# Upload package to download for bigdl-2.0 on mac
-mvn clean package -DskipTests -P mac -P spark_2.x -Dspark.version=2.0.2
-cd spark/dist/
-mvn clean deploy -DskipTests -P sign -P mac -P spark_2.x -Dspark.version=2.0.2
-cd ../../
-
-# Deploy bigdl-2.1
-cat spark/dl/pom.xml.origin | sed 's/<artifactId>bigdl<\/artifactId>/<artifactId>bigdl-SPARK_2.1<\/artifactId>/' > spark/dl/pom.xml
-mvn clean package -DskipTests -P spark_2.x -Dspark.version=2.1.1
-cd spark/dl/
-mvn clean deploy -DskipTests -P sign -P spark_2.x -Dspark.version=2.1.1
-# Upload package to download for bigdl-2.1
-cd ../dist/
-mvn clean deploy -DskipTests -P sign -P spark_2.x -Dspark.version=2.1.1
-cd ../../
-# Upload package to download for bigdl-2.1 on mac
-mvn clean package -DskipTests -P mac -P spark_2.x -Dspark.version=2.1.1
-cd spark/dist/
-mvn clean deploy -DskipTests -P sign -P mac -P spark_2.x -Dspark.version=2.1.1
-cd ../../
-
-
-mv spark/pom.xml.origin spark/pom.xml
-mv spark/dl/pom.xml.origin spark/dl/pom.xml
+mv dl/pom.xml.origin dl/pom.xml
+mv spark-version/1.5-plus/pom.xml.origin spark-version/1.5-plus/pom.xml
+mv spark-version/2.0/pom.xml.origin spark-version/2.0/pom.xml
