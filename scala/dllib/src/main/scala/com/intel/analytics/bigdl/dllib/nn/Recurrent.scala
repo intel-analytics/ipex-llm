@@ -37,7 +37,7 @@ class Recurrent[T : ClassTag]()
   private var hiddenShape: Array[Int] = null
   private val currentInput = T()
   private val currentGradOutput = T()
-  private val gradInputCell = Tensor[T]()
+  private var gradInputCell = Tensor[T]()
   private var outputCell = Tensor[T]()
   private val _input = T()
   private val batchDim = 1
@@ -191,6 +191,12 @@ class Recurrent[T : ClassTag]()
     result
   }
 
+  private def reset(src1: ArrayBuffer[Tensor[T]], src2: Tensor[T]): Unit = {
+    cellAppendStartIdx = 0
+    src1.foreach(x => x.set(Tensor[T](1)))
+    src2.set(Tensor[T](1))
+  }
+
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim == 3 || input.dim == 5,
       "Recurrent: input should be a 3D or 5D Tensor, e.g [batch, times, nDim], " +
@@ -198,6 +204,22 @@ class Recurrent[T : ClassTag]()
 
     batchSize = input.size(batchDim)
     times = input.size(timeDim)
+
+    /**
+     * get previous batchsize.
+     * If current batchSize is not equal to previous batchSize,
+     * reset recurrent's output and cells' output to avoid
+     * address conflicts.
+     */
+    val batchSizeOfCell = if (!cells.isEmpty) {
+      cells.head.output.toTable[Tensor[T]](inputDim).size(batchDim)
+    } else {
+      0
+    }
+
+    if (batchSizeOfCell > 0 && batchSizeOfCell != batchSize) {
+      reset(cells.map(x => x.output.toTable[Tensor[T]](inputDim)), output)
+    }
 
     outputCell = if (preTopology != null) {
       preTopology.updateOutput(input).toTensor[T]
@@ -231,6 +253,7 @@ class Recurrent[T : ClassTag]()
       currentInput(hidDim) = cells(i - 1).output.toTable(hidDim)
       i += 1
     }
+
     if (cellAppendStartIdx == 0 || cellAppendStartIdx < times) {
       set(cells.slice(cellAppendStartIdx, times)
         .map(x => x.output.toTable[Tensor[T]](inputDim)),
@@ -275,6 +298,21 @@ class Recurrent[T : ClassTag]()
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    /**
+     * get previous batchsize.
+     * If current batchSize is not equal to previous batchSize,
+     * reset recurrent's gradInput and cells' gradInput to avoid
+     * address conflicts.
+     */
+    val batchSizeOfCell = if (cells.head.gradInput.toTable.length > 0) {
+      cells.head.gradInput.toTable[Tensor[T]](inputDim).size(batchDim)
+    } else {
+      0
+    }
+
+    if (batchSizeOfCell > 0 && batchSizeOfCell != batchSize ) {
+      reset(cells.map(x => x.gradInput.toTable[Tensor[T]](inputDim)), gradInputCell)
+    }
 
     gradInput = if (preTopology != null) {
       /**
