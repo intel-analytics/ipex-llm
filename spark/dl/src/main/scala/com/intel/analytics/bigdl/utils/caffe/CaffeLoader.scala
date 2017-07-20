@@ -276,8 +276,6 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
           if (nodes != null) {
             var curr = nodes(0)
             bottomList.foreach(dependency => {
-              // if (splitLayerMap.contains(dependency)) splitLayerMap(dependency) -> curr
-              // else
               if (top2LayerMap.contains(dependency)) {
                 layersMap(top2LayerMap(dependency)) -> curr
               }
@@ -295,18 +293,16 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
         }
       }
     })
+    // process with split separately in case of out of order
     allLayers.foreach(layer => {
       var name : String = null
-     // val topList = new ArrayBuffer[String]()
       val bottomList = new ArrayBuffer[String]()
       layer match {
         case v2 : LayerParameter =>
           name = v2.getName
-         // topList ++= v2.getTopList.asScala
           bottomList ++= v2.getBottomList.asScala
         case v1 : V1LayerParameter =>
           name = v1.getName
-         // topList ++= v1.getTopList.asScala
           bottomList ++= v1.getBottomList.asScala
       }
       bottomList.foreach(bottom => {
