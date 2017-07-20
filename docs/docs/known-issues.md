@@ -1,4 +1,6 @@
 
+
+---
 * Currently, BigDL uses synchronous mini-batch SGD in model training. The mini-batch size is expected to be a multiple of **total cores** used in the job.
 
 * You may observe very poor performance when running BigDL for Spark 2.0 with Java 7; it is highly recommended to use Java 8 when building and running BigDL for Spark 2.0.

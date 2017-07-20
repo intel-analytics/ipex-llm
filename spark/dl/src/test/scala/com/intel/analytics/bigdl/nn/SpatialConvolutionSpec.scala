@@ -2863,4 +2863,27 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     conv.weight should be (exceptedWeight)
     conv.bias should be (exceptedBias)
   }
+
+  "hashcode & clearState" should "works fine" in {
+    val layer = new SpatialConvolution[Float](3, 4,
+      2, 2, 1, 1, 0, 0, withBias = false)
+    val input = Tensor[Float](2, 3, 4, 4).rand()
+    val output = layer.forward(input).toTensor[Float]
+    layer.backward(input, output.clone().rand)
+    layer.hashCode()
+    layer.clearState()
+  }
+
+  "equals" should "works fine" in {
+    val layer = new SpatialConvolution[Float](3, 4,
+      2, 2, 1, 1, 0, 0, withBias = false)
+    val layer2 = layer.cloneModule()
+    layer.equals(layer2) should be (true)
+
+    val layer3 = new SpatialConvolution[Float](3, 4,
+      2, 2, 1, 1, 0, 0)
+    layer3.equals(layer) should be (false)
+    layer3.weight.copy(layer.weight)
+    layer3.equals(layer) should be (false)
+  }
 }

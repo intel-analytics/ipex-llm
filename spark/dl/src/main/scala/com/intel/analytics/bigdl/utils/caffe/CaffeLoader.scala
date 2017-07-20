@@ -26,9 +26,8 @@ import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{File, Node, Table}
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FSDataInputStream, Path}
+import com.intel.analytics.bigdl.utils.{File, FileReader, Table}
+
 import org.apache.log4j.Logger
 
 import scala.collection.mutable
@@ -87,16 +86,16 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
   }
 
   private def loadBinary(prototxtPath: String, modelPath: String): Caffe.NetParameter = {
-    var modelFs: org.apache.hadoop.fs.FileSystem = null
-    var prototxtFs: org.apache.hadoop.fs.FileSystem = null
+    var modelFr: FileReader = null
+    var prototxtFr: FileReader = null
     var modelStream: InputStream = null
     var prototxtStream: InputStream = null
     var prototxtReader: InputStreamReader = null
     try {
-      modelFs = File.getFileSystem(prototxtPath)
-      prototxtFs = File.getFileSystem(prototxtPath)
-      modelStream = modelFs.open(new Path(modelPath))
-      prototxtStream = modelFs.open(new Path(prototxtPath))
+      modelFr = FileReader(modelPath)
+      prototxtFr = FileReader(prototxtPath)
+      modelStream = modelFr.open()
+      prototxtStream = prototxtFr.open()
       prototxtReader = new InputStreamReader(prototxtStream, "ASCII")
 
       val builder = NetParameter.newBuilder
@@ -111,8 +110,8 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
       if (null != prototxtReader) prototxtReader.close()
       if (null != modelStream) modelStream.close()
       if (null != prototxtStream) prototxtStream.close()
-      if (modelFs != null) modelFs.close()
-      if (prototxtFs != null) prototxtFs.close()
+      if (modelFr != null) modelFr.close()
+      if (prototxtFr != null) prototxtFr.close()
     }
   }
 
@@ -439,15 +438,14 @@ object CaffeLoader {
  * load caffe model dynamically from binary and prototxt file
  * @param defPath prototxt file which illustrate the caffe model structure
  * @param modelPath binary file containing the weight and bias
- * @param matchAll if match all modules for parameter copy
  * @param customizedConverters customized layer converter
  * @tparam T data type
  * @return created module (graph) and criterion
  */
-  def loadCaffe[T: ClassTag](defPath: String, modelPath: String, matchAll: Boolean = true,
+  def loadCaffe[T: ClassTag](defPath: String, modelPath: String,
     customizedConverters : mutable.HashMap[String, (GeneratedMessage) => Seq[ModuleNode[T]]] = null)
                               (implicit ev: TensorNumeric[T]): (Module[T], ParallelCriterion[T]) = {
-    val caffeLoader = new CaffeLoader[T](defPath, modelPath, matchAll, customizedConverters)
+    val caffeLoader = new CaffeLoader[T](defPath, modelPath, true, customizedConverters)
     caffeLoader.createCaffeModel()
   }
 }

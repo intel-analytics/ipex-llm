@@ -24,8 +24,8 @@ import org.apache.spark.sql.DataFrame
  * Extends MlTransformer and override process to gain compatibility with
  * both spark 1.5 and spark 2.0.
  */
-private[ml] abstract class DLTransformerBase
-  extends Model[DLTransformerBase] with DLParams {
+private[ml] abstract class DLTransformerBase[M <: DLTransformerBase[M]]
+  extends Model[M] with DLParams {
 
   /**
    * convert feature columns(MLlib Vectors or Array) to Seq format
@@ -51,5 +51,5 @@ private[ml] abstract class DLTransformerBase
     }
   }
 
-  override def copy(extra: ParamMap): DLTransformerBase = defaultCopy(extra)
+  override def copy(extra: ParamMap): M = defaultCopy(extra)
 }

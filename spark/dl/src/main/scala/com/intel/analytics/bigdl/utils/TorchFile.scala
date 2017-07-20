@@ -97,13 +97,13 @@ object TorchFile {
       fileName: String,
       objectType: TorchObject,
       overWrite: Boolean = false): Unit = {
-    val file = new File(fileName)
+    val file = new java.io.File(fileName)
     if (file.exists()) {
       require(file.isFile(), s"$fileName is not a file")
       if (!overWrite) {
         throw new FileAlreadyExistsException(fileName)
       } else { // clear the file
-        val fw = new FileWriter(file)
+        val fw = new java.io.FileWriter(file)
         fw.write("")
         fw.close()
       }

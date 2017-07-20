@@ -16,17 +16,21 @@
 
 package com.intel.analytics.bigdl.nn.abstractnn
 
+import java.nio.ByteOrder
+
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.{Tensor, TensorDataType}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
-import com.intel.analytics.bigdl.nn.{InitializationMethod, Module, Zeros}
+import com.intel.analytics.bigdl.nn.{Graph, InitializationMethod, Module, Zeros}
 import com.intel.analytics.bigdl.utils.TorchObject.TYPE_MODULE
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.spark.rdd.RDD
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch, Sample}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.utils.caffe.CaffePersister
+import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowSaver}
 
 import scala.reflect.ClassTag
 
@@ -384,6 +388,24 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
   def saveTorch(path : String, overWrite: Boolean = false) : this.type = {
     this.clearState()
     File.saveTorch(this, path, TYPE_MODULE, overWrite)
+    this
+  }
+
+  def saveCaffe(prototxtPath: String, modelPath: String,
+    useV2 : Boolean = true, overwrite : Boolean = false) : this.type = {
+    this.clearState()
+    CaffePersister.persist[T](prototxtPath, modelPath, this, useV2, overwrite)
+    this
+  }
+
+  def saveTF(
+              inputs : Seq[(String, Seq[Int])],
+              path: String,
+              byteOrder: ByteOrder = ByteOrder.LITTLE_ENDIAN,
+              dataFormat: TensorflowDataFormat = TensorflowDataFormat.NHWC): this.type = {
+    require(this.isInstanceOf[Graph[T]], "only Graph container can be saved as Tensorflow model")
+    this.clearState()
+    TensorflowSaver.saveGraph(this.asInstanceOf[Graph[T]], inputs, path, byteOrder, dataFormat)
     this
   }
 
