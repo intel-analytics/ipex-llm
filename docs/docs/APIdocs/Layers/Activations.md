@@ -523,8 +523,7 @@ f(x) = ⎨ x + lambda, if x < -lambda
 ```
 
 Parameters:
-
-`lambda`    - a factor, default is 0.5
+* `lambda` a factor, default is 0.5
 
 **Scala example:**
 ```scala
@@ -1028,12 +1027,9 @@ Applies non-linear function HardTanh to each element of input, HardTanh is defin
 ```
 
 Parameters:
-
-`minValue` - minValue in f(x), default is -1.
-
-`maxValue` - maxValue in f(x), default is 1.
-
-`inplace`  - weather inplace update output from input. default is false.
+* `minValue` minValue in f(x), default is -1.
+* `maxValue` maxValue in f(x), default is 1.
+* `inplace`  weather inplace update output from input. default is false.
 
 **Scala example:**
 ```scala
