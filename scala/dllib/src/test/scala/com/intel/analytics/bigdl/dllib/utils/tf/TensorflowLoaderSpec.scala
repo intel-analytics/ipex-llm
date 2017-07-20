@@ -243,7 +243,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     val tfGraph = TensorflowLoader.buildTFGraph(results, Seq("output"))
     val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("input"),
       Seq("output"),
-      ByteOrder.LITTLE_ENDIAN)
+      ByteOrder.LITTLE_ENDIAN, "")
     val input = TensorflowToBigDL.toTensor(results.get(0).getAttrMap.get("value").getTensor,
       ByteOrder.LITTLE_ENDIAN).contiguous()
     val tfResult = TensorflowToBigDL.toTensor(results.get(results.size()-1)
@@ -275,7 +275,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     val tfGraph = TensorflowLoader.buildTFGraph(results.subList(0, results.size()-1), Seq("output"))
     val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("input"),
       Seq("output"),
-      ByteOrder.LITTLE_ENDIAN)
+      ByteOrder.LITTLE_ENDIAN, "")
     val input = TensorflowToBigDL.toTensor(results.get(0).getAttrMap.get("value").getTensor,
       ByteOrder.LITTLE_ENDIAN).contiguous()
     val tfResult = TensorflowToBigDL.toTensor(results.get(results.size()-1)
@@ -509,7 +509,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     val tfGraph = TensorflowLoader.buildTFGraph(tfNodes, endPoints.map(_.split(":")(0)))
     val context = new mutable.HashMap[NodeDef, (Tensor[Float], Tensor[Float])]
     val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("input"),
-      endPoints.map(_.split(":")(0)), ByteOrder.LITTLE_ENDIAN, Some(context))
+      endPoints.map(_.split(":")(0)), ByteOrder.LITTLE_ENDIAN, "", Some(context))
 
     // Compare the tensor contents
     val tfInputTensor = tfNodes.asScala.filter(_.getName == "input")(0)
