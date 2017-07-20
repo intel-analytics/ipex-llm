@@ -36,7 +36,6 @@ import scala.reflect.ClassTag
 class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Converter[T]{
 
   override protected def fromCaffeConvolution(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
-    val name = getLayerName(layer)
     val param = getConvolutionParam(layer).get
     val group = if (param.getGroup == 0)  1 else param.getGroup
     val  weightBlob = getBlob(layer, 0).get
@@ -149,7 +148,6 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
   }
 
   override protected def fromCaffeBias(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
-    val param = layer.asInstanceOf[LayerParameter].getBiasParam
     // input blob
     val weightBlob = getBlob(layer, 0)
     val size = weightBlob.get.getShape.getDimList.asScala.map(_.toInt).toArray.product
@@ -224,7 +222,7 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
     setConnections(layerParameter, bottoms, nextSize)
 
     // copy weight and bias
-    var (weightBuilder, biasBuilder) = copyParam(module)
+    val (weightBuilder, biasBuilder) = copyParam(module)
 
     setBlobs(layerParameter, weightBuilder, biasBuilder)
 
@@ -448,7 +446,7 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
     setConnections(layerParameter, bottoms, nextSize)
 
     // copy weight and bias
-    var (weightBuilder, biasBuilder) = copyParam(module)
+    val (weightBuilder, biasBuilder) = copyParam(module)
 
     val blobShape = toCaffeScalaParam(module)
 
