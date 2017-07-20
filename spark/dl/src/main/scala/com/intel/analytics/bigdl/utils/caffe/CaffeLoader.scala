@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{File, Table}
+import com.intel.analytics.bigdl.utils.{File, Node, Table}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FSDataInputStream, Path}
 import org.apache.log4j.Logger
@@ -245,7 +245,8 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
           }
         })
     }
-    allLayers.foreach(layer => {
+    val topology = createLayersTopology(allLayers)
+    topology.foreach(layer => {
       var name : String = null
       val topList = new ArrayBuffer[String]()
       val bottomList = new ArrayBuffer[String]()
@@ -372,6 +373,56 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
     } else {
       None
     }
+  }
+
+  private def createLayersTopology(origins :
+    ArrayBuffer[GeneratedMessage]) : ArrayBuffer[GeneratedMessage] = {
+
+    val res = new ArrayBuffer[GeneratedMessage]()
+
+    val name2Layer = new mutable.HashMap[String, GeneratedMessage]()
+    val inDegrees = new mutable.HashMap[String, Int]()
+    val bottom2Layer = new mutable.HashMap[String, String]()
+    origins.foreach(layer => {
+      val topList = new ArrayBuffer[String]()
+      val bottomList = new ArrayBuffer[String]()
+      var layerName : String = null
+      layer match {
+        case v2 : LayerParameter =>
+          layerName = v2.getName
+          topList ++= v2.getTopList.asScala
+          bottomList ++= v2.getBottomList.asScala
+        case v1 : V1LayerParameter =>
+          layerName = v1.getName
+          topList ++= v1.getTopList.asScala
+          bottomList ++= v1.getBottomList.asScala
+      }
+
+      name2Layer(layerName) = layer
+      bottomList.foreach(bottom => bottom2Layer(bottom) = layerName)
+      inDegrees(layerName) = bottomList.size
+    })
+    while(!inDegrees.isEmpty) {
+      // toArray is not lazy eval, which is not affected by inDegrees - 1 operations below
+      val topLayers = inDegrees.filterKeys(inDegrees(_) == 0).keySet.toArray
+      require(topLayers.size != 0, "Cycle exists!")
+      topLayers.foreach(layerName => {
+        val layer = name2Layer(layerName)
+        res.append(layer)
+        val topList = new ArrayBuffer[String]()
+        layer match {
+          case v2 : LayerParameter =>
+            topList ++= v2.getTopList.asScala
+          case v1 : V1LayerParameter =>
+            topList ++= v1.getTopList.asScala
+        }
+        topList.foreach(top => {
+          inDegrees(bottom2Layer(top)) = inDegrees(bottom2Layer(top)) - 1
+        })
+        inDegrees.remove(layerName)
+      })
+    }
+    res
   }
 }
 
