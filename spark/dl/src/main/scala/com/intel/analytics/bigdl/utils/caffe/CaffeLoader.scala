@@ -389,65 +389,6 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
       None
     }
   }
-
-  private def createLayersTopology(origins :
-    ArrayBuffer[GeneratedMessage]) : ArrayBuffer[GeneratedMessage] = {
-
-    val res = new ArrayBuffer[GeneratedMessage]()
-
-    val name2Layer = new mutable.HashMap[String, GeneratedMessage]()
-    val inDegrees = new mutable.HashMap[String, Int]()
-    val bottom2Layer = new mutable.HashMap[String, ArrayBuffer[String]]()
-    origins.foreach(layer => {
-      val topList = new ArrayBuffer[String]()
-      val bottomList = new ArrayBuffer[String]()
-      var layerName : String = null
-      layer match {
-        case v2 : LayerParameter =>
-          layerName = v2.getName
-          topList ++= v2.getTopList.asScala
-          bottomList ++= v2.getBottomList.asScala
-        case v1 : V1LayerParameter =>
-          layerName = v1.getName
-          topList ++= v1.getTopList.asScala
-          bottomList ++= v1.getBottomList.asScala
-      }
-
-      name2Layer(layerName) = layer
-      bottomList.foreach(bottom => {
-        if (!bottom2Layer.contains(bottom)) {
-          bottom2Layer(bottom) = new ArrayBuffer[String]()
-        }
-        bottom2Layer(bottom).append(layerName)
-      })
-      inDegrees(layerName) = bottomList.size
-    })
-    while(!inDegrees.isEmpty) {
-      // toArray is not lazy eval, which is not affected by inDegrees - 1 operations below
-      val topLayers = inDegrees.filterKeys(inDegrees(_) == 0).keySet.toArray
-      require(topLayers.size != 0, "Cycle exists!")
-      topLayers.foreach(layerName => {
-        val layer = name2Layer(layerName)
-        res.append(layer)
-        val topList = new ArrayBuffer[String]()
-        layer match {
-          case v2 : LayerParameter =>
-            topList ++= v2.getTopList.asScala
-          case v1 : V1LayerParameter =>
-            topList ++= v1.getTopList.asScala
-        }
-        topList.foreach(top => {
-          if (bottom2Layer.contains(top)) {
-            val bottomLayerNames = bottom2Layer(top)
-            bottomLayerNames.foreach(
-              layerName => inDegrees(layerName) = inDegrees(layerName) - 1)
-          }
-        })
-        inDegrees.remove(layerName)
-      })
-    }
-    res
-  }
 }
 
 object CaffeLoader {
