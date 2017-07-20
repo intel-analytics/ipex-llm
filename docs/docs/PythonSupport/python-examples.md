@@ -2,7 +2,7 @@
 
 ## **Text Classification using BigDL Python API**  
 
-This tutorial describes the [textclassifier](https://github.com/intel-analytics/BigDL/tree/master/pyspark/dl/models/textclassifier) example written using BigDL Python API, which builds a text classifier using a CNN (convolutional neural network) or LSTM or GRU model (as specified by the user). (It was first described by [this Keras tutorial](https://blog.keras.io/using-pre-trained-word-embeddings-in-a-keras-model.html))
+This tutorial describes the [textclassifier](https://github.com/intel-analytics/BigDL/tree/master/pyspark/bigdl/models/textclassifier) example written using BigDL Python API, which builds a text classifier using a CNN (convolutional neural network) or LSTM or GRU model (as specified by the user). (It was first described by [this Keras tutorial](https://blog.keras.io/using-pre-trained-word-embeddings-in-a-keras-model.html))
 
 The example first creates the `SparkContext` using the SparkConf` return by the `create_spark_conf()` method, and then initialize the engine:
 ```python
