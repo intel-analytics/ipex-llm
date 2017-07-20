@@ -173,7 +173,21 @@ object Module {
           quantizedConv.initWeightAndBias(conv.weight, conv.bias)
         case dilatedConv if dilatedConv.isInstanceOf[SpatialDilatedConvolution[T]] =>
           // do with dilated convolution
-          dilatedConv
+          val conv = dilatedConv.asInstanceOf[SpatialDilatedConvolution[T]]
+          val quantizedConv = new fixpoint.SpatialDilatedConvolution[T](
+            conv.nInputPlane,
+            conv.nOutputPlane,
+            conv.kW,
+            conv.kH,
+            conv.dW,
+            conv.dH,
+            conv.padW,
+            conv.padH,
+            conv.dilationW,
+            conv.dilationH)
+          quantizedConv.initWeightAndBias(conv.weight, conv.bias)
+
+          quantizedConv
         case normalLinear if normalLinear.isInstanceOf[Linear[T]] =>
           // do with linear
           val linear = normalLinear.asInstanceOf[Linear[T]]
