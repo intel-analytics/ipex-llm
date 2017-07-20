@@ -244,8 +244,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
           }
         })
     }
-    val topology = createLayersTopology(allLayers)
-    topology.foreach(layer => {
+    allLayers.foreach(layer => {
       var name : String = null
       val topList = new ArrayBuffer[String]()
       val bottomList = new ArrayBuffer[String]()
@@ -277,8 +276,9 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
           if (nodes != null) {
             var curr = nodes(0)
             bottomList.foreach(dependency => {
-              if (splitLayerMap.contains(dependency)) splitLayerMap(dependency) -> curr
-              else if (top2LayerMap.contains(dependency)) {
+              // if (splitLayerMap.contains(dependency)) splitLayerMap(dependency) -> curr
+              // else
+              if (top2LayerMap.contains(dependency)) {
                 layersMap(top2LayerMap(dependency)) -> curr
               }
             })
@@ -294,6 +294,26 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
           }
         }
       }
+    })
+    allLayers.foreach(layer => {
+      var name : String = null
+     // val topList = new ArrayBuffer[String]()
+      val bottomList = new ArrayBuffer[String]()
+      layer match {
+        case v2 : LayerParameter =>
+          name = v2.getName
+         // topList ++= v2.getTopList.asScala
+          bottomList ++= v2.getBottomList.asScala
+        case v1 : V1LayerParameter =>
+          name = v1.getName
+         // topList ++= v1.getTopList.asScala
+          bottomList ++= v1.getBottomList.asScala
+      }
+      bottomList.foreach(bottom => {
+        if (splitLayerMap.contains(bottom)) {
+          splitLayerMap(bottom) -> layersMap(name)
+        }
+      })
     })
     return layers
   }
@@ -381,7 +401,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
 
     val name2Layer = new mutable.HashMap[String, GeneratedMessage]()
     val inDegrees = new mutable.HashMap[String, Int]()
-    val bottom2Layer = new mutable.HashMap[String, String]()
+    val bottom2Layer = new mutable.HashMap[String, ArrayBuffer[String]]()
     origins.foreach(layer => {
       val topList = new ArrayBuffer[String]()
       val bottomList = new ArrayBuffer[String]()
@@ -398,7 +418,12 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
       }
 
       name2Layer(layerName) = layer
-      bottomList.foreach(bottom => bottom2Layer(bottom) = layerName)
+      bottomList.foreach(bottom => {
+        if (!bottom2Layer.contains(bottom)) {
+          bottom2Layer(bottom) = new ArrayBuffer[String]()
+        }
+        bottom2Layer(bottom).append(layerName)
+      })
       inDegrees(layerName) = bottomList.size
     })
     while(!inDegrees.isEmpty) {
@@ -416,7 +441,11 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
             topList ++= v1.getTopList.asScala
         }
         topList.foreach(top => {
-          inDegrees(bottom2Layer(top)) = inDegrees(bottom2Layer(top)) - 1
+          if (bottom2Layer.contains(top)) {
+            val bottomLayerNames = bottom2Layer(top)
+            bottomLayerNames.foreach(
+              layerName => inDegrees(layerName) = inDegrees(layerName) - 1)
+          }
         })
         inDegrees.remove(layerName)
       })
