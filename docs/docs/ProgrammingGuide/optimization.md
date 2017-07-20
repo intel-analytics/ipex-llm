@@ -165,4 +165,4 @@ For validation, you need to provide
 * batch size: how many data evaluate in one time
 
 ### Visualize training process
-See [Visualization with TensorBoard](https://bigdl-project.github.io/UserGuide/visualization-with-tensorboard/)
+See [Visualization](visualization.md)

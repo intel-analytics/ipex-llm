@@ -16,7 +16,7 @@ pyspark --master local[4] \
 
 ## **Run from spark-submit**
 
-- A BigDL Python program runs as a standard PySPark program, which requires all Python dependency (e.g., NumPy) used by the program be installed on each node in the Spark cluster. You can try run the BigDL [lenet Python example](https://github.com/intel-analytics/BigDL/tree/master/pyspark/dl/models/lenet) using [spark-submit](http://spark.apache.org/docs/latest/submitting-applications.html) as follows:
+- A BigDL Python program runs as a standard PySPark program, which requires all Python dependency (e.g., NumPy) used by the program be installed on each node in the Spark cluster. You can try run the BigDL [lenet Python example](https://github.com/intel-analytics/BigDL/tree/master/pyspark/bigdl/models/lenet) using [spark-submit](http://spark.apache.org/docs/latest/submitting-applications.html) as follows:
 - __Ensure every path is valid__ 
 
 ```bash
@@ -34,12 +34,12 @@ pyspark --master local[4] \
       --total-executor-cores 80  \
       --executor-cores 10  \
       --executor-memory 20g \
-       --py-files ${PYTHON_API_ZIP_PATH},${BigDL_HOME}/pyspark/dl/models/lenet/lenet5.py  \
+       --py-files ${PYTHON_API_ZIP_PATH},${BigDL_HOME}/pyspark/bigdl/models/lenet/lenet5.py  \
        --properties-file ${BigDL_HOME}/dist/conf/spark-bigdl.conf \
        --jars ${BigDL_JAR_PATH} \
        --conf spark.driver.extraClassPath=${BigDL_JAR_PATH} \
        --conf spark.executor.extraClassPath=bigdl-VERSION-jar-with-dependencies.jar \
-       ${BigDL_HOME}/pyspark/dl/models/lenet/lenet5.py
+       ${BigDL_HOME}/pyspark/bigdl/models/lenet/lenet5.py
 ```
 
 
