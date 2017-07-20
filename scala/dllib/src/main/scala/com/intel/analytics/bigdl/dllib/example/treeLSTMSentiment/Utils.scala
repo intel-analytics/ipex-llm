@@ -171,25 +171,24 @@ object Utils {
   }
 
   def loadEmbeddingAndVocabulary(
+    sc: SparkContext,
     w2vPath: String,
     vocabPath: String,
     indexFrom: Int
   ):
   (Tensor[Float], Map[String, Int]) = {
-    val word2Vec = scala.collection.mutable.Map[String, Array[Float]]()
-    for (line <- Source.fromFile(w2vPath, "ISO-8859-1").getLines) {
+    val word2Vec = sc.textFile(w2vPath)
+      .map(line => {
       val values = line.split(" ")
       val word = values(0)
       val coefs = values.slice(1, values.length).map(_.toFloat)
-      word2Vec += word -> coefs
-    }
+      word -> coefs
+    }).toLocalIterator.toList.toMap
 
     var i = 1
-    val vocabLines = Source
-      .fromFile(vocabPath, "ISO-8859-1")
-      .getLines
-      .toList
-    val word2VecTensor = Tensor(vocabLines.length + indexFrom - 1, word2Vec.last._2.length)
+    val vocabLines = sc.textFile(vocabPath).collect()
+    val word2VecTensor =
+      Tensor(vocabLines.length + indexFrom - 1, word2Vec.last._2.length)
 
     val vocab = scala.collection.mutable.Map[String, Int]()
     while (i < indexFrom) {
@@ -240,7 +239,7 @@ object Utils {
     hiddenSize: Int = 250,
     learningRate: Double = 0.05,
     regRate: Double = 1e-4,
-    p: Double = 0,
-    epoch: Int = 10
+    p: Double = 0.5,
+    epoch: Int = 5
   ) extends AbstractTextClassificationParams
 }
