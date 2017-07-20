@@ -2,7 +2,7 @@
 1. [Install Spark](https://spark.apache.org/downloads.html)
 
 2. You can download the BigDL release (currently v0.2.0) and nightly build from the [Release Page](../release-download.md)
-  or build the BigDL package from [source](UserGuide/install-build-src.md). 
+  or build the BigDL package from [source](../UserGuide/install-build-src.md). 
 
 3. Install python dependencies:
   * BigDL only depend on `Numpy` for now.  
