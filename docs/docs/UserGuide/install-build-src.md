@@ -38,13 +38,21 @@ After that, you can find a `dist` folder, which contains all the needed files to
 * **dist/conf/spark-bigdl.conf**: This file contains necessary property configurations. ```Engine.createSparkConf``` will populate these properties, so try to use that method in your code. Or you need to pass the file to Spark with the "--properties-file" option. 
 
 
-## **Build for macOS**
+## **Build for MacOS**
 
 The instructions above will only build for Linux. To build BigDL for macOS, pass `-P mac` to the `make-dist.sh` script as follows:
 ```bash
 $ bash make-dist.sh -P mac
 ```
 
+## **Build for Windows**
+
+To build BigDL for Windows, pass `-P win64` to the build command:
+```bash
+> mvn clean package -DskipTests -P win64
+```
+
+Please note that we only test it on Windows 10
 
 * **Build for Spark 2.0 and above**
 
@@ -108,6 +116,7 @@ After that, you can find that the three jar packages in `PATH_To_BigDL`/target/,
 Note that the instructions above will build BigDL with Spark 1.5.x or 1.6.x (using Scala 2.10) for Linux, and skip the build of native library code. Similarly, you may customize the default behaviors by passing the following parameters to maven:
 
  - `-P mac`: build for maxOS
+ - `-P win64`: build for windows
  - `-P spark_2.x`: build for Spark 2.0 and above (using Scala 2.11). (Again, it is highly recommended to use _**Java 8**_ when running with Spark 2.0; otherwise you may observe very poor performance.)
  * `-P full-build`: full build
  * `-P scala_2.10` (or `-P scala_2.11`): build using Scala 2.10 (or Scala 2.11) 

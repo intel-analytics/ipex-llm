@@ -515,6 +515,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     CosineDistance[T]()
   }
 
+  def createCosineDistanceCriterion(sizeAverage: Boolean = true)
+  : CosineDistanceCriterion[T] = {
+    CosineDistanceCriterion[T](sizeAverage)
+  }
+
   def createDiceCoefficientCriterion(sizeAverage: Boolean = true,
                                      epsilon: Float = 1.0f)
   : DiceCoefficientCriterion[T] = {
@@ -933,17 +938,24 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       bRegularizer)
   }
 
-  def createSpatialShareConvolution(nInputPlane: Int,
-                                    nOutputPlane: Int,
-                                    kernelW: Int,
-                                    kernelH: Int,
-                                    strideW: Int = 1,
-                                    strideH: Int = 1,
-                                    padW: Int = 0,
-                                    padH: Int = 0,
-                                    nGroup: Int = 1,
-                                    propagateBack: Boolean = true)
-  : SpatialShareConvolution[T] = {
+  def createSpatialShareConvolution(
+        nInputPlane: Int,
+        nOutputPlane: Int,
+        kernelW: Int,
+        kernelH: Int,
+        strideW: Int = 1,
+        strideH: Int = 1,
+        padW: Int = 0,
+        padH: Int = 0,
+        nGroup: Int = 1,
+        propagateBack: Boolean = true,
+        wRegularizer: Regularizer[T] = null,
+        bRegularizer: Regularizer[T] = null,
+        initWeight: JTensor = null,
+        initBias: JTensor = null,
+        initGradWeight: JTensor = null,
+        initGradBias: JTensor = null,
+        withBias: Boolean = true) : SpatialShareConvolution[T] = {
     SpatialShareConvolution[T](nInputPlane,
       nOutputPlane,
       kernelW,
@@ -953,7 +965,15 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       padW,
       padH,
       nGroup,
-      propagateBack)
+      propagateBack,
+      wRegularizer,
+      bRegularizer,
+      toTensor(initWeight),
+      toTensor(initBias),
+      toTensor(initGradWeight),
+      toTensor(initGradBias),
+      withBias
+    )
   }
 
   def createSpatialZeroPadding(padLeft: Int,
@@ -1361,7 +1381,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Module.loadTF[T](path, inputs.asScala, outputs.asScala, order)
   }
 
-  def saveTF(model: Graph[T],
+  def saveTF(model: AbstractModule[Activity, Activity, T],
              inputs: JList[Any],
              path: String,
              byteOrder: String,
@@ -1383,7 +1403,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       val shape = array.get(1).asInstanceOf[JList[Int]]
       (name, shape.asScala)
     }
-    TensorflowSaver.saveGraph(model, scalaInputs, path, order, format)
+    model.saveTF(scalaInputs, path, order, format)
   }
 
   def modelPredictRDD(model: AbstractModule[Activity, Activity, T],

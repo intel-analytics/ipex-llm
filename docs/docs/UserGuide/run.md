@@ -143,3 +143,4 @@ In the above command
 * -f: where you put your MNIST data
 * -c: The core number on local machine used for this prediction. The default value is physical cores number. Get it through Runtime.getRuntime().availableProcessors() / 2
 * --model: the model snapshot file
+
