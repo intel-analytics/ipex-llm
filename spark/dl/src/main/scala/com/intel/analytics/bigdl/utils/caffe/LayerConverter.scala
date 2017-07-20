@@ -41,9 +41,7 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
     val group = if (param.getGroup == 0)  1 else param.getGroup
     val  weightBlob = getBlob(layer, 0).get
     val biasBlob = getBlob(layer, 1)
-    if (!biasBlob.isDefined) {
-      throw new RuntimeException(s"${getLayerName(layer)} without bias is not supported now")
-    }
+    val withBias = biasBlob.isDefined
     val nInputPlane = if (weightBlob.hasShape) weightBlob.getShape.getDim(1)
     else weightBlob.getChannels * group
     val nOutPlane = if (weightBlob.hasShape) weightBlob.getShape.getDim(0)
@@ -75,7 +73,7 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
       }
     }
     Seq(SpatialConvolution[T](nInputPlane.toInt, nOutPlane.toInt,
-      kw, kh, dw, dh, pw, ph, group).setName(getLayerName(layer)).inputs())
+      kw, kh, dw, dh, pw, ph, group, withBias).setName(getLayerName(layer)).inputs())
   }
 
   override protected def fromCaffeInnerProduct(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
@@ -122,8 +120,8 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
 
   override protected def fromCaffeReshape(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val param = layer.asInstanceOf[LayerParameter].getReshapeParam
-    val shapeSize = param.getShape.getDimList.toArray.asInstanceOf[Array[Int]]
-    Seq(Reshape[T](shapeSize).setName(getLayerName(layer)).inputs())
+    val shapeSize = param.getShape.getDimList.asScala.map(_.toInt).toArray
+    Seq(InferReshape[T](shapeSize).setName(getLayerName(layer)).inputs())
   }
 
   override protected def fromCaffeScale(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
@@ -133,7 +131,7 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
     val weightBlob = getBlob(layer, 1)
     if (weightBlob.isDefined) {
       val blob = weightBlob.get
-      val size = blob.getShape.getDimList.toArray.asInstanceOf[Array[Int]]
+      val size = blob.getShape.getDimList.asScala.map(_.toInt).toArray
       Seq(Scale[T](size).setName(layerName).inputs())
     } else {
       val inputBlob = getBlob(layer, 0).get
@@ -145,7 +143,7 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
       } else {
         numOfAxis = numOfAxis + axis
       }
-      val size = shape.getDimList.subList(axis, numOfAxis).asInstanceOf[Array[Int]]
+      val size = shape.getDimList.subList(axis, numOfAxis).asScala.map(_.toInt).toArray
       Seq(Scale[T](size).setName(layerName).inputs())
     }
   }
@@ -154,7 +152,7 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
     val param = layer.asInstanceOf[LayerParameter].getBiasParam
     // input blob
     val weightBlob = getBlob(layer, 0)
-    val size = weightBlob.get.getShape.getDimList.toArray().asInstanceOf[Array[Int]].product
+    val size = weightBlob.get.getShape.getDimList.asScala.map(_.toInt).toArray.product
     Seq(Add[T](size).setName(getLayerName(layer)).inputs())
   }
 
@@ -526,7 +524,7 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
   override protected def toCaffeSequential(module : AbstractModule[Activity, Tensor[T], T],
     bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage] = {
     val res = new ArrayBuffer[GeneratedMessage]()
-    var lastBottoms = bottoms
+    val lastBottoms = bottoms
     val modules = module.asInstanceOf[Sequential[T]].modules
     modules.foreach(nested => {
       val nestedLayer = nested.asInstanceOf[AbstractModule[_, _, _]].

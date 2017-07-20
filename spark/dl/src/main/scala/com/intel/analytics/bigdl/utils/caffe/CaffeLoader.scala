@@ -339,7 +339,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
     val param = getInforgainParam(layerName).get
     val weightBlob = getBlob(layerName, 2)
     if (weightBlob.isDefined) {
-      val size = weightBlob.get.getShape.getDimList.toArray.asInstanceOf[Array[Int]]
+      val size = weightBlob.get.getShape.getDimList.asScala.map(_.toInt).toArray
       val weightData = weightBlob.get.getDataList
       var weightArr = new Array[T](weightData.size)
       var i = 0
