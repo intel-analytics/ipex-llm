@@ -27,8 +27,7 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{File, FileReader, Table}
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FSDataInputStream, Path}
+
 import org.apache.log4j.Logger
 
 import scala.collection.mutable
@@ -277,8 +276,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
           if (nodes != null) {
             var curr = nodes(0)
             bottomList.foreach(dependency => {
-              if (splitLayerMap.contains(dependency)) splitLayerMap(dependency) -> curr
-              else if (top2LayerMap.contains(dependency)) {
+              if (top2LayerMap.contains(dependency)) {
                 layersMap(top2LayerMap(dependency)) -> curr
               }
             })
@@ -294,6 +292,24 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
           }
         }
       }
+    })
+    // process with split separately in case of out of order
+    allLayers.foreach(layer => {
+      var name : String = null
+      val bottomList = new ArrayBuffer[String]()
+      layer match {
+        case v2 : LayerParameter =>
+          name = v2.getName
+          bottomList ++= v2.getBottomList.asScala
+        case v1 : V1LayerParameter =>
+          name = v1.getName
+          bottomList ++= v1.getBottomList.asScala
+      }
+      bottomList.foreach(bottom => {
+        if (splitLayerMap.contains(bottom)) {
+          splitLayerMap(bottom) -> layersMap(name)
+        }
+      })
     })
     return layers
   }
