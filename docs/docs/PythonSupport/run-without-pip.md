@@ -1,22 +1,13 @@
 First of all, you need to obtain the BigDL libs. Refer to [Install from pre built](install-pre-built.md) or [Install from source code](../UserGuide/install-build-src) for more details
 
 
-## **Run from python shell**
-0. __This only support running in local__.
-1. Set some environmental variables. Replace SPARK_HOME, BigDL_HOME and BigDL_version, and etc. according to your actual configurations. 
-2. __Ensure every path is valid__ 
+## **A quick launch for local mode**
 
 ```bash
-export BigDL_HOME=...
-export BigDL_version=bigdl-0.2.0-SNAPSHOT
-export SPARK_HOME=...
-export spark.master=local[2]
-
-export PYTHONPATH=$SPARK_HOME/python/lib/pyspark.zip:$SPARK_HOME/python/lib/py4j-0.9-src.zip:$BigDL_HOME/spark/dl/src/main/resources/spark-bigdl.conf:${BigDL_HOME}/dist/lib/${BigDL_version}-python-api.zip
-export SPARK_CLASSPATH=BigDL_HOME/spark/dl/target/${BigDL_version}-jar-with-dependencies.jar
+cd $BIGDL_HOME/dist/lib 
+pyspark --master local[4] --conf spark.driver.extraClassPath=bigdl-0.2.0-jar-with-dependencies.jar --py-files bigdl-0.2.0-python-api.zip --properties-file ../conf/spark-bigdl.conf 
 ```
 
-3.Type `python` in commandline to start a REPL. 
  [Example code to verify if run successfully](run-from-pip.md#code.verification)
 
 
@@ -93,9 +84,3 @@ sudo pip install numpy scipy pandas scikit-learn matplotlib seaborn wordcloud
 After successfully launching Jupyter, you will be able to navigate to the notebook dashboard using your browser. You can find the exact URL in the console output when you started Jupyter; by default, the dashboard URL is http://your_node:8888/
 
 [Example code to verify if run successfully](run-from-pip.md#code.verification)
-
-
-
-
-## **Packing python dependencies for yarn cluster**
-You can run BigDL Python programs on YARN clusters without changes to the cluster (e.g., no need to pre-install the Python dependencies). You  can first package all the required Python dependency into a virtual environment on the localnode (where you will run the spark-submit command), and then directly use spark-submit to run the BigDL Python program on the YARN cluster (using that virtual environment). Please refer to this [Packing-dependencies](https://github.com/intel-analytics/BigDL/tree/master/pyspark/python_package) for more details.

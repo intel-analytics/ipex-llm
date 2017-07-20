@@ -8,6 +8,9 @@
 * Embedding: 100-dimensional pre-trained GloVe embeddings of 400k words which trained on a 2014 dump of English Wikipedia.
 * Training data: "20 Newsgroup dataset" which containing 20 categories and with totally 19997 texts.
 
+## Install dependencies
+ * [Install dependencies](../../../README.md#Installing on Ubuntu)
+
 ## How to run this example:
 
 If there is no [Pre-train GloVe word embeddings](http://nlp.stanford.edu/data/glove.6B.zip)

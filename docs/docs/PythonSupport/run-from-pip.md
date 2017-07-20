@@ -3,7 +3,6 @@
 
 ## **Use an Interactive Shell**
  * type `python` in commandline to start a REPL
- * [Example code to verify if run successfully](#code.verification)
 
 ## **Use Jupyter Notebook**
 
@@ -11,12 +10,10 @@
  ```bash
  jupyter notebook --notebook-dir=./ --ip=* --no-browser
  ```
- * [Example code to verify if run successfully](#code.verification)
-
 
 
 <a name="code.verification"></a>
-## Code ##
+## Example code to verify if run successfully ##
 ```python
  from bigdl.util.common import *
  from pyspark import SparkContext

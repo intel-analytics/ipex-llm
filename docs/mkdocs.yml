@@ -26,9 +26,7 @@ pages:
 - Python User Guide: 
   - Install:
     - From pip: PythonSupport/install-from-pip.md
-    - Use Pre-built Libs: PythonSupport/install-pre-built.md
-    - Build from Source Code: UserGuide/install-build-src.md
-
+    - Without pip: PythonSupport/install-without-pip.md
   - Run:
     - After pip install: PythonSupport/run-from-pip.md
     - Without pip install: PythonSupport/run-without-pip.md
