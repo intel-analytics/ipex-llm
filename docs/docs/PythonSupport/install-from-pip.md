@@ -5,7 +5,7 @@
 - We've tested this package with __python 2.7__ and __python 3.5__
 
 
-## **Install BigDL-0.1.2 via pip**
+## **Install BigDL-0.1.2**
 
 1.Download Spark1.6.3:  
 ```bash
