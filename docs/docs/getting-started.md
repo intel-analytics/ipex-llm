@@ -1,13 +1,8 @@
 ---
 ## **Before using BigDL**
 
-Apache Spark needs to be installed before you start using BigDL. 
+Before using BigDL, you need to install Apache Spark and obtain BigDL libraries. Then in your program, you need to ensure the SparkContext is created successfully and initialize BigDL engine before calling BigDL APIs. Navigate to *Scala User Guide/Install* or *Python User Guide/Install* for details about how to install BigDL, and *Scala User Guide/Run* or *Python User Guide/Run* for how to run programs.  
 
-BigDL provide both Scala/Java and Python API.  
-
-To use BigDL *Scala/Java* API, you need first obtain or build the BigDL libraries. When writing programs, you need to ensure the SparkContext is created successfully and initialize BigDL engine before calling BigDL APIs. Refer to [Use Prebuild Libs](UserGuide/install-pre-built.md), [Build from Source](UserGuide/install-build-src.md), and [Run](UserGuide/run.md) for details about how to build BigDL and run a program in Scala.  
-
-After installation, You can use Python API in an interactive shell, or run a program in commandline, or use Jupyter notebooks. Refer to [Python Install](PythonSupport/python-install.md) and [Python Run](PythonSupport/python-run.md) for details about how to install python and run python programs.
 
 ---
 
