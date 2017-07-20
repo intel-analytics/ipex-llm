@@ -75,7 +75,7 @@ res: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 1.3333334	2.5	6.0
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
 ```
-For more API, please visit [bigdl scala doc](https://bigdl-project.github.io/latest/#APIdocs/scaladoc/)
+For more API, navigate to *API Guide/Full API docs* on side bar.
 
 ---
 ## **Table**

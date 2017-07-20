@@ -1,10 +1,12 @@
-## Optimizer ##
 
-You can use Optimizer to distributed train your model with
-a spark cluster.
 
-### How to use Optimizer 
-You need at least provide model, data, loss function and batch size.
+## Use Optimizer for Training 
+
+You can use `Optimizer` in BigDL to train a model. 
+
+You need to first create an `Optimizer`, and then call `Optimizer.optimize` to start the training. 
+
+To create an optimizer, you need at least provide model, data, loss function and batch size.
 
 * **model**
 
@@ -163,4 +165,4 @@ For validation, you need to provide
 * batch size: how many data evaluate in one time
 
 ### Visualize training process
-See [Visualization with TensorBoard](https://bigdl-project.github.io/UserGuide/visualization-with-tensorboard/)
+See [Visualization](visualization.md)

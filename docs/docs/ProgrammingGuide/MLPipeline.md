@@ -1,5 +1,5 @@
 
-## Use BigDL with Apache Spark ML pipeline ##
+## **Overview**
 
 BigDL provides `DLEstimator` and `DLClassifier` for users with Apache Spark MLlib experience, which
 provides high level API for training a BigDL Model with the Apache Spark `Estimator`/`Transfomer`
@@ -11,8 +11,8 @@ Spark ML Pipeline for prediction.
 Currently only scala interface are implemented for `DLEstimator` and `DLClassifier`. Python
 support will be added soon.
 
-
-## DLEstimator ##
+---
+## **DLEstimator**
 
 `DLEstimator` extends `org.apache.spark.ml.Estimator` and supports model training from
 Apache Spark DataFrame/Dataset. 
@@ -25,10 +25,11 @@ Spark 1.5, 1.6) and `org.apache.spark.ml.linalg.Vector` (for Apache Spark 2.0+).
 data can be of Double type.
 
 To use `DLEstimator` for training, user should specify
-1. the model structure constructed from BigDL layers. You can also use some predefined model
+
+* the model structure constructed from BigDL layers. You can also use some predefined model
 like LetNet or ResNet.
-2. the model criterion, which calculates the loss and gradient from model output and label.
-3. the feature data dimensions and label data dimensions (the constructor
+* the model criterion, which calculates the loss and gradient from model output and label.
+* the feature data dimensions and label data dimensions (the constructor
 parameters `featureSize` and `labelSize` respectively). E.g., a sample from
 [MNist](http://yann.lecun.com/exdb/mnist/) may have the `featureSize` as Array(28, 28) and
 `labelSize` as Array(1). And the feature column contains an array or a `Vector` of 784 (28 * 28)
@@ -88,7 +89,8 @@ Output is
 |[1.0, 2.0]|[2.0, 1.0]|[2.006953001022339, 1.0039551258087158]|
 
 
-## DLClassifier ##
+---
+## **DLClassifier**
 
 `DLClassifier` is a specialized `DLEstimator` that simplifies the data format for
 classification tasks. It only supports label column of DoubleType, and the fitted

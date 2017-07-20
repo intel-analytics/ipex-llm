@@ -14,11 +14,11 @@ A BigDL program starts with `import com.intel.analytics.bigdl._`; it then _**cre
   val sc = new SparkContext(conf)
   Engine.init
 ````
-````Engine.createSparkConf```` will return a ````SparkConf```` populated with some appropriate configuration. And ````Engine.init```` will verify and read some environment information(e.g. executor numbers and executor cores) from the ````SparkContext````. You can find more information about the initialization in the [Programming Guilde](https://github.com/intel-analytics/BigDL/wiki/Programming-Guide#engine)
+````Engine.createSparkConf```` will return a ````SparkConf```` populated with some appropriate configuration. And ````Engine.init```` will verify and read some environment information(e.g. executor numbers and executor cores) from the ````SparkContext````. 
 
 After the initialization, we need to:
 
-1. _**Create the LeNet model**_ by calling the [````LeNet5()````](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/lenet/LeNet5.scala), which creates the LeNet-5 convolutional network model as follows:
+1._**Create the LeNet model**_ by calling the [````LeNet5()````](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/lenet/LeNet5.scala), which creates the LeNet-5 convolutional network model as follows:
 
 ````scala
     val model = Sequential()
@@ -35,7 +35,7 @@ After the initialization, we need to:
       .add(Linear(100, classNum))
       .add(LogSoftMax())
 ````
-2. Load the data by _**creating the [```DataSet```](https://github.com/intel-analytics/BigDL/blob/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/dataset)**_ (either a distributed or local one depending on whether it runs on Spark or not), and then _**applying a series of [```Transformer```](https://github.com/intel-analytics/BigDL/blob/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/dataset)**_ (e.g., ````SampleToGreyImg````, ````GreyImgNormalizer```` and ````GreyImgToBatch````):
+2.Load the data by _**creating the [```DataSet```](https://github.com/intel-analytics/BigDL/blob/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/dataset)**_ (either a distributed or local one depending on whether it runs on Spark or not), and then _**applying a series of [```Transformer```](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/dataset)**_ (e.g., ````SampleToGreyImg````, ````GreyImgNormalizer```` and ````GreyImgToBatch````):
 
 ````scala
     val trainSet = (if (sc.isDefined) {
@@ -135,7 +135,7 @@ After importing ```com.intel.analytics.bigdl._``` and some initialization, the [
   }
 ````
 
-It then creates ```DLClassifer``` (a Spark ML pipelines [Transformer](https://spark.apache.org/docs/1.6.3/ml-pipeline.html#transformers)) that predicts the input value based on the specified deep learning model:
+It then creates ```DLClassifer``` (a Spark ML pipelines [Transformer](https://spark.apache.org/docs/latest/ml-pipeline.html#transformers)) that predicts the input value based on the specified deep learning model:
 ````scala
   val model = loadModel(param)
   val valTrans = new DLClassifier()

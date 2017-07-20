@@ -44,7 +44,7 @@ pages:
   - Caffe Support: ProgrammingGuide/caffe-support.md
 - API Guide:
   - Data: APIdocs/Data.md
-  - Module: APIdocs/Module.md
+  - Model: APIdocs/Module.md
   - Layers: 
     - Containers:  APIdocs/Layers/Containers.md
     - Simple Layers: APIdocs/Layers/Simple-Layers.md
