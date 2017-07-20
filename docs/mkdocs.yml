@@ -24,8 +24,12 @@ pages:
   - Examples: UserGuide/examples.md
   - More Resources: UserGuide/resources.md
 - Python User Guide: 
-  - Install: PythonSupport/python-install.md
-  - Run: PythonSupport/python-run.md
+  - Install:
+    - From pip: PythonSupport/install-from-pip.md
+    - Without pip: PythonSupport/install-without-pip.md
+  - Run:
+    - After pip install: PythonSupport/run-from-pip.md
+    - Without pip install: PythonSupport/run-without-pip.md
   - Examples: PythonSupport/python-examples.md
   - More Examples and Tutorials: PythonSupport/python-resources.md
 - Programming Guide:
