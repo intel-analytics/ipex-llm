@@ -1,115 +1,90 @@
-## SpatialSubtractiveNormalization ##
+## BatchNormalization ##
 
 **Scala:**
 ```scala
-val spatialSubtractiveNormalization = SpatialSubtractiveNormalization(nInputPlane = 1, kernel = null)
+val bn = BatchNormalization(nOutput, eps, momentum, affine)
 ```
 **Python:**
 ```python
-spatialSubtractiveNormalization = SpatialSubtractiveNormalization(n_input_plane=1, kernel=None)
+bn = BatchNormalization(n_output, eps, momentum, affine)
 ```
 
-SpatialSubtractiveNormalization applies a spatial subtraction operation on a series of 2D inputs using kernel for computing the weighted average in a neighborhood.The neighborhood is defined for a local spatial region that is the size as kernel and across all features. For an input image, since there is only one feature, the region is only spatial. For an RGB image, the weighted average is taken over RGB channels and a spatial region.
+This layer implements Batch Normalization as described in the paper:
+[Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift](https://arxiv.org/abs/1502.03167)
+by Sergey Ioffe, Christian Szegedy
 
-If the kernel is 1D, then it will be used for constructing and separable 2D kernel.
-The operations will be much more efficient in this case.
- 
-The kernel is generally chosen as a gaussian when it is believed that the correlation
-of two pixel locations decrease with increasing distance. On the feature dimension,
-a uniform average is used since the weighting across features is not known.
+This implementation is useful for inputs NOT coming from convolution layers. For convolution layers, use nn.SpatialBatchNormalization.
+
+The operation implemented is:
 
 ```
-nInputPlane : number of input plane, default is 1.
-kernel : kernel tensor, default is a 9 x 9 tensor.
+              ( x - mean(x) )
+      y =  -------------------- * gamma + beta
+              standard-deviation(x)
 ```
+where gamma and beta are learnable parameters.The learning of gamma and beta is optional.
+
+**Parameters:**
+
+* **nOutput** - feature map number
+* **eps** - avoid divide zero. Default: 1e-5
+* **momentum** - momentum for weight update. Default: 0.1
+* **affine** - affine operation on output or not. Default: true
 
 **Scala example:**
 ```scala
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.tensor._
-val kernel = Tensor(3, 3).rand()
+import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
-> print(kernel)
-0.56141114	0.76815456	0.29409808	
-0.3599753	0.17142025	0.5243272	
-0.62450963	0.28084084	0.17154165	
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3x3]
-
-
-val spatialSubtractiveNormalization = SpatialSubtractiveNormalization(1, kernel)
-
-val input = Tensor(1, 1, 1, 5).rand()
-
-> print(input)
-(1,1,.,.) =
-0.122356184	0.44442436	0.6394927	0.9349956	0.8226007	
-
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 1x1x1x5]
-
-> print(spatialSubtractiveNormalization.forward(input))
-(1,1,.,.) =
--0.2427161	0.012936085	-0.08024883	0.15658027	-0.07613802	
-
-[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x1x1x5]
-
-
+val bn = BatchNormalization(2)
+val input = Tensor(T(
+             T(1.0f, 2.0f),
+             T(3.0f, 6.0f))
+            )
+val gradOutput = Tensor(T(
+             T(1.0f, 2.0f),
+             T(3.0f, 6.0f))
+)
+val output = bn.forward(input)
+val gradient = bn.backward(input, gradOutput)
+-> print(output) 
+# There's random factor. An output could be
+-0.46433213     -0.2762179      
+0.46433213      0.2762179       
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2]
+-> print(gradient)
+# There's random factor. An output could be
+-4.649627E-6    -6.585548E-7    
+4.649627E-6     6.585548E-7     
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2]
 ```
 
 **Python example:**
 ```python
 from bigdl.nn.layer import *
-kernel=np.array([[1, 2, 3],[4, 5, 6],[7, 8, 9]])
-spatialSubtractiveNormalization = SpatialSubtractiveNormalization(1, kernel)
->  spatialSubtractiveNormalization.forward(np.array([[[[1, 2, 3, 4, 5]]]]))
-[array([[[[ 0.,  0.,  0.,  0.,  0.]]]], dtype=float32)]
-
-     
-```
-
-
-## Normalize ##
-
-**Scala:**
-```scala
-val module = Normalize(p,eps=1e-10)
-```
-**Python:**
-```python
-module = Normalize(p,eps=1e-10,bigdl_type="float")
-```
-
-Normalizes the input Tensor to have unit L_p norm. The smoothing parameter eps prevents
-division by zero when the input contains all zero elements (default = 1e-10).
-The input can be 1d, 2d or 4d. If the input is 4d, it should follow the format (n, c, h, w) where n is the batch number,
-c is the channel number, h is the height and w is the width
- * @param p L_p norm
- * @param eps smoothing parameter
-
-**Scala example:**
-```scala
-val module = Normalize(2.0,eps=1e-10)
-val input = Tensor(2,3).rand()
-input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
-0.7075603       0.084298864     0.91339105
-0.22373432      0.8704987       0.6936567
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x3]
-
-module.forward(input)
-res8: com.intel.analytics.bigdl.tensor.Tensor[Float] =
-0.6107763       0.072768        0.7884524
-0.19706465      0.76673317      0.61097115
-[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
-```
-
-**Python example:**
-```python
-module = Normalize(2.0,eps=1e-10,bigdl_type="float")
-input = np.array([[1, 2, 3],[4, 5, 6]])
-module.forward(input)
-[array([
-[ 0.26726124,  0.53452247,  0.80178368],
-[ 0.45584232,  0.56980288,  0.68376344]], dtype=float32)]
+from bigdl.nn.criterion import *
+import numpy as np
+bn = BatchNormalization(2)
+input = np.array([
+  [1.0, 2.0],
+  [3.0, 6.0]
+])
+grad_output = np.array([
+           [2.0, 3.0],
+           [4.0, 5.0]
+         ])
+output = bn.forward(input)
+gradient = bn.backward(input, grad_output)
+-> print output
+# There's random factor. An output could be
+[[-0.99583918 -0.13030811]
+ [ 0.99583918  0.13030811]]
+-> print gradient
+# There's random factor. An output could be
+[[ -9.97191637e-06  -1.55339364e-07]
+ [  9.97191637e-06   1.55339364e-07]]
 ```
 
 ## SpatialBatchNormalization ##
@@ -132,29 +107,23 @@ by Sergey Ioffe, Christian Szegedy.
 This implementation is useful for inputs coming from convolution layers.
 For non-convolutional layers, see `BatchNormalization`
 The operation implemented is:
- ``` 
+``` 
         ( x - mean(x) )
   y = -------------------- * gamma + beta
        standard-deviation(x)
  
   where gamma and beta are learnable parameters.
   The learning of gamma and beta is optional.
-```  
-`nOutput` output feature map number
+```
 
-`eps` avoid divide zero
-
-`momentum` momentum for weight update
-
-`affine` affine operation on output or not
-
-`initWeight` initial weight tensor
-
-`initBias`  initial bias tensor
-
-`initGradWeight` initial gradient weight 
-
-`initGradBias` initial gradient bias
++ `nOutput` output feature map number
++ `eps` avoid divide zero
++ `momentum` momentum for weight update
++ `affine` affine operation on output or not
++ `initWeight` initial weight tensor
++ `initBias`  initial bias tensor
++ `initGradWeight` initial gradient weight 
++ `initGradBias` initial gradient bias
  
  
 **Scala example:**
@@ -219,6 +188,143 @@ array([[[[  5.70826093e-03,   9.06338100e-05],
         [[  8.49217057e-01,  -9.03094828e-01],
          [  8.56826544e-01,  -5.35586655e-01]]]], dtype=float32)
 ```
+
+## SpatialCrossMapLRN ##
+
+**Scala:**
+```scala
+val spatialCrossMapLRN = SpatialCrossMapLRN(size = 5, alpha  = 1.0, beta = 0.75, k = 1.0)
+```
+**Python:**
+```python
+spatialCrossMapLRN = SpatialCrossMapLRN(size=5, alpha=1.0, beta=0.75, k=1.0)
+```
+
+SpatialCrossMapLRN applies Spatial Local Response Normalization between different feature maps
+
+```
+                             x_f
+  y_f =  -------------------------------------------------
+          (k+(alpha/size)* sum_{l=l1 to l2} (x_l^2^))^beta^
+          
+where  l1 corresponds to `max(0,f-ceil(size/2))` and l2 to `min(F, f-ceil(size/2) + size)`, `F` is the number  of feature maps       
+```
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor._
+val spatialCrossMapLRN = SpatialCrossMapLRN(5, 0.01, 0.75, 1.0)
+
+val input = Tensor(2, 2, 2, 2).rand()
+
+> print(input)
+(1,1,.,.) =
+0.42596373	0.20075735	
+0.10307904	0.7486494	
+
+(1,2,.,.) =
+0.9887414	0.3554662	
+0.6291069	0.53952795	
+
+(2,1,.,.) =
+0.41220918	0.5463298	
+0.40766734	0.08064394	
+
+(2,2,.,.) =
+0.58255607	0.027811589	
+0.47811228	0.3082057	
+
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x2x2x2]
+
+> print(spatialCrossMapLRN.forward(input))
+(1,1,.,.) =
+0.42522463	0.20070718	
+0.10301625	0.74769455	
+
+(1,2,.,.) =
+0.98702586	0.35537735	
+0.6287237	0.5388398	
+
+(2,1,.,.) =
+0.41189456	0.5460847	
+0.4074261	0.08063166	
+
+(2,2,.,.) =
+0.5821114	0.02779911	
+0.47782937	0.3081588	
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x2x2]
+
+```
+
+**Python example:**
+```python
+from bigdl.nn.layer import *
+spatialCrossMapLRN = SpatialCrossMapLRN(5, 0.01, 0.75, 1.0)
+> spatialCrossMapLRN.forward(np.array([[[[1, 2],[3, 4]],[[5, 6],[7, 8]]],[[[9, 10],[11, 12]],[[13, 14],[15, 16]]]]))
+[array([[[[  0.96269381,   1.88782692],
+         [  2.76295042,   3.57862759]],
+
+        [[  4.81346893,   5.66348076],
+         [  6.44688463,   7.15725517]]],
+
+
+       [[[  6.6400919 ,   7.05574226],
+         [  7.41468   ,   7.72194815]],
+
+        [[  9.59124374,   9.87803936],
+         [ 10.11092758,  10.29593086]]]], dtype=float32)]
+
+     
+```
+
+## Normalize ##
+
+**Scala:**
+```scala
+val module = Normalize(p,eps=1e-10)
+```
+**Python:**
+```python
+module = Normalize(p,eps=1e-10,bigdl_type="float")
+```
+
+Normalizes the input Tensor to have unit L_p norm. The smoothing parameter eps prevents
+division by zero when the input contains all zero elements (default = 1e-10).
+The input can be 1d, 2d or 4d. If the input is 4d, it should follow the format (n, c, h, w) where n is the batch number,
+c is the channel number, h is the height and w is the width
+
+ * @param p L_p norm
+ * @param eps smoothing parameter
+
+**Scala example:**
+```scala
+val module = Normalize(2.0,eps=1e-10)
+val input = Tensor(2,3).rand()
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+0.7075603       0.084298864     0.91339105
+0.22373432      0.8704987       0.6936567
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x3]
+
+module.forward(input)
+res8: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+0.6107763       0.072768        0.7884524
+0.19706465      0.76673317      0.61097115
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
+```
+
+**Python example:**
+```python
+module = Normalize(2.0,eps=1e-10,bigdl_type="float")
+input = np.array([[1, 2, 3],[4, 5, 6]])
+module.forward(input)
+[array([
+[ 0.26726124,  0.53452247,  0.80178368],
+[ 0.45584232,  0.56980288,  0.68376344]], dtype=float32)]
+```
+
 ## SpatialDivisiveNormalization ##
 
 **Scala:**
@@ -318,183 +424,72 @@ gradInput = layer.backward(input, gradOutput)
          [ 0.28016835,  0.03791744, -0.17803842, -0.27817759,  0.42473239]]], dtype=float32)]
 ```
 
-## SpatialCrossMapLRN ##
+
+## SpatialSubtractiveNormalization ##
 
 **Scala:**
 ```scala
-val spatialCrossMapLRN = SpatialCrossMapLRN(size = 5, alpha  = 1.0, beta = 0.75, k = 1.0)
+val spatialSubtractiveNormalization = SpatialSubtractiveNormalization(nInputPlane = 1, kernel = null)
 ```
 **Python:**
 ```python
-spatialCrossMapLRN = SpatialCrossMapLRN(size=5, alpha=1.0, beta=0.75, k=1.0)
+spatialSubtractiveNormalization = SpatialSubtractiveNormalization(n_input_plane=1, kernel=None)
 ```
 
-SpatialCrossMapLRN applies Spatial Local Response Normalization between different feature maps
+SpatialSubtractiveNormalization applies a spatial subtraction operation on a series of 2D inputs using kernel for computing the weighted average in a neighborhood.The neighborhood is defined for a local spatial region that is the size as kernel and across all features. For an input image, since there is only one feature, the region is only spatial. For an RGB image, the weighted average is taken over RGB channels and a spatial region.
 
-```
-                             x_f
-  y_f =  -------------------------------------------------
-          (k+(alpha/size)* sum_{l=l1 to l2} (x_l^2^))^beta^
-          
-where  l1 corresponds to `max(0,f-ceil(size/2))` and l2 to `min(F, f-ceil(size/2) + size)`, `F` is the number  of feature maps       
-```
+If the kernel is 1D, then it will be used for constructing and separable 2D kernel.
+The operations will be much more efficient in this case.
+ 
+The kernel is generally chosen as a gaussian when it is believed that the correlation
+of two pixel locations decrease with increasing distance. On the feature dimension,
+a uniform average is used since the weighting across features is not known.
+
++ nInputPlane : number of input plane, default is 1.
++ kernel : kernel tensor, default is a 9 x 9 tensor.
 
 **Scala example:**
 ```scala
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor._
-val spatialCrossMapLRN = SpatialCrossMapLRN(5, 0.01, 0.75, 1.0)
+val kernel = Tensor(3, 3).rand()
 
-val input = Tensor(2, 2, 2, 2).rand()
+> print(kernel)
+0.56141114	0.76815456	0.29409808	
+0.3599753	0.17142025	0.5243272	
+0.62450963	0.28084084	0.17154165	
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3x3]
+
+
+val spatialSubtractiveNormalization = SpatialSubtractiveNormalization(1, kernel)
+
+val input = Tensor(1, 1, 1, 5).rand()
 
 > print(input)
 (1,1,.,.) =
-0.42596373	0.20075735	
-0.10307904	0.7486494	
+0.122356184	0.44442436	0.6394927	0.9349956	0.8226007	
 
-(1,2,.,.) =
-0.9887414	0.3554662	
-0.6291069	0.53952795	
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 1x1x1x5]
 
-(2,1,.,.) =
-0.41220918	0.5463298	
-0.40766734	0.08064394	
-
-(2,2,.,.) =
-0.58255607	0.027811589	
-0.47811228	0.3082057	
-
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x2x2x2]
-
-> print(spatialCrossMapLRN.forward(input))
+> print(spatialSubtractiveNormalization.forward(input))
 (1,1,.,.) =
-0.42522463	0.20070718	
-0.10301625	0.74769455	
+-0.2427161	0.012936085	-0.08024883	0.15658027	-0.07613802	
 
-(1,2,.,.) =
-0.98702586	0.35537735	
-0.6287237	0.5388398	
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x1x1x5]
 
-(2,1,.,.) =
-0.41189456	0.5460847	
-0.4074261	0.08063166	
-
-(2,2,.,.) =
-0.5821114	0.02779911	
-0.47782937	0.3081588	
-
-[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x2x2]
 
 ```
 
 **Python example:**
 ```python
 from bigdl.nn.layer import *
-spatialCrossMapLRN = SpatialCrossMapLRN(5, 0.01, 0.75, 1.0)
-> spatialCrossMapLRN.forward(np.array([[[[1, 2],[3, 4]],[[5, 6],[7, 8]]],[[[9, 10],[11, 12]],[[13, 14],[15, 16]]]]))
-[array([[[[  0.96269381,   1.88782692],
-         [  2.76295042,   3.57862759]],
-
-        [[  4.81346893,   5.66348076],
-         [  6.44688463,   7.15725517]]],
-
-
-       [[[  6.6400919 ,   7.05574226],
-         [  7.41468   ,   7.72194815]],
-
-        [[  9.59124374,   9.87803936],
-         [ 10.11092758,  10.29593086]]]], dtype=float32)]
+kernel=np.array([[1, 2, 3],[4, 5, 6],[7, 8, 9]])
+spatialSubtractiveNormalization = SpatialSubtractiveNormalization(1, kernel)
+>  spatialSubtractiveNormalization.forward(np.array([[[[1, 2, 3, 4, 5]]]]))
+[array([[[[ 0.,  0.,  0.,  0.,  0.]]]], dtype=float32)]
 
      
 ```
 
-
-## BatchNormalization ##
-
-**Scala:**
-```scala
-val bn = BatchNormalization(nOutput, eps, momentum, affine)
-```
-**Python:**
-```python
-bn = BatchNormalization(n_output, eps, momentum, affine)
-```
-
-This layer implements Batch Normalization as described in the paper:
-[Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift](https://arxiv.org/abs/1502.03167)
-by Sergey Ioffe, Christian Szegedy
-
-This implementation is useful for inputs NOT coming from convolution layers. For convolution layers, use nn.SpatialBatchNormalization.
-
-The operation implemented is:
-
-```
-              ( x - mean(x) )
-      y =  -------------------- * gamma + beta
-              standard-deviation(x)
-```
-where gamma and beta are learnable parameters.The learning of gamma and beta is optional.
-
-**Parameters:**
-* **nOutput** - feature map number
-* **eps** - avoid divide zero. Default: 1e-5
-* **momentum** - momentum for weight update. Default: 0.1
-* **affine** - affine operation on output or not. Default: true
-
-**Scala example:**
-```scala
-import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.utils.T
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
-
-val bn = BatchNormalization(2)
-val input = Tensor(T(
-             T(1.0f, 2.0f),
-             T(3.0f, 6.0f))
-            )
-val gradOutput = Tensor(T(
-             T(1.0f, 2.0f),
-             T(3.0f, 6.0f))
-)
-val output = bn.forward(input)
-val gradient = bn.backward(input, gradOutput)
--> print(output) 
-# There's random factor. An output could be
--0.46433213     -0.2762179      
-0.46433213      0.2762179       
-[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2]
--> print(gradient)
-# There's random factor. An output could be
--4.649627E-6    -6.585548E-7    
-4.649627E-6     6.585548E-7     
-[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2]
-```
-
-**Python example:**
-```python
-from bigdl.nn.layer import *
-from bigdl.nn.criterion import *
-import numpy as np
-bn = BatchNormalization(2)
-input = np.array([
-  [1.0, 2.0],
-  [3.0, 6.0]
-])
-grad_output = np.array([
-           [2.0, 3.0],
-           [4.0, 5.0]
-         ])
-output = bn.forward(input)
-gradient = bn.backward(input, grad_output)
--> print output
-# There's random factor. An output could be
-[[-0.99583918 -0.13030811]
- [ 0.99583918  0.13030811]]
--> print gradient
-# There's random factor. An output could be
-[[ -9.97191637e-06  -1.55339364e-07]
- [  9.97191637e-06   1.55339364e-07]]
-```
 

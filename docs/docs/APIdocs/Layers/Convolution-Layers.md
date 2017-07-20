@@ -1,119 +1,3 @@
-## SpatialShareConvolution ##
-
-**Scala:**
-```scala
-val layer = SpatialShareConvolution(nInputPlane, nOutputPlane, kW, kH, dW, dH,
-      padW, padH)
-```
-**Python:**
-```python
-layer = SpatialShareConvolution(nInputPlane, nOutputPlane, kW, kH, dW, dH, padW, padH)
-```
-
- Applies a 2D convolution over an input image composed of several input planes.
- The input tensor in forward(input) is expected to be
- a 3D tensor (nInputPlane x height x width).
-
- This layer has been optimized to save memory. If using this layer to construct multiple convolution
- layers, please add sharing script for the fInput and fGradInput. Please refer to the ResNet example.
-
-**Scala example:**
-```scala
-
-    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
-    import com.intel.analytics.bigdl.nn._
-    import com.intel.analytics.bigdl.tensor._
-
-    val nInputPlane = 1
-    val nOutputPlane = 1
-    val kW = 2
-    val kH = 2
-    val dW = 1
-    val dH = 1
-    val padW = 0
-    val padH = 0
-    val layer = SpatialShareConvolution(nInputPlane, nOutputPlane, kW, kH, dW, dH,
-      padW, padH)
-
-    val inputData = Array(
-      1.0, 2, 3, 1,
-      4, 5, 6, 1,
-      7, 8, 9, 1,
-      1.0, 2, 3, 1,
-      4, 5, 6, 1,
-      7, 8, 9, 1,
-      1.0, 2, 3, 1,
-      4, 5, 6, 1,
-      7, 8, 9, 1
-    )
-
-    val kernelData = Array(
-      2.0, 3,
-      4, 5
-    )
-
-    val biasData = Array(0.0)
-
-    layer.weight.copy(Tensor(Storage(kernelData), 1,
-      Array(nOutputPlane, nInputPlane, kH, kW)))
-    layer.bias.copy(Tensor(Storage(biasData), 1, Array(nOutputPlane)))
-
-    val input = Tensor(Storage(inputData), 1, Array(3, 1, 3, 4))
-    val output = layer.updateOutput(input)
- 
-    > output
-res2: com.intel.analytics.bigdl.tensor.Tensor[Float] =
-(1,1,.,.) =
-49.0    63.0    38.0
-91.0    105.0   56.0
-
-(2,1,.,.) =
-49.0    63.0    38.0
-91.0    105.0   56.0
-
-(3,1,.,.) =
-49.0    63.0    38.0
-91.0    105.0   56.0
-```
-
-**Python example:**
-```python
-nInputPlane = 1
-nOutputPlane = 1
-kW = 2
-kH = 2
-dW = 1
-dH = 1
-padW = 0
-padH = 0
-layer = SpatialShareConvolution(nInputPlane, nOutputPlane, kW, kH, dW, dH, padW, padH)
-
-input = np.array([
-      1.0, 2, 3, 1,
-      4, 5, 6, 1,
-      7, 8, 9, 1,
-      1.0, 2, 3, 1,
-      4, 5, 6, 1,
-      7, 8, 9, 1,
-      1.0, 2, 3, 1,
-      4, 5, 6, 1,
-      7, 8, 9, 1]
-    ).astype("float32").reshape(3, 1, 3, 4)
-layer.forward(input)
-
-> print (output)
-array([[[[-3.55372381, -4.0352459 , -2.65861344],
-         [-4.99829054, -5.4798131 , -3.29477644]]],
-
-
-       [[[-3.55372381, -4.0352459 , -2.65861344],
-         [-4.99829054, -5.4798131 , -3.29477644]]],
-
-
-       [[[-3.55372381, -4.0352459 , -2.65861344],
-         [-4.99829054, -5.4798131 , -3.29477644]]]], dtype=float32)
-```
-
 ## SpatialConvolution ##
 
 **Scala:**
@@ -277,6 +161,362 @@ grad input of m is : [[[[-0.02344826 -0.06515953 -0.03618064]
   [[-0.05926216 -0.04542646  0.14849319]
    [-0.09506465 -0.34244278 -0.03763583]
    [-0.02346931 -0.1815301  -0.18314059]]]]
+```
+
+## VolumetricConvolution ##
+
+**Scala:**
+```scala
+val module = VolumetricConvolution(nInputPlane, nOutputPlane, kT, kW, kH,
+  dT=1, dW=1, dH=1, padT=0, padW=0, padH=0, withBias=true)
+```
+**Python:**
+```python
+module = VolumetricConvolution(n_input_plane, n_output_plane, k_t, k_w, k_h,
+  d_t=1, d_w=1, d_h=1, pad_t=0, pad_w=0, pad_h=0, with_bias=true)
+```
+
+Applies a 3D convolution over an input image composed of several input planes. The input tensor
+in forward(input) is expected to be a 4D tensor (nInputPlane x time x height x width).
+
+* @param nInputPlane The number of expected input planes in the image given into forward()
+* @param nOutputPlane The number of output planes the convolution layer will produce.
+* @param kT The kernel size of the convolution in time
+* @param kW The kernel width of the convolution
+* @param kH The kernel height of the convolution
+* @param dT The step of the convolution in the time dimension. Default is 1
+* @param dW The step of the convolution in the width dimension. Default is 1
+* @param dH The step of the convolution in the height dimension. Default is 1
+* @param padT Additional zeros added to the input plane data on both sides of time axis.
+* Default is 0. (kT-1)/2 is often used here.
+* @param padW The additional zeros added per width to the input planes.
+* @param padH The additional zeros added per height to the input planes.
+* @param withBias whether with bias.
+ 
+**Scala example:**
+```scala
+val layer = VolumetricConvolution(2, 3, 2, 2, 2, dT=1, dW=1, dH=1,
+  padT=0, padW=0, padH=0, withBias=true)
+val input = Tensor(2, 2, 2, 2).rand()
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,1,.,.) =
+0.54846555      0.5549177
+0.43748873      0.6596535
+
+(1,2,.,.) =
+0.87915933      0.5955469
+0.67464 0.40921077
+
+(2,1,.,.) =
+0.24127467      0.49356017
+0.6707502       0.5421975
+
+(2,2,.,.) =
+0.007834963     0.08188637
+0.51387626      0.7376101
+
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x2x2x2]
+
+layer.forward(input)
+res16: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,1,.,.) =
+-0.6680023
+
+(2,1,.,.) =
+0.41926455
+
+(3,1,.,.) =
+-0.029196609
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 3x1x1x1]
+```
+
+**Python example:**
+```python
+layer = VolumetricConvolution(2, 3, 2, 2, 2, d_t=1, d_w=1, d_h=1,
+          pad_t=0, pad_w=0, pad_h=0, with_bias=True, init_method="default",
+          bigdl_type="float")
+input = np.random.rand(2,2,2,2)
+ array([[[[ 0.47639062,  0.76800312],
+         [ 0.28834351,  0.21883535]],
+
+        [[ 0.86097919,  0.89812597],
+         [ 0.43632181,  0.58004824]]],
+
+
+       [[[ 0.65784027,  0.34700039],
+         [ 0.64511955,  0.1660241 ]],
+
+        [[ 0.36060054,  0.71265665],
+         [ 0.51755249,  0.6508298 ]]]])
+ 
+layer.forward(input)
+array([[[[ 0.54268712]]],
+
+
+       [[[ 0.17670505]]],
+
+
+       [[[ 0.40953237]]]], dtype=float32)
+
+```
+
+## SpatialDilatedConvolution ##
+
+**Scala:**
+```scala
+val layer = SpatialDilatedConvolution(
+  inputPlanes,
+  outputPlanes,
+  kernelW,
+  kernelH,
+  strideW,
+  strideH,
+  paddingW,
+  paddingH,
+  dilationW,
+  dilationH
+)
+```
+**Python:**
+```python
+layer = SpatialDilatedConvolution(
+  inputPlanes,
+  outputPlanes,
+  kernelW,
+  kernelH,
+  strideW,
+  strideH,
+  paddingW,
+  paddingH,
+  dilationW,
+  dilationH
+)
+```
+
+Apply a 2D dilated convolution over an input image.
+
+The input tensor is expected to be a 3D or 4D(with batch) tensor.
+
+For a normal SpatialConvolution, the kernel will multiply with input
+image element-by-element contiguous. In dilated convolution, it’s possible
+to have filters that have spaces between each cell. For example, filter w and
+image x, when dilatiionW and dilationH both = 1, this is normal 2D convolution
+```
+w(0, 0) * x(0, 0), w(0, 1) * x(0, 1)
+w(1, 0) * x(1, 0), w(1, 1) * x(1, 1)
+```
+when dilationW and dilationH both = 2
+```
+w(0, 0) * x(0, 0), w(0, 1) * x(0, 2)
+w(1, 0) * x(2, 0), w(1, 1) * x(2, 2)
+```
+when dilationW and dilationH both = 3
+```
+w(0, 0) * x(0, 0), w(0, 1) * x(0, 3)
+w(1, 0) * x(3, 0), w(1, 1) * x(3, 3)
+```
+
+If input is a 3D tensor nInputPlane x height x width,
+ * owidth  = floor(width + 2 * padW - dilationW * (kW-1) - 1) / dW + 1
+ * oheight = floor(height + 2 * padH - dilationH * (kH-1) - 1) / dH + 1
+
+Reference Paper:
+> Yu F, Koltun V. Multi-scale context aggregation by dilated convolutions[J].
+arXiv preprint arXiv:1511.07122, 2015.
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+
+val layer = SpatialDilatedConvolution(1, 1, 2, 2, 1, 1, 0, 0, 2, 2)
+val input = Tensor(T(T(
+  T(1.0f, 2.0f, 3.0f, 4.0f),
+  T(5.0f, 6.0f, 7.0f, 8.0f),
+  T(9.0f, 1.0f, 2.0f, 3.0f),
+  T(4.0f, 5.0f, 6.0f, 7.0f)
+)))
+val filter = Tensor(T(T(T(
+  T(1.0f, 1.0f),
+  T(1.0f, 1.0f)
+))))
+layer.weight.copy(filter)
+layer.bias.zero()
+layer.forward(input)
+layer.backward(input, Tensor(T(T(
+  T(0.1f, 0.2f),
+  T(0.3f, 0.4f)
+))))
+```
+
+Its output should be
+```
+(1,.,.) =
+15.0    10.0
+22.0    26.0
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x2x2]
+
+(1,.,.) =
+0.1     0.2     0.1     0.2
+0.3     0.4     0.3     0.4
+0.1     0.2     0.1     0.2
+0.3     0.4     0.3     0.4
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x4x4]
+```
+
+**Python example:**
+```python
+from bigdl.nn.layer import SpatialDilatedConvolution
+import numpy as np
+
+layer = SpatialDilatedConvolution(1, 1, 2, 2, 1, 1, 0, 0, 2, 2)
+input = np.array([[
+  [1.0, 2.0, 3.0, 4.0],
+  [5.0, 6.0, 7.0, 8.0],
+  [9.0, 1.0, 2.0, 3.0],
+  [4.0, 5.0, 6.0, 7.0]
+]])
+filter = np.array([[[
+  [1.0, 1.0],
+  [1.0, 1.0]
+]]])
+bias = np.array([0.0])
+layer.set_weights([filter, bias])
+layer.forward(input)
+layer.backward(input, np.array([[[0.1, 0.2], [0.3, 0.4]]]))
+```
+
+Its output should be
+```
+array([[[ 15.,  10.],
+        [ 22.,  26.]]], dtype=float32)
+        
+array([[[ 0.1       ,  0.2       ,  0.1       ,  0.2       ],
+        [ 0.30000001,  0.40000001,  0.30000001,  0.40000001],
+        [ 0.1       ,  0.2       ,  0.1       ,  0.2       ],
+        [ 0.30000001,  0.40000001,  0.30000001,  0.40000001]]], dtype=float32)
+
+```
+
+## SpatialShareConvolution ##
+
+**Scala:**
+```scala
+val layer = SpatialShareConvolution(nInputPlane, nOutputPlane, kW, kH, dW, dH,
+      padW, padH)
+```
+**Python:**
+```python
+layer = SpatialShareConvolution(nInputPlane, nOutputPlane, kW, kH, dW, dH, padW, padH)
+```
+
+ Applies a 2D convolution over an input image composed of several input planes.
+ The input tensor in forward(input) is expected to be
+ a 3D tensor (nInputPlane x height x width).
+
+ This layer has been optimized to save memory. If using this layer to construct multiple convolution
+ layers, please add sharing script for the fInput and fGradInput. Please refer to the ResNet example.
+
+**Scala example:**
+```scala
+
+    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+    import com.intel.analytics.bigdl.nn._
+    import com.intel.analytics.bigdl.tensor._
+
+    val nInputPlane = 1
+    val nOutputPlane = 1
+    val kW = 2
+    val kH = 2
+    val dW = 1
+    val dH = 1
+    val padW = 0
+    val padH = 0
+    val layer = SpatialShareConvolution(nInputPlane, nOutputPlane, kW, kH, dW, dH,
+      padW, padH)
+
+    val inputData = Array(
+      1.0, 2, 3, 1,
+      4, 5, 6, 1,
+      7, 8, 9, 1,
+      1.0, 2, 3, 1,
+      4, 5, 6, 1,
+      7, 8, 9, 1,
+      1.0, 2, 3, 1,
+      4, 5, 6, 1,
+      7, 8, 9, 1
+    )
+
+    val kernelData = Array(
+      2.0, 3,
+      4, 5
+    )
+
+    val biasData = Array(0.0)
+
+    layer.weight.copy(Tensor(Storage(kernelData), 1,
+      Array(nOutputPlane, nInputPlane, kH, kW)))
+    layer.bias.copy(Tensor(Storage(biasData), 1, Array(nOutputPlane)))
+
+    val input = Tensor(Storage(inputData), 1, Array(3, 1, 3, 4))
+    val output = layer.updateOutput(input)
+ 
+    > output
+res2: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,1,.,.) =
+49.0    63.0    38.0
+91.0    105.0   56.0
+
+(2,1,.,.) =
+49.0    63.0    38.0
+91.0    105.0   56.0
+
+(3,1,.,.) =
+49.0    63.0    38.0
+91.0    105.0   56.0
+```
+
+**Python example:**
+```python
+nInputPlane = 1
+nOutputPlane = 1
+kW = 2
+kH = 2
+dW = 1
+dH = 1
+padW = 0
+padH = 0
+layer = SpatialShareConvolution(nInputPlane, nOutputPlane, kW, kH, dW, dH, padW, padH)
+
+input = np.array([
+      1.0, 2, 3, 1,
+      4, 5, 6, 1,
+      7, 8, 9, 1,
+      1.0, 2, 3, 1,
+      4, 5, 6, 1,
+      7, 8, 9, 1,
+      1.0, 2, 3, 1,
+      4, 5, 6, 1,
+      7, 8, 9, 1]
+    ).astype("float32").reshape(3, 1, 3, 4)
+layer.forward(input)
+
+> print (output)
+array([[[[-3.55372381, -4.0352459 , -2.65861344],
+         [-4.99829054, -5.4798131 , -3.29477644]]],
+
+
+       [[[-3.55372381, -4.0352459 , -2.65861344],
+         [-4.99829054, -5.4798131 , -3.29477644]]],
+
+
+       [[[-3.55372381, -4.0352459 , -2.65861344],
+         [-4.99829054, -5.4798131 , -3.29477644]]]], dtype=float32)
 ```
 
 ## SpatialFullConvolution ##
@@ -528,245 +768,6 @@ output m is : [[[-0.04712385  0.21949144  0.0843184   0.14336972]
   [-0.33000433 -0.41727966 -0.36827195 -0.34524575]
   [-0.2410759  -0.38439807 -0.27613443 -0.39401439]
   [-0.38188276 -0.36746511 -0.37627563 -0.34141305]]]
-```
-
-## SpatialDilatedConvolution ##
-
-**Scala:**
-```scala
-val layer = SpatialDilatedConvolution(
-  inputPlanes,
-  outputPlanes,
-  kernelW,
-  kernelH,
-  strideW,
-  strideH,
-  paddingW,
-  paddingH,
-  dilationW,
-  dilationH
-)
-```
-**Python:**
-```python
-layer = SpatialDilatedConvolution(
-  inputPlanes,
-  outputPlanes,
-  kernelW,
-  kernelH,
-  strideW,
-  strideH,
-  paddingW,
-  paddingH,
-  dilationW,
-  dilationH
-)
-```
-
-Apply a 2D dilated convolution over an input image.
-
-The input tensor is expected to be a 3D or 4D(with batch) tensor.
-
-For a normal SpatialConvolution, the kernel will multiply with input
-image element-by-element contiguous. In dilated convolution, it’s possible
-to have filters that have spaces between each cell. For example, filter w and
-image x, when dilatiionW and dilationH both = 1, this is normal 2D convolution
-```
-w(0, 0) * x(0, 0), w(0, 1) * x(0, 1)
-w(1, 0) * x(1, 0), w(1, 1) * x(1, 1)
-```
-when dilationW and dilationH both = 2
-```
-w(0, 0) * x(0, 0), w(0, 1) * x(0, 2)
-w(1, 0) * x(2, 0), w(1, 1) * x(2, 2)
-```
-when dilationW and dilationH both = 3
-```
-w(0, 0) * x(0, 0), w(0, 1) * x(0, 3)
-w(1, 0) * x(3, 0), w(1, 1) * x(3, 3)
-```
-
-If input is a 3D tensor nInputPlane x height x width,
- * owidth  = floor(width + 2 * padW - dilationW * (kW-1) - 1) / dW + 1
- * oheight = floor(height + 2 * padH - dilationH * (kH-1) - 1) / dH + 1
-
-Reference Paper:
-> Yu F, Koltun V. Multi-scale context aggregation by dilated convolutions[J].
-arXiv preprint arXiv:1511.07122, 2015.
-
-**Scala example:**
-```scala
-import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.utils.T
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
-
-val layer = SpatialDilatedConvolution(1, 1, 2, 2, 1, 1, 0, 0, 2, 2)
-val input = Tensor(T(T(
-  T(1.0f, 2.0f, 3.0f, 4.0f),
-  T(5.0f, 6.0f, 7.0f, 8.0f),
-  T(9.0f, 1.0f, 2.0f, 3.0f),
-  T(4.0f, 5.0f, 6.0f, 7.0f)
-)))
-val filter = Tensor(T(T(T(
-  T(1.0f, 1.0f),
-  T(1.0f, 1.0f)
-))))
-layer.weight.copy(filter)
-layer.bias.zero()
-layer.forward(input)
-layer.backward(input, Tensor(T(T(
-  T(0.1f, 0.2f),
-  T(0.3f, 0.4f)
-))))
-```
-
-Its output should be
-```
-(1,.,.) =
-15.0    10.0
-22.0    26.0
-
-[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x2x2]
-
-(1,.,.) =
-0.1     0.2     0.1     0.2
-0.3     0.4     0.3     0.4
-0.1     0.2     0.1     0.2
-0.3     0.4     0.3     0.4
-
-[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x4x4]
-```
-
-**Python example:**
-```python
-from bigdl.nn.layer import SpatialDilatedConvolution
-import numpy as np
-
-layer = SpatialDilatedConvolution(1, 1, 2, 2, 1, 1, 0, 0, 2, 2)
-input = np.array([[
-  [1.0, 2.0, 3.0, 4.0],
-  [5.0, 6.0, 7.0, 8.0],
-  [9.0, 1.0, 2.0, 3.0],
-  [4.0, 5.0, 6.0, 7.0]
-]])
-filter = np.array([[[
-  [1.0, 1.0],
-  [1.0, 1.0]
-]]])
-bias = np.array([0.0])
-layer.set_weights([filter, bias])
-layer.forward(input)
-layer.backward(input, np.array([[[0.1, 0.2], [0.3, 0.4]]]))
-```
-
-Its output should be
-```
-array([[[ 15.,  10.],
-        [ 22.,  26.]]], dtype=float32)
-        
-array([[[ 0.1       ,  0.2       ,  0.1       ,  0.2       ],
-        [ 0.30000001,  0.40000001,  0.30000001,  0.40000001],
-        [ 0.1       ,  0.2       ,  0.1       ,  0.2       ],
-        [ 0.30000001,  0.40000001,  0.30000001,  0.40000001]]], dtype=float32)
-
-```
-
-## VolumetricConvolution ##
-
-**Scala:**
-```scala
-val module = VolumetricConvolution(nInputPlane, nOutputPlane, kT, kW, kH,
-  dT=1, dW=1, dH=1, padT=0, padW=0, padH=0, withBias=true)
-```
-**Python:**
-```python
-module = VolumetricConvolution(n_input_plane, n_output_plane, k_t, k_w, k_h,
-  d_t=1, d_w=1, d_h=1, pad_t=0, pad_w=0, pad_h=0, with_bias=true)
-```
-
-Applies a 3D convolution over an input image composed of several input planes. The input tensor
-in forward(input) is expected to be a 4D tensor (nInputPlane x time x height x width).
- * @param nInputPlane The number of expected input planes in the image given into forward()
- * @param nOutputPlane The number of output planes the convolution layer will produce.
- * @param kT The kernel size of the convolution in time
- * @param kW The kernel width of the convolution
- * @param kH The kernel height of the convolution
- * @param dT The step of the convolution in the time dimension. Default is 1
- * @param dW The step of the convolution in the width dimension. Default is 1
- * @param dH The step of the convolution in the height dimension. Default is 1
- * @param padT Additional zeros added to the input plane data on both sides of time axis.
- * Default is 0. (kT-1)/2 is often used here.
- * @param padW The additional zeros added per width to the input planes.
- * @param padH The additional zeros added per height to the input planes.
- * @param withBias whether with bias.
- 
-**Scala example:**
-```scala
-val layer = VolumetricConvolution(2, 3, 2, 2, 2, dT=1, dW=1, dH=1,
-  padT=0, padW=0, padH=0, withBias=true)
-val input = Tensor(2, 2, 2, 2).rand()
-input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
-(1,1,.,.) =
-0.54846555      0.5549177
-0.43748873      0.6596535
-
-(1,2,.,.) =
-0.87915933      0.5955469
-0.67464 0.40921077
-
-(2,1,.,.) =
-0.24127467      0.49356017
-0.6707502       0.5421975
-
-(2,2,.,.) =
-0.007834963     0.08188637
-0.51387626      0.7376101
-
-[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x2x2x2]
-
-layer.forward(input)
-res16: com.intel.analytics.bigdl.tensor.Tensor[Float] =
-(1,1,.,.) =
--0.6680023
-
-(2,1,.,.) =
-0.41926455
-
-(3,1,.,.) =
--0.029196609
-
-[com.intel.analytics.bigdl.tensor.DenseTensor of size 3x1x1x1]
-```
-
-**Python example:**
-```python
-layer = VolumetricConvolution(2, 3, 2, 2, 2, d_t=1, d_w=1, d_h=1,
-          pad_t=0, pad_w=0, pad_h=0, with_bias=True, init_method="default",
-          bigdl_type="float")
-input = np.random.rand(2,2,2,2)
- array([[[[ 0.47639062,  0.76800312],
-         [ 0.28834351,  0.21883535]],
-
-        [[ 0.86097919,  0.89812597],
-         [ 0.43632181,  0.58004824]]],
-
-
-       [[[ 0.65784027,  0.34700039],
-         [ 0.64511955,  0.1660241 ]],
-
-        [[ 0.36060054,  0.71265665],
-         [ 0.51755249,  0.6508298 ]]]])
- 
-layer.forward(input)
-array([[[[ 0.54268712]]],
-
-
-       [[[ 0.17670505]]],
-
-
-       [[[ 0.40953237]]]], dtype=float32)
-
 ```
 
 ## SpatialConvolutionMap ##
