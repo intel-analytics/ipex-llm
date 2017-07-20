@@ -906,7 +906,7 @@ module = TemporalConvolution(
   )
 ```
 
-Applies a 1D convolution over an input sequence composed of nInputFrame frames..
+Applies a 1D convolution over an input sequence composed of nInputFrame frames.
 The input tensor in `forward(input)` is expected to be a 2D tensor
 (`nInputFrame` x `inputFrameSize`) or a 3D tensor
 (`nBatchFrame` x `nInputFrame` x `inputFrameSize`).
@@ -928,7 +928,7 @@ The input tensor in `forward(input)` is expected to be a 2D tensor
  
 **Scala example:**
 ```scala
-import com.intel.analytics.bigdl.numeric.NumericDouble
+import com.intel.analytics.bigdl.numeric.NumericFloat
 val seed = 100
 RNG.setSeed(seed)
 val inputFrameSize = 5
@@ -938,29 +938,30 @@ val dW = 2
 val layer = TemporalConvolution(inputFrameSize, outputFrameSize, kW, dW)
 
 Random.setSeed(seed)
-val input = Tensor(10, 5).apply1(e => Random.nextDouble())
-val gradOutput = Tensor(3, 3).apply1(e => Random.nextDouble())
+val input = Tensor(10, 5).apply1(e => Random.nextFloat())
+val gradOutput = Tensor(3, 3).apply1(e => Random.nextFloat())
 
 val output = layer.updateOutput(input)
-println(output)
--0.46563127839495466	0.013695616322773968	-0.43273799278822744
--0.1533250673179169	-0.04438171389050036	-0.7511583415829347
--0.6131689030252309	-0.050553649561625946	-0.9389273227418238
-  [com.intel.analytics.bigdl.tensor.DenseTensor of size 3x3]
+> println(output)
+2017-07-21 06:18:00 INFO  ThreadPool$:79 - Set mkl threads to 1 on thread 1
+-0.34987333	-0.0063185245	-0.45821175	
+-0.20838472	0.15102878	-0.5656665	
+-0.13935827	-0.099345684	-0.76407385	
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 3x3]
 
 val gradInput = layer.updateGradInput(input, gradOutput)
-println(gradInput)
--0.009572257943311123	-0.18823937289128437	-0.36172316763980045	-0.10005666946020048	-0.15554310756650214
-0.2060395566423548	0.3132859941014649	-0.08751837181823585	-0.38016365172711447	-0.156857069156403
--0.1827793915298305	-0.01961859278200985	-0.22231712464522513	-0.24295660550299444	-0.10152199059063097
-0.05471372377621043	0.18728801339596463	0.0614925534402292	-0.39158461265944894	-0.17545014799280984
-0.1562856400001907	-0.36233070774098963	-0.13831654314551048	-0.2433956053116482	-0.1897324066712781
-0.10128394533484554	0.06037494182802123	0.18464792191467272	-0.21973489164601162	-0.21737611736972462
-0.14394621614396086	-0.004332649683832851	-0.08190276456697157	-0.09643254407079335	-0.1622353637475946
--0.028785663591757247	-7.471897211673287E-5	0.12643994842206718	-0.021775720291914047	0.03021322398053564
-0.18927190370956923	-0.09223731706582469	-0.009355636209847022	-0.03904491365552621	-0.07096226413225268
-0.0	0.0	0.0	0.0	0.0
-  [com.intel.analytics.bigdl.tensor.DenseTensor of size 10x5]
+> println(gradInput)
+0.018415622	-0.10201519	-0.15641063	-0.08271551	-0.060939234	
+0.13609992	0.14934899	0.06083451	-0.13943195	-0.11092151	
+-0.14552939	-0.024670592	-0.29887137	-0.14555064	-0.05840567	
+0.09920926	0.2705848	0.016875947	-0.27233958	-0.069991685	
+-0.0024300043	-0.15160085	-0.20593905	-0.2894306	-0.057458147	
+0.06390554	0.07710219	0.105445914	-0.26714328	-0.18871497	
+0.13901645	-0.10651534	0.006758575	-0.08754986	-0.13747974	
+-0.026543075	-0.044046614	0.13146847	-0.01198944	-0.030542556	
+0.18396454	-0.055985756	-0.03506116	-0.02156017	-0.09211717	
+0.0	0.0	0.0	0.0	0.0	
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 10x5]
 ```
 
 **Python example:**
@@ -977,13 +978,13 @@ input = np.random.rand(10, 5)
 gradOutput = np.random.rand(3, 3)
 
 output = layer.forward(input)
-print(output)
+> print(output)
 [[ 0.43262666  0.52964264 -0.09026626]
  [ 0.46828389  0.3391096   0.04789509]
  [ 0.37985104  0.13899082 -0.05767119]]
  
 gradInput = layer.backward(input, gradOutput)
-print(gradInput)
+> print(gradInput)
 [[-0.08801709  0.03619258  0.06944641 -0.01570761  0.00682773]
  [-0.02754797  0.07474414 -0.08249797  0.04756897  0.0096445 ]
  [-0.14383194  0.05168077  0.27049363  0.10419817  0.05263135]
