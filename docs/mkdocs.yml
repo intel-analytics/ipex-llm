@@ -12,55 +12,66 @@ extra:
 
 pages:
 - Overview: index.md 
-- Releases: release.md
+- Releases: 
+  - Download: release-download.md 
+  - Documentation: release-docs.md
 - Getting Started: getting-started.md
-- User Guide: 
+- Scala User Guide: 
   - Install: 
     - Use Pre-built Libs: UserGuide/install-pre-built.md
     - Build from Source Code: UserGuide/install-build-src.md 
   - Run : UserGuide/run.md
   - Examples: UserGuide/examples.md
   - More Resources: UserGuide/resources.md
-- Python Support: 
-  - Install: PythonSupport/python-install.md
-  - Run: PythonSupport/python-run.md
+- Python User Guide: 
+  - Install:
+    - From pip: PythonSupport/install-from-pip.md
+    - Without pip: PythonSupport/install-without-pip.md
+  - Run:
+    - After pip install: PythonSupport/run-from-pip.md
+    - Without pip install: PythonSupport/run-without-pip.md
   - Examples: PythonSupport/python-examples.md
   - More Examples and Tutorials: PythonSupport/python-resources.md
-  - Tensorflow Support: PythonSupport/tensorflow-support.md
 - Programming Guide:
-  - Scala Docs: APIdocs/scaladoc.md
-  - Python API Docs: APIdocs/python-api-doc.md
-  - Data: APIdocs/Data/merged-Data.md
-  - Model:
-    - Sequential Model: APIdocs/Model/Sequential.md
-    - Functional API: APIdocs/Model/Functional.md
-    - Module API: APIdocs/Model/ModuleAPI.md
-  - Layers: 
-    - Containers:  APIdocs/Layers/Containers/merged-Containers.md
-    - Simple Layers: APIdocs/Layers/Simple-Layers/merged-Simple-Layers.md
-    - Convolution Layers: APIdocs/Layers/Convolution-Layers/merged-Convolution-Layers.md
-    - Pooling Layers:  APIdocs/Layers/Pooling-Layers/merged-Pooling-Layers.md
-    - Linear Layers:  APIdocs/Layers/Linear-Layers/merged-Linear-Layers.md
-    - Non-linear Activations: APIdocs/Layers/Non-linear-Activations/merged-Non-linear-Activations.md
-    - Embedding Layers: APIdocs/Layers/Embedding-Layers/merged-Embedding-Layers.md
-    - Merge/Split Layers: APIdocs/Layers/MergeSplit-Layers/merged-MergeSplit-Layers.md
-    - Math Layers: APIdocs/Layers/Math-Layers/merged-Math-Layers.md
-    - Padding Layers: APIdocs/Layers/Padding-Layers/merged-Padding-Layers.md
-    - Normalization Layers:  APIdocs/Layers/Normalization-Layers/merged-Normalization-Layers.md
-    - Dropout Layers: APIdocs/Layers/Dropout-Layers/merged-Dropout-Layers.md
-    - Distance Layers: APIdocs/Layers/Distance-Layers/merged-Distance-Layers.md
-    - Recurrent Layers:  APIdocs/Layers/Recurrent-Layers/merged-Recurrent-Layers.md
-    - Utilities: APIdocs/Layers/Utilities/merged-Utilities.md
-  - Losses: APIdocs/Losses/merged-Losses.md
-  - Initalizers: APIdocs/Initializers/merged-Initializers.md
-  - Regularizers: APIdocs/Regularizers/merged-Regularizers.md
-  - Optimization: 
-    - Optimizer: APIdocs/Optimizers/DistriOptimizer.md
-    - Optimization Algorithms: APIdocs/Optimizers/Optim-Methods/merged-Optim-Methods.md
-    - Triggers: APIdocs/Optimizers/Triggers.md
-  - Metrics:  APIdocs/Metrics/merged-Metrics.md
+  - Define a Model:
+    - Using Sequential API: ProgrammingGuide/Model/Sequential.md
+    - Using Functional API: ProgrammingGuide/Model/Functional.md
+  - Optimization: ProgrammingGuide/optimization.md
+  - Use Spark ML: ProgrammingGuide/MLPipeline.md
   - Visualization: ProgrammingGuide/visualization.md
-  - MLPipeline: APIdocs/MLPipeline/merged-MLPipeline.md
+  - Run on Amazon EC2: ProgrammingGuide/run-on-ec2.md 
+  - Tensorflow Support: ProgrammingGuide/tensorflow-support.md
+  - Caffe Support: ProgrammingGuide/caffe-support.md
+- API Guide:
+  - Data: APIdocs/Data.md
+  - Module: APIdocs/Module.md
+  - Layers: 
+    - Containers:  APIdocs/Layers/Containers.md
+    - Simple Layers: APIdocs/Layers/Simple-Layers.md
+    - Convolution Layers: APIdocs/Layers/Convolution-Layers.md
+    - Pooling Layers:  APIdocs/Layers/Pooling-Layers.md
+    - Activations: APIdocs/Layers/Activations.md
+    - Embedding Layers: APIdocs/Layers/Embedding-Layers.md
+    - Merge/Split Layers: APIdocs/Layers/MergeSplit-Layers.md
+    - Math Layers: APIdocs/Layers/Math-Layers.md
+    - Padding Layers: APIdocs/Layers/Padding-Layers.md
+    - Normalization Layers:  APIdocs/Layers/Normalization-Layers.md
+    - Dropout Layers: APIdocs/Layers/Dropout-Layers.md
+    - Distance Layers: APIdocs/Layers/Distance-Layers.md
+    - Recurrent Layers:  APIdocs/Layers/Recurrent-Layers.md
+    - Recursive Layers:  APIdocs/Layers/Recursive-Layers.md
+    - Utilities: APIdocs/Layers/Utilities.md
+  - Losses: APIdocs/Losses.md
+  - Initalizers: APIdocs/Initializers.md
+  - Regularizers: APIdocs/Regularizers.md
+  - Optimizer: APIdocs/Optimizers/Optimizer.md
+  - Optim Methods:
+    - OptimMethod: APIdocs/Optimizers/OptimMethod.md 
+    - Optimization Algorithms: APIdocs/Optimizers/Optim-Methods.md
+  - Triggers: APIdocs/Triggers.md
+  - Metrics:  APIdocs/Metrics.md
+  - Full API docs:
+    - Scala Docs: APIdocs/scaladoc.md
+    - Python API Docs: APIdocs/python-api-doc.md
 - Powered by: powered-by.md
 - Known Issues: known-issues.md
-- Version: version.md 

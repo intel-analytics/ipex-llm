@@ -15,13 +15,13 @@
  */
 package com.intel.analytics.bigdl.utils.caffe
 
-import java.io._
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream, OutputStream}
 
 import scala.collection.JavaConverters._
 import caffe.Caffe.{LayerParameter, NetParameter, V1LayerParameter}
 import com.intel.analytics.bigdl.nn.{Container, Graph, Sequential, View}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Node
+import com.intel.analytics.bigdl.utils.{File, FileWriter, Node}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -45,7 +45,7 @@ import org.apache.log4j.Logger
  * @param overwrite whether to overwirte existing caffe files
  */
 class CaffePersister[T: ClassTag](val prototxtPath: String,
-      val modelPath: String, val module : Container[Activity, Activity, T],
+      val modelPath: String, val module : AbstractModule[Activity, Activity, T],
       useV2 : Boolean = true, overwrite : Boolean = false)(implicit ev: TensorNumeric[T]) {
 
   private val logger = Logger.getLogger(getClass)
@@ -169,32 +169,15 @@ class CaffePersister[T: ClassTag](val prototxtPath: String,
 
   private def saveBinary() : Unit = {
     // save binary
-    if (prototxtPath.startsWith(hdfsPrefix)) {
-      val binaryFile = new Path(modelPath)
-      val fs = binaryFile.getFileSystem(new Configuration())
-      if (fs.exists(binaryFile)) {
-        if (overwrite) {
-          fs.delete(binaryFile, true)
-        } else {
-          throw new RuntimeException(s"file $modelPath already exists")
-        }
-      }
-      val out = fs.create(binaryFile)
+    var binaryFileWriter: FileWriter = null
+    try {
+      binaryFileWriter = FileWriter(modelPath)
+      val out = binaryFileWriter.create(overwrite)
       val byteArrayOut = new ByteArrayOutputStream()
       byteArrayOut.write(netparam.build.toByteArray)
       IOUtils.copyBytes(new ByteArrayInputStream(byteArrayOut.toByteArray), out, 1024, true)
-    } else {
-      val binaryFile = new java.io.File(modelPath)
-      if (binaryFile.exists()) {
-        if (overwrite) {
-          binaryFile.delete()
-        } else {
-          throw new RuntimeException(s"file $modelPath already exists")
-        }
-      }
-      val binaryWriter = new FileOutputStream(binaryFile)
-      binaryWriter.write(netparam.build.toByteArray)
-      binaryWriter.close
+    } finally {
+      binaryFileWriter.close()
     }
   }
 
@@ -227,32 +210,16 @@ class CaffePersister[T: ClassTag](val prototxtPath: String,
         netParameterWithoutData.addLayers(v1Layer)
       })
     }
-    if (prototxtPath.startsWith(hdfsPrefix)) {
-      val prototxtFile = new Path(prototxtPath)
-      val fs = prototxtFile.getFileSystem(new Configuration())
-      if (fs.exists(prototxtFile)) {
-        if (overwrite) {
-          fs.delete(prototxtFile, true)
-        } else {
-          throw new RuntimeException(s"file $prototxtPath already exists")
-        }
-      }
-      val out = fs.create(prototxtFile)
+
+    var prototxtFileWriter: FileWriter = null
+    try {
+      prototxtFileWriter = FileWriter(prototxtPath)
+      val out = prototxtFileWriter.create(overwrite)
       val byteArrayOut = new ByteArrayOutputStream()
       byteArrayOut.write(netParameterWithoutData.build().toString.getBytes)
       IOUtils.copyBytes(new ByteArrayInputStream(byteArrayOut.toByteArray), out, 1024, true)
-    } else {
-      val prototxtFile = new java.io.File(prototxtPath)
-      if (prototxtFile.exists()) {
-        if (overwrite) {
-          prototxtFile.delete()
-        } else {
-          throw new RuntimeException(s"file $prototxtPath already exists")
-        }
-      }
-      val prototxtWriter = new OutputStreamWriter(new FileOutputStream(prototxtFile))
-      prototxtWriter.write(netParameterWithoutData.build.toString)
-      prototxtWriter.close
+    } finally {
+      prototxtFileWriter.close()
     }
   }
 }
@@ -260,7 +227,7 @@ class CaffePersister[T: ClassTag](val prototxtPath: String,
 
 object CaffePersister{
   def persist[T: ClassTag](prototxtPath: String,
-               modelPath: String, module : Container[Activity, Activity, T],
+               modelPath: String, module : AbstractModule[Activity, Activity, T],
   useV2 : Boolean = true, overwrite : Boolean = false)(implicit ev: TensorNumeric[T]) : Unit = {
     val caffePersist = new CaffePersister[T](prototxtPath, modelPath, module, useV2, overwrite)
     caffePersist.saveAsCaffe()

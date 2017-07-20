@@ -1,4 +1,5 @@
 
+---
 
 ## **Generating summary info in BigDL**
 To enable visualization support, you need first properly configure the `Optimizer` to collect statistics summary in different stages of training (i.e. training (`TrainSummary`) and validation (`ValidationSummary`),respectively). It should be done before the training starts (calling `Optimizer.optimize()`). See examples below: 
@@ -31,8 +32,9 @@ trainedModel = optimizer.optimize()
 ```
 After you start to run your spark job, the train and validation summary will be saved to `mylogdir/myapp/train` and `mylogdir/myapp/validation` respectively (Note: you may want to use different `appName` for different job runs to avoid possible conflicts.)
 
+---
 
-## Retrieving summary info as readable format
+## **Retrieving summary info as readable format**
 
 You can use provided API `readScalar`(Scala) and `read_scalar`(Python) to retrieve the summaries into readable format, and export them to other tools for further analysis or visualization.
 
@@ -49,6 +51,8 @@ loss = np.array(train_summary.read_scalar('Loss'))
 valloss = np.array(val_summary.read_scalar('Loss'))
 ...
 ```
+
+---
 
 ## **Visualizing training with TensorBoard**
 With the summary info generated, we can then use [TensorBoard](https://pypi.python.org/pypi/tensorboard) to visualize the behaviors of the BigDL program.  
@@ -89,7 +93,9 @@ And “weights”, “bias”, “gradientWeights” and “gradientBias” unde
 ![histogram1](../Image/tensorboard-histo1.png)
 ![histogram2](../Image/tensorboard-histo2.png)
 
-## Visualizing training with Jupyter notebook
+---
+
+## **Visualizing training with Jupyter notebook**
 
 If you're using Jupyter notebook, you can also draw the training curves using popular plotting tools (e.g. matplotlib) and show the plots inline. 
 
