@@ -158,7 +158,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
 
   private def fromCaffeFlatten(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val layerName = getLayerName(layer)
-    Seq(FlattenTable[T].setName(layerName).inputs())
+    Seq(InferReshape[T](Array(0, -1)).setName(layerName).inputs())
   }
 
   private def fromCaffeLog(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
@@ -286,7 +286,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
         toCaffeBatchNormalization(moduleNode, bottoms, nextSize)
       case joinTable : JoinTable[_] => toCaffeConcat(moduleNode, bottoms, nextSize)
       case elu : ELU[_] => toCaffeElu(moduleNode, bottoms, nextSize)
-      case flatternTable : FlattenTable[_] => toCaffeFlattern(moduleNode, bottoms, nextSize)
+      case infershape : InferReshape[_] => toCaffeFlattern(moduleNode, bottoms, nextSize)
       case log : Log[_] => toCaffeLog(moduleNode, bottoms, nextSize)
       case power : Power[_] => toCaffePower(moduleNode, bottoms, nextSize)
       case prelu : PReLU[_] => toCaffePReLu(moduleNode, bottoms, nextSize)
