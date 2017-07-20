@@ -87,3 +87,6 @@ sudo pip install numpy scipy pandas scikit-learn matplotlib seaborn wordcloud
 After successfully launching Jupyter, you will be able to navigate to the notebook dashboard using your browser. You can find the exact URL in the console output when you started Jupyter; by default, the dashboard URL is http://your_node:8888/
 
 [Example code to verify if run successfully](run-from-pip.md#code.verification)
+
+## BigDL Configuration
+Please check [this page](UserGuide/configuration.md)

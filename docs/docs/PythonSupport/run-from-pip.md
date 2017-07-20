@@ -30,4 +30,7 @@
  
 ```
 
+## BigDL Configuration
+Please check [this page](UserGuide/configuration.md)
+
 
