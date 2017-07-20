@@ -4,6 +4,8 @@ LeNet5 is a classical CNN model used in digital number classification. For detai
 please refer to <http://yann.lecun.com/exdb/lenet/>.
 
 ## How to run this example:
+Please note that due to some permission issue, this example **cannot** be run on Windows.
+
 
 Program would download the mnist data into ```/tmp/mnist``` automatically by default.
 
