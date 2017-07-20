@@ -140,7 +140,7 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
     setConnections(layerParameter, bottoms, nextSize)
 
     // copy weight and bias
-    var (weightBuilder, biasBuilder) = copyParam(module)
+    val (weightBuilder, biasBuilder) = copyParam(module)
 
     // get convolution param map
     val layerParams = toCaffeConvolutionParam(module)
@@ -158,6 +158,8 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
     convolutionParam.setStrideH(layerParams("strideH"))
     convolutionParam.setPadW(layerParams("padW"))
     convolutionParam.setPadH(layerParams("padH"))
+    val withBias = if (layerParams("withBias") == 1) true else false
+    convolutionParam.setBiasTerm(withBias)
 
     weightBuilder.setChannels(nInputPlane / ngroup)
     weightBuilder.setNum(nOutputPlane)
