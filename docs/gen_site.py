@@ -76,11 +76,6 @@ run_cmd(['mv', '/tmp/bigdl-doc/extra.css', '{}/docs'.format(dir_name)],
 run_cmd(['rm', '-rf', '/tmp/bigdl-doc'],
     'rm theme folder error')
 
-# merge md files
-script_path = dir_name + '/merge_md.py'
-run_cmd(['python', script_path],
-    'merge md files error')
-
 # mkdocs build
 run_cmd(['mkdocs', 'build'], 
     'mkdocs build error')

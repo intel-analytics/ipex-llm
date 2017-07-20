@@ -89,4 +89,4 @@ After successfully launching Jupyter, you will be able to navigate to the notebo
 [Example code to verify if run successfully](run-from-pip.md#code.verification)
 
 ## BigDL Configuration
-Please check [this page](UserGuide/configuration.md)
+Please check [this page](../UserGuide/configuration.md)

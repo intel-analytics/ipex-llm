@@ -31,6 +31,6 @@
 ```
 
 ## BigDL Configuration
-Please check [this page](UserGuide/configuration.md)
+Please check [this page](../UserGuide/configuration.md)
 
 
