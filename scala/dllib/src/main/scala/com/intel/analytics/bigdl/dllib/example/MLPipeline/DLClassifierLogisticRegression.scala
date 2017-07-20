@@ -30,7 +30,7 @@ object DLClassifierLogisticRegression {
   def main(args: Array[String]): Unit = {
     val conf = Engine.createSparkConf()
       .setAppName("DLClassifierLogisticRegression")
-      .set("spark.task.maxFailures", "1")
+      .setMaster("local[1]")
     val sc = new SparkContext(conf)
     val sqlContext = SQLContext.getOrCreate(sc)
     Engine.init
@@ -49,5 +49,4 @@ object DLClassifierLogisticRegression {
     val dlModel = estimator.fit(df)
     dlModel.transform(df).show(false)
   }
-
 }
