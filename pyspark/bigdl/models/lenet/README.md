@@ -4,7 +4,7 @@ LeNet5 is a classical CNN model used in digital number classification. For detai
 please refer to <http://yann.lecun.com/exdb/lenet/>.
 
 ## Install dependencies
- * [Install dependencies](../../../README.md#Installing on Ubuntu)
+ * [Install dependencies](../../../README.md#install.dependencies)
  
 ## How to run this example:
 

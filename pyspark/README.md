@@ -8,6 +8,7 @@ This Python binding has been tested with Python 2.7 and Spark 1.6.0 / Spark 2.0.
 
 * Set SPARK_HOME and then run: ```$BigDL_HOME/pyspark/test/dev/run-all.sh``` 
 
+<a name="install.dependencies"></a>
 ## Installing on Ubuntu
 1. Build BigDL
 [Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page)

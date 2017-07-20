@@ -9,7 +9,7 @@
 * Training data: "20 Newsgroup dataset" which containing 20 categories and with totally 19997 texts.
 
 ## Install dependencies
- * [Install dependencies](../../../README.md#Installing on Ubuntu)
+ * [Install dependencies](../../../README.md#install.dependencies)
 
 ## How to run this example:
 

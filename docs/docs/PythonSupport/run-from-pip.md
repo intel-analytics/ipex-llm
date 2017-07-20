@@ -2,10 +2,11 @@
 * [Install via pip](install-from-pip.md)
 
 ## **Use an Interactive Shell**
+ * export SPARK_HOME=path to spark-1.6.3-bin-hadoop2.6 
  * type `python` in commandline to start a REPL
 
 ## **Use Jupyter Notebook**
-
+ * export SPARK_HOME=path to spark-1.6.3-bin-hadoop2.6 
  * Start jupyter notebook as you normally did, e.g.
  ```bash
  jupyter notebook --notebook-dir=./ --ip=* --no-browser
