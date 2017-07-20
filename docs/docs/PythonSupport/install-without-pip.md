@@ -1,4 +1,3 @@
-## **Download a pre-built library**
 
 1. [Install Spark](https://spark.apache.org/downloads.html)
 
