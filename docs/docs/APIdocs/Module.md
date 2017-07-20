@@ -1,10 +1,7 @@
-## Module Class Overview
-Module (Scala) or Model (Python) provides API to faciliate user's requirement to save model to specific path, load model from given path, evaluate model and predict with model, etc.
-
-
+---
 ## Model Save
 
-BigDL supports different file systems like Linux file system, HDFS and AWS S3. Use `model.save` to save models. Below is an example of how to save a model to local file system. 
+BigDL supports saving models to local file system, HDFS and AWS S3. After a model is created, you can use `save` on created model to save it. Below example shows how to save a model. 
 
 **Scala example**
 ```scala
@@ -13,7 +10,11 @@ import com.intel.analytics.bigdl.numeric.NumericFloat
 
 val model = Sequential().add(Linear(10, 5)).add(Sigmoid()).add(SoftMax())
 //...train
-model.save("/tmp/model.bigdl", true)
+
+model.save("/tmp/model.bigdl", true) //save to local fs
+model.save("hdfs://...") //save to hdfs
+model.save("s3://...") //save to s3
+
 ```
 **Python example**
 ```python
@@ -23,30 +24,42 @@ from bigdl.optim.optimizer import *
 
 model = Sequential().add(Linear(10, 5)).add(Sigmoid()).add(SoftMax())
 //...train
-model.save("/tmp/model.bigdl", True)
+model.save("/tmp/model.bigdl", True) //save to local fs
+model.save("hdfs://...") //save to hdfs
+model.save("s3://...") //save to s3
 ```
 In `model.save`, the first parameter is the path where we want to save our model, the second paramter is to specify if we need to overwrite the file if it already exists, it's set to false by default
 
 
 ## Model Load
 
-Use `Module.load`(in Scala) or `Model.load` (in Python) to load an existing model. We just need to specify the model path where we previously saved the model to load it to memory for resume training or prediction purpose
+Use `Module.load`(in Scala) or `Model.load` (in Python) to load an existing model.  `Module` (Scala) or `Model`(Python) is a utilily class provided in BigDL. We just need to specify the model path where we previously saved the model to load it to memory for resume training or prediction purpose.
 
 **Scala example**
 ```scala
-val loadedModel = Module.load("/tmp/model.bigdl")
+val model = Module.load("/tmp/model.bigdl") //load from local fs
+val model = Module.load("hdfs://...") //load from hdfs
+val model = Module.load("s3://...") //load from s3
 ```
-`Module` above is a utilily  to manipulate module APIs
 
 **Python example**
 ```python
-model = Model.load("/tmp/model.bigdl")
+model = Model.load("/tmp/model.bigdl") //load from local fs
+model = Model.load("hdfs://...") //load from hdfs
+model = Model.load("s3://...") //load from s3
 ```
-`Model` is a utility for python mirroring `Module` in scala
 
 ## Model Evaluation
+**Scala**
+```scala
+model.evaluate(dataset,vMethods,batchSize = None)
+```
+**Python**
+```python
+model.test(val_rdd, batch_size, val_methods)
+```
 
-Use `model.evaluate` to evaluate the model with validation data.
+Use `evaluate` on the model for evaluation. The parameter `dataset` (Scala) or `val_rdd` (Python) in is the validation dataset, and `vMethods` (Scala) or `val_methods`(Python) is an array of ValidationMethods. Refer to [Metrics](Metrics.md) for the list of defined ValidationMethods. 
 
 **Scala example**
 ```scala
@@ -81,13 +94,22 @@ testSet = sc.parallelize(samples)
 
 //train a model or load an existing model...
 //model = ...
-evaluateResult = model.evaluate(testSet, 1, [Top1Accuracy])
+evaluateResult = model.test(testSet, 1, [Top1Accuracy])
 ```
 
 
 ## Model Prediction
+**Scala**
+```scala
+model.predict(dataset)
+model.predictClass(dataset)
+```
 
-Use `model.predict` for Prediction.
+**Python**
+```python
+model.predict(data_rdd)
+```
+Use `predict` or `predictClass` on model for Prediction. `predict` returns return the probability distribution of each class, and `predictClass` returns the predict label. They both accepts the test dataset as parameter. 
 
 **Scala example**
 ```scala

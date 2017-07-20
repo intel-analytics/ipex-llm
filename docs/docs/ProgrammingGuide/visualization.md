@@ -117,3 +117,27 @@ plt.legend();
 ```
  
 ![jupyter](../Image/jupyter.png)
+
+## **Logging**
+
+BigDL also has a stright-forward logging output on the console along the    training, as shown below. You can see real-time epoch/iteration/loss/       throughput in the log.
+
+```
+  2017-01-10 10:03:55 INFO  DistriOptimizer$:241 - [Epoch 1 0/               5000][Iteration 1][Wall Clock XXX] Train 512 in   XXXseconds. Throughput    is XXX records/second. Loss is XXX.
+  2017-01-10 10:03:58 INFO  DistriOptimizer$:241 - [Epoch 1 512/             5000][Iteration 2][Wall Clock XXX] Train 512    in XXXseconds. Throughput   is XXX records/second. Loss is XXX.
+  2017-01-10 10:04:00 INFO  DistriOptimizer$:241 - [Epoch 1 1024/            5000][Iteration 3][Wall Clock XXX] Train 512   in XXXseconds. Throughput    is XXX records/second. Loss is XXX.
+```
+
+The DistriOptimizer log level is INFO by default. We implement a method     named with `redirectSparkInfoLogs`  in `spark/utils/LoggerFilter.scala`.    You can import and redirect at first.
+
+```scala
+  import com.intel.analytics.bigdl.utils.LoggerFilter
+  LoggerFilter.redirectSparkInfoLogs()
+```
+
+This method will redirect all logs of `org`, `akka`, `breeze` to `bigdl.    log` with `INFO` level, except `org.  apache.spark.SparkContext`. And it    will output all `ERROR` message in console too.
+
+ You can disable the redirection with java property `-Dbigdl.utils.          LoggerFilter.disable=true`. By default,   it will do redirect of all        examples and models in our code.
+
+ You can set where the `bigdl.log` will be generated with `-Dbigdl.utils.    LoggerFilter.logFile=<path>`. By    default, it will be generated under     current workspace.
+

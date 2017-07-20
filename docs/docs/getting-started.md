@@ -5,39 +5,32 @@ Apache Spark needs to be installed before you start using BigDL.
 
 BigDL provide both Scala/Java and Python API.  
 
-To use BigDL *Scala/Java* API, the first thing is to obtain the BigDL libraries. You can either download the pre-built BigDL libs ([available here](release-download.md)), or build the libs from source code (available at [BigDL Github](https://github.com/intel-analytics/BigDL)). When writing programs, you need to ensure the SparkContext is created successfully and initialize BigDL engine before calling BigDL APIs. Refer to [Use Prebuild Libs](UserGuide/install-pre-built.md), [Build from Source](UserGuide/install-build-src.md), and [Run](UserGuide/run.md) for details about how to build BigDL and run a program in Scala.  
+To use BigDL *Scala/Java* API, you need first obtain or build the BigDL libraries. When writing programs, you need to ensure the SparkContext is created successfully and initialize BigDL engine before calling BigDL APIs. Refer to [Use Prebuild Libs](UserGuide/install-pre-built.md), [Build from Source](UserGuide/install-build-src.md), and [Run](UserGuide/run.md) for details about how to build BigDL and run a program in Scala.  
 
-To use BigDL *Python* API, besides using pre-built BigDL libs or building from source, you can also install BigDL python via pip (only support some spark versions). You may use Python API in an interactive shell, or run a program in commandline, or use Jupyter notebooks. Before calling BigDL API's in your program, you have to ensure the SparkContext is succesfully created and initialize BigDL engine. Refer to [Python Install](PythonSupport/python-install.md) and [Python Run](PythonSupport/python-run.md) for details about how to install python and run python programs.
+After installation, You can use Python API in an interactive shell, or run a program in commandline, or use Jupyter notebooks. Refer to [Python Install](PythonSupport/python-install.md) and [Python Run](PythonSupport/python-run.md) for details about how to install python and run python programs.
 
 ---
 
 ## **Prepare your Data**
 
-You data need to be transformed into specific data structures in order to be fed into BigDL for training, evaluation and prediction.
- 
-Below are several data structures that you need to know when using BigDL. 
+Your data need to be transformed into RDD of [Sample](APIdocs/Data.md#sample) in order to be fed into BigDL for training, evaluation and prediction (also refer to [Optimizer docs](APIdocs/Optimizers/Optimizer.md)). 
 
-* ```Tensor``` is a multi-dimensional array of basic numeric types (e.g., ```Int```, ```Float```,       ```Double```, etc.) It is the most essential data structure in BigDL, composing the basic data flow inside the nerual network (i.e. the input, output, weight, bias and gradient of many layers). Refer to [Tensor API doc](APIdocs/Data.md#tensor) for details about the numeric computation functions provided in BigDL. 
-* `Table` is key-value map. Usually we use Tables to map from digits to Tensors. Some of the layers has `Table` as input or output (e.g. [ConcatTable](APIdocs/Layers/Containers.md#concattable)). You can also use ```T()``` to create Tables in BigDL - just a syntax sugar. Refer to [Table API doc](APIdocs/Data.md#table) for detailed usage.
- 
-* `Sample` is usually a **(feature, label)** pair. A `Sample` can be created from two `Tensors` (in Scala) or two `numpy arrays` (in Python). Refer to [Sample API doc](APIdocs/Data.md#sample) for detailed usage.
-
-You need to convert your dataset into `RDD` of `Samples` (both Scala and Python), and then feed your data into Optimizer for training, validation or prediction. Refer to [Optimizer docs](APIdocs/Optimizers/Optimizer.md) for details.
+[Tensor](APIdocs/Data.md#tensor), [Table](APIdocs/Data.md#table) are essential data structures that composes the basic dataflow inside the nerual network( e.g. input/output, gradients, weights, etc.). You will need to understand them to get a better idea of layer behaviors. 
 
 
 ---
 
 ## **Use BigDL for Prediction only**
 
-If you have an existing model and want to use BigDL only for prediction, you need to first load the model, and then do prediction or evaluation. 
+If you have an existing model and want to use BigDL only for prediction, you need first load the model, and then do prediction or evaluation. 
 
-BigDL supports loading models trained and saved in BigDL, or a trained Tensorflow model. 
+BigDL supports loading models trained and saved in BigDL, or a trained Caffe or Tensorflow model. 
 
 * To load a BigDL model, you can use `Module.load` interface (Scala) or `Model.load` (in Python). Refer to [Model Save](APIdocs/Module/#model-save) for details.  
 * To load a Tensorflow model, refer to [Tensorflow Support](ProgrammingGuide/tensorflow-support.md) for details.
 * To load a Caffe model, refer to [Caffe Support](ProgrammingGuide/caffe-support.md) for details.
 
-Once you have a loaded model, you can call `model.predict()` to do predictions (refer to [Model Predict](APIdocs/Module/#model-prediction) for details). Note that you need to convert your input data into proper format which `predict` accepts. For how to prepare your data, refer to section [Prepare your Data](#prepare-your-data). 
+Refer to [Model Predict](APIdocs/Module/#model-prediction) for details about how to use a model for prediction.
 
 If you are using the trained model as a component inside a Spark ML pipeline, refer to
 [Using BigDL in Spark ML Pipeline](ProgrammingGuide/MLPipeline.md) page for usage. 
@@ -105,32 +98,7 @@ Instead of using an entire model, you can also use pre-trained weights/biases in
 ## **Monitor your training**
 
 
- * Visualization
-
 BigDL provides a convinient way to monitor/visualize your training progress. It writes the statistics collected during training/validation and they can be visualized in real-time using tensorboard. These statistics can also be retrieved into readable data structures later and visualized in other tools (e.g. Jupyter notebook). For details, refer to [Visualization](ProgrammingGuide/visualization.md). 
-
- * Logging
-
-BigDL also has a stright-forward logging output on the console along the training, as shown below. You can see real-time epoch/iteration/loss/throughput in the log.
-
-```
- 2017-01-10 10:03:55 INFO  DistriOptimizer$:241 - [Epoch 1 0/5000][Iteration 1][Wall Clock XXX] Train 512 in   XXXseconds. Throughput is XXX records/second. Loss is XXX.
- 2017-01-10 10:03:58 INFO  DistriOptimizer$:241 - [Epoch 1 512/5000][Iteration 2][Wall Clock XXX] Train 512    in XXXseconds. Throughput is XXX records/second. Loss is XXX.
- 2017-01-10 10:04:00 INFO  DistriOptimizer$:241 - [Epoch 1 1024/5000][Iteration 3][Wall Clock XXX] Train 512   in XXXseconds. Throughput is XXX records/second. Loss is XXX.
-```
-
-The DistriOptimizer log level is INFO by default. We implement a method named with `redirectSparkInfoLogs`  in `spark/utils/LoggerFilter.scala`. You can import and redirect at first.
-
-```scala
- import com.intel.analytics.bigdl.utils.LoggerFilter
- LoggerFilter.redirectSparkInfoLogs()
-```
-
-This method will redirect all logs of `org`, `akka`, `breeze` to `bigdl.log` with `INFO` level, except `org.  apache.spark.SparkContext`. And it will output all `ERROR` message in console too.
-
-You can disable the redirection with java property `-Dbigdl.utils.LoggerFilter.disable=true`. By default,   it will do redirect of all examples and models in our code.
-
-You can set where the `bigdl.log` will be generated with `-Dbigdl.utils.LoggerFilter.logFile=<path>`. By    default, it will be generated under current workspace.
 
 ---
 
