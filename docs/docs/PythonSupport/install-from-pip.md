@@ -1,4 +1,4 @@
-
+## **NOTES**
 
 - Pip install support __mac__ and __linux__ platform but only __Spark1.6.x__ for now.
 - Pip install only support run in __local__. Might support cluster mode in the future.

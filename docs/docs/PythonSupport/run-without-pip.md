@@ -5,7 +5,10 @@ First of all, you need to obtain the BigDL libs. Refer to [Install from pre buil
 
 ```bash
 cd $BIGDL_HOME/dist/lib 
-pyspark --master local[4] --conf spark.driver.extraClassPath=bigdl-0.2.0-jar-with-dependencies.jar --py-files bigdl-0.2.0-python-api.zip --properties-file ../conf/spark-bigdl.conf 
+pyspark --master local[4] \
+--conf spark.driver.extraClassPath=bigdl-0.2.0-jar-with-dependencies.jar \
+--py-files bigdl-0.2.0-python-api.zip \
+--properties-file ../conf/spark-bigdl.conf 
 ```
 
  [Example code to verify if run successfully](run-from-pip.md#code.verification)
