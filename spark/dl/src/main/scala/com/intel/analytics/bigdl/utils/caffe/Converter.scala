@@ -399,7 +399,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
 
   protected def toCaffeConvolutionParam(module : AbstractModule[Activity, Tensor[T], T])
   : mutable.HashMap[String, Int] = {
-    var map = new mutable.HashMap[String, Int]()
+    val map = new mutable.HashMap[String, Int]()
     val layer = classOf[SpatialConvolution[T]].cast(module)
     val nInputPlane = layer.nInputPlane
     val nOutputPlane = layer.nOutputPlane
@@ -419,6 +419,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
     map("padW") = padW
     map("padH") = padH
     map("ngroup") = ngroup
+    map("withBias") = if (layer.withBias) 1 else 0
     map
   }
 
@@ -516,6 +517,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
     var i = 0
     while (i < size.length) {
       shapeBlob.setDim(i, size(i))
+      i += 1
     }
     shapeBlob.build
   }

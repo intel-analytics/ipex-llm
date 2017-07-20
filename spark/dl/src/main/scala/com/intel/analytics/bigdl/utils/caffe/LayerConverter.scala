@@ -177,7 +177,7 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
     setConnections(layerParameter, bottoms, nextSize)
 
     // copy weight and bias
-    var (weightBuilder, biasBuilder) = copyParam(module)
+    val (weightBuilder, biasBuilder) = copyParam(module)
 
     // get convolution param map
     val layerParams = toCaffeConvolutionParam(module)
@@ -195,6 +195,8 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
     convolutionParam.setStrideH(layerParams("strideH"))
     convolutionParam.setPadW(layerParams("padW"))
     convolutionParam.setPadH(layerParams("padH"))
+    val withBias = if (layerParams("withBias") == 1) true else false
+    convolutionParam.setBiasTerm(withBias)
     weightBuilder.setChannels(nInputPlane / ngroup)
     weightBuilder.setNum(nOutputPlane)
 
