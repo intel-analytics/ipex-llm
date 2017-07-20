@@ -40,7 +40,6 @@ export SPARK_CLASSPATH=BigDL_HOME/spark/dl/target/${BigDL_version}-jar-with-depe
       --total-executor-cores 80  \
       --executor-cores 10  \
       --executor-memory 20g \
-      --conf spark.akka.frameSize=64 \
        --py-files ${PYTHON_API_ZIP_PATH},${BigDL_HOME}/pyspark/dl/models/lenet/lenet5.py  \
        --properties-file ${BigDL_HOME}/dist/conf/spark-bigdl.conf \
        --jars ${BigDL_JAR_PATH} \
@@ -85,7 +84,6 @@ sudo pip install numpy scipy pandas scikit-learn matplotlib seaborn wordcloud
       --total-executor-cores 8  \
       --executor-cores 1  \
       --executor-memory 20g \
-      --conf spark.akka.frameSize=64 \
        --py-files ${PYTHON_API_ZIP_PATH} \
        --jars ${BigDL_JAR_PATH} \
        --conf spark.driver.extraClassPath=${BigDL_JAR_PATH} \
