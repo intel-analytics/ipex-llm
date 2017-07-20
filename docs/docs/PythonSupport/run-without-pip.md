@@ -1,4 +1,4 @@
-First of all, you need to obtain the BigDL libs. Refer to [Install from pre built](install-pre-built.md) or [Install from source code](../UserGuide/install-pre-built.md) for more details
+First of all, you need to obtain the BigDL libs. Refer to [Install from pre built](install-pre-built.md) or [Install from source code](../UserGuide/install-build-src) for more details
 
 
 ## **Run from python shell**
@@ -16,7 +16,7 @@ export PYTHONPATH=$SPARK_HOME/python/lib/pyspark.zip:$SPARK_HOME/python/lib/py4j
 export SPARK_CLASSPATH=BigDL_HOME/spark/dl/target/${BigDL_version}-jar-with-dependencies.jar
 ```
 
-3.Run python .
+3.Type `python` in commandline to start a REPL. 
  [Example code to verify if run successfully](run-from-pip.md#code.verification)
 
 
@@ -52,7 +52,7 @@ export SPARK_CLASSPATH=BigDL_HOME/spark/dl/target/${BigDL_version}-jar-with-depe
 
 
 
-## **Run from bin/pyspark + Jupyter Notebook**
+## **Run from pyspark + Jupyter**
 
 - With the full Python API support in BigDL, users can now use BigDL together with powerful notebooks (such as Jupyter notebook) in a distributed fashion across the cluster, combining Python libraries, Spark SQL / dataframes and MLlib, deep learning models in BigDL, as well as interactive visualization tools.
 

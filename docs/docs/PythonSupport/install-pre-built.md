@@ -2,4 +2,4 @@
 
 1. [Install Spark](https://spark.apache.org/downloads.html)
 
-2. You can download the BigDL release (currently v0.1.0) and nightly build from the [Release Page](../release-download.md)
+2. You can download the BigDL release (currently v0.2.0) and nightly build from the [Release Page](../release-download.md)
