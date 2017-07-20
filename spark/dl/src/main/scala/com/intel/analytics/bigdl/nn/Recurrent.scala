@@ -45,6 +45,7 @@ class Recurrent[T : ClassTag]()
   private val inputDim = 1
   private val hidDim = 2
   private var cellAppendStartIdx = 0
+  private var preBatchSize = 0
   private var (batchSize, times) = (0, 0)
   private var topology: Cell[T] = null
   private var preTopology: AbstractModule[Activity, Activity, T] = null
@@ -211,13 +212,13 @@ class Recurrent[T : ClassTag]()
      * reset recurrent's output and cells' output to avoid
      * address conflicts.
      */
-    val batchSizeOfCell = if (!cells.isEmpty) {
+    preBatchSize = if (!cells.isEmpty) {
       cells.head.output.toTable[Tensor[T]](inputDim).size(batchDim)
     } else {
       0
     }
 
-    if (batchSizeOfCell > 0 && batchSizeOfCell != batchSize) {
+    if (preBatchSize > 0 && preBatchSize != batchSize) {
       reset(cells.map(x => x.output.toTable[Tensor[T]](inputDim)), output)
     }
 
@@ -304,13 +305,8 @@ class Recurrent[T : ClassTag]()
      * reset recurrent's gradInput and cells' gradInput to avoid
      * address conflicts.
      */
-    val batchSizeOfCell = if (cells.head.gradInput.toTable.length > 0) {
-      cells.head.gradInput.toTable[Tensor[T]](inputDim).size(batchDim)
-    } else {
-      0
-    }
 
-    if (batchSizeOfCell > 0 && batchSizeOfCell != batchSize ) {
+    if (preBatchSize > 0 && preBatchSize != batchSize ) {
       reset(cells.map(x => x.gradInput.toTable[Tensor[T]](inputDim)), gradInputCell)
     }
 
@@ -355,9 +351,14 @@ class Recurrent[T : ClassTag]()
     hidden = null
     gradHidden = null
     hiddenShape = null
+    gradInputCell.set()
+    outputCell.set()
     currentInput.clear()
     currentGradOutput.clear()
     _input.clear()
+    reset(cells.map(x => x.output.toTable[Tensor[T]](inputDim)), output)
+    reset(cells.map(x => x.gradInput.toTable[Tensor[T]](inputDim)), gradInputCell)
+    cells.foreach(x => x.clearState())
     cells.clear()
     this
   }

@@ -14,3 +14,5 @@
 * If you meet the program stuck after **Save model...** on Mesos, check the `spark.driver.memory` and increase the value. Eg, VGG on Cifar10 may need 20G+.
 
 * If you meet `can't find executor core number` on Mesos, you should pass the executor cores through `--conf spark.executor.cores=xxx`
+
+* On Windows, if you meet "Could not locate executable null\bin\winutils.exe" error, you need to install winutils.exe. Please refer this [post](https://stackoverflow.com/questions/35652665/java-io-ioexception-could-not-locate-executable-null-bin-winutils-exe-in-the-ha).

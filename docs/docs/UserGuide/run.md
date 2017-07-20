@@ -144,3 +144,6 @@ In the above command
 * -c: The core number on local machine used for this prediction. The default value is physical cores number. Get it through Runtime.getRuntime().availableProcessors() / 2
 * --model: the model snapshot file
 
+## For Windows User
+Some BigDL functions depends on Hadoop library, which requires winutils.exe installed on your machine. If you meet "Could not locate executable null\bin\winutils.exe", see
+the [known issue page](known-issues.md).
