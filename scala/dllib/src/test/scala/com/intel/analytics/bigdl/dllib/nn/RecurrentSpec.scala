@@ -49,11 +49,15 @@ class RecurrentSpec extends FlatSpec with Matchers {
     val gradOutput1 = Tensor[Double](batchSize1, outputSize).rand
     val gradOutput2 = Tensor[Double](batchSize2, outputSize).rand
 
+    model.clearState()
+
     model.forward(input1)
     model.backward(input1, gradOutput1)
     val gradInput1 =
       Tensor[Double](batchSize1, time, inputSize).copy(model.gradInput.toTensor[Double])
     val output1 = Tensor[Double](batchSize1, outputSize).copy(model.output.toTensor[Double])
+
+    model.clearState()
 
     model.forward(input2)
     model.backward(input2, gradOutput2)
@@ -72,6 +76,8 @@ class RecurrentSpec extends FlatSpec with Matchers {
     val gradInput2compare =
       Tensor[Double](batchSize2, time, inputSize).copy(model.gradInput.toTensor[Double])
     val output2compare = Tensor[Double](batchSize2, outputSize).copy(model.output.toTensor[Double])
+
+    model.hashCode()
 
     output1 should be (output1compare)
     output2 should be (output2compare)
