@@ -87,6 +87,7 @@ module = BiRecurrent(merge=None,bigdl_type="float")
 ```
 
 This layer implement a bidirectional recurrent neural network
+
  * @param merge concat or add the output tensor of the two RNNs. Default is add
 
 **Scala example:**
@@ -136,12 +137,18 @@ rnnCell = RnnCell(input_size, hidden_size, Tanh(), w_regularizer, u_regularizer,
 ```
 
 Implementation of vanilla recurrent neural network cell
-i2h: weight matrix of input to hidden units
-h2h: weight matrix of hidden units to themselves through time
+
++ i2h: weight matrix of input to hidden units
++ h2h: weight matrix of hidden units to themselves through time
+
 The updating is defined as:
+
+```
 h_t = f(i2h * x_t + h2h * h_{t-1})
+```
 
 **Parameters:**
+
 * **inputSize** - input size. Default: 4
 * **hiddenSize** - hidden layer size. Default: 3
 * **activation** - activation function f for non-linearity
@@ -369,10 +376,14 @@ model = LSTMPeephole(
 ```
 
 Long Short Term Memory architecture with peephole.
-Ref. A.: http://arxiv.org/pdf/1303.5778v1 (blueprint for this module)
-B. http://web.eecs.utk.edu/~itamar/courses/ECE-692/Bobby_paper1.pdf
-C. http://arxiv.org/pdf/1503.04069v1.pdf
-D. https://github.com/wojzaremba/lstm
+Ref.
+
+1. http://arxiv.org/pdf/1303.5778v1 (blueprint for this module)
+2. http://web.eecs.utk.edu/~itamar/courses/ECE-692/Bobby_paper1.pdf
+3. http://arxiv.org/pdf/1503.04069v1.pdf
+4. https://github.com/wojzaremba/lstm
+
+**Parameters**,
 
 - param inputSize the size of each input vector
 - param hiddenSize Hidden unit size in the LSTM
@@ -479,11 +490,13 @@ gru = GRU(inputSize, outputSize, p, w_regularizer, u_regularizer, b_regularizer)
 Gated Recurrent Units architecture. The first input in sequence uses zero value for cell and hidden state.
 
 Ref.
- 1. http://www.wildml.com/2015/10/recurrent-neural-network-tutorial-part-4-implementing-a-grulstm-rnn-with-python-and-theano/
- 2. https://github.com/Element-Research/rnn/blob/master/GRU.lua
+
+1. http://www.wildml.com/2015/10/recurrent-neural-network-tutorial-part-4-implementing-a-grulstm-rnn-with-python-and-theano/
+2. https://github.com/Element-Research/rnn/blob/master/GRU.lua
  
  
 **Parameters:**
+
 * **inputSize** - the size of each input vector
 * **outputSize** - hidden unit size in GRU
 * **p** - is used for [[Dropout]] probability. For more details about
@@ -601,8 +614,12 @@ model = ConvLSTMPeephole(
 ```
 
 Convolution Long Short Term Memory architecture with peephole.
-Ref. A.: https://arxiv.org/abs/1506.04214 (blueprint for this module)
-B. https://github.com/viorik/ConvLSTM
+Ref.
+
+1. https://arxiv.org/abs/1506.04214 (blueprint for this module)
+2. https://github.com/viorik/ConvLSTM
+
+**Parameters**,
 
 - param inputSize: number of input planes in the image given into forward()
 - param outputSize: number of output planes the convolution layer will produce

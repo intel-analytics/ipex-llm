@@ -178,19 +178,20 @@ module = VolumetricConvolution(n_input_plane, n_output_plane, k_t, k_w, k_h,
 
 Applies a 3D convolution over an input image composed of several input planes. The input tensor
 in forward(input) is expected to be a 4D tensor (nInputPlane x time x height x width).
- * @param nInputPlane The number of expected input planes in the image given into forward()
- * @param nOutputPlane The number of output planes the convolution layer will produce.
- * @param kT The kernel size of the convolution in time
- * @param kW The kernel width of the convolution
- * @param kH The kernel height of the convolution
- * @param dT The step of the convolution in the time dimension. Default is 1
- * @param dW The step of the convolution in the width dimension. Default is 1
- * @param dH The step of the convolution in the height dimension. Default is 1
- * @param padT Additional zeros added to the input plane data on both sides of time axis.
- * Default is 0. (kT-1)/2 is often used here.
- * @param padW The additional zeros added per width to the input planes.
- * @param padH The additional zeros added per height to the input planes.
- * @param withBias whether with bias.
+
+* @param nInputPlane The number of expected input planes in the image given into forward()
+* @param nOutputPlane The number of output planes the convolution layer will produce.
+* @param kT The kernel size of the convolution in time
+* @param kW The kernel width of the convolution
+* @param kH The kernel height of the convolution
+* @param dT The step of the convolution in the time dimension. Default is 1
+* @param dW The step of the convolution in the width dimension. Default is 1
+* @param dH The step of the convolution in the height dimension. Default is 1
+* @param padT Additional zeros added to the input plane data on both sides of time axis.
+* Default is 0. (kT-1)/2 is often used here.
+* @param padW The additional zeros added per width to the input planes.
+* @param padH The additional zeros added per height to the input planes.
+* @param withBias whether with bias.
  
 **Scala example:**
 ```scala

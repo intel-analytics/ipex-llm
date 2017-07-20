@@ -45,8 +45,10 @@ val module = Linear(3, 5)
 
 println(module.forward(Tensor.range(1, 3, 1)))
 ```
+
 Output is
-```com.intel.analytics.bigdl.tensor.Tensor[Float] =
+```
+com.intel.analytics.bigdl.tensor.Tensor[Float] =
 0.79338956
 -2.3417668
 -2.7557678

@@ -13,10 +13,12 @@ Applies 2D max-pooling operation in kWxkH regions by step size dWxdH steps.
 The number of output features is equal to the number of input planes.
 If the input image is a 3D tensor nInputPlane x height x width,
 the output image size will be nOutputPlane x oheight x owidth where
-owidth  = op((width  + 2*padW - kW) / dW + 1)
-oheight = op((height + 2*padH - kH) / dH + 1)
+
++ owidth  = op((width  + 2*padW - kW) / dW + 1)
++ oheight = op((height + 2*padH - kH) / dH + 1)
+
 op is a rounding operator. By default, it is floor.
-It can be changed by calling :ceil() or :floor() methods.
+It can be changed by calling ceil() or floor() methods.
 
 **Scala example:**
 

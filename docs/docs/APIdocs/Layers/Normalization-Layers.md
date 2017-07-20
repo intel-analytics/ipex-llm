@@ -25,6 +25,7 @@ The operation implemented is:
 where gamma and beta are learnable parameters.The learning of gamma and beta is optional.
 
 **Parameters:**
+
 * **nOutput** - feature map number
 * **eps** - avoid divide zero. Default: 1e-5
 * **momentum** - momentum for weight update. Default: 0.1
@@ -106,29 +107,23 @@ by Sergey Ioffe, Christian Szegedy.
 This implementation is useful for inputs coming from convolution layers.
 For non-convolutional layers, see `BatchNormalization`
 The operation implemented is:
- ``` 
+``` 
         ( x - mean(x) )
   y = -------------------- * gamma + beta
        standard-deviation(x)
  
   where gamma and beta are learnable parameters.
   The learning of gamma and beta is optional.
-```  
-`nOutput` output feature map number
+```
 
-`eps` avoid divide zero
-
-`momentum` momentum for weight update
-
-`affine` affine operation on output or not
-
-`initWeight` initial weight tensor
-
-`initBias`  initial bias tensor
-
-`initGradWeight` initial gradient weight 
-
-`initGradBias` initial gradient bias
++ `nOutput` output feature map number
++ `eps` avoid divide zero
++ `momentum` momentum for weight update
++ `affine` affine operation on output or not
++ `initWeight` initial weight tensor
++ `initBias`  initial bias tensor
++ `initGradWeight` initial gradient weight 
++ `initGradBias` initial gradient bias
  
  
 **Scala example:**
@@ -300,6 +295,7 @@ Normalizes the input Tensor to have unit L_p norm. The smoothing parameter eps p
 division by zero when the input contains all zero elements (default = 1e-10).
 The input can be 1d, 2d or 4d. If the input is 4d, it should follow the format (n, c, h, w) where n is the batch number,
 c is the channel number, h is the height and w is the width
+
  * @param p L_p norm
  * @param eps smoothing parameter
 
@@ -449,10 +445,8 @@ The kernel is generally chosen as a gaussian when it is believed that the correl
 of two pixel locations decrease with increasing distance. On the feature dimension,
 a uniform average is used since the weighting across features is not known.
 
-```
-nInputPlane : number of input plane, default is 1.
-kernel : kernel tensor, default is a 9 x 9 tensor.
-```
++ nInputPlane : number of input plane, default is 1.
++ kernel : kernel tensor, default is a 9 x 9 tensor.
 
 **Scala example:**
 ```scala
