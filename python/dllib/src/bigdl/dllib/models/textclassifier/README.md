@@ -13,6 +13,8 @@
 
 ## How to run this example:
 
+Please note that due to some permission issue, this example **cannot** be run on Windows.
+
 If there is no [Pre-train GloVe word embeddings](http://nlp.stanford.edu/data/glove.6B.zip)
 or [20 Newsgroup dataset](http://www.cs.cmu.edu/afs/cs.cmu.edu/project/theo-20/www/data/news20.html) in
 `/tmp/news20` directory with the following structure looks like:
