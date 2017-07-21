@@ -17,7 +17,7 @@
 # limitations under the License.
 #
 
-BIGDL_VERSION=0.3.0-SNAPSHOT
+BIGDL_VERSION=0.2.0
 
 SPARK1_DIR=spark-1.6.3-bin-hadoop2.6
 SPARK1_LINK=https://www.apache.org/dist/spark/spark-1.6.3/$SPARK1_DIR.tgz
