@@ -42,8 +42,8 @@ export SPARK_HOME=path to spark-1.6.3-bin-hadoop2.6
 - NOTE: you might need to `sudo` if without permission for the installation
 ```bash
 pip install --upgrade pip
-pip install BigDL==0.2.0.dev3     # for Python 2.7
-pip3 install BigDL==0.2.0.dev3  # for Python 3.n
+pip install BigDL==0.2.0.dev4     # for Python 2.7
+pip3 install BigDL==0.2.0.dev4  # for Python 3.n
 ```
 
 
