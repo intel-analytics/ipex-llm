@@ -246,6 +246,17 @@ class Layer(JavaValue):
                              "modelPredictRDD", self.value, data_rdd)
         return result.map(lambda data: data.to_ndarray())
 
+    def predict_class(self, data_rdd):
+        """
+        module predict, return the predict label
+
+        :param data_rdd: the data to be predict.
+        :return: An RDD represent the predict label.
+        """
+        result = callBigDlFunc(self.bigdl_type,
+                               "modelPredictClass", self.value, data_rdd)
+        return result
+
     def test(self, val_rdd, batch_size, val_methods):
         """
         A method to benchmark the model quality.
