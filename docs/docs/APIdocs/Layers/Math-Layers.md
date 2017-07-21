@@ -95,6 +95,7 @@ output:
 ```
 
 
+---
 ## Min ##
 
 **Scala:**
@@ -108,9 +109,9 @@ min = Min(dim, num_input_dims)
 
 Applies a min operation over dimension `dim`.
 
-**Parameters:**
-* **dim** - A integer. The dimension to min along.
-* **numInputDims** - An optional integer indicating the number of input dimensions.
+Parameters:
+* `dim` A integer. The dimension to min along.
+* `numInputDims` An optional integer indicating the number of input dimensions.
  
 
 **Scala example:**
@@ -162,6 +163,7 @@ gradient = min.backward(input, grad_output)
 [[ 1.  0.]
  [ 1.  0.]]
 ```
+---
 ## Add ##
 
 **Scala:**
@@ -194,7 +196,7 @@ addLayer.forward(Tensor(T(T(1.0f, 1.0f, 1.0f, 1.0f), T(3.0f, 3.0f, 3.0f, 3.0f)))
 addLayer.backward(Tensor(T(T(1.0f, 1.0f, 1.0f, 1.0f), T(3.0f, 3.0f, 3.0f, 3.0f))),
     Tensor(T(T(0.1f, 0.1f, 0.1f, 0.1f), T(0.3f, 0.3f, 0.3f, 0.3f))))
 ```
-Its output should be
+Gives the output,
 ```
 2.0     3.0     4.0     5.0
 4.0     5.0     6.0     7.0
@@ -216,7 +218,7 @@ add_layer.forward(np.array([[1.0, 1.0, 1.0, 1.0], [3.0, 3.0, 3.0, 3.0]]))
 add_layer.backward(np.array([[1.0, 1.0, 1.0, 1.0], [3.0, 3.0, 3.0, 3.0]]),
     np.array([[0.1, 0.1, 0.1, 0.1], [0.3, 0.3, 0.3, 0.3]]))
 ```
-Its output should be
+Gives the output,
 ```
 array([[ 2.,  3.,  4.,  5.],
        [ 4.,  5.,  6.,  7.]], dtype=float32)
@@ -224,7 +226,7 @@ array([[ 2.,  3.,  4.,  5.],
 array([[ 0.1       ,  0.1       ,  0.1       ,  0.1       ],
        [ 0.30000001,  0.30000001,  0.30000001,  0.30000001]], dtype=float32)   
 ```
-
+---
 ## BiLinear
 
 **Scala:**
@@ -252,21 +254,15 @@ A bilinear transformation with sparse inputs.
 The input tensor given in forward(input) is a table containing both inputs x_1 and x_2,
 which are tensors of size N x inputDimension1 and N x inputDimension2, respectively.
 
-**Parameters:**
+Parameters:
 
-**inputSize1**   dimension of input x_1
-
-**inputSize2**   dimension of input x_2
-
-**outputSize**   output dimension
-
-**biasRes**  The layer can be trained without biases by setting bias = false. otherwise true
-
-**wRegularizer** : instance of `Regularizer`
+* `inputSize1`   dimension of input x_1
+* `inputSize2`   dimension of input x_2
+* `outputSize`   output dimension
+* `biasRes` The layer can be trained without biases by setting bias = false. otherwise true
+* `wRegularizer` instance of `Regularizer`
              (eg. L1 or L2 regularization), applied to the input weights matrices.
-
-**bRegularizer** : instance of `Regularizer`
-             applied to the bias.
+* `bRegularizer` instance of `Regularizer` applied to the bias.
 
 **Scala example:**
 ```scala
@@ -357,6 +353,7 @@ print grad
        [ 14.39296341,  -6.71434498],
        [ 20.93929482, -13.02455521]], dtype=float32)]
 ```
+---
 ## Clamp ##
 
 **Scala:**
@@ -369,8 +366,8 @@ model = Clamp(min, max)
 ```
 
 A kind of hard tanh activition function with integer min and max
-- param min min value
-- param max max value
+* `min` min value
+* `max` max value
 
 **Scala example:**
 ```scala
@@ -426,7 +423,7 @@ output = model.forward(input)
  [[ 1.74174643 -1.04323316]
   [-1.91858733  0.12624046]]
 ```
-
+---
 ## Square ##
 
 **Scala:**
@@ -450,7 +447,7 @@ val module = Square()
 
 println(module.forward(Tensor.range(1, 6, 1)))
 ```
-Output is
+Gives the output,
 ```
 com.intel.analytics.bigdl.tensor.Tensor[Float] =
 1.0
@@ -471,11 +468,11 @@ import numpy as np
 module = Square()
 print(module.forward(np.arange(1, 7, 1)))
 ```
-Output is
+Gives the output,
 ```
 [array([  1.,   4.,   9.,  16.,  25.,  36.], dtype=float32)]
 ```
-
+---
 ## Mean ##
 
 **Scala:**
@@ -544,7 +541,7 @@ m2 = Mean(2,1,True)
 out = m2.forward(input)
 print "output m2 is :",out
 ```
-produces output:
+Gives the output,
 ```python
 input is : [[[ 0.01990713  0.37740696]
   [ 0.67689963  0.67715705]]
@@ -558,6 +555,7 @@ creating: createMean
 output m2 is : [array([[ 0.34840336,  0.527282  ],
        [ 0.39545399,  0.72673225]], dtype=float32)]
 ```
+---
 ## Power ##
 
 **Scala:**
@@ -571,11 +569,11 @@ module = Power(power, scale=1.0, shift=0.0)
 
  Apply an element-wise power operation with scale and shift.
  
- f(x) = (shift + scale * x)^power^
+ `f(x) = (shift + scale * x)^power^`
  
- `power` the exponent.
- `scale` Default is 1.
- `shift` Default is 0.
+ * `power` the exponent.
+ * `scale` Default is 1.
+ * `shift` Default is 0.
 
 **Scala example:**
 ```scala
@@ -662,8 +660,8 @@ module = AddConstant(constant_scalar,inplace=False,bigdl_type="float")
 ```
 
 Element wise add a constant scalar to input tensor
-* @param constant_scalar constant value
-* @param inplace Can optionally do its operation in-place without using extra state memory
+* `constant_scalar` constant value
+* `inplace` Can optionally do its operation in-place without using extra state memory
  
 **Scala example:**
 ```scala
@@ -691,7 +689,7 @@ module.forward(input)
 [ 4.,  5.,  6.],
 [ 7.,  8.,  9.]], dtype=float32)]
 ```
-
+---
 ## Abs ##
 
 **Scala:**
@@ -729,7 +727,7 @@ print(abs.forward(input))
 ```
 `output is: [array([ 21.,  29.,  30.], dtype=float32)]`
 
-
+---
 ## Log ##
 
 **Scala:**
@@ -784,7 +782,7 @@ gradient = log.backward(input, grad_output)
 -> print gradient
 [ 1.          0.36787945]
 ```
-
+---
 ## Sum ##
 
 **Scala:**
@@ -865,6 +863,7 @@ creating: createSum
 output 2 is : [array([[ 0.39697325,  0.5237624 ],
        [ 0.40162998,  0.23838466]], dtype=float32)]
 ```
+---
 ## Sqrt ##
 
 Apply an element-wise sqrt operation.
@@ -899,8 +898,7 @@ val gradInput = sqrt.backward(input, gradOutput)
 println(gradOutput
 ```
 
-The output will be,
-
+Gives the output,
 ```
 output: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 1.0     1.4142135       1.7320508       2.0     2.236068
@@ -908,7 +906,7 @@ output: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 3.3166249       3.4641016       3.6055512       3.7416575       3.8729835
 ```
 
-The gradInput will be,
+Gives the gradInput
 
 ```
 gradInput: com.intel.analytics.bigdl.tensor.Tensor[Float] =
@@ -939,7 +937,7 @@ gradInput = sqrt.backward(input, gradOutput)
 print gradInput
 ```
 
-The output will be:
+Gives the output,
 
 ```
 [array([[ 1.        ,  1.41421354,  1.73205078,  2.        ,  2.23606801],
@@ -947,13 +945,14 @@ The output will be:
        [ 3.31662488,  3.46410155,  3.60555124,  3.7416575 ,  3.87298346]], dtype=float32)]
 ```
 
-The gradInput will be:
+Gives the gradInput:
 
 ```
 [array([[ 1.        ,  1.06066012,  1.15470052,  1.25      ,  1.34164071],
        [ 1.42886901,  1.51185787,  1.59099019,  1.66666675,  1.73925269],
        [ 1.80906808,  1.87638831,  1.94145072,  2.00445938,  2.0655911 ]], dtype=float32)]
 ```
+---
 ## Exp ##
 
 **Scala:**
@@ -997,8 +996,8 @@ exp = Exp()
        [  2.71828175,   7.38905621,  20.08553696]], dtype=float32)]
 
 ```
-
-## Max
+---
+## Max ##
 
 **Scala:**
 ```scala
@@ -1011,11 +1010,11 @@ layer = Max(dim, num_input_dims=INTMIN)
 
 Applies a max operation over dimension `dim`.
 
-**Parameters:**
+Parameters:
 
-**dim** max along this dimension
+* `dim` max along this dimension
 
-**numInputDims** Optional. If in a batch model, set to the inputDims.
+* `numInputDims` Optional. If in a batch model, set to the inputDims.
 
 **Scala example:**
 ```scala
@@ -1070,7 +1069,8 @@ print grad
 [[ 0.  0.  3.]
  [ 0.  0.  4.]
  [ 0.  0.  5.]]
-``
+```
+---
 ## CAdd ##
 
 **Scala:**
@@ -1089,7 +1089,7 @@ repeat on unmatched singleton dimension(if some unmatched dimension isn't single
 it will report an error). If the input is a batch, a singleton dimension will be add to the first
 dimension before the expand.
 
- * @param size the size of the bias 
+ * `size` the size of the bias 
 
 **Scala example:**
 ```scala
@@ -1118,7 +1118,7 @@ module.forward(input)
 array([[ 0.89537328,  0.84167016,  0.68722725],
        [ 0.1290929 ,  0.37419251, -0.20137388]], dtype=float32)
 ```
-
+---
 ## Cosine ##
 
 **Scala:**
@@ -1172,8 +1172,8 @@ module = Cosine(3,3)
 module.forward(input)
 print "output is :",out
 ```
+Gives the output,
 
-produces output:
 ```python
 input is : [[ 0.31156943  0.85577626  0.4274042 ]
  [ 0.79744055  0.66431136  0.05657437]]
@@ -1183,6 +1183,7 @@ output is : [array([[-0.73284394, -0.28076306, -0.51965958],
 
 
 ```
+---
 ## Mul ##
 
 **Scala:**
@@ -1227,7 +1228,7 @@ input = np.random.uniform(0, 1, (1, 5)).astype("float32")
 [array([[ 0.72429317,  0.7377845 ,  0.09136307,  0.40439236,  0.29011244]], dtype=float32)]
 
 ```
-
+---
 ## MulConstant ##
 
 **Scala:**
@@ -1242,9 +1243,9 @@ layer = MulConstant(const, inplace)
 Multiplies input Tensor by a (non-learnable) scalar constant.
 This module is sometimes useful for debugging purposes.
 
-**Parameters:**
-* **constant** - scalar constant
-* **inplace** - Can optionally do its operation in-place without using extra state memory. Default: false
+Parameters:
+* `constant`scalar constant
+* `inplace` Can optionally do its operation in-place without using extra state memory. Default: false
 
 **Scala example:**
 ```scala
