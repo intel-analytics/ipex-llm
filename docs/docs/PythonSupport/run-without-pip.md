@@ -90,3 +90,10 @@ After successfully launching Jupyter, you will be able to navigate to the notebo
 
 ## BigDL Configuration
 Please check [this page](../UserGuide/configuration.md)
+
+## **FAQ**
+- TypeError: 'JavaPackage' object is not callable
+  - `Check if every path within the launch script is valid expecially the path end with jar `
+
+- java.lang.NoSuchMethodError:XXX
+  - `Check if the spark version is match i.e you are using Spark2.x but the underneath BigDL compiled with Spark1.6`
