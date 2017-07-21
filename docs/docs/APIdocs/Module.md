@@ -108,8 +108,9 @@ model.predictClass(dataset)
 **Python**
 ```python
 model.predict(data_rdd)
+model.predict_class(data_rdd)
 ```
-Use `predict` or `predictClass` on model for Prediction. `predict` returns return the probability distribution of each class, and `predictClass` returns the predict label. They both accepts the test dataset as parameter. 
+Use `predict` or `predictClass` or `predict_class` on model for Prediction. `predict` returns return the probability distribution of each class, and `predictClass`/`predict_class` returns the predict label. They both accepts the test dataset as parameter. 
 
 **Scala example**
 ```scala
