@@ -114,7 +114,7 @@ Caculate the percentage that target in output's top5 probability indexes.
 ```scala
 val top5accuracy = new Top5Accuracy()
 ```
-set validation method as Top1Accuracy
+set validation method as Top5Accuracy
 ```scala
 val result = model.evaluate(dataSet, Array(new Top5Accuracy[Float]().asInstanceOf[ValidationMethod[Float]]))
 
