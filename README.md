@@ -21,7 +21,7 @@ You may want to write your deep learning programs using BigDL if:
   
   https://bigdl-project.github.io/
   
-  In particular, you can check out the [Getting Started page](https://bigdl-project.github.io/master/#getting-started/) for a qucik overview of how to use BigDL
+  In particular, you can check out the [Getting Started page](https://bigdl-project.github.io/master/#getting-started/) for a quick overview of how to use BigDL
   
 * For step-by-step deep leaning tutorials on BigDL (using Python), you can check out the [BigDL Tutorials project](https://github.com/intel-analytics/BigDL-tutorials)
 
