@@ -24,56 +24,18 @@ by passing JVM parameters. Here's an example:
 java -cp xxx.jar -DFOO=BAR your.main.class.name
 ```
 
-## Properties
+## Available Properties
 
-### Logging
-* bigdl.utils.LoggerFilter.disable
+Category|Property|Default value|Description
+-----|-----|------|-----
+**Logging**|bigdl.utils.LoggerFilter.disable|*false*|Disable redirecting logs of Spark and BigDL to  a file.
+|bigdl.utils.LoggerFilter.logFile|*Current_Working_Directory/bigdl.log*|Where is the redirecting log.
+|bigdl.utils.LoggerFilter.enableSparkLog|*true*|Enable redirecting Spark logs to logFile. Set it to false when you don't want to see Spark logs in the redirecting log file.
+**Mode**|bigdl.localMode|*false*|Whether BigDL is running as a local Java/Scala program.
+**Multi-threading**|bigdl.coreNumber|*half of the virtual core number*|How many cores BigDL use on your machine. It is only used when bigdl.localMode is set to true. If hyper thread is enabled on your machine, DO NOT set it larger than half of the virtual core number.
+|bigdl.Parameter.syncPoolSize|*4*|Thread pool size for syncing parameter between executors.
+**Distributed Training**|bigdl.network.nio|*true*|Whether use NIO as BlockManager backend in Spark 1.5. If it is set to false, user can specify spark.shuffle.blockTransferService to change the BlockManager backend. **ONLY** used when running on Spark 1.5.
+|bigdl.failure.retryTimes|*5*|How many times to retry when there's failure in distributed Training.
+|bigdl.failure.retryTimeInterval|*120*|Unit is second. How long recount the retry times.
+|bigdl.check.singleton|*false*|Whether to check if multiple partition run on a same executor, which is bad for performance.
 
-Default value is **false**. Disable redirecting logs of Spark and BigDL to a file.
-
-* bigdl.utils.LoggerFilter.logFile
-
-Default value is **Current_Working_Directory/bigdl.log**. Where is the redirecting log.
-
-* bigdl.utils.LoggerFilter.enableSparkLog
-
-Default value is **true**. Enable redirecting Spark logs to logFile. Set it to false when you don't want to see Spark logs in the redirecting log file.
-
-### Mode
-* bigdl.localMode
-
-Default value is **false**. Whether BigDL is running as a local Java/Scala program.
-
-### Multi-threading
-
-* bigdl.coreNumber
-
-Default value is **half of the virtual core number**. How many cores BigDL use on your machine.
-It is only used when bigdl.localMode is set to true. If hyper thread is enabled on your machine,
-DO NOT set it larger than half of the virtual core number.
-
-* bigdl.Parameter.syncPoolSize
-
-Default value is **4**. Thread pool size for syncing parameter between executors.
-
-
-### Distributed Training
-* bigdl.network.nio
-
-Default value is **true**. Whether use NIO as BlockManager backend in Spark 1.5. If it is set to
-false, user can specify spark.shuffle.blockTransferService to change the BlockManager backend.
-
-It is only used when running on Spark 1.5.
-
-* bigdl.failure.retryTimes
-
-Default value is **5**. How many times to retry when there's failure in distributed Training.
-
-* bigdl.failure.retryTimeInterval
-
-Default value is **120**. Unit is second. How long recount the retry times.
-
-* bigdl.check.singleton
-
-Default value is **false**. Whether to check if multiple partition run on a same executor, which is
-bad for performance.

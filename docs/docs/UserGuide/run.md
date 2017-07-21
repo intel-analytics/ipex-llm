@@ -106,6 +106,7 @@ com.intel.analytics.bigdl.example.lenetLocal.Train \
 --checkpoint ./model
 ```
 In the above commands
+
 * -f: where you put your MNIST data
 * -c: The core number on local machine used for this training. The default value is physical cores number. Get it through Runtime.getRuntime().availableProcessors() / 2
 * -b: The mini-batch size. It is expected that the mini-batch size is a multiple of core_number
@@ -126,6 +127,7 @@ com.intel.analytics.bigdl.example.lenetLocal.Test \
 -b batch_size
 ```
 In the above command
+
 * -f: where you put your MNIST data
 * --model: the model snapshot file
 * -c: The core number on local machine used for this testing. The default value is physical cores number. Get it through Runtime.getRuntime().availableProcessors() / 2
@@ -140,10 +142,11 @@ com.intel.analytics.bigdl.example.lenetLocal.Predict \
 --model ./model/model.iteration
 ```
 In the above command
+
 * -f: where you put your MNIST data
 * -c: The core number on local machine used for this prediction. The default value is physical cores number. Get it through Runtime.getRuntime().availableProcessors() / 2
 * --model: the model snapshot file
 
 ## For Windows User
 Some BigDL functions depends on Hadoop library, which requires winutils.exe installed on your machine. If you meet "Could not locate executable null\bin\winutils.exe", see
-the [known issue page](known-issues.md).
+the [known issue page](../known-issues.md).
