@@ -8,7 +8,7 @@ Before using BigDL, you need to install Apache Spark and obtain BigDL libraries.
 
 ## **Prepare your Data**
 
-Your data need to be transformed into RDD of [Sample](APIdocs/Data.md#sample) in order to be fed into BigDL for training, evaluation and prediction (also refer to [Optimizer docs](APIdocs/Optimizers/Optimizer.md)). 
+Your data need to be transformed into RDD of [Sample](APIdocs/Data.md#sample) in order to be fed into BigDL for training, evaluation and prediction (also refer to [Optimization](ProgrammingGuide/optimization.md) and [Optimizer API guide](APIdocs/Optimizers/Optimizer.md)). 
 
 [Tensor](APIdocs/Data.md#tensor), [Table](APIdocs/Data.md#table) are essential data structures that composes the basic dataflow inside the nerual network( e.g. input/output, gradients, weights, etc.). You will need to understand them to get a better idea of layer behaviors. 
 
@@ -49,33 +49,31 @@ To define a model, you can either use the Sequential API or Functional API. The 
 
 After creating the model, you will have to deside which loss function to use in training. Find the details of losses defined in BigDL in [Losses](APIdocs/Losses.md).  
 
-Now you create an `Optimizer` and set the loss function, input dataset along with other hyper parameters into the Optimizer. Then call `Optimizer.optimize` to train. Refer to [Optimizer docs](APIdocs/Optimizers/Optimizer.md) for details. 
+Now you create an `Optimizer` and set the loss function, input dataset along with other hyper parameters into the Optimizer. Then call `Optimizer.optimize` to train. Refer to [Optimization](ProgrammingGuide/optimization.md) and [Optimizer API guide](APIdocs/Optimizers/Optimizer.md) for details. 
 
-Evaluation can be performed periodically during a training. Before calling `Optimizer.optimize`, use `Optimizer.setValidation` (in Scala) or `Optimizer.set_validation` (in Python) to set validation configurations, e.g. validation dataset, validation metrics, etc. For a list of defined metrics, refer to [Metrics](APIdocs/Metrics.md).
+Model Evaluation can be performed periodically during a training. Refer to [Validate your Model in Training](ProgrammingGuide/optimization.md#validate-your-model-in-training) for details.  For a list of defined metrics, refer to [Metrics](APIdocs/Metrics.md).
 
-When `Optimizer.optimize` finishes, it will return a trained model. You can then use `model.predict` for predictions. Refer to [Model Prediction](APIdocs/Module.md#model-prediction) for detailed usage.    
+When `Optimizer.optimize` finishes, it will return a trained model. You can then use the trained model for prediction or evaluation. Refer to [Model Prediction](APIdocs/Module.md#model-prediction) and [Model Evaluation](APIdocs/Module.md#model-evaluation) for detailed usage.    
+
+If you prefer to train a model inside a Spark ML pipeline, please refer to  [Using BigDL in Spark ML Pipeline](ProgrammingGuide/MLPipeline/MLPipeline.  md) page for usage.
 
 ## **Save a Model**
 
 When training is finished, you may need to save the final model for later use. 
 
-Use `model.save` to save your BigDL model into a file (in BigDL model format) on local filesystem, HDFS, or Amazon s3 (refer to [Model Save](APIdocs/Module.md/#model-save)). 
+BigDL allows you to save your BigDL model on local filesystem, HDFS, or Amazon s3 (refer to [Model Save](APIdocs/Module.md/#model-save)). 
 
 You may also save the model to Tensorflow or Caffe format (refer to [Caffe Support](ProgrammingGuide/caffe-support.md), and [Tensorflow Support](ProgrammingGuide/tensorflow-support.md) respectively).  
 
-
-If you prefer to train a model inside a Spark ML pipeline, please refer to [Using BigDL in Spark ML Pipeline](ProgrammingGuide/MLPipeline/MLPipeline.md) page for usage. 
 
 ## **Stop and Resume a Training**
 
 Training a deep learning model sometimes takes a very long time. It may be stopped or interrupted and we need the training to resume from where we have left. 
 
-To enable this, you have to configure `Optimizer` to periodically take snapshots of the model (trained weights, biases, etc.) and optim-method (configurations and states of the optimization) and dump them into files. Use `Optimizer.setCheckpoint` (in Scala) or `optimizer.set_checkpoint` (in Python) to configure the frequency and paths of writing snapshots. Then during training, you will find several snapshot files written in the checkpoint path. Refer to [Optimizer API](APIdocs/Optimizers/Optimizer.md) for details. 
+To enable this, you have to configure `Optimizer` to periodically take snapshots of the model (trained weights, biases, etc.) and optim-method (configurations and states of the optimization) and dump them into files. Refer to [Checkpointing](ProgrammingGuide/optimization/#checkpointing) for details. 
 
-After training stops, you can resume from any saved point. Choose one of the model snapshots and the corresponding optim-method snapshot to resume (the iteration number of the the snapshots is in the file name suffix). Use `Module.load` (Scala) or `Model.load`(Python) to load the model snapshot into an model object, and `OptimMethod.load` (Scala only, Python does not support this yet) to load optimization method into an OptimMethod object. Then create a new `Optimizer` with the loaded model and optim method. Call `Optimizer.optimize`, and you will resume from the point where the snapshot is taken. Refer to [OptimMethod API](APIdocs/Optimizers/OptimMethod.md) and [Model Load](APIdocs/Module.md#model-load) for details.
+To resume a training after it stops, refer to [Resume Training](ProgrammingGuide/optimization.md#resume-training).
  
-You can also resume training without loading the optim method, if you intend to change the learning rate schedule or even the optimization algorithm. Just create an `Optimizer` with loaded model and a new instance of OptimMethod (both Scala and Python). 
-
 
 --- 
 
