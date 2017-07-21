@@ -57,6 +57,8 @@ When `Optimizer.optimize` finishes, it will return a trained model. You can then
 
 If you prefer to train a model inside a Spark ML pipeline, please refer to  [Using BigDL in Spark ML Pipeline](ProgrammingGuide/MLPipeline/MLPipeline.  md) page for usage.
 
+---
+
 ## **Save a Model**
 
 When training is finished, you may need to save the final model for later use. 
@@ -65,6 +67,7 @@ BigDL allows you to save your BigDL model on local filesystem, HDFS, or Amazon s
 
 You may also save the model to Tensorflow or Caffe format (refer to [Caffe Support](ProgrammingGuide/caffe-support.md), and [Tensorflow Support](ProgrammingGuide/tensorflow-support.md) respectively).  
 
+---
 
 ## **Stop and Resume a Training**
 
