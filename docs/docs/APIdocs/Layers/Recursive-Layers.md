@@ -33,8 +33,8 @@ eg. a tensor represents a binary tree:
  -1, -1, -1]
 ```
 
-**Parameters:**
-* **content** the tensor to be encoded
+Parameters:
+* `content` the tensor to be encoded
 
 ##TreeLSTM##
 
@@ -43,6 +43,7 @@ TreeLSTM is a base class of all other kinds of tree lstms,
 [Improved Semantic Representations From Tree-Structured Long Short-Term Memory Networks](https://arxiv.org/abs/1503.00075)
  by Kai Sheng Tai, Richard Socher, and Christopher Manning.
 
+---
 ## BinaryTreeLSTM ##
 
 **Scala:**
@@ -70,11 +71,11 @@ Tree-LSTM is a kind of recursive neural networks, as described in the paper
  by Kai Sheng Tai, Richard Socher, and Christopher Manning.
 
 
-**Parameters:**
-* **inputSize** - the size of each input vector
-* **hiddenSize** - hidden unit size in GRU
-* **gateOutput** - whether gate the output. Default is `true`
-* **withGraph** - whether create lstms with `com.intel.analytics.bigdl.nn.Graph`. Default is `true`.
+Parameters:
+* `inputSize` the size of each input vector
+* `hiddenSize` hidden unit size in GRU
+* `gateOutput` whether gate the output. Default is `true`
+* `withGraph` whether create lstms with `com.intel.analytics.bigdl.nn.Graph`. Default is `true`.
 
 **Scala example:**
 ```scala
