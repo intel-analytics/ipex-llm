@@ -1,10 +1,4 @@
----
-Regularizers are used to avoid overfitting. 
-
----
-## L1 Regularizer
-
-L1 Regularizer.
+## L1 Regularizer ##
 
 **Scala:**
 ```scala
@@ -14,36 +8,14 @@ val l1Regularizer = L1Regularizer(rate)
 ```python
 regularizerl1 = L1Regularizer(rate)
 ```
----
-## L2 Regularizer 
 
-L2 Regularizer.
+L1 regularizer is used to add penalty to the gradWeight to avoid overfitting.
 
-**Scala:**
-```scala
-val l2Regularizer = L2Regularizer(rate)
-```
-**Python:**
-```python
-regularizerl2 = L2Regularizer(rate)
-```
----
-## L1L2 Regularizer
+In our code implmenation, gradWeight = gradWeight + alpha * abs(weight)
 
-L1L2 Regularizer.
- 
-**Scala:**
-```scala
-val l1l2Regularizer = L1L2Regularizer(l1rate, l2rate)
-```
-**Python:**
-```python
-regularizerl1l2 = L1L2Regularizer(l1rate, l2rate)
-```
+For more details, please refer to [wiki](https://en.wikipedia.org/wiki/Regularization_(mathematics)).
 
----
-## Scala Example
-### L1 Regularizer
+**Scala example:**
 ```scala
 
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
@@ -85,7 +57,57 @@ res2: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 5x5]
 
 ```
-### L2 Regularizer
+
+**Python example:**
+```python
+
+from bigdl.nn.layer import *
+from bigdl.nn.criterion import *
+from bigdl.optim.optimizer import *
+from bigdl.util.common import *
+
+input = np.random.uniform(0, 1, (3, 5)).astype("float32")
+gradOutput = np.random.uniform(0, 1, (3, 5)).astype("float32")
+linear = Linear(5, 5, wRegularizer = L1Regularizer(0.2), bRegularizer = L1Regularizer(0.2))
+output = linear.forward(input)
+gradInput = linear.backward(input, gradOutput)
+
+> linear.parameters()
+{u'Linear@596d857b': {u'bias': array([ 0.3185505 , -0.02004393,  0.34620118, -0.09206461,  0.40776938], dtype=float32),
+  u'gradBias': array([ 2.14087653,  1.82181644,  1.90674937,  1.37307787,  0.81534696], dtype=float32),
+  u'gradWeight': array([[ 0.34909648,  0.85083449,  1.44904375,  0.90150446,  0.57136625],
+         [ 0.3745544 ,  0.42218602,  1.53656614,  1.1836741 ,  1.00702667],
+         [ 0.30529332,  0.26813674,  0.85559171,  0.61224306,  0.34721529],
+         [ 0.22859855,  0.8535381 ,  1.19809723,  1.37248564,  0.50041491],
+         [ 0.36197871,  0.03069445,  0.64837945,  0.12765063,  0.12872688]], dtype=float32),
+  u'weight': array([[-0.12423037,  0.35694697,  0.39038274, -0.34970999, -0.08283543],
+         [-0.4186025 , -0.33235055,  0.34948507,  0.39953214,  0.16294235],
+         [-0.25171402, -0.28955361, -0.32243955, -0.19771226, -0.29320192],
+         [-0.39263198,  0.37766701,  0.14673658,  0.24882999, -0.0779015 ],
+         [ 0.0323218 , -0.31266898,  0.31543773, -0.0898933 , -0.33485892]], dtype=float32)}}
+```
+
+
+
+
+## L2 Regularizer ##
+
+**Scala:**
+```scala
+val l2Regularizer = L2Regularizer(rate)
+```
+**Python:**
+```python
+regularizerl2 = L2Regularizer(rate)
+```
+
+L2 regularizer is used to add penalty to the gradWeight to avoid overfitting.
+
+In our code implmenation, gradWeight = gradWeight + alpha * weight * weight
+
+For more details, please refer to [wiki](https://en.wikipedia.org/wiki/Regularization_(mathematics)).
+
+**Scala example:**
 ```scala
 
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
@@ -127,7 +149,53 @@ res0: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 5x5]
 
 ```
-### L1L2 Regularizer
+
+**Python example:**
+```python
+from bigdl.nn.layer import *
+from bigdl.nn.criterion import *
+from bigdl.optim.optimizer import *
+from bigdl.util.common import *
+
+input = np.random.uniform(0, 1, (3, 5)).astype("float32")
+gradOutput = np.random.uniform(0, 1, (3, 5)).astype("float32")
+linear = Linear(5, 5, wRegularizer = L2Regularizer(0.2), bRegularizer = L2Regularizer(0.2))
+output = linear.forward(input)
+gradInput = linear.backward(input, gradOutput)
+
+> linear.parameters()
+{u'Linear@787aab5e': {u'bias': array([-0.43960261, -0.12444571,  0.22857292, -0.43216187,  0.27770036], dtype=float32),
+  u'gradBias': array([ 0.51726723,  1.32883406,  0.57567948,  1.7791357 ,  1.2887038 ], dtype=float32),
+  u'gradWeight': array([[ 0.45477036,  0.22262168,  0.21923628,  0.26152173,  0.19836383],
+         [ 1.12261093,  0.72921795,  0.08405925,  0.78192139,  0.48798928],
+         [ 0.34581488,  0.21195598,  0.26357424,  0.18987852,  0.2465664 ],
+         [ 1.18659711,  1.11271608,  0.72589797,  1.19098675,  0.33769298],
+         [ 0.82314551,  0.71177536,  0.4428404 ,  0.764337  ,  0.3500182 ]], dtype=float32),
+  u'weight': array([[ 0.03727285, -0.39697152,  0.42733836, -0.34291714, -0.13833708],
+         [ 0.09232076, -0.09720675, -0.33625153,  0.06477787, -0.34739712],
+         [ 0.17145753,  0.10128133,  0.16679128, -0.33541158,  0.40437087],
+         [-0.03005157, -0.36412898,  0.0629965 ,  0.13443278, -0.38414535],
+         [-0.16630849,  0.06934392,  0.40328237,  0.22299488, -0.1178569 ]], dtype=float32)}}
+```
+
+## L1L2 Regularizer ##
+
+**Scala:**
+```scala
+val l1l2Regularizer = L1L2Regularizer(l1rate, l2rate)
+```
+**Python:**
+```python
+regularizerl1l2 = L1L2Regularizer(l1rate, l2rate)
+```
+
+L1L2 regularizer is used to add penalty to the gradWeight to avoid overfitting.
+
+In our code implmenation, we will apply L1regularizer and L2regularizer sequentially.
+
+For more details, please refer to [wiki](https://en.wikipedia.org/wiki/Regularization_(mathematics)).
+
+**Scala example:**
 ```scala
 
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
@@ -168,64 +236,8 @@ res1: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 -0.053217214    -8.643427E-4    -0.036953792    0.29753304      0.06567569
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 5x5]
 ```
----
-## Python Example
-### L1 Regularizer
-```python
 
-from bigdl.nn.layer import *
-from bigdl.nn.criterion import *
-from bigdl.optim.optimizer import *
-from bigdl.util.common import *
-
-input = np.random.uniform(0, 1, (3, 5)).astype("float32")
-gradOutput = np.random.uniform(0, 1, (3, 5)).astype("float32")
-linear = Linear(5, 5, wRegularizer = L1Regularizer(0.2), bRegularizer = L1Regularizer(0.2))
-output = linear.forward(input)
-gradInput = linear.backward(input, gradOutput)
-
-> linear.parameters()
-{u'Linear@596d857b': {u'bias': array([ 0.3185505 , -0.02004393,  0.34620118, -0.09206461,  0.40776938], dtype=float32),
-  u'gradBias': array([ 2.14087653,  1.82181644,  1.90674937,  1.37307787,  0.81534696], dtype=float32),
-  u'gradWeight': array([[ 0.34909648,  0.85083449,  1.44904375,  0.90150446,  0.57136625],
-         [ 0.3745544 ,  0.42218602,  1.53656614,  1.1836741 ,  1.00702667],
-         [ 0.30529332,  0.26813674,  0.85559171,  0.61224306,  0.34721529],
-         [ 0.22859855,  0.8535381 ,  1.19809723,  1.37248564,  0.50041491],
-         [ 0.36197871,  0.03069445,  0.64837945,  0.12765063,  0.12872688]], dtype=float32),
-  u'weight': array([[-0.12423037,  0.35694697,  0.39038274, -0.34970999, -0.08283543],
-         [-0.4186025 , -0.33235055,  0.34948507,  0.39953214,  0.16294235],
-         [-0.25171402, -0.28955361, -0.32243955, -0.19771226, -0.29320192],
-         [-0.39263198,  0.37766701,  0.14673658,  0.24882999, -0.0779015 ],
-         [ 0.0323218 , -0.31266898,  0.31543773, -0.0898933 , -0.33485892]], dtype=float32)}}
-```
-### L2 Regularizer
-```python
-from bigdl.nn.layer import *
-from bigdl.nn.criterion import *
-from bigdl.optim.optimizer import *
-from bigdl.util.common import *
-
-input = np.random.uniform(0, 1, (3, 5)).astype("float32")
-gradOutput = np.random.uniform(0, 1, (3, 5)).astype("float32")
-linear = Linear(5, 5, wRegularizer = L2Regularizer(0.2), bRegularizer = L2Regularizer(0.2))
-output = linear.forward(input)
-gradInput = linear.backward(input, gradOutput)
-
-> linear.parameters()
-{u'Linear@787aab5e': {u'bias': array([-0.43960261, -0.12444571,  0.22857292, -0.43216187,  0.27770036], dtype=float32),
-  u'gradBias': array([ 0.51726723,  1.32883406,  0.57567948,  1.7791357 ,  1.2887038 ], dtype=float32),
-  u'gradWeight': array([[ 0.45477036,  0.22262168,  0.21923628,  0.26152173,  0.19836383],
-         [ 1.12261093,  0.72921795,  0.08405925,  0.78192139,  0.48798928],
-         [ 0.34581488,  0.21195598,  0.26357424,  0.18987852,  0.2465664 ],
-         [ 1.18659711,  1.11271608,  0.72589797,  1.19098675,  0.33769298],
-         [ 0.82314551,  0.71177536,  0.4428404 ,  0.764337  ,  0.3500182 ]], dtype=float32),
-  u'weight': array([[ 0.03727285, -0.39697152,  0.42733836, -0.34291714, -0.13833708],
-         [ 0.09232076, -0.09720675, -0.33625153,  0.06477787, -0.34739712],
-         [ 0.17145753,  0.10128133,  0.16679128, -0.33541158,  0.40437087],
-         [-0.03005157, -0.36412898,  0.0629965 ,  0.13443278, -0.38414535],
-         [-0.16630849,  0.06934392,  0.40328237,  0.22299488, -0.1178569 ]], dtype=float32)}}
-```
-### L1L2 Regularizer
+**Python example:**
 ```python
 from bigdl.nn.layer import *
 from bigdl.nn.criterion import *
