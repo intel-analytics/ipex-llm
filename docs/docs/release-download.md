@@ -9,10 +9,10 @@ Here are the folders for nightly build packages. The packages are built from lat
 
 |               | Linux x64 | Mac |
 | ------------- | --------- | ------ |
-| Spark 1.5.2   | [download](https://oss.sonatype.org/content/groups/public/com/intel/analytics/bigdl/dist-spark-1.5.2-scala-2.10.5-linux64/0.2.0-SNAPSHOT/)| [download](https://oss.sonatype.org/content/groups/public/com/intel/analytics/bigdl/dist-spark-1.5.2-scala-2.10.5-mac/0.2.0-SNAPSHOT/)   |
-| Spark 1.6.3   | [download](https://oss.sonatype.org/content/groups/public/com/intel/analytics/bigdl/dist-spark-1.6.3-scala-2.10.5-linux64/0.2.0-SNAPSHOT/) | [download](https://oss.sonatype.org/content/groups/public/com/intel/analytics/bigdl/dist-spark-1.6.3-scala-2.10.5-mac/0.2.0-SNAPSHOT/) |
-| Spark 2.0.2   | [download](https://oss.sonatype.org/content/groups/public/com/intel/analytics/bigdl/dist-spark-2.0.2-scala-2.11.8-linux64/0.2.0-SNAPSHOT/) | [download](https://oss.sonatype.org/content/groups/public/com/intel/analytics/bigdl/dist-spark-2.0.2-scala-2.11.8-mac/0.2.0-SNAPSHOT/) |
-| Spark 2.1.1   | [download](https://oss.sonatype.org/content/groups/public/com/intel/analytics/bigdl/dist-spark-2.1.1-scala-2.11.8-linux64/0.2.0-SNAPSHOT/) | [download](https://oss.sonatype.org/content/groups/public/com/intel/analytics/bigdl/dist-spark-2.1.1-scala-2.11.8-mac/0.2.0-SNAPSHOT/) |
+| Spark 1.5.2   | [download](https://oss.sonatype.org/content/groups/public/com/intel/analytics/bigdl/dist-spark-1.5.2-scala-2.10.5-linux64/0.3.0-SNAPSHOT/)| [download](https://oss.sonatype.org/content/groups/public/com/intel/analytics/bigdl/dist-spark-1.5.2-scala-2.10.5-mac/0.3.0-SNAPSHOT/)   |
+| Spark 1.6.3   | [download](https://oss.sonatype.org/content/groups/public/com/intel/analytics/bigdl/dist-spark-1.6.3-scala-2.10.5-linux64/0.3.0-SNAPSHOT/) | [download](https://oss.sonatype.org/content/groups/public/com/intel/analytics/bigdl/dist-spark-1.6.3-scala-2.10.5-mac/0.3.0-SNAPSHOT/) |
+| Spark 2.0.2   | [download](https://oss.sonatype.org/content/groups/public/com/intel/analytics/bigdl/dist-spark-2.0.2-scala-2.11.8-linux64/0.3.0-SNAPSHOT/) | [download](https://oss.sonatype.org/content/groups/public/com/intel/analytics/bigdl/dist-spark-2.0.2-scala-2.11.8-mac/0.3.0-SNAPSHOT/) |
+| Spark 2.1.1   | [download](https://oss.sonatype.org/content/groups/public/com/intel/analytics/bigdl/dist-spark-2.1.1-scala-2.11.8-linux64/0.3.0-SNAPSHOT/) | [download](https://oss.sonatype.org/content/groups/public/com/intel/analytics/bigdl/dist-spark-2.1.1-scala-2.11.8-mac/0.3.0-SNAPSHOT/) |
 
 
 --- 
