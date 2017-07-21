@@ -888,3 +888,113 @@ Output is
         [ 0.86757064,  0.91269422,  0.95781779]]], dtype=float32)]
 ```
 
+## TemporalConvolution ##
+
+**Scala:**
+```scala
+val module = TemporalConvolution(
+  inputFrameSize, outputFrameSize, kernelW, strideW = 1, propagateBack = true,
+  wRegularizer = null, bRegularizer = null, initWeight = null, initBias = null,
+  initGradWeight = null, initGradBias = null
+  )
+```
+**Python:**
+```python
+module = TemporalConvolution(
+  input_frame_size, output_frame_size, kernel_w, stride_w = 1, propagate_back = True,
+  w_regularizer = None, b_regularizer = None, init_weight = None, init_bias = None,
+  init_grad_weight = None, init_grad_bias = None
+  )
+```
+
+Applies a 1D convolution over an input sequence composed of nInputFrame frames.
+The input tensor in `forward(input)` is expected to be a 2D tensor
+(`nInputFrame` x `inputFrameSize`) or a 3D tensor
+(`nBatchFrame` x `nInputFrame` x `inputFrameSize`).
+
+ * @param inputFrameSize The input frame size expected in sequences given into `forward()`.
+ * @param outputFrameSize The output frame size the convolution layer will produce.
+ * @param kernelW The kernel width of the convolution
+ * @param strideW The step of the convolution in the width dimension.
+ * @param propagateBack Whether propagate gradient back, default is true.
+ * @param wRegularizer instance of `Regularizer`
+                     (eg. L1 or L2 regularization), applied to the input weights matrices.
+ * @param bRegularizer instance of `Regularizer`
+                     applied to the bias.
+ * @param initWeight Initial weight
+ * @param initBias Initial bias
+ * @param initGradWeight Initial gradient weight
+ * @param initGradBias Initial gradient bias
+ * @tparam T The numeric type in the criterion, usually which are `Float` or `Double`
+ 
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.numeric.NumericFloat
+val seed = 100
+RNG.setSeed(seed)
+val inputFrameSize = 5
+val outputFrameSize = 3
+val kW = 5
+val dW = 2
+val layer = TemporalConvolution(inputFrameSize, outputFrameSize, kW, dW)
+
+Random.setSeed(seed)
+val input = Tensor(10, 5).apply1(e => Random.nextFloat())
+val gradOutput = Tensor(3, 3).apply1(e => Random.nextFloat())
+
+val output = layer.updateOutput(input)
+> println(output)
+2017-07-21 06:18:00 INFO  ThreadPool$:79 - Set mkl threads to 1 on thread 1
+-0.34987333	-0.0063185245	-0.45821175	
+-0.20838472	0.15102878	-0.5656665	
+-0.13935827	-0.099345684	-0.76407385	
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 3x3]
+
+val gradInput = layer.updateGradInput(input, gradOutput)
+> println(gradInput)
+0.018415622	-0.10201519	-0.15641063	-0.08271551	-0.060939234	
+0.13609992	0.14934899	0.06083451	-0.13943195	-0.11092151	
+-0.14552939	-0.024670592	-0.29887137	-0.14555064	-0.05840567	
+0.09920926	0.2705848	0.016875947	-0.27233958	-0.069991685	
+-0.0024300043	-0.15160085	-0.20593905	-0.2894306	-0.057458147	
+0.06390554	0.07710219	0.105445914	-0.26714328	-0.18871497	
+0.13901645	-0.10651534	0.006758575	-0.08754986	-0.13747974	
+-0.026543075	-0.044046614	0.13146847	-0.01198944	-0.030542556	
+0.18396454	-0.055985756	-0.03506116	-0.02156017	-0.09211717	
+0.0	0.0	0.0	0.0	0.0	
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 10x5]
+```
+
+**Python example:**
+```python
+from bigdl.nn.layer import TemporalConvolution
+import numpy as np
+inputFrameSize = 5
+outputFrameSize = 3
+kW = 5
+dW = 2
+layer = TemporalConvolution(inputFrameSize, outputFrameSize, kW, dW)
+
+input = np.random.rand(10, 5)
+gradOutput = np.random.rand(3, 3)
+
+output = layer.forward(input)
+> print(output)
+[[ 0.43262666  0.52964264 -0.09026626]
+ [ 0.46828389  0.3391096   0.04789509]
+ [ 0.37985104  0.13899082 -0.05767119]]
+ 
+gradInput = layer.backward(input, gradOutput)
+> print(gradInput)
+[[-0.08801709  0.03619258  0.06944641 -0.01570761  0.00682773]
+ [-0.02754797  0.07474414 -0.08249797  0.04756897  0.0096445 ]
+ [-0.14383194  0.05168077  0.27049363  0.10419817  0.05263135]
+ [ 0.12452157 -0.02296585  0.14436334  0.02482709 -0.12260982]
+ [ 0.04890725 -0.19043611  0.2909058  -0.10708418  0.07759682]
+ [ 0.05745121  0.10499261  0.02989995  0.13047372  0.09119483]
+ [-0.09693538 -0.12962547  0.22133902 -0.09149387  0.29208034]
+ [ 0.2622599  -0.12875232  0.21714815  0.11484481 -0.00040091]
+ [ 0.07558989  0.00072951  0.12860702 -0.27085134  0.10740379]
+ [ 0.          0.          0.          0.          0.        ]]
+
+```
