@@ -74,7 +74,7 @@ array([[[ 0.92741418, -3.29826593],
        [[-0.03147819, -0.10049306],
         [ 0.13161489,  1.27620149]]], dtype=float32)
 ```
-
+---
 ## MM ##
 
 **Scala:**
@@ -128,7 +128,7 @@ scala> print(output2)
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 3x3]
 
 ```
-
+---
 **Python example:**
 ```python
 from bigdl.nn.layer import *
@@ -239,14 +239,15 @@ grad_out = np.random.rand(3)
 grad_in = m.backward([input1, input2],grad_out)
 print "grad input of m is :",grad_in
 ```
-produces output:
+Gives the output,
+
 ```python
 input is : [ 0.48649797  0.22131348  0.45667796] [ 0.73207053  0.74290136  0.03169769]
 creating: createCMaxTable
 output of m is : [array([ 0.73207051,  0.74290138,  0.45667794], dtype=float32)]
 grad input of m is : [array([ 0.        ,  0.        ,  0.86938971], dtype=float32), array([ 0.04140199,  0.4787094 ,  0.        ], dtype=float32)]
 ```
-
+---
 ## SplitTable ##
 
 **Scala:**
@@ -301,7 +302,7 @@ layer.backward(Tensor(T(
 ))
 ```
 
-Its output should be 
+Gives the output,
 ```
  {
         2: 2.0
@@ -346,8 +347,7 @@ layer.backward(np.array([
   np.array([0.7, 0.8, 0.9])
 ])
 ```
-
-Its output should be
+Gives the output,
 ```
 [
   array([ 1.,  4.,  7.], dtype=float32),
@@ -359,7 +359,7 @@ array([[ 0.1       ,  0.40000001,  0.69999999],
        [ 0.2       ,  0.5       ,  0.80000001],
        [ 0.30000001,  0.60000002,  0.89999998]], dtype=float32)
 ```
-
+---
 ## DotProduct ##
 
 **Scala:**
@@ -433,7 +433,7 @@ output:
 [ 6.]
 ```
 
-
+---
 ## CSubTable ##
 
 **Scala:**
@@ -492,11 +492,11 @@ input2 = np.random.randn(5)
 input = [input1, input2]
 output = model.forward(input)
 ```
-output is
+Gives the output,
 ```
 array([-1.15087152,  0.6169951 ,  2.41840839,  1.34374809,  1.39436531], dtype=float32)
 ```
-
+---
 ## CDivTable ##
 
 **Scala:**
@@ -540,7 +540,7 @@ module.forward(input)
 [ 1.,                   0.5     ,    0.33333334],
 [ 0.66666669, 0.5       ,  2.        ]], dtype=float32)]
 ```
-
+---
 ## JoinTable
 **Scala:**
 ```scala
@@ -560,11 +560,9 @@ when using mini-batch, a batch of sample tensors will be passed to the layer and
 the user need to specify the number of dimensions of each sample tensor in the
 batch using `nInputDims`.
 
-**Parameters:**
-
-**dimension**  - to be join in this dimension
-
-**nInputDims** - specify the number of dimensions that this module will receiveIf it is more than the dimension of input tensors, the first dimensionwould be considered as batch size
+Parameters:
+* `dimension`  to be join in this dimension
+* `nInputDims` specify the number of dimensions that this module will receiveIf it is more than the dimension of input tensors, the first dimensionwould be considered as batch size
 
 ```
 +----------+             +-----------+
@@ -679,7 +677,7 @@ print grad
         [ 2.,  3.,  4.],
         [ 1.,  2.,  3.]]], dtype=float32)]
 ```
-
+---
 ## SelectTable ##
 
 **Scala:**
@@ -757,7 +755,7 @@ creating: createSelectTable
  
 ```
 
-
+---
 ## NarrowTable ##
 
 **Scala:**
@@ -815,7 +813,7 @@ narrowTable = NarrowTable(1, 1)
        
 ```
 
-
+---
 ## CAddTable ##
 
 **Scala:**
@@ -841,7 +839,7 @@ mlp.add(CAddTable())
 
 println(mlp.forward(Tensor.range(1, 3, 1)))
 ```
-Output is
+Gives the output,
 ```
 com.intel.analytics.bigdl.nn.abstractnn.Activity =
 2.0
@@ -861,11 +859,11 @@ mlp.add(CAddTable())
 
 print(mlp.forward(np.arange(1, 4, 1)))
 ```
-Output is
+Gives the output,
 ```
 [array([ 2.,  4.,  6.], dtype=float32)]
 ```
-
+---
 ## CMulTable ##
 
 **Scala:**
@@ -931,7 +929,7 @@ output = model.forward(input)
 >>> print(output)
 [-0.22172636  0.70175284  0.13344601  0.08483877 -0.77035683]
 ```
-
+---
 ## MV ##
 
 **Scala:**
@@ -959,7 +957,7 @@ val module = MV()
 
 println(module.forward(T(Tensor.range(1, 12, 1).resize(2, 2, 3), Tensor.range(1, 6, 1).resize(2, 3))))
 ```
-Output is
+Gives the output,
 ```
 com.intel.analytics.bigdl.tensor.Tensor[Float] =
 14.0	32.0
@@ -973,11 +971,11 @@ module = MV()
 
 print(module.forward([np.arange(1, 13, 1).reshape(2, 2, 3), np.arange(1, 7, 1).reshape(2, 3)]))
 ```
-Output is
+Gives the output,
 ```
 [array([ 0.31657887, -1.11062765, -1.16235781, -0.67723978,  0.74650359], dtype=float32)]
 ```
-
+---
 ## FlattenTable ##
 
 **Scala:**
@@ -1069,7 +1067,7 @@ output = module.forward(input)
  array([-0.84997159,  1.63694572, -0.31109291], dtype=float32)]
 
 ```
-
+---
 ## CMinTable ##
 
 **Scala:**
@@ -1104,7 +1102,8 @@ layer.backward(T(
   Tensor(T(5.0f, 7.0f, -5.0f))
 ), Tensor(T(0.1f, 0.2f, 0.3f)))
 ```
-Its output should be
+Gives the output,
+
 ```
 1.0
 4.0
@@ -1146,7 +1145,8 @@ layer.backward([
 ], np.array([0.1, 0.2, 0.3]))
 
 ```
-Its output should be
+Gives the output,
+
 ```
 array([ 1.,  4., -5.], dtype=float32)
 
