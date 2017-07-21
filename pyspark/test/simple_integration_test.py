@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Still in experimental stage!
+
 
 from bigdl.nn.layer import *
 from bigdl.nn.initialization_method import *

@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-# Still in experimental stage!
+
 
 import itertools
 import re
