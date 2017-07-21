@@ -24,12 +24,12 @@ The operation implemented is:
 ```
 where gamma and beta are learnable parameters.The learning of gamma and beta is optional.
 
-**Parameters:**
+Parameters:
 
-* **nOutput** - feature map number
-* **eps** - avoid divide zero. Default: 1e-5
-* **momentum** - momentum for weight update. Default: 0.1
-* **affine** - affine operation on output or not. Default: true
+* `nOutput` feature map number
+* `eps` avoid divide zero. Default: 1e-5
+* `momentum` momentum for weight update. Default: 0.1
+* `affine` affine operation on output or not. Default: true
 
 **Scala example:**
 ```scala
@@ -86,7 +86,7 @@ gradient = bn.backward(input, grad_output)
 [[ -9.97191637e-06  -1.55339364e-07]
  [  9.97191637e-06   1.55339364e-07]]
 ```
-
+---
 ## SpatialBatchNormalization ##
 
 **Scala:**
@@ -188,7 +188,7 @@ array([[[[  5.70826093e-03,   9.06338100e-05],
         [[  8.49217057e-01,  -9.03094828e-01],
          [  8.56826544e-01,  -5.35586655e-01]]]], dtype=float32)
 ```
-
+---
 ## SpatialCrossMapLRN ##
 
 **Scala:**
@@ -279,7 +279,7 @@ spatialCrossMapLRN = SpatialCrossMapLRN(5, 0.01, 0.75, 1.0)
 
      
 ```
-
+---
 ## Normalize ##
 
 **Scala:**
@@ -296,8 +296,8 @@ division by zero when the input contains all zero elements (default = 1e-10).
 The input can be 1d, 2d or 4d. If the input is 4d, it should follow the format (n, c, h, w) where n is the batch number,
 c is the channel number, h is the height and w is the width
 
- * @param p L_p norm
- * @param eps smoothing parameter
+ *  `p` L_p norm
+ *  `eps` smoothing parameter
 
 **Scala example:**
 ```scala
@@ -424,7 +424,7 @@ gradInput = layer.backward(input, gradOutput)
          [ 0.28016835,  0.03791744, -0.17803842, -0.27817759,  0.42473239]]], dtype=float32)]
 ```
 
-
+---
 ## SpatialSubtractiveNormalization ##
 
 **Scala:**
@@ -445,8 +445,8 @@ The kernel is generally chosen as a gaussian when it is believed that the correl
 of two pixel locations decrease with increasing distance. On the feature dimension,
 a uniform average is used since the weighting across features is not known.
 
-+ nInputPlane : number of input plane, default is 1.
-+ kernel : kernel tensor, default is a 9 x 9 tensor.
++ `nInputPlane`  number of input plane, default is 1.
++ `kernel` kernel tensor, default is a 9 x 9 tensor.
 
 **Scala example:**
 ```scala
@@ -480,7 +480,7 @@ val input = Tensor(1, 1, 1, 5).rand()
 
 
 ```
-
+---
 **Python example:**
 ```python
 from bigdl.nn.layer import *
