@@ -16,22 +16,22 @@ either a 4D tensor (`batch x nInputPlane x height x width`) or a 3D tensor (` nI
 
 Detailed paramter explaination for the constructor.
  
- * param nInputPlane: The number of expected input planes in the image given into forward()
- * param nOutputPlane: The number of output planes the convolution layer will produce.
- * param kernelW: The kernel width of the convolution
- * param kernelH: The kernel height of the convolution
- * param strideW: The step of the convolution in the width dimension.
- * param strideH: The step of the convolution in the height dimension
- * param padW:  padding to be added to width to the input.
- * param padH: padding to be added to height to the input.
- * param nGroup: Kernel group number
- * param propagateBack: whether to propagate gradient back
- * param wRegularizer: regularizer on weight. an instance of [[Regularizer]] (e.g. L1 or L2)
- * param bRegularizer: regularizer on bias. an instance of [[Regularizer]] (e.g. L1 or L2).
- * param initWeight: weight initializer
- * param initBias:  bias initializer
- * param initGradWeight: weight gradient initializer
- * param initGradBias: bias gradient initializer
+ * `nInputPlane` The number of expected input planes in the image given into forward()
+ * `nOutputPlane` The number of output planes the convolution layer will produce.
+ * `kernelW` The kernel width of the convolution
+ * `kernelH` The kernel height of the convolution
+ * `strideW` The step of the convolution in the width dimension.
+ * `strideH` The step of the convolution in the height dimension
+ * `padW`  padding to be added to width to the input.
+ * `padH` padding to be added to height to the input.
+ * `nGroup` Kernel group number
+ * `propagateBack` whether to propagate gradient back
+ * `wRegularizer` regularizer on weight. an instance of [[Regularizer]] (e.g. L1 or L2)
+ * `bRegularizer` regularizer on bias. an instance of [[Regularizer]] (e.g. L1 or L2).
+ * `initWeight` weight initializer
+ * `initBias`  bias initializer
+ * `initGradWeight` weight gradient initializer
+ * `initGradBias` bias gradient initializer
  
 **Scala example:**
 ```scala
@@ -132,7 +132,8 @@ print "grad out of m is :",grad_out
 grad_in = m.backward(input,grad_out)
 print "grad input of m is :",grad_in
 ```
-produces output:
+Gives the output,
+
 ```python
 input is : [[[[ 0.75276617  0.44212513  0.90275949]
    [ 0.78205279  0.77864714  0.83647254]
@@ -179,19 +180,19 @@ module = VolumetricConvolution(n_input_plane, n_output_plane, k_t, k_w, k_h,
 Applies a 3D convolution over an input image composed of several input planes. The input tensor
 in forward(input) is expected to be a 4D tensor (nInputPlane x time x height x width).
 
-* @param nInputPlane The number of expected input planes in the image given into forward()
-* @param nOutputPlane The number of output planes the convolution layer will produce.
-* @param kT The kernel size of the convolution in time
-* @param kW The kernel width of the convolution
-* @param kH The kernel height of the convolution
-* @param dT The step of the convolution in the time dimension. Default is 1
-* @param dW The step of the convolution in the width dimension. Default is 1
-* @param dH The step of the convolution in the height dimension. Default is 1
-* @param padT Additional zeros added to the input plane data on both sides of time axis.
-* Default is 0. (kT-1)/2 is often used here.
-* @param padW The additional zeros added per width to the input planes.
-* @param padH The additional zeros added per height to the input planes.
-* @param withBias whether with bias.
+* `nInputPlane` The number of expected input planes in the image given into forward()
+* `nOutputPlane` The number of output planes the convolution layer will produce.
+* `kT` The kernel size of the convolution in time
+* `kW` The kernel width of the convolution
+* `kH` The kernel height of the convolution
+* `dT` The step of the convolution in the time dimension. Default is 1
+* `dW` The step of the convolution in the width dimension. Default is 1
+* `dH` The step of the convolution in the height dimension. Default is 1
+* `padT` Additional zeros added to the input plane data on both sides of time axis.
+         Default is 0. `(kT-1)/2` is often used here.
+* `padW` The additional zeros added per width to the input planes.
+* `padH` The additional zeros added per height to the input planes.
+* `withBias` whether with bias.
  
 **Scala example:**
 ```scala
@@ -318,8 +319,8 @@ w(1, 0) * x(3, 0), w(1, 1) * x(3, 3)
 ```
 
 If input is a 3D tensor nInputPlane x height x width,
- * owidth  = floor(width + 2 * padW - dilationW * (kW-1) - 1) / dW + 1
- * oheight = floor(height + 2 * padH - dilationH * (kH-1) - 1) / dH + 1
+ * `owidth  = floor(width + 2 * padW - dilationW * (kW-1) - 1) / dW + 1`
+ * `oheight = floor(height + 2 * padH - dilationH * (kH-1) - 1) / dH + 1`
 
 Reference Paper:
 > Yu F, Koltun V. Multi-scale context aggregation by dilated convolutions[J].
@@ -351,8 +352,8 @@ layer.backward(input, Tensor(T(T(
   T(0.3f, 0.4f)
 ))))
 ```
+Gives the output,
 
-Its output should be
 ```
 (1,.,.) =
 15.0    10.0
@@ -390,8 +391,8 @@ layer.set_weights([filter, bias])
 layer.forward(input)
 layer.backward(input, np.array([[[0.1, 0.2], [0.3, 0.4]]]))
 ```
+Gives the output,
 
-Its output should be
 ```
 array([[[ 15.,  10.],
         [ 22.,  26.]]], dtype=float32)
@@ -402,7 +403,7 @@ array([[[ 0.1       ,  0.2       ,  0.1       ,  0.2       ],
         [ 0.30000001,  0.40000001,  0.30000001,  0.40000001]]], dtype=float32)
 
 ```
-
+---
 ## SpatialShareConvolution ##
 
 **Scala:**
@@ -518,7 +519,7 @@ array([[[[-3.55372381, -4.0352459 , -2.65861344],
        [[[-3.55372381, -4.0352459 , -2.65861344],
          [-4.99829054, -5.4798131 , -3.29477644]]]], dtype=float32)
 ```
-
+---
 ## SpatialFullConvolution ##
 
 **Scala:**
@@ -553,22 +554,22 @@ Reference: Long J, Shelhamer E, Darrell T. Fully convolutional networks for sema
 
 Detailed explaination of arguments in constructor. 
 
- * param nInputPlane The number of expected input planes in the image given into forward()
- * param nOutputPlane The number of output planes the convolution layer will produce.
- * param kW The kernel width of the convolution.
- * param kH The kernel height of the convolution.
- * param dW The step of the convolution in the width dimension. Default is 1.
- * param dH The step of the convolution in the height dimension. Default is 1.
- * param padW The additional zeros added per width to the input planes. Default is 0.
- * param padH The additional zeros added per height to the input planes. Default is 0.
- * param adjW Extra width to add to the output image. Default is 0.
- * param adjH Extra height to add to the output image. Default is 0.
- * param nGroup Kernel group number.
- * param noBias If bias is needed.
- * param wRegularizer: instance of [[Regularizer]]
- *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
- * param bRegularizer: instance of [[Regularizer]]
- *                    applied to the bias.
+ * `nInputPlane` The number of expected input planes in the image given into forward()
+ * `nOutputPlane` The number of output planes the convolution layer will produce.
+ * `kW` The kernel width of the convolution.
+ * `kH` The kernel height of the convolution.
+ * `dW` The step of the convolution in the width dimension. Default is 1.
+ * `dH` The step of the convolution in the height dimension. Default is 1.
+ * `padW` The additional zeros added per width to the input planes. Default is 0.
+ * `padH` The additional zeros added per height to the input planes. Default is 0.
+ * `adjW` Extra width to add to the output image. Default is 0.
+ * `adjH` Extra height to add to the output image. Default is 0.
+ * `nGroup` Kernel group number.
+ * `noBias` If bias is needed.
+ * `wRegularizer` instance of [[Regularizer]]
+                   (eg. L1 or L2 regularization), applied to the input weights matrices.
+ * `bRegularizer` instance of [[Regularizer]]
+                   applied to the bias.
  
 **Scala example:**
 
@@ -737,7 +738,8 @@ print "input is :",table_input
 out = m.forward(table_input)
 print "output m is :",out
 ```
-produces output:
+Gives the output,
+
 ```python
 creating: createSpatialFullConvolution
 --------- tensor input---------
@@ -805,17 +807,17 @@ The SpatialConvolution is equivalent to using a full connection table.
 A Connection Table is the mapping of input/output feature map, stored in a 2D Tensor. The first column is the input feature maps. The second column is output feature maps.
 
 
-***Full Connection table:***
+Full Connection table:
 ```scala
 val conn = SpatialConvolutionMap.full(nin: Int, nout: In)
 ```
 
-***One to One connection table:***
+One to One connection table:
 ```scala
 val conn = SpatialConvolutionMap.oneToOne(nfeat: Int)
 ```
 
-***Random Connection table:***
+Random Connection table:
 ```scala
 val conn = SpatialConvolutionMap.random(nin: Int, nout: Int, nto: Int)
 ```
@@ -843,7 +845,7 @@ val module = SpatialConvolutionMap(SpatialConvolutionMap.oneToOne(3), 2, 2)
 
 pritnln(module.forward(Tensor.range(1, 48, 1).resize(3, 4, 4)))
 ```
-Output is
+Gives the output,
 ```
 com.intel.analytics.bigdl.tensor.Tensor[Float] =
 (1,.,.) =
@@ -873,7 +875,7 @@ module = SpatialConvolutionMap(np.array([(1, 1), (2, 2), (3, 3)]), 2, 2)
 
 print(module.forward(np.arange(1, 49, 1).reshape(3, 4, 4)))
 ```
-Output is
+Gives the output,
 ```
 [array([[[-1.24280548, -1.70889318, -2.17498088],
         [-3.10715604, -3.57324386, -4.03933144],
@@ -912,20 +914,20 @@ The input tensor in `forward(input)` is expected to be a 2D tensor
 (`nInputFrame` x `inputFrameSize`) or a 3D tensor
 (`nBatchFrame` x `nInputFrame` x `inputFrameSize`).
 
- * @param inputFrameSize The input frame size expected in sequences given into `forward()`.
- * @param outputFrameSize The output frame size the convolution layer will produce.
- * @param kernelW The kernel width of the convolution
- * @param strideW The step of the convolution in the width dimension.
- * @param propagateBack Whether propagate gradient back, default is true.
- * @param wRegularizer instance of `Regularizer`
+ * `inputFrameSize` The input frame size expected in sequences given into `forward()`.
+ * `outputFrameSize` The output frame size the convolution layer will produce.
+ * `kernelW` The kernel width of the convolution
+ * `strideW` The step of the convolution in the width dimension.
+ * `propagateBack` Whether propagate gradient back, default is true.
+ * `wRegularizer` instance of `Regularizer`
                      (eg. L1 or L2 regularization), applied to the input weights matrices.
- * @param bRegularizer instance of `Regularizer`
+ * `bRegularizer` instance of `Regularizer`
                      applied to the bias.
- * @param initWeight Initial weight
- * @param initBias Initial bias
- * @param initGradWeight Initial gradient weight
- * @param initGradBias Initial gradient bias
- * @tparam T The numeric type in the criterion, usually which are `Float` or `Double`
+ * `initWeight` Initial weight
+ * `initBias` Initial bias
+ * `initGradWeight` Initial gradient weight
+ * `initGradBias` Initial gradient bias
+ * `T` The numeric type in the criterion, usually which are `Float` or `Double`
  
 **Scala example:**
 ```scala
