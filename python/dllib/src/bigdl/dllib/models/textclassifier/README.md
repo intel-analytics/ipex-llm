@@ -23,8 +23,16 @@ $ [/tmp/news20]$ tree . -L 1
   ├── 20news-19997.tar.gz
   └── glove.6B.zip
 ```
+- The example code would automatically download the data during the first run.
+- If you install BigDL via pip, you can run this example locally by the following command:
+  - Check [Run after pip install](../../../../docs/docs/PythonSupport/run-from-pip.md)
+```
+export SPARK_HOME=path to spark-1.6.3
+python ${BigDL_HOME}/pyspark/bigdl/models/textclassifier/textclassifier.py --max_epoch 3 --model cnn
+             
+```
 
-then running the flowing script would automatically download the data during the first run.
+- You can also use `spark-submit` to launch this example:
 
 ```{r, engine='sh'}
         PYTHONHASHSEED=0
