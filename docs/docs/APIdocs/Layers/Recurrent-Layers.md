@@ -74,7 +74,7 @@ output = module.forward(input)
          [ 0.44095358,  0.27467242, -0.05471399,  0.46601957],
          [ 0.451913  , -0.33519334, -0.61357468,  0.56650752]]], dtype=float32)]
 ```
-
+---
 ## BiRecurrent ##
 
 **Scala:**
@@ -88,7 +88,7 @@ module = BiRecurrent(merge=None,bigdl_type="float")
 
 This layer implement a bidirectional recurrent neural network
 
- * @param merge concat or add the output tensor of the two RNNs. Default is add
+ * `merge` concat or add the output tensor of the two RNNs. Default is add
 
 **Scala example:**
 ```scala
@@ -124,7 +124,7 @@ module.forward(input)
 array([[[ 0.69091094,  0.97150528,  0.9562254 ,  1.14894259],
         [ 0.83814102,  1.11358368,  0.96752423,  1.00913286]]], dtype=float32)
 ```
-
+---
 ## RNN ##
 
 **Scala:**
@@ -138,8 +138,8 @@ rnnCell = RnnCell(input_size, hidden_size, Tanh(), w_regularizer, u_regularizer,
 
 Implementation of vanilla recurrent neural network cell
 
-+ i2h: weight matrix of input to hidden units
-+ h2h: weight matrix of hidden units to themselves through time
+* `i2h` weight matrix of input to hidden units
+* `h2h` weight matrix of hidden units to themselves through time
 
 The updating is defined as:
 
@@ -147,14 +147,14 @@ The updating is defined as:
 h_t = f(i2h * x_t + h2h * h_{t-1})
 ```
 
-**Parameters:**
+Parameters:
 
-* **inputSize** - input size. Default: 4
-* **hiddenSize** - hidden layer size. Default: 3
-* **activation** - activation function f for non-linearity
-* **wRegularizer** - instance of `Regularizer`(eg. L1 or L2 regularization), applied to the input weights matrices. Default: null
-* **uRegularizer** - instance of `Regularizer`(eg. L1 or L2 regularization), applied to the recurrent weights matrices. Default: null
-* **bRegularizer** - instance of `Regularizer`(eg. L1 or L2 regularization), applied to the bias. Default: null
+* `inputSize` input size. Default: 4
+* `hiddenSize`  hidden layer size. Default: 3
+* `activation` activation function f for non-linearity
+* `wRegularizer` instance of `Regularizer`(eg. L1 or L2 regularization), applied to the input weights matrices. Default: null
+* `uRegularizer` instance of `Regularizer`(eg. L1 or L2 regularization), applied to the recurrent weights matrices. Default: null
+* `bRegularizer` instance of `Regularizer`(eg. L1 or L2 regularization), applied to the bias. Default: null
 
 **Scala example:**
 ```scala
@@ -232,7 +232,7 @@ gradient = model.backward(input, grad_output)
 [[[-0.90771425  1.24791598]
   [-0.70141178  0.97821164]]]
 ```
-
+---
 ## LSTM ##
 
 **Scala:**
@@ -351,7 +351,7 @@ gradInput = criterion.backward(output, labels)
 model.backward(input, gradInput)
 ```
 
-
+---
 ## LSTMPeephole ##
 
 **Scala:**
@@ -383,22 +383,20 @@ Ref.
 3. http://arxiv.org/pdf/1503.04069v1.pdf
 4. https://github.com/wojzaremba/lstm
 
-**Parameters**,
-
-- param inputSize the size of each input vector
-- param hiddenSize Hidden unit size in the LSTM
-- param  p is used for [[Dropout]] probability. For more details about
+Parameters:
+* `inputSize` the size of each input vector
+* `hiddenSize` Hidden unit size in the LSTM
+* `p` is used for [[Dropout]] probability. For more details about
            RNN dropouts, please refer to
            [RnnDrop: A Novel Dropout for RNNs in ASR]
            (http://www.stat.berkeley.edu/~tsmoon/files/Conference/asru2015.pdf)
            [A Theoretically Grounded Application of Dropout in Recurrent Neural Networks]
            (https://arxiv.org/pdf/1512.05287.pdf)
-- param wRegularizer: instance of [[Regularizer]]
+* `wRegularizer` instance of [[Regularizer]]
                    (eg. L1 or L2 regularization), applied to the input weights matrices.
-- param uRegularizer: instance [[Regularizer]]
+* `uRegularizer` instance [[Regularizer]]
           (eg. L1 or L2 regularization), applied to the recurrent weights matrices.
-- param bRegularizer: instance of [[Regularizer]]
-          applied to the bias.
+* `bRegularizer` instance of [[Regularizer]] applied to the bias.
 
 **Scala example:**
 ```scala
@@ -475,7 +473,7 @@ output = model.forward(input)
   [ 0.40773875 -0.2028828   0.24765283  0.0986848   0.12132661]
   [ 0.40263647 -0.22403356  0.38489845  0.04720671  0.1686969 ]]]
 ```
-
+---
 ## GRU ##
 
 **Scala:**
@@ -495,17 +493,17 @@ Ref.
 2. https://github.com/Element-Research/rnn/blob/master/GRU.lua
  
  
-**Parameters:**
+Parameters:
 
-* **inputSize** - the size of each input vector
-* **outputSize** - hidden unit size in GRU
-* **p** - is used for [[Dropout]] probability. For more details about
+* `inputSize` the size of each input vector
+* `outputSize` hidden unit size in GRU
+* `p` is used for [[Dropout]] probability. For more details about
           RNN dropouts, please refer to
            [RnnDrop: A Novel Dropout for RNNs in ASR](http://www.stat.berkeley.edu/~tsmoon/files/Conference/asru2015.pdf)
             and [A Theoretically Grounded Application of Dropout in Recurrent Neural Networks](https://arxiv.org/pdf/1512.05287.pdf). Default: 0.0
-* **wRegularizer** - instance of `Regularizer`(eg. L1 or L2 regularization), applied to the input weights matrices. Default: null
-* **uRegularizer** - instance of `Regularizer`(eg. L1 or L2 regularization), applied to the recurrent weights matrices. Default: null
-* **bRegularizer** - instance of `Regularizer`(eg. L1 or L2 regularization), applied to the bias. Default: null
+* `wRegularizer` instance of `Regularizer`(eg. L1 or L2 regularization), applied to the input weights matrices. Default: null
+* `uRegularizer` instance of `Regularizer`(eg. L1 or L2 regularization), applied to the recurrent weights matrices. Default: null
+* `bRegularizer` instance of `Regularizer`(eg. L1 or L2 regularization), applied to the bias. Default: null
 
 **Scala example:**
 ```scala
@@ -583,6 +581,7 @@ gradient = model.backward(input, grad_output)
 [[[-0.32956457  0.27405274]
   [-0.32718879  0.32963118]]]
 ```
+---
 ## ConvLSTMPeephole ##
 
 **Scala:**
@@ -619,20 +618,20 @@ Ref.
 1. https://arxiv.org/abs/1506.04214 (blueprint for this module)
 2. https://github.com/viorik/ConvLSTM
 
-**Parameters**,
+Parameters:
 
-- param inputSize: number of input planes in the image given into forward()
-- param outputSize: number of output planes the convolution layer will produce
-- param kernelI: convolutional filter size to convolve input
-- param kernelC: convolutional filter size to convolve cell
-- param stride: step of the convolution
-- param wRegularizer: instance of [[Regularizer]]
+* `inputSize` number of input planes in the image given into forward()
+* `outputSize` number of output planes the convolution layer will produce
+* `kernelI` convolutional filter size to convolve input
+* `kernelC` convolutional filter size to convolve cell
+* `stride` step of the convolution
+* `wRegularizer` instance of [[Regularizer]]
                    (eg. L1 or L2 regularization), applied to the input weights matrices.
-- param uRegularizer: instance [[Regularizer]]
+* `uRegularizer` instance [[Regularizer]]
           (eg. L1 or L2 regularization), applied to the recurrent weights matrices.
-- param bRegularizer: instance of [[Regularizer]]
+* `bRegularizer` instance of [[Regularizer]]
           applied to the bias.
-- param withPeephole: whether use last cell status control a gate
+* `withPeephole` whether use last cell status control a gate
 
 **Scala example:**
 ```scala
@@ -809,7 +808,7 @@ output = model.forward(input)
     [-0.15700462 -0.17341313 -0.06551415]]]]]
 ```
 
-
+---
 ## TimeDistributed ##
 
 **Scala:**
@@ -855,8 +854,7 @@ layer.backward(input, Tensor(T(T(
   )
 ))))
 ```
-
-Its output should be
+Gives the output,
 ```
 (1,1,.,.) =
 4.0     6.0
@@ -905,8 +903,7 @@ layer.backward(input, np.array([[
   ]
 ]]))
 ```
-
-Its output should be
+Gives the output,
 ```
 array([[[[ 4.,  6.]],
 
