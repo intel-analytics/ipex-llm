@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-
 from bigdl.nn.layer import *
 from bigdl.nn.initialization_method import *
 from bigdl.nn.criterion import *

@@ -15,7 +15,6 @@
 #
 
 
-
 import itertools
 import re
 from optparse import OptionParser

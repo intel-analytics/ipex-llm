@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-
 from optparse import OptionParser
 from bigdl.dataset import mnist
 from bigdl.dataset.transformer import *

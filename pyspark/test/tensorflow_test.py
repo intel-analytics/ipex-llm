@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-
 from bigdl.nn.layer import *
 from bigdl.optim.optimizer import *
 from bigdl.util.common import *
