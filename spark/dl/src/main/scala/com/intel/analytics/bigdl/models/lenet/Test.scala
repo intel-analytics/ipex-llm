@@ -17,10 +17,8 @@
 package com.intel.analytics.bigdl.models.lenet
 
 import java.nio.ByteBuffer
-import java.nio.file.Paths
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.dataset.DataSet
 import com.intel.analytics.bigdl.dataset.image.{BytesToGreyImg, GreyImgNormalizer, GreyImgToSample}
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn.{Container, Module, Quantize, SpatialConvolution}
@@ -88,7 +86,7 @@ object Test {
           Array(new Top1Accuracy[Float]), Some(param.batchSize))
 
         result.foreach(r => println(s"${r._2} is ${r._1}"))
-        quantizedModel.save("/tmp/model.quantized.960")
+        quantizedModel.save("/tmp/model.quantized.960", overWrite = true)
       }
       {
         val result = model.evaluate(evaluationSet,

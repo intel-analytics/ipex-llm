@@ -79,6 +79,7 @@ class SpatialConvolution[T: ClassTag](
       bias.fill(ev.fromType(0)) // TODO bias may be null, at that time, we should not initialize it
     }
 
+    // Reshape the weight. Computing the min, max, and quantizing the weight don't need group
     val weightFP32Tmp = weightFP32.view(Array(nOutputPlane, nInputPlane, kernelH, kernelW))
     setWeightSum(weightFP32Tmp, weightSum)
 
@@ -90,7 +91,7 @@ class SpatialConvolution[T: ClassTag](
 
     val bufferOffset = 0
     val buffer = ByteBuffer.allocate(weightFP32.nElement())
-    val weightFP32Tensor = weightFP32.asInstanceOf[Tensor[Float]]
+    val weightFP32Tensor = weightFP32Tmp.toTensor[Float]
     Quantize.quantize(weightFP32Tensor, buffer, bufferOffset)
 
     weight.setStorage(buffer)
@@ -185,7 +186,7 @@ class SpatialConvolution[T: ClassTag](
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
-    (Array(null, null), Array(null, null))
+    (Array(null, bias), Array(null, null))
   }
 
   override def getParametersTable(): Table = {

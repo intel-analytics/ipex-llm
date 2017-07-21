@@ -186,8 +186,6 @@ object Module {
             conv.dilationW,
             conv.dilationH)
           quantizedConv.initWeightAndBias(conv.weight, conv.bias)
-
-          quantizedConv
         case normalLinear if normalLinear.isInstanceOf[Linear[T]] =>
           // do with linear
           val linear = normalLinear.asInstanceOf[Linear[T]]
