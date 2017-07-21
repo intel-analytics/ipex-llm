@@ -5,9 +5,10 @@ First of all, you need to obtain the BigDL libs. Refer to [Install from pre buil
 
 ```bash
 cd $BIGDL_HOME/dist/lib 
+BIGDL_VERSION=...
 ${SPARK_HOME}/bin/pyspark --master local[4] \
---conf spark.driver.extraClassPath=bigdl-0.2.0-jar-with-dependencies.jar \
---py-files bigdl-0.2.0-python-api.zip \
+--conf spark.driver.extraClassPath=bigdl-${BIGDL_VERSION}-jar-with-dependencies.jar \
+--py-files bigdl-${BIGDL_VERSION}-python-api.zip \
 --properties-file ../conf/spark-bigdl.conf 
 ```
 
@@ -22,9 +23,10 @@ ${SPARK_HOME}/bin/pyspark --master local[4] \
 ```bash
    BigDL_HOME=...
    SPARK_HOME=...
+   BIGDL_VERSION=...
    MASTER=...
-   PYTHON_API_ZIP_PATH=${BigDL_HOME}/dist/lib/bigdl-VERSION-python-api.zip
-   BigDL_JAR_PATH=${BigDL_HOME}/dist/lib/bigdl-VERSION-jar-with-dependencies.jar
+   PYTHON_API_ZIP_PATH=${BigDL_HOME}/dist/lib/bigdl-${BIGDL_VERSION}-python-api.zip
+   BigDL_JAR_PATH=${BigDL_HOME}/dist/lib/bigdl-${BIGDL_VERSION}-jar-with-dependencies.jar
    PYTHONPATH=${PYTHON_API_ZIP_PATH}:$PYTHONPATH
    
    ${SPARK_HOME}/bin/spark-submit \
@@ -38,7 +40,7 @@ ${SPARK_HOME}/bin/pyspark --master local[4] \
        --properties-file ${BigDL_HOME}/dist/conf/spark-bigdl.conf \
        --jars ${BigDL_JAR_PATH} \
        --conf spark.driver.extraClassPath=${BigDL_JAR_PATH} \
-       --conf spark.executor.extraClassPath=bigdl-VERSION-jar-with-dependencies.jar \
+       --conf spark.executor.extraClassPath=bigdl-${BIGDL_VERSION}-jar-with-dependencies.jar \
        ${BigDL_HOME}/pyspark/bigdl/models/lenet/lenet5.py
 ```
 
@@ -60,11 +62,12 @@ sudo pip install numpy scipy pandas scikit-learn matplotlib seaborn wordcloud
 - __Ensure every path is valid__ 
 
 ```bash
- BigDL_HOME=...                                                                                         
+   BigDL_HOME=...                                                                                         
+   BIGDL_VERSION=...
    SPARK_HOME=...
    MASTER=...
-   PYTHON_API_ZIP_PATH=${BigDL_HOME}/dist/lib/bigdl-VERSION-python-api.zip
-   BigDL_JAR_PATH=${BigDL_HOME}/dist/lib/bigdl-VERSION-jar-with-dependencies.jar
+   PYTHON_API_ZIP_PATH=${BigDL_HOME}/dist/lib/bigdl-${BIGDL_VERSION}-python-api.zip
+   BigDL_JAR_PATH=${BigDL_HOME}/dist/lib/bigdl-${BIGDL_VERSION}-jar-with-dependencies.jar
 
    export PYTHONPATH=${PYTHON_API_ZIP_PATH}:$PYTHONPATH
    export PYSPARK_DRIVER_PYTHON=jupyter
@@ -81,7 +84,7 @@ sudo pip install numpy scipy pandas scikit-learn matplotlib seaborn wordcloud
        --py-files ${PYTHON_API_ZIP_PATH} \
        --jars ${BigDL_JAR_PATH} \
        --conf spark.driver.extraClassPath=${BigDL_JAR_PATH} \
-       --conf spark.executor.extraClassPath=bigdl-VERSION-jar-with-dependencies.jar
+       --conf spark.executor.extraClassPath=bigdl-${BIGDL_VERSION}-jar-with-dependencies.jar
 ```
 
 After successfully launching Jupyter, you will be able to navigate to the notebook dashboard using your browser. You can find the exact URL in the console output when you started Jupyter; by default, the dashboard URL is http://your_node:8888/
