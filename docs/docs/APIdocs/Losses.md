@@ -57,7 +57,7 @@ gradInput = layer.backward(input, target)
 [array([[ 1.,  1.],
         [ 1.,  1.]], dtype=float32)]
 ```
-
+---
 ## TimeDistributedCriterion ##
 
 **Scala:**
@@ -72,9 +72,8 @@ module = TimeDistributedCriterion(critrn, sizeAverage)
 This class is intended to support inputs with 3 or more dimensions.
 Apply Any Provided Criterion to every temporal slice of an input.
   
-`critrn` embedded criterion
-
-`sizeAverage` whether to divide the sequence length. Default is false.
+* `critrn` embedded criterion
+* `sizeAverage` whether to divide the sequence length. Default is false.
 
 **Scala example:**
 ```scala
@@ -142,6 +141,7 @@ target = np.array([[1,1],[2,2],[3,3]])
 >layer.forward(input, target)
 0.8793184
 ```
+---
 ## MarginRankingCriterion ##
 
 **Scala:**
@@ -156,12 +156,12 @@ val mse = new MarginRankingCriterion(margin=1.0, sizeAverage=true)
 mse = MarginRankingCriterion(margin=1.0, size_average=true)
 ```
 
-Creates a criterion that measures the loss given an input x = {x1, x2},
+Creates a criterion that measures the loss given an input `x = {x1, x2}`,
 a table of two Tensors of size 1 (they contain only scalars), and a label y (1 or -1).
 In batch mode, x is a table of two Tensors of size batchsize, and y is a Tensor of size
 batchsize containing 1 or -1 for each corresponding pair of elements in the input Tensor.
-If y == 1 then it assumed the first input should be ranked higher (have a larger value) than
-the second input, and vice-versa for y == -1.
+If `y == 1` then it assumed the first input should be ranked higher (have a larger value) than
+the second input, and vice-versa for `y == -1`.
 
 
 **Scala example:**
@@ -196,14 +196,13 @@ val gradInput = mse.backward(input, target)
 println(output)
 println(gradInput)
 ```
-
-The output will be,
+Gives the output
 
 ```
 output: Float = 0.8                                                                                                                                                                    [21/154]
 ```
 
-The gradInput will be,
+Gives the gradInput,
 
 ```
 gradInput: com.intel.analytics.bigdl.utils.Table =
@@ -247,19 +246,19 @@ print output
 print gradInput
 ```
 
-The output will be,
+Gives the output,
 
 ```
 0.8
 ```
 
-The gradInput will be,
+Gives the gradInput,
 
 ```
 [array([ 0. , -0.2,  0.2, -0. , -0. ], dtype=float32), array([-0. ,  0.2, -0.2,  0. ,  0. ], dtype=float32)] 
 ```
 
-
+---
 ## ClassNLLCriterion
 
 **Scala:**
@@ -283,9 +282,9 @@ criterion expects a class index (1 to the number of class) as target when callin
 `forward(input, target)` and `backward(input, target)`.
 
  The loss can be described as:
-     loss(x, class) = -x[class]
+     `loss(x, class) = -x[class]`
  or in the case of the weights argument it is specified as follows:
-     loss(x, class) = -weights[class] * x[class]
+     `loss(x, class) = -weights[class] * x[class]`
  Due to the behaviour of the backend code, it is necessary to set sizeAverage to false when
  calculating losses in non-batch mode.
 
@@ -296,11 +295,10 @@ criterion expects a class index (1 to the number of class) as target when callin
  By default, the losses are averaged over observations for each minibatch. However, if the field
  `sizeAverage` is set to false, the losses are instead summed for each minibatch.
 
-**Parameters:**
+Parameters:
 
-**weights**     - weights of each element of the input
-
-**sizeAverage** - A boolean indicating whether normalizing by the number of elements in the input.
+* `weights` weights of each element of the input
+* `sizeAverage` A boolean indicating whether normalizing by the number of elements in the input.
                   Default: true
 
 **Scala example:**
@@ -357,7 +355,7 @@ print gradient
  [ 0.          0.         -0.33333334]]
 ```
 
-
+---
 ## SoftmaxWithCriterion ##
 
 **Scala:**
@@ -373,8 +371,8 @@ Computes the multinomial logistic loss for a one-of-many classification task, pa
 get a probability distribution over classes. It should be preferred over separate SoftmaxLayer + MultinomialLogisticLossLayer as 
 its gradient computation is more numerically stable.
 
-- param ignoreLabel   (optional) Specify a label value that should be ignored when computing the loss.
-- param normalizeMode How to normalize the output loss.
+* `ignoreLabel`   (optional) Specify a label value that should be ignored when computing the loss.
+* `normalizeMode` How to normalize the output loss.
 
 **Scala example:**
 ```scala
@@ -442,7 +440,7 @@ output = model.forward(input, target)
 2.1002123
 
 ```
-
+---
 ## SmoothL1Criterion ##
 
 **Scala:**
@@ -493,14 +491,13 @@ val target = Tensor(Storage(targetArr.map(x => x.toFloat))).reshape(Array(2, 2, 
 val output = slc.forward(input, target)
 val gradInput = slc.backward(input, target)
 ```
-
-The output is,
+Gives the output,
 
 ```
 output: Float = 0.0447365
 ```
 
-The gradInput is,
+Gives the gradInput,
 
 ```
 gradInput: com.intel.analytics.bigdl.tensor.Tensor[Float] =
@@ -554,7 +551,7 @@ gradInput = slc.backward(input, target)
 print output
 print gradInput
 ```
-
+---
 ## SmoothL1CriterionWithWeights ##
 
 **Scala:**
@@ -631,7 +628,7 @@ gradInput = smcod.backward(input, target)
 [array([-0.010944  ,  0.42500001,  0.63037443, -0.94999999, -0.1       ,
          0.07      ,  0.12      , -0.44000003], dtype=float32)]
 ```
-
+---
 ## MultiMarginCriterion ##
 
 **Scala:**
@@ -701,7 +698,7 @@ print "output of loss is : ",out
 grad_out = loss.backward(input,target)
 print "grad out of loss is : ",grad_out
 ```
-produces output
+Gives the output,
 ```
 input= [[ 0.46868305 -2.28562261]
  [ 0.8076243  -0.67809689]
@@ -715,7 +712,7 @@ grad out of loss is :  [[ 0.16666667 -0.16666667]
 
 
 ```
-
+---
 ## HingeEmbeddingCriterion ##
 
 
@@ -797,7 +794,7 @@ creating: createHingeEmbeddingCriterion
 0.9
 ```
 
-
+---
 ## MarginCriterion ##
 
 **Scala:**
@@ -810,8 +807,8 @@ criterion = MarginCriterion(margin=1.0, sizeAverage=true, bigdl_type="float")
 ```
 
 Creates a criterion that optimizes a two-class classification hinge loss (margin-based loss) between input x (a Tensor of dimension 1) and output y.
- * @param margin if unspecified, is by default 1.
- * @param sizeAverage whether to average the loss, is by default true
+ * `margin` if unspecified, is by default 1.
+ * `sizeAverage` whether to average the loss, is by default true
 
 **Scala example:**
 ```scala
@@ -851,7 +848,7 @@ array([[ 0.67882632,  0.61257846],
 criterion.forward(input, target)
 0.8166871
 ```
-
+---
 ## CosineEmbeddingCriterion ##
 
 **Scala:**
@@ -929,7 +926,7 @@ cosineEmbeddingCriterion = CosineEmbeddingCriterion(0.0, False)
 
 ```
 
-
+---
 ## BCECriterion ##
 
 **Scala:**
@@ -1002,7 +999,7 @@ gradInput = criterion.backward(input, target)
         [-1.22368968]], dtype=float32)]
 
 ```
-
+---
 ## DiceCoefficientCriterion ##
 
 **Scala:**
@@ -1078,6 +1075,7 @@ creating: createDiceCoefficientCriterion
 output of loss is : -0.17262316
 grad out of loss is : [[-0.38274616 -0.11200322]]
 ```
+---
 ## MSECriterion ##
 
 **Scala:**
@@ -1094,10 +1092,10 @@ The mean squared error criterion e.g. input: a, target: b, total elements: n
 loss(a, b) = 1/n * sum(|a_i - b_i|^2)
 ```
 
-**Parameters:**
+Parameters:
 
- * **sizeAverage** - a boolean indicating whether to divide the sum of squared error by n.
- Default: true
+ * `sizeAverage` a boolean indicating whether to divide the sum of squared error by n. 
+                 Default: true
 
 **Scala example:**
 ```scala
@@ -1147,7 +1145,7 @@ gradient= criterion.backward(input, target)
 [[-0.5 -0.5]
  [-0.5 -0.5]]
 ```
-
+---
 ## SoftMarginCriterion ##
 
 **Scala:**
@@ -1166,8 +1164,8 @@ input x (a Tensor of dimension 1) and output y (which is a tensor containing eit
 loss(x, y) = sum_i (log(1 + exp(-y[i]*x[i]))) / x:nElement()
 ```
 
-**Parameters:**
-* **sizeAverage** - A boolean indicating whether normalizing by the number of elements in the input.
+Parameters:
+* `sizeAverage` A boolean indicating whether normalizing by the number of elements in the input.
                     Default: true
 
 **Scala example:**
@@ -1218,7 +1216,7 @@ gradient = criterion.backward(input, target)
 [[-0.06723536  0.22019927]
  [ 0.23814353 -0.00449655]]
 ```
-
+---
 ## DistKLDivCriterion ##
 
 **Scala:**
@@ -1284,7 +1282,7 @@ print "output of loss is :",out
 grad_out = loss.backward(input,target)
 print "grad out of loss is :",grad_out
 ```
-produces output:
+Gives the output
 ```python
 input= [-1.14333924  0.97662296]
 target= [2 1]
@@ -1292,7 +1290,7 @@ creating: createDistKLDivCriterion
 output of loss is : 1.348175
 grad out of loss is : [-1.  -0.5]
 ```
-
+---
 ## ClassSimplexCriterion ##
 
 **Scala:**
@@ -1308,8 +1306,8 @@ ClassSimplexCriterion implements a criterion for classification.
 It learns an embedding per class, where each class' embedding is a
 point on an (N-1)-dimensional simplex, where N is the number of classes.
 
-**Parameters:**
-* **nClasses** - An integer, the number of classes.
+Parameters:
+* `nClasses` An integer, the number of classes.
 
 **Scala example:**
 ```scala
@@ -1355,7 +1353,7 @@ gradient = criterion.backward(input, target)
 [[ 0.25        0.20635083  0.60000002  0.80000001  1.        ]
  [ 0.60000002  1.          1.20000005  1.39999998  1.60000002]]
 ```
-
+---
 ## L1HingeEmbeddingCriterion ##
 
 **Scala:**
@@ -1409,7 +1407,7 @@ output = model.forward(input, target)
 >>> print output
 1.1
 ```
-
+---
 ## CrossEntropyCriterion ##
 
 **Scala:**
@@ -1423,9 +1421,8 @@ module = CrossEntropyCriterion(weights, sizeAverage)
 
 This criterion combines LogSoftMax and ClassNLLCriterion in one single class.
 
-`weights` A tensor assigning weight to each of the classes
-
-`sizeAverage` whether to divide the sequence length. Default is true.
+* `weights` A tensor assigning weight to each of the classes
+* `sizeAverage` whether to divide the sequence length. Default is true.
 
 **Scala example:**
 ```scala
@@ -1472,6 +1469,7 @@ target = np.array([1, 2, 3])
 >layer.forward(input, target)
 0.94830513
 ```
+---
 ## ParallelCriterion ##
 
 **Scala:**
@@ -1517,16 +1515,14 @@ println(output)
 println(gradInput)
 
 ```
-
-
-The output is,
+Gives the output,
 
 ```
 100.75
 
 ```
 
-The gradInput is,
+Gives the gradInput,
 
 ```
  {
@@ -1576,8 +1572,7 @@ gradInput = pc.backward(input, target)
 print "output = %s " % output
 print "gradInput = %s " % gradInput
 ```
-
-The console will output,
+Gives the output,
 
 ```
 input = 
@@ -1594,7 +1589,7 @@ gradInput = [array([[-0.25,  0.  ,  0.  ,  0.  ,  0.  ,  0.  ,  0.  ,  0.  ,  0.
        [ 0.80000001,  0.69999999,  0.60000002,  0.5       ,  0.40000001,
          0.30000001,  0.2       ,  0.1       ,  0.        , -0.1       ]], dtype=float32)]
 ```
-
+---
 ## MultiLabelMarginCriterion ##
 
 **Scala:**
@@ -1652,7 +1647,7 @@ multiLabelMarginCriterion = MultiLabelMarginCriterion(False)
 
 ```
 
-
+---
 ## MultiLabelSoftMarginCriterion ##
 
 **Scala:**
@@ -1707,7 +1702,7 @@ target = np.array([0, 1, 1])
 > criterion.forward(input, target)
 0.6081934
 ```
-
+---
 ## AbsCriterion ##
 
 **Scala:**
@@ -1747,7 +1742,7 @@ output=criterion.forward(input, target)
 >>> print output
 3.0
 ```
-
+---
 ## MultiCriterion ##
 
 **Scala:**
