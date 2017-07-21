@@ -20,9 +20,8 @@ pages:
   - Install: 
     - Use Pre-built Libs: UserGuide/install-pre-built.md
     - Build from Source Code: UserGuide/install-build-src.md 
-  - Run: 
-    - Run: UserGuide/run.md
-    - Configuration: UserGuide/configuration.md
+  - Run: UserGuide/run.md
+  - Configuration: UserGuide/configuration.md
   - Examples: UserGuide/examples.md
   - More Resources: UserGuide/resources.md
 - Python User Guide: 
