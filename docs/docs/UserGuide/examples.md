@@ -61,7 +61,7 @@ Finally (after optionally specifying the validation data and methods for the ```
       trigger = Trigger.everyEpoch,
       dataset = validationSet,
       vMethods = Array(new Top1Accuracy))
-    .setState(state)
+    .setOptimMethod(new Adagrad(learningRate=0.01, learningRateDecay=0.0002))
     .setEndWhen(Trigger.maxEpoch(param.maxEpoch))
     .optimize()
 ````
@@ -106,10 +106,8 @@ After that, the [example](https://github.com/intel-analytics/BigDL/blob/master/s
     criterion = new ClassNLLCriterion[Float](),
     batchSize = param.batchSize
   )
-  val state = T("learningRate" -> 0.01, "learningRateDecay" -> 0.0002)
   optimizer
-    .setState(state)
-    .setOptimMethod(new Adagrad())
+    .setOptimMethod(new Adagrad(learningRate=0.01, learningRateDecay=0.0002))
     .setValidation(Trigger.everyEpoch, valRDD, Array(new Top1Accuracy[Float]), param.batchSize)
     .setEndWhen(Trigger.maxEpoch(2))
     .optimize()
@@ -138,14 +136,10 @@ After importing ```com.intel.analytics.bigdl._``` and some initialization, the [
 It then creates ```DLClassifer``` (a Spark ML pipelines [Transformer](https://spark.apache.org/docs/latest/ml-pipeline.html#transformers)) that predicts the input value based on the specified deep learning model:
 ````scala
   val model = loadModel(param)
-  val valTrans = new DLClassifier()
-    .setInputCol("features")
-    .setOutputCol("predict")
-
-  val paramsTrans = ParamMap(
-    valTrans.modelTrain -> model,
-    valTrans.batchShape ->
-    Array(param.batchSize, 3, imageSize, imageSize))
+  val valTrans = new DLClassifierModel(model, Array(3, imageSize, imageSize))
+    .setBatchSize(param.batchSize)
+    .setFeaturesCol("features")
+    .setPredictionCol("predict")
 ````
 
 After that, the [example](https://github.com/intel-analytics/BigDL/blob/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/example/imageclassification/ImagePredictor.scala)  loads the input images into a [DataFrame](https://spark.apache.org/docs/1.6.3/ml-guide.html#dataframe), and then predicts the class of each each image using the ```DLClassifer```:
