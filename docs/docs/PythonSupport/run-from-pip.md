@@ -31,6 +31,8 @@ linear = Linear(2, 3) # Try to create a Linear layer
 ```
 
 ## BigDL Configuration
-Please check [this page](../UserGuide/configuration.md)
+- Increase memory
+  - export SPARK_DRIVER_MEMORY=20g
+
 
 
