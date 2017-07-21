@@ -46,7 +46,7 @@ val module = Linear(3, 5)
 println(module.forward(Tensor.range(1, 3, 1)))
 ```
 
-Output is
+Gives the output,
 ```
 com.intel.analytics.bigdl.tensor.Tensor[Float] =
 0.79338956
@@ -66,11 +66,11 @@ module = Linear(3, 5)
 
 print(module.forward(np.arange(1, 4, 1)))
 ```
-Output is
+Gives the output,
 ```
 [array([ 0.31657887, -1.11062765, -1.16235781, -0.67723978,  0.74650359], dtype=float32)]
 ```
-
+---
 ## Reverse ##
 
 
@@ -84,7 +84,7 @@ m = Reverse(dimension=1)
 ```
 
  Reverse the input w.r.t given dimension.
- The input can be a Tensor or Table. __Dimension is one-based index__ 
+ The input can be a Tensor or Table. `Dimension` is one-based index.
  
 
 **Scala example:**
@@ -116,8 +116,6 @@ output:
 
 ```
 
-
-
 **Python example:**
 ```python
 input = np.random.random((2,3))
@@ -138,8 +136,7 @@ output:
 
  
 ```
-
-
+---
 ## Reshape ##
 
 **Scala:**
@@ -154,16 +151,16 @@ reshape = Reshape(size, batch_mode)
 The `forward(input)` reshape the input tensor into `size(0) * size(1) * ...` tensor,
 taking the elements row-wise.
 
-**parameters**
-* **size** - the size after reshape
-* **batchMode** - It is a optional argument. If it is set to `Some(true)`,
+parameters:
+* `size` the size after reshape
+* `batchMode` It is a optional argument. If it is set to `Some(true)`,
                   the first dimension of input is considered as batch dimension,
                   and thus keep this dimension size fixed. This is necessary
                   when dealing with batch sizes of one. When set to `Some(false)`,
                   it forces the entire input (including the first dimension) to be reshaped
                   to the input size. Default is `None`, which means the module considers
-                  inputs with more elements than the product of provided sizes (size(0) *
-                  size(1) * ..) to be batches, otherwise in no batch mode.
+                  inputs with more elements than the product of provided sizes (`size(0) *
+                  size(1) * ..`) to be batches, otherwise in no batch mode.
 
 **Scala example:**
 ```scala
@@ -190,7 +187,7 @@ output = reshape.forward(input)
 -> print output[0].shape
 (2, 3, 2)
 ```
-
+---
 ## Index ##
 
 **Scala:**
@@ -201,10 +198,10 @@ val model = Index(dimension)
 ```python
 model = Index(dimension)
 ```
-
 Applies the Tensor index operation along the given dimension.
 
 **Scala example:**
+
 ```scala
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.nn._
@@ -260,7 +257,7 @@ output = model.forward(input)
 >>> print(output)
 [-0.45804846 -0.20176707 -0.20176707  0.50963247]
 ```
-
+---
 ## Identity ##
 
 **Scala:**
@@ -306,10 +303,8 @@ identity = Identity()
        [ 4.,  5.,  6.]], dtype=float32)]
        
 ```
-
-
-
-## Narrow
+---
+## Narrow ##
 
 **Scala:**
 ```scala
@@ -323,13 +318,10 @@ layer = Narrow(dimension, offset, length=1)
 Narrow is an application of narrow operation in a module.
 The module further supports a negative length in order to handle inputs with an unknown size.
 
-**Parameters:**
-
-**dimension** -narrow along this dimension
-
-**offset** -the start index on the given dimension
-
-**length** -length to narrow, default value is 1
+Parameters:
+* `dimension` narrow along this dimension
+* `offset` the start index on the given dimension
+* `length` length to narrow, default value is 1
 
 **Scala Example**
 ```scala
@@ -384,6 +376,7 @@ print grad
  [ 0.  4.  0.]
  [ 0.  5.  0.]]
 ```
+---
 ## Unsqueeze ##
 
 **Scala:**
@@ -395,8 +388,8 @@ val layer = Unsqueeze(dim)
 layer = Unsqueeze(dim)
 ```
 
-Insert singleton dim (i.e., dimension 1) at position pos. For an input with dim = input.dim(),
-there are dim + 1 possible positions to insert the singleton dimension. The dim starts from 1.
+Insert singleton dim (i.e., dimension 1) at position pos. For an input with `dim = input.dim()`,
+there are `dim + 1` possible positions to insert the singleton dimension. The dim starts from 1.
 
 **Scala example:**
 ```scala
@@ -450,7 +443,7 @@ gradInput = layer.backward(input, gradOutput)
         [[ 0.76349133,  0.96734989],
          [ 0.88068211,  0.07284366]]], dtype=float32)]
 ```
-
+---
 ## Squeeze ##
 
 **Scala:**
@@ -464,10 +457,9 @@ module = Squeeze(dims, numInputDims=-2147483648)
 
 Delete all singleton dimensions or a specific singleton dimension.
 
- `dims` Optional. If this dimension is singleton dimension, it will be deleted.
+* `dims` Optional. If this dimension is singleton dimension, it will be deleted.
            The first index starts from 1. Default: delete all dimensions.
-           
- `num_input_dims` Optional. If in a batch model, set to the inputDims.
+* `num_input_dims` Optional. If in a batch model, set to the inputDims.
 
 **Scala example:**
 ```scala
@@ -492,6 +484,7 @@ out: array([[ 1.,  2.,  3.],
             [ 1.,  2.,  3.]], dtype=float32)
 
 ```
+---
 ## Select ##
 
 **Scala:**
@@ -526,8 +519,7 @@ layer.backward(Tensor(T(
   T(7.0f, 8.0f, 9.0f)
 )), Tensor(T(0.1f, 0.2f, 0.3f)))
 ```
-
-Its output should be
+Gives the output,
 ```
 4.0
 5.0
@@ -557,8 +549,7 @@ layer.backward(np.array([
   [7.0, 8.0, 9.0]
 ]), np.array([0.1, 0.2, 0.3]))
 ```
-
-Its output should be
+Gives the output,
 ```
 array([ 4.,  5.,  6.], dtype=float32)
 
@@ -566,7 +557,7 @@ array([[ 0.        ,  0.        ,  0.        ],
        [ 0.1       ,  0.2       ,  0.30000001],
        [ 0.        ,  0.        ,  0.        ]], dtype=float32)
 ```
-
+---
 ## MaskedSelect ##
 
 **Scala:**
@@ -616,6 +607,7 @@ mask = np.array([[1,0], [0, 1]])
 >layer.forward([input1, mask])
 array([ 0.1525335 ,  0.05474588], dtype=float32)
 ```
+---
 ## Transpose ##
 
 **Scala:**
@@ -668,8 +660,8 @@ output = layer.forward(input)
        [ 0.33434764,  0.64844745]], dtype=float32)]
 
 ```
-
-## InferReshape
+---
+## InferReshape ##
 
 **Scala:**
 ```scala
@@ -704,11 +696,9 @@ For example,
 The 1st and 3rd dim are set to given sizes, keep the 2nd dim unchanged,
 and inferred the last dim as 14.
 
-**Parameters:**
-
-**size**      -the target tensor size
-
-**batchMode** -whether in batch mode
+Parameters:
+* `size` the target tensor size
+* `batchMode` whether in batch mode
 
 **Scala example:**
 ```scala
@@ -758,6 +748,7 @@ print grad
 [[[ 0.84927064  0.55205333  0.25077972]
   [ 0.76105869  0.30828172  0.1237276 ]]]
 ```
+---
 ## Replicate ##
 
 **Scala:**
@@ -788,7 +779,7 @@ val module = Replicate(4, 1, 2)
 
 println(module.forward(Tensor.range(1, 6, 1).resize(1, 2, 3)))
 ```
-Output is
+Gives the output,
 ```
 com.intel.analytics.bigdl.tensor.Tensor[Float] =
 (1,1,.,.) =
@@ -819,7 +810,7 @@ module = Replicate(4, 1, 2)
 
 print(module.forward(np.arange(1, 7, 1).reshape(1, 2, 3)))
 ```
-Output is 
+Gives the output, 
 ```
 [array([[[[ 1.,  2.,  3.],
          [ 4.,  5.,  6.]],
@@ -873,18 +864,14 @@ val gradOutput = Tensor(2, 8).randn()
 val output = view.forward(input)
 val gradInput = view.backward(input, gradOutput)
 ```
-
-The output is,
-
+Gives the output,
 ```
 output: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 -0.43037438     1.2982363       -1.4723133      -0.2602826      0.7178128       -1.8763185      0.88629466      0.8346704
 0.20963766      -0.9349786      1.0376515       1.3153045       1.5450214       1.084113        -0.29929757     -0.18356979
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x8]
 ```
-
-The gradInput is,
-
+Gives the gradInput,
 ```
 gradInput: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 0.7360089       0.9133299       0.40443268      -0.94965595
@@ -911,7 +898,7 @@ gradInput = view.backward(input, gradOutput)
 print output
 print gradInput
 ```
-
+---
 ## Contiguous ##
 
 Be used to make input, gradOutput both contiguous
@@ -925,7 +912,6 @@ val contiguous = Contiguous()
 ```python
 contiguous = Contiguous()
 ```
-
 Used to make input, gradOutput both contiguous
 
 **Scala example:**
@@ -943,9 +929,7 @@ val gradOutput = Tensor(5).range(2, 6, 1)
 val gradInput = contiguous.backward(input, gradOutput)
 println(gradOutput)
 ```
-
-The output will be,
-
+Gives the output,
 ```
 output: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 1.0
@@ -955,8 +939,7 @@ output: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 5.0
 [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 5]
 ```
-
-The gradInput will be,
+Gives the gradInput,
 
 ```
 gradInput: com.intel.analytics.bigdl.tensor.Tensor[Float] =
@@ -990,14 +973,12 @@ gradInput = contiguous.backward(input, gradOutput)
 print gradInput
 
 ```
-
-The output will be,
-
+Gives the output,
 ```
 [array([[ 1.,  2.,  3.,  4.,  5.]], dtype=float32)]
 ```
 
-The gradInput will be,
+Gives the gradInput,
 
 ```
 [array([[ 2.,  3.,  4.,  5.,  6.]], dtype=float32)]
