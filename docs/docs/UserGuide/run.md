@@ -1,6 +1,6 @@
 
 
-## **Use an Interactive Shell**
+## **Use Interactive Spark Shell**
 You can try BigDL easily using the Spark interactive shell. Run below command to start spark shell with BigDL support:
 ```bash
 $ SPARK_HOME/bin/spark-shell --properties-file dist/conf/spark-bigdl.conf    \
@@ -41,7 +41,7 @@ res9: com.intel.analytics.bigdl.tensor.Tensor[Double] =
 
 ---
 
-## **Run a BigDL Program**
+## **Run as a Spark Program**
 You can run a BigDL program, e.g., the [VGG](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/vgg) training, as a standard Spark program (running in either local mode or cluster mode) as follows:
 
 1. Download the CIFAR-10 data from [here](https://www.cs.toronto.edu/%7Ekriz/cifar.html). Remember to choose the binary version.
@@ -87,7 +87,7 @@ If you are to run your own program, do remember to create SparkContext and initi
 
 ---
 
-## **Run as a local Java/Scala program**
+## **Run as a Local Java/Scala program**
 You can try BigDL program as a local Java/Scala program. 
 
 To run the BigDL model as a local Java/Scala program, you need to set Java property `bigdl.localMode` to `true`. If you want to specify how many cores to be used for training/testing/prediction, you need to set Java property `bigdl.coreNumber` to the core number. You can either call `System.setProperty("bigdl.localMode", "true")` and `System.setProperty("bigdl.coreNumber", core_number)` in the Java/Scala code, or pass -Dbigdl.localMode=true and -Dbigdl.coreNumber=core_number when runing the program.
