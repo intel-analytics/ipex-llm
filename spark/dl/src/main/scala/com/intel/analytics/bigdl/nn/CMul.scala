@@ -212,7 +212,7 @@ class CMul[T: ClassTag](
   }
 }
 
-object CMul extends  ModuleSerializable {
+object CMul extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
       size: Array[Int], wRegularizer: Regularizer[T] = null)
     (implicit ev: TensorNumeric[T]) : CMul[T] = {

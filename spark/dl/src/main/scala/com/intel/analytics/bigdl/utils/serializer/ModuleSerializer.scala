@@ -110,7 +110,6 @@ object ModuleSerializer extends ModuleSerializable{
       DataConverter.setAttributeValue(attrBuilder, fieldValue, ptype)
       bigDLModelBuilder.putAttr(paramName, attrBuilder.build)
     })
-    copyFromBigDL(module, bigDLModelBuilder)
     createSerializeBigDLModule(bigDLModelBuilder, module)
   }
 

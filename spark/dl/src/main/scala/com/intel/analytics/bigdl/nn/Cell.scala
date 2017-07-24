@@ -191,7 +191,7 @@ trait CellSerializable extends ModuleSerializable {
     cellModule.cell = DataConverter.getAttributeValue(attrMap.get("cell")).
       asInstanceOf[AbstractModule[Activity, Activity, T]]
 
-    moduleData
+    createBigDLModule(model, cellModule)
   }
 
   override def serializeModule[T: ClassTag](module : ModuleData[T])
@@ -205,6 +205,6 @@ trait CellSerializable extends ModuleSerializable {
       ModuleSerializer.abstractModuleType)
     cellModuleBuilder.putAttr("cell", cellBuilder.build)
 
-    cellModuleBuilder.build
+    createSerializeBigDLModule(cellModuleBuilder, module)
   }
 }

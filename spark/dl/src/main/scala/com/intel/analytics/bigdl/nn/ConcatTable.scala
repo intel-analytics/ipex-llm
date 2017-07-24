@@ -242,7 +242,7 @@ class ConcatTable[T : ClassTag]
   }
 }
 
-object ConcatTable extends  ContainerSerializable {
+object ConcatTable extends ContainerSerializable {
   def apply[A <: Activity : ClassTag, @specialized(Float, Double) T: ClassTag]()
       (implicit ev: TensorNumeric[T]) : ConcatTable[T] = {
     new ConcatTable[T]()

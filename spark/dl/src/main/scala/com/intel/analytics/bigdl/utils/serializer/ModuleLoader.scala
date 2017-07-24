@@ -34,7 +34,7 @@ object ModuleLoader {
   private val hdfsPrefix: String = "hdfs:"
 
   def loadFromFile[T: ClassTag](modelPath : String)
-                               (implicit ev: TensorNumeric[T]) : AbstractModule[_, _, T] = {
+    (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
     val modelBuilder = BigDLModule.newBuilder
     var cis : CodedInputStream = null
     if (modelPath.startsWith(hdfsPrefix)) {
@@ -54,9 +54,9 @@ object ModulePersister {
 
   private val hdfsPrefix: String = "hdfs:"
 
-  def saveToFile[T: ClassTag](modelPath: String, module: AbstractModule[_, _, T],
+  def saveToFile[T: ClassTag](modelPath: String, module: AbstractModule[Activity, Activity, T],
                               overwrite: Boolean = false)(implicit ev: TensorNumeric[T]): Unit = {
-    val bigDLModule = ModuleData(module.asInstanceOf[AbstractModule[Activity, Activity, T]]
+    val bigDLModule = ModuleData(module
       , new ArrayBuffer[String](), new ArrayBuffer[String]())
     val bigDLModel = ModuleSerializer.serialize(bigDLModule)
     if (modelPath.startsWith(hdfsPrefix)) {

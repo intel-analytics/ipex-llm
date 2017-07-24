@@ -721,7 +721,7 @@ class BatchNormalization[T: ClassTag](
   }
 }
 
-object BatchNormalization extends  ModuleSerializable {
+object BatchNormalization extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
     nOutput: Int,
     eps: Double = 1e-5,

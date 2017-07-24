@@ -233,7 +233,7 @@ object SpatialDivisiveNormalization extends ModuleSerializable {
 
   override def loadModule[T: ClassTag](model : BigDLModule)
                                       (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
-    val moduleData = ModuleSerializer.loadModule(model)
+    val moduleData = super.loadModule(model)
     val spatialDivisiveNormModule = moduleData.module.
       asInstanceOf[SpatialDivisiveNormalization[T]]
     // val eanestimator = spatialDivisiveNormModule.cell
@@ -264,7 +264,7 @@ object SpatialDivisiveNormalization extends ModuleSerializable {
 
   override def serializeModule[T: ClassTag](module : ModuleData[T])
                                            (implicit ev: TensorNumeric[T]) : BigDLModule = {
-    val bigDLModule = ModuleSerializer.serializeModule(module)
+    val bigDLModule = super.serializeModule(module)
     val spatialDivisiveNormModule = module.module.asInstanceOf[SpatialDivisiveNormalization[T]]
     val spatialDivisiveNormBuilder = BigDLModule.newBuilder(bigDLModule)
 

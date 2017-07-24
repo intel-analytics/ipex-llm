@@ -78,7 +78,7 @@ class AddConstant[T: ClassTag](
   }
 }
 
-object AddConstant extends ModuleSerializable{
+object AddConstant extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
     constant_scalar: Double,
     inplace: Boolean = false)(implicit ev: TensorNumeric[T]) : AddConstant[T] = {

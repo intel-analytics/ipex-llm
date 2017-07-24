@@ -151,19 +151,17 @@ object Reshape extends ModuleSerializable {
     } else if (batchModeV == 2) {
       batchMode = Some(true)
     }
-    ModuleData(Reshape(size, batchMode).asInstanceOf[AbstractModule[Activity, Activity, T]],
-      model.getPreModulesList.asScala,
-      model.getNextModulesList.asScala)
+    val reshape = Reshape(size, batchMode).asInstanceOf[AbstractModule[Activity, Activity, T]]
+    createBigDLModule(model, reshape)
   }
 
   override def serializeModule[T: ClassTag](module : ModuleData[T])
                                            (implicit ev: TensorNumeric[T]) : BigDLModule = {
 
-    val reshapClas = Class.forName("com.intel.analytics.bigdl.nn.Reshape")
     val reshape = module.module.asInstanceOf[Reshape[T]]
     val reshapeBuilder = BigDLModule.newBuilder()
 
-    val moduleType = ModuleSerializer.getModuleTypeByCls(reshapClas)
+    val moduleType = ModuleSerializer.getModuleTypeByCls(reshape.getClass)
     reshapeBuilder.setModuleType(moduleType)
 
     val sizeBuilder = AttrValue.newBuilder
@@ -180,6 +178,6 @@ object Reshape extends ModuleSerializable {
       universe.typeOf[Int])
     reshapeBuilder.putAttr("batchMode", batchModeBuilder.build)
 
-    reshapeBuilder.build
+    createSerializeBigDLModule(reshapeBuilder, module)
   }
 }

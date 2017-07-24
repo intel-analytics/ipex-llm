@@ -62,7 +62,7 @@ class CSubTable[T: ClassTag]()(
   }
 }
 
-object CSubTable extends  ModuleSerializable {
+object CSubTable extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag]()
       (implicit ev: TensorNumeric[T]) : CSubTable[T] = {
     new CSubTable[T]()

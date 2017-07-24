@@ -93,9 +93,11 @@ object Transpose extends ModuleSerializable {
       permutations(i) = (permutation(0), permutation(1))
       i += 1
     }
-    ModuleData(Transpose(permutations).asInstanceOf[AbstractModule[Activity,
-      Activity, T]], model.getPreModulesList.asScala,
-      model.getNextModulesList.asScala)
+
+    val tranpose = Transpose(permutations).asInstanceOf[AbstractModule[Activity,
+            Activity, T]]
+    createBigDLModule(model, tranpose)
+
   }
 
   override def serializeModule[T: ClassTag](module : ModuleData[T])
@@ -109,10 +111,7 @@ object Transpose extends ModuleSerializable {
     val sizeBuilder = AttrValue.newBuilder
     DataConverter.setAttributeValue(sizeBuilder, size, universe.typeOf[Int])
     transposeBuilder.putAttr("size", sizeBuilder.build)
-
-    val transposCls = Class.forName("com.intel.analytics.bigdl.nn.Transpose")
-
-    transposeBuilder.setModuleType(ModuleSerializer.getModuleTypeByCls(transposCls))
+    transposeBuilder.setModuleType(ModuleSerializer.getModuleTypeByCls(transpose.getClass))
 
     var i = 0
 
@@ -125,6 +124,6 @@ object Transpose extends ModuleSerializable {
       i += 1
     }
 
-    transposeBuilder.build
+    createSerializeBigDLModule(transposeBuilder, module)
   }
 }
