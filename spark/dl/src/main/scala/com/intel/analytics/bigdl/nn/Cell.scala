@@ -84,10 +84,10 @@ abstract class Cell[T : ClassTag](
    * @param size batchSize
    * @return
    */
-  def hidResize(hidden: Activity, size: Int, rows: Int = 1, columns: Int = 1): Activity = {
+  def hidResize(hidden: Activity, size: Int, imageSize: Array[Int] = null): Activity = {
     if (hidden == null) {
       if (hiddensShape.length == 1) {
-        hidResize(Tensor[T](), size, rows, columns)
+        hidResize(Tensor[T](), size, null)
       } else {
         val _hidden = T()
         var i = 1
@@ -95,7 +95,7 @@ abstract class Cell[T : ClassTag](
           _hidden(i) = Tensor[T]()
           i += 1
         }
-        hidResize(_hidden, size, rows, columns)
+        hidResize(_hidden, size, imageSize)
       }
     } else {
       if (hidden.isInstanceOf[Tensor[T]]) {
@@ -106,14 +106,21 @@ abstract class Cell[T : ClassTag](
         require(hidden.isInstanceOf[Table],
           "Cell: hidden should be a Table")
         var i = 1
-        if (rows== 1 && columns==1) {
+        if (null == imageSize) {
           while (i <= hidden.toTable.length()) {
             hidden.toTable[Tensor[T]](i).resize(size, hiddensShape(i - 1))
             i += 1
           }
-        } else {
+        } else if (imageSize.length == 2) {
           while (i <= hidden.toTable.length()) {
-            hidden.toTable[Tensor[T]](i).resize(size, hiddensShape(i - 1), rows, columns)
+            hidden.toTable[Tensor[T]](i).resize(size, hiddensShape(i - 1),
+              imageSize(0), imageSize(1))
+            i += 1
+          }
+        } else if (imageSize.length == 3) {
+          while (i <= hidden.toTable.length()) {
+            hidden.toTable[Tensor[T]](i).resize(size, hiddensShape(i - 1),
+              imageSize(0), imageSize(1), imageSize(2))
             i += 1
           }
         }

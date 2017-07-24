@@ -42,7 +42,7 @@ import scala.reflect.ClassTag
             applied to the bias.
  * @param withPeephole: whether use last cell status control a gate.
  */
-class ConvLSTMPeephole[T : ClassTag] (
+class ConvLSTMPeephole2D[T : ClassTag](
   val inputSize: Int,
   val outputSize: Int,
   val kernelI: Int,
@@ -202,10 +202,10 @@ class ConvLSTMPeephole[T : ClassTag] (
     convlstm
   }
 
-  override def canEqual(other: Any): Boolean = other.isInstanceOf[ConvLSTMPeephole[T]]
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[ConvLSTMPeephole2D[T]]
 
   override def equals(other: Any): Boolean = other match {
-    case that: ConvLSTMPeephole[T] =>
+    case that: ConvLSTMPeephole2D[T] =>
       super.equals(that) &&
         (that canEqual this) &&
         inputSize == that.inputSize &&
@@ -227,11 +227,11 @@ class ConvLSTMPeephole[T : ClassTag] (
     cell.reset()
   }
 
-  override def toString: String = s"ConvLSTMPeephole($inputSize, $outputSize," +
+  override def toString: String = s"ConvLSTMPeephole2D($inputSize, $outputSize," +
     s"$kernelI, $kernelC, $stride)"
 }
 
-object ConvLSTMPeephole {
+object ConvLSTMPeephole2D {
   def apply[@specialized(Float, Double) T: ClassTag](
     inputSize: Int,
     outputSize: Int,
@@ -242,8 +242,8 @@ object ConvLSTMPeephole {
     uRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
     withPeephole: Boolean = true
-  )(implicit ev: TensorNumeric[T]): ConvLSTMPeephole[T] = {
-    new ConvLSTMPeephole[T](inputSize, outputSize, kernelI, kernelC, stride,
+  )(implicit ev: TensorNumeric[T]): ConvLSTMPeephole2D[T] = {
+    new ConvLSTMPeephole2D[T](inputSize, outputSize, kernelI, kernelC, stride,
       wRegularizer, uRegularizer, bRegularizer, withPeephole)
   }
 }

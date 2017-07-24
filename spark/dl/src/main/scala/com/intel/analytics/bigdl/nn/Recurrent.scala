@@ -83,10 +83,9 @@ class Recurrent[T : ClassTag]()
    * Clone N models; N depends on the time dimension of the input
    * @param times
    * @param batchSize
-   * @param hiddenSize
+   * @param imageSize
    */
-  private def extend(times: Int, batchSize: Int, hiddenSize: Int,
-    rows: Int = 1, columns: Int = 1): Unit = {
+  private def extend(times: Int, batchSize: Int, imageSize: Array[Int] = null): Unit = {
     if (hidden == null) {
       require((preTopology == null && modules.length == 1) ||
         (topology != null && preTopology != null && modules.length == 2),
@@ -98,7 +97,7 @@ class Recurrent[T : ClassTag]()
       val cell = cells.head
 
       // The cell will help initialize or resize the hidden variable.
-      hidden = cell.hidResize(hidden = null, size = batchSize, rows, columns)
+      hidden = cell.hidResize(hidden = null, size = batchSize, imageSize)
 
       /*
        * Since the gradHidden is only used as an empty Tensor or Table during
@@ -107,7 +106,7 @@ class Recurrent[T : ClassTag]()
        */
       gradHidden = hidden
     } else {
-      cells.head.hidResize(hidden = hidden, size = batchSize, rows, columns)
+      cells.head.hidResize(hidden = hidden, size = batchSize, imageSize)
       gradHidden = hidden
     }
     var t = cells.length
@@ -199,8 +198,8 @@ class Recurrent[T : ClassTag]()
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.dim == 3 || input.dim == 5,
-      "Recurrent: input should be a 3D or 5D Tensor, e.g [batch, times, nDim], " +
+    require(input.dim == 3 || input.dim == 5 || input.dim == 6,
+      "Recurrent: input should be a 3D/5D/6D Tensor, e.g [batch, times, nDim], " +
         s"current input.dim = ${input.dim}")
 
     batchSize = input.size(batchDim)
@@ -232,11 +231,16 @@ class Recurrent[T : ClassTag]()
     if (input.dim() == 3) {
       output.resize(batchSize, times, hiddenSize)
       // Clone N modules along the sequence dimension.
-      extend(times, batchSize, hiddenSize)
+      extend(times, batchSize)
     } else if (input.dim() == 5) {
       output.resize(batchSize, times, hiddenSize, input.size(4), input.size(5))
       // Clone N modules along the sequence dimension.
-      extend(times, batchSize, hiddenSize, input.size(4), input.size(5))
+      extend(times, batchSize, Array(input.size(4), input.size(5)))
+    } else if (input.dim() == 6) {
+      val sizes = Array(batchSize, times, hiddenSize, input.size(4),
+        input.size(5), input.size(6))
+      output.resize(sizes)
+      extend(times, batchSize, Array(input.size(4), input.size(5), input.size(6)))
     }
 
     /**
