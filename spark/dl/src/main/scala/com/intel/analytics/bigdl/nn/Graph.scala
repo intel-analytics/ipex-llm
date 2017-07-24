@@ -326,25 +326,44 @@ object Graph extends ContainerSerializable {
   override def loadModule[T: ClassTag](module : BigDLModule)
                                       (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
     val subModules = module.getSubModulesList.asScala
-    val modules = new ArrayBuffer[ModuleNode[T]]()
-    // map all bottom modules to current module
-    val bottomToModules = new mutable.HashMap[String, ModuleNode[T]]()
+
+    val attributes = module.getAttrMap
+    val inputNames = new mutable.LinkedHashMap[String, String]
+    val outputNames = new mutable.LinkedHashMap[String, String]
+    val inputnms = attributes.get("inputNames")
+    DataConverter.getAttributeValue(attributes.get("inputNames"))
+      .asInstanceOf[Array[String]].map(name => inputNames(name) = name)
+    DataConverter.getAttributeValue(attributes.get("outputNames"))
+      .asInstanceOf[Array[String]].map(name => outputNames(name) = name)
+
+    val inputs = new ArrayBuffer[ModuleNode[T]]
+    val outputs = new ArrayBuffer[ModuleNode[T]]
+
+    // val modules = new ArrayBuffer[ModuleNode[T]]()
+    // layer name to layer node mapping
+    val layerMap = new mutable.HashMap[String, ModuleNode[T]]()
     subModules.foreach(subModule => {
       val bigDLModule = ModuleSerializer.load(subModule)
       val moduleNode = bigDLModule.module.inputs()
       val preNodes = bigDLModule.pre
       preNodes.foreach(pre => {
-        if (bottomToModules.contains(pre)) {
-          bottomToModules(pre) -> moduleNode
+        if (layerMap.contains(pre)) {
+          layerMap(pre) -> moduleNode
         }
       })
       val nextNodes = bigDLModule.next
-      nextNodes.foreach(next => bottomToModules(next) = moduleNode)
-      modules.append(moduleNode)
+      layerMap(bigDLModule.module.getName) = moduleNode
+     //  modules.append(moduleNode)
+      if (inputNames.contains(bigDLModule.module.getName)) {
+        inputs.append(moduleNode)
+      }
+      if (outputNames.contains(bigDLModule.module.getName)) {
+        outputs.append(moduleNode)
+      }
     })
-    val inputs = modules.filter(_.prevNodes.size == 0).toArray
-    val outputs = modules.filter(_.nextNodes.size == 0).toArray
-    val attributes = module.getAttrMap
+
+    // val inputs = modules.filter(_.prevNodes.size == 0).toArray
+    // val outputs = modules.filter(_.nextNodes.size == 0).toArray
     var sharedVariables : Option[(Array[Tensor[T]], Array[Tensor[T]])] = None
     if (attributes.containsKey("sharedWeight") && attributes.containsKey("sharedBias")) {
       val weights = attributes.get("sharedWeight")
@@ -353,7 +372,7 @@ object Graph extends ContainerSerializable {
       val biasArray = DataConverter.getAttributeValue(biases).asInstanceOf[Array[Tensor[T]]]
       sharedVariables = Some(weightArray, biasArray)
     }
-    val graph = Graph[T](inputs, outputs, sharedVariables)
+    val graph = Graph[T](inputs.toArray, outputs.toArray, sharedVariables)
     createBigDLModule(module, graph)
   }
 
@@ -364,12 +383,14 @@ object Graph extends ContainerSerializable {
     module.pre.foreach(_ => graphBuilder.addAllNextModules(_))
     graphBuilder.setName(module.module.getName)
     val graph = module.module.asInstanceOf[Graph[T]]
+    val inputsNames = graph.inputs.map(_.element.getName).toArray
+    val outputsNames = graph.outputs.map(_.element.getName).toArray
     graph.getExecutions.foreach(execution => {
-      val nextNodes = execution.prevNodes.map(_.element.getName)
-      val preNodex = execution.nextNodes.map(_.element.getName)
-      val subModel = ModuleSerializer.serialize(ModuleData(execution.element
-        .asInstanceOf[AbstractModule[Activity, Activity, T]],
-        nextNodes, preNodex))
+      val preNodes = execution.prevNodes.map(_.element.getName)
+      val nextNodes = execution.nextNodes.map(_.element.getName)
+      val currNode = execution.element
+        .asInstanceOf[AbstractModule[Activity, Activity, T]]
+      val subModel = ModuleSerializer.serialize(ModuleData(currNode, preNodes, nextNodes))
       graphBuilder.addSubModules(subModel)
     })
     if (graph.variables.isDefined) {
@@ -382,6 +403,14 @@ object Graph extends ContainerSerializable {
       DataConverter.setAttributeValue(biasAttrBuilder, bias)
       graphBuilder.putAttr("sharedBias", biasAttrBuilder.build)
     }
+
+    val inputNamesAttrBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(inputNamesAttrBuilder, inputsNames)
+    graphBuilder.putAttr("inputNames", inputNamesAttrBuilder.build)
+
+    val outputNamesBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(outputNamesBuilder, outputsNames)
+    graphBuilder.putAttr("outputNames", outputNamesBuilder.build)
 
     graphBuilder.setModuleType(ModuleSerializer.getModuleTypeByCls(graph.getClass))
     graphBuilder.build

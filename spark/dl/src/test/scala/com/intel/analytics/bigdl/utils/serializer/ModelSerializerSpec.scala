@@ -95,6 +95,39 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     res1 should be (res2)
   }
 
+  "BinaryTreeLSTM serializer" should " work properly" in {
+
+    RNG.setSeed(1000)
+    val binaryTreeLSTM = BinaryTreeLSTM(2, 2)
+
+    val inputs =
+      Tensor(
+        T(T(T(1f, 2f),
+          T(2f, 3f),
+          T(4f, 5f))))
+
+    val tree =
+      Tensor(
+        T(T(T(2f, 5f, -1f),
+          T(0f, 0f, 1f),
+          T(0f, 0f, 2f),
+          T(0f, 0f, 3f),
+          T(3f, 4f, 0f))))
+
+    val input = T(inputs, tree)
+
+    val res1 = binaryTreeLSTM.forward(input)
+    val res11 = binaryTreeLSTM.forward(input)
+    res1 should be (res11)
+    ModulePersister.saveToFile("/tmp/binaryTreeLSTM.bigdl", binaryTreeLSTM, true)
+    ModulePersister.saveModelDefinitionToFile("/tmp/binaryTreeLSTM.prototxt", binaryTreeLSTM, true)
+    RNG.setSeed(1000)
+    val loadedBinaryTreeLSTM = ModuleLoader.loadFromFile("/tmp/binaryTreeLSTM.bigdl")
+    val res2 = loadedBinaryTreeLSTM.forward(input)
+    res1 should be (res2)
+
+  }
+
   "BiRecurrent serializer" should "work properly" in {
     val input1 = Tensor(1, 5, 6).apply1(e => Random.nextFloat()).transpose(1, 2)
     val input2 = Tensor()

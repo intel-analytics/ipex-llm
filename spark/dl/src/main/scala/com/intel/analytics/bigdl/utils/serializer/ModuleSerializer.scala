@@ -172,6 +172,8 @@ object ModuleSerializer extends ModuleSerializable{
     registerModule("BatchNormalization",
       Class.forName("com.intel.analytics.bigdl.nn.BatchNormalization"), BatchNormalization)
     registerModule("Bilinear", Class.forName("com.intel.analytics.bigdl.nn.Bilinear"), Bilinear)
+    registerModule("BinaryTreeLSTM", Class.forName("com.intel.analytics.bigdl.nn.BinaryTreeLSTM"),
+      BinaryTreeLSTM)
     registerModule("BiRecurrent", Class.forName("com.intel.analytics.bigdl.nn.BiRecurrent"),
       BiRecurrent)
     registerModule("Bottle", Class.forName("com.intel.analytics.bigdl.nn.Bottle"), Bottle)
@@ -219,6 +221,7 @@ object ModuleSerializer extends ModuleSerializable{
     registerModule("Index", Class.forName("com.intel.analytics.bigdl.nn.Index"), Index)
     registerModule("InferReshape", Class.forName("com.intel.analytics.bigdl.nn.InferReshape"),
       InferReshape)
+    registerModule("Input", Class.forName("com.intel.analytics.bigdl.nn.Input"), Input)
     registerModule("JoinTable", Class.forName("com.intel.analytics.bigdl.nn.JoinTable"), JoinTable)
     registerModule("L1Penalty", Class.forName("com.intel.analytics.bigdl.nn.L1Penalty"), L1Penalty)
     registerModule("LeakyReLU", Class.forName("com.intel.analytics.bigdl.nn.LeakyReLU"), LeakyReLU)

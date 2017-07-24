@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, Tensor
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Node
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 import scala.reflect.ClassTag
 
@@ -53,7 +54,7 @@ class Input[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends TensorModule[T
   override def hashCode(): Int = System.identityHashCode(this)
 }
 
-object Input {
+object Input extends ModuleSerializable {
   def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): ModuleNode[T] = {
     new Node(new Input().asInstanceOf[AbstractModule[Activity, Tensor[T], T]])
   }
