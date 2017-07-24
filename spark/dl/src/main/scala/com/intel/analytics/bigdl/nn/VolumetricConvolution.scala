@@ -265,7 +265,7 @@ class VolumetricConvolution[T: ClassTag](
         val gradInputT = gradInput.select(1, t)
         val gradOutputT = gradOutput.select(1, t)
         val fGradInputT = fGradInput.select(1, t)
-        require(gradOutputT.isContiguous())
+        require(gradOutputT.isContiguous(), "each batch of gradOutput should be contiguous")
         updateGradInputFrame(gradInputT, gradOutputT, weightMM.transpose(1, 2), fGradInputT,
           kT, kW, kH,
           dT, dW, dH,
