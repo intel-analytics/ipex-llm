@@ -81,11 +81,13 @@ class Recurrent[T : ClassTag]()
 
   /**
    * Clone N models; N depends on the time dimension of the input
-   * @param times
-   * @param batchSize
-   * @param imageSize
+   * @param sizes, the first element is batchSize, the second is times, the third is hiddensize
+    *             the left is size of images
    */
-  private def extend(times: Int, batchSize: Int, imageSize: Array[Int] = null): Unit = {
+  private def extend(sizes: Array[Int]): Unit = {
+    val times = sizes(1)
+    val batchSize = sizes(0)
+    val imageSize = sizes.drop(3)
     if (hidden == null) {
       require((preTopology == null && modules.length == 1) ||
         (topology != null && preTopology != null && modules.length == 2),
@@ -97,7 +99,7 @@ class Recurrent[T : ClassTag]()
       val cell = cells.head
 
       // The cell will help initialize or resize the hidden variable.
-      hidden = cell.hidResize(hidden = null, size = batchSize, imageSize)
+      hidden = cell.hidResize(hidden = null, batchSize = batchSize, imageSize)
 
       /*
        * Since the gradHidden is only used as an empty Tensor or Table during
@@ -106,7 +108,7 @@ class Recurrent[T : ClassTag]()
        */
       gradHidden = hidden
     } else {
-      cells.head.hidResize(hidden = hidden, size = batchSize, imageSize)
+      cells.head.hidResize(hidden = hidden, batchSize = batchSize, imageSize)
       gradHidden = hidden
     }
     var t = cells.length
@@ -228,20 +230,11 @@ class Recurrent[T : ClassTag]()
     }
 
     val hiddenSize = topology.hiddensShape(0)
-    if (input.dim() == 3) {
-      output.resize(batchSize, times, hiddenSize)
-      // Clone N modules along the sequence dimension.
-      extend(times, batchSize)
-    } else if (input.dim() == 5) {
-      output.resize(batchSize, times, hiddenSize, input.size(4), input.size(5))
-      // Clone N modules along the sequence dimension.
-      extend(times, batchSize, Array(input.size(4), input.size(5)))
-    } else if (input.dim() == 6) {
-      val sizes = Array(batchSize, times, hiddenSize, input.size(4),
-        input.size(5), input.size(6))
-      output.resize(sizes)
-      extend(times, batchSize, Array(input.size(4), input.size(5), input.size(6)))
-    }
+    val outputSize = input.size().clone()
+    outputSize(2) = hiddenSize
+    output.resize(outputSize)
+    // Clone N modules along the sequence dimension.
+    extend(outputSize)
 
     /**
      * currentInput forms a T() type. It contains two elements, hidden and input.
