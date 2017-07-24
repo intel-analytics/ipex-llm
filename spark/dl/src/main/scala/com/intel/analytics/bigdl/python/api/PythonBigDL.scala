@@ -36,6 +36,7 @@ import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn.tf.{Const, Fill, Shape, SplitAndSelect}
+import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowSaver}
 
 import scala.collection.JavaConverters._
 import scala.language.existentials
@@ -514,6 +515,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     CosineDistance[T]()
   }
 
+  def createCosineDistanceCriterion(sizeAverage: Boolean = true)
+  : CosineDistanceCriterion[T] = {
+    CosineDistanceCriterion[T](sizeAverage)
+  }
+
   def createDiceCoefficientCriterion(sizeAverage: Boolean = true,
                                      epsilon: Float = 1.0f)
   : DiceCoefficientCriterion[T] = {
@@ -859,6 +865,48 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       bRegularizer)
   }
 
+  def createTemporalConvolution(
+    inputFrameSize: Int,
+    outputFrameSize: Int,
+    kernelW: Int,
+    strideW: Int = 1,
+    propagateBack: Boolean = true,
+    wRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null,
+    initWeight: JTensor = null,
+    initBias: JTensor = null,
+    initGradWeight: JTensor = null,
+    initGradBias: JTensor = null
+  )
+  : TemporalConvolution[T] = {
+    TemporalConvolution[T](
+      inputFrameSize,
+      outputFrameSize,
+      kernelW,
+      strideW,
+      propagateBack,
+      wRegularizer,
+      bRegularizer,
+      toTensor(initWeight),
+      toTensor(initBias),
+      toTensor(initGradWeight),
+      toTensor(initGradBias)
+    )
+  }
+
+  def createBinaryTreeLSTM(
+    inputSize: Int,
+    hiddenSize: Int,
+    gateOutput: Boolean = true,
+    withGraph: Boolean = true)
+  : BinaryTreeLSTM[T] = {
+    BinaryTreeLSTM[T](
+      inputSize,
+      hiddenSize,
+      gateOutput,
+      withGraph)
+  }
+
   def createSpatialFullConvolution(nInputPlane: Int,
                                    nOutputPlane: Int,
                                    kW: Int,
@@ -890,17 +938,24 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       bRegularizer)
   }
 
-  def createSpatialShareConvolution(nInputPlane: Int,
-                                    nOutputPlane: Int,
-                                    kernelW: Int,
-                                    kernelH: Int,
-                                    strideW: Int = 1,
-                                    strideH: Int = 1,
-                                    padW: Int = 0,
-                                    padH: Int = 0,
-                                    nGroup: Int = 1,
-                                    propagateBack: Boolean = true)
-  : SpatialShareConvolution[T] = {
+  def createSpatialShareConvolution(
+        nInputPlane: Int,
+        nOutputPlane: Int,
+        kernelW: Int,
+        kernelH: Int,
+        strideW: Int = 1,
+        strideH: Int = 1,
+        padW: Int = 0,
+        padH: Int = 0,
+        nGroup: Int = 1,
+        propagateBack: Boolean = true,
+        wRegularizer: Regularizer[T] = null,
+        bRegularizer: Regularizer[T] = null,
+        initWeight: JTensor = null,
+        initBias: JTensor = null,
+        initGradWeight: JTensor = null,
+        initGradBias: JTensor = null,
+        withBias: Boolean = true) : SpatialShareConvolution[T] = {
     SpatialShareConvolution[T](nInputPlane,
       nOutputPlane,
       kernelW,
@@ -910,7 +965,15 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       padW,
       padH,
       nGroup,
-      propagateBack)
+      propagateBack,
+      wRegularizer,
+      bRegularizer,
+      toTensor(initWeight),
+      toTensor(initBias),
+      toTensor(initGradWeight),
+      toTensor(initGradBias),
+      withBias
+    )
   }
 
   def createSpatialZeroPadding(padLeft: Int,
@@ -1304,6 +1367,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Module.loadCaffe[T](model, defPath, modelPath, matchAll)
   }
 
+  def loadCaffeModel(defPath: String, modelPath: String): AbstractModule[Activity, Activity, T] = {
+    Module.loadCaffeModel[T](defPath, modelPath)
+  }
+
   def loadTF(path: String, inputs: JList[String], outputs: JList[String],
              byteOrder: String): AbstractModule[Activity, Activity, T] = {
     val order = byteOrder match {
@@ -1312,6 +1379,31 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       case _ => throw new IllegalArgumentException(s"No support byte order $byteOrder")
     }
     Module.loadTF[T](path, inputs.asScala, outputs.asScala, order)
+  }
+
+  def saveTF(model: AbstractModule[Activity, Activity, T],
+             inputs: JList[Any],
+             path: String,
+             byteOrder: String,
+             dataFormat: String): Unit = {
+    val order = byteOrder.toLowerCase match {
+      case "little_endian" => ByteOrder.LITTLE_ENDIAN
+      case "big_endian" => ByteOrder.BIG_ENDIAN
+      case _ => throw new IllegalArgumentException(s"Unknown byte order $byteOrder")
+    }
+
+    val format = dataFormat.toLowerCase match {
+      case "nhwc" => TensorflowDataFormat.NHWC
+      case "nchw" => TensorflowDataFormat.NCHW
+      case _ => throw new IllegalArgumentException(s"Unknown format $dataFormat")
+    }
+    val scalaInputs = inputs.asScala.map { elem =>
+      val array = elem.asInstanceOf[JList[Any]]
+      val name = array.get(0).asInstanceOf[String]
+      val shape = array.get(1).asInstanceOf[JList[Int]]
+      (name, shape.asScala)
+    }
+    model.saveTF(scalaInputs, path, order, format)
   }
 
   def modelPredictRDD(model: AbstractModule[Activity, Activity, T],
@@ -1324,6 +1416,12 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
     }
     new JavaRDD[JTensor](listRDD)
+  }
+
+  def modelPredictClass(model: AbstractModule[Activity, Activity, T],
+                      dataRdd: JavaRDD[Sample]): JavaRDD[Int] = {
+    val tensorRDD = model.predictClass(dataRdd.rdd.map(toSample(_)))
+    new JavaRDD[Int](tensorRDD)
   }
 
   def modelForward(model: AbstractModule[Activity, Activity, T],
@@ -1349,6 +1447,12 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def modelSave(module: AbstractModule[Activity, Activity, T],
                 path: String, overWrite: Boolean): Unit = {
     module.save(path, overWrite)
+  }
+
+  def saveCaffe(module: AbstractModule[Activity, Activity, T],
+    prototxtPath: String, modelPath: String,
+    useV2 : Boolean = true, overwrite : Boolean = false): Unit = {
+    module.saveCaffe(prototxtPath, modelPath, useV2, overwrite)
   }
 
   def criterionForward(criterion: AbstractCriterion[Activity, Activity, T],
@@ -1412,6 +1516,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def createTop1Accuracy(): ValidationMethod[T] = {
     new Top1Accuracy()
+  }
+
+  def createTreeNNAccuracy(): ValidationMethod[T] = {
+    new TreeNNAccuracy()
   }
 
   def createTop5Accuracy(): ValidationMethod[T] = {

@@ -14,11 +14,11 @@ A BigDL program starts with `import com.intel.analytics.bigdl._`; it then _**cre
   val sc = new SparkContext(conf)
   Engine.init
 ````
-````Engine.createSparkConf```` will return a ````SparkConf```` populated with some appropriate configuration. And ````Engine.init```` will verify and read some environment information(e.g. executor numbers and executor cores) from the ````SparkContext````. You can find more information about the initialization in the [Programming Guilde](https://github.com/intel-analytics/BigDL/wiki/Programming-Guide#engine)
+````Engine.createSparkConf```` will return a ````SparkConf```` populated with some appropriate configuration. And ````Engine.init```` will verify and read some environment information(e.g. executor numbers and executor cores) from the ````SparkContext````. 
 
 After the initialization, we need to:
 
-1. _**Create the LeNet model**_ by calling the [````LeNet5()````](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/lenet/LeNet5.scala), which creates the LeNet-5 convolutional network model as follows:
+1._**Create the LeNet model**_ by calling the [````LeNet5()````](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/lenet/LeNet5.scala), which creates the LeNet-5 convolutional network model as follows:
 
 ````scala
     val model = Sequential()
@@ -35,7 +35,7 @@ After the initialization, we need to:
       .add(Linear(100, classNum))
       .add(LogSoftMax())
 ````
-2. Load the data by _**creating the [```DataSet```](https://github.com/intel-analytics/BigDL/blob/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/dataset)**_ (either a distributed or local one depending on whether it runs on Spark or not), and then _**applying a series of [```Transformer```](https://github.com/intel-analytics/BigDL/blob/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/dataset)**_ (e.g., ````SampleToGreyImg````, ````GreyImgNormalizer```` and ````GreyImgToBatch````):
+2.Load the data by _**creating the [```DataSet```](https://github.com/intel-analytics/BigDL/blob/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/dataset)**_ (either a distributed or local one depending on whether it runs on Spark or not), and then _**applying a series of [```Transformer```](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/dataset)**_ (e.g., ````SampleToGreyImg````, ````GreyImgNormalizer```` and ````GreyImgToBatch````):
 
 ````scala
     val trainSet = (if (sc.isDefined) {
@@ -61,13 +61,14 @@ Finally (after optionally specifying the validation data and methods for the ```
       trigger = Trigger.everyEpoch,
       dataset = validationSet,
       vMethods = Array(new Top1Accuracy))
-    .setState(state)
+    .setOptimMethod(new Adagrad(learningRate=0.01, learningRateDecay=0.0002))
     .setEndWhen(Trigger.maxEpoch(param.maxEpoch))
     .optimize()
 ````
 
 ---
-## Text Classification - Working with Spark RDD
+## **Text Classification - Working with Spark RDD**
+
 This tutorial describes the [text_classification](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/example/textclassification) example, which builds a text classifier using a simple convolutional neural network (CNN) model. (It was first described by [this Keras tutorial](https://blog.keras.io/using-pre-trained-word-embeddings-in-a-keras-model.html)).
 
 After importing ```com.intel.analytics.bigdl._``` and some initialization, the [example](https://github.com/intel-analytics/BigDL/blob/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/example/textclassification/TextClassifier.scala) broadcasts the pre-trained world embedding and loads the input data using RDD transformations:
@@ -105,10 +106,8 @@ After that, the [example](https://github.com/intel-analytics/BigDL/blob/master/s
     criterion = new ClassNLLCriterion[Float](),
     batchSize = param.batchSize
   )
-  val state = T("learningRate" -> 0.01, "learningRateDecay" -> 0.0002)
   optimizer
-    .setState(state)
-    .setOptimMethod(new Adagrad())
+    .setOptimMethod(new Adagrad(learningRate=0.01, learningRateDecay=0.0002))
     .setValidation(Trigger.everyEpoch, valRDD, Array(new Top1Accuracy[Float]), param.batchSize)
     .setEndWhen(Trigger.maxEpoch(2))
     .optimize()
@@ -134,17 +133,13 @@ After importing ```com.intel.analytics.bigdl._``` and some initialization, the [
   }
 ````
 
-It then creates ```DLClassifer``` (a Spark ML pipelines [Transformer](https://spark.apache.org/docs/1.6.3/ml-pipeline.html#transformers)) that predicts the input value based on the specified deep learning model:
+It then creates ```DLClassifer``` (a Spark ML pipelines [Transformer](https://spark.apache.org/docs/latest/ml-pipeline.html#transformers)) that predicts the input value based on the specified deep learning model:
 ````scala
   val model = loadModel(param)
-  val valTrans = new DLClassifier()
-    .setInputCol("features")
-    .setOutputCol("predict")
-
-  val paramsTrans = ParamMap(
-    valTrans.modelTrain -> model,
-    valTrans.batchShape ->
-    Array(param.batchSize, 3, imageSize, imageSize))
+  val valTrans = new DLClassifierModel(model, Array(3, imageSize, imageSize))
+    .setBatchSize(param.batchSize)
+    .setFeaturesCol("features")
+    .setPredictionCol("predict")
 ````
 
 After that, the [example](https://github.com/intel-analytics/BigDL/blob/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/example/imageclassification/ImagePredictor.scala)  loads the input images into a [DataFrame](https://spark.apache.org/docs/1.6.3/ml-guide.html#dataframe), and then predicts the class of each each image using the ```DLClassifer```:

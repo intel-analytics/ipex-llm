@@ -49,10 +49,10 @@ object DLClassifierLeNet {
       val sqLContext = SQLContext.getOrCreate(sc)
       Engine.init
 
-      val trainData = param.folder + "/train-images.idx3-ubyte"
-      val trainLabel = param.folder + "/train-labels.idx1-ubyte"
-      val validationData = param.folder + "/t10k-images.idx3-ubyte"
-      val validationLabel = param.folder + "/t10k-labels.idx1-ubyte"
+      val trainData = param.folder + "/train-images-idx3-ubyte"
+      val trainLabel = param.folder + "/train-labels-idx1-ubyte"
+      val validationData = param.folder + "/t10k-images-idx3-ubyte"
+      val validationLabel = param.folder + "/t10k-labels-idx1-ubyte"
 
       val trainSet = DataSet.array(load(trainData, trainLabel), sc) ->
         BytesToGreyImg(28, 28) -> GreyImgNormalizer(trainMean, trainStd) -> GreyImgToBatch(1)
@@ -71,8 +71,8 @@ object DLClassifierLeNet {
       val estimator = new DLClassifier[Float](model, criterion, featureSize)
         .setFeaturesCol(inputs(0))
         .setLabelCol(inputs(1))
-        .setBatchSize(50)
-      val transformer = estimator.fit(trainingDF).asInstanceOf[DLModel[Float]]
+        .setBatchSize(param.batchSize)
+      val transformer = estimator.fit(trainingDF)
 
       val validationSet = DataSet.array(load(validationData, validationLabel), sc) ->
         BytesToGreyImg(28, 28) -> GreyImgNormalizer(testMean, testStd) -> GreyImgToBatch(1)

@@ -33,6 +33,10 @@ import scala.sys.process._
 object TH {
   def hasTorch(): Boolean = {
     val torchPath = System.getProperty("torch_location")
+    // Skip on windows
+    if (System.getProperty("os.name").toLowerCase().contains("win")) {
+      return false
+    }
     val exitValue = if (torchPath != null) s"ls $torchPath".! else "which th".!
     return exitValue == 0
   }

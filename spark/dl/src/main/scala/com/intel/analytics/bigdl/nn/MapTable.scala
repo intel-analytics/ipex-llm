@@ -37,12 +37,18 @@ class MapTable[T: ClassTag](
   (implicit ev: TensorNumeric[T]) extends Container[Table, Table, T]  {
 
   private def extend(n: Int): Unit = {
-    modules.update(0, module.asInstanceOf[AbstractModule[Activity, Activity, T]])
+    if (!modules.contains(0)) {
+      modules.append(module.asInstanceOf[AbstractModule[Activity, Activity, T]])
+    } else {
+      modules.update(0, module.asInstanceOf[AbstractModule[Activity, Activity, T]])
+    }
     var i = 1
     while (i <= n && modules.size <= i) {
+      if (modules.length <= i) {
         modules.append(module
           .cloneModule()
           .asInstanceOf[AbstractModule[Activity, Activity, T]])
+      }
       i += 1
     }
   }
@@ -82,7 +88,7 @@ class MapTable[T: ClassTag](
     extend(input.length())
     var i = 0
     while (i < input.length()) {
-        modules(i).accGradParameters(input(i + 1), gradOutput(i + 1))
+      modules(i).accGradParameters(input(i + 1), gradOutput(i + 1))
       i += 1
     }
   }
@@ -113,11 +119,16 @@ class MapTable[T: ClassTag](
     }
     str
   }
+
+  override def clearState(): this.type = {
+    modules.clear()
+    this
+  }
 }
 
 object MapTable extends ContainerSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
-      module: AbstractModule[_ <: Activity, _ <: Activity, T] = null
+    module: AbstractModule[_ <: Activity, _ <: Activity, T] = null
   )(implicit ev: TensorNumeric[T]) : MapTable[T] = {
     new MapTable[T](module)
   }

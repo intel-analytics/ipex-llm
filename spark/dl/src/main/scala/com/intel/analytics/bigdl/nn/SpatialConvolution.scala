@@ -443,9 +443,9 @@ class SpatialConvolution[T: ClassTag](
     hash = hash * seed + padW.hashCode()
     hash = hash * seed + padH.hashCode()
     hash = hash * seed + weight.hashCode()
-    hash = hash * seed + bias.hashCode()
+    if (withBias) hash = hash * seed + bias.hashCode()
     hash = hash * seed + gradWeight.hashCode()
-    hash = hash * seed + gradBias.hashCode()
+    if (withBias) hash = hash * seed + gradBias.hashCode()
 
     hash
   }
@@ -456,8 +456,10 @@ class SpatialConvolution[T: ClassTag](
     fGradInput.set()
     ones.set()
     onesBatch.set()
-    onesBias.set()
-    gradientBiasMT.set()
+    if (withBias) {
+      onesBias.set()
+      gradientBiasMT.set()
+    }
     this
   }
 

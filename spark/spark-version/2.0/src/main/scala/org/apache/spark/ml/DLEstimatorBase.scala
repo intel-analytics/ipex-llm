@@ -63,14 +63,15 @@ private[ml] trait DLParams extends HasFeaturesCol with HasPredictionCol {
  * Extends MLEstimator and override process to gain compatibility with
  * both spark 1.5 and spark 2.0.
  */
-private[ml] abstract class DLEstimatorBase
-  extends Estimator[DLTransformerBase] with DLParams with HasLabelCol{
+private[ml] abstract class DLEstimatorBase[Learner <: DLEstimatorBase[Learner, M],
+    M <: DLTransformerBase[M]]
+  extends Estimator[M] with DLParams with HasLabelCol {
 
   protected def getLabelArrayCol: String = $(labelCol) + "_Array"
 
-  protected def internalFit(featureAndLabel: RDD[(Seq[AnyVal], Seq[AnyVal])]): DLTransformerBase
+  protected def internalFit(featureAndLabel: RDD[(Seq[AnyVal], Seq[AnyVal])]): M
 
-  override def fit(dataset: Dataset[_]): DLTransformerBase = {
+  override def fit(dataset: Dataset[_]): M = {
     transformSchema(dataset.schema, logging = true)
     internalFit(toArrayType(dataset.toDF()))
   }
@@ -112,7 +113,7 @@ private[ml] abstract class DLEstimatorBase
         s"${dataTypes.mkString("[", ", ", "]")} but was actually of type $actualDataType.")
   }
 
-  override def copy(extra: ParamMap): DLEstimatorBase = defaultCopy(extra)
+  override def copy(extra: ParamMap): Learner = defaultCopy(extra)
 }
 
 

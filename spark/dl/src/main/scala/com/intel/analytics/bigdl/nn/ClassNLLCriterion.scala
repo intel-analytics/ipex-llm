@@ -44,6 +44,10 @@ import com.intel.analytics.bigdl.utils.Engine
  * Due to the behaviour of the backend code, it is necessary to set sizeAverage to false when
  * calculating losses in non-batch mode.
  *
+ * Note that if the target is `-1`, the training process will skip this sample.
+ * In other words, the forward process will return zero output and the backward process
+ * will also return zero `gradInput`.
+ *
  * By default, the losses are averaged over observations for each minibatch. However, if the field
  * sizeAverage is set to false, the losses are instead summed for each minibatch.
  *
@@ -73,10 +77,11 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
         "ClassNLLCriterion: " + ErrorInfo.constrainInputDimSameAsTarget +
           s" Input dimension is: ${ input.dim() } , target dimension is: ${ target.dim() }")
       val curTarget = ev.toType[Int](target.valueAt(1))
-      assert(curTarget >= 1 && curTarget <= nClasses,
+      assert(curTarget >= 1 && curTarget <= nClasses || curTarget == -1,
         s"curTarget ${curTarget} is out of range, should be 1 to ${nClasses}")
       total_weight = if (weights != null) weights(Array(curTarget)) else ev.fromType[Int](1)
-      output = ev.times(ev.negative(input.valueAt(curTarget)), total_weight)
+      output = if (curTarget == -1) ev.zero
+      else ev.times(ev.negative(input.valueAt(curTarget)), total_weight)
     } else if (input.dim() == 2) {
       val batchSize = input.size(1)
       val targetSize = target.size()
@@ -93,10 +98,13 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
         val _i = i
         results(_i - 1) = Engine.model.invoke( () => {
           val curTarget = ev.toType[Int](target.valueAt(_i))
-          assert(curTarget >= 1 && curTarget <= nClasses,
+          assert(curTarget >= 1 && curTarget <= nClasses || curTarget == -1,
             s"curTarget ${curTarget} is out of range 1 to ${nClasses}")
-          val curWeight = if (weights != null) weights.valueAt(curTarget) else ev.fromType[Int](1)
-          (ev.times(input.valueAt(_i, curTarget), curWeight), curWeight)
+          if (curTarget == -1) (ev.zero, ev.one)
+          else {
+            val curWeight = if (weights != null) weights.valueAt(curTarget) else ev.fromType[Int](1)
+            (ev.times(input.valueAt(_i, curTarget), curWeight), curWeight)
+          }
         })
         i += 1
       }
@@ -128,6 +136,7 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
         "ClassNLLCriterion: " + ErrorInfo.constrainInputDimSameAsTarget +
           s" Input dimension is: ${ input.dim() } , target dimension is: ${ target.dim() }")
       val curTarget = ev.toType[Int](target.valueAt(1))
+      if (curTarget == -1) return gradInput
       gradInput.setValue(curTarget, if (weights != null) ev.times(ev.fromType[Int](-1),
         weights.valueAt(curTarget))
       else ev.fromType[Int](-1))
@@ -147,11 +156,13 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
         val _i = i
         resultsBackward(_i - 1) = Engine.model.invoke(() => {
           val curTarget = ev.toType[Int](target.valueAt(_i))
-          gradInput.setValue(_i, curTarget, if (weights != null) ev.times(ev.fromType[Int](-1),
-            weights.valueAt(curTarget))
-          else ev.fromType[Int](-1))
-          if (sizeAverage) gradInput.setValue(_i, curTarget, ev.divide(gradInput.valueAt(_i,
-            curTarget), total_weight))
+          if (curTarget != -1) {
+            gradInput.setValue(_i, curTarget, if (weights != null) ev.times(ev.fromType[Int](-1),
+              weights.valueAt(curTarget))
+            else ev.fromType[Int](-1))
+            if (sizeAverage) gradInput.setValue(_i, curTarget, ev.divide(gradInput.valueAt(_i,
+              curTarget), total_weight))
+          }
         })
         i += 1
       }
@@ -169,8 +180,8 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
 
 object ClassNLLCriterion {
   def apply[@specialized(Float, Double) T: ClassTag](
-      weights: Tensor[T] = null,
-      sizeAverage: Boolean = true)(implicit ev: TensorNumeric[T]) : ClassNLLCriterion[T] = {
+    weights: Tensor[T] = null,
+    sizeAverage: Boolean = true)(implicit ev: TensorNumeric[T]) : ClassNLLCriterion[T] = {
     new ClassNLLCriterion[T](weights, sizeAverage)
   }
 }

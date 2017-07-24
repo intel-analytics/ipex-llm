@@ -246,6 +246,17 @@ class Layer(JavaValue):
                              "modelPredictRDD", self.value, data_rdd)
         return result.map(lambda data: data.to_ndarray())
 
+    def predict_class(self, data_rdd):
+        """
+        module predict, return the predict label
+
+        :param data_rdd: the data to be predict.
+        :return: An RDD represent the predict label.
+        """
+        result = callBigDlFunc(self.bigdl_type,
+                               "modelPredictClass", self.value, data_rdd)
+        return result
+
     def test(self, val_rdd, batch_size, val_methods):
         """
         A method to benchmark the model quality.
@@ -323,6 +334,27 @@ class Layer(JavaValue):
         callBigDlFunc(self.bigdl_type, "modelSave", self.value, path,
                       over_write)
 
+    def save_caffe(self, prototxt_path, model_path, use_v2 = True, overwrite = False):
+        callBigDlFunc(self.bigdl_type, "saveCaffe", self.value, prototxt_path,
+                      model_path, use_v2, overwrite)
+
+    def save_tensorflow(self, inputs, path, byte_order="little_endian", data_format="nhwc"):
+        """
+        Save a model to protobuf files so that it can be used in tensorflow inference.
+
+        When saving the model, placeholders will be added to the tf model as input nodes. So
+        you need to pass in the names and shapes of the placeholders. BigDL model doesn't have
+        such information. The order of the placeholder information should be same as the inputs
+        of the graph model.
+        :param inputs: placeholder information, should be an array of tuples (input_name, shape)
+                       where 'input_name' is a string and shape is an array of integer
+        :param path: the path to be saved to
+        :param byte_order: model byte order
+        :param data_format: model data format, should be "nhwc" or "nchw"
+        """
+        callBigDlFunc(self.bigdl_type, "saveTF", self.value, inputs, path, byte_order, data_format)
+
+
     def setWRegularizer(self, wRegularizer):
         '''
         set weight regularizer
@@ -374,15 +406,26 @@ class Model(Container):
     All inputs should be able to connect to outputs through some paths in the graph.
     It is allowed that some successors of the inputs node are not connect to outputs.
     If so, these nodes will be excluded in the computation.
+    
+    We also support initializing a Graph directly from a tensorflow module. In this case, you should
+    pass your tensorflow nodes as inputs and outputs and also specify the byte_order parameter ("little_endian"
+     or "big_endian") and node_type parameter ("bigdl" or "tensorflow")
+    node_type parameter.
     """
 
     def __init__(self,
                  inputs,
                  outputs,
-                 bigdl_type="float"):
-        super(Model, self).__init__(None, bigdl_type,
+                 bigdl_type="float", byte_order="little_endian", model_type="bigdl"):
+        if model_type == "bigdl":
+            super(Model, self).__init__(None, bigdl_type,
                                     to_list(inputs),
                                     to_list(outputs))
+        else:
+            from bigdl.util.tf_utils import convert
+            model = convert(to_list(inputs), to_list(outputs), byte_order, bigdl_type)
+            super(Model, self).__init__(model, bigdl_type)
+
 
     @staticmethod
     def load(path, bigdl_type="float"):
@@ -418,6 +461,19 @@ class Model(Container):
         :return: A pre-trained model.
         """
         jmodel = callBigDlFunc(bigdl_type, "loadCaffe", model, defPath, modelPath, match_all)
+        return Layer.of(jmodel)
+
+    @staticmethod
+    def load_caffe_model(defPath, modelPath, bigdl_type="float"):
+        """
+        Load a pre-trained Caffe model.
+
+
+        :param defPath: The path containing the caffe model definition.
+        :param modelPath: The path containing the pre-trained caffe model.
+        :return: A pre-trained model.
+        """
+        jmodel = callBigDlFunc(bigdl_type, "loadCaffeModel", defPath, modelPath)
         return Layer.of(jmodel)
 
     @staticmethod
@@ -567,6 +623,89 @@ class Sequential(Container):
     def __init__(self, bigdl_type="float"):
         super(Sequential, self).__init__(None, bigdl_type)
 
+class TemporalConvolution(Layer):
+
+    '''
+    Applies a 1D convolution over an input sequence composed of nInputFrame frames..
+    The input tensor in `forward(input)` is expected to be a 2D tensor
+    (`nInputFrame` x `inputFrameSize`) or a 3D tensor
+    (`nBatchFrame` x `nInputFrame` x `inputFrameSize`).
+
+    :param input_frame_size The input frame size expected in sequences given into `forward()`
+    :param output_frame_size The output frame size the convolution layer will produce.
+    :param kernel_w The kernel width of the convolution
+    :param stride_w The step of the convolution in the width dimension.
+    :param propagate_back Whether propagate gradient back, default is true.
+    :param weight_regularizer instance of [[Regularizer]]
+                        (eg. L1 or L2 regularization), applied to the input weights matrices.
+    :param bias_regularizer instance of [[Regularizer]]
+                         applied to the bias.
+    :param init_weight Initial weight
+    :param init_bias Initial bias
+    :param init_grad_weight Initial gradient weight
+    :param init_grad_bias Initial gradient bias
+
+    >>> temporalConvolution = TemporalConvolution(6, 12, 5, 5)
+    creating: createTemporalConvolution
+    >>> temporalConvolution.setWRegularizer(L1Regularizer(0.5))
+    creating: createL1Regularizer
+    >>> temporalConvolution.setBRegularizer(L1Regularizer(0.5))
+    creating: createL1Regularizer
+    '''
+
+    def __init__(self,
+                 input_frame_size,
+                 output_frame_size,
+                 kernel_w,
+                 stride_w=1,
+                 propagate_back=True,
+                 weight_regularizer=None,
+                 bias_regularizer=None,
+                 init_weight=None,
+                 init_bias=None,
+                 init_grad_weight=None,
+                 init_grad_bias=None,
+                 bigdl_type="float"):
+        super(TemporalConvolution, self).__init__(None, bigdl_type,
+                                                 input_frame_size,
+                                                 output_frame_size,
+                                                 kernel_w,
+                                                 stride_w,
+                                                 propagate_back,
+                                                 weight_regularizer,
+                                                 bias_regularizer,
+                                                 JTensor.from_ndarray(init_weight),
+                                                 JTensor.from_ndarray(init_bias),
+                                                 JTensor.from_ndarray(init_grad_weight),
+                                                 JTensor.from_ndarray(init_grad_bias))
+    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+        callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
+                      weight_init_method, bias_init_method)
+        return self
+
+class BinaryTreeLSTM(Layer):
+    '''
+    This class is an implementation of Binary TreeLSTM (Constituency Tree LSTM).
+    :param inputSize input units size
+    :param hiddenSize hidden units size
+    :param gateOutput whether gate output
+    :param withGraph whether create lstms with [[Graph]], the default value is true.
+    >>> treeLSTM = BinaryTreeLSTM(100, 200)
+    creating: createBinaryTreeLSTM
+    '''
+
+    def __init__(self,
+                 input_size,
+                 hidden_size,
+                 gate_output=True,
+                 with_graph=True,
+                 bigdl_type="float"):
+        super(BinaryTreeLSTM, self).__init__(None,
+                                             bigdl_type,
+                                             input_size,
+                                             hidden_size,
+                                             gate_output,
+                                             with_graph)
 
 class SpatialConvolution(Layer):
 
@@ -1518,6 +1657,27 @@ class CosineDistance(Layer):
     def __init__(self,
                  bigdl_type="float"):
         super(CosineDistance, self).__init__(None, bigdl_type)
+
+class Input(Node):
+
+    '''
+    Input layer do nothing to the input tensors, just passing them through. It is used as input to
+    the Graph container (add a link) when the first layer of the graph container accepts multiple
+    tensors as inputs.
+
+    Each input node of the graph container should accept one tensor as input. If you want a module
+    accepting multiple tensors as input, you should add some Input module before it and connect
+    the outputs of the Input nodes to it.
+
+    Please note that the return is not a layer but a Node containing input layer.
+
+    >>> input = Input()
+    creating: createInput
+    '''
+
+    def __init__(self,
+                 bigdl_type="float"):
+        super(Input, self).__init__(None, bigdl_type)
 
 
 class DotProduct(Layer):
@@ -2800,6 +2960,15 @@ class SpatialShareConvolution(Layer):
 
     >>> spatialShareConvolution = SpatialShareConvolution(1, 1, 1, 1)
     creating: createSpatialShareConvolution
+    >>> import numpy as np
+    >>> init_weight = np.random.randn(1, 12, 6, 5, 5)
+    >>> init_bias = np.random.randn(12)
+    >>> init_grad_weight = np.zeros([1, 12, 6, 5, 5])
+    >>> init_grad_bias = np.zeros([12])
+    >>> conv = SpatialShareConvolution(6, 12, 5, 5, 1, 1, 0, 0, 1, True, L1Regularizer(0.5), L1Regularizer(0.5), init_weight, init_bias, init_grad_weight, init_grad_bias)
+    creating: createL1Regularizer
+    creating: createL1Regularizer
+    creating: createSpatialShareConvolution
     '''
 
     def __init__(self,
@@ -2813,6 +2982,13 @@ class SpatialShareConvolution(Layer):
                  pad_h=0,
                  n_group=1,
                  propagate_back=True,
+                 wRegularizer=None,
+                 bRegularizer=None,
+                 init_weight=None,
+                 init_bias=None,
+                 init_grad_weight=None,
+                 init_grad_bias=None,
+                 with_bias=True,
                  bigdl_type="float"):
         super(SpatialShareConvolution, self).__init__(None, bigdl_type,
                                                       n_input_plane,
@@ -2824,7 +3000,14 @@ class SpatialShareConvolution(Layer):
                                                       pad_w,
                                                       pad_h,
                                                       n_group,
-                                                      propagate_back)
+                                                      propagate_back,
+                                                      wRegularizer,
+                                                      bRegularizer,
+                                                      JTensor.from_ndarray(init_weight),
+                                                      JTensor.from_ndarray(init_bias),
+                                                      JTensor.from_ndarray(init_grad_weight),
+                                                      JTensor.from_ndarray(init_grad_bias),
+                                                      with_bias)
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)

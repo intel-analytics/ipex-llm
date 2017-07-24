@@ -8,7 +8,12 @@
 * Embedding: 100-dimensional pre-trained GloVe embeddings of 400k words which trained on a 2014 dump of English Wikipedia.
 * Training data: "20 Newsgroup dataset" which containing 20 categories and with totally 19997 texts.
 
+## Install dependencies
+ * [Install dependencies](../../../README.md#install.dependencies)
+
 ## How to run this example:
+
+Please note that due to some permission issue, this example **cannot** be run on Windows.
 
 If there is no [Pre-train GloVe word embeddings](http://nlp.stanford.edu/data/glove.6B.zip)
 or [20 Newsgroup dataset](http://www.cs.cmu.edu/afs/cs.cmu.edu/project/theo-20/www/data/news20.html) in
@@ -20,11 +25,19 @@ $ [/tmp/news20]$ tree . -L 1
   ├── 20news-19997.tar.gz
   └── glove.6B.zip
 ```
+- The example code would automatically download the data during the first run.
+- If you install BigDL via pip, you can run this example locally by the following command:
+  - Check [Run after pip install](../../../../docs/docs/PythonSupport/run-from-pip.md)
+```
+export SPARK_HOME=path to spark-1.6.3
+python ${BigDL_HOME}/pyspark/bigdl/models/textclassifier/textclassifier.py --max_epoch 3 --model cnn
+             
+```
 
-then running the flowing script would automatically download the data during the first run.
+- You can also use `spark-submit` to launch this example:
 
 ```{r, engine='sh'}
-        PYTHONHASHSEED=...
+        PYTHONHASHSEED=0
         BigDL_HOME=...
         SPARK_HOME=...
         MASTER=...
@@ -39,7 +52,6 @@ then running the flowing script would automatically download the data during the
             --total-executor-cores 4  \
             --executor-cores 4  \
             --executor-memory 20g \
-            --conf spark.akka.frameSize=64 \
             --py-files ${PYTHON_API_ZIP_PATH},${BigDL_HOME}/pyspark/bigdl/models/textclassifier/textclassifier.py  \
             --jars ${BigDL_JAR_PATH} \
             --conf spark.driver.extraClassPath=${BigDL_JAR_PATH} \

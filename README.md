@@ -17,13 +17,14 @@ You may want to write your deep learning programs using BigDL if:
 * You want to leverage existing Hadoop/Spark clusters to run your deep learning applications, which can be then dynamically shared with other workloads (e.g., ETL, data warehouse, feature engineering, classical machine learning, graph analytics, etc.)
 
 ## How to use BigDL?
-* To learn how to install and build BigDL (on both Linux and macOS), you can check out the [Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page)
-* To learn how to run BigDL programs (as either a local Java program or a Spark program), you can check out the [Getting Started Page](https://github.com/intel-analytics/BigDL/wiki/Getting-Started)
-* To learn the details of Python support in BigDL, you can check out the [Python Support Page](https://github.com/intel-analytics/BigDL/wiki/Python-Support)
-* To try BigDL out on EC2, you can check out the [Running on EC2 Page](https://github.com/intel-analytics/BigDL/wiki/Running-on-EC2)
-* To learn how to create practical neural networks using BigDL in a couple of minutes, you can check out the [Tutorials Page](https://github.com/intel-analytics/BigDL/wiki/Tutorials)
-* For more details, you can check out the [Documents Page](https://github.com/intel-analytics/BigDL/wiki/Documents) (including Tutorials, Examples, Programming Guide, etc.)
+* More information can be found at the BigDL project website:
+  
+  https://bigdl-project.github.io/
+  
+  In particular, you can check out the [Getting Started page](https://bigdl-project.github.io/master/#getting-started/) for a quick overview of how to use BigDL
+  
+* For step-by-step deep leaning tutorials on BigDL (using Python), you can check out the [BigDL Tutorials project](https://github.com/intel-analytics/BigDL-tutorials)
 
-## Support
 * You can join the [BigDL Google Group](https://groups.google.com/forum/#!forum/bigdl-user-group) (or subscribe to the [Mail List](mailto:bigdl-user-group+subscribe@googlegroups.com)) for more questions and discussions on BigDL
+
 * You can post bug reports and feature requests at the [Issue Page](https://github.com/intel-analytics/BigDL/issues)

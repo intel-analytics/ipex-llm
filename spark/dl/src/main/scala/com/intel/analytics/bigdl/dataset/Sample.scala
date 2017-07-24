@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.dataset
 
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import org.apache.commons.lang3.SerializationUtils
 
 import scala.reflect.ClassTag
 
@@ -57,6 +58,12 @@ abstract class Sample[T: ClassTag] extends Serializable {
    * @return number of tensors in label
    */
   def numLabel(): Int
+
+  /**
+   *@return A deep clone
+   */
+  override def clone(): this.type =
+    SerializationUtils.clone(this)
 
   /**
    * Get feature tensor, for one feature Sample only.
@@ -123,7 +130,8 @@ private[bigdl] class ArraySample[T: ClassTag](
       private val data: Array[T],
       private val featureSize: Array[Array[Int]],
       private val labelSize: Array[Array[Int]]) extends Sample[T] {
-  require(featureSize != null, "Feature couldn't be empty")
+  require(data != null, "Sample: Data couldn't be empty")
+  require(featureSize != null, "Sample: Feature couldn't be empty")
 
   override def getData(): Array[T] = data
 
@@ -197,21 +205,20 @@ private[bigdl] class ArraySample[T: ClassTag](
   override def equals(other: Any): Boolean = other match {
     case that: ArraySample[T] =>
       if (!(that canEqual this) ||
-        !(labelSize.deep == that.labelSize.deep) ||
+        !(data.deep == that.data.deep) ||
         !(featureSize.deep == that.featureSize.deep)) {
         return false
       }
-      var i = labelSize.map(_.product).sum + featureSize.map(_.product).sum - 1
-      while (i >= 0) {
-        if (data(i) != that.data(i)) return false
-        i -= 1
+      if (null != labelSize && null != that.labelSize) {
+        labelSize.deep == that.labelSize.deep
+      } else {
+        null == labelSize & null == that.labelSize
       }
-      true
     case _ => false
   }
 
   override def hashCode(): Int = {
-    val state = Seq(data, featureSize, labelSize)
+    val state = if (null == labelSize) Seq(data, featureSize) else Seq(data, featureSize, labelSize)
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
 }

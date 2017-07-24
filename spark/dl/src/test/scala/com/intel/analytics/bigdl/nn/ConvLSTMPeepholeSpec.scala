@@ -329,54 +329,55 @@ class ConvLSTMPeepholeSpec extends FlatSpec with BeforeAndAfter with Matchers {
       -0.06827257, 0.115748845, 0.14643653, -0.13591826
     )
     val weights = model.getParameters()._1
+    weights.copy(Tensor[Double](weightData, Array(weightData.size, 1)))
 
-    val weightsOri = new ArrayBuffer[Tensor[Double]]()
-    val weightsNew = new ArrayBuffer[Tensor[Double]]()
-
-    val sizeI = hiddenSize * inputSize * 3 * 3
-    val sizeH = hiddenSize * hiddenSize * 3 * 3
-    var next = 0
-    for(i <- 0 until 4) {
-      val i2g = Tensor[Double](weightData.slice(next, next + sizeI),
-        Array(1, hiddenSize, inputSize, 3, 3))
-      weightsOri += Tensor[Double]().resizeAs(i2g).copy(i2g)
-      next += sizeI
-      val i2gBias = Tensor[Double](weightData.slice(next, next + hiddenSize),
-        Array(1, hiddenSize))
-      weightsOri += Tensor[Double]().resizeAs(i2gBias).copy(i2gBias)
-      next += hiddenSize
-      val h2g = Tensor[Double](weightData.slice(next, next + sizeH),
-        Array(1, hiddenSize, hiddenSize, 3, 3))
-      weightsOri += Tensor[Double]().resizeAs(h2g).copy(h2g)
-      next += sizeH
-    }
-
-    // weightsOri(0) -----> forgetGatei2g.weight
-    // weightsOri(3) -----> inputGatei2g.weight
-    // weightsOri(6) -----> hiddeni2g.weight
-    // weightsOri(9) -----> outputGatei2g.weight
-    val weightsTable = T(weightsOri(0), weightsOri(3), weightsOri(6), weightsOri(9))
-    val joinWeights = JoinTable[Double](2, 5)
-    weightsNew += joinWeights.forward(weightsTable)
-
-    // weightsOri(1) -----> forgetGatei2g.bias
-    // weightsOri(4) -----> inputGatei2g.bias
-    // weightsOri(7) -----> hiddeni2g.bias
-    // weightsOri(10) -----> outputGatei2g.bias
-    val biasTable = T(weightsOri(1), weightsOri(4), weightsOri(7), weightsOri(10))
-    val joinBias = JoinTable[Double](1, 1)
-    weightsNew += joinBias.forward(biasTable)
-
-    // weightsOri(2) -----> forgetGateh2g
-    // weightsOri(5) -----> inputGateh2g
-    // weightsOri(8) -----> hiddenh2h
-    // weightsOri(11) -----> outputGateh2g
-    weightsNew += weightsOri(2)
-    weightsNew += weightsOri(5)
-    weightsNew += weightsOri(8)
-    weightsNew += weightsOri(11)
-
-    weights.copy(Module.flatten[Double](weightsNew.toArray))
+//    val weightsOri = new ArrayBuffer[Tensor[Double]]()
+//    val weightsNew = new ArrayBuffer[Tensor[Double]]()
+//
+//    val sizeI = hiddenSize * inputSize * 3 * 3
+//    val sizeH = hiddenSize * hiddenSize * 3 * 3
+//    var next = 0
+//    for(i <- 0 until 4) {
+//      val i2g = Tensor[Double](weightData.slice(next, next + sizeI),
+//        Array(1, hiddenSize, inputSize, 3, 3))
+//      weightsOri += Tensor[Double]().resizeAs(i2g).copy(i2g)
+//      next += sizeI
+//      val i2gBias = Tensor[Double](weightData.slice(next, next + hiddenSize),
+//        Array(1, hiddenSize))
+//      weightsOri += Tensor[Double]().resizeAs(i2gBias).copy(i2gBias)
+//      next += hiddenSize
+//      val h2g = Tensor[Double](weightData.slice(next, next + sizeH),
+//        Array(1, hiddenSize, hiddenSize, 3, 3))
+//      weightsOri += Tensor[Double]().resizeAs(h2g).copy(h2g)
+//      next += sizeH
+//    }
+//
+//    // weightsOri(0) -----> forgetGatei2g.weight
+//    // weightsOri(3) -----> inputGatei2g.weight
+//    // weightsOri(6) -----> hiddeni2g.weight
+//    // weightsOri(9) -----> outputGatei2g.weight
+//    val weightsTable = T(weightsOri(0), weightsOri(3), weightsOri(6), weightsOri(9))
+//    val joinWeights = JoinTable[Double](2, 5)
+//    weightsNew += joinWeights.forward(weightsTable)
+//
+//    // weightsOri(1) -----> forgetGatei2g.bias
+//    // weightsOri(4) -----> inputGatei2g.bias
+//    // weightsOri(7) -----> hiddeni2g.bias
+//    // weightsOri(10) -----> outputGatei2g.bias
+//    val biasTable = T(weightsOri(1), weightsOri(4), weightsOri(7), weightsOri(10))
+//    val joinBias = JoinTable[Double](1, 1)
+//    weightsNew += joinBias.forward(biasTable)
+//
+//    // weightsOri(2) -----> forgetGateh2g
+//    // weightsOri(5) -----> inputGateh2g
+//    // weightsOri(8) -----> hiddenh2h
+//    // weightsOri(11) -----> outputGateh2g
+//    weightsNew += weightsOri(2)
+//    weightsNew += weightsOri(5)
+//    weightsNew += weightsOri(8)
+//    weightsNew += weightsOri(11)
+//
+//    weights.copy(Module.flatten[Double](weightsNew.toArray))
 
     val output = model.forward(input)
     val gradInput = model.backward(input, output).asInstanceOf[Tensor[Double]]
@@ -630,42 +631,43 @@ class ConvLSTMPeepholeSpec extends FlatSpec with BeforeAndAfter with Matchers {
       -0.11207754, 0.042513624, -0.05665606, -0.015827265, 0.12174054
     )
     val weights = model.getParameters()._1
+    weights.copy(Tensor[Double](weightData, Array(weightData.size, 1)))
 
-    val weightsOri = new ArrayBuffer[Tensor[Double]]()
-    val weightsNew = new ArrayBuffer[Tensor[Double]]()
-
-    val sizeI = hiddenSize * inputSize * 3 * 3
-    val sizeH = hiddenSize * hiddenSize * 3 * 3
-    var next = 0
-    for(i <- 0 until 4) {
-      val i2g = Tensor[Double](weightData.slice(next, next + sizeI),
-        Array(1, hiddenSize, inputSize, 3, 3))
-      weightsOri += Tensor[Double]().resizeAs(i2g).copy(i2g)
-      next += sizeI
-      val i2gBias = Tensor[Double](weightData.slice(next, next + hiddenSize),
-        Array(1, hiddenSize))
-      weightsOri += Tensor[Double]().resizeAs(i2gBias).copy(i2gBias)
-      next += hiddenSize
-      val h2g = Tensor[Double](weightData.slice(next, next + sizeH),
-        Array(1, hiddenSize, hiddenSize, 3, 3))
-      weightsOri += Tensor[Double]().resizeAs(h2g).copy(h2g)
-      next += sizeH
-    }
-
-    val weightsTable = T(weightsOri(0), weightsOri(3), weightsOri(6), weightsOri(9))
-    val joinWeights = JoinTable[Double](2, 5)
-    weightsNew += joinWeights.forward(weightsTable)
-
-    val biasTable = T(weightsOri(1), weightsOri(4), weightsOri(7), weightsOri(10))
-    val joinBias = JoinTable[Double](1, 1)
-    weightsNew += joinBias.forward(biasTable)
-
-    weightsNew += weightsOri(2)
-    weightsNew += weightsOri(5)
-    weightsNew += weightsOri(8)
-    weightsNew += weightsOri(11)
-
-    weights.copy(Module.flatten[Double](weightsNew.toArray))
+//    val weightsOri = new ArrayBuffer[Tensor[Double]]()
+//    val weightsNew = new ArrayBuffer[Tensor[Double]]()
+//
+//    val sizeI = hiddenSize * inputSize * 3 * 3
+//    val sizeH = hiddenSize * hiddenSize * 3 * 3
+//    var next = 0
+//    for(i <- 0 until 4) {
+//      val i2g = Tensor[Double](weightData.slice(next, next + sizeI),
+//        Array(1, hiddenSize, inputSize, 3, 3))
+//      weightsOri += Tensor[Double]().resizeAs(i2g).copy(i2g)
+//      next += sizeI
+//      val i2gBias = Tensor[Double](weightData.slice(next, next + hiddenSize),
+//        Array(1, hiddenSize))
+//      weightsOri += Tensor[Double]().resizeAs(i2gBias).copy(i2gBias)
+//      next += hiddenSize
+//      val h2g = Tensor[Double](weightData.slice(next, next + sizeH),
+//        Array(1, hiddenSize, hiddenSize, 3, 3))
+//      weightsOri += Tensor[Double]().resizeAs(h2g).copy(h2g)
+//      next += sizeH
+//    }
+//
+//    val weightsTable = T(weightsOri(0), weightsOri(3), weightsOri(6), weightsOri(9))
+//    val joinWeights = JoinTable[Double](2, 5)
+//    weightsNew += joinWeights.forward(weightsTable)
+//
+//    val biasTable = T(weightsOri(1), weightsOri(4), weightsOri(7), weightsOri(10))
+//    val joinBias = JoinTable[Double](1, 1)
+//    weightsNew += joinBias.forward(biasTable)
+//
+//    weightsNew += weightsOri(2)
+//    weightsNew += weightsOri(5)
+//    weightsNew += weightsOri(8)
+//    weightsNew += weightsOri(11)
+//
+//    weights.copy(Module.flatten[Double](weightsNew.toArray))
 
     val output = model.forward(input)
     val gradInput = model.backward(input, output).asInstanceOf[Tensor[Double]]
