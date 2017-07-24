@@ -199,7 +199,44 @@ object Module {
       }
     }
 
+    def reorganizeParameters(parameters: Array[Tensor[T]]): Tensor[T] = {
+      var length = 0
+      for (i <- parameters.indices) {
+        if (parameters(i) != null) {
+          length += parameters(i).nElement()
+        }
+      }
+
+      val result = Tensor[T](length)
+
+      var offset = 0
+      for (i <- parameters.indices) {
+        val parameter = parameters(i)
+
+        if (parameter != null) {
+          val length = parameter.nElement()
+
+          val (src, srcOffset) = (parameter.storage().array(), parameter.storageOffset() - 1)
+          val (dst, dstOffset) = (result.storage().array(), offset)
+
+          val (size, stride) = (parameter.size(), parameter.stride())
+
+          System.arraycopy(src, srcOffset, dst, dstOffset, length)
+          parameter.set(result.storage(), offset + 1, size, stride)
+
+          offset += length
+        }
+      }
+
+      result
+    }
+
     // deep copy a new model then substitute with all quantized version models
-    substitute(model.cloneModule())
+    val quantizedModel = substitute(model.cloneModule())
+
+    val paras = quantizedModel.parameters()._1
+    reorganizeParameters(paras)
+
+    quantizedModel
   }
 }

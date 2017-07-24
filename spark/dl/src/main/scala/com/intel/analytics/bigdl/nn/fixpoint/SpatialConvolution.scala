@@ -55,8 +55,8 @@ class SpatialConvolution[T: ClassTag](
   val DILATION_HEIGHT = 1
   val DILATION_WIDTH = 1
 
-  val min = new Array[T](nInputPlane * kernelH * kernelW)
-  val max = new Array[T](nInputPlane * kernelH * kernelW)
+  val min = new Array[T](nOutputPlane)
+  val max = new Array[T](nOutputPlane)
 
   @transient var _init = false
 
@@ -186,7 +186,7 @@ class SpatialConvolution[T: ClassTag](
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
-    (Array(null, bias), Array(null, null))
+    (Array(null, null), Array(null, null))
   }
 
   override def getParametersTable(): Table = {
