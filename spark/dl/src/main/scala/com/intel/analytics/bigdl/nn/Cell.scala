@@ -87,7 +87,7 @@ abstract class Cell[T : ClassTag](
   def hidResize(hidden: Activity, size: Int, imageSize: Array[Int] = null): Activity = {
     if (hidden == null) {
       if (hiddensShape.length == 1) {
-        hidResize(Tensor[T](), size, null)
+        hidResize(Tensor[T](), size)
       } else {
         val _hidden = T()
         var i = 1
@@ -111,16 +111,9 @@ abstract class Cell[T : ClassTag](
             hidden.toTable[Tensor[T]](i).resize(size, hiddensShape(i - 1))
             i += 1
           }
-        } else if (imageSize.length == 2) {
+        } else {
           while (i <= hidden.toTable.length()) {
-            hidden.toTable[Tensor[T]](i).resize(size, hiddensShape(i - 1),
-              imageSize(0), imageSize(1))
-            i += 1
-          }
-        } else if (imageSize.length == 3) {
-          while (i <= hidden.toTable.length()) {
-            hidden.toTable[Tensor[T]](i).resize(size, hiddensShape(i - 1),
-              imageSize(0), imageSize(1), imageSize(2))
+            hidden.toTable[Tensor[T]](i).resize(Array(size, hiddensShape(i - 1)) ++ imageSize)
             i += 1
           }
         }
