@@ -209,7 +209,7 @@ class DataConverterSpec extends FlatSpec with Matchers{
   }
 
   "Module Conversion " should " work properly" in {
-    val linear = Linear(5, 5)
+    val linear = Linear(5, 5).setName("linear")
     val attriBulder = AttrValue.newBuilder
     DataConverter.setAttributeValue(attriBulder, linear, ModuleSerializer.abstractModuleType)
     val attr = attriBulder.build
@@ -332,8 +332,8 @@ class DataConverterSpec extends FlatSpec with Matchers{
 
   "Array of Modules conversion" should " work properly" in {
     val arry = new Array[AbstractModule[Activity, Activity, Float]](2)
-    arry(0) = Linear[Float](2, 3)
-    arry(1) = Linear[Float](2, 3)
+    arry(0) = Linear[Float](2, 3).setName("l1")
+    arry(1) = Linear[Float](2, 3).setName("l2")
     val attriBulder = AttrValue.newBuilder
     DataConverter.setAttributeValue(attriBulder, arry)
     val attr = attriBulder.build
@@ -354,7 +354,7 @@ class DataConverterSpec extends FlatSpec with Matchers{
     attrsMap("string") = "str"
     attrsMap("bool") = true
     attrsMap("tensor") = Tensor(2, 2).apply1(_ => Random.nextFloat())
-    attrsMap("module") = Linear(3, 4)
+    attrsMap("module") = Linear(3, 4).setName("linear")
 
     map("test") = attrsMap
 
