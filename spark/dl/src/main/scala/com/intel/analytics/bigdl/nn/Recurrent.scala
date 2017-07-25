@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
 
+import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
@@ -262,6 +263,16 @@ class Recurrent[T : ClassTag]()
         cellAppendStartIdx)
     }
     output
+  }
+
+  def getFinalstateAndCell(): mutable.HashMap[String, Tensor[T]] = {
+    require(cells != null && cells(times - 1).output != null,
+      "getFinalstateAndCell need to be called after updateOutput")
+    val map = new mutable.HashMap[String, Tensor[T]]()
+    map("cell") = cells(times - 1).output.toTable(hidDim).asInstanceOf[Table]
+      .getOrElse(hidDim, null)
+    map("final_state") = cells(times - 1).output.toTable[Tensor[T]](inputDim)
+    map
   }
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
