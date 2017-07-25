@@ -42,12 +42,13 @@ import com.intel.analytics.bigdl.utils.Engine
  */
 @SerialVersionUID(4533142511857387857L)
 class SpatialAveragePooling[@specialized(Float, Double) T: ClassTag](
-  val kW: Int,
-  val kH: Int,
+  var kW: Int,
+  var kH: Int,
   val dW: Int = 1,
   val dH: Int = 1,
   val padW: Int = 0,
   val padH: Int = 0,
+  val globalPooling: Boolean = false,
   private var ceilMode: Boolean = false,
   private var countIncludePad: Boolean = true,
   private var divide: Boolean = true
@@ -190,6 +191,10 @@ class SpatialAveragePooling[@specialized(Float, Double) T: ClassTag](
     val dimW = input.dim()
     val inputHeight = input.size(dimH)
     val inputWidth = input.size(dimW)
+    if (globalPooling) {
+      kH = inputHeight
+      kW = inputWidth
+    }
     val nInputPlane = input.size(dimH - 1)
     var outputHeight =
       if (ceilMode) {
@@ -480,9 +485,11 @@ object SpatialAveragePooling {
       dH: Int = 1,
       padW: Int = 0,
       padH: Int = 0,
+      globalPooling: Boolean = false,
       ceilMode: Boolean = false,
       countIncludePad: Boolean = true,
       divide: Boolean = true)(implicit ev: TensorNumeric[T]) : SpatialAveragePooling[T] = {
-    new SpatialAveragePooling[T](kW, kH, dW, dH, padW, padH, ceilMode, countIncludePad, divide)
+    new SpatialAveragePooling[T](kW, kH, dW, dH, padW, padH, globalPooling,
+      ceilMode, countIncludePad, divide)
   }
 }
