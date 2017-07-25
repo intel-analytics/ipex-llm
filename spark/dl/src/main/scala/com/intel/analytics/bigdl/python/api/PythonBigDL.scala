@@ -349,11 +349,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                                   dH: Int = 1,
                                   padW: Int = 0,
                                   padH: Int = 0,
+                                  globalPooling: Boolean = false,
                                   ceilMode: Boolean = false,
                                   countIncludePad: Boolean = true,
                                   divide: Boolean = true)
   : SpatialAveragePooling[T] = {
-    SpatialAveragePooling[T](kW, kH, dW, dH, padW, padH, ceilMode, countIncludePad, divide)
+    SpatialAveragePooling[T](kW, kH, dW, dH, padW, padH, globalPooling,
+      ceilMode, countIncludePad, divide)
   }
 
   def createSpatialBatchNormalization(nOutput: Int,

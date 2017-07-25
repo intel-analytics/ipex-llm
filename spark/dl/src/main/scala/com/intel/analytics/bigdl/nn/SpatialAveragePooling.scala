@@ -35,6 +35,8 @@ import com.intel.analytics.bigdl.utils.Engine
  * @param dH step height
  * @param padW padding width
  * @param padH padding height
+ * @param globalPooling If globalPooling then it will pool over the size of the input by doing
+ *                      kH = input->height and kW = input->width
  * @param ceilMode whether the output size is to be ceiled or floored
  * @param countIncludePad whether to include padding when dividing the
  *                        number of elements in pooling region
