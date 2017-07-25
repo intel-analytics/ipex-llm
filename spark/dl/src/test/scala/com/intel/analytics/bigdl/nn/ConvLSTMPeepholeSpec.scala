@@ -1019,7 +1019,7 @@ class ConvLSTMPeepholeSpec extends FlatSpec with BeforeAndAfter with Matchers {
     )
 
     val output = model.forward(input).asInstanceOf[Tensor[Double]]
-    val finalstateAndCell = rec.getFinalstateAndCell()
+    val finalstateAndCell = rec.getFinalStateAndCell()
     val finalState = finalstateAndCell("final_state")
     finalState.map(output.select(2, seqLength), (v1, v2) => {
       assert(abs(v1 - v2) == 0)
