@@ -262,15 +262,18 @@ class Recurrent[T : ClassTag]()
     output
   }
 
-  def getFinalStateAndCell(): mutable.HashMap[String, Tensor[T]] = {
+  /**
+    * Get final state and cell status
+    * Return a tuple, the first one is final state, the last is cell status
+    */
+  def getFinalStateAndCellStatus(): (Tensor[T], Tensor[T]) = {
     require(cells != null && cells(times - 1).output != null,
       "getFinalStateAndCell need to be called after updateOutput")
-    val map = new mutable.HashMap[String, Tensor[T]]()
     val cell = cells(times - 1).output.toTable(hidDim).asInstanceOf[Activity]
-    map("cell") = if (cell.isInstanceOf[Table]) cell.asInstanceOf[Table].getOrElse(hidDim, null)
+    val cellState = if (cell.isInstanceOf[Table]) cell.asInstanceOf[Table].getOrElse(hidDim, null)
       else null
-    map("final_state") = cells(times - 1).output.toTable[Tensor[T]](inputDim)
-    map
+    val finalState = cells(times - 1).output.toTable[Tensor[T]](inputDim)
+    (finalState, cellState)
   }
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
