@@ -269,8 +269,8 @@ class Recurrent[T : ClassTag]()
     require(cells != null && cells(times - 1).output != null,
       "getFinalStateAndCell need to be called after updateOutput")
     val map = new mutable.HashMap[String, Tensor[T]]()
-    val cell = cells(times - 1).output.toTable(hidDim).asInstanceOf[Table]
-    map("cell") = if (cell.isTable) cell.getOrElse(hidDim, null)
+    val cell = cells(times - 1).output.toTable(hidDim).asInstanceOf[Activity]
+    map("cell") = if (cell.isInstanceOf[Table]) cell.asInstanceOf[Table].getOrElse(hidDim, null)
       else cell.asInstanceOf[Tensor[T]]
     map("final_state") = cells(times - 1).output.toTable[Tensor[T]](inputDim)
     map
