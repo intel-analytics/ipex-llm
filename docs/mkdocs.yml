@@ -1,0 +1,78 @@
+site_name: BigDL Project
+theme: null
+extra_css: [extra.css]
+theme_dir: mkdocs_windmill 
+repo_name: 'Fork on GitHub '
+repo_url: 'https://github.com/intel-analytics/BigDL'
+extra:
+    version: latest
+    article_nav_top: false
+    article_nav_bottom: false
+
+
+pages:
+- Overview: index.md 
+- Releases: 
+  - Download: release-download.md 
+  - Documentation: release-docs.md
+- Getting Started: getting-started.md
+- Scala User Guide: 
+  - Install: 
+    - Use Pre-built Libs: UserGuide/install-pre-built.md
+    - Build from Source Code: UserGuide/install-build-src.md 
+  - Run: UserGuide/run.md
+  - Configuration: UserGuide/configuration.md
+  - Examples: UserGuide/examples.md
+  - More Resources: UserGuide/resources.md
+- Python User Guide: 
+  - Install:
+    - From pip: PythonSupport/install-from-pip.md
+    - Without pip: PythonSupport/install-without-pip.md
+  - Run:
+    - After pip install: PythonSupport/run-from-pip.md
+    - Without pip install: PythonSupport/run-without-pip.md
+  - Examples: PythonSupport/python-examples.md
+  - More Examples and Tutorials: PythonSupport/python-resources.md
+- Programming Guide:
+  - Define a Model:
+    - Using Sequential API: ProgrammingGuide/Model/Sequential.md
+    - Using Functional API: ProgrammingGuide/Model/Functional.md
+  - Optimization: ProgrammingGuide/optimization.md
+  - Use Spark ML: ProgrammingGuide/MLPipeline.md
+  - Visualization: ProgrammingGuide/visualization.md
+  - Run on Amazon EC2: ProgrammingGuide/run-on-ec2.md 
+  - Tensorflow Support: ProgrammingGuide/tensorflow-support.md
+  - Caffe Support: ProgrammingGuide/caffe-support.md
+- API Guide:
+  - Data: APIdocs/Data.md
+  - Model: APIdocs/Module.md
+  - Layers: 
+    - Containers:  APIdocs/Layers/Containers.md
+    - Simple Layers: APIdocs/Layers/Simple-Layers.md
+    - Convolution Layers: APIdocs/Layers/Convolution-Layers.md
+    - Pooling Layers:  APIdocs/Layers/Pooling-Layers.md
+    - Activations: APIdocs/Layers/Activations.md
+    - Embedding Layers: APIdocs/Layers/Embedding-Layers.md
+    - Merge/Split Layers: APIdocs/Layers/MergeSplit-Layers.md
+    - Math Layers: APIdocs/Layers/Math-Layers.md
+    - Padding Layers: APIdocs/Layers/Padding-Layers.md
+    - Normalization Layers:  APIdocs/Layers/Normalization-Layers.md
+    - Dropout Layers: APIdocs/Layers/Dropout-Layers.md
+    - Distance Layers: APIdocs/Layers/Distance-Layers.md
+    - Recurrent Layers:  APIdocs/Layers/Recurrent-Layers.md
+    - Recursive Layers:  APIdocs/Layers/Recursive-Layers.md
+    - Utilities: APIdocs/Layers/Utilities.md
+  - Losses: APIdocs/Losses.md
+  - Initalizers: APIdocs/Initializers.md
+  - Regularizers: APIdocs/Regularizers.md
+  - Optimizer: APIdocs/Optimizers/Optimizer.md
+  - Optim Methods:
+    - OptimMethod: APIdocs/Optimizers/OptimMethod.md 
+    - Optimization Algorithms: APIdocs/Optimizers/Optim-Methods.md
+  - Triggers: APIdocs/Triggers.md
+  - Metrics:  APIdocs/Metrics.md
+  - Full API docs:
+    - Scala Docs: APIdocs/scaladoc.md
+    - Python API Docs: APIdocs/python-api-doc.md
+- Powered by: powered-by.md
+- Known Issues: known-issues.md
