@@ -329,33 +329,46 @@ class ConvLSTMPeephole2DSpec extends FlatSpec with BeforeAndAfter with Matchers 
       -0.06827257, 0.115748845, 0.14643653, -0.13591826
     )
     val weights = model.getParameters()._1
-    weights.copy(Tensor[Double](weightData, Array(weightData.size, 1)))
+//    weights.copy(Tensor[Double](weightData, Array(weightData.size, 1)))
 
-//    val weightsOri = new ArrayBuffer[Tensor[Double]]()
-//    val weightsNew = new ArrayBuffer[Tensor[Double]]()
-//
-//    val sizeI = hiddenSize * inputSize * 3 * 3
-//    val sizeH = hiddenSize * hiddenSize * 3 * 3
-//    var next = 0
-//    for(i <- 0 until 4) {
-//      val i2g = Tensor[Double](weightData.slice(next, next + sizeI),
-//        Array(1, hiddenSize, inputSize, 3, 3))
-//      weightsOri += Tensor[Double]().resizeAs(i2g).copy(i2g)
-//      next += sizeI
-//      val i2gBias = Tensor[Double](weightData.slice(next, next + hiddenSize),
-//        Array(1, hiddenSize))
-//      weightsOri += Tensor[Double]().resizeAs(i2gBias).copy(i2gBias)
-//      next += hiddenSize
-//      val h2g = Tensor[Double](weightData.slice(next, next + sizeH),
-//        Array(1, hiddenSize, hiddenSize, 3, 3))
-//      weightsOri += Tensor[Double]().resizeAs(h2g).copy(h2g)
-//      next += sizeH
-//    }
-//
+    val weightsOri = new ArrayBuffer[Tensor[Double]]()
+    val weightsNew = new ArrayBuffer[Tensor[Double]]()
+
+    val sizeI = hiddenSize * inputSize * 3 * 3
+    val sizeH = hiddenSize * hiddenSize * 3 * 3
+    var next = 0
+    for(i <- 0 until 4) {
+      val i2g = Tensor[Double](weightData.slice(next, next + sizeI),
+        Array(1, hiddenSize, inputSize, 3, 3))
+      weightsOri += Tensor[Double]().resizeAs(i2g).copy(i2g)
+      next += sizeI
+      val i2gBias = Tensor[Double](weightData.slice(next, next + hiddenSize),
+        Array(1, hiddenSize))
+      weightsOri += Tensor[Double]().resizeAs(i2gBias).copy(i2gBias)
+      next += hiddenSize
+      val h2g = Tensor[Double](weightData.slice(next, next + sizeH),
+        Array(1, hiddenSize, hiddenSize, 3, 3))
+      weightsOri += Tensor[Double]().resizeAs(h2g).copy(h2g)
+      next += sizeH
+    }
+
+    weightsNew += weightsOri(2)
+    weightsNew += weightsOri(0)
+    weightsNew += weightsOri(1)
+    weightsNew += weightsOri(5)
+    weightsNew += weightsOri(3)
+    weightsNew += weightsOri(4)
+    weightsNew += weightsOri(8)
+    weightsNew += weightsOri(6)
+    weightsNew += weightsOri(7)
+    weightsNew += weightsOri(11)
+    weightsNew += weightsOri(9)
+    weightsNew += weightsOri(10)
 //    // weightsOri(0) -----> forgetGatei2g.weight
 //    // weightsOri(3) -----> inputGatei2g.weight
 //    // weightsOri(6) -----> hiddeni2g.weight
 //    // weightsOri(9) -----> outputGatei2g.weight
+//
 //    val weightsTable = T(weightsOri(0), weightsOri(3), weightsOri(6), weightsOri(9))
 //    val joinWeights = JoinTable[Double](2, 5)
 //    weightsNew += joinWeights.forward(weightsTable)
@@ -376,8 +389,8 @@ class ConvLSTMPeephole2DSpec extends FlatSpec with BeforeAndAfter with Matchers 
 //    weightsNew += weightsOri(5)
 //    weightsNew += weightsOri(8)
 //    weightsNew += weightsOri(11)
-//
-//    weights.copy(Module.flatten[Double](weightsNew.toArray))
+
+    weights.copy(Module.flatten[Double](weightsNew.toArray))
 
     val output = model.forward(input)
     val gradInput = model.backward(input, output).asInstanceOf[Tensor[Double]]
@@ -631,7 +644,41 @@ class ConvLSTMPeephole2DSpec extends FlatSpec with BeforeAndAfter with Matchers 
       -0.11207754, 0.042513624, -0.05665606, -0.015827265, 0.12174054
     )
     val weights = model.getParameters()._1
-    weights.copy(Tensor[Double](weightData, Array(weightData.size, 1)))
+//    weights.copy(Tensor[Double](weightData, Array(weightData.size, 1)))
+
+    val weightsOri = new ArrayBuffer[Tensor[Double]]()
+    val weightsNew = new ArrayBuffer[Tensor[Double]]()
+
+    val sizeI = hiddenSize * inputSize * 3 * 3
+    val sizeH = hiddenSize * hiddenSize * 3 * 3
+    var next = 0
+    for(i <- 0 until 4) {
+      val i2g = Tensor[Double](weightData.slice(next, next + sizeI),
+        Array(1, hiddenSize, inputSize, 3, 3))
+      weightsOri += Tensor[Double]().resizeAs(i2g).copy(i2g)
+      next += sizeI
+      val i2gBias = Tensor[Double](weightData.slice(next, next + hiddenSize),
+        Array(1, hiddenSize))
+      weightsOri += Tensor[Double]().resizeAs(i2gBias).copy(i2gBias)
+      next += hiddenSize
+      val h2g = Tensor[Double](weightData.slice(next, next + sizeH),
+        Array(1, hiddenSize, hiddenSize, 3, 3))
+      weightsOri += Tensor[Double]().resizeAs(h2g).copy(h2g)
+      next += sizeH
+    }
+
+    weightsNew += weightsOri(2)
+    weightsNew += weightsOri(0)
+    weightsNew += weightsOri(1)
+    weightsNew += weightsOri(5)
+    weightsNew += weightsOri(3)
+    weightsNew += weightsOri(4)
+    weightsNew += weightsOri(8)
+    weightsNew += weightsOri(6)
+    weightsNew += weightsOri(7)
+    weightsNew += weightsOri(11)
+    weightsNew += weightsOri(9)
+    weightsNew += weightsOri(10)
 
 //    val weightsOri = new ArrayBuffer[Tensor[Double]]()
 //    val weightsNew = new ArrayBuffer[Tensor[Double]]()
@@ -667,7 +714,7 @@ class ConvLSTMPeephole2DSpec extends FlatSpec with BeforeAndAfter with Matchers 
 //    weightsNew += weightsOri(8)
 //    weightsNew += weightsOri(11)
 //
-//    weights.copy(Module.flatten[Double](weightsNew.toArray))
+    weights.copy(Module.flatten[Double](weightsNew.toArray))
 
     val output = model.forward(input)
     val gradInput = model.backward(input, output).asInstanceOf[Tensor[Double]]

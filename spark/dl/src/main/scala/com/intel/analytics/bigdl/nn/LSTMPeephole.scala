@@ -79,17 +79,21 @@ class LSTMPeephole[T : ClassTag] (
     Sequential()
     .add(Dropout(p))
     .add(TimeDistributed(Linear(inputSize, hiddenSize * 4, wRegularizer = wRegularizer,
-      bRegularizer = bRegularizer).setName("linear-precalc")))
+      bRegularizer = bRegularizer)))
 
   def buildGate(dimension: Int, offset: Int, length: Int)
-               (input1: ModuleNode[T], input2: ModuleNode[T], input3: ModuleNode[T], name: String)
+               (input1: ModuleNode[T], input2: ModuleNode[T], input3: ModuleNode[T])
   : ModuleNode[T] = {
+
+    /**
+     * f(input1 + U * input2)
+     */
 
     val i2g = Narrow(dimension, offset, length).inputs(input1)
     val drop = Dropout(p).inputs(input2)
     val h2g = Linear(hiddenSize, hiddenSize,
-      withBias = false, wRegularizer = uRegularizer).setName(name).inputs(drop)
-    val cMul = CMul(Array(hiddenSize)).setName(name + " CMul").inputs(input3)
+      withBias = false, wRegularizer = uRegularizer).inputs(drop)
+    val cMul = CMul(Array(hiddenSize)).inputs(input3)
 
     val cadd = CAddTable().inputs(i2g, h2g, cMul)
     val sigmoid = Sigmoid().inputs(cadd)
@@ -100,7 +104,7 @@ class LSTMPeephole[T : ClassTag] (
   def buildInputGate()
                     (input1: ModuleNode[T], input2: ModuleNode[T], input3: ModuleNode[T])
   : ModuleNode[T] = {
-    inputGate = buildGate(featDim, 1, hiddenSize)(input1, input2, input3, "inputGate")
+    inputGate = buildGate(featDim, 1, hiddenSize)(input1, input2, input3)
     inputGate
   }
 
@@ -108,7 +112,7 @@ class LSTMPeephole[T : ClassTag] (
                      (input1: ModuleNode[T], input2: ModuleNode[T], input3: ModuleNode[T])
   : ModuleNode[T] = {
     forgetGate =
-      buildGate(featDim, 1 + hiddenSize, hiddenSize)(input1, input2, input3, "forgetGate")
+      buildGate(featDim, 1 + hiddenSize, hiddenSize)(input1, input2, input3)
     forgetGate
   }
 
@@ -116,7 +120,7 @@ class LSTMPeephole[T : ClassTag] (
                      (input1: ModuleNode[T], input2: ModuleNode[T], input3: ModuleNode[T])
   : ModuleNode[T] = {
     outputGate =
-      buildGate(featDim, 1 + 3 * hiddenSize, hiddenSize)(input1, input2, input3, "outputGate")
+      buildGate(featDim, 1 + 3 * hiddenSize, hiddenSize)(input1, input2, input3)
     outputGate
   }
 
@@ -124,10 +128,14 @@ class LSTMPeephole[T : ClassTag] (
                  (input1: ModuleNode[T], input2: ModuleNode[T])
   : ModuleNode[T] = {
 
+    /**
+     * f(input1 + W * input2)
+     */
+
     val i2h = Narrow(featDim, 1 + 2 * hiddenSize, hiddenSize).inputs(input1)
     val drop = Dropout(p).inputs(input2)
     val h2h = Linear(hiddenSize, hiddenSize, withBias = false,
-      wRegularizer = uRegularizer).setName("hiddenGate").inputs(drop)
+      wRegularizer = uRegularizer).inputs(drop)
     val cadd = CAddTable().inputs(i2h, h2h)
     val tanh = Tanh().inputs(cadd)
 
@@ -142,9 +150,9 @@ class LSTMPeephole[T : ClassTag] (
     buildForgetGate()(input1, input2, input3)
     buildHidden()(input1, input2)
 
-    val forgetLayer = CMulTable().setName("forget CMulti").inputs(forgetGate, input3)
+    val forgetLayer = CMulTable().inputs(forgetGate, input3)
 
-    val inputLayer = CMulTable().setName("input CMulti").inputs(inputGate, hiddenLayer)
+    val inputLayer = CMulTable().inputs(inputGate, hiddenLayer)
 
     val cellLayer = CAddTable().inputs(forgetLayer, inputLayer)
 
@@ -157,16 +165,28 @@ class LSTMPeephole[T : ClassTag] (
     val input2 = Input()
     val input3 = Input()
 
+    /**
+     * f: sigmoid
+     * g: tanh
+     * forgetLayer = input3 * f(input1 + U1 * input2)
+     * inputLayer = f(input1 + U2 * input2) * g(input1 + U3 * input2)
+     * cellLayer = forgetLayer + inputLayer
+     */
     buildCell()(input1, input2, input3)
     buildOutputGate()(input1, input2, cellLayer)
 
     val tanh = Tanh().inputs(cellLayer)
-    val cMul = CMulTable().setName("output CMulti").inputs(outputGate, tanh)
+    val cMul = CMulTable().inputs(outputGate, tanh)
 
     val out1 = Identity().inputs(cMul)
     val out2 = Identity().inputs(cMul)
     val out3 = cellLayer
 
+    /**
+     * out1 = outputGate * g(cellLayer)
+     * out2 = out1
+     * out3 = cellLayer
+     */
     Graph(Array(input1, input2, input3), Array(out1, out2, out3))
   }
 

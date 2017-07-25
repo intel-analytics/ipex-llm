@@ -140,6 +140,12 @@ class LSTM[T : ClassTag] (
     val input3 = Input()
     val (in, hid, forg, out) = buildGates()(input1, input2)
 
+    /**
+     * g: Tanh
+     * cMult1 = in * hid
+     * cMult2 = forg * input3
+     * cMult3 = out * g(cMult1 + cMult2)
+     */
     val cMult1 = CMulTable().inputs(in, hid)
     val cMult2 = CMulTable().inputs(forg, input3)
     val cadd = CAddTable(true).inputs(cMult1, cMult2)
@@ -150,6 +156,11 @@ class LSTM[T : ClassTag] (
     val out2 = Identity().inputs(cMult3)
     val out3 = cadd
 
+    /**
+     * out1 = cMult3
+     * out2 = out1
+     * out3 = cMult1 + cMult2
+     */
     Graph(Array(input1, input2, input3), Array(out1, out2, out3))
   }
 
