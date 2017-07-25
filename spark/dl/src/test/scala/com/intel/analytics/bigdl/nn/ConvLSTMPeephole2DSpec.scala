@@ -25,9 +25,9 @@ import scala.collection.mutable.ArrayBuffer
 import scala.math._
 
 @com.intel.analytics.bigdl.tags.Parallel
-class ConvLSTMPeepholeSpec extends FlatSpec with BeforeAndAfter with Matchers {
+class ConvLSTMPeephole2DSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
-  "A convLstm" should " work in BatchMode" in {
+  "A convLstm2d" should " work in BatchMode" in {
     val hiddenSize = 5
     val inputSize = 3
     val seqLength = 4
@@ -37,13 +37,13 @@ class ConvLSTMPeepholeSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val rec = Recurrent[Double]()
     val model = Sequential[Double]()
       .add(rec
-        .add(ConvLSTMPeephole[Double](
+        .add(ConvLSTMPeephole2D[Double](
             inputSize,
             hiddenSize,
             kernalW, kernalH,
             1,
             withPeephole = false)))
-     .add(View(hiddenSize * kernalH * kernalW))
+//     .add(View(hiddenSize * kernalH * kernalW))
 
     val input = Tensor[Double](batchSize, seqLength, inputSize, kernalW, kernalH).rand
     val output = model.forward(input).toTensor[Double]
@@ -53,7 +53,7 @@ class ConvLSTMPeepholeSpec extends FlatSpec with BeforeAndAfter with Matchers {
     }
   }
 
-  "A ConvLSTMPeepwhole " should "generate corrent output" in {
+  "A ConvLSTMPeepwhole2D " should "generate corrent output" in {
     val hiddenSize = 5
     val inputSize = 3
     val seqLength = 4
@@ -113,7 +113,7 @@ class ConvLSTMPeepholeSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val rec = Recurrent[Double]()
     val model = Sequential[Double]()
       .add(rec
-        .add(ConvLSTMPeephole[Double](inputSize, hiddenSize, 3, 3, 1, withPeephole = false)))
+        .add(ConvLSTMPeephole2D[Double](inputSize, hiddenSize, 3, 3, 1, withPeephole = false)))
 
     val weightData = Array(
       0.1323664, 0.11453647, 0.08062653, 0.12153825, 0.09627097, 0.09425588, -0.12831208,
@@ -441,7 +441,7 @@ class ConvLSTMPeepholeSpec extends FlatSpec with BeforeAndAfter with Matchers {
     })
   }
 
-  "A ConvLSTMPeepwhole " should "generate corrent output when batch != 1" in {
+  "A ConvLSTMPeepwhole2D " should "generate corrent output when batch != 1" in {
     val hiddenSize = 4
     val inputSize = 2
     val seqLength = 2
@@ -500,7 +500,7 @@ class ConvLSTMPeepholeSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val rec = Recurrent[Double]()
     val model = Sequential[Double]()
       .add(rec
-        .add(ConvLSTMPeephole[Double](inputSize, hiddenSize, 3, 3, 1, withPeephole = false)))
+        .add(ConvLSTMPeephole2D[Double](inputSize, hiddenSize, 3, 3, 1, withPeephole = false)))
 
     val weightData = Array(
       -0.0697708, 0.187022, 0.08511595, 0.096392, 0.004365, -0.181258, 0.0446674,
@@ -730,7 +730,7 @@ class ConvLSTMPeepholeSpec extends FlatSpec with BeforeAndAfter with Matchers {
     })
   }
 
-  "A ConvLSTMPeepwhole " should "return expected hidden and cell state when batch != 1" in {
+  "A ConvLSTMPeepwhole2D " should "return expected hidden and cell state when batch != 1" in {
     val hiddenSize = 4
     val inputSize = 2
     val seqLength = 2
@@ -789,7 +789,7 @@ class ConvLSTMPeepholeSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val rec = Recurrent[Double]()
     val model = Sequential[Double]()
       .add(rec
-        .add(ConvLSTMPeephole[Double](inputSize, hiddenSize, 3, 3, 1, withPeephole = false)))
+        .add(ConvLSTMPeephole2D[Double](inputSize, hiddenSize, 3, 3, 1, withPeephole = false)))
 
     val weightData = Array(
       -0.0697708, 0.187022, 0.08511595, 0.096392, 0.004365, -0.181258, 0.0446674,

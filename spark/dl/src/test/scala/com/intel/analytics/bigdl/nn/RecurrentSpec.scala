@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.utils.{Engine, T}
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer
+import scala.math._
 
 @com.intel.analytics.bigdl.tags.Serial
 class RecurrentSpec extends FlatSpec with Matchers {
@@ -291,5 +292,36 @@ class RecurrentSpec extends FlatSpec with Matchers {
     }
 
     flag should be (false)
+  }
+
+  "A Recurrent Module " should "work with getFinalStateAndCell " in {
+
+    val hiddenSize = 4
+    val inputSize = 5
+    val outputSize = 5
+    val bpttTruncate = 10
+    val seed = 100
+    val batchSize = 1
+    val time = 4
+    RNG.setSeed(seed)
+
+    val rec = Recurrent[Double]()
+      .add(RnnCell[Double](inputSize, hiddenSize, Tanh()))
+    val model = Sequential[Double]()
+      .add(rec)
+
+    val input = Tensor[Double](Array(batchSize, time, inputSize)).rand
+
+    val output = model.forward(input).asInstanceOf[Tensor[Double]]
+    val finalStateAndCell = rec.getFinalStateAndCell()
+    val finalState = finalStateAndCell("final_state")
+    val cell = finalStateAndCell("cell")
+
+    finalState.map(output.asInstanceOf[Tensor[Double]].select(2, time), (v1, v2) => {
+      assert(abs(v1 - v2) == 0)
+      v1
+    })
+
+    assert(cell == null, "rnn should not have cell state")
   }
 }
