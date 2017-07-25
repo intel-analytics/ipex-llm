@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.utils.caffe
 
 import caffe.Caffe._
 import caffe.Caffe.EltwiseParameter.EltwiseOp
+import caffe.Caffe.LRNParameter.NormRegion
 import caffe.Caffe.PoolingParameter.PoolMethod
 import com.google.protobuf.GeneratedMessage
 import com.intel.analytics.bigdl.nn.Graph._
@@ -86,7 +87,14 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
     val alpha = param.getAlpha
     val belta = param.getBeta
     val k = param.getK
-    Seq(SpatialCrossMapLRN[T](localSize, alpha, belta, k).setName(layerName).inputs())
+    val normRegion = param.getNormRegion
+    normRegion match {
+      case NormRegion.ACROSS_CHANNELS =>
+        Seq(SpatialCrossMapLRN[T](localSize, alpha, belta, k).setName(layerName).inputs())
+      case NormRegion.WITHIN_CHANNEL =>
+        Seq(SpatialWithinChannelLRN[T](localSize, alpha, belta).setName(layerName).inputs())
+      case _ => null
+    }
   }
 
   private def fromCaffePooling(layer : GeneratedMessage): Seq[ModuleNode[T]] = {
@@ -274,6 +282,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
       case convolution : SpatialConvolution[_] => toCaffeConvolution(moduleNode, bottoms, nextSize)
       case relu : ReLU[_] => toCaffeRelu(moduleNode, bottoms, nextSize)
       case lrn : SpatialCrossMapLRN[_] => toCaffeLRN(moduleNode, bottoms, nextSize)
+      case lrn : SpatialWithinChannelLRN[_] => toCaffeLRN(moduleNode, bottoms, nextSize)
       case maxPooling : SpatialMaxPooling[_] => toCaffeMaxPooling(moduleNode, bottoms, nextSize)
       case avgPooling : SpatialAveragePooling[_] => toCaffeAvePooling(moduleNode, bottoms, nextSize)
       case linear : Linear[_] => toCaffeInnerProduct(moduleNode, bottoms, nextSize)
@@ -424,9 +433,14 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
   }
 
   protected def toCaffeLRNParam(module : AbstractModule[Activity, Tensor[T], T])
-  : (Int, Double, Double, Double) = {
-    val layer = classOf[SpatialCrossMapLRN[T]].cast(module)
-    (layer.size, layer.alpha, layer.beta, layer.k)
+  : (Int, Double, Double, Double, String) = {
+    module match {
+      case layer: SpatialCrossMapLRN[T] =>
+        (layer.size, layer.alpha, layer.beta, layer.k, layer.getClass.getSimpleName)
+      case layer: SpatialWithinChannelLRN[T] =>
+        (layer.size, layer.alpha, layer.beta, 0, layer.getClass.getSimpleName)
+      case _ => null
+    }
   }
 
   protected def toCaffeMaxPoolingParam(module : AbstractModule[Activity, Tensor[T], T])

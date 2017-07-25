@@ -203,6 +203,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     TimeDistributed[T](layer)
   }
 
+  def createSpatialWithinChannelLRN(size: Int = 5, alpha: Double = 1.0, beta: Double = 0.75)
+  : SpatialWithinChannelLRN[T] = {
+    SpatialWithinChannelLRN[T](size, alpha, beta)
+  }
+
   def createRnnCell(inputSize: Int,
                     hiddenSize: Int,
                     activation: TensorModule[T],
