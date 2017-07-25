@@ -328,13 +328,12 @@ object Graph extends ContainerSerializable {
     val subModules = module.getSubModulesList.asScala
 
     val attributes = module.getAttrMap
-    val inputNames = new mutable.LinkedHashMap[String, String]
-    val outputNames = new mutable.LinkedHashMap[String, String]
-    val inputnms = attributes.get("inputNames")
+    val inputNames = new ArrayBuffer[String]
+    val outputNames = new ArrayBuffer[String]
     DataConverter.getAttributeValue(attributes.get("inputNames"))
-      .asInstanceOf[Array[String]].map(name => inputNames(name) = name)
+      .asInstanceOf[Array[String]].map(name => inputNames.append(name))
     DataConverter.getAttributeValue(attributes.get("outputNames"))
-      .asInstanceOf[Array[String]].map(name => outputNames(name) = name)
+      .asInstanceOf[Array[String]].map(name => outputNames.append(name))
 
     val inputs = new ArrayBuffer[ModuleNode[T]]
     val outputs = new ArrayBuffer[ModuleNode[T]]
@@ -353,15 +352,10 @@ object Graph extends ContainerSerializable {
       })
       val nextNodes = bigDLModule.next
       layerMap(bigDLModule.module.getName) = moduleNode
-     //  modules.append(moduleNode)
-      if (inputNames.contains(bigDLModule.module.getName)) {
-        inputs.append(moduleNode)
-      }
-      if (outputNames.contains(bigDLModule.module.getName)) {
-        outputs.append(moduleNode)
-      }
     })
 
+    inputNames.foreach(inputName => inputs.append(layerMap(inputName)))
+    outputNames.foreach(outputName => outputs.append(layerMap(outputName)))
     // val inputs = modules.filter(_.prevNodes.size == 0).toArray
     // val outputs = modules.filter(_.nextNodes.size == 0).toArray
     var sharedVariables : Option[(Array[Tensor[T]], Array[Tensor[T]])] = None

@@ -267,7 +267,6 @@ class BinaryTreeLSTM[T: ClassTag](
     tree: TensorTree[T],
     nodeIndex: Int): Table = {
     val out = if (tree.noChild(nodeIndex)) {
-      println((batch - 1) + "_" + (nodeIndex - 1))
       cells(batch - 1)(nodeIndex - 1)
         .forward(input.select(1, tree.leafIndex(nodeIndex))).toTable
     } else {

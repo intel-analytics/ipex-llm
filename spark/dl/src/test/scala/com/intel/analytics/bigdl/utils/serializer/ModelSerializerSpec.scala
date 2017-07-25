@@ -16,9 +16,9 @@
 package com.intel.analytics.bigdl.utils.serializer
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.{PairwiseDistance, ParallelTable, SpatialAveragePooling, TimeDistributed, VolumetricConvolution, _}
-import com.intel.analytics.bigdl.nn.abstractnn.{TensorModule}
-import com.intel.analytics.bigdl.tensor.{Tensor}
+import com.intel.analytics.bigdl.nn.{PairwiseDistance, ParallelTable, SpatialAveragePooling, TemporalConvolution, TimeDistributed, VolumetricConvolution, _}
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
@@ -120,7 +120,6 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     val res11 = binaryTreeLSTM.forward(input)
     res1 should be (res11)
     ModulePersister.saveToFile("/tmp/binaryTreeLSTM.bigdl", binaryTreeLSTM, true)
-    ModulePersister.saveModelDefinitionToFile("/tmp/binaryTreeLSTM.prototxt", binaryTreeLSTM, true)
     RNG.setSeed(1000)
     val loadedBinaryTreeLSTM = ModuleLoader.loadFromFile("/tmp/binaryTreeLSTM.bigdl")
     val res2 = loadedBinaryTreeLSTM.forward(input)
@@ -327,6 +326,35 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     res1 should be (res2)
   }
 
+  "ConvLSTMPeephole serializer" should " work properly" in {
+    val hiddenSize = 5
+    val inputSize = 3
+    val seqLength = 4
+    val batchSize = 2
+    val kernalW = 3
+    val kernalH = 3
+    val convLSTMPeephole = Recurrent()
+    val model = Sequential()
+      .add(convLSTMPeephole
+        .add(ConvLSTMPeephole(
+          inputSize,
+          hiddenSize,
+          kernalW, kernalH,
+          1,
+          withPeephole = false)))
+      .add(View(hiddenSize * kernalH * kernalW))
+
+    val input1 = Tensor(batchSize, seqLength, inputSize, kernalW, kernalH).rand
+
+    val input2 = Tensor()
+    input2.resizeAs(input1).copy(input1)
+    val res1 = convLSTMPeephole.forward(input1)
+    ModulePersister.saveToFile("/tmp/convLSTMPeephole.bigdl", convLSTMPeephole, true)
+    val loadedConvLSTMPeephole = ModuleLoader.loadFromFile("/tmp/convLSTMPeephole.bigdl")
+    val res2 = loadedConvLSTMPeephole.forward(input2)
+    res1 should be (res2)
+  }
+
   "Cosine serializer" should "work properly" in {
     val cosine = Cosine(5, 5)
 
@@ -527,7 +555,6 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
 
   "GRU serializer " should "work properly" in {
     RNG.setSeed(100)
-    //val gru = GRU(1000, 1000)
     val gru = Recurrent().add(GRU(100, 100))
     val input1 = Tensor(2, 20, 100).apply1(e => Random.nextFloat())
     val input2 = Tensor(2, 20, 100)
@@ -1588,6 +1615,20 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     ModulePersister.saveToFile("/tmp/tanhShrink.bigdl", tanhShrink, true)
     val loadedTanhShrink = ModuleLoader.loadFromFile("/tmp/tanhShrink.bigdl")
     val res2 = loadedTanhShrink.forward(input2)
+    res1 should be (res2)
+  }
+
+  "TemporalConvolution serializer " should " work properly" in {
+    val temporalConvolution = TemporalConvolution(10, 8, 5, 2)
+    val input1 = Tensor(100, 10).apply1(e => Random.nextFloat())
+    val input2 = Tensor(100, 10)
+    input2.copy(input1)
+
+    val res1 = temporalConvolution.forward(input1)
+
+    ModulePersister.saveToFile("/tmp/temporalConvolution.bigdl", temporalConvolution, true)
+    val loadedTemporalConvolution = ModuleLoader.loadFromFile("/tmp/temporalConvolution.bigdl")
+    val res2 = loadedTemporalConvolution.forward(input2)
     res1 should be (res2)
   }
 

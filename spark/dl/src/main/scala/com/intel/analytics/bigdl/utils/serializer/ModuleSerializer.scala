@@ -190,6 +190,8 @@ object ModuleSerializer extends ModuleSerializable{
       ConcatTable)
     registerModule("Contiguous", Class.forName("com.intel.analytics.bigdl.nn.Contiguous"),
       Contiguous)
+    registerModule("ConvLSTMPeephole",
+      Class.forName("com.intel.analytics.bigdl.nn.ConvLSTMPeephole"), ConvLSTMPeephole)
     registerModule("Cosine", Class.forName("com.intel.analytics.bigdl.nn.Cosine"),
       Cosine)
     registerModule("CosineDistance", Class.forName("com.intel.analytics.bigdl.nn.CosineDistance"),
@@ -328,6 +330,8 @@ object ModuleSerializer extends ModuleSerializable{
     registerModule("Tanh", Class.forName("com.intel.analytics.bigdl.nn.Tanh"), Tanh)
     registerModule("TanhShrink", Class.forName("com.intel.analytics.bigdl.nn.TanhShrink"),
       TanhShrink)
+    registerModule("TemporalConvolution",
+      Class.forName("com.intel.analytics.bigdl.nn.TemporalConvolution"), TemporalConvolution)
     registerModule("Threshold", Class.forName("com.intel.analytics.bigdl.nn.Threshold"), Threshold)
     registerModule("TimeDistributed", Class.forName("com.intel.analytics.bigdl.nn.TimeDistributed"),
       TimeDistributed)
