@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
 
+import scala.collection.mutable
 import scala.reflect.ClassTag
 
 /**
@@ -112,11 +113,11 @@ abstract class Cell[T : ClassTag](
             i += 1
           }
         } else {
+          val sizes = new Array[Int](imageSize.length + 2)
+          sizes(0) = batchSize
+          Array.copy(imageSize, 0, sizes, 2, imageSize.size)
           while (i <= hidden.toTable.length()) {
-            val sizes = new Array[Int](imageSize.length + 2)
-            sizes(0) = batchSize
             sizes(1) = hiddensShape(i - 1)
-            Array.copy(imageSize, 0, sizes, 2, imageSize.size)
             hidden.toTable[Tensor[T]](i).resize(sizes)
             i += 1
           }
