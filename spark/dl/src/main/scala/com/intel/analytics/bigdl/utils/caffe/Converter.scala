@@ -434,12 +434,14 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
 
   protected def toCaffeLRNParam(module : AbstractModule[Activity, Tensor[T], T])
   : (Int, Double, Double, Double, String) = {
-    module match {
-      case layer: SpatialCrossMapLRN[T] =>
-        (layer.size, layer.alpha, layer.beta, layer.k, layer.getClass.getSimpleName)
-      case layer: SpatialWithinChannelLRN[T] =>
-        (layer.size, layer.alpha, layer.beta, 0, layer.getClass.getSimpleName)
-      case _ => null
+    if (module.isInstanceOf[SpatialCrossMapLRN[T]]) {
+      val layer = classOf[SpatialCrossMapLRN[T]].cast(module)
+      (layer.size, layer.alpha, layer.beta, layer.k, layer.getClass.getSimpleName)
+    } else if (module.isInstanceOf[SpatialWithinChannelLRN[T]]) {
+      val layer = classOf[SpatialWithinChannelLRN[T]].cast(module)
+      (layer.size, layer.alpha, layer.beta, 0, layer.getClass.getSimpleName)
+    } else {
+      null
     }
   }
 
