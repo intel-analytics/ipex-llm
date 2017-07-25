@@ -230,7 +230,7 @@ class Recurrent[T : ClassTag]()
     }
 
     val hiddenSize = topology.hiddensShape(0)
-    val outputSize = input.size().clone()
+    val outputSize = input.size()
     outputSize(2) = hiddenSize
     output.resize(outputSize)
     // Clone N modules along the sequence dimension.

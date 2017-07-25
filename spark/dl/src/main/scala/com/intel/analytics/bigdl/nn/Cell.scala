@@ -113,7 +113,11 @@ abstract class Cell[T : ClassTag](
           }
         } else {
           while (i <= hidden.toTable.length()) {
-            hidden.toTable[Tensor[T]](i).resize(Array(batchSize, hiddensShape(i - 1)) ++ imageSize)
+            val sizes = new Array[Int](imageSize.length + 2)
+            sizes(0) = batchSize
+            sizes(1) = hiddensShape(i - 1)
+            Array.copy(imageSize, 0, sizes, 2, imageSize.size)
+            hidden.toTable[Tensor[T]](i).resize(sizes)
             i += 1
           }
         }
