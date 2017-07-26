@@ -270,7 +270,8 @@ class Recurrent[T : ClassTag]()
     require(cells != null && cells(times - 1).output != null,
       "getFinalStateAndCell need to be called after updateOutput")
     val cell = cells(times - 1).output.toTable(hidDim).asInstanceOf[Activity]
-    val cellState = if (cell.isInstanceOf[Table]) cell.asInstanceOf[Table].getOrElse(hidDim, null)
+    val cellState = if (cell.isInstanceOf[Table]) cell.asInstanceOf[Table]
+      .getOrElse[Tensor[T]](hidDim, null)
       else null
     val finalState = cells(times - 1).output.toTable[Tensor[T]](inputDim)
     (finalState, cellState)
