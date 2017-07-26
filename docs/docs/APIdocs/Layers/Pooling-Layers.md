@@ -112,11 +112,11 @@ The gradInput is,
 
 **Scala:**
 ```scala
-val m = SpatialAveragePooling(kW, kH, dW=1, dH=1, padW=0, padH=0, ceilMode=false, countIncludePad=true, divide=true)
+val m = SpatialAveragePooling(kW, kH, dW=1, dH=1, padW=0, padH=0, globalPooling=false, ceilMode=false, countIncludePad=true, divide=true)
 ```
 **Python:**
 ```python
-m = SpatialAveragePooling(kw, kh, dw=1, dh=1, pad_w=0, pad_h=0,ceil_mode=False, count_include_pad=True, divide=True)
+m = SpatialAveragePooling(kw, kh, dw=1, dh=1, pad_w=0, pad_h=0, global_pooling=False, ceil_mode=False, count_include_pad=True, divide=True)
 ```
 
 SpatialAveragePooling is a module that applies 2D average-pooling operation in `kW`x`kH` regions by step size `dW`x`dH`.
