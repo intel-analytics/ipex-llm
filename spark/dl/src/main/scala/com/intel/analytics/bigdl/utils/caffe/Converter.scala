@@ -281,8 +281,8 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
     val model : Seq[GeneratedMessage] = module match {
       case convolution : SpatialConvolution[_] => toCaffeConvolution(moduleNode, bottoms, nextSize)
       case relu : ReLU[_] => toCaffeRelu(moduleNode, bottoms, nextSize)
-      case lrn : SpatialCrossMapLRN[_] => toCaffeLRN(moduleNode, bottoms, nextSize)
-      case lrn : SpatialWithinChannelLRN[_] => toCaffeLRN(moduleNode, bottoms, nextSize)
+      case crossMapLrn : SpatialCrossMapLRN[_] => toCaffeLRN(moduleNode, bottoms, nextSize)
+      case inChannelLrn : SpatialWithinChannelLRN[_] => toCaffeLRN(moduleNode, bottoms, nextSize)
       case maxPooling : SpatialMaxPooling[_] => toCaffeMaxPooling(moduleNode, bottoms, nextSize)
       case avgPooling : SpatialAveragePooling[_] => toCaffeAvePooling(moduleNode, bottoms, nextSize)
       case linear : Linear[_] => toCaffeInnerProduct(moduleNode, bottoms, nextSize)

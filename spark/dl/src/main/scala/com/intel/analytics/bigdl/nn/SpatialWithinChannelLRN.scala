@@ -25,7 +25,7 @@ import scala.reflect.ClassTag
 /**
  * The local response normalization layer performs a kind of “lateral inhibition”
  * by normalizing over local input regions. the local regions extend spatially,
- * in separate channels (i.e., they have shape 1 x local_size x local_size).
+ * in separate channels (i.e., they have shape 1 x size x size).
  * @param size  the side length of the square region to sum over
  * @param alpha the scaling parameter
  * @param beta the exponent
