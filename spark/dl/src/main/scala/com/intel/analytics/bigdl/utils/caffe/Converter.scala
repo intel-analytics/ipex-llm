@@ -115,7 +115,8 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
     val pooling = poolingType match {
       case PoolMethod.MAX => SpatialMaxPooling[T](kw, kh, dw, dh, pw, ph).ceil().
         setName(layerName).inputs()
-      case PoolMethod.AVE => SpatialAveragePooling[T](kw, kh, dw, dh, pw, ph).ceil().
+      case PoolMethod.AVE => SpatialAveragePooling[T](kw, kh, dw, dh, pw, ph,
+        param.getGlobalPooling).ceil().
         setName(layerName).inputs()
       case _ => null
     }
@@ -454,6 +455,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
     poolingParameter.setPadW(layer.padW)
     poolingParameter.setPadH(layer.padH)
     poolingParameter.setPool(PoolMethod.AVE)
+    poolingParameter.setGlobalPooling(layer.globalPooling)
     poolingParameter.build
   }
 
