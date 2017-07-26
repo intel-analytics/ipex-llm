@@ -78,6 +78,8 @@ input[0][4][0] = 1
 
 output = module.forward(input)
 
+res = module.get_finalState_cellStatus()
+
 > input
 [[[ 0.  0.  0.  0.  1.]
   [ 1.  0.  0.  0.  0.]
@@ -92,10 +94,12 @@ output = module.forward(input)
   [ 0.13328044  0.41262615  0.37388939  0.10983802]
   [-0.51452565  0.13222042  0.59192103  0.8393243 ]]]
 
-> final
+> res[0]
+# final state
 [[-0.51452565  0.13222042  0.59192103  0.8393243 ]]
 
-> cell
+> res[1]
+# cell status
 None
 ```
 ---

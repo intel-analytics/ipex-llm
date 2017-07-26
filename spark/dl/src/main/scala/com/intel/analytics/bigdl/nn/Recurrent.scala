@@ -262,10 +262,6 @@ class Recurrent[T : ClassTag]()
     output
   }
 
-  /**
-    * Get final state and cell status
-    * Return a tuple, the first one is final state, the last is cell status
-    */
   def getFinalStateAndCellStatus(): (Tensor[T], Tensor[T]) = {
     require(cells != null && cells(times - 1).output != null,
       "getFinalStateAndCell need to be called after updateOutput")

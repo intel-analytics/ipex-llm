@@ -295,34 +295,6 @@ class RecurrentSpec extends FlatSpec with Matchers {
   }
 
   "A Recurrent Module " should "work with getFinalStateAndCell " in {
-    import com.intel.analytics.bigdl.tensor.Tensor
-    import com.intel.analytics.bigdl.nn._
-    import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
-    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
-
-    val hiddenSize2 = 4
-    val inputSize2 = 5
-    val module = Recurrent().add(RnnCell(inputSize2, hiddenSize2, Tanh()))
-    val input2 = Tensor(Array(1, 5, inputSize2))
-    for (i <- 1 to 5) {
-      val rdmInput = Math.ceil(RNG.uniform(0.0, 1.0)*inputSize2).toInt
-      input2.setValue(1, i, rdmInput, 1.0f)
-    }
-
-    val output2 = module.forward(input2).asInstanceOf[Tensor[Float]]
-    println("input")
-    print(input2)
-    println("output")
-    print(output2)
-
-    val (finalState2, cellStatus2) = module.getFinalStateAndCellStatus()
-    println("finalState")
-    print(finalState2)
-    println("cellstatus")
-    print(cellStatus2)
-    
-    
-
     val hiddenSize = 4
     val inputSize = 5
     val outputSize = 5
