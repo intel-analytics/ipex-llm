@@ -1050,6 +1050,8 @@ class SpatialAveragePooling(Layer):
     :param dH: step height
     :param padW: padding width
     :param padH: padding height
+    :param global_pooling: If globalPooling then it will pool over the size of the input by doing
+                         kH = input->height and kW = input->width
     :param ceilMode: whether the output size is to be ceiled or floored
     :param countIncludePad: whether to include padding when dividing thenumber of elements in pooling region
     :param divide: whether to do the averaging
@@ -1066,6 +1068,7 @@ class SpatialAveragePooling(Layer):
                  dh=1,
                  pad_w=0,
                  pad_h=0,
+                 global_pooling=False,
                  ceil_mode=False,
                  count_include_pad=True,
                  divide=True,
@@ -1077,6 +1080,7 @@ class SpatialAveragePooling(Layer):
                                                     dh,
                                                     pad_w,
                                                     pad_h,
+                                                    global_pooling,
                                                     ceil_mode,
                                                     count_include_pad,
                                                     divide)
