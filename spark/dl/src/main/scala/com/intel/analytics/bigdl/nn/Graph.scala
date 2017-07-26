@@ -315,36 +315,6 @@ object Graph {
   }
 }
 
-/**
- * Each input node of the graph container should accept one tensor as input. If you want a module
- * accepting multiple tensors as input, you should add some Input module before it and connect
- * the outputs of the Input nodes to it.
- * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
- */
-@SerialVersionUID(- 8525406230282608924L)
-class Input[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
-  override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    output = input
-    output
-  }
-  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    gradInput = gradOutput
-    gradInput
-  }
-  override def equals(other: Any): Boolean = {
-    if (!other.isInstanceOf[Input[_]]) return false
-    this.eq(other.asInstanceOf[Input[_]])
-  }
-
-  override def hashCode(): Int = System.identityHashCode(this)
-}
-
-object Input {
-  def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): ModuleNode[T] = {
-    new Node(new Input().asInstanceOf[AbstractModule[Activity, Tensor[T], T]])
-  }
-}
-
 private[bigdl] class Dummy[T: ClassTag]()(implicit ev: TensorNumeric[T])
   extends AbstractModule[Activity, Tensor[T], T] {
   override def updateOutput(input: Activity): Tensor[T] = null

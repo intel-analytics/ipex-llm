@@ -7,7 +7,7 @@
     <groupId>com.intel.analytics.bigdl</groupId>
     <artifactId>bigdl-parent</artifactId>
     <packaging>pom</packaging>
-    <version>0.2.0-SNAPSHOT</version>
+    <version>0.3.0-SNAPSHOT</version>
 
     <name>BigDL</name>
     <description>A distributed deep learning library for Apache Spark.</description>
@@ -591,6 +591,7 @@
             <id>win64</id>
             <properties>
                 <mkl-java-os-version>mkl-java-win64</mkl-java-os-version>
+                <os-flag>win64</os-flag>
             </properties>
         </profile>
         <profile>

@@ -158,7 +158,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
 
   private def fromCaffeFlatten(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val layerName = getLayerName(layer)
-    Seq(FlattenTable[T].setName(layerName).inputs())
+    Seq(InferReshape[T](Array(0, -1)).setName(layerName).inputs())
   }
 
   private def fromCaffeLog(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
@@ -212,7 +212,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
     val param = getEltWiseParam(layer).get
     val layerName = getLayerName(layer)
     val opsType = param.getOperation
-    val coeff2 = param.getCoeff(1)
+    val coeff2 = if (param.getCoeffCount == 0) 1 else param.getCoeff(0)
     val ops = opsType match {
       case EltwiseOp.PROD => CMulTable[T]().setName(layerName).inputs()
       case EltwiseOp.MAX => CMaxTable[T]().setName(layerName).inputs()
@@ -286,7 +286,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
         toCaffeBatchNormalization(moduleNode, bottoms, nextSize)
       case joinTable : JoinTable[_] => toCaffeConcat(moduleNode, bottoms, nextSize)
       case elu : ELU[_] => toCaffeElu(moduleNode, bottoms, nextSize)
-      case flatternTable : FlattenTable[_] => toCaffeFlattern(moduleNode, bottoms, nextSize)
+      case infershape : InferReshape[_] => toCaffeFlattern(moduleNode, bottoms, nextSize)
       case log : Log[_] => toCaffeLog(moduleNode, bottoms, nextSize)
       case power : Power[_] => toCaffePower(moduleNode, bottoms, nextSize)
       case prelu : PReLU[_] => toCaffePReLu(moduleNode, bottoms, nextSize)
@@ -399,7 +399,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
 
   protected def toCaffeConvolutionParam(module : AbstractModule[Activity, Tensor[T], T])
   : mutable.HashMap[String, Int] = {
-    var map = new mutable.HashMap[String, Int]()
+    val map = new mutable.HashMap[String, Int]()
     val layer = classOf[SpatialConvolution[T]].cast(module)
     val nInputPlane = layer.nInputPlane
     val nOutputPlane = layer.nOutputPlane
@@ -419,6 +419,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
     map("padW") = padW
     map("padH") = padH
     map("ngroup") = ngroup
+    map("withBias") = if (layer.withBias) 1 else 0
     map
   }
 
@@ -516,6 +517,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
     var i = 0
     while (i < size.length) {
       shapeBlob.setDim(i, size(i))
+      i += 1
     }
     shapeBlob.build
   }

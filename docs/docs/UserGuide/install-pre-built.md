@@ -1,9 +1,9 @@
-### **Download a pre-built library**
+## **Download a pre-built library**
 
-You can download the BigDL release (currently v0.1.0) and nightly build from the [Release Page](/release)
+You can download the BigDL release and nightly build from the [Release Page](../release-download.md)
 
-
-### **Link with a release version**
+---
+## **Link with a release version**
 
 Currently, BigDL releases are hosted on maven central; here's an example to add the BigDL dependency to your own project:
 ```xml
@@ -17,7 +17,7 @@ SBT developers can use
 ```sbt
 libraryDependencies += "com.intel.analytics.bigdl" % "bigdl" % "${BIGDL_VERSION}"
 ```
-Since currently only BigDL 0.1.0 is released, ${BIGDL_VERSION} must be set to 0.1.0 here.
+You can find the optional `${BIGDL_VERSION}` from the [Release Page](../release-download.md).
 
 *Note*: the BigDL lib default supports Spark 1.5.x and 1.6.x; if your project runs on Spark 2.0 and 2.1, use this
 ```xml
@@ -53,11 +53,11 @@ libraryDependencies += "com.intel.analytics.bigdl.native" % "mkl-java-mac" % "${
 ```
 
 --- 
-### Link with a development version
+## **Link with a development version**
 
 Currently, BigDL development version is hosted on [SonaType](https://oss.sonatype.org/content/groups/public/com/intel/analytics/bigdl/). 
 
-To link your application with the latest BigDL development version, you should add some dependencies like [Linking with BigDL releases](#linking-with-bigdl-releases), but set ${BIGDL_VERSION} to 0.2.0-SNAPSHOT, and add below repository to your pom.xml.
+To link your application with the latest BigDL development version, you should add some dependencies like [Linking with BigDL releases](#link-with-a-release-version), but set `${BIGDL_VERSION}` to `0.3.0-SNAPSHOT`, and add below repository to your pom.xml.
 
 ```xml
 <repository>

@@ -56,8 +56,10 @@ object Train {
     val labelPadding = -1f
     val glovePath = s"$DATA_DIR/glove/glove.840B.300d.txt"
     val vocabPath = s"$DATA_DIR/sst/vocab-cased.txt"
+    log.info("Start loading embeddings\n")
     val (word2VecTensor, vocab) =
-      loadEmbeddingAndVocabulary(glovePath, vocabPath, indexFrom)
+      loadEmbeddingAndVocabulary(sc, glovePath, vocabPath, indexFrom)
+    log.info("Finish loading embeddings\n")
 
     val vocabBC = sc.broadcast(vocab)
     val (trainTreeRDD, trainLabelRDD, trainSentenceRDD) = preProcessData(
@@ -67,7 +69,7 @@ object Train {
       s"$DATA_DIR/sst/train/parents.txt",
       s"$DATA_DIR/sst/train/labels.txt",
       s"$DATA_DIR/sst/train/sents.txt")
-    println(
+    log.info(
       s"""
          |train treeRDD count: ${trainTreeRDD.count()}
          |train labelRDD count: ${trainLabelRDD.count()}
@@ -81,7 +83,7 @@ object Train {
       s"$DATA_DIR/sst/dev/parents.txt",
       s"$DATA_DIR/sst/dev/labels.txt",
       s"$DATA_DIR/sst/dev/sents.txt")
-    println(
+    log.info(
       s"""
          |dev treeRDD count: ${devTreeRDD.count()}
          |dev labelRDD count: ${devLabelRDD.count()}

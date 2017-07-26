@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Still in experimental stage!
 
 from bigdl.nn.layer import *
 from bigdl.nn.initialization_method import *
@@ -317,6 +316,10 @@ class TestWorkFlow(unittest.TestCase):
                                  [-0.5906958], [-0.12307882], [-0.77907401]], dtype="float32")
         for i in range(0, total_length):
             self.assertTrue(np.allclose(p[i], ground_label[i], atol=1e-6, rtol=0))
+        predict_class = model.predict_class(predict_data)
+        predict_labels = predict_class.take(6)
+        for i in range(0, total_length):
+            self.assertTrue(predict_labels[i] == 1)
 
     def test_rng(self):
         rng = RNG()
