@@ -1141,7 +1141,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                                   padT: Int = 0,
                                   padW: Int = 0,
                                   padH: Int = 0,
-                                  withBias: Boolean = true)
+                                  withBias: Boolean = true,
+                                  wRegularizer: Regularizer[T] = null,
+                                  bRegularizer: Regularizer[T] = null)
   : VolumetricConvolution[T] = {
     VolumetricConvolution[T](nInputPlane,
       nOutputPlane,
@@ -1154,7 +1156,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       padT,
       padW,
       padH,
-      withBias)
+      withBias,
+      wRegularizer,
+      bRegularizer)
   }
 
   def createVolumetricMaxPooling(kT: Int,
