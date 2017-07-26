@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.utils.caffe
 import scala.collection.JavaConverters._
 import caffe.Caffe
 import caffe.Caffe.EltwiseParameter.EltwiseOp
+import caffe.Caffe.LRNParameter.NormRegion
 import caffe.Caffe.{BlobProto, PoolingParameter, _}
 import com.google.protobuf.GeneratedMessage
 import com.intel.analytics.bigdl.nn.Graph._
@@ -250,7 +251,7 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
     // copy weight and bias
     val (weightBuilder, biasBuilder) = copyParam(module)
 
-    val (localSize, alpha, belta, k) = toCaffeLRNParam(module)
+    val (localSize, alpha, belta, k, lrnType) = toCaffeLRNParam(module)
 
     val lrnParameter = LRNParameter.newBuilder()
 
@@ -258,6 +259,11 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
     lrnParameter.setAlpha(alpha.toFloat)
     lrnParameter.setBeta(belta.toFloat)
     lrnParameter.setK(k.toFloat)
+    if (lrnType == SpatialCrossMapLRN.getClass.getSimpleName) {
+      lrnParameter.setNormRegion(NormRegion.ACROSS_CHANNELS)
+    } else if (lrnType == SpatialWithinChannelLRN.getClass.getSimpleName) {
+      lrnParameter.setNormRegion(NormRegion.WITHIN_CHANNEL)
+    }
 
     setBlobs(layerParameter, weightBuilder, biasBuilder)
 
