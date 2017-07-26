@@ -149,36 +149,29 @@ class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter{
   }
 
   "Load tensorflow lenet to/from HDFS" should "works properly" in {
-    val conv1 = SpatialConvolution(1, 6, 5, 5).setName("conv1").inputs()
-    val tanh1 = Tanh().setName("tanh1").inputs(conv1)
-    val pool1 = SpatialMaxPooling(2, 2, 2, 2).setName("pool1").inputs(tanh1)
-    val tanh2 = Tanh().setName("tanh2").inputs(pool1)
-    val conv2 = SpatialConvolution(6, 12, 5, 5).setName("conv2").inputs(tanh2)
-    val pool2 = SpatialMaxPooling(2, 2, 2, 2).setName("output").inputs(conv2)
+    System.setProperty("bigdl.enableNHWC", "true")
+    val conv1 = SpatialConvolution[Float](1, 6, 5, 5).setName("conv1").inputs()
+    val tanh1 = Tanh[Float]().setName("tanh1").inputs(conv1)
+    val pool1 = SpatialMaxPooling[Float](2, 2, 2, 2).setName("pool1").inputs(tanh1)
+    val tanh2 = Tanh[Float]().setName("tanh2").inputs(pool1)
+    val conv2 = SpatialConvolution[Float](6, 12, 5, 5).setName("conv2").inputs(tanh2)
+    val pool2 = SpatialMaxPooling[Float](2, 2, 2, 2).setName("output").inputs(conv2)
 
-    val funcModel = Graph(conv1, pool2)
-    val inputData = Tensor(4, 1, 28, 28).rand()
-    val transInput = inputData.transpose(2, 3).transpose(3, 4).contiguous()
-    val outputData = funcModel.forward(inputData).toTensor
+    val funcModel = Graph[Float](conv1, pool2)
+    val inputData = Tensor[Float](4, 1, 28, 28).rand()
+    val outputData = funcModel.forward(inputData).toTensor[Float]
 
-    val tmpFile = java.io.File.createTempFile("tensorflowSaverTest" + UUID.randomUUID(), "lenet")
-    TensorflowSaver.saveGraphWitNodeDef(
-      funcModel,
-      Seq(Tensorflow.const(transInput, "input", ByteOrder.LITTLE_ENDIAN)),
-      tmpFile.getPath,
-      ByteOrder.LITTLE_ENDIAN,
-      Set(Tensorflow.const(outputData.transpose(2, 3).transpose(3, 4).contiguous(),
-        "target", ByteOrder.LITTLE_ENDIAN))
-    )
+    val hdfsDir = hdfs + s"/${ com.google.common.io.Files.createTempDir().getPath() }"
+    TensorflowSaver.saveGraph[Float](funcModel, Seq(("input", Seq(4, 28, 28, 1))), hdfsDir)
 
 
-    // val loadedModel = TensorflowLoader.load(tmpFile.getPath,
-    //   Seq("input"),
-    //   Seq("output"),
-    //   ByteOrder.LITTLE_ENDIAN)
-    // val loadedOutput = loadedModel.forward(inputData).toTensor
-    // loadedOutput.almostEqual(outputData, 1e-7)
-
+    val loadedModel = TensorflowLoader.load[Float](hdfsDir,
+      Seq("input"),
+      Seq("output"),
+      ByteOrder.LITTLE_ENDIAN)
+    val loadedOutput = loadedModel.forward(inputData).toTensor[Float]
+    loadedOutput.almostEqual(outputData, 1e-7)
+    System.setProperty("bigdl.enableNHWC", "false")
   }
 
   "Persist and Load Caffe to/from HDFS" should "works properly" in {
