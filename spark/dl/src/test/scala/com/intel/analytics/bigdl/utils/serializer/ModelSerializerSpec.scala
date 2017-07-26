@@ -16,13 +16,16 @@
 package com.intel.analytics.bigdl.utils.serializer
 
 import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.example.loadmodel.AlexNet
+import com.intel.analytics.bigdl.models.inception.Inception_v1_NoAuxClassifier
 import com.intel.analytics.bigdl.nn.{PairwiseDistance, ParallelTable, SpatialAveragePooling, TemporalConvolution, TimeDistributed, VolumetricConvolution, _}
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
-import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.utils.{RandomGenerator, T, Table}
+import org.apache.spark.ml.feature.Intercept
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.reflect.ClassTag
@@ -1725,7 +1728,6 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     val res2 = loadedVolumetricMaxPooling.forward(input1)
     res1 should be (res2)
   }
-
   "Customized Module " should "work properly" in {
     val testModule = new TestModule(1.0)
     ModuleSerializer.registerModule("test module",
@@ -1739,7 +1741,6 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     val res2 = loadedModule.forward(tensor2)
     res1 should be (res2)
   }
-
 }
 
 class TestModule[T: ClassTag](val constant_scalar: Double)

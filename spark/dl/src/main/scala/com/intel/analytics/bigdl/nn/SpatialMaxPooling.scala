@@ -20,9 +20,11 @@ import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Engine
-import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
+import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData, ModuleSerializable}
+import serialization.Model.{AttrValue, BigDLModule}
 
 import scala.reflect._
+import scala.reflect.runtime.universe
 
 /**
  * Applies 2D max-pooling operation in kWxkH regions by step size dWxdH steps.
@@ -296,5 +298,28 @@ object SpatialMaxPooling extends ModuleSerializable {
       padW: Int = 0,
       padH: Int = 0)(implicit ev: TensorNumeric[T]): SpatialMaxPooling[T] = {
     new SpatialMaxPooling[T](kW, kH, dW, dH, padW, padH)
+  }
+
+  override def loadModule[T: ClassTag](model : BigDLModule)
+                                      (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
+    val maxPoolingModuleData = super.loadModule(model)
+    val attrMap = model.getAttrMap
+    val ceil_mode = DataConverter.
+      getAttributeValue(attrMap.get("ceil_mode")).
+      asInstanceOf[Boolean]
+    if (ceil_mode) {
+      maxPoolingModuleData.module.asInstanceOf[SpatialMaxPooling[T]].ceil()
+    }
+    maxPoolingModuleData
+  }
+
+  override def serializeModule[T: ClassTag](module : ModuleData[T])
+                                           (implicit ev: TensorNumeric[T]) : BigDLModule = {
+    val maxPoolingBuilder = BigDLModule.newBuilder(super.serializeModule(module))
+    val maxPooling = module.module.asInstanceOf[SpatialMaxPooling[T]]
+    val ceilBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(ceilBuilder, maxPooling.ceil_mode, universe.typeOf[Boolean])
+    maxPoolingBuilder.putAttr("ceil_mode", ceilBuilder.build)
+    maxPoolingBuilder.build
   }
 }
