@@ -31,7 +31,8 @@ import scala.reflect.ClassTag
  * @param beta the exponent
  * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
  */
-class SpatialWithinChannelLRN[@specialized(Float, Double) T: ClassTag]
+@SerialVersionUID(1266310321934331395L)
+class SpatialWithinChannelLRN[T: ClassTag]
 (val size: Int = 5, val alpha: Double = 1.0, val beta: Double = 0.75)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
