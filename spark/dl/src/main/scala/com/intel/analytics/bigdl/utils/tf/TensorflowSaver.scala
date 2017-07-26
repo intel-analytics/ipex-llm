@@ -124,6 +124,7 @@ object TensorflowSaver {
   private val logger = Logger.getLogger(getClass)
 
   private val maps = mutable.Map[String, BigDLToTensorflow](
+    getNameFromObj(TemporalConvolution.getClass.getName) -> TemporalConvolutionToTF,
     getNameFromObj(ReLU.getClass.getName) -> ReLUToTF,
     getNameFromObj(Linear.getClass.getName) -> LinearToTF,
     getNameFromObj(SpatialConvolution.getClass.getName) -> SpatialConvolutionToTF,

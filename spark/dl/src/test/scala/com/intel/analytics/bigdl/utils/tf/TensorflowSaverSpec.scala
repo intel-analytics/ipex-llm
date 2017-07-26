@@ -155,6 +155,12 @@ class TensorflowSaverSpec extends TensorflowSpecHelper {
     test(layer, input, true, "/biasAdd") should be(true)
   }
 
+  "TemporalConvolution" should "be correctly saved" in {
+    val layer = TemporalConvolution(3, 5, 2, 2)
+    val input = Tensor[Float](4, 16, 3).rand()
+    test(layer, input, false, "/biasAdd") should be(true)
+  }
+
   "Mean" should "be correctly saved" in {
     val layer = Mean(1, -1, true)
     val input = Tensor[Float](4, 5).rand()
