@@ -3623,7 +3623,7 @@ class SpatialWithinChannelLRN(Layer):
 
     def __init__(self,
                  size=5,
-                 alpha=1,
+                 alpha=1.0,
                  beta=0.75,
                  bigdl_type="float"):
         super(SpatialWithinChannelLRN, self).__init__(None, bigdl_type,
