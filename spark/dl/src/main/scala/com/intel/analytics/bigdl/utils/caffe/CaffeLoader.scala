@@ -133,43 +133,45 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
     builder.clearLayer
 
     v1Layers.foreach(v1Layer => {
-      val v1LayerBuilder = V1LayerParameter.newBuilder(v1Layer)
-      val name = v1LayerBuilder.getName
+      val name = v1Layer.getName
       if (layers.contains(name)) {
-        v1LayerBuilder.clearBlobs
         var weightLayer = layers(name)
-        if (weightLayer.isInstanceOf[V1LayerParameter]) {
-          weightLayer.asInstanceOf[V1LayerParameter].getBlobsList.asScala.foreach(
-            blob => v1LayerBuilder.addBlobs(blob)
-          )
-        } else {
-          weightLayer.asInstanceOf[LayerParameter].getBlobsList.asScala.foreach(
-            blob => v1LayerBuilder.addBlobs(blob)
-          )
-        }
+        builder.addLayers(copyBlobs(weightLayer, v1Layer).asInstanceOf[V1LayerParameter])
+      } else {
+        builder.addLayers(v1Layer)
       }
-      builder.addLayers(v1LayerBuilder.build)
     })
 
     v2Layers.foreach(v2Layer => {
-      val v2LayerBuilder = LayerParameter.newBuilder(v2Layer)
-      val name = v2LayerBuilder.getName
+      val name = v2Layer.getName
       if (layers.contains(name)) {
-        v2LayerBuilder.clearBlobs
         var weightLayer = layers(name)
-        if (weightLayer.isInstanceOf[V1LayerParameter]) {
-          weightLayer.asInstanceOf[V1LayerParameter].getBlobsList.asScala.foreach(
-            blob => v2LayerBuilder.addBlobs(blob)
-          )
-        } else {
-          weightLayer.asInstanceOf[LayerParameter].getBlobsList.asScala.foreach(
-            blob => v2LayerBuilder.addBlobs(blob)
-          )
-        }
+        builder.addLayer(copyBlobs(weightLayer, v2Layer).asInstanceOf[LayerParameter])
+      } else {
+        builder.addLayer(v2Layer)
       }
-      builder.addLayer(v2LayerBuilder.build)
     })
     builder.build
+  }
+
+  private def copyBlobs(from : GeneratedMessage, to : GeneratedMessage): GeneratedMessage = {
+    val blobList = from match {
+      case v1 : V1LayerParameter => v1.asInstanceOf[V1LayerParameter].getBlobsList.asScala
+      case v2 : LayerParameter => v2.asInstanceOf[LayerParameter].getBlobsList.asScala
+    }
+    val layer = to match {
+      case v1 : V1LayerParameter =>
+        val layerBuilder = V1LayerParameter.newBuilder(to.asInstanceOf[V1LayerParameter])
+        layerBuilder.clearBlobs
+        blobList.foreach(blob => layerBuilder.addBlobs(blob))
+        layerBuilder.build
+      case v2 : LayerParameter =>
+        val layerBuilder = LayerParameter.newBuilder(to.asInstanceOf[LayerParameter])
+        layerBuilder.clearBlobs
+        blobList.foreach(blob => layerBuilder.addBlobs(blob))
+        layerBuilder.build
+    }
+    layer.asInstanceOf[GeneratedMessage]
   }
 
   private def getBlob(name: String, ind: Int): Option[Caffe.BlobProto] = {
