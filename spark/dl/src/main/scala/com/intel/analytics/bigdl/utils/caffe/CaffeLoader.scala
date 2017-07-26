@@ -98,14 +98,15 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
       prototxtStream = prototxtFr.open()
       prototxtReader = new InputStreamReader(prototxtStream, "ASCII")
 
-      val builder = NetParameter.newBuilder
-      TextFormat.merge(prototxtReader, builder)
+      val netBuilder = NetParameter.newBuilder
+      TextFormat.merge(prototxtReader, netBuilder)
       logger.info(s"start loading caffe model from $modelPath")
       val cis = CodedInputStream.newInstance(modelStream)
       cis.setSizeLimit(Integer.MAX_VALUE)
-      builder.mergeFrom(cis)
+      val weightBuilder = NetParameter.newBuilder
+      weightBuilder.mergeFrom(cis)
       logger.info("load caffe model done")
-      builder.build()
+      mergeNetWithParams(netBuilder.build, weightBuilder.build)
     } finally {
       if (null != prototxtReader) prototxtReader.close()
       if (null != modelStream) modelStream.close()
@@ -113,6 +114,62 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
       if (modelFr != null) modelFr.close()
       if (prototxtFr != null) prototxtFr.close()
     }
+  }
+
+  private def mergeNetWithParams(net : NetParameter, weights : NetParameter): NetParameter = {
+
+    val builder = NetParameter.newBuilder(net)
+    val layers = new mutable.HashMap[String, GeneratedMessage]
+    val v1Layers = new ArrayBuffer[V1LayerParameter]
+    val v2Layers = new ArrayBuffer[LayerParameter]
+
+    net.getLayersList.asScala.foreach(v1Layer => v1Layers.append(v1Layer))
+    net.getLayerList.asScala.foreach(v2Layer => v2Layers.append(v2Layer))
+
+    weights.getLayersList.asScala.foreach(v1Layer => layers(v1Layer.getName) = v1Layer)
+    weights.getLayerList.asScala.foreach(v2Layer => layers(v2Layer.getName) = v2Layer)
+
+    builder.clearLayers
+    builder.clearLayer
+
+    v1Layers.foreach(v1Layer => {
+      val v1LayerBuilder = V1LayerParameter.newBuilder(v1Layer)
+      val name = v1LayerBuilder.getName
+      if (layers.contains(name)) {
+        v1LayerBuilder.clearBlobs
+        var weightLayer = layers(name)
+        if (weightLayer.isInstanceOf[V1LayerParameter]) {
+          weightLayer.asInstanceOf[V1LayerParameter].getBlobsList.asScala.foreach(
+            blob => v1LayerBuilder.addBlobs(blob)
+          )
+        } else {
+          weightLayer.asInstanceOf[LayerParameter].getBlobsList.asScala.foreach(
+            blob => v1LayerBuilder.addBlobs(blob)
+          )
+        }
+      }
+      builder.addLayers(v1LayerBuilder.build)
+    })
+
+    v2Layers.foreach(v2Layer => {
+      val v2LayerBuilder = LayerParameter.newBuilder(v2Layer)
+      val name = v2LayerBuilder.getName
+      if (layers.contains(name)) {
+        v2LayerBuilder.clearBlobs
+        var weightLayer = layers(name)
+        if (weightLayer.isInstanceOf[V1LayerParameter]) {
+          weightLayer.asInstanceOf[V1LayerParameter].getBlobsList.asScala.foreach(
+            blob => v2LayerBuilder.addBlobs(blob)
+          )
+        } else {
+          weightLayer.asInstanceOf[LayerParameter].getBlobsList.asScala.foreach(
+            blob => v2LayerBuilder.addBlobs(blob)
+          )
+        }
+      }
+      builder.addLayer(v2LayerBuilder.build)
+    })
+    builder.build
   }
 
   private def getBlob(name: String, ind: Int): Option[Caffe.BlobProto] = {
