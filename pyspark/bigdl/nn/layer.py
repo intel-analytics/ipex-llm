@@ -1158,7 +1158,7 @@ class SpatialCrossMapLRN(Layer):
     l1 corresponds to max(0,f-ceil(size/2)) and l2 to min(F, f-ceil(size/2) + size).
     Here, F is the number of feature maps.
 
-    :param size:  the number of channels to sum over (for cross channel LRN) or the side length ofthe square region to sum over (for within channel LRN)
+    :param size:  the number of channels to sum over
     :param alpha:  the scaling parameter
     :param beta:   the exponent
     :param k: a constant
@@ -3609,6 +3609,31 @@ class SpatialSubtractiveNormalization(Layer):
                                                               n_input_plane,
                                                               JTensor.from_ndarray(kernel))
 
+
+class SpatialWithinChannelLRN(Layer):
+    '''
+    The local response normalization layer performs a kind of lateral inhibition
+    by normalizing over local input regions. the local regions extend spatially,
+    in separate channels (i.e., they have shape 1 x local_size x local_size).
+
+    :param size  the side length of the square region to sum over
+    :param alpha the scaling parameter
+    :param beta the exponent
+
+
+    >>> layer = SpatialWithinChannelLRN()
+    creating: createSpatialWithinChannelLRN
+    '''
+
+    def __init__(self,
+                 size=5,
+                 alpha=1.0,
+                 beta=0.75,
+                 bigdl_type="float"):
+        super(SpatialWithinChannelLRN, self).__init__(None, bigdl_type,
+                                                      size,
+                                                      alpha,
+                                                      beta)
 
 class Pack(Layer):
     '''

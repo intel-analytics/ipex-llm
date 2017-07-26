@@ -280,6 +280,91 @@ spatialCrossMapLRN = SpatialCrossMapLRN(5, 0.01, 0.75, 1.0)
      
 ```
 ---
+## SpatialWithinChannelLRN ##
+
+**Scala:**
+```scala
+val spatialWithinChannelLRN = SpatialWithinChannelLRN(size = 5, alpha  = 1.0, beta = 0.75)
+```
+**Python:**
+```python
+spatialWithinChannelLRN = SpatialWithinChannelLRN(size=5, alpha=1.0, beta=0.75)
+```
+
+SpatialWithinChannelLRN performs a kind of “lateral inhibition”
+by normalizing over local input regions. the local regions extend spatially,
+in separate channels (i.e., they have shape 1 x size x size).
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor._
+val spatialWithinChannelLRN = SpatialWithinChannelLRN(5, 0.01, 0.75)
+
+val input = Tensor(2, 2, 2, 2).rand()
+
+> print(input)
+(1,1,.,.) =
+0.8658837       0.1297312
+0.7559588       0.039047405
+
+(1,2,.,.) =
+0.79211944      0.84445393
+0.8854509       0.6596644
+
+(2,1,.,.) =
+0.96907943      0.7036902
+0.90358996      0.5719087
+
+(2,2,.,.) =
+0.52309155      0.8838519
+0.44981572      0.40950212
+
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x2x2x2]
+
+> print(spatialWithinChannelLRN.forward(input))
+(1,1,.,.) =
+0.8655359       0.12967908      
+0.75565517      0.03903172      
+
+(1,2,.,.) =
+0.7915117       0.843806        
+0.8847715       0.6591583       
+
+(2,1,.,.) =
+0.9683307       0.70314646      
+0.9028918       0.5714668       
+
+(2,2,.,.) =
+0.52286804      0.8834743       
+0.44962353      0.40932715      
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x2x2]
+
+```
+
+**Python example:**
+```python
+from bigdl.nn.layer import *
+spatialWithinChannelLRN = SpatialWithinChannelLRN(5, 0.01, 0.75)
+> spatialWithinChannelLRN.forward(np.array([[[[1, 2],[3, 4]],[[5, 6],[7, 8]]],[[[9, 10],[11, 12]],[[13, 14],[15, 16]]]]))
+array([[[[  0.99109352,   1.98218703],
+         [  2.97328043,   3.96437407]],
+
+        [[  4.75394297,   5.70473146],
+         [  6.65551996,   7.60630846]]],
+
+
+       [[[  7.95743227,   8.84159184],
+         [  9.72575092,  10.60991001]],
+
+        [[ 10.44729614,  11.2509346 ],
+         [ 12.05457211,  12.85821056]]]], dtype=float32)
+
+     
+```
+---
 ## Normalize ##
 
 **Scala:**
