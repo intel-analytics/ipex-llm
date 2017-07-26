@@ -5,8 +5,7 @@
 val layer = LookupTable(nIndex: Int, nOutput: Int, paddingValue: Double = 0,
                                  maxNorm: Double = Double.MaxValue,
                                  normType: Double = 2.0,
-                                 shouldScaleGradByFreq: Boolean = false,
-                                 wRegularizer: Regularizer[T] = null)
+                                 shouldScaleGradByFreq: Boolean = false)
 ```
 
 **Python:**

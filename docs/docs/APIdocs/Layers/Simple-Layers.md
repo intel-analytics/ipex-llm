@@ -5,13 +5,8 @@
 val module = Linear(
   inputSize,
   outputSize,
-  withBias = true,
-  wRegularizer = null,
-  bRegularizer = null,
-  initWeight = null,
-  initBias = null,
-  initGradWeight = null,
-  initGradBias = null)
+  initMethod = Default,
+  withBias = true)
 ```
 **Python:**
 ```python
@@ -19,13 +14,7 @@ module = Linear(
   input_size,
   output_size,
   init_method="default",
-  with_bias=True,
-  wRegularizer=None,
-  bRegularizer=None,
-  init_weight=None,
-  init_bias=None,
-  init_grad_weight=None,
-  init_grad_bias=None)
+  with_bias=True)
 ```
 
 The `Linear` module applies a linear transformation to the input data,

@@ -129,11 +129,11 @@ array([[[ 0.69091094,  0.97150528,  0.9562254 ,  1.14894259],
 
 **Scala:**
 ```scala
-val rnnCell = RnnCell[Double](inputSize, hiddenSize, activation, wRegularizer, uRegularizer, bRegularizer)
+val rnnCell = RnnCell[Double](inputSize, hiddenSize, activation)
 ```
 **Python:**
 ```python
-rnnCell = RnnCell(input_size, hidden_size, Tanh(), w_regularizer, u_regularizer, b_regularizer)
+rnnCell = RnnCell(input_size, hidden_size, Tanh())
 ```
 
 Implementation of vanilla recurrent neural network cell
@@ -152,9 +152,6 @@ Parameters:
 * `inputSize` input size. Default: 4
 * `hiddenSize`  hidden layer size. Default: 3
 * `activation` activation function f for non-linearity
-* `wRegularizer` instance of `Regularizer`(eg. L1 or L2 regularization), applied to the input weights matrices. Default: null
-* `uRegularizer` instance of `Regularizer`(eg. L1 or L2 regularization), applied to the recurrent weights matrices. Default: null
-* `bRegularizer` instance of `Regularizer`(eg. L1 or L2 regularization), applied to the bias. Default: null
 
 **Scala example:**
 ```scala
@@ -358,21 +355,13 @@ model.backward(input, gradInput)
 ```scala
 val model = LSTMPeephole(
   inputSize = 4,
-  hiddenSize = 3,
-  p = 0.0,
-  wRegularizer = null,
-  uRegularizer = null,
-  bRegularizer = null)
+  hiddenSize = 3)
 ```
 **Python:**
 ```python
 model = LSTMPeephole(
   input_size,
-  hidden_size,
-  p=0.0,
-  wRegularizer=None,
-  uRegularizer=None,
-  bRegularizer=None)
+  hidden_sizee)
 ```
 
 Long Short Term Memory architecture with peephole.
@@ -386,17 +375,6 @@ Ref.
 Parameters:
 * `inputSize` the size of each input vector
 * `hiddenSize` Hidden unit size in the LSTM
-* `p` is used for [[Dropout]] probability. For more details about
-           RNN dropouts, please refer to
-           [RnnDrop: A Novel Dropout for RNNs in ASR]
-           (http://www.stat.berkeley.edu/~tsmoon/files/Conference/asru2015.pdf)
-           [A Theoretically Grounded Application of Dropout in Recurrent Neural Networks]
-           (https://arxiv.org/pdf/1512.05287.pdf)
-* `wRegularizer` instance of [[Regularizer]]
-                   (eg. L1 or L2 regularization), applied to the input weights matrices.
-* `uRegularizer` instance [[Regularizer]]
-          (eg. L1 or L2 regularization), applied to the recurrent weights matrices.
-* `bRegularizer` instance of [[Regularizer]] applied to the bias.
 
 **Scala example:**
 ```scala
@@ -478,11 +456,11 @@ output = model.forward(input)
 
 **Scala:**
 ```scala
-val gru = GRU(inputSize, outputSize, p, wRegularizer, uRegularizer, bRegularizer)
+val gru = GRU(inputSize, outputSize)
 ```
 **Python:**
 ```python
-gru = GRU(inputSize, outputSize, p, w_regularizer, u_regularizer, b_regularizer)
+gru = GRU(inputSize, outputSize)
 ```
 
 Gated Recurrent Units architecture. The first input in sequence uses zero value for cell and hidden state.
@@ -497,13 +475,6 @@ Parameters:
 
 * `inputSize` the size of each input vector
 * `outputSize` hidden unit size in GRU
-* `p` is used for [[Dropout]] probability. For more details about
-          RNN dropouts, please refer to
-           [RnnDrop: A Novel Dropout for RNNs in ASR](http://www.stat.berkeley.edu/~tsmoon/files/Conference/asru2015.pdf)
-            and [A Theoretically Grounded Application of Dropout in Recurrent Neural Networks](https://arxiv.org/pdf/1512.05287.pdf). Default: 0.0
-* `wRegularizer` instance of `Regularizer`(eg. L1 or L2 regularization), applied to the input weights matrices. Default: null
-* `uRegularizer` instance of `Regularizer`(eg. L1 or L2 regularization), applied to the recurrent weights matrices. Default: null
-* `bRegularizer` instance of `Regularizer`(eg. L1 or L2 regularization), applied to the bias. Default: null
 
 **Scala example:**
 ```scala
