@@ -266,4 +266,11 @@ class SpatialAveragePoolingSpec extends FlatSpec with Matchers {
     val checker = new GradientChecker(1e-4, 1e-2)
     checker.checkLayer[Float](module, input) should be(true)
   }
+
+  "A SpatialAvgPooling with globalpooling" should "work properly" in {
+    val module = new SpatialAveragePooling[Float](2, 2, globalPooling = true)
+    val input = Tensor[Float](1, 3, 3).rand()
+    val module2 = new SpatialAveragePooling[Float](3, 3)
+    module.forward(input) should be (module2.forward(input))
+  }
 }
