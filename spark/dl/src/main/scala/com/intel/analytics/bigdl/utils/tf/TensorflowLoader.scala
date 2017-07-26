@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.utils.tf
 
-import java.io.{DataInputStream, FileInputStream}
+import java.io.{DataInputStream, FileInputStream, InputStream}
 import java.nio.ByteOrder
 import java.util
 
@@ -28,9 +28,8 @@ import com.intel.analytics.bigdl.nn.Graph
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{DirectedGraph, Node}
+import com.intel.analytics.bigdl.utils.{DirectedGraph, File, FileReader, Node}
 import com.intel.analytics.bigdl.utils.tf.TensorflowToBigDL._
-import com.intel.analytics.bigdl.utils.File
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -67,15 +66,21 @@ object TensorflowLoader{
    * @return
    */
   private[bigdl] def parse(graphProtoTxt: String) : List[NodeDef] = {
-    val f = File.getInputStream(graphProtoTxt).getOrElse(null)
-    require(f != null, graphProtoTxt + " does not exists")
+    var fr: FileReader = null
+    var in: InputStream = null
+    try {
+      fr = FileReader(graphProtoTxt)
+      in = fr.open()
+      val reader = CodedInputStream.newInstance(new DataInputStream(in))
+      reader.setSizeLimit(0x7fffffff)
 
-    val reader = CodedInputStream.newInstance(new DataInputStream(f))
-    reader.setSizeLimit(0x7fffffff)
+      val graph = GraphDef.parseFrom(reader)
+      graph.getNodeList
+    } finally {
+      if (fr != null) fr.close()
+      if (in != null) in.close()
+    }
 
-    val graph = GraphDef.parseFrom(reader)
-    f.close()
-    graph.getNodeList
   }
 
   /**
