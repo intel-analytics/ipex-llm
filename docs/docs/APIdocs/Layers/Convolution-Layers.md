@@ -193,6 +193,10 @@ in forward(input) is expected to be a 4D tensor (nInputPlane x time x height x w
 * `padW` The additional zeros added per width to the input planes.
 * `padH` The additional zeros added per height to the input planes.
 * `withBias` whether with bias.
+* `wRegularizer` instance of [[Regularizer]]
+                   (eg. L1 or L2 regularization), applied to the input weights matrices.
+* `bRegularizer` instance of [[Regularizer]]
+                   applied to the bias.
  
 **Scala example:**
 ```scala
