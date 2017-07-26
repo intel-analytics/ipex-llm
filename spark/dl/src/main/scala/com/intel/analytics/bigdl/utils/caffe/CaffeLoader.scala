@@ -37,7 +37,7 @@ abstract class Customizable[T: ClassTag](implicit ev: TensorNumeric[T]) {
   var contexts: Map[String, Any] = _
   def convertor(layer: GeneratedMessage): Seq[ModuleNode[T]]
 
-  def registorContext(name: String, context: Any): Unit = {
+  def registerContext(name: String, context: Any): Unit = {
     if (contexts == null) {
       contexts = Map[String, Any]()
     }
@@ -74,8 +74,9 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
       customizedConverters.foreach(entry => {
         layerConverter.registerCutomizedConverter(entry._1, entry._2.convertor)
         v1layerConverter.registerCutomizedConverter(entry._1, entry._2.convertor)
-        entry._2.registorContext("name2LayerV1", name2LayerV1)
-        entry._2.registorContext("name2LayerV2", name2LayerV2)
+        entry._2.registerContext("name2LayerV1", name2LayerV1)
+        entry._2.registerContext("name2LayerV2", name2LayerV2)
+        entry._2.registerContext("netparam", netparam)
       })
     }
   }
