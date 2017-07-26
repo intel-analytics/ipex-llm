@@ -42,7 +42,7 @@ import scala.reflect.ClassTag
             applied to the bias.
  * @param withPeephole: whether use last cell status control a gate.
  */
-class ConvLSTMPeephole[T : ClassTag] (
+class ConvLSTMPeephole3D[T : ClassTag](
   val inputSize: Int,
   val outputSize: Int,
   val kernelI: Int,
@@ -62,26 +62,16 @@ class ConvLSTMPeephole[T : ClassTag] (
   var outputGate: Sequential[T] = _
   var hiddenLayer: Sequential[T] = _
   var cellLayer: Sequential[T] = _
-//  val joinDim = 2
+
   override var cell: AbstractModule[Activity, Activity, T] = buildConvLSTM()
 
-//  override def preTopology: AbstractModule[Activity, Activity, T] =
-//    Sequential()
-//        .add(TimeDistributed(SpatialConvolution(inputSize, outputSize*4, kernelI, kernelI,
-//          stride, stride, kernelI/2, kernelI/2, wRegularizer = wRegularizer,
-//          bRegularizer = bRegularizer)))
-
-//  def buildGate(offset: Int, length: Int): Sequential[T] = {
-//    val i2g = Narrow(joinDim, offset, length)
   def buildGate(): Sequential[T] = {
     val i2g = Sequential()
       .add(Contiguous())
-      .add(SpatialConvolution(inputSize, outputSize, kernelI, kernelI,
-        stride, stride, kernelI/2, kernelI/2, wRegularizer = wRegularizer,
-        bRegularizer = bRegularizer))
-    val h2g = SpatialConvolution(outputSize, outputSize, kernelC, kernelC,
-      stride, stride, kernelC/2, kernelC/2, withBias = false,
-      wRegularizer = uRegularizer)
+      .add(VolumetricConvolution(inputSize, outputSize, kernelI, kernelI, kernelI,
+        stride, stride, stride, kernelI/2, kernelI/2, kernelI/2))
+    val h2g = VolumetricConvolution(outputSize, outputSize, kernelC, kernelC, kernelC,
+      stride, stride, stride, kernelC/2, kernelC/2, kernelC/2, withBias = false)
 
     val gate = Sequential()
     if (withPeephole) {
@@ -89,7 +79,7 @@ class ConvLSTMPeephole[T : ClassTag] (
         .add(ParallelTable()
           .add(i2g)
           .add(h2g)
-          .add(CMul(Array(1, outputSize, 1, 1))))
+          .add(CMul(Array(1, outputSize, 1, 1, 1))))
     } else {
       gate.add(NarrowTable(1, 2))
       gate
@@ -103,19 +93,16 @@ class ConvLSTMPeephole[T : ClassTag] (
   }
 
   def buildInputGate(): Sequential[T] = {
-//    inputGate = buildGate(1 + outputSize, outputSize)
     inputGate = buildGate()
     inputGate
   }
 
   def buildForgetGate(): Sequential[T] = {
-//    forgetGate = buildGate(1, outputSize)
     forgetGate = buildGate()
     forgetGate
   }
 
   def buildOutputGate(): Sequential[T] = {
-//    outputGate = buildGate(1 + 3 * outputSize, outputSize)
     outputGate = buildGate()
     outputGate
   }
@@ -124,15 +111,12 @@ class ConvLSTMPeephole[T : ClassTag] (
     val hidden = Sequential()
       .add(NarrowTable(1, 2))
 
-//    val i2h = Narrow(joinDim, 1 + 2 * outputSize, outputSize)
     val i2h = Sequential()
       .add(Contiguous())
-      .add(SpatialConvolution(inputSize, outputSize, kernelI, kernelI,
-        stride, stride, kernelI/2, kernelI/2, wRegularizer = wRegularizer,
-        bRegularizer = bRegularizer))
-    val h2h = SpatialConvolution(outputSize, outputSize, kernelC, kernelC,
-      stride, stride, kernelC/2, kernelC/2, withBias = false,
-      wRegularizer = uRegularizer)
+      .add(VolumetricConvolution(inputSize, outputSize, kernelI, kernelI, kernelI,
+        stride, stride, stride, kernelI/2, kernelI/2, kernelI/2))
+    val h2h = VolumetricConvolution(outputSize, outputSize, kernelC, kernelC, kernelC,
+      stride, stride, stride, kernelC/2, kernelC/2, kernelC/2, withBias = false)
 
     hidden
       .add(ParallelTable()
@@ -202,10 +186,10 @@ class ConvLSTMPeephole[T : ClassTag] (
     convlstm
   }
 
-  override def canEqual(other: Any): Boolean = other.isInstanceOf[ConvLSTMPeephole[T]]
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[ConvLSTMPeephole2D[T]]
 
   override def equals(other: Any): Boolean = other match {
-    case that: ConvLSTMPeephole[T] =>
+    case that: ConvLSTMPeephole2D[T] =>
       super.equals(that) &&
         (that canEqual this) &&
         inputSize == that.inputSize &&
@@ -227,11 +211,11 @@ class ConvLSTMPeephole[T : ClassTag] (
     cell.reset()
   }
 
-  override def toString: String = s"ConvLSTMPeephole($inputSize, $outputSize," +
+  override def toString: String = s"ConvLSTMPeephole3D($inputSize, $outputSize," +
     s"$kernelI, $kernelC, $stride)"
 }
 
-object ConvLSTMPeephole {
+object ConvLSTMPeephole3D {
   def apply[@specialized(Float, Double) T: ClassTag](
     inputSize: Int,
     outputSize: Int,
@@ -242,8 +226,8 @@ object ConvLSTMPeephole {
     uRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
     withPeephole: Boolean = true
-  )(implicit ev: TensorNumeric[T]): ConvLSTMPeephole[T] = {
-    new ConvLSTMPeephole[T](inputSize, outputSize, kernelI, kernelC, stride,
+  )(implicit ev: TensorNumeric[T]): ConvLSTMPeephole3D[T] = {
+    new ConvLSTMPeephole3D[T](inputSize, outputSize, kernelI, kernelC, stride,
       wRegularizer, uRegularizer, bRegularizer, withPeephole)
   }
 }
