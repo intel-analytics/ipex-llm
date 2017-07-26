@@ -286,3 +286,10 @@ optimizer.set_validation(
 trained_model = optimizer.optimize()
 
 ```
+
+### How BigDL train models in a distributed cluster? ###
+BigDL distributed training is data parallelism. The training data is split among workers and cached in memory. A complete model is also cached on each worker. The model only uses the data of the same worker in the training.
+
+BigDL employs a synchronous distributed training. In each iteration, each worker will sync the latest weights, calculate gradients with local data and local model, sync the gradients and update the weights with a given optimization method(e.g. SGD, Adagrad).
+
+In gradients and weights sync, BigDL doesn't use the RDD APIs like(broadcast, reduce, aggregate, treeAggregate). The problem of these methods is every worker needs to communicate with driver, so the driver will become the bottleneck if the parameter is too large or the workers are too many. Instead, BigDL implement a P2P algorithm for parameter sync to remove the bottleneck. For detail of the algorithm, please see the [code](https://github.com/intel-analytics/BigDL/blob/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/optim/DistriOptimizer.scala)
