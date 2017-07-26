@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.utils.T
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class oVolumetricConvolutionSpec extends TorchSpec {
+class VolumetricConvolutionSpec extends TorchSpec {
     "A VolumetricConvolution" should "generate correct output" in {
     torchCheck()
     val seed = 100
