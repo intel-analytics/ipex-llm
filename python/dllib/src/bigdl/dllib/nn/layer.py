@@ -3617,7 +3617,7 @@ class Pack(Layer):
     def __init__(self, dimension, bigdl_type="float"):
         super(Pack, self).__init__(None, bigdl_type, dimension)
 
-class ConvLSTMPeephole(Layer):
+class ConvLSTMPeephole2D(Layer):
     '''
     
 |   Convolution Long Short Term Memory architecture with peephole.
@@ -3632,19 +3632,45 @@ class ConvLSTMPeephole(Layer):
     :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices
     :param uRegularizer: instance [[Regularizer]](eg. L1 or L2 regularization), applied to the recurrent weights matrices
     :param bRegularizer: instance of [[Regularizer]]applied to the bias.
-    :param with_peephold: whether use last cell status control a gate.
+    :param with_peephole: whether use last cell status control a gate.
 
-    >>> convlstm = ConvLSTMPeephole(4, 3, 3, 3, 1, L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
+    >>> convlstm = ConvLSTMPeephole2D(4, 3, 3, 3, 1, L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
     creating: createL1Regularizer
     creating: createL1Regularizer
     creating: createL1Regularizer
-    creating: createConvLSTMPeephole
+    creating: createConvLSTMPeephole2D
     '''
 
     def __init__(self, input_size, output_size, kernel_i, kernel_c, stride, wRegularizer=None, uRegularizer=None,
                  bRegularizer=None, with_peephole=True, bigdl_type="float"):
-        super(ConvLSTMPeephole, self).__init__(None, bigdl_type, input_size, output_size, kernel_i, kernel_c, stride,
-                                               wRegularizer, uRegularizer, bRegularizer, with_peephole)
+        super(ConvLSTMPeephole2D, self).__init__(None, bigdl_type, input_size, output_size, kernel_i, kernel_c, stride,
+                                                 wRegularizer, uRegularizer, bRegularizer, with_peephole)
+
+
+class ConvLSTMPeephole3D(Layer):
+    '''
+
+    :param input_size: number of input planes in the image given into forward()
+    :param output_size: number of output planes the convolution layer will produce
+    :param kernel_i Convolutional filter size to convolve input
+    :param kernel_c Convolutional filter size to convolve cell
+    :param stride The step of the convolution
+    :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices
+    :param uRegularizer: instance [[Regularizer]](eg. L1 or L2 regularization), applied to the recurrent weights matrices
+    :param bRegularizer: instance of [[Regularizer]]applied to the bias.
+    :param with_peephole: whether use last cell status control a gate.
+
+    >>> convlstm = ConvLSTMPeephole3D(4, 3, 3, 3, 1, L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
+    creating: createL1Regularizer
+    creating: createL1Regularizer
+    creating: createL1Regularizer
+    creating: createConvLSTMPeephole3D
+    '''
+
+    def __init__(self, input_size, output_size, kernel_i, kernel_c, stride, wRegularizer=None, uRegularizer=None,
+                 bRegularizer=None, with_peephole=True, bigdl_type="float"):
+        super(ConvLSTMPeephole3D, self).__init__(None, bigdl_type, input_size, output_size, kernel_i, kernel_c, stride,
+                                                 wRegularizer, uRegularizer, bRegularizer, with_peephole)
 
 def _test():
     import doctest
