@@ -1050,6 +1050,8 @@ class SpatialAveragePooling(Layer):
     :param dH: step height
     :param padW: padding width
     :param padH: padding height
+    :param global_pooling: If globalPooling then it will pool over the size of the input by doing
+                         kH = input->height and kW = input->width
     :param ceilMode: whether the output size is to be ceiled or floored
     :param countIncludePad: whether to include padding when dividing thenumber of elements in pooling region
     :param divide: whether to do the averaging
@@ -1066,6 +1068,7 @@ class SpatialAveragePooling(Layer):
                  dh=1,
                  pad_w=0,
                  pad_h=0,
+                 global_pooling=False,
                  ceil_mode=False,
                  count_include_pad=True,
                  divide=True,
@@ -1077,6 +1080,7 @@ class SpatialAveragePooling(Layer):
                                                     dh,
                                                     pad_w,
                                                     pad_h,
+                                                    global_pooling,
                                                     ceil_mode,
                                                     count_include_pad,
                                                     divide)
@@ -1154,7 +1158,7 @@ class SpatialCrossMapLRN(Layer):
     l1 corresponds to max(0,f-ceil(size/2)) and l2 to min(F, f-ceil(size/2) + size).
     Here, F is the number of feature maps.
 
-    :param size:  the number of channels to sum over (for cross channel LRN) or the side length ofthe square region to sum over (for within channel LRN)
+    :param size:  the number of channels to sum over
     :param alpha:  the scaling parameter
     :param beta:   the exponent
     :param k: a constant
@@ -3606,6 +3610,31 @@ class SpatialSubtractiveNormalization(Layer):
                                                               JTensor.from_ndarray(kernel))
 
 
+class SpatialWithinChannelLRN(Layer):
+    '''
+    The local response normalization layer performs a kind of lateral inhibition
+    by normalizing over local input regions. the local regions extend spatially,
+    in separate channels (i.e., they have shape 1 x local_size x local_size).
+
+    :param size  the side length of the square region to sum over
+    :param alpha the scaling parameter
+    :param beta the exponent
+
+
+    >>> layer = SpatialWithinChannelLRN()
+    creating: createSpatialWithinChannelLRN
+    '''
+
+    def __init__(self,
+                 size=5,
+                 alpha=1.0,
+                 beta=0.75,
+                 bigdl_type="float"):
+        super(SpatialWithinChannelLRN, self).__init__(None, bigdl_type,
+                                                      size,
+                                                      alpha,
+                                                      beta)
+
 class Pack(Layer):
     '''
     Stacks a list of n-dimensional tensors into one (n+1)-dimensional tensor.
@@ -3617,7 +3646,7 @@ class Pack(Layer):
     def __init__(self, dimension, bigdl_type="float"):
         super(Pack, self).__init__(None, bigdl_type, dimension)
 
-class ConvLSTMPeephole(Layer):
+class ConvLSTMPeephole2D(Layer):
     '''
     
 |   Convolution Long Short Term Memory architecture with peephole.
@@ -3632,19 +3661,45 @@ class ConvLSTMPeephole(Layer):
     :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices
     :param uRegularizer: instance [[Regularizer]](eg. L1 or L2 regularization), applied to the recurrent weights matrices
     :param bRegularizer: instance of [[Regularizer]]applied to the bias.
-    :param with_peephold: whether use last cell status control a gate.
+    :param with_peephole: whether use last cell status control a gate.
 
-    >>> convlstm = ConvLSTMPeephole(4, 3, 3, 3, 1, L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
+    >>> convlstm = ConvLSTMPeephole2D(4, 3, 3, 3, 1, L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
     creating: createL1Regularizer
     creating: createL1Regularizer
     creating: createL1Regularizer
-    creating: createConvLSTMPeephole
+    creating: createConvLSTMPeephole2D
     '''
 
     def __init__(self, input_size, output_size, kernel_i, kernel_c, stride, wRegularizer=None, uRegularizer=None,
                  bRegularizer=None, with_peephole=True, bigdl_type="float"):
-        super(ConvLSTMPeephole, self).__init__(None, bigdl_type, input_size, output_size, kernel_i, kernel_c, stride,
-                                               wRegularizer, uRegularizer, bRegularizer, with_peephole)
+        super(ConvLSTMPeephole2D, self).__init__(None, bigdl_type, input_size, output_size, kernel_i, kernel_c, stride,
+                                                 wRegularizer, uRegularizer, bRegularizer, with_peephole)
+
+
+class ConvLSTMPeephole3D(Layer):
+    '''
+
+    :param input_size: number of input planes in the image given into forward()
+    :param output_size: number of output planes the convolution layer will produce
+    :param kernel_i Convolutional filter size to convolve input
+    :param kernel_c Convolutional filter size to convolve cell
+    :param stride The step of the convolution
+    :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices
+    :param uRegularizer: instance [[Regularizer]](eg. L1 or L2 regularization), applied to the recurrent weights matrices
+    :param bRegularizer: instance of [[Regularizer]]applied to the bias.
+    :param with_peephole: whether use last cell status control a gate.
+
+    >>> convlstm = ConvLSTMPeephole3D(4, 3, 3, 3, 1, L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
+    creating: createL1Regularizer
+    creating: createL1Regularizer
+    creating: createL1Regularizer
+    creating: createConvLSTMPeephole3D
+    '''
+
+    def __init__(self, input_size, output_size, kernel_i, kernel_c, stride, wRegularizer=None, uRegularizer=None,
+                 bRegularizer=None, with_peephole=True, bigdl_type="float"):
+        super(ConvLSTMPeephole3D, self).__init__(None, bigdl_type, input_size, output_size, kernel_i, kernel_c, stride,
+                                                 wRegularizer, uRegularizer, bRegularizer, with_peephole)
 
 def _test():
     import doctest

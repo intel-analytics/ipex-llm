@@ -24,7 +24,6 @@ import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData, Mo
 import com.intel.analytics.bigdl.utils.{T, Table}
 import serialization.Model.{AttrValue, BigDLModule}
 
-import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 import scala.reflect.runtime._
 
@@ -85,13 +84,13 @@ abstract class Cell[T : ClassTag](
    *      and recursively intialize all the tensors in the Table.
    *
    * @param hidden
-   * @param size batchSize
+   * @param batchSize batchSize
    * @return
    */
-  def hidResize(hidden: Activity, size: Int, rows: Int = 1, columns: Int = 1): Activity = {
+  def hidResize(hidden: Activity, batchSize: Int, imageSize: Array[Int] = null): Activity = {
     if (hidden == null) {
       if (hiddensShape.length == 1) {
-        hidResize(Tensor[T](), size, rows, columns)
+        hidResize(Tensor[T](), batchSize)
       } else {
         val _hidden = T()
         var i = 1
@@ -99,25 +98,29 @@ abstract class Cell[T : ClassTag](
           _hidden(i) = Tensor[T]()
           i += 1
         }
-        hidResize(_hidden, size, rows, columns)
+        hidResize(_hidden, batchSize, imageSize)
       }
     } else {
       if (hidden.isInstanceOf[Tensor[T]]) {
         require(hidden.isInstanceOf[Tensor[T]],
           "Cell: hidden should be a Tensor")
-        hidden.toTensor.resize(size, hiddensShape(0))
+        hidden.toTensor.resize(batchSize, hiddensShape(0))
       } else {
         require(hidden.isInstanceOf[Table],
           "Cell: hidden should be a Table")
         var i = 1
-        if (rows== 1 && columns==1) {
+        if (null == imageSize) {
           while (i <= hidden.toTable.length()) {
-            hidden.toTable[Tensor[T]](i).resize(size, hiddensShape(i - 1))
+            hidden.toTable[Tensor[T]](i).resize(batchSize, hiddensShape(i - 1))
             i += 1
           }
         } else {
+          val sizes = new Array[Int](imageSize.length + 2)
+          sizes(0) = batchSize
+          Array.copy(imageSize, 0, sizes, 2, imageSize.size)
           while (i <= hidden.toTable.length()) {
-            hidden.toTable[Tensor[T]](i).resize(size, hiddensShape(i - 1), rows, columns)
+            sizes(1) = hiddensShape(i - 1)
+            hidden.toTable[Tensor[T]](i).resize(sizes)
             i += 1
           }
         }

@@ -203,6 +203,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     TimeDistributed[T](layer)
   }
 
+  def createSpatialWithinChannelLRN(size: Int = 5, alpha: Double = 1.0, beta: Double = 0.75)
+  : SpatialWithinChannelLRN[T] = {
+    SpatialWithinChannelLRN[T](size, alpha, beta)
+  }
+
   def createRnnCell(inputSize: Int,
                     hiddenSize: Int,
                     activation: TensorModule[T],
@@ -251,7 +256,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Recurrent[T]()
   }
 
-  def createConvLSTMPeephole(
+  def createConvLSTMPeephole2D(
     inputSize: Int,
     outputSize: Int,
     kernelI: Int,
@@ -260,8 +265,22 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     wRegularizer: Regularizer[T] = null,
     uRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
-    withPeephole: Boolean = true): ConvLSTMPeephole[T] = {
-    ConvLSTMPeephole[T](inputSize, outputSize, kernelI, kernelC, stride,
+    withPeephole: Boolean = true): ConvLSTMPeephole2D[T] = {
+    ConvLSTMPeephole2D[T](inputSize, outputSize, kernelI, kernelC, stride,
+      wRegularizer, uRegularizer, bRegularizer, withPeephole)
+  }
+
+  def createConvLSTMPeephole3D(
+    inputSize: Int,
+    outputSize: Int,
+    kernelI: Int,
+    kernelC: Int,
+    stride: Int = 1,
+    wRegularizer: Regularizer[T] = null,
+    uRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null,
+    withPeephole: Boolean = true): ConvLSTMPeephole3D[T] = {
+    ConvLSTMPeephole3D[T](inputSize, outputSize, kernelI, kernelC, stride,
       wRegularizer, uRegularizer, bRegularizer, withPeephole)
   }
 
@@ -349,11 +368,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                                   dH: Int = 1,
                                   padW: Int = 0,
                                   padH: Int = 0,
+                                  globalPooling: Boolean = false,
                                   ceilMode: Boolean = false,
                                   countIncludePad: Boolean = true,
                                   divide: Boolean = true)
   : SpatialAveragePooling[T] = {
-    SpatialAveragePooling[T](kW, kH, dW, dH, padW, padH, ceilMode, countIncludePad, divide)
+    SpatialAveragePooling[T](kW, kH, dW, dH, padW, padH, globalPooling,
+      ceilMode, countIncludePad, divide)
   }
 
   def createSpatialBatchNormalization(nOutput: Int,

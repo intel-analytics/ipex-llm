@@ -329,7 +329,7 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     res1 should be (res2)
   }
 
-  "ConvLSTMPeephole serializer" should " work properly" in {
+  "ConvLSTMPeephole2D serializer" should " work properly" in {
     val hiddenSize = 5
     val inputSize = 3
     val seqLength = 4

@@ -84,12 +84,13 @@ class Recurrent[T : ClassTag]()
 
   /**
    * Clone N models; N depends on the time dimension of the input
-   * @param times
-   * @param batchSize
-   * @param hiddenSize
+   * @param sizes, the first element is batchSize, the second is times, the third is hiddensize
+    *             the left is size of images
    */
-  private def extend(times: Int, batchSize: Int, hiddenSize: Int,
-    rows: Int = 1, columns: Int = 1): Unit = {
+  private def extend(sizes: Array[Int]): Unit = {
+    val times = sizes(1)
+    val batchSize = sizes(0)
+    val imageSize = sizes.drop(3)
     if (hidden == null) {
       require((preTopology == null && modules.length == 1) ||
         (topology != null && preTopology != null && modules.length == 2),
@@ -101,7 +102,7 @@ class Recurrent[T : ClassTag]()
       val cell = cells.head
 
       // The cell will help initialize or resize the hidden variable.
-      hidden = cell.hidResize(hidden = null, size = batchSize, rows, columns)
+      hidden = cell.hidResize(hidden = null, batchSize = batchSize, imageSize)
 
       /*
        * Since the gradHidden is only used as an empty Tensor or Table during
@@ -110,7 +111,7 @@ class Recurrent[T : ClassTag]()
        */
       gradHidden = hidden
     } else {
-      cells.head.hidResize(hidden = hidden, size = batchSize, rows, columns)
+      cells.head.hidResize(hidden = hidden, batchSize = batchSize, imageSize)
       gradHidden = hidden
     }
     var t = cells.length
@@ -202,8 +203,8 @@ class Recurrent[T : ClassTag]()
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.dim == 3 || input.dim == 5,
-      "Recurrent: input should be a 3D or 5D Tensor, e.g [batch, times, nDim], " +
+    require(input.dim == 3 || input.dim == 5 || input.dim == 6,
+      "Recurrent: input should be a 3D/5D/6D Tensor, e.g [batch, times, nDim], " +
         s"current input.dim = ${input.dim}")
 
     batchSize = input.size(batchDim)
@@ -232,15 +233,11 @@ class Recurrent[T : ClassTag]()
     }
 
     val hiddenSize = topology.hiddensShape(0)
-    if (input.dim() == 3) {
-      output.resize(batchSize, times, hiddenSize)
-      // Clone N modules along the sequence dimension.
-      extend(times, batchSize, hiddenSize)
-    } else if (input.dim() == 5) {
-      output.resize(batchSize, times, hiddenSize, input.size(4), input.size(5))
-      // Clone N modules along the sequence dimension.
-      extend(times, batchSize, hiddenSize, input.size(4), input.size(5))
-    }
+    val outputSize = input.size()
+    outputSize(2) = hiddenSize
+    output.resize(outputSize)
+    // Clone N modules along the sequence dimension.
+    extend(outputSize)
 
     /**
      * currentInput forms a T() type. It contains two elements, hidden and input.

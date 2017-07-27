@@ -251,11 +251,10 @@ class VolumetricConvolution[T: ClassTag](
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     require(input.dim() == 4 || input.dim() == 5,
       s"4D or 5D (batch mode) tensor expected for input, but got: ${ input.dim() }d")
-    require(input.isContiguous(), "input should be contiguous")
-    require(gradOutput.isContiguous(), "gradOutput should be contiguous")
     gradInput.resizeAs(input)
     fGradInput.resizeAs(fInput).zero()
     if (input.dim() == 4) {
+      require(gradOutput.isContiguous(), "gradOutput should be contiguous")
       updateGradInputFrame(gradInput, gradOutput, weightMM.transpose(1, 2), fGradInput,
         kT, kW, kH,
         dT, dW, dH,
@@ -267,6 +266,7 @@ class VolumetricConvolution[T: ClassTag](
         val gradInputT = gradInput.select(1, t)
         val gradOutputT = gradOutput.select(1, t)
         val fGradInputT = fGradInput.select(1, t)
+        require(gradOutputT.isContiguous(), "each batch of gradOutput should be contiguous")
         updateGradInputFrame(gradInputT, gradOutputT, weightMM.transpose(1, 2), fGradInputT,
           kT, kW, kH,
           dT, dW, dH,
@@ -304,7 +304,6 @@ class VolumetricConvolution[T: ClassTag](
   }
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
-    require(input.isContiguous(), "input should be contiguous")
     require(gradOutput.isContiguous(), "gradOutput should be contiguous")
     if (gradWeightMM == null || gradWeightMM.storage().isEmpty) {
       gradWeightMM = gradWeight.view(nOutputPlane, nInputPlane * kT * kH * kW)

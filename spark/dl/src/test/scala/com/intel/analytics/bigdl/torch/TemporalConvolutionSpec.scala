@@ -21,18 +21,13 @@ import com.intel.analytics.bigdl.nn.TemporalConvolution
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
 
-class TemporalConvolutionSpec extends FlatSpec with BeforeAndAfter with Matchers {
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
+class TemporalConvolutionSpec extends TorchSpec {
 
   "A TemporalConvolution with 2d input" should "generate correct output" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -74,6 +69,7 @@ class TemporalConvolutionSpec extends FlatSpec with BeforeAndAfter with Matchers
   }
 
   "A TemporalConvolution" should "generate correct output" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 

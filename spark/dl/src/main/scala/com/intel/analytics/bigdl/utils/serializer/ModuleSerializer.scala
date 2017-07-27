@@ -190,8 +190,8 @@ object ModuleSerializer extends ModuleSerializable{
       ConcatTable)
     registerModule("Contiguous", Class.forName("com.intel.analytics.bigdl.nn.Contiguous"),
       Contiguous)
-    registerModule("ConvLSTMPeephole",
-      Class.forName("com.intel.analytics.bigdl.nn.ConvLSTMPeephole"), ConvLSTMPeephole)
+    registerModule("ConvLSTMPeephole2D",
+      Class.forName("com.intel.analytics.bigdl.nn.ConvLSTMPeephole2D"), ConvLSTMPeephole2D)
     registerModule("Cosine", Class.forName("com.intel.analytics.bigdl.nn.Cosine"),
       Cosine)
     registerModule("CosineDistance", Class.forName("com.intel.analytics.bigdl.nn.CosineDistance"),
