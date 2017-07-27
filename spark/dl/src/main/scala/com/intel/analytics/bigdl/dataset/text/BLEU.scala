@@ -28,41 +28,14 @@ class BLEU() extends Serializable {
    * "BLEU: a method for automatic evaluation of machine translation."
    * In Proceedings of ACL. http://www.aclweb.org/anthology/P02-1040.pdf
    *
+   * sentenceBleu([ref1, ref2, ref3], hypo1)
    *
-   * hypothesis1 = ['It', 'is', 'a', 'guide', 'to', 'action', 'which',
-   * ...               'ensures', 'that', 'the', 'military', 'always',
-   * ...               'obeys', 'the', 'commands', 'of', 'the', 'party']
+   * The default BLEU will calculate a score using 4-grams with uniformly
+   * distributed weights. You can define your customized weights by transferring
+   * the arguments to weights.
    *
-   *  hypothesis2 = ['It', 'is', 'to', 'insure', 'the', 'troops',
-   * ...               'forever', 'hearing', 'the', 'activity', 'guidebook',
-   * ...               'that', 'party', 'direct']
-   *
-   * reference1 = ['It', 'is', 'a', 'guide', 'to', 'action', 'that',
-   * ...               'ensures', 'that', 'the', 'military', 'will', 'forever',
-   * ...               'heed', 'Party', 'commands']
-   *
-   * reference2 = ['It', 'is', 'the', 'guiding', 'principle', 'which',
-   * ...               'guarantees', 'the', 'military', 'forces', 'always',
-   * ...               'being', 'under', 'the', 'command', 'of', 'the',
-   * ...               'Party']
-   *
-   * reference3 = ['It', 'is', 'the', 'practical', 'guide', 'for', 'the',
-   * ...               'army', 'always', 'to', 'heed', 'the', 'directions',
-   * ...               'of', 'the', 'party']
-   *
-   * sentenceBleu([reference1, reference2, reference3], hypothesis1)
-   * 0.5045...
-   *
-   * sentenceBleu([reference1, reference2, reference3], hypothesis2)
-   * 0.3969...
-   *
-   *
-   *  The default BLEU calculates a score for up to 4grams using uniform
-   * weights. To evaluate your translations with higher/lower order ngrams,
-   * use customized weights. E.g. when accounting for up to 6grams with uniform
-   * weights:
-   *
-   *  weights = Array(0.1666, 0.1666, 0.1666, 0.1666, 0.1666)
+   * E.g:
+   *  weights = Array(0.2, 0.2, 0.2, 0.2, 0.2)
    *
    * @param references reference sentences
    * @param hypothesis a hypothesis sentence
@@ -90,44 +63,12 @@ class BLEU() extends Serializable {
   }
 
   /**
-   * Calculate a single corpus-level BLEU score (aka. system-level BLEU) for all
+   * Calculate a system-level BLEU for all
    * the hypotheses and their respective references.
    *
-   * Instead of averaging the sentence level BLEU scores (i.e. marco-average
-   * precision), the original BLEU metric (Papineni et al. 2002) accounts for
-   * the micro-average precision (i.e. summing the numerators and denominators
-   * for each hypothesis-reference(s) pairs before the division).
-   *
-   * hyp1 = ['It', 'is', 'a', 'guide', 'to', 'action', 'which',
-   * ...         'ensures', 'that', 'the', 'military', 'always',
-   * ...         'obeys', 'the', 'commands', 'of', 'the', 'party']
-   * ref1a = ['It', 'is', 'a', 'guide', 'to', 'action', 'that',
-   * ...          'ensures', 'that', 'the', 'military', 'will', 'forever',
-   * ...          'heed', 'Party', 'commands']
-   * ref1b = ['It', 'is', 'the', 'guiding', 'principle', 'which',
-   * ...          'guarantees', 'the', 'military', 'forces', 'always',
-   * ...          'being', 'under', 'the', 'command', 'of', 'the', 'Party']
-   * ref1c = ['It', 'is', 'the', 'practical', 'guide', 'for', 'the',
-   * ...          'army', 'always', 'to', 'heed', 'the', 'directions',
-   * ...          'of', 'the', 'party']
-   *
-   * hyp2 = ['he', 'read', 'the', 'book', 'because', 'he', 'was',
-   * ...         'interested', 'in', 'world', 'history']
-   * ref2a = ['he', 'was', 'interested', 'in', 'world', 'history',
-   * ...          'because', 'he', 'read', 'the', 'book']
-   *
-   * list_of_references = [[ref1a, ref1b, ref1c], [ref2a]]
+   * listOfReferences = [[ref1.1, ref1.2, ref1.3], [ref2.1]]
    * hypotheses = [hyp1, hyp2]
-   * corpus_bleu(list_of_references, hypotheses) # doctest: +ELLIPSIS
-   * 0.5920...
-   *
-   * The example below show that corpus_bleu() is different from averaging
-   * sentence_bleu() for hypotheses
-   *
-   * score1 = sentence_bleu([ref1a, ref1b, ref1c], hyp1)
-   * score2 = sentence_bleu([ref2a], hyp2)
-   * (score1 + score2) / 2 # doctest: +ELLIPSIS
-   * 0.6223...
+   * corpus_bleu(listOfReferences, hypotheses)
    *
    * @param references
    * @param hypotheses
@@ -204,75 +145,15 @@ class BLEU() extends Serializable {
   /**
    * Calculate brevity penalty.
    *
-   * As the modified n-gram precision still has the problem from the short
-   * length sentence, brevity penalty is used to modify the overall BLEU
-   * score according to length.
+   * It will give penalty for short candidate sentence for the BLEU score.
    *
-   * An example from the paper. There are three references with length 12, 15
-   * and 17. And a concise hypothesis of the length 12. The brevity penalty is 1.
+   * For example,
+   * references = Array(Array.fill(10)("a"), Array.fill(12)("a"))
+   * hypothesis = Array.fill(15)("b")
    *
-   *     >>> reference1 = list('aaaaaaaaaaaa')      # i.e. ['a'] * 12
-   *     >>> reference2 = list('aaaaaaaaaaaaaaa')   # i.e. ['a'] * 15
-   *     >>> reference3 = list('aaaaaaaaaaaaaaaaa') # i.e. ['a'] * 17
-   *     >>> hypothesis = list('aaaaaaaaaaaa')      # i.e. ['a'] * 12
-   *    >>> references = [reference1, reference2, reference3]
-   *     >>> hyp_len = len(hypothesis)
-   *     >>> closest_ref_len =  closest_ref_length(references, hyp_len)
-   *     >>> brevity_penalty(closest_ref_len, hyp_len)
-   *     1.0
+   * will return
    *
-   * In case a hypothesis translation is shorter than the references, penalty is
-   * applied.
-   *
-   *     >>> references = [['a'] * 28, ['a'] * 28]
-   *     >>> hypothesis = ['a'] * 12
-   *     >>> hyp_len = len(hypothesis)
-   *     >>> closest_ref_len =  closest_ref_length(references, hyp_len)
-   *     >>> brevity_penalty(closest_ref_len, hyp_len)
-   *     0.2635971381157267
-   *
-   * The length of the closest reference is used to compute the penalty. If the
-   * length of a hypothesis is 12, and the reference lengths are 13 and 2, the
-   * penalty is applied because the hypothesis length (12) is less then the
-   * closest reference length (13).
-   *
-   *     >>> references = [['a'] * 13, ['a'] * 2]
-   *     >>> hypothesis = ['a'] * 12
-   *     >>> hyp_len = len(hypothesis)
-   *     >>> closest_ref_len =  closest_ref_length(references, hyp_len)
-   *     >>> brevity_penalty(closest_ref_len, hyp_len) # doctest: +ELLIPSIS
-   *     0.9200...
-   *
-   * The brevity penalty doesn't depend on reference order. More importantly,
-   * when two reference sentences are at the same distance, the shortest
-   * reference sentence length is used.
-   *
-   *     >>> references = [['a'] * 13, ['a'] * 11]
-   *     >>> hypothesis = ['a'] * 12
-   *     >>> hyp_len = len(hypothesis)
-   *     >>> closest_ref_len =  closest_ref_length(references, hyp_len)
-   *     >>> bp1 = brevity_penalty(closest_ref_len, hyp_len)
-   *     >>> hyp_len = len(hypothesis)
-   *     >>> closest_ref_len =  closest_ref_length(reversed(references), hyp_len)
-   *     >>> bp2 = brevity_penalty(closest_ref_len, hyp_len)
-   *     >>> bp1 == bp2 == 1
-   *     True
-   *
-   * A test example from mteval-v13a.pl (starting from the line 705):
-   *
-   *     >>> references = [['a'] * 11, ['a'] * 8]
-   *     >>> hypothesis = ['a'] * 7
-   *     >>> hyp_len = len(hypothesis)
-   *     >>> closest_ref_len =  closest_ref_length(references, hyp_len)
-   *     >>> brevity_penalty(closest_ref_len, hyp_len) # doctest: +ELLIPSIS
-   *     0.8668...
-   *
-   *     >>> references = [['a'] * 11, ['a'] * 8, ['a'] * 6, ['a'] * 7]
-   *     >>> hypothesis = ['a'] * 7
-   *     >>> hyp_len = len(hypothesis)
-   *     >>> closest_ref_len =  closest_ref_length(references, hyp_len)
-   *     >>> brevity_penalty(closest_ref_len, hyp_len)
-   *     1.0
+   * exp(1 - 15 / 12)
    *
    * @param closestRefLen
    * @param hypLen
@@ -402,15 +283,6 @@ case class SmoothingFunction(epsilon: Double = 0.1, alpha: Int = 5, k: Int = 5)
    * Smoothing method 3: NIST geometric sequence smoothing
    *     The smoothing is computed by taking 1 / ( 2^k ), instead of 0, for each
    *     precision score whose matching n-gram count is null.
-   *     k is 1 for the first 'n' value for which the n-gram match count is null/
-   *     For example, if the text contains:
-   *      - one 2-gram match
-   *      - and (consequently) two 1-gram matches
-   *     the n-gram count for each individual precision score would be:
-   * - n=1  =>  prec_count = 2     (two unigrams)
-   * - n=2  =>  prec_count = 1     (one bigram)
-   * - n=3  =>  prec_count = 1/2   (no trigram,  taking 'smoothed' value of 1 / ( 2^k ), with k=1)
-   * - n=4  =>  prec_count = 1/4   (no fourgram, taking 'smoothed' value of 1 / ( 2^k ), with k=2)
    * @param pN
    * @return
    */
@@ -578,77 +450,12 @@ object BLEU {
   /**
    * Calculate modified ngram precision.
    *
-   * The normal precision method may lead to some wrong translations with
-   * high-precision, e.g., the translation, in which a word of reference
-   * repeats several times, has very high precision.
+   * It will element-wisely compare the n-gram phrases
+   * from candidate sentences and reference sentences
+   * and return count number for the pair phrases.
    *
-   * This function only returns the Fraction object that contains the numerator
-   * and denominator necessary to calculate the corpus-level precision.
-   * To calculate the modified precision for a single pair of hypothesis and
-   * references, cast the Fraction object into a float.
-   *
-   * The famous "the the the ... " example shows that you can get BLEU precision
-   * by duplicating high frequency words.
-   *
-   *     reference1 = 'the cat is on the mat'.split()
-   *     reference2 = 'there is a cat on the mat'.split()
-   *     hypothesis1 = 'the the the the the the the'.split()
-   *     references = [reference1, reference2]
-   *     float(modifiedPrecision(references, hypothesis1, n=1))
-   *     0.2857...
-   *
-   * In the modified n-gram precision, a reference word will be considered
-   *    exhausted after a matching hypothesis word is identified, e.g.
-   *
-   *     reference1 = ['It', 'is', 'a', 'guide', 'to', 'action', 'that',
-   *     ...               'ensures', 'that', 'the', 'military', 'will',
-   *     ...               'forever', 'heed', 'Party', 'commands']
-   *     reference2 = ['It', 'is', 'the', 'guiding', 'principle', 'which',
-   *     ...               'guarantees', 'the', 'military', 'forces', 'always',
-   *     ...               'being', 'under', 'the', 'command', 'of', 'the',
-   *     ...               'Party']
-   *     reference3 = ['It', 'is', 'the', 'practical', 'guide', 'for', 'the',
-   *     ...               'army', 'always', 'to', 'heed', 'the', 'directions',
-   *     ...               'of', 'the', 'party']
-   *     hypothesis = 'of the'.split()
-   *     references = [reference1, reference2, reference3]
-   *     float(modified_precision(references, hypothesis, n=1))
-   *     1.0
-   *     float(modified_precision(references, hypothesis, n=2))
-   *     1.0
-   *
-   * An example of a normal machine translation hypothesis:
-   *
-   *     hypothesis1 = ['It', 'is', 'a', 'guide', 'to', 'action', 'which',
-   *     ...               'ensures', 'that', 'the', 'military', 'always',
-   *     ...               'obeys', 'the', 'commands', 'of', 'the', 'party']
-   *
-   *     hypothesis2 = ['It', 'is', 'to', 'insure', 'the', 'troops',
-   *     ...               'forever', 'hearing', 'the', 'activity', 'guidebook',
-   *     ...               'that', 'party', 'direct']
-   *
-   *     reference1 = ['It', 'is', 'a', 'guide', 'to', 'action', 'that',
-   *     ...               'ensures', 'that', 'the', 'military', 'will',
-   *     ...               'forever', 'heed', 'Party', 'commands']
-   *
-   *     reference2 = ['It', 'is', 'the', 'guiding', 'principle', 'which',
-   *     ...               'guarantees', 'the', 'military', 'forces', 'always',
-   *     ...               'being', 'under', 'the', 'command', 'of', 'the',
-   *     ...               'Party']
-   *
-   *     reference3 = ['It', 'is', 'the', 'practical', 'guide', 'for', 'the',
-   *     ...               'army', 'always', 'to', 'heed', 'the', 'directions',
-   *     ...               'of', 'the', 'party']
-   *     references = [reference1, reference2, reference3]
-   *     float(modified_precision(references, hypothesis1, n=1))
-   *     0.9444...
-   *     float(modified_precision(references, hypothesis2, n=1))
-   *     0.5714...
-   *     float(modified_precision(references, hypothesis1, n=2))
-   *     0.5882352941176471
-   *     float(modified_precision(references, hypothesis2, n=2))
-   *     0.07692...
-   *
+   * The number of paired phrases will be further clipped
+   * for giving penalty to duplicated phrases.
    * @param references
    * @param hypothesis
    * @param n
