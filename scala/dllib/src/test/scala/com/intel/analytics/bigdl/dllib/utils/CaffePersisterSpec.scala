@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.numeric.NumericDouble
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.caffe.{CaffeLoader, CaffePersister}
+import com.intel.analytics.bigdl.utils.caffe.{CaffeLoader, CaffePersister, Customizable}
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
@@ -42,13 +42,14 @@ class CaffePersisterSpec extends FlatSpec with Matchers{
   val savedprototxt = Paths.get(resource.getPath(), "test_persist.prototxt").toString
   val savedmodelPath = Paths.get(resource.getPath(), "test_persist.caffemodel").toString
 
-  private def loadDummy[T : ClassTag](message : GeneratedMessage)(implicit ev: TensorNumeric[T])
-  : Seq[ModuleNode[T]] = {
-    Seq(Identity[T].setName("Dummy").inputs())
+  private class LoadDummy[T: ClassTag](implicit ev: TensorNumeric[T]) extends Customizable[T] {
+    override def convertor(layer: GeneratedMessage): Seq[ModuleNode[T]] = {
+      Seq(Identity[T].setName("Dummy").inputs())
+    }
   }
 
-  val convertMap = new mutable.HashMap[String, (GeneratedMessage) => Seq[ModuleNode[Double]]]()
-  convertMap("DUMMY") = loadDummy[Double]
+  val convertMap = new mutable.HashMap[String, Customizable[Double]]()
+  convertMap("DUMMY") = new LoadDummy[Double]
 
   "Save graph module" should "Works properly" in {
 
