@@ -33,7 +33,8 @@ object File {
    * @return An instance of T
    */
   def loadTorch[T](fileName: String): T = {
-    TorchFile.load[T](fileName)
+    val torchFile = new TorchFile
+    torchFile.load[T](fileName)
   }
 
   /**
@@ -49,7 +50,8 @@ object File {
       fileName: String,
       objectType: TorchObject,
       overWrite: Boolean = false): Unit = {
-    TorchFile.save(source, fileName, objectType, overWrite)
+    val torchFile = new TorchFile
+    torchFile.save(source, fileName, objectType, overWrite)
   }
 
   /**
