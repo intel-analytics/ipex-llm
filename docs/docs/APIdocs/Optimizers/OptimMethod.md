@@ -2,12 +2,13 @@
 
 OptimMethod is used to update model gradient parameters.We have defined SGD method, Adagrad method, etc.
 Details about those optim methods, you can refer to [Optim-Methods](Optim-Methods.md).
-Now, method construct parameters(e.g."learningRate") and internal training parameters(e.g."epoch") store in optim method instead of state(since version 0.2.0)
+Now, method parameters(e.g."learningRate") and internal training parameters(e.g."epoch") store in Table state.
 Here is mainly to describe how to use those methods when training
 ### Set method ###
 **scala**
 ```scala
 optimizer.setOptimMethod(method : OptimMethod[T])
+optimizer.setState(state : Table) // set method parameters
 ```
 **python**
 ```scala
@@ -16,37 +17,34 @@ optimizer = Optimizer(
     training_rdd,
     criterion,
     optim_method,
+    state,
     end_trigger,
     batch_size)
 ```
 in python, you can set optim method when creating an optimizer
 
-### Save method ###
+### Save method parameters ###
+In this release, we can just support save parameters of optim method, but no method name.
+When training, you can use optimizer.setCheckPoint(for scala) or optimizer.set_checkpoint(for python) to save parameters at regular intervals.
+
+### Load method parameters ###
+Method parameters are stored in state, so you can load state like this:
 ```scala
-method.save(path: String, overWrite: Boolean = false)
+val state = T.load(path : String)
 ```
-`T`: path to save method  
-`overWrite`: whether to overwrite or not
+`path`: file of state path
 
-When training, you can use optimizer.setCheckPoint(for scala) or optimizer.set_checkpoint(for python) to save methods at regular intervals.
-
-### Load method ###
-```scala
-val method = OptimMethod.load(path : String)
-```
-`path`: file of optim method path
-
-Python can't support loading optim method from a snapshot now, but we are working on fixing it.
+Python can't support loading optim method from a snapshot in this release.
 
 ### Scala example ###
-Here is an example to train LeNet5 model with a loading method.
+Here is an example to train LeNet5 model with a loading state.
 ```scala
 val trainingRDD = ...
 val valRDD = ...
 val batchSize = 12
 val methodPath = ...
 // Load optim method
-val method = OptimMethod.load(methodPath)
+val state = T.load(state)
 // Create an optimizer
 val optimizer = Optimizer(
   model = LeNet5(classNum = 10),
@@ -69,11 +67,14 @@ Here is an example to train LeNet5 model with SGD method.
 train_data = ...
 test_data = ...
 batch_size = 12
+state = {"learningRate": 0.01,
+         "learningRateDecay": 0.0002}
 optimizer = Optimizer(
   model=lenet_model,
   training_rdd=train_data,
   criterion=ClassNLLCriterion(),
-  optim_method=SGD(learningrate=0.01, learningrate_decay=0.0002), # set optim method
+  optim_method="SGD",
+  state=state
   end_trigger=MaxEpoch(15),
   batch_size=batch_size)
        
@@ -81,7 +82,7 @@ optimizer.set_validation(
     batch_size=32,
     val_rdd=test_data,
     trigger=EveryEpoch(),
-    val_method=[Top1Accuracy()]
+    val_method=["Top1Accuracy"]
 )
 
 optimizer.set_checkpoint(EveryEpoch(), checkpointPath) # set checkpoint to save model and optim method

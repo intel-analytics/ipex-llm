@@ -1,27 +1,11 @@
+Here, we just describe some optim methods. Method parameters(e.g."learningRate") and internal training parameters(e.g."epoch") store in Table state.
+If you want to set and save methods when training, you can refer to [OptimMethod](OptimMethod.md) for Details.
 ## Adam ##
 
 **Scala:**
 ```scala
-val optim = new Adam(learningRate=1e-3, learningRateDecay=0.0, beta1=0.9, beta2=0.999, Epsilon=1e-8)
+val optim = new Adam()
 ```
-**Python:**
-```python
-optim = Adam(learningRate=1e-3, learningRateDecay-0.0, beta1=0.9, beta2=0.999, Epsilon=1e-8, bigdl_type="float")
-```
-
-An implementation of Adam optimization, first-order gradient-based optimization of stochastic  objective  functions. http://arxiv.org/pdf/1412.6980.pdf
-
- `learningRate` learning rate. Default value is 1e-3. 
- 
- `learningRateDecay` learning rate decay. Default value is 0.0.
- 
- `beta1` first moment coefficient. Default value is 0.9.
- 
- `beta2` second moment coefficient. Default value is 0.999.
- 
- `Epsilon` for numerical stability. Default value is 1e-8.
- 
-
 **Scala example:**
 ```scala
 import com.intel.analytics.bigdl.optim._
@@ -29,7 +13,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.utils.T
 
-val optm = new Adam(learningRate=0.002)
+val optm = new Adam()
 def rosenBrock(x: Tensor[Float]): (Float, Tensor[Float]) = {
     // (1) compute f(x)
     val d = x.size(1)
@@ -68,102 +52,66 @@ def rosenBrock(x: Tensor[Float]): (Float, Tensor[Float]) = {
     (fout, dxout)
   }  
 val x = Tensor(2).fill(0)
-> print(optm.optimize(rosenBrock, x))
+val state=T("learningRate" -> 0.002)
+> print(optm.optimize(rosenBrock, x, state))
 (0.0019999996
 0.0
 [com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 2],[D@302d88d8)
 ```
+**Python:**
+Just support setting string name "Adam" to Optimizer
 **Python example:**
-```python
-optim_method = Adam(learningrate=0.002)
-                  
+```python           
 optimizer = Optimizer(
     model=mlp_model,
     training_rdd=train_data,
     criterion=ClassNLLCriterion(),
-    optim_method=optim_method,
+    optim_method="Adam",
+    state={"learningrate": 0.002}
     end_trigger=MaxEpoch(20),
     batch_size=32)
 
 ```
 ## SGD ##
-
-**Scala:**
-```scala
-val optimMethod = SGD(learningRate= 1e-3,learningRateDecay=0.0,
-                      weightDecay=0.0,momentum=0.0,dampening=Double.MaxValue,
-                      nesterov=false,learningRateSchedule=Default(),
-                      learningRates=null,weightDecays=null)
-```
-
-**Python:**
-```python
-optim_method = SGD(learningrate=1e-3,learningrate_decay=0.0,weightdecay=0.0,
-                   momentum=0.0,dampening=DOUBLEMAX,nesterov=False,
-                   leaningrate_schedule=None,learningrates=None,
-                   weightdecays=None,bigdl_type="float")
-```
-
 A plain implementation of SGD which provides optimize method. After setting 
 optimization method when create Optimize, Optimize will call optimization method at the end of 
 each iteration.
  
 **Scala example:**
 ```scala
-val optimMethod = new SGD[Float](learningRate= 1e-3,learningRateDecay=0.0,
-                               weightDecay=0.0,momentum=0.0,dampening=Double.MaxValue,
-                               nesterov=false,learningRateSchedule=Default(),
-                               learningRates=null,weightDecays=null)
-optimizer.setOptimMethod(optimMethod)
+optimizer.setOptimMethod(new SGD[Float]())
 ```
 
 **Python example:**
-```python
-optim_method = SGD(learningrate=1e-3,learningrate_decay=0.0,weightdecay=0.0,
-                  momentum=0.0,dampening=DOUBLEMAX,nesterov=False,
-                  leaningrate_schedule=None,learningrates=None,
-                  weightdecays=None,bigdl_type="float")
-                  
+```python                 
 optimizer = Optimizer(
     model=mlp_model,
     training_rdd=train_data,
     criterion=ClassNLLCriterion(),
-    optim_method=optim_method,
+    optim_method="SGD",
+    state={"learningrate": 0.002}
     end_trigger=MaxEpoch(20),
     batch_size=32)
 ```
 
 ## Adadelta ##
-
-
 *AdaDelta* implementation for *SGD* 
 It has been proposed in `ADADELTA: An Adaptive Learning Rate Method`.
 http://arxiv.org/abs/1212.5701.
 
-**Scala:**
-```scala
-val optimMethod = Adadelta(decayRate = 0.9, Epsilon = 1e-10)
-```
-**Python:**
-```python
-optim_method = AdaDelta(decayrate = 0.9, epsilon = 1e-10)
-```
-
-
 **Scala example:**
 ```scala
-optimizer.setOptimMethod(new Adadelta(0.9, 1e-10))
+optimizer.setOptimMethod(new Adadelta())
 
 ```
-
-
 **Python example:**
 ```python
 optimizer = Optimizer(
     model=mlp_model,
     training_rdd=train_data,
     criterion=ClassNLLCriterion(),
-    optim_method=Adadelta(0.9, 0.00001),
+    optim_method="Adadelta",
+    state={"learningrate": 0.09, "learningRateDecay": 0.00001}
     end_trigger=MaxEpoch(20),
     batch_size=32)
 ```
@@ -192,15 +140,6 @@ Returns:
 the new x vector and the function list {fx}, evaluated before the update
 
 ## Adagrad ##
-
-**Scala:**
-```scala
-val adagrad = new Adagrad(learningRate = 1e-3,
-                          learningRateDecay = 0.0,
-                          weightDecay = 0.0)
-
-```
-
  An implementation of Adagrad. See the original paper:
  <http://jmlr.org/papers/volume12/duchi11a/duchi11a.pdf>
 
@@ -251,21 +190,7 @@ x after optimize: 0.27779138
 [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2]
 ```
 
-
-**Scala:**
-```scala
-val optimMethod = new LBFGS(maxIter=20, maxEval=Double.MaxValue,
-                            tolFun=1e-5, tolX=1e-9, nCorrection=100,
-                            learningRate=1.0, lineSearch=None, lineSearchOptions=None)
-```
-
-**Python:**
-```python
-optim_method = LBFGS(max_iter=20, max_eval=Double.MaxValue, \
-                 tol_fun=1e-5, tol_x=1e-9, n_correction=100, \
-                 learning_rate=1.0, line_search=None, line_search_options=None)
-```
-
+## LBFGS ##
 This implementation of L-BFGS relies on a user-provided line search function
 (state.lineSearch). If this function is not provided, then a simple learningRate
 is used to produce fixed size steps. Fixed size steps are much less costly than line
@@ -286,23 +211,17 @@ case, the learning rate allows a reduction of confidence in the step size.
 
 **Scala example:**
 ```scala
-val optimMethod = new LBFGS(maxIter=20, maxEval=Double.MaxValue,
-                            tolFun=1e-5, tolX=1e-9, nCorrection=100,
-                            learningRate=1.0, lineSearch=None, lineSearchOptions=None)
-optimizer.setOptimMethod(optimMethod)
+optimizer.setOptimMethod(new LBFGS())
 ```
 
 **Python example:**
-```python
-optim_method = LBFGS(max_iter=20, max_eval=DOUBLEMAX, \
-                 tol_fun=1e-5, tol_x=1e-9, n_correction=100, \
-                 learning_rate=1.0, line_search=None, line_search_options=None)
-                  
+```python       
 optimizer = Optimizer(
     model=mlp_model,
     training_rdd=train_data,
     criterion=ClassNLLCriterion(),
-    optim_method=optim_method,
+    optim_method="LBFGS",
+    state={"learningRate": 1.0}
     end_trigger=MaxEpoch(20),
     batch_size=32)
 ```

@@ -61,7 +61,8 @@ Finally (after optionally specifying the validation data and methods for the ```
       trigger = Trigger.everyEpoch,
       dataset = validationSet,
       vMethods = Array(new Top1Accuracy))
-    .setOptimMethod(new Adagrad(learningRate=0.01, learningRateDecay=0.0002))
+    .setOptimMethod(new Adagrad())
+    .setState(T("learningRate" -> 0.01, "learningRateDecay" -> 0.0002))
     .setEndWhen(Trigger.maxEpoch(param.maxEpoch))
     .optimize()
 ````
@@ -107,7 +108,8 @@ After that, the [example](https://github.com/intel-analytics/BigDL/blob/master/s
     batchSize = param.batchSize
   )
   optimizer
-    .setOptimMethod(new Adagrad(learningRate=0.01, learningRateDecay=0.0002))
+    .setOptimMethod(new Adagrad())
+    .setState(T("learningRate" -> 0.01, "learningRateDecay" -> 0.0002))
     .setValidation(Trigger.everyEpoch, valRDD, Array(new Top1Accuracy[Float]), param.batchSize)
     .setEndWhen(Trigger.maxEpoch(2))
     .optimize()
