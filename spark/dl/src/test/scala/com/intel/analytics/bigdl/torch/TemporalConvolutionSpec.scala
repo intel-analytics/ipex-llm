@@ -51,7 +51,8 @@ class TemporalConvolutionSpec extends TorchSpec {
       "output = layer:forward(input) \n" +
       "gradInput = layer:backward(input, gradOutput) "
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("weight", "bias", "output", "gradInput"))
 
     val luaWeight = torchResult("weight").asInstanceOf[Tensor[Double]]
@@ -66,6 +67,7 @@ class TemporalConvolutionSpec extends TorchSpec {
     bias should be equals luaBias
     output should be equals luaOutput
     gradInput should be equals luaGradInput
+    th.release()
   }
 
   "A TemporalConvolution" should "generate correct output" in {
@@ -93,7 +95,8 @@ class TemporalConvolutionSpec extends TorchSpec {
       "output = layer:forward(input) \n" +
       "gradInput = layer:backward(input, gradOutput) "
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("weight", "bias", "output", "gradInput"))
 
     val luaWeight = torchResult("weight").asInstanceOf[Tensor[Double]]
@@ -108,6 +111,7 @@ class TemporalConvolutionSpec extends TorchSpec {
     bias should be equals luaBias
     output should be equals luaOutput
     gradInput should be equals luaGradInput
+    th.release()
   }
 
   "A TemporalConvolution" should "be good in gradient check for input" in {

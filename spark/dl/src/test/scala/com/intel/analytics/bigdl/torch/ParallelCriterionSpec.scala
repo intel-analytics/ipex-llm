@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.utils.{Engine, T, Table}
 
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class ParallelCriterionSpec extends TorchSpec {
     "A ParallelCriterion " should "generate correct output and grad" in {
     torchCheck()
@@ -58,7 +58,8 @@ class ParallelCriterionSpec extends TorchSpec {
       gradOutput2 = gradOutput[2]
       """.stripMargin
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "target" -> target),
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "target" -> target),
       Array("loss", "gradOutput1", "gradOutput2"))
     val luaLoss = torchResult("loss").asInstanceOf[Double]
     val luaGradOutput1 = torchResult("gradOutput1").asInstanceOf[Tensor[Double]]
@@ -70,6 +71,7 @@ class ParallelCriterionSpec extends TorchSpec {
 
     println("Test case : ParallelCriterion, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 }
 

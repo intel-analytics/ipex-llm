@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.optim.Adagrad
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{RandomGenerator, T}
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class AdagradSpec extends TorchSpec {
     "Adagrad with weightDecay" should "works fine" in {
     torchCheck()
@@ -39,7 +39,8 @@ class AdagradSpec extends TorchSpec {
       "optim.adagrad(feval, param, config)\n" +
       "x,f = optim.adagrad(feval, param, config)\n"
 
-    val (luaTime, torchResult) = TH.run(code, Map("grad" -> grad, "param" -> param,
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("grad" -> grad, "param" -> param,
       "config" -> config),
       Array("x", "grad"))
     val luaGrad = torchResult("grad").asInstanceOf[Tensor[Float]]
@@ -51,5 +52,6 @@ class AdagradSpec extends TorchSpec {
 
     luaParam should be (param)
     luaGrad should be (grad)
+    th.release()
   }
 }

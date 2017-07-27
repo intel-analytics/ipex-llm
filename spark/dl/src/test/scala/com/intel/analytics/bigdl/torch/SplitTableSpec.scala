@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.utils.T
 
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class SplitTableSpec extends TorchSpec {
     "A SplitTable selects a tensor as an output" should "generate correct output and grad" in {
     torchCheck()
@@ -57,7 +57,8 @@ class SplitTableSpec extends TorchSpec {
       end
                """.stripMargin
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output1", "output2", "output3", "gradInput"))
     val torchOutput1 = torchResult("output1").asInstanceOf[Tensor[Double]]
     val torchOutput2 = torchResult("output2").asInstanceOf[Tensor[Double]]
@@ -67,5 +68,6 @@ class SplitTableSpec extends TorchSpec {
 
     torchOutput should be(output)
     torchgradInput should be(gradInput)
+    th.release()
   }
 }

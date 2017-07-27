@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.torch
 import com.intel.analytics.bigdl.nn.MultiLabelSoftMarginCriterion
 import com.intel.analytics.bigdl.tensor.Tensor
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class MultiLabelSoftMarginCriterionSpec extends TorchSpec {
     "A MultiLabelSoftMarginCriterion Criterion " should
     "generate correct output and grad" in {
@@ -46,7 +46,8 @@ class MultiLabelSoftMarginCriterionSpec extends TorchSpec {
       "gradInput = abs:backward(input, target)"
 
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "target" -> target),
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "target" -> target),
       Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Double]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -56,6 +57,7 @@ class MultiLabelSoftMarginCriterionSpec extends TorchSpec {
 
     println("Test case : MultiLabelSoftMarginCriterion, Torch : " +
       luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
 }

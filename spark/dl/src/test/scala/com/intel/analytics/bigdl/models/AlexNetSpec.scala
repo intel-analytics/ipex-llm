@@ -21,15 +21,15 @@ import com.intel.analytics.bigdl.example.loadmodel.{AlexNet, AlexNet_OWT}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.optim.SGD
-import com.intel.analytics.bigdl.tensor.{Tensor, _}
-import com.intel.analytics.bigdl.torch.{TH, TorchSpec}
+import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.torch.{NewTH, TorchSpec}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.T
 
 import scala.math._
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class AlexNetSpec extends TorchSpec {
   "AlexNet float" should "generate correct output" in {
     torchCheck()
@@ -112,10 +112,11 @@ gradOutput=criterion.gradInput
 gradInput = model.gradInput
       """
 
-    TH.runNM(code, Map("input" -> input, "labels" -> labels), Array("output", "gradOutput", "err",
+    val th = new NewTH
+    th.runNM(code, Map("input" -> input, "labels" -> labels), Array("output", "gradOutput", "err",
       "parameters_initial", "gradParameters_initial", "gradInput", "model"))
 
-    val parameterTorch = TH.map("parameters_initial").asInstanceOf[Tensor[Double]]
+    val parameterTorch = th.map("parameters_initial").asInstanceOf[Tensor[Double]]
     val parameters = model.getParameters()._1.asInstanceOf[Tensor[Float]]
 
     for (i <- 0 until parameters.nElement()) {
@@ -140,7 +141,7 @@ gradInput = model.gradInput
     }
 
     model.zeroGradParameters()
-    val output = TH.map("output").asInstanceOf[Tensor[Double]]
+    val output = th.map("output").asInstanceOf[Tensor[Double]]
     val outputTest = model.forward(floatInput).toTensor
     var abss = 0.0
     for (i <- 0 until outputTest.nElement()) {
@@ -151,12 +152,12 @@ gradInput = model.gradInput
     println(s"outputAbs:$abss")
 
     val errTest = criterion.forward(outputTest, floatLabel)
-    val err = TH.map("err").asInstanceOf[Double]
+    val err = th.map("err").asInstanceOf[Double]
     println(s"${abs(errTest - err)}")
     assert(abs(errTest - err) < 1e-6)
 
     val gradOutputTest = criterion.backward(outputTest, floatLabel).toTensor
-    val gradOutput = TH.map("gradOutput").asInstanceOf[Tensor[Double]]
+    val gradOutput = th.map("gradOutput").asInstanceOf[Tensor[Double]]
     abss = 0.0
     for (i <- 0 until gradOutputTest.nElement()) {
       val tmp = abs(gradOutputTest.storage().array()(i) - gradOutput.storage().array()(i))
@@ -166,7 +167,7 @@ gradInput = model.gradInput
     println(s"gradOutputTestAbs:$abss")
 
     val gradInput = model.backward(floatInput, gradOutputTest).toTensor[Float]
-    val gradInputTorch = TH.map("gradInput").asInstanceOf[Tensor[Double]]
+    val gradInputTorch = th.map("gradInput").asInstanceOf[Tensor[Double]]
 
     abss = 0.0
     for (i <- 0 until gradInputTorch.nElement()) {
@@ -176,7 +177,7 @@ gradInput = model.gradInput
     println(s"gradInputTestAbs:$abss")
 
     val (weights, grad) = model.getParameters()
-    val modelTorch = TH.map("model").asInstanceOf[Module[Double]]
+    val modelTorch = th.map("model").asInstanceOf[Module[Double]]
     val (weightsTorch, gradTorch) = modelTorch.getParameters()
     sgd.optimize(_ => (errTest, grad), weights, state, state)
     abss = 0.0
@@ -185,6 +186,7 @@ gradInput = model.gradInput
       abss += tmp
     }
     assert(abss < 2e-2)
+    th.release()
   }
 
   "AlexNet Float save to torch" should "generate correct output" in {
@@ -237,11 +239,12 @@ gradOutput=criterion.gradInput
 gradInput = model.gradInput
       """
 
-    TH.runNM(code, Map("model" -> model, "input" -> input, "labels" -> labels),
+    val th = new NewTH
+    th.runNM(code, Map("model" -> model, "input" -> input, "labels" -> labels),
       Array("output", "gradOutput", "err",
       "parameters_initial", "gradParameters_initial", "gradInput", "model"))
 
-    val parameterTorch = TH.map("parameters_initial").asInstanceOf[Tensor[Float]]
+    val parameterTorch = th.map("parameters_initial").asInstanceOf[Tensor[Float]]
     val parameters = model.getParameters()._1.asInstanceOf[Tensor[Float]]
 
     parameterTorch should be (parameters)
@@ -262,7 +265,7 @@ gradInput = model.gradInput
     }
 
     model.zeroGradParameters()
-    val output = TH.map("output").asInstanceOf[Tensor[Float]]
+    val output = th.map("output").asInstanceOf[Tensor[Float]]
     val outputTest = model.forward(input).toTensor
     var abss = 0.0
     for (i <- 0 until outputTest.nElement()) {
@@ -273,12 +276,12 @@ gradInput = model.gradInput
     println(s"outputAbs:$abss")
 
     val errTest = criterion.forward(outputTest, labels)
-    val err = TH.map("err").asInstanceOf[Double]
+    val err = th.map("err").asInstanceOf[Double]
     println(s"err:${abs(errTest - err)}")
     assert(abs(errTest - err) < 1e-6)
 
     val gradOutputTest = criterion.backward(outputTest, labels).toTensor
-    val gradOutput = TH.map("gradOutput").asInstanceOf[Tensor[Float]]
+    val gradOutput = th.map("gradOutput").asInstanceOf[Tensor[Float]]
     abss = 0.0
     for (i <- 0 until gradOutputTest.nElement()) {
       val tmp = abs(gradOutputTest.storage().array()(i) - gradOutput.storage().array()(i))
@@ -288,7 +291,7 @@ gradInput = model.gradInput
     println(s"gradOutputTestAbs:$abss")
 
     val gradInput = model.backward(input, gradOutputTest).toTensor[Float]
-    val gradInputTorch = TH.map("gradInput").asInstanceOf[Tensor[Float]]
+    val gradInputTorch = th.map("gradInput").asInstanceOf[Tensor[Float]]
 
     abss = 0.0
     for (i <- 0 until gradInputTorch.nElement()) {
@@ -297,7 +300,7 @@ gradInput = model.gradInput
     }
     println(s"gradInputTestAbs:$abss")
 
-    val modelTorch = TH.map("model").asInstanceOf[Module[Float]]
+    val modelTorch = th.map("model").asInstanceOf[Module[Float]]
     val (weightsTorch, gradTorch) = modelTorch.getParameters()
     sgd.optimize(_ => (errTest, grad), weights, state, state)
     abss = 0.0
@@ -306,6 +309,7 @@ gradInput = model.gradInput
       abss += tmp
     }
     assert(abss < 2e-2)
+    th.release()
   }
 
 

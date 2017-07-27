@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.torch
 
 import com.intel.analytics.bigdl.tensor.Tensor
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class TensorSpec extends TorchSpec {
     "Read empty LongTensor" should "generate correct output" in {
     torchCheck()
@@ -25,10 +25,12 @@ class TensorSpec extends TorchSpec {
 
     val code = "output = torch.LongTensor()\n"
 
-    val (luaTime, torchResult) = TH.run(code, Map("empty" -> empty),
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("empty" -> empty),
       Array("output"))
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
     luaOutput1 should be (empty)
+    th.release()
   }
 
   "Read LongTensor" should "generate correct output" in {
@@ -38,9 +40,11 @@ class TensorSpec extends TorchSpec {
     val code = "output = torch.LongTensor(1, 2, 3)\n" +
       "output:zero()"
 
-    val (luaTime, torchResult) = TH.run(code, Map("tensor" -> tensor),
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("tensor" -> tensor),
       Array("output"))
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
     luaOutput1 should be (tensor)
+    th.release()
   }
 }

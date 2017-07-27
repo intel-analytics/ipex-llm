@@ -157,8 +157,7 @@ class NewTH {
 
   // Single map
   def map(result: String): (Any) = {
-    val suffix = List(uuid, "t7").mkString(".")
-    val tmpFile = List(System.getProperty("java.io.tmpdir"), result, suffix).mkString(".")
+    val tmpFile = tmpFileName(result)
     val tmp: Any = File.loadTorch(tmpFile)
     tmp
   }

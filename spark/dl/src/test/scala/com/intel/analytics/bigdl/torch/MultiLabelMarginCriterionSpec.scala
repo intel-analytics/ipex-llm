@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class MultiLabelMarginCriterionSpec extends TorchSpec {
   "A MultiLabelMarginCriterion " should "generate correct output and grad whith one dimension" in {
     torchCheck()
@@ -42,7 +42,8 @@ class MultiLabelMarginCriterionSpec extends TorchSpec {
       "output = module:forward(input, target)\n" +
       "gradInput = module:backward(input, target)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "target" -> target),
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "target" -> target),
       Array("output", "gradInput"))
     val luaOutput = torchResult("output").asInstanceOf[Double]
     val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -53,6 +54,7 @@ class MultiLabelMarginCriterionSpec extends TorchSpec {
     println("Test case : MultiLabelMarginCriterion, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")
 
+    th.release()
   }
 
   "A MultiLabelMarginCriterion " should "generate correct output and grad with two dimensions" in {
@@ -80,7 +82,8 @@ class MultiLabelMarginCriterionSpec extends TorchSpec {
       "output = module:forward(input, target)\n" +
       "gradInput = module:backward(input, target)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "target" -> target),
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "target" -> target),
       Array("output", "gradInput"))
     val luaOutput = torchResult("output").asInstanceOf[Double]
     val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -91,5 +94,6 @@ class MultiLabelMarginCriterionSpec extends TorchSpec {
     println("Test case : MultiLabelMarginCriterion, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")
 
+    th.release()
   }
 }

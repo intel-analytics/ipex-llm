@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 
 import scala.math._
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class ModuleSpec extends TorchSpec {
     "getParameter" should "behave correctly" in {
     torchCheck()
@@ -39,7 +39,8 @@ class ModuleSpec extends TorchSpec {
       "weight, grad = module:getParameters()\n"
 
 
-    val (luaTime, torchResult) = TH.run(code, Map("subModule1" -> subModule1,
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("subModule1" -> subModule1,
       "subModule2" -> subModule2), Array("weight", "grad"))
     val luaOutput1 = torchResult("weight").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("grad").asInstanceOf[Tensor[Double]]
@@ -54,5 +55,6 @@ class ModuleSpec extends TorchSpec {
     })
 
 
+    th.release()
   }
 }

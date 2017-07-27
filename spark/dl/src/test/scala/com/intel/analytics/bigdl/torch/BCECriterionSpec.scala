@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.utils.RandomGenerator._
 
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class BCECriterionSpec extends TorchSpec{
 
   "A BCECriterion " should "generate correct output and grad" in {
@@ -45,7 +45,8 @@ class BCECriterionSpec extends TorchSpec{
       "output2 = criterion:backward(input, target)"
 
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "target" -> target),
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "target" -> target),
       Array("output1", "output2"))
     val luaOutput1 = torchResult("output1").asInstanceOf[Double]
     val luaOutput2 = torchResult("output2").asInstanceOf[Tensor[Double]]
@@ -55,6 +56,7 @@ class BCECriterionSpec extends TorchSpec{
 
     println("Test case : BCECriterion, Torch : " + luaTime + " s, Scala : " +
       scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "A BCECriterion with weights" should "generate correct output and grad" in {
@@ -78,7 +80,8 @@ class BCECriterionSpec extends TorchSpec{
       "output2 = criterion:backward(input, target)"
 
 
-    val (luaTime, torchResult) = TH.run(code,
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "target" -> target, "weights" -> weights),
       Array("output1", "output2"))
     val luaOutput1 = torchResult("output1").asInstanceOf[Double]
@@ -89,6 +92,7 @@ class BCECriterionSpec extends TorchSpec{
 
     println("Test case : BCECriterion, Torch : " + luaTime + " s, Scala : " +
       scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "A BCECriterion with sizeAverage" should "generate correct output and grad" in {
@@ -112,7 +116,8 @@ class BCECriterionSpec extends TorchSpec{
       "output2 = criterion:backward(input, target)"
 
 
-    val (luaTime, torchResult) = TH.run(code,
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "target" -> target, "weights" -> weights),
       Array("output1", "output2"))
     val luaOutput1 = torchResult("output1").asInstanceOf[Double]
@@ -123,6 +128,7 @@ class BCECriterionSpec extends TorchSpec{
 
     println("Test case : BCECriterion, Torch : " + luaTime + " s, Scala : " +
       scalaTime / 1e9 + " s")
+    th.release()
   }
 
 }

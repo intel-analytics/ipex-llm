@@ -19,7 +19,7 @@ import com.intel.analytics.bigdl.nn.AddConstant
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class AddConstantSpec extends TorchSpec {
     "A Add Module " should "generate correct output and grad" in {
     torchCheck()
@@ -46,7 +46,8 @@ class AddConstantSpec extends TorchSpec {
       "output = module:forward(input)\n" +
       "gradInput = module:backward(input, gradOutput)\n"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
 
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
@@ -60,5 +61,6 @@ class AddConstantSpec extends TorchSpec {
 
     luaOutput1 should be(output)
     luaOutput2 should be(gradInput)
+    th.release()
   }
 }

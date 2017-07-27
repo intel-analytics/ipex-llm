@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.nn.CMulTable
 import scala.collection.mutable.HashMap
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class CMulTableSpec extends TorchSpec {
     "A CMulTable Module" should "generate correct output and grad" in {
     torchCheck()
@@ -50,7 +50,8 @@ class CMulTableSpec extends TorchSpec {
       "gradInput = module:backward(input,gradOutput)"
 
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Table]
@@ -61,5 +62,6 @@ class CMulTableSpec extends TorchSpec {
     println("Test case : CMinTable, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")
 
+    th.release()
   }
 }

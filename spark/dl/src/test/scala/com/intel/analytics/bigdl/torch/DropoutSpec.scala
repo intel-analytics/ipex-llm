@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class DropoutSpec extends TorchSpec {
     "Dropout module with continuous input" should "converge to correct weight and bias" in {
     torchCheck()
@@ -36,7 +36,8 @@ class DropoutSpec extends TorchSpec {
       "output1 = module:forward(input)\n" +
       "output2 = module:backward(input, input:clone():fill(1))"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input), Array("output1", "output2"))
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input), Array("output1", "output2"))
     val luaOutput1 = torchResult("output1").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("output2").asInstanceOf[Tensor[Double]]
 
@@ -52,6 +53,7 @@ class DropoutSpec extends TorchSpec {
     luaOutput2 should be(output2)
 
     println("Test case : Dropout, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "Dropout module with discontinuous input" should "converge to correct weight and bias" in {
@@ -67,7 +69,8 @@ class DropoutSpec extends TorchSpec {
       "output1 = module:forward(input)\n" +
       "output2 = module:backward(input, input:clone():fill(1))"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input), Array("output1", "output2"))
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input), Array("output1", "output2"))
     val luaOutput1 = torchResult("output1").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("output2").asInstanceOf[Tensor[Double]]
 
@@ -83,5 +86,6 @@ class DropoutSpec extends TorchSpec {
     luaOutput2 should be(output2)
 
     println("Test case : Dropout, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 }

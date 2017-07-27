@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.T
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class CAddSpec extends TorchSpec {
   "CAdd L2 regularizer" should "works correctly" in {
     import com.intel.analytics.bigdl.numeric.NumericDouble
@@ -115,7 +115,8 @@ class CAddSpec extends TorchSpec {
       "gradInput = module:backward(input,gradOutput)\n" +
       "gradBias = module.gradBias"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput", "gradBias"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -126,6 +127,7 @@ class CAddSpec extends TorchSpec {
     layer.gradBias should be (luaGradBias)
 
     println("Test case : CAdd, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "A CAdd(3)" should "generate correct output and grad" in {
@@ -153,7 +155,8 @@ class CAddSpec extends TorchSpec {
       "gradInput = module:backward(input,gradOutput)" +
       "gradBias = module.gradBias"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput", "gradBias"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -164,6 +167,7 @@ class CAddSpec extends TorchSpec {
     layer.gradBias should be (luaGradBias)
 
     println("Test case : CAdd, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "A CAdd(3, 4)" should "generate correct output and grad" in {
@@ -191,7 +195,8 @@ class CAddSpec extends TorchSpec {
       "gradInput = module:backward(input,gradOutput)" +
       "gradBias = module.gradBias"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput", "gradBias"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -202,6 +207,7 @@ class CAddSpec extends TorchSpec {
     layer.gradBias should be (luaGradBias)
 
     println("Test case : CAdd, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "A CAdd(1, 10, 1, 1)" should "generate correct output and grad" in {
@@ -229,7 +235,8 @@ class CAddSpec extends TorchSpec {
       "gradInput = module:backward(input,gradOutput)" +
       "gradBias = module.gradBias"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput", "gradBias"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -240,6 +247,7 @@ class CAddSpec extends TorchSpec {
     layer.gradBias should be (luaGradBias)
 
     println("Test case : CAdd, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
 }

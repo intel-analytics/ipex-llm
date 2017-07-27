@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.utils.RandomGenerator._
 
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class CrossEntropyCriterionSpec extends TorchSpec {
     "A CrossEntropyCriterion Module" should "generate correct output and grad" in {
     torchCheck()
@@ -46,7 +46,8 @@ class CrossEntropyCriterionSpec extends TorchSpec {
       "output = module:forward(input, target)\n" +
       "gradInput = module:backward(input,target)\n"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "target" -> target),
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "target" -> target),
       Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Double]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -57,6 +58,7 @@ class CrossEntropyCriterionSpec extends TorchSpec {
     println("Test case : CrossEntropyCriterion, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")
 
+    th.release()
   }
 
   "A CrossEntropyCriterion(sizeAverage = false) Module" should
@@ -83,7 +85,8 @@ class CrossEntropyCriterionSpec extends TorchSpec {
       "output = module:forward(input, target)\n" +
       "gradInput = module:backward(input,target)\n"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "target" -> target),
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "target" -> target),
       Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Double]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -94,5 +97,6 @@ class CrossEntropyCriterionSpec extends TorchSpec {
     println("Test case : CrossEntropyCriterion, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")
 
+    th.release()
   }
 }

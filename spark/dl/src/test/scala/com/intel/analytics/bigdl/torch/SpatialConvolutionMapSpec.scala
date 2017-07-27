@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.utils.T
 
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class SpatialConvolutionMapSpec extends TorchSpec {
   "SpatialConvolution L2 regularizer" should "works correctly" in {
     import com.intel.analytics.bigdl.numeric.NumericDouble
@@ -135,7 +135,8 @@ class SpatialConvolutionMapSpec extends TorchSpec {
       "bias = layer.bias \n" +
       "output = layer:forward(input) "
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input),
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input),
       Array("weight", "bias", "output"))
 
     val luaWeight = torchResult("weight").asInstanceOf[Tensor[Double]]
@@ -148,6 +149,7 @@ class SpatialConvolutionMapSpec extends TorchSpec {
     weight shouldEqual luaWeight
     bias shouldEqual luaBias
     output shouldEqual luaOutput
+    th.release()
   }
 
   "A SpatialConvolution with random table" should "generate correct output" in {
@@ -173,7 +175,8 @@ class SpatialConvolutionMapSpec extends TorchSpec {
       "bias = layer.bias \n" +
       "output = layer:forward(input) "
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input),
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input),
       Array("weight", "bias", "output"))
 
     val luaWeight = torchResult("weight").asInstanceOf[Tensor[Double]]
@@ -186,6 +189,7 @@ class SpatialConvolutionMapSpec extends TorchSpec {
     weight shouldEqual luaWeight
     bias shouldEqual luaBias
     output shouldEqual luaOutput
+    th.release()
   }
 
   "A SpatialConvolution with oneToOne table" should "generate correct output" in {
@@ -211,7 +215,8 @@ class SpatialConvolutionMapSpec extends TorchSpec {
       "bias = layer.bias \n" +
       "output = layer:forward(input) "
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input),
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input),
       Array("weight", "bias", "output"))
 
     val luaWeight = torchResult("weight").asInstanceOf[Tensor[Double]]
@@ -224,6 +229,7 @@ class SpatialConvolutionMapSpec extends TorchSpec {
     weight shouldEqual luaWeight
     bias shouldEqual luaBias
     output shouldEqual luaOutput
+    th.release()
   }
 
 }

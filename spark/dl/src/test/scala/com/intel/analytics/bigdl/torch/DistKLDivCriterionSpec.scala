@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class DistKLDivCriterionSpec extends TorchSpec {
     "A DistKLDivCriterion " should "generate correct output and grad" in {
     torchCheck()
@@ -35,7 +35,8 @@ class DistKLDivCriterionSpec extends TorchSpec {
       "output = module:forward(input, target)\n" +
       "gradInput = module:backward(input, target)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "target" -> target),
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "target" -> target),
       Array("output", "gradInput"))
 
     val luaOutput1 = torchResult("output").asInstanceOf[Double]
@@ -53,5 +54,6 @@ class DistKLDivCriterionSpec extends TorchSpec {
 
     println("Test case : DistKLDivCriterion, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 }

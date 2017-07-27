@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 
 import scala.math._
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class SmoothL1CriterionSpec extends TorchSpec {
     "A Smooth Criterion " should "generate correct output and grad" in {
     torchCheck()
@@ -57,7 +57,8 @@ class SmoothL1CriterionSpec extends TorchSpec {
       "gradInput = sl:backward(input,target)"
 
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "target" -> target),
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "target" -> target),
       Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Double]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -67,5 +68,6 @@ class SmoothL1CriterionSpec extends TorchSpec {
       assert(abs(v1 - v2) < 1e-6);
       v1
     })
+    th.release()
   }
 }

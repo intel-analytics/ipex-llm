@@ -24,7 +24,7 @@ import scala.collection.mutable.HashMap
 
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class CosineEmbeddingCriterionSpec extends TorchSpec {
     "A CosineEmbeddingCriterion Module" should "generate correct output and grad" in {
     torchCheck()
@@ -57,7 +57,8 @@ class CosineEmbeddingCriterionSpec extends TorchSpec {
       "gradInput = module:backward(input, -0.5)\n"
 
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input),
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input),
       Array("output", "gradInput", "_idx", "buffer", "_outputs"))
     val luaOutput1 = torchResult("output").asInstanceOf[Double]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Table]
@@ -67,5 +68,6 @@ class CosineEmbeddingCriterionSpec extends TorchSpec {
 
     println("Test case : CrossEntropyCriterion, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 }

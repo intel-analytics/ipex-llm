@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.utils.RandomGenerator._
 import scala.util.Random
 import com.intel.analytics.bigdl._
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class SpatialBatchNormalizationSpec extends TorchSpec {
     "A SpatialBatchNormalization" should "generate correct output and gradInput" in {
     torchCheck()
@@ -76,7 +76,8 @@ class SpatialBatchNormalizationSpec extends TorchSpec {
         |gradInput = sbn:backward(input, gradOutput2)
       """.stripMargin
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput,
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput,
       "gradOutput2" -> gradOutput2), Array("parameters_initial", "gradParameters_initial",
       "gradParameters", "output", "gradInput"))
     val parameterTorch = torchResult("parameters_initial").asInstanceOf[Tensor[Double]]
@@ -111,6 +112,7 @@ class SpatialBatchNormalizationSpec extends TorchSpec {
       v1
     })
 
+    th.release()
   }
 
   "A SpatialBatchNormalization evaluating" should "generate correct output" in {
@@ -167,7 +169,8 @@ class SpatialBatchNormalizationSpec extends TorchSpec {
         |output = sbn:forward(input)
       """.stripMargin
 
-    val (luaTime, torchResult) = TH.run(code,
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput, "gradOutput2" -> gradOutput2),
       Array("parameters_initial", "gradParameters_initial", "output", "gradInput"))
     val parameterTorch = torchResult("parameters_initial").asInstanceOf[Tensor[Double]]
@@ -194,6 +197,7 @@ class SpatialBatchNormalizationSpec extends TorchSpec {
       v1
     })
 
+    th.release()
   }
 
   "SpatialBatchNormalization module in batch mode" should "be good in gradient check " +

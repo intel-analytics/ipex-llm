@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.utils.T
 
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class SpatialDilatedConvolutionSpec extends TorchSpec {
   "SpatialDilatedConvolution L2 regularizer" should "works correctly" in {
     import com.intel.analytics.bigdl.numeric.NumericDouble
@@ -136,7 +136,8 @@ class SpatialDilatedConvolutionSpec extends TorchSpec {
       "bias = layer.bias \n" +
       "output = layer:forward(input) "
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input),
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input),
       Array("weight", "bias", "output"))
 
     val luaWeight = torchResult("weight").asInstanceOf[Tensor[Double]]
@@ -149,6 +150,7 @@ class SpatialDilatedConvolutionSpec extends TorchSpec {
     weight should be(luaWeight)
     bias should be(luaBias)
     output should be(luaOutput)
+    th.release()
   }
 
   "A SpatialDilatedConvolution" should "generate correct output and grad" in {
@@ -190,7 +192,8 @@ class SpatialDilatedConvolutionSpec extends TorchSpec {
       gradWeight = layer.gradWeight
       """
 
-    val (luaTime, torchResult) = TH.run(code,
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput),
       Array("weight", "bias", "output", "gradInput", "gradBias", "gradWeight")
     )
@@ -211,6 +214,7 @@ class SpatialDilatedConvolutionSpec extends TorchSpec {
     gradInput should be(luaGradInput)
     luaGradBias should be (layer.gradBias)
     luaGradWeight should be (layer.gradWeight)
+    th.release()
   }
 
   "A SpatialDilatedConvolution" should "generate correct output and grad with 3D input" in {
@@ -252,7 +256,8 @@ class SpatialDilatedConvolutionSpec extends TorchSpec {
       gradWeight = layer.gradWeight
       """
 
-    val (luaTime, torchResult) = TH.run(code,
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput),
       Array("weight", "bias", "output", "gradInput", "gradBias", "gradWeight")
     )
@@ -273,6 +278,7 @@ class SpatialDilatedConvolutionSpec extends TorchSpec {
     gradInput should be(luaGradInput)
     luaGradBias should be (layer.gradBias)
     luaGradWeight should be (layer.gradWeight)
+    th.release()
   }
 
   "A SpatialDilatedConvolution multiple forward backward" should
@@ -327,7 +333,8 @@ class SpatialDilatedConvolutionSpec extends TorchSpec {
       gradWeight2 = layer.gradWeight
       """
 
-    val (luaTime, torchResult) = TH.run(code,
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput),
       Array("weight", "bias", "output", "gradInput", "gradBias", "gradWeight",
         "output2", "gradInput2", "gradBias2", "gradWeight2")
@@ -354,5 +361,6 @@ class SpatialDilatedConvolutionSpec extends TorchSpec {
     gradInput2 should be(luaGradInput2)
     luaGradBias2 should be (layer.gradBias)
     luaGradWeight2 should be (layer.gradWeight)
+    th.release()
   }
 }

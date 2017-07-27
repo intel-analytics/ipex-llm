@@ -19,7 +19,7 @@ import com.intel.analytics.bigdl.nn.TanhShrink
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class TanhShrinkSpec extends TorchSpec {
     "A TanhShrink()" should "generate correct output and grad" in {
     torchCheck()
@@ -40,7 +40,8 @@ class TanhShrinkSpec extends TorchSpec {
       "output = module:forward(input)\n" +
       "gradInput = module:backward(input,gradOutput)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -49,5 +50,6 @@ class TanhShrinkSpec extends TorchSpec {
     gradInput should be (luaGradInput)
 
     println("Test case : TanhShrink, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 }

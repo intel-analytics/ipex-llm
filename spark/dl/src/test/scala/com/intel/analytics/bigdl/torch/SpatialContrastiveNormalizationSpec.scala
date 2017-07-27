@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.utils.RandomGenerator._
 
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class SpatialContrastiveNormalizationSpec extends TorchSpec {
     "A SpatialContrastiveNormalization 3D input" should "generate correct output and grad" in {
     torchCheck()
@@ -50,7 +50,8 @@ class SpatialContrastiveNormalizationSpec extends TorchSpec {
       gradInput = model:backward(input, gradOutput)
       """
 
-    val (luaTime, torchResult) = TH.run(code,
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput")
     )
@@ -60,6 +61,7 @@ class SpatialContrastiveNormalizationSpec extends TorchSpec {
 
     output should be(luaOutput)
     gradInput should be(luaGradInput)
+    th.release()
   }
 
   "A SpatialContrastiveNormalization" should "generate correct output and grad" in {
@@ -88,7 +90,8 @@ class SpatialContrastiveNormalizationSpec extends TorchSpec {
       gradInput = model:backward(input, gradOutput)
       """
 
-    val (luaTime, torchResult) = TH.run(code,
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput")
     )
@@ -98,6 +101,7 @@ class SpatialContrastiveNormalizationSpec extends TorchSpec {
 
     output should be(luaOutput)
     gradInput should be(luaGradInput)
+    th.release()
   }
 
   "A SpatialContrastiveNormalization(4)" should "generate correct output and grad" in {
@@ -126,7 +130,8 @@ class SpatialContrastiveNormalizationSpec extends TorchSpec {
       gradInput = model:backward(input, gradOutput)
       """
 
-    val (luaTime, torchResult) = TH.run(code,
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput")
     )
@@ -136,6 +141,7 @@ class SpatialContrastiveNormalizationSpec extends TorchSpec {
 
     output should be(luaOutput)
     gradInput should be(luaGradInput)
+    th.release()
   }
 
   "A SpatialContrastiveNormalization(4, kernel)" should "generate correct output and grad" in {
@@ -162,7 +168,8 @@ class SpatialContrastiveNormalizationSpec extends TorchSpec {
       gradInput = model:backward(input, gradOutput)
       """
 
-    val (luaTime, torchResult) = TH.run(code,
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput, "kernel" -> kernel),
       Array("output", "gradInput")
     )
@@ -172,6 +179,7 @@ class SpatialContrastiveNormalizationSpec extends TorchSpec {
 
     output should be(luaOutput)
     gradInput should be(luaGradInput)
+    th.release()
   }
 
   "SpatialContrastiveNormalization(4, kernel) with 3D input" should
@@ -199,7 +207,8 @@ class SpatialContrastiveNormalizationSpec extends TorchSpec {
       gradInput = model:backward(input, gradOutput)
       """
 
-    val (luaTime, torchResult) = TH.run(code,
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput, "kernel" -> kernel),
       Array("output", "gradInput")
     )
@@ -209,6 +218,7 @@ class SpatialContrastiveNormalizationSpec extends TorchSpec {
 
     output should be(luaOutput)
     gradInput should be(luaGradInput)
+    th.release()
   }
 
   "A SpatialContrastiveNormalization(1, gaussian) whit 3D input" should
@@ -237,7 +247,8 @@ class SpatialContrastiveNormalizationSpec extends TorchSpec {
       gradInput = model:backward(input, gradOutput)
       """
 
-    val (luaTime, torchResult) = TH.run(code,
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput, "kernel" -> kernel),
       Array("output", "gradInput")
     )
@@ -247,6 +258,7 @@ class SpatialContrastiveNormalizationSpec extends TorchSpec {
 
     output should be(luaOutput)
     gradInput should be(luaGradInput)
+    th.release()
   }
 }
 

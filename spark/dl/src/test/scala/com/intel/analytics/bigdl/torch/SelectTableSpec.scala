@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 import scala.collection.mutable.HashMap
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class SelectTableSpec extends TorchSpec {
     "A SelectTable selects a tensor as an output" should "generate correct output and grad" in {
     torchCheck()
@@ -61,7 +61,8 @@ class SelectTableSpec extends TorchSpec {
       end
                """.stripMargin
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput1", "gradInput2", "gradInput3"))
     val torchOutput = torchResult("output").asInstanceOf[Tensor[Double]]
     val torchgradInput1 = torchResult("gradInput1").asInstanceOf[Tensor[Double]]
@@ -75,6 +76,7 @@ class SelectTableSpec extends TorchSpec {
     println("Test case : PairwiseDistance, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 +
       " s")
+    th.release()
   }
 
   "A SelectTable selects a table as an output" should "generate correct output and grad" in {
@@ -112,7 +114,8 @@ class SelectTableSpec extends TorchSpec {
       gradInput2 = gradInput[2]
                """.stripMargin
 
-    val (luaTime, torchResult) = TH.run(code, Map("embeddedInput2" -> embeddedInput2,
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("embeddedInput2" -> embeddedInput2,
       "embeddedInput1" -> embeddedInput1, "gradOutput" -> gradOutput),
       Array("output", "gradInput1", "gradInput2"))
 
@@ -131,5 +134,6 @@ class SelectTableSpec extends TorchSpec {
     println("Test case : PairwiseDistance, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 +
       " s")
+    th.release()
   }
 }

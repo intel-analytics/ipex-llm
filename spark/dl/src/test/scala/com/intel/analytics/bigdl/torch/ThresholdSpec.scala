@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.utils.Engine
 
 import scala.math._
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class ThresholdSpec extends TorchSpec {
     "A Threshold Module " should "generate correct output and grad" in {
     torchCheck()
@@ -55,7 +55,8 @@ class ThresholdSpec extends TorchSpec {
     val code = "output = module:forward(input)\n" +
       "gradInput = module:backward(input,gradOutput)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("module" -> module, "input" -> input,
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("module" -> module, "input" -> input,
       "gradOutput" -> gradOutput), Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -70,5 +71,6 @@ class ThresholdSpec extends TorchSpec {
     })
 
     println("Test case : Threshold, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 }

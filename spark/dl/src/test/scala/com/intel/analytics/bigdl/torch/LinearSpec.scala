@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.utils.RandomGenerator._
 import scala.util.Random
 import com.intel.analytics.bigdl._
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class LinearSpec extends TorchSpec {
     "Linear module" should "converge to correct weight and bias" in {
     torchCheck()
@@ -47,7 +47,8 @@ class LinearSpec extends TorchSpec {
       "output1 = linear:forward(input)\n" +
       "output2 = linear:backward(input, grad)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("linear" -> linear,
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("linear" -> linear,
       "input" -> input, "grad" -> grad),
       Array("weight", "bias", "output1", "output2"))
     val luaOutput1 = torchResult("output1").asInstanceOf[Tensor[Double]]
@@ -71,6 +72,7 @@ class LinearSpec extends TorchSpec {
     luaBias should be(bias)
 
     println("Test case : Linear, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "Linear module without bias" should "converate to correct weight and bias" in {
@@ -95,7 +97,8 @@ class LinearSpec extends TorchSpec {
       "output1 = linear:forward(input)\n" +
       "output2 = linear:backward(input, grad)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("linear" -> linear,
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("linear" -> linear,
       "input" -> input, "grad" -> grad),
       Array("weight", "bias", "output1", "output2"))
     val luaOutput1 = torchResult("output1").asInstanceOf[Tensor[Double]]
@@ -119,6 +122,7 @@ class LinearSpec extends TorchSpec {
     luaBias should be(bias)
 
     println("Test case : Linear, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "Linear (1024, 1000)" should "converate to correct weight and bias" in {
@@ -140,7 +144,8 @@ class LinearSpec extends TorchSpec {
       "output1 = linear:forward(input)\n" +
       "output2 = linear:backward(input, grad)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("linear" -> linear,
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("linear" -> linear,
       "input" -> input, "grad" -> grad),
       Array("weight", "bias", "output1", "output2"))
     val luaOutput1 = torchResult("output1").asInstanceOf[Tensor[Double]]
@@ -164,6 +169,7 @@ class LinearSpec extends TorchSpec {
     luaBias should be(bias)
 
     println("Test case : Linear, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "Linear (27, 64)" should "converge to correct weight and bias" in {
@@ -184,7 +190,8 @@ class LinearSpec extends TorchSpec {
       "output1 = linear:forward(input)\n" +
       "output2 = linear:backward(input, grad)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("linear" -> linear,
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("linear" -> linear,
       "input" -> input, "grad" -> grad),
       Array("weight", "bias", "output1", "output2"))
     val luaOutput1 = torchResult("output1").asInstanceOf[Tensor[Double]]
@@ -208,6 +215,7 @@ class LinearSpec extends TorchSpec {
     luaBias should be(bias)
 
     println("Test case : Linear, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "Linear module" should "be good in gradient check for input" in {
@@ -248,7 +256,8 @@ class LinearSpec extends TorchSpec {
       "output = linear:forward(input)\n" +
       "gradInput = linear:backward(input, grad)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("linear" -> linear,
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("linear" -> linear,
       "input" -> input, "grad" -> grad),
       Array("linear", "output", "gradInput"))
     val torchLinear = torchResult("linear").asInstanceOf[Linear[Double]]
@@ -273,5 +282,6 @@ class LinearSpec extends TorchSpec {
     luaBias should be(bias)
 
     println("Test case : Linear, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 }

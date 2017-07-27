@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl._
 
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class BatchNormalizationSpec extends TorchSpec {
     "A SpatialBatchNormalization" should "generate correct output and gradInput" in {
     torchCheck()
@@ -76,7 +76,8 @@ class BatchNormalizationSpec extends TorchSpec {
         |sbn:backward(input, gradOutput2)
       """.stripMargin
 
-    val (luaTime, torchResult) = TH.run(code,
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput, "gradOutput2" -> gradOutput2),
       Array("parameters_initial", "gradParameters_initial", "gradParameters",
         "output", "gradInput")
@@ -113,6 +114,7 @@ class BatchNormalizationSpec extends TorchSpec {
       v1
     })
 
+    th.release()
   }
 
   "A SpatialBatchNormalization evaluating" should "generate correct output" in {
@@ -169,7 +171,8 @@ class BatchNormalizationSpec extends TorchSpec {
         |output = sbn:forward(input)
       """.stripMargin
 
-    val (luaTime, torchResult) = TH.run(code,
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput, "gradOutput2" -> gradOutput2),
       Array("parameters_initial", "gradParameters_initial", "output"))
     val parameterTorch = torchResult("parameters_initial").asInstanceOf[Tensor[Double]]
@@ -195,6 +198,7 @@ class BatchNormalizationSpec extends TorchSpec {
       v1
     })
 
+    th.release()
   }
 
   "A SpatialBatchNormalization forward backward twice" should
@@ -238,7 +242,8 @@ class BatchNormalizationSpec extends TorchSpec {
         |gradInput = sbn:backward(input, gradOutput2)
       """.stripMargin
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput,
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput,
       "gradOutput2" -> gradOutput2), Array("parameters_initial", "gradParameters_initial",
       "gradParameters", "output", "gradInput"))
     val parameterTorch = torchResult("parameters_initial").asInstanceOf[Tensor[Double]]
@@ -260,6 +265,7 @@ class BatchNormalizationSpec extends TorchSpec {
     gradInput should be (gradInputTorch)
     gradparametersTorch should be (gradparameters)
 
+    th.release()
   }
 
   "BatchNormalization module in batch mode" should "be good in gradient check for input" in {
@@ -316,7 +322,8 @@ class BatchNormalizationSpec extends TorchSpec {
         |gradInput = sbn:updateGradInput(input, gradOutput)
       """.stripMargin
 
-    val (luaTime, torchResult) = TH.run(code,
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput),
       Array("parameters_initial", "gradParameters_initial", "gradParameters",
         "output", "gradInput")
@@ -340,6 +347,7 @@ class BatchNormalizationSpec extends TorchSpec {
     gradInputTorch should be (gradInput)
 
     gradparametersTorch should be (gradparameters)
+    th.release()
   }
 
   "BatchNormalization updateGradientInput and acc" should "generate correct result" in {
@@ -375,7 +383,8 @@ class BatchNormalizationSpec extends TorchSpec {
         |sbn:accGradParameters(input, gradOutput)
       """.stripMargin
 
-    val (luaTime, torchResult) = TH.run(code,
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput),
       Array("parameters_initial", "gradParameters_initial", "gradParameters",
         "output", "gradInput")
@@ -400,6 +409,7 @@ class BatchNormalizationSpec extends TorchSpec {
     gradInputTorch should be (gradInput)
 
     gradparametersTorch should be (gradparameters)
+    th.release()
   }
 
   "BatchNormalization affine = false" should "generate correct result" in {
@@ -427,7 +437,8 @@ class BatchNormalizationSpec extends TorchSpec {
         |sbn:accGradParameters(input, gradOutput)
       """.stripMargin
 
-    val (luaTime, torchResult) = TH.run(code,
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput")
     )
@@ -442,5 +453,6 @@ class BatchNormalizationSpec extends TorchSpec {
     outputTorch should be (output)
 
     gradInputTorch should be (gradInput)
+    th.release()
   }
 }

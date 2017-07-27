@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class MultiCriterionSpec extends TorchSpec {
     "A MultiCriterion Module " should "generate correct output and grad with Tensor input" in {
     torchCheck()
@@ -45,7 +45,8 @@ class MultiCriterionSpec extends TorchSpec {
       "output = module:forward(input, target)\n" +
       "gradInput = module:backward(input, target)\n"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "target" -> target),
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "target" -> target),
       Array("output", "gradInput"))
 
     val luaOutput1 = torchResult("output").asInstanceOf[Double]
@@ -62,6 +63,7 @@ class MultiCriterionSpec extends TorchSpec {
 
     println("Test case : MultiCriterion, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "A MultiCriterion Module " should "generate correct output and grad with Table input" in {

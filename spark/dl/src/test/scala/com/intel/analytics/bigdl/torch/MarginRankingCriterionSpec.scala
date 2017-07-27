@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.utils.Table
 import scala.collection.mutable.HashMap
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class MarginRankingCriterionSpec extends TorchSpec {
     "A MarginRankingCriterion " should "generate correct output and grad with only value" in {
     torchCheck()
@@ -48,7 +48,8 @@ class MarginRankingCriterionSpec extends TorchSpec {
       "output = mse:forward(input,-1)\n" +
       "gradInput = mse:backward(input,-1)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "target" -> target),
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "target" -> target),
       Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Double]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Table]
@@ -58,6 +59,7 @@ class MarginRankingCriterionSpec extends TorchSpec {
 
     println("Test case : MarginRankingCriterion, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "A MarginRankingCriterion " should "generate correct output and grad with Tensor target" in {
@@ -85,7 +87,8 @@ class MarginRankingCriterionSpec extends TorchSpec {
       "output = mse:forward(input, target)\n" +
       "gradInput = mse:backward(input, target)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "target" -> target1),
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "target" -> target1),
       Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Double]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Table]
@@ -95,5 +98,6 @@ class MarginRankingCriterionSpec extends TorchSpec {
 
     println("Test case : MarginRankingCriterion, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 }

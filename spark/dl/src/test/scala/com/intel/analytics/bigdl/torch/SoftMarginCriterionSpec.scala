@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class SoftMarginCriterionSpec extends TorchSpec {
     "A SoftMarginCriterion Module " should "generate correct output and grad" in {
     torchCheck()
@@ -39,7 +39,8 @@ class SoftMarginCriterionSpec extends TorchSpec {
       "output = module:forward(input, target)\n " +
       "gradInput = module:backward(input, target)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "target" -> target),
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "target" -> target),
       Array("output", "gradInput"))
     val luaOutput = torchResult("output").asInstanceOf[Double]
     val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -49,6 +50,7 @@ class SoftMarginCriterionSpec extends TorchSpec {
 
     println("Test case : SoftMarginCriterion, Torch : " + luaTime + " s, Scala : "
       + scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "A SoftMarginCriterion Module with setting sizeAverage to false" should "generate " +
@@ -70,7 +72,8 @@ class SoftMarginCriterionSpec extends TorchSpec {
       "output = module:forward(input, target)\n " +
       "gradInput = module:backward(input, target)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "target" -> target),
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "target" -> target),
       Array("output", "gradInput"))
     val luaOutput = torchResult("output").asInstanceOf[Double]
     val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -80,5 +83,6 @@ class SoftMarginCriterionSpec extends TorchSpec {
 
     println("Test case : SoftMarginCriterion, Torch : " + luaTime + " s, Scala : "
       + scalaTime / 1e9 + " s")
+    th.release()
   }
 }

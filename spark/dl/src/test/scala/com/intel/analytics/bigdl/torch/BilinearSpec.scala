@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class BilinearSpec extends TorchSpec {
 
   "BiLinear L2 regularizer" should "works correctly" in {
@@ -119,7 +119,8 @@ class BilinearSpec extends TorchSpec {
       "gradBias = module.gradBias\n" +
       "gradWeight = module.gradWeight\n"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput", "bias", "weight", "grad", "gradBias", "gradWeight"))
 
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
@@ -151,5 +152,6 @@ class BilinearSpec extends TorchSpec {
 
     println("Test case : Bilinear, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 }

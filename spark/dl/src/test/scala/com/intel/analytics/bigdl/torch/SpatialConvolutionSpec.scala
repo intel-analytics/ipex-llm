@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.utils.RandomGenerator._
 
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class SpatialConvolutionSpec extends TorchSpec {
     "A SpatialConvolution" should "generate correct output" in {
     torchCheck()
@@ -54,7 +54,8 @@ class SpatialConvolutionSpec extends TorchSpec {
       "bias = layer.bias \n" +
       "output = layer:forward(input) "
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input),
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input),
       Array("weight", "bias", "output"))
 
     val luaWeight = torchResult("weight").asInstanceOf[Tensor[Double]]
@@ -68,6 +69,7 @@ class SpatialConvolutionSpec extends TorchSpec {
     weight shouldEqual luaWeight.resizeAs(weight)
     bias shouldEqual luaBias.resizeAs(bias)
     output shouldEqual luaOutput
+    th.release()
   }
 
 
@@ -103,7 +105,8 @@ class SpatialConvolutionSpec extends TorchSpec {
       model:zeroGradParameters()
       output = model:forward(input) """
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input), Array("weight", "bias",
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input), Array("weight", "bias",
       "output", "model"))
 
     val luaWeight = torchResult("weight").asInstanceOf[Tensor[Double]]
@@ -119,6 +122,7 @@ class SpatialConvolutionSpec extends TorchSpec {
     bias shouldEqual luaBias.resizeAs(bias)
     output shouldEqual luaOutput
 
+    th.release()
   }
 
   "A SpatialConvolution" should "be good in gradient check for input" in {
@@ -169,10 +173,12 @@ class SpatialConvolutionSpec extends TorchSpec {
       "weight = layer.weight\n" +
       "output = layer:forward(input) "
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input),
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input),
       Array("weight", "bias", "output"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
 
     require(output.equals(luaOutput) == true)
+    th.release()
   }
 }

@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.torch
 import com.intel.analytics.bigdl.nn.ClassNLLCriterion
 import com.intel.analytics.bigdl.tensor.Tensor
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class ClassNLLCriterionSpec extends TorchSpec {
   "A ClassNLL Criterion " should "generate correct output and grad" in {
     torchCheck()
@@ -50,7 +50,8 @@ class ClassNLLCriterionSpec extends TorchSpec {
       "output2 = criterion:backward(input, target)"
 
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "target" -> target),
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "target" -> target),
       Array("output1", "output2"))
     val luaOutput1 = torchResult("output1").asInstanceOf[Double]
     val luaOutput2 = torchResult("output2").asInstanceOf[Tensor[Double]]
@@ -60,5 +61,6 @@ class ClassNLLCriterionSpec extends TorchSpec {
 
     println("Test case : ClassNLLCriterion, Torch : " + luaTime + " s, Scala : " +
       scalaTime / 1e9 + " s")
+    th.release()
   }
 }

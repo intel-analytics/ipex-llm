@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.utils.RandomGenerator._
 import scala.math._
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class ViewSpec extends TorchSpec {
     "A View Container" should "generate correct output and grad" in {
     torchCheck()
@@ -42,7 +42,8 @@ class ViewSpec extends TorchSpec {
     val code = "output = module:forward(input)\n" +
       "gradInput = module:backward(input,gradOutput)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("module" -> module, "input" -> input,
+    val th = new NewTH
+    val (luaTime, torchResult) = th.run(code, Map("module" -> module, "input" -> input,
       "gradOutput" -> gradOutput), Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -57,6 +58,7 @@ class ViewSpec extends TorchSpec {
     })
 
     println("Test case : View, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "View module" should "be good in gradient check for input" in {
