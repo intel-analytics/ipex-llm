@@ -196,7 +196,7 @@ class ConvLSTMPeephole3D[T : ClassTag](
   override def canEqual(other: Any): Boolean = other.isInstanceOf[ConvLSTMPeephole[T]]
 
   override def equals(other: Any): Boolean = other match {
-    case that: ConvLSTMPeephole[T] =>
+    case that: ConvLSTMPeephole3D[T] =>
       super.equals(that) &&
         (that canEqual this) &&
         inputSize == that.inputSize &&
