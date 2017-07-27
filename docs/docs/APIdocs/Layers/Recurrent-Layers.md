@@ -9,7 +9,15 @@ val module = Recurrent()
 module = Recurrent()
 ```
 
-Recurrent module is a container of rnn cells. Different types of rnn cells can be added using add() function.
+Recurrent module is a container of rnn cells. Different types of rnn cells can be added using add() function.  
+
+Recurrent support return final state and cell status of its rnn cells by using getFinalStateAndCellStatus. output of getFinalStateAndCellStatus
+is a tuple. The first element is the output state at last time while the second elements is the cell status.  
+
+If contained cell is simple rnn, finalstate is `batch x hiddenSize`. cell is None  
+If contained cell is lstm, finalstate is `batch x hiddenSize`. cell is `batch x hiddenSize`  
+If contained cell is convlstm2D, finalstate is `batch x outputPlane x height x width`. cell is `batch x outputPlane x height x width`  
+If contained cell is convlstm3D, finalstate is `batch x outputPlane x height x width x length`. cell is `batch x outputPlane x height x width x length`
 
 **Scala example:**
 ```scala
@@ -641,6 +649,9 @@ model = ConvLSTMPeephole2D(
 ```
 
 Convolution Long Short Term Memory architecture with peephole for 2 dimension images.
+The input tensor in `forward(input)` is expected to be a 5D tensor (`batch x time x nInputPlane x height x width`). output of
+`forward(input)` is also expected to be a 5D tensor (`batch x time x outputPlane x height x width`).
+
 Ref.
 
 1. https://arxiv.org/abs/1506.04214 (blueprint for this module)
@@ -868,6 +879,8 @@ model = ConvLSTMPeephole3D(
 ```
 
 Similar to Convlstm2D, it's a Convolution Long Short Term Memory architecture with peephole but for 3 spatial dimension images.
+The input tensor in `forward(input)` is expected to be a 6D tensor (`batch x time x nInputPlane x height x width x length`). output of
+`forward(input)` is also expected to be a 6D tensor (`batch x time x outputPlane x height x width x length`).
 
 Parameters:
 
