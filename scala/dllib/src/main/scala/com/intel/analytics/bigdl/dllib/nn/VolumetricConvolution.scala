@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
+import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
@@ -41,13 +42,19 @@ import scala.reflect.ClassTag
  * @param padW The additional zeros added per width to the input planes.
  * @param padH The additional zeros added per height to the input planes.
  * @param withBias whether with bias
+ * @param wRegularizer: instance of [[Regularizer]]
+ * (eg. L1 or L2 regularization), applied to the input weights matrices.
+ * @param bRegularizer: instance of [[Regularizer]]
+ * applied to the bias.
  * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
  */
 class VolumetricConvolution[T: ClassTag](
   val nInputPlane: Int, val nOutputPlane: Int,
   val kT: Int, val kW: Int, val kH: Int,
   val dT: Int = 1, val dW: Int = 1, val dH: Int = 1,
-  val padT: Int = 0, val padW: Int = 0, val padH: Int = 0, withBias: Boolean = true
+  val padT: Int = 0, val padW: Int = 0, val padH: Int = 0, withBias: Boolean = true,
+  var wRegularizer: Regularizer[T] = null,
+  var bRegularizer: Regularizer[T] = null
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
   require(kT > 0 && kW > 0 && kH > 0, "kernel size should be greater than zero," +
@@ -321,6 +328,12 @@ class VolumetricConvolution[T: ClassTag](
         t += 1
       }
     }
+    if (null != wRegularizer) {
+      wRegularizer.accRegularization(weight, gradWeight, scaleW)
+    }
+    if (withBias && null != bRegularizer) {
+      bRegularizer.accRegularization(bias, gradBias, scaleB)
+    }
   }
 
   override def toString: String = {
@@ -334,9 +347,11 @@ object VolumetricConvolution {
     nInputPlane: Int, nOutputPlane: Int,
     kT: Int, kW: Int, kH: Int,
     dT: Int = 1, dW: Int = 1, dH: Int = 1,
-    padT: Int = 0, padW: Int = 0, padH: Int = 0, withBias: Boolean = true
+    padT: Int = 0, padW: Int = 0, padH: Int = 0, withBias: Boolean = true,
+    wRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null
   )(implicit ev: TensorNumeric[T]): VolumetricConvolution[T] = {
     new VolumetricConvolution[T](nInputPlane, nOutputPlane, kT, kW, kH,
-      dT, dW, dH, padT, padW, padH, withBias)
+      dT, dW, dH, padT, padW, padH, withBias, wRegularizer, bRegularizer)
   }
 }

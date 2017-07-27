@@ -18,8 +18,10 @@ package com.intel.analytics.bigdl.torch
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.optim.{L2Regularizer, SGD}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.T
 
 import scala.util.Random
 
@@ -348,6 +350,94 @@ class VolumetricConvolutionSpec extends TorchSpec {
 
     val checker = new GradientChecker(1e-4)
     checker.checkWeight[Double](layer, input, 1e-3) should be(true)
+  }
+
+  "VolumetricConvolution L2 regularizer" should "works correctly" in {
+    import com.intel.analytics.bigdl.numeric.NumericDouble
+
+    val seed = 100
+    RNG.setSeed(seed)
+    val from = 3
+    val to = 2
+    val kt = 2
+    val ki = 2
+    val kj = 2
+    val st = 2
+    val si = 2
+    val sj = 2
+    val padT = 1
+    val padW = 1
+    val padH = 1
+    val outt = 6
+    val outi = 6
+    val outj = 6
+    val int = (outt - 1) * st + kt - padT * 2
+    val ini = (outi - 1) * si + ki - padW * 2
+    val inj = (outj - 1) * sj + kj - padH * 2
+    val batch = 3
+
+    val input = Tensor[Double](batch, from, int, inj, ini).apply1(e => Random.nextDouble())
+
+
+    val state1 = T("learningRate" -> 0.1, "learningRateDecay" -> 5e-7,
+      "weightDecay" -> 0.1, "momentum" -> 0.002)
+    val state2 = T("learningRate" -> 0.1, "learningRateDecay" -> 5e-7,
+      "weightDecay" -> 0.0, "momentum" -> 0.002)
+
+    val criterion = new MSECriterion[Double]
+
+    val labels = Tensor[Double](1296).rand()
+
+    val model1 = Sequential()
+      .add(VolumetricConvolution[Double](from, to, kt, ki, kj, st, si, sj,
+        padT, padW, padH))
+      .add(Sigmoid())
+    val (weights1, grad1) = model1.getParameters()
+
+    val model2 = Sequential()
+      .add(VolumetricConvolution[Double](from, to, kt, ki, kj, st, si, sj,
+        padT, padW, padH,
+        wRegularizer = L2Regularizer(0.1), bRegularizer = L2Regularizer(0.1)))
+      .add(Sigmoid())
+    val (weights2, grad2) = model2.getParameters()
+    weights2.copy(weights1.clone())
+    grad2.copy(grad1.clone())
+
+
+    val sgd = new SGD[Double]
+
+    def feval1(x: Tensor[Double]): (Double, Tensor[Double]) = {
+      val output = model1.forward(input).toTensor[Double]
+      val _loss = criterion.forward(output, labels)
+      model1.zeroGradParameters()
+      val gradInput = criterion.backward(output, labels)
+      model1.backward(input, gradInput)
+      (_loss, grad1)
+    }
+
+    def feval2(x: Tensor[Double]): (Double, Tensor[Double]) = {
+      val output = model2.forward(input).toTensor[Double]
+      val _loss = criterion.forward(output, labels)
+      model2.zeroGradParameters()
+      val gradInput = criterion.backward(output, labels)
+      model2.backward(input, gradInput)
+      (_loss, grad2)
+    }
+
+    var loss1: Array[Double] = null
+    for (i <- 1 to 100) {
+      loss1 = sgd.optimize(feval1, weights1, state1)._2
+      println(s"${i}-th loss = ${loss1(0)}")
+    }
+
+    var loss2: Array[Double] = null
+    for (i <- 1 to 100) {
+      loss2 = sgd.optimize(feval2, weights2, state2)._2
+      println(s"${i}-th loss = ${loss2(0)}")
+    }
+
+    weights1 should be(weights2)
+    loss1 should be(loss2)
   }
 }
 
