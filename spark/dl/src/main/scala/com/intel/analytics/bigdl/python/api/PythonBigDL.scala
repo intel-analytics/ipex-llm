@@ -128,6 +128,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def toJTensor(tensor: Tensor[T]): JTensor = {
     // clone here in case the the size of storage larger then the size of tensor.
+    require(tensor != null, "tensor cannot be null")
     val cloneTensor = tensor.clone()
     JTensor(cloneTensor.storage().toList.map(_.asInstanceOf[Any]).asJava,
       cloneTensor.size().toList.asJava, typeName)
@@ -1787,7 +1788,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                     biasInitMethod: InitializationMethod): layer.type = {
     layer.setInitMethod(weightInitMethod, biasInitMethod)
   }
+
+  def getFinalStateAndCellStatus(rec: Recurrent[T]): JList[JTensor] = {
+    val res = rec.getFinalStateAndCellStatus()
+      if (res._2 == null) return List(toJTensor(res._1), null.asInstanceOf[JTensor]).asJava
+    else return List(toJTensor(res._1), toJTensor(res._2)).asJava
+  }
 }
-
-
-

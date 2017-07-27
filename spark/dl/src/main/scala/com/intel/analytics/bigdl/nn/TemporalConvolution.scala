@@ -21,7 +21,10 @@ import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Engine, T, Table}
+<<<<<<< HEAD
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
+=======
+>>>>>>> upstream/master
 
 import scala.concurrent.Future
 import scala.reflect.ClassTag
@@ -405,8 +408,8 @@ class TemporalConvolution[T: ClassTag](
   }
 
   override def getParametersTable(): Table = {
-      T(getName() -> T("weight" -> weight, "bias" -> bias,
-        "gradWeight" -> gradWeight, "gradBias" -> gradBias))
+    T(getName() -> T("weight" -> weight, "bias" -> bias,
+      "gradWeight" -> gradWeight, "gradBias" -> gradBias))
   }
 
   override def equals(obj: Any): Boolean = {
