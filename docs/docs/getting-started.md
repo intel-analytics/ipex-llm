@@ -55,7 +55,6 @@ Model Evaluation can be performed periodically during a training. Refer to [Vali
 
 When `Optimizer.optimize` finishes, it will return a trained model. You can then use the trained model for prediction or evaluation. Refer to [Model Prediction](APIdocs/Module.md#model-prediction) and [Model Evaluation](APIdocs/Module.md#model-evaluation) for detailed usage.    
 
-If you prefer to train a model inside a Spark ML pipeline, please refer to  [Using BigDL in Spark ML Pipeline](ProgrammingGuide/MLPipeline/MLPipeline.  md) page for usage.
 
 ---
 
@@ -73,7 +72,7 @@ You may also save the model to Tensorflow or Caffe format (refer to [Caffe Suppo
 
 Training a deep learning model sometimes takes a very long time. It may be stopped or interrupted and we need the training to resume from where we have left. 
 
-To enable this, you have to configure `Optimizer` to periodically take snapshots of the model (trained weights, biases, etc.) and optim-method (configurations and states of the optimization) and dump them into files. Refer to [Checkpointing](ProgrammingGuide/optimization/#checkpointing) for details. 
+To enable this, you have to configure `Optimizer` to periodically take snapshots of the model (trained weights, biases, etc.) and optimization states (configurations and status of the optimization) and dump them into files. Refer to [Checkpointing](ProgrammingGuide/optimization/#checkpointing) for details. 
 
 To resume a training after it stops, refer to [Resume Training](ProgrammingGuide/optimization.md#resume-training).
  
