@@ -42,7 +42,7 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
     val  weightBlob = getBlob(layer, 0).get
     val biasBlob = getBlob(layer, 1)
     val withBias = biasBlob.isDefined
-    val nInputPlane = if (weightBlob.hasShape) weightBlob.getShape.getDim(1)
+    val nInputPlane = if (weightBlob.hasShape) weightBlob.getShape.getDim(1) * group
     else weightBlob.getChannels * group
     val nOutPlane = if (weightBlob.hasShape) weightBlob.getShape.getDim(0)
     else weightBlob.getNum
@@ -72,8 +72,16 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
         ph = pw
       }
     }
-    Seq(SpatialConvolution[T](nInputPlane.toInt, nOutPlane.toInt,
-      kw, kh, dw, dh, pw, ph, group, withBias).setName(getLayerName(layer)).inputs())
+
+    if (param.getDilationCount == 0 || param.getDilation(0) == 1) {
+      Seq(SpatialConvolution[T](nInputPlane.toInt, nOutPlane.toInt,
+        kw, kh, dw, dh, pw, ph, group, withBias).setName(getLayerName(layer)).inputs())
+    } else {
+      val dilation = param.getDilation(0)
+      Seq(SpatialDilatedConvolution[T](nInputPlane.toInt, nOutPlane.toInt,
+        kw, kh, dw, dh, pw, ph, dilation, dilation)
+        .setName(getLayerName(layer)).inputs())
+    }
   }
 
   override protected def fromCaffeInnerProduct(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
