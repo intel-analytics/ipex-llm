@@ -72,6 +72,41 @@ class TestWorkFlow(unittest.TestCase):
         self.assertTrue(np.allclose(fc1_loaded.get_weights()[0],
                                     fc1.get_weights()[0]))
 
+    def test_load_optim_method(self):
+        FEATURES_DIM = 2
+        data_len = 100
+        batch_size = 32
+        epoch_num = 5
+
+        def gen_rand_sample():
+            features = np.random.uniform(0, 1, (FEATURES_DIM))
+            label = (2 * features).sum() + 0.4
+            return Sample.from_ndarray(features, label)
+        trainingData = self.sc.parallelize(range(0, data_len)).map(lambda i: gen_rand_sample())
+        model = Sequential()
+        l1 = Linear(FEATURES_DIM, 1).set_init_method(Xavier(), Zeros()).set_name("linear1")
+        model.add(l1)
+
+        sgd = SGD(learningrate=0.01, learningrate_decay=0.0002, weightdecay=0.0,
+                  momentum=0.0, dampening=0.0, nesterov=False,
+                  leaningrate_schedule=Poly(0.5, int((data_len/batch_size)*epoch_num)))
+
+        tmp_path = tempfile.mktemp()
+        sgd.save(tmp_path, True)
+        optim_method = OptimMethod.load(tmp_path)
+        self.assertTrue(optim_method.learningRate() == sgd.value.learningRate())
+        self.assertTrue(optim_method.momentum() == sgd.value.momentum())
+        self.assertTrue(optim_method.nesterov() == sgd.value.nesterov())
+
+        optimizer = Optimizer(
+            model=model,
+            training_rdd=trainingData,
+            criterion=MSECriterion(),
+            optim_method=optim_method,
+            end_trigger=MaxEpoch(epoch_num),
+            batch_size=batch_size)
+        optimizer.optimize()
+
     def test_create_node(self):
         import numpy as np
         fc1 = Linear(4, 2)()
