@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.torch
 
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -49,5 +50,37 @@ class ConvLSTMPeephole3DSpec extends FlatSpec with BeforeAndAfter with Matchers 
       val output = model.forward(input)
       model.backward(input, output)
     }
+  }
+
+  "A ConvLSTMPeepwhole3D" should " return expected hidden and cell state" in {
+    val hiddenSize = 5
+    val inputSize = 3
+    val seqLength = 4
+    val batchSize = 2
+    val kernalW = 3
+    val kernalH = 3
+    val rec = Recurrent[Double]()
+    val model = Sequential[Double]()
+      .add(rec
+        .add(ConvLSTMPeephole3D[Double](
+          inputSize,
+          hiddenSize,
+          kernalW, kernalH,
+          1, withPeephole = true)))
+
+    val input = Tensor[Double](batchSize, seqLength, inputSize, 3, 3, 3).rand
+
+    var output: Activity = null
+    for (i <- 1 to 3) {
+      output = model.forward(input)
+      model.backward(input, output)
+    }
+
+    val finalState = rec.getFinalStateAndCellStatus()._1
+
+    finalState.map(output.asInstanceOf[Tensor[Double]].select(2, seqLength), (v1, v2) => {
+      assert(abs(v1 - v2) == 0)
+      v1
+    })
   }
 }
