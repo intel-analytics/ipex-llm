@@ -26,9 +26,9 @@ import scala.collection.mutable.ArrayBuffer
 import scala.math._
 
 @com.intel.analytics.bigdl.tags.Parallel
-class ConvLSTMPeephole2DSpec extends FlatSpec with BeforeAndAfter with Matchers {
+class ConvLSTMPeepholeSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
-  "A convLstm2d" should " work in BatchMode" in {
+  "A convLstm" should " work in BatchMode" in {
     val hiddenSize = 5
     val inputSize = 3
     val seqLength = 4
@@ -54,7 +54,7 @@ class ConvLSTMPeephole2DSpec extends FlatSpec with BeforeAndAfter with Matchers 
     }
   }
 
-  "A ConvLSTMPeepwhole2D " should "generate corrent output" in {
+  "A ConvLSTMPeepwhole " should "generate corrent output" in {
     val hiddenSize = 5
     val inputSize = 3
     val seqLength = 4
@@ -442,7 +442,7 @@ class ConvLSTMPeephole2DSpec extends FlatSpec with BeforeAndAfter with Matchers 
     })
   }
 
-  "A ConvLSTMPeepwhole2D " should "generate corrent output when batch != 1" in {
+  "A ConvLSTMPeepwhole " should "generate corrent output when batch != 1" in {
     val hiddenSize = 4
     val inputSize = 2
     val seqLength = 2
@@ -731,7 +731,7 @@ class ConvLSTMPeephole2DSpec extends FlatSpec with BeforeAndAfter with Matchers 
     })
   }
 
-  "A ConvLSTMPeepwhole2D " should "return expected hidden and cell state when batch != 1" in {
+  "A ConvLSTMPeepwhole " should "return expected hidden and cell state when batch != 1" in {
     val hiddenSize = 4
     val inputSize = 2
     val seqLength = 2
@@ -1033,7 +1033,7 @@ class ConvLSTMPeephole2DSpec extends FlatSpec with BeforeAndAfter with Matchers 
     })
   }
 
-  "ConvLSTMPeephole2D L2 regularizer" should "works correctly" in {
+  "ConvLSTMPeephole L2 regularizer" should "works correctly" in {
     import com.intel.analytics.bigdl.numeric.NumericDouble
 
     val hiddenSize = 5
@@ -1042,7 +1042,6 @@ class ConvLSTMPeephole2DSpec extends FlatSpec with BeforeAndAfter with Matchers 
     val batchSize = 1
     val kernalW = 3
     val kernalH = 3
-    
 
     val state1 = T("learningRate" -> 0.1, "learningRateDecay" -> 5e-7,
       "weightDecay" -> 0.1, "momentum" -> 0.002)
