@@ -21,10 +21,7 @@ import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Engine, T, Table}
-<<<<<<< HEAD
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
-=======
->>>>>>> upstream/master
 
 import scala.concurrent.Future
 import scala.reflect.ClassTag
