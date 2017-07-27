@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.torch
 
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.optim.{L2Regularizer, SGD}
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -37,7 +38,7 @@ class ConvLSTMPeephole2DSpec extends FlatSpec with BeforeAndAfter with Matchers 
     val rec = Recurrent[Double]()
     val model = Sequential[Double]()
       .add(rec
-        .add(ConvLSTMPeephole2D[Double](
+        .add(ConvLSTMPeephole[Double](
             inputSize,
             hiddenSize,
             kernalW, kernalH,
@@ -113,7 +114,7 @@ class ConvLSTMPeephole2DSpec extends FlatSpec with BeforeAndAfter with Matchers 
     val rec = Recurrent[Double]()
     val model = Sequential[Double]()
       .add(rec
-        .add(ConvLSTMPeephole2D[Double](inputSize, hiddenSize, 3, 3, 1, withPeephole = false)))
+        .add(ConvLSTMPeephole[Double](inputSize, hiddenSize, 3, 3, 1, withPeephole = false)))
 
     val weightData = Array(
       0.1323664, 0.11453647, 0.08062653, 0.12153825, 0.09627097, 0.09425588, -0.12831208,
@@ -500,7 +501,7 @@ class ConvLSTMPeephole2DSpec extends FlatSpec with BeforeAndAfter with Matchers 
     val rec = Recurrent[Double]()
     val model = Sequential[Double]()
       .add(rec
-        .add(ConvLSTMPeephole2D[Double](inputSize, hiddenSize, 3, 3, 1, withPeephole = false)))
+        .add(ConvLSTMPeephole[Double](inputSize, hiddenSize, 3, 3, 1, withPeephole = false)))
 
     val weightData = Array(
       -0.0697708, 0.187022, 0.08511595, 0.096392, 0.004365, -0.181258, 0.0446674,
@@ -789,7 +790,7 @@ class ConvLSTMPeephole2DSpec extends FlatSpec with BeforeAndAfter with Matchers 
     val rec = Recurrent[Double]()
     val model = Sequential[Double]()
       .add(rec
-        .add(ConvLSTMPeephole2D[Double](inputSize, hiddenSize, 3, 3, 1, withPeephole = false)))
+        .add(ConvLSTMPeephole[Double](inputSize, hiddenSize, 3, 3, 1, withPeephole = false)))
 
     val weightData = Array(
       -0.0697708, 0.187022, 0.08511595, 0.096392, 0.004365, -0.181258, 0.0446674,
@@ -1030,5 +1031,91 @@ class ConvLSTMPeephole2DSpec extends FlatSpec with BeforeAndAfter with Matchers 
       assert(abs(v1 - v2) == 0)
       v1
     })
+  }
+
+  "ConvLSTMPeephole2D L2 regularizer" should "works correctly" in {
+    import com.intel.analytics.bigdl.numeric.NumericDouble
+
+    val hiddenSize = 5
+    val inputSize = 3
+    val seqLength = 4
+    val batchSize = 1
+    val kernalW = 3
+    val kernalH = 3
+    
+
+    val state1 = T("learningRate" -> 0.1, "learningRateDecay" -> 5e-7,
+      "weightDecay" -> 0.1, "momentum" -> 0.002)
+    val state2 = T("learningRate" -> 0.1, "learningRateDecay" -> 5e-7,
+      "weightDecay" -> 0.0, "momentum" -> 0.002)
+
+    val criterion = new TimeDistributedCriterion[Double](new MSECriterion[Double])
+
+    val input = Tensor[Double](batchSize, seqLength, inputSize, 3, 3).rand
+    val labels = Tensor[Double](batchSize, seqLength, hiddenSize, 3, 3).rand
+
+    val rec = Recurrent[Double]()
+    val model1 = Sequential[Double]()
+      .add(rec
+        .add(ConvLSTMPeephole[Double](
+          inputSize,
+          hiddenSize,
+          kernalW, kernalH,
+          1,
+          withPeephole = true)))
+
+    val (weights1, grad1) = model1.getParameters()
+
+    val model2 = Sequential[Double]()
+      .add(Recurrent[Double]()
+        .add(ConvLSTMPeephole[Double](
+          inputSize,
+          hiddenSize,
+          kernalW, kernalH,
+          1,
+          wRegularizer = L2Regularizer(0.1),
+          uRegularizer = L2Regularizer(0.1),
+          bRegularizer = L2Regularizer(0.1),
+          cRegularizer = L2Regularizer(0.1),
+          withPeephole = true)))
+
+    val (weights2, grad2) = model2.getParameters()
+    weights2.copy(weights1.clone())
+    grad2.copy(grad1.clone())
+
+    val sgd = new SGD[Double]
+
+    def feval1(x: Tensor[Double]): (Double, Tensor[Double]) = {
+      val output = model1.forward(input).toTensor[Double]
+      val _loss = criterion.forward(output, labels)
+      model1.zeroGradParameters()
+      val gradInput = criterion.backward(output, labels)
+      model1.backward(input, gradInput)
+      (_loss, grad1)
+    }
+
+    def feval2(x: Tensor[Double]): (Double, Tensor[Double]) = {
+      val output = model2.forward(input).toTensor[Double]
+      val _loss = criterion.forward(output, labels)
+      model2.zeroGradParameters()
+      val gradInput = criterion.backward(output, labels)
+      model2.backward(input, gradInput)
+      (_loss, grad2)
+    }
+
+    var loss1: Array[Double] = null
+    for (i <- 1 to 100) {
+      loss1 = sgd.optimize(feval1, weights1, state1)._2
+      println(s"${i}-th loss = ${loss1(0)}")
+    }
+
+    var loss2: Array[Double] = null
+    for (i <- 1 to 100) {
+      loss2 = sgd.optimize(feval2, weights2, state2)._2
+      println(s"${i}-th loss = ${loss2(0)}")
+    }
+
+    weights1 should be(weights2)
+    loss1 should be(loss2)
   }
 }

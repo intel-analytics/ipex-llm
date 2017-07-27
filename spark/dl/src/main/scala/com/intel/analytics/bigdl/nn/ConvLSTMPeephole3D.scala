@@ -40,6 +40,8 @@ import scala.reflect.ClassTag
             (eg. L1 or L2 regularization), applied to the recurrent weights matrices.
  * @param bRegularizer: instance of [[Regularizer]]
             applied to the bias.
+ * @param cRegularizer: instance of [[Regularizer]]
+            applied to peephole.
  * @param withPeephole: whether use last cell status control a gate.
  */
 class ConvLSTMPeephole3D[T : ClassTag](
@@ -51,11 +53,12 @@ class ConvLSTMPeephole3D[T : ClassTag](
   var wRegularizer: Regularizer[T] = null,
   var uRegularizer: Regularizer[T] = null,
   var bRegularizer: Regularizer[T] = null,
+  var cRegularizer: Regularizer[T] = null,
   val withPeephole: Boolean = true
 )(implicit ev: TensorNumeric[T])
   extends Cell[T](
     hiddensShape = Array(outputSize, outputSize),
-    regularizers = Array(wRegularizer, uRegularizer, bRegularizer)
+    regularizers = Array(wRegularizer, uRegularizer, bRegularizer, cRegularizer)
   ) {
   var inputGate: Sequential[T] = _
   var forgetGate: Sequential[T] = _
@@ -81,7 +84,7 @@ class ConvLSTMPeephole3D[T : ClassTag](
         .add(ParallelTable()
           .add(i2g)
           .add(h2g)
-          .add(CMul(Array(1, outputSize, 1, 1, 1))))
+          .add(CMul(Array(1, outputSize, 1, 1, 1), cRegularizer)))
     } else {
       gate.add(NarrowTable(1, 2))
       gate
@@ -190,10 +193,10 @@ class ConvLSTMPeephole3D[T : ClassTag](
     convlstm
   }
 
-  override def canEqual(other: Any): Boolean = other.isInstanceOf[ConvLSTMPeephole2D[T]]
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[ConvLSTMPeephole[T]]
 
   override def equals(other: Any): Boolean = other match {
-    case that: ConvLSTMPeephole2D[T] =>
+    case that: ConvLSTMPeephole[T] =>
       super.equals(that) &&
         (that canEqual this) &&
         inputSize == that.inputSize &&
@@ -229,10 +232,11 @@ object ConvLSTMPeephole3D {
     wRegularizer: Regularizer[T] = null,
     uRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
+    cRegularizer: Regularizer[T] = null,
     withPeephole: Boolean = true
   )(implicit ev: TensorNumeric[T]): ConvLSTMPeephole3D[T] = {
     new ConvLSTMPeephole3D[T](inputSize, outputSize, kernelI, kernelC, stride,
-      wRegularizer, uRegularizer, bRegularizer, withPeephole)
+      wRegularizer, uRegularizer, bRegularizer, cRegularizer, withPeephole)
   }
 }
 

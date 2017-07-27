@@ -3663,7 +3663,7 @@ class Pack(Layer):
     def __init__(self, dimension, bigdl_type="float"):
         super(Pack, self).__init__(None, bigdl_type, dimension)
 
-class ConvLSTMPeephole2D(Layer):
+class ConvLSTMPeephole(Layer):
     '''
     
 |   Convolution Long Short Term Memory architecture with peephole.
@@ -3678,19 +3678,21 @@ class ConvLSTMPeephole2D(Layer):
     :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices
     :param uRegularizer: instance [[Regularizer]](eg. L1 or L2 regularization), applied to the recurrent weights matrices
     :param bRegularizer: instance of [[Regularizer]]applied to the bias.
+    :param cRegularizer: instance of [[Regularizer]]applied to peephole.
     :param with_peephole: whether use last cell status control a gate.
 
-    >>> convlstm = ConvLSTMPeephole2D(4, 3, 3, 3, 1, L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
+    >>> convlstm = ConvLSTMPeephole(4, 3, 3, 3, 1, L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
     creating: createL1Regularizer
     creating: createL1Regularizer
     creating: createL1Regularizer
-    creating: createConvLSTMPeephole2D
+    creating: createL1Regularizer
+    creating: createConvLSTMPeephole
     '''
 
     def __init__(self, input_size, output_size, kernel_i, kernel_c, stride, wRegularizer=None, uRegularizer=None,
-                 bRegularizer=None, with_peephole=True, bigdl_type="float"):
-        super(ConvLSTMPeephole2D, self).__init__(None, bigdl_type, input_size, output_size, kernel_i, kernel_c, stride,
-                                                 wRegularizer, uRegularizer, bRegularizer, with_peephole)
+                 bRegularizer=None, cRegularizer=None, with_peephole=True, bigdl_type="float"):
+        super(ConvLSTMPeephole, self).__init__(None, bigdl_type, input_size, output_size, kernel_i, kernel_c, stride,
+                                                 wRegularizer, uRegularizer, bRegularizer, cRegularizer, with_peephole)
 
 
 class ConvLSTMPeephole3D(Layer):
@@ -3704,9 +3706,11 @@ class ConvLSTMPeephole3D(Layer):
     :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices
     :param uRegularizer: instance [[Regularizer]](eg. L1 or L2 regularization), applied to the recurrent weights matrices
     :param bRegularizer: instance of [[Regularizer]]applied to the bias.
+    :param cRegularizer: instance of [[Regularizer]]applied to peephole.
     :param with_peephole: whether use last cell status control a gate.
 
-    >>> convlstm = ConvLSTMPeephole3D(4, 3, 3, 3, 1, L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
+    >>> convlstm = ConvLSTMPeephole3D(4, 3, 3, 3, 1, L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
+    creating: createL1Regularizer
     creating: createL1Regularizer
     creating: createL1Regularizer
     creating: createL1Regularizer
@@ -3714,9 +3718,9 @@ class ConvLSTMPeephole3D(Layer):
     '''
 
     def __init__(self, input_size, output_size, kernel_i, kernel_c, stride, wRegularizer=None, uRegularizer=None,
-                 bRegularizer=None, with_peephole=True, bigdl_type="float"):
+                 bRegularizer=None, cRegularizer=None, with_peephole=True, bigdl_type="float"):
         super(ConvLSTMPeephole3D, self).__init__(None, bigdl_type, input_size, output_size, kernel_i, kernel_c, stride,
-                                                 wRegularizer, uRegularizer, bRegularizer, with_peephole)
+                                                 wRegularizer, uRegularizer, bRegularizer, cRegularizer, with_peephole)
 
 def _test():
     import doctest

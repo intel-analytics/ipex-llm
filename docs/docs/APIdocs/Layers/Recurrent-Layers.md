@@ -11,7 +11,7 @@ module = Recurrent()
 
 Recurrent module is a container of rnn cells. Different types of rnn cells can be added using add() function.  
 
-Recurrent support return final state and cell status of its rnn cells by using getFinalStateAndCellStatus. output of getFinalStateAndCellStatus
+Recurrent supports returning final state and cell status of its rnn cells by using getFinalStateAndCellStatus. output of getFinalStateAndCellStatus
 is a tuple. The first element is the output state at last time while the second elements is the cell status.  
 
 If contained cell is simple rnn, finalstate is `batch x hiddenSize`. cell is None  
@@ -618,11 +618,11 @@ gradient = model.backward(input, grad_output)
   [-0.32718879  0.32963118]]]
 ```
 ---
-## ConvLSTMPeephole2D ##
+## ConvLSTMPeephole ##
 
 **Scala:**
 ```scala
-val model = ConvLSTMPeephole2D(
+val model = ConvLSTMPeephole(
   inputSize = 2,
   outputSize = 4,
   kernelI = 3,
@@ -631,12 +631,13 @@ val model = ConvLSTMPeephole2D(
   wRegularizer = null,
   uRegularizer = null,
   bRegularizer = null,
+  cRegularizer = null,
   withPeephole = true)
 ```
 
 **Python:**
 ```python
-model = ConvLSTMPeephole2D(
+model = ConvLSTMPeephole(
   input_size = 2,
   output_size = 4,
   kernel_i = 3,
@@ -645,6 +646,7 @@ model = ConvLSTMPeephole2D(
   wRegularizer=None,
   uRegularizer=None,
   bRegularizer=None,
+  cRegularizer = None,
   with_peephole = True)
 ```
 
@@ -670,6 +672,8 @@ Parameters:
           (eg. L1 or L2 regularization), applied to the recurrent weights matrices.
 * `bRegularizer` instance of [[Regularizer]]
           applied to the bias.
+* `cRegularizer` instance of [[Regularizer]]
+        applied to peephole.
 * `withPeephole` whether use last cell status control a gate
 
 **Scala example:**
@@ -689,7 +693,7 @@ val input = Tensor(Array(batchSize, seqLength, inputSize, 3, 3)).rand()
 val rec = Recurrent()
     val model = Sequential()
       .add(rec
-        .add(ConvLSTMPeephole2D(inputSize, outputSize, 3, 3, 1, withPeephole = false)))
+        .add(ConvLSTMPeephole(inputSize, outputSize, 3, 3, 1, withPeephole = false)))
         
 val output = model.forward(input).toTensor
 
@@ -783,7 +787,7 @@ batch_size = 1
 input = np.random.randn(batch_size, seq_len, input_size, 3, 3)
 rec = Recurrent()
 model = Sequential().add(
-    rec.add(ConvLSTMPeephole2D(input_size, output_size, 3, 3, 1, with_peephole = False)))
+    rec.add(ConvLSTMPeephole(input_size, output_size, 3, 3, 1, with_peephole = False)))
 output = model.forward(input)
 
 >>> print(input)
@@ -861,6 +865,7 @@ val model = ConvLSTMPeephole3D(
   wRegularizer = null,
   uRegularizer = null,
   bRegularizer = null,
+  cRegularizer = null,
   withPeephole = true)
 ```
 
@@ -875,6 +880,7 @@ model = ConvLSTMPeephole3D(
   wRegularizer=None,
   uRegularizer=None,
   bRegularizer=None,
+  cRegularizer=None,
   with_peephole = True)
 ```
 
@@ -895,6 +901,8 @@ Parameters:
           (eg. L1 or L2 regularization), applied to the recurrent weights matrices.
 * `bRegularizer` instance of [[Regularizer]]
           applied to the bias.
+* `cRegularizer` instance of [[Regularizer]]
+          applied to peephole.
 * `withPeephole` whether use last cell status control a gate
 
 **Scala example:**
