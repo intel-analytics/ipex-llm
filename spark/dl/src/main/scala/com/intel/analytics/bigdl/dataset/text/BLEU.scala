@@ -76,7 +76,8 @@ class BLEU() extends Serializable {
     references: Array[Array[String]],
     hypothesis: Array[String],
     weights: Array[Double] = Array(0.25, 0.25, 0.25, 0.25),
-    smoothingFunction: (Array[Fraction]) => Array[Fraction] = null,
+    smoothingFunction: (Array[Fraction], Array[Array[String]], Array[String], Int, Boolean)
+      => Array[Fraction] = null,
     autoReweight: Boolean = false,
     emulateMultibleu: Boolean = false): Double = {
       corpusBleu(
@@ -140,7 +141,9 @@ class BLEU() extends Serializable {
     references: Array[Array[Array[String]]],
     hypotheses: Array[Array[String]],
     weights: Array[Double] = Array(0.25, 0.25, 0.25, 0.25),
-    smoothingFunction: (Array[Fraction]) => Array[Fraction] = null,
+    smoothingFunction:
+    (Array[Fraction], Array[Array[String]], Array[String], Int, Boolean)
+      => Array[Fraction] = null,
     autoReweight: Boolean = false,
     emulateMultibleu: Boolean = false): Double = {
 
@@ -188,7 +191,8 @@ class BLEU() extends Serializable {
       _smoothingFunction = SmoothingFunction().method0()
     }
 
-    val pNsmooth = _smoothingFunction(pN)
+    val pNsmooth = _smoothingFunction(
+      pN, references.last, hypotheses.last, hypLengths, emulateMultibleu)
     val s = _weights.zip(pNsmooth)
       .map(x => x._1 * math.log(x._2.doubleValue))
       .foldLeft(0.0)((a, b) => a + b)
@@ -284,6 +288,293 @@ class BLEU() extends Serializable {
     }
   }
 
+  def modifiedPrecision(
+    references: Array[Array[String]],
+    hypothesis: Array[String],
+    n: Int): Fraction = {
+    BLEU.modifiedPrecision(references, hypothesis, n)
+  }
+
+  private def counter[A](key: Iterator[A]): mutable.Map[A, Int] = {
+    BLEU.counter(key)
+  }
+
+  private def ngrams(sequence: Array[String], n: Int): Iterator[BoolArray] = {
+    BLEU.ngrams(sequence, n)
+  }
+
+  def closestRefLength(
+    references: Array[Array[String]],
+    hypLen: Int): Int = {
+    references.map(x => (x.length, math.abs(hypLen - x.length))).minBy(_._2)._1
+  }
+}
+
+class BoolArray(val array: Array[String])
+  extends Serializable {
+
+  override def equals(obj: Any): Boolean = {
+    if (!obj.isInstanceOf[BoolArray]) {
+      false
+    } else {
+      val other = obj.asInstanceOf[BoolArray]
+      if (array.length != other.array.length) {
+        return false
+      }
+      array zip other.array foreach(x => {
+        if (!x._1.equals(x._2)) {
+          return false
+        }
+      })
+      true
+    }
+  }
+
+  override def hashCode(): Int = {
+    var hash = 0
+    array.foreach(x => hash += x.hashCode)
+    hash
+  }
+}
+
+case class SmoothingFunction(epsilon: Double = 0.1, alpha: Int = 5, k: Int = 5)
+  extends Serializable {
+
+  /**
+   * No smoothing
+   * @param pN
+   * @return
+   */
+  def method0()(pN: Array[Fraction],
+                refs: Array[Array[String]] = null,
+                hypo: Array[String] = null,
+                hypLen: Int = 0,
+                emuMultibleu: Boolean = false): Array[Fraction] = {
+    val pNsmooth = new ArrayBuffer[Fraction]
+    var i = 0
+    pN.foreach(x => {
+      if (x.getNumerator != 0) {
+        pNsmooth.append(Fraction.getFraction(x.getNumerator, x.getDenominator))
+      } else if (emuMultibleu == true && i < 5) {
+        return Array(Fraction.getFraction(Float.MinValue))
+      }
+      i += 1
+    })
+    pNsmooth.toArray
+  }
+
+  /**
+   * Smoothing method 1: Add *epsilon* counts to precision with 0 counts.
+   * @param pN
+   * @return
+   */
+  def method1()(pN: Array[Fraction],
+                refs: Array[Array[String]] = null,
+                hypo: Array[String] = null,
+                hypLen: Int = 0,
+                emuMultibleu: Boolean = false): Array[Fraction] = {
+    pN.map(x => {
+      if (x.getNumerator == 0) {
+        Fraction.getFraction(x.getNumerator + epsilon / x.getDenominator)
+      } else {
+        x
+      }
+    })
+  }
+
+  /**
+   * Smoothing method 2: Add 1 to both numerator and denominator from
+   *     Chin-Yew Lin and Franz Josef Och (2004) Automatic evaluation of
+   *     machine translation quality using longest common subsequence and
+   *     skip-bigram statistics. In ACL04.
+   * @param pN
+   * @return
+   */
+  def method2()(pN: Array[Fraction],
+                refs: Array[Array[String]] = null,
+                hypo: Array[String] = null,
+                hypLen: Int = 0,
+                emuMultibleu: Boolean = false): Array[Fraction] = {
+    pN.map(x => Fraction.getFraction(x.getNumerator + 1, x.getDenominator + 1))
+  }
+
+  /**
+   * Smoothing method 3: NIST geometric sequence smoothing
+   *     The smoothing is computed by taking 1 / ( 2^k ), instead of 0, for each
+   *     precision score whose matching n-gram count is null.
+   *     k is 1 for the first 'n' value for which the n-gram match count is null/
+   *     For example, if the text contains:
+   *      - one 2-gram match
+   *      - and (consequently) two 1-gram matches
+   *     the n-gram count for each individual precision score would be:
+   * - n=1  =>  prec_count = 2     (two unigrams)
+   * - n=2  =>  prec_count = 1     (one bigram)
+   * - n=3  =>  prec_count = 1/2   (no trigram,  taking 'smoothed' value of 1 / ( 2^k ), with k=1)
+   * - n=4  =>  prec_count = 1/4   (no fourgram, taking 'smoothed' value of 1 / ( 2^k ), with k=2)
+   * @param pN
+   * @return
+   */
+  def method3()(pN: Array[Fraction],
+                refs: Array[Array[String]] = null,
+                hypo: Array[String] = null,
+                hypLen: Int = 0,
+                emuMultibleu: Boolean = false): Array[Fraction] = {
+    var incvnt = 0
+    pN.map(x => {
+      if (x.getNumerator == 0) {
+        incvnt += 1
+        Fraction.getFraction(1.0 / (math.pow(2, incvnt) * x.getDenominator.toDouble))
+      } else {
+        x
+      }
+    })
+  }
+
+  /**
+   *  Smoothing method 4:
+   *     Shorter translations may have inflated precision values due to having
+   *     smaller denominators; therefore, we give them proportionally
+   *     smaller smoothed counts. Instead of scaling to 1/(2^k), Chen and Cherry
+   *     suggests dividing by 1/ln(len(T)), where T is the length of the translation.
+   * @param pN
+   * @param refs
+   * @param hypo
+   * @param hypLen
+   * @param emuMultibleu
+   * @return
+   */
+  def method4()(pN: Array[Fraction],
+                refs: Array[Array[String]] = null,
+                hypo: Array[String] = null,
+                hypLen: Int = 0,
+                emuMultibleu: Boolean = false): Array[Fraction] = {
+    var i = -1
+    pN.map(x => {
+      i += 1
+      if (x.getNumerator == 0 && hypLen != 0) {
+        val incvnt = i + 1.0 * k.toDouble / math.log(hypLen)
+        Fraction.getFraction(1.0 / incvnt)
+      } else {
+        x
+      }
+    })
+  }
+
+  /**
+   * Smoothing method 5:
+   *     The matched counts for similar values of n should be similar. To a
+   *     calculate the n-gram matched count, it averages the n−1, n and n+1 gram
+   *     matched counts.
+   * @param pN
+   * @param refs
+   * @param hypo
+   * @param hypLen
+   * @param emuMultibleu
+   * @return
+   */
+  def method5()(pN: Array[Fraction],
+                refs: Array[Array[String]] = null,
+                hypo: Array[String] = null,
+                hypLen: Int = 0,
+                emuMultibleu: Boolean = false): Array[Fraction] = {
+    val pNPlus1 = pN ++ Array(BLEU.modifiedPrecision(references = refs, hypothesis = hypo, n = 5))
+    var m = pN.head.doubleValue + 1.0
+    val pNsmooth = new ArrayBuffer[Fraction]
+    var i = 0
+    pN.map(x => {
+      val tmp = (m + x.doubleValue + pNPlus1(i + 1).doubleValue) / 3.0
+      m = tmp
+      i += 1
+      Fraction.getFraction(tmp)
+    })
+  }
+
+  /**
+   *    Smoothing method 6:
+   *    Interpolates the maximum likelihood estimate of the precision *p_n* with
+   *     a prior estimate *pi0*. The prior is estimated by assuming that the ratio
+   *     between pn and pn−1 will be the same as that between pn−1 and pn−2; from
+   *     Gao and He (2013) Training MRF-Based Phrase Translation Models using
+   *     Gradient Ascent. In NAACL.
+   * @param pN
+   * @param refs
+   * @param hypo
+   * @param hypLen
+   * @param emuMultibleu
+   * @return
+   */
+  def method6()(pN: Array[Fraction],
+                refs: Array[Array[String]] = null,
+                hypo: Array[String] = null,
+                hypLen: Int = 0,
+                emuMultibleu: Boolean = false): Array[Fraction] = {
+    require(pN.length > 2)
+    val pNsmooth = new ArrayBuffer[Fraction]
+    var i = 0
+    while (i < pN.length) {
+      if (i < 2) {
+        pNsmooth.append(pN(i))
+      } else {
+        val pi0 = if (pNsmooth(i - 2).doubleValue == 0) {
+          0.0
+        } else {
+          math.pow(pNsmooth(i - 1).doubleValue, 2) / pNsmooth(i - 2).doubleValue
+        }
+        val m = pN(i).getNumerator.toDouble
+        val l = BLEU.ngrams(hypo, i + 1).toArray.length.toDouble
+        pNsmooth.append(Fraction.getFraction((m + alpha.toDouble * pi0) / (l + alpha.toDouble)))
+      }
+      i += 1
+    }
+    pNsmooth.toArray
+  }
+
+  /**
+   * Smoothing method 6:
+   *     Interpolates the maximum likelihood estimate of the precision *p_n* with
+   *     a prior estimate *pi0*. The prior is estimated by assuming that the ratio
+   *     between pn and pn−1 will be the same as that between pn−1 and pn−2.
+   * @param pN
+   * @param refs
+   * @param hypo
+   * @param hypLen
+   * @param emuMultibleu
+   * @return
+   */
+  def method7()(pN: Array[Fraction],
+                refs: Array[Array[String]] = null,
+                hypo: Array[String] = null,
+                hypLen: Int = 0,
+                emuMultibleu: Boolean = false): Array[Fraction] = {
+    val pN1 = method4()(pN, refs, hypo, hypLen, emuMultibleu)
+    val pN2 = method5()(pN1, refs, hypo, hypLen, emuMultibleu)
+    pN2
+  }
+}
+
+object BLEU {
+
+  def apply(): BLEU = new BLEU()
+
+  def ngrams(sequence: Array[String], n: Int): Iterator[BoolArray] = {
+    val seqIter = sequence.toIterator
+    val ngram = new ArrayBuffer[BoolArray]
+    var buffer = new mutable.MutableList[String]
+    var count = n
+    while (count > 1) {
+      buffer += seqIter.next
+      count -= 1
+    }
+    while (seqIter.hasNext) {
+      val _next = seqIter.next
+      buffer += _next
+      ngram.append(new BoolArray(buffer.toArray))
+      buffer = buffer.drop(1)
+    }
+
+    ngram.toIterator
+  }
+
   /**
    * Calculate modified ngram precision.
    *
@@ -363,10 +654,10 @@ class BLEU() extends Serializable {
    * @param n
    * @return
    */
-  private def modifiedPrecision(
-    references: Array[Array[String]],
-    hypothesis: Array[String],
-    n: Int): Fraction = {
+  def modifiedPrecision(
+                         references: Array[Array[String]],
+                         hypothesis: Array[String],
+                         n: Int): Fraction = {
 
     val counts = if (hypothesis.length > n) {
       counter[BoolArray](ngrams(hypothesis, n))
@@ -410,131 +701,5 @@ class BLEU() extends Serializable {
       counts(_key) = counts.getOrElse(_key, 0) + 1
     }
     counts
-  }
-
-  private def ngrams(sequence: Array[String], n: Int): Iterator[BoolArray] = {
-    val seqIter = sequence.toIterator
-    val ngram = new ArrayBuffer[BoolArray]
-    var buffer = new mutable.MutableList[String]
-    var count = n
-    while (count > 1) {
-      buffer += seqIter.next
-      count -= 1
-    }
-    while (seqIter.hasNext) {
-      val _next = seqIter.next
-      buffer += _next
-      ngram.append(new BoolArray(buffer.toArray))
-      buffer = buffer.drop(1)
-    }
-
-    ngram.toIterator
-  }
-
-  def closestRefLength(
-    references: Array[Array[String]],
-    hypLen: Int): Int = {
-    references.map(x => (x.length, math.abs(hypLen - x.length))).minBy(_._2)._1
-  }
-}
-
-class BoolArray(val array: Array[String])
-  extends Serializable {
-
-  override def equals(obj: Any): Boolean = {
-    if (!obj.isInstanceOf[BoolArray]) {
-      false
-    } else {
-      val other = obj.asInstanceOf[BoolArray]
-      if (array.length != other.array.length) {
-        return false
-      }
-      array zip other.array foreach(x => {
-        if (!x._1.equals(x._2)) {
-          return false
-        }
-      })
-      true
-    }
-  }
-
-  override def hashCode(): Int = {
-    var hash = 0
-    array.foreach(x => hash += x.hashCode)
-    hash
-  }
-}
-
-case class SmoothingFunction(epsilon: Double = 0.1, alpha: Int = 5, k: Int = 5)
-  extends Serializable {
-
-  /**
-   * No smoothing
-   * @param pN
-   * @return
-   */
-  def method0()(pN: Array[Fraction]): Array[Fraction] = {
-    val pNsmooth = new ArrayBuffer[Fraction]
-    pN.foreach(x => {
-      if (x.getNumerator != 0) {
-        pNsmooth.append(Fraction.getFraction(x.getNumerator, x.getDenominator))
-      }
-    })
-    pNsmooth.toArray
-  }
-
-  /**
-   * Smoothing method 1: Add *epsilon* counts to precision with 0 counts.
-   * @param pN
-   * @return
-   */
-  def method1(pN: Array[Fraction]): Array[Fraction] = {
-    pN.map(x => {
-      if (x.getNumerator == 0) {
-        Fraction.getFraction(x.getNumerator + epsilon / x.getDenominator)
-      } else {
-        x
-      }
-    })
-  }
-
-  /**
-   * Smoothing method 2: Add 1 to both numerator and denominator from
-   *     Chin-Yew Lin and Franz Josef Och (2004) Automatic evaluation of
-   *     machine translation quality using longest common subsequence and
-   *     skip-bigram statistics. In ACL04.
-   * @param pN
-   * @return
-   */
-  def method2(pN: Array[Fraction]): Array[Fraction] = {
-    pN.map(x => Fraction.getFraction(x.getNumerator + 1 / x.getDenominator + 1))
-  }
-
-  /**
-   * Smoothing method 3: NIST geometric sequence smoothing
-   *     The smoothing is computed by taking 1 / ( 2^k ), instead of 0, for each
-   *     precision score whose matching n-gram count is null.
-   *     k is 1 for the first 'n' value for which the n-gram match count is null/
-   *     For example, if the text contains:
-   *      - one 2-gram match
-   *      - and (consequently) two 1-gram matches
-   *     the n-gram count for each individual precision score would be:
-   * - n=1  =>  prec_count = 2     (two unigrams)
-   * - n=2  =>  prec_count = 1     (one bigram)
-   * - n=3  =>  prec_count = 1/2   (no trigram,  taking 'smoothed' value of 1 / ( 2^k ), with k=1)
-   * - n=4  =>  prec_count = 1/4   (no fourgram, taking 'smoothed' value of 1 / ( 2^k ), with k=2)
-   * @param pN
-   * @return
-   */
-  def method3(pN: Array[Fraction]): Array[Fraction] = {
-    var incvnt = 0
-    pN.map(x => {
-      if (x.getNumerator == 0) {
-        incvnt += 1
-        Fraction.getFraction(1 / (math.pow(2, incvnt) * x.getDenominator))
-      } else {
-        x
-      }
-    })
   }
 }

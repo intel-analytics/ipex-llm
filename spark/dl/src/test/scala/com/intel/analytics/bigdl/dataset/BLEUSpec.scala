@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.dataset
 
-import com.intel.analytics.bigdl.dataset.text.BLEU
+import com.intel.analytics.bigdl.dataset.text.{BLEU, SmoothingFunction}
 import org.scalatest.{FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Parallel
@@ -40,7 +40,7 @@ class BLEUSpec extends FlatSpec with Matchers {
       "army", "always", "to", "heed", "the",
       "directions", "of", "the", "party")
 
-    val bleu = new BLEU()
+    val bleu = BLEU()
     val score1 = bleu.sentenceBleu(Array(reference1, reference2, reference3), hypothesis1)
     val score2 = bleu.sentenceBleu(Array(reference1, reference2, reference3), hypothesis2)
 
@@ -76,7 +76,7 @@ class BLEUSpec extends FlatSpec with Matchers {
     val ref2a = Array("he", "was", "interested", "in", "world", "history",
       "because", "he", "read", "the", "book")
 
-    val bleu = new BLEU()
+    val bleu = BLEU()
     val listOfRefs = Array(Array(ref1a, ref1b, ref1c), Array(ref2a))
     val hypotheses = Array(hyp1, hyp2)
     val score1 = bleu.corpusBleu(listOfRefs, hypotheses)
@@ -96,7 +96,7 @@ class BLEUSpec extends FlatSpec with Matchers {
     val hypothesis = Array.fill[String](12)("a")
 
 
-    val bleu = new BLEU()
+    val bleu = BLEU()
     val hypLen = hypothesis.length
     val closestRefLen = bleu.closestRefLength(Array(reference1, reference2, reference3), hypLen)
     val bp = bleu.brevityPenalty(closestRefLen, hypLen)
@@ -110,7 +110,7 @@ class BLEUSpec extends FlatSpec with Matchers {
     val hypothesis = Array.fill[String](12)("a")
 
 
-    val bleu = new BLEU()
+    val bleu = BLEU()
     val hypLen = hypothesis.length
     val closestRefLen = bleu.closestRefLength(Array(reference1, reference2), hypLen)
     val bp = bleu.brevityPenalty(closestRefLen, hypLen)
@@ -124,11 +124,45 @@ class BLEUSpec extends FlatSpec with Matchers {
     val hypothesis = Array.fill[String](12)("a")
 
 
-    val bleu = new BLEU()
+    val bleu = BLEU()
     val hypLen = hypothesis.length
     val closestRefLen = bleu.closestRefLength(Array(reference1, reference2), hypLen)
     val bp = bleu.brevityPenalty(closestRefLen, hypLen)
 
     bp should be ((0.9200444146293233) +- 1e-5)
+  }
+
+  "BLEUSpec" should " calculate correctly in method01234567" in {
+    val hyp1 = Array("It", "is", "a", "guide", "to", "action", "which",
+      "ensures", "that", "the", "military", "always",
+      "obeys", "the", "commands", "of", "the", "party")
+
+    val ref1a = Array("It", "is", "a", "guide", "to", "action", "that",
+      "ensures", "that", "the", "military", "will",
+      "forever", "heed", "Party", "commands")
+
+    val bleu = BLEU()
+    val chencherry = SmoothingFunction()
+    val scorex = bleu.sentenceBleu(Array(ref1a), hyp1)
+    val score0 = bleu.sentenceBleu(Array(ref1a), hyp1, smoothingFunction = chencherry.method0())
+    val score1 = bleu.sentenceBleu(Array(ref1a), hyp1, smoothingFunction = chencherry.method1())
+    val score2 = bleu.sentenceBleu(Array(ref1a), hyp1, smoothingFunction = chencherry.method2())
+    val score3 = bleu.sentenceBleu(Array(ref1a), hyp1, smoothingFunction = chencherry.method3())
+    val score4 = bleu.sentenceBleu(Array(ref1a), hyp1, smoothingFunction = chencherry.method4())
+    val score5 = bleu.sentenceBleu(Array(ref1a), hyp1, smoothingFunction = chencherry.method5())
+    val score6 = bleu.sentenceBleu(Array(ref1a), hyp1, smoothingFunction = chencherry.method6())
+    val score7 = bleu.sentenceBleu(Array(ref1a), hyp1, smoothingFunction = chencherry.method7())
+
+    scorex should be ((0.41180376356915777) +- 1e-5)
+    score0 should be ((0.41180376356915777) +- 1e-5)
+    score1 should be ((0.41180376356915777) +- 1e-5)
+    score2 should be ((0.44897710722021167) +- 1e-5)
+    score3 should be ((0.41180376356915777) +- 1e-5)
+    score4 should be ((0.41180376356915777) +- 1e-5)
+    score5 should be ((0.49053283797997127) +- 1e-5)
+    score6 should be ((0.4135895888868294) +- 1e-5)
+    score7 should be ((0.49053283797997127) +- 1e-5)
+
+
   }
 }
