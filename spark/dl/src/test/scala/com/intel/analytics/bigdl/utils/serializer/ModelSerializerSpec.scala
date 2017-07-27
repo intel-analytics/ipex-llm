@@ -336,10 +336,10 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     val batchSize = 2
     val kernalW = 3
     val kernalH = 3
-    val convLSTMPeephole = Recurrent()
+    val convLSTMPeephole2d = Recurrent()
     val model = Sequential()
-      .add(convLSTMPeephole
-        .add(ConvLSTMPeephole(
+      .add(convLSTMPeephole2d
+        .add(ConvLSTMPeephole2D(
           inputSize,
           hiddenSize,
           kernalW, kernalH,
@@ -351,10 +351,39 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
 
     val input2 = Tensor()
     input2.resizeAs(input1).copy(input1)
-    val res1 = convLSTMPeephole.forward(input1)
-    ModulePersister.saveToFile("/tmp/convLSTMPeephole.bigdl", convLSTMPeephole, true)
-    val loadedConvLSTMPeephole = ModuleLoader.loadFromFile("/tmp/convLSTMPeephole.bigdl")
-    val res2 = loadedConvLSTMPeephole.forward(input2)
+    val res1 = convLSTMPeephole2d.forward(input1)
+    ModulePersister.saveToFile("/tmp/convLSTMPeephole2d.bigdl", convLSTMPeephole2d, true)
+    val loadedConvLSTMPeephole2d = ModuleLoader.loadFromFile("/tmp/convLSTMPeephole2d.bigdl")
+    val res2 = loadedConvLSTMPeephole2d.forward(input2)
+    res1 should be (res2)
+  }
+
+  "ConvLSTMPeephole3D serializer" should " work properly" in {
+    val hiddenSize = 5
+    val inputSize = 3
+    val seqLength = 4
+    val batchSize = 2
+    val kernalW = 3
+    val kernalH = 3
+    val convLSTMPeephole3d = Recurrent()
+    val model = Sequential()
+      .add(convLSTMPeephole3d
+        .add(ConvLSTMPeephole3D(
+          inputSize,
+          hiddenSize,
+          kernalW, kernalH,
+          1,
+          withPeephole = false)))
+      .add(View(hiddenSize * kernalH * kernalW))
+
+    val input1 = Tensor(batchSize, seqLength, inputSize, kernalW, kernalH, 3).rand
+
+    val input2 = Tensor()
+    input2.resizeAs(input1).copy(input1)
+    val res1 = convLSTMPeephole3d.forward(input1)
+    ModulePersister.saveToFile("/tmp/convLSTMPeephole3d.bigdl", convLSTMPeephole3d, true)
+    val loadedConvLSTMPeephole3d = ModuleLoader.loadFromFile("/tmp/convLSTMPeephole3d.bigdl")
+    val res2 = loadedConvLSTMPeephole3d.forward(input2)
     res1 should be (res2)
   }
 
@@ -1516,6 +1545,20 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     val loadedSpatialSubtractiveNormalization = ModuleLoader.
       loadFromFile("/tmp/spatialSubtractiveNormalization.bigdl")
     val res2 = loadedSpatialSubtractiveNormalization.forward(input2)
+    res1 should be (res2)
+  }
+
+  "SpatialWithinChannelLRN serializer " should " work properly" in {
+    val spatialWithinChannelLRN = new SpatialWithinChannelLRN[Float](5, 5e-4, 0.75)
+    val input1 = Tensor(1, 4, 7, 6).apply1( e => Random.nextFloat())
+    val input2 = Tensor()
+    input2.resizeAs(input1).copy(input1)
+    val res1 = spatialWithinChannelLRN.forward(input1)
+    ModulePersister.saveToFile("/tmp/spatialWithinChannelLRN.bigdl",
+      spatialWithinChannelLRN, true)
+    val loadedSpatialWithinChannelLRN = ModuleLoader.
+      loadFromFile("/tmp/spatialWithinChannelLRN.bigdl")
+    val res2 = loadedSpatialWithinChannelLRN.forward(input2)
     res1 should be (res2)
   }
 

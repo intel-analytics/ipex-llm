@@ -192,6 +192,8 @@ object ModuleSerializer extends ModuleSerializable{
       Contiguous)
     registerModule("ConvLSTMPeephole2D",
       Class.forName("com.intel.analytics.bigdl.nn.ConvLSTMPeephole2D"), ConvLSTMPeephole2D)
+    registerModule("ConvLSTMPeephole3D",
+      Class.forName("com.intel.analytics.bigdl.nn.ConvLSTMPeephole3D"), ConvLSTMPeephole3D)
     registerModule("Cosine", Class.forName("com.intel.analytics.bigdl.nn.Cosine"),
       Cosine)
     registerModule("CosineDistance", Class.forName("com.intel.analytics.bigdl.nn.CosineDistance"),
@@ -319,6 +321,9 @@ object ModuleSerializer extends ModuleSerializable{
     registerModule("SpatialSubtractiveNormalization",
       Class.forName("com.intel.analytics.bigdl.nn.SpatialSubtractiveNormalization"),
       SpatialSubtractiveNormalization)
+    registerModule("SpatialWithinChannelLRN",
+      Class.forName("com.intel.analytics.bigdl.nn.SpatialWithinChannelLRN"),
+      SpatialWithinChannelLRN)
     registerModule("SpatialZeroPadding",
       Class.forName("com.intel.analytics.bigdl.nn.SpatialZeroPadding"), SpatialZeroPadding)
     registerModule("SplitTable", Class.forName("com.intel.analytics.bigdl.nn.SplitTable"),

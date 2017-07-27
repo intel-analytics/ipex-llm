@@ -215,7 +215,7 @@ class ConvLSTMPeephole3D[T : ClassTag](
     s"$kernelI, $kernelC, $stride)"
 }
 
-object ConvLSTMPeephole3D {
+object ConvLSTMPeephole3D extends CellSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
     inputSize: Int,
     outputSize: Int,
