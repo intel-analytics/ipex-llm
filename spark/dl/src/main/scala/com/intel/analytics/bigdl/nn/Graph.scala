@@ -267,7 +267,6 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
       input.toTable[Tensor[T]](i + 1)
     }
   }
-  
 }
 
 object Graph extends ContainerSerializable {
