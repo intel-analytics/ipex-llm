@@ -1,4 +1,4 @@
-First of all, you need to obtain the BigDL libs. Refer to [Install without pip](install-without-pip.md) for more details
+First of all, you need to obtain the BigDL libs. Refer to [Install](install-without-pip.md) for more details
 
 
 ## **A quick launch for local mode**
@@ -12,8 +12,20 @@ ${SPARK_HOME}/bin/pyspark --master local[4] \
 --properties-file ../conf/spark-bigdl.conf 
 ```
 
- [Example code to verify if run successfully](run-from-pip.md#code.verification)
+_**Example code to verify if run successfully**
+ ```python
+ from bigdl.util.common import *
+ from pyspark import SparkContext
+ from bigdl.nn.layer import *
+ import bigdl.version
 
+ # create sparkcontext with bigdl configuration
+ sc = SparkContext.getOrCreate(conf=create_spark_conf())
+ init_engine() # prepare the bigdl environment
+ bigdl.version.__version__ # Get the current BigDL version
+ linear = Linear(2, 3) # Try to create a Linear layer
+
+ ```
 
 ## **Run from spark-submit**
 
@@ -89,7 +101,21 @@ sudo pip install numpy scipy pandas scikit-learn matplotlib seaborn wordcloud
 
 After successfully launching Jupyter, you will be able to navigate to the notebook dashboard using your browser. You can find the exact URL in the console output when you started Jupyter; by default, the dashboard URL is http://your_node:8888/
 
-[Example code to verify if run successfully](run-from-pip.md#code.verification)
+_**Example code to verify if run successfully**
+ ```python
+ from bigdl.util.common import *
+ from pyspark import SparkContext
+ from bigdl.nn.layer import *
+ import bigdl.version
+
+ # create sparkcontext with bigdl configuration
+ sc = SparkContext.getOrCreate(conf=create_spark_conf())
+ init_engine() # prepare the bigdl environment
+ bigdl.version.__version__ # Get the current BigDL version
+ linear = Linear(2, 3) # Try to create a Linear layer
+
+ ```
+
 
 ## BigDL Configuration
 Please check [this page](../UserGuide/configuration.md)
