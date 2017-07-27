@@ -306,7 +306,7 @@ class SampleToBatch[T: ClassTag]
 /**
  * Convert a sequence of [[Sample]] to a sequence of [[MiniBatch]] through function toMiniBatch.
  */
-private[bigdl] class SampleToMiniBatch[T: ClassTag](
+class SampleToMiniBatch[T: ClassTag] private[bigdl](
       totalBatch: Int,
       miniBatch: Option[MiniBatch[T]] = None,
       featurePaddingParam: Option[PaddingParam[T]] = None,

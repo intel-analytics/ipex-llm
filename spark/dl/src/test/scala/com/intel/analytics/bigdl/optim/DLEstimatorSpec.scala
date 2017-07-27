@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
+import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.apache.spark.ml.feature.MinMaxScaler
 import org.apache.spark.ml.{DLEstimator, DLModel, Pipeline, PipelineModel}
@@ -62,6 +63,9 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     assert(estimator.getLabelCol == "label")
     assert(estimator.getMaxEpoch == 100)
     assert(estimator.getBatchSize == 1)
+    assert(estimator.getLearningRate == 1.0)
+    assert(estimator.getLearningRateDecay == 0)
+
   }
 
   "An DLEstimator" should "fit on feature(one dimension Array[Double]) and label(Double)" in {

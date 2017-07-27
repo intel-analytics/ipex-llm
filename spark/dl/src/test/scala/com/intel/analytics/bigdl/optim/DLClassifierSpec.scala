@@ -64,6 +64,8 @@ class DLClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
     assert(estimator.getLabelCol == "label")
     assert(estimator.getMaxEpoch == 100)
     assert(estimator.getBatchSize == 1)
+    assert(estimator.getLearningRate == 1.0)
+    assert(estimator.getLearningRateDecay == 0)
   }
 
   "An DLClassifier" should "fit on feature(one dimension Array[Double]) and label(Double)" in {
