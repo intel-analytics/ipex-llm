@@ -3048,7 +3048,8 @@ class VolumetricConvolution(Layer):
     :param pad_w: The additional zeros added per width to the input planes.
     :param pad_h: The additional zeros added per height to the input planes.
     :param with_bias: whether with bias
-    :param init_method: Init method, Default, Xavier, Bilinear.
+    :param wRegularizer: instance of [[Regularizer]] (eg. L1 or L2 regularization), applied to the input weights matrices.
+    :param bRegularizer: instance of [[Regularizer]] applied to the bias.
 
 
     >>> volumetricConvolution = VolumetricConvolution(6, 12, 5, 5, 5, 1, 1, 1)
@@ -3068,6 +3069,8 @@ class VolumetricConvolution(Layer):
                  pad_w=0,
                  pad_h=0,
                  with_bias=True,
+                 wRegularizer=None,
+                 bRegularizer=None,
                  bigdl_type="float"):
         super(VolumetricConvolution, self).__init__(None, bigdl_type,
                                                     n_input_plane,
@@ -3081,7 +3084,9 @@ class VolumetricConvolution(Layer):
                                                     pad_t,
                                                     pad_w,
                                                     pad_h,
-                                                    with_bias)
+                                                    with_bias,
+                                                    wRegularizer,
+                                                    bRegularizer)
 
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
