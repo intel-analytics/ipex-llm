@@ -863,6 +863,18 @@ class Recurrent(Container):
     def __init__(self, bigdl_type="float"):
         super(Recurrent, self).__init__(None, bigdl_type)
 
+    def get_finalState_cellStatus(self):
+        """
+        get final state and cell status.
+        
+        :return: list of final state and cell status
+        """
+        finalState_cellStatus = callBigDlFunc(self.bigdl_type, "getFinalStateAndCellStatus", self.value)
+        for idx, tensor in enumerate(finalState_cellStatus):
+            if tensor is not None:
+                finalState_cellStatus[idx] = tensor.to_ndarray()
+
+        return finalState_cellStatus
 
 class LSTM(Layer):
     '''
