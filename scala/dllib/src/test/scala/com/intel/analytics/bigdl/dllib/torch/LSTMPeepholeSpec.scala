@@ -19,12 +19,14 @@ package com.intel.analytics.bigdl.torch
 import java.io.PrintWriter
 
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.T
 
 import scala.collection.mutable.ArrayBuffer
+import scala.math._
 import scala.sys.process._
 
 @com.intel.analytics.bigdl.tags.Serial
@@ -670,5 +672,30 @@ class LSTMPeepholeSpec  extends TorchSpec {
     println("gradient check for weights")
     val gradCheck = new GradientCheckerRNN(1e-2, 1)
     val checkFlag = gradCheck.checkLayer(model, input, labels)
+  }
+
+  "A LSTMPeephole" should " be able to return finalstate" in {
+    val inputSize = 10
+    val hiddenSize = 30
+    val batchSize = 12
+    val time = 20
+    val seed = 100
+    RNG.setSeed(seed)
+    val input = Tensor[Float](batchSize, time, inputSize).rand
+    val gradOutput = Tensor[Float](batchSize, time, hiddenSize).rand
+
+    val model = Recurrent[Float]()
+      .add(LSTMPeephole[Float](inputSize, hiddenSize))
+
+    var output: Activity = null
+    for (i <- 1 to 5) {
+      output = model.forward(input)
+      model.backward(input, gradOutput)
+    }
+    val (finalState, cellStatus) = model.getFinalStateAndCellStatus()
+    finalState.map(output.asInstanceOf[Tensor[Float]].select(2, time), (v1, v2) => {
+      assert(abs(v1 - v2) == 0)
+      v1
+    })
   }
 }
