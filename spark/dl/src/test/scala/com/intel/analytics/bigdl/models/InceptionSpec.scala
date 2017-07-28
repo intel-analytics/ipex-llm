@@ -541,7 +541,8 @@ class InceptionSpec extends TorchSpec {
       Array("output", "gradOutput", "err", "parameters_initial", "gradParameters_initial",
         "gradParameters", "parameters", "initModel"))
 
-    val model = th.map("initModel").asInstanceOf[AbstractModule[Tensor[Double], Tensor[Double], Double]]
+    val model = th.map("initModel")
+      .asInstanceOf[AbstractModule[Tensor[Double], Tensor[Double], Double]]
 
     val parameters = model.getParameters()._1.asInstanceOf[Tensor[Double]]
     println(s"model size: ${parameters.nElement()}")
