@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.optim.Regularizer
@@ -69,14 +70,17 @@ class RnnCell[T : ClassTag] (
         bRegularizer = bRegularizer))
     .asInstanceOf[AbstractModule[Activity, Activity, T]]
 
-  override var cell: AbstractModule[Activity, Activity, T] =
-    Sequential[T]()
-    .add(parallelTable)
-    .add(cAddTable)
-    .add(activation)
-    .add(ConcatTable()
-      .add(Identity[T]())
-      .add(Identity[T]()))
+  override var cell: AbstractModule[Activity, Activity, T] = buildGraph
+
+  private def buildGraph: Graph[T] = {
+    val input1 = Input()
+    val input2 = h2h.inputs()
+    val add = cAddTable.inputs(input1, input2)
+    val activate = activation.inputs(add)
+    val out1 = Identity[T].inputs(activate)
+    val out2 = Identity[T].inputs(activate)
+    Graph(Array(input1, input2), Array(out1, out2))
+  }
 
   /**
    * Clear cached activities to save storage space or network bandwidth. Note that we use

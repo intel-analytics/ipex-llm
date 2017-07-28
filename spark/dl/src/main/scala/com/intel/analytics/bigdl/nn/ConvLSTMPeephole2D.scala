@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -57,149 +58,122 @@ class ConvLSTMPeephole2D[T : ClassTag](
     hiddensShape = Array(outputSize, outputSize),
     regularizers = Array(wRegularizer, uRegularizer, bRegularizer)
   ) {
-  var inputGate: Sequential[T] = _
-  var forgetGate: Sequential[T] = _
-  var outputGate: Sequential[T] = _
-  var hiddenLayer: Sequential[T] = _
-  var cellLayer: Sequential[T] = _
-//  val joinDim = 2
-  override var cell: AbstractModule[Activity, Activity, T] = buildConvLSTM()
+  var inputGate: ModuleNode[T] = _
+  var forgetGate: ModuleNode[T] = _
+  var outputGate: ModuleNode[T] = _
+  var hiddenLayer: ModuleNode[T] = _
+  var cellLayer: ModuleNode[T] = _
 
-//  override def preTopology: AbstractModule[Activity, Activity, T] =
-//    Sequential()
-//        .add(TimeDistributed(SpatialConvolution(inputSize, outputSize*4, kernelI, kernelI,
-//          stride, stride, kernelI/2, kernelI/2, wRegularizer = wRegularizer,
-//          bRegularizer = bRegularizer)))
+  override var cell: AbstractModule[Activity, Activity, T] =
+  Sequential()
+    .add(FlattenTable())
+    .add(buildConvLSTM())
+    .add(ConcatTable()
+      .add(SelectTable(1))
+      .add(NarrowTable(2, 2)))
 
-//  def buildGate(offset: Int, length: Int): Sequential[T] = {
-//    val i2g = Narrow(joinDim, offset, length)
-  def buildGate(): Sequential[T] = {
-    val i2g = Sequential()
-      .add(Contiguous())
-      .add(SpatialConvolution(inputSize, outputSize, kernelI, kernelI,
-        stride, stride, kernelI/2, kernelI/2, wRegularizer = wRegularizer,
-        bRegularizer = bRegularizer))
+  def buildGate(input1: ModuleNode[T], input2: ModuleNode[T], input3: ModuleNode[T])
+  : ModuleNode[T] = {
+
+    /**
+     * i2g = Contiguous(Conv(input1))
+     * h2g = Conv(input2)
+     * cMul = CMul(input3)
+     * Sigmoid(i2g + h2g + cMul)
+     */
+
+    val conti = Contiguous().inputs(input1)
+    val i2g = SpatialConvolution(inputSize, outputSize, kernelI, kernelI,
+      stride, stride, kernelI/2, kernelI/2, wRegularizer = wRegularizer,
+      bRegularizer = bRegularizer).inputs(conti)
     val h2g = SpatialConvolution(outputSize, outputSize, kernelC, kernelC,
       stride, stride, kernelC/2, kernelC/2, withBias = false,
-      wRegularizer = uRegularizer)
-
-    val gate = Sequential()
-    if (withPeephole) {
-      gate
-        .add(ParallelTable()
-          .add(i2g)
-          .add(h2g)
-          .add(CMul(Array(1, outputSize, 1, 1))))
+      wRegularizer = uRegularizer).inputs(input2)
+    val cadd = if (withPeephole) {
+      val cMul = CMul(Array(1, outputSize, 1, 1)).inputs(input3)
+      CAddTable().inputs(i2g, h2g, cMul)
     } else {
-      gate.add(NarrowTable(1, 2))
-      gate
-        .add(ParallelTable()
-          .add(i2g)
-          .add(h2g))
+      CAddTable().inputs(i2g, h2g)
     }
-
-    gate.add(CAddTable())
-      .add(Sigmoid())
+    val sigmoid = Sigmoid().inputs(cadd)
+    sigmoid
   }
 
-  def buildInputGate(): Sequential[T] = {
-//    inputGate = buildGate(1 + outputSize, outputSize)
-    inputGate = buildGate()
+  def buildInputGate(input1: ModuleNode[T], input2: ModuleNode[T], input3: ModuleNode[T])
+  : ModuleNode[T] = {
+    inputGate = buildGate(input1, input2, input3)
     inputGate
   }
 
-  def buildForgetGate(): Sequential[T] = {
-//    forgetGate = buildGate(1, outputSize)
-    forgetGate = buildGate()
+  def buildForgetGate(input1: ModuleNode[T], input2: ModuleNode[T], input3: ModuleNode[T])
+  : ModuleNode[T] = {
+    forgetGate = buildGate(input1, input2, input3)
     forgetGate
   }
 
-  def buildOutputGate(): Sequential[T] = {
-//    outputGate = buildGate(1 + 3 * outputSize, outputSize)
-    outputGate = buildGate()
+  def buildOutputGate(input1: ModuleNode[T], input2: ModuleNode[T], input3: ModuleNode[T])
+  : ModuleNode[T] = {
+    outputGate = buildGate(input1, input2, input3)
     outputGate
   }
 
-  def buildHidden(): Sequential[T] = {
-    val hidden = Sequential()
-      .add(NarrowTable(1, 2))
+  def buildHidden(input1: ModuleNode[T], input2: ModuleNode[T])
+  : ModuleNode[T] = {
 
-//    val i2h = Narrow(joinDim, 1 + 2 * outputSize, outputSize)
-    val i2h = Sequential()
-      .add(Contiguous())
-      .add(SpatialConvolution(inputSize, outputSize, kernelI, kernelI,
-        stride, stride, kernelI/2, kernelI/2, wRegularizer = wRegularizer,
-        bRegularizer = bRegularizer))
+    /**
+     * i2g = Contiguous(Conv(input1))
+     * h2g = Conv(input2)
+     * Tanh(i2g + h2g)
+     */
+
+    val conti = Contiguous().inputs(input1)
+    val i2h = SpatialConvolution(inputSize, outputSize, kernelI, kernelI,
+      stride, stride, kernelI/2, kernelI/2, wRegularizer = wRegularizer,
+      bRegularizer = bRegularizer).inputs(conti)
     val h2h = SpatialConvolution(outputSize, outputSize, kernelC, kernelC,
       stride, stride, kernelC/2, kernelC/2, withBias = false,
-      wRegularizer = uRegularizer)
+      wRegularizer = uRegularizer).inputs(input2)
 
-    hidden
-      .add(ParallelTable()
-        .add(i2h)
-        .add(h2h))
-      .add(CAddTable())
-      .add(Tanh())
+    val cadd = CAddTable().inputs(i2h, h2h)
+    val tanh = Tanh().inputs(cadd)
 
-    this.hiddenLayer = hidden
-    hidden
+    this.hiddenLayer = tanh
+    tanh
   }
 
-  def buildCell(): Sequential[T] = {
-    buildInputGate()
-    buildForgetGate()
-    buildHidden()
+  def buildCell(input1: ModuleNode[T], input2: ModuleNode[T], input3: ModuleNode[T])
+  : ModuleNode[T] = {
+    buildInputGate(input1, input2, input3)
+    buildForgetGate(input1, input2, input3)
+    buildHidden(input1, input2)
 
-    val forgetLayer = Sequential()
-      .add(ConcatTable()
-        .add(forgetGate)
-        .add(SelectTable(3)))
-      .add(CMulTable())
+    val forgetLayer = CMulTable().inputs(forgetGate, input3)
 
-    val inputLayer = Sequential()
-      .add(ConcatTable()
-        .add(inputGate)
-        .add(hiddenLayer))
-      .add(CMulTable())
+    val inputLayer = CMulTable().inputs(inputGate, hiddenLayer)
 
-    val cellLayer = Sequential()
-      .add(ConcatTable()
-        .add(forgetLayer)
-        .add(inputLayer))
-      .add(CAddTable())
+    val cellLayer = CAddTable().inputs(forgetLayer, inputLayer)
 
     this.cellLayer = cellLayer
     cellLayer
   }
 
-  def buildConvLSTM(): Sequential[T] = {
-    buildCell()
-    buildOutputGate()
+  def buildConvLSTM(): Graph[T] = {
+    val input1 = Input()
+    val input2 = Input()
+    val input3 = Input()
 
-    val convlstm = Sequential()
-      .add(FlattenTable())
-      .add(ConcatTable()
-        .add(NarrowTable(1, 2))
-        .add(cellLayer))
-      .add(FlattenTable())
+    buildCell(input1, input2, input3)
+    buildOutputGate(input1, input2, cellLayer)
 
-      .add(ConcatTable()
-        .add(Sequential()
-          .add(ConcatTable()
-            .add(outputGate)
-            .add(Sequential()
-              .add(SelectTable(3))
-              .add(Tanh())))
-          .add(CMulTable())
-          .add(Contiguous()))
-        .add(SelectTable(3)))
+    val tanh = Tanh().inputs(cellLayer)
+    val cMul = CMulTable().inputs(outputGate, tanh)
+    val conti = Contiguous().inputs(cMul)
 
-      .add(ConcatTable()
-        .add(SelectTable(1))
-        .add(Identity()))
+    val out1 = Identity().inputs(conti)
+    val out2 = Identity().inputs(conti)
+    val out3 = cellLayer
 
-    cell = convlstm
-    convlstm
+    Graph(Array(input1, input2, input3), Array(out1, out2, out3))
   }
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[ConvLSTMPeephole2D[T]]
@@ -247,4 +221,3 @@ object ConvLSTMPeephole2D {
       wRegularizer, uRegularizer, bRegularizer, withPeephole)
   }
 }
-
