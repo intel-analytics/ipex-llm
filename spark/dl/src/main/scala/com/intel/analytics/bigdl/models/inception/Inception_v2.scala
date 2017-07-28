@@ -222,7 +222,7 @@ object Inception_v2_NoAuxClassifier {
     model.add(Linear(1024, classNum).setName("loss3/classifier"))
     model.add(LogSoftMax().setName("loss3/loss"))
 
-    // model.reset()
+    model.reset()
     model
   }
 
@@ -267,7 +267,7 @@ object Inception_v2_NoAuxClassifier {
     val output = LogSoftMax().setName("loss3/loss").inputs(linear)
 
     val model = Graph(input, output)
-    // model.reset()
+    model.reset()
     model
   }
 }
@@ -357,7 +357,7 @@ object Inception_v2 {
     model.add(features1)
     model.add(split1)
 
-    // model.reset()
+    model.reset()
     model
   }
 
@@ -424,7 +424,7 @@ object Inception_v2 {
 
     val split2 = JoinTable(2, 2).inputs(output3, output2, output1)
     val model = Graph(input, split2)
-    // model.reset()
+    model.reset()
     model
   }
 }
