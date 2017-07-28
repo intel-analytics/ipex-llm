@@ -52,9 +52,8 @@ object AlexNet_OWT {
 
   def graph(classNum: Int, hasDropout : Boolean = true, firstLayerPropagateBack :
   Boolean = false): Module[Float] = {
-    val input = Input()
     val conv1 = SpatialConvolution(3, 64, 11, 11, 4, 4, 2, 2, 1, firstLayerPropagateBack)
-      .setName("conv1").inputs(input)
+      .setName("conv1").inputs()
     val relu1 = ReLU(true).setName("relu1").inputs(conv1)
     val pool1 = SpatialMaxPooling(3, 3, 2, 2).setName("pool1").inputs(relu1)
     val conv2 = SpatialConvolution(64, 192, 5, 5, 1, 1, 2, 2).setName("conv2").inputs(pool1)
@@ -76,7 +75,7 @@ object AlexNet_OWT {
     val drop7 = if (hasDropout) Dropout(0.5).setName("drop7").inputs(relu7) else relu7
     val fc8 = Linear(4096, classNum).setName("fc8").inputs(drop7)
     val output = LogSoftMax().inputs(fc8)
-    Graph(input, output)
+    Graph(conv1, output)
   }
 }
 
@@ -111,9 +110,8 @@ object AlexNet {
   }
 
   def graph(classNum: Int, hasDropout : Boolean = true): Module[Float] = {
-    val input = Input()
     val conv1 = SpatialConvolution(3, 96, 11, 11, 4, 4, 0, 0, 1, false)
-      .setName("conv1").inputs(input)
+      .setName("conv1").inputs()
     val relu1 = ReLU(true).setName("relu1").inputs(conv1)
     val norm1 = SpatialCrossMapLRN(5, 0.0001, 0.75).setName("norm1").inputs(relu1)
     val pool1 = SpatialMaxPooling(3, 3, 2, 2).setName("pool1").inputs(norm1)
@@ -137,6 +135,6 @@ object AlexNet {
     val drop7 = if (hasDropout) Dropout(0.5).setName("drop7").inputs(relu7) else relu7
     val fc8 = Linear(4096, classNum).setName("fc8").inputs(drop7)
     val loss = LogSoftMax().setName("loss").inputs(fc8)
-    Graph(input, loss)
+    Graph(conv1, loss)
   }
 }

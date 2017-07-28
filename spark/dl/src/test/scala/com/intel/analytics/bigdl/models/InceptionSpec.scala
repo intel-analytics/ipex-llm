@@ -843,6 +843,25 @@ class InceptionSpec extends TorchSpec {
     model.getParametersTable().equals(graphModel.getParametersTable()) should be (true)
   }
 
+  "Inception_v1 graph" should "be correct" in {
+    val batchSize = 1
+    RNG.setSeed(1000)
+    val model = Inception_v1(1000, false)
+    RNG.setSeed(1000)
+    val graphModel = Inception_v1.graph(1000, false)
+
+    val input = Tensor[Float](batchSize, 3, 224, 224).apply1(e => Random.nextFloat())
+    val gradOutput = Tensor[Float](batchSize, 3000).apply1(e => Random.nextFloat())
+
+    val output1 = model.forward(input).toTensor[Float]
+    val output2 = graphModel.forward(input).toTensor[Float]
+    output1 should be(output2)
+
+    val gradInput1 = model.backward(input, gradOutput)
+    val gradInput2 = graphModel.backward(input, gradOutput)
+    gradInput1 should be(gradInput2)
+  }
+
   "Inception_Layer_V2 graph" should "be correct" in {
     val batchSize = 8
     RNG.setSeed(1000)
@@ -901,34 +920,8 @@ class InceptionSpec extends TorchSpec {
     val output2 = graphModel.forward(input).toTensor[Float]
     output1 should be(output2)
 
-    val tmp1 = graphModel.getParametersTable()[Table]("conv1/7x7_s2")[Tensor[Float]]("gradWeight")
-    val tmp2 = model.getParametersTable()[Table]("conv1/7x7_s2")[Tensor[Float]]("gradWeight")
-
-    val t1 = graphModel.getParametersTable()[Table]("conv1/7x7_s2")[Tensor[Float]]("weight")
-    val t2 = model.getParametersTable()[Table]("conv1/7x7_s2")[Tensor[Float]]("weight")
-
-    val gradInput1 = model.backward(input, gradOutput)
-    val gradInput2 = graphModel.backward(input, gradOutput)
+    val gradInput1 = model.updateGradInput(input, gradOutput)
+    val gradInput2 = graphModel.updateGradInput(input, gradOutput)
     gradInput1 should be(gradInput2)
-
-    model.getParametersTable()[Table]("conv2/3x3/bn")[Tensor[Float]]("gradWeight") should be(
-      graphModel.getParametersTable()[Table]("conv2/3x3/bn")[Tensor[Float]]("gradWeight")
-    )
-
-    model.getParametersTable()[Table]("loss1/classifier")[Tensor[Float]]("gradWeight") should be(
-      graphModel.getParametersTable()[Table]("loss1/classifier")[Tensor[Float]]("gradWeight")
-    )
-
-    model.getParametersTable()[Table]("loss2/conv")[Tensor[Float]]("gradWeight") should be(
-      graphModel.getParametersTable()[Table]("loss2/conv")[Tensor[Float]]("gradWeight")
-    )
-
-    model.getParametersTable()[Table]("loss2/classifier")[Tensor[Float]]("gradWeight") should be(
-      graphModel.getParametersTable()[Table]("loss2/classifier")[Tensor[Float]]("gradWeight")
-    )
-
-    model.getParametersTable()[Table]("pool5/7x7_s1")[Tensor[Float]]("gradWeight") should be(
-      graphModel.getParametersTable()[Table]("pool5/7x7_s1")[Tensor[Float]]("gradWeight")
-    )
   }
 }

@@ -273,7 +273,7 @@ object ResNet {
     val dataset = dataSet.getOrElse(DatasetType.CIFAR10).asInstanceOf[DatasetType]
     val optnet = opt.get("optnet").getOrElse(true)
 
-    def shortcutFunc(nInputPlane: Int, nOutputPlane: Int, stride: Int)(input: ModuleNode[Float])
+    def shortcutFunc(nInputPlane: Int, nOutputPlane: Int, stride: Int, input: ModuleNode[Float])
     : ModuleNode[Float] = {
       val useConv = shortcutType == ShortcutType.C ||
         (shortcutType == ShortcutType.B && nInputPlane != nOutputPlane)
@@ -303,7 +303,7 @@ object ResNet {
       val relu1 = ReLU(true).inputs(bn1)
       val conv2 = SpatialConvolution(n, n, 3, 3, 1, 1, 1, 1).inputs(relu1)
       val bn2 = SpatialBatchNormalization(n).inputs(conv2)
-      val shortcut = shortcutFunc(nInputPlane, n, stride)(input)
+      val shortcut = shortcutFunc(nInputPlane, n, stride, input)
       val add = CAddTable(true).inputs(bn2, shortcut)
       val output = ReLU(true).inputs(add)
       output
@@ -322,7 +322,7 @@ object ResNet {
       val conv3 = Convolution(n, n*4, 1, 1, 1, 1, 0, 0, optnet = optnet).inputs(relu2)
       val sbn = SpatialBatchNormalization(n * 4).inputs(conv3)
 
-      val shortcut = shortcutFunc(nInputPlane, n * 4, stride)(input)
+      val shortcut = shortcutFunc(nInputPlane, n * 4, stride, input)
       val add = CAddTable(true).inputs(sbn, shortcut)
       val output = ReLU(true).inputs(add)
       output

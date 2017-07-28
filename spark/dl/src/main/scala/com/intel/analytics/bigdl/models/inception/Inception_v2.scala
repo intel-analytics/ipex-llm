@@ -101,7 +101,6 @@ object Inception_Layer_v2 {
       pool.add(ReLU(true).setName(namePrefix + "pool_proj/bn/sc/relu"))
     }
     concat.add(pool)
-    println("Inception_Layer_v2: " + concat.modules.length)
     concat.setName(namePrefix + "output")
   }
 
@@ -295,7 +294,7 @@ object Inception_v2 {
     features1.add(Inception_Layer_v2(320, T(T(0), T(128, 160), T(64, 96), T("max", 0)),
       "inception_3c/"))
 
-    val output1 = Sequential() // 9
+    val output1 = Sequential()
     output1.add(SpatialAveragePooling(5, 5, 3, 3).ceil().setName("pool3/5x5_s3"))
     output1.add(SpatialConvolution(576, 128, 1, 1, 1, 1).setName("loss1/conv"))
     output1.add(SpatialBatchNormalization(128, 1e-3).setName("loss1/conv/bn"))
@@ -306,8 +305,10 @@ object Inception_v2 {
     output1.add(Linear(1024, classNum).setName("loss1/classifier"))
     output1.add(LogSoftMax().setName("loss1/loss"))
 
-    val features2 = Sequential() // 5
-    features2.add(Inception_Layer_v2(576, T(T(224), T(64, 96), T(96, 128), T("avg", 128)),
+
+    val features2 = Sequential()
+    features2
+      .add(Inception_Layer_v2(576, T(T(224), T(64, 96), T(96, 128), T("avg", 128)),
         "inception_4a/"))
       .add(Inception_Layer_v2(576, T(T(192), T(96, 128), T(96, 128), T("avg", 128)),
         "inception_4b/"))
@@ -318,7 +319,7 @@ object Inception_v2 {
       .add(Inception_Layer_v2(576, T(T(0), T(128, 192), T(192, 256), T("max", 0)),
         "inception_4e/"))
 
-    val output2 = Sequential() // 9
+    val output2 = Sequential()
     output2.add(SpatialAveragePooling(5, 5, 3, 3).ceil().setName("pool4/5x5_s3"))
     output2.add(SpatialConvolution(1024, 128, 1, 1, 1, 1).setName("loss2/conv"))
     output2.add(SpatialBatchNormalization(128, 1e-3).setName("loss2/conv/bn"))
@@ -329,7 +330,7 @@ object Inception_v2 {
     output2.add(Linear(1024, classNum).setName("loss2/classifier"))
     output2.add(LogSoftMax().setName("loss2/loss"))
 
-    val output3 = Sequential() // 6
+    val output3 = Sequential()
     output3.add(Inception_Layer_v2(1024, T(T(352), T(192, 320), T(160, 224), T("avg", 128)),
       "inception_5a/"))
     output3.add(Inception_Layer_v2(1024, T(T(352), T(192, 320), T(192, 224), T("max", 128)),
@@ -352,6 +353,7 @@ object Inception_v2 {
     split1.add(output1)
 
     val model = Sequential()
+
     model.add(features1)
     model.add(split1)
 
@@ -420,9 +422,8 @@ object Inception_v2 {
     val linear5_1 = Linear(1024, classNum).setName("loss3/classifier").inputs(view5_1)
     val output3 = LogSoftMax().setName("loss3/loss").inputs(linear5_1)
 
-    val split2 = JoinTable(2, 2).inputs(output3, output2)
-    val split1 = JoinTable(2, 2).inputs(split2, output1)
-    val model = Graph(input, split1)
+    val split2 = JoinTable(2, 2).inputs(output3, output2, output1)
+    val model = Graph(input, split2)
     // model.reset()
     model
   }
