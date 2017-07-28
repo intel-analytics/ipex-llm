@@ -1664,32 +1664,45 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def createDLEstimator(model: Module[T],
                         criterion : Criterion[T],
                         featureSize : JList[Int],
-                        labelSize : JList[Int]): DLEstimator[T] = {
-    new DLEstimator(model, criterion, featureSize.asScala.toArray, labelSize.asScala.toArray)
+                        labelSize : JList[Int],
+                        uid: String = "DLEstimator"): DLEstimator[T] = {
+    new DLEstimator(model, criterion, featureSize.asScala.toArray, labelSize.asScala.toArray, uid)
   }
 
-  def fit(estimator: DLEstimator[T], dataset: DataFrame): DLModel[T] = {
+  def fitEstimator(estimator: DLEstimator[T], dataset: DataFrame): DLModel[T] = {
     estimator.fit(dataset).asInstanceOf[DLModel[T]]
   }
 
   def createDLModel(model: Module[T],
-                              featureSize : JList[Int]): DLModel[T] = {
-    new DLModel(model, featureSize.asScala.toArray)
+                    featureSize : JList[Int],
+                    uid: String = "DLModel"): DLModel[T] = {
+    new DLModel(model, featureSize.asScala.toArray, uid)
+  }
+
+  def dlmodelSetFeatureSize(model: DLModel[T], featureSize : JList[Int]): model.type = {
+    model.setFeatureSize(featureSize.asScala.toArray)
+  }
+
+  def dlmodelGetFeatureSize(model: DLModel[T]): JList[Int] = {
+    model.getFeatureSize.toList.asJava
   }
 
   def createDLClassifier(model: Module[T],
                         criterion : Criterion[T],
-                        featureSize : JList[Int]): DLClassifier[T] = {
-    new DLClassifier(model, criterion, featureSize.asScala.toArray)
+                        featureSize : JList[Int],
+                         labelSize : JList[Int] = Array(1).toList.asJava,
+                         uid: String = "DLClassifier"): DLClassifier[T] = {
+    new DLClassifier(model, criterion, featureSize.asScala.toArray, uid)
   }
 
-  def fit(classifier: DLClassifier[T], dataset: DataFrame): DLClassifierModel[T] = {
+  def fitClassifier(classifier: DLClassifier[T], dataset: DataFrame): DLClassifierModel[T] = {
     classifier.fit(dataset).asInstanceOf[DLClassifierModel[T]]
   }
 
   def createDLClassifierModel(model: Module[T],
-                         featureSize : JList[Int]): DLClassifierModel[T] = {
-    new DLClassifierModel(model, featureSize.asScala.toArray)
+                              featureSize : JList[Int],
+                              uid: String = "DLClassifierModel"): DLClassifierModel[T] = {
+    new DLClassifierModel(model, featureSize.asScala.toArray, uid)
   }
 }
 

@@ -23,7 +23,7 @@ from distutils.util import strtobool
 from dataset import imagenet
 
 from dataset.transformer import *
-from nn.layer import *
+import bigdl.nn.layer
 
 from ml.dl_classifier import *
 
@@ -69,9 +69,9 @@ if __name__ == "__main__":
 
     # get model
     if options.model_type == 'torch':
-        model = Model.load_torch(options.model_path)
+        model = bigdl.nn.layer.Model.load_torch(options.model_path)
     elif options.model_type == 'bigdl':
-        model = Model.load(options.model_path)
+        model = bigdl.nn.layer.Model.load(options.model_path)
     else:
         print("Unsupported model type")
         sys.exit(0)
