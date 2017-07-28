@@ -27,12 +27,6 @@ Here are the folders for nightly build packages. The packages are built from lat
 
 
 ---
-## **Release 0.1.2**
-
-
-
-
----
 ## **Release 0.1.1**
 
 |               | Linux x64 | Mac |
