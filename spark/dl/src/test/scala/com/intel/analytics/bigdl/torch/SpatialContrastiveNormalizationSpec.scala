@@ -33,11 +33,12 @@ class SpatialContrastiveNormalizationSpec extends TorchSpec {
     val model = new Sequential[Double]()
     model.add(layer)
 
-    Random.setSeed(3)
-    val input = Tensor[Double](1, 5, 5).apply1(e => Random.nextDouble())
+    val random = new Random
+    random.setSeed(3)
+    val input = Tensor[Double](1, 5, 5).apply1(e => random.nextDouble())
     val output = model.updateOutput(input).toTensor[Double]
 
-    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => random.nextDouble())
 
     val gradInput = model.backward(input, gradOutput)
 
@@ -73,11 +74,12 @@ class SpatialContrastiveNormalizationSpec extends TorchSpec {
     val model = new Sequential[Double]()
     model.add(layer)
 
-    Random.setSeed(3)
-    val input = Tensor[Double](3, 1, 5, 5).apply1(e => Random.nextDouble())
+    val random = new Random
+    random.setSeed(3)
+    val input = Tensor[Double](3, 1, 5, 5).apply1(e => random.nextDouble())
     val output = model.updateOutput(input).toTensor[Double]
 
-    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => random.nextDouble())
 
     val gradInput = model.backward(input, gradOutput)
 
@@ -113,11 +115,12 @@ class SpatialContrastiveNormalizationSpec extends TorchSpec {
     val model = new Sequential[Double]()
     model.add(layer)
 
-    Random.setSeed(3)
-    val input = Tensor[Double](3, 4, 5, 5).apply1(e => Random.nextDouble())
+    val random = new Random
+    random.setSeed(3)
+    val input = Tensor[Double](3, 4, 5, 5).apply1(e => random.nextDouble())
     val output = model.updateOutput(input).toTensor[Double]
 
-    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => random.nextDouble())
 
     val gradInput = model.backward(input, gradOutput)
 
@@ -153,11 +156,12 @@ class SpatialContrastiveNormalizationSpec extends TorchSpec {
 
     val model = new SpatialContrastiveNormalization[Double](4, kernel)
 
-    Random.setSeed(3)
-    val input = Tensor[Double](3, 4, 14, 14).apply1(e => Random.nextDouble())
+    val random = new Random
+    random.setSeed(3)
+    val input = Tensor[Double](3, 4, 14, 14).apply1(e => random.nextDouble())
     val output = model.updateOutput(input)
 
-    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => random.nextDouble())
 
     val gradInput = model.backward(input, gradOutput)
 
@@ -192,11 +196,12 @@ class SpatialContrastiveNormalizationSpec extends TorchSpec {
 
     val model = new SpatialContrastiveNormalization[Double](4, kernel)
 
-    Random.setSeed(3)
-    val input = Tensor[Double](4, 14, 14).apply1(e => Random.nextDouble())
+    val random = new Random
+    random.setSeed(3)
+    val input = Tensor[Double](4, 14, 14).apply1(e => random.nextDouble())
     val output = model.updateOutput(input)
 
-    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => random.nextDouble())
 
     val gradInput = model.backward(input, gradOutput)
 
@@ -231,12 +236,13 @@ class SpatialContrastiveNormalizationSpec extends TorchSpec {
 
     val model = new SpatialContrastiveNormalization[Double](1, kernel.clone())
 
-    Random.setSeed(3)
-    val input1 = Tensor[Double](4, 3, 14, 14).apply1(e => Random.nextDouble())
+    val random = new Random
+    random.setSeed(3)
+    val input1 = Tensor[Double](4, 3, 14, 14).apply1(e => random.nextDouble())
     val input = input1.narrow(2, 1, 1)
     val output = model.updateOutput(input)
 
-    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => random.nextDouble())
 
     val gradInput = model.backward(input, gradOutput)
 

@@ -43,8 +43,9 @@ class SpatialConvolutionSpec extends TorchSpec {
     val layer = new SpatialConvolution[Double](nInputPlane, nOutputPlane, kW, kH, dW, dH,
       padW, padH)
 
-    Random.setSeed(seed)
-    val input = Tensor[Double](16, 3, 224, 224).apply1(e => Random.nextDouble())
+    val random = new Random
+    random.setSeed(seed)
+    val input = Tensor[Double](16, 3, 224, 224).apply1(e => random.nextDouble())
 
     val output = layer.updateOutput(input)
 
@@ -91,8 +92,9 @@ class SpatialConvolutionSpec extends TorchSpec {
     val model = new Sequential[Double]()
     model.add(layer)
 
-    Random.setSeed(3)
-    val input = Tensor[Double](8, 64, 27, 27).apply1(e => Random.nextDouble())
+    val random = new Random
+    random.setSeed(seed)
+    val input = Tensor[Double](8, 64, 27, 27).apply1(e => random.nextDouble())
 
     val output = model.updateOutput(input)
 
@@ -163,8 +165,9 @@ class SpatialConvolutionSpec extends TorchSpec {
     val layer = new SpatialConvolution[Double](nInputPlane, nOutputPlane, kW, kH, dW, dH,
       padW, padH, withBias = false)
 
-    Random.setSeed(seed)
-    val input = Tensor[Double](16, 3, 224, 224).apply1(e => Random.nextDouble())
+    val random = new Random
+    random.setSeed(seed)
+    val input = Tensor[Double](16, 3, 224, 224).apply1(e => random.nextDouble())
     val output = layer.updateOutput(input)
 
     val code = "torch.manualSeed(" + seed + ")\n" +

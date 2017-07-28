@@ -34,9 +34,10 @@ class AlexNetSpec extends TorchSpec {
   "AlexNet float" should "generate correct output" in {
     torchCheck()
 
-    Random.setSeed(1)
-    val input = Tensor[Double](8, 3, 224, 224).apply1(e => Random.nextDouble())
-    val labels = Tensor[Double](8).apply1(e => Random.nextInt(100))
+    val random = new Random
+    random.setSeed(1)
+    val input = Tensor[Double](8, 3, 224, 224).apply1(e => random.nextDouble())
+    val labels = Tensor[Double](8).apply1(e => random.nextInt(100))
 
     val seed = 100
     RNG.setSeed(seed)
@@ -192,9 +193,10 @@ gradInput = model.gradInput
   "AlexNet Float save to torch" should "generate correct output" in {
     torchCheck()
 
-    Random.setSeed(1)
-    val input = Tensor[Float](8, 3, 224, 224).apply1(e => Random.nextFloat())
-    val labels = Tensor[Float](8).apply1(e => Random.nextInt(100))
+    val random = new Random
+    random.setSeed(1)
+    val input = Tensor[Float](8, 3, 224, 224).apply1(e => random.nextFloat())
+    val labels = Tensor[Float](8).apply1(e => random.nextInt(100))
 
     val seed = 100
     RNG.setSeed(seed)

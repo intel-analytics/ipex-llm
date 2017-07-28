@@ -27,7 +27,8 @@ class SelectTableSpec extends TorchSpec {
     "A SelectTable selects a tensor as an output" should "generate correct output and grad" in {
     torchCheck()
     val seed = 100
-    Random.setSeed(seed)
+    val random = new Random
+    random.setSeed(seed)
 
     val module = new SelectTable[Double](3)
     val input1 = Tensor[Double](10).randn()
@@ -82,7 +83,8 @@ class SelectTableSpec extends TorchSpec {
   "A SelectTable selects a table as an output" should "generate correct output and grad" in {
     torchCheck()
     val seed = 100
-    Random.setSeed(seed)
+    val random = new Random
+    random.setSeed(seed)
 
     val module = new SelectTable[Double](1)
     val embeddedInput1 = T(

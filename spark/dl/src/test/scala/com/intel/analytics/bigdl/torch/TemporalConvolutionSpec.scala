@@ -37,9 +37,10 @@ class TemporalConvolutionSpec extends TorchSpec {
     val dW = 2
     val layer = TemporalConvolution[Double](inputFrameSize, outputFrameSize, kW, dW)
 
-    Random.setSeed(seed)
-    val input = Tensor[Double](100, 10).apply1(e => Random.nextDouble())
-    val gradOutput = Tensor[Double](48, 8).apply1(e => Random.nextDouble())
+    val random = new Random
+    random.setSeed(seed)
+    val input = Tensor[Double](100, 10).apply1(e => random.nextDouble())
+    val gradOutput = Tensor[Double](48, 8).apply1(e => random.nextDouble())
 
     val output = layer.updateOutput(input)
     val gradInput = layer.updateGradInput(input, gradOutput)
@@ -81,9 +82,10 @@ class TemporalConvolutionSpec extends TorchSpec {
     val dW = 2
     val layer = TemporalConvolution[Double](inputFrameSize, outputFrameSize, kW, dW)
 
-    Random.setSeed(seed)
-    val input = Tensor[Double](10, 100, 10).apply1(e => Random.nextDouble())
-    val gradOutput = Tensor[Double](10, 48, 8).apply1(e => Random.nextDouble())
+    val random = new Random
+    random.setSeed(seed)
+    val input = Tensor[Double](10, 100, 10).apply1(e => random.nextDouble())
+    val gradOutput = Tensor[Double](10, 48, 8).apply1(e => random.nextDouble())
 
     val output = layer.updateOutput(input)
     val gradInput = layer.updateGradInput(input, gradOutput)

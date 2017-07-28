@@ -26,7 +26,8 @@ class SplitTableSpec extends TorchSpec {
     "A SplitTable selects a tensor as an output" should "generate correct output and grad" in {
     torchCheck()
     val seed = 100
-    Random.setSeed(seed)
+    val random = new Random
+    random.setSeed(seed)
 
     val module = new SplitTable[Double](1, 2)
     val input = Tensor[Double](3, 5).randn()

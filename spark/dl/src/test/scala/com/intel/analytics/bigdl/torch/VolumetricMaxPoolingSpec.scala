@@ -140,8 +140,9 @@ class VolumetricMaxPoolingSpec extends TorchSpec {
     val module = VolumetricMaxPooling[Double](kt, ki, kj, st, si, sj,
       padT, padW, padH)
 
-    Random.setSeed(seed)
-    val input = Tensor[Double](batch, from, int, ini, inj).apply1(e => Random.nextDouble())
+    val random = new Random
+    random.setSeed(seed)
+    val input = Tensor[Double](batch, from, int, ini, inj).apply1(e => random.nextDouble())
 
     val output = module.updateOutput(input)
 
@@ -191,8 +192,9 @@ class VolumetricMaxPoolingSpec extends TorchSpec {
     val module = VolumetricMaxPooling[Double](kt, ki, kj, st, si, sj,
       padT, padW, padH)
 
-    Random.setSeed(seed)
-    val input = Tensor[Double](batch, from, int, ini, inj).apply1(e => Random.nextDouble())
+    val random = new Random
+    random.setSeed(seed)
+    val input = Tensor[Double](batch, from, int, ini, inj).apply1(e => random.nextDouble())
 
     val checker = new GradientChecker(1e-5)
     checker.checkLayer[Double](module, input, 1e-3) should be (true)
@@ -224,8 +226,9 @@ class VolumetricMaxPoolingSpec extends TorchSpec {
     val module = VolumetricMaxPooling[Double](kt, ki, kj, st, si, sj,
       padT, padW, padH).ceil()
 
-    Random.setSeed(seed)
-    val input = Tensor[Double](batch, from, int, ini, inj).apply1(e => Random.nextDouble())
+    val random = new Random
+    random.setSeed(seed)
+    val input = Tensor[Double](batch, from, int, ini, inj).apply1(e => random.nextDouble())
 
     val output = module.updateOutput(input)
 
@@ -366,8 +369,9 @@ class VolumetricMaxPoolingSpec extends TorchSpec {
     val module = VolumetricMaxPooling[Float](kt, ki, kj, st, si, sj,
       padT, padW, padH)
 
-    Random.setSeed(seed)
-    val input = Tensor[Float](batch, from, int, ini, inj).apply1(e => Random.nextFloat())
+    val random = new Random
+    random.setSeed(seed)
+    val input = Tensor[Float](batch, from, int, ini, inj).apply1(e => random.nextFloat())
 
     val output = module.updateOutput(input)
 
@@ -419,8 +423,9 @@ class VolumetricMaxPoolingSpec extends TorchSpec {
     val module = VolumetricMaxPooling[Float](kt, ki, kj, st, si, sj,
       padT, padW, padH).ceil()
 
-    Random.setSeed(seed)
-    val input = Tensor[Float](batch, from, int, ini, inj).apply1(e => Random.nextFloat())
+    val random = new Random
+    random.setSeed(seed)
+    val input = Tensor[Float](batch, from, int, ini, inj).apply1(e => random.nextFloat())
 
     val output = module.updateOutput(input)
 

@@ -34,11 +34,12 @@ class SpatialSubtractiveNormalizationSpec extends TorchSpec {
     val model = new Sequential[Double]()
     model.add(layer)
 
-    Random.setSeed(3)
-    val input = Tensor[Double](1, 5, 5).apply1(e => Random.nextDouble())
+    val random = new Random
+    random.setSeed(3)
+    val input = Tensor[Double](1, 5, 5).apply1(e => random.nextDouble())
     val output = model.updateOutput(input).toTensor[Double]
 
-    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => random.nextDouble())
 
     val gradInput = model.backward(input, gradOutput)
 
@@ -74,11 +75,12 @@ class SpatialSubtractiveNormalizationSpec extends TorchSpec {
     val model = new Sequential[Double]()
     model.add(layer)
 
-    Random.setSeed(3)
-    val input = Tensor[Double](3, 1, 5, 5).apply1(e => Random.nextDouble())
+    val random = new Random
+    random.setSeed(3)
+    val input = Tensor[Double](3, 1, 5, 5).apply1(e => random.nextDouble())
     val output = model.updateOutput(input).toTensor[Double]
 
-    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => random.nextDouble())
 
     val gradInput = model.backward(input, gradOutput)
 
@@ -155,11 +157,12 @@ class SpatialSubtractiveNormalizationSpec extends TorchSpec {
 
     val model = new SpatialSubtractiveNormalization[Double](4, kernel)
 
-    Random.setSeed(3)
-    val input = Tensor[Double](3, 4, 5, 5).apply1(e => Random.nextDouble())
+    val random = new Random
+    random.setSeed(3)
+    val input = Tensor[Double](3, 4, 5, 5).apply1(e => random.nextDouble())
     val output = model.updateOutput(input)
 
-    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => random.nextDouble())
 
     val gradInput = model.backward(input, gradOutput)
 

@@ -53,10 +53,11 @@ class ResNetSpec extends TorchSpec {
 
     def unitTest(inputSeed: Int, modelSeed: Int, depth: Int, batchSize: Int) {
 
-      Random.setSeed(inputSeed)
+      val random = new Random
+      random.setSeed(inputSeed)
       val classNum: Int = 1000
-      val input = Tensor[Float](batchSize, 3, 224, 224).apply1( e => Random.nextFloat())
-      val labels = Tensor[Float](batchSize).apply1(e => Random.nextInt(classNum))
+      val input = Tensor[Float](batchSize, 3, 224, 224).apply1( e => random.nextFloat())
+      val labels = Tensor[Float](batchSize).apply1(e => random.nextInt(classNum))
 
     val seed = modelSeed
     RNG.setSeed(seed)

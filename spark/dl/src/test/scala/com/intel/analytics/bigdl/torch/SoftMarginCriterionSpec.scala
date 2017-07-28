@@ -25,8 +25,9 @@ class SoftMarginCriterionSpec extends TorchSpec {
     "A SoftMarginCriterion Module " should "generate correct output and grad" in {
     torchCheck()
     val module = new SoftMarginCriterion[Double]()
-    Random.setSeed(100)
-    val input = Tensor[Double](4, 10).apply1(e => Random.nextDouble())
+    val random = new Random
+    random.setSeed(100)
+    val input = Tensor[Double](4, 10).apply1(e => random.nextDouble())
     val target = Tensor[Double](4, 10).randn()
 
     val start = System.nanoTime()
@@ -57,8 +58,9 @@ class SoftMarginCriterionSpec extends TorchSpec {
     "correct output and grad" in {
     torchCheck()
     val module = new SoftMarginCriterion[Double](false)
-    Random.setSeed(100)
-    val input = Tensor[Double](4, 10).apply1(e => Random.nextDouble())
+    val random = new Random
+    random.setSeed(100)
+    val input = Tensor[Double](4, 10).apply1(e => random.nextDouble())
     val target = Tensor[Double](4, 10).randn()
 
     val start = System.nanoTime()
