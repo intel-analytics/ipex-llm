@@ -9,19 +9,27 @@ val m = SpatialConvolution(nInputPlane,nOutputPlane,kernelW,kernelH,strideW=1,st
 m = SpatialConvolution(n_input_plane,n_output_plane,kernel_w,kernel_h,stride_w=1,stride_h=1,pad_w=0,pad_h=0,n_group=1,propagate_back=True,wRegularizer=None,bRegularizer=None,init_weight=None,init_bias=None,init_grad_weight=None,init_grad_bias=None)
 ```
 
-SpatialConvolution is a module that applies a 2D convolution over an input image.
+SpatialConvolution is a module that applies a 3D full convolution over an 3D input image, a sequence of images, or a video etc. * The input tensor is expected to be a 4D or 5D(with batch) tensor. Note that instead
+of setting adjT, adjW and adjH, `VolumetricConvolution` also accepts a table input
+with two tensors: T(convInput, sizeTensor) where convInput is the standard input tensor,
+and the size of sizeTensor is used to set the size of the output (will ignore the adjT, adjW and
+adjH values used to construct the module). This module can be used without a bias by setting
+parameter `noBias = true` while constructing the module.
 
 The input tensor in `forward(input)` is expected to be
-either a 4D tensor (`batch x nInputPlane x height x width`) or a 3D tensor (` nInputPlane x height x width`). The convolution is performed on the last two dimensions.
+either a 5D tensor (`batch x nInputPlane x depth x height x width`) or a 4D tensor (` nInputPlane x depth x height x width`). The convolution is performed on the last two dimensions.
 
 Detailed paramter explaination for the constructor.
  
  * `nInputPlane` The number of expected input planes in the image given into forward()
  * `nOutputPlane` The number of output planes the convolution layer will produce.
+ * `kernelT` The kernel depth of the convolution
  * `kernelW` The kernel width of the convolution
  * `kernelH` The kernel height of the convolution
+ * `strideT` The step of the convolution in the width dimension.
  * `strideW` The step of the convolution in the width dimension.
  * `strideH` The step of the convolution in the height dimension
+ * `padT`  padding to be added to depth to the input.
  * `padW`  padding to be added to width to the input.
  * `padH` padding to be added to height to the input.
  * `nGroup` Kernel group number
@@ -530,10 +538,6 @@ array([[[[-3.55372381, -4.0352459 , -2.65861344],
 ```scala
 val m  = SpatialFullConvolution(nInputPlane, nOutputPlane, kW, kH, dW=1, dH=1, padW=0, padH=0, adjW=0, adjH=0,nGroup=1, noBias=false,wRegularizer=null,bRegularizer=null)
 ```
-or
-```scala
-val m = SpatialFullConvolution(InputPlane, nOutputPlane, kW, kH, dW=1, dH=1, padW=0, padH=0, adjW=0, adjH=0,nGroup=1, noBias=false,wRegularizer=null,bRegularizer=null)
-```
 **Python:**
 ```python
 m = SpatialFullConvolution(n_input_plane,n_output_plane,kw,kh,dw=1,dh=1,pad_w=0,pad_h=0,adj_w=0,adj_h=0,n_group=1,no_bias=False,init_method='default',wRegularizer=None,bRegularizer=None)
@@ -1004,3 +1008,459 @@ gradInput = layer.backward(input, gradOutput)
  [ 0.          0.          0.          0.          0.        ]]
 
 ```
+
+---
+## VolumetricFullConvolution ##
+
+**Scala:**
+```scala
+val m  = VolumetricFullConvolution(
+  nInputPlane, nOutputPlane,
+  kT, kW, kH,
+  dT, dW = 1, dH = 1,
+  padT = 0, padW = 0, padH = 0,
+  adjT = 0, adjW = 0, adjH = 0,
+  nGroup=1, noBias=false,wRegularizer=null,bRegularizer=null)
+```
+**Python:**
+```python
+m = VolumetricFullConvolution(
+    n_input_plane, n_output_plane,
+    kt, kw, kh, 
+    dt=1, dw=1,dh=1,
+    pad_t=0, pad_w=0, pad_h=0, 
+    adj_t=0, adj_w=0,adj_h=0,
+    n_group=1,no_bias=False,init_method='default',wRegularizer=None,bRegularizer=None)
+```
+
+VolumetricFullConvolution is a module that applies a 2D full convolution over an input image. 
+
+The input tensor in `forward(input)` is expected to be
+either a 4D tensor (`batch x nInputPlane x height x width`) or a 3D tensor (`nInputPlane x height x width`). The convolution is performed on the last two dimensions. `adjW` and `adjH` are used to adjust the size of the output image. The size of output tensor of `forward` will be :
+```
+  output width  = (width  - 1) * dW - 2*padW + kW + adjW
+  output height = (height - 1) * dH - 2*padH + kH + adjH
+``` 
+
+Note, scala API also accepts a table input with two tensors: `T(convInput, sizeTensor)` where `convInput` is the standard input tensor, and the size of `sizeTensor` is used to set the size of the output (will ignore the `adjW` and `adjH` values used to construct the module). Use `SpatialFullConvolution[Table, T](...)` instead of `SpatialFullConvolution[Tensor,T](...)`) for table input.
+ 
+This module can also be used without a bias by setting parameter `noBias = true` while constructing the module.
+ 
+Other frameworks may call this operation "In-network Upsampling", "Fractionally-strided convolution", "Backwards Convolution," "Deconvolution", or "Upconvolution."
+ 
+Reference: Long J, Shelhamer E, Darrell T. Fully convolutional networks for semantic segmentation[C]//Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition. 2015: 3431-3440.
+
+Detailed explaination of arguments in constructor. 
+
+ * `nInputPlane` The number of expected input planes in the image given into forward()
+ * `nOutputPlane` The number of output planes the convolution layer will produce.
+ * `kW` The kernel width of the convolution.
+ * `kH` The kernel height of the convolution.
+ * `dW` The step of the convolution in the width dimension. Default is 1.
+ * `dH` The step of the convolution in the height dimension. Default is 1.
+ * `padW` The additional zeros added per width to the input planes. Default is 0.
+ * `padH` The additional zeros added per height to the input planes. Default is 0.
+ * `adjW` Extra width to add to the output image. Default is 0.
+ * `adjH` Extra height to add to the output image. Default is 0.
+ * `nGroup` Kernel group number.
+ * `noBias` If bias is needed.
+ * `wRegularizer` instance of `Regularizer`
+                   (eg. L1 or L2 regularization), applied to the input weights matrices.
+ * `bRegularizer` instance of `Regularizer`
+                   applied to the bias.
+ 
+**Scala example:**
+
+Tensor Input example: 
+
+```scala
+scala>
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor._
+
+val m = VolumetricFullConvolution(2, 1, 2, 2, 2)
+
+val input = Tensor(1, 2, 2, 3, 3).randn()
+val output = m.forward(input)
+val gradOut = Tensor(1, 1, 3, 4, 4).fill(0.2f)
+val gradIn = m.backward(input, gradOut)
+
+scala> println(input)
+(1,1,1,.,.) =
+0.3903321	-0.90453357	1.735308	
+-1.2824814	-0.27802613	-0.3977802	
+-0.08534186	0.6385388	-0.86845094	
+
+(1,1,2,.,.) =
+-0.24652982	0.69465446	0.1713606	
+0.07106233	-0.88137305	1.0625362	
+-0.553569	1.1822331	-2.2488093	
+
+(1,2,1,.,.) =
+0.552869	0.4108489	1.7802315	
+0.018191056	0.72422534	-0.6423254	
+-0.4077748	0.024120487	-0.42820823	
+
+(1,2,2,.,.) =
+-1.3711191	-0.37988988	-2.1587164	
+-0.85155743	-1.5785019	-0.77727056	
+0.42253423	0.79593533	0.15303874	
+
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 1x2x2x3x3]
+
+scala> println(output)
+(1,1,1,.,.) =
+-0.29154167	-0.027156994	-0.6949123	-0.22638178	
+0.091479614	-0.106284864	-0.23198327	-0.5334093	
+0.092822656	-0.13807209	-0.07207352	-0.023272723	
+-0.19217497	-0.18892932	-0.089907974	-0.059967346	
+
+(1,1,2,.,.) =
+0.08078699	-0.0242998	0.27271587	0.48551774	
+-0.30726838	0.5497404	-0.7220843	0.48132813	
+0.007951438	-0.39301366	0.56711966	-0.39552623	
+-0.016941413	-0.5530351	0.21254264	-0.22647215	
+
+(1,1,3,.,.) =
+-0.38189644	-0.5241636	-0.49781954	-0.59505236	
+-0.23887709	-0.99911994	-0.773817	-0.63575095	
+-0.1193203	0.016682416	-0.41216886	-0.5211964	
+-0.06341652	-0.32541442	0.43984014	-0.16862796	
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x1x3x4x4]
+
+scala> println(gradOut)
+(1,1,1,.,.) =
+0.2	0.2	0.2	0.2	
+0.2	0.2	0.2	0.2	
+0.2	0.2	0.2	0.2	
+0.2	0.2	0.2	0.2	
+
+(1,1,2,.,.) =
+0.2	0.2	0.2	0.2	
+0.2	0.2	0.2	0.2	
+0.2	0.2	0.2	0.2	
+0.2	0.2	0.2	0.2	
+
+(1,1,3,.,.) =
+0.2	0.2	0.2	0.2	
+0.2	0.2	0.2	0.2	
+0.2	0.2	0.2	0.2	
+0.2	0.2	0.2	0.2	
+
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 1x1x3x4x4]
+scala> println(gradIn)
+(1,1,1,.,.) =
+-0.089189366	-0.089189366	-0.089189366	
+-0.089189366	-0.089189366	-0.089189366	
+-0.089189366	-0.089189366	-0.089189366	
+
+(1,1,2,.,.) =
+-0.089189366	-0.089189366	-0.089189366	
+-0.089189366	-0.089189366	-0.089189366	
+-0.089189366	-0.089189366	-0.089189366	
+
+(1,2,1,.,.) =
+0.06755526	0.06755526	0.06755526	
+0.06755526	0.06755526	0.06755526	
+0.06755526	0.06755526	0.06755526	
+
+(1,2,2,.,.) =
+0.06755526	0.06755526	0.06755526	
+0.06755526	0.06755526	0.06755526	
+0.06755526	0.06755526	0.06755526	
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x2x2x3x3]
+
+```
+
+Table input Example
+```scala
+scala>
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.utils.T
+
+val m = VolumetricFullConvolution(1, 2, 2, 2, 2)
+
+val input1 = Tensor(1, 3, 3, 3).randn()
+val input2 = Tensor(3, 3, 3).fill(2.0f)
+val input = T(input1, input2)
+val output = m.forward(input)
+val gradOut = Tensor(2, 4, 4, 4).fill(0.1f)
+val gradIn = m.backward(input, gradOut)
+
+scala> println(input)
+{
+  2: (1,.,.) =
+  2.0	2.0	2.0
+  2.0	2.0	2.0
+  2.0	2.0	2.0
+
+  (2,.,.) =
+  2.0	2.0	2.0
+  2.0	2.0	2.0
+  2.0	2.0	2.0
+
+  (3,.,.) =
+  2.0	2.0	2.0
+  2.0	2.0	2.0
+  2.0	2.0	2.0
+
+  [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3x3x3]
+  1: (1,1,.,.) =
+  0.23809154	1.2167819	0.3664989
+  0.8797001	1.5262067	0.15420714
+  0.38004395	-0.24190372	-1.1151218
+
+  (1,2,.,.) =
+  -1.895742	1.8554556	0.62502027
+  -0.6004498	0.056441266	-0.66499823
+  0.7039313	-0.08569297	-0.08191566
+
+  (1,3,.,.) =
+  -1.9555066	-0.20133287	-0.22135374
+  0.8918014	-1.2684877	0.14211883
+  2.5802526	1.1118578	-1.3165624
+
+  [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 1x3x3x3]
+}
+
+scala> println(output)
+(1,1,.,.) =
+-0.2578445	-0.48271507	-0.28246504	-0.20139077
+-0.43916196	-0.72301924	-0.2915339	-0.20471849
+-0.41347015	-0.36456454	0.021684423	-0.20852578
+-0.255981	-0.17165771	-0.04553239	-0.19543594
+
+(1,2,.,.) =
+0.18660262	-0.8204256	-0.08807768	-0.1023551
+0.026309028	-0.49442527	0.3699256	-0.12729678
+-0.34651133	0.08542377	0.24221262	-0.47949657
+-0.29622912	-0.15598825	-0.23278731	-0.32802662
+
+(1,3,.,.) =
+0.6303606	-1.0451282	0.21740273	-0.03673452
+-0.039471984	-0.2264648	0.15774214	-0.30815765
+-1.0726243	-0.13914594	0.08537227	-0.30611742
+-0.55404246	-0.29725668	-0.037192106	-0.20331946
+
+(1,4,.,.) =
+0.19113302	-0.68506914	-0.21211714	-0.26207167
+-0.40826926	0.068062216	-0.5962198	-0.18985644
+-0.7111124	0.3466564	0.2185097	-0.5388211
+-0.16902745	0.10249108	-0.09487718	-0.35127735
+
+(2,1,.,.) =
+-0.2744591	-0.21165672	-0.17422867	-0.25680506
+-0.24608877	-0.1242196	-0.02206999	-0.23146236
+-0.27057967	-0.17076656	-0.18083718	-0.35417527
+-0.28634468	-0.24118122	-0.30961025	-0.41247135
+
+(2,2,.,.) =
+-0.41682464	-0.5772195	-0.159199	-0.2294753
+-0.41187716	-0.41886678	0.4104582	-0.1382559
+-0.08818802	0.459113	0.48080307	-0.3373265
+-0.18515268	-0.14088067	-0.67644227	-0.67253566
+
+(2,3,.,.) =
+-0.009801388	-0.83997947	-0.39409852	-0.29002026
+-0.6333371	-0.66267097	0.52607954	-0.10082486
+-0.46748784	-0.08717018	-0.54928875	-0.59819674
+-0.103552	0.22147804	-0.20562811	-0.46321797
+
+(2,4,.,.) =
+0.090245515	-0.28537494	-0.24673338	-0.289634
+-0.98199505	-0.7408645	-0.4654177	-0.35744694
+-0.5410351	-0.48618284	-0.40212065	-0.26319134
+0.4081596	0.8880725	-0.26220837	-0.73146355
+
+  [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x4x4x4]
+
+scala> println(gradOut)
+(1,1,.,.) =
+0.1	0.1	0.1	0.1
+0.1	0.1	0.1	0.1
+0.1	0.1	0.1	0.1
+0.1	0.1	0.1	0.1
+
+(1,2,.,.) =
+0.1	0.1	0.1	0.1
+0.1	0.1	0.1	0.1
+0.1	0.1	0.1	0.1
+0.1	0.1	0.1	0.1
+
+(1,3,.,.) =
+0.1	0.1	0.1	0.1
+0.1	0.1	0.1	0.1
+0.1	0.1	0.1	0.1
+0.1	0.1	0.1	0.1
+
+(1,4,.,.) =
+0.1	0.1	0.1	0.1
+0.1	0.1	0.1	0.1
+0.1	0.1	0.1	0.1
+0.1	0.1	0.1	0.1
+
+(2,1,.,.) =
+0.1	0.1	0.1	0.1
+0.1	0.1	0.1	0.1
+0.1	0.1	0.1	0.1
+0.1	0.1	0.1	0.1
+
+(2,2,.,.) =
+0.1	0.1	0.1	0.1
+0.1	0.1	0.1	0.1
+0.1	0.1	0.1	0.1
+0.1	0.1	0.1	0.1
+
+(2,3,.,.) =
+0.1	0.1	0.1	0.1
+0.1	0.1	0.1	0.1
+0.1	0.1	0.1	0.1
+0.1	0.1	0.1	0.1
+
+(2,4,.,.) =
+0.1	0.1	0.1	0.1
+0.1	0.1	0.1	0.1
+0.1	0.1	0.1	0.1
+0.1	0.1	0.1	0.1
+
+  [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x4x4x4]
+
+scala> println(gradIn)
+{
+  2: (1,.,.) =
+  0.0	0.0	0.0
+  0.0	0.0	0.0
+  0.0	0.0	0.0
+
+  (2,.,.) =
+  0.0	0.0	0.0
+  0.0	0.0	0.0
+  0.0	0.0	0.0
+
+  (3,.,.) =
+  0.0	0.0	0.0
+  0.0	0.0	0.0
+  0.0	0.0	0.0
+
+  [com.intel.analytics.bigdl.tensor.DenseTensor of size 3x3x3]
+  1: (1,1,.,.) =
+  0.048819613	0.048819613	0.048819613
+  0.048819613	0.048819613	0.048819613
+  0.048819613	0.048819613	0.048819613
+
+  (1,2,.,.) =
+  0.048819613	0.048819613	0.048819613
+  0.048819613	0.048819613	0.048819613
+  0.048819613	0.048819613	0.048819613
+
+  (1,3,.,.) =
+  0.048819613	0.048819613	0.048819613
+  0.048819613	0.048819613	0.048819613
+  0.048819613	0.048819613	0.048819613
+
+  [com.intel.analytics.bigdl.tensor.DenseTensor of size 1x3x3x3]
+```
+
+**Python example:**
+```python
+from bigdl.nn.layer import *
+import numpy as np
+
+m = VolumetricFullConvolution(2, 1, 2, 2, 2)
+
+print "--------- tensor input---------"
+tensor_input = np.random.rand(1, 2, 2, 3, 3)
+print "input is :",tensor_input
+out = m.forward(tensor_input)
+print "output m is :",out
+
+print "----------- table input --------"
+adj_input=np.empty([3, 3, 3])
+adj_input.fill(2.0)
+table_input = [tensor_input,adj_input]
+print "input is :",table_input
+out = m.forward(table_input)
+print "output m is :",out
+```
+
+```
+creating: createVolumetricFullConvolution
+--------- tensor input---------
+input is : [[[[[ 0.41632522  0.62726142  0.11133406]
+    [ 0.61013369  0.76320391  0.27937597]
+    [ 0.3596402   0.85087329  0.18706284]]
+
+   [[ 0.19224562  0.79333622  0.02064112]
+    [ 0.34019388  0.36193739  0.0189533 ]
+    [ 0.01245767  0.59638721  0.97882726]]]
+
+
+  [[[ 0.03641869  0.92804035  0.08934243]
+    [ 0.96598196  0.54331079  0.9157464 ]
+    [ 0.31659511  0.48128023  0.13775686]]
+
+   [[ 0.44624135  0.02830871  0.95668413]
+    [ 0.32971474  0.46466264  0.58239329]
+    [ 0.94129846  0.27284845  0.59931096]]]]]
+output m is : [[[[[ 0.24059629  0.11875484 -0.07601731  0.18490529]
+    [ 0.17978033 -0.05925606 -0.06877603 -0.00254188]
+    [ 0.33574528  0.10908454 -0.01606898  0.22380096]
+    [ 0.24050319  0.17277193  0.10569186  0.20417407]]
+
+   [[ 0.26733595  0.26336247 -0.16927747  0.04417276]
+    [ 0.39058518 -0.08025722 -0.11981271  0.08441451]
+    [ 0.21994853 -0.1127445  -0.01282334 -0.25795668]
+    [ 0.34960991  0.17045188  0.0885388   0.08292522]]
+
+   [[ 0.29700345  0.22094724  0.27189076  0.07538646]
+    [ 0.27829763  0.01766421  0.32052374 -0.09809484]
+    [ 0.28885722  0.08438809  0.24915564 -0.08578731]
+    [ 0.25339472 -0.09679155  0.09070791  0.21198538]]]]]
+----------- table input --------
+input is : [array([[[[[ 0.41632522,  0.62726142,  0.11133406],
+          [ 0.61013369,  0.76320391,  0.27937597],
+          [ 0.3596402 ,  0.85087329,  0.18706284]],
+
+         [[ 0.19224562,  0.79333622,  0.02064112],
+          [ 0.34019388,  0.36193739,  0.0189533 ],
+          [ 0.01245767,  0.59638721,  0.97882726]]],
+
+
+        [[[ 0.03641869,  0.92804035,  0.08934243],
+          [ 0.96598196,  0.54331079,  0.9157464 ],
+          [ 0.31659511,  0.48128023,  0.13775686]],
+
+         [[ 0.44624135,  0.02830871,  0.95668413],
+          [ 0.32971474,  0.46466264,  0.58239329],
+          [ 0.94129846,  0.27284845,  0.59931096]]]]]), array([[[ 2.,  2.,  2.],
+        [ 2.,  2.,  2.],
+        [ 2.,  2.,  2.]],
+
+       [[ 2.,  2.,  2.],
+        [ 2.,  2.,  2.],
+        [ 2.,  2.,  2.]],
+
+       [[ 2.,  2.,  2.],
+        [ 2.,  2.,  2.],
+        [ 2.,  2.,  2.]]])]
+output m is : [[[[[ 0.24059629  0.11875484 -0.07601731  0.18490529]
+    [ 0.17978033 -0.05925606 -0.06877603 -0.00254188]
+    [ 0.33574528  0.10908454 -0.01606898  0.22380096]
+    [ 0.24050319  0.17277193  0.10569186  0.20417407]]
+
+   [[ 0.26733595  0.26336247 -0.16927747  0.04417276]
+    [ 0.39058518 -0.08025722 -0.11981271  0.08441451]
+    [ 0.21994853 -0.1127445  -0.01282334 -0.25795668]
+    [ 0.34960991  0.17045188  0.0885388   0.08292522]]
+
+   [[ 0.29700345  0.22094724  0.27189076  0.07538646]
+    [ 0.27829763  0.01766421  0.32052374 -0.09809484]
+    [ 0.28885722  0.08438809  0.24915564 -0.08578731]
+    [ 0.25339472 -0.09679155  0.09070791  0.21198538]]]]]
+```
+

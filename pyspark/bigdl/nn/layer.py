@@ -2969,11 +2969,11 @@ class SpatialFullConvolution(Layer):
                       weight_init_method, bias_init_method)
         return self
 
-class VolumetricConvolution(Layer):
+class VolumetricFullConvolution(Layer):
     '''
     Apply a 3D full convolution over an 3D input image, a sequence of images, or a video etc.
     The input tensor is expected to be a 4D or 5D(with batch) tensor. Note that instead
-    of setting adjT, adjW and adjH, VolumetricConvolution[Table, T] also accepts a table input
+    of setting adjT, adjW and adjH, `VolumetricFullConvolution` also accepts a table input
     with two tensors: T(convInput, sizeTensor) where convInput is the standard input tensor,
     and the size of sizeTensor is used to set the size of the output (will ignore the adjT, adjW and
     adjH values used to construct the module). This module can be used without a bias by setting
@@ -3015,8 +3015,8 @@ class VolumetricConvolution(Layer):
     :param bRegularizer: instance of [[Regularizer]]applied to the bias.
 
 
-    >>> volumetricConvolution = VolumetricConvolution(1, 1, 1, 1, 1, 1)
-    creating: createVolumetricConvolution
+    >>> volumetricFullConvolution = VolumetricFullConvolution(1, 1, 1, 1, 1, 1)
+    creating: createVolumetricFullConvolution
     '''
 
     def __init__(self,
@@ -3031,6 +3031,7 @@ class VolumetricConvolution(Layer):
                  pad_t=0,
                  pad_w=0,
                  pad_h=0,
+                 adj_t=0,
                  adj_w=0,
                  adj_h=0,
                  n_group=1,
@@ -3038,7 +3039,7 @@ class VolumetricConvolution(Layer):
                  wRegularizer=None,
                  bRegularizer=None,
                  bigdl_type="float"):
-        super(VolumetricConvolution, self).__init__(None, bigdl_type,
+        super(VolumetricFullConvolution, self).__init__(None, bigdl_type,
                                                      n_input_plane,
                                                      n_output_plane,
                                                      kt,

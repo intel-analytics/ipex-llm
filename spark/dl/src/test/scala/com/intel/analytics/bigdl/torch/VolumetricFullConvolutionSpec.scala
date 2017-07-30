@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.torch
 
-import com.intel.analytics.bigdl.nn.{Sequential, VolumetricFullConvolution}
+import com.intel.analytics.bigdl.nn.{BilinearFiller, Sequential, VolumetricFullConvolution, Zeros}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.{T, Table}
@@ -25,6 +25,45 @@ import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
 class VolumetricFullConvolutionSpec extends TorchSpec {
+  "s" should "a" in  {
+    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+    import com.intel.analytics.bigdl.nn._
+    import com.intel.analytics.bigdl.tensor._
+    import com.intel.analytics.bigdl.utils.T
+
+    val m = VolumetricFullConvolution(1, 2, 2, 2, 2)
+
+    val input1 = Tensor(1, 3, 3, 3).randn()
+    val input2 = Tensor(3, 3, 3).fill(2.0f)
+    val input = T(input1, input2)
+    val output = m.forward(input)
+    val gradOut = Tensor(2, 4, 4, 4).fill(0.1f)
+    val gradIn = m.backward(input, gradOut)
+
+    println(input)
+    println(output)
+    println(gradOut)
+    println(gradIn)
+  }
+
+  "test" should "a" in {
+    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+    import com.intel.analytics.bigdl.nn._
+    import com.intel.analytics.bigdl.tensor._
+
+    val m = VolumetricFullConvolution(2, 1, 2, 2, 2)
+
+    val input = Tensor(1, 2, 2, 3, 3).randn()
+    val output = m.forward(input)
+    val gradOut = Tensor(1, 1, 3, 4, 4).fill(0.2f)
+    val gradIn = m.backward(input, gradOut)
+
+    println(input)
+    println(output)
+    println(gradOut)
+    println(gradIn)
+  }
+
   "A VolumetricFullConvolution" should "generate correct output" in {
     torchCheck()
     val seed = 100

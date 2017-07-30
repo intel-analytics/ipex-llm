@@ -28,7 +28,7 @@ import scala.reflect.ClassTag
  *
  * Apply a 3D full convolution over an 3D input image, a sequence of images, or a video etc.
  * The input tensor is expected to be a 4D or 5D(with batch) tensor. Note that instead
- * of setting adjT, adjW and adjH, VolumetricConvolution[Table, T] also accepts a table input
+ * of setting adjT, adjW and adjH, [[VolumetricConvolution]] also accepts a table input
  * with two tensors: T(convInput, sizeTensor) where convInput is the standard input tensor,
  * and the size of sizeTensor is used to set the size of the output (will ignore the adjT, adjW and
  * adjH values used to construct the module). This module can be used without a bias by setting
@@ -410,7 +410,7 @@ class VolumetricFullConvolution[T: ClassTag](
         columns.asInstanceOf[Tensor[Double]]
       )
 
-      case DoubleType => NNPrimitive.vol2colFloat(
+      case FloatType => NNPrimitive.vol2colFloat(
         gradOutput.asInstanceOf[Tensor[Float]],
         gradOutput.size(1), outputDepth, outputHeight, outputWidth,
         kT, kH, kW,
@@ -825,7 +825,7 @@ object VolumetricFullConvolution {
     kT: Int,
     kW: Int,
     kH: Int,
-    dT: Int,
+    dT: Int = 1,
     dW: Int = 1,
     dH: Int = 1,
     padT: Int = 0,
