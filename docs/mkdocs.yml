@@ -30,15 +30,11 @@ pages:
   - Examples: PythonSupport/python-examples.md
   - More Examples and Tutorials: PythonSupport/python-resources.md
 - Programming Guide:
-  - Define a Model:
-    - Using Sequential API: ProgrammingGuide/Model/Sequential.md
-    - Using Functional API: ProgrammingGuide/Model/Functional.md
+  - Define a Model: ProgrammingGuide/Model/Sequential.md
   - Optimization: ProgrammingGuide/optimization.md
   - Use Spark ML: ProgrammingGuide/MLPipeline.md
   - Visualization: ProgrammingGuide/visualization.md
   - Run on Amazon EC2: ProgrammingGuide/run-on-ec2.md 
-  - Tensorflow Support: ProgrammingGuide/tensorflow-support.md
-  - Caffe Support: ProgrammingGuide/caffe-support.md
 - API Guide:
   - Data: APIdocs/Data.md
   - Model: APIdocs/Module.md
@@ -56,7 +52,6 @@ pages:
     - Dropout Layers: APIdocs/Layers/Dropout-Layers.md
     - Distance Layers: APIdocs/Layers/Distance-Layers.md
     - Recurrent Layers:  APIdocs/Layers/Recurrent-Layers.md
-    - Recursive Layers:  APIdocs/Layers/Recursive-Layers.md
     - Utilities: APIdocs/Layers/Utilities.md
   - Losses: APIdocs/Losses.md
   - Initalizers: APIdocs/Initializers.md
