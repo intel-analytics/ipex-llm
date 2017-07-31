@@ -24,6 +24,8 @@ by passing JVM parameters. Here's an example:
 java -cp xxx.jar -DFOO=BAR your.main.class.name
 ```
 
+Note that to run BigDL in a local Java/Scala program, you need to set environment variable BIGDL_LOCAL_MODE to true.
+
 ## Available Properties
 
 Category|Property|Default value|Description
@@ -31,7 +33,6 @@ Category|Property|Default value|Description
 **Logging**|bigdl.utils.LoggerFilter.disable|*false*|Disable redirecting logs of Spark and BigDL to  a file.
 |bigdl.utils.LoggerFilter.logFile|*Current_Working_Directory/bigdl.log*|Where is the redirecting log.
 |bigdl.utils.LoggerFilter.enableSparkLog|*true*|Enable redirecting Spark logs to logFile. Set it to false when you don't want to see Spark logs in the redirecting log file.
-**Mode**|bigdl.localMode|*false*|Whether BigDL is running as a local Java/Scala program.
 **Multi-threading**|bigdl.coreNumber|*half of the virtual core number*|How many cores BigDL use on your machine. It is only used when bigdl.localMode is set to true. If hyper thread is enabled on your machine, DO NOT set it larger than half of the virtual core number.
 |bigdl.Parameter.syncPoolSize|*4*|Thread pool size for syncing parameter between executors.
 **Distributed Training**|bigdl.network.nio|*true*|Whether use NIO as BlockManager backend in Spark 1.5. If it is set to false, user can specify spark.shuffle.blockTransferService to change the BlockManager backend. **ONLY** used when running on Spark 1.5.
