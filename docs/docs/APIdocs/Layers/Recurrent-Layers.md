@@ -285,7 +285,8 @@ val model = Sequential().add(
 val criterion = TimeDistributedCriterion(
   CrossEntropyCriterion(), false)
 
-val sgd = new SGD(learningRate=0.1, learningRateDecay=5e-7, weightDecay=0.1, momentum=0.002)
+val sgd = new SGD()
+val state = T("learningRate" -> 0.1, "learningRateDecay" -> 5e-7, "weightDecay" -> 0.1, "momentum" -> 0.002)
 
 val (weight, grad) = model.getParameters()
 
@@ -306,7 +307,7 @@ def feval(x: Tensor[Float]): (Float, Tensor[Float]) = {
 
 var loss: Array[Float] = null
 for (i <- 1 to 100) {
-  loss = sgd.optimize(feval, weight)._2
+  loss = sgd.optimize(feval, weight, state)._2
   println(s"${i}-th loss = ${loss(0)}")
 }
 ```
@@ -337,8 +338,6 @@ model.add(rec)
 model.add(TimeDistributed(Linear(hidden_size, output_size)))
 
 criterion = TimeDistributedCriterion(CrossEntropyCriterion(), False)
-
-sgd = SGD(learningrate=0.1, learningrate_decay=5e-7)
 
 weight, grad = model.parameters()
 
