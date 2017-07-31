@@ -60,7 +60,7 @@ trait DataConverter {
  */
 object DataConverter extends DataConverter{
 
-  val typePlaceHolder = universe.typeOf[DataConverter]
+  private val typePlaceHolder = universe.typeOf[DataConverter]
 
   private def getRuntimeType[T : ClassTag](value : Any) (implicit ev: TensorNumeric[T])
     : universe.Type = {

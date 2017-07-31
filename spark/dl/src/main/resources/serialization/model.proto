@@ -2,16 +2,16 @@ syntax = "proto3";
 package serialization;
 message BigDLModule
 {
-    string name = 1; //model name
+    string name = 1; //module name
     repeated BigDLModule subModules = 2; // sub modules
-    BigDLTensor weight = 3; // double weight for each layer
-    BigDLTensor bias = 4; // double bias for each layer
+    BigDLTensor weight = 3; // weight for each layer, serialized data are stored as double
+    BigDLTensor bias = 4; // bias for each layer
     repeated string preModules = 5; //pre modules of the same hierarchy
     repeated string nextModules = 6; //next modules of the same hierachy
-    string moduleType = 7; //module type
-    map<string, AttrValue> attr = 8; // module attribute map
+    string moduleType = 7; //module type to identify a module like linear, graph, etc
+    map<string, AttrValue> attr = 8; // module attributes
 }
-enum ValFormat {
+enum VarFormat {
     EMPTY_FORMAT = 0;
     DEFAULT = 1;
     ONE_D = 2;
