@@ -61,7 +61,7 @@ message AttrValue {
         repeated bool boolean = 6 ;         // "Array(bool)"
         repeated Regularizer  Regularizer = 7 ;         // "Array(Regularizer)"
         repeated BigDLTensor tensor = 8;         // "Array(BigDLTensor)"
-        repeated ValFormat variableFormat = 9; // "Array(VariableFormat)"
+        repeated VarFormat variableFormat = 9; // "Array(VariableFormat)"
         repeated InitMethod initMethod = 10;         // "Array(BigDLTensor)"
         repeated BigDLModule bigDLModule = 11; // "Array(BigDLModel)"
         repeated NameAttrList nameAttrList = 12; //
@@ -92,7 +92,7 @@ message AttrValue {
         bool boolValue = 6; // bool value
         Regularizer regularizerValue = 7; // Regularizer
         BigDLTensor tensorValue = 8; //tensor value
-        ValFormat variableFormatValue= 9; //Variable format
+        VarFormat variableFormatValue= 9; //Variable format
         InitMethod initMethodValue = 10; // init method
         BigDLModule bigDLModuleValue = 11; // big DL module
         NameAttrList nameAttrListValue = 12; // name attribute list

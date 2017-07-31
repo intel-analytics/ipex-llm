@@ -257,16 +257,16 @@ object DataConverter extends DataConverter{
       (implicit ev: TensorNumeric[T]): AnyRef = {
       val format = attribute.getVariableFormatValue
       format match {
-        case ValFormat.DEFAULT => VariableFormat.Default
-        case ValFormat.ONE_D => VariableFormat.ONE_D
-        case ValFormat.IN_OUT => VariableFormat.IN_OUT
-        case ValFormat.OUT_IN => VariableFormat.OUT_IN
-        case ValFormat.IN_OUT_KW_KH => VariableFormat.IN_OUT_KW_KH
-        case ValFormat.OUT_IN_KW_KH => VariableFormat.OUT_IN_KW_KH
-        case ValFormat.GP_OUT_IN_KW_KH => VariableFormat.GP_OUT_IN_KW_KH
-        case ValFormat.GP_IN_OUT_KW_KH => VariableFormat.GP_IN_OUT_KW_KH
-        case ValFormat.OUT_IN_KT_KH_KW => VariableFormat.OUT_IN_KT_KH_KW
-        case ValFormat.EMPTY_FORMAT => null
+        case VarFormat.DEFAULT => VariableFormat.Default
+        case VarFormat.ONE_D => VariableFormat.ONE_D
+        case VarFormat.IN_OUT => VariableFormat.IN_OUT
+        case VarFormat.OUT_IN => VariableFormat.OUT_IN
+        case VarFormat.IN_OUT_KW_KH => VariableFormat.IN_OUT_KW_KH
+        case VarFormat.OUT_IN_KW_KH => VariableFormat.OUT_IN_KW_KH
+        case VarFormat.GP_OUT_IN_KW_KH => VariableFormat.GP_OUT_IN_KW_KH
+        case VarFormat.GP_IN_OUT_KW_KH => VariableFormat.GP_IN_OUT_KW_KH
+        case VarFormat.OUT_IN_KT_KH_KW => VariableFormat.OUT_IN_KT_KH_KW
+        case VarFormat.EMPTY_FORMAT => null
       }
     }
 
@@ -276,19 +276,19 @@ object DataConverter extends DataConverter{
       if (value != null) {
         val format = value.asInstanceOf[VariableFormat]
         val formatValue = format match {
-          case VariableFormat.Default => ValFormat.DEFAULT
-          case VariableFormat.ONE_D => ValFormat.ONE_D
-          case VariableFormat.IN_OUT => ValFormat.IN_OUT
-          case VariableFormat.OUT_IN => ValFormat.OUT_IN
-          case VariableFormat.IN_OUT_KW_KH => ValFormat.IN_OUT_KW_KH
-          case VariableFormat.OUT_IN_KW_KH => ValFormat.OUT_IN_KW_KH
-          case VariableFormat.GP_OUT_IN_KW_KH => ValFormat.GP_OUT_IN_KW_KH
-          case VariableFormat.GP_IN_OUT_KW_KH => ValFormat.GP_IN_OUT_KW_KH
-          case VariableFormat.OUT_IN_KT_KH_KW => ValFormat.OUT_IN_KT_KH_KW
+          case VariableFormat.Default => VarFormat.DEFAULT
+          case VariableFormat.ONE_D => VarFormat.ONE_D
+          case VariableFormat.IN_OUT => VarFormat.IN_OUT
+          case VariableFormat.OUT_IN => VarFormat.OUT_IN
+          case VariableFormat.IN_OUT_KW_KH => VarFormat.IN_OUT_KW_KH
+          case VariableFormat.OUT_IN_KW_KH => VarFormat.OUT_IN_KW_KH
+          case VariableFormat.GP_OUT_IN_KW_KH => VarFormat.GP_OUT_IN_KW_KH
+          case VariableFormat.GP_IN_OUT_KW_KH => VarFormat.GP_IN_OUT_KW_KH
+          case VariableFormat.OUT_IN_KT_KH_KW => VarFormat.OUT_IN_KT_KH_KW
         }
         attributeBuilder.setVariableFormatValue(formatValue)
       } else {
-        attributeBuilder.setVariableFormatValue(ValFormat.EMPTY_FORMAT)
+        attributeBuilder.setVariableFormatValue(VarFormat.EMPTY_FORMAT)
       }
    }
 }

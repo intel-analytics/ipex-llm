@@ -15,9 +15,9 @@ public final class Model {
         (com.google.protobuf.ExtensionRegistryLite) registry);
   }
   /**
-   * Protobuf enum {@code serialization.ValFormat}
+   * Protobuf enum {@code serialization.VarFormat}
    */
-  public enum ValFormat
+  public enum VarFormat
       implements com.google.protobuf.ProtocolMessageEnum {
     /**
      * <code>EMPTY_FORMAT = 0;</code>
@@ -116,11 +116,11 @@ public final class Model {
      * @deprecated Use {@link #forNumber(int)} instead.
      */
     @java.lang.Deprecated
-    public static ValFormat valueOf(int value) {
+    public static VarFormat valueOf(int value) {
       return forNumber(value);
     }
 
-    public static ValFormat forNumber(int value) {
+    public static VarFormat forNumber(int value) {
       switch (value) {
         case 0: return EMPTY_FORMAT;
         case 1: return DEFAULT;
@@ -136,15 +136,15 @@ public final class Model {
       }
     }
 
-    public static com.google.protobuf.Internal.EnumLiteMap<ValFormat>
+    public static com.google.protobuf.Internal.EnumLiteMap<VarFormat>
         internalGetValueMap() {
       return internalValueMap;
     }
     private static final com.google.protobuf.Internal.EnumLiteMap<
-        ValFormat> internalValueMap =
-          new com.google.protobuf.Internal.EnumLiteMap<ValFormat>() {
-            public ValFormat findValueByNumber(int number) {
-              return ValFormat.forNumber(number);
+        VarFormat> internalValueMap =
+          new com.google.protobuf.Internal.EnumLiteMap<VarFormat>() {
+            public VarFormat findValueByNumber(int number) {
+              return VarFormat.forNumber(number);
             }
           };
 
@@ -161,9 +161,9 @@ public final class Model {
       return serialization.Model.getDescriptor().getEnumTypes().get(0);
     }
 
-    private static final ValFormat[] VALUES = values();
+    private static final VarFormat[] VALUES = values();
 
-    public static ValFormat valueOf(
+    public static VarFormat valueOf(
         com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
       if (desc.getType() != getDescriptor()) {
         throw new java.lang.IllegalArgumentException(
@@ -177,11 +177,11 @@ public final class Model {
 
     private final int value;
 
-    private ValFormat(int value) {
+    private VarFormat(int value) {
       this.value = value;
     }
 
-    // @@protoc_insertion_point(enum_scope:serialization.ValFormat)
+    // @@protoc_insertion_point(enum_scope:serialization.VarFormat)
   }
 
   /**
@@ -458,7 +458,7 @@ public final class Model {
 
     /**
      * <pre>
-     *model name
+     *module name
      * </pre>
      *
      * <code>string name = 1;</code>
@@ -466,7 +466,7 @@ public final class Model {
     java.lang.String getName();
     /**
      * <pre>
-     *model name
+     *module name
      * </pre>
      *
      * <code>string name = 1;</code>
@@ -520,7 +520,7 @@ public final class Model {
 
     /**
      * <pre>
-     * double weight for each layer
+     * weight for each layer, serialized data are stored as double
      * </pre>
      *
      * <code>.serialization.BigDLTensor weight = 3;</code>
@@ -528,7 +528,7 @@ public final class Model {
     boolean hasWeight();
     /**
      * <pre>
-     * double weight for each layer
+     * weight for each layer, serialized data are stored as double
      * </pre>
      *
      * <code>.serialization.BigDLTensor weight = 3;</code>
@@ -536,7 +536,7 @@ public final class Model {
     serialization.Model.BigDLTensor getWeight();
     /**
      * <pre>
-     * double weight for each layer
+     * weight for each layer, serialized data are stored as double
      * </pre>
      *
      * <code>.serialization.BigDLTensor weight = 3;</code>
@@ -545,7 +545,7 @@ public final class Model {
 
     /**
      * <pre>
-     * double bias for each layer
+     * bias for each layer
      * </pre>
      *
      * <code>.serialization.BigDLTensor bias = 4;</code>
@@ -553,7 +553,7 @@ public final class Model {
     boolean hasBias();
     /**
      * <pre>
-     * double bias for each layer
+     * bias for each layer
      * </pre>
      *
      * <code>.serialization.BigDLTensor bias = 4;</code>
@@ -561,7 +561,7 @@ public final class Model {
     serialization.Model.BigDLTensor getBias();
     /**
      * <pre>
-     * double bias for each layer
+     * bias for each layer
      * </pre>
      *
      * <code>.serialization.BigDLTensor bias = 4;</code>
@@ -640,7 +640,7 @@ public final class Model {
 
     /**
      * <pre>
-     *module type
+     *module type to identify a module like linear, graph, etc
      * </pre>
      *
      * <code>string moduleType = 7;</code>
@@ -648,7 +648,7 @@ public final class Model {
     java.lang.String getModuleType();
     /**
      * <pre>
-     *module type
+     *module type to identify a module like linear, graph, etc
      * </pre>
      *
      * <code>string moduleType = 7;</code>
@@ -658,7 +658,7 @@ public final class Model {
 
     /**
      * <pre>
-     * module attribute map
+     * module attributes
      * </pre>
      *
      * <code>map&lt;string, .serialization.AttrValue&gt; attr = 8;</code>
@@ -666,7 +666,7 @@ public final class Model {
     int getAttrCount();
     /**
      * <pre>
-     * module attribute map
+     * module attributes
      * </pre>
      *
      * <code>map&lt;string, .serialization.AttrValue&gt; attr = 8;</code>
@@ -681,7 +681,7 @@ public final class Model {
     getAttr();
     /**
      * <pre>
-     * module attribute map
+     * module attributes
      * </pre>
      *
      * <code>map&lt;string, .serialization.AttrValue&gt; attr = 8;</code>
@@ -690,7 +690,7 @@ public final class Model {
     getAttrMap();
     /**
      * <pre>
-     * module attribute map
+     * module attributes
      * </pre>
      *
      * <code>map&lt;string, .serialization.AttrValue&gt; attr = 8;</code>
@@ -701,7 +701,7 @@ public final class Model {
         serialization.Model.AttrValue defaultValue);
     /**
      * <pre>
-     * module attribute map
+     * module attributes
      * </pre>
      *
      * <code>map&lt;string, .serialization.AttrValue&gt; attr = 8;</code>
@@ -880,7 +880,7 @@ public final class Model {
     private volatile java.lang.Object name_;
     /**
      * <pre>
-     *model name
+     *module name
      * </pre>
      *
      * <code>string name = 1;</code>
@@ -899,7 +899,7 @@ public final class Model {
     }
     /**
      * <pre>
-     *model name
+     *module name
      * </pre>
      *
      * <code>string name = 1;</code>
@@ -977,7 +977,7 @@ public final class Model {
     private serialization.Model.BigDLTensor weight_;
     /**
      * <pre>
-     * double weight for each layer
+     * weight for each layer, serialized data are stored as double
      * </pre>
      *
      * <code>.serialization.BigDLTensor weight = 3;</code>
@@ -987,7 +987,7 @@ public final class Model {
     }
     /**
      * <pre>
-     * double weight for each layer
+     * weight for each layer, serialized data are stored as double
      * </pre>
      *
      * <code>.serialization.BigDLTensor weight = 3;</code>
@@ -997,7 +997,7 @@ public final class Model {
     }
     /**
      * <pre>
-     * double weight for each layer
+     * weight for each layer, serialized data are stored as double
      * </pre>
      *
      * <code>.serialization.BigDLTensor weight = 3;</code>
@@ -1010,7 +1010,7 @@ public final class Model {
     private serialization.Model.BigDLTensor bias_;
     /**
      * <pre>
-     * double bias for each layer
+     * bias for each layer
      * </pre>
      *
      * <code>.serialization.BigDLTensor bias = 4;</code>
@@ -1020,7 +1020,7 @@ public final class Model {
     }
     /**
      * <pre>
-     * double bias for each layer
+     * bias for each layer
      * </pre>
      *
      * <code>.serialization.BigDLTensor bias = 4;</code>
@@ -1030,7 +1030,7 @@ public final class Model {
     }
     /**
      * <pre>
-     * double bias for each layer
+     * bias for each layer
      * </pre>
      *
      * <code>.serialization.BigDLTensor bias = 4;</code>
@@ -1133,7 +1133,7 @@ public final class Model {
     private volatile java.lang.Object moduleType_;
     /**
      * <pre>
-     *module type
+     *module type to identify a module like linear, graph, etc
      * </pre>
      *
      * <code>string moduleType = 7;</code>
@@ -1152,7 +1152,7 @@ public final class Model {
     }
     /**
      * <pre>
-     *module type
+     *module type to identify a module like linear, graph, etc
      * </pre>
      *
      * <code>string moduleType = 7;</code>
@@ -1199,7 +1199,7 @@ public final class Model {
     }
     /**
      * <pre>
-     * module attribute map
+     * module attributes
      * </pre>
      *
      * <code>map&lt;string, .serialization.AttrValue&gt; attr = 8;</code>
@@ -1219,7 +1219,7 @@ public final class Model {
     }
     /**
      * <pre>
-     * module attribute map
+     * module attributes
      * </pre>
      *
      * <code>map&lt;string, .serialization.AttrValue&gt; attr = 8;</code>
@@ -1230,7 +1230,7 @@ public final class Model {
     }
     /**
      * <pre>
-     * module attribute map
+     * module attributes
      * </pre>
      *
      * <code>map&lt;string, .serialization.AttrValue&gt; attr = 8;</code>
@@ -1246,7 +1246,7 @@ public final class Model {
     }
     /**
      * <pre>
-     * module attribute map
+     * module attributes
      * </pre>
      *
      * <code>map&lt;string, .serialization.AttrValue&gt; attr = 8;</code>
@@ -1788,7 +1788,7 @@ public final class Model {
       private java.lang.Object name_ = "";
       /**
        * <pre>
-       *model name
+       *module name
        * </pre>
        *
        * <code>string name = 1;</code>
@@ -1807,7 +1807,7 @@ public final class Model {
       }
       /**
        * <pre>
-       *model name
+       *module name
        * </pre>
        *
        * <code>string name = 1;</code>
@@ -1827,7 +1827,7 @@ public final class Model {
       }
       /**
        * <pre>
-       *model name
+       *module name
        * </pre>
        *
        * <code>string name = 1;</code>
@@ -1844,7 +1844,7 @@ public final class Model {
       }
       /**
        * <pre>
-       *model name
+       *module name
        * </pre>
        *
        * <code>string name = 1;</code>
@@ -1857,7 +1857,7 @@ public final class Model {
       }
       /**
        * <pre>
-       *model name
+       *module name
        * </pre>
        *
        * <code>string name = 1;</code>
@@ -2191,7 +2191,7 @@ public final class Model {
           serialization.Model.BigDLTensor, serialization.Model.BigDLTensor.Builder, serialization.Model.BigDLTensorOrBuilder> weightBuilder_;
       /**
        * <pre>
-       * double weight for each layer
+       * weight for each layer, serialized data are stored as double
        * </pre>
        *
        * <code>.serialization.BigDLTensor weight = 3;</code>
@@ -2201,7 +2201,7 @@ public final class Model {
       }
       /**
        * <pre>
-       * double weight for each layer
+       * weight for each layer, serialized data are stored as double
        * </pre>
        *
        * <code>.serialization.BigDLTensor weight = 3;</code>
@@ -2215,7 +2215,7 @@ public final class Model {
       }
       /**
        * <pre>
-       * double weight for each layer
+       * weight for each layer, serialized data are stored as double
        * </pre>
        *
        * <code>.serialization.BigDLTensor weight = 3;</code>
@@ -2235,7 +2235,7 @@ public final class Model {
       }
       /**
        * <pre>
-       * double weight for each layer
+       * weight for each layer, serialized data are stored as double
        * </pre>
        *
        * <code>.serialization.BigDLTensor weight = 3;</code>
@@ -2253,7 +2253,7 @@ public final class Model {
       }
       /**
        * <pre>
-       * double weight for each layer
+       * weight for each layer, serialized data are stored as double
        * </pre>
        *
        * <code>.serialization.BigDLTensor weight = 3;</code>
@@ -2275,7 +2275,7 @@ public final class Model {
       }
       /**
        * <pre>
-       * double weight for each layer
+       * weight for each layer, serialized data are stored as double
        * </pre>
        *
        * <code>.serialization.BigDLTensor weight = 3;</code>
@@ -2293,7 +2293,7 @@ public final class Model {
       }
       /**
        * <pre>
-       * double weight for each layer
+       * weight for each layer, serialized data are stored as double
        * </pre>
        *
        * <code>.serialization.BigDLTensor weight = 3;</code>
@@ -2305,7 +2305,7 @@ public final class Model {
       }
       /**
        * <pre>
-       * double weight for each layer
+       * weight for each layer, serialized data are stored as double
        * </pre>
        *
        * <code>.serialization.BigDLTensor weight = 3;</code>
@@ -2320,7 +2320,7 @@ public final class Model {
       }
       /**
        * <pre>
-       * double weight for each layer
+       * weight for each layer, serialized data are stored as double
        * </pre>
        *
        * <code>.serialization.BigDLTensor weight = 3;</code>
@@ -2344,7 +2344,7 @@ public final class Model {
           serialization.Model.BigDLTensor, serialization.Model.BigDLTensor.Builder, serialization.Model.BigDLTensorOrBuilder> biasBuilder_;
       /**
        * <pre>
-       * double bias for each layer
+       * bias for each layer
        * </pre>
        *
        * <code>.serialization.BigDLTensor bias = 4;</code>
@@ -2354,7 +2354,7 @@ public final class Model {
       }
       /**
        * <pre>
-       * double bias for each layer
+       * bias for each layer
        * </pre>
        *
        * <code>.serialization.BigDLTensor bias = 4;</code>
@@ -2368,7 +2368,7 @@ public final class Model {
       }
       /**
        * <pre>
-       * double bias for each layer
+       * bias for each layer
        * </pre>
        *
        * <code>.serialization.BigDLTensor bias = 4;</code>
@@ -2388,7 +2388,7 @@ public final class Model {
       }
       /**
        * <pre>
-       * double bias for each layer
+       * bias for each layer
        * </pre>
        *
        * <code>.serialization.BigDLTensor bias = 4;</code>
@@ -2406,7 +2406,7 @@ public final class Model {
       }
       /**
        * <pre>
-       * double bias for each layer
+       * bias for each layer
        * </pre>
        *
        * <code>.serialization.BigDLTensor bias = 4;</code>
@@ -2428,7 +2428,7 @@ public final class Model {
       }
       /**
        * <pre>
-       * double bias for each layer
+       * bias for each layer
        * </pre>
        *
        * <code>.serialization.BigDLTensor bias = 4;</code>
@@ -2446,7 +2446,7 @@ public final class Model {
       }
       /**
        * <pre>
-       * double bias for each layer
+       * bias for each layer
        * </pre>
        *
        * <code>.serialization.BigDLTensor bias = 4;</code>
@@ -2458,7 +2458,7 @@ public final class Model {
       }
       /**
        * <pre>
-       * double bias for each layer
+       * bias for each layer
        * </pre>
        *
        * <code>.serialization.BigDLTensor bias = 4;</code>
@@ -2473,7 +2473,7 @@ public final class Model {
       }
       /**
        * <pre>
-       * double bias for each layer
+       * bias for each layer
        * </pre>
        *
        * <code>.serialization.BigDLTensor bias = 4;</code>
@@ -2755,7 +2755,7 @@ public final class Model {
       private java.lang.Object moduleType_ = "";
       /**
        * <pre>
-       *module type
+       *module type to identify a module like linear, graph, etc
        * </pre>
        *
        * <code>string moduleType = 7;</code>
@@ -2774,7 +2774,7 @@ public final class Model {
       }
       /**
        * <pre>
-       *module type
+       *module type to identify a module like linear, graph, etc
        * </pre>
        *
        * <code>string moduleType = 7;</code>
@@ -2794,7 +2794,7 @@ public final class Model {
       }
       /**
        * <pre>
-       *module type
+       *module type to identify a module like linear, graph, etc
        * </pre>
        *
        * <code>string moduleType = 7;</code>
@@ -2811,7 +2811,7 @@ public final class Model {
       }
       /**
        * <pre>
-       *module type
+       *module type to identify a module like linear, graph, etc
        * </pre>
        *
        * <code>string moduleType = 7;</code>
@@ -2824,7 +2824,7 @@ public final class Model {
       }
       /**
        * <pre>
-       *module type
+       *module type to identify a module like linear, graph, etc
        * </pre>
        *
        * <code>string moduleType = 7;</code>
@@ -2869,7 +2869,7 @@ public final class Model {
       }
       /**
        * <pre>
-       * module attribute map
+       * module attributes
        * </pre>
        *
        * <code>map&lt;string, .serialization.AttrValue&gt; attr = 8;</code>
@@ -2889,7 +2889,7 @@ public final class Model {
       }
       /**
        * <pre>
-       * module attribute map
+       * module attributes
        * </pre>
        *
        * <code>map&lt;string, .serialization.AttrValue&gt; attr = 8;</code>
@@ -2900,7 +2900,7 @@ public final class Model {
       }
       /**
        * <pre>
-       * module attribute map
+       * module attributes
        * </pre>
        *
        * <code>map&lt;string, .serialization.AttrValue&gt; attr = 8;</code>
@@ -2916,7 +2916,7 @@ public final class Model {
       }
       /**
        * <pre>
-       * module attribute map
+       * module attributes
        * </pre>
        *
        * <code>map&lt;string, .serialization.AttrValue&gt; attr = 8;</code>
@@ -2940,7 +2940,7 @@ public final class Model {
       }
       /**
        * <pre>
-       * module attribute map
+       * module attributes
        * </pre>
        *
        * <code>map&lt;string, .serialization.AttrValue&gt; attr = 8;</code>
@@ -2963,7 +2963,7 @@ public final class Model {
       }
       /**
        * <pre>
-       * module attribute map
+       * module attributes
        * </pre>
        *
        * <code>map&lt;string, .serialization.AttrValue&gt; attr = 8;</code>
@@ -2979,7 +2979,7 @@ public final class Model {
       }
       /**
        * <pre>
-       * module attribute map
+       * module attributes
        * </pre>
        *
        * <code>map&lt;string, .serialization.AttrValue&gt; attr = 8;</code>
@@ -5222,7 +5222,7 @@ public final class Model {
      *Variable format
      * </pre>
      *
-     * <code>.serialization.ValFormat variableFormatValue = 9;</code>
+     * <code>.serialization.VarFormat variableFormatValue = 9;</code>
      */
     int getVariableFormatValueValue();
     /**
@@ -5230,9 +5230,9 @@ public final class Model {
      *Variable format
      * </pre>
      *
-     * <code>.serialization.ValFormat variableFormatValue = 9;</code>
+     * <code>.serialization.VarFormat variableFormatValue = 9;</code>
      */
-    serialization.Model.ValFormat getVariableFormatValue();
+    serialization.Model.VarFormat getVariableFormatValue();
 
     /**
      * <pre>
@@ -5957,15 +5957,15 @@ public final class Model {
        * "Array(VariableFormat)"
        * </pre>
        *
-       * <code>repeated .serialization.ValFormat variableFormat = 9;</code>
+       * <code>repeated .serialization.VarFormat variableFormat = 9;</code>
        */
-      java.util.List<serialization.Model.ValFormat> getVariableFormatList();
+      java.util.List<serialization.Model.VarFormat> getVariableFormatList();
       /**
        * <pre>
        * "Array(VariableFormat)"
        * </pre>
        *
-       * <code>repeated .serialization.ValFormat variableFormat = 9;</code>
+       * <code>repeated .serialization.VarFormat variableFormat = 9;</code>
        */
       int getVariableFormatCount();
       /**
@@ -5973,15 +5973,15 @@ public final class Model {
        * "Array(VariableFormat)"
        * </pre>
        *
-       * <code>repeated .serialization.ValFormat variableFormat = 9;</code>
+       * <code>repeated .serialization.VarFormat variableFormat = 9;</code>
        */
-      serialization.Model.ValFormat getVariableFormat(int index);
+      serialization.Model.VarFormat getVariableFormat(int index);
       /**
        * <pre>
        * "Array(VariableFormat)"
        * </pre>
        *
-       * <code>repeated .serialization.ValFormat variableFormat = 9;</code>
+       * <code>repeated .serialization.VarFormat variableFormat = 9;</code>
        */
       java.util.List<java.lang.Integer>
       getVariableFormatValueList();
@@ -5990,7 +5990,7 @@ public final class Model {
        * "Array(VariableFormat)"
        * </pre>
        *
-       * <code>repeated .serialization.ValFormat variableFormat = 9;</code>
+       * <code>repeated .serialization.VarFormat variableFormat = 9;</code>
        */
       int getVariableFormatValue(int index);
 
@@ -6774,12 +6774,12 @@ public final class Model {
       public static final int VARIABLEFORMAT_FIELD_NUMBER = 9;
       private java.util.List<java.lang.Integer> variableFormat_;
       private static final com.google.protobuf.Internal.ListAdapter.Converter<
-          java.lang.Integer, serialization.Model.ValFormat> variableFormat_converter_ =
+          java.lang.Integer, serialization.Model.VarFormat> variableFormat_converter_ =
               new com.google.protobuf.Internal.ListAdapter.Converter<
-                  java.lang.Integer, serialization.Model.ValFormat>() {
-                public serialization.Model.ValFormat convert(java.lang.Integer from) {
-                  serialization.Model.ValFormat result = serialization.Model.ValFormat.valueOf(from);
-                  return result == null ? serialization.Model.ValFormat.UNRECOGNIZED : result;
+                  java.lang.Integer, serialization.Model.VarFormat>() {
+                public serialization.Model.VarFormat convert(java.lang.Integer from) {
+                  serialization.Model.VarFormat result = serialization.Model.VarFormat.valueOf(from);
+                  return result == null ? serialization.Model.VarFormat.UNRECOGNIZED : result;
                 }
               };
       /**
@@ -6787,18 +6787,18 @@ public final class Model {
        * "Array(VariableFormat)"
        * </pre>
        *
-       * <code>repeated .serialization.ValFormat variableFormat = 9;</code>
+       * <code>repeated .serialization.VarFormat variableFormat = 9;</code>
        */
-      public java.util.List<serialization.Model.ValFormat> getVariableFormatList() {
+      public java.util.List<serialization.Model.VarFormat> getVariableFormatList() {
         return new com.google.protobuf.Internal.ListAdapter<
-            java.lang.Integer, serialization.Model.ValFormat>(variableFormat_, variableFormat_converter_);
+            java.lang.Integer, serialization.Model.VarFormat>(variableFormat_, variableFormat_converter_);
       }
       /**
        * <pre>
        * "Array(VariableFormat)"
        * </pre>
        *
-       * <code>repeated .serialization.ValFormat variableFormat = 9;</code>
+       * <code>repeated .serialization.VarFormat variableFormat = 9;</code>
        */
       public int getVariableFormatCount() {
         return variableFormat_.size();
@@ -6808,9 +6808,9 @@ public final class Model {
        * "Array(VariableFormat)"
        * </pre>
        *
-       * <code>repeated .serialization.ValFormat variableFormat = 9;</code>
+       * <code>repeated .serialization.VarFormat variableFormat = 9;</code>
        */
-      public serialization.Model.ValFormat getVariableFormat(int index) {
+      public serialization.Model.VarFormat getVariableFormat(int index) {
         return variableFormat_converter_.convert(variableFormat_.get(index));
       }
       /**
@@ -6818,7 +6818,7 @@ public final class Model {
        * "Array(VariableFormat)"
        * </pre>
        *
-       * <code>repeated .serialization.ValFormat variableFormat = 9;</code>
+       * <code>repeated .serialization.VarFormat variableFormat = 9;</code>
        */
       public java.util.List<java.lang.Integer>
       getVariableFormatValueList() {
@@ -6829,7 +6829,7 @@ public final class Model {
        * "Array(VariableFormat)"
        * </pre>
        *
-       * <code>repeated .serialization.ValFormat variableFormat = 9;</code>
+       * <code>repeated .serialization.VarFormat variableFormat = 9;</code>
        */
       public int getVariableFormatValue(int index) {
         return variableFormat_.get(index);
@@ -9109,18 +9109,18 @@ public final class Model {
          * "Array(VariableFormat)"
          * </pre>
          *
-         * <code>repeated .serialization.ValFormat variableFormat = 9;</code>
+         * <code>repeated .serialization.VarFormat variableFormat = 9;</code>
          */
-        public java.util.List<serialization.Model.ValFormat> getVariableFormatList() {
+        public java.util.List<serialization.Model.VarFormat> getVariableFormatList() {
           return new com.google.protobuf.Internal.ListAdapter<
-              java.lang.Integer, serialization.Model.ValFormat>(variableFormat_, variableFormat_converter_);
+              java.lang.Integer, serialization.Model.VarFormat>(variableFormat_, variableFormat_converter_);
         }
         /**
          * <pre>
          * "Array(VariableFormat)"
          * </pre>
          *
-         * <code>repeated .serialization.ValFormat variableFormat = 9;</code>
+         * <code>repeated .serialization.VarFormat variableFormat = 9;</code>
          */
         public int getVariableFormatCount() {
           return variableFormat_.size();
@@ -9130,9 +9130,9 @@ public final class Model {
          * "Array(VariableFormat)"
          * </pre>
          *
-         * <code>repeated .serialization.ValFormat variableFormat = 9;</code>
+         * <code>repeated .serialization.VarFormat variableFormat = 9;</code>
          */
-        public serialization.Model.ValFormat getVariableFormat(int index) {
+        public serialization.Model.VarFormat getVariableFormat(int index) {
           return variableFormat_converter_.convert(variableFormat_.get(index));
         }
         /**
@@ -9140,10 +9140,10 @@ public final class Model {
          * "Array(VariableFormat)"
          * </pre>
          *
-         * <code>repeated .serialization.ValFormat variableFormat = 9;</code>
+         * <code>repeated .serialization.VarFormat variableFormat = 9;</code>
          */
         public Builder setVariableFormat(
-            int index, serialization.Model.ValFormat value) {
+            int index, serialization.Model.VarFormat value) {
           if (value == null) {
             throw new NullPointerException();
           }
@@ -9157,9 +9157,9 @@ public final class Model {
          * "Array(VariableFormat)"
          * </pre>
          *
-         * <code>repeated .serialization.ValFormat variableFormat = 9;</code>
+         * <code>repeated .serialization.VarFormat variableFormat = 9;</code>
          */
-        public Builder addVariableFormat(serialization.Model.ValFormat value) {
+        public Builder addVariableFormat(serialization.Model.VarFormat value) {
           if (value == null) {
             throw new NullPointerException();
           }
@@ -9173,12 +9173,12 @@ public final class Model {
          * "Array(VariableFormat)"
          * </pre>
          *
-         * <code>repeated .serialization.ValFormat variableFormat = 9;</code>
+         * <code>repeated .serialization.VarFormat variableFormat = 9;</code>
          */
         public Builder addAllVariableFormat(
-            java.lang.Iterable<? extends serialization.Model.ValFormat> values) {
+            java.lang.Iterable<? extends serialization.Model.VarFormat> values) {
           ensureVariableFormatIsMutable();
-          for (serialization.Model.ValFormat value : values) {
+          for (serialization.Model.VarFormat value : values) {
             variableFormat_.add(value.getNumber());
           }
           onChanged();
@@ -9189,7 +9189,7 @@ public final class Model {
          * "Array(VariableFormat)"
          * </pre>
          *
-         * <code>repeated .serialization.ValFormat variableFormat = 9;</code>
+         * <code>repeated .serialization.VarFormat variableFormat = 9;</code>
          */
         public Builder clearVariableFormat() {
           variableFormat_ = java.util.Collections.emptyList();
@@ -9202,7 +9202,7 @@ public final class Model {
          * "Array(VariableFormat)"
          * </pre>
          *
-         * <code>repeated .serialization.ValFormat variableFormat = 9;</code>
+         * <code>repeated .serialization.VarFormat variableFormat = 9;</code>
          */
         public java.util.List<java.lang.Integer>
         getVariableFormatValueList() {
@@ -9213,7 +9213,7 @@ public final class Model {
          * "Array(VariableFormat)"
          * </pre>
          *
-         * <code>repeated .serialization.ValFormat variableFormat = 9;</code>
+         * <code>repeated .serialization.VarFormat variableFormat = 9;</code>
          */
         public int getVariableFormatValue(int index) {
           return variableFormat_.get(index);
@@ -9223,7 +9223,7 @@ public final class Model {
          * "Array(VariableFormat)"
          * </pre>
          *
-         * <code>repeated .serialization.ValFormat variableFormat = 9;</code>
+         * <code>repeated .serialization.VarFormat variableFormat = 9;</code>
          */
         public Builder setVariableFormatValue(
             int index, int value) {
@@ -9237,7 +9237,7 @@ public final class Model {
          * "Array(VariableFormat)"
          * </pre>
          *
-         * <code>repeated .serialization.ValFormat variableFormat = 9;</code>
+         * <code>repeated .serialization.VarFormat variableFormat = 9;</code>
          */
         public Builder addVariableFormatValue(int value) {
           ensureVariableFormatIsMutable();
@@ -9250,7 +9250,7 @@ public final class Model {
          * "Array(VariableFormat)"
          * </pre>
          *
-         * <code>repeated .serialization.ValFormat variableFormat = 9;</code>
+         * <code>repeated .serialization.VarFormat variableFormat = 9;</code>
          */
         public Builder addAllVariableFormatValue(
             java.lang.Iterable<java.lang.Integer> values) {
@@ -10546,7 +10546,7 @@ public final class Model {
      *Variable format
      * </pre>
      *
-     * <code>.serialization.ValFormat variableFormatValue = 9;</code>
+     * <code>.serialization.VarFormat variableFormatValue = 9;</code>
      */
     public int getVariableFormatValueValue() {
       if (valueCase_ == 9) {
@@ -10559,15 +10559,15 @@ public final class Model {
      *Variable format
      * </pre>
      *
-     * <code>.serialization.ValFormat variableFormatValue = 9;</code>
+     * <code>.serialization.VarFormat variableFormatValue = 9;</code>
      */
-    public serialization.Model.ValFormat getVariableFormatValue() {
+    public serialization.Model.VarFormat getVariableFormatValue() {
       if (valueCase_ == 9) {
-        serialization.Model.ValFormat result = serialization.Model.ValFormat.valueOf(
+        serialization.Model.VarFormat result = serialization.Model.VarFormat.valueOf(
             (java.lang.Integer) value_);
-        return result == null ? serialization.Model.ValFormat.UNRECOGNIZED : result;
+        return result == null ? serialization.Model.VarFormat.UNRECOGNIZED : result;
       }
-      return serialization.Model.ValFormat.EMPTY_FORMAT;
+      return serialization.Model.VarFormat.EMPTY_FORMAT;
     }
 
     public static final int INITMETHODVALUE_FIELD_NUMBER = 10;
@@ -11968,7 +11968,7 @@ public final class Model {
        *Variable format
        * </pre>
        *
-       * <code>.serialization.ValFormat variableFormatValue = 9;</code>
+       * <code>.serialization.VarFormat variableFormatValue = 9;</code>
        */
       public int getVariableFormatValueValue() {
         if (valueCase_ == 9) {
@@ -11981,7 +11981,7 @@ public final class Model {
        *Variable format
        * </pre>
        *
-       * <code>.serialization.ValFormat variableFormatValue = 9;</code>
+       * <code>.serialization.VarFormat variableFormatValue = 9;</code>
        */
       public Builder setVariableFormatValueValue(int value) {
         valueCase_ = 9;
@@ -11994,24 +11994,24 @@ public final class Model {
        *Variable format
        * </pre>
        *
-       * <code>.serialization.ValFormat variableFormatValue = 9;</code>
+       * <code>.serialization.VarFormat variableFormatValue = 9;</code>
        */
-      public serialization.Model.ValFormat getVariableFormatValue() {
+      public serialization.Model.VarFormat getVariableFormatValue() {
         if (valueCase_ == 9) {
-          serialization.Model.ValFormat result = serialization.Model.ValFormat.valueOf(
+          serialization.Model.VarFormat result = serialization.Model.VarFormat.valueOf(
               (java.lang.Integer) value_);
-          return result == null ? serialization.Model.ValFormat.UNRECOGNIZED : result;
+          return result == null ? serialization.Model.VarFormat.UNRECOGNIZED : result;
         }
-        return serialization.Model.ValFormat.EMPTY_FORMAT;
+        return serialization.Model.VarFormat.EMPTY_FORMAT;
       }
       /**
        * <pre>
        *Variable format
        * </pre>
        *
-       * <code>.serialization.ValFormat variableFormatValue = 9;</code>
+       * <code>.serialization.VarFormat variableFormatValue = 9;</code>
        */
-      public Builder setVariableFormatValue(serialization.Model.ValFormat value) {
+      public Builder setVariableFormatValue(serialization.Model.VarFormat value) {
         if (value == null) {
           throw new NullPointerException();
         }
@@ -12025,7 +12025,7 @@ public final class Model {
        *Variable format
        * </pre>
        *
-       * <code>.serialization.ValFormat variableFormatValue = 9;</code>
+       * <code>.serialization.VarFormat variableFormatValue = 9;</code>
        */
       public Builder clearVariableFormatValue() {
         if (valueCase_ == 9) {
@@ -13666,7 +13666,7 @@ public final class Model {
       " \001(\0132\032.serialization.RegularizerH\000\0221\n\013te",
       "nsorValue\030\010 \001(\0132\032.serialization.BigDLTen" +
       "sorH\000\0227\n\023variableFormatValue\030\t \001(\0162\030.ser" +
-      "ialization.ValFormatH\000\0224\n\017initMethodValu" +
+      "ialization.VarFormatH\000\0224\n\017initMethodValu" +
       "e\030\n \001(\0132\031.serialization.InitMethodH\000\0226\n\020" +
       "bigDLModuleValue\030\013 \001(\0132\032.serialization.B" +
       "igDLModuleH\000\0228\n\021nameAttrListValue\030\014 \001(\0132" +
@@ -13679,7 +13679,7 @@ public final class Model {
       "/\n\013Regularizer\030\007 \003(\0132\032.serialization.Reg" +
       "ularizer\022*\n\006tensor\030\010 \003(\0132\032.serialization" +
       ".BigDLTensor\0220\n\016variableFormat\030\t \003(\0162\030.s" +
-      "erialization.ValFormat\022-\n\ninitMethod\030\n \003" +
+      "erialization.VarFormat\022-\n\ninitMethod\030\n \003" +
       "(\0132\031.serialization.InitMethod\022/\n\013bigDLMo" +
       "dule\030\013 \003(\0132\032.serialization.BigDLModule\0221" +
       "\n\014nameAttrList\030\014 \003(\0132\033.serialization.Nam" +
@@ -13694,7 +13694,7 @@ public final class Model {
       "\002 \003(\0132%.serialization.NameAttrList.AttrE" +
       "ntry\032E\n\tAttrEntry\022\013\n\003key\030\001 \001(\t\022\'\n\005value\030" +
       "\002 \001(\0132\030.serialization.AttrValue:\0028\001*\260\001\n\t",
-      "ValFormat\022\020\n\014EMPTY_FORMAT\020\000\022\013\n\007DEFAULT\020\001" +
+      "VarFormat\022\020\n\014EMPTY_FORMAT\020\000\022\013\n\007DEFAULT\020\001" +
       "\022\t\n\005ONE_D\020\002\022\n\n\006IN_OUT\020\003\022\n\n\006OUT_IN\020\004\022\020\n\014I" +
       "N_OUT_KW_KH\020\005\022\020\n\014OUT_IN_KW_KH\020\006\022\023\n\017GP_OU" +
       "T_IN_KW_KH\020\007\022\023\n\017GP_IN_OUT_KW_KH\020\010\022\023\n\017OUT" +
