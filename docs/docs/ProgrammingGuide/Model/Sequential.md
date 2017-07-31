@@ -1,7 +1,3 @@
-BigDL supports two different model definition styles: Sequential API and Functional API.
-
-Here we introduce how to define a model in Sequential API.
-
 ---
 ## **Define a simple model**
 Suppose we want to define a model with three layers

@@ -19,11 +19,7 @@ Your data need to be transformed into RDD of [Sample](APIdocs/Data.md#sample) in
 
 If you have an existing model and want to use BigDL only for prediction, you need first load the model, and then do prediction or evaluation. 
 
-BigDL supports loading models trained and saved in BigDL, or a trained Caffe or Tensorflow model. 
-
-* To load a BigDL model, you can use `Module.load` interface (Scala) or `Model.load` (in Python). Refer to [Model Save](APIdocs/Module/#model-save) for details.  
-* To load a Tensorflow model, refer to [Tensorflow Support](ProgrammingGuide/tensorflow-support.md) for details.
-* To load a Caffe model, refer to [Caffe Support](ProgrammingGuide/caffe-support.md) for details.
+BigDL supports loading models trained and saved in BigDL. To load a BigDL model, you can use `Module.load` interface (Scala) or `Model.load` (in Python). Refer to [Model Save](APIdocs/Module/#model-save) for details.  
 
 Refer to [Model Predict](APIdocs/Module/#model-prediction) for details about how to use a model for prediction.
 
@@ -45,7 +41,7 @@ Before training models, please make sure BigDL is installed, BigDL engine initia
 
 The most recommended way to create your first model is to modify from an existing one. BigDL provides plenty of models for you to refer to. See [Scala Models/Examples](UserGuide/resources.md) and [Python Models/Examples and Tutorials](PythonSupport/python-resources.md). 
 
-To define a model, you can either use the Sequential API or Functional API. The Functional API is more flexible than Sequential API. Refer to [Sequential API](ProgrammingGuide/Model/Sequential.md) and [Functional API](ProgrammingGuide/Model/Functional.md) for how to define models in different shapes. Navigate to *API Guide/Layers* on the side bar to find the documenations of available layers and activation.
+To know how to define a model step by step, refer to [Model Definition](ProgrammingGuide/Model/Sequential.md). Navigate to *API Guide/Layers* on the side bar to find the documenations of available layers and activations.
 
 After creating the model, you will have to deside which loss function to use in training. Find the details of losses defined in BigDL in [Losses](APIdocs/Losses.md).  
 
@@ -64,7 +60,6 @@ When training is finished, you may need to save the final model for later use.
 
 BigDL allows you to save your BigDL model on local filesystem, HDFS, or Amazon s3 (refer to [Model Save](APIdocs/Module.md/#model-save)). 
 
-You may also save the model to Tensorflow or Caffe format (refer to [Caffe Support](ProgrammingGuide/caffe-support.md), and [Tensorflow Support](ProgrammingGuide/tensorflow-support.md) respectively).  
 
 ---
 
