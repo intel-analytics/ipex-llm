@@ -31,8 +31,8 @@ import scala.reflect.ClassTag
 
 @SerialVersionUID(1581502108010704056L)
 class Select[T: ClassTag](
-  val dimension: Int,
-  val index: Int
+  dimension: Int,
+  index: Int
 )(implicit ev: TensorNumeric[T])
   extends TensorModule[T] {
   def getPositiveDimAndIndex(input: Tensor[T]): (Int, Int) = {

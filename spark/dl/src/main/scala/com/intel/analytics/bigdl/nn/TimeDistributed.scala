@@ -41,7 +41,7 @@ import scala.reflect.ClassTag
  * @tparam T data type, which can be [[Double]] or [[Float]]
  */
 
-class TimeDistributed[T : ClassTag] (val layer: TensorModule[T])
+class TimeDistributed[T : ClassTag] (layer: TensorModule[T])
   (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   private var inputSize: Array[Int] = _

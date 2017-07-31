@@ -45,8 +45,8 @@ import scala.reflect.ClassTag
             applied to the bias.
  */
 class RnnCell[T : ClassTag] (
-  val inputSize: Int = 4,
-  val hiddenSize: Int = 3,
+  inputSize: Int = 4,
+  hiddenSize: Int = 3,
   val activation: TensorModule[T],
   var wRegularizer: Regularizer[T] = null,
   var uRegularizer: Regularizer[T] = null,

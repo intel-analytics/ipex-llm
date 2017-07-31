@@ -39,8 +39,8 @@ import scala.util.control.Breaks._
 class BinaryTreeLSTM[T: ClassTag](
   inputSize: Int,
   hiddenSize: Int,
-  val gateOutput: Boolean = true,
-  val withGraph: Boolean = true
+  gateOutput: Boolean = true,
+  withGraph: Boolean = true
 )(implicit ev: TensorNumeric[T])
   extends TreeLSTM[T](inputSize, hiddenSize) {
   var composer: Module[T] = createComposer()

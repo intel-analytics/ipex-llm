@@ -1784,6 +1784,7 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     val res2 = loadedModule.forward(tensor2)
     res1 should be (res2)
   }
+
 }
 
 class TestModule[T: ClassTag](val constant_scalar: Double)
