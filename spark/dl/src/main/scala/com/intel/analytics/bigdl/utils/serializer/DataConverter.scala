@@ -171,12 +171,17 @@ object DataConverter extends DataConverter{
       if (regularizer.getRegularDataCount == 0) {
         return null
       }
-      val l1 = regularizer.getRegularDataList.get(0)
-      val l2 = regularizer.getRegularDataList.get(1)
       regularizerType match {
-        case serialization.Bigdl.RegularizerType.L1Regularizer => L1Regularizer[T](l1)
-        case serialization.Bigdl.RegularizerType.L2Regularizer => L2Regularizer[T](l2)
-        case serialization.Bigdl.RegularizerType.L1L2Regularizer => L1L2Regularizer[T](l1, l2)
+        case serialization.Bigdl.RegularizerType.L1Regularizer =>
+          val l1 = regularizer.getRegularDataList.get(0)
+          L1Regularizer[T](l1)
+        case serialization.Bigdl.RegularizerType.L2Regularizer =>
+          val l2 = regularizer.getRegularDataList.get(1)
+          L2Regularizer[T](l2)
+        case serialization.Bigdl.RegularizerType.L1L2Regularizer =>
+          val l1 = regularizer.getRegularDataList.get(0)
+          val l2 = regularizer.getRegularDataList.get(1)
+          L1L2Regularizer[T](l1, l2)
       }
     }
 
