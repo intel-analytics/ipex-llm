@@ -191,7 +191,7 @@ object ModuleSerializer extends ModuleSerializable{
     registerModule("Contiguous", Class.forName("com.intel.analytics.bigdl.nn.Contiguous"),
       Contiguous)
     registerModule("ConvLSTMPeephole2D",
-      Class.forName("com.intel.analytics.bigdl.nn.ConvLSTMPeephole2D"), ConvLSTMPeephole2D)
+      Class.forName("com.intel.analytics.bigdl.nn.ConvLSTMPeephole"), ConvLSTMPeephole)
     registerModule("ConvLSTMPeephole3D",
       Class.forName("com.intel.analytics.bigdl.nn.ConvLSTMPeephole3D"), ConvLSTMPeephole3D)
     registerModule("Cosine", Class.forName("com.intel.analytics.bigdl.nn.Cosine"),

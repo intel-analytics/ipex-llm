@@ -339,7 +339,7 @@ class ModelSerializerSpec extends FlatSpec with Matchers {
     val convLSTMPeephole2d = Recurrent()
     val model = Sequential()
       .add(convLSTMPeephole2d
-        .add(ConvLSTMPeephole2D(
+        .add(ConvLSTMPeephole(
           inputSize,
           hiddenSize,
           kernalW, kernalH,

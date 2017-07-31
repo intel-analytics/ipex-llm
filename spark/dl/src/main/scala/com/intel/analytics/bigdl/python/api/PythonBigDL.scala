@@ -257,7 +257,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Recurrent[T]()
   }
 
-  def createConvLSTMPeephole2D(
+  def createConvLSTMPeephole(
     inputSize: Int,
     outputSize: Int,
     kernelI: Int,
@@ -266,9 +266,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     wRegularizer: Regularizer[T] = null,
     uRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
-    withPeephole: Boolean = true): ConvLSTMPeephole2D[T] = {
-    ConvLSTMPeephole2D[T](inputSize, outputSize, kernelI, kernelC, stride,
-      wRegularizer, uRegularizer, bRegularizer, withPeephole)
+    cRegularizer: Regularizer[T] = null,
+    withPeephole: Boolean = true): ConvLSTMPeephole[T] = {
+    ConvLSTMPeephole[T](inputSize, outputSize, kernelI, kernelC, stride,
+      wRegularizer, uRegularizer, bRegularizer, cRegularizer, withPeephole)
   }
 
   def createConvLSTMPeephole3D(
@@ -280,9 +281,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     wRegularizer: Regularizer[T] = null,
     uRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
+    cRegularizer: Regularizer[T] = null,
     withPeephole: Boolean = true): ConvLSTMPeephole3D[T] = {
     ConvLSTMPeephole3D[T](inputSize, outputSize, kernelI, kernelC, stride,
-      wRegularizer, uRegularizer, bRegularizer, withPeephole)
+      wRegularizer, uRegularizer, bRegularizer, cRegularizer, withPeephole)
   }
 
   def createEcho(): Echo[T] = {
@@ -1163,7 +1165,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                                   padT: Int = 0,
                                   padW: Int = 0,
                                   padH: Int = 0,
-                                  withBias: Boolean = true)
+                                  withBias: Boolean = true,
+                                  wRegularizer: Regularizer[T] = null,
+                                  bRegularizer: Regularizer[T] = null)
   : VolumetricConvolution[T] = {
     VolumetricConvolution[T](nInputPlane,
       nOutputPlane,
@@ -1176,7 +1180,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       padT,
       padW,
       padH,
-      withBias)
+      withBias,
+      wRegularizer,
+      bRegularizer)
   }
 
   def createVolumetricMaxPooling(kT: Int,

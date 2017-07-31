@@ -169,12 +169,12 @@ grad input of m is : [[[[-0.02344826 -0.06515953 -0.03618064]
 **Scala:**
 ```scala
 val module = VolumetricConvolution(nInputPlane, nOutputPlane, kT, kW, kH,
-  dT=1, dW=1, dH=1, padT=0, padW=0, padH=0, withBias=true)
+  dT=1, dW=1, dH=1, padT=0, padW=0, padH=0, withBias=true, wRegularizer=null, bRegularizer=null)
 ```
 **Python:**
 ```python
 module = VolumetricConvolution(n_input_plane, n_output_plane, k_t, k_w, k_h,
-  d_t=1, d_w=1, d_h=1, pad_t=0, pad_w=0, pad_h=0, with_bias=true)
+  d_t=1, d_w=1, d_h=1, pad_t=0, pad_w=0, pad_h=0, with_bias=true, wRegularizer=null, bRegularizer=null)
 ```
 
 Applies a 3D convolution over an input image composed of several input planes. The input tensor
@@ -193,6 +193,10 @@ in forward(input) is expected to be a 4D tensor (nInputPlane x time x height x w
 * `padW` The additional zeros added per width to the input planes.
 * `padH` The additional zeros added per height to the input planes.
 * `withBias` whether with bias.
+* `wRegularizer` instance of [[Regularizer]]
+                   (eg. L1 or L2 regularization), applied to the input weights matrices.
+* `bRegularizer` instance of [[Regularizer]]
+                   applied to the bias.
  
 **Scala example:**
 ```scala
