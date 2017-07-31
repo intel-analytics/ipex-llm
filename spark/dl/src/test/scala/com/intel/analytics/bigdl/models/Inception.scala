@@ -672,7 +672,7 @@ object Inception_v2 {
     val linear5_1 = Linear[Float](1024, classNum).setName("loss3/classifier").inputs(view5_1)
     val output3 = LogSoftMax[Float]().setName("loss3/loss").inputs(linear5_1)
 
-    val split2 = JoinTable[Float](2, 2).inputs(output3, output2, output1)
+    val split2 = JoinTable[Float](2, 0).inputs(output3, output2, output1)
     val model = Graph(input, split2)
     // model.reset()
     model

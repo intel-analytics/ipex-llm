@@ -90,7 +90,7 @@ object Inception_Layer_v1 {
       weightInitMethod = Xavier, Zeros).setName(namePrefix + "pool_proj").inputs(pool)
     val reluPool = ReLU(true).setName(namePrefix + "relu_pool_proj").inputs(convPool)
 
-    JoinTable(2, 4).inputs(relu1x1, relu3x3_2, relu5x5_2, reluPool)
+    JoinTable(2, 0).inputs(relu1x1, relu3x3_2, relu5x5_2, reluPool)
   }
 }
 
@@ -333,7 +333,7 @@ object Inception_v1 {
       .setInitMethod(weightInitMethod = Xavier, Zeros).setName("loss3/classifier").inputs(view5_1)
     val output3 = LogSoftMax().setName("loss3/loss3").inputs(linear5_1)
 
-    val split2 = JoinTable(2, 2).setName("split2").inputs(output3, output2, output1)
+    val split2 = JoinTable(2, 0).setName("split2").inputs(output3, output2, output1)
     Graph(input, split2)
   }
 }

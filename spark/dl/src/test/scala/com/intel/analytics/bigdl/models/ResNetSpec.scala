@@ -478,7 +478,7 @@ object ResNetTest {
     } else if (nInputPlane != nOutputPlane) {
       val pool1 = SpatialAveragePooling(1, 1, stride, stride).inputs(input)
       val mul1 = MulConstant(0f).inputs(pool1)
-      val concat = JoinTable(2, 3).inputs(pool1, mul1)
+      val concat = JoinTable(2, 0).inputs(pool1, mul1)
       concat
     } else {
       input

@@ -175,9 +175,9 @@ object Inception_Layer_v2 {
       pool
     }
     if (relu1 == null) {
-      JoinTable(2, 4).inputs(relu4, relu7, reluPool)
+      JoinTable(2, 0).inputs(relu4, relu7, reluPool)
     } else {
-      JoinTable(2, 4).inputs(relu1, relu4, relu7, reluPool)
+      JoinTable(2, 0).inputs(relu1, relu4, relu7, reluPool)
     }
   }
 }
@@ -422,7 +422,7 @@ object Inception_v2 {
     val linear5_1 = Linear(1024, classNum).setName("loss3/classifier").inputs(view5_1)
     val output3 = LogSoftMax().setName("loss3/loss").inputs(linear5_1)
 
-    val split2 = JoinTable(2, 2).inputs(output3, output2, output1)
+    val split2 = JoinTable(2, 0).inputs(output3, output2, output1)
     val model = Graph(input, split2)
     model.reset()
     model
