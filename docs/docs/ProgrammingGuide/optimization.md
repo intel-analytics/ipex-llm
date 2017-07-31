@@ -139,7 +139,7 @@ optimizer.setOptimMethod(new Adam())  // Change to adam
 **python**
 ```
 # Python need to define the optimization algorithm in the constructor
-optimizer = Optimizer(model, train_data, MSECriterion(), MaxIteration(100), 4, optim_method = Adam())
+optimizer = Optimizer(model, train_data, MSECriterion(), MaxIteration(100), 4, optim_method = "Adam")
 ```
 
 ## Validate your model in training
