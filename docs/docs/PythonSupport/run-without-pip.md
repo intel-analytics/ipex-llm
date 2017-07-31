@@ -1,4 +1,4 @@
-First of all, you need to obtain the BigDL libs. Refer to [Install from pre built](install-pre-built.md) or [Install from source code](../UserGuide/install-build-src) for more details
+First of all, you need to obtain the BigDL libs. Refer to [Install from pre built](../UserGuide/install-pre-built.md) or [Install from source code](../UserGuide/install-build-src.md) for more details
 
 
 ## **A quick launch for local mode**
