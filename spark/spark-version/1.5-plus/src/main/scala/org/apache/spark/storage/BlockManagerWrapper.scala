@@ -45,8 +45,14 @@ object BlockManagerWrapper {
     SparkEnv.get.blockManager.getLocal(blockId)
   }
 
-  def byteBufferConvert(byteBuffer: ByteBuffer): ByteBuffer = {
-    byteBuffer
+  def getLocalOrRemoteBytes(blockId: BlockId): Option[ByteBuffer] = {
+    val bm = SparkEnv.get.blockManager
+    val maybeLocalBytes = bm.getLocalBytes(blockId)
+    if (maybeLocalBytes.isDefined) {
+      maybeLocalBytes
+    } else {
+      bm.getRemoteBytes(blockId)
+    }
   }
 
   def unlock(blockId : BlockId): Unit = {}
