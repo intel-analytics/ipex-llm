@@ -97,11 +97,12 @@ class SmoothL1CriterionWithWeights[@specialized(Float, Double) T: ClassTag]
       // apply "outside" weights,  w_out * SmoothL1(|input - gt| * w_in)
       buffer.cmul(outsideW)
     }
-    if (num > 0) {
+    output = if (num > 0) {
       ev.divide(buffer.sum(), ev.fromType(num))
     } else {
       ev.divide(buffer.sum(), ev.fromType(input.size(1)))
     }
+    output
   }
 
   override def updateGradInput(input: Tensor[T], target: Table): Tensor[T] = {

@@ -72,10 +72,6 @@ class MaskedSelect[T: ClassTag]
     this
   }
 
-  override def toString(): String = {
-    s"nn.MaskedSelect"
-  }
-
   override def canEqual(other: Any): Boolean = other.isInstanceOf[MaskedSelect[T]]
 
   override def equals(other: Any): Boolean = other match {

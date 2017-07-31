@@ -16,7 +16,8 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, Initializable}
+import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils.{T, Table}
@@ -58,11 +59,14 @@ import scala.reflect.ClassTag
  * @param adjH Extra height to add to the output image. Default is 0.
  * @param nGroup Kernel group number.
  * @param noBias If bias is needed.
- * @param initMethod Init method, Default, Xavier, Bilinear.
+ * @param wRegularizer: instance of [[Regularizer]]
+ *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
+ * @param bRegularizer: instance of [[Regularizer]]
+ *                    applied to the bias.
  */
 
 @SerialVersionUID(- 3110412775551642284L)
-class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
+class SpatialFullConvolution[T: ClassTag](
   val nInputPlane: Int,
   val nOutputPlane: Int,
   val kW: Int,
@@ -75,8 +79,10 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
   var adjH: Int = 0,
   val nGroup: Int = 1,
   val noBias: Boolean = false,
-  private var initMethod: InitializationMethod = Default
-  )(implicit ev: TensorNumeric[T]) extends AbstractModule[A, Tensor[T], T]{
+  var wRegularizer: Regularizer[T] = null,
+  var bRegularizer: Regularizer[T] = null
+  )(implicit ev: TensorNumeric[T])
+  extends AbstractModule[Activity, Tensor[T], T] with Initializable {
 
   require(adjW <= dW - 1 && adjH <= dH - 1,
     "SpatialFullConvolution: adjW=$adjW and adjH=$adjH must be smaller than " +
@@ -94,8 +100,8 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
   protected val onesBias = Tensor[T]()
   protected val onesBatch = Tensor[T]()
   protected var weightMM: Tensor[T] = null
-  protected var gradientBiasMT: Tensor[T] = Tensor[T]()
-  protected var gradWeightMMInBatch: Tensor[T] = Tensor[T]()
+  protected val gradientBiasMT: Tensor[T] = Tensor[T]()
+  protected val gradWeightMMInBatch: Tensor[T] = Tensor[T]()
 
   protected val _1x1 = if (kH == 1 && kW == 1 && dW == 1 && dH == 1
     && padH == 0 && padW == 0) {
@@ -104,7 +110,13 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
     false
   }
 
-  reset()
+  {
+    val stdv = 1.0 / math.sqrt(kW * kH * nInputPlane)
+    val wInit = RandomUniform(-stdv, stdv)
+    val bInit = RandomUniform(-stdv, stdv)
+
+    setInitMethod(wInit, bInit)
+  }
 
   private var im2colTime = 0L
   private var col2imTime = 0L
@@ -113,44 +125,9 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
 
   def getCol2ImgTime(): Double = col2imTime
 
-  def setInitMethod(initMethod: InitializationMethod): this.type = {
-    this.initMethod = initMethod
-    this
-  }
-
   override def reset(): Unit = {
-    initMethod match {
-      case Default =>
-        val stdv = 1.0 / math.sqrt(kW * kH * nInputPlane)
-        weight.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
-        if (!noBias) {
-          bias.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
-        }
-      case Xavier =>
-        val fanIn = nInputPlane * kH * kW
-        val fanOut = nOutputPlane * kH * kW
-        val stdv = math.sqrt(6.0 / (fanIn + fanOut))
-        weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
-        if (null != bias) {
-          bias.fill(ev.zero)
-        }
-      case BilinearFiller =>
-        require(weight.dim() == 5, s"SpatialFullConvolution: weight must be 5 dim, " +
-          s"but got ${weight.dim()}")
-        require(kH == kW, s"SpatialFullConvolution: Kernel $kH * $kW must be square")
-        val f = Math.ceil(kW / 2.0).toInt
-        val c = (2 * f - 1 - f % 2) / (2.0f * f)
-        val weightArray = weight.storage().array()
-        val weightOffset = weight.storageOffset() - 1
-        var i = 0
-        while(i < weight.nElement()) {
-          val x : Float = i % kW
-          val y : Float = (i / kW) % kH
-          weightArray(i + weightOffset) = ev.fromType[Float](
-            (1f - math.abs(x / f - c)) * (1f - math.abs(y / f - c)))
-          i += 1
-        }
-    }
+    weightInitMethod.init(weight, VariableFormat.GP_IN_OUT_KW_KH)
+    Option(bias).foreach(biasInitMethod.init(_, VariableFormat.ONE_D))
     zeroGradParameters()
   }
 
@@ -272,8 +249,11 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
     }
   }
 
-  override def updateOutput(input: A): Tensor[T] = {
+  override def updateOutput(input: Activity): Tensor[T] = {
     val inputTensor: Tensor[T] = if (input.isInstanceOf[Table]) {
+      if (gradInput == null || !gradInput.isInstanceOf[Table]) {
+        gradInput = T()
+      }
       val targetTensor: Tensor[T] = input.toTable[Tensor[T]](2)
       val tDims = targetTensor.dim()
       val tH = targetTensor.size(tDims - 1)
@@ -282,6 +262,9 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
       adjH = calculateAdj(tH, kH, padH, dH)
       input.toTable[Tensor[T]](1)
     } else {
+      if (gradInput == null || gradInput.isInstanceOf[Table]) {
+        gradInput = Tensor[T]()
+      }
       input.toTensor[T]
     }
 
@@ -419,7 +402,7 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
 
   }
 
-  override def updateGradInput(input: A, gradOutput: Tensor[T]): A = {
+  override def updateGradInput(input: Activity, gradOutput: Tensor[T]): Activity = {
     val inputTensor: Tensor[T] = if (input.isInstanceOf[Table]) {
       input.toTable[Tensor[T]](1)
     } else {
@@ -509,7 +492,7 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
       input: Tensor[T], gradOutput: Tensor[T], gradWeight: Tensor[T],
       gradBias: Tensor[T], columns: Tensor[T],
       outputHeight: Int, outputWidth: Int,
-      scale: T)(implicit ev: TensorNumeric[T]): Unit = {
+      scaleW: T, scaleB: T)(implicit ev: TensorNumeric[T]): Unit = {
     // Extract columns:
     val before = System.nanoTime()
     ev.getType() match {
@@ -539,29 +522,29 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
     var m = input.size(1)   // nInputPlane
     var k = columns.size(2)   // inputHeight * inputWidth
 
-    // Do GEMM (note: this is a bit confusing because gemm assumes column-major matrices)
-    DenseTensorBLAS.gemm[T](
-      'T', 'N',
-      n, m, k,
-      scale,
-      columns.storage().array(), columns.storageOffset() - 1, k,
-      input.storage().array(), input.storageOffset() - 1, k,
-      ev.one,
-      gradWeight.storage().array(), gradWeight.storageOffset() - 1, n
-    )
-
+    if (scaleW != 0) {
+      // Do GEMM (note: this is a bit confusing because gemm assumes column-major matrices)
+      DenseTensorBLAS.gemm[T](
+        'T', 'N',
+        n, m, k,
+        scaleW,
+        columns.storage().array(), columns.storageOffset() - 1, k,
+        input.storage().array(), input.storageOffset() - 1, k,
+        ev.one,
+        gradWeight.storage().array(), gradWeight.storageOffset() - 1, n
+      )
+    }
     // Do Bias:
     // M,N,K are dims of matrix A and B
     // (see https://software.intel.com/en-us/node/468480)
     m = gradOutput.size(1)
     k = outputHeight * outputWidth
-
     // Do GEMV (note: this is a bit confusing because gemv assumes column-major matrices)
-    if (null != gradBias) {
+    if (null != gradBias && scaleB != 0) {
       ev.gemv(
         'T',
         k, m,
-        scale,
+        scaleB,
         gradOutput.storage().array(), gradOutput.storageOffset() - 1, k,
         ones.storage().array(), ones.storageOffset() - 1, 1,
         ev.one,
@@ -571,8 +554,7 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
   }
 
 
-  override def accGradParameters(input: A, gradOutput: Tensor[T],
-                                 scale: Double = 1.0): Unit = {
+  override def accGradParameters(input: Activity, gradOutput: Tensor[T]): Unit = {
     val inputTensor: Tensor[T] = if (input.isInstanceOf[Table]) {
       val targetTensor: Tensor[T] = input.toTable[Tensor[T]](2)
       val tDims = targetTensor.dim()
@@ -646,7 +628,8 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
           gradBias_G,
           column_n.select(1, g + 1),
           outputHeight, outputWidth,
-          ev.fromType[Double](scale))
+          ev.fromType[Double](scaleW),
+          ev.fromType[Double](scaleB))
         g += 1
       }
 
@@ -665,6 +648,12 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
       inputTensor.resize(nInputPlane, inputHeight, inputWidth)
     }
 
+    if (null != wRegularizer) {
+      wRegularizer.accRegularization(weight, gradWeight, scaleW)
+    }
+    if (null != bRegularizer) {
+      bRegularizer.accRegularization(bias, gradBias, scaleB)
+    }
   }
 
   override def updateParameters(learningRate: T): Unit = {
@@ -717,10 +706,10 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
       return false
     }
 
-    if (!obj.isInstanceOf[SpatialFullConvolution[A, T]]) {
+    if (!obj.isInstanceOf[SpatialFullConvolution[T]]) {
       return false
     }
-    val other = obj.asInstanceOf[SpatialFullConvolution[A, T]]
+    val other = obj.asInstanceOf[SpatialFullConvolution[T]]
     if (this.eq(other)) {
       return true
     }
@@ -763,13 +752,13 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
   }
 
   override def toString(): String = {
-    s"nn.SpatialFullConvolution($nInputPlane -> $nOutputPlane, " +
+    s"${getPrintName}($nInputPlane -> $nOutputPlane, " +
       s"$kW x $kH, $dW, $dH, $padW, $padH, $adjW, $adjH)"
   }
 }
 
 object SpatialFullConvolution {
-  def apply[A <: Activity : ClassTag, @specialized(Float, Double) T: ClassTag](
+  def apply[@specialized(Float, Double) T: ClassTag](
       nInputPlane: Int,
       nOutputPlane: Int,
       kW: Int,
@@ -782,9 +771,11 @@ object SpatialFullConvolution {
       adjH: Int = 0,
       nGroup: Int = 1,
       noBias: Boolean = false,
-      initMethod: InitializationMethod = Default
-  )(implicit ev: TensorNumeric[T]) : SpatialFullConvolution[A, T] = {
-    new SpatialFullConvolution[A, T](nInputPlane, nOutputPlane, kW, kH, dW, dH,
-      padW, padH, adjW, adjH, nGroup, noBias, initMethod)
+      wRegularizer: Regularizer[T] = null,
+      bRegularizer: Regularizer[T] = null
+  )(implicit ev: TensorNumeric[T]) : SpatialFullConvolution[T] = {
+    new SpatialFullConvolution[T](nInputPlane, nOutputPlane, kW, kH, dW, dH,
+      padW, padH, adjW, adjH, nGroup, noBias,
+      wRegularizer, bRegularizer)
   }
 }

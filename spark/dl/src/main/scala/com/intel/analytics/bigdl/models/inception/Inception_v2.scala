@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+/* Still in experimental stage! */
+
 package com.intel.analytics.bigdl.models.inception
 
 import com.intel.analytics.bigdl._

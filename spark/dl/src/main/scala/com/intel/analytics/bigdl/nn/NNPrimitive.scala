@@ -661,4 +661,296 @@ object NNPrimitive {
       cCol += 1
     }
   }
+
+  def unfoldedCopyVolDouble(fInput: Tensor[Double], input: Tensor[Double],
+    kT: Int, kW: Int, kH: Int,
+    dT: Int, dW: Int, dH: Int, pT: Int, pW: Int, pH: Int, nInputPlane: Int,
+    inputDepth: Int, inputWidth: Int, inputHeight: Int, outputDepth: Int,
+    outputWidth: Int, outputHeight: Int): Unit = {
+    val inputData = input.storage().array()
+    val fInputData = fInput.storage().array()
+
+    var k = 0
+    while (k < nInputPlane * kT * kH * kW) {
+      val nip = k / (kT * kH * kW)
+      var rest = k % (kT * kH * kW)
+      val kt = rest / (kH * kW)
+      rest = rest % (kH * kW)
+      val kh = rest / kW
+      val kw = rest % kW
+      var t, x, y, it, ix, iy = 0
+      val dstOffset = nip * (kT * kH * kW * outputDepth * outputHeight * outputWidth) +
+        kt * (kH * kW * outputDepth * outputHeight * outputWidth) +
+        kh * (kW * outputDepth * outputHeight * outputWidth) +
+        kw * (outputDepth * outputHeight * outputWidth) + fInput.storageOffset() - 1
+      val srcOffset = nip * (inputDepth * inputHeight * inputWidth) + input.storageOffset() - 1
+
+      if (pT > 0 || pH > 0 || pW > 0) {
+        t = 0
+        while (t < outputDepth) {
+          it = t * dT - pT + kt
+          var y = 0
+          while (y < outputHeight) {
+            iy = y * dH - pH + kh
+            x = 0
+            while (x < outputWidth) {
+              ix = x * dW - pW + kw
+              if (it < 0 || it >= inputDepth || iy < 0 || iy >= inputHeight ||
+                ix < 0 || ix >= inputWidth) {
+                fInputData(dstOffset + t * outputHeight * outputWidth + y * outputWidth + x) = 0
+              } else {
+                fInputData(dstOffset + t * outputHeight * outputWidth + y * outputWidth + x)
+                  = inputData(srcOffset + it * inputHeight * inputWidth + iy * inputWidth + ix)
+              }
+              x += 1
+            }
+            y += 1
+          }
+          t += 1
+        }
+      } else {
+        t = 0
+        while (t < outputDepth) {
+          it = t * dT + kt
+          y = 0
+          while (y < outputHeight) {
+            iy = y * dH + kh
+            x = 0
+            while (x < outputWidth) {
+              ix = x * dW + kw
+              fInputData(dstOffset + t * outputHeight * outputWidth + y * outputWidth + x)
+                = inputData(srcOffset + it * inputHeight * inputWidth + iy * inputWidth + ix)
+              x += 1
+            }
+            y += 1
+          }
+          t += 1
+        }
+      }
+      k += 1
+    }
+  }
+
+  def unfoldedCopyVolFloat(fInput: Tensor[Float], input: Tensor[Float],
+    kT: Int, kW: Int, kH: Int,
+    dT: Int, dW: Int, dH: Int, pT: Int, pW: Int, pH: Int, nInputPlane: Int,
+    inputDepth: Int, inputWidth: Int, inputHeight: Int, outputDepth: Int,
+    outputWidth: Int, outputHeight: Int): Unit = {
+    val inputData = input.storage().array()
+    val fInputData = fInput.storage().array()
+
+    var k = 0
+    while (k < nInputPlane * kT * kH * kW) {
+      val nip = k / (kT * kH * kW)
+      var rest = k % (kT * kH * kW)
+      val kt = rest / (kH * kW)
+      rest = rest % (kH * kW)
+      val kh = rest / kW
+      val kw = rest % kW
+      var t, x, y, it, ix, iy = 0
+      val dstOffset = nip * (kT * kH * kW * outputDepth * outputHeight * outputWidth) +
+        kt * (kH * kW * outputDepth * outputHeight * outputWidth) +
+        kh * (kW * outputDepth * outputHeight * outputWidth) +
+        kw * (outputDepth * outputHeight * outputWidth) + fInput.storageOffset() - 1
+      val srcOffset = nip * (inputDepth * inputHeight * inputWidth) + input.storageOffset() - 1
+
+      if (pT > 0 || pH > 0 || pW > 0) {
+        t = 0
+        while (t < outputDepth) {
+          it = t * dT - pT + kt
+          var y = 0
+          while (y < outputHeight) {
+            iy = y * dH - pH + kh
+            x = 0
+            while (x < outputWidth) {
+              ix = x * dW - pW + kw
+              if (it < 0 || it >= inputDepth || iy < 0 || iy >= inputHeight ||
+                ix < 0 || ix >= inputWidth) {
+                fInputData(dstOffset + t * outputHeight * outputWidth + y * outputWidth + x) = 0f
+              } else {
+                fInputData(dstOffset + t * outputHeight * outputWidth + y * outputWidth + x)
+                  = inputData(srcOffset + it * inputHeight * inputWidth + iy * inputWidth + ix)
+              }
+              x += 1
+            }
+            y += 1
+          }
+          t += 1
+        }
+      } else {
+        t = 0
+        while (t < outputDepth) {
+          it = t * dT + kt
+          y = 0
+          while (y < outputHeight) {
+            iy = y * dH + kh
+            x = 0
+            while (x < outputWidth) {
+              ix = x * dW + kw
+              fInputData(dstOffset + t * outputHeight * outputWidth + y * outputWidth + x)
+                = inputData(srcOffset + it * inputHeight * inputWidth + iy * inputWidth + ix)
+              x += 1
+            }
+            y += 1
+          }
+          t += 1
+        }
+      }
+      k += 1
+    }
+  }
+
+  def unfoldedAccVolDouble(fInput: Tensor[Double], input: Tensor[Double], kT: Int, kW: Int, kH: Int,
+    dT: Int, dW: Int, dH: Int, pT: Int, pW: Int, pH: Int, nInputPlane: Int, inputDepth: Int,
+    inputWidth: Int, inputHeight: Int,
+    outputDepth: Int, outputWidth: Int, outputHeight: Int): Unit = {
+    var nip, kt, kw, kh, t, y, x, it, ix, iy = 0
+    val inputData = input.storage().array()
+    val fInputData = fInput.storage().array()
+    nip = 0
+    while (nip < nInputPlane) {
+      kt = 0
+      while (kt < kT) {
+        kh = 0
+        while (kh < kH) {
+          kw = 0
+          while (kw < kW) {
+            val srcOffset = nip * (kT * kH * kW * outputDepth * outputHeight * outputWidth) +
+              kt * (kH * kW * outputDepth * outputHeight * outputWidth) +
+              kh * (kW * outputDepth * outputHeight * outputWidth) +
+              kw * (outputDepth * outputHeight * outputWidth) + fInput.storageOffset() - 1
+
+            val dstOffset = nip * (inputDepth * inputHeight * inputWidth) +
+              input.storageOffset() - 1
+            if (pT > 0 || pH > 0 || pW > 0) {
+              t = 0
+              while (t < outputDepth) {
+                it = t * dT - pT + kt
+                y = 0
+                while (y < outputHeight) {
+                  iy = y * dH - pH + kh
+                  x = 0
+                  while (x < outputWidth) {
+                    ix = x * dW - pW + kw
+                    if (it < 0 || it >= inputDepth || iy < 0 || iy >= inputHeight ||
+                      ix < 0 || ix >= inputWidth) {
+
+                    }
+                    else {
+                      inputData(dstOffset + it * inputHeight * inputWidth + iy * inputWidth + ix) +=
+                          fInputData(srcOffset + t * outputHeight * outputWidth +
+                            y * outputWidth + x)
+                    }
+                    x += 1
+                  }
+                  y += 1
+                }
+                t += 1
+              }
+            }
+            else {
+              t = 0
+              while (t < outputDepth) {
+                it = t * dT + kt
+                y = 0
+                while (y < outputHeight) {
+                  iy = y * dH + kh
+                  x = 0
+                  while (x < outputWidth) {
+                    ix = x * dW + kw
+                    inputData(dstOffset + it * inputHeight * inputWidth + iy * inputWidth + ix) +=
+                      fInputData(srcOffset + t * outputHeight * outputWidth + y * outputWidth + x)
+                    x += 1
+                  }
+                  y += 1
+                }
+                t += 1
+              }
+            }
+            kw += 1
+          }
+          kh += 1
+        }
+        kt += 1
+      }
+      nip += 1
+    }
+  }
+
+  def unfoldedAccVolFloat(fInput: Tensor[Float], input: Tensor[Float], kT: Int, kW: Int, kH: Int,
+    dT: Int, dW: Int, dH: Int, pT: Int, pW: Int, pH: Int, nInputPlane: Int, inputDepth: Int,
+    inputWidth: Int, inputHeight: Int,
+    outputDepth: Int, outputWidth: Int, outputHeight: Int): Unit = {
+    var nip, kt, kw, kh, t, y, x, it, ix, iy = 0
+    val inputData = input.storage().array()
+    val fInputData = fInput.storage().array()
+    nip = 0
+    while (nip < nInputPlane) {
+      kt = 0
+      while (kt < kT) {
+        kh = 0
+        while (kh < kH) {
+          kw = 0
+          while (kw < kW) {
+            val srcOffset = nip * (kT * kH * kW * outputDepth * outputHeight * outputWidth) +
+              kt * (kH * kW * outputDepth * outputHeight * outputWidth) +
+              kh * (kW * outputDepth * outputHeight * outputWidth) +
+              kw * (outputDepth * outputHeight * outputWidth) + fInput.storageOffset() - 1
+
+            val dstOffset = nip * (inputDepth * inputHeight * inputWidth) +
+              input.storageOffset() - 1
+            if (pT > 0 || pH > 0 || pW > 0) {
+              t = 0
+              while (t < outputDepth) {
+                it = t * dT - pT + kt
+                y = 0
+                while (y < outputHeight) {
+                  iy = y * dH - pH + kh
+                  x = 0
+                  while (x < outputWidth) {
+                    ix = x * dW - pW + kw
+                    if (it < 0 || it >= inputDepth || iy < 0 || iy >= inputHeight ||
+                      ix < 0 || ix >= inputWidth) {
+
+                    }
+                    else {
+                      inputData(dstOffset + it * inputHeight * inputWidth + iy * inputWidth + ix) +=
+                        fInputData(srcOffset + t * outputHeight * outputWidth +
+                          y * outputWidth + x)
+                    }
+                    x += 1
+                  }
+                  y += 1
+                }
+                t += 1
+              }
+            }
+            else {
+              t = 0
+              while (t < outputDepth) {
+                it = t * dT + kt
+                y = 0
+                while (y < outputHeight) {
+                  iy = y * dH + kh
+                  x = 0
+                  while (x < outputWidth) {
+                    ix = x * dW + kw
+                    inputData(dstOffset + it * inputHeight * inputWidth + iy * inputWidth + ix) +=
+                      fInputData(srcOffset + t * outputHeight * outputWidth + y * outputWidth + x)
+                    x += 1
+                  }
+                  y += 1
+                }
+                t += 1
+              }
+            }
+            kw += 1
+          }
+          kh += 1
+        }
+        kt += 1
+      }
+      nip += 1
+    }
+  }
 }

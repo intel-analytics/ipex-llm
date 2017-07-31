@@ -5,7 +5,7 @@
     <parent>
         <artifactId>spark_bigdl</artifactId>
         <groupId>com.intel.analytics.bigdl</groupId>
-        <version>0.2.0-SNAPSHOT</version>
+        <version>0.3.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -16,6 +16,8 @@
         <scoverage.plugin.version>1.1.1</scoverage.plugin.version>
         <scoverage.scalacPluginVersion>1.1.1</scoverage.scalacPluginVersion>
         <scoverage.aggregate>true</scoverage.aggregate>
+        <runSpecsInParallel>false</runSpecsInParallel>
+        <tagsToExclude>com.intel.analytics.bigdl.tags.Integration</tagsToExclude>
     </properties>
 
     <dependencies>
@@ -37,12 +39,24 @@
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-client</artifactId>
-            <version>2.7.1</version>
+            <scope>${spark-scope}</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-aws</artifactId>
             <scope>${spark-scope}</scope>
             <exclusions>
                 <exclusion>
-                    <groupId>javax.servlet</groupId>
-                    <artifactId>*</artifactId>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-annotations</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -55,7 +69,7 @@
         <dependency>
             <groupId>com.intel.analytics.bigdl.native</groupId>
             <artifactId>${mkl-java-os-version}</artifactId>
-            <version>${project.version}</version>
+            <version>0.3.0-SNAPSHOT</version>
             <exclusions>
                 <!-- We already copy the dynamic lib files of this project to mkl-java, so we
                 need not the dependency, which will break assembly step.
@@ -142,6 +156,7 @@
                     <systemProperties>
                         <bigdl.disableCheckSysEnv>true</bigdl.disableCheckSysEnv>
                     </systemProperties>
+                    <argLine>-Xmx6g -XX:MaxPermSize=1g</argLine>
                 </configuration>
                 <executions>
                     <execution>
@@ -154,10 +169,25 @@
             </plugin>
 
             <plugin>
+                <!--Please don't merge this shade plugin with spark-version's shade plugin to spark/pom.xml,
+                 or shade plugin will be executed after assembly plugin. -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>3.0.0</version>
                 <configuration>
+                    <artifactSet>
+                        <includes>
+                            <include>com.google.protobuf</include>
+                        </includes>
+                    </artifactSet>
+                    <filters>
+                        <filter>
+                            <artifact>com.google.protobuf</artifact>
+                            <excludes>
+                                <exclude>META-INF/maven/com.google.protobuf/protobuf-java/*</exclude>
+                            </excludes>
+                        </filter>
+                    </filters>
                     <relocations>
                         <relocation>
                             <pattern>com.google.protobuf</pattern>
@@ -218,21 +248,6 @@
             </plugin>
 
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>3.0.1</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>jar-no-fork</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
                 <groupId>org.scalastyle</groupId>
                 <artifactId>scalastyle-maven-plugin</artifactId>
                 <version>0.8.0</version>
@@ -274,7 +289,7 @@
             </plugin>
         </plugins>
     </reporting>
-    
+
     <profiles>
         <profile>
             <id>parallel-tests</id>
@@ -292,13 +307,9 @@
             </properties>
         </profile>
         <profile>
-            <id>serial-all</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
+            <id>integration-test</id>
             <properties>
-                <runSpecsInParallel>false</runSpecsInParallel>
-                <tagsToExclude>com.intel.analytics.bigdl.tags.Integration</tagsToExclude>
+                <tagsToExclude>com.intel.analytics.bigdl.tags.Serial,com.intel.analytics.bigdl.tags.Parallel</tagsToExclude>
             </properties>
         </profile>
     </profiles>

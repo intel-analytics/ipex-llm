@@ -20,7 +20,7 @@ import java.util
 
 import com.intel.analytics.bigdl.dataset.text._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Storage, Tensor}
 import com.intel.analytics.bigdl.utils.Engine
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
@@ -46,16 +46,20 @@ class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val input3 = Tensor[Float](2, dictionaryLength).apply1(e => Random.nextFloat())
     val target3 = Tensor(Storage(Array(3.0f, 1.0f, 2.0f)), 1, Array(3))
 
-    val sample1 = new Sample[Float](input1, target1)
-    val sample2 = new Sample[Float](input2, target2)
-    val sample3 = new Sample[Float](input3, target3)
+    val sample1 = Sample[Float](input1, target1)
+    val sample2 = Sample[Float](input2, target2)
+    val sample3 = Sample[Float](input3, target3)
 
     val featurePadding = Tensor[Float](dictionaryLength).fill(100.0f)
+
+    val featurePaddingParam = PaddingParam(Some(Array(featurePadding)))
+    val labelPaddingParam = PaddingParam[Float](Some(Array(Tensor[Float](1).fill(10.0f))))
 
     val trainData =
       Array[Sample[Float]](sample1, sample2, sample3, sample3, sample3, sample3)
     val trainSet = DataSet.array(trainData)
-      .transform(SampleToBatch[Float](batchSize, Some(featurePadding), Some(10.0f)))
+      .transform(SampleToMiniBatch[Float](batchSize,
+        Some(featurePaddingParam), Some(labelPaddingParam)))
 
     val iter = trainSet.toLocal().data(train = false)
 
@@ -77,16 +81,12 @@ class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
       Array(3.0f, 1.0f, 2.0f, 3.0f, 1.0f, 2.0f, 3.0f, 1.0f, 2.0f)), 1, Array(3, 3))
 
     var batch = iter.next()
-    var label = batch.labels
-    var data = batch.data
-    label should be (tensorTarget1)
-    batch.data should be (tensorInput1)
+    batch.getTarget should be (tensorTarget1)
+    batch.getInput should be (tensorInput1)
 
     batch = iter.next()
-    label = batch.labels
-    data = batch.data
-    label should be (tensorTarget2)
-    batch.data should be (tensorInput2)
+    batch.getTarget should be (tensorTarget2)
+    batch.getInput should be (tensorInput2)
   }
 
   "SampleToBatchPadding " should "be good when padding to same length for all batch" in {
@@ -100,16 +100,22 @@ class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val input3 = Tensor[Float](2, dictionaryLength).apply1(e => Random.nextFloat())
     val target3 = Tensor(Storage(Array(3.0f, 1.0f, 4.0f)), 1, Array(3))
 
-    val sample1 = new Sample[Float](input1, target1)
-    val sample2 = new Sample[Float](input2, target2)
-    val sample3 = new Sample[Float](input3, target3)
+    val sample1 = Sample[Float](input1, target1)
+    val sample2 = Sample[Float](input2, target2)
+    val sample3 = Sample[Float](input3, target3)
 
-    val featurePadding = Tensor[Float](dictionaryLength).fill(100.0f)
+    val featurePadding = Tensor[Float](dictionaryLength).fill(100f)
+
+    val featurePaddingParam = PaddingParam(Some(Array(featurePadding)),
+      FixedLength(Array(10)))
+    val labelPaddingParam = PaddingParam[Float](Some(Array(Tensor[Float](1).fill(80f))),
+      FixedLength(Array(10)))
 
     val trainData =
       Array[Sample[Float]](sample1, sample2, sample3, sample3, sample3, sample3)
     val trainSet = DataSet.array(trainData).transform(
-      SampleToBatch[Float](batchSize, Some(featurePadding), Some(80.0f), Some(10)))
+      SampleToMiniBatch[Float](batchSize,
+        Some(featurePaddingParam), Some(labelPaddingParam)))
 
     val iter = trainSet.toLocal().data(train = false)
 
@@ -138,19 +144,19 @@ class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
         3.0f, 1.0f, 4.0f, 80.0f, 80.0f, 80.0f, 80.0f, 80.0f, 80.0f, 80.0f)), 1, Array(3, 10))
 
     var batch = iter.next()
-    var label = batch.labels
-    var data = batch.data
+    var label = batch.getTarget
+    var data = batch.getInput
     label should be (tensorTarget1)
-    batch.data should be (tensorInput1)
+    data should be (tensorInput1)
 
     batch = iter.next()
-    label = batch.labels
-    data = batch.data
+    label = batch.getTarget
+    data = batch.getInput
     label should be (tensorTarget2)
-    batch.data should be (tensorInput2)
+    data should be (tensorInput2)
   }
 
-  "SampleToBatchPadding " should "be same to SampleToBatch when no padding" in {
+  "SampleToBatchPadding " should "be same to SampleToMiniBatch when no padding" in {
     val batchSize = 3
     val totalCount = 100
     val trainData = new Array[Sample[Float]](totalCount)
@@ -158,11 +164,11 @@ class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
     while (i < totalCount) {
       val input = Tensor[Float](3, 224, 224).apply1(e => Random.nextFloat())
       val label = Tensor[Float](2, 2).apply1(e => Random.nextFloat())
-      trainData(i) = new Sample[Float](input, label)
+      trainData(i) = Sample[Float](input, label)
       i += 1
     }
     val trainSet1 = DataSet.array(trainData)
-      .transform(SampleToBatch[Float](batchSize))
+      .transform(SampleToMiniBatch[Float](batchSize))
     val trainSet2 = DataSet.array(trainData)
       .transform(SampleToBatchNoPadding(batchSize))
 
@@ -172,14 +178,17 @@ class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
     while (data1.hasNext && data2.hasNext) {
       val batch1 = data1.next()
       val batch2 = data2.next()
-      batch1.data should be (batch2.data)
-      batch1.labels should be (batch2.labels)
+      if (batch1.getInput() != batch2.getInput()) {
+        println
+      }
+      batch1.getInput should be (batch2.getInput)
+      batch1.getTarget should be (batch2.getTarget)
     }
     data1.hasNext should be (false)
     data2.hasNext should be (false)
   }
 
-  "SampleToBatchPadding " should "be same to LabeledSentenceToSample and SampleToBatch " +
+  "SampleToBatchPadding " should "be same to LabeledSentenceToSample and SampleToMiniBatch " +
     "when padding" in {
     val batchSize = 3
     val totalCount = 9
@@ -198,10 +207,16 @@ class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val trainMaxLength = 10
     val featurePadding = Tensor[Float](dictionaryLength).fill(0.0f)
     featurePadding(4000) = 1
+
+    val featurePaddingParam = PaddingParam(Some(Array(featurePadding)),
+      FixedLength(Array(trainMaxLength)))
+    val labelPaddingParam = PaddingParam[Float](Some(Array(Tensor[Float](1).fill(3999f))),
+      FixedLength(Array(trainMaxLength)))
+
     val trainSet1 = DataSet.array(trainData)
       .transform(LabeledSentenceToSample(dictionaryLength))
-      .transform(SampleToBatch[Float]
-        (batchSize, Some(featurePadding), Some(3999), Some(trainMaxLength)))
+      .transform(SampleToMiniBatch[Float](batchSize,
+        Some(featurePaddingParam), Some(labelPaddingParam)))
 
     val trainSet2 = DataSet.array(trainData)
       .transform(LabeledSentenceToSample(dictionaryLength,
@@ -214,8 +229,8 @@ class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
     while (data1.hasNext && data2.hasNext) {
       val batch1 = data1.next()
       val batch2 = data2.next()
-      batch1.data should be (batch2.data)
-      batch1.labels should be (batch2.labels)
+      batch1.getInput should be (batch2.getInput)
+      batch1.getTarget should be (batch2.getTarget)
     }
     data1.hasNext should be (false)
     data2.hasNext should be (false)
@@ -233,6 +248,25 @@ class SampleToBatchNoPadding[T: ClassTag]
 (totalBatch: Int)
 (implicit ev: TensorNumeric[T])
   extends Transformer[Sample[T], MiniBatch[T]] {
+
+  private def copyArray(
+        src: Array[T],
+        srcPos: Int,
+        dest: Array[T],
+        destPos: Int,
+        length: Int): Unit = {
+    ev.getType() match {
+      case DoubleType => Array.copy(src
+        .asInstanceOf[Array[Double]],
+        srcPos, dest
+          .asInstanceOf[Array[Double]], destPos, length)
+      case FloatType => System.arraycopy(src
+        .asInstanceOf[Array[Float]],
+        srcPos, dest
+          .asInstanceOf[Array[Float]], destPos, length)
+      case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
+    }
+  }
 
   override def apply(prev: Iterator[Sample[T]]): Iterator[MiniBatch[T]] = {
     new Iterator[MiniBatch[T]] {
@@ -252,7 +286,7 @@ class SampleToBatchNoPadding[T: ClassTag]
           var i = 0
           while (i < batchSize && prev.hasNext) {
             val sample = prev.next()
-            if(!sample.feature().isContiguous() || !sample.label().isContiguous()) {
+            if(!sample.feature.isContiguous() || !sample.label.isContiguous()) {
               throw new IllegalArgumentException(
                 "Only support contiguous tensor, pls use tensor.contiguous() before batching")
             }
@@ -264,8 +298,10 @@ class SampleToBatchNoPadding[T: ClassTag]
               featureData = new Array[T](batchSize * oneFeatureLength)
               labelData = new Array[T](batchSize * oneLabelLength)
             }
-            sample.copyFromLabel(labelData, i*oneLabelLength, oneLabelLength)
-            sample.copyFromFeature(featureData, i*oneFeatureLength, oneFeatureLength)
+            copyArray(sample.feature().storage().array(), sample.feature().storageOffset() - 1,
+              featureData, i * oneFeatureLength, sample.feature().nElement())
+            copyArray(sample.label().storage().array(), sample.label().storageOffset() - 1,
+              labelData, i * oneLabelLength, sample.label().nElement())
             i += 1
           }
           featureSize(0) = i

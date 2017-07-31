@@ -16,10 +16,12 @@
 
 package com.intel.analytics.bigdl.models.vgg
 
+import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 import java.nio.file.{Files, Path, Paths}
 
 import com.intel.analytics.bigdl.dataset.ByteRecord
+import com.intel.analytics.bigdl.utils.File
 import scopt.OptionParser
 
 import scala.collection.mutable.ArrayBuffer
@@ -38,9 +40,8 @@ object Utils {
     batchSize: Int = 112,
     maxEpoch: Int = 90,
     overWriteCheckpoint: Boolean = false,
-    partitionNum: Int = -1,
-    nodeNum: Int = -1,
-    corePerTask: Int = -1
+    learningRate: Double = 0.01,
+    weightDecay: Double = 0.0005
   )
 
   val trainParser = new OptionParser[TrainParams]("BigDL Vgg on Cifar10 Example") {
@@ -65,18 +66,12 @@ object Utils {
     opt[Unit]("overWrite")
       .text("overwrite checkpoint files")
       .action( (_, c) => c.copy(overWriteCheckpoint = true) )
-    opt[Int]("partitionNum")
-      .text("partition number")
-      .action((x, c) => c.copy(partitionNum = x))
-      .required()
-    opt[Int]("nodeNum")
-      .text("node number")
-      .action((x, c) => c.copy(nodeNum = x))
-      .required()
-    opt[Int]("corePerTask")
-      .text("core number per task")
-      .action((x, c) => c.copy(corePerTask = x))
-      .required()
+    opt[Double]("weightDecay")
+      .text("weight decay")
+      .action((x, c) => c.copy(weightDecay = x))
+    opt[Double]('l', "learningRate")
+      .text("inital learning rate")
+      .action((x, c) => c.copy(learningRate = x))
   }
 
   case class TestParams(
@@ -100,11 +95,11 @@ object Utils {
 
   private[bigdl] def loadTrain(dataFile: String): Array[ByteRecord] = {
     val allFiles = Array(
-      Paths.get(dataFile, "data_batch_1.bin"),
-      Paths.get(dataFile, "data_batch_2.bin"),
-      Paths.get(dataFile, "data_batch_3.bin"),
-      Paths.get(dataFile, "data_batch_4.bin"),
-      Paths.get(dataFile, "data_batch_5.bin")
+      dataFile + "/data_batch_1.bin",
+      dataFile + "/data_batch_2.bin",
+      dataFile + "/data_batch_3.bin",
+      dataFile + "/data_batch_4.bin",
+      dataFile + "/data_batch_5.bin"
     )
 
     val result = new ArrayBuffer[ByteRecord]()
@@ -114,19 +109,30 @@ object Utils {
 
   private[bigdl] def loadTest(dataFile: String): Array[ByteRecord] = {
     val result = new ArrayBuffer[ByteRecord]()
-    val testFile = Paths.get(dataFile, "test_batch.bin")
+    val testFile = dataFile + "/test_batch.bin"
     load(testFile, result)
     result.toArray
   }
 
-  private[bigdl] def load(featureFile: Path, result : ArrayBuffer[ByteRecord]): Unit = {
+  /**
+   * load cifar data.
+   * read cifar from hdfs if data folder starts with "hdfs:", otherwise form local file.
+   * @param featureFile
+   * @param result
+   */
+  private[bigdl] def load(featureFile: String, result : ArrayBuffer[ByteRecord]): Unit = {
     val rowNum = 32
     val colNum = 32
     val imageOffset = rowNum * colNum * 3 + 1
     val channelOffset = rowNum * colNum
     val bufferOffset = 8
 
-    val featureBuffer = ByteBuffer.wrap(Files.readAllBytes(featureFile))
+    val featureBuffer = if (featureFile.startsWith(File.hdfsPrefix)) {
+      ByteBuffer.wrap(File.readHdfsByte(featureFile))
+    } else {
+      ByteBuffer.wrap(Files.readAllBytes(Paths.get(featureFile)))
+    }
+
     val featureArray = featureBuffer.array()
     val featureCount = featureArray.length / (rowNum * colNum * 3 + 1)
 

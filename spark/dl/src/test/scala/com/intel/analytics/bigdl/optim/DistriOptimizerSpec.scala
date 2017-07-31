@@ -18,14 +18,12 @@ package com.intel.analytics.bigdl.optim
 
 import java.nio.file.{Files, Paths}
 
-import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch}
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-
-import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T, ExceptionTest}
+import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.visualization.TrainSummary
-
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -169,6 +167,25 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     result2(Array(1)) should be(1.0 +- 5e-2)
   }
 
+  "Train with MSE and SGD" should "be trained with good result after reset model" in {
+    var mm = bn
+    val optimizer = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
+      .setState(T("learningRate" -> 20.0))
+      .setEndWhen(Trigger.maxEpoch(5))
+    optimizer.optimize()
+
+    mm = mse
+    mm.getParameters()._1.fill(0.125)
+    optimizer.setModel(mm)
+    val model = optimizer.optimize()
+
+    val result1 = model.forward(input1).asInstanceOf[Tensor[Double]]
+    result1(Array(1)) should be(0.0 +- 5e-2)
+
+    val result2 = model.forward(input2).asInstanceOf[Tensor[Double]]
+    result2(Array(1)) should be(1.0 +- 5e-2)
+  }
+
   it should "be same compare to ref optimizer" in {
     RandomGenerator.RNG.setSeed(10)
     val optimizer = new DistriOptimizer(
@@ -301,13 +318,15 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     .setEndWhen(Trigger.maxEpoch(1))
     .optimize()
 
-    val state = T.load(optimizer.getCheckpointPath().get + "/state.33")
+    val optimMethod =
+      OptimMethod.load[Double](optimizer.getCheckpointPath().get + "/optimMethod.33")
 
-    state[Int]("epoch") should be (2)
-    state[Int]("neval") should be (33)
+    optimMethod.state.get[Int]("epoch").get should be (2)
+    optimMethod.state.get[Int]("neval").get should be (33)
   }
 
   "TrainSummary with MSE and LBFGS" should "work correctly" in {
+    TestUtils.cancelOnWindows()
     RandomGenerator.RNG.setSeed(10)
     val logdir = com.google.common.io.Files.createTempDir()
     val trainSummary = TrainSummary(logdir.getPath, "lbfgs")
@@ -329,6 +348,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "TrainSummary with MSE and SGD" should "work correctly" in {
+    TestUtils.cancelOnWindows()
     RandomGenerator.RNG.setSeed(10)
     val logdir = com.google.common.io.Files.createTempDir()
     val trainSummary = TrainSummary(logdir.getPath, "sgd")
@@ -350,6 +370,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "TrainSummary with MSE and Adagrad" should "work correctly" in {
+    TestUtils.cancelOnWindows()
     RandomGenerator.RNG.setSeed(10)
     val logdir = com.google.common.io.Files.createTempDir()
     val trainSummary = TrainSummary(logdir.getPath, "adagrad")
@@ -389,6 +410,8 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val result2 = model.forward(input2).asInstanceOf[Tensor[Double]]
     result2(Array(1)) should be(1.0 +- 5e-2)
+
+    ExceptionTest.resetCount()
   }
 
   "Train with MSE and SGD" should "be trained with good result with failures in big interval" in {
@@ -404,6 +427,92 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
       .setState(T("learningRate" -> 20.0))
       .setEndWhen(Trigger.maxEpoch(5))
       .setCheckpoint(filePath, Trigger.everyEpoch)
+    val model = optimizer.optimize()
+
+    val result1 = model.forward(input1).asInstanceOf[Tensor[Double]]
+    result1(Array(1)) should be(0.0 +- 5e-2)
+
+    val result2 = model.forward(input2).asInstanceOf[Tensor[Double]]
+    result2(Array(1)) should be(1.0 +- 5e-2)
+
+    ExceptionTest.resetCount()
+  }
+
+  "Train with MSE and SGD" should "throw exception after retry times exceed settings" in {
+    val filePath = java.io.File.createTempFile("OptimizerSpec", "model").getAbsolutePath
+    Files.delete(Paths.get(filePath))
+    Files.createDirectory(Paths.get(filePath))
+    val failCountNumberList = Array(800, 850, 900)
+    System.setProperty("bigdl.failure.retryTimes", "3")
+    val mm = mserf(failCountNumberList)
+    mm.getParameters()._1.fill(0.125)
+    val optimizer = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
+      .setState(T("learningRate" -> 20.0))
+      .setEndWhen(Trigger.maxEpoch(5))
+
+    intercept[Exception] {
+      optimizer.optimize()
+    }
+    ExceptionTest.resetCount()
+
+    optimizer.setCheckpoint(filePath, Trigger.everyEpoch)
+    intercept[Exception] {
+      optimizer.optimize()
+    }
+    ExceptionTest.resetCount()
+  }
+
+  "Train with Plateau" should "work properly" in {
+    LoggerFilter.redirectSparkInfoLogs()
+    Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+    Logger.getLogger("com.intel.analytics.bigdl").setLevel(Level.INFO)
+
+    RandomGenerator.RNG.setSeed(10)
+    val logdir = com.google.common.io.Files.createTempDir()
+    val mm = mse
+    mm.getParameters()._1.fill(0.125)
+    val optimizer = new DistriOptimizer[Double](
+      _model = mm,
+      dataset = dataSet,
+      criterion = new MSECriterion[Double]()
+    )
+
+    val optimMethod = new SGD[Double](learningRate = 20.0, learningRateSchedule =
+      SGD.Plateau("Loss", epsilon = 0, patience = 1, mode = "min"))
+
+    optimizer.setOptimMethod(optimMethod)
+      .setEndWhen(Trigger.maxEpoch(10))
+    val model = optimizer.optimize()
+
+    val result1 = model.forward(input1).asInstanceOf[Tensor[Double]]
+    result1(Array(1)) should be(0.0 +- 5e-2)
+
+    val result2 = model.forward(input2).asInstanceOf[Tensor[Double]]
+    result2(Array(1)) should be(1.0 +- 5e-2)
+  }
+
+  "Train with Plateau Score" should "work properly" in {
+    LoggerFilter.redirectSparkInfoLogs()
+    Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+    Logger.getLogger("com.intel.analytics.bigdl").setLevel(Level.INFO)
+
+    RandomGenerator.RNG.setSeed(10)
+    val logdir = com.google.common.io.Files.createTempDir()
+    val mm = mse
+    mm.getParameters()._1.fill(0.125)
+    val optimizer = new DistriOptimizer[Double](
+      _model = mm,
+      dataset = dataSet,
+      criterion = new MSECriterion[Double]()
+    )
+
+    val optimMethod = new SGD[Double](learningRate = 20.0, learningRateSchedule =
+      SGD.Plateau("score", epsilon = 0, patience = 1, mode = "max"))
+
+    optimizer.setOptimMethod(optimMethod)
+      .setEndWhen(Trigger.maxEpoch(10))
+    optimizer.setValidation(Trigger.everyEpoch, dataSet,
+      Array(new Top1Accuracy[Double]()))
     val model = optimizer.optimize()
 
     val result1 = model.forward(input1).asInstanceOf[Tensor[Double]]

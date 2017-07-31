@@ -192,7 +192,7 @@ class RandomGenerator private[bigdl]() {
   /**
    * Generates a random number on [0,0xffffffff]-interval
    */
-  private def random(): Long = {
+  private[bigdl] def random(): Long = {
     var y: Long = 0
 
     this.left = this.left - 1

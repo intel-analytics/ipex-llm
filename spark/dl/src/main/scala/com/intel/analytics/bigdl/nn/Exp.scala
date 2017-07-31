@@ -37,10 +37,6 @@ class Exp[@specialized(Float, Double) T: ClassTag] (implicit ev: TensorNumeric[T
       .resizeAs(gradOutput)
       .cmul(output, gradOutput)
   }
-
-  override def toString(): String = {
-    s"nn.Exp"
-  }
 }
 
 object Exp {

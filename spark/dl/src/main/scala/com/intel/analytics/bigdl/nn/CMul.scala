@@ -16,7 +16,8 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
+import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
@@ -38,8 +39,9 @@ import scala.reflect.ClassTag
  */
 @SerialVersionUID(8888147326550637025L)
 class CMul[@specialized(Float, Double) T: ClassTag](
-  val size: Array[Int])(
-  implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+  val size: Array[Int],
+  var wRegularizer: Regularizer[T] = null)(
+  implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
   val weight: Tensor[T] = Tensor[T](size)
   val gradWeight : Tensor[T] = Tensor[T](size)
@@ -47,11 +49,14 @@ class CMul[@specialized(Float, Double) T: ClassTag](
   private val _sum = Tensor[T]()
   private val _repeat = Tensor[T]()
 
-  reset()
+  {
+    val stdv = 1 / math.sqrt(weight.nElement())
+    val wInit: InitializationMethod = RandomUniform(-stdv, stdv)
+    setInitMethod(weightInitMethod = wInit)
+  }
 
   override def reset(): Unit = {
-    val stdv = 1.0/math.sqrt(weight.nElement())
-    weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
+    weightInitMethod.init(weight, VariableFormat.ONE_D)
     zeroGradParameters()
   }
 
@@ -79,12 +84,13 @@ class CMul[@specialized(Float, Double) T: ClassTag](
   private def mulOneDimWeight(dim: Int, expand: Tensor[T], output: Tensor[T]): Unit = {
     val (innerNum, outerNum) = Utils.getInnerOuterNum(dim, output)
     val weightData = expand.storage().array()
+    val weightOffset = expand.storageOffset() - 1
     var outer = 0
     var offset = output.storageOffset() - 1
     while (outer < outerNum) {
       var k = 0
       while (k < expand.nElement()) {
-        ev.scal(innerNum, weightData(k), output.storage().array(), offset, 1)
+        ev.scal(innerNum, weightData(k + weightOffset), output.storage().array(), offset, 1)
         offset += innerNum
         k += 1
       }
@@ -115,11 +121,13 @@ class CMul[@specialized(Float, Double) T: ClassTag](
     gradInput
   }
 
-  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
-    scale: Double = 1.0): Unit = {
+  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
+    if (scaleW == 0) {
+      return
+    }
 
     if (weight.nElement() == gradOutput.nElement()) {
-      gradWeight.addcmul(ev.fromType[Double](scale), input, gradOutput)
+      gradWeight.addcmul(ev.fromType[Double](scaleW), input, gradOutput)
     } else {
       if (weight.dim() == input.dim()) {
         _repeat.resizeAs(input).cmul(input, gradOutput)
@@ -134,13 +142,16 @@ class CMul[@specialized(Float, Double) T: ClassTag](
           }
           i += 1
         }
-        gradWeight.add(ev.fromType[Double](scale), sumFrom)
+        gradWeight.add(ev.fromType[Double](scaleW), sumFrom)
       } else {
         _repeat.resizeAs(input).cmul(input, gradOutput)
         _sum.sum(_repeat, 1)
-        gradWeight.add(ev.fromType[Double](scale), _sum)
+        gradWeight.add(ev.fromType[Double](scaleW), _sum)
       }
 
+    }
+    if (null != wRegularizer && scaleW != 0) {
+      wRegularizer.accRegularization(weight, gradWeight, scaleW)
     }
   }
 
@@ -196,13 +207,14 @@ class CMul[@specialized(Float, Double) T: ClassTag](
   }
 
   override def toString(): String = {
-    s"nn.CMul(${java.util.Arrays.toString(size)})"
+    s"${getPrintName}(${java.util.Arrays.toString(size)})"
   }
 }
 
 object CMul {
   def apply[@specialized(Float, Double) T: ClassTag](
-      size: Array[Int])(implicit ev: TensorNumeric[T]) : CMul[T] = {
-    new CMul[T](size)
+      size: Array[Int], wRegularizer: Regularizer[T] = null)
+    (implicit ev: TensorNumeric[T]) : CMul[T] = {
+    new CMul[T](size, wRegularizer)
   }
 }

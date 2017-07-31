@@ -22,19 +22,13 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class SpatialConvolutionSpec extends FlatSpec with BeforeAndAfter with Matchers {
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
-
-  "A SpatialConvolution" should "generate correct output" in {
+class SpatialConvolutionSpec extends TorchSpec {
+    "A SpatialConvolution" should "generate correct output" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -70,13 +64,15 @@ class SpatialConvolutionSpec extends FlatSpec with BeforeAndAfter with Matchers 
     val weight = layer.weight
     val bias = layer.bias
 
-    weight should be equals luaWeight
-    bias should be equals luaBias
-    output should be equals luaOutput
+    // weight's size is different from torch's weight, as we support ngroup.
+    weight shouldEqual luaWeight.resizeAs(weight)
+    bias shouldEqual luaBias.resizeAs(bias)
+    output shouldEqual luaOutput
   }
 
 
   "A SpatialConvolution(64,192,5,5,1,1,2,2)" should "generate correct output" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -118,13 +114,15 @@ class SpatialConvolutionSpec extends FlatSpec with BeforeAndAfter with Matchers 
     val weight = layer.weight
     val bias = layer.bias
 
-    weight should be equals luaWeight
-    bias should be equals luaBias
-    output should be equals luaOutput
+    // weight's size is different from torch's weight, as we support ngroup.
+    weight shouldEqual luaWeight.resizeAs(weight)
+    bias shouldEqual luaBias.resizeAs(bias)
+    output shouldEqual luaOutput
 
   }
 
   "A SpatialConvolution" should "be good in gradient check for input" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
     val layer = new SpatialConvolution[Double](3, 6, 5, 5, 1, 1, 0, 0)
@@ -135,6 +133,7 @@ class SpatialConvolutionSpec extends FlatSpec with BeforeAndAfter with Matchers 
   }
 
   "A SpatialConvolution" should "be good in gradient check for weight" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
     val layer = new SpatialConvolution[Double](3, 6, 5, 5, 1, 1, 0, 0)
@@ -142,5 +141,38 @@ class SpatialConvolutionSpec extends FlatSpec with BeforeAndAfter with Matchers 
 
     val checker = new GradientChecker(1e-4)
     checker.checkWeight(layer, input, 1e-3) should be(true)
+  }
+
+  "A SpatialConvolution without bias" should "generate correct output" in {
+    torchCheck()
+    val seed = 100
+    RNG.setSeed(seed)
+
+    val nInputPlane = 3
+    val nOutputPlane = 64
+    val kW = 11
+    val kH = 11
+    val dW = 4
+    val dH = 4
+    val padW = 2
+    val padH = 2
+    val layer = new SpatialConvolution[Double](nInputPlane, nOutputPlane, kW, kH, dW, dH,
+      padW, padH, withBias = false)
+
+    Random.setSeed(seed)
+    val input = Tensor[Double](16, 3, 224, 224).apply1(e => Random.nextDouble())
+    val output = layer.updateOutput(input)
+
+    val code = "torch.manualSeed(" + seed + ")\n" +
+      "layer = nn.SpatialConvolutionMM(3, 64, 11, 11, 4, 4, 2, 2)\n" +
+      "layer:noBias()\n" +
+      "weight = layer.weight\n" +
+      "output = layer:forward(input) "
+
+    val (luaTime, torchResult) = TH.run(code, Map("input" -> input),
+      Array("weight", "bias", "output"))
+    val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
+
+    require(output.equals(luaOutput) == true)
   }
 }

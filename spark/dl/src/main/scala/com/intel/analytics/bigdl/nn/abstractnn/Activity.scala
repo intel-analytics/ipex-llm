@@ -33,6 +33,10 @@ trait Activity {
   def toTensor[D](implicit ev: TensorNumeric[D]): Tensor[D]
 
   def toTable: Table
+
+  def isTensor: Boolean
+
+  def isTable: Boolean
 }
 
 object Activity {

@@ -18,11 +18,18 @@ package com.intel.analytics.bigdl.utils
 
 import org.apache.log4j._
 import java.nio.file.{Paths, Files}
-import scala.collection.JavaConverters._
+
+ // scalastyle:off
+ // | Property Name                           | Default            | Meaning                                      |
+ // |-----------------------------------------+--------------------+----------------------------------------------|
+ // | bigdl.utils.LoggerFilter.disable        | false              | Disable redirecting logs of Spark and BigDL. |
+ // |                                         |                    | Output location depends on log4j.properties  |
+ // | bigdl.utils.LoggerFilter.logFile        | user.dir/bigdl.log | The log file user defined.                   |
+ // | bigdl.utils.LoggerFilter.enableSparkLog | true               | Enable redirecting logs of Spark to logFile  |
+ // scalastyle:on
 
 /**
  * logger filter, which will filter the log of Spark(org, breeze, akka) to file.
- * it could be set by user through `-Dbigdl.utils.LoggerFilter.logFile`
  */
 object LoggerFilter {
 
@@ -74,20 +81,20 @@ object LoggerFilter {
   }
 
   /**
-   * 1. redirect all logs of Spark to file, which can be set by `-Dbigdl.utils.LoggerFilter.logFile`
-   * the default file is under current workspace named `bigdl.log`.
+   * 1. redirect all spark log to file, which can be set by `-Dbigdl.utils.LoggerFilter.logFile`
+   *    the default file is under current workspace named `bigdl.log`.
    * 2. `-Dbigdl.utils.LoggerFilter.disable=true` will disable redirection.
-   * and add an console appender for `com.intel.analytics.bigdl.optim`, because we set the threshold
-   * to ERROR first.
+   * 3. `-Dbigdl.utils.LoggerFilter.enableSparkLog=false` will not output spark log to file
    */
   def redirectSparkInfoLogs(): Unit = {
     val disable = System.getProperty("bigdl.utils.LoggerFilter.disable", "false")
-    if (disable.equalsIgnoreCase("false")) {
-      val optimClass = "com.intel.analytics.bigdl.optim"
+    val enableSparkLog = System.getProperty("bigdl.utils.LoggerFilter.enableSparkLog", "true")
+
+    def getLogFile: String = {
       val default = Paths.get(System.getProperty("user.dir"), "bigdl.log").toString
       val logFile = System.getProperty("bigdl.utils.LoggerFilter.logFile", default)
 
-      // If file doesn't exist, create a new one. If it's a directory, throw an error.
+      // If the file doesn't exist, create a new one. If it's a directory, throw an error.
       val logFilePath = Paths.get(logFile)
       if (!Files.exists(logFilePath)) {
         Files.createFile(logFilePath)
@@ -96,17 +103,30 @@ object LoggerFilter {
           .error(s"$logFile exists and is an directory. Can't redirect to it.")
       }
 
+      logFile
+    }
+
+    if (disable.equalsIgnoreCase("false")) {
+      val logFile = getLogFile
+
       val defaultClasses = List("org", "akka", "breeze")
 
       for (clz <- defaultClasses) {
         classLogToAppender(clz, consoleAppender(Level.ERROR))
         Logger.getLogger(clz).setAdditivity(false)
       }
-
+      // it should be set to WARN for the progress bar
       Logger.getLogger("org.apache.spark.SparkContext").setLevel(Level.WARN)
 
-      for (clz <- optimClass :: defaultClasses) {
-        classLogToAppender(clz, fileAppender(logFile, Level.INFO))
+      // set all logs to file
+      Logger.getRootLogger.addAppender(fileAppender(logFile, Level.INFO))
+
+      // because we have set all defaultClasses loggers additivity to false
+      // so we should reconfigure them.
+      if (enableSparkLog.equalsIgnoreCase("true")) {
+        for (clz <- defaultClasses) {
+          classLogToAppender(clz, fileAppender(logFile, Level.INFO))
+        }
       }
     }
   }

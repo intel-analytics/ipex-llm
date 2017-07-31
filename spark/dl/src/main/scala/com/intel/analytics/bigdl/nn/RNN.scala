@@ -16,7 +16,9 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
@@ -34,88 +36,47 @@ import scala.reflect.ClassTag
  * @param inputSize input size
  * @param hiddenSize hidden layer size
  * @param activation activation function f for non-linearity
- * @param initMethod initialization method for rnn parameters
+ * @param wRegularizer: instance of [[Regularizer]]
+ *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
+ * @param uRegularizer: instance [[Regularizer]]
+            (eg. L1 or L2 regularization), applied to the recurrent weights matrices.
+ * @param bRegularizer: instance of [[Regularizer]](../regularizers.md),
+            applied to the bias.
  */
 class RnnCell[T : ClassTag] (
   inputSize: Int = 4,
   hiddenSize: Int = 3,
   activation: TensorModule[T],
-  private var initMethod: InitializationMethod = Default)
+  var wRegularizer: Regularizer[T] = null,
+  var uRegularizer: Regularizer[T] = null,
+  var bRegularizer: Regularizer[T] = null)
   (implicit ev: TensorNumeric[T])
   extends Cell[T](Array(hiddenSize)) {
 
   val parallelTable = ParallelTable[T]()
-  val i2h = Linear[T](inputSize, hiddenSize)
-  val h2h = Linear[T](hiddenSize, hiddenSize)
+  val i2h = Identity[T]()
+  val h2h = Linear[T](hiddenSize, hiddenSize,
+    wRegularizer = uRegularizer)
   parallelTable.add(i2h)
   parallelTable.add(h2h)
-  val cAddTable = CAddTable[T]()
+  val cAddTable = CAddTable[T](false)
 
-  val rnn = Sequential[T]()
+  override def preTopology: AbstractModule[Activity, Activity, T] =
+    TimeDistributed[T](
+      Linear[T](inputSize,
+        hiddenSize,
+        wRegularizer = wRegularizer,
+        bRegularizer = bRegularizer))
+    .asInstanceOf[AbstractModule[Activity, Activity, T]]
+
+  override var cell: AbstractModule[Activity, Activity, T] =
+    Sequential[T]()
     .add(parallelTable)
     .add(cAddTable)
     .add(activation)
     .add(ConcatTable()
       .add(Identity[T]())
       .add(Identity[T]()))
-
-  def setInitMethod(initMethod: InitializationMethod): this.type = {
-    this.initMethod = initMethod
-    this
-  }
-
-  override def reset(): Unit = {
-    initMethod match {
-      case Default =>
-        parallelTable.modules.foreach( m => {
-          val inputSize = m.asInstanceOf[Linear[T]].weight.size(1).toFloat
-          val outputSize = m.asInstanceOf[Linear[T]].weight.size(2).toFloat
-          val stdv = 6.0 / (inputSize + outputSize)
-          m.asInstanceOf[Linear[T]].weight.apply1( _ =>
-            ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
-          m.asInstanceOf[Linear[T]].bias.apply1( _ => ev.fromType[Double](0.0))
-        })
-      case _ =>
-        throw new IllegalArgumentException(s"Unsupported initMethod type ${initMethod}")
-    }
-    zeroGradParameters()
-  }
-
-  override def updateOutput(input: Table): Table = {
-    output = rnn.updateOutput(input).toTable
-    output
-  }
-
-  override def updateGradInput(input: Table, gradOutput: Table): Table = {
-    gradInput = rnn.updateGradInput(input, gradOutput).toTable
-    gradInput
-  }
-
-  override def accGradParameters(input: Table, gradOutput: Table,
-                                 scale: Double = 1.0): Unit = {
-    rnn.accGradParameters(input, gradOutput, scale)
-  }
-
-  override def updateParameters(learningRate: T): Unit = {
-    rnn.updateParameters(learningRate)
-  }
-
-  override def zeroGradParameters(): Unit = {
-    rnn.zeroGradParameters()
-  }
-
-  override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
-    rnn.parameters()
-  }
-
-  override def getParametersTable(): Table = {
-    rnn.getParametersTable()
-  }
-
-  override def toString(): String = {
-    val str = "nn.RnnCell"
-    str
-  }
 
   /**
    * Clear cached activities to save storage space or network bandwidth. Note that we use
@@ -128,7 +89,7 @@ class RnnCell[T : ClassTag] (
    */
   override def clearState(): RnnCell.this.type = {
     super.clearState()
-    rnn.clearState()
+    cell.clearState()
     this
   }
 
@@ -142,12 +103,12 @@ class RnnCell[T : ClassTag] (
         i2h == that.i2h &&
         h2h == that.h2h &&
         cAddTable == that.cAddTable &&
-        rnn == that.rnn
+        cell == that.cell
     case _ => false
   }
 
   override def hashCode(): Int = {
-    val state = Seq(super.hashCode(), parallelTable, i2h, h2h, cAddTable, rnn)
+    val state = Seq(super.hashCode(), parallelTable, i2h, h2h, cAddTable, cell)
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
@@ -156,8 +117,11 @@ object RnnCell {
   def apply[@specialized(Float, Double) T: ClassTag](
     inputSize: Int = 4,
     hiddenSize: Int = 3,
-    activation: TensorModule[T])
+    activation: TensorModule[T],
+    wRegularizer: Regularizer[T] = null,
+    uRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null)
    (implicit ev: TensorNumeric[T]) : RnnCell[T] = {
-    new RnnCell[T](inputSize, hiddenSize, activation)
+    new RnnCell[T](inputSize, hiddenSize, activation, wRegularizer, uRegularizer, bRegularizer)
   }
 }

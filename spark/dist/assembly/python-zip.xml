@@ -1,0 +1,28 @@
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
+    <id>python-api</id>
+    <formats>
+        <format>zip</format>
+    </formats>
+    <includeBaseDirectory>false</includeBaseDirectory>
+    <fileSets>
+        <fileSet>
+            <includes>
+                <include>**/*.py</include>
+            </includes>
+            <excludes>
+                <exclude>test/**</exclude>
+            </excludes>
+            <outputDirectory>/..</outputDirectory>
+            <directory>${project.build.directory}/../../../pyspark</directory>
+        </fileSet>
+        <fileSet>
+            <includes>
+                <include>**/spark-bigdl.conf</include>
+            </includes>
+            <outputDirectory>/</outputDirectory>
+            <directory>${project.build.directory}/../../../spark/dl/src/main/resources</directory>
+        </fileSet>
+    </fileSets>
+</assembly>

@@ -19,19 +19,13 @@ package com.intel.analytics.bigdl.torch
 import com.intel.analytics.bigdl.nn.{Sequential, SpatialContrastiveNormalization}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class SpatialContrastiveNormalizationSpec extends FlatSpec with BeforeAndAfter with Matchers {
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
-
-  "A SpatialContrastiveNormalization 3D input" should "generate correct output and grad" in {
+class SpatialContrastiveNormalizationSpec extends TorchSpec {
+    "A SpatialContrastiveNormalization 3D input" should "generate correct output and grad" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -69,6 +63,7 @@ class SpatialContrastiveNormalizationSpec extends FlatSpec with BeforeAndAfter w
   }
 
   "A SpatialContrastiveNormalization" should "generate correct output and grad" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -106,6 +101,7 @@ class SpatialContrastiveNormalizationSpec extends FlatSpec with BeforeAndAfter w
   }
 
   "A SpatialContrastiveNormalization(4)" should "generate correct output and grad" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -143,6 +139,7 @@ class SpatialContrastiveNormalizationSpec extends FlatSpec with BeforeAndAfter w
   }
 
   "A SpatialContrastiveNormalization(4, kernel)" should "generate correct output and grad" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -179,6 +176,7 @@ class SpatialContrastiveNormalizationSpec extends FlatSpec with BeforeAndAfter w
 
   "SpatialContrastiveNormalization(4, kernel) with 3D input" should
     "generate correct output and grad" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -215,6 +213,7 @@ class SpatialContrastiveNormalizationSpec extends FlatSpec with BeforeAndAfter w
 
   "A SpatialContrastiveNormalization(1, gaussian) whit 3D input" should
     "generate correct output and grad" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 

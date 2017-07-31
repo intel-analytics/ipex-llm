@@ -16,7 +16,8 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
+import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
@@ -38,17 +39,21 @@ import scala.reflect.ClassTag
  */
 @SerialVersionUID(3917196591309935383L)
 class CAdd[@specialized(Float, Double) T: ClassTag](
-  val size: Array[Int])(
-  implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+  val size: Array[Int],
+  var bRegularizer: Regularizer[T] = null)(
+  implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
   val bias: Tensor[T] = Tensor[T](size)
   val gradBias : Tensor[T] = Tensor[T](size)
 
-  reset()
+  {
+    val stdv = 1.0/math.sqrt(bias.nElement())
+    val bInit: InitializationMethod = RandomUniform(-stdv, stdv)
+    setInitMethod(biasInitMethod = bInit)
+  }
 
   override def reset(): Unit = {
-    val stdv = 1.0/math.sqrt(bias.nElement())
-    bias.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
+    biasInitMethod.init(bias, VariableFormat.ONE_D)
     zeroGradParameters()
   }
 
@@ -76,13 +81,14 @@ class CAdd[@specialized(Float, Double) T: ClassTag](
   private def addOneDimBias(pivotDim: Int, expand: Tensor[T], output: Tensor[T]): Unit = {
     val (innerNum, outerNum) = Utils.getInnerOuterNum(pivotDim, output)
     val biasData = expand.storage().array()
+    val biasOffset = expand.storageOffset() - 1
     var outer = 0
     var offset = output.storageOffset() - 1
     var k = 0
     while (outer < outerNum) {
       k = 0
       while (k < expand.nElement()) {
-        ev.add(innerNum, output.storage().array(), offset, biasData(k), 1)
+        ev.add(innerNum, output.storage().array(), offset, biasData(k + biasOffset), 1)
         offset += innerNum
         k += 1
       }
@@ -95,10 +101,12 @@ class CAdd[@specialized(Float, Double) T: ClassTag](
     gradInput
   }
 
-  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
-    scale: Double = 1.0): Unit = {
+  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
+    if (scaleB == 0) {
+      return
+    }
     if (bias.nElement() == gradOutput.nElement()) {
-      gradBias.add(ev.fromType[Double](scale), gradOutput)
+      gradBias.add(ev.fromType[Double](scaleB), gradOutput)
     } else {
       val expand = if (bias.dim() == gradOutput.dim()) {
         gradBias.view(gradBias.size())
@@ -117,7 +125,7 @@ class CAdd[@specialized(Float, Double) T: ClassTag](
           k = 0
           while (k < expand.nElement()) {
             biasData(k) = ev.plus(ev.times(ev.sum(innerNum, gradOutputData, offset, 1),
-              ev.fromType[Double](scale)), biasData(k))
+              ev.fromType[Double](scaleB)), biasData(k))
             offset += innerNum
             k += 1
           }
@@ -125,8 +133,11 @@ class CAdd[@specialized(Float, Double) T: ClassTag](
         }
       } else {
         expand.expandAs(gradOutput)
-        expand.add(ev.fromType[Double](scale), gradOutput)
+        expand.add(ev.fromType[Double](scaleB), gradOutput)
       }
+    }
+    if (null != bRegularizer) {
+      bRegularizer.accRegularization(bias, gradBias, scaleB)
     }
   }
 
@@ -175,14 +186,15 @@ class CAdd[@specialized(Float, Double) T: ClassTag](
   }
 
   override def toString(): String = {
-    s"nn.CAdd(${java.util.Arrays.toString(size)})"
+    s"${getPrintName}(${java.util.Arrays.toString(size)})"
   }
 }
 
 object CAdd {
   def apply[@specialized(Float, Double) T: ClassTag](
-    size: Array[Int]
+    size: Array[Int],
+    bRegularizer: Regularizer[T] = null
   )(implicit ev: TensorNumeric[T]) : CAdd[T] = {
-    new CAdd[T](size)
+    new CAdd[T](size, bRegularizer)
   }
 }

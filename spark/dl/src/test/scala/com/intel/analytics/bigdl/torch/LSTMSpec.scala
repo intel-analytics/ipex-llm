@@ -20,17 +20,16 @@ import java.io.PrintWriter
 
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.numeric.NumericDouble
-import com.intel.analytics.bigdl.optim.SGD
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.optim.{L2Regularizer, SGD}
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.T
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.sys.process._
 
 @com.intel.analytics.bigdl.tags.Serial
-class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
-  before {
+class LSTMSpec  extends TorchSpec {
+  override def torchCheck(): Unit = {
     if (!TH.hasTorch()) {
       cancel("Torch is not installed")
     }
@@ -46,7 +45,105 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     }
   }
 
+  "A LSTM dropout " should "works correctly" in {
+    val inputSize = 6
+    val hiddenSize = 5
+    val batchSize = 2
+    val time = 2
+    RNG.setSeed(100)
+    val input = Tensor[Float](batchSize, time, inputSize)
+    println(s"input = ${input}")
+    val model = Recurrent[Float]().add(LSTM[Float](inputSize, hiddenSize, p = 0.1))
+    val output = model.forward(input)
+    println(s"output = ${output}")
+  }
+
+  "A LSTM L2 regularizer" should "works correctly" in {
+    import com.intel.analytics.bigdl.numeric.NumericDouble
+    val hiddenSize = 4
+    val inputSize = 6
+    val outputSize = 5
+    val seqLength = 5
+    val seed = 100
+
+    RNG.setSeed(seed)
+    val input = Tensor[Double](Array(1, seqLength, inputSize))
+    val labels = Tensor[Double](Array(1, seqLength))
+    for (i <- 1 to seqLength) {
+      val rdmLabel = Math.ceil(RNG.uniform(0, 1) * outputSize).toInt
+      val rdmInput = Math.ceil(RNG.uniform(0, 1) * inputSize).toInt
+      input.setValue(1, i, rdmInput, 1.0)
+      labels.setValue(1, i, rdmLabel)
+    }
+
+    println(input)
+    val rec1 = Recurrent[Double]()
+    val rec2 = Recurrent[Double]()
+
+    val model1 = Sequential[Double]()
+      .add(rec1
+        .add(LSTM[Double](inputSize, hiddenSize)))
+      .add(TimeDistributed[Double](Linear[Double](hiddenSize, outputSize)))
+
+    val model2 = Sequential[Double]()
+      .add(rec2
+        .add(LSTM[Double](inputSize, hiddenSize, uRegularizer = L2Regularizer(0.1),
+          wRegularizer = L2Regularizer(0.1), bRegularizer = L2Regularizer(0.1))))
+      .add(TimeDistributed[Double](Linear[Double](hiddenSize, outputSize,
+        wRegularizer = L2Regularizer(0.1), bRegularizer = L2Regularizer(0.1))))
+
+    val criterion = TimeDistributedCriterion[Double](
+      CrossEntropyCriterion[Double](), false)
+    val state1 = T("learningRate" -> 0.1, "learningRateDecay" -> 5e-7,
+      "weightDecay" -> 0.1, "momentum" -> 0.002)
+    val state2 = T("learningRate" -> 0.1, "learningRateDecay" -> 5e-7,
+      "weightDecay" -> 0.0, "momentum" -> 0.002)
+
+    val (weights1, grad1) = model1.getParameters()
+    val (weights2, grad2) = model2.getParameters()
+    weights2.copy(weights1.clone())
+    grad2.copy(grad1.clone())
+
+
+    val sgd = new SGD[Double]
+
+    def feval1(x: Tensor[Double]): (Double, Tensor[Double]) = {
+      val output = model1.forward(input).toTensor[Double]
+      val _loss = criterion.forward(output, labels)
+      model1.zeroGradParameters()
+      val gradInput = criterion.backward(output, labels)
+      model1.backward(input, gradInput)
+      (_loss, grad1)
+    }
+
+    def feval2(x: Tensor[Double]): (Double, Tensor[Double]) = {
+      val output = model2.forward(input).toTensor[Double]
+      val _loss = criterion.forward(output, labels)
+      model2.zeroGradParameters()
+      val gradInput = criterion.backward(output, labels)
+      model2.backward(input, gradInput)
+      (_loss, grad2)
+    }
+
+    var loss1: Array[Double] = null
+    for (i <- 1 to 100) {
+      loss1 = sgd.optimize(feval1, weights1, state1)._2
+      println(s"${i}-th loss = ${loss1(0)}")
+    }
+
+    var loss2: Array[Double] = null
+    for (i <- 1 to 100) {
+      loss2 = sgd.optimize(feval2, weights2, state2)._2
+      println(s"${i}-th loss = ${loss2(0)}")
+    }
+
+
+    weights1 should be(weights2)
+    loss1 should be(loss2)
+  }
+
   "A LSTM " should "has same loss as torch rnn" in {
+    torchCheck()
 
     val hiddenSize = 4
     val inputSize = 6
@@ -66,7 +163,7 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     }
 
 //    println(input)
-    val rec = Recurrent[Double](hiddenSize)
+    val rec = Recurrent[Double]()
 
     val model = Sequential[Double]()
       .add(rec
@@ -214,6 +311,7 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
 
 
   "A LSTM " should "has same loss as torch rnn in batch mode" in {
+    torchCheck()
 
     val hiddenSize = 4
     val inputSize = 6
@@ -235,7 +333,7 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
         labels.setValue(b, i, rdmLabel)
       }
     }
-    val rec = Recurrent[Double](hiddenSize)
+    val rec = Recurrent[Double]()
 
     val model = Sequential[Double]()
       .add(rec
@@ -368,6 +466,7 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A LSTM " should "converge" in {
+    torchCheck()
 
     val hiddenSize = 4
     val inputSize = 6
@@ -387,7 +486,7 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
 
     println(input)
     RNG.setSeed(seed)
-    val rec = Recurrent[Double](hiddenSize)
+    val rec = Recurrent[Double]()
 
     val model = Sequential[Double]()
       .add(rec
@@ -429,6 +528,7 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A LSTM " should "converge in batch mode" in {
+    torchCheck()
 
     val hiddenSize = 4
     val inputSize = 6
@@ -451,7 +551,7 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     }
 
     println(input)
-    val rec = Recurrent[Double](hiddenSize)
+    val rec = Recurrent[Double]()
 
     val model = Sequential[Double]()
       .add(rec

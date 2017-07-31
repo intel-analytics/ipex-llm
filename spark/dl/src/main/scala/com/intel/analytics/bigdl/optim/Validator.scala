@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.optim
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.dataset.{DistributedDataSet, LocalDataSet, MiniBatch}
+import org.apache.log4j.Logger
 
 /**
  * [[Validator]] is an abstract class which is used to test a model automatically
@@ -36,9 +37,14 @@ abstract class Validator[T, D](
 ) {
   def test(vMethods: Array[ValidationMethod[T]]): Array[(ValidationResult, ValidationMethod[T])]
 }
-
+@deprecated(
+  "Validator(model, dataset) is deprecated. Please use model.evaluate instead",
+  "0.2.0")
 object Validator {
+  private val logger = Logger.getLogger(getClass)
+
   def apply[T, D](model: Module[T], dataset: DataSet[D]): Validator[T, D] = {
+    logger.warn("Validator(model, dataset) is deprecated. Please use model.evaluate instead")
     dataset match {
       case d: DistributedDataSet[_] =>
         new DistriValidator[T](

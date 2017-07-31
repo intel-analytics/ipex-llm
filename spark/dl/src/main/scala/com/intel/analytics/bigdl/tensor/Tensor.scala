@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.tensor
 import java.io.Serializable
 
 import breeze.linalg.{DenseMatrix => BrzDenseMatrix, DenseVector => BrzDenseVector}
+import com.intel.analytics.bigdl.mkl.MKL
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{File, Table}
@@ -104,12 +105,29 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
   def randn(): Tensor[T]
 
   /**
+   * Fill with random value(normal gaussian distribution with the specified mean
+   * and stdv).
+   * It will change the value of the current tensor and return itself
+   *
+   * @return current tensor
+   */
+  def randn(mean: Double, stdv: Double): Tensor[T]
+
+  /**
    * Fill with random value(uniform distribution).
    * It will change the value of the current tensor and return itself
    *
    * @return current tensor
    */
   def rand(): Tensor[T]
+
+  /**
+   * Fill with random value(uniform distribution between [lowerBound, upperBound])
+   * It will change the value of the current tensor and return itself
+   *
+   * @return current tensor
+   */
+  def rand(lowerBound: Double, upperBound: Double): Tensor[T]
 
   /**
    * Fill with random value(bernoulli distribution).
@@ -613,6 +631,46 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
 
   override def toTable: Table =
     throw new IllegalArgumentException("Tensor cannot be cast to Table")
+
+  /**
+   * Return true because it's a Tensor implemented from [[Activity]]
+   *
+   * @return true
+   */
+  override def isTensor: Boolean = true
+
+
+  /**
+   * Return false because it's not a Table
+   *
+   * @return false
+   */
+  override def isTable: Boolean = false
+
+  /**
+   * Return tensor numeric
+   * @return
+   */
+  def getTensorNumeric(): TensorNumeric[T]
+
+  /**
+   * Compare with other tensor. The shape of the other tensor must be same with this tensor.
+   * If element wise difference is less than delta, return true.
+   * @param other
+   * @param delta
+   * @return
+   */
+  def almostEqual(other: Tensor[T], delta : Double): Boolean = {
+    var result = true
+    this.map(other, (a, b) => {
+      val tn = getTensorNumeric()
+      if (tn.isGreater(tn.abs(tn.minus(a, b)), tn.fromType(delta))) {
+        result = false
+      }
+      a
+    })
+    return result
+  }
 }
 
 /**
@@ -625,6 +683,11 @@ object DoubleType extends TensorDataType
 object FloatType extends TensorDataType
 
 object Tensor {
+
+  // pre-load MKL library. If we do not do it here,
+  // libjmkl.so will be loaded when one of the methods of in MKL is called.
+  MKL.isMKLLoaded
+
   /**
    * Returns an empty tensor.
    *

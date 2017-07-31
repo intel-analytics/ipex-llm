@@ -17,14 +17,14 @@
 package com.intel.analytics.bigdl.models.rnn
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.{DataSet, SampleToBatch}
+import com.intel.analytics.bigdl.dataset.{DataSet, FixedLength, PaddingParam, SampleToMiniBatch}
 import com.intel.analytics.bigdl.dataset.text.LabeledSentenceToSample
 import com.intel.analytics.bigdl.dataset.text._
 import com.intel.analytics.bigdl.dataset.text.utils.SentenceToken
 import com.intel.analytics.bigdl.nn.{CrossEntropyCriterion, Module, TimeDistributedCriterion}
 import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Engine, T}
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.utils.{Engine, T, Table}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
@@ -51,18 +51,17 @@ object Train {
         param.sentFile,
         param.tokenFile)
 
-      val dictionary = Dictionary(tokens.toDistributed().data(false), param.vocabSize)
+      val dictionary = Dictionary(tokens, param.vocabSize)
       dictionary.save(param.saveFolder)
 
-      val maxTrainLength = tokens.toDistributed().data(false).map(x => x.length).max
+      val maxTrainLength = tokens.map(x => x.length).max
 
       val valtokens = SequencePreprocess(
         param.dataFolder + "/val.txt",
         sc = sc,
         param.sentFile,
-        param.tokenFile
-      )
-      val maxValLength = valtokens.toDistributed().data(false).map(x => x.length).max
+        param.tokenFile)
+      val maxValLength = valtokens.map(x => x.length).max
 
       logger.info(s"maxTrain length = ${maxTrainLength}, maxVal = ${maxValLength}")
 
@@ -71,23 +70,25 @@ object Train {
       val endIdx = dictionary.getIndex(SentenceToken.end)
       val padFeature = Tensor[Float]().resize(totalVocabLength)
       padFeature.setValue(endIdx + 1, 1.0f)
-      val padLabel = startIdx
+      val padLabel = Tensor[Float](T(startIdx.toFloat + 1.0f))
+      val featurePadding = PaddingParam(Some(Array(padFeature)),
+        FixedLength(Array(maxTrainLength)))
+      val labelPadding = PaddingParam(Some(Array(padLabel)),
+        FixedLength(Array(maxTrainLength)))
 
-      val trainSet = tokens
+      val trainSet = DataSet.rdd(tokens)
         .transform(TextToLabeledSentence[Float](dictionary))
         .transform(LabeledSentenceToSample[Float](totalVocabLength))
-        .transform(SampleToBatch[Float](batchSize = param.batchSize,
-          featurePadding = Some(padFeature),
-          labelPadding = Some(padLabel),
-          fixedLength = Some(maxTrainLength)))
+        .transform(SampleToMiniBatch[Float](
+          param.batchSize,
+          Some(featurePadding),
+          Some(labelPadding)))
 
-      val validationSet = valtokens
+      val validationSet = DataSet.rdd(valtokens)
         .transform(TextToLabeledSentence[Float](dictionary))
         .transform(LabeledSentenceToSample[Float](totalVocabLength))
-        .transform(SampleToBatch[Float](batchSize = param.batchSize,
-          featurePadding = Some(padFeature),
-          labelPadding = Some(padLabel),
-          fixedLength = Some(maxValLength)))
+        .transform(SampleToMiniBatch[Float](param.batchSize,
+          Some(featurePadding), Some(labelPadding)))
 
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
@@ -100,13 +101,11 @@ object Train {
         curModel
       }
 
-      val state = if (param.stateSnapshot.isDefined) {
-        T.load(param.stateSnapshot.get)
+      val optimMethod = if (param.stateSnapshot.isDefined) {
+        OptimMethod.load[Float](param.stateSnapshot.get)
       } else {
-        T("learningRate" -> param.learningRate,
-          "momentum" -> param.momentum,
-          "weightDecay" -> param.weightDecay,
-          "dampening" -> param.dampening)
+        new SGD[Float](learningRate = param.learningRate, learningRateDecay = 0.0,
+          weightDecay = param.weightDecay, momentum = param.momentum, dampening = param.dampening)
       }
 
       val optimizer = Optimizer(
@@ -127,9 +126,10 @@ object Train {
       optimizer
         .setValidation(Trigger.everyEpoch, validationSet, Array(new Loss[Float](
           TimeDistributedCriterion[Float](CrossEntropyCriterion[Float](), sizeAverage = true))))
-        .setState(state)
+        .setOptimMethod(optimMethod)
         .setEndWhen(Trigger.maxEpoch(param.nEpochs))
         .optimize()
+      sc.stop()
     })
   }
 }

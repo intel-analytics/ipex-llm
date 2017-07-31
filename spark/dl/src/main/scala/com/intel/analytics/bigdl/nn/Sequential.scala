@@ -28,7 +28,7 @@ import scala.reflect.ClassTag
 
 @SerialVersionUID(5375403296928513267L)
 class Sequential[T: ClassTag]
-  (implicit ev: TensorNumeric[T]) extends Container[Activity, Activity, T] {
+(implicit ev: TensorNumeric[T]) extends Container[Activity, Activity, T] {
 
   override def updateOutput(input: Activity): Activity = {
     var i = 0
@@ -43,6 +43,37 @@ class Sequential[T: ClassTag]
   }
 
   override def updateGradInput(input: Activity, nextError: Activity): Activity = {
+    var i = modules.length - 1
+    var error = nextError.asInstanceOf[Activity]
+    while (i > 0) {
+      val input = modules(i - 1).output
+      error = modules(i).updateGradInput(input, error)
+      i -= 1
+    }
+    error = modules(0).updateGradInput(input, error)
+
+    this.gradInput = error
+    gradInput
+  }
+
+  override def accGradParameters(
+    input: Activity,
+    gradOutput: Activity): Unit = {
+    var i = modules.length - 1
+    var currentModule = modules(i)
+    var currentGradOutput = gradOutput
+    while (i > 0) {
+      val previousModule = modules(i - 1)
+      currentModule.accGradParameters(previousModule.output, currentGradOutput)
+      currentGradOutput = currentModule.gradInput
+      currentModule = previousModule
+      i -= 1
+    }
+
+    currentModule.accGradParameters(input, currentGradOutput)
+  }
+
+  override def backward(input: Activity, nextError: Activity): Activity = {
     var i = modules.length - 1
     var error = nextError.asInstanceOf[Activity]
     while (i > 0) {
@@ -101,7 +132,7 @@ class Sequential[T: ClassTag]
   override def toString(): String = {
     val tab = "  "
 
-    s"nn.Sequential {${line + tab}[input -> ${
+    s"${getPrintName}{${line + tab}[input -> ${
       modules.zipWithIndex.map {
         case (m: AbstractModule[Activity, Activity, T], i: Int) => "(" + (i + 1) + ")"
       }.
@@ -120,7 +151,7 @@ class Sequential[T: ClassTag]
 
 object Sequential {
   def apply[@specialized(Float, Double) T: ClassTag]()
-      (implicit ev: TensorNumeric[T]) : Sequential[T] = {
+    (implicit ev: TensorNumeric[T]) : Sequential[T] = {
     new Sequential[T]()
   }
 }

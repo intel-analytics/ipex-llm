@@ -17,7 +17,7 @@
 # limitations under the License.
 #
 
-BIGDL_VERSION=0.2.0-SNAPSHOT
+BIGDL_VERSION=0.3.0-SNAPSHOT
 
 SPARK1_DIR=spark-1.6.3-bin-hadoop2.6
 SPARK1_LINK=https://www.apache.org/dist/spark/spark-1.6.3/$SPARK1_DIR.tgz
@@ -26,7 +26,6 @@ SPARK2_LINK=https://www.apache.org/dist/spark/spark-2.0.2/$SPARK2_DIR.tgz
 SPARK_DIR=$SPARK1_DIR
 SPARK_LINK=$SPARK1_LINK
 CURRENT=`pwd`
-BIGDL_SH=$CURRENT/dist/bin/bigdl.sh
 BIGDL2_JAR=$HOME/.m2/repository/com/intel/analytics/bigdl/bigdl-SPARK_2.0/${BIGDL_VERSION}/bigdl-SPARK_2.0-${BIGDL_VERSION}-jar-with-dependencies.jar
 BIGDL1_JAR=$HOME/.m2/repository/com/intel/analytics/bigdl/bigdl/${BIGDL_VERSION}/bigdl-${BIGDL_VERSION}-jar-with-dependencies.jar
 BIGDL_JAR=$BIGDL1_JAR
@@ -38,8 +37,6 @@ LEARNING_RATE=0.01
 MAX_EPOCH=90
 ME=`basename "$0"`
 
-source ./dist/bin/bigdl.sh
-
 options=$(getopt -o p:m:c:s:o:r:n:b:t:l:f:e:h -l spark:,model:,class:,spark-url:,cores:,memory:,nodes:,batch-size:,trained-model:,learning-rate:,hdfs-data-dir:,max-epoch:,help -- "$@")
 
 eval set -- "$options"
@@ -47,7 +44,7 @@ eval set -- "$options"
 while true; do
 	case $1 in
 		-p|--spark)
-			if [ "$2" == "spark_2.0" ]; then
+			if [ "$2" == "spark_2.x" ]; then
 				SPARK_DIR=$SPARK2_DIR
 				SPARK_LINK=$SPARK2_LINK
 				BIGDL_JAR=$BIGDL2_JAR
@@ -176,7 +173,7 @@ cd $CURRENT
 
 if [ "$MODEL" == "lenet" ] || [ "$MODEL" == "vgg" ]; then
 	if [ "$CLASS" == "train" ]; then
-		$BIGDL_SH -- ./$SPARK_DIR/bin/spark-submit \
+		./$SPARK_DIR/bin/spark-submit \
 			--master $SPARK_URL \
             --total-executor-cores $(($CORES * $NODES)) \
             --executor-cores $CORES \
@@ -186,7 +183,7 @@ if [ "$MODEL" == "lenet" ] || [ "$MODEL" == "vgg" ]; then
 			--num-executors $NODES \
 			--class com.intel.analytics.bigdl.models.$MODEL.Train $BIGDL_JAR -f $DATA_DIR/ -b $BATCH_SIZE --maxEpoch $MAX_EPOCH --overWrite --checkpoint $MODEL_DIR
 	else
-		$BIGDL_SH -- ./$SPARK_DIR/bin/spark-submit \
+		./$SPARK_DIR/bin/spark-submit \
 			--master $SPARK_URL \
             --total-executor-cores $(($CORES * $NODES)) \
             --executor-cores $CORES \
@@ -200,7 +197,7 @@ elif [ "$MODEL" == "inception-v1" ]; then
 #echo $SPARK_URL
 #echo $BIGDL_JAR
 	if [ "$CLASS" == "train" ]; then
-		$BIGDL_SH -- ./$SPARK_DIR/bin/spark-submit \
+		./$SPARK_DIR/bin/spark-submit \
 			--master $SPARK_URL \
             --total-executor-cores $(($CORES * $NODES))  \
             --executor-cores $CORES  \
@@ -211,7 +208,7 @@ elif [ "$MODEL" == "inception-v1" ]; then
 			--driver-class-path $BIGDL_JAR \
 			--class com.intel.analytics.bigdl.models.inception.TrainInceptionV1 $BIGDL_JAR --batchSize $BATCH_SIZE --maxEpoch $MAX_EPOCH --overWrite --learningRate $LEARNING_RATE -f $HDFS_DATA_DIR --checkpoint $MODEL_DIR
 	else
-		$BIGDL_SH -- ./$SPARK_DIR/bin/spark-submit \
+		./$SPARK_DIR/bin/spark-submit \
 			--master $SPARK_URL \
 			--driver-cores $CORES \
 			--driver-memory $MEMORY \
@@ -223,7 +220,7 @@ elif [ "$MODEL" == "inception-v1" ]; then
 			--class com.intel.analytics.bigdl.models.inception.Test $BIGDL_JAR --batchSize $BATCH_SIZE -f $HDFS_DATA_DIR/val
 	fi
 elif [ "$MODEL" == "perf" ]; then
-	$BIGDL_SH -- ./$SPARK_DIR/bin/spark-submit \
+	./$SPARK_DIR/bin/spark-submit \
 		--master $SPARK_URL \
 		--driver-cores $CORES \
 		--driver-memory $MEMORY \

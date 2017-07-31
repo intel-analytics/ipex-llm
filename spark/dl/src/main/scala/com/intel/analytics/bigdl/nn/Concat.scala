@@ -79,14 +79,21 @@ class Concat[T: ClassTag](val dimension: Int)(
       results(i) = Engine.model.invoke(() => {
         val target = this.output.narrow(this.dimension, _offset,
           currentOutput.size(this.dimension))
-        var f = 1
-        while (f <= target.size(1)) {
-          val curFrame = target.select(1, f)
-          val outputFrame = currentOutput.select(1, f)
-          require(curFrame.isContiguous())
-          require(outputFrame.isContiguous())
-          curFrame.copy(outputFrame)
-          f += 1
+        if (target.isContiguous() || this.dimension > 2) {
+          // Copy directly when target is Contiguous or dimension is larger than 2
+          // in which case the contiguous region in target tensor is fairly small in practice
+          target.copy(currentOutput)
+        } else {
+          // Divide target into contiguous frames when target isn't contiguous
+          var f = 1
+          while (f <= target.size(1)) {
+            val curFrame = target.select(1, f)
+            val outputFrame = currentOutput.select(1, f)
+            require(curFrame.isContiguous())
+            require(outputFrame.isContiguous())
+            curFrame.copy(outputFrame)
+            f += 1
+          }
         }
       })
       i += 1
@@ -105,17 +112,43 @@ class Concat[T: ClassTag](val dimension: Int)(
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    var before = System.nanoTime()
     this.gradInput.resizeAs(input)
-
     var offset = 1
+    if (gradouts == null || gradouts.length != this.modules.length) {
+      gradouts = new Array[Tensor[T]](this.modules.length)
+    }
     var i = 0
     while (i < this.modules.length) {
       val currentOutput = this.modules(i).output.asInstanceOf[Tensor[T]]
+      val _offset = offset
+      val _i = i
+      results(i) = Engine.model.invoke( () => {
+        val narrowedTensor = gradOutput.narrow(dimension, _offset,
+          currentOutput.size(dimension))
+        if(dimension == 2) {
+          gradouts(_i) = Tensor[T]().resizeAs(narrowedTensor)
+          var b = 1
+          val firstSize = narrowedTensor.size(1)
+          while(b <= firstSize) {
+            gradouts(_i).select(1, b).copy(narrowedTensor.select(1, b))
+            b += 1
+          }
+        } else {
+          gradouts(_i) = narrowedTensor.contiguous()
+        }
+      })
+      i += 1
+      offset += currentOutput.size(dimension)
+    }
+    Engine.model.sync(results)
+
+    i = 0
+    offset = 1
+    while (i < this.modules.length) {
+      val currentOutput = this.modules(i).output.asInstanceOf[Tensor[T]]
       val currentGradInput = this.modules(i)
-        .updateGradInput(
-          input.asInstanceOf[Activity],
-          gradOutput.narrow(dimension, offset, currentOutput.size(dimension))
-            .asInstanceOf[Activity])
+        .updateGradInput(input.asInstanceOf[Activity], gradouts(i).asInstanceOf[Activity])
         .asInstanceOf[Tensor[T]]
 
       if (currentGradInput != null) {
@@ -134,8 +167,7 @@ class Concat[T: ClassTag](val dimension: Int)(
     this.gradInput
   }
 
-  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
-    scale: Double = 1.0): Unit = {
+  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
     var offset = 1
     var i = 0
     while (i < this.modules.length) {
@@ -143,7 +175,7 @@ class Concat[T: ClassTag](val dimension: Int)(
       this.modules(i).accGradParameters(
         input.asInstanceOf[Activity],
         gradOutput.narrow(dimension, offset, currentOutput.size(dimension))
-          .asInstanceOf[Activity], scale)
+          .asInstanceOf[Activity])
 
       i += 1
       offset += currentOutput.size(dimension)
@@ -273,7 +305,7 @@ class Concat[T: ClassTag](val dimension: Int)(
     val last = "   ... -> "
     val ext = "  |    "
     val extlast = "       "
-    s"nn.Concat {$line${tab}input$line${
+    s"${getPrintName}{$line${tab}input$line${
       modules.zipWithIndex
         .map { case (model: AbstractModule[Activity, Activity, T], index: Int)
         => s"$tab$next(${index + 1}): ${

@@ -17,9 +17,10 @@
 package com.intel.analytics.bigdl.models.lenet
 
 import java.nio.ByteBuffer
-import java.nio.file.{Files, Path}
+import java.nio.file.{Files, Path, Paths}
 
 import com.intel.analytics.bigdl.dataset.ByteRecord
+import com.intel.analytics.bigdl.utils.File
 import scopt.OptionParser
 
 object Utils {
@@ -97,9 +98,25 @@ object Utils {
       .action((x, c) => c.copy(batchSize = x))
   }
 
-  private[bigdl] def load(featureFile: Path, labelFile: Path): Array[ByteRecord] = {
-    val labelBuffer = ByteBuffer.wrap(Files.readAllBytes(labelFile))
-    val featureBuffer = ByteBuffer.wrap(Files.readAllBytes(featureFile))
+  /**
+   * load mnist data.
+   * read mnist from hdfs if data folder starts with "hdfs:", otherwise form local file.
+   * @param featureFile
+   * @param labelFile
+   * @return
+   */
+  private[bigdl] def load(featureFile: String, labelFile: String): Array[ByteRecord] = {
+
+    val featureBuffer = if (featureFile.startsWith(File.hdfsPrefix)) {
+      ByteBuffer.wrap(File.readHdfsByte(featureFile))
+    } else {
+      ByteBuffer.wrap(Files.readAllBytes(Paths.get(featureFile)))
+    }
+    val labelBuffer = if (featureFile.startsWith(File.hdfsPrefix)) {
+      ByteBuffer.wrap(File.readHdfsByte(labelFile))
+    } else {
+      ByteBuffer.wrap(Files.readAllBytes(Paths.get(labelFile)))
+    }
     val labelMagicNumber = labelBuffer.getInt()
 
     require(labelMagicNumber == 2049)

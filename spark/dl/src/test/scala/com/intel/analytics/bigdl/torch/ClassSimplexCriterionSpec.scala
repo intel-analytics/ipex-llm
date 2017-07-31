@@ -17,19 +17,13 @@ package com.intel.analytics.bigdl.torch
 
 import com.intel.analytics.bigdl.nn.ClassSimplexCriterion
 import com.intel.analytics.bigdl.tensor.Tensor
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class ClassSimplexCriterionSpec extends FlatSpec with BeforeAndAfter with Matchers {
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
-
-  "A ClassSimplexCriterion " should "generate correct output and grad with " in {
+class ClassSimplexCriterionSpec extends TorchSpec {
+    "A ClassSimplexCriterion " should "generate correct output and grad with " in {
+    torchCheck()
     val criterion = new ClassSimplexCriterion[Double](5)
     val input = Tensor[Double](2, 5).apply1(e => Random.nextDouble())
     val target = Tensor[Double](2)

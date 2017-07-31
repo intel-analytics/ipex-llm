@@ -15,7 +15,8 @@
  */
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Initializable}
+import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
@@ -28,26 +29,32 @@ import scala.reflect.ClassTag
  * The input tensor given in forward(input) is a table containing both inputs x_1 and x_2,
  * which are tensors of size N x inputDimension1 and N x inputDimension2, respectively.
  *
- * @param inputSize1 dimension of input x_1
- * @param inputSize2 dimension of input x_2
- * @param outputSize output dimension
+ * @param inputSize1   dimension of input x_1
+ * @param inputSize2   dimension of input x_2
+ * @param outputSize   output dimension
  * @param biasRes  The layer can be trained without biases by setting bias = false. otherwise true
+ * @param wRegularizer : instance of [[Regularizer]]
+ *                     (eg. L1 or L2 regularization), applied to the input weights matrices.
+ * @param bRegularizer : instance of [[Regularizer]]
+ *                     applied to the bias.
  */
 
-@SerialVersionUID(- 4838965135083645415L)
+@SerialVersionUID(-4838965135083645415L)
 class Bilinear[T: ClassTag](
-  val inputSize1: Int,
-  val inputSize2: Int,
-  val outputSize: Int,
-  val biasRes: Boolean = true
- )(implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T] {
+ val inputSize1: Int,
+ val inputSize2: Int,
+ val outputSize: Int,
+ val biasRes: Boolean = true,
+ var wRegularizer: Regularizer[T] = null,
+ var bRegularizer: Regularizer[T] = null
+)(implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T] with Initializable {
 
   require((inputSize1 > 0) && (inputSize2 > 0) && (outputSize > 0),
     s"Bilinear: inputSize1 and inputSize2 and outputSize should be positive integer numbers," +
       "but got inputSize1 $inputSize1, inputSize2 $inputSize2, outputSize $outputSize")
 
   val weight = Tensor[T](outputSize, inputSize1, inputSize2)
-  val bias: Tensor[T] = if (biasRes)Tensor[T](outputSize) else null
+  val bias: Tensor[T] = if (biasRes) Tensor[T](outputSize) else null
 
   var buff1: Tensor[T] = Tensor[T]()
   var buff2: Tensor[T] = Tensor[T]()
@@ -55,12 +62,16 @@ class Bilinear[T: ClassTag](
   val gradWeight: Tensor[T] = Tensor[T](outputSize, inputSize1, inputSize2)
   val gradBias: Tensor[T] = Tensor[T](outputSize)
 
-  reset()
+  {
+    val stdv = 1.0 / math.sqrt(weight.size(2))
+    var wInit: InitializationMethod = RandomUniform(-stdv, stdv)
+    var bInit: InitializationMethod = RandomUniform(-stdv, stdv)
+    setInitMethod(wInit, bInit)
+  }
 
   override def reset(): Unit = {
-    val stdv = 1.0 / math.sqrt(weight.size(2))
-    weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
-    if (null != bias ) bias.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
+    weightInitMethod.init(weight, VariableFormat.Default)
+    Option(bias).foreach(biasInitMethod.init(_, VariableFormat.ONE_D))
     zeroGradParameters()
   }
 
@@ -82,7 +93,7 @@ class Bilinear[T: ClassTag](
     // compute output scores
     output.resize(res1.size(1), weight.size(1))
     var k = 1
-    while(k < (weight.size(1) + 1)) {
+    while (k < (weight.size(1) + 1)) {
       buff2.zero()
       buff2.addmm(res1, weight(k))
       buff2.cmul(res2)
@@ -126,11 +137,11 @@ class Bilinear[T: ClassTag](
       Array(gradInput2.size(1), gradInput2.size(2))))
 
     // do remaining slices of weight tensor
-    if(weight.size(1) > 1) {
+    if (weight.size(1) > 1) {
       buff1.resizeAs(res1)
 
       var k = 2
-      while(k < (weight.size(1) + 1)) {
+      while (k < (weight.size(1) + 1)) {
         buff1.zero()
         buff2.zero()
 
@@ -149,23 +160,33 @@ class Bilinear[T: ClassTag](
     gradInput
   }
 
-  override def accGradParameters(input: Table, gradOutput: Tensor[T], scale: Double = 1.0): Unit = {
+  override def accGradParameters(input: Table, gradOutput: Tensor[T]): Unit = {
     val res1 = input[Tensor[T]](1)
     val res2 = input[Tensor[T]](2)
 
     // make sure we have buffer
-    if(null == buff1) buff1 = Tensor[T]()
+    if (null == buff1) buff1 = Tensor[T]()
     buff1.resizeAs(res1)
 
     // accumulate parameter gradients:
-    var k = 1
-    while(k < (weight.size(1) + 1)) {
-      buff1.zero()
-      buff1.cmul(res1, gradOutput.narrow(2, k, 1).expandAs(res1))
-      gradWeight.select(1, k).addmm(buff1.t(), input(2))
-      k += 1
+    if (scaleW !=0 ) {
+      var k = 1
+      while (k < (weight.size(1) + 1)) {
+        buff1.zero()
+        buff1.cmul(res1, gradOutput.narrow(2, k, 1).expandAs(res1))
+        gradWeight.select(1, k).addmm(ev.fromType[Double](scaleW), buff1.t(), input(2))
+        k += 1
+      }
     }
-    if(null != bias) gradBias.add(ev.fromType(scale), gradOutput.sum(1))
+
+    if(null != bias && scaleB != 0) gradBias.add(ev.fromType[Double](scaleB), gradOutput.sum(1))
+
+    if (wRegularizer != null && scaleW != 0) {
+      wRegularizer.accRegularization(weight, gradWeight, scaleW)
+    }
+    if (bRegularizer != null && scaleB != 0) {
+      bRegularizer.accRegularization(bias, gradBias, scaleB)
+    }
   }
 
   override def zeroGradParameters(): Unit = {
@@ -173,7 +194,7 @@ class Bilinear[T: ClassTag](
     gradBias.zero()
   }
 
-  override def clearState() : this.type = {
+  override def clearState(): this.type = {
     super.clearState()
     buff1.set()
     buff2.set()
@@ -198,7 +219,7 @@ class Bilinear[T: ClassTag](
   }
 
   override def toString(): String = {
-    s"nn.Bilinear($inputSize1, $inputSize2, $outputSize, $biasRes)"
+    s"${getPrintName}($inputSize1, $inputSize2, $outputSize, $biasRes)"
   }
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[Bilinear[T]]
@@ -220,6 +241,7 @@ class Bilinear[T: ClassTag](
 
   override def hashCode(): Int = {
     def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
+
     val state = Seq(super.hashCode(), weight, bias, gradWeight, gradBias,
       inputSize1, inputSize2, outputSize, biasRes)
     state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
@@ -231,7 +253,11 @@ object Bilinear {
     inputSize1: Int,
     inputSize2: Int,
     outputSize: Int,
-    biasRes: Boolean = true)(implicit ev: TensorNumeric[T]) : Bilinear[T] = {
-    new Bilinear[T](inputSize1, inputSize2, outputSize, biasRes)
+    biasRes: Boolean = true,
+    wRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null
+   )(implicit ev: TensorNumeric[T]): Bilinear[T] = {
+    new Bilinear[T](inputSize1, inputSize2, outputSize, biasRes,
+      wRegularizer, bRegularizer)
   }
 }

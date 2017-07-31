@@ -80,7 +80,7 @@ class Replicate[T: ClassTag](
   }
 
   override def toString(): String = {
-    s"nn.Replicate($nFeatures, $dim${if (nDim != Int.MaxValue) ", " + nDim else ""})"
+    s"${getPrintName}($nFeatures, $dim${if (nDim != Int.MaxValue) ", " + nDim else ""})"
   }
 }
 

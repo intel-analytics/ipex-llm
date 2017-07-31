@@ -78,18 +78,6 @@ object Options {
     opt[Int]("checkpointIteration")
       .text("checkpoint interval of iterations")
       .action((x, c) => c.copy(checkpointIteration = x))
-    opt[Int]("partitionNum")
-      .text("partition number")
-      .action((x, c) => c.copy(partitionNum = x))
-      .required()
-    opt[Int]("nodeNum")
-      .text("node number")
-      .action((x, c) => c.copy(nodeNum = x))
-      .required()
-    opt[Int]("corePerTask")
-      .text("core number per task")
-      .action((x, c) => c.copy(corePerTask = x))
-      .required()
   }
 
   case class TestParams(

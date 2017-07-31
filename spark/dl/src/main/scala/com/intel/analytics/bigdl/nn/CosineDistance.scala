@@ -119,10 +119,6 @@ class CosineDistance[T: ClassTag](
     gradInput
   }
 
-  override def toString(): String = {
-    s"nn.CosineDistance"
-  }
-
   override def canEqual(other: Any): Boolean = other.isInstanceOf[CosineDistance[T]]
 
   override def equals(other: Any): Boolean = other match {

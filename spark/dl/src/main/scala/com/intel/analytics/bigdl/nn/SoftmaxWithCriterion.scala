@@ -81,8 +81,8 @@ class SoftmaxWithCriterion[@specialized(Float, Double) T: ClassTag](ignoreLabel:
       }
       i += 1
     }
-    loss = ev.divide(loss, getNormalizer(normalizeMode, count))
-    loss
+    output = ev.divide(loss, getNormalizer(normalizeMode, count))
+    output
   }
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {

@@ -1,29 +1,38 @@
+# Compile products
 *.pyc
 *.class
-*.log
-dl/src/main/python/.idea/
+target/
+/dist/
 
-# sbt specific
+# SBT, Maven specific
 .cache
 .history
 .lib/
-dist/*
-target/
 lib_managed/
 src_managed/
 project/boot/
 project/plugins/project/
+dependency-reduced-pom.xml
 
-# Scala-IDE specific
+# IDE specific
 .scala_dependencies
 .worksheet
 *.iml
 .idea/
 
-# other
-*.txt
+# macOS specific
+.DS_Store
+
+# data files
 *.csv
-nohup.out
 model*.[0-9]*
 state*.[0-9]*
-spark/dl/dependency-reduced-pom.xml
+
+# other
+nohup.out
+*.log
+*.un~
+.ipynb_checkpoints/
+pyspark/dist/
+pyspark/build/
+

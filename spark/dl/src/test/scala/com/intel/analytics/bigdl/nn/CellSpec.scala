@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
@@ -35,8 +36,9 @@ private[bigdl] class CellUnit[T : ClassTag] (hidSize: Int)
     T()
   }
 
-  override def accGradParameters(input: Table, gradOutput: Table,
-                                 scale: Double = 1.0): Unit = {}
+  override def accGradParameters(input: Table, gradOutput: Table): Unit = {}
+
+  override var cell: AbstractModule[Activity, Activity, T] = _
 }
 
 @com.intel.analytics.bigdl.tags.Parallel
@@ -44,7 +46,7 @@ class CellSpec extends FlatSpec with Matchers {
 
   "A Cell" should "hidResize correctly" in {
     val cell = new CellUnit[Double](4)
-    val hidden = cell.hidResize(hidden = null, size = 5)
+    val hidden = cell.hidResize(hidden = null, batchSize = 5)
 
     hidden.isInstanceOf[Table] should be (true)
     var i = 1
@@ -58,5 +60,6 @@ class CellSpec extends FlatSpec with Matchers {
     hidden2(1).asInstanceOf[Tensor[Double]].size should be (Array(5, 4))
     hidden2(2).asInstanceOf[Tensor[Double]].size should be (Array(5, 4))
     hidden2(3).asInstanceOf[Tensor[Double]].size should be (Array(5, 4))
+
   }
 }

@@ -20,19 +20,13 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.{GradientChecker, LogSoftMax}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class LogSoftMaxSpec extends FlatSpec with BeforeAndAfter with Matchers {
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
-
-  "A LogSoftMax Module " should "generate correct output and grad with input 2D" in {
+class LogSoftMaxSpec extends TorchSpec {
+    "A LogSoftMax Module " should "generate correct output and grad with input 2D" in {
+    torchCheck()
     val module = new LogSoftMax[Double]()
     Random.setSeed(100)
     val input = Tensor[Double](4, 10).apply1(e => Random.nextDouble())
@@ -61,6 +55,7 @@ class LogSoftMaxSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A LogSoftMax Module " should "generate correct output and grad with input 1D" in {
+    torchCheck()
     val module = new LogSoftMax[Double]()
     Random.setSeed(100)
     val input = Tensor[Double](10).apply1(e => Random.nextDouble())
@@ -89,6 +84,7 @@ class LogSoftMaxSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A LogSoftMax Module " should "generate correct output and grad tiwh input 1*N" in {
+    torchCheck()
     val module = new LogSoftMax[Double]()
     Random.setSeed(100)
     val input = Tensor[Double](1, 10).apply1(e => Random.nextDouble())
@@ -117,6 +113,7 @@ class LogSoftMaxSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "LogSoftMax module" should "be good in gradient check for input" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
     val layer = new LogSoftMax[Double]()

@@ -56,7 +56,7 @@ class AddConstant[T: ClassTag](
   }
 
   override def toString(): String = {
-    s"nn.AddConstant ($constant_scalar, $inplace)"
+    s"${getPrintName}($constant_scalar, $inplace)"
   }
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[AddConstant[T]]

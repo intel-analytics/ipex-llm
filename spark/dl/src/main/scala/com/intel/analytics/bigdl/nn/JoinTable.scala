@@ -18,8 +18,9 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.{Engine, Table}
 
+import scala.concurrent.Future
 import scala.reflect.ClassTag
 
 /**
@@ -43,6 +44,9 @@ class JoinTable[T: ClassTag] (
   val nInputDims: Int
 )(implicit ev: TensorNumeric[T])
   extends AbstractModule[Table, Tensor[T], T] {
+
+  @transient
+  private var results: Array[Future[Unit]] = null
 
   private def getPositiveDimension(input: Table): Int = {
     var nDim = this.dimension
@@ -73,41 +77,68 @@ class JoinTable[T: ClassTag] (
     }
     output.resize(size)
 
-    var offset = 1
-    i = 1
-    while (i <= input.length()) {
-      val currentOutput: Tensor[T] = input(i)
-      output.narrow(dimension, offset, currentOutput.size(dimension))
-        .copy(currentOutput)
-      offset += currentOutput.size(dimension)
-      i += 1
+    if (results == null || results.length != input.length) {
+      results = new Array[Future[Unit]](input.length)
     }
-
+    var offset = 1
+    i = 0
+    while (i < input.length) {
+      val currentOutput = input(i + 1).asInstanceOf[Tensor[T]]
+      val _offset = offset
+      results(i) = Engine.model.invoke( () => {
+        val target = output.narrow(dimension, _offset, currentOutput.size(dimension))
+        if (target.isContiguous() || dimension > 2) {
+          target.copy(currentOutput)
+        } else {
+          var f = 1
+          while (f <= target.size(1)) {
+            val curFrame = target.select(1, f)
+            val outputFrame = currentOutput.select(1, f)
+            require(curFrame.isContiguous())
+            require(outputFrame.isContiguous())
+            curFrame.copy(outputFrame)
+            f += 1
+          }
+        }
+      })
+      i += 1
+      offset += currentOutput.size(dimension)
+    }
+    Engine.model.sync(results)
     output
   }
 
   override def updateGradInput(input: Table, gradOutput: Tensor[T]): Table = {
     val dimension = getPositiveDimension(input)
 
-    var i = 1
-    while (i <= input.length()) {
-      if (!gradInput.contains(i)) {
-        gradInput(i) = Tensor()
-      }
-      gradInput[Tensor[T]](i).resizeAs(input(i))
-      i += 1
-    }
-
     var offset = 1
-    i = 1
-    while (i <= input.length()) {
-      val currentOutput: Tensor[T] = input(i)
-      val currentGradInput = gradOutput
-        .narrow(dimension, offset, currentOutput.size(dimension))
-      gradInput[Tensor[T]](i)copy(currentGradInput)
-      offset += currentOutput.size(dimension)
+    var i = 0
+    while (i < input.length) {
+      val currentOutput = input(i + 1).asInstanceOf[Tensor[T]]
+      val _offset = offset
+      val _i = i
+      results(i) = Engine.model.invoke( () => {
+        val narrowedTensor = gradOutput.narrow(dimension, _offset, currentOutput.size(dimension))
+        if (!gradInput.contains(_i + 1)) gradInput(_i + 1) = Tensor()
+        gradInput[Tensor[T]](_i + 1).resizeAs(input(_i + 1))
+        if(narrowedTensor.isContiguous() || dimension > 2) {
+          gradInput[Tensor[T]](_i + 1).copy(narrowedTensor)
+        } else {
+          var b = 1
+          while(b <= narrowedTensor.size(1)) {
+            val curFrame = gradInput[Tensor[T]](_i + 1).select(1, b)
+            val narrowFrame = narrowedTensor.select(1, b)
+            require(curFrame.isContiguous())
+            require(narrowFrame.isContiguous())
+            curFrame.copy(narrowFrame)
+            b += 1
+          }
+        }
+      })
       i += 1
+      offset += currentOutput.size(dimension)
     }
+    Engine.model.sync(results)
     gradInput
   }
 
@@ -129,6 +160,12 @@ class JoinTable[T: ClassTag] (
     def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
     val state = Seq(super.hashCode(), dimension, nInputDims)
     state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
+  }
+
+  override def clearState(): this.type = {
+    super.clearState()
+    gradInput.clear()
+    this
   }
 }
 

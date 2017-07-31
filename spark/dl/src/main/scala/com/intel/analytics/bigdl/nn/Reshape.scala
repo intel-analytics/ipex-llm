@@ -39,7 +39,7 @@ import scala.reflect.ClassTag
  */
 @SerialVersionUID(- 830146931795053244L)
 class Reshape[@specialized(Float, Double) T: ClassTag](
-  size: Array[Int], var batchMode: Option[Boolean] = None)(
+  val size: Array[Int], var batchMode: Option[Boolean] = None)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T]  {
   val batchSize = new Array[Int](size.length + 1)
   var nElement: Int = 1
@@ -52,14 +52,18 @@ class Reshape[@specialized(Float, Double) T: ClassTag](
 
     if ((batchMode.nonEmpty && !batchMode.get) ||
           (input.nElement() == nElement && batchMode.isEmpty && input.size(1) != 1)) {
-      require(input.nElement() == nElement, "element number must match Reshape size")
+      require(input.nElement() == nElement, s"element number must match Reshape size. " +
+        s"But In ${this.getName()} : element number is: ${ input.nElement() } , " +
+        s"reshape size is: ${nElement}")
       if (input.isContiguous()) output =
         input.view(size)
       else output = input.contiguous().view(size)
     }
     else {
       require(input.nElement() == nElement * input.size(1),
-        "element number must match Reshape size")
+        s"element number must match Reshape size. " +
+          s"But In ${this.getName()} : element number is: ${ input.nElement() } , " +
+          s"reshape size is: ${ nElement * input.size(1) }")
       batchSize(0) = input.size(1)
       if (input.isContiguous()) {
         output = input.view(batchSize)
@@ -119,12 +123,12 @@ class Reshape[@specialized(Float, Double) T: ClassTag](
   }
 
   override def toString(): String = {
-    s"nn.Reshape(${size.mkString("x")})"
+    s"${getPrintName}(${size.mkString("x")})"
   }
 }
 
 object Reshape {
-  def apply[@specialized(Float, Double) T: ClassTag](
+  def apply[T: ClassTag](
       size: Array[Int],
       batchMode: Option[Boolean] = None)(implicit ev: TensorNumeric[T]) : Reshape[T] = {
     new Reshape[T](size, batchMode)

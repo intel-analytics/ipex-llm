@@ -26,7 +26,7 @@ import scala.reflect.ClassTag
 
 /**
  * This layer implement a bidirectional recurrent neural network
- * @param merge concat or add the output tensor of the two RNNs. Default is concat
+ * @param merge concat or add the output tensor of the two RNNs. Default is add
  * @param ev numeric operator
  * @tparam T numeric type
  */
@@ -47,7 +47,7 @@ class BiRecurrent[T : ClassTag] (
           .add(Reverse[T](timeDim))
           .add(revLayer)
           .add(Reverse[T](timeDim))))
-    if (merge == null) birnn.add(CAddTable[T]())
+    if (merge == null) birnn.add(CAddTable[T](true))
     else birnn.add(merge)
 
   override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]):
@@ -62,9 +62,8 @@ class BiRecurrent[T : ClassTag] (
     output
   }
 
-  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
-                                 scale: Double = 1.0): Unit = {
-    birnn.accGradParameters(input, gradOutput, scale)
+  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
+    birnn.accGradParameters(input, gradOutput)
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
@@ -117,7 +116,7 @@ class BiRecurrent[T : ClassTag] (
     this
   }
 
-  override def toString(): String = s"BiRecurrent($timeDim, $birnn)"
+  override def toString(): String = s"${getPrintName}($timeDim, $birnn)"
 
   override def equals(other: Any): Boolean = other match {
     case that: BiRecurrent[T] =>

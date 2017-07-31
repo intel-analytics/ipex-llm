@@ -13,11 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Still in experimental stage!
 
-from nn.layer import *
-from optim.optimizer import *
-from util.common import *
+from bigdl.nn.layer import *
+from bigdl.optim.optimizer import *
+from bigdl.util.common import *
 import numpy as np
 import unittest
 
@@ -42,7 +41,7 @@ class TestLoadCaffe(unittest.TestCase):
         module = Sequential()\
             .add(SpatialConvolution(3, 4, 2, 2).set_name("conv"))\
             .add(SpatialConvolution(4, 3, 2, 2).set_name("conv2"))\
-            .add(Linear(2, 27, with_bias=False).set_name("ip"))
+            .add(Linear(27, 2, with_bias=False).set_name("ip"))
 
         model = Model.load_caffe(module, proto_txt, model_path, bigdl_type="float")
 
@@ -99,7 +98,7 @@ class TestLoadCaffe(unittest.TestCase):
             -0.3027454615, 0.1254911423, 0.2114857137, 0.0392392874,
             0.1668677032, 0.0506658256, 0.1139862537, 0.2874754369,
             -0.3273061812, 0.2115428150, -0.2002333999, -0.1621897519,
-            0.0032395422, 0.2072965205]).astype("float").reshape((27, 2))
+            0.0032395422, 0.2072965205]).astype("float").reshape((2, 27))
 
         self.assertTrue(np.allclose(parameters["conv"]["weight"],
                                     conv1_weight, atol=1e-6, rtol=0))
@@ -116,7 +115,7 @@ class TestLoadCaffe(unittest.TestCase):
         module = Sequential()\
             .add(SpatialConvolution(3, 4, 2, 2).set_name("conv"))\
             .add(SpatialConvolution(4, 3, 2, 2).set_name("conv3"))\
-            .add(Linear(2, 27, with_bias=False).set_name("ip"))
+            .add(Linear(27, 2, with_bias=False).set_name("ip"))
 
         model = Model.load_caffe(module, proto_txt, model_path, match_all=False)
 
@@ -130,6 +129,20 @@ class TestLoadCaffe(unittest.TestCase):
                                      conv2_weight, atol=1e-6, rtol=0))
         self.assertFalse(np.allclose(parameters["conv3"]["bias"],
                                      conv2_bias, atol=1e-6, rtol=0))
+        self.assertTrue(np.allclose(parameters["ip"]["weight"],
+                                    linear_weight, atol=1e-6, rtol=0))
+
+        # test load caffe dynamically
+        model = Model.load_caffe_model(proto_txt, model_path, bigdl_type="float")
+        parameters = model.parameters()
+        self.assertTrue(np.allclose(parameters["conv"]["weight"],
+                                    conv1_weight, atol=1e-6, rtol=0))
+        self.assertTrue(np.allclose(parameters["conv"]["bias"],
+                                    conv1_bias, atol=1e-6, rtol=0))
+        self.assertTrue(np.allclose(parameters["conv2"]["weight"],
+                                    conv2_weight, atol=1e-6, rtol=0))
+        self.assertTrue(np.allclose(parameters["conv2"]["bias"],
+                                    conv2_bias, atol=1e-6, rtol=0))
         self.assertTrue(np.allclose(parameters["ip"]["weight"],
                                     linear_weight, atol=1e-6, rtol=0))
 

@@ -187,8 +187,7 @@ class ParameterManager2(val id: Int, val executorId: Int,
         override def call(): Int = {
           try {
             val blockId = getGradientBlockId(pid, executorId)
-            val tmp = BlockManagerWrapper.byteBufferConvert(bm.getLocalBytes(blockId)
-              .getOrElse(bm.getRemoteBytes(blockId).get))
+            val tmp = BlockManagerWrapper.getLocalOrRemoteBytes(blockId).get
             params(pid) = SerializerInstance.serialize(tmp)
             BlockManagerWrapper.unlock(blockId)
             pid
@@ -227,9 +226,10 @@ class ParameterManager2(val id: Int, val executorId: Int,
         override def call(): Int = {
           try {
             val blockId = getWeightBlockId(pid)
-            val localBuffer = BlockManagerWrapper.byteBufferConvert(
-              bm.getLocalBytes(blockId).getOrElse(bm.getRemoteBytes(blockId)
-                .get))
+            val localBuffer = BlockManagerWrapper.getLocalOrRemoteBytes(blockId).getOrElse {
+              throw new RuntimeException(s"Didn't find weight block $blockId in the block " +
+                s"manager. Did you initialize this AllReduceParameter on every executor?")
+            }
             val start = pid * taskSize + math.min(pid, extraSize)
             val length = taskSize + (if (pid < extraSize) 1 else 0)
             require(localBuffer.array().length == length * 2)
@@ -299,7 +299,6 @@ class ParameterManager2(val id: Int, val executorId: Int,
   }
 
   /** Put a gradient in local blockmanager */
-//  def sendGradientPartition[T: ClassTag](gradient: Tensor[T], pid: Int, loss: Double): Unit = {
   def sendGradientPartition[T: ClassTag](gradient: Tensor[T], pid: Int): Unit = {
     val gradientsId = getGradientPartitionId(pid)
 

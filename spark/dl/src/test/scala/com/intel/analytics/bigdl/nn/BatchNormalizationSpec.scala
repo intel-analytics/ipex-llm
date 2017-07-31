@@ -16,12 +16,43 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Parallel
 class BatchNormalizationSpec extends FlatSpec with Matchers {
+  "A BatchNormalization" should "generate correct output using default arguments" in {
+    val bn = BatchNormalization[Double](None)
+    val input = Tensor[Double](3, 3)
+
+    var i = 0
+    input.apply1(e => {
+      i += 1; i
+    })
+    val output = bn.forward(input)
+
+    val mean = Tensor[Double](Storage[Double](Array(4.0, 5.0, 6.0)))
+    val std = Tensor(Storage(Array(0.4082479, 0.4082479, 0.4082479)))
+    val output1 = Tensor[Double](3, 3)
+    for (i <- 1 to 3) {
+      for (j <- 1 to 3) {
+        output1.setValue(i, j, (input(Array(i, j)) - mean(Array(j))) * std(Array(j)))
+      }
+    }
+
+    output.nDimension() should be(2)
+    output.size(1) should be(3)
+    output.size(2) should be(3)
+
+    output.map(output1, (a, b) => {
+      a should be (b +- 0.0001)
+      a
+    })
+  }
+
   "A BatchNormalization" should "generate correct output" in {
+
     val bn = new BatchNormalization[Double](3)
     bn.weight(1) = 0.1
     bn.weight(2) = 0.2
@@ -30,6 +61,32 @@ class BatchNormalizationSpec extends FlatSpec with Matchers {
     bn.bias(1) = 0.1
     bn.bias(2) = 0.2
     bn.bias(3) = 0.3
+    val input = Tensor[Double](3, 3)
+
+    var i = 0
+    input.apply1(e => {
+      i += 1; i
+    })
+    val output = bn.forward(input)
+
+    output.nDimension() should be(2)
+    output.size(1) should be(3)
+    output.size(2) should be(3)
+    output(Array(1, 1)) should be(-0.0225 +- 0.0001)
+    output(Array(1, 2)) should be(-0.0449 +- 0.0001)
+    output(Array(1, 3)) should be(-0.0674 +- 0.0001)
+    output(Array(2, 1)) should be(0.1 +- 0.0001)
+    output(Array(2, 2)) should be(0.2 +- 0.0001)
+    output(Array(2, 3)) should be(0.3 +- 0.0001)
+    output(Array(3, 1)) should be(0.2225 +- 0.0001)
+    output(Array(3, 2)) should be(0.4449 +- 0.0001)
+    output(Array(3, 3)) should be(0.6674 +- 0.0001)
+  }
+
+  "A BatchNormalization" should "generate correct output for given weight and bias" in {
+    val weight = Tensor[Double](T(0.1, 0.2, 0.3))
+    val bias = Tensor[Double](T(0.1, 0.2, 0.3))
+    val bn = new BatchNormalization[Double](nOutput = 3, initWeight = weight, initBias = bias)
     val input = Tensor[Double](3, 3)
 
     var i = 0
@@ -155,5 +212,30 @@ class BatchNormalizationSpec extends FlatSpec with Matchers {
     output.valueAt(1) should be(0.2 +- 0.00001)
     output.valueAt(2) should be(0.6 +- 0.00001)
     output.valueAt(3) should be(1.2 +- 0.00001)
+  }
+
+  "A BatchNormalization with scaleW and scaleB" should "generate correct output" in {
+    val weight = Tensor[Double](T(0.1, 0.2, 0.3))
+    val bias = Tensor[Double](T(0.1, 0.2, 0.3))
+    val bn1 = new BatchNormalization[Double](nOutput = 3, initWeight = weight, initBias = bias)
+    val bn2 = bn1.cloneModule().asInstanceOf[BatchNormalization[Double]].setScaleW(0.5).setScaleB(2)
+    val input = Tensor[Double](3, 3)
+
+    var i = 0
+    input.apply1(e => {
+      i += 1; i
+    })
+    val output1 = bn1.forward(input)
+    val output2 = bn2.forward(input)
+    output1 should be(output2)
+
+    val gradOutput = Tensor(output1)
+    val gradInput1 = bn1.backward(input, gradOutput)
+    val gradInput2 = bn2.backward(input, gradOutput)
+    gradInput1 should be(gradInput2)
+
+    bn2.gradWeight should be(bn1.gradWeight.mul(0.5))
+    bn2.gradBias should be(bn1.gradBias.mul(2))
+
   }
 }

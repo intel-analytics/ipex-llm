@@ -125,10 +125,6 @@ class LogSoftMax[T: ClassTag](
 
     gradInput
   }
-
-  override def toString(): String = {
-    s"nn.LogSoftMax"
-  }
 }
 
 object LogSoftMax {

@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.optim
 
+import breeze.linalg.*
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
@@ -23,8 +24,21 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 import scala.math._
 import scala.reflect.ClassTag
 
-class Adam[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T])
-  extends OptimMethod[T] {
+/**
+ * An implementation of Adam http://arxiv.org/pdf/1412.6980.pdf
+ * @param learningRate learning rate
+ * @param learningRateDecay learning rate decay
+ * @param beta1 first moment coefficient
+ * @param beta2 second moment coefficient
+ * @param Epsilon for numerical stability
+ * @tparam T
+ */
+class Adam[@specialized(Float, Double) T: ClassTag](
+ var learningRate: Double = 1e-3,
+ var learningRateDecay: Double = 0.0,
+ var beta1: Double = 0.9,
+ var beta2: Double = 0.999,
+ var Epsilon: Double = 1e-8)(implicit ev: TensorNumeric[T]) extends OptimMethod[T] {
 
   /**
    * An implementation of Adam http://arxiv.org/pdf/1412.6980.pdf
@@ -32,38 +46,24 @@ class Adam[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T
    * @param feval     a function that takes a single input (X), the point of a evaluation, and
    *                  returns f(X) and df/dX
    * @param parameter the initial point
-   * @param config    a table with hyper-parameters for the optimizer
-   *                  config("learningRate") : learning rate
-   *                  config("learningRateDecay") : learning rate decay
-   *                  config("beta1") : first moment coefficient
-   *                  config("beta2") : second moment coefficient
-   *                  config("Epsilon"): for numerical stability
-   * @param state     a table describing the state of the optimizer; after each call the state
-   *                  is modified
-   *                  state("s") : 1st moment variables
-   *                  state("r"): 2nd moment variables
-   *                  state("denom"): A tmp tensor to hold the sqrt(v) + epsilon
    * @return the new x vector and the function list {fx}, evaluated before the update
    */
   override def optimize(feval: (Tensor[T]) => (T, Tensor[T]),
-               parameter: Tensor[T], config: Table, state: Table): (Tensor[T], Array[T]) = {
+               parameter: Tensor[T]): (Tensor[T], Array[T]) = {
 
-    val _config = if (config == null) T() else config
-    val _state = if (state == null) _config else state
-
-    val lr = _config.getOrElse[Double]("learningRate", 1e-3)
-    val lrd = _config.getOrElse[Double]("learningRateDecay", 0.0)
-    val beta1 = _config.getOrElse[Double]("beta1", 0.9)
-    val beta2 = _config.getOrElse[Double]("beta2", 0.999)
-    val eps = _config.getOrElse[Double]("Epsilon", 1e-8)
+    val lr = this.learningRate
+    val lrd = this.learningRateDecay
+    val beta1 = this.beta1
+    val beta2 = this.beta2
+    val eps = this.Epsilon
 
     val (fx, dfdx) = feval(parameter)
 
-    var timestep = _state.getOrElse[Int]("evalCounter", 0)
+    var timestep = state.getOrElse[Int]("evalCounter", 0)
 
     val (_s, _r, _denom) =
-      if (_state.get[Tensor[T]]("s").isDefined) {
-        (_state.get[Tensor[T]]("s").get, _state.get[Tensor[T]]("r").get,
+      if (state.get[Tensor[T]]("s").isDefined) {
+        (state.get[Tensor[T]]("s").get, state.get[Tensor[T]]("r").get,
           Tensor[T]().resizeAs(dfdx).zero())
       } else {
         (Tensor[T]().resizeAs(dfdx).zero(), Tensor[T]().resizeAs(dfdx).zero(),
@@ -82,15 +82,27 @@ class Adam[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T
     val stepSize = clr * sqrt(biasCorrection2) / biasCorrection1
     parameter.addcdiv(ev.fromType[Double](-stepSize), _s, _denom)
 
-    _state("evalCounter") = timestep
-    _state("s") = _s
-    _state("r") = _r
+    state("evalCounter") = timestep // A tmp tensor to hold the sqrt(v) + epsilon
+    state("s") = _s // 1st moment variables
+    state("r") = _r // 2nd moment variables
 
     (parameter, Array(fx))
   }
 
-  override def clearHistory(state: Table): Table = {
+  override def loadFromTable(config: Table): this.type = {
+    this.learningRate = config.get[Double]("learningRate").getOrElse(this.learningRate)
+    this.learningRateDecay = config.get[Double]("learningRateDecay")
+      .getOrElse(this.learningRateDecay)
+    this.beta1 = config.get[Double]("beta1").getOrElse(this.beta1)
+    this.beta2 = config.get[Double]("beta2").getOrElse(this.beta2)
+    this.Epsilon = config.get[Double]("Epsilon").getOrElse(this.Epsilon)
+    this
+  }
+
+  override def clearHistory(): Unit = {
     state.delete("s")
     state.delete("r")
   }
+
+  override def getLearningRate(): Double = this.learningRate
 }

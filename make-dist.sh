@@ -30,13 +30,21 @@ else
     exit 1
 fi
 
+MVN_OPTS_LIST="-Xmx2g -XX:ReservedCodeCacheSize=512m"
+
 if [[ "$_java" ]]; then
     version=$("$_java" -version 2>&1 | awk -F '"' '/version/ {print $2}')
     if [[ "$version" < "1.7" ]]; then
         echo Require a java version not lower than 1.7
         exit 1
     fi
+    # For jdk7
+    if [[ "$version" < "1.8" ]]; then
+        MVN_OPTS_LIST="$MVN_OPTS_LIST -XX:MaxPermSize=1G"
+    fi
 fi
+
+export MAVEN_OPTS=${MAVEN_OPTS:-"$MVN_OPTS_LIST"}
 
 # Check if mvn installed
 MVN_INSTALL=$(which mvn 2>/dev/null | grep mvn | wc -l)
@@ -49,10 +57,6 @@ mvn clean package -DskipTests $*
 
 BASEDIR=$(dirname "$0")
 DIST_DIR=$BASEDIR/dist
-BIN_DIR=$DIST_DIR/bin
-LIB_DIR=$DIST_DIR/lib
-CONF_DIR=$DIST_DIR/conf
-VERSION=0.2.0-SNAPSHOT
 
 if [ ! -d "$DIST_DIR" ]
 then
@@ -62,15 +66,4 @@ else
   mkdir $DIST_DIR
 fi
 
-mkdir $BIN_DIR
-mkdir $LIB_DIR
-mkdir $CONF_DIR
-
-cp $BASEDIR/scripts/bigdl.sh $BIN_DIR/
-cp $BASEDIR/scripts/classes.lst $BIN_DIR/
-cp $BASEDIR/scripts/img_class.lst $BIN_DIR/
-cp $BASEDIR/spark/dl/src/main/resources/spark-bigdl.conf $CONF_DIR/
-
-cp $BASEDIR/spark/dl/target/bigdl-$VERSION-jar-with-dependencies.jar $LIB_DIR/
-cp $BASEDIR/target/bigdl-$VERSION-python-api.zip $LIB_DIR/
-
+cp -r $BASEDIR/spark/dist/target/bigdl-*/* ./dist/

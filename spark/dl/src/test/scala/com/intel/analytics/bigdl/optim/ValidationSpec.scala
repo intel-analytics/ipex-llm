@@ -17,10 +17,60 @@
 package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Parallel
 class ValidationSpec extends FlatSpec with Matchers {
+  "treeNN accuracy" should "be correct on 2d tensor" in {
+    val output = Tensor[Double](
+      T(
+        T(0.0, 0.0, 0.1, 0.0),
+        T(3.0, 7.0, 0.0, 1.0),
+        T(0.0, 1.0, 0.0, 0.0)))
+
+    val target = Tensor[Double](
+      T(3.0))
+
+    val validation = new TreeNNAccuracy[Double]()
+    val result = validation(output, target)
+    val test = new AccuracyResult(1, 1)
+    result should be(test)
+  }
+
+  "treeNN accuracy" should "be correct on 3d tensor" in {
+    val output = Tensor[Double](
+      T(
+        T(
+          T(0.0, 0.0, 0.1, 0.0),
+          T(3.0, 7.0, 0.0, 1.0),
+          T(0.0, 1.0, 0.0, 0.0)),
+        T(
+          T(0.0, 0.1, 0.0, 0.0),
+          T(3.0, 7.0, 0.0, 1.0),
+          T(0.0, 1.0, 0.0, 0.0)),
+        T(
+          T(0.0, 0.0, 0.0, 0.1),
+          T(3.0, 7.0, 0.0, 1.0),
+          T(0.0, 1.0, 0.0, 0.0)),
+        T(
+          T(0.0, 0.0, 0.0, 1.0),
+          T(3.0, 0.0, 8.0, 1.0),
+          T(0.0, 1.0, 0.0, 0.0))))
+
+    val target = Tensor[Double](
+      T(
+        T(3.0, 0.0, 0.1, 1.0),
+        T(2.0, 0.0, 0.1, 1.0),
+        T(3.0, 7.0, 0.0, 1.0),
+        T(4.0, 1.0, 0.0, 0.0)))
+
+    val validation = new TreeNNAccuracy[Double]()
+    val result = validation(output, target)
+    val test = new AccuracyResult(3, 4)
+    result should be(test)
+  }
+
   "top1 accuracy" should "be correct on 2d tensor" in {
     val output = Tensor(Storage(Array[Double](
       0, 0, 0, 1,
@@ -47,6 +97,36 @@ class ValidationSpec extends FlatSpec with Matchers {
     val validation = new Top1Accuracy[Double]()
     val result = validation(output, target)
     val test = new AccuracyResult(4, 8)
+    result should be(test)
+  }
+
+
+  "top1 accuracy" should "be correct on 2d tensor for binary inputs" in {
+    val output = Tensor(Storage(Array[Double](
+      0,
+      0,
+      1,
+      0,
+      1,
+      0,
+      0,
+      0
+    )), 1, Array(8, 1))
+
+    val target = Tensor(Storage(Array[Double](
+      1,
+      0,
+      1,
+      1,
+      0,
+      0,
+      1,
+      1
+    )))
+
+    val validation = new Top1Accuracy[Double]()
+    val result = validation(output, target)
+    val test = new AccuracyResult(3, 8)
     result should be(test)
   }
 
@@ -139,5 +219,26 @@ class ValidationSpec extends FlatSpec with Matchers {
     val result4 = validation(output, target4)
     val test4 = new AccuracyResult(1, 1)
     result4 should be(test4)
+  }
+
+  "MAE" should "be correct on 2d tensor" in {
+    val output = Tensor(Storage(Array[Double](
+      0.1, 0.15, 0.7, 0.1, 0.05,
+      0.1, 0.6, 0.1, 0.1, 0.1,
+      0.8, 0.05, 0.05, 0.05, 0.05,
+      0.1, 0.05, 0.7, 0.1, 0.05
+    )), 1, Array(4, 5))
+
+    val target = Tensor(Storage(Array[Double](
+      4,
+      3,
+      4,
+      2
+    )))
+
+    val validation = new MAE[Double]()
+    val result = validation(output, target)
+    val test = new LossResult(1.5f, 1)
+    result should be(test)
   }
 }

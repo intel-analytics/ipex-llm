@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.nn.{CrossEntropyCriterion, Module}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.models.resnet.ResNet.{DatasetType, ShortcutType}
 import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, T}
+import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, T, Table}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
@@ -37,6 +37,8 @@ object Train {
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {
       val conf = Engine.createSparkConf().setAppName("Train ResNet on Cifar10")
+        // Will throw exception without this config when has only one executor
+        .set("spark.rpc.message.maxSize", "200")
       val sc = new SparkContext(conf)
       Engine.init
 
@@ -67,17 +69,12 @@ object Train {
         curModel
       }
 
-      val state = if (param.stateSnapshot.isDefined) {
-        T.load(param.stateSnapshot.get)
+      val optimMethod = if (param.stateSnapshot.isDefined) {
+        OptimMethod.load[Float](param.stateSnapshot.get)
       } else {
-        T(
-          "learningRate" -> param.learningRate,
-          "weightDecay" -> param.weightDecay,
-          "momentum" -> param.momentum,
-          "dampening" -> param.dampening,
-          "nesterov" -> param.nesterov,
-          "learningRateSchedule" -> SGD.EpochDecay(cifar10Decay)
-        )
+        new SGD[Float](learningRate = param.learningRate, learningRateDecay = 0.0,
+          weightDecay = param.weightDecay, momentum = param.momentum, dampening = param.dampening,
+          nesterov = param.nesterov, learningRateSchedule = SGD.EpochDecay(cifar10Decay))
       }
 
       val optimizer = Optimizer(
@@ -90,11 +87,12 @@ object Train {
       }
 
       optimizer
-        .setState(state)
+        .setOptimMethod(optimMethod)
         .setValidation(Trigger.everyEpoch,
           validateSet, Array(new Top1Accuracy[Float]))
         .setEndWhen(Trigger.maxEpoch(maxEpoch))
         .optimize()
+      sc.stop()
 
     })
   }
