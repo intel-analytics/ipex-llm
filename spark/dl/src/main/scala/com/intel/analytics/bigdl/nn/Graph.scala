@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer.{ContainerSerializable, DataConverter, ModuleData, ModuleSerializer}
 import com.intel.analytics.bigdl.utils.{Node, T, Table}
-import serialization.Model.{AttrValue, BigDLModule}
+import serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer

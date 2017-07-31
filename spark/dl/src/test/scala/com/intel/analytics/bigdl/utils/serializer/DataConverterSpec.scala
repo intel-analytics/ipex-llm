@@ -21,11 +21,11 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, Tensor
 import com.intel.analytics.bigdl.optim.{L1L2Regularizer, L1Regularizer, L2Regularizer, Regularizer}
 import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
-import serialization.Model.AttrValue
+import serialization.Bigdl.AttrValue
 
 import scala.reflect.runtime.universe
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
-import serialization.Model.AttrValue.DataType
+import serialization.Bigdl.AttrValue.DataType
 
 import scala.collection.mutable
 import scala.util.Random

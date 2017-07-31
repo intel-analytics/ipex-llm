@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.IOUtils
-import serialization.Model.BigDLModule
+import serialization.Bigdl.BigDLModule
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag

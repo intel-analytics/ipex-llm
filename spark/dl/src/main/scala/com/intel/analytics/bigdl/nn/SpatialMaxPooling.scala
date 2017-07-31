@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData, ModuleSerializable}
-import serialization.Model.{AttrValue, BigDLModule}
+import serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.reflect._
 import scala.reflect.runtime.universe

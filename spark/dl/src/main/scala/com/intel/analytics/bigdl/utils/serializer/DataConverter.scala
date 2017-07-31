@@ -22,8 +22,8 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.optim.{L1L2Regularizer, L1Regularizer, L2Regularizer, Regularizer}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import serialization.Model._
-import serialization.Model.AttrValue.{ArrayValue, DataType}
+import serialization.Bigdl._
+import serialization.Bigdl.AttrValue.{ArrayValue, DataType}
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
@@ -174,9 +174,9 @@ object DataConverter extends DataConverter{
       val l1 = regularizer.getRegularDataList.get(0)
       val l2 = regularizer.getRegularDataList.get(1)
       regularizerType match {
-        case serialization.Model.RegularizerType.L1Regularizer => L1Regularizer[T](l1)
-        case serialization.Model.RegularizerType.L2Regularizer => L2Regularizer[T](l2)
-        case serialization.Model.RegularizerType.L1L2Regularizer => L1L2Regularizer[T](l1, l2)
+        case serialization.Bigdl.RegularizerType.L1Regularizer => L1Regularizer[T](l1)
+        case serialization.Bigdl.RegularizerType.L2Regularizer => L2Regularizer[T](l2)
+        case serialization.Bigdl.RegularizerType.L1L2Regularizer => L1L2Regularizer[T](l1, l2)
       }
     }
 
@@ -186,16 +186,16 @@ object DataConverter extends DataConverter{
     (implicit ev: TensorNumeric[T]): Unit = {
       attributeBuilder.setDataType(DataType.REGULARIZER)
       if (value != null) {
-        var regularizerBuilder = serialization.Model.Regularizer.newBuilder
+        var regularizerBuilder = serialization.Bigdl.Regularizer.newBuilder
         val regularizer = value.asInstanceOf[L1L2Regularizer[T]]
         val l1 = regularizer.l1
         val l2 = regularizer.l2
         regularizerBuilder.addRegularData(l1)
         regularizerBuilder.addRegularData(l2)
         val regularizerType = regularizer match {
-          case l1: L1Regularizer[_] => serialization.Model.RegularizerType.L1Regularizer
-          case l2: L2Regularizer[_] => serialization.Model.RegularizerType.L2Regularizer
-          case l1l2: L1L2Regularizer[_] => serialization.Model.RegularizerType.L1L2Regularizer
+          case l1: L1Regularizer[_] => serialization.Bigdl.RegularizerType.L1Regularizer
+          case l2: L2Regularizer[_] => serialization.Bigdl.RegularizerType.L2Regularizer
+          case l1l2: L1L2Regularizer[_] => serialization.Bigdl.RegularizerType.L1L2Regularizer
         }
         regularizerBuilder.setRegularizerType(regularizerType)
         attributeBuilder.setRegularizerValue(regularizerBuilder.build)

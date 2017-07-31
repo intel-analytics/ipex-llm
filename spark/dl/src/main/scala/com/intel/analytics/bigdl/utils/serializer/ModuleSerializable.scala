@@ -23,8 +23,8 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
 import com.intel.analytics.bigdl.utils.serializer.DataConverter.RegularizerConverter
-import serialization.Model.AttrValue.DataType
-import serialization.Model.{AttrValue, BigDLModule, BigDLTensor}
+import serialization.Bigdl.AttrValue.DataType
+import serialization.Bigdl.{AttrValue, BigDLModule, BigDLTensor}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag

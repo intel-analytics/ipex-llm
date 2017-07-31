@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializer._
 import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData, ModuleSerializable, ModuleSerializer}
-import serialization.Model.{AttrValue, BigDLModule}
+import serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.concurrent.Future
 import scala.reflect.ClassTag

@@ -19,7 +19,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
 import com.intel.analytics.bigdl.utils.serializer._
-import serialization.Model.BigDLModule
+import serialization.Bigdl.BigDLModule
 
 import scala.reflect.ClassTag
 
