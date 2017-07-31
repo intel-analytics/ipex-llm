@@ -50,14 +50,48 @@ object BlockManagerWrapper {
     SparkEnv.get.blockManager.removeBlock(blockId)
   }
 
-  def byteBufferConvert(chunkedByteBuffer: ChunkedByteBuffer): ByteBuffer = {
-    ByteBuffer.wrap(chunkedByteBuffer.toArray)
+  def getLocalOrRemoteBytes(blockId: BlockId): Option[ByteBuffer] = {
+    val maybeLocalBytes = getLocalBytesFn(blockId)
+    if (maybeLocalBytes.isDefined) {
+      maybeLocalBytes
+    } else {
+      SparkEnv.get.blockManager.getRemoteBytes(blockId).map(_.toByteBuffer)
+    }
   }
 
   def unlock(blockId : BlockId): Unit = {
     val blockInfoManager = SparkEnv.get.blockManager.blockInfoManager
     if(blockInfoManager.get(blockId).isDefined) {
       blockInfoManager.unlock(blockId)
+    }
+  }
+
+  private val getLocalBytesFn: (BlockId) => Option[ByteBuffer] = {
+    val bmClass = classOf[BlockManager]
+    val getLocalBytesMethod = bmClass.getMethod("getLocalBytes", classOf[BlockId])
+
+    // Spark versions before 2.2.0 declare:
+    // def getLocalBytes(blockId: BlockId): Option[ChunkedByteBuffer]
+    // Spark 2.2.0+ declares:
+    // def getLocalBytes(blockId: BlockId): Option[BlockData]
+    // Because the latter change happened in the commit that introduced BlockData,
+    // and because you can't discover the generic type of the return type by reflection,
+    // distinguish the cases by seeing if BlockData exists.
+    try {
+      val blockDataClass = Class.forName("org.apache.spark.storage.BlockData")
+      // newer method, apply reflection to transform BlockData after invoking
+      val toByteBufferMethod = blockDataClass.getMethod("toByteBuffer")
+      (blockId: BlockId) =>
+        getLocalBytesMethod.invoke(SparkEnv.get.blockManager, blockId)
+          .asInstanceOf[Option[_]]
+          .map(blockData => toByteBufferMethod.invoke(blockData).asInstanceOf[ByteBuffer])
+    } catch {
+      case _: ClassNotFoundException =>
+        // older method, can be invoked directly
+        (blockId: BlockId) =>
+          getLocalBytesMethod.invoke(SparkEnv.get.blockManager, blockId)
+            .asInstanceOf[Option[ChunkedByteBuffer]]
+            .map(_.toByteBuffer)
     }
   }
 
