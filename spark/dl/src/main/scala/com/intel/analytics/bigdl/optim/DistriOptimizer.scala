@@ -118,9 +118,7 @@ object DistriOptimizer {
       case MklBlas => coresPerNode
     }
 
-    val totalRecords = dataset.data(false).map { b =>
-      b.getTarget().toTensor.storage().array().length
-    }.reduce(_ + _)
+    val numSamples = dataset.data(train = false).map(_.size()).reduce(_ + _)
 
     val shuffleBefore = System.nanoTime()
     logger.info(s"config $state")
@@ -144,10 +142,7 @@ object DistriOptimizer {
     var epochStart = System.nanoTime()
     var dataRDD = dataset.data(train = true)
     var recordsProcessed = 0
-    var miniBatchesProcessed = 0
     while (!endWhen(driverState)) {
-      val _header = header(driverState[Int]("epoch"), miniBatchesProcessed, dataset.size(),
-        driverState[Int]("neval"), wallClockTime)
       val lossSum = sc.accumulator(0.0, "loss sum")
       val recordsNum = sc.accumulator(0, "record number")
       metrics.set("computing time for each node", mutable.ArrayBuffer[Double](), sc)
@@ -228,7 +223,7 @@ object DistriOptimizer {
             i += 1
           }
 
-          if (finishedThreads.size > 0) {
+          if (finishedThreads.nonEmpty) {
             time = System.nanoTime()
             val gradLength = cached.modelGradients(0).nElement()
             val taskSize = gradLength / _subModelNumber
@@ -295,7 +290,6 @@ object DistriOptimizer {
         }.count()
 
         recordsProcessed += recordsNum.value
-        miniBatchesProcessed += 1
         val end = System.nanoTime()
         wallClockTime += end - start
         optimMethod.state.update("epoch", driverState[Int]("epoch"))
@@ -308,8 +302,10 @@ object DistriOptimizer {
         optimMethod.updateHyperParameter()
         driverState("Throughput") = recordsNum.value.toFloat / ((end - start) / 1e9f)
         driverState("LearningRate") = -optimMethod.getLearningRate().toFloat
-        logger.info(s"${_header} Train ${recordsNum.value} in ${(end - start) / 1e9} seconds. " +
-          s"Throughput is ${driverState("Throughput")} records/second. Loss is ${
+        val _header = header(driverState[Int]("epoch"), recordsProcessed, numSamples,
+          driverState[Int]("neval"), wallClockTime)
+        logger.info(s"${_header} Trained ${recordsNum.value} records in ${(end - start) / 1e9} " +
+          s"seconds. Throughput is ${driverState("Throughput")} records/second. Loss is ${
             driverState("Loss")}. ${optimMethod.getHyperParameter()}")
         logger.debug("\n" + metrics.summary())
         logger.debug("Dropped modules: " + (driverSubModelNum - numFinishedModelUpdates))
@@ -346,7 +342,7 @@ object DistriOptimizer {
         }
 
         driverState("neval") = driverState[Int]("neval") + 1
-        if (miniBatchesProcessed >= dataset.size()) {
+        if (recordsProcessed >= numSamples) {
           val epochEnd = System.nanoTime()
           wallClockTime = lastEpochTime + epochEnd - epochStart
           lastEpochTime = wallClockTime
@@ -357,7 +353,6 @@ object DistriOptimizer {
           dataset.shuffle()
           dataRDD = dataset.data(train = true)
           recordsProcessed = 0
-          miniBatchesProcessed = 0
         }
         validate(
           validationTrigger,
@@ -370,9 +365,9 @@ object DistriOptimizer {
           validationSummary
         )
 
-        if (trainSummary.isDefined) {
+        trainSummary.foreach { summary =>
           saveSummary(
-            trainSummary.get,
+            summary,
             models,
             driverState,
             parameters
