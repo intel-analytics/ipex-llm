@@ -142,9 +142,6 @@ object Engine {
   // Thread pool for layer use
   @volatile private var _model: ThreadPool = new ThreadPool(1).setMKLThread(MKL.getNumThreads)
 
-  // Thread pool for parameterManager use
-  @volatile private var _pmPool: ThreadPool = null
-
   /**
    * If user undefine the property bigdl.coreNumber, it will return physical core number
    * system has. The biggest number it supports is the physical cores number.
@@ -161,16 +158,6 @@ object Engine {
     // Todo: check the Hyper threading
     Runtime.getRuntime().availableProcessors() / 2
   }
-
-  /**
-   * @return true if current execution is a singleton on the JVM
-   */
-  private[bigdl] def checkSingleton(): Boolean = singletonCounter.compareAndSet(false, true)
-
-  /**
-   * Reset the singleton flag
-   */
-  private[bigdl] def resetSingletonFlag(): Unit = singletonCounter.set(false)
 
   /**
    * Return number of cores, the engine.init must be called before use this method or an exception
@@ -241,14 +228,6 @@ object Engine {
     _default
   }
 
-  private[bigdl] def pmPool: ThreadPool = {
-    if (_pmPool == null) {
-      throw new IllegalStateException(s"Engine.init: Thread engine is not " +
-        s"initialized. $NOT_INIT_ERROR")
-    }
-    _pmPool
-  }
-
   private def initThreadPool(core : Int) : Unit = {
     val defaultPoolSize: Int = System.getProperty("bigdl.utils.Engine.defaultPoolSize",
       (core * 50).toString).toInt
@@ -265,12 +244,6 @@ object Engine {
     if(_model == null || _model.getPoolSize != modelPoolSize) {
       _model = new ThreadPool(modelPoolSize)
       _model.setMKLThread(MKL.getNumThreads)
-    }
-
-    val pmPoolSize: Int = System.getProperty("bigdl.utils.Engine.pmPoolSize",
-      (core * 50).toString).toInt
-    if(_pmPool == null || _pmPool.getPoolSize != pmPoolSize) {
-      _pmPool = new ThreadPool(pmPoolSize)
     }
   }
 
@@ -330,6 +303,8 @@ object Engine {
   private[bigdl] def setNodeAndCore(nodeNum: Int, coreNum: Int): Unit = {
     setNodeNumber(nodeNum)
     setCoreNumber(coreNum)
+    // By default partition number is the same with node number
+    setPartitionNumber(nodeNum)
   }
 
   /**
@@ -435,16 +410,14 @@ object Engine {
   }
   
   var parNumber = 0
-  private[bigdl] def partitionNumber(): Option[Int] = {
-    Some(parNumber)
+  private[bigdl] def partitionNumber(): Int = {
+    parNumber
   }
 
   /**
-    * This method should only be used for test purpose.
-    *
     * @param n
     */
-  private[bigdl] def setPartitionNumber(n : Option[Int]): Unit = {
-    parNumber = n.get
+  private[bigdl] def setPartitionNumber(n : Int): Unit = {
+    parNumber = n
   }
 }

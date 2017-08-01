@@ -34,9 +34,7 @@ object Options {
     maxIteration: Int = 62000,
     weightDecay: Double = 0.0001,
     checkpointIteration: Int = 620,
-    partitionNum: Int = -1,
-    nodeNum: Int = -1,
-    corePerTask: Int = -1
+    partitionNum: Int = -1
   )
 
   val trainParser = new OptionParser[TrainParams]("BigDL Inception Example") {

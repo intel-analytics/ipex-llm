@@ -49,7 +49,7 @@ val sc = Engine.init(4, 1, true)
         })
 
       val partitionNum = 12
-      Engine.setPartitionNumber(Some(partitionNum))
+      Engine.setPartitionNumber(partitionNum)
 //      RandomGenerator.RNG.setSeed(10)
       val input1: Tensor[Double] = Tensor[Double](Storage[Double](Array(0.0, 1.0, 2.0, 3.0)))
 //val input1: Tensor[Double] = Tensor[Double](Storage[Double](Array(1.0, 1.0, 1.0, 1.0)))

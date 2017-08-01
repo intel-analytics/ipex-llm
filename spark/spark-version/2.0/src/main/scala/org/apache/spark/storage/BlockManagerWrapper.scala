@@ -39,6 +39,10 @@ object BlockManagerWrapper {
     SparkEnv.get.blockManager.getLocalValues(blockId)
   }
 
+  def getLocalBytes(blockId: BlockId): Option[ByteBuffer] = {
+    getLocalBytesFn(blockId)    
+  }
+
   def putSingle(blockId: BlockId,
     value: Any,
     level: StorageLevel,

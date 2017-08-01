@@ -45,6 +45,11 @@ object BlockManagerWrapper {
     SparkEnv.get.blockManager.getLocal(blockId)
   }
 
+
+  def getLocalBytes(blockId: BlockId): Option[ByteBuffer] = {
+    SparkEnv.get.blockManager.getLocalBytes(blockId)
+  }
+
   def getLocalOrRemoteBytes(blockId: BlockId): Option[ByteBuffer] = {
     val bm = SparkEnv.get.blockManager
     val maybeLocalBytes = bm.getLocalBytes(blockId)
