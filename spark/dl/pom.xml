@@ -145,6 +145,27 @@
     <build>
         <plugins>
             <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-surefire-plugin</artifactId>
+              <version>2.20</version>
+              <configuration>
+                <includes>
+                  <include>**/*TestParallel.class</include>
+                  <include>**/*TestParallel2.class</include>
+                  <!--
+                  <include>**/*DistriOptimizerSpec.class</include>
+                  -->
+                </includes>
+                <forkCount>2.5C</forkCount>
+                <reuseForks>true</reuseForks>
+                <parallel>methods</parallel>
+                <useUnlimitedThreads>true</useUnlimitedThreads>
+                <useFile>false</useFile>
+                <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                <argLine>-Xmx1024m -XX:MaxPermSize=256m</argLine>
+              </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.scalatest</groupId>
                 <artifactId>scalatest-maven-plugin</artifactId>
                 <version>1.0</version>
@@ -297,6 +318,7 @@
                 <runSpecsInParallel>true</runSpecsInParallel>
                 <tagsToInclude>com.intel.analytics.bigdl.tags.Parallel</tagsToInclude>
                 <tagsToExclude>com.intel.analytics.bigdl.tags.Integration</tagsToExclude>
+                <tagsToExclude>com.intel.analytics.bigdl.tags.Ignore</tagsToExclude>
             </properties>
         </profile>
         <profile>
@@ -304,6 +326,7 @@
             <properties>
                 <runSpecsInParallel>false</runSpecsInParallel>
                 <tagsToExclude>com.intel.analytics.bigdl.tags.Parallel,com.intel.analytics.bigdl.tags.Integration</tagsToExclude>
+                <tagsToExclude>com.intel.analytics.bigdl.tags.Ignore</tagsToExclude>
             </properties>
         </profile>
         <profile>
