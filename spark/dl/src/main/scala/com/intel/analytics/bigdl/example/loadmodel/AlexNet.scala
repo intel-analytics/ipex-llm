@@ -38,7 +38,7 @@ object AlexNet_OWT {
     model.add(SpatialConvolution(256, 256, 3, 3, 1, 1, 1, 1).setName("conv5"))
     model.add(ReLU(true).setName("relu5"))
     model.add(SpatialMaxPooling(3, 3, 2, 2).setName("poo5"))
-    model.add(View(256 * 6 * 6))
+    model.add(View(256 * 6 * 6).setName("view"))
     model.add(Linear(256 * 6 * 6, 4096).setName("fc6"))
     model.add(ReLU(true).setName("relu6"))
     if (hasDropout) model.add(Dropout(0.5).setName("drop6"))
@@ -46,7 +46,7 @@ object AlexNet_OWT {
     model.add(ReLU(true).setName("relu7"))
     if (hasDropout) model.add(Dropout(0.5).setName("drop7"))
     model.add(Linear(4096, classNum).setName("fc8"))
-    model.add(LogSoftMax())
+    model.add(LogSoftMax().setName("logsoftmax"))
     model
   }
 }

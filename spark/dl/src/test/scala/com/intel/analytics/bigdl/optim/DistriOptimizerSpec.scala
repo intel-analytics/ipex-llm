@@ -361,6 +361,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "TrainSummary with MSE and LBFGS" should "work correctly" in {
+    TestUtils.cancelOnWindows()
     RandomGenerator.RNG.setSeed(10)
     val logdir = com.google.common.io.Files.createTempDir()
     val trainSummary = TrainSummary(logdir.getPath, "lbfgs")
@@ -382,6 +383,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "TrainSummary with MSE and SGD" should "work correctly" in {
+    TestUtils.cancelOnWindows()
     RandomGenerator.RNG.setSeed(10)
     val logdir = com.google.common.io.Files.createTempDir()
     val trainSummary = TrainSummary(logdir.getPath, "sgd")
@@ -403,6 +405,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "TrainSummary with MSE and Adagrad" should "work correctly" in {
+    TestUtils.cancelOnWindows()
     RandomGenerator.RNG.setSeed(10)
     val logdir = com.google.common.io.Files.createTempDir()
     val trainSummary = TrainSummary(logdir.getPath, "adagrad")

@@ -20,10 +20,9 @@ import java.util
 import java.util.{List => JList, Map => JMap}
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.TensorSample
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim.{Loss, SGD, Top1Accuracy, Trigger}
-import com.intel.analytics.bigdl.utils.{Engine, T}
+import com.intel.analytics.bigdl.utils.{Engine, T, TestUtils}
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
@@ -140,6 +139,7 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "Double prototype" should "be test" in {
+    TestUtils.cancelOnWindows()
 
     Logger.getLogger("org").setLevel(Level.WARN)
     Logger.getLogger("akka").setLevel(Level.WARN)
@@ -210,20 +210,16 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val localData = data.collect()
     pp.toTensor(preResult.get(0)) should be
-    (trainedModel.forward(pp.toSample(localData(0))
-      .asInstanceOf[TensorSample[Float]].featureTensor))
+    (trainedModel.forward(pp.toSample(localData(0)).feature))
 
     pp.toTensor(preResult.get(25)) should be
-    (trainedModel.forward(pp.toSample(localData(25))
-      .asInstanceOf[TensorSample[Float]].featureTensor))
+    (trainedModel.forward(pp.toSample(localData(25)).feature))
 
     pp.toTensor(preResult.get(55)) should be
-    (trainedModel.forward(pp.toSample(localData(55))
-      .asInstanceOf[TensorSample[Float]].featureTensor))
+    (trainedModel.forward(pp.toSample(localData(55)).feature))
 
     pp.toTensor(preResult.get(75)) should be
-    (trainedModel.forward(pp.toSample(localData(75))
-      .asInstanceOf[TensorSample[Float]].featureTensor))
+    (trainedModel.forward(pp.toSample(localData(75)).feature))
 
     // TODO: verify the parameters result
     val parameters = pp.modelGetParameters(trainedModel)

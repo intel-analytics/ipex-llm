@@ -35,7 +35,7 @@ object TensorflowSaver {
    *
    * When save the model, placeholders will be added to the tf model as input nodes. So you need to
    * pass in the names and shape for the placeholders. BigDL model doesn't have such information.
-   * The order of the placeholde information should be same as the inputs of the graph model
+   * The order of the placeholder information should be same as the inputs of the graph model
    *
    * @param model graph model instance
    * @param inputs input node defs
@@ -43,7 +43,7 @@ object TensorflowSaver {
    * @param byteOrder model byte order
    * @tparam T
    */
-  def saveGraphWitNodeDef[T](
+  def saveGraphWithNodeDef[T](
       model : Graph[T],
       inputs : Seq[NodeDef],
       path: String,
@@ -78,8 +78,8 @@ object TensorflowSaver {
     val os = new FileOutputStream(path)
     val output = CodedOutputStream.newInstance(os)
     val graph = graphBuilder.build()
-    logger.info("Graph definition is:")
-    logger.info(graph.toString)
+    logger.debug("Graph definition is:")
+    logger.debug(graph.toString)
     graph.writeTo(output)
     output.flush()
     os.close()
@@ -91,7 +91,7 @@ object TensorflowSaver {
    *
    * When save the model, placeholders will be added to the tf model as input nodes. So you need to
    * pass in the names and shape for the placeholders. BigDL model doesn't have such information.
-   * The order of the placeholde information should be same as the inputs of the graph model
+   * The order of the placeholder information should be same as the inputs of the graph model
    *
    * @param model graph model instance
    * @param inputs placeholder information
@@ -109,7 +109,7 @@ object TensorflowSaver {
     val inputNodeDefs = inputs.map(input =>
       placeholder(model.getNumericType(), input._2, input._1)
     )
-    saveGraphWitNodeDef(model, inputNodeDefs, path, byteOrder)
+    saveGraphWithNodeDef(model, inputNodeDefs, path, byteOrder)
   }
 
   /**

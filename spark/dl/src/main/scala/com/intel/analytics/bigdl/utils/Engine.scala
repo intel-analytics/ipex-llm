@@ -150,12 +150,7 @@ object Engine {
    * Runtime.getRuntime().availableProcessors() / 2
    */
   private def getCoreNumberFromProperty() = {
-    val coreNumber = System.getProperty("bigdl.coreNumber", getNumMachineCores.toString).toInt
-    if (coreNumber > getNumMachineCores) {
-      getNumMachineCores
-    } else {
-      coreNumber
-    }
+    System.getProperty("bigdl.coreNumber", getNumMachineCores.toString).toInt
   }
 
   private def getNumMachineCores: Int = {
@@ -270,7 +265,14 @@ object Engine {
     val stream : InputStream = getClass.getResourceAsStream("/spark-bigdl.conf")
     val lines = scala.io.Source.fromInputStream(stream)
       .getLines.filter(_.startsWith("spark")).toArray
+
+    // For spark 1.5, we observe nio block manager has better performance than netty block manager
+    // So we will force set block manager to nio. If user don't want this, he/she can set
+    // bigdl.network.nio == false to customize it. This configuration/blcok manager setting won't
+    // take affect on newer spark version as the nio block manger has been removed
     lines.map(_.split("\\s+")).map(d => (d(0), d(1))).toSeq
+      .filter(_._1 != "spark.shuffle.blockTransferService" ||
+        System.getProperty("bigdl.network.nio", "true").toBoolean)
   }
 
   /**

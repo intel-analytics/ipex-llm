@@ -223,7 +223,7 @@ class TextClassifier(param: AbstractTextClassificationParams) extends Serializab
       Sample(
         featureTensor = Tensor(input.flatten, Array(sequenceLen, embeddingDim))
           .transpose(1, 2).contiguous(),
-        labelTensor = Tensor(Array(label), Array(1)))
+        label = label)
     }
 
     val Array(trainingRDD, valRDD) = sampleRDD.randomSplit(
@@ -255,14 +255,14 @@ class TextClassifier(param: AbstractTextClassificationParams) extends Serializab
       Sample(
         featureTensor = Tensor(input.flatten, Array(param.maxSequenceLength, param.embeddingDim))
           .transpose(1, 2).contiguous(),
-        labelTensor = Tensor(Array(label), Array(1)))
+        label = label)
     }
 
     val valRDD = rdds(1).map { case (input: Array[Array[Float]], label: Float) =>
       Sample(
         featureTensor = Tensor(input.flatten, Array(param.maxSequenceLength, param.embeddingDim))
           .transpose(1, 2).contiguous(),
-        labelTensor = Tensor(Array(label), Array(1)))
+        label = label)
     }
 
     // train

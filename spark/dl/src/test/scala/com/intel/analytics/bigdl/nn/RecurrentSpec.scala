@@ -23,9 +23,69 @@ import com.intel.analytics.bigdl.utils.{Engine, T}
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer
+import scala.math._
 
 @com.intel.analytics.bigdl.tags.Serial
 class RecurrentSpec extends FlatSpec with Matchers {
+
+  "A Recurrent" should " converge when batchSize changes" in {
+    val hiddenSize = 4
+    val inputSize = 5
+    val outputSize = 5
+    val time = 4
+    val batchSize1 = 5
+    val batchSize2 = 8
+    val seed = 100
+    RNG.setSeed(seed)
+
+    val model = Sequential[Double]()
+      .add(Recurrent[Double]()
+        .add(RnnCell[Double](inputSize, hiddenSize, Tanh[Double]())))
+      .add(Select(2, 1))
+      .add(Linear[Double](hiddenSize, outputSize))
+
+    val input1 = Tensor[Double](Array(batchSize1, time, inputSize)).rand
+    val input2 = Tensor[Double](batchSize2, time, inputSize).rand
+
+    val gradOutput1 = Tensor[Double](batchSize1, outputSize).rand
+    val gradOutput2 = Tensor[Double](batchSize2, outputSize).rand
+
+    model.clearState()
+
+    model.forward(input1)
+    model.backward(input1, gradOutput1)
+    val gradInput1 =
+      Tensor[Double](batchSize1, time, inputSize).copy(model.gradInput.toTensor[Double])
+    val output1 = Tensor[Double](batchSize1, outputSize).copy(model.output.toTensor[Double])
+
+    model.clearState()
+
+    model.forward(input2)
+    model.backward(input2, gradOutput2)
+    val gradInput2 =
+      Tensor[Double](batchSize2, time, inputSize).copy(model.gradInput.toTensor[Double])
+    val output2 = Tensor[Double](batchSize2, outputSize).copy(model.output.toTensor[Double])
+
+    model.forward(input1)
+    model.backward(input1, gradOutput1)
+    val gradInput1compare =
+      Tensor[Double](batchSize1, time, inputSize).copy(model.gradInput.toTensor[Double])
+    val output1compare = Tensor[Double](batchSize1, outputSize).copy(model.output.toTensor[Double])
+
+    model.forward(input2)
+    model.backward(input2, gradOutput2)
+    val gradInput2compare =
+      Tensor[Double](batchSize2, time, inputSize).copy(model.gradInput.toTensor[Double])
+    val output2compare = Tensor[Double](batchSize2, outputSize).copy(model.output.toTensor[Double])
+
+    model.hashCode()
+
+    output1 should be (output1compare)
+    output2 should be (output2compare)
+
+    gradInput1 should be (gradInput1compare)
+    gradInput2 should be (gradInput2compare)
+  }
 
   "A Recurrent Language Model Module " should "converge" in {
 
@@ -232,5 +292,33 @@ class RecurrentSpec extends FlatSpec with Matchers {
     }
 
     flag should be (false)
+  }
+
+  "A Recurrent Module " should "work with getFinalStateAndCell " in {
+    val hiddenSize = 4
+    val inputSize = 5
+    val outputSize = 5
+    val bpttTruncate = 10
+    val seed = 100
+    val batchSize = 1
+    val time = 4
+    RNG.setSeed(seed)
+
+    val rec = Recurrent[Double]()
+      .add(RnnCell[Double](inputSize, hiddenSize, Tanh()))
+    val model = Sequential[Double]()
+      .add(rec)
+
+    val input = Tensor[Double](Array(batchSize, time, inputSize)).rand
+
+    val output = model.forward(input).asInstanceOf[Tensor[Double]]
+    val (finalState, cellStatus) = rec.getFinalStateAndCellStatus()
+
+    finalState.map(output.asInstanceOf[Tensor[Double]].select(2, time), (v1, v2) => {
+      assert(abs(v1 - v2) == 0)
+      v1
+    })
+
+    assert(cellStatus == null, "rnn should not have cell state")
   }
 }

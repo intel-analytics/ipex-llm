@@ -57,7 +57,7 @@ object TensorflowLoader{
     val tfGraph = buildTFGraph(nodeList, outputs)
 
     // Build BigDL model from the tf node graph
-    buildBigDLModel(tfGraph, inputs, outputs, byteOrder)
+    buildBigDLModel(tfGraph, inputs, outputs, byteOrder, graphPrototxt)
   }
 
   /**
@@ -128,6 +128,7 @@ object TensorflowLoader{
       inputs: Seq[String],
       outputs: Seq[String],
       byteOrder: ByteOrder,
+      graphPrototxt: String,
       ctx: Option[Context[T]] = None
     )(implicit ev: TensorNumeric[T]): Module[T] = {
     import scala.collection.JavaConverters._
@@ -146,10 +147,23 @@ object TensorflowLoader{
       } else if (convertedNode.get(n).isDefined) {
         // converted node, skip
       } else {
+        val errorMsg =
+          s"""
+            | Cannot convert the given tensorflow operation graph to BigDL model. The convert fails
+            | at node ${n.element.getName}.
+            | To investigate the model. Please use the dump_tf_graph.py to dump the graph, then use
+            | Tensorboard to visualize the model.
+            |
+            | python dump_tf_graph.py $graphPrototxt
+            | tensorboard --logdir ./log
+            |
+            | You can find the dump_tf_graph.py in the bin folder of the dist package, or scripts
+            | folder in the source code.
+          """.stripMargin
+
         val (module, nodes, inputNodes) =
           extract[T](n.graph(reverse = true), context, byteOrder).getOrElse(
-            throw new UnsupportedOperationException(s"Can not find matched graph \n${n}\n\n" +
-              s"Its inputs are\n ${n.prevNodes.mkString("\n")}")
+            throw new UnsupportedOperationException(errorMsg)
           )
 
         val node = new Node(module)

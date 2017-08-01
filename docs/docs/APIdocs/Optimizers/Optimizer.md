@@ -32,6 +32,40 @@ val optimizer = Opimizer[T: ClassTag, D](
 `dataset`: the training DataSet.  
 `criterion`: the Loss function.
 
+```scala
+def apply[T: ClassTag](
+      model: Module[T],
+      sampleRDD: RDD[Sample[T]],
+      criterion: Criterion[T],
+      batchSize: Int,
+      featurePaddingParam: PaddingParam[T],
+      labelPaddingParam: PaddingParam[T])
+```
+Apply an Optimizer who could apply padding to the Samples with a padding strategy.  
+`model`: model will be optimizied.  
+`sampleRDD`: training Samples.  
+`criterion`: loss function.  
+`batchSize`: mini batch size.  
+`featurePaddingParam`: feature padding strategy.  
+`labelPaddingParam`: label padding strategy.
+
+
+
+```scala
+def apply[T: ClassTag](
+      model: Module[T],
+      sampleRDD: RDD[Sample[T]],
+      criterion: Criterion[T],
+      batchSize: Int,
+      miniBatch: MiniBatch[T])
+```
+Apply an optimizer with User-Defined `MiniBatch`.  
+`model`: model will be optimizied.  
+`sampleRDD`: training Samples.  
+`criterion`: loss function.  
+`batchSize`: mini batch size.  
+`miniBatch`: An User-Defined MiniBatch to construct a mini batch.
+
 ***Validation***
 
 Function setValidation is to set a validate evaluation in the `optimizer`.
@@ -220,10 +254,10 @@ optimizer = Optimizer(
   model=lenet_model,
   training_rdd=train_data,
   criterion=ClassNLLCriterion(),
+  optim_method=SGD(learningrate=0.01, learningrate_decay=0.0002), # set optim method
   end_trigger=MaxEpoch(15),
-  batch_size=batch_size,
-  optim_method=SGD(learningrate=0.05)
-)
+  batch_size=batch_size)
+  
 # Older version, before 0.2.0, use following code: 
 # optimizer = Optimizer(
 #   model=model,
@@ -238,8 +272,24 @@ optimizer.set_validation(
     batch_size=2048,
     val_rdd=test_data,
     trigger=EveryEpoch(),
-    val_method=["Top1Accuracy"]
+    val_method=[Top1Accuracy()]
 )
 
+# Older version, before 0.2.0, use following code: 
+#optimizer.set_validation(
+#    batch_size=2048,
+#    val_rdd=test_data,
+#    trigger=EveryEpoch(),
+#    val_method=["Top1Accuracy"]
+#)
+
 trained_model = optimizer.optimize()
+
 ```
+
+### How BigDL train models in a distributed cluster? ###
+BigDL distributed training is data parallelism. The training data is split among workers and cached in memory. A complete model is also cached on each worker. The model only uses the data of the same worker in the training.
+
+BigDL employs a synchronous distributed training. In each iteration, each worker will sync the latest weights, calculate gradients with local data and local model, sync the gradients and update the weights with a given optimization method(e.g. SGD, Adagrad).
+
+In gradients and weights sync, BigDL doesn't use the RDD APIs like(broadcast, reduce, aggregate, treeAggregate). The problem of these methods is every worker needs to communicate with driver, so the driver will become the bottleneck if the parameter is too large or the workers are too many. Instead, BigDL implement a P2P algorithm for parameter sync to remove the bottleneck. For detail of the algorithm, please see the [code](https://github.com/intel-analytics/BigDL/blob/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/optim/DistriOptimizer.scala)

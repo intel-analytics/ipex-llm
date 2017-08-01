@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.models
 
+import com.intel.analytics.bigdl.models.inception.Inception_v1
 import com.intel.analytics.bigdl.nn.ClassNLLCriterion
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.optim.SGD
@@ -733,5 +734,45 @@ class InceptionSpec extends TorchSpec {
       gradoutputtest should be (gradoutputtest2)
       weights.equals(weights2) should be (true)
     }
+  }
+
+  "Inception ModelCaffe" should "init right" in {
+    RNG.setSeed(1024)
+
+    Random.setSeed(1024)
+
+    val input = Tensor[Float](4, 3, 224, 224).apply1(e => Random.nextFloat())
+    val labels = Tensor[Float](4).apply1(e => Random.nextInt(1000))
+
+    val model = Inception.getModelCaffe[Float](1000)
+
+    val criterion = new ClassNLLCriterion[Float]()
+
+    model.zeroGradParameters()
+    val output = model.forward(input).toTensor[Float]
+    val loss = criterion.forward(output, labels)
+
+    // since we already set the seed, the loss should match exactly
+    loss should be (6.8930426f)
+  }
+
+  "InceptionV1 " should "init right" in {
+    RNG.setSeed(1024)
+
+    Random.setSeed(1024)
+
+    val input = Tensor[Float](4, 3, 224, 224).apply1(e => Random.nextFloat())
+    val labels = Tensor[Float](4).apply1(e => Random.nextInt(1000))
+
+    val model = Inception_v1(1000)
+
+    val criterion = new ClassNLLCriterion[Float]()
+
+    model.zeroGradParameters()
+    val output = model.forward(input).toTensor[Float]
+    val loss = criterion.forward(output, labels)
+
+    // since we already set the seed, the loss should match exactly
+    loss should be (6.901158f)
   }
 }

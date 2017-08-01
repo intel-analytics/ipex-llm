@@ -3,7 +3,12 @@
 LeNet5 is a classical CNN model used in digital number classification. For detail information,
 please refer to <http://yann.lecun.com/exdb/lenet/>.
 
+## Install dependencies
+ * [Install dependencies](../../../README.md#install.dependencies)
+ 
 ## How to run this example:
+Please note that due to some permission issue, this example **cannot** be run on Windows.
+
 
 Program would download the mnist data into ```/tmp/mnist``` automatically by default.
 
@@ -34,7 +39,6 @@ We would train a LeNet model in spark local mode with the following commands and
         --total-executor-cores 2  \
         --executor-cores 2  \
         --executor-memory 4g \
-        --conf spark.akka.frameSize=64 \
         --py-files ${PYTHON_API_ZIP_PATH},${BigDL_HOME}/pyspark/bigdl/models/lenet/lenet5.py  \
         --properties-file ${BigDL_HOME}/dist/conf/spark-bigdl.conf \
         --jars ${BigDL_JAR_PATH} \
