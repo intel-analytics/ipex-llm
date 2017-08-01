@@ -301,6 +301,16 @@
             </properties>
         </profile>
         <profile>
+            <id>serial-tests</id>
+            <properties>
+                <runSpecsInParallel>false</runSpecsInParallel>
+                <tagsToInclude>com.intel.analytics.bigdl.tags.Serial</tagsToInclude>
+                <tagsToExclude>com.intel.analytics.bigdl.tags.Integration</tagsToExclude>
+                <tagsToExclude>com.intel.analytics.bigdl.tags.Parallel</tagsToExclude>
+                <tagsToExclude>com.intel.analytics.bigdl.tags.Ignore</tagsToExclude>
+            </properties>
+        </profile>
+        <profile>
           <id>surefire-tests</id>
           <build>
             <plugins>
@@ -325,14 +335,6 @@
               </plugin>
             </plugins>
           </build>
-        </profile>
-        <profile>
-            <id>serial-tests</id>
-            <properties>
-                <runSpecsInParallel>false</runSpecsInParallel>
-                <tagsToExclude>com.intel.analytics.bigdl.tags.Parallel,com.intel.analytics.bigdl.tags.Integration</tagsToExclude>
-                <tagsToExclude>com.intel.analytics.bigdl.tags.Ignore</tagsToExclude>
-            </properties>
         </profile>
         <profile>
             <id>integration-test</id>
