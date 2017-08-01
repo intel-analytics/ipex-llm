@@ -39,7 +39,7 @@ object ParameterManager2 {
 
   private val nextId = new AtomicInteger(0)
 
-  private val pm = new HashMap[Int, ParameterManager2]()
+  private val pm = new HashMap[String, ParameterManager2]()
 
   private var executorIdMap: HashMap[String, Int] = null
 
@@ -47,9 +47,9 @@ object ParameterManager2 {
     executorIdMap = map
   }
 
-  def get(executorId: String): ParameterManager2 = {
-    val id = executorIdMap(executorId)
-    if (pm.contains(id)) pm(id)
+  def get(id: Int, executorId: String): ParameterManager2 = {
+    val eid = id + "exe" + executorIdMap(executorId)
+    if (pm.contains(eid)) pm(eid)
     else null
   }
 
@@ -59,7 +59,7 @@ object ParameterManager2 {
     val conf = SparkEnv.get.conf
     val master = ParameterManagerMaster.createEnv(conf, port)
     val p = new ParameterManager2(id, executorId, executorNum, partitionNum, size, master)
-    pm.put(executorId, p)
+    pm.put(id + "exe" + executorId, p)
     p
   }
 }
@@ -284,26 +284,26 @@ class ParameterManager2(val id: Int, val executorId: Int,
   }
 
   def getGradientBlockId(pidFrom : Int, pidTo : Int): BlockId = {
-    SparkExtension.getLocalBlockId("pm" + pidTo + "gBytes" + pidFrom)
+    SparkExtension.getLocalBlockId(id + "pm" + pidTo + "gBytes" + pidFrom)
   }
 
   def getWeightBlockId(pid : Int): BlockId = {
-    SparkExtension.getLocalBlockId("pm_wBytes" + pid)
+    SparkExtension.getLocalBlockId(id + "pm_wBytes" + pid)
   }
 
   def getWeightExecutorId(): BlockId = {
-    SparkExtension.getLocalBlockId("pm_w" + executorId)
+    SparkExtension.getLocalBlockId(id + "pm_w" + executorId)
   }
 
   def getWeightId(): BlockId = {
-    SparkExtension.getLocalBlockId("weight" + executorId)
+    SparkExtension.getLocalBlockId(id + "weight" + executorId)
   }
 
   def getGradientPartitionId(pid: Int): BlockId = {
-    SparkExtension.getLocalBlockId("pm_g_p" + pid)
+    SparkExtension.getLocalBlockId(id + "pm_g_p" + pid)
   }
 
   def getGradientExecutorId(): BlockId = {
-    SparkExtension.getLocalBlockId("pm_g" + executorId)
+    SparkExtension.getLocalBlockId(id + "pm_g" + executorId)
   }
 }
