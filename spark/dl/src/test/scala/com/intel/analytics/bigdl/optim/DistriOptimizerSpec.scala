@@ -20,7 +20,7 @@ import java.nio.file.{Files, Paths}
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.image.{BGRImgToBatch, LabeledBGRImage}
-import com.intel.analytics.bigdl.dataset.{DataSet, DistributedDataSet, LocalArrayDataSet, MiniBatch}
+import com.intel.analytics.bigdl.dataset.{DataSet, DistributedDataSet, MiniBatch}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils._
@@ -31,18 +31,18 @@ import org.apache.spark.rdd.RDD
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 object DistriOptimizerSpec {
-  val input1: Tensor[Double] = Tensor[Double](Storage[Double](Array(0.0, 1.0, 0.0, 1.0)))
-  val output1 = 0.0
-  val input2: Tensor[Double] = Tensor[Double](Storage[Double](Array(1.0, 0.0, 1.0, 0.0)))
-  val output2 = 1.0
-  var plusOne = 0.0
+  private val input1: Tensor[Double] = Tensor[Double](Storage[Double](Array(0.0, 1.0, 0.0, 1.0)))
+  private val output1 = 0.0
+  private val input2: Tensor[Double] = Tensor[Double](Storage[Double](Array(1.0, 0.0, 1.0, 0.0)))
+  private val output2 = 1.0
+  private var plusOne = 0.0
   private val nodeNumber = 4
   private val coreNumber = 4
-  Engine.init(nodeNumber, coreNumber, true)
+  Engine.init(nodeNumber, coreNumber, onSpark = true)
 
   private val batchSize = 2 * coreNumber
 
-  val prepareData: Int => (MiniBatch[Double]) = index => {
+  private val prepareData: Int => (MiniBatch[Double]) = index => {
     val input = Tensor[Double]().resize(batchSize, 4)
     val target = Tensor[Double]().resize(batchSize)
     var i = 0
@@ -62,39 +62,35 @@ object DistriOptimizerSpec {
 
 object DistriOptimizerSpecModel {
   def mse: Module[Double] = {
-    val mlp = new Sequential[Double]
-    mlp.add(new Linear(4, 2))
-    mlp.add(new Sigmoid)
-    mlp.add(new Linear(2, 1))
-    mlp.add(new Sigmoid)
-    mlp
+    new Sequential[Double]
+      .add(new Linear(4, 2))
+      .add(new Sigmoid)
+      .add(new Linear(2, 1))
+      .add(new Sigmoid)
   }
 
   def bn: Module[Double] = {
-    val mlp = Sequential[Double]
-    mlp.add(Linear(4, 2))
-    mlp.add(BatchNormalization(2))
-    mlp.add(ReLU())
-    mlp.add(Linear(2, 1))
-    mlp.add(Sigmoid())
-    mlp
+    Sequential[Double]
+      .add(Linear(4, 2))
+      .add(BatchNormalization(2))
+      .add(ReLU())
+      .add(Linear(2, 1))
+      .add(Sigmoid())
   }
 
   def cre: Module[Double] = {
-    val mlp = new Sequential[Double]
-    mlp.add(new Linear(4, 2))
-    mlp.add(new LogSoftMax)
-    mlp
+    new Sequential[Double]
+      .add(new Linear(4, 2))
+      .add(new LogSoftMax)
   }
 
   def mserf(failCountNumberLists: Array[Int], sleep: Boolean = false): Module[Double] = {
-    val mlp = new Sequential[Double]
-    mlp.add(new Linear(4, 2))
-    mlp.add(new Sigmoid)
-    mlp.add(new Linear(2, 1))
-    mlp.add(new Sigmoid)
-    mlp.add(new ExceptionTest(failCountNumberLists, sleep))
-    mlp
+    new Sequential[Double]
+      .add(new Linear(4, 2))
+      .add(new Sigmoid)
+      .add(new Linear(2, 1))
+      .add(new Sigmoid)
+      .add(new ExceptionTest(failCountNumberLists, sleep))
   }
 }
 
@@ -104,19 +100,17 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   import DistriOptimizerSpec._
   import DistriOptimizerSpecModel._
 
-  Logger.getLogger("org").setLevel(Level.ERROR)
+  Logger.getLogger("org").setLevel(Level.WARN)
   Logger.getLogger("akka").setLevel(Level.WARN)
 
   private var sc: SparkContext = _
 
   private var dataSet: DistributedDataSet[MiniBatch[Double]] = _
-  private var smallDataSet: DistributedDataSet[MiniBatch[Double]] = _
 
   before {
     sc = new SparkContext("local[1]", "RDDOptimizerSpec")
 
     val rdd = sc.parallelize(1 to (256 * nodeNumber), nodeNumber).map(prepareData)
-    val smallRDD = sc.parallelize(1 to (4 * nodeNumber), nodeNumber).map(prepareData)
 
     dataSet = new DistributedDataSet[MiniBatch[Double]] {
       override def originRDD(): RDD[_] = rdd
@@ -124,16 +118,6 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
       override def data(train : Boolean): RDD[MiniBatch[Double]] = rdd
 
       override def size(): Long = rdd.count()
-
-      override def shuffle(): Unit = {}
-    }
-
-    smallDataSet = new DistributedDataSet[MiniBatch[Double]] {
-      override def originRDD(): RDD[_] = smallRDD
-
-      override def data(train : Boolean): RDD[MiniBatch[Double]] = smallRDD
-
-      override def size(): Long = smallRDD.count()
 
       override def shuffle(): Unit = {}
     }
@@ -524,63 +508,63 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     ExceptionTest.resetCount()
   }
 
-//  "Train with Plateau" should "work properly" in {
-//    LoggerFilter.redirectSparkInfoLogs()
-//    Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
-//    Logger.getLogger("com.intel.analytics.bigdl").setLevel(Level.INFO)
-//
-//    RandomGenerator.RNG.setSeed(10)
-//    val logdir = com.google.common.io.Files.createTempDir()
-//    val mm = mse
-//    mm.getParameters()._1.fill(0.125)
-//    val optimizer = new DistriOptimizer[Double](
-//      _model = mm,
-//      dataset = dataSet,
-//      criterion = new MSECriterion[Double]()
-//    )
-//
-//    val optimMethod = new SGD[Double](learningRate = 20.0, learningRateSchedule =
-//      SGD.Plateau("Loss", epsilon = 0, patience = 1, mode = "min"))
-//
-//    optimizer.setOptimMethod(optimMethod)
-//      .setEndWhen(Trigger.maxEpoch(1))
-//    val model = optimizer.optimize()
-//
-//    val result1 = model.forward(input1).asInstanceOf[Tensor[Double]]
-//    result1(Array(1)) should be(0.0 +- 5e-2)
-//
-//    val result2 = model.forward(input2).asInstanceOf[Tensor[Double]]
-//    result2(Array(1)) should be(1.0 +- 5e-2)
-//  }
-//
-//  "Train with Plateau Score" should "work properly" in {
-//    LoggerFilter.redirectSparkInfoLogs()
-//    Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
-//    Logger.getLogger("com.intel.analytics.bigdl").setLevel(Level.INFO)
-//
-//    RandomGenerator.RNG.setSeed(10)
-//    val logdir = com.google.common.io.Files.createTempDir()
-//    val mm = mse
-//    mm.getParameters()._1.fill(0.125)
-//    val optimizer = new DistriOptimizer[Double](
-//      _model = mm,
-//      dataset = dataSet,
-//      criterion = new MSECriterion[Double]()
-//    )
-//
-//    val optimMethod = new SGD[Double](learningRate = 20.0, learningRateSchedule =
-//      SGD.Plateau("score", epsilon = 0, patience = 1, mode = "max"))
-//
-//    optimizer.setOptimMethod(optimMethod)
-//      .setEndWhen(Trigger.maxEpoch(1))
-//    optimizer.setValidation(Trigger.everyEpoch, dataSet,
-//      Array(new Top1Accuracy[Double]()))
-//    val model = optimizer.optimize()
-//
-//    val result1 = model.forward(input1).asInstanceOf[Tensor[Double]]
-//    result1(Array(1)) should be(0.0 +- 5e-2)
-//
-//    val result2 = model.forward(input2).asInstanceOf[Tensor[Double]]
-//    result2(Array(1)) should be(1.0 +- 5e-2)
-//  }
+  "Train with Plateau" should "work properly" in {
+    LoggerFilter.redirectSparkInfoLogs()
+    Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+    Logger.getLogger("com.intel.analytics.bigdl").setLevel(Level.INFO)
+
+    RandomGenerator.RNG.setSeed(10)
+    val logdir = com.google.common.io.Files.createTempDir()
+    val mm = mse
+    mm.getParameters()._1.fill(0.125)
+    val optimizer = new DistriOptimizer[Double](
+      _model = mm,
+      dataset = dataSet,
+      criterion = new MSECriterion[Double]()
+    )
+
+    val optimMethod = new SGD[Double](learningRate = 20.0, learningRateSchedule =
+      SGD.Plateau("Loss", epsilon = 0, patience = 1, mode = "min"))
+
+    optimizer.setOptimMethod(optimMethod)
+      .setEndWhen(Trigger.maxEpoch(1))
+    val model = optimizer.optimize()
+
+    val result1 = model.forward(input1).asInstanceOf[Tensor[Double]]
+    result1(Array(1)) should be(0.0 +- 5e-2)
+
+    val result2 = model.forward(input2).asInstanceOf[Tensor[Double]]
+    result2(Array(1)) should be(1.0 +- 5e-2)
+  }
+
+  "Train with Plateau Score" should "work properly" in {
+    LoggerFilter.redirectSparkInfoLogs()
+    Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+    Logger.getLogger("com.intel.analytics.bigdl").setLevel(Level.INFO)
+
+    RandomGenerator.RNG.setSeed(10)
+    val logdir = com.google.common.io.Files.createTempDir()
+    val mm = mse
+    mm.getParameters()._1.fill(0.125)
+    val optimizer = new DistriOptimizer[Double](
+      _model = mm,
+      dataset = dataSet,
+      criterion = new MSECriterion[Double]()
+    )
+
+    val optimMethod = new SGD[Double](learningRate = 20.0, learningRateSchedule =
+      SGD.Plateau("score", epsilon = 0, patience = 1, mode = "max"))
+
+    optimizer.setOptimMethod(optimMethod)
+      .setEndWhen(Trigger.maxEpoch(1))
+    optimizer.setValidation(Trigger.everyEpoch, dataSet,
+      Array(new Top1Accuracy[Double]()))
+    val model = optimizer.optimize()
+
+    val result1 = model.forward(input1).asInstanceOf[Tensor[Double]]
+    result1(Array(1)) should be(0.0 +- 5e-2)
+
+    val result2 = model.forward(input2).asInstanceOf[Tensor[Double]]
+    result2(Array(1)) should be(1.0 +- 5e-2)
+  }
 }
