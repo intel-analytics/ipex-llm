@@ -1,6 +1,5 @@
 ---
-#  BigDL
----
+## **What is BigDL**
 
 BigDL is a distributed deep learning library for Apache Spark; with BigDL, users can write their deep learning applications as standard Spark programs, which can directly run on top of existing Spark or Hadoop clusters.
 
@@ -10,7 +9,10 @@ BigDL is a distributed deep learning library for Apache Spark; with BigDL, users
 
 * **Efficiently scale-out.** BigDL can efficiently scale out to perform data analytics at "Big Data scale", by leveraging [Apache Spark](http://spark.apache.org/) (a lightning fast distributed data processing framework), as well as efficient implementations of synchronous SGD and all-reduce communications on Spark. 
 
-## Why BigDL?
+
+---
+## **Why BigDL?**
+
 You may want to write your deep learning programs using BigDL if:
 
 * You want to analyze a large amount of data on the same Big Data (Hadoop/Spark) cluster where the data are stored (in, say, HDFS, HBase, Hive, etc.).
@@ -19,29 +21,13 @@ You may want to write your deep learning programs using BigDL if:
 
 * You want to leverage existing Hadoop/Spark clusters to run your deep learning applications, which can be then dynamically shared with other workloads (e.g., ETL, data warehouse, feature engineering, classical machine learning, graph analytics, etc.)
 
-## How to use BigDL?
-* To learn how to install and build BigDL (on both Linux and macOS), you can check out the [Build Page][build]
+---
 
-* To learn how to run BigDL programs (as either a local Java program or a Spark program), you can check out the [Getting Started Page][gettingstarted]
+## **Getting Help**
 
-* To learn the details of Python support in BigDL, you can check out the [Python Support Page][pythonsupport]
-
-* To try BigDL out on EC2, you can check out the [Running on EC2 Page][runningonEC2]
-
-* To learn how to create practical neural networks using BigDL in a couple of minutes, you can check out the [Examples Page][examples]
-
-* For more details, you can check out the latest [Documents Page](https://intel-analytics.github.io/bigdl-doc/)
-
-## Getting Help
 * You can join the [BigDL Google Group](https://groups.google.com/forum/#!forum/bigdl-user-group) (or subscribe to the [Mail List](mailto:bigdl-user-group+subscribe@googlegroups.com)) for more questions and discussions on BigDL
 
 * You can post bug reports and feature requests at the [Issue Page](https://github.com/intel-analytics/BigDL/issues)
-
-[build]: UserGuide/build
-[gettingstarted]: UserGuide/getting-started
-[pythonsupport]: pythonsupport/python-support
-[runningonEC2]: UserGuide/running-on-ec2
-[examples]: UserGuide/examples
 
 
 

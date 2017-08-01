@@ -46,7 +46,7 @@ class CellSpec extends FlatSpec with Matchers {
 
   "A Cell" should "hidResize correctly" in {
     val cell = new CellUnit[Double](4)
-    val hidden = cell.hidResize(hidden = null, size = 5)
+    val hidden = cell.hidResize(hidden = null, batchSize = 5)
 
     hidden.isInstanceOf[Table] should be (true)
     var i = 1

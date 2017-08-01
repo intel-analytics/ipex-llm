@@ -91,6 +91,13 @@ test_load_caffe = Module(
     ]
 )
 
+test_tensorflow = Module(
+    name="tensorflow_test",
+    python_test_goals=[
+        "test.tensorflow_test"
+    ]
+)
+
 test_imagenet = Module(
     name="imagenet_transformer_test",
     python_test_goals=[

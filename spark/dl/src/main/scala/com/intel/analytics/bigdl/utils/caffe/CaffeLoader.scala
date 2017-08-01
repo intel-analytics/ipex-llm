@@ -17,7 +17,6 @@ package com.intel.analytics.bigdl.utils.caffe
 
 import java.io._
 
-import scala.collection.JavaConverters._
 import caffe.Caffe
 import caffe.Caffe._
 import com.google.protobuf.{CodedInputStream, GeneratedMessage, TextFormat}
@@ -26,15 +25,25 @@ import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{File, Table}
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FSDataInputStream, Path}
+import com.intel.analytics.bigdl.utils.{FileReader, Table}
 import org.apache.log4j.Logger
 
+import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
+abstract class Customizable[T: ClassTag](implicit ev: TensorNumeric[T]) {
+  var contexts: Map[String, Any] = _
+  def convertor(layer: GeneratedMessage): Seq[ModuleNode[T]]
+
+  def registerContext(name: String, context: Any): Unit = {
+    if (contexts == null) {
+      contexts = Map[String, Any]()
+    }
+    contexts += (name -> context)
+  }
+}
 /**
  * An utility to load pre-trained caffe model from prototxt and binary
  * and convert it to BigDL equivalent modules
@@ -46,83 +55,128 @@ import scala.reflect.ClassTag
  */
 class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
   matchAll: Boolean = true,
-  customizedConverters : mutable.HashMap[String, (GeneratedMessage) => Seq[ModuleNode[T]]] = null
-  )(implicit ev: TensorNumeric[T]) {
-
-  private val hdfsPrefix: String = "hdfs:"
+  customizedConverters: mutable.HashMap[String, Customizable[T]] = null
+)(implicit ev: TensorNumeric[T]) {
 
   private val logger = Logger.getLogger(getClass)
 
   private var netparam: Caffe.NetParameter = _
-  private var name2LayerV1: Map[String, V1LayerParameter] = _
-  private var name2LayerV2: Map[String, LayerParameter] = _
+  private var name2LayerV1: Map[String, V1LayerParameter] = Map[String, V1LayerParameter]()
+  private var name2LayerV2: Map[String, LayerParameter] = Map[String, LayerParameter]()
 
   private val layerConverter = new LayerConverter[T]()
   private val v1layerConverter = new V1LayerConverter[T]()
 
-  private var criterions = ParallelCriterion[T]()
+  private val criterions = ParallelCriterion[T]()
 
-
-  registerCustomizedConverter
-
-  private def registerCustomizedConverter() : Unit = {
+  private def registerCustomizedConverter(): Unit = {
     if (customizedConverters != null) {
       customizedConverters.foreach(entry => {
-        layerConverter.registerCutomizedConverter(entry._1, entry._2)
-        v1layerConverter.registerCutomizedConverter(entry._1, entry._2)
+        layerConverter.registerCutomizedConverter(entry._1, entry._2.convertor)
+        v1layerConverter.registerCutomizedConverter(entry._1, entry._2.convertor)
+        entry._2.registerContext("name2LayerV1", name2LayerV1)
+        entry._2.registerContext("name2LayerV2", name2LayerV2)
+        entry._2.registerContext("netparam", netparam)
       })
     }
   }
 
   private def loadCaffe(prototxtPath: String, modelPath: String): Unit = {
-    if (name2LayerV2 == null) {
       netparam = loadBinary(prototxtPath, modelPath)
-      name2LayerV2 = Map[String, LayerParameter]()
-      name2LayerV1 = Map[String, V1LayerParameter]()
       import scala.collection.JavaConverters._
       // V1LayerParameter
       netparam.getLayersList.asScala.foreach(layer => name2LayerV1 += (layer.getName -> layer))
       // V2LayerParameter
       netparam.getLayerList.asScala.foreach(layer => name2LayerV2 += (layer.getName -> layer))
-
-    }
-  }
-
-  private def createHdfsInputStream(fileName: String): FSDataInputStream = {
-    val src = new Path(fileName)
-    val fs = src.getFileSystem(new Configuration())
-    fs.open(src)
   }
 
   private def loadBinary(prototxtPath: String, modelPath: String): Caffe.NetParameter = {
-    var prototxtReader: InputStreamReader = null
+    var modelFr: FileReader = null
+    var prototxtFr: FileReader = null
     var modelStream: InputStream = null
+    var prototxtStream: InputStream = null
+    var prototxtReader: InputStreamReader = null
     try {
-      if (prototxtPath.startsWith(File.hdfsPrefix)) {
-        require(modelPath.startsWith(File.hdfsPrefix), "If prototxt is saved in hdfs," +
-          " model should also be saved in hdfs")
-        val prototxtStream = createHdfsInputStream(prototxtPath)
-        modelStream = createHdfsInputStream(modelPath)
-        prototxtReader = new InputStreamReader(prototxtStream, "ASCII")
-      } else {
-        val f = new java.io.File(prototxtPath)
-        require(f.exists(), prototxtPath + " does not exists")
-        prototxtReader = new InputStreamReader(new FileInputStream(f), "ASCII")
-        modelStream = new FileInputStream(modelPath)
-      }
+      modelFr = FileReader(modelPath)
+      prototxtFr = FileReader(prototxtPath)
+      modelStream = modelFr.open()
+      prototxtStream = prototxtFr.open()
+      prototxtReader = new InputStreamReader(prototxtStream, "ASCII")
 
-      val builder = NetParameter.newBuilder
-      TextFormat.merge(prototxtReader, builder)
+      val netBuilder = NetParameter.newBuilder
+      TextFormat.merge(prototxtReader, netBuilder)
       logger.info(s"start loading caffe model from $modelPath")
       val cis = CodedInputStream.newInstance(modelStream)
       cis.setSizeLimit(Integer.MAX_VALUE)
-      builder.mergeFrom(cis)
+      val weightBuilder = NetParameter.newBuilder
+      weightBuilder.mergeFrom(cis)
       logger.info("load caffe model done")
-      builder.build()
+      mergeNetWithParams(netBuilder.build, weightBuilder.build)
     } finally {
-      prototxtReader.close()
-      modelStream.close()
+      if (null != prototxtReader) prototxtReader.close()
+      if (null != modelStream) modelStream.close()
+      if (null != prototxtStream) prototxtStream.close()
+      if (modelFr != null) modelFr.close()
+      if (prototxtFr != null) prototxtFr.close()
     }
+  }
+
+  private def mergeNetWithParams(net : NetParameter, weights : NetParameter): NetParameter = {
+
+    val builder = NetParameter.newBuilder(net)
+    val layers = new mutable.HashMap[String, GeneratedMessage]
+    val v1Layers = new ArrayBuffer[V1LayerParameter]
+    val v2Layers = new ArrayBuffer[LayerParameter]
+
+    net.getLayersList.asScala.foreach(v1Layer => v1Layers.append(v1Layer))
+    net.getLayerList.asScala.foreach(v2Layer => v2Layers.append(v2Layer))
+
+    weights.getLayersList.asScala.foreach(v1Layer => layers(v1Layer.getName) = v1Layer)
+    weights.getLayerList.asScala.foreach(v2Layer => layers(v2Layer.getName) = v2Layer)
+
+    builder.clearLayers
+    builder.clearLayer
+
+    v1Layers.foreach(v1Layer => {
+      val name = v1Layer.getName
+      if (layers.contains(name)) {
+        var weightLayer = layers(name)
+        builder.addLayers(copyBlobs(weightLayer, v1Layer).asInstanceOf[V1LayerParameter])
+      } else {
+        builder.addLayers(v1Layer)
+      }
+    })
+
+    v2Layers.foreach(v2Layer => {
+      val name = v2Layer.getName
+      if (layers.contains(name)) {
+        var weightLayer = layers(name)
+        builder.addLayer(copyBlobs(weightLayer, v2Layer).asInstanceOf[LayerParameter])
+      } else {
+        builder.addLayer(v2Layer)
+      }
+    })
+    builder.build
+  }
+
+  private def copyBlobs(from : GeneratedMessage, to : GeneratedMessage): GeneratedMessage = {
+    val blobList = from match {
+      case v1 : V1LayerParameter => v1.asInstanceOf[V1LayerParameter].getBlobsList.asScala
+      case v2 : LayerParameter => v2.asInstanceOf[LayerParameter].getBlobsList.asScala
+    }
+    val layer = to match {
+      case v1 : V1LayerParameter =>
+        val layerBuilder = V1LayerParameter.newBuilder(to.asInstanceOf[V1LayerParameter])
+        layerBuilder.clearBlobs
+        blobList.foreach(blob => layerBuilder.addBlobs(blob))
+        layerBuilder.build
+      case v2 : LayerParameter =>
+        val layerBuilder = LayerParameter.newBuilder(to.asInstanceOf[LayerParameter])
+        layerBuilder.clearBlobs
+        blobList.foreach(blob => layerBuilder.addBlobs(blob))
+        layerBuilder.build
+    }
+    layer.asInstanceOf[GeneratedMessage]
   }
 
   private def getBlob(name: String, ind: Int): Option[Caffe.BlobProto] = {
@@ -210,9 +264,10 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
  */
   def createCaffeModel(): (Module[T], ParallelCriterion[T]) = {
     loadCaffe(prototxtPath, modelPath)
+    registerCustomizedConverter()
     val layers = createLayers()
-    val inputs = layers.filter(layer => layer.prevNodes.size == 0).toArray
-    val outputs = layers.filter(layer => layer.nextNodes.size == 0).toArray
+    val inputs = layers.filter(layer => layer.prevNodes.isEmpty).toArray
+    val outputs = layers.filter(layer => layer.nextNodes.isEmpty).toArray
     val module = Graph(inputs, outputs)
     module.setName(netparam.getName)
     copyParameters(module)
@@ -241,7 +296,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
         })
     } else {
       // filter out those layers from prototxt but also occurs in binary
-      var localMap = new mutable.HashMap[String, Int]()
+      val localMap = new mutable.HashMap[String, Int]()
       var i = 0
       netparam.getLayerList.asScala.
         foreach(layer => {
@@ -282,18 +337,17 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
         // we need to separate it with loss function and module
         val isCriterionLayerOnly : Boolean = tryAddCriterion(layerType, name)
         if (!isCriterionLayerOnly) {
-          var nodes = convertCaffeLayer(layer)
+          val nodes = convertCaffeLayer(layer)
           if (nodes != null) {
-            var curr = nodes(0)
+            var curr = nodes.head
             bottomList.foreach(dependency => {
-              if (splitLayerMap.contains(dependency)) splitLayerMap(dependency) -> curr
-              else if (top2LayerMap.contains(dependency)) {
+              if (top2LayerMap.contains(dependency)) {
                 layersMap(top2LayerMap(dependency)) -> curr
               }
             })
-            while (curr.nextNodes.size != 0) {
+            while (curr.nextNodes.nonEmpty) {
               layers.append(curr)
-              curr = curr.nextNodes(0)
+              curr = curr.nextNodes.head
             }
             layers.append(curr)
             layersMap(name) = curr
@@ -304,7 +358,25 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
         }
       }
     })
-    return layers
+    // process with split separately in case of out of order
+    allLayers.foreach(layer => {
+      var name : String = null
+      val bottomList = new ArrayBuffer[String]()
+      layer match {
+        case v2 : LayerParameter =>
+          name = v2.getName
+          bottomList ++= v2.getBottomList.asScala
+        case v1 : V1LayerParameter =>
+          name = v1.getName
+          bottomList ++= v1.getBottomList.asScala
+      }
+      bottomList.foreach(bottom => {
+        if (splitLayerMap.contains(bottom)) {
+          splitLayerMap(bottom) -> layersMap(name)
+        }
+      })
+    })
+    layers
   }
 
   private def convertCaffeLayer(layer : GeneratedMessage): Seq[ModuleNode[T]] = {
@@ -348,9 +420,9 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
     val param = getInforgainParam(layerName).get
     val weightBlob = getBlob(layerName, 2)
     if (weightBlob.isDefined) {
-      val size = weightBlob.get.getShape.getDimList.toArray.asInstanceOf[Array[Int]]
+      val size = weightBlob.get.getShape.getDimList.asScala.map(_.toInt).toArray
       val weightData = weightBlob.get.getDataList
-      var weightArr = new Array[T](weightData.size)
+      val weightArr = new Array[T](weightData.size)
       var i = 0
       while (i < weightData.size) {
         weightArr(i) = ev.fromType[Float](weightData.get(i))
@@ -397,15 +469,14 @@ object CaffeLoader {
  * load caffe model dynamically from binary and prototxt file
  * @param defPath prototxt file which illustrate the caffe model structure
  * @param modelPath binary file containing the weight and bias
- * @param matchAll if match all modules for parameter copy
  * @param customizedConverters customized layer converter
  * @tparam T data type
  * @return created module (graph) and criterion
  */
-  def loadCaffe[T: ClassTag](defPath: String, modelPath: String, matchAll: Boolean = true,
-    customizedConverters : mutable.HashMap[String, (GeneratedMessage) => Seq[ModuleNode[T]]] = null)
+  def loadCaffe[T: ClassTag](defPath: String, modelPath: String,
+    customizedConverters : mutable.HashMap[String, Customizable[T]] = null)
                               (implicit ev: TensorNumeric[T]): (Module[T], ParallelCriterion[T]) = {
-    val caffeLoader = new CaffeLoader[T](defPath, modelPath, matchAll, customizedConverters)
+    val caffeLoader = new CaffeLoader[T](defPath, modelPath, true, customizedConverters)
     caffeLoader.createCaffeModel()
   }
 }

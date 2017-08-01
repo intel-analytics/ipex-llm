@@ -33,7 +33,9 @@ class FileSpec extends FlatSpec with Matchers {
     val model = Module.loadTorch[Float](absolutePath).asInstanceOf[Sequential[Float]]
     model.getParameters() should be (alexnet.getParameters())
     for (i <- 0 until model.modules.size) {
-      println(i)
+      println(s"check the $i th layer in the model...")
+      // torch will discard the name
+      model.modules(i).setName(alexnet.asInstanceOf[Sequential[Float]].modules(i).getName())
       model.modules(i) should be (alexnet.asInstanceOf[Sequential[Float]].modules(i))
     }
     model should be (alexnet)

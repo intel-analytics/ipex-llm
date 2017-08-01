@@ -7,7 +7,7 @@
     <groupId>com.intel.analytics.bigdl</groupId>
     <artifactId>bigdl-parent</artifactId>
     <packaging>pom</packaging>
-    <version>0.2.0-SNAPSHOT</version>
+    <version>0.3.0-SNAPSHOT</version>
 
     <name>BigDL</name>
     <description>A distributed deep learning library for Apache Spark.</description>
@@ -225,6 +225,12 @@
                 <groupId>org.scalatest</groupId>
                 <artifactId>scalatest_${scala.major.version}</artifactId>
                 <version>${scalatest.version}</version>
+                <scope>${spark-scope}</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-aws</artifactId>
+                <version>${hadoop.version}</version>
                 <scope>${spark-scope}</scope>
             </dependency>
             <dependency>
@@ -579,6 +585,13 @@
             <id>rh5</id>
             <properties>
                 <mkl-java-os-version>mkl-java-rh5</mkl-java-os-version>
+            </properties>
+        </profile>
+        <profile>
+            <id>win64</id>
+            <properties>
+                <mkl-java-os-version>mkl-java-win64</mkl-java-os-version>
+                <os-flag>win64</os-flag>
             </properties>
         </profile>
         <profile>

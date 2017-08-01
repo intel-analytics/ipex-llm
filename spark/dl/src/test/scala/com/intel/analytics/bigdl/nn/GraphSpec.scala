@@ -434,7 +434,7 @@ class GraphSpec extends FlatSpec with Matchers {
     val seqModel = ModelUntils.ResNet.basicBlockSeq(16, 16, 1, "C")
     RandomGenerator.RNG.setSeed(1000)
     val input = Input()
-    val output = ModelUntils.ResNet.basicBlockSeq(16, 16, 1, "C").inputs(input)
+    val output = ModelUntils.ResNet.basicBlockFunc(16, 16, 1, "C")(input)
     val funcModel = Graph(input, output)
 
     println(seqModel)
@@ -458,7 +458,22 @@ class GraphSpec extends FlatSpec with Matchers {
     println(s"func model backward time is ${(System.nanoTime() - start) / 1e6}ms")
 
     gradients1 should be(gradients2)
-    seqModel.getParameters()._2 should be(funcModel.getParameters()._2)
+
+    seqModel.getParametersTable()[Table]("conv1")[Tensor[Float]]("gradWeight") should be(
+      funcModel.getParametersTable()[Table]("conv1")[Tensor[Float]]("gradWeight")
+    )
+
+    seqModel.getParametersTable()[Table]("bn1")[Tensor[Float]]("gradWeight") should be(
+      funcModel.getParametersTable()[Table]("bn1")[Tensor[Float]]("gradWeight")
+    )
+
+    seqModel.getParametersTable()[Table]("conv2")[Tensor[Float]]("gradWeight") should be(
+      funcModel.getParametersTable()[Table]("conv2")[Tensor[Float]]("gradWeight")
+    )
+
+    seqModel.getParametersTable()[Table]("bn2")[Tensor[Float]]("gradWeight") should be(
+      funcModel.getParametersTable()[Table]("bn2")[Tensor[Float]]("gradWeight")
+    )
   }
 
   "InceptionV1 block" should "be correct" in {
@@ -588,11 +603,13 @@ object ModelUntils {
   object ResNet {
     def basicBlockFunc(nInputPlane: Int, n: Int, stride: Int, shortcutType : String)(
       input : ModuleNode[Float]) : ModuleNode[Float] = {
-      val conv1 = SpatialConvolution(nInputPlane, n, 3, 3, stride, stride, 1, 1).inputs(input)
-      val bn1 = SpatialBatchNormalization(n).inputs(conv1)
+      val conv1 = SpatialConvolution(nInputPlane, n, 3, 3, stride, stride, 1, 1)
+        .setName("conv1").inputs(input)
+      val bn1 = SpatialBatchNormalization(n).setName("bn1").inputs(conv1)
       val relu1 = ReLU(true).inputs(bn1)
-      val conv2 = SpatialConvolution(n, n, 3, 3, 1, 1, 1, 1).inputs(relu1)
-      val bn2 = SpatialBatchNormalization(n).inputs(conv2)
+      val conv2 = SpatialConvolution(n, n, 3, 3, 1, 1, 1, 1)
+        .setName("conv2").inputs(relu1)
+      val bn2 = SpatialBatchNormalization(n).setName("bn2").inputs(conv2)
       val shortcut = shortcutFunc(nInputPlane, n, stride, shortcutType)(input)
       val add = CAddTable(true).inputs(bn2, shortcut)
       val output = ReLU(true).inputs(add)
@@ -602,11 +619,11 @@ object ModelUntils {
     def basicBlockSeq(nInputPlane: Int, n: Int, stride: Int, shortcutType : String)
     : Module[Float] = {
       val s = Sequential()
-      s.add(SpatialConvolution(nInputPlane, n, 3, 3, stride, stride, 1, 1))
-      s.add(SpatialBatchNormalization(n))
+      s.add(SpatialConvolution(nInputPlane, n, 3, 3, stride, stride, 1, 1).setName("conv1"))
+      s.add(SpatialBatchNormalization(n).setName("bn1"))
       s.add(ReLU(true))
-      s.add(SpatialConvolution(n, n, 3, 3, 1, 1, 1, 1))
-      s.add(SpatialBatchNormalization(n))
+      s.add(SpatialConvolution(n, n, 3, 3, 1, 1, 1, 1).setName("conv2"))
+      s.add(SpatialBatchNormalization(n).setName("bn2"))
 
       Sequential()
         .add(ConcatTable()
