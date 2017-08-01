@@ -18,12 +18,12 @@ package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.{Module, _}
 import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch}
-import com.intel.analytics.bigdl.nn.{Container, Module, Utils}
+import com.intel.analytics.bigdl.nn.{Module, Utils}
 import com.intel.analytics.bigdl.parameters.AllReduceParameter
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
-import java.io.{File, FileFilter, FilenameFilter}
+import java.io.{File, FilenameFilter}
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
@@ -141,7 +141,7 @@ object DistriOptimizer {
 
     var epochStart = System.nanoTime()
     var dataRDD = dataset.data(train = true)
-    var recordsProcessed = 0
+    var recordsProcessedThisEpoch = 0
     while (!endWhen(driverState)) {
       val lossSum = sc.accumulator(0.0, "loss sum")
       val recordsNum = sc.accumulator(0, "record number")
@@ -289,7 +289,7 @@ object DistriOptimizer {
           Iterator.empty
         }.count()
 
-        recordsProcessed += recordsNum.value
+        recordsProcessedThisEpoch += recordsNum.value
         val end = System.nanoTime()
         wallClockTime += end - start
         optimMethod.state.update("epoch", driverState[Int]("epoch"))
@@ -302,7 +302,7 @@ object DistriOptimizer {
         optimMethod.updateHyperParameter()
         driverState("Throughput") = recordsNum.value.toFloat / ((end - start) / 1e9f)
         driverState("LearningRate") = -optimMethod.getLearningRate().toFloat
-        val _header = header(driverState[Int]("epoch"), recordsProcessed, numSamples,
+        val _header = header(driverState[Int]("epoch"), recordsProcessedThisEpoch, numSamples,
           driverState[Int]("neval"), wallClockTime)
         logger.info(s"${_header} Trained ${recordsNum.value} records in ${(end - start) / 1e9} " +
           s"seconds. Throughput is ${driverState("Throughput")} records/second. Loss is ${
@@ -342,7 +342,8 @@ object DistriOptimizer {
         }
 
         driverState("neval") = driverState[Int]("neval") + 1
-        if (recordsProcessed >= numSamples) {
+        if (recordsProcessedThisEpoch >= numSamples) {
+          // Epoch is finished
           val epochEnd = System.nanoTime()
           wallClockTime = lastEpochTime + epochEnd - epochStart
           lastEpochTime = wallClockTime
@@ -352,8 +353,9 @@ object DistriOptimizer {
           driverState("epoch") = driverState[Int]("epoch") + 1
           dataset.shuffle()
           dataRDD = dataset.data(train = true)
-          recordsProcessed = 0
+          recordsProcessedThisEpoch = 0
         }
+
         validate(
           validationTrigger,
           validationDataSet,
@@ -406,14 +408,14 @@ object DistriOptimizer {
    * @param parameters all reduce parameters
    */
   private def checkpoint[T: ClassTag](
-    cacheTrigger: Option[Trigger],
-    cachePath: Option[String],
-    isOverWrite: Boolean,
-    wallClockTime: Long,
-    models: RDD[Cache[T]],
-    state: Table,
-    parameters: AllReduceParameter[T],
-    optimMethod: OptimMethod[T]): Unit = {
+      cacheTrigger: Option[Trigger],
+      cachePath: Option[String],
+      isOverWrite: Boolean,
+      wallClockTime: Long,
+      models: RDD[Cache[T]],
+      state: Table,
+      parameters: AllReduceParameter[T],
+      optimMethod: OptimMethod[T]): Unit = {
     cacheTrigger.foreach { trigger =>
       cachePath.foreach { path =>
         if (trigger(state)) {
