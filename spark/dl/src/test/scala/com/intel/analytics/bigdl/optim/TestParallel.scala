@@ -96,7 +96,7 @@ object TestParallelModel {
   }
 }
 
-@com.intel.analytics.bigdl.tags.Parallel
+@com.intel.analytics.bigdl.tags.Ignore
 @RunWith(classOf[JUnitRunner])
 class TestParallel extends FlatSpec with Matchers with BeforeAndAfter {
   import TestParallel._
