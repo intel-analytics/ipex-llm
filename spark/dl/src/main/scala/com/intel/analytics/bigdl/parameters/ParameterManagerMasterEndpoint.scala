@@ -72,7 +72,6 @@ class ParameterManagerMasterEndpoint(
   /** Update block lists with a given executorId */
   private def updateExecutorBlockList(executorId: Int, blockId: BlockId): Unit = {
     ParameterManagerMaster.synchronized {
-//      if (total < 426) {
         if (blocks.containsKey(executorId)) {
           blocks.get(executorId).add(blockId)
         }
@@ -81,11 +80,6 @@ class ParameterManagerMasterEndpoint(
           hashset.add(blockId)
           blocks.put(executorId, hashset)
         }
-//        if (total >= 425) {
-//          println("total: " + total)
-//        }
-//        total += 1
-//    }
     }
   }
 
@@ -93,10 +87,6 @@ class ParameterManagerMasterEndpoint(
   private def clearExecutorBlockList(executorId: Int) = {
     ParameterManagerMaster.synchronized {
       if (blocks.containsKey(executorId)) {
-//        total -= blocks.get(executorId).size
-        
-//        println("total: " + total)
-        
         blocks.get(executorId).clear()
       }
     }
@@ -131,7 +121,7 @@ object ParameterManagerMaster {
     val port = conf.getInt("BigDL.port", 7777)
     val systemName = if (isDriver) "BigDLDriver" else "BigDLExecutor"
     val rpcEnv = RpcEnvWrapper.create(systemName, bindAddress, port, conf,
-      new SecurityManager(conf), clientMode = !isDriver)
+      SparkEnv.get.securityManager, clientMode = !isDriver)
 
     def registerOrLookupEndpoint(name: String, isDriver: Boolean, endpointCreator: => RpcEndpoint):
     RpcEndpointRef = {

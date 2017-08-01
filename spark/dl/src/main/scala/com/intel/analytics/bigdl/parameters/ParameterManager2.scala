@@ -161,9 +161,10 @@ class ParameterManager2(val id: Int, val executorId: Int,
       if (block.isDefined) {
         block.get.put(fp16param.bytes())
       } else {
-        val bytes = ByteBuffer.allocate(fp16param.bytes().limit)
-        bytes.put(fp16param.bytes())
-        BlockManagerWrapper.putBytes(blockId, bytes, StorageLevel.MEMORY_ONLY_SER)
+//        val bytes = ByteBuffer.allocate(fp16param.bytes().limit)
+//        bytes.put(fp16param.bytes())
+//        BlockManagerWrapper.putBytes(blockId, bytes, StorageLevel.MEMORY_ONLY_SER)
+        BlockManagerWrapper.putBytes(blockId, fp16param.bytes(), StorageLevel.MEMORY_ONLY_SER)
       }
 
       pid += 1
@@ -250,9 +251,11 @@ class ParameterManager2(val id: Int, val executorId: Int,
     if (block.isDefined) {
       block.get.put(data.bytes())
     } else {
-      val bytes = ByteBuffer.allocate(data.bytes().limit)
-      bytes.put(data.bytes())
-      BlockManagerWrapper.putBytes(blockId, bytes, StorageLevel.MEMORY_ONLY_SER)
+//      val bytes = ByteBuffer.allocate(data.bytes().limit)
+//      bytes.put(data.bytes())
+//      BlockManagerWrapper.putBytes(blockId, bytes, StorageLevel.MEMORY_ONLY_SER)
+        BlockManagerWrapper.putBytes(blockId,
+          data.bytes(), StorageLevel.MEMORY_ONLY_SER)
     }
 //    BlockManagerWrapper.putBytes(blockId,
 //      SerializerInstance.serialize(weightExecutor).bytes(), StorageLevel.MEMORY_ONLY_SER)
