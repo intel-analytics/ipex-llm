@@ -19,7 +19,8 @@ package com.intel.analytics.bigdl.optim
 import java.nio.file.{Files, Paths}
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch}
+import com.intel.analytics.bigdl.dataset.image.{BGRImgToBatch, LabeledBGRImage}
+import com.intel.analytics.bigdl.dataset.{DataSet, DistributedDataSet, LocalArrayDataSet, MiniBatch}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils._
@@ -104,7 +105,6 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   import DistriOptimizerSpecModel._
 
   Logger.getLogger("org").setLevel(Level.ERROR)
-  Logger.getLogger("com").setLevel(Level.ERROR)
   Logger.getLogger("akka").setLevel(Level.WARN)
 
   private var sc: SparkContext = _
@@ -150,22 +150,49 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "DistriOptimizer" should "train all minibatches per epoch" in {
-    RandomGenerator.RNG.setSeed(10)
-    val maxEpochs = 2
-    val logdir = com.google.common.io.Files.createTempDir()
-    val trainSummary = TrainSummary(logdir.getPath, "minibatch-test")
-    val optimizer = new DistriOptimizer(
-      mse,
-      smallDataSet,
-      new MSECriterion[Double]())
-      .setOptimMethod(new LBFGS)
-      .setTrainSummary(trainSummary)
-      .setEndWhen(Trigger.maxEpoch(maxEpochs))
-    val model = optimizer.optimize()
-    val losses = trainSummary.readScalar("Loss")
-    trainSummary.close()
+    val numSamples = 64
+    val numClasses = 3
+    val height = 32
+    val width = 32
+    val images = Array.tabulate(64) { i =>
+      val image = new LabeledBGRImage(width, height)
+      image.setLabel((i % numClasses).toFloat + 1F)
+      val tensor = Tensor[Float](Storage[Float](image.content), 1, Array(3, width, height))
+      tensor.rand()
+      image
+    }
 
-    losses should have length maxEpochs * smallDataSet.size()
+    val dataSet = DataSet.rdd(sc.parallelize(images, 4))
+
+    val numBatches = 16
+    val toTensor = new BGRImgToBatch(numBatches)
+    val nn = new Sequential[Float]()
+      .add(new Reshape(Array(3 * height * width)))
+      .add(new Linear(3 * height * width, numClasses))
+      .add(new LogSoftMax[Float]())
+    val sampleDataSet = (dataSet -> toTensor).asInstanceOf[DistributedDataSet[MiniBatch[Float]]]
+    val batchDataSet = DataSet.rdd(sampleDataSet.data(train = false))
+    assert(sampleDataSet.size() == numSamples)
+    assert(batchDataSet.size() == numBatches)
+
+    Seq(sampleDataSet, batchDataSet).foreach { dataset =>
+      RandomGenerator.RNG.setSeed(10)
+      val maxEpochs = 2
+      val logdir = com.google.common.io.Files.createTempDir()
+      val trainSummary = TrainSummary(logdir.getPath, "minibatch-test")
+      val optimizer = new DistriOptimizer(
+        nn,
+        dataset,
+        ClassNLLCriterion[Float]())
+        .setOptimMethod(new LBFGS)
+        .setTrainSummary(trainSummary)
+        .setEndWhen(Trigger.maxEpoch(maxEpochs))
+      val model = optimizer.optimize()
+      val losses = trainSummary.readScalar("Loss")
+      trainSummary.close()
+
+      losses should have length maxEpochs * (dataset.data(train = false).count() / nodeNumber)
+    }
   }
 
   "Train with MSE and LBFGS" should "be good" in {
@@ -352,7 +379,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     .setEndWhen(Trigger.maxEpoch(2))
     .optimize()
 
-    val numIterations = dataSet.size() + 1
+    val numIterations = dataSet.data(train = false).count() / nodeNumber + 1
     val optimMethod = OptimMethod.load[Double](optimizer.getCheckpointPath().get +
         s"/optimMethod.$numIterations")
 
