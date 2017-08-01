@@ -150,11 +150,11 @@
               <version>2.20</version>
               <configuration>
                 <includes>
+                  <!--
                   <include>**/*TestParallel.class</include>
                   <include>**/*TestParallel2.class</include>
-                  <!--
-                  <include>**/*DistriOptimizerSpec.class</include>
                   -->
+                  <include>**/*DistriOptimizerSpec.class</include>
                 </includes>
                 <forkCount>2.5C</forkCount>
                 <reuseForks>true</reuseForks>
