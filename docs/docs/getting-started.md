@@ -19,7 +19,7 @@ Your data need to be transformed into RDD of [Sample](APIdocs/Data.md#sample) in
 
 If you have an existing model and want to use BigDL only for prediction, you need first load the model, and then do prediction or evaluation. 
 
-BigDL supports loading models trained and saved in BigDL. To load a BigDL model, you can use `Module.load` interface (Scala) or `Model.load` (in Python). Refer to [Model Save](APIdocs/Module/#model-save) for details.  
+BigDL supports loading models trained and saved in BigDL. To load a BigDL model, you can use `Module.load` interface (Scala) or `Model.load` (in Python). Refer to [Model Load](APIdocs/Module/#model-load) for details.  
 
 Refer to [Model Predict](APIdocs/Module/#model-prediction) for details about how to use a model for prediction.
 
@@ -97,6 +97,5 @@ BigDL provides a convinient way to monitor/visualize your training progress. It 
 There're several strategies that may be useful when tuning an optimization. 
 
  * Change the learning Rate Schedule in SGD. Refer to [SGD docs](APIdocs/Optimizers/Optim-Methods.md#sgd) for details. 
- * If overfit is seen, try use Regularization. Refer to [Regularizers](APIdocs/Regularizers.md). 
  * Try change the initialization methods. Refer to [Initailizers](APIdocs/Initializers.md).
  * Try Adam or Adagrad at the first place. If they can't achive a good score, use SGD and find a proper learning rate schedule - it usually takes time, though. RMSProp is recommended for RNN models. Refer to [Optimization Algorithms](APIdocs/Optimizers/Optim-Methods.md) for a list of supported optimization methods. 

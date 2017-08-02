@@ -55,7 +55,6 @@ pages:
     - Utilities: APIdocs/Layers/Utilities.md
   - Losses: APIdocs/Losses.md
   - Initalizers: APIdocs/Initializers.md
-  - Regularizers: APIdocs/Regularizers.md
   - Optimizer: APIdocs/Optimizers/Optimizer.md
   - Optim Methods:
     - OptimMethod: APIdocs/Optimizers/OptimMethod.md 
