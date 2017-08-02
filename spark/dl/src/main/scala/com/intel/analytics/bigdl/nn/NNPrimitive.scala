@@ -353,6 +353,194 @@ object NNPrimitive {
     }
   }
 
+  def im2colDoubleNHWC(
+    fInput: Tensor[Double], input: Tensor[Double],
+    kW: Int, kH: Int,
+    dW: Int, dH: Int,
+    padLeft: Int, padTop: Int,
+    nInputPlane: Int, inputWidth: Int, inputHeight: Int,
+    outputWidth: Int, outputHeight: Int): Unit = {
+
+    val inputData = input.storage().array()
+    val fInputData = fInput.storage().array()
+
+    val srcOffset = input.storageOffset()
+    val destOffset = fInput.storageOffset()
+
+    var hPad = -padTop
+    var fInputCount = 0
+    var h = 0
+    while (h < outputHeight) {
+      var wPad = -padLeft
+      var w = 0
+      while (w < outputWidth) {
+        var ih = hPad
+        while (ih < hPad + kH) {
+          var iw = wPad
+          while(iw < wPad + kW) {
+            if (ih >= 0 && ih < inputHeight && iw >= 0 && iw < inputWidth) {
+              val src = srcOffset + (ih * inputWidth + iw) * nInputPlane - 1
+              val dest = destOffset + fInputCount - 1
+              System.arraycopy(inputData, src,
+                fInputData, dest, nInputPlane)
+            } else {
+              val fromIndex = destOffset + fInputCount - 1
+              val toIndex = fromIndex + nInputPlane
+              util.Arrays.fill(fInputData, fromIndex, toIndex, 0.0)
+            }
+            fInputCount = fInputCount + nInputPlane
+            iw = iw + 1
+          }
+          ih = ih + 1
+        }
+        w = w + 1
+        wPad = wPad + dW
+      }
+      h = h + 1
+      hPad = hPad + dH
+    }
+  }
+
+  def im2colFloatNHWC(
+    fInput: Tensor[Float], input: Tensor[Float],
+    kW: Int, kH: Int,
+    dW: Int, dH: Int,
+    padLeft: Int, padTop: Int,
+    nInputPlane: Int, inputWidth: Int, inputHeight: Int,
+    outputWidth: Int, outputHeight: Int): Unit = {
+
+    val inputData = input.storage().array()
+    val fInputData = fInput.storage().array()
+
+    val srcOffset = input.storageOffset()
+    val destOffset = fInput.storageOffset()
+
+    var hPad = -padTop
+    var fInputCount = 0
+    var h = 0
+    while (h < outputHeight) {
+      var wPad = -padLeft
+      var w = 0
+      while (w < outputWidth) {
+        var ih = hPad
+        while (ih < hPad + kH) {
+          var iw = wPad
+          while(iw < wPad + kW) {
+            if (ih >= 0 && ih < inputHeight && iw >= 0 && iw < inputWidth) {
+              val src = srcOffset + (ih * inputWidth + iw) * nInputPlane - 1
+              val dest = destOffset + fInputCount - 1
+              System.arraycopy(inputData, src,
+                fInputData, dest, nInputPlane)
+            } else {
+              val fromIndex = destOffset + fInputCount - 1
+              val toIndex = fromIndex + nInputPlane
+              util.Arrays.fill(fInputData, fromIndex, toIndex, 0.0f)
+            }
+            fInputCount = fInputCount + nInputPlane
+            iw = iw + 1
+          }
+          ih = ih + 1
+        }
+        w = w + 1
+        wPad = wPad + dW
+      }
+      h = h + 1
+      hPad = hPad + dH
+    }
+  }
+
+  def col2imDoubleNHWC(
+    fInput: Tensor[Double], input: Tensor[Double],
+    kW: Int, kH: Int,
+    dW: Int, dH: Int,
+    padLeft: Int, padTop: Int,
+    nInputPlane: Int,
+    inputWidth: Int, inputHeight: Int,
+    outputWidth: Int, outputHeight: Int): Unit = {
+    val inputData = input.storage().array()
+    val inputOffset = input.storageOffset()
+    val fInputData = fInput.storage().array()
+    val fInputOffset = fInput.storageOffset()
+    var hPad = -padTop
+    var h = 0
+    var fInputCount = 0
+    while (h < outputHeight) {
+      var wPad = -padLeft
+      var w = 0
+      while (w < outputWidth) {
+        var ih = hPad
+        while (ih < hPad + kH) {
+          var iw = wPad
+          while (iw < wPad + kW) {
+            if (ih >= 0 && ih < inputHeight && iw >= 0 && iw < inputWidth) {
+              val dataImPatch = inputOffset + (ih * inputWidth + iw) * nInputPlane - 1
+              var i = 0
+              while(i < nInputPlane) {
+                inputData(dataImPatch + i) += fInputData(fInputOffset + fInputCount - 1)
+                fInputCount = fInputCount + 1
+                i = i + 1
+              }
+            } else {
+              fInputCount = fInputCount + nInputPlane
+            }
+            iw = iw + 1
+          }
+          ih = ih + 1
+        }
+        w = w + 1
+        wPad = wPad + dW
+      }
+      h = h + 1
+      hPad = hPad + dH
+    }
+  }
+
+  def col2imFloatNHWC(
+    fInput: Tensor[Float], input: Tensor[Float],
+    kW: Int, kH: Int,
+    dW: Int, dH: Int,
+    padLeft: Int, padTop: Int,
+    nInputPlane: Int,
+    inputWidth: Int, inputHeight: Int,
+    outputWidth: Int, outputHeight: Int): Unit = {
+    val inputData = input.storage().array()
+    val inputOffset = input.storageOffset()
+    val fInputData = fInput.storage().array()
+    val fInputOffset = fInput.storageOffset()
+    var hPad = -padTop
+    var h = 0
+    var fInputCount = 0
+    while (h < outputHeight) {
+      var wPad = -padLeft
+      var w = 0
+      while (w < outputWidth) {
+        var ih = hPad
+        while (ih < hPad + kH) {
+          var iw = wPad
+          while (iw < wPad + kW) {
+            if (ih >= 0 && ih < inputHeight && iw >= 0 && iw < inputWidth) {
+              val dataImPatch = inputOffset + (ih * inputWidth + iw) * nInputPlane - 1
+              var i = 0
+              while(i < nInputPlane) {
+                inputData(dataImPatch + i) += fInputData(fInputOffset + fInputCount - 1)
+                fInputCount = fInputCount + 1
+                i = i + 1
+              }
+            } else {
+              fInputCount = fInputCount + nInputPlane
+            }
+            iw = iw + 1
+          }
+          ih = ih + 1
+        }
+        w = w + 1
+        wPad = wPad + dW
+      }
+      h = h + 1
+      hPad = hPad + dH
+    }
+  }
+
   def maxPoolingForwardDouble(
     input: Array[Double], inputOffset: Int,
     output: Array[Double], outputOffset: Int,
