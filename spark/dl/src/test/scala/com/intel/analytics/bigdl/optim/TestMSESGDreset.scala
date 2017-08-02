@@ -19,8 +19,6 @@ package com.intel.analytics.bigdl.optim
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch}
 import com.intel.analytics.bigdl.nn._
-//import com.intel.analytics.bigdl.optim.DistriOptimizerSpec.{input1, input2}
-//import com.intel.analytics.bigdl.optim.DistriOptimizerSpecModel.{bn, mse}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{Engine, ExceptionTest, T}
 import org.apache.log4j.{Level, Logger}
