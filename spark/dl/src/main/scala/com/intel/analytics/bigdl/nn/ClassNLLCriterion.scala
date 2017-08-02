@@ -88,7 +88,7 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
       target.squeeze()
       require(target.dim() == 1,
         "ClassNLLCriterion: illegal target! Target should be 1D tensor after squeeze," +
-          s"but target dimension is: ${ target.dim() }, please check your data.")
+          s"but target's size is: ${ target.size() }, please check your data.")
 
       total_weight = ev.fromType[Int](0)
       output = ev.fromType[Int](0)
