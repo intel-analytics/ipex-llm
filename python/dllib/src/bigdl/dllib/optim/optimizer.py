@@ -26,6 +26,7 @@ from bigdl.util.common import callBigDlFunc
 from bigdl.util.common import callJavaFunc
 from bigdl.util.common import get_spark_context
 from bigdl.util.common import to_list
+from py4j.java_gateway import JavaObject
 
 
 if sys.version >= '3':
@@ -313,7 +314,35 @@ class Plateau(JavaValue):
         JavaValue.__init__(self, None, bigdl_type, monitor, factor, patience, mode, epsilon,
                            cooldown, min_lr)
 
-class SGD(JavaValue):
+class OptimMethod(JavaValue):
+
+    def __init__(self, jvalue, bigdl_type, *args):
+        if (jvalue):
+            assert(type(jvalue) == JavaObject)
+            self.value = jvalue
+        else:
+            self.value = callBigDlFunc(
+                bigdl_type, JavaValue.jvm_class_constructor(self), *args)
+        self.bigdl_type = bigdl_type
+
+    @staticmethod
+    def load(path, bigdl_type="float"):
+        """
+        load optim method
+        :param path: file path
+        """
+        return callBigDlFunc(bigdl_type, "loadOptimMethod", path)
+
+    def save(self, path, overWrite):
+        """
+        save OptimMethod
+        :param path      path
+        :param overWrite whether to overwrite
+        """
+        method=self.value
+        return callBigDlFunc(self.bigdl_type, "saveOptimMethod", method, path, overWrite)
+
+class SGD(OptimMethod):
     """
     A plain implementation of SGD
 
@@ -340,12 +369,12 @@ class SGD(JavaValue):
                  learningrates=None,
                  weightdecays=None,
                  bigdl_type="float"):
-        JavaValue.__init__(self, None, bigdl_type, learningrate, learningrate_decay, weightdecay,
+        super(SGD, self).__init__(None, bigdl_type, learningrate, learningrate_decay, weightdecay,
                            momentum, dampening, nesterov,
                            leaningrate_schedule if (leaningrate_schedule) else Default(),
                            JTensor.from_ndarray(learningrates), JTensor.from_ndarray(weightdecays))
 
-class Adagrad(JavaValue):
+class Adagrad(OptimMethod):
     """
     An implementation of Adagrad. See the original paper:
     http://jmlr.org/papers/volume12/duchi11a/duchi11a.pdf
@@ -361,9 +390,9 @@ class Adagrad(JavaValue):
                  learningrate_decay=0.0,
                  weightdecay=0.0,
                  bigdl_type="float"):
-        JavaValue.__init__(self, None, bigdl_type, learningrate, learningrate_decay, weightdecay)
+        super(Adagrad, self).__init__(None, bigdl_type, learningrate, learningrate_decay, weightdecay)
 
-class LBFGS(JavaValue):
+class LBFGS(OptimMethod):
     """
     This implementation of L-BFGS relies on a user-provided line
     search function (state.lineSearch). If this function is not
@@ -400,10 +429,10 @@ class LBFGS(JavaValue):
                  bigdl_type="float"):
         if linesearch or linesearch_options:
             raise ValueError('linesearch and linesearch_options must be None in LBFGS')
-        JavaValue.__init__(self, None, bigdl_type, max_iter, max_eval, tolfun, tolx,
-                           ncorrection, learningrate, verbose, linesearch, linesearch_options)
+        super(LBFGS, self).__init__(None, bigdl_type, max_iter, max_eval, tolfun, tolx,
+                       ncorrection, learningrate, verbose, linesearch, linesearch_options)
 
-class Adadelta(JavaValue):
+class Adadelta(OptimMethod):
     """
     Adadelta implementation for SGD: http://arxiv.org/abs/1212.5701
 
@@ -416,9 +445,9 @@ class Adadelta(JavaValue):
                  decayrate = 0.9,
                  epsilon = 1e-10,
                  bigdl_type="float"):
-        JavaValue.__init__(self, None, bigdl_type, decayrate, epsilon)
+        super(Adadelta, self).__init__(None, bigdl_type, decayrate, epsilon)
 
-class Adam(JavaValue):
+class Adam(OptimMethod):
     """
     An implementation of Adam http://arxiv.org/pdf/1412.6980.pdf
     :param learningrate learning rate
@@ -436,10 +465,10 @@ class Adam(JavaValue):
                  beta2 = 0.999,
                  epsilon = 1e-8,
                  bigdl_type="float"):
-        JavaValue.__init__(self, None, bigdl_type, learningrate, learningrate_decay,
+        super(Adam, self).__init__(None, bigdl_type, learningrate, learningrate_decay,
                            beta1, beta2, epsilon)
 
-class Adamax(JavaValue):
+class Adamax(OptimMethod):
     """
     An implementation of Adamax http://arxiv.org/pdf/1412.6980.pdf
     :param learningrate learning rate
@@ -455,9 +484,9 @@ class Adamax(JavaValue):
                  beta2 = 0.999,
                  epsilon = 1e-38,
                  bigdl_type="float"):
-        JavaValue.__init__(self, None, bigdl_type, learningrate, beta1, beta2, epsilon)
+        super(Adamax, self).__init__(None, bigdl_type, learningrate, beta1, beta2, epsilon)
 
-class RMSprop(JavaValue):
+class RMSprop(OptimMethod):
     """
     An implementation of RMSprop
     :param learningrate learning rate
@@ -473,7 +502,7 @@ class RMSprop(JavaValue):
                  decayrate = 0.99,
                  epsilon = 1e-8,
                  bigdl_type="float"):
-        JavaValue.__init__(self, None, bigdl_type, learningrate, learningrate_decay, decayrate, epsilon)
+        super(RMSprop, self).__init__(None, bigdl_type, learningrate, learningrate_decay, decayrate, epsilon)
 
 class MultiStep(JavaValue):
     """
