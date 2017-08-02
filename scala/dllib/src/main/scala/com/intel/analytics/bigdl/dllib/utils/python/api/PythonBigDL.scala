@@ -1626,6 +1626,16 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     new  RMSprop[T](learningRate, learningRateDecay, decayRate, Epsilon)
   }
 
+  def loadOptimMethod(path: String): OptimMethod[T] = {
+    OptimMethod.load[T](path)
+  }
+
+  def saveOptimMethod(method: OptimMethod[T], path: String,
+                            overWrite: Boolean = false): Unit = {
+    method.save(path, overWrite)
+  }
+
+
   def createOptimizer(model: AbstractModule[Activity, Activity, T],
                       trainingRdd: JavaRDD[Sample],
                       criterion: Criterion[T],
