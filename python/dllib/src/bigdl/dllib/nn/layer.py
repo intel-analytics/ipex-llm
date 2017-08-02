@@ -27,6 +27,7 @@ from bigdl.util.common import get_spark_context
 from bigdl.util.common import to_list
 from bigdl.util.common import INTMAX, INTMIN, DOUBLEMAX
 from bigdl.optim.optimizer import L1Regularizer, L2Regularizer, L1L2Regularizer
+from py4j.java_gateway import JavaObject
 
 if sys.version >= '3':
     long = int
@@ -57,8 +58,12 @@ class Layer(JavaValue):
     """
 
     def __init__(self, jvalue, bigdl_type, *args):
-        self.value = jvalue if jvalue else callBigDlFunc(
-            bigdl_type, JavaValue.jvm_class_constructor(self), *args)
+        if (jvalue):
+            assert(type(jvalue) == JavaObject)
+            self.value = jvalue
+        else:
+            self.value = callBigDlFunc(
+                bigdl_type, JavaValue.jvm_class_constructor(self), *args)
         self.bigdl_type = bigdl_type
 
     def __str__(self):
