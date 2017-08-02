@@ -25,45 +25,6 @@ import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
 class VolumetricFullConvolutionSpec extends TorchSpec {
-  "s" should "a" in  {
-    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
-    import com.intel.analytics.bigdl.nn._
-    import com.intel.analytics.bigdl.tensor._
-    import com.intel.analytics.bigdl.utils.T
-
-    val m = VolumetricFullConvolution(1, 2, 2, 2, 2)
-
-    val input1 = Tensor(1, 3, 3, 3).randn()
-    val input2 = Tensor(3, 3, 3).fill(2.0f)
-    val input = T(input1, input2)
-    val output = m.forward(input)
-    val gradOut = Tensor(2, 4, 4, 4).fill(0.1f)
-    val gradIn = m.backward(input, gradOut)
-
-    println(input)
-    println(output)
-    println(gradOut)
-    println(gradIn)
-  }
-
-  "test" should "a" in {
-    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
-    import com.intel.analytics.bigdl.nn._
-    import com.intel.analytics.bigdl.tensor._
-
-    val m = VolumetricFullConvolution(2, 1, 2, 2, 2)
-
-    val input = Tensor(1, 2, 2, 3, 3).randn()
-    val output = m.forward(input)
-    val gradOut = Tensor(1, 1, 3, 4, 4).fill(0.2f)
-    val gradIn = m.backward(input, gradOut)
-
-    println(input)
-    println(output)
-    println(gradOut)
-    println(gradIn)
-  }
-
   "A VolumetricFullConvolution" should "generate correct output" in {
     torchCheck()
     val seed = 100
@@ -178,11 +139,13 @@ class VolumetricFullConvolutionSpec extends TorchSpec {
 
     Random.setSeed(3)
     val input = Tensor[Double](3, nInputPlane, 3, 6, 6).apply1(e => Random.nextDouble())
-    val output = model.updateOutput(input).toTensor[Double]
+    var output = model.updateOutput(input).toTensor[Double]
 
     val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
 
-    val gradInput = model.backward(input, gradOutput)
+    var gradInput = model.backward(input, gradOutput)
+    output = model.updateOutput(input).toTensor[Double]
+    gradInput = model.backward(input, gradOutput)
 
     val code = "torch.manualSeed(" + seed + ")\n" +
       s"""layer = nn.VolumetricFullConvolution($nInputPlane,
@@ -192,6 +155,8 @@ class VolumetricFullConvolutionSpec extends TorchSpec {
       weight = layer.weight
       bias = layer.bias
       model:zeroGradParameters()
+      output = model:forward(input)
+      gradInput = model:backward(input, gradOutput)
       output = model:forward(input)
       gradInput = model:backward(input, gradOutput)
       gradBias = layer.gradBias

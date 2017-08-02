@@ -192,6 +192,7 @@ class VolumetricFullConvolution[T: ClassTag](
       require(gradOutput.nDimension() == ndim, s"VolumetricFullConvolution: gradOutput should be " +
         s"$ndim, but got ${gradOutput.nDimension()}")
       require(gradOutput.size(dimFilter) == nOutputPlane
+        && gradOutput.size(dimDepth) == outputDepth
         && gradOutput.size(dimHeight) == outputHeight
         && gradOutput.size(dimWidth) == outputWidth,
         s"VolumetricFullConvolution: GradOutput's size should be" +
@@ -613,8 +614,10 @@ class VolumetricFullConvolution[T: ClassTag](
     val inputTensor: Tensor[T] = if (input.isInstanceOf[Table]) {
       val targetTensor: Tensor[T] = input.toTable[Tensor[T]](2)
       val tDims = targetTensor.dim()
+      val tT = targetTensor.size(tDims - 2)
       val tH = targetTensor.size(tDims - 1)
       val tW = targetTensor.size(tDims)
+      adjT = calculateAdj(tT, kT, padT, dT)
       adjW = calculateAdj(tW, kW, padW, dW)
       adjH = calculateAdj(tH, kH, padH, dH)
       input.toTable[Tensor[T]](1)
@@ -652,7 +655,10 @@ class VolumetricFullConvolution[T: ClassTag](
     gradWeightMMInBatch.resize(Array(batchSize, nGroup, nInputPlane / nGroup,
       nOutputPlane * kT * kH * kW / nGroup))
     gradWeightMMInBatch.zero()
-    if (!noBias) gradientBiasMT.resize(Array(batchSize, nOutputPlane))
+    if (!noBias) {
+      gradientBiasMT.resize(Array(batchSize, nOutputPlane))
+      gradientBiasMT.zero()
+    }
 
     // Define a buffer of ones, for bias accumulation
     if (ones.nDimension != 2 || ones.size(1) * ones.size(2) < outputHeight * outputWidth) {
