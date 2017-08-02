@@ -322,6 +322,10 @@
                   <includes>
                     <include>**/*TestParallel.class</include>
                     <include>**/*TestParallel2.class</include>
+                    <include>**/*TestLBFGS.class</include>
+                    <include>**/*TestSGD.class</include>
+                    <include>**/*TestMSESGDref.class</include>
+                    <include>**/*TestMSESGDreset.class</include>
                     <include>**/*DistriOptimizerSpec.class</include>
                   </includes>
                   <forkCount>2.5C</forkCount>

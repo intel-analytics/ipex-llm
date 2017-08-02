@@ -25,7 +25,7 @@ import org.scalatest.{FlatSpec, Matchers}
 import scala.collection.mutable.ArrayBuffer
 import scala.math._
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class RecurrentSpec extends FlatSpec with Matchers {
 
   "A Recurrent" should " converge when batchSize changes" in {

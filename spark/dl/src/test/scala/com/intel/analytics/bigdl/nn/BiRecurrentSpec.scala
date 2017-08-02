@@ -30,7 +30,7 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.sys.process._
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class BiRecurrentSpec  extends TorchSpec {
   override def torchCheck(): Unit = {
     super.torchCheck()
