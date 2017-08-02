@@ -2996,13 +2996,13 @@ class VolumetricFullConvolution(Layer):
 
     :param nInputPlane The number of expected input planes in the image given into forward()
     :param nOutputPlane The number of output planes the convolution layer will produce.
-    :param kT The kernel width of the convolution.
+    :param kT The kernel depth of the convolution.
     :param kW The kernel width of the convolution.
     :param kH The kernel height of the convolution.
-    :param dT The step of the convolution in the width dimension. Default is 1.
+    :param dT The step of the convolution in the depth dimension. Default is 1.
     :param dW The step of the convolution in the width dimension. Default is 1.
     :param dH The step of the convolution in the height dimension. Default is 1.
-    :param padT The additional zeros added per width to the input planes. Default is 0.
+    :param padT The additional zeros added per depth to the input planes. Default is 0.
     :param padW The additional zeros added per width to the input planes. Default is 0.
     :param padH The additional zeros added per height to the input planes. Default is 0.
     :param adjT Extra depth to add to the output image. Default is 0.
@@ -3010,7 +3010,6 @@ class VolumetricFullConvolution(Layer):
     :param adjH Extra height to add to the output image. Default is 0.
     :param nGroup Kernel group number.
     :param noBias If bias is needed.
-    :param initMethod Init method, Default, Xavier, Bilinear.
     :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices.
     :param bRegularizer: instance of [[Regularizer]]applied to the bias.
 

@@ -9,27 +9,19 @@ val m = SpatialConvolution(nInputPlane,nOutputPlane,kernelW,kernelH,strideW=1,st
 m = SpatialConvolution(n_input_plane,n_output_plane,kernel_w,kernel_h,stride_w=1,stride_h=1,pad_w=0,pad_h=0,n_group=1,propagate_back=True,wRegularizer=None,bRegularizer=None,init_weight=None,init_bias=None,init_grad_weight=None,init_grad_bias=None)
 ```
 
-SpatialConvolution is a module that applies a 3D full convolution over an 3D input image, a sequence of images, or a video etc. * The input tensor is expected to be a 4D or 5D(with batch) tensor. Note that instead
-of setting adjT, adjW and adjH, `VolumetricConvolution` also accepts a table input
-with two tensors: T(convInput, sizeTensor) where convInput is the standard input tensor,
-and the size of sizeTensor is used to set the size of the output (will ignore the adjT, adjW and
-adjH values used to construct the module). This module can be used without a bias by setting
-parameter `noBias = true` while constructing the module.
+SpatialConvolution is a module that applies a 2D convolution over an input image.
 
 The input tensor in `forward(input)` is expected to be
-either a 5D tensor (`batch x nInputPlane x depth x height x width`) or a 4D tensor (` nInputPlane x depth x height x width`). The convolution is performed on the last two dimensions.
+either a 4D tensor (`batch x nInputPlane x height x width`) or a 3D tensor (` nInputPlane x height x width`). The convolution is performed on the last two dimensions.
 
 Detailed paramter explaination for the constructor.
  
  * `nInputPlane` The number of expected input planes in the image given into forward()
  * `nOutputPlane` The number of output planes the convolution layer will produce.
- * `kernelT` The kernel depth of the convolution
  * `kernelW` The kernel width of the convolution
  * `kernelH` The kernel height of the convolution
- * `strideT` The step of the convolution in the width dimension.
  * `strideW` The step of the convolution in the width dimension.
  * `strideH` The step of the convolution in the height dimension
- * `padT`  padding to be added to depth to the input.
  * `padW`  padding to be added to width to the input.
  * `padH` padding to be added to height to the input.
  * `nGroup` Kernel group number
@@ -1033,40 +1025,47 @@ m = VolumetricFullConvolution(
     n_group=1,no_bias=False,init_method='default',wRegularizer=None,bRegularizer=None)
 ```
 
-VolumetricFullConvolution is a module that applies a 2D full convolution over an input image. 
+`VolumetricFullConvolution` Apply a 3D full convolution over an 3D input image, a sequence of images, or a video etc.
+The input tensor is expected to be a 4D or 5D(with batch) tensor. Note that instead
+of setting adjT, adjW and adjH, `VolumetricConvolution` also accepts a table input
+with two tensors: T(convInput, sizeTensor) where convInput is the standard input tensor,
+and the size of sizeTensor is used to set the size of the output (will ignore the adjT, adjW and
+adjH values used to construct the module). This module can be used without a bias by setting
+parameter noBias = true while constructing the module.
 
-The input tensor in `forward(input)` is expected to be
-either a 4D tensor (`batch x nInputPlane x height x width`) or a 3D tensor (`nInputPlane x height x width`). The convolution is performed on the last two dimensions. `adjW` and `adjH` are used to adjust the size of the output image. The size of output tensor of `forward` will be :
+If input is a 4D tensor nInputPlane x depth x height x width,
 ```
-  output width  = (width  - 1) * dW - 2*padW + kW + adjW
-  output height = (height - 1) * dH - 2*padH + kH + adjH
-``` 
+odepth  = (depth  - 1) * dT - 2*padT + kT + adjT
+owidth  = (width  - 1) * dW - 2*padW + kW + adjW
+oheight = (height - 1) * dH - 2*padH + kH + adjH
+```
 
-Note, scala API also accepts a table input with two tensors: `T(convInput, sizeTensor)` where `convInput` is the standard input tensor, and the size of `sizeTensor` is used to set the size of the output (will ignore the `adjW` and `adjH` values used to construct the module). Use `SpatialFullConvolution[Table, T](...)` instead of `SpatialFullConvolution[Tensor,T](...)`) for table input.
- 
-This module can also be used without a bias by setting parameter `noBias = true` while constructing the module.
- 
-Other frameworks may call this operation "In-network Upsampling", "Fractionally-strided convolution", "Backwards Convolution," "Deconvolution", or "Upconvolution."
- 
-Reference: Long J, Shelhamer E, Darrell T. Fully convolutional networks for semantic segmentation[C]//Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition. 2015: 3431-3440.
+Other frameworks call this operation "In-network Upsampling", "Fractionally-strided convolution",
+"Backwards Convolution," "Deconvolution", or "Upconvolution."
 
-Detailed explaination of arguments in constructor. 
+Reference Paper: Long J, Shelhamer E, Darrell T. Fully convolutional networks for semantic
+segmentation[C]//Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition.
+2015: 3431-3440.
 
- * `nInputPlane` The number of expected input planes in the image given into forward()
- * `nOutputPlane` The number of output planes the convolution layer will produce.
- * `kW` The kernel width of the convolution.
- * `kH` The kernel height of the convolution.
- * `dW` The step of the convolution in the width dimension. Default is 1.
- * `dH` The step of the convolution in the height dimension. Default is 1.
- * `padW` The additional zeros added per width to the input planes. Default is 0.
- * `padH` The additional zeros added per height to the input planes. Default is 0.
- * `adjW` Extra width to add to the output image. Default is 0.
- * `adjH` Extra height to add to the output image. Default is 0.
- * `nGroup` Kernel group number.
- * `noBias` If bias is needed.
- * `wRegularizer` instance of `Regularizer`
-                   (eg. L1 or L2 regularization), applied to the input weights matrices.
- * `bRegularizer` instance of `Regularizer`
+ * nInputPlane The number of expected input planes in the image given into forward()
+ * nOutputPlane The number of output planes the convolution layer will produce.
+ * kT The kernel depth of the convolution.
+ * kW The kernel width of the convolution.
+ * kH The kernel height of the convolution.
+ * dT The step of the convolution in the depth dimension. Default is 1.
+ * dW The step of the convolution in the width dimension. Default is 1.
+ * dH The step of the convolution in the height dimension. Default is 1.
+ * padT The additional zeros added per depth to the input planes. Default is 0.
+ * padW The additional zeros added per width to the input planes. Default is 0.
+ * padH The additional zeros added per height to the input planes. Default is 0.
+ * adjT Extra depth to add to the output image. Default is 0.
+ * adjW Extra width to add to the output image. Default is 0.
+ * adjH Extra height to add to the output image. Default is 0.
+ * nGroup Kernel group number.
+ * noBias If bias is needed.
+ * wRegularizer: instance of `Regularizer`
+ *             (eg. L1 or L2 regularization), applied to the input weights matrices.
+ * bRegularizer: instance of `Regularizer`
                    applied to the bias.
  
 **Scala example:**

@@ -24,8 +24,6 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 import scala.reflect.ClassTag
 
 /**
- * Apply a 3D full convolution over an input image.
- *
  * Apply a 3D full convolution over an 3D input image, a sequence of images, or a video etc.
  * The input tensor is expected to be a 4D or 5D(with batch) tensor. Note that instead
  * of setting adjT, adjW and adjH, [[VolumetricConvolution]] also accepts a table input
@@ -92,7 +90,7 @@ class VolumetricFullConvolution[T: ClassTag](
   extends AbstractModule[Activity, Tensor[T], T] with Initializable {
 
   require(adjW <= dW - 1 && adjH <= dH - 1 && adjT <= dT -1,
-    "VolumetricFullConvolution: adjW=$adjW and adjH=$adjH must be smaller than " +
+    s"VolumetricFullConvolution: adjW=$adjW and adjH=$adjH must be smaller than " +
       s"(dW - 1)=${dW - 1} and (dH - 1)=${dH - 1} respectively")
 
   val weight: Tensor[T] = Tensor[T](nGroup, nInputPlane / nGroup,
@@ -105,10 +103,10 @@ class VolumetricFullConvolution[T: ClassTag](
   private val columns: Tensor[T] = Tensor[T]()
   private val ones: Tensor[T] = Tensor[T]()
   private val zeroScalar: Tensor[T] = Tensor[T]()
-  protected val onesBias = Tensor[T]()
+  protected val onesBias = if (noBias) null else Tensor[T]()
   protected val onesBatch = Tensor[T]()
   protected var weightMM: Tensor[T] = _
-  protected val gradientBiasMT: Tensor[T] = Tensor[T]()
+  protected val gradientBiasMT: Tensor[T] = if (noBias) null else Tensor[T]()
   protected val gradWeightMMInBatch: Tensor[T] = Tensor[T]()
 
   protected val _1x1x1 = if (
@@ -320,7 +318,8 @@ class VolumetricFullConvolution[T: ClassTag](
     output.resize(batchSize, nOutputPlane, outputDepth, outputHeight, outputWidth)
     output.zero()
 
-    if (onesBias.dim() != 1 || onesBias.size(1) != outputDepth * outputHeight * outputWidth) {
+    if (null != bias &&
+      (onesBias.dim() != 1 || onesBias.size(1) != outputDepth * outputHeight * outputWidth)) {
       onesBias.resize(Array(outputDepth * outputHeight * outputWidth)).fill(ev.one)
     }
 
@@ -653,7 +652,7 @@ class VolumetricFullConvolution[T: ClassTag](
     gradWeightMMInBatch.resize(Array(batchSize, nGroup, nInputPlane / nGroup,
       nOutputPlane * kT * kH * kW / nGroup))
     gradWeightMMInBatch.zero()
-    gradientBiasMT.resize(Array(batchSize, nOutputPlane))
+    if (!noBias) gradientBiasMT.resize(Array(batchSize, nOutputPlane))
 
     // Define a buffer of ones, for bias accumulation
     if (ones.nDimension != 2 || ones.size(1) * ones.size(2) < outputHeight * outputWidth) {
@@ -753,10 +752,10 @@ class VolumetricFullConvolution[T: ClassTag](
     columns.set()
     ones.set()
     zeroScalar.set()
-    onesBias.set()
+    if (onesBias != null) onesBias.set()
     onesBatch.set()
     weightMM = null
-    gradientBiasMT.set()
+    if (gradientBiasMT != null) gradientBiasMT.set()
     gradWeightMMInBatch.set()
     this
   }
@@ -796,25 +795,30 @@ class VolumetricFullConvolution[T: ClassTag](
     var hash = super.hashCode()
     hash = hash * seed + nInputPlane.hashCode()
     hash = hash * seed + nOutputPlane.hashCode()
+    hash = hash * seed + kT.hashCode()
     hash = hash * seed + kW.hashCode()
     hash = hash * seed + kH.hashCode()
+    hash = hash * seed + dT.hashCode()
     hash = hash * seed + dW.hashCode()
     hash = hash * seed + dH.hashCode()
+    hash = hash * seed + padT.hashCode()
     hash = hash * seed + padW.hashCode()
     hash = hash * seed + padH.hashCode()
+    hash = hash * seed + adjT.hashCode()
     hash = hash * seed + adjW.hashCode()
     hash = hash * seed + adjH.hashCode()
     hash = hash * seed + weight.hashCode()
-    hash = hash * seed + bias.hashCode()
+    if (!noBias) hash = hash * seed + bias.hashCode()
     hash = hash * seed + gradWeight.hashCode()
-    hash = hash * seed + gradBias.hashCode()
+    if (!noBias) hash = hash * seed + gradBias.hashCode()
 
     hash
   }
 
   override def toString(): String = {
     s"${getPrintName()}($nInputPlane -> $nOutputPlane, " +
-      s"$kW x $kH, $dW, $dH, $padW, $padH, $adjW, $adjH)"
+      s"$kT x $kW x $kH, $dT x $dW, $dH, " +
+      s"$padT, $padW, $padH, $adjT, $adjW, $adjH)"
   }
 }
 
