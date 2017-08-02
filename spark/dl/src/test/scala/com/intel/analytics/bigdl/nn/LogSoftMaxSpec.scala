@@ -28,6 +28,29 @@ class LogSoftMaxSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
 
+  "A LogSoftMax Module" should " be fast using MKL" in {
+    val layer = LogSoftMax[Float]()
+    val batchSize = 20
+    val input = Tensor[Float](batchSize, 10000)
+    val gradOutput = Tensor[Float](batchSize, 10000)
+    var startTime = System.nanoTime()
+    var duration = (System.nanoTime() - startTime) / 1e9
+    var sum = 0.0
+    for (i <- 1 to 5) {
+      layer.forward(input)
+      layer.backward(input, gradOutput)
+    }
+    for (i <- 1 to 5) {
+      startTime = System.nanoTime()
+      layer.forward(input)
+      layer.backward(input, gradOutput)
+      duration = (System.nanoTime() - startTime) / 1e9
+      println(s"speed: = ${duration} seconds")
+      sum += duration
+    }
+    println(s"avg speed: = ${sum / 5}")
+  }
+
   "A LogSoftMax Module " should "generate correct output" in {
     val module = new LogSoftMax[Double]()
     val input = Tensor[Double](2)
