@@ -66,7 +66,7 @@ import scala.reflect.ClassTag
  *                    applied to the bias.
  */
 
-@SerialVersionUID(- 3110412775551642284L)
+@SerialVersionUID(- 809921720980508072L)
 class VolumetricFullConvolution[T: ClassTag](
   val nInputPlane: Int,
   val nOutputPlane: Int,
