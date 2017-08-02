@@ -1,5 +1,8 @@
-First of all, you need to obtain the BigDL libs. Refer to [Install](install-without-pip.md) for more details
+## **Before running python programs**
 
+First of all, you need to obtain the BigDL libs. Refer to [Install](install-without-pip.md) for more details. 
+
+Then, set environmental variables as described in [Set Environment         Variables](../UserGuide/run.md#set-environment-variables).
 
 ## **A quick launch for local mode**
 

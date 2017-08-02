@@ -65,33 +65,4 @@ s reached.
   the number of iterations specified by "max".
   Usually used in `Optimizer.setEndWhen`.
 
----    
-## Max Score
-**Scala:**
-```scala
- val trigger = Trigger.maxScore(max)
-```
-**Python:**
-```python
- trigger = MaxScore(max)
-``` 
-
-  
- A trigger that triggers an action when validation score
- larger than "max" score
-
----
-## Min Loss
-**Scala:**
-```scala
- val trigger = Trigger.minLoss(min)
-```
-**Python:**
-```python
- trigger = MinLoss(min)
-``` 
-
-  
- A trigger that triggers an action when training loss
- less than "min" loss
 
