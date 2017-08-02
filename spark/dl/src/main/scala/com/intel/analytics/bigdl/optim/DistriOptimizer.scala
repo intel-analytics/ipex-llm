@@ -138,7 +138,7 @@ object DistriOptimizer {
     var dataRDD = dataset.data(train = true)
     val dummyRDD = CoalescedWithLocalityRDD(models, Engine.nodeNumber())
       .mapPartitions { iter =>
-        Iterator(iter.next())
+        Iterator(iter.next().optimMethod)
       }.cache()
     dummyRDD.count()
     
@@ -151,12 +151,14 @@ object DistriOptimizer {
       metrics.set("computing time average", 0.0, sc, partitionNum)
       metrics.set("aggregate gradient time", 0.0, sc, partitionNum)
       metrics.set("get weights average", 0.0, sc, partitionNum)
-      metrics.set("send gradient partition", 0.0, sc, partitionNum)
-      metrics.set("aggregate local gradient", 0.0, sc, Engine.nodeNumber())
       metrics.set("put gradient", 0.0, sc, Engine.nodeNumber())
       metrics.set("aggregrateGradientParition average executor", 0.0, sc, Engine.nodeNumber())
-      metrics.set("compute weight average", 0.0, sc, Engine.nodeNumber())
       metrics.set("send weights average", 0.0, sc, Engine.nodeNumber())
+      metrics.set("computing time for each node", mutable.ArrayBuffer[Double](), sc)
+      metrics.set("get weights for each node", mutable.ArrayBuffer[Double](), sc)
+      metrics.set("compute weight average", 0.0, sc, Engine.nodeNumber())
+      metrics.set("send gradient partition", 0.0, sc, partitionNum)
+      metrics.set("aggregate local gradient", 0.0, sc, Engine.nodeNumber())
 
       val driverMetrics = metrics
       val start = System.nanoTime()
@@ -164,7 +166,6 @@ object DistriOptimizer {
       val finishedModelNum = dataRDD.zipPartitions(
         models, true)(
         (data, modelIter) => {
-          val start = System.nanoTime()
           val cached = modelIter.next()
           val executorId = SparkEnv.get.executorId
           val parameters = ParameterManager2.get(pid, executorId)
@@ -300,31 +301,29 @@ object DistriOptimizer {
       if (dropPercentage == 0 || finishedModelNum >= driverSubModelNum * (1-maxDropPercentage)) {
         val value = lossSum.value / finishedModelNum
 
-        val nodeNumber = Engine.nodeNumber()
         val job3start = System.nanoTime()
         dummyRDD.mapPartitions { iter =>
-          val modelCache = iter.next()
+          val optimMethod = iter.next()
           val executorId = SparkEnv.get.executorId
           val parameters = ParameterManager2.get(pid, executorId)
           val getG = System.nanoTime()
           parameters.aggregrateGradientParition()
+          
+          val gradients = parameters.getLocalParameter[T](parameters.getGradientExecutorId())
+          gradients.div(ev.fromType(finishedModelNum))
           driverMetrics.add("aggregrateGradientParition average executor",
             System.nanoTime() - getG)
 
-          var time = System.nanoTime()
-          val gradients = parameters.getLocalParameter[T](parameters.getGradientExecutorId())
-          gradients.div(ev.fromType(finishedModelNum))
-
-          modelCache.optimMethod.state.update("epoch", driverState[Int]("epoch"))
-          modelCache.optimMethod.state.update("neval", driverState[Int]("neval"))
-          modelCache.optimMethod.state.update("Loss", driverState[Float]("Loss"))
+          optimMethod.state.update("epoch", driverState[Int]("epoch"))
+          optimMethod.state.update("neval", driverState[Int]("neval"))
+          optimMethod.state.update("Loss", driverState[Float]("Loss"))
           if (validationMethods.isDefined) {
-            modelCache.optimMethod.state.update("score", driverState[Float]("score"))
+            optimMethod.state.update("score", driverState[Float]("score"))
           }
-          
+          var time = System.nanoTime()
           val weights = parameters.getLocalParameter[T](parameters.getWeightExecutorId())
 
-          modelCache.optimMethod.optimize(_ => (ev.fromType(value), gradients), weights)
+          optimMethod.optimize(_ => (ev.fromType(value), gradients), weights)
           driverMetrics.add("compute weight average", System.nanoTime() - time)
           time = System.nanoTime()
           parameters.sendWeightExecutor()
@@ -350,7 +349,8 @@ object DistriOptimizer {
         logger.info(s"${_header} Train ${recordsNum.value} in ${(end - start) / 1e9}seconds. " +
           s"Throughput is ${driverState("Throughput")} records/second. Loss is ${
             driverState("Loss")}. ${optimMethod.getHyperParameter()}")
-        logger.debug("\n" + metrics.summary())
+        logger.info(s"job1: ${job2start-start} job2: ${job2end-job2start}, job3: ${job3end-job3start}" )
+        logger.info("\n" + metrics.summary())
         logger.debug("Dropped modules: " + (driverSubModelNum - finishedModelNum))
 
         lossArray = new Array[Double](_subModelNumber)
