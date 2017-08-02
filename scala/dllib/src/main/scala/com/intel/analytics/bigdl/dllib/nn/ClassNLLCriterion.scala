@@ -86,6 +86,10 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
       val batchSize = input.size(1)
       val targetSize = target.size()
       target.squeeze()
+      require(target.dim() == 1,
+        "ClassNLLCriterion: illegal target! Target should be 1D tensor after squeeze," +
+          s"but target's size is: ${ target.size() }, please check your data.")
+
       total_weight = ev.fromType[Int](0)
       output = ev.fromType[Int](0)
 
