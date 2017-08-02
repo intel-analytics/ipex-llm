@@ -45,20 +45,11 @@ The instructions above will only build for Linux. To build BigDL for macOS, pass
 $ bash make-dist.sh -P mac
 ```
 
-## **Build for Windows**
+## **Build for Spark 2.0 and above**
 
-To build BigDL for Windows, pass `-P win64` to the build command:
+The instructions above will build BigDL with Spark 1.5.x or 1.6.x (using Scala 2.10); to build for Spark 2.0 and above (which uses Scala 2.11 by default), pass `-P spark_2.0`, `-P spark_2.1` or `-P spark_2.1.1` to the `make-dist.sh` script:
 ```bash
-> mvn clean package -DskipTests -P win64
-```
-
-Please note that we only test it on Windows 10
-
-* **Build for Spark 2.0 and above**
-
-The instructions above will build BigDL with Spark 1.5.x or 1.6.x (using Scala 2.10); to build for Spark 2.0 and above (which uses Scala 2.11 by default), pass `-P spark_2.x` to the `make-dist.sh` script:
-```bash
-$ bash make-dist.sh -P spark_2.x
+$ bash make-dist.sh -P spark_2.1.1
 ```
 
 It is highly recommended to use _**Java 8**_ when running with Spark 2.x; otherwise you may observe very poor performance.
