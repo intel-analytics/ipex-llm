@@ -82,63 +82,31 @@ class LogSoftMax[T: ClassTag](
     if (buffer2 == null || buffer2.length < in.nElement) {
       buffer2 = new Array[T](in.nElement)
     }
-    ev.getType match {
-      case FloatType =>
 
-        MKL.vsExp(in.nElement,
-          in.storage.asInstanceOf[Storage[Float]].array,
-          in.storageOffset - 1,
-          buffer2.asInstanceOf[Array[Float]],
-          0)
+    ev.vExp(in.nElement,
+      in.storage.array,
+      in.storageOffset - 1,
+      buffer2,
+      0)
 
-        val dot = MKL.vsdot(in.nElement,
-          buffer2.asInstanceOf[Array[Float]],
-          0,
-          1,
-          buffer1.asInstanceOf[Array[Float]],
-          0,
-          1)
-        val sum = ev.negative(
-          ev.log(ev.fromType[Float](dot)))
+    val dot = ev.dot(in.nElement,
+      buffer2,
+      0,
+      1,
+      buffer1,
+      0,
+      1)
 
-        MKL.vsaxpy(in.nElement,
-          ev.toType[Float](sum),
-          buffer1.asInstanceOf[Array[Float]],
-          0,
-          1,
-          out.storage.asInstanceOf[Storage[Float]].array,
-          out.storageOffset - 1,
-          1)
+    val sum = ev.negative(ev.log(dot))
 
-      case DoubleType =>
-
-        MKL.vdExp(in.nElement,
-          in.storage.asInstanceOf[Storage[Double]].array,
-          in.storageOffset - 1,
-          buffer2.asInstanceOf[Array[Double]],
-          0)
-
-        val dot = MKL.vddot(in.nElement,
-          buffer2.asInstanceOf[Array[Double]],
-          0,
-          1,
-          buffer1.asInstanceOf[Array[Double]],
-          0,
-          1)
-        val sum = ev.negative(
-          ev.log(ev.fromType[Double](dot)))
-
-        MKL.vdaxpy(in.nElement,
-          ev.toType[Double](sum),
-          buffer1.asInstanceOf[Array[Double]],
-          0,
-          1,
-          out.storage.asInstanceOf[Storage[Double]].array,
-          out.storageOffset - 1,
-          1)
-      case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
-    }
-    out
+    ev.axpy(in.nElement,
+      sum,
+      buffer1,
+      0,
+      1,
+      out.storage.array,
+      out.storageOffset - 1,
+      1)
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
@@ -170,70 +138,45 @@ class LogSoftMax[T: ClassTag](
   }
 
   private def updateGradInputFrame(out: Tensor[T], gradOut: Tensor[T]): Unit = {
-    ev.getType match {
-       case FloatType =>
+    ev.vExp(out.nElement,
+      out.storage.array,
+      out.storageOffset - 1,
+      buffer2,
+      0)
 
-         MKL.vsExp(out.nElement,
-           out.storage.asInstanceOf[Storage[Float]].array,
-           out.storageOffset - 1,
-           buffer2.asInstanceOf[Array[Float]],
-           0)
+    val dot = ev.dot(gradOut.nElement,
+      gradOut.storage.array,
+      gradOut.storageOffset - 1,
+      1,
+      buffer1,
+      0,
+      1)
 
-         val dot = MKL.vsdot(gradOut.nElement,
-           gradOut.storage.asInstanceOf[Storage[Float]].array,
-           gradOut.storageOffset - 1,
-           1,
-           buffer1.asInstanceOf[Array[Float]],
-           0,
-           1)
-         val sum = ev.negative(
-           ev.fromType[Float](dot))
+    val sum = ev.negative(dot)
 
-         MKL.vsaxpy(gradOut.nElement,
-           ev.toType[Float](sum),
-           buffer2.asInstanceOf[Array[Float]],
-           0,
-           1,
-           gradOut.storage.asInstanceOf[Storage[Float]].array,
-           gradOut.storageOffset - 1,
-           1)
-
-      case DoubleType =>
-
-        MKL.vdExp(out.nElement,
-          out.storage.asInstanceOf[Storage[Double]].array,
-          out.storageOffset - 1,
-          buffer2.asInstanceOf[Array[Double]],
-          0)
-
-        val dot = MKL.vddot(gradOut.nElement,
-          gradOut.storage.asInstanceOf[Storage[Double]].array,
-          gradOut.storageOffset - 1,
-          1,
-          buffer1.asInstanceOf[Array[Double]],
-          0,
-          1)
-        val sum = ev.negative(
-          ev.fromType[Double](dot))
-
-        MKL.vdaxpy(gradOut.nElement,
-          ev.toType[Double](sum),
-          buffer2.asInstanceOf[Array[Double]],
-          0,
-          1,
-          gradOut.storage.asInstanceOf[Storage[Double]].array,
-          gradOut.storageOffset - 1,
-          1)
-      case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
-    }
+    ev.axpy(gradOut.nElement,
+      sum,
+      buffer2,
+      0,
+      1,
+      gradOut.storage.array,
+      gradOut.storageOffset - 1,
+      1)
   }
 
+  override def clearState() : this.type = {
+    super.clearState()
+    if (buffer1 != null) buffer1 = null
+    if (buffer2 != null) buffer2 = null
+    if (results != null) results = null
+    this
+  }
 }
 
 object LogSoftMax {
 
   def apply[@specialized(Float, Double) T: ClassTag]()
-      (implicit ev: TensorNumeric[T]) : LogSoftMax[T] = {
+    (implicit ev: TensorNumeric[T]) : LogSoftMax[T] = {
     new LogSoftMax[T]()
   }
   private val A0 = 1.0
@@ -260,4 +203,3 @@ object LogSoftMax {
     return 0.0
   }
 }
-
