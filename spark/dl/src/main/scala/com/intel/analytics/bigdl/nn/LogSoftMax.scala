@@ -166,9 +166,9 @@ class LogSoftMax[T: ClassTag](
 
   override def clearState() : this.type = {
     super.clearState()
-    if (buffer1 != null) buffer1 = null
-    if (buffer2 != null) buffer2 = null
-    if (results != null) results = null
+    buffer1 = null
+    buffer2 = null
+    results = null
     this
   }
 }
