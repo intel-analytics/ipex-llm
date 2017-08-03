@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.optim.{L1L2Regularizer, L1Regularizer, L2Regula
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import serialization.Bigdl._
-import serialization.Bigdl.AttrValue.{ArrayValue, DataType}
+import serialization.Bigdl.AttrValue.{ArrayValue}
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
@@ -217,19 +217,37 @@ object DataConverter extends DataConverter{
     override def getAttributeValue[T: ClassTag](attribute: AttrValue)
       (implicit ev: TensorNumeric[T]): AnyRef = {
       val serializedTensor = attribute.getTensorValue
-      val data = serializedTensor.getDataList.asScala
-      if (data.size == 0) {
-        return null
-      }
+      val dataType = serializedTensor.getDatatype
       val sizes = serializedTensor.getSizeList.asScala
-      val strorageArray = new Array[T](data.size)
-      var i = 0;
-      while (i < data.size) {
-        strorageArray(i) = ev.fromType[Double](data(i))
-        i += 1
+      if (sizes.size == 0) {
+        return null;
+      }
+      if (dataType != DataType.DOUBLE && dataType != DataType.FLOAT) {
+        throw new IllegalArgumentException(s"$dataType not supported!")
+      }
+      val strorageArray : Array[T] = dataType match {
+        case DataType.FLOAT =>
+          val data = serializedTensor.getFloatDataList.asScala
+          val strorageArray = new Array[T](data.size)
+          var i = 0;
+          while (i < data.size) {
+            strorageArray(i) = ev.fromType[Float](data(i))
+            i += 1
+          }
+          strorageArray
+        case DataType.DOUBLE =>
+          val data = serializedTensor.getDoubleDataList.asScala
+          val strorageArray = new Array[T](data.size)
+          var i = 0;
+          while (i < data.size) {
+            strorageArray(i) = ev.fromType[Double](data(i))
+            i += 1
+          }
+          strorageArray
+        case _ => throw new IllegalArgumentException(s"$dataType not supported in tensor now !")
       }
       val sizeArray = new Array[Int](sizes.size)
-      i = 0;
+      var i = 0;
       while (i < sizes.size) {
         sizeArray(i) = sizes(i)
         i += 1
@@ -241,11 +259,21 @@ object DataConverter extends DataConverter{
       (attributeBuilder: AttrValue.Builder, value: Any,
        valueType : universe.Type = null)
       (implicit ev: TensorNumeric[T]): Unit = {
+      import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+      import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericDouble
       attributeBuilder.setDataType(DataType.TENSOR)
       if (value != null) {
         val tensor = value.asInstanceOf[Tensor[T]]
         val tensorBuilder = BigDLTensor.newBuilder
-        tensor.storage().array().foreach(data => tensorBuilder.addData(ev.toType[Double](data)))
+        if (ev == NumericFloat) {
+          tensorBuilder.setDatatype(DataType.FLOAT)
+          tensor.storage().array().foreach(data => tensorBuilder.
+            addFloatData(ev.toType[Float](data)))
+        } else if (ev == NumericDouble) {
+          tensorBuilder.setDatatype(DataType.DOUBLE)
+          tensor.storage().array().foreach(data => tensorBuilder.
+            addDoubleData(ev.toType[Float](data)))
+        }
         tensor.size().foreach(size => tensorBuilder.addSize(size))
         attributeBuilder.setTensorValue(tensorBuilder.build)
       }

@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
 import com.intel.analytics.bigdl.utils.serializer.DataConverter.RegularizerConverter
-import serialization.Bigdl.AttrValue.DataType
+import serialization.Bigdl.DataType
 import serialization.Bigdl.{AttrValue, BigDLModule, BigDLTensor}
 
 import scala.collection.mutable.ArrayBuffer
@@ -91,15 +91,29 @@ trait ModuleSerializable extends Loadable with Savable{
 
   private def copy2BigDLTensor[T: ClassTag](tensor : Tensor[T], serializedTensor : BigDLTensor)
                                            (implicit ev: TensorNumeric[T]) : Unit = {
-    val serializedData = serializedTensor.getDataList
-    require(tensor.nElement() == serializedData.size(), "data size is not equal")
-    var i = 0
-    val tensorData = tensor.storage().array()
-    var offset = tensor.storageOffset() - 1
-    while (i < serializedData.size()) {
-      tensorData(offset) = ev.fromType[Double](serializedData.get(i))
-      offset += 1
-      i += 1
+    val dataType = serializedTensor.getDatatype
+    if (dataType == DataType.FLOAT) {
+      val serializedData = serializedTensor.getFloatDataList
+      require(tensor.nElement() == serializedData.size(), "data size is not equal")
+      var i = 0
+      val tensorData = tensor.storage().array()
+      var offset = tensor.storageOffset() - 1
+      while (i < serializedData.size()) {
+        tensorData(offset) = ev.fromType[Float](serializedData.get(i))
+        offset += 1
+        i += 1
+      }
+    } else if (dataType == DataType.DOUBLE) {
+      val serializedData = serializedTensor.getDoubleDataList
+      require(tensor.nElement() == serializedData.size(), "data size is not equal")
+      var i = 0
+      val tensorData = tensor.storage().array()
+      var offset = tensor.storageOffset() - 1
+      while (i < serializedData.size()) {
+        tensorData(offset) = ev.fromType[Double](serializedData.get(i))
+        offset += 1
+        i += 1
+      }
     }
   }
 
@@ -134,12 +148,23 @@ trait ModuleSerializable extends Loadable with Savable{
 
   private def copyFromBigDLTensor[T: ClassTag](tensor : Tensor[T],
     serializedTensor : BigDLTensor.Builder)(implicit ev: TensorNumeric[T]) : Unit = {
-    var i = 0
+    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericDouble
     val tensorData = tensor.storage().array()
-    var offset = tensor.storageOffset() - 1
-    while (i < tensorData.length) {
-      serializedTensor.addData(ev.toType[Double](tensorData(i)))
-      i += 1
+    if (ev == NumericFloat) {
+      var i = 0
+      while (i < tensorData.length) {
+        serializedTensor.addFloatData(ev.toType[Float](tensorData(i)))
+        i += 1
+      }
+      serializedTensor.setDatatype(DataType.FLOAT)
+    } else if (ev == NumericDouble) {
+      var i = 0
+      while (i < tensorData.length) {
+        serializedTensor.addDoubleData(ev.toType[Double](tensorData(i)))
+        i += 1
+      }
+      serializedTensor.setDatatype(DataType.DOUBLE)
     }
     tensor.size().foreach(_ => serializedTensor.addSize(_))
   }

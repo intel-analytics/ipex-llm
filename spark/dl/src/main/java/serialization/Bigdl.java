@@ -452,6 +452,203 @@ public final class Bigdl {
     // @@protoc_insertion_point(enum_scope:serialization.RegularizerType)
   }
 
+  /**
+   * Protobuf enum {@code serialization.DataType}
+   */
+  public enum DataType
+      implements com.google.protobuf.ProtocolMessageEnum {
+    /**
+     * <code>INT32 = 0;</code>
+     */
+    INT32(0),
+    /**
+     * <code>INT64 = 1;</code>
+     */
+    INT64(1),
+    /**
+     * <code>FLOAT = 2;</code>
+     */
+    FLOAT(2),
+    /**
+     * <code>DOUBLE = 3;</code>
+     */
+    DOUBLE(3),
+    /**
+     * <code>STRING = 4;</code>
+     */
+    STRING(4),
+    /**
+     * <code>BOOL = 5;</code>
+     */
+    BOOL(5),
+    /**
+     * <code>REGULARIZER = 6;</code>
+     */
+    REGULARIZER(6),
+    /**
+     * <code>TENSOR = 7;</code>
+     */
+    TENSOR(7),
+    /**
+     * <code>VARIABLE_FORMAT = 8;</code>
+     */
+    VARIABLE_FORMAT(8),
+    /**
+     * <code>INITMETHOD = 9;</code>
+     */
+    INITMETHOD(9),
+    /**
+     * <code>MODULE = 10;</code>
+     */
+    MODULE(10),
+    /**
+     * <code>NAME_ATTR_LIST = 11;</code>
+     */
+    NAME_ATTR_LIST(11),
+    /**
+     * <code>ARRAY_VALUE = 12;</code>
+     */
+    ARRAY_VALUE(12),
+    UNRECOGNIZED(-1),
+    ;
+
+    /**
+     * <code>INT32 = 0;</code>
+     */
+    public static final int INT32_VALUE = 0;
+    /**
+     * <code>INT64 = 1;</code>
+     */
+    public static final int INT64_VALUE = 1;
+    /**
+     * <code>FLOAT = 2;</code>
+     */
+    public static final int FLOAT_VALUE = 2;
+    /**
+     * <code>DOUBLE = 3;</code>
+     */
+    public static final int DOUBLE_VALUE = 3;
+    /**
+     * <code>STRING = 4;</code>
+     */
+    public static final int STRING_VALUE = 4;
+    /**
+     * <code>BOOL = 5;</code>
+     */
+    public static final int BOOL_VALUE = 5;
+    /**
+     * <code>REGULARIZER = 6;</code>
+     */
+    public static final int REGULARIZER_VALUE = 6;
+    /**
+     * <code>TENSOR = 7;</code>
+     */
+    public static final int TENSOR_VALUE = 7;
+    /**
+     * <code>VARIABLE_FORMAT = 8;</code>
+     */
+    public static final int VARIABLE_FORMAT_VALUE = 8;
+    /**
+     * <code>INITMETHOD = 9;</code>
+     */
+    public static final int INITMETHOD_VALUE = 9;
+    /**
+     * <code>MODULE = 10;</code>
+     */
+    public static final int MODULE_VALUE = 10;
+    /**
+     * <code>NAME_ATTR_LIST = 11;</code>
+     */
+    public static final int NAME_ATTR_LIST_VALUE = 11;
+    /**
+     * <code>ARRAY_VALUE = 12;</code>
+     */
+    public static final int ARRAY_VALUE_VALUE = 12;
+
+
+    public final int getNumber() {
+      if (this == UNRECOGNIZED) {
+        throw new java.lang.IllegalArgumentException(
+            "Can't get the number of an unknown enum value.");
+      }
+      return value;
+    }
+
+    /**
+     * @deprecated Use {@link #forNumber(int)} instead.
+     */
+    @java.lang.Deprecated
+    public static DataType valueOf(int value) {
+      return forNumber(value);
+    }
+
+    public static DataType forNumber(int value) {
+      switch (value) {
+        case 0: return INT32;
+        case 1: return INT64;
+        case 2: return FLOAT;
+        case 3: return DOUBLE;
+        case 4: return STRING;
+        case 5: return BOOL;
+        case 6: return REGULARIZER;
+        case 7: return TENSOR;
+        case 8: return VARIABLE_FORMAT;
+        case 9: return INITMETHOD;
+        case 10: return MODULE;
+        case 11: return NAME_ATTR_LIST;
+        case 12: return ARRAY_VALUE;
+        default: return null;
+      }
+    }
+
+    public static com.google.protobuf.Internal.EnumLiteMap<DataType>
+        internalGetValueMap() {
+      return internalValueMap;
+    }
+    private static final com.google.protobuf.Internal.EnumLiteMap<
+        DataType> internalValueMap =
+          new com.google.protobuf.Internal.EnumLiteMap<DataType>() {
+            public DataType findValueByNumber(int number) {
+              return DataType.forNumber(number);
+            }
+          };
+
+    public final com.google.protobuf.Descriptors.EnumValueDescriptor
+        getValueDescriptor() {
+      return getDescriptor().getValues().get(ordinal());
+    }
+    public final com.google.protobuf.Descriptors.EnumDescriptor
+        getDescriptorForType() {
+      return getDescriptor();
+    }
+    public static final com.google.protobuf.Descriptors.EnumDescriptor
+        getDescriptor() {
+      return serialization.Bigdl.getDescriptor().getEnumTypes().get(3);
+    }
+
+    private static final DataType[] VALUES = values();
+
+    public static DataType valueOf(
+        com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+      if (desc.getType() != getDescriptor()) {
+        throw new java.lang.IllegalArgumentException(
+          "EnumValueDescriptor is not for this type.");
+      }
+      if (desc.getIndex() == -1) {
+        return UNRECOGNIZED;
+      }
+      return VALUES[desc.getIndex()];
+    }
+
+    private final int value;
+
+    private DataType(int value) {
+      this.value = value;
+    }
+
+    // @@protoc_insertion_point(enum_scope:serialization.DataType)
+  }
+
   public interface BigDLModuleOrBuilder extends
       // @@protoc_insertion_point(interface_extends:serialization.BigDLModule)
       com.google.protobuf.MessageOrBuilder {
@@ -3677,11 +3874,20 @@ public final class Bigdl {
       com.google.protobuf.MessageOrBuilder {
 
     /**
+     * <code>.serialization.DataType datatype = 1;</code>
+     */
+    int getDatatypeValue();
+    /**
+     * <code>.serialization.DataType datatype = 1;</code>
+     */
+    serialization.Bigdl.DataType getDatatype();
+
+    /**
      * <pre>
      *size of tensor
      * </pre>
      *
-     * <code>repeated int32 size = 1;</code>
+     * <code>repeated int32 size = 2;</code>
      */
     java.util.List<java.lang.Integer> getSizeList();
     /**
@@ -3689,7 +3895,7 @@ public final class Bigdl {
      *size of tensor
      * </pre>
      *
-     * <code>repeated int32 size = 1;</code>
+     * <code>repeated int32 size = 2;</code>
      */
     int getSizeCount();
     /**
@@ -3697,7 +3903,7 @@ public final class Bigdl {
      *size of tensor
      * </pre>
      *
-     * <code>repeated int32 size = 1;</code>
+     * <code>repeated int32 size = 2;</code>
      */
     int getSize(int index);
 
@@ -3706,25 +3912,50 @@ public final class Bigdl {
      *tensor element
      * </pre>
      *
-     * <code>repeated double data = 2;</code>
+     * <code>repeated float float_data = 3;</code>
      */
-    java.util.List<java.lang.Double> getDataList();
+    java.util.List<java.lang.Float> getFloatDataList();
     /**
      * <pre>
      *tensor element
      * </pre>
      *
-     * <code>repeated double data = 2;</code>
+     * <code>repeated float float_data = 3;</code>
      */
-    int getDataCount();
+    int getFloatDataCount();
     /**
      * <pre>
      *tensor element
      * </pre>
      *
-     * <code>repeated double data = 2;</code>
+     * <code>repeated float float_data = 3;</code>
      */
-    double getData(int index);
+    float getFloatData(int index);
+
+    /**
+     * <pre>
+     *tensor element
+     * </pre>
+     *
+     * <code>repeated double double_data = 4;</code>
+     */
+    java.util.List<java.lang.Double> getDoubleDataList();
+    /**
+     * <pre>
+     *tensor element
+     * </pre>
+     *
+     * <code>repeated double double_data = 4;</code>
+     */
+    int getDoubleDataCount();
+    /**
+     * <pre>
+     *tensor element
+     * </pre>
+     *
+     * <code>repeated double double_data = 4;</code>
+     */
+    double getDoubleData(int index);
   }
   /**
    * Protobuf type {@code serialization.BigDLTensor}
@@ -3738,8 +3969,10 @@ public final class Bigdl {
       super(builder);
     }
     private BigDLTensor() {
+      datatype_ = 0;
       size_ = java.util.Collections.emptyList();
-      data_ = java.util.Collections.emptyList();
+      floatData_ = java.util.Collections.emptyList();
+      doubleData_ = java.util.Collections.emptyList();
     }
 
     @java.lang.Override
@@ -3768,19 +4001,25 @@ public final class Bigdl {
               break;
             }
             case 8: {
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+              int rawValue = input.readEnum();
+
+              datatype_ = rawValue;
+              break;
+            }
+            case 16: {
+              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
                 size_ = new java.util.ArrayList<java.lang.Integer>();
-                mutable_bitField0_ |= 0x00000001;
+                mutable_bitField0_ |= 0x00000002;
               }
               size_.add(input.readInt32());
               break;
             }
-            case 10: {
+            case 18: {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001) && input.getBytesUntilLimit() > 0) {
+              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002) && input.getBytesUntilLimit() > 0) {
                 size_ = new java.util.ArrayList<java.lang.Integer>();
-                mutable_bitField0_ |= 0x00000001;
+                mutable_bitField0_ |= 0x00000002;
               }
               while (input.getBytesUntilLimit() > 0) {
                 size_.add(input.readInt32());
@@ -3788,23 +4027,44 @@ public final class Bigdl {
               input.popLimit(limit);
               break;
             }
-            case 17: {
-              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
-                data_ = new java.util.ArrayList<java.lang.Double>();
-                mutable_bitField0_ |= 0x00000002;
+            case 29: {
+              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+                floatData_ = new java.util.ArrayList<java.lang.Float>();
+                mutable_bitField0_ |= 0x00000004;
               }
-              data_.add(input.readDouble());
+              floatData_.add(input.readFloat());
               break;
             }
-            case 18: {
+            case 26: {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
-              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002) && input.getBytesUntilLimit() > 0) {
-                data_ = new java.util.ArrayList<java.lang.Double>();
-                mutable_bitField0_ |= 0x00000002;
+              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004) && input.getBytesUntilLimit() > 0) {
+                floatData_ = new java.util.ArrayList<java.lang.Float>();
+                mutable_bitField0_ |= 0x00000004;
               }
               while (input.getBytesUntilLimit() > 0) {
-                data_.add(input.readDouble());
+                floatData_.add(input.readFloat());
+              }
+              input.popLimit(limit);
+              break;
+            }
+            case 33: {
+              if (!((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
+                doubleData_ = new java.util.ArrayList<java.lang.Double>();
+                mutable_bitField0_ |= 0x00000008;
+              }
+              doubleData_.add(input.readDouble());
+              break;
+            }
+            case 34: {
+              int length = input.readRawVarint32();
+              int limit = input.pushLimit(length);
+              if (!((mutable_bitField0_ & 0x00000008) == 0x00000008) && input.getBytesUntilLimit() > 0) {
+                doubleData_ = new java.util.ArrayList<java.lang.Double>();
+                mutable_bitField0_ |= 0x00000008;
+              }
+              while (input.getBytesUntilLimit() > 0) {
+                doubleData_.add(input.readDouble());
               }
               input.popLimit(limit);
               break;
@@ -3817,11 +4077,14 @@ public final class Bigdl {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
           size_ = java.util.Collections.unmodifiableList(size_);
         }
-        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
-          data_ = java.util.Collections.unmodifiableList(data_);
+        if (((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+          floatData_ = java.util.Collections.unmodifiableList(floatData_);
+        }
+        if (((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
+          doubleData_ = java.util.Collections.unmodifiableList(doubleData_);
         }
         makeExtensionsImmutable();
       }
@@ -3838,14 +4101,31 @@ public final class Bigdl {
               serialization.Bigdl.BigDLTensor.class, serialization.Bigdl.BigDLTensor.Builder.class);
     }
 
-    public static final int SIZE_FIELD_NUMBER = 1;
+    private int bitField0_;
+    public static final int DATATYPE_FIELD_NUMBER = 1;
+    private int datatype_;
+    /**
+     * <code>.serialization.DataType datatype = 1;</code>
+     */
+    public int getDatatypeValue() {
+      return datatype_;
+    }
+    /**
+     * <code>.serialization.DataType datatype = 1;</code>
+     */
+    public serialization.Bigdl.DataType getDatatype() {
+      serialization.Bigdl.DataType result = serialization.Bigdl.DataType.valueOf(datatype_);
+      return result == null ? serialization.Bigdl.DataType.UNRECOGNIZED : result;
+    }
+
+    public static final int SIZE_FIELD_NUMBER = 2;
     private java.util.List<java.lang.Integer> size_;
     /**
      * <pre>
      *size of tensor
      * </pre>
      *
-     * <code>repeated int32 size = 1;</code>
+     * <code>repeated int32 size = 2;</code>
      */
     public java.util.List<java.lang.Integer>
         getSizeList() {
@@ -3856,7 +4136,7 @@ public final class Bigdl {
      *size of tensor
      * </pre>
      *
-     * <code>repeated int32 size = 1;</code>
+     * <code>repeated int32 size = 2;</code>
      */
     public int getSizeCount() {
       return size_.size();
@@ -3866,47 +4146,82 @@ public final class Bigdl {
      *size of tensor
      * </pre>
      *
-     * <code>repeated int32 size = 1;</code>
+     * <code>repeated int32 size = 2;</code>
      */
     public int getSize(int index) {
       return size_.get(index);
     }
     private int sizeMemoizedSerializedSize = -1;
 
-    public static final int DATA_FIELD_NUMBER = 2;
-    private java.util.List<java.lang.Double> data_;
+    public static final int FLOAT_DATA_FIELD_NUMBER = 3;
+    private java.util.List<java.lang.Float> floatData_;
     /**
      * <pre>
      *tensor element
      * </pre>
      *
-     * <code>repeated double data = 2;</code>
+     * <code>repeated float float_data = 3;</code>
+     */
+    public java.util.List<java.lang.Float>
+        getFloatDataList() {
+      return floatData_;
+    }
+    /**
+     * <pre>
+     *tensor element
+     * </pre>
+     *
+     * <code>repeated float float_data = 3;</code>
+     */
+    public int getFloatDataCount() {
+      return floatData_.size();
+    }
+    /**
+     * <pre>
+     *tensor element
+     * </pre>
+     *
+     * <code>repeated float float_data = 3;</code>
+     */
+    public float getFloatData(int index) {
+      return floatData_.get(index);
+    }
+    private int floatDataMemoizedSerializedSize = -1;
+
+    public static final int DOUBLE_DATA_FIELD_NUMBER = 4;
+    private java.util.List<java.lang.Double> doubleData_;
+    /**
+     * <pre>
+     *tensor element
+     * </pre>
+     *
+     * <code>repeated double double_data = 4;</code>
      */
     public java.util.List<java.lang.Double>
-        getDataList() {
-      return data_;
+        getDoubleDataList() {
+      return doubleData_;
     }
     /**
      * <pre>
      *tensor element
      * </pre>
      *
-     * <code>repeated double data = 2;</code>
+     * <code>repeated double double_data = 4;</code>
      */
-    public int getDataCount() {
-      return data_.size();
+    public int getDoubleDataCount() {
+      return doubleData_.size();
     }
     /**
      * <pre>
      *tensor element
      * </pre>
      *
-     * <code>repeated double data = 2;</code>
+     * <code>repeated double double_data = 4;</code>
      */
-    public double getData(int index) {
-      return data_.get(index);
+    public double getDoubleData(int index) {
+      return doubleData_.get(index);
     }
-    private int dataMemoizedSerializedSize = -1;
+    private int doubleDataMemoizedSerializedSize = -1;
 
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -3921,19 +4236,29 @@ public final class Bigdl {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
+      if (datatype_ != serialization.Bigdl.DataType.INT32.getNumber()) {
+        output.writeEnum(1, datatype_);
+      }
       if (getSizeList().size() > 0) {
-        output.writeUInt32NoTag(10);
+        output.writeUInt32NoTag(18);
         output.writeUInt32NoTag(sizeMemoizedSerializedSize);
       }
       for (int i = 0; i < size_.size(); i++) {
         output.writeInt32NoTag(size_.get(i));
       }
-      if (getDataList().size() > 0) {
-        output.writeUInt32NoTag(18);
-        output.writeUInt32NoTag(dataMemoizedSerializedSize);
+      if (getFloatDataList().size() > 0) {
+        output.writeUInt32NoTag(26);
+        output.writeUInt32NoTag(floatDataMemoizedSerializedSize);
       }
-      for (int i = 0; i < data_.size(); i++) {
-        output.writeDoubleNoTag(data_.get(i));
+      for (int i = 0; i < floatData_.size(); i++) {
+        output.writeFloatNoTag(floatData_.get(i));
+      }
+      if (getDoubleDataList().size() > 0) {
+        output.writeUInt32NoTag(34);
+        output.writeUInt32NoTag(doubleDataMemoizedSerializedSize);
+      }
+      for (int i = 0; i < doubleData_.size(); i++) {
+        output.writeDoubleNoTag(doubleData_.get(i));
       }
     }
 
@@ -3942,6 +4267,10 @@ public final class Bigdl {
       if (size != -1) return size;
 
       size = 0;
+      if (datatype_ != serialization.Bigdl.DataType.INT32.getNumber()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(1, datatype_);
+      }
       {
         int dataSize = 0;
         for (int i = 0; i < size_.size(); i++) {
@@ -3958,14 +4287,25 @@ public final class Bigdl {
       }
       {
         int dataSize = 0;
-        dataSize = 8 * getDataList().size();
+        dataSize = 4 * getFloatDataList().size();
         size += dataSize;
-        if (!getDataList().isEmpty()) {
+        if (!getFloatDataList().isEmpty()) {
           size += 1;
           size += com.google.protobuf.CodedOutputStream
               .computeInt32SizeNoTag(dataSize);
         }
-        dataMemoizedSerializedSize = dataSize;
+        floatDataMemoizedSerializedSize = dataSize;
+      }
+      {
+        int dataSize = 0;
+        dataSize = 8 * getDoubleDataList().size();
+        size += dataSize;
+        if (!getDoubleDataList().isEmpty()) {
+          size += 1;
+          size += com.google.protobuf.CodedOutputStream
+              .computeInt32SizeNoTag(dataSize);
+        }
+        doubleDataMemoizedSerializedSize = dataSize;
       }
       memoizedSize = size;
       return size;
@@ -3983,10 +4323,13 @@ public final class Bigdl {
       serialization.Bigdl.BigDLTensor other = (serialization.Bigdl.BigDLTensor) obj;
 
       boolean result = true;
+      result = result && datatype_ == other.datatype_;
       result = result && getSizeList()
           .equals(other.getSizeList());
-      result = result && getDataList()
-          .equals(other.getDataList());
+      result = result && getFloatDataList()
+          .equals(other.getFloatDataList());
+      result = result && getDoubleDataList()
+          .equals(other.getDoubleDataList());
       return result;
     }
 
@@ -3997,13 +4340,19 @@ public final class Bigdl {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (37 * hash) + DATATYPE_FIELD_NUMBER;
+      hash = (53 * hash) + datatype_;
       if (getSizeCount() > 0) {
         hash = (37 * hash) + SIZE_FIELD_NUMBER;
         hash = (53 * hash) + getSizeList().hashCode();
       }
-      if (getDataCount() > 0) {
-        hash = (37 * hash) + DATA_FIELD_NUMBER;
-        hash = (53 * hash) + getDataList().hashCode();
+      if (getFloatDataCount() > 0) {
+        hash = (37 * hash) + FLOAT_DATA_FIELD_NUMBER;
+        hash = (53 * hash) + getFloatDataList().hashCode();
+      }
+      if (getDoubleDataCount() > 0) {
+        hash = (37 * hash) + DOUBLE_DATA_FIELD_NUMBER;
+        hash = (53 * hash) + getDoubleDataList().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -4123,10 +4472,14 @@ public final class Bigdl {
       }
       public Builder clear() {
         super.clear();
+        datatype_ = 0;
+
         size_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000001);
-        data_ = java.util.Collections.emptyList();
         bitField0_ = (bitField0_ & ~0x00000002);
+        floatData_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000004);
+        doubleData_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000008);
         return this;
       }
 
@@ -4150,16 +4503,24 @@ public final class Bigdl {
       public serialization.Bigdl.BigDLTensor buildPartial() {
         serialization.Bigdl.BigDLTensor result = new serialization.Bigdl.BigDLTensor(this);
         int from_bitField0_ = bitField0_;
-        if (((bitField0_ & 0x00000001) == 0x00000001)) {
-          size_ = java.util.Collections.unmodifiableList(size_);
-          bitField0_ = (bitField0_ & ~0x00000001);
-        }
-        result.size_ = size_;
+        int to_bitField0_ = 0;
+        result.datatype_ = datatype_;
         if (((bitField0_ & 0x00000002) == 0x00000002)) {
-          data_ = java.util.Collections.unmodifiableList(data_);
+          size_ = java.util.Collections.unmodifiableList(size_);
           bitField0_ = (bitField0_ & ~0x00000002);
         }
-        result.data_ = data_;
+        result.size_ = size_;
+        if (((bitField0_ & 0x00000004) == 0x00000004)) {
+          floatData_ = java.util.Collections.unmodifiableList(floatData_);
+          bitField0_ = (bitField0_ & ~0x00000004);
+        }
+        result.floatData_ = floatData_;
+        if (((bitField0_ & 0x00000008) == 0x00000008)) {
+          doubleData_ = java.util.Collections.unmodifiableList(doubleData_);
+          bitField0_ = (bitField0_ & ~0x00000008);
+        }
+        result.doubleData_ = doubleData_;
+        result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
       }
@@ -4201,23 +4562,36 @@ public final class Bigdl {
 
       public Builder mergeFrom(serialization.Bigdl.BigDLTensor other) {
         if (other == serialization.Bigdl.BigDLTensor.getDefaultInstance()) return this;
+        if (other.datatype_ != 0) {
+          setDatatypeValue(other.getDatatypeValue());
+        }
         if (!other.size_.isEmpty()) {
           if (size_.isEmpty()) {
             size_ = other.size_;
-            bitField0_ = (bitField0_ & ~0x00000001);
+            bitField0_ = (bitField0_ & ~0x00000002);
           } else {
             ensureSizeIsMutable();
             size_.addAll(other.size_);
           }
           onChanged();
         }
-        if (!other.data_.isEmpty()) {
-          if (data_.isEmpty()) {
-            data_ = other.data_;
-            bitField0_ = (bitField0_ & ~0x00000002);
+        if (!other.floatData_.isEmpty()) {
+          if (floatData_.isEmpty()) {
+            floatData_ = other.floatData_;
+            bitField0_ = (bitField0_ & ~0x00000004);
           } else {
-            ensureDataIsMutable();
-            data_.addAll(other.data_);
+            ensureFloatDataIsMutable();
+            floatData_.addAll(other.floatData_);
+          }
+          onChanged();
+        }
+        if (!other.doubleData_.isEmpty()) {
+          if (doubleData_.isEmpty()) {
+            doubleData_ = other.doubleData_;
+            bitField0_ = (bitField0_ & ~0x00000008);
+          } else {
+            ensureDoubleDataIsMutable();
+            doubleData_.addAll(other.doubleData_);
           }
           onChanged();
         }
@@ -4248,11 +4622,55 @@ public final class Bigdl {
       }
       private int bitField0_;
 
+      private int datatype_ = 0;
+      /**
+       * <code>.serialization.DataType datatype = 1;</code>
+       */
+      public int getDatatypeValue() {
+        return datatype_;
+      }
+      /**
+       * <code>.serialization.DataType datatype = 1;</code>
+       */
+      public Builder setDatatypeValue(int value) {
+        datatype_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.serialization.DataType datatype = 1;</code>
+       */
+      public serialization.Bigdl.DataType getDatatype() {
+        serialization.Bigdl.DataType result = serialization.Bigdl.DataType.valueOf(datatype_);
+        return result == null ? serialization.Bigdl.DataType.UNRECOGNIZED : result;
+      }
+      /**
+       * <code>.serialization.DataType datatype = 1;</code>
+       */
+      public Builder setDatatype(serialization.Bigdl.DataType value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        
+        datatype_ = value.getNumber();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.serialization.DataType datatype = 1;</code>
+       */
+      public Builder clearDatatype() {
+        
+        datatype_ = 0;
+        onChanged();
+        return this;
+      }
+
       private java.util.List<java.lang.Integer> size_ = java.util.Collections.emptyList();
       private void ensureSizeIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
           size_ = new java.util.ArrayList<java.lang.Integer>(size_);
-          bitField0_ |= 0x00000001;
+          bitField0_ |= 0x00000002;
          }
       }
       /**
@@ -4260,7 +4678,7 @@ public final class Bigdl {
        *size of tensor
        * </pre>
        *
-       * <code>repeated int32 size = 1;</code>
+       * <code>repeated int32 size = 2;</code>
        */
       public java.util.List<java.lang.Integer>
           getSizeList() {
@@ -4271,7 +4689,7 @@ public final class Bigdl {
        *size of tensor
        * </pre>
        *
-       * <code>repeated int32 size = 1;</code>
+       * <code>repeated int32 size = 2;</code>
        */
       public int getSizeCount() {
         return size_.size();
@@ -4281,7 +4699,7 @@ public final class Bigdl {
        *size of tensor
        * </pre>
        *
-       * <code>repeated int32 size = 1;</code>
+       * <code>repeated int32 size = 2;</code>
        */
       public int getSize(int index) {
         return size_.get(index);
@@ -4291,7 +4709,7 @@ public final class Bigdl {
        *size of tensor
        * </pre>
        *
-       * <code>repeated int32 size = 1;</code>
+       * <code>repeated int32 size = 2;</code>
        */
       public Builder setSize(
           int index, int value) {
@@ -4305,7 +4723,7 @@ public final class Bigdl {
        *size of tensor
        * </pre>
        *
-       * <code>repeated int32 size = 1;</code>
+       * <code>repeated int32 size = 2;</code>
        */
       public Builder addSize(int value) {
         ensureSizeIsMutable();
@@ -4318,7 +4736,7 @@ public final class Bigdl {
        *size of tensor
        * </pre>
        *
-       * <code>repeated int32 size = 1;</code>
+       * <code>repeated int32 size = 2;</code>
        */
       public Builder addAllSize(
           java.lang.Iterable<? extends java.lang.Integer> values) {
@@ -4333,20 +4751,20 @@ public final class Bigdl {
        *size of tensor
        * </pre>
        *
-       * <code>repeated int32 size = 1;</code>
+       * <code>repeated int32 size = 2;</code>
        */
       public Builder clearSize() {
         size_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000001);
+        bitField0_ = (bitField0_ & ~0x00000002);
         onChanged();
         return this;
       }
 
-      private java.util.List<java.lang.Double> data_ = java.util.Collections.emptyList();
-      private void ensureDataIsMutable() {
-        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
-          data_ = new java.util.ArrayList<java.lang.Double>(data_);
-          bitField0_ |= 0x00000002;
+      private java.util.List<java.lang.Float> floatData_ = java.util.Collections.emptyList();
+      private void ensureFloatDataIsMutable() {
+        if (!((bitField0_ & 0x00000004) == 0x00000004)) {
+          floatData_ = new java.util.ArrayList<java.lang.Float>(floatData_);
+          bitField0_ |= 0x00000004;
          }
       }
       /**
@@ -4354,43 +4772,137 @@ public final class Bigdl {
        *tensor element
        * </pre>
        *
-       * <code>repeated double data = 2;</code>
+       * <code>repeated float float_data = 3;</code>
+       */
+      public java.util.List<java.lang.Float>
+          getFloatDataList() {
+        return java.util.Collections.unmodifiableList(floatData_);
+      }
+      /**
+       * <pre>
+       *tensor element
+       * </pre>
+       *
+       * <code>repeated float float_data = 3;</code>
+       */
+      public int getFloatDataCount() {
+        return floatData_.size();
+      }
+      /**
+       * <pre>
+       *tensor element
+       * </pre>
+       *
+       * <code>repeated float float_data = 3;</code>
+       */
+      public float getFloatData(int index) {
+        return floatData_.get(index);
+      }
+      /**
+       * <pre>
+       *tensor element
+       * </pre>
+       *
+       * <code>repeated float float_data = 3;</code>
+       */
+      public Builder setFloatData(
+          int index, float value) {
+        ensureFloatDataIsMutable();
+        floatData_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *tensor element
+       * </pre>
+       *
+       * <code>repeated float float_data = 3;</code>
+       */
+      public Builder addFloatData(float value) {
+        ensureFloatDataIsMutable();
+        floatData_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *tensor element
+       * </pre>
+       *
+       * <code>repeated float float_data = 3;</code>
+       */
+      public Builder addAllFloatData(
+          java.lang.Iterable<? extends java.lang.Float> values) {
+        ensureFloatDataIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, floatData_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *tensor element
+       * </pre>
+       *
+       * <code>repeated float float_data = 3;</code>
+       */
+      public Builder clearFloatData() {
+        floatData_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000004);
+        onChanged();
+        return this;
+      }
+
+      private java.util.List<java.lang.Double> doubleData_ = java.util.Collections.emptyList();
+      private void ensureDoubleDataIsMutable() {
+        if (!((bitField0_ & 0x00000008) == 0x00000008)) {
+          doubleData_ = new java.util.ArrayList<java.lang.Double>(doubleData_);
+          bitField0_ |= 0x00000008;
+         }
+      }
+      /**
+       * <pre>
+       *tensor element
+       * </pre>
+       *
+       * <code>repeated double double_data = 4;</code>
        */
       public java.util.List<java.lang.Double>
-          getDataList() {
-        return java.util.Collections.unmodifiableList(data_);
+          getDoubleDataList() {
+        return java.util.Collections.unmodifiableList(doubleData_);
       }
       /**
        * <pre>
        *tensor element
        * </pre>
        *
-       * <code>repeated double data = 2;</code>
+       * <code>repeated double double_data = 4;</code>
        */
-      public int getDataCount() {
-        return data_.size();
+      public int getDoubleDataCount() {
+        return doubleData_.size();
       }
       /**
        * <pre>
        *tensor element
        * </pre>
        *
-       * <code>repeated double data = 2;</code>
+       * <code>repeated double double_data = 4;</code>
        */
-      public double getData(int index) {
-        return data_.get(index);
+      public double getDoubleData(int index) {
+        return doubleData_.get(index);
       }
       /**
        * <pre>
        *tensor element
        * </pre>
        *
-       * <code>repeated double data = 2;</code>
+       * <code>repeated double double_data = 4;</code>
        */
-      public Builder setData(
+      public Builder setDoubleData(
           int index, double value) {
-        ensureDataIsMutable();
-        data_.set(index, value);
+        ensureDoubleDataIsMutable();
+        doubleData_.set(index, value);
         onChanged();
         return this;
       }
@@ -4399,11 +4911,11 @@ public final class Bigdl {
        *tensor element
        * </pre>
        *
-       * <code>repeated double data = 2;</code>
+       * <code>repeated double double_data = 4;</code>
        */
-      public Builder addData(double value) {
-        ensureDataIsMutable();
-        data_.add(value);
+      public Builder addDoubleData(double value) {
+        ensureDoubleDataIsMutable();
+        doubleData_.add(value);
         onChanged();
         return this;
       }
@@ -4412,13 +4924,13 @@ public final class Bigdl {
        *tensor element
        * </pre>
        *
-       * <code>repeated double data = 2;</code>
+       * <code>repeated double double_data = 4;</code>
        */
-      public Builder addAllData(
+      public Builder addAllDoubleData(
           java.lang.Iterable<? extends java.lang.Double> values) {
-        ensureDataIsMutable();
+        ensureDoubleDataIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, data_);
+            values, doubleData_);
         onChanged();
         return this;
       }
@@ -4427,11 +4939,11 @@ public final class Bigdl {
        *tensor element
        * </pre>
        *
-       * <code>repeated double data = 2;</code>
+       * <code>repeated double double_data = 4;</code>
        */
-      public Builder clearData() {
-        data_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000002);
+      public Builder clearDoubleData() {
+        doubleData_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000008);
         onChanged();
         return this;
       }
@@ -5303,13 +5815,13 @@ public final class Bigdl {
     serialization.Bigdl.AttrValue.ArrayValueOrBuilder getArrayValueOrBuilder();
 
     /**
-     * <code>.serialization.AttrValue.DataType dataType = 14;</code>
+     * <code>.serialization.DataType dataType = 14;</code>
      */
     int getDataTypeValue();
     /**
-     * <code>.serialization.AttrValue.DataType dataType = 14;</code>
+     * <code>.serialization.DataType dataType = 14;</code>
      */
-    serialization.Bigdl.AttrValue.DataType getDataType();
+    serialization.Bigdl.DataType getDataType();
 
     public serialization.Bigdl.AttrValue.ValueCase getValueCase();
   }
@@ -5501,203 +6013,6 @@ public final class Bigdl {
       return serialization.Bigdl.internal_static_serialization_AttrValue_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               serialization.Bigdl.AttrValue.class, serialization.Bigdl.AttrValue.Builder.class);
-    }
-
-    /**
-     * Protobuf enum {@code serialization.AttrValue.DataType}
-     */
-    public enum DataType
-        implements com.google.protobuf.ProtocolMessageEnum {
-      /**
-       * <code>INT32 = 0;</code>
-       */
-      INT32(0),
-      /**
-       * <code>INT64 = 1;</code>
-       */
-      INT64(1),
-      /**
-       * <code>FLOAT = 2;</code>
-       */
-      FLOAT(2),
-      /**
-       * <code>DOUBLE = 3;</code>
-       */
-      DOUBLE(3),
-      /**
-       * <code>STRING = 4;</code>
-       */
-      STRING(4),
-      /**
-       * <code>BOOL = 5;</code>
-       */
-      BOOL(5),
-      /**
-       * <code>REGULARIZER = 6;</code>
-       */
-      REGULARIZER(6),
-      /**
-       * <code>TENSOR = 7;</code>
-       */
-      TENSOR(7),
-      /**
-       * <code>VARIABLE_FORMAT = 8;</code>
-       */
-      VARIABLE_FORMAT(8),
-      /**
-       * <code>INITMETHOD = 9;</code>
-       */
-      INITMETHOD(9),
-      /**
-       * <code>MODULE = 10;</code>
-       */
-      MODULE(10),
-      /**
-       * <code>NAME_ATTR_LIST = 11;</code>
-       */
-      NAME_ATTR_LIST(11),
-      /**
-       * <code>ARRAY_VALUE = 12;</code>
-       */
-      ARRAY_VALUE(12),
-      UNRECOGNIZED(-1),
-      ;
-
-      /**
-       * <code>INT32 = 0;</code>
-       */
-      public static final int INT32_VALUE = 0;
-      /**
-       * <code>INT64 = 1;</code>
-       */
-      public static final int INT64_VALUE = 1;
-      /**
-       * <code>FLOAT = 2;</code>
-       */
-      public static final int FLOAT_VALUE = 2;
-      /**
-       * <code>DOUBLE = 3;</code>
-       */
-      public static final int DOUBLE_VALUE = 3;
-      /**
-       * <code>STRING = 4;</code>
-       */
-      public static final int STRING_VALUE = 4;
-      /**
-       * <code>BOOL = 5;</code>
-       */
-      public static final int BOOL_VALUE = 5;
-      /**
-       * <code>REGULARIZER = 6;</code>
-       */
-      public static final int REGULARIZER_VALUE = 6;
-      /**
-       * <code>TENSOR = 7;</code>
-       */
-      public static final int TENSOR_VALUE = 7;
-      /**
-       * <code>VARIABLE_FORMAT = 8;</code>
-       */
-      public static final int VARIABLE_FORMAT_VALUE = 8;
-      /**
-       * <code>INITMETHOD = 9;</code>
-       */
-      public static final int INITMETHOD_VALUE = 9;
-      /**
-       * <code>MODULE = 10;</code>
-       */
-      public static final int MODULE_VALUE = 10;
-      /**
-       * <code>NAME_ATTR_LIST = 11;</code>
-       */
-      public static final int NAME_ATTR_LIST_VALUE = 11;
-      /**
-       * <code>ARRAY_VALUE = 12;</code>
-       */
-      public static final int ARRAY_VALUE_VALUE = 12;
-
-
-      public final int getNumber() {
-        if (this == UNRECOGNIZED) {
-          throw new java.lang.IllegalArgumentException(
-              "Can't get the number of an unknown enum value.");
-        }
-        return value;
-      }
-
-      /**
-       * @deprecated Use {@link #forNumber(int)} instead.
-       */
-      @java.lang.Deprecated
-      public static DataType valueOf(int value) {
-        return forNumber(value);
-      }
-
-      public static DataType forNumber(int value) {
-        switch (value) {
-          case 0: return INT32;
-          case 1: return INT64;
-          case 2: return FLOAT;
-          case 3: return DOUBLE;
-          case 4: return STRING;
-          case 5: return BOOL;
-          case 6: return REGULARIZER;
-          case 7: return TENSOR;
-          case 8: return VARIABLE_FORMAT;
-          case 9: return INITMETHOD;
-          case 10: return MODULE;
-          case 11: return NAME_ATTR_LIST;
-          case 12: return ARRAY_VALUE;
-          default: return null;
-        }
-      }
-
-      public static com.google.protobuf.Internal.EnumLiteMap<DataType>
-          internalGetValueMap() {
-        return internalValueMap;
-      }
-      private static final com.google.protobuf.Internal.EnumLiteMap<
-          DataType> internalValueMap =
-            new com.google.protobuf.Internal.EnumLiteMap<DataType>() {
-              public DataType findValueByNumber(int number) {
-                return DataType.forNumber(number);
-              }
-            };
-
-      public final com.google.protobuf.Descriptors.EnumValueDescriptor
-          getValueDescriptor() {
-        return getDescriptor().getValues().get(ordinal());
-      }
-      public final com.google.protobuf.Descriptors.EnumDescriptor
-          getDescriptorForType() {
-        return getDescriptor();
-      }
-      public static final com.google.protobuf.Descriptors.EnumDescriptor
-          getDescriptor() {
-        return serialization.Bigdl.AttrValue.getDescriptor().getEnumTypes().get(0);
-      }
-
-      private static final DataType[] VALUES = values();
-
-      public static DataType valueOf(
-          com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
-        if (desc.getType() != getDescriptor()) {
-          throw new java.lang.IllegalArgumentException(
-            "EnumValueDescriptor is not for this type.");
-        }
-        if (desc.getIndex() == -1) {
-          return UNRECOGNIZED;
-        }
-        return VALUES[desc.getIndex()];
-      }
-
-      private final int value;
-
-      private DataType(int value) {
-        this.value = value;
-      }
-
-      // @@protoc_insertion_point(enum_scope:serialization.AttrValue.DataType)
     }
 
     public interface ArrayValueOrBuilder extends
@@ -6127,13 +6442,13 @@ public final class Bigdl {
       int getSize();
 
       /**
-       * <code>.serialization.AttrValue.DataType datatype = 14;</code>
+       * <code>.serialization.DataType datatype = 14;</code>
        */
       int getDatatypeValue();
       /**
-       * <code>.serialization.AttrValue.DataType datatype = 14;</code>
+       * <code>.serialization.DataType datatype = 14;</code>
        */
-      serialization.Bigdl.AttrValue.DataType getDatatype();
+      serialization.Bigdl.DataType getDatatype();
     }
     /**
      * Protobuf type {@code serialization.AttrValue.ArrayValue}
@@ -7008,17 +7323,17 @@ public final class Bigdl {
       public static final int DATATYPE_FIELD_NUMBER = 14;
       private int datatype_;
       /**
-       * <code>.serialization.AttrValue.DataType datatype = 14;</code>
+       * <code>.serialization.DataType datatype = 14;</code>
        */
       public int getDatatypeValue() {
         return datatype_;
       }
       /**
-       * <code>.serialization.AttrValue.DataType datatype = 14;</code>
+       * <code>.serialization.DataType datatype = 14;</code>
        */
-      public serialization.Bigdl.AttrValue.DataType getDatatype() {
-        serialization.Bigdl.AttrValue.DataType result = serialization.Bigdl.AttrValue.DataType.valueOf(datatype_);
-        return result == null ? serialization.Bigdl.AttrValue.DataType.UNRECOGNIZED : result;
+      public serialization.Bigdl.DataType getDatatype() {
+        serialization.Bigdl.DataType result = serialization.Bigdl.DataType.valueOf(datatype_);
+        return result == null ? serialization.Bigdl.DataType.UNRECOGNIZED : result;
       }
 
       private byte memoizedIsInitialized = -1;
@@ -7097,7 +7412,7 @@ public final class Bigdl {
         if (size_ != 0) {
           output.writeInt32(13, size_);
         }
-        if (datatype_ != serialization.Bigdl.AttrValue.DataType.INT32.getNumber()) {
+        if (datatype_ != serialization.Bigdl.DataType.INT32.getNumber()) {
           output.writeEnum(14, datatype_);
         }
       }
@@ -7212,7 +7527,7 @@ public final class Bigdl {
           size += com.google.protobuf.CodedOutputStream
             .computeInt32Size(13, size_);
         }
-        if (datatype_ != serialization.Bigdl.AttrValue.DataType.INT32.getNumber()) {
+        if (datatype_ != serialization.Bigdl.DataType.INT32.getNumber()) {
           size += com.google.protobuf.CodedOutputStream
             .computeEnumSize(14, datatype_);
         }
@@ -10208,13 +10523,13 @@ public final class Bigdl {
 
         private int datatype_ = 0;
         /**
-         * <code>.serialization.AttrValue.DataType datatype = 14;</code>
+         * <code>.serialization.DataType datatype = 14;</code>
          */
         public int getDatatypeValue() {
           return datatype_;
         }
         /**
-         * <code>.serialization.AttrValue.DataType datatype = 14;</code>
+         * <code>.serialization.DataType datatype = 14;</code>
          */
         public Builder setDatatypeValue(int value) {
           datatype_ = value;
@@ -10222,16 +10537,16 @@ public final class Bigdl {
           return this;
         }
         /**
-         * <code>.serialization.AttrValue.DataType datatype = 14;</code>
+         * <code>.serialization.DataType datatype = 14;</code>
          */
-        public serialization.Bigdl.AttrValue.DataType getDatatype() {
-          serialization.Bigdl.AttrValue.DataType result = serialization.Bigdl.AttrValue.DataType.valueOf(datatype_);
-          return result == null ? serialization.Bigdl.AttrValue.DataType.UNRECOGNIZED : result;
+        public serialization.Bigdl.DataType getDatatype() {
+          serialization.Bigdl.DataType result = serialization.Bigdl.DataType.valueOf(datatype_);
+          return result == null ? serialization.Bigdl.DataType.UNRECOGNIZED : result;
         }
         /**
-         * <code>.serialization.AttrValue.DataType datatype = 14;</code>
+         * <code>.serialization.DataType datatype = 14;</code>
          */
-        public Builder setDatatype(serialization.Bigdl.AttrValue.DataType value) {
+        public Builder setDatatype(serialization.Bigdl.DataType value) {
           if (value == null) {
             throw new NullPointerException();
           }
@@ -10241,7 +10556,7 @@ public final class Bigdl {
           return this;
         }
         /**
-         * <code>.serialization.AttrValue.DataType datatype = 14;</code>
+         * <code>.serialization.DataType datatype = 14;</code>
          */
         public Builder clearDatatype() {
           
@@ -10685,17 +11000,17 @@ public final class Bigdl {
     public static final int DATATYPE_FIELD_NUMBER = 14;
     private int dataType_;
     /**
-     * <code>.serialization.AttrValue.DataType dataType = 14;</code>
+     * <code>.serialization.DataType dataType = 14;</code>
      */
     public int getDataTypeValue() {
       return dataType_;
     }
     /**
-     * <code>.serialization.AttrValue.DataType dataType = 14;</code>
+     * <code>.serialization.DataType dataType = 14;</code>
      */
-    public serialization.Bigdl.AttrValue.DataType getDataType() {
-      serialization.Bigdl.AttrValue.DataType result = serialization.Bigdl.AttrValue.DataType.valueOf(dataType_);
-      return result == null ? serialization.Bigdl.AttrValue.DataType.UNRECOGNIZED : result;
+    public serialization.Bigdl.DataType getDataType() {
+      serialization.Bigdl.DataType result = serialization.Bigdl.DataType.valueOf(dataType_);
+      return result == null ? serialization.Bigdl.DataType.UNRECOGNIZED : result;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -10754,7 +11069,7 @@ public final class Bigdl {
       if (valueCase_ == 13) {
         output.writeMessage(13, (serialization.Bigdl.AttrValue.ArrayValue) value_);
       }
-      if (dataType_ != serialization.Bigdl.AttrValue.DataType.INT32.getNumber()) {
+      if (dataType_ != serialization.Bigdl.DataType.INT32.getNumber()) {
         output.writeEnum(14, dataType_);
       }
     }
@@ -10820,7 +11135,7 @@ public final class Bigdl {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(13, (serialization.Bigdl.AttrValue.ArrayValue) value_);
       }
-      if (dataType_ != serialization.Bigdl.AttrValue.DataType.INT32.getNumber()) {
+      if (dataType_ != serialization.Bigdl.DataType.INT32.getNumber()) {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(14, dataType_);
       }
@@ -12686,13 +13001,13 @@ public final class Bigdl {
 
       private int dataType_ = 0;
       /**
-       * <code>.serialization.AttrValue.DataType dataType = 14;</code>
+       * <code>.serialization.DataType dataType = 14;</code>
        */
       public int getDataTypeValue() {
         return dataType_;
       }
       /**
-       * <code>.serialization.AttrValue.DataType dataType = 14;</code>
+       * <code>.serialization.DataType dataType = 14;</code>
        */
       public Builder setDataTypeValue(int value) {
         dataType_ = value;
@@ -12700,16 +13015,16 @@ public final class Bigdl {
         return this;
       }
       /**
-       * <code>.serialization.AttrValue.DataType dataType = 14;</code>
+       * <code>.serialization.DataType dataType = 14;</code>
        */
-      public serialization.Bigdl.AttrValue.DataType getDataType() {
-        serialization.Bigdl.AttrValue.DataType result = serialization.Bigdl.AttrValue.DataType.valueOf(dataType_);
-        return result == null ? serialization.Bigdl.AttrValue.DataType.UNRECOGNIZED : result;
+      public serialization.Bigdl.DataType getDataType() {
+        serialization.Bigdl.DataType result = serialization.Bigdl.DataType.valueOf(dataType_);
+        return result == null ? serialization.Bigdl.DataType.UNRECOGNIZED : result;
       }
       /**
-       * <code>.serialization.AttrValue.DataType dataType = 14;</code>
+       * <code>.serialization.DataType dataType = 14;</code>
        */
-      public Builder setDataType(serialization.Bigdl.AttrValue.DataType value) {
+      public Builder setDataType(serialization.Bigdl.DataType value) {
         if (value == null) {
           throw new NullPointerException();
         }
@@ -12719,7 +13034,7 @@ public final class Bigdl {
         return this;
       }
       /**
-       * <code>.serialization.AttrValue.DataType dataType = 14;</code>
+       * <code>.serialization.DataType dataType = 14;</code>
        */
       public Builder clearDataType() {
         
@@ -13655,56 +13970,58 @@ public final class Bigdl {
       "\n\003key\030\001 \001(\t\022\'\n\005value\030\002 \001(\0132\030.serializati" +
       "on.AttrValue:\0028\001\"M\n\nInitMethod\0221\n\nmethod",
       "Type\030\001 \001(\0162\035.serialization.InitMethodTyp" +
-      "e\022\014\n\004data\030\002 \003(\001\")\n\013BigDLTensor\022\014\n\004size\030\001" +
-      " \003(\005\022\014\n\004data\030\002 \003(\001\"[\n\013Regularizer\0227\n\017reg" +
-      "ularizerType\030\001 \001(\0162\036.serialization.Regul" +
-      "arizerType\022\023\n\013regularData\030\002 \003(\001\"\336\t\n\tAttr" +
-      "Value\022\024\n\nint32Value\030\001 \001(\005H\000\022\024\n\nint64Valu" +
-      "e\030\002 \001(\003H\000\022\024\n\nfloatValue\030\003 \001(\002H\000\022\025\n\013doubl" +
-      "eValue\030\004 \001(\001H\000\022\025\n\013stringValue\030\005 \001(\tH\000\022\023\n" +
-      "\tboolValue\030\006 \001(\010H\000\0226\n\020regularizerValue\030\007" +
-      " \001(\0132\032.serialization.RegularizerH\000\0221\n\013te",
-      "nsorValue\030\010 \001(\0132\032.serialization.BigDLTen" +
-      "sorH\000\0227\n\023variableFormatValue\030\t \001(\0162\030.ser" +
-      "ialization.VarFormatH\000\0224\n\017initMethodValu" +
-      "e\030\n \001(\0132\031.serialization.InitMethodH\000\0226\n\020" +
-      "bigDLModuleValue\030\013 \001(\0132\032.serialization.B" +
-      "igDLModuleH\000\0228\n\021nameAttrListValue\030\014 \001(\0132" +
-      "\033.serialization.NameAttrListH\000\0229\n\narrayV" +
-      "alue\030\r \001(\0132#.serialization.AttrValue.Arr" +
-      "ayValueH\000\0223\n\010dataType\030\016 \001(\0162!.serializat" +
-      "ion.AttrValue.DataType\032\303\003\n\nArrayValue\022\013\n",
-      "\003i32\030\001 \003(\005\022\013\n\003i64\030\002 \003(\003\022\013\n\003flt\030\003 \003(\002\022\013\n\003" +
-      "dbl\030\004 \003(\001\022\013\n\003str\030\005 \003(\t\022\017\n\007boolean\030\006 \003(\010\022" +
-      "/\n\013Regularizer\030\007 \003(\0132\032.serialization.Reg" +
-      "ularizer\022*\n\006tensor\030\010 \003(\0132\032.serialization" +
-      ".BigDLTensor\0220\n\016variableFormat\030\t \003(\0162\030.s" +
-      "erialization.VarFormat\022-\n\ninitMethod\030\n \003" +
-      "(\0132\031.serialization.InitMethod\022/\n\013bigDLMo" +
-      "dule\030\013 \003(\0132\032.serialization.BigDLModule\0221" +
-      "\n\014nameAttrList\030\014 \003(\0132\033.serialization.Nam" +
-      "eAttrList\022\014\n\004size\030\r \001(\005\0223\n\010datatype\030\016 \001(",
-      "\0162!.serialization.AttrValue.DataType\"\300\001\n" +
-      "\010DataType\022\t\n\005INT32\020\000\022\t\n\005INT64\020\001\022\t\n\005FLOAT" +
-      "\020\002\022\n\n\006DOUBLE\020\003\022\n\n\006STRING\020\004\022\010\n\004BOOL\020\005\022\017\n\013" +
-      "REGULARIZER\020\006\022\n\n\006TENSOR\020\007\022\023\n\017VARIABLE_FO" +
-      "RMAT\020\010\022\016\n\nINITMETHOD\020\t\022\n\n\006MODULE\020\n\022\022\n\016NA" +
-      "ME_ATTR_LIST\020\013\022\017\n\013ARRAY_VALUE\020\014B\007\n\005value" +
-      "\"\230\001\n\014NameAttrList\022\014\n\004name\030\001 \001(\t\0223\n\004attr\030" +
-      "\002 \003(\0132%.serialization.NameAttrList.AttrE" +
-      "ntry\032E\n\tAttrEntry\022\013\n\003key\030\001 \001(\t\022\'\n\005value\030" +
-      "\002 \001(\0132\030.serialization.AttrValue:\0028\001*\260\001\n\t",
-      "VarFormat\022\020\n\014EMPTY_FORMAT\020\000\022\013\n\007DEFAULT\020\001" +
-      "\022\t\n\005ONE_D\020\002\022\n\n\006IN_OUT\020\003\022\n\n\006OUT_IN\020\004\022\020\n\014I" +
-      "N_OUT_KW_KH\020\005\022\020\n\014OUT_IN_KW_KH\020\006\022\023\n\017GP_OU" +
-      "T_IN_KW_KH\020\007\022\023\n\017GP_IN_OUT_KW_KH\020\010\022\023\n\017OUT" +
-      "_IN_KT_KH_KW\020\t*\253\001\n\016InitMethodType\022\030\n\024EMP" +
-      "TY_INITIALIZATION\020\000\022\022\n\016RANDOM_UNIFORM\020\001\022" +
-      "\030\n\024RANDOM_UNIFORM_PARAM\020\002\022\021\n\rRANDOM_NORM" +
-      "AL\020\003\022\t\n\005ZEROS\020\004\022\010\n\004ONES\020\005\022\t\n\005CONST\020\006\022\n\n\006" +
-      "XAVIER\020\007\022\022\n\016BILINEARFILLER\020\010*L\n\017Regulari" +
-      "zerType\022\023\n\017L1L2Regularizer\020\000\022\021\n\rL1Regula",
-      "rizer\020\001\022\021\n\rL2Regularizer\020\002b\006proto3"
+      "e\022\014\n\004data\030\002 \003(\001\"o\n\013BigDLTensor\022)\n\010dataty" +
+      "pe\030\001 \001(\0162\027.serialization.DataType\022\014\n\004siz" +
+      "e\030\002 \003(\005\022\022\n\nfloat_data\030\003 \003(\002\022\023\n\013double_da" +
+      "ta\030\004 \003(\001\"[\n\013Regularizer\0227\n\017regularizerTy" +
+      "pe\030\001 \001(\0162\036.serialization.RegularizerType" +
+      "\022\023\n\013regularData\030\002 \003(\001\"\207\010\n\tAttrValue\022\024\n\ni" +
+      "nt32Value\030\001 \001(\005H\000\022\024\n\nint64Value\030\002 \001(\003H\000\022" +
+      "\024\n\nfloatValue\030\003 \001(\002H\000\022\025\n\013doubleValue\030\004 \001" +
+      "(\001H\000\022\025\n\013stringValue\030\005 \001(\tH\000\022\023\n\tboolValue",
+      "\030\006 \001(\010H\000\0226\n\020regularizerValue\030\007 \001(\0132\032.ser" +
+      "ialization.RegularizerH\000\0221\n\013tensorValue\030" +
+      "\010 \001(\0132\032.serialization.BigDLTensorH\000\0227\n\023v" +
+      "ariableFormatValue\030\t \001(\0162\030.serialization" +
+      ".VarFormatH\000\0224\n\017initMethodValue\030\n \001(\0132\031." +
+      "serialization.InitMethodH\000\0226\n\020bigDLModul" +
+      "eValue\030\013 \001(\0132\032.serialization.BigDLModule" +
+      "H\000\0228\n\021nameAttrListValue\030\014 \001(\0132\033.serializ" +
+      "ation.NameAttrListH\000\0229\n\narrayValue\030\r \001(\013" +
+      "2#.serialization.AttrValue.ArrayValueH\000\022",
+      ")\n\010dataType\030\016 \001(\0162\027.serialization.DataTy" +
+      "pe\032\271\003\n\nArrayValue\022\013\n\003i32\030\001 \003(\005\022\013\n\003i64\030\002 " +
+      "\003(\003\022\013\n\003flt\030\003 \003(\002\022\013\n\003dbl\030\004 \003(\001\022\013\n\003str\030\005 \003" +
+      "(\t\022\017\n\007boolean\030\006 \003(\010\022/\n\013Regularizer\030\007 \003(\013" +
+      "2\032.serialization.Regularizer\022*\n\006tensor\030\010" +
+      " \003(\0132\032.serialization.BigDLTensor\0220\n\016vari" +
+      "ableFormat\030\t \003(\0162\030.serialization.VarForm" +
+      "at\022-\n\ninitMethod\030\n \003(\0132\031.serialization.I" +
+      "nitMethod\022/\n\013bigDLModule\030\013 \003(\0132\032.seriali" +
+      "zation.BigDLModule\0221\n\014nameAttrList\030\014 \003(\013",
+      "2\033.serialization.NameAttrList\022\014\n\004size\030\r " +
+      "\001(\005\022)\n\010datatype\030\016 \001(\0162\027.serialization.Da" +
+      "taTypeB\007\n\005value\"\230\001\n\014NameAttrList\022\014\n\004name" +
+      "\030\001 \001(\t\0223\n\004attr\030\002 \003(\0132%.serialization.Nam" +
+      "eAttrList.AttrEntry\032E\n\tAttrEntry\022\013\n\003key\030" +
+      "\001 \001(\t\022\'\n\005value\030\002 \001(\0132\030.serialization.Att" +
+      "rValue:\0028\001*\260\001\n\tVarFormat\022\020\n\014EMPTY_FORMAT" +
+      "\020\000\022\013\n\007DEFAULT\020\001\022\t\n\005ONE_D\020\002\022\n\n\006IN_OUT\020\003\022\n" +
+      "\n\006OUT_IN\020\004\022\020\n\014IN_OUT_KW_KH\020\005\022\020\n\014OUT_IN_K" +
+      "W_KH\020\006\022\023\n\017GP_OUT_IN_KW_KH\020\007\022\023\n\017GP_IN_OUT",
+      "_KW_KH\020\010\022\023\n\017OUT_IN_KT_KH_KW\020\t*\253\001\n\016InitMe" +
+      "thodType\022\030\n\024EMPTY_INITIALIZATION\020\000\022\022\n\016RA" +
+      "NDOM_UNIFORM\020\001\022\030\n\024RANDOM_UNIFORM_PARAM\020\002" +
+      "\022\021\n\rRANDOM_NORMAL\020\003\022\t\n\005ZEROS\020\004\022\010\n\004ONES\020\005" +
+      "\022\t\n\005CONST\020\006\022\n\n\006XAVIER\020\007\022\022\n\016BILINEARFILLE" +
+      "R\020\010*L\n\017RegularizerType\022\023\n\017L1L2Regularize" +
+      "r\020\000\022\021\n\rL1Regularizer\020\001\022\021\n\rL2Regularizer\020" +
+      "\002*\300\001\n\010DataType\022\t\n\005INT32\020\000\022\t\n\005INT64\020\001\022\t\n\005" +
+      "FLOAT\020\002\022\n\n\006DOUBLE\020\003\022\n\n\006STRING\020\004\022\010\n\004BOOL\020" +
+      "\005\022\017\n\013REGULARIZER\020\006\022\n\n\006TENSOR\020\007\022\023\n\017VARIAB",
+      "LE_FORMAT\020\010\022\016\n\nINITMETHOD\020\t\022\n\n\006MODULE\020\n\022" +
+      "\022\n\016NAME_ATTR_LIST\020\013\022\017\n\013ARRAY_VALUE\020\014b\006pr" +
+      "oto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -13741,7 +14058,7 @@ public final class Bigdl {
     internal_static_serialization_BigDLTensor_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_serialization_BigDLTensor_descriptor,
-        new java.lang.String[] { "Size", "Data", });
+        new java.lang.String[] { "Datatype", "Size", "FloatData", "DoubleData", });
     internal_static_serialization_Regularizer_descriptor =
       getDescriptor().getMessageTypes().get(3);
     internal_static_serialization_Regularizer_fieldAccessorTable = new

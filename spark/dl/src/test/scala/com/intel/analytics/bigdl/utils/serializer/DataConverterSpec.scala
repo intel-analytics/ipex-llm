@@ -25,7 +25,7 @@ import serialization.Bigdl.AttrValue
 
 import scala.reflect.runtime.universe
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
-import serialization.Bigdl.AttrValue.DataType
+import serialization.Bigdl.DataType
 
 import scala.collection.mutable
 import scala.util.Random

@@ -4,7 +4,7 @@ message BigDLModule
 {
     string name = 1; //module name
     repeated BigDLModule subModules = 2; // sub modules
-    BigDLTensor weight = 3; // weight for each layer, serialized data are stored as double
+    BigDLTensor weight = 3; // weight for each layer, serialized data are stored as either float or double
     BigDLTensor bias = 4; // bias for each layer
     repeated string preModules = 5; //pre modules of the same hierarchy
     repeated string nextModules = 6; //next modules of the same hierachy
@@ -44,13 +44,32 @@ message InitMethod {
     repeated double data = 2;
 }
 message BigDLTensor{
-    repeated int32 size = 1; //size of tensor
-    repeated double data = 2; //tensor element
+    DataType datatype = 1;
+    repeated int32 size = 2; //size of tensor
+    repeated float float_data = 3; //tensor element
+    repeated double double_data = 4; //tensor element
 }
 message Regularizer {
     RegularizerType regularizerType = 1;
     repeated double regularData = 2;
 }
+
+enum DataType {
+    INT32 = 0;
+    INT64 = 1;
+    FLOAT = 2;
+    DOUBLE = 3;
+    STRING = 4;
+    BOOL = 5;
+    REGULARIZER = 6;
+    TENSOR = 7;
+    VARIABLE_FORMAT= 8;
+    INITMETHOD = 9;
+    MODULE = 10;
+    NAME_ATTR_LIST = 11;
+    ARRAY_VALUE = 12;
+}
+
 message AttrValue {
     message ArrayValue {
         repeated int32 i32 = 1;                         // "Array(int32)"
@@ -67,21 +86,6 @@ message AttrValue {
         repeated NameAttrList nameAttrList = 12; //
         int32 size = 13;
         DataType datatype = 14;
-    }
-    enum DataType {
-        INT32 = 0;
-        INT64 = 1;
-        FLOAT = 2;
-        DOUBLE = 3;
-        STRING = 4;
-        BOOL = 5;
-        REGULARIZER = 6;
-        TENSOR = 7;
-        VARIABLE_FORMAT= 8;
-        INITMETHOD = 9;
-        MODULE = 10;
-        NAME_ATTR_LIST = 11;
-        ARRAY_VALUE = 12;
     }
     oneof value {
         int32 int32Value = 1; // int32 value
