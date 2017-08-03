@@ -953,4 +953,218 @@ object NNPrimitive {
       nip += 1
     }
   }
+
+  def vol2colDouble(
+    vol: Tensor[Double],
+    channels: Int,
+    depth: Int, height: Int, width: Int,
+    kT: Int, kH: Int, kW: Int,
+    pT: Int, pH: Int, pW: Int,
+    dT: Int, dH: Int, dW: Int,
+    dilationT: Int, dilationH: Int, dilationW: Int,
+    col: Tensor[Double]
+  ): Unit = {
+    val colData = col.storage().array()
+    val colDataOffset = col.storageOffset() - 1
+    val volData = vol.storage().array()
+    val volDataOffset = vol.storageOffset() - 1
+    val depthCol = (depth + 2 * pT - (dilationT * (kT - 1) + 1)) / dT + 1
+    val widthCol = (width + 2 * pW - (dilationW * (kW - 1) + 1)) / dW + 1
+    val heightCol = (height + 2 * pH - (dilationH * (kH - 1) + 1)) / dH + 1
+    val channelsCol = channels * kT * kW * kH
+
+    var c = 0
+    while (c < channelsCol) {
+      val wOffset = c % kW
+      val hOffset = (c / kW) % kH
+      val tOffset = (c / kW / kH) % kT
+      val cVol = c / kT / kH / kW
+
+      var t = 0
+      while (t < depthCol) {
+        var h = 0
+        while (h < heightCol) {
+          var w = 0
+          while (w < widthCol) {
+            val tPad = t * dT - pT + tOffset * dilationT
+            val hPad = h * dH - pH + hOffset * dilationH
+            val wPad = w * dW - pW + wOffset * dilationW
+
+            if (tPad >= 0 && tPad < depth &&
+              hPad >= 0 && hPad < height &&
+              wPad >= 0 && wPad < width) {
+              colData(((c * depthCol + t) * heightCol + h) * widthCol + w + colDataOffset) =
+                volData(((cVol * depth + tPad) * height + hPad) * width + wPad + volDataOffset)
+            } else {
+              colData(((c * depthCol + t) * heightCol + h) * widthCol + w + colDataOffset) = 0.0
+            }
+            w += 1
+          }
+          h += 1
+        }
+        t += 1
+      }
+      c += 1
+    }
+  }
+
+  def vol2colFloat(
+    vol: Tensor[Float],
+    channels: Int,
+    depth: Int, height: Int, width: Int,
+    kT: Int, kH: Int, kW: Int,
+    pT: Int, pH: Int, pW: Int,
+    dT: Int, dH: Int, dW: Int,
+    dilationT: Int, dilationH: Int, dilationW: Int,
+    col: Tensor[Float]
+  ): Unit = {
+    val colData = col.storage().array()
+    val colDataOffset = col.storageOffset() - 1
+    val volData = vol.storage().array()
+    val volDataOffset = vol.storageOffset() - 1
+    val depthCol = (depth + 2 * pT - (dilationT * (kT - 1) + 1)) / dT + 1
+    val widthCol = (width + 2 * pW - (dilationW * (kW - 1) + 1)) / dW + 1
+    val heightCol = (height + 2 * pH - (dilationH * (kH - 1) + 1)) / dH + 1
+    val channelsCol = channels * kT * kW * kH
+
+    var c = 0
+    while (c < channelsCol) {
+      val wOffset = c % kW
+      val hOffset = (c / kW) % kH
+      val tOffset = (c / kW / kH) % kT
+      val cVol = c / kT / kH / kW
+
+      var t = 0
+      while (t < depthCol) {
+        var h = 0
+        while (h < heightCol) {
+          var w = 0
+          while (w < widthCol) {
+            val tPad = t * dT - pT + tOffset * dilationT
+            val hPad = h * dH - pH + hOffset * dilationH
+            val wPad = w * dW - pW + wOffset * dilationW
+
+            if (tPad >= 0 && tPad < depth &&
+              hPad >= 0 && hPad < height &&
+              wPad >= 0 && wPad < width) {
+              colData(((c * depthCol + t) * heightCol + h) * widthCol + w + colDataOffset) =
+                volData(((cVol * depth + tPad) * height + hPad) * width + wPad + volDataOffset)
+            } else {
+              colData(((c * depthCol + t) * heightCol + h) * widthCol + w + colDataOffset) = 0f
+            }
+            w += 1
+          }
+          h += 1
+        }
+        t += 1
+      }
+      c += 1
+    }
+  }
+
+  def col2volDouble(
+    col: Tensor[Double],
+    channels: Int,
+    depth: Int, height: Int, width: Int,
+    kT: Int, kH: Int, kW: Int,
+    pT: Int, pH: Int, pW: Int,
+    dT: Int, dH: Int, dW: Int,
+    dilationT: Int, dilationH: Int, dilationW: Int,
+    vol: Tensor[Double]
+  ): Unit = {
+    val colData = col.storage().array()
+    val colDataOffset = col.storageOffset() - 1
+    val volData = vol.storage().array()
+    val volDataOffset = vol.storageOffset() - 1
+
+    val depthCol = (depth + 2 * pT - (dilationT * (kT - 1) + 1)) / dT + 1
+    val heightCol = (height + 2 * pH - (dilationH * (kH - 1) + 1)) / dH + 1
+    val widthCol = (width + 2 * pW - (dilationW * (kW - 1) + 1)) / dW + 1
+    val channelsCol = channels * kT * kW * kH
+
+    var c = 0
+    while (c < channelsCol) {
+      val wOffset = c % kW
+      val hOffset = (c / kW) % kH
+      val tOffset = (c / kW / kH) % kT
+      val cVol = c / kT / kH / kW
+
+      var t = 0
+      while (t < depthCol) {
+        var h = 0
+        while (h < heightCol) {
+          var w = 0
+          while (w < widthCol) {
+            val tPad = t * dT - pT + tOffset * dilationT
+            val hPad = h * dH - pH + hOffset * dilationH
+            val wPad = w * dW - pW + wOffset * dilationW
+
+            if (tPad >= 0 && tPad < depth &&
+              hPad >= 0 && hPad < height &&
+              wPad >= 0 && wPad < width) {
+              volData(((cVol * depth + tPad) * height + hPad) * width + wPad + volDataOffset) +=
+                colData(((c * depthCol + t) * heightCol + h) * widthCol + w + colDataOffset)
+            }
+            w += 1
+          }
+          h += 1
+        }
+        t += 1
+      }
+      c += 1
+    }
+  }
+
+  def col2volFloat(
+    col: Tensor[Float],
+    channels: Int,
+    depth: Int, width: Int, height: Int,
+    kT: Int, kW: Int, kH: Int,
+    pT: Int, pW: Int, pH: Int,
+    dT: Int, dW: Int, dH: Int,
+    dilationT: Int, dilationW: Int, dilationH: Int,
+    vol: Tensor[Float]
+  ): Unit = {
+    val colData = col.storage().array()
+    val colDataOffset = col.storageOffset() - 1
+    val volData = vol.storage().array()
+    val volDataOffset = vol.storageOffset() - 1
+
+    val depthCol = (depth + 2 * pT - (dilationT * (kT - 1) + 1)) / dT + 1
+    val heightCol = (height + 2 * pH - (dilationH * (kH - 1) + 1)) / dH + 1
+    val widthCol = (width + 2 * pW - (dilationW * (kW - 1) + 1)) / dW + 1
+    val channelsCol = channels * kT * kW * kH
+
+    var c = 0
+    while (c < channelsCol) {
+      val wOffset = c % kW
+      val hOffset = (c / kW) % kH
+      val tOffset = (c / kW / kH) % kT
+      val cVol = c / kT / kH / kW
+
+      var t = 0
+      while (t < depthCol) {
+        var h = 0
+        while (h < heightCol) {
+          var w = 0
+          while (w < widthCol) {
+            val tPad = t * dT - pT + tOffset * dilationT
+            val hPad = h * dH - pH + hOffset * dilationH
+            val wPad = w * dW - pW + wOffset * dilationW
+
+            if (tPad >= 0 && tPad < depth &&
+              hPad >= 0 && hPad < height &&
+              wPad >= 0 && wPad < width) {
+              volData(((cVol * depth + tPad) * height + hPad) * width + wPad + volDataOffset) +=
+                colData(((c * depthCol + t) * heightCol + h) * widthCol + w + colDataOffset)
+            }
+            w += 1
+          }
+          h += 1
+        }
+        t += 1
+      }
+      c += 1
+    }
+  }
 }
