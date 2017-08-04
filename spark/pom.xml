@@ -5,7 +5,7 @@
     <parent>
         <artifactId>bigdl-parent</artifactId>
         <groupId>com.intel.analytics.bigdl</groupId>
-        <version>0.2.0-SNAPSHOT</version>
+        <version>0.3.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -18,4 +18,22 @@
         <module>spark-version</module>
         <module>dist</module>
     </modules>
+
+    <dependencies>
+        <!--
+          This is a dummy dependency that is used to trigger the maven-shade plugin so that BigDL's
+          published POMs are flattened and do not contain variables. Without this dependency, some
+          subprojects' published POMs would contain variables like ${spark.version} that will
+          be substituted according to the default properties instead of the ones determined by the
+          profiles that were active during publishing. By ensuring that maven-shade runs for all
+          subprojects, we eliminate this problem because the substitutions are baked into the final POM.
+
+          Here we 'borrow' the spark dummy project. So we needn't to publish one to maven central.
+        -->
+        <dependency>
+            <groupId>org.spark-project.spark</groupId>
+            <artifactId>unused</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+    </dependencies>
 </project>

@@ -11,6 +11,7 @@ You can download imagenet-2012 data from <http://image-net.org/download-images>.
 After you download the files(**ILSVRC2012_img_train.tar** and **ILSVRC2012_img_val.tar**), 
 run the follow commands to prepare the data.
 
+classes.lst and img_class.lst used below can be found at bigdl_folder/scripts folder
 ```bash
 mkdir train
 mv ILSVRC2012_img_train.tar train/
@@ -34,8 +35,11 @@ Now all the images belong to the same category are moved to the same folder.
 This command will transform the images into hadoop sequence files, which are 
 more suitable for a distributed training.
 
+Bigdl has different versions, bigdl-VERSION-jar-with-dependencies-and-spark.jar used in the following command is a general name.
+Please update it according to your bigdl version.  
+
 ```bash
-java -cp bigdl_folder/lib/bigdl-VERSION-jar-with-dependencies-and-spark.jar com.intel.analytics.bigdl.models.utils.ImageNetSeqFileGenerator -f imagenet_folder -o output_folder -p cores_number
+java -cp bigdl_folder/spark/dl/target/bigdl-VERSION-jar-with-dependencies-and-spark.jar com.intel.analytics.bigdl.models.utils.ImageNetSeqFileGenerator -f imagenet_folder -o output_folder -p cores_number
 ```
 
 It will generate the hadoop sequence files in the output folder.
@@ -43,7 +47,6 @@ It will generate the hadoop sequence files in the output folder.
 ## Train the Model
 * Spark standalone, example command
 ```bash
-./dist/bin/bigdl.sh -- \
 spark-submit \
 --master spark://xxx.xxx.xxx.xxx:xxxx \
 --executor-cores cores_per_executor \
@@ -58,7 +61,6 @@ dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 ```
 * Spark yarn client mode, example command
 ```bash
-./dist/bin/bigdl.sh -- \
 spark-submit \
 --master yarn \
 --deploy-mode client \
@@ -91,7 +93,6 @@ policy.
 ## Test the Model
 * Spark standalone, example command
 ```bash
-./dist/bin/bigdl.sh -- \
 spark-submit \
 --master spark://xxx.xxx.xxx.xxx:xxxx \
 --executor-cores cores_per_executor \
@@ -105,7 +106,6 @@ dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 ```
 * Spark yarn client mode, example command
 ```bash
-./dist/bin/bigdl.sh -- \
 spark-submit \
 --master yarn \
 --deploy-mode client \

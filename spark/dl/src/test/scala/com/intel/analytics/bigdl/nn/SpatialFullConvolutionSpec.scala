@@ -19,7 +19,10 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.optim.{L2Regularizer, SGD}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class SpatialFullConvolutionSpec extends FlatSpec with Matchers {
@@ -55,13 +58,13 @@ class SpatialFullConvolutionSpec extends FlatSpec with Matchers {
     val labels = Tensor[Double](16).rand()
 
     val model1 = Sequential()
-      .add(SpatialFullConvolution[Tensor[Double], Double](nInputPlane, nOutputPlane,
+      .add(SpatialFullConvolution[Double](nInputPlane, nOutputPlane,
         kW, kH, dW, dH, padW, padH))
       .add(Sigmoid())
     val (weights1, grad1) = model1.getParameters()
 
     val model2 = Sequential()
-      .add(SpatialFullConvolution[Tensor[Double], Double](nInputPlane, nOutputPlane,
+      .add(SpatialFullConvolution[Double](nInputPlane, nOutputPlane,
         kW, kH, dW, dH, padW, padH,
         wRegularizer = L2Regularizer(0.1), bRegularizer = L2Regularizer(0.1)))
       .add(Sigmoid())
@@ -108,8 +111,9 @@ class SpatialFullConvolutionSpec extends FlatSpec with Matchers {
   }
 
   "A SpatialFullConvolution BilinearFiller" should "generate correct parameter" in {
-    val conv = new SpatialFullConvolution[Tensor[Double], Double](3, 6, 3, 3, 2, 2,
-      0, 0, 0, 0, 1, false, BilinearFiller)
+    val conv = new SpatialFullConvolution[Double](3, 6, 3, 3, 2, 2,
+      0, 0, 0, 0, 1, false)
+    conv.setInitMethod(weightInitMethod = BilinearFiller, biasInitMethod = Zeros)
 
     val caffeWeight = Tensor(Storage(Array(
       0.0625, 0.1875, 0.1875, 0.1875, 0.5625, 0.5625, 0.1875, 0.5625, 0.5625,
@@ -136,8 +140,9 @@ class SpatialFullConvolutionSpec extends FlatSpec with Matchers {
   }
 
   "A SpatialFullConvolution BilinearFiller(1, 2, 4, 4)" should "generate correct parameter" in {
-    val conv = new SpatialFullConvolution[Tensor[Double], Double](1, 2, 4, 4, 2, 2,
-      0, 0, 0, 0, 1, false, BilinearFiller)
+    val conv = new SpatialFullConvolution[Double](1, 2, 4, 4, 2, 2,
+      0, 0, 0, 0, 1, false)
+    conv.setInitMethod(weightInitMethod = BilinearFiller, biasInitMethod = Zeros)
 
     val caffeWeight = Tensor(Storage(Array(
       0.0625, 0.1875, 0.1875, 0.0625,
@@ -152,5 +157,34 @@ class SpatialFullConvolutionSpec extends FlatSpec with Matchers {
     )), 1, Array(1, 1, 2, 4, 4))
 
     conv.weight should be (caffeWeight)
+  }
+
+  "A SpatialFullConvolution with scaleW and scaleB" should "generate correct output" in {
+    val nInputPlane = 3
+    val nOutputPlane = 6
+    val kW = 3
+    val kH = 3
+    val dW = 1
+    val dH = 1
+    val padW = 2
+    val padH = 2
+    val layer = new SpatialFullConvolution[Double](nInputPlane, nOutputPlane,
+      kW, kH, dW, dH, padW, padH)
+    val layer2 = layer.cloneModule().asInstanceOf[SpatialFullConvolution[Double]]
+      .setScaleW(0.5).setScaleB(2.0)
+    Random.setSeed(100)
+    val input = Tensor[Double](3, 3, 6, 6).apply1(e => Random.nextDouble())
+    val output1 = layer.forward(input)
+    val output2 = layer2.forward(input)
+    output1 should be(output2)
+
+    val gradOutput = Tensor(output1)
+    val gradInput1 = layer.backward(input, gradOutput)
+    val gradInput2 = layer2.backward(input, gradOutput)
+    gradInput1 should be(gradInput2)
+
+    layer2.gradWeight should be(layer.gradWeight.mul(0.5))
+    layer2.gradBias should be(layer.gradBias.mul(2))
+
   }
 }

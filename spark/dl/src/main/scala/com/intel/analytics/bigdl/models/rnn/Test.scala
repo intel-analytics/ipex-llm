@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.models.rnn
 
 
-import com.intel.analytics.bigdl.dataset.{DataSet, LocalDataSet, MiniBatch, SampleToBatch}
+import com.intel.analytics.bigdl.dataset.{DataSet, LocalDataSet, MiniBatch, SampleToMiniBatch}
 import com.intel.analytics.bigdl.dataset.text.{Dictionary, LabeledSentence, LabeledSentenceToSample}
 import com.intel.analytics.bigdl.nn.{Concat, Identity, LogSoftMax, Module}
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -64,12 +64,12 @@ object Test {
       val rdd = sc.parallelize(labeledInput).mapPartitions(iter =>
         LabeledSentenceToSample[Float](vocabSize).apply(iter)
       ).mapPartitions(iter =>
-        SampleToBatch[Float](batchSize).apply(iter)
+        SampleToMiniBatch[Float](batchSize).apply(iter)
       )
 
       val flow = rdd.mapPartitions(iter => {
         iter.map(batch => {
-          var curInput = batch.data
+          var curInput = batch.getInput().toTensor[Float]
           // Iteratively output predicted words
           for (i <- 1 to param.numOfWords.getOrElse(0)) {
             val input = curInput.max(featDim)._2
@@ -92,6 +92,7 @@ object Test {
 
       val results = flow.map(x => x.map(t => vocab.getWord(t)))
       results.foreach(x => logger.info(x.mkString(" ")))
+      sc.stop()
     }
   }
 }

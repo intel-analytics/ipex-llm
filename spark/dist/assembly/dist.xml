@@ -17,9 +17,12 @@
       <outputDirectory>/bin</outputDirectory>
       <directory>${project.build.directory}/../../../scripts</directory>
       <includes>
-          <include>bigdl.sh</include>
           <include>classes.lst</include>
           <include>img_class.lst</include>
+          <include>download.sh</include>
+          <include>flickr.urls</include>
+          <include>run.example.sh</include>
+          <include>dump_tf_graph.py</include>
       </includes>
     </fileSet>
     <fileSet>

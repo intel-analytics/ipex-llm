@@ -23,19 +23,24 @@ import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.dataset.{DataSet, MiniBatch, Transformer}
 import com.intel.analytics.bigdl.nn.{MSECriterion, Module}
 import com.intel.analytics.bigdl.optim._
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 import com.intel.analytics.bigdl.utils.{Engine, T, Table}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 
+import scala.reflect.ClassTag
+
 object toAutoencoderBatch {
   def apply(): toAutoencoderBatch[Float] = new toAutoencoderBatch[Float]()
 }
 
-class toAutoencoderBatch[T] extends Transformer[MiniBatch[T], MiniBatch[T]] {
+class toAutoencoderBatch[T: ClassTag](implicit ev: TensorNumeric[T]
+      )extends Transformer[MiniBatch[T], MiniBatch[T]] {
   override def apply(prev: Iterator[MiniBatch[T]]): Iterator[MiniBatch[T]] = {
     prev.map(batch => {
-      MiniBatch(batch.data, batch.data)
+      MiniBatch(batch.getInput().toTensor[T], batch.getInput().toTensor[T])
     })
   }
 }
@@ -87,6 +92,7 @@ object Train {
         .setOptimMethod(optimMethod)
         .setEndWhen(Trigger.maxEpoch(param.maxEpoch))
         .optimize()
+      sc.stop()
     })
   }
 }

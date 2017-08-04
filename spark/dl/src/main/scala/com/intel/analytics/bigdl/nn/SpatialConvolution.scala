@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
@@ -50,29 +50,43 @@ class SpatialConvolution[T: ClassTag](
   val padH: Int = 0, // The additional zeros added per height to the input planes.
   val nGroup: Int = 1, // Kernel group number
   val propagateBack: Boolean = true, // propagate gradient back
-  private var initMethod: InitializationMethod = Default,
-  val wRegularizer: Regularizer[T] = null,
-  val bRegularizer: Regularizer[T] = null
-)(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+  var wRegularizer: Regularizer[T] = null,
+  var bRegularizer: Regularizer[T] = null,
+  val initWeight: Tensor[T] = null,
+  val initBias: Tensor[T] = null,
+  val initGradWeight: Tensor[T] = null,
+  val initGradBias: Tensor[T] = null,
+  val withBias: Boolean = true
+)(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
   require(nInputPlane % nGroup == 0, "Number of input channels should be multiples of group.")
   require(nOutputPlane % nGroup == 0, "Number of output channels should be multiples of group.")
 
-  val weight: Tensor[T] = Tensor[T](nGroup, nOutputPlane / nGroup,
-    nInputPlane / nGroup, kernelH, kernelW)
-  val bias: Tensor[T] = Tensor[T](nOutputPlane)
+  val weight: Tensor[T] = if (initWeight != null) {
+    initWeight
+  } else {
+    Tensor[T](nGroup, nOutputPlane / nGroup, nInputPlane / nGroup, kernelH, kernelW)
+  }
 
-  val gradWeight: Tensor[T] = Tensor[T](nGroup, nOutputPlane / nGroup, nInputPlane / nGroup,
-    kernelH, kernelW)
-  val gradBias: Tensor[T] = Tensor[T](nOutputPlane)
+  val bias: Tensor[T] = if (!withBias) null
+    else if (initBias != null) initBias else Tensor[T](nOutputPlane)
+
+  val gradWeight: Tensor[T] = if (initGradWeight != null) {
+    initGradWeight
+  } else {
+    Tensor[T](nGroup, nOutputPlane / nGroup, nInputPlane / nGroup, kernelH, kernelW)
+  }
+
+  val gradBias: Tensor[T] = if (!withBias) null
+    else if (initGradBias != null) initGradBias else Tensor[T](nOutputPlane)
 
   var fInput = Tensor[T]()
   var fGradInput = Tensor[T]()
   protected val ones = Tensor[T]()
   protected val onesBatch = Tensor[T]()
-  protected val onesBias = Tensor[T]()
+  protected val onesBias = if (withBias) Tensor[T]() else null
   protected var weightMM: Tensor[T] = null
-  protected val gradientBiasMT: Tensor[T] = Tensor[T]()
+  protected val gradientBiasMT: Tensor[T] = if (withBias) Tensor[T]() else null
   protected var gradWeightMM: Tensor[T] = null
   @transient
   protected var gradWeightMMInBatch: Tensor[T] = null
@@ -82,7 +96,15 @@ class SpatialConvolution[T: ClassTag](
   } else {
     false
   }
-  reset()
+
+  {
+    val stdv = 1.0 / math.sqrt(kernelW * kernelH * nInputPlane)
+    val wInit: InitializationMethod = RandomUniform(-stdv, stdv)
+    val bInit: InitializationMethod = if (withBias) RandomUniform(-stdv, stdv)
+      else null
+    setInitMethod(wInit, bInit)
+  }
+
   protected var im2colTime = 0L
   protected var col2imTime = 0L
 
@@ -90,27 +112,15 @@ class SpatialConvolution[T: ClassTag](
 
   def getCol2ImgTime(): Double = col2imTime
 
-  def setInitMethod(initMethod: InitializationMethod): this.type = {
-    this.initMethod = initMethod
-    this
-  }
-
   @transient
   protected var results: Array[Future[Unit]] = null
 
   override def reset(): Unit = {
-    initMethod match {
-      case Default =>
-        val stdv = 1.0 / math.sqrt(kernelW * kernelH * nInputPlane)
-        weight.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
-        bias.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
-      case Xavier =>
-        val fanIn = nInputPlane * kernelH * kernelW
-        val fanOut = nOutputPlane * kernelH * kernelW
-        val stdv = math.sqrt(6.0 / (fanIn + fanOut))
-        weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
-        bias.fill(ev.fromType(0))
-      case _ => throw new IllegalArgumentException()
+    if (initWeight == null) {
+      weightInitMethod.init(weight, VariableFormat.GP_OUT_IN_KW_KH)
+    }
+    if (withBias && initBias == null) {
+      biasInitMethod.init(bias, VariableFormat.ONE_D)
     }
     zeroGradParameters()
   }
@@ -136,7 +146,7 @@ class SpatialConvolution[T: ClassTag](
     require(outputWidth >= 1 && outputHeight >= 1,
       s"output size is too small. outputWidth: $outputWidth, outputHeight: $outputHeight")
 
-    if (onesBias.dim() != 1 || onesBias.size(1) != outputHeight * outputWidth) {
+    if (withBias && (onesBias.dim() != 1 || onesBias.size(1) != outputHeight * outputWidth)) {
       onesBias.resize(Array(outputHeight * outputWidth)).fill(ev.fromType(1.0))
     }
 
@@ -154,11 +164,14 @@ class SpatialConvolution[T: ClassTag](
       }
       var g = 0
       while (g < nGroup) {
+        val biasUse = if (withBias) {
+          bias.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup)
+        } else null
         updateOutputFrame(
           input.narrow(1, g * nInputPlane / nGroup + 1, nInputPlane / nGroup),
           output.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
           weightMM.select(1, g + 1),
-          bias.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
+          biasUse,
           fInput.select(1, g + 1),
           kernelW, kernelH, strideW, strideH,
           padW, padH,
@@ -193,11 +206,14 @@ class SpatialConvolution[T: ClassTag](
           val fInputT = fInput.select(1, _i)
           var g = 0
           while (g < nGroup) {
+            val biasUse = if (withBias) {
+              bias.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup)
+            } else null
             updateOutputFrame(
               inputT.narrow(1, g * nInputPlane / nGroup + 1, nInputPlane / nGroup),
               outputT.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
               weightMM.select(1, g + 1),
-              bias.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
+              biasUse,
               fInputT.select(1, g + 1),
               kernelW, kernelH, strideW, strideH,
               padW, padH,
@@ -268,8 +284,7 @@ class SpatialConvolution[T: ClassTag](
     return gradInput
   }
 
-  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
-    scale: Double = 1.0): Unit = {
+  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
     require(input.nDimension() == 3 || input.nDimension() == 4, "Only support 3D or 4D input")
     require(gradOutput.isContiguous())
 
@@ -280,12 +295,17 @@ class SpatialConvolution[T: ClassTag](
       }
       var g = 0
       while (g < nGroup) {
+        val gradBiasUse = if (withBias) {
+          gradBias.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup)
+        } else null
+
         accGradParametersFrame(
           gradOutput.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
           gradWeightMM.select(1, g + 1),
-          gradBias.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
+          gradBiasUse,
           fInput.select(1, g + 1),
-          ev.fromType[Double](scale))
+          ev.fromType[Double](scaleW),
+          ev.fromType[Double](scaleB))
         g += 1
       }
     } else {
@@ -294,7 +314,7 @@ class SpatialConvolution[T: ClassTag](
         gradWeightMMInBatch = Tensor[T]().resize(Array(batchSize, nGroup, nOutputPlane / nGroup,
           nInputPlane * kernelH * kernelW / nGroup))
       }
-      if(gradientBiasMT.nElement() == 0) {
+      if(withBias && gradientBiasMT.nElement() == 0) {
         gradientBiasMT.resize(Array(batchSize, nOutputPlane))
       }
       if (ones.dim() != 1 || ones.size(1) != gradOutput.size(3) * gradOutput.size(4)) {
@@ -312,13 +332,17 @@ class SpatialConvolution[T: ClassTag](
           val fInputT = fInput.select(1, _i)
           var g = 0
           while (g < nGroup) {
+            val gradientBiasMTUse = if (withBias) {
+              gradientBiasMT.select(1, _i).narrow(1, g * nOutputPlane / nGroup + 1,
+                nOutputPlane / nGroup)
+            } else null
             calcGradParametersFrame(
               gradOutputT.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
               gradWeightMMInBatch.select(1, _i).select(1, g + 1),
-              gradientBiasMT.select(1, _i).narrow(1, g * nOutputPlane / nGroup + 1,
-                nOutputPlane / nGroup),
+              gradientBiasMTUse,
               fInputT.select(1, g + 1),
-              ev.fromType[Double](scale))
+              ev.fromType[Double](scaleW),
+              ev.fromType[Double](scaleB))
             g += 1
           }
         })
@@ -331,34 +355,49 @@ class SpatialConvolution[T: ClassTag](
         nOutputPlane * nInputPlane * kernelH * kernelW / nGroup).t
       val grad = gradWeight.view(nOutputPlane * nInputPlane * kernelH * kernelW / nGroup)
       grad.addmv(ev.fromType(1.0), ev.fromType(1.0), gradView, onesBatch)
-      gradBias.addmv(ev.fromType(1.0), ev.fromType(1.0), gradientBiasMT.t, onesBatch)
+      if (withBias) {
+        gradBias.addmv(ev.fromType(1.0), ev.fromType(1.0), gradientBiasMT.t, onesBatch)
+      }
     }
 
     if (null != wRegularizer) {
-      wRegularizer.accRegularization(weight, gradWeight)
+      wRegularizer.accRegularization(weight, gradWeight, scaleW)
     }
-    if (null != bRegularizer) {
-      bRegularizer.accRegularization(bias, gradBias)
+    if (withBias && null != bRegularizer) {
+      bRegularizer.accRegularization(bias, gradBias, scaleB)
     }
   }
 
   override def updateParameters(learningRate: T): Unit = {
     weight.map(gradWeight, (a, b) => ev.minus(a, ev.times(learningRate, b)))
-    bias.map(gradBias, (a, b) => ev.minus(a, ev.times(learningRate, b)))
+    if (withBias) {
+      bias.map(gradBias, (a, b) => ev.minus(a, ev.times(learningRate, b)))
+    }
   }
 
   override def zeroGradParameters(): Unit = {
     gradWeight.zero()
-    gradBias.zero()
+    if (withBias) {
+      gradBias.zero()
+    }
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
-    (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
+    if (withBias) {
+      (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
+    } else {
+      (Array(this.weight), Array(this.gradWeight))
+    }
   }
 
   override def getParametersTable(): Table = {
-    T(getName() -> T("weight" -> weight, "bias" -> bias,
-      "gradWeight" -> gradWeight, "gradBias" -> gradBias))
+    if (withBias) {
+      T(getName() -> T("weight" -> weight, "bias" -> bias,
+        "gradWeight" -> gradWeight, "gradBias" -> gradBias))
+    } else {
+      T(getName() -> T("weight" -> weight,
+        "gradWeight" -> gradWeight))
+    }
   }
 
   override def equals(obj: Any): Boolean = {
@@ -403,9 +442,9 @@ class SpatialConvolution[T: ClassTag](
     hash = hash * seed + padW.hashCode()
     hash = hash * seed + padH.hashCode()
     hash = hash * seed + weight.hashCode()
-    hash = hash * seed + bias.hashCode()
+    if (withBias) hash = hash * seed + bias.hashCode()
     hash = hash * seed + gradWeight.hashCode()
-    hash = hash * seed + gradBias.hashCode()
+    if (withBias) hash = hash * seed + gradBias.hashCode()
 
     hash
   }
@@ -416,13 +455,15 @@ class SpatialConvolution[T: ClassTag](
     fGradInput.set()
     ones.set()
     onesBatch.set()
-    onesBias.set()
-    gradientBiasMT.set()
+    if (withBias) {
+      onesBias.set()
+      gradientBiasMT.set()
+    }
     this
   }
 
   override def toString(): String = {
-    s"nn.SpatialConvolution($nInputPlane -> $nOutputPlane, $kernelW x" +
+    s"${getPrintName}($nInputPlane -> $nOutputPlane, $kernelW x" +
       s" $kernelH, $strideW, $strideH, $padW, $padH)"
   }
 
@@ -452,7 +493,7 @@ class SpatialConvolution[T: ClassTag](
       }
     }
     output2d.addmm(ev.fromType[Int](0), output2d, ev.fromType[Int](1), weight, fInput)
-    output2d.addr(ev.fromType(1), bias, onesBias)
+    if (withBias) output2d.addr(ev.fromType(1), bias, onesBias)
   }
 
   protected def updateGradInputFrame(gradInput: Tensor[T], gradOutput: Tensor[T],
@@ -494,64 +535,75 @@ class SpatialConvolution[T: ClassTag](
   }
 
   protected def accGradParametersFrame(gradOutput: Tensor[T], gradWeight: Tensor[T],
-    gradBias: Tensor[T], fInput: Tensor[T], scale: T)(implicit ev: TensorNumeric[T]): Unit = {
+    gradBias: Tensor[T], fInput: Tensor[T],
+    scaleW: T, scaleB: T)(implicit ev: TensorNumeric[T]): Unit = {
 
     ev.getType() match {
       case DoubleType =>
         val gradOutput2d = Tensor[Double](gradOutput.storage().asInstanceOf[Storage[Double]],
           gradOutput.storageOffset(),
           Array(gradOutput.size(1), gradOutput.size(2) * gradOutput.size(3)))
-
-        gradWeight.asInstanceOf[Tensor[Double]].addmm(1.0, gradWeight.asInstanceOf[Tensor[Double]],
-          ev.toType[Double](scale), gradOutput2d,
-          fInput.t.asInstanceOf[Tensor[Double]])
-
-        var i = 0
-        while (i < gradBias.size(1)) {
-          var sum = 0.0
-          val data = gradOutput2d.storage().array()
-          val offset = gradOutput2d.storageOffset() - 1 + i * gradOutput2d.stride(1)
-          var k = 0
-          while (k < gradOutput2d.size(2)) {
-            sum += data(k + offset)
-            k += 1
-          }
-          gradBias.asInstanceOf[Tensor[Double]].setValue(
-            i + 1, gradBias.asInstanceOf[Tensor[Double]].valueAt(i + 1) +
-              (ev.toType[Double](scale) * sum))
-          i += 1
+        if (scaleW !=0 ) {
+          gradWeight.asInstanceOf[Tensor[Double]].addmm(1.0,
+            gradWeight.asInstanceOf[Tensor[Double]],
+            ev.toType[Double](scaleW), gradOutput2d,
+            fInput.t.asInstanceOf[Tensor[Double]])
         }
+
+        if (withBias && scaleB != 0) {
+          var i = 0
+          while (i < gradBias.size(1)) {
+            var sum = 0.0
+            val data = gradOutput2d.storage().array()
+            val offset = gradOutput2d.storageOffset() - 1 + i * gradOutput2d.stride(1)
+            var k = 0
+            while (k < gradOutput2d.size(2)) {
+              sum += data(k + offset)
+              k += 1
+            }
+            gradBias.asInstanceOf[Tensor[Double]].setValue(
+              i + 1, gradBias.asInstanceOf[Tensor[Double]].valueAt(i + 1) +
+                (ev.toType[Double](scaleB) * sum))
+            i += 1
+          }
+        }
+
       case FloatType =>
         val gradOutput2d = Tensor[Float](gradOutput.storage().asInstanceOf[Storage[Float]],
           gradOutput.storageOffset(),
           Array(gradOutput.size(1), gradOutput.size(2) * gradOutput.size(3)))
-
-        gradWeight.asInstanceOf[Tensor[Float]].addmm(1.0f, gradWeight.asInstanceOf[Tensor[Float]],
-          ev.toType[Float](scale), gradOutput2d,
-          fInput.t.asInstanceOf[Tensor[Float]])
-
-        var i = 0
-        while (i < gradBias.size(1)) {
-          var sum = 0.0f
-          val data = gradOutput2d.storage().array()
-          val offset = gradOutput2d.storageOffset() - 1 + i * gradOutput2d.stride(1)
-          var k = 0
-          while (k < gradOutput2d.size(2)) {
-            sum += data(k + offset)
-            k += 1
-          }
-          gradBias.asInstanceOf[Tensor[Float]].setValue(
-            i + 1, gradBias.asInstanceOf[Tensor[Float]].valueAt(i + 1) +
-              (ev.toType[Float](scale) * sum))
-          i += 1
+        if (scaleW != 0) {
+          gradWeight.asInstanceOf[Tensor[Float]].addmm(1.0f,
+            gradWeight.asInstanceOf[Tensor[Float]],
+            ev.toType[Float](scaleW), gradOutput2d,
+            fInput.t.asInstanceOf[Tensor[Float]])
         }
+
+        if (withBias && scaleB != 0) {
+          var i = 0
+          while (i < gradBias.size(1)) {
+            var sum = 0.0f
+            val data = gradOutput2d.storage().array()
+            val offset = gradOutput2d.storageOffset() - 1 + i * gradOutput2d.stride(1)
+            var k = 0
+            while (k < gradOutput2d.size(2)) {
+              sum += data(k + offset)
+              k += 1
+            }
+            gradBias.asInstanceOf[Tensor[Float]].setValue(
+              i + 1, gradBias.asInstanceOf[Tensor[Float]].valueAt(i + 1) +
+                (ev.toType[Float](scaleB) * sum))
+            i += 1
+          }
+        }
+
       case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
     }
   }
 
   protected def calcGradParametersFrame(gradOutput: Tensor[T], gradWeight: Tensor[T],
     gradBias: Tensor[T],
-    fInput: Tensor[T], scale: T)(implicit ev: TensorNumeric[T]): Unit = {
+    fInput: Tensor[T], scaleW: T, scaleB: T)(implicit ev: TensorNumeric[T]): Unit = {
 
     ev.getType() match {
       case DoubleType =>
@@ -559,22 +611,34 @@ class SpatialConvolution[T: ClassTag](
           gradOutput.storageOffset(),
           Array(gradOutput.size(1), gradOutput.size(2) * gradOutput.size(3)))
 
-        gradWeight.asInstanceOf[Tensor[Double]].addmm(0.0, gradWeight.asInstanceOf[Tensor[Double]],
-          ev.toType[Double](scale), gradOutput2d,
-          fInput.t.asInstanceOf[Tensor[Double]])
-        gradBias.asInstanceOf[Tensor[Double]].addmv(0.0, 1.0, gradOutput2d,
-          ones.asInstanceOf[Tensor[Double]])
+        if (scaleW != 0) {
+          gradWeight.asInstanceOf[Tensor[Double]].addmm(0.0,
+            gradWeight.asInstanceOf[Tensor[Double]],
+            ev.toType[Double](scaleW), gradOutput2d,
+            fInput.t.asInstanceOf[Tensor[Double]])
+        }
+
+        if (withBias && scaleB != 0) {
+          gradBias.asInstanceOf[Tensor[Double]].addmv(0.0, ev.toType[Double](scaleB), gradOutput2d,
+            ones.asInstanceOf[Tensor[Double]])
+        }
+
       case FloatType =>
         val gradOutput2d = Tensor[Float](gradOutput.storage().asInstanceOf[Storage[Float]],
           gradOutput.storageOffset(),
           Array(gradOutput.size(1), gradOutput.size(2) * gradOutput.size(3)))
+        if (scaleW != 0) {
+            gradWeight.asInstanceOf[Tensor[Float]].addmm(0.0f,
+              gradWeight.asInstanceOf[Tensor[Float]],
+              ev.toType[Float](scaleW), gradOutput2d,
+              fInput.t.asInstanceOf[Tensor[Float]])
+        }
 
-        gradWeight.asInstanceOf[Tensor[Float]].addmm(0.0f, gradWeight.asInstanceOf[Tensor[Float]],
-          ev.toType[Float](scale), gradOutput2d,
-          fInput.t.asInstanceOf[Tensor[Float]])
+        if (withBias && scaleB != 0) {
+          gradBias.asInstanceOf[Tensor[Float]].addmv(0.0f, ev.toType[Float](scaleB), gradOutput2d,
+            ones.asInstanceOf[Tensor[Float]])
+        }
 
-        gradBias.asInstanceOf[Tensor[Float]].addmv(0.0f, 1.0f, gradOutput2d,
-          ones.asInstanceOf[Tensor[Float]])
       case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
     }
   }
@@ -592,12 +656,16 @@ object SpatialConvolution {
       padH: Int = 0,
       nGroup: Int = 1,
       propagateBack: Boolean = true,
-      initMethod: InitializationMethod = Default,
       wRegularizer: Regularizer[T] = null,
-      bRegularizer: Regularizer[T] = null
+      bRegularizer: Regularizer[T] = null,
+      initWeight: Tensor[T] = null,
+      initBias: Tensor[T] = null,
+      initGradWeight: Tensor[T] = null,
+      initGradBias: Tensor[T] = null,
+      withBias: Boolean = true
   )(implicit ev: TensorNumeric[T]): SpatialConvolution[T] = {
     new SpatialConvolution[T](nInputPlane, nOutputPlane, kernelW, kernelH,
-      strideW, strideH, padW, padH, nGroup, propagateBack, initMethod,
-      wRegularizer, bRegularizer)
+      strideW, strideH, padW, padH, nGroup, propagateBack,
+      wRegularizer, bRegularizer, initWeight, initBias, initGradWeight, initGradBias, withBias)
   }
 }

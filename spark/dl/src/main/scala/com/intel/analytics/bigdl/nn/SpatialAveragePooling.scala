@@ -35,6 +35,8 @@ import com.intel.analytics.bigdl.utils.Engine
  * @param dH step height
  * @param padW padding width
  * @param padH padding height
+ * @param globalPooling If globalPooling then it will pool over the size of the input by doing
+ *                      kH = input->height and kW = input->width
  * @param ceilMode whether the output size is to be ceiled or floored
  * @param countIncludePad whether to include padding when dividing the
  *                        number of elements in pooling region
@@ -42,12 +44,13 @@ import com.intel.analytics.bigdl.utils.Engine
  */
 @SerialVersionUID(4533142511857387857L)
 class SpatialAveragePooling[@specialized(Float, Double) T: ClassTag](
-  val kW: Int,
-  val kH: Int,
+  var kW: Int,
+  var kH: Int,
   val dW: Int = 1,
   val dH: Int = 1,
-  private var padW: Int = 0,
-  private var padH: Int = 0,
+  val padW: Int = 0,
+  val padH: Int = 0,
+  val globalPooling: Boolean = false,
   private var ceilMode: Boolean = false,
   private var countIncludePad: Boolean = true,
   private var divide: Boolean = true
@@ -190,6 +193,10 @@ class SpatialAveragePooling[@specialized(Float, Double) T: ClassTag](
     val dimW = input.dim()
     val inputHeight = input.size(dimH)
     val inputWidth = input.size(dimW)
+    if (globalPooling) {
+      kH = inputHeight
+      kW = inputWidth
+    }
     val nInputPlane = input.size(dimH - 1)
     var outputHeight =
       if (ceilMode) {
@@ -468,21 +475,23 @@ class SpatialAveragePooling[@specialized(Float, Double) T: ClassTag](
   }
 
   override def toString(): String = {
-    s"nn.SpatialAveragePooling($kW, $kH, $dW, $dH, $padW, $padH)"
+    s"${getPrintName}($kW, $kH, $dW, $dH, $padW, $padH)"
   }
 }
 
 object SpatialAveragePooling {
-  def apply[@specialized(Float, Double) T: ClassTag](
+  def apply[T: ClassTag](
       kW: Int,
       kH: Int,
       dW: Int = 1,
       dH: Int = 1,
       padW: Int = 0,
       padH: Int = 0,
+      globalPooling: Boolean = false,
       ceilMode: Boolean = false,
       countIncludePad: Boolean = true,
       divide: Boolean = true)(implicit ev: TensorNumeric[T]) : SpatialAveragePooling[T] = {
-    new SpatialAveragePooling[T](kW, kH, dW, dH, padW, padH, ceilMode, countIncludePad, divide)
+    new SpatialAveragePooling[T](kW, kH, dW, dH, padW, padH, globalPooling,
+      ceilMode, countIncludePad, divide)
   }
 }

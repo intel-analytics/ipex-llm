@@ -34,8 +34,7 @@ import scala.reflect._
  * where x_f is the input at spatial locations h,w (not shown for simplicity) and feature map f,
  * l1 corresponds to max(0,f-ceil(size/2)) and l2 to min(F, f-ceil(size/2) + size).
  * Here, F is the number of feature maps.
- * @param size  the number of channels to sum over (for cross channel LRN) or the side length of
- *              the square region to sum over (for within channel LRN)
+ * @param size  the number of channels to sum over (for cross channel LRN)
  * @param alpha  the scaling parameter
  * @param beta   the exponent
  * @param k
@@ -89,7 +88,7 @@ class SpatialCrossMapLRN[@specialized(Float, Double) T: ClassTag]
   }
 
   override def toString(): String = {
-    s"nn.LocalResponseNormalizationAcrossChannels($size, $alpha, $beta, $k)"
+    s"${getPrintName}($size, $alpha, $beta, $k)"
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {

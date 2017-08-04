@@ -74,6 +74,10 @@ class SGD[@specialized(Float, Double) T: ClassTag](
 
     var (fx, dfdx) = feval(x)
 
+    if (wd != 0 || wds != null) {
+      require(!state.get[Boolean]("isLayerwiseScaled").getOrElse(false),
+        "SGD: Can't set layerwise scale and weight decay at the same time")
+    }
     if (wd != 0) {
       dfdx.add(ev.fromType[Double](wd), x)
     } else if (wds != null) {
@@ -204,7 +208,7 @@ object SGD {
     def updateHyperParameter[T](optimMethod : SGD[T]) : Unit
 
     @deprecated("Please input SGD instead of Table", "0.2.0")
-    def updateHyperParameter(config : Table, state : Table) : Unit
+    def updateHyperParameter(config : Table, state : Table) : Unit = {}
 
     var currentRate : Double = 0.0
   }
@@ -269,7 +273,7 @@ object SGD {
   /**
    * A learning rate decay policy, where the effective learning rate
    * follows a polynomial decay, to be zero by the max_iteration.
-   * Calculation: base_lr (1 - iter/maxIteration) ^ (power)
+   * Calculation: base_lr (1 - iter/maxIteration) `^` (power)
    *
    * @param power coeffient of decay, refer to calculation formula
    * @param maxIteration max iteration when lr becomes zero
@@ -303,7 +307,7 @@ object SGD {
   }
   /**
    * A learning rate decay policy, where the effective learning rate
-   * is calculated as base_lr * gamma ^ (floor(iter / stepSize))
+   * is calculated as base_lr * gamma `^` (floor(iter / stepSize))
    *
    * @param stepSize the inteval for lr decay
    * @param gamma coefficient of decay, refer to calculation formula
@@ -432,6 +436,50 @@ object SGD {
   }
 
   /**
+   * [[NaturalExp]] is a learning rate schedule, which rescale the learning rate by
+   * exp ( -decay_rate * iter / decay_step )
+   * referring to tensorflow's learning rate decay # natural_exp_decay
+   *
+   * @param decay_step how often to apply decay
+   * @param gamma the decay rate. e.g. 0.96
+   */
+  case class NaturalExp(decay_step : Int, gamma : Double)
+    extends LearningRateSchedule {
+
+    override def updateHyperParameter[T](optimMethod: SGD[T]): Unit = {
+      val lr = optimMethod.learningRate
+      val nevals = optimMethod.state.get[Int]("evalCounter").getOrElse(0)
+      val p = nevals / decay_step
+      optimMethod.state("evalCounter") = nevals + 1
+      val clr = -lr * math.exp(-gamma * p)
+      currentRate = clr
+    }
+  }
+
+  /**
+   * [[Exponential]] is a learning rate schedule, which rescale the learning rate by
+   * lr_{n + 1} = lr * decayRate `^` (iter / decayStep)
+   * @param decayStep the inteval for lr decay
+   * @param decayRate decay rate
+   * @param stairCase if true, iter / decayStep is an integer division
+   *                  and the decayed learning rate follows a staircase function.
+   */
+  case class Exponential(decayStep: Int, decayRate: Double,
+    stairCase: Boolean = false) extends LearningRateSchedule {
+    override def updateHyperParameter[T](optimMethod: SGD[T]): Unit = {
+      val lr = optimMethod.learningRate
+      val nevals = optimMethod.state.get[Int]("evalCounter").getOrElse(0)
+      var p = nevals / decayStep.toDouble
+      if (stairCase) {
+        p = p.floor
+      }
+      val clr = -lr * Math.pow(decayRate, p)
+      optimMethod.state("evalCounter") = nevals + 1
+      currentRate = clr
+    }
+  }
+
+  /**
    * It is the default learning rate schedule.
    * For each iteration, the learning rate would
    * update with the following formula:
@@ -466,4 +514,69 @@ object SGD {
    * @param config config table contains hyper parameters
    */
   case class Regime(startEpoch: Int, endEpoch: Int, config: Table)
+
+  /**
+   * Plateau is the learning rate schedule when a metric has stopped improving.
+   * Models often benefit from reducing the learning rate by a factor of 2-10
+   * once learning stagnates. It monitors a quantity and if no improvement
+   * is seen for a 'patience' number of epochs, the learning rate is reduced.
+   * @param monitor quantity to be monitored, can be Loss or score
+   * @param factor factor by which the learning rate will be reduced. new_lr = lr * factor
+   * @param patience number of epochs with no improvement after which learning rate will be reduced.
+   * @param mode one of {min, max}.
+   *             In min mode, lr will be reduced when the quantity monitored has stopped decreasing;
+   *             in max mode it will be reduced when the quantity monitored has stopped increasing
+   * @param epsilon threshold for measuring the new optimum, to only focus on significant changes.
+   * @param cooldown number of epochs to wait before resuming normal operation
+   *                 after lr has been reduced.
+   * @param minLr lower bound on the learning rate.
+   */
+  case class Plateau(monitor: String, factor: Float = 0.1f,
+    patience: Int = 10, mode: String = "min", epsilon: Float = 1e-4f,
+    cooldown: Int = 0, minLr: Float = 0) extends LearningRateSchedule {
+    require(factor < 1, "Plateau does not support a factor >= 1.0")
+    require(mode == "min" || mode == "max",
+      s"Learning Rate Plateau Reducing mode ${ mode } is unknown, please use min | max")
+    var (monitorOp, best) = if (mode == "min") {
+      ((a: Float, b: Float) => a < b - epsilon, Float.PositiveInfinity)
+    } else {
+      ((a: Float, b: Float) => a > b + epsilon, Float.NegativeInfinity)
+    }
+    private var cooldownCounter: Int = 0
+    private var waitCounter: Int = 0
+    private val lrEpsilon: Float = minLr * 1e-4f
+    private var curEpoch = 1
+
+
+    /**
+     * update learning rate by config table and state table
+     * @param optimMethod init optiMethod.
+     */
+    override def updateHyperParameter[T](optimMethod: SGD[T]): Unit = {
+      val epoch = optimMethod.state[Int]("epoch")
+      if (epoch == 1) currentRate = -optimMethod.learningRate
+      if (epoch == curEpoch) return
+      curEpoch = epoch
+      val current = optimMethod.state.get[Float](monitor)
+      require(current.isDefined, s"Learning Rate Plateau Reducing requires ${monitor} available!")
+      if (cooldownCounter > 0) {
+        cooldownCounter -= 1
+        waitCounter = 0
+      }
+      if (monitorOp(current.get, best)) {
+        best = current.get
+        waitCounter = 0
+      } else if (cooldownCounter <= 0) {
+        if (waitCounter >= patience) {
+          if (currentRate.abs > minLr + lrEpsilon) {
+            currentRate = - Math.max(currentRate.abs * factor, minLr)
+            cooldownCounter = cooldown
+            waitCounter = 0
+          }
+        }
+        waitCounter += 1
+      }
+    }
+  }
+
 }

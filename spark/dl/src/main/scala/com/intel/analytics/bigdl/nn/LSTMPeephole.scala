@@ -51,9 +51,9 @@ class LSTMPeephole[T : ClassTag] (
   val inputSize: Int,
   val hiddenSize: Int,
   val p: Double = 0.0,
-  val wRegularizer: Regularizer[T] = null,
-  val uRegularizer: Regularizer[T] = null,
-  val bRegularizer: Regularizer[T] = null
+  var wRegularizer: Regularizer[T] = null,
+  var uRegularizer: Regularizer[T] = null,
+  var bRegularizer: Regularizer[T] = null
 )
   (implicit ev: TensorNumeric[T])
   extends Cell[T](
@@ -65,15 +65,19 @@ class LSTMPeephole[T : ClassTag] (
   var outputGate: Sequential[T] = _
   var hiddenLayer: Sequential[T] = _
   var cellLayer: Sequential[T] = _
+  val featDim = 2
   override var cell: AbstractModule[Activity, Activity, T] = buildLSTM()
 
-  def buildGate(): Sequential[T] = {
+  override def preTopology: AbstractModule[Activity, Activity, T] =
+    Sequential()
+    .add(Dropout(p))
+    .add(TimeDistributed(Linear(inputSize, hiddenSize * 4, wRegularizer = wRegularizer,
+      bRegularizer = bRegularizer)))
+
+  def buildGate(dimension: Int, offset: Int, length: Int): Sequential[T] = {
     val gate = Sequential()
 
-    val i2g = Sequential()
-      .add(Dropout(p))
-      .add(Linear(inputSize, hiddenSize, wRegularizer = wRegularizer,
-        bRegularizer = bRegularizer))
+    val i2g = Narrow(dimension, offset, length)
     val h2g = Sequential()
       .add(Dropout(p))
       .add(Linear(hiddenSize, hiddenSize,
@@ -89,17 +93,17 @@ class LSTMPeephole[T : ClassTag] (
   }
 
   def buildInputGate(): Sequential[T] = {
-    inputGate = buildGate()
+    inputGate = buildGate(featDim, 1, hiddenSize)
     inputGate
   }
 
   def buildForgetGate(): Sequential[T] = {
-    forgetGate = buildGate()
+    forgetGate = buildGate(featDim, 1 + hiddenSize, hiddenSize)
     forgetGate
   }
 
   def buildOutputGate(): Sequential[T] = {
-    outputGate = buildGate()
+    outputGate = buildGate(featDim, 1 + 3 * hiddenSize, hiddenSize)
     outputGate
   }
 
@@ -107,10 +111,8 @@ class LSTMPeephole[T : ClassTag] (
     val hidden = Sequential()
       .add(NarrowTable(1, 2))
 
-    val i2h = Sequential()
-      .add(Dropout(p))
-      .add(Linear(inputSize, hiddenSize, wRegularizer = wRegularizer,
-        bRegularizer = bRegularizer))
+    val i2h = Narrow(featDim, 1 + 2 * hiddenSize, hiddenSize)
+
     val h2h = Sequential()
       .add(Dropout(p))
       .add(Linear(hiddenSize, hiddenSize, withBias = false,

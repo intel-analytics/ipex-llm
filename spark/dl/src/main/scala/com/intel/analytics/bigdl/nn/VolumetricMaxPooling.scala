@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import scala.reflect._
 
 /**
- * Applies 3D max-pooling operation in kTxkWxkH regions by step size dTxdWxdH steps.
+ * Applies 3D max-pooling operation in kTxkWxkH regions by step size dTxdWxdH.
  * The number of output features is equal to the number of input planes / dT.
  * The input can optionally be padded with zeros. Padding should be smaller than
  * half of kernel size. That is, padT < kT/2, padW < kW/2 and padH < kH/2
@@ -325,7 +325,7 @@ class VolumetricMaxPooling[T: ClassTag](
   }
 
   override def toString(): String = {
-    s"nn.VolumetricMaxPooling($kT, $kW, $kH, $dT, $dW, $dH, $padT, $padW, $padH)"
+    s"${getPrintName}($kT, $kW, $kH, $dT, $dW, $dH, $padT, $padW, $padH)"
   }
 
   override def clearState(): this.type = {

@@ -17,13 +17,13 @@
 package com.intel.analytics.bigdl.nn
 
 import org.scalatest.{FlatSpec, Matchers}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl._
 
 import scala.math._
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.optim.{L1Regularizer, L2Regularizer, SGD}
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.{RandomGenerator, T}
 
 @com.intel.analytics.bigdl.tags.Parallel
 class LinearSpec extends FlatSpec with Matchers {
@@ -314,5 +314,93 @@ class LinearSpec extends FlatSpec with Matchers {
 
     val checker = new GradientChecker(1e-4, 1e-2)
     checker.checkLayer[Double](linear, input) should be(true)
+  }
+
+  "Linear forward" should "be correct" in {
+    val linear = new Linear[Double](3, 2)
+    linear.weight.setValue(1, 1, 1.0)
+    linear.weight.setValue(1, 2, 2.0)
+    linear.weight.setValue(1, 3, 3.0)
+    linear.weight.setValue(2, 1, 4.0)
+    linear.weight.setValue(2, 2, 5.0)
+    linear.weight.setValue(2, 3, 6.0)
+    linear.bias.setValue(1, 7.0)
+    linear.bias.setValue(2, 8.0)
+
+    val input = Tensor[Double](T(0.1, 0.2, 0.3))
+    linear.forward(input) should be(Tensor[Double](T(8.4, 11.2)))
+  }
+
+  "Linear forward" should "be correct with given weight" in {
+    val weight = Tensor[Double](T(
+      T(1.0, 2.0, 3.0),
+      T(4.0, 5.0, 6.0)
+    ))
+    val bias = Tensor[Double](T(
+      T(7.0, 8.0)
+    ))
+    val linear = new Linear[Double](inputSize = 3, outputSize = 2,
+      initWeight = weight, initBias = bias)
+
+    val input = Tensor[Double](T(0.1, 0.2, 0.3))
+    linear.forward(input) should be(Tensor[Double](T(8.4, 11.2)))
+  }
+
+  "Linear forward" should "be correct in batch mode" in {
+    val linear = new Linear[Double](3, 2)
+    linear.weight.setValue(1, 1, 1.0)
+    linear.weight.setValue(1, 2, 2.0)
+    linear.weight.setValue(1, 3, 3.0)
+    linear.weight.setValue(2, 1, 4.0)
+    linear.weight.setValue(2, 2, 5.0)
+    linear.weight.setValue(2, 3, 6.0)
+    linear.bias.setValue(1, 7.0)
+    linear.bias.setValue(2, 8.0)
+
+    val input = Tensor[Double](T(T(0.1, 0.2, 0.3), T(0.2, 0.4, 0.6)))
+    linear.forward(input) should be(Tensor[Double](T(T(8.4, 11.2), T(9.8, 14.4))))
+  }
+
+  "Linear with scaleW and scaleB" should "be correct with given weight" in {
+    val weight = Tensor[Double](T(
+      T(1.0, 2.0, 3.0),
+      T(4.0, 5.0, 6.0)
+    ))
+    val bias = Tensor[Double](T(
+      T(7.0, 8.0)
+    ))
+    val linear = new Linear[Double](inputSize = 3, outputSize = 2,
+      initWeight = weight, initBias = bias)
+    val linear2 = linear.cloneModule().asInstanceOf[Linear[Double]].setScaleB(2.0).setScaleW(0.5)
+
+    val input = Tensor[Double](T(0.1, 0.2, 0.3))
+
+    val output1 = linear.forward(input)
+    val output2 = linear2.forward(input)
+    output1 should be(output2)
+
+    val gradOutput = Tensor(output1)
+    val gradInput1 = linear.backward(input, gradOutput)
+    val gradInput2 = linear2.backward(input, gradOutput)
+    gradInput1 should be(gradInput2)
+
+    linear2.gradWeight should be(linear.gradWeight.mul(0.5))
+    linear2.gradBias should be(linear.gradBias.mul(2))
+  }
+
+  "Xavier" should "init right in SpatialConvolution" in {
+    RandomGenerator.RNG.setSeed(1)
+    val linear = Linear[Float](3, 5)
+      .setInitMethod(Xavier, Zeros)
+    val exceptedWeight = Tensor[Float](Storage(Array(
+      -0.1399592, -0.32341975, 0.32080957,
+      0.042518664, -0.5119037, -0.097942464,
+      0.6549186, -0.468386, -0.8185887,
+      0.059606634, 0.29525837, 0.7170032,
+      -0.14323229, -0.07412344, 0.10165376
+    ).map(_.toFloat))).resize(5, 3)
+    val exceptedBias = Tensor[Float](T(0f, 0f, 0f, 0f, 0f))
+    linear.weight should be (exceptedWeight)
+    linear.bias should be (exceptedBias)
   }
 }

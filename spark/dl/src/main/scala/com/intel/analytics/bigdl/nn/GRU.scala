@@ -55,11 +55,9 @@ class GRU[T : ClassTag] (
   val inputSize: Int,
   val outputSize: Int,
   val p: Double = 0,
-  val wRegularizer: Regularizer[T] = null,
-  val uRegularizer: Regularizer[T] = null,
-  val bRegularizer: Regularizer[T] = null
-)
-  (implicit ev: TensorNumeric[T])
+  var wRegularizer: Regularizer[T] = null,
+  var uRegularizer: Regularizer[T] = null,
+  var bRegularizer: Regularizer[T] = null)(implicit ev: TensorNumeric[T])
   extends Cell[T](
     hiddensShape = Array(outputSize),
     regularizers = Array(wRegularizer, uRegularizer, bRegularizer)
@@ -67,7 +65,16 @@ class GRU[T : ClassTag] (
   var i2g: AbstractModule[_, _, T] = _
   var h2g: AbstractModule[_, _, T] = _
   var gates: AbstractModule[_, _, T] = _
+  val featDim = 2
   override var cell: AbstractModule[Activity, Activity, T] = buildGRU()
+
+  override def preTopology: AbstractModule[Activity, Activity, T] =
+    if (p != 0) {
+      null
+    } else {
+      TimeDistributed[T](Linear(inputSize, 3 * outputSize,
+        wRegularizer = wRegularizer, bRegularizer = bRegularizer))
+    }
 
   def buildGates(): AbstractModule[Activity, Activity, T] = {
     if (p != 0) {
@@ -80,7 +87,7 @@ class GRU[T : ClassTag] (
             wRegularizer = wRegularizer, bRegularizer = bRegularizer))
           .add(Linear(inputSize, outputSize,
             wRegularizer = wRegularizer, bRegularizer = bRegularizer)))
-        .add(JoinTable(1, 1))
+        .add(JoinTable(2, 0))
 
       h2g = Sequential()
         .add(ConcatTable()
@@ -91,10 +98,9 @@ class GRU[T : ClassTag] (
             wRegularizer = uRegularizer))
           .add(Linear(outputSize, outputSize, withBias = false,
             wRegularizer = uRegularizer)))
-        .add(JoinTable(1, 1))
+        .add(JoinTable(2, 0))
     } else {
-      i2g = Linear(inputSize, 2 * outputSize,
-        wRegularizer = wRegularizer, bRegularizer = bRegularizer)
+      i2g = Narrow[T](featDim, 1, 2 * outputSize)
       h2g = Linear(outputSize, 2 * outputSize, withBias = false,
         wRegularizer = uRegularizer)
     }
@@ -103,7 +109,7 @@ class GRU[T : ClassTag] (
       .add(ParallelTable()
         .add(i2g)
         .add(h2g))
-      .add(CAddTable())
+      .add(CAddTable(true))
       .add(Reshape(Array(2, outputSize)))
       .add(SplitTable(1, 2))
       .add(ParallelTable()
@@ -122,22 +128,30 @@ class GRU[T : ClassTag] (
         .add(gates))
       .add(FlattenTable()) // x(t), h(t - 1), r(t), z(t)
 
+    val f2g = if (p != 0) {
+      Sequential()
+        .add(Dropout(p))
+        .add(Linear(inputSize, outputSize,
+            wRegularizer = wRegularizer, bRegularizer = bRegularizer))
+    } else {
+      Narrow(featDim, 1 + 2 * outputSize, outputSize)
+    }
+
     val h_hat = Sequential()
       .add(ConcatTable()
-        .add(SelectTable(1))
         .add(Sequential()
-          .add(NarrowTable(2, 2))
-          .add(CMulTable())))
+          .add(SelectTable(1))
+          .add(f2g))
+        .add(Sequential()
+        .add(NarrowTable(2, 2))
+        .add(CMulTable())))
       .add(ParallelTable()
+        .add(Identity())
         .add(Sequential()
-          .add(Dropout(p))
-          .add(Linear(inputSize, outputSize, wRegularizer = wRegularizer,
-            bRegularizer = bRegularizer)))
-        .add(Sequential()
-          .add(Dropout(p))
-          .add(Linear(outputSize, outputSize, withBias = false,
-            wRegularizer = uRegularizer))))
-      .add(CAddTable())
+         .add(Dropout(p))
+         .add(Linear(outputSize, outputSize, withBias = false,
+           wRegularizer = uRegularizer))))
+      .add(CAddTable(true))
       .add(Tanh())
 
     gru
@@ -155,7 +169,7 @@ class GRU[T : ClassTag] (
             .add(SelectTable(2))
             .add(SelectTable(4)))
           .add(CMulTable())))
-      .add(CAddTable())
+      .add(CAddTable(false))
       .add(ConcatTable()
         .add(Identity[T]())
         .add(Identity[T]()))
@@ -189,9 +203,7 @@ object GRU {
     p: Double = 0,
     wRegularizer: Regularizer[T] = null,
     uRegularizer: Regularizer[T] = null,
-    bRegularizer: Regularizer[T] = null
-  )
-    (implicit ev: TensorNumeric[T]): GRU[T] = {
+    bRegularizer: Regularizer[T] = null)(implicit ev: TensorNumeric[T]): GRU[T] = {
     new GRU[T](inputSize, outputSize, p, wRegularizer, uRegularizer, bRegularizer)
   }
 }

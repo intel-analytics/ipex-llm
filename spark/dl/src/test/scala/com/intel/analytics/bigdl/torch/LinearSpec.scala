@@ -19,20 +19,14 @@ package com.intel.analytics.bigdl.torch
 import com.intel.analytics.bigdl.nn.{GradientChecker, Linear, MSECriterion}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
 import com.intel.analytics.bigdl._
 
 @com.intel.analytics.bigdl.tags.Serial
-class LinearSpec extends FlatSpec with BeforeAndAfter with Matchers {
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
-
-  "Linear module" should "converge to correct weight and bias" in {
+class LinearSpec extends TorchSpec {
+    "Linear module" should "converge to correct weight and bias" in {
+    torchCheck()
     val inputN = 5
     val outputN = 2
 
@@ -80,6 +74,7 @@ class LinearSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "Linear module without bias" should "converate to correct weight and bias" in {
+    torchCheck()
     val inputN = 5
     val outputN = 2
 
@@ -127,6 +122,7 @@ class LinearSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "Linear (1024, 1000)" should "converate to correct weight and bias" in {
+    torchCheck()
     val inputN = 1024
     val outputN = 1000
 
@@ -171,6 +167,7 @@ class LinearSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "Linear (27, 64)" should "converge to correct weight and bias" in {
+    torchCheck()
     val inputN = 27
     val outputN = 64
 
@@ -214,6 +211,7 @@ class LinearSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "Linear module" should "be good in gradient check for input" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
     val linear = new Linear[Double](5, 2)
@@ -224,6 +222,7 @@ class LinearSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "Linear module" should "be good in gradient check for weight" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
     val linear = new Linear[Double](5, 2)
@@ -234,6 +233,7 @@ class LinearSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "Linear (27, 64) without bias" should "converate to correct weight and bias" in {
+    torchCheck()
     val inputN = 27
     val outputN = 64
 

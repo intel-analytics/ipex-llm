@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.TensorCriterion
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{DenseTensorApply, Tensor, TensorFunc4, TensorFunc6}
 
 import scala.reflect.ClassTag
 
@@ -39,36 +39,44 @@ import scala.reflect.ClassTag
 class BCECriterion[@specialized(Float, Double) T: ClassTag]
 (var weights: Tensor[T] = null, sizeAverage: Boolean = true)
   (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
-  var total_weight = ev.fromType[Int](0)
-  val eps = ev.fromType[Double](1e-12)
+  private val eps = 1e-12
   if (weights != null) require(weights.dim() == 1, "weights input should be 1-D Tensor")
-
-  var buffer = Tensor[T]()
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     require(input.nElement() == target.nElement())
-    buffer.resizeAs(input).zero()
 
     if (null != weights && target.dim() != 1) {
       weights = weights.view(1, target.size(2)).expandAs(target)
     }
 
-    buffer.add(input).add(eps)
-    buffer.apply1(ev.log(_))
+    var sum = 0.0
+    if (null != weights) {
+      val func = new TensorFunc6[T] {
+        override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int,
+                           data3: Array[T], offset3: Int): Unit = {
+          val x = ev.toType[Double](data1(offset1))
+          val y = ev.toType[Double](data2(offset2))
+          val w = ev.toType[Double](data3(offset3))
+          sum -= (Math.log(x + eps) * y + Math.log(1.0 - x + eps) * (1.0 - y)) * w
+        }
+      }
+      DenseTensorApply.apply3(input, target, weights, func)
+    } else {
+      val func = new TensorFunc4[T] {
+        override def apply(data1: Array[T], offset1: Int,
+                           data2: Array[T], offset2: Int): Unit = {
+          val x = ev.toType[Double](data1(offset1))
+          val y = ev.toType[Double](data2(offset2))
+          sum -= Math.log(x + eps) * y + Math.log(1.0 - x + eps) * (1.0 - y)
+        }
+      }
+      DenseTensorApply.apply2(input, target, func)
 
-    if (null != weights) buffer.cmul(weights)
+    }
 
-    output = target.dot(buffer)
+    if (sizeAverage) sum /= input.nElement()
 
-    buffer.mul(input, ev.fromType[Int](-1)).add(ev.fromType[Int](1)).add(eps).apply1(ev.log)
-    if (null != weights) buffer.cmul(weights)
-
-    output = ev.plus(output, buffer.sum())
-    output = ev.minus(output, target.dot(buffer))
-
-    if (sizeAverage) output = ev.divide(output, ev.fromType[Int](input.nElement()))
-
-    output = ev.negative(output)
+    output = ev.fromType[Double](sum)
 
     output
   }
@@ -80,21 +88,23 @@ class BCECriterion[@specialized(Float, Double) T: ClassTag]
       weights = weights.view(1, target.size(2)).expandAs(target)
     }
 
-    buffer.resizeAs(input)
-    buffer.zero()
-    // -x ( 1 + eps - x) + eps
-    buffer.add(ev.fromType[Int](-1)).add(input).add(ev.negative(eps)).
-      cmul(input).add(ev.negative(eps))
+    val norm = if (sizeAverage) 1.0 / input.nElement() else 1.0
 
     gradInput.resizeAs(input)
-    // y - x
-    gradInput.add(target, ev.fromType[Int](-1), input)
-    // - (y - x) / ( x ( 1 + eps -x ) + eps )
-    gradInput = gradInput / buffer
 
-    if (null != weights) gradInput.cmul(weights)
+    val func = new TensorFunc6[T] {
+      override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int,
+                         data3: Array[T], offset3: Int): Unit = {
+        val x = ev.toType[Double](data2(offset2))
+        val y = ev.toType[Double](data3(offset3))
+        data1(offset1) = ev.fromType(-norm * (y - x) / ((1.0 - x + eps) * (x + eps)))
+      }
+    }
+    DenseTensorApply.apply3(gradInput, input, target, func)
 
-    if (sizeAverage) gradInput.div(ev.fromType[Int](target.nElement()))
+    if (null != weights) {
+      gradInput.cmul(weights)
+    }
 
     gradInput
   }

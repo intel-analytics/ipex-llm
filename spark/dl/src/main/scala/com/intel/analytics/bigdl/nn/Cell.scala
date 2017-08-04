@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
 
+import scala.collection.mutable
 import scala.reflect.ClassTag
 
 /**
@@ -42,7 +43,7 @@ import scala.reflect.ClassTag
  */
 abstract class Cell[T : ClassTag](
   val hiddensShape: Array[Int],
-  val regularizers: Array[Regularizer[T]] = null
+  var regularizers: Array[Regularizer[T]] = null
 )(implicit ev: TensorNumeric[T])
   extends AbstractModule[Table, Table, T] {
 
@@ -61,6 +62,19 @@ abstract class Cell[T : ClassTag](
   var cell: AbstractModule[Activity, Activity, T]
 
   /**
+   * The preTopology defines operations to pre-process the input when it is not dependent
+   * on the time dimension. For example, the i2h in SimpleRNN Cell can be calculated before
+   * the recurrence since all the input slices are independent.
+   *
+   * This is particular useful to boost the performance of the recurrent layer.
+   *
+   * Please define your own preTopology according to your Cell structure.
+   * Please refer to SimpleRNN or LSTM for reference.
+   * @return
+   */
+  def preTopology: AbstractModule[Activity, Activity, T] = null
+
+  /**
    * resize the hidden parameters wrt the batch size, hiddens shapes.
    *
    * e.g. RnnCell contains 1 hidden parameter (H), thus it will return Tensor(size)
@@ -68,13 +82,13 @@ abstract class Cell[T : ClassTag](
    *      and recursively intialize all the tensors in the Table.
    *
    * @param hidden
-   * @param size batchSize
+   * @param batchSize batchSize
    * @return
    */
-  def hidResize(hidden: Activity, size: Int): Activity = {
+  def hidResize(hidden: Activity, batchSize: Int, imageSize: Array[Int] = null): Activity = {
     if (hidden == null) {
       if (hiddensShape.length == 1) {
-        hidResize(Tensor[T](), size)
+        hidResize(Tensor[T](), batchSize)
       } else {
         val _hidden = T()
         var i = 1
@@ -82,20 +96,31 @@ abstract class Cell[T : ClassTag](
           _hidden(i) = Tensor[T]()
           i += 1
         }
-        hidResize(_hidden, size)
+        hidResize(_hidden, batchSize, imageSize)
       }
     } else {
       if (hidden.isInstanceOf[Tensor[T]]) {
         require(hidden.isInstanceOf[Tensor[T]],
           "Cell: hidden should be a Tensor")
-        hidden.toTensor.resize(size, hiddensShape(0))
+        hidden.toTensor.resize(batchSize, hiddensShape(0))
       } else {
         require(hidden.isInstanceOf[Table],
           "Cell: hidden should be a Table")
         var i = 1
-        while (i <= hidden.toTable.length()) {
-          hidden.toTable[Tensor[T]](i).resize(size, hiddensShape(i - 1))
-          i += 1
+        if (null == imageSize) {
+          while (i <= hidden.toTable.length()) {
+            hidden.toTable[Tensor[T]](i).resize(batchSize, hiddensShape(i - 1))
+            i += 1
+          }
+        } else {
+          val sizes = new Array[Int](imageSize.length + 2)
+          sizes(0) = batchSize
+          Array.copy(imageSize, 0, sizes, 2, imageSize.size)
+          while (i <= hidden.toTable.length()) {
+            sizes(1) = hiddensShape(i - 1)
+            hidden.toTable[Tensor[T]](i).resize(sizes)
+            i += 1
+          }
         }
         hidden
       }
@@ -112,9 +137,8 @@ abstract class Cell[T : ClassTag](
     gradInput
   }
 
-  override def accGradParameters(input: Table, gradOutput: Table,
-    scale: Double = 1.0): Unit = {
-    cell.accGradParameters(input, gradOutput, scale)
+  override def accGradParameters(input: Table, gradOutput: Table): Unit = {
+    cell.accGradParameters(input, gradOutput)
   }
 
   override def updateParameters(learningRate: T): Unit = {

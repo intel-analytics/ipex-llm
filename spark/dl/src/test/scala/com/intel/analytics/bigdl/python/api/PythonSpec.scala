@@ -21,9 +21,8 @@ import java.util.{List => JList, Map => JMap}
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.optim.SGD
-import com.intel.analytics.bigdl.optim.Trigger
-import com.intel.analytics.bigdl.utils.{Engine, T}
+import com.intel.analytics.bigdl.optim.{Loss, SGD, Top1Accuracy, Trigger}
+import com.intel.analytics.bigdl.utils.{Engine, T, TestUtils}
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
@@ -62,7 +61,8 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val pythonBigDL = PythonBigDL.ofFloat()
     val mse = new MSECriterion[Float]
     val joutput = pythonBigDL.modelForward(linear,
-      List(pythonBigDL.toJTensor(input)).asJava
+      List(pythonBigDL.toJTensor(input)).asJava,
+      false
     ).iterator().next()
     val expectedOutput = linear.forward(input)
     require(pythonBigDL.toTensor(joutput) == expectedOutput, "forward output should be the same")
@@ -72,7 +72,9 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val expectedLinearGradOutput = linear.backward(input, mseGradOutput)
     val jLinearGradOutput = pythonBigDL.modelBackward(linear,
       List(pythonBigDL.toJTensor(input)).asJava,
-      List(pythonBigDL.toJTensor(mseGradOutput)).asJava
+      false,
+      List(pythonBigDL.toJTensor(mseGradOutput)).asJava,
+      false
     ).iterator().next()
     require(pythonBigDL.toTensor(jLinearGradOutput) == expectedLinearGradOutput,
       "backward output should be the same")
@@ -100,17 +102,17 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     module.add(linear1)
     module.add(linear2)
 
-    val mapOutput = pythonBigDL.modelForward(module, pythonBigDL.activityToJTensors(input))
-    val mapOutputActivity = pythonBigDL.jTensorsToActivity(mapOutput)
+    val mapOutput = pythonBigDL.modelForward(module, pythonBigDL.activityToJTensors(input), true)
+    val mapOutputActivity = pythonBigDL.jTensorsToActivity(mapOutput, true)
     mapOutputActivity.toTable should equal (expectedOutput)
 
     val expectedGradInput = T(
       linear1.updateGradInput(input(1), gradOutput(1)),
       linear2.updateGradInput(input(2), gradOutput(2)))
     val mapGradInput = pythonBigDL.modelBackward(module,
-      pythonBigDL.activityToJTensors(input),
-      pythonBigDL.activityToJTensors(gradOutput))
-    val mapGradInputActivity = pythonBigDL.jTensorsToActivity(mapGradInput)
+      pythonBigDL.activityToJTensors(input), true,
+      pythonBigDL.activityToJTensors(gradOutput), true)
+    val mapGradInputActivity = pythonBigDL.jTensorsToActivity(mapGradInput, true)
 
     mapGradInputActivity.toTable should equal (expectedGradInput)
 
@@ -137,6 +139,7 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "Double prototype" should "be test" in {
+    TestUtils.cancelOnWindows()
 
     Logger.getLogger("org").setLevel(Level.WARN)
     Logger.getLogger("akka").setLevel(Level.WARN)
@@ -184,7 +187,7 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
       batchSize = batchSize,
       trigger = Trigger.severalIteration(10),
       valRdd = data.toJavaRDD(),
-      vMethods = util.Arrays.asList("Top1Accuracy", "Loss"))
+      vMethods = util.Arrays.asList(new Top1Accuracy(), new Loss()))
 
     val logdir = com.google.common.io.Files.createTempDir()
     val trainSummary = TrainSummary(logdir.getPath, "lenet")
@@ -207,28 +210,24 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val localData = data.collect()
     pp.toTensor(preResult.get(0)) should be
-    (trainedModel.forward(pp.toSample(localData(0)).feature()))
+    (trainedModel.forward(pp.toSample(localData(0)).feature))
 
     pp.toTensor(preResult.get(25)) should be
-    (trainedModel.forward(pp.toSample(localData(25)).feature()))
+    (trainedModel.forward(pp.toSample(localData(25)).feature))
 
     pp.toTensor(preResult.get(55)) should be
-    (trainedModel.forward(pp.toSample(localData(55)).feature()))
+    (trainedModel.forward(pp.toSample(localData(55)).feature))
 
     pp.toTensor(preResult.get(75)) should be
-    (trainedModel.forward(pp.toSample(localData(75)).feature()))
+    (trainedModel.forward(pp.toSample(localData(75)).feature))
 
-
-    val resultRDD = pp.predict(trainedModel, data.map(pp.toSample(_)))
-    val result = resultRDD.take(5)
-    println(result)
     // TODO: verify the parameters result
     val parameters = pp.modelGetParameters(trainedModel)
 //    println(parameters)
     val testResult = pp.modelTest(trainedModel,
       data.toJavaRDD(),
       batchSize = 32,
-      valMethods = util.Arrays.asList("Top1Accuracy"))
+      valMethods = util.Arrays.asList(new Top1Accuracy()))
     println(testResult)
   }
 }

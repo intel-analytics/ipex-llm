@@ -210,6 +210,7 @@ object Utils {
     def getModules(module: Module[T]): Unit = {
       module match {
         case m: Container[_, _, T] =>
+          namedModules += (module.getName() -> module)
           for (m <- module.asInstanceOf[Container[_, _, T]].modules) getModules(m)
         case _ => namedModules += (module.getName() -> module)
       }
@@ -233,6 +234,22 @@ object Utils {
     // copy running status
     dst.copyStatus(src)
     dst
+  }
+
+  /**
+   * get whether the module is layerwise scaled
+   * @param model input module
+   * @return whether the module is layerwise scaled
+   */
+  def isLayerwiseScaled[T](model: Module[T]): Boolean = model match {
+    case m: Container[Activity, Activity, T] =>
+      var i = 0
+      while (i < m.modules.length) {
+        if (isLayerwiseScaled(m.modules(i))) return true
+        i += 1
+      }
+      false
+    case m: Module[T] => (m.getScaleB() != 1) || (m.getScaleW() != 1)
   }
 
   /**

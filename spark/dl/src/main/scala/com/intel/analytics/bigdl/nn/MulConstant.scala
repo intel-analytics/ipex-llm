@@ -59,7 +59,7 @@ class MulConstant[@specialized(Float, Double) T: ClassTag](
   }
 
   override def toString(): String = {
-    s"nn.MulConstant($scalar, $inplace)"
+    s"${getPrintName}($scalar, $inplace)"
   }
 
 

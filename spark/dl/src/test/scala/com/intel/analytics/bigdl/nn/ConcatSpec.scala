@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import org.scalatest.{FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Parallel
@@ -38,4 +39,38 @@ class ConcatSpec extends FlatSpec with Matchers {
 
   }
 
+  "Concat forward/backward 1D input/output" should "return good result" in {
+    val model = Concat[Float](1)
+    model.add(Identity[Float]())
+    model.add(Identity[Float]())
+    val input = Tensor[Float].range(1, 3, 1)
+    val gradOutput = Tensor[Float].range(1, 6, 1)
+    val output = model.forward(input)
+    val gradInput = model.backward(input, gradOutput)
+    output should be (Tensor(Storage(Array[Float](1, 2, 3, 1, 2, 3))))
+    gradInput should be (Tensor(Storage(Array[Float](5, 7, 9))))
+  }
+
+  "Concat forward/backward 4D input/output" should "return good result" in {
+    val model = Concat[Float](3)
+    model.add(Identity[Float]())
+    model.add(AddConstant[Float](1))
+    val input = Tensor[Float](2, 2, 2, 2).apply1(_ => 1)
+    var i = 0
+    val gradOutput = Tensor[Float](2, 2, 4, 2).apply1 { _ =>
+      val result = if (i % 8 < 4) 2f else 3f
+      i = i + 1
+      result
+    }
+    val output = model.forward(input)
+    val expectedOutput = Tensor[Float](2, 2, 4, 2).apply1 { _ =>
+      val result = if (i % 8 < 4) 1f else 2f
+      i = i + 1
+      result
+    }
+    val gradInput = model.backward(input, gradOutput)
+    val expectedGradInput = Tensor[Float](2, 2, 2, 2).apply1(_ => 5f)
+    output should be (expectedOutput)
+    gradInput should be (expectedGradInput)
+  }
 }

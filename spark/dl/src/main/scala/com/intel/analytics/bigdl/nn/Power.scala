@@ -99,7 +99,7 @@ class Power[@specialized(Float, Double) T: ClassTag](
   }
 
   override def toString(): String = {
-    s"nn.Power($power, $scale, $shift)"
+    s"${getPrintName}($power, $scale, $shift)"
   }
 
 }

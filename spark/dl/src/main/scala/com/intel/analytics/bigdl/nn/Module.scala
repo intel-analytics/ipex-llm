@@ -15,15 +15,29 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import java.nio.ByteOrder
+
+import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{CaffeLoader, File}
+import com.intel.analytics.bigdl.utils.File
+import com.intel.analytics.bigdl.utils.caffe.CaffeLoader
+import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowLoader}
 
 import scala.reflect.ClassTag
 
 object Module {
+  /**
+   * Load model from path.
+   *
+   * @param path path to save module, local file system, HDFS and Amazon S3 is supported.
+   *             HDFS path should be like "hdfs://[host]:[port]/xxx"
+   *             Amazon S3 path should be like "s3a://bucket/xxx"
+   * @tparam T numeric type
+   * @return model loaded from path
+   */
   def load[T: ClassTag](path : String) : AbstractModule[Activity, Activity, T] = {
     File.load[AbstractModule[Activity, Activity, T]](path)
   }
@@ -32,10 +46,35 @@ object Module {
     File.loadTorch[AbstractModule[Activity, Activity, T]](path)
   }
 
+  @deprecated
   def loadCaffe[T: ClassTag](model: AbstractModule[Activity, Activity, T],
     defPath: String, modelPath: String, matchAll: Boolean = true)(
     implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
     CaffeLoader.load[T](model, defPath, modelPath, matchAll)
+  }
+
+  /**
+   * Loaf caffe trained model from prototxt and weight files
+   * @param defPath  caffe model definition file path
+   * @param modelPath caffe model binary file containing weight and bias
+   */
+  def loadCaffeModel[T: ClassTag](defPath: String, modelPath: String)(
+    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
+    CaffeLoader.loadCaffe[T](defPath, modelPath)._1
+  }
+  /**
+   * Load tensorflow model from its saved protobuf file.
+   * @param file where is the protobuf model file
+   * @param inputs input node names
+   * @param outputs output node names, the output tensor order is same with the node order
+   * @param byteOrder byte order in the tensorflow file. The default value is little endian
+   * @return BigDL model
+   */
+  def loadTF[T: ClassTag](file: String, inputs: Seq[String], outputs: Seq[String],
+            byteOrder: ByteOrder = ByteOrder.LITTLE_ENDIAN)(
+    implicit ev: TensorNumeric[T]): Module[T] = {
+
+    TensorflowLoader.load(file, inputs, outputs, byteOrder)
   }
 
   def flatten[@specialized(Float, Double) T: ClassTag](parameters: Array[Tensor[T]])(

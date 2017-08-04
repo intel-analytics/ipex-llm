@@ -44,15 +44,11 @@ class Tanh[@specialized(Float, Double) T: ClassTag](
       gradValue, ev.minus(ev.fromType[Int](1), ev.times(outputValue, outputValue))))
     gradInput
   }
-
-  override def toString(): String = {
-    s"nn.Tanh"
-  }
 }
 
 
 object Tanh {
-  def apply[@specialized(Float, Double) T: ClassTag]()
+  def apply[T: ClassTag]()
       (implicit ev: TensorNumeric[T]) : Tanh[T] = {
     new Tanh[T]()
   }

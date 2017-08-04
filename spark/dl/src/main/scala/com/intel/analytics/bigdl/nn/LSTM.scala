@@ -17,7 +17,6 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -52,9 +51,9 @@ class LSTM[T : ClassTag] (
   val inputSize: Int,
   val hiddenSize: Int,
   val p: Double = 0,
-  val wRegularizer: Regularizer[T] = null,
-  val uRegularizer: Regularizer[T] = null,
-  val bRegularizer: Regularizer[T] = null
+  var wRegularizer: Regularizer[T] = null,
+  var uRegularizer: Regularizer[T] = null,
+  var bRegularizer: Regularizer[T] = null
 )
   (implicit ev: TensorNumeric[T])
   extends Cell[T](
@@ -64,6 +63,13 @@ class LSTM[T : ClassTag] (
   var gates: Sequential[T] = _
   var cellLayer: Sequential[T] = _
   override var cell: AbstractModule[Activity, Activity, T] = buildLSTM()
+
+  override def preTopology: AbstractModule[Activity, Activity, T] = if (p != 0) {
+    null
+  } else {
+    TimeDistributed[T](Linear(inputSize, 4 * hiddenSize,
+      wRegularizer = wRegularizer, bRegularizer = bRegularizer))
+  }
 
   def buildGates(): Sequential[T] = {
     val gates = Sequential()
@@ -107,8 +113,7 @@ class LSTM[T : ClassTag] (
             withBias = false, wRegularizer = uRegularizer)))
         .add(JoinTable(1, 1))
     } else {
-      i2g = Linear(inputSize, 4 * hiddenSize,
-        wRegularizer = wRegularizer, bRegularizer = bRegularizer)
+      i2g = Identity()
       h2g = Linear(hiddenSize, 4 * hiddenSize,
         withBias = false, wRegularizer = uRegularizer)
     }
@@ -117,7 +122,7 @@ class LSTM[T : ClassTag] (
       .add(ParallelTable()
         .add(i2g)
         .add(h2g))
-      .add(CAddTable())
+      .add(CAddTable(false))
       .add(Reshape(Array(4, hiddenSize)))
       .add(SplitTable(1, 2))
       .add(ParallelTable()
@@ -150,7 +155,7 @@ class LSTM[T : ClassTag] (
             .add(SelectTable(3))
             .add(SelectTable(5)))
           .add(CMulTable())))
-      .add(CAddTable())
+      .add(CAddTable(true))
 
     lstm
       .add(ConcatTable()

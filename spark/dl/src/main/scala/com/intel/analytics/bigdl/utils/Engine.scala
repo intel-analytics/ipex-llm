@@ -17,9 +17,13 @@
 package com.intel.analytics.bigdl.utils
 
 import java.io.InputStream
+import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
+
 import org.apache.log4j.Logger
 import org.apache.spark.{SparkConf, SparkContext}
+
+import com.intel.analytics.bigdl.mkl.MKL
 
 /**
  * define engine type trait
@@ -42,13 +46,13 @@ object Engine {
     setNodeAndCore(nExecutor, executorCores)
     val res = if (onSpark) {
       require(localMode == false,
-        s"Engine.init: BIGDL_LOCAL_MODE should not be set while onSpark is " +
-          s"true. $ENV_VAR_ERROR")
+        s"Engine.init: bigdl.localMode should not be set while onSpark is " +
+          s"true. Please set correct java property.")
       Some(createSparkConf())
     } else {
       require(localMode == true,
-        s"Engine.init: BIGDL_LOCAL_MODE should be set while onSpark is " +
-          s"false. $ENV_VAR_ERROR")
+        s"Engine.init: bigdl.localMode should be set while onSpark is " +
+          s"false. Please set correct java property.")
       None
     }
     res
@@ -88,15 +92,13 @@ object Engine {
    */
   def init: Unit = this.synchronized {
     if (localMode) {
-      require(getSparkMaster == null, "Detect BIGDL_LOCAL_MODE and spark.master are both set." +
-        " They're conflict. Please reset BIGDL_LOCAL_MODE if you're use Spark or remove " +
-        "spark.master if you're run without spark")
-      logger.info("Detect BIGDL_LOCAL_MODE is set. Run workload without spark")
-      // The physical core number should have been initialized by env variable in bigdl.sh
-      setNodeAndCore(1, getCoreNumberFromEnv)
+      logger.info("Detect bigdl.localMode is set. Run workload without spark")
+      // The physical core number should have been initialized
+      // by java property -Dbigdl.coreNumber=xx
+      setNodeAndCore(1, getCoreNumberFromProperty)
     } else {
       logger.info("Auto detect executor number and executor cores number")
-      val (nExecutor, executorCores) = sparkExecutorAndCore(forceCheck = true).get
+      val (nExecutor, executorCores) = sparkExecutorAndCore().get
       logger.info(s"Executor number is $nExecutor and executor cores number is $executorCores")
       setNodeAndCore(nExecutor, executorCores)
       checkSparkContext
@@ -105,9 +107,16 @@ object Engine {
 
   private val logger = Logger.getLogger(getClass)
   private val singletonCounter = new AtomicBoolean()
-  private[bigdl] var localMode = System.getenv("BIGDL_LOCAL_MODE") != null
   private var physicalCoreNumber = -1
   private var nodeNum: Int = -1
+
+  private[bigdl] def localMode: Boolean = {
+    System.getProperty("bigdl.localMode", "false").toLowerCase(Locale.ROOT) match {
+      case "true" => true
+      case "false" => false
+      case option => throw new IllegalArgumentException(s"Unknown bigdl.localMode $option")
+    }
+  }
 
   private val NOT_INIT_ERROR =
     "Do you call Engine.init? See more at " +
@@ -116,24 +125,14 @@ object Engine {
   private val SPARK_CONF_ERROR = "For details please check " +
     "https://github.com/intel-analytics/BigDL/wiki/Programming-Guide#engine"
 
-  private val ENV_VAR_ERROR =
-    "Do you run 'source bigdl.sh' before the program? Please use bigdl.sh to init the environment" +
-      ". See https://github.com/intel-analytics/BigDL/wiki/Getting-Started#before-running" +
-      "-a-bigdl-program. And init SparkConf by refering " +
-      "https://github.com/intel-analytics/BigDL/wiki/Programming-Guide#engine. " +
-      "For test purpose, set bigdl.disableCheckSysEnv to true"
-
   /**
-   * Notice: Please use property DL_ENGINE_TYPE to set engineType.
-   * Default engine is MklBlas
+   * Notice: Please use property bigdl.engineType to set engineType.
+   * Default engine is mklblas
    */
   private var engineType: EngineType = {
-    val dlEngineType = System.getenv("DL_ENGINE_TYPE")
-
-    if (dlEngineType == null || dlEngineType.toLowerCase == "mklblas") {
-      MklBlas
-    } else {
-      throw new Error(s"Unknown DL_ENGINE_TYPE. $ENV_VAR_ERROR")
+    System.getProperty("bigdl.engineType", "mklblas").toLowerCase(Locale.ROOT) match {
+      case "mklblas" => MklBlas
+      case engineType => throw new IllegalArgumentException(s"Unknown engine type $engineType")
     }
   }
 
@@ -141,17 +140,23 @@ object Engine {
   @volatile private var _default: ThreadPool = null
 
   // Thread pool for layer use
-  @volatile private var _model: ThreadPool = new ThreadPool(1).setMKLThread(1)
+  @volatile private var _model: ThreadPool = new ThreadPool(1).setMKLThread(MKL.getNumThreads)
 
-  private def getCoreNumberFromEnv : Int = {
-    val env = System.getenv("DL_CORE_NUMBER")
-    if (env == null) {
-      // We assume the HT is enabled
-      // Todo: check the Hyper threading
-      Runtime.getRuntime().availableProcessors() / 2
-    } else {
-      env.toInt
-    }
+  /**
+   * If user undefine the property bigdl.coreNumber, it will return physical core number
+   * system has. The biggest number it supports is the physical cores number.
+   *
+   * Currently, it not support detect true physical cores number. Get it through
+   * Runtime.getRuntime().availableProcessors() / 2
+   */
+  private def getCoreNumberFromProperty() = {
+    System.getProperty("bigdl.coreNumber", getNumMachineCores.toString).toInt
+  }
+
+  private def getNumMachineCores: Int = {
+    // We assume the HT is enabled
+    // Todo: check the Hyper threading
+    Runtime.getRuntime().availableProcessors() / 2
   }
 
   /**
@@ -248,7 +253,7 @@ object Engine {
 
     if(_model == null || _model.getPoolSize != modelPoolSize) {
       _model = new ThreadPool(modelPoolSize)
-      _model.setMKLThread(1)
+      _model.setMKLThread(MKL.getNumThreads)
     }
   }
 
@@ -260,7 +265,14 @@ object Engine {
     val stream : InputStream = getClass.getResourceAsStream("/spark-bigdl.conf")
     val lines = scala.io.Source.fromInputStream(stream)
       .getLines.filter(_.startsWith("spark")).toArray
+
+    // For spark 1.5, we observe nio block manager has better performance than netty block manager
+    // So we will force set block manager to nio. If user don't want this, he/she can set
+    // bigdl.network.nio == false to customize it. This configuration/blcok manager setting won't
+    // take affect on newer spark version as the nio block manger has been removed
     lines.map(_.split("\\s+")).map(d => (d(0), d(1))).toSeq
+      .filter(_._1 != "spark.shuffle.blockTransferService" ||
+        System.getProperty("bigdl.network.nio", "true").toBoolean)
   }
 
   /**
@@ -309,21 +321,12 @@ object Engine {
   private[bigdl] def reset : Unit = {
     nodeNum = 1
     physicalCoreNumber = 1
-    localMode = false
   }
 
-  private def dynamicAllocationExecutor : Option[Int] = {
-    if (System.getProperty("spark.dynamicAllocation.enabled") == "true") {
-      val maxExecutors = if (System.getProperty("spark.dynamicAllocation.maxExecutors") != null) {
-        System.getProperty("spark.dynamicAllocation.maxExecutors").toInt
-      } else {
-        1
-      }
-      val minExecutors = if (System.getProperty("spark.dynamicAllocation.minExecutors") != null) {
-        System.getProperty("spark.dynamicAllocation.minExecutors").toInt
-      } else {
-        1
-      }
+  private def dynamicAllocationExecutor(conf: SparkConf): Option[Int] = {
+    if (conf.get("spark.dynamicAllocation.enabled", null) == "true") {
+      val maxExecutors = conf.get("spark.dynamicAllocation.maxExecutors", "1").toInt
+      val minExecutors = conf.get("spark.dynamicAllocation.minExecutors", "1").toInt
       require(maxExecutors == minExecutors, "Engine.init: " +
         "spark.dynamicAllocation.maxExecutors and " +
         "spark.dynamicAllocation.minExecutors must be identical " +
@@ -334,41 +337,40 @@ object Engine {
     }
   }
 
-  private def getSparkMaster : String = {
-    System.getProperty("spark.master")
+  /**
+   * Extract spark executor number and executor cores from environment.
+   * @return (nExecutor, executorCore)
+   */
+  private[utils] def sparkExecutorAndCore(): Option[(Int, Int)] = {
+    parseExecutorAndCore(SparkContext.getOrCreate().getConf)
   }
 
   /**
-   * Extract spark executor number and executor cores from environment.
-    * @param forceCheck throw exception if user doesn't set properties correctly
+   * Extract spark executor number and executor cores from given conf.
+   * Exposed for testing.
    * @return (nExecutor, executorCore)
    */
-  private[utils] def sparkExecutorAndCore(forceCheck : Boolean) : Option[(Int, Int)] = {
-    val master = getSparkMaster
-    if (master == null) {
-      require(forceCheck == false, "Engine.init: Can't find spark.master, " +
-        "do you start your application with spark-submit?")
-      return None
-    }
-    if(master.toLowerCase.startsWith("local")) {
+  private[utils] def parseExecutorAndCore(conf: SparkConf): Option[(Int, Int)] = {
+    val master = conf.get("spark.master", null)
+    if (master.toLowerCase.startsWith("local")) {
       // Spark local mode
       val patternLocalN = "local\\[(\\d+)\\]".r
       val patternLocalStar = "local\\[\\*\\]".r
       master match {
         case patternLocalN(n) => Some(1, n.toInt)
-        case patternLocalStar(_*) => Some(1, getCoreNumberFromEnv)
+        case patternLocalStar(_*) => Some(1, getNumMachineCores)
         case _ => throw new IllegalArgumentException(s"Can't parser master $master")
       }
     } else if (master.toLowerCase.startsWith("spark")) {
       // Spark standalone mode
-      val coreString = System.getProperty("spark.executor.cores")
-      val maxString = System.getProperty("spark.cores.max")
+      val coreString = conf.get("spark.executor.cores", null)
+      val maxString = conf.get("spark.cores.max", null)
       require(coreString != null, "Engine.init: Can't find executor core number" +
         ", do you submit with --executor-cores option")
       require(maxString != null, "Engine.init: Can't find total core number" +
         ". Do you submit with --total-executor-cores")
       val core = coreString.toInt
-      val nodeNum = dynamicAllocationExecutor.getOrElse {
+      val nodeNum = dynamicAllocationExecutor(conf).getOrElse {
         val total = maxString.toInt
         require(total >= core && total % core == 0, s"Engine.init: total core " +
           s"number($total) can't be divided " +
@@ -378,13 +380,13 @@ object Engine {
       Some(nodeNum, core)
     } else if (master.toLowerCase.startsWith("yarn")) {
       // yarn mode
-      val coreString = System.getProperty("spark.executor.cores")
+      val coreString = conf.get("spark.executor.cores", null)
       require(coreString != null, "Engine.init: Can't find executor core number" +
         ", do you submit with " +
         "--executor-cores option")
       val core = coreString.toInt
-      val node = dynamicAllocationExecutor.getOrElse {
-        val numExecutorString = System.getProperty("spark.executor.instances")
+      val node = dynamicAllocationExecutor(conf).getOrElse {
+        val numExecutorString = conf.get("spark.executor.instances", null)
         require(numExecutorString != null, "Engine.init: Can't find executor number" +
           ", do you submit with " +
           "--num-executors option")
@@ -393,14 +395,14 @@ object Engine {
       Some(node, core)
     } else if (master.toLowerCase.startsWith("mesos")) {
       // mesos mode
-      require(System.getProperty("spark.mesos.coarse") != "false", "Engine.init: " +
+      require(conf.get("spark.mesos.coarse", null) != "false", "Engine.init: " +
         "Don't support mesos fine-grained mode")
-      val coreString = System.getProperty("spark.executor.cores")
+      val coreString = conf.get("spark.executor.cores", null)
       require(coreString != null, "Engine.init: Can't find executor core number" +
         ", do you submit with --executor-cores option")
       val core = coreString.toInt
-      val nodeNum = dynamicAllocationExecutor.getOrElse {
-        val maxString = System.getProperty("spark.cores.max")
+      val nodeNum = dynamicAllocationExecutor(conf).getOrElse {
+        val maxString = conf.get("spark.cores.max", null)
         require(maxString != null, "Engine.init: Can't find total core number" +
           ". Do you submit with --total-executor-cores")
         val total = maxString.toInt
@@ -414,24 +416,4 @@ object Engine {
       throw new IllegalArgumentException(s"Engine.init: Unsupported master format $master")
     }
   }
-
-  private def checkSysEnv() : Unit = {
-    // bigdl.disableCheckSysEnv is only for test purpose
-    if (System.getProperty("bigdl.disableCheckSysEnv") != null) {
-      return
-    }
-
-    readConf
-      .filter(_._1.startsWith("spark.executorEnv."))
-      .map(c => (c._1.substring(18), c._2))
-      .foreach(env => {
-        require(System.getenv(env._1) != null,
-          s"Engine.init: Cannot find ${env._1} in environment variables. $ENV_VAR_ERROR")
-        require(System.getenv(env._1) == env._2,
-          s"Engine.init: Environment variable ${env._1} is ${System.getenv(env._1)}. " +
-          s"But it should be ${env._2}. $ENV_VAR_ERROR")
-    })
-  }
-
-  checkSysEnv()
 }

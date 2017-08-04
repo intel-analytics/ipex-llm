@@ -25,7 +25,6 @@ When running as a Spark program, we use transformed imagenet sequence file as in
 For Caffe Inception model and Alexnet model, the command to transform the sequence file is (validation data is the different with the [BigDL inception Prepare the data](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/inception#prepare-the-data))
 
 ```bash
-dist/bin/bigdl.sh --
 java -cp dist/lib/bigdl-VERSION-jar-with-dependencies-and-spark.jar \
          com.intel.analytics.bigdl.models.utils.ImageNetSeqFileGenerator   \
     -f <imagenet_folder> -o <output_folder> -p <cores_number> -r -v
@@ -34,7 +33,6 @@ java -cp dist/lib/bigdl-VERSION-jar-with-dependencies-and-spark.jar \
 For Torch Resnet model, the command to transform the sequence file is (validation data is the same with the [BigDL Inception Prepare the data](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/inception#prepare-the-data))
 
 ```bash
-dist/bin/bigdl.sh --
 java -cp dist/lib/bigdl-VERSION-jar-with-dependencies-and-spark.jar \
          com.intel.analytics.bigdl.models.utils.ImageNetSeqFileGenerator   \
      -f imagenet_folder -o output_folder -p cores_number -v
@@ -65,7 +63,6 @@ For example, following the steps below will load BVLC GoogLeNet.
   [last: s][~/loadmodel]$ tree dist/
   dist/
   ├── bin
-  │   ├── bigdl.sh
   │   ├── classes.lst
   │   └── img_class.lst
   └── lib
@@ -90,7 +87,6 @@ For example, following the steps below will load BVLC GoogLeNet.
   imagenet_folder=imagenet
   output_folder=seq
   cores_number=28
-  dist/bin/bigdl.sh --                                                       \
   java -cp dist/lib/bigdl-VERSION-jar-with-dependencies-and-spark.jar \
            com.intel.analytics.bigdl.models.utils.ImageNetSeqFileGenerator   \
        -f ${imagenet_folder} -o ${output_folder} -p ${cores_number} -r -v
@@ -126,7 +122,6 @@ For example, following the steps below will load BVLC GoogLeNet.
   pathToCaffePrototxt=data/model/bvlc_googlenet/deploy.prototxt
   pathToModel=data/model/bvlc_googlenet/bvlc_googlenet.caffemodel
   batchSize=448
-  dist/bin/bigdl.sh --                                                                     \
   spark-submit --driver-memory 20g --master $master --executor-memory 100g                 \
                --executor-cores 28                                                         \
                --total-executor-cores 112                                                  \
@@ -145,7 +140,6 @@ For example, following the steps below will load BVLC GoogLeNet.
   pathToCaffePrototxt=data/model/bvlc_googlenet/deploy.prototxt
   pathToModel=data/model/bvlc_googlenet/bvlc_googlenet.caffemodel
   batchSize=448
-  dist/bin/bigdl.sh --                                                                     \
   spark-submit --driver-memory 20g --master yarn --executor-memory 100g                    \
                --deploy-mode client                                                        \
                --executor-cores 28                                                         \

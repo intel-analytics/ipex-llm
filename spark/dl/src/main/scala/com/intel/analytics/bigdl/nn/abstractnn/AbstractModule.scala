@@ -16,17 +16,21 @@
 
 package com.intel.analytics.bigdl.nn.abstractnn
 
+import java.nio.ByteOrder
+
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.{Tensor, TensorDataType}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
-import com.intel.analytics.bigdl.nn.Module
+import com.intel.analytics.bigdl.nn.{Graph, InitializationMethod, Module, Zeros}
 import com.intel.analytics.bigdl.utils.TorchObject.TYPE_MODULE
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.spark.rdd.RDD
 import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.dataset.Sample
+import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch, Sample}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.utils.caffe.CaffePersister
+import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowSaver}
 
 import scala.reflect.ClassTag
 
@@ -61,6 +65,49 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
    * The cached gradient of activities. So we don't compute it again when need it
    */
   var gradInput: A = Activity[A, T]()
+
+  /**
+   * The scale of gradient weight and gradient bias
+   * before gradParameters being accumulated.
+   */
+  protected var scaleW: Double = 1.0
+  protected var scaleB: Double = 1.0
+
+  /**
+   * Get the scale of gradientWeight
+   */
+  def getScaleW(): Double = {
+    scaleW
+  }
+
+  /**
+   * Get the scale of gradientBias
+   */
+  def getScaleB(): Double = {
+    scaleB
+  }
+
+  /**
+   * Set the scale of gradientWeight
+   *
+   * @param w the value of the scale of gradientWeight
+   * @return this
+   */
+  def setScaleW(w: Double): this.type = {
+    scaleW = w
+    this
+  }
+
+  /**
+   * Set the scale of gradientBias
+   *
+   * @param b the value of the scale of gradientBias
+   * @return this
+   */
+  def setScaleB(b: Double): this.type = {
+    scaleB = b
+    this
+  }
 
   /**
    * Copy the useful running status from src to this.
@@ -125,11 +172,23 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
    */
   def getName() : String = {
     if (this.name == null) {
-      s"${this.getClass.getName}@${namePostfix}"
+      s"${this.getClass.getSimpleName}@${namePostfix}"
     } else {
       this.name
     }
   }
+
+  protected def getPrintName(): String = {
+    val postfix = if (name == null) {
+      namePostfix
+    } else {
+      name
+    }
+    s"${this.getClass.getSimpleName}[${postfix}]"
+
+  }
+
+  override def toString(): String = getPrintName
 
   protected var forwardTime = 0L
 
@@ -205,9 +264,8 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
    *
    * @param input
    * @param gradOutput
-   * @param scale
    */
-  def accGradParameters(input: A, gradOutput: B, scale: Double = 1.0): Unit = {}
+  def accGradParameters(input: A, gradOutput: B): Unit = {}
 
   /**
    * If the module has parameters, this will zero the accumulation of the gradients with respect
@@ -272,6 +330,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
 
   def reset(): Unit = {}
 
+
   protected var line = "\n"
 
   def setLine(line: String): this.type = {
@@ -302,16 +361,25 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
       (that canEqual this) &&
         (that.getClass equals this.getClass) &&
         output == that.output &&
-        gradInput == that.gradInput
+        gradInput == that.gradInput &&
+        name == that.name
     case _ => false
   }
 
   override def hashCode(): Int = {
     def getHashCode(a: Object): Int = if (a == null) 0 else a.hashCode()
-    val state = Seq(output, gradInput, this.getClass)
+    val state = Seq(output, gradInput, this.getClass, this.name)
     state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
   }
 
+  /**
+   * Save this module to path.
+   * @param path path to save module, local file system, HDFS and Amazon S3 is supported.
+   *             HDFS path should be like "hdfs://[host]:[port]/xxx"
+   *             Amazon S3 path should be like "s3a://bucket/xxx"
+   * @param overWrite if overwrite
+   * @return self
+   */
   def save(path : String, overWrite: Boolean = false) : this.type = {
     this.clearState()
     File.save(this, path, overWrite)
@@ -321,6 +389,24 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
   def saveTorch(path : String, overWrite: Boolean = false) : this.type = {
     this.clearState()
     File.saveTorch(this, path, TYPE_MODULE, overWrite)
+    this
+  }
+
+  def saveCaffe(prototxtPath: String, modelPath: String,
+    useV2 : Boolean = true, overwrite : Boolean = false) : this.type = {
+    this.clearState()
+    CaffePersister.persist[T](prototxtPath, modelPath, this, useV2, overwrite)
+    this
+  }
+
+  def saveTF(
+              inputs : Seq[(String, Seq[Int])],
+              path: String,
+              byteOrder: ByteOrder = ByteOrder.LITTLE_ENDIAN,
+              dataFormat: TensorflowDataFormat = TensorflowDataFormat.NHWC): this.type = {
+    require(this.isInstanceOf[Graph[T]], "only Graph container can be saved as Tensorflow model")
+    this.clearState()
+    TensorflowSaver.saveGraph(this.asInstanceOf[Graph[T]], inputs, path, byteOrder, dataFormat)
     this
   }
 
@@ -377,11 +463,80 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
   }
 
   /**
+   * save weights and bias to file
+   * @param path file to save
+   * @param overWrite whether to overwrite or not
+   */
+  def saveWeights(path: String, overWrite: Boolean): Unit = {
+    val parameterTable = getParametersTable()
+    val weightsBiasTable = T()
+    parameterTable.foreach {
+      case (name: String, params: Table) =>
+        val wb = T()
+        if (params.contains("weight")) {
+          wb("weight") = params("weight")
+        }
+        if (params.contains("bias")) {
+          wb("bias") = params("bias")
+        }
+        weightsBiasTable(name) = wb
+      case _ => throw new UnsupportedOperationException("invalid parameter table")
+    }
+    weightsBiasTable.save(path, overWrite)
+  }
+
+  /**
+   * load pretrained weights and bias to current module
+   * @param weightPath file to store weights and bias
+   * @param matchAll whether to match all layers' weights and bias,
+   *                 if not, only load existing pretrained weights and bias
+   * @return current module
+   */
+  def loadWeights(weightPath: String, matchAll: Boolean = true): this.type = {
+    val srcParameter = File.load[Table](weightPath)
+    val targetParameter = getParametersTable()
+    copyWeights(targetParameter, srcParameter, matchAll)
+    this
+  }
+
+  /**
+   * copy weights from another model, mapping by layer name
+   * @param srcModel model to copy from
+   * @param matchAll whether to match all layers' weights and bias,
+   * @return current module
+   */
+  def loadModelWeights(srcModel: Module[Float], matchAll: Boolean = true): this.type = {
+    val srcParameter = srcModel.getParametersTable()
+    val targetParameter = getParametersTable()
+    copyWeights(targetParameter, srcParameter, matchAll)
+    this
+  }
+
+  private def copyWeights(target: Table, src: Table, matchAll: Boolean): Unit = {
+    target.foreach {
+      case (name: String, targetParams: Table) =>
+        if (src.contains(name)) {
+          val srcParams = src[Table](name)
+          if (srcParams.contains("weight")) {
+            val w = srcParams[Tensor[T]]("weight")
+            targetParams[Tensor[T]]("weight").resizeAs(w).copy(w)
+          }
+          if (srcParams.contains("bias")) {
+            val b = srcParams[Tensor[T]]("bias")
+            targetParams[Tensor[T]]("bias").resizeAs(b).copy(b)
+          }
+        } else {
+          if (matchAll) new Exception(s"module $name cannot find corresponding weight bias")
+        }
+    }
+  }
+
+  /**
    * Some other modules point to current module
    * @param nodes upstream module nodes
    * @return node containing current module
    */
-  def apply(nodes : ModuleNode[T]*): ModuleNode[T] = {
+  def inputs(nodes : ModuleNode[T]*): ModuleNode[T] = {
     require(this.isInstanceOf[AbstractModule[_, Tensor[T], T]],
       "AbstractModule: Only module with tensor output can be added into a graph node")
     val curNode = new ModuleNode[T](this.asInstanceOf[AbstractModule[Activity, Tensor[T], T]])
@@ -417,6 +572,13 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
    vMethods: Array[ValidationMethod[T]],
    batchSize: Option[Int] = None): Array[(ValidationResult, ValidationMethod[T])] = {
     Evaluator(this).test(dataset, vMethods, batchSize)
+  }
+
+
+  def evaluate(dataSet: LocalDataSet[MiniBatch[T]],
+               vMethods: Array[ValidationMethod[T]]
+              ): Array[(ValidationResult, ValidationMethod[T])] = {
+    Validator(this, dataSet).test(vMethods)
   }
 }
 

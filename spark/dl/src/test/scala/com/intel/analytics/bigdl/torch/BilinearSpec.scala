@@ -20,20 +20,15 @@ import com.intel.analytics.bigdl.optim.{L2Regularizer, SGD}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.{T, Table}
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class BilinearSpec extends FlatSpec with BeforeAndAfter with Matchers{
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
+class BilinearSpec extends TorchSpec {
 
   "BiLinear L2 regularizer" should "works correctly" in {
     import com.intel.analytics.bigdl.numeric.NumericDouble
+    torchCheck()
 
     val state1 = T("learningRate" -> 0.1, "learningRateDecay" -> 5e-7,
       "weightDecay" -> 0.1, "momentum" -> 0.002)
@@ -102,6 +97,7 @@ class BilinearSpec extends FlatSpec with BeforeAndAfter with Matchers{
   }
 
   "A Bilinear " should "generate correct output and grad" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 

@@ -16,10 +16,13 @@
 
 package org.apache.spark.storage
 
+import java.lang.{Boolean => JBoolean}
 import java.nio.ByteBuffer
 
 import org.apache.spark.SparkEnv
 import org.apache.spark.util.io.ChunkedByteBuffer
+
+import scala.reflect.ClassTag
 
 object BlockManagerWrapper {
 
@@ -29,7 +32,7 @@ object BlockManagerWrapper {
     require(bytes != null, "Bytes is null")
     val blockManager = SparkEnv.get.blockManager
     blockManager.removeBlock(blockId)
-    blockManager.putBytes(blockId, new ChunkedByteBuffer(bytes), level)
+    putBytesFn(blockId, new ChunkedByteBuffer(bytes), level)
   }
 
   def getLocal(blockId: BlockId): Option[BlockResult] = {
@@ -47,8 +50,13 @@ object BlockManagerWrapper {
     SparkEnv.get.blockManager.removeBlock(blockId)
   }
 
-  def byteBufferConvert(chunkedByteBuffer: ChunkedByteBuffer): ByteBuffer = {
-    ByteBuffer.wrap(chunkedByteBuffer.toArray)
+  def getLocalOrRemoteBytes(blockId: BlockId): Option[ByteBuffer] = {
+    val maybeLocalBytes = getLocalBytesFn(blockId)
+    if (maybeLocalBytes.isDefined) {
+      maybeLocalBytes
+    } else {
+      SparkEnv.get.blockManager.getRemoteBytes(blockId).map(_.toByteBuffer)
+    }
   }
 
   def unlock(blockId : BlockId): Unit = {
@@ -57,4 +65,73 @@ object BlockManagerWrapper {
       blockInfoManager.unlock(blockId)
     }
   }
+
+  private val getLocalBytesFn: (BlockId) => Option[ByteBuffer] = {
+    val bmClass = classOf[BlockManager]
+    val getLocalBytesMethod = bmClass.getMethod("getLocalBytes", classOf[BlockId])
+
+    // Spark versions before 2.2.0 declare:
+    // def getLocalBytes(blockId: BlockId): Option[ChunkedByteBuffer]
+    // Spark 2.2.0+ declares:
+    // def getLocalBytes(blockId: BlockId): Option[BlockData]
+    // Because the latter change happened in the commit that introduced BlockData,
+    // and because you can't discover the generic type of the return type by reflection,
+    // distinguish the cases by seeing if BlockData exists.
+    try {
+      val blockDataClass = Class.forName("org.apache.spark.storage.BlockData")
+      // newer method, apply reflection to transform BlockData after invoking
+      val toByteBufferMethod = blockDataClass.getMethod("toByteBuffer")
+      (blockId: BlockId) =>
+        getLocalBytesMethod.invoke(SparkEnv.get.blockManager, blockId)
+          .asInstanceOf[Option[_]]
+          .map(blockData => toByteBufferMethod.invoke(blockData).asInstanceOf[ByteBuffer])
+    } catch {
+      case _: ClassNotFoundException =>
+        // older method, can be invoked directly
+        (blockId: BlockId) =>
+          getLocalBytesMethod.invoke(SparkEnv.get.blockManager, blockId)
+            .asInstanceOf[Option[ChunkedByteBuffer]]
+            .map(_.toByteBuffer)
+    }
+  }
+
+  private val putBytesFn: (BlockId, ChunkedByteBuffer, StorageLevel) => Unit = {
+    val bmClass = classOf[BlockManager]
+    // Spark 2.0.0 - 2.1.0, and 2.2.0+ (as of this writing), declare the method:
+    // def putBytes[T: ClassTag](
+    //   blockId: BlockId,
+    //   bytes: ChunkedByteBuffer,
+    //   level: StorageLevel,
+    //   tellMaster: Boolean = true): Boolean
+    val putBytesMethod =
+      try {
+        bmClass.getMethod("putBytes",
+          classOf[BlockId], classOf[ChunkedByteBuffer], classOf[StorageLevel],
+          classOf[Boolean], classOf[ClassTag[_]])
+      } catch {
+        case _: NoSuchMethodException =>
+          // But Spark 2.1.1 and distros like Cloudera 2.0.0 / 2.1.0 had an extra boolean
+          // param:
+          //   def putBytes[T: ClassTag](
+          //     blockId: BlockId,
+          //     bytes: ChunkedByteBuffer,
+          //     level: StorageLevel,
+          //     tellMaster: Boolean = true,
+          //     encrypt: Boolean = false): Boolean
+          bmClass.getMethod("putBytes",
+            classOf[BlockId], classOf[ChunkedByteBuffer], classOf[StorageLevel],
+            classOf[Boolean], classOf[Boolean], classOf[ClassTag[_]])
+      }
+    putBytesMethod.getParameterTypes.length match {
+      case 5 =>
+        (blockId: BlockId, bytes: ChunkedByteBuffer, level: StorageLevel) =>
+          putBytesMethod.invoke(SparkEnv.get.blockManager,
+            blockId, bytes, level, JBoolean.TRUE, null)
+      case 6 =>
+        (blockId: BlockId, bytes: ChunkedByteBuffer, level: StorageLevel) =>
+          putBytesMethod.invoke(SparkEnv.get.blockManager,
+            blockId, bytes, level, JBoolean.TRUE, JBoolean.FALSE, null)
+    }
+  }
+
 }

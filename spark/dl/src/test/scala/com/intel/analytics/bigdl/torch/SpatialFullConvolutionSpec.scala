@@ -20,19 +20,13 @@ import com.intel.analytics.bigdl.nn.{Sequential, SpatialFullConvolution}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.{T, Table}
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class SpatialFullConvolutionSpec extends FlatSpec with BeforeAndAfter with Matchers {
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
-
-  "A SpatialFullConvolution" should "generate correct output" in {
+class SpatialFullConvolutionSpec extends TorchSpec {
+    "A SpatialFullConvolution" should "generate correct output" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -44,7 +38,7 @@ class SpatialFullConvolutionSpec extends FlatSpec with BeforeAndAfter with Match
     val dH = 1
     val padW = 2
     val padH = 2
-    val layer = new SpatialFullConvolution[Tensor[Double], Double](nInputPlane, nOutputPlane,
+    val layer = new SpatialFullConvolution[Double](nInputPlane, nOutputPlane,
       kW, kH, dW, dH, padW, padH)
 
     Random.setSeed(seed)
@@ -74,6 +68,7 @@ class SpatialFullConvolutionSpec extends FlatSpec with BeforeAndAfter with Match
   }
 
   "A SpatialFullConvolution on rectangle input" should "generate correct output" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -85,7 +80,7 @@ class SpatialFullConvolutionSpec extends FlatSpec with BeforeAndAfter with Match
     val dH = 2
     val padW = 1
     val padH = 1
-    val layer = new SpatialFullConvolution[Tensor[Double], Double](nInputPlane, nOutputPlane,
+    val layer = new SpatialFullConvolution[Double](nInputPlane, nOutputPlane,
       kW, kH, dW, dH, padW, padH)
 
     Random.setSeed(seed)
@@ -114,6 +109,7 @@ class SpatialFullConvolutionSpec extends FlatSpec with BeforeAndAfter with Match
   }
 
   "A SpatialFullConvolution" should "generate correct output and grad" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -125,7 +121,7 @@ class SpatialFullConvolutionSpec extends FlatSpec with BeforeAndAfter with Match
     val dH = 1
     val padW = 2
     val padH = 2
-    val layer = new SpatialFullConvolution[Tensor[Double], Double](nInputPlane, nOutputPlane,
+    val layer = new SpatialFullConvolution[Double](nInputPlane, nOutputPlane,
       kW, kH, dW, dH, padW, padH)
     val model = new Sequential[Double]()
     model.add(layer)
@@ -175,6 +171,7 @@ class SpatialFullConvolutionSpec extends FlatSpec with BeforeAndAfter with Match
   }
 
   "A SpatialFullConvolution" should "generate correct output and grad with 3D input" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -186,7 +183,7 @@ class SpatialFullConvolutionSpec extends FlatSpec with BeforeAndAfter with Match
     val dH = 2
     val padW = 1
     val padH = 1
-    val layer = new SpatialFullConvolution[Tensor[Double], Double](nInputPlane, nOutputPlane,
+    val layer = new SpatialFullConvolution[Double](nInputPlane, nOutputPlane,
       kW, kH, dW, dH, padW, padH)
     val model = new Sequential[Double]()
     model.add(layer)
@@ -236,6 +233,7 @@ class SpatialFullConvolutionSpec extends FlatSpec with BeforeAndAfter with Match
   }
 
   "A SpatialFullConvolution noBias" should "generate correct output and grad with 3D input" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -247,7 +245,7 @@ class SpatialFullConvolutionSpec extends FlatSpec with BeforeAndAfter with Match
     val dH = 2
     val padW = 1
     val padH = 1
-    val layer = new SpatialFullConvolution[Tensor[Double], Double](nInputPlane, nOutputPlane,
+    val layer = new SpatialFullConvolution[Double](nInputPlane, nOutputPlane,
       kW, kH, dW, dH, padW, padH, 0, 0, 1, true)
     val model = new Sequential[Double]()
     model.add(layer)
@@ -294,6 +292,7 @@ class SpatialFullConvolutionSpec extends FlatSpec with BeforeAndAfter with Match
   }
 
   "A SpatialFullConvolution" should "generate correct output and grad with table input" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -305,7 +304,7 @@ class SpatialFullConvolutionSpec extends FlatSpec with BeforeAndAfter with Match
     val dH = 2
     val padW = 1
     val padH = 1
-    val layer = new SpatialFullConvolution[Table, Double](nInputPlane, nOutputPlane,
+    val layer = new SpatialFullConvolution[Double](nInputPlane, nOutputPlane,
       kW, kH, dW, dH, padW, padH)
 
     Random.setSeed(3)
@@ -360,6 +359,7 @@ class SpatialFullConvolutionSpec extends FlatSpec with BeforeAndAfter with Match
   }
 
   "A SpatialFullConvolution OneToOne" should "generate correct output and grad" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -369,7 +369,7 @@ class SpatialFullConvolutionSpec extends FlatSpec with BeforeAndAfter with Match
     val kH = 3
     val dW = 1
     val dH = 1
-    val layer = new SpatialFullConvolution[Tensor[Double], Double](nInputPlane, nOutputPlane,
+    val layer = new SpatialFullConvolution[Double](nInputPlane, nOutputPlane,
       kW, kH, dW, dH, 0, 0, 0, 0, 6)
     Random.setSeed(3)
     val input = Tensor[Double](6, 5, 5).apply1(e => Random.nextDouble())
@@ -415,6 +415,7 @@ class SpatialFullConvolutionSpec extends FlatSpec with BeforeAndAfter with Match
   }
 
   "A SpatialFullConvolution with different input" should "generate correct output and grad" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -426,7 +427,7 @@ class SpatialFullConvolutionSpec extends FlatSpec with BeforeAndAfter with Match
     val dH = 1
     val padW = 2
     val padH = 2
-    val layer = new SpatialFullConvolution[Tensor[Double], Double](nInputPlane, nOutputPlane,
+    val layer = new SpatialFullConvolution[Double](nInputPlane, nOutputPlane,
       kW, kH, dW, dH, padW, padH)
     val model = new Sequential[Double]()
     model.add(layer)

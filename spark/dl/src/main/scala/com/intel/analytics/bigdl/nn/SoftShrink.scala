@@ -73,10 +73,6 @@ class SoftShrink[T: ClassTag](
 
     gradInput
   }
-
-  override def toString(): String = {
-    s"nn.SoftShrink"
-  }
 }
 
 object SoftShrink {

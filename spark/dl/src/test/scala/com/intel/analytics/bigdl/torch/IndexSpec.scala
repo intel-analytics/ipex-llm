@@ -19,20 +19,14 @@ import com.intel.analytics.bigdl.nn.Index
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.Table
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.mutable.HashMap
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class IndexSpec extends FlatSpec with BeforeAndAfter with Matchers{
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
-
-  "A Index " should "generate correct output and grad with one dimension" in {
+class IndexSpec extends TorchSpec {
+    "A Index " should "generate correct output and grad with one dimension" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -75,6 +69,7 @@ class IndexSpec extends FlatSpec with BeforeAndAfter with Matchers{
   }
 
   "A Index " should "generate correct output and grad with two dimension" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 

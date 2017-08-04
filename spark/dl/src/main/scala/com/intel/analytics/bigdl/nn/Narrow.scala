@@ -45,7 +45,7 @@ class Narrow[T: ClassTag](dimension: Int, offset: Int, length: Int = 1)
     gradInput
   }
   override def toString(): String = {
-    s"nn.Narrow($dimension, $offset, $length)"
+    s"${getPrintName}($dimension, $offset, $length)"
   }
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[Narrow[T]]

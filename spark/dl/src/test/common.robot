@@ -4,7 +4,7 @@ Library         Collections
 Library         RequestsLibrary
 Library         String
 Library         OperatingSystem
-
+Library         XML
 
 *** Keywords ***
 Operate Vertical
@@ -31,7 +31,7 @@ Status Equal
    Log To Console                   Expected=${status}, Actual=${realStatus}
    Should Be Equal As Strings       ${status}                                  ${realStatus}
 
-BigDL Integration Test
+BigDL Test
    [Arguments]         ${run_keyword}      ${verticals}
    @{verticalList}= 	 Split String 	     ${verticals}       separator=,
    :FOR                ${vertical}         IN                 @{verticalList}  
@@ -41,6 +41,7 @@ BigDL Integration Test
 
 Stop Verticals
    [Arguments]         @{verticalList}
+   Remove Environment Variable             http_proxy
    :FOR                ${vertical}         IN                @{verticalList}
    \                   Operate Vertical    ${vertical}       stop               deployed/stopped
 
@@ -56,6 +57,7 @@ Check DataSource
 Prepare DataSource And Verticals
    Check DataSource
    Check Verticals
+   Get BigDL Version
 
 Check Verticals
    :FOR                   ${vertical}           IN             @{verticals}
@@ -67,3 +69,11 @@ Run Shell
    ${rc}             ${output}=     Run and Return RC and Output    ${program}
    Log To Console                   ${output}
    Should Be Equal As Integers      ${rc}          0
+
+Get BigDL Version
+   ${root}=               Parse XML           pom.xml
+   ${version}=            Get Element Text    ${root}    version   
+   Log To Console         ${version}
+   Set Global Variable    ${version}
+   ${jar_path}=           Set Variable        ${jar_dir}/bigdl-${version}-jar-with-dependencies.jar
+   Set Global Variable    ${jar_path}     

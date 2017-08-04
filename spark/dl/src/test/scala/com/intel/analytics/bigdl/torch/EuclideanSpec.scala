@@ -18,19 +18,13 @@ package com.intel.analytics.bigdl.torch
 import com.intel.analytics.bigdl.nn.Euclidean
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class EuclideanSpec extends FlatSpec with BeforeAndAfter with Matchers{
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
-
-  "A Euclidean " should "generate correct output and grad with input one dimension" in {
+class EuclideanSpec extends TorchSpec {
+    "A Euclidean " should "generate correct output and grad with input one dimension" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -40,9 +34,14 @@ class EuclideanSpec extends FlatSpec with BeforeAndAfter with Matchers{
     val code = "torch.manualSeed(" + seed + ")\n" +
       "module = nn.Euclidean(7, 7)\n" +
       "weight = module.weight\n" +
-      "output = module:forward(input)\n" +
       "module:zeroGradParameters()\n" +
-      "gradInput = module:backward(input,gradOutput)\n" +
+      "local i = 0\n" +
+      "while i < 5 do\n" +
+      "output = module:forward(input)\n" +
+      "gradInput = module:backward(input, gradOutput)\n" +
+      "i = i + 1\n" +
+      "end\n" +
+      "weight = module.weight\n" +
       "gradWeight = module.gradWeight\n" +
       "_repeat2 = module._repeat2\n"
 
@@ -56,8 +55,14 @@ class EuclideanSpec extends FlatSpec with BeforeAndAfter with Matchers{
 
     val module = new Euclidean[Double](7, 7)
     val start = System.nanoTime()
-    val output = module.forward(input)
-    val gradInput = module.backward(input, gradOutput)
+    var output : Tensor[Double] = null
+    var gradInput : Tensor[Double] = null
+    var i = 0
+    while (i < 5) {
+      output = module.forward(input)
+      gradInput = module.backward(input, gradOutput)
+      i += 1
+    }
     val weight = module.weight
     val gradWeight = module.gradWeight
     val end = System.nanoTime()
@@ -73,6 +78,7 @@ class EuclideanSpec extends FlatSpec with BeforeAndAfter with Matchers{
   }
 
   "A Euclidean " should "generate correct output and grad with input two dimensions" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 

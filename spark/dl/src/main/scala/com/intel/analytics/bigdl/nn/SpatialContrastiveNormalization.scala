@@ -63,7 +63,7 @@ class SpatialContrastiveNormalization[T: ClassTag](
   }
 
   override def toString(): String = {
-    s"SpatialContrastiveNormalization($nInputPlane, kernelTensor, $threshold, $thresval)"
+    s"${getPrintName}($nInputPlane, kernelTensor, $threshold, $thresval)"
   }
 
   override def canEqual(other: Any): Boolean = {

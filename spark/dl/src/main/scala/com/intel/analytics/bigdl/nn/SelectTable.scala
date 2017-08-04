@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 
 import scala.reflect.ClassTag
 
@@ -32,7 +32,7 @@ import scala.reflect.ClassTag
 @SerialVersionUID(8787233248773612598L)
 class SelectTable[T: ClassTag](
   val index: Int)
-  (implicit ev: TensorNumeric[T]) extends Container[Table, Activity, T]  {
+  (implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Activity, T]  {
 
   override def updateOutput(input: Table): Activity = {
     val index = if (this.index < 0) input.length() + this.index else this.index

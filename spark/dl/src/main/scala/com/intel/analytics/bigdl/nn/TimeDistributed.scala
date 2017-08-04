@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
@@ -30,14 +31,15 @@ import scala.reflect.ClassTag
  * For instance, The TimeDistributed Layer can feed each time slice of input tensor
  * to the Linear layer.
  *
+ * The input data format is [Batch, Time, Other dims]. For the contained layer, it must not change
+ * the Other dims length.
+ *
  * @tparam T data type, which can be [[Double]] or [[Float]]
  */
 
 class TimeDistributed[T : ClassTag] (layer: TensorModule[T])
-(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+  (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
-  private val fInput: Tensor[T] = Tensor[T]()
-  private val fGradOutput: Tensor[T] = Tensor[T]()
   private var inputSize: Array[Int] = _
   private var gradOutputSize: Array[Int] = _
   private var outputSize: Array[Int] = _
@@ -62,8 +64,8 @@ class TimeDistributed[T : ClassTag] (layer: TensorModule[T])
         s" Current src.length = ${src.length}" +
         s" Current target.length = ${target.length}")
     require(dim1 * dim2 == src(0),
-    "TimeDistributed: split method requires dim1 * dim2 == src(0), " +
-      s"Current dim1 = ${dim1}, dim2 = ${dim2}, src(0) = ${src(0)}")
+      "TimeDistributed: split method requires dim1 * dim2 == src(0), " +
+        s"Current dim1 = ${dim1}, dim2 = ${dim2}, src(0) = ${src(0)}")
 
     target(0) = dim1
     target(1) = dim2
@@ -90,26 +92,41 @@ class TimeDistributed[T : ClassTag] (layer: TensorModule[T])
      * combine: [B, T, D] => [B * T, D]
      * split:   [B * T, D] => [B, T, D]
      */
-    combine(input.size, inputSize)
-    fInput.set(input).resize(inputSize)
-    val _output = layer.updateOutput(fInput).toTensor[T]
-    split(_output.size, outputSize, input.size(1), input.size(2))
+
+    val _inputSize = input.size
+    combine(_inputSize, inputSize)
+    input.resize(inputSize)
+    val _output = layer.updateOutput(input).toTensor[T]
+    split(_output.size, outputSize, _inputSize(0), _inputSize(1))
+    input.resize(_inputSize)
     output.set(_output).resize(outputSize)
     output
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    gradOutputSize = inputSize
-    combine(gradOutput.size, gradOutputSize)
-    fGradOutput.set(gradOutput).resize(gradOutputSize)
-    val _gradInput = layer.updateGradInput(fInput, fGradOutput).toTensor[T]
-    gradInput.set(_gradInput).resize(input.size)
+    if (gradOutputSize == null) {
+      gradOutputSize = new Array[Int](gradOutput.size.length - 1)
+    }
+    val _inputSize = input.size
+    val _gradOutputSize = gradOutput.size
+    combine(_gradOutputSize, gradOutputSize)
+    input.resize(inputSize)
+    gradOutput.resize(gradOutputSize)
+    val _gradInput = layer.updateGradInput(input, gradOutput).toTensor[T]
+    gradInput.set(_gradInput).resize(_inputSize)
+    input.resize(_inputSize)
+    gradOutput.resize(_gradOutputSize)
     gradInput
   }
 
-  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
-                                 scale: Double = 1.0): Unit = {
-    layer.accGradParameters(fInput, fGradOutput)
+  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
+    val _inputSize = input.size
+    val _gradOutputSize = gradOutput.size
+    input.resize(inputSize)
+    gradOutput.resize(gradOutputSize)
+    layer.accGradParameters(input, gradOutput)
+    input.resize(_inputSize)
+    gradOutput.resize(_gradOutputSize)
   }
 
   /**
@@ -165,6 +182,12 @@ class TimeDistributed[T : ClassTag] (layer: TensorModule[T])
   override def getParameters(): (Tensor[T], Tensor[T]) = layer.getParameters()
 
   /**
+   * This method will return a table indicating the name and corresponding parameters.
+   * @return Table
+   */
+  override def getParametersTable(): Table = layer.getParametersTable()
+
+  /**
    * Copy the useful running status from src to this.
    *
    * The subclass should override this method if it has some parameters besides weight and bias.
@@ -181,17 +204,10 @@ class TimeDistributed[T : ClassTag] (layer: TensorModule[T])
   override def clearState(): TimeDistributed.this.type = {
     super.clearState()
     layer.clearState()
-    fInput.set()
-    fGradOutput.set()
     inputSize = null
     gradOutputSize = null
     outputSize = null
     this
-  }
-
-  override def toString(): String = {
-    val str = "nn.TimeDistributed"
-    str
   }
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[TimeDistributed[T]]
@@ -200,9 +216,7 @@ class TimeDistributed[T : ClassTag] (layer: TensorModule[T])
     case that: TimeDistributed[T] =>
       super.equals(that) &&
         (that canEqual this) &&
-      layer.equals(layer) &&
-        fInput == that.fInput &&
-        fGradOutput == that.fGradOutput &&
+        layer.equals(layer) &&
         inputSize == that.inputSize &&
         gradOutputSize == that.gradOutputSize &&
         outputSize == that.outputSize
@@ -211,14 +225,14 @@ class TimeDistributed[T : ClassTag] (layer: TensorModule[T])
 
   override def hashCode(): Int = {
     val state = Seq(super.hashCode(),
-      layer, fInput, fGradOutput, inputSize, gradOutputSize, outputSize)
-    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+      layer, inputSize, gradOutputSize, outputSize)
+    state.filter(_ != null).map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
 
 object TimeDistributed {
   def apply[@specialized(Float, Double) T: ClassTag](layer: TensorModule[T])
-  (implicit ev: TensorNumeric[T]): TimeDistributed[T] = {
+    (implicit ev: TensorNumeric[T]): TimeDistributed[T] = {
     new TimeDistributed[T](layer)
   }
 }

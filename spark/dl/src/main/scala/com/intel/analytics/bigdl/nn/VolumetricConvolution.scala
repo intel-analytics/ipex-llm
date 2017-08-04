@@ -16,11 +16,13 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
+import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.{T, Table}
+import org.apache.spark.sql.catalyst.optimizer.OptimizeIn
 
 import scala.reflect.ClassTag
 
@@ -40,7 +42,10 @@ import scala.reflect.ClassTag
  * @param padW The additional zeros added per width to the input planes.
  * @param padH The additional zeros added per height to the input planes.
  * @param withBias whether with bias
- * @param initMethod Init method, Default, Xavier, Bilinear.
+ * @param wRegularizer: instance of [[Regularizer]]
+ * (eg. L1 or L2 regularization), applied to the input weights matrices.
+ * @param bRegularizer: instance of [[Regularizer]]
+ * applied to the bias.
  * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
  */
 class VolumetricConvolution[T: ClassTag](
@@ -48,8 +53,9 @@ class VolumetricConvolution[T: ClassTag](
   val kT: Int, val kW: Int, val kH: Int,
   val dT: Int = 1, val dW: Int = 1, val dH: Int = 1,
   val padT: Int = 0, val padW: Int = 0, val padH: Int = 0, withBias: Boolean = true,
-  private var initMethod: InitializationMethod = Default
-)(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+  var wRegularizer: Regularizer[T] = null,
+  var bRegularizer: Regularizer[T] = null
+)(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
   require(kT > 0 && kW > 0 && kH > 0, "kernel size should be greater than zero," +
     s" but got kT: $kT kH: $kH kW: $kW")
@@ -69,18 +75,17 @@ class VolumetricConvolution[T: ClassTag](
   protected var weightMM: Tensor[T] = null
   protected var gradWeightMM: Tensor[T] = null
 
-  reset()
+  {
+    val stdv = 1.0 / math.sqrt(kT * kW * kH * nInputPlane)
+    val wInit: InitializationMethod = RandomUniform(-stdv, stdv)
+    val bInit: InitializationMethod = RandomUniform(-stdv, stdv)
+
+    setInitMethod(wInit, bInit)
+  }
 
   override def reset(): Unit = {
-    initMethod match {
-      case Default =>
-        val stdv = 1.0 / math.sqrt(kT * kW * kH * nInputPlane)
-        weight.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
-        if (withBias) {
-          bias.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
-        }
-      case _ => throw new IllegalArgumentException()
-    }
+    weightInitMethod.init(weight, VariableFormat.OUT_IN_KT_KH_KW)
+    Option(bias).foreach(biasInitMethod.init(_, VariableFormat.ONE_D))
     zeroGradParameters()
   }
 
@@ -188,7 +193,9 @@ class VolumetricConvolution[T: ClassTag](
     }
 
     if (input.dim() == 4) {
-      require(input.size(1) == nInputPlane, "input.size(1) should be equal to nInputPlane")
+      require(input.size(1) == nInputPlane, s"input.size(1) should be equal to nInputPlane. " +
+        s"But In ${this.getName()} : input.size(1) is: ${ input.size(1) } ," +
+        s" nInputPlane is: ${ nInputPlane }")
       fInput.resize(kT * kW * kH * nInputPlane, outputDepth * outputHeight * outputWidth)
       output.resize(nOutputPlane, outputDepth, outputHeight, outputWidth)
       updateOutputFrame(input, output, weightMM, bias, fInput, kT, kW, kH, dT, dW, dH,
@@ -200,7 +207,7 @@ class VolumetricConvolution[T: ClassTag](
       output.resize(input.size(1), nOutputPlane, outputDepth, outputHeight, outputWidth)
 
       var t = 1
-      while (t < input.size(1)) {
+      while (t <= input.size(1)) {
         val inputT = input.select(1, t)
         val outputT = output.select(1, t)
         val fInputT = fInput.select(1, t)
@@ -250,11 +257,10 @@ class VolumetricConvolution[T: ClassTag](
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     require(input.dim() == 4 || input.dim() == 5,
       s"4D or 5D (batch mode) tensor expected for input, but got: ${ input.dim() }d")
-    require(input.isContiguous(), "input should be contiguous")
-    require(gradOutput.isContiguous(), "gradOutput should be contiguous")
     gradInput.resizeAs(input)
     fGradInput.resizeAs(fInput).zero()
     if (input.dim() == 4) {
+      require(gradOutput.isContiguous(), "gradOutput should be contiguous")
       updateGradInputFrame(gradInput, gradOutput, weightMM.transpose(1, 2), fGradInput,
         kT, kW, kH,
         dT, dW, dH,
@@ -262,10 +268,11 @@ class VolumetricConvolution[T: ClassTag](
     } else {
       // batch mode
       var t = 1
-      while (t < input.size(1)) {
+      while (t <= input.size(1)) {
         val gradInputT = gradInput.select(1, t)
         val gradOutputT = gradOutput.select(1, t)
         val fGradInputT = fGradInput.select(1, t)
+        require(gradOutputT.isContiguous(), "each batch of gradOutput should be contiguous")
         updateGradInputFrame(gradInputT, gradOutputT, weightMM.transpose(1, 2), fGradInputT,
           kT, kW, kH,
           dT, dW, dH,
@@ -277,12 +284,14 @@ class VolumetricConvolution[T: ClassTag](
   }
 
   def accGradParametersFrame(gradOutput: Tensor[T], gradWeight: Tensor[T], gradBias: Tensor[T],
-    fInput: Tensor[T], scale: Double): Unit = {
+    fInput: Tensor[T], scaleW: T, scaleB: T): Unit = {
     val gradOutput2d = gradOutput.view(gradOutput.size(1), gradOutput.size(2) *
       gradOutput.size(3) * gradOutput.size(4))
     val fInputT = fInput.transpose(1, 2)
-    gradWeight.addmm(ev.one, gradWeight, ev.fromType(scale), gradOutput2d, fInputT)
-    if (withBias) {
+    if (scaleW != 0) {
+      gradWeight.addmm(ev.one, gradWeight, scaleW, gradOutput2d, fInputT)
+    }
+    if (withBias && scaleB != 0) {
       var i = 0
       while (i < gradBias.size(1)) {
         var sum = ev.zero
@@ -294,29 +303,36 @@ class VolumetricConvolution[T: ClassTag](
           k += 1
         }
         gradBias.setValue(i + 1, ev.plus(gradBias.valueAt(i + 1),
-          ev.times(ev.fromType(scale), sum)))
+          ev.times(scaleB, sum)))
         i += 1
       }
     }
   }
 
-  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T], scale: Double): Unit = {
-    require(input.isContiguous(), "input should be contiguous")
+  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
     require(gradOutput.isContiguous(), "gradOutput should be contiguous")
     if (gradWeightMM == null || gradWeightMM.storage().isEmpty) {
       gradWeightMM = gradWeight.view(nOutputPlane, nInputPlane * kT * kH * kW)
     }
     if (input.dim() == 4) {
-      accGradParametersFrame(gradOutput, gradWeightMM, gradBias, fInput, scale)
+      accGradParametersFrame(gradOutput, gradWeightMM, gradBias, fInput,
+        ev.fromType[Double](scaleW), ev.fromType[Double](scaleB))
     } else {
       // batch mode
       var t = 1
-      while (t < input.size(1)) {
+      while (t <= input.size(1)) {
         val gradOutputT = gradOutput.select(1, t)
         val fInputT = fInput.select(1, t)
-        accGradParametersFrame(gradOutputT, gradWeightMM, gradBias, fInputT, scale)
+        accGradParametersFrame(gradOutputT, gradWeightMM, gradBias, fInputT,
+          ev.fromType[Double](scaleW), ev.fromType[Double](scaleB))
         t += 1
       }
+    }
+    if (null != wRegularizer) {
+      wRegularizer.accRegularization(weight, gradWeight, scaleW)
+    }
+    if (withBias && null != bRegularizer) {
+      bRegularizer.accRegularization(bias, gradBias, scaleB)
     }
   }
 
@@ -332,9 +348,10 @@ object VolumetricConvolution {
     kT: Int, kW: Int, kH: Int,
     dT: Int = 1, dW: Int = 1, dH: Int = 1,
     padT: Int = 0, padW: Int = 0, padH: Int = 0, withBias: Boolean = true,
-    initMethod: InitializationMethod = Default
+    wRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null
   )(implicit ev: TensorNumeric[T]): VolumetricConvolution[T] = {
     new VolumetricConvolution[T](nInputPlane, nOutputPlane, kT, kW, kH,
-      dT, dW, dH, padT, padW, padH, withBias, initMethod)
+      dT, dW, dH, padT, padW, padH, withBias, wRegularizer, bRegularizer)
   }
 }

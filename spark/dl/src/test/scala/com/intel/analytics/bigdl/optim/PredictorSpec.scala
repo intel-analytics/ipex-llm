@@ -57,12 +57,12 @@ class PredictorSpec extends FlatSpec with Matchers with BeforeAndAfter{
     val result = model.predict(dataSet)
 
     val prob = result.map(_.toTensor[Float].clone()).collect()
-    prob(0) should be (model.forward(data(0).feature()))
-    prob(11) should be (model.forward(data(11).feature()))
-    prob(31) should be (model.forward(data(31).feature()))
-    prob(51) should be (model.forward(data(51).feature()))
-    prob(71) should be (model.forward(data(71).feature()))
-    prob(91) should be (model.forward(data(91).feature()))
+    prob(0) should be (model.forward(data(0).feature))
+    prob(11) should be (model.forward(data(11).feature))
+    prob(31) should be (model.forward(data(31).feature))
+    prob(51) should be (model.forward(data(51).feature))
+    prob(71) should be (model.forward(data(71).feature))
+    prob(91) should be (model.forward(data(91).feature))
   }
 
   "model.predictClass" should "be correct" in {
@@ -82,16 +82,22 @@ class PredictorSpec extends FlatSpec with Matchers with BeforeAndAfter{
 
     val prob = result.collect()
     prob(0) should be
-    (model.forward(data(0).feature()).toTensor[Float].max(1)._2.valueAt(1).toInt)
+    (model.forward(data(0).feature
+    ).toTensor[Float].max(1)._2.valueAt(1).toInt)
     prob(11) should be
-    (model.forward(data(11).feature()).toTensor[Float].max(1)._2.valueAt(1).toInt)
+    (model.forward(data(11).feature
+    ).toTensor[Float].max(1)._2.valueAt(1).toInt)
     prob(31) should be
-    (model.forward(data(31).feature()).toTensor[Float].max(1)._2.valueAt(1).toInt)
+    (model.forward(data(31).feature
+    ).toTensor[Float].max(1)._2.valueAt(1).toInt)
     prob(51) should be
-    (model.forward(data(51).feature()).toTensor[Float].max(1)._2.valueAt(1).toInt)
+    (model.forward(data(51).feature
+    ).toTensor[Float].max(1)._2.valueAt(1).toInt)
     prob(71) should be
-    (model.forward(data(71).feature()).toTensor[Float].max(1)._2.valueAt(1).toInt)
+    (model.forward(data(71).feature
+    ).toTensor[Float].max(1)._2.valueAt(1).toInt)
     prob(91) should be
-    (model.forward(data(91).feature()).toTensor[Float].max(1)._2.valueAt(1).toInt)
+    (model.forward(data(91).feature
+    ).toTensor[Float].max(1)._2.valueAt(1).toInt)
   }
 }

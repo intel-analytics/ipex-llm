@@ -20,14 +20,22 @@ import java.io.{File, FileOutputStream}
 
 import com.google.common.primitives.{Ints, Longs}
 import netty.Crc32c
+import org.apache.hadoop.fs.{FSDataOutputStream, FileSystem, Path}
 import org.tensorflow.util.Event
 
 /**
  * A writer to write event protobuf to file by tensorboard's format.
- * @param file
+ * @param file Support local path and HDFS path
  */
-private[bigdl] class RecordWriter(file: File) {
-  val outputStream = new FileOutputStream(file)
+private[bigdl] class RecordWriter(file: Path, fs: FileSystem) {
+  val outputStream = if (file.toString.startsWith("hdfs://")) {
+    // FSDataOutputStream couldn't flush data to localFileSystem in time. So reading summaries
+    // will throw exception.
+    fs.create(file, true, 1024)
+  } else {
+    // Using FileOutputStream when write to local.
+    new FileOutputStream(new File(file.toString))
+  }
   val crc32 = new Crc32c()
   def write(event: Event): Unit = {
     val eventString = event.toByteArray
@@ -36,6 +44,10 @@ private[bigdl] class RecordWriter(file: File) {
     outputStream.write(Ints.toByteArray(maskedCRC32(header).toInt).reverse)
     outputStream.write(eventString)
     outputStream.write(Ints.toByteArray(maskedCRC32(eventString).toInt).reverse)
+    if (outputStream.isInstanceOf[FSDataOutputStream]) {
+      // Flush data to HDFS.
+      outputStream.asInstanceOf[FSDataOutputStream].hflush()
+    }
   }
 
   def close(): Unit = {
