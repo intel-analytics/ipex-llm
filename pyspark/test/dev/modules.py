@@ -97,10 +97,3 @@ test_tensorflow = Module(
         "test.tensorflow_test"
     ]
 )
-
-test_imagenet = Module(
-    name="imagenet_transformer_test",
-    python_test_goals=[
-        "test.imagenet_transformer_test"
-    ]
-)

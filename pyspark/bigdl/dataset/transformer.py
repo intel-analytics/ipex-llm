@@ -26,4 +26,4 @@ def normalizer(mean, std):
     Normalize features by standard deviation
     """
     return lambda sample: Sample.from_ndarray((sample.features - mean) / std,
-    sample.label, sample.bigdl_type)
+                                              sample.label, sample.bigdl_type)
