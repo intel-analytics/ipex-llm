@@ -118,11 +118,15 @@ object DistriOptimizer {
       case MklBlas => coresPerNode
     }
 
+    logger.info("Count dataset")
+    val countBefore = System.nanoTime()
     val numSamples = dataset.data(train = false).map(_.size()).reduce(_ + _)
+    val countAfter = System.nanoTime()
+    logger.info(s"Count dataset complete. Time elapsed: ${(countAfter - countBefore) / 1e9}s")
 
     val shuffleBefore = System.nanoTime()
     logger.info(s"config $state")
-    logger.info(s"Shuffle data")
+    logger.info("Shuffle data")
     dataset.shuffle()
     val shuffleEnd = System.nanoTime()
     logger.info(s"Shuffle data complete. Takes ${(shuffleEnd - shuffleBefore) / 1e9}s")
