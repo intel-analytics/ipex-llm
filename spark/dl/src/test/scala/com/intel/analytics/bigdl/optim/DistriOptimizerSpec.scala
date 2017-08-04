@@ -146,10 +146,11 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
       image
     }
 
-    val dataSet = DataSet.rdd(sc.parallelize(images, 4))
+    val numPartitions = 4
+    val dataSet = DataSet.rdd(sc.parallelize(images, numPartitions))
 
-    val numBatches = 16
-    val toTensor = new BGRImgToBatch(numBatches)
+    val batchSize = 16
+    val toTensor = new BGRImgToBatch(batchSize)
     val nn = new Sequential[Float]()
       .add(new Reshape(Array(3 * height * width)))
       .add(new Linear(3 * height * width, numClasses))
@@ -157,7 +158,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val sampleDataSet = (dataSet -> toTensor).asInstanceOf[DistributedDataSet[MiniBatch[Float]]]
     val batchDataSet = DataSet.rdd(sampleDataSet.data(train = false))
     assert(sampleDataSet.size() == numSamples)
-    assert(batchDataSet.size() == numBatches)
+    assert(batchDataSet.size() == numSamples / batchSize * numPartitions)
 
     Seq(sampleDataSet, batchDataSet).foreach { dataset =>
       RandomGenerator.RNG.setSeed(10)

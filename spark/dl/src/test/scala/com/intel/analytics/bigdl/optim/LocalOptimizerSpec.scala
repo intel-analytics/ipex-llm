@@ -19,8 +19,10 @@ package com.intel.analytics.bigdl.optim
 import com.intel.analytics.bigdl.dataset.{DataSet, LocalDataSet, MiniBatch}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.dataset.image.{BGRImgToBatch, LabeledBGRImage}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T}
+import com.intel.analytics.bigdl.visualization.TrainSummary
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 object DummyDataSet extends LocalDataSet[MiniBatch[Float]] {
@@ -95,19 +97,17 @@ object DummyDataSet extends LocalDataSet[MiniBatch[Float]] {
 
 object LocalOptimizerSpecModel {
   def creModel : Module[Float] = {
-    val mlp = new Sequential[Float]
-    mlp.add(new Linear(4, 2))
-    mlp.add(new LogSoftMax)
-    mlp
+    new Sequential[Float]
+      .add(new Linear(4, 2))
+      .add(new LogSoftMax)
   }
 
   def mseModel : Module[Float] = {
-    val mlp = new Sequential[Float]
-    mlp.add(new Linear(4, 2))
-    mlp.add(new Sigmoid)
-    mlp.add(new Linear(2, 1))
-    mlp.add(new Sigmoid)
-    mlp
+    new Sequential[Float]
+      .add(new Linear(4, 2))
+      .add(new Sigmoid)
+      .add(new Linear(2, 1))
+      .add(new Sigmoid)
   }
 }
 
@@ -116,8 +116,8 @@ class LocalOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter{
   import LocalOptimizerSpecModel._
   import DummyDataSet._
 
-  val nodeNumber = 1
-  val coreNumber = 4
+  private val nodeNumber = 1
+  private val coreNumber = 4
 
   before {
     System.setProperty("bigdl.localMode", "true")
@@ -126,6 +126,52 @@ class LocalOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter{
 
   after {
     System.clearProperty("bigdl.localMode")
+  }
+
+  "LocalOptimizer" should "train all minibatches per epoch" in {
+    val numSamples = 64
+    val numClasses = 3
+    val height = 32
+    val width = 32
+    val images = Array.tabulate(64) { i =>
+      val image = new LabeledBGRImage(width, height)
+      image.setLabel((i % numClasses).toFloat + 1F)
+      val tensor = Tensor[Float](Storage[Float](image.content), 1, Array(3, width, height))
+      tensor.rand()
+      image
+    }
+
+    val dataSet = DataSet.array(images)
+
+    val batchSize = 16
+    val toTensor = new BGRImgToBatch(batchSize)
+    val nn = new Sequential[Float]()
+      .add(new Reshape(Array(3 * height * width)))
+      .add(new Linear(3 * height * width, numClasses))
+      .add(new LogSoftMax[Float]())
+    val sampleDataSet = (dataSet -> toTensor).asInstanceOf[LocalDataSet[MiniBatch[Float]]]
+    val batchDataSet = DataSet.array(sampleDataSet.data(train = false).toArray)
+    assert(sampleDataSet.size() == numSamples)
+    assert(batchDataSet.size() == numSamples / batchSize)
+
+    Seq(sampleDataSet, batchDataSet).foreach { dataset =>
+      RandomGenerator.RNG.setSeed(10)
+      val maxEpochs = 2
+      val logdir = com.google.common.io.Files.createTempDir()
+      val trainSummary = TrainSummary(logdir.getPath, "minibatch-test")
+      val optimizer = new LocalOptimizer(
+        nn,
+        dataset,
+        ClassNLLCriterion[Float]())
+        .setOptimMethod(new LBFGS)
+        .setTrainSummary(trainSummary)
+        .setEndWhen(Trigger.maxEpoch(maxEpochs))
+      val model = optimizer.optimize()
+      val losses = trainSummary.readScalar("Loss")
+      trainSummary.close()
+
+      losses should have length maxEpochs * (dataset.data(train = false).length / nodeNumber)
+    }
   }
 
   "Train model with CrossEntropy and SGD" should "be good" in {
