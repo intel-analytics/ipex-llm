@@ -27,6 +27,7 @@ from bigdl.util.common import get_spark_context
 from bigdl.util.common import to_list
 from bigdl.util.common import INTMAX, INTMIN, DOUBLEMAX
 from bigdl.optim.optimizer import L1Regularizer, L2Regularizer, L1L2Regularizer
+from py4j.java_gateway import JavaObject
 
 if sys.version >= '3':
     long = int
@@ -57,8 +58,12 @@ class Layer(JavaValue):
     """
 
     def __init__(self, jvalue, bigdl_type, *args):
-        self.value = jvalue if jvalue else callBigDlFunc(
-            bigdl_type, JavaValue.jvm_class_constructor(self), *args)
+        if (jvalue):
+            assert(type(jvalue) == JavaObject)
+            self.value = jvalue
+        else:
+            self.value = callBigDlFunc(
+                bigdl_type, JavaValue.jvm_class_constructor(self), *args)
         self.bigdl_type = bigdl_type
 
     def __str__(self):
@@ -2972,6 +2977,98 @@ class SpatialFullConvolution(Layer):
                       weight_init_method, bias_init_method)
         return self
 
+class VolumetricFullConvolution(Layer):
+    '''
+    Apply a 3D full convolution over an 3D input image, a sequence of images, or a video etc.
+    The input tensor is expected to be a 4D or 5D(with batch) tensor. Note that instead
+    of setting adjT, adjW and adjH, `VolumetricFullConvolution` also accepts a table input
+    with two tensors: T(convInput, sizeTensor) where convInput is the standard input tensor,
+    and the size of sizeTensor is used to set the size of the output (will ignore the adjT, adjW and
+    adjH values used to construct the module). This module can be used without a bias by setting
+    parameter noBias = true while constructing the module.
+
+
+    If input is a 4D tensor nInputPlane x depth x height x width,
+    odepth = (depth  - 1) * dT - 2*padt + kT + adjT
+    owidth  = (width  - 1) * dW - 2*padW + kW + adjW
+    oheight = (height - 1) * dH - 2*padH + kH + adjH
+
+
+    Other frameworks call this operation "In-network Upsampling", "Fractionally-strided convolution",
+    "Backwards Convolution," "Deconvolution", or "Upconvolution."
+
+
+    Reference Paper: Long J, Shelhamer E, Darrell T. Fully convolutional networks for semantic
+    segmentation[C]//Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition.
+    2015: 3431-3440.
+
+    :param nInputPlane The number of expected input planes in the image given into forward()
+    :param nOutputPlane The number of output planes the convolution layer will produce.
+    :param kT The kernel depth of the convolution.
+    :param kW The kernel width of the convolution.
+    :param kH The kernel height of the convolution.
+    :param dT The step of the convolution in the depth dimension. Default is 1.
+    :param dW The step of the convolution in the width dimension. Default is 1.
+    :param dH The step of the convolution in the height dimension. Default is 1.
+    :param padT The additional zeros added per depth to the input planes. Default is 0.
+    :param padW The additional zeros added per width to the input planes. Default is 0.
+    :param padH The additional zeros added per height to the input planes. Default is 0.
+    :param adjT Extra depth to add to the output image. Default is 0.
+    :param adjW Extra width to add to the output image. Default is 0.
+    :param adjH Extra height to add to the output image. Default is 0.
+    :param nGroup Kernel group number.
+    :param noBias If bias is needed.
+    :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices.
+    :param bRegularizer: instance of [[Regularizer]]applied to the bias.
+
+
+    >>> volumetricFullConvolution = VolumetricFullConvolution(1, 1, 1, 1, 1, 1)
+    creating: createVolumetricFullConvolution
+    '''
+
+    def __init__(self,
+                 n_input_plane,
+                 n_output_plane,
+                 kt,
+                 kw,
+                 kh,
+                 dt=1,
+                 dw=1,
+                 dh=1,
+                 pad_t=0,
+                 pad_w=0,
+                 pad_h=0,
+                 adj_t=0,
+                 adj_w=0,
+                 adj_h=0,
+                 n_group=1,
+                 no_bias=False,
+                 wRegularizer=None,
+                 bRegularizer=None,
+                 bigdl_type="float"):
+        super(VolumetricFullConvolution, self).__init__(None, bigdl_type,
+                                                     n_input_plane,
+                                                     n_output_plane,
+                                                     kt,
+                                                     kw,
+                                                     kh,
+                                                     dt,
+                                                     dw,
+                                                     dh,
+                                                     pad_t,
+                                                     pad_w,
+                                                     pad_h,
+                                                     adj_t,
+                                                     adj_w,
+                                                     adj_h,
+                                                     n_group,
+                                                     no_bias,
+                                                     wRegularizer,
+                                                     bRegularizer)
+    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+        callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
+                      weight_init_method, bias_init_method)
+        return self
 
 class SpatialShareConvolution(Layer):
 

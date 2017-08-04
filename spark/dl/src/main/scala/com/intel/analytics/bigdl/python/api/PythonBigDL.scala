@@ -934,6 +934,45 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       withGraph)
   }
 
+  def createVolumetricFullConvolution(nInputPlane: Int,
+    nOutputPlane: Int,
+    kT: Int,
+    kW: Int,
+    kH: Int,
+    dT: Int = 1,
+    dW: Int = 1,
+    dH: Int = 1,
+    padT: Int = 0,
+    padW: Int = 0,
+    padH: Int = 0,
+    adjT: Int = 0,
+    adjW: Int = 0,
+    adjH: Int = 0,
+    nGroup: Int = 1,
+    noBias: Boolean = false,
+    wRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null)
+  : VolumetricFullConvolution[T] = {
+    VolumetricFullConvolution[T](nInputPlane,
+      nOutputPlane,
+      kT,
+      kW,
+      kH,
+      dT,
+      dW,
+      dH,
+      padT,
+      padW,
+      padH,
+      adjT,
+      adjW,
+      adjH,
+      nGroup,
+      noBias,
+      wRegularizer,
+      bRegularizer)
+  }
+
   def createSpatialFullConvolution(nInputPlane: Int,
                                    nOutputPlane: Int,
                                    kW: Int,
@@ -1628,6 +1667,16 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Epsilon: Double = 1e-8): RMSprop[T] = {
     new  RMSprop[T](learningRate, learningRateDecay, decayRate, Epsilon)
   }
+
+  def loadOptimMethod(path: String): OptimMethod[T] = {
+    OptimMethod.load[T](path)
+  }
+
+  def saveOptimMethod(method: OptimMethod[T], path: String,
+                            overWrite: Boolean = false): Unit = {
+    method.save(path, overWrite)
+  }
+
 
   def createOptimizer(model: AbstractModule[Activity, Activity, T],
                       trainingRdd: JavaRDD[Sample],

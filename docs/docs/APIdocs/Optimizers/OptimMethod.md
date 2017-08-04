@@ -31,12 +31,17 @@ method.save(path: String, overWrite: Boolean = false)
 When training, you can use optimizer.setCheckPoint(for scala) or optimizer.set_checkpoint(for python) to save methods at regular intervals.
 
 ### Load method ###
+**scala**
 ```scala
 val method = OptimMethod.load(path : String)
 ```
 `path`: file of optim method path
 
-Python can't support loading optim method from a snapshot now, but we are working on fixing it.
+**python**
+```scala
+optimizer = OptimMethod.load(path, bigdl_type="float")
+```
+`bigdl_type`: type of optim method, default is "float"
 
 ### Scala example ###
 Here is an example to train LeNet5 model with a loading method.
