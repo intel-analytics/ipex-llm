@@ -14,9 +14,6 @@
 # limitations under the License.
 #
 
-import random
-import numpy as np
-from scipy import misc
 
 from bigdl.util.common import Sample
 
