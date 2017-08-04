@@ -149,14 +149,69 @@ object Module {
 
   def quantize[@specialized(Float) T: ClassTag](model: AbstractModule[Activity, Activity, T])(
     implicit ev: TensorNumeric[T]): Module[T] = {
+    type ModuleNode[T] = AbstractModule[Activity, Tensor[T], T]
+
+    def convertGraph(model: Graph[T]): Graph[T] = {
+      implicit def moduleToModuleNode(module: Module[T]): ModuleNode[T] =
+        module.asInstanceOf[ModuleNode[T]]
+
+      def replaceRef(node: Node[ModuleNode[T]],
+        newNode: Node[ModuleNode[T]], refs: Seq[Node[ModuleNode[T]]]): Unit = {
+        val buffer = refs.asInstanceOf[ArrayBuffer[Node[ModuleNode[T]]]]
+        refs.zipWithIndex.filter(_._1 == node).foreach { x =>
+          buffer.update(x._2, newNode)
+        }
+      }
+
+      def replace(node: Node[ModuleNode[T]], module: ModuleNode[T],
+        list: Array[Node[ModuleNode[T]]], index: Int): Unit = {
+        // create a new node
+        val newNode = Node(module)
+        newNode.nextNodes.asInstanceOf[ArrayBuffer[Node[ModuleNode[T]]]] ++= node.nextNodes
+        newNode.prevNodes.asInstanceOf[ArrayBuffer[Node[ModuleNode[T]]]] ++= node.prevNodes
+
+        // prev.next
+        newNode.prevNodes.foreach(n => replaceRef(node, newNode, n.nextNodes))
+
+        // next.prev
+        newNode.nextNodes.foreach(n => replaceRef(node, newNode, n.prevNodes))
+
+        // update the list
+        list.update(index, newNode)
+      }
+
+      val sortedNodes = model.backGraph.topologySort
+
+      for (i <- sortedNodes.indices) {
+        val node = sortedNodes(i)
+        val module = node.element
+        val waitedModule = substitute(module)
+
+        if (waitedModule != module) {
+          replace(node, waitedModule, sortedNodes, i)
+        }
+      }
+
+      val inputs = sortedNodes.filter(n => n.prevNodes.isEmpty)
+      val outputs = sortedNodes.filter(n => n.nextNodes.isEmpty)
+
+      // create a new Graph, much simpler than replacing others in the old graph
+      Graph(inputs, outputs)
+    }
+
     def substitute(model: Module[T]): Module[T] = {
       model match {
         case container: Container[Activity, Activity, T] =>
-          // do with container
-          for (i <- container.modules.indices) {
-            container.modules(i) = substitute(container.modules(i))
+          container match {
+            case graph: Graph[T] =>
+              convertGraph(graph)
+            case _ =>
+              // do with container
+              for (i <- container.modules.indices) {
+                container.modules(i) = substitute(container.modules(i))
+              }
+              container
           }
-          container
         case normalConv if normalConv.isInstanceOf[SpatialConvolution[T]] =>
           // do with normal convolution
           val conv = normalConv.asInstanceOf[SpatialConvolution[T]]

@@ -80,7 +80,7 @@ class SpatialConvolution[T: ClassTag](
     }
 
     // Reshape the weight. Computing the min, max, and quantizing the weight don't need group
-    val weightFP32Tmp = weightFP32.view(Array(nOutputPlane, nInputPlane, kernelH, kernelW))
+    val weightFP32Tmp = weightFP32.view(Array(nOutputPlane, nInputPlane / nGroup, kernelH, kernelW))
     setWeightSum(weightFP32Tmp, weightSum)
 
     for (i <- 1 to nOutputPlane) {

@@ -17,8 +17,11 @@
 package com.intel.analytics.bigdl.example.quantization
 
 
-import com.intel.analytics.bigdl.nn.Module
-import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter}
+import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.utils.caffe.CaffeLoader
+import com.intel.analytics.bigdl.utils.{Engine, File, LoggerFilter}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 
@@ -47,9 +50,28 @@ object Test {
       val evaluationSet = transformer(rddData)
 
       val model = Module.load[Float](path)
-      testAll(name, model, evaluationSet, batchSize)
+      val reshape = Reshape[Float](Array(1, 28, 28))
+
+      val newModel = Sequential[Float]()
+      newModel.add(reshape)
+      newModel.add(model)
+      testAll(name, newModel, evaluationSet, batchSize)
 
       sc.stop()
     }
+
+//    val prototxt = "/home/wyz/workspace/models/lenet/deploy.prototxt"
+//    val modelPath = "/home/wyz/workspace/models/lenet/lenet.caffemodel"
+//
+//    val model = CaffeLoader.loadCaffe[Float](prototxt, modelPath)._1
+//    model.save("/home/wyz/workspace/models/lenet/lenet.bigdlmodel",
+//      overWrite = true)
+//    println(model)
+//
+//    val quantizedModel = Module.quantize[Float](model)
+//    quantizedModel.save(
+//      "/home/wyz/workspace/models/lenet/lenet.quantized.bigdlmodel",
+//      overWrite = true)
+//    println(quantizedModel)
   }
 }
