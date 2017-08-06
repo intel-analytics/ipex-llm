@@ -415,7 +415,7 @@ object Optimizer {
   )(implicit ev: TensorNumeric[T]): Optimizer[T, D] = {
     dataset match {
       case d: DistributedDataSet[_] =>
-        new DistriOptimizer2[T](
+        new DistriOptimizer[T](
           _model = model,
           dataset = d.asInstanceOf[DistributedDataSet[MiniBatch[T]]],
           criterion = criterion

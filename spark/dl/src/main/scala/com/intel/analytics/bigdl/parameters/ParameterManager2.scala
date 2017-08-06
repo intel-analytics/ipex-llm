@@ -154,16 +154,16 @@ class ParameterManager2(val id: Int, val executorId: Int,
       val start = pid * taskSize + math.min(pid, extraSize)
       val length = taskSize + (if (pid < extraSize) 1 else 0)
       val blockId = getGradientBlockId(executorId, pid)
-      val fp16param = new FP16CompressedTensor[T](length)(_classTag)
-      fp16param.compress(0, parameter, start, length)
-//      BlockManagerWrapper.putBytes(blockId, fp16param.bytes(), StorageLevel.MEMORY_ONLY_SER)
+//      val fp16param = new FP16CompressedTensor[T](length)(_classTag)
+//      fp16param.compress(0, parameter, start, length)
       val block = BlockManagerWrapper.getLocalBytes(blockId)
       if (block.isDefined) {
-        block.get.put(fp16param.bytes())
+        val fp16param = new FP16CompressedTensor[T](block.get)(_classTag)
+        fp16param.compress(0, parameter, start, length)
+//        block.get.put(fp16param.bytes())
       } else {
-//        val bytes = ByteBuffer.allocate(fp16param.bytes().limit)
-//        bytes.put(fp16param.bytes())
-//        BlockManagerWrapper.putBytes(blockId, bytes, StorageLevel.MEMORY_ONLY_SER)
+        val fp16param = new FP16CompressedTensor[T](length)(_classTag)
+        fp16param.compress(0, parameter, start, length)
         BlockManagerWrapper.putBytes(blockId, fp16param.bytes(), StorageLevel.MEMORY_ONLY_SER)
       }
 
@@ -212,7 +212,6 @@ class ParameterManager2(val id: Int, val executorId: Int,
 
   /** Fetch partial weights from remote nodes and concat them as a complete weight */
   def syncWeights[T: ClassTag](localParameter: Tensor[T]): Unit = {
-    val bm = SparkEnv.get.blockManager
     val tasks = (0 until executorNum).map(pid => {
       new Callable[Int] {
         override def call(): Int = {
@@ -238,6 +237,35 @@ class ParameterManager2(val id: Int, val executorId: Int,
       }
     })
     syncPool.invokeAll(tasks.asJava)
+  }
+
+  def getWeights[T: ClassTag](localParameter: Tensor[T]): FutureResult[Int] = {
+    val tasks = (0 until executorNum).map { pid =>
+      syncPool.submit {
+        new Callable[Int] {
+          override def call(): Int = {
+            try {
+              val blockId = getWeightBlockId(pid)
+              val localBuffer = BlockManagerWrapper.getLocalOrRemoteBytes(blockId).getOrElse {
+                throw new RuntimeException(s"Didn't find weight block $blockId in the block " +
+                  s"manager. Did you initialize this AllReduceParameter on every executor?")
+              }
+              val start = pid * taskSize + math.min(pid, extraSize)
+              val length = taskSize + (if (pid < extraSize) 1 else 0)
+              require(localBuffer.array().length == length * 2)
+              SerializerInstance.serialize(localBuffer).deCompress(0, localParameter, start, length)
+              BlockManagerWrapper.unlock(blockId)
+              pid
+            } catch {
+              case t: Throwable =>
+                logger.error("Error: " + ExceptionUtils.getStackTrace(t))
+                throw t
+            }
+          }
+        }
+      }
+    }
+    new FutureResult(tasks)
   }
 
   /** Put the partial weight in the blockmanager */
