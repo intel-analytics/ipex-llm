@@ -20,14 +20,17 @@ import java.util
 
 import com.intel.analytics.bigdl.tensor.Tensor
 
-object NNPrimitive {
+private[nn] object NNPrimitive {
   def im2colDouble(
     fInput: Tensor[Double], input: Tensor[Double],
     kW: Int, kH: Int,
     dW: Int, dH: Int,
     padW: Int, padH: Int,
-    nInputPlane: Int, inputWidth: Int, inputHeight: Int,
     outputWidth: Int, outputHeight: Int): Unit = {
+
+    val nInputPlane = input.size(1)
+    val inputHeight = input.size(2)
+    val inputWidth = input.size(3)
 
     val inputData = input.storage().array()
     val fInputData = fInput.storage().array()
@@ -107,8 +110,11 @@ object NNPrimitive {
     kW: Int, kH: Int,
     dW: Int, dH: Int,
     padW: Int, padH: Int,
-    nInputPlane: Int, inputWidth: Int, inputHeight: Int,
     outputWidth: Int, outputHeight: Int): Unit = {
+
+    val nInputPlane = input.size(1)
+    val inputHeight = input.size(2)
+    val inputWidth = input.size(3)
 
     val inputData = input.storage().array()
     val fInputData = fInput.storage().array()
@@ -188,10 +194,12 @@ object NNPrimitive {
     kW: Int, kH: Int,
     dW: Int, dH: Int,
     padW: Int, padH: Int,
-    nInputPlane: Int,
-    inputWidth: Int, inputHeight: Int,
     outputWidth: Int, outputHeight: Int
   ): Unit = {
+
+    val nInputPlane = input.size(1)
+    val inputHeight = input.size(2)
+    val inputWidth = input.size(3)
 
     val inputData = input.storage().array()
     val fInputData = fInput.storage().array()
@@ -273,10 +281,12 @@ object NNPrimitive {
     kW: Int, kH: Int,
     dW: Int, dH: Int,
     padW: Int, padH: Int,
-    nInputPlane: Int,
-    inputWidth: Int, inputHeight: Int,
     outputWidth: Int, outputHeight: Int
   ): Unit = {
+
+    val nInputPlane = input.size(1)
+    val inputHeight = input.size(2)
+    val inputWidth = input.size(3)
 
     val inputData = input.storage().array()
     val fInputData = fInput.storage().array()
@@ -350,6 +360,222 @@ object NNPrimitive {
         kh += 1
       }
       nPlane += 1
+    }
+  }
+
+  def im2colDoubleNHWC(
+    fInput: Tensor[Double], input: Tensor[Double],
+    kW: Int, kH: Int,
+    dW: Int, dH: Int,
+    padLeft: Int, padTop: Int,
+    outputWidth: Int, outputHeight: Int): Unit = {
+
+    val nInputPlane = input.size(3)
+    val inputHeight = input.size(1)
+    val inputWidth = input.size(2)
+
+    val inputData = input.storage().array()
+    val fInputData = fInput.storage().array()
+
+    val srcOffset = input.storageOffset() - 1
+    val destOffset = fInput.storageOffset() - 1
+
+    var hPad = -padTop
+    var fInputCount = 0
+    var h = 0
+    while (h < outputHeight) {
+      var wPad = -padLeft
+      var w = 0
+      while (w < outputWidth) {
+        var ih = hPad
+        while (ih < hPad + kH) {
+          var iw = wPad
+          while(iw < wPad + kW) {
+            if (ih >= 0 && ih < inputHeight && iw >= 0 && iw < inputWidth) {
+              val src = srcOffset + (ih * inputWidth + iw) * nInputPlane
+              val dest = destOffset + fInputCount
+              val n = Math.min(inputWidth, wPad + kW) - iw
+              System.arraycopy(inputData, src,
+                fInputData, dest, nInputPlane * n)
+              fInputCount = fInputCount + nInputPlane * n
+              iw = iw + n
+            } else {
+              val n = if (ih < 0 || ih >= inputHeight || iw >= inputWidth) {
+                wPad + kW - iw
+              } else {
+                0 - iw
+              }
+              val fromIndex = destOffset + fInputCount
+              val toIndex = fromIndex + nInputPlane * n
+              util.Arrays.fill(fInputData, fromIndex, toIndex, 0.0)
+              fInputCount = fInputCount + nInputPlane * n
+              iw = iw + n
+            }
+          }
+          ih = ih + 1
+        }
+        w = w + 1
+        wPad = wPad + dW
+      }
+      h = h + 1
+      hPad = hPad + dH
+    }
+  }
+
+  def im2colFloatNHWC(
+    fInput: Tensor[Float], input: Tensor[Float],
+    kW: Int, kH: Int,
+    dW: Int, dH: Int,
+    padLeft: Int, padTop: Int,
+    outputWidth: Int, outputHeight: Int): Unit = {
+
+    val nInputPlane = input.size(3)
+    val inputHeight = input.size(1)
+    val inputWidth = input.size(2)
+
+    val inputData = input.storage().array()
+    val fInputData = fInput.storage().array()
+
+    val srcOffset = input.storageOffset() - 1
+    val destOffset = fInput.storageOffset() - 1
+
+    var hPad = -padTop
+    var fInputCount = 0
+    var h = 0
+    while (h < outputHeight) {
+      var wPad = -padLeft
+      var w = 0
+      while (w < outputWidth) {
+        var ih = hPad
+        while (ih < hPad + kH) {
+          var iw = wPad
+          while(iw < wPad + kW) {
+            if (ih >= 0 && ih < inputHeight && iw >= 0 && iw < inputWidth) {
+              val src = srcOffset + (ih * inputWidth + iw) * nInputPlane
+              val dest = destOffset + fInputCount
+              val n = Math.min(inputWidth, wPad + kW) - iw
+              System.arraycopy(inputData, src,
+                fInputData, dest, nInputPlane * n)
+              fInputCount = fInputCount + nInputPlane * n
+              iw = iw + n
+            } else {
+              val n = if (ih < 0 || ih >= inputHeight || iw >= inputWidth) {
+                wPad + kW - iw
+              } else {
+                0 - iw
+              }
+              val fromIndex = destOffset + fInputCount
+              val toIndex = fromIndex + nInputPlane * n
+              util.Arrays.fill(fInputData, fromIndex, toIndex, 0.0f)
+              fInputCount = fInputCount + nInputPlane * n
+              iw = iw + n
+            }
+          }
+          ih = ih + 1
+        }
+        w = w + 1
+        wPad = wPad + dW
+      }
+      h = h + 1
+      hPad = hPad + dH
+    }
+  }
+
+  def col2imDoubleNHWC(
+    fInput: Tensor[Double], input: Tensor[Double],
+    kW: Int, kH: Int,
+    dW: Int, dH: Int,
+    padLeft: Int, padTop: Int,
+    outputWidth: Int, outputHeight: Int): Unit = {
+
+    val nInputPlane = input.size(3)
+    val inputHeight = input.size(1)
+    val inputWidth = input.size(2)
+
+    val inputData = input.storage().array()
+    val inputOffset = input.storageOffset() - 1
+    val fInputData = fInput.storage().array()
+    val fInputOffset = fInput.storageOffset() - 1
+    var hPad = -padTop
+    var h = 0
+    var fInputCount = 0
+    while (h < outputHeight) {
+      var wPad = -padLeft
+      var w = 0
+      while (w < outputWidth) {
+        var ih = hPad
+        while (ih < hPad + kH) {
+          var iw = wPad
+          while (iw < wPad + kW) {
+            if (ih >= 0 && ih < inputHeight && iw >= 0 && iw < inputWidth) {
+              val dataImPatch = inputOffset + (ih * inputWidth + iw) * nInputPlane
+              var i = 0
+              while(i < nInputPlane) {
+                inputData(dataImPatch + i) += fInputData(fInputOffset + fInputCount)
+                fInputCount = fInputCount + 1
+                i = i + 1
+              }
+            } else {
+              fInputCount = fInputCount + nInputPlane
+            }
+            iw = iw + 1
+          }
+          ih = ih + 1
+        }
+        w = w + 1
+        wPad = wPad + dW
+      }
+      h = h + 1
+      hPad = hPad + dH
+    }
+  }
+
+  def col2imFloatNHWC(
+    fInput: Tensor[Float], input: Tensor[Float],
+    kW: Int, kH: Int,
+    dW: Int, dH: Int,
+    padLeft: Int, padTop: Int,
+    outputWidth: Int, outputHeight: Int): Unit = {
+
+    val nInputPlane = input.size(3)
+    val inputHeight = input.size(1)
+    val inputWidth = input.size(2)
+
+    val inputData = input.storage().array()
+    val inputOffset = input.storageOffset() - 1
+    val fInputData = fInput.storage().array()
+    val fInputOffset = fInput.storageOffset() - 1
+    var hPad = -padTop
+    var h = 0
+    var fInputCount = 0
+    while (h < outputHeight) {
+      var wPad = -padLeft
+      var w = 0
+      while (w < outputWidth) {
+        var ih = hPad
+        while (ih < hPad + kH) {
+          var iw = wPad
+          while (iw < wPad + kW) {
+            if (ih >= 0 && ih < inputHeight && iw >= 0 && iw < inputWidth) {
+              val dataImPatch = inputOffset + (ih * inputWidth + iw) * nInputPlane
+              var i = 0
+              while(i < nInputPlane) {
+                inputData(dataImPatch + i) += fInputData(fInputOffset + fInputCount)
+                fInputCount = fInputCount + 1
+                i = i + 1
+              }
+            } else {
+              fInputCount = fInputCount + nInputPlane
+            }
+            iw = iw + 1
+          }
+          ih = ih + 1
+        }
+        w = w + 1
+        wPad = wPad + dW
+      }
+      h = h + 1
+      hPad = hPad + dH
     }
   }
 
