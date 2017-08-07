@@ -82,6 +82,22 @@ class DLClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
     assert(dlModel.transform(df).where("prediction=label").count() > nRecords * 0.8)
   }
 
+  "An DLClassifier" should "fit with adam and sgd" in {
+    val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
+    val criterion = ClassNLLCriterion[Float]()
+    Seq(new SGD[Float], new Adam[Float]).foreach { optimMethod =>
+      val classifier = new DLClassifier[Float](model, criterion, Array(6))
+        .setBatchSize(12)
+        .setMaxEpoch(2)
+        .setOptimMethod(optimMethod)
+        .setLearningRate(0.1)
+      val data = sc.parallelize(smallData)
+      val df = sqlContext.createDataFrame(data).toDF("features", "label")
+      val dlModel = classifier.fit(df)
+      dlModel.isInstanceOf[DLClassifierModel[_]] should be(true)
+    }
+  }
+
   "An DLClassifier" should "get the same classification result with BigDL model" in {
     Logger.getLogger("org").setLevel(Level.WARN)
     Logger.getLogger("akka").setLevel(Level.WARN)
