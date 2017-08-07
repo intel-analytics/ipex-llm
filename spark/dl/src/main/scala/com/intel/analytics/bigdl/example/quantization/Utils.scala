@@ -18,7 +18,8 @@ package com.intel.analytics.bigdl.example.quantization
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dataset.image._
-import com.intel.analytics.bigdl.dataset.{ByteRecord, Sample, Transformer}
+import com.intel.analytics.bigdl.dataset.{ByteRecord, DataSet, Sample, Transformer}
+import com.intel.analytics.bigdl.example.loadmodel.AlexNet
 import com.intel.analytics.bigdl.optim.{Top1Accuracy, Top5Accuracy, ValidationMethod, ValidationResult}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -26,8 +27,10 @@ import scopt.OptionParser
 import com.intel.analytics.bigdl.models.lenet.{Utils => LeNetUtils}
 import com.intel.analytics.bigdl.models.vgg.{Utils => VggUtils}
 import com.intel.analytics.bigdl.nn.Module
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.caffe.CaffeLoader
 import java.io.{File, FileOutputStream, PrintWriter}
-import java.nio.file.Paths
+import java.nio.file.{Files, Paths}
 
 object Utils {
   case class TestParams(folder: String = "./",
@@ -62,6 +65,10 @@ object Utils {
 
       case "vgg" =>
         sc.parallelize(VggUtils.loadTest(folder), partitionNum)
+
+      case "alexnet" => DataSet.SeqFileFolder.filesToRdd(folder, sc, 1000)
+      case "inception_v1" => DataSet.SeqFileFolder.filesToRdd(folder, sc, 1000)
+      case "inception_v2" => DataSet.SeqFileFolder.filesToRdd(folder, sc, 1000)
       case _ => throw new UnsupportedOperationException(s"unknown model: $model")
     }
   }
@@ -71,10 +78,36 @@ object Utils {
       case "lenet" =>
         BytesToGreyImg(28, 28) -> GreyImgNormalizer(LeNetUtils.testMean,
           LeNetUtils.testStd) -> GreyImgToSample()
+
       case "vgg" =>
         BytesToBGRImg() -> BGRImgNormalizer(VggUtils.testMean, VggUtils.testStd) -> BGRImgToSample()
+
+      case "alexnet" =>
+        val name = Paths.get(System.getProperty("user.dir"), "mean.txt").toString
+        val means = loadMeanFile(name)
+        BytesToBGRImg(normalize = 1f) -> BGRImgCropper(256, 256, CropCenter) ->
+                BGRImgPixelNormalizer(means) -> BGRImgCropper(227, 227, CropCenter) ->
+                BGRImgToSample(toRGB = false)
+
+      case "inception_v1" =>
+        BytesToBGRImg(normalize = 1f) ->
+                BGRImgCropper(224, 224, CropCenter) ->
+                BGRImgNormalizer(123, 117, 104, 1, 1, 1) -> BGRImgToSample(toRGB = false)
+
+      case "inception_v2" =>
+        BytesToBGRImg() -> BGRImgCropper(227, 227, CropCenter) ->
+                HFlip(0.5) -> BGRImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225) ->
+                BGRImgToSample()
+
       case _ => throw new UnsupportedOperationException(s"unknown model: $model")
     }
+  }
+
+  def time[R](block: => R): (R, Double) = {
+    val start = System.nanoTime()
+    val result = block
+    val end = System.nanoTime()
+    (result, (end - start) / 1e9)
   }
 
   def test(model: Module[Float], evaluationSet: RDD[Sample[Float]], batchSize: Int)
@@ -86,15 +119,37 @@ object Utils {
     result
   }
 
+  def writeToLog(model: String, totalNum: Int, accuracies: Array[(Float, Float)],
+    costs: List[Double]): Unit = {
+    val name = Paths.get(System.getProperty("user.dir"), "model_inference.log").toString
+    val file = new File(name)
+
+    val out = if (file.exists() && !file.isDirectory) {
+      new PrintWriter(new FileOutputStream(new File(name), true))
+    } else {
+      new PrintWriter(name)
+    }
+
+    out.append(model)
+    out.append("\t" + totalNum.toString)
+    accuracies.foreach(a => out.append(s"\t${a._1}-${a._2}"))
+    out.append(s"\t${costs.mkString("-")}")
+    out.append("\n")
+    out.close()
+  }
+
   def testAll(name: String, model: Module[Float], evaluationSet: RDD[Sample[Float]],
     batchSize: Int): Unit = {
-    val modelResult = test(model, evaluationSet, batchSize)
+    val (modelResult, modelCosts) = time {
+      test(model, evaluationSet, batchSize)
+    }
 
     val quantizedModel = Module.quantize(model)
-    val quantizedModelResult = test(quantizedModel, evaluationSet, batchSize)
+    val (quantizedModelResult, quantizedModelCosts) = time {
+      test(quantizedModel, evaluationSet, batchSize)
+    }
 
     require(modelResult.length > 0, s"unknown result")
-    val method = modelResult(0)._2.toString()
     val totalNum = modelResult(0)._1.result()._2
 
     val accuracies = new Array[(Float, Float)](modelResult.length)
@@ -103,23 +158,25 @@ object Utils {
       accuracies(i) = accuracy
     }
 
-    def writeToLog(model: String, totalNum: Int, accuracies: Array[(Float, Float)]): Unit = {
-      val name = Paths.get(System.getProperty("user.dir"), "model_inference.log").toString
-      val file = new File(name)
-
-      val out = if (file.exists() && !file.isDirectory) {
-        new PrintWriter(new FileOutputStream(new File(name), true))
-      } else {
-        new PrintWriter(name)
-      }
-
-      out.append(model)
-      out.append("\t" + totalNum.toString)
-      accuracies.foreach(a => out.append(s"\t${a._1}-${a._2}"))
-      out.append("\n")
-      out.close()
+    val costs = List(modelCosts, quantizedModelCosts).map { x =>
+      Math.round(totalNum / x * 100) / 100.0
     }
 
-    writeToLog(name, totalNum, accuracies)
+    writeToLog(name, totalNum, accuracies, costs)
+  }
+
+  def convertModelFromCaffe(prototxt: String, caffeModel: String): Module[Float] = {
+    CaffeLoader.loadCaffe[Float](prototxt, caffeModel)._1
+  }
+
+  def loadMeanFile(path: String): Tensor[Float] = {
+    val lines = Files.readAllLines(Paths.get(path))
+    val array = new Array[Float](lines.size())
+
+    lines.toArray.zipWithIndex.foreach {x =>
+      array(x._2) = x._1.toString.toFloat
+    }
+
+    Tensor[Float](array, Array(array.length))
   }
 }

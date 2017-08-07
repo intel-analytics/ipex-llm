@@ -17,11 +17,9 @@
 package com.intel.analytics.bigdl.example.quantization
 
 
-import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.utils.caffe.CaffeLoader
-import com.intel.analytics.bigdl.utils.{Engine, File, LoggerFilter}
+import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter}
+
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 
@@ -40,7 +38,6 @@ object Test {
       val conf = Engine.createSparkConf()
               .setAppName(s"Test ${name} of ${path} with quantization")
               .set("spark.akka.frameSize", 64.toString)
-              .setMaster("local[4]")
       val sc = new SparkContext(conf)
       Engine.init
 
@@ -49,29 +46,17 @@ object Test {
       val transformer = getTransformer(name)
       val evaluationSet = transformer(rddData)
 
-      val model = Module.load[Float](path)
-      val reshape = Reshape[Float](Array(1, 28, 28))
-
-      val newModel = Sequential[Float]()
-      newModel.add(reshape)
-      newModel.add(model)
-      testAll(name, newModel, evaluationSet, batchSize)
+      val model = if (param.model != "lenet") {
+        Module.load[Float](path)
+      } else {
+        val reshape = Reshape[Float](Array(1, 28, 28))
+        val newModel = Sequential[Float]()
+        newModel.add(reshape)
+        newModel.add(Module.load[Float](path))
+      }
+      testAll(name, model, evaluationSet, batchSize)
 
       sc.stop()
     }
-
-//    val prototxt = "/home/wyz/workspace/models/lenet/deploy.prototxt"
-//    val modelPath = "/home/wyz/workspace/models/lenet/lenet.caffemodel"
-//
-//    val model = CaffeLoader.loadCaffe[Float](prototxt, modelPath)._1
-//    model.save("/home/wyz/workspace/models/lenet/lenet.bigdlmodel",
-//      overWrite = true)
-//    println(model)
-//
-//    val quantizedModel = Module.quantize[Float](model)
-//    quantizedModel.save(
-//      "/home/wyz/workspace/models/lenet/lenet.quantized.bigdlmodel",
-//      overWrite = true)
-//    println(quantizedModel)
   }
 }

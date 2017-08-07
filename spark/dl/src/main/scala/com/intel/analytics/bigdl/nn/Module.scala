@@ -149,22 +149,23 @@ object Module {
 
   def quantize[@specialized(Float) T: ClassTag](model: AbstractModule[Activity, Activity, T])(
     implicit ev: TensorNumeric[T]): Module[T] = {
-    type ModuleNode[T] = AbstractModule[Activity, Tensor[T], T]
+    type ModuleNode[R] = AbstractModule[Activity, Tensor[R], R]
+    type SeqNodes[R] = Seq[Node[ModuleNode[R]]]
+    type ArrayNodes[R] = Array[Node[ModuleNode[R]]]
+    type ANode[R] = Node[ModuleNode[R]]
 
     def convertGraph(model: Graph[T]): Graph[T] = {
       implicit def moduleToModuleNode(module: Module[T]): ModuleNode[T] =
         module.asInstanceOf[ModuleNode[T]]
 
-      def replaceRef(node: Node[ModuleNode[T]],
-        newNode: Node[ModuleNode[T]], refs: Seq[Node[ModuleNode[T]]]): Unit = {
+      def replaceRef(node: ANode[T], newNode: ANode[T], refs: SeqNodes[T]): Unit = {
         val buffer = refs.asInstanceOf[ArrayBuffer[Node[ModuleNode[T]]]]
         refs.zipWithIndex.filter(_._1 == node).foreach { x =>
           buffer.update(x._2, newNode)
         }
       }
 
-      def replace(node: Node[ModuleNode[T]], module: ModuleNode[T],
-        list: Array[Node[ModuleNode[T]]], index: Int): Unit = {
+      def replace(node: ANode[T], module: ModuleNode[T], list: ArrayNodes[T], index: Int): Unit = {
         // create a new node
         val newNode = Node(module)
         newNode.nextNodes.asInstanceOf[ArrayBuffer[Node[ModuleNode[T]]]] ++= node.nextNodes
@@ -193,7 +194,13 @@ object Module {
       }
 
       val inputs = sortedNodes.filter(n => n.prevNodes.isEmpty)
-      val outputs = sortedNodes.filter(n => n.nextNodes.isEmpty)
+      // because all outputs point to dummy nodes, we should filter these nodes as outputs of Graph
+      val outputs = sortedNodes.filter {n =>
+        n.nextNodes.length == 1 && (n.nextNodes.head.element match {
+          case d if d.isInstanceOf[Dummy[T]] => true
+          case _ => false
+        })
+      }
 
       // create a new Graph, much simpler than replacing others in the old graph
       Graph(inputs, outputs)
@@ -215,17 +222,21 @@ object Module {
         case normalConv if normalConv.isInstanceOf[SpatialConvolution[T]] =>
           // do with normal convolution
           val conv = normalConv.asInstanceOf[SpatialConvolution[T]]
-          val quantizedConv = new fixpoint.SpatialConvolution[T](
-            conv.nInputPlane,
-            conv.nOutputPlane,
-            conv.kernelW,
-            conv.kernelH,
-            conv.strideW,
-            conv.strideH,
-            conv.padW,
-            conv.padH,
-            conv.nGroup)
-          quantizedConv.initWeightAndBias(conv.weight, conv.bias)
+          if (conv.nGroup > 1) {
+            val quantizedConv = new fixpoint.SpatialConvolution[T](
+              conv.nInputPlane,
+              conv.nOutputPlane,
+              conv.kernelW,
+              conv.kernelH,
+              conv.strideW,
+              conv.strideH,
+              conv.padW,
+              conv.padH,
+              conv.nGroup)
+            quantizedConv.initWeightAndBias(conv.weight, conv.bias)
+          } else {
+            conv
+          }
         case dilatedConv if dilatedConv.isInstanceOf[SpatialDilatedConvolution[T]] =>
           // do with dilated convolution
           val conv = dilatedConv.asInstanceOf[SpatialDilatedConvolution[T]]
