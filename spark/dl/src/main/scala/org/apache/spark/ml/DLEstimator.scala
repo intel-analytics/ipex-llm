@@ -68,9 +68,9 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag](
   def setBatchSize(value: Int): this.type = set(batchSize, value)
 
   /**
-   * optimization Method to be used. BigDL supports many optimization methods like Adam,
+   * optimization method to be used. BigDL supports many optimization methods like Adam,
    * SGD and LBFGS. Refer to package com.intel.analytics.bigdl.optim for all the options.
-   * Default: LBFGS
+   * Default: SGD
    */
   val optimMethod = new Param[OptimMethod[_]](this, "optimMethod", "optimMethod")
 
@@ -101,7 +101,7 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag](
   def setLearningRate(value: Double): this.type = set(learningRate, value)
 
     /**
-   * learning rate Decay.
+   * learning rate decay.
    * Default: 0
    */
   val learningRateDecay = new DoubleParam(this, "learningRateDecay", "learningRateDecay")
@@ -121,7 +121,7 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag](
     val batches = toMiniBatch(featureAndLabel)
 
     if(!isDefined(optimMethod)) {
-      set(optimMethod, new LBFGS[T])
+      set(optimMethod, new SGD[T])
     }
     val state = T("learningRate" -> $(learningRate), "learningRateDecay" -> $(learningRateDecay))
     val optimizer = Optimizer(model, batches, criterion)

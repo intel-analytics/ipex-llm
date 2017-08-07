@@ -222,10 +222,8 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       val criterion = ClassNLLCriterion[Float]()
       val estimator = new DLEstimator[Float](model, criterion, Array(6), Array(1))
         .setBatchSize(nRecords)
-        // intentionally set low since this only validates data format compatibitliy
         .setMaxEpoch(maxEpoch)
         .setFeaturesCol("scaled")
-
       val pipeline = new Pipeline().setStages(Array(scaler, estimator))
 
       val pipelineModel = pipeline.fit(df)
