@@ -423,7 +423,7 @@ object Conv2D2 extends TensorflowToBigDL{
     require(attributes.get("data_format").getS.toString(Charset.defaultCharset()) == "NCHW",
       "NCHW should be used for this sub-graph")
 
-    require(attributes.get("strides").getList.getI(2).toInt == 1, s"not support strides on depth")
+    require(attributes.get("strides").getList.getI(1).toInt == 1, s"not support strides on depth")
     val (strideH, strideW) = (attributes.get("strides").getList.getI(2).toInt,
       attributes.get("strides").getList.getI(3).toInt)
 
