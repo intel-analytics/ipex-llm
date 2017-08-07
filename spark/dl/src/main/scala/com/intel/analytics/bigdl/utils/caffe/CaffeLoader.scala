@@ -81,17 +81,15 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
     }
   }
 
-  private var isCaffeLoaded = false
-
   private def loadCaffe(prototxtPath: String, modelPath: String): Unit = {
-    if (isCaffeLoaded) return
-    netparam = loadBinary(prototxtPath, modelPath)
-    import scala.collection.JavaConverters._
-    // V1LayerParameter
-    netparam.getLayersList.asScala.foreach(layer => name2LayerV1 += (layer.getName -> layer))
-    // V2LayerParameter
-    netparam.getLayerList.asScala.foreach(layer => name2LayerV2 += (layer.getName -> layer))
-    isCaffeLoaded = true
+    if (null == netparam) {
+      netparam = loadBinary(prototxtPath, modelPath)
+      import scala.collection.JavaConverters._
+      // V1LayerParameter
+      netparam.getLayersList.asScala.foreach(layer => name2LayerV1 += (layer.getName -> layer))
+      // V2LayerParameter
+      netparam.getLayerList.asScala.foreach(layer => name2LayerV2 += (layer.getName -> layer))
+    }
   }
 
   private def loadBinary(prototxtPath: String, modelPath: String): Caffe.NetParameter = {
