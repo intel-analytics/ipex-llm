@@ -480,14 +480,14 @@ class SpatialConvolution[T: ClassTag](
         case DoubleType =>
           val before = System.nanoTime()
           NNPrimitive.im2colDouble(fInput.asInstanceOf[Tensor[Double]],
-            input.asInstanceOf[Tensor[Double]], kW, kH, dW, dH, padW, padH, nInputPlane,
-            inputWidth, inputHeight, outputWidth, outputHeight)
+            input.asInstanceOf[Tensor[Double]], kW, kH, dW, dH, padW, padH,
+            outputWidth, outputHeight)
           im2colTime += System.nanoTime() - before
         case FloatType =>
           val before = System.nanoTime()
           NNPrimitive.im2colFloat(fInput.asInstanceOf[Tensor[Float]],
-            input.asInstanceOf[Tensor[Float]], kW, kH, dW, dH, padW, padH, nInputPlane,
-            inputWidth, inputHeight, outputWidth, outputHeight)
+            input.asInstanceOf[Tensor[Float]], kW, kH, dW, dH, padW, padH,
+            outputWidth, outputHeight)
           im2colTime += System.nanoTime() - before
         case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
       }
@@ -510,9 +510,8 @@ class SpatialConvolution[T: ClassTag](
           gradInput.asInstanceOf[Tensor[Double]].zero()
           val before = System.nanoTime()
           NNPrimitive.col2imDouble(fgradInput.asInstanceOf[Tensor[Double]],
-            gradInput.asInstanceOf[Tensor[Double]], kW, kH, dW, dH, padW, padH, gradInput.size(1),
-            gradInput.size(3),
-            gradInput.size(2), gradOutput.size(3), gradOutput.size(2))
+            gradInput.asInstanceOf[Tensor[Double]], kW, kH, dW, dH, padW, padH,
+            gradOutput.size(3), gradOutput.size(2))
           col2imTime += System.nanoTime() - before
         }
       case FloatType =>
@@ -525,9 +524,8 @@ class SpatialConvolution[T: ClassTag](
           gradInput.asInstanceOf[Tensor[Float]].zero()
           val before = System.nanoTime()
           NNPrimitive.col2imFloat(fgradInput.asInstanceOf[Tensor[Float]],
-            gradInput.asInstanceOf[Tensor[Float]], kW, kH, dW, dH, padW, padH, gradInput.size(1),
-            gradInput.size(3),
-            gradInput.size(2), gradOutput.size(3), gradOutput.size(2))
+            gradInput.asInstanceOf[Tensor[Float]], kW, kH, dW, dH, padW, padH,
+            gradOutput.size(3), gradOutput.size(2))
           col2imTime += System.nanoTime() - before
         }
       case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
