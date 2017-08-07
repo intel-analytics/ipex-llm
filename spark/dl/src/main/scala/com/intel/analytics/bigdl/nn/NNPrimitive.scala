@@ -20,14 +20,17 @@ import java.util
 
 import com.intel.analytics.bigdl.tensor.Tensor
 
-object NNPrimitive {
+private[nn] object NNPrimitive {
   def im2colDouble(
     fInput: Tensor[Double], input: Tensor[Double],
     kW: Int, kH: Int,
     dW: Int, dH: Int,
     padW: Int, padH: Int,
-    nInputPlane: Int, inputWidth: Int, inputHeight: Int,
     outputWidth: Int, outputHeight: Int): Unit = {
+
+    val nInputPlane = input.size(1)
+    val inputHeight = input.size(2)
+    val inputWidth = input.size(3)
 
     val inputData = input.storage().array()
     val fInputData = fInput.storage().array()
@@ -107,8 +110,11 @@ object NNPrimitive {
     kW: Int, kH: Int,
     dW: Int, dH: Int,
     padW: Int, padH: Int,
-    nInputPlane: Int, inputWidth: Int, inputHeight: Int,
     outputWidth: Int, outputHeight: Int): Unit = {
+
+    val nInputPlane = input.size(1)
+    val inputHeight = input.size(2)
+    val inputWidth = input.size(3)
 
     val inputData = input.storage().array()
     val fInputData = fInput.storage().array()
@@ -188,10 +194,12 @@ object NNPrimitive {
     kW: Int, kH: Int,
     dW: Int, dH: Int,
     padW: Int, padH: Int,
-    nInputPlane: Int,
-    inputWidth: Int, inputHeight: Int,
     outputWidth: Int, outputHeight: Int
   ): Unit = {
+
+    val nInputPlane = input.size(1)
+    val inputHeight = input.size(2)
+    val inputWidth = input.size(3)
 
     val inputData = input.storage().array()
     val fInputData = fInput.storage().array()
@@ -273,10 +281,12 @@ object NNPrimitive {
     kW: Int, kH: Int,
     dW: Int, dH: Int,
     padW: Int, padH: Int,
-    nInputPlane: Int,
-    inputWidth: Int, inputHeight: Int,
     outputWidth: Int, outputHeight: Int
   ): Unit = {
+
+    val nInputPlane = input.size(1)
+    val inputHeight = input.size(2)
+    val inputWidth = input.size(3)
 
     val inputData = input.storage().array()
     val fInputData = fInput.storage().array()
@@ -358,14 +368,17 @@ object NNPrimitive {
     kW: Int, kH: Int,
     dW: Int, dH: Int,
     padLeft: Int, padTop: Int,
-    nInputPlane: Int, inputWidth: Int, inputHeight: Int,
     outputWidth: Int, outputHeight: Int): Unit = {
+
+    val nInputPlane = input.size(3)
+    val inputHeight = input.size(1)
+    val inputWidth = input.size(2)
 
     val inputData = input.storage().array()
     val fInputData = fInput.storage().array()
 
-    val srcOffset = input.storageOffset()
-    val destOffset = fInput.storageOffset()
+    val srcOffset = input.storageOffset() - 1
+    val destOffset = fInput.storageOffset() - 1
 
     var hPad = -padTop
     var fInputCount = 0
@@ -379,17 +392,25 @@ object NNPrimitive {
           var iw = wPad
           while(iw < wPad + kW) {
             if (ih >= 0 && ih < inputHeight && iw >= 0 && iw < inputWidth) {
-              val src = srcOffset + (ih * inputWidth + iw) * nInputPlane - 1
-              val dest = destOffset + fInputCount - 1
+              val src = srcOffset + (ih * inputWidth + iw) * nInputPlane
+              val dest = destOffset + fInputCount
+              val n = Math.min(inputWidth, wPad + kW) - iw
               System.arraycopy(inputData, src,
-                fInputData, dest, nInputPlane)
+                fInputData, dest, nInputPlane * n)
+              fInputCount = fInputCount + nInputPlane * n
+              iw = iw + n
             } else {
-              val fromIndex = destOffset + fInputCount - 1
-              val toIndex = fromIndex + nInputPlane
+              val n = if (ih < 0 || ih >= inputHeight || iw >= inputWidth) {
+                wPad + kW - iw
+              } else {
+                0 - iw
+              }
+              val fromIndex = destOffset + fInputCount
+              val toIndex = fromIndex + nInputPlane * n
               util.Arrays.fill(fInputData, fromIndex, toIndex, 0.0)
+              fInputCount = fInputCount + nInputPlane * n
+              iw = iw + n
             }
-            fInputCount = fInputCount + nInputPlane
-            iw = iw + 1
           }
           ih = ih + 1
         }
@@ -406,14 +427,17 @@ object NNPrimitive {
     kW: Int, kH: Int,
     dW: Int, dH: Int,
     padLeft: Int, padTop: Int,
-    nInputPlane: Int, inputWidth: Int, inputHeight: Int,
     outputWidth: Int, outputHeight: Int): Unit = {
+
+    val nInputPlane = input.size(3)
+    val inputHeight = input.size(1)
+    val inputWidth = input.size(2)
 
     val inputData = input.storage().array()
     val fInputData = fInput.storage().array()
 
-    val srcOffset = input.storageOffset()
-    val destOffset = fInput.storageOffset()
+    val srcOffset = input.storageOffset() - 1
+    val destOffset = fInput.storageOffset() - 1
 
     var hPad = -padTop
     var fInputCount = 0
@@ -427,17 +451,25 @@ object NNPrimitive {
           var iw = wPad
           while(iw < wPad + kW) {
             if (ih >= 0 && ih < inputHeight && iw >= 0 && iw < inputWidth) {
-              val src = srcOffset + (ih * inputWidth + iw) * nInputPlane - 1
-              val dest = destOffset + fInputCount - 1
+              val src = srcOffset + (ih * inputWidth + iw) * nInputPlane
+              val dest = destOffset + fInputCount
+              val n = Math.min(inputWidth, wPad + kW) - iw
               System.arraycopy(inputData, src,
-                fInputData, dest, nInputPlane)
+                fInputData, dest, nInputPlane * n)
+              fInputCount = fInputCount + nInputPlane * n
+              iw = iw + n
             } else {
-              val fromIndex = destOffset + fInputCount - 1
-              val toIndex = fromIndex + nInputPlane
+              val n = if (ih < 0 || ih >= inputHeight || iw >= inputWidth) {
+                wPad + kW - iw
+              } else {
+                0 - iw
+              }
+              val fromIndex = destOffset + fInputCount
+              val toIndex = fromIndex + nInputPlane * n
               util.Arrays.fill(fInputData, fromIndex, toIndex, 0.0f)
+              fInputCount = fInputCount + nInputPlane * n
+              iw = iw + n
             }
-            fInputCount = fInputCount + nInputPlane
-            iw = iw + 1
           }
           ih = ih + 1
         }
@@ -454,13 +486,16 @@ object NNPrimitive {
     kW: Int, kH: Int,
     dW: Int, dH: Int,
     padLeft: Int, padTop: Int,
-    nInputPlane: Int,
-    inputWidth: Int, inputHeight: Int,
     outputWidth: Int, outputHeight: Int): Unit = {
+
+    val nInputPlane = input.size(3)
+    val inputHeight = input.size(1)
+    val inputWidth = input.size(2)
+
     val inputData = input.storage().array()
-    val inputOffset = input.storageOffset()
+    val inputOffset = input.storageOffset() - 1
     val fInputData = fInput.storage().array()
-    val fInputOffset = fInput.storageOffset()
+    val fInputOffset = fInput.storageOffset() - 1
     var hPad = -padTop
     var h = 0
     var fInputCount = 0
@@ -473,10 +508,10 @@ object NNPrimitive {
           var iw = wPad
           while (iw < wPad + kW) {
             if (ih >= 0 && ih < inputHeight && iw >= 0 && iw < inputWidth) {
-              val dataImPatch = inputOffset + (ih * inputWidth + iw) * nInputPlane - 1
+              val dataImPatch = inputOffset + (ih * inputWidth + iw) * nInputPlane
               var i = 0
               while(i < nInputPlane) {
-                inputData(dataImPatch + i) += fInputData(fInputOffset + fInputCount - 1)
+                inputData(dataImPatch + i) += fInputData(fInputOffset + fInputCount)
                 fInputCount = fInputCount + 1
                 i = i + 1
               }
@@ -500,13 +535,16 @@ object NNPrimitive {
     kW: Int, kH: Int,
     dW: Int, dH: Int,
     padLeft: Int, padTop: Int,
-    nInputPlane: Int,
-    inputWidth: Int, inputHeight: Int,
     outputWidth: Int, outputHeight: Int): Unit = {
+
+    val nInputPlane = input.size(3)
+    val inputHeight = input.size(1)
+    val inputWidth = input.size(2)
+
     val inputData = input.storage().array()
-    val inputOffset = input.storageOffset()
+    val inputOffset = input.storageOffset() - 1
     val fInputData = fInput.storage().array()
-    val fInputOffset = fInput.storageOffset()
+    val fInputOffset = fInput.storageOffset() - 1
     var hPad = -padTop
     var h = 0
     var fInputCount = 0
@@ -519,10 +557,10 @@ object NNPrimitive {
           var iw = wPad
           while (iw < wPad + kW) {
             if (ih >= 0 && ih < inputHeight && iw >= 0 && iw < inputWidth) {
-              val dataImPatch = inputOffset + (ih * inputWidth + iw) * nInputPlane - 1
+              val dataImPatch = inputOffset + (ih * inputWidth + iw) * nInputPlane
               var i = 0
               while(i < nInputPlane) {
-                inputData(dataImPatch + i) += fInputData(fInputOffset + fInputCount - 1)
+                inputData(dataImPatch + i) += fInputData(fInputOffset + fInputCount)
                 fInputCount = fInputCount + 1
                 i = i + 1
               }
