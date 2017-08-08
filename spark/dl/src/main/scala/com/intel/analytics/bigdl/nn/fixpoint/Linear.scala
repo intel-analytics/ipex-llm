@@ -135,13 +135,14 @@ class Linear[T: ClassTag](
         val outputArray = output.storage().array().asInstanceOf[Array[Float]]
         val outputOffset = output.storageOffset() - 1
         val weightSumArray = weightSum.asInstanceOf[Array[Float]]
+        val weightSumOffset = 0
         val biasArray = bias.storage().array().asInstanceOf[Array[Float]]
         val biasOffset = bias.storageOffset() - 1
 
         FixPoint.InternalMixPrecisionConvolutionGEMM(
-          FixPoint.NCHW, weight.getStorageInJni, 0, 0, data.getStorageInJni, outputArray, outputOffset,
-          outputSize, batchSize, inputSize, weightSumArray, 0, biasArray, biasOffset,
-          batchSize, outputSize, 1, 1, 1,
+          FixPoint.NCHW, weight.getStorageInJni, data.getStorageInJni, outputArray, outputOffset,
+          weightSumArray, weightSumOffset, biasArray, biasOffset,
+          batchSize, outputSize, 1, 1,
           FAULT_TOLERANCE)
 
       case _ => throw new UnsupportedOperationException(s"Only support Float for quantized model")

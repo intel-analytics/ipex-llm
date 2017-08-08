@@ -57,6 +57,7 @@ object Utils {
 
   def getRddData(model: String, sc: SparkContext, partitionNum: Int,
     folder: String): RDD[ByteRecord] = {
+    def imagenet: RDD[ByteRecord] = DataSet.SeqFileFolder.filesToRdd(folder, sc, 1000)
     model match {
       case "lenet" =>
         val validationData = folder + "/t10k-images-idx3-ubyte"
@@ -66,14 +67,24 @@ object Utils {
       case "vgg" =>
         sc.parallelize(VggUtils.loadTest(folder), partitionNum)
 
-      case "alexnet" => DataSet.SeqFileFolder.filesToRdd(folder, sc, 1000)
-      case "inception_v1" => DataSet.SeqFileFolder.filesToRdd(folder, sc, 1000)
-      case "inception_v2" => DataSet.SeqFileFolder.filesToRdd(folder, sc, 1000)
+      case "alexnet" => imagenet
+      case "inception_v1" => imagenet
+      case "inception_v2" => imagenet
+      case m if m.toLowerCase.contains("resnet") => imagenet
+
       case _ => throw new UnsupportedOperationException(s"unknown model: $model")
     }
   }
 
   def getTransformer(model: String): Transformer[ByteRecord, Sample[Float]] = {
+    def imagenetPreprocessing(imageSize: Int): Transformer[ByteRecord, Sample[Float]] = {
+      val name = Paths.get(System.getProperty("user.dir"), "mean.txt").toString
+      val means = loadMeanFile(name)
+      BytesToBGRImg(normalize = 1f) -> BGRImgCropper(256, 256, CropCenter) ->
+              BGRImgPixelNormalizer(means) -> BGRImgCropper(imageSize, imageSize, CropCenter) ->
+              BGRImgToSample(toRGB = false)
+    }
+
     model match {
       case "lenet" =>
         BytesToGreyImg(28, 28) -> GreyImgNormalizer(LeNetUtils.testMean,
@@ -82,12 +93,7 @@ object Utils {
       case "vgg" =>
         BytesToBGRImg() -> BGRImgNormalizer(VggUtils.testMean, VggUtils.testStd) -> BGRImgToSample()
 
-      case "alexnet" =>
-        val name = Paths.get(System.getProperty("user.dir"), "mean.txt").toString
-        val means = loadMeanFile(name)
-        BytesToBGRImg(normalize = 1f) -> BGRImgCropper(256, 256, CropCenter) ->
-                BGRImgPixelNormalizer(means) -> BGRImgCropper(227, 227, CropCenter) ->
-                BGRImgToSample(toRGB = false)
+      case "alexnet" => imagenetPreprocessing(227)
 
       case "inception_v1" =>
         BytesToBGRImg(normalize = 1f) ->
@@ -95,9 +101,13 @@ object Utils {
                 BGRImgNormalizer(123, 117, 104, 1, 1, 1) -> BGRImgToSample(toRGB = false)
 
       case "inception_v2" =>
-        BytesToBGRImg() -> BGRImgCropper(227, 227, CropCenter) ->
+        BytesToBGRImg() -> BGRImgCropper(224, 224, CropCenter) ->
                 HFlip(0.5) -> BGRImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225) ->
                 BGRImgToSample()
+
+      case m if m.toLowerCase.contains("resnet") =>
+        BytesToBGRImg() -> BGRImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225) ->
+                BGRImgCropper(224, 224, CropCenter) -> BGRImgToSample()
 
       case _ => throw new UnsupportedOperationException(s"unknown model: $model")
     }

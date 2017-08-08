@@ -222,21 +222,17 @@ object Module {
         case normalConv if normalConv.isInstanceOf[SpatialConvolution[T]] =>
           // do with normal convolution
           val conv = normalConv.asInstanceOf[SpatialConvolution[T]]
-          if (conv.nGroup == 2 && conv.nInputPlane == 96) {
-            val quantizedConv = new fixpoint.SpatialConvolution[T](
-              conv.nInputPlane,
-              conv.nOutputPlane,
-              conv.kernelW,
-              conv.kernelH,
-              conv.strideW,
-              conv.strideH,
-              conv.padW,
-              conv.padH,
-              conv.nGroup)
-            quantizedConv.initWeightAndBias(conv.weight, conv.bias)
-          } else {
-            conv
-          }
+          val quantizedConv = new fixpoint.SpatialConvolution[T](
+            conv.nInputPlane,
+            conv.nOutputPlane,
+            conv.kernelW,
+            conv.kernelH,
+            conv.strideW,
+            conv.strideH,
+            conv.padW,
+            conv.padH,
+            conv.nGroup)
+          quantizedConv.initWeightAndBias(conv.weight, conv.bias)
         case dilatedConv if dilatedConv.isInstanceOf[SpatialDilatedConvolution[T]] =>
           // do with dilated convolution
           val conv = dilatedConv.asInstanceOf[SpatialDilatedConvolution[T]]

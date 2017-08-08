@@ -43,8 +43,12 @@ class SpatialConvolution[T: ClassTag](
   require(nInputPlane % nGroup == 0, "Number of input channels should be multiples of group.")
   require(nOutputPlane % nGroup == 0, "Number of output channels should be multiples of group.")
 
-  var weight: QuantizeTensor[T] = QuantizeTensor[T]()
+  var weight: Array[QuantizeTensor[T]] = new Array[QuantizeTensor[T]](nGroup)
   var data: QuantizeTensor[T] = QuantizeTensor[T]()
+
+  for (i <- 0 until nGroup) {
+    weight(i) = QuantizeTensor[T]()
+  }
 
   val bias: Tensor[T] = Tensor[T](nOutputPlane)
   var weightSum: Array[T] = new Array[T](nOutputPlane)
@@ -93,12 +97,18 @@ class SpatialConvolution[T: ClassTag](
       max(i - 1) = singleRow.max()
     }
 
-    val bufferOffset = 0
-    val buffer = ByteBuffer.allocate(weightFP32.nElement())
-    val weightFP32Tensor = weightFP32Tmp.toTensor[Float]
-    Quantize.quantize(weightFP32Tensor, buffer, bufferOffset)
+    for (i <- 1 to nGroup) {
+      val groupWeight = weightFP32.select(1, i)
+      val bufferOffset = 0
+      val buffer = ByteBuffer.allocate(groupWeight.nElement())
+      ev.getType() match {
+        case FloatType =>
+          Quantize.quantize(groupWeight.toTensor[Float], buffer, bufferOffset)
+        case _ => throw new UnsupportedOperationException(s"Only support Float for quantized model")
+      }
 
-    weight.setStorage(buffer)
+      weight(i - 1).setStorage(buffer)
+    }
 
     init()
 
@@ -106,20 +116,25 @@ class SpatialConvolution[T: ClassTag](
   }
 
   private def init(): this.type = {
-    val byteArrayOfWeight = weight.getStorage.get
-    weight.setStorageInJni(
-      FixPoint.FixConvKernelDescInit(nOutputPlane, nInputPlane / nGroup, kernelH, kernelW))
+    for (i <- 1 to nGroup) {
+      val byteArrayOfWeight = weight(i - 1).getStorage.get
+      weight(i - 1).setStorageInJni(
+        FixPoint.FixConvKernelDescInit(nOutputPlane / nGroup, nInputPlane / nGroup,
+          kernelH, kernelW))
+      ev.getType() match {
+        case FloatType =>
+          val start = (i - 1) * nOutputPlane / nGroup
+          val end = i * nOutputPlane / nGroup
+          val minArray = min.asInstanceOf[Array[Float]].slice(start, end)
+          val maxArray = max.asInstanceOf[Array[Float]].slice(start, end)
+          val byteOffset = 0
 
-    ev.getType() match {
-      case FloatType =>
-        val minArray = min.asInstanceOf[Array[Float]]
-        val maxArray = max.asInstanceOf[Array[Float]]
-        val byteOffset = 0
-
-        FixPoint.FixConvKernelLoadFromModel(weight.getStorageInJni, byteArrayOfWeight, byteOffset,
-          minArray, maxArray, nOutputPlane, nInputPlane / nGroup,
-          kernelH, kernelW, WEIGHT_THRESHOLD, FixPoint.NCHW)
-      case _ => throw new UnsupportedOperationException(s"Only support Float for quantized model")
+          FixPoint.FixConvKernelLoadFromModel(weight(i - 1).getStorageInJni,
+            byteArrayOfWeight, byteOffset,
+            minArray, maxArray, nOutputPlane / nGroup, nInputPlane / nGroup,
+            kernelH, kernelW, WEIGHT_THRESHOLD, FixPoint.NCHW)
+        case _ => throw new UnsupportedOperationException(s"Only support Float for quantized model")
+      }
     }
 
     _init = true
@@ -132,7 +147,8 @@ class SpatialConvolution[T: ClassTag](
       "SpatialConvolution: " + ErrorInfo.constrainInputAs3DOrBatch)
     require(input.isContiguous())
 
-    if (!_init && weight.getStorage.isDefined) {
+    // TODO check total array
+    if (!_init && weight(0).getStorage.isDefined) {
       init()
     }
 
@@ -165,8 +181,6 @@ class SpatialConvolution[T: ClassTag](
     }
 
     @inline def im2ColAndGemmFloat(batch: Int): Unit = {
-      val weightSumArray = weightSum.asInstanceOf[Array[Float]]
-      val biasArray = bias.storage().array().asInstanceOf[Array[Float]]
       val batchOutput = output.select(1, batch + 1)
       val batchInput = input.select(1, batch + 1)
 
@@ -174,36 +188,42 @@ class SpatialConvolution[T: ClassTag](
       while (group < nGroup) {
         val groupBatchOutput = batchOutput.narrow(1, group * nOutputPlane / nGroup + 1,
           nOutputPlane / nGroup)
-        val groupBatchOutputArray = groupBatchOutput.storage().array().asInstanceOf[Array[Float]]
-        val groupBatchOutputOffset = groupBatchOutput.storageOffset() - 1
-
         val groupBatchInput = batchInput.narrow(1, group * nInputPlane / nGroup + 1,
           nInputPlane / nGroup)
-        val groupBatchInputArray = groupBatchInput.storage().array().asInstanceOf[Array[Float]]
-        val groupBatchInputOffset = groupBatchInput.storageOffset() - 1
+        val groupWeight = weight(group)
+        val offset = nOutputPlane / nGroup * group
 
-        val biasOffset = bias.storageOffset() - 1 + nOutputPlane / nGroup * group
-        val weightOffset = nOutputPlane / nGroup * nInputPlane / nGroup * kernelW * kernelH * group
-        val weightSumOffset = nOutputPlane / nGroup * group
-
-        FixPoint.FixConvDataInit(
-          data.getStorageInJni, groupBatchInputArray, groupBatchInputOffset,
-          nInputPlane / nGroup, kernelH, kernelW, strideH, strideW, padH, padW,
-          DILATION_HEIGHT, DILATION_WIDTH, 1, inputHeight, inputWidth, THRESHOLD,
-          FixPoint.NCHW)
-
-        FixPoint.InternalMixPrecisionConvolutionGEMM(
-          FixPoint.NCHW,
-          weight.getStorageInJni, weightOffset, group,
-          data.getStorageInJni,
-          groupBatchOutputArray, groupBatchOutputOffset,
-          nOutputPlane / nGroup, 1, nInputPlane / nGroup,
-          weightSumArray, weightSumOffset,
-          biasArray, biasOffset, 1, nOutputPlane / nGroup, outputHeight, outputWidth, nGroup,
-          FAULT_TOLERANCE)
+        groupIm2ColGemm(groupBatchInput, groupBatchOutput, groupWeight, offset)
 
         group += 1
       }
+    }
+
+    @inline def groupIm2ColGemm(input: Tensor[T], output: Tensor[T],
+      weight: QuantizeTensor[T], offset: Int): Unit = {
+      val inputArray = input.storage().array().asInstanceOf[Array[Float]]
+      val inputOffset = input.storageOffset() - 1
+
+      val outputArray = output.storage().array().asInstanceOf[Array[Float]]
+      val outputOffset = output.storageOffset() - 1
+
+      val biasArray = bias.storage().array().asInstanceOf[Array[Float]]
+      val biasOffset = bias.storageOffset() - 1 + offset
+
+      val weightSumArray = weightSum.asInstanceOf[Array[Float]]
+      val weightSumOffset = offset
+
+      FixPoint.FixConvDataInit(
+        data.getStorageInJni, inputArray, inputOffset,
+        nInputPlane / nGroup, kernelH, kernelW, strideH, strideW, padH, padW,
+        DILATION_HEIGHT, DILATION_WIDTH, 1, inputHeight, inputWidth, THRESHOLD,
+        FixPoint.NCHW)
+
+      FixPoint.InternalMixPrecisionConvolutionGEMM(
+        FixPoint.NCHW, weight.getStorageInJni, data.getStorageInJni,
+        outputArray, outputOffset, weightSumArray, weightSumOffset,
+        biasArray, biasOffset, 1, nOutputPlane / nGroup, outputHeight, outputWidth,
+        FAULT_TOLERANCE)
     }
 
     output
@@ -274,7 +294,7 @@ class SpatialConvolution[T: ClassTag](
   }
 
   def release(): Unit = {
-    weight.release()
+    weight.foreach(_.release())
     data.release()
   }
 }
