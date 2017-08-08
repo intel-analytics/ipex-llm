@@ -16,11 +16,12 @@
 package org.apache.spark.ml
 
 import com.intel.analytics.bigdl.{Criterion, Module}
-import com.intel.analytics.bigdl.dataset.{DataSet, MiniBatch}
+import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.models.utils.ModelBroadcast
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.utils.T
 import org.apache.spark.ml.param.{IntParam, ParamMap, ParamValidators, _}
 import org.apache.spark.ml.util.SchemaUtils
 import org.apache.spark.rdd.RDD
@@ -67,7 +68,19 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag](
   def setBatchSize(value: Int): this.type = set(batchSize, value)
 
   /**
-   * number of max Epoch for the training
+   * optimization method to be used. BigDL supports many optimization methods like Adam,
+   * SGD and LBFGS. Refer to package com.intel.analytics.bigdl.optim for all the options.
+   * Default: SGD
+   */
+  val optimMethod = new Param[OptimMethod[_]](this, "optimMethod", "optimMethod")
+
+  def getOptimMethod: OptimMethod[_] = $(optimMethod)
+
+  def setOptimMethod(value: OptimMethod[_]): this.type = set(optimMethod, value)
+
+  /**
+   * number of max Epoch for the training, an epoch refers to a traverse over the training data
+   * Default: 100
    */
   val maxEpoch = new IntParam(this, "maxEpoch", "number of max Epoch", ParamValidators.gt(0))
   setDefault(maxEpoch -> 100)
@@ -75,6 +88,28 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag](
   def getMaxEpoch: Int = $(maxEpoch)
 
   def setMaxEpoch(value: Int): this.type = set(maxEpoch, value)
+
+  /**
+   * learning rate for the optimizer.
+   * Default: 1.0
+   */
+  val learningRate = new DoubleParam(this, "learningRate", "learningRate", ParamValidators.gt(0))
+  setDefault(learningRate -> 1.0)
+
+  def getLearningRate: Double = $(learningRate)
+
+  def setLearningRate(value: Double): this.type = set(learningRate, value)
+
+    /**
+   * learning rate decay.
+   * Default: 0
+   */
+  val learningRateDecay = new DoubleParam(this, "learningRateDecay", "learningRateDecay")
+  setDefault(learningRateDecay -> 0.0)
+
+  def getLearningRateDecay: Double = $(learningRateDecay)
+
+  def setLearningRateDecay(value: Double): this.type = set(learningRateDecay, value)
 
   override def transformSchema(schema : StructType): StructType = {
     validateSchema(schema)
@@ -84,14 +119,17 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag](
   protected override def internalFit(
       featureAndLabel: RDD[(Seq[AnyVal], Seq[AnyVal])]): DLModel[T] = {
     val batches = toMiniBatch(featureAndLabel)
-    val dataset = DataSet.rdd(batches)
 
-    val optimizer = Optimizer(model, dataset, criterion)
-      .setOptimMethod(new LBFGS[T]())
+    if(!isDefined(optimMethod)) {
+      set(optimMethod, new SGD[T])
+    }
+    val state = T("learningRate" -> $(learningRate), "learningRateDecay" -> $(learningRateDecay))
+    val optimizer = Optimizer(model, batches, criterion)
+      .setState(state)
+      .setOptimMethod($(optimMethod).asInstanceOf[OptimMethod[T]])
       .setEndWhen(Trigger.maxEpoch($(maxEpoch)))
     val optimizedModel = optimizer.optimize()
 
-    dataset.unpersist()
     wrapBigDLModel(optimizedModel, featureSize)
   }
 
@@ -106,9 +144,10 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag](
   /**
    * Extract and reassemble data according to batchSize
    */
-  private def toMiniBatch(featureAndLabel: RDD[(Seq[AnyVal], Seq[AnyVal])]): RDD[MiniBatch[T]] = {
+  private def toMiniBatch(
+      featureAndLabel: RDD[(Seq[AnyVal], Seq[AnyVal])]): DistributedDataSet[MiniBatch[T]] = {
 
-    featureAndLabel.map { case (f, l) =>
+    val samples = featureAndLabel.map { case (f, l) =>
       // convert feature and label data type to the same type with model
       val feature = f.head match {
         case dd: Double => f.asInstanceOf[Seq[Double]].map(ev.fromType(_))
@@ -119,17 +158,11 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag](
         case ff: Float => l.asInstanceOf[Seq[Float]].map(ev.fromType(_))
       }
       (feature, label)
-    }.mapPartitions { rows =>
-      // combine records according to batchSize
-      val batches = rows.grouped($(batchSize)).map { batch =>
-        val featureData = batch.flatMap(_._1).toArray
-        val labelData = batch.flatMap(_._2).toArray
-        MiniBatch[T](
-          Tensor(featureData, Array(batch.length) ++ featureSize),
-          Tensor(labelData, Array(batch.length) ++ labelSize))
-      }
-      batches
+    }.map { case (feature, label) =>
+      Sample(Tensor(feature.toArray, featureSize), Tensor(label.toArray, labelSize))
     }
+    (DataSet.rdd(samples) -> SampleToMiniBatch(${batchSize}))
+      .asInstanceOf[DistributedDataSet[MiniBatch[T]]]
   }
 
   override def copy(extra: ParamMap): DLEstimator[T] = {

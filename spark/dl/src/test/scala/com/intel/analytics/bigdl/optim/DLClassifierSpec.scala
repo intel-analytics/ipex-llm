@@ -64,6 +64,8 @@ class DLClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
     assert(estimator.getLabelCol == "label")
     assert(estimator.getMaxEpoch == 100)
     assert(estimator.getBatchSize == 1)
+    assert(estimator.getLearningRate == 1.0)
+    assert(estimator.getLearningRateDecay == 0)
   }
 
   "An DLClassifier" should "fit on feature(one dimension Array[Double]) and label(Double)" in {
@@ -78,6 +80,22 @@ class DLClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val dlModel = classifier.fit(df)
     dlModel.isInstanceOf[DLClassifierModel[_]] should be(true)
     assert(dlModel.transform(df).where("prediction=label").count() > nRecords * 0.8)
+  }
+
+  "An DLClassifier" should "fit with adam and LBFGS" in {
+    val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
+    val criterion = ClassNLLCriterion[Float]()
+    Seq(new LBFGS[Float], new Adam[Float]).foreach { optimMethod =>
+      val classifier = new DLClassifier[Float](model, criterion, Array(6))
+        .setBatchSize(nRecords)
+        .setMaxEpoch(2)
+        .setOptimMethod(optimMethod)
+        .setLearningRate(0.1)
+      val data = sc.parallelize(smallData)
+      val df = sqlContext.createDataFrame(data).toDF("features", "label")
+      val dlModel = classifier.fit(df)
+      dlModel.isInstanceOf[DLClassifierModel[_]] should be(true)
+    }
   }
 
   "An DLClassifier" should "get the same classification result with BigDL model" in {
