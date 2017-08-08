@@ -87,8 +87,6 @@ if __name__ == "__main__":
         StructField("features",  ArrayType(DoubleType(),False), False),
         StructField("label", ArrayType(DoubleType(), False), False)])
     train_df = sqlContext.createDataFrame(train_rdd, schema)
-    train_df.show()
-    train_df.printSchema
 
     model = build_model(10)
     criterion = ClassNLLCriterion()
