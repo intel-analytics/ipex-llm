@@ -222,7 +222,7 @@ object Module {
         case normalConv if normalConv.isInstanceOf[SpatialConvolution[T]] =>
           // do with normal convolution
           val conv = normalConv.asInstanceOf[SpatialConvolution[T]]
-          if (conv.nGroup > 1) {
+          if (conv.nGroup == 2 && conv.nInputPlane == 96) {
             val quantizedConv = new fixpoint.SpatialConvolution[T](
               conv.nInputPlane,
               conv.nOutputPlane,

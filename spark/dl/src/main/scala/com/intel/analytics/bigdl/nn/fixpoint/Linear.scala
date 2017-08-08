@@ -139,7 +139,7 @@ class Linear[T: ClassTag](
         val biasOffset = bias.storageOffset() - 1
 
         FixPoint.InternalMixPrecisionConvolutionGEMM(
-          FixPoint.NCHW, weight.getStorageInJni, 0, data.getStorageInJni, outputArray, outputOffset,
+          FixPoint.NCHW, weight.getStorageInJni, 0, 0, data.getStorageInJni, outputArray, outputOffset,
           outputSize, batchSize, inputSize, weightSumArray, 0, biasArray, biasOffset,
           batchSize, outputSize, 1, 1, 1,
           FAULT_TOLERANCE)

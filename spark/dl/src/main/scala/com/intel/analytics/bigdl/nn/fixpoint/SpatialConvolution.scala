@@ -182,7 +182,7 @@ class SpatialConvolution[T: ClassTag](
         val groupBatchInputArray = groupBatchInput.storage().array().asInstanceOf[Array[Float]]
         val groupBatchInputOffset = groupBatchInput.storageOffset() - 1
 
-        val biasOffset = bias.storageOffset() - 1 // + nOutputPlane / nGroup * group
+        val biasOffset = bias.storageOffset() - 1 + nOutputPlane / nGroup * group
         val weightOffset = nOutputPlane / nGroup * nInputPlane / nGroup * kernelW * kernelH * group
         val weightSumOffset = nOutputPlane / nGroup * group
 
@@ -194,12 +194,12 @@ class SpatialConvolution[T: ClassTag](
 
         FixPoint.InternalMixPrecisionConvolutionGEMM(
           FixPoint.NCHW,
-          weight.getStorageInJni, weightOffset,
+          weight.getStorageInJni, weightOffset, group,
           data.getStorageInJni,
           groupBatchOutputArray, groupBatchOutputOffset,
           nOutputPlane / nGroup, 1, nInputPlane / nGroup,
           weightSumArray, weightSumOffset,
-          biasArray, biasOffset, 1, nOutputPlane / nGroup, outputHeight, outputWidth, group,
+          biasArray, biasOffset, 1, nOutputPlane / nGroup, outputHeight, outputWidth, nGroup,
           FAULT_TOLERANCE)
 
         group += 1
@@ -270,7 +270,7 @@ class SpatialConvolution[T: ClassTag](
 
   override def toString(): String = {
     s"fixpoint.SpatialConvolution($nInputPlane -> $nOutputPlane, $kernelW x" +
-      s" $kernelH, $strideW, $strideH, $padW, $padH)"
+      s" $kernelH, $strideW, $strideH, $padW, $padH, $nGroup)"
   }
 
   def release(): Unit = {
