@@ -299,7 +299,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     kW: Int,
     dW: Int)
   : TemporalMaxPooling[T] = {
-    val maxpooling = TemporalMaxPooling[T](
+    TemporalMaxPooling[T](
       kW,
       dW)
   }
