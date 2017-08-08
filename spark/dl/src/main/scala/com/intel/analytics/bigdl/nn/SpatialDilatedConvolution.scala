@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.{DenseTensorBLAS, DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
@@ -543,7 +544,7 @@ class SpatialDilatedConvolution[T: ClassTag](
   }
 }
 
-object SpatialDilatedConvolution {
+object SpatialDilatedConvolution extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
       nInputPlane: Int,
       nOutputPlane: Int,

@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 import scala.reflect.ClassTag
 
@@ -28,7 +29,7 @@ import scala.reflect.ClassTag
  * Sigmoid is defined as: f(x) = 1 / (1 + exp(-x))
  */
 @SerialVersionUID(6855417348268610044L)
-class Sigmoid[@specialized(Float, Double) T: ClassTag](
+class Sigmoid[T: ClassTag](
   implicit ev: TensorNumeric[T]) extends TensorModule[T]  {
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
@@ -46,7 +47,7 @@ class Sigmoid[@specialized(Float, Double) T: ClassTag](
   }
 }
 
-object Sigmoid {
+object Sigmoid extends ModuleSerializable {
   def apply[T: ClassTag]()
       (implicit ev: TensorNumeric[T]) : Sigmoid[T] = {
     new Sigmoid[T]()

@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 import scala.reflect.ClassTag
 
@@ -41,7 +42,7 @@ class ReLU6[T: ClassTag](inplace: Boolean = false)
   }
 }
 
-object ReLU6 {
+object ReLU6 extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
       inplace: Boolean = false)(implicit ev: TensorNumeric[T]) : ReLU6[T] = {
     new ReLU6[T]()

@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.{DenseTensorApply, Tensor, TensorFunc6}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 import scala.reflect.ClassTag
 
@@ -34,7 +35,7 @@ import scala.reflect.ClassTag
 
 @SerialVersionUID(- 6870619109313859155L)
 class LeakyReLU[T: ClassTag](
-  negval: Double = 0.01,
+  val negval: Double = 0.01,
   var inplace: Boolean = false)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
@@ -97,7 +98,7 @@ class LeakyReLU[T: ClassTag](
   }
 }
 
-object LeakyReLU {
+object LeakyReLU extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
       negval: Double = 0.01,
       inplace: Boolean = false)(implicit ev: TensorNumeric[T]) : LeakyReLU[T] = {

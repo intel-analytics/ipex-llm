@@ -24,6 +24,7 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 import scala.reflect._
 import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 /**
  * Applies 2D average-pooling operation in kWxkH regions by step size dWxdH steps.
@@ -43,7 +44,7 @@ import com.intel.analytics.bigdl.utils.Engine
  * @param divide whether to do the averaging
  */
 @SerialVersionUID(4533142511857387857L)
-class SpatialAveragePooling[@specialized(Float, Double) T: ClassTag](
+class SpatialAveragePooling[T: ClassTag](
   var kW: Int,
   var kH: Int,
   val dW: Int = 1,
@@ -479,7 +480,7 @@ class SpatialAveragePooling[@specialized(Float, Double) T: ClassTag](
   }
 }
 
-object SpatialAveragePooling {
+object SpatialAveragePooling extends ModuleSerializable {
   def apply[T: ClassTag](
       kW: Int,
       kH: Int,

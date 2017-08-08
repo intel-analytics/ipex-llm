@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
@@ -38,7 +39,7 @@ import scala.reflect.ClassTag
  * @tparam T numeric type
  */
 @SerialVersionUID(3917196591309935383L)
-class CAdd[@specialized(Float, Double) T: ClassTag](
+class CAdd[T: ClassTag](
   val size: Array[Int],
   var bRegularizer: Regularizer[T] = null)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
@@ -190,7 +191,7 @@ class CAdd[@specialized(Float, Double) T: ClassTag](
   }
 }
 
-object CAdd {
+object CAdd extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
     size: Array[Int],
     bRegularizer: Regularizer[T] = null

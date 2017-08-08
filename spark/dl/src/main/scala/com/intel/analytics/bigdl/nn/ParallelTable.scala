@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.serializer.ContainerSerializable
 
 import scala.reflect.ClassTag
 
@@ -82,7 +83,7 @@ class ParallelTable[T: ClassTag]
   }
 }
 
-object ParallelTable {
+object ParallelTable extends ContainerSerializable {
   def apply[@specialized(Float, Double) T: ClassTag]()
       (implicit ev: TensorNumeric[T]) : ParallelTable[T] = {
     new ParallelTable[T]()

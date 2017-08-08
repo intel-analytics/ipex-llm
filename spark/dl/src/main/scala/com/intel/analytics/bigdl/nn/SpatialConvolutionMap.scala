@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{DenseTensorConv, Storage, Tensor}
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
@@ -35,7 +36,7 @@ import scala.reflect.ClassTag
  *                    applied to the bias.
  */
 @SerialVersionUID(5288662921102331388L)
-class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
+class SpatialConvolutionMap[T: ClassTag](
   val connTable: Tensor[T],
   val kW: Int, // The kernel width of the convolution
   val kH: Int, // The kernel height of the convolution
@@ -305,7 +306,7 @@ class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
   }
 }
 
-object SpatialConvolutionMap {
+object SpatialConvolutionMap extends ModuleSerializable {
 
   def apply[@specialized(Float, Double) T: ClassTag](
     connTable: Tensor[T],

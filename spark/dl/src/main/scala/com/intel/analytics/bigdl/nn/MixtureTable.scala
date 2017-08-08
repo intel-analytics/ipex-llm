@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
@@ -212,7 +213,7 @@ class MixtureTable[T: ClassTag](var dim: Int = Int.MaxValue)
   }
 }
 
-object MixtureTable {
+object MixtureTable extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](dim: Int = Int.MaxValue)
       (implicit ev: TensorNumeric[T]) : MixtureTable[T] = {
     new MixtureTable[T](dim)

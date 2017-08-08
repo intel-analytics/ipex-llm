@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 import scala.reflect._
 
@@ -68,7 +69,7 @@ class CAddTable[T: ClassTag](val inplace: Boolean = false)(
 }
 
 
-object CAddTable {
+object CAddTable extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
       inplace: Boolean = false)(implicit ev: TensorNumeric[T]) : CAddTable[T] = {
     new CAddTable[T](inplace)

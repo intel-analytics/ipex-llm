@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 import scala.reflect.ClassTag
 
@@ -115,7 +116,7 @@ class Padding[T: ClassTag](
   }
 }
 
-object Padding{
+object Padding extends ModuleSerializable {
   def apply[T: ClassTag](
     dim: Int,
     pad: Int,

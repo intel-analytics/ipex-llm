@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.{DenseTensorApply, Tensor, TensorFunc6}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 import scala.reflect.ClassTag
 
@@ -88,7 +89,7 @@ class ELU[T: ClassTag](
   }
 }
 
-object ELU {
+object ELU extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
       alpha: Double = 1.0,
       inplace: Boolean = false)(implicit ev: TensorNumeric[T]) : ELU[T] = {

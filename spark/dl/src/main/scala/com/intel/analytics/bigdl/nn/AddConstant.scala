@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 import scala.reflect.ClassTag
 
@@ -77,7 +78,7 @@ class AddConstant[T: ClassTag](
   }
 }
 
-object AddConstant {
+object AddConstant extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
     constant_scalar: Double,
     inplace: Boolean = false)(implicit ev: TensorNumeric[T]) : AddConstant[T] = {

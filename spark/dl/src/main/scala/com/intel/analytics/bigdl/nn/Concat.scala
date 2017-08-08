@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.utils.serializer.{ContainerSerializable}
 
 import scala.concurrent.Future
 import scala.reflect.ClassTag
@@ -327,7 +328,7 @@ class Concat[T: ClassTag](val dimension: Int)(
   }
 }
 
-object Concat {
+object Concat extends ContainerSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
       dimension: Int)(implicit ev: TensorNumeric[T]) : Concat[T] = {
     new Concat[T](dimension)

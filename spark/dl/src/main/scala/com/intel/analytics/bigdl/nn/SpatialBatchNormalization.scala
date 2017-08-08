@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 import scala.reflect.ClassTag
 
@@ -53,7 +54,7 @@ class SpatialBatchNormalization[T: ClassTag](
   }
 }
 
-object SpatialBatchNormalization {
+object SpatialBatchNormalization extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
       nOutput: Int,
       eps: Double = 1e-5,

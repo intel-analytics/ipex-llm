@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.{DenseTensorApply, Tensor, TensorFunc6}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 import scala.reflect.ClassTag
 
@@ -33,7 +34,7 @@ import scala.reflect.ClassTag
  */
 
 @SerialVersionUID( 3551967457354343585L)
-class HardShrink[T: ClassTag](lambda: Double = 0.5)
+class HardShrink[T: ClassTag](val lambda: Double = 0.5)
   (implicit ev: TensorNumeric[T])
   extends TensorModule[T] {
   private val lam = ev.fromType[Double](lambda)
@@ -68,7 +69,7 @@ class HardShrink[T: ClassTag](lambda: Double = 0.5)
   }
 }
 
-object HardShrink {
+object HardShrink extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
       lambda: Double = 0.5)(implicit ev: TensorNumeric[T]) : HardShrink[T] = {
     new HardShrink[T](lambda)

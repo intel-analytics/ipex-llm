@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
@@ -209,7 +210,7 @@ class LSTM[T : ClassTag] (
   override def toString: String = s"LSTM($inputSize, $hiddenSize, $p)"
 }
 
-object LSTM {
+object LSTM extends CellSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
     inputSize: Int,
     hiddenSize: Int,

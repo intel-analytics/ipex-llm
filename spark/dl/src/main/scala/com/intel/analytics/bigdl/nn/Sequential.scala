@@ -16,8 +16,9 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.{Activity, AbstractModule}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.{ContainerSerializable, ModuleSerializable}
 
 import scala.reflect.ClassTag
 
@@ -149,7 +150,7 @@ class Sequential[T: ClassTag]
 
 }
 
-object Sequential {
+object Sequential extends ContainerSerializable {
   def apply[@specialized(Float, Double) T: ClassTag]()
     (implicit ev: TensorNumeric[T]) : Sequential[T] = {
     new Sequential[T]()

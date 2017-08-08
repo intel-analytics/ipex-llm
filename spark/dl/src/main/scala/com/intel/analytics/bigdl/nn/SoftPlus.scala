@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.{DenseTensorApply, Tensor, TensorFunc4, TensorFunc6}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 import scala.reflect.ClassTag
 
@@ -81,7 +82,7 @@ class SoftPlus[T: ClassTag](
   }
 }
 
-object SoftPlus {
+object SoftPlus extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
       beta: Double = 1.0)(implicit ev: TensorNumeric[T]) : SoftPlus[T] = {
     new SoftPlus[T](beta)

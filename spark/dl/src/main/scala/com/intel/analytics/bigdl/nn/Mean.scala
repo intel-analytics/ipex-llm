@@ -16,6 +16,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 import scala.reflect.ClassTag
 
@@ -46,7 +47,7 @@ class Mean[T: ClassTag](
   override def toString: String = s"nn.Mean"
 }
 
-object Mean {
+object Mean extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
       dimension: Int = 1,
       nInputDims: Int = -1,

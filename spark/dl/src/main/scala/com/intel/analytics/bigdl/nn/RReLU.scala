@@ -19,6 +19,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 import scala.reflect.ClassTag
 
@@ -46,9 +47,9 @@ import scala.reflect.ClassTag
  */
 @SerialVersionUID(- 9012115082607155821L)
 class RReLU[T: ClassTag](
-  lower: Double = 1.0/8,
-  upper: Double = 1.0/3,
-  inplace: Boolean = false)(
+  val lower: Double = 1.0/8,
+  val upper: Double = 1.0/3,
+  val inplace: Boolean = false)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T]  {
   @transient
   var noise: Tensor[T] = null
@@ -167,7 +168,7 @@ class RReLU[T: ClassTag](
   }
 }
 
-object RReLU {
+object RReLU extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
       lower: Double = 1.0/8,
       upper: Double = 1.0/3,

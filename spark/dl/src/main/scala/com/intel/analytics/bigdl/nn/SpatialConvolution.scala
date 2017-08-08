@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
@@ -642,7 +643,7 @@ class SpatialConvolution[T: ClassTag](
   }
 }
 
-object SpatialConvolution {
+object SpatialConvolution extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
       nInputPlane: Int,
       nOutputPlane: Int,

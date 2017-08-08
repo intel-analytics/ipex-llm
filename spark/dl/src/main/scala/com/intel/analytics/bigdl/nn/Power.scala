@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 import scala.reflect.ClassTag
 
@@ -33,7 +34,7 @@ import scala.reflect.ClassTag
  */
 
 @SerialVersionUID(- 6637789603381436472L)
-class Power[@specialized(Float, Double) T: ClassTag](
+class Power[T: ClassTag](
   val power: Double,
   val scale : Double = 1,
   val shift : Double = 0)
@@ -104,7 +105,7 @@ class Power[@specialized(Float, Double) T: ClassTag](
 
 }
 
-object Power {
+object Power extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
       power: Double,
       scale : Double = 1,

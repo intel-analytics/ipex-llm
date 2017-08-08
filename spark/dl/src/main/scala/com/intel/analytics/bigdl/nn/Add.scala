@@ -19,6 +19,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
@@ -127,7 +128,7 @@ class Add[T: ClassTag](val inputSize: Int
   }
 }
 
-object Add {
+object Add extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
     inputSize: Int)(implicit ev: TensorNumeric[T]) : Add[T] = {
     new Add[T](inputSize)

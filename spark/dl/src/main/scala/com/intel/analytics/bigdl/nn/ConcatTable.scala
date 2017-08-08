@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.{ContainerSerializable, ModuleSerializable}
 import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
@@ -241,7 +242,7 @@ class ConcatTable[T : ClassTag]
   }
 }
 
-object ConcatTable {
+object ConcatTable extends ContainerSerializable {
   def apply[A <: Activity : ClassTag, @specialized(Float, Double) T: ClassTag]()
       (implicit ev: TensorNumeric[T]) : ConcatTable[T] = {
     new ConcatTable[T]()

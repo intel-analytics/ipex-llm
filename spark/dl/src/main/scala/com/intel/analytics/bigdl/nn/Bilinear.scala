@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
@@ -248,7 +249,7 @@ class Bilinear[T: ClassTag](
   }
 }
 
-object Bilinear {
+object Bilinear extends  ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
     inputSize1: Int,
     inputSize2: Int,

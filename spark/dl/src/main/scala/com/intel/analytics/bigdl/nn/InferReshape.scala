@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 import scala.reflect.ClassTag
 
@@ -45,7 +46,7 @@ import scala.reflect.ClassTag
  * @param batchMode whether in batch mode
  * @tparam T Numeric type ([[Float]] and [[Double]] are allowed)
  */
-class InferReshape[@specialized(Float, Double) T: ClassTag](
+class InferReshape[T: ClassTag](
   size: Array[Int], var batchMode: Boolean = false)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   private var inferedSizes: Array[Int] = _
@@ -155,7 +156,7 @@ class InferReshape[@specialized(Float, Double) T: ClassTag](
   }
 }
 
-object InferReshape {
+object InferReshape extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](size: Array[Int], batchMode: Boolean = false)
     (implicit ev: TensorNumeric[T]): InferReshape[T] =
     new InferReshape(size, batchMode)

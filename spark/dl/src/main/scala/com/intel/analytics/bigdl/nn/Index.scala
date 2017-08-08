@@ -19,6 +19,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 import scala.reflect.ClassTag
 
@@ -72,7 +73,7 @@ class Index[T: ClassTag](dimension: Int)(implicit ev: TensorNumeric[T])
   }
 }
 
-object Index {
+object Index extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
       dimension: Int)(implicit ev: TensorNumeric[T]) : Index[T] = {
     new Index[T](dimension)

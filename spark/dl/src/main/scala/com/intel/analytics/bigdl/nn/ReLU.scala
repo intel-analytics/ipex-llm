@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 import scala.reflect.ClassTag
 
@@ -33,7 +34,7 @@ class ReLU[T: ClassTag](ip: Boolean = false)(
   implicit ev: TensorNumeric[T]) extends Threshold[T](0, 0, ip) {
 }
 
-object ReLU {
+object ReLU extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
       ip: Boolean = false)(implicit ev: TensorNumeric[T]) : ReLU[T] = {
     new ReLU[T](ip)

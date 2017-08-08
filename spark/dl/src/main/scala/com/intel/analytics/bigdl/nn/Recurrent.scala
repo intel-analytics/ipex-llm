@@ -18,9 +18,12 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.{ContainerSerializable, DataConverter, ModuleData, ModuleSerializer}
 import com.intel.analytics.bigdl.utils.{T, Table}
+import serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -400,9 +403,45 @@ class Recurrent[T : ClassTag]()
   }
 }
 
-object Recurrent {
+object Recurrent extends ContainerSerializable {
   def apply[@specialized(Float, Double) T: ClassTag]()
     (implicit ev: TensorNumeric[T]) : Recurrent[T] = {
     new Recurrent[T]()
+  }
+
+  override def loadModule[T: ClassTag](model : BigDLModule)
+                                      (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
+    val moduleData = super.loadModule(model)
+    val recurrent = moduleData.module.asInstanceOf[Recurrent[T]]
+    val attrMap = model.getAttrMap
+
+    val topologyAttr = attrMap.get("topology")
+    recurrent.topology = DataConverter.getAttributeValue(topologyAttr).
+      asInstanceOf[Cell[T]]
+
+    val preTopologyAttr = attrMap.get("preTopology")
+    recurrent.preTopology = DataConverter.getAttributeValue(preTopologyAttr).
+      asInstanceOf[AbstractModule[Activity, Activity, T]]
+
+    moduleData
+  }
+
+  override def serializeModule[T: ClassTag](module : ModuleData[T])
+                                           (implicit ev: TensorNumeric[T]) : BigDLModule = {
+    val containerBuilder = BigDLModule.newBuilder(super.serializeModule(module))
+
+    val recurrent = module.module.asInstanceOf[Recurrent[T]]
+
+    val topologyBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(topologyBuilder, recurrent.topology,
+      ModuleSerializer.abstractModuleType)
+    containerBuilder.putAttr("topology", topologyBuilder.build)
+
+    val preTopologyBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(preTopologyBuilder,
+      recurrent.preTopology, ModuleSerializer.abstractModuleType)
+    containerBuilder.putAttr("preTopology", preTopologyBuilder.build)
+
+    containerBuilder.build
   }
 }

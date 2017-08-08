@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 
 import scala.reflect.ClassTag
 
@@ -31,7 +32,7 @@ import scala.reflect.ClassTag
  * @param padBottom pad bottom position
  */
 @SerialVersionUID(- 5144173515559923276L)
-class SpatialZeroPadding[@specialized(Float, Double) T: ClassTag](
+class SpatialZeroPadding[T: ClassTag](
   padLeft: Int, padRight: Int, padTop: Int, padBottom: Int)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   def this(padLeft: Int)(implicit ev: TensorNumeric[T]) = this(padLeft, padLeft, padLeft, padLeft)
@@ -174,7 +175,7 @@ class SpatialZeroPadding[@specialized(Float, Double) T: ClassTag](
   }
 }
 
-object SpatialZeroPadding {
+object SpatialZeroPadding extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
       padLeft: Int,
       padRight: Int,
