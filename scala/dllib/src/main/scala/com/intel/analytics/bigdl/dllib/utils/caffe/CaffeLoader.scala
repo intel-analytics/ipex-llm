@@ -82,12 +82,14 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
   }
 
   private def loadCaffe(prototxtPath: String, modelPath: String): Unit = {
+    if (null == netparam) {
       netparam = loadBinary(prototxtPath, modelPath)
       import scala.collection.JavaConverters._
       // V1LayerParameter
       netparam.getLayersList.asScala.foreach(layer => name2LayerV1 += (layer.getName -> layer))
       // V2LayerParameter
       netparam.getLayerList.asScala.foreach(layer => name2LayerV2 += (layer.getName -> layer))
+    }
   }
 
   private def loadBinary(prototxtPath: String, modelPath: String): Caffe.NetParameter = {
@@ -140,7 +142,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
     v1Layers.foreach(v1Layer => {
       val name = v1Layer.getName
       if (layers.contains(name)) {
-        var weightLayer = layers(name)
+        val weightLayer = layers(name)
         builder.addLayers(copyBlobs(weightLayer, v1Layer).asInstanceOf[V1LayerParameter])
       } else {
         builder.addLayers(v1Layer)
@@ -150,7 +152,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
     v2Layers.foreach(v2Layer => {
       val name = v2Layer.getName
       if (layers.contains(name)) {
-        var weightLayer = layers(name)
+        val weightLayer = layers(name)
         builder.addLayer(copyBlobs(weightLayer, v2Layer).asInstanceOf[LayerParameter])
       } else {
         builder.addLayer(v2Layer)
@@ -282,7 +284,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
     val allLayers = ArrayBuffer[GeneratedMessage]()
     if (netparam.getLayersList.size > 0 ) {
       // filter out those layers from prototxt but also occurs in binary
-      var localMap = new mutable.HashMap[String, Int]()
+      val localMap = new mutable.HashMap[String, Int]()
       var i = 0
       netparam.getLayersList.asScala.
         foreach(layer => {
