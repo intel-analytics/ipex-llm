@@ -2,11 +2,11 @@
 
 **Scala:**
 ```scala
-val m = SpatialConvolution(nInputPlane,nOutputPlane,kernelW,kernelH,strideW=1,strideH=1,padW=0,padH=0,nGroup=1,propagateBack=true,wRegularizer=null,bRegularizer=null,initWeight=null, initBias=null, initGradWeight=null, initGradBias=null)
+val m = SpatialConvolution(nInputPlane,nOutputPlane,kernelW,kernelH,strideW=1,strideH=1,padW=0,padH=0,nGroup=1,propagateBack=true,wRegularizer=null,bRegularizer=null,initWeight=null, initBias=null, initGradWeight=null, initGradBias=null, withBias=true, dataFormat=DataFormat.NCHW)
 ```
 **Python:**
 ```python
-m = SpatialConvolution(n_input_plane,n_output_plane,kernel_w,kernel_h,stride_w=1,stride_h=1,pad_w=0,pad_h=0,n_group=1,propagate_back=True,wRegularizer=None,bRegularizer=None,init_weight=None,init_bias=None,init_grad_weight=None,init_grad_bias=None)
+m = SpatialConvolution(n_input_plane,n_output_plane,kernel_w,kernel_h,stride_w=1,stride_h=1,pad_w=0,pad_h=0,n_group=1,propagate_back=True,wRegularizer=None,bRegularizer=None,init_weight=None,init_bias=None,init_grad_weight=None,init_grad_bias=None, with_bias=True, data_format="NCHW")
 ```
 
 SpatialConvolution is a module that applies a 2D convolution over an input image.
@@ -32,6 +32,10 @@ Detailed paramter explaination for the constructor.
  * `initBias`  bias initializer
  * `initGradWeight` weight gradient initializer
  * `initGradBias` bias gradient initializer
+ * `with_bias` the optional initial value for if need bias
+ * `data_format` a string value (or DataFormat Object in Scala) of "NHWC" or "NCHW" to specify the input data format of this layer. In "NHWC" format
+                        data is stored in the order of \[batch_size, height, width, channels\], in "NCHW" format data is stored
+                        in the order of \[batch_size, channels, height, width\].
  
 **Scala example:**
 ```scala

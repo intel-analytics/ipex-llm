@@ -16,6 +16,10 @@
 
 package com.intel.analytics.bigdl.nn.abstractnn
 
+/**
+ * DataFormat are used to specify the data format of the input and output data when data is
+ * 2-D images.
+ */
 sealed trait DataFormat {
   def getHWCDims(inputDims: Int): (Int, Int, Int)
 
@@ -29,6 +33,11 @@ object DataFormat {
       case "NCHW" => NCHW
     }
   }
+
+  /**
+   * Specify the input/output data format when data is stored in the order of
+   * [batch, channels, height, width]
+   */
   case object NCHW extends DataFormat {
     def getHWCDims(inputDims: Int): (Int, Int, Int) = {
       if (inputDims == 3) (2, 3, 1) else (3, 4, 2)
@@ -36,6 +45,11 @@ object DataFormat {
 
     val value = "NCHW"
   }
+
+  /**
+   * Specify the input/output data format when data is stored in the order of
+   * [batch, height, width, channels]
+   */
   case object NHWC extends DataFormat {
     def getHWCDims(inputDims: Int): (Int, Int, Int) = {
       if (inputDims == 3) (1, 2, 3) else (2, 3, 4)

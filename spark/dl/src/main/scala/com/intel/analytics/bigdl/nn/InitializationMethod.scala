@@ -22,6 +22,8 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 /**
  * VariableFormat describe the meaning of each dimension of the variable
+ * (the trainable parameters of a model like weight and bias) and can be used to
+ * return the fan in and fan out size of the variable when provided the variable shape.
  */
 trait VariableFormat {
   def getFanIn(shape: Array[Int]): Int = {
