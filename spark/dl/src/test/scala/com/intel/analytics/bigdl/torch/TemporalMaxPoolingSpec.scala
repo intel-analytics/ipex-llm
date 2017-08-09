@@ -103,6 +103,49 @@ class TemporalMaxPoolingSpec extends TorchSpec {
       scalaTime / 1e9 + " s")
   }
 
+  "A TemporalMaxPooling" should "generate correct output and gradInput in batch with" +
+    "multiple forward and backward" in {
+    torchCheck()
+    RNG.setSeed(100)
+    val module = new TemporalMaxPooling[Double](4)
+    val input = Tensor[Double](5, 10, 5).rand()
+    val gradOutput = Tensor[Double](5, 2, 5).rand()
+
+    val start = System.nanoTime()
+    var output = module.forward(input)
+    var gradInput = module.backward(input, gradOutput)
+    output = module.forward(input)
+    gradInput = module.backward(input, gradOutput)
+    val end = System.nanoTime()
+    val scalaTime = end - start
+
+    val code =
+      s"""
+         |module = nn.TemporalMaxPooling(4)
+         |output = module:forward(input)
+         |gradInput = module:backward(input,gradOutput)
+         |output = module:forward(input)
+         |gradInput = module:backward(input,gradOutput)
+       """.stripMargin
+
+    val (luaTime, torchResult) = TH.run(code, Map("input" -> input,
+      "gradOutput" -> gradOutput), Array("output", "gradInput"))
+    val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
+    val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
+
+
+    luaOutput1.map(output, (v1, v2) => {
+      assert(abs(v1 - v2) == 0)
+      v1
+    })
+    luaOutput2.map(gradInput, (v1, v2) => {
+      assert(abs(v1 - v2) == 0)
+      v1
+    })
+
+    println("Test case : TemporalMaxPooling, Torch : " + luaTime + " s, Scala : " +
+      scalaTime / 1e9 + " s")
+  }
   "A TemporalMaxPooling" should "be good in gradient check for input" in {
     torchCheck()
     val seed = 100
