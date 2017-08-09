@@ -39,13 +39,15 @@ import scala.reflect.ClassTag
 class TemporalMaxPooling[T: ClassTag](
   val kW: Int, var dW: Int = -1)
   (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
-  @transient var indices: Tensor[T] = _
+  @transient private var indices: Tensor[T] = _
+  @transient private var inputC: Tensor[T] = _
+  @transient private var gradOutputC: Tensor[T] = _
 
   if (dW == -1) {
     dW = kW
   }
 
-  def shapeCheck(
+  private def shapeCheck(
     input: Tensor[T],
     gradOutput: Tensor[T],
     indices: Tensor[T],
@@ -110,7 +112,10 @@ class TemporalMaxPooling[T: ClassTag](
     frameSize = input.size(dimF)
     nOFrame = (nIFrame - kW) / dW + 1
 
-    val inputC = input.contiguous()
+    if (inputC == null) {
+      inputC = Tensor()
+    }
+    inputC.resizeAs(input).copy(input)
 
     if (inputC.nDimension() == 2) {
       output.resize(nOFrame, frameSize)
@@ -175,7 +180,7 @@ class TemporalMaxPooling[T: ClassTag](
   def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     shapeCheck(input, gradOutput, indices, kW, dW)
 
-    val gradOutputC = gradOutput.contiguous()
+    gradOutputC.resizeAs(gradOutput).copy(gradOutput)
 
     gradInput.resizeAs(input)
     gradInput.zero()
@@ -276,7 +281,9 @@ class TemporalMaxPooling[T: ClassTag](
 
   override def clearState(): this.type = {
     super.clearState()
-    indices.set()
+    if (indices != null) indices.set()
+    if (inputC != null) inputC.set()
+    if (gradOutputC != null) gradOutputC.set()
     this
   }
 }

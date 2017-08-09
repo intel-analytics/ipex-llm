@@ -64,18 +64,6 @@ class TemporalMaxPoolingSpec extends TorchSpec {
       scalaTime / 1e9 + " s")
   }
 
-  "a" should "a" in {
-    import com.intel.analytics.bigdl.numeric.NumericFloat
-    val module = new TemporalMaxPooling(4)
-    val input = Tensor(1, 8, 5).rand()
-    val output = module.forward(input)
-    val gradOutput = Tensor(1, 2, 5).rand()
-    val gradInput = module.backward(input, gradOutput)
-
-    println(output)
-    println(gradInput)
-  }
-
   "A TemporalMaxPooling" should "generate correct output and gradInput in batch" in {
     torchCheck()
     RNG.setSeed(100)
