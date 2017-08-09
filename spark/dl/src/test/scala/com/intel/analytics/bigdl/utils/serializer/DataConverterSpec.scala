@@ -91,9 +91,7 @@ class DataConverterSpec extends FlatSpec with Matchers{
   "L1L2Regularizer conversion " should  " work properly" in {
     val regularizer = L1L2Regularizer(1.0, 2.0)
     val attriBulder = AttrValue.newBuilder
-    val cls = Class.forName("com.intel.analytics.bigdl.optim.Regularizer")
-    val tpe = universe.runtimeMirror(cls.getClassLoader).classSymbol(cls).selfType
-    DataConverter.setAttributeValue(attriBulder, regularizer, tpe)
+    DataConverter.setAttributeValue(attriBulder, regularizer, ModuleSerializer.regularizerType)
     val retrievedValue = DataConverter.getAttributeValue(attriBulder.build)
     retrievedValue.isInstanceOf[L1L2Regularizer[Float]] should be (true)
     retrievedValue.asInstanceOf[L1L2Regularizer[Float]].l1 should be (regularizer.l1)
@@ -103,9 +101,7 @@ class DataConverterSpec extends FlatSpec with Matchers{
   "L1Regularizer conversion " should  " work properly" in {
     val regularizer = L1Regularizer(1.0)
     val attriBulder = AttrValue.newBuilder
-    val cls = Class.forName("com.intel.analytics.bigdl.optim.Regularizer")
-    val tpe = universe.runtimeMirror(cls.getClassLoader).classSymbol(cls).selfType
-    DataConverter.setAttributeValue(attriBulder, regularizer, tpe)
+    DataConverter.setAttributeValue(attriBulder, regularizer, ModuleSerializer.regularizerType)
     val retrievedValue = DataConverter.getAttributeValue(attriBulder.build)
     retrievedValue.isInstanceOf[L1Regularizer[Float]] should be (true)
     retrievedValue.asInstanceOf[L1Regularizer[Float]].l1 should be (regularizer.l1)
@@ -114,9 +110,7 @@ class DataConverterSpec extends FlatSpec with Matchers{
   "L2Regularizer conversion " should  " work properly" in {
     val regularizer = L2Regularizer(1.0)
     val attriBulder = AttrValue.newBuilder
-    val cls = Class.forName("com.intel.analytics.bigdl.optim.Regularizer")
-    val tpe = universe.runtimeMirror(cls.getClassLoader).classSymbol(cls).selfType
-    DataConverter.setAttributeValue(attriBulder, regularizer, tpe)
+    DataConverter.setAttributeValue(attriBulder, regularizer, ModuleSerializer.regularizerType)
     val retrievedValue = DataConverter.getAttributeValue(attriBulder.build)
     retrievedValue.isInstanceOf[L2Regularizer[Float]] should be (true)
     retrievedValue.asInstanceOf[L2Regularizer[Float]].l2 should be (regularizer.l2)
@@ -125,9 +119,7 @@ class DataConverterSpec extends FlatSpec with Matchers{
   "Empty Regularizer conversion " should  " work properly" in {
     val regularizer : L1L2Regularizer[Float] = null
     val attriBulder = AttrValue.newBuilder
-    val cls = Class.forName("com.intel.analytics.bigdl.optim.Regularizer")
-    val tpe = universe.runtimeMirror(cls.getClassLoader).classSymbol(cls).toType
-    DataConverter.setAttributeValue(attriBulder, regularizer, tpe)
+    DataConverter.setAttributeValue(attriBulder, regularizer, ModuleSerializer.regularizerType)
     val attr = attriBulder.build
     val retrievedValue = DataConverter.getAttributeValue(attr)
     attr.getDataType should be (DataType.REGULARIZER)
@@ -137,9 +129,7 @@ class DataConverterSpec extends FlatSpec with Matchers{
   "Tensor conversion " should " work properly" in {
     val tensor = Tensor(5, 5).apply1(e => Random.nextFloat())
     val attriBulder = AttrValue.newBuilder
-    val cls = Class.forName("com.intel.analytics.bigdl.tensor.Tensor")
-    val tpe = universe.runtimeMirror(cls.getClassLoader).classSymbol(cls).selfType
-    DataConverter.setAttributeValue(attriBulder, tensor, tpe)
+    DataConverter.setAttributeValue(attriBulder, tensor, ModuleSerializer.tensorType)
     val attr = attriBulder.build
     val retrievedValue = DataConverter.getAttributeValue(attr)
     attr.getDataType should be (DataType.TENSOR)
@@ -149,9 +139,7 @@ class DataConverterSpec extends FlatSpec with Matchers{
   "Empty Tensor conversion " should " work properly" in {
     val tensor : Tensor[Float] = null
     val attriBulder = AttrValue.newBuilder
-    val cls = Class.forName("com.intel.analytics.bigdl.tensor.Tensor")
-    var tpe = universe.runtimeMirror(cls.getClassLoader).classSymbol(cls).selfType
-    DataConverter.setAttributeValue(attriBulder, tensor, tpe)
+    DataConverter.setAttributeValue(attriBulder, tensor, ModuleSerializer.tensorType)
     val attr = attriBulder.build
     val retrievedValue = DataConverter.getAttributeValue(attr)
     attr.getDataType should be (DataType.TENSOR)
@@ -206,16 +194,6 @@ class DataConverterSpec extends FlatSpec with Matchers{
     val retrievedValue = DataConverter.getAttributeValue(attr)
     attr.getDataType should be (DataType.INITMETHOD)
     retrievedValue should be (initMethod)
-  }
-
-  "Module Conversion " should " work properly" in {
-    val linear = Linear(5, 5).setName("linear")
-    val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, linear, ModuleSerializer.abstractModuleType)
-    val attr = attriBulder.build
-    val retrievedValue = DataConverter.getAttributeValue(attr)
-    attr.getDataType should be (DataType.MODULE)
-    retrievedValue should be (linear)
   }
 
   "Nullable Module Conversion " should " work properly" in {
@@ -330,17 +308,6 @@ class DataConverterSpec extends FlatSpec with Matchers{
   }
 
 
-  "Array of Modules conversion" should " work properly" in {
-    val arry = new Array[AbstractModule[Activity, Activity, Float]](2)
-    arry(0) = Linear[Float](2, 3).setName("l1")
-    arry(1) = Linear[Float](2, 3).setName("l2")
-    val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, arry)
-    val attr = attriBulder.build
-    val retrievedValue = DataConverter.getAttributeValue(attr)
-    retrievedValue should be (arry)
-  }
-
   "NameList conversion " should " work properly" in {
 
     val map = new mutable.HashMap[String, mutable.Map[String, Any]]
@@ -354,7 +321,6 @@ class DataConverterSpec extends FlatSpec with Matchers{
     attrsMap("string") = "str"
     attrsMap("bool") = true
     attrsMap("tensor") = Tensor(2, 2).apply1(_ => Random.nextFloat())
-    attrsMap("module") = Linear(3, 4).setName("linear")
 
     map("test") = attrsMap
 
