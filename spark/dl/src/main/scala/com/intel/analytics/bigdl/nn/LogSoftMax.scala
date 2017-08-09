@@ -43,9 +43,9 @@ class LogSoftMax[T: ClassTag](
   @transient
   private var results: Array[Future[Unit]] = null
   @transient
-  private var buffer1: Array[T] = null
+  private var ones: Array[T] = null
   @transient
-  private var buffer2: Array[T] = null
+  private var buffer: Array[T] = null
 
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
@@ -76,24 +76,24 @@ class LogSoftMax[T: ClassTag](
   }
 
   private def updateOutputFrame(in: Tensor[T], out: Tensor[T]): Unit = {
-    if (buffer1 == null || buffer1.length < in.nElement) {
-      buffer1 = Array.fill(in.nElement)(ev.fromType[Int](1))
+    if (ones == null || ones.length < in.nElement) {
+      ones = Array.fill(in.nElement)(ev.fromType[Int](1))
     }
-    if (buffer2 == null || buffer2.length < in.nElement) {
-      buffer2 = new Array[T](in.nElement)
+    if (buffer == null || buffer.length < in.nElement) {
+      buffer = new Array[T](in.nElement)
     }
 
     ev.vExp(in.nElement,
       in.storage.array,
       in.storageOffset - 1,
-      buffer2,
+      buffer,
       0)
 
     val dot = ev.dot(in.nElement,
-      buffer2,
+      buffer,
       0,
       1,
-      buffer1,
+      ones,
       0,
       1)
 
@@ -101,7 +101,7 @@ class LogSoftMax[T: ClassTag](
 
     ev.axpy(in.nElement,
       sum,
-      buffer1,
+      ones,
       0,
       1,
       out.storage.array,
@@ -141,14 +141,14 @@ class LogSoftMax[T: ClassTag](
     ev.vExp(out.nElement,
       out.storage.array,
       out.storageOffset - 1,
-      buffer2,
+      buffer,
       0)
 
     val dot = ev.dot(gradOut.nElement,
       gradOut.storage.array,
       gradOut.storageOffset - 1,
       1,
-      buffer1,
+      ones,
       0,
       1)
 
@@ -156,7 +156,7 @@ class LogSoftMax[T: ClassTag](
 
     ev.axpy(gradOut.nElement,
       sum,
-      buffer2,
+      buffer,
       0,
       1,
       gradOut.storage.array,
@@ -166,8 +166,8 @@ class LogSoftMax[T: ClassTag](
 
   override def clearState() : this.type = {
     super.clearState()
-    buffer1 = null
-    buffer2 = null
+    ones = null
+    buffer = null
     results = null
     this
   }
