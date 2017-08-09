@@ -29,6 +29,7 @@ from pyspark import SparkConf
 import numpy as np
 import threading
 from bigdl.util.engine import prepare_env
+from pyspark.ml.param import Param, Params
 
 INTMAX = 2147483647
 INTMIN = -2147483648
@@ -82,13 +83,66 @@ class JavaValue(object):
         print("creating: " + name)
         return name
 
-    def __init__(self, jvalue, bigdl_type, *args):
+    def __init__(self, jvalue=None, bigdl_type="float", *args):
         self.value = jvalue if jvalue else callBigDlFunc(
             bigdl_type, self.jvm_class_constructor(), *args)
         self.bigdl_type = bigdl_type
 
     def __str__(self):
         return self.value.toString()
+
+
+class JavaWrapper(Params, JavaValue):
+    """
+    Utility class to help create wrapper classes from Java/Scala
+    implementations of pipeline components.
+    """
+
+    # __metaclass__ = ABCMeta
+
+
+    def _make_java_param_pair(self, param, value):
+        """
+        Makes a Java parm pair.
+        """
+        sc = SparkContext._active_spark_context
+        param = self._resolveParam(param)
+        java_param = self.value.getParam(param.name)
+        java_value = _py2java(sc, value)
+        return java_param.w(java_value)
+
+    def _transfer_params_to_java(self):
+        """
+        Transforms the embedded params to the companion Java object.
+        """
+        paramMap = self.extractParamMap()
+        for param in self.params:
+            if param in paramMap:
+                pair = self._make_java_param_pair(param, paramMap[param])
+                self.value.set(pair)
+
+    def _transfer_params_from_java(self):
+        """
+        Transforms the embedded params from the companion Java object.
+        """
+        sc = SparkContext._active_spark_context
+        for param in self.params:
+            if self.value.hasParam(param.name):
+                java_param = self.value.getParam(param.name)
+                value = _java2py(sc, self.value.getOrDefault(java_param))
+                self._paramMap[param] = value
+
+    @staticmethod
+    def _empty_java_param_map():
+        """
+        Returns an empty Java ParamMap reference.
+        """
+        jvm = SparkContext._jvm
+        if jvm:
+            return jvm
+        else:
+            raise AttributeError("Cannot load _jvm from SparkContext. Is SparkContext initialized?")
+        return jvm.org.apache.spark.ml.param.ParamMap()
 
 
 class TestResult():
@@ -188,6 +242,7 @@ class JTensor(object):
 
 
 class Sample(object):
+
     def __init__(self, features, label, features_shape, label_shape,
                  bigdl_type="float"):
         def get_dtype():
@@ -195,6 +250,7 @@ class Sample(object):
                 return "float32"
             else:
                 return "float64"
+
         self.features = np.array(features, dtype=get_dtype()).reshape(features_shape)  # noqa
         self.label = np.array(label, dtype=get_dtype()).reshape(label_shape)
         self.bigdl_type = bigdl_type
@@ -204,9 +260,11 @@ class Sample(object):
         return cls(
             features=[float(i) for i in features.ravel()],
             label=[float(i) for i in label.ravel()],
+            bigdl_type=bigdl_type,
             features_shape=list(features.shape),
-            label_shape=list(label.shape) if label.shape else [label.size],
-            bigdl_type=bigdl_type)
+            label_shape=list(label.shape) if label.shape else [label.size]
+        )
+
 
     def __reduce__(self):
         (features_storage, features_shape) = JTensor.flatten_ndarray(self.features)
@@ -298,7 +356,7 @@ def get_spark_context(conf = None):
 
 def get_spark_sql_context(sc):
     if "getOrCreate" in SQLContext.__dict__:
-        return SQLContext.getOrCreate()
+        return SQLContext.getOrCreate(sc)
     else:
         return SQLContext(sc)  # Compatible with Spark1.5.1
 

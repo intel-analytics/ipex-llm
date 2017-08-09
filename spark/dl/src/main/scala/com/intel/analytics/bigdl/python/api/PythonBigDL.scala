@@ -41,6 +41,9 @@ import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowSaver
 import scala.collection.JavaConverters._
 import scala.language.existentials
 import scala.reflect.ClassTag
+import org.apache.spark.ml.{DLClassifier, DLClassifierModel, DLEstimator, DLModel}
+import org.apache.spark.ml.param.ParamMap
+import org.apache.spark.sql.DataFrame
 
 /**
  * [[com.intel.analytics.bigdl.dataset.Sample]] for python.
@@ -1782,7 +1785,6 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Engine.init
   }
 
-
   def setWeights(model: AbstractModule[Activity, Activity, T], weights: JList[JTensor]): Unit = {
     val weightTensor = weights.asScala.toArray.map(toTensor(_))
     model.setWeightsBias(weightTensor)
@@ -1846,7 +1848,51 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def getFinalStateAndCellStatus(rec: Recurrent[T]): JList[JTensor] = {
     val res = rec.getFinalStateAndCellStatus()
-      if (res._2 == null) return List(toJTensor(res._1), null.asInstanceOf[JTensor]).asJava
+    if (res._2 == null) return List(toJTensor(res._1), null.asInstanceOf[JTensor]).asJava
     else return List(toJTensor(res._1), toJTensor(res._2)).asJava
+  }
+
+  def createDLEstimator(model: Module[T],
+                        criterion : Criterion[T],
+                        featureSize : JList[Int],
+                        labelSize : JList[Int],
+                        uid: String = "DLEstimator"): DLEstimator[T] = {
+    new DLEstimator(model, criterion, featureSize.asScala.toArray, labelSize.asScala.toArray, uid)
+  }
+
+  def fitEstimator(estimator: DLEstimator[T], dataset: DataFrame): DLModel[T] = {
+    estimator.fit(dataset).asInstanceOf[DLModel[T]]
+  }
+
+  def createDLModel(model: Module[T],
+                    featureSize : JList[Int],
+                    uid: String = "DLModel"): DLModel[T] = {
+    new DLModel(model, featureSize.asScala.toArray, uid)
+  }
+
+  def dlmodelSetFeatureSize(model: DLModel[T], featureSize : JList[Int]): model.type = {
+    model.setFeatureSize(featureSize.asScala.toArray)
+  }
+
+  def dlmodelGetFeatureSize(model: DLModel[T]): JList[Int] = {
+    model.getFeatureSize.toList.asJava
+  }
+
+  def createDLClassifier(model: Module[T],
+                        criterion : Criterion[T],
+                        featureSize : JList[Int],
+                         labelSize : JList[Int] = Array(1).toList.asJava,
+                         uid: String = "DLClassifier"): DLClassifier[T] = {
+    new DLClassifier(model, criterion, featureSize.asScala.toArray, uid)
+  }
+
+  def fitClassifier(classifier: DLClassifier[T], dataset: DataFrame): DLClassifierModel[T] = {
+    classifier.fit(dataset).asInstanceOf[DLClassifierModel[T]]
+  }
+
+  def createDLClassifierModel(model: Module[T],
+                              featureSize : JList[Int],
+                              uid: String = "DLClassifierModel"): DLClassifierModel[T] = {
+    new DLClassifierModel(model, featureSize.asScala.toArray, uid)
   }
 }
