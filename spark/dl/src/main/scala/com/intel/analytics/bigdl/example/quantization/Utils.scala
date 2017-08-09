@@ -36,7 +36,8 @@ object Utils {
   case class TestParams(folder: String = "./",
     model: String = "unkonwn_model",
     modelPath: String = "",
-    batchSize: Int = 32)
+    batchSize: Int = 32,
+    quantize: Boolean = true)
 
   val testParser = new OptionParser[TestParams]("BigDL Models Test with Quantization") {
     opt[String]('f', "folder")
@@ -53,6 +54,9 @@ object Utils {
     opt[Int]('b', "batchSize")
             .text("How many samples in a bach?")
             .action((x, c) => c.copy(batchSize = x))
+    opt[Boolean]('q', "quantize")
+            .text("Quantize the model?")
+            .action((x, c) => c.copy(quantize = x))
   }
 
   def getRddData(model: String, sc: SparkContext, partitionNum: Int,
@@ -127,6 +131,30 @@ object Utils {
       new Top5Accuracy[Float]), Some(batchSize))
     result.foreach(r => println(s"${r._2} is ${r._1}"))
     result
+  }
+
+  def writeToLog(model: String, quantized: Boolean, totalNum: Int, accuracies: Array[Float],
+    costs: Double): Unit = {
+    val name = Paths.get(System.getProperty("user.dir"), "model_inference.log").toString
+    val file = new File(name)
+
+    val out = if (file.exists() && !file.isDirectory) {
+      new PrintWriter(new FileOutputStream(new File(name), true))
+    } else {
+      new PrintWriter(name)
+    }
+
+    out.append(model)
+    if (quantized) {
+      out.append("\tQuantized")
+    } else {
+      out.append("\tMKL")
+    }
+    out.append("\t" + totalNum.toString)
+    accuracies.foreach(a => out.append(s"\t${a}"))
+    out.append(s"\t${costs}")
+    out.append("\n")
+    out.close()
   }
 
   def writeToLog(model: String, totalNum: Int, accuracies: Array[(Float, Float)],

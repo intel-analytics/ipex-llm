@@ -147,8 +147,8 @@ object Module {
     return Tensor(storage)
   }
 
-  def quantize[@specialized(Float) T: ClassTag](model: AbstractModule[Activity, Activity, T])(
-    implicit ev: TensorNumeric[T]): Module[T] = {
+  def quantize[@specialized(Float, Double) T: ClassTag](
+    model: AbstractModule[Activity, Activity, T])(implicit ev: TensorNumeric[T]): Module[T] = {
     type ModuleNode[R] = AbstractModule[Activity, Tensor[R], R]
     type SeqNodes[R] = Seq[Node[ModuleNode[R]]]
     type ArrayNodes[R] = Array[Node[ModuleNode[R]]]

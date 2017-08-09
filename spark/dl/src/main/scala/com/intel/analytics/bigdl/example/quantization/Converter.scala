@@ -24,40 +24,71 @@ import scopt.OptionParser
 object Converter {
 
   case class ConverterParam(
-    modelType: String = "",
     from: String = "",
+    to: String = "",
+    input: String = "",
+    output: String = "",
     prototxt: String = "",
-    to: String = ""
+    quantize: Boolean = false
   )
 
   val converterParser = new OptionParser[ConverterParam]("Convert caffe model to bigdl model") {
-    opt[String]("modelType")
-            .text("What's the type of origin model?")
-            .action((x, c) => c.copy(modelType = x))
-            .required()
     opt[String]("from")
-            .text("Where's the origin model file?")
+            .text("What's the type origin model (caffe, torch, bigdl)?")
             .action((x, c) => c.copy(from = x))
+            .required()
+    opt[String]("to")
+            .text("What's the type of model you want (bigdl, torch)?")
+            .action((x, c) => c.copy(to = x))
+            .required()
+    opt[String]("input")
+            .text("Where's the origin model file?")
+            .action((x, c) => c.copy(input = x))
+            .required()
+    opt[String]("output")
+            .text("Where's the bigdl model file to save?")
+            .action((x, c) => c.copy(output = x))
             .required()
     opt[String]("prototxt")
             .text("Where's the caffe deploy prototxt?")
             .action((x, c) => c.copy(prototxt = x))
-    opt[String]("to")
-            .text("Where's the bigdl model?")
-            .action((x, c) => c.copy(to = x))
-            .required()
+    opt[Boolean]("quantize")
+            .text("Do you want to quantize the model?")
+            .action((x, c) => c.copy(quantize = x))
   }
 
   def main(args: Array[String]): Unit = {
     converterParser.parse(args, ConverterParam()).foreach { param =>
-      val model = param.modelType.toLowerCase match {
+      val input = param.input
+      val output = param.output
+
+      val loadedModel = param.from.toLowerCase match {
+        case "bigdl" =>
+          Module.load[Float](input)
         case "torch" =>
-          Module.loadTorch(param.from)
+          Module.loadTorch[Float](input)
         case "caffe" =>
-          CaffeLoader.loadCaffe(param.prototxt, param.from)._1
+          CaffeLoader.loadCaffe[Float](param.prototxt, input)._1
+        case _ =>
+          throw new UnsupportedOperationException(s"Unsupported model type.")
       }
 
-      model.save(param.to)
+      val model = if (param.quantize) {
+        Module.quantize[Float](loadedModel)
+      } else {
+        loadedModel
+      }
+
+      param.to.toLowerCase match {
+        case "bigdl" =>
+          model.save(output)
+        case "torch" =>
+          model.saveTorch(output)
+        case "caffe" =>
+          model.saveCaffe(param.prototxt, output)
+        case _ =>
+          throw new UnsupportedOperationException(s"Unsupported model type.")
+      }
     }
   }
 }

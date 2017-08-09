@@ -47,14 +47,40 @@ object Test {
       val evaluationSet = transformer(rddData)
 
       val model = if (param.model != "lenet") {
-        Module.load[Float](path)
+        val m = Module.load[Float](path)
+        if (param.quantize) {
+          Module.quantize(m)
+        } else {
+          m
+        }
       } else {
         val reshape = Reshape[Float](Array(1, 28, 28))
         val newModel = Sequential[Float]()
         newModel.add(reshape)
         newModel.add(Module.load[Float](path))
+
+        if (param.quantize) {
+          Module.quantize(newModel)
+        } else {
+          newModel
+        }
       }
-      testAll(name, model, evaluationSet, batchSize)
+
+      val (modelResult, modelCosts) = time {
+        test(model, evaluationSet, batchSize)
+      }
+
+      require(modelResult.length > 0, s"unknown result")
+      val totalNum = modelResult(0)._1.result()._2
+
+      val accuracies = new Array[Float](modelResult.length)
+      modelResult.indices.foreach { i =>
+        accuracies(i) = modelResult(i)._1.result()._1
+      }
+
+      val costs = Math.round(totalNum / modelCosts * 100) / 100.0
+
+      writeToLog(param.model, param.quantize, totalNum, accuracies, costs)
 
       sc.stop()
     }
