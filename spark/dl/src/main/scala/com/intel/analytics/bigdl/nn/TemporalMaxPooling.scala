@@ -79,12 +79,25 @@ class TemporalMaxPooling[T: ClassTag](
       s"input sequence smaller than kernel size. Got: ${input.size(dimS)}, Expected: $kW")
 
     if (gradOutput != null) {
-      require(gradOutput.nDimension() == ndims && gradOutput.size(dimS) == noframe)
-      require(gradOutput.nDimension() == ndims && gradOutput.size(dimF) == framesize)
+      require(gradOutput.nDimension() == ndims,
+        s"gradOuput should have $ndims dimension, but got ${gradOutput.nDimension()}")
+      require(gradOutput.size(dimS) == noframe,
+        s"gradOutput's $dimS dimension expects $noframe size," +
+          s" but got ${gradOutput.size(dimS)} dimension")
+      require(gradOutput.size(dimF) == framesize,
+        s"gradOutput's $dimF dimension expects $framesize size," +
+          s" but got ${gradOutput.size(dimF)} dimension")
     }
+
     if (indices != null) {
-      require(indices.nDimension() == ndims && indices.size(dimS) == noframe)
-      require(indices.nDimension() == ndims && indices.size(dimF) == framesize)
+      require(indices.nDimension() == ndims,
+        s"indices should have $ndims dimension, but got ${indices.nDimension()}")
+      require(indices.size(dimS) == noframe,
+        s"indices's $dimS dimension expects $noframe size," +
+          s" but got ${gradOutput.size(dimS)} dimension")
+      require(indices.size(dimF) == framesize,
+        s"indices's $dimF dimension expects $framesize size," +
+          s" but got ${gradOutput.size(dimF)} dimension")
     }
   }
 

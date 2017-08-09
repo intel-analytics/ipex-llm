@@ -1022,14 +1022,14 @@ gradInput = layer.backward(input, gradOutput)
 
 **scala:**
 ```scala
-val m = TemporalMaxPooling(kW, dW = kW)
+val m = TemporalMaxPooling(k_w, d_w = k_w)
 ```
 
 ```python
-m = TemporalMaxPooling(kW, dW = kW)
+m = TemporalMaxPooling(k_w, d_w = k_w)
 ```
 
-Applies 1D max-pooling operation in kW regions by step size dW steps.
+Applies 1D max-pooling operation in `k_w` regions by step size `d_w` steps.
 Input sequence composed of nInputFrame frames.
 The input tensor in forward(input) is expected to be a 2D tensor
 (nInputFrame x inputFrameSize) or a 3D tensor (nBatchFrame x nInputFrame x inputFrameSize).
@@ -1038,11 +1038,11 @@ If the input sequence is a 2D tensor of dimension nInputFrame x inputFrameSize,
 the output sequence will be nOutputFrame x inputFrameSize where
 
 ```
-nOutputFrame = (nInputFrame - kW) / dW + 1
+nOutputFrame = (nInputFrame - k_w) / d_w + 1
 ```
 
-  * kW: kernel width
-  * dW: step size in width
+  * k_w: kernel width
+  * d_w: step size in width
 
 ```scala
 scala>

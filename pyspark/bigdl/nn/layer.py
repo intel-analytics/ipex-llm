@@ -813,21 +813,21 @@ class TemporalMaxPooling(Layer):
     If the input sequence is a 2D tensor of dimension nInputFrame x inputFrameSize,
     the output sequence will be nOutputFrame x inputFrameSize where
 
-    nOutputFrame = (nInputFrame - kW) / dW + 1
+    nOutputFrame = (nInputFrame - k_w) / d_w + 1
 
-    :param kW:              kernel width
-    :param dW:              step size in width
+    :param k_w:              kernel width
+    :param d_w:              step size in width
 
     >>> temporalMaxPooling = TemporalMaxPooling(2, 2)
     creating: createTemporalMaxPooling
     '''
 
     def __init__(self,
-                 kw,
-                 dw,
+                 k_w,
+                 d_w,
                  bigdl_type="float"):
-        super(TemporalMaxPooling, self).__init__(None, bigdl_type, kw,
-                                                dw)
+        super(TemporalMaxPooling, self).__init__(None, bigdl_type, k_w,
+                                                d_w)
 class SpatialMaxPooling(Layer):
 
     '''
