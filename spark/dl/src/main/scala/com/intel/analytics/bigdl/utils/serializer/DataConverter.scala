@@ -149,8 +149,8 @@ object DataConverter extends DataConverter{
       }
     } else if (valueType.toString == ModuleSerializer.abstractModuleType.toString
       || valueType.toString == ModuleSerializer.tensorModuleType.toString
-      || valueType.toString.startsWith("com.intel.analytics.bigdl.Module")
-      || valueType.toString.startsWith("com.intel.analytics.bigdl.nn.abstractnn.AbstractModule")
+      || valueType.toString == ModuleSerializer.moduleType.toString
+      || valueType.toString == ModuleSerializer.boundedModuleType.toString
       ) {
       ModuleConverter.setAttributeValue(attributeBuilder, value)
     } else if (value.isInstanceOf[mutable.Map[String, _ <: Any]]) {

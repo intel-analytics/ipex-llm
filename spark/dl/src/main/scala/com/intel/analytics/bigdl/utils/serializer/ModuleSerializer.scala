@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.utils.serializer
 
 import java.lang.reflect.Field
 
+import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn._
 
 import scala.collection.JavaConverters._
@@ -46,6 +47,8 @@ object ModuleSerializer extends ModuleSerializable{
   var regularizerType : universe.Type = null
   var abstractModuleType : universe.Type = null
   var tensorModuleType : universe.Type = null
+  var moduleType : universe.Type = null
+  var boundedModuleType : universe.Type = null
   var tType : universe.Type = null
 
   init
@@ -179,6 +182,10 @@ object ModuleSerializer extends ModuleSerializable{
           abstractModuleType = ptype
         } else if (name == "tensorModule") {
           tensorModuleType = ptype
+        } else if (name == "module") {
+          moduleType = ptype
+        } else if (name == "boundedModule") {
+          boundedModuleType = ptype
         } else if (name == "ev") {
           tensorNumericType = ptype
         } else if (name == "ttpe") {
@@ -190,9 +197,11 @@ object ModuleSerializer extends ModuleSerializable{
 }
 
 private case class GenericTypeWrapper[T: ClassTag](tensor : Tensor[T],
-                                              regularizer : Regularizer[T],
-                                              abstractModule: AbstractModule[Activity, Activity, T],
-                                              tensorModule : TensorModule[T],
-                                              ttpe : T
-                                             )(implicit ev: TensorNumeric[T])
+  regularizer : Regularizer[T],
+  abstractModule: AbstractModule[Activity, Activity, T],
+  tensorModule : TensorModule[T],
+  module: Module[T],
+  boundedModule: AbstractModule[_ <: Activity, _ <: Activity, T],
+  ttpe : T
+  )(implicit ev: TensorNumeric[T])
 
