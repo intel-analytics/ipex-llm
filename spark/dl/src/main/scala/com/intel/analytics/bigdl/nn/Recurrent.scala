@@ -267,7 +267,7 @@ class Recurrent[T : ClassTag]()
 
   def getState(): Activity = {
     require(cells != null && cells(times - 1).output != null,
-      "getHiddenState need to be called after updateOutput")
+      "getState need to be called after updateOutput")
     cells(times - 1).output.toTable(hidDim)
   }
 

@@ -294,7 +294,7 @@ class RecurrentSpec extends FlatSpec with Matchers {
     flag should be (false)
   }
 
-  "A Recurrent Module " should "work with getFinalStateAndCell " in {
+  "A Recurrent Module " should "work with get/set state " in {
     val hiddenSize = 4
     val inputSize = 5
     val outputSize = 5
@@ -318,5 +318,8 @@ class RecurrentSpec extends FlatSpec with Matchers {
       assert(abs(v1 - v2) == 0)
       v1
     })
+
+    rec.setState(state)
+    model.forward(input)
   }
 }
