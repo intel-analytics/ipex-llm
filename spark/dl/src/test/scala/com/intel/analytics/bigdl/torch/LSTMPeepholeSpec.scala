@@ -23,7 +23,8 @@ import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.TorchObject.TYPE_DOUBLE_TENSOR
+import com.intel.analytics.bigdl.utils.{T, TorchFile, Table}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.math._
@@ -674,27 +675,199 @@ class LSTMPeepholeSpec  extends TorchSpec {
     val checkFlag = gradCheck.checkLayer(model, input, labels)
   }
 
-  "A LSTMPeephole" should " be able to return finalstate" in {
-    val inputSize = 10
-    val hiddenSize = 30
-    val batchSize = 12
-    val time = 20
+  "A LSTMPeepwhole " should "get state correctly" in {
+    torchCheck()
+
+    import com.intel.analytics.bigdl.numeric.NumericDouble
+    val hiddenSize = 4
+    val inputSize = 6
+    val seqLength = 5
     val seed = 100
+    val batchSize = 5
+
     RNG.setSeed(seed)
-    val input = Tensor[Float](batchSize, time, inputSize).rand
-    val gradOutput = Tensor[Float](batchSize, time, hiddenSize).rand
+    val input = Tensor[Double](batchSize, seqLength, inputSize).rand
 
-    val model = Recurrent[Float]()
-      .add(LSTMPeephole[Float](inputSize, hiddenSize))
+    val rec = Recurrent()
 
-    var output: Activity = null
-    for (i <- 1 to 5) {
-      output = model.forward(input)
-      model.backward(input, gradOutput)
+    val model = Sequential()
+      .add(rec
+        .add(LSTMPeephole(inputSize, hiddenSize)))
+
+    val (weights, grad) = model.getParameters()
+
+    /*
+     * Since we changed the structure of LSTMPeephole, we have to rearrange the parameters.
+     */
+    val (weightsArray, gradArray) = model.parameters()
+    val weightsArrayTorch = weightsArray.clone
+
+    val weightsTorch = new ArrayBuffer[Tensor[Double]]()
+
+    val i2g2 = weightsArrayTorch(0).narrow(1, 1 + hiddenSize, hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g2).copy(i2g2)
+    val i2g2bias = weightsArrayTorch(1).narrow(1, 1 + hiddenSize, hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g2bias).copy(i2g2bias)
+    weightsTorch += Tensor().resizeAs(weightsArrayTorch(2)).copy(weightsArrayTorch(2))
+    weightsTorch += Tensor().resizeAs(weightsArrayTorch(3)).copy(weightsArrayTorch(3))
+    val i2g1 = weightsArrayTorch(0).narrow(1, 1, hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g1).copy(i2g1)
+    val i2g1bias = weightsArrayTorch(1).narrow(1, 1, hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g1bias).copy(i2g1bias)
+    weightsTorch += Tensor().resizeAs(weightsArrayTorch(4)).copy(weightsArrayTorch(4))
+    weightsTorch += Tensor().resizeAs(weightsArrayTorch(5)).copy(weightsArrayTorch(5))
+
+    val i2g3 = weightsArrayTorch(0).narrow(1, 1 + 2 * hiddenSize, hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g3).copy(i2g3)
+    val i2g3bias = weightsArrayTorch(1).narrow(1, 1 + 2 * hiddenSize, hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g3bias).copy(i2g3bias)
+
+    weightsTorch += Tensor().resizeAs(weightsArrayTorch(6)).copy(weightsArrayTorch(6))
+
+    val i2g4 = weightsArrayTorch(0).narrow(1, 1 + 3 * hiddenSize, hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g4).copy(i2g4)
+    val i2g4bias = weightsArrayTorch(1).narrow(1, 1 + 3 * hiddenSize, hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g4bias).copy(i2g4bias)
+
+    weightsTorch += Tensor().resizeAs(weightsArrayTorch(7)).copy(weightsArrayTorch(7))
+    weightsTorch += Tensor().resizeAs(weightsArrayTorch(8)).copy(weightsArrayTorch(8))
+
+    val (weights2Torch, grad2Torch) =
+      (Module.flatten[Double](weightsTorch.toArray), Module.flatten[Double](gradArray))
+
+    val code =
+      s"""
+         |
+      |-- 1.4. Combine 1.1 and 1.3 to produce final model
+         |require 'rnn'
+         |torch.manualSeed($seed)
+         |
+         |local lstm = nn.LSTM($inputSize, $hiddenSize, 1, true)
+      |model = nn.Sequencer(
+         | nn.Sequential()
+         |   :add(lstm))
+         |
+         |local parameters, gradParameters = model:getParameters()
+         |parameters:copy(weights)
+      |local output = model:forward(input)
+      |local state = lstm:getHiddenState($seqLength)
+    """.stripMargin
+    scala.Seq
+
+    val (luaTime, torchResult) = TH.run(code,
+      Map("input" -> input.transpose(1, 2), "weights" -> weights2Torch),
+      Array("output", "state"))
+
+    val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
+    val luaState = torchResult("state").asInstanceOf[Table]
+
+    val output = model.forward(input).toTensor.transpose(1, 2)
+
+    rec.getState().toTable.foreach { case ((key: Int, value: Tensor[Double])) =>
+      value.map(luaState(key), (v1, v2) => {
+        assert(abs(v1 - v2) <= 1e-8)
+        v1
+      })
     }
-    val (finalState, cellStatus) = model.getFinalStateAndCellStatus()
-    finalState.map(output.asInstanceOf[Tensor[Float]].select(2, time), (v1, v2) => {
-      assert(abs(v1 - v2) == 0)
+
+    luaOutput.map(output, (v1, v2) => {
+      assert(abs(v1 - v2) <= 1e-8)
+      v1
+    })
+  }
+
+  "A LSTMPeepwhole " should "set state correctly" in {
+    torchCheck()
+
+    import com.intel.analytics.bigdl.numeric.NumericDouble
+    val hiddenSize = 4
+    val inputSize = 6
+    val seqLength = 5
+    val seed = 100
+    val batchSize = 5
+
+    RNG.setSeed(seed)
+    val input = Tensor[Double](batchSize, seqLength, inputSize).rand
+    val state = T(Tensor[Double](batchSize, hiddenSize).rand,
+      Tensor[Double](batchSize, hiddenSize).rand)
+    val rec = Recurrent()
+    rec.setState(state)
+    val model = Sequential()
+      .add(rec
+        .add(LSTMPeephole(inputSize, hiddenSize)))
+
+    val (weights, grad) = model.getParameters()
+
+
+    /*
+     * Since we changed the structure of LSTMPeephole, we have to rearrange the parameters.
+     */
+    val (weightsArray, gradArray) = model.parameters()
+    val weightsArrayTorch = weightsArray.clone
+
+    val weightsTorch = new ArrayBuffer[Tensor[Double]]()
+
+    val i2g2 = weightsArrayTorch(0).narrow(1, 1 + hiddenSize, hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g2).copy(i2g2)
+    val i2g2bias = weightsArrayTorch(1).narrow(1, 1 + hiddenSize, hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g2bias).copy(i2g2bias)
+    weightsTorch += Tensor().resizeAs(weightsArrayTorch(2)).copy(weightsArrayTorch(2))
+    weightsTorch += Tensor().resizeAs(weightsArrayTorch(3)).copy(weightsArrayTorch(3))
+    val i2g1 = weightsArrayTorch(0).narrow(1, 1, hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g1).copy(i2g1)
+    val i2g1bias = weightsArrayTorch(1).narrow(1, 1, hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g1bias).copy(i2g1bias)
+    weightsTorch += Tensor().resizeAs(weightsArrayTorch(4)).copy(weightsArrayTorch(4))
+    weightsTorch += Tensor().resizeAs(weightsArrayTorch(5)).copy(weightsArrayTorch(5))
+
+    val i2g3 = weightsArrayTorch(0).narrow(1, 1 + 2 * hiddenSize, hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g3).copy(i2g3)
+    val i2g3bias = weightsArrayTorch(1).narrow(1, 1 + 2 * hiddenSize, hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g3bias).copy(i2g3bias)
+
+    weightsTorch += Tensor().resizeAs(weightsArrayTorch(6)).copy(weightsArrayTorch(6))
+
+    val i2g4 = weightsArrayTorch(0).narrow(1, 1 + 3 * hiddenSize, hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g4).copy(i2g4)
+    val i2g4bias = weightsArrayTorch(1).narrow(1, 1 + 3 * hiddenSize, hiddenSize)
+    weightsTorch += Tensor().resizeAs(i2g4bias).copy(i2g4bias)
+
+    weightsTorch += Tensor().resizeAs(weightsArrayTorch(7)).copy(weightsArrayTorch(7))
+    weightsTorch += Tensor().resizeAs(weightsArrayTorch(8)).copy(weightsArrayTorch(8))
+
+    val (weights2Torch, grad2Torch) =
+      (Module.flatten[Double](weightsTorch.toArray), Module.flatten[Double](gradArray))
+
+    val code =
+      s"""
+         |
+      |-- 1.4. Combine 1.1 and 1.3 to produce final model
+         |require 'rnn'
+         |torch.manualSeed($seed)
+         |
+         |local lstm = nn.LSTM($inputSize, $hiddenSize, 1, true)
+         |model = nn.Sequencer(
+         | nn.Sequential()
+         |   :add(lstm))
+         |
+         |local parameters, gradParameters = model:getParameters()
+         |lstm.userPrevOutput = state[1]
+         |lstm.userPrevCell = state[2]
+         |lstm:setHiddenState(0, state)
+         |parameters:copy(weights)
+         |local output = model:forward(input)
+    """.stripMargin
+    scala.Seq
+
+    val (luaTime, torchResult) = TH.run(code,
+      Map("input" -> input.transpose(1, 2), "weights" -> weights2Torch, "state" -> state),
+      Array("output"))
+
+    val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
+
+    val output = model.forward(input).toTensor.transpose(1, 2)
+    luaOutput.map(output, (v1, v2) => {
+      assert(abs(v1 - v2) <= 1e-8)
       v1
     })
   }

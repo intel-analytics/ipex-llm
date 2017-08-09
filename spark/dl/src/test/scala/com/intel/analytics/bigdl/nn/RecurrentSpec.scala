@@ -312,13 +312,11 @@ class RecurrentSpec extends FlatSpec with Matchers {
     val input = Tensor[Double](Array(batchSize, time, inputSize)).rand
 
     val output = model.forward(input).asInstanceOf[Tensor[Double]]
-    val (finalState, cellStatus) = rec.getFinalStateAndCellStatus()
+    val state = rec.getState()
 
-    finalState.map(output.asInstanceOf[Tensor[Double]].select(2, time), (v1, v2) => {
+    state.toTensor[Double].map(output.asInstanceOf[Tensor[Double]].select(2, time), (v1, v2) => {
       assert(abs(v1 - v2) == 0)
       v1
     })
-
-    assert(cellStatus == null, "rnn should not have cell state")
   }
 }

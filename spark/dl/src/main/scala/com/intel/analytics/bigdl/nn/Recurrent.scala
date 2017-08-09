@@ -244,8 +244,10 @@ class Recurrent[T : ClassTag]()
      * identical elements T(output, output). One of the elements from the cell output is
      * the updated hidden. Thus the currentInput will update its hidden element with this output.
      */
-    currentInput(hidDim) = hidden
     var i = 1
+    // init state
+    currentInput(hidDim) = if (initState != null) initState
+     else hidden
     while (i <= times) {
       currentInput(inputDim) = outputCell.select(timeDim, i)
       cells(i - 1).updateOutput(currentInput)
@@ -253,6 +255,7 @@ class Recurrent[T : ClassTag]()
       i += 1
     }
 
+    initState = null
     if (cellAppendStartIdx == 0 || cellAppendStartIdx < times) {
       set(cells.slice(cellAppendStartIdx, times)
         .map(x => x.output.toTable[Tensor[T]](inputDim)),
@@ -262,15 +265,15 @@ class Recurrent[T : ClassTag]()
     output
   }
 
-  def getFinalStateAndCellStatus(): (Tensor[T], Tensor[T]) = {
+  def getState(): Activity = {
     require(cells != null && cells(times - 1).output != null,
-      "getFinalStateAndCell need to be called after updateOutput")
-    val cell = cells(times - 1).output.toTable(hidDim).asInstanceOf[Activity]
-    val cellState = if (cell.isTable) cell.asInstanceOf[Table]
-      .getOrElse[Tensor[T]](hidDim, null)
-      else null
-    val finalState = cells(times - 1).output.toTable[Tensor[T]](inputDim)
-    (finalState, cellState)
+      "getHiddenState need to be called after updateOutput")
+    cells(times - 1).output.toTable(hidDim)
+  }
+
+  var initState: Activity = null
+  def setState(state: Activity): Unit = {
+    initState = state
   }
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {

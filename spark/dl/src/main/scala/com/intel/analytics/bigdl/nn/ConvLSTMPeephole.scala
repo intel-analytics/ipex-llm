@@ -82,9 +82,11 @@ class ConvLSTMPeephole[T : ClassTag](
       .add(SpatialConvolution(inputSize, outputSize, kernelI, kernelI,
         stride, stride, kernelI/2, kernelI/2, wRegularizer = wRegularizer,
         bRegularizer = bRegularizer))
-    val h2g = SpatialConvolution(outputSize, outputSize, kernelC, kernelC,
+    val h2g = Sequential()
+      .add(Contiguous())
+      .add(SpatialConvolution(outputSize, outputSize, kernelC, kernelC,
       stride, stride, kernelC/2, kernelC/2, withBias = false,
-      wRegularizer = uRegularizer)
+      wRegularizer = uRegularizer))
 
     val gate = Sequential()
     if (withPeephole) {
@@ -133,9 +135,11 @@ class ConvLSTMPeephole[T : ClassTag](
       .add(SpatialConvolution(inputSize, outputSize, kernelI, kernelI,
         stride, stride, kernelI/2, kernelI/2, wRegularizer = wRegularizer,
         bRegularizer = bRegularizer))
-    val h2h = SpatialConvolution(outputSize, outputSize, kernelC, kernelC,
+    val h2h = Sequential()
+      .add(Contiguous())
+      .add(SpatialConvolution(outputSize, outputSize, kernelC, kernelC,
       stride, stride, kernelC/2, kernelC/2, withBias = false,
-      wRegularizer = uRegularizer)
+      wRegularizer = uRegularizer))
 
     hidden
       .add(ParallelTable()

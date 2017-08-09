@@ -53,33 +53,27 @@ class ConvLSTMPeephole3DSpec extends FlatSpec with BeforeAndAfter with Matchers 
     }
   }
 
-  "A ConvLSTMPeepwhole3D" should " return expected hidden and cell state" in {
+  "A ConvLSTMPeepwhole3D" should " return state" in {
     val hiddenSize = 5
     val inputSize = 3
     val seqLength = 4
     val batchSize = 2
     val kernalW = 3
     val kernalH = 3
-    val rec = Recurrent[Double]()
-    val model = Sequential[Double]()
-      .add(rec
+    val model = Recurrent[Double]
         .add(ConvLSTMPeephole3D[Double](
           inputSize,
           hiddenSize,
           kernalW, kernalH,
-          1, withPeephole = true)))
+          1, withPeephole = true))
 
     val input = Tensor[Double](batchSize, seqLength, inputSize, 3, 3, 3).rand
 
-    var output: Activity = null
-    for (i <- 1 to 3) {
-      output = model.forward(input)
-      model.backward(input, output)
-    }
+    val output = model.forward(input)
 
-    val finalState = rec.getFinalStateAndCellStatus()._1
-
-    finalState.map(output.asInstanceOf[Tensor[Double]].select(2, seqLength), (v1, v2) => {
+    val state = model.getState()
+    val hidden = state.asInstanceOf[Table].apply(1).asInstanceOf[Tensor[Double]]
+    hidden.map(output.select(2, seqLength), (v1, v2) => {
       assert(abs(v1 - v2) == 0)
       v1
     })
