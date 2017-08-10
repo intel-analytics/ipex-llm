@@ -127,8 +127,11 @@ object Utils {
   case class TestParams(
      folder: String = "./",
      modelSnapshot: Option[String] = None,
-     numOfWords: Option[Int] = None,
-     batchSize: Int = 2
+     numOfWords: Option[Int] = Some(10),
+     evaluate: Boolean = true,
+     sentFile: Option[String] = None,
+     tokenFile: Option[String] = None,
+     batchSize: Int = 4
   )
 
   val testParser = new OptionParser[TestParams]("BigDL rnn Test Example") {
@@ -145,12 +148,22 @@ object Utils {
     opt[Int]("words")
       .text("number of words to write")
       .action((x, c) => c.copy(numOfWords = Some(x)))
-      .required()
+
+    opt[Boolean]("evaluate")
+      .text("evaluate the model")
+      .action((x, c) => c.copy(evaluate = x))
+
+    opt[String]("sent")
+      .text("sentence dictionary to split document into sentences")
+      .action((x, c) => c.copy(sentFile = Some(x)))
+
+    opt[String]("token")
+      .text("token dictionary to split sentence into tokens")
+      .action((x, c) => c.copy(tokenFile = Some(x)))
 
     opt[Int]('b', "batchSize")
       .text("batchSize of rnn")
       .action((x, c) => c.copy(batchSize = x))
-      .required()
   }
 
   private[bigdl] def readSentence(directory: String)
