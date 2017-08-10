@@ -263,7 +263,9 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     layer.bias.copy(Tensor(Storage(biasData), 1, Array(nOutputPlane)))
     val input = Tensor(Storage(inputData), 1, Array(2, 2, 1))
     val output = layer.updateOutput(input)
+    val gradInput = layer.backward(input, output)
     output.storage().array() should be (Array(30.0f, 14, 11, 4))
+    gradInput.storage().array() should be (Array(30.0f, 74, 101, 188))
   }
 
   "A SpatialConvolution layer" should "work with SAME padding using NCHW format" in {
@@ -294,10 +296,9 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     layer.bias.copy(Tensor(Storage(biasData), 1, Array(nOutputPlane)))
     val input = Tensor(Storage(inputData), 1, Array(1, 2, 2))
     val output = layer.updateOutput(input)
-    output(Array(1, 1, 1)) should be(30)
-    output(Array(1, 1, 2)) should be(14)
-    output(Array(1, 2, 1)) should be(11)
-    output(Array(1, 2, 2)) should be(4)
+    val gradInput = layer.backward(input, output)
+    output.storage().array() should be (Array(30.0f, 14, 11, 4))
+    gradInput.storage().array() should be (Array(30.0f, 74, 101, 188))
   }
 
   "A SpatialConvolution layer" should "generate same output with NCHW and NHWC" in {
@@ -317,8 +318,9 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
       Conv(4, 4, 3, 3, 2, 2, 1, 1),
       Conv(4, 4, 1, 1, 2, 2, 1, 1),
       Conv(4, 4, 5, 5, 2, 2, 1, 1),
-      Conv(4, 4, 1, 1, 2, 2, 1, -1),
-      Conv(4, 4, 5, 5, 2, 2, 1, -1)
+      Conv(4, 4, 1, 1, 2, 2, -1, -1),
+      Conv(4, 4, 5, 5, 2, 2, -1, -1),
+      Conv(1, 1, 2, 2, 1, 1, -1, -1)
     )
 
     for (param <- params) {

@@ -50,6 +50,8 @@ class SpatialShareConvolution[T: ClassTag](
   initWeight, initBias, initGradWeight, initGradBias, withBias) {
 
   require(Engine.model.getPoolSize == 1, "Don't support single model multi thread.")
+  require(padW >= 0 && padH >= 0, "SAME padding is not supported in SpatialShareConvolution," +
+    " padW and padH should not be negative")
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim() == 3 || input.dim() == 4,
@@ -94,7 +96,7 @@ class SpatialShareConvolution[T: ClassTag](
             biasUse,
             fInput.select(1, g + 1),
             kernelW, kernelH, strideW, strideH,
-            padW, padH,
+            padW, padH, padW, padH,
             nInputPlane / nGroup, inputWidth, inputHeight,
             nOutputPlane / nGroup, outputWidth, outputHeight)
           g += 1
@@ -128,7 +130,7 @@ class SpatialShareConvolution[T: ClassTag](
               gradOutputT.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
               weightMM.select(1, g + 1).transpose(1, 2),
               fGradInput.select(1, g + 1),
-              kernelW, kernelH, strideW, strideH, padW, padH)
+              kernelW, kernelH, strideW, strideH, padW, padH, padW, padH)
             g += 1
           }
         i += 1
@@ -235,13 +237,13 @@ class SpatialShareConvolution[T: ClassTag](
       case DoubleType =>
         val before = System.nanoTime()
         NNPrimitive.im2colDouble(fInput.asInstanceOf[Tensor[Double]],
-          input.asInstanceOf[Tensor[Double]], kW, kH, dW, dH, padW, padH,
+          input.asInstanceOf[Tensor[Double]], kW, kH, dW, dH, padW, padH, padW, padH,
           outputWidth, outputHeight)
         im2colTime += System.nanoTime() - before
       case FloatType =>
         val before = System.nanoTime()
         NNPrimitive.im2colFloat(fInput.asInstanceOf[Tensor[Float]],
-          input.asInstanceOf[Tensor[Float]], kW, kH, dW, dH, padW, padH,
+          input.asInstanceOf[Tensor[Float]], kW, kH, dW, dH, padW, padH, padW, padH,
           outputWidth, outputHeight)
         im2colTime += System.nanoTime() - before
       case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
