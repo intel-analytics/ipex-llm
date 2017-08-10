@@ -1026,7 +1026,7 @@ object TorchFile {
 
   private def readSpatialConvolutionWithType[T: ClassTag](
       elements: Table)(implicit ev: TensorNumeric[T]): SpatialConvolution[T] = {
-    val propagateBack = if (!elements.contains("gradInput")) false else true
+    val propagateBack = if (null == elements("gradInput")) false else true
     val result = SpatialConvolution[T](
       nInputPlane = elements[Double]("nInputPlane").toInt,
       nOutputPlane = elements[Double]("nOutputPlane").toInt,
