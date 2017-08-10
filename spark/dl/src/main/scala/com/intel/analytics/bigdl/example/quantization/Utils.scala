@@ -21,6 +21,8 @@ import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.dataset.{ByteRecord, DataSet, Sample, Transformer}
 import com.intel.analytics.bigdl.models.lenet.{Utils => LeNetUtils}
 import com.intel.analytics.bigdl.models.vgg.{Utils => VggUtils}
+import com.intel.analytics.bigdl.models.resnet.{Utils => ResNetUtils,
+Cifar10DataSet => ResNetCifar10DataSet}
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.optim.{Top1Accuracy, Top5Accuracy, ValidationMethod, ValidationResult}
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -73,7 +75,9 @@ object Utils {
       case "alexnet" => imagenet
       case "inception_v1" => imagenet
       case "inception_v2" => imagenet
-      case m if m.toLowerCase.contains("resnet") => imagenet
+      case m if m.toLowerCase.contains("resnet") && !m.toLowerCase.contains("cifar10") => imagenet
+      case m if m.toLowerCase.contains("resnet") && m.toLowerCase.contains("cifar10") =>
+        sc.parallelize(ResNetUtils.loadTest(folder), partitionNum)
 
       case _ => throw new UnsupportedOperationException(s"unknown model: $model")
     }
@@ -108,9 +112,12 @@ object Utils {
                 HFlip(0.5) -> BGRImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225) ->
                 BGRImgToSample()
 
-      case m if m.toLowerCase.contains("resnet") =>
+      case m if m.toLowerCase.contains("resnet") && !m.toLowerCase.contains("cifar10") =>
         BytesToBGRImg() -> BGRImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225) ->
                 BGRImgCropper(224, 224, CropCenter) -> BGRImgToSample()
+      case m if m.toLowerCase.contains("resnet") && m.toLowerCase.contains("cifar10") =>
+        BytesToBGRImg() -> BGRImgNormalizer(ResNetCifar10DataSet.trainMean,
+          ResNetCifar10DataSet.trainStd) -> BGRImgToSample()
 
       case _ => throw new UnsupportedOperationException(s"unknown model: $model")
     }
