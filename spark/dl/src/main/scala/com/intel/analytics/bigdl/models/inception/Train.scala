@@ -62,7 +62,7 @@ object TrainInceptionV1 {
       } else if (param.graphModel) {
         Inception_v1_NoAuxClassifier.graph(classNum = param.classNumber)
       } else {
-        Inception_v2_NoAuxClassifier(classNum = param.classNumber)
+        Inception_v1_NoAuxClassifier(classNum = param.classNumber)
       }
 
       val optimMethod = if (param.stateSnapshot.isDefined) {

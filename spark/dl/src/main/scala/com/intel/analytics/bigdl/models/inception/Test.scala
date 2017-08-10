@@ -55,23 +55,10 @@ object Test {
       val evaluationSet = transformer(rddData)
 
       val model = Module.load[Float](param.model)
-
-    {
-      println(model)
       val result = model.evaluate(evaluationSet,
         Array(new Top1Accuracy[Float], new Top5Accuracy[Float]), param.batchSize)
 
       result.foreach(r => println(s"${r._2} is ${r._1}"))
-    }
-
-    {
-      val quantizedModel = Module.quantize(model)
-      println(quantizedModel)
-      val result = quantizedModel.evaluate(evaluationSet,
-        Array(new Top1Accuracy[Float], new Top5Accuracy[Float]), param.batchSize)
-
-      result.foreach(r => println(s"${r._2} is ${r._1}"))
-    }
       sc.stop()
     }
   }
