@@ -255,7 +255,6 @@ class Recurrent[T : ClassTag]()
       i += 1
     }
 
-    initState = null
     if (cellAppendStartIdx == 0 || cellAppendStartIdx < times) {
       set(cells.slice(cellAppendStartIdx, times)
         .map(x => x.output.toTable[Tensor[T]](inputDim)),
@@ -271,7 +270,7 @@ class Recurrent[T : ClassTag]()
     cells(times - 1).output.toTable(hidDim)
   }
 
-  var initState: Activity = null
+  private var initState: Activity = null
   def setState(state: Activity): Unit = {
     initState = state
   }
@@ -372,6 +371,7 @@ class Recurrent[T : ClassTag]()
     reset(cells.map(x => x.gradInput.toTable[Tensor[T]](inputDim)), gradInputCell)
     cells.foreach(x => x.clearState())
     cells.clear()
+    initState = null
     this
   }
 
