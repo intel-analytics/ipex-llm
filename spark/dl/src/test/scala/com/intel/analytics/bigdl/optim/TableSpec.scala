@@ -281,4 +281,17 @@ class TableSpec extends FlatSpec with Matchers {
 
     output.toTable should be(output)
   }
+
+  "A Table with key unexisted" should "work correctly" in {
+    val table = T("key" -> 1)
+
+    val v1 = table[Int]("key")
+
+    v1 should be (1)
+    table.contains("yek") should be (false)
+
+    intercept[NoSuchElementException] {
+      val v2 = table[Int]("yek")
+    }
+  }
 }
