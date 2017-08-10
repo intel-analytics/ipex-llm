@@ -1765,17 +1765,18 @@ object Quantize{
   }
 
   def quantize(value: Float, max: Float, min: Float): Byte = {
-    Math.round(1.0 * value / Math.max(max, min) * Byte.MaxValue).toByte
+    Math.round(1.0 * value / Math.max(Math.abs(max), Math.abs(min)) * Byte.MaxValue).toByte
   }
 
   def dequantize(byte: Byte, max: Float, min: Float): Float = {
-    byte.toFloat / Byte.MaxValue * Math.max(max, min)
+    byte.toFloat / Byte.MaxValue * Math.max(Math.abs(max), Math.abs(min))
   }
 
   def quantize(src: Array[Float], start: Int, end: Int, dst: ByteBuffer,
     dstOffset: Int): (Float, Float) = {
-    val max = Math.abs(findMax(src, start, end))
-    val min = Math.abs(findMin(src, start, end))
+    // we should keep the plus and minus
+    val max = findMax(src, start, end)
+    val min = findMin(src, start, end)
 
     for (i <- 0 until end - start) {
       dst.put(dstOffset + i, quantize(src(start + i), max, min))
@@ -1880,68 +1881,19 @@ object Quantize{
     var lossValue = 0.0
 
     for (i <- start until end) {
-      lossValue += (before(i) - after(i))
+      lossValue += Math.abs(before(i) - after(i))
     }
 
     lossValue
   }
 
-  def testQuantizeMatrix(): Unit = {
-    val src = Array(0.1f, 0.2f, 0.3f, 0.4f, 0.5f,
-      0.6f, 0.4f, 0.3f, 0.2f, 0.1f)
-    val dst = ByteBuffer.allocate(src.length)
-    dst.clear()
+  def loss(before: Tensor[Float], after: Tensor[Float]): Double = {
+    val beforeArray = before.storage().array()
+    val afterArray = after.storage().array()
 
-    val (max, min) = quantize(src, 0, src.length, dst, 0, Array(2, 5))
+    val start = 0
+    val end = before.nElement()
 
-    for (i <- src.indices) {
-      println(dst.get(i))
-    }
-
-    val before = src.clone()
-    for (i <- src.indices) {
-      src(i) = 0f
-    }
-
-    dequantize(src, 0, src.length, dst, 0, max, min, Array(2, 5))
-    for (i <- src.indices) {
-      println(src(i))
-    }
-    val after = src.clone()
-
-    println(loss(before, after, 0, src.length))
-  }
-
-  def testArray(): Unit = {
-    val src = Array[Float](0.6f, 0.4f, -0.3f, 0.2f, 0.1f)
-
-    val dst = ByteBuffer.allocate(src.length)
-    dst.clear()
-
-    val (max, min) = quantize(src, 0, src.length, dst, 0)
-    println(dst)
-
-    for (i <- src.indices) {
-      println(dst.get(i))
-    }
-
-    val before = src.clone()
-    for (i <- src.indices) {
-      src(i) = 0f
-    }
-
-    dequantize(src, 0, src.length, dst, 0, max, min)
-    for (i <- src.indices) {
-      println(src(i))
-    }
-
-    val after = src.clone()
-
-    println(loss(before, after, 0, src.length))
-  }
-
-  def main(args: Array[String]): Unit = {
-    testArray()
-    //    testQuantizeMatrix()
+    loss(beforeArray, afterArray, start, end) / beforeArray.sum
   }
 }

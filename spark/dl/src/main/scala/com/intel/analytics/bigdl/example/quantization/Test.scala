@@ -17,9 +17,9 @@
 package com.intel.analytics.bigdl.example.quantization
 
 
+import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter}
-
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 

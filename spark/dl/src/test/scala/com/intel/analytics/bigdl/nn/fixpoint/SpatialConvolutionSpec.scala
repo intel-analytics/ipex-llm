@@ -16,109 +16,54 @@
 
 package com.intel.analytics.bigdl.nn.fixpoint
 
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.nn.{SpatialConvolution => NNSpatialConvolution}
-import com.intel.analytics.bigdl.nn.fixpoint.{SpatialConvolution => FPSpatialConvolution}
-
-import java.io.{File, PrintWriter}
-import org.scalatest.{FlatSpec, Matchers}
+import com.intel.analytics.bigdl.numeric.NumericFloat
+import com.intel.analytics.bigdl.tensor.Tensor
+import org.scalatest.{FlatSpec, Matchers, ParallelTestExecution}
 
 @com.intel.analytics.bigdl.tags.Parallel
-class SpatialConvolutionSpec extends FlatSpec with Matchers {
+class SpatialConvolutionSpec extends FlatSpec with Matchers with ParallelTestExecution {
+  // Notice:
+  // 1. if we set input channel more than 1, the result will be not the same
+  // 2. multi groups can't work
   val testCases = List(
-    TestCase(1, 1, 3, 3, 1, 1, 2, 2, 1, 1, 0, 0, "case1"),
-    TestCase(2, 1024, 19, 19, 1, 1024, 1, 1, 1, 1, 0, 0, "case2"),
-    TestCase(2, 1024, 19, 19, 1, 126, 3, 3, 1, 1, 1, 1, "case3"),
-    TestCase(2, 1024, 19, 19, 1, 24, 3, 3, 1, 1, 1, 1, "case4"),
-    TestCase(2, 256, 1, 1, 1, 16, 3, 3, 1, 1, 1, 1, "case5"),
-    TestCase(2, 256, 1, 1, 1, 84, 3, 3, 1, 1, 1, 1, "case6"),
-    TestCase(2, 256, 3, 3, 1, 16, 3, 3, 1, 1, 1, 1, "case7"),
-    TestCase(2, 256, 3, 3, 1, 84, 3, 3, 1, 1, 1, 1, "case8"),
-    TestCase(2, 256, 5, 5, 1, 126, 3, 3, 1, 1, 1, 1, "case9"),
-    TestCase(2, 256, 5, 5, 1, 24, 3, 3, 1, 1, 1, 1, "case10"),
-    TestCase(2, 512, 10, 10, 1, 126, 3, 3, 1, 1, 1, 1, "case11"),
-    TestCase(2, 512, 10, 10, 1, 24, 3, 3, 1, 1, 1, 1, "case12"),
-    TestCase(2, 512, 38, 38, 1, 16, 3, 3, 1, 1, 1, 1, "case13"),
-    TestCase(2, 512, 38, 38, 1, 84, 3, 3, 1, 1, 1, 1, "case14")
+    TestCase(1, 1, 3, 3, 1, 1, 2, 2, 1, 1, 0, 0),
+    TestCase(1, 1, 38, 38, 1, 2, 3, 3, 1, 1, 0, 0),
+//    TestCase(1, 1, 38, 38, 2, 2, 3, 3, 1, 1, 0, 0),
+    TestCase(2, 1, 38, 38, 1, 84, 3, 3, 1, 1, 0, 0)
   )
 
   for (test <- testCases) {
     val start = s"A fixpoint.SpatialConvolution $test"
-    println(start)
     start should "generate the same result with nn.SpatialConvolution" in {
-      val nn = new NNSpatialConvolution[Float](test.inputChannel, test.outputChannel,
+      val weight = Tensor(test.group, test.outputChannel / test.group,
+        test.inputChannel / test.group, test.kernelHeight, test.kernelWidth).fill(1.0f)
+      val bias = Tensor(test.outputChannel).fill(0f)
+      val input = Tensor().resize(Array(test.batchSize, test.inputChannel,
+        test.inputHeight, test.inputWidth)).fill(1.0f)
+
+      val nnConv = new NNSpatialConvolution(test.inputChannel, test.outputChannel,
+        test.kernelHeight, test.kernelWidth, test.strideHeight, test.strideWidth,
+        test.padHeight, test.padWidth, test.group, initWeight = weight, initBias = bias)
+
+      println(nnConv)
+
+      val quantizedConv = new SpatialConvolution(test.inputChannel, test.outputChannel,
         test.kernelHeight, test.kernelWidth, test.strideHeight, test.strideWidth,
         test.padHeight, test.padWidth, test.group)
-      val fp = new FPSpatialConvolution[Float](test.inputChannel, test.outputChannel,
-        test.kernelHeight, test.kernelWidth, test.strideHeight, test.strideWidth,
-        test.padHeight, test.padWidth, test.group)
 
-      nn.reset()
-      fp.reset()
+      nnConv.updateOutput(input)
 
-      nn.bias.fill(0f)
-      for (i <- 0 until nn.weight.nElement()) {
-        nn.weight.storage().array()(i) = i % 32
-      }
+      quantizedConv.initWeightAndBias(nnConv.weight, nnConv.bias)
+      quantizedConv.updateOutput(input)
 
-//      fp.weight.copy(nn.weight)
-      fp.bias.copy(nn.bias)
 
-      val input = Tensor[Float]().resize(Array(test.batchSize, test.inputChannel,
-        test.inputHeight, test.inputWidth)).rand()
+      nnConv.output shouldEqual quantizedConv.output
 
-      for (i <- 0 until input.nElement()) {
-        input.storage().array()(i) = i % 32
-      }
-
-      val nnOutput = nn.updateOutput(input)
-      val fpOutput = fp.updateOutput(input)
-
-      fp.release()
-
-//      val file = s"/tmp/output/${fp.toString().filterNot((x: Char) => x.isWhitespace)}"
-      val file = s"/tmp/output/${test.name}"
-      Tools.writeTensor2File(fpOutput, file)
-
-//      Tools.compare2Tensors(nnOutput, fpOutput) should be (0)
+      quantizedConv.release()
     }
   }
+  case class TestCase(batchSize: Int, inputChannel: Int, inputHeight: Int, inputWidth: Int,
+    group: Int, outputChannel: Int, kernelHeight: Int, kernelWidth: Int,
+    strideHeight: Int, strideWidth: Int, padHeight: Int, padWidth: Int)
 }
-
-object Tools {
-  val magicValue = 2f
-
-  def compare2Tensors(a1: Tensor[Float], a2: Tensor[Float]): Int = {
-    var ret = true
-
-    if (a1.nElement() != a2.nElement()) {
-      ret = false
-    }
-
-    var count = 0
-
-    for (i <- 0 until a1.nElement()) {
-      val a1t = a1.storage().array()(i)
-      val a2t = a2.storage().array()(i)
-      if (math.abs(a1t - a2t) > magicValue) {
-        count += 1
-      }
-    }
-
-    println(s"total = ${a1.nElement()} count = $count")
-    count
-  }
-
-  def writeTensor2File(tensor: Tensor[Float], file: String): Unit = {
-    val printWriter = new PrintWriter(new File(file))
-    try {
-      for (i <- 0 until tensor.nElement()) {
-        printWriter.write(tensor.storage().array()(i).toString + "\n")
-      }
-    } finally {
-      printWriter.close()
-    }
-  }
-}
-
