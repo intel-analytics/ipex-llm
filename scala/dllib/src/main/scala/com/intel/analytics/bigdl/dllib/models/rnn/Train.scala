@@ -128,6 +128,7 @@ object Train {
           TimeDistributedCriterion[Float](CrossEntropyCriterion[Float](), sizeAverage = true))))
         .setOptimMethod(optimMethod)
         .setEndWhen(Trigger.maxEpoch(param.nEpochs))
+        .setCheckpoint(param.checkpoint.get, Trigger.everyEpoch)
         .optimize()
       sc.stop()
     })
