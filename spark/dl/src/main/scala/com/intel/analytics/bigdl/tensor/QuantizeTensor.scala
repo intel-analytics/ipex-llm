@@ -17,8 +17,8 @@
 package com.intel.analytics.bigdl.tensor
 
 import breeze.linalg.{DenseMatrix, DenseVector}
+import com.intel.analytics.bigdl.quantization.Quantization
 import java.nio.ByteBuffer
-import com.intel.analytics.bigdl.fixpoint.FixPoint
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
 import org.apache.spark.mllib.linalg
@@ -58,7 +58,7 @@ private[bigdl] class QuantizeTensor[@specialized(Float) T: ClassTag]()
 
   def release(): Unit = {
     if (desc != 0) {
-      FixPoint.FreeMemory(desc)
+      Quantization.FreeMemory(desc)
     }
     desc = 0L
   }

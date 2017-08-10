@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.fixpoint
+package com.intel.analytics.bigdl.nn.quantization
 
 import com.intel.analytics.bigdl.nn.Quantize._
 import com.intel.analytics.bigdl.tensor.Tensor

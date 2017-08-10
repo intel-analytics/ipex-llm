@@ -14,14 +14,9 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.fixpoint
+package com.intel.analytics.bigdl.nn.quantization
 
-import java.nio.file.{Files, Paths}
-
-import com.intel.analytics.bigdl.nn.Module
-import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-
 import scala.reflect.ClassTag
 
 @SerialVersionUID(- 8572055756810843156L)

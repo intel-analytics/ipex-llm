@@ -14,18 +14,16 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.fixpoint
+package com.intel.analytics.bigdl.nn.quantization
 
-import java.nio.ByteBuffer
-import java.nio.file.{Files, Paths}
-
-import scala.reflect.ClassTag
-import com.intel.analytics.bigdl.utils.{T, Table}
-import com.intel.analytics.bigdl.tensor.{FloatType, QuantizeTensor, Tensor}
-import com.intel.analytics.bigdl.nn.{ErrorInfo, Module, Quantize}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
-import com.intel.analytics.bigdl.fixpoint.FixPoint
+import com.intel.analytics.bigdl.nn.{ErrorInfo, Quantize}
+import com.intel.analytics.bigdl.quantization.Quantization
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor.{FloatType, QuantizeTensor, Tensor}
+import com.intel.analytics.bigdl.utils.{T, Table}
+import java.nio.ByteBuffer
+import scala.reflect.ClassTag
 
 @SerialVersionUID(- 8008252944905538960L)
 class SpatialConvolution[T: ClassTag](
@@ -119,7 +117,7 @@ class SpatialConvolution[T: ClassTag](
     for (i <- 1 to nGroup) {
       val byteArrayOfWeight = weight(i - 1).getStorage.get
       weight(i - 1).setStorageInJni(
-        FixPoint.FixConvKernelDescInit(nOutputPlane / nGroup, nInputPlane / nGroup,
+        Quantization.FixConvKernelDescInit(nOutputPlane / nGroup, nInputPlane / nGroup,
           kernelH, kernelW))
       ev.getType() match {
         case FloatType =>
@@ -129,10 +127,10 @@ class SpatialConvolution[T: ClassTag](
           val maxArray = max.asInstanceOf[Array[Float]].slice(start, end)
           val byteOffset = 0
 
-          FixPoint.FixConvKernelLoadFromModel(weight(i - 1).getStorageInJni,
+          Quantization.FixConvKernelLoadFromModel(weight(i - 1).getStorageInJni,
             byteArrayOfWeight, byteOffset,
             minArray, maxArray, nOutputPlane / nGroup, nInputPlane / nGroup,
-            kernelH, kernelW, WEIGHT_THRESHOLD, FixPoint.NCHW)
+            kernelH, kernelW, WEIGHT_THRESHOLD, Quantization.NCHW)
         case _ => throw new UnsupportedOperationException(s"Only support Float for quantized model")
       }
     }
@@ -165,7 +163,7 @@ class SpatialConvolution[T: ClassTag](
     output.resize(Array(batchSize, nOutputPlane, outputHeight, outputWidth))
 
     if (!data.isInitialized) {
-      data.setStorageInJni(FixPoint.FixConvDataDescInit(nInputPlane / nGroup, kernelH, kernelW,
+      data.setStorageInJni(Quantization.FixConvDataDescInit(nInputPlane / nGroup, kernelH, kernelW,
         strideH, strideW, padH, padW, DILATION_HEIGHT, DILATION_WIDTH, 1,
         inputHeight, inputWidth))
     }
@@ -213,14 +211,14 @@ class SpatialConvolution[T: ClassTag](
       val weightSumArray = weightSum.asInstanceOf[Array[Float]]
       val weightSumOffset = offset
 
-      FixPoint.FixConvDataInit(
+      Quantization.FixConvDataInit(
         data.getStorageInJni, inputArray, inputOffset,
         nInputPlane / nGroup, kernelH, kernelW, strideH, strideW, padH, padW,
         DILATION_HEIGHT, DILATION_WIDTH, 1, inputHeight, inputWidth, THRESHOLD,
-        FixPoint.NCHW)
+        Quantization.NCHW)
 
-      FixPoint.InternalMixPrecisionConvolutionGEMM(
-        FixPoint.NCHW, weight.getStorageInJni, data.getStorageInJni,
+      Quantization.InternalMixPrecisionConvolutionGEMM(
+        Quantization.NCHW, weight.getStorageInJni, data.getStorageInJni,
         outputArray, outputOffset, weightSumArray, weightSumOffset,
         biasArray, biasOffset, 1, nOutputPlane / nGroup, outputHeight, outputWidth,
         FAULT_TOLERANCE)

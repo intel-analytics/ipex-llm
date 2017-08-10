@@ -155,9 +155,6 @@ object Module {
     type ANode[R] = Node[ModuleNode[R]]
 
     def convertGraph(model: Graph[T]): Graph[T] = {
-      implicit def moduleToModuleNode(module: Module[T]): ModuleNode[T] =
-        module.asInstanceOf[ModuleNode[T]]
-
       def replaceRef(node: ANode[T], newNode: ANode[T], refs: SeqNodes[T]): Unit = {
         val buffer = refs.asInstanceOf[ArrayBuffer[Node[ModuleNode[T]]]]
         refs.zipWithIndex.filter(_._1 == node).foreach { x =>
@@ -189,7 +186,7 @@ object Module {
         val waitedModule = substitute(module)
 
         if (waitedModule != module) {
-          replace(node, waitedModule, sortedNodes, i)
+          replace(node, waitedModule.asInstanceOf[ModuleNode[T]], sortedNodes, i)
         }
       }
 
@@ -222,7 +219,7 @@ object Module {
         case normalConv if normalConv.isInstanceOf[SpatialConvolution[T]] =>
           // do with normal convolution
           val conv = normalConv.asInstanceOf[SpatialConvolution[T]]
-          val quantizedConv = new fixpoint.SpatialConvolution[T](
+          val quantizedConv = new quantization.SpatialConvolution[T](
             conv.nInputPlane,
             conv.nOutputPlane,
             conv.kernelW,
@@ -236,7 +233,7 @@ object Module {
         case dilatedConv if dilatedConv.isInstanceOf[SpatialDilatedConvolution[T]] =>
           // do with dilated convolution
           val conv = dilatedConv.asInstanceOf[SpatialDilatedConvolution[T]]
-          val quantizedConv = new fixpoint.SpatialDilatedConvolution[T](
+          val quantizedConv = new quantization.SpatialDilatedConvolution[T](
             conv.nInputPlane,
             conv.nOutputPlane,
             conv.kW,
@@ -252,7 +249,7 @@ object Module {
           // do with linear
           val linear = normalLinear.asInstanceOf[Linear[T]]
 
-          val quantizedLinear = new fixpoint.Linear[T](
+          val quantizedLinear = new quantization.Linear[T](
             linear.weight.size(2),
             linear.weight.size(1))
 
