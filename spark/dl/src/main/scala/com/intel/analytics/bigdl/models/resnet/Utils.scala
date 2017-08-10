@@ -95,6 +95,27 @@ object Utils {
       .action((x, c) => c.copy(graphModel = true))
   }
 
+  case class TestParams(
+    folder: String = "./",
+    model: String = "",
+    batchSize: Int = 128
+  )
+
+  val testParser = new OptionParser[TestParams]("BigDL ResNet on Cifar10 Test Example") {
+    opt[String]('f', "folder")
+      .text("the location of Cifar10 dataset")
+      .action((x, c) => c.copy(folder = x))
+
+    opt[String]('m', "model")
+      .text("the location of model snapshot")
+      .action((x, c) => c.copy(model = x))
+      .required()
+      .required()
+    opt[Int]('b', "batchSize")
+      .text("batch size")
+      .action((x, c) => c.copy(batchSize = x))
+  }
+
   private[bigdl] def loadTrain(dataFile: String): Array[ByteRecord] = {
     val allFiles = Array(
       Paths.get(dataFile, "data_batch_1.bin"),
