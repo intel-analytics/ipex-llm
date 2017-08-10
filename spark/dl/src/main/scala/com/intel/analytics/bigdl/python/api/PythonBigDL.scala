@@ -350,7 +350,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       toTensor(initGradWeight),
       toTensor(initGradBias),
       withBias,
-      DataFormat.getFormat(dataFormat)
+      DataFormat(dataFormat)
     )
   }
 

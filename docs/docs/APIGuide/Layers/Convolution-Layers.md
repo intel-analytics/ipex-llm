@@ -14,6 +14,18 @@ SpatialConvolution is a module that applies a 2D convolution over an input image
 The input tensor in `forward(input)` is expected to be
 either a 4D tensor (`batch x nInputPlane x height x width`) or a 3D tensor (` nInputPlane x height x width`). The convolution is performed on the last two dimensions.
 
+As for padding, when padW and padH are both -1, we use a padding algorithm similar to the "SAME" padding of tensorflow. That is
+```scala
+ outHeight = Math.ceil(inHeight.toFloat/strideH.toFloat)
+ outWidth = Math.ceil(inWidth.toFloat/strideW.toFloat)
+
+ padAlongHeight = (outHeight - 1) * strideH + kernelH - inHeight
+ padAlongWidth = (outWidth - 1) * strideW + kernelW - inWidth
+
+ padTop = padAlongHeight / 2
+ padLeft = padAlongWidth / 2
+```
+
 Detailed paramter explaination for the constructor.
  
  * `nInputPlane` The number of expected input planes in the image given into forward()

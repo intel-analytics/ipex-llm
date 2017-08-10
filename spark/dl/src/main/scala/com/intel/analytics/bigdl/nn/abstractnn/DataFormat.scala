@@ -27,7 +27,7 @@ sealed trait DataFormat {
 }
 
 object DataFormat {
-  def getFormat(formatString: String): DataFormat = {
+  def apply(formatString: String): DataFormat = {
     formatString.toUpperCase match {
       case "NHWC" => NHWC
       case "NCHW" => NCHW
