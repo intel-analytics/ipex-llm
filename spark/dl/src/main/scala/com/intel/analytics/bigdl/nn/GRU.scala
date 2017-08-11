@@ -90,9 +90,9 @@ class GRU[T : ClassTag] (
       val droph2g1 = Dropout(p).inputs(input2)
       val droph2g2 = Dropout(p).inputs(input2)
       val linearh2g1 = Linear(outputSize, outputSize,
-        wRegularizer = wRegularizer, bRegularizer = bRegularizer).inputs(droph2g1)
+        wRegularizer = wRegularizer, bRegularizer = bRegularizer, withBias = false).inputs(droph2g1)
       val linearh2g2 = Linear(outputSize, outputSize,
-        wRegularizer = wRegularizer, bRegularizer = bRegularizer).inputs(droph2g2)
+        wRegularizer = wRegularizer, bRegularizer = bRegularizer, withBias = false).inputs(droph2g2)
       h2g = JoinTable(2, 0).inputs(linearh2g1, linearh2g2)
     } else {
       i2g = Narrow[T](featDim, 1, 2 * outputSize).inputs(input1)
