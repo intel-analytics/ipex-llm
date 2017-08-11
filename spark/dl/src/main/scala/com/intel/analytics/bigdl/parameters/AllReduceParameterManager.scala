@@ -16,30 +16,28 @@
 
 package com.intel.analytics.bigdl.parameters
 
-import java.nio.ByteBuffer
-import java.util.concurrent.atomic.{AtomicInteger}
-import java.util.concurrent.{Callable, Executors, ThreadFactory}
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.{Callable, Executors, Future, ThreadFactory}
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Engine, T, Table}
 import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.log4j.Logger
-
 import org.apache.spark.sparkExtension.{ParameterManagerMaster, SparkExtension}
-import org.apache.spark.{SparkEnv}
+import org.apache.spark.SparkEnv
 import org.apache.spark.storage.{BlockId, BlockManagerWrapper, StorageLevel}
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.HashMap
 import scala.reflect._
 
-object ParameterManager2 {
+object AllReduceParameterManager {
   val logger = Logger.getLogger(getClass)
 
   private val nextId = new AtomicInteger(0)
 
-  private val pm = new HashMap[String, ParameterManager2]()
+  private val pm = new HashMap[String, AllReduceParameterManager]()
 
   private var executorIdMap: HashMap[String, Int] = null
 
@@ -47,36 +45,43 @@ object ParameterManager2 {
     executorIdMap = map
   }
 
-  def get(id: Int, executorId: String): ParameterManager2 = {
+  def get(id: Int, executorId: String): AllReduceParameterManager = {
     val eid = id + "exe" + executorIdMap(executorId)
     if (pm.contains(eid)) pm(eid)
     else null
   }
 
   def createParameterManager[T: ClassTag](executorId: Int, executorNum: Int, partitionNum: Int,
-    size: Int, port: Int = -1): ParameterManager2 = {
+    size: Int, port: Int = -1): AllReduceParameterManager = {
     val id = nextId.getAndIncrement()
     val conf = SparkEnv.get.conf
     val master = ParameterManagerMaster.createEnv(conf, port)
-    val p = new ParameterManager2(id, executorId, executorNum, partitionNum, size, master)
+    val p = new AllReduceParameterManager(id, executorId, executorNum, partitionNum, size, master)
     pm.put(id + "exe" + executorId, p)
     p
   }
 }
 
 /**
-  * Represent a parameter stored on block manager. In distributed optimization, we put parameter
-  * on block manager of spark. Each worker sync parameter through block manager. Block manager
-  * here serve as a parameter server.
-  * @param id distinguish from other parameters
-  * @param executorId executor id which hosted the parameter
-  * @param partitionNum how many partitions will use this parameter
-  * @param size size of the parameter(1D vector)
-  * @param master master used to communicate betwwen driver and executor
-  */
-class ParameterManager2(val id: Int, val executorId: Int,
-  executorNum: Int, partitionNum: Int, size: Int, val master: ParameterManagerMaster) {
-  import ParameterManager2._
+ * Represent parameters stored on the block manager. In distributed optimization, we put parameters
+ * on block manager of spark. Each worker syncs parameters through the block manager. Block manager
+ * here serves as a parameter server.
+ *
+ * A Tensor is sliced into `executorNum` chunks and each chunk is assigned to a particular node
+ * (Spark executor). Likewise, gradients for each chunk are also assigned and stored on separate
+ * nodes. In this way, gradient aggregation and parameter updates can be performed independently for
+ * each chunk on separate nodes.
+ *
+ * @param id distinguish from other parameters
+ * @param executorId executorId of the node
+ * @param executorNum how many executors will use this parameter
+ * @param partitionNum partition numbers
+ * @param size size of the parameter (1D vector)
+ * @param master ParameterManagerMaster endpoint
+ */
+class AllReduceParameterManager(val id: Int, val executorId: Int, executorNum: Int,
+  partitionNum: Int, size: Int, val master: ParameterManagerMaster) {
+  import AllReduceParameterManager._
 
   private val syncPoolSize: Int = System.getProperty(
     "bigdl.Parameter.syncPoolSize", "4").toInt
@@ -95,7 +100,15 @@ class ParameterManager2(val id: Int, val executorId: Int,
   val taskSize = size / executorNum
   val extraSize = size % executorNum
 
-  /** Set initialize parameter */
+  /**
+    * This method should be called on each RDD partition before parameter synchronization begins.
+    * An empty gradient tensor is placed in the block manager that can be used to store gradients.
+    * A 1 / executorNum fraction of the `parameter` tensor is copied to the block manager as a
+    * compressed tensor.
+    *
+    * @param parameter A tensor representing the initial underlying weights of this
+    *                  `AllReduceParameterManager`
+    */
   def init[T: ClassTag](parameter: Tensor[T], state: Table)
     (implicit ev: TensorNumeric[T]): Unit = {
     val _classTag = classTag[T]
@@ -146,7 +159,13 @@ class ParameterManager2(val id: Int, val executorId: Int,
     gradientBuffer(0)
   }
 
-  /** Split aggregated gradient into executor number and put them in blockmanager */
+  /**
+    * Slice aggregated gradients into chunks, and mark each chunk to be sent
+    * to the appropriate parameter node, and put it in the block manager.
+    *
+    * @param parameter A Tensor that contains gradients computed on the entire model on a single
+    *                  node.
+    */
   def putGradients[T: ClassTag](parameter: Tensor[T]): Unit = {
     val _classTag = classTag[T]
     var pid = 0
@@ -154,13 +173,10 @@ class ParameterManager2(val id: Int, val executorId: Int,
       val start = pid * taskSize + math.min(pid, extraSize)
       val length = taskSize + (if (pid < extraSize) 1 else 0)
       val blockId = getGradientBlockId(executorId, pid)
-//      val fp16param = new FP16CompressedTensor[T](length)(_classTag)
-//      fp16param.compress(0, parameter, start, length)
       val block = BlockManagerWrapper.getLocalBytes(blockId)
       if (block.isDefined) {
         val fp16param = new FP16CompressedTensor[T](block.get)(_classTag)
         fp16param.compress(0, parameter, start, length)
-//        block.get.put(fp16param.bytes())
       } else {
         val fp16param = new FP16CompressedTensor[T](length)(_classTag)
         fp16param.compress(0, parameter, start, length)
@@ -171,7 +187,11 @@ class ParameterManager2(val id: Int, val executorId: Int,
     }
   }
 
-  /** Fetch partital gradients from local or remote nodes, aggregate them */
+  /**
+    * Retrieve gradients for the slice of the model that this node is responsible for from all the
+    * other nodes. A new thread is created for each separate node. The gradients are then summed
+    * and then stored in decompressed form in blockmanager.
+    */
   def aggregrateGradientParition[T: ClassTag](): Unit = {
     val params = new Array[CompressedTensor[T]](executorNum)
     val sgThreads = (0 until executorNum).map(pid => {
@@ -210,35 +230,13 @@ class ParameterManager2(val id: Int, val executorId: Int,
     params.head.deCompress(gradientExecutor)
   }
 
-  /** Fetch partial weights from remote nodes and concat them as a complete weight */
-  def syncWeights[T: ClassTag](localParameter: Tensor[T]): Unit = {
-    val tasks = (0 until executorNum).map(pid => {
-      new Callable[Int] {
-        override def call(): Int = {
-          try {
-            val blockId = getWeightBlockId(pid)
-            val localBuffer = BlockManagerWrapper.getLocalOrRemoteBytes(blockId).getOrElse {
-              throw new RuntimeException(s"Didn't find weight block $blockId in the block " +
-                s"manager. Did you initialize this AllReduceParameter on every executor?")
-            }
-            val start = pid * taskSize + math.min(pid, extraSize)
-            val length = taskSize + (if (pid < extraSize) 1 else 0)
-            require(localBuffer.array().length == length * 2)
-            SerializerInstance.serialize[T](localBuffer)
-              .deCompress(0, localParameter, start, length)
-            BlockManagerWrapper.unlock(blockId)
-            pid
-          } catch {
-            case t : Throwable =>
-              logger.error("Error: " + ExceptionUtils.getStackTrace(t))
-              throw t
-          }
-        }
-      }
-    })
-    syncPool.invokeAll(tasks.asJava)
-  }
-
+  /**
+    * Use a fixed thread pool to launch a thread for each node of the weights. Each thread
+    * requests a node of the weights from the Spark block manager.
+    *
+    * @param localParameter The Tensor that will hold the retrieved weights.
+    * @return A [[FutureResult]] which contains a [[Future]] for each thread.
+    */
   def getWeights[T: ClassTag](localParameter: Tensor[T]): FutureResult[Int] = {
     val tasks = (0 until executorNum).map { pid =>
       syncPool.submit {
@@ -268,7 +266,10 @@ class ParameterManager2(val id: Int, val executorId: Int,
     new FutureResult(tasks)
   }
 
-  /** Put the partial weight in the blockmanager */
+  /**
+    * Put the portion of the weights that this node is responsible for to the block manager.
+    * Weights are placed locally, then pulled when needed by other nodes.
+    */
   def sendWeightExecutor[T: ClassTag]() : Unit = {
     val weightExecutorId = getWeightExecutorId()
     val weightExecutor = getLocalParameter(weightExecutorId)
@@ -279,14 +280,9 @@ class ParameterManager2(val id: Int, val executorId: Int,
     if (block.isDefined) {
       block.get.put(data.bytes())
     } else {
-//      val bytes = ByteBuffer.allocate(data.bytes().limit)
-//      bytes.put(data.bytes())
-//      BlockManagerWrapper.putBytes(blockId, bytes, StorageLevel.MEMORY_ONLY_SER)
         BlockManagerWrapper.putBytes(blockId,
           data.bytes(), StorageLevel.MEMORY_ONLY_SER)
     }
-//    BlockManagerWrapper.putBytes(blockId,
-//      SerializerInstance.serialize(weightExecutor).bytes(), StorageLevel.MEMORY_ONLY_SER)
   }
 
   /** Get a block from local blockmanager */

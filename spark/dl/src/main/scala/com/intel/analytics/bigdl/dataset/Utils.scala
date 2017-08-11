@@ -24,7 +24,6 @@ object Utils {
 
   def getBatchSize(batchSize : Int, totalPartition: Option[Int] = None): Int = {
     val nodeNumber = Engine.nodeNumber()
-//    val partitionNum = totalPartition.getOrElse(nodeNumber)
     val partitionNum = Engine.partitionNumber()
     logger.info(s"partition number: $partitionNum, node number: $nodeNumber")
 

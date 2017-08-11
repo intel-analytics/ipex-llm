@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.{Module, _}
 import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch}
-import com.intel.analytics.bigdl.parameters.{CompressedTensor, FutureResult, ParameterManager2}
+import com.intel.analytics.bigdl.parameters.{FutureResult, AllReduceParameterManager}
 import com.intel.analytics.bigdl.nn.{Container, Module, Utils}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -76,6 +76,7 @@ object DistriOptimizer {
    * @param metrics metrics
    * @param models cached models
    * @param optimMethod optimization method
+   * @param pid id of AllReduceParameter
    * @param validationTrigger validation trigger
    * @param validationDataSet validation dataset
    * @param validationMethods validation methods
@@ -122,7 +123,7 @@ object DistriOptimizer {
     dataset.shuffle()
     val shuffleEnd = System.nanoTime()
     logger.info(s"Shuffle data complete. Takes ${(shuffleEnd - shuffleBefore) / 1e9}s")
-println("partitionNum: " + partitionNum + " nodeNumber: " + Engine.nodeNumber())
+
     var tasks: ArrayBuffer[Future[_]] = new ArrayBuffer()
     var threshold = Long.MaxValue
     var timeout = Long.MaxValue
@@ -152,11 +153,8 @@ println("partitionNum: " + partitionNum + " nodeNumber: " + Engine.nodeNumber())
       metrics.set("aggregate gradient time", 0.0, sc, partitionNum)
       metrics.set("get weights average", 0.0, sc, partitionNum)
       metrics.set("put gradient", 0.0, sc, Engine.nodeNumber())
-      metrics.set("put gradient2", 0.0, sc, Engine.nodeNumber())
       metrics.set("aggregrateGradientParition average executor", 0.0, sc, Engine.nodeNumber())
       metrics.set("send weights average", 0.0, sc, Engine.nodeNumber())
-      metrics.set("computing time for each node", mutable.ArrayBuffer[Double](), sc)
-      metrics.set("get weights for each node", mutable.ArrayBuffer[Double](), sc)
       metrics.set("compute weight average", 0.0, sc, Engine.nodeNumber())
       metrics.set("send gradient partition", 0.0, sc, partitionNum)
       metrics.set("aggregate local gradient", 0.0, sc, Engine.nodeNumber())
@@ -169,7 +167,7 @@ println("partitionNum: " + partitionNum + " nodeNumber: " + Engine.nodeNumber())
         (data, modelIter) => {
           val cached = modelIter.next()
           val executorId = SparkEnv.get.executorId
-          val parameters = ParameterManager2.get(pid, executorId)
+          val parameters = AllReduceParameterManager.get(pid, executorId)
           val syWStart = System.nanoTime()
           /*
             Note: All models in `cached` share the same storage for weights, so we only need to
@@ -179,7 +177,7 @@ println("partitionNum: " + partitionNum + " nodeNumber: " + Engine.nodeNumber())
           if (partitionNum == Engine.nodeNumber()) {
             weightsResult = parameters.getWeights(cached.modelWeights.head)
           } else {
-            ParameterManager2.synchronized {
+            AllReduceParameterManager.synchronized {
               if (!parameters.job1Start) {
                 weightsResult = parameters.getWeights(cached.modelWeights.head)
                 weightsResult.waitResult()
@@ -289,7 +287,7 @@ println("partitionNum: " + partitionNum + " nodeNumber: " + Engine.nodeNumber())
           if (partitionNum == Engine.nodeNumber()) {
             time = System.nanoTime()
             parameters.putGradients(cached.gradient)
-            driverMetrics.add("put gradient2", System.nanoTime() - time)
+            driverMetrics.add("put gradient", System.nanoTime() - time)
           } else {
             time = System.nanoTime()
             parameters.sendGradients(cached.gradient, TaskContext.getPartitionId())
@@ -303,7 +301,7 @@ println("partitionNum: " + partitionNum + " nodeNumber: " + Engine.nodeNumber())
       if (partitionNum != Engine.nodeNumber()) {
         dummyRDD.mapPartitions { iter =>
           val executorId = SparkEnv.get.executorId
-          val parameters = ParameterManager2.get(pid, executorId)
+          val parameters = AllReduceParameterManager.get(pid, executorId)
           var t = System.nanoTime()
           val gradient = parameters.aggregateLocalGradient()
           driverMetrics.add("aggregate local gradient", System.nanoTime() - t)
@@ -324,7 +322,7 @@ println("partitionNum: " + partitionNum + " nodeNumber: " + Engine.nodeNumber())
         dummyRDD.mapPartitions { iter =>
           val optimMethod = iter.next()
           val executorId = SparkEnv.get.executorId
-          val parameters = ParameterManager2.get(pid, executorId)
+          val parameters = AllReduceParameterManager.get(pid, executorId)
           val getG = System.nanoTime()
           parameters.aggregrateGradientParition()
           
@@ -369,8 +367,9 @@ println("partitionNum: " + partitionNum + " nodeNumber: " + Engine.nodeNumber())
         logger.info(s"${_header} Train ${recordsNum.value} in ${(end - start) / 1e9}seconds. " +
           s"Throughput is ${driverState("Throughput")} records/second. Loss is ${
             driverState("Loss")}. ${optimMethod.getHyperParameter()}")
-        logger.info(s"job1: ${(job2start-start)/1e9} job2: ${(job2end-job2start)/1e9}, job3: ${(job3end-job3start)/1e9}" )
-        logger.info("\n" + metrics.summary())
+        logger.debug(s"job1: ${(job2start-start)/1e9} job2: ${(job2end-job2start)/1e9}," +
+          s"job3: ${(job3end-job3start)/1e9}" )
+        logger.debug("\n" + metrics.summary())
         logger.debug("Dropped modules: " + (driverSubModelNum - finishedModelNum))
 
         lossArray = new Array[Double](_subModelNumber)
@@ -579,7 +578,7 @@ println("partitionNum: " + partitionNum + " nodeNumber: " + Engine.nodeNumber())
       executorIdMap(driver) = nodeNumber
     }
 
-    val pm = ParameterManager2.createParameterManager(executorIdMap(driver), nodeNumber,
+    val pm = AllReduceParameterManager.createParameterManager(executorIdMap(driver), nodeNumber,
       partitionNum, parameterSize)
     val actualPort = pm.master.driverEndpoint.address.port
     val pid = pm.id
@@ -602,11 +601,11 @@ println("partitionNum: " + partitionNum + " nodeNumber: " + Engine.nodeNumber())
       val weights = cached.head._2
 
       val executorId = SparkEnv.get.executorId
-      ParameterManager2.synchronized {
-        ParameterManager2.setExecutorMap(executorIdMap)
-        var parameter = ParameterManager2.get(pid, executorId)
+      AllReduceParameterManager.synchronized {
+        AllReduceParameterManager.setExecutorMap(executorIdMap)
+        var parameter = AllReduceParameterManager.get(pid, executorId)
         if (parameter == null) {
-          parameter = ParameterManager2.createParameterManager(executorIdMap(executorId),
+          parameter = AllReduceParameterManager.createParameterManager(executorIdMap(executorId),
             nodeNumber, partitionNum, parameterSize, actualPort)
         }
         if (!parameter.initFinished) {
@@ -741,7 +740,7 @@ println("partitionNum: " + partitionNum + " nodeNumber: " + Engine.nodeNumber())
     val (weights, gradients) = models.mapPartitions(iter => {
       val cached = iter.next()
       val executorId = SparkEnv.get.executorId
-      val parameter = ParameterManager2.get(pid, executorId)
+      val parameter = AllReduceParameterManager.get(pid, executorId)
       Iterator.single((Map(parameter.executorId ->
         parameter.getLocalParameter[T](parameter.getWeightExecutorId())),
         Map(parameter.executorId ->
@@ -809,7 +808,6 @@ class DistriOptimizer[T: ClassTag] (
     }.collect().distinct.size
     Engine.setNodeNumber(actualNodeNumber)
     val coresPerNode = Engine.coreNumber()
-//    val actualNodeNumber = Engine.nodeNumber()
 
     prepareInput()
 
@@ -826,7 +824,7 @@ class DistriOptimizer[T: ClassTag] (
     }
 
     var retryNum = 0
-    val maxRetry = System.getProperty("bigdl.failure.retryTimes", "1").toInt
+    val maxRetry = System.getProperty("bigdl.failure.retryTimes", "5").toInt
     val retryTimeInterval = System.getProperty("bigdl.failure.retryTimeInterval", "120").toInt
     var lastFailureTimestamp = System.nanoTime()
     while (retryNum < maxRetry) {

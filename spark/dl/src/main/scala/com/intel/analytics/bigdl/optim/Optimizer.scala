@@ -327,7 +327,7 @@ object Optimizer {
       criterion: Criterion[T],
       batchSize: Int
       )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
-    new DistriOptimizer2[T](
+    new DistriOptimizer[T](
       _model = model,
       dataset = (DataSet.rdd(sampleRDD) -> SampleToMiniBatch(batchSize))
         .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
@@ -357,7 +357,7 @@ object Optimizer {
       featurePaddingParam: PaddingParam[T],
       labelPaddingParam: PaddingParam[T]
          )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
-    new DistriOptimizer2[T](
+    new DistriOptimizer[T](
       _model = model,
       dataset = (DataSet.rdd(sampleRDD) ->
         SampleToMiniBatch(batchSize, Some(featurePaddingParam), Some(labelPaddingParam)))
@@ -373,7 +373,7 @@ object Optimizer {
         batchSize: Int,
         featurePaddingParam: PaddingParam[T]
       )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
-    new DistriOptimizer2[T](
+    new DistriOptimizer[T](
       _model = model,
       dataset = (DataSet.rdd(sampleRDD) ->
         SampleToMiniBatch(batchSize, Some(featurePaddingParam)))
@@ -399,7 +399,7 @@ object Optimizer {
           batchSize: Int,
           miniBatch: MiniBatch[T]
         )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
-    new DistriOptimizer2[T](
+    new DistriOptimizer[T](
       _model = model,
       dataset = (DataSet.rdd(sampleRDD) ->
         SampleToMiniBatch(miniBatch, batchSize, None))

@@ -34,9 +34,7 @@ object TrainInceptionV1 {
       val conf = Engine.createSparkConf().setAppName("BigDL InceptionV1 Train Example")
         .set("spark.task.maxFailures", "1")
       val sc = new SparkContext(conf)
-      Engine.init(8, 1, true)
-      Engine.setPartitionNumber(224)
-//      Engine.init
+      Engine.init
 
       val trainSet = ImageNet2012(
         param.folder + "/train",
