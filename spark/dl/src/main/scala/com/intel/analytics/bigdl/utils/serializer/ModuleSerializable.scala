@@ -15,6 +15,8 @@
  */
 package com.intel.analytics.bigdl.utils.serializer
 
+import java.lang.reflect.Field
+
 import com.intel.analytics.bigdl.nn.Container
 
 import scala.collection.JavaConverters._
@@ -23,6 +25,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
 import com.intel.analytics.bigdl.utils.serializer.DataConverter.RegularizerConverter
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializer._
 import serialization.Bigdl.DataType
 import serialization.Bigdl.{AttrValue, BigDLModule, BigDLTensor}
 
@@ -36,14 +39,78 @@ import scala.reflect.ClassTag
  */
 trait ModuleSerializable extends Loadable with Savable{
 
+
+  /**
+   * Default deserialization using reflection
+   * @param model serialized protobuf module instace
+   * @return BigDL module instance with linkages with other modules
+   */
   override def loadModule[T: ClassTag](model : BigDLModule)
                                       (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
-    ModuleSerializer.loadModule(model)
+
+    val evidence = scala.reflect.classTag[T]
+    val modelAttributes = model.getAttrMap
+    val moduleType = model.getModuleType
+    val cls = ModuleSerializer.getModuleClsByType(moduleType)
+    val constructorMirror = getCostructorMirror(cls)
+    val constructorFullParams = constructorMirror.symbol.paramss
+    val args = new Array[Object](constructorFullParams(0).size + constructorFullParams(1).size)
+    var i = 0;
+    constructorFullParams.foreach(map => {
+      map.foreach(param => {
+        val name = param.name.decodedName.toString
+        val ptype = param.typeSignature
+        if (ptype.toString == "scala.reflect.ClassTag[T]") {
+          args(i) = evidence
+        } else if (ptype.toString ==
+          tensorNumericType.toString) {
+          args(i) = ev
+        } else {
+          require(modelAttributes.containsKey(name), s"$name value cannot be found")
+          val attribute = modelAttributes.get(name)
+          val value = DataConverter.getAttributeValue(attribute)
+          args(i) = value
+        }
+        i+= 1
+      })
+    })
+    val module = constructorMirror.apply(args : _*).
+      asInstanceOf[AbstractModule[Activity, Activity, T]]
+    createBigDLModule(model, module)
   }
 
+  /**
+   *  Default serialization using reflection
+   *  @param module BigDL module instance with linkages with other modules
+   *  @return serialized protobuf module instace
+   */
   override def serializeModule[T: ClassTag](module : ModuleData[T])
                                            (implicit ev: TensorNumeric[T]) : BigDLModule = {
-    ModuleSerializer.serializeModule(module)
+    val bigDLModelBuilder = BigDLModule.newBuilder
+    val cls = module.module.getClass
+    val moduleType = getModuleTypeByCls(cls)
+    bigDLModelBuilder.setModuleType(moduleType)
+    val fullParams = getCostructorMirror(cls).symbol.paramss
+    val clsTag = scala.reflect.classTag[T]
+    val constructorParams = fullParams(0)
+    constructorParams.foreach(param => {
+      val paramName = param.name.decodedName.toString
+      var ptype = param.typeSignature
+      val attrBuilder = AttrValue.newBuilder
+      // For some modules, fields are declared inside but passed to Super directly
+      var field : Field = null
+      try {
+        field = cls.getDeclaredField(paramName)
+      } catch {
+        case e : NoSuchFieldException =>
+          field = cls.getSuperclass.getDeclaredField(paramName)
+      }
+      field.setAccessible(true)
+      val fieldValue = field.get(module.module)
+      DataConverter.setAttributeValue(attrBuilder, fieldValue, ptype)
+      bigDLModelBuilder.putAttr(paramName, attrBuilder.build)
+    })
+    createSerializeBigDLModule(bigDLModelBuilder, module)
   }
 
   protected def createBigDLModule[T: ClassTag](model : BigDLModule,
