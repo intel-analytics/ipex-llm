@@ -18,9 +18,16 @@ package com.intel.analytics.bigdl.utils
 
 import java.io._
 
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.{ModuleData, ModuleSerializer}
+import opennlp.tools.ml.model.AbstractModel
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FSDataInputStream, FSDataOutputStream, FileSystem, Path}
 import org.apache.hadoop.io.IOUtils
+
+import scala.collection.mutable.ArrayBuffer
+import scala.reflect.ClassTag
 
 object File {
   private[bigdl] val hdfsPrefix: String = "hdfs:"
@@ -65,16 +72,29 @@ object File {
    * @param isOverwrite if overwrite.
    */
   def save(obj: Serializable, fileName: String, isOverwrite: Boolean = false): Unit = {
+
+    val byteArrayOut = new ByteArrayOutputStream()
+    val objFile = new ObjectOutputStream(byteArrayOut)
+    objFile.writeObject(obj)
+    saveBytes(byteArrayOut.toByteArray, fileName, isOverwrite)
+  }
+
+  def saveModule[T: ClassTag](modelPath: String, module: AbstractModule[Activity, Activity, T],
+    overwrite: Boolean = false)(implicit ev: TensorNumeric[T]): Unit = {
+    val bigDLModule = ModuleData(module
+      , new ArrayBuffer[String](), new ArrayBuffer[String]())
+    val bigDLModel = ModuleSerializer.serialize(bigDLModule)
+    saveBytes(bigDLModel.toByteArray, modelPath, overwrite)
+  }
+
+  def saveBytes(bytes: Array[Byte], fileName: String, isOverwrite: Boolean = false) : Unit = {
     var fw: FileWriter = null
     var out: OutputStream = null
     var objFile: ObjectOutputStream = null
     try {
       fw = FileWriter(fileName)
       out = fw.create(isOverwrite)
-      val byteArrayOut = new ByteArrayOutputStream()
-      objFile = new ObjectOutputStream(byteArrayOut)
-      objFile.writeObject(obj)
-      IOUtils.copyBytes(new ByteArrayInputStream(byteArrayOut.toByteArray), out, 1024, true)
+      IOUtils.copyBytes(new ByteArrayInputStream(bytes), out, 1024, true)
     } finally {
       if (null != objFile) objFile.close()
       if (null != out) out.close()
@@ -160,6 +180,14 @@ object File {
    * @param fileName file name.
    */
   def load[T](fileName: String): T = {
+
+    val objFile = new ObjectInputStream(new ByteArrayInputStream(readBytes(fileName)))
+    val result = objFile.readObject()
+    result.asInstanceOf[T]
+  }
+
+
+  def readBytes[T](fileName : String) : Array[Byte] = {
     var fr: FileReader = null
     var in: InputStream = null
     var objFile: ObjectInputStream = null
@@ -168,9 +196,7 @@ object File {
       in = fr.open()
       val byteArrayOut = new ByteArrayOutputStream()
       IOUtils.copyBytes(in, byteArrayOut, 1024, true)
-      objFile = new ObjectInputStream(new ByteArrayInputStream(byteArrayOut.toByteArray))
-      val result = objFile.readObject()
-      result.asInstanceOf[T]
+      byteArrayOut.toByteArray
     } finally {
       if (null != in) in.close()
       if (null != fr) fr.close()
