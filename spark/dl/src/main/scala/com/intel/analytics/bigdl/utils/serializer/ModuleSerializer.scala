@@ -33,7 +33,7 @@ import scala.reflect.ClassTag
 
 object ModuleSerializer extends ModuleSerializable{
 
-  val runtimeMirror = universe.runtimeMirror(getClass.getClassLoader)
+  private val runtimeMirror = universe.runtimeMirror(getClass.getClassLoader)
 
   private val moduleMaps = new mutable.HashMap[String, Class[_]]()
   private val classMaps = new mutable.HashMap[Class[_], String]()
@@ -53,6 +53,11 @@ object ModuleSerializer extends ModuleSerializable{
 
   init
 
+  /**
+   * Default deserialization using reflection
+   * @param model serialized protobuf module instace
+   * @return BigDL module instance with linkages with other modules
+   */
   override def loadModule[T: ClassTag](model : BigDLModule)
     (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
 
@@ -87,6 +92,11 @@ object ModuleSerializer extends ModuleSerializable{
     createBigDLModule(model, module)
   }
 
+  /**
+   *  Default serialization using reflection
+   *  @param module BigDL module instance with linkages with other modules
+   *  @return serialized protobuf module instace
+   */
   override def serializeModule[T: ClassTag](module : ModuleData[T])
                                            (implicit ev: TensorNumeric[T]) : BigDLModule = {
     val bigDLModelBuilder = BigDLModule.newBuilder
@@ -116,7 +126,11 @@ object ModuleSerializer extends ModuleSerializable{
     createSerializeBigDLModule(bigDLModelBuilder, module)
   }
 
-
+  /**
+   * Serialization entry for all modules based on corresponding class instance of module
+   * @param bigDLModule : BigDL module to be serialized
+   * @return protobuf format module instance
+   */
   def serialize[T: ClassTag](bigDLModule : ModuleData[T])
                             (implicit ev: TensorNumeric[T])
     : BigDLModule = {
@@ -125,13 +139,23 @@ object ModuleSerializer extends ModuleSerializable{
     serializerMaps(cls).serializeModule(bigDLModule)
   }
 
+  /**
+   *  Deserialization entry for all modules based on corresponding module type
+   *  @param model : BigDL module on protobuf for deserialization
+   *  @return BigDL module
+   */
   def load[T: ClassTag](model: BigDLModule)
                        (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
     deserializerMaps(model.getModuleType).loadModule(model)
   }
 
 
-
+  /**
+   * register module for single module, used for standard BigDL module and user defined module
+   * @param moduleType,must be unique
+   * @param moduleCls class for module
+   * @param serializer serialzable implementation for this module
+   */
   def registerModule(moduleType : String, moduleCls : Class[_],
     serializer : ModuleSerializable) : Unit = {
     moduleMaps(moduleType) = moduleCls
@@ -140,17 +164,17 @@ object ModuleSerializer extends ModuleSerializable{
     deserializerMaps(moduleType) = serializer
   }
 
-  def getModuleClsByType(moduleType : String) : Class[_] = {
+  private def getModuleClsByType(moduleType : String) : Class[_] = {
     require(moduleMaps.contains(moduleType), s"$moduleType is not supported")
     moduleMaps(moduleType)
   }
 
-  def getModuleTypeByCls(cls : Class[_]) : String = {
+  private def getModuleTypeByCls(cls : Class[_]) : String = {
     require(classMaps.contains(cls), s"$cls is not supported")
     classMaps(cls)
   }
 
-  def getCostructorMirror[T : ClassTag](cls : Class[_]) : universe.MethodMirror = {
+  private def getCostructorMirror[T : ClassTag](cls : Class[_]) : universe.MethodMirror = {
 
     val clsSymbol = runtimeMirror.classSymbol(cls)
     val cm = runtimeMirror.reflectClass(clsSymbol)

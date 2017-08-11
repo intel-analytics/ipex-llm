@@ -64,11 +64,11 @@ object DataConverter extends DataConverter{
 
   private def getRuntimeType[T : ClassTag](value : Any) (implicit ev: TensorNumeric[T])
     : universe.Type = {
-    if (value.isInstanceOf[Tensor[T]]) {
+    if (value.isInstanceOf[Tensor[_]]) {
       ModuleSerializer.tensorType
-    } else if (value.isInstanceOf[AbstractModule[Activity, Activity, T]]) {
+    } else if (value.isInstanceOf[AbstractModule[_, _, T]]) {
       ModuleSerializer.abstractModuleType
-    } else if (value.isInstanceOf[Regularizer[T]]) {
+    } else if (value.isInstanceOf[Regularizer[_]]) {
       ModuleSerializer.regularizerType
     } else if (value.isInstanceOf[InitializationMethod]) {
       universe.typeOf[InitializationMethod]
@@ -78,7 +78,7 @@ object DataConverter extends DataConverter{
       val cls = value.getClass
       val runtimeMirror = universe.runtimeMirror(getClass.getClassLoader)
       val clsSymbol = runtimeMirror.classSymbol(cls)
-     clsSymbol.toType
+      clsSymbol.toType
     }
   }
 
