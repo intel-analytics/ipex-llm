@@ -128,6 +128,9 @@ class LSTMPeepholeSpec  extends TorchSpec {
     /*
      * Since we changed the structure of LSTMPeephole, we have to rearrange the parameters.
      */
+
+    val parametersTable = model.getParametersTable()
+
     val (weightsArray, gradArray) = model.parameters()
     val weightsArrayTorch = weightsArray.clone
     val weightsTorch = reconstruct(weightsArrayTorch, hiddenSize)
@@ -378,6 +381,7 @@ class LSTMPeepholeSpec  extends TorchSpec {
     val weightsTorch = reconstruct(weightsArrayTorch, hiddenSize)
 
     val weights2Torch = Module.flatten[Float](weightsTorch)
+
 
     val code =
       s"""
@@ -778,14 +782,14 @@ class LSTMPeepholeSpec  extends TorchSpec {
     weightsTorchAfter += i2g2After.clone()
     val i2g2biasAfter = tensor(1).narrow(1, 1 + hiddenSize, hiddenSize)
     weightsTorchAfter += i2g2biasAfter.clone()
-    weightsTorchAfter += tensor(2).clone()
     weightsTorchAfter += tensor(3).clone()
+    weightsTorchAfter += tensor(2).clone()
     val i2g1After = tensor(0).narrow(1, 1, hiddenSize)
     weightsTorchAfter += i2g1After.clone()
     val i2g1biasAfter = tensor(1).narrow(1, 1, hiddenSize)
     weightsTorchAfter += i2g1biasAfter.clone()
-    weightsTorchAfter += tensor(4).clone()
     weightsTorchAfter += tensor(5).clone()
+    weightsTorchAfter += tensor(4).clone()
 
     val i2g3After = tensor(0).narrow(1, 1 + 2 * hiddenSize, hiddenSize)
     weightsTorchAfter += i2g3After.clone()
@@ -799,8 +803,14 @@ class LSTMPeepholeSpec  extends TorchSpec {
     val i2g4biasAfter = tensor(1).narrow(1, 1 + 3 * hiddenSize, hiddenSize)
     weightsTorchAfter += i2g4biasAfter.clone()
 
-    for (i <- 7 until tensor.size)
-      weightsTorchAfter += tensor(i).clone()
+    if (tensor.length > 8) {
+      weightsTorchAfter += tensor(8).clone()
+      weightsTorchAfter += tensor(7).clone()
+    }
+    if (tensor.length > 10) {
+      weightsTorchAfter += tensor(9).clone()
+      weightsTorchAfter += tensor(10).clone()
+    }
     weightsTorchAfter.toArray
   }
 }
