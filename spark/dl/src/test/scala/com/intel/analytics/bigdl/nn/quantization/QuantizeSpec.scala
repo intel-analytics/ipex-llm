@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn.quantization
 
-import com.intel.analytics.bigdl.nn.Quantize._
+import Quantize._
 import com.intel.analytics.bigdl.tensor.Tensor
 
 import java.nio.ByteBuffer

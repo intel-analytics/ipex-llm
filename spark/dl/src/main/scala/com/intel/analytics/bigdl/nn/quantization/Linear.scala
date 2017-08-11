@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.nn.quantization
 
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
-import com.intel.analytics.bigdl.nn.{ErrorInfo, Module, Quantize}
+import com.intel.analytics.bigdl.nn.{ErrorInfo, Module}
 import com.intel.analytics.bigdl.quantization.Quantization
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{FloatType, QuantizeTensor, Tensor}
