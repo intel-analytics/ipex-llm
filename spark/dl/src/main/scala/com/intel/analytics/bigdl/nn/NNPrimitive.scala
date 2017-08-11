@@ -43,7 +43,7 @@ private[nn] object NNPrimitive {
       val kw = rest % kW
       val dstOffset = k * outputHeight * outputWidth + fInput.storageOffset() - 1
       val srcOffset = nip * inputWidth * inputHeight + input.storageOffset() - 1
-      if (padLeft + padRight > 0  || padTop + padBottom > 0) {
+      if (padLeft > 0 || padRight > 0 || padTop > 0 || padBottom > 0) {
         var y = 0
         while (y < outputHeight) {
           val iy = y * dH - padTop + kh
@@ -127,7 +127,7 @@ private[nn] object NNPrimitive {
       val kw = rest % kW
       val dstOffset = k * outputHeight * outputWidth + fInput.storageOffset() - 1
       val srcOffset = nip * inputWidth * inputHeight + input.storageOffset() - 1
-      if (padLeft + padRight > 0  || padTop + padBottom > 0) {
+      if (padLeft > 0 || padRight > 0 || padTop > 0 || padBottom > 0) {
         var y = 0
         while (y < outputHeight) {
           val iy = y * dH - padTop + kh
@@ -213,7 +213,7 @@ private[nn] object NNPrimitive {
             kh * (kW * outputHeight * outputWidth) +
             kw * (outputHeight * outputWidth) + fInput.storageOffset() - 1
           val dstOffset = nPlane * (inputHeight * inputWidth) + input.storageOffset() - 1
-          if (padLeft + padRight > 0 || padTop + padBottom > 0) {
+          if (padLeft > 0 || padRight > 0 || padTop > 0 || padBottom > 0) {
             var y = 0
             while (y < outputHeight) {
               val iy = y * dH - padTop + kh
@@ -300,7 +300,7 @@ private[nn] object NNPrimitive {
             (kW * outputHeight * outputWidth) +
             kw * (outputHeight * outputWidth) + fInput.storageOffset() - 1
           val dstOffset = nPlane * (inputHeight * inputWidth) + input.storageOffset() - 1
-          if (padLeft + padRight > 0 || padTop + padBottom > 0) {
+          if (padLeft > 0 || padRight > 0 || padTop > 0 || padBottom > 0) {
             var y = 0
             while (y < outputHeight) {
               val iy = y * dH - padTop + kh
@@ -370,6 +370,9 @@ private[nn] object NNPrimitive {
     padLeft: Int, padTop: Int, padRight: Int, padBottom: Int,
     outputWidth: Int, outputHeight: Int): Unit = {
 
+    // padRight and padBottom are used in the NCHW version but not here,
+    // add it to keep api consistent
+
     val nInputPlane = input.size(3)
     val inputHeight = input.size(1)
     val inputWidth = input.size(2)
@@ -428,6 +431,9 @@ private[nn] object NNPrimitive {
     dW: Int, dH: Int,
     padLeft: Int, padTop: Int, padRight: Int, padBottom: Int,
     outputWidth: Int, outputHeight: Int): Unit = {
+
+    // padRight and padBottom are used in the NCHW version but not here,
+    // add it to keep api consistent
 
     val nInputPlane = input.size(3)
     val inputHeight = input.size(1)
@@ -488,6 +494,9 @@ private[nn] object NNPrimitive {
     padLeft: Int, padTop: Int, padRight: Int, padBottom: Int,
     outputWidth: Int, outputHeight: Int): Unit = {
 
+    // padRight and padBottom are used in the NCHW version but not here,
+    // add it to keep api consistent
+
     val nInputPlane = input.size(3)
     val inputHeight = input.size(1)
     val inputWidth = input.size(2)
@@ -536,6 +545,9 @@ private[nn] object NNPrimitive {
     dW: Int, dH: Int,
     padLeft: Int, padTop: Int, padRight: Int, padBottom: Int,
     outputWidth: Int, outputHeight: Int): Unit = {
+
+    // padRight and padBottom are used in the NCHW version but not here,
+    // add it to keep api consistent
 
     val nInputPlane = input.size(3)
     val inputHeight = input.size(1)
