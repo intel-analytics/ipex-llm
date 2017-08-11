@@ -868,18 +868,24 @@ class Recurrent(Container):
     def __init__(self, bigdl_type="float"):
         super(Recurrent, self).__init__(None, bigdl_type)
 
-    def get_finalState_cellStatus(self):
+    def get_state(self):
         """
-        get final state and cell status.
+        get hidden state and cell at last time step.
         
-        :return: list of final state and cell status
+        :return: list of hidden state and cell
         """
-        finalState_cellStatus = callBigDlFunc(self.bigdl_type, "getFinalStateAndCellStatus", self.value)
-        for idx, tensor in enumerate(finalState_cellStatus):
-            if tensor is not None:
-                finalState_cellStatus[idx] = tensor.to_ndarray()
+        state = callBigDlFunc(self.bigdl_type, "getState", self.value)
+        for idx, tensor in enumerate(state):
+                state[idx] = tensor.to_ndarray()
 
-        return finalState_cellStatus
+        return state
+
+    def set_state(self, state):
+        """
+        set hidden state and cell at first time step.
+        """
+        jstate, state_is_table = self.check_input(state)
+        callBigDlFunc(self.bigdl_type, "setState", self.value, jstate, state_is_table)
 
 class LSTM(Layer):
     '''
