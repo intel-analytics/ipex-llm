@@ -35,7 +35,7 @@ This Python binding has been tested with Python 2.7 and Spark 1.6.0 / Spark 2.0.
     MASTER=...
     PYTHON_API_ZIP_PATH=${BigDL_HOME}/dist/lib/bigdl-VERSION-python-api.zip
     BigDL_JAR_PATH=${BigDL_HOME}/dist/lib/bigdl-VERSION-jar-with-dependencies.jar
-    PYTHONPATH=${PYTHON_API_ZIP_PATH}:$PYTHONPATH
+    export PYTHONPATH=${PYTHON_API_ZIP_PATH}:$PYTHONPATH
     
     ${SPARK_HOME}/bin/spark-submit \
         --master ${MASTER} \
