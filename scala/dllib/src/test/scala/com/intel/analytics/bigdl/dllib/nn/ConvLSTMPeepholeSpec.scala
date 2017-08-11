@@ -20,6 +20,8 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim.{L2Regularizer, SGD}
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.TorchObject.TYPE_DOUBLE_TENSOR
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer
@@ -731,6 +733,7 @@ class ConvLSTMPeepholeSpec extends FlatSpec with BeforeAndAfter with Matchers {
     })
   }
 
+  // Tested with torch convlstm
   "A ConvLSTMPeepwhole " should "return expected hidden and cell state when batch != 1" in {
     val hiddenSize = 4
     val inputSize = 2
@@ -923,42 +926,41 @@ class ConvLSTMPeepholeSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val weights = model.getParameters()._1
     weights.copy(Tensor[Double](weightData, Array(weightData.size, 1)))
 
-    //    val weightsOri = new ArrayBuffer[Tensor[Double]]()
-    //    val weightsNew = new ArrayBuffer[Tensor[Double]]()
-    //
-    //    val sizeI = hiddenSize * inputSize * 3 * 3
-    //    val sizeH = hiddenSize * hiddenSize * 3 * 3
-    //    var next = 0
-    //    for(i <- 0 until 4) {
-    //      val i2g = Tensor[Double](weightData.slice(next, next + sizeI),
-    //        Array(1, hiddenSize, inputSize, 3, 3))
-    //      weightsOri += Tensor[Double]().resizeAs(i2g).copy(i2g)
-    //      next += sizeI
-    //      val i2gBias = Tensor[Double](weightData.slice(next, next + hiddenSize),
-    //        Array(1, hiddenSize))
-    //      weightsOri += Tensor[Double]().resizeAs(i2gBias).copy(i2gBias)
-    //      next += hiddenSize
-    //      val h2g = Tensor[Double](weightData.slice(next, next + sizeH),
-    //        Array(1, hiddenSize, hiddenSize, 3, 3))
-    //      weightsOri += Tensor[Double]().resizeAs(h2g).copy(h2g)
-    //      next += sizeH
-    //    }
-    //
-    //    val weightsTable = T(weightsOri(0), weightsOri(3), weightsOri(6), weightsOri(9))
-    //    val joinWeights = JoinTable[Double](2, 5)
-    //    weightsNew += joinWeights.forward(weightsTable)
-    //
-    //    val biasTable = T(weightsOri(1), weightsOri(4), weightsOri(7), weightsOri(10))
-    //    val joinBias = JoinTable[Double](1, 1)
-    //    weightsNew += joinBias.forward(biasTable)
-    //
-    //    weightsNew += weightsOri(2)
-    //    weightsNew += weightsOri(5)
-    //    weightsNew += weightsOri(8)
-    //    weightsNew += weightsOri(11)
-    //
-    //    weights.copy(Module.flatten[Double](weightsNew.toArray))
-
+//        val weightsOri = new ArrayBuffer[Tensor[Double]]()
+//        val weightsNew = new ArrayBuffer[Tensor[Double]]()
+//
+//        val sizeI = hiddenSize * inputSize * 3 * 3
+//        val sizeH = hiddenSize * hiddenSize * 3 * 3
+//        var next = 0
+//        for(i <- 0 until 4) {
+//          val i2g = Tensor[Double](weightData.slice(next, next + sizeI),
+//            Array(1, hiddenSize, inputSize, 3, 3))
+//          weightsOri += Tensor[Double]().resizeAs(i2g).copy(i2g)
+//          next += sizeI
+//          val i2gBias = Tensor[Double](weightData.slice(next, next + hiddenSize),
+//            Array(1, hiddenSize))
+//          weightsOri += Tensor[Double]().resizeAs(i2gBias).copy(i2gBias)
+//          next += hiddenSize
+//          val h2g = Tensor[Double](weightData.slice(next, next + sizeH),
+//            Array(1, hiddenSize, hiddenSize, 3, 3))
+//          weightsOri += Tensor[Double]().resizeAs(h2g).copy(h2g)
+//          next += sizeH
+//        }
+//
+//        val weightsTable = T(weightsOri(0), weightsOri(3), weightsOri(6), weightsOri(9))
+//        val joinWeights = JoinTable[Double](2, 5)
+//        weightsNew += joinWeights.forward(weightsTable)
+//
+//        val biasTable = T(weightsOri(1), weightsOri(4), weightsOri(7), weightsOri(10))
+//        val joinBias = JoinTable[Double](1, 1)
+//        weightsNew += joinBias.forward(biasTable)
+//
+//        weightsNew += weightsOri(2)
+//        weightsNew += weightsOri(5)
+//        weightsNew += weightsOri(8)
+//        weightsNew += weightsOri(11)
+//
+//        weights.copy(Module.flatten[Double](weightsNew.toArray))
     val expectedCellData = Array(
       -0.14987348457222294, -0.22105992474941866, -0.3387238605194439, -0.39446403835780186,
       -0.316453669906271, -0.37140873935818197, -0.4794204029633373, -0.43318998938865677,
@@ -1020,17 +1022,56 @@ class ConvLSTMPeepholeSpec extends FlatSpec with BeforeAndAfter with Matchers {
     )
 
     val output = model.forward(input).asInstanceOf[Tensor[Double]]
-    val (finalState, cellStatus) = rec.getFinalStateAndCellStatus()
-    finalState.map(output.select(2, seqLength), (v1, v2) => {
+    val state = rec.getState()
+    val hiddenState = state.toTable.apply(1).asInstanceOf[Tensor[Double]]
+    val cell = state.toTable.apply(2).asInstanceOf[Tensor[Double]]
+    hiddenState.map(output.select(2, seqLength), (v1, v2) => {
       assert(abs(v1 - v2) == 0)
       v1
     })
 
-    cellStatus.map(Tensor[Double](expectedCellData, Array(batchSize, hiddenSize, 3, 4)),
+    cell.map(Tensor[Double](expectedCellData, Array(batchSize, hiddenSize, 3, 4)),
       (v1, v2) => {
       assert(abs(v1 - v2) == 0)
       v1
     })
+
+    rec.setState(state)
+    model.forward(input)
+  }
+
+  "A ConvLSTMPeepwhole " should "with set state should generate different output" in {
+    val hiddenSize = 4
+    val inputSize = 2
+    val seqLength = 2
+    val batchSize = 3
+
+    val input = Tensor[Double](batchSize, seqLength, inputSize, 3, 4).rand()
+
+    val seed = 890
+    RNG.setSeed(seed)
+    val rec = Recurrent[Double]()
+    val model = Sequential[Double]()
+      .add(rec
+        .add(ConvLSTMPeephole[Double](inputSize, hiddenSize, 3, 3, 1, withPeephole = false)))
+
+    RNG.setSeed(890)
+    val rec2 = Recurrent[Double]()
+    val model2 = Sequential[Double]()
+      .add(rec2
+        .add(ConvLSTMPeephole[Double](inputSize, hiddenSize, 3, 3, 1, withPeephole = false)))
+
+    val output = model.forward(input).asInstanceOf[Tensor[Double]]
+
+    rec2.setState(T(Tensor[Double](batchSize, hiddenSize, 3, 4).rand,
+      Tensor[Double](batchSize, hiddenSize, 3, 4).rand))
+    val output2 = model2.forward(input).asInstanceOf[Tensor[Double]]
+
+    output.map(output2,
+      (v1, v2) => {
+        assert(abs(v1 - v2) != 0)
+        v1
+      })
   }
 
   "ConvLSTMPeephole L2 regularizer" should "works correctly" in {
