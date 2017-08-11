@@ -74,9 +74,11 @@ class ConvLSTMPeephole3D[T : ClassTag](
       .add(VolumetricConvolution(inputSize, outputSize, kernelI, kernelI, kernelI,
         stride, stride, stride, kernelI/2, kernelI/2, kernelI/2, wRegularizer = wRegularizer,
         bRegularizer = bRegularizer))
-    val h2g = VolumetricConvolution(outputSize, outputSize, kernelC, kernelC, kernelC,
+    val h2g = Sequential()
+      .add(Contiguous())
+      .add(VolumetricConvolution(outputSize, outputSize, kernelC, kernelC, kernelC,
       stride, stride, stride, kernelC/2, kernelC/2, kernelC/2, wRegularizer = uRegularizer,
-      withBias = false)
+      withBias = false))
 
     val gate = Sequential()
     if (withPeephole) {
@@ -121,9 +123,11 @@ class ConvLSTMPeephole3D[T : ClassTag](
       .add(VolumetricConvolution(inputSize, outputSize, kernelI, kernelI, kernelI,
         stride, stride, stride, kernelI/2, kernelI/2, kernelI/2, wRegularizer = wRegularizer,
         bRegularizer = bRegularizer))
-    val h2h = VolumetricConvolution(outputSize, outputSize, kernelC, kernelC, kernelC,
+    val h2h = Sequential()
+      .add(Contiguous())
+      .add(VolumetricConvolution(outputSize, outputSize, kernelC, kernelC, kernelC,
       stride, stride, stride, kernelC/2, kernelC/2, kernelC/2, withBias = false,
-      wRegularizer = uRegularizer)
+      wRegularizer = uRegularizer))
 
     hidden
       .add(ParallelTable()
