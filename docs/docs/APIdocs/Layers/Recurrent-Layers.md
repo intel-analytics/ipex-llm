@@ -11,13 +11,13 @@ module = Recurrent()
 
 Recurrent module is a container of rnn cells. Different types of rnn cells can be added using add() function.  
 
-Recurrent supports returning final state and cell status of its rnn cells by using getFinalStateAndCellStatus. output of getFinalStateAndCellStatus
-is a tuple. The first element is the output state at last time while the second elements is the cell status.  
+Recurrent supports returning state and cell of its rnn cells at last time step by using getState. output of getState
+is an Activity and it can be directly used for setState function, which will set hidden state and cell at the first time step.  
 
-If contained cell is simple rnn, finalstate is `batch x hiddenSize`. cell is None  
-If contained cell is lstm, finalstate is `batch x hiddenSize`. cell is `batch x hiddenSize`  
-If contained cell is convlstm2D, finalstate is `batch x outputPlane x height x width`. cell is `batch x outputPlane x height x width`  
-If contained cell is convlstm3D, finalstate is `batch x outputPlane x height x width x length`. cell is `batch x outputPlane x height x width x length`
+If contained cell is simple rnn, getState return value is a tensor(hidden state) which is `batch x hiddenSize`.  
+If contained cell is lstm, getState return value is a table [hidden state, cell], both size is `batch x hiddenSize`.  
+If contained cell is convlstm, getState return value is a table [hidden state, cell], both size is `batch x outputPlane x height x width`.  
+If contained cell is convlstm3D, getState return value is a table [hidden state, cell], both size is `batch x outputPlane x height x width x length`.
 
 **Scala example:**
 ```scala
@@ -37,7 +37,8 @@ for (i <- 1 to 5) {
 
 val output = module.forward(input)
 
-val (finalState, cellStatus) = module.getFinalStateAndCellStatus()
+val state = module.getState()
+module.setState(state)
 
 > input
 (1,.,.) =
@@ -59,14 +60,6 @@ val (finalState, cellStatus) = module.getFinalStateAndCellStatus()
 
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 1x5x4]
 
-> finalState
-0.007001166	-0.7096118	-0.778529	-0.47429603
-
-[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x4]
-
-> cellStatus
-null
-
 ```
 
 **Python example:**
@@ -86,7 +79,8 @@ input[0][4][0] = 1
 
 output = module.forward(input)
 
-res = module.get_finalState_cellStatus()
+res = module.get_state()
+module.set_state(res)
 
 > input
 [[[ 0.  0.  0.  0.  1.]
@@ -102,13 +96,6 @@ res = module.get_finalState_cellStatus()
   [ 0.13328044  0.41262615  0.37388939  0.10983802]
   [-0.51452565  0.13222042  0.59192103  0.8393243 ]]]
 
-> res[0]
-# final state
-[[-0.51452565  0.13222042  0.59192103  0.8393243 ]]
-
-> res[1]
-# cell status
-None
 ```
 ---
 ## BiRecurrent ##

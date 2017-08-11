@@ -1844,9 +1844,15 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     layer.setInitMethod(weightInitMethod, biasInitMethod)
   }
 
-  def getFinalStateAndCellStatus(rec: Recurrent[T]): JList[JTensor] = {
-    val res = rec.getFinalStateAndCellStatus()
-      if (res._2 == null) return List(toJTensor(res._1), null.asInstanceOf[JTensor]).asJava
-    else return List(toJTensor(res._1), toJTensor(res._2)).asJava
+  def getState(rec: Recurrent[T]): JList[JTensor] = {
+    val res = rec.getState()
+      if (res.isTensor) return List(toJTensor(res.toTensor)).asJava
+    else return List(toJTensor(res.toTable.apply[Tensor[T]](1)),
+        toJTensor(res.toTable.apply[Tensor[T]](2))).asJava
+  }
+
+  def setState(rec: Recurrent[T], state: JList[JTensor], isTable: Boolean): Unit = {
+    val stateActivity = jTensorsToActivity(state, isTable)
+    rec.setState(stateActivity)
   }
 }
