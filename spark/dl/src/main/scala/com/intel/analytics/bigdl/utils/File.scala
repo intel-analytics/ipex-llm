@@ -18,10 +18,6 @@ package com.intel.analytics.bigdl.utils
 
 import java.io._
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.serializer.{ModuleData, ModuleSerializer}
-import opennlp.tools.ml.model.AbstractModel
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FSDataInputStream, FSDataOutputStream, FileSystem, Path}
 import org.apache.hadoop.io.IOUtils
@@ -77,14 +73,6 @@ object File {
     val objFile = new ObjectOutputStream(byteArrayOut)
     objFile.writeObject(obj)
     saveBytes(byteArrayOut.toByteArray, fileName, isOverwrite)
-  }
-
-  def saveModule[T: ClassTag](modelPath: String, module: AbstractModule[Activity, Activity, T],
-    overwrite: Boolean = false)(implicit ev: TensorNumeric[T]): Unit = {
-    val bigDLModule = ModuleData(module
-      , new ArrayBuffer[String](), new ArrayBuffer[String]())
-    val bigDLModel = ModuleSerializer.serialize(bigDLModule)
-    saveBytes(bigDLModel.toByteArray, modelPath, overwrite)
   }
 
   def saveBytes(bytes: Array[Byte], fileName: String, isOverwrite: Boolean = false) : Unit = {
