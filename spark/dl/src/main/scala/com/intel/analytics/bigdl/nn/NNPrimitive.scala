@@ -16,8 +16,9 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.tensor.Tensor
 import java.util
+
+import com.intel.analytics.bigdl.tensor.Tensor
 
 private[nn] object NNPrimitive {
   def im2colDouble(
@@ -1752,5 +1753,3 @@ private[nn] object NNPrimitive {
     }
   }
 }
-
-

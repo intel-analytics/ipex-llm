@@ -18,8 +18,6 @@ package com.intel.analytics.bigdl.nn
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.quantization.Quantize
 import com.intel.analytics.bigdl.tensor.Tensor
