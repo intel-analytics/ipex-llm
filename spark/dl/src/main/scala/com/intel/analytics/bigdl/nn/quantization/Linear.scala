@@ -138,8 +138,8 @@ class Linear[T: ClassTag](
         val biasOffset = bias.storageOffset() - 1
 
         Quantization.InternalMixPrecisionConvolutionGEMM(
-          Quantization.NCHW, weight.getStorageInJni, data.getStorageInJni, outputArray, outputOffset,
-          weightSumArray, weightSumOffset, biasArray, biasOffset,
+          Quantization.NCHW, weight.getStorageInJni, data.getStorageInJni, outputArray,
+          outputOffset, weightSumArray, weightSumOffset, biasArray, biasOffset,
           batchSize, outputSize, 1, 1,
           FAULT_TOLERANCE)
 
@@ -201,6 +201,7 @@ class Linear[T: ClassTag](
     data.release()
   }
 }
+
 
 object Linear {
   def apply[@specialized(Float, Double) T: ClassTag](

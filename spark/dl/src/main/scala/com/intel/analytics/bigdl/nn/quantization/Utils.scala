@@ -102,13 +102,17 @@ object Utils {
     }
 
     val inputs = sortedNodes.filter(n => n.prevNodes.isEmpty)
-
     // because all outputs point to dummy nodes, we should filter these nodes as outputs of Graph
     val outputs = sortedNodes.filter {n =>
       n.nextNodes.length == 1 && (n.nextNodes.head.element match {
         case d if d.isInstanceOf[Dummy[T]] => true
         case _ => false
       })
+    }
+
+    // delete all dummy nodes
+    outputs.foreach { node =>
+      node.nextNodes.asInstanceOf[ArrayBuffer[ANode[T]]].remove(0)
     }
 
     // create a new Graph, much simpler than replacing others in the old graph

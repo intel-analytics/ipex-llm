@@ -16,9 +16,11 @@
 
 package com.intel.analytics.bigdl.nn.quantization
 
-import Quantize._
+import com.intel.analytics.bigdl.nn
+import com.intel.analytics.bigdl.nn.quantization.Quantize._
+import com.intel.analytics.bigdl.nn.{Graph, Input, Module}
+import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
-
 import java.nio.ByteBuffer
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -258,5 +260,18 @@ class QuantizeSpec extends FlatSpec with Matchers {
 
     val los = loss(before.storage().array(), after.storage().array(), 0, src.nElement())
     los should be (0.toDouble +- 0.02) // here is an experiment result
+  }
+
+  "load quantized graph model" should "work correctly" in {
+    val input = Input()
+    val linear1 = nn.Linear(3, 4).inputs(input)
+    val linear2 = nn.Linear(3, 4).inputs(input)
+    val output = nn.CAddTable().inputs(linear1, linear2)
+    val graph = Graph(Array(input), Array(output))
+
+    val in = Tensor(3, 3).randn()
+    val out = graph.forward(in)
+
+    val quantizedModel = Module.quantize(graph)
   }
 }
