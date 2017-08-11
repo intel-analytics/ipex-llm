@@ -38,12 +38,12 @@ object BGRImgToLocalSeqFile {
  * @param baseFileName file name, the real generated sequence file will have a No. suffix
  */
 class BGRImgToLocalSeqFile(blockSize: Int, baseFileName: Path, hasName: Boolean = false) extends
-  Transformer[(LabeledBGRImage, String), String] {
+  Transformer[LabeledBGRImage, String] {
   private val conf: Configuration = new Configuration
   private var index = 0
   private val preBuffer: ByteBuffer = ByteBuffer.allocate(4 * 2)
 
-  override def apply(prev: Iterator[(LabeledBGRImage, String)]): Iterator[String] = {
+  override def apply(prev: Iterator[LabeledBGRImage]): Iterator[String] = {
     new Iterator[String] {
       override def hasNext: Boolean = prev.hasNext
 
@@ -55,7 +55,7 @@ class BGRImgToLocalSeqFile(blockSize: Int, baseFileName: Path, hasName: Boolean 
           SequenceFile.Writer.valueClass(classOf[Text]))
         var i = 0
         while (i < blockSize && prev.hasNext) {
-          val (image, imageName) = prev.next()
+          val image = prev.next()
 
           preBuffer.putInt(image.width())
           preBuffer.putInt(image.height())
@@ -64,7 +64,7 @@ class BGRImgToLocalSeqFile(blockSize: Int, baseFileName: Path, hasName: Boolean 
           System.arraycopy(preBuffer.array, 0, data, 0, preBuffer.capacity)
           System.arraycopy(imageByteData, 0, data, preBuffer.capacity, imageByteData.length)
           preBuffer.clear
-          val imageKey = if (hasName) s"${imageName}\n${image.label().toInt}"
+          val imageKey = if (hasName) s"${image.name()}\n${image.label().toInt}"
             else s"${image.label().toInt}"
           writer.append(new Text(imageKey), new Text(data))
           i += 1

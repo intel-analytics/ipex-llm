@@ -75,7 +75,7 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val dataSet2 = DataSet.array(LocalImageFiles.readPaths(Paths.get(
       processPath(resource.getPath())), hasLabel = false)).transform(
-      LocalGreyImgReader(28, 28))
+      LocalGreyImgReader(28, 28, 1f,false))
     dataSet2.size() should be (3)
 
     val iter2 = dataSet2.toLocal().data(train = false)
@@ -234,7 +234,7 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     // Convert the test imagenet files to seq files
     val files = (DataSet.ImageFolder.paths(Paths.get(processPath(resource.getPath())))
-      -> LocalImgReaderWithName(Image.NO_SCALE)
+      -> LocalImgReader(Image.NO_SCALE, hasName = true)
       -> BGRImgToLocalSeqFile(2, Paths.get(tmpFile.getAbsolutePath(), "imagenet"))
       ).toLocal().data(train = false).map(s => {
       println(s);
@@ -426,7 +426,7 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     // Convert the test imagenet files to seq files
     val files = (DataSet.ImageFolder.paths(Paths.get(processPath(resource.getPath())))
-      -> LocalImgReaderWithName(Image.NO_SCALE)
+      -> LocalImgReader(Image.NO_SCALE, hasName = true)
       -> BGRImgToLocalSeqFile(100, Paths.get(tmpFile.getAbsolutePath(), "imagenet"))
       ).toLocal().data(train = false).map(s => {
       println(s);

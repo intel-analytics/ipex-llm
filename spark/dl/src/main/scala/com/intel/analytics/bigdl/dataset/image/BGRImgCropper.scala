@@ -83,6 +83,7 @@ class BGRImgCropper(cropWidth: Int, cropHeight: Int, cropperMethod: CropperMetho
         i += 1
       }
       buffer.setLabel(img.label())
+      buffer.setName(img.name())
     })
   }
 }

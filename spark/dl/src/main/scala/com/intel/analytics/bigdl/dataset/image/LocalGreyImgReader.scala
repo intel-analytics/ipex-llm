@@ -33,9 +33,9 @@ object LocalGreyImgReader {
    * @param normalize the value to normalize
    * @return grey image reader transformer
    */
-  def apply(scaleTo: Int = Image.NO_SCALE, normalize: Float = 255f)
+  def apply(scaleTo: Int = Image.NO_SCALE, normalize: Float = 255f, hasName: Boolean = false)
   : Transformer[LocalLabeledImagePath, LabeledGreyImage] = {
-      new LocalScaleGreyImgReader(scaleTo, normalize)
+      new LocalScaleGreyImgReader(scaleTo, normalize, hasName)
   }
 
 
@@ -47,19 +47,20 @@ object LocalGreyImgReader {
    * @param normalize the value to normalize
    * @return grey image reader transformer
    */
-  def apply(resizeW: Int, resizeH: Int, normalize: Float)
+  def apply(resizeW: Int, resizeH: Int, normalize: Float, hasName: Boolean)
   : Transformer[LocalLabeledImagePath, LabeledGreyImage]
-  = new LocalResizeGreyImgReader(resizeW, resizeH, normalize)
+  = new LocalResizeGreyImgReader(resizeW, resizeH, normalize, hasName)
 }
 
 /**
  * Read Grey images from local given paths. After read the image, it will resize the shorted
  * edge to the given scale to value and resize the other edge properly. It will also divide
  * the pixel value by the given normalize value.
- * @param scaleTo
- * @param normalize
- */
-class LocalScaleGreyImgReader private[dataset](scaleTo: Int, normalize: Float)
+ * @param scaleTo the given scale to value
+ * @param normalize the value to normalize
+ * @param hasName whether the image contains name
+  */
+class LocalScaleGreyImgReader private[dataset](scaleTo: Int, normalize: Float, hasName: Boolean)
   extends Transformer[LocalLabeledImagePath, LabeledGreyImage] {
 
 
@@ -69,7 +70,11 @@ class LocalScaleGreyImgReader private[dataset](scaleTo: Int, normalize: Float)
     prev.map(data => {
       val imgData = GreyImage.readImage(data.path, scaleTo)
       val label = data.label
-      buffer.copy(imgData, normalize).setLabel(label)
+      if (hasName) {
+        buffer.copy(imgData, normalize).setLabel(label).setName(data.path.getFileName.toString)
+      } else {
+        buffer.copy(imgData, normalize).setLabel(label)
+      }
     })
   }
 }
@@ -81,8 +86,10 @@ class LocalScaleGreyImgReader private[dataset](scaleTo: Int, normalize: Float)
  * @param resizeW the given width to resize
  * @param resizeH the given height to resize
  * @param normalize the value to normalize
+ * @param hasName whether the image contains name
  */
-class LocalResizeGreyImgReader private[dataset](resizeW: Int, resizeH: Int, normalize: Float)
+class LocalResizeGreyImgReader private[dataset](resizeW: Int,
+                                                resizeH: Int, normalize: Float, hasName: Boolean)
   extends Transformer[LocalLabeledImagePath, LabeledGreyImage] {
 
 
@@ -92,7 +99,11 @@ class LocalResizeGreyImgReader private[dataset](resizeW: Int, resizeH: Int, norm
     prev.map(data => {
       val imgData = GreyImage.readImage(data.path, resizeW, resizeH)
       val label = data.label
-      buffer.copy(imgData, normalize).setLabel(label)
+      if (hasName) {
+        buffer.copy(imgData, normalize).setLabel(label).setName(data.path.getFileName.toString)
+      } else {
+        buffer.copy(imgData, normalize).setLabel(label)
+      }
     })
   }
 }

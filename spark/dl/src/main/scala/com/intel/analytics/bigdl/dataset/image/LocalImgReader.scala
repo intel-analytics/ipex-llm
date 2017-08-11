@@ -28,23 +28,24 @@ object LocalImgReader {
   // Class.forName("sun.java2d.cmm.lcms.LCMS")
   ColorSpace.getInstance(ColorSpace.CS_sRGB).toRGB(Array[Float](0, 0, 0))
 
-  def apply(scaleTo: Int = Image.NO_SCALE, normalize: Float = 255f)
+  def apply(scaleTo: Int = Image.NO_SCALE, normalize: Float = 255f, hasName: Boolean = false)
   : Transformer[LocalLabeledImagePath, LabeledBGRImage]
-  = new LocalScaleImgReader(scaleTo, normalize)
+  = new LocalScaleImgReader(scaleTo, normalize, hasName)
 
-  def apply(resizeW: Int, resizeH: Int, normalize: Float)
+  def apply(resizeW: Int, resizeH: Int, normalize: Float, hasName: Boolean)
   : Transformer[LocalLabeledImagePath, LabeledBGRImage]
-  = new LocalResizeImgReader(resizeW, resizeH, normalize)
+  = new LocalResizeImgReader(resizeW, resizeH, normalize, hasName)
 }
 
 /**
  * Read BGR images from local given paths. After read the image, it will resize the shorted
  * edge to the given scale to value and resize the other edge properly. It will also divide
  * the pixel value by the given normalize value.
- * @param scaleTo
- * @param normalize
+ * @param scaleTo the given scale to value
+ * @param normalize the value to normalize
+ * @param hasName whether the image contains name
  */
-class LocalScaleImgReader private[dataset](scaleTo: Int, normalize: Float)
+class LocalScaleImgReader private[dataset](scaleTo: Int, normalize: Float, hasName: Boolean)
   extends Transformer[LocalLabeledImagePath, LabeledBGRImage] {
 
 
@@ -54,7 +55,11 @@ class LocalScaleImgReader private[dataset](scaleTo: Int, normalize: Float)
     prev.map(data => {
       val imgData = BGRImage.readImage(data.path, scaleTo)
       val label = data.label
-      buffer.copy(imgData, normalize).setLabel(label)
+      if (hasName) {
+        buffer.copy(imgData, normalize).setLabel(label).setName(data.path.getFileName.toString)
+      } else {
+        buffer.copy(imgData, normalize).setLabel(label)
+      }
     })
   }
 }
@@ -66,8 +71,10 @@ class LocalScaleImgReader private[dataset](scaleTo: Int, normalize: Float)
  * @param resizeW the given width to resize
  * @param resizeH the given hight to resize
  * @param normalize the value to normalize
+ * @param hasName whether the image contains name
  */
-class LocalResizeImgReader private[dataset](resizeW: Int, resizeH: Int, normalize: Float)
+class LocalResizeImgReader private[dataset](resizeW: Int, resizeH: Int,
+                                            normalize: Float, hasName: Boolean)
   extends Transformer[LocalLabeledImagePath, LabeledBGRImage] {
 
 
@@ -77,7 +84,11 @@ class LocalResizeImgReader private[dataset](resizeW: Int, resizeH: Int, normaliz
     prev.map(data => {
       val imgData = BGRImage.readImage(data.path, resizeW, resizeH)
       val label = data.label
-      buffer.copy(imgData, normalize).setLabel(label)
+      if (hasName) {
+        buffer.copy(imgData, normalize).setLabel(label).setName(data.path.getFileName.toString)
+      } else {
+        buffer.copy(imgData, normalize).setLabel(label)
+      }
     })
   }
 }

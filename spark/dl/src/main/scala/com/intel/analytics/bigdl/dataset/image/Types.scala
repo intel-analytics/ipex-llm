@@ -101,7 +101,7 @@ class GreyImage(
  * @param _label
  */
 class LabeledGreyImage(d: Array[Float], w: Int, h: Int,
-  protected var _label : Float
+  protected var _label : Float, var _name : String = null
 ) extends GreyImage(d, w, h) with Label[Float] {
 
   def this(_width: Int, _height: Int) =
@@ -119,6 +119,14 @@ class LabeledGreyImage(d: Array[Float], w: Int, h: Int,
   def copy(other: LabeledGreyImage): GreyImage = {
     this.copy(other.asInstanceOf[GreyImage])
     this._label = other._label
+    this._name = other._name
+    this
+  }
+
+  def name(): String = _name
+
+  def setName(name: String): this.type = {
+    this._name = name
     this
   }
 }
@@ -256,7 +264,8 @@ class BGRImage(
  * @param _label a float label
  */
 class LabeledBGRImage(d: Array[Float], w: Int, h: Int,
-  protected var _label : Float) extends BGRImage(d, w, h) with Label[Float] {
+  protected var _label : Float, var _name : String = null)
+  extends BGRImage(d, w, h) with Label[Float] {
 
   def this() = this(new Array[Float](0), 0, 0, 0.0f)
 
@@ -278,11 +287,19 @@ class LabeledBGRImage(d: Array[Float], w: Int, h: Int,
   def copy(other: LabeledBGRImage): LabeledBGRImage = {
     this.copy(other.asInstanceOf[BGRImage])
     this._label = other._label
+    this._name = other._name
     this
   }
 
   override def clone(): LabeledBGRImage = {
     new LabeledBGRImage().copy(this)
+  }
+
+  def name(): String = _name
+
+  def setName(name: String): this.type = {
+    this._name = name
+    this
   }
 
 }
