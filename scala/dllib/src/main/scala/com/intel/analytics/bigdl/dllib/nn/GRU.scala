@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -62,9 +63,8 @@ class GRU[T : ClassTag] (
     hiddensShape = Array(outputSize),
     regularizers = Array(wRegularizer, uRegularizer, bRegularizer)
   ) {
-  var i2g: AbstractModule[_, _, T] = _
-  var h2g: AbstractModule[_, _, T] = _
-  var gates: AbstractModule[_, _, T] = _
+  var i2g: ModuleNode[T] = _
+  var h2g: ModuleNode[T] = _
   val featDim = 2
   override var cell: AbstractModule[Activity, Activity, T] = buildGRU()
 
@@ -76,106 +76,77 @@ class GRU[T : ClassTag] (
         wRegularizer = wRegularizer, bRegularizer = bRegularizer))
     }
 
-  def buildGates(): AbstractModule[Activity, Activity, T] = {
+  def buildGates()(input1: ModuleNode[T], input2: ModuleNode[T])
+  : (ModuleNode[T], ModuleNode[T]) = {
     if (p != 0) {
-      i2g = Sequential()
-        .add(ConcatTable()
-          .add(Dropout(p))
-          .add(Dropout(p)))
-        .add(ParallelTable()
-          .add(Linear(inputSize, outputSize,
-            wRegularizer = wRegularizer, bRegularizer = bRegularizer))
-          .add(Linear(inputSize, outputSize,
-            wRegularizer = wRegularizer, bRegularizer = bRegularizer)))
-        .add(JoinTable(2, 0))
+      val dropi2g1 = Dropout(p).inputs(input1)
+      val dropi2g2 = Dropout(p).inputs(input1)
+      val lineari2g1 = Linear(inputSize, outputSize,
+        wRegularizer = wRegularizer, bRegularizer = bRegularizer).inputs(dropi2g1)
+      val lineari2g2 = Linear(inputSize, outputSize,
+        wRegularizer = wRegularizer, bRegularizer = bRegularizer).inputs(dropi2g2)
+      i2g = JoinTable(2, 0).inputs(lineari2g1, lineari2g2)
 
-      h2g = Sequential()
-        .add(ConcatTable()
-          .add(Dropout(p))
-          .add(Dropout(p)))
-        .add(ParallelTable()
-          .add(Linear(outputSize, outputSize, withBias = false,
-            wRegularizer = uRegularizer))
-          .add(Linear(outputSize, outputSize, withBias = false,
-            wRegularizer = uRegularizer)))
-        .add(JoinTable(2, 0))
+      val droph2g1 = Dropout(p).inputs(input2)
+      val droph2g2 = Dropout(p).inputs(input2)
+      val linearh2g1 = Linear(outputSize, outputSize,
+        wRegularizer = wRegularizer, bRegularizer = bRegularizer, withBias = false).inputs(droph2g1)
+      val linearh2g2 = Linear(outputSize, outputSize,
+        wRegularizer = wRegularizer, bRegularizer = bRegularizer, withBias = false).inputs(droph2g2)
+      h2g = JoinTable(2, 0).inputs(linearh2g1, linearh2g2)
     } else {
-      i2g = Narrow[T](featDim, 1, 2 * outputSize)
+      i2g = Narrow[T](featDim, 1, 2 * outputSize).inputs(input1)
       h2g = Linear(outputSize, 2 * outputSize, withBias = false,
-        wRegularizer = uRegularizer)
+        wRegularizer = uRegularizer).inputs(input2)
     }
 
-    gates = Sequential()
-      .add(ParallelTable()
-        .add(i2g)
-        .add(h2g))
-      .add(CAddTable(true))
-      .add(Reshape(Array(2, outputSize)))
-      .add(SplitTable(1, 2))
-      .add(ParallelTable()
-        .add(Sigmoid())
-        .add(Sigmoid()))
+    val cadd = CAddTable(true).inputs(i2g, h2g)
 
-    gates
+    val narrow1 = Narrow[T](featDim, 1, outputSize).inputs(cadd)
+    val narrow2 = Narrow[T](featDim, 1 + outputSize, outputSize).inputs(cadd)
+
+    val sigmoid1 = Sigmoid().inputs(narrow1)
+    val sigmoid2 = Sigmoid().inputs(narrow2)
+
+    (sigmoid1, sigmoid2)
   }
 
-  def buildGRU(): AbstractModule[Activity, Activity, T] = {
-    buildGates()
-
-    val gru = Sequential()
-      .add(ConcatTable()
-        .add(Identity())
-        .add(gates))
-      .add(FlattenTable()) // x(t), h(t - 1), r(t), z(t)
+  def buildGRU(): Graph[T] = {
+    val x = Input()
+    val h = Input()
+    val (r, z) = buildGates()(x, h) // x(t), h(t - 1), r(t), z(t)
 
     val f2g = if (p != 0) {
-      Sequential()
-        .add(Dropout(p))
-        .add(Linear(inputSize, outputSize,
-            wRegularizer = wRegularizer, bRegularizer = bRegularizer))
+      val drop1 = Dropout(p).inputs(x)
+      val linear1 = Linear(inputSize, outputSize,
+        wRegularizer = wRegularizer, bRegularizer = bRegularizer).inputs(drop1)
+      linear1
     } else {
-      Narrow(featDim, 1 + 2 * outputSize, outputSize)
+      Narrow(featDim, 1 + 2 * outputSize, outputSize).inputs(x)
     }
 
-    val h_hat = Sequential()
-      .add(ConcatTable()
-        .add(Sequential()
-          .add(SelectTable(1))
-          .add(f2g))
-        .add(Sequential()
-        .add(NarrowTable(2, 2))
-        .add(CMulTable())))
-      .add(ParallelTable()
-        .add(Identity())
-        .add(Sequential()
-         .add(Dropout(p))
-         .add(Linear(outputSize, outputSize, withBias = false,
-           wRegularizer = uRegularizer))))
-      .add(CAddTable(true))
-      .add(Tanh())
+    // h_hat = tanh(f2g + Linear(r*h))
+    val cMult = CMulTable().inputs(h, r)
+    val drop2 = Dropout(p).inputs(cMult)
+    val linear2 = Linear(outputSize, outputSize, withBias = false,
+               wRegularizer = uRegularizer).inputs(drop2)
 
-    gru
-      .add(ConcatTable()
-        .add(Sequential()
-          .add(ConcatTable()
-            .add(h_hat)
-            .add(Sequential()
-              .add(SelectTable(4))
-              .add(MulConstant(-1))
-              .add(AddConstant(1))))
-          .add(CMulTable()))
-        .add(Sequential()
-          .add(ConcatTable()
-            .add(SelectTable(2))
-            .add(SelectTable(4)))
-          .add(CMulTable())))
-      .add(CAddTable(false))
-      .add(ConcatTable()
-        .add(Identity[T]())
-        .add(Identity[T]()))
+    val cadd2 = CAddTable(true).inputs(f2g, linear2)
+    val h_hat = Tanh().inputs(cadd2)
 
-    cell = gru
-    cell
+    // h_t (1 - z) * h + z * h_hat
+    val mulConst = MulConstant(-1).inputs(z)
+    val addConst = AddConstant(1).inputs(mulConst)
+    val cMult2 = CMulTable().inputs(h_hat, addConst)
+
+    val cMult3 = CMulTable().inputs(h, z)
+
+    val cadd3 = CAddTable(false).inputs(cMult2, cMult3)
+
+    val out1 = Identity().inputs(cadd3)
+    val out2 = Identity().inputs(cadd3)
+
+    Graph(Array(x, h), Array(out1, out2))
   }
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[GRU[T]]
