@@ -54,11 +54,6 @@ class RnnCell[T : ClassTag] (
   (implicit ev: TensorNumeric[T])
   extends Cell[T](Array(hiddenSize)) {
 
-  val i2h = Identity[T]()
-  val h2h = Linear[T](hiddenSize, hiddenSize,
-    wRegularizer = uRegularizer)
-  val cAddTable = CAddTable[T](false)
-
   override def preTopology: AbstractModule[Activity, Activity, T] =
     TimeDistributed[T](
       Linear[T](inputSize,
@@ -70,13 +65,14 @@ class RnnCell[T : ClassTag] (
   override var cell: AbstractModule[Activity, Activity, T] = buildGraph
 
   private def buildGraph: Graph[T] = {
-    val input1 = Input()
-    val input2 = h2h.inputs()
-    val add = cAddTable.inputs(input1, input2)
+    val i2h = Input()
+    val h2h = Linear[T](hiddenSize, hiddenSize,
+      wRegularizer = uRegularizer).inputs()
+    val add = CAddTable[T](false).inputs(i2h, h2h)
     val activate = activation.inputs(add)
     val out1 = Identity[T].inputs(activate)
     val out2 = Identity[T].inputs(activate)
-    Graph(Array(input1, input2), Array(out1, out2))
+    Graph(Array(i2h, h2h), Array(out1, out2))
   }
 
   /**
@@ -100,15 +96,12 @@ class RnnCell[T : ClassTag] (
     case that: RnnCell[T] =>
       super.equals(that) &&
         (that canEqual this) &&
-        i2h == that.i2h &&
-        h2h == that.h2h &&
-        cAddTable == that.cAddTable &&
         cell == that.cell
     case _ => false
   }
 
   override def hashCode(): Int = {
-    val state = Seq(super.hashCode(), i2h, h2h, cAddTable, cell)
+    val state = Seq(super.hashCode(), cell)
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
