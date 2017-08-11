@@ -16,6 +16,7 @@
 package com.intel.analytics.bigdl.utils
 
 import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -44,6 +45,72 @@ class DirectedGraph[T](val source : Node[T], val reverse : Boolean = false) exte
    * @return
    */
   def edges : Int = BFS.map(_.nextNodes.length).reduce(_ + _)
+
+  private def nodeHash(n: Node[T]): Int = {
+    val module = n.element.asInstanceOf[AbstractModule[_, _, T]]
+    var a = module.hashCode
+//    a += module.output.getClass.hashCode
+    a += n.prevNodes.length.hashCode
+    n.prevNodes.foreach(x => {
+      a += x
+        .element
+        .asInstanceOf[AbstractModule[_, _, T]]
+        .hashCode
+    })
+    a
+  }
+
+  private def reversePostOrder: Iterator[Node[T]] = {
+    new Iterator[Node[T]] {
+      val order = new mutable.Stack[Node[T]]()
+      DFS.foreach(n => order.push(n))
+
+      override def hasNext: Boolean = !order.isEmpty
+
+      override def next(): Node[T] = {
+        order.pop()
+      }
+    }
+  }
+
+  private def equivalent(n1: Node[T], n2: Node[T]): Boolean = {
+
+     if (n1.element.getClass != n2.element.getClass) {
+      return false
+    }
+
+    if (n1.prevNodes.length != n2.prevNodes.length) {
+      return false
+    }
+
+    true
+  }
+
+  private def removeNode(n: Node[T]): Unit = {
+    for (e <- n.prevNodes) {
+      n.delete(e)
+    }
+    for (e <- n.nextNodes) {
+      n.delete(e)
+    }
+  }
+
+  def cse: Unit = {
+    val available = new mutable.HashMap[Int, Node[T]]()
+
+    reversePostOrder.foreach(n => {
+      val h = nodeHash(n)
+      val candidate = available.getOrElse(h, null)
+      if (candidate == null) {
+        available.put(h, n)
+      } else if (equivalent(n, candidate)) {
+        for (e <- n.nextNodes) {
+          candidate -> e
+        }
+        removeNode(n)
+      }
+    })
+  }
 
   /**
    * Topology sort.
