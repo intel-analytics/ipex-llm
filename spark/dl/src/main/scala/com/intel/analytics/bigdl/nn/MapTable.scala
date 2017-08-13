@@ -34,12 +34,11 @@ class MapTable[T: ClassTag](
   var module: AbstractModule[_ <: Activity, _ <: Activity, T] = null)
   (implicit ev: TensorNumeric[T]) extends Container[Table, Table, T]  {
 
+  if ( module != null) {
+    this.add(module)
+  }
+
   private def extend(n: Int): Unit = {
-    if (!modules.contains(0)) {
-      modules.append(module.asInstanceOf[AbstractModule[Activity, Activity, T]])
-    } else {
-      modules.update(0, module.asInstanceOf[AbstractModule[Activity, Activity, T]])
-    }
     var i = 1
     while (i <= n && modules.size <= i) {
       if (modules.length <= i) {
@@ -56,6 +55,9 @@ class MapTable[T: ClassTag](
     this.module = module
     if (modules.nonEmpty) {
       modules.update(0, module.asInstanceOf[AbstractModule[Activity, Activity, T]])
+      for (i <- 1 until modules.size) {
+        modules.update(i, module.cloneModule().asInstanceOf[AbstractModule[Activity, Activity, T]])
+      }
     } else {
       modules.append(module.asInstanceOf[AbstractModule[Activity, Activity, T]])
     }
@@ -63,6 +65,7 @@ class MapTable[T: ClassTag](
   }
 
   override def updateOutput(input: Table): Table = {
+    require(module != null, "Single module required")
     extend(input.length())
     var i = 0
     while (i < input.length()) {
@@ -73,6 +76,7 @@ class MapTable[T: ClassTag](
   }
 
   override def updateGradInput(input: Table, gradOutput: Table): Table = {
+    require(module != null, "Single module required")
     extend(input.length())
     var i = 0
     while (i < input.length()) {
@@ -83,6 +87,7 @@ class MapTable[T: ClassTag](
   }
 
   override def accGradParameters(input: Table, gradOutput: Table): Unit = {
+    require(module != null, "Single module required")
     extend(input.length())
     var i = 0
     while (i < input.length()) {
