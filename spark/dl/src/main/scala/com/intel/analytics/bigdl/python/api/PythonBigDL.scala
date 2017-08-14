@@ -65,7 +65,7 @@ case class JTensor(storage: JList[Any], shape: JList[Int], bigdlType: String)
  * @param method method name
  */
 
-case class TestResult(val result: Float, totalNum: Int, method: String)
+case class EvaluatedResult(val result: Float, totalNum: Int, method: String)
 
 object PythonBigDL {
 
@@ -1409,11 +1409,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                 valRDD: JavaRDD[Sample],
                 batchSize: Int,
                 valMethods: JList[ValidationMethod[T]])
-  : JList[TestResult] = {
+  : JList[EvaluatedResult] = {
     val resultArray = model.evaluate(valRDD.rdd.map(toSample(_)),
       valMethods.asScala.toArray, Some(batchSize))
     val testResultArray = resultArray.map { result =>
-      TestResult(result._1.result()._1, result._1.result()._2,
+      EvaluatedResult(result._1.result()._1, result._1.result()._2,
         result._2.toString())
     }
     testResultArray.toList.asJava

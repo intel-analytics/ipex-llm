@@ -91,7 +91,7 @@ class JavaValue(object):
         return self.value.toString()
 
 
-class TestResult():
+class EvaluatedResult():
     """
     A testing result used to benchmark the model quality.
     """
@@ -107,10 +107,10 @@ class TestResult():
         self.method = method
 
     def __reduce__(self):
-        return (TestResult, (self.result, self.total_num, self.method))
+        return (EvaluatedResult, (self.result, self.total_num, self.method))
 
     def __str__(self):
-        return "Test result: %s, total_num: %s, method: %s" % (
+        return "Evaluated result: %s, total_num: %s, method: %s" % (
             self.result, self.total_num, self.method)
 
 
@@ -240,7 +240,7 @@ _picklable_classes = [
     'Rating',
     'LabeledPoint',
     'Sample',
-    'TestResult',
+    'EvaluatedResult',
     'JTensor'
 ]
 
