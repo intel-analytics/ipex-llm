@@ -23,16 +23,7 @@ import shutil
 import tempfile
 
 
-class TestTensorflow(unittest.TestCase):
-
-    def setUp(self):
-        sparkConf = create_spark_conf()
-        self.sc = SparkContext(master="local[4]", appName="test model",
-                               conf=sparkConf)
-        init_engine()
-
-    def tearDown(self):
-        self.sc.stop()
+class TestTensorflow():
 
     def test_load_and_save(self):
         linear = Linear(10, 2)()

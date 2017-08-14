@@ -22,7 +22,6 @@ from bigdl.util.common import *
 from bigdl.nn.initialization_method import *
 from bigdl.dataset import movielens
 import numpy as np
-import unittest
 import tempfile
 import pytest
 from numpy.testing import assert_allclose
