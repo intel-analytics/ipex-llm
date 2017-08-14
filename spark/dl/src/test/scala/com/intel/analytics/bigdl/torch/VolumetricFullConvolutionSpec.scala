@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class VolumetricFullConvolutionSpec extends TorchSpec {
   "A VolumetricFullConvolution" should "generate correct output" in {
     torchCheck()
