@@ -736,6 +736,9 @@ class SpatialConvolution(Layer):
     :param init_grad_weight: the optional initial value for the grad_weight
     :param init_grad_bias: the optional initial value for the grad_bias
     :param with_bias: the optional initial value for if need bias
+    :param data_format: a string value of "NHWC" or "NCHW" to specify the input data format of this layer. In "NHWC" format
+                       data is stored in the order of [batch_size, height, width, channels], in "NCHW" format data is stored
+                       in the order of [batch_size, channels, height, width].
 
     >>> spatialConvolution = SpatialConvolution(6, 12, 5, 5)
     creating: createSpatialConvolution
@@ -748,7 +751,7 @@ class SpatialConvolution(Layer):
     >>> init_bias = np.random.randn(12)
     >>> init_grad_weight = np.zeros([1, 12, 6, 5, 5])
     >>> init_grad_bias = np.zeros([12])
-    >>> spatialConvolution = SpatialConvolution(6, 12, 5, 5, 1, 1, 0, 0, 1, True, L1Regularizer(0.5), L1Regularizer(0.5), init_weight, init_bias, init_grad_weight, init_grad_bias)
+    >>> spatialConvolution = SpatialConvolution(6, 12, 5, 5, 1, 1, 0, 0, 1, True, L1Regularizer(0.5), L1Regularizer(0.5), init_weight, init_bias, init_grad_weight, init_grad_bias, True, "NCHW")
     creating: createL1Regularizer
     creating: createL1Regularizer
     creating: createSpatialConvolution
@@ -772,6 +775,7 @@ class SpatialConvolution(Layer):
                  init_grad_weight=None,
                  init_grad_bias=None,
                  with_bias=True,
+                 data_format="NCHW",
                  bigdl_type="float"):
         super(SpatialConvolution, self).__init__(None, bigdl_type,
                                                  n_input_plane,
@@ -790,7 +794,8 @@ class SpatialConvolution(Layer):
                                                  JTensor.from_ndarray(init_bias),
                                                  JTensor.from_ndarray(init_grad_weight),
                                                  JTensor.from_ndarray(init_grad_bias),
-                                                 with_bias)
+                                                 with_bias,
+                                                 data_format)
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                   weight_init_method, bias_init_method)
