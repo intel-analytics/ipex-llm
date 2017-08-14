@@ -98,7 +98,8 @@ class SpatialAveragePooling[@specialized(Float, Double) T: ClassTag](
   private def updateOutputFrameDouble(input: Tensor[Double], output: Tensor[Double],
     nInputPlane: Int, inputHeight: Int, inputWidth: Int,
     outputHeight: Int, outputWidth: Int,
-    kW: Int, kH: Int, dW: Int, dH: Int): Unit = {
+    kW: Int, kH: Int, dW: Int, dH: Int,
+    padLeft: Int, padTop: Int, padRight: Int, padBottom: Int): Unit = {
     require(input.isContiguous())
     val inputData = input.storage().array()
     val inputOffset = input.storageOffset() - 1
@@ -110,10 +111,10 @@ class SpatialAveragePooling[@specialized(Float, Double) T: ClassTag](
       while (yy < outputHeight) {
         var xx = 0
         while (xx < outputWidth) {
-          var hStart = yy * dH - padH
-          var wStart = xx * dW - padW
-          var hEnd = math.min(hStart + kH, inputHeight + padH)
-          var wEnd = math.min(wStart + kW, inputWidth + padW)
+          var hStart = yy * dH - padTop
+          var wStart = xx * dW - padLeft
+          var hEnd = math.min(hStart + kH, inputHeight + padBottom)
+          var wEnd = math.min(wStart + kW, inputWidth + padRight)
           val poolSize = (hEnd - hStart) * (wEnd - wStart)
           hStart = math.max(hStart, 0)
           wStart = math.max(wStart, 0)
@@ -143,7 +144,8 @@ class SpatialAveragePooling[@specialized(Float, Double) T: ClassTag](
 
   private def updateOutputFrameFloat(input: Tensor[Float], output: Tensor[Float],
     nInputPlane: Int, inputHeight: Int, inputWidth: Int, outputHeight: Int, outputWidth: Int,
-    kW: Int, kH: Int, dW: Int, dH: Int): Unit = {
+    kW: Int, kH: Int, dW: Int, dH: Int,
+    padLeft: Int, padTop: Int, padRight: Int, padBottom: Int): Unit = {
     require(input.isContiguous())
     val inputData = input.storage().array()
     val inputOffset = input.storageOffset() - 1
@@ -155,10 +157,10 @@ class SpatialAveragePooling[@specialized(Float, Double) T: ClassTag](
       while (yy < outputHeight) {
         var xx = 0
         while (xx < outputWidth) {
-          var hStart = yy * dH - padH
-          var wStart = xx * dW - padW
-          var hEnd = math.min(hStart + kH, inputHeight + padH)
-          var wEnd = math.min(wStart + kW, inputWidth + padW)
+          var hStart = yy * dH - padTop
+          var wStart = xx * dW - padLeft
+          var hEnd = math.min(hStart + kH, inputHeight + padBottom)
+          var wEnd = math.min(wStart + kW, inputWidth + padRight)
           val poolSize = (hEnd - hStart) * (wEnd - wStart)
           hStart = math.max(hStart, 0)
           wStart = math.max(wStart, 0)
@@ -186,6 +188,24 @@ class SpatialAveragePooling[@specialized(Float, Double) T: ClassTag](
     }
   }
 
+  // return (padTop, padDown, padLeft, padRight)
+  protected def getPadding(inputHeight: Int, inputWidth: Int): (Int, Int, Int, Int) = {
+    if (padW == -1 && padH == -1) {
+      // deal with SAME padding
+      val oW = Math.ceil(inputWidth.toFloat / dW.toFloat).toInt
+      val oH = Math.ceil(inputHeight.toFloat / dH.toFloat).toInt
+      val padAlongWidth = Math.max(0, (oW -1) * dW + kW - inputWidth)
+      val padAlongHeight = Math.max(0, (oH - 1) * dH + kH - inputHeight)
+      (padAlongHeight/2, padAlongHeight - padAlongHeight/2,
+        padAlongWidth/2, padAlongWidth - padAlongWidth/2)
+    } else {
+      require(inputWidth >= kW - padW && inputHeight >= kH - padH,
+        "input smaller than kernel size")
+      require(kW / 2 >= padW && kH / 2 >= padH, "pad should be smaller than half of kernel size")
+      (padH, padH, padW, padW)
+    }
+  }
+
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim() == 3 || input.dim() == 4,
       "SpatialAveragePooling: " + ErrorInfo.constrainInputAs3DOrBatch)
@@ -198,25 +218,30 @@ class SpatialAveragePooling[@specialized(Float, Double) T: ClassTag](
       kW = inputWidth
     }
     val nInputPlane = input.size(dimH - 1)
+
+    val (padTop, padBottom, padLeft, padRight) = getPadding(inputHeight, inputWidth)
+
     var outputHeight =
       if (ceilMode) {
-        math.ceil((inputHeight - kH + 2 * padH).toFloat / dH).toInt + 1
+        math.ceil((inputHeight - kH + padTop + padBottom).toFloat / dH).toInt + 1
       } else {
-        math.floor((inputHeight - kH + 2 * padH).toFloat / dH).toInt + 1
+        math.floor((inputHeight - kH + padTop + padBottom).toFloat / dH).toInt + 1
       }
     var outputWidth =
       if (ceilMode) {
-        math.ceil((inputWidth - kW + 2 * padW).toFloat / dW).toInt + 1
+        math.ceil((inputWidth - kW + padLeft + padRight).toFloat / dW).toInt + 1
       } else {
-        math.floor((inputWidth - kW + 2 * padW).toFloat / dW).toInt + 1
+        math.floor((inputWidth - kW + padLeft + padRight).toFloat / dW).toInt + 1
       }
-    if (padW != 0 || padH != 0) {
+
+    // padx >= 0
+    if (padLeft + padRight + padTop + padBottom > 0) {
       // ensure that the last pooling starts inside the image
       // needed to avoid problems in ceil mode
-      if ((outputHeight - 1) * dH >= inputHeight + padH) {
+      if ((outputHeight - 1) * dH >= inputHeight + padBottom) {
         outputHeight -= 1
       }
-      if ((outputWidth - 1) * dW >= inputWidth + padW) {
+      if ((outputWidth - 1) * dW >= inputWidth + padRight) {
         outputWidth -= 1
       }
     }
@@ -226,12 +251,12 @@ class SpatialAveragePooling[@specialized(Float, Double) T: ClassTag](
         updateOutputFrameDouble(input.asInstanceOf[Tensor[Double]],
           output.asInstanceOf[Tensor[Double]],
           nInputPlane, inputHeight, inputWidth, outputHeight, outputWidth,
-          kW, kH, dW, dH)
+          kW, kH, dW, dH, padLeft, padTop, padRight, padBottom)
       } else {
         updateOutputFrameFloat(input.asInstanceOf[Tensor[Float]],
           output.asInstanceOf[Tensor[Float]],
           nInputPlane, inputHeight, inputWidth, outputHeight, outputWidth,
-          kW, kH, dW, dH)
+          kW, kH, dW, dH, padLeft, padTop, padRight, padBottom)
       }
     }
     else {
@@ -250,12 +275,12 @@ class SpatialAveragePooling[@specialized(Float, Double) T: ClassTag](
             updateOutputFrameDouble(input(_i).asInstanceOf[Tensor[Double]],
               output(_i).asInstanceOf[Tensor[Double]],
               nInputPlane, inputHeight, inputWidth, outputHeight, outputWidth,
-              kW, kH, dW, dH)
+              kW, kH, dW, dH, padLeft, padTop, padRight, padBottom)
           } else {
             updateOutputFrameFloat(input(_i).asInstanceOf[Tensor[Float]],
               output(_i).asInstanceOf[Tensor[Float]],
               nInputPlane, inputHeight, inputWidth, outputHeight, outputWidth,
-              kW, kH, dW, dH)
+              kW, kH, dW, dH, padLeft, padTop, padRight, padBottom)
           }
         })
         i += 1
@@ -272,7 +297,8 @@ class SpatialAveragePooling[@specialized(Float, Double) T: ClassTag](
   private def updateGradInputFrameDouble(gradInput: Tensor[Double], gradOutput: Tensor[Double],
     nInputPlane: Int, inputHeight: Int, inputWidth: Int,
     outputHeight: Int, outputWidth: Int,
-    kW: Int, kH: Int, dW: Int, dH: Int): Unit = {
+    kW: Int, kH: Int, dW: Int, dH: Int,
+    padLeft: Int, padTop: Int, padRight: Int, padBottom: Int): Unit = {
     require(gradOutput.isContiguous())
     val gradInputData = gradInput.storage().array()
     val gradInputOffset = gradInput.storageOffset() - 1
@@ -284,10 +310,10 @@ class SpatialAveragePooling[@specialized(Float, Double) T: ClassTag](
       while (yy < outputHeight) {
         var xx = 0
         while (xx < outputWidth) {
-          var hStart = yy * dH - padH
-          var wStart = xx * dW - padW
-          var hEnd = math.min(hStart + kH, inputHeight + padH)
-          var wEnd = math.min(wStart + kW, inputWidth + padW)
+          var hStart = yy * dH - padTop
+          var wStart = xx * dW - padLeft
+          var hEnd = math.min(hStart + kH, inputHeight + padBottom)
+          var wEnd = math.min(wStart + kW, inputWidth + padRight)
           val poolSize = (hEnd - hStart) * (wEnd - wStart)
           hStart = math.max(hStart, 0)
           wStart = math.max(wStart, 0)
@@ -318,7 +344,8 @@ class SpatialAveragePooling[@specialized(Float, Double) T: ClassTag](
   private def updateGradInputFrameFloat(gradInput: Tensor[Float], gradOutput: Tensor[Float],
     nInputPlane: Int, inputHeight: Int, inputWidth: Int,
     outputHeight: Int, outputWidth: Int,
-    kW: Int, kH: Int, dW: Int, dH: Int): Unit = {
+    kW: Int, kH: Int, dW: Int, dH: Int,
+    padLeft: Int, padTop: Int, padRight: Int, padBottom: Int): Unit = {
     require(gradOutput.isContiguous())
     val gradInputData = gradInput.storage().array()
     val gradInputOffset = gradInput.storageOffset() - 1
@@ -330,10 +357,10 @@ class SpatialAveragePooling[@specialized(Float, Double) T: ClassTag](
       while (yy < outputHeight) {
         var xx = 0
         while (xx < outputWidth) {
-          var hStart = yy * dH - padH
-          var wStart = xx * dW - padW
-          var hEnd = math.min(hStart + kH, inputHeight + padH)
-          var wEnd = math.min(wStart + kW, inputWidth + padW)
+          var hStart = yy * dH - padTop
+          var wStart = xx * dW - padLeft
+          var hEnd = math.min(hStart + kH, inputHeight + padBottom)
+          var wEnd = math.min(wStart + kW, inputWidth + padRight)
           val poolSize = (hEnd - hStart) * (wEnd - wStart)
           hStart = math.max(hStart, 0)
           wStart = math.max(wStart, 0)
@@ -369,28 +396,11 @@ class SpatialAveragePooling[@specialized(Float, Double) T: ClassTag](
     val inputHeight = input.size(dimh)
     val inputWidth = input.size(dimw)
     val nInputPlane = input.size(dimh - 1)
-    var outputHeight =
-      if (ceilMode) {
-        math.ceil((inputHeight - kH + 2 * padH).toFloat / dH).toInt + 1
-      } else {
-        math.floor((inputHeight - kH + 2 * padH).toFloat / dH).toInt + 1
-      }
-    var outputWidth =
-      if (ceilMode) {
-        math.ceil((inputWidth - kW + 2 * padW).toFloat / dW).toInt + 1
-      } else {
-        math.floor((inputWidth - kW + 2 * padW).toFloat / dW).toInt + 1
-      }
-    if (padW != 0 || padH != 0) {
-      // ensure that the last pooling starts inside the image
-      // needed to avoid problems in ceil mode
-      if ((outputHeight - 1) * dH >= inputHeight + padH) {
-        outputHeight -= 1
-      }
-      if ((outputWidth - 1) * dW >= inputWidth + padW) {
-        outputWidth -= 1
-      }
-    }
+
+    val outputHeight: Int = gradOutput.size(dimh)
+    val outputWidth: Int = gradOutput.size(dimw)
+
+    val (padTop, padBottom, padLeft, padRight) = getPadding(inputHeight, inputWidth)
 
     gradInput.resizeAs(input).zero()
     if (input.dim() == 3) {
@@ -398,12 +408,12 @@ class SpatialAveragePooling[@specialized(Float, Double) T: ClassTag](
         updateGradInputFrameDouble(gradInput.asInstanceOf[Tensor[Double]],
           gradOutput.asInstanceOf[Tensor[Double]],
           nInputPlane, inputHeight, inputWidth, outputHeight, outputWidth,
-          kW, kH, dW, dH)
+          kW, kH, dW, dH, padLeft, padTop, padRight, padBottom)
       } else {
         updateGradInputFrameFloat(gradInput.asInstanceOf[Tensor[Float]],
           gradOutput.asInstanceOf[Tensor[Float]],
           nInputPlane, inputHeight, inputWidth, outputHeight, outputWidth,
-          kW, kH, dW, dH)
+          kW, kH, dW, dH, padLeft, padTop, padRight, padBottom)
       }
     }
     else {
@@ -421,12 +431,12 @@ class SpatialAveragePooling[@specialized(Float, Double) T: ClassTag](
             updateGradInputFrameDouble(gradInput(_i).asInstanceOf[Tensor[Double]],
               gradOutput(_i).asInstanceOf[Tensor[Double]],
               nInputPlane, inputHeight, inputWidth, outputHeight, outputWidth,
-              kW, kH, dW, dH)
+              kW, kH, dW, dH, padLeft, padTop, padRight, padBottom)
           } else {
             updateGradInputFrameFloat(gradInput(_i).asInstanceOf[Tensor[Float]],
               gradOutput(_i).asInstanceOf[Tensor[Float]],
               nInputPlane, inputHeight, inputWidth, outputHeight, outputWidth,
-              kW, kH, dW, dH)
+              kW, kH, dW, dH, padLeft, padTop, padRight, padBottom)
           }
         })
         i += 1
