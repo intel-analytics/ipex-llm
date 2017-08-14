@@ -37,37 +37,34 @@ class MSECriterion[@specialized(Float, Double) T: ClassTag]
   private var ones: Array[T] = null
 
   @transient
-  private var minus: Array[T] = null
-
-  @transient
   private var buffer: Array[T] = null
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     output = ev.fromType[Int](0)
 
-    if (ones == null || ones.length < input.nElement) {
-      ones = Array.fill(input.nElement)(ev.fromType[Int](1))
-    }
-    if (buffer == null || buffer.length < input.nElement) {
-      buffer = new Array[T](input.nElement)
-    }
-    if (minus == null || minus.length < input.nElement) {
-      minus = new Array[T](input.nElement)
-    }
+    gradInput.resizeAs(input)
 
     val nElement = input.nElement
+
+    if (ones == null || ones.length < nElement) {
+      ones = Array.fill(nElement)(ev.fromType[Int](1))
+    }
+    if (buffer == null || buffer.length < nElement) {
+      buffer = new Array[T](nElement)
+    }
+
 
     ev.vSub(nElement,
       input.storage.array,
       input.storageOffset - 1,
       target.storage.array,
       target.storageOffset - 1,
-      minus,
-      0)
+      gradInput.storage.array,
+      gradInput.storageOffset - 1)
 
     ev.vPowx(nElement,
-      minus,
-      0,
+      gradInput.storage.array,
+      gradInput.storageOffset - 1,
       ev.fromType[Int](2),
       buffer,
       0)
@@ -86,17 +83,13 @@ class MSECriterion[@specialized(Float, Double) T: ClassTag]
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
     val nElement = input.nElement
-    gradInput.resizeAs(input).zero
     var norm = ev.fromType[Int](2)
     if (sizeAverage) {
       norm = ev.fromType[Double](2.0 / nElement)
     }
 
-    ev.axpy(nElement,
+    ev.scal(nElement,
       norm,
-      minus,
-      0,
-      1,
       gradInput.storage.array,
       gradInput.storageOffset - 1,
       1)
