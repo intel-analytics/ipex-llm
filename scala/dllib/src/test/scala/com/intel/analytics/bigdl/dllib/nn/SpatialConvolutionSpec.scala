@@ -21,11 +21,12 @@ import org.scalatest.{FlatSpec, Matchers}
 
 import scala.math._
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.optim.{L2Regularizer, SGD}
-import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 
 import scala.util.Random
+import com.intel.analytics.bigdl.utils.T
 
 @com.intel.analytics.bigdl.tags.Parallel
 class SpatialConvolutionSpec extends FlatSpec with Matchers {
@@ -232,6 +233,145 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     output(Array(1, 1, 2)) should be(63)
     output(Array(1, 2, 1)) should be(91)
     output(Array(1, 2, 2)) should be(105)
+  }
+
+  "A SpatialConvolution layer" should "work with SAME padding using NHWC format" in {
+    import tensor.TensorNumericMath.TensorNumeric.NumericFloat
+    val nInputPlane = 1
+    val nOutputPlane = 1
+    val kW = 2
+    val kH = 2
+    val dW = 1
+    val dH = 1
+    val padW = -1
+    val padH = -1
+    val layer = new SpatialConvolution(nInputPlane, nOutputPlane,
+      kW, kH, dW, dH, padW, padH, format = DataFormat.NHWC)
+
+    val inputData = Array(
+      1.0f, 2, 3, 4
+    )
+
+    val kernelData = Array(
+      1.0f, 2, 3, 4
+    )
+
+    val biasData = Array(0.0f)
+
+    layer.weight.copy(Tensor(Storage(kernelData), 1, Array(kH, kW, nOutputPlane,
+      nInputPlane)))
+    layer.bias.copy(Tensor(Storage(biasData), 1, Array(nOutputPlane)))
+    val input = Tensor(Storage(inputData), 1, Array(2, 2, 1))
+    val output = layer.updateOutput(input)
+    val gradInput = layer.backward(input, output)
+    output.storage().array() should be (Array(30.0f, 14, 11, 4))
+    gradInput.storage().array() should be (Array(30.0f, 74, 101, 188))
+  }
+
+  "A SpatialConvolution layer" should "work with SAME padding using NCHW format" in {
+    import tensor.TensorNumericMath.TensorNumeric.NumericFloat
+    val nInputPlane = 1
+    val nOutputPlane = 1
+    val kW = 1
+    val kH = 1
+    val dW = 2
+    val dH = 2
+    val padW = -1
+    val padH = -1
+    val layer = new SpatialConvolution(nInputPlane, nOutputPlane,
+      kW, kH, dW, dH, padW, padH)
+
+    val inputData = Array(
+      0.0f, 1.0f, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+    )
+
+    val kernelData = Array(
+      1.0f
+    )
+
+    val biasData = Array(0.0f)
+
+    layer.weight.copy(Tensor(Storage(kernelData), 1, Array(nOutputPlane,
+      nInputPlane, kH, kW)))
+    layer.bias.copy(Tensor(Storage(biasData), 1, Array(nOutputPlane)))
+    val input = Tensor(Storage(inputData), 1, Array(1, 4, 4))
+    val output = layer.updateOutput(input)
+    val gradInput = layer.backward(input, output)
+    output.storage().array() should be (Array(0.0f, 2, 8, 10))
+    gradInput.storage().array() should be (Array(
+      0.0f, 0, 2, 0, 0, 0, 0, 0, 8, 0, 10, 0, 0, 0, 0, 0
+    ))
+  }
+
+  "A SpatialConvolution layer" should "generate same output with NCHW and NHWC" in {
+    import tensor.TensorNumericMath.TensorNumeric.NumericDouble
+    case class Conv(nIn: Int, nOut: Int, kW: Int,
+                    kH: Int, dW: Int, dH: Int, pW: Int, pH: Int)
+    val params = List(
+      Conv(1, 1, 1, 1, 2, 2, -1, -1),
+      Conv(1, 1, 3, 3, 1, 1, 0, 0),
+      Conv(1, 1, 1, 1, 1, 1, 0, 0),
+      Conv(1, 1, 5, 5, 1, 1, 0, 0),
+      Conv(4, 4, 3, 3, 1, 1, 0, 0),
+      Conv(4, 4, 1, 1, 1, 1, 0, 0),
+      Conv(4, 4, 5, 5, 1, 1, 0, 0),
+      Conv(4, 4, 3, 3, 2, 2, 0, 0),
+      Conv(4, 4, 1, 1, 2, 2, 0, 0),
+      Conv(4, 4, 5, 5, 2, 2, 0, 0),
+      Conv(4, 4, 3, 3, 2, 2, 1, 1),
+      Conv(4, 4, 1, 1, 2, 2, 1, 1),
+      Conv(4, 4, 5, 5, 2, 2, 1, 1),
+      Conv(4, 4, 1, 1, 2, 2, -1, -1),
+      Conv(4, 4, 5, 5, 2, 2, -1, -1),
+      Conv(1, 1, 2, 2, 1, 1, -1, -1)
+    )
+
+    for (param <- params) {
+      println(param)
+      val layer = new SpatialConvolution(param.nIn, param.nOut,
+        param.kW, param.kH, param.dW, param.dH, param.pW, param.pH)
+      val layerNHWC = new SpatialConvolution(param.nIn, param.nOut,
+        param.kW, param.kH, param.dW, param.dH, param.pW, param.pH, format = DataFormat.NHWC)
+
+      val input = Tensor(Array(4, param.nIn, 7, 7)).randn()
+
+      val inputNHWC = Tensor(input.size())
+        .copy(input).transpose(2, 4).transpose(2, 3).contiguous()
+
+      val kernel = Tensor(Array(param.nOut, param.nIn, param.kH, param.kW)).randn()
+      val bias = Tensor(Array(param.nOut)).randn()
+
+      val kernelNHWC = Tensor(Array(1, param.nOut, param.nIn, param.kH, param.kW))
+        .copy(kernel).transpose(2, 5).transpose(3, 4).transpose(2, 3).contiguous()
+      val biasNHWC = Tensor(Array(param.nOut)).copy(bias)
+
+      layer.weight.copy(kernel)
+      layerNHWC.weight.copy(kernelNHWC)
+      layer.bias.copy(bias)
+      layerNHWC.bias.copy(biasNHWC)
+
+      val output = layer.forward(input)
+      val outputNHWC = layerNHWC.forward(inputNHWC)
+      val gradOutput = Tensor(output.size()).fill(1.0)
+      val gradOutputNHWC = Tensor(outputNHWC.size()).fill(1.0)
+
+      val gradInput = layer.backward(input, gradOutput)
+      val gradInputNHWC = layerNHWC.backward(inputNHWC, gradOutputNHWC)
+
+
+      outputNHWC.transpose(2, 4).transpose(3, 4)
+        .sub(output).pow(2).sum() should be < 1e-7
+
+      gradInputNHWC.transpose(2, 4).transpose(3, 4)
+        .sub(gradInput).pow(2).sum() should be < 1e-7
+
+      layer.updateParameters(0.01)
+      layerNHWC.updateParameters(0.01)
+
+      val transWeight = layerNHWC.weight.transpose(2, 5).transpose(3, 4).transpose(4, 5)
+      transWeight.sub(layer.weight).pow(2).sum() should be < 1e-7
+
+    }
   }
 
   "A SpatialConvolution layer" should "generate correct output with given weight" in {
