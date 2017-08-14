@@ -27,10 +27,11 @@ import com.intel.analytics.bigdl.torch.TorchSpec
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.utils.{RandomGenerator, T}
 import org.apache.log4j.Logger
+import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Parallel
-class ResNetSpec extends TorchSpec {
+@com.intel.analytics.bigdl.tags.Serial
+class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
   "ResNet basicBlockFunc graph" should "be same with original one" in {
     val depth = 16
     ResNetTest.iChannels = 16
