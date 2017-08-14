@@ -24,9 +24,13 @@ import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn.{Graph, _}
 import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.torch.{TH, TorchSpec}
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.torch.TH
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
+import com.intel.analytics.bigdl.utils.{Engine, T}
+import org.junit.runner.RunWith
+import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.junit.JUnitRunner
+import scala.collection.immutable
 import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T, Table}
 import org.apache.log4j.Logger
 import com.intel.analytics.bigdl.numeric.NumericFloat
@@ -35,13 +39,17 @@ import scala.collection.{immutable, mutable}
 import scala.math._
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Parallel
-class ResNetSpec extends TorchSpec {
+@com.intel.analytics.bigdl.tags.Ignore
+@RunWith(classOf[JUnitRunner])
+class ResNetSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "ResNet Float" should "generate correct output" in {
     // System.setProperty("java.io.tmpdir", "/disk2/test");
     Engine.setCoreNumber(4)
-    torchCheck()
+    val th = new TH
+    if (!th.hasTorch()) {
+      cancel("Torch is not installed")
+    }
 
     for (i <- 1 to 1) {
       println(s"unitTest-${i}")
