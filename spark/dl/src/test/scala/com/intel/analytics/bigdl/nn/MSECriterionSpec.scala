@@ -23,6 +23,30 @@ import scala.math._
 
 @com.intel.analytics.bigdl.tags.Parallel
 class MSECriterionSpec extends FlatSpec {
+  "A MSE Criterion" should " be fast" in {
+    val mse = MSECriterion[Double]
+    val input = Tensor[Double](3, 50, 50)
+    val target = Tensor[Double](3, 50, 50)
+
+    val warmUp = 50
+    for (i <- 1 to warmUp) {
+      mse.forward(input, target)
+      mse.backward(input, target)
+    }
+
+    val iteration = 50
+    var sum = 0.0
+    for (i <- 1 to warmUp) {
+      val st = System.nanoTime
+      mse.forward(input, target)
+      mse.backward(input, target)
+      val eta = (System.nanoTime() - st) / 1e9
+      sum += eta
+      println(s"eta = ${eta}")
+    }
+
+    println(s"average eta = ${sum / iteration}")
+  }
   "A MSE Criterion " should "generate correct output and grad" in {
     val mse = new MSECriterion[Double]
     val input = Tensor[Double](2, 2, 2)
