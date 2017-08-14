@@ -204,8 +204,8 @@ class SpatialConvolution[T: ClassTag](
       // deal with SAME padding
       val oW = Math.ceil(inputWidth.toFloat / strideW.toFloat).toInt
       val oH = Math.ceil(inputHeight.toFloat / strideH.toFloat).toInt
-      val padAlongWidth = (oW -1) * strideW + kernelW - inputWidth
-      val padAlongHeight = (oH - 1) * strideH + kernelH - inputHeight
+      val padAlongWidth = Math.max(0, (oW -1) * strideW + kernelW - inputWidth)
+      val padAlongHeight = Math.max(0, (oH - 1) * strideH + kernelH - inputHeight)
       (padAlongHeight/2, padAlongHeight - padAlongHeight/2,
         padAlongWidth/2, padAlongWidth - padAlongWidth/2)
     } else {
