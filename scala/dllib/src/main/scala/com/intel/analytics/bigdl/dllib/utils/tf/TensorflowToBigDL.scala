@@ -25,6 +25,7 @@ import org.tensorflow.framework.{DataType, NodeDef, TensorProto}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.tf._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.tf.Conv2D.getOrSetTensor
 import com.intel.analytics.bigdl.utils.{DirectedGraph, Node, T}
 import com.intel.analytics.bigdl.utils.tf.TensorflowLoader.Context
 import com.intel.analytics.bigdl.utils.tf.TensorflowToBigDL._
@@ -226,7 +227,7 @@ object TensorflowToBigDL {
       TanhTF, ReluTF, SigmoidTF, Conv2D, Placeholder, SqueezeTF, IdentityTF, ConcatTF,
       BatchNormTF, AddConstTF1, AddConstTF2, AddTF, SoftMaxTF, ElementWiseMulTF, MulTF,
       SplitTF, PaddingTF, MeanTF, UnpackTF, StrideSliceTF, ShapeTF, FillTF, PackTF, ConstTF,
-      Flatten, Conv2D2
+      Flatten, Conv2D2, Conv1D
     )
     res
   }
@@ -325,6 +326,82 @@ object  SqueezeTF extends TensorflowToBigDL {
 
     Squeeze[T](dims, batchMode = true).asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
   }
+}
+
+object Conv1D extends TensorflowToBigDL {
+  private val graph = {
+    val squeeze = Node("Squeeze")
+    val add = Node("BiasAdd")
+    val conv = Node("Conv2D")
+    val const1 = Node("Const")
+    val const2 = Node("Const")
+    val expandDimWeight = Node("ExpandDims")
+    val expandDimInput = Node("ExpandDims")
+
+    Node("*") -> expandDimInput -> conv
+    const1 -> expandDimInput
+    Node("Const") -> Node("Identity") -> expandDimWeight -> conv -> squeeze -> add
+    const2 -> expandDimWeight
+    Node("Const") -> Node("Identity") -> add
+    add.graph(reverse = true)
+  }
+
+  override def topology: DirectedGraph[String] = graph
+
+  override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
+                                  context: Context[T],
+                                  byteOrder: ByteOrder)(
+    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+
+    val squeezeNode = tfGraph.source.prevNodes.head
+    val convNode = squeezeNode.prevNodes.head
+
+    val attributes = convNode.element.getAttrMap
+    require(attributes.get("strides").getList.getI(0).toInt == 1, s"not support strides on batch")
+
+    val (strideH, strideW) = if (attributes.get("data_format").getS
+      .toString(Charset.defaultCharset()) == "NHWC") {
+      require(System.getProperty("bigdl.enableNHWC", "false").toBoolean, "Not support NHWC")
+      require(attributes.get("strides").getList.getI(3).toInt == 1, s"not support strides on depth")
+      (attributes.get("strides").getList.getI(1).toInt,
+        attributes.get("strides").getList.getI(2).toInt)
+    } else if (attributes.get("data_format").getS.toString(Charset.defaultCharset()) == "NCHW") {
+      require(attributes.get("strides").getList.getI(1).toInt == 1, s"not support strides on depth")
+      (attributes.get("strides").getList.getI(2).toInt,
+        attributes.get("strides").getList.getI(3).toInt)
+    } else {
+      throw new IllegalArgumentException("no supported data format")
+    }
+    val biasNode = tfGraph.source.prevNodes(1).prevNodes.head.element
+    val (bias, gradBias) = getOrSetTensor(biasNode, context, byteOrder)(t => t)
+
+    val weightNode = convNode.prevNodes(1).prevNodes.head.prevNodes.head.element
+    val (weights, gradWeights) = getOrSetTensor(weightNode, context, byteOrder) { t =>
+      t.transpose(1, 3).transpose(2, 3)
+    }
+
+    val nOuputPlane = weights.size(1)
+    val nInputPlane = weights.size(3)
+    val kernelW = weights.size(2)
+
+    weights.resize(nOuputPlane, nInputPlane * kernelW)
+    gradWeights.resizeAs(weights)
+
+    if (attributes.get("padding").getS.toString(Charset.defaultCharset()) == "SAME") {
+      throw new IllegalArgumentException("SAME padding is not supported")
+    }
+
+    TemporalConvolution[T](
+      inputFrameSize = nInputPlane, outputFrameSize = nOuputPlane,
+      kernelW = kernelW,
+      strideW = strideW,
+      initWeight = weights,
+      initBias = bias,
+      initGradWeight = gradWeights,
+      initGradBias = gradBias).asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+  }
+
+
 }
 
 object Conv2D extends TensorflowToBigDL{
