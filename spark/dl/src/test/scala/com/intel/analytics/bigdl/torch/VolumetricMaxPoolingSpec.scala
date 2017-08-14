@@ -59,7 +59,7 @@ class VolumetricMaxPoolingSpec extends TorchSpec {
       s" $padW, $padH)\n" +
       "output = layer:forward(input)"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input),
       Array("output"))
 
@@ -104,7 +104,7 @@ class VolumetricMaxPoolingSpec extends TorchSpec {
       s" $padW, $padH)\n" +
       "output = layer:forward(input)"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input),
       Array("weight", "bias", "output"))
 
@@ -155,7 +155,7 @@ class VolumetricMaxPoolingSpec extends TorchSpec {
 
     val gradOutput = Tensor[Double]().resizeAs(output).rand()
     val gradInput = module.backward(input, gradOutput)
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input,
       "gradOutput" -> gradOutput), Array("output", "gradInput"))
 
@@ -241,7 +241,7 @@ class VolumetricMaxPoolingSpec extends TorchSpec {
 
     val gradOutput = Tensor[Double]().resizeAs(output).rand()
     val gradInput = module.backward(input, gradOutput)
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input,
       "gradOutput" -> gradOutput), Array("output", "gradInput"))
 
@@ -286,7 +286,7 @@ class VolumetricMaxPoolingSpec extends TorchSpec {
       s" $padW, $padH)\n" +
       "output = layer:forward(input)"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input),
       Array("output"))
 
@@ -332,7 +332,7 @@ class VolumetricMaxPoolingSpec extends TorchSpec {
       s" $padW, $padH)\n" +
       "output = layer:forward(input)"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input),
       Array("weight", "bias", "output"))
 
@@ -386,7 +386,7 @@ class VolumetricMaxPoolingSpec extends TorchSpec {
     val gradOutput = Tensor[Float]()
     gradOutput.resizeAs(output).rand()
     val gradInput = module.backward(input, gradOutput)
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input,
       "gradOutput" -> gradOutput), Array("output", "gradInput"))
 
@@ -439,7 +439,7 @@ class VolumetricMaxPoolingSpec extends TorchSpec {
 
     val gradOutput = Tensor[Float]().resizeAs(output).rand()
     val gradInput = module.backward(input, gradOutput)
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input,
       "gradOutput" -> gradOutput), Array("output", "gradInput"))
 

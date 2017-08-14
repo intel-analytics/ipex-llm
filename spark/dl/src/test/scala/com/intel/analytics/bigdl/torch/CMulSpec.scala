@@ -115,7 +115,7 @@ class CMulSpec extends TorchSpec {
         gradInput = module:backward(input,gradOutput)
         gradWeight = module.gradWeight"""
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput", "gradWeight"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
@@ -155,7 +155,7 @@ class CMulSpec extends TorchSpec {
         gradInput = module:backward(input,gradOutput)
         gradWeight = module.gradWeight"""
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput", "gradWeight"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
@@ -195,7 +195,7 @@ class CMulSpec extends TorchSpec {
         gradInput = module:backward(input,gradOutput)
         gradWeight = module.gradWeight"""
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput", "gradWeight"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
@@ -235,7 +235,7 @@ class CMulSpec extends TorchSpec {
         gradInput = module:backward(input,gradOutput)
         gradWeight = module.gradWeight"""
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput", "gradWeight"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
@@ -275,7 +275,7 @@ class CMulSpec extends TorchSpec {
         gradInput = module:backward(input,gradOutput)
         gradWeight = module.gradWeight"""
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput", "gradWeight"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]

@@ -29,11 +29,10 @@ import com.intel.analytics.bigdl.dataset.image.{ColorJitter, LabeledBGRImage}
 import com.intel.analytics.bigdl.utils.RandomGenerator
 
 @com.intel.analytics.bigdl.tags.Parallel
-class ColorJitterSpec extends FlatSpec with BeforeAndAfter with Matchers {
+class ColorJitterSpec extends TorchSpec {
   "A ColorJitter" should "blend image correctly" in {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
+
+    torchCheck()
 
     val seed = 1000
     RNG.setSeed(seed)
@@ -149,7 +148,7 @@ class ColorJitterSpec extends FlatSpec with BeforeAndAfter with Matchers {
         |output = transform(input)
       """.stripMargin
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> torchInput), Array("output"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Float]]
 

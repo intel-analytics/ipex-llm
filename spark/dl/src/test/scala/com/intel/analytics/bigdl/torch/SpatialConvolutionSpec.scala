@@ -55,7 +55,7 @@ class SpatialConvolutionSpec extends TorchSpec {
       "bias = layer.bias \n" +
       "output = layer:forward(input) "
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input),
       Array("weight", "bias", "output"))
 
@@ -107,7 +107,7 @@ class SpatialConvolutionSpec extends TorchSpec {
       model:zeroGradParameters()
       output = model:forward(input) """
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input), Array("weight", "bias",
       "output", "model"))
 
@@ -176,7 +176,7 @@ class SpatialConvolutionSpec extends TorchSpec {
       "weight = layer.weight\n" +
       "output = layer:forward(input) "
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input),
       Array("weight", "bias", "output"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]

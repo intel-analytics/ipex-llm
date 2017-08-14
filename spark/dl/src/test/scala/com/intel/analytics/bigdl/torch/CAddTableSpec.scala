@@ -50,7 +50,7 @@ class CAddTableSpec extends TorchSpec {
         gradInput = model:backward(input, gradOutput)
       """
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
@@ -90,7 +90,7 @@ class CAddTableSpec extends TorchSpec {
         gradInput = model:backward(input, gradOutput)
       """
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))

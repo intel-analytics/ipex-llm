@@ -36,7 +36,7 @@ class DropoutSpec extends TorchSpec {
       "output1 = module:forward(input)\n" +
       "output2 = module:backward(input, input:clone():fill(1))"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input), Array("output1", "output2"))
     val luaOutput1 = torchResult("output1").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("output2").asInstanceOf[Tensor[Double]]
@@ -69,7 +69,7 @@ class DropoutSpec extends TorchSpec {
       "output1 = module:forward(input)\n" +
       "output2 = module:backward(input, input:clone():fill(1))"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input), Array("output1", "output2"))
     val luaOutput1 = torchResult("output1").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("output2").asInstanceOf[Tensor[Double]]

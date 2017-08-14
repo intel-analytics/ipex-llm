@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Graph, Input}
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.torch.{NewTH, TorchSpec}
+import com.intel.analytics.bigdl.torch.{TH, TorchSpec}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.{T, Table}
 import com.intel.analytics.bigdl.numeric.NumericFloat
@@ -159,7 +159,7 @@ class InceptionSpec extends TorchSpec {
         parameters, gradParameters = model:getParameters()
       """
 
-    val th = new NewTH
+    val th = new TH
     th.runNM(code, Map("input" -> input, "labels" -> labels), Array("output", "gradOutput", "err",
       "parameters_initial", "gradParameters_initial", "gradParameters", "parameters", "model2"))
 
@@ -348,7 +348,7 @@ class InceptionSpec extends TorchSpec {
 
       """
 
-    val th = new NewTH
+    val th = new TH
     th.runNM(code, Map("input" -> input, "labels" -> labels), Array("output", "gradOutput", "err",
       "parameters_initial", "gradParameters_initial", "gradInput", "parameters"))
 
@@ -535,7 +535,7 @@ class InceptionSpec extends TorchSpec {
         parameters, gradParameters = model:getParameters()
       """
 
-    val th = new NewTH
+    val th = new TH
     th.runNM(code,
       Map("input" -> input, "labels" -> labels),
       Array("output", "gradOutput", "err", "parameters_initial", "gradParameters_initial",
@@ -706,7 +706,7 @@ class InceptionSpec extends TorchSpec {
         end
       """
 
-    val th = new NewTH
+    val th = new TH
     th.runNM(code, Map("input" -> input, "labels" -> labels), Array("initModel"))
 
     val model = Inception.getModel[Float](1000, "inception-bn")

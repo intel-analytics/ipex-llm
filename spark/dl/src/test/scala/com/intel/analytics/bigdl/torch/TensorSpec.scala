@@ -25,7 +25,7 @@ class TensorSpec extends TorchSpec {
 
     val code = "output = torch.LongTensor()\n"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("empty" -> empty),
       Array("output"))
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
@@ -40,7 +40,7 @@ class TensorSpec extends TorchSpec {
     val code = "output = torch.LongTensor(1, 2, 3)\n" +
       "output:zero()"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("tensor" -> tensor),
       Array("output"))
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]

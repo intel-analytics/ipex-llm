@@ -47,7 +47,7 @@ class BottleSpec extends TorchSpec {
     "output = module:forward(input)\n" +
     "gradInput = module:backward(input,gradOutput)"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput", "inShape", "outShape"))
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]

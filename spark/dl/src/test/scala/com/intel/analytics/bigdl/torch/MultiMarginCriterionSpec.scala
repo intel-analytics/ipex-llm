@@ -40,7 +40,7 @@ class MultiMarginCriterionSpec extends TorchSpec {
       "output = module:forward(input, target)\n" +
       "gradInput = module:backward(input, target)"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input, "target" -> target,
       "weights" -> weights), Array("output", "gradInput"))
     val luaOutput = torchResult("output").asInstanceOf[Double]
@@ -76,7 +76,7 @@ class MultiMarginCriterionSpec extends TorchSpec {
       "output = module:forward(input, target)\n" +
       "gradInput = module:backward(input, target)"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input, "target" -> target,
       "weights" -> weights), Array("output", "gradInput"))
     val luaOutput = torchResult("output").asInstanceOf[Double]
@@ -109,7 +109,7 @@ class MultiMarginCriterionSpec extends TorchSpec {
       "output = module:forward(input, target)\n" +
       "gradInput = module:backward(input, target)"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input, "target" -> target),
       Array("output", "gradInput"))
     val luaOutput = torchResult("output").asInstanceOf[Double]

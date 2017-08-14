@@ -45,7 +45,7 @@ class AbsCriterionSpec extends TorchSpec {
       "output2 = abs:backward(input, target)"
 
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input, "target" -> target),
       Array("output1", "output2"))
     val luaOutput1 = torchResult("output1").asInstanceOf[Double]

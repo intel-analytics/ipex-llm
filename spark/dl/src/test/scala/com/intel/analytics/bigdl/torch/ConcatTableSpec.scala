@@ -54,7 +54,7 @@ class ConcatTableSpec extends TorchSpec {
         parameters, gradParameters = module:getParameters()
       """
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput1" -> gradOutput1, "gradOutput2" -> gradOutput2),
       Array("output1", "output2", "gradInput", "gradParameters"))

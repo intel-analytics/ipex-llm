@@ -176,7 +176,7 @@ class BiRecurrentSpec  extends TorchSpec {
          |gradInput = model.gradInput
     """.stripMargin
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code,
       Map("input" -> input.transpose(1, 2), "weights" -> weights,
         "labels" -> labels(1)),

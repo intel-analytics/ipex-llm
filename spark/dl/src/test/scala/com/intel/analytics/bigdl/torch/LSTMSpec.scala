@@ -30,9 +30,7 @@ import scala.sys.process._
 @com.intel.analytics.bigdl.tags.Parallel
 class LSTMSpec  extends TorchSpec {
   override def torchCheck(): Unit = {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
+    torchCheck()
     val tmpFile = java.io.File.createTempFile("checkRNN", ".lua")
     val writer = new PrintWriter(tmpFile)
     writer.write("exist = (pcall(require, 'rnn'))\n print(exist)")
@@ -250,7 +248,7 @@ class LSTMSpec  extends TorchSpec {
          |gradInput = model.gradInput
     """.stripMargin
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code,
       Map("input" -> input.transpose(1, 2), "weights" -> weights,
         "labels" -> SplitTable[Double](1).forward(labels.t())),
@@ -410,7 +408,7 @@ class LSTMSpec  extends TorchSpec {
          |gradInput = model.gradInput
     """.stripMargin
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code,
       Map("input" -> input.transpose(1, 2), "weights" -> weights,
         "labels" -> SplitTable[Double](1).forward(labels.t())),

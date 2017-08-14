@@ -56,7 +56,7 @@ class ConcatSpec extends TorchSpec {
     gradInput = module:backward(input,gradOutput)
       """
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput", "module", "parameters_initial", "gradParameters_initial"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
@@ -121,7 +121,7 @@ class ConcatSpec extends TorchSpec {
     gradInput = module:backward(input,gradOutput)
       """
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput", "module", "parameters_initial", "gradParameters_initial",
       "parameters", "gradParameters"))
@@ -197,7 +197,7 @@ class ConcatSpec extends TorchSpec {
     gradInput = module:backward(input,gradOutput)
       """
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput", "module"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]

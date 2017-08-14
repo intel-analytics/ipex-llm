@@ -58,7 +58,7 @@ class SplitTableSpec extends TorchSpec {
       end
                """.stripMargin
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output1", "output2", "output3", "gradInput"))
     val torchOutput1 = torchResult("output1").asInstanceOf[Tensor[Double]]

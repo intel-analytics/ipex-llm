@@ -34,9 +34,7 @@ import scala.sys.process._
 @com.intel.analytics.bigdl.tags.Parallel
 class LSTMPeepholeSpec  extends TorchSpec {
   override def torchCheck(): Unit = {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
+    super.torchCheck()
     val tmpFile = java.io.File.createTempFile("checkRNN", ".lua")
     val writer = new PrintWriter(tmpFile)
     writer.write("exist = (pcall(require, 'rnn'))\n print(exist)")
@@ -210,7 +208,7 @@ class LSTMPeepholeSpec  extends TorchSpec {
          |gradInput = model.gradInput
     """.stripMargin
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code,
       Map("input" -> input.transpose(1, 2), "weights" -> weights2Torch,
         "labels" -> SplitTable[Double](1).forward(labels.t())),
@@ -450,7 +448,7 @@ class LSTMPeepholeSpec  extends TorchSpec {
     """.stripMargin
     scala.Seq
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code,
       Map("input" -> input.transpose(1, 2), "weights" -> weights2Torch,
         "labels" -> SplitTable[Double](1).forward(labels.t())),

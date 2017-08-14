@@ -47,7 +47,7 @@ class LinearSpec extends TorchSpec {
       "output1 = linear:forward(input)\n" +
       "output2 = linear:backward(input, grad)"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("linear" -> linear,
       "input" -> input, "grad" -> grad),
       Array("weight", "bias", "output1", "output2"))
@@ -97,7 +97,7 @@ class LinearSpec extends TorchSpec {
       "output1 = linear:forward(input)\n" +
       "output2 = linear:backward(input, grad)"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("linear" -> linear,
       "input" -> input, "grad" -> grad),
       Array("weight", "bias", "output1", "output2"))
@@ -144,7 +144,7 @@ class LinearSpec extends TorchSpec {
       "output1 = linear:forward(input)\n" +
       "output2 = linear:backward(input, grad)"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("linear" -> linear,
       "input" -> input, "grad" -> grad),
       Array("weight", "bias", "output1", "output2"))
@@ -190,7 +190,7 @@ class LinearSpec extends TorchSpec {
       "output1 = linear:forward(input)\n" +
       "output2 = linear:backward(input, grad)"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("linear" -> linear,
       "input" -> input, "grad" -> grad),
       Array("weight", "bias", "output1", "output2"))
@@ -256,7 +256,7 @@ class LinearSpec extends TorchSpec {
       "output = linear:forward(input)\n" +
       "gradInput = linear:backward(input, grad)"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("linear" -> linear,
       "input" -> input, "grad" -> grad),
       Array("linear", "output", "gradInput"))

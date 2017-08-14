@@ -48,7 +48,7 @@ class MarginRankingCriterionSpec extends TorchSpec {
       "output = mse:forward(input,-1)\n" +
       "gradInput = mse:backward(input,-1)"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input, "target" -> target),
       Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Double]
@@ -87,7 +87,7 @@ class MarginRankingCriterionSpec extends TorchSpec {
       "output = mse:forward(input, target)\n" +
       "gradInput = mse:backward(input, target)"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input, "target" -> target1),
       Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Double]

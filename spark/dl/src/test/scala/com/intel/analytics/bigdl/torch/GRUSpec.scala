@@ -33,9 +33,7 @@ class GRUSpec  extends TorchSpec {
   System.setProperty("bigdl.disableCheckSysEnv", "true")
   Engine.init(1, 1, true)
   override def torchCheck(): Unit = {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
+    super.torchCheck()
     val tmpFile = java.io.File.createTempFile("checkRNN", ".lua")
     val writer = new PrintWriter(tmpFile)
     writer.write("exist = (pcall(require, 'rnn'))\n print(exist)")
@@ -304,7 +302,7 @@ class GRUSpec  extends TorchSpec {
          |gradInput = model.gradInput
     """.stripMargin
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code,
       Map("input" -> input.transpose(1, 2), "weights" -> weights2Torch,
         "labels" -> SplitTable[Double](1).forward(labels.t())),
@@ -557,7 +555,7 @@ class GRUSpec  extends TorchSpec {
          |gradInput = model.gradInput
     """.stripMargin
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code,
       Map("input" -> input.transpose(1, 2), "weights" -> weights2Torch,
         "labels" -> SplitTable[Double](1).forward(labels.t())),

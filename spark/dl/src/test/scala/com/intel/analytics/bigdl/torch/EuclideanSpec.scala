@@ -45,7 +45,7 @@ class EuclideanSpec extends TorchSpec {
       "gradWeight = module.gradWeight\n" +
       "_repeat2 = module._repeat2\n"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput", "weight", "gradWeight", "_repeat2"))
 
@@ -96,7 +96,7 @@ class EuclideanSpec extends TorchSpec {
       "gradWeight = module.gradWeight\n" +
       "_repeat2 = module._repeat2\n"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput", "weight", "gradWeight", "_repeat2"))
 

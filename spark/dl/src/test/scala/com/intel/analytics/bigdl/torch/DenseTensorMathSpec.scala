@@ -34,7 +34,7 @@ class DenseTensorMathSpec extends TorchSpec {
     val end = System.nanoTime()
     val scalaTime = end - start
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("a" -> a), Array("outcome"))
 
     val luaResult = torchResult("outcome").asInstanceOf[Tensor[Double]]
@@ -58,7 +58,7 @@ class DenseTensorMathSpec extends TorchSpec {
     val end = System.nanoTime()
     val scalaTime = end - start
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("a" -> a, "b" -> b), Array("outcome"))
 
     val luaResult = torchResult("outcome").asInstanceOf[Tensor[Double]]
@@ -82,7 +82,7 @@ class DenseTensorMathSpec extends TorchSpec {
     val end = System.nanoTime()
     val scalaTime = end - start
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("a" -> a), Array("outcome"))
 
     val luaResult = torchResult("outcome").asInstanceOf[Tensor[Double]]
@@ -106,7 +106,7 @@ class DenseTensorMathSpec extends TorchSpec {
     val end = System.nanoTime()
     val scalaTime = end - start
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("a" -> a, "b" -> b), Array("outcome"))
 
     val luaResult = torchResult("outcome").asInstanceOf[Tensor[Double]]
@@ -129,7 +129,7 @@ class DenseTensorMathSpec extends TorchSpec {
     val end = System.nanoTime()
     val scalaTime = end - start
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("a" -> a), Array("outcome"))
 
     val luaResult = torchResult("outcome").asInstanceOf[Tensor[Double]]
@@ -153,7 +153,7 @@ class DenseTensorMathSpec extends TorchSpec {
     val end = System.nanoTime()
     val scalaTime = end - start
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("a" -> a), Array("outcome"))
 
     val luaResult = torchResult("outcome").asInstanceOf[Tensor[Double]]
@@ -177,7 +177,7 @@ class DenseTensorMathSpec extends TorchSpec {
     val end = System.nanoTime()
     val scalaTime = end - start
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("a" -> a, "b" -> b), Array("outcome"))
 
     val luaResult = torchResult("outcome").asInstanceOf[Tensor[Double]]
@@ -201,7 +201,7 @@ class DenseTensorMathSpec extends TorchSpec {
     val end = System.nanoTime()
     val scalaTime = end - start
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("a" -> a), Array("outcome"))
 
     val luaResult = torchResult("outcome").asInstanceOf[Tensor[Double]]
@@ -226,7 +226,7 @@ class DenseTensorMathSpec extends TorchSpec {
     val end = System.nanoTime()
     val scalaTime = end - start
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("a" -> a, "b" -> b), Array("outcome"))
 
     val luaResult = torchResult("outcome").asInstanceOf[Tensor[Double]]
@@ -249,7 +249,7 @@ class DenseTensorMathSpec extends TorchSpec {
     val end = System.nanoTime()
     val scalaTime = end - start
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("a" -> a), Array("outcome"))
 
     val luaResult = torchResult("outcome").asInstanceOf[Double]
@@ -272,7 +272,7 @@ class DenseTensorMathSpec extends TorchSpec {
     val end = System.nanoTime()
     val scalaTime = end - start
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("a" -> a), Array("outcome"))
 
     val luaResult = torchResult("outcome").asInstanceOf[Tensor[Double]]
@@ -295,7 +295,7 @@ class DenseTensorMathSpec extends TorchSpec {
     val end = System.nanoTime()
     val scalaTime = end - start
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("a" -> a), Array("outcome"))
 
     val luaResult = torchResult("outcome").asInstanceOf[Double]
@@ -319,7 +319,7 @@ class DenseTensorMathSpec extends TorchSpec {
     val end = System.nanoTime()
     val scalaTime = end - start
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("a" -> a, "b" -> b), Array("outcome"))
 
     val luaResult = torchResult("outcome").asInstanceOf[Tensor[Double]]
@@ -343,7 +343,7 @@ class DenseTensorMathSpec extends TorchSpec {
     val end = System.nanoTime()
     val scalaTime = end - start
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("a" -> a, "b" -> b), Array("outcome"))
 
     val luaResult = torchResult("outcome").asInstanceOf[Tensor[Double]]
@@ -363,7 +363,7 @@ class DenseTensorMathSpec extends TorchSpec {
     val m = 20
     val code = "m = 20\noutcome = a:add(m, b)"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("a" -> a, "b" -> b), Array("outcome"))
     val luaResult = torchResult("outcome").asInstanceOf[Tensor[Double]]
 
@@ -386,7 +386,7 @@ class DenseTensorMathSpec extends TorchSpec {
     val b = Tensor[Double](200, 200).rand()
     val code = "outcome = a:cmul(b)"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("a" -> a, "b" -> b), Array("outcome"))
     val luaResult = torchResult("outcome").asInstanceOf[Tensor[Double]]
 
@@ -415,7 +415,7 @@ class DenseTensorMathSpec extends TorchSpec {
     val end = System.nanoTime()
     val scalaTime = end - start
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("a" -> a, "b" -> b), Array("outcome"))
 
     val luaResult = torchResult("outcome").asInstanceOf[Tensor[Double]]
@@ -434,7 +434,7 @@ class DenseTensorMathSpec extends TorchSpec {
     val b = 20
     val code = "b = 20\noutcome = a:div(b)"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("a" -> a), Array("outcome"))
     val luaResult = torchResult("outcome").asInstanceOf[Tensor[Double]]
 
@@ -465,7 +465,7 @@ class DenseTensorMathSpec extends TorchSpec {
 
     val code = "outcome = torch.Tensor(a:size(1), b:size(2)):fill(0)\noutcome:addmm(a, b)"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("a" -> a, "b" -> b), Array("outcome"))
 
     val luaResult = torchResult("outcome").asInstanceOf[Tensor[Double]]
@@ -494,7 +494,7 @@ class DenseTensorMathSpec extends TorchSpec {
 
     val code = "outcome = torch.Tensor(a:size(1), b:size(1)):fill(0)\noutcome:addr(a, b)"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("a" -> a, "b" -> b), Array("outcome"))
 
     val luaResult = torchResult("outcome").asInstanceOf[Tensor[Double]]

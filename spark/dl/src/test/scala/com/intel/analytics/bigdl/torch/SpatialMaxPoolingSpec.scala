@@ -51,7 +51,7 @@ class SpatialMaxPoolingSpec extends TorchSpec {
     val code = "output = module:forward(input)\n" +
       "gradInput = module:backward(input,gradOutput)"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("module" -> module, "input" -> input,
       "gradOutput" -> gradOutput), Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]

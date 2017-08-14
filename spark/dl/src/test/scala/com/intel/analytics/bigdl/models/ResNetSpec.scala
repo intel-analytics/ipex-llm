@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn.{Graph, _}
 import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.torch.{NewTH, TorchSpec}
+import com.intel.analytics.bigdl.torch.{TH, TorchSpec}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T, Table}
@@ -217,7 +217,7 @@ class ResNetSpec extends TorchSpec {
 
       """
 
-    val th = new NewTH
+    val th = new TH
     th.runNM(code, immutable.Map("input" -> input, "labels" -> labels),
       Array("output", "gradOutput", "err", "parameters_initial",
         "gradParameters_initial", "gradInput", "model"))

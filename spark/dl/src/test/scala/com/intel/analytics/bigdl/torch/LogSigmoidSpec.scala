@@ -41,7 +41,7 @@ class LogSigmoidSpec extends TorchSpec {
       "output1 = module:forward(input)\n " +
       "output2 = module:backward(input, gradOutput)"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output1", "output2"))
     val luaOutput = torchResult("output1").asInstanceOf[Tensor[Double]]

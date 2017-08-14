@@ -76,7 +76,7 @@ class BatchNormalizationSpec extends TorchSpec {
         |sbn:backward(input, gradOutput2)
       """.stripMargin
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput, "gradOutput2" -> gradOutput2),
       Array("parameters_initial", "gradParameters_initial", "gradParameters",
@@ -171,7 +171,7 @@ class BatchNormalizationSpec extends TorchSpec {
         |output = sbn:forward(input)
       """.stripMargin
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput, "gradOutput2" -> gradOutput2),
       Array("parameters_initial", "gradParameters_initial", "output"))
@@ -242,7 +242,7 @@ class BatchNormalizationSpec extends TorchSpec {
         |gradInput = sbn:backward(input, gradOutput2)
       """.stripMargin
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput,
       "gradOutput2" -> gradOutput2), Array("parameters_initial", "gradParameters_initial",
       "gradParameters", "output", "gradInput"))
@@ -322,7 +322,7 @@ class BatchNormalizationSpec extends TorchSpec {
         |gradInput = sbn:updateGradInput(input, gradOutput)
       """.stripMargin
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput),
       Array("parameters_initial", "gradParameters_initial", "gradParameters",
@@ -383,7 +383,7 @@ class BatchNormalizationSpec extends TorchSpec {
         |sbn:accGradParameters(input, gradOutput)
       """.stripMargin
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput),
       Array("parameters_initial", "gradParameters_initial", "gradParameters",
@@ -437,7 +437,7 @@ class BatchNormalizationSpec extends TorchSpec {
         |sbn:accGradParameters(input, gradOutput)
       """.stripMargin
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput")

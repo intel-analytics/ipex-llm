@@ -38,7 +38,7 @@ class SpatialCrossMapLRNSpec extends TorchSpec {
       "layer = nn.SpatialCrossMapLRN(5, 1.0, 0.75, 1.0)\n" +
       "output = layer:forward(input) "
 
-    val th = new NewTH
+    val th = new TH
     val torchResult = th.run(code, Map("input" -> input), Array("output"))._2
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
 
@@ -59,7 +59,7 @@ class SpatialCrossMapLRNSpec extends TorchSpec {
       "layer = nn.SpatialCrossMapLRN(5, 1.0, 0.75, 1.0)\n" +
       "output = layer:forward(input) "
 
-    val th = new NewTH
+    val th = new TH
     val torchResult = th.run(code, Map("input" -> input), Array("output"))._2
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
 
@@ -83,7 +83,7 @@ class SpatialCrossMapLRNSpec extends TorchSpec {
       "layer:forward(input) " +
       "gradInput = layer:updateGradInput(input, gradOutput) "
 
-    val th = new NewTH
+    val th = new TH
     val torchResult = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("gradInput"))._2
     val luaOutput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -108,7 +108,7 @@ class SpatialCrossMapLRNSpec extends TorchSpec {
       "layer:forward(input) " +
       "gradInput = layer:updateGradInput(input, gradOutput) "
 
-    val th = new NewTH
+    val th = new TH
     val torchResult = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("gradInput"))._2
     val luaOutput = torchResult("gradInput").asInstanceOf[Tensor[Double]]

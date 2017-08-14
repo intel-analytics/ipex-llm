@@ -39,7 +39,7 @@ class AdagradSpec extends TorchSpec {
       "optim.adagrad(feval, param, config)\n" +
       "x,f = optim.adagrad(feval, param, config)\n"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("grad" -> grad, "param" -> param,
       "config" -> config),
       Array("x", "grad"))

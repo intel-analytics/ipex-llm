@@ -45,7 +45,7 @@ class NarrowTableSpec extends TorchSpec {
       "i = i + 1\n" +
       "end"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
 

@@ -50,7 +50,7 @@ class AddSpec extends TorchSpec {
       "gradInput = module:backward(input, gradOutput)\n" +
       "ones = module._ones\n"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput", "bias", "ones"))
 
@@ -101,7 +101,7 @@ class AddSpec extends TorchSpec {
           "gradInput = module:backward(input, gradOutput)\n" +
           "ones = module._ones\n"
 
-        val th = new NewTH
+        val th = new TH
         val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
             Array("output", "gradInput", "bias", "ones"))
 

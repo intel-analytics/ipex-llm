@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.tensor._
-import com.intel.analytics.bigdl.torch.{NewTH, TorchSpec}
+import com.intel.analytics.bigdl.torch.{TH, TorchSpec}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.T
 
@@ -113,7 +113,7 @@ gradOutput=criterion.gradInput
 gradInput = model.gradInput
       """
 
-    val th = new NewTH
+    val th = new TH
     th.runNM(code, Map("input" -> input, "labels" -> labels), Array("output", "gradOutput", "err",
       "parameters_initial", "gradParameters_initial", "gradInput", "model"))
 
@@ -241,7 +241,7 @@ gradOutput=criterion.gradInput
 gradInput = model.gradInput
       """
 
-    val th = new NewTH
+    val th = new TH
     th.runNM(code, Map("model" -> model, "input" -> input, "labels" -> labels),
       Array("output", "gradOutput", "err",
       "parameters_initial", "gradParameters_initial", "gradInput", "model"))

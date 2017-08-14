@@ -51,7 +51,7 @@ class SpatialContrastiveNormalizationSpec extends TorchSpec {
       gradInput = model:backward(input, gradOutput)
       """
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput")
@@ -92,7 +92,7 @@ class SpatialContrastiveNormalizationSpec extends TorchSpec {
       gradInput = model:backward(input, gradOutput)
       """
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput")
@@ -133,7 +133,7 @@ class SpatialContrastiveNormalizationSpec extends TorchSpec {
       gradInput = model:backward(input, gradOutput)
       """
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput")
@@ -172,7 +172,7 @@ class SpatialContrastiveNormalizationSpec extends TorchSpec {
       gradInput = model:backward(input, gradOutput)
       """
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput, "kernel" -> kernel),
       Array("output", "gradInput")
@@ -212,7 +212,7 @@ class SpatialContrastiveNormalizationSpec extends TorchSpec {
       gradInput = model:backward(input, gradOutput)
       """
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput, "kernel" -> kernel),
       Array("output", "gradInput")
@@ -253,7 +253,7 @@ class SpatialContrastiveNormalizationSpec extends TorchSpec {
       gradInput = model:backward(input, gradOutput)
       """
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput, "kernel" -> kernel),
       Array("output", "gradInput")

@@ -51,7 +51,7 @@ class L1HingeEmbeddingCriterionSpec extends TorchSpec {
       "output = module:forward(input, 1)\n" +
       "gradInput = module:backward(input, 1)\n"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input), Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Double]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Table]
@@ -90,7 +90,7 @@ class L1HingeEmbeddingCriterionSpec extends TorchSpec {
       "output = module:forward(input, -1.0)\n" +
       "gradInput = module:backward(input, -1.0)\n"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input), Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Double]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Table]

@@ -46,7 +46,7 @@ class MaskedSelectSpec extends TorchSpec {
       "gradInput = module:backward({input1, mask}, gradOutput)\n" +
       "gradInput[2] = gradInput[2]:double()"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input1" -> input1, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
 

@@ -59,7 +59,7 @@ class ParallelCriterionSpec extends TorchSpec {
       gradOutput2 = gradOutput[2]
       """.stripMargin
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input, "target" -> target),
       Array("loss", "gradOutput1", "gradOutput2"))
     val luaLoss = torchResult("loss").asInstanceOf[Double]

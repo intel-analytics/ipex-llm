@@ -57,7 +57,7 @@ class CosineEmbeddingCriterionSpec extends TorchSpec {
       "gradInput = module:backward(input, -0.5)\n"
 
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input),
       Array("output", "gradInput", "_idx", "buffer", "_outputs"))
     val luaOutput1 = torchResult("output").asInstanceOf[Double]

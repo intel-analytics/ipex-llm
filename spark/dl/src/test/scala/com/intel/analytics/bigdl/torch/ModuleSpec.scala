@@ -39,7 +39,7 @@ class ModuleSpec extends TorchSpec {
       "weight, grad = module:getParameters()\n"
 
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("subModule1" -> subModule1,
       "subModule2" -> subModule2), Array("weight", "grad"))
     val luaOutput1 = torchResult("weight").asInstanceOf[Tensor[Double]]

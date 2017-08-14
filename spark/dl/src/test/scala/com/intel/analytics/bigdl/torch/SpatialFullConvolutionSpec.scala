@@ -53,7 +53,7 @@ class SpatialFullConvolutionSpec extends TorchSpec {
       "bias = layer.bias \n" +
       "output = layer:forward(input) "
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input),
       Array("weight", "bias", "output"))
 
@@ -97,7 +97,7 @@ class SpatialFullConvolutionSpec extends TorchSpec {
       "bias = layer.bias \n" +
       "output = layer:forward(input) "
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input),
       Array("weight", "bias", "output"))
 
@@ -154,7 +154,7 @@ class SpatialFullConvolutionSpec extends TorchSpec {
       gradWeight = layer.gradWeight
       """
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput),
       Array("weight", "bias", "output", "gradInput", "gradBias", "gradWeight")
@@ -219,7 +219,7 @@ class SpatialFullConvolutionSpec extends TorchSpec {
       gradWeight = layer.gradWeight
       """
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput),
       Array("weight", "bias", "output", "gradInput", "gradBias", "gradWeight")
@@ -285,7 +285,7 @@ class SpatialFullConvolutionSpec extends TorchSpec {
       gradWeight = layer.gradWeight
       """
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput),
       Array("weight", "output", "gradInput", "gradWeight")
@@ -349,7 +349,7 @@ class SpatialFullConvolutionSpec extends TorchSpec {
       gradInput2 = gradInput[2]
       """
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code,
       Map("input1" -> input1, "input2" -> input2, "gradOutput" -> gradOutput),
       Array("weight", "bias", "output", "gradInput1", "gradInput2", "gradBias", "gradWeight")
@@ -413,7 +413,7 @@ class SpatialFullConvolutionSpec extends TorchSpec {
       gradWeight = layer.gradWeight
       """
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput,
         "weight" -> layer.weight, "bias" -> layer.bias),
@@ -479,7 +479,7 @@ class SpatialFullConvolutionSpec extends TorchSpec {
       gradWeight = layer.gradWeight
       """
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code,
       Map("input" -> input2, "gradOutput" -> gradOutput2),
       Array("weight", "bias", "output", "gradInput", "gradBias", "gradWeight")

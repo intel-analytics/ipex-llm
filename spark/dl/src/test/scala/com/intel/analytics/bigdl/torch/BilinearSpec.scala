@@ -119,7 +119,7 @@ class BilinearSpec extends TorchSpec {
       "gradBias = module.gradBias\n" +
       "gradWeight = module.gradWeight\n"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput", "bias", "weight", "grad", "gradBias", "gradWeight"))
 

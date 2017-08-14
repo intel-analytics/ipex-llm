@@ -49,7 +49,7 @@ class PairwiseDistanceSpec extends TorchSpec {
       gradInput2 = gradInput[2]
                """.stripMargin
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput1", "gradInput2"))
     val torchOutput = torchResult("output").asInstanceOf[Tensor[Double]]
@@ -92,7 +92,7 @@ class PairwiseDistanceSpec extends TorchSpec {
       gradInput2 = gradInput[2]
                """.stripMargin
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput1", "gradInput2"))
     val torchOutput = torchResult("output").asInstanceOf[Tensor[Double]]

@@ -76,7 +76,7 @@ class SpatialBatchNormalizationSpec extends TorchSpec {
         |gradInput = sbn:backward(input, gradOutput2)
       """.stripMargin
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput,
       "gradOutput2" -> gradOutput2), Array("parameters_initial", "gradParameters_initial",
       "gradParameters", "output", "gradInput"))
@@ -169,7 +169,7 @@ class SpatialBatchNormalizationSpec extends TorchSpec {
         |output = sbn:forward(input)
       """.stripMargin
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput, "gradOutput2" -> gradOutput2),
       Array("parameters_initial", "gradParameters_initial", "output", "gradInput"))

@@ -48,7 +48,7 @@ class IndexSpec extends TorchSpec {
       "output = module:forward(input)\n" +
       "gradInput = module:backward(input,gradOutput)\n"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input1" -> input1, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
 
@@ -94,7 +94,7 @@ class IndexSpec extends TorchSpec {
       "output = module:forward(input)\n" +
       "gradInput = module:backward(input,gradOutput)\n"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input1" -> input1, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
 

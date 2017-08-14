@@ -115,7 +115,7 @@ class CAddSpec extends TorchSpec {
       "gradInput = module:backward(input,gradOutput)\n" +
       "gradBias = module.gradBias"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput", "gradBias"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
@@ -155,7 +155,7 @@ class CAddSpec extends TorchSpec {
       "gradInput = module:backward(input,gradOutput)" +
       "gradBias = module.gradBias"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput", "gradBias"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
@@ -195,7 +195,7 @@ class CAddSpec extends TorchSpec {
       "gradInput = module:backward(input,gradOutput)" +
       "gradBias = module.gradBias"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput", "gradBias"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
@@ -235,7 +235,7 @@ class CAddSpec extends TorchSpec {
       "gradInput = module:backward(input,gradOutput)" +
       "gradBias = module.gradBias"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput", "gradBias"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]

@@ -62,7 +62,7 @@ class SelectTableSpec extends TorchSpec {
       end
                """.stripMargin
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput1", "gradInput2", "gradInput3"))
     val torchOutput = torchResult("output").asInstanceOf[Tensor[Double]]
@@ -116,7 +116,7 @@ class SelectTableSpec extends TorchSpec {
       gradInput2 = gradInput[2]
                """.stripMargin
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("embeddedInput2" -> embeddedInput2,
       "embeddedInput1" -> embeddedInput1, "gradOutput" -> gradOutput),
       Array("output", "gradInput1", "gradInput2"))

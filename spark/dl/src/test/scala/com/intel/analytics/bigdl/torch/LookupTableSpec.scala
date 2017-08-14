@@ -121,7 +121,7 @@ class LookupTableSpec extends TorchSpec {
       "gradweight = module.gradWeight\n" +
       "count = module._count:double()\n"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput", "weight", "gradweight", "count"))
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
@@ -181,7 +181,7 @@ class LookupTableSpec extends TorchSpec {
       "weight = module.weight\n" +
       "gradweight = module.gradWeight\n"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input),
       Array("output", "gradInput", "weight", "gradweight", "shouldScaleGradByFreq"))
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
@@ -240,7 +240,7 @@ class LookupTableSpec extends TorchSpec {
       "weight = module.weight\n" +
       "gradweight = module.gradWeight\n"
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input),
       Array("output", "gradInput", "weight", "gradweight"))
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]

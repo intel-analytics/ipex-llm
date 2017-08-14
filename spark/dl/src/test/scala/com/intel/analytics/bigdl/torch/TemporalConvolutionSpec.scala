@@ -52,7 +52,7 @@ class TemporalConvolutionSpec extends TorchSpec {
       "output = layer:forward(input) \n" +
       "gradInput = layer:backward(input, gradOutput) "
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("weight", "bias", "output", "gradInput"))
 
@@ -97,7 +97,7 @@ class TemporalConvolutionSpec extends TorchSpec {
       "output = layer:forward(input) \n" +
       "gradInput = layer:backward(input, gradOutput) "
 
-    val th = new NewTH
+    val th = new TH
     val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("weight", "bias", "output", "gradInput"))
 
