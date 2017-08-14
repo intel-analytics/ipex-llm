@@ -98,9 +98,9 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
           nextGradOutputTable[Tensor[T]](n.prevNodes.indexOf(curNode) + 1)
         }
 
-        if (curGradOutput == null) {
+        if ((curGradOutput == null) || (curGradOutput.nElement() == 0)) {
           curGradOutput = nextGradOutput
-        } else {
+        } else if (nextGradOutput.nElement() > 0) {
           curGradOutput.add(nextGradOutput)
         }
       })
