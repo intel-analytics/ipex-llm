@@ -324,7 +324,7 @@
                     <include>**/*TestSGD.class</include>
                     <include>**/*TestMSESGDref.class</include>
                     <include>**/*TestMSESGDreset.class</include>
-                      <include>**/*ResNetSpec.class</include>
+                      <include>**/*TestResNet.class</include>
                   </includes>
                   <forkCount>2.5C</forkCount>
                   <reuseForks>true</reuseForks>
