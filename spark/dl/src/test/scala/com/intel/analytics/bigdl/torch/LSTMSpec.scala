@@ -30,7 +30,7 @@ import scala.sys.process._
 @com.intel.analytics.bigdl.tags.Parallel
 class LSTMSpec  extends TorchSpec {
   override def torchCheck(): Unit = {
-    torchCheck()
+    super.torchCheck()
     val tmpFile = java.io.File.createTempFile("checkRNN", ".lua")
     val writer = new PrintWriter(tmpFile)
     writer.write("exist = (pcall(require, 'rnn'))\n print(exist)")
