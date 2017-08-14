@@ -21,6 +21,7 @@ import numpy as np
 import unittest
 import shutil
 import tempfile
+from numpy.testing import assert_allclose
 
 
 class TestTensorflow():
@@ -39,8 +40,7 @@ class TestTensorflow():
         model_loaded = Model.load_tensorflow(temp + "/model.pb", ["input"], ["output"])
         expected_output = model_original.forward(input)
         output = model_loaded.forward(input)
-        self.assertTrue(np.allclose(output,
-                                    expected_output, atol=1e-6, rtol=0))
+        assert_allclose(output, expected_output, atol=1e-6, rtol=0)
 
 
 if __name__ == "__main__":

@@ -26,6 +26,7 @@ import tempfile
 import pytest
 from numpy.testing import assert_allclose
 
+
 class TestSimple():
     def setup_method(self, method):
         """ setup any state tied to the execution of the given method in a
@@ -41,7 +42,6 @@ class TestSimple():
         call.
         """
         self.sc.stop()
-
 
     def test_training(self):
         cadd = CAdd([5, 1])
@@ -67,17 +67,17 @@ class TestSimple():
             err = grad_update(cadd, x, y, mse, 0.01)
         print(cadd.get_weights()[0])
         assert_allclose(cadd.get_weights()[0],
-                                    np.array([1, 2, 3, 4, 5]).reshape((5, 1)),
-                                    rtol=1.e-1)
+                        np.array([1, 2, 3, 4, 5]).reshape((5, 1)),
+                        rtol=1.e-1)
 
     def test_load_model(self):
         fc1 = Linear(4, 2)
-        fc1.set_weights([np.ones((4, 2)), np.ones((2, ))])
+        fc1.set_weights([np.ones((4, 2)), np.ones((2,))])
         tmp_path = tempfile.mktemp()
         fc1.save(tmp_path, True)
         fc1_loaded = Model.load(tmp_path)
         assert_allclose(fc1_loaded.get_weights()[0],
-                                    fc1.get_weights()[0])
+                        fc1.get_weights()[0])
 
     def test_load_optim_method(self):
         FEATURES_DIM = 2
@@ -89,6 +89,7 @@ class TestSimple():
             features = np.random.uniform(0, 1, (FEATURES_DIM))
             label = (2 * features).sum() + 0.4
             return Sample.from_ndarray(features, label)
+
         trainingData = self.sc.parallelize(range(0, data_len)).map(lambda i: gen_rand_sample())
         model = Sequential()
         l1 = Linear(FEATURES_DIM, 1).set_init_method(Xavier(), Zeros()).set_name("linear1")
@@ -96,7 +97,7 @@ class TestSimple():
 
         sgd = SGD(learningrate=0.01, learningrate_decay=0.0002, weightdecay=0.0,
                   momentum=0.0, dampening=0.0, nesterov=False,
-                  leaningrate_schedule=Poly(0.5, int((data_len/batch_size)*epoch_num)))
+                  leaningrate_schedule=Poly(0.5, int((data_len / batch_size) * epoch_num)))
 
         tmp_path = tempfile.mktemp()
         sgd.save(tmp_path, True)
@@ -121,12 +122,12 @@ class TestSimple():
         cadd = CAddTable()([fc1, fc2])
         output1 = ReLU()(cadd)
         model = Model([fc1, fc2], [output1])
-        fc1.element().set_weights([np.ones((4, 2)), np.ones((2, ))])
-        fc2.element().set_weights([np.ones((4, 2)), np.ones((2, ))])
+        fc1.element().set_weights([np.ones((4, 2)), np.ones((2,))])
+        fc2.element().set_weights([np.ones((4, 2)), np.ones((2,))])
         output = model.forward([np.array([0.1, 0.2, -0.3, -0.4]),
                                 np.array([0.5, 0.4, -0.2, -0.1])])
         assert_allclose(output,
-                                    np.array([2.2, 2.2]))
+                        np.array([2.2, 2.2]))
 
     def test_graph_backward(self):
         fc1 = Linear(4, 2)()
@@ -135,8 +136,8 @@ class TestSimple():
         output1 = ReLU()(cadd)
         output2 = Threshold(10.0)(cadd)
         model = Model([fc1, fc2], [output1, output2])
-        fc1.element().set_weights([np.ones((4, 2)), np.ones((2, ))])
-        fc2.element().set_weights([np.ones((4, 2)) * 2, np.ones((2, )) * 2])
+        fc1.element().set_weights([np.ones((4, 2)), np.ones((2,))])
+        fc2.element().set_weights([np.ones((4, 2)) * 2, np.ones((2,)) * 2])
         output = model.forward([np.array([0.1, 0.2, -0.3, -0.4]),
                                 np.array([0.5, 0.4, -0.2, -0.1])])
         gradInput = model.backward([np.array([0.1, 0.2, -0.3, -0.4]),
@@ -144,24 +145,28 @@ class TestSimple():
                                    [np.array([1.0, 2.0]),
                                     np.array([3.0, 4.0])])
         assert_allclose(gradInput[0],
-                                    np.array([3.0, 3.0, 3.0, 3.0]))
+                        np.array([3.0, 3.0, 3.0, 3.0]))
         assert_allclose(gradInput[1],
-                                    np.array([6.0, 6.0, 6.0, 6.0]))
+                        np.array([6.0, 6.0, 6.0, 6.0]))
 
     def test_load_zip_conf(self):
         from bigdl.util.common import get_bigdl_conf
         import sys
         sys.path = [path for path in sys.path if "spark-bigdl.conf" not in path]
-        sys.path.insert(0, os.path.join(os.path.split(__file__)[0], "resources/conf/python-api.zip"))  # noqa
-        sys.path.insert(0, os.path.join(os.path.split(__file__)[0], "resources/conf/invalid-python-api.zip"))  # noqa
+        sys.path.insert(0, os.path.join(os.path.split(__file__)[0],
+                                        "resources/conf/python-api.zip"))  # noqa
+        sys.path.insert(0, os.path.join(os.path.split(__file__)[0],
+                                        "resources/conf/invalid-python-api.zip"))  # noqa
         result = get_bigdl_conf()
         assert result.get("spark.executorEnv.OMP_WAIT_POLICY"), "passive"
 
     def test_set_seed(self):
         w_init = Xavier()
         b_init = Zeros()
-        l1 = Linear(10, 20).set_init_method(w_init, b_init).set_name("linear1").set_seed(1234).reset()  # noqa
-        l2 = Linear(10, 20).set_init_method(w_init, b_init).set_name("linear2").set_seed(1234).reset()  # noqa
+        l1 = Linear(10, 20).set_init_method(w_init, b_init).set_name("linear1").set_seed(
+            1234).reset()  # noqa
+        l2 = Linear(10, 20).set_init_method(w_init, b_init).set_name("linear2").set_seed(
+            1234).reset()  # noqa
         p1 = l1.parameters()
         p2 = l2.parameters()
         assert (p1["linear1"]["weight"] == p2["linear2"]["weight"]).all()  # noqa
@@ -181,7 +186,7 @@ class TestSimple():
             lambda i: gen_rand_sample())
 
         model_test = Sequential()
-        l1_test = Linear(FEATURES_DIM, 1).set_init_method(Xavier(), Zeros())\
+        l1_test = Linear(FEATURES_DIM, 1).set_init_method(Xavier(), Zeros()) \
             .set_name("linear1_test")
         assert "linear1_test" == l1_test.name()
         model_test.add(l1_test)
@@ -194,7 +199,7 @@ class TestSimple():
 
         optim_method = SGD(learningrate=0.01, learningrate_decay=0.0002, weightdecay=0.0,
                            momentum=0.0, dampening=0.0, nesterov=False,
-                           leaningrate_schedule=Poly(0.5, int((data_len/batch_size)*epoch_num)))
+                           leaningrate_schedule=Poly(0.5, int((data_len / batch_size) * epoch_num)))
         optimizer = Optimizer(
             model=model_test,
             training_rdd=trainingData,
@@ -251,12 +256,12 @@ class TestSimple():
         input = rng.uniform(0.0, 1.0, [4])
         output = linear.forward(input)
         assert_allclose(output,
-                                    np.array([0.41366524,
-                                              0.009532653,
-                                              -0.677581,
-                                              0.07945433,
-                                              -0.5742568]),
-                                    atol=1e-6, rtol=0)
+                        np.array([0.41366524,
+                                  0.009532653,
+                                  -0.677581,
+                                  0.07945433,
+                                  -0.5742568]),
+                        atol=1e-6, rtol=0)
         mse = MSECriterion()
         target = rng.uniform(0.0, 1.0, [5])
         loss = mse.forward(output, target)
@@ -350,7 +355,7 @@ class TestSimple():
         label = (features).sum() + 0.4
         predict_data = self.sc.parallelize(range(0, total_length)).map(
             lambda i: Sample.from_ndarray(features[i], label))
-        model = Linear(2, 1).set_init_method(Xavier(), Zeros())\
+        model = Linear(2, 1).set_init_method(Xavier(), Zeros()) \
             .set_name("linear1").set_seed(1234).reset()
         predict_result = model.predict(predict_data)
         p = predict_result.take(6)
@@ -392,6 +397,7 @@ class TestSimple():
             assert_allclose(movielens_data[i], ground_data[i], atol=1e-6, rtol=0)
             assert_allclose(id_pairs[i], ground_pairs[i], atol=1e-6, rtol=0)
             assert_allclose(id_ratings[i], ground_ratings[i], atol=1e-6, rtol=0)
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
