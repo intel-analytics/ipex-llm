@@ -41,7 +41,8 @@ object Utils {
     maxEpoch: Int = 90,
     overWriteCheckpoint: Boolean = false,
     learningRate: Double = 0.01,
-    weightDecay: Double = 0.0005
+    weightDecay: Double = 0.0005,
+    graphModel: Boolean = false
   )
 
   val trainParser = new OptionParser[TrainParams]("BigDL Vgg on Cifar10 Example") {
@@ -72,6 +73,9 @@ object Utils {
     opt[Double]('l', "learningRate")
       .text("inital learning rate")
       .action((x, c) => c.copy(learningRate = x))
+    opt[Unit]('g', "graphModel")
+      .text("use graph model")
+      .action((x, c) => c.copy(graphModel = true))
   }
 
   case class TestParams(
