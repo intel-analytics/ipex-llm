@@ -28,7 +28,7 @@ do
     export PYTHON_EXECUTABLE=$p
     export PYSPARK_PYTHON=$p
     export PYSPARK_DRIVER_PYTHON=$p
-    $p -m pytest -v --doctest-modules ../../../pyspark/bigdl
+    $p -m pytest -v --doctest-modules ../../../pyspark/bigdl --ignore=../../../pyspark/bigdl/dataset/sentence.py
     $p -m pytest -v -n 4 ../../../pyspark/test/
 done
 
