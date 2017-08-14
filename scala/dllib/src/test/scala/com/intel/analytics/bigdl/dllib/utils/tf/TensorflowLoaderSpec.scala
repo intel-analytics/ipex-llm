@@ -304,6 +304,26 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     }
   }
 
+  "Tensorflow conv1d" should "be load correctly" in {
+    val output = Seq("output:0")
+    val comparePairs = testModel("temporal_convolution", output, false, Seq(), true) { tensor =>
+      if (tensor.dim() == 3) {
+        val t = tensor.transpose(1, 3).transpose(2, 3).contiguous()
+        t.resize(t.size(1), t.size(2) * t.size(3))
+      } else {
+        tensor
+      }
+    }
+    for (i <- output.indices) {
+      val (tf, bigdl) = comparePairs(i)
+      tf.almostEqual(bigdl, 1e-6) should be(true)
+    }
+    for (i <- output.length until comparePairs.length) {
+      val (tf, bigdl) = comparePairs(i)
+      tf.almostEqual(bigdl, 1e-4) should be(true)
+    }
+  }
+
   "Tensorflow Alexnet" should "be load correctly" in {
     val output = Seq("alexnet_v2/fc8/squeezed:0")
     val comparePairs = testModel("alexnet", output, true, Seq.empty, true) { tensor =>
