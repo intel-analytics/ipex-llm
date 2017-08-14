@@ -230,6 +230,12 @@ trait TensorMath[T] {
   def sqrt(): Tensor[T]
 
   /**
+   * replaces all elements in-place with the tanh root of the elements of this.
+   * @return
+   */
+  def tanh(): Tensor[T]
+
+  /**
    * replaces all elements in-place with the absolute values of the elements of this.
    * @return
    */
