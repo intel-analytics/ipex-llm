@@ -316,10 +316,11 @@ gradInput = model.gradInput
 
 
   "ALexNet_OWT graph" should "be same with original one" in {
-    Random.setSeed(1)
+    val random = new Random()
+    random.setSeed(1)
     val batchSize = 4
-    val input = Tensor[Float](batchSize, 3, 224, 224).apply1(e => Random.nextFloat())
-    val gradOutput = Tensor[Float](batchSize, 1000).apply1(e => Random.nextFloat())
+    val input = Tensor[Float](batchSize, 3, 224, 224).apply1(e => random.nextFloat())
+    val gradOutput = Tensor[Float](batchSize, 1000).apply1(e => random.nextFloat())
 
     RNG.setSeed(1000)
     val model = AlexNet_OWT(1000, false, true)
@@ -345,10 +346,11 @@ gradInput = model.gradInput
   }
 
   "ALexNet graph" should "be same with original one" in {
-    Random.setSeed(1)
+    val random = new Random()
+    random.setSeed(1)
     val batchSize = 4
-    val input = Tensor[Float](batchSize, 3, 256, 256).apply1(e => Random.nextFloat())
-    val gradOutput = Tensor[Float](batchSize, 1000).apply1(e => Random.nextFloat())
+    val input = Tensor[Float](batchSize, 3, 256, 256).apply1(e => random.nextFloat())
+    val gradOutput = Tensor[Float](batchSize, 1000).apply1(e => random.nextFloat())
 
     RNG.setSeed(1000)
     val model = AlexNet(1000, false)
