@@ -40,7 +40,8 @@ object Utils {
     weightDecay: Double = 1e-4,
     momentum: Double = 0.9,
     dampening: Double = 0.0,
-    nesterov: Boolean = true)
+    nesterov: Boolean = true,
+    graphModel: Boolean = false)
 
   val trainParser = new OptionParser[TrainParams]("BigDL ResNet Example") {
     head("Train ResNet model on single node")
@@ -89,6 +90,9 @@ object Utils {
     opt[Boolean]("nesterov")
       .text("nesterov of ResNet; default is trye")
       .action((x, c) => c.copy(nesterov = x))
+    opt[Unit]('g', "graphModel")
+      .text("use graph model")
+      .action((x, c) => c.copy(graphModel = true))
   }
 
   private[bigdl] def loadTrain(dataFile: String): Array[ByteRecord] = {
