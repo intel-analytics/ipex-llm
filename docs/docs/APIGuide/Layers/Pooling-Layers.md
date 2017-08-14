@@ -20,6 +20,18 @@ the output image size will be nOutputPlane x oheight x owidth where
 op is a rounding operator. By default, it is floor.
 It can be changed by calling ceil() or floor() methods.
 
+As for padding, when padW and padH are both -1, we use a padding algorithm similar to the "SAME" padding of tensorflow. That is
+```scala
+ outHeight = Math.ceil(inHeight.toFloat/strideH.toFloat)
+ outWidth = Math.ceil(inWidth.toFloat/strideW.toFloat)
+
+ padAlongHeight = Math.max(0, (outHeight - 1) * strideH + kernelH - inHeight)
+ padAlongWidth = Math.max(0, (outWidth - 1) * strideW + kernelW - inWidth)
+
+ padTop = padAlongHeight / 2
+ padLeft = padAlongWidth / 2
+```
+
 **Scala example:**
 
 ```scala
@@ -122,6 +134,18 @@ m = SpatialAveragePooling(kw, kh, dw=1, dh=1, pad_w=0, pad_h=0, global_pooling=F
 SpatialAveragePooling is a module that applies 2D average-pooling operation in `kW`x`kH` regions by step size `dW`x`dH`.
 
 The number of output features is equal to the number of input planes.
+
+As for padding, when padW and padH are both -1, we use a padding algorithm similar to the "SAME" padding of tensorflow. That is
+```scala
+ outHeight = Math.ceil(inHeight.toFloat/strideH.toFloat)
+ outWidth = Math.ceil(inWidth.toFloat/strideW.toFloat)
+
+ padAlongHeight = Math.max(0, (outHeight - 1) * strideH + kernelH - inHeight)
+ padAlongWidth = Math.max(0, (outWidth - 1) * strideW + kernelW - inWidth)
+
+ padTop = padAlongHeight / 2
+ padLeft = padAlongWidth / 2
+```
 
 **Scala example:**
 ```scala

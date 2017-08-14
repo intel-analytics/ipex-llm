@@ -29,6 +29,18 @@ import com.intel.analytics.bigdl.utils.Engine
  * Applies 2D average-pooling operation in kWxkH regions by step size dWxdH steps.
  * The number of output features is equal to the number of input planes.
  *
+ * When padW and padH are both -1, we use a padding algorithm similar to the "SAME"
+ * padding of tensorflow. That is
+ *
+ * outHeight = Math.ceil(inHeight.toFloat/strideH.toFloat)
+ * outWidth = Math.ceil(inWidth.toFloat/strideW.toFloat)
+ *
+ * padAlongHeight = Math.max(0, (outHeight - 1) * strideH + kernelH - inHeight)
+ * padAlongWidth = Math.max(0, (outWidth - 1) * strideW + kernelW - inWidth)
+ *
+ * padTop = padAlongHeight / 2
+ * padLeft = padAlongWidth / 2
+ *
  * @param kW kernel width
  * @param kH kernel height
  * @param dW step width

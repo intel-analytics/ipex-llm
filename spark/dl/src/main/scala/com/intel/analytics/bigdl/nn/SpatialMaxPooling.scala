@@ -32,6 +32,19 @@ import scala.reflect._
  * oheight = op((height + 2*padH - kH) / dH + 1)
  * op is a rounding operator. By default, it is floor.
  * It can be changed by calling :ceil() or :floor() methods.
+ *
+ * When padW and padH are both -1, we use a padding algorithm similar to the "SAME"
+ * padding of tensorflow. That is
+ *
+ * outHeight = Math.ceil(inHeight.toFloat/strideH.toFloat)
+ * outWidth = Math.ceil(inWidth.toFloat/strideW.toFloat)
+ *
+ * padAlongHeight = Math.max(0, (outHeight - 1) * strideH + kernelH - inHeight)
+ * padAlongWidth = Math.max(0, (outWidth - 1) * strideW + kernelW - inWidth)
+ *
+ * padTop = padAlongHeight / 2
+ * padLeft = padAlongWidth / 2
+ *
  * @param kW              kernel width
  * @param kH              kernel height
  * @param dW              step size in width
