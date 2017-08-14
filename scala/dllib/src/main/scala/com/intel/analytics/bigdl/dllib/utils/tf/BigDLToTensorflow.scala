@@ -126,6 +126,44 @@ object SpatialConvolutionToTF extends BigDLToTensorflow {
   }
 }
 
+object TemporalConvolutionToTF extends BigDLToTensorflow {
+  override def toTFDef(module: AbstractModule[_, _, _], inputs: Seq[NodeDef],
+                       byteOrder: ByteOrder): Seq[NodeDef] = {
+    require(inputs.length == 1, "SpatialConvolution only accept one input")
+    val spatialConv = module.asInstanceOf[TemporalConvolution[_]]
+
+    val const1 = const(Tensor[Float](1).setValue(1, 1.0f),
+      spatialConv.getName() + "/dim1", byteOrder, true, DataType.DT_INT32)
+    val expandDimsInput = expandDims(inputs.head, const1,
+      spatialConv.getName() + "/expandDimsInput")
+
+    val filterTensor = spatialConv.weight
+      .view(spatialConv.outputFrameSize, spatialConv.kernelW, spatialConv.inputFrameSize)
+      .transpose(2, 3).transpose(1, 3).contiguous()
+
+    val filter = const(filterTensor, spatialConv.getName() + "/filter", byteOrder)
+    val filterReader = identity(filter, spatialConv.getName() + "/filterReader")
+
+    val const2 = const(Tensor[Float](1).setValue(1, 0.0f),
+      spatialConv.getName() + "/dim2", byteOrder, true, DataType.DT_INT32)
+    val expandDimsWeight = expandDims(filterReader, const2,
+      spatialConv.getName() + "/expandDimsWeight")
+
+    val conv = conv2D(expandDimsInput, expandDimsWeight, spatialConv.strideW, 1,
+      spatialConv.kernelW, 1, 0, 0,
+      getDataFormat(), spatialConv.getName() + "/conv2D")
+
+    val sq = squeeze(conv, Seq(1), spatialConv.getName() + "/squeeze")
+
+    val bias = const(spatialConv.bias, spatialConv.getName() + "/bias", byteOrder)
+    val biasReader = identity(bias, spatialConv.getName() + "/biasReader")
+    val add = biasAdd(sq, biasReader, getDataFormat(),
+      spatialConv.getName() + "/biasAdd")
+    Seq(add, biasReader, bias, conv, filterReader, filter, sq,
+      expandDimsInput, expandDimsWeight, const1, const2)
+  }
+}
+
 object SqueezeToTF extends BigDLToTensorflow {
   override def toTFDef(module: AbstractModule[_, _, _], inputs: Seq[NodeDef],
                        byteOrder: ByteOrder): Seq[NodeDef] = {

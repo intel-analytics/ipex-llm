@@ -180,6 +180,21 @@ object Tensorflow {
   }
 
   /**
+   * Generate a ExpandDims tensorflow protobuf node
+   */
+  def expandDims(input: NodeDef, dim: NodeDef,
+              name: String): NodeDef = {
+    NodeDef.newBuilder()
+      .setName(name)
+      .setOp("ExpandDims")
+      .addInput(input.getName)
+      .addInput(dim.getName)
+      .putAttr("T", getDataType(input))
+      .putAttr("Tdim", AttrValue.newBuilder().setType(DataType.DT_INT32).build())
+      .build()
+  }
+
+  /**
    * Generate a relu tensorflow protobuf node
    * @param features
    * @param name
