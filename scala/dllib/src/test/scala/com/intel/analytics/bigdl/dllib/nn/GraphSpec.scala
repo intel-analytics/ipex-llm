@@ -16,16 +16,22 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.example.loadmodel.AlexNet_OWT
+import com.intel.analytics.bigdl.models.autoencoder.Autoencoder
 import com.intel.analytics.bigdl.models.inception.{Inception_Layer_v1, Inception_v1}
+import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.models.resnet.{Convolution, ResNet}
 import com.intel.analytics.bigdl.models.resnet.ResNet.{ShortcutType, iChannels}
+import com.intel.analytics.bigdl.models.vgg.{VggForCifar10, Vgg_16, Vgg_19}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.{RandomGenerator, T, Table}
 
 import scala.reflect.ClassTag
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class GraphSpec extends FlatSpec with Matchers {
@@ -402,7 +408,7 @@ class GraphSpec extends FlatSpec with Matchers {
     val seqModel = ModelUntils.ResNet.basicBlockSeq(16, 16, 1, "A")
     RandomGenerator.RNG.setSeed(1000)
     val input = Input()
-    val output = ModelUntils.ResNet.basicBlockSeq(16, 16, 1, "A").inputs(input)
+    val output = ModelUntils.ResNet.basicBlockFunc(16, 16, 1, "A")(input)
     val funcModel = Graph(input, output)
 
     println(seqModel)
@@ -533,6 +539,112 @@ class GraphSpec extends FlatSpec with Matchers {
     seqModel.getParametersTable()[Table]("pool_conv")[Tensor[Float]]("gradWeight") should be(
       funcModel.getParametersTable()[Table]("pool_conv")[Tensor[Float]]("gradWeight")
     )
+  }
+
+  "Autoencoder graph" should "be correct" in {
+    Random.setSeed(1)
+    val batchSize = 4
+    val input = Tensor[Float](batchSize, 28 * 28).apply1(e => Random.nextFloat())
+    val gradOutput = Tensor[Float](batchSize, 784).apply1(e => Random.nextFloat())
+
+    RNG.setSeed(1000)
+    val model = Autoencoder(32)
+    RNG.setSeed(1000)
+    val graphModel = Autoencoder.graph(32)
+
+    val output1 = model.forward(input).toTensor[Float]
+    val output2 = graphModel.forward(input).toTensor[Float]
+    output1 should be(output2)
+
+    val gradInput1 = model.backward(input, gradOutput)
+    val gradInput2 = graphModel.backward(input, gradOutput)
+    gradInput1 should be(gradInput2)
+    gradInput1 should be(gradInput2)
+    model.getParameters().equals(graphModel.getParameters()) should be(true)
+  }
+
+  "Lenet graph" should "be correct" in {
+    Random.setSeed(1)
+    val batchSize = 4
+    val input = Tensor[Float](batchSize, 28*28).apply1(e => Random.nextFloat())
+    val gradOutput = Tensor[Float](batchSize, 10).apply1(e => Random.nextFloat())
+
+    RNG.setSeed(1000)
+    val model = LeNet5(10)
+    RNG.setSeed(1000)
+    val graphModel = LeNet5.graph(10)
+
+    val output1 = model.forward(input).toTensor[Float]
+    val output2 = graphModel.forward(input).toTensor[Float]
+    output1 should be(output2)
+
+    val gradInput1 = model.backward(input, gradOutput)
+    val gradInput2 = graphModel.backward(input, gradOutput)
+    gradInput1 should be(gradInput2)
+    model.getParameters().equals(graphModel.getParameters()) should be(true)
+  }
+
+  "VggForCifar10 graph" should "be correct" in {
+    Random.setSeed(1)
+    val batchSize = 4
+    val input = Tensor[Float](batchSize, 3, 32, 32).apply1(e => Random.nextFloat())
+    val gradOutput = Tensor[Float](batchSize, 10).apply1(e => Random.nextFloat())
+
+    RNG.setSeed(1000)
+    val model = VggForCifar10(10, false)
+    RNG.setSeed(1000)
+    val graphModel = VggForCifar10.graph(10, false)
+
+    val output1 = model.forward(input).toTensor[Float]
+    val output2 = graphModel.forward(input).toTensor[Float]
+    output1 should be(output2)
+
+    val gradInput1 = model.backward(input, gradOutput)
+    val gradInput2 = graphModel.backward(input, gradOutput)
+    gradInput1 should be(gradInput2)
+    model.getParameters().equals(graphModel.getParameters()) should be(true)
+  }
+
+  "Vgg_16 graph" should "be correct" in {
+    Random.setSeed(1)
+    val batchSize = 1
+    val input = Tensor[Float](batchSize, 3, 224, 224).apply1(e => Random.nextFloat())
+    val gradOutput = Tensor[Float](1000).apply1(e => Random.nextFloat())
+
+    RNG.setSeed(1000)
+    val model = Vgg_16(1000, false)
+    RNG.setSeed(1000)
+    val graphModel = Vgg_16.graph(1000, false)
+
+    val output1 = model.forward(input).toTensor[Float]
+    val output2 = graphModel.forward(input).toTensor[Float]
+    output1 should be(output2)
+
+    val gradInput1 = model.backward(input, gradOutput)
+    val gradInput2 = graphModel.backward(input, gradOutput)
+    gradInput1 should be(gradInput2)
+    model.getParameters().equals(graphModel.getParameters()) should be(true)
+  }
+
+  "Vgg_19 graph" should "be correct" in {
+    Random.setSeed(1)
+    val batchSize = 1
+    val input = Tensor[Float](batchSize, 3, 224, 224).apply1(e => Random.nextFloat())
+    val gradOutput = Tensor[Float](1000).apply1(e => Random.nextFloat())
+
+    RNG.setSeed(1000)
+    val model = Vgg_19(1000, false)
+    RNG.setSeed(1000)
+    val graphModel = Vgg_19.graph(1000, false)
+
+    val output1 = model.forward(input).toTensor[Float]
+    val output2 = graphModel.forward(input).toTensor[Float]
+    output1 should be(output2)
+
+    val gradInput1 = model.backward(input, gradOutput)
+    val gradInput2 = graphModel.backward(input, gradOutput)
+    gradInput1 should be(gradInput2)
+    model.getParameters().equals(graphModel.getParameters()) should be(true)
   }
 }
 

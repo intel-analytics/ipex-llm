@@ -70,7 +70,7 @@ object Train {
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
       } else {
-        Autoencoder(classNum = 32)
+        if (param.graphModel) Autoencoder.graph(classNum = 32) else Autoencoder(classNum = 32)
       }
 
       val optimMethod = if (param.stateSnapshot.isDefined) {
