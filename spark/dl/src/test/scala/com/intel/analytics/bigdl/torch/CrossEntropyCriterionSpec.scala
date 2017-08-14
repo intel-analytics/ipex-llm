@@ -53,7 +53,7 @@ class CrossEntropyCriterionSpec extends TorchSpec {
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
 
     luaOutput1 should be (output +- 1e-12)
-    luaOutput2 should be (gradInput +- 1e-12)
+    luaOutput2 shouldEqual gradInput
 
     println("Test case : CrossEntropyCriterion, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")
@@ -92,7 +92,7 @@ class CrossEntropyCriterionSpec extends TorchSpec {
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
 
     luaOutput1 should be (output +- 1e-12)
-    luaOutput2 should be (gradInput +- 1e-12)
+    luaOutput2 shouldEqual gradInput
 
     println("Test case : CrossEntropyCriterion, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")
