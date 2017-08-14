@@ -56,7 +56,8 @@ class VolumetricFullConvolutionSpec extends TorchSpec {
       "bias = layer.bias \n" +
       "output = layer:forward(input) "
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input),
       Array("weight", "bias", "output"))
 
     val luaWeight = torchResult("weight").asInstanceOf[Tensor[Double]]
@@ -69,6 +70,8 @@ class VolumetricFullConvolutionSpec extends TorchSpec {
     weight should be(luaWeight.resizeAs(weight))
     bias should be(luaBias)
     output should be(luaOutput)
+
+    th.release()
   }
 
   "A VolumetricFullConvolution on rectangle input" should "generate correct output" in {
@@ -101,7 +104,8 @@ class VolumetricFullConvolutionSpec extends TorchSpec {
       "bias = layer.bias \n" +
       "output = layer:forward(input) "
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input),
       Array("weight", "bias", "output"))
 
     val luaWeight = torchResult("weight").asInstanceOf[Tensor[Double]]
@@ -114,6 +118,8 @@ class VolumetricFullConvolutionSpec extends TorchSpec {
     weight should be(luaWeight.resizeAs(weight))
     bias should be(luaBias)
     output should be(luaOutput)
+
+    th.release()
   }
 
   "A VolumetricFullConvolution" should "generate correct output and grad" in {
@@ -163,7 +169,8 @@ class VolumetricFullConvolutionSpec extends TorchSpec {
       gradWeight = layer.gradWeight
       """
 
-    val (luaTime, torchResult) = TH.run(code,
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput),
       Array("weight", "bias", "output", "gradInput", "gradBias", "gradWeight")
     )
@@ -184,6 +191,8 @@ class VolumetricFullConvolutionSpec extends TorchSpec {
     gradInput should be(luaGradInput)
     luaGradBias should be (layer.gradBias)
     luaGradWeight should be (layer.gradWeight.resizeAs(luaGradWeight))
+
+    th.release()
   }
 
   "A VolumetricFullConvolution" should "generate correct output and grad with 4D input" in {
@@ -229,7 +238,8 @@ class VolumetricFullConvolutionSpec extends TorchSpec {
       gradWeight = layer.gradWeight
       """
 
-    val (luaTime, torchResult) = TH.run(code,
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput),
       Array("weight", "bias", "output", "gradInput", "gradBias", "gradWeight")
     )
@@ -250,6 +260,8 @@ class VolumetricFullConvolutionSpec extends TorchSpec {
     gradInput should be(luaGradInput)
     luaGradBias should be (layer.gradBias)
     luaGradWeight should be (layer.gradWeight.resizeAs(luaGradWeight))
+
+    th.release()
   }
 
   "A VolumetricFullConvolution noBias" should "generate correct output and grad with 3D input" in {
@@ -296,7 +308,8 @@ class VolumetricFullConvolutionSpec extends TorchSpec {
       gradWeight = layer.gradWeight
       """
 
-    val (luaTime, torchResult) = TH.run(code,
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput),
       Array("weight", "output", "gradInput", "gradWeight")
     )
@@ -313,6 +326,8 @@ class VolumetricFullConvolutionSpec extends TorchSpec {
     output should be(luaOutput)
     gradInput should be(luaGradInput)
     luaGradWeight should be (layer.gradWeight.resizeAs(luaGradWeight))
+
+    th.release()
   }
 
   "A VolumetricFullConvolution" should "generate correct output and grad with table input" in {
@@ -361,7 +376,8 @@ class VolumetricFullConvolutionSpec extends TorchSpec {
       gradInput2 = gradInput[2]
       """
 
-    val (luaTime, torchResult) = TH.run(code,
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code,
       Map("input1" -> input1, "input2" -> input2, "gradOutput" -> gradOutput),
       Array("weight", "bias", "output", "gradInput1", "gradInput2", "gradBias", "gradWeight")
     )
@@ -384,6 +400,8 @@ class VolumetricFullConvolutionSpec extends TorchSpec {
     gradInput should be(luaGradInput)
     luaGradBias should be (layer.gradBias)
     luaGradWeight should be (layer.gradWeight.resizeAs(luaGradWeight))
+
+    th.release()
   }
 
   "A VolumetricFullConvolution OneToOne" should "generate correct output and grad" in {
@@ -425,7 +443,8 @@ class VolumetricFullConvolutionSpec extends TorchSpec {
       gradWeight = layer.gradWeight
       """
 
-    val (luaTime, torchResult) = TH.run(code,
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput,
         "weight" -> layer.weight, "bias" -> layer.bias),
       Array("output", "gradInput", "gradBias", "gradWeight")
@@ -443,6 +462,8 @@ class VolumetricFullConvolutionSpec extends TorchSpec {
     gradInput should be(luaGradInput)
     luaGradBias should be (layer.gradBias)
     luaGradWeight should be (layer.gradWeight.resizeAs(luaGradWeight))
+
+    th.release()
   }
 
   "A VolumetricFullConvolution with different input" should "generate correct output and grad" in {
@@ -492,7 +513,8 @@ class VolumetricFullConvolutionSpec extends TorchSpec {
       gradWeight = layer.gradWeight
       """
 
-    val (luaTime, torchResult) = TH.run(code,
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code,
       Map("input" -> input2, "gradOutput" -> gradOutput2),
       Array("weight", "bias", "output", "gradInput", "gradBias", "gradWeight")
     )
@@ -513,6 +535,8 @@ class VolumetricFullConvolutionSpec extends TorchSpec {
     gradInput2 should be(luaGradInput)
     luaGradBias should be (layer.gradBias)
     luaGradWeight should be (layer.gradWeight.resizeAs(luaGradWeight))
+
+    th.release()
   }
 
 }

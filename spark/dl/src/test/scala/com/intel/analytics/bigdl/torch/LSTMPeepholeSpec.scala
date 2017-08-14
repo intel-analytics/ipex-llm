@@ -668,7 +668,8 @@ class LSTMPeepholeSpec  extends TorchSpec {
     """.stripMargin
     scala.Seq
 
-    val (luaTime, torchResult) = TH.run(code,
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code,
       Map("input" -> input.transpose(1, 2), "weights" -> weights2Torch),
       Array("output", "state"))
 
@@ -688,6 +689,8 @@ class LSTMPeepholeSpec  extends TorchSpec {
       assert(abs(v1 - v2) <= 1e-8)
       v1
     })
+
+    th.release()
   }
 
   "A LSTMPeepwhole " should "set state correctly" in {
@@ -744,7 +747,8 @@ class LSTMPeepholeSpec  extends TorchSpec {
     """.stripMargin
     scala.Seq
 
-    val (luaTime, torchResult) = TH.run(code,
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code,
       Map("input" -> input.transpose(1, 2), "weights" -> weights2Torch, "state" -> state,
         "gradOutput" -> gradOutput.transpose(1, 2)),
         Array("output", "gradInput", "gradParameters"))
@@ -774,6 +778,8 @@ class LSTMPeepholeSpec  extends TorchSpec {
       assert(abs(v1 - v2) <= 1e-8)
       v1
     })
+
+    th.release()
   }
 
   private def reconstruct[T: ClassTag](tensor: Array[Tensor[T]], hiddenSize: Int):
