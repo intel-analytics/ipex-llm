@@ -22,8 +22,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import scala.reflect.ClassTag
 
 /**
- * Wrap a nn models to an [[Operation]], if an nn module's function
- * exactly corresponds to an Tensoflow operation.
+ * Wrap a nn module to an [[Operation]]
  *
  * @param module an nn module
  * @tparam A Input data type

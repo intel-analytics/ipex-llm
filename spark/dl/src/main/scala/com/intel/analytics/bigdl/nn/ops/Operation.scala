@@ -23,8 +23,8 @@ import scala.reflect.ClassTag
 
 /**
  * [[Operation]] is an abstract class which represents the most basic operations
- * The operations only has forward functions and without backward functions.
- * The operations can be used to build a computational graph
+ * An operations has only forward functions and without backward functions.
+ * An operations can be used to build a computational graph
  *
  * @tparam A Input data type
  * @tparam T Numeric type. Only support float/double now
