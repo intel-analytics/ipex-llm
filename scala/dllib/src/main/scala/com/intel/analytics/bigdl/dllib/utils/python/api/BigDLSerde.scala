@@ -21,7 +21,7 @@ package org.apache.spark.bigdl.api.python
 import java.io.OutputStream
 import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, Map => JMap}
 
-import com.intel.analytics.bigdl.python.api.{JTensor, Sample, TestResult}
+import com.intel.analytics.bigdl.python.api.{JTensor, Sample, EvaluatedResult}
 import net.razorvine.pickle._
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.api.python.SerDeUtil
@@ -178,10 +178,10 @@ object BigDLSerDe extends BigDLSerDeBase with Serializable {
     }
   }
 
-  private[python] class TestResultPickler extends BigDLBasePickler[TestResult] {
+  private[python] class TestResultPickler extends BigDLBasePickler[EvaluatedResult] {
 
     def saveState(obj: Object, out: OutputStream, pickler: Pickler): Unit = {
-      val testResult = obj.asInstanceOf[TestResult]
+      val testResult = obj.asInstanceOf[EvaluatedResult]
       saveObjects(out,
         pickler,
         testResult.result,
@@ -192,7 +192,7 @@ object BigDLSerDe extends BigDLSerDeBase with Serializable {
       if (args.length != 3) {
         throw new PickleException("should be 3, not : " + args.length)
       }
-      new TestResult(args(0).asInstanceOf[Float],
+      new EvaluatedResult(args(0).asInstanceOf[Float],
         args(1).asInstanceOf[Int],
         args(2).asInstanceOf[String])
     }
