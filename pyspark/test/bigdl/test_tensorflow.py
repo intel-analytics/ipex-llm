@@ -21,18 +21,10 @@ import numpy as np
 import unittest
 import shutil
 import tempfile
+from numpy.testing import assert_allclose
 
 
-class TestTensorflow(unittest.TestCase):
-
-    def setUp(self):
-        sparkConf = create_spark_conf()
-        self.sc = SparkContext(master="local[4]", appName="test model",
-                               conf=sparkConf)
-        init_engine()
-
-    def tearDown(self):
-        self.sc.stop()
+class TestTensorflow():
 
     def test_load_and_save(self):
         linear = Linear(10, 2)()
@@ -48,8 +40,7 @@ class TestTensorflow(unittest.TestCase):
         model_loaded = Model.load_tensorflow(temp + "/model.pb", ["input"], ["output"])
         expected_output = model_original.forward(input)
         output = model_loaded.forward(input)
-        self.assertTrue(np.allclose(output,
-                                    expected_output, atol=1e-6, rtol=0))
+        assert_allclose(output, expected_output, atol=1e-6, rtol=0)
 
 
 if __name__ == "__main__":
