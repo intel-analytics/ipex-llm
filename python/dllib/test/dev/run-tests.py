@@ -91,11 +91,7 @@ LOGGER = logging.getLogger()
 
 
 def run_individual_python_test(test_name, python_exec):
-    env = dict(os.environ)
-    env.update({
-        'DL_CORE_NUMBER': '4',
-        'PYSPARK_PYTHON': python_exec
-    })
+
     LOGGER.debug("Starting test(%s): %s", python_exec, test_name)
     start_time = time.time()
     try:
@@ -137,36 +133,6 @@ def run_individual_python_test(test_name, python_exec):
 def get_default_python_executables():
     python_execs = ["python2.7", "python3.5"]
     return python_execs
-
-
-def parse_opts():
-    parser = OptionParser(
-        prog="run-tests"
-    )
-    parser.add_option(
-        "--python-executables", type="string", default=','.join(get_default_python_executables()),
-        help="A comma-separated list of Python executables to test against (default: %default)"
-    )
-    parser.add_option(
-        "--modules", type="string",
-        default=",".join(sorted(python_modules.keys())),
-        help="A comma-separated list of Python modules to test (default: %default)"
-    )
-    parser.add_option(
-        "-p", "--parallelism", type="int", default=4,
-        help="The number of suites to test in parallel (default %default)"
-    )
-    parser.add_option(
-        "--verbose", action="store_true",
-        help="Enable additional debug logging"
-    )
-
-    (opts, args) = parser.parse_args()
-    if args:
-        parser.error("Unsupported arguments: %s" % ' '.join(args))
-    if opts.parallelism < 1:
-        parser.error("Parallelism cannot be less than 1")
-    return opts
 
 
 def main():
