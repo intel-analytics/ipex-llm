@@ -31,7 +31,7 @@ import scala.math._
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
-class InceptionSpec extends FlatSpec with BeforeAndAfter with Matchers {
+class TestInceptionTorch extends FlatSpec with BeforeAndAfter with Matchers {
   val torch = new TorchSpec
   torch.torchCheck()
 
