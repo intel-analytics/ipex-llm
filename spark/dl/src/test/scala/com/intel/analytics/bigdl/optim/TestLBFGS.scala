@@ -99,8 +99,8 @@ object TestLBFGSModel {
 @com.intel.analytics.bigdl.tags.Ignore
 @RunWith(classOf[JUnitRunner])
 class TestLBFGS extends FlatSpec with Matchers with BeforeAndAfter {
-  import TestParallel._
-  import TestParallelModel._
+  import TestLBFGS._
+  import TestLBFGSModel._
 
   Logger.getLogger("org").setLevel(Level.WARN)
   Logger.getLogger("akka").setLevel(Level.WARN)

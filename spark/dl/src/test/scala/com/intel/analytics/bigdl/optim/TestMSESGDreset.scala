@@ -99,8 +99,8 @@ object TestMSESGDresetModel {
 @com.intel.analytics.bigdl.tags.Ignore
 @RunWith(classOf[JUnitRunner])
 class TestMSESGDreset extends FlatSpec with Matchers with BeforeAndAfter {
-  import TestParallel._
-  import TestParallelModel._
+  import TestMSESGDreset._
+  import TestMSESGDresetModel._
 
   Logger.getLogger("org").setLevel(Level.WARN)
   Logger.getLogger("akka").setLevel(Level.WARN)

@@ -99,8 +99,8 @@ object TestMSESGDrefModel {
 @com.intel.analytics.bigdl.tags.Ignore
 @RunWith(classOf[JUnitRunner])
 class TestMSESGDref extends FlatSpec with Matchers with BeforeAndAfter {
-  import TestParallel._
-  import TestParallelModel._
+  import TestMSESGDref._
+  import TestMSESGDrefModel._
 
   Logger.getLogger("org").setLevel(Level.WARN)
   Logger.getLogger("akka").setLevel(Level.WARN)
