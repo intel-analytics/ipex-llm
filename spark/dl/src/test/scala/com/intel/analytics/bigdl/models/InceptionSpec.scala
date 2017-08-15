@@ -31,7 +31,7 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import scala.math._
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class InceptionSpec extends FlatSpec with BeforeAndAfter with Matchers {
   "Inception ModelCaffe" should "init right" in {
     RNG.setSeed(1024)

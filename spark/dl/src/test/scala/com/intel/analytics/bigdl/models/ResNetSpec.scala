@@ -30,7 +30,7 @@ import org.apache.log4j.Logger
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
   "ResNet basicBlockFunc graph" should "be same with original one" in {
     val depth = 16
