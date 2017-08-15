@@ -13,25 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn.opts
+package com.intel.analytics.bigdl.nn.tf
 
-import com.intel.analytics.bigdl.nn.CSubTable
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.T
+import org.scalatest.{FlatSpec, Matchers}
 
-import scala.reflect.ClassTag
+class DivideSpec extends FlatSpec with Matchers {
+  "Divide operation" should "works correctly" in {
+    import com.intel.analytics.bigdl.numeric.NumericFloat
+    val input =
+      T(
+        Tensor(T(1f, 2f, 3f)),
+        Tensor(T(2f, 2f, 4f))
+      )
 
-class Substract[T: ClassTag](implicit ev: TensorNumeric[T])
-  extends Operation[Table, T]{
-  val model = CSubTable[T]()
+    val expectOutput = Tensor(T(0.5f, 1f, 0.75f))
 
-  override def updateOutput(input: Table): Tensor[T] = {
-    output = model.forward(input)
-    output
+    val output = Divide().forward(input)
+    output should be(expectOutput)
   }
-}
-
-object Substract {
-  def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): Substract[T] = new Substract[T]()
 }
