@@ -1516,6 +1516,8 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
 
   override def tanh(): Tensor[T] = DenseTensorMath.tanh[T](this, this)
 
+  override def tanh(x: Tensor[T]): Tensor[T] = DenseTensorMath.tanh[T](this, x)
+
   override def log1p(x: Tensor[T]): Tensor[T] = DenseTensorMath.log1p[T](this, x)
 
   override def log1p(): Tensor[T] = DenseTensorMath.log1p[T](this, this)

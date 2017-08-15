@@ -559,6 +559,8 @@ trait TensorMath[T] {
 
   def sqrt(y: Tensor[T]): Tensor[T]
 
+  def tanh(y: Tensor[T]): Tensor[T]
+
   def log1p(y: Tensor[T]): Tensor[T]
 
   def log(): Tensor[T]

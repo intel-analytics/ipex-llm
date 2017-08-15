@@ -32,8 +32,8 @@ import scala.reflect.ClassTag
 class Tanh[@specialized(Float, Double) T: ClassTag](
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    output.resizeAs(input).copy(input)
-    output.tanh()
+    output.resizeAs(input)
+    output.tanh(input)
     output
   }
 
