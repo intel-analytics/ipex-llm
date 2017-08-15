@@ -37,6 +37,10 @@ abstract class Operation[A <: Activity: ClassTag,
     throw new UnsupportedOperationException("Operation does not support updateGradInput() method")
   }
 
+  override def accGradParameters(input: A, gradOutput: Tensor[T]): Unit = {
+    throw new UnsupportedOperationException("Operation does not support updateGradInput() method")
+  }
+
   override def backward(input: A, gradOutput: Tensor[T]): A = {
     throw new UnsupportedOperationException("Operation does not support backward() method")
   }
