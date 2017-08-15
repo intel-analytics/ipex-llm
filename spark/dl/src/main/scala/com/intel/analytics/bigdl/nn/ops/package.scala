@@ -15,6 +15,9 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.amazonaws.services.autoscaling.model.Activity
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
 
@@ -39,5 +42,41 @@ package object ops {
   object Divide {
     def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): Operation[Table, T]
     = ModuleToOperation[Table, T](CDivTable())
+  }
+
+  object Sum {
+    def apply[T: ClassTag](axis: Int, keepDim: Boolean = false)
+      (implicit ev: TensorNumeric[T]): Operation[Tensor[T], T]
+    = ModuleToOperation[Tensor[T], T](
+      com.intel.analytics.bigdl.nn.Sum(dimension = axis, squeeze = !keepDim))
+  }
+
+  object Reshape {
+    def apply[T: ClassTag](size: Array[Int])
+      (implicit ev: TensorNumeric[T]): Operation[Tensor[T], T]
+    = ModuleToOperation[Tensor[T], T](
+      com.intel.analytics.bigdl.nn.InferReshape(size: Array[Int]))
+  }
+
+  object Squeeze {
+    def apply[T: ClassTag](axis: Array[Int] = null)
+      (implicit ev: TensorNumeric[T]): Operation[Tensor[T], T]
+    = ModuleToOperation[Tensor[T], T](
+      com.intel.analytics.bigdl.nn.Squeeze(dims = axis, batchMode = false))
+  }
+
+  object Identity {
+    def apply[T: ClassTag]()
+      (implicit ev: TensorNumeric[T]): Operation[Activity, T]
+    = ModuleToOperation[Activity, T](
+      com.intel.analytics.bigdl.nn.Identity()
+        .asInstanceOf[AbstractModule[Activity, Tensor[T], T]])
+  }
+
+  object ReLU {
+    def apply[T: ClassTag]()
+      (implicit ev: TensorNumeric[T]): Operation[Tensor[T], T]
+    = ModuleToOperation[Tensor[T], T](
+      com.intel.analytics.bigdl.nn.ReLU())
   }
 }
