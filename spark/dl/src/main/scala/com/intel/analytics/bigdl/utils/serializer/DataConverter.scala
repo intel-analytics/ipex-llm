@@ -18,12 +18,13 @@ package com.intel.analytics.bigdl.utils.serializer
 import scala.collection.JavaConverters._
 import scala.reflect.runtime.universe
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.abstractnn.DataFormat.{NCHW, NHWC}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
 import com.intel.analytics.bigdl.optim.{L1L2Regularizer, L1Regularizer, L2Regularizer, Regularizer}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import serialization.Bigdl._
-import serialization.Bigdl.AttrValue.{ArrayValue}
+import serialization.Bigdl.AttrValue.ArrayValue
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
@@ -74,6 +75,8 @@ object DataConverter extends DataConverter{
       universe.typeOf[InitializationMethod]
     } else if (value.isInstanceOf[VariableFormat]) {
       universe.typeOf[VariableFormat]
+    } else if (value.isInstanceOf[DataFormat]) {
+      universe.typeOf[DataFormat]
     } else {
       val cls = value.getClass
       val runtimeMirror = universe.runtimeMirror(getClass.getClassLoader)
@@ -98,6 +101,7 @@ object DataConverter extends DataConverter{
       case DataType.MODULE => ModuleConverter.getAttributeValue(attribute)
       case DataType.NAME_ATTR_LIST => NameListConverter.getAttributeValue(attribute)
       case DataType.ARRAY_VALUE => ArrayConverter.getAttributeValue(attribute)
+      case DataType.DATA_FORMAT => DataFormatConverter.getAttributeValue(attribute)
       case _ => throw new IllegalArgumentException
         (s"${attribute.getDataType} can not be recognized")
     }
@@ -157,6 +161,8 @@ object DataConverter extends DataConverter{
       NameListConverter.setAttributeValue(attributeBuilder, value)
     } else if (value.isInstanceOf[Array[_ <: Any]]) {
       ArrayConverter.setAttributeValue(attributeBuilder, value)
+    } else if (valueType == universe.typeOf[DataFormat]) {
+      DataFormatConverter.setAttributeValue(attributeBuilder, value)
     }
   }
 
@@ -388,6 +394,35 @@ object DataConverter extends DataConverter{
     }
   }
 
+  /**
+   * DataConverter for [[com.intel.analytics.bigdl.nn.abstractnn.DataFormat]]
+   */
+  object DataFormatConverter extends DataConverter {
+    override def getAttributeValue[T: ClassTag](attribute: AttrValue)
+      (implicit ev: TensorNumeric[T]): AnyRef = {
+      val dataFormat = attribute.getDataFormatValue
+      dataFormat match {
+        case InputDataFormat.NCHW => NCHW
+        case InputDataFormat.NHWC => NHWC
+      }
+
+    }
+
+    override def setAttributeValue[T: ClassTag]
+    (attributeBuilder: AttrValue.Builder, value: Any, valueType: universe.Type)
+    (implicit ev: TensorNumeric[T]): Unit = {
+      attributeBuilder.setDataType(DataType.DATA_FORMAT)
+      if (value != null) {
+        val dataFormat = value.asInstanceOf[DataFormat]
+        val inputFormat = dataFormat match {
+          case NCHW => InputDataFormat.NCHW
+          case NHWC => InputDataFormat.NHWC
+        }
+        attributeBuilder.setDataFormatValue(inputFormat)
+      }
+    }
+  }
+
 /**
  * DataConverter for [[com.intel.analytics.bigdl.nn.abstractnn.AbstractModule]]
  */
@@ -547,15 +582,29 @@ object DataConverter extends DataConverter{
         case DataType.NAME_ATTR_LIST =>
           val nameArray = new Array[Map[String, Map[String, Any]]](size)
           val nameAttriLists = valueArray.getNameAttrListList.asScala
-          val i = 0
+          var i = 0
           nameAttriLists.foreach(nameList => {
             val attrValue = AttrValue.newBuilder
             attrValue.setDataType(DataType.NAME_ATTR_LIST)
             attrValue.setNameAttrListValue(nameList)
             nameArray(i) = NameListConverter.getAttributeValue(attrValue.build)
               .asInstanceOf[Map[String, Map[String, Any]]]
+            i += 1
           })
           nameArray
+        case DataType.DATA_FORMAT =>
+          val dataFormats = new Array[DataFormat](size)
+          val dataFormatList = valueArray.getDataFormatList.asScala
+          var i = 0
+          dataFormatList.foreach(format => {
+            val attrValue = AttrValue.newBuilder
+            attrValue.setDataType(DataType.DATA_FORMAT)
+            attrValue.setDataFormatValue(format)
+            dataFormats(i) = DataFormatConverter.
+              getAttributeValue(attrValue.build).asInstanceOf[DataFormat]
+            i += 1
+          })
+          dataFormats
       }
       arr
     }
@@ -646,6 +695,15 @@ object DataConverter extends DataConverter{
           NameListConverter.setAttributeValue(attrValueBuilder, map)
           arrayBuilder.addNameAttrList(attrValueBuilder.getNameAttrListValue)
         })
+      } else if (value.isInstanceOf[Array[DataFormat]]) {
+        arrayBuilder.setDatatype(DataType.DATA_FORMAT)
+        val formats = value.asInstanceOf[Array[DataFormat]]
+        formats.foreach(format => {
+          val attrValueBuilder = AttrValue.newBuilder
+          DataFormatConverter.setAttributeValue(attrValueBuilder, format)
+          arrayBuilder.addDataFormat(attrValueBuilder.getDataFormatValue)
+        })
+        arrayBuilder.setSize(formats.size)
       }
       attributeBuilder.setArrayValue(arrayBuilder.build)
     }
