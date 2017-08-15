@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn.tf
+package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
-class SubstractSpec extends FlatSpec with Matchers {
-  "Substract operation" should "works correctly" in {
+class DivideSpec extends FlatSpec with Matchers {
+  "Divide operation" should "works correctly" in {
     import com.intel.analytics.bigdl.numeric.NumericFloat
     val input =
       T(
@@ -28,9 +28,9 @@ class SubstractSpec extends FlatSpec with Matchers {
         Tensor(T(2f, 2f, 4f))
       )
 
-    val expectOutput = Tensor(T(-1f, 0f, -1f))
+    val expectOutput = Tensor(T(0.5f, 1f, 0.75f))
 
-    val output = Subtract().forward(input)
+    val output = Divide().forward(input)
     output should be(expectOutput)
   }
 }

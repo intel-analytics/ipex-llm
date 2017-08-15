@@ -13,25 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn.tf
+package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
-class AddSpec extends FlatSpec with Matchers {
-  "Add operation" should "works correctly" in {
+class SubstractSpec extends FlatSpec with Matchers {
+  "Substract operation" should "works correctly" in {
     import com.intel.analytics.bigdl.numeric.NumericFloat
     val input =
       T(
         Tensor(T(1f, 2f, 3f)),
-        Tensor(T(2f, 2f, 4f)),
-        Tensor(T(7f, 3f, 1f))
+        Tensor(T(2f, 2f, 4f))
       )
 
-    val expectOutput = Tensor(T(10f, 7f, 8f))
+    val expectOutput = Tensor(T(-1f, 0f, -1f))
 
-    val output = Add().forward(input)
+    val output = Subtract().forward(input)
     output should be(expectOutput)
   }
 }
