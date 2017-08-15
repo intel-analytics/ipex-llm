@@ -17,13 +17,11 @@
 package com.intel.analytics.bigdl.utils
 
 import java.util.concurrent._
-
 import com.intel.analytics.bigdl.mkl.MKL
 import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.log4j.Logger
-
 import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.{Await, ExecutionContext, ExecutionContextExecutor, Future}
 import scala.collection.JavaConverters._
 
 /**
@@ -198,13 +196,11 @@ class ThreadPool(private var poolSize: Int) {
 }
 
 object ThreadPool {
-  val singleThreadPool = new ExecutionContext {
-    def execute(runnable: Runnable) {
-      runnable.run()
+  val singleThreadPool: ExecutionContextExecutor = ExecutionContext.fromExecutor(
+    new Executor {
+      override def execute(runnable: Runnable): Unit = { runnable.run() }
     }
-
-    def reportFailure(t: Throwable) {}
-  }
+  )
 
   private val logger = Logger.getLogger(getClass)
 }

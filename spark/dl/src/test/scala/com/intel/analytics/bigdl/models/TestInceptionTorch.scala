@@ -16,16 +16,14 @@
 
 package com.intel.analytics.bigdl.models
 
-import com.intel.analytics.bigdl.models.inception._
-import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Graph, Input}
+import com.intel.analytics.bigdl.nn.ClassNLLCriterion
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.torch.{TH, TorchSpec}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.{T, Table}
-import com.intel.analytics.bigdl.numeric.NumericFloat
-
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import scala.math._
 import scala.util.Random
