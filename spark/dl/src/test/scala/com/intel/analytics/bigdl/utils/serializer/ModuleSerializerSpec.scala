@@ -322,7 +322,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val res2 = loadedContiguous.forward(tensor2)
     res1 should be (res2)
   }
-/*
+
   "ConvLSTMPeephole2D serializer" should " work properly" in {
     val hiddenSize = 5
     val inputSize = 3
@@ -351,7 +351,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val res2 = loadedConvLSTMPeephole2d.forward(input2)
     res1 should be (res2)
   }
-*/
+
   "ConvLSTMPeephole3D serializer" should " work properly" in {
     val hiddenSize = 5
     val inputSize = 3
@@ -1409,7 +1409,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val res2 = loadedSpatialBatchNorm.forward(input2)
     res1 should be (res2)
   }
-/*
+
   "SpatialContrastiveNormalization serializer " should " work properly" in {
     RNG.setSeed(100)
     val spatialContrastiveNorm = new SpatialContrastiveNormalization()
@@ -1424,8 +1424,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val res2 = loadedSpatialContrastiveNorm.forward(input2)
     res1 should be (res2)
   }
-  */
-/*
+
   "SpatialConvolution serializer " should " work properly" in {
     val spatialConvolution = SpatialConvolution(3, 4, 2, 2)
     val input1 = Tensor(1, 3, 5, 5).apply1( e => Random.nextFloat())
@@ -1437,7 +1436,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val res2 = loadedSpatialConvolution.forward(input2)
     res1 should be (res2)
   }
-*/
+
   "SpatialConvolutionMap serializer" should " work properly" in {
     val spatialConvolutionMap = SpatialConvolutionMap(
       SpatialConvolutionMap.random(1, 1, 1), 2, 2)
@@ -1479,7 +1478,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val res2 = loadedSpatialDilatedConvolution.forward(input2)
     res1 should be (res2)
   }
-/*
+
   "SpatialDivisiveNormalization serializer " should " work properly" in {
     val spatialDivisiveNormalization = SpatialDivisiveNormalization()
     val input1 = Tensor(1, 5, 5).apply1(e => Random.nextFloat())
@@ -1495,7 +1494,6 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     res1 should be (res2)
 
   }
-  */
 
   "SpatialFullConvolution serializer " should " work properly" in {
 
@@ -1541,7 +1539,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val res2 = loadedSpatialShareConvolution.forward(input2)
     res1 should be (res2)
   }
-/*
+
   "SpatialSubtractiveNormalization serializer " should " work properly" in {
     val kernel = Tensor(3, 3).apply1( e => Random.nextFloat())
     val spatialSubtractiveNormalization = SpatialSubtractiveNormalization(1, kernel)
@@ -1556,7 +1554,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val res2 = loadedSpatialSubtractiveNormalization.forward(input2)
     res1 should be (res2)
   }
-*/
+
   "SpatialWithinChannelLRN serializer " should " work properly" in {
     val spatialWithinChannelLRN = new SpatialWithinChannelLRN[Float](5, 5e-4, 0.75)
     val input1 = Tensor(1, 4, 7, 6).apply1( e => Random.nextFloat())
@@ -1778,8 +1776,10 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     val res1 = volumetricFullConvolution.forward(input1)
 
-    ModulePersister.saveToFile("/tmp/volumetricFullConvolution.bigdl", volumetricFullConvolution, true)
-    val loadedVolumetricFullConvolution = ModuleLoader.loadFromFile("/tmp/volumetricFullConvolution.bigdl")
+    ModulePersister.saveToFile("/tmp/volumetricFullConvolution.bigdl",
+      volumetricFullConvolution, true)
+    val loadedVolumetricFullConvolution = ModuleLoader.
+      loadFromFile("/tmp/volumetricFullConvolution.bigdl")
     val res2 = loadedVolumetricFullConvolution.forward(input1)
     res1 should be (res2)
 
