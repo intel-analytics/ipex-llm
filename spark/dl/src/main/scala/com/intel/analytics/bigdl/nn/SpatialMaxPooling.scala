@@ -94,6 +94,7 @@ class SpatialMaxPooling[T: ClassTag](
 
     val (padTop, _, padLeft, _, oHeight, oWidth) =
       if (padW == -1 && padH == -1) {
+        // no ceil/floor mode in SAME padding
         Utils.getSAMEOutSizeAndPadding(inputHeight, inputWidth, dH, dW, kH, kW)
       } else {
         require(inputWidth >= kW - padW && inputHeight >= kH - padH,

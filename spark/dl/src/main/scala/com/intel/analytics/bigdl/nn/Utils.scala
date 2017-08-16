@@ -313,7 +313,6 @@ object Utils {
     (padAlongHeight/2, padAlongHeight - padAlongHeight/2,
       padAlongWidth/2, padAlongWidth - padAlongWidth/2,
         oH, oW)
-
   }
 
   /**
