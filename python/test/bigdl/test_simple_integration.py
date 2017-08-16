@@ -385,19 +385,6 @@ class TestSimple():
         for i in range(0, 2):
             assert_allclose(data[i], data2[i])
 
-    def test_movielens(self):
-        movielens_data = movielens.read_data_sets("/tmp/movielens/")
-        id_pairs = movielens.get_id_pairs("/tmp/movielens/")
-        id_ratings = movielens.get_id_ratings("/tmp/movielens/")
-
-        ground_data = np.array([[1, 1193, 5, 978300760], [1, 661, 3, 978302109]])
-        ground_pairs = np.array([[1, 1193], [1, 661]])
-        ground_ratings = np.array([[1, 1193, 5], [1, 661, 3]])
-        for i in range(0, 2):
-            assert_allclose(movielens_data[i], ground_data[i], atol=1e-6, rtol=0)
-            assert_allclose(id_pairs[i], ground_pairs[i], atol=1e-6, rtol=0)
-            assert_allclose(id_ratings[i], ground_ratings[i], atol=1e-6, rtol=0)
-
 
 if __name__ == "__main__":
     pytest.main([__file__])
