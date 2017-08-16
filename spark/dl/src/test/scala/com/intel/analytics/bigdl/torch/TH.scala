@@ -37,6 +37,12 @@ class TH {
   private val uuid: String = shortUUID()
   private var savedParameters: Option[Map[String, Any]] = None
   private var savedResult: Option[Array[String]] = None
+  private val torch_location = System.getProperty("torch_location")
+  private val torch = if (torch_location == null) {
+    "th"
+  } else {
+    Paths.get(torch_location, "th").toString
+  }
 
   def hasTorch(): Boolean = {
     val torchPath = System.getProperty("torch_location")
@@ -106,7 +112,7 @@ class TH {
     }
 
     // Read from user`s code
-    usrCode.append("Timer = torch.Timer()\n")
+    usrCode.append("Timer = torch.Time()\n")
     usrCode.append(code)
     usrCode.append("\nluaTime = Timer:time().real\nprint(luaTime)")
 
@@ -129,7 +135,16 @@ class TH {
 
     println(tmpFile)
 
-    var luaTime = Seq(System.getProperty("torch_location", "th"), tmpFile).!!.trim
+    val stdout = new StringBuilder
+    val stderr = new StringBuilder
+    val status = s"$torch $tmpFile" ! ProcessLogger(stdout append _, stderr append _)
+
+    var luaTime = if (status == 0) { // successful
+      stdout.toString.trim
+    } else {
+      throw new RuntimeException(s"Nonzero exit value: $status ${stderr
+              .replaceAllLiterally("\t", "\n")}")
+    }
 
     println("luaTime:" + luaTime)
 
