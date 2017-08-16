@@ -35,8 +35,8 @@ import scala.reflect.ClassTag
  */
 
 @SerialVersionUID(3953292249027271493L)
-class Threshold[@specialized(Float, Double) T: ClassTag](
-  th: Double = 1e-6, v: Double = 0.0, ip: Boolean = false)(
+class Threshold[T: ClassTag](
+  val th: Double = 1e-6, val v: Double = 0.0, val ip: Boolean = false)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   var threshold = th
   var value = v

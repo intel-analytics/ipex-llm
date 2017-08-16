@@ -20,7 +20,9 @@ import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.Input
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData, ModuleSerializable, ModuleSerializer}
 import com.intel.analytics.bigdl.utils.{T, Table}
+import serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -40,8 +42,8 @@ class BinaryTreeLSTM[T: ClassTag](
   withGraph: Boolean = true
 )(implicit ev: TensorNumeric[T])
   extends TreeLSTM[T](inputSize, hiddenSize) {
-  val composer: Module[T] = createComposer()
-  val leafModule: Module[T] = createLeafModule()
+  var composer: Module[T] = createComposer()
+  var leafModule: Module[T] = createLeafModule()
   val composers: ArrayBuffer[Module[T]] = ArrayBuffer[Module[T]](composer)
   val leafModules: ArrayBuffer[Module[T]] = ArrayBuffer[Module[T]](leafModule)
   val cells: ArrayBuffer[ArrayBuffer[Module[T]]] = ArrayBuffer[ArrayBuffer[Module[T]]]()
@@ -405,7 +407,7 @@ class BinaryTreeLSTM[T: ClassTag](
   }
 }
 
-object BinaryTreeLSTM {
+object BinaryTreeLSTM extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
     inputSize: Int,
     hiddenSize: Int,
@@ -413,6 +415,65 @@ object BinaryTreeLSTM {
     withGraph: Boolean = true
   )(implicit ev: TensorNumeric[T]): BinaryTreeLSTM[T] =
     new BinaryTreeLSTM[T](inputSize, hiddenSize, gateOutput, withGraph)
+
+  override def loadModule[T: ClassTag](model : BigDLModule)
+                                      (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
+    val moduleData = super.loadModule(model)
+    val binaryTreeLSTMModule = moduleData.module.asInstanceOf[BinaryTreeLSTM[T]]
+    binaryTreeLSTMModule.composers.clear
+    binaryTreeLSTMModule.leafModules.clear
+
+    val attrMap = model.getAttrMap
+
+    DataConverter.getAttributeValue(attrMap.get("composers")).
+      asInstanceOf[Array[Module[T]]].foreach(module => {
+      binaryTreeLSTMModule.composers.append(module)
+    })
+
+    DataConverter.getAttributeValue(attrMap.get("leafModules")).
+      asInstanceOf[Array[Module[T]]].foreach(module => {
+      binaryTreeLSTMModule.leafModules.append(module)
+    })
+
+    binaryTreeLSTMModule.leafModule = DataConverter.getAttributeValue(attrMap.get("leafModule")).
+      asInstanceOf[Module[T]]
+
+    binaryTreeLSTMModule.composer = DataConverter.getAttributeValue(attrMap.get("composer")).
+      asInstanceOf[Module[T]]
+
+    createBigDLModule(model, binaryTreeLSTMModule)
+  }
+
+  override def serializeModule[T: ClassTag](module : ModuleData[T])
+                                           (implicit ev: TensorNumeric[T]) : BigDLModule = {
+    val binaryTreeLSTMBuilder = BigDLModule.newBuilder(super.serializeModule(module))
+
+    val binaryTreeLSTM = module.module.asInstanceOf[BinaryTreeLSTM[T]]
+
+    val composer = binaryTreeLSTM.composer
+    val composerBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(composerBuilder, composer, ModuleSerializer.abstractModuleType)
+    binaryTreeLSTMBuilder.putAttr("composer", composerBuilder.build)
+
+
+    val leafModule = binaryTreeLSTM.leafModule
+    val leafModuleBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(leafModuleBuilder, leafModule,
+      ModuleSerializer.abstractModuleType)
+    binaryTreeLSTMBuilder.putAttr("leafModule", leafModuleBuilder.build)
+
+    val composers = binaryTreeLSTM.composers.toArray
+    val composersBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(composersBuilder, composers)
+    binaryTreeLSTMBuilder.putAttr("composers", composersBuilder.build)
+
+    val leafModules = binaryTreeLSTM.leafModules.toArray
+    val leafModulesBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(leafModulesBuilder, leafModules)
+    binaryTreeLSTMBuilder.putAttr("leafModules", leafModulesBuilder.build)
+
+    createSerializeBigDLModule(binaryTreeLSTMBuilder, module)
+  }
 }
 
 /**

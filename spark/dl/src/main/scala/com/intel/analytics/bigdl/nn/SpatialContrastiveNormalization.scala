@@ -19,6 +19,8 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData, ModuleSerializable, ModuleSerializer}
+import serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.reflect.ClassTag
 
@@ -48,7 +50,7 @@ class SpatialContrastiveNormalization[T: ClassTag](
   }
 
   // instantiate sub+div normalization
-  private val normalizer = new Sequential[T]()
+  private var normalizer = new Sequential[T]()
   normalizer.add(new SpatialSubtractiveNormalization(nInputPlane, kernel))
   normalizer.add(new SpatialDivisiveNormalization(nInputPlane, kernel, threshold, thresval))
 
@@ -96,7 +98,7 @@ class SpatialContrastiveNormalization[T: ClassTag](
   }
 }
 
-object SpatialContrastiveNormalization {
+object SpatialContrastiveNormalization extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
       nInputPlane: Int = 1,
       kernel: Tensor[T] = null,
@@ -104,5 +106,36 @@ object SpatialContrastiveNormalization {
       thresval: Double = 1e-4)(
       implicit ev: TensorNumeric[T]) : SpatialContrastiveNormalization[T] = {
     new SpatialContrastiveNormalization[T](nInputPlane, kernel, threshold, thresval)
+  }
+
+  override def loadModule[T: ClassTag](model : BigDLModule)
+                                      (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
+    val moduleData = super.loadModule(model)
+    val spatialContrastiveNormaModule = moduleData.module.
+      asInstanceOf[SpatialContrastiveNormalization[T]]
+    // val eanestimator = spatialDivisiveNormModule.cell
+    val attrMap = model.getAttrMap
+
+    spatialContrastiveNormaModule.normalizer = DataConverter.
+      getAttributeValue(attrMap.get("normalizer")).
+      asInstanceOf[Sequential[T]]
+
+    moduleData
+  }
+
+  override def serializeModule[T: ClassTag](module : ModuleData[T])
+                                           (implicit ev: TensorNumeric[T]) : BigDLModule = {
+    val bigDLModule = super.serializeModule(module)
+    val spatialContrastiveNormaModule = module.module.
+      asInstanceOf[SpatialContrastiveNormalization[T]]
+    val spatialContrastiveNormBuilder = BigDLModule.newBuilder(bigDLModule)
+
+    val normalizerBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(normalizerBuilder,
+      spatialContrastiveNormaModule.normalizer,
+      ModuleSerializer.tensorModuleType)
+    spatialContrastiveNormBuilder.putAttr("normalizer", normalizerBuilder.build)
+
+    spatialContrastiveNormBuilder.build
   }
 }

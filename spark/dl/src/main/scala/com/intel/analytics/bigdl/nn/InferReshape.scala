@@ -45,7 +45,7 @@ import scala.reflect.ClassTag
  * @param batchMode whether in batch mode
  * @tparam T Numeric type ([[Float]] and [[Double]] are allowed)
  */
-class InferReshape[@specialized(Float, Double) T: ClassTag](
+class InferReshape[T: ClassTag](
   size: Array[Int], var batchMode: Boolean = false)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   private var inferedSizes: Array[Int] = _
