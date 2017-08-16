@@ -229,11 +229,13 @@ class SpatialConvolution[T: ClassTag](
     val inputWidth = input.size(dimWidth)
     val inputHeight = input.size(dimHeight)
 
-    // deal with SAME padding
-    val (padTop, padBottom, padLeft, padRight) = getPadding(inputHeight, inputWidth)
-
-    val outputWidth = (inputWidth + padLeft + padRight - kernelW) / strideW + 1
-    val outputHeight = (inputHeight + padTop + padBottom - kernelH) / strideH + 1
+    val (padTop, padBottom, padLeft, padRight, outputHeight, outputWidth) =
+      if (padW == -1 && padH == -1) {
+        Utils.getSAMEOutSizeAndPadding(inputHeight, inputWidth, strideH, strideW, kernelH, kernelW)
+      } else {
+        Utils.getOutSizeAndPadding(inputHeight, inputWidth, strideH, strideW,
+          kernelH, kernelW, padH, padW, ceilMode = false)
+      }
 
     require(outputWidth >= 1 && outputHeight >= 1,
       s"output size is too small. outputWidth: $outputWidth, outputHeight: $outputHeight")

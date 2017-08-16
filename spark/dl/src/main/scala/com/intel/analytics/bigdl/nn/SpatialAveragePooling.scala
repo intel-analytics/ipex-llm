@@ -200,24 +200,6 @@ class SpatialAveragePooling[@specialized(Float, Double) T: ClassTag](
     }
   }
 
-  // return (padTop, padDown, padLeft, padRight)
-  protected def getPadding(inputHeight: Int, inputWidth: Int): (Int, Int, Int, Int) = {
-    if (padW == -1 && padH == -1) {
-      // deal with SAME padding
-      val oW = Math.ceil(inputWidth.toFloat / dW.toFloat).toInt
-      val oH = Math.ceil(inputHeight.toFloat / dH.toFloat).toInt
-      val padAlongWidth = Math.max(0, (oW -1) * dW + kW - inputWidth)
-      val padAlongHeight = Math.max(0, (oH - 1) * dH + kH - inputHeight)
-      (padAlongHeight/2, padAlongHeight - padAlongHeight/2,
-        padAlongWidth/2, padAlongWidth - padAlongWidth/2)
-    } else {
-      require(inputWidth >= kW - padW && inputHeight >= kH - padH,
-        "input smaller than kernel size")
-      require(kW / 2 >= padW && kH / 2 >= padH, "pad should be smaller than half of kernel size")
-      (padH, padH, padW, padW)
-    }
-  }
-
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim() == 3 || input.dim() == 4,
       "SpatialAveragePooling: " + ErrorInfo.constrainInputAs3DOrBatch)
@@ -231,32 +213,13 @@ class SpatialAveragePooling[@specialized(Float, Double) T: ClassTag](
     }
     val nInputPlane = input.size(dimH - 1)
 
-    val (padTop, padBottom, padLeft, padRight) = getPadding(inputHeight, inputWidth)
-
-    var outputHeight =
-      if (ceilMode) {
-        math.ceil((inputHeight - kH + padTop + padBottom).toFloat / dH).toInt + 1
+    val (padTop, padBottom, padLeft, padRight, outputHeight, outputWidth) =
+      if (padW == -1 && padH == -1) {
+        Utils.getSAMEOutSizeAndPadding(inputHeight, inputWidth, dH, dW, kH, kW)
       } else {
-        math.floor((inputHeight - kH + padTop + padBottom).toFloat / dH).toInt + 1
-      }
-    var outputWidth =
-      if (ceilMode) {
-        math.ceil((inputWidth - kW + padLeft + padRight).toFloat / dW).toInt + 1
-      } else {
-        math.floor((inputWidth - kW + padLeft + padRight).toFloat / dW).toInt + 1
+        Utils.getOutSizeAndPadding(inputHeight, inputWidth, dH, dW, kH, kW, padH, padW, ceilMode)
       }
 
-    // padx >= 0
-    if (padLeft + padRight + padTop + padBottom > 0) {
-      // ensure that the last pooling starts inside the image
-      // needed to avoid problems in ceil mode
-      if ((outputHeight - 1) * dH >= inputHeight + padBottom) {
-        outputHeight -= 1
-      }
-      if ((outputWidth - 1) * dW >= inputWidth + padRight) {
-        outputWidth -= 1
-      }
-    }
     if (input.dim() == 3) {
       output.resize(Array(nInputPlane, outputHeight, outputWidth))
       if (classTag[T] == classTag[Double]) {
@@ -409,10 +372,15 @@ class SpatialAveragePooling[@specialized(Float, Double) T: ClassTag](
     val inputWidth = input.size(dimw)
     val nInputPlane = input.size(dimh - 1)
 
-    val outputHeight: Int = gradOutput.size(dimh)
-    val outputWidth: Int = gradOutput.size(dimw)
-
-    val (padTop, padBottom, padLeft, padRight) = getPadding(inputHeight, inputWidth)
+    val (padTop, padBottom, padLeft, padRight, outputHeight, outputWidth) =
+      if (padW == -1 && padH == -1) {
+        Utils.getSAMEOutSizeAndPadding(inputHeight, inputWidth, dH, dW, kH, kW)
+      } else {
+        require(inputWidth >= kW - padW && inputHeight >= kH - padH,
+          "input smaller than kernel size")
+        require(kW / 2 >= padW && kH / 2 >= padH, "pad should be smaller than half of kernel size")
+        Utils.getOutSizeAndPadding(inputHeight, inputWidth, dH, dW, kH, kW, padH, padW, ceilMode)
+      }
 
     gradInput.resizeAs(input).zero()
     if (input.dim() == 3) {
