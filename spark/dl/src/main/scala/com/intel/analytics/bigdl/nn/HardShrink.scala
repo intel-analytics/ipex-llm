@@ -33,7 +33,7 @@ import scala.reflect.ClassTag
  */
 
 @SerialVersionUID( 3551967457354343585L)
-class HardShrink[T: ClassTag](lambda: Double = 0.5)
+class HardShrink[T: ClassTag](val lambda: Double = 0.5)
   (implicit ev: TensorNumeric[T])
   extends TensorModule[T] {
   private val lam = ev.fromType[Double](lambda)
