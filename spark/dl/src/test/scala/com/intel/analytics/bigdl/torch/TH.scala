@@ -112,7 +112,7 @@ class TH {
     }
 
     // Read from user`s code
-    usrCode.append("Timer = torch.Time()\n")
+    usrCode.append("Timer = torch.Timer()\n")
     usrCode.append(code)
     usrCode.append("\nluaTime = Timer:time().real\nprint(luaTime)")
 
