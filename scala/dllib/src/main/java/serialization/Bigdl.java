@@ -453,6 +453,104 @@ public final class Bigdl {
   }
 
   /**
+   * Protobuf enum {@code serialization.InputDataFormat}
+   */
+  public enum InputDataFormat
+      implements com.google.protobuf.ProtocolMessageEnum {
+    /**
+     * <code>NCHW = 0;</code>
+     */
+    NCHW(0),
+    /**
+     * <code>NHWC = 1;</code>
+     */
+    NHWC(1),
+    UNRECOGNIZED(-1),
+    ;
+
+    /**
+     * <code>NCHW = 0;</code>
+     */
+    public static final int NCHW_VALUE = 0;
+    /**
+     * <code>NHWC = 1;</code>
+     */
+    public static final int NHWC_VALUE = 1;
+
+
+    public final int getNumber() {
+      if (this == UNRECOGNIZED) {
+        throw new java.lang.IllegalArgumentException(
+            "Can't get the number of an unknown enum value.");
+      }
+      return value;
+    }
+
+    /**
+     * @deprecated Use {@link #forNumber(int)} instead.
+     */
+    @java.lang.Deprecated
+    public static InputDataFormat valueOf(int value) {
+      return forNumber(value);
+    }
+
+    public static InputDataFormat forNumber(int value) {
+      switch (value) {
+        case 0: return NCHW;
+        case 1: return NHWC;
+        default: return null;
+      }
+    }
+
+    public static com.google.protobuf.Internal.EnumLiteMap<InputDataFormat>
+        internalGetValueMap() {
+      return internalValueMap;
+    }
+    private static final com.google.protobuf.Internal.EnumLiteMap<
+        InputDataFormat> internalValueMap =
+          new com.google.protobuf.Internal.EnumLiteMap<InputDataFormat>() {
+            public InputDataFormat findValueByNumber(int number) {
+              return InputDataFormat.forNumber(number);
+            }
+          };
+
+    public final com.google.protobuf.Descriptors.EnumValueDescriptor
+        getValueDescriptor() {
+      return getDescriptor().getValues().get(ordinal());
+    }
+    public final com.google.protobuf.Descriptors.EnumDescriptor
+        getDescriptorForType() {
+      return getDescriptor();
+    }
+    public static final com.google.protobuf.Descriptors.EnumDescriptor
+        getDescriptor() {
+      return serialization.Bigdl.getDescriptor().getEnumTypes().get(3);
+    }
+
+    private static final InputDataFormat[] VALUES = values();
+
+    public static InputDataFormat valueOf(
+        com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+      if (desc.getType() != getDescriptor()) {
+        throw new java.lang.IllegalArgumentException(
+          "EnumValueDescriptor is not for this type.");
+      }
+      if (desc.getIndex() == -1) {
+        return UNRECOGNIZED;
+      }
+      return VALUES[desc.getIndex()];
+    }
+
+    private final int value;
+
+    private InputDataFormat(int value) {
+      this.value = value;
+    }
+
+    // @@protoc_insertion_point(enum_scope:serialization.InputDataFormat)
+  }
+
+  /**
    * Protobuf enum {@code serialization.DataType}
    */
   public enum DataType
@@ -509,6 +607,10 @@ public final class Bigdl {
      * <code>ARRAY_VALUE = 12;</code>
      */
     ARRAY_VALUE(12),
+    /**
+     * <code>DATA_FORMAT = 13;</code>
+     */
+    DATA_FORMAT(13),
     UNRECOGNIZED(-1),
     ;
 
@@ -564,6 +666,10 @@ public final class Bigdl {
      * <code>ARRAY_VALUE = 12;</code>
      */
     public static final int ARRAY_VALUE_VALUE = 12;
+    /**
+     * <code>DATA_FORMAT = 13;</code>
+     */
+    public static final int DATA_FORMAT_VALUE = 13;
 
 
     public final int getNumber() {
@@ -597,6 +703,7 @@ public final class Bigdl {
         case 10: return MODULE;
         case 11: return NAME_ATTR_LIST;
         case 12: return ARRAY_VALUE;
+        case 13: return DATA_FORMAT;
         default: return null;
       }
     }
@@ -623,7 +730,7 @@ public final class Bigdl {
     }
     public static final com.google.protobuf.Descriptors.EnumDescriptor
         getDescriptor() {
-      return serialization.Bigdl.getDescriptor().getEnumTypes().get(3);
+      return serialization.Bigdl.getDescriptor().getEnumTypes().get(4);
     }
 
     private static final DataType[] VALUES = values();
@@ -5813,11 +5920,28 @@ public final class Bigdl {
     serialization.Bigdl.AttrValue.ArrayValueOrBuilder getArrayValueOrBuilder();
 
     /**
-     * <code>optional .serialization.DataType dataType = 14;</code>
+     * <pre>
+     * data format
+     * </pre>
+     *
+     * <code>optional .serialization.InputDataFormat dataFormatValue = 14;</code>
+     */
+    int getDataFormatValueValue();
+    /**
+     * <pre>
+     * data format
+     * </pre>
+     *
+     * <code>optional .serialization.InputDataFormat dataFormatValue = 14;</code>
+     */
+    serialization.Bigdl.InputDataFormat getDataFormatValue();
+
+    /**
+     * <code>optional .serialization.DataType dataType = 15;</code>
      */
     int getDataTypeValue();
     /**
-     * <code>optional .serialization.DataType dataType = 14;</code>
+     * <code>optional .serialization.DataType dataType = 15;</code>
      */
     serialization.Bigdl.DataType getDataType();
 
@@ -5985,6 +6109,12 @@ public final class Bigdl {
               break;
             }
             case 112: {
+              int rawValue = input.readEnum();
+              valueCase_ = 14;
+              value_ = rawValue;
+              break;
+            }
+            case 120: {
               int rawValue = input.readEnum();
 
               dataType_ = rawValue;
@@ -6435,16 +6565,58 @@ public final class Bigdl {
           int index);
 
       /**
-       * <code>optional int32 size = 13;</code>
+       * <pre>
+       * "Array(DataFormat)"
+       * </pre>
+       *
+       * <code>repeated .serialization.InputDataFormat dataFormat = 13;</code>
+       */
+      java.util.List<serialization.Bigdl.InputDataFormat> getDataFormatList();
+      /**
+       * <pre>
+       * "Array(DataFormat)"
+       * </pre>
+       *
+       * <code>repeated .serialization.InputDataFormat dataFormat = 13;</code>
+       */
+      int getDataFormatCount();
+      /**
+       * <pre>
+       * "Array(DataFormat)"
+       * </pre>
+       *
+       * <code>repeated .serialization.InputDataFormat dataFormat = 13;</code>
+       */
+      serialization.Bigdl.InputDataFormat getDataFormat(int index);
+      /**
+       * <pre>
+       * "Array(DataFormat)"
+       * </pre>
+       *
+       * <code>repeated .serialization.InputDataFormat dataFormat = 13;</code>
+       */
+      java.util.List<java.lang.Integer>
+      getDataFormatValueList();
+      /**
+       * <pre>
+       * "Array(DataFormat)"
+       * </pre>
+       *
+       * <code>repeated .serialization.InputDataFormat dataFormat = 13;</code>
+       */
+      int getDataFormatValue(int index);
+
+      /**
+       * <code>optional int32 size = 14;</code>
        */
       int getSize();
 
       /**
-       * <code>optional .serialization.DataType datatype = 14;</code>
+       * <code>optional .serialization.DataType datatype = 15;</code>
        */
       int getDatatypeValue();
       /**
-       * <code>optional .serialization.DataType datatype = 14;</code>
+       * <code>optional .serialization.DataType datatype = 15;</code>
        */
       serialization.Bigdl.DataType getDatatype();
     }
@@ -6472,6 +6644,7 @@ public final class Bigdl {
         initMethod_ = java.util.Collections.emptyList();
         bigDLModule_ = java.util.Collections.emptyList();
         nameAttrList_ = java.util.Collections.emptyList();
+        dataFormat_ = java.util.Collections.emptyList();
         size_ = 0;
         datatype_ = 0;
       }
@@ -6684,11 +6857,34 @@ public final class Bigdl {
                 break;
               }
               case 104: {
+                int rawValue = input.readEnum();
+                if (!((mutable_bitField0_ & 0x00001000) == 0x00001000)) {
+                  dataFormat_ = new java.util.ArrayList<java.lang.Integer>();
+                  mutable_bitField0_ |= 0x00001000;
+                }
+                dataFormat_.add(rawValue);
+                break;
+              }
+              case 106: {
+                int length = input.readRawVarint32();
+                int oldLimit = input.pushLimit(length);
+                while(input.getBytesUntilLimit() > 0) {
+                  int rawValue = input.readEnum();
+                  if (!((mutable_bitField0_ & 0x00001000) == 0x00001000)) {
+                    dataFormat_ = new java.util.ArrayList<java.lang.Integer>();
+                    mutable_bitField0_ |= 0x00001000;
+                  }
+                  dataFormat_.add(rawValue);
+                }
+                input.popLimit(oldLimit);
+                break;
+              }
+              case 112: {
 
                 size_ = input.readInt32();
                 break;
               }
-              case 112: {
+              case 120: {
                 int rawValue = input.readEnum();
 
                 datatype_ = rawValue;
@@ -6737,6 +6933,9 @@ public final class Bigdl {
           }
           if (((mutable_bitField0_ & 0x00000800) == 0x00000800)) {
             nameAttrList_ = java.util.Collections.unmodifiableList(nameAttrList_);
+          }
+          if (((mutable_bitField0_ & 0x00001000) == 0x00001000)) {
+            dataFormat_ = java.util.Collections.unmodifiableList(dataFormat_);
           }
           makeExtensionsImmutable();
         }
@@ -7309,25 +7508,90 @@ public final class Bigdl {
         return nameAttrList_.get(index);
       }
 
-      public static final int SIZE_FIELD_NUMBER = 13;
+      public static final int DATAFORMAT_FIELD_NUMBER = 13;
+      private java.util.List<java.lang.Integer> dataFormat_;
+      private static final com.google.protobuf.Internal.ListAdapter.Converter<
+          java.lang.Integer, serialization.Bigdl.InputDataFormat> dataFormat_converter_ =
+              new com.google.protobuf.Internal.ListAdapter.Converter<
+                  java.lang.Integer, serialization.Bigdl.InputDataFormat>() {
+                public serialization.Bigdl.InputDataFormat convert(java.lang.Integer from) {
+                  serialization.Bigdl.InputDataFormat result = serialization.Bigdl.InputDataFormat.valueOf(from);
+                  return result == null ? serialization.Bigdl.InputDataFormat.UNRECOGNIZED : result;
+                }
+              };
+      /**
+       * <pre>
+       * "Array(DataFormat)"
+       * </pre>
+       *
+       * <code>repeated .serialization.InputDataFormat dataFormat = 13;</code>
+       */
+      public java.util.List<serialization.Bigdl.InputDataFormat> getDataFormatList() {
+        return new com.google.protobuf.Internal.ListAdapter<
+            java.lang.Integer, serialization.Bigdl.InputDataFormat>(dataFormat_, dataFormat_converter_);
+      }
+      /**
+       * <pre>
+       * "Array(DataFormat)"
+       * </pre>
+       *
+       * <code>repeated .serialization.InputDataFormat dataFormat = 13;</code>
+       */
+      public int getDataFormatCount() {
+        return dataFormat_.size();
+      }
+      /**
+       * <pre>
+       * "Array(DataFormat)"
+       * </pre>
+       *
+       * <code>repeated .serialization.InputDataFormat dataFormat = 13;</code>
+       */
+      public serialization.Bigdl.InputDataFormat getDataFormat(int index) {
+        return dataFormat_converter_.convert(dataFormat_.get(index));
+      }
+      /**
+       * <pre>
+       * "Array(DataFormat)"
+       * </pre>
+       *
+       * <code>repeated .serialization.InputDataFormat dataFormat = 13;</code>
+       */
+      public java.util.List<java.lang.Integer>
+      getDataFormatValueList() {
+        return dataFormat_;
+      }
+      /**
+       * <pre>
+       * "Array(DataFormat)"
+       * </pre>
+       *
+       * <code>repeated .serialization.InputDataFormat dataFormat = 13;</code>
+       */
+      public int getDataFormatValue(int index) {
+        return dataFormat_.get(index);
+      }
+      private int dataFormatMemoizedSerializedSize;
+
+      public static final int SIZE_FIELD_NUMBER = 14;
       private int size_;
       /**
-       * <code>optional int32 size = 13;</code>
+       * <code>optional int32 size = 14;</code>
        */
       public int getSize() {
         return size_;
       }
 
-      public static final int DATATYPE_FIELD_NUMBER = 14;
+      public static final int DATATYPE_FIELD_NUMBER = 15;
       private int datatype_;
       /**
-       * <code>optional .serialization.DataType datatype = 14;</code>
+       * <code>optional .serialization.DataType datatype = 15;</code>
        */
       public int getDatatypeValue() {
         return datatype_;
       }
       /**
-       * <code>optional .serialization.DataType datatype = 14;</code>
+       * <code>optional .serialization.DataType datatype = 15;</code>
        */
       public serialization.Bigdl.DataType getDatatype() {
         serialization.Bigdl.DataType result = serialization.Bigdl.DataType.valueOf(datatype_);
@@ -7407,11 +7671,18 @@ public final class Bigdl {
         for (int i = 0; i < nameAttrList_.size(); i++) {
           output.writeMessage(12, nameAttrList_.get(i));
         }
+        if (getDataFormatList().size() > 0) {
+          output.writeUInt32NoTag(106);
+          output.writeUInt32NoTag(dataFormatMemoizedSerializedSize);
+        }
+        for (int i = 0; i < dataFormat_.size(); i++) {
+          output.writeEnumNoTag(dataFormat_.get(i));
+        }
         if (size_ != 0) {
-          output.writeInt32(13, size_);
+          output.writeInt32(14, size_);
         }
         if (datatype_ != serialization.Bigdl.DataType.INT32.getNumber()) {
-          output.writeEnum(14, datatype_);
+          output.writeEnum(15, datatype_);
         }
       }
 
@@ -7521,13 +7792,25 @@ public final class Bigdl {
           size += com.google.protobuf.CodedOutputStream
             .computeMessageSize(12, nameAttrList_.get(i));
         }
+        {
+          int dataSize = 0;
+          for (int i = 0; i < dataFormat_.size(); i++) {
+            dataSize += com.google.protobuf.CodedOutputStream
+              .computeEnumSizeNoTag(dataFormat_.get(i));
+          }
+          size += dataSize;
+          if (!getDataFormatList().isEmpty()) {  size += 1;
+            size += com.google.protobuf.CodedOutputStream
+              .computeUInt32SizeNoTag(dataSize);
+          }dataFormatMemoizedSerializedSize = dataSize;
+        }
         if (size_ != 0) {
           size += com.google.protobuf.CodedOutputStream
-            .computeInt32Size(13, size_);
+            .computeInt32Size(14, size_);
         }
         if (datatype_ != serialization.Bigdl.DataType.INT32.getNumber()) {
           size += com.google.protobuf.CodedOutputStream
-            .computeEnumSize(14, datatype_);
+            .computeEnumSize(15, datatype_);
         }
         memoizedSize = size;
         return size;
@@ -7568,6 +7851,7 @@ public final class Bigdl {
             .equals(other.getBigDLModuleList());
         result = result && getNameAttrListList()
             .equals(other.getNameAttrListList());
+        result = result && dataFormat_.equals(other.dataFormat_);
         result = result && (getSize()
             == other.getSize());
         result = result && datatype_ == other.datatype_;
@@ -7628,6 +7912,10 @@ public final class Bigdl {
         if (getNameAttrListCount() > 0) {
           hash = (37 * hash) + NAMEATTRLIST_FIELD_NUMBER;
           hash = (53 * hash) + getNameAttrListList().hashCode();
+        }
+        if (getDataFormatCount() > 0) {
+          hash = (37 * hash) + DATAFORMAT_FIELD_NUMBER;
+          hash = (53 * hash) + dataFormat_.hashCode();
         }
         hash = (37 * hash) + SIZE_FIELD_NUMBER;
         hash = (53 * hash) + getSize();
@@ -7800,6 +8088,8 @@ public final class Bigdl {
           } else {
             nameAttrListBuilder_.clear();
           }
+          dataFormat_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00001000);
           size_ = 0;
 
           datatype_ = 0;
@@ -7908,6 +8198,11 @@ public final class Bigdl {
           } else {
             result.nameAttrList_ = nameAttrListBuilder_.build();
           }
+          if (((bitField0_ & 0x00001000) == 0x00001000)) {
+            dataFormat_ = java.util.Collections.unmodifiableList(dataFormat_);
+            bitField0_ = (bitField0_ & ~0x00001000);
+          }
+          result.dataFormat_ = dataFormat_;
           result.size_ = size_;
           result.datatype_ = datatype_;
           result.bitField0_ = to_bitField0_;
@@ -8151,6 +8446,16 @@ public final class Bigdl {
                 nameAttrListBuilder_.addAllMessages(other.nameAttrList_);
               }
             }
+          }
+          if (!other.dataFormat_.isEmpty()) {
+            if (dataFormat_.isEmpty()) {
+              dataFormat_ = other.dataFormat_;
+              bitField0_ = (bitField0_ & ~0x00001000);
+            } else {
+              ensureDataFormatIsMutable();
+              dataFormat_.addAll(other.dataFormat_);
+            }
+            onChanged();
           }
           if (other.getSize() != 0) {
             setSize(other.getSize());
@@ -10493,15 +10798,181 @@ public final class Bigdl {
           return nameAttrListBuilder_;
         }
 
+        private java.util.List<java.lang.Integer> dataFormat_ =
+          java.util.Collections.emptyList();
+        private void ensureDataFormatIsMutable() {
+          if (!((bitField0_ & 0x00001000) == 0x00001000)) {
+            dataFormat_ = new java.util.ArrayList<java.lang.Integer>(dataFormat_);
+            bitField0_ |= 0x00001000;
+          }
+        }
+        /**
+         * <pre>
+         * "Array(DataFormat)"
+         * </pre>
+         *
+         * <code>repeated .serialization.InputDataFormat dataFormat = 13;</code>
+         */
+        public java.util.List<serialization.Bigdl.InputDataFormat> getDataFormatList() {
+          return new com.google.protobuf.Internal.ListAdapter<
+              java.lang.Integer, serialization.Bigdl.InputDataFormat>(dataFormat_, dataFormat_converter_);
+        }
+        /**
+         * <pre>
+         * "Array(DataFormat)"
+         * </pre>
+         *
+         * <code>repeated .serialization.InputDataFormat dataFormat = 13;</code>
+         */
+        public int getDataFormatCount() {
+          return dataFormat_.size();
+        }
+        /**
+         * <pre>
+         * "Array(DataFormat)"
+         * </pre>
+         *
+         * <code>repeated .serialization.InputDataFormat dataFormat = 13;</code>
+         */
+        public serialization.Bigdl.InputDataFormat getDataFormat(int index) {
+          return dataFormat_converter_.convert(dataFormat_.get(index));
+        }
+        /**
+         * <pre>
+         * "Array(DataFormat)"
+         * </pre>
+         *
+         * <code>repeated .serialization.InputDataFormat dataFormat = 13;</code>
+         */
+        public Builder setDataFormat(
+            int index, serialization.Bigdl.InputDataFormat value) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureDataFormatIsMutable();
+          dataFormat_.set(index, value.getNumber());
+          onChanged();
+          return this;
+        }
+        /**
+         * <pre>
+         * "Array(DataFormat)"
+         * </pre>
+         *
+         * <code>repeated .serialization.InputDataFormat dataFormat = 13;</code>
+         */
+        public Builder addDataFormat(serialization.Bigdl.InputDataFormat value) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureDataFormatIsMutable();
+          dataFormat_.add(value.getNumber());
+          onChanged();
+          return this;
+        }
+        /**
+         * <pre>
+         * "Array(DataFormat)"
+         * </pre>
+         *
+         * <code>repeated .serialization.InputDataFormat dataFormat = 13;</code>
+         */
+        public Builder addAllDataFormat(
+            java.lang.Iterable<? extends serialization.Bigdl.InputDataFormat> values) {
+          ensureDataFormatIsMutable();
+          for (serialization.Bigdl.InputDataFormat value : values) {
+            dataFormat_.add(value.getNumber());
+          }
+          onChanged();
+          return this;
+        }
+        /**
+         * <pre>
+         * "Array(DataFormat)"
+         * </pre>
+         *
+         * <code>repeated .serialization.InputDataFormat dataFormat = 13;</code>
+         */
+        public Builder clearDataFormat() {
+          dataFormat_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00001000);
+          onChanged();
+          return this;
+        }
+        /**
+         * <pre>
+         * "Array(DataFormat)"
+         * </pre>
+         *
+         * <code>repeated .serialization.InputDataFormat dataFormat = 13;</code>
+         */
+        public java.util.List<java.lang.Integer>
+        getDataFormatValueList() {
+          return java.util.Collections.unmodifiableList(dataFormat_);
+        }
+        /**
+         * <pre>
+         * "Array(DataFormat)"
+         * </pre>
+         *
+         * <code>repeated .serialization.InputDataFormat dataFormat = 13;</code>
+         */
+        public int getDataFormatValue(int index) {
+          return dataFormat_.get(index);
+        }
+        /**
+         * <pre>
+         * "Array(DataFormat)"
+         * </pre>
+         *
+         * <code>repeated .serialization.InputDataFormat dataFormat = 13;</code>
+         */
+        public Builder setDataFormatValue(
+            int index, int value) {
+          ensureDataFormatIsMutable();
+          dataFormat_.set(index, value);
+          onChanged();
+          return this;
+        }
+        /**
+         * <pre>
+         * "Array(DataFormat)"
+         * </pre>
+         *
+         * <code>repeated .serialization.InputDataFormat dataFormat = 13;</code>
+         */
+        public Builder addDataFormatValue(int value) {
+          ensureDataFormatIsMutable();
+          dataFormat_.add(value);
+          onChanged();
+          return this;
+        }
+        /**
+         * <pre>
+         * "Array(DataFormat)"
+         * </pre>
+         *
+         * <code>repeated .serialization.InputDataFormat dataFormat = 13;</code>
+         */
+        public Builder addAllDataFormatValue(
+            java.lang.Iterable<java.lang.Integer> values) {
+          ensureDataFormatIsMutable();
+          for (int value : values) {
+            dataFormat_.add(value);
+          }
+          onChanged();
+          return this;
+        }
+
         private int size_ ;
         /**
-         * <code>optional int32 size = 13;</code>
+         * <code>optional int32 size = 14;</code>
          */
         public int getSize() {
           return size_;
         }
         /**
-         * <code>optional int32 size = 13;</code>
+         * <code>optional int32 size = 14;</code>
          */
         public Builder setSize(int value) {
           
@@ -10510,7 +10981,7 @@ public final class Bigdl {
           return this;
         }
         /**
-         * <code>optional int32 size = 13;</code>
+         * <code>optional int32 size = 14;</code>
          */
         public Builder clearSize() {
           
@@ -10521,13 +10992,13 @@ public final class Bigdl {
 
         private int datatype_ = 0;
         /**
-         * <code>optional .serialization.DataType datatype = 14;</code>
+         * <code>optional .serialization.DataType datatype = 15;</code>
          */
         public int getDatatypeValue() {
           return datatype_;
         }
         /**
-         * <code>optional .serialization.DataType datatype = 14;</code>
+         * <code>optional .serialization.DataType datatype = 15;</code>
          */
         public Builder setDatatypeValue(int value) {
           datatype_ = value;
@@ -10535,14 +11006,14 @@ public final class Bigdl {
           return this;
         }
         /**
-         * <code>optional .serialization.DataType datatype = 14;</code>
+         * <code>optional .serialization.DataType datatype = 15;</code>
          */
         public serialization.Bigdl.DataType getDatatype() {
           serialization.Bigdl.DataType result = serialization.Bigdl.DataType.valueOf(datatype_);
           return result == null ? serialization.Bigdl.DataType.UNRECOGNIZED : result;
         }
         /**
-         * <code>optional .serialization.DataType datatype = 14;</code>
+         * <code>optional .serialization.DataType datatype = 15;</code>
          */
         public Builder setDatatype(serialization.Bigdl.DataType value) {
           if (value == null) {
@@ -10554,7 +11025,7 @@ public final class Bigdl {
           return this;
         }
         /**
-         * <code>optional .serialization.DataType datatype = 14;</code>
+         * <code>optional .serialization.DataType datatype = 15;</code>
          */
         public Builder clearDatatype() {
           
@@ -10628,6 +11099,7 @@ public final class Bigdl {
       BIGDLMODULEVALUE(11),
       NAMEATTRLISTVALUE(12),
       ARRAYVALUE(13),
+      DATAFORMATVALUE(14),
       VALUE_NOT_SET(0);
       private final int value;
       private ValueCase(int value) {
@@ -10656,6 +11128,7 @@ public final class Bigdl {
           case 11: return BIGDLMODULEVALUE;
           case 12: return NAMEATTRLISTVALUE;
           case 13: return ARRAYVALUE;
+          case 14: return DATAFORMATVALUE;
           case 0: return VALUE_NOT_SET;
           default: return null;
         }
@@ -10995,16 +11468,46 @@ public final class Bigdl {
       return serialization.Bigdl.AttrValue.ArrayValue.getDefaultInstance();
     }
 
-    public static final int DATATYPE_FIELD_NUMBER = 14;
+    public static final int DATAFORMATVALUE_FIELD_NUMBER = 14;
+    /**
+     * <pre>
+     * data format
+     * </pre>
+     *
+     * <code>optional .serialization.InputDataFormat dataFormatValue = 14;</code>
+     */
+    public int getDataFormatValueValue() {
+      if (valueCase_ == 14) {
+        return (java.lang.Integer) value_;
+      }
+      return 0;
+    }
+    /**
+     * <pre>
+     * data format
+     * </pre>
+     *
+     * <code>optional .serialization.InputDataFormat dataFormatValue = 14;</code>
+     */
+    public serialization.Bigdl.InputDataFormat getDataFormatValue() {
+      if (valueCase_ == 14) {
+        serialization.Bigdl.InputDataFormat result = serialization.Bigdl.InputDataFormat.valueOf(
+            (java.lang.Integer) value_);
+        return result == null ? serialization.Bigdl.InputDataFormat.UNRECOGNIZED : result;
+      }
+      return serialization.Bigdl.InputDataFormat.NCHW;
+    }
+
+    public static final int DATATYPE_FIELD_NUMBER = 15;
     private int dataType_;
     /**
-     * <code>optional .serialization.DataType dataType = 14;</code>
+     * <code>optional .serialization.DataType dataType = 15;</code>
      */
     public int getDataTypeValue() {
       return dataType_;
     }
     /**
-     * <code>optional .serialization.DataType dataType = 14;</code>
+     * <code>optional .serialization.DataType dataType = 15;</code>
      */
     public serialization.Bigdl.DataType getDataType() {
       serialization.Bigdl.DataType result = serialization.Bigdl.DataType.valueOf(dataType_);
@@ -11067,8 +11570,11 @@ public final class Bigdl {
       if (valueCase_ == 13) {
         output.writeMessage(13, (serialization.Bigdl.AttrValue.ArrayValue) value_);
       }
+      if (valueCase_ == 14) {
+        output.writeEnum(14, ((java.lang.Integer) value_));
+      }
       if (dataType_ != serialization.Bigdl.DataType.INT32.getNumber()) {
-        output.writeEnum(14, dataType_);
+        output.writeEnum(15, dataType_);
       }
     }
 
@@ -11133,9 +11639,13 @@ public final class Bigdl {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(13, (serialization.Bigdl.AttrValue.ArrayValue) value_);
       }
+      if (valueCase_ == 14) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(14, ((java.lang.Integer) value_));
+      }
       if (dataType_ != serialization.Bigdl.DataType.INT32.getNumber()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeEnumSize(14, dataType_);
+          .computeEnumSize(15, dataType_);
       }
       memoizedSize = size;
       return size;
@@ -11214,6 +11724,10 @@ public final class Bigdl {
           result = result && getArrayValue()
               .equals(other.getArrayValue());
           break;
+        case 14:
+          result = result && getDataFormatValueValue()
+              == other.getDataFormatValueValue();
+          break;
         case 0:
         default:
       }
@@ -11285,6 +11799,10 @@ public final class Bigdl {
         case 13:
           hash = (37 * hash) + ARRAYVALUE_FIELD_NUMBER;
           hash = (53 * hash) + getArrayValue().hashCode();
+          break;
+        case 14:
+          hash = (37 * hash) + DATAFORMATVALUE_FIELD_NUMBER;
+          hash = (53 * hash) + getDataFormatValueValue();
           break;
         case 0:
         default:
@@ -11496,6 +12014,9 @@ public final class Bigdl {
             result.value_ = arrayValueBuilder_.build();
           }
         }
+        if (valueCase_ == 14) {
+          result.value_ = value_;
+        }
         result.dataType_ = dataType_;
         result.valueCase_ = valueCase_;
         onBuilt();
@@ -11595,6 +12116,10 @@ public final class Bigdl {
           }
           case ARRAYVALUE: {
             mergeArrayValue(other.getArrayValue());
+            break;
+          }
+          case DATAFORMATVALUE: {
+            setDataFormatValueValue(other.getDataFormatValueValue());
             break;
           }
           case VALUE_NOT_SET: {
@@ -12997,15 +13522,88 @@ public final class Bigdl {
         return arrayValueBuilder_;
       }
 
+      /**
+       * <pre>
+       * data format
+       * </pre>
+       *
+       * <code>optional .serialization.InputDataFormat dataFormatValue = 14;</code>
+       */
+      public int getDataFormatValueValue() {
+        if (valueCase_ == 14) {
+          return ((java.lang.Integer) value_).intValue();
+        }
+        return 0;
+      }
+      /**
+       * <pre>
+       * data format
+       * </pre>
+       *
+       * <code>optional .serialization.InputDataFormat dataFormatValue = 14;</code>
+       */
+      public Builder setDataFormatValueValue(int value) {
+        valueCase_ = 14;
+        value_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * data format
+       * </pre>
+       *
+       * <code>optional .serialization.InputDataFormat dataFormatValue = 14;</code>
+       */
+      public serialization.Bigdl.InputDataFormat getDataFormatValue() {
+        if (valueCase_ == 14) {
+          serialization.Bigdl.InputDataFormat result = serialization.Bigdl.InputDataFormat.valueOf(
+              (java.lang.Integer) value_);
+          return result == null ? serialization.Bigdl.InputDataFormat.UNRECOGNIZED : result;
+        }
+        return serialization.Bigdl.InputDataFormat.NCHW;
+      }
+      /**
+       * <pre>
+       * data format
+       * </pre>
+       *
+       * <code>optional .serialization.InputDataFormat dataFormatValue = 14;</code>
+       */
+      public Builder setDataFormatValue(serialization.Bigdl.InputDataFormat value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        valueCase_ = 14;
+        value_ = value.getNumber();
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * data format
+       * </pre>
+       *
+       * <code>optional .serialization.InputDataFormat dataFormatValue = 14;</code>
+       */
+      public Builder clearDataFormatValue() {
+        if (valueCase_ == 14) {
+          valueCase_ = 0;
+          value_ = null;
+          onChanged();
+        }
+        return this;
+      }
+
       private int dataType_ = 0;
       /**
-       * <code>optional .serialization.DataType dataType = 14;</code>
+       * <code>optional .serialization.DataType dataType = 15;</code>
        */
       public int getDataTypeValue() {
         return dataType_;
       }
       /**
-       * <code>optional .serialization.DataType dataType = 14;</code>
+       * <code>optional .serialization.DataType dataType = 15;</code>
        */
       public Builder setDataTypeValue(int value) {
         dataType_ = value;
@@ -13013,14 +13611,14 @@ public final class Bigdl {
         return this;
       }
       /**
-       * <code>optional .serialization.DataType dataType = 14;</code>
+       * <code>optional .serialization.DataType dataType = 15;</code>
        */
       public serialization.Bigdl.DataType getDataType() {
         serialization.Bigdl.DataType result = serialization.Bigdl.DataType.valueOf(dataType_);
         return result == null ? serialization.Bigdl.DataType.UNRECOGNIZED : result;
       }
       /**
-       * <code>optional .serialization.DataType dataType = 14;</code>
+       * <code>optional .serialization.DataType dataType = 15;</code>
        */
       public Builder setDataType(serialization.Bigdl.DataType value) {
         if (value == null) {
@@ -13032,7 +13630,7 @@ public final class Bigdl {
         return this;
       }
       /**
-       * <code>optional .serialization.DataType dataType = 14;</code>
+       * <code>optional .serialization.DataType dataType = 15;</code>
        */
       public Builder clearDataType() {
         
@@ -13971,7 +14569,7 @@ public final class Bigdl {
       "e\030\002 \003(\005\022\022\n\nfloat_data\030\003 \003(\002\022\023\n\013double_da" +
       "ta\030\004 \003(\001\"[\n\013Regularizer\0227\n\017regularizerTy" +
       "pe\030\001 \001(\0162\036.serialization.RegularizerType" +
-      "\022\023\n\013regularData\030\002 \003(\001\"\207\010\n\tAttrValue\022\024\n\ni" +
+      "\022\023\n\013regularData\030\002 \003(\001\"\366\010\n\tAttrValue\022\024\n\ni" +
       "nt32Value\030\001 \001(\005H\000\022\024\n\nint64Value\030\002 \001(\003H\000\022" +
       "\024\n\nfloatValue\030\003 \001(\002H\000\022\025\n\013doubleValue\030\004 \001" +
       "(\001H\000\022\025\n\013stringValue\030\005 \001(\tH\000\022\023\n\tboolValue",
@@ -13985,39 +14583,43 @@ public final class Bigdl {
       "H\000\0228\n\021nameAttrListValue\030\014 \001(\0132\033.serializ" +
       "ation.NameAttrListH\000\0229\n\narrayValue\030\r \001(\013" +
       "2#.serialization.AttrValue.ArrayValueH\000\022",
-      ")\n\010dataType\030\016 \001(\0162\027.serialization.DataTy" +
-      "pe\032\271\003\n\nArrayValue\022\013\n\003i32\030\001 \003(\005\022\013\n\003i64\030\002 " +
-      "\003(\003\022\013\n\003flt\030\003 \003(\002\022\013\n\003dbl\030\004 \003(\001\022\013\n\003str\030\005 \003" +
-      "(\t\022\017\n\007boolean\030\006 \003(\010\022/\n\013Regularizer\030\007 \003(\013" +
-      "2\032.serialization.Regularizer\022*\n\006tensor\030\010" +
-      " \003(\0132\032.serialization.BigDLTensor\0220\n\016vari" +
-      "ableFormat\030\t \003(\0162\030.serialization.VarForm" +
-      "at\022-\n\ninitMethod\030\n \003(\0132\031.serialization.I" +
-      "nitMethod\022/\n\013bigDLModule\030\013 \003(\0132\032.seriali" +
-      "zation.BigDLModule\0221\n\014nameAttrList\030\014 \003(\013",
-      "2\033.serialization.NameAttrList\022\014\n\004size\030\r " +
-      "\001(\005\022)\n\010datatype\030\016 \001(\0162\027.serialization.Da" +
-      "taTypeB\007\n\005value\"\230\001\n\014NameAttrList\022\014\n\004name" +
-      "\030\001 \001(\t\0223\n\004attr\030\002 \003(\0132%.serialization.Nam" +
-      "eAttrList.AttrEntry\032E\n\tAttrEntry\022\013\n\003key\030" +
-      "\001 \001(\t\022\'\n\005value\030\002 \001(\0132\030.serialization.Att" +
-      "rValue:\0028\001*\260\001\n\tVarFormat\022\020\n\014EMPTY_FORMAT" +
-      "\020\000\022\013\n\007DEFAULT\020\001\022\t\n\005ONE_D\020\002\022\n\n\006IN_OUT\020\003\022\n" +
-      "\n\006OUT_IN\020\004\022\020\n\014IN_OUT_KW_KH\020\005\022\020\n\014OUT_IN_K" +
-      "W_KH\020\006\022\023\n\017GP_OUT_IN_KW_KH\020\007\022\023\n\017GP_IN_OUT",
-      "_KW_KH\020\010\022\023\n\017OUT_IN_KT_KH_KW\020\t*\253\001\n\016InitMe" +
-      "thodType\022\030\n\024EMPTY_INITIALIZATION\020\000\022\022\n\016RA" +
-      "NDOM_UNIFORM\020\001\022\030\n\024RANDOM_UNIFORM_PARAM\020\002" +
-      "\022\021\n\rRANDOM_NORMAL\020\003\022\t\n\005ZEROS\020\004\022\010\n\004ONES\020\005" +
-      "\022\t\n\005CONST\020\006\022\n\n\006XAVIER\020\007\022\022\n\016BILINEARFILLE" +
-      "R\020\010*L\n\017RegularizerType\022\023\n\017L1L2Regularize" +
-      "r\020\000\022\021\n\rL1Regularizer\020\001\022\021\n\rL2Regularizer\020" +
-      "\002*\300\001\n\010DataType\022\t\n\005INT32\020\000\022\t\n\005INT64\020\001\022\t\n\005" +
-      "FLOAT\020\002\022\n\n\006DOUBLE\020\003\022\n\n\006STRING\020\004\022\010\n\004BOOL\020" +
-      "\005\022\017\n\013REGULARIZER\020\006\022\n\n\006TENSOR\020\007\022\023\n\017VARIAB",
-      "LE_FORMAT\020\010\022\016\n\nINITMETHOD\020\t\022\n\n\006MODULE\020\n\022" +
-      "\022\n\016NAME_ATTR_LIST\020\013\022\017\n\013ARRAY_VALUE\020\014b\006pr" +
-      "oto3"
+      "9\n\017dataFormatValue\030\016 \001(\0162\036.serialization" +
+      ".InputDataFormatH\000\022)\n\010dataType\030\017 \001(\0162\027.s" +
+      "erialization.DataType\032\355\003\n\nArrayValue\022\013\n\003" +
+      "i32\030\001 \003(\005\022\013\n\003i64\030\002 \003(\003\022\013\n\003flt\030\003 \003(\002\022\013\n\003d" +
+      "bl\030\004 \003(\001\022\013\n\003str\030\005 \003(\t\022\017\n\007boolean\030\006 \003(\010\022/" +
+      "\n\013Regularizer\030\007 \003(\0132\032.serialization.Regu" +
+      "larizer\022*\n\006tensor\030\010 \003(\0132\032.serialization." +
+      "BigDLTensor\0220\n\016variableFormat\030\t \003(\0162\030.se" +
+      "rialization.VarFormat\022-\n\ninitMethod\030\n \003(" +
+      "\0132\031.serialization.InitMethod\022/\n\013bigDLMod",
+      "ule\030\013 \003(\0132\032.serialization.BigDLModule\0221\n" +
+      "\014nameAttrList\030\014 \003(\0132\033.serialization.Name" +
+      "AttrList\0222\n\ndataFormat\030\r \003(\0162\036.serializa" +
+      "tion.InputDataFormat\022\014\n\004size\030\016 \001(\005\022)\n\010da" +
+      "tatype\030\017 \001(\0162\027.serialization.DataTypeB\007\n" +
+      "\005value\"\230\001\n\014NameAttrList\022\014\n\004name\030\001 \001(\t\0223\n" +
+      "\004attr\030\002 \003(\0132%.serialization.NameAttrList" +
+      ".AttrEntry\032E\n\tAttrEntry\022\013\n\003key\030\001 \001(\t\022\'\n\005" +
+      "value\030\002 \001(\0132\030.serialization.AttrValue:\0028" +
+      "\001*\260\001\n\tVarFormat\022\020\n\014EMPTY_FORMAT\020\000\022\013\n\007DEF",
+      "AULT\020\001\022\t\n\005ONE_D\020\002\022\n\n\006IN_OUT\020\003\022\n\n\006OUT_IN\020" +
+      "\004\022\020\n\014IN_OUT_KW_KH\020\005\022\020\n\014OUT_IN_KW_KH\020\006\022\023\n" +
+      "\017GP_OUT_IN_KW_KH\020\007\022\023\n\017GP_IN_OUT_KW_KH\020\010\022" +
+      "\023\n\017OUT_IN_KT_KH_KW\020\t*\253\001\n\016InitMethodType\022" +
+      "\030\n\024EMPTY_INITIALIZATION\020\000\022\022\n\016RANDOM_UNIF" +
+      "ORM\020\001\022\030\n\024RANDOM_UNIFORM_PARAM\020\002\022\021\n\rRANDO" +
+      "M_NORMAL\020\003\022\t\n\005ZEROS\020\004\022\010\n\004ONES\020\005\022\t\n\005CONST" +
+      "\020\006\022\n\n\006XAVIER\020\007\022\022\n\016BILINEARFILLER\020\010*L\n\017Re" +
+      "gularizerType\022\023\n\017L1L2Regularizer\020\000\022\021\n\rL1" +
+      "Regularizer\020\001\022\021\n\rL2Regularizer\020\002*%\n\017Inpu",
+      "tDataFormat\022\010\n\004NCHW\020\000\022\010\n\004NHWC\020\001*\321\001\n\010Data" +
+      "Type\022\t\n\005INT32\020\000\022\t\n\005INT64\020\001\022\t\n\005FLOAT\020\002\022\n\n" +
+      "\006DOUBLE\020\003\022\n\n\006STRING\020\004\022\010\n\004BOOL\020\005\022\017\n\013REGUL" +
+      "ARIZER\020\006\022\n\n\006TENSOR\020\007\022\023\n\017VARIABLE_FORMAT\020" +
+      "\010\022\016\n\nINITMETHOD\020\t\022\n\n\006MODULE\020\n\022\022\n\016NAME_AT" +
+      "TR_LIST\020\013\022\017\n\013ARRAY_VALUE\020\014\022\017\n\013DATA_FORMA" +
+      "T\020\rb\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -14066,13 +14668,13 @@ public final class Bigdl {
     internal_static_serialization_AttrValue_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_serialization_AttrValue_descriptor,
-        new java.lang.String[] { "Int32Value", "Int64Value", "FloatValue", "DoubleValue", "StringValue", "BoolValue", "RegularizerValue", "TensorValue", "VariableFormatValue", "InitMethodValue", "BigDLModuleValue", "NameAttrListValue", "ArrayValue", "DataType", "Value", });
+        new java.lang.String[] { "Int32Value", "Int64Value", "FloatValue", "DoubleValue", "StringValue", "BoolValue", "RegularizerValue", "TensorValue", "VariableFormatValue", "InitMethodValue", "BigDLModuleValue", "NameAttrListValue", "ArrayValue", "DataFormatValue", "DataType", "Value", });
     internal_static_serialization_AttrValue_ArrayValue_descriptor =
       internal_static_serialization_AttrValue_descriptor.getNestedTypes().get(0);
     internal_static_serialization_AttrValue_ArrayValue_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_serialization_AttrValue_ArrayValue_descriptor,
-        new java.lang.String[] { "I32", "I64", "Flt", "Dbl", "Str", "Boolean", "Regularizer", "Tensor", "VariableFormat", "InitMethod", "BigDLModule", "NameAttrList", "Size", "Datatype", });
+        new java.lang.String[] { "I32", "I64", "Flt", "Dbl", "Str", "Boolean", "Regularizer", "Tensor", "VariableFormat", "InitMethod", "BigDLModule", "NameAttrList", "DataFormat", "Size", "Datatype", });
     internal_static_serialization_NameAttrList_descriptor =
       getDescriptor().getMessageTypes().get(5);
     internal_static_serialization_NameAttrList_fieldAccessorTable = new

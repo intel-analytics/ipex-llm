@@ -39,6 +39,12 @@ enum RegularizerType {
     L1Regularizer = 1;
     L2Regularizer = 2;
 }
+
+enum InputDataFormat {
+    NCHW = 0;
+    NHWC = 1;
+}
+
 message InitMethod {
     InitMethodType methodType = 1;
     repeated double data = 2;
@@ -68,6 +74,7 @@ enum DataType {
     MODULE = 10;
     NAME_ATTR_LIST = 11;
     ARRAY_VALUE = 12;
+    DATA_FORMAT = 13;
 }
 
 message AttrValue {
@@ -84,8 +91,9 @@ message AttrValue {
         repeated InitMethod initMethod = 10;         // "Array(BigDLTensor)"
         repeated BigDLModule bigDLModule = 11; // "Array(BigDLModel)"
         repeated NameAttrList nameAttrList = 12; //
-        int32 size = 13;
-        DataType datatype = 14;
+        repeated InputDataFormat dataFormat = 13; // "Array(DataFormat)"
+        int32 size = 14;
+        DataType datatype = 15;
     }
     oneof value {
         int32 int32Value = 1; // int32 value
@@ -101,8 +109,9 @@ message AttrValue {
         BigDLModule bigDLModuleValue = 11; // big DL module
         NameAttrList nameAttrListValue = 12; // name attribute list
         ArrayValue arrayValue = 13; //array value of any type
+        InputDataFormat dataFormatValue = 14; // data format
     }
-    DataType dataType = 14;
+    DataType dataType = 15;
 }
 message NameAttrList {
     string name = 1;

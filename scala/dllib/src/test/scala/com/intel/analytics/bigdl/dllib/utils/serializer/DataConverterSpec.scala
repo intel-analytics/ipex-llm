@@ -17,7 +17,8 @@ package com.intel.analytics.bigdl.utils.serializer
 
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.VariableFormat.{Default, ONE_D}
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
+import com.intel.analytics.bigdl.nn.abstractnn.DataFormat.{NCHW, NHWC}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat, TensorModule}
 import com.intel.analytics.bigdl.optim.{L1L2Regularizer, L1Regularizer, L2Regularizer, Regularizer}
 import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
@@ -206,6 +207,26 @@ class DataConverterSpec extends FlatSpec with Matchers{
     retrievedValue should be (linear)
   }
 
+  "NHWC DataFormat conversion " should " work properly" in {
+    val format : DataFormat = NHWC
+    val attriBulder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(attriBulder, format, universe.typeOf[DataFormat])
+    val attr = attriBulder.build
+    val retrievedValue = DataConverter.getAttributeValue(attr)
+    attr.getDataType should be (DataType.DATA_FORMAT)
+    retrievedValue should be (format)
+  }
+
+  "NCHW DataFormat conversion " should " work properly" in {
+    val format : DataFormat = NCHW
+    val attriBulder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(attriBulder, format, universe.typeOf[DataFormat])
+    val attr = attriBulder.build
+    val retrievedValue = DataConverter.getAttributeValue(attr)
+    attr.getDataType should be (DataType.DATA_FORMAT)
+    retrievedValue should be (format)
+  }
+
   "Array of int32 conversion " should " work properly " in {
     val arry = Array[Int](1, 2, 3)
     val attriBulder = AttrValue.newBuilder
@@ -307,6 +328,17 @@ class DataConverterSpec extends FlatSpec with Matchers{
     retrievedValue should be (arry)
   }
 
+  "Array of Dataformat conversion " should " work properly" in {
+    val arry = new Array[DataFormat](2)
+    arry(0) = NCHW
+    arry(1) = NHWC
+    val attriBulder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(attriBulder, arry)
+    val attr = attriBulder.build
+    val retrievedValue = DataConverter.getAttributeValue(attr)
+    retrievedValue should be (arry)
+  }
+
 
   "NameList conversion " should " work properly" in {
 
@@ -321,6 +353,7 @@ class DataConverterSpec extends FlatSpec with Matchers{
     attrsMap("string") = "str"
     attrsMap("bool") = true
     attrsMap("tensor") = Tensor(2, 2).apply1(_ => Random.nextFloat())
+    attrsMap("dataformat") = NCHW
 
     map("test") = attrsMap
 
