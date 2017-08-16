@@ -1509,6 +1509,10 @@ private[bigdl] class QuantizeTensor[@specialized(Float) T: ClassTag]()
 
   override def toTensor[D](implicit ev: TensorNumeric[D]): Tensor[D] =
     throw new UnsupportedOperationException(errorString)
+
+  override def tanh(): Tensor[T] = throw new UnsupportedOperationException(errorString)
+
+  override def tanh(y: Tensor[T]): Tensor[T] = throw new UnsupportedOperationException(errorString)
 }
 
 object QuantizeTensor {
