@@ -28,7 +28,7 @@ import scala.math._
 @com.intel.analytics.bigdl.tags.Serial
 class RecurrentSpec extends FlatSpec with Matchers {
 
-  "A Recurrent class CellTimes" should " add correctly" in {
+  "A Cell class " should "call addTimes() correctly" in {
     val hiddenSize = 5
     val inputSize = 5
     val outputSize = 5
@@ -55,12 +55,6 @@ class RecurrentSpec extends FlatSpec with Matchers {
     rnnCell4.forward(T(input, hidden))
     rnnCell4.backward(T(input, hidden), T(gradOutput, gradHidden))
 
-    val cellTimes = CellTimes[Double](6)
-    cellTimes.add(rnnCell1)
-    cellTimes.add(rnnCell2)
-    cellTimes.add(rnnCell3)
-    cellTimes.add(rnnCell4)
-
     val forwardSum = new Array[Long](6)
     val backwardSum = new Array[Long](6)
 
@@ -81,9 +75,13 @@ class RecurrentSpec extends FlatSpec with Matchers {
       backwardSum(i) += rnnCell4.getTimes()(i)._3
     }
 
+    rnnCell1.addTimes(rnnCell2)
+    rnnCell1.addTimes(rnnCell3)
+    rnnCell1.addTimes(rnnCell4)
+
     for (i <- 0 until 6) {
-      forwardSum(i) should be (cellTimes.getTimes()(i)._2)
-      backwardSum(i) should be (cellTimes.getTimes()(i)._3)
+      forwardSum(i) should be (rnnCell1.getTimes()(i)._2)
+      backwardSum(i) should be (rnnCell1.getTimes()(i)._3)
     }
   }
 

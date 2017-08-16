@@ -47,6 +47,12 @@ abstract class Cell[T : ClassTag](
 )(implicit ev: TensorNumeric[T])
   extends AbstractModule[Table, Table, T] {
 
+  var subModules: Array[AbstractModule[_ <: Activity, _ <: Activity, T]] = null
+  var forwardTimes: Array[Long] = null
+  var backwardTimes: Array[Long] = null
+  var times: Array[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)] = null
+
+
   /**
    * Any recurrent kernels should have a cell member variable which
    * represents the module in the kernel.
@@ -150,12 +156,73 @@ abstract class Cell[T : ClassTag](
     cell.updateParameters(learningRate)
   }
 
-  override def getTimes():
-  Array[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)] = {
-    cell.getTimes
+  private def initAddTimes(): Unit = {
+    val cellTimes = cell.getTimes
+    if (subModules == null || subModules.length < cellTimes.length) {
+      subModules = new Array[AbstractModule[_ <: Activity, _ <: Activity, T]](cellTimes.length)
+      var i = 0
+      while (i < cellTimes.length) {
+        subModules(i) = cellTimes(i)._1
+        i += 1
+      }
+      forwardTimes = new Array[Long](cellTimes.length)
+      backwardTimes = new Array[Long](cellTimes.length)
+      times =
+        new Array[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)](cellTimes.length)
+    }
+  }
+
+  private def resetAddTimes(): Unit = {
+    if (subModules != null) {
+      var i = 0
+      while (i < subModules.length) {
+        subModules(i) = null
+        forwardTimes(i) = 0L
+        backwardTimes(i) = 0L
+        i += 1
+      }
+    }
+  }
+
+  def addTimes(other: Cell[T]): Unit = {
+    val cellTimes = cell.getTimes
+    val otherTimes = other.getTimes
+    require(cellTimes.length == otherTimes.length,
+      " Cell -> CellTimes: cell.getTimes.length does not comform to other.getTimes.length." +
+        s" cell.getTimes.length = ${cellTimes.length}, " +
+        s"other.getTimes.length = ${otherTimes.length}")
+
+    val length = cellTimes.length
+    initAddTimes()
+    var i = 0
+    while (i < length) {
+      val subModule = otherTimes(i)._1.getClass.getName
+      require(subModules(i).getClass.getName == subModule,
+        s"Cell -> CellTimes: ${i}-th submodule in cell" +
+          s" does not comform to ${i}-th submodule in other." +
+          s" ${i}-th cell module is ${subModules(i)}," +
+          s" ${i}-th other module is ${otherTimes(i)._1}")
+      forwardTimes(i) += otherTimes(i)._2
+      backwardTimes(i) += otherTimes(i)._3
+      i += 1
+    }
+  }
+
+  override def getTimes(): Array[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)] = {
+    initAddTimes()
+    val cellTimes = cell.getTimes
+    var i = 0
+    while (i < cellTimes.length) {
+      times(i) = (subModules(i),
+        forwardTimes(i) + cellTimes(i)._2,
+        backwardTimes(i) + cellTimes(i)._3)
+      i += 1
+    }
+    times
   }
 
   override def resetTimes(): Unit = {
+    resetAddTimes()
     cell.resetTimes
   }
 
