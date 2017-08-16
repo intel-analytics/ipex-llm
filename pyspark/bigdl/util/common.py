@@ -91,7 +91,7 @@ class JavaValue(object):
         return self.value.toString()
 
 
-class TestResult():
+class EvaluatedResult():
     """
     A testing result used to benchmark the model quality.
     """
@@ -107,10 +107,10 @@ class TestResult():
         self.method = method
 
     def __reduce__(self):
-        return (TestResult, (self.result, self.total_num, self.method))
+        return (EvaluatedResult, (self.result, self.total_num, self.method))
 
     def __str__(self):
-        return "Test result: %s, total_num: %s, method: %s" % (
+        return "Evaluated result: %s, total_num: %s, method: %s" % (
             self.result, self.total_num, self.method)
 
 
@@ -240,7 +240,7 @@ _picklable_classes = [
     'Rating',
     'LabeledPoint',
     'Sample',
-    'TestResult',
+    'EvaluatedResult',
     'JTensor'
 ]
 
@@ -283,14 +283,17 @@ def create_spark_conf():
     sparkConf.setAll(bigdl_conf.items())
     return sparkConf
 
-
 def get_spark_context(conf = None):
     """
     Get the current active spark context and create one if no active instance
     :param conf: combining bigdl configs into spark conf
     :return: SparkContext
     """
-    with SparkContext._lock:  # Compatible with Spark1.5.1
+    if hasattr(SparkContext, "getOrCreate"):
+        return SparkContext.getOrCreate(conf=conf or create_spark_conf())
+    else:
+        # Might have threading issue but we cann't add _lock here
+        # as it's not RLock in spark1.5
         if SparkContext._active_spark_context is None:
             SparkContext(conf=conf or create_spark_conf())
         return SparkContext._active_spark_context

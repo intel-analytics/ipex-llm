@@ -22,18 +22,25 @@ from bigdl.util.common import *
 from bigdl.nn.initialization_method import *
 from bigdl.dataset import movielens
 import numpy as np
-import unittest
 import tempfile
+import pytest
+from numpy.testing import assert_allclose
 
 
-class TestWorkFlow(unittest.TestCase):
-    def setUp(self):
+class TestSimple():
+    def setup_method(self, method):
+        """ setup any state tied to the execution of the given method in a
+        class.  setup_method is invoked for every test method of a class.
+        """
         sparkConf = create_spark_conf()
         self.sc = SparkContext(master="local[4]", appName="test model",
                                conf=sparkConf)
         init_engine()
 
-    def tearDown(self):
+    def teardown_method(self, method):
+        """ teardown any state that was previously setup with a setup_method
+        call.
+        """
         self.sc.stop()
 
     def test_training(self):
@@ -52,25 +59,25 @@ class TestWorkFlow(unittest.TestCase):
             mlp.update_parameters(learning_rate)
             return err
 
-        mse = MSECriterion()
+        mse = MSECriterion(self)
         for i in range(0, 1000):
             x = np.random.random((5, 4))
             y = x.copy()
             y = y + bf
             err = grad_update(cadd, x, y, mse, 0.01)
         print(cadd.get_weights()[0])
-        self.assertTrue(np.allclose(cadd.get_weights()[0],
-                                    np.array([1, 2, 3, 4, 5]).reshape((5, 1)),
-                                    rtol=1.e-1))
+        assert_allclose(cadd.get_weights()[0],
+                        np.array([1, 2, 3, 4, 5]).reshape((5, 1)),
+                        rtol=1.e-1)
 
     def test_load_model(self):
         fc1 = Linear(4, 2)
-        fc1.set_weights([np.ones((4, 2)), np.ones((2, ))])
+        fc1.set_weights([np.ones((4, 2)), np.ones((2,))])
         tmp_path = tempfile.mktemp()
         fc1.save(tmp_path, True)
         fc1_loaded = Model.load(tmp_path)
-        self.assertTrue(np.allclose(fc1_loaded.get_weights()[0],
-                                    fc1.get_weights()[0]))
+        assert_allclose(fc1_loaded.get_weights()[0],
+                        fc1.get_weights()[0])
 
     def test_load_optim_method(self):
         FEATURES_DIM = 2
@@ -82,6 +89,7 @@ class TestWorkFlow(unittest.TestCase):
             features = np.random.uniform(0, 1, (FEATURES_DIM))
             label = (2 * features).sum() + 0.4
             return Sample.from_ndarray(features, label)
+
         trainingData = self.sc.parallelize(range(0, data_len)).map(lambda i: gen_rand_sample())
         model = Sequential()
         l1 = Linear(FEATURES_DIM, 1).set_init_method(Xavier(), Zeros()).set_name("linear1")
@@ -89,14 +97,14 @@ class TestWorkFlow(unittest.TestCase):
 
         sgd = SGD(learningrate=0.01, learningrate_decay=0.0002, weightdecay=0.0,
                   momentum=0.0, dampening=0.0, nesterov=False,
-                  leaningrate_schedule=Poly(0.5, int((data_len/batch_size)*epoch_num)))
+                  leaningrate_schedule=Poly(0.5, int((data_len / batch_size) * epoch_num)))
 
         tmp_path = tempfile.mktemp()
         sgd.save(tmp_path, True)
         optim_method = OptimMethod.load(tmp_path)
-        self.assertTrue(optim_method.learningRate() == sgd.value.learningRate())
-        self.assertTrue(optim_method.momentum() == sgd.value.momentum())
-        self.assertTrue(optim_method.nesterov() == sgd.value.nesterov())
+        assert optim_method.learningRate() == sgd.value.learningRate()
+        assert optim_method.momentum() == sgd.value.momentum()
+        assert optim_method.nesterov() == sgd.value.nesterov()
 
         optimizer = Optimizer(
             model=model,
@@ -114,12 +122,12 @@ class TestWorkFlow(unittest.TestCase):
         cadd = CAddTable()([fc1, fc2])
         output1 = ReLU()(cadd)
         model = Model([fc1, fc2], [output1])
-        fc1.element().set_weights([np.ones((4, 2)), np.ones((2, ))])
-        fc2.element().set_weights([np.ones((4, 2)), np.ones((2, ))])
+        fc1.element().set_weights([np.ones((4, 2)), np.ones((2,))])
+        fc2.element().set_weights([np.ones((4, 2)), np.ones((2,))])
         output = model.forward([np.array([0.1, 0.2, -0.3, -0.4]),
                                 np.array([0.5, 0.4, -0.2, -0.1])])
-        self.assertTrue(np.allclose(output,
-                                    np.array([2.2, 2.2])))
+        assert_allclose(output,
+                        np.array([2.2, 2.2]))
 
     def test_graph_backward(self):
         fc1 = Linear(4, 2)()
@@ -128,36 +136,40 @@ class TestWorkFlow(unittest.TestCase):
         output1 = ReLU()(cadd)
         output2 = Threshold(10.0)(cadd)
         model = Model([fc1, fc2], [output1, output2])
-        fc1.element().set_weights([np.ones((4, 2)), np.ones((2, ))])
-        fc2.element().set_weights([np.ones((4, 2)) * 2, np.ones((2, )) * 2])
+        fc1.element().set_weights([np.ones((4, 2)), np.ones((2,))])
+        fc2.element().set_weights([np.ones((4, 2)) * 2, np.ones((2,)) * 2])
         output = model.forward([np.array([0.1, 0.2, -0.3, -0.4]),
                                 np.array([0.5, 0.4, -0.2, -0.1])])
         gradInput = model.backward([np.array([0.1, 0.2, -0.3, -0.4]),
                                     np.array([0.5, 0.4, -0.2, -0.1])],
                                    [np.array([1.0, 2.0]),
                                     np.array([3.0, 4.0])])
-        self.assertTrue(np.allclose(gradInput[0],
-                                    np.array([3.0, 3.0, 3.0, 3.0])))
-        self.assertTrue(np.allclose(gradInput[1],
-                                    np.array([6.0, 6.0, 6.0, 6.0])))
+        assert_allclose(gradInput[0],
+                        np.array([3.0, 3.0, 3.0, 3.0]))
+        assert_allclose(gradInput[1],
+                        np.array([6.0, 6.0, 6.0, 6.0]))
 
     def test_load_zip_conf(self):
         from bigdl.util.common import get_bigdl_conf
         import sys
         sys.path = [path for path in sys.path if "spark-bigdl.conf" not in path]
-        sys.path.insert(0, os.path.join(os.path.split(__file__)[0], "resources/conf/python-api.zip"))  # noqa
-        sys.path.insert(0, os.path.join(os.path.split(__file__)[0], "resources/conf/invalid-python-api.zip"))  # noqa
+        sys.path.insert(0, os.path.join(os.path.split(__file__)[0],
+                                        "resources/conf/python-api.zip"))  # noqa
+        sys.path.insert(0, os.path.join(os.path.split(__file__)[0],
+                                        "resources/conf/invalid-python-api.zip"))  # noqa
         result = get_bigdl_conf()
-        self.assertTrue(result.get("spark.executorEnv.OMP_WAIT_POLICY"), "passive")
+        assert result.get("spark.executorEnv.OMP_WAIT_POLICY"), "passive"
 
     def test_set_seed(self):
         w_init = Xavier()
         b_init = Zeros()
-        l1 = Linear(10, 20).set_init_method(w_init, b_init).set_name("linear1").set_seed(1234).reset()  # noqa
-        l2 = Linear(10, 20).set_init_method(w_init, b_init).set_name("linear2").set_seed(1234).reset()  # noqa
+        l1 = Linear(10, 20).set_init_method(w_init, b_init).set_name("linear1").set_seed(
+            1234).reset()  # noqa
+        l2 = Linear(10, 20).set_init_method(w_init, b_init).set_name("linear2").set_seed(
+            1234).reset()  # noqa
         p1 = l1.parameters()
         p2 = l2.parameters()
-        self.assertTrue((p1["linear1"]["weight"] == p2["linear2"]["weight"]).all())  # noqa
+        assert (p1["linear1"]["weight"] == p2["linear2"]["weight"]).all()  # noqa
 
     def test_simple_flow(self):
         FEATURES_DIM = 2
@@ -174,20 +186,20 @@ class TestWorkFlow(unittest.TestCase):
             lambda i: gen_rand_sample())
 
         model_test = Sequential()
-        l1_test = Linear(FEATURES_DIM, 1).set_init_method(Xavier(), Zeros())\
+        l1_test = Linear(FEATURES_DIM, 1).set_init_method(Xavier(), Zeros()) \
             .set_name("linear1_test")
-        self.assertEqual("linear1_test", l1_test.name())
+        assert "linear1_test" == l1_test.name()
         model_test.add(l1_test)
         model_test.add(Sigmoid())
 
         model = Sequential()
         l1 = Linear(FEATURES_DIM, 1).set_init_method(Xavier(), Zeros()).set_name("linear1")
-        self.assertEqual("linear1", l1.name())
+        assert "linear1" == l1.name()
         model.add(l1)
 
         optim_method = SGD(learningrate=0.01, learningrate_decay=0.0002, weightdecay=0.0,
                            momentum=0.0, dampening=0.0, nesterov=False,
-                           leaningrate_schedule=Poly(0.5, int((data_len/batch_size)*epoch_num)))
+                           leaningrate_schedule=Poly(0.5, int((data_len / batch_size) * epoch_num)))
         optimizer = Optimizer(
             model=model_test,
             training_rdd=trainingData,
@@ -222,7 +234,7 @@ class TestWorkFlow(unittest.TestCase):
         # TODO: add result validation
         parameters = trained_model.parameters()
 
-        self.assertIsNotNone(parameters["linear1"])
+        assert parameters["linear1"] is not None
         print("parameters %s" % parameters["linear1"])
         predict_result = trained_model.predict(trainingData)
         p = predict_result.take(2)
@@ -243,13 +255,13 @@ class TestWorkFlow(unittest.TestCase):
         linear = Linear(4, 5)
         input = rng.uniform(0.0, 1.0, [4])
         output = linear.forward(input)
-        self.assertTrue(np.allclose(output,
-                                    np.array([0.41366524,
-                                              0.009532653,
-                                              -0.677581,
-                                              0.07945433,
-                                              -0.5742568]),
-                                    atol=1e-6, rtol=0))
+        assert_allclose(output,
+                        np.array([0.41366524,
+                                  0.009532653,
+                                  -0.677581,
+                                  0.07945433,
+                                  -0.5742568]),
+                        atol=1e-6, rtol=0)
         mse = MSECriterion()
         target = rng.uniform(0.0, 1.0, [5])
         loss = mse.forward(output, target)
@@ -343,18 +355,18 @@ class TestWorkFlow(unittest.TestCase):
         label = (features).sum() + 0.4
         predict_data = self.sc.parallelize(range(0, total_length)).map(
             lambda i: Sample.from_ndarray(features[i], label))
-        model = Linear(2, 1).set_init_method(Xavier(), Zeros())\
+        model = Linear(2, 1).set_init_method(Xavier(), Zeros()) \
             .set_name("linear1").set_seed(1234).reset()
         predict_result = model.predict(predict_data)
         p = predict_result.take(6)
         ground_label = np.array([[-0.47596836], [-0.37598032], [-0.00492062],
                                  [-0.5906958], [-0.12307882], [-0.77907401]], dtype="float32")
         for i in range(0, total_length):
-            self.assertTrue(np.allclose(p[i], ground_label[i], atol=1e-6, rtol=0))
+            assert_allclose(p[i], ground_label[i], atol=1e-6, rtol=0)
         predict_class = model.predict_class(predict_data)
         predict_labels = predict_class.take(6)
         for i in range(0, total_length):
-            self.assertTrue(predict_labels[i] == 1)
+            assert predict_labels[i] == 1
 
     def test_rng(self):
         rng = RNG()
@@ -362,29 +374,17 @@ class TestWorkFlow(unittest.TestCase):
         result = rng.uniform(0.1, 0.2, [2, 3])
         ground_label = np.array([[0.15434049, 0.16711557, 0.12783694],
                                  [0.14120464, 0.14245176, 0.15263824]])
-        self.assertTrue(result.shape == (2, 3))
+        assert result.shape == (2, 3)
         data = result
         for i in range(0, 2):
-            self.assertTrue(np.allclose(data[i], ground_label[i], atol=1e-6, rtol=0))
+            assert_allclose(data[i], ground_label[i], atol=1e-6, rtol=0)
 
         rng.set_seed(100)
         result2 = rng.uniform(0.1, 0.2, [2, 3])
         data2 = result2
         for i in range(0, 2):
-            self.assertTrue(np.allclose(data[i], data2[i]))
+            assert_allclose(data[i], data2[i])
 
-    def test_movielens(self):
-        movielens_data = movielens.read_data_sets("/tmp/movielens/")
-        id_pairs = movielens.get_id_pairs("/tmp/movielens/")
-        id_ratings = movielens.get_id_ratings("/tmp/movielens/")
-
-        ground_data = np.array([[1, 1193, 5, 978300760], [1, 661, 3, 978302109]])
-        ground_pairs = np.array([[1, 1193], [1, 661]])
-        ground_ratings = np.array([[1, 1193, 5], [1, 661, 3]])
-        for i in range(0, 2):
-            self.assertTrue(np.allclose(movielens_data[i], ground_data[i], atol=1e-6, rtol=0))
-            self.assertTrue(np.allclose(id_pairs[i], ground_pairs[i], atol=1e-6, rtol=0))
-            self.assertTrue(np.allclose(id_ratings[i], ground_ratings[i], atol=1e-6, rtol=0))
 
 if __name__ == "__main__":
-    unittest.main(failfast=True)
+    pytest.main([__file__])

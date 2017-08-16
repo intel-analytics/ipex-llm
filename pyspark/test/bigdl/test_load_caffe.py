@@ -18,18 +18,24 @@ from bigdl.nn.layer import *
 from bigdl.optim.optimizer import *
 from bigdl.util.common import *
 import numpy as np
-import unittest
+import pytest
+from numpy.testing import assert_allclose
 
 
-class TestLoadCaffe(unittest.TestCase):
-
-    def setUp(self):
+class TestLoadCaffe():
+    def setup_method(self, method):
+        """ setup any state tied to the execution of the given method in a
+        class.  setup_method is invoked for every test method of a class.
+        """
         sparkConf = create_spark_conf()
         self.sc = SparkContext(master="local[4]", appName="test model",
                                conf=sparkConf)
         init_engine()
 
-    def tearDown(self):
+    def teardown_method(self, method):
+        """ teardown any state that was previously setup with a setup_method
+        call.
+        """
         self.sc.stop()
 
     def test_load_caffe(self):
@@ -38,9 +44,9 @@ class TestLoadCaffe(unittest.TestCase):
         proto_txt = os.path.join(resource_path, "test.prototxt")
         model_path = os.path.join(resource_path, "test.caffemodel")
 
-        module = Sequential()\
-            .add(SpatialConvolution(3, 4, 2, 2).set_name("conv"))\
-            .add(SpatialConvolution(4, 3, 2, 2).set_name("conv2"))\
+        module = Sequential() \
+            .add(SpatialConvolution(3, 4, 2, 2).set_name("conv")) \
+            .add(SpatialConvolution(4, 3, 2, 2).set_name("conv2")) \
             .add(Linear(27, 2, with_bias=False).set_name("ip"))
 
         model = Model.load_caffe(module, proto_txt, model_path, bigdl_type="float")
@@ -59,11 +65,11 @@ class TestLoadCaffe(unittest.TestCase):
             0.1151610613, -0.4214298427, -0.4075299501, -0.1441932321,
             -0.3215276599, 0.4862193465, 0.0050434470, 0.4745523334,
             0.3657383919, -0.2879499197, 0.3388324380, 0.3669666648,
-            -0.4454920888, -0.4200569391, -0.4690187573, -0.4590228796])\
-            .astype("float")\
-            .reshape((4, 3, 2, 2))
+            -0.4454920888, -0.4200569391, -0.4690187573, -0.4590228796]) \
+            .astype("float") \
+            .reshape((1, 4, 3, 2, 2))
 
-        conv1_bias = np.array([0.0458712392, -0.0029324144, -0.0251041390, 0.0052924110])\
+        conv1_bias = np.array([0.0458712392, -0.0029324144, -0.0251041390, 0.0052924110]) \
             .astype("float")
 
         conv2_weight = np.array([
@@ -78,9 +84,9 @@ class TestLoadCaffe(unittest.TestCase):
             -0.0088762743, 0.0061115879, 0.0048167249, -0.0107875718,
             -0.0249741413, -0.0018652071, 0.0028419730, 0.0255292989,
             -0.0091862874, 0.0010728909, 0.0009157739, 0.0073709050,
-            -0.0088602817, -0.0093507599, 0.0070853345, -0.0074293613])\
-            .astype("float")\
-            .reshape((3, 4, 2, 2))
+            -0.0088602817, -0.0093507599, 0.0070853345, -0.0074293613]) \
+            .astype("float") \
+            .reshape((1, 3, 4, 2, 2))
 
         conv2_bias = np.array([0, 0, 0]).astype("float")
 
@@ -100,52 +106,52 @@ class TestLoadCaffe(unittest.TestCase):
             -0.3273061812, 0.2115428150, -0.2002333999, -0.1621897519,
             0.0032395422, 0.2072965205]).astype("float").reshape((2, 27))
 
-        self.assertTrue(np.allclose(parameters["conv"]["weight"],
-                                    conv1_weight, atol=1e-6, rtol=0))
-        self.assertTrue(np.allclose(parameters["conv"]["bias"],
-                                    conv1_bias, atol=1e-6, rtol=0))
-        self.assertTrue(np.allclose(parameters["conv2"]["weight"],
-                                    conv2_weight, atol=1e-6, rtol=0))
-        self.assertTrue(np.allclose(parameters["conv2"]["bias"],
-                                    conv2_bias, atol=1e-6, rtol=0))
-        self.assertTrue(np.allclose(parameters["ip"]["weight"],
-                                    linear_weight, atol=1e-6, rtol=0))
+        assert_allclose(parameters["conv"]["weight"],
+                        conv1_weight, atol=1e-6, rtol=0)
+        assert_allclose(parameters["conv"]["bias"],
+                        conv1_bias, atol=1e-6, rtol=0)
+        assert_allclose(parameters["conv2"]["weight"],
+                        conv2_weight, atol=1e-6, rtol=0)
+        assert_allclose(parameters["conv2"]["bias"],
+                        conv2_bias, atol=1e-6, rtol=0)
+        assert_allclose(parameters["ip"]["weight"],
+                        linear_weight, atol=1e-6, rtol=0)
 
         # test load caffe not match all parameters
-        module = Sequential()\
-            .add(SpatialConvolution(3, 4, 2, 2).set_name("conv"))\
-            .add(SpatialConvolution(4, 3, 2, 2).set_name("conv3"))\
+        module = Sequential() \
+            .add(SpatialConvolution(3, 4, 2, 2).set_name("conv")) \
+            .add(SpatialConvolution(4, 3, 2, 2).set_name("conv3")) \
             .add(Linear(27, 2, with_bias=False).set_name("ip"))
 
         model = Model.load_caffe(module, proto_txt, model_path, match_all=False)
 
         parameters = model.parameters()
 
-        self.assertTrue(np.allclose(parameters["conv"]["weight"],
-                                    conv1_weight, atol=1e-6, rtol=0))
-        self.assertTrue(np.allclose(parameters["conv"]["bias"],
-                                    conv1_bias, atol=1e-6, rtol=0))
-        self.assertFalse(np.allclose(parameters["conv3"]["weight"],
-                                     conv2_weight, atol=1e-6, rtol=0))
-        self.assertFalse(np.allclose(parameters["conv3"]["bias"],
-                                     conv2_bias, atol=1e-6, rtol=0))
-        self.assertTrue(np.allclose(parameters["ip"]["weight"],
-                                    linear_weight, atol=1e-6, rtol=0))
+        assert_allclose(parameters["conv"]["weight"],
+                        conv1_weight, atol=1e-6, rtol=0)
+        assert_allclose(parameters["conv"]["bias"],
+                        conv1_bias, atol=1e-6, rtol=0)
+        assert not (np.allclose(parameters["conv3"]["weight"],
+                                conv2_weight, atol=1e-6, rtol=0))
+        assert not (np.allclose(parameters["conv3"]["bias"],
+                                conv2_bias, atol=1e-6, rtol=0))
+        assert_allclose(parameters["ip"]["weight"],
+                        linear_weight, atol=1e-6, rtol=0)
 
         # test load caffe dynamically
         model = Model.load_caffe_model(proto_txt, model_path, bigdl_type="float")
         parameters = model.parameters()
-        self.assertTrue(np.allclose(parameters["conv"]["weight"],
-                                    conv1_weight, atol=1e-6, rtol=0))
-        self.assertTrue(np.allclose(parameters["conv"]["bias"],
-                                    conv1_bias, atol=1e-6, rtol=0))
-        self.assertTrue(np.allclose(parameters["conv2"]["weight"],
-                                    conv2_weight, atol=1e-6, rtol=0))
-        self.assertTrue(np.allclose(parameters["conv2"]["bias"],
-                                    conv2_bias, atol=1e-6, rtol=0))
-        self.assertTrue(np.allclose(parameters["ip"]["weight"],
-                                    linear_weight, atol=1e-6, rtol=0))
+        assert_allclose(parameters["conv"]["weight"],
+                        conv1_weight, atol=1e-6, rtol=0)
+        assert_allclose(parameters["conv"]["bias"],
+                        conv1_bias, atol=1e-6, rtol=0)
+        assert_allclose(parameters["conv2"]["weight"],
+                        conv2_weight, atol=1e-6, rtol=0)
+        assert_allclose(parameters["conv2"]["bias"],
+                        conv2_bias, atol=1e-6, rtol=0)
+        assert_allclose(parameters["ip"]["weight"],
+                        linear_weight, atol=1e-6, rtol=0)
 
 
 if __name__ == "__main__":
-    unittest.main()
+    pytest.main([__file__])
