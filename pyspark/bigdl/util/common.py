@@ -296,7 +296,7 @@ def get_spark_context(conf = None):
         # as it's not RLock in spark1.5
         if SparkContext._active_spark_context is None:
             SparkContext(conf=conf or create_spark_conf())
-            return SparkContext._active_spark_context
+        return SparkContext._active_spark_context
 
 
 def get_spark_sql_context(sc):
