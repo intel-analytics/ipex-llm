@@ -284,6 +284,36 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     tfResult.almostEqual(bigDLResult.toTensor, 1e-5)
   }
 
+  "Tensorflow batchnorm nhwc" should "be loaded correctly" in {
+    val output = Seq("output:0")
+    val comparePairs = testModel("batch_norm_nhwc", output, false, Seq(), true) { tensor =>
+      tensor
+    }
+    for (i <- 0 until output.length) {
+      val (tf, bigdl) = comparePairs(i)
+      tf.almostEqual(bigdl, 1e-4) should be(true)
+    }
+    for (i <- output.length until comparePairs.length) {
+      val (tf, bigdl) = comparePairs(i)
+      tf.almostEqual(bigdl, 1e-3) should be(true)
+    }
+  }
+
+  "Tensorflow batchnorm nchw" should "be loaded correctly" in {
+    val output = Seq("output:0")
+    val comparePairs = testModel("batch_norm_nchw", output, false, Seq(), true) { tensor =>
+      tensor
+    }
+    for (i <- 0 until output.length) {
+      val (tf, bigdl) = comparePairs(i)
+      tf.almostEqual(bigdl, 1e-4) should be(true)
+    }
+    for (i <- output.length until comparePairs.length) {
+      val (tf, bigdl) = comparePairs(i)
+      tf.almostEqual(bigdl, 1e-3) should be(true)
+    }
+  }
+
   "Tensorflow lenet" should "be load correctly" in {
     val output = Seq("LeNet/pool2/MaxPool:0")
     val comparePairs = testModel("lenet", output, true, Seq((4, 3), (3, 2)), true) { tensor =>
