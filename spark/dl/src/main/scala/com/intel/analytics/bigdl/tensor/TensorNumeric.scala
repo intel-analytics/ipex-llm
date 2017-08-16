@@ -138,6 +138,8 @@ object TensorNumericMath {
 
     def sum(n: Int, a: Array[T], aOffset: Int, stride: Int): T
 
+    def prod(n: Int, a: Array[T], aOffset: Int, stride: Int): T
+
     def arraycopy(src: Array[T], srcPos: Int,
                   dest: Array[T], destPos: Int, length: Int): Unit
 
@@ -584,6 +586,16 @@ object TensorNumericMath {
         }
       }
 
+      override def prod(n: Int, a: Array[Float], aOffset: Int, stride: Int): Float = {
+        var i = 0
+        var r = 1.0f
+        while (i < n) {
+          r *= a(aOffset + i * stride)
+          i += 1
+        }
+        r
+      }
+
       override def sum(n: Int, a: Array[Float], aOffset: Int, stride: Int): Float = {
         var i = 0
         var r = 0.0f
@@ -835,6 +847,16 @@ object TensorNumericMath {
             i += 1
           }
         }
+      }
+
+      override def prod(n: Int, a: Array[Double], aOffset: Int, stride: Int): Double = {
+        var i = 0
+        var r = 1.0
+        while (i < n) {
+          r *= a(aOffset + i * stride)
+          i += 1
+        }
+        r
       }
 
       override def sum(n: Int, a: Array[Double], aOffset: Int, stride: Int): Double = {

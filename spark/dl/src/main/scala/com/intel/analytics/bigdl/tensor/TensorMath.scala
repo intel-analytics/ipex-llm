@@ -115,6 +115,14 @@ trait TensorMath[T] {
   def sum(): T
 
   /**
+   * returns the product of the elements of this
+   * @return
+   */
+  def prod(): T
+
+  def prod(x: Tensor[T], dim: Int): Tensor[T]
+
+  /**
    * performs the sum operation over the dimension dim
    * @param dim
    * @return
