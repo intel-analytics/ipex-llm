@@ -347,7 +347,8 @@
                                 <include>**/*TestSGD.class</include>
                                 <include>**/*TestMSESGDref.class</include>
                                 <include>**/*TestMSESGDreset.class</include>
-                                <include>**/*TestResNet.class</include>
+                                <include>**/*ResNetSpec.class</include>
+                                <include>**/*InceptionSpec.class</include>
                             </includes>
                             <forkCount>2.5C</forkCount>
                             <reuseForks>true</reuseForks>
@@ -355,7 +356,7 @@
                             <useUnlimitedThreads>true</useUnlimitedThreads>
                             <useFile>false</useFile>
                             <redirectTestOutputToFile>true</redirectTestOutputToFile>
-                            <argLine>-Xmx1024m -XX:MaxPermSize=256m</argLine>
+                            <argLine>-Xmx6G</argLine>
                         </configuration>
                     </plugin>
                 </plugins>

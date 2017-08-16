@@ -18,16 +18,17 @@ package com.intel.analytics.bigdl.utils
 
 import com.intel.analytics.bigdl.nn.{SpatialConvolution, SpatialShareConvolution}
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.models.inception.Inception_v1_NoAuxClassifier
+import com.intel.analytics.bigdl.models.inception.{Inception_v1_NoAuxClassifier}
 import com.intel.analytics.bigdl.models.resnet.ResNet
 import com.intel.analytics.bigdl.models.resnet.ResNet.{DatasetType, ShortcutType}
-import com.intel.analytics.bigdl.models.vgg.Vgg_16
+import com.intel.analytics.bigdl.models.vgg.{Vgg_16}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
-import org.scalatest.{FlatSpec, Matchers, ParallelTestExecution}
+import org.scalatest.{FlatSpec, Matchers}
+
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
-class SpatialShareConvolutionSpec extends FlatSpec with Matchers with ParallelTestExecution {
+class SpatialShareConvolutionSpec extends FlatSpec with Matchers {
   val testSize = Array(
     (1, 1, 1, 1, 1, 1, 1, 1, 1),
     (1, 3, 1, 1, 1, 1, 1, 1, 1),
