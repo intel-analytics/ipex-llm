@@ -128,7 +128,7 @@ abstract class Cell[T : ClassTag](
   }
 
   override def updateOutput(input: Table): Table = {
-    output = cell.updateOutput(input).toTable
+    output = cell.forward(input).toTable
     output
   }
 
@@ -141,8 +141,22 @@ abstract class Cell[T : ClassTag](
     cell.accGradParameters(input, gradOutput)
   }
 
+  override def backward(input: Table, gradOutput: Table): Table = {
+    gradInput = cell.backward(input, gradOutput).toTable
+    gradInput
+  }
+
   override def updateParameters(learningRate: T): Unit = {
     cell.updateParameters(learningRate)
+  }
+
+  override def getTimes():
+  Array[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)] = {
+    cell.getTimes
+  }
+
+  override def resetTimes(): Unit = {
+    cell.resetTimes
   }
 
   override def zeroGradParameters(): Unit = {

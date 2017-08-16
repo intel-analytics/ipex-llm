@@ -52,6 +52,7 @@ class Recurrent[T : ClassTag]()
     new ArrayBuffer[Array[Dropout[T]]]
   private val timeBuffer =
     new ArrayBuffer[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)]
+  private var cellTimes: CellTimes[T] = null
 
   /**
    *
@@ -366,19 +367,22 @@ class Recurrent[T : ClassTag]()
       })
     }
 
-    var i = 0
-    while (i < times) {
-      cells(i).getTimes.foreach(x => {
-        modulesForwardTime += x._2
-        modulesBackwardTime += x._3
-        timeBuffer.append(x)
-      })
-      i += 1
+    val numOfSubModules = cells.head.getTimes.length
+    if (cellTimes == null || cellTimes.numOfSubModules != numOfSubModules) {
+      cellTimes = CellTimes[T](numOfSubModules)
     }
+    cells.foreach(x => {
+      cellTimes.add(x)
+    })
+
+    cellTimes.getTimes.foreach(x => {
+      timeBuffer.append(x)
+    })
+
     timeBuffer.append(
       (this,
-        this.forwardTime - modulesForwardTime,
-        this.backwardTime - modulesBackwardTime))
+        this.forwardTime - modulesForwardTime - cellTimes.getForwardTimes,
+        this.backwardTime - modulesBackwardTime - cellTimes.getBackwardTimes))
     timeBuffer.toArray
   }
 
@@ -393,6 +397,9 @@ class Recurrent[T : ClassTag]()
     }
     this.forwardTime = 0
     this.backwardTime = 0
+    if (cellTimes != null) {
+      cellTimes.resetTimes
+    }
   }
 
   override def clearState() : this.type = {
@@ -409,6 +416,7 @@ class Recurrent[T : ClassTag]()
     cells.clear()
     timeBuffer.clear()
     initState = null
+    cellTimes = null
     this
   }
 
@@ -444,5 +452,79 @@ object Recurrent {
   def apply[@specialized(Float, Double) T: ClassTag]()
     (implicit ev: TensorNumeric[T]) : Recurrent[T] = {
     new Recurrent[T]()
+  }
+}
+
+/**
+ * CellTimes class to add the total forward and backward elapsed time for each submodule
+ * of Cell in the Array[Cell] in Recurrent layer.
+ * All the cloned cells along the time step will be condensed to one by adding the corresponding
+ * elapsed time in each submodule in cell.
+ *
+ * For example, if we call a SimpleRNN cell which contains the following submodules:
+ *
+ * Input[e00cc11c], 2108, 2687
+ * CAddTable[84032019], 72358, 92797
+ * Tanh[713c3e7e], 38840, 94434
+ * Identity[99edb9d1], 1470, 2526
+ * Identity[92f95cf1], 1711, 2501
+ *
+ * Then each of the cell in the Array[Cell] will add the corresponding forward and backward
+ * elapsed time into one cell format.
+ * @param numOfSubModules
+ * @tparam T
+ */
+case class CellTimes[T : ClassTag](numOfSubModules: Int) {
+  val subModules = new Array[AbstractModule[_ <: Activity, _ <: Activity, T]](numOfSubModules)
+  val forwardTimes = new Array[Long](numOfSubModules)
+  val backwardTimes = new Array[Long](numOfSubModules)
+  val times =
+    new Array[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)](numOfSubModules)
+
+  def add(other: Cell[T]): Unit = {
+    val cellTimes = other.getTimes
+    val length = cellTimes.length
+    require(numOfSubModules == length,
+      " Recurrent -> CellTimes: cell.getTimes.length does not comform to number of submodules." +
+      s" cell.getTimes.length = ${length}, number of submodules = ${numOfSubModules}")
+    var i = 0
+    while (i < length) {
+      if (subModules(i) != null) {
+        val subModule = cellTimes(i)._1.getClass.getName
+        require(subModules(i).getClass.getName == subModule,
+          s" Recurrent -> CellTimes: ${i}-th submodule in cell" +
+            s" does not comform to ${i}-th submodule in cell.getTimes." +
+            s" ${i}-th submodule is ${subModules(i)}," +
+            s" ${i}-th submodule in cell.getTimes is ${cellTimes(i)._1}")
+      } else {
+        subModules(i) = cellTimes(i)._1
+      }
+      forwardTimes(i) += cellTimes(i)._2
+      backwardTimes(i) += cellTimes(i)._3
+      i += 1
+    }
+  }
+
+  def getTimes(): Array[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)] = {
+    var i = 0
+    while (i < numOfSubModules) {
+      times(i) = (subModules(i), forwardTimes(i), backwardTimes(i))
+      i += 1
+    }
+    times
+  }
+
+  def getForwardTimes(): Long = forwardTimes.sum
+
+  def getBackwardTimes(): Long = backwardTimes.sum
+
+  def resetTimes(): Unit = {
+    var i = 0
+    while (i < numOfSubModules) {
+      subModules(i) = null
+      forwardTimes(i) = 0L
+      backwardTimes(i) = 0L
+      i += 1
+    }
   }
 }

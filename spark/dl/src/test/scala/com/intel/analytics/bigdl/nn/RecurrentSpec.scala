@@ -28,6 +28,65 @@ import scala.math._
 @com.intel.analytics.bigdl.tags.Serial
 class RecurrentSpec extends FlatSpec with Matchers {
 
+  "A Recurrent class CellTimes" should " add correctly" in {
+    val hiddenSize = 5
+    val inputSize = 5
+    val outputSize = 5
+    val batchSize = 5
+    val time = 4
+    val seed = 100
+    RNG.setSeed(seed)
+    val rnnCell1 = RnnCell[Double](inputSize, hiddenSize, Tanh[Double]())
+    val rnnCell2 = RnnCell[Double](inputSize, hiddenSize, Tanh[Double]())
+    val rnnCell3 = RnnCell[Double](inputSize, hiddenSize, Tanh[Double]())
+    val rnnCell4 = RnnCell[Double](inputSize, hiddenSize, Tanh[Double]())
+
+    val input = Tensor[Double](batchSize, inputSize).randn
+    val hidden = Tensor[Double](batchSize, hiddenSize).randn
+    val gradOutput = Tensor[Double](batchSize, outputSize).randn
+    val gradHidden = Tensor[Double](batchSize, outputSize).randn
+
+    rnnCell1.forward(T(input, hidden))
+    rnnCell1.backward(T(input, hidden), T(gradOutput, gradHidden))
+    rnnCell2.forward(T(input, hidden))
+    rnnCell2.backward(T(input, hidden), T(gradOutput, gradHidden))
+    rnnCell3.forward(T(input, hidden))
+    rnnCell3.backward(T(input, hidden), T(gradOutput, gradHidden))
+    rnnCell4.forward(T(input, hidden))
+    rnnCell4.backward(T(input, hidden), T(gradOutput, gradHidden))
+
+    val cellTimes = CellTimes[Double](6)
+    cellTimes.add(rnnCell1)
+    cellTimes.add(rnnCell2)
+    cellTimes.add(rnnCell3)
+    cellTimes.add(rnnCell4)
+
+    val forwardSum = new Array[Long](6)
+    val backwardSum = new Array[Long](6)
+
+    for (i <- 0 until 6) {
+      forwardSum(i) += rnnCell1.getTimes()(i)._2
+      backwardSum(i) += rnnCell1.getTimes()(i)._3
+    }
+    for (i <- 0 until 6) {
+      forwardSum(i) += rnnCell2.getTimes()(i)._2
+      backwardSum(i) += rnnCell2.getTimes()(i)._3
+    }
+    for (i <- 0 until 6) {
+      forwardSum(i) += rnnCell3.getTimes()(i)._2
+      backwardSum(i) += rnnCell3.getTimes()(i)._3
+    }
+    for (i <- 0 until 6) {
+      forwardSum(i) += rnnCell4.getTimes()(i)._2
+      backwardSum(i) += rnnCell4.getTimes()(i)._3
+    }
+
+    for (i <- 0 until 6) {
+      forwardSum(i) should be (cellTimes.getTimes()(i)._2)
+      backwardSum(i) should be (cellTimes.getTimes()(i)._3)
+    }
+  }
+
   "A Recurrent" should " call getTimes correctly" in {
     val hiddenSize = 4
     val inputSize = 5

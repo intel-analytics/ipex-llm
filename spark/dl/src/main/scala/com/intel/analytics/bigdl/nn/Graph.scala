@@ -72,7 +72,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
       } else {
         seqToTable(node.prevNodes.map(_.element.output))
       }
-      node.element.updateOutput(inputsBP(i))
+      node.element.forward(inputsBP(i))
       i += 1
     }
 
