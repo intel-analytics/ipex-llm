@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
 
@@ -30,7 +30,7 @@ import scala.reflect.ClassTag
  * [[Recurrent]] module is a container of rnn cells
  * Different types of rnn cells can be added using add() function
  */
-class Recurrent[T : ClassTag]()
+class Recurrent[T : ClassTag](feedbackOutput: Boolean = false)
   (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
 
   private var hidden: Activity = null
@@ -52,6 +52,8 @@ class Recurrent[T : ClassTag]()
   private var preTopology: AbstractModule[Activity, Activity, T] = null
   private val dropouts: ArrayBuffer[Array[Dropout[T]]] =
     new ArrayBuffer[Array[Dropout[T]]]
+  private var inputSize: Array[Int] = null
+  private var newInputSize: Array[Int] = null
 
   /**
    *
@@ -224,7 +226,7 @@ class Recurrent[T : ClassTag]()
       reset(cells.map(x => x.output.toTable[Tensor[T]](inputDim)), output)
     }
 
-    outputCell = if (preTopology != null) {
+    outputCell = if (preTopology != null && !feedbackOutput) {
       preTopology.updateOutput(input).toTensor[T]
     } else {
       input
@@ -248,11 +250,41 @@ class Recurrent[T : ClassTag]()
     // init state
     currentInput(hidDim) = if (initState != null) initState
      else hidden
+
+    val newInput = if (feedbackOutput && preTopology != null) Tensor(input.size())
+      else Tensor[T]()
     while (i <= times) {
-      currentInput(inputDim) = outputCell.select(timeDim, i)
+      if (!feedbackOutput) {
+        currentInput(inputDim) = outputCell.select(timeDim, i)
+      } else {
+        val inputTmp = if (i == 1) {
+          // input at t(0) is last time step of user input
+          input.select(timeDim, times).clone()
+        } else {
+          // input at t(i) is output at t(i-1)
+          cells(i - 2).output.toTable[Tensor[T]](inputDim)
+        }
+        require(inputTmp.nElement() == input.select(timeDim, i).nElement(), "outputsize is " +
+          "not the same with input size!! Please update cell settings or turn off feedbackOutput.")
+        currentInput(inputDim) = if (preTopology != null) {
+          newInput.narrow(2, i, 1).copy(inputTmp)
+          val sizes = 1 +: inputTmp.size()
+          inputTmp.resize(sizes)
+          val _input = preTopology.updateOutput(inputTmp).toTensor[T]
+          inputTmp.resize(sizes.takeRight(sizes.length - 1))
+          _input.select(1, 1)
+        } else {
+          inputTmp
+        }
+      }
       cells(i - 1).updateOutput(currentInput)
       currentInput(hidDim) = cells(i - 1).output.toTable(hidDim)
       i += 1
+    }
+
+    if (preTopology != null && feedbackOutput) {
+      // For backward preTopology use
+      outputCell = preTopology.updateOutput(newInput).toTensor[T]
     }
 
     if (cellAppendStartIdx == 0 || cellAppendStartIdx < times) {
@@ -294,7 +326,9 @@ class Recurrent[T : ClassTag]()
       currentGradOutput(inputDim) = gradOutput.select(timeDim, i)
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
         else hidden
+
       _input(inputDim) = outputCell.select(timeDim, i)
+
       if (i == 1) {
         cells(i - 1).regluarized(true)
       } else {
@@ -340,6 +374,7 @@ class Recurrent[T : ClassTag]()
       currentGradOutput(inputDim) = gradOutput.select(timeDim, i)
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
         else hidden
+
       _input(inputDim) = outputCell.select(timeDim, i)
       cells(i - 1).updateGradInput(_input, currentGradOutput)
       currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
@@ -404,8 +439,8 @@ class Recurrent[T : ClassTag]()
 }
 
 object Recurrent {
-  def apply[@specialized(Float, Double) T: ClassTag]()
+  def apply[@specialized(Float, Double) T: ClassTag](feedbackOutput: Boolean = false)
     (implicit ev: TensorNumeric[T]) : Recurrent[T] = {
-    new Recurrent[T]()
+    new Recurrent[T](feedbackOutput)
   }
 }

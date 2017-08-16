@@ -21,7 +21,7 @@ import java.io.PrintWriter
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.optim.SGD
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.TorchObject.TYPE_DOUBLE_TENSOR
 import com.intel.analytics.bigdl.utils.{T, Table, TorchFile}
@@ -769,6 +769,54 @@ class LSTMPeepholeSpec  extends TorchSpec {
     val grad2TorchAfter =
       Module.flatten[Double](reconstruct[Double](gradsArrayTorchAfter, hiddenSize))
     luagradParameters.map(grad2TorchAfter, (v1, v2) => {
+      assert(abs(v1 - v2) <= 1e-8)
+      v1
+    })
+  }
+
+  "A LSTMPeepwhole " should "work with feedbackOutput correctly" in {
+    torchCheck()
+
+    import com.intel.analytics.bigdl.numeric.NumericDouble
+    val hiddenSize = 3
+    val inputSize = 3
+    val seqLength = 2
+    val seed = 100
+    val batchSize = 2
+
+    RNG.setSeed(seed)
+    val input = Tensor[Double](batchSize, seqLength, inputSize).rand
+    val gradOutput = Tensor[Double](batchSize, seqLength, hiddenSize).rand
+    val rec = Recurrent(true)
+    val model = rec
+        .add(LSTMPeephole(inputSize, hiddenSize))
+
+    val weights = model.getParameters()._1.clone()
+    model.zeroGradParameters()
+    val output = model.forward(input).toTensor
+    val gradInput = model.backward(input, gradOutput).toTensor
+    val gradient = model.getParameters()._2
+
+    val model2 = Recurrent().add(LSTMPeephole(inputSize, hiddenSize))
+    model2.getParameters()._1.copy(weights)
+    model2.zeroGradParameters()
+
+    val input2 = Tensor(input.size())
+    input2.narrow(2, 1, 1).copy(input.narrow(2, seqLength, 1))
+    input2.narrow(2, 2, seqLength-1).copy(output.narrow(2, 1, seqLength-1))
+    val output2 = model2.forward(input2).toTensor
+    val gradInput2 = model2.backward(input2, gradOutput).toTensor
+    val gradient2 = model2.getParameters()._2
+
+    output.map(output2, (v1, v2) => {
+      assert(abs(v1 - v2) <= 1e-8)
+      v1
+    })
+    gradInput.map(gradInput2, (v1, v2) => {
+      assert(abs(v1 - v2) <= 1e-8)
+      v1
+    })
+    gradient.map(gradient2, (v1, v2) => {
       assert(abs(v1 - v2) <= 1e-8)
       v1
     })

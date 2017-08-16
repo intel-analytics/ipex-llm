@@ -253,8 +253,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     LSTMPeephole[T](inputSize, hiddenSize, p, wRegularizer, uRegularizer, bRegularizer)
   }
 
-  def createRecurrent(): Recurrent[T] = {
-    Recurrent[T]()
+  def createRecurrent(feedbackOutput: Boolean = false): Recurrent[T] = {
+    Recurrent[T](feedbackOutput)
   }
 
   def createConvLSTMPeephole(

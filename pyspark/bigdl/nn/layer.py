@@ -870,8 +870,8 @@ class Recurrent(Container):
     creating: createRecurrent
     '''
 
-    def __init__(self, bigdl_type="float"):
-        super(Recurrent, self).__init__(None, bigdl_type)
+    def __init__(self, feedback_output=False, bigdl_type="float"):
+        super(Recurrent, self).__init__(None, bigdl_type, feedback_output)
 
     def get_state(self):
         """

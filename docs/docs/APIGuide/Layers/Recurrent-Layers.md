@@ -2,11 +2,11 @@
 
 **Scala:**
 ```scala
-val module = Recurrent()
+val module = Recurrent(feedbackOutput=false)
 ```
 **Python:**
 ```python
-module = Recurrent()
+module = Recurrent(feedback_output = False)
 ```
 
 Recurrent module is a container of rnn cells. Different types of rnn cells can be added using add() function.  
@@ -18,6 +18,11 @@ If contained cell is simple rnn, getState return value is a tensor(hidden state)
 If contained cell is lstm, getState return value is a table [hidden state, cell], both size is `batch x hiddenSize`.  
 If contained cell is convlstm, getState return value is a table [hidden state, cell], both size is `batch x outputPlane x height x width`.  
 If contained cell is convlstm3D, getState return value is a table [hidden state, cell], both size is `batch x outputPlane x height x width x length`.
+
+Parameters:
+
+* `feedbackOutput` whether feed prior predictions back into the rnn. By default it's false. If it's set as true. only last time step of user input is used
+during training.
 
 **Scala example:**
 ```scala
