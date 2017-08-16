@@ -353,18 +353,27 @@ class Recurrent[T : ClassTag]()
     gradInput
   }
 
-  override def getTimes():
-  Array[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)] = {
-    timeBuffer.clear
-    var modulesForwardTime = 0L
-    var modulesBackwardTime = 0L
-    if (preTopology != null) {
-      preTopology.getTimes.foreach(x => {
-        modulesForwardTime += x._2
-        modulesBackwardTime += x._3
+  private def appendTimes(module: Module[T]): Unit = {
+    if (module != null) {
+      module.getTimes.foreach(x => {
         timeBuffer.append(x)
       })
     }
+  }
+
+  private def bufferTime(): (Long, Long) = {
+    var forwardSum = 0L
+    var backwardSum = 0L
+    timeBuffer.foreach(x => {
+      forwardSum += x._2
+      backwardSum += x._2
+    })
+    (forwardSum, backwardSum)
+  }
+
+  override def getTimes():
+  Array[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)] = {
+    timeBuffer.clear
 
     val head = cells.head
     var i = 1
@@ -373,19 +382,15 @@ class Recurrent[T : ClassTag]()
       i += 1
     }
 
-    var cellForwardTimes = 0L
-    var cellBackwardTimes = 0L
+    appendTimes(preTopology)
+    appendTimes(head)
 
-    head.getTimes.foreach(x => {
-      timeBuffer.append(x)
-      cellForwardTimes += x._2
-      cellBackwardTimes += x._3
-    })
+    val (bufferForward, bufferBackward) = bufferTime()
 
     timeBuffer.append(
       (this,
-        this.forwardTime - modulesForwardTime - cellForwardTimes,
-        this.backwardTime - modulesBackwardTime - cellBackwardTimes))
+        this.forwardTime - bufferForward,
+        this.backwardTime - bufferBackward))
     timeBuffer.toArray
   }
 
