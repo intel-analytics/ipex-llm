@@ -28,6 +28,58 @@ import scala.math._
 @com.intel.analytics.bigdl.tags.Serial
 class RecurrentSpec extends FlatSpec with Matchers {
 
+  "A Recurrent" should " call getTimes correctly" in {
+    val hiddenSize = 4
+    val inputSize = 5
+    val outputSize = 5
+    val time = 4
+    val batchSize1 = 5
+    val batchSize2 = 8
+    val seed = 100
+    RNG.setSeed(seed)
+
+    val model = Sequential[Double]()
+      .add(Recurrent[Double]()
+        .add(RnnCell[Double](inputSize, hiddenSize, Tanh[Double]())))
+      .add(Select(2, 1))
+      .add(Linear[Double](hiddenSize, outputSize))
+
+    val input = Tensor[Double](Array(batchSize1, time, inputSize)).rand
+    val gradOutput = Tensor[Double](batchSize1, outputSize).rand
+
+    model.clearState()
+
+    for (i <- 1 to 5) {
+      model.forward(input)
+      model.backward(input, gradOutput)
+    }
+    model.resetTimes()
+
+    var st = System.nanoTime()
+    model.forward(input)
+    val etaForward = System.nanoTime() - st
+    println(s"forward eta = ${etaForward}")
+    st = System.nanoTime()
+    model.backward(input, gradOutput)
+    val etaBackward = System.nanoTime() - st
+    println(s"backward eta = ${etaBackward}")
+    println()
+    var forwardSum = 0L
+    var backwardSum = 0L
+
+    model.getTimes.foreach(x => {
+      println(x._1 + ", " + x._2 + ", " + x._3)
+      forwardSum += x._2
+      backwardSum += x._3
+    })
+    println()
+    println(s"forwardSum = ${forwardSum}")
+    println(s"backwardSum = ${backwardSum}")
+
+    assert(abs((etaForward - forwardSum) / etaForward) < 0.1)
+    assert(abs((etaBackward - backwardSum) / etaBackward) < 0.1)
+  }
+
   "A Recurrent" should " converge when batchSize changes" in {
     val hiddenSize = 4
     val inputSize = 5
