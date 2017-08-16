@@ -1032,7 +1032,7 @@ class ConvLSTMPeepholeSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     cell.map(Tensor[Double](expectedCellData, Array(batchSize, hiddenSize, 3, 4)),
       (v1, v2) => {
-      assert(abs(v1 - v2) == 0)
+      assert(abs(v1 - v2) < 1e-10)
       v1
     })
 

@@ -55,6 +55,8 @@ object TensorNumericMath {
 
     def sqrt(x: T): T
 
+    def tanh(x: T): T
+
     def abs(x: T): T
 
     def negative(x: T): T
@@ -103,6 +105,8 @@ object TensorNumericMath {
     def vExp(n: Int, a: Array[T], aOffset: Int, y: Array[T], yOffset: Int): Unit
 
     def vSqrt(n: Int, a: Array[T], aOffset: Int, y: Array[T], yOffset: Int): Unit
+
+    def vTanh(n: Int, a: Array[T], aOffset: Int, y: Array[T], yOffset: Int): Unit
 
     def vAbs(n: Int, a: Array[T], aOffset: Int, y: Array[T], yOffset: Int): Unit
 
@@ -170,6 +174,8 @@ object TensorNumericMath {
       def max(x: Float, y: Float): Float = java.lang.Math.max(x, y)
 
       def sqrt(x: Float): Float = Math.sqrt(x.toDouble).toFloat
+
+      def tanh(x: Float): Float = Math.tanh(x.toDouble).toFloat
 
       def abs(x: Float): Float = Math.abs(x)
 
@@ -258,6 +264,12 @@ object TensorNumericMath {
       : Unit = {
         require(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vsSqrt(n, a, aOffset, y, yOffset)
+      }
+
+      override def vTanh(n: Int, a: Array[Float], aOffset: Int, y: Array[Float], yOffset: Int)
+      : Unit = {
+        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        MKL.vsTanh(n, a, aOffset, y, yOffset)
       }
 
       override def vAbs(n: Int, a: Array[Float], aOffset: Int, y: Array[Float], yOffset: Int)
@@ -370,6 +382,8 @@ object TensorNumericMath {
 
       def sqrt(x: Double): Double = Math.sqrt(x)
 
+      def tanh(x: Double): Double = Math.tanh(x)
+
       def abs(x: Double): Double = Math.abs(x)
 
       def negative(x: Double): Double = -x
@@ -460,6 +474,12 @@ object TensorNumericMath {
                          yOffset: Int): Unit = {
         require(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vdSqrt(n, a, aOffset, y, yOffset)
+      }
+
+      override def vTanh(n: Int, a: Array[Double], aOffset: Int, y: Array[Double], yOffset: Int)
+      : Unit = {
+        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        MKL.vdTanh(n, a, aOffset, y, yOffset)
       }
 
       override def vAbs(n: Int, a: Array[Double], aOffset: Int, y: Array[Double], yOffset: Int)
