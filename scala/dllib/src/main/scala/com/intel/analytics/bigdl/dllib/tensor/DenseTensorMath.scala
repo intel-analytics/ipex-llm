@@ -358,6 +358,23 @@ object DenseTensorMath {
     self
   }
 
+  def tanh[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], x: Tensor[T])
+                                                   (implicit ev: TensorNumeric[T]): Tensor[T] = {
+    require(self.nElement() == x.nElement())
+    if (MKL.isMKLLoaded && self.isContiguous() && x.isContiguous()) {
+      ev.vTanh(self.nElement(), x.storage().array(), x.storageOffset() - 1,
+        self.storage().array(), self.storageOffset() - 1)
+    } else {
+      val func = new TensorFunc4[T] {
+        override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit = {
+          data1(offset1) = ev.tanh(data2(offset2))
+        }
+      }
+      DenseTensorApply.apply2[T](self, x, func)
+    }
+    self
+  }
+
   def log1p[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], x: Tensor[T])
     (implicit ev: TensorNumeric[T]): Tensor[T] = {
     require(self.nElement() == x.nElement())
