@@ -28,6 +28,120 @@ import scala.math._
 @com.intel.analytics.bigdl.tags.Serial
 class RecurrentSpec extends FlatSpec with Matchers {
 
+  "A Cell class " should "call addTimes() correctly" in {
+    val hiddenSize = 5
+    val inputSize = 5
+    val outputSize = 5
+    val batchSize = 5
+    val time = 4
+    val seed = 100
+    RNG.setSeed(seed)
+    val rnnCell1 = RnnCell[Double](inputSize, hiddenSize, Tanh[Double]())
+    val rnnCell2 = RnnCell[Double](inputSize, hiddenSize, Tanh[Double]())
+    val rnnCell3 = RnnCell[Double](inputSize, hiddenSize, Tanh[Double]())
+    val rnnCell4 = RnnCell[Double](inputSize, hiddenSize, Tanh[Double]())
+
+    val input = Tensor[Double](batchSize, inputSize).randn
+    val hidden = Tensor[Double](batchSize, hiddenSize).randn
+    val gradOutput = Tensor[Double](batchSize, outputSize).randn
+    val gradHidden = Tensor[Double](batchSize, outputSize).randn
+
+    rnnCell1.forward(T(input, hidden))
+    rnnCell1.backward(T(input, hidden), T(gradOutput, gradHidden))
+    rnnCell2.forward(T(input, hidden))
+    rnnCell2.backward(T(input, hidden), T(gradOutput, gradHidden))
+    rnnCell3.forward(T(input, hidden))
+    rnnCell3.backward(T(input, hidden), T(gradOutput, gradHidden))
+    rnnCell4.forward(T(input, hidden))
+    rnnCell4.backward(T(input, hidden), T(gradOutput, gradHidden))
+
+    val forwardSum = new Array[Long](6)
+    val backwardSum = new Array[Long](6)
+
+    for (i <- 0 until 6) {
+      forwardSum(i) += rnnCell1.getTimes()(i)._2
+      backwardSum(i) += rnnCell1.getTimes()(i)._3
+    }
+    for (i <- 0 until 6) {
+      forwardSum(i) += rnnCell2.getTimes()(i)._2
+      backwardSum(i) += rnnCell2.getTimes()(i)._3
+    }
+    for (i <- 0 until 6) {
+      forwardSum(i) += rnnCell3.getTimes()(i)._2
+      backwardSum(i) += rnnCell3.getTimes()(i)._3
+    }
+    for (i <- 0 until 6) {
+      forwardSum(i) += rnnCell4.getTimes()(i)._2
+      backwardSum(i) += rnnCell4.getTimes()(i)._3
+    }
+
+    rnnCell1.addTimes(rnnCell2)
+    rnnCell1.addTimes(rnnCell3)
+    rnnCell1.addTimes(rnnCell4)
+
+    for (i <- 0 until 6) {
+      forwardSum(i) should be (rnnCell1.getTimes()(i)._2)
+      backwardSum(i) should be (rnnCell1.getTimes()(i)._3)
+    }
+  }
+
+  "A Recurrent" should " call getTimes correctly" in {
+    val hiddenSize = 128
+    val inputSize = 1280
+    val outputSize = 128
+    val time = 30
+    val batchSize1 = 100
+    val batchSize2 = 8
+    val seed = 100
+    RNG.setSeed(seed)
+
+    val model = Sequential[Double]()
+      .add(Recurrent[Double]()
+        .add(LSTM[Double](inputSize, hiddenSize)))
+      .add(Select(2, 1))
+//      .add(Linear[Double](hiddenSize, outputSize))
+
+    val input = Tensor[Double](Array(batchSize1, time, inputSize)).rand
+    val gradOutput = Tensor[Double](batchSize1, outputSize).rand
+
+    model.clearState()
+
+    model.resetTimes
+    model.getTimes
+
+    for (i <- 1 to 10) {
+      model.resetTimes
+      model.forward(input)
+      model.backward(input, gradOutput)
+      model.getTimes()
+    }
+    model.resetTimes()
+
+    var st = System.nanoTime()
+    model.forward(input)
+    val etaForward = System.nanoTime() - st
+    println(s"forward eta = ${etaForward}")
+    st = System.nanoTime()
+    model.backward(input, gradOutput)
+    val etaBackward = System.nanoTime() - st
+    println(s"backward eta = ${etaBackward}")
+    println()
+    var forwardSum = 0L
+    var backwardSum = 0L
+
+    model.getTimes.foreach(x => {
+      println(x._1 + ", " + x._2 + ", " + x._3)
+      forwardSum += x._2
+      backwardSum += x._3
+    })
+    println()
+    println(s"forwardSum = ${forwardSum}")
+    println(s"backwardSum = ${backwardSum}")
+
+    assert(abs((etaForward - forwardSum) / etaForward) < 0.1)
+    assert(abs((etaBackward - backwardSum) / etaBackward) < 0.1)
+  }
+
   "A Recurrent" should " converge when batchSize changes" in {
     val hiddenSize = 4
     val inputSize = 5
