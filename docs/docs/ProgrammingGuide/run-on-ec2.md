@@ -30,11 +30,17 @@ Before running the BigDL examples, you need to launch a Spark cluster on EC2 (yo
 
 
 You can run BigDL examples using the `run.example.sh` script in home directory of your BigDL Client instance (e.g. `/home/ubuntu/`) with the following parameters:
+
 * Mandatory parameters:
+  
   * `-m|--model` which model to train, including
+    
     * lenet: train the [LeNet](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/lenet) example
+    
     * vgg: train the [VGG](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/vgg) example
+
     * inception-v1: train the [Inception v1](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/inception) example
+
     * perf: test the training speed using the [Inception v1](https://github.com/intel-analytics/BigDL/blob/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/inception/Inception_v1.scala) model with dummy data
 
   * `-s|--spark-url` the master URL for the Spark cluster
@@ -50,6 +56,7 @@ You can run BigDL examples using the `run.example.sh` script in home directory o
   * `-f|--hdfs-data-dir` HDFS directory for the input images (for the "inception-v1" model training only)
 
 * Optional parameters:
+
   * `-e|--max-epoch` the maximum number of epochs (i.e., going through all the input data once) used in the training; default to 90 if not specified
 
   * `-p|--spark` by default the example will run with Spark 1.5 or 1.6; to use Spark 2.0, please specify "spark_2.0" here (it is highly recommended to use _**Java 8**_ when running BigDL for Spark 2.0, otherwise you may observe very poor performance)
