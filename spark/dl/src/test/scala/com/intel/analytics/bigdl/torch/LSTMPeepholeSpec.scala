@@ -809,15 +809,15 @@ class LSTMPeepholeSpec  extends TorchSpec {
     val gradient2 = model2.getParameters()._2
 
     output.map(output2, (v1, v2) => {
-      assert(abs(v1 - v2) <= 1e-8)
+      assert(v1 == v2)
       v1
     })
     gradInput.map(gradInput2, (v1, v2) => {
-      assert(abs(v1 - v2) <= 1e-8)
+      assert(v1 == v2)
       v1
     })
     gradient.map(gradient2, (v1, v2) => {
-      assert(abs(v1 - v2) <= 1e-8)
+      assert(v1 == v2)
       v1
     })
   }
