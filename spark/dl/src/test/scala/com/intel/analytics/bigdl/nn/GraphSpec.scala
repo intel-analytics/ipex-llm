@@ -1013,7 +1013,7 @@ class GraphSpec extends FlatSpec with Matchers {
     val output2_1 = Threshold(10.0).inputs(cadd_1)
 
     val graphNoBack = Graph(Array(reshape, fc1_1), Array(output1_1, output2_1))
-    graphNoBack.setFreeze(Array("fc2_1"))
+    graphNoBack.setStopGradient(Array("fc2_1"))
 
     fc1.element.getParameters()._1.apply1(_ => 1.0f)
     fc2.element.getParameters()._1.apply1(_ => 2.0f)
