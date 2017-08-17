@@ -33,35 +33,35 @@ You can run BigDL examples using the `run.example.sh` script in home directory o
 
 * Mandatory parameters:
   
-  * `-m|--model` which model to train, including
+    * `-m|--model` which model to train, including
     
-    * lenet: train the [LeNet](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/lenet) example
+        * lenet: train the [LeNet](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/lenet) example
     
-    * vgg: train the [VGG](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/vgg) example
+        * vgg: train the [VGG](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/vgg) example
 
-    * inception-v1: train the [Inception v1](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/inception) example
+        * inception-v1: train the [Inception v1](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/inception) example
 
-    * perf: test the training speed using the [Inception v1](https://github.com/intel-analytics/BigDL/blob/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/inception/Inception_v1.scala) model with dummy data
+        * perf: test the training speed using the [Inception v1](https://github.com/intel-analytics/BigDL/blob/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/inception/Inception_v1.scala) model with dummy data
 
-  * `-s|--spark-url` the master URL for the Spark cluster
+    * `-s|--spark-url` the master URL for the Spark cluster
 
-  * `-n|--nodes` number of Spark slave nodes
+    * `-n|--nodes` number of Spark slave nodes
 
-  * `-o|--cores` number of cores used on each node
+    * `-o|--cores` number of cores used on each node
 
-  * `-r|--memory` memory used on each node, e.g. 200g
+    * `-r|--memory` memory used on each node, e.g. 200g
 
-  * `-b|--batch-size` batch size when training the model; it is expected to be a multiple of "nodes * cores"
+    * `-b|--batch-size` batch size when training the model; it is expected to be a multiple of "nodes * cores"
 
-  * `-f|--hdfs-data-dir` HDFS directory for the input images (for the "inception-v1" model training only)
+    * `-f|--hdfs-data-dir` HDFS directory for the input images (for the "inception-v1" model training only)
 
 * Optional parameters:
 
-  * `-e|--max-epoch` the maximum number of epochs (i.e., going through all the input data once) used in the training; default to 90 if not specified
+    * `-e|--max-epoch` the maximum number of epochs (i.e., going through all the input data once) used in the training; default to 90 if not specified
 
-  * `-p|--spark` by default the example will run with Spark 1.5 or 1.6; to use Spark 2.0, please specify "spark_2.0" here (it is highly recommended to use _**Java 8**_ when running BigDL for Spark 2.0, otherwise you may observe very poor performance)
+    * `-p|--spark` by default the example will run with Spark 1.5 or 1.6; to use Spark 2.0, please specify "spark_2.0" here (it is highly recommended to use _**Java 8**_ when running BigDL for Spark 2.0, otherwise you may observe very poor performance)
 
-  * `-l|--learning-rate` by default the the example will use an initial learning rate of "0.01"; you can specify a different value here
+    * `-l|--learning-rate` by default the the example will use an initial learning rate of "0.01"; you can specify a different value here
 
 After the training, you can check the log files and generated models in the home directory (e.g., `/home/ubuntu/`).  
 
