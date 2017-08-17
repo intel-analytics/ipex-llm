@@ -62,6 +62,19 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
     extends Container[Activity, Activity, T]{
 
   override def updateOutput(input: Activity): Activity = {
+    forwardExecution(input) { (element, forwardInput) =>
+      element.updateOutput(forwardInput)
+    }
+  }
+
+  override def forward(input: Activity): Activity = {
+    forwardExecution(input) { (element, forwardInput) =>
+      element.forward(forwardInput)
+    }
+  }
+
+  private def forwardExecution(input: Activity)
+    (action: (AbstractModule[Activity, Tensor[T], T], Activity) => Unit): Activity = {
     var i = 0
     while(i < executions.length) {
       val node = executions(i)
@@ -72,7 +85,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
       } else {
         seqToTable(node.prevNodes.map(_.element.output))
       }
-      node.element.updateOutput(inputsBP(i))
+      action(node.element, inputsBP(i))
       i += 1
     }
 
@@ -84,7 +97,8 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
     output
   }
 
-  override def backward(input: Activity, gradOutput: Activity): Activity = {
+  private def backwardExecution(input: Activity, gradOutput: Activity)
+    (action: (AbstractModule[Activity, Tensor[T], T], Activity, Tensor[T]) => Unit): Activity = {
     dummyOutput.element.gradInput = gradOutput
     var i = executions.length - 1
     while(i >= 0) {
@@ -106,7 +120,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
       })
 
       gradOutputBP(i) = curGradOutput
-      curNode.element.backward(inputsBP(i), curGradOutput)
+      action(curNode.element, inputsBP(i), curGradOutput)
       i -= 1
     }
 
@@ -119,39 +133,16 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
     gradInput
   }
 
+  override def backward(input: Activity, gradOutput: Activity): Activity = {
+    backwardExecution(input, gradOutput) {(element, inputBP, curGradOuput) =>
+      element.backward(inputBP, curGradOuput)
+    }
+  }
+
   override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
-    dummyOutput.element.gradInput = gradOutput
-    var i = executions.length - 1
-    while(i >= 0) {
-      val curNode = executions(i)
-      var curGradOutput : Tensor[T] = null
-      curNode.nextNodes.foreach(n => {
-        val nextGradOutput = if (n.prevNodes.length == 1) {
-          n.element.gradInput.toTensor
-        } else {
-          val nextGradOutputTable = n.element.gradInput.toTable
-          nextGradOutputTable[Tensor[T]](n.prevNodes.indexOf(curNode) + 1)
-        }
-
-        if (curGradOutput == null) {
-          curGradOutput = nextGradOutput
-        } else {
-          curGradOutput.add(nextGradOutput)
-        }
-      })
-
-      gradOutputBP(i) = curGradOutput
-      curNode.element.updateGradInput(inputsBP(i), curGradOutput)
-      i -= 1
+    backwardExecution(input, gradOutput) {(element, inputBP, curGradOutput) =>
+      element.updateGradInput(inputBP, curGradOutput)
     }
-
-    gradInput = if (inputs.length == 1) {
-      inputs(0).element.gradInput
-    } else {
-      seqToTable(inputs.map(_.element.gradInput))
-    }
-
-    gradInput
   }
 
   override def accGradParameters(input: Activity, gradOutput: Activity): Unit = {
