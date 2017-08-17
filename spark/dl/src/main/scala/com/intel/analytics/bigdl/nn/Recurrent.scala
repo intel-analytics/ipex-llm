@@ -375,7 +375,9 @@ class Recurrent[T : ClassTag]()
   Array[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)] = {
     timeBuffer.clear
 
-    val head = cells.head
+    val head = if (!cells.isEmpty) {
+      cells.head
+    } else null
     var i = 1
     while (i < times) {
       head.addTimes(cells(i))

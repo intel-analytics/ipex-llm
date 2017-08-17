@@ -176,7 +176,6 @@ abstract class Cell[T : ClassTag](
     if (subModules != null) {
       var i = 0
       while (i < subModules.length) {
-        subModules(i) = null
         forwardTimes(i) = 0L
         backwardTimes(i) = 0L
         i += 1

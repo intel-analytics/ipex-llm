@@ -106,9 +106,14 @@ class RecurrentSpec extends FlatSpec with Matchers {
 
     model.clearState()
 
+    model.resetTimes
+    model.getTimes
+
     for (i <- 1 to 5) {
+      model.resetTimes
       model.forward(input)
       model.backward(input, gradOutput)
+      model.getTimes()
     }
     model.resetTimes()
 
