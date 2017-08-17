@@ -410,15 +410,15 @@ object Engine {
       throw new IllegalArgumentException(s"Engine.init: Unsupported master format $master")
     }
   }
-  
+
   private var parNumber = 0
   private[bigdl] def partitionNumber(): Int = {
     parNumber
   }
 
   /**
-    * @param n
-    */
+   * @param n
+   */
   private[bigdl] def setPartitionNumber(n : Int): Unit = {
     parNumber = n
   }

@@ -29,7 +29,7 @@ object RpcEnvWrapper {
     RpcEnv.create(name, host, port, conf,
       securityManager)
   }
-  
+
   def setupEndpoint(rpcEnv: RpcEnv, name: String, endpoint: RpcEndpoint): RpcEndpointRef = {
     rpcEnv.setupEndpoint(name, endpoint)
   }

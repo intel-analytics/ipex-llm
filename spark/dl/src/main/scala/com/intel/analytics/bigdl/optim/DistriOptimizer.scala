@@ -44,16 +44,16 @@ object DistriOptimizer {
   val logger = Logger.getLogger(getClass)
 
   /**
-    * Optimizer cache some metadata on each executor
-    *
-    * @param localModels cached models
-    * @param modelWeights weights of the cached models
-    * @param modelGradients gradients of the cached models
-    * @param localCriterions cached criterion
-    * @param localStates cached state
-    * @param gradient tensor buffer
-    * @tparam T
-    */
+   * Optimizer cache some metadata on each executor
+   *
+   * @param localModels cached models
+   * @param modelWeights weights of the cached models
+   * @param modelGradients gradients of the cached models
+   * @param localCriterions cached criterion
+   * @param localStates cached state
+   * @param gradient tensor buffer
+   * @tparam T
+   */
   case class Cache[T](
    localModels: Array[Module[T]],
    modelWeights: Array[Tensor[T]],
@@ -142,7 +142,7 @@ object DistriOptimizer {
         Iterator(iter.next().optimMethod)
       }.cache()
     dummyRDD.count()
-    
+
     while (!endWhen(driverState)) {
       val _header = header(driverState[Int]("epoch"), accumulateCount, dataset.size(),
         driverState[Int]("neval"), wallClockTime)
@@ -313,7 +313,7 @@ object DistriOptimizer {
         }.count()
       }
       val job2end = System.nanoTime()
-      
+
       dropModelNumBatch += (driverSubModelNum - finishedModelNum)
       if (dropPercentage == 0 || finishedModelNum >= driverSubModelNum * (1-maxDropPercentage)) {
         val value = lossSum.value / finishedModelNum
@@ -325,7 +325,7 @@ object DistriOptimizer {
           val parameters = AllReduceParameterManager.get(pid, executorId).get
           val getG = System.nanoTime()
           parameters.aggregrateGradientParition()
-          
+
           val gradients = parameters.getLocalParameter[T](parameters.getGradientExecutorId())
           gradients.div(ev.fromType(finishedModelNum))
           driverMetrics.add("aggregrateGradientParition average executor",
@@ -606,7 +606,7 @@ object DistriOptimizer {
         val parameter = AllReduceParameterManager.get(pid, executorId).getOrElse(
           AllReduceParameterManager.createParameterManager(executorIdMap(executorId),
             nodeNumber, partitionNum, parameterSize, Some(actualPort), Some(pid)))
-        
+
         if (!parameter.initFinished) {
           parameter.init(weights, broadcastState)
           parameter.initFinished = true
@@ -616,7 +616,7 @@ object DistriOptimizer {
           c._2.storage().set(parameter.getLocalParameter[T](blockId).storage())
         }
       }
-      
+
       logger.info("model thread pool size is " + Engine.model.getPoolSize)
 
       Iterator.single(Cache(

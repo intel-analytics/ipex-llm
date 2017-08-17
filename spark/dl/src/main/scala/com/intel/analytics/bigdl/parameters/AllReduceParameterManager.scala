@@ -100,14 +100,14 @@ class AllReduceParameterManager(val id: Int, val executorId: Int, executorNum: I
   private val extraSize = size % executorNum
 
   /**
-    * This method should be called on each RDD partition before parameter synchronization begins.
-    * An empty gradient tensor is placed in the block manager that can be used to store gradients.
-    * A 1 / executorNum fraction of the `parameter` tensor is copied to the block manager as a
-    * compressed tensor.
-    *
-    * @param parameter A tensor representing the initial underlying weights of this
-    *                  `AllReduceParameterManager`
-    */
+   * This method should be called on each RDD partition before parameter synchronization begins.
+   * An empty gradient tensor is placed in the block manager that can be used to store gradients.
+   * A 1 / executorNum fraction of the `parameter` tensor is copied to the block manager as a
+   * compressed tensor.
+   *
+   * @param parameter A tensor representing the initial underlying weights of this
+   *                  `AllReduceParameterManager`
+   */
   def init[T: ClassTag](parameter: Tensor[T], state: Table)
     (implicit ev: TensorNumeric[T]): Unit = {
     val _classTag = classTag[T]
@@ -159,12 +159,12 @@ class AllReduceParameterManager(val id: Int, val executorId: Int, executorNum: I
   }
 
   /**
-    * Slice aggregated gradients into chunks, and mark each chunk to be sent
-    * to the appropriate parameter node, and put it in the block manager.
-    *
-    * @param parameter A Tensor that contains gradients computed on the entire model on a single
-    *                  node.
-    */
+   * Slice aggregated gradients into chunks, and mark each chunk to be sent
+   * to the appropriate parameter node, and put it in the block manager.
+   *
+   * @param parameter A Tensor that contains gradients computed on the entire model on a single
+   *                  node.
+   */
   def putGradientsExecutor[T: ClassTag](parameter: Tensor[T]): Unit = {
     val _classTag = classTag[T]
     var pid = 0
@@ -187,10 +187,10 @@ class AllReduceParameterManager(val id: Int, val executorId: Int, executorNum: I
   }
 
   /**
-    * Retrieve gradients for the slice of the model that this node is responsible for from all the
-    * other nodes. A new thread is created for each separate node. The gradients are then summed
-    * and then stored in decompressed form in blockmanager.
-    */
+   * Retrieve gradients for the slice of the model that this node is responsible for from all the
+   * other nodes. A new thread is created for each separate node. The gradients are then summed
+   * and then stored in decompressed form in blockmanager.
+   */
   def aggregrateGradientParition[T: ClassTag](): Unit = {
     val params = new Array[CompressedTensor[T]](executorNum)
     val sgThreads = (0 until executorNum).map(pid => {
@@ -230,12 +230,12 @@ class AllReduceParameterManager(val id: Int, val executorId: Int, executorNum: I
   }
 
   /**
-    * Use a fixed thread pool to launch a thread for each node of the weights. Each thread
-    * requests a node of the weights from the Spark block manager.
-    *
-    * @param localParameter The Tensor that will hold the retrieved weights.
-    * @return A [[FutureResult]] which contains a [[Future]] for each thread.
-    */
+   * Use a fixed thread pool to launch a thread for each node of the weights. Each thread
+   * requests a node of the weights from the Spark block manager.
+   *
+   * @param localParameter The Tensor that will hold the retrieved weights.
+   * @return A [[FutureResult]] which contains a [[Future]] for each thread.
+   */
   def getWeights[T: ClassTag](localParameter: Tensor[T]): FutureResult[Int] = {
     val tasks = (0 until executorNum).map { pid =>
       syncPool.submit {
@@ -266,9 +266,9 @@ class AllReduceParameterManager(val id: Int, val executorId: Int, executorNum: I
   }
 
   /**
-    * Put the portion of the weights that this node is responsible for to the block manager.
-    * Weights are placed locally, then pulled when needed by other nodes.
-    */
+   * Put the portion of the weights that this node is responsible for to the block manager.
+   * Weights are placed locally, then pulled when needed by other nodes.
+   */
   def putWeightExecutor[T: ClassTag]() : Unit = {
     val weightExecutorId = getWeightExecutorId()
     val weightExecutor = getLocalParameter(weightExecutorId)

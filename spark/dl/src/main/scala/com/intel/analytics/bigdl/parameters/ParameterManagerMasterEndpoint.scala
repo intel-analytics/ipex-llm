@@ -39,7 +39,7 @@ private class ParameterManagerMasterEndpoint(
   override val rpcEnv: RpcEnv,
   conf: SparkConf)
   extends ThreadSafeRpcEndpoint {
-  
+
   private val blocks = new HashMap[Int, mutable.HashSet[BlockId]]
 
   override def receiveAndReply(context: RpcCallContext): PartialFunction[Any, Unit] = {
@@ -54,6 +54,9 @@ private class ParameterManagerMasterEndpoint(
 
     case ResetTotal() =>
       context.reply(resetTotal())
+
+    case _ =>
+      throw new UnsupportedOperationException("Unsupported request")
   }
 
   /** Get block lists with a given executorId */
@@ -62,9 +65,9 @@ private class ParameterManagerMasterEndpoint(
       blocks.get(executorId).toSeq
     } else Seq.empty
   }
-  
+
   private var total = 0
-  
+
   private def resetTotal(): Unit = {
     total = 0
   }
