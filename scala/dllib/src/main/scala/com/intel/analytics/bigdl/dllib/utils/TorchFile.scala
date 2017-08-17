@@ -497,7 +497,7 @@ object TorchFile {
     table("padW") = source.padW
     table("padH") = source.padH
     table("indices") = source.indices
-    table("ceil_mode") = source.ceil_mode
+    table("ceil_mode") = source.ceilMode
     writeObject(table, rawData, path, TYPE_TABLE)
     byteWrite(rawData, path)
   }
