@@ -39,7 +39,7 @@ class ConcatTable[T : ClassTag]
     }
     var i = 0
     while (i < modules.length) {
-      val currentOutput = modules(i).updateOutput(input)
+      val currentOutput = modules(i).forward(input)
       output.toTable(i + 1) = currentOutput
       i += 1
     }
