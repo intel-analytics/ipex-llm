@@ -283,14 +283,17 @@ def create_spark_conf():
     sparkConf.setAll(bigdl_conf.items())
     return sparkConf
 
-
 def get_spark_context(conf = None):
     """
     Get the current active spark context and create one if no active instance
     :param conf: combining bigdl configs into spark conf
     :return: SparkContext
     """
-    with SparkContext._lock:  # Compatible with Spark1.5.1
+    if hasattr(SparkContext, "getOrCreate"):
+        return SparkContext.getOrCreate(conf=conf or create_spark_conf())
+    else:
+        # Might have threading issue but we cann't add _lock here
+        # as it's not RLock in spark1.5
         if SparkContext._active_spark_context is None:
             SparkContext(conf=conf or create_spark_conf())
         return SparkContext._active_spark_context

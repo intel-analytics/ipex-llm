@@ -38,20 +38,20 @@ class Recurrent[T : ClassTag]()
   private var hiddenShape: Array[Int] = null
   private val currentInput = T()
   private val currentGradOutput = T()
-  private var gradInputCell = Tensor[T]()
+  private val gradInputCell = Tensor[T]()
   private var outputCell = Tensor[T]()
   private val _input = T()
   private val batchDim = 1
   private val timeDim = 2
   private val inputDim = 1
   private val hidDim = 2
-  private var cellAppendStartIdx = 0
-  private var preBatchSize = 0
   private var (batchSize, times) = (0, 0)
   private var topology: Cell[T] = null
   private var preTopology: AbstractModule[Activity, Activity, T] = null
   private val dropouts: ArrayBuffer[Array[Dropout[T]]] =
     new ArrayBuffer[Array[Dropout[T]]]
+  private val timeBuffer =
+    new ArrayBuffer[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)]
 
   /**
    *
@@ -132,15 +132,10 @@ class Recurrent[T : ClassTag]()
    * @param src
    * @param dst
    */
-  private def set(src: ArrayBuffer[Tensor[T]], dst: Tensor[T], offset: Int): Unit = {
+  private def copy(src: ArrayBuffer[Tensor[T]], dst: Tensor[T], offset: Int): Unit = {
     var t = 1
     while ((t + offset) <= times) {
       dst.select(timeDim, t + offset).copy(src(t - 1))
-      t += 1
-    }
-    t = 1
-    while ((t + offset) <= times) {
-      src(t - 1).set(dst.select(timeDim, t + offset))
       t += 1
     }
   }
@@ -194,12 +189,6 @@ class Recurrent[T : ClassTag]()
     result
   }
 
-  private def reset(src1: ArrayBuffer[Tensor[T]], src2: Tensor[T]): Unit = {
-    cellAppendStartIdx = 0
-    src1.foreach(x => x.set(Tensor[T](1)))
-    src2.set(Tensor[T](1))
-  }
-
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim == 3 || input.dim == 5 || input.dim == 6,
       "Recurrent: input should be a 3D/5D/6D Tensor, e.g [batch, times, nDim], " +
@@ -208,24 +197,8 @@ class Recurrent[T : ClassTag]()
     batchSize = input.size(batchDim)
     times = input.size(timeDim)
 
-    /**
-     * get previous batchsize.
-     * If current batchSize is not equal to previous batchSize,
-     * reset recurrent's output and cells' output to avoid
-     * address conflicts.
-     */
-    preBatchSize = if (!cells.isEmpty) {
-      cells.head.output.toTable[Tensor[T]](inputDim).size(batchDim)
-    } else {
-      0
-    }
-
-    if (preBatchSize > 0 && preBatchSize != batchSize) {
-      reset(cells.map(x => x.output.toTable[Tensor[T]](inputDim)), output)
-    }
-
     outputCell = if (preTopology != null) {
-      preTopology.updateOutput(input).toTensor[T]
+      preTopology.forward(input).toTensor[T]
     } else {
       input
     }
@@ -250,17 +223,13 @@ class Recurrent[T : ClassTag]()
      else hidden
     while (i <= times) {
       currentInput(inputDim) = outputCell.select(timeDim, i)
-      cells(i - 1).updateOutput(currentInput)
+      cells(i - 1).forward(currentInput)
       currentInput(hidDim) = cells(i - 1).output.toTable(hidDim)
       i += 1
     }
 
-    if (cellAppendStartIdx == 0 || cellAppendStartIdx < times) {
-      set(cells.slice(cellAppendStartIdx, times)
-        .map(x => x.output.toTable[Tensor[T]](inputDim)),
-        output,
-        cellAppendStartIdx)
-    }
+    copy(cells.map(x => x.output.toTable[Tensor[T]](inputDim)),
+        output, 0)
     output
   }
 
@@ -276,7 +245,6 @@ class Recurrent[T : ClassTag]()
   }
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
-    cellAppendStartIdx = cells.length
     currentGradOutput(hidDim) = gradHidden
     /**
      * Since we clone module along the time dimension, the output of each
@@ -310,16 +278,6 @@ class Recurrent[T : ClassTag]()
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    /**
-     * get previous batchsize.
-     * If current batchSize is not equal to previous batchSize,
-     * reset recurrent's gradInput and cells' gradInput to avoid
-     * address conflicts.
-     */
-
-    if (preBatchSize > 0 && preBatchSize != batchSize ) {
-      reset(cells.map(x => x.gradInput.toTable[Tensor[T]](inputDim)), gradInputCell)
-    }
 
     gradInput = if (preTopology != null) {
       /**
@@ -345,16 +303,111 @@ class Recurrent[T : ClassTag]()
       currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
       i -= 1
     }
-    if (cellAppendStartIdx == 0 || cellAppendStartIdx < times) {
-      set(cells.slice(cellAppendStartIdx, times)
-        .map(x => x.gradInput.toTable[Tensor[T]](inputDim)),
-        gradInputCell,
-        cellAppendStartIdx)
-    }
+    copy(cells.map(x => x.gradInput.toTable[Tensor[T]](inputDim)),
+        gradInputCell, 0)
     if (preTopology != null) {
       gradInput = preTopology.updateGradInput(input, gradInputCell).toTensor[T]
     }
     gradInput
+  }
+
+  override def backward(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    val st = System.nanoTime
+    currentGradOutput(hidDim) = gradHidden
+    var i = times
+    while (i >= 1) {
+      currentGradOutput(inputDim) = gradOutput.select(timeDim, i)
+      _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
+      else hidden
+      _input(inputDim) = outputCell.select(timeDim, i)
+      if (i == 1) {
+        cells(i - 1).regluarized(true)
+      } else {
+        cells(i - 1).regluarized(false)
+      }
+      cells(i - 1).backward(_input, currentGradOutput)
+      currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
+      i -= 1
+    }
+
+    gradInput = if (preTopology != null) {
+      /**
+       * if preTopology is Sequential, it has not created gradInput.
+       * Thus, it needs to create a new Tensor.
+       */
+      if (preTopology.gradInput == null) {
+        preTopology.gradInput = Tensor[T]()
+      }
+      preTopology.gradInput.toTensor[T]
+    } else {
+      gradInputCell
+    }
+    gradInputCell.resizeAs(outputCell)
+    copy(cells.map(x => x.gradInput.toTable[Tensor[T]](inputDim)),
+      gradInputCell, 0)
+
+    if (preTopology != null) {
+      gradInput = preTopology.backward(input, gradInputCell).toTensor[T]
+    }
+
+    this.backwardTime = System.nanoTime - st
+    gradInput
+  }
+
+  private def appendTimes(module: Module[T]): Unit = {
+    if (module != null) {
+      module.getTimes.foreach(x => {
+        timeBuffer.append(x)
+      })
+    }
+  }
+
+  private def bufferTime(): (Long, Long) = {
+    var forwardSum = 0L
+    var backwardSum = 0L
+    timeBuffer.foreach(x => {
+      forwardSum += x._2
+      backwardSum += x._3
+    })
+    (forwardSum, backwardSum)
+  }
+
+  override def getTimes():
+  Array[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)] = {
+    timeBuffer.clear
+
+    val head = if (!cells.isEmpty) {
+      cells.head
+    } else null
+
+    var i = 1
+    while (i < times) {
+      head.addTimes(cells(i))
+      i += 1
+    }
+
+    appendTimes(preTopology)
+    appendTimes(head)
+
+    val (bufferForward, bufferBackward) = bufferTime()
+    timeBuffer.append(
+      (this,
+        this.forwardTime - bufferForward,
+        this.backwardTime - bufferBackward))
+    timeBuffer.toArray
+  }
+
+  override def resetTimes(): Unit = {
+    if (preTopology != null) {
+      preTopology.resetTimes
+    }
+    var i = 0
+    while (i < times) {
+      cells(i).resetTimes
+      i += 1
+    }
+    this.forwardTime = 0
+    this.backwardTime = 0
   }
 
   override def clearState() : this.type = {
@@ -367,10 +420,9 @@ class Recurrent[T : ClassTag]()
     currentInput.clear()
     currentGradOutput.clear()
     _input.clear()
-    reset(cells.map(x => x.output.toTable[Tensor[T]](inputDim)), output)
-    reset(cells.map(x => x.gradInput.toTable[Tensor[T]](inputDim)), gradInputCell)
     cells.foreach(x => x.clearState())
     cells.clear()
+    timeBuffer.clear()
     initState = null
     this
   }

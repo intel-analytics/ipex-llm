@@ -227,7 +227,7 @@ object TensorflowToBigDL {
       TanhTF, ReluTF, SigmoidTF, Conv2D, Placeholder, SqueezeTF, IdentityTF, ConcatTF,
       BatchNormTF, AddConstTF1, AddConstTF2, AddTF, SoftMaxTF, ElementWiseMulTF, MulTF,
       SplitTF, PaddingTF, MeanTF, UnpackTF, StrideSliceTF, ShapeTF, FillTF, PackTF, ConstTF,
-      Flatten, Conv2D2, Conv1D
+      Flatten, Conv2D2, Conv1D, FlattenV2, BatchNormV2NHWCTF, BatchNormV2NCHWTF
     )
     res
   }
@@ -454,9 +454,7 @@ object Conv2D extends TensorflowToBigDL{
 
     val (pW, pH) =
       if (attributes.get("padding").getS.toString(Charset.defaultCharset()) == "SAME") {
-        require((kernelW - strideW) % 2 == 0)
-        require((kernelH - strideH) % 2 == 0)
-        ((kernelW - strideW) / 2, (kernelH - strideH) / 2)
+        (-1, -1)
       } else {
         (0, 0)
       }
@@ -519,9 +517,7 @@ object Conv2D2 extends TensorflowToBigDL{
 
     val (pW, pH) =
       if (attributes.get("padding").getS.toString(Charset.defaultCharset()) == "SAME") {
-        require((kernelW - strideW) % 2 == 0)
-        require((kernelH - strideH) % 2 == 0)
-        ((kernelW - strideW) / 2, (kernelH - strideH) / 2)
+        (-1, -1)
       } else {
         (0, 0)
       }
@@ -657,9 +653,7 @@ object MaxPoolingTF extends TensorflowToBigDL {
 
     val (pW, pH) =
       if (attributes.get("padding").getS.toString(Charset.defaultCharset()) == "SAME") {
-        require((ksizeW - strideW) % 2 == 0)
-        require((ksizeH - strideH) % 2 == 0)
-        ((ksizeW - strideW) / 2, (ksizeH - strideH) / 2)
+        (-1, -1)
       } else {
         (0, 0)
       }
@@ -706,9 +700,7 @@ object AvgPoolingTF extends TensorflowToBigDL{
 
     val (pW, pH) =
       if (attributes.get("padding").getS.toString(Charset.defaultCharset()) == "SAME") {
-        require((ksizeW - strideW) % 2 == 0)
-        require((ksizeH - strideH) % 2 == 0)
-        ((ksizeW - strideW) / 2, (ksizeH - strideH) / 2)
+        (-1, -1)
       } else {
         (0, 0)
       }
@@ -825,6 +817,141 @@ object IdentityTF extends TensorflowToBigDL {
     implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
 
     Input[T].element.asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+  }
+}
+
+object BatchNormV2NCHWTF extends TensorflowToBigDL{
+  private val graph = {
+    val nodeInput = Node("*")
+    val nodeMean = Node("Mean")
+    val nodeStopGrad = Node("StopGradient")
+    val nodeSub = Node("Sub")
+    val nodeSquare = Node("SquaredDifference")
+    val nodeShiftedMean = Node("Mean")
+    val node_mean = Node("Add")
+    val nodeMean_1 = Node("Mean")
+    val nodeVariance = Node("Sub")
+    val nodeAdd = Node("Add")
+    val nodeMul = Node("Mul")
+    val nodeMul_1 = Node("Mul")
+    val nodeMul_2 = Node("Mul")
+    val node_sub = Node("Sub")
+    val nodeAdd_1 = Node("Add")
+    val nodeSqueeze_1 = Node("Squeeze")
+    val nodeSqueeze = Node("Squeeze")
+    val reshape1 = Node("Reshape")
+    val reshape = Node("Reshape")
+    val reshape2 = Node("Reshape")
+    val reshape3 = Node("Reshape")
+
+    nodeInput -> nodeMul_1 -> nodeAdd_1
+    Node("Const") -> Node("Identity") -> reshape2 -> node_sub
+    nodeInput -> nodeSub -> nodeShiftedMean -> node_mean -> nodeSqueeze -> reshape -> nodeMul_2
+    nodeInput -> nodeMean -> nodeStopGrad -> node_mean
+    Node("Const") -> nodeMean
+    nodeStopGrad -> nodeSub
+    nodeInput -> nodeSquare -> nodeMean_1 -> nodeVariance
+    Node("Const") -> nodeMean_1
+    nodeStopGrad -> nodeSquare
+    Node("Const") -> nodeShiftedMean -> Node("Square") ->
+      nodeVariance -> nodeSqueeze_1 -> reshape1 -> nodeAdd
+    Node("Const") -> nodeAdd -> Node("Rsqrt") -> nodeMul -> nodeMul_1
+    Node("Const") -> Node("Identity") -> reshape3 -> nodeMul -> nodeMul_2 -> node_sub -> nodeAdd_1
+    Node("Const") -> reshape
+    Node("Const") -> reshape1
+    Node("Const") -> reshape2
+    Node("Const") -> reshape3
+    nodeAdd_1.graph(reverse = true)
+  }
+  override def topology: DirectedGraph[String] = graph
+
+  override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
+                                  context: Context[T],
+                                  byteOrder: ByteOrder)(
+          implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+
+    val biasNode = tfGraph.source.prevNodes(1).prevNodes.head.prevNodes.head.prevNodes.head.element
+    val weightNode = tfGraph.source.prevNodes(1).prevNodes(1).prevNodes(1)
+      .prevNodes(1).prevNodes.head.prevNodes.head.element
+    val (weights, gradWeights) = getOrSetTensor[T](weightNode, context, byteOrder)(t => t)
+    val (bias, gradBias) = getOrSetTensor[T](biasNode, context, byteOrder)(t => t)
+
+    val batchNorm = SpatialBatchNormalization[T](
+      nOutput = weights.size(1),
+      initWeight = weights,
+      initBias = bias,
+      initGradWeight = gradWeights,
+      initGradBias = gradBias
+    )
+
+    batchNorm.asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+  }
+}
+
+object BatchNormV2NHWCTF extends TensorflowToBigDL{
+  private val graph = {
+    val nodeInput = Node("*")
+    val nodeMean = Node("Mean")
+    val nodeStopGrad = Node("StopGradient")
+    val nodeSub = Node("Sub")
+    val nodeSquare = Node("SquaredDifference")
+    val nodeShiftedMean = Node("Mean")
+    val node_mean = Node("Add")
+    val nodeMean_1 = Node("Mean")
+    val nodeVariance = Node("Sub")
+    val nodeAdd = Node("Add")
+    val nodeMul = Node("Mul")
+    val nodeMul_1 = Node("Mul")
+    val nodeMul_2 = Node("Mul")
+    val node_sub = Node("Sub")
+    val nodeAdd_1 = Node("Add")
+    val nodeSqueeze_1 = Node("Squeeze")
+    val nodeSqueeze = Node("Squeeze")
+
+    nodeInput -> nodeMul_1 -> nodeAdd_1
+    Node("Const") -> Node("Identity") -> node_sub
+    nodeInput -> nodeSub -> nodeShiftedMean -> node_mean -> nodeSqueeze -> nodeMul_2
+    nodeInput -> nodeMean -> nodeStopGrad -> node_mean
+    Node("Const") -> nodeMean
+    nodeStopGrad -> nodeSub
+    nodeInput -> nodeSquare -> nodeMean_1 -> nodeVariance
+    Node("Const") -> nodeMean_1
+    nodeStopGrad -> nodeSquare
+    Node("Const") -> nodeShiftedMean -> Node("Square") -> nodeVariance -> nodeSqueeze_1 -> nodeAdd
+    Node("Const") -> nodeAdd -> Node("Rsqrt") -> nodeMul -> nodeMul_1
+    Node("Const") -> Node("Identity") -> nodeMul -> nodeMul_2 -> node_sub -> nodeAdd_1
+    nodeAdd_1.graph(reverse = true)
+  }
+
+  override def topology: DirectedGraph[String] = graph
+
+  override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
+                                  context: Context[T],
+                                  byteOrder: ByteOrder)(
+               implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+
+    val biasNode = tfGraph.source.prevNodes(1).prevNodes.head.prevNodes.head.element
+    val weightNode = tfGraph.source.prevNodes(1).prevNodes(1).prevNodes(1)
+      .prevNodes(1).prevNodes.head.element
+    val (weights, gradWeights) = getOrSetTensor[T](weightNode, context, byteOrder)(t => t)
+    val (bias, gradBias) = getOrSetTensor[T](biasNode, context, byteOrder)(t => t)
+
+    val batchNorm = SpatialBatchNormalization[T](
+      nOutput = weights.size(1),
+      initWeight = weights,
+      initBias = bias,
+      initGradWeight = gradWeights,
+      initGradBias = gradBias
+    )
+
+    val layer = Sequential()
+    layer.add(Transpose(Array((2, 4))))
+    layer.add(Contiguous())
+    layer.add(batchNorm)
+    layer.add(Transpose(Array((2, 4))))
+    layer.add(Contiguous())
+
+    layer.asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
   }
 }
 
@@ -1016,6 +1143,59 @@ object ConcatTF extends TensorflowToBigDL{
     val nInputDims = 4
 
     JoinTable[T](dimension = axis + 1, nInputDims = -1)
+      .asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+  }
+}
+
+object FlattenV2 extends TensorflowToBigDL {
+  private val graph = {
+    val reshapeNode = Node("Reshape")
+    val concatNode = Node("ConcatV2")
+    val sliceNode = Node("Slice")
+    val expandNode = Node("ExpandDims")
+    val prodNode = Node("Prod")
+    val sliceNode1 = Node("Slice")
+    val shapeNode = Node("Shape")
+    val beginNode = Node("Const")
+    val sizeNode = Node("Const")
+    val beginNode1 = Node("Const")
+    val sizeNode1 = Node("Const")
+    val constNode = Node("Const")
+    val dimNode = Node("Const")
+    val axisNode = Node("Const")
+    val inputNode = Node("*")
+
+    shapeNode -> sliceNode
+    beginNode -> sliceNode
+    sizeNode -> sliceNode
+
+    shapeNode -> sliceNode1
+    beginNode1 -> sliceNode1
+    sizeNode1 -> sliceNode1
+
+    sliceNode1 -> prodNode
+    constNode -> prodNode
+
+    prodNode -> expandNode
+    dimNode -> expandNode
+
+    sliceNode -> concatNode
+    expandNode -> concatNode
+    axisNode -> concatNode
+
+    inputNode -> reshapeNode
+    inputNode -> shapeNode
+    concatNode -> reshapeNode
+    reshapeNode.graph(reverse = true)
+  }
+
+  override def topology: DirectedGraph[String] = graph
+
+  override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
+           context: Context[T], byteOrder: ByteOrder)(
+    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+
+    InferReshape[T](size = Array(-1), true)
       .asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
   }
 }

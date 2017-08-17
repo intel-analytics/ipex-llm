@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.nn
 
 import org.scalatest.{FlatSpec, Matchers}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 
 import scala.math.abs
 import com.intel.analytics.bigdl._
@@ -272,5 +272,27 @@ class SpatialAveragePoolingSpec extends FlatSpec with Matchers {
     val input = Tensor[Float](1, 3, 3).rand()
     val module2 = new SpatialAveragePooling[Float](3, 3)
     module.forward(input) should be (module2.forward(input))
+  }
+
+  "A SpatialMaxPooling" should "work with SAME padding using NCHW format" in {
+    import tensor.TensorNumericMath.TensorNumeric.NumericFloat
+
+    val kW = 2
+    val kH = 2
+    val dW = 1
+    val dH = 1
+    val padW = -1
+    val padH = -1
+    val layer = new SpatialAveragePooling(kW, kH, dW, dH, padW, padH, countIncludePad = false)
+
+    val inputData = Array(
+      1.0f, 2, 3, 4
+    )
+
+    val input = Tensor(Storage(inputData), 1, Array(1, 2, 2))
+    val output = layer.updateOutput(input)
+    val gradInput = layer.backward(input, output)
+    output.storage().array() should be (Array(2.5f, 3, 3.5, 4))
+    gradInput.storage().array() should be (Array(0.625f, 2.125, 2.375, 7.875))
   }
 }

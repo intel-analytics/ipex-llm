@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 #
 # Copyright 2016 The BigDL Authors.
 #
@@ -15,24 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import tensorflow as tf
+from sys import argv
 
-. `dirname $0`/prepare_env.sh
+from util import run_model
 
-cd "`dirname $0`"
+def main():
 
-export DL_CORE_NUMBER=4
+    inputs = tf.Variable(tf.reshape(tf.range(0.0, 16), [1, 4, 4, 1]), name = 'input')
+    output = tf.layers.batch_normalization(inputs, axis=3, training=True)
 
-for p in ${PYTHON_EXECUTABLES[@]}
-do
-    echo "${cyan}Using python version: $p${reset}"
-    export PYTHON_EXECUTABLE=$p
-    export PYSPARK_PYTHON=$p
-    export PYSPARK_DRIVER_PYTHON=$p
-    $p -m pytest -v --doctest-modules ../../../pyspark/bigdl \
-    --ignore=../../../pyspark/bigdl/dataset/ \
-    --ignore=../../../pyspark/bigdl/util/ \
-    --ignore=../../../pyspark/bigdl/models/
+    named_output = tf.nn.relu(output, name="output")
 
-    $p -m pytest -v -n 4 ../../../pyspark/test/
-done
+    net_outputs = map(lambda x: tf.get_default_graph().get_tensor_by_name(x), argv[2].split(','))
+    run_model(net_outputs, argv[1], 'batchNorm', argv[3] == 'True')
 
+if __name__ == "__main__":
+    main()
