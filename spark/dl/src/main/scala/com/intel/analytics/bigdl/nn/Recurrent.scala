@@ -349,7 +349,8 @@ class Recurrent[T : ClassTag]()
     if (preTopology != null) {
       gradInput = preTopology.backward(input, gradInputCell).toTensor[T]
     }
-    backwardTime += System.nanoTime - st
+
+    this.backwardTime += System.nanoTime - st
     gradInput
   }
 
@@ -366,7 +367,7 @@ class Recurrent[T : ClassTag]()
     var backwardSum = 0L
     timeBuffer.foreach(x => {
       forwardSum += x._2
-      backwardSum += x._2
+      backwardSum += x._3
     })
     (forwardSum, backwardSum)
   }
