@@ -35,6 +35,19 @@ import scala.reflect.runtime.universe
  * oheight = op((height + 2*padH - kH) / dH + 1)
  * op is a rounding operator. By default, it is floor.
  * It can be changed by calling :ceil() or :floor() methods.
+ *
+ * When padW and padH are both -1, we use a padding algorithm similar to the "SAME"
+ * padding of tensorflow. That is
+ *
+ * outHeight = Math.ceil(inHeight.toFloat/strideH.toFloat)
+ * outWidth = Math.ceil(inWidth.toFloat/strideW.toFloat)
+ *
+ * padAlongHeight = Math.max(0, (outHeight - 1) * strideH + kernelH - inHeight)
+ * padAlongWidth = Math.max(0, (outWidth - 1) * strideW + kernelW - inWidth)
+ *
+ * padTop = padAlongHeight / 2
+ * padLeft = padAlongWidth / 2
+ *
  * @param kW              kernel width
  * @param kH              kernel height
  * @param dW              step size in width
@@ -47,7 +60,7 @@ class SpatialMaxPooling[T: ClassTag](
   val kW: Int, val kH: Int, val dW: Int, val dH: Int, val padW: Int = 0, val padH: Int = 0)
   (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
-  var ceil_mode = false
+  var ceilMode = false
   val indices = Tensor[T]()
 
   def this(kW: Int, kH: Int)(implicit ev: TensorNumeric[T]) {
@@ -59,7 +72,7 @@ class SpatialMaxPooling[T: ClassTag](
    * @return this
    */
   def ceil(): SpatialMaxPooling[T] = {
-    ceil_mode = true
+    ceilMode = true
     this
   }
 
@@ -68,61 +81,55 @@ class SpatialMaxPooling[T: ClassTag](
    * @return this
    */
   def floor(): SpatialMaxPooling[T] = {
-    ceil_mode = false
+    ceilMode = false
     this
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim() == 3 || input.dim() == 4,
       "SpatialMaxPooling: " + ErrorInfo.constrainInputAs3DOrBatch)
-    val dimw = input.dim()
-    val dimh = input.dim() - 1
-    require(input.size(dimw) >= kW - padW && input.size(dimh) >= kH - padH,
-      "input smaller than kernel size")
-    require(kW / 2 >= padW && kH / 2 >= padH, "pad should be smaller than half of kernel size")
-    val nslices = input.size(dimh - 1)
-    val iheight = input.size(dimh)
-    val iwidth = input.size(dimw)
-    var oheight: Int = 0
-    var owidth: Int = 0
-    if (ceil_mode) {
-      oheight = math.ceil(1.0 * (iheight - kH + 2 * padH) / dH).toInt + 1
-      owidth = math.ceil(1.0 * (iwidth - kW + 2 * padW) / dW).toInt + 1
-    }
-    else {
-      oheight = math.floor(1.0 * (iheight - kH + 2 * padH) / dH).toInt + 1
-      owidth = math.floor(1.0 * (iwidth - kW + 2 * padW) / dW).toInt + 1
-    }
+    val dimW = input.dim()
+    val dimH = input.dim() - 1
 
-    if (padW != 0 || padH != 0) {
-      if ((oheight - 1) * dH >= iheight + padH) oheight -= 1
-      if ((owidth - 1) * dW >= iwidth + padW) owidth -= 1
-    }
+    val nInputPlane = input.size(dimH - 1)
+    val inputHeight = input.size(dimH)
+    val inputWidth = input.size(dimW)
+
+    val (padTop, _, padLeft, _, oHeight, oWidth) =
+      if (padW == -1 && padH == -1) {
+        // no ceil/floor mode in SAME padding
+        Utils.getSAMEOutSizeAndPadding(inputHeight, inputWidth, dH, dW, kH, kW)
+      } else {
+        require(inputWidth >= kW - padW && inputHeight >= kH - padH,
+          "input smaller than kernel size")
+        require(kW / 2 >= padW && kH / 2 >= padH, "pad should be smaller than half of kernel size")
+        Utils.getOutSizeAndPadding(inputHeight, inputWidth, dH, dW, kH, kW, padH, padW, ceilMode)
+      }
 
     if (input.dim() == 3) {
-      output.resize(Array(nslices, oheight, owidth))
+      output.resize(Array(nInputPlane, oHeight, oWidth))
       /* indices will contain the locations for each output point */
-      indices.resize(Array(nslices, oheight, owidth))
+      indices.resize(Array(nInputPlane, oHeight, oWidth))
       if (classTag[T] == classTag[Double]) {
         NNPrimitive.maxPoolingForwardDouble(
           input.asInstanceOf[Tensor[Double]].storage().array(), input.storageOffset() - 1,
           output.asInstanceOf[Tensor[Double]].storage().array(), output.storageOffset() - 1,
           indices.asInstanceOf[Tensor[Double]].storage().array(), indices.storageOffset() - 1,
-          nslices, iwidth, iheight, owidth, oheight, kW, kH, dW, dH, padW, padH)
+          nInputPlane, inputWidth, inputHeight, oWidth, oHeight, kW, kH, dW, dH, padLeft, padTop)
       } else if (classTag[T] == classTag[Float]) {
         NNPrimitive.maxPoolingForwardFloat(
           input.asInstanceOf[Tensor[Float]].storage().array(), input.storageOffset() - 1,
           output.asInstanceOf[Tensor[Float]].storage().array(), output.storageOffset() - 1,
           indices.asInstanceOf[Tensor[Float]].storage().array(), indices.storageOffset() - 1,
-          nslices, iwidth, iheight, owidth, oheight, kW, kH, dW, dH, padW, padH)
+          nInputPlane, inputWidth, inputHeight, oWidth, oHeight, kW, kH, dW, dH, padLeft, padTop)
       } else {
         throw new IllegalArgumentException
       }
     }
     else {
       val nbatch = input.size(1)
-      output.resize(Array(nbatch, nslices, oheight, owidth))
-      indices.resize(Array(nbatch, nslices, oheight, owidth))
+      output.resize(Array(nbatch, nInputPlane, oHeight, oWidth))
+      indices.resize(Array(nbatch, nInputPlane, oHeight, oWidth))
       if (classTag[T] == classTag[Double]) {
         Engine.model.invokeAndWait(
           (1 to nbatch).map(i => () => {
@@ -136,8 +143,8 @@ class SpatialMaxPooling[T: ClassTag](
               curOutput.storageOffset() - 1,
               curIndices.asInstanceOf[Tensor[Double]].storage().array(),
               curIndices.storageOffset() - 1,
-              nslices, iwidth, iheight, owidth, oheight,
-              kW, kH, dW, dH, padW, padH
+              nInputPlane, inputWidth, inputHeight, oWidth, oHeight,
+              kW, kH, dW, dH, padLeft, padTop
             )
           })
         )
@@ -154,8 +161,8 @@ class SpatialMaxPooling[T: ClassTag](
               curOutput.storageOffset() - 1,
               curIndices.asInstanceOf[Tensor[Float]].storage().array(),
               curIndices.storageOffset() - 1,
-              nslices, iwidth, iheight, owidth, oheight,
-              kW, kH, dW, dH, padW, padH
+              nInputPlane, inputWidth, inputHeight, oWidth, oHeight,
+              kW, kH, dW, dH, padLeft, padTop
             )
           })
         )
@@ -169,9 +176,7 @@ class SpatialMaxPooling[T: ClassTag](
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     val dimw = input.dim()
     val dimh = input.dim() - 1
-    require(input.size(dimw) >= kW - padW && input.size(dimh) >= kH - padH,
-      "input smaller than kernel size")
-    require(kW / 2 >= padW && kH / 2 >= padH, "pad should be smaller than half of kernel size")
+
     val nslices = input.size(dimh - 1)
     val iheight = input.size(dimh)
     val iwidth = input.size(dimw)
@@ -259,7 +264,7 @@ class SpatialMaxPooling[T: ClassTag](
       dH == other.dH &&
       padW == other.padW &&
       padH == other.padH &&
-      ceil_mode == other.ceil_mode &&
+      ceilMode == other.ceilMode &&
       indices == other.indices
   }
 
@@ -272,7 +277,7 @@ class SpatialMaxPooling[T: ClassTag](
     hash = hash * seed + dH.hashCode()
     hash = hash * seed + padW.hashCode()
     hash = hash * seed + padH.hashCode()
-    hash = hash * seed + ceil_mode.hashCode()
+    hash = hash * seed + ceilMode.hashCode()
     hash = hash * seed + indices.hashCode()
 
     hash
