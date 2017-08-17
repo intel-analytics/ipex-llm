@@ -61,6 +61,8 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
     (implicit ev: TensorNumeric[T])
     extends Container[Activity, Activity, T]{
 
+  type absModule = AbstractModule[_ <: Activity, _ <: Activity, T]
+
   override def updateOutput(input: Activity): Activity = {
     var i = 0
     while(i < executions.length) {
@@ -85,6 +87,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
   }
 
   override def backward(input: Activity, gradOutput: Activity): Activity = {
+    val before = System.nanoTime()
     dummyOutput.element.gradInput = gradOutput
     var i = executions.length - 1
     while(i >= 0) {
@@ -109,14 +112,37 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
       curNode.element.backward(inputsBP(i), curGradOutput)
       i -= 1
     }
-
     gradInput = if (inputs.length == 1) {
       inputs(0).element.gradInput
     } else {
       seqToTable(inputs.map(_.element.gradInput))
     }
-
+    backwardTime += System.nanoTime() - before
     gradInput
+  }
+
+  private def calcSumTimesOfAllNodes(timesOfAllNodes: Array[(absModule, Long, Long)])
+  : (Long, Long) = {
+    var sumForward = 0L
+    var sumBackward = 0L
+    timesOfAllNodes.foreach(x => {
+      sumForward += x._2
+      sumBackward += x._3
+    })
+    (sumForward, sumBackward)
+  }
+
+  override def getTimes():
+  Array[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)] = {
+    val timesOfAllNodes = this.modules.flatMap(_.getTimes()).toArray
+    val (sumForward, sumBackward) = calcSumTimesOfAllNodes(timesOfAllNodes)
+    timesOfAllNodes ++ Array((this, this.forwardTime - sumForward, this.backwardTime - sumBackward))
+  }
+
+  override def resetTimes(): Unit = {
+    this.forwardTime = 0L
+    this.backwardTime = 0L
+    modules.foreach(_.resetTimes())
   }
 
   override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {

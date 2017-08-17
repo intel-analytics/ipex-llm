@@ -379,6 +379,7 @@ class Recurrent[T : ClassTag]()
     val head = if (!cells.isEmpty) {
       cells.head
     } else null
+
     var i = 1
     while (i < times) {
       head.addTimes(cells(i))
@@ -389,7 +390,6 @@ class Recurrent[T : ClassTag]()
     appendTimes(head)
 
     val (bufferForward, bufferBackward) = bufferTime()
-
     timeBuffer.append(
       (this,
         this.forwardTime - bufferForward,
