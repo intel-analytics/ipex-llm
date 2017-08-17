@@ -51,6 +51,8 @@ import scala.reflect._
  * @param dH              step size in height
  * @param padW            padding in width
  * @param padH            padding in height
+ * @param format          DataFormat.NCHW or DataFormat.NHWC, indicating the input
+ *                        data format
  */
 @SerialVersionUID(2277597677473874749L)
 class SpatialMaxPooling[T: ClassTag](
