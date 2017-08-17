@@ -206,7 +206,8 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
   }
 
   /**
-   * set trainable
+   * set trainable. If trainable is false, its parameters(weight/bias, if exists)
+   * are not changed in training process
    * @param trainable whether this layer is trainable
    */
   def setTrainable(trainable: Boolean): this.type = {
@@ -217,14 +218,25 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
     this
   }
 
-  private var _stopGrad: Boolean = false
+  private var _stopGradient: Boolean = false
 
-  def isStopGrad(): Boolean = {
-    _stopGrad
+  /**
+   * whether stop propagating gradInput back
+   * @return
+   */
+  def isStopGradient(): Boolean = {
+    _stopGradient
   }
 
-  def setStopGrad(isStop: Boolean = true): this.type = {
-    _stopGrad = isStop
+  /**
+   * set stop gradient. If isStopGradient is true, its input gradient
+   * is not computed. And it will not contributed to the input gradient computation of
+   * layers that depend on this layer.
+   * @param isStopGradient default is true.
+   * @return
+   */
+  def setStopGradient(isStopGradient: Boolean = true): this.type = {
+    _stopGradient = isStopGradient
     this
   }
 

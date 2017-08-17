@@ -203,10 +203,10 @@ class Node[T](val element: T) extends Serializable {
   }
 
   /**
-    * remove all previous nodes
+    * remove edges that connect previous nodes
     * @return current node
     */
-  def removePrev(): Node[T] = {
+  def removePrevEdges(): Node[T] = {
     prevs.foreach(_.nexts.-=(this))
     prevs.clear()
     this

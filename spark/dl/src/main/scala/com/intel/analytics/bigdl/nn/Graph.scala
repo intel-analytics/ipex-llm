@@ -120,7 +120,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
       })
 
       gradOutputBP(i) = curGradOutput
-      if (!curNode.element.isStopGrad()) {
+      if (!curNode.element.isStopGradient()) {
         curNode.element.backward(inputsBP.get(curNode.element.getName()), curGradOutput)
       } else {
         curNode.element.accGradParameters(inputsBP.get(curNode.element.getName()), curGradOutput)
@@ -186,7 +186,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
 
       gradOutputBP(i) = curGradOutput
 
-      if (!curNode.element.isStopGrad()) {
+      if (!curNode.element.isStopGradient()) {
         curNode.element.updateGradInput(inputsBP.get(curNode.element.getName()), curGradOutput)
       }
       i += 1
@@ -248,13 +248,13 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
     _.element.asInstanceOf[AbstractModule[Activity, Activity, T]]))
 
   /**
-    * build is needed when the stopGrad is changed
-    */
+   * build is needed when the stopGrad is changed
+   */
   def build(): this.type = {
     val gradGraph = backGraph.cloneGraph()
     dummyOutputGrad = gradGraph.source
     val nodes = gradGraph.DFS
-    nodes.filter(_.element.isStopGrad()).foreach(_.removePrev())
+    nodes.filter(_.element.isStopGradient()).foreach(_.removePrevEdges())
     backwardExecutions = gradGraph.topologySort.filter(!_.element.isInstanceOf[Dummy[T]])
     clearState()
     this
@@ -330,9 +330,10 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
   }
 
   /**
-   * set an array of layers to be freezed, which means their parameters are not changed
+   * set an array of layers that match the given ```names``` to be "freezed",
+   * i.e. their parameters(weight/bias, if exists) are not changed in training process
    * @param names an array of layer names
-   * @return
+   * @return current graph model
    */
   def setFreeze(names: Array[String]): this.type = {
     names.foreach(name => {
@@ -345,7 +346,8 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
   }
 
   /**
-   * set all layers to be trainable
+   * "unfreeze" all layers, i.e. make the layer parameters(weight/bias, if exists)
+   * to be trained(updated) in training process
    */
   def unFreeze(): this.type = {
     modules.foreach(layer => {
@@ -355,11 +357,35 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
     this
   }
 
-  override def reset(): Unit = {
-    modules.foreach(_.setStopGrad(false))
-    unFreeze()
+  /**
+   * stop the input gradient of layers that match the given ```names```
+   * their input gradient are not computed.
+   * And they will not contributed to the input gradient computation of
+   * layers that depend on them.
+   * @param names an array of layer names
+   * @return current graph model
+   */
+  def setStopGradient(names: Array[String]): this.type = {
+    names.foreach(name => {
+      val layer = getSubModule(name)
+      require(layer.isDefined, s"cannot find layer match ${name}")
+      layer.get.setStopGradient(true)
+    })
+    build()
+    this
   }
 
+
+  override def reset(): Unit = {
+    modules.foreach(_.setStopGradient(false))
+    unFreeze()
+    build()
+  }
+
+  /**
+   * get forward executions
+   * @return
+   */
   def getForwardExecutions : Array[Node[AbstractModule[Activity, Tensor[T], T]]] = {
     forwardExecutions
   }

@@ -385,6 +385,17 @@ class Layer(JavaValue):
                         "setLayerTrainable", self.value, trainable)
         return self
 
+    def set_stop_gradient(self, stop_gradient):
+        '''
+        set stop gradient. If isStopGradient is true, its input gradient
+        is not computed. And it will not contributed to the input gradient computation of
+        layers that depend on this layer.
+        :param stop_gradient: whether stop gradient
+        '''
+        callBigDlFunc(self.bigdl_type,
+                        "setLayerStopGradient", self.value, stop_gradient)
+        return self
+
 
 
 class Container(Layer):
@@ -503,22 +514,12 @@ class Model(Container):
 
     def set_freeze(self, freeze_layers, bigdl_type="float"):
         """
-        set an array of layers to be freezed, the rest of layers are trainable
+        set an array of layers to be freezed
         :param freeze_layers: an array of layer names
         :param bigdl_type:
         :return:
         """
         callBigDlFunc(bigdl_type, "setFreeze", self.value, freeze_layers)
-        return self
-
-    def set_trainable(self, trainable_layers, bigdl_type="float"):
-        """
-        set an array of layers to be trainable, the rest of layers are freezed
-        :param trainable_layers:  an array of layer names
-        :param bigdl_type:
-        :return:
-        """
-        callBigDlFunc(bigdl_type, "setTrainable", self.value, trainable_layers)
         return self
 
     def unfreeze(self, bigdl_type="float"):
@@ -528,6 +529,19 @@ class Model(Container):
         :return:
         """
         callBigDlFunc(bigdl_type, "unFreeze", self.value)
+        return self
+
+    def set_stop_gradient(self, stop_layers, bigdl_type="float"):
+        """
+        stop the input gradient of layers that match the given ```names```
+        their input gradient are not computed.
+        And they will not contributed to the input gradient computation of
+        layers that depend on them.
+        :param stop_layers:  an array of layer names
+        :param bigdl_type:
+        :return:
+        """
+        callBigDlFunc(bigdl_type, "setStopGradient", self.value, stop_layers)
         return self
 
 

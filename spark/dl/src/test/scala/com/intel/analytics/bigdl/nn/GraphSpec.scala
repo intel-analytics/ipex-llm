@@ -652,7 +652,7 @@ class GraphSpec extends FlatSpec with Matchers {
 
   "Graph backward sequential with propagateBack false in the first" should "work properly" in {
     RandomGenerator.RNG.setSeed(1000)
-    val input = Reshape(Array(1, 28, 28)).setStopGrad().inputs()
+    val input = Reshape(Array(1, 28, 28)).setStopGradient().inputs()
     val conv1 = SpatialConvolution(1, 6, 5, 5).setName("conv1").inputs(input)
     val tanh1 = Tanh().inputs(conv1)
     val pool1 = SpatialMaxPooling(2, 2, 2, 2).inputs(tanh1)
@@ -714,7 +714,7 @@ class GraphSpec extends FlatSpec with Matchers {
     val input = Reshape(Array(1, 28, 28)).setName("r1").inputs()
     val conv1 = SpatialConvolution(1, 6, 5, 5).setName("conv1").inputs(input)
     val tanh1 = Tanh().setName("tanh1").inputs(conv1)
-    val pool1 = SpatialMaxPooling(2, 2, 2, 2).setName("pool1").setStopGrad().inputs(tanh1)
+    val pool1 = SpatialMaxPooling(2, 2, 2, 2).setName("pool1").setStopGradient().inputs(tanh1)
     val tanh2 = Tanh().setName("tanh2").inputs(pool1)
     val conv2 = SpatialConvolution(6, 12, 5, 5).setName("conv2").inputs(tanh2)
     val pool2 = SpatialMaxPooling(2, 2, 2, 2).inputs(conv2)
@@ -775,7 +775,7 @@ class GraphSpec extends FlatSpec with Matchers {
     val fc1_1 = Linear(4, 2).inputs()
     val fc2_1 = Linear(4, 2).inputs()
     val cadd_1 = CAddTable().inputs(fc1_1, fc2_1)
-    val output1_1 = ReLU().setStopGrad().inputs(cadd_1)
+    val output1_1 = ReLU().setStopGradient().inputs(cadd_1)
     val output2_1 = Threshold(10.0).inputs(cadd_1)
 
     val graphNoBack = Graph(Array(fc2_1, fc1_1), Array(output1_1, output2_1))
@@ -825,7 +825,7 @@ class GraphSpec extends FlatSpec with Matchers {
     val graph = Graph(Array(fc2, fc1), Array(output1, output2))
     RandomGenerator.RNG.setSeed(1000)
     val fc1_1 = Linear(4, 2).inputs()
-    val fc2_1 = Linear(4, 2).setStopGrad().inputs()
+    val fc2_1 = Linear(4, 2).setStopGradient().inputs()
     val cadd_1 = CAddTable().inputs(fc1_1, fc2_1)
     val output1_1 = ReLU().inputs(cadd_1)
     val output2_1 = Threshold(10.0).inputs(cadd_1)
@@ -864,7 +864,7 @@ class GraphSpec extends FlatSpec with Matchers {
     RandomGenerator.RNG.setSeed(1000)
     val reshape = Reshape(Array(4)).inputs()
     val fc1_1 = Linear(4, 2).inputs()
-    val fc2_1 = Linear(4, 2).setStopGrad().inputs(reshape)
+    val fc2_1 = Linear(4, 2).setStopGradient().inputs(reshape)
     val cadd_1 = CAddTable().inputs(fc1_1, fc2_1)
     val output1_1 = ReLU().inputs(cadd_1)
     val output2_1 = Threshold(10.0).inputs(cadd_1)
@@ -903,7 +903,7 @@ class GraphSpec extends FlatSpec with Matchers {
     val graph = Graph(Array(fc2, fc1), Array(output1, output2))
     RandomGenerator.RNG.setSeed(1000)
     val fc1_1 = Linear(4, 2).inputs()
-    val fc2_1 = Linear(4, 2).setStopGrad().inputs()
+    val fc2_1 = Linear(4, 2).setStopGradient().inputs()
     val cadd_1 = CAddTable().inputs(fc1_1, fc2_1)
     val output1_1 = ReLU().inputs(cadd_1)
     val output2_1 = Threshold(10.0).inputs(cadd_1)
@@ -930,7 +930,7 @@ class GraphSpec extends FlatSpec with Matchers {
     fc1_1.element.parameters()._2 should be (fc1.element.parameters()._2)
 
     // reset propagateBack
-    fc2_1.element.setStopGrad(false)
+    fc2_1.element.setStopGradient(false)
     graphNoBack.build()
     graphNoBack.zeroGradParameters()
     graphNoBack.forward(input) should be (graph.forward(input))
@@ -941,131 +941,100 @@ class GraphSpec extends FlatSpec with Matchers {
     graphNoBack.parameters()._2 should be (graph.parameters()._2)
   }
 
-//  "graph setFreeze" should "work properly" in {
-//    RandomGenerator.RNG.setSeed(1000)
-//    val fc1 = Linear(4, 2).inputs()
-//    val fc2 = Linear(4, 2).inputs()
-//    val cadd = CAddTable().inputs(fc1, fc2)
-//    val output1 = ReLU().inputs(cadd)
-//    val output2 = Threshold(10.0).inputs(cadd)
-//
-//    val graph = Graph(Array(fc2, fc1), Array(output1, output2))
-//    RandomGenerator.RNG.setSeed(1000)
-//    val reshape = Reshape(Array(4)).inputs()
-//    val fc1_1 = Linear(4, 2).inputs()
-//    val fc2_1 = Linear(4, 2).setName("fc2_1").inputs(reshape)
-//    val cadd_1 = CAddTable().inputs(fc1_1, fc2_1)
-//    val output1_1 = ReLU().inputs(cadd_1)
-//    val output2_1 = Threshold(10.0).inputs(cadd_1)
-//
-//    val graphNoBack = Graph(Array(reshape, fc1_1), Array(output1_1, output2_1))
-//    graphNoBack.setFreeze(Array("fc2_1"))
-//
-//    fc1.element.getParameters()._1.apply1(_ => 1.0f)
-//    fc2.element.getParameters()._1.apply1(_ => 2.0f)
-//    fc1_1.element.getParameters()._1.apply1(_ => 1.0f)
-//    fc2_1.element.getParameters()._1.apply1(_ => 2.0f)
-//
-//    val input = T(Tensor(T(0.1f, 0.2f, -0.3f, -0.4f)),
-//      Tensor(T(0.5f, 0.4f, -0.2f, -0.1f)))
-//    graph.forward(input) should be (graphNoBack.forward(input))
-//
-//
-//    val gradOutput = T(Tensor(T(1.0f, 2.0f)), Tensor(T(3.0f, 4.0f)))
-//
-//    graph.backward(input, gradOutput)
-//    graphNoBack.backward(input, gradOutput)
-//    fc2_1.element.gradInput.toTensor.nElement() should be (0)
-//    output2.element.gradInput should be (output2_1.element.gradInput)
-//    fc1_1.element.gradInput should be (fc1.element.gradInput)
-//    fc1_1.element.parameters()._2 should be (fc1.element.parameters()._2)
-//    reshape.element.gradInput.toTensor.nElement() should be (0)
-//  }
 
-//  "graph setTrainable" should "work properly" in {
-//    RandomGenerator.RNG.setSeed(1000)
-//    val fc1 = Linear(4, 2).inputs()
-//    val fc2 = Linear(4, 2).inputs()
-//    val cadd = CAddTable().inputs(fc1, fc2)
-//    val output1 = ReLU().inputs(cadd)
-//    val output2 = Threshold(10.0).inputs(cadd)
-//
-//    val graph = Graph(Array(fc2, fc1), Array(output1, output2))
-//    RandomGenerator.RNG.setSeed(1000)
-//    val reshape = Reshape(Array(4)).inputs()
-//    val fc1_1 = Linear(4, 2).setName("fc1_1").inputs()
-//    val fc2_1 = Linear(4, 2).setName("fc2_1").inputs(reshape)
-//    val cadd_1 = CAddTable().inputs(fc1_1, fc2_1)
-//    val output1_1 = ReLU().inputs(cadd_1)
-//    val output2_1 = Threshold(10.0).inputs(cadd_1)
-//
-//    val graphNoBack = Graph(Array(reshape, fc1_1), Array(output1_1, output2_1))
-//    graphNoBack.setTrainable(Array("fc1_1"))
-//
-//    fc1.element.getParameters()._1.apply1(_ => 1.0f)
-//    fc2.element.getParameters()._1.apply1(_ => 2.0f)
-//    fc1_1.element.getParameters()._1.apply1(_ => 1.0f)
-//    fc2_1.element.getParameters()._1.apply1(_ => 2.0f)
-//
-//    val input = T(Tensor(T(0.1f, 0.2f, -0.3f, -0.4f)),
-//      Tensor(T(0.5f, 0.4f, -0.2f, -0.1f)))
-//    graph.forward(input) should be (graphNoBack.forward(input))
-//
-//
-//    val gradOutput = T(Tensor(T(1.0f, 2.0f)), Tensor(T(3.0f, 4.0f)))
-//
-//    graph.backward(input, gradOutput)
-//    graphNoBack.backward(input, gradOutput)
-//    fc2_1.element.gradInput.toTensor.nElement() should be (0)
-//    output2.element.gradInput should be (output2_1.element.gradInput)
-//    fc1_1.element.gradInput should be (fc1.element.gradInput)
-//    fc1_1.element.parameters()._2 should be (fc1.element.parameters()._2)
-//    reshape.element.gradInput.toTensor.nElement() should be (0)
-//  }
+  "markdown test" should "work" in {
+    val reshape = Reshape(Array(4)).inputs()
+    val fc1 = Linear(4, 2).setName("fc1").inputs()
+    val fc2 = Linear(4, 2).setName("fc2").inputs(reshape)
+    val cadd_1 = CAddTable().setName("cadd").inputs(fc1, fc2)
+    val output1_1 = ReLU().inputs(cadd_1)
+    val output2_1 = Threshold(10.0).inputs(cadd_1)
 
-//  "graph unfreeze" should "work properly" in {
-//    RandomGenerator.RNG.setSeed(1000)
-//    val fc1 = Linear(4, 2).inputs()
-//    val fc2 = Linear(4, 2).inputs()
-//    val cadd = CAddTable().inputs(fc1, fc2)
-//    val output1 = ReLU().inputs(cadd)
-//    val output2 = Threshold(10.0).inputs(cadd)
-//
-//    val graph = Graph(Array(fc2, fc1), Array(output1, output2))
-//    RandomGenerator.RNG.setSeed(1000)
-//    val reshape = Reshape(Array(4)).inputs()
-//    val fc1_1 = Linear(4, 2).setName("fc1_1").inputs()
-//    val fc2_1 = Linear(4, 2).setName("fc2_1").inputs(reshape)
-//    val cadd_1 = CAddTable().inputs(fc1_1, fc2_1)
-//    val output1_1 = ReLU().inputs(cadd_1)
-//    val output2_1 = Threshold(10.0).inputs(cadd_1)
-//
-//    val graphNoBack = Graph(Array(reshape, fc1_1), Array(output1_1, output2_1))
-//    graphNoBack.setTrainable(Array("fc1_1"))
-//    graphNoBack.unFreeze()
-//
-//    fc1.element.getParameters()._1.apply1(_ => 1.0f)
-//    fc2.element.getParameters()._1.apply1(_ => 2.0f)
-//    fc1_1.element.getParameters()._1.apply1(_ => 1.0f)
-//    fc2_1.element.getParameters()._1.apply1(_ => 2.0f)
-//
-//    val input = T(Tensor(T(0.1f, 0.2f, -0.3f, -0.4f)),
-//      Tensor(T(0.5f, 0.4f, -0.2f, -0.1f)))
-//    graph.forward(input) should be (graphNoBack.forward(input))
-//
-//
-//    val gradOutput = T(Tensor(T(1.0f, 2.0f)), Tensor(T(3.0f, 4.0f)))
-//
-//    graph.backward(input, gradOutput)
-//    graphNoBack.zeroGradParameters()
-//    graphNoBack.forward(input) should be (graph.forward(input))
-//    graphNoBack.backward(input, gradOutput)
-//
-//    graphNoBack.parameters()._1 should be (graph.parameters()._1)
-//
-//    graphNoBack.parameters()._2 should be (graph.parameters()._2)
-//  }
+    val model = Graph(Array(reshape, fc1), Array(output1_1, output2_1))
 
+
+
+    val input = T(Tensor(T(0.1f, 0.2f, -0.3f, -0.4f)),
+      Tensor(T(0.5f, 0.4f, -0.2f, -0.1f)))
+    val gradOutput = T(Tensor(T(1.0f, 2.0f)), Tensor(T(3.0f, 4.0f)))
+
+    fc1.element.getParameters()._1.apply1(_ => 1.0f)
+    fc2.element.getParameters()._1.apply1(_ => 2.0f)
+    model.zeroGradParameters()
+    println("output1: \n", model.forward(input))
+    model.backward(input, gradOutput)
+    model.updateParameters(1)
+    println("fc2 weight \n", fc2.element.parameters()._1(0))
+
+
+    fc1.element.getParameters()._1.apply1(_ => 1.0f)
+    fc2.element.getParameters()._1.apply1(_ => 2.0f)
+    model.zeroGradParameters()
+    model.setFreeze(Array("fc2"))
+    println("output2: \n", model.forward(input))
+    model.backward(input, gradOutput)
+    model.updateParameters(1)
+    println("fc2 weight \n", fc2.element.parameters()._1(0))
+
+    fc1.element.getParameters()._1.apply1(_ => 1.0f)
+    fc2.element.getParameters()._1.apply1(_ => 2.0f)
+    model.zeroGradParameters()
+    model.unFreeze()
+    println("output3: \n", model.forward(input))
+    model.backward(input, gradOutput)
+    model.updateParameters(1)
+    println("fc2 weight \n", fc2.element.parameters()._1(0))
+
+    fc1.element.getParameters()._1.apply1(_ => 1.0f)
+    fc2.element.getParameters()._1.apply1(_ => 2.0f)
+    model.setStopGradient(Array("cadd"))
+    model.zeroGradParameters()
+    println("output4: \n", model.forward(input))
+    model.backward(input, gradOutput)
+    model.updateParameters(1)
+    println("fc1 weight \n", fc1.element.parameters()._1(0))
+    println("fc2 weight \n", fc2.element.parameters()._1(0))
+  }
+  "graph setFreeze" should "work properly" in {
+    RandomGenerator.RNG.setSeed(1000)
+    val fc1 = Linear(4, 2).inputs()
+    val fc2 = Linear(4, 2).inputs()
+    val cadd = CAddTable().inputs(fc1, fc2)
+    val output1 = ReLU().inputs(cadd)
+    val output2 = Threshold(10.0).inputs(cadd)
+
+    val graph = Graph(Array(fc2, fc1), Array(output1, output2))
+    RandomGenerator.RNG.setSeed(1000)
+    val reshape = Reshape(Array(4)).inputs()
+    val fc1_1 = Linear(4, 2).inputs()
+    val fc2_1 = Linear(4, 2).setName("fc2_1").inputs(reshape)
+    val cadd_1 = CAddTable().inputs(fc1_1, fc2_1)
+    val output1_1 = ReLU().inputs(cadd_1)
+    val output2_1 = Threshold(10.0).inputs(cadd_1)
+
+    val graphNoBack = Graph(Array(reshape, fc1_1), Array(output1_1, output2_1))
+    graphNoBack.setFreeze(Array("fc2_1"))
+
+    fc1.element.getParameters()._1.apply1(_ => 1.0f)
+    fc2.element.getParameters()._1.apply1(_ => 2.0f)
+    fc1_1.element.getParameters()._1.apply1(_ => 1.0f)
+    fc2_1.element.getParameters()._1.apply1(_ => 2.0f)
+
+    val input = T(Tensor(T(0.1f, 0.2f, -0.3f, -0.4f)),
+      Tensor(T(0.5f, 0.4f, -0.2f, -0.1f)))
+    graph.forward(input) should be (graphNoBack.forward(input))
+
+
+    val gradOutput = T(Tensor(T(1.0f, 2.0f)), Tensor(T(3.0f, 4.0f)))
+
+    graph.backward(input, gradOutput)
+    graphNoBack.backward(input, gradOutput)
+    fc2_1.element.gradInput.toTensor.nElement() should be (0)
+    output2.element.gradInput should be (output2_1.element.gradInput)
+    fc1_1.element.gradInput should be (fc1.element.gradInput)
+    fc1_1.element.parameters()._2 should be (fc1.element.parameters()._2)
+    reshape.element.gradInput.toTensor.nElement() should be (0)
+  }
 }
 
 object ModelUntils {

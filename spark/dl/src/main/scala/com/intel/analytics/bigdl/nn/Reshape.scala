@@ -51,6 +51,8 @@ class Reshape[@specialized(Float, Double) T: ClassTag](
     nElement *= size(i - 1)
   }
 
+  private var inplace: Boolean = true
+
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
 
     if ((batchMode.nonEmpty && !batchMode.get) ||
@@ -60,7 +62,10 @@ class Reshape[@specialized(Float, Double) T: ClassTag](
         s"reshape size is: ${nElement}")
       if (input.isContiguous()) output =
         input.view(size)
-      else output = input.contiguous().view(size)
+      else {
+        output = input.contiguous().view(size)
+        inplace = false
+      }
     }
     else {
       require(input.nElement() == nElement * input.size(1),
@@ -72,6 +77,7 @@ class Reshape[@specialized(Float, Double) T: ClassTag](
         output = input.view(batchSize)
       } else {
         output = input.contiguous().view(batchSize)
+        inplace = false
       }
     }
     output
@@ -127,6 +133,15 @@ class Reshape[@specialized(Float, Double) T: ClassTag](
 
   override def toString(): String = {
     s"${getPrintName}(${size.mkString("x")})"
+  }
+
+  override def clearState(): this.type = {
+    if (!inplace) {
+      // inplace operation, so skip clear output
+      output.set()
+    }
+    gradInput.set()
+    this
   }
 }
 
