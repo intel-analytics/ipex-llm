@@ -1001,7 +1001,9 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   override def cdiv(x: Tensor[T], y: Tensor[T]): Tensor[T] = DenseTensorMath.cdiv(this, x, y)
 
   /**
-   * stores the element-wise maximum of x and y in x.
+   * stores the element-wise maximum of x and y in x.=======
+      ev.addcdiv(value, this.storage().array(), this.storageOffset() - 1,
+>>>>>>> add boolean, short, int, long, string, char to tensor support
    * x.cmax(y) = max(x, y)
    *
    * @param y tensor
