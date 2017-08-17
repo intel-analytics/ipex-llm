@@ -86,20 +86,20 @@ class RecurrentSpec extends FlatSpec with Matchers {
   }
 
   "A Recurrent" should " call getTimes correctly" in {
-    val hiddenSize = 4
-    val inputSize = 5
-    val outputSize = 5
-    val time = 4
-    val batchSize1 = 5
+    val hiddenSize = 128
+    val inputSize = 1280
+    val outputSize = 128
+    val time = 30
+    val batchSize1 = 100
     val batchSize2 = 8
     val seed = 100
     RNG.setSeed(seed)
 
     val model = Sequential[Double]()
       .add(Recurrent[Double]()
-        .add(RnnCell[Double](inputSize, hiddenSize, Tanh[Double]())))
+        .add(LSTM[Double](inputSize, hiddenSize)))
       .add(Select(2, 1))
-      .add(Linear[Double](hiddenSize, outputSize))
+//      .add(Linear[Double](hiddenSize, outputSize))
 
     val input = Tensor[Double](Array(batchSize1, time, inputSize)).rand
     val gradOutput = Tensor[Double](batchSize1, outputSize).rand
@@ -109,7 +109,7 @@ class RecurrentSpec extends FlatSpec with Matchers {
     model.resetTimes
     model.getTimes
 
-    for (i <- 1 to 5) {
+    for (i <- 1 to 10) {
       model.resetTimes
       model.forward(input)
       model.backward(input, gradOutput)
