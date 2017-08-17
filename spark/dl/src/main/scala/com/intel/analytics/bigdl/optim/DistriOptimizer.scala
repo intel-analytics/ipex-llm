@@ -167,7 +167,7 @@ object DistriOptimizer {
         (data, modelIter) => {
           val cached = modelIter.next()
           val executorId = SparkEnv.get.executorId
-          val parameters = AllReduceParameterManager.get(pid, executorId)
+          val parameters = AllReduceParameterManager.get(pid, executorId).get
           val syWStart = System.nanoTime()
           /*
             Note: All models in `cached` share the same storage for weights, so we only need to
@@ -286,7 +286,7 @@ object DistriOptimizer {
 
           if (partitionNum == Engine.nodeNumber()) {
             time = System.nanoTime()
-            parameters.putGradients(cached.gradient)
+            parameters.putGradientsExecutor(cached.gradient)
             driverMetrics.add("put gradient", System.nanoTime() - time)
           } else {
             time = System.nanoTime()
@@ -301,13 +301,13 @@ object DistriOptimizer {
       if (partitionNum != Engine.nodeNumber()) {
         dummyRDD.mapPartitions { iter =>
           val executorId = SparkEnv.get.executorId
-          val parameters = AllReduceParameterManager.get(pid, executorId)
+          val parameters = AllReduceParameterManager.get(pid, executorId).get
           var t = System.nanoTime()
           val gradient = parameters.aggregateLocalGradient()
           driverMetrics.add("aggregate local gradient", System.nanoTime() - t)
 
           t = System.nanoTime()
-          parameters.putGradients(gradient)
+          parameters.putGradientsExecutor(gradient)
           driverMetrics.add("put gradient", System.nanoTime() - t)
           Iterator.empty
         }.count()
@@ -322,7 +322,7 @@ object DistriOptimizer {
         dummyRDD.mapPartitions { iter =>
           val optimMethod = iter.next()
           val executorId = SparkEnv.get.executorId
-          val parameters = AllReduceParameterManager.get(pid, executorId)
+          val parameters = AllReduceParameterManager.get(pid, executorId).get
           val getG = System.nanoTime()
           parameters.aggregrateGradientParition()
           
@@ -343,7 +343,7 @@ object DistriOptimizer {
           optimMethod.optimize(_ => (ev.fromType(value), gradients), weights)
           driverMetrics.add("compute weight average", System.nanoTime() - time)
           time = System.nanoTime()
-          parameters.sendWeightExecutor()
+          parameters.putWeightExecutor()
           driverMetrics.add("send weights average", System.nanoTime() - time)
           parameters.job1Start = false
           Iterator.empty
@@ -603,11 +603,10 @@ object DistriOptimizer {
       val executorId = SparkEnv.get.executorId
       AllReduceParameterManager.synchronized {
         AllReduceParameterManager.setExecutorMap(executorIdMap)
-        var parameter = AllReduceParameterManager.get(pid, executorId)
-        if (parameter == null) {
-          parameter = AllReduceParameterManager.createParameterManager(executorIdMap(executorId),
-            nodeNumber, partitionNum, parameterSize, actualPort)
-        }
+        val parameter = AllReduceParameterManager.get(pid, executorId).getOrElse(
+          AllReduceParameterManager.createParameterManager(executorIdMap(executorId),
+            nodeNumber, partitionNum, parameterSize, Some(actualPort), Some(pid)))
+        
         if (!parameter.initFinished) {
           parameter.init(weights, broadcastState)
           parameter.initFinished = true
@@ -740,7 +739,7 @@ object DistriOptimizer {
     val (weights, gradients) = models.mapPartitions(iter => {
       val cached = iter.next()
       val executorId = SparkEnv.get.executorId
-      val parameter = AllReduceParameterManager.get(pid, executorId)
+      val parameter = AllReduceParameterManager.get(pid, executorId).get
       Iterator.single((Map(parameter.executorId ->
         parameter.getLocalParameter[T](parameter.getWeightExecutorId())),
         Map(parameter.executorId ->

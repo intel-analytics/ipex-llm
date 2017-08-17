@@ -45,15 +45,14 @@ object AllReduceParameterManager {
     executorIdMap = map
   }
 
-  def get(id: Int, executorId: String): AllReduceParameterManager = {
+  def get(id: Int, executorId: String): Option[AllReduceParameterManager] = {
     val eid = id + "exe" + executorIdMap(executorId)
-    if (pm.contains(eid)) pm(eid)
-    else null
+    pm.get(eid)
   }
 
   def createParameterManager[T: ClassTag](executorId: Int, executorNum: Int, partitionNum: Int,
-    size: Int, port: Int = -1): AllReduceParameterManager = {
-    val id = nextId.getAndIncrement()
+    size: Int, port: Option[Int] = None, pid: Option[Int] = None): AllReduceParameterManager = {
+    val id = pid.getOrElse(nextId.getAndIncrement())
     val conf = SparkEnv.get.conf
     val master = ParameterManagerMaster.createEnv(conf, port)
     val p = new AllReduceParameterManager(id, executorId, executorNum, partitionNum, size, master)
@@ -86,7 +85,7 @@ class AllReduceParameterManager(val id: Int, val executorId: Int, executorNum: I
   private val syncPoolSize: Int = System.getProperty(
     "bigdl.Parameter.syncPoolSize", "4").toInt
 
-  val syncPool = Executors.newFixedThreadPool(syncPoolSize, new ThreadFactory {
+  private val syncPool = Executors.newFixedThreadPool(syncPoolSize, new ThreadFactory {
     override def newThread(r: Runnable): Thread = {
       val t = Executors.defaultThreadFactory().newThread(r)
       t.setDaemon(true)
@@ -97,8 +96,8 @@ class AllReduceParameterManager(val id: Int, val executorId: Int, executorNum: I
   var job1Start: Boolean = false
   var initFinished = false
 
-  val taskSize = size / executorNum
-  val extraSize = size % executorNum
+  private val taskSize = size / executorNum
+  private val extraSize = size % executorNum
 
   /**
     * This method should be called on each RDD partition before parameter synchronization begins.
@@ -166,7 +165,7 @@ class AllReduceParameterManager(val id: Int, val executorId: Int, executorNum: I
     * @param parameter A Tensor that contains gradients computed on the entire model on a single
     *                  node.
     */
-  def putGradients[T: ClassTag](parameter: Tensor[T]): Unit = {
+  def putGradientsExecutor[T: ClassTag](parameter: Tensor[T]): Unit = {
     val _classTag = classTag[T]
     var pid = 0
     while (pid < executorNum) {
@@ -270,7 +269,7 @@ class AllReduceParameterManager(val id: Int, val executorId: Int, executorNum: I
     * Put the portion of the weights that this node is responsible for to the block manager.
     * Weights are placed locally, then pulled when needed by other nodes.
     */
-  def sendWeightExecutor[T: ClassTag]() : Unit = {
+  def putWeightExecutor[T: ClassTag]() : Unit = {
     val weightExecutorId = getWeightExecutorId()
     val weightExecutor = getLocalParameter(weightExecutorId)
     val blockId = getWeightBlockId(executorId)
@@ -307,14 +306,6 @@ class AllReduceParameterManager(val id: Int, val executorId: Int, executorNum: I
     master.updateBlockId(executorId, gradientsId)
   }
 
-  def getGradientBlockId(pidFrom : Int, pidTo : Int): BlockId = {
-    SparkExtension.getLocalBlockId(id + "pm" + pidTo + "gBytes" + pidFrom)
-  }
-
-  def getWeightBlockId(pid : Int): BlockId = {
-    SparkExtension.getLocalBlockId(id + "pm_wBytes" + pid)
-  }
-
   def getWeightExecutorId(): BlockId = {
     SparkExtension.getLocalBlockId(id + "pm_w" + executorId)
   }
@@ -323,11 +314,19 @@ class AllReduceParameterManager(val id: Int, val executorId: Int, executorNum: I
     SparkExtension.getLocalBlockId(id + "weight" + executorId)
   }
 
-  def getGradientPartitionId(pid: Int): BlockId = {
-    SparkExtension.getLocalBlockId(id + "pm_g_p" + pid)
-  }
-
   def getGradientExecutorId(): BlockId = {
     SparkExtension.getLocalBlockId(id + "pm_g" + executorId)
+  }
+
+  private def getGradientBlockId(pidFrom : Int, pidTo : Int): BlockId = {
+    SparkExtension.getLocalBlockId(id + "pm" + pidTo + "gBytes" + pidFrom)
+  }
+
+  private def getWeightBlockId(pid : Int): BlockId = {
+    SparkExtension.getLocalBlockId(id + "pm_wBytes" + pid)
+  }
+
+  private def getGradientPartitionId(pid: Int): BlockId = {
+    SparkExtension.getLocalBlockId(id + "pm_g_p" + pid)
   }
 }

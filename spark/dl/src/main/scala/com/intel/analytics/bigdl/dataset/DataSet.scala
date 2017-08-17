@@ -265,7 +265,7 @@ class CachedDistriDataSet[T: ClassTag] private[dataset]
         0
       }
       require(localData.length > 0, "Found an empty partition! Please check your rdd" +
-        "and reduce core or node numbers if necessary")
+        "and reduce node numbers or partition numbers if necessary")
       new Iterator[T] {
         private val _offset = new AtomicInteger(offset)
 
