@@ -350,7 +350,7 @@ class Recurrent[T : ClassTag]()
       gradInput = preTopology.backward(input, gradInputCell).toTensor[T]
     }
 
-    this.backwardTime += System.nanoTime - st
+    this.backwardTime = System.nanoTime - st
     gradInput
   }
 

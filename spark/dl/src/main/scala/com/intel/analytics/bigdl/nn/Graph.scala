@@ -117,7 +117,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
     } else {
       seqToTable(inputs.map(_.element.gradInput))
     }
-    backwardTime += System.nanoTime() - before
+    backwardTime = System.nanoTime() - before
     gradInput
   }
 
