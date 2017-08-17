@@ -178,10 +178,10 @@ object DistriOptimizer {
             weightsResult = parameters.getWeights(cached.modelWeights.head)
           } else {
             AllReduceParameterManager.synchronized {
-              if (!parameters.job1Start) {
+              if (!parameters.syncWeight) {
                 weightsResult = parameters.getWeights(cached.modelWeights.head)
                 weightsResult.waitResult()
-                parameters.job1Start = true
+                parameters.syncWeight = true
               }
             }
           }
@@ -345,7 +345,7 @@ object DistriOptimizer {
           time = System.nanoTime()
           parameters.putWeightExecutor()
           driverMetrics.add("send weights average", System.nanoTime() - time)
-          parameters.job1Start = false
+          parameters.syncWeight = false
           Iterator.empty
         }.count()
         val job3end = System.nanoTime()

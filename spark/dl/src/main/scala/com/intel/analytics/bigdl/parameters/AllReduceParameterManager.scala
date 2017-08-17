@@ -93,7 +93,9 @@ class AllReduceParameterManager(val id: Int, val executorId: Int, executorNum: I
     }
   })
 
-  var job1Start: Boolean = false
+  // Used to make sure in one iteration, in each executor, get weight is only executed once
+  var syncWeight: Boolean = false
+  // Used to make sure in each executor, init is only executed once
   var initFinished = false
 
   private val taskSize = size / executorNum
