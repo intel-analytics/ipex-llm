@@ -228,7 +228,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
   // Add a dummy output node for backward graph,
   // dummyOutputGrad has the same function as dummyOutput
   // used to construct a backward graph
-  private var dummyOutputGrad: ModuleNode[T] = null
+  private var dummyOutputGrad: ModuleNode[T] = _
   outputs.foreach(_ -> dummyOutput)
 
   /**
