@@ -69,37 +69,6 @@ class SpatialMaxPoolingSpec extends FlatSpec with Matchers {
     assert(gradOutput == gradOutputOrg)
   }
 
-
-  "A SpatialMaxPoolingNHWC" should "generate correct output and gradInput" in {
-
-    import tensor.TensorNumericMath.TensorNumeric.NumericDouble
-    val module = new SpatialMaxPooling(2, 2, 2, 2)
-    val moduleNHWC = new SpatialMaxPooling(2, 2, 2, 2, format = DataFormat.NHWC)
-    val input = Tensor(2, 4, 3, 3).randn()
-    val gradOutput = Tensor(2, 4, 1, 1).randn()
-
-    val inputNHWC = Tensor(input.size()).copy(input)
-      .transpose(2, 4).transpose(2, 3).contiguous()
-     val gradOutputNHWC = Tensor(gradOutput.size()).copy(gradOutput)
-      .transpose(2, 4).transpose(2, 3)
-
-    val expectedOutput = module.forward(input)
-    val expectedGrad = module.backward(input, gradOutput)
-
-    val output = moduleNHWC.forward(inputNHWC)
-    val gradInput = moduleNHWC.backward(inputNHWC, gradOutputNHWC)
-    expectedOutput.map(output.transpose(2, 4).transpose(3, 4), (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6)
-      v1
-    })
-
-    expectedGrad.map(gradInput.transpose(2, 4).transpose(3, 4), (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6)
-      v1
-    })
-  }
-
-
   "A SpatialMaxPooling of float" should "generate correct output and gradInput" in {
     val module = new SpatialMaxPooling[Float](2, 2)
     val input = Tensor[Float](1, 3, 3)
@@ -415,5 +384,54 @@ class SpatialMaxPoolingSpec extends FlatSpec with Matchers {
     val gradInput = layer.backward(input, output)
     output.storage().array() should be (Array(4.0f, 4, 4, 4))
     gradInput.storage().array() should be (Array(0.0f, 0, 0, 16))
+  }
+
+  "A SpatialMaxPoolingNHWC" should "generate correct output and gradInput" in {
+
+    import tensor.TensorNumericMath.TensorNumeric.NumericDouble
+    case class Pooling(kW: Int, kH: Int, dW: Int, dH: Int, pW: Int, pH: Int)
+    val params = List(
+      Pooling(3, 3, 1, 1, 0, 0),
+      Pooling(1, 1, 1, 1, 0, 0),
+      Pooling(5, 5, 1, 1, 0, 0),
+      Pooling(3, 3, 2, 2, 0, 0),
+      Pooling(1, 1, 2, 2, 0, 0),
+      Pooling(5, 5, 2, 2, 0, 0),
+      Pooling(3, 3, 2, 2, 1, 1),
+      Pooling(5, 5, 2, 2, 1, 1),
+      Pooling(1, 1, 2, 2, -1, -1),
+      Pooling(5, 5, 2, 2, -1, -1),
+      Pooling(2, 2, 1, 1, -1, -1)
+    )
+    for (param <- params) {
+      println(param)
+
+      val module = new SpatialMaxPooling(param.kW, param.kH, param.dW, param.dH, param.pW, param.pH)
+      val moduleNHWC = new SpatialMaxPooling(param.kW, param.kH, param.dW, param.dH,
+        param.pW, param.pH, format = DataFormat.NHWC)
+
+      val input = Tensor(2, 4, 5, 5).randn()
+
+      val inputNHWC = Tensor(input.size()).copy(input)
+        .transpose(2, 4).transpose(2, 3).contiguous()
+
+      val expectedOutput = module.forward(input)
+      val expectedGrad = module.backward(input, expectedOutput)
+
+      var output = moduleNHWC.forward(inputNHWC)
+      var gradInput = moduleNHWC.backward(inputNHWC, output)
+      output = output.transpose(2, 4).transpose(3, 4)
+      gradInput = gradInput.transpose(2, 4).transpose(3, 4)
+      expectedOutput.map(output, (v1, v2) => {
+        assert(abs(v1 - v2) < 1e-6)
+        v1
+      })
+
+      expectedGrad.map(gradInput, (v1, v2) => {
+        assert(abs(v1 - v2) < 1e-6)
+        v1
+      })
+
+    }
   }
 }
