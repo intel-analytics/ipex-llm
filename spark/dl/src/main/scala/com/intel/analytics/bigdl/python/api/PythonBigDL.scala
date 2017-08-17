@@ -1422,7 +1422,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def loadBigDL(path: String): AbstractModule[Activity, Activity, T] = {
-    Module.loadModule[T](path)
+    Module.load[T](path)
   }
 
   def loadTorch(path: String): AbstractModule[Activity, Activity, T] = {
