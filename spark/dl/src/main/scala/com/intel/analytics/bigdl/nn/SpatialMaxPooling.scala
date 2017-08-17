@@ -323,7 +323,7 @@ object SpatialMaxPooling extends ModuleSerializable {
     val maxPoolingBuilder = BigDLModule.newBuilder(super.serializeModule(module))
     val maxPooling = module.module.asInstanceOf[SpatialMaxPooling[T]]
     val ceilBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(ceilBuilder, maxPooling.ceil_mode, universe.typeOf[Boolean])
+    DataConverter.setAttributeValue(ceilBuilder, maxPooling.ceilMode, universe.typeOf[Boolean])
     maxPoolingBuilder.putAttr("ceil_mode", ceilBuilder.build)
     maxPoolingBuilder.build
   }
