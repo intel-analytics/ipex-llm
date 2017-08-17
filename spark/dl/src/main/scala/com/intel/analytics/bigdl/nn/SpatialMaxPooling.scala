@@ -114,13 +114,13 @@ class SpatialMaxPooling[T: ClassTag](
               input.asInstanceOf[Tensor[Double]],
               output.asInstanceOf[Tensor[Double]],
               indices.asInstanceOf[Tensor[Double]],
-              oWidth, oHeight, kW, kH, dW, dH, padW, padH)
+              oWidth, oHeight, kW, kH, dW, dH, padLeft, padTop)
           } else if (classTag[T] == classTag[Float]) {
             NNPrimitive.maxPoolingForwardFloat(
               input.asInstanceOf[Tensor[Float]],
               output.asInstanceOf[Tensor[Float]],
               indices.asInstanceOf[Tensor[Float]],
-              oWidth, oHeight, kW, kH, dW, dH, padW, padH)
+              oWidth, oHeight, kW, kH, dW, dH, padLeft, padTop)
           } else {
             throw new IllegalArgumentException
           }
@@ -133,13 +133,13 @@ class SpatialMaxPooling[T: ClassTag](
               input.asInstanceOf[Tensor[Double]],
               output.asInstanceOf[Tensor[Double]],
               indices.asInstanceOf[Tensor[Double]],
-              oWidth, oHeight, kW, kH, dW, dH, padW, padH)
+              oWidth, oHeight, kW, kH, dW, dH, padLeft, padTop)
           } else if (classTag[T] == classTag[Float]) {
             NNPrimitive.maxPoolingForwardFloatNHWC(
               input.asInstanceOf[Tensor[Float]],
               output.asInstanceOf[Tensor[Float]],
               indices.asInstanceOf[Tensor[Float]],
-              oWidth, oHeight, kW, kH, dW, dH, padW, padH)
+              oWidth, oHeight, kW, kH, dW, dH, padLeft, padTop)
           } else {
             throw new IllegalArgumentException
           }
@@ -161,7 +161,7 @@ class SpatialMaxPooling[T: ClassTag](
                   curOutput.asInstanceOf[Tensor[Double]],
                   curIndices.asInstanceOf[Tensor[Double]],
                   oWidth, oHeight,
-                  kW, kH, dW, dH, padW, padH
+                  kW, kH, dW, dH, padLeft, padTop
                 )
               })
             )
@@ -176,7 +176,7 @@ class SpatialMaxPooling[T: ClassTag](
                   curOutput.asInstanceOf[Tensor[Float]],
                   curIndices.asInstanceOf[Tensor[Float]],
                   oWidth, oHeight,
-                  kW, kH, dW, dH, padW, padH
+                  kW, kH, dW, dH, padLeft, padTop
                 )
               })
             )
@@ -197,7 +197,7 @@ class SpatialMaxPooling[T: ClassTag](
                   curOutput.asInstanceOf[Tensor[Double]],
                   curIndices.asInstanceOf[Tensor[Double]],
                   oWidth, oHeight,
-                  kW, kH, dW, dH, padW, padH
+                  kW, kH, dW, dH, padLeft, padTop
                 )
               })
             )
@@ -212,7 +212,7 @@ class SpatialMaxPooling[T: ClassTag](
                   curOutput.asInstanceOf[Tensor[Float]],
                   curIndices.asInstanceOf[Tensor[Float]],
                   oWidth, oHeight,
-                  kW, kH, dW, dH, padW, padH
+                  kW, kH, dW, dH, padLeft, padTop
                 )
               })
             )

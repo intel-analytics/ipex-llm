@@ -723,9 +723,9 @@ private[nn] object NNPrimitive {
 
     val gradInput = gradInputTensor.storage().array()
     val gradInputOffset = gradInputTensor.storageOffset() - 1
-    val gradOutput = gradOutputTensor.storage()
+    val gradOutput = gradOutputTensor.storage().array()
     val gradOutputOffset = gradOutputTensor.storageOffset() - 1
-    val indices = indicesTensor.storage()
+    val indices = indicesTensor.storage().array()
     val indicesOffset = indicesTensor.storageOffset() - 1
 
     val slices = Range(0, nSlices).iterator
@@ -757,9 +757,9 @@ private[nn] object NNPrimitive {
 
     val gradInput = gradInputTensor.storage().array()
     val gradInputOffset = gradInputTensor.storageOffset() - 1
-    val gradOutput = gradOutputTensor.storage()
+    val gradOutput = gradOutputTensor.storage().array()
     val gradOutputOffset = gradOutputTensor.storageOffset() - 1
-    val indices = indicesTensor.storage()
+    val indices = indicesTensor.storage().array()
     val indicesOffset = indicesTensor.storageOffset() - 1
 
     val slices = Range(0, nSlices).iterator
@@ -909,9 +909,9 @@ private[nn] object NNPrimitive {
 
     val gradInput = gradInputTensor.storage().array()
     val gradInputOffset = gradInputTensor.storageOffset() - 1
-    val gradOutput = gradOutputTensor.storage()
+    val gradOutput = gradOutputTensor.storage().array()
     val gradOutputOffset = gradOutputTensor.storageOffset() - 1
-    val indices = indicesTensor.storage()
+    val indices = indicesTensor.storage().array()
     val indicesOffset = indicesTensor.storageOffset() - 1
 
     var i = 0
@@ -945,9 +945,9 @@ private[nn] object NNPrimitive {
 
     val gradInput = gradInputTensor.storage().array()
     val gradInputOffset = gradInputTensor.storageOffset() - 1
-    val gradOutput = gradOutputTensor.storage()
+    val gradOutput = gradOutputTensor.storage().array()
     val gradOutputOffset = gradOutputTensor.storageOffset() - 1
-    val indices = indicesTensor.storage()
+    val indices = indicesTensor.storage().array()
     val indicesOffset = indicesTensor.storageOffset() - 1
 
     var i = 0
