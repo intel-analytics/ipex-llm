@@ -34,10 +34,7 @@ import scala.reflect.ClassTag
 object ModuleSerializer extends ModuleSerializable{
 
   private val runtimeMirror = universe.runtimeMirror(getClass.getClassLoader)
-
- // private val moduleMaps = new mutable.HashMap[String, Class[_]]()
- // private val classMaps = new mutable.HashMap[Class[_], String]()
- // private val deserializerMaps = new mutable.HashMap[String, ModuleSerializable]()
+  
   private val serializerMaps = new mutable.HashMap[String, ModuleSerializable]()
 
   // generic type definition for type matching
