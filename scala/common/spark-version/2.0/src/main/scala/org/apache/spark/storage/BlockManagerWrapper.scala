@@ -61,8 +61,8 @@ object BlockManagerWrapper {
 
   def unlock(blockId : BlockId): Unit = {
     val blockInfoManager = SparkEnv.get.blockManager.blockInfoManager
-    if(blockInfoManager.get(blockId).isDefined) {
-      blockInfoManager.unlock(blockId)
+    if (blockInfoManager.get(blockId).isDefined) {
+      unlockFn(blockId)
     }
   }
 
@@ -131,6 +131,29 @@ object BlockManagerWrapper {
         (blockId: BlockId, bytes: ChunkedByteBuffer, level: StorageLevel) =>
           putBytesMethod.invoke(SparkEnv.get.blockManager,
             blockId, bytes, level, JBoolean.TRUE, JBoolean.FALSE, null)
+    }
+  }
+
+  private val unlockFn: (BlockId) => Unit = {
+    val bimClass = classOf[BlockInfoManager]
+    // Spark 2.0.0-2.0.2, 2.1.0-2.1.1 declare:
+    // def unlock(blockId: BlockId): Unit
+    val unlockMethod =
+      try {
+        bimClass.getMethod("unlock", classOf[BlockId])
+      } catch {
+        case _: NoSuchMethodException =>
+          // But 2.0.3+, 2.1.2+, 2.2.0+ declare:
+          // def unlock(blockId: BlockId, taskAttemptId: Option[TaskAttemptId] = None): Unit
+          bimClass.getMethod("unlock", classOf[BlockId], classOf[Option[_]])
+      }
+    unlockMethod.getParameterTypes.length match {
+      case 1 =>
+        (blockId: BlockId) =>
+          unlockMethod.invoke(SparkEnv.get.blockManager.blockInfoManager, blockId)
+      case 2 =>
+        (blockId: BlockId) =>
+          unlockMethod.invoke(SparkEnv.get.blockManager.blockInfoManager, blockId, None)
     }
   }
 
