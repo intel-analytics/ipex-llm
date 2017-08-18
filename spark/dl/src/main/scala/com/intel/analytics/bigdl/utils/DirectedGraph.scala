@@ -221,10 +221,6 @@ class Node[T](val element: T) extends Serializable {
 
   private val nexts = new ArrayBuffer[Node[T]]()
   private val prevs = new ArrayBuffer[Node[T]]()
-
-  def cloneNode(): Node[T] = {
-    new Node[T](element)
-  }
 }
 
 object Node {
