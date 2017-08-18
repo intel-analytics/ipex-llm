@@ -42,8 +42,11 @@ Please note that it is highly recommended to run BigDL in the region where the c
 ---
 ## **Play Around with BigDL**
 Once your dataproc cluster is ready, directly go to the following URL (change `bigdl` into your own cluster name if you are using a different one) to play around BigDL in Jupyter Notebook. Note that you need to [create an SSH tunel and SOCKS proxy](https://cloud.google.com/dataproc/docs/concepts/cluster-web-interfaces) to visit them. 
-* Jupyter Notebook: http://bigdl-m:8888/
-* Tensorboard: http://bigdl-m:6006/
-* YARN ResourceManager: http://bigdl-m:8088/
+
+* Jupyter Notebook: [http://bigdl-m:8888/](http://bigdl-m:8888/)
+
+* Tensorboard: [http://bigdl-m:6006/](http://bigdl-m:6006/)
+
+* YARN ResourceManager: [http://bigdl-m:8088/](http://bigdl-m:8088/)
 
 Inside your Jupyter Notebook, you may find two examples are already there. Start your BigDL journey with them.
