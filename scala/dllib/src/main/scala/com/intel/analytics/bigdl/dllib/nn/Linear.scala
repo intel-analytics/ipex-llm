@@ -47,10 +47,10 @@ class Linear[T: ClassTag](
   val withBias: Boolean = true,
   var wRegularizer: Regularizer[T] = null,
   var bRegularizer: Regularizer[T] = null,
-  initWeight: Tensor[T] = null,
-  initBias: Tensor[T] = null,
-  initGradWeight: Tensor[T] = null,
-  initGradBias: Tensor[T] = null
+  private val initWeight: Tensor[T] = null,
+  private val initBias: Tensor[T] = null,
+  private val initGradWeight: Tensor[T] = null,
+  private val initGradBias: Tensor[T] = null
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
   val weight: Tensor[T] =
     if (initWeight != null) initWeight else Tensor[T](outputSize, inputSize)

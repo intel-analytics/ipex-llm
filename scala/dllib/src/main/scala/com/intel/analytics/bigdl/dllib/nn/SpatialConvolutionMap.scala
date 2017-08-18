@@ -35,7 +35,7 @@ import scala.reflect.ClassTag
  *                    applied to the bias.
  */
 @SerialVersionUID(5288662921102331388L)
-class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
+class SpatialConvolutionMap[T: ClassTag](
   val connTable: Tensor[T],
   val kW: Int, // The kernel width of the convolution
   val kH: Int, // The kernel height of the convolution

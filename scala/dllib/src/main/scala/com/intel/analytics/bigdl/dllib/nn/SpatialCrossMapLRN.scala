@@ -40,7 +40,7 @@ import scala.reflect._
  * @param k
  */
 @SerialVersionUID(3641570491004969703L)
-class SpatialCrossMapLRN[@specialized(Float, Double) T: ClassTag]
+class SpatialCrossMapLRN[T: ClassTag]
 (val size: Int = 5, val alpha: Double = 1.0, val beta: Double = 0.75, val k: Double = 1.0)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
