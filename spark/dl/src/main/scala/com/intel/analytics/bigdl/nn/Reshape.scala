@@ -51,6 +51,8 @@ class Reshape[@specialized(Float, Double) T: ClassTag](
     nElement *= size(i - 1)
   }
 
+  // whether share the storage between input and output
+  // in this layer, if input is contiguous, inplace is true. otherwise, inplace is false
   private var inplace: Boolean = true
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {

@@ -218,28 +218,6 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
     this
   }
 
-  private var _stopGradient: Boolean = false
-
-  /**
-   * whether stop propagating gradInput back
-   * @return
-   */
-  def isStopGradient(): Boolean = {
-    _stopGradient
-  }
-
-  /**
-   * set stop gradient. If isStopGradient is true, its input gradient
-   * is not computed. And it will not contributed to the input gradient computation of
-   * layers that depend on this layer.
-   * @param isStopGradient default is true.
-   * @return
-   */
-  def setStopGradient(isStopGradient: Boolean = true): this.type = {
-    _stopGradient = isStopGradient
-    this
-  }
-
   /**
    * Takes an input object, and computes the corresponding output of the module. After a forward,
    * the output state variable should have been updated to the new value.

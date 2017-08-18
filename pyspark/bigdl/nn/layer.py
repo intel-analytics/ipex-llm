@@ -385,17 +385,6 @@ class Layer(JavaValue):
                         "setLayerTrainable", self.value, trainable)
         return self
 
-    def set_stop_gradient(self, stop_gradient):
-        '''
-        set stop gradient. If isStopGradient is true, its input gradient
-        is not computed. And it will not contributed to the input gradient computation of
-        layers that depend on this layer.
-        :param stop_gradient: whether stop gradient
-        '''
-        callBigDlFunc(self.bigdl_type,
-                        "setLayerStopGradient", self.value, stop_gradient)
-        return self
-
 
 
 class Container(Layer):

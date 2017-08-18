@@ -652,7 +652,7 @@ class GraphSpec extends FlatSpec with Matchers {
 
   "Graph backward sequential with propagateBack false in the first" should "work properly" in {
     RandomGenerator.RNG.setSeed(1000)
-    val input = Reshape(Array(1, 28, 28)).setStopGradient().inputs()
+    val input = Reshape(Array(1, 28, 28)).setName("reshape").inputs()
     val conv1 = SpatialConvolution(1, 6, 5, 5).setName("conv1").inputs(input)
     val tanh1 = Tanh().inputs(conv1)
     val pool1 = SpatialMaxPooling(2, 2, 2, 2).inputs(tanh1)
@@ -681,6 +681,8 @@ class GraphSpec extends FlatSpec with Matchers {
 
     val funcModelNoBack = Graph(input, output)
     val funcModelOriginal = Graph(input2, output_2)
+
+    funcModelNoBack.setStopGradient(Array("reshape"))
 
     val inputData = Tensor(4, 28 * 28).rand()
     val outputData1 = funcModelOriginal.forward(inputData) // warm up
@@ -714,7 +716,7 @@ class GraphSpec extends FlatSpec with Matchers {
     val input = Reshape(Array(1, 28, 28)).setName("r1").inputs()
     val conv1 = SpatialConvolution(1, 6, 5, 5).setName("conv1").inputs(input)
     val tanh1 = Tanh().setName("tanh1").inputs(conv1)
-    val pool1 = SpatialMaxPooling(2, 2, 2, 2).setName("pool1").setStopGradient().inputs(tanh1)
+    val pool1 = SpatialMaxPooling(2, 2, 2, 2).setName("pool1").inputs(tanh1)
     val tanh2 = Tanh().setName("tanh2").inputs(pool1)
     val conv2 = SpatialConvolution(6, 12, 5, 5).setName("conv2").inputs(tanh2)
     val pool2 = SpatialMaxPooling(2, 2, 2, 2).inputs(conv2)
@@ -739,6 +741,7 @@ class GraphSpec extends FlatSpec with Matchers {
     val output_2 = LogSoftMax().inputs(fc2_2)
 
     val funcModelNoBack = Graph(input, output)
+    funcModelNoBack.setStopGradient(Array("pool1"))
     val funcModelOriginal = Graph(input2, output_2)
 
     val inputData = Tensor(4, 28 * 28).rand()
@@ -775,10 +778,11 @@ class GraphSpec extends FlatSpec with Matchers {
     val fc1_1 = Linear(4, 2).inputs()
     val fc2_1 = Linear(4, 2).inputs()
     val cadd_1 = CAddTable().inputs(fc1_1, fc2_1)
-    val output1_1 = ReLU().setStopGradient().inputs(cadd_1)
+    val output1_1 = ReLU().setName("relu").inputs(cadd_1)
     val output2_1 = Threshold(10.0).inputs(cadd_1)
 
     val graphNoBack = Graph(Array(fc2_1, fc1_1), Array(output1_1, output2_1))
+    graphNoBack.setStopGradient(Array("relu"))
 
     RandomGenerator.RNG.setSeed(1000)
     val fc1_2 = Linear(4, 2).inputs()
@@ -825,12 +829,13 @@ class GraphSpec extends FlatSpec with Matchers {
     val graph = Graph(Array(fc2, fc1), Array(output1, output2))
     RandomGenerator.RNG.setSeed(1000)
     val fc1_1 = Linear(4, 2).inputs()
-    val fc2_1 = Linear(4, 2).setStopGradient().inputs()
+    val fc2_1 = Linear(4, 2).setName("fc2_1").inputs()
     val cadd_1 = CAddTable().inputs(fc1_1, fc2_1)
     val output1_1 = ReLU().inputs(cadd_1)
     val output2_1 = Threshold(10.0).inputs(cadd_1)
 
     val graphNoBack = Graph(Array(fc2_1, fc1_1), Array(output1_1, output2_1))
+    graphNoBack.setStopGradient(Array("fc2_1"))
 
     fc1.element.getParameters()._1.apply1(_ => 1.0f)
     fc2.element.getParameters()._1.apply1(_ => 2.0f)
@@ -864,13 +869,13 @@ class GraphSpec extends FlatSpec with Matchers {
     RandomGenerator.RNG.setSeed(1000)
     val reshape = Reshape(Array(4)).inputs()
     val fc1_1 = Linear(4, 2).inputs()
-    val fc2_1 = Linear(4, 2).setStopGradient().inputs(reshape)
+    val fc2_1 = Linear(4, 2).setName("fc2_1").inputs(reshape)
     val cadd_1 = CAddTable().inputs(fc1_1, fc2_1)
     val output1_1 = ReLU().inputs(cadd_1)
     val output2_1 = Threshold(10.0).inputs(cadd_1)
 
     val graphNoBack = Graph(Array(reshape, fc1_1), Array(output1_1, output2_1))
-
+    graphNoBack.setStopGradient(Array("fc2_1"))
     fc1.element.getParameters()._1.apply1(_ => 1.0f)
     fc2.element.getParameters()._1.apply1(_ => 2.0f)
     fc1_1.element.getParameters()._1.apply1(_ => 1.0f)
@@ -903,12 +908,13 @@ class GraphSpec extends FlatSpec with Matchers {
     val graph = Graph(Array(fc2, fc1), Array(output1, output2))
     RandomGenerator.RNG.setSeed(1000)
     val fc1_1 = Linear(4, 2).inputs()
-    val fc2_1 = Linear(4, 2).setStopGradient().inputs()
+    val fc2_1 = Linear(4, 2).setName("fc2_1").inputs()
     val cadd_1 = CAddTable().inputs(fc1_1, fc2_1)
     val output1_1 = ReLU().inputs(cadd_1)
     val output2_1 = Threshold(10.0).inputs(cadd_1)
 
     val graphNoBack = Graph(Array(fc2_1, fc1_1), Array(output1_1, output2_1))
+    graphNoBack.setStopGradient(Array("fc2_1"))
 
     fc1.element.getParameters()._1.apply1(_ => 1.0f)
     fc2.element.getParameters()._1.apply1(_ => 2.0f)
@@ -930,7 +936,7 @@ class GraphSpec extends FlatSpec with Matchers {
     fc1_1.element.parameters()._2 should be (fc1.element.parameters()._2)
 
     // reset propagateBack
-    fc2_1.element.setStopGradient(false)
+    graphNoBack.reset()
     graphNoBack.build()
     graphNoBack.zeroGradParameters()
     graphNoBack.forward(input) should be (graph.forward(input))

@@ -203,22 +203,4 @@ abstract class Container[A <: Activity : ClassTag,
       }
     }
   }
-
-  /**
-   * get all submodules map, use the module name as key
-   */
-  def getSubModules(): Map[String, Module[T]] = {
-    val nameToSubModules = Utils.getNamedModules(this)
-    nameToSubModules
-  }
-
-  /**
-   * get submodule by module name
-   */
-  def getSubModule(name: String): Option[Module[T]] = {
-    val subModules = getSubModules()
-    if (subModules.contains(name)) {
-      Some(subModules(name))
-    } else None
-  }
 }

@@ -120,7 +120,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
       })
 
       gradOutputBP(i) = curGradOutput
-      if (!curNode.element.isStopGradient()) {
+      if (!isStopGradient(curNode.element)) {
         curNode.element.backward(inputsBP.get(curNode.element.getName()), curGradOutput)
       } else {
         curNode.element.accGradParameters(inputsBP.get(curNode.element.getName()), curGradOutput)
@@ -186,7 +186,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
 
       gradOutputBP(i) = curGradOutput
 
-      if (!curNode.element.isStopGradient()) {
+      if (!isStopGradient(curNode.element)) {
         curNode.element.updateGradInput(inputsBP.get(curNode.element.getName()), curGradOutput)
       }
       i += 1
@@ -254,7 +254,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
     val gradGraph = backGraph.cloneGraph()
     dummyOutputGrad = gradGraph.source
     val nodes = gradGraph.DFS
-    nodes.filter(_.element.isStopGradient()).foreach(_.removePrevEdges())
+    nodes.filter(x => isStopGradient(x.element)).foreach(_.removePrevEdges())
     backwardExecutions = gradGraph.topologySort.filter(!_.element.isInstanceOf[Dummy[T]])
     clearState()
     this
@@ -269,7 +269,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
 
   private val gradOutputBP = new Array[Tensor[T]](forwardExecutions.length)
 
-  private def checkRoots : Unit = {
+  private def checkRoots: Unit = {
     val roots = forwardExecutions.filter(_.prevNodes.size == 0)
       .filter(node => !node.element.isInstanceOf[WithoutInput])
     require(roots.size == inputs.length,
@@ -337,7 +337,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
    */
   def setFreeze(names: Array[String]): this.type = {
     names.foreach(name => {
-      val layer = getSubModule(name)
+      val layer = this (name)
       require(layer.isDefined, s"cannot find layer match ${name}")
       layer.get.setScaleW(0)
       layer.get.setScaleB(0)
@@ -357,6 +357,17 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
     this
   }
 
+
+  private var stopGradientLayers: util.HashSet[AbstractModule[_ <: Activity, _ <: Activity, T]] = _
+
+  /**
+   * whether stop propagating gradInput back
+   * @return
+   */
+  private def isStopGradient(module: AbstractModule[_ <: Activity, _ <: Activity, T]): Boolean = {
+    null != stopGradientLayers && stopGradientLayers.contains(module)
+  }
+
   /**
    * stop the input gradient of layers that match the given ```names```
    * their input gradient are not computed.
@@ -367,9 +378,11 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
    */
   def setStopGradient(names: Array[String]): this.type = {
     names.foreach(name => {
-      val layer = getSubModule(name)
+      val layer = this (name)
       require(layer.isDefined, s"cannot find layer match ${name}")
-      layer.get.setStopGradient(true)
+      if (stopGradientLayers == null) stopGradientLayers =
+        new util.HashSet[AbstractModule[_ <: Activity, _ <: Activity, T]]()
+      stopGradientLayers.add(layer.get)
     })
     build()
     this
@@ -377,7 +390,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
 
 
   override def reset(): Unit = {
-    modules.foreach(_.setStopGradient(false))
+    stopGradientLayers.clear()
     unFreeze()
     build()
   }
@@ -386,7 +399,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
    * get forward executions
    * @return
    */
-  def getForwardExecutions : Array[Node[AbstractModule[Activity, Tensor[T], T]]] = {
+  def getForwardExecutions: Array[Node[AbstractModule[Activity, Tensor[T], T]]] = {
     forwardExecutions
   }
 }
@@ -404,9 +417,9 @@ object Graph extends ContainerSerializable {
    * @param output output node
    * @return a graph container
    */
-  def apply[T: ClassTag](input : Array[ModuleNode[T]], output : Array[ModuleNode[T]],
-      variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None)
-      (implicit ev: TensorNumeric[T]) : Graph[T] = {
+  def apply[T: ClassTag](input: Array[ModuleNode[T]], output: Array[ModuleNode[T]],
+                         variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None)
+                        (implicit ev: TensorNumeric[T]): Graph[T] = {
     new Graph[T](input, output, variables)
   }
 
@@ -416,8 +429,8 @@ object Graph extends ContainerSerializable {
    * @param output output nodes
    * @return a graph container
    */
-  def apply[T: ClassTag](input : ModuleNode[T], output : Array[ModuleNode[T]])
-    (implicit ev: TensorNumeric[T]) : Graph[T] = {
+  def apply[T: ClassTag](input: ModuleNode[T], output: Array[ModuleNode[T]])
+                        (implicit ev: TensorNumeric[T]): Graph[T] = {
     new Graph[T](Array(input), output)
   }
 
@@ -427,8 +440,8 @@ object Graph extends ContainerSerializable {
    * @param output output node
    * @return a graph container
    */
-  def apply[T: ClassTag](input : Array[ModuleNode[T]], output : ModuleNode[T])
-    (implicit ev: TensorNumeric[T]) : Graph[T] = {
+  def apply[T: ClassTag](input: Array[ModuleNode[T]], output: ModuleNode[T])
+                        (implicit ev: TensorNumeric[T]): Graph[T] = {
     new Graph[T](input, Array(output))
   }
 
@@ -438,8 +451,8 @@ object Graph extends ContainerSerializable {
    * @param output output nodes
    * @return a graph container
    */
-  def apply[T: ClassTag](input : ModuleNode[T], output : ModuleNode[T])
-    (implicit ev: TensorNumeric[T]) : Graph[T] = {
+  def apply[T: ClassTag](input: ModuleNode[T], output: ModuleNode[T])
+                        (implicit ev: TensorNumeric[T]): Graph[T] = {
     new Graph[T](Array(input), Array(output))
   }
 
@@ -532,5 +545,6 @@ object Graph extends ContainerSerializable {
 private[bigdl] class Dummy[T: ClassTag]()(implicit ev: TensorNumeric[T])
   extends AbstractModule[Activity, Tensor[T], T] {
   override def updateOutput(input: Activity): Tensor[T] = null
+
   override def updateGradInput(input: Activity, gradOutput: Tensor[T]): Activity = null
 }
