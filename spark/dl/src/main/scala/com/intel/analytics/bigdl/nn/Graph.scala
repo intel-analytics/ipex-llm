@@ -417,9 +417,9 @@ object Graph extends ContainerSerializable {
    * @param output output node
    * @return a graph container
    */
-  def apply[T: ClassTag](input: Array[ModuleNode[T]], output: Array[ModuleNode[T]],
-                         variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None)
-                        (implicit ev: TensorNumeric[T]): Graph[T] = {
+  def apply[T: ClassTag](input : Array[ModuleNode[T]], output : Array[ModuleNode[T]],
+      variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None)
+      (implicit ev: TensorNumeric[T]) : Graph[T] = {
     new Graph[T](input, output, variables)
   }
 
@@ -429,8 +429,8 @@ object Graph extends ContainerSerializable {
    * @param output output nodes
    * @return a graph container
    */
-  def apply[T: ClassTag](input: ModuleNode[T], output: Array[ModuleNode[T]])
-                        (implicit ev: TensorNumeric[T]): Graph[T] = {
+  def apply[T: ClassTag](input : ModuleNode[T], output : Array[ModuleNode[T]])
+    (implicit ev: TensorNumeric[T]) : Graph[T] = {
     new Graph[T](Array(input), output)
   }
 
@@ -440,8 +440,8 @@ object Graph extends ContainerSerializable {
    * @param output output node
    * @return a graph container
    */
-  def apply[T: ClassTag](input: Array[ModuleNode[T]], output: ModuleNode[T])
-                        (implicit ev: TensorNumeric[T]): Graph[T] = {
+  def apply[T: ClassTag](input : Array[ModuleNode[T]], output : ModuleNode[T])
+    (implicit ev: TensorNumeric[T]) : Graph[T] = {
     new Graph[T](input, Array(output))
   }
 
@@ -451,8 +451,8 @@ object Graph extends ContainerSerializable {
    * @param output output nodes
    * @return a graph container
    */
-  def apply[T: ClassTag](input: ModuleNode[T], output: ModuleNode[T])
-                        (implicit ev: TensorNumeric[T]): Graph[T] = {
+  def apply[T: ClassTag](input : ModuleNode[T], output : ModuleNode[T])
+    (implicit ev: TensorNumeric[T]) : Graph[T] = {
     new Graph[T](Array(input), Array(output))
   }
 
@@ -510,7 +510,7 @@ object Graph extends ContainerSerializable {
     val graph = module.module.asInstanceOf[Graph[T]]
     val inputsNames = graph.inputs.map(_.element.getName).toArray
     val outputsNames = graph.outputs.map(_.element.getName).toArray
-    graph.getExecutions.foreach(execution => {
+    graph.getForwardExecutions.foreach(execution => {
       val preNodes = execution.prevNodes.map(_.element.getName)
       val nextNodes = execution.nextNodes.map(_.element.getName)
       val currNode = execution.element
@@ -545,6 +545,5 @@ object Graph extends ContainerSerializable {
 private[bigdl] class Dummy[T: ClassTag]()(implicit ev: TensorNumeric[T])
   extends AbstractModule[Activity, Tensor[T], T] {
   override def updateOutput(input: Activity): Tensor[T] = null
-
   override def updateGradInput(input: Activity, gradOutput: Tensor[T]): Activity = null
 }
