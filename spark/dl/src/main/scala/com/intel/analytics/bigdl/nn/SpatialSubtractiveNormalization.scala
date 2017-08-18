@@ -67,7 +67,7 @@ class SpatialSubtractiveNormalization[T: ClassTag](
   }
 
   // create convolutional mean extractor
-  var meanestimator = new Sequential[T]()
+  private var meanestimator = new Sequential[T]()
   meanestimator.add(new SpatialZeroPadding(padW, padW, padH, padH))
   if (kdim == 2) {
     meanestimator.add(new SpatialConvolution(nInputPlane, 1, kernel.size(2), kernel.size(1)))

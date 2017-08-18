@@ -49,7 +49,7 @@ class VolumetricMaxPooling[T: ClassTag](
   (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   var ceilMode = false
-  var indices = Tensor[Float]()
+  private var indices = Tensor[Float]()
 
   def this(kT: Int, kW: Int, kH: Int)(implicit ev: TensorNumeric[T]) {
     this(kT, kW, kH, kT, kW, kH)

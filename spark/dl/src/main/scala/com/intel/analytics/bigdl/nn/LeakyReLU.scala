@@ -34,7 +34,7 @@ import scala.reflect.ClassTag
 
 @SerialVersionUID(- 6870619109313859155L)
 class LeakyReLU[T: ClassTag](
-  val negval: Double = 0.01,
+  private val negval: Double = 0.01,
   var inplace: Boolean = false)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 

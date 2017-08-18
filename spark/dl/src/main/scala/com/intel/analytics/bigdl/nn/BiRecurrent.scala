@@ -39,7 +39,7 @@ class BiRecurrent[T : ClassTag] (
   val timeDim = 2
   val layer: Recurrent[T] = Recurrent[T]()
   val revLayer: Recurrent[T] = Recurrent[T]()
-  var birnn = Sequential[T]()
+  private var birnn = Sequential[T]()
       .add(ConcatTable()
         .add(Identity[T]())
         .add(Identity[T]()))
@@ -164,11 +164,10 @@ object BiRecurrent extends ContainerSerializable {
 
   override def serializeModule[T: ClassTag](module : ModuleData[T])
                                            (implicit ev: TensorNumeric[T]) : BigDLModule = {
-    val biRecurrentCls = Class.forName("com.intel.analytics.bigdl.nn.BiRecurrent")
     val birecurrentModule = module.module.
       asInstanceOf[BiRecurrent[T]]
     val birecurrentBuilder = BigDLModule.newBuilder
-    birecurrentBuilder.setModuleType(biRecurrentCls.getName)
+    birecurrentBuilder.setModuleType(birecurrentModule.getClass.getName)
 
     val mergeBuilder = AttrValue.newBuilder
     DataConverter.setAttributeValue(mergeBuilder,

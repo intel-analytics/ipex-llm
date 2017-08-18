@@ -52,10 +52,10 @@ class BatchNormalization[T: ClassTag](
   val eps: Double = 1e-5, // avoid divde zero
   val momentum: Double = 0.1, // momentum for weight update
   val affine: Boolean = true, // affine operation on output or not
-  val initWeight: Tensor[T] = null,
-  val initBias: Tensor[T] = null,
-  val initGradWeight: Tensor[T] = null,
-  val initGradBias: Tensor[T] = null
+  private val initWeight: Tensor[T] = null,
+  private val initBias: Tensor[T] = null,
+  private val initGradWeight: Tensor[T] = null,
+  private val initGradBias: Tensor[T] = null
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
   require(nOutput > 0)

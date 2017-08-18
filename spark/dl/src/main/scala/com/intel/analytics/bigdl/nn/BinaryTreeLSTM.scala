@@ -42,8 +42,8 @@ class BinaryTreeLSTM[T: ClassTag](
   withGraph: Boolean = true
 )(implicit ev: TensorNumeric[T])
   extends TreeLSTM[T](inputSize, hiddenSize) {
-  var composer: Module[T] = createComposer()
-  var leafModule: Module[T] = createLeafModule()
+  private var composer: Module[T] = createComposer()
+  private var leafModule: Module[T] = createLeafModule()
   val composers: ArrayBuffer[Module[T]] = ArrayBuffer[Module[T]](composer)
   val leafModules: ArrayBuffer[Module[T]] = ArrayBuffer[Module[T]](leafModule)
   val cells: ArrayBuffer[ArrayBuffer[Module[T]]] = ArrayBuffer[ArrayBuffer[Module[T]]]()
