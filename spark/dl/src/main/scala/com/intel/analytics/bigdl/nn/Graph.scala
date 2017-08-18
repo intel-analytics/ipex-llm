@@ -390,7 +390,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
 
 
   override def reset(): Unit = {
-    stopGradientLayers.clear()
+    if (null != stopGradientLayers) stopGradientLayers.clear()
     unFreeze()
     build()
   }
