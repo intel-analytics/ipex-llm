@@ -20,7 +20,9 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData, ModuleSerializable, ModuleSerializer}
 import com.intel.analytics.bigdl.utils.{T, Table}
+import serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
@@ -258,5 +260,39 @@ abstract class Cell[T : ClassTag](
         }
       )
     }
+  }
+}
+
+object CellSerializer extends ModuleSerializable {
+
+  override def loadModule[T: ClassTag](model : BigDLModule)
+                                      (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
+    val moduleData = super.loadModule(model)
+    val cellModule = moduleData.module.asInstanceOf[Cell[T]]
+
+    val attrMap = model.getAttrMap
+    cellModule.cell = DataConverter.getAttributeValue(attrMap.get("cell")).
+      asInstanceOf[AbstractModule[Activity, Activity, T]]
+
+    createBigDLModule(model, cellModule)
+  }
+
+  override def serializeModule[T: ClassTag](module : ModuleData[T])
+                                           (implicit ev: TensorNumeric[T]) : BigDLModule = {
+    val bigDLModule = super.serializeModule(module)
+    val cellModule = module.module.asInstanceOf[Cell[T]]
+    val cellModuleBuilder = BigDLModule.newBuilder(bigDLModule)
+
+    val cellSerializerFlagBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(cellSerializerFlagBuilder, true,
+      scala.reflect.runtime.universe.typeOf[Boolean])
+    cellModuleBuilder.putAttr("is_cell_module", cellSerializerFlagBuilder.build)
+
+    val cellBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(cellBuilder, cellModule.cell,
+      ModuleSerializer.abstractModuleType)
+    cellModuleBuilder.putAttr("cell", cellBuilder.build)
+
+    createSerializeBigDLModule(cellModuleBuilder, module)
   }
 }

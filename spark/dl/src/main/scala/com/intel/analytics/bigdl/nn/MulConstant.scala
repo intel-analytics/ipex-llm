@@ -30,7 +30,7 @@ import scala.reflect.ClassTag
  */
 
 @SerialVersionUID(- 8747642888169310696L)
-class MulConstant[@specialized(Float, Double) T: ClassTag](
+class MulConstant[T: ClassTag](
   val constant : Double, val inplace : Boolean = false)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T]  {
   val scalar = ev.fromType[Double](constant)

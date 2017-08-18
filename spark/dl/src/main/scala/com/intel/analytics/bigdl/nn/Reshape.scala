@@ -16,11 +16,14 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData, ModuleSerializable, ModuleSerializer}
+import serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.reflect.ClassTag
+import scala.reflect.runtime.universe
 
 /**
  * The `forward(input)` reshape the input tensor into a
@@ -127,10 +130,53 @@ class Reshape[@specialized(Float, Double) T: ClassTag](
   }
 }
 
-object Reshape {
+object Reshape extends ModuleSerializable {
   def apply[T: ClassTag](
       size: Array[Int],
       batchMode: Option[Boolean] = None)(implicit ev: TensorNumeric[T]) : Reshape[T] = {
     new Reshape[T](size, batchMode)
+  }
+
+  override def loadModule[T: ClassTag](model : BigDLModule)
+                                      (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
+    val attrMap = model.getAttrMap
+    val size = DataConverter.getAttributeValue(attrMap.get("size")).
+      asInstanceOf[Array[Int]]
+    val batchModeV = DataConverter.getAttributeValue(attrMap.get("batchMode")).
+      asInstanceOf[Int]
+    var batchMode : Option[Boolean] = None
+    if (batchModeV == 1) {
+      batchMode = Some(false)
+    } else if (batchModeV == 2) {
+      batchMode = Some(true)
+    }
+    val reshape = Reshape(size, batchMode).asInstanceOf[AbstractModule[Activity, Activity, T]]
+    createBigDLModule(model, reshape)
+  }
+
+  override def serializeModule[T: ClassTag](module : ModuleData[T])
+                                           (implicit ev: TensorNumeric[T]) : BigDLModule = {
+
+    val reshape = module.module.asInstanceOf[Reshape[T]]
+    val reshapeBuilder = BigDLModule.newBuilder()
+
+    val moduleType = reshape.getClass.getName
+    reshapeBuilder.setModuleType(moduleType)
+
+    val sizeBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(sizeBuilder, reshape.size,
+      universe.typeOf[Array[Int]])
+    reshapeBuilder.putAttr("size", sizeBuilder.build)
+
+    var batchMode = 0
+    if (reshape.batchMode != None) {
+      batchMode = if (reshape.batchMode.get == false) 1 else 2
+    }
+    val batchModeBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(batchModeBuilder, batchMode,
+      universe.typeOf[Int])
+    reshapeBuilder.putAttr("batchMode", batchModeBuilder.build)
+
+    createSerializeBigDLModule(reshapeBuilder, module)
   }
 }
