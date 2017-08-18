@@ -147,6 +147,8 @@ object MapTable extends ContainerSerializable {
     val mapTable = module.module.asInstanceOf[MapTable[T]]
     val subModules = mapTable.modules
     require(subModules.size >=1, "sub module should not be empty")
+    // `modules` are created during forward() by 'n' times of the same module depends on input size,
+    // store the first one to save the storage cost just in case large input size
     val singleModule = subModules(0)
     mapTable.modules.clear()
     mapTable.modules.append(singleModule)
