@@ -61,8 +61,8 @@ import scala.reflect.ClassTag
  */
 @SerialVersionUID(- 2896121321564992779L)
 class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
-    val outputs : Seq[ModuleNode[T]],
-    val variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None)
+    private val outputs : Seq[ModuleNode[T]],
+    private val variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None)
     (implicit ev: TensorNumeric[T])
     extends Container[Activity, Activity, T]{
 
@@ -334,7 +334,6 @@ object Graph extends ContainerSerializable {
     val inputs = new ArrayBuffer[ModuleNode[T]]
     val outputs = new ArrayBuffer[ModuleNode[T]]
 
-    // val modules = new ArrayBuffer[ModuleNode[T]]()
     // layer name to layer node mapping
     val layerMap = new mutable.HashMap[String, ModuleNode[T]]()
     subModules.foreach(subModule => {
@@ -352,8 +351,7 @@ object Graph extends ContainerSerializable {
 
     inputNames.foreach(inputName => inputs.append(layerMap(inputName)))
     outputNames.foreach(outputName => outputs.append(layerMap(outputName)))
-    // val inputs = modules.filter(_.prevNodes.size == 0).toArray
-    // val outputs = modules.filter(_.nextNodes.size == 0).toArray
+
     var sharedVariables : Option[(Array[Tensor[T]], Array[Tensor[T]])] = None
     if (attributes.containsKey("sharedWeight") && attributes.containsKey("sharedBias")) {
       val weights = attributes.get("sharedWeight")

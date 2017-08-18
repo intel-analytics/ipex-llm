@@ -33,7 +33,7 @@ import scala.reflect.ClassTag
  * @tparam T numeric type
  */
 class BiRecurrent[T : ClassTag] (
-  val merge: AbstractModule[Table, Tensor[T], T] = null)
+  private val merge: AbstractModule[Table, Tensor[T], T] = null)
   (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
 
   val timeDim = 2

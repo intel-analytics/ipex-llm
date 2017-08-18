@@ -27,7 +27,7 @@ import scala.reflect.ClassTag
  * @tparam T numeric type
  */
 @SerialVersionUID(- 3787689437971361185L)
-class Clamp[T: ClassTag](val minV: Int, val maxV: Int)(
+class Clamp[T: ClassTag](private val minV: Int, private val maxV: Int)(
   implicit ev: TensorNumeric[T]) extends HardTanh[T](minV, maxV) {
   override def toString(): String = {
     s"nn.Clamp"
