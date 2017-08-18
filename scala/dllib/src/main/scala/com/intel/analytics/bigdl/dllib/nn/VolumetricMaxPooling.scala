@@ -19,8 +19,11 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData, ModuleSerializable, ModuleSerializer}
+import serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.reflect._
+import scala.reflect.runtime.universe
 
 /**
  * Applies 3D max-pooling operation in kTxkWxkH regions by step size dTxdWxdH.
@@ -46,7 +49,7 @@ class VolumetricMaxPooling[T: ClassTag](
   (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   var ceilMode = false
-  val indices = Tensor[Float]()
+  private var indices = Tensor[Float]()
 
   def this(kT: Int, kW: Int, kH: Int)(implicit ev: TensorNumeric[T]) {
     this(kT, kW, kH, kT, kW, kH)
@@ -544,7 +547,7 @@ class VolumetricMaxPooling[T: ClassTag](
   }
 }
 
-object VolumetricMaxPooling {
+object VolumetricMaxPooling extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag]
   (kT: Int, kW: Int, kH: Int, dT: Int, dW: Int, dH: Int,
     padT: Int = 0, padW: Int = 0, padH: Int = 0)(implicit ev: TensorNumeric[T])
@@ -553,4 +556,32 @@ object VolumetricMaxPooling {
   def apply[@specialized(Float, Double) T: ClassTag]
   (kT: Int, kW: Int, kH: Int)(implicit ev: TensorNumeric[T])
   : VolumetricMaxPooling[T] = new VolumetricMaxPooling[T](kT, kW, kH)
+
+  override def loadModule[T: ClassTag](model : BigDLModule)
+                                      (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
+    val moduleData = super.loadModule(model)
+    val maxPooling = moduleData.module.asInstanceOf[VolumetricMaxPooling[T]]
+    val attrMap = model.getAttrMap
+    maxPooling.ceilMode = DataConverter.getAttributeValue(attrMap.get("ceilMode")).
+      asInstanceOf[Boolean]
+    maxPooling.indices = DataConverter.getAttributeValue(attrMap.get("indices")).
+      asInstanceOf[Tensor[Float]]
+    moduleData
+  }
+
+  override def serializeModule[T: ClassTag](module : ModuleData[T])
+                                           (implicit ev: TensorNumeric[T]) : BigDLModule = {
+    val maxPooling = module.module.asInstanceOf[VolumetricMaxPooling[T]]
+    val bigDLModuleBuilder = BigDLModule.newBuilder(super.serializeModule(module))
+
+    val ceilModeBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(ceilModeBuilder, maxPooling.ceilMode, universe.typeOf[Boolean])
+    bigDLModuleBuilder.putAttr("ceilMode", ceilModeBuilder.build)
+
+    val indicesBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(indicesBuilder, maxPooling.indices, ModuleSerializer.tensorType)
+    bigDLModuleBuilder.putAttr("indices", indicesBuilder.build)
+
+    bigDLModuleBuilder.build
+  }
 }

@@ -47,15 +47,15 @@ import scala.reflect.ClassTag
  * @tparam T numeric type
  */
 @SerialVersionUID(- 3181824540272906068L)
-class BatchNormalization[@specialized(Float, Double) T: ClassTag](
+class BatchNormalization[T: ClassTag](
   val nOutput: Int, // output feature map number
   val eps: Double = 1e-5, // avoid divde zero
   val momentum: Double = 0.1, // momentum for weight update
   val affine: Boolean = true, // affine operation on output or not
-  initWeight: Tensor[T] = null,
-  initBias: Tensor[T] = null,
-  initGradWeight: Tensor[T] = null,
-  initGradBias: Tensor[T] = null
+  private val initWeight: Tensor[T] = null,
+  private val initBias: Tensor[T] = null,
+  private val initGradWeight: Tensor[T] = null,
+  private val initGradBias: Tensor[T] = null
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
   require(nOutput > 0)

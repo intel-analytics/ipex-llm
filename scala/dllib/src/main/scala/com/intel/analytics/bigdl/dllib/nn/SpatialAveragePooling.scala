@@ -55,7 +55,7 @@ import com.intel.analytics.bigdl.utils.Engine
  * @param divide whether to do the averaging
  */
 @SerialVersionUID(4533142511857387857L)
-class SpatialAveragePooling[@specialized(Float, Double) T: ClassTag](
+class SpatialAveragePooling[T: ClassTag](
   var kW: Int,
   var kH: Int,
   val dW: Int = 1,
