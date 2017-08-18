@@ -124,9 +124,9 @@ class DirectedGraph[T](val source : Node[T], val reverse : Boolean = false) exte
   }
 
   /**
-    * Clone the graph structure, will not change the node element
-    * @return new graph
-    */
+   * Clone the graph structure, will not change the node element
+   * @return new graph
+   */
   def cloneGraph(): DirectedGraph[T] = {
     val oldToNew = new util.HashMap[Node[T], Node[T]]()
     val oldNodes = new util.LinkedList[Node[T]]()
@@ -203,9 +203,9 @@ class Node[T](val element: T) extends Serializable {
   }
 
   /**
-    * remove edges that connect previous nodes
-    * @return current node
-    */
+   * remove edges that connect previous nodes
+   * @return current node
+   */
   def removePrevEdges(): Node[T] = {
     prevs.foreach(_.nexts.-=(this))
     prevs.clear()
