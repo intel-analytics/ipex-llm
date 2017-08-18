@@ -1868,7 +1868,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def setFreeze(model: Graph[T], freezeLayers: JList[String]): Graph[T] = {
-    model.setFreeze(freezeLayers.asScala.toArray)
+    model.freeze(freezeLayers.asScala.toArray)
   }
 
   def unFreeze(model: Graph[T]): Graph[T] = {
@@ -1876,6 +1876,6 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def setStopGradient(model: Graph[T], layers: JList[String]): Graph[T] = {
-    model.setStopGradient(layers.asScala.toArray)
+    model.stopGradient(layers.asScala.toArray)
   }
 }

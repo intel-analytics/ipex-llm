@@ -152,13 +152,13 @@ To "freeze" a module means to exclude some layers of model from training.
 
 ```scala
 layer.setTrainable(false)
-model.setFreeze(Array("layer1", "layer2"))
+model.freeze(Array("layer1", "layer2"))
 model.unFreeze()
-model.setStopGradient(Array("layer1"))
+model.stopGradient(Array("layer1"))
 ```
 * A single layer can be "freezed" by calling ```setTrainable(false)```. If a layer is freezed,
 its parameters(weight/bias, if exists) are not changed in training process
-* User can set freeze of list of layers in model by calling ```setFreeze```
+* User can set freeze of list of layers in model by calling ```freeze```
 * User can unfreeze all layers by calling ```unFreeze```
 * stop the input gradient of layers that match the given names. Their input gradient are not computed.
 And they will not contributed to the input gradient computation of layers that depend on them.
@@ -166,9 +166,9 @@ And they will not contributed to the input gradient computation of layers that d
 **Python**
 ```python
 layer.set_trainable(false)
-model.set_freeze(["layer1", "layer2"])
+model.freeze(["layer1", "layer2"])
 model.unfreeze()
-model.set_stop_gradient(["layer1"])
+model.stop_gradient(["layer1"])
 ```
 
 **Scala**
@@ -216,7 +216,7 @@ println("fc2 weight \n", fc2.element.parameters()._1(0))
 fc1.element.getParameters()._1.apply1(_ => 1.0f)
 fc2.element.getParameters()._1.apply1(_ => 2.0f)
 model.zeroGradParameters()
-model.setFreeze(Array("fc2"))
+model.freeze(Array("fc2"))
 println("output2: \n", model.forward(input))
 model.backward(input, gradOutput)
 model.updateParameters(1)
@@ -269,7 +269,7 @@ println("fc2 weight \n", fc2.element.parameters()._1(0))
 ```scala
 fc1.element.getParameters()._1.apply1(_ => 1.0f)
 fc2.element.getParameters()._1.apply1(_ => 2.0f)
-model.setStopGradient(Array("cadd"))
+model.stopGradient(Array("cadd"))
 model.zeroGradParameters()
 println("output4: \n", model.forward(input))
 model.backward(input, gradOutput)
@@ -344,7 +344,7 @@ print "fc2 weight \n", fc2.element().parameters()['fc2']['weight']
 ```
 fc1.element().set_weights([np.array([[1,1,1,1],[1,1,1,1]]), np.array([1,1])])
 fc2.element().set_weights([np.array([[2,2,2,2],[2,2,2,2]]), np.array([2,2])])
-m3 = model.set_freeze(["fc2"])
+m3 = model.freeze(["fc2"])
 model.zero_grad_parameters()
 output = model.forward(input)
 print "output2 ", output
@@ -384,7 +384,7 @@ print "fc2 weight \n", fc2.element().parameters()['fc2']['weight']
 ```
 
 ```
-m3 = model.set_stop_gradient(["cadd"])
+m3 = model.stop_gradient(["cadd"])
 model.zero_grad_parameters()
 output = model.forward(input)
 print "output4 ", output

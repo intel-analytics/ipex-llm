@@ -129,27 +129,15 @@ class DirectedGraph[T](val source : Node[T], val reverse : Boolean = false) exte
    */
   def cloneGraph(): DirectedGraph[T] = {
     val oldToNew = new util.HashMap[Node[T], Node[T]]()
-//    BFS.foreach(node => {
-//      oldToNew.put(node, new Node[T](node.element))
-//    })
-//    BFS.foreach(node => {
-//      node.prevNodes.foreach(prev => {
-//        oldToNew.get(prev) -> oldToNew.get(node)
-//      })
-//    })
-    val oldNodes = new util.LinkedList[Node[T]]()
-    oldNodes.add(source)
-    oldToNew.put(source, new Node[T](source.element))
-    while (!oldNodes.isEmpty) {
-      val cur = oldNodes.remove()
-      cur.prevNodes.foreach(prev => {
-        if (!oldToNew.containsKey(prev)) {
-          oldToNew.put(prev, new Node[T](prev.element))
-          oldNodes.add(prev)
-        }
-        oldToNew.get(prev) -> oldToNew.get(cur)
+    val bfs = BFS.toArray
+    bfs.foreach(node => {
+      oldToNew.put(node, new Node[T](node.element))
+    })
+    bfs.foreach(node => {
+      node.prevNodes.foreach(prev => {
+        oldToNew.get(prev) -> oldToNew.get(node)
       })
-    }
+    })
     new DirectedGraph[T](oldToNew.get(source), reverse)
   }
 
@@ -233,6 +221,10 @@ class Node[T](val element: T) extends Serializable {
 
   private val nexts = new ArrayBuffer[Node[T]]()
   private val prevs = new ArrayBuffer[Node[T]]()
+
+  def cloneNode(): Node[T] = {
+    new Node[T](element)
+  }
 }
 
 object Node {

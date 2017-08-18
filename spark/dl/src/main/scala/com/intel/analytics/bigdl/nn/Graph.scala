@@ -335,7 +335,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
    * @param names an array of layer names
    * @return current graph model
    */
-  def setFreeze(names: Array[String]): this.type = {
+  def freeze(names: Array[String]): this.type = {
     names.foreach(name => {
       val layer = this (name)
       require(layer.isDefined, s"cannot find layer match ${name}")
@@ -358,14 +358,14 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
   }
 
 
-  private var stopGradientLayers: util.HashSet[AbstractModule[_ <: Activity, _ <: Activity, T]] = _
+  private var stopGradientLayers: util.HashSet[String] = _
 
   /**
    * whether stop propagating gradInput back
    * @return
    */
   private def isStopGradient(module: AbstractModule[_ <: Activity, _ <: Activity, T]): Boolean = {
-    null != stopGradientLayers && stopGradientLayers.contains(module)
+    null != stopGradientLayers && stopGradientLayers.contains(module.getName())
   }
 
   /**
@@ -376,13 +376,13 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
    * @param names an array of layer names
    * @return current graph model
    */
-  def setStopGradient(names: Array[String]): this.type = {
+  def stopGradient(names: Array[String]): this.type = {
     names.foreach(name => {
       val layer = this (name)
       require(layer.isDefined, s"cannot find layer match ${name}")
       if (stopGradientLayers == null) stopGradientLayers =
-        new util.HashSet[AbstractModule[_ <: Activity, _ <: Activity, T]]()
-      stopGradientLayers.add(layer.get)
+        new util.HashSet[String]()
+      stopGradientLayers.add(layer.get.getName())
     })
     build()
     this

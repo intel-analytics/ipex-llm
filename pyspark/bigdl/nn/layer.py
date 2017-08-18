@@ -501,7 +501,7 @@ class Model(Container):
         jmodel = callBigDlFunc(bigdl_type, "loadTF", path, inputs, outputs, byte_order)
         return Model.of(jmodel)
 
-    def set_freeze(self, freeze_layers, bigdl_type="float"):
+    def freeze(self, freeze_layers, bigdl_type="float"):
         """
         set an array of layers to be freezed
         :param freeze_layers: an array of layer names
@@ -520,7 +520,7 @@ class Model(Container):
         callBigDlFunc(bigdl_type, "unFreeze", self.value)
         return self
 
-    def set_stop_gradient(self, stop_layers, bigdl_type="float"):
+    def stop_gradient(self, stop_layers, bigdl_type="float"):
         """
         stop the input gradient of layers that match the given ```names```
         their input gradient are not computed.

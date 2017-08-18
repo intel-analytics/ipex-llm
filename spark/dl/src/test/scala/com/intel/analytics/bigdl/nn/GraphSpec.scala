@@ -682,7 +682,7 @@ class GraphSpec extends FlatSpec with Matchers {
     val funcModelNoBack = Graph(input, output)
     val funcModelOriginal = Graph(input2, output_2)
 
-    funcModelNoBack.setStopGradient(Array("reshape"))
+    funcModelNoBack.stopGradient(Array("reshape"))
 
     val inputData = Tensor(4, 28 * 28).rand()
     val outputData1 = funcModelOriginal.forward(inputData) // warm up
@@ -741,7 +741,7 @@ class GraphSpec extends FlatSpec with Matchers {
     val output_2 = LogSoftMax().inputs(fc2_2)
 
     val funcModelNoBack = Graph(input, output)
-    funcModelNoBack.setStopGradient(Array("pool1"))
+    funcModelNoBack.stopGradient(Array("pool1"))
     val funcModelOriginal = Graph(input2, output_2)
 
     val inputData = Tensor(4, 28 * 28).rand()
@@ -782,7 +782,7 @@ class GraphSpec extends FlatSpec with Matchers {
     val output2_1 = Threshold(10.0).inputs(cadd_1)
 
     val graphNoBack = Graph(Array(fc2_1, fc1_1), Array(output1_1, output2_1))
-    graphNoBack.setStopGradient(Array("relu"))
+    graphNoBack.stopGradient(Array("relu"))
 
     RandomGenerator.RNG.setSeed(1000)
     val fc1_2 = Linear(4, 2).inputs()
@@ -835,7 +835,7 @@ class GraphSpec extends FlatSpec with Matchers {
     val output2_1 = Threshold(10.0).inputs(cadd_1)
 
     val graphNoBack = Graph(Array(fc2_1, fc1_1), Array(output1_1, output2_1))
-    graphNoBack.setStopGradient(Array("fc2_1"))
+    graphNoBack.stopGradient(Array("fc2_1"))
 
     fc1.element.getParameters()._1.apply1(_ => 1.0f)
     fc2.element.getParameters()._1.apply1(_ => 2.0f)
@@ -875,7 +875,7 @@ class GraphSpec extends FlatSpec with Matchers {
     val output2_1 = Threshold(10.0).inputs(cadd_1)
 
     val graphNoBack = Graph(Array(reshape, fc1_1), Array(output1_1, output2_1))
-    graphNoBack.setStopGradient(Array("fc2_1"))
+    graphNoBack.stopGradient(Array("fc2_1"))
     fc1.element.getParameters()._1.apply1(_ => 1.0f)
     fc2.element.getParameters()._1.apply1(_ => 2.0f)
     fc1_1.element.getParameters()._1.apply1(_ => 1.0f)
@@ -914,7 +914,7 @@ class GraphSpec extends FlatSpec with Matchers {
     val output2_1 = Threshold(10.0).inputs(cadd_1)
 
     val graphNoBack = Graph(Array(fc2_1, fc1_1), Array(output1_1, output2_1))
-    graphNoBack.setStopGradient(Array("fc2_1"))
+    graphNoBack.stopGradient(Array("fc2_1"))
 
     fc1.element.getParameters()._1.apply1(_ => 1.0f)
     fc2.element.getParameters()._1.apply1(_ => 2.0f)
@@ -976,7 +976,7 @@ class GraphSpec extends FlatSpec with Matchers {
     fc1.element.getParameters()._1.apply1(_ => 1.0f)
     fc2.element.getParameters()._1.apply1(_ => 2.0f)
     model.zeroGradParameters()
-    model.setFreeze(Array("fc2"))
+    model.freeze(Array("fc2"))
     println("output2: \n", model.forward(input))
     model.backward(input, gradOutput)
     model.updateParameters(1)
@@ -993,7 +993,7 @@ class GraphSpec extends FlatSpec with Matchers {
 
     fc1.element.getParameters()._1.apply1(_ => 1.0f)
     fc2.element.getParameters()._1.apply1(_ => 2.0f)
-    model.setStopGradient(Array("cadd"))
+    model.stopGradient(Array("cadd"))
     model.zeroGradParameters()
     println("output4: \n", model.forward(input))
     model.backward(input, gradOutput)
@@ -1019,7 +1019,7 @@ class GraphSpec extends FlatSpec with Matchers {
     val output2_1 = Threshold(10.0).inputs(cadd_1)
 
     val graphNoBack = Graph(Array(reshape, fc1_1), Array(output1_1, output2_1))
-    graphNoBack.setStopGradient(Array("fc2_1"))
+    graphNoBack.stopGradient(Array("fc2_1"))
 
     fc1.element.getParameters()._1.apply1(_ => 1.0f)
     fc2.element.getParameters()._1.apply1(_ => 2.0f)
