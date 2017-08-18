@@ -51,10 +51,13 @@ class SpatialSubtractiveNormalization[T: ClassTag](
   if (kernel == null) kernel = Tensor.ones[T](9, 9)
 
   private val kdim = kernel.nDimension()
-  require(kdim == 1 || kdim == 2, "averaging kernel must be 2D or 1D")
-  require(kernel.size(1) % 2 != 0, "averaging kernel must have ODD dimensions")
+  require(kdim == 1 || kdim == 2, "averaging kernel must be 2D or 1D" +
+    s"averaging kernel dimension $kdim")
+  require(kernel.size(1) % 2 != 0, "averaging kernel must have ODD dimensions" +
+    s"averaging kernel dimension ${kernel.size(1)}")
   if (kdim == 2) {
-    require(kernel.size(2) % 2 != 0, "averaging kernel must have ODD dimensions")
+    require(kernel.size(2) % 2 != 0, "averaging kernel must have ODD dimensions" +
+      s"averaging kernel dimension ${kernel.size(2)}")
   }
 
   kernel.div(ev.times(kernel.sum(), ev.fromType[Int](nInputPlane)))

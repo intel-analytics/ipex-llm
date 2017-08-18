@@ -514,7 +514,9 @@ object BinaryTreeLSTM extends ModuleSerializable {
  */
 class TensorTree[T: ClassTag](val content: Tensor[T])
   (implicit ev: TensorNumeric[T]) extends Serializable {
-  require(content.dim() == 2, "The content of TensorTree should be a two-dimensional tensor")
+  require(content.dim() == 2,
+    "The content of TensorTree should be a two-dimensional tensor" +
+      s"content dim(${content.dim()})")
   def size: Array[Int] = content.size()
 
   def nodeNumber: Int = size(0)

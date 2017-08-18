@@ -42,8 +42,10 @@ class MM[T: ClassTag](
       input(2).isInstanceOf[Tensor[T]], "Input must be two tensors")
     val m1: Tensor[T] = input(1)
     val m2: Tensor[T] = input(2)
-    require(m1.dim() == 2 || m1.dim() == 3, "input matrix must be 2D or 3D")
-    require(m2.dim() == 2 || m2.dim() == 3, "input matrix must be 2D or 3D")
+    require(m1.dim() == 2 || m1.dim() == 3, "input matrix must be 2D or 3D" +
+      s"input dim ${m1.dim()}")
+    require(m2.dim() == 2 || m2.dim() == 3, "input matrix must be 2D or 3D" +
+      s"input dim ${m2.dim()}")
 
     (m1, m2)
   }
@@ -52,7 +54,8 @@ class MM[T: ClassTag](
     var (ma, mb) = checkInputFormat(input)
 
     if (ma.dim() == 2) {
-      require(mb.dim() == 2, "second input tensor must be 2D")
+      require(mb.dim() == 2, "second input tensor must be 2D" +
+        s"second input dim ${mb.dim()}")
 
       if (transA) {
         ma = ma.t()
@@ -60,13 +63,16 @@ class MM[T: ClassTag](
       if (transB) {
         mb = mb.t()
       }
-      require(ma.size(2) == mb.size(1), "matrix sizes do not match")
+      require(ma.size(2) == mb.size(1), "matrix sizes do not match" +
+        s"The sizes are ${ma.size(2)} and ${mb.size(1)}")
 
       output.resize(ma.size(1), mb.size(2))
       output.mm(ma, mb)
     } else {
-      require(mb.dim() == 3, "second input tensor must be 3D")
-      require(ma.size(1) == mb.size(1), "inputs must contain the same number of minibatches")
+      require(mb.dim() == 3, "second input tensor must be 3D" +
+        s"second input dim ${mb.dim()}")
+      require(ma.size(1) == mb.size(1), "inputs must contain the same number of minibatches" +
+        s"The minibatces of each are ${ma.size(1)} and ${mb.size(1)}")
 
       if (transA) {
         ma = ma.transpose(2, 3)
@@ -74,7 +80,8 @@ class MM[T: ClassTag](
       if (transB) {
         mb = mb.transpose(2, 3)
       }
-      require(ma.size(3) == mb.size(2), "matrix sizes do not match")
+      require(ma.size(3) == mb.size(2), "matrix sizes do not match" +
+        s"the matrix sizes are ${ma.size(3)} and ${mb.size(2)}")
 
       output.resize(ma.size(1), ma.size(2), mb.size(3))
       output.bmm(ma, mb)
@@ -90,18 +97,23 @@ class MM[T: ClassTag](
     gradInput[Tensor[T]](2).resizeAs(mb)
 
     require(gradOutput.dim() == 2 || gradOutput.dim() == 3,
-      "arguments must be a 2D or 3D Tensor")
+      "arguments must be a 2D or 3D Tensor" +
+        s"arguments dim ${gradOutput.dim()}")
 
 
     val (hDim, wDim, f): (Int, Int, Tensor[T] => Tensor[T] => Tensor[T] => Tensor[T]) =
       if (gradOutput.dim() == 2) {
-        require(ma.dim() == 2, "first input tensor must be 2D")
-        require(mb.dim() == 2, "second input tensor must be 2D")
+        require(ma.dim() == 2, "first input tensor must be 2D" +
+          s"first input dim ${ma.dim()}")
+        require(mb.dim() == 2, "second input tensor must be 2D" +
+          s"second input dim ${mb.dim()}")
 
         (1, 2, t => m1 => m2 => t.mm(m1, m2))
       } else {
-        require(ma.dim() == 3, "first input tensor must be 3D")
-        require(mb.dim() == 3, "second input tensor must be 3D")
+        require(ma.dim() == 3, "first input tensor must be 3D" +
+          s"first input dim ${ma.dim()}")
+        require(mb.dim() == 3, "second input tensor must be 3D" +
+          s"second input dim ${mb.dim()}")
 
         (2, 3, t => m1 => m2 => t.bmm(m1, m2))
       }

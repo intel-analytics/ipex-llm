@@ -38,7 +38,8 @@ class Replicate[T: ClassTag](
   val nDim : Int = Int.MaxValue)
   (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
-  require(dim > 0, "Can only replicate across positive integer dimensions.")
+  require(dim > 0, "Can only replicate across positive integer dimensions. " +
+    s"The number of dimensions is $dim.")
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(dim <= input.dim() + 1,

@@ -61,7 +61,9 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
 (weights: Tensor[T] = null, sizeAverage: Boolean = true)
   (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
   private var total_weight = ev.fromType[Int](0)
-  if (weights != null) require(weights.dim() == 1, "weights input should be 1-D Tensor")
+  if (weights != null) require(weights.dim() == 1,
+    "weights input should be 1-D Tensor" +
+    $"weights dim(${weights.dim()})")
 
   @transient
   private var results: Array[Future[(T, T)]] = null
@@ -70,7 +72,9 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     require(input.dim() == 1 || input.dim() == 2,
-      "ClassNLLCriterion: " + ErrorInfo.constrainInputAsVectorOrBatch)
+      "ClassNLLCriterion: " +
+        ErrorInfo.constrainInputAsVectorOrBatch+
+       s"input dim(${input.dim()})")
     val nClasses = input.size(input.dim())
     if (input.dim() == 1) {
       require(input.dim() == target.dim(),
@@ -130,7 +134,9 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
     require(input.dim() == 1 || input.dim() == 2,
-      "ClassNLLCriterion: " + ErrorInfo.constrainInputAsVectorOrBatch)
+      "ClassNLLCriterion: " +
+        ErrorInfo.constrainInputAsVectorOrBatch +
+        s"input dim ${input.dim()}")
     assert(ev.toType[Double](total_weight) > 0.0, "total weight must larger than 0")
     gradInput.resizeAs(input)
     gradInput.zero()
