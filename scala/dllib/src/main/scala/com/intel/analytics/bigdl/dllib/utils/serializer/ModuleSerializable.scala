@@ -51,7 +51,7 @@ trait ModuleSerializable extends Loadable with Savable{
     val evidence = scala.reflect.classTag[T]
     val modelAttributes = model.getAttrMap
     val moduleType = model.getModuleType
-    val cls = ModuleSerializer.getModuleClsByType(moduleType)
+    val cls = Class.forName(moduleType)
     val constructorMirror = getCostructorMirror(cls)
     val constructorFullParams = constructorMirror.symbol.paramss
     val args = new Array[Object](constructorFullParams(0).size + constructorFullParams(1).size)
@@ -88,10 +88,8 @@ trait ModuleSerializable extends Loadable with Savable{
                                            (implicit ev: TensorNumeric[T]) : BigDLModule = {
     val bigDLModelBuilder = BigDLModule.newBuilder
     val cls = module.module.getClass
-    val moduleType = getModuleTypeByCls(cls)
-    bigDLModelBuilder.setModuleType(moduleType)
+    bigDLModelBuilder.setModuleType(cls.getName)
     val fullParams = getCostructorMirror(cls).symbol.paramss
-    val clsTag = scala.reflect.classTag[T]
     val constructorParams = fullParams(0)
     constructorParams.foreach(param => {
       val paramName = param.name.decodedName.toString
@@ -265,6 +263,8 @@ trait ContainerSerializable extends ModuleSerializable {
     containerBuilder.build
   }
 }
+
+object ContainerSerializer extends ContainerSerializable
 
 case class ModuleData[T: ClassTag](module : AbstractModule[Activity, Activity, T],
                                     pre : Seq[String], next : Seq[String])

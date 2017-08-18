@@ -33,7 +33,7 @@ import scala.reflect.ClassTag
  */
 
 @SerialVersionUID(- 6637789603381436472L)
-class Power[@specialized(Float, Double) T: ClassTag](
+class Power[T: ClassTag](
   val power: Double,
   val scale : Double = 1,
   val shift : Double = 0)
