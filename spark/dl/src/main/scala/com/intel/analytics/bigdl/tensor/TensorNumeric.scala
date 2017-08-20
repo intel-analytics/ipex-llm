@@ -98,9 +98,9 @@ object TensorNumericMath {
 
     def fill(data: Array[T], fromIndex: Int, toIndex: Int, value: T): Unit
 
-    def fromType[@specialized(Float, Double, Int) K](k: K)(implicit c: ConvertableFrom[K]): T
+    def fromType[K](k: K)(implicit c: ConvertableFrom[K]): T
 
-    def toType[@specialized(Float, Double, Int) K](t: T)(implicit c: ConvertableTo[K]): K
+    def toType[K](t: T)(implicit c: ConvertableTo[K]): K
 
     def vPowx(n: Int, a: Array[T], aOffset: Int, b: T, y: Array[T], yOffset: Int): Unit
 
@@ -272,7 +272,7 @@ object TensorNumericMath {
       throw new UnsupportedOperationException(typeName +
         " in tensor does not support fill operation")
 
-    def fromType[@specialized(Float, Double, Int) K](k: K)(implicit c: ConvertableFrom[K]): T =
+    def fromType[K](k: K)(implicit c: ConvertableFrom[K]): T =
       throw new UnsupportedOperationException(typeName +
         " in tensor does not support fromType operation")
 
@@ -617,15 +617,6 @@ object TensorNumericMath {
           diff / (absA + absB) < epsilon
         }
 
-        if (!result) {
-          if (a == b) {
-            true
-          } else if (a == 0 || b == 0 || diff < java.lang.Float.MIN_NORMAL) {
-            diff < (epsilon * java.lang.Float.MIN_NORMAL)
-          } else {
-            diff / (absA + absB) < epsilon
-          }
-        }
         result
       }
 
@@ -923,12 +914,38 @@ object TensorNumericMath {
 
     implicit object NumericString extends UndefinedTensorNumeric[String]("String") {
       override def plus(x: String, y: String): String = x + y
+
+      override def fromType[K](k: K)(
+        implicit c: ConvertableFrom[K]): String =
+        c.toString(k)
+
+      override def axpy(n: Int, da: String, dx: Array[String], _dx_offset: Int,
+        incx: Int, dy: Array[String],
+        _dy_offset: Int, incy: Int): Unit = {
+        var i = 0
+        while (i < n) {
+          dy(i + _dy_offset) = dx(_dx_offset + i) + dy(_dy_offset + i)
+          i += 1
+        }
+      }
+
+      override def nearlyEqual(a: String, b: String, epsilon: Double): Boolean = {
+        a == b
+      }
     }
 
     implicit object NumericBoolean extends UndefinedTensorNumeric[Boolean]("Boolean") {
       override def or(x: Boolean, y: Boolean): Boolean = x || y
 
       override def and(x: Boolean, y: Boolean): Boolean = x && y
+
+      override def fromType[K](k: K)(
+        implicit c: ConvertableFrom[K]): Boolean =
+        c.toBoolean(k)
+
+      override def nearlyEqual(a: Boolean, b: Boolean, epsilon: Double): Boolean = {
+        a == b
+      }
     }
 
     implicit object NumericInt extends UndefinedTensorNumeric[Int]("Int") {
@@ -950,6 +967,20 @@ object TensorNumericMath {
 
       override def tanh(x: Int): Int = Math.tanh(x.toDouble).toInt
 
+      override def fromType[K](k: K)(
+        implicit c: ConvertableFrom[K]): Int =
+        c.toInt(k)
+
+      override def axpy(n: Int, da: Int, dx: Array[Int], _dx_offset: Int,
+        incx: Int, dy: Array[Int],
+        _dy_offset: Int, incy: Int): Unit = {
+        var i = 0
+        while (i < n) {
+          dy(i + _dy_offset) = dx(_dx_offset + i) + dy(_dy_offset + i)
+          i += 1
+        }
+      }
+
       override def abs(x: Int): Int = Math.abs(x)
 
       override def negative(x: Int): Int = -x
@@ -963,6 +994,8 @@ object TensorNumericMath {
       override def isGreater(x: Int, y: Int): Boolean = x > y
 
       override def isGreaterEq(x: Int, y: Int): Boolean = x >= y
+
+      override def nearlyEqual(a: Int, b: Int, epsilon: Double): Boolean = a == b
     }
 
     implicit object NumericLong extends UndefinedTensorNumeric[Long]("Long") {
@@ -997,6 +1030,36 @@ object TensorNumericMath {
       override def isGreater(x: Long, y: Long): Boolean = x > y
 
       override def isGreaterEq(x: Long, y: Long): Boolean = x >= y
+
+      override def fromType[K](k: K)(
+        implicit c: ConvertableFrom[K]): Long =
+        c.toLong(k)
+
+      override def axpy(n: Int, da: Long, dx: Array[Long], _dx_offset: Int,
+        incx: Int, dy: Array[Long],
+        _dy_offset: Int, incy: Int): Unit = {
+        var i = 0
+        while (i < n) {
+          dy(i + _dy_offset) = dx(_dx_offset + i) + dy(_dy_offset + i)
+          i += 1
+        }
+      }
+
+      override def nearlyEqual(a: Long, b: Long, epsilon: Double): Boolean = {
+        val absA = math.abs(a)
+        val absB = math.abs(b)
+        val diff = math.abs(a - b)
+
+        val result = if (a == b) {
+          true
+        } else if (a == 0 || b == 0 || diff < java.lang.Float.MIN_NORMAL) {
+          diff < (epsilon * java.lang.Float.MIN_NORMAL)
+        } else {
+          diff / (absA + absB) < epsilon
+        }
+
+        result
+      }
     }
 
     implicit object NumericShort extends UndefinedTensorNumeric[Short]("Short") {
@@ -1031,12 +1094,60 @@ object TensorNumericMath {
       override def isGreater(x: Short, y: Short): Boolean = x > y
 
       override def isGreaterEq(x: Short, y: Short): Boolean = x >= y
+
+      override def fromType[K](k: K)(
+        implicit c: ConvertableFrom[K]): Short =
+        c.toShort(k)
+
+      override def axpy(n: Int, da: Short, dx: Array[Short], _dx_offset: Int,
+        incx: Int, dy: Array[Short],
+        _dy_offset: Int, incy: Int): Unit = {
+        var i = 0
+        while (i < n) {
+          dy(i + _dy_offset) = (dx(_dx_offset + i) + dy(_dy_offset + i)).toShort
+          i += 1
+        }
+      }
+
+      override def nearlyEqual(a: Short, b: Short, epsilon: Double): Boolean = {
+        val absA = math.abs(a)
+        val absB = math.abs(b)
+        val diff = math.abs(a - b)
+
+        val result = if (a == b) {
+          true
+        } else if (a == 0 || b == 0 || diff < java.lang.Float.MIN_NORMAL) {
+          diff < (epsilon * java.lang.Float.MIN_NORMAL)
+        } else {
+          diff / (absA + absB) < epsilon
+        }
+
+        result
+      }
     }
 
     implicit object NumericChar extends UndefinedTensorNumeric[Char]("Char") {
       override def plus(x: Char, y: Char): Char = (x + y).toChar
 
       override def minus(x: Char, y: Char): Char = (x - y).toChar
+
+      override def fromType[K](k: K)(
+        implicit c: ConvertableFrom[K]): Char =
+        c.toChar(k)
+
+      override def axpy(n: Int, da: Char, dx: Array[Char], _dx_offset: Int,
+        incx: Int, dy: Array[Char],
+        _dy_offset: Int, incy: Int): Unit = {
+        var i = 0
+        while (i < n) {
+          dy(i + _dy_offset) = (dx(_dx_offset + i) + dy(_dy_offset + i)).toChar
+          i += 1
+        }
+      }
+
+      override def nearlyEqual(a: Char, b: Char, epsilon: Double): Boolean = {
+        a == b
+      }
     }
   }
 }
