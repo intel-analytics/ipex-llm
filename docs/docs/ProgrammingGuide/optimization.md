@@ -19,7 +19,7 @@ Your training data. As we train models on Spark, one of
 the most common distributed data structures is RDD. Of course
 you can use DataFrame. Please check the BigDL pipeline example.
 
-The element in the RDD is [Sample](../APIdocs/Data.md#sample), which is actually a sequence of
+The element in the RDD is [Sample](../APIGuide/Data.md#sample), which is actually a sequence of
 Tensors. You need to convert your data record(image, audio, text)
 to Tensors before you feed them into Optimizer. We also provide
 many utilities to do it.
@@ -31,7 +31,7 @@ the model with the ground truth(the labels of the training data). It
 outputs a loss value to measure how good the model is(the lower the
 better). It also provides a gradient to indicate how to tune the model.
 
-In BigDL, all loss functions are subclass of Criterion. Refer to [Losses](../APIdocs/Losses.md) for a list of defined losses.
+In BigDL, all loss functions are subclass of Criterion. Refer to [Losses](../APIGuide/Losses.md) for a list of defined losses.
 
 * **batch size**
 
@@ -199,7 +199,7 @@ optimizer.set_checkpoint(path, trigger,isOverWrite=True)
 ## Resume Training
 
 
-After training stops, you can resume from any saved point. Choose one of   the model snapshots and the corresponding optim-method snapshot to resume (saved in checkpoint path, details see [Checkpointing](#checkpointing)).     Use `Module.load` (Scala) or `Model.load`(Python) to load the model         snapshot into an model object, and `T.load` (Scala only, Python   does not support this yet) to load state which stores optimization method parameters. Then create a new `Optimizer` with the loaded model and Table state . Call `Optimizer.optimize`, and you will resume from the point       where the snapshot is taken. Refer to [OptimMethod Load](../APIdocs/Optimizers/OptimMethod.md#load-method) and [Model Load](../APIdocs/Module.md#model-load) for details.
+After training stops, you can resume from any saved point. Choose one of   the model snapshots and the corresponding optim-method snapshot to resume (saved in checkpoint path, details see [Checkpointing](#checkpointing)).     Use `Module.load` (Scala) or `Model.load`(Python) to load the model         snapshot into an model object, and `T.load` (Scala only, Python   does not support this yet) to load state which stores optimization method parameters. Then create a new `Optimizer` with the loaded model and Table state . Call `Optimizer.optimize`, and you will resume from the point       where the snapshot is taken. Refer to [OptimMethod Load](../APIGuide/Optimizers/OptimMethod.md#load-method) and [Model Load](../APIGuide/Module.md#model-load) for details.
 
 You can also resume training without loading state, if you       intend to change the learning rate schedule or even the optimization        algorithm. Just create an `Optimizer` with loaded model and a new instance  of Table state (both Scala and Python).
 
