@@ -75,6 +75,8 @@ object Transpose extends ModuleSerializable {
   override def loadModule[T: ClassTag](model : BigDLModule)
                                       (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
 
+    checkVersion(model)
+
     val attrMap = model.getAttrMap
 
     val size = DataConverter.
@@ -104,6 +106,8 @@ object Transpose extends ModuleSerializable {
     val transpose = module.module.
       asInstanceOf[Transpose[T]]
     val transposeBuilder = BigDLModule.newBuilder
+
+    setVersion(transposeBuilder)
 
     val size = transpose.permutations.length
 

@@ -347,6 +347,8 @@ object Graph extends ContainerSerializable {
 
   override def loadModule[T: ClassTag](module : BigDLModule)
                                       (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
+    checkVersion(module)
+
     val subModules = module.getSubModulesList.asScala
 
     val attributes = module.getAttrMap
@@ -392,7 +394,11 @@ object Graph extends ContainerSerializable {
 
   override def serializeModule[T: ClassTag](module : ModuleData[T])
                                            (implicit ev: TensorNumeric[T]) : BigDLModule = {
+
     val graphBuilder = BigDLModule.newBuilder
+
+    setVersion(graphBuilder)
+
     module.next.foreach(_ => graphBuilder.addAllPreModules(_))
     module.pre.foreach(_ => graphBuilder.addAllNextModules(_))
     graphBuilder.setName(module.module.getName)

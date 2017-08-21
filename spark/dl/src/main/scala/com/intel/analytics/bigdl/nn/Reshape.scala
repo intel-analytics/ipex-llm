@@ -139,6 +139,8 @@ object Reshape extends ModuleSerializable {
 
   override def loadModule[T: ClassTag](model : BigDLModule)
                                       (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
+    checkVersion(model)
+
     val attrMap = model.getAttrMap
     val size = DataConverter.getAttributeValue(attrMap.get("size")).
       asInstanceOf[Array[Int]]
@@ -158,9 +160,8 @@ object Reshape extends ModuleSerializable {
                                            (implicit ev: TensorNumeric[T]) : BigDLModule = {
 
     val reshape = module.module.asInstanceOf[Reshape[T]]
-    val reshapeBuilder = BigDLModule.newBuilder()
+    val reshapeBuilder = BigDLModule.newBuilder(super.serializeModule(module))
 
-    val moduleType = reshape.getClass.getName
     reshapeBuilder.setModuleType(moduleType)
 
     val sizeBuilder = AttrValue.newBuilder

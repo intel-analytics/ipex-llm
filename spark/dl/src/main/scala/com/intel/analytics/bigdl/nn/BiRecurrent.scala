@@ -147,6 +147,8 @@ object BiRecurrent extends ContainerSerializable {
   override def loadModule[T: ClassTag](model : BigDLModule)
                                       (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
 
+    checkVersion(model)
+
     val attrMap = model.getAttrMap
 
     val merge = DataConverter.
@@ -164,10 +166,13 @@ object BiRecurrent extends ContainerSerializable {
 
   override def serializeModule[T: ClassTag](module : ModuleData[T])
                                            (implicit ev: TensorNumeric[T]) : BigDLModule = {
+
     val birecurrentModule = module.module.
       asInstanceOf[BiRecurrent[T]]
     val birecurrentBuilder = BigDLModule.newBuilder
     birecurrentBuilder.setModuleType(birecurrentModule.getClass.getName)
+
+    setVersion(birecurrentBuilder)
 
     val mergeBuilder = AttrValue.newBuilder
     DataConverter.setAttributeValue(mergeBuilder,

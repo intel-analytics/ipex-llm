@@ -784,6 +784,8 @@ object SpatialFullConvolution extends ModuleSerializable {
 
   override def loadModule[T: ClassTag](model : BigDLModule)
                                       (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
+    checkVersion(model)
+
     val attrMap = model.getAttrMap
     val intParams = DataConverter.getAttributeValue(attrMap.get("intParams")).
       asInstanceOf[Array[Int]]
@@ -807,10 +809,10 @@ object SpatialFullConvolution extends ModuleSerializable {
   override def serializeModule[T: ClassTag](module : ModuleData[T])
                                            (implicit ev: TensorNumeric[T]) : BigDLModule = {
 
-    val fullConvCls = Class.forName("com.intel.analytics.bigdl.nn.SpatialFullConvolution")
     val fullConv = module.module.asInstanceOf[SpatialFullConvolution[T]]
     val bigDLModuleBuilder = BigDLModule.newBuilder
-    bigDLModuleBuilder.setModuleType(fullConvCls.getName)
+    bigDLModuleBuilder.setModuleType(module.module.getClass.getName)
+    setVersion(bigDLModuleBuilder)
     val intParamsBuilder = AttrValue.newBuilder
     val intParams = Array(fullConv.nInputPlane, fullConv.nOutputPlane, fullConv.kW,
       fullConv.kH, fullConv.dW, fullConv.dH, fullConv.padW, fullConv.padH, fullConv.adjW,

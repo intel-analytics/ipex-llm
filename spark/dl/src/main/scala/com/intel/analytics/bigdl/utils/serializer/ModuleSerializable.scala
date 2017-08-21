@@ -62,6 +62,8 @@ trait ModuleSerializable extends Loadable with Savable{
   override def loadModule[T: ClassTag](model : BigDLModule)
                                       (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
 
+    checkVersion(model)
+
     val evidence = scala.reflect.classTag[T]
     val modelAttributes = model.getAttrMap
     val moduleType = model.getModuleType
@@ -100,7 +102,9 @@ trait ModuleSerializable extends Loadable with Savable{
    */
   override def serializeModule[T: ClassTag](module : ModuleData[T])
                                            (implicit ev: TensorNumeric[T]) : BigDLModule = {
+
     val bigDLModelBuilder = BigDLModule.newBuilder
+    setVersion(bigDLModelBuilder)
     val cls = module.module.getClass
     bigDLModelBuilder.setModuleType(cls.getName)
     val fullParams = getCostructorMirror(cls).symbol.paramss
