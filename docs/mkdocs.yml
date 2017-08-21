@@ -25,24 +25,16 @@ pages:
   - Examples: ScalaUserGuide/examples.md
   - More Resources: ScalaUserGuide/resources.md
 - Python User Guide: 
-  - Install:
-    - From pip: PythonUserGuide/install-from-pip.md
-    - Without pip: PythonUserGuide/install-without-pip.md
-  - Run:
-    - After pip install: PythonUserGuide/run-from-pip.md
-    - Without pip install: PythonUserGuide/run-without-pip.md
+  - Install: PythonUserGuide/install-without-pip.md
+  - Run: PythonUserGuide/run-without-pip.md
   - Examples: PythonUserGuide/python-examples.md
   - More Examples and Tutorials: PythonUserGuide/python-resources.md
 - Programming Guide:
-  - Define a Model:
-    - Using Sequential API: ProgrammingGuide/Model/Sequential.md
-    - Using Functional API: ProgrammingGuide/Model/Functional.md
+  - Define a Model: ProgrammingGuide/Model/Sequential.md
   - Optimization: ProgrammingGuide/optimization.md
   - Use Spark ML: ProgrammingGuide/MLPipeline.md
   - Visualization: ProgrammingGuide/visualization.md
   - Run on Amazon EC2: ProgrammingGuide/run-on-ec2.md 
-  - Tensorflow Support: ProgrammingGuide/tensorflow-support.md
-  - Caffe Support: ProgrammingGuide/caffe-support.md
 - API Guide:
   - Data: APIGuide/Data.md
   - Model: APIGuide/Module.md
@@ -60,19 +52,14 @@ pages:
     - Dropout Layers: APIGuide/Layers/Dropout-Layers.md
     - Distance Layers: APIGuide/Layers/Distance-Layers.md
     - Recurrent Layers:  APIGuide/Layers/Recurrent-Layers.md
-    - Recursive Layers:  APIGuide/Layers/Recursive-Layers.md
     - Utilities: APIGuide/Layers/Utilities.md
   - Losses: APIGuide/Losses.md
   - Initalizers: APIGuide/Initializers.md
-  - Regularizers: APIGuide/Regularizers.md
   - Optimizer: APIGuide/Optimizers/Optimizer.md
   - Optim Methods:
     - OptimMethod: APIGuide/Optimizers/OptimMethod.md 
     - Optimization Algorithms: APIGuide/Optimizers/Optim-Methods.md
   - Triggers: APIGuide/Triggers.md
   - Metrics:  APIGuide/Metrics.md
-  - Full API docs:
-    - Scala Docs: APIGuide/scaladoc.md
-    - Python API Docs: APIGuide/python-api-doc.md
 - Powered by: powered-by.md
 - Known Issues: known-issues.md

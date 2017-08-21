@@ -2,7 +2,7 @@
 
 First of all, you need to obtain the BigDL libs. Refer to [Install](install-without-pip.md) for more details. 
 
-Then, set environmental variables as described in [Set Environment         Variables](../UserGuide/run.md#set-environment-variables).
+Then, set environmental variables as described in [Set Environment         Variables](../ScalaUserGuide/run.md#set-environment-variables).
 
 ## **A quick launch for local mode**
 
@@ -121,7 +121,7 @@ _**Example code to verify if run successfully**
 
 
 ## BigDL Configuration
-Please check [this page](../UserGuide/configuration.md)
+Please check [this page](../ScalaUserGuide/configuration.md)
 
 ## **FAQ**
 - TypeError: 'JavaPackage' object is not callable
