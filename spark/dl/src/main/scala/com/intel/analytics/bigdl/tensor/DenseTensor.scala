@@ -1237,7 +1237,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     var result = true
     this.map(other, (a, b) => {
       if (result) {
-        resultut = ev.nearlyEqual(a, b, DenseTensorMath.floatEpsilon)
+        result = ev.nearlyEqual(a, b, DenseTensorMath.floatEpsilon)
       }
       a
     })
