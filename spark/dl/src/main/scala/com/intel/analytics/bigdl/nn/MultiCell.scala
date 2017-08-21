@@ -23,13 +23,17 @@ import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData, Mo
 import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
  * Enable user stack multiple simple cells.
  */
 class MultiCell[T : ClassTag](cells: Array[Cell[T]])(implicit ev: TensorNumeric[T])
-  extends AbstractModule[Table, Table, T] {
+  extends Cell[T](hiddensShape = cells.last.hiddensShape) {
+  override var cell: AbstractModule[Activity, Activity, T] = Sequential[T]()
+  cells.foreach(x => cell.asInstanceOf[Sequential[T]].add(x))
+  
   override def updateOutput(input: Table): Table = {
     var i = 0
     var result = input
@@ -85,4 +89,42 @@ class MultiCell[T : ClassTag](cells: Array[Cell[T]])(implicit ev: TensorNumeric[
     gradInput
   }
 
+  override def zeroGradParameters(): Unit = {
+    cells.foreach(_.zeroGradParameters())
+  }
+
+  override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
+    val weights = new ArrayBuffer[Tensor[T]]()
+    val gradWeights = new ArrayBuffer[Tensor[T]]()
+    cells.foreach(m => {
+      val params = m.parameters()
+      if (params != null) {
+        params._1.foreach(weights += _)
+        params._2.foreach(gradWeights += _)
+      }
+    })
+    (weights.toArray, gradWeights.toArray)
+  }
+
+  override def getParametersTable(): Table = {
+    val pt = T()
+    cells.foreach(m => {
+      val params = m.getParametersTable()
+      if (params != null) {
+        params.keySet.foreach(key => pt(key) = params(key))
+      }
+    })
+    pt
+  }
+
+  override def reset(): Unit = {
+    cells.foreach(_.reset())
+  }
+}
+
+object MultiCell {
+  def apply[@specialized(Float, Double) T: ClassTag](cells: Array[Cell[T]]
+    )(implicit ev: TensorNumeric[T]): MultiCell[T] = {
+    new MultiCell[T](cells)
+  }
 }
