@@ -338,6 +338,9 @@ class Layer(JavaValue):
     def save(self, path, over_write = False):
         callBigDlFunc(self.bigdl_type, "modelSave", self.value, path,
                       over_write)
+    def saveModel(self, path, over_write = False):
+        callBigDlFunc(self.bigdl_type, "bigdlModelSave", self.value, path,
+                      over_write)
 
     def save_caffe(self, prototxt_path, model_path, use_v2 = True, overwrite = False):
         callBigDlFunc(self.bigdl_type, "saveCaffe", self.value, prototxt_path,
@@ -441,6 +444,17 @@ class Model(Container):
         :return: A pre-trained model.
         """
         jmodel = callBigDlFunc(bigdl_type, "loadBigDL", path)
+        return Layer.of(jmodel)
+
+    @staticmethod
+    def loadModule(path, bigdl_type="float"):
+        """
+        Load a pre-trained Bigdl model.
+
+        :param path: The path containing the pre-trained model.
+        :return: A pre-trained model.
+        """
+        jmodel = callBigDlFunc(bigdl_type, "loadBigDLModule", path)
         return Layer.of(jmodel)
 
     @staticmethod

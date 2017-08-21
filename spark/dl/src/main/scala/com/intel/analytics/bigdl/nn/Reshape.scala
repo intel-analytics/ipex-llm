@@ -162,7 +162,7 @@ object Reshape extends ModuleSerializable {
     val reshape = module.module.asInstanceOf[Reshape[T]]
     val reshapeBuilder = BigDLModule.newBuilder(super.serializeModule(module))
 
-    reshapeBuilder.setModuleType(moduleType)
+    reshapeBuilder.setModuleType(reshape.getClass.getName)
 
     val sizeBuilder = AttrValue.newBuilder
     DataConverter.setAttributeValue(sizeBuilder, reshape.size,
