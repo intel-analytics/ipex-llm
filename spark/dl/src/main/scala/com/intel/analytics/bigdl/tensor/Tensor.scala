@@ -678,6 +678,8 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
  */
 sealed trait TensorDataType
 
+object BooleanType extends TensorDataType
+
 object DoubleType extends TensorDataType
 
 object FloatType extends TensorDataType
