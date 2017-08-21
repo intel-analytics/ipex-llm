@@ -84,25 +84,7 @@ class Recurrent[T : ClassTag](batchNormParams: BatchNormParams[T] = null)
 
     if (batchNormParams != null) {
       layer = batchNormalization(batchNormParams)
-    }
-
-    preTopology = preTopology match {
-      case sequential: Sequential[T] =>
-        if (layer != null) {
-          sequential.add(layer)
-        } else if (sequential.modules.length == 0) {
-          null
-        } else {
-          sequential
-        }
-      case module: AbstractModule[Activity, Activity, T] =>
-        val sequential = Sequential[T]()
-        sequential.add(module)
-        if (layer != null) {
-          sequential.add(layer)
-        }
-        sequential
-      case _ => null
+      preTopology = Sequential[T]().add(preTopology).add(layer)
     }
 
     if (preTopology != null) {
@@ -112,16 +94,17 @@ class Recurrent[T : ClassTag](batchNormParams: BatchNormParams[T] = null)
     this
   }
 
-  private def batchNormalization(batchNormParams: BatchNormParams[T]) =
+  private def batchNormalization(batchNormParams: BatchNormParams[T]) = {
     TimeDistributed[T](BatchNormalization[T](
-      nOutput = 1,
+      nOutput = topology.hiddenSizeOfPreTopo,
       batchNormParams.eps,
       batchNormParams.momentum,
-      affine = false,
+      affine = true,
       batchNormParams.initWeight,
       batchNormParams.initBias,
       batchNormParams.initGradWeight,
       batchNormParams.initGradBias))
+  }
 
   // list of cell modules cloned from added modules
   private val cells: ArrayBuffer[Cell[T]]
@@ -362,6 +345,7 @@ class Recurrent[T : ClassTag](batchNormParams: BatchNormParams[T] = null)
     val st = System.nanoTime
     currentGradOutput(hidDim) = gradHidden
     var i = times
+
     while (i >= 1) {
       currentGradOutput(inputDim) = gradOutput.select(timeDim, i)
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)

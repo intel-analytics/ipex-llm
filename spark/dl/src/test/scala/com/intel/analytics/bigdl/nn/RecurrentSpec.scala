@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.optim.SGD
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.utils.{Engine, T}
 import org.scalatest.{FlatSpec, Matchers}
@@ -221,28 +221,79 @@ class RecurrentSpec extends FlatSpec with Matchers {
   "A Recurrent with SimpleRNN cell " should " add batchNormalization correctly" in {
     val hiddenSize = 4
     val inputSize = 5
-    val outputSize = 5
-    val batchSize = 4
+    val batchSize = 2
     val time = 2
-    val batchSize1 = 5
-    val batchSize2 = 8
     val seed = 100
     RNG.setSeed(seed)
 
+    val cell = RnnCell[Double](inputSize, hiddenSize, ReLU[Double]())
     val model = Sequential[Double]()
       .add(Recurrent[Double](BatchNormParams())
-        .add(RnnCell[Double](inputSize, hiddenSize, Tanh[Double]())))
-      .add(TimeDistributed[Double](Linear[Double](hiddenSize, outputSize)))
+        .add(cell))
 
-    println(model)
+    val (weightsArray, gradWeightsArray) = model.parameters()
+    weightsArray(0).set(Tensor[Double](Array(0.038822557355026155,
+      0.15308625574211315, -0.1982324504512677, -0.07866809418407278,
+      -0.06751351799422134, 0.023597193777786962, 0.3083771498964048,
+      -0.31429738377130323, -0.4429929170091549, -0.30704694098520874,
+      -0.33847886911170505, -0.2804322767460886, 0.15272262323432112,
+      -0.2592875227066882, 0.2914515643266326, -0.0422707164265147,
+      -0.32493950675524846, 0.3310656372548169, 0.06716552027607742, -0.39025554201755425),
+      Array(4, 5)))
+    weightsArray(1).set(Tensor[Double](Array(0.3500089930447004,
+      0.11118793394460541,
+      -0.2600975267200473,
+      0.020882861472978465), Array(4)))
 
-    val input = Tensor[Double](batchSize, time, inputSize)
-    val gradOutput = Tensor[Double](batchSize, time, outputSize)
+    weightsArray(2).set(Tensor[Double](Array(0.18532821908593178,
+    0.5622962701600045,
+    0.10837689251638949,
+    0.005817196564748883),
+      Array(4)))
+
+    weightsArray(4).set(Tensor[Double](Array(-0.28030250454321504,
+      -0.19257679535076022, 0.4786237839143723, 0.45018431078642607,
+    0.31168314907699823, -0.37334575527347624, -0.3280589876230806, -0.4210121303331107,
+    0.31622475129552186, -0.18864686344750226, -0.22592625673860312, 0.13238358590751886,
+    -0.06829581526108086, 0.1993589240591973, 0.44002981553785503, 0.14196494384668767),
+      Array(4, 4)))
+    weightsArray(5).set(Tensor[Double](Array(0.3176493758801371,
+    0.4200237800832838,
+    -0.16388805187307298,
+    -0.20112364063970745), Array(4)))
+
+    val input = Tensor[Double](Array(0.1754104527644813, 0.5687455364968628,
+      0.3728320465888828, 0.17862433078698814, 0.005688507109880447,
+    0.5325737004168332, 0.2524263544473797, 0.6466914659831673, 0.7956625143997371,
+      0.14206538046710193, 0.015254967380315065, 0.5813889650162309, 0.5988433782476932,
+      0.4791899386327714, 0.6038045417517424, 0.3864191132597625, 0.1051476860884577,
+      0.44046495063230395, 0.3819434456527233, 0.40475733182393014),
+      Array(batchSize, time, inputSize))
+    val gradOutput = Tensor[Double](Array(0.015209059891239357, 0.08723655440707856,
+      1.2730716350771312, 0.17783007683002253, 0.9809208554215729,
+      0.7760053128004074, 0.05994199030101299, 0.550958373118192,
+    1.1344734990039382, -0.1642483852831349, 0.585060822398516, 0.6124844773937481,
+    0.7424796849954873, 0.95687689865008, 0.6301839421503246, 0.17582130827941),
+      Array(batchSize, time, hiddenSize))
 
     val output = model.forward(input)
     val gradInput = model.backward(input, gradOutput)
 
-    println("add normalization")
+    output should be (Tensor[Double](Array(0.6299258968399799,
+      1.3642297404555106, 0.0, 0.0,
+    0.0, 0.0, 0.0, 0.0361454784986459,
+    0.25696697120146866, 0.19273657953649884, 0.0, 0.0,
+    0.12799813658263415, 0.24882574216093045, 0.0, 0.0),
+      Array(batchSize, time, hiddenSize)))
+
+    gradInput should be (Tensor[Double](Array(-0.027275798942804907,
+      -0.1383686829541865, 0.16717516624801407, 0.11372249422239256,
+      0.08955797331273728, -0.08873463347124873, -0.38487333246986216,
+      0.48437215964262187, 0.2417856458208813, 0.19281229062491595,
+    0.03225607513585589, -0.36656214055421815, 0.2795038794253451,
+      0.8385161794048844, 0.549019363159085, 0.08375435727819777,
+      0.8898041559782669, -0.9310512053159811, -1.1940243194481583, -0.8313896270967381),
+      Array(batchSize, time, inputSize)))
   }
 
   "A Recurrent" should " converge when batchSize changes" in {
@@ -287,13 +338,15 @@ class RecurrentSpec extends FlatSpec with Matchers {
     model.backward(input1, gradOutput1)
     val gradInput1compare =
       Tensor[Double](batchSize1, time, inputSize).copy(model.gradInput.toTensor[Double])
-    val output1compare = Tensor[Double](batchSize1, outputSize).copy(model.output.toTensor[Double])
+    val output1compare = Tensor[Double](batchSize1, outputSize)
+      .copy(model.output.toTensor[Double])
 
     model.forward(input2)
     model.backward(input2, gradOutput2)
     val gradInput2compare =
       Tensor[Double](batchSize2, time, inputSize).copy(model.gradInput.toTensor[Double])
-    val output2compare = Tensor[Double](batchSize2, outputSize).copy(model.output.toTensor[Double])
+    val output2compare = Tensor[Double](batchSize2, outputSize)
+      .copy(model.output.toTensor[Double])
 
     model.hashCode()
 
