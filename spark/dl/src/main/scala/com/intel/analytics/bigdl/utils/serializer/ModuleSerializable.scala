@@ -24,7 +24,6 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
-import com.intel.analytics.bigdl.utils.serializer.DataConverter.RegularizerConverter
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializer._
 import serialization.Bigdl.DataType
 import serialization.Bigdl.{AttrValue, BigDLModule, BigDLTensor}
@@ -39,6 +38,21 @@ import scala.reflect.ClassTag
  */
 trait ModuleSerializable extends Loadable with Savable{
 
+
+  private val bigDLVersion = com.intel.analytics.bigdl.BIGDL_VERSION
+
+  // Separate this two methods for reuse in sub-classes
+  protected def checkVersion[T: ClassTag](module : BigDLModule)
+                                         (implicit ev: TensorNumeric[T]) : Unit = {
+    val version = module.getVersion
+    require(version == bigDLVersion, s"bigDL version mismatch," +
+      s"expected $version, actual $bigDLVersion")
+  }
+
+  protected def setVersion[T: ClassTag](modelBuilder : BigDLModule.Builder)
+                                       (implicit ev: TensorNumeric[T]) : Unit = {
+    modelBuilder.setVersion(bigDLVersion)
+  }
 
   /**
    * Default deserialization using reflection
