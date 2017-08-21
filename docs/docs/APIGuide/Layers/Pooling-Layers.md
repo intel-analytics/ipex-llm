@@ -2,11 +2,11 @@
 
 **Scala:**
 ```scala
-val mp = SpatialMaxPooling(2, 2, dW=2, dH=2, padW=0, padH=0)
+val mp = SpatialMaxPooling(2, 2, dW=2, dH=2, padW=0, padH=0, format=DataFormat.NCHW)
 ```
 **Python:**
 ```python
-mp = SpatialMaxPooling(2, 2, dw=2, dh=2, pad_w=0, pad_h=0, to_ceil=false)
+mp = SpatialMaxPooling(2, 2, dw=2, dh=2, pad_w=0, pad_h=0, to_ceil=false, format="NCHW")
 ```
 
 Applies 2D max-pooling operation in kWxkH regions by step size dWxdH steps.
@@ -31,6 +31,10 @@ As for padding, when padW and padH are both -1, we use a padding algorithm simil
  padTop = padAlongHeight / 2
  padLeft = padAlongWidth / 2
 ```
+
+The format parameter is a string value (or DataFormat Object in Scala) of "NHWC" or "NCHW" to specify the input data format of this layer. In "NHWC" format
+data is stored in the order of \[batch_size, height, width, channels\], in "NCHW" format data is stored
+in the order of \[batch_size, channels, height, width\].
 
 **Scala example:**
 
