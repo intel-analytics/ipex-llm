@@ -301,14 +301,16 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                               dH: Int,
                               padW: Int = 0,
                               padH: Int = 0,
-                              ceilMode: Boolean = false)
+                              ceilMode: Boolean = false,
+                              format: String = "NCHW")
   : SpatialMaxPooling[T] = {
     val maxpooling = SpatialMaxPooling[T](kW,
       kH,
       dW,
       dH,
       padW,
-      padH)
+      padH,
+      format = DataFormat(format))
     if (ceilMode) maxpooling.ceil()
     else maxpooling
   }
