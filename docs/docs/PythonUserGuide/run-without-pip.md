@@ -1,4 +1,4 @@
-First of all, you need to obtain the BigDL libs. Refer to [Install from pre built](../UserGuide/install-pre-built.md) or [Install from source code](../UserGuide/install-build-src.md) for more details
+First of all, you need to obtain the BigDL libs. Refer to [Install from pre built](../ScalaUserGuide/install-pre-built.md) or [Install from source code](../ScalaUserGuide/install-build-src.md) for more details
 
 
 ## **A quick launch for local mode**
@@ -92,7 +92,7 @@ After successfully launching Jupyter, you will be able to navigate to the notebo
 [Example code to verify if run successfully](run-from-pip.md#code.verification)
 
 ## BigDL Configuration
-Please check [this page](../UserGuide/configuration.md)
+Please check [this page](../ScalaUserGuide/configuration.md)
 
 ## **FAQ**
 - TypeError: 'JavaPackage' object is not callable
