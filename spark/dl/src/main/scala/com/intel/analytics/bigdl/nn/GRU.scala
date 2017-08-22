@@ -66,7 +66,7 @@ class GRU[T : ClassTag] (
   var i2g: ModuleNode[T] = _
   var h2g: ModuleNode[T] = _
   val featDim = 2
-  override var cell: AbstractModule[Activity, Activity, T] = buildGRU()
+//  override var cell: AbstractModule[Activity, Activity, T] = buildGRU()
 
   override def preTopology: AbstractModule[Activity, Activity, T] =
     if (p != 0) {
@@ -111,7 +111,7 @@ class GRU[T : ClassTag] (
     (sigmoid1, sigmoid2)
   }
 
-  def buildGRU(): Graph[T] = {
+  override def buildModel(): Graph[T] = {
     val x = Input()
     val h = Input()
     val (r, z) = buildGates()(x, h) // x(t), h(t - 1), r(t), z(t)

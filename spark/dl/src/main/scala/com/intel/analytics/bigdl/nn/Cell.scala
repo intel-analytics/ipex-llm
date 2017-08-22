@@ -59,7 +59,7 @@ abstract class Cell[T : ClassTag](
    * Similarly the `preHiddens` is the kernel's output hiddens at the previous time step.
    *
    */
-  var cell: AbstractModule[Activity, Activity, T]
+  lazy val cell: AbstractModule[Activity, Activity, T] = buildModel()
 
   /**
    * The preTopology defines operations to pre-process the input when it is not dependent
@@ -73,6 +73,13 @@ abstract class Cell[T : ClassTag](
    * @return
    */
   def preTopology: AbstractModule[Activity, Activity, T] = null
+  
+  def buildModel(): AbstractModule[Activity, Activity, T]
+
+  /**
+   * Whether ignore pretopology
+   */
+  var ignorePreTopology: Boolean = false
 
   /**
    * resize the hidden parameters wrt the batch size, hiddens shapes.

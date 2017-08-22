@@ -38,7 +38,7 @@ private[bigdl] class CellUnit[T : ClassTag] (hidSize: Int)
 
   override def accGradParameters(input: Table, gradOutput: Table): Unit = {}
 
-  override var cell: AbstractModule[Activity, Activity, T] = _
+  override def buildModel: AbstractModule[Activity, Activity, T] = {null}
 }
 
 @com.intel.analytics.bigdl.tags.Parallel

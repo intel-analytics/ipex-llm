@@ -67,7 +67,8 @@ class Recurrent[T : ClassTag](feedbackOutput: Boolean = false)
     require(module.isInstanceOf[Cell[T]],
       "Recurrent: contained module should be Cell type")
     topology = module.asInstanceOf[Cell[T]]
-    preTopology = topology.preTopology
+    preTopology = if (!feedbackOutput) topology.preTopology
+     else { topology.ignorePreTopology = true; null }
     if (preTopology != null) {
       modules += preTopology
     }
@@ -196,7 +197,7 @@ class Recurrent[T : ClassTag](feedbackOutput: Boolean = false)
     batchSize = input.size(batchDim)
     times = input.size(timeDim)
 
-    outputCell = if (preTopology != null && !feedbackOutput) {
+    outputCell = if (preTopology != null) {
       preTopology.updateOutput(input).toTensor[T]
     } else {
       input
@@ -239,24 +240,11 @@ class Recurrent[T : ClassTag](feedbackOutput: Boolean = false)
         newInput.narrow(timeDim, i, 1).copy(inputTmp)
         require(inputTmp.nElement() == input.select(timeDim, i).nElement(), "outputsize is " +
           "not the same with input size!! Please update cell settings or turn off feedbackOutput.")
-        currentInput(inputDim) = if (preTopology != null) {
-          val sizes = 1 +: inputTmp.size()
-          inputTmp.resize(sizes)
-          val _input = preTopology.updateOutput(inputTmp).toTensor[T]
-          inputTmp.resize(sizes.takeRight(sizes.length - 1))
-          _input.select(1, 1)
-        } else {
-          inputTmp
-        }
+        currentInput(inputDim) = inputTmp
       }
       cells(i - 1).updateOutput(currentInput)
       currentInput(hidDim) = cells(i - 1).output.toTable(hidDim)
       i += 1
-    }
-
-    if (preTopology != null && feedbackOutput) {
-      // For backward preTopology use
-      outputCell = preTopology.updateOutput(newInput).toTensor[T]
     }
 
     copy(cells.map(x => x.output.toTable[Tensor[T]](inputDim)),
@@ -294,7 +282,7 @@ class Recurrent[T : ClassTag](feedbackOutput: Boolean = false)
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
         else hidden
 
-      _input(inputDim) = if (feedbackOutput && preTopology == null) {
+      _input(inputDim) = if (feedbackOutput) {
         newInput.select(timeDim, i)
       } else {
         outputCell.select(timeDim, i)
@@ -310,8 +298,7 @@ class Recurrent[T : ClassTag](feedbackOutput: Boolean = false)
       i -= 1
     }
     if (preTopology != null) {
-      val tmpInput = if (feedbackOutput) newInput else input
-      preTopology.accGradParameters(tmpInput, gradInputCell)
+      preTopology.accGradParameters(input, gradInputCell)
     }
   }
 
@@ -337,7 +324,7 @@ class Recurrent[T : ClassTag](feedbackOutput: Boolean = false)
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
         else hidden
 
-      _input(inputDim) = if (feedbackOutput && preTopology == null) {
+      _input(inputDim) = if (feedbackOutput) {
         newInput.select(timeDim, i)
       } else {
         outputCell.select(timeDim, i)
@@ -349,8 +336,7 @@ class Recurrent[T : ClassTag](feedbackOutput: Boolean = false)
     copy(cells.map(x => x.gradInput.toTable[Tensor[T]](inputDim)),
         gradInputCell, 0)
     if (preTopology != null) {
-      val tmpInput = if (feedbackOutput) newInput else input
-      gradInput = preTopology.updateGradInput(tmpInput, gradInputCell).toTensor[T]
+      gradInput = preTopology.updateGradInput(input, gradInputCell).toTensor[T]
     }
     gradInput
   }
