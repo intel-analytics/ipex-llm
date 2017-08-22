@@ -88,7 +88,7 @@ object PTBWordLM {
         model = model,
         dataset = trainSet,
         criterion = TimeDistributedCriterion[Float](
-          CrossEntropyCriterion[Float](), timeMajor = true, sizeAverage = true)
+          CrossEntropyCriterion[Float](), sizeAverage = true)
       )
 
       if (param.checkpoint.isDefined) {
@@ -103,7 +103,6 @@ object PTBWordLM {
         .setValidation(Trigger.everyEpoch, validationSet, Array(new Loss[Float](
           TimeDistributedCriterion[Float](
             CrossEntropyCriterion[Float](),
-            timeMajor = true,
             sizeAverage = true))))
         .setOptimMethod(optimMethod)
         .setEndWhen(Trigger.maxEpoch(param.nEpochs))

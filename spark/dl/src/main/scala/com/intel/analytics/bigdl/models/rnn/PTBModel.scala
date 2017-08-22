@@ -30,8 +30,8 @@ object PTBModel {
     val input = Input[Float]()
     val embeddingLookup =
       LookupTable[Float](inputSize, hiddenSize).inputs(input)
-    val transpose = Transpose[Float](Array((1, 2))).inputs(embeddingLookup)
-    val lstm = addLayer(hiddenSize, hiddenSize, 1, numLayers, transpose)
+//    val transpose = Transpose[Float](Array((1, 2))).inputs(embeddingLookup)
+    val lstm = addLayer(hiddenSize, hiddenSize, 1, numLayers, embeddingLookup)
     val output =
       TimeDistributed[Float](Linear[Float](hiddenSize, outputSize))
       .inputs(lstm)
@@ -44,7 +44,7 @@ object PTBModel {
                numLayers: Int,
                input: ModuleNode[Float]): ModuleNode[Float] = {
     if (depth == numLayers) {
-      Recurrent[Float](timeMajor = true)
+      Recurrent[Float]()
         .add(LSTM[Float](inputSize, hiddenSize, 0))
         .inputs(input)
     } else {
@@ -53,7 +53,7 @@ object PTBModel {
         hiddenSize,
         depth + 1,
         numLayers,
-        Recurrent[Float](timeMajor = true)
+        Recurrent[Float]()
           .add(LSTM[Float](inputSize, hiddenSize, 0))
           .inputs(input)
       )

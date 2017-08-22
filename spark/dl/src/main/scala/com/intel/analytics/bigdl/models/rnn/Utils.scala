@@ -42,7 +42,7 @@ object Utils {
                           stateSnapshot: Option[String] = None,
                           checkpoint: Option[String] = None,
                           batchSize: Int = 20,
-                          learningRate: Double = 1.0,
+                          learningRate: Double = 0.01,
                           momentum: Double = 0.0,
                           weightDecay: Double = 0.5,
                           dampening: Double = 0.0,
