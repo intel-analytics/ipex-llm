@@ -115,10 +115,8 @@ class Reverse[T: ClassTag](dim: Int = 1, isInplace: Boolean = false)
 
   override def clearState(): this.type = {
     if (!isInplace) {
-      // inplace operation, so skip clear output
-      output.set()
+      super.clearState()
     }
-    gradInput.set()
     this
   }
 

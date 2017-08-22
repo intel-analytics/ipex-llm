@@ -42,10 +42,8 @@ class ReLU6[T: ClassTag](inplace: Boolean = false)
 
   override def clearState(): this.type = {
     if (!inplace) {
-      // inplace operation, so skip clear output
-      output.set()
+      super.clearState()
     }
-    gradInput.set()
     this
   }
 }

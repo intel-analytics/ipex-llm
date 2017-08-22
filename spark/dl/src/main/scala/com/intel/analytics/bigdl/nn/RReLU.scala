@@ -168,10 +168,8 @@ class RReLU[T: ClassTag](
 
   override def clearState(): this.type = {
     if (!inplace) {
-      // inplace operation, so skip clear output
-      output.set()
+      super.clearState()
     }
-    gradInput.set()
     this
   }
 }

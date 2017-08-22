@@ -78,9 +78,8 @@ class AddConstant[T: ClassTag](
 
   override def clearState(): this.type = {
     if (!inplace) {
-      output.set()
+      super.clearState()
     }
-    gradInput.set()
     this
   }
 }
