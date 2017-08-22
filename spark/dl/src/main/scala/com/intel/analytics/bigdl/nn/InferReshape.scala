@@ -52,6 +52,7 @@ class InferReshape[T: ClassTag](
   private var startIndex = 0
   private var inferIndex = -1
   private var subTotal = 1
+  private var inPlace = true
 
   init()
 
@@ -98,6 +99,7 @@ class InferReshape[T: ClassTag](
       output = input.view(inferedSizes)
     } else {
       output = input.contiguous().view(inferedSizes)
+      inPlace = false
     }
     output
   }
@@ -152,6 +154,15 @@ class InferReshape[T: ClassTag](
     s"${getPrintName}(${
       size.mkString("x")
     })"
+  }
+
+  override def clearState(): this.type = {
+    if (!inPlace) {
+      // inplace operation, so skip clear output
+      output.set()
+    }
+    gradInput.set()
+    this
   }
 }
 

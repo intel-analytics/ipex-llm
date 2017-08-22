@@ -79,6 +79,15 @@ class MulConstant[T: ClassTag](
     val state = Seq(super.hashCode(), scalar, inplace)
     state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
   }
+
+  override def clearState(): this.type = {
+    if (!inplace) {
+      // inplace operation, so skip clear output
+      output.set()
+    }
+    gradInput.set()
+    this
+  }
 }
 
 object MulConstant {

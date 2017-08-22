@@ -187,7 +187,11 @@ class Dropout[T: ClassTag](
   }
 
   override def clearState(): this.type = {
-    super.clearState()
+    if (!inplace) {
+      // inplace operation, so skip clear output
+      output.set()
+    }
+    gradInput.set()
     noise.set()
     this
   }

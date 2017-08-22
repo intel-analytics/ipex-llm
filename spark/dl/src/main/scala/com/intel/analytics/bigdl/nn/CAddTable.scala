@@ -65,6 +65,15 @@ class CAddTable[T: ClassTag](val inplace: Boolean = false)(
     }
     gradInput
   }
+
+  override def clearState(): this.type = {
+    if (!inplace) {
+      // inplace operation, so skip clear output
+      output.set()
+    }
+    gradInput.clear()
+    this
+  }
 }
 
 

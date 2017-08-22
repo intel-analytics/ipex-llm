@@ -183,6 +183,15 @@ class HardTanh[T: ClassTag](
   override def toString: String = {
     s"nn.HardTanh"
   }
+
+  override def clearState(): this.type = {
+    if (!inplace) {
+      // inplace operation, so skip clear output
+      output.set()
+    }
+    gradInput.set()
+    this
+  }
 }
 
 object HardTanh {
