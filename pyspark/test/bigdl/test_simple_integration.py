@@ -84,7 +84,7 @@ class TestSimple():
         fc1.set_weights([np.ones((4, 2)), np.ones((2,))])
         tmp_path = tempfile.mktemp()
         fc1.saveModel(tmp_path, True)
-        fc1_loaded = Model.loadModule(tmp_path)
+        fc1_loaded = Model.loadModel(tmp_path)
         assert_allclose(fc1_loaded.get_weights()[0],
                         fc1.get_weights()[0])
 
