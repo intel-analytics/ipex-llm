@@ -21,8 +21,9 @@ If contained cell is convlstm3D, getState return value is a table [hidden state,
 
 Parameters:
 
-* `feedbackOutput` whether feed prior predictions back into the rnn. By default it's false. If it's set as true. only last time step of user input is used
-during training.
+* `feedbackOutput` whether feed prior predictions back into the rnn. By default it's false. With feedbackoutput is true, input is dynamically composed during training. input at t(i) is output at t(i-1), and input at t(0) is the last time step of user input. It's usually used to get prediction from t+1 to t+n with given input at t.  
+
+With feedbackOutput is true, currently only support LSTMPeephole, ConvLSTMPeephole, ConvLSTMPeephole3D cell.
 
 **Scala example:**
 ```scala
