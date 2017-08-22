@@ -680,9 +680,19 @@ sealed trait TensorDataType
 
 object BooleanType extends TensorDataType
 
-object DoubleType extends TensorDataType
+object CharType extends TensorDataType
+
+object StringType extends TensorDataType
+
+object IntType extends TensorDataType
+
+object ShortType extends TensorDataType
+
+object LongType extends TensorDataType
 
 object FloatType extends TensorDataType
+
+object DoubleType extends TensorDataType
 
 object Tensor {
 

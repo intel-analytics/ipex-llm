@@ -21,18 +21,16 @@ import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
-class LogicalAnd[T: ClassTag](
-  axis: Int = 1,
-  keepDim: Boolean = false)
+class LogicalAnd[T: ClassTag]()
   (implicit ev: TensorNumeric[T]) extends Operation[Table, T] {
   override def updateOutput(input: Table): Tensor[T] = {
-    output.resizeAs(input(1)).copy(input(1))
     ev.getType() match {
       case BooleanType =>
+        output.asInstanceOf[Tensor[Boolean]].resizeAs(input(1)).copy(input(1))
         output
           .toTensor[Boolean]
           .map(input(2).asInstanceOf[Tensor[Boolean]], (a, b) => a && b)
-      case _ => throw new RuntimeException("LogicalOr only support boolean tensor")
+      case _ => throw new RuntimeException("LogicalAnd only support boolean tensor")
     }
 
     output
@@ -41,5 +39,5 @@ class LogicalAnd[T: ClassTag](
 
 object LogicalAnd {
   def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): Operation[Table, T]
-  = ModuleToOperation[Table, T](new LogicalOr())
+  = ModuleToOperation[Table, T](new LogicalAnd())
 }
