@@ -20,7 +20,9 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.{Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.{ContainerSerializable, DataConverter, ModuleData, ModuleSerializer}
 import com.intel.analytics.bigdl.utils.{T, Table}
+import serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -51,6 +53,8 @@ class Recurrent[T : ClassTag](feedbackOutput: Boolean = false)
   private val dropouts: ArrayBuffer[Array[Dropout[T]]] =
     new ArrayBuffer[Array[Dropout[T]]]
   private var newInput = Tensor[T]()
+  private val timeBuffer =
+    new ArrayBuffer[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)]
 
   /**
    *
@@ -72,6 +76,7 @@ class Recurrent[T : ClassTag](feedbackOutput: Boolean = false)
     if (preTopology != null) {
       modules += preTopology
     }
+    topology.cell = topology.buildModel()
     modules += topology
     this
   }
@@ -198,7 +203,7 @@ class Recurrent[T : ClassTag](feedbackOutput: Boolean = false)
     times = input.size(timeDim)
 
     outputCell = if (preTopology != null) {
-      preTopology.updateOutput(input).toTensor[T]
+      preTopology.forward(input).toTensor[T]
     } else {
       input
     }
@@ -242,7 +247,7 @@ class Recurrent[T : ClassTag](feedbackOutput: Boolean = false)
           "not the same with input size!! Please update cell settings or turn off feedbackOutput.")
         currentInput(inputDim) = inputTmp
       }
-      cells(i - 1).updateOutput(currentInput)
+      cells(i - 1).forward(currentInput)
       currentInput(hidDim) = cells(i - 1).output.toTable(hidDim)
       i += 1
     }
@@ -341,6 +346,105 @@ class Recurrent[T : ClassTag](feedbackOutput: Boolean = false)
     gradInput
   }
 
+  override def backward(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    val st = System.nanoTime
+    currentGradOutput(hidDim) = gradHidden
+    var i = times
+    while (i >= 1) {
+      currentGradOutput(inputDim) = gradOutput.select(timeDim, i)
+      _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
+      else hidden
+      _input(inputDim) = outputCell.select(timeDim, i)
+      if (i == 1) {
+        cells(i - 1).regluarized(true)
+      } else {
+        cells(i - 1).regluarized(false)
+      }
+      cells(i - 1).backward(_input, currentGradOutput)
+      currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
+      i -= 1
+    }
+
+    gradInput = if (preTopology != null) {
+      /**
+       * if preTopology is Sequential, it has not created gradInput.
+       * Thus, it needs to create a new Tensor.
+       */
+      if (preTopology.gradInput == null) {
+        preTopology.gradInput = Tensor[T]()
+      }
+      preTopology.gradInput.toTensor[T]
+    } else {
+      gradInputCell
+    }
+    gradInputCell.resizeAs(outputCell)
+    copy(cells.map(x => x.gradInput.toTable[Tensor[T]](inputDim)),
+      gradInputCell, 0)
+
+    if (preTopology != null) {
+      gradInput = preTopology.backward(input, gradInputCell).toTensor[T]
+    }
+
+    this.backwardTime = System.nanoTime - st
+    gradInput
+  }
+
+  private def appendTimes(module: Module[T]): Unit = {
+    if (module != null) {
+      module.getTimes.foreach(x => {
+        timeBuffer.append(x)
+      })
+    }
+  }
+
+  private def bufferTime(): (Long, Long) = {
+    var forwardSum = 0L
+    var backwardSum = 0L
+    timeBuffer.foreach(x => {
+      forwardSum += x._2
+      backwardSum += x._3
+    })
+    (forwardSum, backwardSum)
+  }
+
+  override def getTimes():
+  Array[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)] = {
+    timeBuffer.clear
+
+    val head = if (!cells.isEmpty) {
+      cells.head
+    } else null
+
+    var i = 1
+    while (i < times) {
+      head.addTimes(cells(i))
+      i += 1
+    }
+
+    appendTimes(preTopology)
+    appendTimes(head)
+
+    val (bufferForward, bufferBackward) = bufferTime()
+    timeBuffer.append(
+      (this,
+        this.forwardTime - bufferForward,
+        this.backwardTime - bufferBackward))
+    timeBuffer.toArray
+  }
+
+  override def resetTimes(): Unit = {
+    if (preTopology != null) {
+      preTopology.resetTimes
+    }
+    var i = 0
+    while (i < times) {
+      cells(i).resetTimes
+      i += 1
+    }
+    this.forwardTime = 0
+    this.backwardTime = 0
+  }
+
   override def clearState() : this.type = {
     super.clearState()
     hidden = null
@@ -353,6 +457,7 @@ class Recurrent[T : ClassTag](feedbackOutput: Boolean = false)
     _input.clear()
     cells.foreach(x => x.clearState())
     cells.clear()
+    timeBuffer.clear()
     initState = null
     this
   }
@@ -385,9 +490,45 @@ class Recurrent[T : ClassTag](feedbackOutput: Boolean = false)
   }
 }
 
-object Recurrent {
+object Recurrent extends ContainerSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](feedbackOutput: Boolean = false)
     (implicit ev: TensorNumeric[T]) : Recurrent[T] = {
     new Recurrent[T](feedbackOutput)
+  }
+
+  override def loadModule[T: ClassTag](model : BigDLModule)
+                                      (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
+    val moduleData = super.loadModule(model)
+    val recurrent = moduleData.module.asInstanceOf[Recurrent[T]]
+    val attrMap = model.getAttrMap
+
+    val topologyAttr = attrMap.get("topology")
+    recurrent.topology = DataConverter.getAttributeValue(topologyAttr).
+      asInstanceOf[Cell[T]]
+
+    val preTopologyAttr = attrMap.get("preTopology")
+    recurrent.preTopology = DataConverter.getAttributeValue(preTopologyAttr).
+      asInstanceOf[AbstractModule[Activity, Activity, T]]
+
+    moduleData
+  }
+
+  override def serializeModule[T: ClassTag](module : ModuleData[T])
+                                           (implicit ev: TensorNumeric[T]) : BigDLModule = {
+    val containerBuilder = BigDLModule.newBuilder(super.serializeModule(module))
+
+    val recurrent = module.module.asInstanceOf[Recurrent[T]]
+
+    val topologyBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(topologyBuilder, recurrent.topology,
+      ModuleSerializer.abstractModuleType)
+    containerBuilder.putAttr("topology", topologyBuilder.build)
+
+    val preTopologyBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(preTopologyBuilder,
+      recurrent.preTopology, ModuleSerializer.abstractModuleType)
+    containerBuilder.putAttr("preTopology", preTopologyBuilder.build)
+
+    containerBuilder.build
   }
 }

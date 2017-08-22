@@ -790,12 +790,12 @@ class LSTMPeepholeSpec  extends TorchSpec {
 
     val model2 = Recurrent().add(LSTMPeephole(inputSize, hiddenSize))
     model2.getParameters()._1.fill(0.5)
-    
+
     val rec = Recurrent(true)
     val model = rec
         .add(LSTMPeephole(inputSize, hiddenSize))
     model.getParameters()._1.fill(0.5)
-    
+
     val output = model.forward(input).toTensor
     val gradInput = model.backward(input, gradOutput).toTensor
 

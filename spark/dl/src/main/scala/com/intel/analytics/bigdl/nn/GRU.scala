@@ -66,7 +66,6 @@ class GRU[T : ClassTag] (
   var i2g: ModuleNode[T] = _
   var h2g: ModuleNode[T] = _
   val featDim = 2
-//  override var cell: AbstractModule[Activity, Activity, T] = buildGRU()
 
   override def preTopology: AbstractModule[Activity, Activity, T] =
     if (p != 0) {

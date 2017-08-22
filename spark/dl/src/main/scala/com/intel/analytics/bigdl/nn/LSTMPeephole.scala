@@ -67,7 +67,7 @@ class LSTMPeephole[T : ClassTag] (
   var hiddenLayer: ModuleNode[T] = _
   var cellLayer: ModuleNode[T] = _
   val featDim = 2
-  
+
   override def buildModel: AbstractModule[Activity, Activity, T] = {
     Sequential()
       .add(FlattenTable())
@@ -145,7 +145,7 @@ class LSTMPeephole[T : ClassTag] (
       Linear(inputSize, hiddenSize, wRegularizer = wRegularizer,
         bRegularizer = bRegularizer).inputs(drop)
     }
-    
+
     val drop = Dropout(p).inputs(input2)
     val h2h = Linear(hiddenSize, hiddenSize, withBias = false,
       wRegularizer = uRegularizer).inputs(drop)

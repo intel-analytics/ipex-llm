@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
 
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
@@ -43,6 +44,8 @@ class TimeDistributed[T : ClassTag] (val layer: TensorModule[T])
   private var inputSize: Array[Int] = _
   private var gradOutputSize: Array[Int] = _
   private var outputSize: Array[Int] = _
+  private val timeBuffer =
+    new ArrayBuffer[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)]
 
   private def combine(src: Array[Int], target: Array[Int]): Unit = {
     require(src.length == target.length + 1,
@@ -96,7 +99,7 @@ class TimeDistributed[T : ClassTag] (val layer: TensorModule[T])
     val _inputSize = input.size
     combine(_inputSize, inputSize)
     input.resize(inputSize)
-    val _output = layer.updateOutput(input).toTensor[T]
+    val _output = layer.forward(input).toTensor[T]
     split(_output.size, outputSize, _inputSize(0), _inputSize(1))
     input.resize(_inputSize)
     output.set(_output).resize(outputSize)
@@ -129,6 +132,25 @@ class TimeDistributed[T : ClassTag] (val layer: TensorModule[T])
     gradOutput.resize(_gradOutputSize)
   }
 
+  override def backward(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    val st = System.nanoTime
+    if (gradOutputSize == null) {
+      gradOutputSize = new Array[Int](gradOutput.size.length - 1)
+    }
+
+    val _inputSize = input.size
+    val _gradOutputSize = gradOutput.size
+    combine(_gradOutputSize, gradOutputSize)
+    input.resize(inputSize)
+    gradOutput.resize(gradOutputSize)
+    val _gradInput = layer.backward(input, gradOutput).toTensor[T]
+    gradInput.set(_gradInput).resize(_inputSize)
+    input.resize(_inputSize)
+    gradOutput.resize(_gradOutputSize)
+    backwardTime += System.nanoTime - st
+    gradInput
+  }
+
   /**
    * If the module has parameters, this will zero the accumulation of the gradients with respect
    * to these parameters. Otherwise, it does nothing.
@@ -154,10 +176,25 @@ class TimeDistributed[T : ClassTag] (val layer: TensorModule[T])
     super.checkEngineType()
   }
 
-  override def resetTimes(): Unit = layer.resetTimes()
+  override def resetTimes(): Unit = {
+    layer.resetTimes()
+    this.forwardTime = 0
+    this.backwardTime = 0
+  }
 
   override def getTimes(): Array[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)] = {
-    layer.getTimes()
+    timeBuffer.clear
+    var modulesForwardTime = 0L
+    var modulesBackwardTime = 0L
+    layer.getTimes.foreach(x => {
+      timeBuffer.append(x)
+      modulesForwardTime += x._2
+      modulesBackwardTime += x._3
+    })
+    timeBuffer.append((this,
+      this.forwardTime - modulesForwardTime,
+      this.backwardTime - modulesBackwardTime))
+    timeBuffer.toArray
   }
 
   override def evaluate(): TimeDistributed.this.type = {
@@ -208,6 +245,7 @@ class TimeDistributed[T : ClassTag] (val layer: TensorModule[T])
     inputSize = null
     gradOutputSize = null
     outputSize = null
+    timeBuffer.clear
     this
   }
 

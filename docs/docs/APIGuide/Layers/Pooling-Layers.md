@@ -2,11 +2,11 @@
 
 **Scala:**
 ```scala
-val mp = SpatialMaxPooling(2, 2, dW=2, dH=2, padW=0, padH=0)
+val mp = SpatialMaxPooling(2, 2, dW=2, dH=2, padW=0, padH=0, format=DataFormat.NCHW)
 ```
 **Python:**
 ```python
-mp = SpatialMaxPooling(2, 2, dw=2, dh=2, pad_w=0, pad_h=0, to_ceil=false)
+mp = SpatialMaxPooling(2, 2, dw=2, dh=2, pad_w=0, pad_h=0, to_ceil=false, format="NCHW")
 ```
 
 Applies 2D max-pooling operation in kWxkH regions by step size dWxdH steps.
@@ -19,6 +19,22 @@ the output image size will be nOutputPlane x oheight x owidth where
 
 op is a rounding operator. By default, it is floor.
 It can be changed by calling ceil() or floor() methods.
+
+As for padding, when padW and padH are both -1, we use a padding algorithm similar to the "SAME" padding of tensorflow. That is
+```scala
+ outHeight = Math.ceil(inHeight.toFloat/strideH.toFloat)
+ outWidth = Math.ceil(inWidth.toFloat/strideW.toFloat)
+
+ padAlongHeight = Math.max(0, (outHeight - 1) * strideH + kernelH - inHeight)
+ padAlongWidth = Math.max(0, (outWidth - 1) * strideW + kernelW - inWidth)
+
+ padTop = padAlongHeight / 2
+ padLeft = padAlongWidth / 2
+```
+
+The format parameter is a string value (or DataFormat Object in Scala) of "NHWC" or "NCHW" to specify the input data format of this layer. In "NHWC" format
+data is stored in the order of \[batch_size, height, width, channels\], in "NCHW" format data is stored
+in the order of \[batch_size, channels, height, width\].
 
 **Scala example:**
 
@@ -122,6 +138,18 @@ m = SpatialAveragePooling(kw, kh, dw=1, dh=1, pad_w=0, pad_h=0, global_pooling=F
 SpatialAveragePooling is a module that applies 2D average-pooling operation in `kW`x`kH` regions by step size `dW`x`dH`.
 
 The number of output features is equal to the number of input planes.
+
+As for padding, when padW and padH are both -1, we use a padding algorithm similar to the "SAME" padding of tensorflow. That is
+```scala
+ outHeight = Math.ceil(inHeight.toFloat/strideH.toFloat)
+ outWidth = Math.ceil(inWidth.toFloat/strideW.toFloat)
+
+ padAlongHeight = Math.max(0, (outHeight - 1) * strideH + kernelH - inHeight)
+ padAlongWidth = Math.max(0, (outWidth - 1) * strideW + kernelW - inWidth)
+
+ padTop = padAlongHeight / 2
+ padLeft = padAlongWidth / 2
+```
 
 **Scala example:**
 ```scala

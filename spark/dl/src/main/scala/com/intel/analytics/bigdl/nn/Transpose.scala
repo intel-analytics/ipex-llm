@@ -16,18 +16,21 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData, ModuleSerializable, ModuleSerializer}
+import serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.reflect.ClassTag
+import scala.reflect.runtime.universe
 
 /**
  * Transpose input along specified dimensions
  * @param permutations dimension pairs that need to swap
  */
 @SerialVersionUID(8543726779794064339L)
-class Transpose[@specialized(Float, Double) T: ClassTag](
+class Transpose[T: ClassTag](
   val permutations: Array[(Int, Int)])(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   var buffer: Tensor[T] = _
@@ -63,9 +66,63 @@ class Transpose[@specialized(Float, Double) T: ClassTag](
   }
 }
 
-object Transpose {
+object Transpose extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
       permutations: Array[(Int, Int)])(implicit ev: TensorNumeric[T]) : Transpose[T] = {
     new Transpose[T](permutations)
+  }
+
+  override def loadModule[T: ClassTag](model : BigDLModule)
+                                      (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
+
+    val attrMap = model.getAttrMap
+
+    val size = DataConverter.
+      getAttributeValue(attrMap.get("size")).
+      asInstanceOf[Int]
+
+    val permutations = new Array[(Int, Int)](size)
+
+    var i = 0
+
+    while (i < size) {
+      val permutation = DataConverter.
+        getAttributeValue(attrMap.get(s"permutation_$i")).
+        asInstanceOf[Array[Int]]
+      permutations(i) = (permutation(0), permutation(1))
+      i += 1
+    }
+
+    val tranpose = Transpose(permutations).asInstanceOf[AbstractModule[Activity,
+      Activity, T]]
+    createBigDLModule(model, tranpose)
+
+  }
+
+  override def serializeModule[T: ClassTag](module : ModuleData[T])
+                                           (implicit ev: TensorNumeric[T]) : BigDLModule = {
+    val transpose = module.module.
+      asInstanceOf[Transpose[T]]
+    val transposeBuilder = BigDLModule.newBuilder
+
+    val size = transpose.permutations.length
+
+    val sizeBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(sizeBuilder, size, universe.typeOf[Int])
+    transposeBuilder.putAttr("size", sizeBuilder.build)
+    transposeBuilder.setModuleType(transpose.getClass.getName)
+
+    var i = 0
+
+    while (i < size) {
+      val nextPermutationBuilder = AttrValue.newBuilder
+      val arr : Array[Int] = Array(transpose.permutations(i)._1,
+        transpose.permutations(i)_2)
+      DataConverter.setAttributeValue(nextPermutationBuilder, arr, universe.typeOf[Array[Int]])
+      transposeBuilder.putAttr(s"permutation_$i", nextPermutationBuilder.build)
+      i += 1
+    }
+
+    createSerializeBigDLModule(transposeBuilder, module)
   }
 }

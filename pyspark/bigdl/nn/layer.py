@@ -820,8 +820,11 @@ class SpatialMaxPooling(Layer):
     :param dH:              step size in height
     :param padW:            padding in width
     :param padH:            padding in height
+    :param format:          "NCHW" or "NHWC", indicating the input data format
 
     >>> spatialMaxPooling = SpatialMaxPooling(2, 2, 2, 2)
+    creating: createSpatialMaxPooling
+    >>> spatialMaxPooling = SpatialMaxPooling(2, 2, 2, 2, -1, -1, True, "NHWC")
     creating: createSpatialMaxPooling
     '''
     # to_ceil: call floor() when False; call ceil() when True
@@ -833,6 +836,7 @@ class SpatialMaxPooling(Layer):
                  pad_w=0,
                  pad_h=0,
                  to_ceil=False,
+                 format="NCHW",
                  bigdl_type="float"):
         super(SpatialMaxPooling, self).__init__(None, bigdl_type, kw,
                                                 kh,
@@ -840,7 +844,8 @@ class SpatialMaxPooling(Layer):
                                                 dh,
                                                 pad_w,
                                                 pad_h,
-                                                to_ceil)
+                                                to_ceil,
+                                                format)
 
 
 class Select(Layer):
