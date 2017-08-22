@@ -114,10 +114,11 @@ class SpatialConvolution[T: ClassTag](
   }
 
   private def init(): this.type = {
+    println(this)
     for (i <- 1 to nGroup) {
       val byteArrayOfWeight = weight(i - 1).getStorage.get
       weight(i - 1).setStorageInJni(
-        Quantization.FixConvKernelDescInit(nOutputPlane / nGroup, nInputPlane / nGroup,
+        Quantization.ConvKernelDescInit(nOutputPlane / nGroup, nInputPlane / nGroup,
           kernelH, kernelW))
       ev.getType() match {
         case FloatType =>
@@ -127,7 +128,7 @@ class SpatialConvolution[T: ClassTag](
           val maxArray = max.asInstanceOf[Array[Float]].slice(start, end)
           val byteOffset = 0
 
-          Quantization.FixConvKernelLoadFromModel(weight(i - 1).getStorageInJni,
+          Quantization.ConvKernelLoadFromModel(weight(i - 1).getStorageInJni,
             byteArrayOfWeight, byteOffset,
             minArray, maxArray, nOutputPlane / nGroup, nInputPlane / nGroup,
             kernelH, kernelW, WEIGHT_THRESHOLD, Quantization.NCHW)
@@ -163,7 +164,7 @@ class SpatialConvolution[T: ClassTag](
     output.resize(Array(batchSize, nOutputPlane, outputHeight, outputWidth))
 
     if (!data.isInitialized) {
-      data.setStorageInJni(Quantization.FixConvDataDescInit(nInputPlane / nGroup, kernelH, kernelW,
+      data.setStorageInJni(Quantization.ConvDataDescInit(nInputPlane / nGroup, kernelH, kernelW,
         strideH, strideW, padH, padW, DILATION_HEIGHT, DILATION_WIDTH, 1,
         inputHeight, inputWidth))
     }
@@ -211,7 +212,7 @@ class SpatialConvolution[T: ClassTag](
       val weightSumArray = weightSum.asInstanceOf[Array[Float]]
       val weightSumOffset = offset
 
-      Quantization.FixConvDataInit(
+      Quantization.ConvDataInit(
         data.getStorageInJni, inputArray, inputOffset,
         nInputPlane / nGroup, kernelH, kernelW, strideH, strideW, padH, padW,
         DILATION_HEIGHT, DILATION_WIDTH, 1, inputHeight, inputWidth, THRESHOLD,

@@ -85,14 +85,14 @@ class Linear[T: ClassTag](
   def init(): this.type = {
     val byteArrayOfWeight = weight.getStorage.get
     weight.setStorageInJni(
-      Quantization.FixFCKernelDescInit(outputSize, inputSize))
+      Quantization.FCKernelDescInit(outputSize, inputSize))
 
     ev.getType() match {
       case FloatType =>
         val minArray = min.asInstanceOf[Array[Float]]
         val maxArray = max.asInstanceOf[Array[Float]]
 
-        Quantization.FixFCKernelLoadFromModel(weight.getStorageInJni, byteArrayOfWeight,
+        Quantization.FCKernelLoadFromModel(weight.getStorageInJni, byteArrayOfWeight,
           minArray, maxArray, outputSize, inputSize, WEIGHT_THRESHOLD, Quantization.NCHW)
       case _ => throw new UnsupportedOperationException(s"Only support Float for quantized model")
     }
@@ -119,7 +119,7 @@ class Linear[T: ClassTag](
     }
 
     if (!data.isInitialized) {
-      data.setStorageInJni(Quantization.FixFCDataDescInit(batchSize, inputSize))
+      data.setStorageInJni(Quantization.FCDataDescInit(batchSize, inputSize))
     }
 
     ev.getType() match {
@@ -127,7 +127,7 @@ class Linear[T: ClassTag](
         val src = input.storage().array().asInstanceOf[Array[Float]]
         val offset = input.storageOffset() - 1
 
-        Quantization.FixFCDataInit(data.getStorageInJni, src, offset, batchSize, inputSize,
+        Quantization.FCDataInit(data.getStorageInJni, src, offset, batchSize, inputSize,
           THRESHOLD, Quantization.NCHW)
 
         val outputArray = output.storage().array().asInstanceOf[Array[Float]]
