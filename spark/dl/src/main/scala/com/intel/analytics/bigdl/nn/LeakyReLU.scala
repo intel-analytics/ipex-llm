@@ -72,6 +72,7 @@ class LeakyReLU[T: ClassTag](
     require(input.isSameSizeAs(gradOutput),
       "input should have the same size with gradOutput")
     if (inplace) {
+      gradInput.set(gradOutput)
       gradOutput.map(input, (grad, in) => {
         if (ev.isGreaterEq(ev.fromType[Int](0), in)) {
           negVal
