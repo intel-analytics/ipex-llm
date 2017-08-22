@@ -447,7 +447,7 @@ class Model(Container):
         return Layer.of(jmodel)
 
     @staticmethod
-    def loadModule(path, bigdl_type="float"):
+    def loadModel(path, bigdl_type="float"):
         """
         Load a pre-trained Bigdl model.
 
