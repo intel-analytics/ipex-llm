@@ -233,7 +233,7 @@ object TensorflowToBigDL {
     val res = new ArrayBuffer[TensorflowToBigDL]()
     // ElementWiseMulTF must be after MulTF
     res.append(
-      FullConnectionTF, DropoutTF, AvgPoolingTF, MaxPoolingTF, ReshapeTF, InputTF,
+      FullConnectionTF, DropoutTF, AvgPoolingTF, MaxPoolingTF, ReshapeTF,
       TanhTF, ReluTF, SigmoidTF, Conv2D, Placeholder, SqueezeTF, IdentityTF, ConcatTF,
       BatchNormTF, AddConstTF1, AddConstTF2, AddTF, SoftMaxTF, ElementWiseMulTF, MulTF,
       SplitTF, PaddingTF, MeanTF, UnpackTF, StrideSliceTF, ShapeTF, FillTF, PackTF, ConstTF,
@@ -795,20 +795,6 @@ object ShapeTF extends TensorflowToBigDL {
 
 
     Shape[T]().asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
-  }
-}
-
-object InputTF extends TensorflowToBigDL {
-  private val graph = (Node("Const") -> Node("Identity")).graph(reverse = true)
-
-  override def topology: DirectedGraph[String] = graph
-
-  override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
-                                  context: Context[T],
-                                  byteOrder: ByteOrder)(
-    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
-
-    Input[T].element.asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
   }
 }
 

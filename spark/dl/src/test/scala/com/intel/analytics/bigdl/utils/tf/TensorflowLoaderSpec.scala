@@ -114,7 +114,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     val resource = getClass().getClassLoader().getResource("tf")
     val path = processPath(resource.getPath()) + JFile.separator + "test.pb"
     val results = TensorflowLoader.parse(path)
-    val tfGraph = TensorflowLoader.buildTFGraph(results, Seq("output"))
+    val (tfGraph, _) = TensorflowLoader.buildTFGraph(results, Seq("output"))
     tfGraph.size should be(15)  // there's a dummy output
     val topSort = tfGraph.topologySort// It can do topology sort
     topSort.length should be(15)
@@ -139,11 +139,11 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     val resource = getClass().getClassLoader().getResource("tf")
     val path = processPath(resource.getPath()) + JFile.separator + "test.pb"
     val results = TensorflowLoader.parse(path)
-    val tfGraph = TensorflowLoader.buildTFGraph(results, Seq("output"),
+    val (tfGraph, _) = TensorflowLoader.buildTFGraph(results, Seq("output"),
       (node: NodeDef) => node.getName == "Tanh")
-    tfGraph.size should be(8)  // there's a dummy output
+    tfGraph.size should be(9)  // there's a dummy output
     val topSort = tfGraph.topologySort// It can do topology sort
-    topSort.length should be(8)
+    topSort.length should be(9)
     topSort(0).element should be(null)
     topSort(1).element.getName should be("output")
     topSort(2).element.getName should be("MatMul_1")
@@ -152,6 +152,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     topSort(5).element.getName should be("Tanh")
     topSort(6).element.getName should be("Variable_2/read")
     topSort(7).element.getName should be("Variable_2")
+    topSort(8).element.getName should be("input0")
   }
 
   "TensorFlow loader" should "be able to build a BigDL graph" in {
@@ -170,6 +171,29 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     fc1.parameters()._1(0).fill(0.2f)
     fc1.parameters()._1(1).fill(0.1f)
     model2.add(fc1).add(Tanh())
+
+    val fc2 = Linear[Float](10, 1)
+    fc2.parameters()._1(0).fill(0.2f)
+    fc2.parameters()._1(1).fill(0.1f)
+    model2.add(fc2)
+
+    val output2 = model2.forward(input)
+    output1 should be(output2)
+  }
+
+  "TensorFlow loader" should "be able to build a BigDL graph from a subset of a tf graph" in {
+    val resource = getClass().getClassLoader().getResource("tf")
+    val path = processPath(resource.getPath()) + JFile.separator + "test.pb"
+    val model = TensorflowLoader.load(path, Seq("Tanh"), Seq("output"),
+      ByteOrder.LITTLE_ENDIAN)
+    val container = model.asInstanceOf[Graph[Float]]
+    container.modules.length should be(3)
+    RandomGenerator.RNG.setSeed(100)
+    val input = Tensor[Float](4, 10).rand()
+    val output1 = container.forward(input)
+
+    val model2 = Sequential[Float]()
+    model2.add(Tanh())
 
     val fc2 = Linear[Float](10, 1)
     fc2.parameters()._1(0).fill(0.2f)
@@ -259,8 +283,8 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
 
 
     val results = TensorflowLoader.parse(modelFile)
-    val tfGraph = TensorflowLoader.buildTFGraph(results, Seq("output"))
-    val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("input"),
+    val (tfGraph, inputs) = TensorflowLoader.buildTFGraph(results, Seq("output"))
+    val model = TensorflowLoader.buildBigDLModel(tfGraph, inputs,
       Seq("output"),
       ByteOrder.LITTLE_ENDIAN, "")
     val input = TensorflowToBigDL.toTensor(results.get(0).getAttrMap.get("value").getTensor,
@@ -291,8 +315,9 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     val modelFile = tmpLocation + s + "model.pb"
 
     val results = TensorflowLoader.parse(modelFile)
-    val tfGraph = TensorflowLoader.buildTFGraph(results.subList(0, results.size()-1), Seq("output"))
-    val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("input"),
+    val (tfGraph, inputs) =
+      TensorflowLoader.buildTFGraph(results.subList(0, results.size()-1), Seq("output"))
+    val model = TensorflowLoader.buildBigDLModel(tfGraph, inputs,
       Seq("output"),
       ByteOrder.LITTLE_ENDIAN, "")
     val input = TensorflowToBigDL.toTensor(results.get(0).getAttrMap.get("value").getTensor,
@@ -498,9 +523,11 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     val tfNodes = TensorflowLoader.parse(modelFile)
 
     // filter node for gradient computing
-    val tfGraph = TensorflowLoader.buildTFGraph(tfNodes, endPoints.map(_.split(":")(0)))
+    val (tfGraph, inputs) =
+      TensorflowLoader.buildTFGraph(tfNodes, endPoints.map(_.split(":")(0)),
+        (node: NodeDef) => node.getName == "input_node")
     val context = new mutable.HashMap[String, (Tensor[Float], Tensor[Float])]
-    val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("input"),
+    val model = TensorflowLoader.buildBigDLModel(tfGraph, inputs,
       endPoints.map(_.split(":")(0)), ByteOrder.LITTLE_ENDIAN, "", Some(context))
 
     // Compare the tensor contents

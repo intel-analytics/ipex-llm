@@ -55,10 +55,11 @@ object TensorflowLoader{
     val nodeList = parse(graphPrototxt)
 
     // Construct tf node graph
-    val tfGraph = buildTFGraph(nodeList, outputs)
+    val (tfGraph, adjustedInputs) =
+      buildTFGraph(nodeList, outputs, (node: NodeDef) => inputs.contains(node.getName))
 
     // Build BigDL model from the tf node graph
-    buildBigDLModel(tfGraph, inputs, outputs, byteOrder, graphPrototxt)
+    buildBigDLModel(tfGraph, adjustedInputs, outputs, byteOrder, graphPrototxt)
   }
 
   /**
@@ -110,7 +111,7 @@ object TensorflowLoader{
    */
   private[bigdl] def buildTFGraph(nodes : List[NodeDef], outputNodeNames: Seq[String],
                                   isInput: (NodeDef) => Boolean = (_: NodeDef) => false)
-  : DirectedGraph[NodeDef] = {
+  : (DirectedGraph[NodeDef], Seq[String]) = {
     import scala.collection.JavaConverters._
     var name2Node = nodes.asScala.map(n => n.getName -> new Node(n)).toMap
 
@@ -135,28 +136,49 @@ object TensorflowLoader{
       results
     }
 
-    def connect(nodes: Seq[Node[NodeDef]]): Unit = {
+    def connect(nodes: Seq[Node[NodeDef]]): Seq[String] = {
+      var inputCounter = 0
       val queue = new mutable.Queue[Node[NodeDef]]()
+      val visited = mutable.Set[Node[NodeDef]]()
+      val inputs = new mutable.ArrayBuffer[String]()
       queue.enqueue(nodes: _*)
       while(queue.nonEmpty) {
         val node = queue.dequeue()
-        if (!isInput(node.element)) {
-          node.element.getInputList.asScala.foreach { preNodeName =>
-            // It is tricky here, remove the first char in the name of control dep node
-            val name = if (preNodeName.charAt(0) == '^') preNodeName.substring(1) else preNodeName
-            val preNode = name2Node(name)
-            preNode -> node
-            queue.enqueue(preNode)
+        if (!visited(node)) {
+          visited += node
+          if (!isInput(node.element) && !node.element.getInputList.isEmpty) {
+            node.element.getInputList.asScala.foreach { preNodeName =>
+              // It is tricky here, remove the first char in the name of control dep node
+              val name = if (preNodeName.charAt(0) == '^') preNodeName.substring(1) else preNodeName
+              val preNode = name2Node(name)
+              preNode -> node
+              queue.enqueue(preNode)
+            }
+          } else {
+            if (isInput(node.element) && node.element.getOp != "Placeholder") {
+              val name = s"input$inputCounter"
+              val placeholder = NodeDef.newBuilder()
+                .setName(name)
+                .setOp("Placeholder").build()
+              inputCounter = inputCounter + 1
+              val n = Node(placeholder)
+              n -> node
+              inputs += name
+            } else if (node.element.getOp == "Placeholder") {
+              inputs += node.element.getName
+            }
           }
         }
+
       }
+      inputs
     }
 
-    connect(outputNodes)
+    val inputs = connect(outputNodes)
 
     val dummyOutput = new Node[NodeDef](null)
     outputNodes.foreach(_ -> dummyOutput)
-    dummyOutput.graph(reverse = true)
+    (dummyOutput.graph(reverse = true), inputs)
   }
 
   private[bigdl] def buildBigDLModel[T: ClassTag](

@@ -21,6 +21,7 @@ from util import run_model
 def main():
 
     inputs = tf.Variable(tf.reshape(tf.range(0.0, 16), [1, 4, 4, 1]), name = 'input')
+    inputs = tf.identity(inputs, "input_node")
     output = tf.layers.batch_normalization(inputs, axis=3, training=True)
 
     named_output = tf.nn.relu(output, name="output")
