@@ -65,6 +65,8 @@ class ConvLSTMPeephole[T : ClassTag](
   var outputGate: Sequential[T] = _
   var hiddenLayer: Sequential[T] = _
   var cellLayer: Sequential[T] = _
+
+  override var cell: AbstractModule[Activity, Activity, T] = buildModel()
 //  val joinDim = 2
 
 //  override def preTopology: AbstractModule[Activity, Activity, T] =

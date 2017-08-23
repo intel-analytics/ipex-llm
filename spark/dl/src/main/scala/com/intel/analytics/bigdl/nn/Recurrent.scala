@@ -73,7 +73,9 @@ class Recurrent[T : ClassTag]()
     if (preTopology != null) {
       modules += preTopology
     }
-    topology.cell = topology.buildModel()
+    if (topology.ignorePreTopology) {
+      topology.cell = topology.buildModel()
+    }
     modules += topology
     this
   }

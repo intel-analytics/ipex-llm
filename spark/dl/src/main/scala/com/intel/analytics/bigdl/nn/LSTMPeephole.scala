@@ -68,6 +68,7 @@ class LSTMPeephole[T : ClassTag] (
   var cellLayer: ModuleNode[T] = _
   val featDim = 2
 
+  override var cell: AbstractModule[Activity, Activity, T] = buildModel()
   override def buildModel: AbstractModule[Activity, Activity, T] = {
     Sequential()
       .add(FlattenTable())

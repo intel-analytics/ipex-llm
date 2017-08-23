@@ -64,6 +64,8 @@ class LSTM[T : ClassTag] (
   var gates: Sequential[T] = _
   var cellLayer: Sequential[T] = _
 
+  override var cell: AbstractModule[Activity, Activity, T] = buildModel()
+
   override def preTopology: AbstractModule[Activity, Activity, T] = if (p != 0) {
     null
   } else {
