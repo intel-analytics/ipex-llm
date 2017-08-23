@@ -67,7 +67,7 @@ abstract class Cell[T : ClassTag](
    * Similarly the `preHiddens` is the kernel's output hiddens at the previous time step.
    *
    */
-  var cell: AbstractModule[Activity, Activity, T] = null
+  var cell: AbstractModule[Activity, Activity, T] = buildModel()
 
   /**
    * The preTopology defines operations to pre-process the input when it is not dependent
