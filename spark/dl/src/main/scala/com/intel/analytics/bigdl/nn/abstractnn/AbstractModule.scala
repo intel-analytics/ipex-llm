@@ -212,8 +212,8 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
    */
   def setTrainable(trainable: Boolean): this.type = {
     if (!trainable) {
-      scaleW = 0
-      scaleB = 0
+      setScaleW(0)
+      setScaleB(0)
     }
     this
   }
