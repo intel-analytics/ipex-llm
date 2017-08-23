@@ -78,9 +78,19 @@ class SpatialBatchNormalization[T: ClassTag](
     null
   }
 
+  override def clearState(): this.type = {
+    super.clearState()
+    varBuffer.set()
+    scaleBuffer.set()
+    biasBuffer.set()
+    invStdBuffer.set()
+    saveVar.set()
+    this
+  }
+
   override protected def updateOutputDouble(
-                                             inputTensor: Tensor[Double],
-                                             outputTensor: Tensor[Double]): Unit = {
+      inputTensor: Tensor[Double],
+      outputTensor: Tensor[Double]): Unit = {
     format match {
       case DataFormat.NCHW =>
         super.updateOutputDouble(inputTensor, outputTensor)
@@ -90,8 +100,8 @@ class SpatialBatchNormalization[T: ClassTag](
   }
 
   override protected def updateOutputFloat(
-                                            inputTensor: Tensor[Float],
-                                            outputTensor: Tensor[Float]): Unit = {
+      inputTensor: Tensor[Float],
+      outputTensor: Tensor[Float]): Unit = {
     format match {
       case DataFormat.NCHW =>
         super.updateOutputFloat(inputTensor, outputTensor)

@@ -92,11 +92,12 @@ gradient = bn.backward(input, grad_output)
 **Scala:**
 ```scala
 val module = SpatialBatchNormalization(nOutput, eps=1e-5, momentum=0.1, affine=true,
-                                           initWeight=null, initBias=null, initGradWeight=null, initGradBias=null)
+                                           initWeight=null, initBias=null, initGradWeight=null, initGradBias=null, format=DataFormat.NHWC)
 ```
 **Python:**
 ```python
-module = SpatialBatchNormalization(nOutput, eps=1e-5, momentum=0.1, affine=True)
+module = SpatialBatchNormalization(nOutput, eps=1e-5, momentum=0.1, affine=True,
+                                            init_weight=None, init_bias=None, init_grad_weight=None, init_grad_bias=None, format="NHWC")
 
 ```
 
@@ -124,6 +125,9 @@ The operation implemented is:
 + `initBias`  initial bias tensor
 + `initGradWeight` initial gradient weight 
 + `initGradBias` initial gradient bias
++ `format` a string value (or DataFormat Object in Scala) of "NHWC" or "NCHW" to specify the input data format of this layer. In "NHWC" format
+           data is stored in the order of \[batch_size, height, width, channels\], in "NCHW" format data is stored
+           in the order of \[batch_size, channels, height, width\].
  
  
 **Scala example:**

@@ -391,10 +391,15 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                                       initWeight: JTensor = null,
                                       initBias: JTensor = null,
                                       initGradWeight: JTensor = null,
-                                      initGradBias: JTensor = null)
+                                      initGradBias: JTensor = null,
+                                      format: String = "NHWC")
   : SpatialBatchNormalization[T] = {
     SpatialBatchNormalization[T](nOutput, eps, momentum, affine,
-    toTensor(initWeight), toTensor(initBias), toTensor(initGradWeight), toTensor(initBias))
+      toTensor(initWeight),
+      toTensor(initBias),
+      toTensor(initGradWeight),
+      toTensor(initBias),
+      DataFormat(format))
   }
 
   def createSpatialCrossMapLRN(size: Int = 5,

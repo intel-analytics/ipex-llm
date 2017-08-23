@@ -1146,7 +1146,7 @@ class SpatialBatchNormalization(Layer):
     >>> init_grad_weight = np.array([0.0])
     >>> init_bias = np.array([0.0])
     >>> init_grad_bias = np.array([0.0])
-    >>> spatialBatchNormalization = SpatialBatchNormalization(1, 1e-5, 0.1, True, init_weight, init_bias, init_grad_weight, init_grad_bias)
+    >>> spatialBatchNormalization = SpatialBatchNormalization(1, 1e-5, 0.1, True, init_weight, init_bias, init_grad_weight, init_grad_bias, "NHWC")
     creating: createSpatialBatchNormalization
     '''
 
@@ -1159,6 +1159,7 @@ class SpatialBatchNormalization(Layer):
                  init_bias=None,
                  init_grad_weight=None,
                  init_grad_bias=None,
+                 format="NHWC",
                  bigdl_type="float"):
         super(SpatialBatchNormalization, self).__init__(None, bigdl_type,
                                                         n_output,
@@ -1168,7 +1169,8 @@ class SpatialBatchNormalization(Layer):
                                                         JTensor.from_ndarray(init_weight),
                                                         JTensor.from_ndarray(init_bias),
                                                         JTensor.from_ndarray(init_grad_weight),
-                                                        JTensor.from_ndarray(init_grad_bias))
+                                                        JTensor.from_ndarray(init_grad_bias),
+                                                        format)
 
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
