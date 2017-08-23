@@ -206,15 +206,22 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
   }
 
   /**
-   * set trainable. If trainable is false, its parameters(weight/bias, if exists)
+   * freeze the layer, its parameters(weight/bias, if exists)
    * are not changed in training process
-   * @param trainable whether this layer is trainable
    */
-  def setTrainable(trainable: Boolean): this.type = {
-    if (!trainable) {
-      setScaleW(0)
-      setScaleB(0)
-    }
+  def freeze(): this.type = {
+    setScaleW(0)
+    setScaleB(0)
+    this
+  }
+
+  /**
+   * "unfreeze" layer, i.e. make the layer parameters(weight/bias, if exists)
+   * to be trained(updated) in training process
+   */
+  def unFreeze(): this.type = {
+    setScaleW(1)
+    setScaleB(1)
     this
   }
 

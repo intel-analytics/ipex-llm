@@ -151,13 +151,15 @@ val preductResult = model.predict(predictSet)
 To "freeze" a module means to exclude some layers of model from training.
 
 ```scala
-layer.setTrainable(false)
+layer.freeze()
+layer.unFreeze()
 model.freeze(Array("layer1", "layer2"))
 model.unFreeze()
 model.stopGradient(Array("layer1"))
 ```
-* A single layer can be "freezed" by calling ```setTrainable(false)```. If a layer is freezed,
+* A single layer can be "freezed" by calling ```freeze()```. If a layer is freezed,
 its parameters(weight/bias, if exists) are not changed in training process
+* A single layer can be "unFreezed" by calling ```unFreeze()```.
 * User can set freeze of list of layers in model by calling ```freeze```
 * User can unfreeze all layers by calling ```unFreeze```
 * stop the input gradient of layers that match the given names. Their input gradient are not computed.
@@ -165,7 +167,8 @@ And they will not contributed to the input gradient computation of layers that d
 
 **Python**
 ```python
-layer.set_trainable(false)
+layer.freeze()
+layer.unfreeze()
 model.freeze(["layer1", "layer2"])
 model.unfreeze()
 model.stop_gradient(["layer1"])

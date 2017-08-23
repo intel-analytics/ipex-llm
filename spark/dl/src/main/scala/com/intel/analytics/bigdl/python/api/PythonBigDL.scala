@@ -1862,9 +1862,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     rec.setState(stateActivity)
   }
 
-  def setLayerTrainable(model: AbstractModule[Activity, Activity, T], trainable: Boolean)
+  def setLayerFreeze(model: AbstractModule[Activity, Activity, T])
   : AbstractModule[Activity, Activity, T] = {
-    model.setTrainable(trainable)
+    model.freeze()
+  }
+
+  def setLayerUnFreeze(model: AbstractModule[Activity, Activity, T])
+  : AbstractModule[Activity, Activity, T] = {
+    model.unFreeze()
   }
 
   def setFreeze(model: Graph[T], freezeLayers: JList[String]): Graph[T] = {

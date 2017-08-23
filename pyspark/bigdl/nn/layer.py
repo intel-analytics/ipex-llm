@@ -376,14 +376,20 @@ class Layer(JavaValue):
         '''
         self.value.bRegularizer = bRegularizer.value
 
-    def set_trainable(self, trainable):
+    def freeze(self):
         '''
-        set trainable
-        :param trainable: whether this layer is trainable
+        freeze layer
         '''
         callBigDlFunc(self.bigdl_type,
-                        "setLayerTrainable", self.value, trainable)
+                        "setLayerFreeze", self.value)
         return self
+
+    def unfreeze(self):
+        '''
+        unfreeze layer
+        '''
+        callBigDlFunc(self.bigdl_type,
+                        "setLayerUnFreeze", self.value)
 
 
 
