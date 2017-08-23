@@ -42,7 +42,7 @@ package object bigdl {
 
   private object BigDLBuildInfo {
 
-      val (version: String) = {
+      val version: String = {
 
       val resourceStream = Thread.currentThread().getContextClassLoader.
         getResourceAsStream("bigdl-version-info.properties")
@@ -51,9 +51,7 @@ package object bigdl {
         val unknownProp = "<unknown>"
         val props = new Properties()
         props.load(resourceStream)
-        (
-          props.getProperty("version", unknownProp)
-          )
+        props.getProperty("version", unknownProp)
       } catch {
         case npe: NullPointerException =>
           throw new IllegalArgumentException

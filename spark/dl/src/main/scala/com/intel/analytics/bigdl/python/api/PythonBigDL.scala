@@ -1524,7 +1524,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     module.save(path, overWrite)
   }
 
-  def bigdlModelSave(module: AbstractModule[Activity, Activity, T],
+  def saveBigDLModule(module: AbstractModule[Activity, Activity, T],
                 path: String, overWrite: Boolean): Unit = {
     module.saveModule(path, overWrite)
   }

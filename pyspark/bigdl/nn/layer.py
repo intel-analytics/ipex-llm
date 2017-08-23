@@ -339,7 +339,7 @@ class Layer(JavaValue):
         callBigDlFunc(self.bigdl_type, "modelSave", self.value, path,
                       over_write)
     def saveModel(self, path, over_write = False):
-        callBigDlFunc(self.bigdl_type, "bigdlModelSave", self.value, path,
+        callBigDlFunc(self.bigdl_type, "saveBigDLModule", self.value, path,
                       over_write)
 
     def save_caffe(self, prototxt_path, model_path, use_v2 = True, overwrite = False):
