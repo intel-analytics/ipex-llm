@@ -59,7 +59,7 @@ object TensorflowSaver {
     val graphBuilder = GraphDef.newBuilder()
     inputs.foreach(graphBuilder.addNode(_))
 
-    model.executions.foreach(n => {
+    model.getForwardExecutions.foreach(n => {
       val nodeDefs = maps(n.element.getClass.getName).toTFDef(n.element, inputNodeCache(n.element),
         byteOrder)
       nodeDefs.foreach(nDef => {
