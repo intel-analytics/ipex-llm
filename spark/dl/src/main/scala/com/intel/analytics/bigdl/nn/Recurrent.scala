@@ -40,7 +40,7 @@ class Recurrent[T : ClassTag]()
   protected val currentInput = T()
   protected val currentGradOutput = T()
   protected val gradInputCell = Tensor[T]()
-  protected var outputCell = Tensor[T]()
+  private var outputCell = Tensor[T]()
   protected var _input = T()
   protected val batchDim = 1
   protected val timeDim = 2
@@ -49,9 +49,9 @@ class Recurrent[T : ClassTag]()
   protected var (batchSize, times) = (0, 0)
   protected var topology: Cell[T] = null
   protected var preTopology: AbstractModule[Activity, Activity, T] = null
-  protected val dropouts: ArrayBuffer[Array[Dropout[T]]] =
+  private val dropouts: ArrayBuffer[Array[Dropout[T]]] =
     new ArrayBuffer[Array[Dropout[T]]]
-  protected val timeBuffer =
+  private val timeBuffer =
     new ArrayBuffer[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)]
 
   /**

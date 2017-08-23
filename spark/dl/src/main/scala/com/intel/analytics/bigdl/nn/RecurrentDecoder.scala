@@ -69,7 +69,6 @@ class RecurrentDecoder[T : ClassTag](outputLength: Int)
         s"current input.dim = ${input.dim}")
 
     batchSize = input.size(batchDim)
-    outputCell = input
 
     val hiddenSize = topology.hiddensShape(0)
     val outputSize = input.size()
