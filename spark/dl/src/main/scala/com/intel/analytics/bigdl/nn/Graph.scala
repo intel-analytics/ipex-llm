@@ -345,19 +345,6 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
     this
   }
 
-  /**
-   * "unfreeze" all layers, i.e. make the layer parameters(weight/bias, if exists)
-   * to be trained(updated) in training process
-   */
-  def unFreeze(): this.type = {
-    modules.foreach(layer => {
-      layer.setScaleW(1)
-      layer.setScaleB(1)
-    })
-    this
-  }
-
-
   private var stopGradientLayers: util.HashSet[String] = _
 
   /**
