@@ -65,7 +65,7 @@ class MV[T: ClassTag](val trans: Boolean = false)
       output.mv(m, v)
     } else {
       require(v.dim() == 2, "vector must be 2D (batch dimension)" +
-        s"dimension ${v.dim{}}" )
+        s"dimension ${v.dim()}" )
       require(m.size(1) == v.size(1), "inputs must contain the same number of minibatches" +
         s"The numbers are ${m.size(1)} and ${v.size(1)}")
 

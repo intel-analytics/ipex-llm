@@ -370,7 +370,7 @@ class SpatialMaxPooling[T: ClassTag](
       dH == other.dH &&
       padW == other.padW &&
       padH == other.padH &&
-      ceil_mode == other.ceil_mode &&
+      ceilMode == other.ceilMode &&
       indices == other.indices
   }
 

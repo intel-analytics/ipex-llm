@@ -128,7 +128,7 @@ object Module {
     require(paramters.length > 0,
       "The length of paramters should >= 0" +
       "parameter length" +
-        s" ${paramters.length()}")
+        s" ${paramters.length}")
     var i = 1
     val storage = paramters(0).storage()
     var length = paramters(0).nElement()

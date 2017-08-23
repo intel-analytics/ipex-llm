@@ -63,7 +63,7 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
   private var total_weight = ev.fromType[Int](0)
   if (weights != null) require(weights.dim() == 1,
     "weights input should be 1-D Tensor" +
-    $"weights dim(${weights.dim()})")
+    s"weights dim(${weights.dim()})")
 
   @transient
   private var results: Array[Future[(T, T)]] = null
