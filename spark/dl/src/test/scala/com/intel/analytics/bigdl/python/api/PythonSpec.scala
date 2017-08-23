@@ -138,6 +138,15 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     require(output == expectedResult)
   }
 
+  "to jtensor with empty tensor" should "be test" in {
+    val pythonBigDL = PythonBigDL.ofFloat()
+    val tensor: Tensor[Float] = Tensor[Float]()
+    val jTensor = pythonBigDL.toJTensor(tensor)
+    println(jTensor.shape)
+    val tensorBack = pythonBigDL.toTensor(jTensor)
+    require(tensorBack == tensor)
+  }
+
   "Double prototype" should "be test" in {
     TestUtils.cancelOnWindows()
 

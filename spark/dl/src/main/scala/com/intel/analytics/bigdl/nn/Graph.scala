@@ -15,6 +15,8 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import java.util
+
 import scala.collection.JavaConverters._
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
@@ -24,6 +26,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer.{ContainerSerializable, DataConverter, ModuleData, ModuleSerializer}
 import com.intel.analytics.bigdl.utils.{Node, T, Table}
 import serialization.Bigdl.{AttrValue, BigDLModule}
+import com.intel.analytics.bigdl.utils.{DirectedGraph, Node, T, Table}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -70,16 +73,17 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
 
   override def updateOutput(input: Activity): Activity = {
     var i = 0
-    while(i < executions.length) {
-      val node = executions(i)
-      inputsBP(i) = if (node.prevNodes.isEmpty && !node.element.isInstanceOf[WithoutInput]) {
+    while(i < forwardExecutions.length) {
+      val node = forwardExecutions(i)
+      val nodeInput = if (node.prevNodes.isEmpty && !node.element.isInstanceOf[WithoutInput]) {
         inputData(node, input)
       } else if (node.prevNodes.length == 1) {
         node.prevNodes.head.element.output.toTensor[T]
       } else {
         seqToTable(node.prevNodes.map(_.element.output))
       }
-      node.element.forward(inputsBP(i))
+      node.element.forward(nodeInput)
+      inputsBP.put(node.element.getName(), nodeInput)
       i += 1
     }
 
@@ -93,11 +97,13 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
 
   override def backward(input: Activity, gradOutput: Activity): Activity = {
     val before = System.nanoTime()
-    dummyOutput.element.gradInput = gradOutput
-    var i = executions.length - 1
-    while(i >= 0) {
-      val curNode = executions(i)
+    dummyOutputGrad.element.gradInput = gradOutput
+
+    var i = 0
+    while (i < backwardExecutions.length) {
+      val curNode = backwardExecutions(i)
       var curGradOutput : Tensor[T] = null
+
       curNode.nextNodes.foreach(n => {
         val nextGradOutput = if (n.prevNodes.length == 1) {
           n.element.gradInput.toTensor
@@ -114,9 +120,14 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
       })
 
       gradOutputBP(i) = curGradOutput
-      curNode.element.backward(inputsBP(i), curGradOutput)
-      i -= 1
+      if (!isStopGradient(curNode.element)) {
+        curNode.element.backward(inputsBP.get(curNode.element.getName()), curGradOutput)
+      } else {
+        curNode.element.accGradParameters(inputsBP.get(curNode.element.getName()), curGradOutput)
+      }
+      i += 1
     }
+
     gradInput = if (inputs.length == 1) {
       inputs(0).element.gradInput
     } else {
@@ -151,11 +162,13 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
   }
 
   override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
-    dummyOutput.element.gradInput = gradOutput
-    var i = executions.length - 1
-    while(i >= 0) {
-      val curNode = executions(i)
+    dummyOutputGrad.element.gradInput = gradOutput
+
+    var i = 0
+    while (i < backwardExecutions.length) {
+      val curNode = backwardExecutions(i)
       var curGradOutput : Tensor[T] = null
+
       curNode.nextNodes.foreach(n => {
         val nextGradOutput = if (n.prevNodes.length == 1) {
           n.element.gradInput.toTensor
@@ -172,8 +185,11 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
       })
 
       gradOutputBP(i) = curGradOutput
-      curNode.element.updateGradInput(inputsBP(i), curGradOutput)
-      i -= 1
+
+      if (!isStopGradient(curNode.element)) {
+        curNode.element.updateGradInput(inputsBP.get(curNode.element.getName()), curGradOutput)
+      }
+      i += 1
     }
 
     gradInput = if (inputs.length == 1) {
@@ -186,11 +202,11 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
   }
 
   override def accGradParameters(input: Activity, gradOutput: Activity): Unit = {
-    var i = executions.length - 1
-    while(i >= 0) {
-      val curNode = executions(i)
-      curNode.element.accGradParameters(inputsBP(i), gradOutputBP(i))
-      i -= 1
+    var i = 0
+    while (i < backwardExecutions.length) {
+      val curNode = backwardExecutions(i)
+      curNode.element.accGradParameters(inputsBP.get(curNode.element.getName()), gradOutputBP(i))
+      i += 1
     }
   }
 
@@ -209,27 +225,52 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
   // Add a dummy output node, to get an one end graph. So the nodes that are not dependent by
   // the outputs will be excluded
   private val dummyOutput = new ModuleNode[T](new Dummy[T]())
+  // Add a dummy output node for backward graph,
+  // dummyOutputGrad has the same function as dummyOutput
+  // used to construct a backward graph
+  private var dummyOutputGrad: ModuleNode[T] = _
   outputs.foreach(_ -> dummyOutput)
 
   /**
    * Computing backgraph
    */
-  val backGraph = dummyOutput.graph(reverse = true)
+  private val backGraph = dummyOutput.graph(reverse = true)
+  private var gradGraph: DirectedGraph[AbstractModule[Activity, Tensor[T], T]] = null
 
   /**
    * Execution plan
    */
-  val executions = backGraph.topologySort.filter(!_.element.isInstanceOf[Dummy[T]]).reverse
-  modules.appendAll(executions.map(_.element.asInstanceOf[AbstractModule[Activity, Activity, T]]))
+  private val forwardExecutions = backGraph.topologySort
+    .filter(!_.element.isInstanceOf[Dummy[T]]).reverse
+  private var backwardExecutions: Array[Node[AbstractModule[Activity, Tensor[T], T]]] = null
+
+  modules.appendAll(forwardExecutions.map(
+    _.element.asInstanceOf[AbstractModule[Activity, Activity, T]]))
+
+  /**
+   * build is needed when the stopGrad is changed
+   */
+  def build(): this.type = {
+    val gradGraph = backGraph.cloneGraph()
+    dummyOutputGrad = gradGraph.source
+    val nodes = gradGraph.DFS
+    nodes.filter(x => isStopGradient(x.element)).foreach(_.removePrevEdges())
+    backwardExecutions = gradGraph.topologySort.filter(!_.element.isInstanceOf[Dummy[T]])
+    clearState()
+    this
+  }
+
+
+  private val inputsBP = new util.HashMap[String, Activity]()
 
   // Check all inputs of the graph should be passed in
   checkRoots
+  build
 
-  private val inputsBP = new Array[Activity](executions.length)
-  private val gradOutputBP = new Array[Tensor[T]](executions.length)
+  private val gradOutputBP = new Array[Tensor[T]](forwardExecutions.length)
 
-  private def checkRoots : Unit = {
-    val roots = executions.filter(_.prevNodes.size == 0)
+  private def checkRoots: Unit = {
+    val roots = forwardExecutions.filter(_.prevNodes.size == 0)
       .filter(node => !node.element.isInstanceOf[WithoutInput])
     require(roots.size == inputs.length,
       s"There're ${inputs.length} inputs, but graph has ${roots.size} roots")
@@ -288,8 +329,65 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
     }
   }
 
-  def getExecutions : Array[Node[AbstractModule[Activity, Tensor[T], T]]] = {
-    return executions
+  /**
+   * set an array of layers that match the given ```names``` to be "freezed",
+   * i.e. their parameters(weight/bias, if exists) are not changed in training process
+   * @param names an array of layer names
+   * @return current graph model
+   */
+  def freeze(names: Array[String]): this.type = {
+    names.foreach(name => {
+      val layer = this (name)
+      require(layer.isDefined, s"cannot find layer match ${name}")
+      layer.get.setScaleW(0)
+      layer.get.setScaleB(0)
+    })
+    this
+  }
+
+  private var stopGradientLayers: util.HashSet[String] = _
+
+  /**
+   * whether stop propagating gradInput back
+   * @return
+   */
+  private def isStopGradient(module: AbstractModule[_ <: Activity, _ <: Activity, T]): Boolean = {
+    null != stopGradientLayers && stopGradientLayers.contains(module.getName())
+  }
+
+  /**
+   * stop the input gradient of layers that match the given ```names```
+   * their input gradient are not computed.
+   * And they will not contributed to the input gradient computation of
+   * layers that depend on them.
+   * @param names an array of layer names
+   * @return current graph model
+   */
+  def stopGradient(names: Array[String]): this.type = {
+    names.foreach(name => {
+      val layer = this (name)
+      require(layer.isDefined, s"cannot find layer match ${name}")
+      if (stopGradientLayers == null) stopGradientLayers =
+        new util.HashSet[String]()
+      stopGradientLayers.add(layer.get.getName())
+    })
+    build()
+    this
+  }
+
+
+  override def reset(): Unit = {
+    if (null != stopGradientLayers) stopGradientLayers.clear()
+    unFreeze()
+    build()
+  }
+
+  /**
+   * get forward executions
+   * @return
+   */
+  def getForwardExecutions: Array[Node[AbstractModule[Activity, Tensor[T], T]]] = {
+    forwardExecutions
   }
 }
 
@@ -399,7 +497,7 @@ object Graph extends ContainerSerializable {
     val graph = module.module.asInstanceOf[Graph[T]]
     val inputsNames = graph.inputs.map(_.element.getName).toArray
     val outputsNames = graph.outputs.map(_.element.getName).toArray
-    graph.getExecutions.foreach(execution => {
+    graph.getForwardExecutions.foreach(execution => {
       val preNodes = execution.prevNodes.map(_.element.getName)
       val nextNodes = execution.nextNodes.map(_.element.getName)
       val currNode = execution.element
