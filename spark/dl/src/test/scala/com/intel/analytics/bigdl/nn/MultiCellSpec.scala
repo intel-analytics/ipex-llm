@@ -30,7 +30,7 @@ import scala.math._
 @com.intel.analytics.bigdl.tags.Parallel
 class MultiCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
-  "A MultiCell" should " work in BatchMode" in {
+  "A MultiCell " should "work in BatchMode" in {
     val hiddenSize = 5
     val inputSize = 5
     val seqLength = 4
@@ -64,7 +64,7 @@ class MultiCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
     }
   }
 
-  "A MultiCell" should " generate correct output" in {
+  "A MultiCell " should "generate correct output" in {
     val hiddenSize = 3
     val inputSize = 3
     val seqLength = 1
@@ -89,7 +89,7 @@ class MultiCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     val input = Tensor[Double](batchSize, seqLength, inputSize, 3, 3).rand
     val output = model.forward(input).toTensor[Double]
-    
+
     val model2 = Sequential[Double]()
       .add(Recurrent[Double]().add(ConvLSTMPeephole[Double](
         inputSize,

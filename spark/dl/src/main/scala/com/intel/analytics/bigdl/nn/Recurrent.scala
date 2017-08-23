@@ -229,9 +229,12 @@ class Recurrent[T : ClassTag]()
       currentInput(hidDim) = cells(i - 1).output.toTable(hidDim)
       i += 1
     }
-
     copy(cells.map(x => x.output.toTable[Tensor[T]](inputDim)),
         output, 0)
+    if (topology.isInstanceOf[MultiCell]) {
+      val t = cells.map(x => x.output.toTable(hidDim)).toArray
+      setStates(t)
+    }
     output
   }
 
@@ -244,6 +247,16 @@ class Recurrent[T : ClassTag]()
   private var initState: Activity = null
   def setState(state: Activity): Unit = {
     initState = state
+  }
+
+  def setStates(states: Array[Activity]): Unit = {
+    require(topology.isInstanceOf[MultiCell], "setStates only support for MultiCell")
+    topology.asInstanceOf[MultiCell].states = states
+  }
+
+  def getStates(): Unit = {
+    require(topology.isInstanceOf[MultiCell], "setStates only support for MultiCell")
+    topology.asInstanceOf[MultiCell].states
   }
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {

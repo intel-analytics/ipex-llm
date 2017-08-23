@@ -31,51 +31,65 @@ import scala.reflect.ClassTag
  */
 class MultiCell[T : ClassTag](cells: Array[Cell[T]])(implicit ev: TensorNumeric[T])
   extends Cell[T](hiddensShape = cells.last.hiddensShape) {
+  // inputDim and hidDim must be the same with Recurrent
+  private val inputDim = 1
+  private val hidDim = 2
+
   override var cell: AbstractModule[Activity, Activity, T] = Sequential[T]()
   cells.foreach(x => cell.asInstanceOf[Sequential[T]].add(x))
+  
+  var states: Array[Activity] = null
 
-  override def updateOutput(input: Table): Table = {
+  override def updateOutput(input: Activity): Activity = {
     var i = 0
-    var result = input
+    var result = T()
+    result = input.toTable
     while (i < cells.length) {
-      result = cells(i).forward(result)
+      result(hidDim) = states(i)
+      result = cells(i).forward(result).toTable
       i += 1
     }
 
-    this.output = result
+    this.output = result.toTable[Tensor[T]](inputDim)
     output
   }
 
-  override def updateGradInput(input: Table, gradOutput: Table): Table = {
+  override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
     var i = cells.length - 1
     var error = gradOutput
+    var nextInput = T()
     while (i > 0) {
-      val input = cells(i - 1).output
-      error = cells(i).updateGradInput(input, error)
+      nextInput = cells(i - 1).output.toTable
+      nextInput(hidDim) = states(i)
+      error = cells(i).updateGradInput(nextInput, error)
       i -= 1
     }
-    error = cells(0).updateGradInput(input, error)
+    nextInput = input.toTable
+    error = cells(0).updateGradInput(nextInput, error)
 
     this.gradInput = error
     gradInput
   }
 
-  override def accGradParameters(input: Table, gradOutput: Table): Unit = {
+  override def accGradParameters(input: Activity, gradOutput: Activity): Unit = {
     var i = cells.length - 1
     var currentModule = cells(i)
     var currentGradOutput = gradOutput
+    var nextInput = T()
     while (i > 0) {
       val previousModule = cells(i - 1)
-      currentModule.accGradParameters(previousModule.output, currentGradOutput)
+      nextInput = previousModule.output.toTable
+      nextInput(hidDim) = states(i)
+      currentModule.accGradParameters(nextInput, currentGradOutput)
       currentGradOutput = currentModule.gradInput
       currentModule = previousModule
       i -= 1
     }
-
-    currentModule.accGradParameters(input, currentGradOutput)
+    nextInput = input.toTable
+    currentModule.accGradParameters(nextInput, currentGradOutput)
   }
 
-  override def backward(input: Table, gradOutput: Table): Table = {
+  override def backward(input: Activity, gradOutput: Activity): Activity = {
     var i = cells.length - 1
     var error = gradOutput
     while (i > 0) {

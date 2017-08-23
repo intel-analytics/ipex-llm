@@ -28,15 +28,15 @@ private[bigdl] class CellUnit[T : ClassTag] (hidSize: Int)
   (implicit ev: TensorNumeric[T])
   extends Cell[T](hiddensShape = Array(hidSize, hidSize, hidSize)) {
 
-  override def updateOutput(input: Table): Table = {
+  override def updateOutput(input: Activity): Activity = {
     T()
   }
 
-  override def updateGradInput(input: Table, gradOutput: Table): Table = {
+  override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
     T()
   }
 
-  override def accGradParameters(input: Table, gradOutput: Table): Unit = {}
+  override def accGradParameters(input: Activity, gradOutput: Activity): Unit = {}
 
   override var cell: AbstractModule[Activity, Activity, T] = _
 }

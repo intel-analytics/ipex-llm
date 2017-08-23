@@ -47,13 +47,12 @@ abstract class Cell[T : ClassTag](
   val hiddensShape: Array[Int],
   var regularizers: Array[Regularizer[T]] = null
 )(implicit ev: TensorNumeric[T])
-  extends AbstractModule[Table, Table, T] {
+  extends AbstractModule[Activity, Activity, T] {
 
   var subModules: Array[AbstractModule[_ <: Activity, _ <: Activity, T]] = null
   var forwardTimes: Array[Long] = null
   var backwardTimes: Array[Long] = null
   var times: Array[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)] = null
-
 
   /**
    * Any recurrent kernels should have a cell member variable which
@@ -135,22 +134,22 @@ abstract class Cell[T : ClassTag](
     }
   }
 
-  override def updateOutput(input: Table): Table = {
-    output = cell.forward(input).toTable
+  override def updateOutput(input: Activity): Activity = {
+    output = cell.forward(input)
     output
   }
 
-  override def updateGradInput(input: Table, gradOutput: Table): Table = {
-    gradInput = cell.updateGradInput(input, gradOutput).toTable
+  override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
+    gradInput = cell.updateGradInput(input, gradOutput)
     gradInput
   }
 
-  override def accGradParameters(input: Table, gradOutput: Table): Unit = {
+  override def accGradParameters(input: Activity, gradOutput: Activity): Unit = {
     cell.accGradParameters(input, gradOutput)
   }
 
-  override def backward(input: Table, gradOutput: Table): Table = {
-    gradInput = cell.backward(input, gradOutput).toTable
+  override def backward(input: Activity, gradOutput: Activity): Activity = {
+    gradInput = cell.backward(input, gradOutput)
     gradInput
   }
 
