@@ -32,7 +32,7 @@ class MultiCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
   "A MultiCell" should " work in BatchMode" in {
     val hiddenSize = 5
-    val inputSize = 3
+    val inputSize = 5
     val seqLength = 4
     val batchSize = 2
     val kernalW = 3
@@ -56,11 +56,58 @@ class MultiCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
       .add(rec
         .add(MultiCell[Double](cells)))
 
-    val input = Tensor[Double](batchSize, seqLength, inputSize, 3, 3).rand
+    val input = Tensor[Double](batchSize, seqLength, inputSize, 10, 10).rand
     val output = model.forward(input).toTensor[Double]
     for (i <- 1 to 3) {
       val output = model.forward(input)
       model.backward(input, output)
     }
+  }
+
+  "A MultiCell" should " generate correct output" in {
+    val hiddenSize = 3
+    val inputSize = 3
+    val seqLength = 1
+    val batchSize = 2
+    val kernalW = 3
+    val kernalH = 3
+    val rec = Recurrent[Double]()
+    val cells = Array(ConvLSTMPeephole[Double](
+      inputSize,
+      hiddenSize,
+      kernalW, kernalH,
+      1), ConvLSTMPeephole[Double](
+      inputSize,
+      hiddenSize,
+      kernalW, kernalH,
+      1)).asInstanceOf[Array[Cell[Double]]]
+
+    val model = Sequential[Double]()
+      .add(rec
+        .add(MultiCell[Double](cells)))
+    val weights = model.getParameters()._1.clone()
+
+    val input = Tensor[Double](batchSize, seqLength, inputSize, 3, 3).rand
+    val output = model.forward(input).toTensor[Double]
+    
+    val model2 = Sequential[Double]()
+      .add(Recurrent[Double]().add(ConvLSTMPeephole[Double](
+        inputSize,
+        hiddenSize,
+        kernalW, kernalH,
+        1)))
+      .add(Recurrent[Double]().add(ConvLSTMPeephole[Double](
+        inputSize,
+        hiddenSize,
+        kernalW, kernalH,
+        1)))
+    model2.getParameters()._1.copy(weights)
+
+    val output2 = model2.forward(input).toTensor[Double]
+
+    output.map(output2, (v1, v2) => {
+      assert(abs(v1 - v2) < 1e-6)
+      v1
+    })
   }
 }

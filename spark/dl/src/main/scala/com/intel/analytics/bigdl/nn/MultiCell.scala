@@ -33,7 +33,7 @@ class MultiCell[T : ClassTag](cells: Array[Cell[T]])(implicit ev: TensorNumeric[
   extends Cell[T](hiddensShape = cells.last.hiddensShape) {
   override var cell: AbstractModule[Activity, Activity, T] = Sequential[T]()
   cells.foreach(x => cell.asInstanceOf[Sequential[T]].add(x))
-  
+
   override def updateOutput(input: Table): Table = {
     var i = 0
     var result = input

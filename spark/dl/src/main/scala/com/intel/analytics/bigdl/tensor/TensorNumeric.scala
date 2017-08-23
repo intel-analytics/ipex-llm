@@ -269,7 +269,7 @@ object TensorNumericMath {
       override def vTanh(n: Int, a: Array[Float], aOffset: Int, y: Array[Float], yOffset: Int)
       : Unit = {
         require(MKL.isMKLLoaded, "mkl isn't loaded")
-//        MKL.vsTanh(n, a, aOffset, y, yOffset)
+        MKL.vsTanh(n, a, aOffset, y, yOffset)
       }
 
       override def vAbs(n: Int, a: Array[Float], aOffset: Int, y: Array[Float], yOffset: Int)
@@ -479,7 +479,7 @@ object TensorNumericMath {
       override def vTanh(n: Int, a: Array[Double], aOffset: Int, y: Array[Double], yOffset: Int)
       : Unit = {
         require(MKL.isMKLLoaded, "mkl isn't loaded")
-//        MKL.vdTanh(n, a, aOffset, y, yOffset)
+        MKL.vdTanh(n, a, aOffset, y, yOffset)
       }
 
       override def vAbs(n: Int, a: Array[Double], aOffset: Int, y: Array[Double], yOffset: Int)
