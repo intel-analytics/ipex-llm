@@ -275,7 +275,7 @@ class SpatialAveragePoolingSpec extends FlatSpec with Matchers {
     module.forward(input) should be (module2.forward(input))
   }
 
-  "A SpatialMaxPooling" should "work with SAME padding using NCHW format" in {
+  "A SpatialAveragePooling" should "work with SAME padding using NCHW format" in {
     import tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
     val kW = 2
@@ -297,23 +297,17 @@ class SpatialAveragePoolingSpec extends FlatSpec with Matchers {
     gradInput.storage().array() should be (Array(0.625f, 2.125, 2.375, 7.875))
   }
 
-  "A SpatialMaxPooling with NHWC format" should "generate correct output and gradInput" in {
+  "A SpatialAveragePooling with NHWC format" should "generate correct output and gradInput" in {
 
     import tensor.TensorNumericMath.TensorNumeric.NumericDouble
     case class Pooling(kW: Int, kH: Int, dW: Int, dH: Int, pW: Int, pH: Int)
-    val params = List(
-      Pooling(3, 3, 1, 1, 0, 0),
-      Pooling(1, 1, 1, 1, 0, 0),
-      Pooling(5, 5, 1, 1, 0, 0),
-      Pooling(3, 3, 2, 2, 0, 0),
-      Pooling(1, 1, 2, 2, 0, 0),
-      Pooling(5, 5, 2, 2, 0, 0),
-      Pooling(3, 3, 2, 2, 1, 1),
-      Pooling(5, 5, 2, 2, 1, 1),
-      Pooling(1, 1, 2, 2, -1, -1),
-      Pooling(5, 5, 2, 2, -1, -1),
-      Pooling(2, 2, 1, 1, -1, -1)
-    )
+
+    val params = for (kernel <- 1 to 5;
+                      stride <- 1 to 5;
+                      padding <- -1 to kernel / 2) yield {
+      Pooling(kernel, kernel, stride, stride, padding, padding)
+    }
+
     for (param <- params) {
       println(param)
 
@@ -322,7 +316,7 @@ class SpatialAveragePoolingSpec extends FlatSpec with Matchers {
       val moduleNHWC = new SpatialAveragePooling(param.kW, param.kH, param.dW, param.dH,
         param.pW, param.pH, format = DataFormat.NHWC)
 
-      val input = Tensor(2, 4, 5, 5).randn()
+      val input = Tensor(2, 4, 10, 10).randn()
 
       val inputNHWC = Tensor(input.size()).copy(input)
         .transpose(2, 4).transpose(2, 3).contiguous()
