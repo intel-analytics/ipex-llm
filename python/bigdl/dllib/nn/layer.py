@@ -376,6 +376,22 @@ class Layer(JavaValue):
         '''
         self.value.bRegularizer = bRegularizer.value
 
+    def freeze(self):
+        '''
+        freeze layer
+        '''
+        callBigDlFunc(self.bigdl_type,
+                        "setLayerFreeze", self.value)
+        return self
+
+    def unfreeze(self):
+        '''
+        unfreeze layer
+        '''
+        callBigDlFunc(self.bigdl_type,
+                        "setLayerUnFreeze", self.value)
+
+
 
 class Container(Layer):
     '''
@@ -490,6 +506,39 @@ class Model(Container):
         """
         jmodel = callBigDlFunc(bigdl_type, "loadTF", path, inputs, outputs, byte_order)
         return Model.of(jmodel)
+
+    def freeze(self, freeze_layers, bigdl_type="float"):
+        """
+        set an array of layers to be freezed
+        :param freeze_layers: an array of layer names
+        :param bigdl_type:
+        :return:
+        """
+        callBigDlFunc(bigdl_type, "setFreeze", self.value, freeze_layers)
+        return self
+
+    def unfreeze(self, bigdl_type="float"):
+        """
+        set all layers to be trainable
+        :param bigdl_type:
+        :return:
+        """
+        callBigDlFunc(bigdl_type, "unFreeze", self.value)
+        return self
+
+    def stop_gradient(self, stop_layers, bigdl_type="float"):
+        """
+        stop the input gradient of layers that match the given ```names```
+        their input gradient are not computed.
+        And they will not contributed to the input gradient computation of
+        layers that depend on them.
+        :param stop_layers:  an array of layer names
+        :param bigdl_type:
+        :return:
+        """
+        callBigDlFunc(bigdl_type, "setStopGradient", self.value, stop_layers)
+        return self
+
 
 
 class Linear(Layer):
