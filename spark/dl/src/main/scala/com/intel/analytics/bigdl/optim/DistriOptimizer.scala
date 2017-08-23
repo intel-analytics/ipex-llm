@@ -123,6 +123,12 @@ object DistriOptimizer {
     val numSamples = dataset.data(train = false).map(_.size()).reduce(_ + _)
     val countAfter = System.nanoTime()
     logger.info(s"Count dataset complete. Time elapsed: ${(countAfter - countBefore) / 1e9}s")
+    if (numSamples != dataset.size()) {
+      logger.warn("If the dataset is built directly from RDD[Minibatch], the data in each " +
+        "minibatch is fixed, and a single minibatch is randomly selected in each partition. If " +
+        "the dataset is transformed from RDD[Sample], each minibatch will be constructed on the " +
+        "fly from random samples, which is better for convergence.")
+    }
 
     val shuffleBefore = System.nanoTime()
     logger.info(s"config $state")
@@ -158,8 +164,12 @@ object DistriOptimizer {
       val driverMetrics = metrics
       val start = System.nanoTime()
 
-      val finishedThreads: RDD[Int] = dataRDD.zipPartitions(models, preservesPartitioning = true) {
-        (data, modelIter) => {
+      /*
+        Run the forwards/backwards pass using multiple threads in each partition, and track the
+        number of model updates that finished before the thread timeout mechanism.
+       */
+      val numFinishedModelUpdates: Int = dataRDD
+        .zipPartitions(models, preservesPartitioning = true) { (data, modelIter) => {
           val cached = modelIter.next()
           val syWStart = System.nanoTime()
           /*
@@ -268,8 +278,7 @@ object DistriOptimizer {
           }
           Iterator.single(finishedThreads.size)
         }
-      }
-      val numFinishedModelUpdates = finishedThreads.reduce(_ + _)
+      }.reduce(_ + _)
 
       dropModelNumBatch += (driverSubModelNum - numFinishedModelUpdates)
       if (dropPercentage == 0.0 ||

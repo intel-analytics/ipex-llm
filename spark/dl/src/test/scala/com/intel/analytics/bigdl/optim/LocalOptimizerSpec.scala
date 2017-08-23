@@ -159,18 +159,20 @@ class LocalOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter{
       val maxEpochs = 2
       val logdir = com.google.common.io.Files.createTempDir()
       val trainSummary = TrainSummary(logdir.getPath, "minibatch-test")
+      val optimMethod = new SGD[Float]()
       val optimizer = new LocalOptimizer(
         nn,
         dataset,
         ClassNLLCriterion[Float]())
-        .setOptimMethod(new LBFGS)
+        .setOptimMethod(optimMethod)
         .setTrainSummary(trainSummary)
         .setEndWhen(Trigger.maxEpoch(maxEpochs))
       val model = optimizer.optimize()
       val losses = trainSummary.readScalar("Loss")
       trainSummary.close()
+      val iterations = optimMethod.state[Option[Int]]("neval").get
 
-      losses should have length maxEpochs * (dataset.data(train = false).length / nodeNumber)
+      iterations should be (maxEpochs * (dataset.data(train = false).length / nodeNumber))
     }
   }
 
