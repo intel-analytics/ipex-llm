@@ -62,12 +62,12 @@ trait TensorflowToBigDL {
     node: NodeDef, context: Context[T], byteOrder: ByteOrder)(f: Tensor[T] => Tensor[T])(
     implicit ev: TensorNumeric[T]): (Tensor[T], Tensor[T]) = {
 
-    if (context.contains(node)) {
-      context(node)
+    if (context.contains(node.getName)) {
+      context(node.getName)
     } else {
       val weight = f(toTensor[T](node.getAttrMap.get("value").getTensor, byteOrder)).contiguous()
       val gradient = Tensor[T](weight.size())
-      context.put(node, (weight, gradient))
+      context.put(node.getName, (weight, gradient))
       (weight, gradient)
     }
   }

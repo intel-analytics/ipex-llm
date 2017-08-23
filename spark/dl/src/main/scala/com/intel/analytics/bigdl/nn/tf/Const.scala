@@ -39,6 +39,11 @@ private[bigdl] class Const[T: ClassTag](value: Tensor[T])(implicit ev: TensorNum
 
   output = value
 
+  override def clearState(): this.type = {
+    // Const do not have state, output should always be value
+    this
+  }
+
   override def updateOutput(input: Activity): Tensor[T] = output
 
   override def updateGradInput(input: Activity, gradOutput: Tensor[T]): Activity = {

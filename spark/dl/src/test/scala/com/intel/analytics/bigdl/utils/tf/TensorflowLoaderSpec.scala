@@ -135,6 +135,25 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     topSort(14).element.getName should be("Variable")
   }
 
+  "TensorFlow loader" should "be able to build a TF sub graph" in {
+    val resource = getClass().getClassLoader().getResource("tf")
+    val path = processPath(resource.getPath()) + JFile.separator + "test.pb"
+    val results = TensorflowLoader.parse(path)
+    val tfGraph = TensorflowLoader.buildTFGraph(results, Seq("output"),
+      (node: NodeDef) => node.getName == "Tanh")
+    tfGraph.size should be(8)  // there's a dummy output
+    val topSort = tfGraph.topologySort// It can do topology sort
+    topSort.length should be(8)
+    topSort(0).element should be(null)
+    topSort(1).element.getName should be("output")
+    topSort(2).element.getName should be("MatMul_1")
+    topSort(3).element.getName should be("Variable_3/read")
+    topSort(4).element.getName should be("Variable_3")
+    topSort(5).element.getName should be("Tanh")
+    topSort(6).element.getName should be("Variable_2/read")
+    topSort(7).element.getName should be("Variable_2")
+  }
+
   "TensorFlow loader" should "be able to build a BigDL graph" in {
     val resource = getClass().getClassLoader().getResource("tf")
     val path = processPath(resource.getPath()) + JFile.separator + "test.pb"
@@ -480,7 +499,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
 
     // filter node for gradient computing
     val tfGraph = TensorflowLoader.buildTFGraph(tfNodes, endPoints.map(_.split(":")(0)))
-    val context = new mutable.HashMap[NodeDef, (Tensor[Float], Tensor[Float])]
+    val context = new mutable.HashMap[String, (Tensor[Float], Tensor[Float])]
     val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("input"),
       endPoints.map(_.split(":")(0)), ByteOrder.LITTLE_ENDIAN, "", Some(context))
 
@@ -537,7 +556,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
       // find all gradients tensor of variables in tensorflow graph
       val tfGradTensorsMap = context.keySet.map{
         node =>
-          val t = tfNodes.asScala.filter(_.getName.contains(node.getName + "_grad"))(0)
+          val t = tfNodes.asScala.filter(_.getName.contains(node + "_grad"))(0)
           t.getName ->
             TensorflowToBigDL.toTensor(t.getAttrMap.get("value").getTensor, ByteOrder.LITTLE_ENDIAN)
       }.toMap
@@ -546,7 +565,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
       model.backward(input, gradInputs)
 
       val pairs = context.keySet.map { x =>
-          val name = s"${x.getName}_grad"
+          val name = s"${x}_grad"
           val tensor = tfGradTensorsMap.get(name).orNull
           (tensor, context(x)._2)
       }.toSeq.filter(_._1 != null)
