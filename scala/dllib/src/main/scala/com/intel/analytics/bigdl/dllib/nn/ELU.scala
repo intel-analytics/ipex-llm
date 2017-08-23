@@ -86,6 +86,13 @@ class ELU[T: ClassTag](
     }
     gradInput
   }
+
+  override def clearState(): this.type = {
+    if (!inplace) {
+      super.clearState()
+    }
+    this
+  }
 }
 
 object ELU {
