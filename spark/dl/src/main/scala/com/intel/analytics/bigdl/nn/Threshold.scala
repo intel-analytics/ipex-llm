@@ -398,6 +398,13 @@ class Threshold[T: ClassTag](
   override def toString(): String = {
     s"${getPrintName}($th, $v)"
   }
+
+  override def clearState(): this.type = {
+    if (!inPlace) {
+      super.clearState()
+    }
+    this
+  }
 }
 
 object Threshold {
