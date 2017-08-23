@@ -19,7 +19,7 @@ import sys
 import glob
 from py4j.protocol import Py4JJavaError
 from py4j.java_gateway import JavaObject
-from py4j.java_collections import ListConverter, JavaArray, JavaList, JavaMap
+from py4j.java_collections import ListConverter, JavaArray, JavaList, JavaMap, MapConverter
 
 from pyspark import RDD, SparkContext
 from pyspark.serializers import PickleSerializer, AutoBatchedSerializer
@@ -375,10 +375,10 @@ def _py2java(sc, obj):
                                       sc._gateway._gateway_client)
     elif isinstance(obj, dict):
         result = {}
+        print(obj.keys())
         for (key, value) in obj.items():
-            result[key] = _py2java(sc, value) if isinstance(value, JavaValue) else value  # noqa
-        obj = result
-
+            result[key] = _py2java(sc, value) if not isinstance(value, JavaValue) else value  # noqa
+        obj = MapConverter().convert(result, sc._gateway._gateway_client)
     elif isinstance(obj, JavaValue):
         obj = obj.value
     elif isinstance(obj, JavaObject):

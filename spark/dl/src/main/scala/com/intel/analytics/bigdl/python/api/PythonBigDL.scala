@@ -1676,6 +1676,12 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     method.save(path, overWrite)
   }
 
+  /**
+   * Save tensor dictionary to a Java hashmap object file
+   */
+  def saveTensorDictionary(tensors: JHashMap[String, JTensor], path: String): Unit = {
+    File.save(tensors, path, true)
+  }
 
   def createOptimizer(model: AbstractModule[Activity, Activity, T],
                       trainingRdd: JavaRDD[Sample],
