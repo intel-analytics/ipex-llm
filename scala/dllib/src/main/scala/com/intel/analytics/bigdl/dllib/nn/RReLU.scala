@@ -165,6 +165,13 @@ class RReLU[T: ClassTag](
   override def toString: String = {
     "nn.RReLU"
   }
+
+  override def clearState(): this.type = {
+    if (!inplace) {
+      super.clearState()
+    }
+    this
+  }
 }
 
 object RReLU {
