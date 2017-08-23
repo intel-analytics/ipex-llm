@@ -128,9 +128,9 @@ abstract class Cell[T : ClassTag](
             i += 1
           }
         } else {
-          val sizes = new Array[Int](imageSize.length + 2)
+          val sizes = new Array[Int](imageSize.length + 1)
           sizes(0) = batchSize
-          Array.copy(imageSize, 0, sizes, 2, imageSize.size)
+          Array.copy(imageSize, 0, sizes, 1, imageSize.size)
           while (i <= hidden.toTable.length()) {
             sizes(1) = hiddensShape(i - 1)
             hidden.toTable[Tensor[T]](i).resize(sizes)

@@ -21,10 +21,9 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.{Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer.{ContainerSerializable, DataConverter, ModuleData, ModuleSerializer}
-import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.utils.T
 import serialization.Bigdl.{AttrValue, BigDLModule}
 
-import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
@@ -32,28 +31,27 @@ import scala.reflect.ClassTag
  * [[Recurrent]] module is a container of rnn cells
  * Different types of rnn cells can be added using add() function
  */
-class Recurrent[T : ClassTag](feedbackOutput: Boolean = false)
+class Recurrent[T : ClassTag]()
   (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
 
-  private var hidden: Activity = null
-  private var gradHidden: Activity = null
-  private var hiddenShape: Array[Int] = null
-  private val currentInput = T()
-  private val currentGradOutput = T()
-  private val gradInputCell = Tensor[T]()
-  private var outputCell = Tensor[T]()
-  private val _input = T()
-  private val batchDim = 1
-  private val timeDim = 2
-  private val inputDim = 1
-  private val hidDim = 2
-  private var (batchSize, times) = (0, 0)
-  private var topology: Cell[T] = null
-  private var preTopology: AbstractModule[Activity, Activity, T] = null
-  private val dropouts: ArrayBuffer[Array[Dropout[T]]] =
+  protected var hidden: Activity = null
+  protected var gradHidden: Activity = null
+  protected var hiddenShape: Array[Int] = null
+  protected val currentInput = T()
+  protected val currentGradOutput = T()
+  protected val gradInputCell = Tensor[T]()
+  protected var outputCell = Tensor[T]()
+  protected var _input = T()
+  protected val batchDim = 1
+  protected val timeDim = 2
+  protected val inputDim = 1
+  protected val hidDim = 2
+  protected var (batchSize, times) = (0, 0)
+  protected var topology: Cell[T] = null
+  protected var preTopology: AbstractModule[Activity, Activity, T] = null
+  protected val dropouts: ArrayBuffer[Array[Dropout[T]]] =
     new ArrayBuffer[Array[Dropout[T]]]
-  private var newInput = Tensor[T]()
-  private val timeBuffer =
+  protected val timeBuffer =
     new ArrayBuffer[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)]
 
   /**
@@ -71,8 +69,7 @@ class Recurrent[T : ClassTag](feedbackOutput: Boolean = false)
     require(module.isInstanceOf[Cell[T]],
       "Recurrent: contained module should be Cell type")
     topology = module.asInstanceOf[Cell[T]]
-    preTopology = if (!feedbackOutput) topology.preTopology
-     else { topology.ignorePreTopology = true; null }
+    preTopology = topology.preTopology
     if (preTopology != null) {
       modules += preTopology
     }
@@ -82,7 +79,7 @@ class Recurrent[T : ClassTag](feedbackOutput: Boolean = false)
   }
 
   // list of cell modules cloned from added modules
-  private val cells: ArrayBuffer[Cell[T]]
+  protected val cells: ArrayBuffer[Cell[T]]
   = ArrayBuffer[Cell[T]]()
 
   /**
@@ -90,10 +87,8 @@ class Recurrent[T : ClassTag](feedbackOutput: Boolean = false)
    * @param sizes, the first element is batchSize, the second is times, the third is hiddensize
     *             the left is size of images
    */
-  private def extend(sizes: Array[Int]): Unit = {
-    val times = sizes(1)
-    val batchSize = sizes(0)
-    val imageSize = sizes.drop(3)
+  protected def extend(sizes: Array[Int]): Unit = {
+    val imageSize = sizes
     if (hidden == null) {
       require((preTopology == null && modules.length == 1) ||
         (topology != null && preTopology != null && modules.length == 2),
@@ -137,7 +132,7 @@ class Recurrent[T : ClassTag](feedbackOutput: Boolean = false)
    * @param src
    * @param dst
    */
-  private def copy(src: ArrayBuffer[Tensor[T]], dst: Tensor[T], offset: Int): Unit = {
+  protected def copy(src: ArrayBuffer[Tensor[T]], dst: Tensor[T], offset: Int): Unit = {
     var t = 1
     while ((t + offset) <= times) {
       dst.select(timeDim, t + offset).copy(src(t - 1))
@@ -213,7 +208,7 @@ class Recurrent[T : ClassTag](feedbackOutput: Boolean = false)
     outputSize(2) = hiddenSize
     output.resize(outputSize)
     // Clone N modules along the sequence dimension.
-    extend(outputSize)
+    extend(outputSize.drop(2))
 
     /**
      * currentInput forms a T() type. It contains two elements, hidden and input.
@@ -227,26 +222,8 @@ class Recurrent[T : ClassTag](feedbackOutput: Boolean = false)
     currentInput(hidDim) = if (initState != null) initState
      else hidden
 
-    if (feedbackOutput) {
-      newInput = Tensor(input.size())
-    }
-
     while (i <= times) {
-      if (!feedbackOutput) {
-        currentInput(inputDim) = outputCell.select(timeDim, i)
-      } else {
-        val inputTmp = if (i == 1) {
-          // input at t(0) is last time step of user input
-          input.select(timeDim, times).clone()
-        } else {
-          // input at t(i) is output at t(i-1)
-          cells(i - 2).output.toTable[Tensor[T]](inputDim)
-        }
-        newInput.narrow(timeDim, i, 1).copy(inputTmp)
-        require(inputTmp.nElement() == input.select(timeDim, i).nElement(), "outputsize is " +
-          "not the same with input size!! Please update cell settings or turn off feedbackOutput.")
-        currentInput(inputDim) = inputTmp
-      }
+      currentInput(inputDim) = outputCell.select(timeDim, i)
       cells(i - 1).forward(currentInput)
       currentInput(hidDim) = cells(i - 1).output.toTable(hidDim)
       i += 1
@@ -263,7 +240,7 @@ class Recurrent[T : ClassTag](feedbackOutput: Boolean = false)
     cells(times - 1).output.toTable(hidDim)
   }
 
-  private var initState: Activity = null
+  protected var initState: Activity = null
   def setState(state: Activity): Unit = {
     initState = state
   }
@@ -287,11 +264,7 @@ class Recurrent[T : ClassTag](feedbackOutput: Boolean = false)
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
         else hidden
 
-      _input(inputDim) = if (feedbackOutput) {
-        newInput.select(timeDim, i)
-      } else {
-        outputCell.select(timeDim, i)
-      }
+      _input(inputDim) = outputCell.select(timeDim, i)
 
       if (i == 1) {
         cells(i - 1).regluarized(true)
@@ -329,11 +302,8 @@ class Recurrent[T : ClassTag](feedbackOutput: Boolean = false)
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
         else hidden
 
-      _input(inputDim) = if (feedbackOutput) {
-        newInput.select(timeDim, i)
-      } else {
-        outputCell.select(timeDim, i)
-      }
+      _input(inputDim) = outputCell.select(timeDim, i)
+
       cells(i - 1).updateGradInput(_input, currentGradOutput)
       currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
       i -= 1
@@ -491,9 +461,9 @@ class Recurrent[T : ClassTag](feedbackOutput: Boolean = false)
 }
 
 object Recurrent extends ContainerSerializable {
-  def apply[@specialized(Float, Double) T: ClassTag](feedbackOutput: Boolean = false)
+  def apply[@specialized(Float, Double) T: ClassTag]()
     (implicit ev: TensorNumeric[T]) : Recurrent[T] = {
-    new Recurrent[T](feedbackOutput)
+    new Recurrent[T]()
   }
 
   override def loadModule[T: ClassTag](model : BigDLModule)
