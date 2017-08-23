@@ -73,7 +73,7 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     require(input.dim() == 1 || input.dim() == 2,
       "ClassNLLCriterion: " +
-        ErrorInfo.constrainInputAsVectorOrBatch+
+        ErrorInfo.constrainInputAsVectorOrBatch +
        s"input dim(${input.dim()})")
     val nClasses = input.size(input.dim())
     if (input.dim() == 1) {
