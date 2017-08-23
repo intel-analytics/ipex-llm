@@ -129,9 +129,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def toJTensor(tensor: Tensor[T]): JTensor = {
     // clone here in case the the size of storage larger then the size of tensor.
     require(tensor != null, "tensor cannot be null")
-    val cloneTensor = tensor.clone()
-    JTensor(cloneTensor.storage().toList.map(_.asInstanceOf[Any]).asJava,
-      cloneTensor.size().toList.asJava, typeName)
+    if (tensor.nElement() == 0) {
+      JTensor(new JArrayList[Any](0), List(0).asJava, typeName)
+    } else {
+      val cloneTensor = tensor.clone()
+      JTensor(cloneTensor.storage().toList.map(_.asInstanceOf[Any]).asJava,
+        cloneTensor.size().toList.asJava, typeName)
+    }
   }
 
   def testTensor(jTensor: JTensor): JTensor = {
@@ -1858,5 +1862,27 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def setState(rec: Recurrent[T], state: JList[JTensor], isTable: Boolean): Unit = {
     val stateActivity = jTensorsToActivity(state, isTable)
     rec.setState(stateActivity)
+  }
+
+  def setLayerFreeze(model: AbstractModule[Activity, Activity, T])
+  : AbstractModule[Activity, Activity, T] = {
+    model.freeze()
+  }
+
+  def setLayerUnFreeze(model: AbstractModule[Activity, Activity, T])
+  : AbstractModule[Activity, Activity, T] = {
+    model.unFreeze()
+  }
+
+  def setFreeze(model: Graph[T], freezeLayers: JList[String]): Graph[T] = {
+    model.freeze(freezeLayers.asScala.toArray)
+  }
+
+  def unFreeze(model: Graph[T]): Graph[T] = {
+    model.unFreeze()
+  }
+
+  def setStopGradient(model: Graph[T], layers: JList[String]): Graph[T] = {
+    model.stopGradient(layers.asScala.toArray)
   }
 }
