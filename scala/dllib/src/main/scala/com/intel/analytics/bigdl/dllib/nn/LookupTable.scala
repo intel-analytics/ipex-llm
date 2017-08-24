@@ -165,7 +165,7 @@ class LookupTable[T: ClassTag]
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim() == 1 || input.dim() == 2,
-      "LookupTable: " + ErrorInfo.constrainInputAsVectorOrBatch)
+      s"LookupTable: ${ErrorInfo.constrainInputAsVectorOrBatch}, input dim [${input.dim()}]"  )
     renorm(input)
     inputBuffer = input.contiguous()
     if (inputBuffer.dim() == 1) {
@@ -188,7 +188,7 @@ class LookupTable[T: ClassTag]
     inputBuffer = input.contiguous()
     require(gradWeight.isContiguous(), "LookupTable: gradWeight must be contiguous")
     require(inputBuffer.dim() == 1 || inputBuffer.dim() == 2,
-      "LookupTable: input must be a vector or matrix")
+      s"LookupTable: input must be a vector or matrix, input dim ${inputBuffer.dim()}" )
 
     if (inputBuffer.dim() == 2) {
       inputBuffer.view(inputBuffer.nElement())

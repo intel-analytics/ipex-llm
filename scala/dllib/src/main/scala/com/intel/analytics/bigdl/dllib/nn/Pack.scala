@@ -38,7 +38,8 @@ class Pack[T: ClassTag] (val dimension: Int)(implicit ev: TensorNumeric[T])
     if (nDim < 0) {
       nDim = firstInput.dim() + nDim + 1
     }
-    require(nDim <= firstInput.dim() + 1, "dimension exceeds input dimensions")
+    require(nDim <= firstInput.dim() + 1, "dimension exceeds input dimensions" +
+      s"dimension $nDim, inputDimension ${firstInput.dim()}")
     nDim
   }
 
