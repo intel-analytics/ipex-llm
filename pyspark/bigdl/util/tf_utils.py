@@ -66,6 +66,7 @@ def convert(input_ops, output_ops, byte_order, bigdl_type):
 
     return model
 
+
 def export_checkpoint(checkpoint_path):
     """
     Export variable tensors from the checkpoint files.
@@ -85,12 +86,14 @@ def export_checkpoint(checkpoint_path):
 
     return tensors
 
-def save_variable_bigdl(tensors, target_path, bigdl_type = "float"):
+
+def save_variable_bigdl(tensors, target_path, bigdl_type="float"):
     """
     Save a variable dictionary to a Java object file, so it can be read by BigDL
 
     :param tensors: tensor dictionary
     :param target_path: where is the Java object file store
+    :param bigdl_type: model variable numeric type
     :return: nothing
     """
     jtensors = {}
@@ -100,21 +103,26 @@ def save_variable_bigdl(tensors, target_path, bigdl_type = "float"):
     callBigDlFunc(bigdl_type, "saveTensorDictionary", jtensors, target_path)
 
 
-def dump_model(path, bigdl_type="float"):
+def dump_model(path, sess=None, graph=None, bigdl_type="float"):
     """
     Dump a tensorflow model to files. The graph will be dumped to path/model.pb, and the checkpoint will
     be dumped to path/model.bin
     
     :param path: dump folder path
+    :param sess: if user pass in session, we assume that the variable of the graph in the session
+    has been inited
+    :param graph: tensorflow graph. Default use the default graph of the session
+    :param bigdl_type: model variable numeric type
     :return: nothing
     """
     if not os.path.isdir(path):
         print("Folder " + path + " does not exist")
         raise
 
-    sess = tf.Session()
-    init = tf.global_variables_initializer()
-    sess.run(init)
+    if sess is None:
+        sess = tf.Session()
+        init = tf.global_variables_initializer()
+        sess.run(init)
 
     temp = tempfile.mkdtemp()
     # dump checkpoint to temp files
@@ -127,12 +135,14 @@ def dump_model(path, bigdl_type="float"):
     save_variable_bigdl(tensors, path + "/model.bin", bigdl_type)
 
     # dump grap to pb file
-    tf.train.write_graph(sess.graph, path, 'model.pb')
+    graph = sess.graph if graph is None else graph
+    tf.train.write_graph(graph, path, 'model.pb')
     try:
         shutil.rmtree(temp)
     except OSError as e:
         if e.errno != errno.ENOENT:
             raise
+
 
 def merge_checkpoint(input_graph,
                      checkpoint,
