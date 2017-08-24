@@ -144,10 +144,14 @@ object DistriOptimizer {
       val lossSum = sc.accumulator(0.0, "loss sum")
       val recordsNum = sc.accumulator(0, "record number")
       metrics.set("computing time for each node", mutable.ArrayBuffer[Double](), sc)
+      metrics.set("get weights for each node", mutable.ArrayBuffer[Double](), sc)
       metrics.set("computing time average", 0.0, sc, partitionNum)
       metrics.set("aggregate gradient time", 0.0, sc, partitionNum)
       metrics.set("get weights average", 0.0, sc, partitionNum)
-      metrics.set("get weights for each node", mutable.ArrayBuffer[Double](), sc)
+      metrics.set("put gradient", 0.0, sc, Engine.nodeNumber())
+      metrics.set("aggregrateGradientParition average executor", 0.0, sc, Engine.nodeNumber())
+      metrics.set("compute weight average", 0.0, sc, Engine.nodeNumber())
+      metrics.set("send weights average", 0.0, sc, Engine.nodeNumber())
 
       val driverMetrics = metrics
       val start = System.nanoTime()
@@ -251,7 +255,9 @@ object DistriOptimizer {
             driverMetrics.add("aggregate gradient time", System.nanoTime() - time)
           }
 
+          val t = System.nanoTime()
           parameters.putGradients(cached.gradient)
+          driverMetrics.add("put gradient", System.nanoTime() - t)
           tasks ++= Engine.default.invoke((0 until _subModelNumber).map(i => () => {
             cached.localModels(i).training()
             cached.localModels(i).zeroGradParameters()
@@ -263,8 +269,12 @@ object DistriOptimizer {
       if (dropPercentage == 0 || finishedModelNum >= driverSubModelNum * (1-maxDropPercentage)) {
         val value = lossSum.value / finishedModelNum
         models.mapPartitions(modelIter => {
+          val getG = System.nanoTime()
           val modelCache = modelIter.next()
           parameters.aggregateGradientPartition()
+          driverMetrics.add("aggregrateGradientParition average executor",
+            System.nanoTime() - getG)
+          var time = System.nanoTime()
           parameters.gradientPartition.div(ev.fromType(finishedModelNum))
           modelCache.optimMethod.state.update("epoch", driverState[Int]("epoch"))
           modelCache.optimMethod.state.update("neval", driverState[Int]("neval"))
@@ -274,8 +284,10 @@ object DistriOptimizer {
           }
           modelCache.optimMethod.optimize(_ => (ev.fromType(value), parameters.gradientPartition),
             parameters.weightPartition)
-
+          driverMetrics.add("compute weight average", System.nanoTime() - time)
+          time = System.nanoTime()
           parameters.sendWeightPartition()
+          driverMetrics.add("send weights average", System.nanoTime() - time)
           Iterator.empty
         }).count()
 
@@ -295,7 +307,7 @@ object DistriOptimizer {
         logger.info(s"${_header} Train ${recordsNum.value} in ${(end - start) / 1e9}seconds. " +
           s"Throughput is ${driverState("Throughput")} records/second. Loss is ${
             driverState("Loss")}. ${optimMethod.getHyperParameter()}")
-        logger.debug("\n" + metrics.summary())
+        logger.info("\n" + metrics.summary())
         logger.debug("Dropped modules: " + (driverSubModelNum - finishedModelNum))
         lossArray = new Array[Double](_subModelNumber)
 

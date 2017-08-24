@@ -32,6 +32,7 @@ import scala.reflect._
 
 object AllReduceParameter {
   private val syncPoolSize: Int = System.getProperty("bigdl.Parameter.syncPoolSize", "4").toInt
+  println("syncPoolsize: " + syncPoolSize)
 
   val logger: Logger = Logger.getLogger(getClass)
   val syncPool: ExecutorService = Executors.newFixedThreadPool(syncPoolSize, new ThreadFactory {
@@ -262,18 +263,36 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) ex
    *                  partition of data.
    */
   def putGradients(parameter: Tensor[T]): Unit = {
-    var pid = 0
+//    var pid = 0
     require(parameterBuffer != null, "The parameter buffer is null. Has this AllReduceParameter" +
       " been initialized on each partition?")
-    parameterBuffer.compress(parameter)
-    while (pid < partitionNum) {
-      val start = pid * taskSize + math.min(pid, extraSize)
-      val length = taskSize + (if (pid < extraSize) 1 else 0)
-      val blockId = getGradientBlockId(partitionId, pid)
-      BlockManagerWrapper.putBytes(
-        blockId, parameterBuffer.bytes(start, length), StorageLevel.MEMORY_ONLY_SER)
-      pid += 1
-    }
+//    parameterBuffer.compress(parameter)
+//    while (pid < partitionNum) {
+//      val start = pid * taskSize + math.min(pid, extraSize)
+//      val length = taskSize + (if (pid < extraSize) 1 else 0)
+//      val blockId = getGradientBlockId(partitionId, pid)
+//      BlockManagerWrapper.putBytes(
+//        blockId, parameterBuffer.bytes(start, length), StorageLevel.MEMORY_ONLY_SER)
+//      pid += 1
+//    }
+
+    val _classTag = classTag[T]
+    Engine.default.invokeAndWait2((0 until partitionNum).map(i =>
+      () => {
+        val start = i * taskSize + math.min(i, extraSize)
+        val length = taskSize + (if (i < extraSize) 1 else 0)
+        val blockId = getGradientBlockId(partitionId, i)
+        val block = BlockManagerWrapper.getLocalBytes(blockId)
+        if (block.isDefined) {
+          val fp16param = new FP16CompressedTensor[T](block.get)(_classTag)
+          fp16param.compress(0, parameter, start, length)
+        } else {
+          val fp16param = new FP16CompressedTensor[T](length)(_classTag)
+          fp16param.compress(0, parameter, start, length)
+          BlockManagerWrapper.putBytes(blockId, fp16param.bytes(), StorageLevel.MEMORY_ONLY_SER)
+        }
+      }
+    ))
   }
 
   /**
