@@ -492,7 +492,10 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
   def setWeightsBias(newWeights: Array[Tensor[T]]): this.type = {
     require(parameters() != null, "this layer does not have weight/bias")
     require(parameters()._1.length == newWeights.length,
-      "the number of input weight/bias is not consistant with number of weight/bias of this layer")
+      "the number of input weight/bias is not consistant with " +
+        "number of weight/bias of this layer, " +
+        s"number of input ${parameters()._1.length}," +
+        s" number of output ${newWeights.length}")
     val weights = parameters()._1
     for(i <- newWeights.indices) {
       weights(i).copy(newWeights(i))

@@ -44,7 +44,9 @@ class SmoothL1Criterion[@specialized(Float, Double) T: ClassTag](sizeAverage: Bo
   val buffer: Tensor[T] = Tensor[T]()
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
-    require(input.nElement() == target.nElement())
+    require(input.nElement() == target.nElement(),
+      "input and target size should be equal" +
+        s"input size ${input.nElement()} targetsize ${target.nElement()}")
     buffer.resizeAs(input).copy(input)
     buffer.add(ev.fromType(-1), target).abs()
     val data = buffer.storage().array()

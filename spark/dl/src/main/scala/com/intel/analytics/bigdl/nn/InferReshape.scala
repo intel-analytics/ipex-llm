@@ -85,7 +85,9 @@ class InferReshape[T: ClassTag](
       }
       i += 1
     }
-    require(total <= input.nElement(), "inferred size dim product must be <= total input #elements")
+    require(total <= input.nElement(), "inferred size " +
+      s"dim product must be <= total input #elements" +
+      s"dim product($total) input(${input.nElement()})")
     if (inferIndex != -1) {
       inferedSizes(inferIndex) = input.nElement() / total
       if (batchMode) inferedSizes(inferIndex) = inferedSizes(inferIndex) / input.size(1)

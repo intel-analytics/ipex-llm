@@ -68,7 +68,7 @@ class Cosine[T: ClassTag](val inputSize : Int, val outputSize : Int)(
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim() == 1 || input.dim() == 2,
-      "Cosine: " + ErrorInfo.constrainInputAsVectorOrBatch)
+      s"input.dim() ${input.dim()} Cosine:  ${ErrorInfo.constrainInputAsVectorOrBatch}")
 
     if (null == _weightNorm) _weightNorm = Tensor[T]()
     if (null == _inputNorm) _inputNorm = Tensor[T]()
@@ -102,7 +102,7 @@ class Cosine[T: ClassTag](val inputSize : Int, val outputSize : Int)(
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]) : Tensor[T] = {
     require(input.dim() == 1 || input.dim() == 2,
-      "Cosine: " + ErrorInfo.constrainInputAsVectorOrBatch)
+      s"Cosine:  ${ErrorInfo.constrainInputAsVectorOrBatch}, input.dim() ${input.dim()}")
     val nElement = gradInput.nElement()
     gradInput.resizeAs(input)
     if (gradInput.nElement() != nElement) gradInput.zero()
@@ -140,7 +140,7 @@ class Cosine[T: ClassTag](val inputSize : Int, val outputSize : Int)(
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
     require(input.dim() == 1 || input.dim() == 2,
-      "Cosine: " + ErrorInfo.constrainInputAsVectorOrBatch)
+      s"Cosine:  ${ErrorInfo.constrainInputAsVectorOrBatch}, input.dim() ${input.dim()}")
 
     if (input.dim() == 1 && scaleW != 0) {
       _gradOutput.resizeAs(gradOutput).copy(gradOutput)
