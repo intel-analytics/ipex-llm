@@ -79,7 +79,7 @@ class Recurrent[T : ClassTag](batchNormParams: BatchNormParams[T] = null)
       throw new IllegalArgumentException(
         s"${topology.getName} does not support BatchNormalization." +
           s" Please add preTopology for it. You can simply using: " +
-          s"override def preTopology: AbstractModule[Activity, Activity, T] = Sequential()")
+          s"override def preTopology: AbstractModule[Activity, Activity, T] = Identity()")
     }
 
     if (batchNormParams != null) {
