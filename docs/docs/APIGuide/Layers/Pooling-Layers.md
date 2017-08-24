@@ -128,11 +128,11 @@ The gradInput is,
 
 **Scala:**
 ```scala
-val m = SpatialAveragePooling(kW, kH, dW=1, dH=1, padW=0, padH=0, globalPooling=false, ceilMode=false, countIncludePad=true, divide=true)
+val m = SpatialAveragePooling(kW, kH, dW=1, dH=1, padW=0, padH=0, globalPooling=false, ceilMode=false, countIncludePad=true, divide=true, format=DataFormat.NCHW)
 ```
 **Python:**
 ```python
-m = SpatialAveragePooling(kw, kh, dw=1, dh=1, pad_w=0, pad_h=0, global_pooling=False, ceil_mode=False, count_include_pad=True, divide=True)
+m = SpatialAveragePooling(kw, kh, dw=1, dh=1, pad_w=0, pad_h=0, global_pooling=False, ceil_mode=False, count_include_pad=True, divide=True, format="NCHW")
 ```
 
 SpatialAveragePooling is a module that applies 2D average-pooling operation in `kW`x`kH` regions by step size `dW`x`dH`.
@@ -150,6 +150,10 @@ As for padding, when padW and padH are both -1, we use a padding algorithm simil
  padTop = padAlongHeight / 2
  padLeft = padAlongWidth / 2
 ```
+
+The format parameter is a string value (or DataFormat Object in Scala) of "NHWC" or "NCHW" to specify the input data format of this layer. In "NHWC" format
+data is stored in the order of \[batch_size, height, width, channels\], in "NCHW" format data is stored
+in the order of \[batch_size, channels, height, width\].
 
 **Scala example:**
 ```scala
