@@ -38,10 +38,13 @@ class MultiLabelMarginCriterion[@specialized(Float, Double) T: ClassTag]
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     if (null == isTarget) isTarget = Tensor[T]()
     require(input.nDimension() == 1 || input.nDimension() == 2,
-      "MultiLabelMarginCriterion: " + ErrorInfo.constrainInputAsVectorOrBatch)
+      "MultiLabelMarginCriterion: " + ErrorInfo.constrainInputAsVectorOrBatch +
+    s"input dimension ${input.nDimension()}")
     val (nframe, dim) = if (input.nDimension() == 1) {
       require(target.nDimension() == 1 && target.size(1) == input.size(1),
-        "MultiLabelMarginCriterion: " + ErrorInfo.constrainInputSizeSameAsTarget)
+        "MultiLabelMarginCriterion: " + ErrorInfo.constrainInputSizeSameAsTarget +
+      s"target dimension ${target.nDimension()}, " +
+          s"target size ${target.size(1)}, input size ${input.size()}")
       (1, input.size(1))
     } else {
       require(target.nDimension() == 2 && target.size(1) == input.size(1) && target.size(2)
@@ -109,18 +112,29 @@ class MultiLabelMarginCriterion[@specialized(Float, Double) T: ClassTag]
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
     require(input.nDimension() == 1 || input.nDimension() == 2,
-      "MultiLabelMarginCriterion: " + ErrorInfo.constrainInputAsVectorOrBatch)
+      "MultiLabelMarginCriterion: " + ErrorInfo.constrainInputAsVectorOrBatch +
+    s"input dimension ${input.nDimension()}")
     val (nframe, dim) = if (input.nDimension() == 1) {
       require(target.nDimension() == 1 && target.size(1) == input.size(1),
-        "MultiLabelMarginCriterion: " + ErrorInfo.constrainInputSizeSameAsTarget)
+        "MultiLabelMarginCriterion: " + ErrorInfo.constrainInputSizeSameAsTarget +
+      s"target dimension ${target.nDimension()}" +
+          s"target size ${target.size(1)} input size ${input.size(1)}")
       require(isTarget.nDimension() == 1 && isTarget.size(1) == input.size(1),
-        "MultiLabelMarginCriterion: inconsistent isTarget size")
+        "MultiLabelMarginCriterion: inconsistent isTarget size" +
+          s"isTarget dimension ${isTarget.size(1)}" +
+          s"isTarget size ${isTarget.size(1)} input size ${input.size(1)}")
       (1, input.size(1))
     } else {
       require(target.nDimension() == 2 && target.size(1) == input.size(1) && target.size(2)
-        == input.size(2), "MultiLabelMarginCriterion: " + ErrorInfo.constrainInputSizeSameAsTarget)
+        == input.size(2), "MultiLabelMarginCriterion: " + ErrorInfo.constrainInputSizeSameAsTarget +
+      s"target dimension ${target.nDimension()} " +
+        s"target size(${target.size(1)},${target.size(2)})" +
+        s"input size(${input.size(1)},${input.size(2)})")
       require(isTarget.nDimension() == 2 && isTarget.size(1) == input.size(1) &&
-        isTarget.size(2) == input.size(2), "MultiLabelMarginCriterion: inconsistent isTarget size")
+        isTarget.size(2) == input.size(2), "MultiLabelMarginCriterion: inconsistent isTarget size" +
+        s"isTarget dimension ${isTarget.nDimension()}" +
+        s"isTarget size(${isTarget.size(1)},${isTarget.size(2)})" +
+        s"input size(${input.size(1)},${input.size(2)})")
       (input.size(1), input.size(2))
     }
 

@@ -139,11 +139,13 @@ object Utils {
     func: (Tensor[T], Tensor[T]) => Tensor[T])(implicit ev: TensorNumeric[T]): Activity = {
     if (y.isInstanceOf[Tensor[_]] && x.isInstanceOf[Tensor[_]]) {
       require(x.toTensor[T].nElement() == y.toTensor[T].nElement(),
-        "x, y should have the same size")
+        "x, y should have the same size" +
+          s"x size ${x.toTensor[T].nElement()}, y size ${y.toTensor[T].nElement()}")
       func(x.toTensor[T], y.toTensor[T])
     } else {
       require(x.isInstanceOf[Table] && y.isInstanceOf[Table], "x, y should have the same size")
-      require(x.toTable.length() == y.toTable.length(), "x, y should have the same size")
+      require(x.toTable.length() == y.toTable.length(), "x, y should have the same size" +
+        s"x size ${x.toTable.length()}, y size ${y.toTable.length()}")
       var i = 1
       while (i <= x.toTable.length()) {
         recursiveTensorApply2[T](x.toTable(i), y.toTable(i), func)

@@ -40,7 +40,9 @@ class HardTanh[T: ClassTag](
   val inplace: Boolean = false
 )(implicit ev: TensorNumeric[T])
   extends TensorModule[T] {
-  require(maxValue > minValue, "maxValue must be larger than minValue")
+  require(maxValue > minValue, "maxValue must be larger than minValue, " +
+    s"maxValue ${maxValue}, " +
+    s"minValue ${minValue}")
 
   val min = ev.fromType[Double](minValue)
   val max = ev.fromType[Double](maxValue)
@@ -116,7 +118,9 @@ class HardTanh[T: ClassTag](
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     require(input.nElement() == gradOutput.nElement(),
-      "the number of input element should equal the number of gradOutput element")
+      s"the number of input element (${input.nElement()}) " +
+        s"should equal the number of " +
+        s"gradOutput element (${gradOutput.nElement()}), ")
     if (inplace) {
       gradInput.set(gradOutput)
     } else {

@@ -70,8 +70,17 @@ class SpatialConvolution[T: ClassTag](
   val format: DataFormat = DataFormat.NCHW
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
-  require(nInputPlane % nGroup == 0, "Number of input channels should be multiples of group.")
-  require(nOutputPlane % nGroup == 0, "Number of output channels should be multiples of group.")
+
+  require(nOutputPlane % nGroup == 0, s"Number of input channels " +
+    s"should be multiples of group " +
+    s"number of input channels ${nInputPlane}, " +
+    s"group ${nGroup}.")
+  require(nOutputPlane % nGroup == 0,
+    "Number of output channels " +
+      "should be multiples of group " +
+      s"(number of output channels ${nOutputPlane}, " +
+      s"group ${nGroup}).")
+
   if (nGroup != 1) {
     require(format == DataFormat.NCHW, "group convolution is not supported in NHWC format " )
   }
@@ -389,7 +398,9 @@ class SpatialConvolution[T: ClassTag](
   }
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
-    require(input.nDimension() == 3 || input.nDimension() == 4, "Only support 3D or 4D input")
+    require(input.nDimension() == 3 || input.nDimension() == 4,
+      "Only support 3D or 4D input," +
+        s"but input has ${input.nDimension()} dimensions")
     require(gradOutput.isContiguous())
 
     val (ohDim, owDim, cDim) = format.getHWCDims(input.dim())

@@ -119,7 +119,9 @@ class RReLU[T: ClassTag](
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    require(input.isSameSizeAs(gradOutput))
+    require(input.isSameSizeAs(gradOutput),
+      "input and gradOutput should be same size" +
+        s"input ${input.nElement()} gradOutput ${gradOutput.nElement()}")
     if (noise == null) {
       noise = Tensor[T]()
     }

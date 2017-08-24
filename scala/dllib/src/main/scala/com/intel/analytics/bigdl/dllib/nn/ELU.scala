@@ -60,7 +60,8 @@ class ELU[T: ClassTag](
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     require(input.isSameSizeAs(gradOutput),
-      "input should have the same size with gradOutput")
+      "input should have the same size with gradOutput" +
+        s"input (${input.dim()}) gradOutput (${gradOutput.dim()}")
     if (inplace) {
       gradOutput.map(output, (grad, out) => {
         if (ev.isGreaterEq(ev.fromType[Int](0), out)) {

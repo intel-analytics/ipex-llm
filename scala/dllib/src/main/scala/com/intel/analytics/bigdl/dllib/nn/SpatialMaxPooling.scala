@@ -103,8 +103,12 @@ class SpatialMaxPooling[T: ClassTag](
         Utils.getSAMEOutSizeAndPadding(inputHeight, inputWidth, dH, dW, kH, kW)
       } else {
         require(inputWidth >= kW - padW && inputHeight >= kH - padH,
-          "input smaller than kernel size")
-        require(kW / 2 >= padW && kH / 2 >= padH, "pad should be smaller than half of kernel size")
+          "input smaller than kernel size" +
+            s"input size(${input.size(dimw)},${input.size(dimh)})" +
+            s"kernel size(${kW-padW},${kH-padH})")
+        require(kW / 2 >= padW && kH / 2 >= padH, "pad should be smaller than half of kernel size" +
+          s"pad size($padW,$padH)" +
+          s"kernel size($kW, $kH)")
         Utils.getOutSizeAndPadding(inputHeight, inputWidth, dH, dW, kH, kW, padH, padW, ceilMode)
       }
 
