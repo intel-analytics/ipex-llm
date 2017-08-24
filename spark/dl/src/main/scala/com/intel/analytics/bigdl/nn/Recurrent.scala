@@ -524,7 +524,7 @@ object Recurrent extends ContainerSerializable {
 
     if (flag) {
       val bnormEpsAttr = attrMap.get("bnormEps")
-      recurrent.batchNormParams.momentum =
+      recurrent.batchNormParams.eps =
         DataConverter.getAttributeValue(bnormEpsAttr)
           .asInstanceOf[Double]
 
@@ -617,6 +617,7 @@ object Recurrent extends ContainerSerializable {
       flag, universe.typeOf[Boolean])
     recurrentBuilder.putAttr("bnorm", bNormBuilder.build)
 
+    createSerializeBigDLModule(recurrentBuilder, module)
     recurrentBuilder.build
   }
 }
