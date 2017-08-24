@@ -25,6 +25,8 @@
 
 * [BigDL Overview](https://software.intel.com/en-us/videos/bigdl-overview) 
 
+* [BigDL: Bring Deep Learning to the Fingertips of Big Data Users and Data Scientists](https://software.intel.com/en-us/articles/bigdl-bring-deep-learning-to-big-data-users-and-data-scientists)
+
 * [Introduction to BigDL on Apache Spark* Part1](https://software.intel.com/en-us/videos/introduction-to-bigdl-on-apache-spark-part1) 
 
 * [Introduction to BigDL on Apache Spark* Part2 ](https://software.intel.com/en-us/videos/introduction-to-bigdl-on-apache-spark-part2)
