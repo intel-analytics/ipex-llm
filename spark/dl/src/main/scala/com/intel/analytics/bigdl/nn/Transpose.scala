@@ -72,10 +72,8 @@ object Transpose extends ModuleSerializable {
     new Transpose[T](permutations)
   }
 
-  override def loadModule[T: ClassTag](model : BigDLModule)
-                                      (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
-
-    checkVersion(model)
+  override def doLoadModule[T: ClassTag](model : BigDLModule)
+    (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
 
     val attrMap = model.getAttrMap
 
@@ -95,26 +93,22 @@ object Transpose extends ModuleSerializable {
       i += 1
     }
 
-    val tranpose = Transpose(permutations).asInstanceOf[AbstractModule[Activity,
+    Transpose(permutations).asInstanceOf[AbstractModule[Activity,
       Activity, T]]
-    createBigDLModule(model, tranpose)
 
   }
 
-  override def serializeModule[T: ClassTag](module : ModuleData[T])
-                                           (implicit ev: TensorNumeric[T]) : BigDLModule = {
+  override def doSerializeModule[T: ClassTag](module : ModuleData[T],
+                                              transposeBuilder : BigDLModule.Builder)
+                                           (implicit ev: TensorNumeric[T]) : Unit = {
     val transpose = module.module.
       asInstanceOf[Transpose[T]]
-    val transposeBuilder = BigDLModule.newBuilder
-
-    setVersion(transposeBuilder)
 
     val size = transpose.permutations.length
 
     val sizeBuilder = AttrValue.newBuilder
     DataConverter.setAttributeValue(sizeBuilder, size, universe.typeOf[Int])
     transposeBuilder.putAttr("size", sizeBuilder.build)
-    transposeBuilder.setModuleType(transpose.getClass.getName)
 
     var i = 0
 
@@ -127,6 +121,5 @@ object Transpose extends ModuleSerializable {
       i += 1
     }
 
-    createSerializeBigDLModule(transposeBuilder, module)
   }
 }

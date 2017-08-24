@@ -782,9 +782,8 @@ object SpatialFullConvolution extends ModuleSerializable {
       wRegularizer, bRegularizer)
   }
 
-  override def loadModule[T: ClassTag](model : BigDLModule)
-                                      (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
-    checkVersion(model)
+  override def doLoadModule[T: ClassTag](model : BigDLModule)
+    (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
 
     val attrMap = model.getAttrMap
     val intParams = DataConverter.getAttributeValue(attrMap.get("intParams")).
@@ -802,38 +801,35 @@ object SpatialFullConvolution extends ModuleSerializable {
     val fullConv = SpatialFullConvolution(intParams(0), intParams(1), intParams(2), intParams(3),
       intParams(4), intParams(5), intParams(6), intParams(7), intParams(8), intParams(9),
       intParams(10), noBias, wRegularizer, bRegularizer)
-
-    createBigDLModule(model, fullConv.asInstanceOf[AbstractModule[Activity, Activity, T]])
+    fullConv
   }
 
-  override def serializeModule[T: ClassTag](module : ModuleData[T])
-                                           (implicit ev: TensorNumeric[T]) : BigDLModule = {
+  override def doSerializeModule[T: ClassTag](module : ModuleData[T],
+                                            fullConvBuilder : BigDLModule.Builder)
+                                           (implicit ev: TensorNumeric[T]) : Unit = {
 
     val fullConv = module.module.asInstanceOf[SpatialFullConvolution[T]]
-    val bigDLModuleBuilder = BigDLModule.newBuilder
-    bigDLModuleBuilder.setModuleType(module.module.getClass.getName)
-    setVersion(bigDLModuleBuilder)
+
     val intParamsBuilder = AttrValue.newBuilder
     val intParams = Array(fullConv.nInputPlane, fullConv.nOutputPlane, fullConv.kW,
       fullConv.kH, fullConv.dW, fullConv.dH, fullConv.padW, fullConv.padH, fullConv.adjW,
       fullConv.adjH, fullConv.nGroup)
     DataConverter.setAttributeValue(intParamsBuilder, intParams, universe.typeOf[Array[Int]])
-    bigDLModuleBuilder.putAttr("intParams", intParamsBuilder.build)
+    fullConvBuilder.putAttr("intParams", intParamsBuilder.build)
 
     val biasBuilder = AttrValue.newBuilder
     DataConverter.setAttributeValue(biasBuilder, fullConv.noBias, universe.typeOf[Boolean])
-    bigDLModuleBuilder.putAttr("noBias", biasBuilder.build)
+    fullConvBuilder.putAttr("noBias", biasBuilder.build)
 
     val wRegularizerBuilder = AttrValue.newBuilder
     DataConverter.setAttributeValue(wRegularizerBuilder, fullConv.wRegularizer,
       ModuleSerializer.regularizerType)
-    bigDLModuleBuilder.putAttr("wRegularizer", wRegularizerBuilder.build)
+    fullConvBuilder.putAttr("wRegularizer", wRegularizerBuilder.build)
 
     val bRegularizerBuilder = AttrValue.newBuilder
     DataConverter.setAttributeValue(bRegularizerBuilder, fullConv.bRegularizer,
       ModuleSerializer.regularizerType)
-    bigDLModuleBuilder.putAttr("bRegularizer", bRegularizerBuilder.build)
+    fullConvBuilder.putAttr("bRegularizer", bRegularizerBuilder.build)
 
-    createSerializeBigDLModule(bigDLModuleBuilder, module)
   }
 }

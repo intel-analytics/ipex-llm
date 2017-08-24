@@ -55,15 +55,30 @@ trait ModuleSerializable extends Loadable with Savable{
   }
 
   /**
-   * Default deserialization using reflection
+   * Default deserialization to provide the template
    * @param model serialized protobuf module instace
    * @return BigDL module instance with linkages with other modules
    */
   override def loadModule[T: ClassTag](model : BigDLModule)
                                       (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
 
+    // step 1 : check version
     checkVersion(model)
 
+    // step2 : module specific logic to load module, either default, cell, container or graph
+    val module = doLoadModule(model)
+
+    // step3 : copy params (weight & bias) and linkage
+    createBigDLModule(model, module)
+  }
+
+  /**
+   * Default deserialization using reflection
+   * @param model serialized protobuf module instace
+   * @return BigDL module
+   */
+  protected def doLoadModule[T: ClassTag](model : BigDLModule)
+    (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
     val evidence = scala.reflect.classTag[T]
     val modelAttributes = model.getAttrMap
     val moduleType = model.getModuleType
@@ -90,13 +105,12 @@ trait ModuleSerializable extends Loadable with Savable{
         i+= 1
       })
     })
-    val module = constructorMirror.apply(args : _*).
+    constructorMirror.apply(args : _*).
       asInstanceOf[AbstractModule[Activity, Activity, T]]
-    createBigDLModule(model, module)
   }
 
   /**
-   *  Default serialization using reflection
+   *  Default serialization skeleton using reflection
    *  @param module BigDL module instance with linkages with other modules
    *  @return serialized protobuf module instace
    */
@@ -104,9 +118,25 @@ trait ModuleSerializable extends Loadable with Savable{
                                            (implicit ev: TensorNumeric[T]) : BigDLModule = {
 
     val bigDLModelBuilder = BigDLModule.newBuilder
+
+    // step 1 : set module version
     setVersion(bigDLModelBuilder)
     val cls = module.module.getClass
+
+    // step 2: set module type
     bigDLModelBuilder.setModuleType(cls.getName)
+
+    // step 3 : apply module specific logic to create module
+    doSerializeModule(module, bigDLModelBuilder)
+
+    // step 4 : copy params (weight & bias) a and linkage
+    createSerializeBigDLModule(bigDLModelBuilder, module)
+  }
+
+  protected def doSerializeModule[T: ClassTag](module : ModuleData[T],
+                                               bigDLModelBuilder : BigDLModule.Builder)
+                                              (implicit ev: TensorNumeric[T]) : Unit = {
+    val cls = module.module.getClass
     val fullParams = getCostructorMirror(cls).symbol.paramss
     val constructorParams = fullParams(0)
     constructorParams.foreach(param => {
@@ -126,7 +156,6 @@ trait ModuleSerializable extends Loadable with Savable{
       DataConverter.setAttributeValue(attrBuilder, fieldValue, ptype)
       bigDLModelBuilder.putAttr(paramName, attrBuilder.build)
     })
-    createSerializeBigDLModule(bigDLModelBuilder, module)
   }
 
   protected def createBigDLModule[T: ClassTag](model : BigDLModule,
@@ -256,29 +285,29 @@ trait ModuleSerializable extends Loadable with Savable{
 
 trait ContainerSerializable extends ModuleSerializable {
 
-  override def loadModule[T: ClassTag](model : BigDLModule)
-                                      (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
-    val moduleData = ModuleSerializer.loadModule(model)
-    val container = moduleData.module.asInstanceOf[Container[Activity, Activity, T]]
+  override def doLoadModule[T: ClassTag](model : BigDLModule)
+    (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
+    val module = super.doLoadModule(model)
+    val container = module.asInstanceOf[Container[Activity, Activity, T]]
     val subModules = model.getSubModulesList.asScala
     subModules.foreach(module => {
       val subModuleData = ModuleSerializer.load(module)
       container.modules.append(subModuleData.module)
     })
-    moduleData
+    module
   }
 
-  override def serializeModule[T: ClassTag](module : ModuleData[T])
-                                           (implicit ev: TensorNumeric[T]) : BigDLModule = {
-    val bigDLModule = ModuleSerializer.serializeModule(module)
-    val containerBuilder = BigDLModule.newBuilder(bigDLModule)
+  override def doSerializeModule[T: ClassTag](module : ModuleData[T],
+                                              containerBuilder : BigDLModule.Builder)
+                                           (implicit ev: TensorNumeric[T]) : Unit = {
+
+    super.doSerializeModule(module, containerBuilder)
     val subModulesData = module.module.asInstanceOf[Container[Activity, Activity, T]].modules
     subModulesData.foreach(module => {
       val subModule = ModuleSerializer.serialize(ModuleData(module,
         new ArrayBuffer[String](), new ArrayBuffer[String]()))
       containerBuilder.addSubModules(subModule)
     })
-    containerBuilder.build
   }
 }
 

@@ -345,9 +345,8 @@ object Graph extends ContainerSerializable {
     new Graph[T](Array(input), Array(output))
   }
 
-  override def loadModule[T: ClassTag](module : BigDLModule)
-                                      (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
-    checkVersion(module)
+  override def doLoadModule[T: ClassTag](module : BigDLModule)
+    (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
 
     val subModules = module.getSubModulesList.asScala
 
@@ -388,20 +387,15 @@ object Graph extends ContainerSerializable {
       val biasArray = DataConverter.getAttributeValue(biases).asInstanceOf[Array[Tensor[T]]]
       sharedVariables = Some(weightArray, biasArray)
     }
-    val graph = Graph[T](inputs.toArray, outputs.toArray, sharedVariables)
-    createBigDLModule(module, graph)
+    Graph[T](inputs.toArray, outputs.toArray, sharedVariables)
   }
 
-  override def serializeModule[T: ClassTag](module : ModuleData[T])
-                                           (implicit ev: TensorNumeric[T]) : BigDLModule = {
-
-    val graphBuilder = BigDLModule.newBuilder
-
-    setVersion(graphBuilder)
+  override def doSerializeModule[T: ClassTag](module : ModuleData[T],
+                                              graphBuilder : BigDLModule.Builder)
+                                           (implicit ev: TensorNumeric[T]) : Unit = {
 
     module.next.foreach(_ => graphBuilder.addAllPreModules(_))
     module.pre.foreach(_ => graphBuilder.addAllNextModules(_))
-    graphBuilder.setName(module.module.getName)
     val graph = module.module.asInstanceOf[Graph[T]]
     val inputsNames = graph.inputs.map(_.element.getName).toArray
     val outputsNames = graph.outputs.map(_.element.getName).toArray
@@ -432,8 +426,6 @@ object Graph extends ContainerSerializable {
     DataConverter.setAttributeValue(outputNamesBuilder, outputsNames)
     graphBuilder.putAttr("outputNames", outputNamesBuilder.build)
 
-    graphBuilder.setModuleType(graph.getClass.getName)
-    graphBuilder.build
   }
 }
 

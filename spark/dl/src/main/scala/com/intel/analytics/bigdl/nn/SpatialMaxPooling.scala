@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.{DataFormat, TensorModule}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Engine
@@ -409,26 +409,28 @@ object SpatialMaxPooling extends ModuleSerializable {
     new SpatialMaxPooling[T](kW, kH, dW, dH, padW, padH, format)
   }
 
-  override def loadModule[T: ClassTag](model : BigDLModule)
-                                      (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
-    val maxPoolingModuleData = super.loadModule(model)
+  override def doLoadModule[T: ClassTag](model : BigDLModule)
+    (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
+    val maxPooling = super.doLoadModule(model)
     val attrMap = model.getAttrMap
     val ceil_mode = DataConverter.
       getAttributeValue(attrMap.get("ceil_mode")).
       asInstanceOf[Boolean]
     if (ceil_mode) {
-      maxPoolingModuleData.module.asInstanceOf[SpatialMaxPooling[T]].ceil()
+      maxPooling.asInstanceOf[SpatialMaxPooling[T]].ceil()
     }
-    maxPoolingModuleData
+    maxPooling
   }
 
-  override def serializeModule[T: ClassTag](module : ModuleData[T])
-                                           (implicit ev: TensorNumeric[T]) : BigDLModule = {
-    val maxPoolingBuilder = BigDLModule.newBuilder(super.serializeModule(module))
+  override def doSerializeModule[T: ClassTag](module : ModuleData[T],
+                                              maxPoolingBuilder : BigDLModule.Builder)
+                                           (implicit ev: TensorNumeric[T]) : Unit = {
+
+    super.doSerializeModule(module, maxPoolingBuilder)
     val maxPooling = module.module.asInstanceOf[SpatialMaxPooling[T]]
     val ceilBuilder = AttrValue.newBuilder
     DataConverter.setAttributeValue(ceilBuilder, maxPooling.ceilMode, universe.typeOf[Boolean])
     maxPoolingBuilder.putAttr("ceil_mode", ceilBuilder.build)
-    maxPoolingBuilder.build
+
   }
 }
