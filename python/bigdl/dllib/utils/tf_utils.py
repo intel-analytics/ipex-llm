@@ -27,6 +27,9 @@ from tensorflow.python.framework import graph_util
 from tensorflow.python.framework import importer
 from tensorflow.python.platform import gfile
 from bigdl.nn.layer import Model
+from bigdl.util.common import JTensor
+from bigdl.util.common import callBigDlFunc
+import os
 
 def convert(input_ops, output_ops, byte_order, bigdl_type):
     """
@@ -62,6 +65,84 @@ def convert(input_ops, output_ops, byte_order, bigdl_type):
             raise
 
     return model
+
+
+def export_checkpoint(checkpoint_path):
+    """
+    Export variable tensors from the checkpoint files.
+
+    :param checkpoint_path: tensorflow checkpoint path
+    :return: dictionary of tensor. The key is the variable name and the value is the numpy
+    """
+    reader = tf.train.NewCheckpointReader(checkpoint_path)
+
+    # Get tensor name list
+    tensor_names = filter(lambda n: n!='global_step',
+                          reader.get_variable_to_shape_map().keys())
+    # Prepare key-value dictionary
+    tensors = {}
+    for tn in tensor_names:
+        tensors[tn] = reader.get_tensor(tn)
+
+    return tensors
+
+
+def save_variable_bigdl(tensors, target_path, bigdl_type="float"):
+    """
+    Save a variable dictionary to a Java object file, so it can be read by BigDL
+
+    :param tensors: tensor dictionary
+    :param target_path: where is the Java object file store
+    :param bigdl_type: model variable numeric type
+    :return: nothing
+    """
+    jtensors = {}
+    for tn in tensors.keys():
+        jtensors[tn] = JTensor.from_ndarray(tensors[tn])
+        
+    callBigDlFunc(bigdl_type, "saveTensorDictionary", jtensors, target_path)
+
+
+def dump_model(path, sess=None, graph=None, bigdl_type="float"):
+    """
+    Dump a tensorflow model to files. The graph will be dumped to path/model.pb, and the checkpoint will
+    be dumped to path/model.bin
+    
+    :param path: dump folder path
+    :param sess: if user pass in session, we assume that the variable of the graph in the session
+    has been inited
+    :param graph: tensorflow graph. Default use the default graph of the session
+    :param bigdl_type: model variable numeric type
+    :return: nothing
+    """
+    if not os.path.isdir(path):
+        print("Folder " + path + " does not exist")
+        raise
+
+    if sess is None:
+        sess = tf.Session()
+        init = tf.global_variables_initializer()
+        sess.run(init)
+
+    temp = tempfile.mkdtemp()
+    # dump checkpoint to temp files
+    checkpoint = temp + '/model.chkp'
+    saver = tf.train.Saver()
+    saver.save(sess, checkpoint)
+
+    # generate bin files
+    tensors = export_checkpoint(checkpoint)
+    save_variable_bigdl(tensors, path + "/model.bin", bigdl_type)
+
+    # dump grap to pb file
+    graph = sess.graph if graph is None else graph
+    tf.train.write_graph(graph, path, 'model.pb')
+    try:
+        shutil.rmtree(temp)
+    except OSError as e:
+        if e.errno != errno.ENOENT:
+            raise
+
 
 def merge_checkpoint(input_graph,
                      checkpoint,
