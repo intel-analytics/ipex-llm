@@ -85,7 +85,7 @@ object DummyDataSet extends LocalDataSet[MiniBatch[Float]] {
     new Iterator[MiniBatch[Float]] {
       var i = 0
 
-      override def hasNext: Boolean = true
+      override def hasNext: Boolean = train || i < totalSize
 
       override def next(): MiniBatch[Float] = {
         i += 1

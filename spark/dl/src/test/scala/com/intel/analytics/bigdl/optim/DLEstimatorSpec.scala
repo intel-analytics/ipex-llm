@@ -139,11 +139,12 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       .setMaxEpoch(1)
       .setBatchSize(nRecords)
 
-    val featureData = Tensor(10)
-    val labelData = Tensor(1).fill(1.0f)
-    val miniBatch = sc.parallelize(Seq(
-      MinibatchData[Float](featureData.storage().array(), labelData.storage().array())
-    ))
+    val featureData = Array.tabulate(100)(_ => Tensor(10))
+    val labelData = Array.tabulate(100)(_ => Tensor(1).fill(1.0f))
+    val miniBatch = sc.parallelize(
+      featureData.zip(labelData).map(v =>
+        MinibatchData(v._1.storage.array, v._2.storage.array))
+    )
     val trainingDF: DataFrame = sqlContext.createDataFrame(miniBatch).toDF("features", "label")
 
     val dlModel = estimator.fit(trainingDF)
