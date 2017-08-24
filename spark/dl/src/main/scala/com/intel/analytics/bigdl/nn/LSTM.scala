@@ -16,8 +16,8 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -52,9 +52,9 @@ class LSTM[T : ClassTag] (
   val inputSize: Int,
   val hiddenSize: Int,
   val p: Double = 0,
-  val wRegularizer: Regularizer[T] = null,
-  val uRegularizer: Regularizer[T] = null,
-  val bRegularizer: Regularizer[T] = null
+  var wRegularizer: Regularizer[T] = null,
+  var uRegularizer: Regularizer[T] = null,
+  var bRegularizer: Regularizer[T] = null
 )
   (implicit ev: TensorNumeric[T])
   extends Cell[T](
@@ -63,119 +63,105 @@ class LSTM[T : ClassTag] (
   ) {
   var gates: Sequential[T] = _
   var cellLayer: Sequential[T] = _
-  override var cell: AbstractModule[Activity, Activity, T] = buildLSTM()
+  override var cell: AbstractModule[Activity, Activity, T] = Sequential()
+    .add(FlattenTable())
+    .add(buildLSTM())
+    .add(ConcatTable()
+      .add(SelectTable(1))
+      .add(NarrowTable(2, 2)))
 
-  def buildGates(): Sequential[T] = {
-    val gates = Sequential()
-      .add(NarrowTable(1, 2))
-
-    var i2g: AbstractModule[_, _, T] = null
-    var h2g: AbstractModule[_, _, T] = null
-
-    if (p != 0) {
-      i2g = Sequential()
-        .add(ConcatTable()
-          .add(Dropout(p))
-          .add(Dropout(p))
-          .add(Dropout(p))
-          .add(Dropout(p)))
-        .add(ParallelTable()
-          .add(Linear(inputSize, hiddenSize,
-            wRegularizer = wRegularizer, bRegularizer = bRegularizer))
-          .add(Linear(inputSize, hiddenSize,
-            wRegularizer = wRegularizer, bRegularizer = bRegularizer))
-          .add(Linear(inputSize, hiddenSize,
-            wRegularizer = wRegularizer, bRegularizer = bRegularizer))
-          .add(Linear(inputSize, hiddenSize,
-            wRegularizer = wRegularizer, bRegularizer = bRegularizer)))
-        .add(JoinTable(1, 1))
-
-      h2g = Sequential()
-        .add(ConcatTable()
-          .add(Dropout(p))
-          .add(Dropout(p))
-          .add(Dropout(p))
-          .add(Dropout(p)))
-        .add(ParallelTable()
-          .add(Linear(hiddenSize, hiddenSize,
-            withBias = false, wRegularizer = uRegularizer))
-          .add(Linear(hiddenSize, hiddenSize,
-            withBias = false, wRegularizer = uRegularizer))
-          .add(Linear(hiddenSize, hiddenSize,
-            withBias = false, wRegularizer = uRegularizer))
-          .add(Linear(hiddenSize, hiddenSize,
-            withBias = false, wRegularizer = uRegularizer)))
-        .add(JoinTable(1, 1))
-    } else {
-      i2g = Linear(inputSize, 4 * hiddenSize,
-        wRegularizer = wRegularizer, bRegularizer = bRegularizer)
-      h2g = Linear(hiddenSize, 4 * hiddenSize,
-        withBias = false, wRegularizer = uRegularizer)
-    }
-
-    gates
-      .add(ParallelTable()
-        .add(i2g)
-        .add(h2g))
-      .add(CAddTable(true))
-      .add(Reshape(Array(4, hiddenSize)))
-      .add(SplitTable(1, 2))
-      .add(ParallelTable()
-        .add(Sigmoid())
-        .add(Tanh())
-        .add(Sigmoid())
-        .add(Sigmoid()))
-
-    this.gates = gates
-    gates
+  override def preTopology: AbstractModule[Activity, Activity, T] = if (p != 0) {
+    null
+  } else {
+    TimeDistributed[T](Linear(inputSize, 4 * hiddenSize,
+      wRegularizer = wRegularizer, bRegularizer = bRegularizer))
   }
 
-  def buildLSTM(): Sequential[T] = {
-    buildGates()
+  def buildGates()(input1: ModuleNode[T], input2: ModuleNode[T])
+  : (ModuleNode[T], ModuleNode[T], ModuleNode[T], ModuleNode[T]) = {
 
-    val lstm = Sequential()
-      .add(FlattenTable())
-      .add(ConcatTable()
-        .add(gates)
-        .add(SelectTable(3)))
-      .add(FlattenTable()) // input, hidden, forget, output, cell
+    var i2g: ModuleNode[T] = null
+    var h2g: ModuleNode[T] = null
 
-    val cellLayer = Sequential()
-      .add(ConcatTable()
-        .add(Sequential()
-          .add(NarrowTable(1, 2))
-          .add(CMulTable()))
-        .add(Sequential()
-          .add(ConcatTable()
-            .add(SelectTable(3))
-            .add(SelectTable(5)))
-          .add(CMulTable())))
-      .add(CAddTable(true))
+    if (p != 0) {
+      val dropi2g1 = Dropout(p).inputs(input1)
+      val dropi2g2 = Dropout(p).inputs(input1)
+      val dropi2g3 = Dropout(p).inputs(input1)
+      val dropi2g4 = Dropout(p).inputs(input1)
 
-    lstm
-      .add(ConcatTable()
-        .add(cellLayer)
-        .add(SelectTable(4)))
-      .add(FlattenTable())
+      val lineari2g1 = Linear(inputSize, hiddenSize,
+        wRegularizer = wRegularizer, bRegularizer = bRegularizer).inputs(dropi2g1)
+      val lineari2g2 = Linear(inputSize, hiddenSize,
+        wRegularizer = wRegularizer, bRegularizer = bRegularizer).inputs(dropi2g2)
+      val lineari2g3 = Linear(inputSize, hiddenSize,
+        wRegularizer = wRegularizer, bRegularizer = bRegularizer).inputs(dropi2g3)
+      val lineari2g4 = Linear(inputSize, hiddenSize,
+        wRegularizer = wRegularizer, bRegularizer = bRegularizer).inputs(dropi2g4)
 
+      i2g = JoinTable(1, 1).inputs(lineari2g1, lineari2g2, lineari2g3, lineari2g4)
 
-    lstm
-      .add(ConcatTable()
-        .add(Sequential()
-          .add(ConcatTable()
-            .add(Sequential()
-              .add(SelectTable(1))
-              .add(Tanh()))
-            .add(SelectTable(2)))
-          .add(CMulTable()))
-        .add(SelectTable(1)))
-      .add(ConcatTable()
-        .add(SelectTable(1))
-        .add(Identity()))
+      val droph2g1 = Dropout(p).inputs(input2)
+      val droph2g2 = Dropout(p).inputs(input2)
+      val droph2g3 = Dropout(p).inputs(input2)
+      val droph2g4 = Dropout(p).inputs(input2)
 
-    output = T(Tensor(), T())
-    this.cell = lstm
-    lstm
+      val linearh2g1 = Linear(hiddenSize, hiddenSize,
+        wRegularizer = wRegularizer, bRegularizer = bRegularizer).inputs(droph2g1)
+      val linearh2g2 = Linear(hiddenSize, hiddenSize,
+        wRegularizer = wRegularizer, bRegularizer = bRegularizer).inputs(droph2g2)
+      val linearh2g3 = Linear(hiddenSize, hiddenSize,
+        wRegularizer = wRegularizer, bRegularizer = bRegularizer).inputs(droph2g3)
+      val linearh2g4 = Linear(hiddenSize, hiddenSize,
+        wRegularizer = wRegularizer, bRegularizer = bRegularizer).inputs(droph2g4)
+
+      h2g = JoinTable(1, 1).inputs(linearh2g1, linearh2g2, linearh2g3, linearh2g4)
+    } else {
+      i2g = input1
+      h2g = Linear(hiddenSize, 4 * hiddenSize,
+        withBias = false, wRegularizer = uRegularizer).inputs(input2)
+    }
+
+    val caddTable = CAddTable(false).inputs(i2g, h2g)
+    val reshape = Reshape(Array(4, hiddenSize)).inputs(caddTable)
+    val split1 = Select(2, 1).inputs(reshape)
+    val split2 = Select(2, 2).inputs(reshape)
+    val split3 = Select(2, 3).inputs(reshape)
+    val split4 = Select(2, 4).inputs(reshape)
+
+    (Sigmoid().inputs(split1),
+      Tanh().inputs(split2),
+      Sigmoid().inputs(split3),
+      Sigmoid().inputs(split4))
+  }
+
+  def buildLSTM(): Graph[T] = {
+    val input1 = Input()
+    val input2 = Input()
+    val input3 = Input()
+    val (in, hid, forg, out) = buildGates()(input1, input2)
+
+    /**
+     * g: Tanh
+     * cMult1 = in * hid
+     * cMult2 = forg * input3
+     * cMult3 = out * g(cMult1 + cMult2)
+     */
+    val cMult1 = CMulTable().inputs(in, hid)
+    val cMult2 = CMulTable().inputs(forg, input3)
+    val cadd = CAddTable(true).inputs(cMult1, cMult2)
+    val tanh = Tanh().inputs(cadd)
+    val cMult3 = CMulTable().inputs(tanh, out)
+
+    val out1 = Identity().inputs(cMult3)
+    val out2 = Identity().inputs(cMult3)
+    val out3 = cadd
+
+    /**
+     * out1 = cMult3
+     * out2 = out1
+     * out3 = cMult1 + cMult2
+     */
+    Graph(Array(input1, input2, input3), Array(out1, out2, out3))
   }
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[LSTM[T]]

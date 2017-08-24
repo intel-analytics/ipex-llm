@@ -17,12 +17,27 @@ package com.intel.analytics.bigdl.integration
 
 import java.nio.file.{Files, Paths}
 
+import com.google.protobuf.GeneratedMessage
 import com.intel.analytics.bigdl.models.lenet.LeNet5
-import com.intel.analytics.bigdl.nn.Module
+import com.intel.analytics.bigdl.models.resnet.Convolution
+import com.intel.analytics.bigdl.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericDouble
+import com.intel.analytics.bigdl.utils.caffe.{CaffeLoader, CaffePersister}
 import com.intel.analytics.bigdl.utils.{Engine, File}
 import com.intel.analytics.bigdl.visualization.Summary
 import com.intel.analytics.bigdl.visualization.tensorboard.{FileReader, FileWriter}
+import org.apache.commons.compress.utils.IOUtils
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.Path
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+
+import scala.collection.mutable
+import scala.reflect.ClassTag
+import scala.util.Random
 
 
 @com.intel.analytics.bigdl.tags.Integration
@@ -65,7 +80,7 @@ class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter{
   }
 
   "read/write event file from hdfs" should "work properly" in {
-    Engine.localMode = false
+    System.setProperty("bigdl.localMode", "false")
     Engine.init(1, 4, true)
     val logdir = hdfs + s"/${com.google.common.io.Files.createTempDir().getPath()}"
     val writer = new FileWriter(logdir, 100)
@@ -89,5 +104,81 @@ class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter{
       result(i)._1 should be (i + 1)
       result(i)._2 should be (i)
     }
+    System.clearProperty("bigdl.localMode")
+  }
+
+  "load caffe model from hdfs" should "work properly" in {
+    val prototxt = getClass().getClassLoader().getResource("caffe/test.prototxt").getPath
+    val modelPath = getClass().getClassLoader().getResource("caffe/test.caffemodel").getPath
+
+    val hdfsDir = hdfs + s"/${ com.google.common.io.Files.createTempDir().getPath() }"
+
+    def writeToHdfs(localFile: String, hdfsDir: String): Unit = {
+      val src = new Path(localFile)
+      val fs = src.getFileSystem(new Configuration(false))
+      val inStream = fs.open(src)
+      val dest = new Path(hdfsDir)
+      val fsDest = dest.getFileSystem(new Configuration())
+      val outFileStream = fsDest.create(dest)
+
+      IOUtils.copy(inStream, outFileStream)
+
+      // Close both files
+      inStream.close()
+      outFileStream.close()
+    }
+
+    writeToHdfs(prototxt, hdfsDir + "/test.prototxt")
+    writeToHdfs(modelPath, hdfsDir + "/test.caffemodel")
+    val module = Sequential()
+      .add(Convolution(3, 4, 2, 2).setName("conv"))
+      .add(Convolution(4, 3, 2, 2).setName("conv2"))
+      .add(Linear(2, 27, withBias = false).setName("ip"))
+
+
+    val model = CaffeLoader.load[Double](module, prototxt, modelPath)
+
+    val modelFromHdfs = CaffeLoader.load[Double](module, hdfsDir + "/test.prototxt",
+      hdfsDir + "/test.caffemodel")
+
+    model.getParameters() should be (modelFromHdfs.getParameters())
+
+  }
+
+  "Persist and Load Caffe to/from HDFS" should "works properly" in {
+
+    val input1 = Tensor(10).apply1( e => Random.nextDouble())
+
+    val input2 = Tensor()
+
+    input2.resizeAs(input1).copy(input1)
+
+    val linear = Linear(10, 10)
+
+    // caffe only supports float, In order to compare the results, here we manually
+    // set weight and bias to ensure there is no accurancy loss
+    val weightTensor = Tensor(10, 10).fill(0.5)
+    val biasTensor = Tensor(10).fill(0.1)
+    linear.setWeightsBias(Array(weightTensor, biasTensor))
+
+    val inputNode = linear.inputs()
+
+    val graph = Graph(inputNode, inputNode)
+
+    val hdfsDir = hdfs + s"/${ com.google.common.io.Files.createTempDir().getPath() }"
+
+
+    val res1 = graph.forward(input1)
+
+    CaffePersister.persist(hdfsDir + "/test.prototxt", hdfsDir + "/test.caffemodel",
+      graph, overwrite = true)
+
+    val modelFromHdfs = CaffeLoader.loadCaffe[Double](hdfsDir + "/test.prototxt",
+      hdfsDir + "/test.caffemodel")._1
+
+    val res2 = modelFromHdfs.forward(input2)
+
+    res1 should be (res2)
+
   }
 }

@@ -62,4 +62,29 @@ class CAddSpec extends FlatSpec with Matchers {
     layer.bias(Array(4, 1)) should be(4.0f +- 1e-4f)
     layer.bias(Array(5, 1)) should be(5.0f +- 1e-4f)
   }
+
+  "A CAdd(3) with scaleB" should "work correctly" in {
+    val seed = 100
+    RNG.setSeed(seed)
+
+    val layer1 = new CAdd[Double](Array(3))
+    val layer2 = layer1.cloneModule().asInstanceOf[CAdd[Double]].setScaleB(2)
+
+    val input = Tensor[Double](2, 3)
+    var i = 0
+    input.apply1(_ => {i += 1; i})
+    val gradOutput = Tensor[Double](2, 3)
+    i = 0
+    gradOutput.apply1(_ => {i += 1; i*0.1})
+
+    val output1 = layer1.forward(input)
+    val gradInput1 = layer1.backward(input, gradOutput)
+    val output2 = layer2.forward(input)
+    val gradInput2 = layer2.backward(input, gradOutput)
+
+    output1 should be (output2)
+    gradInput1 should be (gradInput2)
+
+    layer2.gradBias should be (layer1.gradBias.mul(2))
+  }
 }

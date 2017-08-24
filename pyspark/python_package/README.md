@@ -62,7 +62,6 @@ Refer to python_submit_yarn_client.sh.example to run lenet example on yarn clien
     PYTHON_API_PATH=${BigDL_HOME}/dist/lib/bigdl-VERSION-python-api.zip
     BigDL_JAR_PATH=${BigDL_HOME}/dist/lib/bigdl-VERSION-jar-with-dependencies.jar
     PYTHONPATH=${PYTHON_API_PATH}:$PYTHONPATH
-    source ${BigDL_HOME}/dist/bin/bigdl.sh
     # http_proxy=http://...
     PYSPARK_DRIVER_PYTHON=./venv/bin/python PYSPARK_PYTHON=./venv.zip/venv/bin/python ${SPARK_HOME}/bin/spark-submit \
     --master yarn \

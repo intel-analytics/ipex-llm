@@ -45,6 +45,19 @@ class LSTMSpec  extends TorchSpec {
     }
   }
 
+  "A LSTM dropout " should "works correctly" in {
+    val inputSize = 6
+    val hiddenSize = 5
+    val batchSize = 2
+    val time = 2
+    RNG.setSeed(100)
+    val input = Tensor[Float](batchSize, time, inputSize)
+    println(s"input = ${input}")
+    val model = Recurrent[Float]().add(LSTM[Float](inputSize, hiddenSize, p = 0.1))
+    val output = model.forward(input)
+    println(s"output = ${output}")
+  }
+
   "A LSTM L2 regularizer" should "works correctly" in {
     import com.intel.analytics.bigdl.numeric.NumericDouble
     val hiddenSize = 4
@@ -64,8 +77,8 @@ class LSTMSpec  extends TorchSpec {
     }
 
     println(input)
-    val rec1 = Recurrent[Double](hiddenSize)
-    val rec2 = Recurrent[Double](hiddenSize)
+    val rec1 = Recurrent[Double]()
+    val rec2 = Recurrent[Double]()
 
     val model1 = Sequential[Double]()
       .add(rec1
@@ -150,7 +163,7 @@ class LSTMSpec  extends TorchSpec {
     }
 
 //    println(input)
-    val rec = Recurrent[Double](hiddenSize)
+    val rec = Recurrent[Double]()
 
     val model = Sequential[Double]()
       .add(rec
@@ -320,7 +333,7 @@ class LSTMSpec  extends TorchSpec {
         labels.setValue(b, i, rdmLabel)
       }
     }
-    val rec = Recurrent[Double](hiddenSize)
+    val rec = Recurrent[Double]()
 
     val model = Sequential[Double]()
       .add(rec
@@ -473,7 +486,7 @@ class LSTMSpec  extends TorchSpec {
 
     println(input)
     RNG.setSeed(seed)
-    val rec = Recurrent[Double](hiddenSize)
+    val rec = Recurrent[Double]()
 
     val model = Sequential[Double]()
       .add(rec
@@ -538,7 +551,7 @@ class LSTMSpec  extends TorchSpec {
     }
 
     println(input)
-    val rec = Recurrent[Double](hiddenSize)
+    val rec = Recurrent[Double]()
 
     val model = Sequential[Double]()
       .add(rec

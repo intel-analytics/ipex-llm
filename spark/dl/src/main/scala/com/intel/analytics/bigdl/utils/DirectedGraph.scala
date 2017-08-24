@@ -15,8 +15,7 @@
  */
 package com.intel.analytics.bigdl.utils
 
-import com.intel.analytics.bigdl.Module
-
+import java.util
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
@@ -123,6 +122,25 @@ class DirectedGraph[T](val source : Node[T], val reverse : Boolean = false) exte
       }
     }
   }
+
+  /**
+   * Clone the graph structure, will not clone the node element
+   * @return new graph
+   */
+  def cloneGraph(): DirectedGraph[T] = {
+    val oldToNew = new util.HashMap[Node[T], Node[T]]()
+    val bfs = BFS.toArray
+    bfs.foreach(node => {
+      oldToNew.put(node, new Node[T](node.element))
+    })
+    bfs.foreach(node => {
+      node.prevNodes.foreach(prev => {
+        oldToNew.get(prev) -> oldToNew.get(node)
+      })
+    })
+    new DirectedGraph[T](oldToNew.get(source), reverse)
+  }
+
   // scalastyle:on methodName
 }
 
@@ -170,6 +188,27 @@ class Node[T](val element: T) extends Serializable {
   }
 
   /**
+   * Remove linkage with another node
+   *  @param node another node
+   *  @return current node
+   */
+  def delete(node: Node[T]): Node[T] = {
+    if (node.prevs.contains(this)) node.prevs.-=(this)
+    if (this.nexts.contains(node)) this.nexts.-=(node)
+    this
+  }
+
+  /**
+   * remove edges that connect previous nodes
+   * @return current node
+   */
+  def removePrevEdges(): Node[T] = {
+    prevs.foreach(_.nexts.-=(this))
+    prevs.clear()
+    this
+  }
+
+  /**
    * Use current node as source to build a direct graph
    * @param reverse
    * @return
@@ -185,5 +224,5 @@ class Node[T](val element: T) extends Serializable {
 }
 
 object Node {
-  def apply[T](element : T) : Node[T] = new Node(element)
+  def apply[T](element: T): Node[T] = new Node(element)
 }

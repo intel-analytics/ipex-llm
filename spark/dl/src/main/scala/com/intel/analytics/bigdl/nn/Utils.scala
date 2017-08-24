@@ -210,6 +210,7 @@ object Utils {
     def getModules(module: Module[T]): Unit = {
       module match {
         case m: Container[_, _, T] =>
+          namedModules += (module.getName() -> module)
           for (m <- module.asInstanceOf[Container[_, _, T]].modules) getModules(m)
         case _ => namedModules += (module.getName() -> module)
       }
@@ -233,6 +234,22 @@ object Utils {
     // copy running status
     dst.copyStatus(src)
     dst
+  }
+
+  /**
+   * get whether the module is layerwise scaled
+   * @param model input module
+   * @return whether the module is layerwise scaled
+   */
+  def isLayerwiseScaled[T](model: Module[T]): Boolean = model match {
+    case m: Container[Activity, Activity, T] =>
+      var i = 0
+      while (i < m.modules.length) {
+        if (isLayerwiseScaled(m.modules(i))) return true
+        i += 1
+      }
+      false
+    case m: Module[T] => (m.getScaleB() != 1) || (m.getScaleW() != 1)
   }
 
   /**
@@ -275,5 +292,58 @@ object Utils {
       i += 1
     }
     if (count == 1) pivot else -1
+  }
+
+  /**
+   *
+   * @return (padTop, padBottom, padLeft, padRight, outputHeight, outputWidth)
+   */
+  private[nn] def getSAMEOutSizeAndPadding(
+                                  inputHeight: Int,
+                                  inputWidth: Int,
+                                  dH: Int,
+                                  dW: Int,
+                                  kH: Int,
+                                  kW: Int
+                                ): (Int, Int, Int, Int, Int, Int) = {
+    val oW = Math.ceil(inputWidth.toFloat / dW.toFloat).toInt
+    val oH = Math.ceil(inputHeight.toFloat / dH.toFloat).toInt
+    val padAlongWidth = Math.max(0, (oW -1) * dW + kW - inputWidth)
+    val padAlongHeight = Math.max(0, (oH - 1) * dH + kH - inputHeight)
+    (padAlongHeight/2, padAlongHeight - padAlongHeight/2,
+      padAlongWidth/2, padAlongWidth - padAlongWidth/2,
+        oH, oW)
+  }
+
+  /**
+   *
+   * @return (padLeft, padRight, padTop, padBottom, outputHeight, outputWidth)
+   */
+  private[nn] def getOutSizeAndPadding(
+                                        inputHeight: Int,
+                                        inputWidth: Int,
+                                        dH: Int,
+                                        dW: Int,
+                                        kH: Int,
+                                        kW: Int,
+                                        padH: Int,
+                                        padW: Int,
+                                        ceilMode: Boolean
+                               ): (Int, Int, Int, Int, Int, Int) = {
+    var oheight = 0
+    var owidth = 0
+    if (ceilMode) {
+      oheight = math.ceil(1.0 * (inputHeight - kH + 2*padH) / dH).toInt + 1
+      owidth = math.ceil(1.0 * (inputWidth - kW + 2*padW) / dW).toInt + 1
+    } else {
+      oheight = math.floor(1.0 * (inputHeight - kH + 2*padH) / dH).toInt + 1
+      owidth = math.floor(1.0 * (inputWidth - kW + 2*padW) / dW).toInt + 1
+    }
+
+    if (padH != 0 || padW != 0) {
+      if ((oheight - 1) * dH >= inputHeight + padH) oheight -= 1
+      if ((owidth - 1) * dW >= inputWidth + padW) owidth -= 1
+    }
+    (padH, padH, padW, padW, oheight, owidth)
   }
 }

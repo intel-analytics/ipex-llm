@@ -30,17 +30,13 @@ import com.intel.analytics.bigdl.utils.RandomGenerator
 
 @com.intel.analytics.bigdl.tags.Serial
 class ColorJitterSpec extends FlatSpec with BeforeAndAfter with Matchers {
-  before {
+  "A ColorJitter" should "blend image correctly" in {
     if (!TH.hasTorch()) {
       cancel("Torch is not installed")
     }
-  }
-
-  "A ColorJitter" should "blend image correctly" in {
 
     val seed = 1000
     RNG.setSeed(seed)
-    val a = Tensor.randperm[Float](10)
     val image1 = new LabeledBGRImage((1 to 27).map(_.toFloat).toArray, 3, 3, 0)
     val image2 = new LabeledBGRImage((2 to 28).map(_.toFloat).toArray, 3, 3, 0)
     val image3 = new LabeledBGRImage((3 to 29).map(_.toFloat).toArray, 3, 3, 0)
@@ -79,7 +75,6 @@ class ColorJitterSpec extends FlatSpec with BeforeAndAfter with Matchers {
         |      gs = gs or input.new()
         |      grayscale(gs, input)
         |      local alpha = 1.0 + torch.uniform(-var, var)
-        |      local alpha = 0.8753917
         |      blend(input, gs, alpha)
         |      return input
         |   end
@@ -93,7 +88,6 @@ class ColorJitterSpec extends FlatSpec with BeforeAndAfter with Matchers {
         |      gs:resizeAs(input):zero()
         |
         |      local alpha = 1.0 + torch.uniform(-var, var)
-        |      local alpha = 0.6325677
         |      blend(input, gs, alpha)
         |      return input
         |   end
@@ -107,7 +101,7 @@ class ColorJitterSpec extends FlatSpec with BeforeAndAfter with Matchers {
         |      grayscale(gs, input)
         |      gs:fill(gs[1]:mean())
         |      local alpha = 1.0 + torch.uniform(-var, var)
-        |      local alpha = 0.61087716
+        |      --local alpha = 0.61087716
         |      blend(input, gs, alpha)
         |      return input
         |   end
@@ -116,8 +110,7 @@ class ColorJitterSpec extends FlatSpec with BeforeAndAfter with Matchers {
         |function RandomOrder(ts)
         |   return function(input)
         |      local img = input.img or input
-        |      -- local order = torch.randperm(#ts)
-        |      local order = torch.Tensor{2, 1, 3}
+        |      local order = torch.randperm(#ts)
         |      for i=1,#ts do
         |         img = ts[order[i]](img)
         |      end

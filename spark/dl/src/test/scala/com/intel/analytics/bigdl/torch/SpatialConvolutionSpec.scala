@@ -64,9 +64,10 @@ class SpatialConvolutionSpec extends TorchSpec {
     val weight = layer.weight
     val bias = layer.bias
 
-    weight should be equals luaWeight
-    bias should be equals luaBias
-    output should be equals luaOutput
+    // weight's size is different from torch's weight, as we support ngroup.
+    weight shouldEqual luaWeight.resizeAs(weight)
+    bias shouldEqual luaBias.resizeAs(bias)
+    output shouldEqual luaOutput
   }
 
 
@@ -113,9 +114,10 @@ class SpatialConvolutionSpec extends TorchSpec {
     val weight = layer.weight
     val bias = layer.bias
 
-    weight should be equals luaWeight
-    bias should be equals luaBias
-    output should be equals luaOutput
+    // weight's size is different from torch's weight, as we support ngroup.
+    weight shouldEqual luaWeight.resizeAs(weight)
+    bias shouldEqual luaBias.resizeAs(bias)
+    output shouldEqual luaOutput
 
   }
 
@@ -139,5 +141,38 @@ class SpatialConvolutionSpec extends TorchSpec {
 
     val checker = new GradientChecker(1e-4)
     checker.checkWeight(layer, input, 1e-3) should be(true)
+  }
+
+  "A SpatialConvolution without bias" should "generate correct output" in {
+    torchCheck()
+    val seed = 100
+    RNG.setSeed(seed)
+
+    val nInputPlane = 3
+    val nOutputPlane = 64
+    val kW = 11
+    val kH = 11
+    val dW = 4
+    val dH = 4
+    val padW = 2
+    val padH = 2
+    val layer = new SpatialConvolution[Double](nInputPlane, nOutputPlane, kW, kH, dW, dH,
+      padW, padH, withBias = false)
+
+    Random.setSeed(seed)
+    val input = Tensor[Double](16, 3, 224, 224).apply1(e => Random.nextDouble())
+    val output = layer.updateOutput(input)
+
+    val code = "torch.manualSeed(" + seed + ")\n" +
+      "layer = nn.SpatialConvolutionMM(3, 64, 11, 11, 4, 4, 2, 2)\n" +
+      "layer:noBias()\n" +
+      "weight = layer.weight\n" +
+      "output = layer:forward(input) "
+
+    val (luaTime, torchResult) = TH.run(code, Map("input" -> input),
+      Array("weight", "bias", "output"))
+    val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
+
+    require(output.equals(luaOutput) == true)
   }
 }

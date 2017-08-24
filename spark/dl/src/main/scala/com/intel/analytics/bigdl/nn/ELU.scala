@@ -29,8 +29,8 @@ import scala.reflect.ClassTag
 
 @SerialVersionUID( - 3525781855978085005L)
 class ELU[T: ClassTag](
-  alpha: Double = 1.0,
-  inplace: Boolean = false)(
+  val alpha: Double = 1.0,
+  val inplace: Boolean = false)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T]  {
   val _alpha = ev.fromType[Double](alpha)
 
@@ -85,6 +85,13 @@ class ELU[T: ClassTag](
       DenseTensorApply.apply3[T](gradInput, gradOutput, output, func)
     }
     gradInput
+  }
+
+  override def clearState(): this.type = {
+    if (!inplace) {
+      super.clearState()
+    }
+    this
   }
 }
 

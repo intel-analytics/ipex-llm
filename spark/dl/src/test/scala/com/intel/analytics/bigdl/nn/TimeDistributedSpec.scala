@@ -16,11 +16,101 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.scalatest.{FlatSpec, Matchers}
 
 class TimeDistributedSpec extends FlatSpec with Matchers {
+  "A TimeDistributed Module" should " copyStatus correctly" in {
+    RNG.setSeed(100)
+    val batchSize = 5
+    val times = 5
+    val inputDim = 3
+    val outputDim = 4
+    val timeDim = 1
+    val input1 = Tensor[Float](Array(batchSize, times, inputDim)).randn()
+    val gradOutput1 = Tensor[Float](Array(batchSize, times, outputDim)).randn()
+    val input2 = Tensor[Float](Array(batchSize, times, inputDim)).randn()
+    val gradOutput2 = Tensor[Float](Array(batchSize, times, outputDim)).randn()
+    val bnorm1 = BatchNormalization[Float](inputDim, outputDim)
+    val bnorm2 = BatchNormalization[Float](inputDim, outputDim)
+    val model1 = TimeDistributed[Float](bnorm1)
+    val model2 = TimeDistributed[Float](bnorm2)
+
+    model1.forward(input1)
+    model1.backward(input1, gradOutput1)
+
+    model2.forward(input2)
+    model2.backward(input2, gradOutput2)
+
+    model1.copyStatus(model2.asInstanceOf[AbstractModule[Activity, Activity, Float]])
+
+    bnorm1.runningMean should be (bnorm2.runningMean)
+    bnorm1.runningVar should be (bnorm2.runningVar)
+  }
+
+  "A TimeDistributed Module" should " reset correctly" in {
+    RNG.setSeed(100)
+    val batchSize = 5
+    val times = 5
+    val inputDim = 3
+    val outputDim = 4
+    val timeDim = 1
+    val input = Tensor[Float](Array(batchSize, times, inputDim)).randn()
+    val gradOutput = Tensor[Float](Array(batchSize, times, outputDim)).randn()
+    val linear = Linear[Float](inputDim, outputDim)
+    val model = TimeDistributed[Float](linear)
+
+    val output = model.forward(input)
+    val gradInput = model.backward(input, gradOutput)
+
+    model.reset()
+
+    gradOutput should not be (null)
+    gradInput should not be (null)
+  }
+
+  "A TimeDistributed Module" should " hash code correctly" in {
+    RNG.setSeed(100)
+    val batchSize = 5
+    val times = 5
+    val inputDim = 3
+    val outputDim = 4
+    val timeDim = 1
+    val input = Tensor[Float](Array(batchSize, times, inputDim)).randn()
+    val linear1 = Linear[Float](inputDim, outputDim)
+    val linear2 = Linear[Float](inputDim, outputDim)
+    linear2.weight.map(linear1.weight, (a, b) => {
+      b
+    })
+    linear2.bias.map(linear1.bias, (a, b) => {
+      b
+    })
+    val model1 = Sequential[Float]()
+      .add(TimeDistributed[Float](linear1))
+    val model2 = Sequential[Float]()
+      .add(TimeDistributed[Float](linear2))
+    val hashCode1 = model1.hashCode()
+    val hashCode2 = model2.hashCode()
+    hashCode1 should be(hashCode2)
+  }
+  "A TimeDistributed Module" should " getParaemtersTable correctly" in {
+    RNG.setSeed(100)
+
+    val batchSize = 5
+    val times = 5
+    val inputDim = 3
+    val outputDim = 4
+    val timeDim = 1
+
+    val input = Tensor[Float](Array(batchSize, times, inputDim)).randn()
+    val linear = Linear[Float](inputDim, outputDim)
+    val model = TimeDistributed[Float](linear)
+
+    model.getParametersTable() should be (linear.getParametersTable())
+  }
+
   "A TimeDistributed Module " should "generate correct output and grad for Linear in 3D input " +
     "along first dimension" in {
     RNG.setSeed(100)

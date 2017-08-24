@@ -34,7 +34,7 @@ import scala.reflect.ClassTag
 
 @SerialVersionUID(- 6870619109313859155L)
 class LeakyReLU[T: ClassTag](
-  negval: Double = 0.01,
+  private val negval: Double = 0.01,
   var inplace: Boolean = false)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
@@ -72,6 +72,7 @@ class LeakyReLU[T: ClassTag](
     require(input.isSameSizeAs(gradOutput),
       "input should have the same size with gradOutput")
     if (inplace) {
+      gradInput.set(gradOutput)
       gradOutput.map(input, (grad, in) => {
         if (ev.isGreaterEq(ev.fromType[Int](0), in)) {
           negVal
@@ -94,6 +95,13 @@ class LeakyReLU[T: ClassTag](
       DenseTensorApply.apply3[T](gradInput, gradOutput, input, func)
     }
     gradInput
+  }
+
+  override def clearState(): this.type = {
+    if (!inplace) {
+      super.clearState()
+    }
+    this
   }
 }
 

@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
+import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
@@ -37,8 +38,9 @@ import scala.reflect.ClassTag
  * @tparam T numeric type
  */
 @SerialVersionUID(8888147326550637025L)
-class CMul[@specialized(Float, Double) T: ClassTag](
-  val size: Array[Int])(
+class CMul[T: ClassTag](
+  val size: Array[Int],
+  var wRegularizer: Regularizer[T] = null)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
   val weight: Tensor[T] = Tensor[T](size)
@@ -119,11 +121,13 @@ class CMul[@specialized(Float, Double) T: ClassTag](
     gradInput
   }
 
-  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
-    scale: Double = 1.0): Unit = {
+  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
+    if (scaleW == 0) {
+      return
+    }
 
     if (weight.nElement() == gradOutput.nElement()) {
-      gradWeight.addcmul(ev.fromType[Double](scale), input, gradOutput)
+      gradWeight.addcmul(ev.fromType[Double](scaleW), input, gradOutput)
     } else {
       if (weight.dim() == input.dim()) {
         _repeat.resizeAs(input).cmul(input, gradOutput)
@@ -138,13 +142,16 @@ class CMul[@specialized(Float, Double) T: ClassTag](
           }
           i += 1
         }
-        gradWeight.add(ev.fromType[Double](scale), sumFrom)
+        gradWeight.add(ev.fromType[Double](scaleW), sumFrom)
       } else {
         _repeat.resizeAs(input).cmul(input, gradOutput)
         _sum.sum(_repeat, 1)
-        gradWeight.add(ev.fromType[Double](scale), _sum)
+        gradWeight.add(ev.fromType[Double](scaleW), _sum)
       }
 
+    }
+    if (null != wRegularizer && scaleW != 0) {
+      wRegularizer.accRegularization(weight, gradWeight, scaleW)
     }
   }
 
@@ -206,7 +213,8 @@ class CMul[@specialized(Float, Double) T: ClassTag](
 
 object CMul {
   def apply[@specialized(Float, Double) T: ClassTag](
-      size: Array[Int])(implicit ev: TensorNumeric[T]) : CMul[T] = {
-    new CMul[T](size)
+      size: Array[Int], wRegularizer: Regularizer[T] = null)
+    (implicit ev: TensorNumeric[T]) : CMul[T] = {
+    new CMul[T](size, wRegularizer)
   }
 }

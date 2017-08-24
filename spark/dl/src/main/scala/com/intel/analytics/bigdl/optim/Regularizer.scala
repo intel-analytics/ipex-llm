@@ -47,10 +47,12 @@ trait Regularizer[T]
    *
    * @param parameter the parameter that is regularized
    * @param gradParameter the gradient of the parameter
+   * @param scale the scale of gradParameters
    */
   def accRegularization(
     parameter: Tensor[T],
-    gradParameter: Tensor[T]
+    gradParameter: Tensor[T],
+    scale: Double
   ): Unit
 
   /**
@@ -83,16 +85,17 @@ trait Regularizer[T]
  */
 @SerialVersionUID(- 5617491971070914067L)
 class L1L2Regularizer[T: ClassTag](
-  l1: Double,
-  l2: Double
+  val l1: Double,
+  val l2: Double
 )(implicit ev: TensorNumeric[T])
   extends Regularizer[T] {
   override def accRegularization(
     parameter: Tensor[T],
-    gradParameter: Tensor[T]
+    gradParameter: Tensor[T],
+    scale: Double
   ): Unit = {
     if (!preCheck(parameter, gradParameter)) return
-    accL1L2Regularization(l1, l2, parameter, gradParameter)
+    accL1L2Regularization(l1, l2, parameter, gradParameter, scale)
   }
 
   /**
@@ -103,15 +106,17 @@ class L1L2Regularizer[T: ClassTag](
    * @param l2Alpha l2 regularization rate
    * @param parameter the parameter that is regularized
    * @param gradParameter the gradient of the parameter
+   * @param scale scale of gradParameters
    */
   private def accL1L2Regularization(
     l1Alpha: Double,
     l2Alpha: Double,
     parameter: Tensor[T],
-    gradParameter: Tensor[T]
+    gradParameter: Tensor[T],
+    scale: Double
   ): Unit = {
-    accL1Regularization(l1Alpha, parameter, gradParameter)
-    accL2Regularization(l2Alpha, parameter, gradParameter)
+    accL1Regularization(l1Alpha, parameter, gradParameter, scale)
+    accL2Regularization(l2Alpha, parameter, gradParameter, scale)
   }
 
   /**
@@ -121,13 +126,15 @@ class L1L2Regularizer[T: ClassTag](
    * @param alpha l1 regularization rate
    * @param parameter the parameter that is regularized
    * @param gradParameter the gradient of the parameter
+   * @param scale scale of gradParameters
    */
   private def accL1Regularization(
     alpha: Double,
     parameter: Tensor[T],
-    gradParameter: Tensor[T]
+    gradParameter: Tensor[T],
+    scale: Double
   ): Unit = {
-    if (alpha != 0) gradParameter.add(ev.fromType(alpha),
+    if (alpha != 0 && scale != 0) gradParameter.add(ev.fromType(alpha*scale),
       l1SignBuffer.resizeAs(parameter).copy(parameter).sign())
   }
 
@@ -140,13 +147,15 @@ class L1L2Regularizer[T: ClassTag](
    * @param alpha l2 regularization rate
    * @param parameter the parameter that is regularized
    * @param gradParameter the gradient of the parameter
+   * @param scale scale of gradParameters
    */
   private def accL2Regularization(
     alpha: Double,
     parameter: Tensor[T],
-    gradParameter: Tensor[T]
+    gradParameter: Tensor[T],
+    scale: Double
   ): Unit = {
-    if (alpha != 0) gradParameter.add(ev.fromType(alpha), parameter)
+    if (alpha != 0 && scale != 0) gradParameter.add(ev.fromType(alpha* scale), parameter)
   }
 }
 
@@ -164,7 +173,7 @@ object L1L2Regularizer {
  */
 @SerialVersionUID(1950693435414946281L)
 case class L1Regularizer[T: ClassTag](
-  l1: Double
+  override val l1: Double
 ) (implicit ev: TensorNumeric[T])
   extends L1L2Regularizer[T](l1, 0)
 
@@ -175,6 +184,6 @@ case class L1Regularizer[T: ClassTag](
  */
 @SerialVersionUID(- 6597840589687540202L)
 case class L2Regularizer[T: ClassTag](
-  l2: Double
+  override val l2: Double
 ) (implicit ev: TensorNumeric[T])
   extends L1L2Regularizer[T](0, l2)

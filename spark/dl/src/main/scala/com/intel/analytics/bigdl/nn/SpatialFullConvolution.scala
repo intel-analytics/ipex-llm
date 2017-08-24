@@ -20,11 +20,14 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, Initia
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
-import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.utils.{T, Table, serializer}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData, ModuleSerializable, ModuleSerializer}
+import serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.concurrent.Future
 import scala.reflect.ClassTag
+import scala.reflect.runtime.universe
 
 /**
  * Apply a 2D full convolution over an input image.
@@ -66,7 +69,7 @@ import scala.reflect.ClassTag
  */
 
 @SerialVersionUID(- 3110412775551642284L)
-class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
+class SpatialFullConvolution[T: ClassTag](
   val nInputPlane: Int,
   val nOutputPlane: Int,
   val kW: Int,
@@ -79,10 +82,10 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
   var adjH: Int = 0,
   val nGroup: Int = 1,
   val noBias: Boolean = false,
-  val wRegularizer: Regularizer[T] = null,
-  val bRegularizer: Regularizer[T] = null
+  var wRegularizer: Regularizer[T] = null,
+  var bRegularizer: Regularizer[T] = null
   )(implicit ev: TensorNumeric[T])
-  extends AbstractModule[A, Tensor[T], T] with Initializable {
+  extends AbstractModule[Activity, Tensor[T], T] with Initializable {
 
   require(adjW <= dW - 1 && adjH <= dH - 1,
     "SpatialFullConvolution: adjW=$adjW and adjH=$adjH must be smaller than " +
@@ -249,8 +252,11 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
     }
   }
 
-  override def updateOutput(input: A): Tensor[T] = {
+  override def updateOutput(input: Activity): Tensor[T] = {
     val inputTensor: Tensor[T] = if (input.isInstanceOf[Table]) {
+      if (gradInput == null || !gradInput.isInstanceOf[Table]) {
+        gradInput = T()
+      }
       val targetTensor: Tensor[T] = input.toTable[Tensor[T]](2)
       val tDims = targetTensor.dim()
       val tH = targetTensor.size(tDims - 1)
@@ -259,6 +265,9 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
       adjH = calculateAdj(tH, kH, padH, dH)
       input.toTable[Tensor[T]](1)
     } else {
+      if (gradInput == null || gradInput.isInstanceOf[Table]) {
+        gradInput = Tensor[T]()
+      }
       input.toTensor[T]
     }
 
@@ -396,7 +405,7 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
 
   }
 
-  override def updateGradInput(input: A, gradOutput: Tensor[T]): A = {
+  override def updateGradInput(input: Activity, gradOutput: Tensor[T]): Activity = {
     val inputTensor: Tensor[T] = if (input.isInstanceOf[Table]) {
       input.toTable[Tensor[T]](1)
     } else {
@@ -486,7 +495,7 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
       input: Tensor[T], gradOutput: Tensor[T], gradWeight: Tensor[T],
       gradBias: Tensor[T], columns: Tensor[T],
       outputHeight: Int, outputWidth: Int,
-      scale: T)(implicit ev: TensorNumeric[T]): Unit = {
+      scaleW: T, scaleB: T)(implicit ev: TensorNumeric[T]): Unit = {
     // Extract columns:
     val before = System.nanoTime()
     ev.getType() match {
@@ -516,29 +525,29 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
     var m = input.size(1)   // nInputPlane
     var k = columns.size(2)   // inputHeight * inputWidth
 
-    // Do GEMM (note: this is a bit confusing because gemm assumes column-major matrices)
-    DenseTensorBLAS.gemm[T](
-      'T', 'N',
-      n, m, k,
-      scale,
-      columns.storage().array(), columns.storageOffset() - 1, k,
-      input.storage().array(), input.storageOffset() - 1, k,
-      ev.one,
-      gradWeight.storage().array(), gradWeight.storageOffset() - 1, n
-    )
-
+    if (scaleW != 0) {
+      // Do GEMM (note: this is a bit confusing because gemm assumes column-major matrices)
+      DenseTensorBLAS.gemm[T](
+        'T', 'N',
+        n, m, k,
+        scaleW,
+        columns.storage().array(), columns.storageOffset() - 1, k,
+        input.storage().array(), input.storageOffset() - 1, k,
+        ev.one,
+        gradWeight.storage().array(), gradWeight.storageOffset() - 1, n
+      )
+    }
     // Do Bias:
     // M,N,K are dims of matrix A and B
     // (see https://software.intel.com/en-us/node/468480)
     m = gradOutput.size(1)
     k = outputHeight * outputWidth
-
     // Do GEMV (note: this is a bit confusing because gemv assumes column-major matrices)
-    if (null != gradBias) {
+    if (null != gradBias && scaleB != 0) {
       ev.gemv(
         'T',
         k, m,
-        scale,
+        scaleB,
         gradOutput.storage().array(), gradOutput.storageOffset() - 1, k,
         ones.storage().array(), ones.storageOffset() - 1, 1,
         ev.one,
@@ -548,8 +557,7 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
   }
 
 
-  override def accGradParameters(input: A, gradOutput: Tensor[T],
-                                 scale: Double = 1.0): Unit = {
+  override def accGradParameters(input: Activity, gradOutput: Tensor[T]): Unit = {
     val inputTensor: Tensor[T] = if (input.isInstanceOf[Table]) {
       val targetTensor: Tensor[T] = input.toTable[Tensor[T]](2)
       val tDims = targetTensor.dim()
@@ -623,7 +631,8 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
           gradBias_G,
           column_n.select(1, g + 1),
           outputHeight, outputWidth,
-          ev.fromType[Double](scale))
+          ev.fromType[Double](scaleW),
+          ev.fromType[Double](scaleB))
         g += 1
       }
 
@@ -643,10 +652,10 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
     }
 
     if (null != wRegularizer) {
-      wRegularizer.accRegularization(weight, gradWeight)
+      wRegularizer.accRegularization(weight, gradWeight, scaleW)
     }
     if (null != bRegularizer) {
-      bRegularizer.accRegularization(bias, gradBias)
+      bRegularizer.accRegularization(bias, gradBias, scaleB)
     }
   }
 
@@ -700,10 +709,10 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
       return false
     }
 
-    if (!obj.isInstanceOf[SpatialFullConvolution[A, T]]) {
+    if (!obj.isInstanceOf[SpatialFullConvolution[T]]) {
       return false
     }
-    val other = obj.asInstanceOf[SpatialFullConvolution[A, T]]
+    val other = obj.asInstanceOf[SpatialFullConvolution[T]]
     if (this.eq(other)) {
       return true
     }
@@ -751,8 +760,8 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
   }
 }
 
-object SpatialFullConvolution {
-  def apply[A <: Activity : ClassTag, @specialized(Float, Double) T: ClassTag](
+object SpatialFullConvolution extends ModuleSerializable {
+  def apply[@specialized(Float, Double) T: ClassTag](
       nInputPlane: Int,
       nOutputPlane: Int,
       kW: Int,
@@ -767,9 +776,62 @@ object SpatialFullConvolution {
       noBias: Boolean = false,
       wRegularizer: Regularizer[T] = null,
       bRegularizer: Regularizer[T] = null
-  )(implicit ev: TensorNumeric[T]) : SpatialFullConvolution[A, T] = {
-    new SpatialFullConvolution[A, T](nInputPlane, nOutputPlane, kW, kH, dW, dH,
+  )(implicit ev: TensorNumeric[T]) : SpatialFullConvolution[T] = {
+    new SpatialFullConvolution[T](nInputPlane, nOutputPlane, kW, kH, dW, dH,
       padW, padH, adjW, adjH, nGroup, noBias,
       wRegularizer, bRegularizer)
+  }
+
+  override def loadModule[T: ClassTag](model : BigDLModule)
+                                      (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
+    val attrMap = model.getAttrMap
+    val intParams = DataConverter.getAttributeValue(attrMap.get("intParams")).
+      asInstanceOf[Array[Int]]
+
+    val noBias = DataConverter.getAttributeValue(attrMap.get("noBias")).
+      asInstanceOf[Boolean]
+
+    val wRegularizer = DataConverter.getAttributeValue(attrMap.get("wRegularizer")).
+      asInstanceOf[Regularizer[T]]
+
+    val bRegularizer = DataConverter.getAttributeValue(attrMap.get("bRegularizer")).
+      asInstanceOf[Regularizer[T]]
+
+    val fullConv = SpatialFullConvolution(intParams(0), intParams(1), intParams(2), intParams(3),
+      intParams(4), intParams(5), intParams(6), intParams(7), intParams(8), intParams(9),
+      intParams(10), noBias, wRegularizer, bRegularizer)
+
+    createBigDLModule(model, fullConv.asInstanceOf[AbstractModule[Activity, Activity, T]])
+  }
+
+  override def serializeModule[T: ClassTag](module : ModuleData[T])
+                                           (implicit ev: TensorNumeric[T]) : BigDLModule = {
+
+    val fullConvCls = Class.forName("com.intel.analytics.bigdl.nn.SpatialFullConvolution")
+    val fullConv = module.module.asInstanceOf[SpatialFullConvolution[T]]
+    val bigDLModuleBuilder = BigDLModule.newBuilder
+    bigDLModuleBuilder.setModuleType(fullConvCls.getName)
+    val intParamsBuilder = AttrValue.newBuilder
+    val intParams = Array(fullConv.nInputPlane, fullConv.nOutputPlane, fullConv.kW,
+      fullConv.kH, fullConv.dW, fullConv.dH, fullConv.padW, fullConv.padH, fullConv.adjW,
+      fullConv.adjH, fullConv.nGroup)
+    DataConverter.setAttributeValue(intParamsBuilder, intParams, universe.typeOf[Array[Int]])
+    bigDLModuleBuilder.putAttr("intParams", intParamsBuilder.build)
+
+    val biasBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(biasBuilder, fullConv.noBias, universe.typeOf[Boolean])
+    bigDLModuleBuilder.putAttr("noBias", biasBuilder.build)
+
+    val wRegularizerBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(wRegularizerBuilder, fullConv.wRegularizer,
+      ModuleSerializer.regularizerType)
+    bigDLModuleBuilder.putAttr("wRegularizer", wRegularizerBuilder.build)
+
+    val bRegularizerBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(bRegularizerBuilder, fullConv.bRegularizer,
+      ModuleSerializer.regularizerType)
+    bigDLModuleBuilder.putAttr("bRegularizer", bRegularizerBuilder.build)
+
+    createSerializeBigDLModule(bigDLModuleBuilder, module)
   }
 }

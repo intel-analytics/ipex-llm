@@ -25,7 +25,7 @@ class HardShrinkSpec extends TorchSpec {
 
   "An HardShrink" should "generate correct output and grad" in {
     torchCheck()
-    val layer = new HardShrink[Double](5)
+    val layer = HardShrink[Double](5)
     val input = Tensor[Double](2, 2, 2)
     input.apply1(x => randomn())
     val gradOutput = Tensor[Double](2, 2, 2)

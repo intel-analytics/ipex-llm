@@ -27,7 +27,7 @@ import scala.reflect.ClassTag
  * thus outputting a Tensor of the same dimension.
  * Informally the RReLU is also known as 'insanity' layer.
  * RReLU is defined as: f(x) = max(0,x) + a * min(0, x) where a ~ U(l, u).
- * In training mode negative inputs are multiplied by a factor a drawn from a uniform random
+ * In training mode negative inputs are multiplied by a factor drawn from a uniform random
  * distribution U(l, u).
  * In evaluation mode a RReLU behaves like a LeakyReLU with a constant mean
  * factor a = (l + u) / 2.
@@ -38,6 +38,7 @@ import scala.reflect.ClassTag
  * The backward() operation assumes that forward() has been called before.
  * For reference see [Empirical Evaluation of Rectified Activations in Convolutional
  * Network](http://arxiv.org/abs/1505.00853).
+ *
  * @param lower   lower boundary of uniform random distribution
  * @param upper   upper boundary of uniform random distribution
  * @param inplace optionally do its operation in-place without using extra state memory
@@ -45,8 +46,8 @@ import scala.reflect.ClassTag
  */
 @SerialVersionUID(- 9012115082607155821L)
 class RReLU[T: ClassTag](
-  lower: Double = 1.0/8,
-  upper: Double = 1.0/3,
+  val lower: Double = 1.0/8,
+  val upper: Double = 1.0/3,
   inplace: Boolean = false)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T]  {
   @transient
@@ -163,6 +164,13 @@ class RReLU[T: ClassTag](
 
   override def toString: String = {
     "nn.RReLU"
+  }
+
+  override def clearState(): this.type = {
+    if (!inplace) {
+      super.clearState()
+    }
+    this
   }
 }
 

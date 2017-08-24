@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.{Module, _}
 import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch}
-import com.intel.analytics.bigdl.nn.Module
+import com.intel.analytics.bigdl.nn.{Container, Module, Utils}
 import com.intel.analytics.bigdl.parameters.AllReduceParameter
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -109,7 +109,9 @@ object DistriOptimizer {
     var wallClockTime = 0L
     var lastEpochTime = 0L
     val driverState = T("epoch" -> optimMethod.state.get[Int]("epoch").getOrElse(1),
-      "neval" -> optimMethod.state.get[Int]("neval").getOrElse(1))
+      "neval" -> optimMethod.state.get[Int]("neval").getOrElse(1),
+      "Loss" -> optimMethod.state.get[Float]("Loss").getOrElse(Float.PositiveInfinity),
+      "score" -> optimMethod.state.get[Float]("score").getOrElse(0f))
     val _subModelNumber = Engine.getEngineType match {
       case MklBlas => coresPerNode
       case _ => throw new IllegalArgumentException()
@@ -155,6 +157,10 @@ object DistriOptimizer {
         (data, modelIter) => {
           val cached = modelIter.next()
           val syWStart = System.nanoTime()
+          /*
+            Note: All models in `cached` share the same storage for weights, so we only need to
+            copy the weights from parameter server into the first model's weights.
+           */
           val weightsResult = parameters.getWeights(cached.modelWeights.head)
           val miniBatchBuffer = new Array[MiniBatch[T]](_subModelNumber)
           val batch = data.next()
@@ -258,10 +264,14 @@ object DistriOptimizer {
         val value = lossSum.value / finishedModelNum
         models.mapPartitions(modelIter => {
           val modelCache = modelIter.next()
-          parameters.aggregrateGradientPartition()
+          parameters.aggregateGradientPartition()
           parameters.gradientPartition.div(ev.fromType(finishedModelNum))
           modelCache.optimMethod.state.update("epoch", driverState[Int]("epoch"))
           modelCache.optimMethod.state.update("neval", driverState[Int]("neval"))
+          modelCache.optimMethod.state.update("Loss", driverState[Float]("Loss"))
+          if (validationMethods.isDefined) {
+            modelCache.optimMethod.state.update("score", driverState[Float]("score"))
+          }
           modelCache.optimMethod.optimize(_ => (ev.fromType(value), parameters.gradientPartition),
             parameters.weightPartition)
 
@@ -274,8 +284,12 @@ object DistriOptimizer {
         wallClockTime += end - start
         optimMethod.state.update("epoch", driverState[Int]("epoch"))
         optimMethod.state.update("neval", driverState[Int]("neval"))
-        optimMethod.updateHyperParameter()
         driverState("Loss") = lossSum.value.toFloat / finishedModelNum
+        optimMethod.state.update("Loss", driverState[Float]("Loss"))
+        if (validationMethods.isDefined) {
+          optimMethod.state.update("score", driverState[Float]("score"))
+        }
+        optimMethod.updateHyperParameter()
         driverState("Throughput") = recordsNum.value.toFloat / ((end - start) / 1e9f)
         driverState("LearningRate") = -optimMethod.getLearningRate().toFloat
         logger.info(s"${_header} Train ${recordsNum.value} in ${(end - start) / 1e9}seconds. " +
@@ -614,6 +628,7 @@ object DistriOptimizer {
     results.foreach(r => {
       logger.info(s"${r._2} is ${r._1}")
     })
+    state("score") = results(0)._1.result._1
     if(validationSummary.isDefined) {
       results.foreach { r =>
         val result = r._1.result
@@ -711,6 +726,7 @@ class DistriOptimizer[T: ClassTag] (
     state("warmupIterationNum") = warmupIterationNum
     state("computeThresholdbatchSize") = computeThresholdbatchSize
     state("maxDropPercentage") = maxDropPercentage
+    state("isLayerwiseScaled") = Utils.isLayerwiseScaled(_model)
 
     val nodeNumber = Engine.nodeNumber()
     val coresPerNode = Engine.coreNumber()

@@ -26,8 +26,8 @@ import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
 import com.intel.analytics.bigdl.optim.Regularizer
 
 /**
- * The [[Linear]] module applies a linear transformation to the input data,
- * i.e. `y = Wx + b`. The input given in `forward(input)` must be either
+ * The `Linear` module applies a linear transformation to the input data,
+ * i.e. `y = Wx + b`. The `input` given in `forward(input)` must be either
  * a vector (1D tensor) or matrix (2D tensor). If the input is a vector, it must
  * have the size of `inputSize`. If it is a matrix, then each row is assumed to be
  * an input sample of given batch (the number of rows means the batch size and
@@ -42,15 +42,15 @@ import com.intel.analytics.bigdl.optim.Regularizer
  */
 @SerialVersionUID( 359656776803598943L)
 class Linear[T: ClassTag](
-  inputSize: Int,
-  outputSize: Int,
-  withBias: Boolean = true,
-  wRegularizer: Regularizer[T] = null,
-  bRegularizer: Regularizer[T] = null,
-  initWeight: Tensor[T] = null,
-  initBias: Tensor[T] = null,
-  initGradWeight: Tensor[T] = null,
-  initGradBias: Tensor[T] = null
+  val inputSize: Int,
+  val outputSize: Int,
+  val withBias: Boolean = true,
+  var wRegularizer: Regularizer[T] = null,
+  var bRegularizer: Regularizer[T] = null,
+  private val initWeight: Tensor[T] = null,
+  private val initBias: Tensor[T] = null,
+  private val initGradWeight: Tensor[T] = null,
+  private val initGradBias: Tensor[T] = null
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
   val weight: Tensor[T] =
     if (initWeight != null) initWeight else Tensor[T](outputSize, inputSize)
@@ -126,8 +126,7 @@ class Linear[T: ClassTag](
     gradInput
   }
 
-  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
-    scale: Double = 1.0): Unit = {
+  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
     require(input.dim() == 1 || input.dim() == 2,
       "Linear: " + ErrorInfo.constrainInputAsVectorOrBatch)
 
@@ -136,23 +135,30 @@ class Linear[T: ClassTag](
       gradBias.resize(outputSize)
     }
 
-    val value = ev.fromType[Double](scale)
     if (input.dim() == 1) {
-      gradWeight.addr(value, gradOutput, input)
-      if (withBias) {
-        gradBias.add(value, gradOutput)
+      if (scaleW != 0) {
+        gradWeight.addr(ev.fromType[Double](scaleW), gradOutput, input)
+      }
+
+      if (withBias && scaleB != 0) {
+        gradBias.add(ev.fromType[Double](scaleB), gradOutput)
       }
     }
     else if (input.dim() == 2) {
-      gradWeight.addmm(value, gradOutput.t, input)
-      if (withBias) gradBias.addmv(value, gradOutput.t, addBuffer)
+      if (scaleW != 0) {
+        gradWeight.addmm(ev.fromType[Double](scaleW), gradOutput.t, input)
+      }
+
+      if (withBias && scaleB != 0) {
+        gradBias.addmv(ev.fromType[Double](scaleB), gradOutput.t, addBuffer)
+      }
     }
 
-    if (null != wRegularizer) {
-      wRegularizer.accRegularization(weight, gradWeight)
+    if (null != wRegularizer && scaleW != 0) {
+      wRegularizer.accRegularization(weight, gradWeight, scaleW)
     }
-    if (null != bRegularizer) {
-      bRegularizer.accRegularization(bias, gradBias)
+    if (null != bRegularizer && scaleB != 0) {
+      bRegularizer.accRegularization(bias, gradBias, scaleB)
     }
   }
 

@@ -20,7 +20,7 @@ import sys
 from bigdl.util.common import JavaValue
 from bigdl.util.common import callBigDlFunc
 from bigdl.util.common import JTensor
-from bigdl.nn.layer import Model
+from bigdl.nn.layer import Layer
 import numpy as np
 
 if sys.version >= '3':
@@ -51,11 +51,15 @@ class Criterion(JavaValue):
         :param target: ndarray or list of ndarray
         :return: value of loss
         """
+        jinput, input_is_table = Layer.check_input(input)
+        jtarget, target_is_table = Layer.check_input(target)
         output = callBigDlFunc(self.bigdl_type,
                                "criterionForward",
                                self.value,
-                               Model.check_input(input),
-                               Model.check_input(target))
+                               jinput,
+                               input_is_table,
+                               jtarget,
+                               target_is_table)
         return output
 
     def backward(self, input, target):
@@ -67,12 +71,16 @@ class Criterion(JavaValue):
         :param target: ndarray or list of ndarray
         :return: ndarray
         """
+        jinput, input_is_table = Layer.check_input(input)
+        jtarget, target_is_table = Layer.check_input(target)
         output = callBigDlFunc(self.bigdl_type,
                                "criterionBackward",
                                self.value,
-                               Model.check_input(input),
-                               Model.check_input(target))
-        return Model.convert_output(output)
+                               jinput,
+                               input_is_table,
+                               jtarget,
+                               target_is_table)
+        return Layer.convert_output(output)
 
     @classmethod
     def of(cls, jcriterion, bigdl_type="float"):
@@ -91,10 +99,30 @@ class Criterion(JavaValue):
 class ClassNLLCriterion(Criterion):
 
     '''
-    The negative log likelihood criterion.
-    It is useful to train a classification problem with n classes.
-    If provided, the optional argument weights should be a 1D Tensor
-    assigning weight to each of the classes.
+    The negative log likelihood criterion. It is useful to train a classification problem with n
+    classes. If provided, the optional argument weights should be a 1D Tensor assigning weight to
+    each of the classes. This is particularly useful when you have an unbalanced training set.
+
+    The input given through a forward() is expected to contain log-probabilities of each class:
+    input has to be a 1D Tensor of size n. Obtaining log-probabilities in a neural network is easily
+    achieved by adding a LogSoftMax layer in the last layer of your neural network. You may use
+    CrossEntropyCriterion instead, if you prefer not to add an extra layer to your network. This
+    criterion expects a class index (1 to the number of class) as target when calling
+    forward(input, target) and backward(input, target).
+
+    The loss can be described as:
+        loss(x, class) = -x[class]
+    or in the case of the weights argument it is specified as follows:
+        loss(x, class) = -weights[class] * x[class]
+    Due to the behaviour of the backend code, it is necessary to set sizeAverage to false when
+    calculating losses in non-batch mode.
+
+    Note that if the target is `-1`, the training process will skip this sample.
+    In other will, the forward process will return zero output and the backward process
+    will also return zero `gradInput`.
+
+    By default, the losses are averaged over observations for each minibatch. However, if the field
+    sizeAverage is set to false, the losses are instead summed for each minibatch.
 
 
     :param weights: weights of each class
@@ -182,9 +210,30 @@ class ClassSimplexCriterion(Criterion):
                                                     n_classes)
 
 
+class CosineDistanceCriterion(Criterion):
+
+    """
+    Creates a criterion that measures the loss given an input and target,
+    Loss = 1 - cos(x, y)
+
+
+    >>> cosineDistanceCriterion = CosineDistanceCriterion(True)
+    creating: createCosineDistanceCriterion
+    >>> cosineDistanceCriterion.forward(np.array([1.0, 2.0, 3.0, 4.0, 5.0]),
+    ...                                   np.array([5.0, 4.0, 3.0, 2.0, 1.0]))
+    0.07272728
+    """
+
+    def __init__(self,
+                 size_average=True,
+                 bigdl_type="float"):
+        super(CosineDistanceCriterion, self).__init__(None, bigdl_type,
+                                                      size_average)
+
+
 class CosineEmbeddingCriterion(Criterion):
 
-    '''
+    """
     Creates a criterion that measures the loss given an input x = {x1, x2},
     a table of two Tensors, and a Tensor label y with values 1 or -1.
 
@@ -194,7 +243,11 @@ class CosineEmbeddingCriterion(Criterion):
 
     >>> cosineEmbeddingCriterion = CosineEmbeddingCriterion(1e-5, True)
     creating: createCosineEmbeddingCriterion
-    '''
+    >>> cosineEmbeddingCriterion.forward([np.array([1.0, 2.0, 3.0, 4.0, 5.0]),
+    ...                                   np.array([5.0, 4.0, 3.0, 2.0, 1.0])],
+    ...                                 [np.ones(5)])
+    0.0
+    """
 
     def __init__(self,
                  margin=0.0,
@@ -247,7 +300,7 @@ class HingeEmbeddingCriterion(Criterion):
     '''
 
     def __init__(self,
-                 margin=1,
+                 margin=1.0,
                  size_average=True,
                  bigdl_type="float"):
         super(HingeEmbeddingCriterion, self).__init__(None, bigdl_type,
@@ -267,10 +320,19 @@ class L1HingeEmbeddingCriterion(Criterion):
 
     >>> l1HingeEmbeddingCriterion = L1HingeEmbeddingCriterion(1e-5)
     creating: createL1HingeEmbeddingCriterion
+    >>> l1HingeEmbeddingCriterion = L1HingeEmbeddingCriterion()
+    creating: createL1HingeEmbeddingCriterion
+    >>> input1 = np.array([2.1, -2.2])
+    >>> input2 = np.array([-0.55, 0.298])
+    >>> input = [input1, input2]
+    >>> target = np.array([1.0])
+    >>> result = l1HingeEmbeddingCriterion.forward(input, target)
+    >>> (result == 5.148)
+    True
     '''
 
     def __init__(self,
-                 margin=1,
+                 margin=1.0,
                  bigdl_type="float"):
         super(L1HingeEmbeddingCriterion, self).__init__(None, bigdl_type,
                                                         margin)
@@ -335,11 +397,19 @@ class MultiCriterion(Criterion):
 
     >>> multiCriterion = MultiCriterion()
     creating: createMultiCriterion
+    >>> mSECriterion = MSECriterion()
+    creating: createMSECriterion
+    >>> multiCriterion = multiCriterion.add(mSECriterion)
+    >>> multiCriterion = multiCriterion.add(mSECriterion)
     '''
 
     def __init__(self,
                  bigdl_type="float"):
         super(MultiCriterion, self).__init__(None, bigdl_type)
+
+    def add(self, criterion, weight=1.0):
+        self.value.add(criterion.value, weight)
+        return self
 
 
 class MultiLabelMarginCriterion(Criterion):
@@ -378,6 +448,10 @@ class ParallelCriterion(Criterion):
 
     >>> parallelCriterion = ParallelCriterion(True)
     creating: createParallelCriterion
+    >>> mSECriterion = MSECriterion()
+    creating: createMSECriterion
+    >>> parallelCriterion = parallelCriterion.add(mSECriterion)
+    >>> parallelCriterion = parallelCriterion.add(mSECriterion)
     '''
 
     def __init__(self,
@@ -385,6 +459,10 @@ class ParallelCriterion(Criterion):
                  bigdl_type="float"):
         super(ParallelCriterion, self).__init__(None, bigdl_type,
                                                 repeat_target)
+
+    def add(self, criterion, weight=1.0):
+        self.value.add(criterion.value, weight)
+        return self
 
 
 class SmoothL1Criterion(Criterion):
@@ -633,6 +711,46 @@ class SoftMarginCriterion(Criterion):
                  size_average=True,
                  bigdl_type="float"):
         super(SoftMarginCriterion, self).__init__(None, bigdl_type, size_average)
+
+
+class DiceCoefficientCriterion(Criterion):
+
+    '''
+    The Dice-Coefficient criterion
+    input: Tensor,target: Tensor
+
+```
+    return:      2 * (input intersection target)
+            1 - ----------------------------------
+                    input union target
+```
+
+    >>> diceCoefficientCriterion = DiceCoefficientCriterion(size_average = True, epsilon = 1.0)
+    creating: createDiceCoefficientCriterion
+    >>> diceCoefficientCriterion = DiceCoefficientCriterion()
+    creating: createDiceCoefficientCriterion
+    '''
+
+    def __init__(self,
+                 size_average=True,
+                 epsilon=1.0,
+                 bigdl_type="float"):
+        super(DiceCoefficientCriterion, self).__init__(None, bigdl_type,
+                                                       size_average,
+                                                       epsilon)
+
+class L1Cost(Criterion):
+
+    '''
+    compute L1 norm for input, and sign of input
+
+    >>> l1Cost = L1Cost()
+    creating: createL1Cost
+    '''
+
+    def __init__(self,
+                 bigdl_type="float"):
+        super(L1Cost, self).__init__(None, bigdl_type)
 
 def _test():
     import doctest

@@ -368,7 +368,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
       result
     } else {
       require(this.nDimension == 1, "empty tensor")
-      DenseTensor.get1dTensor(this, _sliceIndex)
+      this.narrow(1, index, 1)
     }
   }
 
@@ -1514,6 +1514,10 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
 
   override def sqrt(): Tensor[T] = DenseTensorMath.sqrt[T](this, this)
 
+  override def tanh(): Tensor[T] = DenseTensorMath.tanh[T](this, this)
+
+  override def tanh(x: Tensor[T]): Tensor[T] = DenseTensorMath.tanh[T](this, x)
+
   override def log1p(x: Tensor[T]): Tensor[T] = DenseTensorMath.log1p[T](this, x)
 
   override def log1p(): Tensor[T] = DenseTensorMath.log1p[T](this, this)
@@ -1906,6 +1910,8 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
         "corresponding module, please keep them same.")
     }
   }
+
+  override def getTensorNumeric(): TensorNumeric[T] = ev
 }
 
 object DenseTensor {
@@ -2273,13 +2279,13 @@ object DenseTensor {
     }
 
     // Randomly exchange the elements
-    i = size - 1
-    while (i > 0) {
-      val rand = Math.floor(RNG.uniform(0, size)).toInt
+    i = 0
+    while (i < size - 1) {
+      val rand = Math.floor(RNG.random() % (size - i)).toInt
       val tmp = array(i)
-      array(i) = array(rand)
-      array(rand) = tmp
-      i = i - 1
+      array(i) = array(rand + i)
+      array(rand + i) = tmp
+      i += 1
     }
 
     Tensor(new ArrayStorage(array))

@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import org.apache.commons.lang3.SerializationUtils
 import java.util
 
+import com.intel.analytics.bigdl.utils.T
 import org.apache.spark.rdd.RDD
 
 import scala.collection.Iterator
@@ -36,6 +37,7 @@ import scala.reflect.ClassTag
  * pre-process steps. User needn't write them every time, but can reuse others work.
  *
  * Transformer can be used with RDD(rdd.mapPartition), iterator and DataSet.
+ *
  * @tparam A
  * @tparam B
  */
@@ -57,6 +59,7 @@ trait Transformer[A, B] extends Serializable {
 
   /**
    * Apply this transformer to rdd
+   *
    * @param dataset
    */
   def apply(dataset: RDD[A])(implicit evidence: ClassTag[B]): RDD[B] = {
@@ -73,6 +76,7 @@ trait Transformer[A, B] extends Serializable {
 /**
  * A transformer chain two transformer together. The output type of the first transformer should be
  * same with the input type of the second transformer.
+ *
  * @param first first transformer
  * @param last last transformer
  * @tparam A input type of the first transformer
@@ -104,6 +108,7 @@ class Identity[A] extends Transformer[A, A] {
  * optionally padding all the features (or labels) in the mini-batch to the same length
  */
 object SampleToBatch {
+  @deprecated("Use SampleToMiniBatch instead", "0.2.0")
   def apply[T: ClassTag]
   (batchSize : Int,
    featurePadding : Option[Tensor[T]] = None,
@@ -115,7 +120,7 @@ object SampleToBatch {
 }
 
 /**
- * Convert a sequence of [[TensorSample]] to a sequence of [[TensorMiniBatch]],
+ * Convert a sequence of single-feature and single-label Sample to a sequence of MiniBatch,
  * optionally padding all the features (or labels) in the mini-batch to the same length
  *
  * @param totalBatch total batch size
@@ -127,6 +132,7 @@ object SampleToBatch {
  * @param partitionNum partition number of dataset, default means partitionNum
  *                     equals Engine.nodeNumber()
  */
+@deprecated("Use SampleToMiniBatch instead", "0.2.0")
 class SampleToBatch[T: ClassTag]
 (totalBatch : Int,
  featurePadding : Option[Tensor[T]] = None,
@@ -192,6 +198,7 @@ class SampleToBatch[T: ClassTag]
 
   /**
    * compare a and b, then return the larger one's index
+   *
    * @param i the index of a
    * @param j the index of b
    */
@@ -210,8 +217,7 @@ class SampleToBatch[T: ClassTag]
       private var labelData: Array[T] = null
       private val batchSize = batchSizePerPartition
 
-      private val sampleData = Array.tabulate(batchSize)(_ =>
-        Sample(Tensor(), Tensor()))
+      private val sampleData = new Array[Sample[T]](batchSize)
       private var featureSize: Array[Int] = null
       private var labelSize: Array[Int] = null
       private var oneFeatureElement: Int = 0
@@ -230,7 +236,7 @@ class SampleToBatch[T: ClassTag]
             val sample = prev.next()
             require(sample.feature().isContiguous() && sample.label().isContiguous(),
               "SampleToBatch: Only support contiguous tensor")
-            sampleData(i).copy(sample)
+            sampleData(i) = sample
             featureIndex = getLarger(sampleData(featureIndex).feature().nElement(),
               featureIndex, sample.feature().nElement(), i)
             labelIndex = getLarger(sampleData(labelIndex).label().nElement(),
@@ -294,5 +300,88 @@ class SampleToBatch[T: ClassTag]
         }
       }
     }
+  }
+}
+
+/**
+ * Convert a sequence of [[Sample]] to a sequence of [[MiniBatch]] through function toMiniBatch.
+ */
+class SampleToMiniBatch[T: ClassTag] private[bigdl](
+      totalBatch: Int,
+      miniBatch: Option[MiniBatch[T]] = None,
+      featurePaddingParam: Option[PaddingParam[T]] = None,
+      labelPaddingParam: Option[PaddingParam[T]] = None,
+      partitionNum: Option[Int] = None)
+    (implicit ev: TensorNumeric[T]) extends Transformer[Sample[T], MiniBatch[T]] {
+
+  private val batchPerPartition = Utils.getBatchSize(totalBatch, partitionNum)
+  var miniBatchBuffer = miniBatch.orNull
+
+  override def apply(prev: Iterator[Sample[T]]): Iterator[MiniBatch[T]] = {
+    val batchSizePerPartition = batchPerPartition
+    new Iterator[MiniBatch[T]] {
+      private val batchSize = batchSizePerPartition
+
+      private val sampleData = new Array[Sample[T]](batchSize)
+      override def hasNext: Boolean = prev.hasNext
+
+      override def next(): MiniBatch[T] = {
+        if (prev.hasNext) {
+          var i = 0
+          while (i < batchSize && prev.hasNext) {
+            val sample = prev.next()
+            sampleData(i) = sample
+            i += 1
+          }
+          if (null == miniBatchBuffer) {
+            miniBatchBuffer = MiniBatch(sampleData(0).numFeature(), sampleData(0).numLabel(),
+              featurePaddingParam, labelPaddingParam)
+          }
+
+          if (i < batchSize) {
+            miniBatchBuffer.set(sampleData.slice(0, i))
+          } else {
+            miniBatchBuffer.set(sampleData)
+          }
+        } else {
+          null
+        }
+      }
+    }
+  }
+}
+
+object SampleToMiniBatch {
+  /**
+   * Apply an SampleToMiniBatch transformer.
+   *
+   * @param batchSize           total batch size
+   * @param featurePaddingParam feature padding strategy, see
+   *                            [[com.intel.analytics.bigdl.dataset.PaddingParam]] for details.
+   * @param labelPaddingParam   label padding strategy, see
+   *                            [[com.intel.analytics.bigdl.dataset.PaddingParam]] for details.
+   * @return
+   */
+  def apply[T: ClassTag](
+                          batchSize : Int,
+                          featurePaddingParam: Option[PaddingParam[T]] = None,
+                          labelPaddingParam: Option[PaddingParam[T]] = None,
+                          partitionNum: Option[Int] = None
+        )(implicit ev: TensorNumeric[T]): SampleToMiniBatch[T] = {
+    new SampleToMiniBatch[T](batchSize, None, featurePaddingParam, labelPaddingParam, partitionNum)
+  }
+
+  /**
+   * Apply an SampleToMiniBatch transformer with UDF MiniBatch.
+   *
+   * @param batchSize total batch size
+   * @param miniBatch An User-Defined MiniBatch to construct a mini batch.
+   * @return
+   */
+  def apply[T: ClassTag](
+        miniBatch: MiniBatch[T],
+        batchSize : Int,
+        partitionNum: Option[Int])(implicit ev: TensorNumeric[T]): SampleToMiniBatch[T] = {
+    new SampleToMiniBatch[T](batchSize, Some(miniBatch), partitionNum = partitionNum)
   }
 }

@@ -14,7 +14,9 @@
 # limitations under the License.
 #
 
+import os
 import sys
+import glob
 from py4j.protocol import Py4JJavaError
 from py4j.java_gateway import JavaObject
 from py4j.java_collections import ListConverter, JavaArray, JavaList, JavaMap
@@ -26,6 +28,11 @@ from pyspark.mllib.common import callJavaFunc
 from pyspark import SparkConf
 import numpy as np
 import threading
+from bigdl.util.engine import prepare_env
+
+INTMAX = 2147483647
+INTMIN = -2147483648
+DOUBLEMAX = 1.7976931348623157E308
 
 if sys.version >= '3':
     long = int
@@ -84,7 +91,7 @@ class JavaValue(object):
         return self.value.toString()
 
 
-class TestResult():
+class EvaluatedResult():
     """
     A testing result used to benchmark the model quality.
     """
@@ -100,10 +107,10 @@ class TestResult():
         self.method = method
 
     def __reduce__(self):
-        return (TestResult, (self.result, self.total_num, self.method))
+        return (EvaluatedResult, (self.result, self.total_num, self.method))
 
     def __str__(self):
-        return "Test result: %s, total_num: %s, method: %s" % (
+        return "Evaluated result: %s, total_num: %s, method: %s" % (
             self.result, self.total_num, self.method)
 
 
@@ -158,7 +165,7 @@ class JTensor(object):
         Utility method to flatten a ndarray
 
         :return: (storage, shape)
-        
+
         >>> from bigdl.util.common import JTensor
         >>> np.random.seed(123)
         >>> data = np.random.uniform(0, 1, (2, 3))
@@ -233,7 +240,7 @@ _picklable_classes = [
     'Rating',
     'LabeledPoint',
     'Sample',
-    'TestResult',
+    'EvaluatedResult',
     'JTensor'
 ]
 
@@ -251,10 +258,10 @@ def get_bigdl_conf():
                     "#" not in line and line.strip())
 
     for p in sys.path:
-        if bigdl_conf_file in p:
+        if bigdl_conf_file in p and os.path.isfile(p):
             with open(p) if sys.version_info < (3,) else open(p, encoding='latin-1') as conf_file: # noqa
                 return load_conf(conf_file.read())
-        if bigdl_python_wrapper in p:
+        if bigdl_python_wrapper in p and os.path.isfile(p):
             import zipfile
             with zipfile.ZipFile(p, 'r') as zip_conf:
                 content = zip_conf.read(bigdl_conf_file)
@@ -276,15 +283,20 @@ def create_spark_conf():
     sparkConf.setAll(bigdl_conf.items())
     return sparkConf
 
-
-def get_spark_context():
-    if "getOrCreate" in SparkContext.__dict__:
-        return SparkContext.getOrCreate()
+def get_spark_context(conf = None):
+    """
+    Get the current active spark context and create one if no active instance
+    :param conf: combining bigdl configs into spark conf
+    :return: SparkContext
+    """
+    if hasattr(SparkContext, "getOrCreate"):
+        return SparkContext.getOrCreate(conf=conf or create_spark_conf())
     else:
-        with SparkContext._lock: # Compatible with Spark1.5.1
-            if SparkContext._active_spark_context is None:
-                SparkContext(SparkConf())
-            return SparkContext._active_spark_context
+        # Might have threading issue but we cann't add _lock here
+        # as it's not RLock in spark1.5
+        if SparkContext._active_spark_context is None:
+            SparkContext(conf=conf or create_spark_conf())
+        return SparkContext._active_spark_context
 
 
 def get_spark_sql_context(sc):

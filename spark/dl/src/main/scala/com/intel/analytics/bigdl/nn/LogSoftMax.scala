@@ -16,8 +16,11 @@
 
 package com.intel.analytics.bigdl.nn
 
+import java.util
+
+import com.intel.analytics.bigdl.mkl.MKL
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Engine
 
@@ -39,11 +42,16 @@ class LogSoftMax[T: ClassTag](
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   @transient
   private var results: Array[Future[Unit]] = null
+  @transient
+  private var ones: Array[T] = null
+  @transient
+  private var buffer: Array[T] = null
+
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim() == 1 || input.dim() == 2,
       "LogSoftMax: " + ErrorInfo.constrainInputAsVectorOrBatch)
-    output.resizeAs(input)
+    output.resizeAs(input).copy(input)
     val (nframe, dim) =
       if (input.nDimension() == 1) (1, input.size(1)) else (input.size(1), input.size(2))
 
@@ -68,69 +76,107 @@ class LogSoftMax[T: ClassTag](
   }
 
   private def updateOutputFrame(in: Tensor[T], out: Tensor[T]): Unit = {
-    var logsum = ev.fromType[Int](0)
-    val maxInput = in.max()
-    in.apply1(v => {
-      logsum = ev.plus(logsum, ev.exp(ev.minus(v, maxInput))); v
-    })
-    logsum = ev.plus(maxInput, ev.log(logsum))
+    if (ones == null || ones.length < in.nElement) {
+      ones = Array.fill(in.nElement)(ev.fromType[Int](1))
+    }
+    if (buffer == null || buffer.length < in.nElement) {
+      buffer = new Array[T](in.nElement)
+    }
 
-    out.map(in, (outData, inData) => {
-      ev.minus(inData, logsum)
-    })
+    ev.vExp(in.nElement,
+      in.storage.array,
+      in.storageOffset - 1,
+      buffer,
+      0)
+
+    val dot = ev.dot(in.nElement,
+      buffer,
+      0,
+      1,
+      ones,
+      0,
+      1)
+
+    val sum = ev.negative(ev.log(dot))
+
+    ev.axpy(in.nElement,
+      sum,
+      ones,
+      0,
+      1,
+      out.storage.array,
+      out.storageOffset - 1,
+      1)
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     require(output.nDimension() == 1 || output.nDimension() == 2, "vector or matrix expected")
     require(gradOutput.dim() == input.dim(), "LogSoftMax: input and gradOutput shapes do not " +
       "match, input_dim: " + input.dim() + ", gradOutput_dim: " + gradOutput.dim())
-    gradInput.resizeAs(input)
+    gradInput.resizeAs(input).copy(gradOutput)
     val (nframe, dim) =
       if (output.nDimension() == 1) (1, output.size(1)) else (output.size(1), output.size(2))
 
-    if (results == null || results.length != nframe) {
-      results = new Array[Future[Unit]](nframe)
+
+    if (nframe == 1) {
+      updateGradInputFrame(output, gradInput)
+    } else {
+      if (results == null || results.length != nframe) {
+        results = new Array[Future[Unit]](nframe)
+      }
+      var t = 1
+      while (t <= nframe) {
+        val _t = t
+        results(_t - 1) = Engine.model.invoke(() => {
+          updateGradInputFrame(output.select(1, _t), gradInput.select(1, _t))
+        })
+        t += 1
+      }
+      Engine.model.sync(results)
     }
-
-    var t = 1
-    while (t <= nframe) {
-      val _t = t
-      results(_t - 1) = Engine.model.invoke(() => {
-        var sum = 0.0
-        var d = 1
-        while (d <= dim) {
-          if (gradOutput.dim() == 1) {
-            sum += ev.toType[Double](gradOutput.valueAt(d))
-          } else {
-            sum += ev.toType[Double](gradOutput.valueAt(_t, d))
-          }
-          d += 1
-        }
-
-        d = 1
-        while (d <= dim) {
-          if (input.dim() == 1) {
-            gradInput.setValue(d, ev.minus(gradOutput.valueAt(d),
-              ev.times(ev.exp(output.valueAt(d)), ev.fromType[Double](sum))))
-          } else {
-            gradInput.setValue(_t, d, ev.minus(gradOutput.valueAt(_t, d),
-              ev.times(ev.exp(output.valueAt(_t, d)), ev.fromType[Double](sum))))
-          }
-          d += 1
-        }
-      })
-      t += 1
-    }
-    Engine.model.sync(results)
-
     gradInput
+  }
+
+  private def updateGradInputFrame(out: Tensor[T], gradOut: Tensor[T]): Unit = {
+    ev.vExp(out.nElement,
+      out.storage.array,
+      out.storageOffset - 1,
+      buffer,
+      0)
+
+    val dot = ev.dot(gradOut.nElement,
+      gradOut.storage.array,
+      gradOut.storageOffset - 1,
+      1,
+      ones,
+      0,
+      1)
+
+    val sum = ev.negative(dot)
+
+    ev.axpy(gradOut.nElement,
+      sum,
+      buffer,
+      0,
+      1,
+      gradOut.storage.array,
+      gradOut.storageOffset - 1,
+      1)
+  }
+
+  override def clearState() : this.type = {
+    super.clearState()
+    ones = null
+    buffer = null
+    results = null
+    this
   }
 }
 
 object LogSoftMax {
 
   def apply[@specialized(Float, Double) T: ClassTag]()
-      (implicit ev: TensorNumeric[T]) : LogSoftMax[T] = {
+    (implicit ev: TensorNumeric[T]) : LogSoftMax[T] = {
     new LogSoftMax[T]()
   }
   private val A0 = 1.0
@@ -157,4 +203,3 @@ object LogSoftMax {
     return 0.0
   }
 }
-

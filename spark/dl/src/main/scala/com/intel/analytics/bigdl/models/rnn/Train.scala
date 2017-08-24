@@ -17,13 +17,13 @@
 package com.intel.analytics.bigdl.models.rnn
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.{DataSet, SampleToBatch}
+import com.intel.analytics.bigdl.dataset.{DataSet, FixedLength, PaddingParam, SampleToMiniBatch}
 import com.intel.analytics.bigdl.dataset.text.LabeledSentenceToSample
 import com.intel.analytics.bigdl.dataset.text._
 import com.intel.analytics.bigdl.dataset.text.utils.SentenceToken
 import com.intel.analytics.bigdl.nn.{CrossEntropyCriterion, Module, TimeDistributedCriterion}
 import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{Engine, T, Table}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 import org.apache.log4j.{Level, Logger}
@@ -70,23 +70,25 @@ object Train {
       val endIdx = dictionary.getIndex(SentenceToken.end)
       val padFeature = Tensor[Float]().resize(totalVocabLength)
       padFeature.setValue(endIdx + 1, 1.0f)
-      val padLabel = startIdx
+      val padLabel = Tensor[Float](T(startIdx.toFloat + 1.0f))
+      val featurePadding = PaddingParam(Some(Array(padFeature)),
+        FixedLength(Array(maxTrainLength)))
+      val labelPadding = PaddingParam(Some(Array(padLabel)),
+        FixedLength(Array(maxTrainLength)))
 
       val trainSet = DataSet.rdd(tokens)
         .transform(TextToLabeledSentence[Float](dictionary))
         .transform(LabeledSentenceToSample[Float](totalVocabLength))
-        .transform(SampleToBatch[Float](batchSize = param.batchSize,
-          featurePadding = Some(padFeature),
-          labelPadding = Some(padLabel),
-          fixedLength = Some(maxTrainLength)))
+        .transform(SampleToMiniBatch[Float](
+          param.batchSize,
+          Some(featurePadding),
+          Some(labelPadding)))
 
       val validationSet = DataSet.rdd(valtokens)
         .transform(TextToLabeledSentence[Float](dictionary))
         .transform(LabeledSentenceToSample[Float](totalVocabLength))
-        .transform(SampleToBatch[Float](batchSize = param.batchSize,
-          featurePadding = Some(padFeature),
-          labelPadding = Some(padLabel),
-          fixedLength = Some(maxValLength)))
+        .transform(SampleToMiniBatch[Float](param.batchSize,
+          Some(featurePadding), Some(labelPadding)))
 
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
@@ -126,6 +128,7 @@ object Train {
           TimeDistributedCriterion[Float](CrossEntropyCriterion[Float](), sizeAverage = true))))
         .setOptimMethod(optimMethod)
         .setEndWhen(Trigger.maxEpoch(param.nEpochs))
+        .setCheckpoint(param.checkpoint.get, Trigger.everyEpoch)
         .optimize()
       sc.stop()
     })

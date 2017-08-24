@@ -22,7 +22,7 @@ import java.util.concurrent.{Callable, Executors}
 
 import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator}
+import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, TestUtils}
 import org.apache.hadoop.io.Text
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -227,6 +227,7 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "imagenet sequence data source" should "load image correct" in {
+    TestUtils.cancelOnWindows()
     val resource = getClass().getClassLoader().getResource("imagenet")
     val tmpFile = java.io.File.createTempFile("UnitTest", System.nanoTime().toString)
     require(tmpFile.delete())
@@ -299,7 +300,7 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "image preprocess" should "be same with torch result" in {
     val originMode = Engine.localMode
-    Engine.localMode = true
+    System.setProperty("bigdl.localMode", "true")
     Engine.init(nodeNumber, coreNumber, false)
     val resourceImageNet = getClass().getClassLoader().getResource("imagenet")
     def test(imgFolder: String, imgFileName: String, tensorFile: String): Unit = {
@@ -331,7 +332,7 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
     test("n15075141", "n15075141_38508.JPEG", "n15075141_38508.t7")
     RandomGenerator.RNG.setSeed(100)
     test("n99999999", "n03000134_4970.JPEG", "n03000134_4970.t7")
-    Engine.localMode = false
+    System.clearProperty("bigdl.localMode")
   }
 
   "RDD from DataSet" should "give different position every time" in {
@@ -380,7 +381,7 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
       groupSize
     )
 
-    val dataSet = dataSet1.transform(SampleToBatch(batchSize))
+    val dataSet = dataSet1.transform(SampleToMiniBatch(batchSize))
     val rdd = dataSet.toDistributed().data(train = true)
     rdd.partitions.size should be (partitionNum)
     val rddData = rdd.mapPartitions(iter => {
@@ -419,6 +420,7 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "transformRDD" should "be correct" in {
+    TestUtils.cancelOnWindows()
     val resource = getClass().getClassLoader().getResource("imagenet")
     val tmpFile = java.io.File.createTempFile("UnitTest", System.nanoTime().toString)
     require(tmpFile.delete())

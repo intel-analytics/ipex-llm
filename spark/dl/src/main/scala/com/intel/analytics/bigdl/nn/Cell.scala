@@ -20,8 +20,11 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData, ModuleSerializable, ModuleSerializer}
 import com.intel.analytics.bigdl.utils.{T, Table}
+import serialization.Bigdl.{AttrValue, BigDLModule}
 
+import scala.collection.mutable
 import scala.reflect.ClassTag
 
 /**
@@ -42,9 +45,15 @@ import scala.reflect.ClassTag
  */
 abstract class Cell[T : ClassTag](
   val hiddensShape: Array[Int],
-  val regularizers: Array[Regularizer[T]] = null
+  var regularizers: Array[Regularizer[T]] = null
 )(implicit ev: TensorNumeric[T])
   extends AbstractModule[Table, Table, T] {
+
+  var subModules: Array[AbstractModule[_ <: Activity, _ <: Activity, T]] = null
+  var forwardTimes: Array[Long] = null
+  var backwardTimes: Array[Long] = null
+  var times: Array[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)] = null
+
 
   /**
    * Any recurrent kernels should have a cell member variable which
@@ -61,6 +70,19 @@ abstract class Cell[T : ClassTag](
   var cell: AbstractModule[Activity, Activity, T]
 
   /**
+   * The preTopology defines operations to pre-process the input when it is not dependent
+   * on the time dimension. For example, the i2h in SimpleRNN Cell can be calculated before
+   * the recurrence since all the input slices are independent.
+   *
+   * This is particular useful to boost the performance of the recurrent layer.
+   *
+   * Please define your own preTopology according to your Cell structure.
+   * Please refer to SimpleRNN or LSTM for reference.
+   * @return
+   */
+  def preTopology: AbstractModule[Activity, Activity, T] = null
+
+  /**
    * resize the hidden parameters wrt the batch size, hiddens shapes.
    *
    * e.g. RnnCell contains 1 hidden parameter (H), thus it will return Tensor(size)
@@ -68,13 +90,13 @@ abstract class Cell[T : ClassTag](
    *      and recursively intialize all the tensors in the Table.
    *
    * @param hidden
-   * @param size batchSize
+   * @param batchSize batchSize
    * @return
    */
-  def hidResize(hidden: Activity, size: Int): Activity = {
+  def hidResize(hidden: Activity, batchSize: Int, imageSize: Array[Int] = null): Activity = {
     if (hidden == null) {
       if (hiddensShape.length == 1) {
-        hidResize(Tensor[T](), size)
+        hidResize(Tensor[T](), batchSize)
       } else {
         val _hidden = T()
         var i = 1
@@ -82,20 +104,31 @@ abstract class Cell[T : ClassTag](
           _hidden(i) = Tensor[T]()
           i += 1
         }
-        hidResize(_hidden, size)
+        hidResize(_hidden, batchSize, imageSize)
       }
     } else {
       if (hidden.isInstanceOf[Tensor[T]]) {
         require(hidden.isInstanceOf[Tensor[T]],
           "Cell: hidden should be a Tensor")
-        hidden.toTensor.resize(size, hiddensShape(0))
+        hidden.toTensor.resize(batchSize, hiddensShape(0))
       } else {
         require(hidden.isInstanceOf[Table],
           "Cell: hidden should be a Table")
         var i = 1
-        while (i <= hidden.toTable.length()) {
-          hidden.toTable[Tensor[T]](i).resize(size, hiddensShape(i - 1))
-          i += 1
+        if (null == imageSize) {
+          while (i <= hidden.toTable.length()) {
+            hidden.toTable[Tensor[T]](i).resize(batchSize, hiddensShape(i - 1))
+            i += 1
+          }
+        } else {
+          val sizes = new Array[Int](imageSize.length + 2)
+          sizes(0) = batchSize
+          Array.copy(imageSize, 0, sizes, 2, imageSize.size)
+          while (i <= hidden.toTable.length()) {
+            sizes(1) = hiddensShape(i - 1)
+            hidden.toTable[Tensor[T]](i).resize(sizes)
+            i += 1
+          }
         }
         hidden
       }
@@ -103,7 +136,7 @@ abstract class Cell[T : ClassTag](
   }
 
   override def updateOutput(input: Table): Table = {
-    output = cell.updateOutput(input).toTable
+    output = cell.forward(input).toTable
     output
   }
 
@@ -112,13 +145,86 @@ abstract class Cell[T : ClassTag](
     gradInput
   }
 
-  override def accGradParameters(input: Table, gradOutput: Table,
-    scale: Double = 1.0): Unit = {
-    cell.accGradParameters(input, gradOutput, scale)
+  override def accGradParameters(input: Table, gradOutput: Table): Unit = {
+    cell.accGradParameters(input, gradOutput)
+  }
+
+  override def backward(input: Table, gradOutput: Table): Table = {
+    gradInput = cell.backward(input, gradOutput).toTable
+    gradInput
   }
 
   override def updateParameters(learningRate: T): Unit = {
     cell.updateParameters(learningRate)
+  }
+
+  private def initAddTimes(): Unit = {
+    val cellTimes = cell.getTimes
+    if (subModules == null || subModules.length < cellTimes.length) {
+      subModules = new Array[AbstractModule[_ <: Activity, _ <: Activity, T]](cellTimes.length)
+      var i = 0
+      while (i < cellTimes.length) {
+        subModules(i) = cellTimes(i)._1
+        i += 1
+      }
+      forwardTimes = new Array[Long](cellTimes.length)
+      backwardTimes = new Array[Long](cellTimes.length)
+      times =
+        new Array[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)](cellTimes.length)
+    }
+  }
+
+  private def resetAddTimes(): Unit = {
+    if (subModules != null) {
+      var i = 0
+      while (i < subModules.length) {
+        forwardTimes(i) = 0L
+        backwardTimes(i) = 0L
+        i += 1
+      }
+    }
+  }
+
+  def addTimes(other: Cell[T]): Unit = {
+    val cellTimes = cell.getTimes
+    val otherTimes = other.getTimes
+    require(cellTimes.length == otherTimes.length,
+      " Cell -> CellTimes: cell.getTimes.length does not comform to other.getTimes.length." +
+        s" cell.getTimes.length = ${cellTimes.length}, " +
+        s"other.getTimes.length = ${otherTimes.length}")
+
+    val length = cellTimes.length
+    initAddTimes()
+    var i = 0
+    while (i < length) {
+      val subModule = otherTimes(i)._1.getClass.getName
+      require(subModules(i).getClass.getName == subModule,
+        s"Cell -> CellTimes: ${i}-th submodule in cell" +
+          s" does not comform to ${i}-th submodule in other." +
+          s" ${i}-th cell module is ${subModules(i)}," +
+          s" ${i}-th other module is ${otherTimes(i)._1}")
+      forwardTimes(i) += otherTimes(i)._2
+      backwardTimes(i) += otherTimes(i)._3
+      i += 1
+    }
+  }
+
+  override def getTimes(): Array[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)] = {
+    initAddTimes()
+    val cellTimes = cell.getTimes
+    var i = 0
+    while (i < cellTimes.length) {
+      times(i) = (subModules(i),
+        forwardTimes(i) + cellTimes(i)._2,
+        backwardTimes(i) + cellTimes(i)._3)
+      i += 1
+    }
+    times
+  }
+
+  override def resetTimes(): Unit = {
+    resetAddTimes()
+    cell.resetTimes
   }
 
   override def zeroGradParameters(): Unit = {
@@ -154,5 +260,39 @@ abstract class Cell[T : ClassTag](
         }
       )
     }
+  }
+}
+
+object CellSerializer extends ModuleSerializable {
+
+  override def loadModule[T: ClassTag](model : BigDLModule)
+                                      (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
+    val moduleData = super.loadModule(model)
+    val cellModule = moduleData.module.asInstanceOf[Cell[T]]
+
+    val attrMap = model.getAttrMap
+    cellModule.cell = DataConverter.getAttributeValue(attrMap.get("cell")).
+      asInstanceOf[AbstractModule[Activity, Activity, T]]
+
+    createBigDLModule(model, cellModule)
+  }
+
+  override def serializeModule[T: ClassTag](module : ModuleData[T])
+                                           (implicit ev: TensorNumeric[T]) : BigDLModule = {
+    val bigDLModule = super.serializeModule(module)
+    val cellModule = module.module.asInstanceOf[Cell[T]]
+    val cellModuleBuilder = BigDLModule.newBuilder(bigDLModule)
+
+    val cellSerializerFlagBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(cellSerializerFlagBuilder, true,
+      scala.reflect.runtime.universe.typeOf[Boolean])
+    cellModuleBuilder.putAttr("is_cell_module", cellSerializerFlagBuilder.build)
+
+    val cellBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(cellBuilder, cellModule.cell,
+      ModuleSerializer.abstractModuleType)
+    cellModuleBuilder.putAttr("cell", cellBuilder.build)
+
+    createSerializeBigDLModule(cellModuleBuilder, module)
   }
 }

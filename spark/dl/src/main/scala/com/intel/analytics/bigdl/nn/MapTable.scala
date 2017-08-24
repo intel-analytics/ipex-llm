@@ -18,6 +18,8 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.serializer.{ContainerSerializable, ModuleData}
+import serialization.Bigdl.BigDLModule
 
 import scala.reflect.ClassTag
 
@@ -35,12 +37,18 @@ class MapTable[T: ClassTag](
   (implicit ev: TensorNumeric[T]) extends Container[Table, Table, T]  {
 
   private def extend(n: Int): Unit = {
-    modules.update(0, module.asInstanceOf[AbstractModule[Activity, Activity, T]])
+    if (!modules.contains(0)) {
+      modules.append(module.asInstanceOf[AbstractModule[Activity, Activity, T]])
+    } else {
+      modules.update(0, module.asInstanceOf[AbstractModule[Activity, Activity, T]])
+    }
     var i = 1
     while (i <= n && modules.size <= i) {
+      if (modules.length <= i) {
         modules.append(module
           .cloneModule()
           .asInstanceOf[AbstractModule[Activity, Activity, T]])
+      }
       i += 1
     }
   }
@@ -76,12 +84,11 @@ class MapTable[T: ClassTag](
     gradInput
   }
 
-  override def accGradParameters(input: Table, gradOutput: Table,
-    scale: Double = 1.0): Unit = {
+  override def accGradParameters(input: Table, gradOutput: Table): Unit = {
     extend(input.length())
     var i = 0
     while (i < input.length()) {
-        modules(i).accGradParameters(input(i + 1), gradOutput(i + 1), scale)
+      modules(i).accGradParameters(input(i + 1), gradOutput(i + 1))
       i += 1
     }
   }
@@ -112,12 +119,39 @@ class MapTable[T: ClassTag](
     }
     str
   }
+
+  override def clearState(): this.type = {
+    modules.clear()
+    this
+  }
 }
 
-object MapTable {
+object MapTable extends ContainerSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
-      module: AbstractModule[_ <: Activity, _ <: Activity, T] = null
+    module: AbstractModule[_ <: Activity, _ <: Activity, T] = null
   )(implicit ev: TensorNumeric[T]) : MapTable[T] = {
     new MapTable[T](module)
+  }
+
+  override def loadModule[T: ClassTag](model : BigDLModule)
+                                      (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
+    val moduleData = super.loadModule(model)
+    val mapTable = moduleData.module.asInstanceOf[MapTable[T]]
+    require(mapTable.modules.size >=1, "sub module should not be empty")
+    mapTable.add(mapTable.modules(0))
+    moduleData
+  }
+
+  override def serializeModule[T: ClassTag](module : ModuleData[T])
+                                           (implicit ev: TensorNumeric[T]) : BigDLModule = {
+    val mapTable = module.module.asInstanceOf[MapTable[T]]
+    val subModules = mapTable.modules
+    require(subModules.size >=1, "sub module should not be empty")
+    // `modules` are created during forward() by 'n' times of the same module depends on input size,
+    // store the first one to save the storage cost just in case large input size
+    val singleModule = subModules(0)
+    mapTable.modules.clear()
+    mapTable.modules.append(singleModule)
+    super.serializeModule(module)
   }
 }

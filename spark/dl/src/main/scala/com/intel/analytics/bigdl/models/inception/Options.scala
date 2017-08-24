@@ -33,7 +33,8 @@ object Options {
     maxEpoch: Option[Int] = None,
     maxIteration: Int = 62000,
     weightDecay: Double = 0.0001,
-    checkpointIteration: Int = 620
+    checkpointIteration: Int = 620,
+    graphModel: Boolean = false
   )
 
   val trainParser = new OptionParser[TrainParams]("BigDL Inception Example") {
@@ -75,7 +76,9 @@ object Options {
     opt[Int]("checkpointIteration")
       .text("checkpoint interval of iterations")
       .action((x, c) => c.copy(checkpointIteration = x))
-
+    opt[Unit]('g', "graphModel")
+      .text("use graph model")
+      .action((x, c) => c.copy(graphModel = true))
   }
 
   case class TestParams(

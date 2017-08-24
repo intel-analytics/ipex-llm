@@ -1,0 +1,119 @@
+syntax = "proto3";
+package serialization;
+message BigDLModule
+{
+    string name = 1; //module name
+    repeated BigDLModule subModules = 2; // sub modules
+    BigDLTensor weight = 3; // weight for each layer, serialized data are stored as either float or double
+    BigDLTensor bias = 4; // bias for each layer
+    repeated string preModules = 5; //pre modules of the same hierarchy
+    repeated string nextModules = 6; //next modules of the same hierachy
+    string moduleType = 7; //module type to identify a module like linear, graph, etc
+    map<string, AttrValue> attr = 8; // module attributes
+}
+enum VarFormat {
+    EMPTY_FORMAT = 0;
+    DEFAULT = 1;
+    ONE_D = 2;
+    IN_OUT = 3;
+    OUT_IN = 4;
+    IN_OUT_KW_KH = 5;
+    OUT_IN_KW_KH = 6;
+    GP_OUT_IN_KW_KH = 7;
+    GP_IN_OUT_KW_KH = 8;
+    OUT_IN_KT_KH_KW = 9;
+}
+enum InitMethodType {
+    EMPTY_INITIALIZATION = 0;
+    RANDOM_UNIFORM = 1;
+    RANDOM_UNIFORM_PARAM = 2;
+    RANDOM_NORMAL = 3;
+    ZEROS = 4;
+    ONES = 5;
+    CONST = 6;
+    XAVIER = 7;
+    BILINEARFILLER = 8;
+}
+enum RegularizerType {
+    L1L2Regularizer = 0;
+    L1Regularizer = 1;
+    L2Regularizer = 2;
+}
+
+enum InputDataFormat {
+    NCHW = 0;
+    NHWC = 1;
+}
+
+message InitMethod {
+    InitMethodType methodType = 1;
+    repeated double data = 2;
+}
+message BigDLTensor{
+    DataType datatype = 1;
+    repeated int32 size = 2; //size of tensor
+    repeated float float_data = 3; //tensor element
+    repeated double double_data = 4; //tensor element
+}
+message Regularizer {
+    RegularizerType regularizerType = 1;
+    repeated double regularData = 2;
+}
+
+enum DataType {
+    INT32 = 0;
+    INT64 = 1;
+    FLOAT = 2;
+    DOUBLE = 3;
+    STRING = 4;
+    BOOL = 5;
+    REGULARIZER = 6;
+    TENSOR = 7;
+    VARIABLE_FORMAT= 8;
+    INITMETHOD = 9;
+    MODULE = 10;
+    NAME_ATTR_LIST = 11;
+    ARRAY_VALUE = 12;
+    DATA_FORMAT = 13;
+}
+
+message AttrValue {
+    message ArrayValue {
+        repeated int32 i32 = 1;                         // "Array(int32)"
+        repeated int64 i64 = 2 ;        // "Array(int64)"
+        repeated float flt = 3 ;        // "Array(float)"
+        repeated double dbl = 4 ;        // "Array(double)"
+        repeated string str = 5;                        // "Array(string)"
+        repeated bool boolean = 6 ;         // "Array(bool)"
+        repeated Regularizer  Regularizer = 7 ;         // "Array(Regularizer)"
+        repeated BigDLTensor tensor = 8;         // "Array(BigDLTensor)"
+        repeated VarFormat variableFormat = 9; // "Array(VariableFormat)"
+        repeated InitMethod initMethod = 10;         // "Array(BigDLTensor)"
+        repeated BigDLModule bigDLModule = 11; // "Array(BigDLModel)"
+        repeated NameAttrList nameAttrList = 12; //
+        repeated InputDataFormat dataFormat = 13; // "Array(DataFormat)"
+        int32 size = 14;
+        DataType datatype = 15;
+    }
+    oneof value {
+        int32 int32Value = 1; // int32 value
+        int64 int64Value = 2; //int64 value
+        float floatValue = 3; //float value
+        double doubleValue = 4; //float value
+        string stringValue = 5; // string value
+        bool boolValue = 6; // bool value
+        Regularizer regularizerValue = 7; // Regularizer
+        BigDLTensor tensorValue = 8; //tensor value
+        VarFormat variableFormatValue= 9; //Variable format
+        InitMethod initMethodValue = 10; // init method
+        BigDLModule bigDLModuleValue = 11; // big DL module
+        NameAttrList nameAttrListValue = 12; // name attribute list
+        ArrayValue arrayValue = 13; //array value of any type
+        InputDataFormat dataFormatValue = 14; // data format
+    }
+    DataType dataType = 15;
+}
+message NameAttrList {
+    string name = 1;
+    map<string, AttrValue> attr = 2;
+}

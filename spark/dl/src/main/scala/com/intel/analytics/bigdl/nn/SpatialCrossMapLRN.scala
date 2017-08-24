@@ -34,14 +34,13 @@ import scala.reflect._
  * where x_f is the input at spatial locations h,w (not shown for simplicity) and feature map f,
  * l1 corresponds to max(0,f-ceil(size/2)) and l2 to min(F, f-ceil(size/2) + size).
  * Here, F is the number of feature maps.
- * @param size  the number of channels to sum over (for cross channel LRN) or the side length of
- *              the square region to sum over (for within channel LRN)
+ * @param size  the number of channels to sum over (for cross channel LRN)
  * @param alpha  the scaling parameter
  * @param beta   the exponent
  * @param k
  */
 @SerialVersionUID(3641570491004969703L)
-class SpatialCrossMapLRN[@specialized(Float, Double) T: ClassTag]
+class SpatialCrossMapLRN[T: ClassTag]
 (val size: Int = 5, val alpha: Double = 1.0, val beta: Double = 0.75, val k: Double = 1.0)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 

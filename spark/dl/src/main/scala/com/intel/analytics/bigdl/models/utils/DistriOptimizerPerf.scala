@@ -86,7 +86,7 @@ object DistriOptimizerPerf {
   def performance(param: DistriOptimizerPerfParam): Unit = {
     val conf = Engine.createSparkConf()
       .setAppName("DistriOptimizer Performance Test")
-      .set("spark.task.cpus", Engine.coreNumber().toString)
+      .set("spark.task.maxFailures", "1")
 
     val (_model, input) = param.module match {
       case "inception_v1" => (Inception_v1(1000), Tensor(param.batchSize, 3, 224, 224))

@@ -3,9 +3,14 @@
 LeNet5 is a classical CNN model used in digital number classification. For detail information,
 please refer to <http://yann.lecun.com/exdb/lenet/>.
 
+## Install dependencies
+ * [Install dependencies](../../../README.md#install.dependencies)
+ 
 ## How to run this example:
+Please note that due to some permission issue, this example **cannot** be run on Windows.
 
-Program would download the minst data into ```/tmp/mnist``` automatically by default.
+
+Program would download the mnist data into ```/tmp/mnist``` automatically by default.
 
 ```
 /tmp/mnist$ tree .
@@ -17,14 +22,10 @@ Program would download the minst data into ```/tmp/mnist``` automatically by def
 
 ```
 
-**Source bigdl.sh fisrt which would setup the essential environment for you, otherwise program would fail fast.**
-
 We would train a LeNet model in spark local mode with the following commands and you can distribute it across cluster by modifying the spark master and the executor cores.
 
 ```
     BigDL_HOME=...
-
-    source $BigDL_HOME/dist/bin/bigdl.sh
 
     SPARK_HOME=...
     MASTER=local[*]
@@ -38,7 +39,6 @@ We would train a LeNet model in spark local mode with the following commands and
         --total-executor-cores 2  \
         --executor-cores 2  \
         --executor-memory 4g \
-        --conf spark.akka.frameSize=64 \
         --py-files ${PYTHON_API_ZIP_PATH},${BigDL_HOME}/pyspark/bigdl/models/lenet/lenet5.py  \
         --properties-file ${BigDL_HOME}/dist/conf/spark-bigdl.conf \
         --jars ${BigDL_JAR_PATH} \
@@ -52,6 +52,14 @@ We would train a LeNet model in spark local mode with the following commands and
 * ```--action``` it can be train or test.
 
 * ```--batchSize``` option can be used to set batch size, the default value is 128.
+
+* ```--endTriggerType``` option can be used to control how to end the training process, the value can be "epoch" or "iteration" and default value is "epoch".
+
+* ```--endTriggerNum``` use together with ```endTriggerType```, the default value is 20.
+
+* ```--modelPath``` option can be used to set model path for testing, the default value is /tmp/lenet5/model.470.
+
+* ```--checkpointPath``` option can be used to set checkpoint path for saving model, the default value is /tmp/lenet5/.
 
 To verify the accuracy, search "accuracy" from log:
 

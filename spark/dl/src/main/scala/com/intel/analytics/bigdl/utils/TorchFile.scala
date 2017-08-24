@@ -97,13 +97,13 @@ object TorchFile {
       fileName: String,
       objectType: TorchObject,
       overWrite: Boolean = false): Unit = {
-    val file = new File(fileName)
+    val file = new java.io.File(fileName)
     if (file.exists()) {
       require(file.isFile(), s"$fileName is not a file")
       if (!overWrite) {
         throw new FileAlreadyExistsException(fileName)
       } else { // clear the file
-        val fw = new FileWriter(file)
+        val fw = new java.io.FileWriter(file)
         fw.write("")
         fw.close()
       }
@@ -497,7 +497,7 @@ object TorchFile {
     table("padW") = source.padW
     table("padH") = source.padH
     table("indices") = source.indices
-    table("ceil_mode") = source.ceil_mode
+    table("ceil_mode") = source.ceilMode
     writeObject(table, rawData, path, TYPE_TABLE)
     byteWrite(rawData, path)
   }

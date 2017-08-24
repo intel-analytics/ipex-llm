@@ -55,6 +55,8 @@ object TensorNumericMath {
 
     def sqrt(x: T): T
 
+    def tanh(x: T): T
+
     def abs(x: T): T
 
     def negative(x: T): T
@@ -104,6 +106,8 @@ object TensorNumericMath {
 
     def vSqrt(n: Int, a: Array[T], aOffset: Int, y: Array[T], yOffset: Int): Unit
 
+    def vTanh(n: Int, a: Array[T], aOffset: Int, y: Array[T], yOffset: Int): Unit
+
     def vAbs(n: Int, a: Array[T], aOffset: Int, y: Array[T], yOffset: Int): Unit
 
     def vLog1p(n: Int, a: Array[T], aOffset: Int, y: Array[T], yOffset: Int): Unit
@@ -129,6 +133,9 @@ object TensorNumericMath {
       yOffset: Int): Unit
 
     def sum(n: Int, a: Array[T], aOffset: Int, stride: Int): T
+
+    def arraycopy(src: Array[T], srcPos: Int,
+                  dest: Array[T], destPos: Int, length: Int): Unit
 
     def getType(): TensorDataType
   }
@@ -167,6 +174,8 @@ object TensorNumericMath {
       def max(x: Float, y: Float): Float = java.lang.Math.max(x, y)
 
       def sqrt(x: Float): Float = Math.sqrt(x.toDouble).toFloat
+
+      def tanh(x: Float): Float = Math.tanh(x.toDouble).toFloat
 
       def abs(x: Float): Float = Math.abs(x)
 
@@ -257,6 +266,12 @@ object TensorNumericMath {
         MKL.vsSqrt(n, a, aOffset, y, yOffset)
       }
 
+      override def vTanh(n: Int, a: Array[Float], aOffset: Int, y: Array[Float], yOffset: Int)
+      : Unit = {
+        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        MKL.vsTanh(n, a, aOffset, y, yOffset)
+      }
+
       override def vAbs(n: Int, a: Array[Float], aOffset: Int, y: Array[Float], yOffset: Int)
       : Unit = {
         require(MKL.isMKLLoaded, "mkl isn't loaded")
@@ -339,6 +354,15 @@ object TensorNumericMath {
         }
         r
       }
+
+      override def arraycopy(
+            src: Array[Float],
+            srcPos: Int,
+            dest: Array[Float],
+            destPos: Int,
+            length: Int): Unit = {
+        System.arraycopy(src, srcPos, dest, destPos, length)
+      }
     }
 
     implicit object NumericDouble extends TensorNumeric[Double] {
@@ -357,6 +381,8 @@ object TensorNumericMath {
       def max(x: Double, y: Double): Double = java.lang.Math.max(x, y)
 
       def sqrt(x: Double): Double = Math.sqrt(x)
+
+      def tanh(x: Double): Double = Math.tanh(x)
 
       def abs(x: Double): Double = Math.abs(x)
 
@@ -450,6 +476,12 @@ object TensorNumericMath {
         MKL.vdSqrt(n, a, aOffset, y, yOffset)
       }
 
+      override def vTanh(n: Int, a: Array[Double], aOffset: Int, y: Array[Double], yOffset: Int)
+      : Unit = {
+        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        MKL.vdTanh(n, a, aOffset, y, yOffset)
+      }
+
       override def vAbs(n: Int, a: Array[Double], aOffset: Int, y: Array[Double], yOffset: Int)
       : Unit = {
         require(MKL.isMKLLoaded, "mkl isn't loaded")
@@ -531,6 +563,15 @@ object TensorNumericMath {
           i += 1
         }
         r
+      }
+
+      override def arraycopy(
+            src: Array[Double],
+            srcPos: Int,
+            dest: Array[Double],
+            destPos: Int,
+            length: Int): Unit = {
+        System.arraycopy(src, srcPos, dest, destPos, length)
       }
     }
   }

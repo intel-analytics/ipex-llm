@@ -19,17 +19,80 @@ import os
 import sys
 from distutils.dir_util import mkpath
 
-from bigdl.nn.layer import DOUBLEMAX
+from bigdl.util.common import DOUBLEMAX
 from bigdl.util.common import JTensor
 from bigdl.util.common import JavaValue
 from bigdl.util.common import callBigDlFunc
 from bigdl.util.common import callJavaFunc
 from bigdl.util.common import get_spark_context
+from bigdl.util.common import to_list
+from py4j.java_gateway import JavaObject
+
 
 if sys.version >= '3':
     long = int
     unicode = str
 
+
+class Top1Accuracy(JavaValue):
+    """
+    Caculate the percentage that output's max probability index equals target.
+
+    >>> top1 = Top1Accuracy()
+    creating: createTop1Accuracy
+    """
+    def __init__(self, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type)
+
+class TreeNNAccuracy(JavaValue):
+    """
+    Caculate the percentage that output's max probability index equals target.
+
+    >>> top1 = TreeNNAccuracy()
+    creating: createTreeNNAccuracy
+    """
+    def __init__(self, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type)
+
+class Top5Accuracy(JavaValue):
+    """
+    Caculate the percentage that output's max probability index equals target.
+
+    >>> top5 = Top5Accuracy()
+    creating: createTop5Accuracy
+    """
+    def __init__(self, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type)
+
+
+class Loss(JavaValue):
+
+    """
+    This evaluation method is calculate loss of output with respect to target
+    >>> from bigdl.nn.criterion import ClassNLLCriterion
+    >>> loss = Loss()
+    creating: createClassNLLCriterion
+    creating: createLoss
+
+    >>> loss = Loss(ClassNLLCriterion())
+    creating: createClassNLLCriterion
+    creating: createLoss
+    """
+    def __init__(self, cri=None, bigdl_type="float"):
+        from bigdl.nn.criterion import ClassNLLCriterion
+        if cri is None:
+            cri = ClassNLLCriterion()
+        JavaValue.__init__(self, None, bigdl_type, cri)
+
+class MAE(JavaValue):
+    """
+    This evaluation method calculates the mean absolute error of output with respect to target.
+
+    >>> mae = MAE()
+    creating: createMAE
+    """
+    def __init__(self, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type)
 
 class MaxIteration(JavaValue):
     """
@@ -117,6 +180,42 @@ class SeveralIteration(JavaValue):
         JavaValue.__init__(self, None, bigdl_type, interval)
 
 
+class MaxScore(JavaValue):
+    """
+    A trigger that triggers an action when validation score larger than "max" score
+
+
+    >>> maxScore = MaxScore(0.4)
+    creating: createMaxScore
+    """
+    def __init__(self, max, bigdl_type="float"):
+        """
+        Create a MaxScore trigger.
+
+
+        :param max: max score
+        """
+        JavaValue.__init__(self, None, bigdl_type, max)
+
+
+class MinLoss(JavaValue):
+    """
+    A trigger that triggers an action when training loss less than "min" loss
+
+
+    >>> minLoss = MinLoss(0.1)
+    creating: createMinLoss
+    """
+    def __init__(self, min, bigdl_type="float"):
+        """
+        Create a MinLoss trigger.
+
+
+        :param min: min loss
+        """
+        JavaValue.__init__(self, None, bigdl_type, min)
+
+
 class Poly(JavaValue):
     """
     A learning rate decay policy, where the effective learning rate
@@ -133,6 +232,22 @@ class Poly(JavaValue):
     """
     def __init__(self, power, max_iteration, bigdl_type="float"):
             JavaValue.__init__(self, None, bigdl_type, power, max_iteration)
+
+
+class Exponential(JavaValue):
+    """
+    [[Exponential]] is a learning rate schedule, which rescale the learning rate by
+    lr_{n + 1} = lr * decayRate `^` (iter / decayStep)
+    :param decay_step the inteval for lr decay
+    :param decay_rate decay rate
+    :param stair_case if true, iter / decayStep is an integer division
+                     and the decayed learning rate follows a staircase function.
+
+    >>> exponential = Exponential(100, 0.1)
+    creating: createExponential
+    """
+    def __init__(self, decay_step, decay_rate, stair_case=False, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type, decay_step, decay_rate, stair_case)
 
 
 class Step(JavaValue):
@@ -165,7 +280,69 @@ class Default(JavaValue):
     def __init__(self, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type)
 
-class SGD(JavaValue):
+
+class Plateau(JavaValue):
+    """
+    Plateau is the learning rate schedule when a metric has stopped improving.
+    Models often benefit from reducing the learning rate by a factor of 2-10
+    once learning stagnates. It monitors a quantity and if no improvement
+    is seen for a 'patience' number of epochs, the learning rate is reduced.
+
+    :param monitor quantity to be monitored, can be Loss or score
+    :param factor factor by which the learning rate will be reduced. new_lr = lr * factor
+    :param patience number of epochs with no improvement after which learning rate will be reduced.
+    :param mode one of {min, max}.
+                In min mode, lr will be reduced when the quantity monitored has stopped decreasing;
+                in max mode it will be reduced when the quantity monitored has stopped increasing
+    :param epsilon threshold for measuring the new optimum, to only focus on significant changes.
+    :param cooldown number of epochs to wait before resuming normal operation
+                    after lr has been reduced.
+    :param min_lr lower bound on the learning rate.
+
+    >>> plateau = Plateau("score")
+    creating: createPlateau
+    """
+    def __init__(self,
+                 monitor,
+                 factor=0.1,
+                 patience=10,
+                 mode="min",
+                 epsilon=1e-4,
+                 cooldown=0,
+                 min_lr=0.0,
+                 bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type, monitor, factor, patience, mode, epsilon,
+                           cooldown, min_lr)
+
+class OptimMethod(JavaValue):
+
+    def __init__(self, jvalue, bigdl_type, *args):
+        if (jvalue):
+            assert(type(jvalue) == JavaObject)
+            self.value = jvalue
+        else:
+            self.value = callBigDlFunc(
+                bigdl_type, JavaValue.jvm_class_constructor(self), *args)
+        self.bigdl_type = bigdl_type
+
+    @staticmethod
+    def load(path, bigdl_type="float"):
+        """
+        load optim method
+        :param path: file path
+        """
+        return callBigDlFunc(bigdl_type, "loadOptimMethod", path)
+
+    def save(self, path, overWrite):
+        """
+        save OptimMethod
+        :param path      path
+        :param overWrite whether to overwrite
+        """
+        method=self.value
+        return callBigDlFunc(self.bigdl_type, "saveOptimMethod", method, path, overWrite)
+
+class SGD(OptimMethod):
     """
     A plain implementation of SGD
 
@@ -192,12 +369,12 @@ class SGD(JavaValue):
                  learningrates=None,
                  weightdecays=None,
                  bigdl_type="float"):
-        JavaValue.__init__(self, None, bigdl_type, learningrate, learningrate_decay, weightdecay,
+        super(SGD, self).__init__(None, bigdl_type, learningrate, learningrate_decay, weightdecay,
                            momentum, dampening, nesterov,
                            leaningrate_schedule if (leaningrate_schedule) else Default(),
                            JTensor.from_ndarray(learningrates), JTensor.from_ndarray(weightdecays))
 
-class Adagrad(JavaValue):
+class Adagrad(OptimMethod):
     """
     An implementation of Adagrad. See the original paper:
     http://jmlr.org/papers/volume12/duchi11a/duchi11a.pdf
@@ -213,9 +390,9 @@ class Adagrad(JavaValue):
                  learningrate_decay=0.0,
                  weightdecay=0.0,
                  bigdl_type="float"):
-        JavaValue.__init__(self, None, bigdl_type, learningrate, learningrate_decay, weightdecay)
+        super(Adagrad, self).__init__(None, bigdl_type, learningrate, learningrate_decay, weightdecay)
 
-class LBFGS(JavaValue):
+class LBFGS(OptimMethod):
     """
     This implementation of L-BFGS relies on a user-provided line
     search function (state.lineSearch). If this function is not
@@ -252,10 +429,10 @@ class LBFGS(JavaValue):
                  bigdl_type="float"):
         if linesearch or linesearch_options:
             raise ValueError('linesearch and linesearch_options must be None in LBFGS')
-        JavaValue.__init__(self, None, bigdl_type, max_iter, max_eval, tolfun, tolx,
-                           ncorrection, learningrate, verbose, linesearch, linesearch_options)
+        super(LBFGS, self).__init__(None, bigdl_type, max_iter, max_eval, tolfun, tolx,
+                       ncorrection, learningrate, verbose, linesearch, linesearch_options)
 
-class Adadelta(JavaValue):
+class Adadelta(OptimMethod):
     """
     Adadelta implementation for SGD: http://arxiv.org/abs/1212.5701
 
@@ -268,9 +445,9 @@ class Adadelta(JavaValue):
                  decayrate = 0.9,
                  epsilon = 1e-10,
                  bigdl_type="float"):
-        JavaValue.__init__(self, None, bigdl_type, decayrate, epsilon)
+        super(Adadelta, self).__init__(None, bigdl_type, decayrate, epsilon)
 
-class Adam(JavaValue):
+class Adam(OptimMethod):
     """
     An implementation of Adam http://arxiv.org/pdf/1412.6980.pdf
     :param learningrate learning rate
@@ -288,10 +465,10 @@ class Adam(JavaValue):
                  beta2 = 0.999,
                  epsilon = 1e-8,
                  bigdl_type="float"):
-        JavaValue.__init__(self, None, bigdl_type, learningrate, learningrate_decay,
+        super(Adam, self).__init__(None, bigdl_type, learningrate, learningrate_decay,
                            beta1, beta2, epsilon)
 
-class Adamax(JavaValue):
+class Adamax(OptimMethod):
     """
     An implementation of Adamax http://arxiv.org/pdf/1412.6980.pdf
     :param learningrate learning rate
@@ -307,9 +484,9 @@ class Adamax(JavaValue):
                  beta2 = 0.999,
                  epsilon = 1e-38,
                  bigdl_type="float"):
-        JavaValue.__init__(self, None, bigdl_type, learningrate, beta1, beta2, epsilon)
+        super(Adamax, self).__init__(None, bigdl_type, learningrate, beta1, beta2, epsilon)
 
-class RMSprop(JavaValue):
+class RMSprop(OptimMethod):
     """
     An implementation of RMSprop
     :param learningrate learning rate
@@ -325,7 +502,7 @@ class RMSprop(JavaValue):
                  decayrate = 0.99,
                  epsilon = 1e-8,
                  bigdl_type="float"):
-        JavaValue.__init__(self, None, bigdl_type, learningrate, learningrate_decay, decayrate, epsilon)
+        super(RMSprop, self).__init__(None, bigdl_type, learningrate, learningrate_decay, decayrate, epsilon)
 
 class MultiStep(JavaValue):
     """
@@ -363,7 +540,7 @@ class Optimizer(JavaValue):
 
 
        :param model: the neural net model
-       :param traiing_rdd: the training dataset
+       :param training_rdd: the training dataset
        :param criterion: the loss function
        :param optim_method: the algorithm to use for optimization, 
           e.g. SGD, Adagrad, etc. If optim_method is None, the default algorithm is SGD.
@@ -374,7 +551,7 @@ class Optimizer(JavaValue):
                            training_rdd, criterion,
                           optim_method if optim_method else SGD(), end_trigger, batch_size)
 
-    def set_validation(self, batch_size, val_rdd, trigger, val_method=["Top1Accuracy"]):
+    def set_validation(self, batch_size, val_rdd, trigger, val_method=None):
         """
         Configure validation settings.
 
@@ -384,8 +561,10 @@ class Optimizer(JavaValue):
         :param trigger: validation interval
         :param val_method: the ValidationMethod to use,e.g. "Top1Accuracy", "Top5Accuracy", "Loss"
         """
+        if val_method is None:
+            val_method = [Top1Accuracy()]
         callBigDlFunc(self.bigdl_type, "setValidation", self.value, batch_size,
-                      trigger, val_rdd, val_method)
+                      trigger, val_rdd, to_list(val_method))
 
     def set_model(self, model):
         """
@@ -417,13 +596,13 @@ class Optimizer(JavaValue):
         Do an optimization.
         """
         jmodel = callJavaFunc(get_spark_context(), self.value.optimize)
-        from bigdl.nn.layer import Model
-        return Model.of(jmodel)
+        from bigdl.nn.layer import Layer
+        return Layer.of(jmodel)
 
     def set_train_summary(self, summary):
         """
         Set train summary. A TrainSummary object contains information
-        necesary for the optimizer to know how often the logs are recorded,
+        necessary for the optimizer to know how often the logs are recorded,
         where to store the logs and how to retrieve them, etc. For details,
         refer to the docs of TrainSummary.
 
@@ -437,7 +616,7 @@ class Optimizer(JavaValue):
     def set_val_summary(self, summary):
         """
         Set validation summary. A ValidationSummary object contains information
-        necesary for the optimizer to know how often the logs are recorded,
+        necessary for the optimizer to know how often the logs are recorded,
         where to store the logs and how to retrieve them, etc. For details,
         refer to the docs of ValidationSummary.
 
@@ -547,6 +726,40 @@ class ValidationSummary(JavaValue):
         """
         return callBigDlFunc(self.bigdl_type, "summaryReadScalar", self.value,
                              tag)
+
+
+class L1L2Regularizer(JavaValue):
+    """
+    Apply both L1 and L2 regularization
+
+    :param l1 l1 regularization rate
+    :param l2 l2 regularization rate
+
+    """
+    def __init__(self, l1, l2, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type, l1, l2)
+
+
+class L1Regularizer(JavaValue):
+    """
+    Apply L1 regularization
+
+    :param l1 l1 regularization rate
+
+    """
+    def __init__(self, l1, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type, l1)
+
+
+class L2Regularizer(JavaValue):
+    """
+    Apply L2 regularization
+
+    :param l2 l2 regularization rate
+
+    """
+    def __init__(self, l2, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type, l2)
 
 
 def _test():

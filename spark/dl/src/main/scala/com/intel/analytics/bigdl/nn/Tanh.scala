@@ -33,7 +33,7 @@ class Tanh[@specialized(Float, Double) T: ClassTag](
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     output.resizeAs(input)
-    output.map(input, (_, inputVal) => ev.fromType[Double](tanh(ev.toType[Double](inputVal))))
+    output.tanh(input)
     output
   }
 
@@ -48,7 +48,7 @@ class Tanh[@specialized(Float, Double) T: ClassTag](
 
 
 object Tanh {
-  def apply[@specialized(Float, Double) T: ClassTag]()
+  def apply[T: ClassTag]()
       (implicit ev: TensorNumeric[T]) : Tanh[T] = {
     new Tanh[T]()
   }

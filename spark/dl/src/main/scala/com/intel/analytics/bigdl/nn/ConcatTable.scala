@@ -39,7 +39,7 @@ class ConcatTable[T : ClassTag]
     }
     var i = 0
     while (i < modules.length) {
-      val currentOutput = modules(i).updateOutput(input)
+      val currentOutput = modules(i).forward(input)
       output.toTable(i + 1) = currentOutput
       i += 1
     }
@@ -197,11 +197,10 @@ class ConcatTable[T : ClassTag]
     gradInput
   }
 
-  override def accGradParameters(input: Activity, gradOutput: Table,
-    scale: Double = 1.0): Unit = {
+  override def accGradParameters(input: Activity, gradOutput: Table): Unit = {
     var i = 0
     while (i < modules.length) {
-      modules(i).accGradParameters(input, gradOutput.toTable(i + 1), scale)
+      modules(i).accGradParameters(input, gradOutput.toTable(i + 1))
       i += 1
     }
   }

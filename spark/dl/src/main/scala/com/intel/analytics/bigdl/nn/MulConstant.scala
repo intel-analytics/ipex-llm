@@ -30,7 +30,7 @@ import scala.reflect.ClassTag
  */
 
 @SerialVersionUID(- 8747642888169310696L)
-class MulConstant[@specialized(Float, Double) T: ClassTag](
+class MulConstant[T: ClassTag](
   val constant : Double, val inplace : Boolean = false)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T]  {
   val scalar = ev.fromType[Double](constant)
@@ -78,6 +78,13 @@ class MulConstant[@specialized(Float, Double) T: ClassTag](
     def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
     val state = Seq(super.hashCode(), scalar, inplace)
     state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
+  }
+
+  override def clearState(): this.type = {
+    if (!inplace) {
+      super.clearState()
+    }
+    this
   }
 }
 

@@ -22,6 +22,8 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 /**
  * VariableFormat describe the meaning of each dimension of the variable
+ * (the trainable parameters of a model like weight and bias) and can be used to
+ * return the fan in and fan out size of the variable when provided the variable shape.
  */
 trait VariableFormat {
   def getFanIn(shape: Array[Int]): Int = {
@@ -95,24 +97,24 @@ object VariableFormat {
 
   case object GP_OUT_IN_KW_KH extends VariableFormat {
     override def getFanIn(shape: Array[Int]): Int = {
-      val receptiveFieldSize = shape(0) * shape(2) * shape(3)
+      val receptiveFieldSize = shape(0) * shape(3) * shape(4)
       shape(2) * receptiveFieldSize
     }
 
     override def getFanOut(shape: Array[Int]): Int = {
-      val receptiveFieldSize = shape(0) * shape(2) * shape(3)
+      val receptiveFieldSize = shape(0) * shape(3) * shape(4)
       shape(1) * receptiveFieldSize
     }
   }
 
   case object GP_IN_OUT_KW_KH extends VariableFormat {
     override def getFanIn(shape: Array[Int]): Int = {
-      val receptiveFieldSize = shape(0) * shape(2) * shape(3)
+      val receptiveFieldSize = shape(0) * shape(3) * shape(4)
       shape(1) * receptiveFieldSize
     }
 
     override def getFanOut(shape: Array[Int]): Int = {
-      val receptiveFieldSize = shape(0) * shape(2) * shape(3)
+      val receptiveFieldSize = shape(0) * shape(3) * shape(4)
       shape(2) * receptiveFieldSize
     }
   }
@@ -126,6 +128,18 @@ object VariableFormat {
     override def getFanOut(shape: Array[Int]): Int = {
       val receptiveFieldSize = shape(2) * shape(3) * shape(4)
       shape(0) * receptiveFieldSize
+    }
+  }
+
+  case object GP_KH_KW_IN_OUT extends VariableFormat {
+    override def getFanIn(shape: Array[Int]): Int = {
+      val receptiveFieldSize = shape(0) * shape(1) * shape(2)
+      shape(2) * receptiveFieldSize
+    }
+
+    override def getFanOut(shape: Array[Int]): Int = {
+      val receptiveFieldSize = shape(0) * shape(1) * shape(2)
+      shape(3) * receptiveFieldSize
     }
   }
 

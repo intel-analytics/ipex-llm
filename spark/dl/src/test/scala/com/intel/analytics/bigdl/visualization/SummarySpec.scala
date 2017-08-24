@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.visualization
 
 import com.intel.analytics.bigdl.example.loadmodel.AlexNet
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator}
+import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, TestUtils}
 import Summary._
 import com.intel.analytics.bigdl.visualization.tensorboard.{FileReader, FileWriter}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -28,8 +28,12 @@ import org.tensorflow.framework
 class SummarySpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   before {
-    Engine.localMode = false
+    System.setProperty("bigdl.localMode", "false")
     Engine.init(1, 4, true)
+  }
+
+  after {
+    System.clearProperty("bigdl.localMode")
   }
 
   "write scalar summary" should "work properly" in {
@@ -87,6 +91,7 @@ class SummarySpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "read/write event file" should "work properly" in {
+    TestUtils.cancelOnWindows()
     val logdir = com.google.common.io.Files.createTempDir()
     val writer = new FileWriter(logdir.getPath, 100)
     for (i <- 0 to 9) {
@@ -113,6 +118,7 @@ class SummarySpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "read event file with a non-existent tag" should "return a empty array" in {
+    TestUtils.cancelOnWindows()
     val logdir = com.google.common.io.Files.createTempDir()
     val writer = new FileWriter(logdir.getPath, 100)
     for (i <- 0 to 9) {
@@ -127,6 +133,7 @@ class SummarySpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "FileReader.list" should "work properly" in {
+    TestUtils.cancelOnWindows()
     val logdir = com.google.common.io.Files.createTempDir()
     val writer1 = new FileWriter(logdir.getPath, 100)
     for (i <- 0 to 9) {
@@ -150,6 +157,7 @@ class SummarySpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "FileReader read from five Files" should "work properly" in {
+    TestUtils.cancelOnWindows()
     val numFile = 5
     val logdir = com.google.common.io.Files.createTempDir()
     for (i <- 1 to numFile) {

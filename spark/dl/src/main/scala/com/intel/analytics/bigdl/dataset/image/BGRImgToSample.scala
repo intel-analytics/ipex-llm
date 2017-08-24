@@ -34,7 +34,6 @@ class BGRImgToSample(toRGB: Boolean = true) extends Transformer[LabeledBGRImage,
 
   private val featureBuffer = Tensor[Float]()
   private val labelBuffer = Tensor[Float](1)
-  private val buffer = Sample[Float](featureBuffer, labelBuffer)
 
   override def apply(prev: Iterator[LabeledBGRImage]): Iterator[Sample[Float]] = {
     prev.map(img => {
@@ -44,7 +43,7 @@ class BGRImgToSample(toRGB: Boolean = true) extends Transformer[LabeledBGRImage,
       }
 
       img.copyTo(featureBuffer.storage().array(), 0, toRGB)
-      buffer
+      Sample(featureBuffer, labelBuffer)
     })
   }
 }
