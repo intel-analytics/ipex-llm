@@ -142,9 +142,9 @@ object TensorflowLoader{
 
     // Map from tensorflow node to the converted BigDL node
     val convertedNode = new mutable.HashMap[Node[NodeDef],
-      Node[AbstractModule[Activity, Tensor[T], T]]]()
+      Node[AbstractModule[Activity, Activity, T]]]()
     val nameToNode =
-      new mutable.HashMap[String, Node[AbstractModule[Activity, Tensor[T], T]]]()
+      new mutable.HashMap[String, Node[AbstractModule[Activity, Activity, T]]]()
     val context = ctx.getOrElse(new mutable.HashMap[NodeDef, (Tensor[T], Tensor[T])])
 
     // BFS to keep the input order same
@@ -217,7 +217,7 @@ object TensorflowLoader{
   private[bigdl] def extract[T: ClassTag](graph: DirectedGraph[NodeDef],
       context: Context[T], byteOrder: ByteOrder)(
     implicit ev: TensorNumeric[T]): Option[(
-    AbstractModule[Activity, Tensor[T], T],
+    AbstractModule[Activity, Activity, T],
       List[Node[NodeDef]],
       Seq[Node[NodeDef]]
     )] = {

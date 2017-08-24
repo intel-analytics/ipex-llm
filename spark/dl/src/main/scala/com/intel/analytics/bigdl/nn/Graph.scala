@@ -78,19 +78,23 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
       val nodeInput = if (node.prevNodes.isEmpty && !node.element.isInstanceOf[WithoutInput]) {
         inputData(node, input)
       } else if (node.prevNodes.length == 1) {
-        node.prevNodes.head.element.output.toTensor[T]
+        extractTensor(node.prevNodes.head.element.output, node.prevMetas.head)
       } else {
-        seqToTable(node.prevNodes.map(_.element.output))
+        seqToTable(node.prevNodes.zip(node.prevMetas).map(n => {
+          extractTensor(n._1.element.output, n._2)
+        }))
       }
       node.element.forward(nodeInput)
       inputsBP.put(node.element.getName(), nodeInput)
       i += 1
     }
 
+    // If each output module outputs multiple tensors, we only output the the first tensor for each
+    // output module.
     output = if (outputs.length == 1) {
       outputs(0).element.output
     } else {
-      seqToTable(outputs.map(_.element.output))
+      seqToTable(outputs.map(n => extractTensor(n.element.output, Tensor.START_INDEX)))
     }
     output
   }
@@ -102,21 +106,16 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
     var i = 0
     while (i < backwardExecutions.length) {
       val curNode = backwardExecutions(i)
-      var curGradOutput : Tensor[T] = null
+      var curGradOutput : Activity = null
+      if (curNode.element.output.isTable) {
+        T()
+      }
 
-      curNode.nextNodes.foreach(n => {
-        val nextGradOutput = if (n.prevNodes.length == 1) {
-          n.element.gradInput.toTensor
-        } else {
-          val nextGradOutputTable = n.element.gradInput.toTable
-          nextGradOutputTable[Tensor[T]](n.prevNodes.indexOf(curNode) + 1)
-        }
+      curNode.nextNodes.zip(curNode.nextMetas).foreach(n => {
+        val nextGradOutput = extractTensor(n._1.element.gradInput,
+            n._1.prevNodes.indexOf(curNode) + Tensor.START_INDEX)
 
-        if ((curGradOutput == null) || (curGradOutput.nElement() == 0)) {
-          curGradOutput = nextGradOutput
-        } else if (nextGradOutput.nElement() > 0) {
-          curGradOutput.add(nextGradOutput)
-        }
+        curGradOutput = accActivity(curGradOutput, nextGradOutput, n._2)
       })
 
       gradOutputBP(i) = curGradOutput
@@ -131,7 +130,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
     gradInput = if (inputs.length == 1) {
       inputs(0).element.gradInput
     } else {
-      seqToTable(inputs.map(_.element.gradInput))
+      seqToTable(inputs.map(n => extractTensor(n.element.gradInput, Tensor.START_INDEX)))
     }
     backwardTime = System.nanoTime() - before
     gradInput
@@ -167,21 +166,16 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
     var i = 0
     while (i < backwardExecutions.length) {
       val curNode = backwardExecutions(i)
-      var curGradOutput : Tensor[T] = null
+      var curGradOutput : Activity = null
+      if (curNode.element.output.isTable) {
+        T()
+      }
 
-      curNode.nextNodes.foreach(n => {
-        val nextGradOutput = if (n.prevNodes.length == 1) {
-          n.element.gradInput.toTensor
-        } else {
-          val nextGradOutputTable = n.element.gradInput.toTable
-          nextGradOutputTable[Tensor[T]](n.prevNodes.indexOf(curNode) + 1)
-        }
+      curNode.nextNodes.zip(curNode.nextMetas).foreach(n => {
+        val nextGradOutput = extractTensor(n._1.element.gradInput,
+          n._1.prevNodes.indexOf(curNode) + Tensor.START_INDEX)
 
-        if (curGradOutput == null) {
-          curGradOutput = nextGradOutput
-        } else {
-          curGradOutput.add(nextGradOutput)
-        }
+        curGradOutput = accActivity(curGradOutput, nextGradOutput, n._2)
       })
 
       gradOutputBP(i) = curGradOutput
@@ -195,7 +189,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
     gradInput = if (inputs.length == 1) {
       inputs(0).element.gradInput
     } else {
-      seqToTable(inputs.map(_.element.gradInput))
+      seqToTable(inputs.map(n => extractTensor(n.element.gradInput, Tensor.START_INDEX)))
     }
 
     gradInput
@@ -235,14 +229,14 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
    * Computing backgraph
    */
   private val backGraph = dummyOutput.graph(reverse = true)
-  private var gradGraph: DirectedGraph[AbstractModule[Activity, Tensor[T], T]] = null
+  private var gradGraph: DirectedGraph[AbstractModule[Activity, Activity, T]] = null
 
   /**
    * Execution plan
    */
   private val forwardExecutions = backGraph.topologySort
     .filter(!_.element.isInstanceOf[Dummy[T]]).reverse
-  private var backwardExecutions: Array[Node[AbstractModule[Activity, Tensor[T], T]]] = null
+  private var backwardExecutions: Array[Node[AbstractModule[Activity, Activity, T]]] = null
 
   modules.appendAll(forwardExecutions.map(
     _.element.asInstanceOf[AbstractModule[Activity, Activity, T]]))
@@ -267,7 +261,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
   checkRoots
   build
 
-  private val gradOutputBP = new Array[Tensor[T]](forwardExecutions.length)
+  private val gradOutputBP = new Array[Activity](forwardExecutions.length)
 
   private def checkRoots: Unit = {
     val roots = forwardExecutions.filter(_.prevNodes.size == 0)
@@ -305,7 +299,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
     }
   }
 
-  private def seqToTable(inputs: Seq[_]) : Table = {
+  private def seqToTable(inputs: Seq[Tensor[_]]) : Table = {
     val t = T()
     var j = 1
     inputs.foreach(tensor => {
@@ -316,7 +310,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
   }
 
   private def inputData(
-      node: Node[AbstractModule[Activity, Tensor[T], T]],
+      node: Node[AbstractModule[Activity, Activity, T]],
       input: Activity
   ): Activity = {
     if (inputs.length == 1) {
@@ -386,8 +380,41 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
    * get forward executions
    * @return
    */
-  def getForwardExecutions: Array[Node[AbstractModule[Activity, Tensor[T], T]]] = {
+  def getForwardExecutions: Array[Node[AbstractModule[Activity, Activity, T]]] = {
     forwardExecutions
+  }
+
+  @inline
+  private def extractTensor(activity: Activity, index: Int): Tensor[T] = {
+    if (activity.isTensor) {
+      require(index == Tensor.START_INDEX, s"The output is tensor, so the index should be " +
+        s"${Tensor.START_INDEX} but is $index")
+      activity.toTensor[T]
+    } else {
+      activity.toTable[Tensor[T]](index)
+    }
+  }
+
+  @inline
+  private def accActivity(activity: Activity, tensor: Tensor[T], index: Int): Activity = {
+    if (activity == null || activity.isTensor) {
+      require(index == Tensor.START_INDEX, s"The gradInput is tensor, so the index should be " +
+        s"${Tensor.START_INDEX} but is $index")
+      accTensor(activity.toTensor, tensor)
+    } else {
+      val res = accTensor(activity.toTable.getOrElse[Tensor[T]](index, null), tensor)
+      activity.toTable(index) = res
+    }
+  }
+
+  private def accTensor(tensor: Tensor[T], gradInput: Tensor[T]): Tensor[_] = {
+    if (tensor == null) {
+      gradInput
+    } else if (tensor.nElement() == 0) {
+      gradInput
+    } else {
+      tensor.add(gradInput)
+    }
   }
 }
 
@@ -396,7 +423,7 @@ object Graph extends ContainerSerializable {
    * Node for graph container. The module should have a tensor/table input while a tensor output
    * @tparam T
    */
-  type ModuleNode[T] = Node[AbstractModule[Activity, Tensor[T], T]]
+  type ModuleNode[T] = Node[AbstractModule[Activity, Activity, T]]
 
   /**
    * Build multiple inputs, multiple outputs graph container.

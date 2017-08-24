@@ -51,7 +51,7 @@ abstract class TensorModule[T: ClassTag]
  *
  * @tparam A Input data type
  * @tparam B Output data type
- * @tparam T Numeric type. Only support float/double now
+ * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
  */
 abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
 @specialized(Float, Double) T: ClassTag](
@@ -586,16 +586,32 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
   }
 
   /**
-   * Some other modules point to current module
+   * Build graph: some other modules point to current module
    * @param nodes upstream module nodes
    * @return node containing current module
    */
   def inputs(nodes : ModuleNode[T]*): ModuleNode[T] = {
     require(this.isInstanceOf[AbstractModule[_, Tensor[T], T]],
-      "AbstractModule: Only module with tensor output can be added into a graph node")
-    val curNode = new ModuleNode[T](this.asInstanceOf[AbstractModule[Activity, Tensor[T], T]])
+      s"AbstractModule: ${this.getClass.getName} has multiple outputs, please use (module, index)" +
+        s" instead")
+    val curNode = new ModuleNode[T](this)
     nodes.foreach(node => {
       node -> curNode
+    })
+    curNode
+  }
+
+  /**
+   * Build graph: some other modules point to current module
+   * @param first distinguish from another inputs when input parameter list is empty
+   * @param nodesWithIndex upstream module nodes and the output tensor index. The start index is 1.
+   * @return node containing current module
+   */
+  def inputs(first: (ModuleNode[T], Int), nodesWithIndex : (ModuleNode[T], Int)*): ModuleNode[T] = {
+    val curNode = new ModuleNode[T](this)
+    first._1.add(curNode, first._2)
+    nodesWithIndex.foreach(nodeWithIndex => {
+      nodeWithIndex._1.add(curNode, nodeWithIndex._2)
     })
     curNode
   }

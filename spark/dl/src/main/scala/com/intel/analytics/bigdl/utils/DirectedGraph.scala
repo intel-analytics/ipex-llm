@@ -16,6 +16,9 @@
 package com.intel.analytics.bigdl.utils
 
 import java.util
+
+import com.intel.analytics.bigdl.tensor.Tensor
+
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
@@ -155,13 +158,17 @@ class Node[T](val element: T) extends Serializable {
    * The nodes pointed by current node
    * @return
    */
-  def nextNodes: Seq[Node[T]] = nexts
+  def nextNodes: Seq[Node[T]] = nexts.map(_._1)
+
+  def nextMetas: Seq[Int] = nexts.map(_._2)
 
   /**
    * The nodes point to currect node
    * @return
    */
-  def prevNodes: Seq[Node[T]] = prevs
+  def prevNodes: Seq[Node[T]] = prevs.map(_._1)
+
+  def prevMetas: Seq[Int] = prevs.map(_._2)
 
   // scalastyle:off methodName
   // scalastyle:off noSpaceBeforeLeftBracket
@@ -170,8 +177,8 @@ class Node[T](val element: T) extends Serializable {
    * @param node another node
    * @return another node
    */
-  def -> (node: Node[T]): Node[T] = {
-    this.add(node)
+  def -> (node: Node[T], i : Int = Tensor.START_INDEX): Node[T] = {
+    this.add(node, i)
   }
   // scalastyle:on noSpaceBeforeLeftBracket
   // scalastyle:on methodName
@@ -181,9 +188,9 @@ class Node[T](val element: T) extends Serializable {
    * @param node another node
    * @return another node
    */
-  def add(node: Node[T]): Node[T] = {
-    if (!node.prevs.contains(this)) node.prevs.append(this)
-    if (!this.nexts.contains(node)) this.nexts.append(node)
+  def add(node: Node[T], i : Int = Tensor.START_INDEX): Node[T] = {
+    if (!node.prevs.contains((this, i))) node.prevs.append((this, i))
+    if (!this.nexts.contains((node, i))) this.nexts.append((node, i))
     node
   }
 
@@ -192,9 +199,9 @@ class Node[T](val element: T) extends Serializable {
    *  @param node another node
    *  @return current node
    */
-  def delete(node: Node[T]): Node[T] = {
-    if (node.prevs.contains(this)) node.prevs.-=(this)
-    if (this.nexts.contains(node)) this.nexts.-=(node)
+  def delete(node: Node[T], i : Int = Tensor.START_INDEX): Node[T] = {
+    if (node.prevs.contains((this, i))) node.prevs.-=((this, i))
+    if (this.nexts.contains((node, i))) this.nexts.-=((node, i))
     this
   }
 
@@ -203,7 +210,11 @@ class Node[T](val element: T) extends Serializable {
    * @return current node
    */
   def removePrevEdges(): Node[T] = {
-    prevs.foreach(_.nexts.-=(this))
+    prevs.map(_._1).foreach(pn =>
+      pn.nexts.filter(_._1 == this).foreach(e =>
+        pn.nexts -= e
+      )
+    )
     prevs.clear()
     this
   }
@@ -219,8 +230,8 @@ class Node[T](val element: T) extends Serializable {
 
   override def toString: String = s"(${element.toString})"
 
-  private val nexts = new ArrayBuffer[Node[T]]()
-  private val prevs = new ArrayBuffer[Node[T]]()
+  private val nexts = new ArrayBuffer[(Node[T], Int)]()
+  private val prevs = new ArrayBuffer[(Node[T], Int)]()
 }
 
 object Node {

@@ -688,6 +688,8 @@ object Tensor {
   // libjmkl.so will be loaded when one of the methods of in MKL is called.
   MKL.isMKLLoaded
 
+  val START_INDEX = 1
+
   /**
    * Returns an empty tensor.
    *
