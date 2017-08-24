@@ -45,8 +45,10 @@ trait ModuleSerializable extends Loadable with Savable{
   protected def checkVersion[T: ClassTag](module : BigDLModule)
                                          (implicit ev: TensorNumeric[T]) : Unit = {
     val version = module.getVersion
-    require(version == bigDLVersion, s"bigDL version mismatch," +
-      s"expected $version, actual $bigDLVersion, please use bigdl $bigDLVersion to load model!")
+    require(version <= bigDLVersion, s"bigDL version mismatch," +
+      s"module version $version," +
+      s"bigdl version $bigDLVersion, you cannot use low version bigdl" +
+      s" to load a higher version module")
   }
 
   protected def setVersion[T: ClassTag](modelBuilder : BigDLModule.Builder)
