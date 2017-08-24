@@ -56,7 +56,8 @@ class SpatialCrossMapLRN[T: ClassTag]
   @transient
   private var results: Array[Future[Unit]] = null
 
-  require(size % 2 == 1, "LRN only supports odd values for size")
+  require(size % 2 == 1, "LRN only supports odd values for size" +
+    s"size $size")
   val prePad = (size - 1) / 2
 
   override def equals(obj: Any): Boolean = {
@@ -93,7 +94,8 @@ class SpatialCrossMapLRN[T: ClassTag]
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.nDimension() == 4, "Input must have 4 dimensions, corresponding to " +
-      "(batch, channels, height, width)")
+      "(batch, channels, height, width)" +
+      s"input dimension ${input.nDimension()}")
     require(input.isContiguous(), "Input is not contiguous")
 
     output.resizeAs(input)
@@ -122,7 +124,8 @@ class SpatialCrossMapLRN[T: ClassTag]
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     require(input.nDimension() == 4, "Input must have 4 dimensions, corresponding to " +
-      "(batch, channels, height, width)")
+      "(batch, channels, height, width)" +
+      s"inputdimension ${input.nDimension()}")
     require(gradOutput.isContiguous(), "gradOutput is not contiguous")
 
     val batchNum = input.size(1)

@@ -70,7 +70,8 @@ class LeakyReLU[T: ClassTag](
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     require(input.isSameSizeAs(gradOutput),
-      "input should have the same size with gradOutput")
+      "input should have the same size with gradOutput" +
+        s"input size ${input.dim()} gradOutput size ${gradOutput.dim()}")
     if (inplace) {
       gradInput.set(gradOutput)
       gradOutput.map(input, (grad, in) => {

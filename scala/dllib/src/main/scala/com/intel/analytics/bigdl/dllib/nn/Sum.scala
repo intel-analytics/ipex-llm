@@ -60,7 +60,8 @@ class Sum[T: ClassTag](
       dimension += 1
     }
 
-    require(input.dim() >= dimension, "dimension exceeds input dimensions")
+    require(input.dim() >= dimension, "dimension exceeds input dimensions" +
+      s"dimension $dimension, input dimension ${input.dim()}")
     dimension
   }
 

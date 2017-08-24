@@ -65,7 +65,10 @@ class Nms extends Serializable {
   def nms(scores: Tensor[Float], boxes: Tensor[Float], thresh: Float,
     indices: Array[Int]): Int = {
     if (scores.nElement() == 0) return 0
-    require(indices.length >= scores.nElement() && boxes.size(2) == 4)
+    require(indices.length >= scores.nElement() && boxes.size(2) == 4,
+    "indices length should exceed the number scores'elements and boxes row count should be 4" +
+      s"indices length ${indices.length}, " +
+      s"number of elements ${scores.nElement()}, boxes row count ${boxes.size(2)}")
 
     init(scores.nElement())
     val boxArray = boxes.storage().array()
