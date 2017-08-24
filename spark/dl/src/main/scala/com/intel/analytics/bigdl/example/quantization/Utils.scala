@@ -40,7 +40,7 @@ object Utils {
     batchSize: Int = 32,
     quantize: Boolean = true)
 
-  val testParser = new OptionParser[TestParams]("BigDL Models Test with Quantization") {
+  val testParser = new OptionParser[TestParams]("BigDL Models Test with Quant") {
     opt[String]('f', "folder")
             .text("Where's the data location?")
             .action((x, c) => c.copy(folder = x))

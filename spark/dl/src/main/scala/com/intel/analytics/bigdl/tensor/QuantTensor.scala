@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.tensor
 
 import breeze.linalg.{DenseMatrix, DenseVector}
-import com.intel.analytics.bigdl.quantization.Quantization
+import com.intel.analytics.bigdl.bigquant.BigQuant
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
 import java.nio.ByteBuffer
@@ -26,7 +26,7 @@ import org.apache.spark.mllib.linalg.Matrix
 import scala.reflect.ClassTag
 
 @SerialVersionUID(- 1766499387282335147L)
-private[bigdl] class QuantizeTensor[@specialized(Float) T: ClassTag](
+private[bigdl] class QuantTensor[@specialized(Float) T: ClassTag](
   private[bigdl] var _size: Array[Int],
   private[bigdl] var _stride: Array[Int],
   var nDimension: Int)(implicit ev: TensorNumeric[T]) extends Tensor[T] {
@@ -63,7 +63,7 @@ private[bigdl] class QuantizeTensor[@specialized(Float) T: ClassTag](
 
   def release(): Unit = {
     if (desc != 0 && !setFromOther) {
-      Quantization.FreeMemory(desc)
+      BigQuant.FreeMemory(desc)
     }
     desc = 0L
   }
@@ -72,7 +72,7 @@ private[bigdl] class QuantizeTensor[@specialized(Float) T: ClassTag](
     if (!super.equals(obj)) {
       return false
     }
-    val other = obj.asInstanceOf[QuantizeTensor[T]]
+    val other = obj.asInstanceOf[QuantTensor[T]]
     if (this.eq(other)) {
       return true
     }
@@ -324,20 +324,20 @@ private[bigdl] class QuantizeTensor[@specialized(Float) T: ClassTag](
    * @param value the written value
    * @return
    */
-  override def setValue(d1: Int, value: T): QuantizeTensor.this.type =
+  override def setValue(d1: Int, value: T): QuantTensor.this.type =
     throw new UnsupportedOperationException(errorString)
 
-  override def setValue(d1: Int, d2: Int, value: T): QuantizeTensor.this.type =
+  override def setValue(d1: Int, d2: Int, value: T): QuantTensor.this.type =
     throw new UnsupportedOperationException(errorString)
 
-  override def setValue(d1: Int, d2: Int, d3: Int, value: T): QuantizeTensor.this.type =
+  override def setValue(d1: Int, d2: Int, d3: Int, value: T): QuantTensor.this.type =
     throw new UnsupportedOperationException(errorString)
 
-  override def setValue(d1: Int, d2: Int, d3: Int, d4: Int, value: T): QuantizeTensor.this.type =
+  override def setValue(d1: Int, d2: Int, d3: Int, d4: Int, value: T): QuantTensor.this.type =
     throw new UnsupportedOperationException(errorString)
 
   override def setValue(d1: Int, d2: Int, d3: Int, d4: Int, d5: Int,
-    value: T): QuantizeTensor.this.type = throw new UnsupportedOperationException(errorString)
+    value: T): QuantTensor.this.type = throw new UnsupportedOperationException(errorString)
 
   /**
    * Fill the select subset of the current tensor with the given value.
@@ -529,7 +529,7 @@ private[bigdl] class QuantizeTensor[@specialized(Float) T: ClassTag](
    */
   override def set(other: Tensor[T]): Tensor[T] = {
     other match {
-      case quantizedTensor: QuantizeTensor[T] =>
+      case quantizedTensor: QuantTensor[T] =>
         if (!this.eq(quantizedTensor)) {
           release() // release first, otherwise will leak memory
 
@@ -602,8 +602,8 @@ private[bigdl] class QuantizeTensor[@specialized(Float) T: ClassTag](
    * @return current tensor
    */
   override def copy(other: Tensor[T]): Tensor[T] = {
-    if (other.isInstanceOf[QuantizeTensor[T]]) {
-      val o = other.asInstanceOf[QuantizeTensor[T]]
+    if (other.isInstanceOf[QuantTensor[T]]) {
+      val o = other.asInstanceOf[QuantTensor[T]]
       this.setStorageInJni(o.getStorageInJni)
       this.setStorage(o.getStorage)
     }
@@ -802,7 +802,7 @@ private[bigdl] class QuantizeTensor[@specialized(Float) T: ClassTag](
    * @param overWrite
    * @return
    */
-  override def save(path: String, overWrite: Boolean): QuantizeTensor.this.type =
+  override def save(path: String, overWrite: Boolean): QuantTensor.this.type =
     throw new UnsupportedOperationException(errorString)
 
   /**
@@ -1608,7 +1608,7 @@ private[bigdl] class QuantizeTensor[@specialized(Float) T: ClassTag](
   override def tanh(y: Tensor[T]): Tensor[T] = throw new UnsupportedOperationException(errorString)
 }
 
-object QuantizeTensor {
+object QuantTensor {
   /**
    * Returns an empty tensor.
    *
@@ -1617,7 +1617,7 @@ object QuantizeTensor {
    * @return
    */
   def apply[@specialized(Float, Double) T: ClassTag]()(
-    implicit ev: TensorNumeric[T]): QuantizeTensor[T] = new QuantizeTensor[T]()
+    implicit ev: TensorNumeric[T]): QuantTensor[T] = new QuantTensor[T]()
   /**
    * Create a tensor up to 5 dimensions. The tensor size will be `d1 x d2 x d3 x d4 x d5`.
    *
@@ -1627,17 +1627,17 @@ object QuantizeTensor {
    * @return
    */
   def apply[@specialized(Float, Double) T: ClassTag](d1: Int)(
-    implicit ev: TensorNumeric[T]): QuantizeTensor[T] = new QuantizeTensor[T](d1)
+    implicit ev: TensorNumeric[T]): QuantTensor[T] = new QuantTensor[T](d1)
 
   def apply[@specialized(Float, Double) T: ClassTag](d1: Int, d2: Int)(
-    implicit ev: TensorNumeric[T]): QuantizeTensor[T] = new QuantizeTensor[T](d1, d2)
+    implicit ev: TensorNumeric[T]): QuantTensor[T] = new QuantTensor[T](d1, d2)
 
   def apply[@specialized(Float, Double) T: ClassTag](d1: Int, d2: Int, d3: Int)(
-    implicit ev: TensorNumeric[T]): QuantizeTensor[T] = new QuantizeTensor[T](d1, d2, d3)
+    implicit ev: TensorNumeric[T]): QuantTensor[T] = new QuantTensor[T](d1, d2, d3)
 
   def apply[@specialized(Float, Double) T: ClassTag](d1: Int, d2: Int, d3: Int, d4: Int)(
-    implicit ev: TensorNumeric[T]): QuantizeTensor[T] = new QuantizeTensor[T](d1, d2, d3, d4)
+    implicit ev: TensorNumeric[T]): QuantTensor[T] = new QuantTensor[T](d1, d2, d3, d4)
 
   def apply[@specialized(Float, Double) T: ClassTag](d1: Int, d2: Int, d3: Int, d4: Int, d5: Int)(
-    implicit ev: TensorNumeric[T]): QuantizeTensor[T] = new QuantizeTensor[T](d1, d2, d3, d4, d5)
+    implicit ev: TensorNumeric[T]): QuantTensor[T] = new QuantTensor[T](d1, d2, d3, d4, d5)
 }

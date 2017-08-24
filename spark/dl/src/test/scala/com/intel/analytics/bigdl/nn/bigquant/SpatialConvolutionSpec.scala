@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.quantization
+package com.intel.analytics.bigdl.nn.bigquant
 
 import com.intel.analytics.bigdl.nn.{SpatialConvolution => NNSpatialConvolution}
 import com.intel.analytics.bigdl.numeric.NumericFloat

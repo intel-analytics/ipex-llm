@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.quantization
+package com.intel.analytics.bigdl.nn.bigquant
 
 import com.intel.analytics.bigdl.nn.{Module, Linear => NNLinear}
 import com.intel.analytics.bigdl.numeric.NumericFloat
@@ -46,6 +46,8 @@ class LinearSpec extends FlatSpec with Matchers with ParallelTestExecution {
       quantizedLinear.updateOutput(input)
 
       nnLinear.output shouldEqual quantizedLinear.output
+
+      quantizedLinear.release()
     }
   }
 
@@ -65,6 +67,9 @@ class LinearSpec extends FlatSpec with Matchers with ParallelTestExecution {
     val quanOutput = quantizedLinear2.updateOutput(input)
 
     nnOutput shouldEqual quanOutput
+
+    quantizedLinear.asInstanceOf[Linear[Float]].release()
+    quantizedLinear2.asInstanceOf[Linear[Float]].release()
   }
 
   case class TestCase(batchSize: Int, inputSize: Int, outputSize: Int)

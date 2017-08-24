@@ -81,13 +81,13 @@
             </exclusions>
         </dependency>
         <dependency>
-          <groupId>com.intel.analytics.bigdl.quantization</groupId>
-          <artifactId>quantization-java</artifactId>
+          <groupId>com.intel.analytics.bigdl.bigquant</groupId>
+          <artifactId>bigquant-java</artifactId>
           <version>${project.version}</version>
           <exclusions>
             <exclusion>
-              <groupId>com.intel.analytics.bigdl.quantization</groupId>
-              <artifactId>quantization-native</artifactId>
+              <groupId>com.intel.analytics.bigdl.bigquant</groupId>
+              <artifactId>bigquant-native</artifactId>
             </exclusion>
           </exclusions>
         </dependency>

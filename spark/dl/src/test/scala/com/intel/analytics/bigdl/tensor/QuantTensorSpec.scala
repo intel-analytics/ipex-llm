@@ -16,11 +16,11 @@
 
 package com.intel.analytics.bigdl.tensor
 
-import com.intel.analytics.bigdl.quantization.Quantization
+import com.intel.analytics.bigdl.bigquant.BigQuant
 import org.scalatest.{FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Parallel
-class QuantizeTensorSpec extends FlatSpec with Matchers {
+class QuantTensorSpec extends FlatSpec with Matchers {
   "A QuantizeTensor set to empty" should "work correctly" in {
     val inputChannel = 4
     val outputChannel = 4
@@ -28,17 +28,17 @@ class QuantizeTensorSpec extends FlatSpec with Matchers {
 
     val threshold = 64.0f
 
-    val tensor = QuantizeTensor[Float](outputChannel, inputChannel)
+    val tensor = QuantTensor[Float](outputChannel, inputChannel)
     val byteArray = Array.fill[Byte](inputChannel * outputChannel)(0)
 
-    tensor.setStorageInJni(Quantization.FCKernelDescInit(batchSize, outputChannel))
+    tensor.setStorageInJni(BigQuant.FCKernelDescInit(batchSize, outputChannel))
     tensor.setStorage(byteArray)
 
     val minArray = Array.fill[Float](outputChannel)(0)
     val maxArray = Array.fill[Float](outputChannel)(0)
 
-    Quantization.FCKernelLoadFromModel(tensor.getStorageInJni, byteArray,
-      minArray, maxArray, outputChannel, inputChannel, threshold, Quantization.NCHW)
+    BigQuant.FCKernelLoadFromModel(tensor.getStorageInJni, byteArray,
+      minArray, maxArray, outputChannel, inputChannel, threshold, BigQuant.NCHW)
 
     tensor.set()
 
@@ -55,23 +55,23 @@ class QuantizeTensorSpec extends FlatSpec with Matchers {
 
     val threshold = 64.0f
 
-    val tensor1 = QuantizeTensor[Float](outputChannel, inputChannel)
-    val tensor2 = QuantizeTensor[Float](outputChannel, inputChannel)
+    val tensor1 = QuantTensor[Float](outputChannel, inputChannel)
+    val tensor2 = QuantTensor[Float](outputChannel, inputChannel)
 
     val byteArray = Array.fill[Byte](inputChannel * outputChannel)(0)
 
-    tensor1.setStorageInJni(Quantization.FCKernelDescInit(batchSize, outputChannel))
-    tensor2.setStorageInJni(Quantization.FCKernelDescInit(batchSize, outputChannel))
+    tensor1.setStorageInJni(BigQuant.FCKernelDescInit(batchSize, outputChannel))
+    tensor2.setStorageInJni(BigQuant.FCKernelDescInit(batchSize, outputChannel))
     tensor1.setStorage(byteArray)
     tensor2.setStorage(byteArray)
 
     val minArray = Array.fill[Float](outputChannel)(0)
     val maxArray = Array.fill[Float](outputChannel)(0)
 
-    Quantization.FCKernelLoadFromModel(tensor1.getStorageInJni, byteArray,
-      minArray, maxArray, outputChannel, inputChannel, threshold, Quantization.NCHW)
-    Quantization.FCKernelLoadFromModel(tensor2.getStorageInJni, byteArray,
-      minArray, maxArray, outputChannel, inputChannel, threshold, Quantization.NCHW)
+    BigQuant.FCKernelLoadFromModel(tensor1.getStorageInJni, byteArray,
+      minArray, maxArray, outputChannel, inputChannel, threshold, BigQuant.NCHW)
+    BigQuant.FCKernelLoadFromModel(tensor2.getStorageInJni, byteArray,
+      minArray, maxArray, outputChannel, inputChannel, threshold, BigQuant.NCHW)
 
     tensor2.set(tensor1)
 
@@ -89,17 +89,17 @@ class QuantizeTensorSpec extends FlatSpec with Matchers {
 
     val threshold = 64.0f
 
-    val tensor = QuantizeTensor[Float](outputChannel, inputChannel)
+    val tensor = QuantTensor[Float](outputChannel, inputChannel)
     val byteArray = Array.fill[Byte](inputChannel * outputChannel)(0)
 
-    tensor.setStorageInJni(Quantization.FCKernelDescInit(batchSize, outputChannel))
+    tensor.setStorageInJni(BigQuant.FCKernelDescInit(batchSize, outputChannel))
     tensor.setStorage(byteArray)
 
     val minArray = Array.fill[Float](outputChannel)(0)
     val maxArray = Array.fill[Float](outputChannel)(0)
 
-    Quantization.FCKernelLoadFromModel(tensor.getStorageInJni, byteArray,
-      minArray, maxArray, outputChannel, inputChannel, threshold, Quantization.NCHW)
+    BigQuant.FCKernelLoadFromModel(tensor.getStorageInJni, byteArray,
+      minArray, maxArray, outputChannel, inputChannel, threshold, BigQuant.NCHW)
 
     tensor.set(tensor)
 
@@ -118,30 +118,30 @@ class QuantizeTensorSpec extends FlatSpec with Matchers {
 
     val threshold = 64.0f
 
-    val tensor1 = QuantizeTensor[Float](outputChannel, inputChannel)
-    val tensor2 = QuantizeTensor[Float](outputChannel, inputChannel)
+    val tensor1 = QuantTensor[Float](outputChannel, inputChannel)
+    val tensor2 = QuantTensor[Float](outputChannel, inputChannel)
 
     val byteArray = Array.fill[Byte](inputChannel * outputChannel)(0)
 
-    tensor1.setStorageInJni(Quantization.FCKernelDescInit(batchSize, outputChannel))
-    tensor2.setStorageInJni(Quantization.FCKernelDescInit(batchSize, outputChannel))
+    tensor1.setStorageInJni(BigQuant.FCKernelDescInit(batchSize, outputChannel))
+    tensor2.setStorageInJni(BigQuant.FCKernelDescInit(batchSize, outputChannel))
     tensor1.setStorage(byteArray)
     tensor2.setStorage(byteArray)
 
     val minArray = Array.fill[Float](outputChannel)(0)
     val maxArray = Array.fill[Float](outputChannel)(0)
 
-    Quantization.FCKernelLoadFromModel(tensor1.getStorageInJni, byteArray,
-      minArray, maxArray, outputChannel, inputChannel, threshold, Quantization.NCHW)
-    Quantization.FCKernelLoadFromModel(tensor2.getStorageInJni, byteArray,
-      minArray, maxArray, outputChannel, inputChannel, threshold, Quantization.NCHW)
+    BigQuant.FCKernelLoadFromModel(tensor1.getStorageInJni, byteArray,
+      minArray, maxArray, outputChannel, inputChannel, threshold, BigQuant.NCHW)
+    BigQuant.FCKernelLoadFromModel(tensor2.getStorageInJni, byteArray,
+      minArray, maxArray, outputChannel, inputChannel, threshold, BigQuant.NCHW)
 
     tensor2.set(tensor1)
 
     tensor2.getStorageInJni should be (tensor1.getStorageInJni)
     tensor2.getStorage should be (tensor1.getStorage)
 
-    tensor2.setStorageInJni(Quantization.FCKernelDescInit(batchSize, outputChannel))
+    tensor2.setStorageInJni(BigQuant.FCKernelDescInit(batchSize, outputChannel))
 
     tensor2.getStorageInJni should not be tensor1.getStorageInJni
 

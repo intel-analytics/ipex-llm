@@ -20,7 +20,7 @@ import java.nio.ByteOrder
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
-import com.intel.analytics.bigdl.nn.quantization.Quantize
+import com.intel.analytics.bigdl.nn.bigquant.Quant
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.File
@@ -150,6 +150,6 @@ object Module {
 
   def quantize[@specialized(Float, Double) T: ClassTag](
     model: AbstractModule[Activity, Activity, T])(implicit ev: TensorNumeric[T]): Module[T] = {
-    Quantize.quantize(model)
+    Quant.quantize(model)
   }
 }

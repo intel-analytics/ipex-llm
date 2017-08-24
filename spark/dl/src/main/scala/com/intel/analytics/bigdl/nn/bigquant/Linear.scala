@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.quantization
+package com.intel.analytics.bigdl.nn.bigquant
 
+import com.intel.analytics.bigdl.bigquant.BigQuant
 import com.intel.analytics.bigdl.nn.ErrorInfo
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
-import com.intel.analytics.bigdl.quantization.Quantization
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.tensor.{FloatType, QuantizeTensor, Tensor}
+import com.intel.analytics.bigdl.tensor.{FloatType, QuantTensor, Tensor}
 import com.intel.analytics.bigdl.utils.{T, Table}
 import java.io.{IOException, ObjectInputStream, ObjectOutputStream}
 import scala.reflect.ClassTag
@@ -31,8 +31,8 @@ class Linear[T: ClassTag](
   withBias: Boolean = true
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
-  val data: QuantizeTensor[T] = QuantizeTensor[T]()
-  @transient var weight: QuantizeTensor[T] = _
+  val data: QuantTensor[T] = QuantTensor[T]()
+  @transient var weight: QuantTensor[T] = _
   val bias: Tensor[T] = Tensor[T](outputSize)
 
   val weightSum = new Array[T](outputSize)
@@ -74,9 +74,9 @@ class Linear[T: ClassTag](
     val bufferOffset = 0
     val buffer = new Array[Byte](weightFP32.nElement())
     val weightFP32Tensor = weightFP32.asInstanceOf[Tensor[Float]]
-    Quantize.quantize(weightFP32Tensor, buffer, bufferOffset)
+    Quant.quantize(weightFP32Tensor, buffer, bufferOffset)
 
-    weight = QuantizeTensor[T](outputSize, inputSize)
+    weight = QuantTensor[T](outputSize, inputSize)
     weight.setStorage(buffer)
 
     init()
@@ -88,15 +88,15 @@ class Linear[T: ClassTag](
     val byteArrayOfWeight = weight.getStorage
 
     weight.setStorageInJni(
-      Quantization.FCKernelDescInit(outputSize, inputSize))
+      BigQuant.FCKernelDescInit(outputSize, inputSize))
 
     ev.getType() match {
       case FloatType =>
         val minArray = min.asInstanceOf[Array[Float]]
         val maxArray = max.asInstanceOf[Array[Float]]
 
-        Quantization.FCKernelLoadFromModel(weight.getStorageInJni, byteArrayOfWeight,
-          minArray, maxArray, outputSize, inputSize, WEIGHT_THRESHOLD, Quantization.NCHW)
+        BigQuant.FCKernelLoadFromModel(weight.getStorageInJni, byteArrayOfWeight,
+          minArray, maxArray, outputSize, inputSize, WEIGHT_THRESHOLD, BigQuant.NCHW)
       case _ => throw new UnsupportedOperationException(s"Only support Float for quantized model")
     }
 
@@ -116,7 +116,7 @@ class Linear[T: ClassTag](
   private def readObject(in: ObjectInputStream): Unit = {
     in.defaultReadObject()
 
-    weight = in.readObject().asInstanceOf[QuantizeTensor[T]]
+    weight = in.readObject().asInstanceOf[QuantTensor[T]]
 
     if (weight.getStorage != null && weight.getStorageInJni == 0L) {
       init()
@@ -138,7 +138,7 @@ class Linear[T: ClassTag](
     }
 
     if (!data.isInitialized) {
-      data.setStorageInJni(Quantization.FCDataDescInit(batchSize, inputSize))
+      data.setStorageInJni(BigQuant.FCDataDescInit(batchSize, inputSize))
     }
 
     ev.getType() match {
@@ -146,8 +146,8 @@ class Linear[T: ClassTag](
         val src = input.storage().array().asInstanceOf[Array[Float]]
         val offset = input.storageOffset() - 1
 
-        Quantization.FCDataInit(data.getStorageInJni, src, offset, batchSize, inputSize,
-          THRESHOLD, Quantization.NCHW)
+        BigQuant.FCDataInit(data.getStorageInJni, src, offset, batchSize, inputSize,
+          THRESHOLD, BigQuant.NCHW)
 
         val outputArray = output.storage().array().asInstanceOf[Array[Float]]
         val outputOffset = output.storageOffset() - 1
@@ -156,8 +156,8 @@ class Linear[T: ClassTag](
         val biasArray = bias.storage().array().asInstanceOf[Array[Float]]
         val biasOffset = bias.storageOffset() - 1
 
-        Quantization.InternalMixPrecisionConvolutionGEMM(
-          Quantization.NCHW, weight.getStorageInJni, data.getStorageInJni, outputArray,
+        BigQuant.InternalMixPrecisionConvolutionGEMM(
+          BigQuant.NCHW, weight.getStorageInJni, data.getStorageInJni, outputArray,
           outputOffset, weightSumArray, weightSumOffset, biasArray, biasOffset,
           batchSize, outputSize, 1, 1,
           FAULT_TOLERANCE)

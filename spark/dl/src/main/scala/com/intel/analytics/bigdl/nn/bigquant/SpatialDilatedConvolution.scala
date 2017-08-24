@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.quantization
+package com.intel.analytics.bigdl.nn.bigquant
 
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import scala.reflect.ClassTag

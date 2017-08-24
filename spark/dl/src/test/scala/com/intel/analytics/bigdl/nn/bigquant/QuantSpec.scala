@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.quantization
+package com.intel.analytics.bigdl.nn.bigquant
 
 import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.nn.quantization.Quantize._
+import com.intel.analytics.bigdl.nn.bigquant.Quant._
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
-class QuantizeSpec extends FlatSpec with Matchers {
+class QuantSpec extends FlatSpec with Matchers {
   "Quantize a number with same sign max and min" should "generate correct output" in {
     val src = 0.6f
     val (max, min) = (0.7f, 0.2f)
@@ -316,14 +315,12 @@ class QuantizeSpec extends FlatSpec with Matchers {
 
   "replace cell" should "work correctly" in {
     val cell = RnnCell[Float](4, 3, ReLU[Float]())
-    cell.cell.asInstanceOf[Sequential[Float]].modules(0)
-            .asInstanceOf[ParallelTable[Float]].modules(1)
+    cell.cell.asInstanceOf[Graph[Float]].executions(0).element
             .isInstanceOf[nn.Linear[Float]] should be (true)
 
     cell.cell = Module.quantize(cell.cell)
 
-    cell.cell.asInstanceOf[Sequential[Float]].modules(0)
-            .asInstanceOf[ParallelTable[Float]].modules(1)
+    cell.cell.asInstanceOf[Graph[Float]].executions(0).element
             .isInstanceOf[Linear[Float]] should be (true)
   }
 
