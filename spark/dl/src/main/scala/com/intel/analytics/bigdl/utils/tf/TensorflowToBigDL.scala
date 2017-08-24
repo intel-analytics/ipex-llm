@@ -18,7 +18,6 @@ package com.intel.analytics.bigdl.utils.tf
 import java.nio.charset.Charset
 import java.nio.{ByteBuffer, ByteOrder}
 import java.util
-import java.util.Map
 
 import collection.JavaConverters._
 import com.intel.analytics.bigdl.nn._
@@ -27,7 +26,6 @@ import org.tensorflow.framework.{AttrValue, DataType, NodeDef, TensorProto}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
 import com.intel.analytics.bigdl.nn.tf._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.tf.Conv2D.getOrSetTensor
 import com.intel.analytics.bigdl.utils.{DirectedGraph, Node, T}
 import com.intel.analytics.bigdl.utils.tf.TensorflowLoader.Context
 import com.intel.analytics.bigdl.utils.tf.TensorflowToBigDL._
@@ -237,7 +235,8 @@ object TensorflowToBigDL {
       TanhTF, ReluTF, SigmoidTF, Conv2D, Placeholder, SqueezeTF, IdentityTF, ConcatTF,
       BatchNormTF, AddConstTF1, AddConstTF2, AddTF, SoftMaxTF, ElementWiseMulTF, MulTF,
       SplitTF, PaddingTF, MeanTF, UnpackTF, StrideSliceTF, ShapeTF, FillTF, PackTF, ConstTF,
-      Flatten, Conv2D2, Conv1D, FlattenV2, BatchNormV2NHWCTF, BatchNormV2NCHWTF
+      Flatten, Conv2D2, Conv1D, FlattenV2, BatchNormV2NHWCTF, BatchNormV2NCHWTF, AddNTF,
+      ControlDependencyTF
     )
     res
   }
@@ -1462,4 +1461,40 @@ object MeanTF extends TensorflowToBigDL{
     dim.foreach(i => mean.add(Mean[T](i, squeeze = false)))
     mean.asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
   }
+}
+
+object AddNTF extends TensorflowToBigDL{
+  private val graph = {
+    (Node("...") -> Node("AddN")).graph(reverse = true)
+  }
+
+  override def topology: DirectedGraph[String] = graph
+
+  override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
+                                  context: Context[T],
+                                  byteOrder: ByteOrder)(
+     implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+
+    CAddTable().asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+  }
+}
+
+
+
+object ControlDependencyTF extends TensorflowToBigDL {
+
+  private val graph = {
+    (Node("*") -> Node("DependencyNode")).graph(reverse = true)
+  }
+
+  override def topology: DirectedGraph[String] = graph
+
+  override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
+                                  context: Context[T],
+                                  byteOrder: ByteOrder)(
+     implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+
+    ControlDependency().asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+  }
+
 }

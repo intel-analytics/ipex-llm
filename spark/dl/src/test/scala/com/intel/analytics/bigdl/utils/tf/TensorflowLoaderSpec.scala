@@ -328,6 +328,19 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     tfResult.almostEqual(bigDLResult.toTensor, 1e-5)
   }
 
+  "TensorFlow control dep" should "be load correctly" in {
+    val output = Seq("output:0")
+    val comparePairs = testModel("control_dep", output, backward = true)
+    for (i <- output.indices) {
+      val (tf, bigdl) = comparePairs(i)
+      tf.almostEqual(bigdl, 1e-7) should be(true)
+    }
+    for (i <- output.length until comparePairs.length) {
+      val (tf, bigdl) = comparePairs(i)
+      tf.almostEqual(bigdl, 1e-3) should be(true)
+    }
+  }
+
   "Tensorflow batchnorm nhwc" should "be loaded correctly" in {
     val output = Seq("output:0")
     val comparePairs = testModel("batch_norm_nhwc", output, backward = true)

@@ -149,9 +149,21 @@ object TensorflowLoader{
           if (!isInput(node.element) && !node.element.getInputList.isEmpty) {
             node.element.getInputList.asScala.foreach { preNodeName =>
               // It is tricky here, remove the first char in the name of control dep node
-              val name = if (preNodeName.charAt(0) == '^') preNodeName.substring(1) else preNodeName
-              val preNode = name2Node(name)
-              preNode -> node
+              val preNode = if (preNodeName.charAt(0) == '^') {
+                val name = preNodeName.substring(1)
+                val preNode = name2Node(name)
+                val dependencyNode = Node(NodeDef.newBuilder()
+                  .setOp("DependencyNode")
+                  .addInput(preNode.element.getName)
+                  .setName(s"depends_on_${preNode.element.getName}")
+                  .build())
+                preNode -> dependencyNode -> node
+                preNode
+              } else {
+                val preNode = name2Node(preNodeName)
+                preNode -> node
+                preNode
+              }
               queue.enqueue(preNode)
             }
           } else {
