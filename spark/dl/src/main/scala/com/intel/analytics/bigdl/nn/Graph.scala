@@ -92,7 +92,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
     // If each output module outputs multiple tensors, we only output the the first tensor for each
     // output module.
     output = if (outputs.length == 1) {
-      outputs(0).element.output
+      outputs.head.element.output
     } else {
       seqToTable(outputs.map(n => extractTensor(n.element.output, Tensor.START_INDEX)))
     }
@@ -128,7 +128,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
     }
 
     gradInput = if (inputs.length == 1) {
-      inputs(0).element.gradInput
+      inputs.head.element.gradInput
     } else {
       seqToTable(inputs.map(n => extractTensor(n.element.gradInput, Tensor.START_INDEX)))
     }
@@ -187,7 +187,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
     }
 
     gradInput = if (inputs.length == 1) {
-      inputs(0).element.gradInput
+      inputs.head.element.gradInput
     } else {
       seqToTable(inputs.map(n => extractTensor(n.element.gradInput, Tensor.START_INDEX)))
     }
@@ -258,16 +258,16 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
   private val inputsBP = new util.HashMap[String, Activity]()
 
   // Check all inputs of the graph should be passed in
-  checkRoots
-  build
+  checkRoots()
+  build()
 
   private val gradOutputBP = new Array[Activity](forwardExecutions.length)
 
-  private def checkRoots: Unit = {
-    val roots = forwardExecutions.filter(_.prevNodes.size == 0)
+  private def checkRoots(): Unit = {
+    val roots = forwardExecutions.filter(_.prevNodes.isEmpty)
       .filter(node => !node.element.isInstanceOf[WithoutInput])
-    require(roots.size == inputs.length,
-      s"There're ${inputs.length} inputs, but graph has ${roots.size} roots")
+    require(roots.length == inputs.length,
+      s"There're ${inputs.length} inputs, but graph has ${roots.length} roots")
     inputs.foreach(n =>
       require(roots.contains(n), "inputs and graph roots are not match")
     )
@@ -314,7 +314,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
       input: Activity
   ): Activity = {
     if (inputs.length == 1) {
-      require(inputs(0).eq(node), "input node is not in the input list")
+      require(inputs.head.eq(node), "input node is not in the input list")
       input.toTensor
     } else {
       val i = inputs.indexOf(node)
@@ -332,7 +332,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
   def freeze(names: Array[String]): this.type = {
     names.foreach(name => {
       val layer = this (name)
-      require(layer.isDefined, s"cannot find layer match ${name}")
+      require(layer.isDefined, s"cannot find layer match $name")
       layer.get.setScaleW(0)
       layer.get.setScaleB(0)
     })
@@ -360,7 +360,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
   def stopGradient(names: Array[String]): this.type = {
     names.foreach(name => {
       val layer = this (name)
-      require(layer.isDefined, s"cannot find layer match ${name}")
+      require(layer.isDefined, s"cannot find layer match $name")
       if (stopGradientLayers == null) stopGradientLayers =
         new util.HashSet[String]()
       stopGradientLayers.add(layer.get.getName())
@@ -400,7 +400,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
     if (activity == null || activity.isTensor) {
       require(index == Tensor.START_INDEX, s"The gradInput is tensor, so the index should be " +
         s"${Tensor.START_INDEX} but is $index")
-      accTensor(activity.toTensor, tensor)
+      accTensor(activity.asInstanceOf[Tensor[T]], tensor)
     } else {
       val res = accTensor(activity.toTable.getOrElse[Tensor[T]](index, null), tensor)
       activity.toTable(index) = res
@@ -421,7 +421,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
 object Graph extends ContainerSerializable {
   /**
    * Node for graph container. The module should have a tensor/table input while a tensor output
-   * @tparam T
+   * @tparam T module parameter numeric type
    */
   type ModuleNode[T] = Node[AbstractModule[Activity, Activity, T]]
 
@@ -479,9 +479,9 @@ object Graph extends ContainerSerializable {
     val inputNames = new ArrayBuffer[String]
     val outputNames = new ArrayBuffer[String]
     DataConverter.getAttributeValue(attributes.get("inputNames"))
-      .asInstanceOf[Array[String]].map(name => inputNames.append(name))
+      .asInstanceOf[Array[String]].foreach(name => inputNames.append(name))
     DataConverter.getAttributeValue(attributes.get("outputNames"))
-      .asInstanceOf[Array[String]].map(name => outputNames.append(name))
+      .asInstanceOf[Array[String]].foreach(name => outputNames.append(name))
 
     val inputs = new ArrayBuffer[ModuleNode[T]]
     val outputs = new ArrayBuffer[ModuleNode[T]]
@@ -498,7 +498,7 @@ object Graph extends ContainerSerializable {
         }
       })
       val nextNodes = bigDLModule.next
-      layerMap(bigDLModule.module.getName) = moduleNode
+      layerMap(bigDLModule.module.getName()) = moduleNode
     })
 
     inputNames.foreach(inputName => inputs.append(layerMap(inputName)))
@@ -522,11 +522,11 @@ object Graph extends ContainerSerializable {
     module.next.foreach(_ => graphBuilder.addAllPreModules(_))
     module.pre.foreach(_ => graphBuilder.addAllNextModules(_))
     val graph = module.module.asInstanceOf[Graph[T]]
-    val inputsNames = graph.inputs.map(_.element.getName).toArray
-    val outputsNames = graph.outputs.map(_.element.getName).toArray
+    val inputsNames = graph.inputs.map(_.element.getName()).toArray
+    val outputsNames = graph.outputs.map(_.element.getName()).toArray
     graph.getForwardExecutions.foreach(execution => {
-      val preNodes = execution.prevNodes.map(_.element.getName)
-      val nextNodes = execution.nextNodes.map(_.element.getName)
+      val preNodes = execution.prevNodes.map(_.element.getName())
+      val nextNodes = execution.nextNodes.map(_.element.getName())
       val currNode = execution.element
         .asInstanceOf[AbstractModule[Activity, Activity, T]]
       val subModel = ModuleSerializer.serialize(ModuleData(currNode, preNodes, nextNodes))
@@ -555,7 +555,7 @@ object Graph extends ContainerSerializable {
 }
 
 private[bigdl] class Dummy[T: ClassTag]()(implicit ev: TensorNumeric[T])
-  extends AbstractModule[Activity, Tensor[T], T] {
+  extends AbstractModule[Activity, Activity, T] {
   override def updateOutput(input: Activity): Tensor[T] = null
-  override def updateGradInput(input: Activity, gradOutput: Tensor[T]): Activity = null
+  override def updateGradInput(input: Activity, gradOutput: Activity): Activity = null
 }
