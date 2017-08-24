@@ -17,11 +17,11 @@
 package com.intel.analytics.bigdl.nn.quantization
 
 import com.intel.analytics.bigdl.nn
+import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.quantization.Quantize._
-import com.intel.analytics.bigdl.nn.{Graph, Input, Module}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
-import java.nio.ByteBuffer
+import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
 class QuantizeSpec extends FlatSpec with Matchers {
@@ -56,16 +56,15 @@ class QuantizeSpec extends FlatSpec with Matchers {
   "Quantize a array" should "generate correct output" in {
     val src = Array[Float](0.6f, 0.4f, -0.3f, 0.2f, 0.1f)
 
-    val dst = ByteBuffer.allocate(src.length)
-    dst.clear()
+    val dst = new Array[Byte](src.length)
 
     val (max, min) = quantize(src, 0, src.length, dst, 0)
 
-    dst.get(0) should be (127)
-    dst.get(1) should be (85)
-    dst.get(2) should be (-63)
-    dst.get(3) should be (42)
-    dst.get(4) should be (21)
+    dst(0) should be (127)
+    dst(1) should be (85)
+    dst(2) should be (-63)
+    dst(3) should be (42)
+    dst(4) should be (21)
 
     val before = src.clone()
     for (i <- src.indices) {
@@ -89,25 +88,24 @@ class QuantizeSpec extends FlatSpec with Matchers {
 
   "Quantize a matrix" should "generate correct output" in {
     val src = Array(0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.4f, 0.3f, 0.2f, 0.1f)
-    val dst = ByteBuffer.allocate(src.length)
-    dst.clear()
+    val dst = new Array[Byte](src.length)
 
     val (max, min) = quantize(src, 0, src.length, dst, 0, Array(2, 5))
 
     for (i <- src.indices) {
-      println(dst.get(i))
+      println(dst(i))
     }
 
-    dst.get(0) should be (25)
-    dst.get(1) should be (51)
-    dst.get(2) should be (76)
-    dst.get(3) should be (102)
-    dst.get(4) should be (127)
-    dst.get(5) should be (127)
-    dst.get(6) should be (85)
-    dst.get(7) should be (64)
-    dst.get(8) should be (42)
-    dst.get(9) should be (21)
+    dst(0) should be (25)
+    dst(1) should be (51)
+    dst(2) should be (76)
+    dst(3) should be (102)
+    dst(4) should be (127)
+    dst(5) should be (127)
+    dst(6) should be (85)
+    dst(7) should be (64)
+    dst(8) should be (42)
+    dst(9) should be (21)
 
     val before = src.clone()
     for (i <- src.indices) {
@@ -140,16 +138,15 @@ class QuantizeSpec extends FlatSpec with Matchers {
     val array = Array[Float](0.6f, 0.4f, -0.3f, 0.2f, 0.1f)
     val src = Tensor[Float](array, Array(5))
 
-    val dst = ByteBuffer.allocate(src.nElement())
-    dst.clear()
+    val dst = new Array[Byte](src.nElement())
 
     val (max, min) = quantize(src, dst, 0)
 
-    dst.get(0) should be (127)
-    dst.get(1) should be (85)
-    dst.get(2) should be (-63)
-    dst.get(3) should be (42)
-    dst.get(4) should be (21)
+    dst(0) should be (127)
+    dst(1) should be (85)
+    dst(2) should be (-63)
+    dst(3) should be (42)
+    dst(4) should be (21)
 
     val before = src.clone()
     src.apply1(_ => 0f)
@@ -172,21 +169,20 @@ class QuantizeSpec extends FlatSpec with Matchers {
     val array = Array(0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.4f, 0.3f, 0.2f, 0.1f)
     val src = Tensor[Float](array, Array(2, 5))
 
-    val dst = ByteBuffer.allocate(src.nElement())
-    dst.clear()
+    val dst = new Array[Byte](src.nElement())
 
     val (max, min) = quantize(src, dst, 0)
 
-    dst.get(0) should be (25)
-    dst.get(1) should be (51)
-    dst.get(2) should be (76)
-    dst.get(3) should be (102)
-    dst.get(4) should be (127)
-    dst.get(5) should be (127)
-    dst.get(6) should be (85)
-    dst.get(7) should be (64)
-    dst.get(8) should be (42)
-    dst.get(9) should be (21)
+    dst(0) should be (25)
+    dst(1) should be (51)
+    dst(2) should be (76)
+    dst(3) should be (102)
+    dst(4) should be (127)
+    dst(5) should be (127)
+    dst(6) should be (85)
+    dst(7) should be (64)
+    dst(8) should be (42)
+    dst(9) should be (21)
 
     val before = src.clone()
     src.apply1(_ => 0f)
@@ -220,23 +216,22 @@ class QuantizeSpec extends FlatSpec with Matchers {
     )
     val src = Tensor[Float](array, Array(2, 2, 3))
 
-    val dst = ByteBuffer.allocate(src.nElement())
-    dst.clear()
+    val dst = new Array[Byte](src.nElement())
 
     val (max, min) = quantize(src, dst, 0)
 
-    dst.get(0) should be (21)
-    dst.get(1) should be (42)
-    dst.get(2) should be (64)
-    dst.get(3) should be (85)
-    dst.get(4) should be (106)
-    dst.get(5) should be (127)
-    dst.get(6) should be (-127)
-    dst.get(7) should be (102)
-    dst.get(8) should be (76)
-    dst.get(9) should be (51)
-    dst.get(10) should be (25)
-    dst.get(11) should be (0)
+    dst(0) should be (21)
+    dst(1) should be (42)
+    dst(2) should be (64)
+    dst(3) should be (85)
+    dst(4) should be (106)
+    dst(5) should be (127)
+    dst(6) should be (-127)
+    dst(7) should be (102)
+    dst(8) should be (76)
+    dst(9) should be (51)
+    dst(10) should be (25)
+    dst(11) should be (0)
 
     val before = src.clone()
     src.apply1(_ => 0f)
@@ -273,5 +268,106 @@ class QuantizeSpec extends FlatSpec with Matchers {
     val out = graph.forward(in)
 
     val quantizedModel = Module.quantize(graph)
+  }
+
+  "quantize a quantized linear" should "work correctly" in {
+    case class TestCase(batchSize: Int, inputSize: Int, outputSize: Int)
+    val test = TestCase(1, 1, 1)
+
+    val weight = Tensor(test.outputSize, test.inputSize).fill(1.0f)
+    val bias = Tensor(test.outputSize).fill(0f)
+    val input = Tensor(test.batchSize, test.inputSize).fill(1.0f)
+
+    val linear = Linear[Float](test.inputSize, test.outputSize)
+    linear.initWeightAndBias(weight, bias)
+
+    val linear2 = Module.quantize(linear)
+
+    linear.updateOutput(input)
+    linear2.updateOutput(input)
+
+    linear.output shouldEqual linear2.output
+  }
+
+  "quantize a quantized SpatialConvolution" should "work correctly" in {
+    case class TestCase(batchSize: Int, inputChannel: Int, inputHeight: Int, inputWidth: Int,
+      group: Int, outputChannel: Int, kernelHeight: Int, kernelWidth: Int,
+      strideHeight: Int, strideWidth: Int, padHeight: Int, padWidth: Int)
+    val test = TestCase(1, 1, 3, 3, 1, 1, 2, 2, 1, 1, 0, 0)
+
+    val weight = Tensor(test.group, test.outputChannel / test.group,
+      test.inputChannel / test.group, test.kernelHeight, test.kernelWidth).fill(1.0f)
+    val bias = Tensor(test.outputChannel).fill(0f)
+    val input = Tensor().resize(Array(test.batchSize, test.inputChannel,
+      test.inputHeight, test.inputWidth)).fill(1.0f)
+
+    val conv = SpatialConvolution(test.inputChannel, test.outputChannel,
+      test.kernelHeight, test.kernelWidth, test.strideHeight, test.strideWidth,
+      test.padHeight, test.padWidth, test.group)
+    conv.initWeightAndBias(weight, bias)
+
+    val conv2 = Module.quantize(conv)
+
+    conv.updateOutput(input)
+    conv2.updateOutput(input)
+
+    conv.output shouldEqual conv.output
+  }
+
+  "replace cell" should "work correctly" in {
+    val cell = RnnCell[Float](4, 3, ReLU[Float]())
+    cell.cell.asInstanceOf[Sequential[Float]].modules(0)
+            .asInstanceOf[ParallelTable[Float]].modules(1)
+            .isInstanceOf[nn.Linear[Float]] should be (true)
+
+    cell.cell = Module.quantize(cell.cell)
+
+    cell.cell.asInstanceOf[Sequential[Float]].modules(0)
+            .asInstanceOf[ParallelTable[Float]].modules(1)
+            .isInstanceOf[Linear[Float]] should be (true)
+  }
+
+  "linear perf" should "speed up" in {
+
+    val inputSize = 1152
+    val outputSize = 1152
+    val hiddenSize = 1152
+    val time = 100
+    val batchSize = 4
+
+    val model = Sequential[Float]()
+    for (i <- 1 to 3) {
+      model.add(TimeDistributed[Float](BatchNormalization[Float](outputSize)))
+      model.add(BiRecurrent[Float]()
+              .add(RnnCell[Float](inputSize, hiddenSize, ReLU[Float]())))
+    }
+    println(model)
+    val quantize = Module.quantize(Module.quantize(model))
+    println(quantize)
+
+    val input = Tensor[Float](batchSize, time, inputSize).rand
+
+    for (i <- 0 until 5) {
+      model.updateOutput(input)
+    }
+    val start1 = System.nanoTime()
+    for (i <- 0 until 10) {
+      model.updateOutput(input)
+    }
+    val end1 = System.nanoTime()
+    val eta1 = (end1 - start1) / 1e6
+
+    for (i <- 0 until 5) {
+      quantize.forward(input)
+    }
+    println("*" * 80)
+    val start2 = System.nanoTime()
+    for (i <- 0 until 10) {
+      quantize.forward(input)
+    }
+    val end2 = System.nanoTime()
+    val eta2 = (end2 - start2) / 1e6
+
+    (eta1 > eta2) should be (true)
   }
 }

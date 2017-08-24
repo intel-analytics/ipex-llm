@@ -17,12 +17,9 @@
 package com.intel.analytics.bigdl.nn.quantization
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.{Container, Dummy, Graph}
-import com.intel.analytics.bigdl.nn.{Linear => NNLinear}
-import com.intel.analytics.bigdl.nn.{SpatialConvolution => NNConv}
-import com.intel.analytics.bigdl.nn.{SpatialDilatedConvolution => NNDilatedConv}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
+import com.intel.analytics.bigdl.nn.{Cell, Container, Dummy, Graph, TimeDistributed, Linear => NNLinear, SpatialConvolution => NNConv, SpatialDilatedConvolution => NNDilatedConv}
+import com.intel.analytics.bigdl.tensor.{QuantizeTensor, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Node
 import scala.collection.mutable.ArrayBuffer
@@ -33,6 +30,7 @@ object Utils {
   type SeqNodes[R] = Seq[Node[ModuleNode[R]]]
   type ArrayNodes[R] = Array[Node[ModuleNode[R]]]
   type ANode[R] = Node[ModuleNode[R]]
+  type AbsModule[R] = AbstractModule[Activity, Activity, R]
 
   /**
    * replace the node in place in SeqNodes
@@ -174,6 +172,16 @@ object Utils {
         val quantizedLinear = new Linear[T](linear.weight.size(2), linear.weight.size(1))
 
         quantizedLinear.initWeightAndBias(linear.weight, linear.bias)
+      case timeDistributed if timeDistributed.isInstanceOf[TimeDistributed[T]] =>
+        val td = timeDistributed.asInstanceOf[TimeDistributed[T]]
+        val layer = replace(td.layer)
+
+        TimeDistributed[T](layer.asInstanceOf[TensorModule[T]])
+      case nCell if nCell.isInstanceOf[Cell[T]] =>
+        val cell = nCell.asInstanceOf[Cell[T]]
+        cell.cell = replace(cell.cell)
+
+        cell
       case _ => model
     }
   }
@@ -195,9 +203,7 @@ object Utils {
     implicit ev: TensorNumeric[T]): Tensor[T] = {
     var length = 0
     for (i <- parameters.indices) {
-      // we recognize quantized layers by the parameters, which will return 2 nulls
-      // in quantized layers.
-      if (parameters(i) != null) {
+      if (!parameters(i).isInstanceOf[QuantizeTensor[T]]) {
         length += parameters(i).nElement()
       }
     }
@@ -208,7 +214,7 @@ object Utils {
     for (i <- parameters.indices) {
       val parameter = parameters(i)
 
-      if (parameter != null) {
+      if (!parameter.isInstanceOf[QuantizeTensor[T]]) {
         val length = parameter.nElement()
 
         val (src, srcOffset) = (parameter.storage().array(), parameter.storageOffset() - 1)

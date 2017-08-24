@@ -16,14 +16,13 @@
 
 package com.intel.analytics.bigdl.nn.quantization
 
+import com.intel.analytics.bigdl.nn.ErrorInfo
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
-import com.intel.analytics.bigdl.nn.{ErrorInfo, Module}
 import com.intel.analytics.bigdl.quantization.Quantization
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{FloatType, QuantizeTensor, Tensor}
 import com.intel.analytics.bigdl.utils.{T, Table}
-import java.nio.ByteBuffer
-import java.nio.file.{Files, Paths}
+import java.io.{IOException, ObjectInputStream, ObjectOutputStream}
 import scala.reflect.ClassTag
 
 class Linear[T: ClassTag](
@@ -33,7 +32,7 @@ class Linear[T: ClassTag](
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   val data: QuantizeTensor[T] = QuantizeTensor[T]()
-  val weight: QuantizeTensor[T] = QuantizeTensor[T]()
+  @transient var weight: QuantizeTensor[T] = _
   val bias: Tensor[T] = Tensor[T](outputSize)
 
   val weightSum = new Array[T](outputSize)
@@ -43,6 +42,8 @@ class Linear[T: ClassTag](
   val FAULT_TOLERANCE = 0.5f
   val WEIGHT_THRESHOLD = 64.0f
   val THRESHOLD = 127.0f
+
+  val empty: Tensor[T] = Tensor[T](1)
 
   @transient
   var _init = false
@@ -71,10 +72,11 @@ class Linear[T: ClassTag](
     }
 
     val bufferOffset = 0
-    val buffer = ByteBuffer.allocate(weightFP32.nElement())
+    val buffer = new Array[Byte](weightFP32.nElement())
     val weightFP32Tensor = weightFP32.asInstanceOf[Tensor[Float]]
     Quantize.quantize(weightFP32Tensor, buffer, bufferOffset)
 
+    weight = QuantizeTensor[T](outputSize, inputSize)
     weight.setStorage(buffer)
 
     init()
@@ -83,7 +85,8 @@ class Linear[T: ClassTag](
   }
 
   def init(): this.type = {
-    val byteArrayOfWeight = weight.getStorage.get
+    val byteArrayOfWeight = weight.getStorage
+
     weight.setStorageInJni(
       Quantization.FCKernelDescInit(outputSize, inputSize))
 
@@ -102,13 +105,29 @@ class Linear[T: ClassTag](
     this
   }
 
-  override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.dim() == 1 || input.dim() == 2,
-      "Linear: " + ErrorInfo.constrainInputAsVectorOrBatch)
+  @throws(classOf[IOException])
+  private def writeObject(out: ObjectOutputStream): Unit = {
+    out.defaultWriteObject()
 
-    if (!_init && weight.getStorage.isDefined) {
+    out.writeObject(weight)
+  }
+
+  @throws(classOf[IOException])
+  private def readObject(in: ObjectInputStream): Unit = {
+    in.defaultReadObject()
+
+    weight = in.readObject().asInstanceOf[QuantizeTensor[T]]
+
+    if (weight.getStorage != null && weight.getStorageInJni == 0L) {
       init()
     }
+  }
+
+  override def updateOutput(input: Tensor[T]): Tensor[T] = {
+    require(input.dim() == 1 || input.dim() == 2,
+      "bigquant.Linear: " + ErrorInfo.constrainInputAsVectorOrBatch)
+
+    require(weight.getStorageInJni != 0L, s"weight should be inited first")
 
     val batchSize = if (input.dim() == 1) {
       output.resize(Array(outputSize)) // TODO
@@ -154,7 +173,7 @@ class Linear[T: ClassTag](
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
-    (Array(null, null), Array(null, null))
+    (Array(weight, bias), Array(empty, empty))
   }
 
   override def getParametersTable(): Table = {
@@ -193,7 +212,7 @@ class Linear[T: ClassTag](
   }
 
   override def toString(): String = {
-    s"fixpoint.${getPrintName()}($inputSize -> $outputSize)"
+    s"bigquant.${getPrintName()}($inputSize -> $outputSize)"
   }
 
   def release(): Unit = {

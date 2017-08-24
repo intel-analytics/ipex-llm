@@ -40,29 +40,29 @@ object Quantize{
     byte.toFloat / Byte.MaxValue * Math.max(Math.abs(max), Math.abs(min))
   }
 
-  def quantize(src: Array[Float], start: Int, end: Int, dst: ByteBuffer,
+  def quantize(src: Array[Float], start: Int, end: Int, dst: Array[Byte],
     dstOffset: Int): (Float, Float) = {
     // we should keep the plus and minus
     val max = findMax(src, start, end)
     val min = findMin(src, start, end)
 
     for (i <- 0 until end - start) {
-      dst.put(dstOffset + i, quantize(src(start + i), max, min))
+      dst(dstOffset + i) = quantize(src(start + i), max, min)
     }
 
     (max, min)
   }
 
-  def dequantize(src: Array[Float], start: Int, end: Int, dst: ByteBuffer, dstOffset: Int,
+  def dequantize(src: Array[Float], start: Int, end: Int, dst: Array[Byte], dstOffset: Int,
     max: Float, min: Float): Unit = {
     require(src.length >= end, s"you write too much elements")
 
     for (i <- 0 until end - start) {
-      src(start + i) = dequantize(dst.get(dstOffset + i), max, min)
+      src(start + i) = dequantize(dst(dstOffset + i), max, min)
     }
   }
 
-  def quantize(src: Array[Float], start: Int, end: Int, dst: ByteBuffer, dstOffset: Int,
+  def quantize(src: Array[Float], start: Int, end: Int, dst: Array[Byte], dstOffset: Int,
     size: Array[Int]): (Array[Float], Array[Float]) = {
     require(size.length == 2, s"only support 2-dim matrix")
     require(size.product == (end - start), s"number of elements does not match")
@@ -84,7 +84,7 @@ object Quantize{
     (max, min)
   }
 
-  def dequantize(data: Array[Float], start: Int, end: Int, quantizedData: ByteBuffer, offset: Int,
+  def dequantize(data: Array[Float], start: Int, end: Int, quantizedData: Array[Byte], offset: Int,
     max: Array[Float], min: Array[Float], size: Array[Int]): Unit = {
     require(max.length == min.length, s"the number of max doesn't match with the number of min")
     require(size.length == 2, s"only support 2-dim matrix")
@@ -109,7 +109,7 @@ object Quantize{
     Array(first, last)
   }
 
-  def quantize(input: Tensor[Float], buffer: ByteBuffer,
+  def quantize(input: Tensor[Float], buffer: Array[Byte],
     offset: Int): (Array[Float], Array[Float]) = {
     val length = input.nElement()
 
@@ -128,7 +128,7 @@ object Quantize{
     }
   }
 
-  def dequantize(input: Tensor[Float], buffer: ByteBuffer, offset: Int, max: Array[Float],
+  def dequantize(input: Tensor[Float], buffer: Array[Byte], offset: Int, max: Array[Float],
     min: Array[Float]): Unit = {
     val start = input.storageOffset() - 1
     val end = start + input.nElement()

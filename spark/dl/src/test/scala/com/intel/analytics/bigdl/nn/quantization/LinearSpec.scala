@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn.quantization
 
-import com.intel.analytics.bigdl.nn.{Linear => NNLinear}
+import com.intel.analytics.bigdl.nn.{Module, Linear => NNLinear}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers, ParallelTestExecution}
@@ -26,7 +26,8 @@ class LinearSpec extends FlatSpec with Matchers with ParallelTestExecution {
   val testCases = List(
     TestCase(1, 1, 1),
     TestCase(3, 3, 4),
-    TestCase(512, 1024, 32)
+    TestCase(512, 1024, 32),
+    TestCase(4, 2302, 1152)
   )
 
   for (test <- testCases) {
@@ -46,6 +47,24 @@ class LinearSpec extends FlatSpec with Matchers with ParallelTestExecution {
 
       nnLinear.output shouldEqual quantizedLinear.output
     }
+  }
+
+  "A Linear" should "quantized correctly with serilization" in {
+    val test = testCases(0)
+    val weight = Tensor(test.outputSize, test.inputSize).fill(1.0f)
+    val bias = Tensor(test.outputSize).fill(0f)
+    val input = Tensor(test.batchSize, test.inputSize).fill(1.0f)
+
+    val nnLinear = NNLinear(test.inputSize, test.outputSize, initWeight = weight, initBias = bias)
+    val quantizedLinear = Module.quantize(nnLinear)
+
+    val quantizedLinear2 = Module.quantize(quantizedLinear)
+    println(quantizedLinear2)
+
+    val nnOutput = nnLinear.updateOutput(input)
+    val quanOutput = quantizedLinear2.updateOutput(input)
+
+    nnOutput shouldEqual quanOutput
   }
 
   case class TestCase(batchSize: Int, inputSize: Int, outputSize: Int)

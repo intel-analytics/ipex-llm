@@ -18,29 +18,34 @@ package com.intel.analytics.bigdl.tensor
 
 import breeze.linalg.{DenseMatrix, DenseVector}
 import com.intel.analytics.bigdl.quantization.Quantization
-import java.nio.ByteBuffer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
+import java.nio.ByteBuffer
 import org.apache.spark.mllib.linalg
 import org.apache.spark.mllib.linalg.Matrix
 import scala.reflect.ClassTag
 
 @SerialVersionUID(- 1766499387282335147L)
-private[bigdl] class QuantizeTensor[@specialized(Float) T: ClassTag]()
-  (implicit ev: TensorNumeric[T]) extends Tensor[T] {
+private[bigdl] class QuantizeTensor[@specialized(Float) T: ClassTag](
+  private[bigdl] var _size: Array[Int],
+  private[bigdl] var _stride: Array[Int],
+  var nDimension: Int)(implicit ev: TensorNumeric[T]) extends Tensor[T] {
   @transient private var desc = 0L
-  private var interStorage: Option[Array[Byte]] = None
+  private var interStorage: Array[Byte] = null
+  private var setFromOther: Boolean = false
+
   private val errorString = s"QuantizeTensor doesn't support this operation now"
 
-  def setStorage(buffer: ByteBuffer): Unit = {
-    interStorage = Some(buffer.array())
+  def setStorage(buffer: Array[Byte]): Unit = {
+    interStorage = buffer
   }
 
-  def getStorage: Option[Array[Byte]] = {
+  def getStorage: Array[Byte] = {
     interStorage
   }
 
   def setStorageInJni(ptr: Long): Unit = {
+    setFromOther = false
     desc = ptr
   }
 
@@ -57,7 +62,7 @@ private[bigdl] class QuantizeTensor[@specialized(Float) T: ClassTag]()
   }
 
   def release(): Unit = {
-    if (desc != 0) {
+    if (desc != 0 && !setFromOther) {
       Quantization.FreeMemory(desc)
     }
     desc = 0L
@@ -79,24 +84,44 @@ private[bigdl] class QuantizeTensor[@specialized(Float) T: ClassTag]()
     val seed = 37
     var hash = super.hashCode()
     hash = hash * seed + desc.hashCode()
-    hash = hash * seed + interStorage.hashCode()
+    hash = hash * seed + _size.hashCode()
+    hash = hash * seed + _stride.hashCode()
+
+    if (interStorage != null) {
+      hash = hash * seed + interStorage.hashCode()
+    }
 
     hash
   }
+
+  def this()(implicit ev: TensorNumeric[T]) = this(null, null, 0)
+
+  def this(d1: Int)(implicit ev: TensorNumeric[T]) = this(Array(d1), Array(1), 1)
+
+  def this(d1: Int, d2: Int)(implicit ev: TensorNumeric[T]) = this(Array(d1, d2), Array(d2, 1), 2)
+
+  def this(d1: Int, d2: Int, d3: Int)(implicit ev: TensorNumeric[T]) =
+    this(Array(d1, d2, d3), Array(d3 * d2, d3, 1), 3)
+
+  def this(d1: Int, d2: Int, d3: Int, d4: Int)(implicit ev: TensorNumeric[T]) =
+    this(Array(d1, d2, d3, d4), Array(d4 * d3 * d2, d4 * d3, d4, 1), 4)
+
+  def this(d1: Int, d2: Int, d3: Int, d4: Int, d5: Int)(implicit ev: TensorNumeric[T]) =
+    this(Array(d1, d2, d3, d4, d5), Array(d5 * d4 * d3 * d2, d5 * d4 * d3, d5 * d4, d5, 1), 5)
 
   /**
    * Dimension number of the tensor. For empty tensor, its dimension number is 0
    *
    * @return dimension number
    */
-  override def nDimension(): Int = throw new UnsupportedOperationException(errorString)
+//  override def nDimension(): Int = throw new UnsupportedOperationException(errorString)
 
   /**
    * A shortcut of nDimension()
    *
    * @see nDimension()
    */
-  override def dim(): Int = throw new UnsupportedOperationException(errorString)
+  override def dim(): Int = nDimension
 
   /**
    * Size of tensor. Return an array of which each value represent the size on the
@@ -393,31 +418,74 @@ private[bigdl] class QuantizeTensor[@specialized(Float) T: ClassTag]()
    * @param strides Array describe the jumps
    * @return
    */
-  override def resize(sizes: Array[Int], strides: Array[Int]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def resize(sizes: Array[Int], strides: Array[Int]): Tensor[T] = {
+    _size = sizes
+    _stride = strides
+    this
+  }
 
-  override def resize(size1: Int): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def resize(size1: Int): Tensor[T] = {
+    if (this.nDimension != 1 || this.size(1) != size1) {
+      resize(Array(size1))
+    } else {
+      this
+    }
+  }
 
-  override def resize(size1: Int, size2: Int): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def resize(size1: Int, size2: Int): Tensor[T] = {
+    if (this.nDimension != 2 || this.size(1) != size1 || this.size(2) != size2) {
+      resize(Array(size1, size2))
+    } else {
+      this
+    }
+  }
 
-  override def resize(size1: Int, size2: Int, size3: Int): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def resize(size1: Int, size2: Int, size3: Int): Tensor[T] = {
+    if (this.nDimension != 3 || this.size(1) != size1 || this.size(2) != size2 ||
+            this.size(3) != size3) {
+      resize(Array(size1, size2, size3))
+    } else {
+      this
+    }
+  }
 
-  override def resize(size1: Int, size2: Int, size3: Int, size4: Int): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def resize(size1: Int, size2: Int, size3: Int, size4: Int): Tensor[T] = {
+    if (this.nDimension != 4 || this.size(1) != size1 || this.size(2) != size2 ||
+            this.size(3) != size3 ||
+            this.size(4) != size4) {
+      resize(Array(size1, size2, size3, size4))
+    } else {
+      this
+    }
+  }
 
-  override def resize(size1: Int, size2: Int, size3: Int, size4: Int, size5: Int): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def resize(size1: Int, size2: Int, size3: Int, size4: Int, size5: Int): Tensor[T] = {
+    if (this.nDimension != 5 || this.size(1) != size1 || this.size(2) != size2 ||
+            this.size(3) != size3 || this.size(4) != size4 || this.size(5) != size5) {
+      resize(Array(size1, size2, size3, size4, size5))
+    } else {
+      this
+    }
+  }
 
   /**
    * Element number
    *
    * @return element number
    */
-  override def nElement(): Int =
-    throw new UnsupportedOperationException(errorString)
+  override def nElement(): Int = {
+    if (this.nDimension == 0) {
+      0
+    } else {
+      var n = 1
+      var d = 0
+      while (d < this.nDimension) {
+        n = n * this._size(d)
+        d += 1
+      }
+      n
+    }
+  }
 
   /**
    * Remove the dim-th dimension and return the subset part. For instance
@@ -459,8 +527,23 @@ private[bigdl] class QuantizeTensor[@specialized(Float) T: ClassTag]()
    * @param other the given tensor
    * @return current tensor
    */
-  override def set(other: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def set(other: Tensor[T]): Tensor[T] = {
+    other match {
+      case quantizedTensor: QuantizeTensor[T] =>
+        if (!this.eq(quantizedTensor)) {
+          release() // release first, otherwise will leak memory
+
+          desc = quantizedTensor.getStorageInJni
+          interStorage = quantizedTensor.getStorage
+
+          setFromOther = true
+        }
+      case _ =>
+        throw new UnsupportedOperationException(errorString)
+    }
+
+    this
+  }
 
   /**
    * The Tensor is now going to "view" the given storage, starting at position storageOffset (>=1)
@@ -484,8 +567,12 @@ private[bigdl] class QuantizeTensor[@specialized(Float) T: ClassTag]()
    *
    * @return
    */
-  override def set(): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def set(): Tensor[T] = {
+    release()
+
+    interStorage = null
+    this
+  }
 
   /**
    * Get a subset of the tensor on dim-th dimension. The offset is given by index, and length is
@@ -514,8 +601,14 @@ private[bigdl] class QuantizeTensor[@specialized(Float) T: ClassTag]()
    * @param other source tensor
    * @return current tensor
    */
-  override def copy(other: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def copy(other: Tensor[T]): Tensor[T] = {
+    if (other.isInstanceOf[QuantizeTensor[T]]) {
+      val o = other.asInstanceOf[QuantizeTensor[T]]
+      this.setStorageInJni(o.getStorageInJni)
+      this.setStorage(o.getStorage)
+    }
+    this
+  }
 
   /**
    * Apply a function to each element of the tensor and modified it value if it return a double
@@ -1516,6 +1609,35 @@ private[bigdl] class QuantizeTensor[@specialized(Float) T: ClassTag]()
 }
 
 object QuantizeTensor {
+  /**
+   * Returns an empty tensor.
+   *
+   * @param ev
+   * @tparam T
+   * @return
+   */
   def apply[@specialized(Float, Double) T: ClassTag]()(
     implicit ev: TensorNumeric[T]): QuantizeTensor[T] = new QuantizeTensor[T]()
+  /**
+   * Create a tensor up to 5 dimensions. The tensor size will be `d1 x d2 x d3 x d4 x d5`.
+   *
+   * @param d1,(d2, d3, d4, d5)
+   * @param ev
+   * @tparam T
+   * @return
+   */
+  def apply[@specialized(Float, Double) T: ClassTag](d1: Int)(
+    implicit ev: TensorNumeric[T]): QuantizeTensor[T] = new QuantizeTensor[T](d1)
+
+  def apply[@specialized(Float, Double) T: ClassTag](d1: Int, d2: Int)(
+    implicit ev: TensorNumeric[T]): QuantizeTensor[T] = new QuantizeTensor[T](d1, d2)
+
+  def apply[@specialized(Float, Double) T: ClassTag](d1: Int, d2: Int, d3: Int)(
+    implicit ev: TensorNumeric[T]): QuantizeTensor[T] = new QuantizeTensor[T](d1, d2, d3)
+
+  def apply[@specialized(Float, Double) T: ClassTag](d1: Int, d2: Int, d3: Int, d4: Int)(
+    implicit ev: TensorNumeric[T]): QuantizeTensor[T] = new QuantizeTensor[T](d1, d2, d3, d4)
+
+  def apply[@specialized(Float, Double) T: ClassTag](d1: Int, d2: Int, d3: Int, d4: Int, d5: Int)(
+    implicit ev: TensorNumeric[T]): QuantizeTensor[T] = new QuantizeTensor[T](d1, d2, d3, d4, d5)
 }

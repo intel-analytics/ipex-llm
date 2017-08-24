@@ -107,6 +107,10 @@ class RnnCell[T : ClassTag] (
     val state = Seq(super.hashCode(), cell)
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
+
+  override def toString(): String = {
+    s"$getPrintName()\n\t$cell"
+  }
 }
 
 object RnnCell {
