@@ -618,7 +618,6 @@ object Recurrent extends ContainerSerializable {
     recurrentBuilder.putAttr("bnorm", bNormBuilder.build)
 
     createSerializeBigDLModule(recurrentBuilder, module)
-    recurrentBuilder.build
   }
 }
 
