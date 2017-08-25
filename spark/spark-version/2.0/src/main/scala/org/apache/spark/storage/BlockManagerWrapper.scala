@@ -30,13 +30,16 @@ object BlockManagerWrapper {
                 bytes: ByteBuffer,
                 level: StorageLevel): Unit = {
     require(bytes != null, "Bytes is null")
-    val blockManager = SparkEnv.get.blockManager
-    blockManager.removeBlock(blockId)
+    SparkEnv.get.blockManager.removeBlock(blockId)
     putBytesFn(blockId, new ChunkedByteBuffer(bytes), level)
   }
 
   def getLocal(blockId: BlockId): Option[BlockResult] = {
     SparkEnv.get.blockManager.getLocalValues(blockId)
+  }
+
+  def getLocalBytes(blockId: BlockId): Option[ByteBuffer] = {
+    getLocalBytesFn(blockId)    
   }
 
   def putSingle(blockId: BlockId,

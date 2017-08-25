@@ -264,6 +264,8 @@ class CachedDistriDataSet[T: ClassTag] private[dataset]
       } else {
         0
       }
+      require(localData.length > 0, "Found an empty partition! Please check your rdd" +
+        "and reduce node numbers or partition numbers if necessary")
       new Iterator[T] {
         private val _offset = new AtomicInteger(offset)
 
@@ -336,9 +338,9 @@ object DataSet {
   def array[T: ClassTag](localData: Array[T], sc: SparkContext): DistributedDataSet[T] = {
     val nodeNumber = Engine.nodeNumber()
     new CachedDistriDataSet[T](
-      sc.parallelize(localData, nodeNumber)
+      sc.parallelize(localData, Engine.partitionNumber)
         // Keep this line, or the array will be send to worker every time
-        .coalesce(nodeNumber, true)
+        .coalesce(Engine.partitionNumber, true)
         .mapPartitions(iter => {
           Iterator.single(iter.toArray)
         }).setName("cached dataset")
@@ -355,7 +357,7 @@ object DataSet {
   def rdd[T: ClassTag](data: RDD[T]): DistributedDataSet[T] = {
     val nodeNumber = Engine.nodeNumber()
     new CachedDistriDataSet[T](
-      data.coalesce(nodeNumber, true)
+      data.coalesce(Engine.partitionNumber, true)
         .mapPartitions(iter => {
           Iterator.single(iter.toArray)
         }).setName("cached dataset")

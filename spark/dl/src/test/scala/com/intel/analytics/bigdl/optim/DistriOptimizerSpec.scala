@@ -38,6 +38,7 @@ object DistriOptimizerSpec {
   val nodeNumber = 4
   val coreNumber = 4
   Engine.init(nodeNumber, coreNumber, true)
+  Engine.setPartitionNumber(nodeNumber)
 
   val batchSize = 2 * coreNumber
 

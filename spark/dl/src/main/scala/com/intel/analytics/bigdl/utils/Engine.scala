@@ -160,16 +160,6 @@ object Engine {
   }
 
   /**
-   * @return true if current execution is a singleton on the JVM
-   */
-  private[bigdl] def checkSingleton(): Boolean = singletonCounter.compareAndSet(false, true)
-
-  /**
-   * Reset the singleton flag
-   */
-  private[bigdl] def resetSingletonFlag(): Unit = singletonCounter.set(false)
-
-  /**
    * Return number of cores, the engine.init must be called before use this method or an exception
    * will be thrown
    *
@@ -313,6 +303,10 @@ object Engine {
   private[bigdl] def setNodeAndCore(nodeNum: Int, coreNum: Int): Unit = {
     setNodeNumber(nodeNum)
     setCoreNumber(coreNum)
+    // By default partition number is the same with node number
+    if (parNumber == 0) {
+      setPartitionNumber(nodeNum)
+    }
   }
 
   /**
@@ -415,5 +409,17 @@ object Engine {
     } else {
       throw new IllegalArgumentException(s"Engine.init: Unsupported master format $master")
     }
+  }
+
+  private var parNumber = 0
+  private[bigdl] def partitionNumber(): Int = {
+    parNumber
+  }
+
+  /**
+   * @param n
+   */
+  private[bigdl] def setPartitionNumber(n : Int): Unit = {
+    parNumber = n
   }
 }
