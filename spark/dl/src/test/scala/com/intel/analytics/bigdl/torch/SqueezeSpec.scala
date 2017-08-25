@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class SqueezeSpec extends TorchSpec {
     "A Squeeze(2)" should "generate correct output and grad" in {
     torchCheck()
@@ -39,7 +39,8 @@ class SqueezeSpec extends TorchSpec {
       "output = module:forward(input)\n" +
       "gradInput = module:backward(input,gradOutput)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -48,6 +49,7 @@ class SqueezeSpec extends TorchSpec {
     gradInput should be (luaGradInput)
 
     println("Test case : Squeeze, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "A Squeeze()" should "generate correct output and grad" in {
@@ -66,7 +68,8 @@ class SqueezeSpec extends TorchSpec {
       "output = module:forward(input)\n" +
       "gradInput = module:backward(input,gradOutput)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -75,6 +78,7 @@ class SqueezeSpec extends TorchSpec {
     gradInput should be (luaGradInput)
 
     println("Test case : Squeeze, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "A Squeeze(2, 3)" should "generate correct output and grad" in {
@@ -93,7 +97,8 @@ class SqueezeSpec extends TorchSpec {
       "output = module:forward(input)\n" +
       "gradInput = module:backward(input,gradOutput)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -102,6 +107,7 @@ class SqueezeSpec extends TorchSpec {
     gradInput should be (luaGradInput)
 
     println("Test case : Squeeze, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "A Squeeze(Array(2, 3), true)" should "generate correct output and grad" in {

@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.utils.Table
 import scala.collection.mutable.HashMap
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class IndexSpec extends TorchSpec {
     "A Index " should "generate correct output and grad with one dimension" in {
     torchCheck()
@@ -48,7 +48,8 @@ class IndexSpec extends TorchSpec {
       "output = module:forward(input)\n" +
       "gradInput = module:backward(input,gradOutput)\n"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input1" -> input1, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input1" -> input1, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
 
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
@@ -66,6 +67,7 @@ class IndexSpec extends TorchSpec {
 
     println("Test case : Index, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "A Index " should "generate correct output and grad with two dimension" in {
@@ -92,7 +94,8 @@ class IndexSpec extends TorchSpec {
       "output = module:forward(input)\n" +
       "gradInput = module:backward(input,gradOutput)\n"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input1" -> input1, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input1" -> input1, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
 
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
@@ -110,6 +113,7 @@ class IndexSpec extends TorchSpec {
 
     println("Test case : Index, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
 

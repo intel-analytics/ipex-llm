@@ -20,13 +20,14 @@ import com.intel.analytics.bigdl.tensor.Tensor
 
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class LogSigmoidSpec extends TorchSpec {
     "A LogSigmoid Module " should "generate correct output and grad" in {
     torchCheck()
     val module = new LogSigmoid[Double]()
-    Random.setSeed(100)
-    val input = Tensor[Double](4, 10).apply1(e => Random.nextDouble())
+    val random = new Random
+    random.setSeed(100)
+    val input = Tensor[Double](4, 10).apply1(e => random.nextDouble())
     val data = Tensor[Double](4, 20).randn()
     val gradOutput = data.narrow(2, 1, 10)
 
@@ -40,7 +41,8 @@ class LogSigmoidSpec extends TorchSpec {
       "output1 = module:forward(input)\n " +
       "output2 = module:backward(input, gradOutput)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output1", "output2"))
     val luaOutput = torchResult("output1").asInstanceOf[Tensor[Double]]
     val luaGradInput = torchResult("output2").asInstanceOf[Tensor[Double]]
@@ -49,5 +51,6 @@ class LogSigmoidSpec extends TorchSpec {
     luaGradInput should be(gradInput)
 
     println("Test case : LogSigmoid, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 }

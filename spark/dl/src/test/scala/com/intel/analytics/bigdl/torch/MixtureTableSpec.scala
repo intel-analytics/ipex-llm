@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.utils.Table
 import scala.collection.mutable.HashMap
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class MixtureTableSpec extends TorchSpec {
     "A MixtureTable " should "generate correct output and grad with table expertInput" in {
     torchCheck()
@@ -51,7 +51,8 @@ class MixtureTableSpec extends TorchSpec {
       "output = mse:forward(input)\n" +
       "gradInput = mse:backward(input,gradOutput)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input1" -> input1, "expertTable" -> expertTable,
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input1" -> input1, "expertTable" -> expertTable,
       "gradOutput" -> gradOutput), Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Table]
@@ -61,6 +62,7 @@ class MixtureTableSpec extends TorchSpec {
 
     println("Test case : MixtureTable, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "A MixtureTable " should "generate correct output and grad with tensor expertInput" in {
@@ -80,7 +82,8 @@ class MixtureTableSpec extends TorchSpec {
       "size = mse.size\n" +
       "dim = mse.dim"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput", "size", "dim"))
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Table]
@@ -96,5 +99,6 @@ class MixtureTableSpec extends TorchSpec {
 
     println("Test case : MixtureTable, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 }

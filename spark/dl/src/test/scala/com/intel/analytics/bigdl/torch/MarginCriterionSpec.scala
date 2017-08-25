@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class MarginCriterionSpec extends TorchSpec {
     "A MarginCriterion " should "generate correct output and grad" in {
     torchCheck()
@@ -38,7 +38,8 @@ class MarginCriterionSpec extends TorchSpec {
       "output = mse:forward(input,target)\n" +
       "gradInput = mse:backward(input,target)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "target" -> target),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "target" -> target),
       Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Double]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -48,5 +49,6 @@ class MarginCriterionSpec extends TorchSpec {
 
     println("Test case : MarginCriterion, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 }

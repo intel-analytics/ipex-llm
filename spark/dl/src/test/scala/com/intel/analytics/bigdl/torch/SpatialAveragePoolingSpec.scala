@@ -24,7 +24,7 @@ import scala.math._
 import scala.util.Random
 import com.intel.analytics.bigdl._
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class SpatialAveragePoolingSpec extends TorchSpec {
     "A SpatialAveragePooling" should "generate correct output and gradInput" in {
     torchCheck()
@@ -57,7 +57,8 @@ class SpatialAveragePoolingSpec extends TorchSpec {
       "output = module:forward(input)\n" +
       "gradInput = module:backward(input,gradOutput)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -74,6 +75,7 @@ class SpatialAveragePoolingSpec extends TorchSpec {
 
     println("Test case : SpatialAveragePooling, Torch : " + luaTime + " s, Scala : " +
       scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "A SpatialAveragePooling" should "be good in gradient checker for input" in {

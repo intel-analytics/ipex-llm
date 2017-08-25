@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.utils.RandomGenerator._
 
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class BottleSpec extends TorchSpec {
     "A Bottle Container" should "generate correct output and grad" in {
     torchCheck()
@@ -47,7 +47,8 @@ class BottleSpec extends TorchSpec {
     "output = module:forward(input)\n" +
     "gradInput = module:backward(input,gradOutput)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput", "inShape", "outShape"))
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -57,5 +58,6 @@ class BottleSpec extends TorchSpec {
 
     println("Test case : Bottle, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 }

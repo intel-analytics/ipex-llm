@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.utils.RandomGenerator._
 
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class VolumetricMaxPoolingSpec extends TorchSpec {
 
   "VolumetricMaxPooling Forward dim 4 Double" should "work properly" in {
@@ -59,13 +59,15 @@ class VolumetricMaxPoolingSpec extends TorchSpec {
       s" $padW, $padH)\n" +
       "output = layer:forward(input)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input),
       Array("output"))
 
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
 
     output.size() should be(luaOutput.size())
     output should be(luaOutput)
+    th.release()
   }
 
   "VolumetricMaxPooling Forward dim 5 Double" should "work properly" in {
@@ -102,12 +104,14 @@ class VolumetricMaxPoolingSpec extends TorchSpec {
       s" $padW, $padH)\n" +
       "output = layer:forward(input)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input),
       Array("weight", "bias", "output"))
 
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
 
     output should be(luaOutput)
+    th.release()
   }
 
   "forward backward double batch" should "work properly" in {
@@ -136,8 +140,9 @@ class VolumetricMaxPoolingSpec extends TorchSpec {
     val module = VolumetricMaxPooling[Double](kt, ki, kj, st, si, sj,
       padT, padW, padH)
 
-    Random.setSeed(seed)
-    val input = Tensor[Double](batch, from, int, ini, inj).apply1(e => Random.nextDouble())
+    val random = new Random
+    random.setSeed(seed)
+    val input = Tensor[Double](batch, from, int, ini, inj).apply1(e => random.nextDouble())
 
     val output = module.updateOutput(input)
 
@@ -150,13 +155,15 @@ class VolumetricMaxPoolingSpec extends TorchSpec {
 
     val gradOutput = Tensor[Double]().resizeAs(output).rand()
     val gradInput = module.backward(input, gradOutput)
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input,
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input,
       "gradOutput" -> gradOutput), Array("output", "gradInput"))
 
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
     output should be(luaOutput)
     val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
     gradInput should be(luaGradInput)
+    th.release()
   }
 
   "gradient check double batch" should "work properly" in {
@@ -185,8 +192,9 @@ class VolumetricMaxPoolingSpec extends TorchSpec {
     val module = VolumetricMaxPooling[Double](kt, ki, kj, st, si, sj,
       padT, padW, padH)
 
-    Random.setSeed(seed)
-    val input = Tensor[Double](batch, from, int, ini, inj).apply1(e => Random.nextDouble())
+    val random = new Random
+    random.setSeed(seed)
+    val input = Tensor[Double](batch, from, int, ini, inj).apply1(e => random.nextDouble())
 
     val checker = new GradientChecker(1e-5)
     checker.checkLayer[Double](module, input, 1e-3) should be (true)
@@ -218,8 +226,9 @@ class VolumetricMaxPoolingSpec extends TorchSpec {
     val module = VolumetricMaxPooling[Double](kt, ki, kj, st, si, sj,
       padT, padW, padH).ceil()
 
-    Random.setSeed(seed)
-    val input = Tensor[Double](batch, from, int, ini, inj).apply1(e => Random.nextDouble())
+    val random = new Random
+    random.setSeed(seed)
+    val input = Tensor[Double](batch, from, int, ini, inj).apply1(e => random.nextDouble())
 
     val output = module.updateOutput(input)
 
@@ -232,13 +241,15 @@ class VolumetricMaxPoolingSpec extends TorchSpec {
 
     val gradOutput = Tensor[Double]().resizeAs(output).rand()
     val gradInput = module.backward(input, gradOutput)
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input,
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input,
       "gradOutput" -> gradOutput), Array("output", "gradInput"))
 
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
     output should be(luaOutput)
     val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
     gradInput should be(luaGradInput)
+    th.release()
   }
 
   "VolumetricMaxPooling Forward dim 4 Float" should "work properly" in {
@@ -275,13 +286,15 @@ class VolumetricMaxPoolingSpec extends TorchSpec {
       s" $padW, $padH)\n" +
       "output = layer:forward(input)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input),
       Array("output"))
 
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Float]]
 
     output.size() should be(luaOutput.size())
     output should be(luaOutput)
+    th.release()
   }
 
   "VolumetricMaxPooling Forward dim 5 Float" should "work properly" in {
@@ -319,12 +332,14 @@ class VolumetricMaxPoolingSpec extends TorchSpec {
       s" $padW, $padH)\n" +
       "output = layer:forward(input)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input),
       Array("weight", "bias", "output"))
 
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Float]]
 
     output should be(luaOutput)
+    th.release()
   }
 
 
@@ -354,8 +369,9 @@ class VolumetricMaxPoolingSpec extends TorchSpec {
     val module = VolumetricMaxPooling[Float](kt, ki, kj, st, si, sj,
       padT, padW, padH)
 
-    Random.setSeed(seed)
-    val input = Tensor[Float](batch, from, int, ini, inj).apply1(e => Random.nextFloat())
+    val random = new Random
+    random.setSeed(seed)
+    val input = Tensor[Float](batch, from, int, ini, inj).apply1(e => random.nextFloat())
 
     val output = module.updateOutput(input)
 
@@ -370,13 +386,15 @@ class VolumetricMaxPoolingSpec extends TorchSpec {
     val gradOutput = Tensor[Float]()
     gradOutput.resizeAs(output).rand()
     val gradInput = module.backward(input, gradOutput)
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input,
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input,
       "gradOutput" -> gradOutput), Array("output", "gradInput"))
 
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Float]]
     output should be(luaOutput)
     val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
     gradInput should be(luaGradInput)
+    th.release()
   }
 
   "forward backward Float batch ceil" should "work properly" in {
@@ -405,8 +423,9 @@ class VolumetricMaxPoolingSpec extends TorchSpec {
     val module = VolumetricMaxPooling[Float](kt, ki, kj, st, si, sj,
       padT, padW, padH).ceil()
 
-    Random.setSeed(seed)
-    val input = Tensor[Float](batch, from, int, ini, inj).apply1(e => Random.nextFloat())
+    val random = new Random
+    random.setSeed(seed)
+    val input = Tensor[Float](batch, from, int, ini, inj).apply1(e => random.nextFloat())
 
     val output = module.updateOutput(input)
 
@@ -420,12 +439,14 @@ class VolumetricMaxPoolingSpec extends TorchSpec {
 
     val gradOutput = Tensor[Float]().resizeAs(output).rand()
     val gradInput = module.backward(input, gradOutput)
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input,
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input,
       "gradOutput" -> gradOutput), Array("output", "gradInput"))
 
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Float]]
     output should be(luaOutput)
     val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Float]]
     gradInput should be(luaGradInput)
+    th.release()
   }
 }

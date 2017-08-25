@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import spire.syntax.module
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class AddSpec extends TorchSpec {
     "A Add Module " should "generate correct output and grad" in {
     torchCheck()
@@ -50,7 +50,8 @@ class AddSpec extends TorchSpec {
       "gradInput = module:backward(input, gradOutput)\n" +
       "ones = module._ones\n"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput", "bias", "ones"))
 
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
@@ -70,6 +71,7 @@ class AddSpec extends TorchSpec {
     luaOutput2 should be(gradInput)
     luaBias should be(bias)
 
+    th.release()
   }
     "A Add Module " should "generate correct output and grad with batchsize > 1" in {
         torchCheck()
@@ -99,7 +101,8 @@ class AddSpec extends TorchSpec {
           "gradInput = module:backward(input, gradOutput)\n" +
           "ones = module._ones\n"
 
-        val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+        val th = new TH
+        val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
             Array("output", "gradInput", "bias", "ones"))
 
         val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
@@ -118,5 +121,7 @@ class AddSpec extends TorchSpec {
         luaOutput1 should be(output)
         luaOutput2 should be(gradInput)
         luaBias should be(bias)
+
+        th.release()
     }
 }

@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.utils.RandomGenerator._
 
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class CAddTableSpec extends TorchSpec {
     "CAddTable with ConcatTable" should "return right output" in {
     torchCheck()
@@ -50,7 +50,8 @@ class CAddTableSpec extends TorchSpec {
         gradInput = model:backward(input, gradOutput)
       """
 
-    val (luaTime, torchResult) = TH.run(code,
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
@@ -58,6 +59,7 @@ class CAddTableSpec extends TorchSpec {
 
     output should be (luaOutput)
     gradInput should be (luaGradInput)
+    th.release()
   }
 
   "CAddTable inplace with ConcatTable" should "return right output" in {
@@ -88,7 +90,8 @@ class CAddTableSpec extends TorchSpec {
         gradInput = model:backward(input, gradOutput)
       """
 
-    val (luaTime, torchResult) = TH.run(code,
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
@@ -96,6 +99,7 @@ class CAddTableSpec extends TorchSpec {
 
     output should be (luaOutput)
     gradInput should be (luaGradInput)
+    th.release()
   }
 
 }

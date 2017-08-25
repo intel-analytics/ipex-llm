@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.T
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class CMulSpec extends TorchSpec {
   "CMul L2 regularizer" should "works correctly" in {
     import com.intel.analytics.bigdl.numeric.NumericDouble
@@ -115,7 +115,8 @@ class CMulSpec extends TorchSpec {
         gradInput = module:backward(input,gradOutput)
         gradWeight = module.gradWeight"""
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput", "gradWeight"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -126,6 +127,7 @@ class CMulSpec extends TorchSpec {
     layer.gradWeight should be (luaGradWeight)
 
     println("Test case : CMul, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "A CMul(3)" should "generate correct output and grad" in {
@@ -153,7 +155,8 @@ class CMulSpec extends TorchSpec {
         gradInput = module:backward(input,gradOutput)
         gradWeight = module.gradWeight"""
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput", "gradWeight"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -164,6 +167,7 @@ class CMulSpec extends TorchSpec {
     layer.gradWeight should be (luaGradWeight)
 
     println("Test case : CMul, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "A CMul(3, 4)" should "generate correct output and grad" in {
@@ -191,7 +195,8 @@ class CMulSpec extends TorchSpec {
         gradInput = module:backward(input,gradOutput)
         gradWeight = module.gradWeight"""
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput", "gradWeight"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -202,6 +207,7 @@ class CMulSpec extends TorchSpec {
     layer.gradWeight should be (luaGradWeight)
 
     println("Test case : CMul, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "A CMul(1, 4, 1, 1)" should "generate correct output and grad" in {
@@ -229,7 +235,8 @@ class CMulSpec extends TorchSpec {
         gradInput = module:backward(input,gradOutput)
         gradWeight = module.gradWeight"""
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput", "gradWeight"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -240,6 +247,7 @@ class CMulSpec extends TorchSpec {
     layer.gradWeight should be (luaGradWeight)
 
     println("Test case : CMul, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "A CMul(1, 5, 1, 1)" should "generate correct output and grad" in {
@@ -267,7 +275,8 @@ class CMulSpec extends TorchSpec {
         gradInput = module:backward(input,gradOutput)
         gradWeight = module.gradWeight"""
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput", "gradWeight"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -278,6 +287,7 @@ class CMulSpec extends TorchSpec {
     layer.gradWeight should be (luaGradWeight)
 
     println("Test case : CMul, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
 }

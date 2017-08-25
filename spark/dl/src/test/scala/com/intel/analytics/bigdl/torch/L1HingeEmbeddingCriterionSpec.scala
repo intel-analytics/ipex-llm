@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.utils.Table
 import scala.collection.mutable.HashMap
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class L1HingeEmbeddingCriterionSpec extends TorchSpec {
     "A L1HingeEmbeddingCriterion" should "generate correct output and grad with y == 1 " in {
     torchCheck()
@@ -51,7 +51,8 @@ class L1HingeEmbeddingCriterionSpec extends TorchSpec {
       "output = module:forward(input, 1)\n" +
       "gradInput = module:backward(input, 1)\n"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input), Array("output", "gradInput"))
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input), Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Double]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Table]
 
@@ -60,6 +61,7 @@ class L1HingeEmbeddingCriterionSpec extends TorchSpec {
 
     println("Test case : L1HingeEmbeddingCriterion, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "A L1HingeEmbeddingCriterion" should "generate correct output and grad with y == -1 " in {
@@ -88,7 +90,8 @@ class L1HingeEmbeddingCriterionSpec extends TorchSpec {
       "output = module:forward(input, -1.0)\n" +
       "gradInput = module:backward(input, -1.0)\n"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input), Array("output", "gradInput"))
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input), Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Double]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Table]
 
@@ -97,5 +100,6 @@ class L1HingeEmbeddingCriterionSpec extends TorchSpec {
 
     println("Test case : L1HingeEmbeddingCriterion, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 }

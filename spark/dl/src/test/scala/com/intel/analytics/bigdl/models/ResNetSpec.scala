@@ -29,12 +29,14 @@ import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T, Table}
 import org.apache.log4j.Logger
 import com.intel.analytics.bigdl.numeric.NumericFloat
-
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 import scala.collection.{immutable, mutable}
 import scala.math._
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Ignore
+@RunWith(classOf[JUnitRunner])
 class ResNetSpec extends TorchSpec {
 
   "ResNet Float" should "generate correct output" in {
@@ -215,12 +217,13 @@ class ResNetSpec extends TorchSpec {
 
       """
 
-    TH.runNM(code, immutable.Map("input" -> input, "labels" -> labels),
+    val th = new TH
+    th.runNM(code, immutable.Map("input" -> input, "labels" -> labels),
       Array("output", "gradOutput", "err", "parameters_initial",
         "gradParameters_initial", "gradInput", "model"))
 
     ResNet.shareGradInput(model)
-    val parameterTorch = TH.map("parameters_initial").asInstanceOf[Tensor[Float]]
+    val parameterTorch = th.map("parameters_initial").asInstanceOf[Tensor[Float]]
     val parameters = model.getParameters()._1
 
     for (i <- 0 until parameters.nElement()) {
@@ -248,7 +251,7 @@ class ResNetSpec extends TorchSpec {
       sgd.optimize(feval, weights, state)
     }
 
-    val output = TH.map("output").asInstanceOf[Tensor[Float]]
+    val output = th.map("output").asInstanceOf[Tensor[Float]]
     val outputTest = model.output.toTensor[Float]
     var abss = 0.0
     for (i <- 0 until outputTest.nElement()) {
@@ -260,12 +263,12 @@ class ResNetSpec extends TorchSpec {
 
 
     val errTest = criterion.output
-    val err = TH.map("err").asInstanceOf[Double]
+    val err = th.map("err").asInstanceOf[Double]
     println(s"${abs(errTest - err)}")
     assert(abs(errTest - err) < 1.5e-6)
 
     val gradOutputTest = criterion.backward(outputTest, labels)
-    val gradOutput = TH.map("gradOutput").asInstanceOf[Tensor[Float]]
+    val gradOutput = th.map("gradOutput").asInstanceOf[Tensor[Float]]
     abss = 0.0
     for (i <- 0 until gradOutputTest.nElement()) {
       val tmp = abs(gradOutputTest.storage().array()(i) - gradOutput.storage().array()(i))
@@ -275,7 +278,7 @@ class ResNetSpec extends TorchSpec {
     println(s"gradOutputTestAbs:$abss")
 
     val gradInput = model.gradInput.asInstanceOf[Tensor[Float]]
-    val gradInputTorch = TH.map("gradInput").asInstanceOf[Tensor[Float]]
+    val gradInputTorch = th.map("gradInput").asInstanceOf[Tensor[Float]]
 
     abss = 0.0
     for (i <- 0 until gradInputTorch.nElement()) {
@@ -284,6 +287,7 @@ class ResNetSpec extends TorchSpec {
     }
     println(s"gradInputTestAbs:$abss")
 
+    th.release()
   }
 
   "ResNet basicBlockFunc graph" should "be same with original one" in {

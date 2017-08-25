@@ -22,21 +22,22 @@ import com.intel.analytics.bigdl.utils.{Engine, T, Table}
 
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class ParallelCriterionSpec extends TorchSpec {
     "A ParallelCriterion " should "generate correct output and grad" in {
     torchCheck()
     val seed = 100
-    Random.setSeed(seed)
+    val random = new Random
+    random.setSeed(seed)
 
     val pc = new ParallelCriterion[Double]()
-    val input1 = Tensor[Double](2, 10).apply1(_ => Random.nextDouble())
-    val input2 = Tensor[Double](2, 10).apply1(_ => Random.nextDouble())
+    val input1 = Tensor[Double](2, 10).apply1(_ => random.nextDouble())
+    val input2 = Tensor[Double](2, 10).apply1(_ => random.nextDouble())
     val input = T()
     input(1.0) = input1
     input(2.0) = input2
     val target1 = Tensor[Double](Storage(Array(2.0, 5.0)))
-    val target2 = Tensor[Double](2, 10).apply1(_ => Random.nextDouble())
+    val target2 = Tensor[Double](2, 10).apply1(_ => random.nextDouble())
     val target = T()
     target(1.0) = target1
     target(2.0) = target2
@@ -58,7 +59,8 @@ class ParallelCriterionSpec extends TorchSpec {
       gradOutput2 = gradOutput[2]
       """.stripMargin
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "target" -> target),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "target" -> target),
       Array("loss", "gradOutput1", "gradOutput2"))
     val luaLoss = torchResult("loss").asInstanceOf[Double]
     val luaGradOutput1 = torchResult("gradOutput1").asInstanceOf[Tensor[Double]]
@@ -70,6 +72,7 @@ class ParallelCriterionSpec extends TorchSpec {
 
     println("Test case : ParallelCriterion, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 }
 

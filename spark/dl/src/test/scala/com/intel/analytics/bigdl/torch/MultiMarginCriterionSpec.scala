@@ -19,7 +19,7 @@ import com.intel.analytics.bigdl.nn.MultiMarginCriterion
 import com.intel.analytics.bigdl.tensor.Tensor
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class MultiMarginCriterionSpec extends TorchSpec {
     "A MultiMarginCriterion " should "generate correct output and grad with " +
     "one dimension and weights not null" in {
@@ -40,7 +40,8 @@ class MultiMarginCriterionSpec extends TorchSpec {
       "output = module:forward(input, target)\n" +
       "gradInput = module:backward(input, target)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "target" -> target,
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "target" -> target,
       "weights" -> weights), Array("output", "gradInput"))
     val luaOutput = torchResult("output").asInstanceOf[Double]
     val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -50,6 +51,7 @@ class MultiMarginCriterionSpec extends TorchSpec {
 
     println("Test case : MultiMarginCriterion, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "A MultiMarginCriterion " should "generate correct output and grad with " +
@@ -74,7 +76,8 @@ class MultiMarginCriterionSpec extends TorchSpec {
       "output = module:forward(input, target)\n" +
       "gradInput = module:backward(input, target)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "target" -> target,
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "target" -> target,
       "weights" -> weights), Array("output", "gradInput"))
     val luaOutput = torchResult("output").asInstanceOf[Double]
     val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -84,6 +87,7 @@ class MultiMarginCriterionSpec extends TorchSpec {
 
     println("Test case : MultiMarginCriterion, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "A MultiMarginCriterion " should "generate correct output and grad with weights null" in {
@@ -105,7 +109,8 @@ class MultiMarginCriterionSpec extends TorchSpec {
       "output = module:forward(input, target)\n" +
       "gradInput = module:backward(input, target)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "target" -> target),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "target" -> target),
       Array("output", "gradInput"))
     val luaOutput = torchResult("output").asInstanceOf[Double]
     val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -115,5 +120,6 @@ class MultiMarginCriterionSpec extends TorchSpec {
 
     println("Test case : MultiMarginCriterion, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 }

@@ -24,7 +24,7 @@ import scala.collection.mutable.HashMap
 
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class CosineDistanceCriterionSpec extends TorchSpec {
   "A CosineDistanceCriterionSpec Module" should "generate correct output and grad" in {
     torchCheck()
@@ -57,7 +57,8 @@ class CosineDistanceCriterionSpec extends TorchSpec {
       "gradInput = module:backward(input, 1.0)\n"
 
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input),
       Array("output", "gradInput", "_idx", "buffer", "_outputs"))
     val luaOutput1 = torchResult("output").asInstanceOf[Double]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Table]
@@ -67,5 +68,6 @@ class CosineDistanceCriterionSpec extends TorchSpec {
 
     println("Test case : CrossEntropyCriterion, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 }

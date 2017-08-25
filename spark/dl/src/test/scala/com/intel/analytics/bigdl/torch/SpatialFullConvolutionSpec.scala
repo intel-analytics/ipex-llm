@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class SpatialFullConvolutionSpec extends TorchSpec {
     "A SpatialFullConvolution" should "generate correct output" in {
     torchCheck()
@@ -41,8 +41,9 @@ class SpatialFullConvolutionSpec extends TorchSpec {
     val layer = new SpatialFullConvolution[Double](nInputPlane, nOutputPlane,
       kW, kH, dW, dH, padW, padH)
 
-    Random.setSeed(seed)
-    val input = Tensor[Double](3, 3, 6, 6).apply1(e => Random.nextDouble())
+    val random = new Random
+    random.setSeed(seed)
+    val input = Tensor[Double](3, 3, 6, 6).apply1(e => random.nextDouble())
     layer.updateOutput(input)
     val output = layer.updateOutput(input)
 
@@ -52,7 +53,8 @@ class SpatialFullConvolutionSpec extends TorchSpec {
       "bias = layer.bias \n" +
       "output = layer:forward(input) "
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input),
       Array("weight", "bias", "output"))
 
     val luaWeight = torchResult("weight").asInstanceOf[Tensor[Double]]
@@ -65,6 +67,7 @@ class SpatialFullConvolutionSpec extends TorchSpec {
     weight should be(luaWeight.resizeAs(weight))
     bias should be(luaBias)
     output should be(luaOutput)
+    th.release()
   }
 
   "A SpatialFullConvolution on rectangle input" should "generate correct output" in {
@@ -83,8 +86,9 @@ class SpatialFullConvolutionSpec extends TorchSpec {
     val layer = new SpatialFullConvolution[Double](nInputPlane, nOutputPlane,
       kW, kH, dW, dH, padW, padH)
 
-    Random.setSeed(seed)
-    val input = Tensor[Double](1, 10, 20, 30).apply1(e => Random.nextDouble())
+    val random = new Random
+    random.setSeed(seed)
+    val input = Tensor[Double](1, 10, 20, 30).apply1(e => random.nextDouble())
     val output = layer.updateOutput(input)
 
     val code = "torch.manualSeed(" + seed + ")\n" +
@@ -93,7 +97,8 @@ class SpatialFullConvolutionSpec extends TorchSpec {
       "bias = layer.bias \n" +
       "output = layer:forward(input) "
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input),
       Array("weight", "bias", "output"))
 
     val luaWeight = torchResult("weight").asInstanceOf[Tensor[Double]]
@@ -106,6 +111,7 @@ class SpatialFullConvolutionSpec extends TorchSpec {
     weight should be(luaWeight.resizeAs(weight))
     bias should be(luaBias)
     output should be(luaOutput)
+    th.release()
   }
 
   "A SpatialFullConvolution" should "generate correct output and grad" in {
@@ -126,11 +132,12 @@ class SpatialFullConvolutionSpec extends TorchSpec {
     val model = new Sequential[Double]()
     model.add(layer)
 
-    Random.setSeed(3)
-    val input = Tensor[Double](3, 3, 6, 6).apply1(e => Random.nextDouble())
+    val random = new Random
+    random.setSeed(seed)
+    val input = Tensor[Double](3, 3, 6, 6).apply1(e => random.nextDouble())
     val output = model.updateOutput(input).toTensor[Double]
 
-    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => random.nextDouble())
 
     val gradInput = model.backward(input, gradOutput)
 
@@ -147,7 +154,8 @@ class SpatialFullConvolutionSpec extends TorchSpec {
       gradWeight = layer.gradWeight
       """
 
-    val (luaTime, torchResult) = TH.run(code,
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput),
       Array("weight", "bias", "output", "gradInput", "gradBias", "gradWeight")
     )
@@ -168,6 +176,7 @@ class SpatialFullConvolutionSpec extends TorchSpec {
     gradInput should be(luaGradInput)
     luaGradBias should be (layer.gradBias)
     luaGradWeight should be (layer.gradWeight.resizeAs(luaGradWeight))
+    th.release()
   }
 
   "A SpatialFullConvolution" should "generate correct output and grad with 3D input" in {
@@ -188,11 +197,12 @@ class SpatialFullConvolutionSpec extends TorchSpec {
     val model = new Sequential[Double]()
     model.add(layer)
 
-    Random.setSeed(3)
-    val input = Tensor[Double](3, 6, 6).apply1(e => Random.nextDouble())
+    val random = new Random
+    random.setSeed(seed)
+    val input = Tensor[Double](3, 6, 6).apply1(e => random.nextDouble())
     val output = model.updateOutput(input).toTensor[Double]
 
-    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => random.nextDouble())
 
     val gradInput = model.backward(input, gradOutput)
 
@@ -209,7 +219,8 @@ class SpatialFullConvolutionSpec extends TorchSpec {
       gradWeight = layer.gradWeight
       """
 
-    val (luaTime, torchResult) = TH.run(code,
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput),
       Array("weight", "bias", "output", "gradInput", "gradBias", "gradWeight")
     )
@@ -230,6 +241,7 @@ class SpatialFullConvolutionSpec extends TorchSpec {
     gradInput should be(luaGradInput)
     luaGradBias should be (layer.gradBias)
     luaGradWeight should be (layer.gradWeight.resizeAs(luaGradWeight))
+    th.release()
   }
 
   "A SpatialFullConvolution noBias" should "generate correct output and grad with 3D input" in {
@@ -250,11 +262,12 @@ class SpatialFullConvolutionSpec extends TorchSpec {
     val model = new Sequential[Double]()
     model.add(layer)
 
-    Random.setSeed(3)
-    val input = Tensor[Double](3, 6, 6).apply1(e => Random.nextDouble())
+    val random = new Random
+    random.setSeed(seed)
+    val input = Tensor[Double](3, 6, 6).apply1(e => random.nextDouble())
     val output = model.updateOutput(input).toTensor[Double]
 
-    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => random.nextDouble())
 
     val gradInput = model.backward(input, gradOutput)
 
@@ -272,7 +285,8 @@ class SpatialFullConvolutionSpec extends TorchSpec {
       gradWeight = layer.gradWeight
       """
 
-    val (luaTime, torchResult) = TH.run(code,
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput),
       Array("weight", "output", "gradInput", "gradWeight")
     )
@@ -289,6 +303,7 @@ class SpatialFullConvolutionSpec extends TorchSpec {
     output should be(luaOutput)
     gradInput should be(luaGradInput)
     luaGradWeight should be (layer.gradWeight.resizeAs(luaGradWeight))
+    th.release()
   }
 
   "A SpatialFullConvolution" should "generate correct output and grad with table input" in {
@@ -307,13 +322,14 @@ class SpatialFullConvolutionSpec extends TorchSpec {
     val layer = new SpatialFullConvolution[Double](nInputPlane, nOutputPlane,
       kW, kH, dW, dH, padW, padH)
 
-    Random.setSeed(3)
-    val input1 = Tensor[Double](3, 6, 6).apply1(e => Random.nextDouble())
-    val input2 = Tensor[Double](6, 6).apply1(e => Random.nextInt(dH))
+    val random = new Random
+    random.setSeed(seed)
+    val input1 = Tensor[Double](3, 6, 6).apply1(e => random.nextDouble())
+    val input2 = Tensor[Double](6, 6).apply1(e => random.nextInt(dH))
     val input = T(input1, input2)
     val output = layer.updateOutput(input)
 
-    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => random.nextDouble())
 
     val gradInput = layer.backward(input, gradOutput)
 
@@ -333,7 +349,8 @@ class SpatialFullConvolutionSpec extends TorchSpec {
       gradInput2 = gradInput[2]
       """
 
-    val (luaTime, torchResult) = TH.run(code,
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code,
       Map("input1" -> input1, "input2" -> input2, "gradOutput" -> gradOutput),
       Array("weight", "bias", "output", "gradInput1", "gradInput2", "gradBias", "gradWeight")
     )
@@ -356,6 +373,7 @@ class SpatialFullConvolutionSpec extends TorchSpec {
     gradInput should be(luaGradInput)
     luaGradBias should be (layer.gradBias)
     luaGradWeight should be (layer.gradWeight.resizeAs(luaGradWeight))
+    th.release()
   }
 
   "A SpatialFullConvolution OneToOne" should "generate correct output and grad" in {
@@ -371,11 +389,12 @@ class SpatialFullConvolutionSpec extends TorchSpec {
     val dH = 1
     val layer = new SpatialFullConvolution[Double](nInputPlane, nOutputPlane,
       kW, kH, dW, dH, 0, 0, 0, 0, 6)
-    Random.setSeed(3)
-    val input = Tensor[Double](6, 5, 5).apply1(e => Random.nextDouble())
+    val random = new Random
+    random.setSeed(seed)
+    val input = Tensor[Double](6, 5, 5).apply1(e => random.nextDouble())
     val output = layer.forward(input).toTensor[Double]
 
-    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => random.nextDouble())
 
     val gradInput = layer.updateGradInput(input, gradOutput)
     layer.accGradParameters(input, gradOutput)
@@ -394,7 +413,8 @@ class SpatialFullConvolutionSpec extends TorchSpec {
       gradWeight = layer.gradWeight
       """
 
-    val (luaTime, torchResult) = TH.run(code,
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput,
         "weight" -> layer.weight, "bias" -> layer.bias),
       Array("output", "gradInput", "gradBias", "gradWeight")
@@ -412,6 +432,7 @@ class SpatialFullConvolutionSpec extends TorchSpec {
     gradInput should be(luaGradInput)
     luaGradBias should be (layer.gradBias)
     luaGradWeight should be (layer.gradWeight.resizeAs(luaGradWeight))
+    th.release()
   }
 
   "A SpatialFullConvolution with different input" should "generate correct output and grad" in {
@@ -432,16 +453,17 @@ class SpatialFullConvolutionSpec extends TorchSpec {
     val model = new Sequential[Double]()
     model.add(layer)
 
-    Random.setSeed(3)
-    val input = Tensor[Double](3, 3, 6, 6).apply1(e => Random.nextDouble())
-    val input2 = Tensor[Double](6, 3, 6, 6).apply1(e => Random.nextDouble())
+    val random = new Random
+    random.setSeed(seed)
+    val input = Tensor[Double](3, 3, 6, 6).apply1(e => random.nextDouble())
+    val input2 = Tensor[Double](6, 3, 6, 6).apply1(e => random.nextDouble())
     val output = model.updateOutput(input).toTensor[Double]
-    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => random.nextDouble())
     val gradInput = model.backward(input, gradOutput)
 
     model.zeroGradParameters()
     val output2 = model.updateOutput(input2).toTensor[Double]
-    val gradOutput2 = Tensor[Double]().resizeAs(output2).apply1(e => Random.nextDouble())
+    val gradOutput2 = Tensor[Double]().resizeAs(output2).apply1(e => random.nextDouble())
     val gradInput2 = model.backward(input2, gradOutput2)
 
     val code = "torch.manualSeed(" + seed + ")\n" +
@@ -457,7 +479,8 @@ class SpatialFullConvolutionSpec extends TorchSpec {
       gradWeight = layer.gradWeight
       """
 
-    val (luaTime, torchResult) = TH.run(code,
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code,
       Map("input" -> input2, "gradOutput" -> gradOutput2),
       Array("weight", "bias", "output", "gradInput", "gradBias", "gradWeight")
     )
@@ -478,6 +501,7 @@ class SpatialFullConvolutionSpec extends TorchSpec {
     gradInput2 should be(luaGradInput)
     luaGradBias should be (layer.gradBias)
     luaGradWeight should be (layer.gradWeight.resizeAs(luaGradWeight))
+    th.release()
   }
 
 }

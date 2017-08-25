@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.utils.RandomGenerator._
 
 import scala.math._
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class ConcatSpec extends TorchSpec {
     "A Concat Container with Linear" should "generate correct output and grad " in {
     torchCheck()
@@ -56,7 +56,8 @@ class ConcatSpec extends TorchSpec {
     gradInput = module:backward(input,gradOutput)
       """
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput", "module", "parameters_initial", "gradParameters_initial"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
     val gradParametersInitial = torchResult("gradParameters_initial").asInstanceOf[Tensor[Double]]
@@ -85,6 +86,7 @@ class ConcatSpec extends TorchSpec {
     })
 
     println("Test case : Concat, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "A Concat Container updateGradInput and acc with Linear" should
@@ -119,7 +121,8 @@ class ConcatSpec extends TorchSpec {
     gradInput = module:backward(input,gradOutput)
       """
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput", "module", "parameters_initial", "gradParameters_initial",
       "parameters", "gradParameters"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
@@ -159,6 +162,7 @@ class ConcatSpec extends TorchSpec {
       v1
     })
     println("Test case : Concat, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "A Concat Container" should "generate correct output and grad" in {
@@ -193,7 +197,8 @@ class ConcatSpec extends TorchSpec {
     gradInput = module:backward(input,gradOutput)
       """
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput", "module"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -204,5 +209,6 @@ class ConcatSpec extends TorchSpec {
     luaGradInput should be(gradInput)
 
     println("Test case : Concat, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 }

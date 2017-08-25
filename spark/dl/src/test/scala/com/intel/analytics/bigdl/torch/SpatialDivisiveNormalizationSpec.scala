@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.utils.RandomGenerator._
 
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class SpatialDivisiveNormalizationSpec extends TorchSpec {
     "A SpatialDivisiveNormalization 3D input" should "generate correct output and grad" in {
     torchCheck()
@@ -33,11 +33,12 @@ class SpatialDivisiveNormalizationSpec extends TorchSpec {
     val model = new Sequential[Double]()
     model.add(layer)
 
-    Random.setSeed(3)
-    val input = Tensor[Double](1, 5, 5).apply1(e => Random.nextDouble())
+    val random = new Random
+    random.setSeed(3)
+    val input = Tensor[Double](1, 5, 5).apply1(e => random.nextDouble())
     val output = model.updateOutput(input).toTensor[Double]
 
-    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => random.nextDouble())
 
     val gradInput = model.backward(input, gradOutput)
 
@@ -50,7 +51,8 @@ class SpatialDivisiveNormalizationSpec extends TorchSpec {
       gradInput = model:backward(input, gradOutput)
       """
 
-    val (luaTime, torchResult) = TH.run(code,
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput")
     )
@@ -60,6 +62,7 @@ class SpatialDivisiveNormalizationSpec extends TorchSpec {
 
     output should be(luaOutput)
     gradInput should be(luaGradInput)
+    th.release()
   }
 
   "A SpatialDivisiveNormalization" should "generate correct output and grad" in {
@@ -71,11 +74,12 @@ class SpatialDivisiveNormalizationSpec extends TorchSpec {
     val model = new Sequential[Double]()
     model.add(layer)
 
-    Random.setSeed(3)
-    val input = Tensor[Double](3, 1, 5, 5).apply1(e => Random.nextDouble())
+    val random = new Random
+    random.setSeed(3)
+    val input = Tensor[Double](3, 1, 5, 5).apply1(e => random.nextDouble())
     val output = model.updateOutput(input).toTensor[Double]
 
-    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => random.nextDouble())
 
     val gradInput = model.backward(input, gradOutput)
 
@@ -88,7 +92,8 @@ class SpatialDivisiveNormalizationSpec extends TorchSpec {
       gradInput = model:backward(input, gradOutput)
       """
 
-    val (luaTime, torchResult) = TH.run(code,
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput")
     )
@@ -98,6 +103,7 @@ class SpatialDivisiveNormalizationSpec extends TorchSpec {
 
     output should be(luaOutput)
     gradInput should be(luaGradInput)
+    th.release()
   }
 
   "A SpatialDivisiveNormalization(4)" should "generate correct output and grad" in {
@@ -109,11 +115,12 @@ class SpatialDivisiveNormalizationSpec extends TorchSpec {
     val model = new Sequential[Double]()
     model.add(layer)
 
-    Random.setSeed(3)
-    val input = Tensor[Double](3, 4, 5, 5).apply1(e => Random.nextDouble())
+    val random = new Random
+    random.setSeed(3)
+    val input = Tensor[Double](3, 4, 5, 5).apply1(e => random.nextDouble())
     val output = model.updateOutput(input).toTensor[Double]
 
-    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => random.nextDouble())
 
     val gradInput = model.backward(input, gradOutput)
 
@@ -126,7 +133,8 @@ class SpatialDivisiveNormalizationSpec extends TorchSpec {
       gradInput = model:backward(input, gradOutput)
       """
 
-    val (luaTime, torchResult) = TH.run(code,
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput")
     )
@@ -136,6 +144,7 @@ class SpatialDivisiveNormalizationSpec extends TorchSpec {
 
     output should be(luaOutput)
     gradInput should be(luaGradInput)
+    th.release()
   }
 
   "SpatialDivisiveNormalization(4, kernel)" should "generate correct output and grad" in {
@@ -147,11 +156,12 @@ class SpatialDivisiveNormalizationSpec extends TorchSpec {
 
     val model = new SpatialDivisiveNormalization[Double](4, kernel)
 
-    Random.setSeed(3)
-    val input = Tensor[Double](3, 4, 5, 5).apply1(e => Random.nextDouble())
+    val random = new Random
+    random.setSeed(3)
+    val input = Tensor[Double](3, 4, 5, 5).apply1(e => random.nextDouble())
     val output = model.updateOutput(input)
 
-    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => random.nextDouble())
 
     val gradInput = model.backward(input, gradOutput)
 
@@ -162,7 +172,8 @@ class SpatialDivisiveNormalizationSpec extends TorchSpec {
       gradInput = model:backward(input, gradOutput)
       """
 
-    val (luaTime, torchResult) = TH.run(code,
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput" -> gradOutput, "kernel" -> kernel),
       Array("output", "gradInput")
     )
@@ -172,5 +183,6 @@ class SpatialDivisiveNormalizationSpec extends TorchSpec {
 
     output should be(luaOutput)
     gradInput should be(luaGradInput)
+    th.release()
   }
 }

@@ -21,7 +21,7 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class PaddingSpec extends TorchSpec {
 
 
@@ -41,7 +41,8 @@ class PaddingSpec extends TorchSpec {
       "output = module:forward(input)\n" +
       "gradInput = module:backward(input,gradOutput)\n"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
 
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
@@ -58,6 +59,7 @@ class PaddingSpec extends TorchSpec {
     gradInput should be(luaOutput2)
 
     println("Test case : Padding, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "A Padding Module " should "generate correct output and grad with nInputDim == input.dim()" in {
@@ -76,7 +78,8 @@ class PaddingSpec extends TorchSpec {
       "output = module:forward(input)\n" +
       "gradInput = module:backward(input,gradOutput)\n"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
 
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
@@ -93,6 +96,7 @@ class PaddingSpec extends TorchSpec {
     gradInput should be(luaOutput2)
 
     println("Test case : Padding, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "A Padding Module " should "generate correct output and grad with index == 1" in {
@@ -111,7 +115,8 @@ class PaddingSpec extends TorchSpec {
       "output = module:forward(input)\n" +
       "gradInput = module:backward(input,gradOutput)\n"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
 
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
@@ -128,6 +133,7 @@ class PaddingSpec extends TorchSpec {
     gradInput should be(luaOutput2)
 
     println("Test case : Padding, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 }
 

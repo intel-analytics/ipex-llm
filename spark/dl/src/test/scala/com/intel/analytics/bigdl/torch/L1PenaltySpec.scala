@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class L1PenaltySpec extends TorchSpec {
     "A L1Penalty" should "generate correct output and grad" in {
     torchCheck()
@@ -38,7 +38,8 @@ class L1PenaltySpec extends TorchSpec {
       "output = module:forward(input)\n" +
       "gradInput = module:backward(input,gradOutput)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -47,5 +48,6 @@ class L1PenaltySpec extends TorchSpec {
     gradInput should be (luaGradInput)
 
     println("Test case : L1Penalty, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 }

@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.utils.RandomGenerator._
 
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class ConcatTableSpec extends TorchSpec {
     "ConcatTable forward tensor" should "return right output" in {
     torchCheck()
@@ -54,7 +54,8 @@ class ConcatTableSpec extends TorchSpec {
         parameters, gradParameters = module:getParameters()
       """
 
-    val (luaTime, torchResult) = TH.run(code,
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code,
       Map("input" -> input, "gradOutput1" -> gradOutput1, "gradOutput2" -> gradOutput2),
       Array("output1", "output2", "gradInput", "gradParameters"))
     val luaOutput1 = torchResult("output1").asInstanceOf[Tensor[Double]]
@@ -68,6 +69,7 @@ class ConcatTableSpec extends TorchSpec {
     output should be (luaOutput)
     gradInput should be (luaGradInput)
     gradParameters should be (luaGradParameters)
+    th.release()
   }
 
 }

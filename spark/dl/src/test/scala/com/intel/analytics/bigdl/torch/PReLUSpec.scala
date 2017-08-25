@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import scala.math._
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class PReLUSpec extends TorchSpec {
     "A PReLU Module " should "generate correct output and grad not inplace" in {
     torchCheck()
@@ -41,7 +41,8 @@ class PReLUSpec extends TorchSpec {
       "gradInput = module:backward(input,gradOutput)\n" +
       "gradWeight = module.gradWeight"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput", "gradWeight"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -52,6 +53,7 @@ class PReLUSpec extends TorchSpec {
     luaGradWeight should be (module.gradWeight)
 
     println("Test case : PReLU, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "A PReLU(2)" should "generate correct output and grad not inplace" in {
@@ -72,7 +74,8 @@ class PReLUSpec extends TorchSpec {
       "gradInput = module:backward(input,gradOutput)\n" +
       "gradWeight = module.gradWeight"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput", "gradWeight"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -83,6 +86,7 @@ class PReLUSpec extends TorchSpec {
     luaGradWeight should be (module.gradWeight)
 
     println("Test case : PReLU, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
 }

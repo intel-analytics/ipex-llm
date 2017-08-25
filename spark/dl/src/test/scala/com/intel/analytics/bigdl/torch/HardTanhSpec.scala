@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.torch
 import com.intel.analytics.bigdl.nn.HardTanh
 import com.intel.analytics.bigdl.tensor.Tensor
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class HardTanhSpec  extends TorchSpec {
     "A HardTanh Module " should
     "generate correct output and grad not inplace with contiguous input" in {
@@ -53,7 +53,8 @@ class HardTanhSpec  extends TorchSpec {
       "output = module:forward(input)\n" +
       "gradInput = module:backward(input,gradOutput)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -62,6 +63,7 @@ class HardTanhSpec  extends TorchSpec {
     luaOutput2 should be (gradInput)
 
     println("Test case : HardTanh, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "A HardTanh Module " should "generate correct output and grad inplace with contiguous input" in {
@@ -96,7 +98,8 @@ class HardTanhSpec  extends TorchSpec {
       "output = module:forward(input)\n" +
       "gradInput = module:backward(input,gradOutput)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -105,6 +108,7 @@ class HardTanhSpec  extends TorchSpec {
     luaOutput2 should be (gradInput)
 
     println("Test case : HardTanh, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "A HardTanh Module " should
@@ -132,7 +136,8 @@ class HardTanhSpec  extends TorchSpec {
       "output = module:forward(input:t())\n" +
       "gradInput = module:backward(input:t(),gradOutput:t())"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -141,6 +146,7 @@ class HardTanhSpec  extends TorchSpec {
     luaOutput2 should be (gradInput)
 
     println("Test case : HardTanh, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "A HardTanh Module " should
@@ -168,7 +174,8 @@ class HardTanhSpec  extends TorchSpec {
       "output = module:forward(input:t())\n" +
       "gradInput = module:backward(input:t(),gradOutput:t())"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -177,5 +184,6 @@ class HardTanhSpec  extends TorchSpec {
     luaOutput2 should be (gradInput)
 
     println("Test case : HardTanh, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 }

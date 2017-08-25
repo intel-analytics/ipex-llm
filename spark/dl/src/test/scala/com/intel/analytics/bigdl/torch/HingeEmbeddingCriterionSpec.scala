@@ -19,7 +19,7 @@ import com.intel.analytics.bigdl.nn.HingeEmbeddingCriterion
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class HingeEmbeddingCriterionSpec extends TorchSpec {
     "A HingeEmbeddingCriterion" should "generate correct output and grad" in {
     torchCheck()
@@ -45,7 +45,8 @@ class HingeEmbeddingCriterionSpec extends TorchSpec {
       "gradInput = module:backward(input, target)\n"
 
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "target" -> target),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "target" -> target),
       Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Double]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -55,5 +56,6 @@ class HingeEmbeddingCriterionSpec extends TorchSpec {
 
     println("Test case : HingeEmbeddingCriterion, Torch : " + luaTime + " s, Scala : " +
       scalaTime / 1e9 + " s")
+    th.release()
   }
 }

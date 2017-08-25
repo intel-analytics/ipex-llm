@@ -21,7 +21,7 @@ import org.scalatest.{FlatSpec, Matchers}
 
 import scala.collection.mutable
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class ReverseSpec extends FlatSpec with Matchers {
 
   "A Reverse()" should "generate correct output and grad for Tensor input dim1 inplace" in {

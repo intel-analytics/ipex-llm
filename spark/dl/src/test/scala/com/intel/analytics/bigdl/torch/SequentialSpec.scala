@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.utils.RandomGenerator._
 
 import scala.math._
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class SequentialSpec extends TorchSpec {
     "A Sequential Container" should "generate correct output and grad" in {
     torchCheck()
@@ -42,7 +42,8 @@ class SequentialSpec extends TorchSpec {
     val code = "output = module:forward(input)\n" +
       "gradInput = module:backward(input,gradOutput)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("module" -> module, "input" -> input,
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("module" -> module, "input" -> input,
       "gradOutput" -> gradOutput), Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -57,6 +58,7 @@ class SequentialSpec extends TorchSpec {
     })
 
     println("Test case : Sequential, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "A Sequential Container" should "update weight correctly" in {
@@ -88,7 +90,8 @@ class SequentialSpec extends TorchSpec {
         "i = i + 1\n" +
         "end"
 
-    val (luaTime, torchResult) = TH.run(code, Map("module" -> module, "input" -> input,
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("module" -> module, "input" -> input,
       "gradOutput" -> gradOutput), Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -112,5 +115,6 @@ class SequentialSpec extends TorchSpec {
     })
 
     println("Test case : Sequential, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 }

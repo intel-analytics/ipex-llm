@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 
 import scala.math._
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class ClampSpec extends TorchSpec {
     "A Clamp Module " should "generate correct output and grad" in {
     torchCheck()
@@ -54,7 +54,8 @@ class ClampSpec extends TorchSpec {
       "output = module:forward(input)\n" +
       "gradInput = module:backward(input,gradOutput)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -69,6 +70,7 @@ class ClampSpec extends TorchSpec {
     })
 
     println("Test case : Clamp, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
 }

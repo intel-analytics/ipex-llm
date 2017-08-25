@@ -19,12 +19,13 @@ package com.intel.analytics.bigdl.models
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, GradientChecker}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers, ParallelTestExecution}
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
-class ModelGraientCheckSpec extends FlatSpec with BeforeAndAfter with Matchers {
+class ModelGraientCheckSpec extends FlatSpec with BeforeAndAfter with Matchers
+  with ParallelTestExecution {
 
   private val checkModel = true
 
@@ -59,9 +60,10 @@ class ModelGraientCheckSpec extends FlatSpec with BeforeAndAfter with Matchers {
   "GoogleNet_v1 model" should "init right" in {
     val seed = 100
     RNG.setSeed(seed)
-    Random.setSeed(seed)
-    val input = Tensor[Double](4, 3, 224, 224).apply1(e => Random.nextDouble())
-    val labels = Tensor[Double](4).apply1(e => Random.nextInt(1000))
+    val random = new Random
+    random.setSeed(seed)
+    val input = Tensor[Double](4, 3, 224, 224).apply1(e => random.nextDouble())
+    val labels = Tensor[Double](4).apply1(e => random.nextInt(1000))
     val criterion = new ClassNLLCriterion[Double]()
     val model = GoogleNet_v1_test(1000)
     val output = model.forward(input)

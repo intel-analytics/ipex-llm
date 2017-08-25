@@ -19,7 +19,7 @@ import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class DiceCoefficientCriterionSpec extends FlatSpec with Matchers {
 
   "A DiceCoefficientCriterionSpec" should "generate correct output and gradInput vector input" in {

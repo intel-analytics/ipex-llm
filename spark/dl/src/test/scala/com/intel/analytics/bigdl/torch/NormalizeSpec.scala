@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class NormalizeSpec extends TorchSpec {
     "A Normalize Module" should "generate correct output and grad with input one dimension" in {
     torchCheck()
@@ -32,7 +32,8 @@ class NormalizeSpec extends TorchSpec {
       "output = module:forward(input)\n" +
       "gradInput = module:backward(input,gradOutput)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
 
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
@@ -49,6 +50,7 @@ class NormalizeSpec extends TorchSpec {
     gradInput should be(luaOutput2)
 
     println("Test case : Normalize, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "A Normalize Module" should "generate correct output and grad with input two dimensions" in {
@@ -60,7 +62,8 @@ class NormalizeSpec extends TorchSpec {
       "output = module:forward(input)\n" +
       "gradInput = module:backward(input,gradOutput)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
 
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
@@ -77,6 +80,7 @@ class NormalizeSpec extends TorchSpec {
     gradInput should be(luaOutput2)
 
     println("Test case : Normalize, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "A Normalize Module multiple time" should "generate correct" +
@@ -92,7 +96,8 @@ class NormalizeSpec extends TorchSpec {
       "gradInput = module:backward(input,gradOutput)"
 
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
 
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
@@ -111,5 +116,6 @@ class NormalizeSpec extends TorchSpec {
     gradInput should be(luaOutput2)
 
     println("Test case : Normalize, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 }

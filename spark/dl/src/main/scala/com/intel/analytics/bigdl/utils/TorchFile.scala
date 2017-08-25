@@ -64,7 +64,7 @@ object TorchObject {
   case object TYPE_TABLE extends TorchObject(3)
 }
 
-object TorchFile {
+class TorchFile {
 
   import TorchObject._
 

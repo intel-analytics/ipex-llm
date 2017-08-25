@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class ClassSimplexCriterionSpec extends TorchSpec {
     "A ClassSimplexCriterion " should "generate correct output and grad with " in {
     torchCheck()
@@ -40,7 +40,8 @@ class ClassSimplexCriterionSpec extends TorchSpec {
       "output1 = criterion:forward(input, target)\n " +
       "output2 = criterion:backward(input, target)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "target" -> target),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "target" -> target),
       Array("output1", "output2"))
     val luaOutput1 = torchResult("output1").asInstanceOf[Double]
     val luaOutput2 = torchResult("output2").asInstanceOf[Tensor[Double]]
@@ -50,5 +51,6 @@ class ClassSimplexCriterionSpec extends TorchSpec {
 
     println("Test case : ClassSimplexCriterion, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 }

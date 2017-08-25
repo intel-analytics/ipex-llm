@@ -30,7 +30,7 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.sys.process._
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class BiRecurrentSpec  extends TorchSpec {
   override def torchCheck(): Unit = {
     super.torchCheck()
@@ -176,7 +176,8 @@ class BiRecurrentSpec  extends TorchSpec {
          |gradInput = model.gradInput
     """.stripMargin
 
-    val (luaTime, torchResult) = TH.run(code,
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code,
       Map("input" -> input.transpose(1, 2), "weights" -> weights,
         "labels" -> labels(1)),
       Array("err", "parameters", "gradParameters", "output", "gradInput", "err2", "labels"))
@@ -210,6 +211,7 @@ class BiRecurrentSpec  extends TorchSpec {
     val prediction = logOutput.max(3)._2
 
     luaOutput2 should be(loss(0) +- 1e-5)
+    th.release()
   }
 
 }

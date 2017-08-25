@@ -27,12 +27,10 @@ import com.intel.analytics.bigdl.utils.T
 
 import scala.sys.process._
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class LSTMSpec  extends TorchSpec {
   override def torchCheck(): Unit = {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
+    super.torchCheck()
     val tmpFile = java.io.File.createTempFile("checkRNN", ".lua")
     val writer = new PrintWriter(tmpFile)
     writer.write("exist = (pcall(require, 'rnn'))\n print(exist)")
@@ -250,7 +248,8 @@ class LSTMSpec  extends TorchSpec {
          |gradInput = model.gradInput
     """.stripMargin
 
-    val (luaTime, torchResult) = TH.run(code,
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code,
       Map("input" -> input.transpose(1, 2), "weights" -> weights,
         "labels" -> SplitTable[Double](1).forward(labels.t())),
       Array("err", "parameters", "gradParameters", "output2", "gradInput", "err2"))
@@ -306,6 +305,7 @@ class LSTMSpec  extends TorchSpec {
     val prediction = logOutput.max(3)._2
 
     luaOutput2 should be(loss(0) +- 1e-5)
+    th.release()
   }
 
 
@@ -408,7 +408,8 @@ class LSTMSpec  extends TorchSpec {
          |gradInput = model.gradInput
     """.stripMargin
 
-    val (luaTime, torchResult) = TH.run(code,
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code,
       Map("input" -> input.transpose(1, 2), "weights" -> weights,
         "labels" -> SplitTable[Double](1).forward(labels.t())),
       Array("err", "parameters", "gradParameters", "output2", "gradInput", "err2"))
@@ -463,6 +464,7 @@ class LSTMSpec  extends TorchSpec {
     val logOutput = logSoftMax.forward(output)
 
     luaOutput2 should be(loss(0) +- 1e-5)
+    th.release()
   }
 
   "A LSTM " should "converge" in {

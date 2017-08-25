@@ -17,6 +17,9 @@
 package com.intel.analytics.bigdl.torch
 
 import java.io._
+import java.nio.ByteBuffer
+import java.nio.file.{Files, Paths}
+import java.util.UUID
 
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor._
@@ -30,7 +33,17 @@ import scala.sys.process._
  * With parameters input, run method would automatically run on torch and return the
  * corresponding output.
  */
-object TH {
+class TH {
+  private val uuid: String = shortUUID()
+  private var savedParameters: Option[Map[String, Any]] = None
+  private var savedResult: Option[Array[String]] = None
+  private val torch_location = System.getProperty("torch_location")
+  private val torch = if (torch_location == null) {
+    "th"
+  } else {
+    Paths.get(torch_location, "th").toString
+  }
+
   def hasTorch(): Boolean = {
     val torchPath = System.getProperty("torch_location")
     // Skip on windows
@@ -38,22 +51,19 @@ object TH {
       return false
     }
     val exitValue = if (torchPath != null) s"ls $torchPath".! else "which th".!
-    return exitValue == 0
+    exitValue == 0
   }
 
   // Run with map
   def run(code: String, parameters: Map[String, Any],
     result: Array[String]): (Double, Map[String, Any]) = {
-    val suffix = ".t7"
-    val tmpFile = java.io.File.createTempFile("UnitTest", "lua")
-    val absolutePath = tmpFile.getAbsolutePath
-    val subPath = absolutePath.substring(0, absolutePath.lastIndexOf(java.io.File.separator) + 1)
     var resultMap: Map[String, Any] = Map()
 
     val luaTime = runNM(code: String, parameters: Map[String, Any], result: Array[String])
 
     result.foreach { k =>
-      val tmp: Any = File.loadTorch(subPath + k + suffix)
+      val name = tmpFileName(k)
+      val tmp: Any = File.loadTorch(name)
       resultMap += (k -> tmp)
     }
 
@@ -63,7 +73,7 @@ object TH {
   def run(path: java.nio.file.Path, parameters: Map[String, Tensor[Double]],
     result: Array[String]): (Double, Map[String, Any]) = {
     val code = new StringBuilder("")
-    Source.fromFile(path.toString()).foreach { k =>
+    Source.fromFile(path.toString).foreach { k =>
       code.append(k)
     }
     run(code.toString(), parameters, result)
@@ -71,15 +81,20 @@ object TH {
 
   // Run without map
   def runNM(code: String, parameters: Map[String, Any], result: Array[String]): Double = {
-    val suffix = ".t7"
     val varCode = new StringBuilder("require 'nn'\n" + "require 'optim'\n")
     val usrCode = new StringBuilder("")
     val resCode = new StringBuilder("")
 
+    if (savedParameters.isDefined) {
+      release()
+    } else {
+      savedParameters = Some(parameters)
+      savedResult = Some(result)
+    }
+
     // Variable load code of lua
     parameters.keys.foreach { k =>
-      val tmp = java.io.File.createTempFile(k + "Tmp", suffix)
-      val tmpPath = tmp.getAbsolutePath
+      val tmpPath = tmpFileName(k, "Tmp")
       parameters(k) match {
         case _: Tensor[_] =>
           if (parameters(k).asInstanceOf[Tensor[_]].getType() == FloatType) {
@@ -101,13 +116,11 @@ object TH {
     usrCode.append(code)
     usrCode.append("\nluaTime = Timer:time().real\nprint(luaTime)")
 
-    val tmpFile = java.io.File.createTempFile("UnitTest", "lua")
-    val absolutePath = tmpFile.getAbsolutePath
-    val subPath = absolutePath.substring(0, absolutePath.lastIndexOf(java.io.File.separator) + 1)
+    val tmpFile = tmpFileName("torch", suffix = "lua")
 
     // Result save code of lua
     result.foreach { k =>
-      resCode.append("torch.save(\'" + subPath + k + suffix + "\', " + k + ")\n")
+      resCode.append("torch.save(\'" + tmpFileName(k) + "\', " + k + ")\n")
     }
     val writer = new PrintWriter(tmpFile)
     println("\n============== lua code start ==============\n")
@@ -120,9 +133,18 @@ object TH {
     writer.write(resCode.toString() + "\n\n")
     writer.close()
 
-    println(tmpFile.getAbsolutePath)
+    println(tmpFile)
 
-    var luaTime = Seq(System.getProperty("torch_location", "th"), tmpFile.getAbsolutePath).!!.trim
+    val stdout = new StringBuilder
+    val stderr = new StringBuilder
+    val status = s"$torch $tmpFile" ! ProcessLogger(stdout append _, stderr append _)
+
+    var luaTime = if (status == 0) { // successful
+      stdout.toString.trim
+    } else {
+      throw new RuntimeException(s"Nonzero exit value: $status ${stderr
+              .replaceAllLiterally("\t", "\n")}")
+    }
 
     println("luaTime:" + luaTime)
 
@@ -150,12 +172,58 @@ object TH {
 
   // Single map
   def map(result: String): (Any) = {
-    val suffix = ".t7"
-    val tmpFile = java.io.File.createTempFile("UnitTest", "lua")
-    val absolutePath = tmpFile.getAbsolutePath
-    val subPath = absolutePath.substring(0, absolutePath.lastIndexOf(java.io.File.separator) + 1)
-    val tmp: Any = File.loadTorch(subPath + result + suffix)
+    val tmpFile = tmpFileName(result)
+    val tmp: Any = File.loadTorch(tmpFile)
     tmp
   }
 
+  def release(result: Map[String, Any]): Unit = {
+    result.foreach { k =>
+      val name = tmpFileName(k._1)
+      Files.deleteIfExists(Paths.get(name))
+    }
+
+    Files.deleteIfExists(Paths.get(tmpFileName("torch", suffix = "lua")))
+
+    if (savedParameters != null) {
+      savedParameters.get.foreach { k =>
+        val name = tmpFileName(k._1, infix = "Tmp")
+        Files.deleteIfExists(Paths.get(name))
+      }
+    }
+  }
+
+  def release(result: Array[String]): Unit = {
+    result.foreach { k =>
+      val name = tmpFileName(k)
+      Files.deleteIfExists(Paths.get(name))
+    }
+
+    Files.deleteIfExists(Paths.get(tmpFileName("torch", suffix = "lua")))
+
+    savedParameters.get.foreach { k =>
+      val name = tmpFileName(k._1, infix = "Tmp")
+      Files.deleteIfExists(Paths.get(name))
+    }
+  }
+
+  def release(): Unit = {
+    release(savedResult.get)
+    savedResult = null
+    savedParameters = null
+  }
+
+  def shortUUID(): String = {
+    val uuid = UUID.randomUUID()
+    val l = ByteBuffer.wrap(uuid.toString.getBytes()).getLong()
+    java.lang.Long.toString(l, Character.MAX_RADIX)
+  }
+
+  private def tmpFileName(name: String, infix: String = "", suffix: String = "t7"): String = {
+    val fileName = List(name + infix, uuid, suffix).mkString(".")
+    val tmpDir = System.getProperty("java.io.tmpdir")
+    Paths.get(tmpDir, fileName).toAbsolutePath.toString
+  }
+
 }
+

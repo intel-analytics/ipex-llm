@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.torch
 import com.intel.analytics.bigdl.nn.AbsCriterion
 import com.intel.analytics.bigdl.tensor.Tensor
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class AbsCriterionSpec extends TorchSpec {
     "A Abs Criterion " should "generate correct output and grad" in {
     torchCheck()
@@ -45,7 +45,8 @@ class AbsCriterionSpec extends TorchSpec {
       "output2 = abs:backward(input, target)"
 
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "target" -> target),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "target" -> target),
       Array("output1", "output2"))
     val luaOutput1 = torchResult("output1").asInstanceOf[Double]
     val luaOutput2 = torchResult("output2").asInstanceOf[Tensor[Double]]
@@ -55,5 +56,6 @@ class AbsCriterionSpec extends TorchSpec {
 
     println("Test case : AbsCriterion, Torch : " + luaTime + " s, Scala : " +
       scalaTime / 1e9 + " s")
+    th.release()
   }
 }

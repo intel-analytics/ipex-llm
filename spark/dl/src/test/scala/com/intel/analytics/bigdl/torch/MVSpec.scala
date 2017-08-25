@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.utils.{RandomGenerator, T, Table}
 
 import scala.collection.mutable
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class MVSpec extends TorchSpec {
     def randn(): Double = RandomGenerator.RNG.uniform(-10, 10)
   "A MV" should "generate correct output with no transform and no batch" in {
@@ -52,7 +52,8 @@ class MVSpec extends TorchSpec {
       "end"
 
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaGradInput = torchResult("gradInput").asInstanceOf[Table]
@@ -62,6 +63,7 @@ class MVSpec extends TorchSpec {
 
     println("Test case : MV, Torch : " +
       luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "A MV" should "generate correct output with transform and no batch" in {
@@ -85,7 +87,8 @@ class MVSpec extends TorchSpec {
       "gradInput = module:backward(input, gradOutput)"
 
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaGradInput = torchResult("gradInput").asInstanceOf[Table]
@@ -95,6 +98,7 @@ class MVSpec extends TorchSpec {
 
     println("Test case : MV, Torch : " +
       luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "A MV" should "generate correct output with no transform and batch" in {
@@ -118,7 +122,8 @@ class MVSpec extends TorchSpec {
       "gradInput = module:backward(input, gradOutput)"
 
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaGradInput = torchResult("gradInput").asInstanceOf[Table]
@@ -128,6 +133,7 @@ class MVSpec extends TorchSpec {
 
     println("Test case : MV, Torch : " +
       luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
 
@@ -152,7 +158,8 @@ class MVSpec extends TorchSpec {
       "gradInput = module:backward(input, gradOutput)"
 
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaGradInput = torchResult("gradInput").asInstanceOf[Table]
@@ -162,6 +169,7 @@ class MVSpec extends TorchSpec {
 
     println("Test case : MV, Torch : " +
       luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
 }

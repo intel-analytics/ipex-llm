@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.T
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class LookupTableSpec extends TorchSpec {
 
   "LookupTable L2 regularizer" should "works correctly" in {
@@ -121,7 +121,8 @@ class LookupTableSpec extends TorchSpec {
       "gradweight = module.gradWeight\n" +
       "count = module._count:double()\n"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput", "weight", "gradweight", "count"))
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -150,6 +151,7 @@ class LookupTableSpec extends TorchSpec {
 
     println("Test case : LookupTable, Torch : " + luaTime + " s, Scala : " +
       scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "A LookupTableSpec" should "generate correct output and grad with input 2D" in {
@@ -179,7 +181,8 @@ class LookupTableSpec extends TorchSpec {
       "weight = module.weight\n" +
       "gradweight = module.gradWeight\n"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input),
       Array("output", "gradInput", "weight", "gradweight", "shouldScaleGradByFreq"))
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -207,6 +210,7 @@ class LookupTableSpec extends TorchSpec {
 
     println("Test case : LookupTable, Torch : " + luaTime + " s, Scala : " +
       scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "A LookupTableSpec" should "generate correct output and grad with max-norm regularization" in {
@@ -236,7 +240,8 @@ class LookupTableSpec extends TorchSpec {
       "weight = module.weight\n" +
       "gradweight = module.gradWeight\n"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input),
       Array("output", "gradInput", "weight", "gradweight"))
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -264,5 +269,6 @@ class LookupTableSpec extends TorchSpec {
 
     println("Test case : LookupTable, Torch : " + luaTime + " s, Scala : " +
       scalaTime / 1e9 + " s")
+    th.release()
   }
 }

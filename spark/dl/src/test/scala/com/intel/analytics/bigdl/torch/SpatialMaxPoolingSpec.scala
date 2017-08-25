@@ -24,7 +24,7 @@ import scala.math._
 import scala.util.Random
 import com.intel.analytics.bigdl._
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class SpatialMaxPoolingSpec extends TorchSpec {
     "A SpatialMaxPooling" should "generate correct output and gradInput" in {
     torchCheck()
@@ -51,7 +51,8 @@ class SpatialMaxPoolingSpec extends TorchSpec {
     val code = "output = module:forward(input)\n" +
       "gradInput = module:backward(input,gradOutput)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("module" -> module, "input" -> input,
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("module" -> module, "input" -> input,
       "gradOutput" -> gradOutput), Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
@@ -68,6 +69,7 @@ class SpatialMaxPoolingSpec extends TorchSpec {
 
     println("Test case : SpatialMaxPooling, Torch : " + luaTime + " s, Scala : " +
       scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "A SpatialMaxPooling" should "be good in gradient check for input" in {

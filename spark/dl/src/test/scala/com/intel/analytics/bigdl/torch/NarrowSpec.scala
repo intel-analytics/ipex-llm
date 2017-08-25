@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class NarrowSpec extends TorchSpec {
     "A Narrow Module " should "generate correct output and grad with length < 0" in {
     torchCheck()
@@ -31,7 +31,8 @@ class NarrowSpec extends TorchSpec {
       "output = module:forward(input)\n" +
       "gradInput = module:backward(input,gradOutput)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
 
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
@@ -48,6 +49,7 @@ class NarrowSpec extends TorchSpec {
     gradInput should be(luaOutput2)
 
     println("Test case : Narrow, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "A Narrow Module " should "generate correct output and grad with dimension < 0" in {
@@ -59,7 +61,8 @@ class NarrowSpec extends TorchSpec {
       "output = module:forward(input)\n" +
       "gradInput = module:backward(input,gradOutput)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
 
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
@@ -76,5 +79,6 @@ class NarrowSpec extends TorchSpec {
     gradInput should be(luaOutput2)
 
     println("Test case : Narrow, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 }

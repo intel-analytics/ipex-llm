@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.utils.RandomGenerator._
 
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class SpatialConvolutionSpec extends TorchSpec {
     "A SpatialConvolution" should "generate correct output" in {
     torchCheck()
@@ -43,8 +43,9 @@ class SpatialConvolutionSpec extends TorchSpec {
     val layer = new SpatialConvolution[Double](nInputPlane, nOutputPlane, kW, kH, dW, dH,
       padW, padH)
 
-    Random.setSeed(seed)
-    val input = Tensor[Double](16, 3, 224, 224).apply1(e => Random.nextDouble())
+    val random = new Random
+    random.setSeed(seed)
+    val input = Tensor[Double](16, 3, 224, 224).apply1(e => random.nextDouble())
 
     val output = layer.updateOutput(input)
 
@@ -54,7 +55,8 @@ class SpatialConvolutionSpec extends TorchSpec {
       "bias = layer.bias \n" +
       "output = layer:forward(input) "
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input),
       Array("weight", "bias", "output"))
 
     val luaWeight = torchResult("weight").asInstanceOf[Tensor[Double]]
@@ -68,6 +70,7 @@ class SpatialConvolutionSpec extends TorchSpec {
     weight shouldEqual luaWeight.resizeAs(weight)
     bias shouldEqual luaBias.resizeAs(bias)
     output shouldEqual luaOutput
+    th.release()
   }
 
 
@@ -89,8 +92,9 @@ class SpatialConvolutionSpec extends TorchSpec {
     val model = new Sequential[Double]()
     model.add(layer)
 
-    Random.setSeed(3)
-    val input = Tensor[Double](8, 64, 27, 27).apply1(e => Random.nextDouble())
+    val random = new Random
+    random.setSeed(seed)
+    val input = Tensor[Double](8, 64, 27, 27).apply1(e => random.nextDouble())
 
     val output = model.updateOutput(input)
 
@@ -103,7 +107,8 @@ class SpatialConvolutionSpec extends TorchSpec {
       model:zeroGradParameters()
       output = model:forward(input) """
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input), Array("weight", "bias",
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input), Array("weight", "bias",
       "output", "model"))
 
     val luaWeight = torchResult("weight").asInstanceOf[Tensor[Double]]
@@ -119,6 +124,7 @@ class SpatialConvolutionSpec extends TorchSpec {
     bias shouldEqual luaBias.resizeAs(bias)
     output shouldEqual luaOutput
 
+    th.release()
   }
 
   "A SpatialConvolution" should "be good in gradient check for input" in {
@@ -159,8 +165,9 @@ class SpatialConvolutionSpec extends TorchSpec {
     val layer = new SpatialConvolution[Double](nInputPlane, nOutputPlane, kW, kH, dW, dH,
       padW, padH, withBias = false)
 
-    Random.setSeed(seed)
-    val input = Tensor[Double](16, 3, 224, 224).apply1(e => Random.nextDouble())
+    val random = new Random
+    random.setSeed(seed)
+    val input = Tensor[Double](16, 3, 224, 224).apply1(e => random.nextDouble())
     val output = layer.updateOutput(input)
 
     val code = "torch.manualSeed(" + seed + ")\n" +
@@ -169,10 +176,12 @@ class SpatialConvolutionSpec extends TorchSpec {
       "weight = layer.weight\n" +
       "output = layer:forward(input) "
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input),
       Array("weight", "bias", "output"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
 
     require(output.equals(luaOutput) == true)
+    th.release()
   }
 }

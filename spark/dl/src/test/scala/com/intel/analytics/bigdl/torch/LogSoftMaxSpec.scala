@@ -23,13 +23,14 @@ import com.intel.analytics.bigdl.utils.RandomGenerator._
 
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class LogSoftMaxSpec extends TorchSpec {
     "A LogSoftMax Module " should "generate correct output and grad with input 2D" in {
     torchCheck()
     val module = new LogSoftMax[Double]()
-    Random.setSeed(100)
-    val input = Tensor[Double](4, 10).apply1(e => Random.nextDouble())
+    val random = new Random
+    random.setSeed(100)
+    val input = Tensor[Double](4, 10).apply1(e => random.nextDouble())
     val data = Tensor[Double](4, 20).randn()
     val gradOutput = data.narrow(2, 1, 10)
 
@@ -43,7 +44,8 @@ class LogSoftMaxSpec extends TorchSpec {
       "output1 = module:forward(input)\n " +
       "output2 = module:backward(input, gradOutput)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output1", "output2"))
     val luaOutput = torchResult("output1").asInstanceOf[Tensor[Double]]
     val luaGradInput = torchResult("output2").asInstanceOf[Tensor[Double]]
@@ -52,13 +54,15 @@ class LogSoftMaxSpec extends TorchSpec {
     luaGradInput should be(gradInput)
 
     println("Test case : LogSoft, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "A LogSoftMax Module " should "generate correct output and grad with input 1D" in {
     torchCheck()
     val module = new LogSoftMax[Double]()
-    Random.setSeed(100)
-    val input = Tensor[Double](10).apply1(e => Random.nextDouble())
+    val random = new Random
+    random.setSeed(100)
+    val input = Tensor[Double](10).apply1(e => random.nextDouble())
     val data = Tensor[Double](20).randn()
     val gradOutput = data.narrow(1, 1, 10)
 
@@ -72,7 +76,8 @@ class LogSoftMaxSpec extends TorchSpec {
       "output1 = module:forward(input)\n " +
       "output2 = module:backward(input, gradOutput)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output1", "output2"))
     val luaOutput = torchResult("output1").asInstanceOf[Tensor[Double]]
     val luaGradInput = torchResult("output2").asInstanceOf[Tensor[Double]]
@@ -81,13 +86,15 @@ class LogSoftMaxSpec extends TorchSpec {
     luaGradInput should be(gradInput)
 
     println("Test case : LogSoft, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "A LogSoftMax Module " should "generate correct output and grad tiwh input 1*N" in {
     torchCheck()
     val module = new LogSoftMax[Double]()
-    Random.setSeed(100)
-    val input = Tensor[Double](1, 10).apply1(e => Random.nextDouble())
+    val random = new Random
+    random.setSeed(100)
+    val input = Tensor[Double](1, 10).apply1(e => random.nextDouble())
     val data = Tensor[Double](1, 20).randn()
     val gradOutput = data.narrow(2, 1, 10)
 
@@ -101,7 +108,8 @@ class LogSoftMaxSpec extends TorchSpec {
       "output1 = module:forward(input)\n " +
       "output2 = module:backward(input, gradOutput)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output1", "output2"))
     val luaOutput = torchResult("output1").asInstanceOf[Tensor[Double]]
     val luaGradInput = torchResult("output2").asInstanceOf[Tensor[Double]]
@@ -110,6 +118,7 @@ class LogSoftMaxSpec extends TorchSpec {
     luaGradInput should be(gradInput)
 
     println("Test case : LogSoft, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "LogSoftMax module" should "be good in gradient check for input" in {

@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 
 import scala.sys.process._
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class DenseTensorMathSpec extends TorchSpec {
 
     "matrix + real" should "return correct value" in {
@@ -34,7 +34,8 @@ class DenseTensorMathSpec extends TorchSpec {
     val end = System.nanoTime()
     val scalaTime = end - start
 
-    val (luaTime, torchResult) = TH.run(code, Map("a" -> a), Array("outcome"))
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("a" -> a), Array("outcome"))
 
     val luaResult = torchResult("outcome").asInstanceOf[Tensor[Double]]
 
@@ -43,6 +44,7 @@ class DenseTensorMathSpec extends TorchSpec {
     println("scalaTime : " + scalaTime / 1e9.toDouble + "\n")
 
     c should be(luaResult)
+    th.release()
   }
 
   "matrix + matrix" should "return correct value" in {
@@ -56,7 +58,8 @@ class DenseTensorMathSpec extends TorchSpec {
     val end = System.nanoTime()
     val scalaTime = end - start
 
-    val (luaTime, torchResult) = TH.run(code, Map("a" -> a, "b" -> b), Array("outcome"))
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("a" -> a, "b" -> b), Array("outcome"))
 
     val luaResult = torchResult("outcome").asInstanceOf[Tensor[Double]]
 
@@ -65,6 +68,7 @@ class DenseTensorMathSpec extends TorchSpec {
     println("scalaTime : " + scalaTime / 1e9 + "\n")
 
     c should be(luaResult)
+    th.release()
   }
 
   "matrix - real" should "return correct value" in {
@@ -78,7 +82,8 @@ class DenseTensorMathSpec extends TorchSpec {
     val end = System.nanoTime()
     val scalaTime = end - start
 
-    val (luaTime, torchResult) = TH.run(code, Map("a" -> a), Array("outcome"))
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("a" -> a), Array("outcome"))
 
     val luaResult = torchResult("outcome").asInstanceOf[Tensor[Double]]
 
@@ -87,6 +92,7 @@ class DenseTensorMathSpec extends TorchSpec {
     println("scalaTime : " + scalaTime / 1e9.toDouble + "\n")
 
     c should be(luaResult)
+    th.release()
   }
 
   "matrix - matrix" should "return correct value" in {
@@ -100,7 +106,8 @@ class DenseTensorMathSpec extends TorchSpec {
     val end = System.nanoTime()
     val scalaTime = end - start
 
-    val (luaTime, torchResult) = TH.run(code, Map("a" -> a, "b" -> b), Array("outcome"))
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("a" -> a, "b" -> b), Array("outcome"))
 
     val luaResult = torchResult("outcome").asInstanceOf[Tensor[Double]]
 
@@ -109,6 +116,7 @@ class DenseTensorMathSpec extends TorchSpec {
     println("scalaTime : " + scalaTime / 1e9.toDouble + "\n")
 
     c should be(luaResult)
+    th.release()
   }
 
   "negative matrix" should "return correct value" in {
@@ -121,7 +129,8 @@ class DenseTensorMathSpec extends TorchSpec {
     val end = System.nanoTime()
     val scalaTime = end - start
 
-    val (luaTime, torchResult) = TH.run(code, Map("a" -> a), Array("outcome"))
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("a" -> a), Array("outcome"))
 
     val luaResult = torchResult("outcome").asInstanceOf[Tensor[Double]]
 
@@ -130,6 +139,7 @@ class DenseTensorMathSpec extends TorchSpec {
     println("scalaTime : " + scalaTime / 1e9.toDouble + "\n")
 
     c should be(luaResult)
+    th.release()
   }
 
   "matrix / real" should "return correct value" in {
@@ -143,7 +153,8 @@ class DenseTensorMathSpec extends TorchSpec {
     val end = System.nanoTime()
     val scalaTime = end - start
 
-    val (luaTime, torchResult) = TH.run(code, Map("a" -> a), Array("outcome"))
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("a" -> a), Array("outcome"))
 
     val luaResult = torchResult("outcome").asInstanceOf[Tensor[Double]]
 
@@ -152,6 +163,7 @@ class DenseTensorMathSpec extends TorchSpec {
     println("scalaTime : " + scalaTime / 1e9.toDouble + "\n")
 
     c should be(luaResult)
+    th.release()
   }
 
   "matrix ./ matrix" should "return correct value" in {
@@ -165,7 +177,8 @@ class DenseTensorMathSpec extends TorchSpec {
     val end = System.nanoTime()
     val scalaTime = end - start
 
-    val (luaTime, torchResult) = TH.run(code, Map("a" -> a, "b" -> b), Array("outcome"))
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("a" -> a, "b" -> b), Array("outcome"))
 
     val luaResult = torchResult("outcome").asInstanceOf[Tensor[Double]]
 
@@ -174,6 +187,7 @@ class DenseTensorMathSpec extends TorchSpec {
     println("scalaTime : " + scalaTime / 1e9.toDouble + "\n")
 
     c should be(luaResult)
+    th.release()
   }
 
   "matrix * real" should "return correct value" in {
@@ -187,7 +201,8 @@ class DenseTensorMathSpec extends TorchSpec {
     val end = System.nanoTime()
     val scalaTime = end - start
 
-    val (luaTime, torchResult) = TH.run(code, Map("a" -> a), Array("outcome"))
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("a" -> a), Array("outcome"))
 
     val luaResult = torchResult("outcome").asInstanceOf[Tensor[Double]]
 
@@ -196,6 +211,7 @@ class DenseTensorMathSpec extends TorchSpec {
     println("scalaTime : " + scalaTime / 1e9.toDouble + "\n")
 
     c should be(luaResult)
+    th.release()
   }
 
 
@@ -210,7 +226,8 @@ class DenseTensorMathSpec extends TorchSpec {
     val end = System.nanoTime()
     val scalaTime = end - start
 
-    val (luaTime, torchResult) = TH.run(code, Map("a" -> a, "b" -> b), Array("outcome"))
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("a" -> a, "b" -> b), Array("outcome"))
 
     val luaResult = torchResult("outcome").asInstanceOf[Tensor[Double]]
 
@@ -219,6 +236,7 @@ class DenseTensorMathSpec extends TorchSpec {
     println("scalaTime : " + scalaTime / 1e9.toDouble + "\n")
 
     c should be(luaResult)
+    th.release()
   }
 
   "matrix sumAll" should "return correct value" in {
@@ -231,7 +249,8 @@ class DenseTensorMathSpec extends TorchSpec {
     val end = System.nanoTime()
     val scalaTime = end - start
 
-    val (luaTime, torchResult) = TH.run(code, Map("a" -> a), Array("outcome"))
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("a" -> a), Array("outcome"))
 
     val luaResult = torchResult("outcome").asInstanceOf[Double]
 
@@ -240,6 +259,7 @@ class DenseTensorMathSpec extends TorchSpec {
     println("scalaTime : " + scalaTime / 1e9.toDouble + "\n")
 
     c should be(luaResult)
+    th.release()
   }
 
   "matrix sumDimension" should "return correct value" in {
@@ -252,7 +272,8 @@ class DenseTensorMathSpec extends TorchSpec {
     val end = System.nanoTime()
     val scalaTime = end - start
 
-    val (luaTime, torchResult) = TH.run(code, Map("a" -> a), Array("outcome"))
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("a" -> a), Array("outcome"))
 
     val luaResult = torchResult("outcome").asInstanceOf[Tensor[Double]]
 
@@ -261,6 +282,7 @@ class DenseTensorMathSpec extends TorchSpec {
     println("scalaTime : " + scalaTime / 1e9.toDouble + "\n")
 
     c should be(luaResult)
+    th.release()
   }
 
   "matrix max" should "return correct value" in {
@@ -273,7 +295,8 @@ class DenseTensorMathSpec extends TorchSpec {
     val end = System.nanoTime()
     val scalaTime = end - start
 
-    val (luaTime, torchResult) = TH.run(code, Map("a" -> a), Array("outcome"))
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("a" -> a), Array("outcome"))
 
     val luaResult = torchResult("outcome").asInstanceOf[Double]
 
@@ -282,6 +305,7 @@ class DenseTensorMathSpec extends TorchSpec {
     println("scalaTime : " + scalaTime / 1e9.toDouble + "\n")
 
     c should be(luaResult)
+    th.release()
   }
 
   "matrix conv2" should "return correct value" in {
@@ -295,7 +319,8 @@ class DenseTensorMathSpec extends TorchSpec {
     val end = System.nanoTime()
     val scalaTime = end - start
 
-    val (luaTime, torchResult) = TH.run(code, Map("a" -> a, "b" -> b), Array("outcome"))
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("a" -> a, "b" -> b), Array("outcome"))
 
     val luaResult = torchResult("outcome").asInstanceOf[Tensor[Double]]
 
@@ -304,6 +329,7 @@ class DenseTensorMathSpec extends TorchSpec {
     println("scalaTime : " + scalaTime / 1e9.toDouble + "\n")
 
     c should be(luaResult)
+    th.release()
   }
 
   "matrix xcorr2" should "return correct value" in {
@@ -317,7 +343,8 @@ class DenseTensorMathSpec extends TorchSpec {
     val end = System.nanoTime()
     val scalaTime = end - start
 
-    val (luaTime, torchResult) = TH.run(code, Map("a" -> a, "b" -> b), Array("outcome"))
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("a" -> a, "b" -> b), Array("outcome"))
 
     val luaResult = torchResult("outcome").asInstanceOf[Tensor[Double]]
 
@@ -326,6 +353,7 @@ class DenseTensorMathSpec extends TorchSpec {
     println("scalaTime : " + scalaTime / 1e9.toDouble + "\n")
 
     c should be(luaResult)
+    th.release()
   }
 
   "matrix add" should "return correct value" in {
@@ -335,7 +363,8 @@ class DenseTensorMathSpec extends TorchSpec {
     val m = 20
     val code = "m = 20\noutcome = a:add(m, b)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("a" -> a, "b" -> b), Array("outcome"))
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("a" -> a, "b" -> b), Array("outcome"))
     val luaResult = torchResult("outcome").asInstanceOf[Tensor[Double]]
 
     val start = System.nanoTime()
@@ -348,6 +377,7 @@ class DenseTensorMathSpec extends TorchSpec {
     println("scalaTime : " + scalaTime / 1e9.toDouble + "\n")
 
     c should be(luaResult)
+    th.release()
   }
 
   "matrix cmul" should "return correct value" in {
@@ -356,7 +386,8 @@ class DenseTensorMathSpec extends TorchSpec {
     val b = Tensor[Double](200, 200).rand()
     val code = "outcome = a:cmul(b)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("a" -> a, "b" -> b), Array("outcome"))
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("a" -> a, "b" -> b), Array("outcome"))
     val luaResult = torchResult("outcome").asInstanceOf[Tensor[Double]]
 
     val start = System.nanoTime()
@@ -369,6 +400,7 @@ class DenseTensorMathSpec extends TorchSpec {
     println("scalaTime : " + scalaTime / 1e9.toDouble + "\n")
 
     c should be(luaResult)
+    th.release()
   }
 
   "matrix mul" should "return correct value" in {
@@ -383,7 +415,8 @@ class DenseTensorMathSpec extends TorchSpec {
     val end = System.nanoTime()
     val scalaTime = end - start
 
-    val (luaTime, torchResult) = TH.run(code, Map("a" -> a, "b" -> b), Array("outcome"))
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("a" -> a, "b" -> b), Array("outcome"))
 
     val luaResult = torchResult("outcome").asInstanceOf[Tensor[Double]]
 
@@ -392,6 +425,7 @@ class DenseTensorMathSpec extends TorchSpec {
     println("scalaTime : " + scalaTime / 1e9.toDouble + "\n")
 
     c should be(luaResult)
+    th.release()
   }
 
   "matrix div" should "return correct value" in {
@@ -400,7 +434,8 @@ class DenseTensorMathSpec extends TorchSpec {
     val b = 20
     val code = "b = 20\noutcome = a:div(b)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("a" -> a), Array("outcome"))
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("a" -> a), Array("outcome"))
     val luaResult = torchResult("outcome").asInstanceOf[Tensor[Double]]
 
     val start = System.nanoTime()
@@ -414,6 +449,7 @@ class DenseTensorMathSpec extends TorchSpec {
     println("scalaTime : " + scalaTime / 1e9.toDouble + "\n")
 
     c should be(luaResult)
+    th.release()
   }
 
   "addmm" should "return correct value" in {
@@ -429,7 +465,8 @@ class DenseTensorMathSpec extends TorchSpec {
 
     val code = "outcome = torch.Tensor(a:size(1), b:size(2)):fill(0)\noutcome:addmm(a, b)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("a" -> a, "b" -> b), Array("outcome"))
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("a" -> a, "b" -> b), Array("outcome"))
 
     val luaResult = torchResult("outcome").asInstanceOf[Tensor[Double]]
 
@@ -441,6 +478,7 @@ class DenseTensorMathSpec extends TorchSpec {
       tmp1 should be(tmp2 +- 1e-6)
       tmp1
     })
+    th.release()
   }
 
   "addr" should "return correct value" in {
@@ -456,7 +494,8 @@ class DenseTensorMathSpec extends TorchSpec {
 
     val code = "outcome = torch.Tensor(a:size(1), b:size(1)):fill(0)\noutcome:addr(a, b)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("a" -> a, "b" -> b), Array("outcome"))
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("a" -> a, "b" -> b), Array("outcome"))
 
     val luaResult = torchResult("outcome").asInstanceOf[Tensor[Double]]
 
@@ -468,6 +507,7 @@ class DenseTensorMathSpec extends TorchSpec {
       tmp1 should be(tmp2 +- 1e-6)
       tmp1
     })
+    th.release()
   }
 
 }

@@ -18,7 +18,6 @@ package com.intel.analytics.bigdl.nn
 
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.torch.TH
 import com.intel.analytics.bigdl.utils.Engine
 
 @com.intel.analytics.bigdl.tags.Parallel

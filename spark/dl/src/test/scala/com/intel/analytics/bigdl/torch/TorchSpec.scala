@@ -13,14 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.torch
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
-class TorchSpec extends FlatSpec with BeforeAndAfter with Matchers {
+package com.intel.analytics.bigdl.torch
+import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers, ParallelTestExecution}
+
+import scala.sys.process._
+
+
+class TorchSpec extends FlatSpec with BeforeAndAfter with Matchers with ParallelTestExecution {
   def torchCheck(): Unit = {
-    if (!TH.hasTorch()) {
+    var hasTorch = true
+
+    val torchPath = System.getProperty("torch_location")
+    // Skip on windows
+    if (System.getProperty("os.name").toLowerCase().contains("win")) {
+      hasTorch = false
+    }
+    val exitValue = if (torchPath != null) s"ls $torchPath".! else "which th".!
+
+    if (exitValue != 0) {
+      hasTorch = false
+    }
+    if (!hasTorch) {
       cancel("Torch is not installed")
     }
   }
-
 }

@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 import scala.collection.mutable.HashMap
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class NarrowTableSpec extends TorchSpec {
     "A NarrowTable Module " should "generate correct output and grad" in {
     torchCheck()
@@ -45,7 +45,8 @@ class NarrowTableSpec extends TorchSpec {
       "i = i + 1\n" +
       "end"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
 
     val luaOutput1 = torchResult("output").asInstanceOf[Table]
@@ -68,6 +69,7 @@ class NarrowTableSpec extends TorchSpec {
 
     println("Test case : NarrowTable, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 
   "A NarrowTable Module with negative length" should "generate correct output and grad" in {

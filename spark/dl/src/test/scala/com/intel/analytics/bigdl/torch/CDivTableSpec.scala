@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.utils.Table
 import scala.collection.mutable.HashMap
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Serial
+@com.intel.analytics.bigdl.tags.Parallel
 class CDivTableSpec extends TorchSpec {
     "A CDivTable Module" should "generate correct output and grad" in {
     torchCheck()
@@ -50,7 +50,8 @@ class CDivTableSpec extends TorchSpec {
       "gradInput = module:backward(input,gradOutput)"
 
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val th = new TH
+    val (luaTime, torchResult) = th.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Table]
@@ -60,5 +61,6 @@ class CDivTableSpec extends TorchSpec {
 
     println("Test case : CDivTable, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")
+    th.release()
   }
 }
