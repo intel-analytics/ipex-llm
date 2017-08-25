@@ -82,6 +82,8 @@ abstract class Cell[T : ClassTag](
    */
   def preTopology: AbstractModule[Activity, Activity, T] = null
 
+  def hiddenSizeOfPreTopo: Int = hiddensShape(0)
+
   /**
    * resize the hidden parameters wrt the batch size, hiddens shapes.
    *
