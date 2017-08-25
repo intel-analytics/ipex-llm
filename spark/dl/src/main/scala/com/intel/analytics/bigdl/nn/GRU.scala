@@ -112,7 +112,7 @@ class GRU[T : ClassTag] (
     (sigmoid1, sigmoid2)
   }
 
-  override def buildModel(): Graph[T] = {
+  def buildModel(): Graph[T] = {
     val x = Input()
     val h = Input()
     val (r, z) = buildGates()(x, h) // x(t), h(t - 1), r(t), z(t)

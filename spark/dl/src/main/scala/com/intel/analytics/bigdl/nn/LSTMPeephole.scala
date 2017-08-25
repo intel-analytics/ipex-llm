@@ -68,15 +68,13 @@ class LSTMPeephole[T : ClassTag] (
   var cellLayer: ModuleNode[T] = _
   val featDim = 2
 
-  override var cell: AbstractModule[Activity, Activity, T] = buildModel()
-  override def buildModel: AbstractModule[Activity, Activity, T] = {
+  override var cell: AbstractModule[Activity, Activity, T] =
     Sequential()
       .add(FlattenTable())
       .add(buildLSTM())
       .add(ConcatTable()
         .add(SelectTable(1))
         .add(NarrowTable(2, 2)))
-  }
 
   override def preTopology: AbstractModule[Activity, Activity, T] =
     Sequential()
@@ -92,12 +90,7 @@ class LSTMPeephole[T : ClassTag] (
      * f(input1 + U * input2)
      */
 
-    val i2g = if (!ignorePreTopology) Narrow(dimension, offset, length).inputs(input1)
-    else {
-      val drop = Dropout(p).inputs(input1)
-      Linear(inputSize, hiddenSize, wRegularizer = wRegularizer,
-        bRegularizer = bRegularizer).inputs(drop)
-    }
+    val i2g = Narrow(dimension, offset, length).inputs(input1)
     val drop = Dropout(p).inputs(input2)
     val h2g = Linear(hiddenSize, hiddenSize,
       withBias = false, wRegularizer = uRegularizer).inputs(drop)
@@ -140,12 +133,7 @@ class LSTMPeephole[T : ClassTag] (
      * f(input1 + W * input2)
      */
 
-    val i2h = if (!ignorePreTopology) Narrow(featDim, 1 + 2 * hiddenSize, hiddenSize).inputs(input1)
-    else {
-      val drop = Dropout(p).inputs(input1)
-      Linear(inputSize, hiddenSize, wRegularizer = wRegularizer,
-        bRegularizer = bRegularizer).inputs(drop)
-    }
+    val i2h = Narrow(featDim, 1 + 2 * hiddenSize, hiddenSize).inputs(input1)
 
     val drop = Dropout(p).inputs(input2)
     val h2h = Linear(hiddenSize, hiddenSize, withBias = false,

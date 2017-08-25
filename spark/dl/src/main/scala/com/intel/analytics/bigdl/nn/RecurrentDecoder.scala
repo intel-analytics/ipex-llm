@@ -42,33 +42,17 @@ class RecurrentDecoder[T : ClassTag](outputLength: Int)
 
   times = outputLength
 
-  /**
-   *
-   *  modules: topology (cell)
-   *
-   * The topology (or cell) will be cloned for N times w.r.t the time dimension.
-   *
-   * @param module module to be add
-   * @return this container
-   */
-  override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]):
-    RecurrentDecoder.this.type = {
-    require(module.isInstanceOf[Cell[T]],
-      "Recurrent: contained module should be Cell type")
-    topology = module.asInstanceOf[Cell[T]]
-    preTopology = null
-    topology.ignorePreTopology = true
-    topology.cell = topology.buildModel()
-    modules += topology
-    this
-  }
-
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim == 2 || input.dim == 4 || input.dim == 5,
       "Recurrent: input should be a 2D/4D/5D Tensor, e.g [batch, nDim], " +
         s"current input.dim = ${input.dim}")
 
     batchSize = input.size(batchDim)
+    outputCell = if (preTopology != null) {
+      preTopology.forward(input).toTensor[T]
+    } else {
+      input
+    }
 
     val hiddenSize = topology.hiddensShape(0)
     val outputSize = input.size()
@@ -96,11 +80,22 @@ class RecurrentDecoder[T : ClassTag](outputLength: Int)
       if (i == 1) {
         // input at t(0) is last time step of user input
         currentInput(inputDim) = input
+        currentInput(inputDim) = if (preTopology != null) {
+          val sizes = 1 +: input.size()
+          input.resize(sizes)
+          val _input = preTopology.updateOutput(input).toTensor[T]
+          input.resize(sizes.takeRight(sizes.length - 1))
+          _input.select(1, 1)
+        } else {
+          input
+        }
+
         cells(i - 1).forward(currentInput)
       } else {
         // input at t(i) is output at t(i-1)
         cells(i - 1).forward(cells(i - 2).output)
       }
+      
       i += 1
     }
 

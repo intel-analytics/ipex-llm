@@ -180,7 +180,7 @@ class ConvLSTMPeephole[T : ClassTag](
     cellLayer
   }
 
-  override def buildModel(): Sequential[T] = {
+  def buildModel(): Sequential[T] = {
     buildCell()
     buildOutputGate()
 
@@ -206,7 +206,6 @@ class ConvLSTMPeephole[T : ClassTag](
         .add(SelectTable(1))
         .add(Identity()))
 
-//    cell = convlstm
     convlstm
   }
 

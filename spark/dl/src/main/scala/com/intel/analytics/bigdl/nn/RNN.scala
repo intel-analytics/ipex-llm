@@ -64,9 +64,7 @@ class RnnCell[T : ClassTag] (
         bRegularizer = bRegularizer))
     .asInstanceOf[AbstractModule[Activity, Activity, T]]
 
-//  override var cell: AbstractModule[Activity, Activity, T] = buildGraph
-
-  override def buildModel(): Graph[T] = {
+  def buildModel(): Graph[T] = {
     val i2h = Input()
     val h2h = Linear[T](hiddenSize, hiddenSize,
       wRegularizer = uRegularizer).inputs()

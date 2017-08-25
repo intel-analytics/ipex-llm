@@ -167,7 +167,7 @@ class ConvLSTMPeephole3D[T : ClassTag](
     cellLayer
   }
 
-  override def buildModel(): Sequential[T] = {
+  def buildModel(): Sequential[T] = {
     buildCell()
     buildOutputGate()
 

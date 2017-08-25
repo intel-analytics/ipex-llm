@@ -40,7 +40,7 @@ class Recurrent[T : ClassTag]()
   protected val currentInput = T()
   protected val currentGradOutput = T()
   protected val gradInputCell = Tensor[T]()
-  private var outputCell = Tensor[T]()
+  protected var outputCell = Tensor[T]()
   protected var _input = T()
   protected val batchDim = 1
   protected val timeDim = 2
@@ -72,9 +72,6 @@ class Recurrent[T : ClassTag]()
     preTopology = topology.preTopology
     if (preTopology != null) {
       modules += preTopology
-    }
-    if (topology.ignorePreTopology) {
-      topology.cell = topology.buildModel()
     }
     modules += topology
     this

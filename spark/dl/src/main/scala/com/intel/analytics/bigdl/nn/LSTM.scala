@@ -130,7 +130,7 @@ class LSTM[T : ClassTag] (
       Sigmoid().inputs(split4))
   }
 
-  override def buildModel(): Sequential[T] = {
+  def buildModel(): Sequential[T] = {
     Sequential()
       .add(FlattenTable())
       .add(buildLSTM())
