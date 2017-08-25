@@ -1013,6 +1013,24 @@ public final class Bigdl {
 
     serialization.Bigdl.AttrValue getAttrOrThrow(
         java.lang.String key);
+
+    /**
+     * <pre>
+     *version of this module
+     * </pre>
+     *
+     * <code>optional string version = 9;</code>
+     */
+    java.lang.String getVersion();
+    /**
+     * <pre>
+     *version of this module
+     * </pre>
+     *
+     * <code>optional string version = 9;</code>
+     */
+    com.google.protobuf.ByteString
+        getVersionBytes();
   }
   /**
    * Protobuf type {@code serialization.BigDLModule}
@@ -1031,6 +1049,7 @@ public final class Bigdl {
       preModules_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       nextModules_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       moduleType_ = "";
+      version_ = "";
     }
 
     @java.lang.Override
@@ -1133,6 +1152,12 @@ public final class Bigdl {
               attr = input.readMessage(
                   AttrDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
               attr_.getMutableMap().put(attr.getKey(), attr.getValue());
+              break;
+            }
+            case 74: {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              version_ = s;
               break;
             }
           }
@@ -1566,6 +1591,48 @@ public final class Bigdl {
       return map.get(key);
     }
 
+    public static final int VERSION_FIELD_NUMBER = 9;
+    private volatile java.lang.Object version_;
+    /**
+     * <pre>
+     *version of this module
+     * </pre>
+     *
+     * <code>optional string version = 9;</code>
+     */
+    public java.lang.String getVersion() {
+      java.lang.Object ref = version_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        version_ = s;
+        return s;
+      }
+    }
+    /**
+     * <pre>
+     *version of this module
+     * </pre>
+     *
+     * <code>optional string version = 9;</code>
+     */
+    public com.google.protobuf.ByteString
+        getVersionBytes() {
+      java.lang.Object ref = version_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        version_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -1607,6 +1674,9 @@ public final class Bigdl {
             .setValue(entry.getValue())
             .build();
         output.writeMessage(8, attr);
+      }
+      if (!getVersionBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 9, version_);
       }
     }
 
@@ -1659,6 +1729,9 @@ public final class Bigdl {
         size += com.google.protobuf.CodedOutputStream
             .computeMessageSize(8, attr);
       }
+      if (!getVersionBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(9, version_);
+      }
       memoizedSize = size;
       return size;
     }
@@ -1697,6 +1770,8 @@ public final class Bigdl {
           .equals(other.getModuleType());
       result = result && internalGetAttr().equals(
           other.internalGetAttr());
+      result = result && getVersion()
+          .equals(other.getVersion());
       return result;
     }
 
@@ -1735,6 +1810,8 @@ public final class Bigdl {
         hash = (37 * hash) + ATTR_FIELD_NUMBER;
         hash = (53 * hash) + internalGetAttr().hashCode();
       }
+      hash = (37 * hash) + VERSION_FIELD_NUMBER;
+      hash = (53 * hash) + getVersion().hashCode();
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -1903,6 +1980,8 @@ public final class Bigdl {
         moduleType_ = "";
 
         internalGetMutableAttr().clear();
+        version_ = "";
+
         return this;
       }
 
@@ -1960,6 +2039,7 @@ public final class Bigdl {
         result.moduleType_ = moduleType_;
         result.attr_ = internalGetAttr();
         result.attr_.makeImmutable();
+        result.version_ = version_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -2064,6 +2144,10 @@ public final class Bigdl {
         }
         internalGetMutableAttr().mergeFrom(
             other.internalGetAttr());
+        if (!other.getVersion().isEmpty()) {
+          version_ = other.version_;
+          onChanged();
+        }
         onChanged();
         return this;
       }
@@ -3291,6 +3375,95 @@ public final class Bigdl {
       public Builder putAllAttr(
           java.util.Map<java.lang.String, serialization.Bigdl.AttrValue> values) {
         getMutableAttr().putAll(values);
+        return this;
+      }
+
+      private java.lang.Object version_ = "";
+      /**
+       * <pre>
+       *version of this module
+       * </pre>
+       *
+       * <code>optional string version = 9;</code>
+       */
+      public java.lang.String getVersion() {
+        java.lang.Object ref = version_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          version_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <pre>
+       *version of this module
+       * </pre>
+       *
+       * <code>optional string version = 9;</code>
+       */
+      public com.google.protobuf.ByteString
+          getVersionBytes() {
+        java.lang.Object ref = version_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          version_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <pre>
+       *version of this module
+       * </pre>
+       *
+       * <code>optional string version = 9;</code>
+       */
+      public Builder setVersion(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        version_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *version of this module
+       * </pre>
+       *
+       * <code>optional string version = 9;</code>
+       */
+      public Builder clearVersion() {
+        
+        version_ = getDefaultInstance().getVersion();
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *version of this module
+       * </pre>
+       *
+       * <code>optional string version = 9;</code>
+       */
+      public Builder setVersionBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        version_ = value;
+        onChanged();
         return this;
       }
       public final Builder setUnknownFields(
@@ -14553,73 +14726,73 @@ public final class Bigdl {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\013bigdl.proto\022\rserialization\"\331\002\n\013BigDLMo" +
+      "\n\013bigdl.proto\022\rserialization\"\352\002\n\013BigDLMo" +
       "dule\022\014\n\004name\030\001 \001(\t\022.\n\nsubModules\030\002 \003(\0132\032" +
       ".serialization.BigDLModule\022*\n\006weight\030\003 \001" +
       "(\0132\032.serialization.BigDLTensor\022(\n\004bias\030\004" +
       " \001(\0132\032.serialization.BigDLTensor\022\022\n\npreM" +
       "odules\030\005 \003(\t\022\023\n\013nextModules\030\006 \003(\t\022\022\n\nmod" +
       "uleType\030\007 \001(\t\0222\n\004attr\030\010 \003(\0132$.serializat" +
-      "ion.BigDLModule.AttrEntry\032E\n\tAttrEntry\022\013" +
-      "\n\003key\030\001 \001(\t\022\'\n\005value\030\002 \001(\0132\030.serializati" +
-      "on.AttrValue:\0028\001\"M\n\nInitMethod\0221\n\nmethod",
-      "Type\030\001 \001(\0162\035.serialization.InitMethodTyp" +
-      "e\022\014\n\004data\030\002 \003(\001\"o\n\013BigDLTensor\022)\n\010dataty" +
-      "pe\030\001 \001(\0162\027.serialization.DataType\022\014\n\004siz" +
-      "e\030\002 \003(\005\022\022\n\nfloat_data\030\003 \003(\002\022\023\n\013double_da" +
-      "ta\030\004 \003(\001\"[\n\013Regularizer\0227\n\017regularizerTy" +
-      "pe\030\001 \001(\0162\036.serialization.RegularizerType" +
-      "\022\023\n\013regularData\030\002 \003(\001\"\366\010\n\tAttrValue\022\024\n\ni" +
-      "nt32Value\030\001 \001(\005H\000\022\024\n\nint64Value\030\002 \001(\003H\000\022" +
-      "\024\n\nfloatValue\030\003 \001(\002H\000\022\025\n\013doubleValue\030\004 \001" +
-      "(\001H\000\022\025\n\013stringValue\030\005 \001(\tH\000\022\023\n\tboolValue",
-      "\030\006 \001(\010H\000\0226\n\020regularizerValue\030\007 \001(\0132\032.ser" +
-      "ialization.RegularizerH\000\0221\n\013tensorValue\030" +
-      "\010 \001(\0132\032.serialization.BigDLTensorH\000\0227\n\023v" +
-      "ariableFormatValue\030\t \001(\0162\030.serialization" +
-      ".VarFormatH\000\0224\n\017initMethodValue\030\n \001(\0132\031." +
-      "serialization.InitMethodH\000\0226\n\020bigDLModul" +
-      "eValue\030\013 \001(\0132\032.serialization.BigDLModule" +
-      "H\000\0228\n\021nameAttrListValue\030\014 \001(\0132\033.serializ" +
-      "ation.NameAttrListH\000\0229\n\narrayValue\030\r \001(\013" +
-      "2#.serialization.AttrValue.ArrayValueH\000\022",
-      "9\n\017dataFormatValue\030\016 \001(\0162\036.serialization" +
-      ".InputDataFormatH\000\022)\n\010dataType\030\017 \001(\0162\027.s" +
-      "erialization.DataType\032\355\003\n\nArrayValue\022\013\n\003" +
-      "i32\030\001 \003(\005\022\013\n\003i64\030\002 \003(\003\022\013\n\003flt\030\003 \003(\002\022\013\n\003d" +
-      "bl\030\004 \003(\001\022\013\n\003str\030\005 \003(\t\022\017\n\007boolean\030\006 \003(\010\022/" +
-      "\n\013Regularizer\030\007 \003(\0132\032.serialization.Regu" +
-      "larizer\022*\n\006tensor\030\010 \003(\0132\032.serialization." +
-      "BigDLTensor\0220\n\016variableFormat\030\t \003(\0162\030.se" +
-      "rialization.VarFormat\022-\n\ninitMethod\030\n \003(" +
-      "\0132\031.serialization.InitMethod\022/\n\013bigDLMod",
-      "ule\030\013 \003(\0132\032.serialization.BigDLModule\0221\n" +
-      "\014nameAttrList\030\014 \003(\0132\033.serialization.Name" +
-      "AttrList\0222\n\ndataFormat\030\r \003(\0162\036.serializa" +
-      "tion.InputDataFormat\022\014\n\004size\030\016 \001(\005\022)\n\010da" +
-      "tatype\030\017 \001(\0162\027.serialization.DataTypeB\007\n" +
-      "\005value\"\230\001\n\014NameAttrList\022\014\n\004name\030\001 \001(\t\0223\n" +
-      "\004attr\030\002 \003(\0132%.serialization.NameAttrList" +
-      ".AttrEntry\032E\n\tAttrEntry\022\013\n\003key\030\001 \001(\t\022\'\n\005" +
-      "value\030\002 \001(\0132\030.serialization.AttrValue:\0028" +
-      "\001*\260\001\n\tVarFormat\022\020\n\014EMPTY_FORMAT\020\000\022\013\n\007DEF",
-      "AULT\020\001\022\t\n\005ONE_D\020\002\022\n\n\006IN_OUT\020\003\022\n\n\006OUT_IN\020" +
-      "\004\022\020\n\014IN_OUT_KW_KH\020\005\022\020\n\014OUT_IN_KW_KH\020\006\022\023\n" +
-      "\017GP_OUT_IN_KW_KH\020\007\022\023\n\017GP_IN_OUT_KW_KH\020\010\022" +
-      "\023\n\017OUT_IN_KT_KH_KW\020\t*\253\001\n\016InitMethodType\022" +
-      "\030\n\024EMPTY_INITIALIZATION\020\000\022\022\n\016RANDOM_UNIF" +
-      "ORM\020\001\022\030\n\024RANDOM_UNIFORM_PARAM\020\002\022\021\n\rRANDO" +
-      "M_NORMAL\020\003\022\t\n\005ZEROS\020\004\022\010\n\004ONES\020\005\022\t\n\005CONST" +
-      "\020\006\022\n\n\006XAVIER\020\007\022\022\n\016BILINEARFILLER\020\010*L\n\017Re" +
-      "gularizerType\022\023\n\017L1L2Regularizer\020\000\022\021\n\rL1" +
-      "Regularizer\020\001\022\021\n\rL2Regularizer\020\002*%\n\017Inpu",
-      "tDataFormat\022\010\n\004NCHW\020\000\022\010\n\004NHWC\020\001*\321\001\n\010Data" +
-      "Type\022\t\n\005INT32\020\000\022\t\n\005INT64\020\001\022\t\n\005FLOAT\020\002\022\n\n" +
-      "\006DOUBLE\020\003\022\n\n\006STRING\020\004\022\010\n\004BOOL\020\005\022\017\n\013REGUL" +
-      "ARIZER\020\006\022\n\n\006TENSOR\020\007\022\023\n\017VARIABLE_FORMAT\020" +
-      "\010\022\016\n\nINITMETHOD\020\t\022\n\n\006MODULE\020\n\022\022\n\016NAME_AT" +
-      "TR_LIST\020\013\022\017\n\013ARRAY_VALUE\020\014\022\017\n\013DATA_FORMA" +
-      "T\020\rb\006proto3"
+      "ion.BigDLModule.AttrEntry\022\017\n\007version\030\t \001" +
+      "(\t\032E\n\tAttrEntry\022\013\n\003key\030\001 \001(\t\022\'\n\005value\030\002 " +
+      "\001(\0132\030.serialization.AttrValue:\0028\001\"M\n\nIni",
+      "tMethod\0221\n\nmethodType\030\001 \001(\0162\035.serializat" +
+      "ion.InitMethodType\022\014\n\004data\030\002 \003(\001\"o\n\013BigD" +
+      "LTensor\022)\n\010datatype\030\001 \001(\0162\027.serializatio" +
+      "n.DataType\022\014\n\004size\030\002 \003(\005\022\022\n\nfloat_data\030\003" +
+      " \003(\002\022\023\n\013double_data\030\004 \003(\001\"[\n\013Regularizer" +
+      "\0227\n\017regularizerType\030\001 \001(\0162\036.serializatio" +
+      "n.RegularizerType\022\023\n\013regularData\030\002 \003(\001\"\366" +
+      "\010\n\tAttrValue\022\024\n\nint32Value\030\001 \001(\005H\000\022\024\n\nin" +
+      "t64Value\030\002 \001(\003H\000\022\024\n\nfloatValue\030\003 \001(\002H\000\022\025" +
+      "\n\013doubleValue\030\004 \001(\001H\000\022\025\n\013stringValue\030\005 \001",
+      "(\tH\000\022\023\n\tboolValue\030\006 \001(\010H\000\0226\n\020regularizer" +
+      "Value\030\007 \001(\0132\032.serialization.RegularizerH" +
+      "\000\0221\n\013tensorValue\030\010 \001(\0132\032.serialization.B" +
+      "igDLTensorH\000\0227\n\023variableFormatValue\030\t \001(" +
+      "\0162\030.serialization.VarFormatH\000\0224\n\017initMet" +
+      "hodValue\030\n \001(\0132\031.serialization.InitMetho" +
+      "dH\000\0226\n\020bigDLModuleValue\030\013 \001(\0132\032.serializ" +
+      "ation.BigDLModuleH\000\0228\n\021nameAttrListValue" +
+      "\030\014 \001(\0132\033.serialization.NameAttrListH\000\0229\n" +
+      "\narrayValue\030\r \001(\0132#.serialization.AttrVa",
+      "lue.ArrayValueH\000\0229\n\017dataFormatValue\030\016 \001(" +
+      "\0162\036.serialization.InputDataFormatH\000\022)\n\010d" +
+      "ataType\030\017 \001(\0162\027.serialization.DataType\032\355" +
+      "\003\n\nArrayValue\022\013\n\003i32\030\001 \003(\005\022\013\n\003i64\030\002 \003(\003\022" +
+      "\013\n\003flt\030\003 \003(\002\022\013\n\003dbl\030\004 \003(\001\022\013\n\003str\030\005 \003(\t\022\017" +
+      "\n\007boolean\030\006 \003(\010\022/\n\013Regularizer\030\007 \003(\0132\032.s" +
+      "erialization.Regularizer\022*\n\006tensor\030\010 \003(\013" +
+      "2\032.serialization.BigDLTensor\0220\n\016variable" +
+      "Format\030\t \003(\0162\030.serialization.VarFormat\022-" +
+      "\n\ninitMethod\030\n \003(\0132\031.serialization.InitM",
+      "ethod\022/\n\013bigDLModule\030\013 \003(\0132\032.serializati" +
+      "on.BigDLModule\0221\n\014nameAttrList\030\014 \003(\0132\033.s" +
+      "erialization.NameAttrList\0222\n\ndataFormat\030" +
+      "\r \003(\0162\036.serialization.InputDataFormat\022\014\n" +
+      "\004size\030\016 \001(\005\022)\n\010datatype\030\017 \001(\0162\027.serializ" +
+      "ation.DataTypeB\007\n\005value\"\230\001\n\014NameAttrList" +
+      "\022\014\n\004name\030\001 \001(\t\0223\n\004attr\030\002 \003(\0132%.serializa" +
+      "tion.NameAttrList.AttrEntry\032E\n\tAttrEntry" +
+      "\022\013\n\003key\030\001 \001(\t\022\'\n\005value\030\002 \001(\0132\030.serializa" +
+      "tion.AttrValue:\0028\001*\260\001\n\tVarFormat\022\020\n\014EMPT",
+      "Y_FORMAT\020\000\022\013\n\007DEFAULT\020\001\022\t\n\005ONE_D\020\002\022\n\n\006IN" +
+      "_OUT\020\003\022\n\n\006OUT_IN\020\004\022\020\n\014IN_OUT_KW_KH\020\005\022\020\n\014" +
+      "OUT_IN_KW_KH\020\006\022\023\n\017GP_OUT_IN_KW_KH\020\007\022\023\n\017G" +
+      "P_IN_OUT_KW_KH\020\010\022\023\n\017OUT_IN_KT_KH_KW\020\t*\253\001" +
+      "\n\016InitMethodType\022\030\n\024EMPTY_INITIALIZATION" +
+      "\020\000\022\022\n\016RANDOM_UNIFORM\020\001\022\030\n\024RANDOM_UNIFORM" +
+      "_PARAM\020\002\022\021\n\rRANDOM_NORMAL\020\003\022\t\n\005ZEROS\020\004\022\010" +
+      "\n\004ONES\020\005\022\t\n\005CONST\020\006\022\n\n\006XAVIER\020\007\022\022\n\016BILIN" +
+      "EARFILLER\020\010*L\n\017RegularizerType\022\023\n\017L1L2Re" +
+      "gularizer\020\000\022\021\n\rL1Regularizer\020\001\022\021\n\rL2Regu",
+      "larizer\020\002*%\n\017InputDataFormat\022\010\n\004NCHW\020\000\022\010" +
+      "\n\004NHWC\020\001*\321\001\n\010DataType\022\t\n\005INT32\020\000\022\t\n\005INT6" +
+      "4\020\001\022\t\n\005FLOAT\020\002\022\n\n\006DOUBLE\020\003\022\n\n\006STRING\020\004\022\010" +
+      "\n\004BOOL\020\005\022\017\n\013REGULARIZER\020\006\022\n\n\006TENSOR\020\007\022\023\n" +
+      "\017VARIABLE_FORMAT\020\010\022\016\n\nINITMETHOD\020\t\022\n\n\006MO" +
+      "DULE\020\n\022\022\n\016NAME_ATTR_LIST\020\013\022\017\n\013ARRAY_VALU" +
+      "E\020\014\022\017\n\013DATA_FORMAT\020\rb\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -14638,7 +14811,7 @@ public final class Bigdl {
     internal_static_serialization_BigDLModule_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_serialization_BigDLModule_descriptor,
-        new java.lang.String[] { "Name", "SubModules", "Weight", "Bias", "PreModules", "NextModules", "ModuleType", "Attr", });
+        new java.lang.String[] { "Name", "SubModules", "Weight", "Bias", "PreModules", "NextModules", "ModuleType", "Attr", "Version", });
     internal_static_serialization_BigDLModule_AttrEntry_descriptor =
       internal_static_serialization_BigDLModule_descriptor.getNestedTypes().get(0);
     internal_static_serialization_BigDLModule_AttrEntry_fieldAccessorTable = new

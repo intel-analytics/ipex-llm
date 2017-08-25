@@ -133,17 +133,17 @@ object MapTable extends ContainerSerializable {
     new MapTable[T](module)
   }
 
-  override def loadModule[T: ClassTag](model : BigDLModule)
-                                      (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
-    val moduleData = super.loadModule(model)
-    val mapTable = moduleData.module.asInstanceOf[MapTable[T]]
+  override def doLoadModule[T: ClassTag](model : BigDLModule)
+    (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
+    val mapTable = super.doLoadModule(model).asInstanceOf[MapTable[T]]
     require(mapTable.modules.size >=1, "sub module should not be empty")
     mapTable.add(mapTable.modules(0))
-    moduleData
+    mapTable
   }
 
-  override def serializeModule[T: ClassTag](module : ModuleData[T])
-                                           (implicit ev: TensorNumeric[T]) : BigDLModule = {
+  override def doSerializeModule[T: ClassTag](module : ModuleData[T],
+                                             mapBuilder : BigDLModule.Builder)
+                                           (implicit ev: TensorNumeric[T]) : Unit = {
     val mapTable = module.module.asInstanceOf[MapTable[T]]
     val subModules = mapTable.modules
     require(subModules.size >=1, "sub module should not be empty")
@@ -152,6 +152,6 @@ object MapTable extends ContainerSerializable {
     val singleModule = subModules(0)
     mapTable.modules.clear()
     mapTable.modules.append(singleModule)
-    super.serializeModule(module)
+    super.doSerializeModule(module, mapBuilder)
   }
 }
