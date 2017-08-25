@@ -463,10 +463,10 @@ object Recurrent extends ContainerSerializable {
     new Recurrent[T]()
   }
 
-  override def loadModule[T: ClassTag](model : BigDLModule)
-                                      (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
-    val moduleData = super.loadModule(model)
-    val recurrent = moduleData.module.asInstanceOf[Recurrent[T]]
+  override def doLoadModule[T: ClassTag](model : BigDLModule)
+    (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
+
+    val recurrent = super.doLoadModule(model).asInstanceOf[Recurrent[T]]
     val attrMap = model.getAttrMap
 
     val topologyAttr = attrMap.get("topology")
@@ -477,25 +477,25 @@ object Recurrent extends ContainerSerializable {
     recurrent.preTopology = DataConverter.getAttributeValue(preTopologyAttr).
       asInstanceOf[AbstractModule[Activity, Activity, T]]
 
-    moduleData
+    recurrent
   }
 
-  override def serializeModule[T: ClassTag](module : ModuleData[T])
-                                           (implicit ev: TensorNumeric[T]) : BigDLModule = {
-    val containerBuilder = BigDLModule.newBuilder(super.serializeModule(module))
+  override def doSerializeModule[T: ClassTag](module : ModuleData[T],
+                                            recurrentBuilder : BigDLModule.Builder)
+                                           (implicit ev: TensorNumeric[T]) : Unit = {
+    super.doSerializeModule(module, recurrentBuilder)
 
     val recurrent = module.module.asInstanceOf[Recurrent[T]]
 
     val topologyBuilder = AttrValue.newBuilder
     DataConverter.setAttributeValue(topologyBuilder, recurrent.topology,
       ModuleSerializer.abstractModuleType)
-    containerBuilder.putAttr("topology", topologyBuilder.build)
+    recurrentBuilder.putAttr("topology", topologyBuilder.build)
 
     val preTopologyBuilder = AttrValue.newBuilder
     DataConverter.setAttributeValue(preTopologyBuilder,
       recurrent.preTopology, ModuleSerializer.abstractModuleType)
-    containerBuilder.putAttr("preTopology", preTopologyBuilder.build)
+    recurrentBuilder.putAttr("preTopology", preTopologyBuilder.build)
 
-    containerBuilder.build
   }
 }

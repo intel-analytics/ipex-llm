@@ -80,20 +80,25 @@ object ModuleSerializer extends ModuleSerializable{
    */
   def load[T: ClassTag](model: BigDLModule)
                        (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
-    if (serializerMaps.contains(model.getModuleType)) {
-      serializerMaps(model.getModuleType).loadModule(model)
-    } else {
-      val attrMap = model.getAttrMap
-      val subModuleCount = model.getSubModulesCount
-      if (subModuleCount > 0) {
-        ContainerSerializer.loadModule(model)
+    try {
+      if (serializerMaps.contains(model.getModuleType)) {
+        serializerMaps(model.getModuleType).loadModule(model)
       } else {
-        if (attrMap.containsKey("is_cell_module")) {
-          CellSerializer.loadModule(model)
+        val attrMap = model.getAttrMap
+        val subModuleCount = model.getSubModulesCount
+        if (subModuleCount > 0) {
+          ContainerSerializer.loadModule(model)
         } else {
-          ModuleSerializer.loadModule(model)
+          if (attrMap.containsKey("is_cell_module")) {
+            CellSerializer.loadModule(model)
+          } else {
+            ModuleSerializer.loadModule(model)
+          }
         }
       }
+    } catch {
+      case e: Exception =>
+        throw new RuntimeException("Loading module exception :", e)
     }
   }
 

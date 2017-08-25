@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.T
@@ -198,12 +198,12 @@ object SpatialSubtractiveNormalization extends ModuleSerializable {
     new SpatialSubtractiveNormalization[T](nInputPlane, kernel)
   }
 
-  override def loadModule[T: ClassTag](model : BigDLModule)
-                                      (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
-    val moduleData = super.loadModule(model)
-    val spatialSubtractiveNormModule = moduleData.module.
+  override def doLoadModule[T: ClassTag](model : BigDLModule)
+    (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
+
+    val spatialSubtractiveNormModule = super.doLoadModule(model).
       asInstanceOf[SpatialSubtractiveNormalization[T]]
-    // val eanestimator = spatialDivisiveNormModule.cell
+
     val attrMap = model.getAttrMap
 
     spatialSubtractiveNormModule.meanestimator = DataConverter.
@@ -218,35 +218,32 @@ object SpatialSubtractiveNormalization extends ModuleSerializable {
       getAttributeValue(attrMap.get("divider")).
       asInstanceOf[CDivTable[T]]
 
-
-    moduleData
+    spatialSubtractiveNormModule
   }
 
-  override def serializeModule[T: ClassTag](module : ModuleData[T])
-                                           (implicit ev: TensorNumeric[T]) : BigDLModule = {
-    val bigDLModule = super.serializeModule(module)
+  override def doSerializeModule[T: ClassTag](module : ModuleData[T],
+                                            subtractiveNormBuilder : BigDLModule.Builder)
+                                           (implicit ev: TensorNumeric[T]) : Unit = {
+    super.doSerializeModule(module, subtractiveNormBuilder)
     val spatialSubtractiveNormaModule = module.module.
       asInstanceOf[SpatialSubtractiveNormalization[T]]
-    val spatialSubtractiveNormaBuilder = BigDLModule.newBuilder(bigDLModule)
 
     val meanestimatorBuilder = AttrValue.newBuilder
     DataConverter.setAttributeValue(meanestimatorBuilder,
       spatialSubtractiveNormaModule.meanestimator,
       ModuleSerializer.tensorModuleType)
-    spatialSubtractiveNormaBuilder.putAttr("meanestimator", meanestimatorBuilder.build)
+    subtractiveNormBuilder.putAttr("meanestimator", meanestimatorBuilder.build)
 
 
     val thresholderBuilder = AttrValue.newBuilder
     DataConverter.setAttributeValue(thresholderBuilder, spatialSubtractiveNormaModule.subtractor,
       ModuleSerializer.tensorModuleType)
-    spatialSubtractiveNormaBuilder.putAttr("subtractor", thresholderBuilder.build)
+    subtractiveNormBuilder.putAttr("subtractor", thresholderBuilder.build)
 
     val dividerBuilder = AttrValue.newBuilder
     DataConverter.setAttributeValue(dividerBuilder, spatialSubtractiveNormaModule.divider,
       ModuleSerializer.tensorModuleType)
-    spatialSubtractiveNormaBuilder.putAttr("divider", dividerBuilder.build)
+    subtractiveNormBuilder.putAttr("divider", dividerBuilder.build)
 
-
-    spatialSubtractiveNormaBuilder.build
   }
 }
