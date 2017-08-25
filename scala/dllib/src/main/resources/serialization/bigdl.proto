@@ -10,6 +10,7 @@ message BigDLModule
     repeated string nextModules = 6; //next modules of the same hierachy
     string moduleType = 7; //module type to identify a module like linear, graph, etc
     map<string, AttrValue> attr = 8; // module attributes
+    string version = 9; //version of this module
 }
 enum VarFormat {
     EMPTY_FORMAT = 0;
