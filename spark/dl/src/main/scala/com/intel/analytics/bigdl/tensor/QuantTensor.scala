@@ -36,8 +36,9 @@ private[bigdl] class QuantTensor[@specialized(Float) T: ClassTag](
 
   private val errorString = s"QuantizeTensor doesn't support this operation now"
 
-  def setStorage(buffer: Array[Byte]): Unit = {
+  def setStorage(buffer: Array[Byte]): this.type = {
     interStorage = buffer
+    this
   }
 
   def getStorage: Array[Byte] = {
@@ -82,13 +83,23 @@ private[bigdl] class QuantTensor[@specialized(Float) T: ClassTag](
 
   override def hashCode(): Int = {
     val seed = 37
-    var hash = super.hashCode()
+    var hash = 1
+
+    hash = hash * seed + this.nDimension
+    var d = 1
+    while (d <= this.nDimension) {
+      hash = hash * seed + this.size(d)
+      d += 1
+    }
+
     hash = hash * seed + desc.hashCode()
-    hash = hash * seed + _size.hashCode()
-    hash = hash * seed + _stride.hashCode()
 
     if (interStorage != null) {
-      hash = hash * seed + interStorage.hashCode()
+      var i = 0
+      while (i < interStorage.length) {
+        hash = hash * seed + interStorage(i).toFloat.hashCode()
+        i += 1
+      }
     }
 
     hash
@@ -108,6 +119,11 @@ private[bigdl] class QuantTensor[@specialized(Float) T: ClassTag](
 
   def this(d1: Int, d2: Int, d3: Int, d4: Int, d5: Int)(implicit ev: TensorNumeric[T]) =
     this(Array(d1, d2, d3, d4, d5), Array(d5 * d4 * d3 * d2, d5 * d4 * d3, d5 * d4, d5, 1), 5)
+
+  def this(size: Array[Int])(implicit ev: TensorNumeric[T]) =
+    this(size, DenseTensor.size2Stride(size), size.length)
+
+  override def getTensorType: TensorType = QuantType
 
   /**
    * Dimension number of the tensor. For empty tensor, its dimension number is 0
@@ -130,7 +146,7 @@ private[bigdl] class QuantTensor[@specialized(Float) T: ClassTag](
    *
    * @return size array
    */
-  override def size(): Array[Int] = throw new UnsupportedOperationException(errorString)
+  override def size(): Array[Int] = _size
 
   /**
    * size of the tensor on the given dimension
@@ -138,7 +154,11 @@ private[bigdl] class QuantTensor[@specialized(Float) T: ClassTag](
    * @param dim dimension, count from 1
    * @return size
    */
-  override def size(dim: Int): Int = throw new UnsupportedOperationException(errorString)
+  override def size(dim: Int): Int = {
+    require(dim > 0 && dim <= this.nDimension,
+      s"dimension ${dim} out of range of ${this.nDimension}D tensor")
+    _size(dim - 1)
+  }
 
   /**
    * Jumps between element on the each dimension in the storage.
@@ -1640,4 +1660,7 @@ object QuantTensor {
 
   def apply[@specialized(Float, Double) T: ClassTag](d1: Int, d2: Int, d3: Int, d4: Int, d5: Int)(
     implicit ev: TensorNumeric[T]): QuantTensor[T] = new QuantTensor[T](d1, d2, d3, d4, d5)
+
+  def apply[@specialized(Float, Double) T: ClassTag](size: Array[Int])(
+    implicit ev: TensorNumeric[T]): QuantTensor[T] = new QuantTensor[T](size)
 }

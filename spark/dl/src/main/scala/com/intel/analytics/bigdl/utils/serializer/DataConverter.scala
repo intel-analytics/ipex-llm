@@ -15,13 +15,15 @@
  */
 package com.intel.analytics.bigdl.utils.serializer
 
+import com.google.protobuf.ByteString
 import scala.collection.JavaConverters._
 import scala.reflect.runtime.universe
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat.{NCHW, NHWC}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
+import com.intel.analytics.bigdl.nn.bigquant.Quant
 import com.intel.analytics.bigdl.optim.{L1L2Regularizer, L1Regularizer, L2Regularizer, Regularizer}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{DenseType, QuantTensor, QuantType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import serialization.Bigdl._
 import serialization.Bigdl.AttrValue.ArrayValue
@@ -112,6 +114,7 @@ object DataConverter extends DataConverter{
       case DataType.ARRAY_VALUE => ArrayConverter.getAttributeValue(attribute)
       case DataType.DATA_FORMAT => DataFormatConverter.getAttributeValue(attribute)
       case DataType.CUSTOM => CustomConverterDelegator.getAttributeValue(attribute)
+      case DataType.BYTES => attribute.getBytesValue.toByteArray
       case _ => throw new IllegalArgumentException
         (s"${attribute.getDataType} can not be recognized")
     }
@@ -170,7 +173,14 @@ object DataConverter extends DataConverter{
     } else if (value.isInstanceOf[mutable.Map[String, _ <: Any]]) {
       NameListConverter.setAttributeValue(attributeBuilder, value)
     } else if (valueType <:< universe.typeOf[Array[_ <: Any]] ) {
-      ArrayConverter.setAttributeValue(attributeBuilder, value, valueType)
+      if (value.isInstanceOf[Array[Byte]]) {
+        attributeBuilder.setDataType(DataType.BYTES)
+        val bytes = value.asInstanceOf[Array[Byte]]
+        val bs = ByteString.copyFrom(bytes)
+        attributeBuilder.setBytesValue(bs)
+      } else {
+        ArrayConverter.setAttributeValue(attributeBuilder, value)
+      }
     } else if (valueType == universe.typeOf[DataFormat]) {
       DataFormatConverter.setAttributeValue(attributeBuilder, value)
     } else {
@@ -236,42 +246,58 @@ object DataConverter extends DataConverter{
     override def getAttributeValue[T: ClassTag](attribute: AttrValue)
       (implicit ev: TensorNumeric[T]): AnyRef = {
       val serializedTensor = attribute.getTensorValue
+      val tensorType = serializedTensor.getTensorType
       val dataType = serializedTensor.getDatatype
       val sizes = serializedTensor.getSizeList.asScala
       if (sizes.size == 0) {
         return null;
       }
-      if (dataType != DataType.DOUBLE && dataType != DataType.FLOAT) {
+      if (dataType != DataType.DOUBLE && dataType != DataType.FLOAT && dataType != DataType.BYTES) {
         throw new IllegalArgumentException(s"$dataType not supported!")
       }
-      val strorageArray : Array[T] = dataType match {
-        case DataType.FLOAT =>
-          val data = serializedTensor.getFloatDataList.asScala
-          val strorageArray = new Array[T](data.size)
-          var i = 0;
-          while (i < data.size) {
-            strorageArray(i) = ev.fromType[Float](data(i))
-            i += 1
-          }
-          strorageArray
-        case DataType.DOUBLE =>
-          val data = serializedTensor.getDoubleDataList.asScala
-          val strorageArray = new Array[T](data.size)
-          var i = 0;
-          while (i < data.size) {
-            strorageArray(i) = ev.fromType[Double](data(i))
-            i += 1
-          }
-          strorageArray
-        case _ => throw new IllegalArgumentException(s"$dataType not supported in tensor now !")
-      }
+
       val sizeArray = new Array[Int](sizes.size)
       var i = 0;
       while (i < sizes.size) {
         sizeArray(i) = sizes(i)
         i += 1
       }
-      Tensor[T](strorageArray, sizeArray)
+
+      def dense(): Tensor[T] = {
+        val strorageArray: Array[T] = dataType match {
+          case DataType.FLOAT =>
+            val data = serializedTensor.getFloatDataList.asScala
+            val strorageArray = new Array[T](data.size)
+            var i = 0;
+            while (i < data.size) {
+              strorageArray(i) = ev.fromType[Float](data(i))
+              i += 1
+            }
+            strorageArray
+          case DataType.DOUBLE =>
+            val data = serializedTensor.getDoubleDataList.asScala
+            val strorageArray = new Array[T](data.size)
+            var i = 0;
+            while (i < data.size) {
+              strorageArray(i) = ev.fromType[Double](data(i))
+              i += 1
+            }
+            strorageArray
+          case _ => throw new IllegalArgumentException(s"$dataType not supported in tensor now !")
+        }
+        Tensor[T](strorageArray, sizeArray)
+      }
+
+      def quant(): Tensor[T] = {
+        val tensor = QuantTensor[T](sizeArray)
+        val bytes = serializedTensor.getBytesData.toByteArray
+        tensor.setStorage(bytes)
+      }
+
+      tensorType match {
+        case TensorType.DENSE => dense()
+        case TensorType.QUANT => quant()
+      }
     }
 
     override def setAttributeValue[T: ClassTag]
@@ -284,15 +310,34 @@ object DataConverter extends DataConverter{
       if (value != null) {
         val tensor = value.asInstanceOf[Tensor[T]]
         val tensorBuilder = BigDLTensor.newBuilder
-        if (ev == NumericFloat) {
-          tensorBuilder.setDatatype(DataType.FLOAT)
-          tensor.storage().array().foreach(data => tensorBuilder.
-            addFloatData(ev.toType[Float](data)))
-        } else if (ev == NumericDouble) {
-          tensorBuilder.setDatatype(DataType.DOUBLE)
-          tensor.storage().array().foreach(data => tensorBuilder.
-            addDoubleData(ev.toType[Float](data)))
+
+        def dense(): Unit = {
+          tensorBuilder.setTensorType(TensorType.DENSE)
+          if (ev == NumericFloat) {
+            tensorBuilder.setDatatype(DataType.FLOAT)
+            tensor.storage().array().foreach(data => tensorBuilder.
+                    addFloatData(ev.toType[Float](data)))
+          } else if (ev == NumericDouble) {
+            tensorBuilder.setDatatype(DataType.DOUBLE)
+            tensor.storage().array().foreach(data => tensorBuilder.
+                    addDoubleData(ev.toType[Float](data)))
+          }
         }
+
+        def quant(): Unit = {
+          tensorBuilder.setTensorType(TensorType.QUANT)
+          val quantTensor = tensor.asInstanceOf[QuantTensor[T]]
+          tensorBuilder.setDatatype(DataType.BYTES)
+          val bytes = quantTensor.getStorage
+          val bs = ByteString.copyFrom(bytes)
+          tensorBuilder.setBytesData(bs)
+        }
+
+        tensor.getTensorType match {
+          case DenseType => dense()
+          case QuantType => quant()
+        }
+
         tensor.size().foreach(size => tensorBuilder.addSize(size))
         attributeBuilder.setTensorValue(tensorBuilder.build)
       }

@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.nn.VariableFormat.{Default, ONE_D}
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat.{NCHW, NHWC}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat, TensorModule}
 import com.intel.analytics.bigdl.optim.{L1L2Regularizer, L1Regularizer, L2Regularizer, Regularizer}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{QuantTensor, Tensor}
 import org.scalatest.{FlatSpec, Matchers}
 import serialization.Bigdl.AttrValue
 
@@ -408,4 +408,32 @@ class DataConverterSpec extends FlatSpec with Matchers{
 
   }
 
+  "Array of byte" should "work properly" in {
+    val bytes = new Array[Byte](5)
+    "HELLO".zipWithIndex.foreach(x => bytes(x._2) = x._1.toByte)
+
+    val attriBulder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(attriBulder, bytes)
+    val attr = attriBulder.build
+    val retrievedValue = DataConverter.getAttributeValue(attr).asInstanceOf[Array[Byte]]
+    retrievedValue should be (bytes)
+    retrievedValue.foreach(x => println(x.toChar))
+  }
+
+  "QuantTensor" should "work properly" in {
+    val tensor = QuantTensor[Float](5)
+
+    val bytes = new Array[Byte](5)
+    "HELLO".zipWithIndex.foreach(x => bytes(x._2) = x._1.toByte)
+    bytes.foreach(x => println(x.toChar))
+    tensor.setStorage(bytes)
+
+    val attriBulder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(attriBulder, tensor, ModuleSerializer.tensorType)
+    val attr = attriBulder.build
+    val retrievedValue = DataConverter.getAttributeValue(attr)
+    attr.getDataType should be (DataType.TENSOR)
+
+    retrievedValue.hashCode() should be (tensor.hashCode())
+  }
 }

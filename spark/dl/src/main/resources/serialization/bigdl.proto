@@ -47,6 +47,11 @@ enum InputDataFormat {
     NHWC = 1;
 }
 
+enum TensorType {
+    DENSE = 0;
+    QUANT = 1;
+}
+
 message InitMethod {
     InitMethodType methodType = 1;
     repeated double data = 2;
@@ -56,6 +61,8 @@ message BigDLTensor{
     repeated int32 size = 2; //size of tensor
     repeated float float_data = 3; //tensor element
     repeated double double_data = 4; //tensor element
+    bytes bytes_data = 5; // quantize tensor element
+    TensorType tensorType = 6;
 }
 message Regularizer {
     RegularizerType regularizerType = 1;
@@ -78,6 +85,7 @@ enum DataType {
     ARRAY_VALUE = 12;
     DATA_FORMAT = 13;
     CUSTOM = 14;
+    BYTES = 15;
 }
 
 message AttrValue {
@@ -117,6 +125,7 @@ message AttrValue {
         ArrayValue arrayValue = 15; //array value of any type
         InputDataFormat dataFormatValue = 16; // data format
         google.protobuf.Any customValue = 17; // custom value
+        bytes bytesValue = 18;
     }
 }
 message NameAttrList {
