@@ -209,7 +209,8 @@ object BigDLSerDe extends BigDLSerDeBase with Serializable {
       saveObjects(out,
         pickler,
         record.features,
-        record.label)
+        record.label,
+        record.bigdlType)
     }
 
     def construct(args: Array[Object]): Object = {
