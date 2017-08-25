@@ -1,7 +1,7 @@
 
 ---
 
-** Public Talks:**
+** Talks:**
 
 * [ Strata 2017 London:Building deep learning-powered big data](https://conferences.oreilly.com/strata/strata-eu/public/schedule/detail/60651) [[Slides Download]](https://cdn.oreillystatic.com/en/assets/1/event/228/Building%20deep%20learning-powered%20big%20data%20Presentation.pdf)
 
@@ -21,14 +21,14 @@
 
 ---
 
-** Intel Resource:** 
+** Others:** 
 
 * [BigDL Overview](https://software.intel.com/en-us/videos/bigdl-overview) 
 
-* [BigDL: Bring Deep Learning to the Fingertips of Big Data Users and Data Scientists](https://software.intel.com/en-us/articles/bigdl-bring-deep-learning-to-big-data-users-and-data-scientists)
+* Introduction to BigDL on Apache Spark* :
 
-* [Introduction to BigDL on Apache Spark* Part1](https://software.intel.com/en-us/videos/introduction-to-bigdl-on-apache-spark-part1) 
+    * [Part1](https://software.intel.com/en-us/videos/introduction-to-bigdl-on-apache-spark-part1) 
 
-* [Introduction to BigDL on Apache Spark* Part2 ](https://software.intel.com/en-us/videos/introduction-to-bigdl-on-apache-spark-part2)
+    * [Part2 ](https://software.intel.com/en-us/videos/introduction-to-bigdl-on-apache-spark-part2)
 
-* [Introduction to BigDL on Apache Spark* Part3 ](https://software.intel.com/en-us/videos/introduction-to-bigdl-on-apache-spark-part3)
+    * [Part3 ](https://software.intel.com/en-us/videos/introduction-to-bigdl-on-apache-spark-part3)
