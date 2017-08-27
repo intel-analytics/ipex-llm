@@ -75,7 +75,7 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val dataSet2 = DataSet.array(LocalImageFiles.readPaths(Paths.get(
       processPath(resource.getPath())), hasLabel = false)).transform(
-      LocalGreyImgReader(28, 28, 1f,false))
+      LocalGreyImgReader(28, 28, 1f, false))
     dataSet2.size() should be (3)
 
     val iter2 = dataSet2.toLocal().data(train = false)
