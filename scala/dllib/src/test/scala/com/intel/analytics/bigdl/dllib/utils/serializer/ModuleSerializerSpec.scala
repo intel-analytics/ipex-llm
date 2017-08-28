@@ -138,6 +138,20 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     res1 should be (res2)
   }
 
+  "BiRecurrent serializer" should "work properly with BatchNormParams" in {
+    val input1 = Tensor(1, 5, 6).apply1(e => Random.nextFloat()).transpose(1, 2)
+    val input2 = Tensor()
+    input2.resizeAs(input1).copy(input1)
+    RNG.setSeed(100)
+    val biRecurrent = BiRecurrent(batchNormParams = BatchNormParams()).add(RnnCell(6, 4, Sigmoid()))
+    val res1 = biRecurrent.forward(input1)
+    ModulePersister.saveToFile("/tmp/biRecurrent.bigdl", biRecurrent, true)
+    RNG.setSeed(100)
+    val loadedRecurent = ModuleLoader.loadFromFile("/tmp/biRecurrent.bigdl")
+    val res2 = loadedRecurent.forward(input2)
+    res1 should be (res2)
+  }
+
   "Bottle serializer" should "work properly" in {
     val input1 = Tensor(10).apply1(e => Random.nextFloat())
     val input2 = Tensor()
