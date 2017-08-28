@@ -37,6 +37,9 @@ class BifurcateSplitTable[T: ClassTag](
   var dimension: Int)
   (implicit ev: TensorNumeric[T]) extends AbstractModule[Tensor[T], Table, T]{
 
+  val left = Tensor[T]()
+  val right = Tensor[T]()
+
   override def updateOutput(input: Tensor[T]): Table = {
     val slices = input.size(dimension)
     require(slices >= 1,
@@ -45,8 +48,14 @@ class BifurcateSplitTable[T: ClassTag](
     val leftSlices = slices >> 1
     val rightSlices = slices - leftSlices
 
-    output(1) = input.narrow(dimension, 1, leftSlices).contiguous()
-    output(2) = input.narrow(dimension, 1 + leftSlices, rightSlices).contiguous()
+    val leftSlice = input.narrow(dimension, 1, leftSlices)
+    val rightSlice = input.narrow(dimension, 1 + leftSlices, rightSlices)
+
+    left.resizeAs(leftSlice).copy(leftSlice)
+    right.resizeAs(rightSlice).copy(rightSlice)
+
+    output(1) = left
+    output(2) = right
     output
   }
 
