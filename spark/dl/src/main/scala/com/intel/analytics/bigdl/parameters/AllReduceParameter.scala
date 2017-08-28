@@ -179,21 +179,27 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) ex
    * @return A [[FutureResult]] which contains a [[Future]] for each thread.
    */
   def getWeights(localParameter: Tensor[T]): FutureResult[Int] = {
+    println("new iteration:")
     val tasks = (0 until partitionNum).map { pid =>
       syncPool.submit {
         new Callable[Int] {
           override def call(): Int = {
             try {
               val blockId = getWeightBlockId(pid)
+              var time = System.nanoTime()
               val localBuffer = BlockManagerWrapper.getLocalOrRemoteBytes(blockId).getOrElse {
                 throw new RuntimeException(s"Didn't find weight block $blockId in the block " +
                   s"manager. Did you initialize this AllReduceParameter on every executor?")
               }
+              println("sync time: " + (System.nanoTime() - time)/1e9 +
+                " len: " + localBuffer.array().length)
+              time = System.nanoTime()
               val start = pid * taskSize + math.min(pid, extraSize)
               val length = taskSize + (if (pid < extraSize) 1 else 0)
               require(localBuffer.array().length == length * 2)
               SerializerInstance.serialize(localBuffer).deCompress(0, localParameter, start, length)
               BlockManagerWrapper.unlock(blockId)
+              println("copy time: " + (System.nanoTime() - time)/1e9)
               pid
             } catch {
               case t: Throwable =>
