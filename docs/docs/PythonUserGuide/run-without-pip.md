@@ -95,6 +95,9 @@ After successfully launching Jupyter, you will be able to navigate to the notebo
 Please check [this page](../ScalaUserGuide/configuration.md)
 
 ## **FAQ**
+- Python in worker has different version 2.7 than that in driver 3.4
+  - export PYSPARK_PYTHON=path to python 3.4 on worker
+  - export PYSPARK_DRIVER_PYTHON = path to python 3.4 on driver
 - TypeError: 'JavaPackage' object is not callable
   - `Check if every path within the launch script is valid expecially the path end with jar `
 
