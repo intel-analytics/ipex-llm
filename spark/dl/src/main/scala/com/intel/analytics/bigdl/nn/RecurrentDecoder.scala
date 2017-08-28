@@ -37,10 +37,11 @@ import scala.reflect.ClassTag
  * Different types of rnn cells can be added using add() function. Currently
  * only support lstmpeephole, convlstm, convlstm3D cell.
  */
-class RecurrentDecoder[T : ClassTag](outputLength: Int)
+class RecurrentDecoder[T : ClassTag](seqLength: Int)
   (implicit ev: TensorNumeric[T]) extends Recurrent[T] {
 
-  times = outputLength
+  times = seqLength
+  private val newInput = Tensor[T]()
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim == 2 || input.dim == 4 || input.dim == 5,
@@ -48,11 +49,6 @@ class RecurrentDecoder[T : ClassTag](outputLength: Int)
         s"current input.dim = ${input.dim}")
 
     batchSize = input.size(batchDim)
-    outputCell = if (preTopology != null) {
-      preTopology.forward(input).toTensor[T]
-    } else {
-      input
-    }
 
     val hiddenSize = topology.hiddensShape(0)
     val outputSize = input.size()
@@ -63,6 +59,8 @@ class RecurrentDecoder[T : ClassTag](outputLength: Int)
     output.resize(Array(batchSize, times) ++ featureSizes)
     // Clone N modules along the sequence dimension.
     extend(featureSizes)
+    if (preTopology != null) newInput.resize(output.size())
+    else outputCell.resize(output.size())
 
     /**
      * currentInput forms a T() type. It contains two elements, hidden and input.
@@ -77,26 +75,33 @@ class RecurrentDecoder[T : ClassTag](outputLength: Int)
      else hidden
 
     while (i <= times) {
-      if (i == 1) {
-        // input at t(0) is last time step of user input
-        currentInput(inputDim) = input
-        currentInput(inputDim) = if (preTopology != null) {
-          val sizes = 1 +: input.size()
-          input.resize(sizes)
-          val _input = preTopology.updateOutput(input).toTensor[T]
-          input.resize(sizes.takeRight(sizes.length - 1))
-          _input.select(1, 1)
-        } else {
-          input
-        }
-
-        cells(i - 1).forward(currentInput)
+      // input at t(0) is user input
+      val inputTmp = if (i == 1) {
+        input
       } else {
         // input at t(i) is output at t(i-1)
-        cells(i - 1).forward(cells(i - 2).output)
+        cells(i - 2).output.toTable[Tensor[T]](inputDim)
       }
-      
+
+      currentInput(inputDim) = if (preTopology != null) {
+        newInput.narrow(2, i, 1).copy(inputTmp)
+        val sizes = 1 +: inputTmp.size()
+        inputTmp.resize(sizes)
+        val _input = preTopology.updateOutput(inputTmp).toTensor[T]
+        inputTmp.resize(sizes.takeRight(sizes.length - 1))
+        _input.select(1, 1)
+      } else {
+        outputCell.narrow(2, i, 1).copy(inputTmp)
+        inputTmp
+      }
+      cells(i - 1).updateOutput(currentInput)
+      currentInput(hidDim) = cells(i - 1).output.toTable(hidDim)
       i += 1
+    }
+
+    if (preTopology != null) {
+      // For backward preTopology use
+      outputCell = preTopology.updateOutput(newInput).toTensor[T]
     }
 
     copy(cells.map(x => x.output.toTable[Tensor[T]](inputDim)),
@@ -123,16 +128,20 @@ class RecurrentDecoder[T : ClassTag](outputLength: Int)
 
       if (i > 1) {
         cells(i - 1).regluarized(false)
-        _input = cells(i - 2).output
       } else {
         cells(i - 1).regluarized(true)
-        _input(hidDim) = hidden
-        _input(inputDim) = input
       }
+      
+      _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
+      else hidden
+      _input(inputDim) = outputCell.select(timeDim, i)
 
       cells(i - 1).accGradParameters(_input, currentGradOutput)
       currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
       i -= 1
+    }
+    if (preTopology != null) {
+      preTopology.accGradParameters(newInput, gradInputCell)
     }
   }
 
@@ -143,13 +152,10 @@ class RecurrentDecoder[T : ClassTag](outputLength: Int)
     var i = times
     while (i >= 1) {
       currentGradOutput(inputDim) = gradOutput.select(timeDim, i)
-
-      if (i > 1) {
-        _input = cells(i - 2).output
-      } else {
-        _input(hidDim) = hidden
-        _input(inputDim) = input
-      }
+      _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
+      else hidden
+      
+      _input(inputDim) = outputCell.select(timeDim, i)
 
       cells(i - 1).updateGradInput(_input, currentGradOutput)
       currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
@@ -157,6 +163,9 @@ class RecurrentDecoder[T : ClassTag](outputLength: Int)
     }
     copy(cells.map(x => x.gradInput.toTable[Tensor[T]](inputDim)),
         gradInputCell, 0)
+    if (preTopology != null) {
+      gradInput = preTopology.updateGradInput(newInput, gradInputCell).toTensor[T]
+    }
     gradInput
   }
 
@@ -166,23 +175,38 @@ class RecurrentDecoder[T : ClassTag](outputLength: Int)
     var i = times
     while (i >= 1) {
       currentGradOutput(inputDim) = gradOutput.select(timeDim, i)
-      if (i > 1) {
-        cells(i - 1).regluarized(false)
-        _input = cells(i - 2).output
-      } else {
+      _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
+      else hidden
+      _input(inputDim) = outputCell.select(timeDim, i)
+      if (i == 1) {
         cells(i - 1).regluarized(true)
-        _input(hidDim) = hidden
-        _input(inputDim) = input
+      } else {
+        cells(i - 1).regluarized(false)
       }
       cells(i - 1).backward(_input, currentGradOutput)
       currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
       i -= 1
     }
 
-    gradInput = gradInputCell
-    gradInputCell.resizeAs(output)
+    gradInput = if (preTopology != null) {
+      /**
+        * if preTopology is Sequential, it has not created gradInput.
+        * Thus, it needs to create a new Tensor.
+        */
+      if (preTopology.gradInput == null) {
+        preTopology.gradInput = Tensor[T]()
+      }
+      preTopology.gradInput.toTensor[T]
+    } else {
+      gradInputCell
+    }
+    gradInputCell.resizeAs(outputCell)
     copy(cells.map(x => x.gradInput.toTable[Tensor[T]](inputDim)),
       gradInputCell, 0)
+
+    if (preTopology != null) {
+      gradInput = preTopology.backward(newInput, gradInputCell).toTensor[T]
+    }
 
     this.backwardTime = System.nanoTime - st
     gradInput

@@ -173,8 +173,7 @@ Output for RecurrentDecoder has to be batch x outputLen???(depends on cell type)
  
 With RecurrentDecoder, inputsize and hiddensize of the cell must be the same.
 
-Different types of rnn cells can be added using add() function. Currently
-only support lstmpeephole, convlstm, convlstm3D cell.
+Different types of rnn cells can be added using add() function.
 
 Parameters:
 
