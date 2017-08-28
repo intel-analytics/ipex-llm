@@ -31,6 +31,19 @@ class DirectedGraphSpec extends FlatSpec with Matchers {
     nodeB.nextNodes.length should be(0)
   }
 
+  "Node add with edge index" should "be correct" in {
+    val nodeA = new Node("A")
+    val nodeB = new Node("B")
+    val test = nodeA.add(nodeB, Edge(1))
+    test should be(nodeB)
+    nodeA.prevNodes.length should be(0)
+    nodeA.nextNodes.length should be(1)
+    nodeA.nextNodes(0) should be(nodeB)
+    nodeB.prevNodes.length should be(1)
+    nodeB.prevNodes(0) should be(nodeA)
+    nodeB.nextNodes.length should be(0)
+  }
+
   "Node add" should "ignore duplicated add" in {
     val nodeA = new Node("A")
     val nodeB = new Node("B")

@@ -160,15 +160,35 @@ class Node[T](val element: T) extends Serializable {
    */
   def nextNodes: Seq[Node[T]] = nexts.map(_._1)
 
-  def nextMetas: Seq[Int] = nexts.map(_._2)
+  /**
+   * The edges start from this node
+   * @return
+   */
+  def nextEdges: Seq[Edge] = nexts.map(_._2)
 
   /**
-   * The nodes point to currect node
+   * The nodes pointed by current node with the connect edges
+   * @return
+   */
+  def nextNodesAndEdges: Seq[(Node[T], Edge)] = nexts
+
+  /**
+   * The nodes point to current node
    * @return
    */
   def prevNodes: Seq[Node[T]] = prevs.map(_._1)
 
-  def prevMetas: Seq[Int] = prevs.map(_._2)
+  /**
+   * The edges connect to this node
+   * @return
+   */
+  def prevEdges: Seq[Edge] = prevs.map(_._2)
+
+  /**
+   * The nodes pointed to current node with the connect edges
+   * @return
+   */
+  def prevNodesAndEdges: Seq[(Node[T], Edge)] = prevs
 
   // scalastyle:off methodName
   // scalastyle:off noSpaceBeforeLeftBracket
@@ -177,8 +197,8 @@ class Node[T](val element: T) extends Serializable {
    * @param node another node
    * @return another node
    */
-  def -> (node: Node[T], i : Int = Tensor.START_INDEX): Node[T] = {
-    this.add(node, i)
+  def -> (node: Node[T]): Node[T] = {
+    this.add(node)
   }
   // scalastyle:on noSpaceBeforeLeftBracket
   // scalastyle:on methodName
@@ -188,9 +208,9 @@ class Node[T](val element: T) extends Serializable {
    * @param node another node
    * @return another node
    */
-  def add(node: Node[T], i : Int = Tensor.START_INDEX): Node[T] = {
-    if (!node.prevs.contains((this, i))) node.prevs.append((this, i))
-    if (!this.nexts.contains((node, i))) this.nexts.append((node, i))
+  def add(node: Node[T], e: Edge = Edge.Default): Node[T] = {
+    if (!node.prevs.contains((this, e))) node.prevs.append((this, e))
+    if (!this.nexts.contains((node, e))) this.nexts.append((node, e))
     node
   }
 
@@ -199,10 +219,20 @@ class Node[T](val element: T) extends Serializable {
    *  @param node another node
    *  @return current node
    */
-  def delete(node: Node[T], i : Int = Tensor.START_INDEX): Node[T] = {
-    if (node.prevs.contains((this, i))) node.prevs.-=((this, i))
-    if (this.nexts.contains((node, i))) this.nexts.-=((node, i))
+  def delete(node: Node[T], e: Edge = Edge.Default): Node[T] = {
+    if (node.prevs.contains((this, e))) node.prevs.-=((this, e))
+    if (this.nexts.contains((node, e))) this.nexts.-=((node, e))
     this
+  }
+
+  /**
+   * A sugar allows user to generate the pair (n, something) via n(something)
+   * @param meta
+   * @tparam M
+   * @return
+   */
+  def apply[M](meta: M): (this.type, M) = {
+    (this, meta)
   }
 
   /**
@@ -230,10 +260,20 @@ class Node[T](val element: T) extends Serializable {
 
   override def toString: String = s"(${element.toString})"
 
-  private val nexts = new ArrayBuffer[(Node[T], Int)]()
-  private val prevs = new ArrayBuffer[(Node[T], Int)]()
+  private val nexts = new ArrayBuffer[(Node[T], Edge)]()
+  private val prevs = new ArrayBuffer[(Node[T], Edge)]()
 }
 
 object Node {
   def apply[T](element: T): Node[T] = new Node(element)
+}
+
+/**
+ * An edge in the graph
+ * @param fromIndex A preserved position to store meta info.
+ */
+private[bigdl] case class Edge(fromIndex: Option[Int])
+
+object Edge {
+  val Default = Edge(None)
 }

@@ -688,6 +688,9 @@ object Tensor {
   // libjmkl.so will be loaded when one of the methods of in MKL is called.
   MKL.isMKLLoaded
 
+  /**
+   * Start index in BigDL. We count from 1.
+   */
   val START_INDEX = 1
 
   /**
