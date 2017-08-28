@@ -908,7 +908,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
       val func = new TensorFunc6[T] {
         override def apply (data: Array[T], offset: Int, data1: Array[T],
                            offset1: Int, data2: Array[T], offset2: Int): Unit = {
-          data(offset1) = ev.minus(data1(offset1), data2(offset2))
+          data(offset) = ev.minus(data1(offset1), data2(offset2))
         }
       }
       DenseTensorApply.apply3[T](this, x, y, func)
