@@ -63,7 +63,7 @@ class BiRecurrentSpec  extends TorchSpec {
     val gradOutput1 = gradOutput.narrow(3, 1, outputSize).contiguous()
     val gradOutput2 = gradOutput.narrow(3, 1 + outputSize, outputSize).contiguous()
 
-    val birnn = BiRecurrent[Double](JoinTable[Double](3, 0), isCloneInput = false)
+    val birnn = BiRecurrent[Double](JoinTable[Double](3, 0), isSplitInput = true)
       .add(RnnCell[Double](half, outputSize, ReLU[Double]()))
 
     val recurrent1 = Recurrent[Double]()

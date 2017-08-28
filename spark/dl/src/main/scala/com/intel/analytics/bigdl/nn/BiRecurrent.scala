@@ -36,7 +36,7 @@ import scala.reflect.runtime._
 class BiRecurrent[T : ClassTag] (
   private val merge: AbstractModule[Table, Tensor[T], T] = null,
   val batchNormParams: BatchNormParams[T] = null,
-  val isCloneInput: Boolean = true)
+  val isSplitInput: Boolean = false)
   (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
 
   val timeDim = 2
@@ -46,12 +46,12 @@ class BiRecurrent[T : ClassTag] (
 
   private var birnn = Sequential[T]()
 
-  if (isCloneInput) {
+  if (isSplitInput) {
+    birnn.add(BifurcateSplitTable[T](featDim))
+  } else {
     birnn.add(ConcatTable()
       .add(Identity[T]())
       .add(Identity[T]()))
-  } else {
-    birnn.add(BifurcateSplitTable[T](featDim))
   }
 
   birnn
@@ -153,9 +153,9 @@ object BiRecurrent extends ContainerSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
     merge: AbstractModule[Table, Tensor[T], T] = null,
     batchNormParams: BatchNormParams[T] = null,
-    isCloneInput: Boolean = true)
+    isSplitInput: Boolean = false)
     (implicit ev: TensorNumeric[T]) : BiRecurrent[T] = {
-    new BiRecurrent[T](merge, batchNormParams, isCloneInput)
+    new BiRecurrent[T](merge, batchNormParams, isSplitInput)
   }
 
   override def doLoadModule[T: ClassTag](model : BigDLModule)
@@ -167,8 +167,8 @@ object BiRecurrent extends ContainerSerializable {
       getAttributeValue(attrMap.get("merge")).
       asInstanceOf[AbstractModule[Table, Tensor[T], T]]
 
-    val isCloneInput = DataConverter
-      .getAttributeValue(attrMap.get("isCloneInput"))
+    val isSplitInput = DataConverter
+      .getAttributeValue(attrMap.get("isSplitInput"))
       .asInstanceOf[Boolean]
 
     val flag = DataConverter
@@ -176,9 +176,9 @@ object BiRecurrent extends ContainerSerializable {
       .asInstanceOf[Boolean]
 
     val biRecurrent = if (flag) {
-      BiRecurrent(merge, batchNormParams = BatchNormParams(), isCloneInput = isCloneInput)
+      BiRecurrent(merge, batchNormParams = BatchNormParams(), isSplitInput = isSplitInput)
     } else {
-      BiRecurrent(merge, isCloneInput = isCloneInput)
+      BiRecurrent(merge, isSplitInput = isSplitInput)
     }
 
     biRecurrent.birnn = DataConverter.
@@ -236,11 +236,11 @@ object BiRecurrent extends ContainerSerializable {
       ModuleSerializer.tensorModuleType)
     birecurrentBuilder.putAttr("merge", mergeBuilder.build)
 
-    val isCloneInputBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(isCloneInputBuilder,
-      birecurrentModule.isCloneInput,
+    val isSplitInputBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(isSplitInputBuilder,
+      birecurrentModule.isSplitInput,
       universe.typeOf[Boolean])
-    birecurrentBuilder.putAttr("isCloneInput", isCloneInputBuilder.build)
+    birecurrentBuilder.putAttr("isSplitInput", isSplitInputBuilder.build)
 
     val birnnBuilder = AttrValue.newBuilder
     DataConverter.setAttributeValue(birnnBuilder,

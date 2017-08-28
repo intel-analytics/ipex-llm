@@ -152,12 +152,12 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     res1 should be (res2)
   }
 
-  "BiRecurrent serializer" should "work properly with isCloneInput" in {
+  "BiRecurrent serializer" should "work properly with isSplitInput" in {
     val input1 = Tensor(1, 5, 6).apply1(e => Random.nextFloat()).transpose(1, 2)
     val input2 = Tensor()
     input2.resizeAs(input1).copy(input1)
     RNG.setSeed(100)
-    val biRecurrent = BiRecurrent(isCloneInput = true).add(RnnCell(6, 4, Sigmoid()))
+    val biRecurrent = BiRecurrent(isSplitInput = false).add(RnnCell(6, 4, Sigmoid()))
     val res1 = biRecurrent.forward(input1)
     ModulePersister.saveToFile("/tmp/biRecurrent.bigdl", biRecurrent, true)
     RNG.setSeed(100)
