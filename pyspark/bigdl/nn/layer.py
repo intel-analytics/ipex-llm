@@ -311,7 +311,7 @@ class Layer(JavaValue):
         ... except Py4JJavaError as err:
         ...     print(err.java_exception)
         ...
-        java.lang.IllegalArgumentException: requirement failed: the number of input weight/bias is not consistant with number of weight/bias of this layer
+        java.lang.IllegalArgumentException: requirement failed: the number of input weight/bias is not consistant with number of weight/bias of this layer, number of input 1, number of output 2
         >>> cAdd = CAdd([4, 1])
         creating: createCAdd
         >>> cAdd.set_weights(np.ones([4, 1]))
@@ -1179,7 +1179,7 @@ class SpatialAveragePooling(Layer):
 
     >>> spatialAveragePooling = SpatialAveragePooling(7,7)
     creating: createSpatialAveragePooling
-    >>> spatialAveragePooling = SpatialAveragePooling(2, 2, 2, 2, -1, -1, True, "NHWC")
+    >>> spatialAveragePooling = SpatialAveragePooling(2, 2, 2, 2, -1, -1, True, format="NHWC")
     creating: createSpatialAveragePooling
     '''
 
@@ -1208,6 +1208,9 @@ class SpatialAveragePooling(Layer):
                                                     count_include_pad,
                                                     divide,
                                                     format)
+
+    def set_weights(self, weights):
+        super(SpatialAveragePooling, self).set_weights(weights)
 
 
 class SpatialBatchNormalization(Layer):
@@ -1481,7 +1484,29 @@ class BatchNormalization(Layer):
         return self
 
 
-class Bilinear(Layer):
+class BifurcateSplitTable(Model):
+    '''
+    Creates a module that takes a Tensor as input and
+    outputs two tables, splitting the Tensor along
+    the specified dimension `dimension`.
+
+    The input to this layer is expected to be a tensor, or a batch of tensors;
+
+    :param dimension to be split along this dimension
+    :param T Numeric type. Only support float/double now
+
+    >>> bifurcateSplitTable = BifurcateSplitTable(1)
+    creating: createBifurcateSplitTable
+    '''
+
+    def __init__(self,
+                 dimension,
+                 bigdl_type="float"):
+        super(BifurcateSplitTable, self).__init__(None, bigdl_type,
+                                       dimension)
+
+
+class Bilinear(Model):
 
     '''
     a bilinear transformation with sparse inputs,
