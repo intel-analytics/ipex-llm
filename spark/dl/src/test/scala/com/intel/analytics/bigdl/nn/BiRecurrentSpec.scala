@@ -46,7 +46,7 @@ class BiRecurrentSpec  extends TorchSpec {
     }
   }
 
-  "A BiRecurrent" should "uses isCloneInput correctly" in {
+  "A BiRecurrent" should "uses isSplitInput correctly" in {
     val inputSize = 4
     val outputSize = 5
     val seqLength = 7
