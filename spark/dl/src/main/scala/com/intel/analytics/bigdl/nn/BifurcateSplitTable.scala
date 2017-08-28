@@ -75,6 +75,12 @@ class BifurcateSplitTable[T: ClassTag](
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[SplitTable[T]]
 
+  override def clearState() : this.type = {
+    super.clearState()
+    left.set()
+    right.set()
+    this
+  }
 
   override def toString: String = s"BifurcateSplitTable($dimension)"
 
