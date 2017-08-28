@@ -190,7 +190,7 @@ class Sample(object):
     @classmethod
     def from_ndarray(cls, features, label, bigdl_type="float"):
         """
-        Convert a ndarray to Tensor which would be used in Java side.
+        Convert a ndarray of features and label to Sample, which would be used in Java side.
 
         >>> import numpy as np
         >>> from bigdl.util.common import callBigDlFunc
