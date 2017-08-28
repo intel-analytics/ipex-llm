@@ -221,8 +221,15 @@ class Recurrent[T : ClassTag]()
      */
     var i = 1
     // init state
-    currentInput(hidDim) = if (initState != null) initState
-     else hidden
+    if (!topology.isInstanceOf[MultiCell[T]]) {
+      currentInput(hidDim) = if (initState != null) initState
+      else hidden
+    } else {
+      topology.asInstanceOf[MultiCell[T]].states = if (initStates != null) initStates
+      else {
+        Array.fill[Activity](topology.asInstanceOf[MultiCell[T]].cells.size)(hidden)
+      }
+    }
     while (i <= times) {
       currentInput(inputDim) = outputCell.select(timeDim, i)
       cells(i - 1).forward(currentInput)
@@ -231,8 +238,8 @@ class Recurrent[T : ClassTag]()
     }
     copy(cells.map(x => x.output.toTable[Tensor[T]](inputDim)),
         output, 0)
-    if (topology.isInstanceOf[MultiCell]) {
-      val t = cells.map(x => x.output.toTable(hidDim)).toArray
+    if (topology.isInstanceOf[MultiCell[T]]) {
+      val t = cells.map(x => x.output.toTable(hidDim).asInstanceOf[Activity]).toArray
       setStates(t)
     }
     output
@@ -249,14 +256,15 @@ class Recurrent[T : ClassTag]()
     initState = state
   }
 
+  private var initStates: Array[Activity] = null
   def setStates(states: Array[Activity]): Unit = {
-    require(topology.isInstanceOf[MultiCell], "setStates only support for MultiCell")
-    topology.asInstanceOf[MultiCell].states = states
+    require(topology.isInstanceOf[MultiCell[T]], "setStates only support for MultiCell")
+    initStates = states
   }
 
   def getStates(): Unit = {
-    require(topology.isInstanceOf[MultiCell], "setStates only support for MultiCell")
-    topology.asInstanceOf[MultiCell].states
+    require(topology.isInstanceOf[MultiCell[T]], "getStates only support for MultiCell")
+    topology.asInstanceOf[MultiCell[T]].states
   }
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {

@@ -29,7 +29,7 @@ import scala.reflect.ClassTag
 /**
  * Enable user stack multiple simple cells.
  */
-class MultiCell[T : ClassTag](cells: Array[Cell[T]])(implicit ev: TensorNumeric[T])
+class MultiCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorNumeric[T])
   extends Cell[T](hiddensShape = cells.last.hiddensShape) {
   // inputDim and hidDim must be the same with Recurrent
   private val inputDim = 1
@@ -41,12 +41,14 @@ class MultiCell[T : ClassTag](cells: Array[Cell[T]])(implicit ev: TensorNumeric[
   var states: Array[Activity] = null
 
   override def updateOutput(input: Activity): Activity = {
+    require(states != null, "init state of multicell cannot be null")
     var i = 0
     var result = T()
     result = input.toTable
     while (i < cells.length) {
       result(hidDim) = states(i)
       result = cells(i).forward(result).toTable
+      states(i) = result(hidDim)
       i += 1
     }
 
