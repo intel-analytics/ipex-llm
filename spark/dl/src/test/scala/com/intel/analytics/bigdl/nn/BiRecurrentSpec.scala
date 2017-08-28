@@ -46,6 +46,64 @@ class BiRecurrentSpec  extends TorchSpec {
     }
   }
 
+  "A BiRecurrent" should "uses isCloneInput correctly" in {
+    val inputSize = 4
+    val outputSize = 5
+    val seqLength = 7
+    val seed = 100
+    val batchSize = 2
+    RNG.setSeed(seed)
+
+    val input = Tensor[Double](Array(batchSize, seqLength, inputSize)).randn
+    val gradOutput = Tensor[Double](batchSize, seqLength, outputSize * 2).randn
+
+    val half = inputSize >> 1
+    val input1 = input.narrow(3, 1, half).contiguous()
+    val input2 = input.narrow(3, 1 + half, inputSize - half).contiguous()
+    val gradOutput1 = gradOutput.narrow(3, 1, outputSize).contiguous()
+    val gradOutput2 = gradOutput.narrow(3, 1 + outputSize, outputSize).contiguous()
+
+    val birnn = BiRecurrent[Double](JoinTable[Double](3, 0), isCloneInput = false)
+      .add(RnnCell[Double](half, outputSize, ReLU[Double]()))
+
+    val recurrent1 = Recurrent[Double]()
+      .add(RnnCell[Double](half, outputSize, ReLU[Double]()))
+    val recurrent2 = Sequential[Double]()
+      .add(Reverse[Double](2))
+      .add(Recurrent[Double]()
+        .add(RnnCell[Double](half, outputSize, ReLU[Double]())))
+      .add(Reverse[Double](2))
+
+    val birnnParams = birnn.parameters()._1
+    val length = birnnParams.length
+    val halfLen = length >> 1
+    val weight1 = recurrent1.parameters()._1
+    val weight2 = recurrent2.parameters()._1
+
+    for (i <- 0 until halfLen) {
+      weight1(i).resizeAs(birnnParams(i)).copy(birnnParams(i))
+    }
+    for (i <- 0 until halfLen) {
+      weight2(i).resizeAs(birnnParams(i + halfLen)).copy(birnnParams(i + halfLen))
+    }
+
+    val output = birnn.forward(input)
+    val out1 = recurrent1.forward(input1)
+    val out2 = recurrent2.forward(input2)
+
+    val jointTable = JoinTable[Double](3, 0)
+    val outputCompare = jointTable.forward(T(out1, out2))
+
+    output should be (outputCompare)
+
+    val gradInput = birnn.backward(input, gradOutput)
+    val grad1 = recurrent1.backward(input1, gradOutput1)
+    val grad2 = recurrent2.backward(input2, gradOutput2)
+
+    gradInput.narrow(3, 1, half) should be (grad1)
+    gradInput.narrow(3, 1 + half, inputSize - half) should be (grad2)
+  }
+
   "A BiRecurrent " should "has same loss as torch rnn" in {
     torchCheck()
 
