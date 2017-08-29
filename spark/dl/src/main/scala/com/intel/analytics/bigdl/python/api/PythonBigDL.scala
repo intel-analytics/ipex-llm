@@ -46,17 +46,13 @@ import scala.reflect.ClassTag
  * [[com.intel.analytics.bigdl.dataset.Sample]] for python.
  * @param features features
  * @param label labels
- * @param featuresShape feature size
- * @param labelShape label size
  * @param bigdlType bigdl numeric type
  */
-case class Sample(features: JList[Any],
-                  label: JList[Any],
-                  featuresShape: JList[Int],
-                  labelShape: JList[Int],
+case class Sample(features: JTensor,
+                  label: JTensor,
                   bigdlType: String)
 
-case class JTensor(storage: JList[Any], shape: JList[Int], bigdlType: String)
+case class JTensor(storage: Array[Float], shape: Array[Int], bigdlType: String)
 
 /**
  * [[ValidationResult]] for python
@@ -109,20 +105,20 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def toPySample(sample: JSample[T]): Sample = {
-    val featureList = sample.feature().contiguous().storage().toArray[T].toList.asJava
-    val labelList = sample.label().contiguous().storage().toArray[T].toList.asJava
     val cls = implicitly[ClassTag[T]].runtimeClass
-    Sample(featureList.asInstanceOf[JList[Any]],
-      labelList.asInstanceOf[JList[Any]],
-      sample.feature().size().toList.asJava,
-      sample.label().size().toList.asJava,
-      cls.getSimpleName)
+    Sample(toJTensor(sample.feature()), toJTensor(sample.label()), cls.getSimpleName)
   }
 
   def toTensor(jTensor: JTensor): Tensor[T] = {
-    if (jTensor == null) null else {
-      Tensor(jTensor.storage.asScala.map(_.asInstanceOf[T]).toArray,
-        jTensor.shape.asScala.toArray)
+    if (jTensor == null) return null
+
+    this.typeName match {
+      case "float" =>
+        Tensor(jTensor.storage.map(x => ev.fromType(x.toFloat)), jTensor.shape)
+      case "double" =>
+        Tensor(jTensor.storage.map(x => ev.fromType(x.toDouble)), jTensor.shape)
+      case t: String =>
+        throw new IllegalArgumentException(s"Not supported type: ${t}")
     }
   }
 
@@ -130,11 +126,12 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     // clone here in case the the size of storage larger then the size of tensor.
     require(tensor != null, "tensor cannot be null")
     if (tensor.nElement() == 0) {
-      JTensor(new JArrayList[Any](0), List(0).asJava, typeName)
+      JTensor(Array(0), Array(0), typeName)
     } else {
       val cloneTensor = tensor.clone()
-      JTensor(cloneTensor.storage().toList.map(_.asInstanceOf[Any]).asJava,
-        cloneTensor.size().toList.asJava, typeName)
+      val result = JTensor(cloneTensor.storage().array().map(i => ev.toType[Float](i)),
+        cloneTensor.size(), typeName)
+      result
     }
   }
 
@@ -143,34 +140,16 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     toJTensor(tensor)
   }
 
+
+  def testSample(sample: Sample): Sample = {
+    val jsample = toSample(sample)
+    toPySample(jsample)
+  }
+
   def toSample(record: Sample): JSample[T] = {
     require(record.bigdlType == this.typeName,
       s"record.bigdlType: ${record.bigdlType} == this.typeName: ${this.typeName}")
-    val sample = this.typeName match {
-      case "float" =>
-        val feature = Tensor[Float](Storage[Float](
-          record.features.asInstanceOf[JList[Double]].asScala.map(_.toFloat).toArray[Float]),
-          1,
-          record.featuresShape.asScala.toArray[Int])
-        val label = Tensor[Float](
-          Storage(record.label.asInstanceOf[JList[Double]].asScala.map(_.toFloat).toArray[Float]),
-          1,
-          record.labelShape.asScala.toArray[Int])
-        JSample[Float](feature, label)
-      case "double" =>
-        val feature = Tensor[Double](Storage[Double](
-          record.features.asInstanceOf[JList[Double]].asScala.toArray[Double]),
-          1,
-          record.featuresShape.asScala.toArray[Int])
-        val label = Tensor[Double](
-          Storage(record.label.asInstanceOf[JList[Double]].asScala.toArray[Double]),
-          1,
-          record.labelShape.asScala.toArray[Int])
-        JSample[Double](feature, label)
-      case t: String =>
-        throw new IllegalArgumentException(s"Not supported type: ${t}")
-    }
-    sample.asInstanceOf[JSample[T]]
+    JSample[T](toTensor(record.features), toTensor(record.label))
   }
 
   private def batching(rdd: RDD[Sample], batchSize: Int)
