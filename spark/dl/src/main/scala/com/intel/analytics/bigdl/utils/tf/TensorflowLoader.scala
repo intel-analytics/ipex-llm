@@ -21,7 +21,7 @@ import java.nio.ByteOrder
 import java.util
 
 import org.tensorflow.framework.{GraphDef, NodeDef}
-import com.google.protobuf.{CodedInputStream, Message, TextFormat}
+import com.google.protobuf.{CodedInputStream, TextFormat}
 import java.util.List
 
 import com.intel.analytics.bigdl.Module
@@ -29,7 +29,8 @@ import com.intel.analytics.bigdl.nn.Graph
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{DirectedGraph, File, FileReader, Node}
+import com.intel.analytics.bigdl.utils.{DirectedGraph, Node}
+import com.intel.analytics.bigdl.utils.FileReader
 import com.intel.analytics.bigdl.utils.tf.TensorflowToBigDL._
 
 import scala.collection.mutable
