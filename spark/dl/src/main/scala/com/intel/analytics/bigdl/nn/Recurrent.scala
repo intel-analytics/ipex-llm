@@ -640,4 +640,4 @@ case class BatchNormParams[T : ClassTag](
              var initBias: Tensor[T] = null,
              var initGradWeight: Tensor[T] = null,
              var initGradBias: Tensor[T] = null,
-             var affine: Boolean = false)(implicit ev: TensorNumeric[T])
+             var affine: Boolean = true)(implicit ev: TensorNumeric[T])
