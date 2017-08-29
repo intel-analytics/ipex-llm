@@ -159,13 +159,10 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val labelShape = util.Arrays.asList(1)
 
     val data = sc.parallelize(0 to 100).map {i =>
-      Sample(
-        Range(0, 100).toList.map(_ => Random.nextDouble()).asJava.asInstanceOf[JList[Any]],
-        util.Arrays.asList(i % 2 + 1.0d),
-        featuresShape,
-        labelShape,
-        "double"
-      )
+      val label = JTensor(Array(i % 2 + 1.0f), Array(1), "double")
+      val feature = JTensor(Range(0, 100).map(_ => Random.nextFloat()).toArray,
+        Array(100), "double")
+      Sample(feature, label, "double")
     }
 
     BigDLSerDe.javaToPython(data.toJavaRDD().asInstanceOf[JavaRDD[Any]])
