@@ -32,10 +32,17 @@ import scala.reflect._
 
 object AllReduceParameter {
   private val syncPoolSize: Int = System.getProperty("bigdl.Parameter.syncPoolSize", "4").toInt
-  println("syncPoolsize: " + syncPoolSize)
 
   val logger: Logger = Logger.getLogger(getClass)
   val syncPool: ExecutorService = Executors.newFixedThreadPool(syncPoolSize, new ThreadFactory {
+    override def newThread(r: Runnable): Thread = {
+      val t = Executors.defaultThreadFactory().newThread(r)
+      t.setDaemon(true)
+      t
+    }
+  })
+
+  val computePool: ExecutorService = Executors.newFixedThreadPool(42, new ThreadFactory {
     override def newThread(r: Runnable): Thread = {
       val t = Executors.defaultThreadFactory().newThread(r)
       t.setDaemon(true)
@@ -179,27 +186,21 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) ex
    * @return A [[FutureResult]] which contains a [[Future]] for each thread.
    */
   def getWeights(localParameter: Tensor[T]): FutureResult[Int] = {
-    println("new iteration:")
     val tasks = (0 until partitionNum).map { pid =>
       syncPool.submit {
         new Callable[Int] {
           override def call(): Int = {
             try {
               val blockId = getWeightBlockId(pid)
-              var time = System.nanoTime()
               val localBuffer = BlockManagerWrapper.getLocalOrRemoteBytes(blockId).getOrElse {
                 throw new RuntimeException(s"Didn't find weight block $blockId in the block " +
                   s"manager. Did you initialize this AllReduceParameter on every executor?")
               }
-              println("sync time: " + (System.nanoTime() - time)/1e9 +
-                " len: " + localBuffer.array().length)
-              time = System.nanoTime()
               val start = pid * taskSize + math.min(pid, extraSize)
               val length = taskSize + (if (pid < extraSize) 1 else 0)
               require(localBuffer.array().length == length * 2)
               SerializerInstance.serialize(localBuffer).deCompress(0, localParameter, start, length)
               BlockManagerWrapper.unlock(blockId)
-              println("copy time: " + (System.nanoTime() - time)/1e9)
               pid
             } catch {
               case t: Throwable =>
@@ -246,9 +247,12 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) ex
     val innerTaskSize = length / poolSize
     val innerExtraSize = length % poolSize
     val availableTask = if (innerTaskSize == 0) innerExtraSize else poolSize
-    Engine.default.invokeAndWait2 {
-      (0 until availableTask).map { tid =>
-        () => {
+//    Engine.default.invokeAndWait2 {
+    computePool.invokeAll((0 until availableTask).map(tid =>
+      new Callable[Int] {
+        override def call(): Int = {
+//      (0 until availableTask).map { tid =>
+//        () => {
           val innerStart = tid * innerTaskSize + math.min(innerExtraSize, tid)
           val innerLength = innerTaskSize + (if (tid < innerExtraSize) 1 else 0)
           params.reduce { (l, r) =>
@@ -257,7 +261,8 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) ex
           tid
         }
       }
-    }
+    ).asJava)
+//    }
     params.head.deCompress(gradientPartition)
   }
 
@@ -283,22 +288,28 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) ex
 //    }
 
     val _classTag = classTag[T]
-    Engine.default.invokeAndWait2((0 until partitionNum).map(i =>
-      () => {
-        val start = i * taskSize + math.min(i, extraSize)
-        val length = taskSize + (if (i < extraSize) 1 else 0)
-        val blockId = getGradientBlockId(partitionId, i)
-        val block = BlockManagerWrapper.getLocalBytes(blockId)
-        if (block.isDefined) {
-          val fp16param = new FP16CompressedTensor[T](block.get)(_classTag)
-          fp16param.compress(0, parameter, start, length)
-        } else {
-          val fp16param = new FP16CompressedTensor[T](length)(_classTag)
-          fp16param.compress(0, parameter, start, length)
-          BlockManagerWrapper.putBytes(blockId, fp16param.bytes(), StorageLevel.MEMORY_ONLY_SER)
+//    Engine.default.invokeAndWait2((0 until partitionNum).map(i =>
+    computePool.invokeAll((0 until partitionNum).map(i =>
+//      () => {
+      new Callable[Int] {
+        override def call(): Int = {
+          val start = i * taskSize + math.min(i, extraSize)
+          val length = taskSize + (if (i < extraSize) 1 else 0)
+          val blockId = getGradientBlockId(partitionId, i)
+          val block = BlockManagerWrapper.getLocalBytes(blockId)
+          if (block.isDefined) {
+            val fp16param = new FP16CompressedTensor[T](block.get)(_classTag)
+            fp16param.compress(0, parameter, start, length)
+            i
+          } else {
+            val fp16param = new FP16CompressedTensor[T](length)(_classTag)
+            fp16param.compress(0, parameter, start, length)
+            BlockManagerWrapper.putBytes(blockId, fp16param.bytes(), StorageLevel.MEMORY_ONLY_SER)
+            i
+          }
         }
       }
-    ))
+    ).asJava)
   }
 
   /**
