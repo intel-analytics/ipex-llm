@@ -46,6 +46,7 @@ private[bigdl] class QuantTensor[@specialized(Float) T: ClassTag](
   }
 
   def setStorageInJni(ptr: Long): Unit = {
+    release()
     setFromOther = false
     desc = ptr
   }

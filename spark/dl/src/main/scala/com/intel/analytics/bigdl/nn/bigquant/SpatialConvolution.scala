@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.nn.ErrorInfo
 import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{FloatType, QuantTensor, Tensor}
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
 import com.intel.analytics.bigdl.utils.{T, Table}
 import java.io.{IOException, ObjectInputStream, ObjectOutputStream}
 import scala.reflect.ClassTag
@@ -163,10 +164,18 @@ class SpatialConvolution[T: ClassTag](
     this
   }
 
+  private def checkAndInit(): Unit = {
+    if (!_init) {
+      init()
+    }
+  }
+
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim() == 3 || input.dim() == 4,
       "bigquant.SpatialConvolution: " + ErrorInfo.constrainInputAs3DOrBatch)
     require(input.isContiguous())
+
+    checkAndInit()
 
     // compute attributes of input and output
     val (batchSize, inputHeight, inputWidth) = if (input.dim() == 3) {
@@ -315,7 +324,7 @@ class SpatialConvolution[T: ClassTag](
   }
 }
 
-object SpatialConvolution {
+object SpatialConvolution extends ModuleSerializable {
   def apply[@specialized(Float) T: ClassTag](
     nInputPlane: Int,
     nOutputPlane: Int,

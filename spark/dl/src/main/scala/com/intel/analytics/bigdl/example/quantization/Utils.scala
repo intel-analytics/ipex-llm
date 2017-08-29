@@ -21,13 +21,13 @@ import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.dataset.{ByteRecord, DataSet, Sample, Transformer}
 import com.intel.analytics.bigdl.models.lenet.{Utils => LeNetUtils}
 import com.intel.analytics.bigdl.models.vgg.{Utils => VggUtils}
-import com.intel.analytics.bigdl.models.resnet.{Utils => ResNetUtils,
-Cifar10DataSet => ResNetCifar10DataSet}
+import com.intel.analytics.bigdl.models.resnet.{Cifar10DataSet => ResNetCifar10DataSet, Utils => ResNetUtils}
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.optim.{Top1Accuracy, Top5Accuracy, ValidationMethod, ValidationResult}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.caffe.CaffeLoader
 import java.io.{File, FileOutputStream, PrintWriter}
+import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -214,7 +214,7 @@ object Utils {
   }
 
   def loadMeanFile(path: String): Tensor[Float] = {
-    val lines = Files.readAllLines(Paths.get(path))
+    val lines = Files.readAllLines(Paths.get(path), StandardCharsets.UTF_8)
     val array = new Array[Float](lines.size())
 
     lines.toArray.zipWithIndex.foreach {x =>

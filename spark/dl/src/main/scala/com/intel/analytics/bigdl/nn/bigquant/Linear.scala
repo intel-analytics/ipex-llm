@@ -123,11 +123,17 @@ class Linear[T: ClassTag](
     }
   }
 
+  def checkAndInit(): Unit = {
+    if (!_init && weight.getStorageInJni == 0L) {
+      init()
+    }
+  }
+
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim() == 1 || input.dim() == 2,
       "bigquant.Linear: " + ErrorInfo.constrainInputAsVectorOrBatch)
 
-    require(weight.getStorageInJni != 0L, s"weight should be inited first")
+    checkAndInit()
 
     val batchSize = if (input.dim() == 1) {
       output.resize(Array(outputSize)) // TODO
