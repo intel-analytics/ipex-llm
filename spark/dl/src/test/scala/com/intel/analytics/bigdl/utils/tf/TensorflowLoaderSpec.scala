@@ -347,14 +347,15 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     }
   }
 
-  "Tensorflow Alexnet NCHW" should "be load correctly" in {
-    val output = Seq("alexnet_v2/pool5/MaxPool:0")
-    val comparePairs = testModel("alexnet_nchw", output, backward = false)
-    for (i <- output.indices) {
-      val (tf, bigdl) = comparePairs(i)
-      tf.almostEqual(bigdl, 1e-5) should be(true)
-    }
-  }
+//  Need GPU to run this code
+//  "Tensorflow Alexnet NCHW" should "be load correctly" in {
+//    val output = Seq("alexnet_v2/pool5/MaxPool:0")
+//    val comparePairs = testModel("alexnet_nchw", output, backward = false)
+//    for (i <- output.indices) {
+//      val (tf, bigdl) = comparePairs(i)
+//      tf.almostEqual(bigdl, 1e-5) should be(true)
+//    }
+//  }
 
   "TensorFlow vgg_a" should "be load correctly" in {
     val output = Seq("vgg_a/fc8/squeezed:0")

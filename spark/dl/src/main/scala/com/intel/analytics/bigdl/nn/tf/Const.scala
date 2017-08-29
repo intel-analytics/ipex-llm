@@ -32,6 +32,11 @@ private[bigdl] trait WithoutInput
 private[bigdl] class Const[T: ClassTag](value: Tensor[T])(implicit ev: TensorNumeric[T])
   extends AbstractModule[Activity, Tensor[T], T] with WithoutInput {
 
+  override def clearState(): this.type = {
+    // Const do not have state, output should always be value
+    this
+  }
+
   output = value
 
   override def updateOutput(input: Activity): Tensor[T] = output
