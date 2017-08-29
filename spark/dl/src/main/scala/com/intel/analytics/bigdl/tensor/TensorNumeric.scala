@@ -937,6 +937,8 @@ object TensorNumericMath {
     implicit object NumericString extends UndefinedTensorNumeric[String]("String") {
       override def plus(x: String, y: String): String = x + y
 
+      override def getType(): TensorDataType = DoubleType
+
       override def fromType[K](k: K)(
         implicit c: ConvertableFrom[K]): String =
         c.toString(k)
