@@ -189,7 +189,7 @@ class TestSimple():
 
         def gen_rand_sample():
             features = np.random.uniform(0, 1, (FEATURES_DIM))
-            label = (2 * features).sum() + 0.4
+            label = np.array((2 * features).sum() + 0.4)
             return Sample.from_ndarray(features, label)
 
         trainingData = self.sc.parallelize(range(0, data_len)).map(
