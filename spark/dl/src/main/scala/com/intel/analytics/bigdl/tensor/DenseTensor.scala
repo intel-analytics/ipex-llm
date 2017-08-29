@@ -954,7 +954,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     require(tensor1.nElement() == tensor2.nElement() && this.nElement() == tensor1.nElement())
 
     if (this.isContiguous() && tensor1.isContiguous() && tensor2.isContiguous()) {
-      ev.addcmul(value, this.storage().array(), this.storageOffset() - 1,
+      ev.addcmul(value, this.nElement(), this.storage().array(), this.storageOffset() - 1,
         tensor1.storage().array(), tensor1.storageOffset() - 1,
         tensor2.storage().array(), tensor2.storageOffset() - 1)
     } else {
@@ -976,7 +976,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
 
   override def addcdiv(value: T, tensor1: Tensor[T], tensor2: Tensor[T]): Tensor[T] = {
     if (this.isContiguous() && tensor1.isContiguous() && tensor2.isContiguous()) {
-      ev.addcdiv(value, this.storage().array(), this.storageOffset() - 1,
+      ev.addcdiv(value, this.nElement(), this.storage().array(), this.storageOffset() - 1,
         tensor1.storage().array(), tensor1.storageOffset() - 1,
         tensor2.storage().array(), tensor2.storageOffset() - 1)
     } else {

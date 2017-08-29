@@ -143,12 +143,12 @@ object TensorNumericMath {
 
     def getType(): TensorDataType
 
-    def addcmul(value: T,
+    def addcmul(value: T, n: Int,
       self: Array[T], selfOffset: Int,
       a: Array[T], aOffset: Int,
       b: Array[T], bOffset: Int): Unit
 
-    def addcdiv(value: T,
+    def addcdiv(value: T, n: Int,
       self: Array[T], selfOffset: Int,
       a: Array[T], aOffset: Int,
       b: Array[T], bOffset: Int): Unit
@@ -357,14 +357,14 @@ object TensorNumericMath {
       throw new UnsupportedOperationException(typeName +
         " in tensor does not support getType operation")
 
-    def addcmul(value: T,
+    def addcmul(value: T, n: Int,
       self: Array[T], selfOffset: Int,
       a: Array[T], aOffset: Int,
       b: Array[T], bOffset: Int): Unit =
       throw new UnsupportedOperationException(typeName +
         " in tensor does not support addcmul operation")
 
-    def addcdiv(value: T,
+    def addcdiv(value: T, n: Int,
       self: Array[T], selfOffset: Int,
       a: Array[T], aOffset: Int,
       b: Array[T], bOffset: Int): Unit =
@@ -620,12 +620,11 @@ object TensorNumericMath {
         result
       }
 
-      override def addcmul(value: Float,
+      override def addcmul(value: Float, n: Int,
         self: Array[Float], selfOffset: Int,
         a: Array[Float], aOffset: Int,
         b: Array[Float], bOffset: Int): Unit = {
         val v = value.asInstanceOf[Float]
-        val n = self.length
         var i = 0
 
         while (i < n) {
@@ -634,7 +633,7 @@ object TensorNumericMath {
         }
       }
 
-      override def addcdiv(value: Float,
+      override def addcdiv(value: Float, n: Int,
         self: Array[Float], selfOffset: Int,
         a: Array[Float], aOffset: Int,
         b: Array[Float], bOffset: Int): Unit = {
@@ -883,7 +882,7 @@ object TensorNumericMath {
         result
       }
 
-      override def addcmul(value: Double,
+      override def addcmul(value: Double, n: Int,
         self: Array[Double], selfOffset: Int,
         a: Array[Double], aOffset: Int,
         b: Array[Double], bOffset: Int): Unit = {
@@ -897,7 +896,7 @@ object TensorNumericMath {
         }
       }
 
-      override def addcdiv(value: Double,
+      override def addcdiv(value: Double, n: Int,
         self: Array[Double], selfOffset: Int,
         a: Array[Double], aOffset: Int,
         b: Array[Double], bOffset: Int): Unit = {
