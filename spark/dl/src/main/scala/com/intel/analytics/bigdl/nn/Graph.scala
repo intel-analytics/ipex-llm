@@ -24,9 +24,8 @@ import com.intel.analytics.bigdl.nn.tf.WithoutInput
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer.{ContainerSerializable, DataConverter, ModuleData, ModuleSerializer}
-import com.intel.analytics.bigdl.utils.{Node, T, Table}
+import com.intel.analytics.bigdl.utils._
 import serialization.Bigdl.{AttrValue, BigDLModule}
-import com.intel.analytics.bigdl.utils.{DirectedGraph, Node, T, Table}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -78,8 +77,12 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
       val nodeInput = if (node.prevNodes.isEmpty && !node.element.isInstanceOf[WithoutInput]) {
         inputData(node, input)
       } else {
+        var toOffset = 1
         val prevTensors = node.prevNodesAndEdges.flatMap(n => {
-          extractTensors(n._1.element.output, n._2.fromIndex)
+          val tensors = extractTensors(n._1.element.output, n._2.fromIndex)
+          connectionMap(n) = (n._2.fromIndex.getOrElse(1), toOffset, tensors.length)
+          toOffset += tensors.length
+          tensors
         })
         if (prevTensors.length == 1) {
           prevTensors.head
@@ -116,10 +119,9 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
       }
 
       curNode.nextNodesAndEdges.foreach(n => {
-        val nextGradOutput = extractTensors(n._1.element.gradInput,
-            n._1.prevNodes.indexOf(curNode) + Tensor.START_INDEX)
-
-        curGradOutput = accActivity(curGradOutput, nextGradOutput, n._2.fromIndex)
+        val (startIndexPrev, startIndexNext, nTensor) = connectionMap(n)
+        val nextGradOutput = extractTensors(n._1.element.gradInput, Some(startIndexNext), nTensor)
+        curGradOutput = accActivity(curGradOutput, nextGradOutput, startIndexPrev, nTensor)
       })
 
       gradOutputBP(i) = curGradOutput
@@ -177,10 +179,9 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
       }
 
       curNode.nextNodesAndEdges.foreach(n => {
-        val nextGradOutput = extractTensors(n._1.element.gradInput,
-          n._1.prevNodes.indexOf(curNode) + Tensor.START_INDEX)
-
-        curGradOutput = accActivity(curGradOutput, nextGradOutput, n._2.fromIndex)
+        val (startIndexPrev, startIndexNext, nTensor) = connectionMap(n)
+        val nextGradOutput = extractTensors(n._1.element.gradInput, Some(startIndexNext), nTensor)
+        curGradOutput = accActivity(curGradOutput, nextGradOutput, startIndexPrev, nTensor)
       })
 
       gradOutputBP(i) = curGradOutput
@@ -246,6 +247,11 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
 
   modules.appendAll(forwardExecutions.map(
     _.element.asInstanceOf[AbstractModule[Activity, Activity, T]]))
+
+  // NodeAndEdge -> (fromOffset, toOffset, length)
+  private val connectionMap: mutable.HashMap[(Node[AbstractModule[Activity, Activity, T]], Edge),
+    (Int, Int, Int)] = new mutable.HashMap[(Node[AbstractModule[Activity, Activity, T]], Edge),
+    (Int, Int, Int)]()
 
   /**
    * build is needed when the stopGrad is changed
@@ -391,31 +397,41 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
   }
 
   /**
-   * Extract tensor from an activity. If the activity is a tensor, return itself; else return the
-   * i-th element of the table(which must be a tensor)
+   * Extract tensors from an activity. If the activity is a tensor, return itself; else return
+   * nTensor tensors start from the i-th element of the table(the elements must all be tensors)
+   * If i is None, return all tensors in the table
    * @param activity
    * @param index
+   * @param nTensor
    * @return
    */
   @inline
-  private def extractTensors(activity: Activity, index: Option[Int]): Seq[Tensor[T]] = {
+  private def extractTensors(activity: Activity, index: Option[Int], nTensor : Int = 1)
+      : Seq[Tensor[T]] = {
     if (activity.isTensor) {
       Seq(activity.toTensor[T])
     } else if (index.isEmpty) {
       (1 to activity.toTable.length()).map(activity.toTable[Tensor[T]](_))
     } else {
-      Seq(activity.toTable[Tensor[T]](index.get))
+      (0 until nTensor).map(n => activity.toTable[Tensor[T]](n + index.get))
     }
   }
 
   @inline
-  private def accActivity(activity: Activity, tensors: Seq[Tensor[T]], index: Option[Int])
-      : Activity = {
+  private def accActivity(activity: Activity, tensors: Seq[Tensor[T]], startIndex: Int,
+      nTensor: Int): Activity = {
     if (activity == null || activity.isTensor) {
-      accTensor(activity.asInstanceOf[Tensor[T]], tensor)
+      accTensor(activity.asInstanceOf[Tensor[T]], tensors.head)
     } else {
-      val res = accTensor(activity.toTable.getOrElse[Tensor[T]](index, null), tensor)
-      activity.toTable(index) = res
+      var t = 0
+      var i = startIndex
+      while(i < nTensor) {
+        val res = accTensor(activity.toTable.getOrElse[Tensor[T]](i, null), tensors(t))
+        activity.toTable(i) = res
+        i += 1
+        t += 1
+      }
+      activity
     }
   }
 
