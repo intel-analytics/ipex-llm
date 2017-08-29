@@ -21,10 +21,12 @@ import com.intel.analytics.bigdl.nn.ErrorInfo
 import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{FloatType, QuantTensor, Tensor}
-import com.intel.analytics.bigdl.utils.serializer.ModuleSerializable
+import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData}
 import com.intel.analytics.bigdl.utils.{T, Table}
 import java.io.{IOException, ObjectInputStream, ObjectOutputStream}
 import scala.reflect.ClassTag
+import scala.reflect.runtime.universe
+import serialization.Bigdl.{AttrValue, BigDLModule}
 
 @SerialVersionUID(- 8008252944905538960L)
 class SpatialConvolution[T: ClassTag](
@@ -96,7 +98,7 @@ class SpatialConvolution[T: ClassTag](
 
     weight = new Array[QuantTensor[T]](nGroup)
     for (i <- 0 until nGroup) {
-      weight(i) = QuantTensor[T](nOutputPlane / nGroup, nInputPlane / nGroup, kernelH, kernelW)
+      weight(i) = new QuantTensor[T](nOutputPlane / nGroup, nInputPlane / nGroup, kernelH, kernelW)
     }
 
     for (i <- 1 to nGroup) {
@@ -324,7 +326,7 @@ class SpatialConvolution[T: ClassTag](
   }
 }
 
-object SpatialConvolution extends ModuleSerializable {
+object SpatialConvolution extends QuantSerializer {
   def apply[@specialized(Float) T: ClassTag](
     nInputPlane: Int,
     nOutputPlane: Int,
@@ -338,6 +340,49 @@ object SpatialConvolution extends ModuleSerializable {
   )(implicit ev: TensorNumeric[T]): SpatialConvolution[T] = {
     new SpatialConvolution[T](nInputPlane, nOutputPlane, kernelW, kernelH,
       strideW, strideH, padW, padH, nGroup)
+  }
+
+  override def serializeWeight[T: ClassTag](module: ModuleData[T],
+    modelBuilder: BigDLModule.Builder)(implicit ev: TensorNumeric[T]): Unit = {
+    val conv = module.module.asInstanceOf[SpatialConvolution[T]]
+    val offsets = new Array[Int](conv.weight.length)
+    val allWeights = new Array[Byte](conv.nOutputPlane * conv.nInputPlane *
+            conv.kernelH * conv.kernelW / conv.nGroup)
+
+    var currentOffset = 0
+    for (i <- conv.weight.indices) {
+      offsets(i) = conv.weight(i).size().product
+      System.arraycopy(conv.weight(i).getStorage, 0, allWeights, currentOffset, offsets(i))
+      currentOffset += offsets(i)
+    }
+
+    val offsetBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(offsetBuilder, offsets, universe.typeOf[Array[Int]])
+    modelBuilder.putAttr("offsets", offsetBuilder.build)
+
+    val weightBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(weightBuilder, allWeights, universe.typeOf[Array[Byte]])
+    modelBuilder.putAttr("weights", weightBuilder.build)
+  }
+
+  override def loadWeight[T: ClassTag](model: BigDLModule,
+    module: ModuleData[T])(implicit ev: TensorNumeric[T]): Unit = {
+    val conv = module.module.asInstanceOf[SpatialConvolution[T]]
+    val attrMap = model.getAttrMap
+    val offsets = DataConverter.getAttributeValue(attrMap.get("offsets")).asInstanceOf[Array[Int]]
+    val byteArray = DataConverter.getAttributeValue(attrMap.get("weights"))
+            .asInstanceOf[Array[Byte]]
+
+    var currentOffset = 0
+    conv.weight = new Array[QuantTensor[T]](offsets.length)
+    for (i <- conv.weight.indices) {
+      conv.weight(i) = new QuantTensor[T](conv.nOutputPlane / conv.nGroup,
+        conv.nInputPlane / conv.nGroup, conv.kernelH, conv.kernelW)
+      val storage = new Array[Byte](conv.weight(i).size().product)
+      System.arraycopy(byteArray, currentOffset, storage, 0, offsets(i))
+      currentOffset += offsets(i)
+      conv.weight(i).setStorage(storage)
+    }
   }
 }
 

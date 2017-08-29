@@ -21,14 +21,18 @@ import com.intel.analytics.bigdl.nn.ErrorInfo
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{FloatType, QuantTensor, Tensor}
+import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData, ModuleSerializable}
 import com.intel.analytics.bigdl.utils.{T, Table}
 import java.io.{IOException, ObjectInputStream, ObjectOutputStream}
 import scala.reflect.ClassTag
+import serialization.Bigdl.{AttrValue, BigDLModule, BigDLTensor, DataType}
+import scala.collection.JavaConverters._
+import scala.reflect.runtime.universe
 
 class Linear[T: ClassTag](
-  inputSize: Int,
-  outputSize: Int,
-  withBias: Boolean = true
+  val inputSize: Int,
+  val outputSize: Int,
+  val withBias: Boolean = true
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   val data: QuantTensor[T] = QuantTensor[T]()
@@ -228,12 +232,36 @@ class Linear[T: ClassTag](
 }
 
 
-object Linear {
+object Linear extends QuantSerializer {
   def apply[@specialized(Float, Double) T: ClassTag](
     inputSize: Int,
     outputSize: Int,
     withBias: Boolean = true
   )(implicit ev: TensorNumeric[T]) : Linear[T] = {
     new Linear[T](inputSize, outputSize, withBias)
+  }
+
+  override def serializeWeight[T: ClassTag](module: ModuleData[T],
+    modelBuilder: BigDLModule.Builder)(implicit ev: TensorNumeric[T]): Unit = {
+    val linear = module.module.asInstanceOf[Linear[T]]
+    val weight = new Array[Byte](linear.outputSize * linear.inputSize)
+    System.arraycopy(linear.weight.getStorage, 0, weight, 0, weight.length)
+
+    val weightBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(weightBuilder, weight, universe.typeOf[Array[Byte]])
+    modelBuilder.putAttr("weight", weightBuilder.build)
+  }
+
+  override def loadWeight[T: ClassTag](model: BigDLModule,
+    module: ModuleData[T])(implicit ev: TensorNumeric[T]): Unit = {
+    val linear = module.module.asInstanceOf[Linear[T]]
+    val attrMap = model.getAttrMap
+    val byteArray = DataConverter.getAttributeValue(attrMap.get("weight"))
+            .asInstanceOf[Array[Byte]]
+
+    linear.weight = new QuantTensor[T](linear.outputSize, linear.inputSize)
+    val storage = new Array[Byte](linear.weight.size().product)
+    System.arraycopy(byteArray, 0, storage, 0, storage.length)
+    linear.weight.setStorage(storage)
   }
 }

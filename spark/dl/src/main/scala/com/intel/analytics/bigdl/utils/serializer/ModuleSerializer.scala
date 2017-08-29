@@ -187,6 +187,10 @@ object ModuleSerializer extends ModuleSerializable{
     registerModule("com.intel.analytics.bigdl.nn.VolumetricMaxPooling", VolumetricMaxPooling)
     registerModule("com.intel.analytics.bigdl.nn.Echo", Echo)
 
+    registerModule("com.intel.analytics.bigdl.nn.bigquant.SpatialConvolution",
+      bigquant.SpatialConvolution)
+    registerModule("com.intel.analytics.bigdl.nn.bigquant.Linear",
+      bigquant.Linear)
   }
 }
 

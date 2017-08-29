@@ -1847,6 +1847,65 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     res1 should be (res2)
   }
 
+  "bigquant.SpatialConvolution serializer" should "work properly " in {
+    val nInputPlane = 1
+    val nOutputPlane = 1
+    val kW = 2
+    val kH = 2
+    val dW = 1
+    val dH = 1
+    val padW = 0
+    val padH = 0
+
+    val conv = bigquant.SpatialConvolution[Float](nInputPlane, nOutputPlane,
+      kW, kH, dW, dH, padW, padH)
+
+    val kernelData = Array(
+      2.0f, 3f,
+      4f, 5f
+    )
+
+    val biasData = Array(0.0f)
+
+    val input = Tensor(1, 1, 3, 3).apply1(_ => Random.nextFloat())
+    val weight = Tensor(Storage(kernelData), 1, Array(nOutputPlane, nInputPlane, kH, kW))
+    val bias = Tensor(Storage(biasData), 1, Array(nOutputPlane))
+    conv.initWeightAndBias(weight, bias)
+
+    val res1 = conv.forward(input)
+
+    ModulePersister.saveToFile("/tmp/bigquant.conv.bigdl", conv, true)
+    val loadedConv = ModuleLoader.loadFromFile("/tmp/bigquant.conv.bigdl")
+    val res2 = loadedConv.forward(input)
+    res1 should be (res2)
+  }
+
+  "bigquant.Linear serializer" should "work properly " in {
+    val outputSize = 2
+    val inputSize = 2
+
+    val linear = bigquant.Linear[Float](outputSize, inputSize)
+
+    val kernelData = Array(
+      2.0f, 3f,
+      4f, 5f
+    )
+
+    val biasData = Array(0.0f, 0.1f)
+
+    val input = Tensor(2, 2).apply1(_ => Random.nextFloat())
+    val weight = Tensor(Storage(kernelData), 1, Array(outputSize, inputSize))
+    val bias = Tensor(Storage(biasData), 1, Array(outputSize))
+    linear.initWeightAndBias(weight, bias)
+
+    val res1 = linear.forward(input)
+
+    ModulePersister.saveToFile("/tmp/bigquant.linear.bigdl", linear, true)
+    val loadedLinear = ModuleLoader.loadFromFile("/tmp/bigquant.linear.bigdl")
+    val res2 = loadedLinear.forward(input)
+    res1 should be (res2)
+  }
+
   "Customized Module " should "work properly" in {
     val testModule = new TestModule(CustomData(1.0))
     DataConverter.registerConverter(universe.typeOf[CustomData].toString, TestCustomDataConverter)
