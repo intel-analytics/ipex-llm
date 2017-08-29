@@ -638,7 +638,6 @@ object TensorNumericMath {
         a: Array[Float], aOffset: Int,
         b: Array[Float], bOffset: Int): Unit = {
         val v = value.asInstanceOf[Float]
-        val n = self.length
         var i = 0
 
         while (i < n) {
@@ -887,7 +886,6 @@ object TensorNumericMath {
         a: Array[Double], aOffset: Int,
         b: Array[Double], bOffset: Int): Unit = {
         val v = value.asInstanceOf[Double]
-        val n = self.length
         var i = 0
 
         while (i < n) {
@@ -901,7 +899,6 @@ object TensorNumericMath {
         a: Array[Double], aOffset: Int,
         b: Array[Double], bOffset: Int): Unit = {
         val v = value.asInstanceOf[Double]
-        val n = self.length
         var i = 0
 
         while (i < n) {
