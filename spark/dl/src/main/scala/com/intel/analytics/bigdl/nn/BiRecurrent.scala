@@ -68,6 +68,7 @@ class BiRecurrent[T : ClassTag] (
     BiRecurrent.this.type = {
     layer.add(module)
     revLayer.add(module.cloneModule())
+    modules.append(birnn)
     this
   }
 

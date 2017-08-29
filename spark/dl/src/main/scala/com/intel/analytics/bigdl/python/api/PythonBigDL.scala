@@ -216,10 +216,19 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def createRnnCell(inputSize: Int,
                     hiddenSize: Int,
                     activation: TensorModule[T],
+                    isInputWithBias: Boolean = true,
+                    isHiddenWithBias: Boolean = true,
                     wRegularizer: Regularizer[T] = null,
                     uRegularizer: Regularizer[T] = null,
                     bRegularizer: Regularizer[T] = null): RnnCell[T] = {
-    RnnCell[T](inputSize, hiddenSize, activation, wRegularizer, uRegularizer, bRegularizer)
+    RnnCell[T](inputSize,
+      hiddenSize,
+      activation,
+      isInputWithBias,
+      isHiddenWithBias,
+      wRegularizer,
+      uRegularizer,
+      bRegularizer)
   }
 
   def createTimeDistributedCriterion(critrn: TensorCriterion[T],
