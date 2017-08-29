@@ -136,7 +136,7 @@ private[nn] object NNPrimitive {
               dstOffset + (y + 1) * outputWidth, 0)
           } else {
             if (dW == 1) {
-              val ix = 0 - padTop + kw
+              val ix = 0 - padLeft + kw
               val lpad = Math.max(0, padLeft - kw)
               val rpad = Math.max(0, padRight - (kW - kw - 1))
               if (outputWidth - rpad - lpad <= 0) {

@@ -17,12 +17,14 @@ package com.intel.analytics.bigdl.utils.tf
 
 import java.nio.charset.Charset
 import java.nio.{ByteBuffer, ByteOrder}
+import java.util
+import java.util.Map
 
 import collection.JavaConverters._
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import org.tensorflow.framework.{DataType, NodeDef, TensorProto}
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import org.tensorflow.framework.{AttrValue, DataType, NodeDef, TensorProto}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
 import com.intel.analytics.bigdl.nn.tf._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.tf.Conv2D.getOrSetTensor
@@ -69,6 +71,18 @@ trait TensorflowToBigDL {
       (weight, gradient)
     }
   }
+
+  protected def getString(attrMap: util.Map[String, AttrValue], key: String): String = {
+    attrMap.get(key).getS.toString(Charset.defaultCharset())
+  }
+
+  protected def getInt(attrMap: util.Map[String, AttrValue], key: String): Int = {
+    attrMap.get(key).getI.toInt
+  }
+
+  protected def getIntList(attrMap: util.Map[String, AttrValue], key: String): Seq[Int] = {
+    attrMap.get(key).getList.getIList.asScala.map(_.toInt)
+  }
 }
 
 object TensorflowToBigDL {
@@ -108,10 +122,6 @@ object TensorflowToBigDL {
     patternList.append(pattern)
     sortPattern()
   }
-
-  var dataFormat: String = "NHWC"
-
-  def dataNCHW: Unit = dataFormat = "NCHW"
 
   /**
    * Convert a tensorflow tensor proto to BigDL tensor
@@ -263,22 +273,6 @@ object TensorflowToBigDL {
       }
     })
   }
-
-  /**
-   * This method is just for test purpose. Do not use the bigdl.saveNHWC for real use case
-   * @return
-   */
-  private[tf] def processDims(dim: Int): Int = {
-    if (System.getProperty("bigdl.enableNHWC", "false").toBoolean) {
-      // exchange the dims as BigDL only support NCHW now
-      if (dim == 1) return 2
-      if (dim == 2) return 3
-      if (dim == 3) return 1
-      dim
-    } else {
-      dim
-    }
-  }
 }
 
 object FullConnectionTF extends TensorflowToBigDL{
@@ -322,7 +316,7 @@ object  SqueezeTF extends TensorflowToBigDL {
     implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
 
     val dims = tfGraph.source.element.getAttrOrThrow("squeeze_dims").getList().getIList()
-      .asScala.map(_.toInt).toArray.map(processDims(_))
+      .asScala.map(_.toInt).toArray
 
     Squeeze[T](dims, batchMode = true).asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
   }
@@ -357,21 +351,19 @@ object Conv1D extends TensorflowToBigDL {
     val convNode = squeezeNode.prevNodes.head
 
     val attributes = convNode.element.getAttrMap
-    require(attributes.get("strides").getList.getI(0).toInt == 1, s"not support strides on batch")
+    val format = getString(attributes, "data_format")
+    val strideList = getIntList(attributes, "strides")
+    require(strideList.head == 1, s"not support strides on batch")
 
-    val (strideH, strideW) = if (attributes.get("data_format").getS
-      .toString(Charset.defaultCharset()) == "NHWC") {
-      require(System.getProperty("bigdl.enableNHWC", "false").toBoolean, "Not support NHWC")
-      require(attributes.get("strides").getList.getI(3).toInt == 1, s"not support strides on depth")
-      (attributes.get("strides").getList.getI(1).toInt,
-        attributes.get("strides").getList.getI(2).toInt)
-    } else if (attributes.get("data_format").getS.toString(Charset.defaultCharset()) == "NCHW") {
-      require(attributes.get("strides").getList.getI(1).toInt == 1, s"not support strides on depth")
-      (attributes.get("strides").getList.getI(2).toInt,
-        attributes.get("strides").getList.getI(3).toInt)
-    } else {
-      throw new IllegalArgumentException("no supported data format")
+    val strideW = format match {
+      case "NHWC" =>
+        strideList(2)
+      case "NCHW" =>
+        strideList(3)
+      case _ =>
+        throw new IllegalArgumentException(s"not supported data format: $format")
     }
+
     val biasNode = tfGraph.source.prevNodes(1).prevNodes.head.element
     val (bias, gradBias) = getOrSetTensor(biasNode, context, byteOrder)(t => t)
 
@@ -391,14 +383,27 @@ object Conv1D extends TensorflowToBigDL {
       throw new IllegalArgumentException("SAME padding is not supported")
     }
 
-    TemporalConvolution[T](
+    val tconv = TemporalConvolution[T](
       inputFrameSize = nInputPlane, outputFrameSize = nOuputPlane,
       kernelW = kernelW,
       strideW = strideW,
       initWeight = weights,
       initBias = bias,
       initGradWeight = gradWeights,
-      initGradBias = gradBias).asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+      initGradBias = gradBias)
+
+    val result = format match {
+      case "NCHW" =>
+        val model = Sequential()
+        model.add(Transpose(Array((2, 3))))
+        model.add(Contiguous())
+        model.add(tconv)
+        model.add(Transpose(Array((2, 3))))
+        model.add(Contiguous())
+      case "NHWC" =>
+        tconv
+    }
+    result.asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
   }
 
 
@@ -422,52 +427,68 @@ object Conv2D extends TensorflowToBigDL{
                                   byteOrder: ByteOrder)(
     implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
 
-
-    val attributes = tfGraph.source.prevNodes(0).element.getAttrMap
-    require(attributes.get("strides").getList.getI(0).toInt == 1, s"not support strides on batch")
-
-    val (strideH, strideW) = if (attributes.get("data_format").getS
-      .toString(Charset.defaultCharset()) == "NHWC") {
-      require(System.getProperty("bigdl.enableNHWC", "false").toBoolean, "Not support NHWC")
-      require(attributes.get("strides").getList.getI(3).toInt == 1, s"not support strides on depth")
-      (attributes.get("strides").getList.getI(1).toInt,
-        attributes.get("strides").getList.getI(2).toInt)
-    } else if (attributes.get("data_format").getS.toString(Charset.defaultCharset()) == "NCHW") {
-      require(attributes.get("strides").getList.getI(1).toInt == 1, s"not support strides on depth")
-      (attributes.get("strides").getList.getI(2).toInt,
-        attributes.get("strides").getList.getI(3).toInt)
-    } else {
-      throw new IllegalArgumentException("no supported data format")
-    }
-    val biasNode = tfGraph.source.prevNodes(1).prevNodes.head.element
-    val (bias, gradBias) = getOrSetTensor(biasNode, context, byteOrder)(t => t)
-
-    val weightNode = tfGraph.source.prevNodes.head.prevNodes(1).prevNodes.head.element
-    val (weights, gradWeights) = getOrSetTensor(weightNode, context, byteOrder) { t =>
-      t.transpose(1, 4).transpose(2, 3).transpose(3, 4)
-    }
-
-    val nOuputPlane = weights.size(1)
-    val nInputPlane = weights.size(2)
-    val kernelH = weights.size(3)
-    val kernelW = weights.size(4)
-
+    val attributes = tfGraph.source.prevNodes.head.element.getAttrMap
     val (pW, pH) =
-      if (attributes.get("padding").getS.toString(Charset.defaultCharset()) == "SAME") {
+      if (getString(attributes, "padding") == "SAME") {
         (-1, -1)
       } else {
         (0, 0)
       }
+    val strideList = getIntList(attributes, "strides")
+    require(strideList.head == 1, s"not support strides on batch")
 
-    SpatialConvolution[T](
-      nInputPlane = nInputPlane, nOutputPlane = nOuputPlane,
-      kernelW = kernelW, kernelH = kernelH,
-      strideW = strideW, strideH = strideH,
-      padW = pW, padH = pH,
-      initWeight = weights,
-      initBias = bias,
-      initGradWeight = gradWeights,
-      initGradBias = gradBias).asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+    val format = getString(attributes, "data_format")
+    val conv = format match {
+      case "NHWC" =>
+        require(strideList(3) == 1, s"not support strides on depth")
+        val strideW = strideList(1)
+        val strideH = strideList(2)
+        val biasNode = tfGraph.source.prevNodes(1).prevNodes.head.element
+        val (bias, gradBias) = getOrSetTensor(biasNode, context, byteOrder)(t => t)
+        val weightNode = tfGraph.source.prevNodes.head.prevNodes(1).prevNodes.head.element
+        val (weights, gradWeights) = getOrSetTensor(weightNode, context, byteOrder)(t => t)
+        val nOuputPlane = weights.size(4)
+        val nInputPlane = weights.size(3)
+        val kernelH = weights.size(1)
+        val kernelW = weights.size(2)
+        SpatialConvolution[T](
+          nInputPlane = nInputPlane, nOutputPlane = nOuputPlane,
+          kernelW = kernelW, kernelH = kernelH,
+          strideW = strideW, strideH = strideH,
+          padW = pW, padH = pH,
+          initWeight = weights,
+          initBias = bias,
+          initGradWeight = gradWeights,
+          initGradBias = gradBias, format = DataFormat.NHWC)
+
+      case "NCHW" =>
+        require(strideList(1) == 1, s"not support strides on depth")
+        val strideW = strideList(2)
+        val strideH = strideList(3)
+        val biasNode = tfGraph.source.prevNodes(1).prevNodes.head.element
+        val (bias, gradBias) = getOrSetTensor(biasNode, context, byteOrder)(t => t)
+
+        val weightNode = tfGraph.source.prevNodes.head.prevNodes(1).prevNodes.head.element
+        val (weights, gradWeights) = getOrSetTensor(weightNode, context, byteOrder) { t =>
+          t.transpose(1, 4).transpose(2, 3).transpose(3, 4)
+        }
+        val nOuputPlane = weights.size(1)
+        val nInputPlane = weights.size(2)
+        val kernelH = weights.size(3)
+        val kernelW = weights.size(4)
+        SpatialConvolution[T](
+          nInputPlane = nInputPlane, nOutputPlane = nOuputPlane,
+          kernelW = kernelW, kernelH = kernelH,
+          strideW = strideW, strideH = strideH,
+          padW = pW, padH = pH,
+          initWeight = weights,
+          initBias = bias,
+          initGradWeight = gradWeights,
+          initGradBias = gradBias, format = DataFormat.NCHW)
+      case _ =>
+        throw new IllegalArgumentException(s"not supported data format: $format")
+    }
+    conv.asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
   }
 }
 
@@ -494,13 +515,13 @@ object Conv2D2 extends TensorflowToBigDL{
     implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
 
     val attributes = tfGraph.source.prevNodes(0).element.getAttrMap
-    require(attributes.get("strides").getList.getI(0).toInt == 1, s"not support strides on batch")
-    require(attributes.get("data_format").getS.toString(Charset.defaultCharset()) == "NCHW",
-      "NCHW should be used for this sub-graph")
+    val strideList = getIntList(attributes, "strides")
+    val format = getString(attributes, "data_format")
+    require(strideList.head == 1, s"not support strides on batch")
+    require(format == "NCHW", "NCHW should be used for this sub-graph")
 
-    require(attributes.get("strides").getList.getI(1).toInt == 1, s"not support strides on depth")
-    val (strideH, strideW) = (attributes.get("strides").getList.getI(2).toInt,
-      attributes.get("strides").getList.getI(3).toInt)
+    require(strideList(1) == 1, s"not support strides on depth")
+    val (strideH, strideW) = (strideList(2), strideList(3))
 
     val biasNode = tfGraph.source.prevNodes(1).prevNodes(0).prevNodes.head.element
     val (bias, gradBias) = getOrSetTensor(biasNode, context, byteOrder)(t => t)
@@ -516,7 +537,7 @@ object Conv2D2 extends TensorflowToBigDL{
     val kernelW = weights.size(4)
 
     val (pW, pH) =
-      if (attributes.get("padding").getS.toString(Charset.defaultCharset()) == "SAME") {
+      if (getString(attributes, "padding") == "SAME") {
         (-1, -1)
       } else {
         (0, 0)
@@ -628,42 +649,34 @@ object MaxPoolingTF extends TensorflowToBigDL {
     implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
 
     val attributes = tfGraph.source.element.getAttrMap
-
-    val (strideH, strideW, ksizeH, ksizeW) = if (attributes.get("data_format").getS
-      .toString(Charset.defaultCharset()) == "NHWC") {
-      require(System.getProperty("bigdl.enableNHWC", "false").toBoolean, "Not support NHWC")
-      require(attributes.get("strides").getList.getI(3).toInt == 1, s"not support strides on depth")
-      (
-        attributes.get("strides").getList.getI(1).toInt,
-        attributes.get("strides").getList.getI(2).toInt,
-        attributes.get("ksize").getList.getI(1).toInt,
-        attributes.get("ksize").getList.getI(2).toInt
-      )
-    } else if (attributes.get("data_format").getS.toString(Charset.defaultCharset()) == "NCHW") {
-      require(attributes.get("strides").getList.getI(1).toInt == 1, s"not support strides on depth")
-      (
-        attributes.get("strides").getList.getI(2).toInt,
-        attributes.get("strides").getList.getI(3).toInt,
-        attributes.get("ksize").getList.getI(2).toInt,
-        attributes.get("ksize").getList.getI(3).toInt
-      )
-    } else {
-      throw new IllegalArgumentException("no supported data format")
+    val format = getString(attributes, "data_format")
+    val strideList = getIntList(attributes, "strides")
+    val kernelList = getIntList(attributes, "ksize")
+    val (strideH, strideW, ksizeH, ksizeW) = format match {
+      case "NHWC" =>
+        require(strideList(3) == 1, s"not support strides on depth")
+        (strideList(1), strideList(2), kernelList(1), kernelList(2))
+      case "NCHW" =>
+        require(strideList(1) == 1, s"not support strides on depth")
+        (strideList(2), strideList(3), kernelList(2), kernelList(3))
+      case _ =>
+        throw new IllegalArgumentException(s"not supported data format: $format")
     }
 
     val (pW, pH) =
-      if (attributes.get("padding").getS.toString(Charset.defaultCharset()) == "SAME") {
+      if (getString(attributes, "padding") == "SAME") {
         (-1, -1)
       } else {
         (0, 0)
       }
 
-    SpatialMaxPooling[T](ksizeW, ksizeH, strideW, strideH, pW, pH)
+    SpatialMaxPooling[T](ksizeW, ksizeH, strideW, strideH, pW, pH,
+      format = DataFormat(format))
       .asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
   }
 }
 
-object AvgPoolingTF extends TensorflowToBigDL{
+object AvgPoolingTF extends TensorflowToBigDL {
   private val graph = {
     (Node("*") -> Node("AvgPool")).graph(reverse = true)
   }
@@ -675,37 +688,30 @@ object AvgPoolingTF extends TensorflowToBigDL{
     implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
 
     val attributes = tfGraph.source.element.getAttrMap
+    val format = getString(attributes, "data_format")
+    val strideList = getIntList(attributes, "strides")
+    val kernelList = getIntList(attributes, "ksize")
 
-    val (strideH, strideW, ksizeH, ksizeW) = if (attributes.get("data_format").getS
-      .toString(Charset.defaultCharset()) == "NHWC") {
-      require(System.getProperty("bigdl.enableNHWC", "false").toBoolean, "Not support NHWC")
-      require(attributes.get("strides").getList.getI(3).toInt == 1, s"not support strides on depth")
-      (
-        attributes.get("strides").getList.getI(1).toInt,
-        attributes.get("strides").getList.getI(2).toInt,
-        attributes.get("ksize").getList.getI(1).toInt,
-        attributes.get("ksize").getList.getI(2).toInt
-      )
-    } else if (attributes.get("data_format").getS.toString(Charset.defaultCharset()) == "NCHW") {
-      require(attributes.get("strides").getList.getI(1).toInt == 1, s"not support strides on depth")
-      (
-        attributes.get("strides").getList.getI(2).toInt,
-        attributes.get("strides").getList.getI(3).toInt,
-        attributes.get("ksize").getList.getI(2).toInt,
-        attributes.get("ksize").getList.getI(3).toInt
-      )
-    } else {
-      throw new IllegalArgumentException("no supported data format")
+    val (strideH, strideW, ksizeH, ksizeW) = format match {
+      case "NHWC" =>
+        require(strideList(3) == 1, s"not support strides on depth")
+        (strideList(1), strideList(2), kernelList(1), kernelList(2))
+      case "NCHW" =>
+        require(strideList(1) == 1, s"not support strides on depth")
+        (strideList(2), strideList(3), kernelList(2), kernelList(3))
+      case _ =>
+        throw new IllegalArgumentException(s"not supported data format: $format")
     }
 
     val (pW, pH) =
-      if (attributes.get("padding").getS.toString(Charset.defaultCharset()) == "SAME") {
+      if (getString(attributes, "padding") == "SAME") {
         (-1, -1)
       } else {
         (0, 0)
       }
 
-    SpatialAveragePooling[T](ksizeW, ksizeH, strideW, strideH, pW, pH, countIncludePad = false)
+    SpatialAveragePooling[T](ksizeW, ksizeH, strideW, strideH, pW, pH,
+      countIncludePad = false, format = DataFormat(format))
       .asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
   }
 }
@@ -1055,7 +1061,8 @@ object PackTF extends TensorflowToBigDL{
                                   context: Context[T],
                                   byteOrder: ByteOrder)(
     implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
-    val dim = processDims(tfGraph.source.element.getAttrMap.get("axis").getI.toInt + 1)
+    val attr = tfGraph.source.element.getAttrMap
+    val dim = getInt(attr, "axis") + 1
 
     Pack[T](dim).asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
   }
@@ -1075,7 +1082,8 @@ object UnpackTF extends TensorflowToBigDL{
                                   byteOrder: ByteOrder)(
     implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
 
-    val dim = processDims(tfGraph.source.element.getAttrMap.get("axis").getI.toInt + 1)
+    val attr = tfGraph.source.element.getAttrMap
+    val dim = getInt(attr, "axis") + 1
     val index = tfGraph.source.element.getName.split(":").toList match {
       case _::Nil => 1
       case _::i::Nil => i.toInt + 1
@@ -1138,11 +1146,10 @@ object ConcatTF extends TensorflowToBigDL{
 
     val inputNumber = tfGraph.source.element.getAttrMap.get("N").getI.toInt
     val nodeaxis = tfGraph.source.prevNodes(inputNumber)
-    val axis = processDims(
-      nodeaxis.element.getAttrMap.get("value").getTensor.getIntVal(0))
+    val axis = nodeaxis.element.getAttrMap.get("value").getTensor.getIntVal(0) + 1
     val nInputDims = 4
 
-    JoinTable[T](dimension = axis + 1, nInputDims = -1)
+    JoinTable[T](dimension = axis, nInputDims = -1)
       .asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
   }
 }
@@ -1430,14 +1437,13 @@ object PaddingTF extends TensorflowToBigDL{
     val pad = ArrayBuffer[Int]()
     val padding = Sequential[T]()
 
-    for(i <- 1 to paddings.size(1)) {
-      if (paddings.valueAt(i, 1) != 0 || paddings.valueAt(i, 2) != 0 ) {
-        val dim = processDims(i - 1) + 1
-        if (paddings(Array(i, 1)) != 0) {
-          padding.add(Padding[T](dim, -ev.toType[Int](paddings.valueAt(i, 1)), 4))
+    for(dim <- 1 to paddings.size(1)) {
+      if (paddings.valueAt(dim, 1) != 0 || paddings.valueAt(dim, 2) != 0 ) {
+        if (paddings(Array(dim, 1)) != 0) {
+          padding.add(Padding[T](dim, -ev.toType[Int](paddings.valueAt(dim, 1)), 4))
         }
-        if (paddings(Array(i, 2)) != 0) {
-          padding.add(Padding[T](dim, ev.toType[Int](paddings.valueAt(i, 2)), 4))
+        if (paddings(Array(dim, 2)) != 0) {
+          padding.add(Padding[T](dim, ev.toType[Int](paddings.valueAt(dim, 2)), 4))
         }
       }
     }
@@ -1465,7 +1471,7 @@ object MeanTF extends TensorflowToBigDL{
     val dim = ArrayBuffer[Int]()
     val mean = Sequential[T]()
     for (i <- 1 to dims.size(1)) {
-      dim += processDims(ev.toType[Int](dims.valueAt(i))) + 1
+      dim += ev.toType[Int](dims.valueAt(i)) + 1
     }
     dim.foreach(i => mean.add(Mean[T](i, squeeze = false)))
     mean.asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
