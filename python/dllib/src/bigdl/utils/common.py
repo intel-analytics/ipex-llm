@@ -113,11 +113,13 @@ class EvaluatedResult():
         return "Evaluated result: %s, total_num: %s, method: %s" % (
             self.result, self.total_num, self.method)
 
+def get_dtype(bigdl_type):
+    # Always return float32 for now
+    return "float32"
 
 class JTensor(object):
     """
     A wrapper to easy our work when need to pass or return Tensor to/from Scala.
-
 
     >>> import numpy as np
     >>> from bigdl.util.common import JTensor
@@ -125,8 +127,12 @@ class JTensor(object):
     >>>
     """
     def __init__(self, storage, shape, bigdl_type="float"):
-        self.storage = storage
-        self.shape = shape
+        if isinstance(storage, bytes) and isinstance(shape, bytes):
+            self.storage = np.frombuffer(storage, dtype=get_dtype(bigdl_type))
+            self.shape = np.frombuffer(shape, dtype=np.int32)
+        else:
+            self.storage = np.array(storage, dtype=get_dtype(bigdl_type))
+            self.shape = np.array(shape, dtype=np.int32)
         self.bigdl_type = bigdl_type
 
     @classmethod
@@ -148,75 +154,69 @@ class JTensor(object):
         >>> (array_from_tensor == data).all()
         True
         """
-        return cls(*JTensor.flatten_ndarray(a_ndarray),
-                   bigdl_type= bigdl_type) if a_ndarray is not None else None  # noqa
+        if a_ndarray is None:
+            return None
+        assert isinstance(a_ndarray, np.ndarray), \
+            "input should be a np.ndarray, not %s" % type(a_ndarray)
+        return cls(a_ndarray,
+                   a_ndarray.shape if a_ndarray.shape else (a_ndarray.size),
+                   bigdl_type= bigdl_type)
 
     def to_ndarray(self):
-        def get_dtype():
-            if "float" == self.bigdl_type:
-                return "float32"
-            else:
-                return "float64"
-        return np.array(self.storage, dtype=get_dtype()).reshape(self.shape)  # noqa
-
-    @classmethod
-    def flatten_ndarray(cls, a_ndarray):
-        """
-        Utility method to flatten a ndarray
-
-        :return: (storage, shape)
-
-        >>> from bigdl.util.common import JTensor
-        >>> np.random.seed(123)
-        >>> data = np.random.uniform(0, 1, (2, 3))
-        >>> (storage, shape) = JTensor.flatten_ndarray(data)
-        >>> shape
-        [2, 3]
-        >>> (storage, shape) = JTensor.flatten_ndarray(np.array(2))
-        >>> shape
-        [1]
-        """
-        storage = [float(i) for i in a_ndarray.ravel()]
-        shape = list(a_ndarray.shape) if a_ndarray.shape else [a_ndarray.size]
-        return storage, shape
+        return np.array(self.storage, dtype=get_dtype(self.bigdl_type)).reshape(self.shape)  # noqa
 
     def __reduce__(self):
-        return (JTensor, (self.storage, self.shape, self.bigdl_type))
+        return JTensor, (self.storage.tostring(), self.shape.tostring(), self.bigdl_type)
 
     def __str__(self):
-        return "storage: %s, shape: %s," % (self.storage, self.storage)
+        return "JTensor: storage: %s, shape: %s" % (self.storage, self.shape)
+
+    def __repr__(self):
+        return "JTensor: storage: %s, shape: %s" % (self.storage, self.shape)
 
 
 class Sample(object):
-    def __init__(self, features, label, features_shape, label_shape,
-                 bigdl_type="float"):
-        def get_dtype():
-            if "float" == bigdl_type:
-                return "float32"
-            else:
-                return "float64"
-        self.features = np.array(features, dtype=get_dtype()).reshape(features_shape)  # noqa
-        self.label = np.array(label, dtype=get_dtype()).reshape(label_shape)
+    def __init__(self, features, label, bigdl_type="float"):
+        """
+        User should always use Sample.from_ndarray to construct Sample.
+        :param features: a JTensor
+        :param label: a JTensor
+        :param bigdl_type: "double" or "float"
+        """
+        self.features = features
+        self.label = label
         self.bigdl_type = bigdl_type
 
     @classmethod
     def from_ndarray(cls, features, label, bigdl_type="float"):
+        """
+        Convert a ndarray of features and label to Sample, which would be used in Java side.
+
+        >>> import numpy as np
+        >>> from bigdl.util.common import callBigDlFunc
+        >>> from numpy.testing import assert_allclose
+        >>> sample = Sample.from_ndarray(np.random.random((2,3)), np.random.random((2,3)))
+        >>> sample_back = callBigDlFunc("float", "testSample", sample)
+        >>> assert_allclose(sample.features.to_ndarray(), sample_back.features.to_ndarray())
+        >>> assert_allclose(sample.label.to_ndarray(), sample_back.label.to_ndarray())
+        """
+        assert isinstance(features, np.ndarray), \
+            "features should be a np.ndarray, not %s" % type(features)
+        if not isinstance(label, np.ndarray): # in case label is a scalar.
+            label = np.array(label)
         return cls(
-            features=[float(i) for i in features.ravel()],
-            label=[float(i) for i in label.ravel()],
-            features_shape=list(features.shape),
-            label_shape=list(label.shape) if label.shape else [label.size],
+            features=JTensor.from_ndarray(features),
+            label=JTensor.from_ndarray(label),
             bigdl_type=bigdl_type)
 
     def __reduce__(self):
-        (features_storage, features_shape) = JTensor.flatten_ndarray(self.features)
-        (label_storage, label_shape) = JTensor.flatten_ndarray(self.label)
-        return (Sample, (
-            features_storage, label_storage, features_shape, label_shape,
-            self.bigdl_type))
+        return Sample, (self.features, self.label, self.bigdl_type)
 
     def __str__(self):
-        return "features: %s, label: %s," % (self.features, self.label)
+        return "Sample: features: %s, label: %s," % (self.features, self.label)
+
+    def __repr__(self):
+        return "Sample: features: %s, label: %s" % (self.storage, self.shape)
 
 class RNG():
     """
