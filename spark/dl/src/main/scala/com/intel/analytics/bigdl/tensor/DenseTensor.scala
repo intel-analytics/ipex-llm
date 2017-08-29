@@ -35,6 +35,13 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   var nDimension: Int)(implicit ev: TensorNumeric[T])
   extends Tensor[T] {
 
+  override def isEmpty: Boolean = this.storage() == null || this.storage().length() == 0
+
+  override def isScalar: Boolean =
+    this.nDimension == 0 &&
+      this._size != null && this.size().isEmpty &&
+      this._storage.length() == 1
+
   override def storage(): Storage[T] = _storage
 
   override def storageOffset(): Int = _storageOffset + 1
@@ -42,7 +49,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   override def dim(): Int = nDimension
 
   override def nElement(): Int = {
-    if (this.nDimension == 0) {
+    if (this.isEmpty) {
       0
     } else {
       var n = 1
@@ -408,7 +415,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def apply(index: Int): Tensor[T] = {
-    require(this.nDimension > 0, "empty tensor")
+    require(this.nDimension > 0, "empty or scalar tensor")
     var _index = index - 1
     if (_index < 0) _index = this._size(0) + _index + 1
     require(_index >= 0 && _index < this._size(0),
@@ -448,7 +455,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def update(index: Int, src: Tensor[T]): Unit = {
-    require(this.nDimension > 0, "empty tensor")
+    require(this.nDimension > 0, "empty or scalar tensor")
     var _index = index - 1
     if (_index < 0) _index = this._size(0) + _index + 1
     require(_index >= 0 && _index < this._size(0), "out of range")
@@ -641,6 +648,13 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     require(1 == this.nDimension, "invalid size")
     var offset = this._storageOffset
     offset += getOffset(d1 - 1, 1)
+    this._storage(offset) = value
+    this
+  }
+
+  override def setValue(value: T): this.type = {
+    require(0 == this.nDimension, "invalid size, you can only call this on a scalar")
+    var offset = this._storageOffset
     this._storage(offset) = value
     this
   }
@@ -1854,6 +1868,13 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
 }
 
 object DenseTensor {
+
+  def apply[@specialized(Float, Double) T: ClassTag](value: T)(
+    implicit ev: TensorNumeric[T]): Tensor[T] = {
+    new DenseTensor[T](new ArrayStorage[T](Array(value)), 0, Array[Int](),
+      Array[Int](), 0)
+  }
+
   private[tensor] def squeeze[@specialized(Float, Double) T](self: DenseTensor[T]): Tensor[T] = {
     var ndim = 0
     var d = 0

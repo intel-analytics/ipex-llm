@@ -26,9 +26,17 @@ object DenseTensorApply {
   def apply1[@specialized(Float, Double) T](
     tensor: Tensor[T], func: TensorFunc2[T]): Unit = {
 
-    if (tensor.nDimension == 0) {
+    if (tensor.isEmpty) {
       return
     }
+
+    // shortcut for scalar
+    if (tensor.isScalar) {
+      val data = tensor.storage().array()
+      val index = tensor.storageOffset() - 1
+      func(data, index)
+    }
+
 
     val stride = getStride(tensor)
     val (largestDim, largestSize) = getLargestContiguousSize(tensor)
@@ -62,8 +70,17 @@ object DenseTensorApply {
     require(tensor1.nElement() == tensor2.nElement(),
       s"inconsistent tensor size: ${tensor1.nElement()} == ${tensor2.nElement()}")
 
-    if (tensor1.nDimension == 0) {
+    if (tensor1.isEmpty) {
       return
+    }
+
+    // shortcut for scalar
+    if (tensor1.isScalar && tensor2.isScalar) {
+      val tensor1Data = tensor1.storage().array()
+      val tensor2Data = tensor2.storage().array()
+      val tensor1Index = tensor1.storageOffset() - 1
+      val tensor2Index = tensor2.storageOffset() - 1
+      func(tensor1Data, tensor1Index, tensor2Data, tensor2Index)
     }
 
     val tensor1Data = tensor1.storage().array()
@@ -148,6 +165,17 @@ object DenseTensorApply {
 
     if (tensor1.nDimension == 0) {
       return
+    }
+
+    // shortcut for scalar
+    if (tensor1.isScalar && tensor2.isScalar && tensor3.isScalar) {
+      val tensor1Data = tensor1.storage().array()
+      val tensor2Data = tensor2.storage().array()
+      val tensor3Data = tensor3.storage().array()
+      val tensor1Index = tensor1.storageOffset() - 1
+      val tensor2Index = tensor2.storageOffset() - 1
+      val tensor3Index = tensor3.storageOffset() - 1
+      func(tensor1Data, tensor1Index, tensor2Data, tensor2Index, tensor3Data, tensor3Index)
     }
 
     val tensor1Data = tensor1.storage().array()
