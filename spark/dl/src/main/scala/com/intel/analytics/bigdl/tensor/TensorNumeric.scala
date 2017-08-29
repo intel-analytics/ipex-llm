@@ -959,8 +959,6 @@ object TensorNumericMath {
     }
 
     implicit object NumericBoolean extends UndefinedTensorNumeric[Boolean]("Boolean") {
-      override def getType(): TensorDataType = BooleanType
-
       override def or(x: Boolean, y: Boolean): Boolean = x || y
 
       override def and(x: Boolean, y: Boolean): Boolean = x && y
@@ -972,11 +970,11 @@ object TensorNumericMath {
       override def nearlyEqual(a: Boolean, b: Boolean, epsilon: Double): Boolean = {
         a == b
       }
+
+      override def getType(): TensorDataType = BooleanType
     }
 
     implicit object NumericInt extends UndefinedTensorNumeric[Int]("Int") {
-      override def getType(): TensorDataType = IntType
-
       override def plus(x: Int, y: Int): Int = x + y
 
       override def minus(x: Int, y: Int): Int = x - y
@@ -1027,8 +1025,6 @@ object TensorNumericMath {
     }
 
     implicit object NumericLong extends UndefinedTensorNumeric[Long]("Long") {
-      override def getType(): TensorDataType = LongType
-
       override def plus(x: Long, y: Long): Long = x + y
 
       override def minus(x: Long, y: Long): Long = x - y
@@ -1093,8 +1089,6 @@ object TensorNumericMath {
     }
 
     implicit object NumericShort extends UndefinedTensorNumeric[Short]("Short") {
-      override def getType(): TensorDataType = ShortType
-
       override def plus(x: Short, y: Short): Short = (x + y).toShort
 
       override def minus(x: Short, y: Short): Short = (x - y).toShort
@@ -1159,8 +1153,6 @@ object TensorNumericMath {
     }
 
     implicit object NumericChar extends UndefinedTensorNumeric[Char]("Char") {
-      override def getType(): TensorDataType = CharType
-
       override def plus(x: Char, y: Char): Char = (x + y).toChar
 
       override def minus(x: Char, y: Char): Char = (x - y).toChar
