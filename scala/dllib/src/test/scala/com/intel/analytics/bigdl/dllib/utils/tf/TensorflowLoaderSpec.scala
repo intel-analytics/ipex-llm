@@ -286,10 +286,8 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
 
   "Tensorflow batchnorm nhwc" should "be loaded correctly" in {
     val output = Seq("output:0")
-    val comparePairs = testModel("batch_norm_nhwc", output, false, Seq(), true) { tensor =>
-      tensor
-    }
-    for (i <- 0 until output.length) {
+    val comparePairs = testModel("batch_norm_nhwc", output, backward = true)
+    for (i <- output.indices) {
       val (tf, bigdl) = comparePairs(i)
       tf.almostEqual(bigdl, 1e-4) should be(true)
     }
@@ -301,10 +299,9 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
 
   "Tensorflow batchnorm nchw" should "be loaded correctly" in {
     val output = Seq("output:0")
-    val comparePairs = testModel("batch_norm_nchw", output, false, Seq(), true) { tensor =>
-      tensor
-    }
-    for (i <- 0 until output.length) {
+    val comparePairs = testModel("batch_norm_nchw", output, backward = true)
+
+    for (i <- output.indices) {
       val (tf, bigdl) = comparePairs(i)
       tf.almostEqual(bigdl, 1e-4) should be(true)
     }
@@ -316,15 +313,9 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
 
   "Tensorflow lenet" should "be load correctly" in {
     val output = Seq("LeNet/pool2/MaxPool:0")
-    val comparePairs = testModel("lenet", output, true, Seq((4, 3), (3, 2)), true) { tensor =>
-      if (tensor.dim() == 4) {
-        val trans = tensor.transpose(1, 4).transpose(2, 3).transpose(3, 4).contiguous()
-        trans
-      } else {
-        tensor
-      }
-    }
-    for (i <- 0 until output.length) {
+    val comparePairs = testModel("lenet", output, backward = true)
+
+    for (i <- output.indices) {
       val (tf, bigdl) = comparePairs(i)
       tf.almostEqual(bigdl, 1e-6) should be(true)
     }
@@ -336,14 +327,16 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
 
   "Tensorflow conv1d" should "be load correctly" in {
     val output = Seq("output:0")
-    val comparePairs = testModel("temporal_convolution", output, false, Seq(), true) { tensor =>
-      if (tensor.dim() == 3) {
-        val t = tensor.transpose(1, 3).transpose(2, 3).contiguous()
-        t.resize(t.size(1), t.size(2) * t.size(3))
-      } else {
-        tensor
-      }
+    val comparePairs = testModel("temporal_convolution", output, backward = false)
+    for (i <- output.indices) {
+      val (tf, bigdl) = comparePairs(i)
+      tf.almostEqual(bigdl, 1e-6) should be(true)
     }
+  }
+
+  "Tensorflow Alexnet" should "be load correctly" in {
+    val output = Seq("alexnet_v2/fc8/squeezed:0")
+    val comparePairs = testModel("alexnet", output, backward = true)
     for (i <- output.indices) {
       val (tf, bigdl) = comparePairs(i)
       tf.almostEqual(bigdl, 1e-6) should be(true)
@@ -354,50 +347,20 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     }
   }
 
-  "Tensorflow Alexnet" should "be load correctly" in {
-    val output = Seq("alexnet_v2/fc8/squeezed:0")
-    val comparePairs = testModel("alexnet", output, true, Seq.empty, true) { tensor =>
-        if (tensor.dim() == 4) {
-          val trans = tensor.transpose(1, 4).transpose(2, 3).transpose(3, 4).contiguous()
-          trans
-        } else {
-          tensor
-        }
-    }
-    for (i <- 0 until output.length) {
-      val (tf, bigdl) = comparePairs(i)
-      tf.almostEqual(bigdl, 1e-7) should be(true)
-    }
-    for (i <- output.length until comparePairs.length) {
-      val (tf, bigdl) = comparePairs(i)
-      tf.almostEqual(bigdl, 1e-4) should be(true)
-    }
-  }
-
-  "Tensorflow Alexnet NCHW" should "be load correctly" in {
-    System.setProperty("bigdl.enableNHWC", "false")
-    val output = Seq("alexnet_v2/pool5/MaxPool:0")
-    val comparePairs = testModel("alexnet_nchw", output, false, Seq.empty, false) { tensor =>
-      tensor
-    }
-    for (i <- 0 until output.length) {
-      val (tf, bigdl) = comparePairs(i)
-      tf.almostEqual(bigdl, 1e-5) should be(true)
-    }
-    System.setProperty("bigdl.enableNHWC", "true")
-  }
+//  Need GPU to run this code
+//  "Tensorflow Alexnet NCHW" should "be load correctly" in {
+//    val output = Seq("alexnet_v2/pool5/MaxPool:0")
+//    val comparePairs = testModel("alexnet_nchw", output, backward = false)
+//    for (i <- output.indices) {
+//      val (tf, bigdl) = comparePairs(i)
+//      tf.almostEqual(bigdl, 1e-5) should be(true)
+//    }
+//  }
 
   "TensorFlow vgg_a" should "be load correctly" in {
     val output = Seq("vgg_a/fc8/squeezed:0")
-    val comparePairs = testModel("vgga", output, true, Seq.empty, true) {tensor =>
-        if (tensor.dim() == 4) {
-          val trans = tensor.transpose(1, 4).transpose(2, 3).transpose(3, 4).contiguous()
-          trans
-        } else {
-          tensor
-        }
-    }
-    for (i <- 0 until output.length) {
+    val comparePairs = testModel("vgga", output, backward = true)
+    for (i <- output.indices) {
       val (tf, bigdl) = comparePairs(i)
       tf.almostEqual(bigdl, 1e-7) should be(true)
     }
@@ -409,16 +372,8 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
 
   "TensorFlow vgg_16" should "be load correctly" in {
     val output = Seq("vgg_16/fc8/squeezed:0")
-    val comparePairs = testModel("vgg16", output, true, Seq.empty, true) { tensor =>
-      if (tensor.dim() == 4) {
-        val trans = tensor.transpose(1, 4).transpose(2, 3).transpose(3, 4).contiguous()
-        trans
-      }
-      else {
-        tensor
-      }
-    }
-    for (i <- 0 until output.length) {
+    val comparePairs = testModel("vgg16", output, backward = true)
+    for (i <- output.indices) {
       val (tf, bigdl) = comparePairs(i)
       tf.almostEqual(bigdl, 1e-7) should be(true)
     }
@@ -430,16 +385,8 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
 
   "TensorFlow vgg_19" should "be load correctly" in {
     val output = Seq("vgg_19/fc8/squeezed:0")
-    val comparePairs = testModel("vgg19", output, true, Seq.empty, true) { tensor =>
-      if (tensor.dim() == 4) {
-        val trans = tensor.transpose(1, 4).transpose(2, 3).transpose(3, 4).contiguous()
-        trans
-      }
-      else {
-        tensor
-      }
-    }
-    for (i <- 0 until output.length) {
+    val comparePairs = testModel("vgg19", output, backward = true)
+    for (i <- output.indices) {
       val (tf, bigdl) = comparePairs(i)
       tf.almostEqual(bigdl, 1e-7) should be(true)
     }
@@ -451,18 +398,10 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
 
   "TensorFlow overfeat" should "be load correctly" in {
     val output = Seq("overfeat/fc8/squeezed:0")
-    val comparePairs = testModel("overfeat", output, true, Seq.empty, true) { tensor =>
-      if (tensor.dim() == 4) {
-        val trans = tensor.transpose(1, 4).transpose(2, 3).transpose(3, 4).contiguous()
-        trans
-      }
-      else {
-        tensor
-      }
-    }
-    for (i <- 0 until output.length) {
+    val comparePairs = testModel("overfeat", output, backward = true)
+    for (i <- output.indices) {
       val (tf, bigdl) = comparePairs(i)
-      tf.almostEqual(bigdl, 1e-7) should be(true)
+      tf.almostEqual(bigdl, 1e-6) should be(true)
     }
     for (i <- output.length until comparePairs.length) {
       val (tf, bigdl) = comparePairs(i)
@@ -472,18 +411,10 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
 
   "TensorFlow inception_v3" should "be load correctly" in {
     val output = Seq("InceptionV3/Logits/SpatialSqueeze:0")
-    val comparePairs = testModel("inception_v3", output, true, Seq.empty, true) { tensor =>
-      if (tensor.dim() == 4) {
-        val trans = tensor.transpose(1, 4).transpose(2, 3).transpose(3, 4).contiguous()
-        trans
-      }
-      else {
-        tensor
-      }
-    }
-    for (i <- 0 until output.length) {
+    val comparePairs = testModel("inception_v3", output, true)
+    for (i <- output.indices) {
       val (tf, bigdl) = comparePairs(i)
-      tf.almostEqual(bigdl, 1e-7) should be(true)
+      tf.almostEqual(bigdl, 1e-6) should be(true)
     }
     for (i <- output.length until comparePairs.length) {
       val (tf, bigdl) = comparePairs(i)
@@ -493,16 +424,8 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
 
   "TensorFlow resnet_v1" should "be load correctly" in {
     val output = Seq("resnet_v1_101/SpatialSqueeze:0")
-    val comparePairs = testModel("resnet_v1", output, true, Seq.empty, true) { tensor =>
-      if (tensor.dim() == 4) {
-        val trans = tensor.transpose(1, 4).transpose(2, 3).transpose(3, 4).contiguous()
-        trans
-      }
-      else {
-        tensor
-      }
-    }
-    for (i <- 0 until output.length) {
+    val comparePairs = testModel("resnet_v1", output, backward = true)
+    for (i <- output.indices) {
       val (tf, bigdl) = comparePairs(i)
       tf.almostEqual(bigdl, 1e-6) should be(true)
     }
@@ -515,34 +438,21 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
   "TensorFlow inception_resnet_v2" should "be load correctly" in {
     val output = Seq("InceptionResnetV2/Logits/Logits/BiasAdd:0",
       "InceptionResnetV2/AuxLogits/Logits/BiasAdd:0")
-    val comparePairs = testModel("inception_resnet_v2", output, true, Seq.empty, true) { tensor =>
-      if (tensor.dim() == 4) {
-        val trans = tensor.transpose(1, 4).transpose(2, 3).transpose(3, 4).contiguous()
-        trans
-      } else if (tensor.dim() == 2) {
-        val trans = tensor.transpose(1, 2).contiguous()
-        trans
-      } else {
-        tensor
-      }
-    }
-    for (i <- 0 until output.length) {
+    val comparePairs = testModel("inception_resnet_v2", output, backward = true)
+    for (i <- output.indices) {
       val (tf, bigdl) = comparePairs(i)
       tf.almostEqual(bigdl, 1e-6) should be(true)
     }
     for (i <- output.length until comparePairs.length) {
       val (tf, bigdl) = comparePairs(i)
-      tf.almostEqual(bigdl, 1e-2) should be(true)
+      tf.almostEqual(bigdl, 1e-1) should be(true)
     }
   }
 
   private def testModel(
     modelName: String,
     endPoints: Seq[String],
-    transInput: Boolean,
-    transOutputSeq: Seq[(Int, Int)],
-    backward: Boolean)
-    (transGradient: Tensor[Float] => Tensor[Float]): Seq[(Tensor[Float], Tensor[Float])] = {
+    backward: Boolean): Seq[(Tensor[Float], Tensor[Float])] = {
 
     tfCheck()
     // Generate command and prepare the temp folder
@@ -582,27 +492,18 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
 
     val input = TensorflowToBigDL.toTensor(tfInputTensor,
       ByteOrder.LITTLE_ENDIAN)
-    val transposeInput = if (transInput) {
-      input.transpose(2, 4).transpose(3, 4).contiguous()
-    } else {
-      input
-    }
 
     val bigdlOutputs = if (endPoints.length == 1) {
-      Seq(model.forward(transposeInput).toTensor)
+      Seq(model.forward(input).toTensor)
     } else {
-      val t = model.forward(transposeInput).toTable
+      val t = model.forward(input).toTable
       (1 to endPoints.length).map(t[Tensor[Float]](_))
     }
 
     val comparePair = new mutable.ArrayBuffer[(Tensor[Float], Tensor[Float])]()
-    val forwardPairs = tfOutputTensors.zip(bigdlOutputs).map{
-      x =>
-        var tensor = TensorflowToBigDL.toTensor(x._1, ByteOrder.LITTLE_ENDIAN)
-        for (trans <- transOutputSeq) {
-          tensor = tensor.transpose(trans._1, trans._2)
-        }
-        (tensor.contiguous(), x._2)
+    val forwardPairs = tfOutputTensors.zip(bigdlOutputs).map { x =>
+        val tensor = TensorflowToBigDL.toTensor(x._1, ByteOrder.LITTLE_ENDIAN)
+        (tensor, x._2)
     }
     comparePair ++= forwardPairs
     println(s"Compare ${comparePair.length} pairs of output in this graph")
@@ -613,11 +514,8 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
         i =>
           val t = tfNodes.asScala.filter(_.getName == s"grad_input$i")(0)
             .getAttrMap.get("value").getTensor
-          var tensor = TensorflowToBigDL.toTensor(t, ByteOrder.LITTLE_ENDIAN)
-          for (trans <- transOutputSeq) {
-            tensor = tensor.transpose(trans._1, trans._2)
-          }
-          tensor.contiguous()
+          val tensor = TensorflowToBigDL.toTensor(t, ByteOrder.LITTLE_ENDIAN)
+          tensor
       }
 
       val gradInputs = if (endPoints.length == 1) {
@@ -645,17 +543,11 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
       }.toMap
 
       // do backward
-      model.backward(transposeInput, gradInputs)
+      model.backward(input, gradInputs)
 
-      val pairs = context.keySet.map{
-        x =>
+      val pairs = context.keySet.map { x =>
           val name = s"${x.getName}_grad"
-          val tensor = tfGradTensorsMap.get(name) match {
-            case Some(t) =>
-              transGradient(t)
-            case None =>
-              null
-          }
+          val tensor = tfGradTensorsMap.get(name).orNull
           (tensor, context(x)._2)
       }.toSeq.filter(_._1 != null)
       comparePair ++= pairs
