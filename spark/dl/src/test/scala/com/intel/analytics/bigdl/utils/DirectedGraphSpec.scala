@@ -25,13 +25,32 @@ class DirectedGraphSpec extends FlatSpec with Matchers {
     test should be(nodeB)
     nodeA.prevNodes.length should be(0)
     nodeA.nextNodes.length should be(1)
+    nodeA.nextEdges.length should be(1)
+    nodeA.nextNodes(0) should be(nodeB)
+    nodeA.nextEdges(0) should be(Edge.Default)
+    nodeB.prevNodes.length should be(1)
+    nodeB.prevEdges.length should be(1)
+    nodeB.prevNodes(0) should be(nodeA)
+    nodeB.prevEdges(0) should be(Edge.Default)
+    nodeB.nextNodes.length should be(0)
+    nodeB.nextEdges.length should be(0)
+  }
+
+  "Node add" should "ignore duplicated add" in {
+    val nodeA = new Node("A")
+    val nodeB = new Node("B")
+    val test = nodeA -> nodeB
+    nodeA -> nodeB
+    test should be(nodeB)
+    nodeA.prevNodes.length should be(0)
+    nodeA.nextNodes.length should be(1)
     nodeA.nextNodes(0) should be(nodeB)
     nodeB.prevNodes.length should be(1)
     nodeB.prevNodes(0) should be(nodeA)
     nodeB.nextNodes.length should be(0)
   }
 
-  "Node add with edge index" should "be correct" in {
+  "Node add with edge" should "be correct" in {
     val nodeA = new Node("A")
     val nodeB = new Node("B")
     val test = nodeA.add(nodeB, Edge(Some(1)))
@@ -49,16 +68,24 @@ class DirectedGraphSpec extends FlatSpec with Matchers {
     nodeB.nextEdges.length should be(0)
   }
 
-  "Node add" should "ignore duplicated add" in {
+  "Node add with edge" should "ignore duplicated add" in {
     val nodeA = new Node("A")
     val nodeB = new Node("B")
-    val test = nodeA -> nodeB
-    nodeA -> nodeB
+    val test = nodeA.add(nodeB, Edge(Some(1)))
+    nodeA.add(nodeB, Edge(Some(1)))
     test should be(nodeB)
     nodeA.prevNodes.length should be(0)
     nodeA.nextNodes.length should be(1)
     nodeA.nextNodes(0) should be(nodeB)
     nodeB.prevNodes.length should be(1)
+    nodeB.prevNodes(0) should be(nodeA)
+    nodeB.nextNodes.length should be(0)
+
+    nodeA.add(nodeB, Edge(Some(2)))
+    nodeA.prevNodes.length should be(0)
+    nodeA.nextNodes.length should be(2)
+    nodeA.nextNodes(0) should be(nodeB)
+    nodeB.prevNodes.length should be(2)
     nodeB.prevNodes(0) should be(nodeA)
     nodeB.nextNodes.length should be(0)
   }
