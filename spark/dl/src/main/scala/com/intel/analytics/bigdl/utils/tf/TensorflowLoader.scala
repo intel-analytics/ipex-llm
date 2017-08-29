@@ -142,12 +142,15 @@ object TensorflowLoader{
       val queue = new mutable.Queue[Node[NodeDef]]()
       val visited = mutable.Set[Node[NodeDef]]()
       val inputs = new mutable.ArrayBuffer[String]()
+
+      // Do a BFS to connect the nodes
       queue.enqueue(nodes: _*)
       while(queue.nonEmpty) {
         val node = queue.dequeue()
         if (!visited(node)) {
           visited += node
           if (!isInput(node.element) && !node.element.getInputList.isEmpty) {
+            // continue to traverse
             node.element.getInputList.asScala.foreach { preNodeName =>
               // It is tricky here, remove the first char in the name of control dep node
               val preNode = if (preNodeName.charAt(0) == '^') {
@@ -169,6 +172,7 @@ object TensorflowLoader{
             }
           } else {
             if (isInput(node.element) && node.element.getOp != "Placeholder") {
+              // if the predefined input node is not a Placeholder, add one to match the Input node
               val name = s"input$inputCounter"
               val placeholder = NodeDef.newBuilder()
                 .setName(name)
