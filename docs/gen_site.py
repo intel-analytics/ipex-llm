@@ -72,12 +72,24 @@ run_cmd(['mv', '/tmp/bigdl-doc/mkdocs_windmill', dir_name],
 run_cmd(['mv', '/tmp/bigdl-doc/extra.css', '{}/docs'.format(dir_name)],
     'mv theme foler error')
 
-run_cmd(['rm', '-rf', '/tmp/bigdl-doc'],
-    'rm theme folder error')
-
 # mkdocs build
 run_cmd(['mkdocs', 'build'],
     'mkdocs build error')
+
+# replace resources folder in site
+run_cmd(['cp', '/tmp/bigdl-doc/css/*', '{}/site/css'.format(dir_name)],
+    'mv theme foler error', s=True)
+run_cmd(['cp', '/tmp/bigdl-doc/js/*', '{}/site/js'.format(dir_name)],
+    'mv theme foler error', s=True)
+run_cmd(['cp', '/tmp/bigdl-doc/fonts/*', '{}/site/fonts'.format(dir_name)],
+    'mv theme foler error', s=True)
+run_cmd(['cp', '/tmp/bigdl-doc/img/*', '{}/site/img'.format(dir_name)],
+    'mv theme foler error', s=True)
+run_cmd(['cp', '/tmp/bigdl-doc/version-list', '{}/site'.format(dir_name)],
+    'mv theme foler error', s=True)
+
+run_cmd(['rm', '-rf', '/tmp/bigdl-doc'],
+    'rm theme folder error')
 
 if scaladocs:
     print 'build scala doc'
