@@ -374,18 +374,19 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     }
   }
 
-  "Tensorflow Alexnet NCHW" should "be load correctly" in {
-    System.setProperty("bigdl.enableNHWC", "false")
-    val output = Seq("alexnet_v2/pool5/MaxPool:0")
-    val comparePairs = testModel("alexnet_nchw", output, false, Seq.empty, false) { tensor =>
-      tensor
-    }
-    for (i <- 0 until output.length) {
-      val (tf, bigdl) = comparePairs(i)
-      tf.almostEqual(bigdl, 1e-5) should be(true)
-    }
-    System.setProperty("bigdl.enableNHWC", "true")
-  }
+// Need GPU to run this case
+//  "Tensorflow Alexnet NCHW" should "be load correctly" in {
+//    System.setProperty("bigdl.enableNHWC", "false")
+//    val output = Seq("alexnet_v2/pool5/MaxPool:0")
+//    val comparePairs = testModel("alexnet_nchw", output, false, Seq.empty, false) { tensor =>
+//      tensor
+//    }
+//    for (i <- 0 until output.length) {
+//      val (tf, bigdl) = comparePairs(i)
+//      tf.almostEqual(bigdl, 1e-5) should be(true)
+//    }
+//    System.setProperty("bigdl.enableNHWC", "true")
+//  }
 
   "TensorFlow vgg_a" should "be load correctly" in {
     val output = Seq("vgg_a/fc8/squeezed:0")
