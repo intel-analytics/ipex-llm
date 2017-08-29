@@ -35,6 +35,7 @@ object DenseTensorApply {
       val data = tensor.storage().array()
       val index = tensor.storageOffset() - 1
       func(data, index)
+      return
     }
 
 
@@ -81,6 +82,7 @@ object DenseTensorApply {
       val tensor1Index = tensor1.storageOffset() - 1
       val tensor2Index = tensor2.storageOffset() - 1
       func(tensor1Data, tensor1Index, tensor2Data, tensor2Index)
+      return
     }
 
     val tensor1Data = tensor1.storage().array()
@@ -176,6 +178,7 @@ object DenseTensorApply {
       val tensor2Index = tensor2.storageOffset() - 1
       val tensor3Index = tensor3.storageOffset() - 1
       func(tensor1Data, tensor1Index, tensor2Data, tensor2Index, tensor3Data, tensor3Index)
+      return
     }
 
     val tensor1Data = tensor1.storage().array()
