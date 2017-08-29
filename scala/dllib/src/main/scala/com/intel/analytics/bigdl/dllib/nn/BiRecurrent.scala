@@ -35,24 +35,34 @@ import scala.reflect.runtime._
  */
 class BiRecurrent[T : ClassTag] (
   private val merge: AbstractModule[Table, Tensor[T], T] = null,
-  val batchNormParams: BatchNormParams[T] = null)
+  val batchNormParams: BatchNormParams[T] = null,
+  val isSplitInput: Boolean = false)
   (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
 
   val timeDim = 2
+  val featDim = 3
   val layer: Recurrent[T] = Recurrent[T](batchNormParams)
   val revLayer: Recurrent[T] = Recurrent[T](batchNormParams)
+
   private var birnn = Sequential[T]()
-      .add(ConcatTable()
-        .add(Identity[T]())
-        .add(Identity[T]()))
-      .add(ParallelTable[T]()
-        .add(layer)
-        .add(Sequential[T]()
-          .add(Reverse[T](timeDim))
-          .add(revLayer)
-          .add(Reverse[T](timeDim))))
-    if (merge == null) birnn.add(CAddTable[T](true))
-    else birnn.add(merge)
+
+  if (isSplitInput) {
+    birnn.add(BifurcateSplitTable[T](featDim))
+  } else {
+    birnn.add(ConcatTable()
+      .add(Identity[T]())
+      .add(Identity[T]()))
+  }
+
+  birnn
+    .add(ParallelTable[T]()
+      .add(layer)
+      .add(Sequential[T]()
+        .add(Reverse[T](timeDim))
+        .add(revLayer)
+        .add(Reverse[T](timeDim))))
+  if (merge == null) birnn.add(CAddTable[T](true))
+  else birnn.add(merge)
 
   override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]):
     BiRecurrent.this.type = {
@@ -142,9 +152,10 @@ class BiRecurrent[T : ClassTag] (
 object BiRecurrent extends ContainerSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
     merge: AbstractModule[Table, Tensor[T], T] = null,
-    batchNormParams: BatchNormParams[T] = null)
+    batchNormParams: BatchNormParams[T] = null,
+    isSplitInput: Boolean = false)
     (implicit ev: TensorNumeric[T]) : BiRecurrent[T] = {
-    new BiRecurrent[T](merge, batchNormParams)
+    new BiRecurrent[T](merge, batchNormParams, isSplitInput)
   }
 
   override def doLoadModule[T: ClassTag](model : BigDLModule)
@@ -156,14 +167,18 @@ object BiRecurrent extends ContainerSerializable {
       getAttributeValue(attrMap.get("merge")).
       asInstanceOf[AbstractModule[Table, Tensor[T], T]]
 
+    val isSplitInput = DataConverter
+      .getAttributeValue(attrMap.get("isSplitInput"))
+      .asInstanceOf[Boolean]
+
     val flag = DataConverter
       .getAttributeValue(attrMap.get("bnorm"))
       .asInstanceOf[Boolean]
 
     val biRecurrent = if (flag) {
-      BiRecurrent(merge, batchNormParams = BatchNormParams())
+      BiRecurrent(merge, batchNormParams = BatchNormParams(), isSplitInput = isSplitInput)
     } else {
-      BiRecurrent(merge)
+      BiRecurrent(merge, isSplitInput = isSplitInput)
     }
 
     biRecurrent.birnn = DataConverter.
@@ -220,6 +235,12 @@ object BiRecurrent extends ContainerSerializable {
       birecurrentModule.merge,
       ModuleSerializer.tensorModuleType)
     birecurrentBuilder.putAttr("merge", mergeBuilder.build)
+
+    val isSplitInputBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(isSplitInputBuilder,
+      birecurrentModule.isSplitInput,
+      universe.typeOf[Boolean])
+    birecurrentBuilder.putAttr("isSplitInput", isSplitInputBuilder.build)
 
     val birnnBuilder = AttrValue.newBuilder
     DataConverter.setAttributeValue(birnnBuilder,
