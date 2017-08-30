@@ -617,7 +617,7 @@ object Recurrent extends ContainerSerializable {
       val bnormAffineBuilder = AttrValue.newBuilder
       DataConverter.setAttributeValue(bnormAffineBuilder,
         recurrent.batchNormParams.affine, universe.typeOf[Boolean])
-      recurrentBuilder.putAttr("bnormAffineBuilder", bnormAffineBuilder.build)
+      recurrentBuilder.putAttr("bnormAffine", bnormAffineBuilder.build)
 
       true
     } else {
