@@ -27,27 +27,13 @@ class DirectedGraphSpec extends FlatSpec with Matchers {
     nodeA.nextNodes.length should be(1)
     nodeA.nextEdges.length should be(1)
     nodeA.nextNodes(0) should be(nodeB)
-    nodeA.nextEdges(0) should be(Edge())
+    nodeA.nextEdges(0).fromIndex should be(None)
     nodeB.prevNodes.length should be(1)
     nodeB.prevEdges.length should be(1)
     nodeB.prevNodes(0) should be(nodeA)
-    nodeB.prevEdges(0) should be(Edge())
+    nodeB.prevEdges(0).fromIndex should be(None)
     nodeB.nextNodes.length should be(0)
     nodeB.nextEdges.length should be(0)
-  }
-
-  "Node add" should "ignore duplicated add" in {
-    val nodeA = new Node("A")
-    val nodeB = new Node("B")
-    val test = nodeA -> nodeB
-    nodeA -> nodeB
-    test should be(nodeB)
-    nodeA.prevNodes.length should be(0)
-    nodeA.nextNodes.length should be(1)
-    nodeA.nextNodes(0) should be(nodeB)
-    nodeB.prevNodes.length should be(1)
-    nodeB.prevNodes(0) should be(nodeA)
-    nodeB.nextNodes.length should be(0)
   }
 
   "Node add with edge" should "be correct" in {
@@ -59,35 +45,13 @@ class DirectedGraphSpec extends FlatSpec with Matchers {
     nodeA.nextNodes.length should be(1)
     nodeA.nextEdges.length should be(1)
     nodeA.nextNodes(0) should be(nodeB)
-    nodeA.nextEdges(0) should be(Edge(1))
+    nodeA.nextEdges(0).fromIndex.get should be(1)
     nodeB.prevNodes.length should be(1)
     nodeB.prevEdges.length should be(1)
     nodeB.prevNodes(0) should be(nodeA)
-    nodeB.prevEdges(0) should be(Edge(1))
+    nodeB.prevEdges(0).fromIndex.get should be(1)
     nodeB.nextNodes.length should be(0)
     nodeB.nextEdges.length should be(0)
-  }
-
-  "Node add with edge" should "ignore duplicated add" in {
-    val nodeA = new Node("A")
-    val nodeB = new Node("B")
-    val test = nodeA.add(nodeB, Edge(1))
-    nodeA.add(nodeB, Edge(1))
-    test should be(nodeB)
-    nodeA.prevNodes.length should be(0)
-    nodeA.nextNodes.length should be(1)
-    nodeA.nextNodes(0) should be(nodeB)
-    nodeB.prevNodes.length should be(1)
-    nodeB.prevNodes(0) should be(nodeA)
-    nodeB.nextNodes.length should be(0)
-
-    nodeA.add(nodeB, Edge(2))
-    nodeA.prevNodes.length should be(0)
-    nodeA.nextNodes.length should be(2)
-    nodeA.nextNodes(0) should be(nodeB)
-    nodeB.prevNodes.length should be(2)
-    nodeB.prevNodes(0) should be(nodeA)
-    nodeB.nextNodes.length should be(0)
   }
 
   "Topology sort" should "be correct in a graph" in {

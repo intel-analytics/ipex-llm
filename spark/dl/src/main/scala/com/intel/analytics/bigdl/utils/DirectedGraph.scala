@@ -272,7 +272,7 @@ object Node {
  * An edge in the graph
  * @param fromIndex A preserved position to store meta info.
  */
-private[bigdl] class Edge private (val fromIndex: Option[Int])
+private[bigdl] class Edge private (val fromIndex: Option[Int]) extends Serializable
 
 object Edge {
   def apply(value : Int): Edge = new Edge(Some(value))
