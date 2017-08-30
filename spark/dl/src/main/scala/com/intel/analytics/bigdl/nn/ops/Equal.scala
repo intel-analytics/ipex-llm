@@ -25,11 +25,14 @@ class Equal[T: ClassTag]()
   (implicit ev: TensorNumeric[T]) extends Operation[Table, T] {
 
   /**
-   * Iterate through tensor1, tensor2, and apply func to the elements
+   * Iterate through tensor1, tensor2, and apply func to the elements,
+   * set function result to tensor 3
    *
-   * @param tensor1 the tensor
-   * @param tensor2 the tensor
-   * @param func    (tensor1Data, tensor1Offset, tensor2Data, tensor2Offset)
+   * @param tensor1 the tensor1
+   * @param tensor2 the tensor2
+   * @param tensor3 the result tensor
+   * @param func    (tensor1Data, tensor1Offset, tensor2Data,
+   *                tensor2Offset, tensor3Data, tensor3Offset)
    */
   def apply2[A, B, C](tensor1: Tensor[A], tensor2: Tensor[B], tensor3: Tensor[C],
     func: (Array[A], Int, Array[B], Int, Array[C], Int) => Unit)
@@ -48,7 +51,7 @@ class Equal[T: ClassTag]()
     val tensor2Data = tensor2.storage().array()
     var tensor2Offset = tensor2.storageOffset() - 1
     val tensor3Data = tensor3.storage().array()
-    var tensor3Offset = tensor3.storageOffset() - 1
+    val tensor3Offset = tensor3.storageOffset() - 1
 
     var adjacent = false
     if (tensor1.nDimension == 1 && tensor2.nDimension == 1 && tensor1.stride(1) == 1 &&
@@ -117,6 +120,13 @@ class Equal[T: ClassTag]()
         tensor2Offset = r._2
         i2 = 0
       }
+
+      if (i3 == largestSize3) {
+        val r = updateCounter(tensor3, counter3, tensor3Offset, largestDim3)
+        hasFinished = r._1
+        tensor2Offset = r._2
+        i3 = 0
+      }
     }
   }
 
@@ -139,29 +149,53 @@ class Equal[T: ClassTag]()
     output.resizeAs(input(1))
     input[Tensor[_]](1) match {
       case t1 if t1.getType() == FloatType =>
-        zipWith[Float, Float, Boolean](input[Tensor[Float]](1),
-          input[Tensor[Float]](2), output.asInstanceOf[Tensor[Boolean]], (a, b) => a == b)
-      case t2: Tensor[Boolean] =>
-        zipWith[Boolean, Boolean, Boolean](input[Tensor[Boolean]](1),
-          input[Tensor[Boolean]](2), output.asInstanceOf[Tensor[Boolean]], (a, b) => a == b)
-      case t3: Tensor[Double] =>
-        zipWith[Double, Double, Boolean](input[Tensor[Double]](1),
-          input[Tensor[Double]](2), output.asInstanceOf[Tensor[Boolean]], (a, b) => a == b)
-      case t4: Tensor[Char] =>
-        zipWith[Char, Char, Boolean](input[Tensor[Char]](1),
-          input[Tensor[Char]](2), output.asInstanceOf[Tensor[Boolean]], (a, b) => a == b)
-      case t5: Tensor[String] =>
-        zipWith[String, String, Boolean](input[Tensor[String]](1),
-          input[Tensor[String]](2), output.asInstanceOf[Tensor[Boolean]], (a, b) => a == b)
-      case t6: Tensor[Long] =>
-        zipWith[Long, Long, Boolean](input[Tensor[Long]](1),
-          input[Tensor[Long]](2), output.asInstanceOf[Tensor[Boolean]], (a, b) => a == b)
-      case t7: Tensor[Short] =>
-        zipWith[Short, Short, Boolean](input[Tensor[Short]](1),
-          input[Tensor[Short]](2), output.asInstanceOf[Tensor[Boolean]], (a, b) => a == b)
-      case t8: Tensor[Int] =>
-        zipWith[Int, Int, Boolean](input[Tensor[Int]](1),
-          input[Tensor[Int]](2), output.asInstanceOf[Tensor[Boolean]], (a, b) => a == b)
+        zipWith[Float, Float, Boolean](
+          input[Tensor[Float]](1),
+          input[Tensor[Float]](2),
+          output.asInstanceOf[Tensor[Boolean]],
+          (a, b) => a == b)
+      case t2 if t2.getType() == BooleanType =>
+        zipWith[Boolean, Boolean, Boolean](
+          input[Tensor[Boolean]](1),
+          input[Tensor[Boolean]](2),
+          output.asInstanceOf[Tensor[Boolean]],
+          (a, b) => a == b)
+      case t3 if t3.getType() == DoubleType =>
+        zipWith[Double, Double, Boolean](
+          input[Tensor[Double]](1),
+          input[Tensor[Double]](2),
+          output.asInstanceOf[Tensor[Boolean]],
+          (a, b) => a == b)
+      case t4 if t4.getType() == CharType =>
+        zipWith[Char, Char, Boolean](
+          input[Tensor[Char]](1),
+          input[Tensor[Char]](2),
+          output.asInstanceOf[Tensor[Boolean]],
+          (a, b) => a == b)
+      case t5 if t5.getType() == StringType =>
+        zipWith[String, String, Boolean](
+          input[Tensor[String]](1),
+          input[Tensor[String]](2),
+          output.asInstanceOf[Tensor[Boolean]],
+          (a, b) => a == b)
+      case t6 if t6.getType() == LongType =>
+        zipWith[Long, Long, Boolean](
+          input[Tensor[Long]](1),
+          input[Tensor[Long]](2),
+          output.asInstanceOf[Tensor[Boolean]],
+          (a, b) => a == b)
+      case t7 if t7.getType() == ShortType =>
+        zipWith[Short, Short, Boolean](
+          input[Tensor[Short]](1),
+          input[Tensor[Short]](2),
+          output.asInstanceOf[Tensor[Boolean]],
+          (a, b) => a == b)
+      case t8 if t8.getType() == IntType =>
+        zipWith[Int, Int, Boolean](
+          input[Tensor[Int]](1),
+          input[Tensor[Int]](2),
+          output.asInstanceOf[Tensor[Boolean]],
+          (a, b) => a == b)
       case _ => throw new RuntimeException("Unsupported tensor type")
     }
 
