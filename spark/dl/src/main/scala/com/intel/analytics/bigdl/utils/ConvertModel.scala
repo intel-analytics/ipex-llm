@@ -63,7 +63,7 @@ object ConvertModel {
 
       val loadedModel = param.from.toLowerCase match {
         case "bigdl" =>
-          Module.load[Float](input)
+          Module.loadModule(input)
         case "torch" =>
           Module.loadTorch[Float](input)
         case "caffe" =>
@@ -80,7 +80,7 @@ object ConvertModel {
 
       param.to.toLowerCase match {
         case "bigdl" =>
-          model.save(output)
+          model.saveModule(output, overWrite = true)
         case "torch" =>
           model.saveTorch(output)
         case "caffe" =>

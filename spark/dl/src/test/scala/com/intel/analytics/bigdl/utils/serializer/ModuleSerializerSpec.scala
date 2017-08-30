@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
+import com.intel.analytics.bigdl.utils.caffe.CaffeLoader
 import com.intel.analytics.bigdl.utils.{T, Table}
 import org.scalatest.{FlatSpec, Matchers}
 import serialization.Bigdl
@@ -1904,6 +1905,23 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val loadedLinear = ModuleLoader.loadFromFile("/tmp/bigquant.linear.bigdl")
     val res2 = loadedLinear.forward(input)
     res1 should be (res2)
+  }
+
+  "load LeNet5 and quantize it" should "work correctly" in {
+    val loadedModel = CaffeLoader.loadCaffe(
+      "/home/wyz/workspace/bigquant/raw_models/lenet/deploy.prototxt",
+      "/home/wyz/workspace/bigquant/raw_models/lenet/lenet.caffemodel")._1
+
+    val model = Module.quantize(loadedModel)
+    model.saveModule("/tmp/lenet.quantized.model", overWrite = true)
+
+    val model2 = Module.loadModule("/tmp/lenet.quantized.model")
+
+    val input = Tensor(4, 1, 28, 28).rand
+    model.forward(input)
+    model2.forward(input)
+
+    model.output should be (model2.output)
   }
 
   "Customized Module " should "work properly" in {

@@ -49,37 +49,19 @@ trait QuantSerializer extends ModuleSerializable {
 
   def serializeOthers[T: ClassTag](module: ModuleData[T],
     modelBuilder: BigDLModule.Builder)(implicit ev: TensorNumeric[T]): Unit = {
-    val layer = module.module
-
-    var weightSum: Array[T] = null
-    var min: Array[T] = null
-    var max: Array[T] = null
-
-    layer match {
-      case c if c.isInstanceOf[SpatialConvolution[T]] =>
-        val conv = c.asInstanceOf[SpatialConvolution[T]]
-        weightSum = conv.weightSum
-        min = conv.min
-        max = conv.max
-
-      case l if l.isInstanceOf[Linear[T]] =>
-        val linear = l.asInstanceOf[Linear[T]]
-        weightSum = linear.weightSum
-        min = linear.min
-        max = linear.max
-      case _ =>
-    }
+    val layer = module.module.asInstanceOf[QuantModule[T]]
 
     val weightSumBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(weightSumBuilder, weightSum, universe.typeOf[Array[Float]])
+    DataConverter.setAttributeValue(weightSumBuilder, layer.weightSum,
+      universe.typeOf[Array[Float]])
     modelBuilder.putAttr("weightSum", weightSumBuilder.build)
 
     val minBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(minBuilder, min, universe.typeOf[Array[Float]])
+    DataConverter.setAttributeValue(minBuilder, layer.min, universe.typeOf[Array[Float]])
     modelBuilder.putAttr("min", minBuilder.build)
 
     val maxBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(maxBuilder, max, universe.typeOf[Array[Float]])
+    DataConverter.setAttributeValue(maxBuilder, layer.max, universe.typeOf[Array[Float]])
     modelBuilder.putAttr("max", maxBuilder.build)
   }
 
@@ -119,19 +101,10 @@ trait QuantSerializer extends ModuleSerializable {
     val max = DataConverter.getAttributeValue(attrMap.get("max"))
             .asInstanceOf[Array[java.lang.Float]]
 
-    val layer = module.module match {
-      case c if c.isInstanceOf[SpatialConvolution[T]] =>
-        val conv = c.asInstanceOf[SpatialConvolution[T]]
-        tensorCopy(weightSum, conv.weightSum.asInstanceOf[Array[Float]], 0)
-        tensorCopy(min, conv.min.asInstanceOf[Array[Float]], 0)
-        tensorCopy(max, conv.max.asInstanceOf[Array[Float]], 0)
-      case l if l.isInstanceOf[Linear[T]] =>
-        val linear = l.asInstanceOf[Linear[T]]
-        tensorCopy(weightSum, linear.weightSum.asInstanceOf[Array[Float]], 0)
-        tensorCopy(min, linear.min.asInstanceOf[Array[Float]], 0)
-        tensorCopy(max, linear.max.asInstanceOf[Array[Float]], 0)
-      case _ =>
-    }
+    val layer = module.module.asInstanceOf[QuantModule[T]]
+    tensorCopy(weightSum, layer.weightSum.asInstanceOf[Array[Float]], 0)
+    tensorCopy(min, layer.min.asInstanceOf[Array[Float]], 0)
+    tensorCopy(max, layer.max.asInstanceOf[Array[Float]], 0)
   }
 
   override protected def copyFromBigDL[T: ClassTag](module: ModuleData[T],

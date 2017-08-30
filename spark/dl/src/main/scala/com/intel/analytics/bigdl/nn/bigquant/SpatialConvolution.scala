@@ -39,7 +39,7 @@ class SpatialConvolution[T: ClassTag](
   val padW: Int = 0, // The additional zeros added per width to the input planes.
   val padH: Int = 0, // The additional zeros added per height to the input planes.
   val nGroup: Int = 1 // Kernel group number
-)(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
+)(implicit ev: TensorNumeric[T]) extends QuantModule[T](nOutputPlane) with Initializable {
 
   require(nInputPlane % nGroup == 0, "Number of input channels should be multiples of group.")
   require(nOutputPlane % nGroup == 0, "Number of output channels should be multiples of group.")
@@ -48,18 +48,12 @@ class SpatialConvolution[T: ClassTag](
   var data: QuantTensor[T] = QuantTensor[T]()
 
   val bias: Tensor[T] = Tensor[T](nOutputPlane)
-  var weightSum: Array[T] = new Array[T](nOutputPlane)
 
   val FAULT_TOLERANCE = 0.5f
   val WEIGHT_THRESHOLD = 64.0f
   val THRESHOLD = 127.0f
   val DILATION_HEIGHT = 1
   val DILATION_WIDTH = 1
-
-  val min = new Array[T](nOutputPlane)
-  val max = new Array[T](nOutputPlane)
-
-  val empty = Tensor[T](1)
 
   @transient var _init = false
 

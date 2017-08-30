@@ -18,39 +18,30 @@ package com.intel.analytics.bigdl.nn.bigquant
 
 import com.intel.analytics.bigdl.bigquant.BigQuant
 import com.intel.analytics.bigdl.nn.ErrorInfo
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{FloatType, QuantTensor, Tensor}
-import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData, ModuleSerializable}
+import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData}
 import com.intel.analytics.bigdl.utils.{T, Table}
 import java.io.{IOException, ObjectInputStream, ObjectOutputStream}
 import scala.reflect.ClassTag
-import serialization.Bigdl.{AttrValue, BigDLModule, BigDLTensor, DataType}
-import scala.collection.JavaConverters._
 import scala.reflect.runtime.universe
+import serialization.Bigdl.{AttrValue, BigDLModule}
 
 class Linear[T: ClassTag](
   val inputSize: Int,
   val outputSize: Int,
   val withBias: Boolean = true
-)(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+)(implicit ev: TensorNumeric[T]) extends QuantModule[T](outputSize) {
 
   val data: QuantTensor[T] = QuantTensor[T]()
   @transient var weight: QuantTensor[T] = _
   val bias: Tensor[T] = Tensor[T](outputSize)
 
-  val weightSum = new Array[T](outputSize)
-  val min = new Array[T](outputSize)
-  val max = new Array[T](outputSize)
-
   val FAULT_TOLERANCE = 0.5f
   val WEIGHT_THRESHOLD = 64.0f
   val THRESHOLD = 127.0f
 
-  val empty: Tensor[T] = Tensor[T](1)
-
-  @transient
-  var _init = false
+  @transient var _init = false
 
   private def setWeightSum(weight: Tensor[T], weightSum: Array[T]): Unit = {
     for (i <- 1 to outputSize) {
