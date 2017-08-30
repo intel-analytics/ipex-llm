@@ -128,10 +128,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     if (tensor.nElement() == 0) {
       JTensor(Array(0), Array(0), typeName)
     } else {
-    val cloneTensor = tensor.clone()
-    val result = JTensor(cloneTensor.storage().array().map(i => ev.toType[Float](i)),
-      cloneTensor.size(), typeName)
-    result
+      val cloneTensor = tensor.clone()
+      val result = JTensor(cloneTensor.storage().array().map(i => ev.toType[Float](i)),
+        cloneTensor.size(), typeName)
+      result
+    }
   }
 
   def testTensor(jTensor: JTensor): JTensor = {
