@@ -1174,6 +1174,22 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
   }
 
+  "Recurrent serializer " should "work properly with BatchNormParams" in {
+    val recurrent = Recurrent(BatchNormParams())
+      .add(RnnCell(5, 4, Tanh()))
+    val input1 = Tensor(Array(10, 5, 5))
+
+    val input2 = Tensor(10, 5, 5)
+    input2.copy(input1)
+    val res1 = recurrent.forward(input1)
+
+    ModulePersister.saveToFile("/tmp/recurrent.bigdl", recurrent, true)
+    val loadedRecurrent = ModuleLoader.loadFromFile("/tmp/recurrent.bigdl")
+    val res2 = loadedRecurrent.forward(input1)
+    res1 should be (res2)
+
+  }
+
   "ReLU serializer " should " work properly" in {
     val relu = ReLU()
     val input1 = Tensor(5, 5).apply1(_ => Random.nextFloat())
