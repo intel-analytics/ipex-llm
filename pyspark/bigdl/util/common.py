@@ -195,6 +195,7 @@ class Sample(object):
 
         >>> import numpy as np
         >>> from bigdl.util.common import callBigDlFunc
+        >>> from bigdl.util.common import Sample
         >>> from numpy.testing import assert_allclose
         >>> sample = Sample.from_ndarray(np.random.random((2,3)), np.random.random((2,3)))
         >>> sample_back = callBigDlFunc("float", "testSample", sample)
