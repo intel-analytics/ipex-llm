@@ -68,6 +68,7 @@ class BiRecurrent[T : ClassTag] (
     BiRecurrent.this.type = {
     layer.add(module)
     revLayer.add(module.cloneModule())
+    modules.append(birnn)
     this
   }
 
@@ -215,6 +216,11 @@ object BiRecurrent extends ContainerSerializable {
       biRecurrent.batchNormParams.initGradBias =
         DataConverter.getAttributeValue(bnormInitGradBiasAttr)
           .asInstanceOf[Tensor[T]]
+
+      val bnormAffineAttr = attrMap.get("bnormAffine")
+      biRecurrent.batchNormParams.affine =
+        DataConverter.getAttributeValue(bnormAffineAttr)
+          .asInstanceOf[Boolean]
     }
 
     createBigDLModule(model, biRecurrent)
@@ -250,7 +256,6 @@ object BiRecurrent extends ContainerSerializable {
 
     val flag = if (birecurrentModule.batchNormParams != null) {
 
-      println("save batchNormParams")
       val bnormEpsBuilder = AttrValue.newBuilder
       DataConverter.setAttributeValue(bnormEpsBuilder,
         birecurrentModule.batchNormParams.eps, universe.typeOf[Double])
@@ -280,6 +285,11 @@ object BiRecurrent extends ContainerSerializable {
       DataConverter.setAttributeValue(bnormInitGradBiasBuilder,
         birecurrentModule.batchNormParams.initGradBias, ModuleSerializer.tensorType)
       birecurrentBuilder.putAttr("bnormInitGradBias", bnormInitGradBiasBuilder.build)
+
+      val bnormAffineBuilder = AttrValue.newBuilder
+      DataConverter.setAttributeValue(bnormAffineBuilder,
+        birecurrentModule.batchNormParams.affine, universe.typeOf[Boolean])
+      birecurrentBuilder.putAttr("bnormAffine", bnormAffineBuilder.build)
 
       true
     } else {
