@@ -736,7 +736,13 @@ object Tensor {
     val flatTable = xs.flatten()
     val content = new Array[T](flatTable.length())
     for (i <- 1 to content.length) {
-      content(i - 1) = flatTable(i)
+      content(i - 1) = flatTable[Any](i) match {
+        case e: Int => ev.fromType(e)
+        case e: Float => ev.fromType(e)
+        case e: Double => ev.fromType(e)
+        case _ => throw new IllegalArgumentException(s"Not support numeric type " +
+          flatTable[Any](i).getClass.getName)
+      }
     }
 
     val dims = new ArrayBuffer[Int]()

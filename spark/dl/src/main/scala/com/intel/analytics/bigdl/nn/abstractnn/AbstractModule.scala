@@ -596,7 +596,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
         s" instead")
     val curNode = new ModuleNode[T](this)
     nodes.foreach(node => {
-      node.add(curNode, Edge(None))
+      node.add(curNode, Edge())
     })
     curNode
   }
@@ -609,9 +609,9 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
    */
   def inputs(first: (ModuleNode[T], Int), nodesWithIndex : (ModuleNode[T], Int)*): ModuleNode[T] = {
     val curNode = new ModuleNode[T](this)
-    first._1.add(curNode, Edge(Option(first._2)))
+    first._1.add(curNode, Edge(first._2))
     nodesWithIndex.foreach(nodeWithIndex => {
-      nodeWithIndex._1.add(curNode, Edge(Option(nodeWithIndex._2)))
+      nodeWithIndex._1.add(curNode, Edge(nodeWithIndex._2))
     })
     curNode
   }

@@ -80,7 +80,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
         var toOffset = 1
         val prevTensors = node.prevNodesAndEdges.flatMap(n => {
           val tensors = extractTensors(n._1.element.output, n._2.fromIndex)
-          connectionMap(n) = (n._2.fromIndex.getOrElse(1), toOffset, tensors.length)
+          connectionMap(n._2) = (n._2.fromIndex.getOrElse(1), toOffset, tensors.length)
           toOffset += tensors.length
           tensors
         })
@@ -95,14 +95,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
       i += 1
     }
 
-    // If each output module outputs multiple tensors, we only output the the first tensor for each
-    // output module.
-    output = if (outputs.length == 1) {
-      outputs(0).element.output
-    } else {
-      seqToTable(outputs.map(n => extractTensors(n.element.output,
-        Option(Tensor.START_INDEX)).head))
-    }
+    output = dummyOutput.element.output
     output
   }
 
@@ -119,7 +112,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
       }
 
       curNode.nextNodesAndEdges.foreach(n => {
-        val (startIndexPrev, startIndexNext, nTensor) = connectionMap(n)
+        val (startIndexPrev, startIndexNext, nTensor) = connectionMap(n._2)
         val nextGradOutput = extractTensors(n._1.element.gradInput, Some(startIndexNext), nTensor)
         curGradOutput = accActivity(curGradOutput, nextGradOutput, startIndexPrev, nTensor)
       })
@@ -179,7 +172,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
       }
 
       curNode.nextNodesAndEdges.foreach(n => {
-        val (startIndexPrev, startIndexNext, nTensor) = connectionMap(n)
+        val (startIndexPrev, startIndexNext, nTensor) = connectionMap(n._2)
         val nextGradOutput = extractTensors(n._1.element.gradInput, Some(startIndexNext), nTensor)
         curGradOutput = accActivity(curGradOutput, nextGradOutput, startIndexPrev, nTensor)
       })
@@ -225,7 +218,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
 
   // Add a dummy output node, to get an one end graph. So the nodes that are not dependent by
   // the outputs will be excluded
-  private val dummyOutput = new ModuleNode[T](new Dummy[T]())
+  private val dummyOutput = new ModuleNode[T](new Identity[T]())
   // Add a dummy output node for backward graph,
   // dummyOutputGrad has the same function as dummyOutput
   // used to construct a backward graph
@@ -241,27 +234,24 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
   /**
    * Execution plan
    */
-  private val forwardExecutions = backGraph.topologySort
-    .filter(!_.element.isInstanceOf[Dummy[T]]).reverse
+  private val forwardExecutions = backGraph.topologySort.reverse
   private var backwardExecutions: Array[Node[AbstractModule[Activity, Activity, T]]] = null
 
-  modules.appendAll(forwardExecutions.map(
-    _.element.asInstanceOf[AbstractModule[Activity, Activity, T]]))
+  modules.appendAll(forwardExecutions.filter(n => !n.eq(dummyOutput)).map(_.element))
 
   // NodeAndEdge -> (fromOffset, toOffset, length)
-  private val connectionMap: mutable.HashMap[(Node[AbstractModule[Activity, Activity, T]], Edge),
-    (Int, Int, Int)] = new mutable.HashMap[(Node[AbstractModule[Activity, Activity, T]], Edge),
-    (Int, Int, Int)]()
+  private val connectionMap: mutable.HashMap[Edge, (Int, Int, Int)] =
+    new mutable.HashMap[Edge, (Int, Int, Int)]()
 
   /**
    * build is needed when the stopGrad is changed
    */
-  def build(): this.type = {
+  private[bigdl] def build(): this.type = {
     val gradGraph = backGraph.cloneGraph()
     dummyOutputGrad = gradGraph.source
     val nodes = gradGraph.DFS
     nodes.filter(x => isStopGradient(x.element)).foreach(_.removePrevEdges())
-    backwardExecutions = gradGraph.topologySort.filter(!_.element.isInstanceOf[Dummy[T]])
+    backwardExecutions = gradGraph.topologySort.filter(n => !n.eq(dummyOutputGrad))
     clearState()
     this
   }
@@ -273,7 +263,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
   checkRoots
   build
 
-  private val gradOutputBP = new Array[Activity](forwardExecutions.length)
+  private val gradOutputBP = new Array[Activity](forwardExecutions.length - 1)
 
   private def checkRoots: Unit = {
     val roots = forwardExecutions.filter(_.prevNodes.size == 0)
@@ -389,11 +379,11 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
   }
 
   /**
-   * get forward executions
+   * get forward executions, the dummy node will be filtered
    * @return
    */
   def getForwardExecutions: Array[Node[AbstractModule[Activity, Activity, T]]] = {
-    forwardExecutions
+    forwardExecutions.filter(n => !n.eq(dummyOutput))
   }
 
   /**
@@ -425,7 +415,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
     } else {
       var t = 0
       var i = startIndex
-      while(i < nTensor) {
+      while(t < nTensor) {
         val res = accTensor(activity.toTable.getOrElse[Tensor[T]](i, null), tensors(t))
         activity.toTable(i) = res
         i += 1
@@ -579,10 +569,4 @@ object Graph extends ContainerSerializable {
     graphBuilder.putAttr("outputNames", outputNamesBuilder.build)
 
   }
-}
-
-private[bigdl] class Dummy[T: ClassTag]()(implicit ev: TensorNumeric[T])
-  extends AbstractModule[Activity, Tensor[T], T] {
-  override def updateOutput(input: Activity): Tensor[T] = null
-  override def updateGradInput(input: Activity, gradOutput: Tensor[T]): Activity = null
 }

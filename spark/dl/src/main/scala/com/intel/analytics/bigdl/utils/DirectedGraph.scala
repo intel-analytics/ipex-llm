@@ -137,8 +137,8 @@ class DirectedGraph[T](val source : Node[T], val reverse : Boolean = false) exte
       oldToNew.put(node, new Node[T](node.element))
     })
     bfs.foreach(node => {
-      node.prevNodes.foreach(prev => {
-        oldToNew.get(prev) -> oldToNew.get(node)
+      node.prevNodesAndEdges.foreach(prevNodeAndEdge => {
+        oldToNew.get(prevNodeAndEdge._1).add(oldToNew.get(node), prevNodeAndEdge._2)
       })
     })
     new DirectedGraph[T](oldToNew.get(source), reverse)
@@ -208,7 +208,7 @@ class Node[T](val element: T) extends Serializable {
    * @param node another node
    * @return another node
    */
-  def add(node: Node[T], e: Edge = Edge.Default): Node[T] = {
+  def add(node: Node[T], e: Edge = Edge()): Node[T] = {
     if (!node.prevs.contains((this, e))) node.prevs.append((this, e))
     if (!this.nexts.contains((node, e))) this.nexts.append((node, e))
     node
@@ -219,7 +219,7 @@ class Node[T](val element: T) extends Serializable {
    *  @param node another node
    *  @return current node
    */
-  def delete(node: Node[T], e: Edge = Edge.Default): Node[T] = {
+  def delete(node: Node[T], e: Edge = Edge()): Node[T] = {
     if (node.prevs.contains((this, e))) node.prevs.-=((this, e))
     if (this.nexts.contains((node, e))) this.nexts.-=((node, e))
     this
@@ -272,8 +272,9 @@ object Node {
  * An edge in the graph
  * @param fromIndex A preserved position to store meta info.
  */
-private[bigdl] case class Edge(fromIndex: Option[Int])
+private[bigdl] class Edge private (val fromIndex: Option[Int])
 
 object Edge {
-  val Default = Edge(None)
+  def apply(value : Int): Edge = new Edge(Some(value))
+  def apply(): Edge = new Edge(None)
 }

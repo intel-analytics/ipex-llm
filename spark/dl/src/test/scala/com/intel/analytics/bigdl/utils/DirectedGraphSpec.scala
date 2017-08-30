@@ -27,11 +27,11 @@ class DirectedGraphSpec extends FlatSpec with Matchers {
     nodeA.nextNodes.length should be(1)
     nodeA.nextEdges.length should be(1)
     nodeA.nextNodes(0) should be(nodeB)
-    nodeA.nextEdges(0) should be(Edge.Default)
+    nodeA.nextEdges(0) should be(Edge())
     nodeB.prevNodes.length should be(1)
     nodeB.prevEdges.length should be(1)
     nodeB.prevNodes(0) should be(nodeA)
-    nodeB.prevEdges(0) should be(Edge.Default)
+    nodeB.prevEdges(0) should be(Edge())
     nodeB.nextNodes.length should be(0)
     nodeB.nextEdges.length should be(0)
   }
@@ -53,17 +53,17 @@ class DirectedGraphSpec extends FlatSpec with Matchers {
   "Node add with edge" should "be correct" in {
     val nodeA = new Node("A")
     val nodeB = new Node("B")
-    val test = nodeA.add(nodeB, Edge(Some(1)))
+    val test = nodeA.add(nodeB, Edge(1))
     test should be(nodeB)
     nodeA.prevNodes.length should be(0)
     nodeA.nextNodes.length should be(1)
     nodeA.nextEdges.length should be(1)
     nodeA.nextNodes(0) should be(nodeB)
-    nodeA.nextEdges(0) should be(Edge(Some(1)))
+    nodeA.nextEdges(0) should be(Edge(1))
     nodeB.prevNodes.length should be(1)
     nodeB.prevEdges.length should be(1)
     nodeB.prevNodes(0) should be(nodeA)
-    nodeB.prevEdges(0) should be(Edge(Some(1)))
+    nodeB.prevEdges(0) should be(Edge(1))
     nodeB.nextNodes.length should be(0)
     nodeB.nextEdges.length should be(0)
   }
@@ -71,8 +71,8 @@ class DirectedGraphSpec extends FlatSpec with Matchers {
   "Node add with edge" should "ignore duplicated add" in {
     val nodeA = new Node("A")
     val nodeB = new Node("B")
-    val test = nodeA.add(nodeB, Edge(Some(1)))
-    nodeA.add(nodeB, Edge(Some(1)))
+    val test = nodeA.add(nodeB, Edge(1))
+    nodeA.add(nodeB, Edge(1))
     test should be(nodeB)
     nodeA.prevNodes.length should be(0)
     nodeA.nextNodes.length should be(1)
@@ -81,7 +81,7 @@ class DirectedGraphSpec extends FlatSpec with Matchers {
     nodeB.prevNodes(0) should be(nodeA)
     nodeB.nextNodes.length should be(0)
 
-    nodeA.add(nodeB, Edge(Some(2)))
+    nodeA.add(nodeB, Edge(2))
     nodeA.prevNodes.length should be(0)
     nodeA.nextNodes.length should be(2)
     nodeA.nextNodes(0) should be(nodeB)
@@ -327,5 +327,46 @@ class DirectedGraphSpec extends FlatSpec with Matchers {
     set should contain(nodeB)
     set should contain(nodeC)
     set should contain(nodeD)
+  }
+
+  "Edge" should "be not equal for different instances" in {
+    val edge1 = Edge(1)
+    val edge2 = Edge(1)
+
+    edge1.equals(edge2) should be(false)
+
+    val edge3 = Edge()
+    val edge4 = Edge()
+
+    edge3.equals(edge4) should be(false)
+  }
+
+  "Clone graph" should "be correct" in {
+    val nodeA = new Node("A")
+    val nodeB = new Node("B")
+    val nodeC = new Node("C")
+    val nodeD = new Node("D")
+    nodeA -> nodeB -> nodeC
+    nodeB -> nodeD
+
+    val graph = nodeA.graph()
+    val cloneGraph = graph.cloneGraph()
+    graph.topologySort.map(_.element) should be(cloneGraph.topologySort.map(_.element))
+  }
+
+  "Clone graph" should "should reuse the edge" in {
+    val nodeA = new Node("A")
+    val nodeB = new Node("B")
+    val nodeC = new Node("C")
+    val nodeD = new Node("D")
+    nodeA -> nodeB -> nodeC
+    nodeB -> nodeD
+
+    val graph = nodeA.graph()
+    val cloneGraph = graph.cloneGraph()
+    graph.topologySort.zip(cloneGraph.topologySort).foreach(n => {
+      n._1.prevEdges should be(n._2.prevEdges)
+      n._1.nextEdges should be(n._2.nextEdges)
+    })
   }
 }
