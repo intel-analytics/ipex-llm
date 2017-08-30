@@ -203,7 +203,7 @@ trait ModuleSerializable extends Loadable with Savable{
     }
   }
 
-  private def copy2BigDLTensor[T: ClassTag](tensor : Tensor[T], serializedTensor : BigDLTensor)
+  protected def copy2BigDLTensor[T: ClassTag](tensor : Tensor[T], serializedTensor : BigDLTensor)
                                            (implicit ev: TensorNumeric[T]) : Unit = {
     val dataType = serializedTensor.getDatatype
     if (dataType == DataType.FLOAT) {
@@ -260,15 +260,16 @@ trait ModuleSerializable extends Loadable with Savable{
     }
   }
 
-  private def copyFromBigDLTensor[T: ClassTag](tensor : Tensor[T],
+  protected def copyFromBigDLTensor[T: ClassTag](tensor : Tensor[T],
     serializedTensor : BigDLTensor.Builder)(implicit ev: TensorNumeric[T]) : Unit = {
     import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
     import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericDouble
     val tensorData = tensor.storage().array()
     if (ev == NumericFloat) {
+      val offset = tensor.storageOffset() - 1
       var i = 0
-      while (i < tensorData.length) {
-        serializedTensor.addFloatData(ev.toType[Float](tensorData(i)))
+      while (i < tensor.nElement()) {
+        serializedTensor.addFloatData(ev.toType[Float](tensorData(i + offset)))
         i += 1
       }
       serializedTensor.setDatatype(DataType.FLOAT)
