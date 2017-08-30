@@ -267,6 +267,8 @@ class TimeDistributed[T : ClassTag] (val layer: TensorModule[T])
       layer, inputSize, gradOutputSize, outputSize)
     state.filter(_ != null).map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
+
+  override def toString(): String = s"${getPrintName}${layer}"
 }
 
 object TimeDistributed {
