@@ -304,7 +304,7 @@ object Engine {
     setNodeNumber(nodeNum)
     setCoreNumber(coreNum)
     // By default partition number is the same with node number
-    if (parNumber == 0) {
+    if (partitionNum == 0) {
       setPartitionNumber(nodeNum)
     }
   }
@@ -411,15 +411,15 @@ object Engine {
     }
   }
 
-  private var parNumber = 0
+  private var partitionNum = 0
   private[bigdl] def partitionNumber(): Int = {
-    parNumber
+    partitionNum
   }
 
   /**
    * @param n
    */
   private[bigdl] def setPartitionNumber(n : Int): Unit = {
-    parNumber = n
+    partitionNum = n
   }
 }

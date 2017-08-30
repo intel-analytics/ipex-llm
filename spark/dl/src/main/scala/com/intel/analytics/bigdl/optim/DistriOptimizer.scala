@@ -156,7 +156,7 @@ object DistriOptimizer {
       metrics.set("aggregrateGradientParition average executor", 0.0, sc, Engine.nodeNumber())
       metrics.set("send weights average", 0.0, sc, Engine.nodeNumber())
       metrics.set("compute weight average", 0.0, sc, Engine.nodeNumber())
-      metrics.set("send gradient partition", 0.0, sc, partitionNum)
+      metrics.set("send complete gradient", 0.0, sc, partitionNum)
       metrics.set("aggregate local gradient", 0.0, sc, Engine.nodeNumber())
 
       val driverMetrics = metrics
@@ -290,14 +290,14 @@ object DistriOptimizer {
             driverMetrics.add("put gradient", System.nanoTime() - time)
           } else {
             time = System.nanoTime()
-            parameters.sendGradients(cached.gradient, TaskContext.getPartitionId())
-            driverMetrics.add("send gradient partition", System.nanoTime() - time)
+            parameters.sendCompleteGradients(cached.gradient, TaskContext.getPartitionId())
+            driverMetrics.add("send complete gradient", System.nanoTime() - time)
           }
 
           Iterator.single(finishedThreads.size)
         }).reduce(_ + _)
 
-      val job2start = System.nanoTime()
+      val processGradientStart = System.nanoTime()
       if (partitionNum != Engine.nodeNumber()) {
         dummyRDD.mapPartitions { iter =>
           val executorId = SparkEnv.get.executorId
@@ -312,13 +312,13 @@ object DistriOptimizer {
           Iterator.empty
         }.count()
       }
-      val job2end = System.nanoTime()
+      val processGradientsEnd = System.nanoTime()
 
       dropModelNumBatch += (driverSubModelNum - finishedModelNum)
       if (dropPercentage == 0 || finishedModelNum >= driverSubModelNum * (1-maxDropPercentage)) {
         val value = lossSum.value / finishedModelNum
 
-        val job3start = System.nanoTime()
+        val processWeightStart = System.nanoTime()
         dummyRDD.mapPartitions { iter =>
           val optimMethod = iter.next()
           val executorId = SparkEnv.get.executorId
@@ -343,12 +343,12 @@ object DistriOptimizer {
           optimMethod.optimize(_ => (ev.fromType(value), gradients), weights)
           driverMetrics.add("compute weight average", System.nanoTime() - time)
           time = System.nanoTime()
-          parameters.putWeightExecutor()
+          parameters.sendWeightPartition()
           driverMetrics.add("send weights average", System.nanoTime() - time)
           parameters.syncWeight = false
           Iterator.empty
         }.count()
-        val job3end = System.nanoTime()
+        val processWeightEnd = System.nanoTime()
 
         accumulateCount += recordsNum.value
         val end = System.nanoTime()
@@ -367,8 +367,9 @@ object DistriOptimizer {
         logger.info(s"${_header} Train ${recordsNum.value} in ${(end - start) / 1e9}seconds. " +
           s"Throughput is ${driverState("Throughput")} records/second. Loss is ${
             driverState("Loss")}. ${optimMethod.getHyperParameter()}")
-        logger.debug(s"job1: ${(job2start-start)/1e9} job2: ${(job2end-job2start)/1e9}," +
-          s"job3: ${(job3end-job3start)/1e9}" )
+        logger.debug(s"job1: ${(processGradientStart-start)/1e9}" +
+          s"job2: ${(processGradientsEnd-processGradientStart)/1e9}," +
+          s"job3: ${(processWeightEnd-processWeightStart)/1e9}" )
         logger.debug("\n" + metrics.summary())
         logger.debug("Dropped modules: " + (driverSubModelNum - finishedModelNum))
 

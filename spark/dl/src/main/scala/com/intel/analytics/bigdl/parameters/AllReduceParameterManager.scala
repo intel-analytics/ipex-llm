@@ -32,7 +32,7 @@ import scala.collection.JavaConverters._
 import scala.collection.mutable.HashMap
 import scala.reflect._
 
-object AllReduceParameterManager {
+private[bigdl] object AllReduceParameterManager {
   val logger = Logger.getLogger(getClass)
 
   private val nextId = new AtomicInteger(0)
@@ -78,7 +78,7 @@ object AllReduceParameterManager {
  * @param size size of the parameter (1D vector)
  * @param master ParameterManagerMaster endpoint
  */
-class AllReduceParameterManager(val id: Int, val executorId: Int, executorNum: Int,
+private[bigdl] class AllReduceParameterManager(val id: Int, val executorId: Int, executorNum: Int,
   partitionNum: Int, size: Int, val master: ParameterManagerMaster) {
   import AllReduceParameterManager._
 
@@ -271,7 +271,7 @@ class AllReduceParameterManager(val id: Int, val executorId: Int, executorNum: I
    * Put the portion of the weights that this node is responsible for to the block manager.
    * Weights are placed locally, then pulled when needed by other nodes.
    */
-  def putWeightExecutor[T: ClassTag]() : Unit = {
+  def sendWeightPartition[T: ClassTag]() : Unit = {
     val weightExecutorId = getWeightExecutorId()
     val weightExecutor = getLocalParameter(weightExecutorId)
     val blockId = getWeightBlockId(executorId)
@@ -293,8 +293,8 @@ class AllReduceParameterManager(val id: Int, val executorId: Int, executorNum: I
       .getOrElse(throw new IllegalStateException("Please initialize AllReduceParameter first!"))
   }
 
-  /** Put a gradient in local blockmanager */
-  def sendGradients[T: ClassTag](gradient: Tensor[T], pid: Int): Unit = {
+  /** Put a complete gradient in local blockmanager, waiting for another job to aggregate */
+  def sendCompleteGradients[T: ClassTag](gradient: Tensor[T], pid: Int): Unit = {
     val gradientsId = getGradientPartitionId(pid)
 
     val gradients = BlockManagerWrapper.getLocal(gradientsId)
