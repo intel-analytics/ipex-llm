@@ -101,7 +101,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
       nOutput = topology.hiddenSizeOfPreTopo,
       batchNormParams.eps,
       batchNormParams.momentum,
-      affine = true,
+      affine = batchNormParams.affine,
       batchNormParams.initWeight,
       batchNormParams.initBias,
       batchNormParams.initGradWeight,
@@ -486,6 +486,8 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     val state = Seq(super.hashCode(), cells)
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
+
+  override def toString(): String = s"${getPrintName}${modules}"
 }
 
 object Recurrent extends ContainerSerializable {
@@ -552,6 +554,11 @@ object Recurrent extends ContainerSerializable {
       recurrent.batchNormParams.initGradBias =
         DataConverter.getAttributeValue(bnormInitGradBiasAttr)
           .asInstanceOf[Tensor[T]]
+
+      val bnormAffineAttr = attrMap.get("bnormAffine")
+      recurrent.batchNormParams.affine =
+        DataConverter.getAttributeValue(bnormAffineAttr)
+        .asInstanceOf[Boolean]
     }
 
     createBigDLModule(model, recurrent)
@@ -607,6 +614,11 @@ object Recurrent extends ContainerSerializable {
         recurrent.batchNormParams.initGradBias, ModuleSerializer.tensorType)
       recurrentBuilder.putAttr("bnormInitGradBias", bnormInitGradBiasBuilder.build)
 
+      val bnormAffineBuilder = AttrValue.newBuilder
+      DataConverter.setAttributeValue(bnormAffineBuilder,
+        recurrent.batchNormParams.affine, universe.typeOf[Boolean])
+      recurrentBuilder.putAttr("bnormAffine", bnormAffineBuilder.build)
+
       true
     } else {
       false
@@ -627,4 +639,5 @@ case class BatchNormParams[T : ClassTag](
              var initWeight: Tensor[T] = null,
              var initBias: Tensor[T] = null,
              var initGradWeight: Tensor[T] = null,
-             var initGradBias: Tensor[T] = null)(implicit ev: TensorNumeric[T])
+             var initGradBias: Tensor[T] = null,
+             var affine: Boolean = true)(implicit ev: TensorNumeric[T])
