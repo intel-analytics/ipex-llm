@@ -219,9 +219,15 @@ class Node[T](val element: T) extends Serializable {
    *  @param node another node
    *  @return current node
    */
-  def delete(node: Node[T], e: Edge = Edge()): Node[T] = {
-    if (node.prevs.contains((this, e))) node.prevs.-=((this, e))
-    if (this.nexts.contains((node, e))) this.nexts.-=((node, e))
+  def delete(node: Node[T], e: Edge = null): Node[T] = {
+    if (e != null) {
+      if (node.prevs.contains((this, e))) node.prevs.-=((this, e))
+      if (this.nexts.contains((node, e))) this.nexts.-=((node, e))
+    } else {
+      val curNode = this  // Because of the closure
+      node.prevs.filter(_._1 == curNode).foreach(k => node.prevs.-=(k))
+      this.nexts.filter(_._1 == node).foreach(k => this.nexts.-=(k))
+    }
     this
   }
 
@@ -240,8 +246,9 @@ class Node[T](val element: T) extends Serializable {
    * @return current node
    */
   def removePrevEdges(): Node[T] = {
+    val curNode = this  // Because of the closure
     prevs.map(_._1).foreach(pn =>
-      pn.nexts.filter(_._1 == this).foreach(e =>
+      pn.nexts.filter(_._1 == curNode).foreach(e =>
         pn.nexts -= e
       )
     )

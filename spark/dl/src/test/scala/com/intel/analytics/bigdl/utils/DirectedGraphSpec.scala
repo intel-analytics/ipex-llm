@@ -333,4 +333,50 @@ class DirectedGraphSpec extends FlatSpec with Matchers {
       n._1.nextEdges should be(n._2.nextEdges)
     })
   }
+
+  "delete edge" should "be correct when specify edge" in {
+    val e1 = Edge(1)
+    val e2 = Edge(2)
+    val nodeA = new Node("A")
+    val nodeB = new Node("B")
+    nodeA.add(nodeB, e1)
+    nodeA.add(nodeB, e2)
+    nodeA.delete(nodeB, e1)
+    nodeA.nextEdges.length should be(1)
+    nodeB.prevEdges.length should be(1)
+  }
+
+  "delete edge" should "be correct when not specify edge" in {
+    val e1 = Edge(1)
+    val e2 = Edge(2)
+    val nodeA = new Node("A")
+    val nodeB = new Node("B")
+    nodeA.add(nodeB, e1)
+    nodeA.add(nodeB, e2)
+    nodeA.delete(nodeB)
+    nodeA.nextEdges.length should be(0)
+    nodeB.prevEdges.length should be(0)
+  }
+
+  "delete edge" should "be correct when use default edge" in {
+    val nodeA = new Node("A")
+    val nodeB = new Node("B")
+    nodeA -> nodeB
+    nodeA.delete(nodeB)
+    nodeA.nextEdges.length should be(0)
+    nodeB.prevEdges.length should be(0)
+  }
+
+  "remove previous edge" should "be correct" in {
+    val nodeA = new Node("A")
+    val nodeB = new Node("B")
+    val nodeC = new Node("C")
+    nodeA -> nodeC
+    nodeA -> nodeB
+    nodeB -> nodeC
+    nodeC.removePrevEdges()
+    nodeC.prevEdges.length should be(0)
+    nodeA.nextEdges.length should be(1)
+    nodeB.nextEdges.length should be(0)
+  }
 }

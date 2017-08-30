@@ -737,9 +737,14 @@ object Tensor {
     val content = new Array[T](flatTable.length())
     for (i <- 1 to content.length) {
       content(i - 1) = flatTable[Any](i) match {
+        case e: Boolean => ev.fromType(e)
+        case e: Char => ev.fromType(e)
+        case e: Short => ev.fromType(e)
         case e: Int => ev.fromType(e)
+        case e: Long => ev.fromType(e)
         case e: Float => ev.fromType(e)
         case e: Double => ev.fromType(e)
+        case e: String => ev.fromType(e)
         case _ => throw new IllegalArgumentException(s"Not support numeric type " +
           flatTable[Any](i).getClass.getName)
       }
