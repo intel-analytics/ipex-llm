@@ -147,50 +147,50 @@ class Equal[T: ClassTag]()
 
   override def updateOutput(input: Table): Tensor[T] = {
     output.resizeAs(input(1))
-    input[Tensor[_]](1) match {
-      case t1 if t1.getType() == FloatType =>
+    input[Tensor[_]](1).getType() match {
+      case FloatType =>
         zipWith[Float, Float, Boolean](
           input[Tensor[Float]](1),
           input[Tensor[Float]](2),
           output.asInstanceOf[Tensor[Boolean]],
           (a, b) => a == b)
-      case t2 if t2.getType() == BooleanType =>
+      case BooleanType =>
         zipWith[Boolean, Boolean, Boolean](
           input[Tensor[Boolean]](1),
           input[Tensor[Boolean]](2),
           output.asInstanceOf[Tensor[Boolean]],
           (a, b) => a == b)
-      case t3 if t3.getType() == DoubleType =>
+      case DoubleType =>
         zipWith[Double, Double, Boolean](
           input[Tensor[Double]](1),
           input[Tensor[Double]](2),
           output.asInstanceOf[Tensor[Boolean]],
           (a, b) => a == b)
-      case t4 if t4.getType() == CharType =>
+      case CharType =>
         zipWith[Char, Char, Boolean](
           input[Tensor[Char]](1),
           input[Tensor[Char]](2),
           output.asInstanceOf[Tensor[Boolean]],
           (a, b) => a == b)
-      case t5 if t5.getType() == StringType =>
+      case StringType =>
         zipWith[String, String, Boolean](
           input[Tensor[String]](1),
           input[Tensor[String]](2),
           output.asInstanceOf[Tensor[Boolean]],
           (a, b) => a == b)
-      case t6 if t6.getType() == LongType =>
+      case LongType =>
         zipWith[Long, Long, Boolean](
           input[Tensor[Long]](1),
           input[Tensor[Long]](2),
           output.asInstanceOf[Tensor[Boolean]],
           (a, b) => a == b)
-      case t7 if t7.getType() == ShortType =>
+      case ShortType =>
         zipWith[Short, Short, Boolean](
           input[Tensor[Short]](1),
           input[Tensor[Short]](2),
           output.asInstanceOf[Tensor[Boolean]],
           (a, b) => a == b)
-      case t8 if t8.getType() == IntType =>
+      case IntType =>
         zipWith[Int, Int, Boolean](
           input[Tensor[Int]](1),
           input[Tensor[Int]](2),
