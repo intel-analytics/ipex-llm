@@ -134,7 +134,7 @@ class Recurrent[T : ClassTag]()
    * @param src
    * @param dst
    */
-  private def copy(src: ArrayBuffer[Tensor[T]], dst: Tensor[T], offset: Int): Unit = {
+  private def copy(src: Array[Tensor[T]], dst: Tensor[T], offset: Int): Unit = {
     var t = 1
     while ((t + offset) <= times) {
       dst.select(timeDim, t + offset).copy(src(t - 1))
@@ -211,7 +211,7 @@ class Recurrent[T : ClassTag]()
     output.resize(outputSize)
     // Clone N modules along the sequence dimension.
     extend(outputSize)
-
+    
     /**
      * currentInput forms a T() type. It contains two elements, hidden and input.
      * Each time it will feed the cell with T(hidden, input) (or T(input, hidden) depends on
@@ -224,24 +224,28 @@ class Recurrent[T : ClassTag]()
     if (!topology.isInstanceOf[MultiCell[T]]) {
       currentInput(hidDim) = if (initState != null) initState
       else hidden
+
+      while (i <= times) {
+        currentInput(inputDim) = outputCell.select(timeDim, i)
+        cells(i - 1).forward(currentInput)
+        currentInput(hidDim) = cells(i - 1).output.toTable(hidDim)
+        i += 1
+      }
     } else {
-      topology.asInstanceOf[MultiCell[T]].states = if (initStates != null) initStates
+      val states = if (initStates != null) initStates
       else {
         Array.fill[Activity](topology.asInstanceOf[MultiCell[T]].cells.size)(hidden)
       }
+      
+      cells.foreach(x => x.asInstanceOf[MultiCell[T]].states = states)
+
+      while (i <= times) {
+        cells(i - 1).forward(outputCell.select(timeDim, i))
+        i += 1
+      }
     }
-    while (i <= times) {
-      currentInput(inputDim) = outputCell.select(timeDim, i)
-      cells(i - 1).forward(currentInput)
-      currentInput(hidDim) = cells(i - 1).output.toTable(hidDim)
-      i += 1
-    }
-    copy(cells.map(x => x.output.toTable[Tensor[T]](inputDim)),
-        output, 0)
-    if (topology.isInstanceOf[MultiCell[T]]) {
-      val t = cells.map(x => x.output.toTable(hidDim).asInstanceOf[Activity]).toArray
-      setStates(t)
-    }
+    copy(cells.toArray.map(x => x.output.toTable[Tensor[T]](inputDim)),
+      output, 0)
     output
   }
 
@@ -282,19 +286,26 @@ class Recurrent[T : ClassTag]()
 
     var i = times
     while (i >= 1) {
-      currentGradOutput(inputDim) = gradOutput.select(timeDim, i)
-      _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
-        else hidden
-      _input(inputDim) = outputCell.select(timeDim, i)
       if (i == 1) {
         cells(i - 1).regluarized(true)
       } else {
         cells(i - 1).regluarized(false)
       }
-      cells(i - 1).accGradParameters(_input, currentGradOutput)
-      currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
+      if (!topology.isInstanceOf[MultiCell[T]]) {
+        currentGradOutput(inputDim) = gradOutput.select(timeDim, i)
+        _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
+        else hidden
+        _input(inputDim) = outputCell.select(timeDim, i)
+
+        cells(i - 1).accGradParameters(_input, currentGradOutput)
+        currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
+      } else {
+        cells(i - 1).accGradParameters(outputCell.select(timeDim, i),
+          gradOutput.select(timeDim, i))
+      }
       i -= 1
     }
+
     if (preTopology != null) {
       preTopology.accGradParameters(input, gradInputCell)
     }
@@ -326,7 +337,7 @@ class Recurrent[T : ClassTag]()
       currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
       i -= 1
     }
-    copy(cells.map(x => x.gradInput.toTable[Tensor[T]](inputDim)),
+    copy(cells.toArray.map(x => x.gradInput.toTable[Tensor[T]](inputDim)),
         gradInputCell, 0)
     if (preTopology != null) {
       gradInput = preTopology.updateGradInput(input, gradInputCell).toTensor[T]
@@ -366,7 +377,7 @@ class Recurrent[T : ClassTag]()
       gradInputCell
     }
     gradInputCell.resizeAs(outputCell)
-    copy(cells.map(x => x.gradInput.toTable[Tensor[T]](inputDim)),
+    copy(cells.toArray.map(x => x.gradInput.toTable[Tensor[T]](inputDim)),
       gradInputCell, 0)
 
     if (preTopology != null) {

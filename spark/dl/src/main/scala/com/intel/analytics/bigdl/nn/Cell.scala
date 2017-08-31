@@ -45,7 +45,7 @@ import scala.reflect.ClassTag
  */
 abstract class Cell[T : ClassTag](
   val hiddensShape: Array[Int],
-  var regularizers: Array[Regularizer[T]] = null
+  var regularizers: Array[Regularizer[T]]
 )(implicit ev: TensorNumeric[T])
   extends AbstractModule[Activity, Activity, T] {
 
@@ -134,22 +134,22 @@ abstract class Cell[T : ClassTag](
     }
   }
 
-  override def updateOutput(input: Activity): Activity = {
-    output = cell.forward(input)
+  override def updateOutput(input: Table): Table = {
+    output = cell.forward(input).toTable
     output
   }
 
-  override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
-    gradInput = cell.updateGradInput(input, gradOutput)
+  override def updateGradInput(input: Table, gradOutput: Table): Table = {
+    gradInput = cell.updateGradInput(input, gradOutput).toTable
     gradInput
   }
 
-  override def accGradParameters(input: Activity, gradOutput: Activity): Unit = {
+  override def accGradParameters(input: Table, gradOutput: Table): Unit = {
     cell.accGradParameters(input, gradOutput)
   }
 
-  override def backward(input: Activity, gradOutput: Activity): Activity = {
-    gradInput = cell.backward(input, gradOutput)
+  override def backward(input: Table, gradOutput: Table): Table = {
+    gradInput = cell.backward(input, gradOutput).toTable
     gradInput
   }
 
