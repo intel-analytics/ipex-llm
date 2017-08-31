@@ -228,16 +228,6 @@ class GraphSpec extends FlatSpec with Matchers {
     output should be(Tensor(T(5, 4, 10)))
   }
 
-  "Graph forward" should "be correct when connect a table and one of table element to a node" in {
-    val x = SplitTable(1).inputs()
-    val x1 = Identity().inputs(x(1))
-    val y = CAddTable().inputs(x, x1)
-
-    val graph = Graph(x, y)
-    val output = graph.forward(Tensor(T(T(1, 2, 3), T(4, 2, 7))))
-    output should be(Tensor(T(6, 6, 13)))
-  }
-
   "Graph forward" should "be correct when contains multi output node with table output" in {
     val x = Identity().inputs()
     val y = SplitTable(1).inputs(x)
@@ -390,17 +380,6 @@ class GraphSpec extends FlatSpec with Matchers {
     val output = graph.forward(Tensor(T(T(1, 2, 3), T(4, 2, 7))))
     val grads = graph.backward(Tensor(T(T(1, 2, 3), T(4, 2, 7))), Tensor(T(5, 4, 10)))
     grads should be(Tensor(T(T(5, 4, 10), T(5, 4, 10))))
-  }
-
-  "Graph backward" should "be correct when connect a table and one of table element to a node" in {
-    val x = SplitTable(1).inputs()
-    val x1 = Identity().inputs(x(1))
-    val y = CAddTable().inputs(x, x1)
-
-    val graph = Graph(x, y)
-    val output = graph.forward(Tensor(T(T(1, 2, 3), T(4, 2, 7))))
-    val grads = graph.backward(Tensor(T(T(1, 2, 3), T(4, 2, 7))), Tensor(T(5, 4, 10)))
-    grads should be(Tensor(T(T(10, 8, 20), T(5, 4, 10))))
   }
 
   "Graph forward/backward" should "be successful when there's output from internal node" in {
