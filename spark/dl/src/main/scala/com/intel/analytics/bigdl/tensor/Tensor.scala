@@ -454,6 +454,26 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
   def apply1(func: T => T): Tensor[T]
 
   /**
+   * Zip values of two other tensors with applying the function `func` on
+   * each two values element-wisely and assign the result value to the
+   * current tensor
+   *
+   * The two given tensors should has the same size of the current tensor
+   *
+   * @param t1 tensor 1
+   * @param t2 tensor 2
+   * @param func zip with the function
+   * @tparam A numeric type of tensor 1
+   * @tparam B numeric type of tensor 2
+   *
+   * @return self
+   */
+  def zipWith[A: ClassTag, B: ClassTag](
+    t1: Tensor[A],
+    t2: Tensor[B],
+    func: (A, B) => T): Tensor[T]
+
+  /**
    * Map value of another tensor to corresponding value of current tensor and apply function on
    * the two value and change the value of the current tensor
    * The another tensor should has the same size of the current tensor
