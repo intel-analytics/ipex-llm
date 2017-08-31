@@ -591,9 +591,6 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
    * @return node containing current module
    */
   def inputs(nodes : ModuleNode[T]*): ModuleNode[T] = {
-    require(this.isInstanceOf[AbstractModule[_, Tensor[T], T]],
-      s"AbstractModule: ${this.getClass.getName} has multiple outputs, please use (module, index)" +
-        s" instead")
     val curNode = new ModuleNode[T](this)
     nodes.foreach(node => {
       node.add(curNode, Edge())
