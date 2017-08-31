@@ -51,6 +51,10 @@ class Reshape[@specialized(Float, Double) T: ClassTag](
     nElement *= size(i - 1)
   }
 
+  // whether share the storage between input and output
+  // in this layer, if input is contiguous, inplace is true. otherwise, inplace is false
+  private var inplace: Boolean = true
+
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
 
     if ((batchMode.nonEmpty && !batchMode.get) ||
@@ -60,7 +64,10 @@ class Reshape[@specialized(Float, Double) T: ClassTag](
         s"reshape size is: ${nElement}")
       if (input.isContiguous()) output =
         input.view(size)
-      else output = input.contiguous().view(size)
+      else {
+        output = input.contiguous().view(size)
+        inplace = false
+      }
     }
     else {
       require(input.nElement() == nElement * input.size(1),
@@ -72,6 +79,7 @@ class Reshape[@specialized(Float, Double) T: ClassTag](
         output = input.view(batchSize)
       } else {
         output = input.contiguous().view(batchSize)
+        inplace = false
       }
     }
     output
@@ -128,6 +136,13 @@ class Reshape[@specialized(Float, Double) T: ClassTag](
   override def toString(): String = {
     s"${getPrintName}(${size.mkString("x")})"
   }
+
+  override def clearState(): this.type = {
+    if (!inplace) {
+      super.clearState()
+    }
+    this
+  }
 }
 
 object Reshape extends ModuleSerializable {
@@ -137,8 +152,9 @@ object Reshape extends ModuleSerializable {
     new Reshape[T](size, batchMode)
   }
 
-  override def loadModule[T: ClassTag](model : BigDLModule)
-                                      (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
+  override def doLoadModule[T: ClassTag](model : BigDLModule)
+    (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
+
     val attrMap = model.getAttrMap
     val size = DataConverter.getAttributeValue(attrMap.get("size")).
       asInstanceOf[Array[Int]]
@@ -150,18 +166,15 @@ object Reshape extends ModuleSerializable {
     } else if (batchModeV == 2) {
       batchMode = Some(true)
     }
-    val reshape = Reshape(size, batchMode).asInstanceOf[AbstractModule[Activity, Activity, T]]
-    createBigDLModule(model, reshape)
+    Reshape(size, batchMode).asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 
-  override def serializeModule[T: ClassTag](module : ModuleData[T])
-                                           (implicit ev: TensorNumeric[T]) : BigDLModule = {
+  override def doSerializeModule[T: ClassTag](module : ModuleData[T],
+                                           reshapeBuilder : BigDLModule.Builder)
+                                           (implicit ev: TensorNumeric[T]) : Unit = {
 
     val reshape = module.module.asInstanceOf[Reshape[T]]
-    val reshapeBuilder = BigDLModule.newBuilder()
-
-    val moduleType = reshape.getClass.getName
-    reshapeBuilder.setModuleType(moduleType)
+    super.doSerializeModule(module, reshapeBuilder)
 
     val sizeBuilder = AttrValue.newBuilder
     DataConverter.setAttributeValue(sizeBuilder, reshape.size,
@@ -176,7 +189,5 @@ object Reshape extends ModuleSerializable {
     DataConverter.setAttributeValue(batchModeBuilder, batchMode,
       universe.typeOf[Int])
     reshapeBuilder.putAttr("batchMode", batchModeBuilder.build)
-
-    createSerializeBigDLModule(reshapeBuilder, module)
   }
 }

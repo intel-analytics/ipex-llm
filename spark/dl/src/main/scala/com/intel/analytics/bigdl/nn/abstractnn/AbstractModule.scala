@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.tensor.{Tensor, TensorDataType}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.nn.{Graph, InitializationMethod, Module, Zeros}
+import com.intel.analytics.bigdl.nn.{Module, Utils}
 import com.intel.analytics.bigdl.utils.TorchObject.TYPE_MODULE
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.spark.rdd.RDD
@@ -202,6 +203,26 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
   def resetTimes(): Unit = {
     forwardTime = 0
     backwardTime = 0
+  }
+
+  /**
+   * freeze the layer, its parameters(weight/bias, if exists)
+   * are not changed in training process
+   */
+  def freeze(): this.type = {
+    setScaleW(0)
+    setScaleB(0)
+    this
+  }
+
+  /**
+   * "unfreeze" layer, i.e. make the layer parameters(weight/bias, if exists)
+   * to be trained(updated) in training process
+   */
+  def unFreeze(): this.type = {
+    setScaleW(1)
+    setScaleB(1)
+    this
   }
 
   /**
@@ -471,7 +492,10 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
   def setWeightsBias(newWeights: Array[Tensor[T]]): this.type = {
     require(parameters() != null, "this layer does not have weight/bias")
     require(parameters()._1.length == newWeights.length,
-      "the number of input weight/bias is not consistant with number of weight/bias of this layer")
+      "the number of input weight/bias is not consistant with " +
+        "number of weight/bias of this layer, " +
+        s"number of input ${parameters()._1.length}," +
+        s" number of output ${newWeights.length}")
     val weights = parameters()._1
     for(i <- newWeights.indices) {
       weights(i).copy(newWeights(i))

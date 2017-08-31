@@ -60,7 +60,7 @@ class ConvLSTMPeephole3DSpec extends FlatSpec with BeforeAndAfter with Matchers 
     val batchSize = 2
     val kernalW = 3
     val kernalH = 3
-    val model = Recurrent[Double]
+    val model = Recurrent[Double]()
         .add(ConvLSTMPeephole3D[Double](
           inputSize,
           hiddenSize,

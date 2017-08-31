@@ -81,6 +81,8 @@ abstract class Cell[T : ClassTag](
    */
   def preTopology: AbstractModule[Activity, Activity, T] = null
 
+  def hiddenSizeOfPreTopo: Int = hiddensShape(0)
+
   /**
    * resize the hidden parameters wrt the batch size, hiddens shapes.
    *
@@ -264,23 +266,24 @@ abstract class Cell[T : ClassTag](
 
 object CellSerializer extends ModuleSerializable {
 
-  override def loadModule[T: ClassTag](model : BigDLModule)
-                                      (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
-    val moduleData = super.loadModule(model)
-    val cellModule = moduleData.module.asInstanceOf[Cell[T]]
+  override def doLoadModule[T: ClassTag](model : BigDLModule)
+    (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
+    val module = super.doLoadModule(model)
+    val cellModule = module.asInstanceOf[Cell[T]]
 
     val attrMap = model.getAttrMap
     cellModule.cell = DataConverter.getAttributeValue(attrMap.get("cell")).
       asInstanceOf[AbstractModule[Activity, Activity, T]]
 
-    createBigDLModule(model, cellModule)
+    cellModule
   }
 
-  override def serializeModule[T: ClassTag](module : ModuleData[T])
-                                           (implicit ev: TensorNumeric[T]) : BigDLModule = {
-    val bigDLModule = super.serializeModule(module)
+  override def doSerializeModule[T: ClassTag](module : ModuleData[T],
+                                              cellModuleBuilder : BigDLModule.Builder)
+                                           (implicit ev: TensorNumeric[T]) : Unit = {
+
+    super.doSerializeModule(module, cellModuleBuilder)
     val cellModule = module.module.asInstanceOf[Cell[T]]
-    val cellModuleBuilder = BigDLModule.newBuilder(bigDLModule)
 
     val cellSerializerFlagBuilder = AttrValue.newBuilder
     DataConverter.setAttributeValue(cellSerializerFlagBuilder, true,
@@ -292,6 +295,5 @@ object CellSerializer extends ModuleSerializable {
       ModuleSerializer.abstractModuleType)
     cellModuleBuilder.putAttr("cell", cellBuilder.build)
 
-    createSerializeBigDLModule(cellModuleBuilder, module)
   }
 }

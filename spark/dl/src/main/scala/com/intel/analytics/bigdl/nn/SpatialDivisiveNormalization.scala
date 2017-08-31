@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.T
@@ -57,10 +57,13 @@ class SpatialDivisiveNormalization[T: ClassTag](
   if (kernel == null) kernel = Tensor.ones[T](9, 9)
 
   private val kdim = kernel.nDimension()
-  require(kdim == 1 || kdim == 2, "averaging kernel must be 2D or 1D")
-  require(kernel.size(1) % 2 != 0, "averaging kernel must have ODD dimensions")
+  require(kdim == 1 || kdim == 2, "averaging kernel must be 2D or 1D" +
+    s"averaging kernel dimension $kdim")
+  require(kernel.size(1) % 2 != 0, "averaging kernel must have ODD dimensions" +
+    s"averaging kernel dimension ${kernel.size(1)}")
   if (kdim == 2) {
-    require(kernel.size(2) % 2 != 0, "averaging kernel must have ODD dimensions")
+    require(kernel.size(2) % 2 != 0, "averaging kernel must have ODD dimensions" +
+      s"averaging kernel dimension ${kernel.size(2)}")
   }
 
   val padH = math.floor(kernel.size(1).toFloat/2).toInt
@@ -231,12 +234,12 @@ object SpatialDivisiveNormalization extends ModuleSerializable {
     new SpatialDivisiveNormalization[T](nInputPlane, kernel, threshold, thresval)
   }
 
-  override def loadModule[T: ClassTag](model : BigDLModule)
-                                      (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
-    val moduleData = super.loadModule(model)
-    val spatialDivisiveNormModule = moduleData.module.
+  override def doLoadModule[T: ClassTag](model : BigDLModule)
+    (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
+
+    val spatialDivisiveNormModule = super.doLoadModule(model).
       asInstanceOf[SpatialDivisiveNormalization[T]]
-    // val eanestimator = spatialDivisiveNormModule.cell
+
     val attrMap = model.getAttrMap
 
     spatialDivisiveNormModule.meanestimator = DataConverter.
@@ -259,14 +262,15 @@ object SpatialDivisiveNormalization extends ModuleSerializable {
       getAttributeValue(attrMap.get("thresholder")).
       asInstanceOf[Threshold[T]]
 
-    moduleData
+    spatialDivisiveNormModule
   }
 
-  override def serializeModule[T: ClassTag](module : ModuleData[T])
-                                           (implicit ev: TensorNumeric[T]) : BigDLModule = {
-    val bigDLModule = super.serializeModule(module)
+  override def doSerializeModule[T: ClassTag](module : ModuleData[T],
+                                              spatialDivisiveNormBuilder : BigDLModule.Builder)
+                                           (implicit ev: TensorNumeric[T]) : Unit = {
+
     val spatialDivisiveNormModule = module.module.asInstanceOf[SpatialDivisiveNormalization[T]]
-    val spatialDivisiveNormBuilder = BigDLModule.newBuilder(bigDLModule)
+    super.doSerializeModule(module, spatialDivisiveNormBuilder)
 
     val meanestimatorBuilder = AttrValue.newBuilder
     DataConverter.setAttributeValue(meanestimatorBuilder, spatialDivisiveNormModule.meanestimator,
@@ -293,6 +297,5 @@ object SpatialDivisiveNormalization extends ModuleSerializable {
       ModuleSerializer.tensorModuleType)
     spatialDivisiveNormBuilder.putAttr("thresholder", thresholderBuilder.build)
 
-    spatialDivisiveNormBuilder.build
   }
 }

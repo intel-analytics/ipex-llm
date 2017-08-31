@@ -15,13 +15,14 @@
  */
 package com.intel.analytics.bigdl.utils.tf
 
-import java.io.FileOutputStream
+import java.io.{FileOutputStream, OutputStream}
 import java.nio.ByteOrder
 
 import com.google.protobuf.CodedOutputStream
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.{File, FileWriter}
 import org.apache.log4j.Logger
 import org.tensorflow.framework._
 
@@ -59,7 +60,7 @@ object TensorflowSaver {
     val graphBuilder = GraphDef.newBuilder()
     inputs.foreach(graphBuilder.addNode(_))
 
-    model.executions.foreach(n => {
+    model.getForwardExecutions.foreach(n => {
       val nodeDefs = maps(n.element.getClass.getName).toTFDef(n.element, inputNodeCache(n.element),
         byteOrder)
       nodeDefs.foreach(nDef => {
@@ -75,15 +76,24 @@ object TensorflowSaver {
     extraNodes.foreach(graphBuilder.addNode(_))
 
     // Save to file
-    val os = new FileOutputStream(path)
-    val output = CodedOutputStream.newInstance(os)
-    val graph = graphBuilder.build()
-    logger.debug("Graph definition is:")
-    logger.debug(graph.toString)
-    graph.writeTo(output)
-    output.flush()
-    os.close()
-    logger.info(s"Save as tensorflow model file to $path")
+    var fw: FileWriter = null
+    var out: OutputStream = null
+    try {
+      fw = FileWriter(path)
+      out = fw.create(true)
+      val output = CodedOutputStream.newInstance(out)
+      val graph = graphBuilder.build()
+      logger.debug("Graph definition is:")
+      logger.debug(graph.toString)
+      graph.writeTo(output)
+      output.flush()
+      out.flush()
+      logger.info(s"Save as tensorflow model file to $path")
+    } finally {
+      if (out != null) out.close()
+      if (fw != null) fw.close()
+    }
+
   }
 
   /**

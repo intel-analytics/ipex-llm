@@ -53,14 +53,20 @@ class SmoothL1CriterionWithWeights[@specialized(Float, Double) T: ClassTag]
     var outsideW: Tensor[T] = null
     if (target.length() == 1) {
       hasWeights = false
-      require(input.nElement() == bboxTarget.nElement())
+      require(input.nElement() == bboxTarget.nElement(), s" " +
+        s"the length of bbox target, " +
+        s"input must be equal, input length ${input.nElement()}," +
+        s" bbox target length ${bboxTarget.nElement()}")
     } else {
       hasWeights = true
       insideW = target[Tensor[T]](2)
       outsideW = target[Tensor[T]](3)
       require(insideW.nElement() == outsideW.nElement() &&
         insideW.nElement() == bboxTarget.nElement(),
-        "the length of bbox target, insideW, outsideW must be equal")
+        s"the length of bbox target, insideW, outsideW must be equal, " +
+          s"bbox target ${bboxTarget.nElement()}," +
+          s"insideW ${insideW.nElement()}," +
+          s"outsideW ${outsideW.nElement()}")
     }
 
     if (diff == null) {
@@ -113,14 +119,20 @@ class SmoothL1CriterionWithWeights[@specialized(Float, Double) T: ClassTag]
     var outsideW: Tensor[T] = null
     if (target.length() == 1) {
       hasWeights = false
-      require(input.nElement() == bboxTarget.nElement())
+      require(input.nElement() == bboxTarget.nElement(),
+        "the length of bbox target, input must be equal, " +
+          s"input length ${input.nElement()}, " +
+          s"bbox target length ${bboxTarget.nElement()}")
     } else {
       hasWeights = true
       insideW = target[Tensor[T]](2)
       outsideW = target[Tensor[T]](3)
       require(insideW.nElement() == outsideW.nElement() &&
         insideW.nElement() == bboxTarget.nElement(),
-        "the length of bbox target, insideW, outsideW must be equal")
+        "the length of bbox target, insideW, outsideW must be equal, " +
+          s"bbox target ${bboxTarget.nElement()}," +
+          s"insideW ${insideW.nElement()}," +
+          s"outsideW ${outsideW.nElement()}")
     }
     val data = diff.storage().array()
     var i = 0
