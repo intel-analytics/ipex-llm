@@ -73,6 +73,13 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   var gradInput: A = Activity.allocate[A, T]()
 
   /**
+   * The flag of zero gradient.
+   * The accumulated gradients should be reset to zero if it is true.
+   * It should be reset to false after updating the gradients.
+   */
+  private var zeroGradFlag: Boolean = false
+
+  /**
    * The scale of gradient weight and gradient bias
    * before gradParameters being accumulated.
    */
@@ -340,10 +347,9 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   def accGradParameters(input: A, gradOutput: B): Unit = {}
 
   /**
-   * If the module has parameters, this will zero the accumulation of the gradients with respect
-   * to these parameters. Otherwise, it does nothing.
+   * It will only set the flag without actually reset a gradients to zero
    */
-  def zeroGradParameters(): Unit = {}
+  def zeroGradParameters(): Unit = { zeroGradFlag = true }
 
   def updateParameters(learningRate: T): Unit = {}
 
