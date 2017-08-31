@@ -25,7 +25,7 @@ class LogicalOr[T: ClassTag]()
   (implicit ev: TensorNumeric[T]) extends Operation[Table, T] {
   override def updateOutput(input: Table): Tensor[T] = {
     output.resizeAs(input(1)).copy(input(1))
-    ev.getType() match {
+    input[Tensor[_]](1).getType() match {
       case BooleanType =>
         output
           .toTensor[Boolean]

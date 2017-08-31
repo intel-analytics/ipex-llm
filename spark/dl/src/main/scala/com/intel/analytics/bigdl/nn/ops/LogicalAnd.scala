@@ -24,7 +24,7 @@ import scala.reflect.ClassTag
 class LogicalAnd[T: ClassTag]()
   (implicit ev: TensorNumeric[T]) extends Operation[Table, T] {
   override def updateOutput(input: Table): Tensor[T] = {
-    ev.getType() match {
+    input[Tensor[_]](1).getType() match {
       case BooleanType =>
         output.asInstanceOf[Tensor[Boolean]].resizeAs(input(1)).copy(input(1))
         output
