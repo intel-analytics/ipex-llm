@@ -865,6 +865,32 @@ class SpatialConvolution(Layer):
         return self
 
 
+class TemporalMaxPooling(Layer):
+
+    '''
+    Applies 1D max-pooling operation in kW regions by step size dW steps.
+    Input sequence composed of nInputFrame frames.
+    The input tensor in forward(input) is expected to be a 2D tensor (nInputFrame x inputFrameSize)
+     or a 3D tensor (nBatchFrame x nInputFrame x inputFrameSize).
+
+    If the input sequence is a 2D tensor of dimension nInputFrame x inputFrameSize,
+    the output sequence will be nOutputFrame x inputFrameSize where
+
+    nOutputFrame = (nInputFrame - k_w) / d_w + 1
+
+    :param k_w:              kernel width
+    :param d_w:              step size in width
+
+    >>> temporalMaxPooling = TemporalMaxPooling(2, 2)
+    creating: createTemporalMaxPooling
+    '''
+
+    def __init__(self,
+                 k_w,
+                 d_w,
+                 bigdl_type="float"):
+        super(TemporalMaxPooling, self).__init__(None, bigdl_type, k_w,
+                                                d_w)
 class SpatialMaxPooling(Layer):
 
     '''
