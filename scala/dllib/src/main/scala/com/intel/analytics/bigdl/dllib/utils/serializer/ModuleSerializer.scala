@@ -163,6 +163,8 @@ object ModuleSerializer extends ModuleSerializable{
 
   private def registerModules : Unit = {
 
+    registerModule("com.intel.analytics.bigdl.nn.BatchNormalization", BatchNormalization)
+    registerModule("com.intel.analytics.bigdl.nn.SpatialBatchNormalization", BatchNormalization)
     registerModule("com.intel.analytics.bigdl.nn.BinaryTreeLSTM", BinaryTreeLSTM)
     registerModule("com.intel.analytics.bigdl.nn.BiRecurrent", BiRecurrent)
     registerModule("com.intel.analytics.bigdl.nn.Graph", Graph)
