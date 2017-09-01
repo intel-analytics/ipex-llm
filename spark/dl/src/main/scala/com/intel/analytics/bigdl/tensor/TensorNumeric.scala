@@ -183,6 +183,10 @@ object TensorNumericMath {
       throw new UnsupportedOperationException(typeName +
         " in tensor does not support exp operation")
 
+    def prod(n: Int, a: Array[T], aOffset: Int, stride: Int): T =
+      throw new UnsupportedOperationException(typeName +
+        " in tensor does not support exp operation")
+
     def log(x: T): T =
       throw new UnsupportedOperationException(typeName +
         " in tensor does not support log operation")
