@@ -31,7 +31,7 @@ import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch, Sample}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.utils.caffe.CaffePersister
-import com.intel.analytics.bigdl.utils.serializer.ModulePersister
+import com.intel.analytics.bigdl.utils.serializer.{ModuleData, ModulePersister, ModuleSerializer}
 import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowSaver}
 
 import scala.reflect.ClassTag
@@ -372,8 +372,48 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
     this
   }
 
-  def cloneModule(): AbstractModule[A, B, T] = {
-    SerializationUtils.clone(this)
+  def cloneModule(deepCopy : Boolean = true): AbstractModule[A, B, T] = {
+    val moduleData = ModuleData[T](this.
+      asInstanceOf[AbstractModule[Activity, Activity, T]], Seq[String](), Seq[String]())
+    val serializedModule = ModuleSerializer.serialize[T](moduleData, false)
+    val copy = ModuleSerializer.load[T](serializedModule, false).module
+      .asInstanceOf[AbstractModule[A, B, T]]
+    setWeightAndBias(copy, deepCopy)
+    copy
+  }
+
+  private def setWeightAndBias(copy : AbstractModule[A, B, T], deepCopy : Boolean): Unit = {
+    val parameterTable = this.getParametersTable
+    val copiedModuleParamTable = copy.getParametersTable
+    if (parameterTable != null) {
+      require(copiedModuleParamTable != null, "cloned module should have params")
+      parameterTable.foreach {
+        case (name: String, params: Table) =>
+          require(copiedModuleParamTable.get(name) != null, s"cloned module should have for $name")
+          setLayerWeightAndBias(params,
+            copiedModuleParamTable.get(name).get.asInstanceOf[Table], deepCopy)
+      }
+    }
+  }
+
+  private def setLayerWeightAndBias(params : Table,
+                                    copyParams : Table, deepCopy : Boolean): Unit = {
+
+    copyParam(params, copyParams, deepCopy, "weight")
+    copyParam(params, copyParams, deepCopy, "bias")
+  }
+
+  private def copyParam(params : Table, copyParams : Table,
+                       deepCopy : Boolean, paraName : String) : Unit = {
+    if (params.contains(paraName)) {
+      val copyParam = copyParams.get(paraName).get.asInstanceOf[Tensor[T]]
+      val originParam = params.get(paraName).get.asInstanceOf[Tensor[T]]
+      if (deepCopy) {
+        copyParam.copy(originParam)
+      } else {
+        copyParam.set(originParam)
+      }
+    }
   }
 
   def canEqual(other: Any): Boolean = other.isInstanceOf[AbstractModule[A, B, T]]
