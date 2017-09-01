@@ -255,9 +255,9 @@ object DistriOptimizer {
             driverMetrics.add("aggregate gradient time", System.nanoTime() - time)
           }
 
-          val t = System.nanoTime()
+          val putG = System.nanoTime()
           parameters.putGradients(cached.gradient)
-          driverMetrics.add("put gradient", System.nanoTime() - t)
+          driverMetrics.add("put gradient", System.nanoTime() - putG)
           tasks ++= Engine.default.invoke((0 until _subModelNumber).map(i => () => {
             cached.localModels(i).training()
             cached.localModels(i).zeroGradParameters()
@@ -307,7 +307,7 @@ object DistriOptimizer {
         logger.info(s"${_header} Train ${recordsNum.value} in ${(end - start) / 1e9}seconds. " +
           s"Throughput is ${driverState("Throughput")} records/second. Loss is ${
             driverState("Loss")}. ${optimMethod.getHyperParameter()}")
-        logger.info("\n" + metrics.summary())
+        logger.debug("\n" + metrics.summary())
         logger.debug("Dropped modules: " + (driverSubModelNum - finishedModelNum))
         lossArray = new Array[Double](_subModelNumber)
 

@@ -33,7 +33,6 @@ object TrainInceptionV1 {
       val imageSize = 224
       val conf = Engine.createSparkConf().setAppName("BigDL InceptionV1 Train Example")
         .set("spark.task.maxFailures", "1")
-        .set("spark.akka.frameSize", 64.toString)
       val sc = new SparkContext(conf)
       Engine.init
 

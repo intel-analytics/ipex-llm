@@ -82,9 +82,6 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) ex
   @transient private var extraSize = 0
   @transient private var partitionId: Int = 0
 
-  /** Compressed tensor to store/compress raw parameters before shipping them around the cluster. */
-  @transient private lazy val parameterBuffer: CompressedTensor[T] = readParameterBuffer()
-
   /** Tensor to hold a slice of the global weights. */
   @transient lazy val weightPartition: Tensor[T] = readWeightPartition()
 
@@ -100,13 +97,6 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) ex
     taskSize = size / partitionNum
     extraSize = size % partitionNum
     partitionId = TaskContext.getPartitionId()
-  }
-
-  /**
-   * Create an empty [[CompressedTensor]] for parameter compression.
-   */
-  private def readParameterBuffer(): CompressedTensor[T] = {
-    new FP16SplitsCompressedTensor[T](size, partitionNum).asInstanceOf[CompressedTensor[T]]
   }
 
   /**
@@ -273,23 +263,8 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) ex
    *                  partition of data.
    */
   def putGradients(parameter: Tensor[T]): Unit = {
-//    var pid = 0
-    require(parameterBuffer != null, "The parameter buffer is null. Has this AllReduceParameter" +
-      " been initialized on each partition?")
-//    parameterBuffer.compress(parameter)
-//    while (pid < partitionNum) {
-//      val start = pid * taskSize + math.min(pid, extraSize)
-//      val length = taskSize + (if (pid < extraSize) 1 else 0)
-//      val blockId = getGradientBlockId(partitionId, pid)
-//      BlockManagerWrapper.putBytes(
-//        blockId, parameterBuffer.bytes(start, length), StorageLevel.MEMORY_ONLY_SER)
-//      pid += 1
-//    }
-
     val _classTag = classTag[T]
-//    Engine.default.invokeAndWait2((0 until partitionNum).map(i =>
     computePool.invokeAll((0 until partitionNum).map(i =>
-//      () => {
       new Callable[Int] {
         override def call(): Int = {
           val start = i * taskSize + math.min(i, extraSize)
