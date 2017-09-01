@@ -238,6 +238,19 @@ class GraphSpec extends FlatSpec with Matchers {
     output.toTable[Tensor[Float]](2) should be(Tensor(T(4, 2, 7)))
   }
 
+  "Graph forward" should "be correct when contains nested output" in {
+    val x = Identity().inputs()
+    val y1 = SplitTable(1).inputs(x)
+    val y2 = Identity().inputs(y1(1))
+
+    val graph = Graph(x, Array(y1, y2))
+    val output = graph.forward(Tensor(T(T(1, 2, 3), T(4, 2, 7))))
+    val t1 = output.toTable[Table](1)
+    t1[Tensor[Float]](1) should be(Tensor(T(1, 2, 3)))
+    t1[Tensor[Float]](2) should be(Tensor(T(4, 2, 7)))
+    output.toTable[Tensor[Float]](2) should be(Tensor(T(1, 2, 3)))
+  }
+
   "Graph backward" should "be successful" in {
     val fc1 = Linear(4, 2).inputs()
     val fc2 = Linear(4, 2).inputs()
@@ -380,6 +393,18 @@ class GraphSpec extends FlatSpec with Matchers {
     val output = graph.forward(Tensor(T(T(1, 2, 3), T(4, 2, 7))))
     val grads = graph.backward(Tensor(T(T(1, 2, 3), T(4, 2, 7))), Tensor(T(5, 4, 10)))
     grads should be(Tensor(T(T(5, 4, 10), T(5, 4, 10))))
+  }
+
+  "Graph backward" should "be correct when contains nested output" in {
+    val x = Identity().inputs()
+    val y1 = SplitTable(1).inputs(x)
+    val y2 = Identity().inputs(y1(1))
+
+    val graph = Graph(x, Array(y1, y2))
+    val output = graph.forward(Tensor(T(T(1, 2, 3), T(4, 2, 7))))
+    val result = graph.backward(Tensor(T(T(1, 2, 3), T(4, 2, 7))),
+      T(T(Tensor(T(2, 7, 8)), Tensor(T(1, 5, 3))), Tensor(T(5, 4, 10))))
+    result should be(Tensor(T(T(7, 11, 18), T(1, 5, 3))))
   }
 
   "Graph forward/backward" should "be successful when there's output from internal node" in {

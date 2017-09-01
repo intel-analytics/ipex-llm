@@ -108,11 +108,10 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
       var curGradOutput : Activity = null
 
       curNode.nextNodesAndEdges.foreach(n => {
-        val index = n._1.prevEdges.indexOf(n._2) + 1
         val otherActivity = if (n._1.element.gradInput.isTensor || n._1.prevEdges.length == 1) {
-          require(index == 1, s"Invalid index for a single gradInput $index")
           n._1.element.gradInput
         } else {
+          val index = n._1.prevEdges.indexOf(n._2) + 1
           n._1.element.gradInput.toTable.apply[Activity](index)
         }
 
@@ -182,11 +181,10 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
       }
 
       curNode.nextNodesAndEdges.foreach(n => {
-        val index = n._1.prevEdges.indexOf(n._2) + 1
         val otherActivity = if (n._1.element.gradInput.isTensor || n._1.prevEdges.length == 1) {
-          require(index == 1, s"Invalid index for a single gradInput $index")
           n._1.element.gradInput
         } else {
+          val index = n._1.prevEdges.indexOf(n._2) + 1
           n._1.element.gradInput.toTable.apply[Activity](index)
         }
 
