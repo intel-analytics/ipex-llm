@@ -60,34 +60,7 @@ class BytesToBGRImg(normalize: Float, resizeW : Int = -1, resizeH : Int = -1)
         .asInstanceOf[DataBufferByte].getData
       System.arraycopy(imgBuffer.array(), 8,
         outputImagePixelData, 0, outputImagePixelData.length)
-      resizeImage(bufferedImage, resizeW, resizeH)
+      BGRImage.resizeImage(bufferedImage, resizeW, resizeH)
     }
   }
-
-  private def resizeImage(img: BufferedImage, resizeWidth: Int, resizeHeight: Int): Array[Byte] = {
-    var scaledImage: java.awt.Image = null
-    // no scale
-    if ((resizeHeight == img.getHeight) && (resizeWidth == img.getWidth)) {
-      scaledImage = img
-    } else {
-      scaledImage =
-        img.getScaledInstance(resizeWidth, resizeHeight, java.awt.Image.SCALE_SMOOTH)
-    }
-
-    val imageBuff: BufferedImage =
-      new BufferedImage(resizeWidth, resizeHeight, BufferedImage.TYPE_3BYTE_BGR)
-    imageBuff.getGraphics.drawImage(scaledImage, 0, 0, new Color(0, 0, 0), null)
-    val pixels: Array[Byte] =
-      imageBuff.getRaster.getDataBuffer.asInstanceOf[DataBufferByte].getData
-    require(pixels.length % 3 == 0)
-
-    val bytes = new Array[Byte](8 + pixels.length)
-    val byteBuffer = ByteBuffer.wrap(bytes)
-    require(imageBuff.getWidth * imageBuff.getHeight * 3 == pixels.length)
-    byteBuffer.putInt(imageBuff.getWidth)
-    byteBuffer.putInt(imageBuff.getHeight)
-    System.arraycopy(pixels, 0, bytes, 8, pixels.length)
-    bytes
-  }
-
 }
