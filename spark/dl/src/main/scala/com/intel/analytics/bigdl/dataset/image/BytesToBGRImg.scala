@@ -16,13 +16,17 @@
 
 package com.intel.analytics.bigdl.dataset.image
 
+import java.awt.Color
+import java.awt.image.{BufferedImage, DataBufferByte}
+import java.nio.ByteBuffer
+
 import com.intel.analytics.bigdl.dataset.{ByteRecord, Transformer}
 
 import scala.collection.Iterator
 
 object BytesToBGRImg {
-  def apply(normalize: Float = 255f): BytesToBGRImg =
-    new BytesToBGRImg(normalize)
+  def apply(normalize: Float = 255f, resizeH : Int = -1, resizeW : Int = -1): BytesToBGRImg =
+    new BytesToBGRImg(normalize, resizeH, resizeW)
 }
 
 /**
@@ -30,13 +34,60 @@ object BytesToBGRImg {
  * height, and the last is pixels coming with BGR order.
  * @param normalize
  */
-class BytesToBGRImg(normalize: Float)
+class BytesToBGRImg(normalize: Float, resizeW : Int = -1, resizeH : Int = -1)
   extends Transformer[ByteRecord, LabeledBGRImage] {
+
   private val buffer = new LabeledBGRImage()
 
   override def apply(prev: Iterator[ByteRecord]): Iterator[LabeledBGRImage] = {
     prev.map(rawData => {
-      buffer.copy(rawData.data, normalize).setLabel(rawData.label)
+      buffer.copy(getImgData(rawData, resizeW, resizeH), normalize).setLabel(rawData.label)
     })
   }
+
+  private def getImgData (record : ByteRecord, resizeW : Int, resizeH : Int)
+  : Array[Byte] = {
+    if (resizeW == -1) {
+      return record.data
+    } else {
+      val rawData = record.data
+      val imgBuffer = ByteBuffer.wrap(rawData)
+      val width = imgBuffer.getInt
+      val height = imgBuffer.getInt
+      val bufferedImage : BufferedImage
+      = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR)
+      val outputImagePixelData = bufferedImage.getRaster.getDataBuffer
+        .asInstanceOf[DataBufferByte].getData
+      System.arraycopy(imgBuffer.array(), 8,
+        outputImagePixelData, 0, outputImagePixelData.length)
+      resizeImage(bufferedImage, resizeW, resizeH)
+    }
+  }
+
+  def resizeImage(img: BufferedImage, resizeWidth: Int, resizeHeight: Int): Array[Byte] = {
+    var scaledImage: java.awt.Image = null
+    // no scale
+    if ((resizeHeight == img.getHeight) && (resizeWidth == img.getWidth)) {
+      scaledImage = img
+    } else {
+      scaledImage =
+        img.getScaledInstance(resizeWidth, resizeHeight, java.awt.Image.SCALE_SMOOTH)
+    }
+
+    val imageBuff: BufferedImage =
+      new BufferedImage(resizeWidth, resizeHeight, BufferedImage.TYPE_3BYTE_BGR)
+    imageBuff.getGraphics.drawImage(scaledImage, 0, 0, new Color(0, 0, 0), null)
+    val pixels: Array[Byte] =
+      imageBuff.getRaster.getDataBuffer.asInstanceOf[DataBufferByte].getData
+    require(pixels.length % 3 == 0)
+
+    val bytes = new Array[Byte](8 + pixels.length)
+    val byteBuffer = ByteBuffer.wrap(bytes)
+    require(imageBuff.getWidth * imageBuff.getHeight * 3 == pixels.length)
+    byteBuffer.putInt(imageBuff.getWidth)
+    byteBuffer.putInt(imageBuff.getHeight)
+    System.arraycopy(pixels, 0, bytes, 8, pixels.length)
+    bytes
+  }
+
 }
