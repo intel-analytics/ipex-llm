@@ -287,6 +287,15 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     LogSoftMax[T]()
   }
 
+  def createTemporalMaxPooling(
+    kW: Int,
+    dW: Int)
+  : TemporalMaxPooling[T] = {
+    TemporalMaxPooling[T](
+      kW,
+      dW)
+  }
+
   def createSpatialMaxPooling(kW: Int,
                               kH: Int,
                               dW: Int,
