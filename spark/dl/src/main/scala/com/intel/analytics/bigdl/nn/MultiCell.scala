@@ -31,7 +31,7 @@ import scala.reflect.ClassTag
  */
 class MultiCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorNumeric[T])
   extends Cell[T](
-    hiddensShape = cells.flatMap(_.hiddensShape),
+    hiddensShape = cells.last.hiddensShape,
     regularizers = cells.flatMap(_.regularizers)) {
   // inputDim and hidDim must be the same with Recurrent
   private val inputDim = 1
@@ -41,11 +41,29 @@ class MultiCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorNume
   
   var states: Array[Activity] = null
 
-  override def updateOutput(input: Activity): Activity = {
+  /**
+   * resize the hidden parameters wrt the batch size, hiddens shapes.
+   *
+   * e.g. RnnCell contains 1 hidden parameter (H), thus it will return Tensor(size)
+   *      LSTM contains 2 hidden parameters (C and H) and will return T(Tensor(), Tensor())
+   *      and recursively intialize all the tensors in the Table.
+   * @param batchSize batchSize
+   * @return
+   */
+  def hidResize2(batchSize: Int, imageSize: Array[Int] = null): Array[Activity] = {
+    var i = 0
+    while(i < cells.length) {
+      states(i) = cells(i).hidResize(states(i), batchSize, imageSize)
+      i += 1
+    }
+    states
+  }
+  
+  override def updateOutput(input: Table): Table = {
     require(states != null, "state of multicell cannot be null")
     var i = 0
     var result = T()
-    result(inputDim) = input.toTensor[T]
+    result(inputDim) = input(inputDim)
     while (i < cells.length) {
       result(hidDim) = states(i)
       result = cells(i).forward(result).toTable
@@ -57,59 +75,63 @@ class MultiCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorNume
     output
   }
 
-  override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
+  override def updateGradInput(input: Table, gradOutput: Table): Table = {
     var i = cells.length - 1
-    var error = gradOutput
-    var nextInput = T()
+    var error = T()
+    val nextInput = T()
+    error(inputDim) = gradOutput(inputDim)
     while (i > 0) {
-      nextInput = cells(i - 1).output.toTable
+      nextInput(inputDim) = cells(i - 1).output.toTable(inputDim)
       nextInput(hidDim) = states(i)
+      error(hidDim) = states(i)
       error = cells(i).updateGradInput(nextInput, error)
       i -= 1
     }
-    nextInput = input.toTable
+    nextInput(inputDim) = input(inputDim)
+    nextInput(hidDim) = states(0)
+    error(hidDim) = states(0)
     error = cells(0).updateGradInput(nextInput, error)
 
     this.gradInput = error
     gradInput
   }
 
-  override def accGradParameters(input: Activity, gradOutput: Activity): Unit = {
+  override def accGradParameters(input: Table, gradOutput: Table): Unit = {
     var i = cells.length - 1
-    var currentModule = cells(i)
     var currentGradOutput = T()
-    currentGradOutput(inputDim) = gradOutput.toTensor
-    var nextInput = T()
+    currentGradOutput(inputDim) = gradOutput(inputDim)
+    val nextInput = T()
     while (i > 0) {
       val previousModule = cells(i - 1)
-      nextInput = previousModule.output.toTable
+      nextInput(inputDim) = previousModule.output.toTable(inputDim)
       nextInput(hidDim) = states(i)
       currentGradOutput(hidDim) = states(i)
-      currentModule.accGradParameters(nextInput, currentGradOutput)
-      currentGradOutput = currentModule.gradInput.toTable
-      currentModule = previousModule
+      cells(i).accGradParameters(nextInput, currentGradOutput)
+      currentGradOutput = cells(i).gradInput.toTable(inputDim)
       i -= 1
     }
-    nextInput(inputDim) = input
+    nextInput(inputDim) = input(inputDim)
     nextInput(hidDim) = states(0)
     currentGradOutput(hidDim) = states(0)
-    currentModule.accGradParameters(nextInput, currentGradOutput)
+    cells(0).accGradParameters(nextInput, currentGradOutput)
   }
 
-  override def backward(input: Activity, gradOutput: Activity): Activity = {
+  override def backward(input: Table, gradOutput: Table): Table = {
     var i = cells.length - 1
     var error = T()
-    error(inputDim) = gradOutput
-    var nextInput = T()
+    error(inputDim) = gradOutput(inputDim)
+    val nextInput = T()
     while (i > 0) {
-      nextInput = cells(i - 1).output.toTable
+      nextInput(inputDim) = cells(i - 1).output.toTable(inputDim)
       nextInput(hidDim) = states(i)
       error(hidDim) = states(i)
       error = cells(i).backward(nextInput, error)
       i -= 1
     }
-    
-    error = cells(0).backward(input, error)
+    nextInput(inputDim) = input(inputDim)
+    nextInput(hidDim) = states(0)
+    error(hidDim) = states(0)
+    error = cells(0).backward(nextInput, error)
 
     this.gradInput = error
     gradInput

@@ -57,6 +57,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
   private val timeBuffer =
     new ArrayBuffer[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)]
   private var layer: TensorModule[T] = null
+  private var states: Array[Activity] = null
 
   /**
    *
@@ -93,6 +94,11 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
       modules += preTopology
     }
     modules += topology
+
+    require((preTopology == null && modules.length == 1) ||
+      (topology != null && preTopology != null && modules.length == 2),
+      "Recurrent extend: should contain only one cell or plus a pre-topology" +
+        " to process input")
     this
   }
 
@@ -118,15 +124,9 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     *             the left is size of images
    */
   private def extend(sizes: Array[Int]): Unit = {
-    val times = sizes(1)
     val batchSize = sizes(0)
     val imageSize = sizes.drop(3)
     if (hidden == null) {
-      require((preTopology == null && modules.length == 1) ||
-        (topology != null && preTopology != null && modules.length == 2),
-        "Recurrent extend: should contain only one cell or plus a pre-topology" +
-          " to process input")
-
       cells.clear()
       cells += topology
       val cell = cells.head
@@ -144,6 +144,21 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
       cells.head.hidResize(hidden = hidden, batchSize = batchSize, imageSize)
       gradHidden = hidden
     }
+  }
+
+  private def extend2(sizes: Array[Int]): Unit = {
+    val batchSize = sizes(0)
+    val imageSize = sizes.drop(3)
+    val multiCells = topology.asInstanceOf[MultiCell[T]].cells
+
+    var i = 0
+    while(i < multiCells.length) {
+      states(i) = multiCells(i).hidResize(states(i), batchSize, imageSize)
+      i += 1
+    }
+  }
+  
+  private def cloneCells(): Unit = {
     var t = cells.length
     if (t < times) {
       val cloneCell = cells.head.cloneModule()
@@ -239,8 +254,6 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     val outputSize = input.size()
     outputSize(2) = hiddenSize
     output.resize(outputSize)
-    // Clone N modules along the sequence dimension.
-    extend(outputSize)
     
     /**
      * currentInput forms a T() type. It contains two elements, hidden and input.
@@ -252,6 +265,9 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     var i = 1
     // init state
     if (!topology.isInstanceOf[MultiCell[T]]) {
+      // Clone N modules along the sequence dimension.
+      extend(outputSize)
+      cloneCells()
       currentInput(hidDim) = if (initState != null) initState
       else hidden
 
@@ -262,15 +278,23 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
         i += 1
       }
     } else {
-      val states = if (initStates != null) initStates
-      else {
-        Array.fill[Activity](topology.asInstanceOf[MultiCell[T]].cells.size)(hidden)
+      if (states == null) {
+        cells.clear()
+        cells += topology
+        states = new Array[Activity](topology.asInstanceOf[MultiCell[T]].cells.length)
       }
-      
+
+      if (initStates != null) {
+        states = initStates
+      } else {
+        extend2(outputSize)
+      }
+      cloneCells()
       cells.foreach(x => x.asInstanceOf[MultiCell[T]].states = states)
 
       while (i <= times) {
-        cells(i - 1).forward(outputCell.select(timeDim, i))
+        currentInput(inputDim) = outputCell.select(timeDim, i)
+        cells(i - 1).forward(currentInput)
         i += 1
       }
     }
@@ -298,7 +322,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
 
   def getStates(): Unit = {
     require(topology.isInstanceOf[MultiCell[T]], "getStates only support for MultiCell")
-    topology.asInstanceOf[MultiCell[T]].states
+    states
   }
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {

@@ -45,9 +45,9 @@ import scala.reflect.ClassTag
  */
 abstract class Cell[T : ClassTag](
   val hiddensShape: Array[Int],
-  var regularizers: Array[Regularizer[T]]
+  var regularizers: Array[Regularizer[T]] = null
 )(implicit ev: TensorNumeric[T])
-  extends AbstractModule[Activity, Activity, T] {
+  extends AbstractModule[Table, Table, T] {
 
   var subModules: Array[AbstractModule[_ <: Activity, _ <: Activity, T]] = null
   var forwardTimes: Array[Long] = null

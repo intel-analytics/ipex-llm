@@ -88,7 +88,10 @@ class MultiCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val weights = model.getParameters()._1.clone()
 
     val input = Tensor[Double](batchSize, seqLength, inputSize, 3, 3).rand
+    val gradOutput = Tensor[Double](batchSize, seqLength, inputSize, 3, 3).rand
     val output = model.forward(input).toTensor[Double]
+    val gradInput = model.backward(input, gradOutput).toTensor[Double]
+    val gradient = model.getParameters()._2
 
     val model2 = Sequential[Double]()
       .add(Recurrent[Double]().add(ConvLSTMPeephole[Double](
@@ -104,6 +107,8 @@ class MultiCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
     model2.getParameters()._1.copy(weights)
 
     val output2 = model2.forward(input).toTensor[Double]
+    val gradInput2 = model2.backward(input, gradOutput).toTensor[Double]
+    val gradient2 = model2.getParameters()._2
 
     output.map(output2, (v1, v2) => {
       assert(abs(v1 - v2) < 1e-6)
