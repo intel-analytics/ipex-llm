@@ -100,8 +100,7 @@ message AttrValue {
         repeated google.protobuf.Any custom = 16; // "Array(Any)"
     }
     DataType dataType = 1;
-    string
-    = 2; // specific for custom data
+    string subType = 2; // specific for custom data
     oneof value {
         int32 int32Value = 3; // int32 value
         int64 int64Value = 4; //int64 value
