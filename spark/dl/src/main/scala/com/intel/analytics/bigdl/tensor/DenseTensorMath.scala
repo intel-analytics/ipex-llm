@@ -394,6 +394,18 @@ object DenseTensorMath {
     self
   }
 
+  def prodAll[@specialized(Float, Double) T](self: DenseTensor[T])(
+    implicit ev: TensorNumeric[T]): T = {
+    var product = ev.fromType[Int](1)
+    val func = new TensorFunc2[T] {
+      override def apply(data: Array[T], index: Int): Unit = {
+        product = ev.times(data(index), product)
+      }
+    }
+    Apply.apply1[T](self, func)
+    product
+  }
+
   def sumAll[@specialized(Float, Double) T](self: DenseTensor[T])(
     implicit ev: TensorNumeric[T]): T = {
     var sum = ev.fromType[Int](0)
@@ -404,6 +416,21 @@ object DenseTensorMath {
     }
     Apply.apply1[T](self, func)
     sum
+  }
+
+  def prod[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], x: Tensor[T], _dim: Int)
+    (implicit ev: TensorNumeric[T]): Tensor[T] = {
+    require(_dim >= 0 && _dim < x.nDimension, s"dimension ${_dim + 1} out of range")
+    val result = if (self == null) new DenseTensor[T]() else self
+    val sizes = x.size()
+    sizes(_dim) = 1
+    result.resize(sizes)
+    DenseTensorDimApply.dimApply2[T](result, x, _dim,
+      (rData, rOffset, rStride, rSize, tData, tOffset, tStride, tSize) => {
+        rData(rOffset) = ev.prod(tSize, tData, tOffset, tStride)
+      })
+
+    result
   }
 
   def sum[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], x: Tensor[T], _dim: Int)
@@ -723,58 +750,7 @@ object DenseTensorMath {
 
   def nearlyEqual[@specialized(Float, Double) T](a: T, b: T, epsilon: Double)(
     implicit ev: TensorNumeric[T]): Boolean = {
-    ev.getType() match {
-      case FloatType =>
-        val floatA = ev.toType[Float](a)
-        val floatB = ev.toType[Float](b)
-        val absA = math.abs(floatA)
-        val absB = math.abs(floatB)
-        val diff = math.abs(floatA - floatB)
-
-        val result = if (floatA == floatB) {
-          true
-        } else if (floatA == 0 || floatB == 0 || diff < java.lang.Float.MIN_NORMAL) {
-          diff < (epsilon * java.lang.Float.MIN_NORMAL)
-        } else {
-          diff / (absA + absB) < epsilon
-        }
-
-        if (!result) {
-          if (floatA == b) {
-            true
-          } else if (floatA == 0 || floatB == 0 || diff < java.lang.Float.MIN_NORMAL) {
-            diff < (epsilon * java.lang.Float.MIN_NORMAL)
-          } else {
-            diff / (absA + absB) < epsilon
-          }
-        }
-        result
-      case DoubleType =>
-        val doubleA = ev.toType[Double](a)
-        val doubleB = ev.toType[Double](b)
-        val absA = math.abs(doubleA)
-        val absB = math.abs(doubleB)
-        val diff = math.abs(doubleA - doubleB)
-
-        val result = if (doubleA == doubleB) {
-          true
-        } else if (doubleA == 0 || doubleB == 0 || diff < java.lang.Double.MIN_NORMAL) {
-          diff < (epsilon * java.lang.Double.MIN_NORMAL)
-        } else {
-          diff / (absA + absB) < epsilon
-        }
-
-        if (!result) {
-          if (doubleA == b) {
-            true
-          } else if (doubleA == 0 || doubleB == 0 || diff < java.lang.Double.MIN_NORMAL) {
-            diff < (epsilon * java.lang.Double.MIN_NORMAL)
-          } else {
-            diff / (absA + absB) < epsilon
-          }
-        }
-        result
-    }
+    ev.nearlyEqual(a, b, epsilon)
   }
 
   def cmax[@specialized(Float, Double) T](self: DenseTensor[T], x: Tensor[T], y: Tensor[T])

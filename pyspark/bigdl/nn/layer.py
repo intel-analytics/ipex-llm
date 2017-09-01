@@ -311,7 +311,7 @@ class Layer(JavaValue):
         ... except Py4JJavaError as err:
         ...     print(err.java_exception)
         ...
-        java.lang.IllegalArgumentException: requirement failed: the number of input weight/bias is not consistant with number of weight/bias of this layer
+        java.lang.IllegalArgumentException: requirement failed: the number of input weight/bias is not consistant with number of weight/bias of this layer, number of input 1, number of output 2
         >>> cAdd = CAdd([4, 1])
         creating: createCAdd
         >>> cAdd.set_weights(np.ones([4, 1]))
@@ -337,6 +337,9 @@ class Layer(JavaValue):
 
     def save(self, path, over_write = False):
         callBigDlFunc(self.bigdl_type, "modelSave", self.value, path,
+                      over_write)
+    def saveModel(self, path, over_write = False):
+        callBigDlFunc(self.bigdl_type, "saveBigDLModule", self.value, path,
                       over_write)
 
     def save_caffe(self, prototxt_path, model_path, use_v2 = True, overwrite = False):
@@ -457,6 +460,17 @@ class Model(Container):
         :return: A pre-trained model.
         """
         jmodel = callBigDlFunc(bigdl_type, "loadBigDL", path)
+        return Layer.of(jmodel)
+
+    @staticmethod
+    def loadModel(path, bigdl_type="float"):
+        """
+        Load a pre-trained Bigdl model.
+
+        :param path: The path containing the pre-trained model.
+        :return: A pre-trained model.
+        """
+        jmodel = callBigDlFunc(bigdl_type, "loadBigDLModule", path)
         return Layer.of(jmodel)
 
     @staticmethod
@@ -851,6 +865,32 @@ class SpatialConvolution(Layer):
         return self
 
 
+class TemporalMaxPooling(Layer):
+
+    '''
+    Applies 1D max-pooling operation in kW regions by step size dW steps.
+    Input sequence composed of nInputFrame frames.
+    The input tensor in forward(input) is expected to be a 2D tensor (nInputFrame x inputFrameSize)
+     or a 3D tensor (nBatchFrame x nInputFrame x inputFrameSize).
+
+    If the input sequence is a 2D tensor of dimension nInputFrame x inputFrameSize,
+    the output sequence will be nOutputFrame x inputFrameSize where
+
+    nOutputFrame = (nInputFrame - k_w) / d_w + 1
+
+    :param k_w:              kernel width
+    :param d_w:              step size in width
+
+    >>> temporalMaxPooling = TemporalMaxPooling(2, 2)
+    creating: createTemporalMaxPooling
+    '''
+
+    def __init__(self,
+                 k_w,
+                 d_w,
+                 bigdl_type="float"):
+        super(TemporalMaxPooling, self).__init__(None, bigdl_type, k_w,
+                                                d_w)
 class SpatialMaxPooling(Layer):
 
     '''
@@ -1055,12 +1095,15 @@ class RnnCell(Layer):
     :param input_size: the size of each input vector
     :param hidden_size: Hidden unit size in simple RNN
     :param activation: activation function
+    :param isInputWithBias: boolean
+    :param isHiddenWithBias: boolean
+
     :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices.
     :param uRegularizer: instance [[Regularizer]](eg. L1 or L2 regularization), applied to the recurrent weights matrices.
     :param bRegularizer: instance of [[Regularizer]](../regularizers.md),applied to the bias.
 
 
-    >>> reshape = RnnCell(4, 3, Tanh(), L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
+    >>> reshape = RnnCell(4, 3, Tanh(), True, True, L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
     creating: createTanh
     creating: createL1Regularizer
     creating: createL1Regularizer
@@ -1165,7 +1208,7 @@ class SpatialAveragePooling(Layer):
 
     >>> spatialAveragePooling = SpatialAveragePooling(7,7)
     creating: createSpatialAveragePooling
-    >>> spatialAveragePooling = SpatialAveragePooling(2, 2, 2, 2, -1, -1, True, "NHWC")
+    >>> spatialAveragePooling = SpatialAveragePooling(2, 2, 2, 2, -1, -1, True, format="NHWC")
     creating: createSpatialAveragePooling
     '''
 
@@ -1194,6 +1237,9 @@ class SpatialAveragePooling(Layer):
                                                     count_include_pad,
                                                     divide,
                                                     format)
+
+    def set_weights(self, weights):
+        super(SpatialAveragePooling, self).set_weights(weights)
 
 
 class SpatialBatchNormalization(Layer):
@@ -1467,7 +1513,29 @@ class BatchNormalization(Layer):
         return self
 
 
-class Bilinear(Layer):
+class BifurcateSplitTable(Model):
+    '''
+    Creates a module that takes a Tensor as input and
+    outputs two tables, splitting the Tensor along
+    the specified dimension `dimension`.
+
+    The input to this layer is expected to be a tensor, or a batch of tensors;
+
+    :param dimension to be split along this dimension
+    :param T Numeric type. Only support float/double now
+
+    >>> bifurcateSplitTable = BifurcateSplitTable(1)
+    creating: createBifurcateSplitTable
+    '''
+
+    def __init__(self,
+                 dimension,
+                 bigdl_type="float"):
+        super(BifurcateSplitTable, self).__init__(None, bigdl_type,
+                                       dimension)
+
+
+class Bilinear(Model):
 
     '''
     a bilinear transformation with sparse inputs,

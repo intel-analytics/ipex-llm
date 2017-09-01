@@ -77,6 +77,8 @@ class LSTM[T : ClassTag] (
       wRegularizer = wRegularizer, bRegularizer = bRegularizer))
   }
 
+  override def hiddenSizeOfPreTopo: Int = 4 * hiddenSize
+
   def buildGates()(input1: ModuleNode[T], input2: ModuleNode[T])
   : (ModuleNode[T], ModuleNode[T], ModuleNode[T], ModuleNode[T]) = {
 

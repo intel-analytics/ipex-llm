@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
@@ -96,10 +96,9 @@ object MaskedSelect extends ModuleSerializable {
     new MaskedSelect[T]()
   }
 
-  override def loadModule[T: ClassTag](model : BigDLModule)
-                                      (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
-    val moduleData = super.loadModule(model)
-    val maskedSelect = moduleData.module.asInstanceOf[MaskedSelect[T]]
+  override def doLoadModule[T: ClassTag](model : BigDLModule)
+    (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
+    val maskedSelect = super.doLoadModule(model).asInstanceOf[MaskedSelect[T]]
     val modelAttributes = model.getAttrMap
 
     val maskIndices = modelAttributes.get("maskIndices")
@@ -122,34 +121,33 @@ object MaskedSelect extends ModuleSerializable {
       .asInstanceOf[Tensor[T]]
     maskedSelect.gradMask.resizeAs(gradMaskValue).copy(gradMaskValue)
 
-    moduleData
+    maskedSelect
   }
 
-  override def serializeModule[T: ClassTag](module : ModuleData[T])
-                                           (implicit ev: TensorNumeric[T]) : BigDLModule = {
+  override def doSerializeModule[T: ClassTag](module : ModuleData[T],
+                                              maskedSelectBuilder : BigDLModule.Builder)
+                                           (implicit ev: TensorNumeric[T]) : Unit = {
     val masKSelect = module.module.asInstanceOf[MaskedSelect[T]]
-    val moduleBuilder = BigDLModule.newBuilder(super.serializeModule(module))
 
     val maskIndicesBuilder = AttrValue.newBuilder
     DataConverter.setAttributeValue(maskIndicesBuilder, masKSelect.maskIndices,
       ModuleSerializer.tensorType)
-    moduleBuilder.putAttr("maskIndices", maskIndicesBuilder.build)
+    maskedSelectBuilder.putAttr("maskIndices", maskIndicesBuilder.build)
 
     val maskIndexBufferBuilder = AttrValue.newBuilder
     DataConverter.setAttributeValue(maskIndexBufferBuilder, masKSelect.maskIndexBuffer,
       ModuleSerializer.tensorType)
-    moduleBuilder.putAttr("maskIndexBuffer", maskIndexBufferBuilder.build)
+    maskedSelectBuilder.putAttr("maskIndexBuffer", maskIndexBufferBuilder.build)
 
     val gradBufferBuilder = AttrValue.newBuilder
     DataConverter.setAttributeValue(gradBufferBuilder, masKSelect.gradBuffer,
       ModuleSerializer.tensorType)
-    moduleBuilder.putAttr("gradBuffer", gradBufferBuilder.build)
+    maskedSelectBuilder.putAttr("gradBuffer", gradBufferBuilder.build)
 
     val gradMaskBuilder = AttrValue.newBuilder
     DataConverter.setAttributeValue(gradMaskBuilder, masKSelect.gradMask,
       ModuleSerializer.tensorType)
-    moduleBuilder.putAttr("gradMask", gradMaskBuilder.build)
+    maskedSelectBuilder.putAttr("gradMask", gradMaskBuilder.build)
 
-    moduleBuilder.build
   }
 }

@@ -80,6 +80,15 @@ class TestSimple():
         assert_allclose(fc1_loaded.get_weights()[0],
                         fc1.get_weights()[0])
 
+    def test_load_model_proto(self):
+        fc1 = Linear(4, 2)
+        fc1.set_weights([np.ones((4, 2)), np.ones((2,))])
+        tmp_path = tempfile.mktemp()
+        fc1.saveModel(tmp_path, True)
+        fc1_loaded = Model.loadModel(tmp_path)
+        assert_allclose(fc1_loaded.get_weights()[0],
+                        fc1.get_weights()[0])
+
     def test_load_optim_method(self):
         FEATURES_DIM = 2
         data_len = 100
@@ -180,7 +189,7 @@ class TestSimple():
 
         def gen_rand_sample():
             features = np.random.uniform(0, 1, (FEATURES_DIM))
-            label = (2 * features).sum() + 0.4
+            label = np.array((2 * features).sum() + 0.4)
             return Sample.from_ndarray(features, label)
 
         trainingData = self.sc.parallelize(range(0, data_len)).map(

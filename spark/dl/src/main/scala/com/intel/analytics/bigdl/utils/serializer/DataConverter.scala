@@ -63,6 +63,15 @@ object DataConverter extends DataConverter{
 
   private val typePlaceHolder = universe.typeOf[DataConverter]
 
+  // Customized data converter map, key is the string representation of user defined class type
+
+  private val customizedConverter = new mutable.HashMap[String, DataConverter]
+
+  def registerConverter(tpe : String, converter : DataConverter) : Unit = {
+    require(!customizedConverter.contains(tpe), s"converter for $tpe already exists!")
+    customizedConverter(tpe) = converter
+  }
+
   private def getRuntimeType[T : ClassTag](value : Any) (implicit ev: TensorNumeric[T])
     : universe.Type = {
     if (value.isInstanceOf[Tensor[_]]) {
@@ -102,6 +111,7 @@ object DataConverter extends DataConverter{
       case DataType.NAME_ATTR_LIST => NameListConverter.getAttributeValue(attribute)
       case DataType.ARRAY_VALUE => ArrayConverter.getAttributeValue(attribute)
       case DataType.DATA_FORMAT => DataFormatConverter.getAttributeValue(attribute)
+      case DataType.CUSTOM => CustomConverterDelegator.getAttributeValue(attribute)
       case _ => throw new IllegalArgumentException
         (s"${attribute.getDataType} can not be recognized")
     }
@@ -163,6 +173,8 @@ object DataConverter extends DataConverter{
       ArrayConverter.setAttributeValue(attributeBuilder, value)
     } else if (valueType == universe.typeOf[DataFormat]) {
       DataFormatConverter.setAttributeValue(attributeBuilder, value)
+    } else {
+      CustomConverterDelegator.setAttributeValue(attributeBuilder, value, valueType)
     }
   }
 
@@ -605,6 +617,19 @@ object DataConverter extends DataConverter{
             i += 1
           })
           dataFormats
+        case DataType.CUSTOM =>
+          val customValues = new Array[Any](size)
+          val customValueList = valueArray.getCustomList.asScala
+          var i = 0
+          customValueList.foreach(custom => {
+            val attrValue = AttrValue.newBuilder
+            attrValue.setDataType(DataType.CUSTOM)
+            attrValue.setCustomValue(custom)
+            customValues(i) = CustomConverterDelegator.
+              getAttributeValue(attrValue.build)
+            i += 1
+          })
+          customValues
       }
       arr
     }
@@ -704,9 +729,39 @@ object DataConverter extends DataConverter{
           arrayBuilder.addDataFormat(attrValueBuilder.getDataFormatValue)
         })
         arrayBuilder.setSize(formats.size)
+      } else {
+        arrayBuilder.setDatatype(DataType.CUSTOM)
+        val customValues = value.asInstanceOf[Array[Any]]
+        customValues.foreach(custom => {
+          val attrValueBuilder = AttrValue.newBuilder
+          CustomConverterDelegator.setAttributeValue(attrValueBuilder, custom)
+          arrayBuilder.addCustom(attrValueBuilder.getCustomValue)
+        })
+        arrayBuilder.setSize(customValues.size)
       }
       attributeBuilder.setArrayValue(arrayBuilder.build)
     }
 
+  }
+  /**
+   * DataConvert for custom value
+   */
+  object CustomConverterDelegator extends DataConverter {
+    override def getAttributeValue[T: ClassTag](attribute: AttrValue)
+                                               (implicit ev: TensorNumeric[T]): AnyRef = {
+      val subType = attribute.getSubType
+      require(customizedConverter.contains(subType), s"unrecognized type $subType")
+      val customConverter = customizedConverter.get(subType).get
+      customConverter.getAttributeValue(attribute)
+    }
+
+    override def setAttributeValue[T: ClassTag](attributeBuilder: AttrValue.Builder,
+      value: Any, valueType: universe.Type)(implicit ev: TensorNumeric[T]): Unit = {
+      require(customizedConverter.contains(valueType.toString), s"unrecognized type $valueType")
+      val customConverter = customizedConverter.get(valueType.toString).get
+      attributeBuilder.setDataType(DataType.CUSTOM)
+      attributeBuilder.setSubType(valueType.toString)
+      customConverter.setAttributeValue(attributeBuilder, value, valueType)
+    }
   }
 }

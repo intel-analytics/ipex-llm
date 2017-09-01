@@ -710,6 +710,10 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
 
   // scalastyle:on methodName
 
+  override def prod(): T = DenseTensorMath.prodAll(this)
+
+  override def prod(x: Tensor[T], dim: Int): Tensor[T] = DenseTensorMath.prod(this, x, dim - 1)
+
   override def sum(): T = DenseTensorMath.sumAll(this)
 
   override def sum(dim: Int): Tensor[T] = DenseTensorMath.sum(null, this, dim - 1)
@@ -908,7 +912,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
       val func = new TensorFunc6[T] {
         override def apply (data: Array[T], offset: Int, data1: Array[T],
                            offset1: Int, data2: Array[T], offset2: Int): Unit = {
-          data(offset1) = ev.minus(data1(offset1), data2(offset2))
+          data(offset) = ev.minus(data1(offset1), data2(offset2))
         }
       }
       DenseTensorApply.apply3[T](this, x, y, func)
@@ -954,37 +958,9 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     require(tensor1.nElement() == tensor2.nElement() && this.nElement() == tensor1.nElement())
 
     if (this.isContiguous() && tensor1.isContiguous() && tensor2.isContiguous()) {
-      ev.getType() match {
-        case DoubleType =>
-          val v = value.asInstanceOf[Double]
-          val t1 = tensor1.storage().array().asInstanceOf[Array[Double]]
-          val t1Offset = tensor1.storageOffset() - 1
-          val t2 = tensor2.storage().array().asInstanceOf[Array[Double]]
-          val t2Offset = tensor2.storageOffset() - 1
-          val self = this.storage().array().asInstanceOf[Array[Double]]
-          val selfOffset = this.storageOffset() - 1
-          val n = this.nElement()
-          var i = 0
-
-          while (i < n) {
-            self(i + selfOffset) += t1(t1Offset + i) * t2(t2Offset + i) * v
-            i += 1
-          }
-        case FloatType =>
-          val v = value.asInstanceOf[Float]
-          val t1 = tensor1.storage().array().asInstanceOf[Array[Float]]
-          val t1Offset = tensor1.storageOffset() - 1
-          val t2 = tensor2.storage().array().asInstanceOf[Array[Float]]
-          val t2Offset = tensor2.storageOffset() - 1
-          val self = this.storage().array().asInstanceOf[Array[Float]]
-          val selfOffset = this.storageOffset() - 1
-          val n = this.nElement()
-          var i = 0
-          while (i < n) {
-            self(i + selfOffset) += t1(t1Offset + i) * t2(t2Offset + i) * v
-            i += 1
-          }
-      }
+      ev.addcmul(value, this.nElement(), this.storage().array(), this.storageOffset() - 1,
+        tensor1.storage().array(), tensor1.storageOffset() - 1,
+        tensor2.storage().array(), tensor2.storageOffset() - 1)
     } else {
       val func = new TensorFunc6[T] {
         override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int,
@@ -998,43 +974,15 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     this
   }
 
-  override def addcmul(tensor1: Tensor[T], tensor2: Tensor[T]): Tensor[T] =
+  override def addcmul(tensor1: Tensor[T], tensor2: Tensor[T]): Tensor[T] = {
     addcmul(ev.fromType(1), tensor1, tensor2)
+  }
 
   override def addcdiv(value: T, tensor1: Tensor[T], tensor2: Tensor[T]): Tensor[T] = {
     if (this.isContiguous() && tensor1.isContiguous() && tensor2.isContiguous()) {
-      ev.getType() match {
-        case DoubleType =>
-          val v = value.asInstanceOf[Double]
-          val t1 = tensor1.storage().array().asInstanceOf[Array[Double]]
-          val t1Offset = tensor1.storageOffset() - 1
-          val t2 = tensor2.storage().array().asInstanceOf[Array[Double]]
-          val t2Offset = tensor2.storageOffset() - 1
-          val self = this.storage().array().asInstanceOf[Array[Double]]
-          val selfOffset = this.storageOffset() - 1
-          val n = this.nElement()
-          var i = 0
-
-          while (i < n) {
-            self(i + selfOffset) += t1(t1Offset + i) / t2(t2Offset + i) * v
-            i += 1
-          }
-        case FloatType =>
-          val v = value.asInstanceOf[Float]
-          val t1 = tensor1.storage().array().asInstanceOf[Array[Float]]
-          val t1Offset = tensor1.storageOffset() - 1
-          val t2 = tensor2.storage().array().asInstanceOf[Array[Float]]
-          val t2Offset = tensor2.storageOffset() - 1
-          val self = this.storage().array().asInstanceOf[Array[Float]]
-          val selfOffset = this.storageOffset() - 1
-          val n = this.nElement()
-          var i = 0
-
-          while (i < n) {
-            self(i + selfOffset) += t1(t1Offset + i) / t2(t2Offset + i) * v
-            i += 1
-          }
-      }
+      ev.addcdiv(value, this.nElement(), this.storage().array(), this.storageOffset() - 1,
+        tensor1.storage().array(), tensor1.storageOffset() - 1,
+        tensor2.storage().array(), tensor2.storageOffset() - 1)
     } else {
       val func = new TensorFunc6[T] {
         override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int,
@@ -1293,12 +1241,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     var result = true
     this.map(other, (a, b) => {
       if (result) {
-        ev.getType() match {
-          case FloatType =>
-            result = DenseTensorMath.nearlyEqual(a, b, DenseTensorMath.floatEpsilon)
-          case DoubleType =>
-            result = DenseTensorMath.nearlyEqual(a, b, DenseTensorMath.doubleEpsilon)
-        }
+        result = ev.nearlyEqual(a, b, DenseTensorMath.floatEpsilon)
       }
       a
     })
