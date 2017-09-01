@@ -24,11 +24,16 @@ import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.utils.{T, Table}
 import org.scalatest.{FlatSpec, Matchers}
+import serialization.Bigdl
+import serialization.Bigdl.AttrValue
+import serializer.TestCustomData
 
 import scala.reflect.ClassTag
+import scala.reflect.runtime.universe
 import scala.util.Random
 
 class ModuleSerializerSpec extends FlatSpec with Matchers {
+
   "Abs serializer" should "work properly" in {
     val abs = Abs().setName("abs")
     val tensor1 = Tensor(5, 5).apply1(_ => Random.nextFloat())
@@ -1841,10 +1846,10 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val res2 = loadedVolumetricMaxPooling.forward(input1)
     res1 should be (res2)
   }
+
   "Customized Module " should "work properly" in {
-    val testModule = new TestModule(1.0)
-    ModuleSerializer.registerModule("com.intel.analytics.bigdl.utils.serializer.TestModule",
-    TestSerializer)
+    val testModule = new TestModule(CustomData(1.0))
+    DataConverter.registerConverter(universe.typeOf[CustomData].toString, TestCustomDataConverter)
     val tensor1 = Tensor(10).apply1(_ => Random.nextFloat())
     val tensor2 = Tensor()
     tensor2.resizeAs(tensor1).copy(tensor1)
@@ -1856,9 +1861,9 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
   }
 }
 
-class TestModule[T: ClassTag](val constant_scalar: Double)
+class TestModule[T: ClassTag](val custom: CustomData)
                              (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
-  val addConst = AddConstant(constant_scalar)
+  val addConst = AddConstant(custom.constant_scalar)
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     output = addConst.forward(input).asInstanceOf[Tensor[T]]
     output
@@ -1869,4 +1874,21 @@ class TestModule[T: ClassTag](val constant_scalar: Double)
     gradInput
   }
 }
+case class CustomData(val constant_scalar: Double)
 case object TestSerializer extends ModuleSerializable
+
+object TestCustomDataConverter extends DataConverter {
+  override def getAttributeValue[T: ClassTag](attribute: Bigdl.AttrValue)
+    (implicit ev: TensorNumeric[T]): AnyRef = {
+    val customData = attribute.getCustomValue
+    val customMsg = customData.unpack(classOf[TestCustomData.CustomData])
+    CustomData(customMsg.getScalar)
+  }
+
+  override def setAttributeValue[T: ClassTag](attributeBuilder: AttrValue.Builder,
+    value: Any, valueType: universe.Type)(implicit ev: TensorNumeric[T]): Unit = {
+    val testCustomData = TestCustomData.CustomData.newBuilder
+    testCustomData.setScalar(value.asInstanceOf[CustomData].constant_scalar)
+    attributeBuilder.setCustomValue(com.google.protobuf.Any.pack(testCustomData.build()))
+  }
+}
