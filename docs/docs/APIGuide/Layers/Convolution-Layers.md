@@ -1018,6 +1018,97 @@ gradInput = layer.backward(input, gradOutput)
 ```
 
 ---
+## TemporalMaxPooling
+
+**scala:**
+```scala
+val m = TemporalMaxPooling(k_w, d_w = k_w)
+```
+
+```python
+m = TemporalMaxPooling(k_w, d_w = k_w)
+```
+
+Applies 1D max-pooling operation in `k_w` regions by step size `d_w` steps.
+Input sequence composed of nInputFrame frames.
+The input tensor in forward(input) is expected to be a 2D tensor
+(nInputFrame x inputFrameSize) or a 3D tensor (nBatchFrame x nInputFrame x inputFrameSize).
+
+If the input sequence is a 2D tensor of dimension nInputFrame x inputFrameSize,
+the output sequence will be nOutputFrame x inputFrameSize where
+
+```
+nOutputFrame = (nInputFrame - k_w) / d_w + 1
+```
+
+  * k_w: kernel width
+  * d_w: step size in width
+
+```scala
+scala>
+import com.intel.analytics.bigdl.numeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.Tensor
+
+val module = TemporalMaxPooling(4)
+val input = Tensor(1, 8, 5).rand()
+val output = module.forward(input)
+val gradOutput = Tensor(1, 2, 5).rand()
+val gradInput = module.backward(input, gradOutput)
+
+scala>
+println(output)
+(1,.,.) =
+0.6248109817970544	0.7783127573784441	0.8484677821397781	0.6721713887527585	0.9674506767187268	
+0.9587726043537259	0.8359494411852211	0.6541860734578222	0.7671433456707746	0.8246882800012827	
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x2x5]
+
+scala>
+println(gradInput)
+(1,.,.) =
+0.0	0.0	0.0	0.0	0.012729122070595622	
+0.0	0.1717955127824098	0.00636984477750957	0.0	0.0	
+0.0	0.0	0.0	0.24560829368419945	0.0	
+0.8350501179229468	0.0	0.0	0.0	0.0	
+0.0	0.9017464134376496	0.662078354973346	0.4239895506761968	0.0	
+0.09446275723166764	0.0	0.0	0.0	0.974747731583193	
+0.0	0.0	0.0	0.0	0.0	
+0.0	0.0	0.0	0.0	0.0	
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x8x5]
+```
+
+```python
+from bigdl.nn.layer import *
+import numpy as np
+
+module = TemporalMaxPooling(4)
+input = np.random.rand(1, 8, 5)
+output = module.forward(input)
+grad_output = np.random.rand(1, 2, 5)
+grad_input = module.backward(input, gradOutput)
+
+print "output is :",output
+print "gradient input m is :",grad_input
+```
+
+```
+creating: createTemporalMaxPooling
+output is : [[[0.6248109817970544	0.7783127573784441	0.8484677821397781	0.6721713887527585	0.9674506767187268]	
+[0.9587726043537259	0.8359494411852211	0.6541860734578222	0.7671433456707746	0.8246882800012827]]]	
+gradient input m is : [[[0.0	0.0	0.0	0.0	0.012729122070595622]	
+[0.0	0.1717955127824098	0.00636984477750957	0.0	0.0]	
+[0.0	0.0	0.0	0.24560829368419945	0.0	]
+[0.8350501179229468	0.0	0.0	0.0	0.0	]
+[0.0	0.9017464134376496	0.662078354973346	0.4239895506761968	0.0]	
+[0.09446275723166764	0.0	0.0	0.0	0.974747731583193]	
+[0.0	0.0	0.0	0.0	0.0]	
+[0.0	0.0	0.0	0.0	0.0]]]	
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x8x5]
+```
+---
 ## VolumetricFullConvolution ##
 
 **Scala:**
