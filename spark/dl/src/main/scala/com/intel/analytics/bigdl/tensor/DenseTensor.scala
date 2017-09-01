@@ -710,6 +710,10 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
 
   // scalastyle:on methodName
 
+  override def prod(): T = DenseTensorMath.prodAll(this)
+
+  override def prod(x: Tensor[T], dim: Int): Tensor[T] = DenseTensorMath.prod(this, x, dim - 1)
+
   override def sum(): T = DenseTensorMath.sumAll(this)
 
   override def sum(dim: Int): Tensor[T] = DenseTensorMath.sum(null, this, dim - 1)
