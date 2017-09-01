@@ -174,7 +174,6 @@ object Reshape extends ModuleSerializable {
                                            (implicit ev: TensorNumeric[T]) : Unit = {
 
     val reshape = module.module.asInstanceOf[Reshape[T]]
-    super.doSerializeModule(module, reshapeBuilder)
 
     val sizeBuilder = AttrValue.newBuilder
     DataConverter.setAttributeValue(sizeBuilder, reshape.size,
