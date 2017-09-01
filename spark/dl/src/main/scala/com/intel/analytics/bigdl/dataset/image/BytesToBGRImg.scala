@@ -25,8 +25,8 @@ import com.intel.analytics.bigdl.dataset.{ByteRecord, Transformer}
 import scala.collection.Iterator
 
 object BytesToBGRImg {
-  def apply(normalize: Float = 255f, resizeH : Int = -1, resizeW : Int = -1): BytesToBGRImg =
-    new BytesToBGRImg(normalize, resizeH, resizeW)
+  def apply(normalize: Float = 255f, resizeW : Int = -1, resizeH : Int = -1): BytesToBGRImg =
+    new BytesToBGRImg(normalize, resizeW, resizeH)
 }
 
 /**
