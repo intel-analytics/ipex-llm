@@ -64,7 +64,7 @@ class BytesToBGRImg(normalize: Float, resizeW : Int = -1, resizeH : Int = -1)
     }
   }
 
-  def resizeImage(img: BufferedImage, resizeWidth: Int, resizeHeight: Int): Array[Byte] = {
+  private def resizeImage(img: BufferedImage, resizeWidth: Int, resizeHeight: Int): Array[Byte] = {
     var scaledImage: java.awt.Image = null
     // no scale
     if ((resizeHeight == img.getHeight) && (resizeWidth == img.getWidth)) {
