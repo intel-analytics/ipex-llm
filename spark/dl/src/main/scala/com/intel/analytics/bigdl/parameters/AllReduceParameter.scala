@@ -42,7 +42,10 @@ object AllReduceParameter {
     }
   })
 
-  val computePool: ExecutorService = Executors.newFixedThreadPool(42, new ThreadFactory {
+  private val computePoolSize: Int = System.getProperty("bigdl.Parameter.computePoolSize",
+    (Runtime.getRuntime().availableProcessors() / 2).toString).toInt
+  val computePool: ExecutorService = Executors.newFixedThreadPool(computePoolSize,
+    new ThreadFactory {
     override def newThread(r: Runnable): Thread = {
       val t = Executors.defaultThreadFactory().newThread(r)
       t.setDaemon(true)
@@ -247,12 +250,9 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) ex
     val innerTaskSize = length / poolSize
     val innerExtraSize = length % poolSize
     val availableTask = if (innerTaskSize == 0) innerExtraSize else poolSize
-//    Engine.default.invokeAndWait2 {
     computePool.invokeAll((0 until availableTask).map(tid =>
       new Callable[Int] {
         override def call(): Int = {
-//      (0 until availableTask).map { tid =>
-//        () => {
           val innerStart = tid * innerTaskSize + math.min(innerExtraSize, tid)
           val innerLength = innerTaskSize + (if (tid < innerExtraSize) 1 else 0)
           params.reduce { (l, r) =>
@@ -262,7 +262,6 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) ex
         }
       }
     ).asJava)
-//    }
     params.head.deCompress(gradientPartition)
   }
 
