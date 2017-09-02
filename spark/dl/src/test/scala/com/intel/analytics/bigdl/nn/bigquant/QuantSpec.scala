@@ -16,11 +16,13 @@
 
 package com.intel.analytics.bigdl.nn.bigquant
 
+import com.intel.analytics.bigdl.bigquant.BigQuant
 import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.bigquant.Quant._
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
 class QuantSpec extends FlatSpec with Matchers {
@@ -390,5 +392,28 @@ class QuantSpec extends FlatSpec with Matchers {
     val eta2 = (end2 - start2) / 1e6
 
     (eta1 > eta2) should be (true)
+  }
+
+  "JNI test" should "work correctly" in {
+    BigQuant.printHello()
+  }
+
+  "A simple graph" should "work correctly" in {
+    val input1 = Input()
+    val input2 = Input()
+    val linear = nn.Linear(200, 800).inputs(input1)
+    val cadd = CAddTable().inputs(linear, input2)
+    val out = cadd
+    val graph = Graph(Array(input1, input2), Array(out))
+
+    val t1 = Tensor(4, 200).rand
+    val t2 = Tensor(4, 800).rand
+    val input = T(t1, t2)
+
+    graph.forward(input)
+
+    val quantizedGraph = Module.quantize(graph)
+    quantizedGraph.forward(input)
+    println(quantizedGraph)
   }
 }

@@ -18,11 +18,9 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.bigquant.{CellQuantizer, Quantable}
 import com.intel.analytics.bigdl.optim.Regularizer
-import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{T, Table}
-
 import scala.reflect.ClassTag
 
 /**
@@ -70,11 +68,11 @@ class LSTM[T : ClassTag] (
       .add(SelectTable(1))
       .add(NarrowTable(2, 2)))
 
-  override def preTopology: AbstractModule[Activity, Activity, T] = if (p != 0) {
+  override var preTopology: AbstractModule[Activity, Activity, T] = if (p != 0) {
     null
   } else {
     TimeDistributed[T](Linear(inputSize, 4 * hiddenSize,
-      wRegularizer = wRegularizer, bRegularizer = bRegularizer))
+      wRegularizer = wRegularizer, bRegularizer = bRegularizer).setName("preTopology"))
   }
 
   override def hiddenSizeOfPreTopo: Int = 4 * hiddenSize
@@ -120,10 +118,10 @@ class LSTM[T : ClassTag] (
     } else {
       i2g = input1
       h2g = Linear(hiddenSize, 4 * hiddenSize,
-        withBias = false, wRegularizer = uRegularizer).inputs(input2)
+        withBias = false, wRegularizer = uRegularizer).setName("h2g").inputs(input2)
     }
 
-    val caddTable = CAddTable(false).inputs(i2g, h2g)
+    val caddTable = CAddTable(false).setName("i2g+h2g").inputs(i2g, h2g)
     val reshape = Reshape(Array(4, hiddenSize)).inputs(caddTable)
     val split1 = Select(2, 1).inputs(reshape)
     val split2 = Select(2, 2).inputs(reshape)
@@ -150,7 +148,7 @@ class LSTM[T : ClassTag] (
      */
     val cMult1 = CMulTable().inputs(in, hid)
     val cMult2 = CMulTable().inputs(forg, input3)
-    val cadd = CAddTable(true).inputs(cMult1, cMult2)
+    val cadd = CAddTable(true).setName("inplace=true").inputs(cMult1, cMult2)
     val tanh = Tanh().inputs(cadd)
     val cMult3 = CMulTable().inputs(tanh, out)
 

@@ -18,7 +18,8 @@ package com.intel.analytics.bigdl.nn.bigquant
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
-import com.intel.analytics.bigdl.nn.{Cell, Container, Dummy, Graph, TimeDistributed, Linear => NNLinear, SpatialConvolution => NNConv, SpatialDilatedConvolution => NNDilatedConv}
+import com.intel.analytics.bigdl.nn.tf.WithoutInput
+import com.intel.analytics.bigdl.nn.{Cell, Container, Dummy, Graph, Input, TimeDistributed, Linear => NNLinear, SpatialConvolution => NNConv, SpatialDilatedConvolution => NNDilatedConv}
 import com.intel.analytics.bigdl.tensor.{QuantTensor, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Node
@@ -87,7 +88,9 @@ object Utils {
    * @return new Graph
    */
   def convertGraph[T: ClassTag](model: Graph[T])(implicit ev: TensorNumeric[T]): Graph[T] = {
-    val sortedNodes = model.backGraph.topologySort
+    println("*" * 80)
+    val sortedNodes = model.executions
+    val inputIndexes = model.inputs.map(i => sortedNodes.indexOf(i))
 
     for (i <- sortedNodes.indices) {
       val node = sortedNodes(i)
@@ -99,22 +102,27 @@ object Utils {
       }
     }
 
-    val inputs = sortedNodes.filter(n => n.prevNodes.isEmpty)
+    val inputs = new Array[ANode[T]](inputIndexes.length)
+
+    for (i <- inputIndexes.indices) {
+      inputs(i) = sortedNodes(inputIndexes(i))
+    }
+
     // because all outputs point to dummy nodes, we should filter these nodes as outputs of Graph
     val outputs = sortedNodes.filter {n =>
-      n.nextNodes.length == 1 && (n.nextNodes.head.element match {
-        case d if d.isInstanceOf[Dummy[T]] => true
-        case _ => false
-      })
+      n.nextNodes.exists(_.element.isInstanceOf[Dummy[T]])
     }
 
     // delete all dummy nodes
     outputs.foreach { node =>
-      node.nextNodes.asInstanceOf[ArrayBuffer[ANode[T]]].remove(0)
+      node.nextNodes.zipWithIndex.filter(_._1.element.isInstanceOf[Dummy[T]])
+              .foreach(x => node.nextNodes.asInstanceOf[ArrayBuffer[ANode[T]]].remove(x._2))
     }
 
     // create a new Graph, much simpler than replacing others in the old graph
-    Graph[T](inputs, outputs)
+    val g = Graph[T](inputs, outputs)
+    println("*" * 80)
+    g
   }
 
   /**
@@ -168,15 +176,19 @@ object Utils {
         quantizedConv.initWeightAndBias(conv.weight, conv.bias)
       case normalLinear if normalLinear.isInstanceOf[NNLinear[T]] =>
         val linear = normalLinear.asInstanceOf[NNLinear[T]]
-
-        val quantizedLinear = new Linear[T](linear.weight.size(2), linear.weight.size(1))
-
-        quantizedLinear.initWeightAndBias(linear.weight, linear.bias)
+        if (linear.getName() == "preTopjkology") {
+          val quantizedLinear = new Linear[T](linear.weight.size(2), linear.weight.size(1))
+          quantizedLinear.setName(linear.getName())
+          quantizedLinear.initWeightAndBias(linear.weight, linear.bias)
+        } else {
+          linear
+        }
       case timeDistributed if timeDistributed.isInstanceOf[TimeDistributed[T]] =>
         val td = timeDistributed.asInstanceOf[TimeDistributed[T]]
         val layer = replace(td.layer)
 
-        TimeDistributed[T](layer.asInstanceOf[TensorModule[T]])
+        td.layer = layer.asInstanceOf[TensorModule[T]]
+        td
       case nCell if nCell.isInstanceOf[Cell[T]] =>
         val cell = nCell.asInstanceOf[Cell[T]]
         cell.cell = replace(cell.cell)

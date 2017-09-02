@@ -120,6 +120,7 @@ class Linear[T: ClassTag](
 
   def checkAndInit(): Unit = {
     if (!_init && weight.getStorageInJni == 0L) {
+      println(this)
       init()
     }
   }
@@ -135,6 +136,7 @@ class Linear[T: ClassTag](
       1
     } else {
       output.resize(Array(input.size(1), outputSize))
+      require(inputSize == input.size(2), s"dimension error")
       input.size(1)
     }
 

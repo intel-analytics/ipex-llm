@@ -16,18 +16,16 @@
 package com.intel.analytics.bigdl.nn
 
 import java.nio.ByteOrder
-
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
-import com.intel.analytics.bigdl.nn.bigquant.Quant
+import com.intel.analytics.bigdl.nn.bigquant.{Quant, Quantizer}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.File
 import com.intel.analytics.bigdl.utils.caffe.CaffeLoader
 import com.intel.analytics.bigdl.utils.serializer.ModuleLoader
 import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowLoader}
-
 import scala.reflect.ClassTag
 
 object Module {

@@ -16,12 +16,13 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.bigquant.{Quantable, Quantizer}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
-
 import scala.reflect.ClassTag
 
 /**
@@ -60,13 +61,15 @@ class ConvLSTMPeephole3D[T : ClassTag](
     hiddensShape = Array(outputSize, outputSize),
     regularizers = Array(wRegularizer, uRegularizer, bRegularizer, cRegularizer)
   ) {
-  var inputGate: Sequential[T] = _
-  var forgetGate: Sequential[T] = _
-  var outputGate: Sequential[T] = _
-  var hiddenLayer: Sequential[T] = _
-  var cellLayer: Sequential[T] = _
+  var inputGate: Sequential[T] = null
+  var forgetGate: Sequential[T] = null
+  var outputGate: Sequential[T] = null
+  var hiddenLayer: Sequential[T] = null
+  var cellLayer: Sequential[T] = null
 
   override var cell: AbstractModule[Activity, Activity, T] = buildConvLSTM()
+
+  override var preTopology: AbstractModule[Activity, Activity, T] = null
 
   def buildGate(): Sequential[T] = {
     val i2g = Sequential()
@@ -226,7 +229,7 @@ class ConvLSTMPeephole3D[T : ClassTag](
     s"$kernelI, $kernelC, $stride)"
 }
 
-object ConvLSTMPeephole3D {
+object ConvLSTMPeephole3D extends Quantable {
   def apply[@specialized(Float, Double) T: ClassTag](
     inputSize: Int,
     outputSize: Int,
@@ -241,6 +244,22 @@ object ConvLSTMPeephole3D {
   )(implicit ev: TensorNumeric[T]): ConvLSTMPeephole3D[T] = {
     new ConvLSTMPeephole3D[T](inputSize, outputSize, kernelI, kernelC, stride,
       wRegularizer, uRegularizer, bRegularizer, cRegularizer, withPeephole)
+  }
+
+  def quantize[T: ClassTag](module: Module[T])(
+    implicit ev: TensorNumeric[T]): Module[T] = {
+    val convLSTM = module.asInstanceOf[ConvLSTMPeephole3D[T]]
+    convLSTM.cell = Quantizer.quantize(convLSTM.cell)
+    convLSTM.preTopology = null
+
+    // for quantized module, we don't need these variables
+    convLSTM.inputGate = null
+    convLSTM.forgetGate = null
+    convLSTM.outputGate = null
+    convLSTM.hiddenLayer = null
+    convLSTM.cellLayer = null
+
+    convLSTM
   }
 }
 

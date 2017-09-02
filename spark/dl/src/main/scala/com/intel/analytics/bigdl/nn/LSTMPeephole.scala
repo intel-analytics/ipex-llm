@@ -16,13 +16,14 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.bigquant.{CellQuantizer, Quantable}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
-
 import scala.reflect.ClassTag
 
 /**
@@ -61,11 +62,11 @@ class LSTMPeephole[T : ClassTag] (
     hiddensShape = Array(hiddenSize, hiddenSize),
     regularizers = Array(wRegularizer, uRegularizer, bRegularizer)
   ) {
-  var inputGate: ModuleNode[T] = _
-  var forgetGate: ModuleNode[T] = _
-  var outputGate: ModuleNode[T] = _
-  var hiddenLayer: ModuleNode[T] = _
-  var cellLayer: ModuleNode[T] = _
+  var inputGate: ModuleNode[T] = null
+  var forgetGate: ModuleNode[T] = null
+  var outputGate: ModuleNode[T] = null
+  var hiddenLayer: ModuleNode[T] = null
+  var cellLayer: ModuleNode[T] = null
   val featDim = 2
   override var cell: AbstractModule[Activity, Activity, T] =
     Sequential()
@@ -75,7 +76,7 @@ class LSTMPeephole[T : ClassTag] (
       .add(SelectTable(1))
       .add(NarrowTable(2, 2)))
 
-  override def preTopology: AbstractModule[Activity, Activity, T] =
+  override var preTopology: AbstractModule[Activity, Activity, T] =
     Sequential()
     .add(Dropout(p))
     .add(TimeDistributed(Linear(inputSize, hiddenSize * 4, wRegularizer = wRegularizer,
@@ -217,7 +218,7 @@ class LSTMPeephole[T : ClassTag] (
   override def toString: String = s"LSTMPeephole($inputSize, $hiddenSize, $p)"
 }
 
-object LSTMPeephole {
+object LSTMPeephole extends Quantable {
   def apply[@specialized(Float, Double) T: ClassTag](
     inputSize: Int = 4,
     hiddenSize: Int = 3,
@@ -228,6 +229,20 @@ object LSTMPeephole {
   )
     (implicit ev: TensorNumeric[T]): LSTMPeephole[T] = {
     new LSTMPeephole[T](inputSize, hiddenSize, p, wRegularizer, uRegularizer, bRegularizer)
+  }
+
+  override def quantize[T: ClassTag](module: Module[T])(
+    implicit ev: TensorNumeric[T]): Module[T] = {
+    val lstm = CellQuantizer.quantize(module).asInstanceOf[LSTMPeephole[T]]
+
+    // for quantized module, we don't need these variables
+    lstm.inputGate = null
+    lstm.forgetGate = null
+    lstm.outputGate = null
+    lstm.hiddenLayer = null
+    lstm.cellLayer = null
+
+    lstm
   }
 }
 

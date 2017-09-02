@@ -34,7 +34,7 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers with ParallelTestExe
   )
 
   for (test <- testCases) {
-    val start = s"A fixpoint.SpatialConvolution $test"
+    val start = s"A bigquant.SpatialConvolution $test"
     start should "generate the same result with nn.SpatialConvolution" in {
       val weight = Tensor(test.group, test.outputChannel / test.group,
         test.inputChannel / test.group, test.kernelHeight, test.kernelWidth).fill(1.0f)

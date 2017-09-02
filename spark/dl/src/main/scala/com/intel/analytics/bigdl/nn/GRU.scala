@@ -19,11 +19,11 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.bigquant.{CellQuantizer, Quantable, Quantizer}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
-
 import scala.reflect.ClassTag
 
 /**
@@ -68,7 +68,7 @@ class GRU[T : ClassTag] (
   val featDim = 2
   override var cell: AbstractModule[Activity, Activity, T] = buildGRU()
 
-  override def preTopology: AbstractModule[Activity, Activity, T] =
+  override var preTopology: AbstractModule[Activity, Activity, T] =
     if (p != 0) {
       null
     } else {
@@ -169,7 +169,7 @@ class GRU[T : ClassTag] (
   }
 }
 
-object GRU {
+object GRU extends Quantable {
   def apply[@specialized(Float, Double) T: ClassTag](
     inputSize: Int = 4,
     outputSize: Int = 3,
@@ -178,5 +178,13 @@ object GRU {
     uRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null)(implicit ev: TensorNumeric[T]): GRU[T] = {
     new GRU[T](inputSize, outputSize, p, wRegularizer, uRegularizer, bRegularizer)
+  }
+
+  def quantize[T: ClassTag](module: Module[T])(implicit ev: TensorNumeric[T]): Module[T] = {
+    val gru = CellQuantizer.quantize(module).asInstanceOf[GRU[T]]
+    gru.i2g = null
+    gru.h2g = null
+
+    gru
   }
 }
