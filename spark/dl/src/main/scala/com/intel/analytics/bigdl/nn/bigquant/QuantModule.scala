@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import scala.reflect.ClassTag
 
 abstract class QuantModule[T: ClassTag](length: Int)(
-  implicit ev: TensorNumeric[T]) extends TensorModule {
+  implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   val weightSum: Array[T] = new Array[T](length)
 
   val min: Array[T] = new Array[T](length)

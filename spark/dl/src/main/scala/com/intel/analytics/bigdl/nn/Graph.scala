@@ -528,6 +528,15 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
     writer.close()
     this
   }
+
+  /**
+   * get all outputs. of cause we can filter the output in executions, but the order is
+   * not consistent, eg, LSTM and LSTMPeephole
+   * @return
+   */
+  def getOutputs: Seq[ModuleNode[T]] = {
+    outputs
+  }
 }
 
 object Graph extends ContainerSerializable {

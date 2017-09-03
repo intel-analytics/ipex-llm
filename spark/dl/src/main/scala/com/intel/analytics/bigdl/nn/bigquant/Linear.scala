@@ -120,7 +120,6 @@ class Linear[T: ClassTag](
 
   def checkAndInit(): Unit = {
     if (!_init && weight.getStorageInJni == 0L) {
-      println(this)
       init()
     }
   }

@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
+import com.intel.analytics.bigdl.nn.bigquant.{Quantable, Quantizer}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer.{ContainerSerializable, DataConverter, ModuleData, ModuleSerializer}
@@ -150,6 +151,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
       gradHidden = hidden
     }
     var t = cells.length
+    currentTimes = t
     if (t < times) {
       val cloneCell = cells.head.cloneModule()
       cloneCell.parameters()._1.map(_.set())
@@ -246,10 +248,8 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     quantizeOptim()
 
     if (times > currentTimes) {
-      currentTimes = times
       share(cells)
     }
-
 
     /**
      * currentInput forms a T() type. It contains two elements, hidden and input.
@@ -498,7 +498,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
   override def toString(): String = s"${getPrintName}${modules}"
 }
 
-object Recurrent extends ContainerSerializable {
+object Recurrent extends ContainerSerializable with Quantable {
 
   private val batchDim = 1
   private val timeDim = 2
@@ -731,6 +731,27 @@ object Recurrent extends ContainerSerializable {
     recurrentBuilder.putAttr("bnorm", bNormBuilder.build)
 
     createSerializeBigDLModule(recurrentBuilder, module)
+  }
+
+  override def quantize[T: ClassTag](module: Module[T])(
+    implicit ev: TensorNumeric[T]): Module[T] = {
+    val recurrent = module.asInstanceOf[Recurrent[T]]
+    recurrent.clearState()
+
+    recurrent.topology = Quantizer.quantize(recurrent.topology).asInstanceOf[Cell[T]]
+    recurrent.preTopology = recurrent.topology.preTopology
+
+    if (recurrent.batchNormParams != null) {
+      recurrent.preTopology = Sequential().add(recurrent.preTopology).add(recurrent.layer)
+    }
+
+    recurrent.modules.clear()
+    if (recurrent.preTopology != null) {
+      recurrent.modules += recurrent.preTopology
+    }
+    recurrent.modules += recurrent.topology
+
+    recurrent
   }
 }
 

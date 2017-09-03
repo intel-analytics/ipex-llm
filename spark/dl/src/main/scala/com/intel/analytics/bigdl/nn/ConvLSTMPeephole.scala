@@ -18,7 +18,6 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.bigquant.{Quantable, Quantizer}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -241,7 +240,7 @@ class ConvLSTMPeephole[T : ClassTag](
     s"$kernelI, $kernelC, $stride)"
 }
 
-object ConvLSTMPeephole extends Quantable {
+object ConvLSTMPeephole {
   def apply[@specialized(Float, Double) T: ClassTag](
     inputSize: Int,
     outputSize: Int,
@@ -256,22 +255,6 @@ object ConvLSTMPeephole extends Quantable {
   )(implicit ev: TensorNumeric[T]): ConvLSTMPeephole[T] = {
     new ConvLSTMPeephole[T](inputSize, outputSize, kernelI, kernelC, stride,
       wRegularizer, uRegularizer, bRegularizer, cRegularizer, withPeephole)
-  }
-
-  override def quantize[T: ClassTag](module: Module[T])(
-    implicit ev: TensorNumeric[T]): Module[T] = {
-    val convLSTM = module.asInstanceOf[ConvLSTMPeephole[T]]
-    convLSTM.cell = Quantizer.quantize(convLSTM.cell)
-    convLSTM.preTopology = null
-
-    // for quantized module, we don't need these variables
-    convLSTM.inputGate = null
-    convLSTM.forgetGate = null
-    convLSTM.outputGate = null
-    convLSTM.hiddenLayer = null
-    convLSTM.cellLayer = null
-
-    convLSTM
   }
 }
 

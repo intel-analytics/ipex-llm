@@ -181,9 +181,16 @@ object GRU extends Quantable {
   }
 
   def quantize[T: ClassTag](module: Module[T])(implicit ev: TensorNumeric[T]): Module[T] = {
-    val gru = CellQuantizer.quantize(module).asInstanceOf[GRU[T]]
-    gru.i2g = null
-    gru.h2g = null
+    val gru = module.asInstanceOf[GRU[T]]
+    val index = gru.h2g.prevNodes(0).nextNodes.indexOf(gru.h2g)
+
+    gru.cell = Quantizer.quantize(gru.cell)
+    if (gru.preTopology != null) {
+      gru.preTopology = Quantizer.quantize(gru.preTopology)
+    }
+    if (gru.h2g.element.isInstanceOf[Linear[T]]) {
+      gru.h2g = gru.h2g.prevNodes(0).nextNodes(index)
+    }
 
     gru
   }

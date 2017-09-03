@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.example.quantization
+package com.intel.analytics.bigdl.example.bigquant
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dataset.image._
@@ -72,8 +72,8 @@ object Utils {
       case "vgg" =>
         sc.parallelize(VggUtils.loadTest(folder), partitionNum)
 
-      case "alexnet" => imagenet
-      case "inception_v1" => imagenet
+      case m if m.contains("alexnet") => imagenet
+      case m if m.contains("inception_v1") || m.contains("googlenet") => imagenet
       case "inception_v2" => imagenet
       case m if m.toLowerCase.contains("resnet") && !m.toLowerCase.contains("cifar10") => imagenet
       case m if m.toLowerCase.contains("resnet") && m.toLowerCase.contains("cifar10") =>
@@ -100,9 +100,9 @@ object Utils {
       case "vgg" =>
         BytesToBGRImg() -> BGRImgNormalizer(VggUtils.testMean, VggUtils.testStd) -> BGRImgToSample()
 
-      case "alexnet" => imagenetPreprocessing(227)
+      case m if m.contains("alexnet") => imagenetPreprocessing(227)
 
-      case "inception_v1" =>
+      case m if m.contains("inception_v1") || m.contains("googlenet") =>
         BytesToBGRImg(normalize = 1f) ->
                 BGRImgCropper(224, 224, CropCenter) ->
                 BGRImgNormalizer(123, 117, 104, 1, 1, 1) -> BGRImgToSample(toRGB = false)

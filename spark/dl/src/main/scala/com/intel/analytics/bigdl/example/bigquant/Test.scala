@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.example.quantization
+package com.intel.analytics.bigdl.example.bigquant
 
 
 import com.intel.analytics.bigdl.Module
@@ -47,7 +47,7 @@ object Test {
       val evaluationSet = transformer(rddData)
 
       val model = if (param.model != "lenet") {
-        val m = Module.load[Float](path)
+        val m = Module.loadModule[Float](path)
         if (param.quantize) {
           Module.quantize(m)
         } else {
@@ -57,7 +57,7 @@ object Test {
         val reshape = Reshape[Float](Array(1, 28, 28))
         val newModel = Sequential[Float]()
         newModel.add(reshape)
-        newModel.add(Module.load[Float](path))
+        newModel.add(Module.loadModule[Float](path))
 
         if (param.quantize) {
           Module.quantize(newModel)
@@ -65,6 +65,8 @@ object Test {
           newModel
         }
       }
+
+      test(model, evaluationSet, batchSize)
 
       val (modelResult, modelCosts) = time {
         test(model, evaluationSet, batchSize)

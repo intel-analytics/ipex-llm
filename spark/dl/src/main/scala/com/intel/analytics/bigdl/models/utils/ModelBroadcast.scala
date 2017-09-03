@@ -73,7 +73,6 @@ class ModelBroadcast[T: ClassTag](implicit ev: TensorNumeric[T]) extends Seriali
           case value1: QuantTensor[T] =>
             weightsBias(i) = QuantTensor[T](wb.size()).setStorage(
               wb.asInstanceOf[QuantTensor[T]].getStorage)
-            println("")
           case _ =>
             weightsBias(i) = Tensor[T](Storage(wb.storage().array()),
               wb.storageOffset(), wb.size(), wb.stride())
@@ -86,11 +85,18 @@ class ModelBroadcast[T: ClassTag](implicit ev: TensorNumeric[T]) extends Seriali
       if (parameters._1(i) != null) {
         parameters._1(i).set()
       }
+      i += 1
+    }
+
+    // because in quantized mode, the parameters are not the same length.
+    i = 0
+    while (i < parameters._2.length) {
       if (parameters._2(i) != null) {
         parameters._2(i).set()
       }
       i += 1
     }
+
     weightsBias
   }
 

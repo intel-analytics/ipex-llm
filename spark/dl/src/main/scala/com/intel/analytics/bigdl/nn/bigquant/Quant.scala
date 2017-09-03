@@ -166,10 +166,10 @@ object Quant {
   }
 
   def quantize[T: ClassTag](model: Module[T])(implicit ev: TensorNumeric[T]): Module[T] = {
-    // deep copy a new model then substitute with all quantized version models
+    // deep copy a new model then substitute with all quantized version modules
+    val clonedModel = model.cloneModule()
     println("Converting model now")
-//    val quantizedModel = replace(model.cloneModule())
-    val quantizedModel = Quantizer.quantize(model.cloneModule())
+    val quantizedModel = Quantizer.quantize(clonedModel)
     println("Converting model successfully")
 
     val paras = quantizedModel.parameters()._1

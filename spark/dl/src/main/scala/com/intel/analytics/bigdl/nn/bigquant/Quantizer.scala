@@ -79,10 +79,9 @@ object Quantizer extends Quantable {
 
     registerModule("com.intel.analytics.bigdl.nn.TimeDistributed", nn.TimeDistributed)
     registerModule("com.intel.analytics.bigdl.nn.Recurrent", nn.Recurrent)
-    registerModule("com.intel.analytics.bigdl.nn.LSTMPeephole", nn.LSTMPeephole)
+    registerModule("com.intel.analytics.bigdl.nn.BiRecurrent", nn.BiRecurrent)
+//    registerModule("com.intel.analytics.bigdl.nn.LSTMPeephole", nn.LSTMPeephole)
     registerModule("com.intel.analytics.bigdl.nn.GRU", nn.GRU)
-    registerModule("com.intel.analytics.bigdl.nn.ConvLSTMPeephole3D", nn.ConvLSTMPeephole3D)
-    registerModule("com.intel.analytics.bigdl.nn.ConvLSTMPeephole", nn.ConvLSTMPeephole)
   }
 }
 
@@ -114,8 +113,9 @@ object GraphQuantizer extends Quantable {
   override def quantize[T: ClassTag](module: Module[T])(
     implicit ev: TensorNumeric[T]): Module[T] = {
     val graph = module.asInstanceOf[Graph[T]]
-    val sortedNodes = graph.executions
+    val sortedNodes = graph.getForwardExecutions
     val inputIndexes = graph.inputs.map(i => sortedNodes.indexOf(i))
+    val outputIndexes = graph.getOutputs.map(i => sortedNodes.indexOf(i))
 
     for (i <- sortedNodes.indices) {
       val currNode = sortedNodes(i)
@@ -134,8 +134,10 @@ object GraphQuantizer extends Quantable {
     }
 
     // because all outputs point to dummy nodes, we should filter these nodes as outputs of Graph
-    val outputs = sortedNodes.filter {n =>
-      n.nextNodes.exists(_.element.isInstanceOf[Dummy[T]])
+    val outputs = new Array[ANode[T]](outputIndexes.length)
+
+    for (i <- outputIndexes.indices) {
+      outputs(i) = sortedNodes(outputIndexes(i))
     }
 
     // delete all dummy nodes
