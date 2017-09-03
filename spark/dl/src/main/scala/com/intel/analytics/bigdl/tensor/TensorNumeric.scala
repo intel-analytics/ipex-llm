@@ -972,8 +972,6 @@ object TensorNumericMath {
       override def nearlyEqual(a: Boolean, b: Boolean, epsilon: Double): Boolean = {
         a == b
       }
-
-      override def getType(): TensorDataType = BooleanType
     }
 
     implicit object NumericInt extends UndefinedTensorNumeric[Int]("Int") {
