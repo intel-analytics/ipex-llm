@@ -35,8 +35,16 @@ import scala.reflect.ClassTag
  */
 trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
 
+  /**
+   * @return whether this tensor is an empty tensor. Note that nDimension == 0 is not
+   *         sufficient to determine a tensor is empty, because a scalar tensor's nDimension
+   *         is also 0.
+   */
   def isEmpty: Boolean
 
+  /**
+   * @return whether this tensor is a scalar
+   */
   def isScalar: Boolean
   /**
    * Dimension number of the tensor. For empty tensor, its dimension number is 0
