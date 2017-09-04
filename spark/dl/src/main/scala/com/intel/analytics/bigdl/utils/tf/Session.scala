@@ -51,13 +51,7 @@ class BigDLSessionImpl[T: ClassTag](
 
   val sc = SparkContext.getOrCreate()
 
-  private val noInputOp = Set("Const", "VariableV2", "NoOp")
-
   private val inputOp = Set("ReaderReadV2", "QueueDequeueV2", "QueueDequeueManyV2", "Placeholder")
-
-  private val enqueueOp = Set("QueueEnqueueV2")
-
-  private val readerOps = Set("TFRecordReaderV2")
 
   private val (wholeTFGraph, _) = TensorflowLoader.buildTFGraph(graph.asJava, null)
 
