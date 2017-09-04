@@ -71,9 +71,9 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
   type absModule = AbstractModule[_ <: Activity, _ <: Activity, T]
 
   override def updateOutput(input: Activity): Activity = {
-    var i = 0
-    while(i < forwardExecutions.length) {
-      val node = forwardExecutions(i)
+    forwardCM.reset()
+    while (!forwardCM.isFinished()) {
+      val node = forwardCM.fetch()
       val nodeInput = if (node.prevNodes.isEmpty && !node.element.isInstanceOf[WithoutInput]) {
         inputData(node, input)
       } else {
@@ -92,8 +92,8 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
         }
       }
       node.element.forward(nodeInput)
-      inputsBP.put(node.element.getName(), nodeInput)
-      i += 1
+      inputsBP(node) = nodeInput
+      forwardCM.schedule(node)
     }
 
     output = dummyOutput.element.output
@@ -103,10 +103,9 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
   override def backward(input: Activity, gradOutput: Activity): Activity = {
     val before = System.nanoTime()
     dummyOutputGrad.element.gradInput = gradOutput
-
-    var i = 0
-    while (i < backwardExecutions.length) {
-      val curNode = backwardExecutions(i)
+    backwardCM.reset()
+    while (!backwardCM.isFinished()) {
+      val curNode = backwardCM.fetch()
       var curGradOutput : Activity = null
 
       curNode.nextNodesAndEdges.filterNot(n => n._1.element.isInstanceOf[ControlDependency[T]])
@@ -130,13 +129,13 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
         }
       })
 
-      gradOutputBP(i) = curGradOutput
+      gradOutputBP(curNode) = curGradOutput
       if (!isStopGradient(curNode.element)) {
-        curNode.element.backward(inputsBP.get(curNode.element.getName()), curGradOutput)
+        curNode.element.backward(inputsBP(curNode), curGradOutput)
       } else {
-        curNode.element.accGradParameters(inputsBP.get(curNode.element.getName()), curGradOutput)
+        curNode.element.accGradParameters(inputsBP(curNode), curGradOutput)
       }
-      i += 1
+      backwardCM.schedule(curNode)
     }
 
     gradInput = if (inputs.length == 1) {
@@ -202,10 +201,10 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
         }
       })
 
-      gradOutputBP(i) = curGradOutput
+      gradOutputBP(curNode) = curGradOutput
 
       if (!isStopGradient(curNode.element)) {
-        curNode.element.updateGradInput(inputsBP.get(curNode.element.getName()), curGradOutput)
+        curNode.element.updateGradInput(inputsBP(curNode), curGradOutput)
       }
       i += 1
     }
@@ -222,7 +221,8 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
     var i = 0
     while (i < backwardExecutions.length) {
       val curNode = backwardExecutions(i)
-      curNode.element.accGradParameters(inputsBP.get(curNode.element.getName()), gradOutputBP(i))
+      curNode.element.accGradParameters(inputsBP(curNode),
+        gradOutputBP(curNode))
       i += 1
     }
   }
@@ -252,14 +252,19 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
    * Computing backgraph
    */
   private val backGraph = dummyOutput.graph(reverse = true)
-  private var gradGraph: DirectedGraph[AbstractModule[Activity, Activity, T]] = null
+  private var gradGraph: DirectedGraph[AbstractModule[Activity, Activity, T]] = _
 
   /**
    * Execution plan
    */
-  private val forwardExecutions = backGraph.topologySort
-    .filterNot(_.element.isInstanceOf[ControlDependency[T]]).reverse
-  private var backwardExecutions: Array[Node[AbstractModule[Activity, Activity, T]]] = null
+  private val forwardExecutions = backGraph.DFS
+    .filterNot(_.element.isInstanceOf[ControlDependency[T]]).toArray
+  private val forwardCM = new Scheduler(
+    forwardExecutions.filter(_.prevNodes.length == 0),
+    Seq(dummyOutput)
+  )
+  private var backwardExecutions: Array[Node[AbstractModule[Activity, Activity, T]]] = _
+  private var backwardCM : Scheduler[T] = _
 
   modules.appendAll(forwardExecutions.filter(n => !n.eq(dummyOutput)).map(_.element))
 
@@ -271,20 +276,22 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
     dummyOutputGrad = gradGraph.source
     val nodes = gradGraph.DFS
     nodes.filter(x => isStopGradient(x.element)).foreach(_.removePrevEdges())
-    backwardExecutions = gradGraph.topologySort.filter(n => !n.eq(dummyOutputGrad))
-      .filterNot(_.element.isInstanceOf[ControlDependency[T]])
+    backwardExecutions = gradGraph.DFS.filter(n => !n.eq(dummyOutputGrad))
+      .filterNot(_.element.isInstanceOf[ControlDependency[T]]).toArray
+    backwardCM = new Scheduler[T](Seq(dummyOutputGrad),
+      backwardExecutions.filter(_.nextNodes == 0))
     clearState()
     this
   }
 
 
-  private val inputsBP = new util.HashMap[String, Activity]()
+  private val inputsBP = new mutable.HashMap[ModuleNode[T], Activity]()
 
   // Check all inputs of the graph should be passed in
   checkRoots
   build
 
-  private val gradOutputBP = new Array[Activity](forwardExecutions.length - 1)
+  private val gradOutputBP = new mutable.HashMap[ModuleNode[T], Activity]()
 
   private def checkRoots: Unit = {
     val roots = forwardExecutions.filter(_.prevNodes.size == 0)

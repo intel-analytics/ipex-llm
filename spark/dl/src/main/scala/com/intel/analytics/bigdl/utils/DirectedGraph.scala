@@ -214,6 +214,12 @@ class Node[T](val element: T) extends Serializable {
     node
   }
 
+  def from(node: Node[T], e: Edge = Edge()): Node[T] = {
+    if (!node.nexts.contains((this, e))) node.nexts.append((this, e))
+    if (!this.prevs.contains((node, e))) this.prevs.append((node, e))
+    node
+  }
+
   /**
    * Remove linkage with another node
    *  @param node another node
@@ -279,7 +285,11 @@ object Node {
  * An edge in the graph
  * @param fromIndex A preserved position to store meta info.
  */
-private[bigdl] class Edge private (val fromIndex: Option[Int]) extends Serializable
+private[bigdl] class Edge private (val fromIndex: Option[Int]) extends Serializable {
+  override def toString: String = {
+    s"Edge(fromIndex: $fromIndex)"
+  }
+}
 
 object Edge {
   def apply(value : Int): Edge = new Edge(Some(value))
