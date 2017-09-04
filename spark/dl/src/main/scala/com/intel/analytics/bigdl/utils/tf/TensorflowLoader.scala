@@ -64,7 +64,7 @@ object TensorflowLoader{
   }
 
   /**
-   * Parse a tensorflow model protobuf file, read a list of op nodes from it
+   * Parse a tensorflow model protobuf binary file, read a list of op nodes from it
    * @param graphProtoTxt where is the tf protobuf file
    * @return
    */
@@ -87,7 +87,7 @@ object TensorflowLoader{
   }
 
   /**
-   * Parse a tensorflow model protobuf file, read a list of op nodes from it
+   * Parse a tensorflow model protobuf text file, read a list of op nodes from it
    * @param graphProtoTxt where is the tf protobuf file
    * @return
    */
