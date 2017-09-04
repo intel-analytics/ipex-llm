@@ -45,7 +45,9 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
       throw new RuntimeException(s"${getLayerName(layer)} without bias is not supported now")
     }
     val group = if (param.getGroup == 0)  1 else param.getGroup
-    val nInputPlane = weightBlob.getShape.getDim(1).toInt * group
+    val channel = if (weightBlob.getShape.getDimCount > 1) weightBlob.getShape.getDim(1).toInt
+    else weightBlob.getChannels
+    val nInputPlane = channel * group
     val nOutPlane = param.getNumOutput
     var kw = param.getKernelW
     var kh = param.getKernelH
@@ -82,7 +84,8 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
     val withBias = param.getBiasTerm
     val layerName = getLayerName(layer)
     val weightBlob = getBlob(layer.asInstanceOf[V1LayerParameter], 0).get
-    val nInputPlane = weightBlob.getShape.getDim(1).toInt
+    val nInputPlane = if (weightBlob.getShape.getDimCount > 1) weightBlob.getShape.getDim(1).toInt
+    else weightBlob.getWidth
     val nOutputPlane = param.getNumOutput
     val linear = Linear[T](nInputPlane, nOutputPlane, withBias = withBias).setName(layerName)
     val node = linear.inputs()
@@ -189,7 +192,7 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
     setConnections(layerParameter, bottoms, nextSize)
 
     // copy weight and bias
-    var (weightBuilder, biasBuilder) = copyParam(module)
+    val (weightBuilder, biasBuilder) = copyParam(module)
     setBlobs(layerParameter, weightBuilder, biasBuilder)
     // build concolution layer
     Seq(layerParameter.build())
