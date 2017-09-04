@@ -125,26 +125,37 @@ class DirectedGraph[T](val source : Node[T], val reverse : Boolean = false) exte
       }
     }
   }
+  // scalastyle:on methodName
 
   /**
    * Clone the graph structure, will not clone the node element
-   * @return new graph
+   * @param reverseEdge if reverse the edge in the nodes
+   * @return
    */
-  def cloneGraph(): DirectedGraph[T] = {
+  def cloneGraph(reverseEdge: Boolean = false): DirectedGraph[T] = {
     val oldToNew = new util.HashMap[Node[T], Node[T]]()
     val bfs = BFS.toArray
     bfs.foreach(node => {
       oldToNew.put(node, new Node[T](node.element))
     })
     bfs.foreach(node => {
-      node.prevNodesAndEdges.foreach(prevNodeAndEdge => {
-        oldToNew.get(prevNodeAndEdge._1).add(oldToNew.get(node), prevNodeAndEdge._2)
-      })
+      if (reverseEdge) {
+        node.prevNodesAndEdges.foreach(prevNodeAndEdge => {
+          oldToNew.get(node).add(oldToNew.get(prevNodeAndEdge._1), prevNodeAndEdge._2)
+        })
+      } else {
+        node.prevNodesAndEdges.foreach(prevNodeAndEdge => {
+          oldToNew.get(prevNodeAndEdge._1).add(oldToNew.get(node), prevNodeAndEdge._2)
+        })
+      }
     })
-    new DirectedGraph[T](oldToNew.get(source), reverse)
-  }
 
-  // scalastyle:on methodName
+    if (reverseEdge) {
+      new DirectedGraph[T](oldToNew.get(source), !reverse)
+    } else {
+      new DirectedGraph[T](oldToNew.get(source), reverse)
+    }
+  }
 }
 
 /**
@@ -214,6 +225,12 @@ class Node[T](val element: T) extends Serializable {
     node
   }
 
+  def from(node: Node[T], e: Edge = Edge()): Node[T] = {
+    if (!node.nexts.contains((this, e))) node.nexts.append((this, e))
+    if (!this.prevs.contains((node, e))) this.prevs.append((node, e))
+    node
+  }
+
   /**
    * Remove linkage with another node
    *  @param node another node
@@ -279,7 +296,11 @@ object Node {
  * An edge in the graph
  * @param fromIndex A preserved position to store meta info.
  */
-private[bigdl] class Edge private (val fromIndex: Option[Int]) extends Serializable
+private[bigdl] class Edge private (val fromIndex: Option[Int]) extends Serializable {
+  override def toString: String = {
+    s"Edge(fromIndex: $fromIndex)"
+  }
+}
 
 object Edge {
   def apply(value : Int): Edge = new Edge(Some(value))

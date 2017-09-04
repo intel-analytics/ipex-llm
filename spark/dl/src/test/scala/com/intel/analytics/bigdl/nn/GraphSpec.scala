@@ -22,10 +22,11 @@ import com.intel.analytics.bigdl.models.inception.Inception_v1_NoAuxClassifier
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.models.vgg.{VggForCifar10, Vgg_16, Vgg_19}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.nn.ops.{ControlNodes, Less}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T, Table}
+import com.intel.analytics.bigdl.utils.{Edge, Engine, RandomGenerator, T, Table}
 
 import scala.reflect.ClassTag
 import scala.util.Random
@@ -1134,6 +1135,119 @@ class GraphSpec extends FlatSpec with Matchers {
 
     val model = Inception_v1_NoAuxClassifier.graph(1000).asInstanceOf[Graph[Float]]
     model.saveGraphTopology(absolutePath)
+  }
+
+  "graph" should "support while loop" in {
+    val input = Input("input")
+
+    val conditionInput = Input("conditionInput")
+    val const = new com.intel.analytics.bigdl.nn.tf.Const(Tensor(T(9))).inputs()
+    val less = Less().inputs(const, conditionInput)
+
+    val updateInput = Input()
+    val add = AddConstant(1).inputs(updateInput)
+    val echo = Echo().inputs(add)
+
+    val exit = ControlNodes.whileLoop(
+      (Seq(conditionInput), less),
+      (Seq((updateInput, echo))),
+      Seq(input),
+      "while"
+    )
+    val model = Graph(Array(input), Array(exit(0)), None, false)
+    val result = model.forward(Tensor(T(1)))
+    result.toTensor.valueAt(1) should be(10)
+  }
+
+  "graph" should "support while loop twice and const node should not be executed twice" in {
+    val input = Input()
+
+    val conditionInput = Input()
+    val const = new com.intel.analytics.bigdl.nn.tf.Const(Tensor(T(9))).inputs()
+    var count = 0
+    def feval(module: Echo[Float], input: Tensor[Float]): Unit = {
+      count += 1
+    }
+    val echo = Echo(feval).inputs(const)
+    val less = Less().inputs(echo, conditionInput)
+
+    val updateInput = Input()
+    val add = AddConstant(1).inputs(updateInput)
+
+    val exit = ControlNodes.whileLoop(
+      (Seq(conditionInput), less),
+      Seq((updateInput, add)),
+      Seq(input)
+    )
+    val model = Graph(Array(input), Array(exit(0)), None, false)
+    model.forward(Tensor(T(1)))
+    val result = model.forward(Tensor(T(1)))
+    result.toTensor.valueAt(1) should be(10)
+    count should be(1)
+  }
+
+  "graph" should "support while loop with multiple loop vars" in {
+    val input1 = Input("Input1")
+    val input2 = Input("Input2")
+
+    val conditionInput1 = Input("conditionInput1")
+    val conditionInput2 = Input("conditionInput2")
+    val const = new com.intel.analytics.bigdl.nn.tf.Const(Tensor(T(9))).setName("inc").inputs()
+    val less = Less().setName("less").inputs(const, conditionInput1)
+
+    val updateInput1 = Input("updateInput1")
+    val add1 = AddConstant(1).setName("add1").inputs(updateInput1)
+    val echo1 = Echo().setName("echo1").inputs(add1)
+
+
+    val updateInput2 = Input("updateInput2")
+    val add2 = AddConstant(5).setName("add5").inputs(updateInput2)
+    val echo2 = Echo().setName("echo2").inputs(add2)
+
+    val exit = ControlNodes.whileLoop(
+      (Seq(conditionInput1, conditionInput2), less),
+      (Seq((updateInput1, echo1), (updateInput2, echo2))),
+      Seq(input1, input2),
+      "while"
+    )
+    val model = Graph(Array(input1, input2), exit.toArray, None, false)
+    val result = model.forward(T(Tensor(T(1)), Tensor(T(2))))
+    result.toTable.apply[Tensor[Float]](1).valueAt(1) should be(10)
+    result.toTable.apply[Tensor[Float]](2).valueAt(1) should be(47)
+  }
+
+  "graph" should "support switch with two branch" in {
+    val data = Input("data")
+    val condition = Input("condition")
+    val swtich = ControlNodes.switch(data, condition)
+    val echo1 = Echo().inputs(swtich.trueEdge())
+    val echo2 = Echo().inputs(swtich.falseEdge())
+
+    val model = Graph(Array(data, condition), Array(echo1), None, false)
+    val result = model.forward(T(Tensor[Float](T(1)), Tensor[Boolean](T(true))))
+    result.toTensor should be(Tensor[Float](T(1)))
+
+    intercept[IllegalArgumentException] {
+      model.forward(T(Tensor[Float](T(1)), Tensor[Boolean](T(false))))
+    }
+  }
+
+  "graph" should "support switch with two branch with merge" in {
+    val data = Input("data")
+    val condition = Input("condition")
+    val swtich = ControlNodes.switch(data, condition)
+    val echo1 = Echo().inputs(swtich.trueEdge())
+    val echo2 = Echo().inputs(swtich.falseEdge())
+    val add1 = AddConstant(1).inputs(echo1)
+    val add5 = AddConstant(5).inputs(echo2)
+    val merge = ControlNodes.merge(add1, add5)
+    val output = Identity().inputs(merge)
+
+    val model = Graph(Array(data, condition), Array(output), None, false)
+    var result = model.forward(T(Tensor[Float](T(1)), Tensor[Boolean](T(true))))
+    result.toTensor should be(Tensor[Float](T(2)))
+    result = model.forward(T(Tensor[Float](T(1)), Tensor[Boolean](T(false))))
+    result.toTensor should be(Tensor[Float](T(6)))
   }
 }
 
