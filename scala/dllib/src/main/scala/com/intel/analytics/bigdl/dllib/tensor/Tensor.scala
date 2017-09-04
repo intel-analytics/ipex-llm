@@ -34,6 +34,18 @@ import scala.reflect.ClassTag
  * @tparam T should be Double or Float
  */
 trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
+
+  /**
+   * @return whether this tensor is an empty tensor. Note that nDimension == 0 is not
+   *         sufficient to determine a tensor is empty, because a scalar tensor's nDimension
+   *         is also 0.
+   */
+  def isEmpty: Boolean
+
+  /**
+   * @return whether this tensor is a scalar
+   */
+  def isScalar: Boolean
   /**
    * Dimension number of the tensor. For empty tensor, its dimension number is 0
    *
@@ -232,6 +244,13 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
    */
   def update(indexes: Array[Int], value: T): Unit
 
+
+  /**
+   * Set value for a scalar tensor
+   * @param value the written value
+   * @return
+   */
+  def setValue(value: T): this.type
   /**
    * Write the value on a given position. The number of parameters
    * should be equal to the dimension number of the tensor.
@@ -870,6 +889,12 @@ object Tensor {
    */
   def apply[@specialized(Float, Double) T: ClassTag](other: Tensor[T])(
     implicit ev: TensorNumeric[T]): Tensor[T] = new DenseTensor(other)
+
+  def apply[@specialized(Float, Double) T: ClassTag](value: T)(
+    implicit ev: TensorNumeric[T]): Tensor[T] = {
+    new DenseTensor[T](new ArrayStorage[T](Array(value)), 0, Array[Int](),
+      Array[Int](), 0)
+  }
 
   /**
    * create a tensor with a given breeze vector. The tensor will have the same size
