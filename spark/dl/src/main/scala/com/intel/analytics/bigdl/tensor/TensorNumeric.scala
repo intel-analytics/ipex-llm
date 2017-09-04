@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.tensor
 
 import java.util
 
+import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.mkl.MKL
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 
@@ -931,6 +932,28 @@ object TensorNumericMath {
           self(i + selfOffset) += a(aOffset + i) / b(bOffset + i) * v
           i += 1
         }
+      }
+    }
+
+    implicit object NumericByteString extends UndefinedTensorNumeric[ByteString]("ByteString") {
+      override def plus(x: ByteString, y: ByteString): ByteString = x.concat(y)
+
+      override def fromType[K](k: K)(
+        implicit c: ConvertableFrom[K]): ByteString =
+        ByteString.copyFromUtf8(c.toString(k))
+
+      override def axpy(n: Int, da: ByteString, dx: Array[ByteString], _dx_offset: Int,
+                        incx: Int, dy: Array[ByteString],
+                        _dy_offset: Int, incy: Int): Unit = {
+        var i = 0
+        while (i < n) {
+          dy(i + _dy_offset) = dx(_dx_offset + i).concat(dy(_dy_offset + i))
+          i += 1
+        }
+      }
+
+      override def nearlyEqual(a: ByteString, b: ByteString, epsilon: Double): Boolean = {
+        a == b
       }
     }
 
