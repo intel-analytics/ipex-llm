@@ -940,6 +940,12 @@ private[bigdl] class QuantTensor[@specialized(Float) T: ClassTag](
   override def sum(x: Tensor[T], dim: Int): Tensor[T] =
     throw new UnsupportedOperationException(errorString)
 
+  def prod(): T =
+    throw new UnsupportedOperationException(errorString)
+
+  def prod(x: Tensor[T], dim: Int): Tensor[T] =
+    throw new UnsupportedOperationException(errorString)
+
   /**
    * returns the mean of all elements of this.
    *

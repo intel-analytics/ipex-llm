@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.nn.bigquant
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.nn.tf.WithoutInput
-import com.intel.analytics.bigdl.nn.{Cell, Container, Dummy, Graph, Input, TimeDistributed, Linear => NNLinear, SpatialConvolution => NNConv, SpatialDilatedConvolution => NNDilatedConv}
+import com.intel.analytics.bigdl.nn.{Cell, Container, Graph, Input, TimeDistributed, Linear => NNLinear, SpatialConvolution => NNConv, SpatialDilatedConvolution => NNDilatedConv}
 import com.intel.analytics.bigdl.tensor.{QuantTensor, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Node
@@ -27,7 +27,7 @@ import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 object Utils {
-  type ModuleNode[R] = AbstractModule[Activity, Tensor[R], R]
+  type ModuleNode[R] = AbstractModule[Activity, Activity, R]
   type SeqNodes[R] = Seq[Node[ModuleNode[R]]]
   type ArrayNodes[R] = Array[Node[ModuleNode[R]]]
   type ANode[R] = Node[ModuleNode[R]]
@@ -65,14 +65,18 @@ object Utils {
     index: Int): Unit = {
     // create a new node
     val newNode = Node(module)
-    newNode.nextNodes.asInstanceOf[ArrayBuffer[Node[ModuleNode[T]]]] ++= node.nextNodes
-    newNode.prevNodes.asInstanceOf[ArrayBuffer[Node[ModuleNode[T]]]] ++= node.prevNodes
 
-    // prev.next
-    newNode.prevNodes.foreach(n => replaceRef(node, newNode, n.nextNodes))
+    // 2
+    node.prevNodesAndEdges.foreach(n => n._1.add(newNode, n._2))
 
-    // next.prev
-    newNode.nextNodes.foreach(n => replaceRef(node, newNode, n.prevNodes))
+    // 1
+    node.prevNodesAndEdges.foreach(n => n._1.delete(node, n._2))
+
+    // 3
+    node.nextNodesAndEdges.foreach(n => newNode.add(n._1, n._2))
+
+    // 4
+    node.nextNodesAndEdges.foreach(n => node.delete(n._1, n._2))
 
     // update the list
     list.update(index, newNode)

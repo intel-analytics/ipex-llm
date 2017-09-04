@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.nn.bigquant
 
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn.bigquant.Utils._
-import com.intel.analytics.bigdl.nn.{Cell, Container, Dummy, Graph}
+import com.intel.analytics.bigdl.nn.{Cell, Container, Graph}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.{Module, nn}
 import scala.collection.mutable.{ArrayBuffer, HashMap}
@@ -122,7 +122,7 @@ object GraphQuantizer extends Quantable {
       val currModule = currNode.element
       val waitedModule = Quantizer.quantize(currModule)
 
-      if (waitedModule != module) {
+      if (waitedModule != currModule) {
         replaceNode(currNode, waitedModule.asInstanceOf[ModuleNode[T]], sortedNodes, i)
       }
     }
@@ -141,10 +141,10 @@ object GraphQuantizer extends Quantable {
     }
 
     // delete all dummy nodes
-    outputs.foreach { node =>
-      node.nextNodes.zipWithIndex.filter(_._1.element.isInstanceOf[Dummy[T]])
-              .foreach(x => node.nextNodes.asInstanceOf[ArrayBuffer[ANode[T]]].remove(x._2))
-    }
+//    outputs.foreach { node =>
+//      node.nextNodes.zipWithIndex.filter(_._1.element.isInstanceOf[Dummy[T]])
+//              .foreach(x => node.nextNodes.asInstanceOf[ArrayBuffer[ANode[T]]].remove(x._2))
+//    }
 
     // create a new Graph, much simpler than replacing others in the old graph
     Graph[T](inputs, outputs)

@@ -183,13 +183,17 @@ object GRU extends Quantable {
   def quantize[T: ClassTag](module: Module[T])(implicit ev: TensorNumeric[T]): Module[T] = {
     val gru = module.asInstanceOf[GRU[T]]
     val index = gru.h2g.prevNodes(0).nextNodes.indexOf(gru.h2g)
+    val h2gPrev = gru.h2g.prevNodes(0)
 
     gru.cell = Quantizer.quantize(gru.cell)
     if (gru.preTopology != null) {
       gru.preTopology = Quantizer.quantize(gru.preTopology)
     }
+
+    // if the h2g is a linear node, its previous node is Input node. And there's only one
+    // linear node of that Input nextNodes.
     if (gru.h2g.element.isInstanceOf[Linear[T]]) {
-      gru.h2g = gru.h2g.prevNodes(0).nextNodes(index)
+      gru.h2g = h2gPrev.nextNodes.filter(_.element.isInstanceOf[bigquant.Linear[T]]).last
     }
 
     gru
