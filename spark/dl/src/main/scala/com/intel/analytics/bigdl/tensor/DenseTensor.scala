@@ -39,7 +39,6 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
 
   override def isScalar: Boolean =
     this.nDimension == 0 &&
-      this._size != null && this.size().isEmpty &&
       this._storage.length() == 1
 
   override def storage(): Storage[T] = _storage
