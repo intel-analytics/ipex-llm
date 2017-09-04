@@ -51,7 +51,7 @@ object TensorflowSaver {
       byteOrder: ByteOrder = ByteOrder.LITTLE_ENDIAN,
       extraNodes: Set[NodeDef] = Set()): Unit = {
     val inputNodeCache =
-      new mutable.HashMap[AbstractModule[Activity, Tensor[T], T], ArrayBuffer[NodeDef]]()
+      new mutable.HashMap[AbstractModule[Activity, Activity, T], ArrayBuffer[NodeDef]]()
     model.inputs.zip(inputs).foreach(n => {
       inputNodeCache(n._1.element) = ArrayBuffer(n._2)
       println()
