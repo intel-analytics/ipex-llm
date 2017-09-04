@@ -15,12 +15,8 @@
  */
 package com.intel.analytics.bigdl.utils.tf
 
-import java.io.{BufferedInputStream, File, FileInputStream, InputStream}
-import java.nio.charset.Charset
+import java.io.{BufferedInputStream, File, FileInputStream}
 import java.nio.{ByteBuffer, ByteOrder}
-import java.util.Base64
-
-import com.google.protobuf.ByteString
 
 /**
  * Internal use only.
