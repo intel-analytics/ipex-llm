@@ -31,6 +31,25 @@ from bigdl.util.common import JTensor
 from bigdl.util.common import callBigDlFunc
 import os
 
+def get_path(output_name):
+    sess = tf.Session()
+    init = tf.global_variables_initializer()
+    sess.run(init)
+
+    temp = tempfile.mkdtemp()
+
+    saver = tf.train.Saver()
+    saver.save(sess, temp + '/model.chkp')
+    tf.train.write_graph(sess.graph, temp, 'model.pbtxt')
+
+    merge_checkpoint(temp + '/model.pbtxt',
+                     temp + '/model.chkp',
+                     [output_name],
+                     temp + '/model.pb', sess)
+    return temp + '/model.pb'
+
+
+
 def convert(input_ops, output_ops, byte_order, bigdl_type):
     """
     Convert tensorflow model to bigdl model

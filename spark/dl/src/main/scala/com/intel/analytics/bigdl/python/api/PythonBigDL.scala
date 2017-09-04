@@ -36,9 +36,13 @@ import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn.tf.{Const, Fill, Shape, SplitAndSelect}
-import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowSaver}
+import com.intel.analytics.bigdl.utils.tf.TensorflowLoader.{buildBigDLModel, buildTFGraph, parse}
+import com.intel.analytics.bigdl.utils.tf.{BigDLSessionImpl, TensorflowDataFormat, TensorflowSaver}
+import org.apache.spark.SparkContext
+import org.tensorflow.framework.NodeDef
 
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 import scala.language.existentials
 import scala.reflect.ClassTag
 
@@ -1461,6 +1465,24 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       case _ => throw new IllegalArgumentException(s"No support byte order $byteOrder")
     }
     Module.loadTF[T](path, inputs.asScala, outputs.asScala, order)
+  }
+
+  def trainTF(
+              path: String,
+              output: String,
+              data: JList[JTensor],
+              label: JList[JTensor],
+              optMethod: OptimMethod[T],
+              criterion: Criterion[T],
+              batchSize: Int, endWhen: Trigger): AbstractModule[Activity, Activity, T] = {
+    val nodeList = parse(path)
+
+    val context = new mutable.HashMap[String, (Tensor[T], Tensor[T])]()
+    val session = new BigDLSessionImpl[T](nodeList.asScala, context)
+
+    val model = session.train(Seq(output), data.asScala.map(toTensor), label.asScala.map(toTensor),
+      optMethod, criterion, batchSize, endWhen)
+    model
   }
 
   def saveTF(model: AbstractModule[Activity, Activity, T],

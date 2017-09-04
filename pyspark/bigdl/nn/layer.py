@@ -530,6 +530,17 @@ class Model(Container):
         jmodel = callBigDlFunc(bigdl_type, "loadTF", path, inputs, outputs, byte_order)
         return Model.of(jmodel)
 
+    @staticmethod
+    def train(output, data, label, opt_method, criterion, batch_size, end_when, bigdl_type="float"):
+        from bigdl.util.tf_utils import get_path
+        output_name = output.name.split(":")[0]
+        path = get_path(output_name)
+        data_tensor = map(lambda t: JTensor.from_ndarray(t, bigdl_type), data)
+        label_tensor = map(lambda t: JTensor.from_ndarray(t, bigdl_type), label)
+        jmodel = callBigDlFunc(bigdl_type, "trainTF", path, output_name, data_tensor, label_tensor, opt_method, criterion, batch_size, end_when)
+        return Model.of(jmodel)
+
+
     def freeze(self, freeze_layers, bigdl_type="float"):
         """
         set an array of layers to be freezed
