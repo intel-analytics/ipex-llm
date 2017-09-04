@@ -321,8 +321,11 @@ object TensorflowLoader{
           util.Collections.emptyList(), Seq())
 
         // Prev nodes number should be same except for the Ninput case
-        if (patternNode.prevNodes.length != graphNode.prevNodes.length &&
-          patternNode.prevNodes.filter(_.element == N_INPUT_PLACEHOLDER).length == 0) {
+        val patternInputLength = patternNode.prevNodes.length
+        val graphInputLength = graphNode.prevNodes.
+          filterNot(_.element.getOp == "DependencyNode").length
+        if (patternInputLength != graphInputLength &&
+          !patternNode.prevNodes.exists(_.element == N_INPUT_PLACEHOLDER)) {
           return (util.Collections.emptyList(), Seq())
         }
 
