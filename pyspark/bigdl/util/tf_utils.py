@@ -31,10 +31,12 @@ from bigdl.util.common import JTensor
 from bigdl.util.common import callBigDlFunc
 import os
 
-def get_path(output_name):
-    sess = tf.Session()
-    init = tf.global_variables_initializer()
-    sess.run(init)
+def get_path(output_name, sess=None):
+
+    if sess is None:
+        sess = tf.Session()
+        init = tf.global_variables_initializer()
+        sess.run(init)
 
     temp = tempfile.mkdtemp()
 
