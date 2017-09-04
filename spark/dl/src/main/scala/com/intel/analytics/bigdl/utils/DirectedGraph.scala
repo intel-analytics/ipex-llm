@@ -16,6 +16,9 @@
 package com.intel.analytics.bigdl.utils
 
 import java.util
+
+import com.intel.analytics.bigdl.tensor.Tensor
+
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
@@ -134,8 +137,8 @@ class DirectedGraph[T](val source : Node[T], val reverse : Boolean = false) exte
       oldToNew.put(node, new Node[T](node.element))
     })
     bfs.foreach(node => {
-      node.prevNodes.foreach(prev => {
-        oldToNew.get(prev) -> oldToNew.get(node)
+      node.prevNodesAndEdges.foreach(prevNodeAndEdge => {
+        oldToNew.get(prevNodeAndEdge._1).add(oldToNew.get(node), prevNodeAndEdge._2)
       })
     })
     new DirectedGraph[T](oldToNew.get(source), reverse)
@@ -155,13 +158,37 @@ class Node[T](val element: T) extends Serializable {
    * The nodes pointed by current node
    * @return
    */
-  def nextNodes: Seq[Node[T]] = nexts
+  def nextNodes: Seq[Node[T]] = nexts.map(_._1)
 
   /**
-   * The nodes point to currect node
+   * The edges start from this node
    * @return
    */
-  def prevNodes: Seq[Node[T]] = prevs
+  def nextEdges: Seq[Edge] = nexts.map(_._2)
+
+  /**
+   * The nodes pointed by current node with the connect edges
+   * @return
+   */
+  def nextNodesAndEdges: Seq[(Node[T], Edge)] = nexts
+
+  /**
+   * The nodes point to current node
+   * @return
+   */
+  def prevNodes: Seq[Node[T]] = prevs.map(_._1)
+
+  /**
+   * The edges connect to this node
+   * @return
+   */
+  def prevEdges: Seq[Edge] = prevs.map(_._2)
+
+  /**
+   * The nodes pointed to current node with the connect edges
+   * @return
+   */
+  def prevNodesAndEdges: Seq[(Node[T], Edge)] = prevs
 
   // scalastyle:off methodName
   // scalastyle:off noSpaceBeforeLeftBracket
@@ -181,9 +208,9 @@ class Node[T](val element: T) extends Serializable {
    * @param node another node
    * @return another node
    */
-  def add(node: Node[T]): Node[T] = {
-    if (!node.prevs.contains(this)) node.prevs.append(this)
-    if (!this.nexts.contains(node)) this.nexts.append(node)
+  def add(node: Node[T], e: Edge = Edge()): Node[T] = {
+    if (!node.prevs.contains((this, e))) node.prevs.append((this, e))
+    if (!this.nexts.contains((node, e))) this.nexts.append((node, e))
     node
   }
 
@@ -192,10 +219,26 @@ class Node[T](val element: T) extends Serializable {
    *  @param node another node
    *  @return current node
    */
-  def delete(node: Node[T]): Node[T] = {
-    if (node.prevs.contains(this)) node.prevs.-=(this)
-    if (this.nexts.contains(node)) this.nexts.-=(node)
+  def delete(node: Node[T], e: Edge = null): Node[T] = {
+    if (e != null) {
+      if (node.prevs.contains((this, e))) node.prevs.-=((this, e))
+      if (this.nexts.contains((node, e))) this.nexts.-=((node, e))
+    } else {
+      val curNode = this  // Because of the closure
+      node.prevs.filter(_._1 == curNode).foreach(k => node.prevs.-=(k))
+      this.nexts.filter(_._1 == node).foreach(k => this.nexts.-=(k))
+    }
     this
+  }
+
+  /**
+   * A sugar allows user to generate the pair (n, something) via n(something)
+   * @param meta
+   * @tparam M
+   * @return
+   */
+  def apply[M](meta: M): (this.type, M) = {
+    (this, meta)
   }
 
   /**
@@ -203,7 +246,12 @@ class Node[T](val element: T) extends Serializable {
    * @return current node
    */
   def removePrevEdges(): Node[T] = {
-    prevs.foreach(_.nexts.-=(this))
+    val curNode = this  // Because of the closure
+    prevs.map(_._1).foreach(pn =>
+      pn.nexts.filter(_._1 == curNode).foreach(e =>
+        pn.nexts -= e
+      )
+    )
     prevs.clear()
     this
   }
@@ -219,10 +267,21 @@ class Node[T](val element: T) extends Serializable {
 
   override def toString: String = s"(${element.toString})"
 
-  private val nexts = new ArrayBuffer[Node[T]]()
-  private val prevs = new ArrayBuffer[Node[T]]()
+  private val nexts = new ArrayBuffer[(Node[T], Edge)]()
+  private val prevs = new ArrayBuffer[(Node[T], Edge)]()
 }
 
 object Node {
   def apply[T](element: T): Node[T] = new Node(element)
+}
+
+/**
+ * An edge in the graph
+ * @param fromIndex A preserved position to store meta info.
+ */
+private[bigdl] class Edge private (val fromIndex: Option[Int]) extends Serializable
+
+object Edge {
+  def apply(value : Int): Edge = new Edge(Some(value))
+  def apply(): Edge = new Edge(None)
 }
