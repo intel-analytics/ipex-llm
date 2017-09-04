@@ -20,7 +20,7 @@ import java.util
 import scala.collection.JavaConverters._
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
-import com.intel.analytics.bigdl.nn.tf.WithoutInput
+import com.intel.analytics.bigdl.nn.tf.{ControlDependency, WithoutInput}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer.{ContainerSerializable, DataConverter, ModuleData, ModuleSerializer}
@@ -77,7 +77,9 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
       val nodeInput = if (node.prevNodes.isEmpty && !node.element.isInstanceOf[WithoutInput]) {
         inputData(node, input)
       } else {
-        val prevActivities = node.prevNodesAndEdges.map(n => {
+        val prevActivities = node.prevNodesAndEdges
+          .filterNot(n => n._1.element.isInstanceOf[ControlDependency[T]])
+          .map(n => {
           n._2.fromIndex match {
             case Some(i) => n._1.element.output.toTable.apply[Activity](i)
             case None => n._1.element.output
@@ -107,7 +109,8 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
       val curNode = backwardExecutions(i)
       var curGradOutput : Activity = null
 
-      curNode.nextNodesAndEdges.foreach(n => {
+      curNode.nextNodesAndEdges.filterNot(n => n._1.element.isInstanceOf[ControlDependency[T]])
+        .foreach(n => {
         val otherActivity = if (n._1.element.gradInput.isTensor || n._1.prevEdges.length == 1) {
           n._1.element.gradInput
         } else {
@@ -180,7 +183,9 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
         curGradOutput = T()
       }
 
-      curNode.nextNodesAndEdges.foreach(n => {
+      curNode.nextNodesAndEdges
+        .filterNot(n => n._1.element.isInstanceOf[ControlDependency[T]])
+        .foreach(n => {
         val otherActivity = if (n._1.element.gradInput.isTensor || n._1.prevEdges.length == 1) {
           n._1.element.gradInput
         } else {
@@ -252,7 +257,8 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
   /**
    * Execution plan
    */
-  private val forwardExecutions = backGraph.topologySort.reverse
+  private val forwardExecutions = backGraph.topologySort
+    .filterNot(_.element.isInstanceOf[ControlDependency[T]]).reverse
   private var backwardExecutions: Array[Node[AbstractModule[Activity, Activity, T]]] = null
 
   modules.appendAll(forwardExecutions.filter(n => !n.eq(dummyOutput)).map(_.element))
@@ -266,6 +272,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
     val nodes = gradGraph.DFS
     nodes.filter(x => isStopGradient(x.element)).foreach(_.removePrevEdges())
     backwardExecutions = gradGraph.topologySort.filter(n => !n.eq(dummyOutputGrad))
+      .filterNot(_.element.isInstanceOf[ControlDependency[T]])
     clearState()
     this
   }
