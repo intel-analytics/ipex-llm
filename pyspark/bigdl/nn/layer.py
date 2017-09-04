@@ -403,6 +403,36 @@ class Layer(JavaValue):
         callBigDlFunc(self.bigdl_type,
                         "setLayerUnFreeze", self.value)
 
+    def evaluate(self):
+        '''
+        Set this layer in the evaluation mode
+        '''
+        callJavaFunc(get_spark_context(), self.value.evaluate)
+        return self
+
+    def training(self):
+        '''
+        Set this layer in the training mode 
+        '''
+        callJavaFunc(get_spark_context(), self.value.training)
+        return self
+
+    def is_training(self):
+        '''
+        :return: Whether this layer is in the training mode
+        
+        >>> layer = Dropout()
+        creating: createDropout
+        >>> layer = layer.evaluate()
+        >>> layer.is_training()
+        False
+        >>> layer = layer.training()
+        >>> layer.is_training()
+        True
+        '''
+        return callJavaFunc(get_spark_context(), self.value.isTraining)
+
+
 
 
 class Container(Layer):
