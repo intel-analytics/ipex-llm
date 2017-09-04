@@ -393,6 +393,18 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     result
   }
 
+  def applyFun[A: ClassTag](
+    t: Tensor[A],
+    func: (A) => T): Tensor[T] = {
+    def func2(
+      data1: Array[A], index1: Int,
+      data2: Array[T], index2: Int): Unit = {
+      data2(index2) = func(data1(index1))
+    }
+    DenseTensorApply.apply1(t, this, func2)
+    this
+  }
+
   def zipWith[A: ClassTag, B: ClassTag](
     t1: Tensor[A],
     t2: Tensor[B],

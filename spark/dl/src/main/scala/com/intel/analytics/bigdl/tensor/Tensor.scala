@@ -465,6 +465,18 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
   def copy(other: Tensor[T]): Tensor[T]
 
   /**
+   * Apply a function to each element of the tensor `t`
+   * and set each value to self
+   *
+   * @param t tensor to be modified
+   * @param func applied function
+   * @return current tensor
+   */
+  def applyFun[A: ClassTag](
+    t: Tensor[A],
+    func: (A) => T): Tensor[T]
+
+  /**
    * Apply a function to each element of the tensor and modified it value if it return a double
    *
    * @param func applied function
