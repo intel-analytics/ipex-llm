@@ -287,7 +287,7 @@ object DenseTensorApply {
    *                tensor2Offset, tensor3Data, tensor3Offset)
    */
   def apply2[A, B, C](tensor1: Tensor[A], tensor2: Tensor[B], tensor3: Tensor[C],
-    func: (Array[A], Int, Array[B], Int, Array[C], Int) => Unit)
+    func: TensorDiffTypeFunc6[A, B, C])
   : Unit = {
     require(tensor1.nElement() == tensor2.nElement(),
       s"inconsistent tensor size: ${tensor1.nElement()} == ${tensor2.nElement()}")
