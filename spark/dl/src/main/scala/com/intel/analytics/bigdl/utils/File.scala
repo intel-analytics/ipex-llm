@@ -17,7 +17,9 @@
 package com.intel.analytics.bigdl.utils
 
 import java.io._
+import java.net.URL
 
+import org.apache.commons.io.FileUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FSDataInputStream, FSDataOutputStream, FileSystem, Path}
 import org.apache.hadoop.io.IOUtils
@@ -209,6 +211,30 @@ object File {
       if (null != fs) fs.close()
     }
   }
+  def downloadFromUrl(url: String, dir: String): String = {
+    try {
+      val httpurl = new URL(url)
+      val fileName = getFileNameFromUrl(url)
+      System.out.println(dir + fileName)
+      val f = new File(dir + fileName)
+      FileUtils.copyURLToFile(httpurl, f)
+    } catch {
+      case e: Exception =>
+        e.printStackTrace()
+        return "Fault!"
+    }
+    "Successful!"
+  }
+
+  def getFileNameFromUrl(url: String): String = {
+    var name = System.currentTimeMillis.toString
+    val index = url.lastIndexOf("/")
+    if (index > 0) {
+      name = url.substring(index + 1)
+      if (name.trim.length > 0) return name
+    }
+    name
+  }
 }
 
 /**
@@ -278,6 +304,7 @@ private[bigdl] class FileWriter(fileName: String) {
     if (null != outputStream) outputStream.close()
     fs.close()
   }
+
 }
 
 object FileWriter {
