@@ -77,7 +77,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * The accumulated gradients should be reset to zero if it is true.
    * It should be reset to false after updating the gradients.
    */
-  private var zeroGradFlag: Boolean = false
+  protected var zeroGradFlag: Boolean = false
 
   /**
    * The scale of gradient weight and gradient bias

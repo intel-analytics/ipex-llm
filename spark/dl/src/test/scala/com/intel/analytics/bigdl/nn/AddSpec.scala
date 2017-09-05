@@ -54,5 +54,11 @@ class AddSpec extends FlatSpec with Matchers {
     gradInput1 should be (gradInput2)
 
     layer2.gradBias should be (layer1.gradBias.mul(2))
+
+    // test zeroGradParameters here
+    layer2.zeroGradParameters()
+    layer2.backward(input, gradOutput)
+    layer2.gradBias should be (layer1.gradBias)
+
   }
 }

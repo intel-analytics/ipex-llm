@@ -179,12 +179,24 @@ class Bilinear[T: ClassTag](
       while (k < (weight.size(1) + 1)) {
         buff1.zero()
         buff1.cmul(res1, gradOutput.narrow(2, k, 1).expandAs(res1))
-        gradWeight.select(1, k).addmm(ev.fromType[Double](scaleW), buff1.t(), input(2))
+        if (zeroGradFlag) {
+          gradWeight.select(1, k).addmm(ev.fromType[Double](0.0),
+            ev.fromType[Double](scaleW), buff1.t(), input(2))
+        } else {
+          gradWeight.select(1, k).addmm(ev.fromType[Double](scaleW), buff1.t(), input(2))
+        }
         k += 1
       }
     }
 
-    if(null != bias && scaleB != 0) gradBias.add(ev.fromType[Double](scaleB), gradOutput.sum(1))
+    if(null != bias && scaleB != 0) {
+      if (zeroGradFlag) {
+        gradBias.map(gradOutput.sum(1),
+          (_, y) => (ev.times(ev.fromType[Double](scaleB), y)))
+      } else {
+        gradBias.add(ev.fromType[Double](scaleB), gradOutput.sum(1))
+      }
+    }
 
     if (wRegularizer != null && scaleW != 0) {
       wRegularizer.accRegularization(weight, gradWeight, scaleW)
@@ -192,12 +204,9 @@ class Bilinear[T: ClassTag](
     if (bRegularizer != null && scaleB != 0) {
       bRegularizer.accRegularization(bias, gradBias, scaleB)
     }
+    zeroGradFlag = false
   }
 
-  override def zeroGradParameters(): Unit = {
-    gradWeight.zero()
-    gradBias.zero()
-  }
 
   override def clearState(): this.type = {
     super.clearState()

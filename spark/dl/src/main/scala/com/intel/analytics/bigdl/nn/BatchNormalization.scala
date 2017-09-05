@@ -567,16 +567,26 @@ class BatchNormalization[T: ClassTag](
         }
 
         if (null != gradWeight && scaleW != 0) {
-          gradWeight(_f - 1 + gradWeightOffset) += scaleW * dotp * invstd
+          if (zeroGradFlag) {
+            gradWeight(_f - 1 + gradWeightOffset) = scaleW * dotp * invstd
+          } else {
+            gradWeight(_f - 1 + gradWeightOffset) += scaleW * dotp * invstd
+          }
         }
 
         if (null != gradBias && scaleB != 0) {
-          gradBias(_f - 1 + gradBiasOffset) += scaleB * sum
+          if (zeroGradFlag) {
+            gradBias(_f - 1 + gradBiasOffset) = scaleB * sum
+          } else {
+            gradBias(_f - 1 + gradBiasOffset) += scaleB * sum
+          }
         }
       })
       f += 1
     }
     Engine.model.sync(results)
+    // reset the zeroGradFlag
+    zeroGradFlag = false
   }
 
   private def backwardFloat(input: Array[Float], inputOffset: Int, inputStride: Int,
@@ -655,16 +665,26 @@ class BatchNormalization[T: ClassTag](
         }
 
         if (null != gradWeight && scaleW != 0) {
-          gradWeight(_f - 1 + gradWeightOffset) += scaleW * dotp * invstd
+          if (zeroGradFlag) {
+            gradWeight(_f - 1 + gradWeightOffset) = scaleW * dotp * invstd
+          } else {
+            gradWeight(_f - 1 + gradWeightOffset) += scaleW * dotp * invstd
+          }
         }
 
         if (null != gradBias && scaleB != 0) {
-          gradBias(_f - 1 + gradBiasOffset) += scaleB * sum
+          if (zeroGradFlag) {
+            gradBias(_f - 1 + gradBiasOffset) = scaleB * sum
+          } else {
+            gradBias(_f - 1 + gradBiasOffset) += scaleB * sum
+          }
         }
       })
       f += 1
     }
     Engine.model.sync(results)
+    // reset the zeroGradFlag
+    zeroGradFlag = false
   }
 
   override def copyStatus(src: Module[T]): this.type = {
@@ -677,8 +697,7 @@ class BatchNormalization[T: ClassTag](
 
   override def zeroGradParameters(): Unit = {
     if (affine) {
-      gradWeight.zero()
-      gradBias.zero()
+      zeroGradFlag = true
     }
   }
 

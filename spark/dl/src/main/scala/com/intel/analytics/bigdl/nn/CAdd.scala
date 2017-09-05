@@ -45,6 +45,7 @@ class CAdd[T: ClassTag](
 
   val bias: Tensor[T] = Tensor[T](size)
   val gradBias : Tensor[T] = Tensor[T](size)
+  private val zeros: Tensor[T] = Tensor[T](size)
 
   {
     val stdv = 1.0/math.sqrt(bias.nElement())
@@ -106,7 +107,11 @@ class CAdd[T: ClassTag](
       return
     }
     if (bias.nElement() == gradOutput.nElement()) {
-      gradBias.add(ev.fromType[Double](scaleB), gradOutput)
+      if (zeroGradFlag) {
+        gradBias.add(zeros, ev.fromType[Double](scaleB), gradOutput)
+      } else {
+        gradBias.add(ev.fromType[Double](scaleB), gradOutput)
+      }
     } else {
       val expand = if (bias.dim() == gradOutput.dim()) {
         gradBias.view(gradBias.size())
@@ -143,10 +148,6 @@ class CAdd[T: ClassTag](
 
   override def updateParameters(learningRate: T): Unit = {
     bias.map(gradBias, (a, b) => ev.minus(a, ev.times(learningRate, b)))
-  }
-
-  override def zeroGradParameters(): Unit = {
-    gradBias.zero()
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
