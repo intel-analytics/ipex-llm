@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
@@ -23,40 +23,49 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 import scala.reflect.ClassTag
 
 
-//class Variable[T: ClassTag](initValue: Tensor[T], gradient: Tensor[T])
-//                           (implicit ev: TensorNumeric[T])
-//  extends Operation[Activity, Tensor[T], T] {
-//  override def updateOutput(input: Activity): Activity = {
-//    this.output.resizeAs(initValue)
-//    this.output.copy(initValue)
-//    output
-//  }
-//
-//  override def updateGradInput(input: Activity, gradOutput: Tensor[T]): Activity = {
-//    require(gradOutput.isSameSizeAs(initValue),
-//      s"Invalid gradOutput size. require (${initValue.size().mkString(",")}), but " +
-//        s"(${gradOutput.size().mkString(",")})")
-//    input match {
-//      case t: Tensor[T] =>
-//        if (gradInput == null || gradInput.isInstanceOf[Table]) {
-//          gradInput = Tensor[T]()
-//        }
-//        gradInput.toTensor[T].resizeAs(t).zero()
-//      case t: Table =>
-//        if (gradInput == null || !gradInput.isInstanceOf[Table]) {
-//          gradInput = T()
-//        }
-//        t.foreach(kv => {
-//          val gradInputTensors = gradInput.toTable
-//          val grad = gradInputTensors.getOrElse[Tensor[T]](kv._1, Tensor[T]())
-//            .resizeAs(kv._2.asInstanceOf[Tensor[T]]).zero()
-//          gradInputTensors(kv._1) = grad
-//        })
-//    }
-//    gradInput
-//  }
-//
-//  override def accGradParameters(input: Activity, gradOutput: Tensor[T]): Unit = {
-//    this.gradient.add(ev.fromType[Double](1.0), gradOutput)
-//  }
-//}
+class Variable[T: ClassTag](val variableValue: Tensor[T], val variableGradient: Tensor[T])
+                           (implicit ev: TensorNumeric[T])
+  extends AbstractModule[Activity, Tensor[T], T] {
+
+  override def clearState(): this.type = {
+    this
+  }
+
+  override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
+    (Array(this.variableValue), Array(this.variableGradient))
+  }
+
+  override def updateOutput(input: Activity): Tensor[T] = {
+    this.output.resizeAs(variableValue)
+    this.output.copy(variableValue)
+    output
+  }
+
+  override def updateGradInput(input: Activity, gradOutput: Tensor[T]): Activity = {
+    require(gradOutput.isSameSizeAs(variableValue),
+      s"Invalid gradOutput size. require (${variableValue.size().mkString(",")}), but " +
+        s"(${gradOutput.size().mkString(",")})")
+    input match {
+      case t: Tensor[T] =>
+        if (gradInput == null || gradInput.isInstanceOf[Table]) {
+          gradInput = Tensor[T]()
+        }
+        gradInput.toTensor[T].resizeAs(t).zero()
+      case t: Table =>
+        if (gradInput == null || !gradInput.isInstanceOf[Table]) {
+          gradInput = T()
+        }
+        t.foreach(kv => {
+          val gradInputTensors = gradInput.toTable
+          val grad = gradInputTensors.getOrElse[Tensor[T]](kv._1, Tensor[T]())
+            .resizeAs(kv._2.asInstanceOf[Tensor[T]]).zero()
+          gradInputTensors(kv._1) = grad
+        })
+    }
+    gradInput
+  }
+
+  override def accGradParameters(input: Activity, gradOutput: Tensor[T]): Unit = {
+    this.variableGradient.add(ev.fromType[Double](1.0), gradOutput)
+  }
+}
