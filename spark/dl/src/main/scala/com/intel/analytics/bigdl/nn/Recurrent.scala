@@ -156,6 +156,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
       val cloneCell = cells.head.cloneModule()
       cloneCell.parameters()._1.map(_.set())
       cloneCell.parameters()._2.map(_.set())
+      cloneCell.clearState()
       while (t < times) {
         cells += cloneCell.cloneModule()
           .asInstanceOf[Cell[T]]
@@ -739,10 +740,8 @@ object Recurrent extends ContainerSerializable with Quantable {
     recurrent.clearState()
 
     recurrent.topology = Quantizer.quantize(recurrent.topology).asInstanceOf[Cell[T]]
-    recurrent.preTopology = recurrent.topology.preTopology
-
-    if (recurrent.batchNormParams != null) {
-      recurrent.preTopology = Sequential().add(recurrent.preTopology).add(recurrent.layer)
+    if (recurrent.preTopology != null) {
+      recurrent.preTopology = Quantizer.quantize(recurrent.preTopology)
     }
 
     recurrent.modules.clear()

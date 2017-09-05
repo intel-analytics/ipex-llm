@@ -68,7 +68,7 @@ class LSTM[T : ClassTag] (
       .add(SelectTable(1))
       .add(NarrowTable(2, 2)))
 
-  override var preTopology: AbstractModule[Activity, Activity, T] = if (p != 0) {
+  override def preTopology: AbstractModule[Activity, Activity, T] = if (p != 0) {
     null
   } else {
     TimeDistributed[T](Linear(inputSize, 4 * hiddenSize,

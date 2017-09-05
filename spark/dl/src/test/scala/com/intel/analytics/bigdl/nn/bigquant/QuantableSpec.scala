@@ -216,9 +216,6 @@ class QuantableSpec extends FlatSpec with Matchers {
     val quantOut = quantModel.forward(input).toTensor
 
     val quantCell = findCell(findModule(quantModel, 0))
-    val preTopology = quantCell.preTopology
-
-    isQuantizedLinear(preTopology.asInstanceOf[TimeDistributed[Float]].layer) should be (true)
     isQuantizedLinear(quantCell.cell.asInstanceOf[Graph[Float]].inputs(1).element) should be (true)
 
     output should be (quantOut)
@@ -249,8 +246,6 @@ class QuantableSpec extends FlatSpec with Matchers {
 
     def check(recurrent: Recurrent[Float]): Unit = {
       val cell = findCell(recurrent)
-      val preTopology = cell.preTopology
-      isQuantizedLinear(preTopology.asInstanceOf[TimeDistributed[Float]].layer) should be (true)
       isQuantizedLinear(cell.cell.asInstanceOf[Graph[Float]].inputs(1).element) should be (true)
     }
 
@@ -344,7 +339,6 @@ class QuantableSpec extends FlatSpec with Matchers {
     val gru = findCell(quantModel).asInstanceOf[GRU[Float]]
 
     isQuantizedLinear(gru.h2g.element) should be (true)
-    isQuantizedLinear(gru.preTopology.asInstanceOf[TimeDistributed[Float]].layer) should be (true)
 
     output should be (quantOutput)
   }
@@ -413,7 +407,7 @@ class QuantableSpec extends FlatSpec with Matchers {
   "Linear perf" should "speed up" in {
     val inputSize = 1152
     val hiddenSize = 1152
-    val time = 10
+    val time = 100
     val batchSize = 2
 
     val model = Sequential[Float]()

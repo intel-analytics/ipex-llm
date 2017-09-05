@@ -102,9 +102,6 @@ object CellQuantizer extends Quantable {
     implicit ev: TensorNumeric[T]): Module[T] = {
     val cell = module.asInstanceOf[Cell[T]]
     cell.cell = Quantizer.quantize(cell.cell)
-    if (cell.preTopology != null) {
-      cell.preTopology = Quantizer.quantize(cell.preTopology)
-    }
     cell
   }
 }

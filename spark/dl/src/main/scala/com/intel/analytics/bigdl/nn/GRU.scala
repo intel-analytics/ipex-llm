@@ -68,7 +68,7 @@ class GRU[T : ClassTag] (
   val featDim = 2
   override var cell: AbstractModule[Activity, Activity, T] = buildGRU()
 
-  override var preTopology: AbstractModule[Activity, Activity, T] =
+  override def preTopology: AbstractModule[Activity, Activity, T] =
     if (p != 0) {
       null
     } else {
@@ -186,9 +186,6 @@ object GRU extends Quantable {
     val h2gPrev = gru.h2g.prevNodes(0)
 
     gru.cell = Quantizer.quantize(gru.cell)
-    if (gru.preTopology != null) {
-      gru.preTopology = Quantizer.quantize(gru.preTopology)
-    }
 
     // if the h2g is a linear node, its previous node is Input node. And there's only one
     // linear node of that Input nextNodes.

@@ -68,8 +68,6 @@ class ConvLSTMPeephole3D[T : ClassTag](
 
   override var cell: AbstractModule[Activity, Activity, T] = buildConvLSTM()
 
-  override var preTopology: AbstractModule[Activity, Activity, T] = null
-
   def buildGate(): Sequential[T] = {
     val i2g = Sequential()
       .add(Contiguous())

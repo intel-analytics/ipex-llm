@@ -56,7 +56,7 @@ class RnnCell[T : ClassTag] (
   (implicit ev: TensorNumeric[T])
   extends Cell[T](Array(hiddenSize)) {
 
-  override var preTopology: AbstractModule[Activity, Activity, T] =
+  override def preTopology: AbstractModule[Activity, Activity, T] =
     TimeDistributed[T](
       Linear[T](inputSize,
         hiddenSize,

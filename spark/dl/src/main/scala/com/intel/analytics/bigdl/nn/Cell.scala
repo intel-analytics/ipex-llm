@@ -78,12 +78,9 @@ abstract class Cell[T : ClassTag](
    *
    * Please define your own preTopology according to your Cell structure.
    * Please refer to SimpleRNN or LSTM for reference.
-   *
-   * Note: why this is a var? Because of bigquant, when it's a linear/conv, bigquant will
-   * substitute it with a quant version
    * @return
    */
-  var preTopology: AbstractModule[Activity, Activity, T]
+  def preTopology: AbstractModule[Activity, Activity, T] = null
 
   def hiddenSizeOfPreTopo: Int = hiddensShape(0)
 
