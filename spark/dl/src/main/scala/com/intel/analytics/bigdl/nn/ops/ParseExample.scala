@@ -36,7 +36,8 @@ class ParseExample[T: ClassTag](nDense: Int,
     val serialized = input(1).asInstanceOf[Tensor[StringType]].valueAt()
     val denseKeys = Range(3, 3 + nDense).map(index => input(index).asInstanceOf[Tensor[StringType]])
       .map(_.valueAt().toStringUtf8)
-    val denseDefault = Range(3 + nDense, 3 + 2 * nDense).map(index => input(index).asInstanceOf[Tensor[StringType]])
+    val denseDefault = Range(3 + nDense, 3 + 2 * nDense)
+      .map(index => input(index).asInstanceOf[Tensor[StringType]])
 
     val example = Example.parseFrom(serialized)
 
