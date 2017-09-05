@@ -23,11 +23,5 @@ import scala.reflect.ClassTag
 
 abstract class QuantModule[T: ClassTag](length: Int)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
-  val weightSum: Array[T] = new Array[T](length)
-
-  val min: Array[T] = new Array[T](length)
-
-  val max: Array[T] = new Array[T](length)
-
   val empty: Tensor[T] = Tensor[T](1)
 }

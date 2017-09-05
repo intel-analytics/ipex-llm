@@ -19,8 +19,8 @@ package com.intel.analytics.bigdl.nn.bigquant
 import com.intel.analytics.bigdl.bigquant.BigQuant
 import com.intel.analytics.bigdl.nn.ErrorInfo
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.tensor.{FloatType, QuantTensor, Tensor}
-import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData}
+import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData, ModuleSerializer}
 import com.intel.analytics.bigdl.utils.{T, Table}
 import java.io.{IOException, ObjectInputStream, ObjectOutputStream}
 import scala.reflect.ClassTag
@@ -37,18 +37,7 @@ class Linear[T: ClassTag](
   @transient var weight: QuantTensor[T] = _
   val bias: Tensor[T] = Tensor[T](outputSize)
 
-  val FAULT_TOLERANCE = 0.5f
-  val WEIGHT_THRESHOLD = 64.0f
-  val THRESHOLD = 127.0f
-
   @transient var _init = false
-
-  private def setWeightSum(weight: Tensor[T], weightSum: Array[T]): Unit = {
-    for (i <- 1 to outputSize) {
-      val singleRow = weight.select(1, i)
-      weightSum(i - 1) = singleRow.sum()
-    }
-  }
 
   def initWeightAndBias(weightFP32: Tensor[T], biasFP32: Tensor[T]): this.type = {
     if (biasFP32 != null) {
@@ -58,21 +47,13 @@ class Linear[T: ClassTag](
     }
 
     val weightFP32Tmp = weightFP32.view(Array(outputSize, inputSize))
-    setWeightSum(weightFP32Tmp, weightSum)
-
-    for (i <- 1 to outputSize) {
-      val singleRow = weightFP32Tmp.select(1, i)
-      min(i - 1) = singleRow.min()
-      max(i - 1) = singleRow.max()
-    }
 
     val bufferOffset = 0
     val buffer = new Array[Byte](weightFP32.nElement())
     val weightFP32Tensor = weightFP32.asInstanceOf[Tensor[Float]]
-    Quant.quantize(weightFP32Tensor, buffer, bufferOffset)
 
-    weight = QuantTensor[T](outputSize, inputSize)
-    weight.setStorage(buffer)
+    val params = LinearWeightParams(outputSize, inputSize)
+    weight = QuantTensor[T](weightFP32Tmp, params, LinearWeight)
 
     init()
 
@@ -80,20 +61,7 @@ class Linear[T: ClassTag](
   }
 
   def init(): this.type = {
-    val byteArrayOfWeight = weight.getStorage
-
-    weight.setStorageInJni(
-      BigQuant.FCKernelDescInit(outputSize, inputSize))
-
-    ev.getType() match {
-      case FloatType =>
-        val minArray = min.asInstanceOf[Array[Float]]
-        val maxArray = max.asInstanceOf[Array[Float]]
-
-        BigQuant.FCKernelLoadFromModel(weight.getStorageInJni, byteArrayOfWeight,
-          minArray, maxArray, outputSize, inputSize, WEIGHT_THRESHOLD, BigQuant.NCHW)
-      case _ => throw new UnsupportedOperationException(s"Only support Float for quantized model")
-    }
+    weight.init(LinearWeightParams(outputSize, inputSize), LinearWeight)
 
     _init = true
 
@@ -113,13 +81,13 @@ class Linear[T: ClassTag](
 
     weight = in.readObject().asInstanceOf[QuantTensor[T]]
 
-    if (weight.getStorage != null && weight.getStorageInJni == 0L) {
+    if (weight.getStorage != null && weight.getNativeStorage == 0L) {
       init()
     }
   }
 
   def checkAndInit(): Unit = {
-    if (!_init && weight.getStorageInJni == 0L) {
+    if (!_init && weight.getNativeStorage == 0L) {
       init()
     }
   }
@@ -139,30 +107,28 @@ class Linear[T: ClassTag](
       input.size(1)
     }
 
-    if (!data.isInitialized) {
-      data.setStorageInJni(BigQuant.FCDataDescInit(batchSize, inputSize))
-    }
+    data.init(LinearDataParams(batchSize, inputSize), LinearData)
 
     ev.getType() match {
       case FloatType => // TODO
         val src = input.storage().array().asInstanceOf[Array[Float]]
         val offset = input.storageOffset() - 1
 
-        BigQuant.FCDataInit(data.getStorageInJni, src, offset, batchSize, inputSize,
-          THRESHOLD, BigQuant.NCHW)
+        BigQuant.FCDataInit(data.getNativeStorage, src, offset, batchSize, inputSize,
+          QuantParams.THRESHOLD, BigQuant.NCHW)
 
         val outputArray = output.storage().array().asInstanceOf[Array[Float]]
         val outputOffset = output.storageOffset() - 1
-        val weightSumArray = weightSum.asInstanceOf[Array[Float]]
+        val weightSumArray = weight.sumOfRow.asInstanceOf[Array[Float]]
         val weightSumOffset = 0
         val biasArray = bias.storage().array().asInstanceOf[Array[Float]]
         val biasOffset = bias.storageOffset() - 1
 
         BigQuant.InternalMixPrecisionConvolutionGEMM(
-          BigQuant.NCHW, weight.getStorageInJni, data.getStorageInJni, outputArray,
+          BigQuant.NCHW, weight.getNativeStorage, data.getNativeStorage, outputArray,
           outputOffset, weightSumArray, weightSumOffset, biasArray, biasOffset,
           batchSize, outputSize, 1, 1,
-          FAULT_TOLERANCE)
+          QuantParams.FAULT_TOLERANCE)
 
       case _ => throw new UnsupportedOperationException(s"Only support Float for quantized model")
     }
@@ -236,11 +202,8 @@ object Linear extends QuantSerializer {
   override def serializeWeight[T: ClassTag](module: ModuleData[T],
     modelBuilder: BigDLModule.Builder)(implicit ev: TensorNumeric[T]): Unit = {
     val linear = module.module.asInstanceOf[Linear[T]]
-    val weight = new Array[Byte](linear.outputSize * linear.inputSize)
-    System.arraycopy(linear.weight.getStorage, 0, weight, 0, weight.length)
-
     val weightBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(weightBuilder, weight, universe.typeOf[Array[Byte]])
+    DataConverter.setAttributeValue(weightBuilder, linear.weight, ModuleSerializer.tensorType)
     modelBuilder.putAttr("weight", weightBuilder.build)
   }
 
@@ -248,12 +211,8 @@ object Linear extends QuantSerializer {
     module: ModuleData[T])(implicit ev: TensorNumeric[T]): Unit = {
     val linear = module.module.asInstanceOf[Linear[T]]
     val attrMap = model.getAttrMap
-    val byteArray = DataConverter.getAttributeValue(attrMap.get("weight"))
-            .asInstanceOf[Array[Byte]]
 
-    linear.weight = new QuantTensor[T](linear.outputSize, linear.inputSize)
-    val storage = new Array[Byte](linear.weight.size().product)
-    System.arraycopy(byteArray, 0, storage, 0, storage.length)
-    linear.weight.setStorage(storage)
+    linear.weight = DataConverter.getAttributeValue(attrMap.get("weight"))
+            .asInstanceOf[QuantTensor[T]]
   }
 }

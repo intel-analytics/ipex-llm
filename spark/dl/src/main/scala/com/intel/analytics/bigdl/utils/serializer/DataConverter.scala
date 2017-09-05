@@ -291,6 +291,23 @@ object DataConverter extends DataConverter{
       def quant(): Tensor[T] = {
         val tensor = QuantTensor[T](sizeArray)
         val bytes = serializedTensor.getBytesData.toByteArray
+        val length = sizeArray(0)
+        tensor.maxOfRow = new Array[T](length)
+        tensor.minOfRow = new Array[T](length)
+        tensor.sumOfRow = new Array[T](length)
+
+        dataType match {
+          case DataType.FLOAT =>
+            val data = serializedTensor.getFloatDataList.asScala
+            var i = 0
+            while (i < length) {
+              tensor.maxOfRow(i) = ev.fromType[Float](data(i))
+              tensor.minOfRow(i) = ev.fromType[Float](data(i + length))
+              tensor.sumOfRow(i) = ev.fromType[Float](data(i + 2 * length))
+              i += 1
+            }
+        }
+
         tensor.setStorage(bytes)
       }
 
@@ -327,10 +344,17 @@ object DataConverter extends DataConverter{
         def quant(): Unit = {
           tensorBuilder.setTensorType(TensorType.QUANT)
           val quantTensor = tensor.asInstanceOf[QuantTensor[T]]
-          tensorBuilder.setDatatype(DataType.BYTES)
-          val bytes = quantTensor.getStorage
-          val bs = ByteString.copyFrom(bytes)
-          tensorBuilder.setBytesData(bs)
+          if (ev == NumericFloat) {
+            tensorBuilder.setDatatype(DataType.FLOAT)
+            val bytes = quantTensor.getStorage
+            val bs = ByteString.copyFrom(bytes)
+            tensorBuilder.setBytesData(bs)
+
+            // max, min, and sum
+            quantTensor.maxOfRow.foreach(data => tensorBuilder.addFloatData(ev.toType[Float](data)))
+            quantTensor.minOfRow.foreach(data => tensorBuilder.addFloatData(ev.toType[Float](data)))
+            quantTensor.sumOfRow.foreach(data => tensorBuilder.addFloatData(ev.toType[Float](data)))
+          }
         }
 
         tensor.getTensorType match {

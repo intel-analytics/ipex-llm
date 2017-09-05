@@ -52,7 +52,7 @@ class LinearSpec extends FlatSpec with Matchers with ParallelTestExecution {
   }
 
   "A Linear" should "quantized correctly with serilization" in {
-    val test = testCases(0)
+    val test = testCases(3)
     val weight = Tensor(test.outputSize, test.inputSize).fill(1.0f)
     val bias = Tensor(test.outputSize).fill(0f)
     val input = Tensor(test.batchSize, test.inputSize).fill(1.0f)

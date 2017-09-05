@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.bigquant.BigQuant
 import com.intel.analytics.bigdl.nn.ErrorInfo
 import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.tensor.{FloatType, QuantTensor, Tensor}
+import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData}
 import com.intel.analytics.bigdl.utils.{T, Table}
 import java.io.{IOException, ObjectInputStream, ObjectOutputStream}
@@ -44,31 +44,19 @@ class SpatialConvolution[T: ClassTag](
   require(nInputPlane % nGroup == 0, "Number of input channels should be multiples of group.")
   require(nOutputPlane % nGroup == 0, "Number of output channels should be multiples of group.")
 
-  @transient var weight: Array[QuantTensor[T]] = null
+  @transient var weight: Array[Tensor[T]] = null
   var data: QuantTensor[T] = QuantTensor[T]()
 
   val bias: Tensor[T] = Tensor[T](nOutputPlane)
 
-  val FAULT_TOLERANCE = 0.5f
-  val WEIGHT_THRESHOLD = 64.0f
-  val THRESHOLD = 127.0f
   val DILATION_HEIGHT = 1
   val DILATION_WIDTH = 1
 
   @transient var _init = false
 
-  private def setWeightSum(weight: Tensor[T], weightSum: Array[T], group: Int): Unit = {
-    val start = nOutputPlane / nGroup * (group - 1)
-    for (i <- 1 to weight.size(1)) {
-      val singleRow = weight.select(1, i)
-      weightSum(start + i - 1) = singleRow.sum()
-    }
-  }
-
   private def outputSize(input: Int, pad: Int, kernel: Int, stride: Int): Int = {
     (input + 2 * pad - kernel) / stride + 1
   }
-
 
   def initWeightAndBias(weightFP32: Tensor[T], biasFP32: Tensor[T]): this.type = {
     if (biasFP32 != null) {
@@ -77,35 +65,15 @@ class SpatialConvolution[T: ClassTag](
       bias.fill(ev.fromType(0)) // TODO bias may be null, at that time, we should not initialize it
     }
 
-    // Reshape the weight. Computing the min, max, and quantizing the weight don't need group
-    for (group <- 1 to nGroup) {
-      val weightFP32Tmp = weightFP32.select(1, group)
-      setWeightSum(weightFP32Tmp, weightSum, group)
-    }
-
-    val weightFP32Tmp = weightFP32.view(Array(nOutputPlane, nInputPlane / nGroup, kernelH, kernelW))
-    for (i <- 1 to nOutputPlane) {
-      val singleRow = weightFP32Tmp.select(1, i)
-      min(i - 1) = singleRow.min()
-      max(i - 1) = singleRow.max()
-    }
-
-    weight = new Array[QuantTensor[T]](nGroup)
-    for (i <- 0 until nGroup) {
-      weight(i) = new QuantTensor[T](nOutputPlane / nGroup, nInputPlane / nGroup, kernelH, kernelW)
-    }
-
+    weight = new Array[Tensor[T]](nGroup)
+    val params = ConvWeightParams(nOutputPlane / nGroup, nInputPlane / nGroup, kernelH, kernelW)
     for (i <- 1 to nGroup) {
       val groupWeight = weightFP32.select(1, i)
-      val bufferOffset = 0
-      val buffer = new Array[Byte](groupWeight.nElement())
       ev.getType() match {
         case FloatType =>
-          Quant.quantize(groupWeight.toTensor[Float], buffer, bufferOffset)
+          weight(i - 1) = QuantTensor[T](groupWeight, params, ConvWeight)
         case _ => throw new UnsupportedOperationException(s"Only support Float for quantized model")
       }
-
-      weight(i - 1).setStorage(buffer)
     }
 
     init()
@@ -124,35 +92,17 @@ class SpatialConvolution[T: ClassTag](
   private def readObject(in: ObjectInputStream): Unit = {
     in.defaultReadObject()
 
-    weight = in.readObject().asInstanceOf[Array[QuantTensor[T]]]
-    if (weight(0).getStorage != null && weight(0).getStorageInJni == 0L) {
+    weight = in.readObject().asInstanceOf[Array[Tensor[T]]]
+    if (weight(0).asInstanceOf[QuantTensor[T]].getStorage != null &&
+      weight(0).asInstanceOf[QuantTensor[T]].getNativeStorage == 0L) {
       init()
     }
   }
 
   private def init(): this.type = {
+    val params = ConvWeightParams(nOutputPlane / nGroup, nInputPlane / nGroup, kernelH, kernelW)
     for (i <- 1 to nGroup) {
-      if (weight(i - 1).getStorageInJni == 0L) {
-        val byteArrayOfWeight = weight(i - 1).getStorage
-        weight(i - 1).setStorageInJni(
-          BigQuant.ConvKernelDescInit(nOutputPlane / nGroup, nInputPlane / nGroup,
-            kernelH, kernelW))
-        ev.getType() match {
-          case FloatType =>
-            val start = (i - 1) * nOutputPlane / nGroup
-            val end = i * nOutputPlane / nGroup
-            val minArray = min.asInstanceOf[Array[Float]].slice(start, end)
-            val maxArray = max.asInstanceOf[Array[Float]].slice(start, end)
-            val byteOffset = 0
-
-            BigQuant.ConvKernelLoadFromModel(weight(i - 1).getStorageInJni,
-              byteArrayOfWeight, byteOffset,
-              minArray, maxArray, nOutputPlane / nGroup, nInputPlane / nGroup,
-              kernelH, kernelW, WEIGHT_THRESHOLD, BigQuant.NCHW)
-          case _ =>
-            throw new UnsupportedOperationException(s"Only support Float for quantized model")
-        }
-      }
+      weight(i - 1).asInstanceOf[QuantTensor[T]].init(params, ConvWeight)
     }
 
     _init = true
@@ -185,11 +135,9 @@ class SpatialConvolution[T: ClassTag](
 
     output.resize(Array(batchSize, nOutputPlane, outputHeight, outputWidth))
 
-    if (!data.isInitialized) {
-      data.setStorageInJni(BigQuant.ConvDataDescInit(nInputPlane / nGroup, kernelH, kernelW,
+    data.init(ConvDataParams(nInputPlane / nGroup, kernelH, kernelW,
         strideH, strideW, padH, padW, DILATION_HEIGHT, DILATION_WIDTH, 1,
-        inputHeight, inputWidth))
-    }
+        inputHeight, inputWidth), ConvData)
 
     ev.getType() match {
       case FloatType =>
@@ -211,8 +159,8 @@ class SpatialConvolution[T: ClassTag](
           nOutputPlane / nGroup)
         val groupBatchInput = batchInput.narrow(1, group * nInputPlane / nGroup + 1,
           nInputPlane / nGroup)
-        val groupWeight = weight(group)
-        val offset = nOutputPlane / nGroup * group
+        val groupWeight = weight(group).asInstanceOf[QuantTensor[T]]
+        val offset = 0
 
         groupIm2ColGemm(groupBatchInput, groupBatchOutput, groupWeight, offset)
 
@@ -231,20 +179,20 @@ class SpatialConvolution[T: ClassTag](
       val biasArray = bias.storage().array().asInstanceOf[Array[Float]]
       val biasOffset = bias.storageOffset() - 1 + offset
 
-      val weightSumArray = weightSum.asInstanceOf[Array[Float]]
+      val weightSumArray = weight.sumOfRow.asInstanceOf[Array[Float]]
       val weightSumOffset = offset
 
       BigQuant.ConvDataInit(
-        data.getStorageInJni, inputArray, inputOffset,
+        data.getNativeStorage, inputArray, inputOffset,
         nInputPlane / nGroup, kernelH, kernelW, strideH, strideW, padH, padW,
-        DILATION_HEIGHT, DILATION_WIDTH, 1, inputHeight, inputWidth, THRESHOLD,
+        DILATION_HEIGHT, DILATION_WIDTH, 1, inputHeight, inputWidth, QuantParams.THRESHOLD,
         BigQuant.NCHW)
 
       BigQuant.InternalMixPrecisionConvolutionGEMM(
-        BigQuant.NCHW, weight.getStorageInJni, data.getStorageInJni,
+        BigQuant.NCHW, weight.getNativeStorage, data.getNativeStorage,
         outputArray, outputOffset, weightSumArray, weightSumOffset,
         biasArray, biasOffset, 1, nOutputPlane / nGroup, outputHeight, outputWidth,
-        FAULT_TOLERANCE)
+        QuantParams.FAULT_TOLERANCE)
     }
 
     output
@@ -315,7 +263,7 @@ class SpatialConvolution[T: ClassTag](
   }
 
   def release(): Unit = {
-    weight.foreach(_.release())
+    weight.foreach(_.asInstanceOf[QuantTensor[T]].release())
     data.release()
   }
 }
@@ -339,23 +287,8 @@ object SpatialConvolution extends QuantSerializer {
   override def serializeWeight[T: ClassTag](module: ModuleData[T],
     modelBuilder: BigDLModule.Builder)(implicit ev: TensorNumeric[T]): Unit = {
     val conv = module.module.asInstanceOf[SpatialConvolution[T]]
-    val offsets = new Array[Int](conv.weight.length)
-    val allWeights = new Array[Byte](conv.nOutputPlane * conv.nInputPlane *
-            conv.kernelH * conv.kernelW / conv.nGroup)
-
-    var currentOffset = 0
-    for (i <- conv.weight.indices) {
-      offsets(i) = conv.weight(i).size().product
-      System.arraycopy(conv.weight(i).getStorage, 0, allWeights, currentOffset, offsets(i))
-      currentOffset += offsets(i)
-    }
-
-    val offsetBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(offsetBuilder, offsets, universe.typeOf[Array[Int]])
-    modelBuilder.putAttr("offsets", offsetBuilder.build)
-
     val weightBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(weightBuilder, allWeights, universe.typeOf[Array[Byte]])
+    DataConverter.setAttributeValue(weightBuilder, conv.weight)
     modelBuilder.putAttr("weights", weightBuilder.build)
   }
 
@@ -363,20 +296,8 @@ object SpatialConvolution extends QuantSerializer {
     module: ModuleData[T])(implicit ev: TensorNumeric[T]): Unit = {
     val conv = module.module.asInstanceOf[SpatialConvolution[T]]
     val attrMap = model.getAttrMap
-    val offsets = DataConverter.getAttributeValue(attrMap.get("offsets")).asInstanceOf[Array[Int]]
-    val byteArray = DataConverter.getAttributeValue(attrMap.get("weights"))
-            .asInstanceOf[Array[Byte]]
-
-    var currentOffset = 0
-    conv.weight = new Array[QuantTensor[T]](offsets.length)
-    for (i <- conv.weight.indices) {
-      conv.weight(i) = new QuantTensor[T](conv.nOutputPlane / conv.nGroup,
-        conv.nInputPlane / conv.nGroup, conv.kernelH, conv.kernelW)
-      val storage = new Array[Byte](conv.weight(i).size().product)
-      System.arraycopy(byteArray, currentOffset, storage, 0, offsets(i))
-      currentOffset += offsets(i)
-      conv.weight(i).setStorage(storage)
-    }
+    conv.weight = DataConverter.getAttributeValue(attrMap.get("weights"))
+      .asInstanceOf[Array[Tensor[T]]]
   }
 }
 

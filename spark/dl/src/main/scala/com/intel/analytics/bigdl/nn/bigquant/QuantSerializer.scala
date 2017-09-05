@@ -49,20 +49,6 @@ trait QuantSerializer extends ModuleSerializable {
 
   def serializeOthers[T: ClassTag](module: ModuleData[T],
     modelBuilder: BigDLModule.Builder)(implicit ev: TensorNumeric[T]): Unit = {
-    val layer = module.module.asInstanceOf[QuantModule[T]]
-
-    val weightSumBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(weightSumBuilder, layer.weightSum,
-      universe.typeOf[Array[Float]])
-    modelBuilder.putAttr("weightSum", weightSumBuilder.build)
-
-    val minBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(minBuilder, layer.min, universe.typeOf[Array[Float]])
-    modelBuilder.putAttr("min", minBuilder.build)
-
-    val maxBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(maxBuilder, layer.max, universe.typeOf[Array[Float]])
-    modelBuilder.putAttr("max", maxBuilder.build)
   }
 
   def loadWeight[T: ClassTag](model: BigDLModule,
@@ -87,24 +73,6 @@ trait QuantSerializer extends ModuleSerializable {
 
   def loadOthers[T: ClassTag](model: BigDLModule,
     module: ModuleData[T])(implicit ev: TensorNumeric[T]): Unit = {
-    def tensorCopy(src: Array[java.lang.Float], dst: Array[Float], offset: Int): Unit = {
-      for (i <- src.indices) {
-        dst(i + offset) = src(i)
-      }
-    }
-
-    val attrMap = model.getAttrMap
-    val weightSum = DataConverter.getAttributeValue(attrMap.get("weightSum"))
-            .asInstanceOf[Array[java.lang.Float]]
-    val min = DataConverter.getAttributeValue(attrMap.get("min"))
-            .asInstanceOf[Array[java.lang.Float]]
-    val max = DataConverter.getAttributeValue(attrMap.get("max"))
-            .asInstanceOf[Array[java.lang.Float]]
-
-    val layer = module.module.asInstanceOf[QuantModule[T]]
-    tensorCopy(weightSum, layer.weightSum.asInstanceOf[Array[Float]], 0)
-    tensorCopy(min, layer.min.asInstanceOf[Array[Float]], 0)
-    tensorCopy(max, layer.max.asInstanceOf[Array[Float]], 0)
   }
 
   override protected def copyFromBigDL[T: ClassTag](module: ModuleData[T],
