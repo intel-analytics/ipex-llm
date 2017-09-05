@@ -1467,24 +1467,6 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Module.loadTF[T](path, inputs.asScala, outputs.asScala, order)
   }
 
-  def trainTF(
-              path: String,
-              output: String,
-              data: JList[JTensor],
-              label: JList[JTensor],
-              optMethod: OptimMethod[T],
-              criterion: Criterion[T],
-              batchSize: Int, endWhen: Trigger): AbstractModule[Activity, Activity, T] = {
-    val nodeList = parse(path)
-
-    val context = new mutable.HashMap[String, (Tensor[T], Tensor[T])]()
-    val session = new BigDLSessionImpl[T](nodeList.asScala, context)
-
-    val model = session.train(Seq(output), data.asScala.map(toTensor), label.asScala.map(toTensor),
-      optMethod, criterion, batchSize, endWhen)
-    model
-  }
-
   def saveTF(model: AbstractModule[Activity, Activity, T],
              inputs: JList[Any],
              path: String,
@@ -1726,6 +1708,25 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
    */
   def saveTensorDictionary(tensors: JHashMap[String, JTensor], path: String): Unit = {
     File.save(tensors, path, true)
+  }
+
+  def trainTF(
+               modelPath: String,
+               variablePath: String,
+               output: String,
+               samples: JavaRDD[Sample],
+               optMethod: OptimMethod[T],
+               criterion: Criterion[T],
+               batchSize: Int, endWhen: Trigger): AbstractModule[Activity, Activity, T] = {
+    val nodeList = parse(modelPath)
+
+    val context = new mutable.HashMap[String, (Tensor[T], Tensor[T])]()
+    val session = new BigDLSessionImpl[T](nodeList.asScala, context)
+    val dataset = batching(samples, batchSize)
+
+    val model = session.train(Seq(output), dataset,
+      optMethod, criterion, endWhen)
+    model
   }
 
   def createOptimizer(model: AbstractModule[Activity, Activity, T],

@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.utils.tf
 
-import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch}
+import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.nn.{CrossEntropyCriterion, MSECriterion}
 import com.intel.analytics.bigdl.optim.{SGD, Trigger}
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -75,9 +75,18 @@ class SessionSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val criterion = MSECriterion[Float]()
     val endWhen = Trigger.maxEpoch(5)
 
-    val module = session.train(Seq("output"), data.toSeq, label.toSeq,
-      optim, criterion, 16, endWhen)
-    module.forward(Tensor[Float](Array(1)))
+    val samples = data.zip(label).map { case (dataTensor, labelTensor) =>
+      Sample(dataTensor, labelTensor)
+    }
+
+    val batchSize = Engine.nodeNumber()
+    val rdd = sc.parallelize(samples, batchSize)
+
+    val datasets = (DataSet.rdd(rdd) -> SampleToMiniBatch[Float](batchSize))
+      .asInstanceOf[DistributedDataSet[MiniBatch[Float]]]
+
+    val module = session.train(Seq("output"), datasets, optim, criterion, endWhen)
+     module.forward(Tensor[Float](Array(1)))
   }
 
 }

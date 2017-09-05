@@ -18,14 +18,15 @@ package com.intel.analytics.bigdl.utils.tf
 import java.nio.{ByteOrder, DoubleBuffer, FloatBuffer}
 
 import com.intel.analytics.bigdl.Criterion
-import com.intel.analytics.bigdl.dataset.{DataSet, Sample}
+import com.intel.analytics.bigdl.dataset.{DataSet, DistributedDataSet, MiniBatch, Sample}
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Graph, Linear}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.optim.{OptimMethod, Optimizer, SGD, Trigger}
+import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils._
 import org.apache.spark.SparkContext
+import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.rdd.RDD
 import org.tensorflow.framework.{GraphDef, NodeDef}
 
@@ -35,11 +36,9 @@ import scala.reflect.ClassTag
 abstract class Session[T: ClassTag] {
 
   def train(outputs: Seq[String],
-            data: Seq[Tensor[T]],
-            label: Seq[Tensor[T]],
+            dataSet: DistributedDataSet[MiniBatch[T]],
             optMethod: OptimMethod[T],
             criterion: Criterion[T],
-            batchSize: Int,
             endWhen: Trigger): Graph[T]
 }
 
@@ -78,29 +77,20 @@ class BigDLSessionImpl[T: ClassTag](
   }
 
   override def train(outputs: Seq[String],
-                     data: Seq[Tensor[T]],
-                     label: Seq[Tensor[T]],
+                     dataSet: DistributedDataSet[MiniBatch[T]],
                      optMethod: OptimMethod[T],
                      criterion: Criterion[T],
-                     batchSize: Int, endWhen: Trigger): Graph[T] = {
-
-    val samples = data.zip(label).map { elem =>
-      Sample(elem._1, elem._2)
-    }
-
-    val coreNum = Engine.coreNumber()
-    val rdd = sc.parallelize(samples, coreNum)
+                     endWhen: Trigger): Graph[T] = {
 
     val (model, input) = constructModel(outputs)
 
     require(input.element.getOp == "Placeholder",
       "only support Placeholder as input when in-memory input data is provided")
 
-    val opt = Optimizer(
+    val opt = new DistriOptimizer(
       model,
-      rdd,
-      criterion,
-      batchSize
+      dataSet,
+      criterion
     )
     val optMethod = new SGD[T]()
     opt.setOptimMethod(optMethod).setEndWhen(endWhen)
