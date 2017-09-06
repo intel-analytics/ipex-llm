@@ -188,7 +188,7 @@ object Utils {
       test(model, evaluationSet, batchSize)
     }
 
-    val quantizedModel = Module.quantize(model)
+    val quantizedModel = model.quantize()
     val (quantizedModelResult, quantizedModelCosts) = time {
       test(quantizedModel, evaluationSet, batchSize)
     }

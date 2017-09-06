@@ -16,7 +16,6 @@
 package com.intel.analytics.bigdl.models.utils
 
 import com.intel.analytics.bigdl.models.lenet.LeNet5
-import com.intel.analytics.bigdl.nn.{Linear, Module}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -49,7 +48,7 @@ class ModelBroadcastSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "quantized model broadcast" should "work properly" in {
-    val model = Module.quantize(LeNet5(10))
+    val model = LeNet5(10).quantize()
 
     val modelBroadCast = ModelBroadcast[Float].broadcast(sc, model)
     modelBroadCast.value().toString should be(model.toString)
@@ -61,13 +60,6 @@ class ModelBroadcastSpec extends FlatSpec with Matchers with BeforeAndAfter {
       v1(i).equals(v2(i))
       v1(i) should be (v2(i))
     }
-  }
-
-  "quantized linear" should "work properly" in {
-    val linear = Linear[Float](5, 3)
-    val quantizedLinear = Module.quantize(linear)
-
-    println("")
   }
 
   after {

@@ -1909,7 +1909,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
       "/home/wyz/workspace/bigquant/raw_models/lenet/deploy.prototxt",
       "/home/wyz/workspace/bigquant/raw_models/lenet/lenet.caffemodel")._1
 
-    val model = Module.quantize(loadedModel)
+    val model = loadedModel.quantize()
     model.saveModule("/tmp/lenet.quantized.model", overWrite = true)
 
     val model2 = Module.loadModule("/tmp/lenet.quantized.model")

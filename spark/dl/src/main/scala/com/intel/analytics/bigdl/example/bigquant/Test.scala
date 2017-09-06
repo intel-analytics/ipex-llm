@@ -49,7 +49,7 @@ object Test {
       val model = if (param.model != "lenet") {
         val m = Module.loadModule[Float](path)
         if (param.quantize) {
-          Module.quantize(m)
+          m.quantize()
         } else {
           m
         }
@@ -60,7 +60,7 @@ object Test {
         newModel.add(Module.loadModule[Float](path))
 
         if (param.quantize) {
-          Module.quantize(newModel)
+          newModel.quantize()
         } else {
           newModel
         }

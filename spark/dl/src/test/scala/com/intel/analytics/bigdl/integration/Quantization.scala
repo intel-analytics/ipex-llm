@@ -104,7 +104,7 @@ class QuantizationSpec extends FlatSpec with Matchers with BeforeAndAfter{
     val model = Module.load(lenetFP32Model).asInstanceOf[Module[Float]]
     val fp32Result = test(model, evaluationSet, batchSize)
 
-    val int8Model = Module.quantize(model)
+    val int8Model = model.quantize()
     val int8Result = test(int8Model, evaluationSet, batchSize)
 
     checkResult(fp32Result, int8Result)
@@ -133,7 +133,7 @@ class QuantizationSpec extends FlatSpec with Matchers with BeforeAndAfter{
     val model = Module.load(resnetFP32Model).asInstanceOf[Module[Float]]
     val fp32Result = test(model, evaluationSet, batchSize)
 
-    val int8Model = Module.quantize(model)
+    val int8Model = model.quantize()
     val int8Result = test(int8Model, evaluationSet, batchSize)
 
     checkResult(fp32Result, int8Result)

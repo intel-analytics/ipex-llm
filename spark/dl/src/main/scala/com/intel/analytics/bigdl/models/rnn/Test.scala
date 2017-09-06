@@ -51,7 +51,7 @@ object Test {
 
       val loadedModel = Module.load[Float](param.modelSnapshot.get)
       val model = if (param.quantize) {
-        Module.quantize(loadedModel)
+        loadedModel.quantize()
       } else {
         loadedModel
       }

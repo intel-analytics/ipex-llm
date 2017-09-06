@@ -38,7 +38,7 @@ class QuantableSpec extends FlatSpec with Matchers {
     val input = Tensor(4, 28, 28).fill(1)
     val output = seq.forward(input).toTensor
 
-    val quantSeq = Module.quantize(seq)
+    val quantSeq = seq.quantize()
     val quantOutput = quantSeq.forward(input).toTensor
 
     output should be (quantOutput)
@@ -49,10 +49,10 @@ class QuantableSpec extends FlatSpec with Matchers {
 
     val input = Tensor(4, 28, 28)
 
-    val quantSeq1 = Module.quantize(seq)
+    val quantSeq1 = seq.quantize()
     val quantOutput1 = quantSeq1.forward(input).toTensor
 
-    val quantSeq2 = Module.quantize(seq)
+    val quantSeq2 = seq.quantize()
     val quantOutput2 = quantSeq2.forward(input).toTensor
 
     quantOutput1 should be (quantOutput2)
@@ -65,7 +65,7 @@ class QuantableSpec extends FlatSpec with Matchers {
     val input = Tensor(4, 28, 28).fill(1)
     val output = graph.forward(input).toTensor
 
-    val quantGraph = Module.quantize(graph)
+    val quantGraph = graph.quantize()
     val quantOutput = quantGraph.forward(input).toTensor
 
     output should be (quantOutput)
@@ -76,10 +76,10 @@ class QuantableSpec extends FlatSpec with Matchers {
 
     val input = Tensor(4, 28, 28)
 
-    val quantGraph1 = Module.quantize(graph)
+    val quantGraph1 = graph.quantize()
     val quantOutput1 = quantGraph1.forward(input).toTensor
 
-    val quantGraph2 = Module.quantize(graph)
+    val quantGraph2 = graph.quantize()
     val quantOutput2 = quantGraph2.forward(input).toTensor
 
     quantOutput1 should be (quantOutput2)
@@ -96,7 +96,7 @@ class QuantableSpec extends FlatSpec with Matchers {
     val in = Tensor(3, 3).fill(1)
     val out = graph.forward(in).toTensor
 
-    val quantModel = Module.quantize(graph)
+    val quantModel = graph.quantize()
     val quantOut = quantModel.forward(in).toTensor
 
     out should be (quantOut)
@@ -113,7 +113,7 @@ class QuantableSpec extends FlatSpec with Matchers {
     val linear = Linear[Float](test.inputSize, test.outputSize, initWeight = weight,
       initBias = bias)
 
-    val linear2 = Module.quantize(linear)
+    val linear2 = linear.quantize()
 
     linear.updateOutput(input)
     linear2.updateOutput(input)
@@ -137,7 +137,7 @@ class QuantableSpec extends FlatSpec with Matchers {
       test.kernelHeight, test.kernelWidth, test.strideHeight, test.strideWidth,
       test.padHeight, test.padWidth, test.group, weight, bias)
 
-    val conv2 = Module.quantize(conv)
+    val conv2 = conv.quantize()
 
     conv.updateOutput(input)
     conv2.updateOutput(input)
@@ -165,7 +165,7 @@ class QuantableSpec extends FlatSpec with Matchers {
 
     cell.forward(T(input, hidden))
 
-    val quantCell = Module.quantize(cell).asInstanceOf[RnnCell[Float]]
+    val quantCell = cell.quantize().asInstanceOf[RnnCell[Float]]
     val quantCellGraph = quantCell.cell.asInstanceOf[Graph[Float]]
     quantCellGraph.inputs(1).element.isInstanceOf[Linear[Float]] should be (true)
     quantCell.forward(T(input, hidden))
@@ -190,7 +190,7 @@ class QuantableSpec extends FlatSpec with Matchers {
 
     val output = tmd.forward(input).toTensor
 
-    val quantTmd = Module.quantize(tmd).asInstanceOf[TimeDistributed[Float]]
+    val quantTmd = tmd.quantize().asInstanceOf[TimeDistributed[Float]]
     quantTmd.layer.isInstanceOf[Linear[Float]] should be (true)
     val quantOutput = quantTmd.forward(input).toTensor
 
@@ -211,7 +211,7 @@ class QuantableSpec extends FlatSpec with Matchers {
     model.getParameters()._1.fill(1)
     val output = model.forward(input).toTensor
 
-    val quantModel = Module.quantize(model)
+    val quantModel = model.quantize()
     val quantOut = quantModel.forward(input).toTensor
 
     val quantCell = findCell(findModule(quantModel, 0))
@@ -234,7 +234,7 @@ class QuantableSpec extends FlatSpec with Matchers {
 
     val output = model.forward(input).toTensor
 
-    val quantModel = Module.quantize(model)
+    val quantModel = model.quantize()
     val quantOut = quantModel.forward(input).toTensor
 
     output should be (quantOut)
@@ -274,7 +274,7 @@ class QuantableSpec extends FlatSpec with Matchers {
     val input = Tensor(batchSize, seqLength, inputSize, kernalW, kernalH).fill(1)
     val output = model.forward(input).toTensor
 
-    val quantModel = Module.quantize(model)
+    val quantModel = model.quantize()
     val quantOut = quantModel.forward(input).toTensor
 
     // check modules
@@ -332,7 +332,7 @@ class QuantableSpec extends FlatSpec with Matchers {
 
     val output = model.forward(input).toTensor
 
-    val quantModel = Module.quantize(model)
+    val quantModel = model.quantize()
     val quantOutput = quantModel.forward(input).toTensor
 
     val gru = findCell(quantModel).asInstanceOf[GRU[Float]]
@@ -357,7 +357,7 @@ class QuantableSpec extends FlatSpec with Matchers {
     model.getParameters()._1.fill(1f)
     val output = model.forward(input)
 
-    val quantModel = Module.quantize(model)
+    val quantModel = model.quantize()
     val quantOut = quantModel.forward(input2)
 
     def executions(model: Module[Float]): Array[ANode[Float]] = {
@@ -388,7 +388,7 @@ class QuantableSpec extends FlatSpec with Matchers {
     model.getParameters()._1.fill(1f)
     val output = model.forward(input)
 
-    val quantModel = Module.quantize(model)
+    val quantModel = model.quantize()
     val quantOut = quantModel.forward(input2)
 
     def executions(model: Module[Float]): Array[ANode[Float]] = {
@@ -416,7 +416,7 @@ class QuantableSpec extends FlatSpec with Matchers {
         .add(RnnCell[Float](inputSize, hiddenSize, HardTanh[Float](0, 20, inplace = true))))
     }
     logger.info(model)
-    val quantize = Module.quantize(model)
+    val quantize = model.quantize()
     logger.info(quantize)
 
     val input = Tensor[Float](batchSize, time, inputSize).rand()
@@ -470,7 +470,7 @@ class QuantableSpec extends FlatSpec with Matchers {
 
     graph.forward(input)
 
-    val quantizedGraph = Module.quantize(graph)
+    val quantizedGraph = graph.quantize()
     logger.info(quantizedGraph)
     quantizedGraph.forward(input)
 

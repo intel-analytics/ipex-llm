@@ -57,9 +57,9 @@ class LinearSpec extends FlatSpec with Matchers with ParallelTestExecution {
     val input = Tensor(test.batchSize, test.inputSize).fill(1.0f)
 
     val nnLinear = NNLinear(test.inputSize, test.outputSize, initWeight = weight, initBias = bias)
-    val quantizedLinear = Module.quantize(nnLinear)
+    val quantizedLinear = nnLinear.quantize()
 
-    val quantizedLinear2 = Module.quantize(quantizedLinear)
+    val quantizedLinear2 = quantizedLinear.quantize()
     println(quantizedLinear2)
 
     val nnOutput = nnLinear.updateOutput(input)

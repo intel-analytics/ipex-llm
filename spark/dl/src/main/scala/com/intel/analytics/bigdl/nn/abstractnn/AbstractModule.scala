@@ -17,7 +17,6 @@
 package com.intel.analytics.bigdl.nn.abstractnn
 
 import java.nio.ByteOrder
-
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.{Tensor, TensorDataType}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -30,10 +29,10 @@ import org.apache.spark.rdd.RDD
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch, Sample}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.nn.bigquant.Quant
 import com.intel.analytics.bigdl.utils.caffe.CaffePersister
 import com.intel.analytics.bigdl.utils.serializer.ModulePersister
 import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowSaver}
-
 import scala.reflect.ClassTag
 
 /**
@@ -653,6 +652,10 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
                vMethods: Array[ValidationMethod[T]]
               ): Array[(ValidationResult, ValidationMethod[T])] = {
     Validator(this, dataSet).test(vMethods)
+  }
+
+  def quantize(): Module[T] = {
+    Quant.quantize(this)
   }
 }
 

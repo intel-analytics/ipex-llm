@@ -73,7 +73,7 @@ object ConvertModel {
       }
 
       val model = if (param.quantize) {
-        Module.quantize[Float](loadedModel)
+        loadedModel.quantize()
       } else {
         loadedModel
       }
