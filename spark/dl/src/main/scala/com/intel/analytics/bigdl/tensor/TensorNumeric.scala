@@ -934,6 +934,28 @@ object TensorNumericMath {
       }
     }
 
+    implicit object NumericString extends UndefinedTensorNumeric[String]("String") {
+      override def plus(x: String, y: String): String = x + y
+
+      override def fromType[K](k: K)(
+        implicit c: ConvertableFrom[K]): String =
+        c.toString(k)
+
+      override def axpy(n: Int, da: String, dx: Array[String], _dx_offset: Int,
+        incx: Int, dy: Array[String],
+        _dy_offset: Int, incy: Int): Unit = {
+        var i = 0
+        while (i < n) {
+          dy(i + _dy_offset) = dx(_dx_offset + i) + dy(_dy_offset + i)
+          i += 1
+        }
+      }
+
+      override def nearlyEqual(a: String, b: String, epsilon: Double): Boolean = {
+        a == b
+      }
+    }
+
     implicit object NumericBoolean extends UndefinedTensorNumeric[Boolean]("Boolean") {
       override def or(x: Boolean, y: Boolean): Boolean = x || y
 
