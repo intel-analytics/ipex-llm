@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.bigquant
+package com.intel.analytics.bigdl.nn.quantized
 
-import com.intel.analytics.bigdl.tensor.{QuantTensor, Tensor}
+import com.intel.analytics.bigdl.tensor.{QuantizedTensor, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData}
 import scala.reflect.ClassTag

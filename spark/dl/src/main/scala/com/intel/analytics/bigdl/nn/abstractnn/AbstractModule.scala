@@ -29,7 +29,7 @@ import org.apache.spark.rdd.RDD
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch, Sample}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import com.intel.analytics.bigdl.nn.bigquant.Quant
+import com.intel.analytics.bigdl.nn.quantized.Quantization
 import com.intel.analytics.bigdl.utils.caffe.CaffePersister
 import com.intel.analytics.bigdl.utils.serializer.ModulePersister
 import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowSaver}
@@ -655,7 +655,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   }
 
   def quantize(): Module[T] = {
-    Quant.quantize(this)
+    Quantization.quantize(this)
   }
 }
 

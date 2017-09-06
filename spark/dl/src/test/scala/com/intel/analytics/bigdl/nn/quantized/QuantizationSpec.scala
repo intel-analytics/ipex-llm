@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.bigquant
+package com.intel.analytics.bigdl.nn.quantized
 
 import com.intel.analytics.bigdl.bigquant.BigQuant
 import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.nn.bigquant.Quant._
+import com.intel.analytics.bigdl.nn.quantized.Quantization._
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
-class QuantSpec extends FlatSpec with Matchers {
+class QuantizationSpec extends FlatSpec with Matchers {
   "Quantize a number with same sign max and min" should "generate correct output" in {
     val src = 0.6f
     val (max, min) = (0.7f, 0.2f)

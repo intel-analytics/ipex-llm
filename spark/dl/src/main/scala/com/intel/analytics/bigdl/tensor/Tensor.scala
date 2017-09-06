@@ -785,7 +785,7 @@ sealed trait TensorType
 
 object DenseType extends TensorType
 
-object QuantType extends TensorType
+object QuantizedType extends TensorType
 
 object Tensor {
 

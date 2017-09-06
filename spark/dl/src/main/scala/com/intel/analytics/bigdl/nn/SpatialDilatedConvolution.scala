@@ -543,7 +543,7 @@ class SpatialDilatedConvolution[T: ClassTag](
   }
 }
 
-object SpatialDilatedConvolution extends bigquant.Quantable {
+object SpatialDilatedConvolution extends quantized.Quantizable {
   def apply[@specialized(Float, Double) T: ClassTag](
       nInputPlane: Int,
       nOutputPlane: Int,

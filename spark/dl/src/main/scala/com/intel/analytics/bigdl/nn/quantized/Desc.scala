@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.bigquant
+package com.intel.analytics.bigdl.nn.quantized
 
 import com.intel.analytics.bigdl.bigquant.BigQuant
-import com.intel.analytics.bigdl.tensor.{FloatType, QuantTensor}
+import com.intel.analytics.bigdl.tensor.{FloatType, QuantizedTensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import scala.reflect.ClassTag
 
@@ -68,7 +68,7 @@ object Desc {
     desc
   }
 
-  def get[T: ClassTag](params: DescParams, descType: DescType, tensor: QuantTensor[T])(implicit
+  def get[T: ClassTag](params: DescParams, descType: DescType, tensor: QuantizedTensor[T])(implicit
     ev: TensorNumeric[T]): Long = {
     get(params, descType, tensor.getStorage, 0, tensor.maxOfRow, tensor.minOfRow)
   }

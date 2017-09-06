@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.models.utils
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.tensor.{QuantTensor, Storage, Tensor}
+import com.intel.analytics.bigdl.tensor.{QuantizedTensor, Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import org.apache.spark.SparkContext
 import org.apache.spark.broadcast.Broadcast
@@ -70,8 +70,8 @@ class ModelBroadcast[T: ClassTag](implicit ev: TensorNumeric[T]) extends Seriali
       if (parameters._1(i) != null) {
         val wb = parameters._1(i)
         wb match {
-          case value1: QuantTensor[T] =>
-            weightsBias(i) = QuantTensor[T](wb.size()).copy(wb)
+          case value1: QuantizedTensor[T] =>
+            weightsBias(i) = QuantizedTensor[T](wb.size()).copy(wb)
           case _ =>
             weightsBias(i) = Tensor[T](Storage(wb.storage().array()),
               wb.storageOffset(), wb.size(), wb.stride())

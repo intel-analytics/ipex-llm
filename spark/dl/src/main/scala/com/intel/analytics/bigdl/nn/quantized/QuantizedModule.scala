@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.bigquant
+package com.intel.analytics.bigdl.nn.quantized
 
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import scala.reflect.ClassTag
 
-abstract class QuantModule[T: ClassTag](length: Int)(
+abstract class QuantizedModule[T: ClassTag](length: Int)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   val empty: Tensor[T] = Tensor[T](1)
   def init(): this.type

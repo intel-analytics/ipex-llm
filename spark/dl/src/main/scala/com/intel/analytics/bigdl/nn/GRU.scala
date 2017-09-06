@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.bigquant.{CellQuantizer, Quantable, Quantizer}
+import com.intel.analytics.bigdl.nn.quantized.{CellQuantizer, Quantizable, Quantizer}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -169,7 +169,7 @@ class GRU[T : ClassTag] (
   }
 }
 
-object GRU extends Quantable {
+object GRU extends Quantizable {
   def apply[@specialized(Float, Double) T: ClassTag](
     inputSize: Int = 4,
     outputSize: Int = 3,
@@ -190,7 +190,7 @@ object GRU extends Quantable {
     // if the h2g is a linear node, its previous node is Input node. And there's only one
     // linear node of that Input nextNodes.
     if (gru.h2g.element.isInstanceOf[Linear[T]]) {
-      gru.h2g = h2gPrev.nextNodes.filter(_.element.isInstanceOf[bigquant.Linear[T]]).last
+      gru.h2g = h2gPrev.nextNodes.filter(_.element.isInstanceOf[quantized.Linear[T]]).last
     }
 
     gru

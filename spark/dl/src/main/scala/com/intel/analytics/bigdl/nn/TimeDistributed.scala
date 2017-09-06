@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
-import com.intel.analytics.bigdl.nn.bigquant.{Quantable, Quantizer}
+import com.intel.analytics.bigdl.nn.quantized.{Quantizable, Quantizer}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
@@ -274,7 +274,7 @@ class TimeDistributed[T : ClassTag] (var layer: TensorModule[T])
   override def toString(): String = s"${getPrintName}${layer}"
 }
 
-object TimeDistributed extends Quantable {
+object TimeDistributed extends Quantizable {
   def apply[@specialized(Float, Double) T: ClassTag](layer: TensorModule[T])
     (implicit ev: TensorNumeric[T]): TimeDistributed[T] = {
     new TimeDistributed[T](layer)

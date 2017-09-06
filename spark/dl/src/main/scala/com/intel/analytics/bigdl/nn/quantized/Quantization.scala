@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.bigquant
+package com.intel.analytics.bigdl.nn.quantized
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.bigquant.Utils._
+import com.intel.analytics.bigdl.nn.quantized.Utils._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import java.nio.ByteBuffer
 import scala.reflect.ClassTag
 
-object Quant {
+object Quantization {
   def findMax(src: Array[Float], start: Int, end: Int): Float = {
     src.slice(start, end).max
   }

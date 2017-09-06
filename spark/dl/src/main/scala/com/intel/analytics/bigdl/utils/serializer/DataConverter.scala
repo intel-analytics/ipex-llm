@@ -21,9 +21,9 @@ import scala.reflect.runtime.universe
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat.{NCHW, NHWC}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
-import com.intel.analytics.bigdl.nn.bigquant.Quant
+import com.intel.analytics.bigdl.nn.quantized.Quantization
 import com.intel.analytics.bigdl.optim.{L1L2Regularizer, L1Regularizer, L2Regularizer, Regularizer}
-import com.intel.analytics.bigdl.tensor.{DenseType, QuantTensor, QuantType, Tensor}
+import com.intel.analytics.bigdl.tensor.{DenseType, QuantizedTensor, QuantizedType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import serialization.Bigdl._
 import serialization.Bigdl.AttrValue.ArrayValue
@@ -311,7 +311,7 @@ object DataConverter extends DataConverter{
             }
         }
 
-        QuantTensor[T](bytes, max, min, sum, sizeArray)
+        QuantizedTensor[T](bytes, max, min, sum, sizeArray)
       }
 
       tensorType match {
@@ -346,7 +346,7 @@ object DataConverter extends DataConverter{
 
         def quant(): Unit = {
           tensorBuilder.setTensorType(TensorType.QUANT)
-          val quantTensor = tensor.asInstanceOf[QuantTensor[T]]
+          val quantTensor = tensor.asInstanceOf[QuantizedTensor[T]]
           if (ev == NumericFloat) {
             tensorBuilder.setDatatype(DataType.FLOAT)
             val bytes = quantTensor.getStorage
@@ -362,7 +362,7 @@ object DataConverter extends DataConverter{
 
         tensor.getTensorType match {
           case DenseType => dense()
-          case QuantType => quant()
+          case QuantizedType => quant()
         }
 
         tensor.size().foreach(size => tensorBuilder.addSize(size))

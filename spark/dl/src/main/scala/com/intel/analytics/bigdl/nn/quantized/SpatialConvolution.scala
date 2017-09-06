@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.bigquant
+package com.intel.analytics.bigdl.nn.quantized
 
 import com.intel.analytics.bigdl.bigquant.BigQuant
 import com.intel.analytics.bigdl.nn.ErrorInfo
@@ -39,13 +39,13 @@ class SpatialConvolution[T: ClassTag](
   val padW: Int = 0, // The additional zeros added per width to the input planes.
   val padH: Int = 0, // The additional zeros added per height to the input planes.
   val nGroup: Int = 1 // Kernel group number
-)(implicit ev: TensorNumeric[T]) extends QuantModule[T](nOutputPlane) with Initializable {
+)(implicit ev: TensorNumeric[T]) extends QuantizedModule[T](nOutputPlane) with Initializable {
 
   require(nInputPlane % nGroup == 0, "Number of input channels should be multiples of group.")
   require(nOutputPlane % nGroup == 0, "Number of output channels should be multiples of group.")
 
   @transient var weight: Array[Tensor[T]] = null
-  var data: QuantTensor[T] = QuantTensor[T]()
+  var data: QuantizedTensor[T] = QuantizedTensor[T]()
 
   val bias: Tensor[T] = Tensor[T](nOutputPlane)
 
@@ -69,7 +69,7 @@ class SpatialConvolution[T: ClassTag](
       val groupWeight = weightFP32.select(1, i)
       ev.getType() match {
         case FloatType =>
-          weight(i - 1) = QuantTensor[T](groupWeight, params, ConvWeight)
+          weight(i - 1) = QuantizedTensor[T](groupWeight, params, ConvWeight)
         case _ => throw new UnsupportedOperationException(s"Only support Float for quantized model")
       }
     }
@@ -89,8 +89,8 @@ class SpatialConvolution[T: ClassTag](
     in.defaultReadObject()
 
     weight = in.readObject().asInstanceOf[Array[Tensor[T]]]
-    if (weight(0).asInstanceOf[QuantTensor[T]].getStorage != null &&
-      weight(0).asInstanceOf[QuantTensor[T]].getNativeStorage == 0L) {
+    if (weight(0).asInstanceOf[QuantizedTensor[T]].getStorage != null &&
+      weight(0).asInstanceOf[QuantizedTensor[T]].getNativeStorage == 0L) {
       init()
     }
   }
@@ -98,7 +98,7 @@ class SpatialConvolution[T: ClassTag](
   override def init(): this.type = {
     val params = ConvWeightParams(nOutputPlane / nGroup, nInputPlane / nGroup, kernelH, kernelW)
     for (i <- 1 to nGroup) {
-      weight(i - 1).asInstanceOf[QuantTensor[T]].init(params, ConvWeight)
+      weight(i - 1).asInstanceOf[QuantizedTensor[T]].init(params, ConvWeight)
     }
 
     this
@@ -145,7 +145,7 @@ class SpatialConvolution[T: ClassTag](
           nOutputPlane / nGroup)
         val groupBatchInput = batchInput.narrow(1, group * nInputPlane / nGroup + 1,
           nInputPlane / nGroup)
-        val groupWeight = weight(group).asInstanceOf[QuantTensor[T]]
+        val groupWeight = weight(group).asInstanceOf[QuantizedTensor[T]]
         val offset = 0
 
         groupIm2ColGemm(groupBatchInput, groupBatchOutput, groupWeight, offset)
@@ -155,7 +155,7 @@ class SpatialConvolution[T: ClassTag](
     }
 
     @inline def groupIm2ColGemm(input: Tensor[T], output: Tensor[T],
-      weight: QuantTensor[T], offset: Int): Unit = {
+      weight: QuantizedTensor[T], offset: Int): Unit = {
       val inputArray = input.storage().array().asInstanceOf[Array[Float]]
       val inputOffset = input.storageOffset() - 1
 
@@ -249,7 +249,7 @@ class SpatialConvolution[T: ClassTag](
   }
 
   def release(): Unit = {
-    weight.foreach(_.asInstanceOf[QuantTensor[T]].release())
+    weight.foreach(_.asInstanceOf[QuantizedTensor[T]].release())
     data.release()
   }
 }

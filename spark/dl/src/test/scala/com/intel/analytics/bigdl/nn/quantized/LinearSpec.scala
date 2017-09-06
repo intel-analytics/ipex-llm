@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.bigquant
+package com.intel.analytics.bigdl.nn.quantized
 
 import com.intel.analytics.bigdl.nn.{Module, Linear => NNLinear}
 import com.intel.analytics.bigdl.numeric.NumericFloat

@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.bigquant
+package com.intel.analytics.bigdl.nn.quantized
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.nn.tf.WithoutInput
 import com.intel.analytics.bigdl.nn.{Cell, Container, Graph, Input, TimeDistributed, Linear => NNLinear, SpatialConvolution => NNConv, SpatialDilatedConvolution => NNDilatedConv}
-import com.intel.analytics.bigdl.tensor.{QuantTensor, Tensor}
+import com.intel.analytics.bigdl.tensor.{QuantizedTensor, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Node
 import scala.collection.mutable.ArrayBuffer
@@ -100,7 +100,7 @@ object Utils {
     implicit ev: TensorNumeric[T]): Tensor[T] = {
     var length = 0
     for (i <- parameters.indices) {
-      if (!parameters(i).isInstanceOf[QuantTensor[T]]) {
+      if (!parameters(i).isInstanceOf[QuantizedTensor[T]]) {
         length += parameters(i).nElement()
       }
     }
@@ -111,7 +111,7 @@ object Utils {
     for (i <- parameters.indices) {
       val parameter = parameters(i)
 
-      if (!parameter.isInstanceOf[QuantTensor[T]]) {
+      if (!parameter.isInstanceOf[QuantizedTensor[T]]) {
         val length = parameter.nElement()
 
         val (src, srcOffset) = (parameter.storage().array(), parameter.storageOffset() - 1)

@@ -18,11 +18,11 @@ package com.intel.analytics.bigdl.tensor
 
 import com.intel.analytics.bigdl.bigquant.BigQuant
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.nn.bigquant.{LinearWeight, LinearWeightParams}
+import com.intel.analytics.bigdl.nn.quantized.{LinearWeight, LinearWeightParams}
 import org.scalatest.{FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Parallel
-class QuantTensorSpec extends FlatSpec with Matchers {
+class QuantizedTensorSpec extends FlatSpec with Matchers {
   "A QuantizeTensor set to empty" should "work correctly" in {
     val inputChannel = 4
     val outputChannel = 4
@@ -32,7 +32,7 @@ class QuantTensorSpec extends FlatSpec with Matchers {
 
     val fp32Tensor = Tensor(outputChannel, inputChannel).rand
 
-    val tensor = QuantTensor[Float](fp32Tensor, LinearWeightParams(outputChannel, inputChannel),
+    val tensor = QuantizedTensor[Float](fp32Tensor, LinearWeightParams(outputChannel, inputChannel),
       LinearWeight)
 
     val minArray = Array.fill[Float](outputChannel)(0)
@@ -55,9 +55,9 @@ class QuantTensorSpec extends FlatSpec with Matchers {
 
     val fp32Tensor = Tensor(outputChannel, inputChannel).rand
 
-    val tensor1 = QuantTensor[Float](fp32Tensor, LinearWeightParams(outputChannel, inputChannel),
+    val tensor1 = QuantizedTensor[Float](fp32Tensor, LinearWeightParams(outputChannel, inputChannel),
       LinearWeight)
-    val tensor2 = QuantTensor[Float](fp32Tensor, LinearWeightParams(outputChannel, inputChannel),
+    val tensor2 = QuantizedTensor[Float](fp32Tensor, LinearWeightParams(outputChannel, inputChannel),
       LinearWeight)
 
     tensor2.set(tensor1)
@@ -75,7 +75,7 @@ class QuantTensorSpec extends FlatSpec with Matchers {
     val batchSize = 3
 
     val fp32Tensor = Tensor(outputChannel, inputChannel).rand
-    val tensor = QuantTensor[Float](fp32Tensor, LinearWeightParams(outputChannel, inputChannel),
+    val tensor = QuantizedTensor[Float](fp32Tensor, LinearWeightParams(outputChannel, inputChannel),
       LinearWeight)
 
     tensor.set(tensor)
@@ -97,11 +97,11 @@ class QuantTensorSpec extends FlatSpec with Matchers {
 
     val fp32Tensor = Tensor(outputChannel, inputChannel).rand
 
-    val tensor1 = QuantTensor[Float](fp32Tensor, LinearWeightParams(outputChannel, inputChannel),
+    val tensor1 = QuantizedTensor[Float](fp32Tensor, LinearWeightParams(outputChannel, inputChannel),
       LinearWeight)
-    val tensor2 = QuantTensor[Float](fp32Tensor, LinearWeightParams(outputChannel, inputChannel),
+    val tensor2 = QuantizedTensor[Float](fp32Tensor, LinearWeightParams(outputChannel, inputChannel),
       LinearWeight)
-    val tensor3 = QuantTensor[Float](fp32Tensor, LinearWeightParams(outputChannel, inputChannel),
+    val tensor3 = QuantizedTensor[Float](fp32Tensor, LinearWeightParams(outputChannel, inputChannel),
       LinearWeight)
 
     tensor2.set(tensor1)

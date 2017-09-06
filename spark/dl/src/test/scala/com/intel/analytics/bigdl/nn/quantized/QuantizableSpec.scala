@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.bigquant
+package com.intel.analytics.bigdl.nn.quantized
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.bigquant.BigQuant
 import com.intel.analytics.bigdl.models.lenet.LeNet5
-import com.intel.analytics.bigdl.nn.bigquant.Utils.ANode
+import com.intel.analytics.bigdl.nn.quantized.Utils.ANode
 import com.intel.analytics.bigdl.nn.{Linear => NNLinear, SpatialConvolution => NNConv, SpatialDilatedConvolution => NNDilatedConv, _}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -28,7 +28,7 @@ import com.intel.analytics.bigdl.utils.T
 import org.apache.log4j.Logger
 import org.scalatest.{FlatSpec, Matchers}
 
-class QuantableSpec extends FlatSpec with Matchers {
+class QuantizableSpec extends FlatSpec with Matchers {
   val logger: Logger = Logger.getLogger(getClass)
 
   "Sequential LeNet5" should "work correctly" in {

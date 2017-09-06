@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.bigquant
+package com.intel.analytics.bigdl.nn.quantized
 
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.nn.bigquant.Utils._
+import com.intel.analytics.bigdl.nn.quantized.Utils._
 import com.intel.analytics.bigdl.nn.{Cell, Container, Graph}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.{Module, nn}
 import scala.collection.mutable.{ArrayBuffer, HashMap}
 import scala.reflect.ClassTag
 
-object Quantizer extends Quantable {
-  val registerMaps = new HashMap[String, Quantable]()
+object Quantizer extends Quantizable {
+  val registerMaps = new HashMap[String, Quantizable]()
 
   init()
 
@@ -65,7 +65,7 @@ object Quantizer extends Quantable {
     registerModules()
   }
 
-  private def registerModule(name: String, module: Quantable): Unit = {
+  private def registerModule(name: String, module: Quantizable): Unit = {
     require(!registerMaps.contains(name), s"Module: $name has been registered.")
     registerMaps(name) = module
   }
@@ -85,7 +85,7 @@ object Quantizer extends Quantable {
   }
 }
 
-object ContainerQuantizer extends Quantable {
+object ContainerQuantizer extends Quantizable {
   override def quantize[T: ClassTag](module: Module[T])(
     implicit ev: TensorNumeric[T]): Module[T] = {
     val container = module.asInstanceOf[Container[Activity, Activity, T]]
@@ -97,7 +97,7 @@ object ContainerQuantizer extends Quantable {
   }
 }
 
-object CellQuantizer extends Quantable {
+object CellQuantizer extends Quantizable {
   override def quantize[T: ClassTag](module: Module[T])(
     implicit ev: TensorNumeric[T]): Module[T] = {
     val cell = module.asInstanceOf[Cell[T]]
@@ -106,7 +106,7 @@ object CellQuantizer extends Quantable {
   }
 }
 
-object GraphQuantizer extends Quantable {
+object GraphQuantizer extends Quantizable {
   override def quantize[T: ClassTag](module: Module[T])(
     implicit ev: TensorNumeric[T]): Module[T] = {
     val graph = module.asInstanceOf[Graph[T]]
@@ -148,7 +148,7 @@ object GraphQuantizer extends Quantable {
   }
 }
 
-object ModuleQuantizer extends Quantable {
+object ModuleQuantizer extends Quantizable {
   override def quantize[T: ClassTag](module: Module[T])(
     implicit ev: TensorNumeric[T]): Module[T] = {
     module

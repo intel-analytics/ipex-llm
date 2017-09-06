@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.bigquant
+package com.intel.analytics.bigdl.nn.quantized
 
 import com.intel.analytics.bigdl.bigquant.BigQuant
 import com.intel.analytics.bigdl.nn.ErrorInfo
@@ -31,10 +31,10 @@ class Linear[T: ClassTag](
   val inputSize: Int,
   val outputSize: Int,
   val withBias: Boolean = true
-)(implicit ev: TensorNumeric[T]) extends QuantModule[T](outputSize) {
+)(implicit ev: TensorNumeric[T]) extends QuantizedModule[T](outputSize) {
 
-  val data: QuantTensor[T] = QuantTensor[T]()
-  @transient var weight: QuantTensor[T] = _
+  val data: QuantizedTensor[T] = QuantizedTensor[T]()
+  @transient var weight: QuantizedTensor[T] = _
   val bias: Tensor[T] = Tensor[T](outputSize)
 
   private def initWeightAndBias(weightFP32: Tensor[T], biasFP32: Tensor[T]): this.type = {
@@ -51,7 +51,7 @@ class Linear[T: ClassTag](
     val weightFP32Tensor = weightFP32.asInstanceOf[Tensor[Float]]
 
     val params = LinearWeightParams(outputSize, inputSize)
-    weight = QuantTensor[T](weightFP32Tmp, params, LinearWeight)
+    weight = QuantizedTensor[T](weightFP32Tmp, params, LinearWeight)
 
     this
   }
@@ -73,7 +73,7 @@ class Linear[T: ClassTag](
   private def readObject(in: ObjectInputStream): Unit = {
     in.defaultReadObject()
 
-    weight = in.readObject().asInstanceOf[QuantTensor[T]]
+    weight = in.readObject().asInstanceOf[QuantizedTensor[T]]
 
     if (weight.getStorage != null && weight.getNativeStorage == 0L) {
       init()
@@ -202,7 +202,7 @@ object Linear extends QuantSerializer {
     val attrMap = model.getAttrMap
 
     linear.weight = DataConverter.getAttributeValue(attrMap.get("weight"))
-            .asInstanceOf[QuantTensor[T]]
+            .asInstanceOf[QuantizedTensor[T]]
     linear.init()
   }
 }

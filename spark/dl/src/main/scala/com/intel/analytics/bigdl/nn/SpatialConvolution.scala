@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{DataFormat, Initializable, TensorModule}
-import com.intel.analytics.bigdl.nn.bigquant.Quantable
+import com.intel.analytics.bigdl.nn.quantized.Quantizable
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
@@ -937,7 +937,7 @@ class SpatialConvolution[T: ClassTag](
   }
 }
 
-object SpatialConvolution extends Quantable {
+object SpatialConvolution extends Quantizable {
   def apply[@specialized(Float, Double) T: ClassTag](
       nInputPlane: Int,
       nOutputPlane: Int,
@@ -966,7 +966,7 @@ object SpatialConvolution extends Quantable {
   override def quantize[T: ClassTag](module: Module[T])(
     implicit ev: TensorNumeric[T]): Module[T] = {
     val conv = module.asInstanceOf[SpatialConvolution[T]]
-    bigquant.SpatialConvolution[T](
+    quantized.SpatialConvolution[T](
       conv.nInputPlane, conv.nOutputPlane, conv.kernelW, conv.kernelH, conv.strideW,
       conv.strideH, conv.padW, conv.padH, conv.nGroup, initWeight = conv.weight,
       initBias = conv.bias)

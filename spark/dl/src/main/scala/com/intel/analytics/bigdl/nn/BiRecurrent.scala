@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
-import com.intel.analytics.bigdl.nn.bigquant.{Quantable, Quantizer}
+import com.intel.analytics.bigdl.nn.quantized.{Quantizable, Quantizer}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer.{ContainerSerializable, DataConverter, ModuleData, ModuleSerializer}
@@ -150,7 +150,7 @@ class BiRecurrent[T : ClassTag] (
   }
 }
 
-object BiRecurrent extends ContainerSerializable with Quantable {
+object BiRecurrent extends ContainerSerializable with Quantizable {
   def apply[@specialized(Float, Double) T: ClassTag](
     merge: AbstractModule[Table, Tensor[T], T] = null,
     batchNormParams: BatchNormParams[T] = null,

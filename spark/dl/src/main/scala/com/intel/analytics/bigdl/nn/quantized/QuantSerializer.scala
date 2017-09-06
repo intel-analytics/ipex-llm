@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.bigquant
+package com.intel.analytics.bigdl.nn.quantized
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -73,7 +73,7 @@ trait QuantSerializer extends ModuleSerializable {
 
   def loadOthers[T: ClassTag](model: BigDLModule,
     module: ModuleData[T])(implicit ev: TensorNumeric[T]): Unit = {
-    val quantModule = module.module.asInstanceOf[QuantModule[T]]
+    val quantModule = module.module.asInstanceOf[QuantizedModule[T]]
     quantModule.init()
   }
 
