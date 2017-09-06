@@ -85,8 +85,9 @@ object Train {
         .setOptimMethod(optimMethod)
         .setEndWhen(Trigger.maxEpoch(param.maxEpoch))
         .optimize()
-
+      model.save(param.folder + "/model.bigdl", true)
       sc.stop()
     })
+
   }
 }

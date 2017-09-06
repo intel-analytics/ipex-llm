@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.example.loadmodel.AlexNet_OWT
 import com.intel.analytics.bigdl.nn._
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.nn.Module
+import org.apache.hadoop.fs.Path
 
 @com.intel.analytics.bigdl.tags.Serial
 class FileSpec extends FlatSpec with Matchers {
@@ -72,8 +73,7 @@ class FileSpec extends FlatSpec with Matchers {
     val tmpFile = java.io.File.createTempFile("module", ".bigdl")
     val FileName = tmpFile.getName
     val absolutePath = tmpFile.getAbsolutePath
-    print(absolutePath.split("/")(0))
-
+    val path = new Path(absolutePath)
     val module = new Sequential[Double]
     module.add(new SpatialConvolution(1, 6, 5, 5))
     module.add(new Tanh())
@@ -81,14 +81,16 @@ class FileSpec extends FlatSpec with Matchers {
     module.save(absolutePath, true)
     try {
       val url = new java.io.File(absolutePath.toString).toURI.toURL
-      val res = File.downloadFromUrl(url.toString, absolutePath.split("module")(0) + "data/")
+      val res = File.downloadFromUrl(url.toString, path.toString.replace(path.getName, "") +
+        "data/")
       System.out.println(res)
     } catch {
       case e: Exception =>
         e.printStackTrace()
     }
     val model = Module.load[Float](absolutePath)
-    val Testmodel = Module.load[Float](absolutePath.split("module")(0) + "data/" + FileName)
+    val Testmodel = Module.load[Float](path.toString.replace(path.getName, "") + "data/" +
+      path.getName.toString)
     Testmodel should be (model)
   }
 

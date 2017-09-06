@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.models.lenet
 
+import java.io.PrintWriter
 import java.nio.file.Paths
 
 import com.intel.analytics.bigdl.dataset.DataSet
@@ -25,16 +26,22 @@ import com.intel.analytics.bigdl.optim.Top1Accuracy
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
-
+import com.intel.analytics.bigdl.models.utils.DownloadURL
+import com.intel.analytics.bigdl.utils.File
+import scala.io.Source
 object Test {
+
+
+
   Logger.getLogger("org").setLevel(Level.ERROR)
   Logger.getLogger("akka").setLevel(Level.ERROR)
   Logger.getLogger("breeze").setLevel(Level.ERROR)
   Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
-
   import Utils._
 
   def main(args: Array[String]): Unit = {
+
+
     testParser.parse(args, new TestParams()).foreach { param =>
       val conf = Engine.createSparkConf().setAppName("Test Lenet on MNIST")
         .set("spark.akka.frameSize", 64.toString)
@@ -50,8 +57,12 @@ object Test {
       val transformer =
         BytesToGreyImg(28, 28) -> GreyImgNormalizer(testMean, testStd) -> GreyImgToSample()
       val evaluationSet = transformer(rddData)
-
-      val model = Module.load[Float](param.model)
+      val url = new java.io.File(param.folder + "/model.bigdl").toURI.toURL()
+      val fp = new java.io.File(url.toString, param.folder + "/bigdl")
+      if(!fp.exists()) fp.mkdirs()
+      val state = File.downloadFromUrl(url.toString, param.folder + "/bigdl/")
+     // val model = Module.load[Float](url.toString)
+      val model = Module.load[Float](param.folder + "/model.bigdl")
       val result = model.evaluate(evaluationSet,
         Array(new Top1Accuracy[Float]), Some(param.batchSize))
 
