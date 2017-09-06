@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.nn.quantized
 
+import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.tensor.{QuantizedTensor, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData}
@@ -35,7 +36,7 @@ class SpatialDilatedConvolution[T: ClassTag](
   padH: Int = 0, // The additional zeros added per height to the input planes.
   val dilationW: Int = 1,
   val dilationH: Int = 1,
-  nGroup: Int = 1 // Kernel group number
+  format: DataFormat = DataFormat.NCHW
 )(implicit ev: TensorNumeric[T]) extends SpatialConvolution[T](
   nInputPlane,
   nOutputPlane,
@@ -45,7 +46,7 @@ class SpatialDilatedConvolution[T: ClassTag](
   strideH,
   padW,
   padH,
-  nGroup
+  format = format
 ) {
   override val DILATION_WIDTH: Int = dilationW
   override val DILATION_HEIGHT: Int = dilationH
@@ -67,10 +68,11 @@ object SpatialDilatedConvolution extends QuantSerializer {
     padW: Int = 0,
     padH: Int = 0,
     dilationW: Int = 1,
-    dilationH: Int = 1
+    dilationH: Int = 1,
+    format: DataFormat = DataFormat.NCHW
   )(implicit ev: TensorNumeric[T]) : SpatialDilatedConvolution[T] = {
     new SpatialDilatedConvolution[T](nInputPlane, nOutputPlane, kW, kH, dW, dH,
-      padW, padH, dilationW, dilationH)
+      padW, padH, dilationW, dilationH, format = format)
   }
 
   override def serializeWeight[T: ClassTag](module: ModuleData[T],

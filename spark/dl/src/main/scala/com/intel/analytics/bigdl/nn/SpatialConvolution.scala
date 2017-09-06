@@ -969,6 +969,6 @@ object SpatialConvolution extends Quantizable {
     quantized.SpatialConvolution[T](
       conv.nInputPlane, conv.nOutputPlane, conv.kernelW, conv.kernelH, conv.strideW,
       conv.strideH, conv.padW, conv.padH, conv.nGroup, initWeight = conv.weight,
-      initBias = conv.bias)
+      initBias = conv.bias, conv.format)
   }
 }

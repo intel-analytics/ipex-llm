@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.nn.quantized
 
 import com.intel.analytics.bigdl.bigquant.BigQuant
 import com.intel.analytics.bigdl.nn.ErrorInfo
-import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
+import com.intel.analytics.bigdl.nn.abstractnn.{DataFormat, Initializable, TensorModule}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData}
@@ -38,7 +38,8 @@ class SpatialConvolution[T: ClassTag](
   val strideH: Int = 1, // The step of the convolution in the height dimension
   val padW: Int = 0, // The additional zeros added per width to the input planes.
   val padH: Int = 0, // The additional zeros added per height to the input planes.
-  val nGroup: Int = 1 // Kernel group number
+  val nGroup: Int = 1, // Kernel group number
+  val format: DataFormat = DataFormat.NCHW
 )(implicit ev: TensorNumeric[T]) extends QuantizedModule[T](nOutputPlane) with Initializable {
 
   require(nInputPlane % nGroup == 0, "Number of input channels should be multiples of group.")
@@ -46,14 +47,19 @@ class SpatialConvolution[T: ClassTag](
 
   @transient var weight: Array[Tensor[T]] = null
   var data: QuantizedTensor[T] = QuantizedTensor[T]()
-
   val bias: Tensor[T] = Tensor[T](nOutputPlane)
+
+  val quantFormat = if (format == DataFormat.NCHW) {
+    BigQuant.NCHW
+  } else {
+    BigQuant.NHWC
+  }
 
   val DILATION_HEIGHT = 1
   val DILATION_WIDTH = 1
 
-  private def outputSize(input: Int, pad: Int, kernel: Int, stride: Int): Int = {
-    (input + 2 * pad - kernel) / stride + 1
+  private def outputSize(input: Int, pad: Int, kernel: Int, stride: Int, dilation: Int = 1): Int = {
+    (input + 2 * pad - (dilation * (kernel - 1) + 1)) / stride + 1
   }
 
   private def initWeightAndBias(weightFP32: Tensor[T], biasFP32: Tensor[T]): this.type = {
@@ -104,22 +110,47 @@ class SpatialConvolution[T: ClassTag](
     this
   }
 
+  private def getOutputShape(oh: Int, ow: Int, batchSize: Int = -1): Array[Int] = {
+    format match {
+      case DataFormat.NCHW =>
+        if (batchSize == -1) {
+          Array(nOutputPlane, oh, ow)
+        } else {
+          Array(batchSize, nOutputPlane, oh, ow)
+        }
+      case DataFormat.NHWC =>
+        if (batchSize == -1) {
+          Array(oh, ow, nOutputPlane)
+        } else {
+          Array(batchSize, oh, ow, nOutputPlane)
+        }
+
+    }
+  }
+
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim() == 3 || input.dim() == 4,
       "bigquant.SpatialConvolution: " + ErrorInfo.constrainInputAs3DOrBatch)
     require(input.isContiguous())
 
-    // compute attributes of input and output
-    val (batchSize, inputHeight, inputWidth) = if (input.dim() == 3) {
-      (1, input.size(2), input.size(3))
-    } else {
-      (input.size(1), input.size(3), input.size(4))
-    }
+    val (dimHeight, dimWidth, channelDim) = format.getHWCDims(input.dim())
+    require(input.size(channelDim) == nInputPlane, s"input channel size " +
+      s"${input.size(channelDim)} is not the same as nInputPlane $nInputPlane")
+
+    val inputWidth = input.size(dimWidth)
+    val inputHeight = input.size(dimHeight)
 
     val outputHeight = outputSize(inputHeight, padH, kernelH, strideH)
     val outputWidth = outputSize(inputWidth, padW, kernelW, strideW)
 
-    output.resize(Array(batchSize, nOutputPlane, outputHeight, outputWidth))
+    val batchSize = if (input.dim() == 3) {
+      output.resize(getOutputShape(outputHeight, outputWidth))
+      1 // 3D input, batchSize set to 1
+    } else {
+      val batch = input.size(1)
+      output.resize(getOutputShape(outputHeight, outputWidth, batch))
+      batch
+    }
 
     data.init(ConvDataParams(nInputPlane / nGroup, kernelH, kernelW,
         strideH, strideW, padH, padW, DILATION_HEIGHT, DILATION_WIDTH, 1,
@@ -172,10 +203,10 @@ class SpatialConvolution[T: ClassTag](
         data.getNativeStorage, inputArray, inputOffset,
         nInputPlane / nGroup, kernelH, kernelW, strideH, strideW, padH, padW,
         DILATION_HEIGHT, DILATION_WIDTH, 1, inputHeight, inputWidth, QuantParams.THRESHOLD,
-        BigQuant.NCHW)
+        quantFormat)
 
       BigQuant.InternalMixPrecisionConvolutionGEMM(
-        BigQuant.NCHW, weight.getNativeStorage, data.getNativeStorage,
+        quantFormat, weight.getNativeStorage, data.getNativeStorage,
         outputArray, outputOffset, weightSumArray, weightSumOffset,
         biasArray, biasOffset, 1, nOutputPlane / nGroup, outputHeight, outputWidth,
         QuantParams.FAULT_TOLERANCE)
@@ -266,10 +297,11 @@ object SpatialConvolution extends QuantSerializer {
     padH: Int = 0,
     nGroup: Int = 1,
     initWeight: Tensor[T] = null,
-    initBias: Tensor[T] = null
+    initBias: Tensor[T] = null,
+    format: DataFormat = DataFormat.NCHW
   )(implicit ev: TensorNumeric[T]): SpatialConvolution[T] = {
     val conv = new SpatialConvolution[T](nInputPlane, nOutputPlane, kernelW, kernelH,
-      strideW, strideH, padW, padH, nGroup)
+      strideW, strideH, padW, padH, nGroup, format)
     conv.initWeightAndBias(initWeight, initBias)
   }
 

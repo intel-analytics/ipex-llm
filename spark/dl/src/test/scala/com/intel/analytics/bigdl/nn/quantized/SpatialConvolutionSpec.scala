@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.nn.quantized
 
+import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.nn.{SpatialConvolution => NNSpatialConvolution}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -93,6 +94,67 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers with ParallelTestExe
     quantizedConv.release()
   }
 
+  "A bigquant.SpatialConvolution with NHWC" should "work correctly" in {
+    val test = testCases(1)
+    val weight = Tensor(test.group, test.outputChannel / test.group,
+      test.inputChannel / test.group, test.kernelHeight, test.kernelWidth).fill(1.0f)
+    val bias = Tensor(test.outputChannel).fill(0f)
+
+    val nnConv = NNSpatialConvolution(test.inputChannel, test.outputChannel,
+      test.kernelHeight, test.kernelWidth, test.strideHeight, test.strideWidth,
+      test.padHeight, test.padWidth, test.group, initWeight = weight, initBias = bias,
+      format = DataFormat.NHWC)
+
+    println(nnConv)
+
+    val quantizedConv = SpatialConvolution(test.inputChannel, test.outputChannel,
+      test.kernelHeight, test.kernelWidth, test.strideHeight, test.strideWidth,
+      test.padHeight, test.padWidth, test.group, nnConv.weight, nnConv.bias,
+      format = DataFormat.NHWC)
+
+    for (i <- 1 until 5) {
+      val input = Tensor().resize(Array(test.batchSize,
+        test.inputHeight * i * 10, test.inputWidth * i * 10, test.inputChannel)).fill(1.0f)
+
+      nnConv.updateOutput(input)
+      quantizedConv.updateOutput(input)
+
+
+      nnConv.output shouldEqual quantizedConv.output
+    }
+
+    quantizedConv.release()
+  }
+
+  "A bigquant.SpatialConvolution with 3D input" should "work correctly" in {
+    val test = testCases(1)
+    val weight = Tensor(test.group, test.outputChannel / test.group,
+      test.inputChannel / test.group, test.kernelHeight, test.kernelWidth).fill(1.0f)
+    val bias = Tensor(test.outputChannel).fill(0f)
+
+    val nnConv = NNSpatialConvolution(test.inputChannel, test.outputChannel,
+      test.kernelHeight, test.kernelWidth, test.strideHeight, test.strideWidth,
+      test.padHeight, test.padWidth, test.group, initWeight = weight, initBias = bias,
+      format = DataFormat.NCHW)
+
+    println(nnConv)
+
+    val quantizedConv = SpatialConvolution(test.inputChannel, test.outputChannel,
+      test.kernelHeight, test.kernelWidth, test.strideHeight, test.strideWidth,
+      test.padHeight, test.padWidth, test.group, nnConv.weight, nnConv.bias,
+      format = DataFormat.NCHW)
+
+    val input = Tensor().resize(Array(test.batchSize,
+      test.inputHeight, test.inputWidth)).fill(1.0f)
+
+    nnConv.updateOutput(input)
+    quantizedConv.updateOutput(input)
+
+
+    nnConv.output shouldEqual quantizedConv.output
+
+    quantizedConv.release()
+  }
   case class TestCase(batchSize: Int, inputChannel: Int, inputHeight: Int, inputWidth: Int,
     group: Int, outputChannel: Int, kernelHeight: Int, kernelWidth: Int,
     strideHeight: Int, strideWidth: Int, padHeight: Int, padWidth: Int)
