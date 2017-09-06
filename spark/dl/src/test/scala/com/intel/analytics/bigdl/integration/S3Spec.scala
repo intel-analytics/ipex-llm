@@ -126,7 +126,7 @@ class S3Spec extends FlatSpec with Matchers with BeforeAndAfter{
 
   }
 
-  "Load tensorflow lenet to/from HDFS" should "works properly" in {
+  "Save/load tensorflow lenet to/from s3" should "works properly" in {
     System.setProperty("bigdl.enableNHWC", "true")
     val conv1 = SpatialConvolution[Float](1, 6, 5, 5).setName("conv1").inputs()
     val tanh1 = Tanh[Float]().setName("tanh1").inputs(conv1)
@@ -140,14 +140,16 @@ class S3Spec extends FlatSpec with Matchers with BeforeAndAfter{
     val outputData = funcModel.forward(inputData).toTensor[Float]
 
     val s3Dir = s3aPath + s"/${ com.google.common.io.Files.createTempDir().getPath() }"
-    TensorflowSaver.saveGraph[Float](funcModel, Seq(("input", Seq(4, 28, 28, 1))), s3Dir)
+    TensorflowSaver.saveGraph[Float](funcModel, Seq(("input", Seq(4, 28, 28, 1))),
+      s3Dir + "/test.tfmodel")
 
 
-    val loadedModel = TensorflowLoader.load[Float](s3Dir,
+    val loadedModel = TensorflowLoader.load[Float](s3Dir + "/test.tfmodel",
       Seq("input"),
       Seq("output"),
       ByteOrder.LITTLE_ENDIAN)
-    val loadedOutput = loadedModel.forward(inputData).toTensor[Float]
+    val loadedOutput = loadedModel.forward(inputData.
+      transpose(2, 3).transpose(3, 4).contiguous()).toTensor[Float]
     loadedOutput.almostEqual(outputData, 1e-7)
     System.setProperty("bigdl.enableNHWC", "false")
   }

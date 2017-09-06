@@ -148,7 +148,7 @@ class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter{
 
   }
 
-  "Load tensorflow lenet to/from HDFS" should "works properly" in {
+  "Save/load tensorflow lenet to/from HDFS" should "works properly" in {
     System.setProperty("bigdl.enableNHWC", "true")
     val conv1 = SpatialConvolution[Float](1, 6, 5, 5).setName("conv1").inputs()
     val tanh1 = Tanh[Float]().setName("tanh1").inputs(conv1)
@@ -162,14 +162,15 @@ class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter{
     val outputData = funcModel.forward(inputData).toTensor[Float]
 
     val hdfsDir = hdfs + s"/${ com.google.common.io.Files.createTempDir().getPath() }"
-    TensorflowSaver.saveGraph[Float](funcModel, Seq(("input", Seq(4, 28, 28, 1))), hdfsDir)
+    TensorflowSaver.saveGraph[Float](funcModel, Seq(("input", Seq(4, 28, 28, 1))),
+      hdfsDir + "/test.tfmodel")
 
-
-    val loadedModel = TensorflowLoader.load[Float](hdfsDir,
+    val loadedModel = TensorflowLoader.load[Float](hdfsDir + "/test.tfmodel",
       Seq("input"),
       Seq("output"),
       ByteOrder.LITTLE_ENDIAN)
-    val loadedOutput = loadedModel.forward(inputData).toTensor[Float]
+    val loadedOutput = loadedModel.forward(inputData.
+      transpose(2, 3).transpose(3, 4).contiguous()).toTensor[Float]
     loadedOutput.almostEqual(outputData, 1e-7)
     System.setProperty("bigdl.enableNHWC", "false")
   }
