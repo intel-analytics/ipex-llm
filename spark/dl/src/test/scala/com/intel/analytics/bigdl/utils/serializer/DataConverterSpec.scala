@@ -421,12 +421,13 @@ class DataConverterSpec extends FlatSpec with Matchers{
   }
 
   "QuantTensor" should "work properly" in {
-    val tensor = QuantTensor[Float](5)
-
     val bytes = new Array[Byte](5)
+    val min = Array[Float]('H')
+    val max = Array[Float]('O')
+    val sum = Array[Float]("HELLO".sum)
     "HELLO".zipWithIndex.foreach(x => bytes(x._2) = x._1.toByte)
     bytes.foreach(x => println(x.toChar))
-    tensor.setStorage(bytes)
+    val tensor = QuantTensor[Float](bytes, max, min, sum, Array(5))
 
     val attriBulder = AttrValue.newBuilder
     DataConverter.setAttributeValue(attriBulder, tensor, ModuleSerializer.tensorType)

@@ -37,9 +37,7 @@ class Linear[T: ClassTag](
   @transient var weight: QuantTensor[T] = _
   val bias: Tensor[T] = Tensor[T](outputSize)
 
-  @transient var _init = false
-
-  def initWeightAndBias(weightFP32: Tensor[T], biasFP32: Tensor[T]): this.type = {
+  private def initWeightAndBias(weightFP32: Tensor[T], biasFP32: Tensor[T]): this.type = {
     if (biasFP32 != null) {
       bias.copy(biasFP32)
     } else {
@@ -55,15 +53,11 @@ class Linear[T: ClassTag](
     val params = LinearWeightParams(outputSize, inputSize)
     weight = QuantTensor[T](weightFP32Tmp, params, LinearWeight)
 
-    init()
-
     this
   }
 
-  def init(): this.type = {
+  override def init(): this.type = {
     weight.init(LinearWeightParams(outputSize, inputSize), LinearWeight)
-
-    _init = true
 
     this
   }
@@ -86,17 +80,9 @@ class Linear[T: ClassTag](
     }
   }
 
-  def checkAndInit(): Unit = {
-    if (!_init && weight.getNativeStorage == 0L) {
-      init()
-    }
-  }
-
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim() == 1 || input.dim() == 2,
       "bigquant.Linear: " + ErrorInfo.constrainInputAsVectorOrBatch)
-
-    checkAndInit()
 
     val batchSize = if (input.dim() == 1) {
       output.resize(Array(outputSize)) // TODO
@@ -194,9 +180,12 @@ object Linear extends QuantSerializer {
   def apply[@specialized(Float, Double) T: ClassTag](
     inputSize: Int,
     outputSize: Int,
-    withBias: Boolean = true
+    withBias: Boolean = true,
+    initWeight: Tensor[T] = null,
+    initBias: Tensor[T] = null
   )(implicit ev: TensorNumeric[T]) : Linear[T] = {
-    new Linear[T](inputSize, outputSize, withBias)
+    val linear = new Linear[T](inputSize, outputSize, withBias)
+    linear.initWeightAndBias(initWeight, initBias)
   }
 
   override def serializeWeight[T: ClassTag](module: ModuleData[T],
@@ -214,5 +203,6 @@ object Linear extends QuantSerializer {
 
     linear.weight = DataConverter.getAttributeValue(attrMap.get("weight"))
             .asInstanceOf[QuantTensor[T]]
+    linear.init()
   }
 }

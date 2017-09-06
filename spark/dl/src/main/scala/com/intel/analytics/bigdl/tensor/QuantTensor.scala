@@ -63,15 +63,37 @@ private[bigdl] class QuantTensor[@specialized(Float) T: ClassTag](
   }
 
   override def equals(obj: Any): Boolean = {
-    if (!super.equals(obj)) {
+    if (obj == null) {
       return false
     }
+
+    if (!obj.isInstanceOf[QuantTensor[T]]) {
+      return false
+    }
+
     val other = obj.asInstanceOf[QuantTensor[T]]
     if (this.eq(other)) {
       return true
     }
 
-    desc == other.desc
+    if (this.nDimension != other.nDimension) {
+      return false
+    }
+
+    var d = 1
+    while (d <= this.nDimension) {
+      if (this.size(d) != other.size(d)) {
+        return false
+      }
+      d += 1
+    }
+
+    var result = true
+    for (i <- interStorage.indices) {
+      result = interStorage(i) == other.getStorage(i)
+    }
+
+    result
   }
 
   override def hashCode(): Int = {
@@ -84,8 +106,6 @@ private[bigdl] class QuantTensor[@specialized(Float) T: ClassTag](
       hash = hash * seed + this.size(d)
       d += 1
     }
-
-    hash = hash * seed + desc.hashCode()
 
     if (interStorage != null) {
       var i = 0
@@ -141,9 +161,11 @@ private[bigdl] class QuantTensor[@specialized(Float) T: ClassTag](
     bytes
   }
 
-  // rename init
+  // TODO rename init
   def init(params: DescParams, descType: DescType): Unit = {
-    if (desc != 0L) { release() }
+    if (this.params != null || params == this.params) {
+      release()
+    }
 
     this.params = params
     this.descType = descType
@@ -237,7 +259,6 @@ private[bigdl] class QuantTensor[@specialized(Float) T: ClassTag](
 
   override def set(): Tensor[T] = {
     release()
-
     interStorage = null
     this
   }
@@ -250,6 +271,12 @@ private[bigdl] class QuantTensor[@specialized(Float) T: ClassTag](
 
           desc = quantizedTensor.getNativeStorage
           interStorage = quantizedTensor.getStorage
+          params = quantizedTensor.params
+          descType = quantizedTensor.descType
+
+          if (desc == 0L) {
+            init(params, descType)
+          }
 
           setFromOther = true
         }
@@ -260,34 +287,27 @@ private[bigdl] class QuantTensor[@specialized(Float) T: ClassTag](
     this
   }
 
+  /**
+   * copy from another QuantTensor, it will use the old storage but without the desc.
+   *
+   * @param other source tensor
+   * @return current tensor
+   */
   override def copy(other: Tensor[T]): Tensor[T] = {
     if (other.isInstanceOf[QuantTensor[T]]) {
       val o = other.asInstanceOf[QuantTensor[T]]
-      this.desc = o.getNativeStorage
       this.interStorage = o.getStorage
+      this.params = o.params
+      this.descType = o.descType
     }
     this
   }
 }
 
 object QuantTensor {
-  /**
-   * Returns an empty tensor.
-   *
-   * @param ev
-   * @tparam T
-   * @return
-   */
   def apply[@specialized(Float, Double) T: ClassTag]()(
     implicit ev: TensorNumeric[T]): QuantTensor[T] = new QuantTensor[T]()
-  /**
-   * Create a tensor up to 5 dimensions. The tensor size will be `d1 x d2 x d3 x d4 x d5`.
-   *
-   * @param d1,(d2, d3, d4, d5)
-   * @param ev
-   * @tparam T
-   * @return
-   */
+
   def apply[@specialized(Float, Double) T: ClassTag](d1: Int)(
     implicit ev: TensorNumeric[T]): QuantTensor[T] = new QuantTensor[T](d1)
 
@@ -314,6 +334,17 @@ object QuantTensor {
       tensor.maxOfRow, tensor.minOfRow)
     tensor.params = descParams
     tensor.descType = descType
+    tensor
+  }
+
+  def apply[@specialized(Float, Double) T: ClassTag](src: Array[Byte], min: Array[T], max: Array[T],
+    sum: Array[T], size: Array[Int])(
+    implicit ev: TensorNumeric[T]): QuantTensor[T] = {
+    val tensor = new QuantTensor[T](size)
+    tensor.interStorage = src
+    tensor.maxOfRow = max
+    tensor.minOfRow = min
+    tensor.sumOfRow = sum
     tensor
   }
 }

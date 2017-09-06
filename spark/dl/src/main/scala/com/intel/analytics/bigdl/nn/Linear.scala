@@ -257,8 +257,8 @@ object Linear extends bigquant.Quantable {
   override def quantize[T: ClassTag](module: Module[T])(
     implicit ev: TensorNumeric[T]): Module[T] = {
     val linear = module.asInstanceOf[Linear[T]]
-    val quantizedLinear = new bigquant.Linear[T](linear.weight.size(2), linear.weight.size(1))
+    val quantizedLinear = bigquant.Linear[T](linear.weight.size(2), linear.weight.size(1),
+      initWeight = linear.weight, initBias = linear.bias)
     quantizedLinear.setName(linear.getName())
-    quantizedLinear.initWeightAndBias(linear.weight, linear.bias)
   }
 }

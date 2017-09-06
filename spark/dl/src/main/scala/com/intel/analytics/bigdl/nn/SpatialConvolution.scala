@@ -966,10 +966,9 @@ object SpatialConvolution extends Quantable {
   override def quantize[T: ClassTag](module: Module[T])(
     implicit ev: TensorNumeric[T]): Module[T] = {
     val conv = module.asInstanceOf[SpatialConvolution[T]]
-    val quantizedConv = new bigquant.SpatialConvolution[T](
+    bigquant.SpatialConvolution[T](
       conv.nInputPlane, conv.nOutputPlane, conv.kernelW, conv.kernelH, conv.strideW,
-      conv.strideH, conv.padW, conv.padH, conv.nGroup)
-
-    quantizedConv.initWeightAndBias(conv.weight, conv.bias)
+      conv.strideH, conv.padW, conv.padH, conv.nGroup, initWeight = conv.weight,
+      initBias = conv.bias)
   }
 }

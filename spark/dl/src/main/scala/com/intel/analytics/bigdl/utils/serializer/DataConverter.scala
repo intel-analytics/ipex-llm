@@ -289,26 +289,29 @@ object DataConverter extends DataConverter{
       }
 
       def quant(): Tensor[T] = {
-        val tensor = QuantTensor[T](sizeArray)
         val bytes = serializedTensor.getBytesData.toByteArray
-        val length = sizeArray(0)
-        tensor.maxOfRow = new Array[T](length)
-        tensor.minOfRow = new Array[T](length)
-        tensor.sumOfRow = new Array[T](length)
+        val length = if (sizeArray.length == 1) {
+          1 // if the size is 1, means it's a vector
+        } else {
+          sizeArray(0)
+        }
+        val max = new Array[T](length)
+        val min = new Array[T](length)
+        val sum = new Array[T](length)
 
         dataType match {
           case DataType.FLOAT =>
             val data = serializedTensor.getFloatDataList.asScala
             var i = 0
             while (i < length) {
-              tensor.maxOfRow(i) = ev.fromType[Float](data(i))
-              tensor.minOfRow(i) = ev.fromType[Float](data(i + length))
-              tensor.sumOfRow(i) = ev.fromType[Float](data(i + 2 * length))
+              max(i) = ev.fromType[Float](data(i))
+              min(i) = ev.fromType[Float](data(i + length))
+              sum(i) = ev.fromType[Float](data(i + 2 * length))
               i += 1
             }
         }
 
-        tensor.setStorage(bytes)
+        QuantTensor[T](bytes, max, min, sum, sizeArray)
       }
 
       tensorType match {

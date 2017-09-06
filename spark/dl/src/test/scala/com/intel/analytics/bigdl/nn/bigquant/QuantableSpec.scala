@@ -110,8 +110,8 @@ class QuantableSpec extends FlatSpec with Matchers {
     val bias = Tensor(test.outputSize).fill(0f)
     val input = Tensor(test.batchSize, test.inputSize).fill(1.0f)
 
-    val linear = Linear[Float](test.inputSize, test.outputSize)
-    linear.initWeightAndBias(weight, bias)
+    val linear = Linear[Float](test.inputSize, test.outputSize, initWeight = weight,
+      initBias = bias)
 
     val linear2 = Module.quantize(linear)
 
@@ -135,8 +135,7 @@ class QuantableSpec extends FlatSpec with Matchers {
 
     val conv = SpatialConvolution(test.inputChannel, test.outputChannel,
       test.kernelHeight, test.kernelWidth, test.strideHeight, test.strideWidth,
-      test.padHeight, test.padWidth, test.group)
-    conv.initWeightAndBias(weight, bias)
+      test.padHeight, test.padWidth, test.group, weight, bias)
 
     val conv2 = Module.quantize(conv)
 

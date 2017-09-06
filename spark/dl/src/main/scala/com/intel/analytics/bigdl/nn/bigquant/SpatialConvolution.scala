@@ -52,13 +52,11 @@ class SpatialConvolution[T: ClassTag](
   val DILATION_HEIGHT = 1
   val DILATION_WIDTH = 1
 
-  @transient var _init = false
-
   private def outputSize(input: Int, pad: Int, kernel: Int, stride: Int): Int = {
     (input + 2 * pad - kernel) / stride + 1
   }
 
-  def initWeightAndBias(weightFP32: Tensor[T], biasFP32: Tensor[T]): this.type = {
+  private def initWeightAndBias(weightFP32: Tensor[T], biasFP32: Tensor[T]): this.type = {
     if (biasFP32 != null) {
       bias.copy(biasFP32)
     } else {
@@ -75,8 +73,6 @@ class SpatialConvolution[T: ClassTag](
         case _ => throw new UnsupportedOperationException(s"Only support Float for quantized model")
       }
     }
-
-    init()
 
     this
   }
@@ -99,29 +95,19 @@ class SpatialConvolution[T: ClassTag](
     }
   }
 
-  private def init(): this.type = {
+  override def init(): this.type = {
     val params = ConvWeightParams(nOutputPlane / nGroup, nInputPlane / nGroup, kernelH, kernelW)
     for (i <- 1 to nGroup) {
       weight(i - 1).asInstanceOf[QuantTensor[T]].init(params, ConvWeight)
     }
 
-    _init = true
-
     this
-  }
-
-  private def checkAndInit(): Unit = {
-    if (!_init) {
-      init()
-    }
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim() == 3 || input.dim() == 4,
       "bigquant.SpatialConvolution: " + ErrorInfo.constrainInputAs3DOrBatch)
     require(input.isContiguous())
-
-    checkAndInit()
 
     // compute attributes of input and output
     val (batchSize, inputHeight, inputWidth) = if (input.dim() == 3) {
@@ -278,10 +264,13 @@ object SpatialConvolution extends QuantSerializer {
     strideH: Int = 1,
     padW: Int = 0,
     padH: Int = 0,
-    nGroup: Int = 1
+    nGroup: Int = 1,
+    initWeight: Tensor[T] = null,
+    initBias: Tensor[T] = null
   )(implicit ev: TensorNumeric[T]): SpatialConvolution[T] = {
-    new SpatialConvolution[T](nInputPlane, nOutputPlane, kernelW, kernelH,
+    val conv = new SpatialConvolution[T](nInputPlane, nOutputPlane, kernelW, kernelH,
       strideW, strideH, padW, padH, nGroup)
+    conv.initWeightAndBias(initWeight, initBias)
   }
 
   override def serializeWeight[T: ClassTag](module: ModuleData[T],

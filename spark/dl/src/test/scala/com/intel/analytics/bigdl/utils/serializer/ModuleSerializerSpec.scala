@@ -1858,9 +1858,6 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val padW = 0
     val padH = 0
 
-    val conv = bigquant.SpatialConvolution[Float](nInputPlane, nOutputPlane,
-      kW, kH, dW, dH, padW, padH)
-
     val kernelData = Array(
       2.0f, 3f,
       4f, 5f
@@ -1871,7 +1868,9 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val input = Tensor(1, 1, 3, 3).apply1(_ => Random.nextFloat())
     val weight = Tensor(Storage(kernelData), 1, Array(nOutputPlane, nInputPlane, kH, kW))
     val bias = Tensor(Storage(biasData), 1, Array(nOutputPlane))
-    conv.initWeightAndBias(weight, bias)
+    val conv = bigquant.SpatialConvolution[Float](nInputPlane, nOutputPlane,
+      kW, kH, dW, dH, padW, padH, initWeight = weight, initBias = bias)
+
 
     val res1 = conv.forward(input)
 
@@ -1885,8 +1884,6 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val outputSize = 2
     val inputSize = 2
 
-    val linear = bigquant.Linear[Float](outputSize, inputSize)
-
     val kernelData = Array(
       2.0f, 3f,
       4f, 5f
@@ -1897,7 +1894,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val input = Tensor(2, 2).apply1(_ => Random.nextFloat())
     val weight = Tensor(Storage(kernelData), 1, Array(outputSize, inputSize))
     val bias = Tensor(Storage(biasData), 1, Array(outputSize))
-    linear.initWeightAndBias(weight, bias)
+    val linear = bigquant.Linear[Float](outputSize, inputSize, initWeight = weight, initBias = bias)
 
     val res1 = linear.forward(input)
 
