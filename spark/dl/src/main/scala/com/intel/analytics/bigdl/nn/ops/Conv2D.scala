@@ -37,22 +37,22 @@ class Conv2D[T: ClassTag](
         SpatialConvolution(
           nInputPlane = input.size(4),
           nOutputPlane = filter.size(4),
-          kernelH = filter.size(2),
-          kernelW = filter.size(3),
-          strideH = strides(2),
-          strideW = strides(3),
-          padH = (filter.size(2) - 1) / 2,
-          padW = (filter.size(3) - 1) / 2,
+          kernelH = filter.size(1),
+          kernelW = filter.size(2),
+          strideH = strides(1),
+          strideW = strides(2),
+          padH = -1,
+          padW = -1,
           format = format
         )
       } else if (padding == "VALID") {
         SpatialConvolution(
           nInputPlane = input.size(4),
           nOutputPlane = filter.size(4),
-          kernelH = filter.size(2),
-          kernelW = filter.size(3),
-          strideH = strides(2),
-          strideW = strides(3),
+          kernelH = filter.size(1),
+          kernelW = filter.size(2),
+          strideH = strides(1),
+          strideW = strides(2),
           format = format
         )
       } else {
@@ -63,10 +63,10 @@ class Conv2D[T: ClassTag](
         SpatialConvolution(
           nInputPlane = input.size(2),
           nOutputPlane = filter.size(4),
-          kernelH = filter.size(3),
-          kernelW = filter.size(4),
-          strideH = strides(3),
-          strideW = strides(4),
+          kernelH = filter.size(1),
+          kernelW = filter.size(2),
+          strideH = strides(2),
+          strideW = strides(3),
           padH = (filter.size(3) - 1) / 2,
           padW = (filter.size(4) - 1) / 2,
           format = format
@@ -75,10 +75,10 @@ class Conv2D[T: ClassTag](
         SpatialConvolution(
           nInputPlane = input.size(2),
           nOutputPlane = filter.size(4),
-          kernelH = filter.size(3),
-          kernelW = filter.size(4),
-          strideH = strides(3),
-          strideW = strides(4),
+          kernelH = filter.size(1),
+          kernelW = filter.size(2),
+          strideH = strides(2),
+          strideW = strides(3),
           format = format
         )
       } else {
@@ -86,10 +86,13 @@ class Conv2D[T: ClassTag](
       }
   }
 
+  conv.bias.zero()
+
   conv.weight.resizeAs(filter).copy(filter)
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    conv.updateOutput(input)
+    output = conv.updateOutput(input)
+    output
   }
 }
 
