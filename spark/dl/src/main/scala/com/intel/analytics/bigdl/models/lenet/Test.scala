@@ -26,7 +26,6 @@ import com.intel.analytics.bigdl.optim.Top1Accuracy
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
-import com.intel.analytics.bigdl.models.utils.DownloadURL
 import com.intel.analytics.bigdl.utils.File
 import scala.io.Source
 object Test {
