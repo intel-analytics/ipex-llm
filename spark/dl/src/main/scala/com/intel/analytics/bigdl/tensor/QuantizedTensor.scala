@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.tensor
 
 import breeze.linalg.{DenseMatrix, DenseVector}
 import com.intel.analytics.bigdl.bigquant.BigQuant
-import com.intel.analytics.bigdl.nn.quantized.{Desc, DescParams, DescType, Quantization}
+import com.intel.analytics.bigdl.nn.quantized._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
 import java.nio.ByteBuffer
@@ -55,11 +55,12 @@ private[bigdl] class QuantizedTensor[@specialized(Float) T: ClassTag](
     desc
   }
 
-  def release(): Unit = {
+  def release(): this.type = {
     if (desc != 0 && !setFromOther) {
       BigQuant.FreeMemory(desc)
     }
     desc = 0L
+    this
   }
 
   override def equals(obj: Any): Boolean = {
@@ -163,14 +164,13 @@ private[bigdl] class QuantizedTensor[@specialized(Float) T: ClassTag](
 
   // TODO rename init
   def init(params: DescParams, descType: DescType): Unit = {
-    if (this.params != null || params == this.params) {
+    // two cases:
+    // weight init
+    // the input attributes have been changed
+    if (this.desc == 0L || this.params != params) {
       release()
+      this.desc = Desc.get(params, descType, this)
     }
-
-    this.params = params
-    this.descType = descType
-
-    this.desc = Desc.get(params, descType, this)
   }
 
   override def getTensorType: TensorType = QuantizedType
@@ -258,48 +258,50 @@ private[bigdl] class QuantizedTensor[@specialized(Float) T: ClassTag](
   }
 
   override def set(): Tensor[T] = {
-    release()
     interStorage = null
     this
   }
 
+  /**
+   * set from other tensor, it will share the storage and desc with other
+   *
+   * @param other the given tensor
+   * @return current tensor
+   */
   override def set(other: Tensor[T]): Tensor[T] = {
-    other match {
-      case quantizedTensor: QuantizedTensor[T] =>
-        if (!this.eq(quantizedTensor)) {
-          release() // release first, otherwise will leak memory
+    if (other.isInstanceOf[QuantizedTensor[T]]) {
+      val o = other.asInstanceOf[QuantizedTensor[T]]
 
-          desc = quantizedTensor.getNativeStorage
-          interStorage = quantizedTensor.getStorage
-          params = quantizedTensor.params
-          descType = quantizedTensor.descType
-
-          if (desc == 0L) {
-            init(params, descType)
-          }
-
-          setFromOther = true
-        }
-      case _ =>
-        throw new UnsupportedOperationException(errorString)
+      this.interStorage = o.getStorage
+      this.params = o.params
+      this.descType = o.descType
+      this.desc = o.getNativeStorage
     }
-
     this
   }
 
   /**
-   * copy from another QuantizedTensor, it will use the old storage but without the desc.
+   * copy from another QuantizedTensor, it will a new storage and new desc
    *
    * @param other source tensor
    * @return current tensor
    */
   override def copy(other: Tensor[T]): Tensor[T] = {
-    if (other.isInstanceOf[QuantizedTensor[T]]) {
-      val o = other.asInstanceOf[QuantizedTensor[T]]
-      this.interStorage = o.getStorage
-      this.params = o.params
-      this.descType = o.descType
+    if (other.isInstanceOf[QuantizedTensor[T]] && other.size().deep == this.size().deep) {
+      val quantizedTensor = other.asInstanceOf[QuantizedTensor[T]]
+
+      if (interStorage != null) {
+        interStorage = new Array[Byte](other.nElement())
+      }
+
+      System.arraycopy(quantizedTensor.getStorage, 0, interStorage, 0, this.nElement())
+
+      params = quantizedTensor.params.copy()
+      descType = quantizedTensor.descType
+
+      init(params, descType)
     }
+
     this
   }
 }

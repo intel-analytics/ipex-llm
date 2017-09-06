@@ -20,7 +20,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.nn.quantized.{Quantizable, Quantizer}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{QuantTensorUnsupported, QuantizedTensor, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer.{ContainerSerializable, DataConverter, ModuleData, ModuleSerializer}
 import com.intel.analytics.bigdl.utils.{T, Table}
@@ -154,7 +154,15 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     currentTimes = t
     if (t < times) {
       val cloneCell = cells.head.cloneModule()
-      cloneCell.parameters()._1.map(_.set())
+
+      cloneCell.parameters()._1.map { p =>
+        // for quantization, we should release the native memory first
+        if (p.isInstanceOf[QuantizedTensor[T]]) {
+          p.asInstanceOf[QuantizedTensor[T]].release()
+        }
+        p.set()
+      }
+
       cloneCell.parameters()._2.map(_.set())
       cloneCell.clearState()
       while (t < times) {

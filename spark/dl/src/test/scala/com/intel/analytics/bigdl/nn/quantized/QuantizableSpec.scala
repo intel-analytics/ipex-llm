@@ -208,11 +208,14 @@ class QuantizableSpec extends FlatSpec with Matchers {
 
     val cell = RnnCell(inputSize, hiddenSize, Tanh())
     val model = Sequential().add(Recurrent().add(cell))
-    model.getParameters()._1.fill(1)
+    model.getParameters()._1.rand
     val output = model.forward(input).toTensor
 
     val quantModel = model.quantize()
     val quantOut = quantModel.forward(input).toTensor
+    for (i <- 0 until 10) {
+      val quantOut = quantModel.forward(input).toTensor
+    }
 
     val quantCell = findCell(findModule(quantModel, 0))
     isQuantizedLinear(quantCell.cell.asInstanceOf[Graph[Float]].inputs(1).element) should be (true)
@@ -407,7 +410,7 @@ class QuantizableSpec extends FlatSpec with Matchers {
     val inputSize = 1152
     val hiddenSize = 1152
     val time = 100
-    val batchSize = 2
+    val batchSize = 4
 
     val model = Sequential[Float]()
     for (i <- 1 to 9) {

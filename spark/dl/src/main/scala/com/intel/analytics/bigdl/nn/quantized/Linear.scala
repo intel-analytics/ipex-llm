@@ -84,6 +84,8 @@ class Linear[T: ClassTag](
     require(input.dim() == 1 || input.dim() == 2,
       "bigquant.Linear: " + ErrorInfo.constrainInputAsVectorOrBatch)
 
+    println(this)
+
     val batchSize = if (input.dim() == 1) {
       output.resize(Array(outputSize)) // TODO
       1

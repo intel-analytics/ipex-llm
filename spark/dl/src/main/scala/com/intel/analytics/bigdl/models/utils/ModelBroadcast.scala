@@ -57,7 +57,8 @@ class ModelBroadcast[T: ClassTag](implicit ev: TensorNumeric[T]) extends Seriali
    */
   def value(): Module[T] = {
     val localModel = broadcastModel.value.cloneModule()
-    putWeightBias(broadcastParameters.value, localModel)
+    val weightAndBias = broadcastParameters.value
+    putWeightBias(weightAndBias, localModel)
     localModel
   }
 
@@ -71,7 +72,7 @@ class ModelBroadcast[T: ClassTag](implicit ev: TensorNumeric[T]) extends Seriali
         val wb = parameters._1(i)
         wb match {
           case value1: QuantizedTensor[T] =>
-            weightsBias(i) = QuantizedTensor[T](wb.size()).copy(wb)
+            weightsBias(i) = QuantizedTensor[T](wb.size()).set(wb)
           case _ =>
             weightsBias(i) = Tensor[T](Storage(wb.storage().array()),
               wb.storageOffset(), wb.size(), wb.stride())

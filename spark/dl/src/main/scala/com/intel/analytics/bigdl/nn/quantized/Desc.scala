@@ -27,14 +27,42 @@ object ConvWeight extends DescType with Serializable
 object LinearData extends DescType with Serializable
 object LinearWeight extends DescType with Serializable
 
-trait DescParams
+trait DescParams extends Serializable {
+  def copy(): DescParams
+}
 case class ConvDataParams(nInputPlane: Int, kernelH: Int, kernelW: Int,
   strideH: Int, strideW: Int, padH: Int, padW: Int, dilationHeight: Int, dilationWidth: Int,
-  batchSize: Int, inputHeight: Int, inputWidth: Int) extends DescParams with Serializable
+  batchSize: Int, inputHeight: Int, inputWidth: Int) extends DescParams {
+
+  override def copy(): DescParams = {
+    val p = this
+    ConvDataParams(p.nInputPlane, p.kernelH, p.kernelW, p.strideH, p.strideW,
+      p.padH, p.padW, p.dilationHeight, p.dilationWidth, p.batchSize, p.inputHeight,
+      p.inputWidth)
+  }
+}
 case class ConvWeightParams(nOutputPlane: Int, nInputPlane: Int, kernelH: Int,
-  kernelW: Int) extends DescParams with Serializable
-case class LinearDataParams(batchSize: Int, inputSize: Int) extends DescParams with Serializable
-case class LinearWeightParams(outputSize: Int, inputSize: Int) extends DescParams with Serializable
+  kernelW: Int) extends DescParams {
+
+  override def copy(): DescParams = {
+    val p = this
+    ConvWeightParams(p.nOutputPlane, p.nInputPlane, p.kernelH, p.kernelW)
+  }
+}
+case class LinearDataParams(batchSize: Int, inputSize: Int) extends DescParams {
+
+  override def copy(): DescParams = {
+    val p = this
+    LinearDataParams(p.batchSize, p.inputSize)
+  }
+}
+case class LinearWeightParams(outputSize: Int, inputSize: Int) extends DescParams {
+
+  override def copy(): DescParams = {
+    val p = this
+    LinearWeightParams(p.outputSize, p.inputSize)
+  }
+}
 
 object Desc {
   def get[T: ClassTag](params: DescParams, descType: DescType, bytes: Array[Byte], offset: Int,
