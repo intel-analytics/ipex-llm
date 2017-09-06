@@ -213,10 +213,10 @@ object File {
     }
   }
   /**
-    * load  file according to url
-    * @param url
-    * @param dir
-    */
+   * load  file according to url
+   * @param url
+   * @param dir
+   */
   def downloadFromUrl(url: String, dir: String): Unit = {
       val httpurl = new URL(url)
       val fileName = FilenameUtils.getBaseName(url) + '.' + FilenameUtils.getExtension(url)
