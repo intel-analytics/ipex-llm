@@ -31,7 +31,7 @@ class TFTensorNumericSpec extends FlatSpec with Matchers {
     val sum = Tensor[ByteString](Array(ByteString.copyFromUtf8("aa"),
       ByteString.copyFromUtf8("bb")), Array(2))
 
-    a + b == sum
+    a + b should be (sum)
   }
 
 }
