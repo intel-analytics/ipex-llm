@@ -52,14 +52,6 @@ class TensorNumericSpec extends FlatSpec with Matchers {
     a + b equals sum
   }
 
-  "String Tensor" should "works correctly" in {
-    val a = Tensor[String](T("a", "b", "c"))
-    val b = Tensor[String](T("a", "b", "c"))
-    val sum = Tensor[String](T("aa", "bb", "cc"))
-
-    a + b equals sum
-  }
-
   "Boolean Tensor" should "works correctly" in {
     val a = Tensor[Boolean](T(true, false, false))
     val b = Tensor[Boolean](T(true, true, false))
