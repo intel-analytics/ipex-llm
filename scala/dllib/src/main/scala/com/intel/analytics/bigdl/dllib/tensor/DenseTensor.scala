@@ -393,6 +393,23 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     result
   }
 
+  def zipWith[A: ClassTag, B: ClassTag](
+    t1: Tensor[A],
+    t2: Tensor[B],
+    func: (A, B) => T): Tensor[T] = {
+    val func2 = new TensorDiffTypeFunc6[A, B, T] {
+      override def apply(
+        data1: Array[A], index1: Int,
+        data2: Array[B], index2: Int,
+        data3: Array[T], index3: Int): Unit = {
+        data3(index3) = func(data1(index1), data2(index2))
+      }
+    }
+
+    DenseTensorApply.apply2(t1, t2, this, func2)
+    this
+  }
+
   override def apply1(func: T => T): Tensor[T] = {
     val func2 = new TensorFunc2[T] {
       override def apply(data: Array[T], index: Int): Unit = {
