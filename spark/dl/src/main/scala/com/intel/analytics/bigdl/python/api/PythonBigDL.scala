@@ -126,7 +126,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     // clone here in case the the size of storage larger then the size of tensor.
     require(tensor != null, "tensor cannot be null")
     if (tensor.nElement() == 0) {
-      JTensor(Array(0), Array(0), typeName)
+      JTensor(Array(), Array(0), typeName)
     } else {
       val cloneTensor = tensor.clone()
       val result = JTensor(cloneTensor.storage().array().map(i => ev.toType[Float](i)),
@@ -285,6 +285,15 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def createLogSoftMax(): LogSoftMax[T] = {
     LogSoftMax[T]()
+  }
+
+  def createTemporalMaxPooling(
+    kW: Int,
+    dW: Int)
+  : TemporalMaxPooling[T] = {
+    TemporalMaxPooling[T](
+      kW,
+      dW)
   }
 
   def createSpatialMaxPooling(kW: Int,

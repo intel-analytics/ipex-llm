@@ -394,6 +394,18 @@ object DenseTensorMath {
     self
   }
 
+  def prodAll[@specialized(Float, Double) T](self: DenseTensor[T])(
+    implicit ev: TensorNumeric[T]): T = {
+    var product = ev.fromType[Int](1)
+    val func = new TensorFunc2[T] {
+      override def apply(data: Array[T], index: Int): Unit = {
+        product = ev.times(data(index), product)
+      }
+    }
+    Apply.apply1[T](self, func)
+    product
+  }
+
   def sumAll[@specialized(Float, Double) T](self: DenseTensor[T])(
     implicit ev: TensorNumeric[T]): T = {
     var sum = ev.fromType[Int](0)
@@ -404,6 +416,21 @@ object DenseTensorMath {
     }
     Apply.apply1[T](self, func)
     sum
+  }
+
+  def prod[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], x: Tensor[T], _dim: Int)
+    (implicit ev: TensorNumeric[T]): Tensor[T] = {
+    require(_dim >= 0 && _dim < x.nDimension, s"dimension ${_dim + 1} out of range")
+    val result = if (self == null) new DenseTensor[T]() else self
+    val sizes = x.size()
+    sizes(_dim) = 1
+    result.resize(sizes)
+    DenseTensorDimApply.dimApply2[T](result, x, _dim,
+      (rData, rOffset, rStride, rSize, tData, tOffset, tStride, tSize) => {
+        rData(rOffset) = ev.prod(tSize, tData, tOffset, tStride)
+      })
+
+    result
   }
 
   def sum[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], x: Tensor[T], _dim: Int)

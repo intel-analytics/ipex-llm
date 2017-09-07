@@ -32,6 +32,7 @@ def main():
     n_output = 5
     # xs = tf.placeholder(tf.float32, [None, n_steps, n_input])
     xs = tf.Variable(tf.random_uniform([4, n_steps, n_input]) + 10, name='input', dtype=tf.float32)
+    xs = tf.identity(xs, "input_node")
     weight = tf.Variable(tf.random_uniform([n_hidden, n_output]) + 10, name="weight", dtype=tf.float32)
     bias = tf.Variable(tf.random_uniform([n_output]) + 10, name="bias", dtype=tf.float32)
 

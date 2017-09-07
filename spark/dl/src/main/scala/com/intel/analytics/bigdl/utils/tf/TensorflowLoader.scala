@@ -15,12 +15,13 @@
  */
 package com.intel.analytics.bigdl.utils.tf
 
-import java.io.{DataInputStream, FileInputStream, InputStream}
+import java.io.InputStream
+import java.io.{DataInputStream, FileInputStream, FileReader => JFileReader}
 import java.nio.ByteOrder
 import java.util
 
 import org.tensorflow.framework.{GraphDef, NodeDef}
-import com.google.protobuf.CodedInputStream
+import com.google.protobuf.{CodedInputStream, TextFormat}
 import java.util.List
 
 import com.intel.analytics.bigdl.Module
@@ -28,7 +29,8 @@ import com.intel.analytics.bigdl.nn.Graph
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{DirectedGraph, File, FileReader, Node}
+import com.intel.analytics.bigdl.utils.{DirectedGraph, Node}
+import com.intel.analytics.bigdl.utils.FileReader
 import com.intel.analytics.bigdl.utils.tf.TensorflowToBigDL._
 
 import scala.collection.mutable
@@ -37,7 +39,7 @@ import scala.reflect.ClassTag
 
 object TensorflowLoader{
 
-  type Context[T] = mutable.HashMap[NodeDef, (Tensor[T], Tensor[T])]
+  type Context[T] = mutable.HashMap[String, (Tensor[T], Tensor[T])]
 
   /**
    * Load tensorflow model from a prototxt file
@@ -54,14 +56,15 @@ object TensorflowLoader{
     val nodeList = parse(graphPrototxt)
 
     // Construct tf node graph
-    val tfGraph = buildTFGraph(nodeList, outputs)
+    val (tfGraph, adjustedInputs) =
+      buildTFGraph(nodeList, outputs, (node: NodeDef) => inputs.contains(node.getName))
 
     // Build BigDL model from the tf node graph
-    buildBigDLModel(tfGraph, inputs, outputs, byteOrder, graphPrototxt)
+    buildBigDLModel(tfGraph, adjustedInputs, outputs, byteOrder, graphPrototxt)
   }
 
   /**
-   * Parse a tensorflow model protobuf file, read a list of op nodes from it
+   * Parse a tensorflow model protobuf binary file, read a list of op nodes from it
    * @param graphProtoTxt where is the tf protobuf file
    * @return
    */
@@ -84,13 +87,32 @@ object TensorflowLoader{
   }
 
   /**
+   * Parse a tensorflow model protobuf text file, read a list of op nodes from it
+   * @param graphProtoTxt where is the tf protobuf file
+   * @return
+   */
+  private[bigdl] def parseTxt(graphProtoTxt: String) : List[NodeDef] = {
+    val f = new java.io.File(graphProtoTxt)
+    require(f.exists(), graphProtoTxt + " does not exists")
+
+    val reader = new JFileReader(f)
+
+    val graph = GraphDef.newBuilder()
+
+    TextFormat.merge(reader, graph)
+
+    graph.build().getNodeList
+  }
+
+  /**
    * Build tf ops graph from a given node list
    * @param nodes
    * @param outputNodeNames
    * @return
    */
-  private[bigdl] def buildTFGraph(nodes : List[NodeDef], outputNodeNames: Seq[String])
-  : DirectedGraph[NodeDef] = {
+  private[bigdl] def buildTFGraph(nodes : List[NodeDef], outputNodeNames: Seq[String],
+                                  isInput: (NodeDef) => Boolean = (_: NodeDef) => false)
+  : (DirectedGraph[NodeDef], Seq[String]) = {
     import scala.collection.JavaConverters._
     var name2Node = nodes.asScala.map(n => n.getName -> new Node(n)).toMap
 
@@ -105,19 +127,9 @@ object TensorflowLoader{
         name2Node += nameWithChannel -> new Node(tfNode)
       }
 
-    // Connect nodes
-    name2Node.valuesIterator.foreach(n => {
-      n.element.getInputList.asScala.foreach{
-        input =>
-          // It is tricky here, remove the first char in the name of control dep node
-          val name = if (input.charAt(0) == '^') input.substring(1) else input
-          name2Node(name) -> n
-      }
-    })
-
     // Build graph
     val outputNodes = if (outputNodeNames == null) {
-      name2Node.valuesIterator.filter(_.nextNodes.length == 0).toArray
+      name2Node.valuesIterator.filter(_.nextNodes.isEmpty).toArray
     } else {
       val results = name2Node.valuesIterator.toArray.filter(n =>
         outputNodeNames.contains(n.element.getName))
@@ -125,9 +137,65 @@ object TensorflowLoader{
       results
     }
 
+    def connect(nodes: Seq[Node[NodeDef]]): Seq[String] = {
+      var inputCounter = 0
+      val queue = new mutable.Queue[Node[NodeDef]]()
+      val visited = mutable.Set[Node[NodeDef]]()
+      val inputs = new mutable.ArrayBuffer[String]()
+
+      // Do a BFS to connect the nodes
+      queue.enqueue(nodes: _*)
+      while(queue.nonEmpty) {
+        val node = queue.dequeue()
+        if (!visited(node)) {
+          visited += node
+          if (!isInput(node.element) && !node.element.getInputList.isEmpty) {
+            // continue to traverse
+            node.element.getInputList.asScala.foreach { preNodeName =>
+              // It is tricky here, remove the first char in the name of control dep node
+              val preNode = if (preNodeName.charAt(0) == '^') {
+                val name = preNodeName.substring(1)
+                val preNode = name2Node(name)
+                val dependencyNode = Node(NodeDef.newBuilder()
+                  .setOp("DependencyNode")
+                  .addInput(preNode.element.getName)
+                  .setName(s"depends_on_${preNode.element.getName}")
+                  .build())
+                preNode -> dependencyNode -> node
+                preNode
+              } else {
+                val preNode = name2Node(preNodeName)
+                preNode -> node
+                preNode
+              }
+              queue.enqueue(preNode)
+            }
+          } else {
+            if (isInput(node.element) && node.element.getOp != "Placeholder") {
+              // if the predefined input node is not a Placeholder, add one to match the Input node
+              val name = s"input$inputCounter"
+              val placeholder = NodeDef.newBuilder()
+                .setName(name)
+                .setOp("Placeholder").build()
+              inputCounter = inputCounter + 1
+              val n = Node(placeholder)
+              n -> node
+              inputs += name
+            } else if (node.element.getOp == "Placeholder") {
+              inputs += node.element.getName
+            }
+          }
+        }
+
+      }
+      inputs
+    }
+
+    val inputs = connect(outputNodes)
+
     val dummyOutput = new Node[NodeDef](null)
     outputNodes.foreach(_ -> dummyOutput)
-    dummyOutput.graph(reverse = true)
+    (dummyOutput.graph(reverse = true), inputs)
   }
 
   private[bigdl] def buildBigDLModel[T: ClassTag](
@@ -142,10 +210,10 @@ object TensorflowLoader{
 
     // Map from tensorflow node to the converted BigDL node
     val convertedNode = new mutable.HashMap[Node[NodeDef],
-      Node[AbstractModule[Activity, Tensor[T], T]]]()
+      Node[AbstractModule[Activity, Activity, T]]]()
     val nameToNode =
-      new mutable.HashMap[String, Node[AbstractModule[Activity, Tensor[T], T]]]()
-    val context = ctx.getOrElse(new mutable.HashMap[NodeDef, (Tensor[T], Tensor[T])])
+      new mutable.HashMap[String, Node[AbstractModule[Activity, Activity, T]]]()
+    val context = ctx.getOrElse(new mutable.HashMap[String, (Tensor[T], Tensor[T])])
 
     // BFS to keep the input order same
     tfGraph.BFS.foreach(n => {
@@ -181,13 +249,14 @@ object TensorflowLoader{
 
         // These two pieces of code are all necessary
         val nextNodes = n.nextNodes.filter(
-          n => n.element != null && convertedNode.contains(n) && !context.contains(n.element)
+          n => n.element != null &&
+            convertedNode.contains(n) && !context.contains(n.element.getName)
         ).map(convertedNode(_)).filter(_ != node).toSet
         nextNodes.foreach(node -> _)
 
         val preNodes = inputNodes.flatMap(_.prevNodes)
           .filter(n => n.element != null && convertedNode.contains(n)
-            && !context.contains(n.element))
+            && !context.contains(n.element.getName))
           .map(convertedNode(_)).filter(_ != node).toSet
         preNodes.foreach(_ -> node)
       }
@@ -217,7 +286,7 @@ object TensorflowLoader{
   private[bigdl] def extract[T: ClassTag](graph: DirectedGraph[NodeDef],
       context: Context[T], byteOrder: ByteOrder)(
     implicit ev: TensorNumeric[T]): Option[(
-    AbstractModule[Activity, Tensor[T], T],
+    AbstractModule[Activity, Activity, T],
       List[Node[NodeDef]],
       Seq[Node[NodeDef]]
     )] = {
@@ -252,8 +321,11 @@ object TensorflowLoader{
           util.Collections.emptyList(), Seq())
 
         // Prev nodes number should be same except for the Ninput case
-        if (patternNode.prevNodes.length != graphNode.prevNodes.length &&
-          patternNode.prevNodes.filter(_.element == N_INPUT_PLACEHOLDER).length == 0) {
+        val patternInputLength = patternNode.prevNodes.length
+        val graphInputLength = graphNode.prevNodes.
+          filterNot(_.element.getOp == "DependencyNode").length
+        if (patternInputLength != graphInputLength &&
+          !patternNode.prevNodes.exists(_.element == N_INPUT_PLACEHOLDER)) {
           return (util.Collections.emptyList(), Seq())
         }
 

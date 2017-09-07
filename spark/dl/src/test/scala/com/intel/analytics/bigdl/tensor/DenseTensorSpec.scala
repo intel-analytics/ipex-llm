@@ -767,4 +767,57 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     b.valueAt(3) should be (0.01f)
     a.valueAt(2, 3) should be (0.01f)
   }
+
+  "Scalar tensor" should "be able to construct" in {
+    val t: Tensor[Double] = DenseTensor[Double](1.0)
+    t.nDimension should be(0)
+    t.size().isEmpty should be (true)
+  }
+
+  "Scalar tensor" should "not have size" in {
+    val t: Tensor[Double] = DenseTensor[Double](1.0)
+    val thrown = intercept[Exception] {
+      t.size(1)
+    }
+    thrown.isInstanceOf[IllegalArgumentException] should be (true)
+  }
+
+  "Scalar tensor" should "be able to add" in {
+    val t: Tensor[Double] = DenseTensor[Double](1.0)
+    val y: Tensor[Double] = DenseTensor[Double](1.0)
+    t.add(1.0, y)
+    t should be (DenseTensor[Double](2.0))
+  }
+
+  "Scalar tensor" should "be able to set value" in {
+    val t: Tensor[Double] = DenseTensor[Double](1.0)
+    t.setValue(2.0)
+    t should be (DenseTensor[Double](2.0))
+  }
+
+  "Scalar tensor" should "be able to calc max" in {
+    val t: Tensor[Double] = DenseTensor[Double](1.0)
+    t.max() should be (1.0)
+  }
+
+  "Scalar tensor" should "be able to calc min" in {
+    val t: Tensor[Double] = DenseTensor[Double](1.0)
+    t.max() should be (1.0)
+  }
+
+  "Scalar tensor" should "be able to calc nElement" in {
+    val t: Tensor[Double] = DenseTensor[Double](1.0)
+    t.nElement() should be (1)
+  }
+
+  "Scalar tensor" should "be able to get element" in {
+    val t: Tensor[Double] = DenseTensor[Double](1.0)
+    t.apply(Array[Int]()) should be (1.0)
+  }
+
+  "Scalar tensor" should "be able to update" in {
+    val t: Tensor[Double] = DenseTensor[Double](1.0)
+    t.update(Array[Int](), 2.0)
+    t should be (DenseTensor[Double](2.0))
+  }
 }

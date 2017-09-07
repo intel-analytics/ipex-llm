@@ -138,6 +138,8 @@ object TensorNumericMath {
 
     def sum(n: Int, a: Array[T], aOffset: Int, stride: Int): T
 
+    def prod(n: Int, a: Array[T], aOffset: Int, stride: Int): T
+
     def arraycopy(src: Array[T], srcPos: Int,
                   dest: Array[T], destPos: Int, length: Int): Unit
 
@@ -178,6 +180,10 @@ object TensorNumericMath {
         " in tensor does not support divide operation")
 
     def exp(x: T): T =
+      throw new UnsupportedOperationException(typeName +
+        " in tensor does not support exp operation")
+
+    def prod(n: Int, a: Array[T], aOffset: Int, stride: Int): T =
       throw new UnsupportedOperationException(typeName +
         " in tensor does not support exp operation")
 
@@ -584,6 +590,16 @@ object TensorNumericMath {
         }
       }
 
+      override def prod(n: Int, a: Array[Float], aOffset: Int, stride: Int): Float = {
+        var i = 0
+        var r = 1.0f
+        while (i < n) {
+          r *= a(aOffset + i * stride)
+          i += 1
+        }
+        r
+      }
+
       override def sum(n: Int, a: Array[Float], aOffset: Int, stride: Int): Float = {
         var i = 0
         var r = 0.0f
@@ -837,6 +853,16 @@ object TensorNumericMath {
         }
       }
 
+      override def prod(n: Int, a: Array[Double], aOffset: Int, stride: Int): Double = {
+        var i = 0
+        var r = 1.0
+        while (i < n) {
+          r *= a(aOffset + i * stride)
+          i += 1
+        }
+        r
+      }
+
       override def sum(n: Int, a: Array[Double], aOffset: Int, stride: Int): Double = {
         var i = 0
         var r = 0.0
@@ -911,6 +937,8 @@ object TensorNumericMath {
     implicit object NumericString extends UndefinedTensorNumeric[String]("String") {
       override def plus(x: String, y: String): String = x + y
 
+      override def getType(): TensorDataType = StringType
+
       override def fromType[K](k: K)(
         implicit c: ConvertableFrom[K]): String =
         c.toString(k)
@@ -931,6 +959,8 @@ object TensorNumericMath {
     }
 
     implicit object NumericBoolean extends UndefinedTensorNumeric[Boolean]("Boolean") {
+      override def getType(): TensorDataType = BooleanType
+
       override def or(x: Boolean, y: Boolean): Boolean = x || y
 
       override def and(x: Boolean, y: Boolean): Boolean = x && y
@@ -945,6 +975,8 @@ object TensorNumericMath {
     }
 
     implicit object NumericInt extends UndefinedTensorNumeric[Int]("Int") {
+      override def getType(): TensorDataType = IntType
+
       override def plus(x: Int, y: Int): Int = x + y
 
       override def minus(x: Int, y: Int): Int = x - y
@@ -995,6 +1027,8 @@ object TensorNumericMath {
     }
 
     implicit object NumericLong extends UndefinedTensorNumeric[Long]("Long") {
+      override def getType(): TensorDataType = LongType
+
       override def plus(x: Long, y: Long): Long = x + y
 
       override def minus(x: Long, y: Long): Long = x - y
@@ -1059,6 +1093,8 @@ object TensorNumericMath {
     }
 
     implicit object NumericShort extends UndefinedTensorNumeric[Short]("Short") {
+      override def getType(): TensorDataType = ShortType
+
       override def plus(x: Short, y: Short): Short = (x + y).toShort
 
       override def minus(x: Short, y: Short): Short = (x - y).toShort
@@ -1123,6 +1159,8 @@ object TensorNumericMath {
     }
 
     implicit object NumericChar extends UndefinedTensorNumeric[Char]("Char") {
+      override def getType(): TensorDataType = CharType
+
       override def plus(x: Char, y: Char): Char = (x + y).toChar
 
       override def minus(x: Char, y: Char): Char = (x - y).toChar

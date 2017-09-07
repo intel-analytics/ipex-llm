@@ -624,7 +624,6 @@ object Recurrent extends ContainerSerializable {
   override def doSerializeModule[T: ClassTag](module : ModuleData[T],
                                             recurrentBuilder : BigDLModule.Builder)
                                            (implicit ev: TensorNumeric[T]) : Unit = {
-    super.doSerializeModule(module, recurrentBuilder)
 
     val recurrent = module.module.asInstanceOf[Recurrent[T]]
 

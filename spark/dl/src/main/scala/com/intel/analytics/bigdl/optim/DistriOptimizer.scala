@@ -156,10 +156,14 @@ object DistriOptimizer {
       val lossSum = sc.accumulator(0.0, "loss sum")
       val recordsNum = sc.accumulator(0, "record number")
       metrics.set("computing time for each node", mutable.ArrayBuffer[Double](), sc)
+      metrics.set("get weights for each node", mutable.ArrayBuffer[Double](), sc)
       metrics.set("computing time average", 0.0, sc, partitionNum)
       metrics.set("aggregate gradient time", 0.0, sc, partitionNum)
       metrics.set("get weights average", 0.0, sc, partitionNum)
-      metrics.set("get weights for each node", mutable.ArrayBuffer[Double](), sc)
+      metrics.set("put gradient", 0.0, sc, Engine.nodeNumber())
+      metrics.set("aggregrateGradientParition average executor", 0.0, sc, Engine.nodeNumber())
+      metrics.set("compute weight average", 0.0, sc, Engine.nodeNumber())
+      metrics.set("send weights average", 0.0, sc, Engine.nodeNumber())
 
       val driverMetrics = metrics
       val start = System.nanoTime()
@@ -267,7 +271,9 @@ object DistriOptimizer {
             driverMetrics.add("aggregate gradient time", System.nanoTime() - time)
           }
 
+          val putG = System.nanoTime()
           parameters.putGradients(cached.gradient)
+          driverMetrics.add("put gradient", System.nanoTime() - putG)
           tasks ++= Engine.default.invoke {
             (0 until _subModelNumber).map { i =>
               () => {
@@ -287,7 +293,11 @@ object DistriOptimizer {
         val value = lossSum.value / numFinishedModelUpdates
         models.mapPartitions { modelIter =>
           val modelCache = modelIter.next()
+          val getG = System.nanoTime()
           parameters.aggregateGradientPartition()
+          driverMetrics.add("aggregrateGradientParition average executor",
+            System.nanoTime() - getG)
+          var time = System.nanoTime()
           parameters.gradientPartition.div(ev.fromType(numFinishedModelUpdates))
           modelCache.optimMethod.state.update("epoch", driverState[Int]("epoch"))
           modelCache.optimMethod.state.update("neval", driverState[Int]("neval"))
@@ -297,8 +307,10 @@ object DistriOptimizer {
           }
           modelCache.optimMethod.optimize(_ => (ev.fromType(value), parameters.gradientPartition),
             parameters.weightPartition)
-
+          driverMetrics.add("compute weight average", System.nanoTime() - time)
+          time = System.nanoTime()
           parameters.sendWeightPartition()
+          driverMetrics.add("send weights average", System.nanoTime() - time)
           Iterator.empty
         }.count()
 
