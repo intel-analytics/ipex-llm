@@ -979,4 +979,20 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
 
     r should be (Tensor[Float](3).fill(16.5f))
   }
+
+  "dot on 1D vector" should "return right result 70" in {
+    val x = Tensor[Float](Storage(Array[Float](1, 2, 3, 4)))
+    val y = Tensor[Float](Storage(Array[Float](5, 6, 7, 8)))
+    val s = x.dot(y)
+
+    s should be (70)
+  }
+
+  "dot on 2D vector" should "return right result 70" in {
+    val x = Tensor[Float](Storage(Array[Float](1, 2, 3, 4)), 1, Array(2, 2))
+    val y = Tensor[Float](Storage(Array[Float](5, 6, 7, 8)), 1, Array(2, 2))
+    val s = x.dot(y)
+
+    s should be (70)
+  }
 }
