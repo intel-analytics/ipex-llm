@@ -472,7 +472,7 @@ trait TensorMath[T] {
    */
   def addr(t1: Tensor[T], t2: Tensor[T]): Tensor[T]
 
-  def addr(v1: T, t1: Tensor[T], t2: Tensor[T]): Tensor[T]
+  def addr(v2: T, t1: Tensor[T], t2: Tensor[T]): Tensor[T]
 
   def addr(v1: T, t1: Tensor[T], v2: T, t2: Tensor[T]): Tensor[T]
 
