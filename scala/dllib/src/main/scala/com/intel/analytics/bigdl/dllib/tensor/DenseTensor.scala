@@ -963,12 +963,19 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def dot(y: Tensor[T]): T = {
-    var sum = ev.fromType[Int](0)
-    this.map(y, (a, b) => {
-      sum = ev.plus(sum, ev.times(a, b))
-      a
-    })
-    sum
+    require(this.nElement() == y.nElement())
+    if (MKL.isMKLLoaded && this.isContiguous() && y.isContiguous()) {
+      ev.dot(this.nElement(), this.storage().array(), this.storageOffset() - 1, 1,
+        y.storage().array(), y.storageOffset() - 1, 1)
+    }
+    else {
+      var sum = ev.fromType[Int](0)
+      this.map(y, (a, b) => {
+        sum = ev.plus(sum, ev.times(a, b))
+        a
+      })
+      sum
+    }
   }
 
   override def cmax(value: T): Tensor[T] = {
