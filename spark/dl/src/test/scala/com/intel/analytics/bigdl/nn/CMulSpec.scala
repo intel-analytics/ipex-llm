@@ -49,5 +49,9 @@ class CMulSpec extends FlatSpec with Matchers {
     gradInput1 should be (gradInput2)
 
     layer2.gradWeight should be (layer1.gradWeight.mul(0.5))
+
+    layer2.zeroGradParameters()
+    layer2.backward(input, gradOutput)
+    layer2.gradWeight should be (layer1.gradWeight)
   }
 }

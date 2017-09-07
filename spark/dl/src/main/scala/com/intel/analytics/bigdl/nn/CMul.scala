@@ -127,6 +127,9 @@ class CMul[T: ClassTag](
     }
 
     if (weight.nElement() == gradOutput.nElement()) {
+      if (zeroGradFlag) {
+        gradWeight.zero()
+      }
       gradWeight.addcmul(ev.fromType[Double](scaleW), input, gradOutput)
     } else {
       if (weight.dim() == input.dim()) {
@@ -142,25 +145,32 @@ class CMul[T: ClassTag](
           }
           i += 1
         }
-        gradWeight.add(ev.fromType[Double](scaleW), sumFrom)
+        if (zeroGradFlag) {
+          gradWeight.map(sumFrom,
+            (_, y) => (ev.times(ev.fromType[Double](scaleW), y)))
+        } else {
+          gradWeight.add(ev.fromType[Double](scaleW), sumFrom)
+        }
       } else {
         _repeat.resizeAs(input).cmul(input, gradOutput)
         _sum.sum(_repeat, 1)
-        gradWeight.add(ev.fromType[Double](scaleW), _sum)
+        if (zeroGradFlag) {
+          gradWeight.map(_sum,
+            (_, y) => (ev.times(ev.fromType[Double](scaleW), y)))
+        } else {
+          gradWeight.add(ev.fromType[Double](scaleW), _sum)
+        }
       }
 
     }
     if (null != wRegularizer && scaleW != 0) {
       wRegularizer.accRegularization(weight, gradWeight, scaleW)
     }
+    zeroGradFlag = false
   }
 
   override def updateParameters(learningRate: T): Unit = {
     weight.map(gradWeight, (a, b) => ev.minus(a, ev.times(learningRate, b)))
-  }
-
-  override def zeroGradParameters(): Unit = {
-    gradWeight.zero()
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
