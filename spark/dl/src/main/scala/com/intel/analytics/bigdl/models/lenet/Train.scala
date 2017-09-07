@@ -34,6 +34,10 @@ object Train {
 
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {
+      if (param.debug) {
+        Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.DEBUG)
+      }
+
       val conf = Engine.createSparkConf()
         .setAppName("Train Lenet on MNIST")
         .set("spark.task.maxFailures", "1")

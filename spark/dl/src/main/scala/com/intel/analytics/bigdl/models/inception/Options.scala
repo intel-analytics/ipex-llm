@@ -34,7 +34,8 @@ object Options {
     maxIteration: Int = 62000,
     weightDecay: Double = 0.0001,
     checkpointIteration: Int = 620,
-    graphModel: Boolean = false
+    graphModel: Boolean = false,
+    debug: Boolean = false
   )
 
   val trainParser = new OptionParser[TrainParams]("BigDL Inception Example") {
@@ -79,6 +80,9 @@ object Options {
     opt[Unit]('g', "graphModel")
       .text("use graph model")
       .action((x, c) => c.copy(graphModel = true))
+    opt[Unit]("DEBUG")
+      .text("Start DEBUG Mode")
+      .action( (_, c) => c.copy(debug = true) )
   }
 
   case class TestParams(

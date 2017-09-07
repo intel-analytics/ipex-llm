@@ -16,9 +16,10 @@
 
 package com.intel.analytics.bigdl.models.lenet
 
+import java.io.PrintWriter
 import java.nio.ByteBuffer
 import java.nio.file.{Files, Path, Paths}
-
+import scala.io.Source
 import com.intel.analytics.bigdl.dataset.ByteRecord
 import com.intel.analytics.bigdl.utils.File
 import scopt.OptionParser
@@ -29,6 +30,7 @@ object Utils {
 
   val testMean = 0.13251460696903547
   val testStd = 0.31048024
+
 
   case class TrainParams(
     folder: String = "./",
@@ -42,7 +44,8 @@ object Utils {
     coreNumber: Int = -1,
     nodeNumber: Int = -1,
     overWriteCheckpoint: Boolean = false,
-    graphModel: Boolean = false
+    graphModel: Boolean = false,
+    debug: Boolean = false
   )
 
   val trainParser = new OptionParser[TrainParams]("BigDL Lenet Train Example") {
@@ -79,6 +82,9 @@ object Utils {
     opt[Unit]('g', "graphModel")
       .text("use graph model")
       .action((x, c) => c.copy(graphModel = true))
+    opt[Unit]("DEBUG")
+      .text("Start DEBUG Mode")
+      .action( (_, c) => c.copy(debug = true) )
   }
 
   case class TestParams(

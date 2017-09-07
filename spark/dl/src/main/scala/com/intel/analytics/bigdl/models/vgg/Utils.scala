@@ -42,7 +42,8 @@ object Utils {
     overWriteCheckpoint: Boolean = false,
     learningRate: Double = 0.01,
     weightDecay: Double = 0.0005,
-    graphModel: Boolean = false
+    graphModel: Boolean = false,
+    debug: Boolean = false
   )
 
   val trainParser = new OptionParser[TrainParams]("BigDL Vgg on Cifar10 Example") {
@@ -76,6 +77,9 @@ object Utils {
     opt[Unit]('g', "graphModel")
       .text("use graph model")
       .action((x, c) => c.copy(graphModel = true))
+    opt[Unit]("DEBUG")
+      .text("Start DEBUG Mode")
+      .action( (_, c) => c.copy(debug = true) )
   }
 
   case class TestParams(

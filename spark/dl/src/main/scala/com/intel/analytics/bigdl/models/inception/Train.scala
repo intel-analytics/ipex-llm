@@ -30,6 +30,9 @@ object TrainInceptionV1 {
 
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {
+      if (param.debug) {
+        Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.DEBUG)
+      }
       val imageSize = 224
       val conf = Engine.createSparkConf().setAppName("BigDL InceptionV1 Train Example")
         .set("spark.task.maxFailures", "1")

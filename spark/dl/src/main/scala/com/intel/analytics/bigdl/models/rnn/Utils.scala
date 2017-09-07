@@ -50,7 +50,8 @@ object Utils {
                           nEpochs: Int = 30,
                           sentFile: Option[String] = None,
                           tokenFile: Option[String] = None,
-                          overWriteCheckpoint: Boolean = false)
+                          overWriteCheckpoint: Boolean = false,
+                          debug: Boolean = false)
 
   val trainParser = new OptionParser[TrainParams]("BigDL SimpleRNN Train Example") {
     opt[String]('f', "dataFolder")
@@ -122,6 +123,9 @@ object Utils {
     opt[Unit]("overWrite")
       .text("overwrite checkpoint files")
       .action( (_, c) => c.copy(overWriteCheckpoint = true) )
+    opt[Unit]("DEBUG")
+      .text("Start DEBUG Mode")
+      .action( (_, c) => c.copy(debug = true) )
   }
 
   case class TestParams(

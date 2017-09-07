@@ -38,7 +38,9 @@ object Train {
   val logger = Logger.getLogger(getClass)
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {
-
+      if (param.debug) {
+        Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.DEBUG)
+      }
       val conf = Engine.createSparkConf()
         .setAppName("Train rnn on text")
         .set("spark.task.maxFailures", "1")
