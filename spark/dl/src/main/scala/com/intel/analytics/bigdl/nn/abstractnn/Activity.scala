@@ -29,7 +29,7 @@ import scala.reflect._
  * supported and extending this trait, which
  * are [[Tensor]] and [[Table]].
  */
-sealed trait Activity {
+trait Activity {
   def toTensor[D](implicit ev: TensorNumeric[D]): Tensor[D]
 
   def toTable: Table

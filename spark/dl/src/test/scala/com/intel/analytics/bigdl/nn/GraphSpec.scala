@@ -1126,9 +1126,9 @@ class GraphSpec extends FlatSpec with Matchers {
   }
 
   "graph" should "support while loop" in {
-    val input = Input()
+    val input = Input("input")
 
-    val conditionInput = Input()
+    val conditionInput = Input("conditionInput")
     val const = new com.intel.analytics.bigdl.nn.tf.Const(Tensor(T(9))).inputs()
     val less = Less().inputs(const, conditionInput)
 
@@ -1139,7 +1139,8 @@ class GraphSpec extends FlatSpec with Matchers {
     val exit = ControlNodes.whileLoop(
       (Seq(conditionInput), less),
       (Seq((updateInput, echo))),
-      Seq(input)
+      Seq(input),
+      "while"
     )
     val model = Graph(Array(input), Array(exit(0)), None, false)
     val result = model.forward(Tensor(T(1)))
@@ -1201,6 +1202,40 @@ class GraphSpec extends FlatSpec with Matchers {
     val result = model.forward(T(Tensor(T(1)), Tensor(T(2))))
     result.toTable.apply[Tensor[Float]](1).valueAt(1) should be(10)
     result.toTable.apply[Tensor[Float]](2).valueAt(1) should be(47)
+  }
+
+  "graph" should "support switch with two branch" in {
+    val data = Input("data")
+    val condition = Input("condition")
+    val swtich = ControlNodes.switch(data, condition)
+    val echo1 = Echo().inputs(swtich.trueEdge())
+    val echo2 = Echo().inputs(swtich.falseEdge())
+
+    val model = Graph(Array(data, condition), Array(echo1), None, false)
+    val result = model.forward(T(Tensor[Float](T(1)), Tensor[Boolean](T(true))))
+    result.toTensor should be(Tensor[Float](T(1)))
+
+    intercept[IllegalArgumentException] {
+      model.forward(T(Tensor[Float](T(1)), Tensor[Boolean](T(false))))
+    }
+  }
+
+  "graph" should "support switch with two branch with merge" in {
+    val data = Input("data")
+    val condition = Input("condition")
+    val swtich = ControlNodes.switch(data, condition)
+    val echo1 = Echo().inputs(swtich.trueEdge())
+    val echo2 = Echo().inputs(swtich.falseEdge())
+    val add1 = AddConstant(1).inputs(echo1)
+    val add5 = AddConstant(5).inputs(echo2)
+    val merge = ControlNodes.merge(add1, add5)
+    val output = Identity().inputs(merge)
+
+    val model = Graph(Array(data, condition), Array(output), None, false)
+    var result = model.forward(T(Tensor[Float](T(1)), Tensor[Boolean](T(true))))
+    result.toTensor should be(Tensor[Float](T(2)))
+    result = model.forward(T(Tensor[Float](T(1)), Tensor[Boolean](T(false))))
+    result.toTensor should be(Tensor[Float](T(6)))
   }
 }
 

@@ -66,6 +66,14 @@ class NextIteration[T: ClassTag] private[ops]()(implicit ev: TensorNumeric[T])
 class Enter[T: ClassTag] private[ops]()(implicit ev: TensorNumeric[T]) extends IdentityControl[T]
 
 /**
+ * Mark this dataflow is condition flow. It will erase the iteration status.
+ * User should use ControlNodes.whileLoop to use such operation.
+ * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
+ */
+class LoopCondition[T: ClassTag] private[ops]()(implicit ev: TensorNumeric[T])
+  extends IdentityControl[T]
+
+/**
  * Mark end of a loop. User should use ControlNodes.whileLoop to use such operation.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
  */
@@ -283,15 +291,18 @@ object ControlNodes {
     loopVars: (Seq[ModuleNode[T]]),
     name: String = null
   )(implicit ev: TensorNumeric[T]): Seq[ModuleNode[T]] = {
+    val lc = new LoopCondition[T]().inputs(condition._2)
+    if (name != null) lc.element.setName(s"$name/loopCondition")
 
     loopVars.zip(condition._1).zip(body).zipWithIndex.map(tuple => {
-      val (((input, cond), update), index) = tuple
+      val (((input, cond), update), indexBase0) = tuple
+      val index = indexBase0 + 1
       val enter = new Enter[T]().inputs(input)
       if (name != null) enter.element.setName(s"$name/enter$index")
       val mergeNode = merge[T](enter)
       if (name != null) mergeNode.element.setName(s"$name/merge$index")
       mergeNode -> cond
-      val switchNode = switch[T](mergeNode, condition._2)
+      val switchNode = switch[T](mergeNode, lc)
       if (name != null) switchNode.element.setName(s"$name/switch$index")
       val exitNode = new Exit[T]().inputs(switchNode.trueEdge())
       if (name != null) exitNode.element.setName(s"$name/exit$index")

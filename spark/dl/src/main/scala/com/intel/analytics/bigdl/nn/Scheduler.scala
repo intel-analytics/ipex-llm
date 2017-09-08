@@ -119,6 +119,7 @@ private[bigdl] class Scheduler[T](
           } else {
             val iterationNodes = node.prevNodes.filter(nodeStatus.isIteration(_))
               .filter(!nodeStatus.iteration(_).outOfDate)
+              .filter(!_.element.isInstanceOf[LoopCondition[_]])
             if (iterationNodes.length == 0) {
               Ready()
             } else {
@@ -142,8 +143,8 @@ private[bigdl] class Scheduler[T](
     candidateNodes.foreach(nextNode => {
       if (nextNode.element.isInstanceOf[MergeOps[_]]) {
         val merge = nextNode.element.asInstanceOf[MergeOps[_]]
-        require(nodeStatus.notExecuted(nextNode), "Merge node should not be executed twice out " +
-          "of loop or in a same iteration of a loop")
+        require(nodeStatus.notExecuted(nextNode), s"Merge node(${nextNode.element.getName()}) " +
+          s"should not be executed twice out of loop or in a same iteration of a loop")
         merge.setSwitch(nextNode.prevNodes.indexOf(curNode) + 1)
         readyQueue.enqueue(nextNode)
       } else {
