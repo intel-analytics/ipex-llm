@@ -71,7 +71,6 @@ class FileSpec extends FlatSpec with Matchers {
 
     testModule should be(module)
   }
-
   "download files according to URL" should "work properly" in {
 
     val Testmodel = Module.load[Float]("https://github.com/lopelopelope" +
