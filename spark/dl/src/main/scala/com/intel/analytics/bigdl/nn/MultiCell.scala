@@ -37,26 +37,19 @@ class MultiCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorNume
   private val inputDim = 1
   private val hidDim = 2
 
-  override var cell: AbstractModule[Activity, Activity, T] = _
-  
-  var states: Array[Activity] = null
+  override var cell: AbstractModule[Activity, Activity, T] = buildModel()
 
-  /**
-   * resize the hidden parameters wrt the batch size, hiddens shapes.
-   *
-   * e.g. RnnCell contains 1 hidden parameter (H), thus it will return Tensor(size)
-   *      LSTM contains 2 hidden parameters (C and H) and will return T(Tensor(), Tensor())
-   *      and recursively intialize all the tensors in the Table.
-   * @param batchSize batchSize
-   * @return
-   */
-  def hidResize2(batchSize: Int, imageSize: Array[Int] = null): Array[Activity] = {
-    var i = 0
-    while(i < cells.length) {
-      states(i) = cells(i).hidResize(states(i), batchSize, imageSize)
-      i += 1
+  var states: Array[Activity] = null
+  
+  def buildModel(): Sequential[T] = {
+    val seq = Sequential()
+    cells.foreach{ cell =>
+      if (cell.preTopology != null) {
+        seq.add(cell.preTopology)
+      }
+      seq.add(_)
     }
-    states
+    seq
   }
   
   override def updateOutput(input: Table): Table = {
@@ -64,8 +57,17 @@ class MultiCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorNume
     var i = 0
     var result = T()
     result(inputDim) = input(inputDim)
+    
     while (i < cells.length) {
       result(hidDim) = states(i)
+      
+      if (cells(i).preTopology != null) {
+        val inputTmp = result(inputDim).asInstanceOf[Tensor[T]]
+        val sizes = 1 +: inputTmp.size()
+        inputTmp.resize(sizes)
+        val outputTmp = cells(i).preTopology.forward(inputTmp).toTensor[T]
+        result(inputDim) = outputTmp.select(1, 1)
+      }
       result = cells(i).forward(result).toTable
       states(i) = result(hidDim)
       i += 1
@@ -145,6 +147,13 @@ class MultiCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorNume
     val weights = new ArrayBuffer[Tensor[T]]()
     val gradWeights = new ArrayBuffer[Tensor[T]]()
     cells.foreach(m => {
+      if (m.preTopology != null) {
+        val pretopologyParameters = m.preTopology.parameters()
+        if (pretopologyParameters != null) {
+          pretopologyParameters._1.foreach(weights += _)
+          pretopologyParameters._2.foreach(gradWeights += _)
+        }
+      }
       val params = m.parameters()
       if (params != null) {
         params._1.foreach(weights += _)
@@ -157,6 +166,12 @@ class MultiCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorNume
   override def getParametersTable(): Table = {
     val pt = T()
     cells.foreach(m => {
+      if (m.preTopology != null) {
+        val pretopologyParameters = m.preTopology.getParametersTable()
+        if (pretopologyParameters != null) {
+          pretopologyParameters.keySet.foreach(key => pt(key) = pretopologyParameters(key))
+        }
+      }
       val params = m.getParametersTable()
       if (params != null) {
         params.keySet.foreach(key => pt(key) = params(key))

@@ -67,7 +67,7 @@ class MultiCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
   "A MultiCell " should "generate correct output" in {
     val hiddenSize = 3
     val inputSize = 3
-    val seqLength = 1
+    val seqLength = 2
     val batchSize = 2
     val kernalW = 3
     val kernalH = 3
@@ -104,6 +104,46 @@ class MultiCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
         hiddenSize,
         kernalW, kernalH,
         1)))
+    model2.getParameters()._1.copy(weights)
+
+    val output2 = model2.forward(input).toTensor[Double]
+    val gradInput2 = model2.backward(input, gradOutput).toTensor[Double]
+    val gradient2 = model2.getParameters()._2
+
+    output.map(output2, (v1, v2) => {
+      assert(abs(v1 - v2) < 1e-6)
+      v1
+    })
+  }
+
+  "A MultiCell " should "generate correct output2" in {
+    val hiddenSize = 10
+    val inputSize = 10
+    val seqLength = 2
+    val batchSize = 2
+    val rec = Recurrent[Double]()
+    val cells = Array(LSTM[Double](
+      inputSize,
+      hiddenSize)).asInstanceOf[Array[Cell[Double]]]
+
+    val model = Sequential[Double]()
+      .add(rec
+        .add(MultiCell[Double](cells)))
+    val weights = model.getParameters()._1.clone()
+
+    val input = Tensor[Double](batchSize, seqLength, inputSize).rand
+    val gradOutput = Tensor[Double](batchSize, seqLength, hiddenSize).rand
+    val output = model.forward(input).toTensor[Double]
+    val gradInput = model.backward(input, gradOutput).toTensor[Double]
+    val gradient = model.getParameters()._2
+
+    val model2 = Sequential[Double]()
+      .add(Recurrent[Double]().add(LSTM[Double](
+        inputSize,
+        hiddenSize)))
+      .add(Recurrent[Double]().add(LSTM[Double](
+        inputSize,
+        hiddenSize)))
     model2.getParameters()._1.copy(weights)
 
     val output2 = model2.forward(input).toTensor[Double]

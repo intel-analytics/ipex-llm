@@ -33,8 +33,8 @@ def main():
     # xs = tf.placeholder(tf.float32, [None, n_steps, n_input])
     xs = tf.Variable(tf.random_uniform([4, n_steps, n_input]) + 10, name='input', dtype=tf.float32)
     xs = tf.identity(xs, "input_node")
-    weight = tf.Variable(tf.random_uniform([n_hidden, n_output]) + 10, name="weight", dtype=tf.float32)
-    bias = tf.Variable(tf.random_uniform([n_output]) + 10, name="bias", dtype=tf.float32)
+    # weight = tf.Variable(tf.random_uniform([n_hidden, n_output]) + 10, name="weight", dtype=tf.float32)
+    # bias = tf.Variable(tf.random_uniform([n_output]) + 10, name="bias", dtype=tf.float32)
 
     x = tf.unstack(xs, n_steps, 1)
 
@@ -42,7 +42,8 @@ def main():
 
     output, states = rnn.static_rnn(cell, x, dtype=tf.float32)
 
-    final = tf.nn.bias_add(tf.matmul(output[-1], weight), bias, name='output')
+    # final = tf.nn.bias_add(tf.matmul(output[-1], weight), bias, name='output')
+    final = tf.stack(output, name='output')
 
     output = tf.Variable(tf.random_uniform(tf.shape(final)),name='output_result')
     result = tf.assign(output, final)

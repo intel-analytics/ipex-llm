@@ -296,7 +296,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
   }
 
   "static lstm rnn " should "have the same inference result as tensorflow" in {
-    tfCheck()
+//    tfCheck()
     System.setProperty("bigdl.enableNHWC", "false")
     val modelName = "rnn_lstm"
     // Generate command and prepare the temp folder
@@ -326,6 +326,12 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
       .getAttrMap.get("value").getTensor, ByteOrder.LITTLE_ENDIAN)
     val bigDLResult = model.forward(input)
     tfResult.almostEqual(bigDLResult.toTensor, 1e-5)
+    
+    val t = Recurrent()
+    t.add(LSTM(10, 20))
+    t.getParameters()._1.copy(model.getParameters()._1)
+    val t1 = t.forward(input)
+    val t2 = 0
   }
 
   "TensorFlow control dep" should "be load correctly" in {
