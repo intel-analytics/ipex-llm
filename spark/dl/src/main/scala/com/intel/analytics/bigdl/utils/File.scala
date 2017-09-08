@@ -20,6 +20,7 @@ import java.io._
 import java.net.URL
 
 import org.apache.commons.io.FileUtils
+import org.apache.commons.io.FilenameUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FSDataInputStream, FSDataOutputStream, FileSystem, Path}
 import org.apache.hadoop.io.IOUtils
@@ -211,30 +212,20 @@ object File {
       if (null != fs) fs.close()
     }
   }
-  def downloadFromUrl(url: String, dir: String): String = {
-    try {
+  /**
+    * load  file according to url
+    * @param url
+    * @param dir
+    * @return
+    */
+  def downloadFromUrl(url: String, dir: String): Unit = {
       val httpurl = new URL(url)
-      val fileName = getFileNameFromUrl(url)
-      System.out.println(dir + fileName)
+      val fileName = FilenameUtils.getBaseName(url) + '.' + FilenameUtils.getExtension(url)
       val f = new File(dir + fileName)
       FileUtils.copyURLToFile(httpurl, f)
-    } catch {
-      case e: Exception =>
-        e.printStackTrace()
-        return "Fault!"
-    }
-    "Successful!"
+
   }
 
-  def getFileNameFromUrl(url: String): String = {
-    var name = System.currentTimeMillis.toString
-    val index = url.lastIndexOf("/")
-    if (index > 0) {
-      name = url.substring(index + 1)
-      if (name.trim.length > 0) return name
-    }
-    name
-  }
 }
 
 /**
@@ -243,18 +234,29 @@ object File {
  */
 private[bigdl] class FileReader(fileName: String) {
   private var inputStream: InputStream = null
+  private var exactFileName: String = fileName
   private val conf = File.getConfiguration(fileName)
-  private val path = new Path(fileName)
-  private val fs: FileSystem = path.getFileSystem(conf)
-
+  private var path: Path = null
+  private var fs: FileSystem = null
+  private val httpPrefix: String = "http:"
+  private val httpsPrefix: String = "https:"
   /**
    * get an InputStream
    * @return
    */
   def open(): InputStream = {
     require(inputStream == null, s"File $fileName has been opened already.")
+    if(fileName.startsWith(httpPrefix) || fileName.startsWith(httpsPrefix)) {
+      File.downloadFromUrl(fileName, System.getProperty("user.dir"))
+      exactFileName = System.getProperty(("user.dir")) +
+        FilenameUtils.getBaseName(fileName) + '.' +
+        FilenameUtils.getExtension(fileName)
+    }
+    path = new Path(exactFileName)
+    fs = path.getFileSystem(conf)
     require(fs.exists(path), s"$fileName is empty!")
     inputStream = fs.open(path)
+
     inputStream
   }
 
