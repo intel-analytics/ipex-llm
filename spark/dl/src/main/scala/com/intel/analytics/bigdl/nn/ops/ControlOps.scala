@@ -29,7 +29,7 @@ import scala.reflect.ClassTag
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
  */
 sealed abstract class ControlOps[T: ClassTag]()(implicit ev: TensorNumeric[T])
-  extends AbstractModule[Activity, Activity, T] {
+  extends Operation[Activity, Activity, T] {
   override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
     throw new UnsupportedOperationException("Operation does not support updateGradInput() method")
   }

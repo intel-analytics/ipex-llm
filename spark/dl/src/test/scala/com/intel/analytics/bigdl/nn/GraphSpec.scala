@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.models.autoencoder.Autoencoder
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.models.vgg.{VggForCifar10, Vgg_16, Vgg_19}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import com.intel.analytics.bigdl.nn.ops.ControlNodes
+import com.intel.analytics.bigdl.nn.ops.{ControlNodes, Less}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -1128,20 +1128,21 @@ class GraphSpec extends FlatSpec with Matchers {
   "graph" should "support while loop" in {
     val input = Input()
 
-    val identity = Input()
-    val identity2 = Input()
-    val const = new com.intel.analytics.bigdl.nn.tf.Const(Tensor[Int](9)).inputs()
-    val less = new Less
-    val add = AddConstant(1).inputs(identity)
+    val conditionInput = Input()
+    val const = new com.intel.analytics.bigdl.nn.tf.Const(Tensor(T(9))).inputs()
+    val less = Less().inputs(const, conditionInput)
+
+    val updateInput = Input()
+    val add = AddConstant(1).inputs(updateInput)
     val echo = Echo().inputs(add)
 
     val exit = ControlNodes.whileLoop(
       input,
-      (identity2, less),
-      (identity, echo)
+      (conditionInput, less),
+      (updateInput, echo)
     )
     val model = Graph(input, exit)
-    model.forward(Tensor(T(1, 2, 3)))
+    model.forward(Tensor(T(1)))
   }
 }
 

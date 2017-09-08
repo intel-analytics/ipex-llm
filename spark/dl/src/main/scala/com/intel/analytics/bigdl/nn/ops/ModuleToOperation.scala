@@ -25,21 +25,21 @@ import scala.reflect.ClassTag
  * Wrap a nn module to an [[Operation]]
  *
  * @param module an nn module
- * @tparam A Input data type
  * @tparam T Numeric type. Only support float/double now
  */
-class ModuleToOperation[A <: Activity: ClassTag, T: ClassTag]
-(module: AbstractModule[A, Tensor[T], T])
+class ModuleToOperation[T: ClassTag]
+(module: AbstractModule[Activity, Activity, T])
   (implicit ev: TensorNumeric[T])
-  extends Operation[A, T]{
+  extends Operation[Activity, Activity, T]{
 
-  override def updateOutput(input: A): Tensor[T] = {
+  override def updateOutput(input: Activity): Activity = {
     output = module.forward(input)
     output
   }
 }
 
 object ModuleToOperation {
-  def apply[A <: Activity: ClassTag, T: ClassTag](model: AbstractModule[A, Tensor[T], T])
-    (implicit ev: TensorNumeric[T]): ModuleToOperation[A, T] = new ModuleToOperation(model)
+  def apply[T: ClassTag](model: AbstractModule[_, _, T])
+    (implicit ev: TensorNumeric[T]): ModuleToOperation[T] =
+    new ModuleToOperation(model.asInstanceOf[AbstractModule[Activity, Activity, T]])
 }
