@@ -35,7 +35,7 @@ private[bigdl] class EventWriter(logDir: String,
   private val outputFile = new Path(logDir +
     s"/bigdl.tfevents.${(System.currentTimeMillis() / 1e3).toInt}" +
     s".${InetAddress.getLocalHost().getHostName()}")
-  private val recordWriter = new RecordWriter(outputFile, fs)
+  private[bigdl] val recordWriter = new RecordWriter(outputFile, fs)
   // Add an empty Event to the queue.
   eventQueue.add(Event.newBuilder().setWallTime(System.currentTimeMillis() / 1e3).build())
   @volatile private var running: Boolean = true
