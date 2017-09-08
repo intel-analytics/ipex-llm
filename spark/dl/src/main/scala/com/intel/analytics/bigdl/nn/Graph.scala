@@ -305,6 +305,8 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
   private val gradOutputCache = new mutable.HashMap[String, Activity]()
 
   private def checkRoots: Unit = {
+    require(forwardNodes.map(_.element.getName()).distinct.length == forwardNodes.length,
+      "the name of node in the graph should be unique")
     val roots = forwardNodes.filter(_.prevNodes.size == 0)
       .filter(node => !node.element.isInstanceOf[WithoutInput])
     require(roots.size == inputs.length,

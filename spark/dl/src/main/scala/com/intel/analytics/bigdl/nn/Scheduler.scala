@@ -142,8 +142,8 @@ private[bigdl] class Scheduler[T](
     candidateNodes.foreach(nextNode => {
       if (nextNode.element.isInstanceOf[MergeOps[_]]) {
         val merge = nextNode.element.asInstanceOf[MergeOps[_]]
-        require(nodeStatus.notExecuted(nextNode), "Merge node should not be executed twice out" +
-          "of loop or in a same iteraton of a loop")
+        require(nodeStatus.notExecuted(nextNode), "Merge node should not be executed twice out " +
+          "of loop or in a same iteration of a loop")
         merge.setSwitch(nextNode.prevNodes.indexOf(curNode) + 1)
         readyQueue.enqueue(nextNode)
       } else {
@@ -173,7 +173,7 @@ object Scheduler {
   private val DEFAULT_ITERATION = Iteration(null)
 
   class NodeStatusManager[T] {
-    private val nodeStatus = new mutable.HashMap[ModuleNode[T], NodeStatus]()
+    private val nodeStatus = new mutable.HashMap[String, NodeStatus]()
 
     /**
      * Create an iteration status. Its parent status will be the given status if the given status
@@ -210,7 +210,7 @@ object Scheduler {
      */
     def update(node: ModuleNode[T], status: NodeStatus): Unit = {
       require(node != null && status != null, "Not accept null")
-      nodeStatus(node) = status
+      nodeStatus(node.element.getName()) = status
     }
 
     /**
@@ -219,7 +219,7 @@ object Scheduler {
      * @return
      */
     def apply(node: ModuleNode[T]): NodeStatus = {
-      nodeStatus(node)
+      nodeStatus(node.element.getName())
     }
 
     /**
@@ -228,7 +228,8 @@ object Scheduler {
      * @return
      */
     def isConst(node: ModuleNode[T]): Boolean = {
-      nodeStatus.contains(node) && nodeStatus(node).isInstanceOf[Const]
+      nodeStatus.contains(node.element.getName()) &&
+        nodeStatus(node.element.getName()).isInstanceOf[Const]
     }
 
     /**
@@ -237,7 +238,8 @@ object Scheduler {
      * @return
      */
     def isIteration(node: ModuleNode[T]): Boolean = {
-      nodeStatus.contains(node) && nodeStatus(node).isInstanceOf[Iteration]
+      nodeStatus.contains(node.element.getName()) &&
+        nodeStatus(node.element.getName()).isInstanceOf[Iteration]
     }
 
     /**
@@ -246,9 +248,9 @@ object Scheduler {
      * @return
      */
     def notExecuted(node: ModuleNode[T]): Boolean = {
-      if (!nodeStatus.contains(node)) return true
-      if (nodeStatus(node).isInstanceOf[Iteration] &&
-        nodeStatus(node).asInstanceOf[Iteration].outOfDate) {
+      if (!nodeStatus.contains(node.element.getName())) return true
+      if (nodeStatus(node.element.getName()).isInstanceOf[Iteration] &&
+        nodeStatus(node.element.getName()).asInstanceOf[Iteration].outOfDate) {
         return true
       }
       return false
@@ -260,7 +262,7 @@ object Scheduler {
      * @return
      */
     def iteration(node: ModuleNode[T]): Iteration = {
-      nodeStatus(node).asInstanceOf[Iteration]
+      nodeStatus(node.element.getName()).asInstanceOf[Iteration]
     }
 
     /**

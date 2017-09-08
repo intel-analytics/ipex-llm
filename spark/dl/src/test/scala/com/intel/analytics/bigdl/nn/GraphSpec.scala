@@ -1137,11 +1137,11 @@ class GraphSpec extends FlatSpec with Matchers {
     val echo = Echo().inputs(add)
 
     val exit = ControlNodes.whileLoop(
-      input,
-      (conditionInput, less),
-      (updateInput, echo)
+      (Seq(conditionInput), less),
+      (Seq((updateInput, echo))),
+      Seq(input)
     )
-    val model = Graph(Array(input), Array(exit), None, false)
+    val model = Graph(Array(input), Array(exit(0)), None, false)
     val result = model.forward(Tensor(T(1)))
     result.toTensor.valueAt(1) should be(10)
   }
@@ -1162,15 +1162,45 @@ class GraphSpec extends FlatSpec with Matchers {
     val add = AddConstant(1).inputs(updateInput)
 
     val exit = ControlNodes.whileLoop(
-      input,
-      (conditionInput, less),
-      (updateInput, add)
+      (Seq(conditionInput), less),
+      Seq((updateInput, add)),
+      Seq(input)
     )
-    val model = Graph(Array(input), Array(exit), None, false)
+    val model = Graph(Array(input), Array(exit(0)), None, false)
     model.forward(Tensor(T(1)))
     val result = model.forward(Tensor(T(1)))
     result.toTensor.valueAt(1) should be(10)
     count should be(1)
+  }
+
+  "graph" should "support while loop with multiple loop vars" in {
+    val input1 = Input("Input1")
+    val input2 = Input("Input2")
+
+    val conditionInput1 = Input("conditionInput1")
+    val conditionInput2 = Input("conditionInput2")
+    val const = new com.intel.analytics.bigdl.nn.tf.Const(Tensor(T(9))).setName("inc").inputs()
+    val less = Less().setName("less").inputs(const, conditionInput1)
+
+    val updateInput1 = Input("updateInput1")
+    val add1 = AddConstant(1).setName("add1").inputs(updateInput1)
+    val echo1 = Echo().setName("echo1").inputs(add1)
+
+
+    val updateInput2 = Input("updateInput2")
+    val add2 = AddConstant(5).setName("add5").inputs(updateInput2)
+    val echo2 = Echo().setName("echo2").inputs(add2)
+
+    val exit = ControlNodes.whileLoop(
+      (Seq(conditionInput1, conditionInput2), less),
+      (Seq((updateInput1, echo1), (updateInput2, echo2))),
+      Seq(input1, input2),
+      "while"
+    )
+    val model = Graph(Array(input1, input2), exit.toArray, None, false)
+    val result = model.forward(T(Tensor(T(1)), Tensor(T(2))))
+    result.toTable.apply[Tensor[Float]](1).valueAt(1) should be(10)
+    result.toTable.apply[Tensor[Float]](2).valueAt(1) should be(47)
   }
 }
 

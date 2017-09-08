@@ -119,7 +119,7 @@ private[nn] class MergeOps[T: ClassTag](private var switch : Int = 1)(
     this.output
   }
 
-  override def toString(): String = s"Merge($switch)"
+  override def toString(): String = getPrintName() + s"($switch)"
 }
 
 /**
@@ -269,28 +269,39 @@ object ControlNodes {
   }
 
   /**
-   * Create a while loop in the graph
-   * @param input input node
-   * @param loopCondition a graph which produce a boolean scalar from input node, (input, output)
-   * @param update a graph which produce update input node data, (input, output)
-   * @param ev
+   * Constructor a while loop in the graph
+   * @param condition a sub graph produce a boolean scalar
+   * @param body while body, input/output tuple. body length is seq of nodes with same length of
+   *             loopVars
+   * @param loopVars loop vars
    * @tparam T
-   * @return
+   * @return a seq of nodes with same length of loopVars
    */
   def whileLoop[T: ClassTag](
-    input: ModuleNode[T],
-    loopCondition: (ModuleNode[T], ModuleNode[T]),
-    update: (ModuleNode[T], ModuleNode[T])
-  )(implicit ev: TensorNumeric[T]): ModuleNode[T] = {
-    val enter = new Enter[T]().inputs(input)
-    val mergeNode = merge[T](enter)
-    mergeNode -> loopCondition._1
-    val switchNode = switch[T](mergeNode, loopCondition._2)
-    val exitNode = new Exit[T]().inputs(switchNode.trueEdge())
-    val identity = Identity[T]().inputs(switchNode.falseEdge())
-    identity -> update._1
-    val nextIteration = new NextIteration[T].inputs(update._2)
-    mergeNode.append(nextIteration)
-    exitNode
+    condition: (Seq[ModuleNode[T]], ModuleNode[T]),
+    body: Seq[(ModuleNode[T], ModuleNode[T])],
+    loopVars: (Seq[ModuleNode[T]]),
+    name: String = null
+  )(implicit ev: TensorNumeric[T]): Seq[ModuleNode[T]] = {
+
+    loopVars.zip(condition._1).zip(body).zipWithIndex.map(tuple => {
+      val (((input, cond), update), index) = tuple
+      val enter = new Enter[T]().inputs(input)
+      if (name != null) enter.element.setName(s"$name/enter$index")
+      val mergeNode = merge[T](enter)
+      if (name != null) mergeNode.element.setName(s"$name/merge$index")
+      mergeNode -> cond
+      val switchNode = switch[T](mergeNode, condition._2)
+      if (name != null) switchNode.element.setName(s"$name/switch$index")
+      val exitNode = new Exit[T]().inputs(switchNode.trueEdge())
+      if (name != null) exitNode.element.setName(s"$name/exit$index")
+      val identity = Identity[T]().inputs(switchNode.falseEdge())
+      if (name != null) identity.element.setName(s"$name/switchFalse$index")
+      identity -> update._1
+      val nextIteration = new NextIteration[T].inputs(update._2)
+      if (name != null) nextIteration.element.setName(s"$name/nextIteration$index")
+      mergeNode.append(nextIteration)
+      exitNode
+    })
   }
 }
