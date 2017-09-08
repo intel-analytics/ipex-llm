@@ -675,4 +675,34 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
       path
     }
   }
+
+  "decoder lstm rnn " should "have the same inference result as tensorflow" in {
+    //    tfCheck()
+    System.setProperty("bigdl.enableNHWC", "false")
+    val modelName = "decoder"
+    // Generate command and prepare the temp folder
+    val s = JFile.separator
+    val modelsFolder = processPath(getClass().getClassLoader().getResource("tf").getPath()) +
+      s + "models"
+    val modelScript = modelsFolder + s + s"$modelName.py"
+    val tmpLocation = java.io.File.createTempFile("tensorflowLoaderTest" + UUID.randomUUID(),
+      modelName)
+    tmpLocation.delete()
+    tmpLocation.mkdir()
+
+    require(runPython(s"$modelScript $tmpLocation"), "error when run the model script")
+
+    // Load the model and input/output tensors
+    val modelFile = tmpLocation + s + "model.pb"
+
+    val results = TensorflowLoader.parse(modelFile)
+    val tfGraph = TensorflowLoader.buildTFGraph(results.subList(0, results.size()-1), Seq("output"))
+        val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("input"),
+          Seq("output"),
+          ByteOrder.LITTLE_ENDIAN, "")
+    val input = TensorflowToBigDL.toTensor(results.get(0).getAttrMap.get("value").getTensor,
+      ByteOrder.LITTLE_ENDIAN).contiguous()
+    val tfResult = TensorflowToBigDL.toTensor(results.get(results.size()-1)
+      .getAttrMap.get("value").getTensor, ByteOrder.LITTLE_ENDIAN)    
+  }
 }
