@@ -27,17 +27,20 @@ import scala.reflect.ClassTag
  * topology
  */
 @SerialVersionUID(6735245897546687343L)
-class Echo[T: ClassTag] (implicit ev: TensorNumeric[T])
+class Echo[T: ClassTag](
+  feval: (Echo[T], Tensor[T]) => Unit,
+  beval: (Echo[T], Tensor[T], Tensor[T]) => Unit
+) (implicit ev: TensorNumeric[T])
   extends TensorModule[T]  {
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     this.output = input
-    println(s"${getPrintName} : Activation size is ${input.size().mkString("x")}")
+    feval(this, input)
     this.output
   }
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     this.gradInput = gradOutput
-    println(s"${getPrintName} : Gradient size is ${gradOutput.size().mkString("x")}")
+    beval(this, input, gradOutput)
     this.gradInput
   }
 }
@@ -45,6 +48,25 @@ class Echo[T: ClassTag] (implicit ev: TensorNumeric[T])
 object Echo {
   def apply[@specialized(Float, Double) T: ClassTag]()
       (implicit ev: TensorNumeric[T]) : Echo[T] = {
-    new Echo[T]()
+    new Echo[T](Echo.defaultFeval[T]_, Echo.defaultBeval[T]_)
+  }
+
+  def apply[@specialized(Float, Double) T: ClassTag](feval: (Echo[T], Tensor[T]) => Unit)
+    (implicit ev: TensorNumeric[T]) : Echo[T] = {
+    new Echo[T](feval, Echo.defaultBeval[T]_)
+  }
+
+  def apply[@specialized(Float, Double) T: ClassTag](feval: (Echo[T], Tensor[T]) => Unit,
+    beval: (Echo[T], Tensor[T], Tensor[T]) => Unit)
+    (implicit ev: TensorNumeric[T]) : Echo[T] = {
+    new Echo[T](feval, beval)
+  }
+
+  private def defaultFeval[T](module: Echo[T], input: Tensor[T]): Unit = {
+    println(s"${module.getPrintName} : Activation size is ${input.size().mkString("x")}")
+  }
+
+  private def defaultBeval[T](module: Echo[T], input: Tensor[T], gradOutput: Tensor[T]): Unit = {
+    println(s"${module.getPrintName} : Gradient size is ${gradOutput.size().mkString("x")}")
   }
 }

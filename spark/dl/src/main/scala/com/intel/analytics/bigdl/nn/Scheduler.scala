@@ -107,7 +107,7 @@ private[bigdl] class Scheduler[T](
         nodeStatus(node) = Iteration(lastIteration.prev)
       case _ =>
         nodeStatus(node) = if (node.prevNodes.length == 0) {
-          if (node.isInstanceOf[com.intel.analytics.bigdl.nn.tf.Const[_]]) {
+          if (node.element.isInstanceOf[com.intel.analytics.bigdl.nn.tf.Const[_]]) {
             Const()
           } else {
             Ready()

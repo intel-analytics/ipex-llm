@@ -125,26 +125,37 @@ class DirectedGraph[T](val source : Node[T], val reverse : Boolean = false) exte
       }
     }
   }
+  // scalastyle:on methodName
 
   /**
    * Clone the graph structure, will not clone the node element
-   * @return new graph
+   * @param reverseEdge if reverse the edge in the nodes
+   * @return
    */
-  def cloneGraph(): DirectedGraph[T] = {
+  def cloneGraph(reverseEdge: Boolean = false): DirectedGraph[T] = {
     val oldToNew = new util.HashMap[Node[T], Node[T]]()
     val bfs = BFS.toArray
     bfs.foreach(node => {
       oldToNew.put(node, new Node[T](node.element))
     })
     bfs.foreach(node => {
-      node.prevNodesAndEdges.foreach(prevNodeAndEdge => {
-        oldToNew.get(prevNodeAndEdge._1).add(oldToNew.get(node), prevNodeAndEdge._2)
-      })
+      if (reverseEdge) {
+        node.prevNodesAndEdges.foreach(prevNodeAndEdge => {
+          oldToNew.get(node).add(oldToNew.get(prevNodeAndEdge._1), prevNodeAndEdge._2)
+        })
+      } else {
+        node.prevNodesAndEdges.foreach(prevNodeAndEdge => {
+          oldToNew.get(prevNodeAndEdge._1).add(oldToNew.get(node), prevNodeAndEdge._2)
+        })
+      }
     })
-    new DirectedGraph[T](oldToNew.get(source), reverse)
-  }
 
-  // scalastyle:on methodName
+    if (reverseEdge) {
+      new DirectedGraph[T](oldToNew.get(source), !reverse)
+    } else {
+      new DirectedGraph[T](oldToNew.get(source), reverse)
+    }
+  }
 }
 
 /**

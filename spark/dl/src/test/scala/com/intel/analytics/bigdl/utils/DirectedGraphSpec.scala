@@ -334,6 +334,25 @@ class DirectedGraphSpec extends FlatSpec with Matchers {
     })
   }
 
+  "Reverse graph" should "be correct" in {
+    val nodeA = new Node("A")
+    val nodeB = new Node("B")
+    val nodeC = new Node("C")
+    val nodeD = new Node("D")
+    nodeA -> nodeB -> nodeC
+    nodeB -> nodeD
+
+    val graph = nodeA.graph()
+    val reverseGraph = graph.cloneGraph(true)
+    val originSort = graph.topologySort
+    val sorted = reverseGraph.topologySort
+    originSort.map(_.element) should be(sorted.map(_.element))
+    originSort(1).nextNodes.length should be(2)
+    originSort(1).prevNodes.length should be(1)
+    sorted(1).nextNodes.length should be(1)
+    sorted(1).prevNodes.length should be(2)
+  }
+
   "delete edge" should "be correct when specify edge" in {
     val e1 = Edge(1)
     val e2 = Edge(2)

@@ -1141,8 +1141,36 @@ class GraphSpec extends FlatSpec with Matchers {
       (conditionInput, less),
       (updateInput, echo)
     )
-    val model = Graph(input, exit)
+    val model = Graph(Array(input), Array(exit), None, false)
+    val result = model.forward(Tensor(T(1)))
+    result.toTensor.valueAt(1) should be(10)
+  }
+
+  "graph" should "support while loop twice and const node should not be executed twice" in {
+    val input = Input()
+
+    val conditionInput = Input()
+    val const = new com.intel.analytics.bigdl.nn.tf.Const(Tensor(T(9))).inputs()
+    var count = 0
+    def feval(module: Echo[Float], input: Tensor[Float]): Unit = {
+      count += 1
+    }
+    val echo = Echo(feval).inputs(const)
+    val less = Less().inputs(echo, conditionInput)
+
+    val updateInput = Input()
+    val add = AddConstant(1).inputs(updateInput)
+
+    val exit = ControlNodes.whileLoop(
+      input,
+      (conditionInput, less),
+      (updateInput, add)
+    )
+    val model = Graph(Array(input), Array(exit), None, false)
     model.forward(Tensor(T(1)))
+    val result = model.forward(Tensor(T(1)))
+    result.toTensor.valueAt(1) should be(10)
+    count should be(1)
   }
 }
 
