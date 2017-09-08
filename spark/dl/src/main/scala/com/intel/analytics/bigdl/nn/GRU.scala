@@ -77,6 +77,8 @@ class GRU[T : ClassTag] (
         wRegularizer = wRegularizer, bRegularizer = bRegularizer))
     }
 
+  override def hiddenSizeOfPreTopo: Int = 3 * outputSize
+
   def buildGates()(input1: ModuleNode[T], input2: ModuleNode[T])
   : (ModuleNode[T], ModuleNode[T]) = {
     if (p != 0) {

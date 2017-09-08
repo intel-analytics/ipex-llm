@@ -50,7 +50,8 @@ class LogSoftMax[T: ClassTag](
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim() == 1 || input.dim() == 2,
-      "LogSoftMax: " + ErrorInfo.constrainInputAsVectorOrBatch)
+      "LogSoftMax: " + ErrorInfo.constrainInputAsVectorOrBatch +
+      s"input dim ${input.dim()}")
     output.resizeAs(input).copy(input)
     val (nframe, dim) =
       if (input.nDimension() == 1) (1, input.size(1)) else (input.size(1), input.size(2))

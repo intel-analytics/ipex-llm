@@ -16,7 +16,9 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import java.util
+
+import com.intel.analytics.bigdl.nn.abstractnn.{DataFormat, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -53,6 +55,8 @@ import com.intel.analytics.bigdl.utils.Engine
  * @param countIncludePad whether to include padding when dividing the
  *                        number of elements in pooling region
  * @param divide whether to do the averaging
+ * @param format          DataFormat.NCHW or DataFormat.NHWC, indicating the input
+ *                        data format
  */
 @SerialVersionUID(4533142511857387857L)
 class SpatialAveragePooling[T: ClassTag](
@@ -65,7 +69,8 @@ class SpatialAveragePooling[T: ClassTag](
   val globalPooling: Boolean = false,
   private var ceilMode: Boolean = false,
   private var countIncludePad: Boolean = true,
-  private var divide: Boolean = true
+  private var divide: Boolean = true,
+  val format: DataFormat = DataFormat.NCHW
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   @transient
@@ -200,18 +205,135 @@ class SpatialAveragePooling[T: ClassTag](
     }
   }
 
+  private def updateOutputFrameDoubleNHWC(
+     input: Tensor[Double], output: Tensor[Double],
+     nInputPlane: Int, inputHeight: Int, inputWidth: Int, outputHeight: Int,
+     outputWidth: Int, kW: Int, kH: Int, dW: Int, dH: Int,
+     padLeft: Int, padTop: Int, padRight: Int, padBottom: Int): Unit = {
+    require(input.isContiguous())
+    val inputData = input.storage().array()
+    val inputOffset = input.storageOffset() - 1
+    val outputData = output.storage().array()
+    val outputOffset = output.storageOffset() - 1
+    var yy = 0
+    while (yy < outputHeight) {
+      var xx = 0
+      while (xx < outputWidth) {
+        var hStart = yy * dH - padTop
+        var wStart = xx * dW - padLeft
+        var hEnd = math.min(hStart + kH, inputHeight + padBottom)
+        var wEnd = math.min(wStart + kW, inputWidth + padRight)
+        val poolSize = (hEnd - hStart) * (wEnd - wStart)
+        hStart = math.max(hStart, 0)
+        wStart = math.max(wStart, 0)
+        hEnd = math.min(hEnd, inputHeight)
+        wEnd = math.min(wEnd, inputWidth)
+
+        val currOutLocStart = outputOffset + (yy * outputWidth + xx) * nInputPlane
+        val currOutLocEnd = currOutLocStart + nInputPlane
+        util.Arrays.fill(outputData, currOutLocStart, currOutLocEnd, 0.0)
+        val divideFactor = if (countIncludePad) poolSize else (hEnd - hStart) * (wEnd - wStart)
+
+        var y = hStart
+        while (y < hEnd) {
+          var x = wStart
+          while (x < wEnd) {
+            // k, y, x input indexers
+            val tcntr = y *inputWidth + x
+            val currInLocStart = inputOffset + tcntr * nInputPlane
+            var n = 0
+            while (n < nInputPlane) {
+              val value = inputData(currInLocStart + n)
+              outputData(currOutLocStart + n) += value
+              n = n + 1
+            }
+            x += 1
+          }
+          y += 1
+        }
+        var n = 0
+        while (n < nInputPlane) {
+          outputData(currOutLocStart + n) /= divideFactor
+          n = n + 1
+        }
+        xx += 1
+      }
+      yy += 1
+    }
+  }
+
+
+  private def updateOutputFrameFloatNHWC(
+    input: Tensor[Float], output: Tensor[Float],
+    nInputPlane: Int, inputHeight: Int, inputWidth: Int, outputHeight: Int,
+    outputWidth: Int, kW: Int, kH: Int, dW: Int, dH: Int,
+    padLeft: Int, padTop: Int, padRight: Int, padBottom: Int): Unit = {
+    require(input.isContiguous())
+    val inputData = input.storage().array()
+    val inputOffset = input.storageOffset() - 1
+    val outputData = output.storage().array()
+    val outputOffset = output.storageOffset() - 1
+    var yy = 0
+    while (yy < outputHeight) {
+      var xx = 0
+      while (xx < outputWidth) {
+        var hStart = yy * dH - padTop
+        var wStart = xx * dW - padLeft
+        var hEnd = math.min(hStart + kH, inputHeight + padBottom)
+        var wEnd = math.min(wStart + kW, inputWidth + padRight)
+        val poolSize = (hEnd - hStart) * (wEnd - wStart)
+        hStart = math.max(hStart, 0)
+        wStart = math.max(wStart, 0)
+        hEnd = math.min(hEnd, inputHeight)
+        wEnd = math.min(wEnd, inputWidth)
+
+        val currOutLocStart = outputOffset + (yy * outputWidth + xx) * nInputPlane
+        val currOutLocEnd = currOutLocStart + nInputPlane
+        util.Arrays.fill(outputData, currOutLocStart, currOutLocEnd, 0.0f)
+        val divideFactor = if (countIncludePad) poolSize else (hEnd - hStart) * (wEnd - wStart)
+
+        var y = hStart
+        while (y < hEnd) {
+          var x = wStart
+          while (x < wEnd) {
+            // k, y, x input indexers
+            val tcntr = y *inputWidth + x
+            val currInLocStart = inputOffset + tcntr * nInputPlane
+            var n = 0
+            while (n < nInputPlane) {
+              val value = inputData(currInLocStart + n)
+              outputData(currOutLocStart + n) += value
+              n = n + 1
+            }
+            x += 1
+          }
+          y += 1
+        }
+        var n = 0
+        while (n < nInputPlane) {
+          outputData(currOutLocStart + n) /= divideFactor
+          n = n + 1
+        }
+        xx += 1
+      }
+      yy += 1
+    }
+  }
+
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim() == 3 || input.dim() == 4,
-      "SpatialAveragePooling: " + ErrorInfo.constrainInputAs3DOrBatch)
-    val dimH = input.dim() - 1
-    val dimW = input.dim()
+      "SpatialAveragePooling: " + ErrorInfo.constrainInputAs3DOrBatch +
+    s"input dimension ${input.dim()}")
+
+    val (dimH, dimW, dimC) = format.getHWCDims(input.dim())
+
     val inputHeight = input.size(dimH)
     val inputWidth = input.size(dimW)
+    val nInputPlane = input.size(dimC)
     if (globalPooling) {
       kH = inputHeight
       kW = inputWidth
     }
-    val nInputPlane = input.size(dimH - 1)
 
     val (padTop, padBottom, padLeft, padRight, outputHeight, outputWidth) =
       if (padW == -1 && padH == -1) {
@@ -221,46 +343,88 @@ class SpatialAveragePooling[T: ClassTag](
       }
 
     if (input.dim() == 3) {
-      output.resize(Array(nInputPlane, outputHeight, outputWidth))
-      if (classTag[T] == classTag[Double]) {
-        updateOutputFrameDouble(input.asInstanceOf[Tensor[Double]],
-          output.asInstanceOf[Tensor[Double]],
-          nInputPlane, inputHeight, inputWidth, outputHeight, outputWidth,
-          kW, kH, dW, dH, padLeft, padTop, padRight, padBottom)
-      } else {
-        updateOutputFrameFloat(input.asInstanceOf[Tensor[Float]],
-          output.asInstanceOf[Tensor[Float]],
-          nInputPlane, inputHeight, inputWidth, outputHeight, outputWidth,
-          kW, kH, dW, dH, padLeft, padTop, padRight, padBottom)
-      }
-    }
-    else {
-      val nbatch = input.size(1)
-      output.resize(Array(nbatch, nInputPlane, outputHeight, outputWidth))
-
-      if (results == null || results.length != nbatch) {
-        results = new Array[Future[Unit]](nbatch)
-      }
-
-      var i = 1
-      while (i <= nbatch) {
-        val _i = i
-        results(_i - 1) = Engine.model.invoke(() => {
+      format match {
+        case DataFormat.NCHW =>
+          output.resize(Array(nInputPlane, outputHeight, outputWidth))
           if (classTag[T] == classTag[Double]) {
-            updateOutputFrameDouble(input(_i).asInstanceOf[Tensor[Double]],
-              output(_i).asInstanceOf[Tensor[Double]],
+            updateOutputFrameDouble(input.asInstanceOf[Tensor[Double]],
+              output.asInstanceOf[Tensor[Double]],
               nInputPlane, inputHeight, inputWidth, outputHeight, outputWidth,
               kW, kH, dW, dH, padLeft, padTop, padRight, padBottom)
           } else {
-            updateOutputFrameFloat(input(_i).asInstanceOf[Tensor[Float]],
-              output(_i).asInstanceOf[Tensor[Float]],
+            updateOutputFrameFloat(input.asInstanceOf[Tensor[Float]],
+              output.asInstanceOf[Tensor[Float]],
               nInputPlane, inputHeight, inputWidth, outputHeight, outputWidth,
               kW, kH, dW, dH, padLeft, padTop, padRight, padBottom)
           }
-        })
-        i += 1
+        case DataFormat.NHWC =>
+          output.resize(Array(outputHeight, outputWidth, nInputPlane))
+          if (classTag[T] == classTag[Double]) {
+            updateOutputFrameDoubleNHWC(input.asInstanceOf[Tensor[Double]],
+              output.asInstanceOf[Tensor[Double]],
+              nInputPlane, inputHeight, inputWidth, outputHeight, outputWidth,
+              kW, kH, dW, dH, padLeft, padTop, padRight, padBottom)
+          } else {
+            updateOutputFrameFloatNHWC(input.asInstanceOf[Tensor[Float]],
+              output.asInstanceOf[Tensor[Float]],
+              nInputPlane, inputHeight, inputWidth, outputHeight, outputWidth,
+              kW, kH, dW, dH, padLeft, padTop, padRight, padBottom)
+          }
       }
-      Engine.model.sync(results)
+
+    }
+    else {
+      val nbatch = input.size(1)
+      if (results == null || results.length != nbatch) {
+        results = new Array[Future[Unit]](nbatch)
+      }
+      format match {
+        case DataFormat.NCHW =>
+          output.resize(Array(nbatch, nInputPlane, outputHeight, outputWidth))
+
+          var i = 1
+          while (i <= nbatch) {
+            val _i = i
+            results(_i - 1) = Engine.model.invoke(() => {
+              if (classTag[T] == classTag[Double]) {
+                updateOutputFrameDouble(input(_i).asInstanceOf[Tensor[Double]],
+                  output(_i).asInstanceOf[Tensor[Double]],
+                  nInputPlane, inputHeight, inputWidth, outputHeight, outputWidth,
+                  kW, kH, dW, dH, padLeft, padTop, padRight, padBottom)
+              } else {
+                updateOutputFrameFloat(input(_i).asInstanceOf[Tensor[Float]],
+                  output(_i).asInstanceOf[Tensor[Float]],
+                  nInputPlane, inputHeight, inputWidth, outputHeight, outputWidth,
+                  kW, kH, dW, dH, padLeft, padTop, padRight, padBottom)
+              }
+            })
+            i += 1
+          }
+          Engine.model.sync(results)
+        case DataFormat.NHWC =>
+          output.resize(Array(nbatch, outputHeight, outputWidth, nInputPlane))
+
+          var i = 1
+          while (i <= nbatch) {
+            val _i = i
+            results(_i - 1) = Engine.model.invoke(() => {
+              if (classTag[T] == classTag[Double]) {
+                updateOutputFrameDoubleNHWC(input(_i).asInstanceOf[Tensor[Double]],
+                  output(_i).asInstanceOf[Tensor[Double]],
+                  nInputPlane, inputHeight, inputWidth, outputHeight, outputWidth,
+                  kW, kH, dW, dH, padLeft, padTop, padRight, padBottom)
+              } else {
+                updateOutputFrameFloatNHWC(input(_i).asInstanceOf[Tensor[Float]],
+                  output(_i).asInstanceOf[Tensor[Float]],
+                  nInputPlane, inputHeight, inputWidth, outputHeight, outputWidth,
+                  kW, kH, dW, dH, padLeft, padTop, padRight, padBottom)
+              }
+            })
+            i += 1
+          }
+          Engine.model.sync(results)
+      }
+
     }
 
     if (!divide) {
@@ -363,14 +527,115 @@ class SpatialAveragePooling[T: ClassTag](
     }
   }
 
+  private def updateGradInputFrameDoubleNHWC(
+    gradInput: Tensor[Double], gradOutput: Tensor[Double],
+    nInputPlane: Int, inputHeight: Int, inputWidth: Int,
+    outputHeight: Int, outputWidth: Int,
+    kW: Int, kH: Int, dW: Int, dH: Int,
+    padLeft: Int, padTop: Int, padRight: Int, padBottom: Int): Unit = {
+    require(gradOutput.isContiguous())
+    val gradInputData = gradInput.storage().array()
+    val gradInputOffset = gradInput.storageOffset() - 1
+    val gradOutputData = gradOutput.storage().array()
+    val gradOutputOffset = gradOutput.storageOffset() - 1
+
+    var yy = 0
+    while (yy < outputHeight) {
+      var xx = 0
+      while (xx < outputWidth) {
+        var hStart = yy * dH - padTop
+        var wStart = xx * dW - padLeft
+        var hEnd = math.min(hStart + kH, inputHeight + padBottom)
+        var wEnd = math.min(wStart + kW, inputWidth + padRight)
+        val poolSize = (hEnd - hStart) * (wEnd - wStart)
+        hStart = math.max(hStart, 0)
+        wStart = math.max(wStart, 0)
+        hEnd = math.min(hEnd, inputHeight)
+        wEnd = math.min(wEnd, inputWidth)
+
+        val divideFactor =
+          if (countIncludePad) poolSize else (hEnd - hStart) * (wEnd - wStart)
+
+        val outputOffset = gradOutputOffset + (yy * outputWidth + xx) * nInputPlane
+        var ky = hStart
+        while (ky < hEnd) {
+          var kx = wStart
+          while (kx < wEnd) {
+            var n = 0
+            val inputOffset = gradInputOffset + (ky * inputWidth + kx) * nInputPlane
+            while (n < nInputPlane) {
+              gradInputData(inputOffset + n) += gradOutputData(outputOffset + n) / divideFactor
+              n = n + 1
+            }
+            kx += 1
+          }
+          ky += 1
+        }
+        xx += 1
+      }
+      yy += 1
+    }
+  }
+
+  private def updateGradInputFrameFloatNHWC(
+     gradInput: Tensor[Float], gradOutput: Tensor[Float],
+     nInputPlane: Int, inputHeight: Int, inputWidth: Int,
+     outputHeight: Int, outputWidth: Int,
+     kW: Int, kH: Int, dW: Int, dH: Int,
+     padLeft: Int, padTop: Int, padRight: Int, padBottom: Int): Unit = {
+    require(gradOutput.isContiguous())
+    val gradInputData = gradInput.storage().array()
+    val gradInputOffset = gradInput.storageOffset() - 1
+    val gradOutputData = gradOutput.storage().array()
+    val gradOutputOffset = gradOutput.storageOffset() - 1
+
+    var yy = 0
+    while (yy < outputHeight) {
+      var xx = 0
+      while (xx < outputWidth) {
+        var hStart = yy * dH - padTop
+        var wStart = xx * dW - padLeft
+        var hEnd = math.min(hStart + kH, inputHeight + padBottom)
+        var wEnd = math.min(wStart + kW, inputWidth + padRight)
+        val poolSize = (hEnd - hStart) * (wEnd - wStart)
+        hStart = math.max(hStart, 0)
+        wStart = math.max(wStart, 0)
+        hEnd = math.min(hEnd, inputHeight)
+        wEnd = math.min(wEnd, inputWidth)
+
+        val divideFactor =
+          if (countIncludePad) poolSize else (hEnd - hStart) * (wEnd - wStart)
+
+        val outputOffset = gradOutputOffset + (yy * outputWidth + xx) * nInputPlane
+        var ky = hStart
+        while (ky < hEnd) {
+          var kx = wStart
+          while (kx < wEnd) {
+            var n = 0
+            val inputOffset = gradInputOffset + (ky * inputWidth + kx) * nInputPlane
+            while (n < nInputPlane) {
+              gradInputData(inputOffset + n) += gradOutputData(outputOffset + n) / divideFactor
+              n = n + 1
+            }
+            kx += 1
+          }
+          ky += 1
+        }
+        xx += 1
+      }
+      yy += 1
+    }
+  }
+
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     require(input.dim() == 3 || input.dim() == 4,
-      "SpatialAveragePooling: " + ErrorInfo.constrainInputAs3DOrBatch)
-    val dimh = input.dim() - 1
-    val dimw = input.dim()
+      "SpatialAveragePooling: " + ErrorInfo.constrainInputAs3DOrBatch +
+    s"input dimension ${input.dim()}")
+    val (dimh, dimw, dimc) = format.getHWCDims(input.dim())
+
+    val nInputPlane = input.size(dimc)
     val inputHeight = input.size(dimh)
     val inputWidth = input.size(dimw)
-    val nInputPlane = input.size(dimh - 1)
 
     val (padTop, padBottom, padLeft, padRight, outputHeight, outputWidth) =
       if (padW == -1 && padH == -1) {
@@ -385,44 +650,83 @@ class SpatialAveragePooling[T: ClassTag](
 
     gradInput.resizeAs(input).zero()
     if (input.dim() == 3) {
-      if (classTag[T] == classTag[Double]) {
-        updateGradInputFrameDouble(gradInput.asInstanceOf[Tensor[Double]],
-          gradOutput.asInstanceOf[Tensor[Double]],
-          nInputPlane, inputHeight, inputWidth, outputHeight, outputWidth,
-          kW, kH, dW, dH, padLeft, padTop, padRight, padBottom)
-      } else {
-        updateGradInputFrameFloat(gradInput.asInstanceOf[Tensor[Float]],
-          gradOutput.asInstanceOf[Tensor[Float]],
-          nInputPlane, inputHeight, inputWidth, outputHeight, outputWidth,
-          kW, kH, dW, dH, padLeft, padTop, padRight, padBottom)
+      format match {
+        case DataFormat.NCHW =>
+          if (classTag[T] == classTag[Double]) {
+            updateGradInputFrameDouble(gradInput.asInstanceOf[Tensor[Double]],
+              gradOutput.asInstanceOf[Tensor[Double]],
+              nInputPlane, inputHeight, inputWidth, outputHeight, outputWidth,
+              kW, kH, dW, dH, padLeft, padTop, padRight, padBottom)
+          } else {
+            updateGradInputFrameFloat(gradInput.asInstanceOf[Tensor[Float]],
+              gradOutput.asInstanceOf[Tensor[Float]],
+              nInputPlane, inputHeight, inputWidth, outputHeight, outputWidth,
+              kW, kH, dW, dH, padLeft, padTop, padRight, padBottom)
+          }
+        case DataFormat.NHWC =>
+          if (classTag[T] == classTag[Double]) {
+            updateGradInputFrameDoubleNHWC(gradInput.asInstanceOf[Tensor[Double]],
+              gradOutput.asInstanceOf[Tensor[Double]],
+              nInputPlane, inputHeight, inputWidth, outputHeight, outputWidth,
+              kW, kH, dW, dH, padLeft, padTop, padRight, padBottom)
+          } else {
+            updateGradInputFrameFloatNHWC(gradInput.asInstanceOf[Tensor[Float]],
+              gradOutput.asInstanceOf[Tensor[Float]],
+              nInputPlane, inputHeight, inputWidth, outputHeight, outputWidth,
+              kW, kH, dW, dH, padLeft, padTop, padRight, padBottom)
+          }
       }
-    }
-    else {
+    } else {
       val nBatch = input.size(1)
 
       if (results == null || results.length != nBatch) {
         results = new Array[Future[Unit]](nBatch)
       }
 
-      var i = 1
-      while (i <= nBatch) {
-        val _i = i
-        results(_i - 1) = Engine.model.invoke(() => {
-          if (classTag[T] == classTag[Double]) {
-            updateGradInputFrameDouble(gradInput(_i).asInstanceOf[Tensor[Double]],
-              gradOutput(_i).asInstanceOf[Tensor[Double]],
-              nInputPlane, inputHeight, inputWidth, outputHeight, outputWidth,
-              kW, kH, dW, dH, padLeft, padTop, padRight, padBottom)
-          } else {
-            updateGradInputFrameFloat(gradInput(_i).asInstanceOf[Tensor[Float]],
-              gradOutput(_i).asInstanceOf[Tensor[Float]],
-              nInputPlane, inputHeight, inputWidth, outputHeight, outputWidth,
-              kW, kH, dW, dH, padLeft, padTop, padRight, padBottom)
+      format match {
+        case DataFormat.NCHW =>
+          var i = 1
+          while (i <= nBatch) {
+            val _i = i
+            results(_i - 1) = Engine.model.invoke(() => {
+              if (classTag[T] == classTag[Double]) {
+                updateGradInputFrameDouble(gradInput(_i).asInstanceOf[Tensor[Double]],
+                  gradOutput(_i).asInstanceOf[Tensor[Double]],
+                  nInputPlane, inputHeight, inputWidth, outputHeight, outputWidth,
+                  kW, kH, dW, dH, padLeft, padTop, padRight, padBottom)
+              } else {
+                updateGradInputFrameFloat(gradInput(_i).asInstanceOf[Tensor[Float]],
+                  gradOutput(_i).asInstanceOf[Tensor[Float]],
+                  nInputPlane, inputHeight, inputWidth, outputHeight, outputWidth,
+                  kW, kH, dW, dH, padLeft, padTop, padRight, padBottom)
+              }
+            })
+            i += 1
           }
-        })
-        i += 1
+          Engine.model.sync(results)
+        case DataFormat.NHWC =>
+          var i = 1
+          while (i <= nBatch) {
+            val _i = i
+            results(_i - 1) = Engine.model.invoke(() => {
+              if (classTag[T] == classTag[Double]) {
+                updateGradInputFrameDoubleNHWC(gradInput(_i).asInstanceOf[Tensor[Double]],
+                  gradOutput(_i).asInstanceOf[Tensor[Double]],
+                  nInputPlane, inputHeight, inputWidth, outputHeight, outputWidth,
+                  kW, kH, dW, dH, padLeft, padTop, padRight, padBottom)
+              } else {
+                updateGradInputFrameFloatNHWC(gradInput(_i).asInstanceOf[Tensor[Float]],
+                  gradOutput(_i).asInstanceOf[Tensor[Float]],
+                  nInputPlane, inputHeight, inputWidth, outputHeight, outputWidth,
+                  kW, kH, dW, dH, padLeft, padTop, padRight, padBottom)
+              }
+            })
+            i += 1
+          }
+          Engine.model.sync(results)
       }
-      Engine.model.sync(results)
+
+
     }
     if (!divide) {
       gradInput.mul(ev.fromType[Int](kW * kH))
@@ -481,8 +785,10 @@ object SpatialAveragePooling {
       globalPooling: Boolean = false,
       ceilMode: Boolean = false,
       countIncludePad: Boolean = true,
-      divide: Boolean = true)(implicit ev: TensorNumeric[T]) : SpatialAveragePooling[T] = {
+      divide: Boolean = true,
+      format: DataFormat = DataFormat.NCHW)
+      (implicit ev: TensorNumeric[T]) : SpatialAveragePooling[T] = {
     new SpatialAveragePooling[T](kW, kH, dW, dH, padW, padH, globalPooling,
-      ceilMode, countIncludePad, divide)
+      ceilMode, countIncludePad, divide, format)
   }
 }

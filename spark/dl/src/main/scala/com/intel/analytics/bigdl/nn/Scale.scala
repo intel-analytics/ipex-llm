@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData, ModuleSerializable, ModuleSerializer}
@@ -84,32 +84,30 @@ object Scale extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](size: Array[Int])
     (implicit ev: TensorNumeric[T]): Scale[T] = new Scale[T](size)
 
-  override def loadModule[T: ClassTag](model : BigDLModule)
-                                      (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
-    val moduleData = super.loadModule(model)
-    val scale = moduleData.module.asInstanceOf[Scale[T]]
+  override def doLoadModule[T: ClassTag](model : BigDLModule)
+    (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
+    val scale = super.doLoadModule(model).asInstanceOf[Scale[T]]
     val attrMap = model.getAttrMap
     val cmul = attrMap.get("cmul")
     scale.cmul = DataConverter.getAttributeValue(cmul).asInstanceOf[CMul[T]]
     val cadd = attrMap.get("cadd")
     scale.cadd = DataConverter.getAttributeValue(cadd).asInstanceOf[CAdd[T]]
-    moduleData
+    scale
   }
 
-  override def serializeModule[T: ClassTag](module : ModuleData[T])
-                                           (implicit ev: TensorNumeric[T]) : BigDLModule = {
+  override def doSerializeModule[T: ClassTag](module : ModuleData[T],
+                                            scaleBuilder : BigDLModule.Builder)
+                                           (implicit ev: TensorNumeric[T]) : Unit = {
     val scale = module.module.asInstanceOf[Scale[T]]
-    val serializableModule = super.serializeModule(module)
-    val moduleBuilder = BigDLModule.newBuilder(serializableModule)
+    super.doSerializeModule(module, scaleBuilder)
 
     val cmulBuilder = AttrValue.newBuilder
     DataConverter.setAttributeValue(cmulBuilder, scale.cmul, ModuleSerializer.abstractModuleType)
-    moduleBuilder.putAttr("cmul", cmulBuilder.build)
+    scaleBuilder.putAttr("cmul", cmulBuilder.build)
 
     val caddBuilder = AttrValue.newBuilder
     DataConverter.setAttributeValue(caddBuilder, scale.cadd, ModuleSerializer.abstractModuleType)
-    moduleBuilder.putAttr("cadd", caddBuilder.build)
+    scaleBuilder.putAttr("cadd", caddBuilder.build)
 
-    moduleBuilder.build
   }
 }

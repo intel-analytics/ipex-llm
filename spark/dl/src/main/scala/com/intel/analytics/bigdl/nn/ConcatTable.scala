@@ -55,7 +55,9 @@ class ConcatTable[T : ClassTag]
   private def addTable(out: Activity, in: Activity) : Unit = {
     if (in.isInstanceOf[Tensor[T]] && out.isInstanceOf[Tensor[T]]) {
       require(in.toTensor[T].nElement() == out.toTensor[T].nElement(),
-        "gradInput should have the same size")
+        "gradInput should have the same size" +
+          s"The sizes are ${in.toTensor[T].nElement()} " +
+          s"and ${out.toTensor[T].nElement()}")
       out.toTensor[T].add(in.toTensor[T])
     } else {
       var i = 1

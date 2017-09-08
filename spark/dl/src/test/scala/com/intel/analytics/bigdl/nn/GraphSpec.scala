@@ -15,23 +15,20 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.example.loadmodel.AlexNet_OWT
 import com.intel.analytics.bigdl.models.autoencoder.Autoencoder
-import com.intel.analytics.bigdl.models.inception.{Inception_Layer_v1, Inception_v1}
 import com.intel.analytics.bigdl.models.lenet.LeNet5
-import com.intel.analytics.bigdl.models.resnet.{Convolution, ResNet}
-import com.intel.analytics.bigdl.models.resnet.ResNet.{ShortcutType, iChannels}
 import com.intel.analytics.bigdl.models.vgg.{VggForCifar10, Vgg_16, Vgg_19}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{RandomGenerator, T, Table}
 
 import scala.reflect.ClassTag
 import scala.util.Random
+import org.scalatest.{FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Parallel
 class GraphSpec extends FlatSpec with Matchers {
@@ -211,6 +208,49 @@ class GraphSpec extends FlatSpec with Matchers {
     output should be(T(Tensor(T(0.0f, 0.0f)), Tensor(T(3.8f, 3.8f))))
   }
 
+  "Graph forward" should "be correct when contains multi output node" in {
+    val x = SplitTable(1).inputs()
+    val y1 = Identity().inputs(x(1))
+    val y2 = Identity().inputs(x(2))
+    val z = CAddTable().inputs(y1, y2)
+
+    val graph = Graph(x, z)
+    val output = graph.forward(Tensor(T(T(1, 2, 3), T(4, 2, 7))))
+    output should be(Tensor(T(5, 4, 10)))
+  }
+
+  "Graph forward" should "be correct when connect a table to a node" in {
+    val x = SplitTable(1).inputs()
+    val y = CAddTable().inputs(x)
+
+    val graph = Graph(x, y)
+    val output = graph.forward(Tensor(T(T(1, 2, 3), T(4, 2, 7))))
+    output should be(Tensor(T(5, 4, 10)))
+  }
+
+  "Graph forward" should "be correct when contains multi output node with table output" in {
+    val x = Identity().inputs()
+    val y = SplitTable(1).inputs(x)
+
+    val graph = Graph(x, y)
+    val output = graph.forward(Tensor(T(T(1, 2, 3), T(4, 2, 7))))
+    output.toTable[Tensor[Float]](1) should be(Tensor(T(1, 2, 3)))
+    output.toTable[Tensor[Float]](2) should be(Tensor(T(4, 2, 7)))
+  }
+
+  "Graph forward" should "be correct when contains nested output" in {
+    val x = Identity().inputs()
+    val y1 = SplitTable(1).inputs(x)
+    val y2 = Identity().inputs(y1(1))
+
+    val graph = Graph(x, Array(y1, y2))
+    val output = graph.forward(Tensor(T(T(1, 2, 3), T(4, 2, 7))))
+    val t1 = output.toTable[Table](1)
+    t1[Tensor[Float]](1) should be(Tensor(T(1, 2, 3)))
+    t1[Tensor[Float]](2) should be(Tensor(T(4, 2, 7)))
+    output.toTable[Tensor[Float]](2) should be(Tensor(T(1, 2, 3)))
+  }
+
   "Graph backward" should "be successful" in {
     val fc1 = Linear(4, 2).inputs()
     val fc2 = Linear(4, 2).inputs()
@@ -322,6 +362,51 @@ class GraphSpec extends FlatSpec with Matchers {
     fc2.element.parameters()._2(1) should be(Tensor(T(3.0f, 4.0f)))
   }
 
+  "Graph backward" should "be correct when contains multi output node" in {
+    val x = SplitTable(1).inputs()
+    val y1 = Identity().inputs(x(1))
+    val y2 = Identity().inputs(x(2))
+    val z = CAddTable().inputs(y1, y2)
+
+    val graph = Graph(x, z)
+    val output = graph.forward(Tensor(T(T(1, 2, 3), T(4, 2, 7))))
+    val grads = graph.backward(Tensor(T(T(1, 2, 3), T(4, 2, 7))), Tensor(T(5, 4, 10)))
+    grads should be(Tensor(T(T(5, 4, 10), T(5, 4, 10))))
+  }
+
+  "Graph backward" should "be correct when contains multi output node with table output" in {
+    val x = Identity().inputs()
+    val y = SplitTable(1).inputs(x)
+
+    val graph = Graph(x, y)
+    val output = graph.forward(Tensor(T(T(1, 2, 3), T(4, 2, 7))))
+    val grad = graph.backward(Tensor(T(T(1, 2, 3), T(4, 2, 7))),
+      T(Tensor(T(3, 2, 1)), Tensor(T(5, 7, 9))))
+    grad should be(Tensor(T(T(3, 2, 1), T(5, 7, 9))))
+  }
+
+  "Graph backward" should "be correct when connect a table to a node" in {
+    val x = SplitTable(1).inputs()
+    val y = CAddTable().inputs(x)
+
+    val graph = Graph(x, y)
+    val output = graph.forward(Tensor(T(T(1, 2, 3), T(4, 2, 7))))
+    val grads = graph.backward(Tensor(T(T(1, 2, 3), T(4, 2, 7))), Tensor(T(5, 4, 10)))
+    grads should be(Tensor(T(T(5, 4, 10), T(5, 4, 10))))
+  }
+
+  "Graph backward" should "be correct when contains nested output" in {
+    val x = Identity().inputs()
+    val y1 = SplitTable(1).inputs(x)
+    val y2 = Identity().inputs(y1(1))
+
+    val graph = Graph(x, Array(y1, y2))
+    val output = graph.forward(Tensor(T(T(1, 2, 3), T(4, 2, 7))))
+    val result = graph.backward(Tensor(T(T(1, 2, 3), T(4, 2, 7))),
+      T(T(Tensor(T(2, 7, 8)), Tensor(T(1, 5, 3))), Tensor(T(5, 4, 10))))
+    result should be(Tensor(T(T(7, 11, 18), T(1, 5, 3))))
+  }
+
   "Graph forward/backward" should "be successful when there's output from internal node" in {
     val input1 = Input()
     val input2 = Input()
@@ -408,7 +493,7 @@ class GraphSpec extends FlatSpec with Matchers {
     val seqModel = ModelUntils.ResNet.basicBlockSeq(16, 16, 1, "A")
     RandomGenerator.RNG.setSeed(1000)
     val input = Input()
-    val output = ModelUntils.ResNet.basicBlockFunc(16, 16, 1, "A")(input)
+    val output = ModelUntils.ResNet.basicBlockSeq(16, 16, 1, "A").inputs(input)
     val funcModel = Graph(input, output)
 
     println(seqModel)
@@ -645,6 +730,398 @@ class GraphSpec extends FlatSpec with Matchers {
     val gradInput2 = graphModel.backward(input, gradOutput)
     gradInput1 should be(gradInput2)
     model.getParameters().equals(graphModel.getParameters()) should be(true)
+  }
+
+  "Graph backward sequential with propagateBack false in the first" should "work properly" in {
+    RandomGenerator.RNG.setSeed(1000)
+    val input = Reshape(Array(1, 28, 28)).setName("reshape").inputs()
+    val conv1 = SpatialConvolution(1, 6, 5, 5).setName("conv1").inputs(input)
+    val tanh1 = Tanh().inputs(conv1)
+    val pool1 = SpatialMaxPooling(2, 2, 2, 2).inputs(tanh1)
+    val tanh2 = Tanh().inputs(pool1)
+    val conv2 = SpatialConvolution(6, 12, 5, 5).inputs(tanh2)
+    val pool2 = SpatialMaxPooling(2, 2, 2, 2).inputs(conv2)
+    val reshape = Reshape(Array(12 * 4 * 4)).inputs(pool2)
+    val fc1 = Linear(12 * 4 * 4, 100).inputs(reshape)
+    val tanh3 = Tanh().inputs(fc1)
+    val fc2 = Linear(100, 10).inputs(tanh3)
+    val output = LogSoftMax().inputs(fc2)
+
+    RandomGenerator.RNG.setSeed(1000)
+    val input2 = Reshape(Array(1, 28, 28)).inputs()
+    val conv1_2 = SpatialConvolution(1, 6, 5, 5).setName("conv1").inputs(input2)
+    val tanh1_2 = Tanh().inputs(conv1_2)
+    val pool1_2 = SpatialMaxPooling(2, 2, 2, 2).inputs(tanh1_2)
+    val tanh2_2 = Tanh().inputs(pool1_2)
+    val conv2_2 = SpatialConvolution(6, 12, 5, 5).inputs(tanh2_2)
+    val pool2_2 = SpatialMaxPooling(2, 2, 2, 2).inputs(conv2_2)
+    val reshape_2 = Reshape(Array(12 * 4 * 4)).inputs(pool2_2)
+    val fc1_2 = Linear(12 * 4 * 4, 100).inputs(reshape_2)
+    val tanh3_2 = Tanh().inputs(fc1_2)
+    val fc2_2 = Linear(100, 10).inputs(tanh3_2)
+    val output_2 = LogSoftMax().inputs(fc2_2)
+
+    val funcModelNoBack = Graph(input, output)
+    val funcModelOriginal = Graph(input2, output_2)
+
+    funcModelNoBack.stopGradient(Array("reshape"))
+
+    val inputData = Tensor(4, 28 * 28).rand()
+    val outputData1 = funcModelOriginal.forward(inputData) // warm up
+    var start = System.nanoTime()
+    funcModelOriginal.forward(inputData)
+    println(s"seq model forward time is ${ (System.nanoTime() - start) / 1e6 }ms")
+    start = System.nanoTime()
+    val outputData2 = funcModelNoBack.forward(inputData)
+    println(s"funcModel model forward time is ${ (System.nanoTime() - start) / 1e6 }ms")
+
+    outputData1 should be(outputData2)
+
+    val gradient = Tensor(4, 10).rand()
+    start = System.nanoTime()
+    val gradientBPOriginal = funcModelOriginal.backward(inputData, gradient)
+    println(s"seq model backward time is ${ (System.nanoTime() - start) / 1e6 }ms")
+    start = System.nanoTime()
+    val gradientBPNoBack = funcModelNoBack.backward(inputData, gradient)
+    println(s"funcModel model backward time is ${ (System.nanoTime() - start) / 1e6 }ms")
+
+    gradientBPNoBack.toTensor.nElement() should be(0)
+    val namedModule1 = funcModelOriginal.getParametersTable()
+    val namedModule2 = funcModelNoBack.getParametersTable()
+    namedModule1("conv1").asInstanceOf[Table] should
+      equal(namedModule2("conv1").asInstanceOf[Table])
+    funcModelOriginal.getParameters()._2 should be(funcModelNoBack.getParameters()._2)
+  }
+
+  "Graph backward propagateBack false in the middle" should "work properly in sequential lenet" in {
+    RandomGenerator.RNG.setSeed(1000)
+    val input = Reshape(Array(1, 28, 28)).setName("r1").inputs()
+    val conv1 = SpatialConvolution(1, 6, 5, 5).setName("conv1").inputs(input)
+    val tanh1 = Tanh().setName("tanh1").inputs(conv1)
+    val pool1 = SpatialMaxPooling(2, 2, 2, 2).setName("pool1").inputs(tanh1)
+    val tanh2 = Tanh().setName("tanh2").inputs(pool1)
+    val conv2 = SpatialConvolution(6, 12, 5, 5).setName("conv2").inputs(tanh2)
+    val pool2 = SpatialMaxPooling(2, 2, 2, 2).inputs(conv2)
+    val reshape = Reshape(Array(12 * 4 * 4)).inputs(pool2)
+    val fc1 = Linear(12 * 4 * 4, 100).inputs(reshape)
+    val tanh3 = Tanh().inputs(fc1)
+    val fc2 = Linear(100, 10).inputs(tanh3)
+    val output = LogSoftMax().inputs(fc2)
+
+    RandomGenerator.RNG.setSeed(1000)
+    val input2 = Reshape(Array(1, 28, 28)).setName("r1").inputs()
+    val conv1_2 = SpatialConvolution(1, 6, 5, 5).setName("conv1").inputs(input2)
+    val tanh1_2 = Tanh().setName("tanh1").inputs(conv1_2)
+    val pool1_2 = SpatialMaxPooling(2, 2, 2, 2).setName("pool1").inputs(tanh1_2)
+    val tanh2_2 = Tanh().setName("tanh2").inputs(pool1_2)
+    val conv2_2 = SpatialConvolution(6, 12, 5, 5).inputs(tanh2_2)
+    val pool2_2 = SpatialMaxPooling(2, 2, 2, 2).inputs(conv2_2)
+    val reshape_2 = Reshape(Array(12 * 4 * 4)).inputs(pool2_2)
+    val fc1_2 = Linear(12 * 4 * 4, 100).inputs(reshape_2)
+    val tanh3_2 = Tanh().inputs(fc1_2)
+    val fc2_2 = Linear(100, 10).inputs(tanh3_2)
+    val output_2 = LogSoftMax().inputs(fc2_2)
+
+    val funcModelNoBack = Graph(input, output)
+    funcModelNoBack.stopGradient(Array("pool1"))
+    val funcModelOriginal = Graph(input2, output_2)
+
+    val inputData = Tensor(4, 28 * 28).rand()
+    val outputData1 = funcModelOriginal.forward(inputData)
+    val outputData2 = funcModelNoBack.forward(inputData)
+    outputData1 should be(outputData2)
+
+    val gradient = Tensor(4, 10).rand()
+    val gradientBPOriginal = funcModelOriginal.backward(inputData, gradient)
+    val gradientBPNoBack = funcModelNoBack.backward(inputData, gradient)
+
+    gradientBPNoBack.toTensor.nElement() should be(0)
+    val namedModule1 = Utils.getNamedModules(funcModelOriginal)
+    val namedModule2 = Utils.getNamedModules(funcModelNoBack)
+    namedModule2("r1").gradInput.toTensor.nElement() should be(0)
+    namedModule2("conv1").gradInput.toTensor.nElement() should be(0)
+    namedModule2("tanh1").gradInput.toTensor.nElement() should be(0)
+    namedModule2("pool1").gradInput.toTensor.nElement() should be(0)
+
+    namedModule2("conv2").asInstanceOf[SpatialConvolution[Float]].parameters()._2 should be(
+      namedModule2("conv2").asInstanceOf[SpatialConvolution[Float]].parameters()._2)
+  }
+
+  "graph propagate false in subpath" should "work properly" in {
+    RandomGenerator.RNG.setSeed(1000)
+    val fc1 = Linear(4, 2).inputs()
+    val fc2 = Linear(4, 2).inputs()
+    val cadd = CAddTable().inputs(fc1, fc2)
+    val output1 = ReLU().inputs(cadd)
+    val output2 = Threshold(10.0).inputs(cadd)
+
+    val graph = Graph(Array(fc2, fc1), Array(output1, output2))
+    RandomGenerator.RNG.setSeed(1000)
+    val fc1_1 = Linear(4, 2).inputs()
+    val fc2_1 = Linear(4, 2).inputs()
+    val cadd_1 = CAddTable().inputs(fc1_1, fc2_1)
+    val output1_1 = ReLU().setName("relu").inputs(cadd_1)
+    val output2_1 = Threshold(10.0).inputs(cadd_1)
+
+    val graphNoBack = Graph(Array(fc2_1, fc1_1), Array(output1_1, output2_1))
+    graphNoBack.stopGradient(Array("relu"))
+
+    RandomGenerator.RNG.setSeed(1000)
+    val fc1_2 = Linear(4, 2).inputs()
+    val fc2_2 = Linear(4, 2).inputs()
+    val cadd_2 = CAddTable().inputs(fc1_2, fc2_2)
+    val output2_2 = Threshold(10.0).inputs(cadd_2)
+
+    val graphNoBackExpect = Graph(Array(fc2_2, fc1_2), Array(output2_2))
+
+    fc1.element.getParameters()._1.apply1(_ => 1.0f)
+    fc2.element.getParameters()._1.apply1(_ => 2.0f)
+    fc1_1.element.getParameters()._1.apply1(_ => 1.0f)
+    fc2_1.element.getParameters()._1.apply1(_ => 2.0f)
+    fc1_2.element.getParameters()._1.apply1(_ => 1.0f)
+    fc2_2.element.getParameters()._1.apply1(_ => 2.0f)
+
+    val input = T(Tensor(T(0.1f, 0.2f, -0.3f, -0.4f)),
+      Tensor(T(0.5f, 0.4f, -0.2f, -0.1f)))
+    graph.forward(input) should be (graphNoBack.forward(input))
+
+
+    val gradOutput = T(Tensor(T(1.0f, 2.0f)), Tensor(T(3.0f, 4.0f)))
+    val gradInput = graph.backward(input, gradOutput)
+
+    graph.backward(input, gradOutput)
+    graphNoBack.backward(input, gradOutput)
+    graphNoBackExpect.forward(input)
+    graphNoBackExpect.backward(input, Tensor(T(3.0f, 4.0f)))
+    output1_1.element.gradInput.toTensor.nElement() should be (0)
+    cadd_2.element.gradInput should be (cadd_1.element.gradInput)
+    fc1_2.element.gradInput should be (fc1_1.element.gradInput)
+    fc2_2.element.gradInput should be (fc2_1.element.gradInput)
+    output2.element.gradInput should be (output2_1.element.gradInput)
+  }
+
+  "graph propagate false in concat subpath" should "work properly" in {
+    RandomGenerator.RNG.setSeed(1000)
+    val fc1 = Linear(4, 2).inputs()
+    val fc2 = Linear(4, 2).inputs()
+    val cadd = CAddTable().inputs(fc1, fc2)
+    val output1 = ReLU().inputs(cadd)
+    val output2 = Threshold(10.0).inputs(cadd)
+
+    val graph = Graph(Array(fc2, fc1), Array(output1, output2))
+    RandomGenerator.RNG.setSeed(1000)
+    val fc1_1 = Linear(4, 2).inputs()
+    val fc2_1 = Linear(4, 2).setName("fc2_1").inputs()
+    val cadd_1 = CAddTable().inputs(fc1_1, fc2_1)
+    val output1_1 = ReLU().inputs(cadd_1)
+    val output2_1 = Threshold(10.0).inputs(cadd_1)
+
+    val graphNoBack = Graph(Array(fc2_1, fc1_1), Array(output1_1, output2_1))
+    graphNoBack.stopGradient(Array("fc2_1"))
+
+    fc1.element.getParameters()._1.apply1(_ => 1.0f)
+    fc2.element.getParameters()._1.apply1(_ => 2.0f)
+    fc1_1.element.getParameters()._1.apply1(_ => 1.0f)
+    fc2_1.element.getParameters()._1.apply1(_ => 2.0f)
+
+    val input = T(Tensor(T(0.1f, 0.2f, -0.3f, -0.4f)),
+      Tensor(T(0.5f, 0.4f, -0.2f, -0.1f)))
+    graph.forward(input) should be (graphNoBack.forward(input))
+
+
+    val gradOutput = T(Tensor(T(1.0f, 2.0f)), Tensor(T(3.0f, 4.0f)))
+
+    graph.backward(input, gradOutput)
+    graphNoBack.backward(input, gradOutput)
+    fc2_1.element.gradInput.toTensor.nElement() should be (0)
+    output2.element.gradInput should be (output2_1.element.gradInput)
+    fc1_1.element.gradInput should be (fc1.element.gradInput)
+    fc1_1.element.parameters()._2 should be (fc1.element.parameters()._2)
+  }
+
+  "graph propagate false in concat subpath with longer edge" should "work properly" in {
+    RandomGenerator.RNG.setSeed(1000)
+    val fc1 = Linear(4, 2).inputs()
+    val fc2 = Linear(4, 2).inputs()
+    val cadd = CAddTable().inputs(fc1, fc2)
+    val output1 = ReLU().inputs(cadd)
+    val output2 = Threshold(10.0).inputs(cadd)
+
+    val graph = Graph(Array(fc2, fc1), Array(output1, output2))
+    RandomGenerator.RNG.setSeed(1000)
+    val reshape = Reshape(Array(4)).inputs()
+    val fc1_1 = Linear(4, 2).inputs()
+    val fc2_1 = Linear(4, 2).setName("fc2_1").inputs(reshape)
+    val cadd_1 = CAddTable().inputs(fc1_1, fc2_1)
+    val output1_1 = ReLU().inputs(cadd_1)
+    val output2_1 = Threshold(10.0).inputs(cadd_1)
+
+    val graphNoBack = Graph(Array(reshape, fc1_1), Array(output1_1, output2_1))
+    graphNoBack.stopGradient(Array("fc2_1"))
+    fc1.element.getParameters()._1.apply1(_ => 1.0f)
+    fc2.element.getParameters()._1.apply1(_ => 2.0f)
+    fc1_1.element.getParameters()._1.apply1(_ => 1.0f)
+    fc2_1.element.getParameters()._1.apply1(_ => 2.0f)
+
+    val input = T(Tensor(T(0.1f, 0.2f, -0.3f, -0.4f)),
+      Tensor(T(0.5f, 0.4f, -0.2f, -0.1f)))
+    graph.forward(input) should be (graphNoBack.forward(input))
+
+
+    val gradOutput = T(Tensor(T(1.0f, 2.0f)), Tensor(T(3.0f, 4.0f)))
+
+    graph.backward(input, gradOutput)
+    graphNoBack.backward(input, gradOutput)
+    fc2_1.element.gradInput.toTensor.nElement() should be (0)
+    output2.element.gradInput should be (output2_1.element.gradInput)
+    fc1_1.element.gradInput should be (fc1.element.gradInput)
+    fc1_1.element.parameters()._2 should be (fc1.element.parameters()._2)
+    reshape.element.gradInput.toTensor.nElement() should be (0)
+  }
+
+  "graph propagate false reset to true" should "work properly" in {
+    RandomGenerator.RNG.setSeed(1000)
+    val fc1 = Linear(4, 2).inputs()
+    val fc2 = Linear(4, 2).inputs()
+    val cadd = CAddTable().inputs(fc1, fc2)
+    val output1 = ReLU().inputs(cadd)
+    val output2 = Threshold(10.0).inputs(cadd)
+
+    val graph = Graph(Array(fc2, fc1), Array(output1, output2))
+    RandomGenerator.RNG.setSeed(1000)
+    val fc1_1 = Linear(4, 2).inputs()
+    val fc2_1 = Linear(4, 2).setName("fc2_1").inputs()
+    val cadd_1 = CAddTable().inputs(fc1_1, fc2_1)
+    val output1_1 = ReLU().inputs(cadd_1)
+    val output2_1 = Threshold(10.0).inputs(cadd_1)
+
+    val graphNoBack = Graph(Array(fc2_1, fc1_1), Array(output1_1, output2_1))
+    graphNoBack.stopGradient(Array("fc2_1"))
+
+    fc1.element.getParameters()._1.apply1(_ => 1.0f)
+    fc2.element.getParameters()._1.apply1(_ => 2.0f)
+    fc1_1.element.getParameters()._1.apply1(_ => 1.0f)
+    fc2_1.element.getParameters()._1.apply1(_ => 2.0f)
+
+    val input = T(Tensor(T(0.1f, 0.2f, -0.3f, -0.4f)),
+      Tensor(T(0.5f, 0.4f, -0.2f, -0.1f)))
+    graph.forward(input) should be (graphNoBack.forward(input))
+
+
+    val gradOutput = T(Tensor(T(1.0f, 2.0f)), Tensor(T(3.0f, 4.0f)))
+
+    graph.backward(input, gradOutput)
+    graphNoBack.backward(input, gradOutput)
+    fc2_1.element.gradInput.toTensor.nElement() should be (0)
+    output2.element.gradInput should be (output2_1.element.gradInput)
+    fc1_1.element.gradInput should be (fc1.element.gradInput)
+    fc1_1.element.parameters()._2 should be (fc1.element.parameters()._2)
+
+    // reset propagateBack
+    graphNoBack.reset()
+    graphNoBack.build()
+    graphNoBack.zeroGradParameters()
+    graphNoBack.forward(input) should be (graph.forward(input))
+    graphNoBack.backward(input, gradOutput)
+
+    graphNoBack.parameters()._1 should be (graph.parameters()._1)
+
+    graphNoBack.parameters()._2 should be (graph.parameters()._2)
+  }
+
+
+  "markdown test" should "work" in {
+    val reshape = Reshape(Array(4)).inputs()
+    val fc1 = Linear(4, 2).setName("fc1").inputs()
+    val fc2 = Linear(4, 2).setName("fc2").inputs(reshape)
+    val cadd_1 = CAddTable().setName("cadd").inputs(fc1, fc2)
+    val output1_1 = ReLU().inputs(cadd_1)
+    val output2_1 = Threshold(10.0).inputs(cadd_1)
+
+    val model = Graph(Array(reshape, fc1), Array(output1_1, output2_1))
+
+
+
+    val input = T(Tensor(T(0.1f, 0.2f, -0.3f, -0.4f)),
+      Tensor(T(0.5f, 0.4f, -0.2f, -0.1f)))
+    val gradOutput = T(Tensor(T(1.0f, 2.0f)), Tensor(T(3.0f, 4.0f)))
+
+    fc1.element.getParameters()._1.apply1(_ => 1.0f)
+    fc2.element.getParameters()._1.apply1(_ => 2.0f)
+    model.zeroGradParameters()
+    println("output1: \n", model.forward(input))
+    model.backward(input, gradOutput)
+    model.updateParameters(1)
+    println("fc2 weight \n", fc2.element.parameters()._1(0))
+
+
+    fc1.element.getParameters()._1.apply1(_ => 1.0f)
+    fc2.element.getParameters()._1.apply1(_ => 2.0f)
+    model.zeroGradParameters()
+    model.freeze(Array("fc2"))
+    println("output2: \n", model.forward(input))
+    model.backward(input, gradOutput)
+    model.updateParameters(1)
+    println("fc2 weight \n", fc2.element.parameters()._1(0))
+
+    fc1.element.getParameters()._1.apply1(_ => 1.0f)
+    fc2.element.getParameters()._1.apply1(_ => 2.0f)
+    model.zeroGradParameters()
+    model.unFreeze()
+    println("output3: \n", model.forward(input))
+    model.backward(input, gradOutput)
+    model.updateParameters(1)
+    println("fc2 weight \n", fc2.element.parameters()._1(0))
+
+    fc1.element.getParameters()._1.apply1(_ => 1.0f)
+    fc2.element.getParameters()._1.apply1(_ => 2.0f)
+    model.stopGradient(Array("cadd"))
+    model.zeroGradParameters()
+    println("output4: \n", model.forward(input))
+    model.backward(input, gradOutput)
+    model.updateParameters(1)
+    println("fc1 weight \n", fc1.element.parameters()._1(0))
+    println("fc2 weight \n", fc2.element.parameters()._1(0))
+  }
+  "graph setFreeze" should "work properly" in {
+    RandomGenerator.RNG.setSeed(1000)
+    val fc1 = Linear(4, 2).inputs()
+    val fc2 = Linear(4, 2).inputs()
+    val cadd = CAddTable().inputs(fc1, fc2)
+    val output1 = ReLU().inputs(cadd)
+    val output2 = Threshold(10.0).inputs(cadd)
+
+    val graph = Graph(Array(fc2, fc1), Array(output1, output2))
+    RandomGenerator.RNG.setSeed(1000)
+    val reshape = Reshape(Array(4)).inputs()
+    val fc1_1 = Linear(4, 2).inputs()
+    val fc2_1 = Linear(4, 2).setName("fc2_1").inputs(reshape)
+    val cadd_1 = CAddTable().inputs(fc1_1, fc2_1)
+    val output1_1 = ReLU().inputs(cadd_1)
+    val output2_1 = Threshold(10.0).inputs(cadd_1)
+
+    val graphNoBack = Graph(Array(reshape, fc1_1), Array(output1_1, output2_1))
+    graphNoBack.stopGradient(Array("fc2_1"))
+
+    fc1.element.getParameters()._1.apply1(_ => 1.0f)
+    fc2.element.getParameters()._1.apply1(_ => 2.0f)
+    fc1_1.element.getParameters()._1.apply1(_ => 1.0f)
+    fc2_1.element.getParameters()._1.apply1(_ => 2.0f)
+
+    val input = T(Tensor(T(0.1f, 0.2f, -0.3f, -0.4f)),
+      Tensor(T(0.5f, 0.4f, -0.2f, -0.1f)))
+    graph.forward(input) should be (graphNoBack.forward(input))
+
+
+    val gradOutput = T(Tensor(T(1.0f, 2.0f)), Tensor(T(3.0f, 4.0f)))
+
+    graph.backward(input, gradOutput)
+    graphNoBack.backward(input, gradOutput)
+    fc2_1.element.gradInput.toTensor.nElement() should be (0)
+    output2.element.gradInput should be (output2_1.element.gradInput)
+    fc1_1.element.gradInput should be (fc1.element.gradInput)
+    fc1_1.element.parameters()._2 should be (fc1.element.parameters()._2)
+    reshape.element.gradInput.toTensor.nElement() should be (0)
   }
 }
 

@@ -40,7 +40,9 @@ class BCECriterion[@specialized(Float, Double) T: ClassTag]
 (var weights: Tensor[T] = null, sizeAverage: Boolean = true)
   (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
   private val eps = 1e-12
-  if (weights != null) require(weights.dim() == 1, "weights input should be 1-D Tensor")
+  if (weights != null) require(weights.dim() == 1,
+    "weights input should be 1-D Tensor" +
+    s"weights input dim(${weights.dim()})")
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     require(input.nElement() == target.nElement())
@@ -82,7 +84,10 @@ class BCECriterion[@specialized(Float, Double) T: ClassTag]
   }
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
-    require(input.nElement() == target.nElement())
+    require(input.nElement() == target.nElement(),
+      "input and target should have the same dims." +
+        s"input dim(${input.nElement()})" +
+        s"taget dim(${target.nElement()})")
 
     if (null != weights && target.dim() != 1) {
       weights = weights.view(1, target.size(2)).expandAs(target)

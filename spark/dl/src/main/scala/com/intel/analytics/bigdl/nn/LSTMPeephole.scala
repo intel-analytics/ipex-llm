@@ -82,6 +82,8 @@ class LSTMPeephole[T : ClassTag] (
     .add(TimeDistributed(Linear(inputSize, hiddenSize * 4, wRegularizer = wRegularizer,
       bRegularizer = bRegularizer)))
 
+  override def hiddenSizeOfPreTopo: Int = hiddenSize * 4
+
   def buildGate(dimension: Int, offset: Int, length: Int)
                (input1: ModuleNode[T], input2: ModuleNode[T], input3: ModuleNode[T])
   : ModuleNode[T] = {

@@ -72,7 +72,8 @@ class TimeDistributedCriterion[T : ClassTag](
      */
     val timeDim = 2
     require(input.size(timeDim) == target.size(timeDim),
-      s"target should have as many elements as input")
+      "target should have as many elements as input, " +
+        s"input ${input.size(timeDim)}, target ${target.size(timeDim)}")
 
     output = ev.fromType[Int](0)
     val nstep = input.size(timeDim)
@@ -111,7 +112,8 @@ class TimeDistributedCriterion[T : ClassTag](
      */
     val timeDim = 2
     require(input.size(timeDim) == target.size(timeDim),
-      s"target should have as many elements as input")
+      s"target should have as many elements as input, " +
+        s"input ${input.size(timeDim)}, target ${target.size(timeDim)}")
     gradInput.resizeAs(input).zero()
 
     val nstep = input.size(timeDim)

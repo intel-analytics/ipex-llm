@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.Input
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData, ModuleSerializable, ModuleSerializer}
@@ -416,10 +417,10 @@ object BinaryTreeLSTM extends ModuleSerializable {
   )(implicit ev: TensorNumeric[T]): BinaryTreeLSTM[T] =
     new BinaryTreeLSTM[T](inputSize, hiddenSize, gateOutput, withGraph)
 
-  override def loadModule[T: ClassTag](model : BigDLModule)
-                                      (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
-    val moduleData = super.loadModule(model)
-    val binaryTreeLSTMModule = moduleData.module.asInstanceOf[BinaryTreeLSTM[T]]
+  override def doLoadModule[T: ClassTag](model : BigDLModule)
+    (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
+
+    val binaryTreeLSTMModule = super.doLoadModule(model).asInstanceOf[BinaryTreeLSTM[T]]
     binaryTreeLSTMModule.composers.clear
     binaryTreeLSTMModule.leafModules.clear
 
@@ -441,12 +442,13 @@ object BinaryTreeLSTM extends ModuleSerializable {
     binaryTreeLSTMModule.composer = DataConverter.getAttributeValue(attrMap.get("composer")).
       asInstanceOf[Module[T]]
 
-    createBigDLModule(model, binaryTreeLSTMModule)
+    binaryTreeLSTMModule
   }
 
-  override def serializeModule[T: ClassTag](module : ModuleData[T])
-                                           (implicit ev: TensorNumeric[T]) : BigDLModule = {
-    val binaryTreeLSTMBuilder = BigDLModule.newBuilder(super.serializeModule(module))
+  override def doSerializeModule[T: ClassTag](module : ModuleData[T],
+                                              binaryTreeLSTMBuilder : BigDLModule.Builder)
+                                           (implicit ev: TensorNumeric[T]) : Unit = {
+    super.doSerializeModule(module, binaryTreeLSTMBuilder)
 
     val binaryTreeLSTM = module.module.asInstanceOf[BinaryTreeLSTM[T]]
 
@@ -472,7 +474,6 @@ object BinaryTreeLSTM extends ModuleSerializable {
     DataConverter.setAttributeValue(leafModulesBuilder, leafModules)
     binaryTreeLSTMBuilder.putAttr("leafModules", leafModulesBuilder.build)
 
-    createSerializeBigDLModule(binaryTreeLSTMBuilder, module)
   }
 }
 
@@ -514,7 +515,9 @@ object BinaryTreeLSTM extends ModuleSerializable {
  */
 class TensorTree[T: ClassTag](val content: Tensor[T])
   (implicit ev: TensorNumeric[T]) extends Serializable {
-  require(content.dim() == 2, "The content of TensorTree should be a two-dimensional tensor")
+  require(content.dim() == 2,
+    "The content of TensorTree should be a two-dimensional tensor" +
+      s"content dim(${content.dim()})")
   def size: Array[Int] = content.size()
 
   def nodeNumber: Int = size(0)

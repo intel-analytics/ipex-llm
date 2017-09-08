@@ -19,6 +19,7 @@ from bigdl.nn.initialization_method import *
 from bigdl.nn.criterion import *
 from bigdl.optim.optimizer import *
 from bigdl.util.common import *
+from bigdl.util.common import _py2java
 from bigdl.nn.initialization_method import *
 from bigdl.dataset import movielens
 import numpy as np
@@ -76,6 +77,15 @@ class TestSimple():
         tmp_path = tempfile.mktemp()
         fc1.save(tmp_path, True)
         fc1_loaded = Model.load(tmp_path)
+        assert_allclose(fc1_loaded.get_weights()[0],
+                        fc1.get_weights()[0])
+
+    def test_load_model_proto(self):
+        fc1 = Linear(4, 2)
+        fc1.set_weights([np.ones((4, 2)), np.ones((2,))])
+        tmp_path = tempfile.mktemp()
+        fc1.saveModel(tmp_path, True)
+        fc1_loaded = Model.loadModel(tmp_path)
         assert_allclose(fc1_loaded.get_weights()[0],
                         fc1.get_weights()[0])
 
@@ -179,7 +189,7 @@ class TestSimple():
 
         def gen_rand_sample():
             features = np.random.uniform(0, 1, (FEATURES_DIM))
-            label = (2 * features).sum() + 0.4
+            label = np.array((2 * features).sum() + 0.4)
             return Sample.from_ndarray(features, label)
 
         trainingData = self.sc.parallelize(range(0, data_len)).map(
@@ -385,6 +395,12 @@ class TestSimple():
         for i in range(0, 2):
             assert_allclose(data[i], data2[i])
 
+    def test_save_jtensor_dict(self):
+        tensors = {}
+        tensors["tensor1"] = JTensor.from_ndarray(np.random.rand(3, 2))
+        tensors["tensor2"] = JTensor.from_ndarray(np.random.rand(3, 2))
+        # in old impl, this will throw an exception
+        _py2java(self.sc, tensors)
 
 if __name__ == "__main__":
     pytest.main([__file__])

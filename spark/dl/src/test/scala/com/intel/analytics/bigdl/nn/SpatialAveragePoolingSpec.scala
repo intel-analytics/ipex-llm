@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 
 import scala.math.abs
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 
 @com.intel.analytics.bigdl.tags.Parallel
 class SpatialAveragePoolingSpec extends FlatSpec with Matchers {
@@ -274,7 +275,7 @@ class SpatialAveragePoolingSpec extends FlatSpec with Matchers {
     module.forward(input) should be (module2.forward(input))
   }
 
-  "A SpatialMaxPooling" should "work with SAME padding using NCHW format" in {
+  "A SpatialAveragePooling" should "work with SAME padding using NCHW format" in {
     import tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
     val kW = 2
@@ -294,5 +295,49 @@ class SpatialAveragePoolingSpec extends FlatSpec with Matchers {
     val gradInput = layer.backward(input, output)
     output.storage().array() should be (Array(2.5f, 3, 3.5, 4))
     gradInput.storage().array() should be (Array(0.625f, 2.125, 2.375, 7.875))
+  }
+
+  "A SpatialAveragePooling with NHWC format" should "generate correct output and gradInput" in {
+
+    import tensor.TensorNumericMath.TensorNumeric.NumericDouble
+    case class Pooling(kW: Int, kH: Int, dW: Int, dH: Int, pW: Int, pH: Int)
+
+    val params = for (kernel <- 1 to 5;
+                      stride <- 1 to 5;
+                      padding <- -1 to kernel / 2) yield {
+      Pooling(kernel, kernel, stride, stride, padding, padding)
+    }
+
+    for (param <- params) {
+      println(param)
+
+      val module = new SpatialAveragePooling(param.kW, param.kH, param.dW, param.dH,
+        param.pW, param.pH)
+      val moduleNHWC = new SpatialAveragePooling(param.kW, param.kH, param.dW, param.dH,
+        param.pW, param.pH, format = DataFormat.NHWC)
+
+      val input = Tensor(2, 4, 10, 10).randn()
+
+      val inputNHWC = Tensor(input.size()).copy(input)
+        .transpose(2, 4).transpose(2, 3).contiguous()
+
+      val expectedOutput = module.forward(input)
+      val expectedGrad = module.backward(input, expectedOutput)
+
+      var output = moduleNHWC.forward(inputNHWC)
+      var gradInput = moduleNHWC.backward(inputNHWC, output)
+      output = output.transpose(2, 4).transpose(3, 4)
+      gradInput = gradInput.transpose(2, 4).transpose(3, 4)
+      expectedOutput.map(output, (v1, v2) => {
+        assert(abs(v1 - v2) < 1e-6)
+        v1
+      })
+
+      expectedGrad.map(gradInput, (v1, v2) => {
+        assert(abs(v1 - v2) < 1e-6)
+        v1
+      })
+
+    }
   }
 }

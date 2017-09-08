@@ -31,8 +31,11 @@ do
     $p -m pytest -v --doctest-modules ../../../pyspark/bigdl \
     --ignore=../../../pyspark/bigdl/dataset/ \
     --ignore=../../../pyspark/bigdl/util/ \
-    --ignore=../../../pyspark/bigdl/models/
-
+    --ignore=../../../pyspark/bigdl/models/ && \
     $p -m pytest -v -n 4 ../../../pyspark/test/
+    if [ $? -ne 0 ];
+    then
+        exit $?
+    fi
 done
 

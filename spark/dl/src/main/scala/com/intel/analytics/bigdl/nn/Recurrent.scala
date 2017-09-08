@@ -16,14 +16,16 @@
 
 package com.intel.analytics.bigdl.nn
 
+
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.tensor.{Tensor}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer.{ContainerSerializable, DataConverter, ModuleData, ModuleSerializer}
 import com.intel.analytics.bigdl.utils.T
 import serialization.Bigdl.{AttrValue, BigDLModule}
-
+import scala.reflect.runtime.universe
+import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
@@ -31,7 +33,7 @@ import scala.reflect.ClassTag
  * [[Recurrent]] module is a container of rnn cells
  * Different types of rnn cells can be added using add() function
  */
-class Recurrent[T : ClassTag]()
+class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
   (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
 
   protected var hidden: Activity = null
@@ -53,10 +55,12 @@ class Recurrent[T : ClassTag]()
     new ArrayBuffer[Array[Dropout[T]]]
   private val timeBuffer =
     new ArrayBuffer[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)]
+  private var layer: TensorModule[T] = null
 
   /**
    *
    *  modules: -- preTopology
+   *           |- BatchNormalization (optional)
    *           |- topology (cell)
    *
    * The topology (or cell) will be cloned for N times w.r.t the time dimension.
@@ -68,13 +72,39 @@ class Recurrent[T : ClassTag]()
   override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): Recurrent.this.type = {
     require(module.isInstanceOf[Cell[T]],
       "Recurrent: contained module should be Cell type")
+
     topology = module.asInstanceOf[Cell[T]]
     preTopology = topology.preTopology
+
+    if (batchNormParams != null && preTopology == null) {
+      throw new IllegalArgumentException(
+        s"${topology.getName} does not support BatchNormalization." +
+          s" Please add preTopology for it. You can simply using: " +
+          s"override def preTopology: AbstractModule[Activity, Activity, T] = Identity()")
+    }
+
+    if (batchNormParams != null) {
+      layer = batchNormalization(batchNormParams)
+      preTopology = Sequential[T]().add(preTopology).add(layer)
+    }
+
     if (preTopology != null) {
       modules += preTopology
     }
     modules += topology
     this
+  }
+
+  private def batchNormalization(batchNormParams: BatchNormParams[T]) = {
+    TimeDistributed[T](BatchNormalization[T](
+      nOutput = topology.hiddenSizeOfPreTopo,
+      batchNormParams.eps,
+      batchNormParams.momentum,
+      affine = batchNormParams.affine,
+      batchNormParams.initWeight,
+      batchNormParams.initBias,
+      batchNormParams.initGradWeight,
+      batchNormParams.initGradBias))
   }
 
   // list of cell modules cloned from added modules
@@ -319,6 +349,7 @@ class Recurrent[T : ClassTag]()
     val st = System.nanoTime
     currentGradOutput(hidDim) = gradHidden
     var i = times
+
     while (i >= 1) {
       currentGradOutput(inputDim) = gradOutput.select(timeDim, i)
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
@@ -457,19 +488,30 @@ class Recurrent[T : ClassTag]()
     val state = Seq(super.hashCode(), cells)
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
+
+  override def toString(): String = s"${getPrintName}${modules}"
 }
 
 object Recurrent extends ContainerSerializable {
-  def apply[@specialized(Float, Double) T: ClassTag]()
+  def apply[@specialized(Float, Double) T: ClassTag](
+    batchNormParams: BatchNormParams[T] = null)
     (implicit ev: TensorNumeric[T]) : Recurrent[T] = {
-    new Recurrent[T]()
+    new Recurrent[T](batchNormParams)
   }
 
-  override def loadModule[T: ClassTag](model : BigDLModule)
-                                      (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
-    val moduleData = super.loadModule(model)
-    val recurrent = moduleData.module.asInstanceOf[Recurrent[T]]
+  override def doLoadModule[T: ClassTag](model : BigDLModule)
+    (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
+
     val attrMap = model.getAttrMap
+
+    val flag = DataConverter
+      .getAttributeValue(attrMap.get("bnorm"))
+      .asInstanceOf[Boolean]
+    val recurrent = if (flag) {
+      Recurrent[T](BatchNormParams[T]())
+    } else {
+      Recurrent[T]()
+    }
 
     val topologyAttr = attrMap.get("topology")
     recurrent.topology = DataConverter.getAttributeValue(topologyAttr).
@@ -479,25 +521,124 @@ object Recurrent extends ContainerSerializable {
     recurrent.preTopology = DataConverter.getAttributeValue(preTopologyAttr).
       asInstanceOf[AbstractModule[Activity, Activity, T]]
 
-    moduleData
+    if (recurrent.preTopology != null) {
+      recurrent.modules.append(recurrent.preTopology)
+    }
+    recurrent.modules.append(recurrent.topology)
+
+    if (flag) {
+      val bnormEpsAttr = attrMap.get("bnormEps")
+      recurrent.batchNormParams.eps =
+        DataConverter.getAttributeValue(bnormEpsAttr)
+          .asInstanceOf[Double]
+
+      val bnormMomentumAttr = attrMap.get("bnormMomentum")
+      recurrent.batchNormParams.momentum =
+        DataConverter.getAttributeValue(bnormMomentumAttr)
+          .asInstanceOf[Double]
+
+      val bnormInitWeightAttr = attrMap.get("bnormInitWeight")
+      recurrent.batchNormParams.initWeight =
+        DataConverter.getAttributeValue(bnormInitWeightAttr)
+          .asInstanceOf[Tensor[T]]
+
+      val bnormInitBiasAttr = attrMap.get("bnormInitBias")
+      recurrent.batchNormParams.initBias =
+        DataConverter.getAttributeValue(bnormInitBiasAttr)
+          .asInstanceOf[Tensor[T]]
+
+      val bnormInitGradWeightAttr = attrMap.get("bnormInitGradWeight")
+      recurrent.batchNormParams.initGradWeight =
+        DataConverter.getAttributeValue(bnormInitGradWeightAttr)
+          .asInstanceOf[Tensor[T]]
+
+      val bnormInitGradBiasAttr = attrMap.get("bnormInitGradBias")
+      recurrent.batchNormParams.initGradBias =
+        DataConverter.getAttributeValue(bnormInitGradBiasAttr)
+          .asInstanceOf[Tensor[T]]
+
+      val bnormAffineAttr = attrMap.get("bnormAffine")
+      recurrent.batchNormParams.affine =
+        DataConverter.getAttributeValue(bnormAffineAttr)
+        .asInstanceOf[Boolean]
+    }
+
+    createBigDLModule(model, recurrent)
+    recurrent
   }
 
-  override def serializeModule[T: ClassTag](module : ModuleData[T])
-                                           (implicit ev: TensorNumeric[T]) : BigDLModule = {
-    val containerBuilder = BigDLModule.newBuilder(super.serializeModule(module))
+  override def doSerializeModule[T: ClassTag](module : ModuleData[T],
+                                            recurrentBuilder : BigDLModule.Builder)
+                                           (implicit ev: TensorNumeric[T]) : Unit = {
 
     val recurrent = module.module.asInstanceOf[Recurrent[T]]
 
     val topologyBuilder = AttrValue.newBuilder
     DataConverter.setAttributeValue(topologyBuilder, recurrent.topology,
       ModuleSerializer.abstractModuleType)
-    containerBuilder.putAttr("topology", topologyBuilder.build)
+    recurrentBuilder.putAttr("topology", topologyBuilder.build)
 
     val preTopologyBuilder = AttrValue.newBuilder
     DataConverter.setAttributeValue(preTopologyBuilder,
       recurrent.preTopology, ModuleSerializer.abstractModuleType)
-    containerBuilder.putAttr("preTopology", preTopologyBuilder.build)
+    recurrentBuilder.putAttr("preTopology", preTopologyBuilder.build)
 
-    containerBuilder.build
+    val flag = if (recurrent.batchNormParams != null) {
+
+      val bnormEpsBuilder = AttrValue.newBuilder
+      DataConverter.setAttributeValue(bnormEpsBuilder,
+        recurrent.batchNormParams.eps, universe.typeOf[Double])
+      recurrentBuilder.putAttr("bnormEps", bnormEpsBuilder.build)
+
+      val bnormMomentumBuilder = AttrValue.newBuilder
+      DataConverter.setAttributeValue(bnormMomentumBuilder,
+        recurrent.batchNormParams.momentum, universe.typeOf[Double])
+      recurrentBuilder.putAttr("bnormMomentum", bnormMomentumBuilder.build)
+
+      val bnormInitWeightBuilder = AttrValue.newBuilder
+      DataConverter.setAttributeValue(bnormInitWeightBuilder,
+        recurrent.batchNormParams.initWeight, ModuleSerializer.tensorType)
+      recurrentBuilder.putAttr("bnormInitWeight", bnormInitWeightBuilder.build)
+
+      val bnormInitBiasBuilder = AttrValue.newBuilder
+      DataConverter.setAttributeValue(bnormInitBiasBuilder,
+        recurrent.batchNormParams.initBias, ModuleSerializer.tensorType)
+      recurrentBuilder.putAttr("bnormInitBias", bnormInitBiasBuilder.build)
+
+      val bnormInitGradWeightBuilder = AttrValue.newBuilder
+      DataConverter.setAttributeValue(bnormInitGradWeightBuilder,
+        recurrent.batchNormParams.initGradWeight, ModuleSerializer.tensorType)
+      recurrentBuilder.putAttr("bnormInitGradWeight", bnormInitGradWeightBuilder.build)
+
+      val bnormInitGradBiasBuilder = AttrValue.newBuilder
+      DataConverter.setAttributeValue(bnormInitGradBiasBuilder,
+        recurrent.batchNormParams.initGradBias, ModuleSerializer.tensorType)
+      recurrentBuilder.putAttr("bnormInitGradBias", bnormInitGradBiasBuilder.build)
+
+      val bnormAffineBuilder = AttrValue.newBuilder
+      DataConverter.setAttributeValue(bnormAffineBuilder,
+        recurrent.batchNormParams.affine, universe.typeOf[Boolean])
+      recurrentBuilder.putAttr("bnormAffine", bnormAffineBuilder.build)
+
+      true
+    } else {
+      false
+    }
+
+    val bNormBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(bNormBuilder,
+      flag, universe.typeOf[Boolean])
+    recurrentBuilder.putAttr("bnorm", bNormBuilder.build)
+
+    createSerializeBigDLModule(recurrentBuilder, module)
   }
 }
+
+case class BatchNormParams[T : ClassTag](
+             var eps: Double = 1e-5, // avoid divde zero
+             var momentum: Double = 0.1, // momentum for weight update
+             var initWeight: Tensor[T] = null,
+             var initBias: Tensor[T] = null,
+             var initGradWeight: Tensor[T] = null,
+             var initGradBias: Tensor[T] = null,
+             var affine: Boolean = true)(implicit ev: TensorNumeric[T])

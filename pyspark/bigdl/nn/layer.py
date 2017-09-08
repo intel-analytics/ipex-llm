@@ -311,7 +311,7 @@ class Layer(JavaValue):
         ... except Py4JJavaError as err:
         ...     print(err.java_exception)
         ...
-        java.lang.IllegalArgumentException: requirement failed: the number of input weight/bias is not consistant with number of weight/bias of this layer
+        java.lang.IllegalArgumentException: requirement failed: the number of input weight/bias is not consistant with number of weight/bias of this layer, number of input 1, number of output 2
         >>> cAdd = CAdd([4, 1])
         creating: createCAdd
         >>> cAdd.set_weights(np.ones([4, 1]))
@@ -337,6 +337,9 @@ class Layer(JavaValue):
 
     def save(self, path, over_write = False):
         callBigDlFunc(self.bigdl_type, "modelSave", self.value, path,
+                      over_write)
+    def saveModel(self, path, over_write = False):
+        callBigDlFunc(self.bigdl_type, "saveBigDLModule", self.value, path,
                       over_write)
 
     def save_caffe(self, prototxt_path, model_path, use_v2 = True, overwrite = False):
@@ -375,6 +378,22 @@ class Layer(JavaValue):
         :return:
         '''
         self.value.bRegularizer = bRegularizer.value
+
+    def freeze(self):
+        '''
+        freeze layer
+        '''
+        callBigDlFunc(self.bigdl_type,
+                        "setLayerFreeze", self.value)
+        return self
+
+    def unfreeze(self):
+        '''
+        unfreeze layer
+        '''
+        callBigDlFunc(self.bigdl_type,
+                        "setLayerUnFreeze", self.value)
+
 
 
 class Container(Layer):
@@ -444,6 +463,17 @@ class Model(Container):
         return Layer.of(jmodel)
 
     @staticmethod
+    def loadModel(path, bigdl_type="float"):
+        """
+        Load a pre-trained Bigdl model.
+
+        :param path: The path containing the pre-trained model.
+        :return: A pre-trained model.
+        """
+        jmodel = callBigDlFunc(bigdl_type, "loadBigDLModule", path)
+        return Layer.of(jmodel)
+
+    @staticmethod
     def load_torch(path, bigdl_type="float"):
         """
         Load a pre-trained Torch model.
@@ -490,6 +520,39 @@ class Model(Container):
         """
         jmodel = callBigDlFunc(bigdl_type, "loadTF", path, inputs, outputs, byte_order)
         return Model.of(jmodel)
+
+    def freeze(self, freeze_layers, bigdl_type="float"):
+        """
+        set an array of layers to be freezed
+        :param freeze_layers: an array of layer names
+        :param bigdl_type:
+        :return:
+        """
+        callBigDlFunc(bigdl_type, "setFreeze", self.value, freeze_layers)
+        return self
+
+    def unfreeze(self, bigdl_type="float"):
+        """
+        set all layers to be trainable
+        :param bigdl_type:
+        :return:
+        """
+        callBigDlFunc(bigdl_type, "unFreeze", self.value)
+        return self
+
+    def stop_gradient(self, stop_layers, bigdl_type="float"):
+        """
+        stop the input gradient of layers that match the given ```names```
+        their input gradient are not computed.
+        And they will not contributed to the input gradient computation of
+        layers that depend on them.
+        :param stop_layers:  an array of layer names
+        :param bigdl_type:
+        :return:
+        """
+        callBigDlFunc(bigdl_type, "setStopGradient", self.value, stop_layers)
+        return self
+
 
 
 class Linear(Layer):
@@ -802,6 +865,32 @@ class SpatialConvolution(Layer):
         return self
 
 
+class TemporalMaxPooling(Layer):
+
+    '''
+    Applies 1D max-pooling operation in kW regions by step size dW steps.
+    Input sequence composed of nInputFrame frames.
+    The input tensor in forward(input) is expected to be a 2D tensor (nInputFrame x inputFrameSize)
+     or a 3D tensor (nBatchFrame x nInputFrame x inputFrameSize).
+
+    If the input sequence is a 2D tensor of dimension nInputFrame x inputFrameSize,
+    the output sequence will be nOutputFrame x inputFrameSize where
+
+    nOutputFrame = (nInputFrame - k_w) / d_w + 1
+
+    :param k_w:              kernel width
+    :param d_w:              step size in width
+
+    >>> temporalMaxPooling = TemporalMaxPooling(2, 2)
+    creating: createTemporalMaxPooling
+    '''
+
+    def __init__(self,
+                 k_w,
+                 d_w,
+                 bigdl_type="float"):
+        super(TemporalMaxPooling, self).__init__(None, bigdl_type, k_w,
+                                                d_w)
 class SpatialMaxPooling(Layer):
 
     '''
@@ -813,6 +902,18 @@ class SpatialMaxPooling(Layer):
     oheight = op((height + 2*padH - kH) / dH + 1)
     op is a rounding operator. By default, it is floor.
     It can be changed by calling :ceil() or :floor() methods.
+    
+    When padW and padH are both -1, we use a padding algorithm similar to the "SAME"
+    padding of tensorflow. That is
+ 
+     outHeight = Math.ceil(inHeight.toFloat/strideH.toFloat)
+     outWidth = Math.ceil(inWidth.toFloat/strideW.toFloat)
+ 
+     padAlongHeight = Math.max(0, (outHeight - 1) * strideH + kernelH - inHeight)
+     padAlongWidth = Math.max(0, (outWidth - 1) * strideW + kernelW - inWidth)
+ 
+     padTop = padAlongHeight / 2
+     padLeft = padAlongWidth / 2
 
     :param kW:              kernel width
     :param kH:              kernel height
@@ -1014,12 +1115,15 @@ class RnnCell(Layer):
     :param input_size: the size of each input vector
     :param hidden_size: Hidden unit size in simple RNN
     :param activation: activation function
+    :param isInputWithBias: boolean
+    :param isHiddenWithBias: boolean
+
     :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices.
     :param uRegularizer: instance [[Regularizer]](eg. L1 or L2 regularization), applied to the recurrent weights matrices.
     :param bRegularizer: instance of [[Regularizer]](../regularizers.md),applied to the bias.
 
 
-    >>> reshape = RnnCell(4, 3, Tanh(), L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
+    >>> reshape = RnnCell(4, 3, Tanh(), True, True, L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
     creating: createTanh
     creating: createL1Regularizer
     creating: createL1Regularizer
@@ -1095,7 +1199,18 @@ class SpatialAveragePooling(Layer):
     '''
     Applies 2D average-pooling operation in kWxkH regions by step size dWxdH steps.
     The number of output features is equal to the number of input planes.
-
+    
+    When padW and padH are both -1, we use a padding algorithm similar to the "SAME"
+    padding of tensorflow. That is
+ 
+     outHeight = Math.ceil(inHeight.toFloat/strideH.toFloat)
+     outWidth = Math.ceil(inWidth.toFloat/strideW.toFloat)
+ 
+     padAlongHeight = Math.max(0, (outHeight - 1) * strideH + kernelH - inHeight)
+     padAlongWidth = Math.max(0, (outWidth - 1) * strideW + kernelW - inWidth)
+ 
+     padTop = padAlongHeight / 2
+     padLeft = padAlongWidth / 2
 
     :param kW: kernel width
     :param kH: kernel height
@@ -1108,9 +1223,12 @@ class SpatialAveragePooling(Layer):
     :param ceilMode: whether the output size is to be ceiled or floored
     :param countIncludePad: whether to include padding when dividing thenumber of elements in pooling region
     :param divide: whether to do the averaging
+    :param format:          "NCHW" or "NHWC", indicating the input data format
 
 
     >>> spatialAveragePooling = SpatialAveragePooling(7,7)
+    creating: createSpatialAveragePooling
+    >>> spatialAveragePooling = SpatialAveragePooling(2, 2, 2, 2, -1, -1, True, format="NHWC")
     creating: createSpatialAveragePooling
     '''
 
@@ -1125,6 +1243,7 @@ class SpatialAveragePooling(Layer):
                  ceil_mode=False,
                  count_include_pad=True,
                  divide=True,
+                 format="NCHW",
                  bigdl_type="float"):
         super(SpatialAveragePooling, self).__init__(None, bigdl_type,
                                                     kw,
@@ -1136,7 +1255,11 @@ class SpatialAveragePooling(Layer):
                                                     global_pooling,
                                                     ceil_mode,
                                                     count_include_pad,
-                                                    divide)
+                                                    divide,
+                                                    format)
+
+    def set_weights(self, weights):
+        super(SpatialAveragePooling, self).set_weights(weights)
 
 
 class SpatialBatchNormalization(Layer):
@@ -1410,7 +1533,29 @@ class BatchNormalization(Layer):
         return self
 
 
-class Bilinear(Layer):
+class BifurcateSplitTable(Model):
+    '''
+    Creates a module that takes a Tensor as input and
+    outputs two tables, splitting the Tensor along
+    the specified dimension `dimension`.
+
+    The input to this layer is expected to be a tensor, or a batch of tensors;
+
+    :param dimension to be split along this dimension
+    :param T Numeric type. Only support float/double now
+
+    >>> bifurcateSplitTable = BifurcateSplitTable(1)
+    creating: createBifurcateSplitTable
+    '''
+
+    def __init__(self,
+                 dimension,
+                 bigdl_type="float"):
+        super(BifurcateSplitTable, self).__init__(None, bigdl_type,
+                                       dimension)
+
+
+class Bilinear(Model):
 
     '''
     a bilinear transformation with sparse inputs,
@@ -3644,6 +3789,18 @@ class SpatialConvolutionMap(Layer):
     This class is a generalization of SpatialConvolution.
     It uses a generic connection table between input and output features.
     The SpatialConvolution is equivalent to using a full connection table.
+    
+    When padW and padH are both -1, we use a padding algorithm similar to the "SAME"
+    padding of tensorflow. That is
+ 
+     outHeight = Math.ceil(inHeight.toFloat/strideH.toFloat)
+     outWidth = Math.ceil(inWidth.toFloat/strideW.toFloat)
+ 
+     padAlongHeight = Math.max(0, (outHeight - 1) * strideH + kernelH - inHeight)
+     padAlongWidth = Math.max(0, (outWidth - 1) * strideW + kernelW - inWidth)
+ 
+     padTop = padAlongHeight / 2
+     padLeft = padAlongWidth / 2
 
     :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices.
     :param bRegularizer: instance of [[Regularizer]]applied to the bias.

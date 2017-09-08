@@ -70,8 +70,10 @@ class LeakyReLU[T: ClassTag](
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     require(input.isSameSizeAs(gradOutput),
-      "input should have the same size with gradOutput")
+      "input should have the same size with gradOutput" +
+        s"input size ${input.dim()} gradOutput size ${gradOutput.dim()}")
     if (inplace) {
+      gradInput.set(gradOutput)
       gradOutput.map(input, (grad, in) => {
         if (ev.isGreaterEq(ev.fromType[Int](0), in)) {
           negVal
@@ -94,6 +96,13 @@ class LeakyReLU[T: ClassTag](
       DenseTensorApply.apply3[T](gradInput, gradOutput, input, func)
     }
     gradInput
+  }
+
+  override def clearState(): this.type = {
+    if (!inplace) {
+      super.clearState()
+    }
+    this
   }
 }
 

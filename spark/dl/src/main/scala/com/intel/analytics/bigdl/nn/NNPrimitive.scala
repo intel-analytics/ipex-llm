@@ -136,7 +136,7 @@ private[nn] object NNPrimitive {
               dstOffset + (y + 1) * outputWidth, 0)
           } else {
             if (dW == 1) {
-              val ix = 0 - padTop + kw
+              val ix = 0 - padLeft + kw
               val lpad = Math.max(0, padLeft - kw)
               val rpad = Math.max(0, padRight - (kW - kw - 1))
               if (outputWidth - rpad - lpad <= 0) {
@@ -969,6 +969,116 @@ private[nn] object NNPrimitive {
     }
   }
 
+
+  def temporalMaxPoolingBackwardDouble(
+    gradInput: Array[Double], gradInputOffset: Int,
+    gradOutput: Array[Double], gradOutputOffset: Int,
+    indices: Array[Double], indicesOffset: Int,
+    nSlices: Int, frameSize: Int,
+    kW: Int, dW: Int): Unit = {
+    for (t <- Range(0, nSlices)) {
+      val gip = gradInputOffset + t * frameSize * dW
+      val gop = gradOutputOffset + t * frameSize
+      val xp = indicesOffset + t * frameSize
+
+      var y = 0
+      while (y < frameSize) {
+        val maxIndex = indices(xp + y).toInt - 1
+        if (maxIndex != -1) {
+          gradInput(gip + maxIndex * frameSize + y) +=
+            gradOutput(gop + y)
+        }
+        y += 1
+      }
+    }
+  }
+
+  def temporalMaxPoolingBackwardFloat(
+    gradInput: Array[Float], gradInputOffset: Int,
+    gradOutput: Array[Float], gradOutputOffset: Int,
+    indices: Array[Float], indicesOffset: Int,
+    nSlices: Int, frameSize: Int,
+    kW: Int, dW: Int): Unit = {
+    for (t <- Range(0, nSlices)) {
+      val gip = gradInputOffset + t * frameSize * dW
+      val gop = gradOutputOffset + t * frameSize
+      val xp = indicesOffset + t * frameSize
+
+      var y = 0
+      while (y < frameSize) {
+        val maxIndex = xp + y
+        if (maxIndex != -1) {
+          gradInput(gip + maxIndex * frameSize + y) =
+            gradOutput(gop + y)
+        }
+        y += 1
+      }
+    }
+  }
+
+  def temporalMaxPoolingForwardDouble(
+    input: Array[Double], inputOffset: Int,
+    output: Array[Double], outputOffset: Int,
+    indices: Array[Double], indicesOffset: Int,
+    nSlices: Int, frameSize: Int,
+    kW: Int, dW: Int): Unit = {
+    val slices = Range(0, nSlices).iterator
+    while (slices.hasNext) {
+      val t = slices.next()
+      val ip = inputOffset + t * frameSize * dW
+      val op = outputOffset + t * frameSize
+      val xp = indicesOffset + t * frameSize
+      var y = 0
+      while (y < frameSize) {
+        var maxindex = 0  // default is 0
+        var maxval = Double.MinValue
+        var x = 0
+        while (x < kW) {
+          val value = input(ip + x * frameSize + y)
+          if (value > maxval) {
+            maxval = value
+            maxindex = x
+          }
+          x += 1
+        }
+        output(op + y) = maxval
+        indices(xp + y) = maxindex + 1
+        y += 1
+      }
+    }
+  }
+
+  def temporalMaxPoolingForwardFloat(
+    input: Array[Float], inputOffset: Int,
+    output: Array[Float], outputOffset: Int,
+    indices: Array[Float], indicesOffset: Int,
+    nSlices: Int, frameSize: Int,
+    kW: Int, dW: Int): Unit = {
+    val slices = Range(0, nSlices).iterator
+    while (slices.hasNext) {
+      val t = slices.next()
+      val ip = inputOffset + t * frameSize * dW
+      val op = outputOffset + t * frameSize
+      val xp = indicesOffset + t * frameSize
+      var y = 0
+      while (y < frameSize) {
+        var maxindex = 0  // default is 0
+        var maxval = Float.MinValue
+        var x = 0
+        while (x < kW) {
+          val value = input(ip + x * frameSize + y)
+          if (value > maxval) {
+            maxval = value
+            maxindex = x
+          }
+          x += 1
+        }
+        output(op + y) = maxval
+        indices(xp + y) = maxindex + 1
+        y += 1
+      }
+    }
+  }
 
   // For SpatialFullConvolution
   def col2imWithDilationDouble(columns : Tensor[Double], image : Tensor[Double],
