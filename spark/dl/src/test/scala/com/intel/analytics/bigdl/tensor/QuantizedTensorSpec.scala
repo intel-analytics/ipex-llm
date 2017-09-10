@@ -38,12 +38,14 @@ class QuantizedTensorSpec extends FlatSpec with Matchers {
     val minArray = Array.fill[Float](outputChannel)(0)
     val maxArray = Array.fill[Float](outputChannel)(0)
 
+    val desc = tensor.getNativeStorage
+
     tensor.set()
 
     tensor.getNativeStorage should be (0L)
     tensor.getStorage should be (null)
 
-    tensor.release()
+    BigQuant.FreeMemory(desc)
   }
 
   "A QuantizeTensor set to other tensor" should "work correctly" in {
@@ -60,13 +62,15 @@ class QuantizedTensorSpec extends FlatSpec with Matchers {
     val tensor2 = QuantizedTensor[Float](fp32Tensor,
       LinearWeightParams(outputChannel, inputChannel), LinearWeight)
 
+    val desc = tensor2.getNativeStorage
+
     tensor2.set(tensor1)
 
     tensor2.getNativeStorage should be (tensor1.getNativeStorage)
     tensor2.getStorage should be (tensor1.getStorage)
 
     tensor1.release()
-    tensor2.release()
+    BigQuant.FreeMemory(desc)
   }
 
   "A QuantizeTensor set to itself" should "work correctly" in {
@@ -104,16 +108,18 @@ class QuantizedTensorSpec extends FlatSpec with Matchers {
     val tensor3 = QuantizedTensor[Float](fp32Tensor,
       LinearWeightParams(outputChannel, inputChannel), LinearWeight)
 
+    tensor2.release()
     tensor2.set(tensor1)
 
     tensor2.getNativeStorage should be (tensor1.getNativeStorage)
     tensor2.getStorage should be (tensor1.getStorage)
 
+    tensor2.release()
     tensor2.set(tensor3)
 
     tensor2.getNativeStorage should not be tensor1.getNativeStorage
 
     tensor1.release()
-    tensor2.release()
+    tensor3.release()
   }
 }

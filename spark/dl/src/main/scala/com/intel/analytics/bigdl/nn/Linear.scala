@@ -85,8 +85,6 @@ class Linear[T: ClassTag](
       "Linear: " + ErrorInfo.constrainInputAsVectorOrBatch +
       s"input dim ${input.dim()}")
 
-    println(this)
-
     if (input.dim() == 1) {
       output.resize(Array(outputSize))
       if (withBias) output.copy(bias) else output.zero()

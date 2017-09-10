@@ -60,6 +60,7 @@ private[bigdl] class QuantizedTensor[@specialized(Float) T: ClassTag](
       BigQuant.FreeMemory(desc)
     }
     desc = 0L
+    setFromOther = false
     this
   }
 
@@ -259,6 +260,7 @@ private[bigdl] class QuantizedTensor[@specialized(Float) T: ClassTag](
 
   override def set(): Tensor[T] = {
     interStorage = null
+    desc = 0L
     this
   }
 
@@ -276,6 +278,8 @@ private[bigdl] class QuantizedTensor[@specialized(Float) T: ClassTag](
       this.params = o.params
       this.descType = o.descType
       this.desc = o.getNativeStorage
+
+      setFromOther = true
     }
     this
   }

@@ -84,8 +84,6 @@ class Linear[T: ClassTag](
     require(input.dim() == 1 || input.dim() == 2,
       "bigquant.Linear: " + ErrorInfo.constrainInputAsVectorOrBatch)
 
-    println(this)
-
     val batchSize = if (input.dim() == 1) {
       output.resize(Array(outputSize)) // TODO
       1
@@ -112,7 +110,7 @@ class Linear[T: ClassTag](
         val biasArray = bias.storage().array().asInstanceOf[Array[Float]]
         val biasOffset = bias.storageOffset() - 1
 
-        BigQuant.InternalMixPrecisionConvolutionGEMM(
+        BigQuant.MixPrecisionGEMM(
           BigQuant.NCHW, weight.getNativeStorage, data.getNativeStorage, outputArray,
           outputOffset, weightSumArray, weightSumOffset, biasArray, biasOffset,
           batchSize, outputSize, 1, 1,

@@ -205,7 +205,7 @@ class SpatialConvolution[T: ClassTag](
         DILATION_HEIGHT, DILATION_WIDTH, 1, inputHeight, inputWidth, QuantParams.THRESHOLD,
         quantFormat)
 
-      BigQuant.InternalMixPrecisionConvolutionGEMM(
+      BigQuant.MixPrecisionGEMM(
         quantFormat, weight.getNativeStorage, data.getNativeStorage,
         outputArray, outputOffset, weightSumArray, weightSumOffset,
         biasArray, biasOffset, 1, nOutputPlane / nGroup, outputHeight, outputWidth,
