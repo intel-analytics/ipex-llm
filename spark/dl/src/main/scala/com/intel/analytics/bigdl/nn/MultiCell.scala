@@ -87,6 +87,9 @@ class MultiCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorNume
       nextInput(hidDim) = states(i)
       error(hidDim) = states(i)
       error = cells(i).updateGradInput(nextInput, error)
+//      if (preTopology != null) {
+//        gradInput = preTopology.updateGradInput(nextInput, gradInputCell).toTensor[T]
+//      }
       i -= 1
     }
     nextInput(inputDim) = input(inputDim)
@@ -118,26 +121,26 @@ class MultiCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorNume
     cells(0).accGradParameters(nextInput, currentGradOutput)
   }
 
-  override def backward(input: Table, gradOutput: Table): Table = {
-    var i = cells.length - 1
-    var error = T()
-    error(inputDim) = gradOutput(inputDim)
-    val nextInput = T()
-    while (i > 0) {
-      nextInput(inputDim) = cells(i - 1).output.toTable(inputDim)
-      nextInput(hidDim) = states(i)
-      error(hidDim) = states(i)
-      error = cells(i).backward(nextInput, error)
-      i -= 1
-    }
-    nextInput(inputDim) = input(inputDim)
-    nextInput(hidDim) = states(0)
-    error(hidDim) = states(0)
-    error = cells(0).backward(nextInput, error)
-
-    this.gradInput = error
-    gradInput
-  }
+//  override def backward(input: Table, gradOutput: Table): Table = {
+//    var i = cells.length - 1
+//    var error = T()
+//    error(inputDim) = gradOutput(inputDim)
+//    val nextInput = T()
+//    while (i > 0) {
+//      nextInput(inputDim) = cells(i - 1).output.toTable(inputDim)
+//      nextInput(hidDim) = states(i)
+//      error(hidDim) = states(i)
+//      error = cells(i).backward(nextInput, error)
+//      i -= 1
+//    }
+//    nextInput(inputDim) = input(inputDim)
+//    nextInput(hidDim) = states(0)
+//    error(hidDim) = states(0)
+//    error = cells(0).backward(nextInput, error)
+//
+//    this.gradInput = error
+//    gradInput
+//  }
 
   override def zeroGradParameters(): Unit = {
     cells.foreach(_.zeroGradParameters())

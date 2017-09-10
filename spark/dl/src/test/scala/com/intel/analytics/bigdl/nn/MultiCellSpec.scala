@@ -134,6 +134,7 @@ class MultiCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val input = Tensor[Double](batchSize, seqLength, inputSize).rand
     val gradOutput = Tensor[Double](batchSize, seqLength, hiddenSize).rand
     val output = model.forward(input).toTensor[Double]
+    val t = 0
     val gradInput = model.backward(input, gradOutput).toTensor[Double]
     val gradient = model.getParameters()._2
 
