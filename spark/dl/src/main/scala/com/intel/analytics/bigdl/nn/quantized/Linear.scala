@@ -27,7 +27,7 @@ import scala.reflect.ClassTag
 import scala.reflect.runtime.universe
 import serialization.Bigdl.{AttrValue, BigDLModule}
 
-class Linear[T: ClassTag](
+private[bigdl] class Linear[T: ClassTag](
   val inputSize: Int,
   val outputSize: Int,
   val withBias: Boolean = true
@@ -45,11 +45,6 @@ class Linear[T: ClassTag](
     }
 
     val weightFP32Tmp = weightFP32.view(Array(outputSize, inputSize))
-
-    val bufferOffset = 0
-    val buffer = new Array[Byte](weightFP32.nElement())
-    val weightFP32Tensor = weightFP32.asInstanceOf[Tensor[Float]]
-
     val params = LinearWeightParams(outputSize, inputSize)
     weight = QuantizedTensor[T](weightFP32Tmp, params, LinearWeight)
 

@@ -29,7 +29,7 @@ import scala.reflect.runtime.universe
 import serialization.Bigdl.{AttrValue, BigDLModule}
 
 @SerialVersionUID(- 8008252944905538960L)
-class SpatialConvolution[T: ClassTag](
+private[bigdl] class SpatialConvolution[T: ClassTag](
   val nInputPlane: Int, // The number of expected input planes in the image given into forward()
   val nOutputPlane: Int, // The number of output planes the convolution layer will produce.
   val kernelW: Int, // The kernel width of the convolution
