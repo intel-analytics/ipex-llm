@@ -436,12 +436,12 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
   }
 
   /**
-   * Save current model graph to log folder, which can be display in tensorboard by running
+   * Save current model graph to a folder, which can be display in tensorboard by running
    *   tensorboard --logdir logPath
    * @param logPath
    * @return
    */
-  def saveToLog(logPath: String): this.type = {
+  def saveToTensorboard(logPath: String): this.type = {
     val writer = new TFFileWriter(logPath)
     val graphBuilder = GraphDef.newBuilder()
     forwardExecutions.map(m => {
@@ -449,6 +449,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
       graphBuilder.addNode(nodeDef)
     })
     writer.addGraphDef(graphBuilder.build())
+    writer.close()
     this
   }
 }

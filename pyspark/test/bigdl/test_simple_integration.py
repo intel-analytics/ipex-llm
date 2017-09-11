@@ -159,6 +159,15 @@ class TestSimple():
         assert_allclose(gradInput[1],
                         np.array([6.0, 6.0, 6.0, 6.0]))
 
+    def test_save_to_tensorboard(self):
+        fc1 = Linear(4, 2)()
+        fc2 = Linear(4, 2)()
+        cadd = CAddTable()([fc1, fc2])
+        output1 = ReLU()(cadd)
+        output2 = Threshold(10.0)(cadd)
+        model = Model([fc1, fc2], [output1, output2])
+        model.save_to_tensorboard(tempfile.mkdtemp)
+
     def test_load_zip_conf(self):
         from bigdl.util.common import get_bigdl_conf
         import sys

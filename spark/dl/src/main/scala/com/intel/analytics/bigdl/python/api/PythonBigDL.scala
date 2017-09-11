@@ -1903,4 +1903,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def setStopGradient(model: Graph[T], layers: JList[String]): Graph[T] = {
     model.stopGradient(layers.asScala.toArray)
   }
+
+  def saveToTensorBoard(model: Graph[T], logPath: String): Graph[T] = {
+    model.saveToTensorboard(logPath)
+  }
 }

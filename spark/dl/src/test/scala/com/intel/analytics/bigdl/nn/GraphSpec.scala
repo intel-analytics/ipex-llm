@@ -1130,9 +1130,10 @@ class GraphSpec extends FlatSpec with Matchers {
     Engine.init
     val tmpFile = java.io.File.createTempFile("graph", "tensorboard")
     val absolutePath = tmpFile.getAbsolutePath
+    tmpFile.delete()
 
     val model = Inception_v1_NoAuxClassifier.graph(1000).asInstanceOf[Graph[Float]]
-    model.saveToLog(absolutePath)
+    model.saveToTensorboard(absolutePath)
   }
 }
 
