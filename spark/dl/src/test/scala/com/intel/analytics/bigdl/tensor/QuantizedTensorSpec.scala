@@ -119,7 +119,6 @@ class QuantizedTensorSpec extends FlatSpec with Matchers {
 
     tensor2.getNativeStorage should not be tensor1.getNativeStorage
 
-    tensor1.release()
     tensor3.release()
   }
 }
