@@ -17,12 +17,9 @@ package com.intel.analytics.bigdl.nn
 
 import java.util
 
-import com.intel.analytics.bigdl.Module
-
 import scala.collection.JavaConverters._
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
-import com.intel.analytics.bigdl.nn.ops.ControlOps
 import com.intel.analytics.bigdl.nn.tf.{ControlDependency, WithoutInput}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -66,18 +63,17 @@ import scala.reflect.ClassTag
  */
 @SerialVersionUID(- 2896121321564992779L)
 class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
-  private val outputs : Seq[ModuleNode[T]],
-  private val variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None,
-  generateBackward: Boolean = true
-)(implicit ev: TensorNumeric[T])
+    private val outputs : Seq[ModuleNode[T]],
+    private val variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None)
+    (implicit ev: TensorNumeric[T])
     extends Container[Activity, Activity, T]{
 
   type absModule = AbstractModule[_ <: Activity, _ <: Activity, T]
 
   override def updateOutput(input: Activity): Activity = {
-    forwardScheduler.reset()
-    while (!forwardScheduler.isFinished()) {
-      val node = forwardScheduler.fetch()
+    var i = 0
+    while(i < forwardExecutions.length) {
+      val node = forwardExecutions(i)
       val nodeInput = if (node.prevNodes.isEmpty && !node.element.isInstanceOf[WithoutInput]) {
         inputData(node, input)
       } else {
@@ -96,8 +92,8 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
         }
       }
       node.element.forward(nodeInput)
-      inputCache(node.element.getName()) = nodeInput
-      forwardScheduler.schedule(node)
+      inputsBP.put(node.element.getName(), nodeInput)
+      i += 1
     }
 
     output = dummyOutput.element.output
@@ -105,20 +101,20 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
   }
 
   override def backward(input: Activity, gradOutput: Activity): Activity = {
-    if (!generateBackward) return null
-
     val before = System.nanoTime()
-    backwardScheduler.reset()
-    while (!backwardScheduler.isFinished()) {
-      val curNode = backwardScheduler.fetch()
-      var curGradOutput : Activity = if (curNode.eq(dummyOutputGrad)) gradOutput else null
+    dummyOutputGrad.element.gradInput = gradOutput
 
-      curNode.prevNodesAndEdges.filterNot(n => n._1.element.isInstanceOf[ControlDependency[T]])
+    var i = 0
+    while (i < backwardExecutions.length) {
+      val curNode = backwardExecutions(i)
+      var curGradOutput : Activity = null
+
+      curNode.nextNodesAndEdges.filterNot(n => n._1.element.isInstanceOf[ControlDependency[T]])
         .foreach(n => {
-        val otherActivity = if (n._1.element.gradInput.isTensor || n._1.nextEdges.length == 1) {
+        val otherActivity = if (n._1.element.gradInput.isTensor || n._1.prevEdges.length == 1) {
           n._1.element.gradInput
         } else {
-          val index = n._1.nextEdges.indexOf(n._2) + 1
+          val index = n._1.prevEdges.indexOf(n._2) + 1
           n._1.element.gradInput.toTable.apply[Activity](index)
         }
 
@@ -134,13 +130,13 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
         }
       })
 
-      gradOutputCache(curNode.element.getName()) = curGradOutput
+      gradOutputBP(i) = curGradOutput
       if (!isStopGradient(curNode.element)) {
-        curNode.element.backward(inputCache(curNode.element.getName()), curGradOutput)
+        curNode.element.backward(inputsBP.get(curNode.element.getName()), curGradOutput)
       } else {
-        curNode.element.accGradParameters(inputCache(curNode.element.getName()), curGradOutput)
+        curNode.element.accGradParameters(inputsBP.get(curNode.element.getName()), curGradOutput)
       }
-      backwardScheduler.schedule(curNode)
+      i += 1
     }
 
     gradInput = if (inputs.length == 1) {
@@ -177,39 +173,41 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
   }
 
   override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
-    if (!generateBackward) return null
+    dummyOutputGrad.element.gradInput = gradOutput
 
-    backwardScheduler.reset()
-    while (!backwardScheduler.isFinished()) {
-      val curNode = backwardScheduler.fetch()
-      var curGradOutput : Activity = if (curNode.eq(dummyOutputGrad)) gradOutput else null
-
-      curNode.prevNodesAndEdges.filterNot(n => n._1.element.isInstanceOf[ControlDependency[T]])
-        .foreach(n => {
-          val otherActivity = if (n._1.element.gradInput.isTensor || n._1.nextEdges.length == 1) {
-            n._1.element.gradInput
-          } else {
-            val index = n._1.nextEdges.indexOf(n._2) + 1
-            n._1.element.gradInput.toTable.apply[Activity](index)
-          }
-
-          n._2.fromIndex match {
-            case Some(i) =>
-              if (curNode.element.output.isTable && curGradOutput == null) {
-                curGradOutput = T()
-              }
-              val curActivity = curGradOutput.toTable.getOrElse[Activity](i, null)
-              curGradOutput.toTable(i) = accActivity(curActivity, otherActivity)
-            case None =>
-              curGradOutput = accActivity(curGradOutput, otherActivity)
-          }
-        })
-
-      gradOutputCache(curNode.element.getName()) = curGradOutput
-      if (!isStopGradient(curNode.element)) {
-        curNode.element.updateGradInput(inputCache(curNode.element.getName()), curGradOutput)
+    var i = 0
+    while (i < backwardExecutions.length) {
+      val curNode = backwardExecutions(i)
+      var curGradOutput : Activity = null
+      if (curNode.element.output.isTable) {
+        curGradOutput = T()
       }
-      backwardScheduler.schedule(curNode)
+
+      curNode.nextNodesAndEdges
+        .filterNot(n => n._1.element.isInstanceOf[ControlDependency[T]])
+        .foreach(n => {
+        val otherActivity = if (n._1.element.gradInput.isTensor || n._1.prevEdges.length == 1) {
+          n._1.element.gradInput
+        } else {
+          val index = n._1.prevEdges.indexOf(n._2) + 1
+          n._1.element.gradInput.toTable.apply[Activity](index)
+        }
+
+        n._2.fromIndex match {
+          case Some(i) =>
+            val curActivity = curGradOutput.toTable.getOrElse[Activity](i, null)
+            curGradOutput.toTable(i) = accActivity(curActivity, otherActivity)
+          case None =>
+            curGradOutput = accActivity(curGradOutput, otherActivity)
+        }
+      })
+
+      gradOutputBP(i) = curGradOutput
+
+      if (!isStopGradient(curNode.element)) {
+        curNode.element.updateGradInput(inputsBP.get(curNode.element.getName()), curGradOutput)
+      }
+      i += 1
     }
 
     gradInput = if (inputs.length == 1) {
@@ -222,10 +220,9 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
 
   override def accGradParameters(input: Activity, gradOutput: Activity): Unit = {
     var i = 0
-    while (i < backwardNodes.length) {
-      val curNode = backwardNodes(i)
-      curNode.element.accGradParameters(inputCache(curNode.element.getName()),
-        gradOutputCache(curNode.element.getName()))
+    while (i < backwardExecutions.length) {
+      val curNode = backwardExecutions(i)
+      curNode.element.accGradParameters(inputsBP.get(curNode.element.getName()), gradOutputBP(i))
       i += 1
     }
   }
@@ -255,59 +252,42 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
    * Computing backgraph
    */
   private val backGraph = dummyOutput.graph(reverse = true)
-  private var gradGraph: DirectedGraph[AbstractModule[Activity, Activity, T]] = _
+  private var gradGraph: DirectedGraph[AbstractModule[Activity, Activity, T]] = null
 
   /**
    * Execution plan
    */
-  private val forwardNodes = backGraph.DFS
-    .filterNot(_.element.isInstanceOf[ControlDependency[T]]).toArray
-  private val forwardScheduler = new Scheduler(
-    forwardNodes.filter(_.prevNodes.length == 0),
-    Seq(dummyOutput)
-  )
+  private val forwardExecutions = backGraph.topologySort
+    .filterNot(_.element.isInstanceOf[ControlDependency[T]]).reverse
+  private var backwardExecutions: Array[Node[AbstractModule[Activity, Activity, T]]] = null
 
-  private var backwardScheduler : Scheduler[T] = _
-  private var backwardNodes: Array[Node[AbstractModule[Activity, Activity, T]]] = _
-
-
-  modules.appendAll(forwardNodes.filter(n => !n.eq(dummyOutput)).map(_.element))
+  modules.appendAll(forwardExecutions.filter(n => !n.eq(dummyOutput)).map(_.element))
 
   /**
-   * Generate backward graph and apply the stopGrad
+   * build is needed when the stopGrad is changed
    */
   private[bigdl] def build(): this.type = {
-    val gradGraph = backGraph.cloneGraph(true)
+    val gradGraph = backGraph.cloneGraph()
     dummyOutputGrad = gradGraph.source
-    val originalNodes = gradGraph.DFS
-    originalNodes.filter(x => isStopGradient(x.element)).foreach(_.removePrevEdges())
-    backwardNodes = gradGraph.DFS.filter(n => !n.eq(dummyOutputGrad))
-      .filterNot(_.element.isInstanceOf[ControlDependency[_]]).toArray
-    backwardScheduler = new Scheduler[T](
-      Seq(dummyOutputGrad),
-      backwardNodes.filter(_.nextNodes.length == 0)
-    )
+    val nodes = gradGraph.DFS
+    nodes.filter(x => isStopGradient(x.element)).foreach(_.removePrevEdges())
+    backwardExecutions = gradGraph.topologySort.filter(n => !n.eq(dummyOutputGrad))
+      .filterNot(_.element.isInstanceOf[ControlDependency[T]])
     clearState()
     this
   }
 
 
-  private val inputCache = new mutable.HashMap[String, Activity]()
+  private val inputsBP = new util.HashMap[String, Activity]()
 
   // Check all inputs of the graph should be passed in
   checkRoots
-  if (generateBackward) {
-    forwardNodes.foreach(n => require(!n.element.isInstanceOf[ControlOps[_]],
-      "Not suppot generate back graph with control ops node"))
-    build()
-  }
+  build
 
-  private val gradOutputCache = new mutable.HashMap[String, Activity]()
+  private val gradOutputBP = new Array[Activity](forwardExecutions.length - 1)
 
   private def checkRoots: Unit = {
-    require(forwardNodes.map(_.element.getName()).distinct.length == forwardNodes.length,
-      "the name of node in the graph should be unique")
-    val roots = forwardNodes.filter(_.prevNodes.size == 0)
+    val roots = forwardExecutions.filter(_.prevNodes.size == 0)
       .filter(node => !node.element.isInstanceOf[WithoutInput])
     require(roots.size == inputs.length,
       s"There're ${inputs.length} inputs, but graph has ${roots.size} roots")
@@ -424,7 +404,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
    * @return
    */
   def getForwardExecutions: Array[Node[AbstractModule[Activity, Activity, T]]] = {
-    forwardNodes.filter(n => !n.eq(dummyOutput))
+    forwardExecutions.filter(n => !n.eq(dummyOutput))
   }
 
   @inline
@@ -467,9 +447,9 @@ object Graph extends ContainerSerializable {
    * @return a graph container
    */
   def apply[T: ClassTag](input : Array[ModuleNode[T]], output : Array[ModuleNode[T]],
-      variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None,
-    generateBackward: Boolean = true)(implicit ev: TensorNumeric[T]) : Graph[T] = {
-    new Graph[T](input, output, variables, generateBackward)
+      variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None)
+      (implicit ev: TensorNumeric[T]) : Graph[T] = {
+    new Graph[T](input, output, variables)
   }
 
   /**
