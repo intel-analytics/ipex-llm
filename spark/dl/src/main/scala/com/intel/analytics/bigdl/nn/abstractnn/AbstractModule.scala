@@ -372,7 +372,11 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
     this
   }
 
-  def cloneModule(deepCopy : Boolean = true): AbstractModule[A, B, T] = {
+  def cloneModule(): AbstractModule[A, B, T] = {
+     SerializationUtils.clone(this)
+  }
+
+  def cloneModule(deepCopy : Boolean): AbstractModule[A, B, T] = {
     val moduleData = ModuleData[T](this.
       asInstanceOf[AbstractModule[Activity, Activity, T]], Seq[String](), Seq[String]())
     val serializedModule = ModuleSerializer.serialize[T](moduleData, false)
@@ -389,7 +393,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
       require(copiedModuleParamTable != null, "cloned module should have params")
       parameterTable.foreach {
         case (name: String, params: Table) =>
-          require(copiedModuleParamTable.get(name) != null, s"cloned module should have for $name")
+          require(copiedModuleParamTable.get(name) != None, s"cloned module should have for $name")
           setLayerWeightAndBias(params,
             copiedModuleParamTable.get(name).get.asInstanceOf[Table], deepCopy)
       }
@@ -408,6 +412,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
     if (params.contains(paraName)) {
       val copyParam = copyParams.get(paraName).get.asInstanceOf[Tensor[T]]
       val originParam = params.get(paraName).get.asInstanceOf[Tensor[T]]
+      copyParam.resizeAs(originParam)
       if (deepCopy) {
         copyParam.copy(originParam)
       } else {

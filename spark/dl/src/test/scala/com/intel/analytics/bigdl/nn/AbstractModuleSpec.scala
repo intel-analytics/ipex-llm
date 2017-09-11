@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl._
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.numeric.NumericFloat
+import com.intel.analytics.bigdl.tensor.Tensor
 
 class AbstractModuleSpec extends FlatSpec with Matchers {
   "Get name" should "find the module if it exists" in {
@@ -204,5 +205,43 @@ class AbstractModuleSpec extends FlatSpec with Matchers {
     module.loadModelWeights(module2)
 
     module.parameters()._1 should be(module2.parameters()._1)
+  }
+
+  "Shallow copy " should " work properly " in {
+
+    val linear = Linear[Float](2, 2)
+
+    val shallowCopy = linear.cloneModule(false).asInstanceOf[Linear[Float]]
+
+    val originWeight = linear.weight
+
+    val originBias = linear.bias
+
+    originWeight.fill(1.0f)
+    originBias.fill(2.0f)
+
+    val input = Tensor[Float](2, 2)
+
+    val res1 = linear.forward(input)
+
+    val res2 = shallowCopy.forward(input)
+
+    res1 should be (res2)
+
+  }
+
+  "Deep copy" should " work properly" in {
+
+    val linear = Linear[Float](2, 2)
+
+    val deepCopy = linear.cloneModule(true).asInstanceOf[Linear[Float]]
+
+    val input = Tensor[Float](2, 2)
+
+    val res1 = linear.forward(input)
+
+    val res2 = deepCopy.forward(input)
+
+    res1 should be (res2)
   }
 }
