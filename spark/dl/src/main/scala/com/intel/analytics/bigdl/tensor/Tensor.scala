@@ -182,6 +182,9 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
    */
   def apply(indexes: Array[Int]): T
 
+
+  def valueAt(): T
+
   /**
    * Query the value on a given position. The number of parameters
    * should be equal to the dimension number of the tensor.
@@ -190,7 +193,6 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
    * @param d1,( d2, d3, d4, d5) the given position
    * @return the value on a given position
    */
-
   def valueAt(d1: Int): T
 
   def valueAt(d1: Int, d2: Int): T
@@ -909,12 +911,6 @@ object Tensor {
    */
   def apply[@specialized(Float, Double) T: ClassTag](other: Tensor[T])(
     implicit ev: TensorNumeric[T]): Tensor[T] = new DenseTensor(other)
-
-  def apply[@specialized(Float, Double) T: ClassTag](value: T)(
-    implicit ev: TensorNumeric[T]): Tensor[T] = {
-    new DenseTensor[T](new ArrayStorage[T](Array(value)), 0, Array[Int](),
-      Array[Int](), 0)
-  }
 
   /**
    * create a tensor with a given breeze vector. The tensor will have the same size
