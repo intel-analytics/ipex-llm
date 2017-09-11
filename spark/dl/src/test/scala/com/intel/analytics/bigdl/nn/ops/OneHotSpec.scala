@@ -21,15 +21,14 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class OneHotSpec extends FlatSpec with Matchers {
   "OneHot operation one dimension index" should "works correctly" in {
-    import com.intel.analytics.bigdl.numeric.NumericDouble
     val input =
-      T(Tensor(T(0, 2, -1, 1)),
-        Tensor[Int](3),
-        Tensor[Double](0.5),
-        Tensor[Double](0.0))
+      T(Tensor[Int](T(0, 2, -1, 1)),
+        Tensor[Int](Array(3), shape = Array[Int]()),
+        Tensor[Double](Array(0.5), shape = Array(1)),
+        Tensor[Double](Array(0.0), shape = Array(1)))
 
     val expectOutput =
-      Tensor(T(
+      Tensor[Double](T(
         T(0.5, 0.0, 0.0),
         T(0.0, 0.0, 0.5),
         T(0.0, 0.0, 0.0),
@@ -48,9 +47,9 @@ class OneHotSpec extends FlatSpec with Matchers {
     val input =
       T(
         Tensor(T(T(0, 2), T(1, -1))),
-        Tensor[Int](3),
-        Tensor[Double](1.0),
-        Tensor[Double](0.0)
+        Tensor[Int](Array(3), shape = Array[Int]()),
+        Tensor[Double](Array(1.0), shape = Array(1)),
+        Tensor[Double](Array(0.0), shape = Array(1))
       )
 
     val expectOutput =

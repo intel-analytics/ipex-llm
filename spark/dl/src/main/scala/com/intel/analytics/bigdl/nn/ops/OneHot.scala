@@ -26,9 +26,9 @@ class OneHot[T: ClassTag](
 )(implicit ev: TensorNumeric[T]) extends Operation[Table, T] {
   def updateOutput(input: Table): Tensor[T] = {
     val indices = input[Tensor[Int]](1)
-    val depth = input[Int](2)
-    val onValue = input[T](3)
-    val offValue = input[T](4)
+    val depth = input[Tensor[Int]](2).value()
+    val onValue = input[Tensor[T]](3).valueAt(1)
+    val offValue = input[Tensor[T]](4).valueAt(1)
 
     val size: Array[Int] = indices.size()
     require(indices.dim() <= 2 && indices.dim() > 0,
