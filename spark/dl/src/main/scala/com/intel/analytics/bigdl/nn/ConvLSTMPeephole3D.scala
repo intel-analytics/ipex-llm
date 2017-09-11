@@ -66,6 +66,7 @@ class ConvLSTMPeephole3D[T : ClassTag](
   var hiddenLayer: Sequential[T] = _
   var cellLayer: Sequential[T] = _
 
+  override var preTopology: AbstractModule[Activity, Activity, T] = null
   override var cell: AbstractModule[Activity, Activity, T] = buildConvLSTM()
 
   def buildGate(): Sequential[T] = {

@@ -79,7 +79,8 @@ abstract class Cell[T : ClassTag](
    * Please refer to SimpleRNN or LSTM for reference.
    * @return
    */
-  def preTopology: AbstractModule[Activity, Activity, T] = null
+//  def preTopology: AbstractModule[Activity, Activity, T] = null
+  var preTopology: AbstractModule[Activity, Activity, T]
 
   def hiddenSizeOfPreTopo: Int = hiddensShape(0)
 

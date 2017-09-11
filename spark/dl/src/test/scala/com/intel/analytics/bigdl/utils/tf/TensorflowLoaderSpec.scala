@@ -632,4 +632,53 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
       path
     }
   }
+
+  "static multicell " should "have the same inference result as tensorflow" in {
+    //    tfCheck()
+    System.setProperty("bigdl.enableNHWC", "false")
+    val modelName = "rnn_multicell"
+//val modelName = "rnn_lstm"
+    // Generate command and prepare the temp folder
+    val s = JFile.separator
+    val modelsFolder = processPath(getClass().getClassLoader().getResource("tf").getPath()) +
+      s + "models"
+    val modelScript = modelsFolder + s + s"$modelName.py"
+    val tmpLocation = java.io.File.createTempFile("tensorflowLoaderTest" + UUID.randomUUID(),
+      modelName)
+    tmpLocation.delete()
+    tmpLocation.mkdir()
+
+    require(runPython(s"$modelScript $tmpLocation"), "error when run the model script")
+
+    // Load the model and input/output tensors
+    val modelFile = tmpLocation + s + "model.pb"
+
+    val results = TensorflowLoader.parse(modelFile)
+    val (tfGraph, inputs) =
+      TensorflowLoader.buildTFGraph(results.subList(0, results.size()-1), Seq("output"))
+    val model = TensorflowLoader.buildBigDLModel(tfGraph, inputs,
+      Seq("output"),
+      ByteOrder.LITTLE_ENDIAN, "")
+    val input = TensorflowToBigDL.toTensor(results.get(0).getAttrMap.get("value").getTensor,
+      ByteOrder.LITTLE_ENDIAN).contiguous()
+    val tfResult = TensorflowToBigDL.toTensor(results.get(results.size()-1)
+      .getAttrMap.get("value").getTensor, ByteOrder.LITTLE_ENDIAN)
+    model.getParameters()._1.fill(0.5f)
+    val bigDLResult = model.forward(input)
+    tfResult.almostEqual(bigDLResult.toTensor, 1e-5)
+
+    val t = Recurrent()
+    val cells = Array(LSTM[Float](
+      10,
+      10), LSTM[Float](
+      10,
+      10)).asInstanceOf[Array[Cell[Float]]]
+
+    val t2 = Sequential[Float]()
+      .add(t
+        .add(MultiCell[Float](cells)))
+    val t3 = t.forward(input)
+    val t4 = 0
+    t3.almostEqual(bigDLResult.toTensor, 1e-6)
+  }
 }

@@ -28,7 +28,7 @@ def main():
     dir = argv[1]
     n_steps = 2
     n_input = 10
-    n_hidden = 20
+    n_hidden = 10
     n_output = 5
     # xs = tf.placeholder(tf.float32, [None, n_steps, n_input])
     xs = tf.Variable(tf.random_uniform([4, n_steps, n_input]) + 10, name='input', dtype=tf.float32)

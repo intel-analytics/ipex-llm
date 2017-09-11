@@ -75,8 +75,7 @@ class LSTMPeephole[T : ClassTag] (
       .add(SelectTable(1))
       .add(NarrowTable(2, 2)))
 
-  override def preTopology: AbstractModule[Activity, Activity, T] =
-    Sequential()
+  override var preTopology: AbstractModule[Activity, Activity, T] = Sequential()
     .add(Dropout(p))
     .add(TimeDistributed(Linear(inputSize, hiddenSize * 4, wRegularizer = wRegularizer,
       bRegularizer = bRegularizer)))

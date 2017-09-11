@@ -124,7 +124,10 @@ class MultiCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val rec = Recurrent[Double]()
     val cells = Array(LSTM[Double](
       inputSize,
-      hiddenSize)).asInstanceOf[Array[Cell[Double]]]
+      hiddenSize),
+      LSTM[Double](
+        inputSize,
+        hiddenSize)).asInstanceOf[Array[Cell[Double]]]
 
     val model = Sequential[Double]()
       .add(rec

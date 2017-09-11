@@ -68,6 +68,7 @@ class ConvLSTMPeephole[T : ClassTag](
 //  val joinDim = 2
   override var cell: AbstractModule[Activity, Activity, T] = buildConvLSTM()
 
+  override var preTopology: AbstractModule[Activity, Activity, T] = null
 //  override def preTopology: AbstractModule[Activity, Activity, T] =
 //    Sequential()
 //        .add(TimeDistributed(SpatialConvolution(inputSize, outputSize*4, kernelI, kernelI,

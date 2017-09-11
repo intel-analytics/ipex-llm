@@ -37,6 +37,8 @@ class MultiCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorNume
   private val inputDim = 1
   private val hidDim = 2
 
+  override var preTopology: AbstractModule[Activity, Activity, T] = null
+  
   override var cell: AbstractModule[Activity, Activity, T] = buildModel()
 
   var states: Array[Activity] = null
@@ -47,7 +49,7 @@ class MultiCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorNume
       if (cell.preTopology != null) {
         seq.add(cell.preTopology)
       }
-      seq.add(_)
+      seq.add(cell)
     }
     seq
   }
@@ -62,7 +64,7 @@ class MultiCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorNume
       result(hidDim) = states(i)
       
       if (cells(i).preTopology != null) {
-        val inputTmp = result(inputDim).asInstanceOf[Tensor[T]]
+        val inputTmp = result(inputDim).asInstanceOf[Tensor[T]].clone()
         val sizes = 1 +: inputTmp.size()
         inputTmp.resize(sizes)
         val outputTmp = cells(i).preTopology.forward(inputTmp).toTensor[T]
@@ -121,50 +123,59 @@ class MultiCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorNume
     cells(0).accGradParameters(nextInput, currentGradOutput)
   }
 
-//  override def backward(input: Table, gradOutput: Table): Table = {
-//    var i = cells.length - 1
-//    var error = T()
-//    error(inputDim) = gradOutput(inputDim)
-//    val nextInput = T()
-//    while (i > 0) {
-//      nextInput(inputDim) = cells(i - 1).output.toTable(inputDim)
-//      nextInput(hidDim) = states(i)
-//      error(hidDim) = states(i)
-//      error = cells(i).backward(nextInput, error)
-//      i -= 1
-//    }
-//    nextInput(inputDim) = input(inputDim)
-//    nextInput(hidDim) = states(0)
-//    error(hidDim) = states(0)
-//    error = cells(0).backward(nextInput, error)
-//
-//    this.gradInput = error
-//    gradInput
-//  }
+  override def backward(input: Table, gradOutput: Table): Table = {
+    var i = cells.length - 1
+    var error = T()
+    error(inputDim) = gradOutput(inputDim)
+    val nextInput = T()
+    while (i > 0) {
+      nextInput(inputDim) = cells(i - 1).output.toTable(inputDim)
+      nextInput(hidDim) = states(i)
+      error(hidDim) = states(i)
+      error = cells(i).backward(nextInput, error)
+
+      if (cells(i).preTopology != null) {
+        cells(i).gradInput(inputDim) =
+          cells(i).preTopology.backward(nextInput(inputDim), error(inputDim)).toTensor[T]
+      }
+      i -= 1
+    }
+    nextInput(inputDim) = input(inputDim)
+    nextInput(hidDim) = states(0)
+    error(hidDim) = states(0)
+    error = cells(0).backward(nextInput, error)
+    if (cells(0).preTopology != null) {
+      cells(0).gradInput(inputDim) =
+        cells(0).preTopology.backward(nextInput(inputDim), error(inputDim)).toTensor[T]
+    }
+
+    this.gradInput = error
+    gradInput
+  }
 
   override def zeroGradParameters(): Unit = {
     cells.foreach(_.zeroGradParameters())
   }
 
-  override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
-    val weights = new ArrayBuffer[Tensor[T]]()
-    val gradWeights = new ArrayBuffer[Tensor[T]]()
-    cells.foreach(m => {
-      if (m.preTopology != null) {
-        val pretopologyParameters = m.preTopology.parameters()
-        if (pretopologyParameters != null) {
-          pretopologyParameters._1.foreach(weights += _)
-          pretopologyParameters._2.foreach(gradWeights += _)
-        }
-      }
-      val params = m.parameters()
-      if (params != null) {
-        params._1.foreach(weights += _)
-        params._2.foreach(gradWeights += _)
-      }
-    })
-    (weights.toArray, gradWeights.toArray)
-  }
+//  override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
+//    val weights = new ArrayBuffer[Tensor[T]]()
+//    val gradWeights = new ArrayBuffer[Tensor[T]]()
+//    cells.foreach(m => {
+//      if (m.preTopology != null) {
+//        val pretopologyParameters = m.preTopology.parameters()
+//        if (pretopologyParameters != null) {
+//          pretopologyParameters._1.foreach(weights += _)
+//          pretopologyParameters._2.foreach(gradWeights += _)
+//        }
+//      }
+//      val params = m.parameters()
+//      if (params != null) {
+//        params._1.foreach(weights += _)
+//        params._2.foreach(gradWeights += _)
+//      }
+//    })
+//    (weights.toArray, gradWeights.toArray)
+//  }
 
   override def getParametersTable(): Table = {
     val pt = T()
