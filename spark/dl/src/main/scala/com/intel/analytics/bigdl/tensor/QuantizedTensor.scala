@@ -131,7 +131,7 @@ private[bigdl] class QuantizedTensor[@specialized(Float) T: ClassTag](
   def this(size: Array[Int])(implicit ev: TensorNumeric[T]) =
     this(size, DenseTensor.size2Stride(size), size.length)
 
-  private def createInterStorage(tensor: Tensor[T]): Array[Byte] = {
+  private def createInternalStorage(tensor: Tensor[T]): Array[Byte] = {
     val size = tensor.size(1)
     maxOfRow = new Array[T](size)
     minOfRow = new Array[T](size)
@@ -348,7 +348,7 @@ object QuantizedTensor {
   def apply[@specialized(Float, Double) T: ClassTag](src: Tensor[T], descParams: DescParams,
     descType: DescType)(implicit ev: TensorNumeric[T]): QuantizedTensor[T] = {
     val tensor = new QuantizedTensor[T](src.size(), src.stride(), src.nDimension())
-    tensor.value = tensor.createInterStorage(src)
+    tensor.value = tensor.createInternalStorage(src)
     tensor.desc = Desc.get(descParams, descType, tensor.value, 0,
       tensor.maxOfRow, tensor.minOfRow)
     tensor.params = descParams
