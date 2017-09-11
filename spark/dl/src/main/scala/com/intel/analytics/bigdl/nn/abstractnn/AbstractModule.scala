@@ -373,7 +373,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
   }
 
   def cloneModule(): AbstractModule[A, B, T] = {
-     SerializationUtils.clone(this)
+    SerializationUtils.clone(this)
   }
 
   def cloneModule(deepCopy : Boolean): AbstractModule[A, B, T] = {
