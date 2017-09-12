@@ -16,7 +16,7 @@
 package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.nn.SpatialConvolution
-import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
+import com.intel.analytics.bigdl.nn.abstractnn.{Activity, DataFormat}
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
@@ -24,73 +24,74 @@ import com.intel.analytics.bigdl.utils.Table
 import scala.reflect.ClassTag
 
 class Conv2D[T: ClassTag](
-  input: Tensor[T],
-  filter: Tensor[T],
   strides: Array[Int],
   padding: String,
   format: DataFormat = DataFormat.NHWC
-)(implicit ev: TensorNumeric[T]) extends Operation[Tensor[T], T] {
+)(implicit ev: TensorNumeric[T]) extends Operation[Table, Tensor[T], T] {
 
-  val conv: SpatialConvolution[T] = format match {
-    case DataFormat.NHWC =>
-      if (padding == "SAME") {
-        SpatialConvolution(
-          nInputPlane = input.size(4),
-          nOutputPlane = filter.size(4),
-          kernelH = filter.size(1),
-          kernelW = filter.size(2),
-          strideH = strides(1),
-          strideW = strides(2),
-          padH = -1,
-          padW = -1,
-          format = format
-        )
-      } else if (padding == "VALID") {
-        SpatialConvolution(
-          nInputPlane = input.size(4),
-          nOutputPlane = filter.size(4),
-          kernelH = filter.size(1),
-          kernelW = filter.size(2),
-          strideH = strides(1),
-          strideW = strides(2),
-          format = format
-        )
-      } else {
-        throw new RuntimeException("Padding can only support SAME and VALID padding")
-      }
-    case DataFormat.NCHW =>
-      if (padding == "SAME") {
-        SpatialConvolution(
-          nInputPlane = input.size(2),
-          nOutputPlane = filter.size(4),
-          kernelH = filter.size(1),
-          kernelW = filter.size(2),
-          strideH = strides(2),
-          strideW = strides(3),
-          padH = (filter.size(3) - 1) / 2,
-          padW = (filter.size(4) - 1) / 2,
-          format = format
-        )
-      } else if (padding == "VALID") {
-        SpatialConvolution(
-          nInputPlane = input.size(2),
-          nOutputPlane = filter.size(4),
-          kernelH = filter.size(1),
-          kernelW = filter.size(2),
-          strideH = strides(2),
-          strideW = strides(3),
-          format = format
-        )
-      } else {
-        throw new RuntimeException("Padding can only support SAME and VALID padding")
-      }
-  }
+  override def updateOutput(inputs: Table): Tensor[T] = {
+    val input: Tensor[T] = inputs[Tensor[T]](1)
+    val filter: Tensor[T] = inputs[Tensor[T]](2)
 
-  conv.bias.zero()
+    val conv: SpatialConvolution[T] = format match {
+      case DataFormat.NHWC =>
+        if (padding == "SAME") {
+          SpatialConvolution(
+            nInputPlane = input.size(4),
+            nOutputPlane = filter.size(4),
+            kernelH = filter.size(1),
+            kernelW = filter.size(2),
+            strideH = strides(1),
+            strideW = strides(2),
+            padH = -1,
+            padW = -1,
+            format = format
+          )
+        } else if (padding == "VALID") {
+          SpatialConvolution(
+            nInputPlane = input.size(4),
+            nOutputPlane = filter.size(4),
+            kernelH = filter.size(1),
+            kernelW = filter.size(2),
+            strideH = strides(1),
+            strideW = strides(2),
+            format = format
+          )
+        } else {
+          throw new RuntimeException("Padding can only support SAME and VALID padding")
+        }
+      case DataFormat.NCHW =>
+        if (padding == "SAME") {
+          SpatialConvolution(
+            nInputPlane = input.size(2),
+            nOutputPlane = filter.size(4),
+            kernelH = filter.size(1),
+            kernelW = filter.size(2),
+            strideH = strides(2),
+            strideW = strides(3),
+            padH = (filter.size(3) - 1) / 2,
+            padW = (filter.size(4) - 1) / 2,
+            format = format
+          )
+        } else if (padding == "VALID") {
+          SpatialConvolution(
+            nInputPlane = input.size(2),
+            nOutputPlane = filter.size(4),
+            kernelH = filter.size(1),
+            kernelW = filter.size(2),
+            strideH = strides(2),
+            strideW = strides(3),
+            format = format
+          )
+        } else {
+          throw new RuntimeException("Padding can only support SAME and VALID padding")
+        }
+    }
 
-  conv.weight.resizeAs(filter).copy(filter)
+    conv.bias.zero()
 
-  override def updateOutput(input: Tensor[T]): Tensor[T] = {
+    conv.weight.resizeAs(filter).copy(filter)
+
     output = conv.updateOutput(input)
     output
   }
@@ -98,11 +99,9 @@ class Conv2D[T: ClassTag](
 
 object Conv2D {
   def apply[T: ClassTag](
-    input: Tensor[T],
-    filter: Tensor[T],
     strides: Array[Int],
     padding: String,
     format: DataFormat = DataFormat.NHWC
-  )(implicit ev: TensorNumeric[T]): Operation[Tensor[T], T]
-  = ModuleToOperation[Tensor[T], T](new Conv2D(input, filter, strides, padding, format))
+  )(implicit ev: TensorNumeric[T]): Operation[Activity, Activity, T]
+  = ModuleToOperation[T](new Conv2D(strides, padding, format))
 }
