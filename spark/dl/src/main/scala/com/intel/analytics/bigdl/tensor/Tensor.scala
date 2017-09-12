@@ -183,7 +183,10 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
   def apply(indexes: Array[Int]): T
 
 
-  def valueAt(): T
+  /**
+   * @return the value of a scalar. Requires the tensor to be a scalar.
+   */
+  def value(): T
 
   /**
    * Query the value on a given position. The number of parameters
