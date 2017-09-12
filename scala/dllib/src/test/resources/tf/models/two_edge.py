@@ -14,31 +14,21 @@
 # limitations under the License.
 #
 import tensorflow as tf
-from nets import inception
 from sys import argv
 
 from util import run_model
 
-slim = tf.contrib.slim
-
 def main():
-    """
-    You can also run these commands manually to generate the pb file
-    1. git clone https://github.com/tensorflow/models.git
-    2. export PYTHONPATH=Path_to_your_model_folder
-    3. python alexnet.py
-    """
-    tf.set_random_seed(1)
-    height, width = 299, 299
-    num_classes = 1000
-    inputs = tf.Variable(tf.random_uniform((1, height, width, 3)), name='input')
+
+    inputs = tf.Variable(tf.reshape(tf.range(0.0, 4.0), [4, 1]), name = 'input')
     inputs = tf.identity(inputs, "input_node")
-    net, end_points  = inception.inception_v3(inputs, num_classes,is_training=False)
-    print("nodes in the graph")
-    for n in end_points:
-        print(n + " => " + str(end_points[n]))
+
+    output = tf.concat([inputs, inputs], axis=0)
+
+    named_output = tf.nn.relu(output, name="output")
+
     net_outputs = map(lambda x: tf.get_default_graph().get_tensor_by_name(x), argv[2].split(','))
-    run_model(net_outputs, argv[1], 'InceptionV3', argv[3] == 'True')
+    run_model(net_outputs, argv[1], 'two_edge', argv[3] == 'True')
 
 if __name__ == "__main__":
     main()
