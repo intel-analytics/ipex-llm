@@ -627,8 +627,8 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     }
   }
 
-  "decoder lstm rnn " should "have the same inference result as tensorflow" in {
-    //    tfCheck()
+  "decoder rnn " should "have the same inference result as tensorflow" in {
+//    tfCheck()
     System.setProperty("bigdl.enableNHWC", "false")
     val modelName = "decoder"
     // Generate command and prepare the temp folder
@@ -647,13 +647,16 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     val modelFile = tmpLocation + s + "model.pb"
 
     val results = TensorflowLoader.parse(modelFile)
-    val tfGraph = TensorflowLoader.buildTFGraph(results.subList(0, results.size()-1), Seq("output"))
-        val model = TensorflowLoader.buildBigDLModel(tfGraph, Seq("input"),
-          Seq("output"),
-          ByteOrder.LITTLE_ENDIAN, "")
+    val (tfGraph, inputs) =
+      TensorflowLoader.buildTFGraph(results.subList(0, results.size()-1), Seq("output"))
+    val model = TensorflowLoader.buildBigDLModel(tfGraph, inputs,
+      Seq("output"),
+      ByteOrder.LITTLE_ENDIAN, "")
     val input = TensorflowToBigDL.toTensor(results.get(0).getAttrMap.get("value").getTensor,
       ByteOrder.LITTLE_ENDIAN).contiguous()
     val tfResult = TensorflowToBigDL.toTensor(results.get(results.size()-1)
-      .getAttrMap.get("value").getTensor, ByteOrder.LITTLE_ENDIAN)    
+      .getAttrMap.get("value").getTensor, ByteOrder.LITTLE_ENDIAN)
+    val bigDLResult = model.forward(input)
+    tfResult.almostEqual(bigDLResult.toTensor, 1e-5)
   }
 }
