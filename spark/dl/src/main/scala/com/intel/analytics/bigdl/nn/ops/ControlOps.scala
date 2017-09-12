@@ -52,32 +52,6 @@ abstract class IdentityControl[T: ClassTag]()(implicit ev: TensorNumeric[T]) ext
   }
 }
 
-/**
- * Mark start of next iteration. User should use ControlNodes.whileLoop to use such operation.
- * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
- */
-class NextIteration[T: ClassTag] private[ops]()(implicit ev: TensorNumeric[T])
-  extends IdentityControl[T]
-
-/**
- * Mark start of a loop. User should use ControlNodes.whileLoop to use such operation.
- * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
- */
-class Enter[T: ClassTag] private[ops]()(implicit ev: TensorNumeric[T]) extends IdentityControl[T]
-
-/**
- * Mark this dataflow is condition flow. It will erase the iteration status.
- * User should use ControlNodes.whileLoop to use such operation.
- * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
- */
-class LoopCondition[T: ClassTag] private[ops]()(implicit ev: TensorNumeric[T])
-  extends IdentityControl[T]
-
-/**
- * Mark end of a loop. User should use ControlNodes.whileLoop to use such operation.
- * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
- */
-class Exit[T: ClassTag] private[ops]()(implicit ev: TensorNumeric[T]) extends IdentityControl[T]
 
 /**
  * Switch the control flow. It will construct a table. It accepts a table input containing two
@@ -274,45 +248,5 @@ object ControlNodes {
       node.add(curNode, Edge())
     })
     curNode
-  }
-
-  /**
-   * Constructor a while loop in the graph
-   * @param condition a sub graph produce a boolean scalar
-   * @param body while body, input/output tuple. body length is seq of nodes with same length of
-   *             loopVars
-   * @param loopVars loop vars
-   * @tparam T
-   * @return a seq of nodes with same length of loopVars
-   */
-  def whileLoop[T: ClassTag](
-    condition: (Seq[ModuleNode[T]], ModuleNode[T]),
-    body: Seq[(ModuleNode[T], ModuleNode[T])],
-    loopVars: (Seq[ModuleNode[T]]),
-    name: String = null
-  )(implicit ev: TensorNumeric[T]): Seq[ModuleNode[T]] = {
-    val lc = new LoopCondition[T]().inputs(condition._2)
-    if (name != null) lc.element.setName(s"$name/loopCondition")
-
-    loopVars.zip(condition._1).zip(body).zipWithIndex.map(tuple => {
-      val (((input, cond), update), indexBase0) = tuple
-      val index = indexBase0 + 1
-      val enter = new Enter[T]().inputs(input)
-      if (name != null) enter.element.setName(s"$name/enter$index")
-      val mergeNode = merge[T](enter)
-      if (name != null) mergeNode.element.setName(s"$name/merge$index")
-      mergeNode -> cond
-      val switchNode = switch[T](mergeNode, lc)
-      if (name != null) switchNode.element.setName(s"$name/switch$index")
-      val exitNode = new Exit[T]().inputs(switchNode.trueEdge())
-      if (name != null) exitNode.element.setName(s"$name/exit$index")
-      val identity = Identity[T]().inputs(switchNode.falseEdge())
-      if (name != null) identity.element.setName(s"$name/switchFalse$index")
-      identity -> update._1
-      val nextIteration = new NextIteration[T].inputs(update._2)
-      if (name != null) nextIteration.element.setName(s"$name/nextIteration$index")
-      mergeNode.append(nextIteration)
-      exitNode
-    })
   }
 }

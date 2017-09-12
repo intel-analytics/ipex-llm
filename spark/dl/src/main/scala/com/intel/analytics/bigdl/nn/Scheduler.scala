@@ -93,40 +93,19 @@ private[bigdl] class Scheduler[T](
    */
   def schedule(node: ModuleNode[T]): Unit = {
     // Update status of current node
-    node.element match {
-      case e: Enter[_] =>
-        require(node.prevNodes.length == 1, "Enter only accept one node input")
-        nodeStatus(node) = nodeStatus.stackIteration(nodeStatus(node.prevNodes.head))
-      case x: Exit[_] =>
-        require(node.prevNodes.length == 1, "Exit only accept one node input")
-        nodeStatus(node) = nodeStatus.unstackIteration(nodeStatus.iteration(node.prevNodes.head))
-      case n: NextIteration[_] =>
-        require(node.prevNodes.length == 1, "NextIteration only accept one node input")
-        val lastIteration = nodeStatus.iteration(node.prevNodes.head)
-        lastIteration.outOfDate = true
-        nodeStatus(node) = Iteration(lastIteration.prev)
-      case _ =>
-        nodeStatus(node) = if (node.prevNodes.length == 0) {
-          if (node.element.isInstanceOf[com.intel.analytics.bigdl.nn.tf.Const[_]]) {
-            Const()
-          } else {
-            Ready()
-          }
-        } else {
-          val constNodes = node.prevNodes.filter(nodeStatus.isConst(_))
-          if (constNodes.length == node.prevNodes.length) {
-            Const()
-          } else {
-            val iterationNodes = node.prevNodes.filter(nodeStatus.isIteration(_))
-              .filter(!nodeStatus.iteration(_).outOfDate)
-              .filter(!_.element.isInstanceOf[LoopCondition[_]])
-            if (iterationNodes.length == 0) {
-              Ready()
-            } else {
-              nodeStatus.iteration(iterationNodes.head)
-            }
-          }
-        }
+    nodeStatus(node) = if (node.prevNodes.length == 0) {
+      if (node.element.isInstanceOf[com.intel.analytics.bigdl.nn.tf.Const[_]]) {
+        Const()
+      } else {
+        Ready()
+      }
+    } else {
+      val constNodes = node.prevNodes.filter(nodeStatus.isConst(_))
+      if (constNodes.length == node.prevNodes.length) {
+        Const()
+      } else {
+        Ready()
+      }
     }
 
     // Schedule next nodes
@@ -170,39 +149,8 @@ private[bigdl] class Scheduler[T](
 }
 
 object Scheduler {
-  // Default parent of iteration status
-  private val DEFAULT_ITERATION = Iteration(null)
-
   class NodeStatusManager[T] {
     private val nodeStatus = new mutable.HashMap[String, NodeStatus]()
-
-    /**
-     * Create an iteration status. Its parent status will be the given status if the given status
-     * is Iteration; Or the parent status will point to the DEFAULT_ITERATION
-     * @param status
-     * @return
-     */
-    def stackIteration(status: NodeStatus): Iteration = {
-      val parent = status match {
-        case i: Iteration => i
-        case _ => DEFAULT_ITERATION
-      }
-      Iteration(parent)
-    }
-
-    /**
-     * Create a node status from an iteration status. If the iteration status parent is
-     * DEFAULT_STATUS, return a new Ready status, or return parent iteration
-     * @param status
-     * @return
-     */
-    def unstackIteration(status: Iteration): NodeStatus = {
-      if (status.prev.eq(DEFAULT_ITERATION)) {
-        Ready()
-      } else {
-        status.prev
-      }
-    }
 
     /**
      * Update node status
@@ -234,36 +182,13 @@ object Scheduler {
     }
 
     /**
-     * Check if a given node status is iteration
-     * @param node
-     * @return
-     */
-    def isIteration(node: ModuleNode[T]): Boolean = {
-      nodeStatus.contains(node.element.getName()) &&
-        nodeStatus(node.element.getName()).isInstanceOf[Iteration]
-    }
-
-    /**
      * If the given node has been executed or out of date
      * @param node
      * @return
      */
     def notExecuted(node: ModuleNode[T]): Boolean = {
       if (!nodeStatus.contains(node.element.getName())) return true
-      if (nodeStatus(node.element.getName()).isInstanceOf[Iteration] &&
-        nodeStatus(node.element.getName()).asInstanceOf[Iteration].outOfDate) {
-        return true
-      }
       return false
-    }
-
-    /**
-     * Get current node status. It must be Iteration or exception is thrown
-     * @param node
-     * @return
-     */
-    def iteration(node: ModuleNode[T]): Iteration = {
-      nodeStatus(node.element.getName()).asInstanceOf[Iteration]
     }
 
     /**
@@ -297,12 +222,4 @@ object Scheduler {
    * Current nodes has been executed, while it's not const
    */
   private[nn] case class Ready() extends NodeStatus
-
-  /**
-   * Current node is in a loop
-   * @param outOfDate is out of date
-   * @param prev the stacked iteration for nested loop
-   */
-  private[nn] case class Iteration(val prev: Iteration, var outOfDate: Boolean = false)
-    extends NodeStatus
 }

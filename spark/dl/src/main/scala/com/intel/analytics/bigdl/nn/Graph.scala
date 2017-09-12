@@ -464,7 +464,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
   def saveGraphTopology(logPath: String): this.type = {
     val writer = new TFFileWriter(logPath)
     val graphBuilder = GraphDef.newBuilder()
-    forwardExecutions.map(m => {
+    forwardNodes.map(m => {
       val nodeDef = Tensorflow.bigdlModule(m.element, m.nextNodes.map(_.element.getName()).asJava)
       graphBuilder.addNode(nodeDef)
     })
