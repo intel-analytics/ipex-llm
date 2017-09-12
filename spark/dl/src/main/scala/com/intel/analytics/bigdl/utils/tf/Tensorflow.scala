@@ -19,6 +19,7 @@ import java.nio.{ByteBuffer, ByteOrder}
 import java.nio.charset.Charset
 
 import com.google.protobuf.ByteString
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Tensor, TensorDataType}
 import org.tensorflow.framework.AttrValue.ListValue
 import org.tensorflow.framework._
@@ -80,6 +81,19 @@ object PaddingType {
 }
 
 object Tensorflow {
+
+  /**
+   * Convert a bigdl module to a tensorflow nodedef
+   * @param module
+   * @return
+   */
+  def bigdlModule(module: AbstractModule[_, _, _], inputs: java.lang.Iterable[String]): NodeDef = {
+    NodeDef.newBuilder()
+      .setName(module.getName())
+      .setOp(module.getClass.getName)
+      .addAllInput(inputs)
+      .build()
+  }
   /**
    * Generate a placeholder tensorflow protobuf node
    * @param dtype numeric type
