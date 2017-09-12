@@ -18,13 +18,14 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.models.autoencoder.Autoencoder
+import com.intel.analytics.bigdl.models.inception.Inception_v1_NoAuxClassifier
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.models.vgg.{VggForCifar10, Vgg_16, Vgg_19}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{RandomGenerator, T, Table}
+import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T, Table}
 
 import scala.reflect.ClassTag
 import scala.util.Random
@@ -1122,6 +1123,17 @@ class GraphSpec extends FlatSpec with Matchers {
     fc1_1.element.gradInput should be (fc1.element.gradInput)
     fc1_1.element.parameters()._2 should be (fc1.element.parameters()._2)
     reshape.element.gradInput.toTensor.nElement() should be (0)
+  }
+
+  "save graph to tensorboard log dir" should "work" in {
+    System.setProperty("bigdl.localMode", "true")
+    Engine.init
+    val tmpFile = java.io.File.createTempFile("graph", "tensorboard")
+    val absolutePath = tmpFile.getAbsolutePath
+    tmpFile.delete()
+
+    val model = Inception_v1_NoAuxClassifier.graph(1000).asInstanceOf[Graph[Float]]
+    model.saveGraphTopology(absolutePath)
   }
 }
 
