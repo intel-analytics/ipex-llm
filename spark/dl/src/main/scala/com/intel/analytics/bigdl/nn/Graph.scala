@@ -441,7 +441,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
    * @param logPath
    * @return
    */
-  def saveToTensorboard(logPath: String): this.type = {
+  def saveGraphTopology(logPath: String): this.type = {
     val writer = new TFFileWriter(logPath)
     val graphBuilder = GraphDef.newBuilder()
     forwardExecutions.map(m => {

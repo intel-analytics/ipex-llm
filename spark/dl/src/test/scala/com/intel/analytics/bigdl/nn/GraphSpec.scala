@@ -1133,7 +1133,7 @@ class GraphSpec extends FlatSpec with Matchers {
     tmpFile.delete()
 
     val model = Inception_v1_NoAuxClassifier.graph(1000).asInstanceOf[Graph[Float]]
-    model.saveToTensorboard(absolutePath)
+    model.saveGraphTopology(absolutePath)
   }
 }
 
