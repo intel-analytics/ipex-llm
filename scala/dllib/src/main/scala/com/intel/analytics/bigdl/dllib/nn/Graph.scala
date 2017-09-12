@@ -25,11 +25,14 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer.{ContainerSerializable, DataConverter, ModuleData, ModuleSerializer}
 import com.intel.analytics.bigdl.utils._
+import com.intel.analytics.bigdl.utils.tf.{BigDLToTensorflow, Tensorflow, TensorflowSaver}
 import serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
+import com.intel.analytics.bigdl.visualization.tensorboard.{FileWriter => TFFileWriter}
+import org.tensorflow.framework.GraphDef
 
 /**
  * A graph container. Each node can have multiple inputs. The output of the node should be a tensor.
@@ -430,6 +433,24 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
         actTable
       }
     }
+  }
+
+  /**
+   * Save current model graph to a folder, which can be display in tensorboard by running
+   *   tensorboard --logdir logPath
+   * @param logPath
+   * @return
+   */
+  def saveGraphTopology(logPath: String): this.type = {
+    val writer = new TFFileWriter(logPath)
+    val graphBuilder = GraphDef.newBuilder()
+    forwardExecutions.map(m => {
+      val nodeDef = Tensorflow.bigdlModule(m.element, m.nextNodes.map(_.element.getName()).asJava)
+      graphBuilder.addNode(nodeDef)
+    })
+    writer.addGraphDef(graphBuilder.build())
+    writer.close()
+    this
   }
 }
 
