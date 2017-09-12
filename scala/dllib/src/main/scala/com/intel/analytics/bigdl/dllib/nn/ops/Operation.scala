@@ -29,18 +29,18 @@ import scala.reflect.ClassTag
  * @tparam A Input data type
  * @tparam T Numeric type. Only support float/double now
  */
-abstract class Operation[A <: Activity: ClassTag, T: ClassTag]
-(implicit ev: TensorNumeric[T]) extends AbstractModule[A, Tensor[T], T]{
+abstract class Operation[A <: Activity: ClassTag, B <: Activity: ClassTag, T: ClassTag]
+(implicit ev: TensorNumeric[T]) extends AbstractModule[A, B, T]{
 
-  override def updateGradInput(input: A, gradOutput: Tensor[T]): A = {
+  override def updateGradInput(input: A, gradOutput: B): A = {
     throw new UnsupportedOperationException("Operation does not support updateGradInput() method")
   }
 
-  override def accGradParameters(input: A, gradOutput: Tensor[T]): Unit = {
+  override def accGradParameters(input: A, gradOutput: B): Unit = {
     throw new UnsupportedOperationException("Operation does not support updateGradInput() method")
   }
 
-  override def backward(input: A, gradOutput: Tensor[T]): A = {
+  override def backward(input: A, gradOutput: B): A = {
     throw new UnsupportedOperationException("Operation does not support backward() method")
   }
 }
