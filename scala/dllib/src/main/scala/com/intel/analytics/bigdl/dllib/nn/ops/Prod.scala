@@ -15,6 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -23,7 +24,7 @@ import scala.reflect.ClassTag
 class Prod[T: ClassTag](
   axis: Int = 1,
   keepDim: Boolean = false)
-(implicit ev: TensorNumeric[T]) extends Operation[Tensor[T], T] {
+(implicit ev: TensorNumeric[T]) extends Operation[Tensor[T], Tensor[T], T] {
   private def getPositiveDimension(input: Tensor[T]): Int = {
     var dimension = this.axis
     if (dimension < 0) {
@@ -48,7 +49,7 @@ class Prod[T: ClassTag](
 
 object Prod {
   def apply[T: ClassTag](axis: Int, keepDim: Boolean = false)
-    (implicit ev: TensorNumeric[T]): Operation[Tensor[T], T]
-  = ModuleToOperation[Tensor[T], T](
+    (implicit ev: TensorNumeric[T]): Operation[Activity, Activity, T]
+  = ModuleToOperation[T](
     new Prod(axis = axis, keepDim = keepDim))
 }

@@ -29,7 +29,7 @@ class LessSpec extends FlatSpec with Matchers {
 
     val expectOutput = Tensor[Boolean](T(true, true, false))
 
-    val output = Less[Boolean]().forward(input)
+    val output = Less[Float]().forward(input)
     output should be(expectOutput)
   }
 
@@ -42,7 +42,7 @@ class LessSpec extends FlatSpec with Matchers {
 
     val expectOutput = Tensor[Boolean](T(false, false, true))
 
-    val output = Less[Boolean]().forward(input)
+    val output = Less[Float]().forward(input)
     output should be(expectOutput)
   }
 
@@ -55,7 +55,7 @@ class LessSpec extends FlatSpec with Matchers {
 
     val expectOutput = Tensor[Boolean](T(false, false, true))
 
-    val output = Less[Boolean]().forward(input)
+    val output = Less[Float]().forward(input)
     output should be(expectOutput)
   }
 
@@ -68,7 +68,7 @@ class LessSpec extends FlatSpec with Matchers {
 
     val expectOutput = Tensor[Boolean](T(false, false, true))
 
-    val output = Less[Boolean]().forward(input)
+    val output = Less[Float]().forward(input)
     output should be(expectOutput)
   }
 
@@ -81,7 +81,7 @@ class LessSpec extends FlatSpec with Matchers {
 
     val expectOutput = Tensor[Boolean](T(false, true, false))
 
-    val output = Less[Boolean]().forward(input)
+    val output = Less[Float]().forward(input)
     output should be(expectOutput)
   }
 
@@ -94,7 +94,7 @@ class LessSpec extends FlatSpec with Matchers {
 
     val expectOutput = Tensor[Boolean](T(false, false, true))
 
-    val output = Less[Boolean]().forward(input)
+    val output = Less[Float]().forward(input)
     output should be(expectOutput)
   }
 
@@ -107,7 +107,7 @@ class LessSpec extends FlatSpec with Matchers {
 
     val expectOutput = Tensor[Boolean](T(false, false, true))
 
-    val output = Less[Boolean]().forward(input)
+    val output = Less[Float]().forward(input)
     output should be(expectOutput)
   }
 }
