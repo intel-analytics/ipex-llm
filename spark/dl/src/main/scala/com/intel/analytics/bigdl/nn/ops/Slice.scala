@@ -15,6 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -23,13 +24,13 @@ import scala.reflect.ClassTag
 class Slice[T: ClassTag](
   begin: Array[Int],
   size: Array[Int])
-  (implicit ev: TensorNumeric[T]) extends Operation[Tensor[T], T] {
+  (implicit ev: TensorNumeric[T]) extends Operation[Tensor[T], Tensor[T], T] {
 
   def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(begin.length == size.length && begin.length == input.dim(),
       "the length of `begin`, `size` and the dimension of input should be the same")
 
-    var outputNarrow = input
+    var outputNarrow = output
     var i = 0
     while (i < begin.length) {
       val realSize = if (size(i) == -1) input.size(i + 1) - begin(i) else size(i)
@@ -48,7 +49,7 @@ object Slice {
   def apply[T: ClassTag](
     begin: Array[Int],
     size: Array[Int])
-    (implicit ev: TensorNumeric[T]): Operation[Tensor[T], T]
-  = ModuleToOperation[Tensor[T], T](
+    (implicit ev: TensorNumeric[T]): Operation[Activity, Activity, T]
+  = ModuleToOperation[T](
     new Slice(begin = begin, size = size))
 }

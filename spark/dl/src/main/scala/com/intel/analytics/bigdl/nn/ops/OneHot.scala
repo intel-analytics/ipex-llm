@@ -15,6 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
@@ -23,7 +24,7 @@ import scala.reflect.ClassTag
 
 class OneHot[T: ClassTag](
   axis: Int
-)(implicit ev: TensorNumeric[T]) extends Operation[Table, T] {
+)(implicit ev: TensorNumeric[T]) extends Operation[Table, Tensor[T], T] {
   def updateOutput(input: Table): Tensor[T] = {
     val indices = input[Tensor[Int]](1)
     val depth = input[Tensor[Int]](2).value()
@@ -94,8 +95,8 @@ object OneHot {
   def apply[T: ClassTag](
     axis: Int
   )
-    (implicit ev: TensorNumeric[T]): Operation[Table, T]
-  = ModuleToOperation[Table, T](
+    (implicit ev: TensorNumeric[T]): Operation[Activity, Activity, T]
+  = ModuleToOperation[T](
     new OneHot(
       axis = axis
     ))

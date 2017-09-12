@@ -46,7 +46,7 @@ class OneHotSpec extends FlatSpec with Matchers {
     import com.intel.analytics.bigdl.numeric.NumericDouble
     val input =
       T(
-        Tensor(T(T(0, 2), T(1, -1))),
+        Tensor[Int](T(T(0, 2), T(1, -1))),
         Tensor[Int](Array(3), shape = Array[Int]()),
         Tensor[Double](Array(1.0), shape = Array(1)),
         Tensor[Double](Array(0.0), shape = Array(1))
