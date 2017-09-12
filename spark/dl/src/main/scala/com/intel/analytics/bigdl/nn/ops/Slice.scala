@@ -30,7 +30,7 @@ class Slice[T: ClassTag](
     require(begin.length == size.length && begin.length == input.dim(),
       "the length of `begin`, `size` and the dimension of input should be the same")
 
-    var outputNarrow = output
+    var outputNarrow = input
     var i = 0
     while (i < begin.length) {
       val realSize = if (size(i) == -1) input.size(i + 1) - begin(i) else size(i)
