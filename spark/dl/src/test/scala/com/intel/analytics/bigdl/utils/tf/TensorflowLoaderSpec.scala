@@ -341,6 +341,19 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     }
   }
 
+  "Tensorflow load " should "be able to handle multiple edges" in {
+    val output = Seq("output:0")
+    val comparePairs = testModel("two_edge", output, backward = true)
+    for (i <- output.indices) {
+      val (tf, bigdl) = comparePairs(i)
+      tf.almostEqual(bigdl, 1e-7) should be(true)
+    }
+    for (i <- output.length until comparePairs.length) {
+      val (tf, bigdl) = comparePairs(i)
+      tf.almostEqual(bigdl, 1e-3) should be(true)
+    }
+  }
+
   "Tensorflow batchnorm nhwc" should "be loaded correctly" in {
     val output = Seq("output:0")
     val comparePairs = testModel("batch_norm_nhwc", output, backward = true)

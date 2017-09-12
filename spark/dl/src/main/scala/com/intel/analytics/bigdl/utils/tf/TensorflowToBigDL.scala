@@ -744,8 +744,10 @@ object DropoutTF extends TensorflowToBigDL{
 
     val keepProp = tfGraph.source.prevNodes(0).prevNodes(1).element
       .getAttrMap.get("value").getTensor.getFloatVal(0)
-
-    Dropout[T](keepProp).asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+    val model = Sequential()
+    model.add(SelectTable(1))
+    model.add(Dropout[T](keepProp).asInstanceOf[AbstractModule[Activity, Tensor[T], T]])
+    model.asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
   }
 }
 
@@ -875,7 +877,10 @@ object BatchNormV2NCHWTF extends TensorflowToBigDL{
       initGradBias = gradBias
     )
 
-    batchNorm.asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+    val model = Sequential()
+    model.add(SelectTable(1))
+    model.add(batchNorm)
+    model.asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
   }
 }
 
@@ -936,6 +941,7 @@ object BatchNormV2NHWCTF extends TensorflowToBigDL{
     )
 
     val layer = Sequential()
+    layer.add(SelectTable(1))
     layer.add(Transpose(Array((2, 4))))
     layer.add(Contiguous())
     layer.add(batchNorm)
@@ -1001,13 +1007,17 @@ object BatchNormTF extends TensorflowToBigDL{
     val (weights, gradWeights) = getOrSetTensor[T](weightNode, context, byteOrder)(t => t)
     val (bias, gradBias) = getOrSetTensor[T](weightNode, context, byteOrder)(t => t)
 
-    SpatialBatchNormalization[T](
+    val batchNorm = SpatialBatchNormalization[T](
       nOutput = nOutput,
       initWeight = weights,
       initBias = bias,
       initGradWeight = gradWeights,
       initGradBias = gradBias
     ).asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+    val model = Sequential()
+    model.add(SelectTable(1))
+    model.add(batchNorm)
+    model.asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
   }
 }
 
@@ -1187,8 +1197,10 @@ object FlattenV2 extends TensorflowToBigDL {
            context: Context[T], byteOrder: ByteOrder)(
     implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
 
-    InferReshape[T](size = Array(-1), true)
-      .asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+    val layer = Sequential()
+    layer.add(SelectTable(1))
+    layer.add(InferReshape[T](size = Array(-1), true))
+    layer.asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
   }
 }
 
