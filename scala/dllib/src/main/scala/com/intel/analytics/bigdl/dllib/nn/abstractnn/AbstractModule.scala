@@ -53,20 +53,19 @@ abstract class TensorModule[T: ClassTag]
  * @tparam B Output data type
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
  */
-abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
-@specialized(Float, Double) T: ClassTag](
+abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, T: ClassTag](
   implicit ev: TensorNumeric[T]) extends Serializable {
 
   private val namePostfix = Integer.toHexString(java.util.UUID.randomUUID().hashCode())
   /**
    * The cached output. So we don't compute it again when need it
    */
-  var output: B = Activity[B, T]()
+  var output: B = Activity.allocate[B, T]()
 
   /**
    * The cached gradient of activities. So we don't compute it again when need it
    */
-  var gradInput: A = Activity[A, T]()
+  var gradInput: A = Activity.allocate[A, T]()
 
   /**
    * The scale of gradient weight and gradient bias
@@ -134,12 +133,12 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
    * @return
    */
   def clearState() : this.type = {
-    if (output.isInstanceOf[Tensor[T]]) {
-      output.asInstanceOf[Tensor[T]].set()
+    if (output.isInstanceOf[Tensor[_]]) {
+      output.asInstanceOf[Tensor[_]].set()
     }
 
-    if (gradInput.isInstanceOf[Tensor[T]]) {
-      gradInput.asInstanceOf[Tensor[T]].set()
+    if (gradInput.isInstanceOf[Tensor[_]]) {
+      gradInput.asInstanceOf[Tensor[_]].set()
     }
 
     this

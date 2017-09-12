@@ -15,6 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.{BooleanType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
@@ -22,11 +23,14 @@ import com.intel.analytics.bigdl.utils.Table
 import scala.reflect.ClassTag
 
 class LogicalAnd[T: ClassTag]()
-  (implicit ev: TensorNumeric[T]) extends Operation[Table, T] {
-  override def updateOutput(input: Table): Tensor[T] = {
+  (implicit ev: TensorNumeric[T]) extends Operation[Table, Tensor[Boolean], T] {
+
+  output = Activity.allocate[Tensor[Boolean], Boolean]()
+
+  override def updateOutput(input: Table): Tensor[Boolean] = {
     input[Tensor[_]](1).getType() match {
       case BooleanType =>
-        output.asInstanceOf[Tensor[Boolean]].resizeAs(input(1)).copy(input(1))
+        output.resizeAs(input(1)).copy(input(1))
         output
           .toTensor[Boolean]
           .map(input(2).asInstanceOf[Tensor[Boolean]], (a, b) => a && b)
@@ -38,6 +42,6 @@ class LogicalAnd[T: ClassTag]()
 }
 
 object LogicalAnd {
-  def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): Operation[Table, T]
-  = ModuleToOperation[Table, T](new LogicalAnd())
+  def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): Operation[Activity, Activity, T]
+  = ModuleToOperation[T](new LogicalAnd())
 }
