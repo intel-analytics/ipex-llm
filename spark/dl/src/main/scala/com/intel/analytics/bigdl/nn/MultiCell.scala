@@ -57,21 +57,23 @@ class MultiCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorNume
   override def updateOutput(input: Table): Table = {
     require(states != null, "state of multicell cannot be null")
     var i = 0
-    var result = T()
+    val result = T()
     result(inputDim) = input(inputDim)
     
     while (i < cells.length) {
       result(hidDim) = states(i)
       
       if (cells(i).preTopology != null) {
-        val inputTmp = result(inputDim).asInstanceOf[Tensor[T]].clone()
-        val sizes = 1 +: inputTmp.size()
-        inputTmp.resize(sizes)
-        val outputTmp = cells(i).preTopology.forward(inputTmp).toTensor[T]
-        result(inputDim) = outputTmp.select(1, 1)
+//        val inputTmp = result(inputDim).asInstanceOf[Tensor[T]].clone()
+//        val sizes = 1 +: inputTmp.size()
+//        inputTmp.resize(sizes)
+//        val outputTmp = cells(i).preTopology.forward(inputTmp).toTensor[T]
+//        result(inputDim) = outputTmp.select(1, 1)
+        result(inputDim) = cells(i).preTopology.forward(result(inputDim)).toTensor[T]
       }
-      result = cells(i).forward(result).toTable
-      states(i) = result(hidDim)
+      cells(i).forward(result).toTable
+      states(i) = cells(i).output.toTable(hidDim)
+      result(inputDim) = cells(i).output.toTable(inputDim)
       i += 1
     }
 
@@ -80,73 +82,82 @@ class MultiCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorNume
   }
 
   override def updateGradInput(input: Table, gradOutput: Table): Table = {
-    var i = cells.length - 1
+    var i = cells.length
     var error = T()
-    val nextInput = T()
     error(inputDim) = gradOutput(inputDim)
-    while (i > 0) {
-      nextInput(inputDim) = cells(i - 1).output.toTable(inputDim)
-      nextInput(hidDim) = states(i)
-      error(hidDim) = states(i)
-      error = cells(i).updateGradInput(nextInput, error)
-//      if (preTopology != null) {
-//        gradInput = preTopology.updateGradInput(nextInput, gradInputCell).toTensor[T]
-//      }
+    val nextInput = T()
+
+    while (i >= 1) {
+      val input0: Tensor[T] = if (i > 1) {
+        cells(i - 2).output.toTable(inputDim)
+      } else input(inputDim)
+      nextInput(inputDim) = if (cells(i - 1).preTopology != null) {
+        cells(i - 1).preTopology.forward(input0)
+      } else input0
+
+      nextInput(hidDim) = states(i - 1)
+      error(hidDim) = states(i - 1)
+      error = cells(i - 1).updateGradInput(nextInput, error)
+
+      if (cells(i - 1).preTopology != null) {
+        error(inputDim) = cells(i - 1).preTopology.updateGradInput(input0,
+          cells(i - 1).gradInput.toTable[Tensor[T]](inputDim))
+      }
       i -= 1
     }
-    nextInput(inputDim) = input(inputDim)
-    nextInput(hidDim) = states(0)
-    error(hidDim) = states(0)
-    error = cells(0).updateGradInput(nextInput, error)
 
     this.gradInput = error
     gradInput
   }
 
   override def accGradParameters(input: Table, gradOutput: Table): Unit = {
-    var i = cells.length - 1
-    var currentGradOutput = T()
+    var i = cells.length
+    val currentGradOutput = T()
     currentGradOutput(inputDim) = gradOutput(inputDim)
     val nextInput = T()
-    while (i > 0) {
-      val previousModule = cells(i - 1)
-      nextInput(inputDim) = previousModule.output.toTable(inputDim)
-      nextInput(hidDim) = states(i)
-      currentGradOutput(hidDim) = states(i)
-      cells(i).accGradParameters(nextInput, currentGradOutput)
-      currentGradOutput = cells(i).gradInput.toTable(inputDim)
-      i -= 1
-    }
-    nextInput(inputDim) = input(inputDim)
-    nextInput(hidDim) = states(0)
-    currentGradOutput(hidDim) = states(0)
-    cells(0).accGradParameters(nextInput, currentGradOutput)
-  }
+    while (i >= 1) {
+      val input0: Tensor[T] = if (i > 1) {
+        cells(i - 2).output.toTable(inputDim)
+      } else input(inputDim)
 
-  override def backward(input: Table, gradOutput: Table): Table = {
-    var i = cells.length - 1
-    var error = T()
-    error(inputDim) = gradOutput(inputDim)
-    val nextInput = T()
-    while (i > 0) {
-      nextInput(inputDim) = cells(i - 1).output.toTable(inputDim)
-      nextInput(hidDim) = states(i)
-      error(hidDim) = states(i)
-      error = cells(i).backward(nextInput, error)
-
-      if (cells(i).preTopology != null) {
-        cells(i).gradInput(inputDim) =
-          cells(i).preTopology.backward(nextInput(inputDim), error(inputDim)).toTensor[T]
+      nextInput(inputDim) = if (cells(i - 1).preTopology != null) {
+        cells(i - 1).preTopology.forward(input0)
+      } else input0
+      nextInput(hidDim) = states(i - 1)
+      currentGradOutput(hidDim) = states(i - 1)
+      cells(i - 1).accGradParameters(nextInput, currentGradOutput)
+      
+      if (cells(i - 1).preTopology != null) {
+        cells(i - 1).preTopology.accGradParameters(input0,
+          cells(i - 1).gradInput.toTable[Tensor[T]](inputDim))
       }
       i -= 1
     }
-    nextInput(inputDim) = input(inputDim)
-    nextInput(hidDim) = states(0)
-    error(hidDim) = states(0)
-    error = cells(0).backward(nextInput, error)
-    if (cells(0).preTopology != null) {
-      cells(0).gradInput(inputDim) =
-        cells(0).preTopology.backward(nextInput(inputDim), error(inputDim)).toTensor[T]
+  }
+
+  override def backward(input: Table, gradOutput: Table): Table = {
+    var i = cells.length
+    var error = T()
+    error(inputDim) = gradOutput(inputDim)
+    
+    val nextInput = T()
+    while (i >= 1) {
+      val input0: Tensor[T] = if (i > 1) {
+        cells(i - 2).output.toTable(inputDim)
+      } else input(inputDim)
+      nextInput(inputDim) = if (cells(i - 1).preTopology != null) {
+        cells(i - 1).preTopology.forward(input0)
+      } else input0
+        
+      nextInput(hidDim) = states(i - 1)
+      error(hidDim) = states(i - 1)
+      error = cells(i - 1).backward(nextInput, error)
+
+      if (cells(i - 1).preTopology != null) {
+        error(inputDim) = cells(i - 1).preTopology.backward(input0,
+          cells(i - 1).gradInput.toTable[Tensor[T]](inputDim))
+      }
+      i -= 1
     }
 
     this.gradInput = error
@@ -155,43 +166,6 @@ class MultiCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorNume
 
   override def zeroGradParameters(): Unit = {
     cells.foreach(_.zeroGradParameters())
-  }
-
-//  override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
-//    val weights = new ArrayBuffer[Tensor[T]]()
-//    val gradWeights = new ArrayBuffer[Tensor[T]]()
-//    cells.foreach(m => {
-//      if (m.preTopology != null) {
-//        val pretopologyParameters = m.preTopology.parameters()
-//        if (pretopologyParameters != null) {
-//          pretopologyParameters._1.foreach(weights += _)
-//          pretopologyParameters._2.foreach(gradWeights += _)
-//        }
-//      }
-//      val params = m.parameters()
-//      if (params != null) {
-//        params._1.foreach(weights += _)
-//        params._2.foreach(gradWeights += _)
-//      }
-//    })
-//    (weights.toArray, gradWeights.toArray)
-//  }
-
-  override def getParametersTable(): Table = {
-    val pt = T()
-    cells.foreach(m => {
-      if (m.preTopology != null) {
-        val pretopologyParameters = m.preTopology.getParametersTable()
-        if (pretopologyParameters != null) {
-          pretopologyParameters.keySet.foreach(key => pt(key) = pretopologyParameters(key))
-        }
-      }
-      val params = m.getParametersTable()
-      if (params != null) {
-        params.keySet.foreach(key => pt(key) = params(key))
-      }
-    })
-    pt
   }
 
   override def reset(): Unit = {

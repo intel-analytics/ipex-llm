@@ -146,8 +146,8 @@ class LSTMSpec  extends TorchSpec {
   "A LSTM " should "has same loss as torch rnn" in {
     torchCheck()
 
-    val hiddenSize = 4
-    val inputSize = 6
+    val hiddenSize = 10
+    val inputSize = 10
     val outputSize = 5
     val bpttTruncate = 3
     val seqLength = 5

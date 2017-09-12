@@ -54,7 +54,8 @@ class LSTMPeephole[T : ClassTag] (
   val p: Double = 0.0,
   var wRegularizer: Regularizer[T] = null,
   var uRegularizer: Regularizer[T] = null,
-  var bRegularizer: Regularizer[T] = null
+  var bRegularizer: Regularizer[T] = null,
+  val includeTime: Boolean = true
 )
   (implicit ev: TensorNumeric[T])
   extends Cell[T](
@@ -75,10 +76,17 @@ class LSTMPeephole[T : ClassTag] (
       .add(SelectTable(1))
       .add(NarrowTable(2, 2)))
 
-  override var preTopology: AbstractModule[Activity, Activity, T] = Sequential()
-    .add(Dropout(p))
-    .add(TimeDistributed(Linear(inputSize, hiddenSize * 4, wRegularizer = wRegularizer,
-      bRegularizer = bRegularizer)))
+  override var preTopology: AbstractModule[Activity, Activity, T] = if (includeTime) {
+    Sequential()
+      .add(Dropout(p))
+      .add(TimeDistributed(Linear(inputSize, hiddenSize * 4, wRegularizer = wRegularizer,
+        bRegularizer = bRegularizer)))
+  } else {
+    Sequential()
+      .add(Dropout(p))
+      .add(Linear(inputSize, hiddenSize * 4, wRegularizer = wRegularizer,
+        bRegularizer = bRegularizer))
+  }
 
   override def hiddenSizeOfPreTopo: Int = hiddenSize * 4
 
@@ -223,10 +231,12 @@ object LSTMPeephole {
     p: Double = 0.0,
     wRegularizer: Regularizer[T] = null,
     uRegularizer: Regularizer[T] = null,
-    bRegularizer: Regularizer[T] = null
+    bRegularizer: Regularizer[T] = null,
+    includeTime: Boolean = true
   )
     (implicit ev: TensorNumeric[T]): LSTMPeephole[T] = {
-    new LSTMPeephole[T](inputSize, hiddenSize, p, wRegularizer, uRegularizer, bRegularizer)
+    new LSTMPeephole[T](inputSize, hiddenSize, p, wRegularizer, uRegularizer,
+      bRegularizer, includeTime)
   }
 }
 

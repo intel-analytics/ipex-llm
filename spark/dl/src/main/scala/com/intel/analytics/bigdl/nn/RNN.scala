@@ -52,18 +52,28 @@ class RnnCell[T : ClassTag] (
   isHiddenWithBias: Boolean = true,
   var wRegularizer: Regularizer[T] = null,
   var uRegularizer: Regularizer[T] = null,
-  var bRegularizer: Regularizer[T] = null)
+  var bRegularizer: Regularizer[T] = null,
+  includeTime: Boolean = true)
   (implicit ev: TensorNumeric[T])
   extends Cell[T](Array(hiddenSize)) {
 
-  override var preTopology: AbstractModule[Activity, Activity, T] =
+  override var preTopology: AbstractModule[Activity, Activity, T] = if (includeTime) {
     TimeDistributed[T](
       Linear[T](inputSize,
         hiddenSize,
         wRegularizer = wRegularizer,
         bRegularizer = bRegularizer,
         withBias = isInputWithBias))
-    .asInstanceOf[AbstractModule[Activity, Activity, T]]
+      .asInstanceOf[AbstractModule[Activity, Activity, T]]
+  } else {
+      Linear[T](inputSize,
+        hiddenSize,
+        wRegularizer = wRegularizer,
+        bRegularizer = bRegularizer,
+        withBias = isInputWithBias)
+      .asInstanceOf[AbstractModule[Activity, Activity, T]]
+  }
+    
 
   override var cell: AbstractModule[Activity, Activity, T] = buildGraph
 

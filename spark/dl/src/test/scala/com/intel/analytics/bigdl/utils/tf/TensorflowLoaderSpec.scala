@@ -669,16 +669,17 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
 
     val t = Recurrent()
     val cells = Array(LSTM[Float](
-      10,
-      10), LSTM[Float](
-      10,
-      10)).asInstanceOf[Array[Cell[Float]]]
-
-    val t2 = Sequential[Float]()
-      .add(t
-        .add(MultiCell[Float](cells)))
+      10, 10, includeTime = false), LSTM[Float](
+      10, 10, includeTime = false)).asInstanceOf[Array[Cell[Float]]]
+    
+    t.add(MultiCell[Float](cells))
     val t3 = t.forward(input)
-    val t4 = 0
     t3.almostEqual(bigDLResult.toTensor, 1e-6)
+        
+    val t5 = Tensor[Float](4, 2, 10).rand()
+    
+    val t7 = t.backward(input, t5)
+    
+    val t6 = 0
   }
 }

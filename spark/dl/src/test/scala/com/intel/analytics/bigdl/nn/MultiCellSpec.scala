@@ -124,10 +124,10 @@ class MultiCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val rec = Recurrent[Double]()
     val cells = Array(LSTM[Double](
       inputSize,
-      hiddenSize),
+      hiddenSize, includeTime = false),
       LSTM[Double](
         inputSize,
-        hiddenSize)).asInstanceOf[Array[Cell[Double]]]
+        hiddenSize, includeTime = false)).asInstanceOf[Array[Cell[Double]]]
 
     val model = Sequential[Double]()
       .add(rec
@@ -137,7 +137,6 @@ class MultiCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val input = Tensor[Double](batchSize, seqLength, inputSize).rand
     val gradOutput = Tensor[Double](batchSize, seqLength, hiddenSize).rand
     val output = model.forward(input).toTensor[Double]
-    val t = 0
     val gradInput = model.backward(input, gradOutput).toTensor[Double]
     val gradient = model.getParameters()._2
 
