@@ -497,7 +497,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     res1 should be (res2)
   }
 
-  "Echo serializer " should " work properly" in {
+  "Echo serializer" should "work properly" in {
     val echo = Echo()
     val tensor1 = Tensor(10).apply1(_ => Random.nextFloat())
     val tensor2 = Tensor()

@@ -758,7 +758,7 @@ object Placeholder extends TensorflowToBigDL {
                                   context: Context[T],
                                   byteOrder: ByteOrder)(
     implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
-    Input[T].element.asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+    Input[T]().element.asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
   }
 }
 
@@ -807,7 +807,7 @@ object IdentityTF extends TensorflowToBigDL {
                                   byteOrder: ByteOrder)(
     implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
 
-    Input[T].element.asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+    Input[T]().element.asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
   }
 }
 
