@@ -15,6 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.{BooleanType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
@@ -22,14 +23,15 @@ import com.intel.analytics.bigdl.utils.Table
 import scala.reflect.ClassTag
 
 class LogicalOr[T: ClassTag]()
-  (implicit ev: TensorNumeric[T]) extends Operation[Table, T] {
-  override def updateOutput(input: Table): Tensor[T] = {
+  (implicit ev: TensorNumeric[T]) extends Operation[Table, Tensor[Boolean], T] {
+
+  output = Activity.allocate[Tensor[Boolean], Boolean]()
+
+  override def updateOutput(input: Table): Tensor[Boolean] = {
     output.resizeAs(input(1)).copy(input(1))
     input[Tensor[_]](1).getType() match {
       case BooleanType =>
-        output
-          .toTensor[Boolean]
-          .map(input(2).asInstanceOf[Tensor[Boolean]], (a, b) => a || b)
+        output.map(input(2).asInstanceOf[Tensor[Boolean]], (a, b) => a || b)
       case _ => throw new RuntimeException("LogicalOr only support boolean tensor")
     }
 
@@ -38,6 +40,6 @@ class LogicalOr[T: ClassTag]()
 }
 
 object LogicalOr {
-  def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): Operation[Table, T]
-  = ModuleToOperation[Table, T](new LogicalOr())
+  def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): Operation[Activity, Activity, T]
+  = ModuleToOperation[T](new LogicalOr())
 }
