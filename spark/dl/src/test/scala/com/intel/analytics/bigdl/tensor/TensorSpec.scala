@@ -21,7 +21,7 @@ class TensorSpec extends FlatSpec with Matchers {
 
   "Tensor factory method" should "be able to construct scalar" in {
     val tensor = Tensor[Int](Array(4), Array[Int]())
-    tensor.valueAt() should be (4)
+    tensor.value() should be (4)
   }
 
 }
