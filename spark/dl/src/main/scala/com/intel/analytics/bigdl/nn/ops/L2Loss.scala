@@ -15,24 +15,38 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
 
 import scala.reflect.ClassTag
 
 class L2Loss[T: ClassTag]()
-  (implicit ev: TensorNumeric[T]) extends Operation[Tensor[T], T] {
-  val buffer: Tensor[T] = Tensor[T]()
+  (implicit ev: TensorNumeric[T]) extends Operation[Tensor[_], Tensor[_], T] {
+  var buffer: Tensor[_] = _
 
-  override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    output.resize(1)
+  override def updateOutput(input: Tensor[_]): Tensor[_] = {
     buffer.resizeAs(input)
     input.getType() match {
       case FloatType =>
+        if (output.getType() != FloatType) {
+          output = Activity.allocate[Tensor[Float], Float]()
+        }
+        if (buffer.getType() != FloatType) {
+          buffer = Activity.allocate[Tensor[Float], Float]()
+        }
+        output.resize(1)
         output.asInstanceOf[Tensor[Float]].setValue(1,
           buffer.asInstanceOf[Tensor[Float]].applyFun[Float](
             input.asInstanceOf[Tensor[Float]], x => x * x).sum() / 2)
       case DoubleType =>
+        if (output.getType() != FloatType) {
+          output = Activity.allocate[Tensor[Double], Double]()
+        }
+        if (buffer.getType() != FloatType) {
+          buffer = Activity.allocate[Tensor[Double], Double]()
+        }
+        output.resize(1)
         output.asInstanceOf[Tensor[Double]].setValue(1,
           buffer.asInstanceOf[Tensor[Double]].applyFun[Double](
             input.asInstanceOf[Tensor[Double]], x => x * x).sum() / 2)
@@ -44,6 +58,7 @@ class L2Loss[T: ClassTag]()
 }
 
 object L2Loss {
-  def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): Operation[Tensor[T], T]
-  = ModuleToOperation[Tensor[T], T](new L2Loss())
+  def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]):
+  Operation[Activity, Activity, T]
+  = ModuleToOperation[T](new L2Loss())
 }

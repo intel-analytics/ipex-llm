@@ -15,22 +15,30 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
 
 import scala.reflect.ClassTag
 
 class Floor[T: ClassTag]()
-  (implicit ev: TensorNumeric[T]) extends Operation[Tensor[T], T] {
+  (implicit ev: TensorNumeric[T]) extends Operation[Tensor[_], Tensor[_], T] {
 
-  override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    output.resizeAs(input)
+  override def updateOutput(input: Tensor[_]): Tensor[_] = {
     input.getType() match {
       case FloatType =>
+        if (output.getType() != FloatType) {
+          output = Activity.allocate[Tensor[Float], Float]()
+        }
+        output.resizeAs(input)
         output.asInstanceOf[Tensor[Float]].applyFun[Float](
           input.asInstanceOf[Tensor[Float]],
           scala.math.floor(_).asInstanceOf[Float])
       case DoubleType =>
+        if (output.getType() != DoubleType) {
+          output = Activity.allocate[Tensor[Double], Double]()
+        }
+        output.resizeAs(input)
         output.asInstanceOf[Tensor[Double]].applyFun[Double](
           input.asInstanceOf[Tensor[Double]],
           scala.math.floor)
@@ -42,6 +50,8 @@ class Floor[T: ClassTag]()
 }
 
 object Floor {
-  def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): Operation[Tensor[T], T]
-  = ModuleToOperation[Tensor[T], T](new Floor())
+  def apply[T: ClassTag]()
+    (implicit ev: TensorNumeric[T]):
+  Operation[Activity, Activity, T]
+  = ModuleToOperation[T](new Floor())
 }

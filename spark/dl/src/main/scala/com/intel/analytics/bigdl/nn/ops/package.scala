@@ -81,15 +81,15 @@ package object ops {
 
   object MatMul {
     def apply[T: ClassTag]()
-      (implicit ev: TensorNumeric[T]): Operation[Table, T]
-    = ModuleToOperation[Table, T](
+      (implicit ev: TensorNumeric[T]): Operation[Activity, Activity, T]
+    = ModuleToOperation[T](
       com.intel.analytics.bigdl.nn.MM())
   }
 
   object SoftMax {
     def apply[T: ClassTag]()
-      (implicit ev: TensorNumeric[T]): Operation[Tensor[T], T]
-    = ModuleToOperation[Tensor[T], T](
+      (implicit ev: TensorNumeric[T]): Operation[Activity, Activity, T]
+    = ModuleToOperation[T](
       com.intel.analytics.bigdl.nn.SoftMax())
   }
 }

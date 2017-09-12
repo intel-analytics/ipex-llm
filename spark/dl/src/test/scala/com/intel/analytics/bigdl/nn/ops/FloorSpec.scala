@@ -26,7 +26,7 @@ class FloorSpec extends FlatSpec with Matchers {
 
     val expectOutput = Tensor[Float](T(1f, 2f, 2f))
 
-    val output = Floor[Float]().forward(input)
+    val output = Floor[Double]().forward(input)
     output should be(expectOutput)
   }
 

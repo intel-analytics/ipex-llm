@@ -15,19 +15,20 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
-class TruncatedNormal[T: ClassTag](
-  mean: Double = 0.0,
-  stddev: Double = 1.0,
+class TruncatedNormal[T: ClassTag, DataType: ClassTag](
+  mean: DataType = 0.0,
+  stddev: DataType = 1.0,
   seed: Int = 0
 )
-  (implicit ev: TensorNumeric[T]) extends Operation[Tensor[T], T] {
+  (implicit ev: TensorNumeric[T]) extends Operation[Tensor[Int], Tensor[DataType], T] {
 
-  def updateOutput(input: Tensor[T]): Tensor[T] = {
+  def updateOutput(input: Tensor[Int]): Tensor[DataType] = {
     require(input.nDimension() == 1, "the shape should be a one-dimensional tensor.")
 
     val shape = input.asInstanceOf[Tensor[Int]].storage().toArray
@@ -40,11 +41,11 @@ class TruncatedNormal[T: ClassTag](
 }
 
 object TruncatedNormal {
-  def apply[T: ClassTag](
+  def apply[T: ClassTag, DataType: ClassTag](
     mean: Double = 0.0,
     stddev: Double = 1.0,
     seed: Int = 0)
-    (implicit ev: TensorNumeric[T]): Operation[Tensor[T], T]
-  = ModuleToOperation[Tensor[T], T](
+    (implicit ev: TensorNumeric[T]): Operation[Activity, Activity, T]
+  = ModuleToOperation[T](
     new TruncatedNormal(mean, stddev, seed))
 }

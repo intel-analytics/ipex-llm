@@ -15,25 +15,17 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.T
+import org.scalatest.{FlatSpec, Matchers}
 
-import scala.reflect.ClassTag
 
-class Rank[T: ClassTag]()
-  (implicit ev: TensorNumeric[T]) extends Operation[Tensor[_], Tensor[Int], T] {
+class TruncatedNormalSpec  extends FlatSpec with Matchers {
+  "TruncatedNormal operation" should "works correctly" in {
+    import com.intel.analytics.bigdl.numeric.NumericFloat
+    val input =
+      Tensor[Int](T(1, 2, 3))
 
-  override def updateOutput(input: Tensor[_]): Tensor[Int] = {
-    output.resizeAs(input(1))
-    output.setValue(1, input.nDimension())
-
-    output
+    val output = TruncatedNormal(10, 20).forward(input)
   }
-}
-
-object Rank {
-  def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]):
-  Operation[Activity, Activity, T]
-  = ModuleToOperation[T](new Rank())
 }

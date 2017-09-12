@@ -15,22 +15,25 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils.RandomGenerator
 
 import scala.reflect.ClassTag
 
-class RandomUniform[T: ClassTag](
-  minVal: T,
-  maxVal: T,
+class RandomUniform[T: ClassTag, DataType: ClassTag](
+  minVal: DataType,
+  maxVal: DataType,
   seed: Int = 0
 )
-  (implicit ev: TensorNumeric[T]) extends Operation[Tensor[T], T] {
+  (implicit ev: TensorNumeric[T], ev2: TensorNumeric[DataType])
+extends Operation[Tensor[DataType], Tensor[DataType], T] {
 
   RandomGenerator.RNG.setSeed(seed)
 
-  override def updateOutput(input: Tensor[T]): Tensor[T] = {
+  output = Activity.allocate[Tensor[DataType], DataType]()
+  override def updateOutput(input: Tensor[DataType]): Tensor[DataType] = {
     require(input.nDimension() == 1, "the shape should be a one-dimensional tensor.")
 
     val shape = input.asInstanceOf[Tensor[Int]].storage().toArray
@@ -43,10 +46,11 @@ class RandomUniform[T: ClassTag](
 }
 
 object RandomUniform {
-  def apply[T: ClassTag](
-    minVal: T,
-    maxVal: T,
+  def apply[T: ClassTag, DataType: ClassTag](
+    minVal: DataType,
+    maxVal: DataType,
     seed: Int = 0)
-    (implicit ev: TensorNumeric[T]): Operation[Tensor[T], T]
-  = ModuleToOperation[Tensor[T], T](new RandomUniform(minVal, maxVal, seed))
+    (implicit ev: TensorNumeric[T], ev2: TensorNumeric[DataType]):
+  Operation[Activity, Activity, T]
+  = ModuleToOperation[T](new RandomUniform(minVal, maxVal, seed))
 }
