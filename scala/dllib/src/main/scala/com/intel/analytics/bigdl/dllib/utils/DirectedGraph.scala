@@ -64,10 +64,10 @@ class DirectedGraph[T](val source : Node[T], val reverse : Boolean = false) exte
     })
 
     val result = new ArrayBuffer[Node[T]]()
-    while(!inDegrees.isEmpty) {
+    while(inDegrees.nonEmpty) {
       // toArray is not lazy eval, which is not affected by inDegrees - 1 operations below
       val startNodes = inDegrees.filterKeys(inDegrees(_) == 0).keySet.toArray
-      require(startNodes.size != 0, "There's a cycle in the graph")
+      require(startNodes.length != 0, "There's a cycle in the graph")
       result.appendAll(startNodes)
       startNodes.foreach(n => {
         val nextNodes = if (!reverse) n.nextNodes else n.prevNodes
@@ -96,7 +96,11 @@ class DirectedGraph[T](val source : Node[T], val reverse : Boolean = false) exte
         val node = stack.pop()
         visited.add(node)
         val nextNodes = if (!reverse) node.nextNodes else node.prevNodes
-        nextNodes.filter(!visited.contains(_)).filter(!stack.contains(_)).foreach(stack.push(_))
+        // to preserve order
+        val nodesSet = mutable.LinkedHashSet[Node[T]]()
+        nextNodes.foreach(nodesSet.add)
+        nodesSet.filter(!visited.contains(_))
+          .filter(!stack.contains(_)).foreach(stack.push(_))
         node
       }
     }
@@ -120,7 +124,11 @@ class DirectedGraph[T](val source : Node[T], val reverse : Boolean = false) exte
         val node = queue.dequeue()
         visited.add(node)
         val nextNodes = if (!reverse) node.nextNodes else node.prevNodes
-        nextNodes.filter(!visited.contains(_)).filter(!queue.contains(_)).foreach(queue.enqueue(_))
+        // to preserve order
+        val nodesSet = mutable.LinkedHashSet[Node[T]]()
+        nextNodes.foreach(nodesSet.add)
+        nodesSet.filter(!visited.contains(_))
+          .filter(!queue.contains(_)).foreach(queue.enqueue(_))
         node
       }
     }
