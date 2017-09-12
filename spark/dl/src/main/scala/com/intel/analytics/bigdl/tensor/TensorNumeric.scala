@@ -34,7 +34,7 @@ object TensorNumericMath {
   /**
    * define tensor math operation
    */
-  trait TensorNumeric[@specialized(Float, Double) T] extends Serializable {
+  trait TensorNumeric[@specialized T] extends Serializable {
     def one: T = fromType[Int](1)
 
     def zero: T = fromType[Int](0)
@@ -161,7 +161,7 @@ object TensorNumericMath {
   /**
    * define tensor math operation
    */
-  abstract class UndefinedTensorNumeric[@specialized(Float, Double) T](typeName: String)
+  abstract class UndefinedTensorNumeric[@specialized T](typeName: String)
     extends TensorNumeric[T] {
     def plus(x: T, y: T): T =
       throw new UnsupportedOperationException(typeName
@@ -282,7 +282,7 @@ object TensorNumericMath {
       throw new UnsupportedOperationException(typeName +
         " in tensor does not support fromType operation")
 
-    def toType[@specialized(Float, Double, Int) K](t: T)(implicit c: ConvertableTo[K]): K =
+    def toType[@specialized K](t: T)(implicit c: ConvertableTo[K]): K =
       throw new UnsupportedOperationException(typeName +
         " in tensor does not support toType operation")
 
@@ -385,7 +385,7 @@ object TensorNumericMath {
   /**
    * Numerical operation for type T
    */
-  class TensorNumericOps[@specialized(Float, Double) T](lhs: T)(implicit ev: TensorNumeric[T]) {
+  class TensorNumericOps[@specialized T](lhs: T)(implicit ev: TensorNumeric[T]) {
     // scalastyle:off methodName
     def +(rhs: T): T = ev.plus(lhs, rhs)
 
@@ -478,11 +478,11 @@ object TensorNumericMath {
         util.Arrays.fill(data, fromIndex, toIndex, value)
       }
 
-      override def fromType[@specialized(Float, Double, Int) K](k: K)(
+      override def fromType[@specialized K](k: K)(
         implicit c: ConvertableFrom[K]): Float =
         c.toFloat(k)
 
-      override def toType[@specialized(Float, Double, Int) K]
+      override def toType[@specialized K]
       (t: Float)(implicit c: ConvertableTo[K]): K = c.fromFloat(t)
 
       override def getType(): TensorDataType = FloatType
@@ -741,11 +741,11 @@ object TensorNumericMath {
         util.Arrays.fill(data, fromIndex, toIndex, value)
       }
 
-      override def fromType[@specialized(Float, Double, Int) K](k: K)(
+      override def fromType[@specialized K](k: K)(
         implicit c: ConvertableFrom[K]): Double =
         c.toDouble(k)
 
-      override def toType[@specialized(Float, Double, Int) K](t: Double)
+      override def toType[@specialized K](t: Double)
         (implicit c: ConvertableTo[K]): K = c.fromDouble(t)
 
       override def getType(): TensorDataType = DoubleType
