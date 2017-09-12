@@ -15,6 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
@@ -22,9 +23,11 @@ import com.intel.analytics.bigdl.utils.Table
 import scala.reflect.ClassTag
 
 class Greater[T: ClassTag]()
-  (implicit ev: TensorNumeric[T]) extends Operation[Table, T] {
+  (implicit ev: TensorNumeric[T]) extends Operation[Table, Tensor[Boolean], T] {
 
-  override def updateOutput(input: Table): Tensor[T] = {
+  output = Activity.allocate[Tensor[Boolean], Boolean]()
+
+  override def updateOutput(input: Table): Tensor[Boolean] = {
     output.resizeAs(input(1))
     input[Tensor[_]](1).getType() match {
       case FloatType =>
@@ -70,6 +73,6 @@ class Greater[T: ClassTag]()
 }
 
 object Greater {
-  def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): Operation[Table, T]
-  = ModuleToOperation[Table, T](new Greater())
+  def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): Operation[Activity, Activity, T]
+  = ModuleToOperation[T](new Greater())
 }

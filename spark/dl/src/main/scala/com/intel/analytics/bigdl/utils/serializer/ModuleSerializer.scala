@@ -185,6 +185,7 @@ object ModuleSerializer extends ModuleSerializable{
       SpatialSubtractiveNormalization)
     registerModule("com.intel.analytics.bigdl.nn.Transpose", Transpose)
     registerModule("com.intel.analytics.bigdl.nn.VolumetricMaxPooling", VolumetricMaxPooling)
+    registerModule("com.intel.analytics.bigdl.nn.Echo", Echo)
 
   }
 }

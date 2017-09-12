@@ -15,6 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
@@ -22,48 +23,50 @@ import com.intel.analytics.bigdl.utils.Table
 import scala.reflect.ClassTag
 
 class Equal[T: ClassTag]()
-  (implicit ev: TensorNumeric[T]) extends Operation[Table, T] {
+  (implicit ev: TensorNumeric[T]) extends Operation[Table, Tensor[Boolean], T] {
 
-  override def updateOutput(input: Table): Tensor[T] = {
+  output = Activity.allocate[Tensor[Boolean], Boolean]()
+
+  override def updateOutput(input: Table): Tensor[Boolean] = {
     output.resizeAs(input(1))
     input[Tensor[_]](1).getType() match {
       case FloatType =>
-        output.asInstanceOf[Tensor[Boolean]].zipWith[Float, Float](
+        output.zipWith[Float, Float](
           input[Tensor[Float]](1),
           input[Tensor[Float]](2),
           (a, b) => a == b)
       case BooleanType =>
-        output.asInstanceOf[Tensor[Boolean]].zipWith[Boolean, Boolean](
+        output.zipWith[Boolean, Boolean](
           input[Tensor[Boolean]](1),
           input[Tensor[Boolean]](2),
           (a, b) => a == b)
       case DoubleType =>
-        output.asInstanceOf[Tensor[Boolean]].zipWith[Double, Double](
+        output.zipWith[Double, Double](
           input[Tensor[Double]](1),
           input[Tensor[Double]](2),
           (a, b) => a == b)
       case CharType =>
-        output.asInstanceOf[Tensor[Boolean]].zipWith[Char, Char](
+        output.zipWith[Char, Char](
           input[Tensor[Char]](1),
           input[Tensor[Char]](2),
           (a, b) => a == b)
       case StringType =>
-        output.asInstanceOf[Tensor[Boolean]].zipWith[String, String](
+        output.zipWith[String, String](
           input[Tensor[String]](1),
           input[Tensor[String]](2),
           (a, b) => a == b)
       case LongType =>
-        output.asInstanceOf[Tensor[Boolean]].zipWith[Long, Long](
+        output.zipWith[Long, Long](
           input[Tensor[Long]](1),
           input[Tensor[Long]](2),
           (a, b) => a == b)
       case ShortType =>
-        output.asInstanceOf[Tensor[Boolean]].zipWith[Short, Short](
+        output.zipWith[Short, Short](
           input[Tensor[Short]](1),
           input[Tensor[Short]](2),
           (a, b) => a == b)
       case IntType =>
-        output.asInstanceOf[Tensor[Boolean]].zipWith[Int, Int](
+        output.zipWith[Int, Int](
           input[Tensor[Int]](1),
           input[Tensor[Int]](2),
           (a, b) => a == b)
@@ -75,6 +78,6 @@ class Equal[T: ClassTag]()
 }
 
 object Equal {
-  def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): Operation[Table, T]
-  = ModuleToOperation[Table, T](new Equal())
+  def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): Operation[Activity, Activity, T]
+  = ModuleToOperation[T](new Equal())
 }

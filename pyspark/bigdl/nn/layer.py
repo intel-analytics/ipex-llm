@@ -553,7 +553,14 @@ class Model(Container):
         callBigDlFunc(bigdl_type, "setStopGradient", self.value, stop_layers)
         return self
 
-
+    def save_graph_topology(self, log_path, bigdl_type="float"):
+        """
+        save current model graph to a folder, which can be display in tensorboard by running
+            tensorboard --logdir logPath
+        :param log_path: 
+        :return: 
+        """
+        callBigDlFunc(bigdl_type, "saveGraphTopology", self.value, log_path)
 
 class Linear(Layer):
 

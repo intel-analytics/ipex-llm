@@ -24,58 +24,58 @@ import scala.reflect.ClassTag
 
 package object ops {
   object Add {
-    def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): Operation[Table, T]
-    = ModuleToOperation[Table, T](CAddTable())
+    def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): Operation[Activity, Activity, T]
+    = ModuleToOperation[T](CAddTable())
   }
 
   object Subtract {
-    def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): Operation[Table, T]
-    = ModuleToOperation[Table, T](CSubTable())
+    def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): Operation[Activity, Activity, T]
+    = ModuleToOperation[T](CSubTable())
   }
 
   object Multiply {
-    def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): Operation[Table, T]
-    = ModuleToOperation[Table, T](CMulTable())
+    def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): Operation[Activity, Activity, T]
+    = ModuleToOperation[T](CMulTable())
   }
 
   object Divide {
-    def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): Operation[Table, T]
-    = ModuleToOperation[Table, T](CDivTable())
+    def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): Operation[Activity, Activity, T]
+    = ModuleToOperation[T](CDivTable())
   }
 
   object Sum {
     def apply[T: ClassTag](axis: Int, keepDim: Boolean = false)
-      (implicit ev: TensorNumeric[T]): Operation[Tensor[T], T]
-    = ModuleToOperation[Tensor[T], T](
+      (implicit ev: TensorNumeric[T]): Operation[Activity, Activity, T]
+    = ModuleToOperation[T](
       com.intel.analytics.bigdl.nn.Sum(dimension = axis, squeeze = !keepDim))
   }
 
   object Reshape {
     def apply[T: ClassTag](size: Array[Int])
-      (implicit ev: TensorNumeric[T]): Operation[Tensor[T], T]
-    = ModuleToOperation[Tensor[T], T](
+      (implicit ev: TensorNumeric[T]): Operation[Activity, Activity, T]
+    = ModuleToOperation[T](
       com.intel.analytics.bigdl.nn.InferReshape(size: Array[Int]))
   }
 
   object Squeeze {
     def apply[T: ClassTag](axis: Array[Int] = null)
-      (implicit ev: TensorNumeric[T]): Operation[Tensor[T], T]
-    = ModuleToOperation[Tensor[T], T](
+      (implicit ev: TensorNumeric[T]): Operation[Activity, Activity, T]
+    = ModuleToOperation[T](
       com.intel.analytics.bigdl.nn.Squeeze(dims = axis, batchMode = false))
   }
 
   object Identity {
     def apply[T: ClassTag]()
-      (implicit ev: TensorNumeric[T]): Operation[Activity, T]
-    = ModuleToOperation[Activity, T](
+      (implicit ev: TensorNumeric[T]): Operation[Activity, Activity, T]
+    = ModuleToOperation[T](
       com.intel.analytics.bigdl.nn.Identity()
         .asInstanceOf[AbstractModule[Activity, Tensor[T], T]])
   }
 
   object ReLU {
     def apply[T: ClassTag]()
-      (implicit ev: TensorNumeric[T]): Operation[Tensor[T], T]
-    = ModuleToOperation[Tensor[T], T](
+      (implicit ev: TensorNumeric[T]): Operation[Activity, Activity, T]
+    = ModuleToOperation[T](
       com.intel.analytics.bigdl.nn.ReLU())
   }
 }

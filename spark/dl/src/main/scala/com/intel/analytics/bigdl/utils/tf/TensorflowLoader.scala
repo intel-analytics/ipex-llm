@@ -251,13 +251,13 @@ object TensorflowLoader{
         val nextNodes = n.nextNodes.filter(
           n => n.element != null &&
             convertedNode.contains(n) && !context.contains(n.element.getName)
-        ).map(convertedNode(_)).filter(_ != node).toSet
+        ).map(convertedNode(_)).filter(_ != node)
         nextNodes.foreach(node -> _)
 
         val preNodes = inputNodes.flatMap(_.prevNodes)
           .filter(n => n.element != null && convertedNode.contains(n)
             && !context.contains(n.element.getName))
-          .map(convertedNode(_)).filter(_ != node).toSet
+          .map(convertedNode(_)).filter(_ != node)
         preNodes.foreach(_ -> node)
       }
     })
