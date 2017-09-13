@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.utils.tf
 import java.nio.ByteOrder
 import java.util.UUID
 
-import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, DataFormat}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -60,11 +60,11 @@ class TensorflowSaverSpec extends TensorflowSpecHelper {
       T(1.0f, 2.0f, 5.0f),
       T(-3.0f, -4.0f, -7.0f)
     ))
-    test(layer, input, false, "/biasAdd") should be(true)
+    test(layer, input, "/biasAdd") should be(true)
   }
 
-  "AvgPooling" should "be correctly saved" in {
-    val layer = SpatialAveragePooling(2, 2)
+  "AvgPooling NHWC" should "be correctly saved" in {
+    val layer = SpatialAveragePooling(2, 2, format = DataFormat.NHWC)
     val input = Tensor[Float](T(T(
       T(
         T(1.0f, 2.0f, 5.0f),
@@ -77,11 +77,11 @@ class TensorflowSaverSpec extends TensorflowSpecHelper {
         T(4.0f, 2.0f, 1.0f)
       )
     )))
-    test(layer, input, true) should be(true)
+    test(layer, input) should be(true)
   }
 
-  "MaxPooling" should "be correctly saved" in {
-    val layer = SpatialMaxPooling(2, 2)
+  "MaxPooling NHWC" should "be correctly saved" in {
+    val layer = SpatialMaxPooling(2, 2, format = DataFormat.NHWC)
     val input = Tensor[Float](T(T(
       T(
         T(1.0f, 2.0f, 5.0f),
@@ -94,7 +94,7 @@ class TensorflowSaverSpec extends TensorflowSpecHelper {
         T(4.0f, 2.0f, 1.0f)
       )
     )))
-    test(layer, input, true) should be(true)
+    test(layer, input) should be(true)
   }
 
   "Tanh" should "be correctly saved" in {
@@ -107,7 +107,7 @@ class TensorflowSaverSpec extends TensorflowSpecHelper {
     System.setProperty("bigdl.enableNHWC", "false")
     val layer = Squeeze(3)
     val input = Tensor[Float](4, 2, 1, 2).rand()
-    test(layer, input, false) should be(true)
+    test(layer, input) should be(true)
   }
 
   "CAddTableToTF" should "be correct" in {
@@ -134,43 +134,43 @@ class TensorflowSaverSpec extends TensorflowSpecHelper {
   "LogSoftMax" should "be correctly saved" in {
     val layer = LogSoftMax()
     val input = Tensor[Float](4, 5).rand()
-    test(layer, input, false) should be(true)
+    test(layer, input) should be(true)
   }
 
   "SoftMax" should "be correctly saved" in {
     val layer = SoftMax()
     val input = Tensor[Float](4, 5).rand()
-    test(layer, input, false) should be(true)
+    test(layer, input) should be(true)
   }
 
   "Sigmoid" should "be correctly saved" in {
     val layer = Sigmoid()
     val input = Tensor[Float](4, 5).rand()
-    test(layer, input, false) should be(true)
+    test(layer, input) should be(true)
   }
 
-  "SpatialConvolution" should "be correctly saved" in {
-    val layer = SpatialConvolution(3, 5, 2, 2)
-    val input = Tensor[Float](4, 3, 5, 5).rand()
-    test(layer, input, true, "/biasAdd") should be(true)
+  "SpatialConvolution NHWC" should "be correctly saved" in {
+    val layer = SpatialConvolution(3, 5, 2, 2, format = DataFormat.NHWC)
+    val input = Tensor[Float](4, 5, 5, 3).rand()
+    test(layer, input, "/biasAdd") should be(true)
   }
 
   "TemporalConvolution" should "be correctly saved" in {
     val layer = TemporalConvolution(3, 5, 2, 2)
     val input = Tensor[Float](4, 16, 3).rand()
-    test(layer, input, false, "/biasAdd") should be(true)
+    test(layer, input, "/biasAdd") should be(true)
   }
 
   "Mean" should "be correctly saved" in {
     val layer = Mean(1, -1, true)
     val input = Tensor[Float](4, 5).rand()
-    test(layer, input, false, "/output") should be(true)
+    test(layer, input, "/output") should be(true)
   }
 
   "Padding" should "be correctly saved" in {
     val layer = Padding(1, 2, 2)
     val input = Tensor[Float](4, 5).rand()
-    test(layer, input, false, "/output") should be(true)
+    test(layer, input, "/output") should be(true)
   }
 
   "Batch Norm2D" should "be correctly saved" in {
@@ -181,26 +181,26 @@ class TensorflowSaverSpec extends TensorflowSpecHelper {
     layer.runningVar.rand(0.9, 1.1)
     layer.runningMean.rand()
     val input = Tensor[Float](3, 2, 4, 5).rand()
-    test(layer, input, true, "/output") should be(true)
+    test(layer, input, "/output") should be(true)
   }
 
   "Dropout" should "be correctly saved" in {
     val layer = Dropout()
     layer.evaluate()
     val input = Tensor[Float](3, 2).rand()
-    test(layer, input, false) should be(true)
+    test(layer, input) should be(true)
   }
 
   "View" should "be correctly saved" in {
     val layer = View(2, 4)
     val input = Tensor[Float](2, 2, 2).rand()
-    test(layer, input, false) should be(true)
+    test(layer, input) should be(true)
   }
 
   "Reshape" should "be correctly saved" in {
     val layer = Reshape(Array(2, 4))
     val input = Tensor[Float](2, 2, 2).rand()
-    test(layer, input, false) should be(true)
+    test(layer, input) should be(true)
   }
 
   "lenet" should "be correctly saved" in {
@@ -232,7 +232,6 @@ class TensorflowSaverSpec extends TensorflowSpecHelper {
 
   private def test(layer: AbstractModule[Tensor[Float], Tensor[Float], Float],
                    inputTensor: Tensor[Float],
-                   convertNHWC: Boolean = false,
                    outputSuffix: String = "") : Boolean = {
     tfCheck()
     val layerNode = layer.setName("output").inputs()
@@ -241,22 +240,13 @@ class TensorflowSaverSpec extends TensorflowSpecHelper {
 
     val tmpFile = java.io.File.createTempFile("tensorflowSaverTest" + UUID.randomUUID(), "Layer")
     logger.info(s"Save model to ${tmpFile}")
-    val tfTensor = if (convertNHWC) {
-      inputTensor.transpose(2, 3).transpose(3, 4).contiguous()
-    } else {
-      inputTensor
-    }
-    val outputSave = if (convertNHWC) {
-      outputTensor.transpose(2, 3).transpose(3, 4).contiguous()
-    } else {
-      outputTensor
-    }
+
     TensorflowSaver.saveGraphWithNodeDef(
       graph,
-      Seq(Tensorflow.const(tfTensor, "input", ByteOrder.LITTLE_ENDIAN)),
+      Seq(Tensorflow.const(inputTensor, "input", ByteOrder.LITTLE_ENDIAN)),
       tmpFile.getPath,
       ByteOrder.LITTLE_ENDIAN,
-      Set(Tensorflow.const(outputSave, "target", ByteOrder.LITTLE_ENDIAN))
+      Set(Tensorflow.const(outputTensor, "target", ByteOrder.LITTLE_ENDIAN))
     )
     runPythonSaveTest(tmpFile.getPath, outputSuffix)
   }
