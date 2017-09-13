@@ -24,6 +24,11 @@ import scala.collection.JavaConverters._
 
 
 object TFUtils {
+  import TFTensorNumeric.NumericByteString
+
+  /**
+   * convert tensorflow tensorProto to BigDL Tensor
+   */
   def parseTensor(tfTensor: TensorProto, endian: ByteOrder): Tensor[_] = {
     val shape = tfTensor.getTensorShape.getDimList.asScala.map(_.getSize.toInt).toArray
     tfTensor.getDtype match {
