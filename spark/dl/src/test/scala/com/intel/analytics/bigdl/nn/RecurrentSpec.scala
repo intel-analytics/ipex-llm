@@ -592,4 +592,13 @@ class RecurrentSpec extends FlatSpec with Matchers {
     rec.setState(state)
     model.forward(input)
   }
+
+  "A Recurrent Module " should " work good with copy " in {
+    val input = Tensor[Float](3, 2, 6, 10).randn()
+    val output = Tensor[Float]()
+
+    val rec = Recurrent[Float]()
+    rec.transposeMemory(input, output)
+    output should be (input.transpose(1, 2).clone())
+  }
 }
