@@ -173,7 +173,7 @@ class TensorflowSaverSpec extends TensorflowSpecHelper {
     test(layer, input, "/output") should be(true)
   }
 
-  "Batch Norm2D" should "be correctly saved" in {
+  "Batch Norm2D NCHW" should "be correctly saved" in {
     val layer = SpatialBatchNormalization(2)
     layer.evaluate()
     layer.weight.rand(10.0, 20.0)
@@ -203,17 +203,21 @@ class TensorflowSaverSpec extends TensorflowSpecHelper {
     test(layer, input) should be(true)
   }
 
-  "lenet" should "be correctly saved" in {
+  "lenet NHWC" should "be correctly saved" in {
     tfCheck()
-    val conv1 = SpatialConvolution(1, 6, 5, 5).setName("conv1").inputs()
+    val conv1 = SpatialConvolution(1, 6, 5, 5, format = DataFormat.NHWC)
+      .setName("conv1").inputs()
     val tanh1 = Tanh().setName("tanh1").inputs(conv1)
-    val pool1 = SpatialMaxPooling(2, 2, 2, 2).setName("pool1").inputs(tanh1)
+    val pool1 = SpatialMaxPooling(2, 2, 2, 2, format = DataFormat.NHWC)
+      .setName("pool1").inputs(tanh1)
     val tanh2 = Tanh().setName("tanh2").inputs(pool1)
-    val conv2 = SpatialConvolution(6, 12, 5, 5).setName("conv2").inputs(tanh2)
-    val pool2 = SpatialMaxPooling(2, 2, 2, 2).setName("output").inputs(conv2)
+    val conv2 = SpatialConvolution(6, 12, 5, 5, format = DataFormat.NHWC)
+      .setName("conv2").inputs(tanh2)
+    val pool2 = SpatialMaxPooling(2, 2, 2, 2, format = DataFormat.NHWC)
+      .setName("output").inputs(conv2)
 
     val funcModel = Graph(conv1, pool2)
-    val inputData = Tensor(4, 1, 28, 28).rand()
+    val inputData = Tensor(4, 28, 28, 1).rand()
     val outputData = funcModel.forward(inputData).toTensor
 
     val tmpFile = java.io.File.createTempFile("tensorflowSaverTest" + UUID.randomUUID(), "lenet")
