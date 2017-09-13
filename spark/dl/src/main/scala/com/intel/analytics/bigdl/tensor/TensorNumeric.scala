@@ -935,28 +935,6 @@ object TensorNumericMath {
       }
     }
 
-    implicit object NumericByteString extends UndefinedTensorNumeric[ByteString]("ByteString") {
-      override def plus(x: ByteString, y: ByteString): ByteString = x.concat(y)
-
-      override def fromType[K](k: K)(
-        implicit c: ConvertableFrom[K]): ByteString =
-        ByteString.copyFromUtf8(c.toString(k))
-
-      override def axpy(n: Int, da: ByteString, dx: Array[ByteString], _dx_offset: Int,
-                        incx: Int, dy: Array[ByteString],
-                        _dy_offset: Int, incy: Int): Unit = {
-        var i = 0
-        while (i < n) {
-          dy(i + _dy_offset) = dx(_dx_offset + i).concat(dy(_dy_offset + i))
-          i += 1
-        }
-      }
-
-      override def nearlyEqual(a: ByteString, b: ByteString, epsilon: Double): Boolean = {
-        a == b
-      }
-    }
-
     implicit object NumericString extends UndefinedTensorNumeric[String]("String") {
       override def plus(x: String, y: String): String = x + y
 
