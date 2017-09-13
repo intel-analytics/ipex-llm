@@ -2002,12 +2002,14 @@ object DenseTensor {
       d += 1
     }
 
+    if (self._size == null && _size != null) hasCorrectSize = false
+
     if (nDim_ != self.nDimension) hasCorrectSize = false
 
     if (hasCorrectSize) return self
 
-    if (nDim_ > 0) {
-      if (nDim_ != self.nDimension) {
+    if (nDim_ >= 0) {
+      if (nDim_ != self.nDimension || self._size == null) {
         self._size = new Array[Int](nDim)
         self._stride = new Array[Int](nDim)
         self.nDimension = nDim
@@ -2037,8 +2039,6 @@ object DenseTensor {
           self._storage.resize(totalSize + self._storageOffset)
         }
       }
-    } else {
-      self.nDimension = 0
     }
 
     self
@@ -2103,6 +2103,10 @@ object DenseTensor {
   private[tensor] def isSameSizeAs[@specialized(Float, Double) T](
     self: DenseTensor[T], src: Tensor[_]): Boolean = {
     if (self.nDimension != src.nDimension()) {
+      return false
+    }
+
+    if (self.isEmpty != src.isEmpty) {
       return false
     }
 
