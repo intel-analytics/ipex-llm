@@ -57,15 +57,25 @@ trait TensorflowToBigDL {
   )(implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T]
 
   protected def getOrSetTensor[T: ClassTag](
-    node: NodeDef, context: Context[T], byteOrder: ByteOrder)(f: Tensor[T] => Tensor[T])(
+    node: NodeDef, context: Context[T], byteOrder: ByteOrder,
+    trans: Option[Seq[(Int, Int)]] = None)(
     implicit ev: TensorNumeric[T]): (Tensor[T], Tensor[T]) = {
 
     if (context.contains(node.getName)) {
-      context(node.getName)
+      val result = context(node.getName)
+      (result._1, result._2)
     } else {
-      val weight = f(toTensor[T](node.getAttrMap.get("value").getTensor, byteOrder)).contiguous()
+      var weight = toTensor[T](node.getAttrMap.get("value").getTensor, byteOrder)
+      trans match {
+        case Some(transposes) =>
+          for ((first, second) <- transposes) {
+            weight = weight.transpose(first, second)
+          }
+          weight = weight.contiguous()
+        case _ =>
+      }
       val gradient = Tensor[T](weight.size())
-      context.put(node.getName, (weight, gradient))
+      context.put(node.getName, (weight, gradient, trans))
       (weight, gradient)
     }
   }
@@ -294,11 +304,8 @@ object FullConnectionTF extends TensorflowToBigDL{
 
     val biasNode = tfGraph.source.prevNodes(1).prevNodes.head.element
     val weightNode = tfGraph.source.prevNodes.head.prevNodes(1).prevNodes.head.element
-    val (bias, gradBias) = getOrSetTensor(biasNode, context, byteOrder)(t => t)
-    val (weight, gradWeight) = getOrSetTensor(weightNode, context, byteOrder) { t =>
-      t.transpose(1, 2)
-    }
-
+    val (bias, gradBias) = getOrSetTensor(biasNode, context, byteOrder)
+    val (weight, gradWeight) = getOrSetTensor(weightNode, context, byteOrder, Some(Seq((1, 2))))
     Linear[T](inputSize = weight.size(2), outputSize = weight.size(1),
       initWeight = weight, initGradWeight = gradWeight, initBias = bias, initGradBias = gradBias)
       .asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
@@ -364,12 +371,11 @@ object Conv1D extends TensorflowToBigDL {
     }
 
     val biasNode = tfGraph.source.prevNodes(1).prevNodes.head.element
-    val (bias, gradBias) = getOrSetTensor(biasNode, context, byteOrder)(t => t)
+    val (bias, gradBias) = getOrSetTensor(biasNode, context, byteOrder)
 
     val weightNode = convNode.prevNodes(1).prevNodes.head.prevNodes.head.element
-    val (weights, gradWeights) = getOrSetTensor(weightNode, context, byteOrder) { t =>
-      t.transpose(1, 3).transpose(2, 3)
-    }
+    val (weights, gradWeights) =
+      getOrSetTensor(weightNode, context, byteOrder, Some(Seq((1, 3), (2, 3))))
 
     val nOuputPlane = weights.size(1)
     val nInputPlane = weights.size(3)
@@ -443,9 +449,9 @@ object Conv2D extends TensorflowToBigDL{
         val strideW = strideList(1)
         val strideH = strideList(2)
         val biasNode = tfGraph.source.prevNodes(1).prevNodes.head.element
-        val (bias, gradBias) = getOrSetTensor(biasNode, context, byteOrder)(t => t)
+        val (bias, gradBias) = getOrSetTensor(biasNode, context, byteOrder)
         val weightNode = tfGraph.source.prevNodes.head.prevNodes(1).prevNodes.head.element
-        val (weights, gradWeights) = getOrSetTensor(weightNode, context, byteOrder)(t => t)
+        val (weights, gradWeights) = getOrSetTensor(weightNode, context, byteOrder)
         val nOuputPlane = weights.size(4)
         val nInputPlane = weights.size(3)
         val kernelH = weights.size(1)
@@ -465,12 +471,11 @@ object Conv2D extends TensorflowToBigDL{
         val strideW = strideList(2)
         val strideH = strideList(3)
         val biasNode = tfGraph.source.prevNodes(1).prevNodes.head.element
-        val (bias, gradBias) = getOrSetTensor(biasNode, context, byteOrder)(t => t)
+        val (bias, gradBias) = getOrSetTensor(biasNode, context, byteOrder)
 
         val weightNode = tfGraph.source.prevNodes.head.prevNodes(1).prevNodes.head.element
-        val (weights, gradWeights) = getOrSetTensor(weightNode, context, byteOrder) { t =>
-          t.transpose(1, 4).transpose(2, 3).transpose(3, 4)
-        }
+        val (weights, gradWeights) =
+          getOrSetTensor(weightNode, context, byteOrder, Some(Seq((1, 4), (2, 3), (3, 4))))
         val nOuputPlane = weights.size(1)
         val nInputPlane = weights.size(2)
         val kernelH = weights.size(3)
@@ -523,12 +528,11 @@ object Conv2D2 extends TensorflowToBigDL{
     val (strideH, strideW) = (strideList(2), strideList(3))
 
     val biasNode = tfGraph.source.prevNodes(1).prevNodes(0).prevNodes.head.element
-    val (bias, gradBias) = getOrSetTensor(biasNode, context, byteOrder)(t => t)
+    val (bias, gradBias) = getOrSetTensor(biasNode, context, byteOrder)
 
     val weightNode = tfGraph.source.prevNodes.head.prevNodes(1).prevNodes.head.element
-    val (weights, gradWeights) = getOrSetTensor(weightNode, context, byteOrder) { t =>
-      t.transpose(1, 4).transpose(2, 3).transpose(3, 4)
-    }
+    val (weights, gradWeights) =
+      getOrSetTensor(weightNode, context, byteOrder, Some(Seq((1, 4), (2, 3), (3, 4))))
 
     val nOuputPlane = weights.size(1)
     val nInputPlane = weights.size(2)
@@ -866,8 +870,8 @@ object BatchNormV2NCHWTF extends TensorflowToBigDL{
     val biasNode = tfGraph.source.prevNodes(1).prevNodes.head.prevNodes.head.prevNodes.head.element
     val weightNode = tfGraph.source.prevNodes(1).prevNodes(1).prevNodes(1)
       .prevNodes(1).prevNodes.head.prevNodes.head.element
-    val (weights, gradWeights) = getOrSetTensor[T](weightNode, context, byteOrder)(t => t)
-    val (bias, gradBias) = getOrSetTensor[T](biasNode, context, byteOrder)(t => t)
+    val (weights, gradWeights) = getOrSetTensor[T](weightNode, context, byteOrder)
+    val (bias, gradBias) = getOrSetTensor[T](biasNode, context, byteOrder)
 
     val batchNorm = SpatialBatchNormalization[T](
       nOutput = weights.size(1),
@@ -929,8 +933,8 @@ object BatchNormV2NHWCTF extends TensorflowToBigDL{
     val biasNode = tfGraph.source.prevNodes(1).prevNodes.head.prevNodes.head.element
     val weightNode = tfGraph.source.prevNodes(1).prevNodes(1).prevNodes(1)
       .prevNodes(1).prevNodes.head.element
-    val (weights, gradWeights) = getOrSetTensor[T](weightNode, context, byteOrder)(t => t)
-    val (bias, gradBias) = getOrSetTensor[T](biasNode, context, byteOrder)(t => t)
+    val (weights, gradWeights) = getOrSetTensor[T](weightNode, context, byteOrder)
+    val (bias, gradBias) = getOrSetTensor[T](biasNode, context, byteOrder)
 
     val batchNorm = SpatialBatchNormalization[T](
       nOutput = weights.size(1),
@@ -1004,8 +1008,8 @@ object BatchNormTF extends TensorflowToBigDL{
     val weightNode = tfGraph.source.prevNodes(1).prevNodes.head.prevNodes.head.element
     val biasNode = tfGraph.source.prevNodes(1).prevNodes(1).prevNodes(1)
       .prevNodes.head.prevNodes.head.element
-    val (weights, gradWeights) = getOrSetTensor[T](weightNode, context, byteOrder)(t => t)
-    val (bias, gradBias) = getOrSetTensor[T](weightNode, context, byteOrder)(t => t)
+    val (weights, gradWeights) = getOrSetTensor[T](weightNode, context, byteOrder)
+    val (bias, gradBias) = getOrSetTensor[T](weightNode, context, byteOrder)
 
     val batchNorm = SpatialBatchNormalization[T](
       nOutput = nOutput,
