@@ -18,7 +18,6 @@ package com.intel.analytics.bigdl.tensor
 
 import java.util
 
-import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.mkl.MKL
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 
