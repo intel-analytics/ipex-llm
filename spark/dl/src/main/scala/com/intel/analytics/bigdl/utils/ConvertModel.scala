@@ -74,7 +74,7 @@ object ConvertModel {
 
       val model = if (param.quantize) {
         require(param.to.toLowerCase == "bigdl",
-          s"Unknwon --to ${param.to}. Only support saving quantized model to bigdl model now.")
+          s"Only support quantizing models to BigDL model now.")
         loadedModel.quantize()
       } else {
         loadedModel

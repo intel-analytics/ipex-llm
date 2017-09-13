@@ -22,9 +22,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData, ModuleSerializer}
 import com.intel.analytics.bigdl.utils.{T, Table}
-import java.io.{IOException, ObjectInputStream, ObjectOutputStream}
 import scala.reflect.ClassTag
-import scala.reflect.runtime.universe
 import serialization.Bigdl.{AttrValue, BigDLModule}
 
 private[bigdl] class Linear[T: ClassTag](
@@ -33,8 +31,8 @@ private[bigdl] class Linear[T: ClassTag](
   val withBias: Boolean = true
 )(implicit ev: TensorNumeric[T]) extends QuantizedModule[T](outputSize) {
 
-  val data: QuantizedTensor[T] = QuantizedTensor[T]()
-  @transient var weight: QuantizedTensor[T] = _
+  private val data: QuantizedTensor[T] = QuantizedDummyTensor[T]()
+  var weight: QuantizedTensor[T] = _
   val bias: Tensor[T] = Tensor[T](outputSize)
 
   private def initWeightAndBias(weightFP32: Tensor[T], biasFP32: Tensor[T]): this.type = {
@@ -46,33 +44,9 @@ private[bigdl] class Linear[T: ClassTag](
 
     val weightFP32Tmp = weightFP32.view(Array(outputSize, inputSize))
     val params = LinearWeightParams(outputSize, inputSize)
-    weight = QuantizedTensor[T](weightFP32Tmp, params, LinearWeight)
+    weight = QuantizedTensor[T](weightFP32Tmp, params)
 
     this
-  }
-
-  override def init(): this.type = {
-    weight.init(LinearWeightParams(outputSize, inputSize), LinearWeight)
-
-    this
-  }
-
-  @throws(classOf[IOException])
-  private def writeObject(out: ObjectOutputStream): Unit = {
-    out.defaultWriteObject()
-
-    out.writeObject(weight)
-  }
-
-  @throws(classOf[IOException])
-  private def readObject(in: ObjectInputStream): Unit = {
-    in.defaultReadObject()
-
-    weight = in.readObject().asInstanceOf[QuantizedTensor[T]]
-
-    if (weight.getStorage != null && weight.getNativeStorage == 0L) {
-      init()
-    }
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
@@ -88,10 +62,14 @@ private[bigdl] class Linear[T: ClassTag](
       input.size(1)
     }
 
-    data.init(LinearDataParams(batchSize, inputSize), LinearData)
+    val params = LinearDataParams(batchSize, inputSize)
+    if (data.params == null || data.params != params) {
+      data.release()
+      data.set(QuantizedTensor[T](input.size(), params))
+    }
 
     ev.getType() match {
-      case FloatType => // TODO
+      case FloatType =>
         val src = input.storage().array().asInstanceOf[Array[Float]]
         val offset = input.storageOffset() - 1
 
@@ -198,6 +176,5 @@ object Linear extends QuantSerializer {
 
     linear.weight = DataConverter.getAttributeValue(attrMap.get("weight"))
             .asInstanceOf[QuantizedTensor[T]]
-    linear.init()
   }
 }

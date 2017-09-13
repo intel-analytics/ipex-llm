@@ -80,7 +80,6 @@ object Quantizer extends Quantizable {
     registerModule("com.intel.analytics.bigdl.nn.TimeDistributed", nn.TimeDistributed)
     registerModule("com.intel.analytics.bigdl.nn.Recurrent", nn.Recurrent)
     registerModule("com.intel.analytics.bigdl.nn.BiRecurrent", nn.BiRecurrent)
-//    registerModule("com.intel.analytics.bigdl.nn.LSTMPeephole", nn.LSTMPeephole)
     registerModule("com.intel.analytics.bigdl.nn.GRU", nn.GRU)
   }
 }
@@ -111,40 +110,17 @@ object GraphQuantizer extends Quantizable {
     implicit ev: TensorNumeric[T]): Module[T] = {
     val graph = module.asInstanceOf[Graph[T]]
     val sortedNodes = graph.getForwardExecutions
-    val inputIndexes = graph.inputs.map(i => sortedNodes.indexOf(i))
-    val outputIndexes = graph.getOutputs.map(i => sortedNodes.indexOf(i))
-
     for (i <- sortedNodes.indices) {
       val currNode = sortedNodes(i)
       val currModule = currNode.element
       val waitedModule = Quantizer.quantize(currModule)
 
       if (waitedModule != currModule) {
-        replaceNode(currNode, waitedModule.asInstanceOf[ModuleNode[T]], sortedNodes, i)
+        currNode.setElement(waitedModule)
       }
     }
 
-    val inputs = new Array[ANode[T]](inputIndexes.length)
-
-    for (i <- inputIndexes.indices) {
-      inputs(i) = sortedNodes(inputIndexes(i))
-    }
-
-    // because all outputs point to dummy nodes, we should filter these nodes as outputs of Graph
-    val outputs = new Array[ANode[T]](outputIndexes.length)
-
-    for (i <- outputIndexes.indices) {
-      outputs(i) = sortedNodes(outputIndexes(i))
-    }
-
-    // delete all dummy nodes
-//    outputs.foreach { node =>
-//      node.nextNodes.zipWithIndex.filter(_._1.element.isInstanceOf[Dummy[T]])
-//              .foreach(x => node.nextNodes.asInstanceOf[ArrayBuffer[ANode[T]]].remove(x._2))
-//    }
-
-    // create a new Graph, much simpler than replacing others in the old graph
-    Graph[T](inputs, outputs)
+    graph
   }
 }
 

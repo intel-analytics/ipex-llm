@@ -18,14 +18,12 @@ package com.intel.analytics.bigdl.nn.quantized
 
 import com.intel.analytics.bigdl.bigquant.BigQuant
 import com.intel.analytics.bigdl.nn.ErrorInfo
-import com.intel.analytics.bigdl.nn.abstractnn.{DataFormat, Initializable, TensorModule}
+import com.intel.analytics.bigdl.nn.abstractnn.{DataFormat, Initializable}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData}
 import com.intel.analytics.bigdl.utils.{T, Table}
-import java.io.{IOException, ObjectInputStream, ObjectOutputStream}
 import scala.reflect.ClassTag
-import scala.reflect.runtime.universe
 import serialization.Bigdl.{AttrValue, BigDLModule}
 
 @SerialVersionUID(- 8008252944905538960L)
@@ -45,66 +43,47 @@ private[bigdl] class SpatialConvolution[T: ClassTag](
   require(nInputPlane % nGroup == 0, "Number of input channels should be multiples of group.")
   require(nOutputPlane % nGroup == 0, "Number of output channels should be multiples of group.")
 
-  @transient var weight: Array[Tensor[T]] = null
-  var data: QuantizedTensor[T] = QuantizedTensor[T]()
+  var weight: Array[Tensor[T]] = null
+  private val data: QuantizedTensor[T] = QuantizedDummyTensor[T]()
   val bias: Tensor[T] = Tensor[T](nOutputPlane)
 
-  val quantFormat = if (format == DataFormat.NCHW) {
+  val quantFormat: Int = if (format == DataFormat.NCHW) {
     BigQuant.NCHW
   } else {
     BigQuant.NHWC
   }
 
-  val DILATION_HEIGHT = 1
-  val DILATION_WIDTH = 1
+  val dilationHeight = 1
+  val dilationWidth = 1
 
   private def outputSize(input: Int, pad: Int, kernel: Int, stride: Int, dilation: Int = 1): Int = {
     (input + 2 * pad - (dilation * (kernel - 1) + 1)) / stride + 1
   }
 
-  private def initWeightAndBias(weightFP32: Tensor[T], biasFP32: Tensor[T]): this.type = {
+  protected def initWeightAndBias(weightFP32: Tensor[T], biasFP32: Tensor[T]): this.type = {
     if (biasFP32 != null) {
       bias.copy(biasFP32)
     } else {
       bias.fill(ev.fromType(0)) // TODO bias may be null, at that time, we should not initialize it
     }
 
+    // dilated convolution has no group option
+    val weightTmp = if (weightFP32.nDimension() != 5) {
+      weightFP32.view(Array(nGroup, nOutputPlane / nGroup, nInputPlane / nGroup, kernelH, kernelW))
+    } else {
+      weightFP32
+    }
+
     weight = new Array[Tensor[T]](nGroup)
-    val params = ConvWeightParams(nOutputPlane / nGroup, nInputPlane / nGroup, kernelH, kernelW)
+    val params = ConvWeightParams(nOutputPlane / nGroup, nInputPlane / nGroup, kernelH, kernelW,
+      quantFormat)
     for (i <- 1 to nGroup) {
-      val groupWeight = weightFP32.select(1, i)
+      val groupWeight = weightTmp.select(1, i)
       ev.getType() match {
         case FloatType =>
-          weight(i - 1) = QuantizedTensor[T](groupWeight, params, ConvWeight)
+          weight(i - 1) = QuantizedTensor[T](groupWeight, params)
         case _ => throw new UnsupportedOperationException(s"Only support Float for quantized model")
       }
-    }
-
-    this
-  }
-
-  @throws(classOf[IOException])
-  private def writeObject(out: ObjectOutputStream): Unit = {
-    out.defaultWriteObject()
-
-    out.writeObject(weight)
-  }
-
-  @throws(classOf[IOException])
-  private def readObject(in: ObjectInputStream): Unit = {
-    in.defaultReadObject()
-
-    weight = in.readObject().asInstanceOf[Array[Tensor[T]]]
-    if (weight(0).asInstanceOf[QuantizedTensor[T]].getStorage != null &&
-      weight(0).asInstanceOf[QuantizedTensor[T]].getNativeStorage == 0L) {
-      init()
-    }
-  }
-
-  override def init(): this.type = {
-    val params = ConvWeightParams(nOutputPlane / nGroup, nInputPlane / nGroup, kernelH, kernelW)
-    for (i <- 1 to nGroup) {
-      weight(i - 1).asInstanceOf[QuantizedTensor[T]].init(params, ConvWeight)
     }
 
     this
@@ -140,8 +119,8 @@ private[bigdl] class SpatialConvolution[T: ClassTag](
     val inputWidth = input.size(dimWidth)
     val inputHeight = input.size(dimHeight)
 
-    val outputHeight = outputSize(inputHeight, padH, kernelH, strideH)
-    val outputWidth = outputSize(inputWidth, padW, kernelW, strideW)
+    val outputHeight = outputSize(inputHeight, padH, kernelH, strideH, dilationHeight)
+    val outputWidth = outputSize(inputWidth, padW, kernelW, strideW, dilationWidth)
 
     val batchSize = if (input.dim() == 3) {
       output.resize(getOutputShape(outputHeight, outputWidth))
@@ -152,9 +131,13 @@ private[bigdl] class SpatialConvolution[T: ClassTag](
       batch
     }
 
-    data.init(ConvDataParams(nInputPlane / nGroup, kernelH, kernelW,
-        strideH, strideW, padH, padW, DILATION_HEIGHT, DILATION_WIDTH, 1,
-        inputHeight, inputWidth), ConvData)
+    val params = ConvDataParams(nInputPlane / nGroup, kernelH, kernelW,
+        strideH, strideW, padH, padW, dilationHeight, dilationWidth, 1,
+        inputHeight, inputWidth)
+
+    if (data.params == null || data.params != params) {
+      data.set(QuantizedTensor[T](input.size(), params))
+    }
 
     ev.getType() match {
       case FloatType =>
@@ -202,7 +185,7 @@ private[bigdl] class SpatialConvolution[T: ClassTag](
       BigQuant.ConvDataInit(
         data.getNativeStorage, inputArray, inputOffset,
         nInputPlane / nGroup, kernelH, kernelW, strideH, strideW, padH, padW,
-        DILATION_HEIGHT, DILATION_WIDTH, 1, inputHeight, inputWidth, QuantParams.THRESHOLD,
+        dilationHeight, dilationWidth, 1, inputHeight, inputWidth, QuantParams.THRESHOLD,
         quantFormat)
 
       BigQuant.MixPrecisionGEMM(

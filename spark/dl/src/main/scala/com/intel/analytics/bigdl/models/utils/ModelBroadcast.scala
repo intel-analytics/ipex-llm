@@ -72,7 +72,8 @@ class ModelBroadcast[T: ClassTag](implicit ev: TensorNumeric[T]) extends Seriali
         val wb = parameters._1(i)
         wb match {
           case value1: QuantizedTensor[T] =>
-            weightsBias(i) = QuantizedTensor[T](wb.size()).set(wb)
+            weightsBias(i) = QuantizedTensor[T](value1.getStorage, value1.maxOfRow,
+              value1.minOfRow, value1.sumOfRow, value1.size(), value1.params)
           case _ =>
             weightsBias(i) = Tensor[T](Storage(wb.storage().array()),
               wb.storageOffset(), wb.size(), wb.stride())
@@ -83,7 +84,7 @@ class ModelBroadcast[T: ClassTag](implicit ev: TensorNumeric[T]) extends Seriali
     i = 0
     while (i < parameters._1.length) {
       if (parameters._1(i) != null) {
-        parameters._1(i).set()
+        val wb = parameters._1(i).set()
       }
       i += 1
     }

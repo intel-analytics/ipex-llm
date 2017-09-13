@@ -563,6 +563,10 @@ object SpatialDilatedConvolution extends quantized.Quantizable {
       wRegularizer, bRegularizer)
   }
   def quantize[T: ClassTag](module: Module[T])(implicit ev: TensorNumeric[T]): Module[T] = {
-    module
+    val conv = module.asInstanceOf[SpatialDilatedConvolution[T]]
+    quantized.SpatialDilatedConvolution[T](
+      conv.nInputPlane, conv.nOutputPlane, conv.kW, conv.kH, conv.dW,
+      conv.dH, conv.padW, conv.padH, conv.dilationW, conv.dilationW, initWeight = conv.weight,
+      initBias = conv.bias).setName(conv.getName())
   }
 }

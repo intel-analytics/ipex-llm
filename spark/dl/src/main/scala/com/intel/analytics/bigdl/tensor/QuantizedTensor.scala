@@ -16,21 +16,17 @@
 
 package com.intel.analytics.bigdl.tensor
 
-import breeze.linalg.{DenseMatrix, DenseVector}
 import com.intel.analytics.bigdl.bigquant.BigQuant
 import com.intel.analytics.bigdl.nn.quantized._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Table
-import java.nio.ByteBuffer
-import org.apache.spark.mllib.linalg
-import org.apache.spark.mllib.linalg.Matrix
+import java.io.{IOException, ObjectInputStream}
 import scala.reflect.ClassTag
 
 @SerialVersionUID(- 1766499387282335147L)
 private[bigdl] class QuantizedTensor[@specialized(Float) T: ClassTag](
   private var _size: Array[Int],
   private var _stride: Array[Int],
-  var nDimension: Int)(implicit ev: TensorNumeric[T]) extends QuantTensorUnsupported[T] {
+  var nDimension: Int)(implicit ev: TensorNumeric[T]) extends QuantizedTensorUnsupported[T] {
   @transient private var desc = 0L
   private var value: Array[Byte] = null
 
@@ -39,7 +35,6 @@ private[bigdl] class QuantizedTensor[@specialized(Float) T: ClassTag](
   var sumOfRow: Array[T] = null
 
   var params: DescParams = _
-  var descType: DescType = _
 
   def getStorage: Array[Byte] = {
     value
@@ -113,23 +108,33 @@ private[bigdl] class QuantizedTensor[@specialized(Float) T: ClassTag](
     hash
   }
 
-  def this()(implicit ev: TensorNumeric[T]) = this(null, null, 0)
-
-  def this(d1: Int)(implicit ev: TensorNumeric[T]) = this(Array(d1), Array(1), 1)
-
-  def this(d1: Int, d2: Int)(implicit ev: TensorNumeric[T]) = this(Array(d1, d2), Array(d2, 1), 2)
-
-  def this(d1: Int, d2: Int, d3: Int)(implicit ev: TensorNumeric[T]) =
-    this(Array(d1, d2, d3), Array(d3 * d2, d3, 1), 3)
-
-  def this(d1: Int, d2: Int, d3: Int, d4: Int)(implicit ev: TensorNumeric[T]) =
-    this(Array(d1, d2, d3, d4), Array(d4 * d3 * d2, d4 * d3, d4, 1), 4)
-
-  def this(d1: Int, d2: Int, d3: Int, d4: Int, d5: Int)(implicit ev: TensorNumeric[T]) =
-    this(Array(d1, d2, d3, d4, d5), Array(d5 * d4 * d3 * d2, d5 * d4 * d3, d5 * d4, d5, 1), 5)
-
-  def this(size: Array[Int])(implicit ev: TensorNumeric[T]) =
+  def this(size: Array[Int], params: DescParams)(
+    implicit ev: TensorNumeric[T]) = {
     this(size, DenseTensor.size2Stride(size), size.length)
+    this.params = params
+    this.desc = Desc.get(params, null, 0, null, null)
+  }
+
+  def this(src: Tensor[T], descParams: DescParams)(
+    implicit ev: TensorNumeric[T]) = {
+    this(src.size(), src.stride(), src.nDimension())
+    this.value = createInternalStorage(src)
+    this.params = descParams
+    this.desc = Desc.get(descParams, this.value, 0, this.maxOfRow, this.minOfRow)
+  }
+
+  def this(src: Array[Byte], size: Array[Int], max: Array[T], min: Array[T], sum: Array[T],
+    descParams: DescParams)(implicit ev: TensorNumeric[T]) = {
+    this(size, DenseTensor.size2Stride(size), size.length)
+    require(src.length == size.product, s"size mismatch, byte array size should equal to shape")
+
+    this.value = src
+    this.maxOfRow = max
+    this.minOfRow = min
+    this.sumOfRow = sum
+    this.params = descParams
+    this.desc = Desc.get(descParams, this.value, 0, this.maxOfRow, this.minOfRow)
+  }
 
   private def createInternalStorage(tensor: Tensor[T]): Array[Byte] = {
     val size = tensor.size(1)
@@ -156,17 +161,6 @@ private[bigdl] class QuantizedTensor[@specialized(Float) T: ClassTag](
     bytes
   }
 
-  // TODO rename init
-  def init(params: DescParams, descType: DescType): Unit = {
-    // two cases:
-    // weight init
-    // the input attributes have been changed
-    if (this.desc == 0L || this.params != params) {
-      release()
-      this.desc = Desc.get(params, descType, this)
-    }
-  }
-
   override def getTensorType: TensorType = QuantizedType
 
   override def dim(): Int = nDimension
@@ -185,56 +179,6 @@ private[bigdl] class QuantizedTensor[@specialized(Float) T: ClassTag](
     require(dim > 0 && dim <= this.nDimension,
       s"dimension ${dim} out of range of ${this.nDimension}D tensor")
     _stride(dim - 1)
-  }
-
-  override def resize(sizes: Array[Int], strides: Array[Int]): Tensor[T] = {
-    _size = sizes
-    _stride = strides
-    this
-  }
-
-  override def resize(size1: Int): Tensor[T] = {
-    if (this.nDimension != 1 || this.size(1) != size1) {
-      resize(Array(size1))
-    } else {
-      this
-    }
-  }
-
-  override def resize(size1: Int, size2: Int): Tensor[T] = {
-    if (this.nDimension != 2 || this.size(1) != size1 || this.size(2) != size2) {
-      resize(Array(size1, size2))
-    } else {
-      this
-    }
-  }
-
-  override def resize(size1: Int, size2: Int, size3: Int): Tensor[T] = {
-    if (this.nDimension != 3 || this.size(1) != size1 || this.size(2) != size2 ||
-      this.size(3) != size3) {
-      resize(Array(size1, size2, size3))
-    } else {
-      this
-    }
-  }
-
-  override def resize(size1: Int, size2: Int, size3: Int, size4: Int): Tensor[T] = {
-    if (this.nDimension != 4 || this.size(1) != size1 || this.size(2) != size2 ||
-      this.size(3) != size3 ||
-      this.size(4) != size4) {
-      resize(Array(size1, size2, size3, size4))
-    } else {
-      this
-    }
-  }
-
-  override def resize(size1: Int, size2: Int, size3: Int, size4: Int, size5: Int): Tensor[T] = {
-    if (this.nDimension != 5 || this.size(1) != size1 || this.size(2) != size2 ||
-      this.size(3) != size3 || this.size(4) != size4 || this.size(5) != size5) {
-      resize(Array(size1, size2, size3, size4, size5))
-    } else {
-      this
-    }
   }
 
   override def nElement(): Int = {
@@ -272,12 +216,15 @@ private[bigdl] class QuantizedTensor[@specialized(Float) T: ClassTag](
 
       this.value = o.getStorage
       this.params = o.params
-      this.descType = o.descType
       this.desc = o.getNativeStorage
 
       this.maxOfRow = o.maxOfRow
       this.minOfRow = o.minOfRow
       this.sumOfRow = o.sumOfRow
+
+      this._size = o.size()
+      this._stride = o.stride()
+      this.nDimension = o.nDimension
 
     } else {
       throw new UnsupportedOperationException(s"can't set from other type of tensor.")
@@ -302,7 +249,6 @@ private[bigdl] class QuantizedTensor[@specialized(Float) T: ClassTag](
       System.arraycopy(quantizedTensor.getStorage, 0, value, 0, this.nElement())
 
       params = quantizedTensor.params.copy()
-      descType = quantizedTensor.descType
 
       val length = quantizedTensor.maxOfRow.length
       maxOfRow = new Array[T](length)
@@ -314,56 +260,42 @@ private[bigdl] class QuantizedTensor[@specialized(Float) T: ClassTag](
       sumOfRow = new Array[T](length)
       System.arraycopy(quantizedTensor.sumOfRow, 0, sumOfRow, 0, length)
 
-      init(params, descType)
+      new QuantizedTensor[T](value, size(), maxOfRow, minOfRow, sumOfRow, params)
     } else {
       throw new UnsupportedOperationException(s"can't set from other type of tensor.")
     }
 
     this
   }
+
+  @throws(classOf[IOException])
+  private def readObject(in: ObjectInputStream): Unit = {
+    in.defaultReadObject()
+
+    this.desc = Desc.get(params, value, 0, maxOfRow, minOfRow)
+  }
 }
 
 object QuantizedTensor {
-  def apply[@specialized(Float, Double) T: ClassTag]()(
-    implicit ev: TensorNumeric[T]): QuantizedTensor[T] = new QuantizedTensor[T]()
+  def apply[@specialized(Float, Double) T: ClassTag](size: Array[Int], params: DescParams)(
+    implicit ev: TensorNumeric[T]): QuantizedTensor[T] =
+    new QuantizedTensor[T](size, params)
 
-  def apply[@specialized(Float, Double) T: ClassTag](d1: Int)(
-    implicit ev: TensorNumeric[T]): QuantizedTensor[T] = new QuantizedTensor[T](d1)
-
-  def apply[@specialized(Float, Double) T: ClassTag](d1: Int, d2: Int)(
-    implicit ev: TensorNumeric[T]): QuantizedTensor[T] = new QuantizedTensor[T](d1, d2)
-
-  def apply[@specialized(Float, Double) T: ClassTag](d1: Int, d2: Int, d3: Int)(
-    implicit ev: TensorNumeric[T]): QuantizedTensor[T] = new QuantizedTensor[T](d1, d2, d3)
-
-  def apply[@specialized(Float, Double) T: ClassTag](d1: Int, d2: Int, d3: Int, d4: Int)(
-    implicit ev: TensorNumeric[T]): QuantizedTensor[T] = new QuantizedTensor[T](d1, d2, d3, d4)
-
-  def apply[@specialized(Float, Double) T: ClassTag](d1: Int, d2: Int, d3: Int, d4: Int, d5: Int)(
-    implicit ev: TensorNumeric[T]): QuantizedTensor[T] = new QuantizedTensor[T](d1, d2, d3, d4, d5)
-
-  def apply[@specialized(Float, Double) T: ClassTag](size: Array[Int])(
-    implicit ev: TensorNumeric[T]): QuantizedTensor[T] = new QuantizedTensor[T](size)
-
-  def apply[@specialized(Float, Double) T: ClassTag](src: Tensor[T], descParams: DescParams,
-    descType: DescType)(implicit ev: TensorNumeric[T]): QuantizedTensor[T] = {
-    val tensor = new QuantizedTensor[T](src.size(), src.stride(), src.nDimension())
-    tensor.value = tensor.createInternalStorage(src)
-    tensor.desc = Desc.get(descParams, descType, tensor.value, 0,
-      tensor.maxOfRow, tensor.minOfRow)
-    tensor.params = descParams
-    tensor.descType = descType
-    tensor
+  def apply[@specialized(Float, Double) T: ClassTag](src: Tensor[T], descParams: DescParams)(
+    implicit ev: TensorNumeric[T]): QuantizedTensor[T] = {
+    new QuantizedTensor[T](src, descParams)
   }
 
-  def apply[@specialized(Float, Double) T: ClassTag](src: Array[Byte], min: Array[T], max: Array[T],
-    sum: Array[T], size: Array[Int])(
+  def apply[@specialized(Float, Double) T: ClassTag](src: Array[Byte], max: Array[T], min: Array[T],
+    sum: Array[T], size: Array[Int], descParams: DescParams)(
     implicit ev: TensorNumeric[T]): QuantizedTensor[T] = {
-    val tensor = new QuantizedTensor[T](size)
-    tensor.value = src
-    tensor.maxOfRow = max
-    tensor.minOfRow = min
-    tensor.sumOfRow = sum
-    tensor
+    new QuantizedTensor[T](src, size, max, min, sum, descParams)
+  }
+}
+
+object QuantizedDummyTensor {
+  def apply[@specialized(Float, Double) T: ClassTag]()(
+    implicit ev: TensorNumeric[T]): QuantizedTensor[T] = {
+    QuantizedTensor[T](Tensor(1, 1), LinearWeightParams(1, 1))
   }
 }

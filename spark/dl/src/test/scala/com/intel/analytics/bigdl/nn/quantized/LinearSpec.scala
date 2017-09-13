@@ -62,6 +62,8 @@ class LinearSpec extends FlatSpec with Matchers with ParallelTestExecution {
     val quantizedLinear2 = quantizedLinear.quantize()
     println(quantizedLinear2)
 
+    quantizedLinear.updateOutput(input)
+
     val nnOutput = nnLinear.updateOutput(input)
     val quanOutput = quantizedLinear2.updateOutput(input)
 

@@ -20,7 +20,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.nn.quantized.{Quantizable, Quantizer}
-import com.intel.analytics.bigdl.tensor.{QuantTensorUnsupported, QuantizedTensor, Tensor}
+import com.intel.analytics.bigdl.tensor.{QuantizedTensorUnsupported, QuantizedTensor, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer.{ContainerSerializable, DataConverter, ModuleData, ModuleSerializer}
 import com.intel.analytics.bigdl.utils.{T, Table}
@@ -115,9 +115,6 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
   private val cells: ArrayBuffer[Cell[T]]
   = ArrayBuffer[Cell[T]]()
 
-  // when the currentTimes less than input times, we should do share again.
-  private var currentTimes = 0
-
   /**
    * Clone N models; N depends on the time dimension of the input
    * @param sizes, the first element is batchSize, the second is times, the third is hiddensize
@@ -151,7 +148,6 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
       gradHidden = hidden
     }
     var t = cells.length
-    currentTimes = t
     if (t < times) {
       val cloneCell = cells.head.cloneModule()
 
@@ -170,6 +166,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
           .asInstanceOf[Cell[T]]
         t += 1
       }
+      share(cells)
     }
   }
 
@@ -222,14 +219,6 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     result
   }
 
-  private def quantizeOptim(): Unit = {
-    currentInput(hidDim) = if (initState != null) initState
-    else hidden
-
-    currentInput(inputDim) = outputCell.select(timeDim, 1)
-    cells.head.forward(currentInput)
-  }
-
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim == 3 || input.dim == 5 || input.dim == 6,
       "Recurrent: input should be a 3D/5D/6D Tensor, e.g [batch, times, nDim], " +
@@ -250,15 +239,6 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     output.resize(outputSize)
     // Clone N modules along the sequence dimension.
     extend(outputSize)
-
-    /**
-     * for quantization, we need do forward first for allocating the weight memory
-     */
-    quantizeOptim()
-
-    if (times > currentTimes) {
-      share(cells)
-    }
 
     /**
      * currentInput forms a T() type. It contains two elements, hidden and input.

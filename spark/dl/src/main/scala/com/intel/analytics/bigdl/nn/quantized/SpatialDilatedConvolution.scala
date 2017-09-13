@@ -17,11 +17,10 @@
 package com.intel.analytics.bigdl.nn.quantized
 
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
-import com.intel.analytics.bigdl.tensor.{QuantizedTensor, Tensor}
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData}
 import scala.reflect.ClassTag
-import scala.reflect.runtime.universe
 import serialization.Bigdl.{AttrValue, BigDLModule}
 
 @SerialVersionUID(- 8572055756810843156L)
@@ -48,8 +47,8 @@ private[bigdl] class SpatialDilatedConvolution[T: ClassTag](
   padH,
   format = format
 ) {
-  override val DILATION_WIDTH: Int = dilationW
-  override val DILATION_HEIGHT: Int = dilationH
+  override val dilationWidth: Int = dilationW
+  override val dilationHeight: Int = dilationH
 
   override def toString(): String = {
     s"fixpoint.SpatialDilatedConvolution($nInputPlane -> $nOutputPlane, $kernelW x" +
@@ -58,7 +57,7 @@ private[bigdl] class SpatialDilatedConvolution[T: ClassTag](
 }
 
 object SpatialDilatedConvolution extends QuantSerializer {
-  def apply[@specialized(Float) T: ClassTag](
+  def apply[T: ClassTag](
     nInputPlane: Int,
     nOutputPlane: Int,
     kW: Int,
@@ -69,10 +68,13 @@ object SpatialDilatedConvolution extends QuantSerializer {
     padH: Int = 0,
     dilationW: Int = 1,
     dilationH: Int = 1,
+    initWeight: Tensor[T] = null,
+    initBias: Tensor[T] = null,
     format: DataFormat = DataFormat.NCHW
   )(implicit ev: TensorNumeric[T]) : SpatialDilatedConvolution[T] = {
-    new SpatialDilatedConvolution[T](nInputPlane, nOutputPlane, kW, kH, dW, dH,
+    val conv = new SpatialDilatedConvolution[T](nInputPlane, nOutputPlane, kW, kH, dW, dH,
       padW, padH, dilationW, dilationH, format = format)
+    conv.initWeightAndBias(initWeight, initBias)
   }
 
   override def serializeWeight[T: ClassTag](module: ModuleData[T],

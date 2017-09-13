@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.example.bigquant
+package com.intel.analytics.bigdl.example.quantization
 
 
 import com.intel.analytics.bigdl.Module

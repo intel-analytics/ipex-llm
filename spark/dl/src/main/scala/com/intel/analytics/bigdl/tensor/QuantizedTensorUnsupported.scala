@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.utils.Table
 import org.apache.spark.mllib.linalg.{DenseMatrix, DenseVector, Matrix, Vector}
 import scala.reflect.ClassTag
 
-abstract class QuantTensorUnsupported[T: ClassTag] extends Tensor[T] {
+abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
   val errorString = s"QuantizeTensor doesn't support this operation now"
 
   /**
@@ -1351,4 +1351,21 @@ abstract class QuantTensorUnsupported[T: ClassTag] extends Tensor[T] {
   override def tanh(): Tensor[T] = throw new UnsupportedOperationException(errorString)
 
   override def tanh(y: Tensor[T]): Tensor[T] = throw new UnsupportedOperationException(errorString)
+
+  override def resize(sizes: Array[Int], strides: Array[Int]): this.type =
+    throw new UnsupportedOperationException(errorString)
+
+  override def resize(size1: Int): this.type = throw new UnsupportedOperationException(errorString)
+
+  override def resize(size1: Int, size2: Int): this.type =
+    throw new UnsupportedOperationException(errorString)
+
+  override def resize(size1: Int, size2: Int, size3: Int): this.type =
+    throw new UnsupportedOperationException(errorString)
+
+  override def resize(size1: Int, size2: Int, size3: Int, size4: Int): this.type =
+    throw new UnsupportedOperationException(errorString)
+
+  override def resize(size1: Int, size2: Int, size3: Int, size4: Int, size5: Int): this.type =
+    throw new UnsupportedOperationException(errorString)
 }

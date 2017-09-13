@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.tensor
 import com.intel.analytics.bigdl.bigquant.BigQuant
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.nn.quantized.{LinearWeight, LinearWeightParams}
+import org.apache.commons.lang.SerializationUtils
 import org.scalatest.{FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Parallel
@@ -32,8 +33,7 @@ class QuantizedTensorSpec extends FlatSpec with Matchers {
 
     val fp32Tensor = Tensor(outputChannel, inputChannel).rand
 
-    val tensor = QuantizedTensor[Float](fp32Tensor, LinearWeightParams(outputChannel, inputChannel),
-      LinearWeight)
+    val tensor = QuantizedTensor[Float](fp32Tensor, LinearWeightParams(outputChannel, inputChannel))
 
     val minArray = Array.fill[Float](outputChannel)(0)
     val maxArray = Array.fill[Float](outputChannel)(0)
@@ -58,9 +58,9 @@ class QuantizedTensorSpec extends FlatSpec with Matchers {
     val fp32Tensor = Tensor(outputChannel, inputChannel).rand
 
     val tensor1 = QuantizedTensor[Float](fp32Tensor,
-      LinearWeightParams(outputChannel, inputChannel), LinearWeight)
+      LinearWeightParams(outputChannel, inputChannel))
     val tensor2 = QuantizedTensor[Float](fp32Tensor,
-      LinearWeightParams(outputChannel, inputChannel), LinearWeight)
+      LinearWeightParams(outputChannel, inputChannel))
 
     val desc = tensor2.getNativeStorage
 
@@ -79,8 +79,7 @@ class QuantizedTensorSpec extends FlatSpec with Matchers {
     val batchSize = 3
 
     val fp32Tensor = Tensor(outputChannel, inputChannel).rand
-    val tensor = QuantizedTensor[Float](fp32Tensor, LinearWeightParams(outputChannel, inputChannel),
-      LinearWeight)
+    val tensor = QuantizedTensor[Float](fp32Tensor, LinearWeightParams(outputChannel, inputChannel))
 
     tensor.set(tensor)
 
@@ -102,11 +101,11 @@ class QuantizedTensorSpec extends FlatSpec with Matchers {
     val fp32Tensor = Tensor(outputChannel, inputChannel).rand
 
     val tensor1 = QuantizedTensor[Float](fp32Tensor,
-      LinearWeightParams(outputChannel, inputChannel), LinearWeight)
+      LinearWeightParams(outputChannel, inputChannel))
     val tensor2 = QuantizedTensor[Float](fp32Tensor,
-      LinearWeightParams(outputChannel, inputChannel), LinearWeight)
+      LinearWeightParams(outputChannel, inputChannel))
     val tensor3 = QuantizedTensor[Float](fp32Tensor,
-      LinearWeightParams(outputChannel, inputChannel), LinearWeight)
+      LinearWeightParams(outputChannel, inputChannel))
 
     tensor2.release()
     tensor2.set(tensor1)
@@ -120,5 +119,26 @@ class QuantizedTensorSpec extends FlatSpec with Matchers {
     tensor2.getNativeStorage should not be tensor1.getNativeStorage
 
     tensor3.release()
+  }
+
+  "A QuantizeTensor serialzation" should "work correctly" in {
+    val inputChannel = 4
+    val outputChannel = 4
+    val batchSize = 3
+
+    val threshold = 64.0f
+
+    val fp32Tensor = Tensor(outputChannel, inputChannel).rand
+
+    val tensor = QuantizedTensor[Float](fp32Tensor, LinearWeightParams(outputChannel, inputChannel))
+
+    val clone = SerializationUtils.clone(tensor).asInstanceOf[QuantizedTensor[Float]]
+
+    tensor.getStorage should be (clone.getStorage)
+    tensor.maxOfRow should be (clone.maxOfRow)
+    tensor.minOfRow should be (clone.minOfRow)
+    tensor.sumOfRow should be (clone.sumOfRow)
+
+    tensor.getNativeStorage should not be (clone.getNativeStorage)
   }
 }

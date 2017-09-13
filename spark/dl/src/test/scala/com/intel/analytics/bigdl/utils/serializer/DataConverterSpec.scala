@@ -19,6 +19,7 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.VariableFormat.{Default, ONE_D}
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat.{NCHW, NHWC}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat, TensorModule}
+import com.intel.analytics.bigdl.nn.quantized.{LinearWeight, LinearWeightParams}
 import com.intel.analytics.bigdl.optim.{L1L2Regularizer, L1Regularizer, L2Regularizer, Regularizer}
 import com.intel.analytics.bigdl.tensor.{QuantizedTensor, Tensor}
 import org.scalatest.{FlatSpec, Matchers}
@@ -137,7 +138,7 @@ class DataConverterSpec extends FlatSpec with Matchers{
     retrievedValue should be (tensor)
   }
 
-  "Empty Tensor conversion " should " work properly" in {
+  "Empty Tensor conversion" should "work properly" in {
     val tensor : Tensor[Float] = null
     val attriBulder = AttrValue.newBuilder
     DataConverter.setAttributeValue(attriBulder, tensor, ModuleSerializer.tensorType)
@@ -427,7 +428,7 @@ class DataConverterSpec extends FlatSpec with Matchers{
     val sum = Array[Float]("HELLO".sum)
     "HELLO".zipWithIndex.foreach(x => bytes(x._2) = x._1.toByte)
     bytes.foreach(x => println(x.toChar))
-    val tensor = QuantizedTensor[Float](bytes, max, min, sum, Array(5))
+    val tensor = QuantizedTensor[Float](bytes, max, min, sum, Array(1, 5), LinearWeightParams(1, 5))
 
     val attriBulder = AttrValue.newBuilder
     DataConverter.setAttributeValue(attriBulder, tensor, ModuleSerializer.tensorType)

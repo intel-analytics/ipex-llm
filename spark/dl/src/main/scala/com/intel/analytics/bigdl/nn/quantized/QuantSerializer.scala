@@ -74,7 +74,7 @@ trait QuantSerializer extends ModuleSerializable {
   def loadOthers[T: ClassTag](model: BigDLModule,
     module: ModuleData[T])(implicit ev: TensorNumeric[T]): Unit = {
     val quantModule = module.module.asInstanceOf[QuantizedModule[T]]
-    quantModule.init()
+//    quantModule.init()
   }
 
   override protected def copyFromBigDL[T: ClassTag](module: ModuleData[T],

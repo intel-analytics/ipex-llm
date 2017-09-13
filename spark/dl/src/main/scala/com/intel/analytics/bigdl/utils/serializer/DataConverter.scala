@@ -21,7 +21,7 @@ import scala.reflect.runtime.universe
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat.{NCHW, NHWC}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
-import com.intel.analytics.bigdl.nn.quantized.Quantization
+import com.intel.analytics.bigdl.nn.quantized._
 import com.intel.analytics.bigdl.optim.{L1L2Regularizer, L1Regularizer, L2Regularizer, Regularizer}
 import com.intel.analytics.bigdl.tensor.{DenseType, QuantizedTensor, QuantizedType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -256,14 +256,14 @@ object DataConverter extends DataConverter{
         throw new IllegalArgumentException(s"$dataType not supported!")
       }
 
-      val sizeArray = new Array[Int](sizes.size)
-      var i = 0;
-      while (i < sizes.size) {
-        sizeArray(i) = sizes(i)
-        i += 1
-      }
-
       def dense(): Tensor[T] = {
+        val sizeArray = new Array[Int](sizes.size)
+        var i = 0
+        while (i < sizes.size) {
+          sizeArray(i) = sizes(i)
+          i += 1
+        }
+
         val strorageArray: Array[T] = dataType match {
           case DataType.FLOAT =>
             val data = serializedTensor.getFloatDataList.asScala
@@ -290,6 +290,13 @@ object DataConverter extends DataConverter{
 
       def quant(): Tensor[T] = {
         val bytes = serializedTensor.getBytesData.toByteArray
+        val paramsNum = sizes.head
+        val paramsArray = sizes.slice(1, paramsNum + 1).map(x => x.toInt).toArray
+        val descTypeEnum = sizes(1 + paramsNum).toInt
+
+        val start = paramsNum + 2 // params number indicator + params number + desc type
+        val sizeArray = sizes.slice(start, sizes.size).map(_.toInt).toArray
+
         val length = if (sizeArray.length == 1) {
           1 // if the size is 1, means it's a vector
         } else {
@@ -311,7 +318,20 @@ object DataConverter extends DataConverter{
             }
         }
 
-        QuantizedTensor[T](bytes, max, min, sum, sizeArray)
+        var params: DescParams = null
+
+        descTypeEnum match {
+          case 0 =>
+            params = ConvDataParams(paramsArray)
+          case 1 =>
+            params = ConvWeightParams(paramsArray)
+          case 2 =>
+            params = LinearDataParams(paramsArray)
+          case 3 =>
+            params = LinearWeightParams(paramsArray)
+        }
+
+        QuantizedTensor[T](bytes, max, min, sum, sizeArray, params)
       }
 
       tensorType match {
@@ -357,6 +377,18 @@ object DataConverter extends DataConverter{
             quantTensor.maxOfRow.foreach(data => tensorBuilder.addFloatData(ev.toType[Float](data)))
             quantTensor.minOfRow.foreach(data => tensorBuilder.addFloatData(ev.toType[Float](data)))
             quantTensor.sumOfRow.foreach(data => tensorBuilder.addFloatData(ev.toType[Float](data)))
+
+            // params and desc type
+            val params = quantTensor.params.array
+            tensorBuilder.addSize(params.length)
+            params.foreach(param => tensorBuilder.addSize(param.asInstanceOf[Int]))
+
+            quantTensor.params.getType match {
+              case ConvData => tensorBuilder.addSize(0)
+              case ConvWeight => tensorBuilder.addSize(1)
+              case LinearData => tensorBuilder.addSize(2)
+              case LinearWeight => tensorBuilder.addSize(3)
+            }
           }
         }
 

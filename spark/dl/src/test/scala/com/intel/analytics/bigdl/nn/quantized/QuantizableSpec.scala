@@ -361,6 +361,7 @@ class QuantizableSpec extends FlatSpec with Matchers {
     val output = model.forward(input)
 
     val quantModel = model.quantize()
+    println("*" * 80)
     val quantOut = quantModel.forward(input2)
 
     def executions(model: Module[Float]): Array[ANode[Float]] = {

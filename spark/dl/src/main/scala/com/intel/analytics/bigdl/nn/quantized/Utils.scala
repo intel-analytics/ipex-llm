@@ -34,55 +34,6 @@ object Utils {
   type AbsModule[R] = AbstractModule[Activity, Activity, R]
 
   /**
-   * replace the node in place in SeqNodes
-   *
-   * @param node old node
-   * @param newNode new node
-   * @param refs the refs, previous or next
-   * @tparam T data type: Float or Double
-   */
-  def replaceRef[T: ClassTag](node: ANode[T], newNode: ANode[T], refs: SeqNodes[T]): Unit = {
-    val buffer = refs.asInstanceOf[ArrayBuffer[Node[ModuleNode[T]]]]
-    refs.zipWithIndex.filter(_._1 == node).foreach { x =>
-      buffer.update(x._2, newNode)
-    }
-  }
-
-  /**
-   * replace the node in list to a new node and certainly the refs
-   *
-   * In a graph, a node has previous and next array buffers, which contain the refs of
-   * previous and next nodes. It will replace the node at the index of list to a new node,
-   * which contains a quantized layer.
-   *
-   * @param node old node
-   * @param module quantized node
-   * @param list node list
-   * @param index index at list
-   * @tparam T data type: Float or Double
-   */
-  def replaceNode[T: ClassTag](node: ANode[T], module: ModuleNode[T], list: ArrayNodes[T],
-    index: Int): Unit = {
-    // create a new node
-    val newNode = Node(module)
-
-    // 2
-    node.prevNodesAndEdges.foreach(n => n._1.add(newNode, n._2))
-
-    // 1
-    node.prevNodesAndEdges.foreach(n => n._1.delete(node, n._2))
-
-    // 3
-    node.nextNodesAndEdges.foreach(n => newNode.add(n._1, n._2))
-
-    // 4
-    node.nextNodesAndEdges.foreach(n => node.delete(n._1, n._2))
-
-    // update the list
-    list.update(index, newNode)
-  }
-
-  /**
    * delete parameters of SpatialConvolution, SpatialDilatedConvolution) and linear.
    *
    * because it will make all parameters into a long array in a BigDL model by default,
