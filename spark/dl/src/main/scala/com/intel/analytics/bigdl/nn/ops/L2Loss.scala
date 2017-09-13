@@ -23,10 +23,9 @@ import scala.reflect.ClassTag
 
 class L2Loss[T: ClassTag]()
   (implicit ev: TensorNumeric[T]) extends Operation[Tensor[_], Tensor[_], T] {
-  var buffer: Tensor[_] = _
+  var buffer: Tensor[_] = Tensor[Float]()
 
   override def updateOutput(input: Tensor[_]): Tensor[_] = {
-    buffer.resizeAs(input)
     input.getType() match {
       case FloatType =>
         if (output.getType() != FloatType) {
@@ -35,17 +34,20 @@ class L2Loss[T: ClassTag]()
         if (buffer.getType() != FloatType) {
           buffer = Activity.allocate[Tensor[Float], Float]()
         }
+        buffer.resizeAs(input)
         output.resize(1)
         output.asInstanceOf[Tensor[Float]].setValue(1,
           buffer.asInstanceOf[Tensor[Float]].applyFun[Float](
             input.asInstanceOf[Tensor[Float]], x => x * x).sum() / 2)
       case DoubleType =>
-        if (output.getType() != FloatType) {
+        if (output.getType() != DoubleType) {
           output = Activity.allocate[Tensor[Double], Double]()
         }
-        if (buffer.getType() != FloatType) {
+        val a = buffer.getType()
+        if (buffer.getType() != DoubleType) {
           buffer = Activity.allocate[Tensor[Double], Double]()
         }
+        buffer.resizeAs(input)
         output.resize(1)
         output.asInstanceOf[Tensor[Double]].setValue(1,
           buffer.asInstanceOf[Tensor[Double]].applyFun[Double](

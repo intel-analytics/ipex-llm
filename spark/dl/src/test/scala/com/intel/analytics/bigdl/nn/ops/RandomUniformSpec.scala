@@ -25,6 +25,6 @@ class RandomUniformSpec extends FlatSpec with Matchers {
     val input =
       Tensor[Int](T(1, 2, 3))
 
-    val output = RandomUniform(10, 20).forward(input)
+    val output = RandomUniform[Float, Double](10, 20).forward(input)
   }
 }
