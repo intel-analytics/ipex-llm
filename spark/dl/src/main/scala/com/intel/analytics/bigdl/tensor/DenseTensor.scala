@@ -346,6 +346,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def set(): Tensor[T] = {
+    if (this.isEmpty) return this
     this.resize(0)
     if(this._storage != null) {
       this._storage.resize(0)

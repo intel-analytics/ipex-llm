@@ -36,4 +36,11 @@ class TensorSpec extends FlatSpec with Matchers {
     tensor.isScalar should be (true)
   }
 
+  "Tensor set " should "work for scalar" in {
+    val tensor = Tensor[Int]()
+    tensor.resize(Array[Int](1, 2))
+    tensor.set()
+    tensor.isEmpty should be (true)
+  }
+
 }
