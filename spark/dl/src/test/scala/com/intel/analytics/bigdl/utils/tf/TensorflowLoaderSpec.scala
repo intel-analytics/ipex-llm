@@ -262,7 +262,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     assert(l1.bias == l2.bias)
   }
 
-  "static simple rnn " should "have the same inference result as tensorflow" in {
+  "static simple rnn " should "have the same result as tensorflow" in {
     val output = Seq("output:0")
     val comparePairs = testModel("rnn", output, backward = true)
     for (i <- output.indices) {
@@ -275,9 +275,22 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     }
   }
 
-  "static lstm rnn " should "have the same inference result as tensorflow" in {
+  "static lstm rnn " should "have the same result as tensorflow" in {
     val output = Seq("output:0")
     val comparePairs = testModel("rnn_lstm", output, backward = true)
+    for (i <- output.indices) {
+      val (tf, bigdl) = comparePairs(i)
+      tf.almostEqual(bigdl, 1e-5) should be(true)
+    }
+    for (i <- output.length until comparePairs.length) {
+      val (tf, bigdl) = comparePairs(i)
+      tf.almostEqual(bigdl, 1e-2) should be(true)
+    }
+  }
+
+  "hand coded lstm rnn " should "have the same result as tensorflow" in {
+    val output = Seq("output:0")
+    val comparePairs = testModel("decoder", output, backward = true)
     for (i <- output.indices) {
       val (tf, bigdl) = comparePairs(i)
       tf.almostEqual(bigdl, 1e-5) should be(true)
