@@ -161,65 +161,6 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
   }
 
   /**
-   * set the cells' output and gradInput to recurrent's output and gradInput
-   * to decrease the copy expense.
-   * @param src
-   * @param dst
-   */
-  private[bigdl] def copy(src: ArrayBuffer[Tensor[T]], dst: Tensor[T], offset: Int): Unit = {
-    val dstArr = dst.storage().array()
-    val dstOffset = dst.storageOffset() - 1
-    val otherSize = dst.nElement() / (batchSize * times)
-
-    var t = 1
-    val length2 = batchSize * otherSize
-    while ((t + offset) <= times) {
-      val srcArr = src(t - 1).storage().array()
-      val srcOffset = src(t - 1).storageOffset() - 1
-      val length1 = (t - 1) * otherSize + dstOffset
-      var l = 0
-      while (l < length2) {
-        System.arraycopy(srcArr, l + srcOffset, dstArr, times * l + length1, otherSize)
-        l += otherSize
-      }
-      t += 1
-    }
-  }
-
-  /**
-    * Create a new tensor dst which exchanges the 1 and 2 dimensions of src tensor
-    * @param src
-    * @param dst
-    */
-  private[bigdl] def transposeMemory(src: Tensor[T], dst: Tensor[T]): Unit = {
-    val srcSize = src.size()
-    val batchSize = srcSize(0)
-    val timeSize = srcSize(1)
-    val otherSize = src.nElement() / (batchSize * timeSize)
-    val srcArr = src.storage().array()
-    val srcOffset = src.storageOffset() - 1
-
-    srcSize(0) = timeSize
-    srcSize(1) = batchSize
-    dst.resize(srcSize)
-    val dstArr = dst.storage().array()
-    val dstOffset = dst.storageOffset() - 1
-
-    val length3 = timeSize * otherSize
-    var t = 1
-    while (t <= batchSize) {
-      var l = 0
-      val length1 = timeSize * otherSize * (t-1) + srcOffset
-      val length2 = (t-1) * otherSize + dstOffset
-      while (l < length3) {
-        System.arraycopy(srcArr, length1 + l, dstArr, l * batchSize + length2, otherSize)
-        l += otherSize
-      }
-      t += 1
-    }
-  }
-
-  /**
    * Sharing weights, bias, gradWeights across all the cells in time dim
    * @param cells
    */
@@ -283,7 +224,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     }
 
     size = preOutput.size()
-    transposeMemory(preOutput, outputCell)
+    Recurrent.transposeMemory(preOutput, outputCell)
 
     val hiddenSize = topology.hiddensShape(0)
     val outputSize = input.size()
@@ -310,7 +251,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
       i += 1
     }
 
-    copy(cells.map(x => x.output.toTable[Tensor[T]](inputDim)),
+    Recurrent.copy(cells.map(x => x.output.toTable[Tensor[T]](inputDim)),
         output, 0)
     output
   }
@@ -385,7 +326,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
       currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
       i -= 1
     }
-    copy(cells.map(x => x.gradInput.toTable[Tensor[T]](inputDim)),
+    Recurrent.copy(cells.map(x => x.gradInput.toTable[Tensor[T]](inputDim)),
         gradInputCell, 0)
     if (preTopology != null) {
       gradInput = preTopology.updateGradInput(input, gradInputCell).toTensor[T]
@@ -396,7 +337,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
   override def backward(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     val st = System.nanoTime
     currentGradOutput(hidDim) = gradHidden
-    transposeMemory(gradOutput, buffer)
+    Recurrent.transposeMemory(gradOutput, buffer)
 
     var i = times
 
@@ -428,7 +369,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
       gradInputCell
     }
     gradInputCell.resize(size)
-    copy(cells.map(x => x.gradInput.toTable[Tensor[T]](inputDim)),
+    Recurrent.copy(cells.map(x => x.gradInput.toTable[Tensor[T]](inputDim)),
       gradInputCell, 0)
 
     if (preTopology != null) {
@@ -549,6 +490,70 @@ object Recurrent extends ContainerSerializable {
     batchNormParams: BatchNormParams[T] = null)
     (implicit ev: TensorNumeric[T]) : Recurrent[T] = {
     new Recurrent[T](batchNormParams)
+  }
+
+  /**
+   * set the cells' output and gradInput to recurrent's output and gradInput
+   * to decrease the copy expense.
+   * Copy src tensor to dst tensor along timeDime, default timeDime 2, batchDim 1
+   * @param src
+   * @param dst
+   */
+  private[bigdl] def copy[@specialized(Float, Double) T: ClassTag](
+    src: ArrayBuffer[Tensor[T]], dst: Tensor[T], offset: Int): Unit = {
+    val dstArr = dst.storage().array()
+    val dstOffset = dst.storageOffset() - 1
+    val batchSize = dst.size(0)
+    val timeSize = dst.size(1)
+    val otherSize = dst.nElement() / (batchSize * timeSize)
+
+    var t = 1
+    val length2 = batchSize * otherSize
+    while ((t + offset) <= timeSize) {
+      val srcArr = src(t - 1).storage().array()
+      val srcOffset = src(t - 1).storageOffset() - 1
+      val length1 = (t - 1) * otherSize + dstOffset
+      var l = 0
+      while (l < length2) {
+        System.arraycopy(srcArr, l + srcOffset, dstArr, timeSize * l + length1, otherSize)
+        l += otherSize
+      }
+      t += 1
+    }
+  }
+
+  /**
+   * exchanges the 1 and 2 dimensions of src tensor, and copy memory to dst
+   * @param src
+   * @param dst
+   */
+  private[bigdl] def transposeMemory[@specialized(Float, Double) T: ClassTag](
+    src: Tensor[T], dst: Tensor[T]): Unit = {
+    val srcSize = src.size()
+    val batchSize = srcSize(0)
+    val timeSize = srcSize(1)
+    val otherSize = src.nElement() / (batchSize * timeSize)
+    val srcArr = src.storage().array()
+    val srcOffset = src.storageOffset() - 1
+
+    srcSize(0) = timeSize
+    srcSize(1) = batchSize
+    dst.resize(srcSize)
+    val dstArr = dst.storage().array()
+    val dstOffset = dst.storageOffset() - 1
+
+    val length3 = timeSize * otherSize
+    var t = 1
+    while (t <= batchSize) {
+      var l = 0
+      val length1 = timeSize * otherSize * (t-1) + srcOffset
+      val length2 = (t-1) * otherSize + dstOffset
+      while (l < length3) {
+        System.arraycopy(srcArr, length1 + l, dstArr, l * batchSize + length2, otherSize)
+        l += otherSize
+      }
+      t += 1
+    }
   }
 
   override def doLoadModule[T: ClassTag](model : BigDLModule)
