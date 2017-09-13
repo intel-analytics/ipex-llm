@@ -214,17 +214,15 @@ class TensorflowSaverSpec extends TensorflowSpecHelper {
 
     val funcModel = Graph(conv1, pool2)
     val inputData = Tensor(4, 1, 28, 28).rand()
-    val transInput = inputData.transpose(2, 3).transpose(3, 4).contiguous()
     val outputData = funcModel.forward(inputData).toTensor
 
     val tmpFile = java.io.File.createTempFile("tensorflowSaverTest" + UUID.randomUUID(), "lenet")
     TensorflowSaver.saveGraphWithNodeDef(
       funcModel,
-      Seq(Tensorflow.const(transInput, "input", ByteOrder.LITTLE_ENDIAN)),
+      Seq(Tensorflow.const(inputData, "input", ByteOrder.LITTLE_ENDIAN)),
       tmpFile.getPath,
       ByteOrder.LITTLE_ENDIAN,
-      Set(Tensorflow.const(outputData.transpose(2, 3).transpose(3, 4).contiguous(),
-        "target", ByteOrder.LITTLE_ENDIAN))
+      Set(Tensorflow.const(outputData, "target", ByteOrder.LITTLE_ENDIAN))
     )
 
     runPythonSaveTest(tmpFile.getPath, "") should be(true)
