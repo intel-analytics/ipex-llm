@@ -29,12 +29,12 @@ import org.tensorflow.framework.DataType
 import scala.reflect.ClassTag
 
 class DecodeImage[T: ClassTag](val channels: Int)(implicit ev: TensorNumeric[T])
-  extends AbstractModule[Tensor[ByteString], Tensor[Int], T] {
+  extends Operation[Tensor[ByteString], Tensor[Int], T] {
 
   output = Tensor[Int]()
   override def updateOutput(input: Tensor[ByteString]): Tensor[Int] = {
     require(input.isScalar, "only support ByteString scalar")
-    val image = ImageIO.read(new ByteArrayInputStream(input.valueAt().toByteArray))
+    val image = ImageIO.read(new ByteArrayInputStream(input.value().toByteArray))
     require(image != null, "Can't decode image")
     val imageWidth = image.getWidth
     val imageHeight = image.getHeight
@@ -107,7 +107,7 @@ class DecodeGif[T: ClassTag]()(implicit ev: TensorNumeric[T])
 
     val reader = ImageIO.getImageReadersByFormatName("gif").next()
 
-    val is = ImageIO.createImageInputStream(new ByteArrayInputStream(input.valueAt().toByteArray))
+    val is = ImageIO.createImageInputStream(new ByteArrayInputStream(input.value().toByteArray))
 
     // val reader = ImageIO.getImageReaders(is).next()
 
@@ -146,7 +146,7 @@ class DecodeGif[T: ClassTag]()(implicit ev: TensorNumeric[T])
 
 class DecodeRaw[T: ClassTag](val outType: DataType,
                              val byteOrder: ByteOrder)(implicit ev: TensorNumeric[T])
-  extends AbstractModule[Tensor[ByteString], Activity, T] {
+  extends Operation[Tensor[ByteString], Activity, T] {
   output = {
     outType match {
       case DataType.DT_UINT8 => Tensor[Int]()

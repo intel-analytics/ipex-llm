@@ -29,8 +29,8 @@ class Assert[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Operation[Tab
     val predicateTensor = input(1).asInstanceOf[Tensor[Boolean]]
     val messageTensor = input(2).asInstanceOf[Tensor[ByteString]]
     // todo change to scalar
-    val predicate = predicateTensor.valueAt()
-    val message = messageTensor.valueAt()
+    val predicate = predicateTensor.value()
+    val message = messageTensor.value()
 
     assert(predicate, message.toStringUtf8)
     null

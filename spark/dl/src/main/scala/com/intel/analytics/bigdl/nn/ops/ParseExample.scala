@@ -28,14 +28,14 @@ class ParseExample[T: ClassTag](nDense: Int,
                                 tDense: Seq[TensorDataType],
                                 denseShape: Seq[Array[Int]])
      (implicit ev: TensorNumeric[T])
-  extends AbstractModule[Table, Table, T] {
+  extends Operation[Table, Table, T] {
 
   type StringType = ByteString
 
   override def updateOutput(input: Table): Table = {
-    val serialized = input(1).asInstanceOf[Tensor[StringType]].valueAt()
+    val serialized = input(1).asInstanceOf[Tensor[StringType]].value()
     val denseKeys = Range(3, 3 + nDense).map(index => input(index).asInstanceOf[Tensor[StringType]])
-      .map(_.valueAt().toStringUtf8)
+      .map(_.value().toStringUtf8)
     val denseDefault = Range(3 + nDense, 3 + 2 * nDense)
       .map(index => input(index).asInstanceOf[Tensor[StringType]])
 
