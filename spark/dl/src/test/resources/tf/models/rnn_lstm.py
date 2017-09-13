@@ -17,7 +17,7 @@ import tensorflow as tf
 import numpy as np
 from sys import argv
 from tensorflow.contrib import rnn
-from util import merge_checkpoint
+from util import run_model
 
 def main():
     """
@@ -25,7 +25,7 @@ def main():
     1. mkdir model
     2. python rnn_lstm.py
     """
-    dir = argv[1]
+    tf.set_random_seed(1)
     n_steps = 2
     n_input = 10
     n_hidden = 10
@@ -45,21 +45,7 @@ def main():
     # final = tf.nn.bias_add(tf.matmul(output[-1], weight), bias, name='output')
     final = tf.stack(output, name='output')
 
-    output = tf.Variable(tf.random_uniform(tf.shape(final)),name='output_result')
-    result = tf.assign(output, final)
-    saver = tf.train.Saver()
-    with tf.Session() as sess:
-        init = tf.global_variables_initializer()
-        sess.run(init)
-        sess.run(result)
-        checkpointpath = saver.save(sess, dir + '/model.chkp')
-        tf.train.write_graph(sess.graph, dir, 'model.pbtxt')
-
-    input_graph = dir + "/model.pbtxt"
-    input_checkpoint = dir + "/model.chkp"
-    output_node_names= ["output", "output_result"]
-    output_graph = dir + "/model.pb"
-
-    merge_checkpoint(input_graph, input_checkpoint, output_node_names, output_graph)
+    net_outputs = map(lambda x: tf.get_default_graph().get_tensor_by_name(x), argv[2].split(','))
+    run_model(net_outputs, argv[1], 'rnn', argv[3] == 'True')
 if __name__ == "__main__":
     main()
