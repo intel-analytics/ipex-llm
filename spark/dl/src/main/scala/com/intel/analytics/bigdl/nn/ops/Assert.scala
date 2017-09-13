@@ -15,6 +15,8 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
+import com.google.protobuf.ByteString
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
@@ -22,15 +24,15 @@ import com.intel.analytics.bigdl.utils.Table
 import scala.reflect.ClassTag
 
 
-class Assert[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Operation[Table, T] {
+class Assert[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Operation[Table, Activity, T] {
   override def updateOutput(input: Table): Tensor[T] = {
     val predicateTensor = input(1).asInstanceOf[Tensor[Boolean]]
-    val messageTensor = input(2).asInstanceOf[Tensor[String]]
+    val messageTensor = input(2).asInstanceOf[Tensor[ByteString]]
     // todo change to scalar
-    val predicate = predicateTensor.apply(Array[Int](1))
-    val message = messageTensor.apply(Array[Int](1))
+    val predicate = predicateTensor.valueAt()
+    val message = messageTensor.valueAt()
 
-    assert(predicate, message)
+    assert(predicate, message.toStringUtf8)
     null
   }
 }
