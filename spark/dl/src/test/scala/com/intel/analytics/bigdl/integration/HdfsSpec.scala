@@ -148,8 +148,7 @@ class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter{
 
   }
 
-  "Save/load tensorflow lenet to/from HDFS" should "works properly" in {
-    System.setProperty("bigdl.enableNHWC", "true")
+  "Save/load tensorflow lenet NCHW to/from HDFS" should "works properly" in {
     val conv1 = SpatialConvolution[Float](1, 6, 5, 5).setName("conv1").inputs()
     val tanh1 = Tanh[Float]().setName("tanh1").inputs(conv1)
     val pool1 = SpatialMaxPooling[Float](2, 2, 2, 2).setName("pool1").inputs(tanh1)
@@ -169,10 +168,8 @@ class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter{
       Seq("input"),
       Seq("output"),
       ByteOrder.LITTLE_ENDIAN)
-    val loadedOutput = loadedModel.forward(inputData.
-      transpose(2, 3).transpose(3, 4).contiguous()).toTensor[Float]
+    val loadedOutput = loadedModel.forward(inputData).toTensor[Float]
     loadedOutput.almostEqual(outputData, 1e-7)
-    System.setProperty("bigdl.enableNHWC", "false")
   }
 
   "Persist and Load Caffe to/from HDFS" should "works properly" in {
