@@ -39,7 +39,7 @@ import scala.reflect.ClassTag
 
 object TensorflowLoader{
 
-  type Context[T] = mutable.HashMap[String, (Tensor[T], Tensor[T])]
+  type Context[T] = mutable.HashMap[String, (Tensor[T], Tensor[T], Option[Seq[(Int, Int)]])]
 
   /**
    * Load tensorflow model from a prototxt file
@@ -213,7 +213,8 @@ object TensorflowLoader{
       Node[AbstractModule[Activity, Activity, T]]]()
     val nameToNode =
       new mutable.HashMap[String, Node[AbstractModule[Activity, Activity, T]]]()
-    val context = ctx.getOrElse(new mutable.HashMap[String, (Tensor[T], Tensor[T])])
+    val context = ctx.getOrElse(
+      new mutable.HashMap[String, (Tensor[T], Tensor[T], Option[Seq[(Int, Int)]])])
 
     // BFS to keep the input order same
     tfGraph.BFS.foreach(n => {
@@ -270,7 +271,7 @@ object TensorflowLoader{
 
     val weights = ArrayBuffer[Tensor[T]]()
     val gradients = ArrayBuffer[Tensor[T]]()
-    for ((weight, grad) <- context.values) {
+    for ((weight, grad, _) <- context.values) {
       weights += weight
       gradients += grad
     }

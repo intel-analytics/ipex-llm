@@ -263,69 +263,29 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
   }
 
   "static simple rnn " should "have the same inference result as tensorflow" in {
-    System.setProperty("bigdl.enableNHWC", "false")
-    tfCheck()
-    val modelName = "rnn"
-    // Generate command and prepare the temp folder
-    val s = JFile.separator
-    val modelsFolder = processPath(getClass().getClassLoader().getResource("tf").getPath()) +
-      s + "models"
-    val modelScript = modelsFolder + s + s"$modelName.py"
-    val tmpLocation = java.io.File.createTempFile("tensorflowLoaderTest" + UUID.randomUUID(),
-      modelName)
-    tmpLocation.delete()
-    tmpLocation.mkdir()
-
-    require(runPython(s"$modelScript $tmpLocation"), "error when run the model script")
-
-    // Load the model and input/output tensors
-    val modelFile = tmpLocation + s + "model.pb"
-
-
-    val results = TensorflowLoader.parse(modelFile)
-    val (tfGraph, inputs) = TensorflowLoader.buildTFGraph(results, Seq("output"))
-    val model = TensorflowLoader.buildBigDLModel(tfGraph, inputs,
-      Seq("output"),
-      ByteOrder.LITTLE_ENDIAN, "")
-    val input = TensorflowToBigDL.toTensor(results.get(0).getAttrMap.get("value").getTensor,
-      ByteOrder.LITTLE_ENDIAN).contiguous()
-    val tfResult = TensorflowToBigDL.toTensor(results.get(results.size()-1)
-      .getAttrMap.get("value").getTensor, ByteOrder.LITTLE_ENDIAN)
-    val bigDLResult = model.forward(input)
-    tfResult.almostEqual(bigDLResult.toTensor, 1e-6)
+    val output = Seq("output:0")
+    val comparePairs = testModel("rnn", output, backward = true)
+    for (i <- output.indices) {
+      val (tf, bigdl) = comparePairs(i)
+      tf.almostEqual(bigdl, 1e-5) should be(true)
+    }
+    for (i <- output.length until comparePairs.length) {
+      val (tf, bigdl) = comparePairs(i)
+      tf.almostEqual(bigdl, 1e-3) should be(true)
+    }
   }
 
   "static lstm rnn " should "have the same inference result as tensorflow" in {
-    tfCheck()
-    System.setProperty("bigdl.enableNHWC", "false")
-    val modelName = "rnn_lstm"
-    // Generate command and prepare the temp folder
-    val s = JFile.separator
-    val modelsFolder = processPath(getClass().getClassLoader().getResource("tf").getPath()) +
-      s + "models"
-    val modelScript = modelsFolder + s + s"$modelName.py"
-    val tmpLocation = java.io.File.createTempFile("tensorflowLoaderTest" + UUID.randomUUID(),
-      modelName)
-    tmpLocation.delete()
-    tmpLocation.mkdir()
-
-    require(runPython(s"$modelScript $tmpLocation"), "error when run the model script")
-
-    // Load the model and input/output tensors
-    val modelFile = tmpLocation + s + "model.pb"
-
-    val results = TensorflowLoader.parse(modelFile)
-    val (tfGraph, inputs) =
-      TensorflowLoader.buildTFGraph(results.subList(0, results.size()-1), Seq("output"))
-    val model = TensorflowLoader.buildBigDLModel(tfGraph, inputs,
-      Seq("output"),
-      ByteOrder.LITTLE_ENDIAN, "")
-    val input = TensorflowToBigDL.toTensor(results.get(0).getAttrMap.get("value").getTensor,
-      ByteOrder.LITTLE_ENDIAN).contiguous()
-    val tfResult = TensorflowToBigDL.toTensor(results.get(results.size()-1)
-      .getAttrMap.get("value").getTensor, ByteOrder.LITTLE_ENDIAN)
-    val bigDLResult = model.forward(input)
-    tfResult.almostEqual(bigDLResult.toTensor, 1e-5)
+    val output = Seq("output:0")
+    val comparePairs = testModel("rnn_lstm", output, backward = true)
+    for (i <- output.indices) {
+      val (tf, bigdl) = comparePairs(i)
+      tf.almostEqual(bigdl, 1e-5) should be(true)
+    }
+    for (i <- output.length until comparePairs.length) {
+      val (tf, bigdl) = comparePairs(i)
+      tf.almostEqual(bigdl, 1e-2) should be(true)
+    }
   }
 
   "TensorFlow control dep" should "be load correctly" in {
@@ -552,7 +512,8 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     val (tfGraph, inputs) =
       TensorflowLoader.buildTFGraph(tfNodes, endPoints.map(_.split(":")(0)),
         (node: NodeDef) => node.getName == "input_node")
-    val context = new mutable.HashMap[String, (Tensor[Float], Tensor[Float])]
+    val context =
+      new mutable.HashMap[String, (Tensor[Float], Tensor[Float], Option[Seq[(Int, Int)]])]
     val model = TensorflowLoader.buildBigDLModel(tfGraph, inputs,
       endPoints.map(_.split(":")(0)), ByteOrder.LITTLE_ENDIAN, "", Some(context))
 
@@ -619,8 +580,17 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
 
       val pairs = context.keySet.map { x =>
           val name = s"${x}_grad"
-          val tensor = tfGradTensorsMap.get(name).orNull
-          (tensor, context(x)._2)
+          var tensor = tfGradTensorsMap.get(name).orNull
+          var (_, grad, trans) = context(x)
+          trans match {
+            case Some(transpose) =>
+              for ((firstDim, secondDIm) <- transpose) {
+                tensor = tensor.transpose(firstDim, secondDIm)
+              }
+              tensor = tensor.contiguous()
+            case None =>
+          }
+          (tensor, grad)
       }.toSeq.filter(_._1 != null)
       comparePair ++= pairs
       println(s"Compare ${pairs.length} pairs of gradient in this graph")
