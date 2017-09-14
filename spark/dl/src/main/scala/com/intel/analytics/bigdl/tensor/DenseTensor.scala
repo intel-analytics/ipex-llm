@@ -1993,6 +1993,7 @@ object DenseTensor {
       } else if (totalSize + self._storageOffset > self._storage.length) {
         self._storage.resize(totalSize + self._storageOffset)
       }
+      return self
     }
 
     var hasCorrectSize = true
