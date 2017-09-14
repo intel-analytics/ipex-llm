@@ -165,7 +165,7 @@ object DenseTensorApply {
     require(tensor1.nElement() == tensor2.nElement() && tensor2.nElement() == tensor3.nElement(),
       "inconsistent tensor size")
 
-    if (tensor1.nDimension == 0) {
+    if (tensor1.isEmpty) {
       return
     }
 
@@ -323,7 +323,19 @@ object DenseTensorApply {
     require(tensor1.nElement() == tensor2.nElement(),
       s"inconsistent tensor size: ${tensor1.nElement()} == ${tensor2.nElement()}")
 
-    if (tensor1.nDimension == 0) {
+    if (tensor1.isEmpty) {
+      return
+    }
+
+    // shortcut for scalar
+    if (tensor1.isScalar && tensor2.isScalar) {
+      val tensor1Data = tensor1.storage().array()
+      val tensor2Data = tensor2.storage().array()
+      val tensor3Data = tensor3.storage().array()
+      val tensor1Index = tensor1.storageOffset() - 1
+      val tensor2Index = tensor2.storageOffset() - 1
+      val tensor3Index = tensor3.storageOffset() - 1
+      func(tensor1Data, tensor1Index, tensor2Data, tensor2Index, tensor3Data, tensor3Index)
       return
     }
 
