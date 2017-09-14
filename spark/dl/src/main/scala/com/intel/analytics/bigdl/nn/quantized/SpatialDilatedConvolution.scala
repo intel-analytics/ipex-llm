@@ -51,7 +51,7 @@ private[bigdl] class SpatialDilatedConvolution[T: ClassTag](
   override val dilationHeight: Int = dilationH
 
   override def toString(): String = {
-    s"fixpoint.SpatialDilatedConvolution($nInputPlane -> $nOutputPlane, $kernelW x" +
+    s"quantized.SpatialDilatedConvolution($nInputPlane -> $nOutputPlane, $kernelW x" +
       s" $kernelH, $strideW, $strideH, $padW, $padH, $dilationW, $dilationH)"
   }
 }

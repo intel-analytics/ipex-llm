@@ -88,7 +88,7 @@ private[bigdl] class SpatialConvolution[T: ClassTag](
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim() == 3 || input.dim() == 4,
-      "bigquant.SpatialConvolution: " + ErrorInfo.constrainInputAs3DOrBatch)
+      "quantized.SpatialConvolution: " + ErrorInfo.constrainInputAs3DOrBatch)
     require(input.isContiguous())
 
     val (dimHeight, dimWidth, channelDim) = format.getHWCDims(input.dim())
@@ -239,7 +239,7 @@ private[bigdl] class SpatialConvolution[T: ClassTag](
   }
 
   override def toString(): String = {
-    s"bigquant.SpatialConvolution($nInputPlane -> $nOutputPlane, $kernelW x" +
+    s"quantized.SpatialConvolution($nInputPlane -> $nOutputPlane, $kernelW x" +
       s" $kernelH, $strideW, $strideH, $padW, $padH, $nGroup)"
   }
 

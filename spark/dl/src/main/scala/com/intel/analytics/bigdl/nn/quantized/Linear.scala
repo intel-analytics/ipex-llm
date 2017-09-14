@@ -139,7 +139,7 @@ private[bigdl] class Linear[T: ClassTag](
   }
 
   override def toString(): String = {
-    s"bigquant.${getPrintName()}($inputSize -> $outputSize)"
+    s"quantized.${getPrintName()}($inputSize -> $outputSize)"
   }
 
   def release(): Unit = {
