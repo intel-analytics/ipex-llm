@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils._
+
 import scala.concurrent.Future
 import scala.reflect.ClassTag
 
@@ -129,7 +130,6 @@ class SpatialConvolution[T: ClassTag](
 
   var fInput = Tensor[T]()
   var fGradInput = Tensor[T]()
-
   protected val ones = Tensor[T]()
   protected val onesBatch = Tensor[T]()
   protected val onesBias = if (withBias) Tensor[T]() else null

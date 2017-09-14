@@ -16,13 +16,13 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
+
 import scala.reflect.ClassTag
 
 /**
@@ -61,11 +61,11 @@ class LSTMPeephole[T : ClassTag] (
     hiddensShape = Array(hiddenSize, hiddenSize),
     regularizers = Array(wRegularizer, uRegularizer, bRegularizer)
   ) {
-  var inputGate: ModuleNode[T] = null
-  var forgetGate: ModuleNode[T] = null
-  var outputGate: ModuleNode[T] = null
-  var hiddenLayer: ModuleNode[T] = null
-  var cellLayer: ModuleNode[T] = null
+  var inputGate: ModuleNode[T] = _
+  var forgetGate: ModuleNode[T] = _
+  var outputGate: ModuleNode[T] = _
+  var hiddenLayer: ModuleNode[T] = _
+  var cellLayer: ModuleNode[T] = _
   val featDim = 2
   override var cell: AbstractModule[Activity, Activity, T] =
     Sequential()

@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{RandomGenerator, T, Table}
+
 import scala.reflect.ClassTag
 import RandomGenerator._
 import com.intel.analytics.bigdl.Module
@@ -84,6 +85,7 @@ class Linear[T: ClassTag](
     require(input.dim() == 1 || input.dim() == 2,
       "Linear: " + ErrorInfo.constrainInputAsVectorOrBatch +
       s"input dim ${input.dim()}")
+
 
     if (input.dim() == 1) {
       output.resize(Array(outputSize))

@@ -80,7 +80,6 @@ object Quantizer extends Quantizable {
     registerModule("com.intel.analytics.bigdl.nn.TimeDistributed", nn.TimeDistributed)
     registerModule("com.intel.analytics.bigdl.nn.Recurrent", nn.Recurrent)
     registerModule("com.intel.analytics.bigdl.nn.BiRecurrent", nn.BiRecurrent)
-    registerModule("com.intel.analytics.bigdl.nn.GRU", nn.GRU)
   }
 }
 

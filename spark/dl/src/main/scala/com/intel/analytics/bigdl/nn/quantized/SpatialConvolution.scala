@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.nn.quantized
 
 import com.intel.analytics.bigdl.bigquant.BigQuant
+import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.ErrorInfo
 import com.intel.analytics.bigdl.nn.abstractnn.{DataFormat, Initializable}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -56,10 +57,6 @@ private[bigdl] class SpatialConvolution[T: ClassTag](
   val dilationHeight = 1
   val dilationWidth = 1
 
-  private def outputSize(input: Int, pad: Int, kernel: Int, stride: Int, dilation: Int = 1): Int = {
-    (input + 2 * pad - (dilation * (kernel - 1) + 1)) / stride + 1
-  }
-
   protected def initWeightAndBias(weightFP32: Tensor[T], biasFP32: Tensor[T]): this.type = {
     if (biasFP32 != null) {
       bias.copy(biasFP32)
@@ -89,24 +86,6 @@ private[bigdl] class SpatialConvolution[T: ClassTag](
     this
   }
 
-  private def getOutputShape(oh: Int, ow: Int, batchSize: Int = -1): Array[Int] = {
-    format match {
-      case DataFormat.NCHW =>
-        if (batchSize == -1) {
-          Array(nOutputPlane, oh, ow)
-        } else {
-          Array(batchSize, nOutputPlane, oh, ow)
-        }
-      case DataFormat.NHWC =>
-        if (batchSize == -1) {
-          Array(oh, ow, nOutputPlane)
-        } else {
-          Array(batchSize, oh, ow, nOutputPlane)
-        }
-
-    }
-  }
-
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim() == 3 || input.dim() == 4,
       "bigquant.SpatialConvolution: " + ErrorInfo.constrainInputAs3DOrBatch)
@@ -119,15 +98,17 @@ private[bigdl] class SpatialConvolution[T: ClassTag](
     val inputWidth = input.size(dimWidth)
     val inputHeight = input.size(dimHeight)
 
-    val outputHeight = outputSize(inputHeight, padH, kernelH, strideH, dilationHeight)
-    val outputWidth = outputSize(inputWidth, padW, kernelW, strideW, dilationWidth)
+    val (_, _, _, _, outputHeight, outputWidth) = nn.Utils.getOutSizeAndPadding(
+      inputHeight, inputWidth, strideH, strideW, kernelH, kernelW, padH, padW,
+      false, dilationHeight, dilationWidth)
 
     val batchSize = if (input.dim() == 3) {
-      output.resize(getOutputShape(outputHeight, outputWidth))
+      output.resize(nn.Utils.getOutputShape(outputHeight, outputWidth, nOutputPlane,
+        format = format))
       1 // 3D input, batchSize set to 1
     } else {
       val batch = input.size(1)
-      output.resize(getOutputShape(outputHeight, outputWidth, batch))
+      output.resize(nn.Utils.getOutputShape(outputHeight, outputWidth, nOutputPlane, batch, format))
       batch
     }
 

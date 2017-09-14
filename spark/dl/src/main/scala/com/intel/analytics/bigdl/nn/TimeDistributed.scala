@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.nn.quantized.{Quantizable, Quantizer}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
+
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
@@ -79,13 +80,10 @@ class TimeDistributed[T : ClassTag] (val layer: TensorModule[T])
     }
   }
 
-  @transient var _init = false
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim >= 3,
       "TimeDistributed: input should be at least a 3D Tensor, e.g [batch, time, inputDim]. " +
         s"Current input.dim = ${input.dim}")
-
-    if (!_init) { println(this); _init = true}
 
     if (inputSize == null) {
       inputSize = new Array[Int](input.size.length - 1)
