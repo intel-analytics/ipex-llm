@@ -2025,6 +2025,15 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     layer.gradWeight(Array(1, 1, 1, 2, 2)) should be(77)
 
     layer.gradBias(Array(1)) should be(10)
+
+    layer.zeroGradParameters()
+    layer.backward(input, gradOutput)
+    layer.gradWeight(Array(1, 1, 1, 1, 1)) should be(37)
+    layer.gradWeight(Array(1, 1, 1, 1, 2)) should be(47)
+    layer.gradWeight(Array(1, 1, 1, 2, 1)) should be(67)
+    layer.gradWeight(Array(1, 1, 1, 2, 2)) should be(77)
+
+    layer.gradBias(Array(1)) should be(10)
   }
 
   it should "generate correct gradWeight when group != 1" in {
@@ -2118,6 +2127,15 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     layer.updateGradInput(input, gradOutput)
     layer.accGradParameters(input, gradOutput)
 
+    layer.gradWeight(Array(1, 1, 1, 1, 1)) should be(37 * 3)
+    layer.gradWeight(Array(1, 1, 1, 1, 2)) should be(47 * 3)
+    layer.gradWeight(Array(1, 1, 1, 2, 1)) should be(67 * 3)
+    layer.gradWeight(Array(1, 1, 1, 2, 2)) should be(77 * 3)
+
+    layer.gradBias(Array(1)) should be(10 * 3)
+
+    layer.zeroGradParameters()
+    layer.backward(input, gradOutput)
     layer.gradWeight(Array(1, 1, 1, 1, 1)) should be(37 * 3)
     layer.gradWeight(Array(1, 1, 1, 1, 2)) should be(47 * 3)
     layer.gradWeight(Array(1, 1, 1, 2, 1)) should be(67 * 3)
@@ -2286,6 +2304,29 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     layer.gradWeight(Array(1, 2, 2, 1, 2)) should be(47)
     layer.gradWeight(Array(1, 2, 2, 2, 1)) should be(67)
     layer.gradWeight(Array(1, 2, 2, 2, 2)) should be(77)
+    layer.gradBias(Array(1)) should be (10)
+    layer.gradBias(Array(2)) should be (10)
+
+    layer.zeroGradParameters()
+    layer.backward(input, gradOutput)
+    layer.gradWeight(Array(1, 1, 1, 1, 1)) should be(37)
+    layer.gradWeight(Array(1, 1, 1, 1, 2)) should be(47)
+    layer.gradWeight(Array(1, 1, 1, 2, 1)) should be(67)
+    layer.gradWeight(Array(1, 1, 1, 2, 2)) should be(77)
+    layer.gradWeight(Array(1, 1, 2, 1, 1)) should be(37)
+    layer.gradWeight(Array(1, 1, 2, 1, 2)) should be(47)
+    layer.gradWeight(Array(1, 1, 2, 2, 1)) should be(67)
+    layer.gradWeight(Array(1, 1, 2, 2, 2)) should be(77)
+    layer.gradWeight(Array(1, 2, 1, 1, 1)) should be(37)
+    layer.gradWeight(Array(1, 2, 1, 1, 2)) should be(47)
+    layer.gradWeight(Array(1, 2, 1, 2, 1)) should be(67)
+    layer.gradWeight(Array(1, 2, 1, 2, 2)) should be(77)
+    layer.gradWeight(Array(1, 2, 2, 1, 1)) should be(37)
+    layer.gradWeight(Array(1, 2, 2, 1, 2)) should be(47)
+    layer.gradWeight(Array(1, 2, 2, 2, 1)) should be(67)
+    layer.gradWeight(Array(1, 2, 2, 2, 2)) should be(77)
+    layer.gradBias(Array(1)) should be (10)
+    layer.gradBias(Array(2)) should be (10)
   }
 
   "A SpatialConvolution with different input/output plane" should "get correct gradWeight" in {
@@ -2378,6 +2419,38 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     layer.gradWeight(Array(1, 3, 2, 1, 2)) should be(47)
     layer.gradWeight(Array(1, 3, 2, 2, 1)) should be(67)
     layer.gradWeight(Array(1, 3, 2, 2, 2)) should be(77)
+    layer.gradBias(Array(1)) should be(10)
+    layer.gradBias(Array(2)) should be(10)
+    layer.gradBias(Array(3)) should be(10)
+
+    layer.zeroGradParameters()
+    layer.gradWeight(Array(1, 1, 1, 1, 1)) should be(37)
+    layer.gradWeight(Array(1, 1, 1, 1, 2)) should be(47)
+    layer.gradWeight(Array(1, 1, 1, 2, 1)) should be(67)
+    layer.gradWeight(Array(1, 1, 1, 2, 2)) should be(77)
+    layer.gradWeight(Array(1, 1, 2, 1, 1)) should be(37)
+    layer.gradWeight(Array(1, 1, 2, 1, 2)) should be(47)
+    layer.gradWeight(Array(1, 1, 2, 2, 1)) should be(67)
+    layer.gradWeight(Array(1, 1, 2, 2, 2)) should be(77)
+    layer.gradWeight(Array(1, 2, 1, 1, 1)) should be(37)
+    layer.gradWeight(Array(1, 2, 1, 1, 2)) should be(47)
+    layer.gradWeight(Array(1, 2, 1, 2, 1)) should be(67)
+    layer.gradWeight(Array(1, 2, 1, 2, 2)) should be(77)
+    layer.gradWeight(Array(1, 2, 2, 1, 1)) should be(37)
+    layer.gradWeight(Array(1, 2, 2, 1, 2)) should be(47)
+    layer.gradWeight(Array(1, 2, 2, 2, 1)) should be(67)
+    layer.gradWeight(Array(1, 2, 2, 2, 2)) should be(77)
+    layer.gradWeight(Array(1, 3, 1, 1, 1)) should be(37)
+    layer.gradWeight(Array(1, 3, 1, 1, 2)) should be(47)
+    layer.gradWeight(Array(1, 3, 1, 2, 1)) should be(67)
+    layer.gradWeight(Array(1, 3, 1, 2, 2)) should be(77)
+    layer.gradWeight(Array(1, 3, 2, 1, 1)) should be(37)
+    layer.gradWeight(Array(1, 3, 2, 1, 2)) should be(47)
+    layer.gradWeight(Array(1, 3, 2, 2, 1)) should be(67)
+    layer.gradWeight(Array(1, 3, 2, 2, 2)) should be(77)
+    layer.gradBias(Array(1)) should be(10)
+    layer.gradBias(Array(2)) should be(10)
+    layer.gradBias(Array(3)) should be(10)
   }
 
   "A SpatialConvolution" should "generate correct gradWeight gradBias output gradInput" in {
@@ -2518,6 +2591,17 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
       0.44375239087041, 0.2308612946304, 0.278725442139
     )
     val gradWeight = Tensor[Double](Storage(gradWeightData), 1, Array(3, 2, 2, 3))
+    module.gradBias.map(gradBias, (v1, v2) => {
+      assert(abs(v1 - v2) < 1e-6);
+      v1
+    })
+    module.gradWeight.map(gradWeight, (v1, v2) => {
+      assert(abs(v1 - v2) < 1e-6);
+      v1
+    })
+
+    module.zeroGradParameters()
+    module.backward(input, gradOutput)
     module.gradBias.map(gradBias, (v1, v2) => {
       assert(abs(v1 - v2) < 1e-6);
       v1
@@ -2928,6 +3012,12 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
 
     layer2.gradWeight should be (layer1.gradWeight.mul(2))
     layer2.gradBias should be (layer1.gradBias.mul(0.5))
+
+    layer2.zeroGradParameters()
+    layer2.backward(input, gradOutput)
+    layer2.gradWeight should be (layer1.gradWeight)
+    layer2.gradBias should be (layer1.gradBias)
+
   }
 
   "A SpatialConvolution layer without bias" should "generate correct output" in {
