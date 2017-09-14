@@ -97,7 +97,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     res1 should be (res2)
   }
 
-  "BinaryTreeLSTM serializer" should " work properly" in {
+  "BinaryTreeLSTM serializer" should "work properly" in {
 
     RNG.setSeed(1000)
     val binaryTreeLSTM = BinaryTreeLSTM(2, 2)
@@ -1163,7 +1163,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     res1 should be (res2)
   }
 
-  "Recurrent serializer " should " work properly" in {
+  "Recurrent serializer " should "work properly" in {
     val recurrent = Recurrent()
       .add(RnnCell(5, 4, Tanh()))
     val input1 = Tensor(Array(10, 5, 5))
