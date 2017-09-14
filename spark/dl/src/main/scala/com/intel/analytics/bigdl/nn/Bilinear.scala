@@ -191,8 +191,7 @@ class Bilinear[T: ClassTag](
 
     if(null != bias && scaleB != 0) {
       if (zeroGradFlag) {
-        gradBias.map(gradOutput.sum(1),
-          (_, y) => (ev.times(ev.fromType[Double](scaleB), y)))
+        gradBias.mul(gradOutput.sum(1), ev.fromType[Double](scaleB))
       } else {
         gradBias.add(ev.fromType[Double](scaleB), gradOutput.sum(1))
       }

@@ -146,8 +146,7 @@ class CMul[T: ClassTag](
           i += 1
         }
         if (zeroGradFlag) {
-          gradWeight.map(sumFrom,
-            (_, y) => (ev.times(ev.fromType[Double](scaleW), y)))
+          gradWeight.mul(sumFrom, ev.fromType[Double](scaleW))
         } else {
           gradWeight.add(ev.fromType[Double](scaleW), sumFrom)
         }
@@ -155,8 +154,7 @@ class CMul[T: ClassTag](
         _repeat.resizeAs(input).cmul(input, gradOutput)
         _sum.sum(_repeat, 1)
         if (zeroGradFlag) {
-          gradWeight.map(_sum,
-            (_, y) => (ev.times(ev.fromType[Double](scaleW), y)))
+          gradWeight.mul(_sum, ev.fromType[Double](scaleW))
         } else {
           gradWeight.add(ev.fromType[Double](scaleW), _sum)
         }
