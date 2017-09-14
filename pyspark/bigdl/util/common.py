@@ -286,6 +286,7 @@ def add_cp(sparkConf,str):
 
 def add_cp_from_env(sparkConf):
     if(os.getenv("BIGDL_CLASSPATH")):
+        print(os.getenv("BIGDL_CLASSPATH"))
         add_cp(sparkConf, os.getenv("BIGDL_CLASSPATH"))
 
 def add_cp_from_pip(sparkConf):
@@ -298,7 +299,8 @@ def create_spark_conf():
     bigdl_conf = get_bigdl_conf()
     sparkConf = SparkConf()
     sparkConf.setAll(bigdl_conf.items())
-    add_cp_from_env(sparkConf)
+    add_cp_from_pip(sparkConf)
+    #add_cp_from_env(sparkConf)
     return sparkConf
 
 def get_spark_context(conf = None):
