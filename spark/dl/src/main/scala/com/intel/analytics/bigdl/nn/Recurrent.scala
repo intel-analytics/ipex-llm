@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
+
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -42,17 +43,16 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
   private val currentInput = T()
   private val currentGradOutput = T()
   private val gradInputCell = Tensor[T]()
-  private val outputCell = Tensor[T]()
-  private var size: Array[Int] = null
+  private var outputCell = Tensor[T]()
   private val _input = T()
   private val batchDim = 1
   private val timeDim = 2
-  private val timeTranspose = 1
   private val inputDim = 1
   private val hidDim = 2
   private var (batchSize, times) = (0, 0)
   private var topology: Cell[T] = null
-  private val buffer = Tensor[T]()
+  private val outputBuffer = Tensor[T]()
+  private val gradBuffer = Tensor[T]()
   private var preTopology: AbstractModule[Activity, Activity, T] = null
   private val dropouts: ArrayBuffer[Array[Dropout[T]]] =
     new ArrayBuffer[Array[Dropout[T]]]
@@ -217,14 +217,11 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     batchSize = input.size(batchDim)
     times = input.size(timeDim)
 
-    val preOutput = if (preTopology != null) {
+    outputCell = if (preTopology != null) {
       preTopology.forward(input).toTensor[T]
     } else {
       input
     }
-
-    size = preOutput.size()
-    Recurrent.transposeMemory(preOutput, outputCell)
 
     val hiddenSize = topology.hiddensShape(0)
     val outputSize = input.size()
@@ -245,7 +242,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     currentInput(hidDim) = if (initState != null) initState
      else hidden
     while (i <= times) {
-      currentInput(inputDim) = outputCell.select(timeTranspose, i)
+      currentInput(inputDim) = Recurrent.selectCopy(outputCell, i, outputBuffer)
       cells(i - 1).forward(currentInput)
       currentInput(hidDim) = cells(i - 1).output.toTable(hidDim)
       i += 1
@@ -282,10 +279,10 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
 
     var i = times
     while (i >= 1) {
-      currentGradOutput(inputDim) = gradOutput.select(timeDim, i)
+      currentGradOutput(inputDim) = Recurrent.selectCopy(gradOutput, i, gradBuffer)
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
         else hidden
-      _input(inputDim) = outputCell.select(timeTranspose, i)
+      _input(inputDim) = Recurrent.selectCopy(outputCell, i, outputBuffer)
       if (i == 1) {
         cells(i - 1).regluarized(true)
       } else {
@@ -314,14 +311,14 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     } else {
       gradInputCell
     }
-    gradInputCell.resize(size)
+    gradInputCell.resizeAs(outputCell)
     currentGradOutput(hidDim) = gradHidden
     var i = times
     while (i >= 1) {
-      currentGradOutput(inputDim) = gradOutput.select(timeDim, i)
+      currentGradOutput(inputDim) = Recurrent.selectCopy(gradOutput, i, gradBuffer)
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
         else hidden
-      _input(inputDim) = outputCell.select(timeTranspose, i)
+      _input(inputDim) = Recurrent.selectCopy(outputCell, i, outputBuffer)
       cells(i - 1).updateGradInput(_input, currentGradOutput)
       currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
       i -= 1
@@ -337,15 +334,13 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
   override def backward(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     val st = System.nanoTime
     currentGradOutput(hidDim) = gradHidden
-    Recurrent.transposeMemory(gradOutput, buffer)
-
     var i = times
 
     while (i >= 1) {
-      currentGradOutput(inputDim) = buffer.select(timeTranspose, i)
+      currentGradOutput(inputDim) = Recurrent.selectCopy(gradOutput, i, gradBuffer)
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
       else hidden
-      _input(inputDim) = outputCell.select(timeTranspose, i)
+      _input(inputDim) = Recurrent.selectCopy(outputCell, i, outputBuffer)
       if (i == 1) {
         cells(i - 1).regluarized(true)
       } else {
@@ -368,7 +363,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     } else {
       gradInputCell
     }
-    gradInputCell.resize(size)
+    gradInputCell.resizeAs(outputCell)
     Recurrent.copy(cells.map(x => x.gradInput.toTable[Tensor[T]](inputDim)),
       gradInputCell, 0)
 
@@ -441,7 +436,6 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     hidden = null
     gradHidden = null
     hiddenShape = null
-    size = null
     gradInputCell.set()
     outputCell.set()
     currentInput.clear()
@@ -451,7 +445,8 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     cells.clear()
     timeBuffer.clear()
     initState = null
-    buffer.set()
+    outputBuffer.set()
+    gradBuffer.set()
     this
   }
 
@@ -501,59 +496,85 @@ object Recurrent extends ContainerSerializable {
    */
   private[bigdl] def copy[@specialized(Float, Double) T: ClassTag](
     src: ArrayBuffer[Tensor[T]], dst: Tensor[T], offset: Int): Unit = {
-    val dstArr = dst.storage().array()
-    val dstOffset = dst.storageOffset() - 1
-    val batchSize = dst.size(0)
-    val timeSize = dst.size(1)
-    val otherSize = dst.nElement() / (batchSize * timeSize)
-
+    val timeSize = dst.size(2)
     var t = 1
-    val length2 = batchSize * otherSize
     while ((t + offset) <= timeSize) {
-      val srcArr = src(t - 1).storage().array()
-      val srcOffset = src(t - 1).storageOffset() - 1
-      val length1 = (t - 1) * otherSize + dstOffset
-      var l = 0
-      while (l < length2) {
-        System.arraycopy(srcArr, l + srcOffset, dstArr, timeSize * l + length1, otherSize)
-        l += otherSize
-      }
+      copyToIndex(src(t -1), dst, t + offset)
       t += 1
     }
   }
 
   /**
-   * exchanges the 1 and 2 dimensions of src tensor, and copy memory to dst
+   * select srcIndex subset of the 2-th dimension from src, and copy to dst
    * @param src
+   * @param srcIndex the index of 2-th dimension from src
    * @param dst
    */
-  private[bigdl] def transposeMemory[@specialized(Float, Double) T: ClassTag](
-    src: Tensor[T], dst: Tensor[T]): Unit = {
-    val srcSize = src.size()
-    val batchSize = srcSize(0)
-    val timeSize = srcSize(1)
-    val otherSize = src.nElement() / (batchSize * timeSize)
-    val srcArr = src.storage().array()
-    val srcOffset = src.storageOffset() - 1
-
-    srcSize(0) = timeSize
-    srcSize(1) = batchSize
-    dst.resize(srcSize)
-    val dstArr = dst.storage().array()
-    val dstOffset = dst.storageOffset() - 1
-
-    val length3 = timeSize * otherSize
-    var t = 1
-    while (t <= batchSize) {
-      var l = 0
-      val length1 = timeSize * otherSize * (t-1) + srcOffset
-      val length2 = (t-1) * otherSize + dstOffset
-      while (l < length3) {
-        System.arraycopy(srcArr, length1 + l, dstArr, l * batchSize + length2, otherSize)
-        l += otherSize
+  private[bigdl] def selectCopy[@specialized(Float, Double) T: ClassTag](
+    src: Tensor[T], srcIndex: Int, dst: Tensor[T]): Tensor[T] = {
+    if (src.isContiguous() && dst.isContiguous()) {
+      if ((dst.nElement() == 0) || (dst.nElement() != (src.nElement() / src.size(2)))) {
+        dst.resizeAs(src.select(2, srcIndex))
       }
-      t += 1
+
+      val batchSize = src.size(1)
+      val timeSize = src.size(2)
+      val stepSize = src.nElement() / (batchSize * timeSize)
+
+      val srcArr = src.storage().array()
+      var srcOffset = src.storageOffset() - 1
+      val dstArr = dst.storage().array()
+      var dstOffset = dst.storageOffset() - 1
+
+      val recordSize = timeSize * stepSize
+      val indexSize = (srcIndex-1) * stepSize
+
+      var b = 0
+      while (b < batchSize) {
+        System.arraycopy(srcArr, srcOffset + indexSize, dstArr, dstOffset, stepSize)
+        srcOffset += recordSize
+        dstOffset += stepSize
+        b += 1
+      }
+    } else {
+      val output = src.select(2, srcIndex)
+      dst.resizeAs(output).copy(output)
     }
+    dst
+  }
+
+  /**
+   * copy src to be dst dstIndex subset of the 2-th dimension
+   * @param src
+   * @param dst
+   * @param dstIndex the index of 2-th dimension from dst
+   */
+  private[bigdl] def copyToIndex[@specialized(Float, Double) T: ClassTag](
+    src: Tensor[T], dst: Tensor[T], dstIndex: Int): Tensor[T] = {
+    if (src.isContiguous() && dst.isContiguous()) {
+      val batchSize = dst.size(1)
+      val timeSize = dst.size(2)
+      val stepSize = dst.nElement() / (batchSize * timeSize)
+
+      val dstArr = dst.storage().array()
+      var dstOffset = dst.storageOffset() - 1
+      val srcArr = src.storage().array()
+      var srcOffset = src.storageOffset() - 1
+
+      val recordSize = timeSize * stepSize
+      val indexSize = (dstIndex - 1) * stepSize
+
+      var b = 0
+      while (b < batchSize) {
+        System.arraycopy(srcArr, srcOffset, dstArr, dstOffset + indexSize, stepSize)
+        srcOffset += stepSize
+        dstOffset += recordSize
+        b += 1
+      }
+    } else {
+      dst.select(2, dstIndex).copy(src)
+    }
+    dst
   }
 
   override def doLoadModule[T: ClassTag](model : BigDLModule)

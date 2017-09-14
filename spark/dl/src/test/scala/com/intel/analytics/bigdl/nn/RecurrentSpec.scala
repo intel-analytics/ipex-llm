@@ -605,8 +605,8 @@ class RecurrentSpec extends FlatSpec with Matchers {
     val output1 = Tensor[Float]()
     val output2 = Tensor[Float]().resizeAs(input)
 
-    Recurrent.transposeMemory(input, output1)
-    output1 should be (input.transpose(1, 2).clone())
+    Recurrent.selectCopy(input, 2, output1)
+    output1 should be (input.select(2, 2))
 
     Recurrent.copy(arrInput, output2, 0)
     output2 should be (input)
