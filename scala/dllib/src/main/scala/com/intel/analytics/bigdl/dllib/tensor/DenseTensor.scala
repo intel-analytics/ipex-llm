@@ -1982,6 +1982,20 @@ object DenseTensor {
     self: DenseTensor[T], nDim: Int, _size: Array[Int], _stride: Array[Int])
   : DenseTensor[T] = {
 
+    // resize as a scalar
+    if (nDim == 0 && _size.isEmpty) {
+      self._size = Array[Int]()
+      self._stride = Array[Int]()
+      self.nDimension = nDim
+      val totalSize = 1
+      if (self._storage == null ) {
+        self._storage = new ArrayStorage(new Array[T](totalSize + self._storageOffset))
+      } else if (totalSize + self._storageOffset > self._storage.length) {
+        self._storage.resize(totalSize + self._storageOffset)
+      }
+      return self
+    }
+
     var hasCorrectSize = true
     var nDim_ = 0
     var d = 0
@@ -2103,6 +2117,10 @@ object DenseTensor {
   private[tensor] def isSameSizeAs[@specialized(Float, Double) T](
     self: DenseTensor[T], src: Tensor[_]): Boolean = {
     if (self.nDimension != src.nDimension()) {
+      return false
+    }
+
+    if (self.isEmpty != src.isEmpty) {
       return false
     }
 
