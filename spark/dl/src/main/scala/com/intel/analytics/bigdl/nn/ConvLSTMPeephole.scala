@@ -16,12 +16,12 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
+
 import scala.reflect.ClassTag
 
 /**
@@ -60,11 +60,11 @@ class ConvLSTMPeephole[T : ClassTag](
     hiddensShape = Array(outputSize, outputSize),
     regularizers = Array(wRegularizer, uRegularizer, bRegularizer, cRegularizer)
   ) {
-  var inputGate: Sequential[T] = null
-  var forgetGate: Sequential[T] = null
-  var outputGate: Sequential[T] = null
-  var hiddenLayer: Sequential[T] = null
-  var cellLayer: Sequential[T] = null
+  var inputGate: Sequential[T] = _
+  var forgetGate: Sequential[T] = _
+  var outputGate: Sequential[T] = _
+  var hiddenLayer: Sequential[T] = _
+  var cellLayer: Sequential[T] = _
 //  val joinDim = 2
   override var cell: AbstractModule[Activity, Activity, T] = buildConvLSTM()
 

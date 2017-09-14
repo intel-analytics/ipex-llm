@@ -24,6 +24,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer.{ContainerSerializable, DataConverter, ModuleData, ModuleSerializer}
 import com.intel.analytics.bigdl.utils.{T, Table}
 import serialization.Bigdl.{AttrValue, BigDLModule}
+
 import scala.reflect.ClassTag
 import scala.reflect.runtime._
 

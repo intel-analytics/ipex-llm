@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.tensor.{QuantizedTensor, Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import org.apache.spark.SparkContext
 import org.apache.spark.broadcast.Broadcast
+
 import scala.reflect.ClassTag
 
 /**
@@ -57,8 +58,7 @@ class ModelBroadcast[T: ClassTag](implicit ev: TensorNumeric[T]) extends Seriali
    */
   def value(): Module[T] = {
     val localModel = broadcastModel.value.cloneModule()
-    val weightAndBias = broadcastParameters.value
-    putWeightBias(weightAndBias, localModel)
+    putWeightBias(broadcastParameters.value, localModel)
     localModel
   }
 

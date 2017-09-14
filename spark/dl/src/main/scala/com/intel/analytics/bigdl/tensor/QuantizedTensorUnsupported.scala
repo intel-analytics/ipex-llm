@@ -1368,4 +1368,19 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
 
   override def resize(size1: Int, size2: Int, size3: Int, size4: Int, size5: Int): this.type =
     throw new UnsupportedOperationException(errorString)
+
+  override def isEmpty: Boolean =
+    throw new UnsupportedOperationException(errorString)
+
+  override def isScalar: Boolean =
+    throw new UnsupportedOperationException(errorString)
+
+  override def value(): T =
+    throw new UnsupportedOperationException(errorString)
+
+  override def setValue(value: T): this.type =
+    throw new UnsupportedOperationException(errorString)
+
+  override def zipWith[A: ClassTag, B: ClassTag](t1: Tensor[A], t2: Tensor[B],
+    func: (A, B) => T): Tensor[T] = throw new UnsupportedOperationException(errorString)
 }

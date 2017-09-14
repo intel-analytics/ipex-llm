@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.nn.abstractnn
 
 import java.nio.ByteOrder
+
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.{Tensor, TensorDataType}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -33,6 +34,7 @@ import com.intel.analytics.bigdl.nn.quantized.Quantization
 import com.intel.analytics.bigdl.utils.caffe.CaffePersister
 import com.intel.analytics.bigdl.utils.serializer.ModulePersister
 import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowSaver}
+
 import scala.reflect.ClassTag
 
 /**
