@@ -896,19 +896,29 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   override def add(value: T, y: Tensor[T]): Tensor[T] = DenseTensorMath.cadd(this, this, value, y)
 
   override def add(x: Tensor[T]): Tensor[T] = {
-    require(this.nElement() == x.nElement())
-    if (MKL.isMKLLoaded && this.isContiguous() && x.isContiguous()) {
-      ev.vAdd(this.nElement(), this.storage().array(), this.storageOffset() - 1,
-        x.storage().array(), x.storageOffset() - 1,
-        this.storage().array(), this.storageOffset() - 1)
-    }
-    else {
-      val func = new TensorFunc4[T] {
-        override def apply (data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit = {
-          data1(offset1) = ev.plus(data1(offset1), data2(offset2))
+    if (this.nElement() == x.nElement()) {
+      if (MKL.isMKLLoaded && this.isContiguous() && x.isContiguous()) {
+        ev.vAdd(this.nElement(), this.storage().array(), this.storageOffset() - 1,
+          x.storage().array(), x.storageOffset() - 1,
+          this.storage().array(), this.storageOffset() - 1)
+      } else {
+        val func = new TensorFunc4[T] {
+          override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit = {
+            data1(offset1) = ev.plus(data1(offset1), data2(offset2))
+          }
         }
+        DenseTensorApply.apply2[T](this, x, func)
       }
-      DenseTensorApply.apply2[T](this, x, func)
+    } else {
+      // Try to do some broadcasting
+      DenseTensor.checkBroadcastDims(this, x)
+
+      // recursive add
+      var i = 0
+      while(i < this.size(1)) {
+        this.select(1, i + 1).add(x)
+        i += 1
+      }
     }
     this
   }
@@ -2353,7 +2363,7 @@ object DenseTensor {
     Tensor(Storage(new Array[T](length)), 1, sizes).fill(ev.fromType[Int](1))
   }
 
-  private[tensor] def gaussian1D[@specialized(Float, Double) T: ClassTag](
+  private[tensor] def gaussian1D[@specialized T: ClassTag](
       size: Int = 3,
       sigma: Double = 0.25,
       amplitude: Int = 1,
@@ -2381,5 +2391,25 @@ object DenseTensor {
       gauss.div(gauss.sum())
     }
     gauss
+  }
+
+  private[tensor] def checkBroadcastDims[@specialized T: ClassTag](tensor: Tensor[T],
+    other: Tensor[T]): Unit = {
+    val errorMsg = s"tensor size not match ${tensor.size.mkString("x")} " +
+      s"${other.size.mkString("x")}"
+    require(tensor.nDimension >= other.nDimension(), errorMsg)
+    val delta = tensor.nDimension - other.nDimension()
+    var d = other.nDimension()
+    // Check dimensions
+    var broadcasting = false
+    while(d > 0) {
+      if (broadcasting) {
+        require(other.size(d) == 1, errorMsg)
+      } else if (tensor.size(delta + d) != other.size(d)) {
+        require(other.size(d) == 1, errorMsg)
+        broadcasting = true
+      }
+      d -= 1
+    }
   }
 }

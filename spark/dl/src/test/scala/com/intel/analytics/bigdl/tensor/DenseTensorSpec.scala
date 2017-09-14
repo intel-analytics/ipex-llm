@@ -820,4 +820,32 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     t.update(Array[Int](), 2.0)
     t should be (DenseTensor[Double](2.0))
   }
+
+  "Tensor add" should "support broadcasting" in {
+    val t1 = Tensor[Double](T(1, 2, 3))
+    val t2 = Tensor[Double](T(T(2, 5, 3), T(3, 6, 4)))
+    t2.add(t1) should be (Tensor[Double](T(T(3, 7, 6), T(4, 8, 7))))
+  }
+
+  "Tensor add" should "support broadcasting with singleton dimension" in {
+    val t1 = Tensor[Double](T(T(1, 2, 3)))
+    val t2 = Tensor[Double](T(T(2, 5, 3), T(3, 6, 4)))
+    t2.add(t1) should be (Tensor[Double](T(T(3, 7, 6), T(4, 8, 7))))
+  }
+
+  "Tensor add" should "catch exception when broadcasting size not match" in {
+    val t1 = Tensor[Double](T(1, 2))
+    val t2 = Tensor[Double](T(T(2, 5, 3), T(3, 6, 4)))
+    intercept[IllegalArgumentException] {
+      t2.add(t1) should be (Tensor[Double](T(T(3, 7, 6), T(4, 8, 7))))
+    }
+  }
+
+  "Tensor add" should "catch exception when broadcasting size not match 2" in {
+    val t1 = Tensor[Double](T(T(1, 2, 3), T(1, 2, 3), T(1, 2, 3)))
+    val t2 = Tensor[Double](T(T(2, 5, 3), T(3, 6, 4)))
+    intercept[IllegalArgumentException] {
+      t2.add(t1) should be (Tensor[Double](T(T(3, 7, 6), T(4, 8, 7))))
+    }
+  }
 }
