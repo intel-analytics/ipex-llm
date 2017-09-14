@@ -49,7 +49,7 @@ def __prepare_bigdl_env():
     if conf_paths and conf_paths:
         assert len(conf_paths) == 1, "Expecting one jar: %s" % len(jar_paths)
         assert len(conf_paths) == 1, "Expecting one conf: %s" % len(conf_paths)
-        append_path("SPARK_CLASSPATH", jar_paths[0])
+        #append_path("SPARK_CLASSPATH", jar_paths[0])
         print("Prepending %s to sys.path" % conf_paths[0])
         sys.path.insert(0, conf_paths[0])
 

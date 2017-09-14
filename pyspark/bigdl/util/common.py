@@ -276,11 +276,29 @@ def to_list(a):
         return a
     return [a]
 
+def add_cp(sparkConf,str):
+    original_driver_classpath = ":" + sparkConf.get("spark.driver.extraClassPath") \
+        if sparkConf.contains("spark.driver.extraClassPath") else ""
+    original_executor_classpath = ":" + sparkConf.get("spark.executor.extraClassPath") \
+        if sparkConf.contains("spark.executor.extraClassPath") else ""
+    sparkConf.set("spark.driver.extraClassPath", str + original_driver_classpath)
+    sparkConf.set("spark.executor.extraClassPath", str + original_executor_classpath)
+
+def add_cp_from_env(sparkConf):
+    if(os.getenv("BIGDL_CLASSPATH")):
+        add_cp(sparkConf, os.getenv("BIGDL_CLASSPATH"))
+
+def add_cp_from_pip(sparkConf):
+    jar_dir = os.path.abspath(__file__ + "/../../")
+    jar_paths = glob.glob(os.path.join(jar_dir, "share/lib/*.jar"))
+    if jar_paths:
+        add_cp(sparkConf,jar_paths[0])
 
 def create_spark_conf():
     bigdl_conf = get_bigdl_conf()
     sparkConf = SparkConf()
     sparkConf.setAll(bigdl_conf.items())
+    add_cp_from_env(sparkConf)
     return sparkConf
 
 def get_spark_context(conf = None):
