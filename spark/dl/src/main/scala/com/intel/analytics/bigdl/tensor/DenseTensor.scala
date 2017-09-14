@@ -346,7 +346,6 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def set(): Tensor[T] = {
-    if (this.isEmpty) return this
     this.resize(0)
     if(this._storage != null) {
       this._storage.resize(0)
@@ -1983,6 +1982,19 @@ object DenseTensor {
     self: DenseTensor[T], nDim: Int, _size: Array[Int], _stride: Array[Int])
   : DenseTensor[T] = {
 
+    // resize as a scalar
+    if (nDim == 0 && _size.isEmpty) {
+      self._size = Array[Int]()
+      self._stride = Array[Int]()
+      self.nDimension = nDim
+      val totalSize = 1
+      if (self._storage == null ) {
+        self._storage = new ArrayStorage(new Array[T](totalSize + self._storageOffset))
+      } else if (totalSize + self._storageOffset > self._storage.length) {
+        self._storage.resize(totalSize + self._storageOffset)
+      }
+    }
+
     var hasCorrectSize = true
     var nDim_ = 0
     var d = 0
@@ -2003,14 +2015,12 @@ object DenseTensor {
       d += 1
     }
 
-    if (self._size == null && _size != null) hasCorrectSize = false
-
     if (nDim_ != self.nDimension) hasCorrectSize = false
 
     if (hasCorrectSize) return self
 
-    if (nDim_ >= 0) {
-      if (nDim_ != self.nDimension || self._size == null) {
+    if (nDim_ > 0) {
+      if (nDim_ != self.nDimension) {
         self._size = new Array[Int](nDim)
         self._stride = new Array[Int](nDim)
         self.nDimension = nDim
@@ -2040,6 +2050,8 @@ object DenseTensor {
           self._storage.resize(totalSize + self._storageOffset)
         }
       }
+    } else {
+      self.nDimension = 0
     }
 
     self
