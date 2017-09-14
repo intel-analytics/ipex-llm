@@ -36,11 +36,18 @@ class Unsqueeze[T: ClassTag](
   var numInputDims: Int = Int.MinValue
   )(implicit ev: TensorNumeric[T]) extends TensorModule[T]  {
 
+
   def setNumInputDims(numInputDims: Int): Unit = {
     this.numInputDims = numInputDims
   }
 
   private def getActualPosition(input: Tensor[T]) : Int = {
+    val dim = if (pos < 0) {
+      input.dim() + pos + 1
+    } else {
+      pos
+    }
+
     // get valid dimension offset for batchMode (if any)
     val inputDim = input.dim() // data batch dim
     numInputDims = if (numInputDims != Int.MinValue) numInputDims else inputDim // feature map dim
@@ -49,7 +56,7 @@ class Unsqueeze[T: ClassTag](
       s" input feature map dim ${numInputDims}, inputdim ${inputDim}")
 
     // the actual position; clearer error message for batchMode (if any)
-    val actualPos = pos + offsetDim
+    val actualPos = dim + offsetDim
     require(actualPos >= 1 && actualPos <= (inputDim + 1), s"Invalid position: $pos. " +
       s"input:dim() is $input, input feature map dim (numInputDims) is $numInputDims.")
 
