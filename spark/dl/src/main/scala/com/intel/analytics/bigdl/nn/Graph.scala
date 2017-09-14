@@ -274,7 +274,9 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
   private var backwardNodes: Array[Node[AbstractModule[Activity, Activity, T]]] = _
 
 
-  modules.appendAll(forwardNodes.filter(n => !n.eq(dummyOutput)).map(_.element))
+  modules.appendAll(backGraph.topologySort
+    .filterNot(_.element.isInstanceOf[ControlDependency[T]]).reverse
+    .filter(n => !n.eq(dummyOutput)).map(_.element))
 
   /**
    * Generate backward graph and apply the stopGrad
@@ -283,7 +285,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
     val gradGraph = backGraph.cloneGraph(true)
     dummyOutputGrad = gradGraph.source
     val originalNodes = gradGraph.DFS
-    originalNodes.filter(x => isStopGradient(x.element)).foreach(_.removePrevEdges())
+    originalNodes.filter(x => isStopGradient(x.element)).foreach(_.removeNextEdges())
     backwardNodes = gradGraph.DFS.filter(n => !n.eq(dummyOutputGrad))
       .filterNot(_.element.isInstanceOf[ControlDependency[_]]).toArray
     backwardScheduler = new Scheduler[T](

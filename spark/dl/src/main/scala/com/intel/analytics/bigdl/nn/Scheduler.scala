@@ -37,9 +37,9 @@ import scala.reflect.ClassTag
  * @param outputNodes target nodes
  * @tparam T
  */
-private[bigdl] class Scheduler[T](
+private[bigdl] class Scheduler[T] (
     inputNodes: Seq[ModuleNode[T]], outputNodes: Seq[ModuleNode[T]]
-  ) {
+  ) extends Serializable {
 
   import Scheduler._
 
@@ -149,7 +149,7 @@ private[bigdl] class Scheduler[T](
 }
 
 object Scheduler {
-  class NodeStatusManager[T] {
+  class NodeStatusManager[T] extends Serializable {
     private val nodeStatus = new mutable.HashMap[String, NodeStatus]()
 
     /**

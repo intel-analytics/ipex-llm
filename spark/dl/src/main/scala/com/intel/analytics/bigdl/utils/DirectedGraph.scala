@@ -274,6 +274,21 @@ class Node[T](val element: T) extends Serializable {
   }
 
   /**
+   * remove edges that connect next nodes
+   * @return current node
+   */
+  def removeNextEdges(): Node[T] = {
+    val curNode = this  // Because of the closure
+    nexts.map(_._1).foreach(pn =>
+      pn.prevs.filter(_._1 == curNode).foreach(e =>
+        pn.prevs -= e
+      )
+    )
+    nexts.clear()
+    this
+  }
+
+  /**
    * Use current node as source to build a direct graph
    * @param reverse
    * @return
