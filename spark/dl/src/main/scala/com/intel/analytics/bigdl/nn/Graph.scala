@@ -432,6 +432,19 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
     forwardNodes.filter(n => !n.eq(dummyOutput))
   }
 
+  /**
+   * Get forward executions, the dummy nodes and control dependency nodes will be filtered.
+   *
+   * This method will output a sorted executions. If the graph contains loop, it will throw an
+   * exception
+   * @return
+   */
+  def getSortedForwardExecutions: Array[Node[AbstractModule[Activity, Activity, T]]] = {
+    backGraph.topologySort
+      .filterNot(_.element.isInstanceOf[ControlDependency[T]]).reverse
+      .filter(n => !n.eq(dummyOutput))
+  }
+
   @inline
   private def accActivity(activity: Activity, other: Activity): Activity = {
     if (activity == null) {
@@ -545,22 +558,24 @@ object Graph extends ContainerSerializable {
     val outputs = new ArrayBuffer[ModuleNode[T]]
 
     // layer name to layer node mapping
-    val layerMap = new mutable.HashMap[String, ModuleNode[T]]()
+    val layerMap = new mutable.HashMap[String, (ModuleNode[T], Seq[String])]()
     subModules.foreach(subModule => {
       val bigDLModule = ModuleSerializer.load(subModule)
       val moduleNode = bigDLModule.module.inputs()
       val preNodes = bigDLModule.pre
-      preNodes.foreach(pre => {
-        if (layerMap.contains(pre)) {
-          layerMap(pre) -> moduleNode
-        }
-      })
-      val nextNodes = bigDLModule.next
-      layerMap(bigDLModule.module.getName) = moduleNode
+      layerMap(bigDLModule.module.getName) = (moduleNode, preNodes)
     })
 
-    inputNames.foreach(inputName => inputs.append(layerMap(inputName)))
-    outputNames.foreach(outputName => outputs.append(layerMap(outputName)))
+    layerMap.values.foreach(moduleNode => {
+      moduleNode._2.foreach(pre => {
+        if (layerMap.contains(pre)) {
+          layerMap(pre)._1 -> moduleNode._1
+        }
+      })
+    })
+
+    inputNames.foreach(inputName => inputs.append(layerMap(inputName)._1))
+    outputNames.foreach(outputName => outputs.append(layerMap(outputName)._1))
 
     var sharedVariables : Option[(Array[Tensor[T]], Array[Tensor[T]])] = None
     if (attributes.containsKey("sharedWeight") && attributes.containsKey("sharedBias")) {
