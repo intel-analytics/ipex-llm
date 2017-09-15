@@ -19,7 +19,7 @@ import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.ops._
-import com.intel.analytics.bigdl.nn.tf.WithoutInput
+import com.intel.analytics.bigdl.nn.tf.{ControlDependency, WithoutInput}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Edge, Node, T}
@@ -80,7 +80,7 @@ private[bigdl] class Scheduler[T] (
    */
   def fetch(): ModuleNode[T] = {
     var node = readyQueue.dequeue()
-    while (nodeStatus.isConst(node)) {
+    while (nodeStatus.isConst(node) || node.element.isInstanceOf[ControlDependency[_]]) {
       schedule(node)
       node = readyQueue.dequeue()
     }
