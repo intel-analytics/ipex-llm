@@ -173,7 +173,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    */
   def getName() : String = {
     if (this.name == null) {
-      s"${this.getClass.getSimpleName}@${namePostfix}"
+      s"${this.getClass.getSimpleName}${namePostfix}"
     } else {
       this.name
     }
