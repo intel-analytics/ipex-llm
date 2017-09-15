@@ -109,6 +109,7 @@ object GraphQuantizer extends Quantizable {
     implicit ev: TensorNumeric[T]): Module[T] = {
     val graph = module.asInstanceOf[Graph[T]]
     val sortedNodes = graph.getForwardExecutions
+
     for (i <- sortedNodes.indices) {
       val currNode = sortedNodes(i)
       val currModule = currNode.element
@@ -118,6 +119,11 @@ object GraphQuantizer extends Quantizable {
         currNode.setElement(waitedModule)
       }
     }
+
+    // modules in container need to rebuild
+    graph.resetModules()
+    // nodes in backward executions need to rebuild
+    graph.build()
 
     graph
   }

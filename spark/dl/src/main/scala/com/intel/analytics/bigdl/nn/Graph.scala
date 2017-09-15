@@ -537,6 +537,11 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
   def getOutputs: Seq[ModuleNode[T]] = {
     outputs
   }
+
+  def resetModules(): Unit = {
+    modules.clear()
+    modules.appendAll(forwardExecutions.filter(n => !n.eq(dummyOutput)).map(_.element))
+  }
 }
 
 object Graph extends ContainerSerializable {

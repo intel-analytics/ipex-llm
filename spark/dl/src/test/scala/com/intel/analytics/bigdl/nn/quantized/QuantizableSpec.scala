@@ -410,7 +410,7 @@ class QuantizableSpec extends FlatSpec with Matchers {
   "Linear perf" should "speed up" in {
     val inputSize = 1152
     val hiddenSize = 1152
-    val time = 100
+    val time = 1000
     val batchSize = 4
 
     val model = Sequential[Float]()
