@@ -54,13 +54,12 @@ object TensorflowSaver {
       new mutable.HashMap[AbstractModule[Activity, Activity, T], ArrayBuffer[NodeDef]]()
     model.inputs.zip(inputs).foreach(n => {
       inputNodeCache(n._1.element) = ArrayBuffer(n._2)
-      println()
     })
 
     val graphBuilder = GraphDef.newBuilder()
     inputs.foreach(graphBuilder.addNode(_))
 
-    model.getForwardExecutions.foreach(n => {
+    model.getSortedForwardExecutions.foreach(n => {
       val nodeDefs = maps(n.element.getClass.getName).toTFDef(n.element, inputNodeCache(n.element),
         byteOrder)
       nodeDefs.foreach(nDef => {
