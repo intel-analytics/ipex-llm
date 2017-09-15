@@ -15,23 +15,20 @@
  */
 package com.intel.analytics.bigdl.utils.tf
 
-import java.io.InputStream
-import java.io.{DataInputStream, FileInputStream, FileReader => JFileReader}
+import java.io.{DataInputStream, InputStream, FileReader => JFileReader}
 import java.nio.ByteOrder
 import java.util
-
-import org.tensorflow.framework.{GraphDef, NodeDef}
-import com.google.protobuf.{CodedInputStream, TextFormat}
 import java.util.List
 
+import com.google.protobuf.{CodedInputStream, TextFormat}
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.Graph
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{DirectedGraph, Node}
-import com.intel.analytics.bigdl.utils.FileReader
 import com.intel.analytics.bigdl.utils.tf.TensorflowToBigDL._
+import com.intel.analytics.bigdl.utils.{DirectedGraph, FileReader, Node}
+import org.tensorflow.framework.{GraphDef, NodeDef}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -242,6 +239,22 @@ object TensorflowLoader{
             throw new UnsupportedOperationException(errorMsg)
           )
 
+        // set name
+        if (nodes.size() == 1) {
+          // Use tf operation name if one to one map
+          module.setName(removeColon(nodes.get(0).element.getName()))
+        } else {
+          // Many to one map
+          val name = removeColon(findCommonPrefix(nodes.asScala.map(_.element.getName)))
+          if (name == "") {
+            // Use a name combine nodes
+            module.setName(s"[${nodes.asScala.map(_.element.getName).map(_.replaceAll("/", "\\\\"))
+              .map(removeColon(_)).mkString(", ")}]")
+          } else {
+            // Use the common name
+            module.setName(name + "/" + module.getName())
+          }
+        }
         val node = new Node(module)
         nodes.asScala.foreach(m => {
           convertedNode(m) = node
@@ -366,5 +379,30 @@ object TensorflowLoader{
     })
     import scala.collection.JavaConverters._
     return (patternToGraph.valuesIterator.toList.asJava, inputs)
+  }
+
+  private def findCommonPrefix(data: Seq[String]): String = {
+    if (data.length == 0) return ""
+    var shortest = data(0).length
+    data.foreach(s => if (s.length < shortest) shortest = s.length)
+    var prefix = ""
+    var i = 0
+    while(i < shortest) {
+      var c = data(0).charAt(i)
+      data.foreach(s => if (c != s.charAt(i)) return removeLast(prefix))
+      prefix += c
+      i += 1
+    }
+
+    return removeLast(prefix)
+  }
+
+  private def removeLast(s: String): String = {
+    if (s.length == 0) return s
+    if (s.charAt(s.length - 1) == '/') s.substring(0, s.length - 1) else s
+  }
+
+  private def removeColon(s: String): String = {
+    s.replaceAll(":", "")
   }
 }

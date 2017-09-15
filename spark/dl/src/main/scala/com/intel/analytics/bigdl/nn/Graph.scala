@@ -474,15 +474,22 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
    * Save current model graph to a folder, which can be display in tensorboard by running
    *   tensorboard --logdir logPath
    * @param logPath
+   * @param backward Draw backward graph instead of forward
    * @return
    */
-  def saveGraphTopology(logPath: String): this.type = {
+  def saveGraphTopology(logPath: String, backward: Boolean = false): this.type = {
     val writer = new TFFileWriter(logPath)
     val graphBuilder = GraphDef.newBuilder()
-    forwardNodes.map(m => {
-      val nodeDef = Tensorflow.bigdlModule(m.element, m.nextNodes.map(_.element.getName()).asJava)
+    val nodes = if (backward) {
+      backwardNodes.filter(n => !n.eq(dummyOutputGrad))
+    } else {
+      forwardNodes.filter(n => !n.eq(dummyOutput))
+    }
+    nodes.map(m => {
+      val nodeDef = Tensorflow.bigdlModule(m.element, m.prevNodes.map(_.element.getName()).asJava)
       graphBuilder.addNode(nodeDef)
     })
+
     writer.addGraphDef(graphBuilder.build())
     writer.close()
     this

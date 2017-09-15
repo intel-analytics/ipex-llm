@@ -119,7 +119,8 @@ private[bigdl] class Scheduler[T] (
   }
 
   private def selectNexts(candidateNodes: Seq[ModuleNode[T]], curNode: ModuleNode[T]): Unit = {
-    candidateNodes.foreach(nextNode => {
+    val nodeSet = candidateNodes.toSet  // remove duplicate nodes
+    nodeSet.foreach(nextNode => {
       if (nextNode.element.isInstanceOf[MergeOps[_]]) {
         val merge = nextNode.element.asInstanceOf[MergeOps[_]]
         require(nodeStatus.notExecuted(nextNode), s"Merge node(${nextNode.element.getName()}) " +
