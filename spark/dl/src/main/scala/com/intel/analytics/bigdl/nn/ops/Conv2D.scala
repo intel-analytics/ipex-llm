@@ -29,11 +29,13 @@ class Conv2D[T: ClassTag](
   format: DataFormat = DataFormat.NHWC
 )(implicit ev: TensorNumeric[T]) extends Operation[Table, Tensor[T], T] {
 
+  private var conv: SpatialConvolution[T] = _
+
   override def updateOutput(inputs: Table): Tensor[T] = {
     val input: Tensor[T] = inputs[Tensor[T]](1)
     val filter: Tensor[T] = inputs[Tensor[T]](2)
 
-    val conv: SpatialConvolution[T] = format match {
+    conv = format match {
       case DataFormat.NHWC =>
         if (padding == "SAME") {
           SpatialConvolution(
@@ -45,6 +47,7 @@ class Conv2D[T: ClassTag](
             strideW = strides(2),
             padH = -1,
             padW = -1,
+            withBias = false,
             format = format
           )
         } else if (padding == "VALID") {
@@ -55,11 +58,13 @@ class Conv2D[T: ClassTag](
             kernelW = filter.size(2),
             strideH = strides(1),
             strideW = strides(2),
+            withBias = false,
             format = format
           )
         } else {
           throw new RuntimeException("Padding can only support SAME and VALID padding")
         }
+
       case DataFormat.NCHW =>
         if (padding == "SAME") {
           SpatialConvolution(
@@ -69,8 +74,9 @@ class Conv2D[T: ClassTag](
             kernelW = filter.size(2),
             strideH = strides(2),
             strideW = strides(3),
-            padH = (filter.size(3) - 1) / 2,
-            padW = (filter.size(4) - 1) / 2,
+            padH = -1,
+            padW = -1,
+            withBias = false,
             format = format
           )
         } else if (padding == "VALID") {
@@ -81,6 +87,7 @@ class Conv2D[T: ClassTag](
             kernelW = filter.size(2),
             strideH = strides(2),
             strideW = strides(3),
+            withBias = false,
             format = format
           )
         } else {
@@ -88,10 +95,7 @@ class Conv2D[T: ClassTag](
         }
     }
 
-    conv.bias.zero()
-
-    conv.weight.resizeAs(filter).copy(filter)
-
+    conv.setWeightsBias(Array(filter))
     output = conv.updateOutput(input)
     output
   }
