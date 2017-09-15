@@ -608,7 +608,7 @@ class RecurrentSpec extends FlatSpec with Matchers {
     Recurrent.selectCopy(input, 2, output1)
     output1 should be (input.select(2, 2))
 
-    Recurrent.copy(arrInput, output2, 0)
+    Recurrent.copy(arrInput, output2)
     output2 should be (input)
   }
 }

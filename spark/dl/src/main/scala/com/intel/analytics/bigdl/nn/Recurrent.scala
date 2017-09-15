@@ -45,8 +45,8 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
   private val gradInputCell = Tensor[T]()
   private var outputCell = Tensor[T]()
   private val _input = T()
-  private val batchDim = 1
-  private val timeDim = 2
+  private val batchDim = Recurrent.batchDim
+  private val timeDim = Recurrent.timeDim
   private val inputDim = 1
   private val hidDim = 2
   private var (batchSize, times) = (0, 0)
@@ -120,8 +120,8 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     *             the left is size of images
    */
   private def extend(sizes: Array[Int]): Unit = {
-    val times = sizes(1)
-    val batchSize = sizes(0)
+    val times = sizes(timeDim - 1)
+    val batchSize = sizes(batchDim - 1)
     val imageSize = sizes.drop(3)
     if (hidden == null) {
       require((preTopology == null && modules.length == 1) ||
@@ -248,8 +248,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
       i += 1
     }
 
-    Recurrent.copy(cells.map(x => x.output.toTable[Tensor[T]](inputDim)),
-        output, 0)
+    Recurrent.copy(cells.map(x => x.output.toTable[Tensor[T]](inputDim)), output)
     output
   }
 
@@ -323,8 +322,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
       currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
       i -= 1
     }
-    Recurrent.copy(cells.map(x => x.gradInput.toTable[Tensor[T]](inputDim)),
-        gradInputCell, 0)
+    Recurrent.copy(cells.map(x => x.gradInput.toTable[Tensor[T]](inputDim)), gradInputCell)
     if (preTopology != null) {
       gradInput = preTopology.updateGradInput(input, gradInputCell).toTensor[T]
     }
@@ -364,8 +362,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
       gradInputCell
     }
     gradInputCell.resizeAs(outputCell)
-    Recurrent.copy(cells.map(x => x.gradInput.toTable[Tensor[T]](inputDim)),
-      gradInputCell, 0)
+    Recurrent.copy(cells.map(x => x.gradInput.toTable[Tensor[T]](inputDim)), gradInputCell)
 
     if (preTopology != null) {
       gradInput = preTopology.backward(input, gradInputCell).toTensor[T]
@@ -481,6 +478,10 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
 }
 
 object Recurrent extends ContainerSerializable {
+
+  private val batchDim = 1
+  private val timeDim = 2
+
   def apply[@specialized(Float, Double) T: ClassTag](
     batchNormParams: BatchNormParams[T] = null)
     (implicit ev: TensorNumeric[T]) : Recurrent[T] = {
@@ -495,11 +496,11 @@ object Recurrent extends ContainerSerializable {
    * @param dst
    */
   private[bigdl] def copy[@specialized(Float, Double) T: ClassTag](
-    src: ArrayBuffer[Tensor[T]], dst: Tensor[T], offset: Int): Unit = {
-    val timeSize = dst.size(2)
+    src: ArrayBuffer[Tensor[T]], dst: Tensor[T]): Unit = {
+    val timeSize = dst.size(timeDim)
     var t = 1
-    while ((t + offset) <= timeSize) {
-      copyToIndex(src(t -1), dst, t + offset)
+    while (t <= timeSize) {
+      copyToIndex(src(t -1), dst, t)
       t += 1
     }
   }
@@ -517,8 +518,8 @@ object Recurrent extends ContainerSerializable {
         dst.resizeAs(src.select(2, srcIndex))
       }
 
-      val batchSize = src.size(1)
-      val timeSize = src.size(2)
+      val batchSize = src.size(batchDim)
+      val timeSize = src.size(timeDim)
       val stepSize = src.nElement() / (batchSize * timeSize)
 
       val srcArr = src.storage().array()
@@ -552,8 +553,8 @@ object Recurrent extends ContainerSerializable {
   private[bigdl] def copyToIndex[@specialized(Float, Double) T: ClassTag](
     src: Tensor[T], dst: Tensor[T], dstIndex: Int): Tensor[T] = {
     if (src.isContiguous() && dst.isContiguous()) {
-      val batchSize = dst.size(1)
-      val timeSize = dst.size(2)
+      val batchSize = dst.size(batchDim)
+      val timeSize = dst.size(timeDim)
       val stepSize = dst.nElement() / (batchSize * timeSize)
 
       val dstArr = dst.storage().array()
