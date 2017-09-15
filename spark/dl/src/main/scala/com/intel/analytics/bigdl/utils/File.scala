@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.utils
 import java.io._
 import java.net.URL
 
+import com.intel.analytics.bigdl
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FilenameUtils
 import org.apache.hadoop.conf.Configuration
@@ -212,18 +213,7 @@ object File {
       if (null != fs) fs.close()
     }
   }
-  /**
-   * load  file according to url
-   * @param url
-   * @param dir
-   */
-  def downloadFromUrl(url: String, dir: String): Unit = {
-      val httpurl = new URL(url)
-      val fileName = FilenameUtils.getBaseName(url) + '.' + FilenameUtils.getExtension(url)
-      val f = new File(dir + fileName)
-      FileUtils.copyURLToFile(httpurl, f)
 
-  }
 
 }
 
@@ -237,8 +227,20 @@ private[bigdl] class FileReader(fileName: String) {
   private val conf = File.getConfiguration(fileName)
   private var path: Path = null
   private var fs: FileSystem = null
-  private val httpPrefix: String = "http:"
-  private val httpsPrefix: String = "https:"
+  private val httpPrefix: String = "http://"
+  private val httpsPrefix: String = "https://"
+  /**
+   * load  file according to url
+   * @param url
+   * @param dir
+   */
+  private def downloadFromUrl(url: String, dir: String): Unit = {
+    val httpurl = new URL(url)
+    val fileName = FilenameUtils.getBaseName(url) + '.' + FilenameUtils.getExtension(url)
+    val f = new File(dir + fileName)
+    FileUtils.copyURLToFile(httpurl, f)
+
+  }
   /**
    * get an InputStream
    * @return
@@ -246,8 +248,8 @@ private[bigdl] class FileReader(fileName: String) {
   def open(): InputStream = {
     require(inputStream == null, s"File $fileName has been opened already.")
     if(fileName.startsWith(httpPrefix) || fileName.startsWith(httpsPrefix)) {
-      File.downloadFromUrl(fileName, System.getProperty("user.dir"))
-      exactFileName = System.getProperty(("user.dir")) +
+      downloadFromUrl(fileName, "/tmp/")
+      exactFileName = "/tmp/" +
         FilenameUtils.getBaseName(fileName) + '.' +
         FilenameUtils.getExtension(fileName)
     }
@@ -265,7 +267,13 @@ private[bigdl] class FileReader(fileName: String) {
   def close(): Unit = {
     if (null != inputStream) inputStream.close()
     fs.close()
+    if(fileName != exactFileName) {
+       if (fs.exists(path)) {
+         fs.delete(path, true)
+       }
+    }
   }
+
 }
 
 object FileReader {
