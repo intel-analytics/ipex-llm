@@ -119,7 +119,8 @@ private[bigdl] class Scheduler[T] (
   }
 
   private def selectNexts(candidateNodes: Seq[ModuleNode[T]], curNode: ModuleNode[T]): Unit = {
-    val nodeSet = candidateNodes.toSet  // remove duplicate nodes
+    val nodeSet = new mutable.LinkedHashSet[ModuleNode[T]]()
+    candidateNodes.foreach(nodeSet.add(_))  // remove duplicate nodes and keep the order
     nodeSet.foreach(nextNode => {
       if (nextNode.element.isInstanceOf[MergeOps[_]]) {
         val merge = nextNode.element.asInstanceOf[MergeOps[_]]
