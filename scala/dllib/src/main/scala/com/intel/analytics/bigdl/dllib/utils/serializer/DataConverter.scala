@@ -121,33 +121,33 @@ object DataConverter extends DataConverter{
     attributeBuilder : AttrValue.Builder, value: Any, valueType : universe.Type = typePlaceHolder)
     (implicit ev: TensorNumeric[T]): Unit = {
     // to make it compatible with Java types
-    if (valueType == universe.typeOf[Int] ||
-      valueType == universe.typeOf[java.lang.Integer]) {
+    if (valueType =:= universe.typeOf[Int] ||
+      valueType =:= universe.typeOf[java.lang.Integer]) {
       attributeBuilder.setDataType(DataType.INT32)
       attributeBuilder.setInt32Value(value.asInstanceOf[Int])
-    } else if (valueType == universe.typeOf[Long] ||
-      valueType == universe.typeOf[java.lang.Long]) {
+    } else if (valueType =:= universe.typeOf[Long] ||
+      valueType =:= universe.typeOf[java.lang.Long]) {
       attributeBuilder.setDataType(DataType.INT64)
       attributeBuilder.setInt64Value(value.asInstanceOf[Long])
-    } else if (valueType == universe.typeOf[Float] ||
-      valueType == universe.typeOf[java.lang.Float]) {
+    } else if (valueType =:= universe.typeOf[Float] ||
+      valueType =:= universe.typeOf[java.lang.Float]) {
       attributeBuilder.setDataType(DataType.FLOAT)
       attributeBuilder.setFloatValue(value.asInstanceOf[Float])
-    } else if (valueType == universe.typeOf[Double] ||
-      valueType == universe.typeOf[java.lang.Double]) {
+    } else if (valueType =:= universe.typeOf[Double] ||
+      valueType =:= universe.typeOf[java.lang.Double]) {
       attributeBuilder.setDataType(DataType.DOUBLE)
       attributeBuilder.setDoubleValue(value.asInstanceOf[Double])
-    } else if (valueType == universe.typeOf[String] ||
-      valueType == universe.typeOf[java.lang.String]) {
+    } else if (valueType =:= universe.typeOf[String] ||
+      valueType =:= universe.typeOf[java.lang.String]) {
       attributeBuilder.setDataType(DataType.STRING)
       attributeBuilder.setStringValue(value.asInstanceOf[String])
-    } else if (valueType == universe.typeOf[Boolean] ||
-      valueType == universe.typeOf[java.lang.Boolean]) {
+    } else if (valueType =:= universe.typeOf[Boolean] ||
+      valueType =:= universe.typeOf[java.lang.Boolean]) {
       attributeBuilder.setDataType(DataType.BOOL )
       attributeBuilder.setBoolValue(value.asInstanceOf[Boolean])
-    } else if (valueType == universe.typeOf[VariableFormat]) {
+    } else if (valueType =:= universe.typeOf[VariableFormat]) {
       VariableFormatConverter.setAttributeValue(attributeBuilder, value)
-    } else if (valueType == universe.typeOf[InitializationMethod]) {
+    } else if (valueType =:= universe.typeOf[InitializationMethod]) {
       InitMethodConverter.setAttributeValue(attributeBuilder, value)
     } else if (valueType.toString == ModuleSerializer.regularizerType.toString) {
       RegularizerConverter.setAttributeValue(attributeBuilder, value)
