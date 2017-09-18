@@ -114,7 +114,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     val resource = getClass().getClassLoader().getResource("tf")
     val path = processPath(resource.getPath()) + JFile.separator + "test.pb"
     val results = TensorflowLoader.parse(path)
-    val (tfGraph, _) = TensorflowLoader.buildTFGraph(results, Seq("output"))
+    val (tfGraph, _, _) = TensorflowLoader.buildTFGraph(results, Seq("output"))
     tfGraph.size should be(15)  // there's a dummy output
     val topSort = tfGraph.topologySort// It can do topology sort
     topSort.length should be(15)
@@ -139,7 +139,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     val resource = getClass().getClassLoader().getResource("tf")
     val path = processPath(resource.getPath()) + JFile.separator + "test.pb"
     val results = TensorflowLoader.parse(path)
-    val (tfGraph, _) = TensorflowLoader.buildTFGraph(results, Seq("output"),
+    val (tfGraph, _, _) = TensorflowLoader.buildTFGraph(results, Seq("output"),
       (node: NodeDef) => node.getName == "Tanh")
     tfGraph.size should be(9)  // there's a dummy output
     val topSort = tfGraph.topologySort// It can do topology sort
@@ -522,7 +522,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     val tfNodes = TensorflowLoader.parse(modelFile)
 
     // filter node for gradient computing
-    val (tfGraph, inputs) =
+    val (tfGraph, inputs, _) =
       TensorflowLoader.buildTFGraph(tfNodes, endPoints.map(_.split(":")(0)),
         (node: NodeDef) => node.getName == "input_node")
     val context =
