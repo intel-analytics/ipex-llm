@@ -444,8 +444,8 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
     if (layer.adjW != 0 || layer.adjH != 0) {
       throw new IllegalArgumentException("Caffe doesn't support extra width/height amending")
     }
-    val nInputPlane = layer.nInputPlane
-    val nOutputPlane = layer.nOutputPlane
+    val nInputPlane = layer.nOutputPlane
+    val nOutputPlane = layer.nInputPlane
     val kernelW = layer.kW
     val kernelH = layer.kH
     val strideW = layer.dW
