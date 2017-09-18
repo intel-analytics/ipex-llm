@@ -324,6 +324,10 @@ private[bigdl] class Edge private (val fromIndex: Option[Int]) extends Serializa
     s"Edge(fromIndex: $fromIndex)"
   }
 
+  /**
+   * Create a new Instance of this Edge
+   * @return a new Instance of this Edge
+   */
   def newInstance(): Edge = {
     fromIndex match {
       case Some(index) => Edge(index)
