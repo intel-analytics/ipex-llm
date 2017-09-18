@@ -77,7 +77,7 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
     }
     val layerType = getLayerType(layer).toUpperCase
     if ("DECONVOLUTION" == layerType) {
-      Seq(SpatialFullConvolution[T](nInputPlane, nOutPlane, kw, kh, dw, dh, pw, ph, 0, 0, group)
+      Seq(SpatialFullConvolution[T](nOutPlane, nInputPlane, kw, kh, dw, dh, pw, ph, 0, 0, group)
         .setName(getLayerName(layer)).inputs())
     } else {
       Seq(SpatialConvolution[T](nInputPlane, nOutPlane, kw, kh, dw, dh, pw, ph, group)

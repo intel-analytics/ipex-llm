@@ -76,8 +76,8 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
     if (param.getDilationCount == 0 || param.getDilation(0) == 1) {
       val layerType = getLayerType(layer).toUpperCase
       if ("DECONVOLUTION" == layerType) {
-        Seq(SpatialFullConvolution[T](nInputPlane.toInt, nOutPlane.toInt,
-          kw, kh, dw, dh, pw, ph, 0, 0, group, withBias).setName(getLayerName(layer)).inputs())
+        Seq(SpatialFullConvolution[T](nOutPlane.toInt, nInputPlane.toInt,
+          kw, kh, dw, dh, pw, ph, 0, 0, group, !withBias).setName(getLayerName(layer)).inputs())
       } else {
         Seq(SpatialConvolution[T](nInputPlane.toInt, nOutPlane.toInt,
           kw, kh, dw, dh, pw, ph, group, withBias).setName(getLayerName(layer)).inputs())
