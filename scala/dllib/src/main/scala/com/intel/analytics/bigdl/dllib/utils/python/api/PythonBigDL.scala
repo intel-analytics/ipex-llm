@@ -1500,6 +1500,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     new JavaRDD[JTensor](listRDD)
   }
 
+  def evaluate(module: AbstractModule[Activity, Activity, T]):
+  AbstractModule[Activity, Activity, T] = {
+    module.evaluate()
+  }
+
   def modelPredictClass(model: AbstractModule[Activity, Activity, T],
                       dataRdd: JavaRDD[Sample]): JavaRDD[Int] = {
     val tensorRDD = model.predictClass(dataRdd.rdd.map(toSample(_)))
