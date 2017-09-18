@@ -28,7 +28,7 @@ from pyspark.mllib.common import callJavaFunc
 from pyspark import SparkConf
 import numpy as np
 import threading
-from bigdl.util.engine import prepare_env
+from bigdl.util.engine import prepare_env, compare_version
 
 INTMAX = 2147483647
 INTMIN = -2147483648
@@ -286,21 +286,29 @@ def add_cp(sparkConf,str):
 
 def add_cp_from_env(sparkConf):
     if(os.getenv("BIGDL_CLASSPATH")):
-        print(os.getenv("BIGDL_CLASSPATH"))
         add_cp(sparkConf, os.getenv("BIGDL_CLASSPATH"))
 
 def add_cp_from_pip(sparkConf):
     jar_dir = os.path.abspath(__file__ + "/../../")
     jar_paths = glob.glob(os.path.join(jar_dir, "share/lib/*.jar"))
     if jar_paths:
+        assert len(jar_paths) == 1, "Expecting one jar: %s" % len(jar_paths)
         add_cp(sparkConf,jar_paths[0])
 
 def create_spark_conf():
     bigdl_conf = get_bigdl_conf()
     sparkConf = SparkConf()
     sparkConf.setAll(bigdl_conf.items())
-    add_cp_from_pip(sparkConf)
-    #add_cp_from_env(sparkConf)
+    try:
+        import pyspark.version
+        spark_version = pyspark.version.__version__.split("+")[0]
+        if(compare_version(spark_version,"2.2.0")==-1):
+            pass
+        else:
+            add_cp_from_env(sparkConf)
+            add_cp_from_pip(sparkConf)
+    except ImportError:
+        pass
     return sparkConf
 
 def get_spark_context(conf = None):

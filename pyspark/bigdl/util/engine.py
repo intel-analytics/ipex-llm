@@ -46,13 +46,45 @@ def __prepare_bigdl_env():
         except KeyError:
             os.environ[env_var_name] = path
 
-    if conf_paths and conf_paths:
-        assert len(conf_paths) == 1, "Expecting one jar: %s" % len(jar_paths)
+    if jar_paths and conf_paths:
+        assert len(jar_paths) == 1, "Expecting one jar: %s" % len(jar_paths)
         assert len(conf_paths) == 1, "Expecting one conf: %s" % len(conf_paths)
-        #append_path("SPARK_CLASSPATH", jar_paths[0])
+        append_path("BIGDL_CLASSPATH", jar_paths[0])
         print("Prepending %s to sys.path" % conf_paths[0])
         sys.path.insert(0, conf_paths[0])
 
+    def set_spark_classpath(env_var_name):
+        try:
+            os.environ["SPARK_CLASSPATH"] = os.environ[env_var_name]
+        except KeyError:
+            pass
+
+    try:
+        import pyspark.version
+        spark_version = pyspark.version.__version__.split("+")[0]
+        if (compare_version(spark_version, "2.2.0") == -1):
+            set_spark_classpath("BIGDL_CLASSPATH")
+    except ImportError:
+        set_spark_classpath("BIGDL_CLASSPATH")
+
+def compare_version(version1, version2):
+    v1Arr = version1.split(".")
+    v2Arr = version2.split(".")
+    len1 = len(v1Arr)
+    len2 = len(v2Arr)
+    lenMax = max(len1, len2)
+    for x in range(lenMax):
+        v1Token = 0
+        if x < len1:
+            v1Token = int(v1Arr[x])
+        v2Token = 0
+        if x < len2:
+            v2Token = int(v2Arr[x])
+        if v1Token < v2Token:
+            return -1
+        if v1Token > v2Token:
+            return 1
+    return 0
 
 def prepare_env():
     __prepare_spark_env()
