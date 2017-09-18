@@ -323,6 +323,17 @@ private[bigdl] class Edge private (val fromIndex: Option[Int]) extends Serializa
   override def toString: String = {
     s"Edge(fromIndex: $fromIndex)"
   }
+
+  /**
+   * Create a new Instance of this Edge
+   * @return a new Instance of this Edge
+   */
+  def newInstance(): Edge = {
+    fromIndex match {
+      case Some(index) => Edge(index)
+      case None => Edge()
+    }
+  }
 }
 
 object Edge {
