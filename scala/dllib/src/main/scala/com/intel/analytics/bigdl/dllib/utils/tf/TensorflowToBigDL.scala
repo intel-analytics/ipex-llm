@@ -1083,11 +1083,7 @@ object UnpackTF extends TensorflowToBigDL{
 
     val attr = tfGraph.source.element.getAttrMap
     val dim = getInt(attr, "axis") + 1
-    val index = tfGraph.source.element.getName.split(":").toList match {
-      case _::Nil => 1
-      case _::i::Nil => i.toInt + 1
-    }
-    Select[T](dim, index).asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+    SplitTable[T](dim).asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
   }
 }
 
@@ -1408,12 +1404,11 @@ object SplitTF extends  TensorflowToBigDL {
     val numSplit = tfGraph.source.element.getAttrMap.get("num_split").getI.toInt
     val dim = tfGraph.source.prevNodes.head.element
       .getAttrMap.get("value").getTensor.getIntVal(0) + 1
-    val index = tfGraph.source.element.getName.split(":").toList match {
-      case _::Nil => 1
-      case _::i::Nil => i.toInt + 1
+    val model = new ConcatTable[T]()
+    for (index <- Range(1, numSplit + 1)) {
+      model.add(SplitAndSelect[T](dim, index, numSplit))
     }
-    SplitAndSelect[T](dim, index, numSplit)
-      .asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+    model.asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
   }
 
 }

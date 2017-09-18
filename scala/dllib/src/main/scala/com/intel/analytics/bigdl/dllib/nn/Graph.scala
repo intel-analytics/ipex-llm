@@ -87,11 +87,16 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
         val prevActivities = node.prevNodesAndEdges
           .filterNot(n => n._1.element.isInstanceOf[ControlDependency[T]])
           .map(n => {
-          n._2.fromIndex match {
-            case Some(i) => n._1.element.output.toTable.apply[Activity](i)
-            case None => n._1.element.output
-          }
-        })
+            n._2.fromIndex match {
+              case Some(i) =>
+                if (i == 1 && n._1.element.output.isTensor) {
+                  n._1.element.output
+                } else {
+                  n._1.element.output.toTable.apply[Activity](i)
+                }
+              case None => n._1.element.output
+            }
+          })
         if (prevActivities.length == 1) {
           prevActivities.head
         } else {
@@ -118,24 +123,32 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
 
       curNode.prevNodesAndEdges.filterNot(n => n._1.element.isInstanceOf[ControlDependency[T]])
         .foreach(n => {
-        val otherActivity = if (n._1.element.gradInput.isTensor || n._1.nextEdges.length == 1) {
-          n._1.element.gradInput
-        } else {
-          val index = n._1.nextEdges.indexOf(n._2) + 1
-          n._1.element.gradInput.toTable.apply[Activity](index)
-        }
+          val otherActivity = if (n._1.element.gradInput.isTensor || n._1.nextEdges.length == 1) {
+            n._1.element.gradInput
+          } else {
+            val index = n._1.nextEdges.indexOf(n._2) + 1
+            n._1.element.gradInput.toTable.apply[Activity](index)
+          }
 
-        n._2.fromIndex match {
-          case Some(i) =>
-            if (curNode.element.output.isTable && curGradOutput == null) {
-              curGradOutput = T()
-            }
-            val curActivity = curGradOutput.toTable.getOrElse[Activity](i, null)
-            curGradOutput.toTable(i) = accActivity(curActivity, otherActivity)
-          case None =>
-            curGradOutput = accActivity(curGradOutput, otherActivity)
-        }
-      })
+          n._2.fromIndex match {
+            case Some(i) =>
+              if (i == 1 && curNode.element.output.isTensor) {
+                curGradOutput = accActivity(curGradOutput, otherActivity)
+              } else {
+                if (curNode.element.output.isTable && curGradOutput == null) {
+                  curGradOutput = T()
+                }
+                val curActivity = curGradOutput.toTable.getOrElse[Activity](i, null)
+                curGradOutput.toTable(i) = accActivity(curActivity, otherActivity)
+              }
+            case None =>
+              curGradOutput = accActivity(curGradOutput, otherActivity)
+          }
+        })
+
+      if (curNode.element.output.isTable) {
+        addZeroTensorToMissingGradOutput(curNode.element.output.toTable, curGradOutput.toTable)
+      }
 
       gradOutputCache(curNode.element.getName()) = curGradOutput
       if (!isStopGradient(curNode.element)) {
@@ -153,6 +166,18 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
     }
     backwardTime = System.nanoTime() - before
     gradInput
+  }
+
+  private def addZeroTensorToMissingGradOutput(output: Table, gradOutput: Table): Unit = {
+    var i = 0
+    while (i < output.length()) {
+      if (!gradOutput.contains(i + 1)) {
+        val tensor = output[Tensor[T]](i + 1)
+        val zero = Tensor(tensor.size())
+        gradOutput(i + 1) = zero
+      }
+      i = i + 1
+    }
   }
 
   private def calcSumTimesOfAllNodes(timesOfAllNodes: Array[(absModule, Long, Long)])
@@ -198,15 +223,23 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
 
           n._2.fromIndex match {
             case Some(i) =>
-              if (curNode.element.output.isTable && curGradOutput == null) {
-                curGradOutput = T()
+              if (i == 1 && curNode.element.output.isTensor) {
+                curGradOutput = accActivity(curGradOutput, otherActivity)
+              } else {
+                if (curNode.element.output.isTable && curGradOutput == null) {
+                  curGradOutput = T()
+                }
+                val curActivity = curGradOutput.toTable.getOrElse[Activity](i, null)
+                curGradOutput.toTable(i) = accActivity(curActivity, otherActivity)
               }
-              val curActivity = curGradOutput.toTable.getOrElse[Activity](i, null)
-              curGradOutput.toTable(i) = accActivity(curActivity, otherActivity)
             case None =>
               curGradOutput = accActivity(curGradOutput, otherActivity)
           }
         })
+
+      if (curNode.element.output.isTable) {
+        addZeroTensorToMissingGradOutput(curNode.element.output.toTable, curGradOutput.toTable)
+      }
 
       gradOutputCache(curNode.element.getName()) = curGradOutput
       if (!isStopGradient(curNode.element)) {
