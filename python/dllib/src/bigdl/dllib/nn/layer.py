@@ -238,6 +238,15 @@ class Layer(JavaValue):
         return dict((layer_name, to_ndarray(params)) for layer_name, params in
                 name_to_params.items())
 
+    def evaluate(self):
+        """
+        Evaluate the model to set train = false, useful when doing test/forward
+        :return: layer itself
+        """
+        callBigDlFunc(self.bigdl_type,
+                      "evaluate", self.value)
+        return self
+
     def predict(self, data_rdd):
         """
         Model inference base on the given data.
