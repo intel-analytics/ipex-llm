@@ -43,6 +43,11 @@ package object ops {
     = ModuleToOperation[T](CDivTable())
   }
 
+  object RealDiv {
+    def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): Operation[Activity, Activity, T]
+    = ModuleToOperation[T](CDivTable())
+  }
+
   object Sum {
     def apply[T: ClassTag](axis: Int, keepDim: Boolean = false)
       (implicit ev: TensorNumeric[T]): Operation[Activity, Activity, T]
