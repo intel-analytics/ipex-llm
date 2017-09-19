@@ -325,7 +325,7 @@ object FullConnectionWithoutBiasTF extends TensorflowToBigDL{
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
                                   context: Context[T],
                                   byteOrder: ByteOrder)(
-     implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+     implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
 
     val weightNode = tfGraph.source.prevNodes(1).prevNodes.head.element
@@ -333,7 +333,7 @@ object FullConnectionWithoutBiasTF extends TensorflowToBigDL{
 
     Linear[T](inputSize = weight.size(2), outputSize = weight.size(1), withBias = false,
       initWeight = weight, initGradWeight = gradWeight)
-      .asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+      .asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
 
