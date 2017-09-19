@@ -276,7 +276,7 @@ def to_list(a):
         return a
     return [a]
 
-def add_driver_classpath(sparkConf, path):
+def extend_spark_driver_cp(sparkConf, path):
     original_driver_classpath = ":" + sparkConf.get("spark.driver.extraClassPath") \
         if sparkConf.contains("spark.driver.extraClassPath") else ""
     sparkConf.set("spark.driver.extraClassPath", path + original_driver_classpath)
@@ -286,7 +286,7 @@ def create_spark_conf():
     sparkConf = SparkConf()
     sparkConf.setAll(bigdl_conf.items())
     if not is_spark_below_2_2_0():
-        add_driver_classpath(sparkConf, get_bigdl_classpath())
+        extend_spark_driver_cp(sparkConf, get_bigdl_classpath())
     return sparkConf
 
 def get_spark_context(conf = None):

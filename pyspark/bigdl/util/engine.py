@@ -36,7 +36,7 @@ def __prepare_spark_env():
 def __prepare_bigdl_env():
     jar_dir = os.path.abspath(__file__ + "/../../")
     conf_paths = glob.glob(os.path.join(jar_dir, "share/conf/*.conf"))
-    BigDL_Classpath = get_bigdl_classpath()
+    bigdl_classpath = get_bigdl_classpath()
 
     def append_path(env_var_name, path):
         try:
@@ -51,7 +51,7 @@ def __prepare_bigdl_env():
         print("Prepending %s to sys.path" % conf_paths[0])
         sys.path.insert(0, conf_paths[0])
     if is_spark_below_2_2_0():
-        append_path("SPARK_CLASSPATH", BigDL_Classpath)
+        append_path("SPARK_CLASSPATH", bigdl_classpath)
 
 def get_bigdl_classpath():
     if(os.getenv("BIGDL_CLASSPATH")):
@@ -66,7 +66,7 @@ def get_bigdl_classpath():
 def is_spark_below_2_2_0():
     import pyspark
     if(hasattr(pyspark,"version")):
-        spark_version = getattr(pyspark,"version").__version__.split("+")[0]
+        spark_version = pyspark.__version__.split("+")[0]
         if(compare_version(spark_version, "2.2.0")>=0):
             return False
     return True
