@@ -54,7 +54,7 @@ trait TensorflowToBigDL {
     tfGraph: DirectedGraph[NodeDef],
     context: Context[T],
     byteOrder: ByteOrder
-  )(implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T]
+  )(implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T]
 
   protected def getOrSetTensor[T: ClassTag](
     node: NodeDef, context: Context[T], byteOrder: ByteOrder,
@@ -299,7 +299,7 @@ object FullConnectionTF extends TensorflowToBigDL{
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
                                   context: Context[T],
                                   byteOrder: ByteOrder)(
-    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
 
     val biasNode = tfGraph.source.prevNodes(1).prevNodes.head.element
@@ -308,7 +308,7 @@ object FullConnectionTF extends TensorflowToBigDL{
     val (weight, gradWeight) = getOrSetTensor(weightNode, context, byteOrder, Some(Seq((1, 2))))
     Linear[T](inputSize = weight.size(2), outputSize = weight.size(1),
       initWeight = weight, initGradWeight = gradWeight, initBias = bias, initGradBias = gradBias)
-      .asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+      .asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
 
@@ -325,7 +325,7 @@ object FullConnectionWithoutBiasTF extends TensorflowToBigDL{
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
                                   context: Context[T],
                                   byteOrder: ByteOrder)(
-     implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+     implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
 
     val weightNode = tfGraph.source.prevNodes(1).prevNodes.head.element
@@ -333,7 +333,7 @@ object FullConnectionWithoutBiasTF extends TensorflowToBigDL{
 
     Linear[T](inputSize = weight.size(2), outputSize = weight.size(1), withBias = false,
       initWeight = weight, initGradWeight = gradWeight)
-      .asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+      .asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
 
@@ -344,12 +344,12 @@ object  SqueezeTF extends TensorflowToBigDL {
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
                                   context: Context[T],
                                   byteOrder: ByteOrder)(
-    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
     val dims = tfGraph.source.element.getAttrOrThrow("squeeze_dims").getList().getIList()
       .asScala.map(_.toInt).toArray
 
-    Squeeze[T](dims, batchMode = true).asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+    Squeeze[T](dims, batchMode = true).asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
 
@@ -376,7 +376,7 @@ object Conv1D extends TensorflowToBigDL {
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
                                   context: Context[T],
                                   byteOrder: ByteOrder)(
-    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
     val squeezeNode = tfGraph.source.prevNodes.head
     val convNode = squeezeNode.prevNodes.head
@@ -433,7 +433,7 @@ object Conv1D extends TensorflowToBigDL {
       case "NHWC" =>
         tconv
     }
-    result.asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+    result.asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 
 
@@ -455,7 +455,7 @@ object Conv2D extends TensorflowToBigDL{
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
                                   context: Context[T],
                                   byteOrder: ByteOrder)(
-    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
     val attributes = tfGraph.source.prevNodes.head.element.getAttrMap
     val (pW, pH) =
@@ -517,7 +517,7 @@ object Conv2D extends TensorflowToBigDL{
       case _ =>
         throw new IllegalArgumentException(s"not supported data format: $format")
     }
-    conv.asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+    conv.asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
 
@@ -541,7 +541,7 @@ object Conv2D2 extends TensorflowToBigDL{
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
     context: Context[T],
     byteOrder: ByteOrder)(
-    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
     val attributes = tfGraph.source.prevNodes(0).element.getAttrMap
     val strideList = getIntList(attributes, "strides")
@@ -579,7 +579,7 @@ object Conv2D2 extends TensorflowToBigDL{
       initWeight = weights,
       initBias = bias,
       initGradWeight = gradWeights,
-      initGradBias = gradBias).asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+      initGradBias = gradBias).asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
 
@@ -593,9 +593,9 @@ object ReluTF extends  TensorflowToBigDL {
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
                                   context: Context[T],
                                   byteOrder: ByteOrder)(
-    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
-    ReLU[T]().asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+    ReLU[T]().asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
 
@@ -609,10 +609,10 @@ object TanhTF extends  TensorflowToBigDL{
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
                                   context: Context[T],
                                   byteOrder: ByteOrder)(
-    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
 
-    Tanh[T]().asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+    Tanh[T]().asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
 
@@ -626,9 +626,9 @@ object SigmoidTF extends  TensorflowToBigDL{
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
                                   context: Context[T],
                                   byteOrder: ByteOrder)(
-    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
-    Sigmoid[T]().asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+    Sigmoid[T]().asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
 
@@ -645,7 +645,7 @@ object ReshapeTF extends TensorflowToBigDL {
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
                                   context: Context[T],
                                   byteOrder: ByteOrder)(
-    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
     val sizes = TensorflowToBigDL.toTensor(
       tfGraph.source.prevNodes(1).element.getAttrMap.get("value").getTensor, byteOrder)
@@ -660,7 +660,7 @@ object ReshapeTF extends TensorflowToBigDL {
       i += 1
     }
     Reshape[T](size = arraySize, Some(batchMode))
-      .asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+      .asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
 
@@ -674,7 +674,7 @@ object MaxPoolingTF extends TensorflowToBigDL {
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
                                   context: Context[T],
                                   byteOrder: ByteOrder)(
-    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
     val attributes = tfGraph.source.element.getAttrMap
     val format = getString(attributes, "data_format")
@@ -700,7 +700,7 @@ object MaxPoolingTF extends TensorflowToBigDL {
 
     SpatialMaxPooling[T](ksizeW, ksizeH, strideW, strideH, pW, pH,
       format = DataFormat(format))
-      .asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+      .asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
 
@@ -713,7 +713,7 @@ object AvgPoolingTF extends TensorflowToBigDL {
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
                                   context: Context[T],
                                   byteOrder: ByteOrder)(
-    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
     val attributes = tfGraph.source.element.getAttrMap
     val format = getString(attributes, "data_format")
@@ -740,7 +740,7 @@ object AvgPoolingTF extends TensorflowToBigDL {
 
     SpatialAveragePooling[T](ksizeW, ksizeH, strideW, strideH, pW, pH,
       countIncludePad = false, format = DataFormat(format))
-      .asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+      .asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
 
@@ -769,14 +769,14 @@ object DropoutTF extends TensorflowToBigDL{
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
                                   context: Context[T],
                                   byteOrder: ByteOrder)(
-    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
     val keepProp = tfGraph.source.prevNodes(0).prevNodes(1).element
       .getAttrMap.get("value").getTensor.getFloatVal(0)
     val model = Sequential()
     model.add(SelectTable(1))
-    model.add(Dropout[T](keepProp).asInstanceOf[AbstractModule[Activity, Tensor[T], T]])
-    model.asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+    model.add(Dropout[T](keepProp).asInstanceOf[AbstractModule[Activity, Activity, T]])
+    model.asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
 
@@ -788,8 +788,8 @@ object Placeholder extends TensorflowToBigDL {
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
                                   context: Context[T],
                                   byteOrder: ByteOrder)(
-    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
-    Input[T]().element.asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
+    Input[T]().element.asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
 
@@ -801,11 +801,11 @@ object ConstTF extends TensorflowToBigDL {
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
                                   context: Context[T],
                                   byteOrder: ByteOrder)(
-    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
-    val value = TensorflowToBigDL
-      .toTensor(tfGraph.source.element.getAttrMap.get("value").getTensor, byteOrder)
-    Const(value).asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+    val value = TFUtils
+      .parseTensor(tfGraph.source.element.getAttrMap.get("value").getTensor, byteOrder)
+    Const(value).asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
 
@@ -821,10 +821,10 @@ object ShapeTF extends TensorflowToBigDL {
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
                                   context: Context[T],
                                   byteOrder: ByteOrder)(
-    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
 
-    Shape[T]().asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+    Shape[T]().asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
 
@@ -836,9 +836,9 @@ object IdentityTF extends TensorflowToBigDL {
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
                                   context: Context[T],
                                   byteOrder: ByteOrder)(
-    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
-    Input[T]().element.asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+    Input[T]().element.asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
 
@@ -890,7 +890,7 @@ object BatchNormV2NCHWTF extends TensorflowToBigDL{
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
                                   context: Context[T],
                                   byteOrder: ByteOrder)(
-          implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+          implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
     val biasNode = tfGraph.source.prevNodes(1).prevNodes.head.prevNodes.head.prevNodes.head.element
     val weightNode = tfGraph.source.prevNodes(1).prevNodes(1).prevNodes(1)
@@ -909,7 +909,7 @@ object BatchNormV2NCHWTF extends TensorflowToBigDL{
     val model = Sequential()
     model.add(SelectTable(1))
     model.add(batchNorm)
-    model.asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+    model.asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
 
@@ -953,7 +953,7 @@ object BatchNormV2NHWCTF extends TensorflowToBigDL{
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
                                   context: Context[T],
                                   byteOrder: ByteOrder)(
-               implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+               implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
     val biasNode = tfGraph.source.prevNodes(1).prevNodes.head.prevNodes.head.element
     val weightNode = tfGraph.source.prevNodes(1).prevNodes(1).prevNodes(1)
@@ -977,7 +977,7 @@ object BatchNormV2NHWCTF extends TensorflowToBigDL{
     layer.add(Transpose(Array((2, 4))))
     layer.add(Contiguous())
 
-    layer.asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+    layer.asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
 
@@ -1025,7 +1025,7 @@ object BatchNormTF extends TensorflowToBigDL{
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
                                   context: Context[T],
                                   byteOrder: ByteOrder)(
-    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
     val nOutput = tfGraph.source.prevNodes(1).prevNodes(1).prevNodes(1)
         .prevNodes(1).prevNodes(0).element.getAttrMap.get("value").getTensor.getIntVal(0)
@@ -1042,11 +1042,11 @@ object BatchNormTF extends TensorflowToBigDL{
       initBias = bias,
       initGradWeight = gradWeights,
       initGradBias = gradBias
-    ).asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+    ).asInstanceOf[AbstractModule[Activity, Activity, T]]
     val model = Sequential()
     model.add(SelectTable(1))
     model.add(batchNorm)
-    model.asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+    model.asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
 
@@ -1054,7 +1054,7 @@ object FillTF extends TensorflowToBigDL{
   private val graph = {
     val nodeFill = Node("Fill")
     Node("*") -> nodeFill
-    Node("Const") -> nodeFill
+    Node("*") -> nodeFill
     nodeFill.graph(reverse = true)
   }
 
@@ -1063,12 +1063,9 @@ object FillTF extends TensorflowToBigDL{
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
                                   context: Context[T],
                                   byteOrder: ByteOrder)(
-    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
-    val constNode = tfGraph.source.prevNodes(1)
-    val const = constNode.element.getAttrMap.get("value").getTensor.getFloatVal(0)
-
-    Fill[T](const).asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+    Fill[T]().asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
 
@@ -1084,11 +1081,11 @@ object PackTF extends TensorflowToBigDL{
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
                                   context: Context[T],
                                   byteOrder: ByteOrder)(
-    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
     val attr = tfGraph.source.element.getAttrMap
     val dim = getInt(attr, "axis") + 1
 
-    Pack[T](dim).asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+    Pack[T](dim).asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
 
@@ -1104,11 +1101,11 @@ object UnpackTF extends TensorflowToBigDL{
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
                                   context: Context[T],
                                   byteOrder: ByteOrder)(
-    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
     val attr = tfGraph.source.element.getAttrMap
     val dim = getInt(attr, "axis") + 1
-    SplitTable[T](dim).asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+    SplitTable[T](dim).asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
 
@@ -1127,7 +1124,7 @@ object StrideSliceTF extends TensorflowToBigDL {
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
                                   context: Context[T],
                                   byteOrder: ByteOrder)(
-    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
     val startNode = tfGraph.source.prevNodes(1)
     val endNode = tfGraph.source.prevNodes(2)
@@ -1145,7 +1142,7 @@ object StrideSliceTF extends TensorflowToBigDL {
       .map(elem => (elem._2 + 1, elem._1._1._1 + 1, elem._1._1._2 + 1, elem._1._2)).toArray
 
 
-    StrideSlice[T](specs).asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+    StrideSlice[T](specs).asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
 
@@ -1162,7 +1159,7 @@ object ConcatTF extends TensorflowToBigDL{
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
                                   context: Context[T],
                                   byteOrder: ByteOrder)(
-    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
     val inputNumber = tfGraph.source.element.getAttrMap.get("N").getI.toInt
     val nodeaxis = tfGraph.source.prevNodes(inputNumber)
@@ -1170,7 +1167,7 @@ object ConcatTF extends TensorflowToBigDL{
     val nInputDims = 4
 
     JoinTable[T](dimension = axis, nInputDims = -1)
-      .asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+      .asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
 
@@ -1220,12 +1217,12 @@ object FlattenV2 extends TensorflowToBigDL {
 
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
            context: Context[T], byteOrder: ByteOrder)(
-    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
     val layer = Sequential()
     layer.add(SelectTable(1))
     layer.add(InferReshape[T](size = Array(-1), true))
-    layer.asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+    layer.asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
 
@@ -1274,7 +1271,7 @@ object Flatten extends TensorflowToBigDL {
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
       context: Context[T],
       byteOrder: ByteOrder)(
-    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
     val shapetfTensor = tfGraph.source.prevNodes(1).prevNodes(0).prevNodes(0).element
       .getAttrMap.get("value").getTensor
     val sizes = TensorflowToBigDL.toTensor(shapetfTensor, byteOrder)
@@ -1294,7 +1291,7 @@ object Flatten extends TensorflowToBigDL {
     )
 
     Reshape[T](size = arraySize, Some(batchMode))
-      .asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+      .asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
 
@@ -1310,10 +1307,10 @@ object AddConstTF1 extends  TensorflowToBigDL{
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
                                   context: Context[T],
                                   byteOrder: ByteOrder)(
-    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
     val value = tfGraph.source.prevNodes.head.element
       .getAttrMap.get("value").getTensor.getFloatVal(0)
-    AddConstant[T](value).asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+    AddConstant[T](value).asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
 
@@ -1329,11 +1326,11 @@ object AddConstTF2 extends  TensorflowToBigDL{
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
                                   context: Context[T],
                                   byteOrder: ByteOrder)(
-    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
     val value = tfGraph.source.prevNodes(1).element
       .getAttrMap.get("value").getTensor.getFloatVal(0)
-    AddConstant[T](value).asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+    AddConstant[T](value).asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
 
@@ -1349,9 +1346,9 @@ object AddTF extends  TensorflowToBigDL{
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
                                   context: Context[T],
                                   byteOrder: ByteOrder)(
-    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
-    CAddTable[T]().asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+    CAddTable[T]().asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
 
@@ -1364,9 +1361,9 @@ object SoftMaxTF extends  TensorflowToBigDL{
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
                                   context: Context[T],
                                   byteOrder: ByteOrder)(
-    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
-    SoftMax[T]().asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+    SoftMax[T]().asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
 
@@ -1383,13 +1380,13 @@ object MulTF extends  TensorflowToBigDL{
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
                                   context: Context[T],
                                   byteOrder: ByteOrder)(
-    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
     val scale = TensorflowToBigDL.toTensor(
       tfGraph.source.prevNodes(0).element.getAttrMap.get("value").getTensor, byteOrder)
     require(scale.dim() == 1 && scale.size(1) == 1, s"scale must be one number")
     val mul = MulConstant[T](ev.toType[Double](scale.valueAt(1)))
-    mul.asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+    mul.asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
 
@@ -1405,9 +1402,9 @@ object ElementWiseMulTF extends  TensorflowToBigDL{
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
                                   context: Context[T],
                                   byteOrder: ByteOrder)(
-    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
-    CMulTable[T]().asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+    CMulTable[T]().asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
 
@@ -1424,7 +1421,7 @@ object SplitTF extends  TensorflowToBigDL {
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
                                   context: Context[T],
                                   byteOrder: ByteOrder)(
-    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
     val numSplit = tfGraph.source.element.getAttrMap.get("num_split").getI.toInt
     val dim = tfGraph.source.prevNodes.head.element
@@ -1433,7 +1430,7 @@ object SplitTF extends  TensorflowToBigDL {
     for (index <- Range(1, numSplit + 1)) {
       model.add(SplitAndSelect[T](dim, index, numSplit))
     }
-    model.asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+    model.asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 
 }
@@ -1451,7 +1448,7 @@ object PaddingTF extends TensorflowToBigDL{
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
                                   context: Context[T],
                                   byteOrder: ByteOrder)(
-    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
     val paddings = TensorflowToBigDL.toTensor(
       tfGraph.source.prevNodes(1).element.getAttrMap.get("value").getTensor, byteOrder)
@@ -1469,7 +1466,7 @@ object PaddingTF extends TensorflowToBigDL{
       }
     }
 
-    padding.asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+    padding.asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
 
@@ -1485,7 +1482,7 @@ object MeanTF extends TensorflowToBigDL{
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
                                   context: Context[T],
                                   byteOrder: ByteOrder)(
-    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
     val dims = TensorflowToBigDL.toTensor(
       tfGraph.source.prevNodes(1).element.getAttrMap.get("value").getTensor, byteOrder)
@@ -1495,7 +1492,7 @@ object MeanTF extends TensorflowToBigDL{
       dim += ev.toType[Int](dims.valueAt(i)) + 1
     }
     dim.foreach(i => mean.add(Mean[T](i, squeeze = false)))
-    mean.asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+    mean.asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
 
@@ -1509,9 +1506,9 @@ object AddNTF extends TensorflowToBigDL{
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
                                   context: Context[T],
                                   byteOrder: ByteOrder)(
-     implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+     implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
-    CAddTable().asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+    CAddTable().asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
 
@@ -1528,9 +1525,9 @@ object ControlDependencyTF extends TensorflowToBigDL {
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
                                   context: Context[T],
                                   byteOrder: ByteOrder)(
-     implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+     implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
-    ControlDependency().asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+    ControlDependency().asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 
 }
