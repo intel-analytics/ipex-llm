@@ -128,7 +128,8 @@ class TensorflowSaverSpec extends TensorflowSpecHelper {
     val layer = JoinTable[Float](3, -1)
     val input1 = Tensor[Float](4, 2, 2).rand()
     val input2 = Tensor[Float](4, 2, 2).rand()
-    testMultiInput(layer, Seq(input1, input2), false) should be(true)
+    testMultiInput(layer.asInstanceOf[AbstractModule[Table, Tensor[Float], Float]],
+      Seq(input1, input2), false) should be(true)
   }
 
   "LogSoftMax" should "be correctly saved" in {
