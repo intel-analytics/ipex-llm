@@ -1712,7 +1712,6 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def trainTF(
                modelPath: String,
-               variablePath: String,
                output: String,
                samples: JavaRDD[Sample],
                optMethod: OptimMethod[T],
