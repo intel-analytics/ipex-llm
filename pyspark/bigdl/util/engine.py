@@ -35,37 +35,41 @@ def __prepare_spark_env():
 
 def __prepare_bigdl_env():
     jar_dir = os.path.abspath(__file__ + "/../../")
-    jar_paths = glob.glob(os.path.join(jar_dir, "share/lib/*.jar"))
     conf_paths = glob.glob(os.path.join(jar_dir, "share/conf/*.conf"))
+    BigDL_Classpath = get_bigdl_classpath()
 
     def append_path(env_var_name, path):
         try:
-            print("Adding %s to %s" % (jar_paths[0], env_var_name))
+            print("Adding %s to %s" % (path, env_var_name))
             os.environ[env_var_name] = path + ":" + os.environ[
                 env_var_name]  # noqa
         except KeyError:
             os.environ[env_var_name] = path
 
-    if jar_paths and conf_paths:
-        assert len(jar_paths) == 1, "Expecting one jar: %s" % len(jar_paths)
+    if conf_paths:
         assert len(conf_paths) == 1, "Expecting one conf: %s" % len(conf_paths)
-        append_path("BIGDL_CLASSPATH", jar_paths[0])
         print("Prepending %s to sys.path" % conf_paths[0])
         sys.path.insert(0, conf_paths[0])
-
-    def set_spark_classpath(env_var_name):
-        try:
-            os.environ["SPARK_CLASSPATH"] = os.environ[env_var_name]
-        except KeyError:
-            pass
 
     try:
         import pyspark.version
         spark_version = pyspark.version.__version__.split("+")[0]
         if (compare_version(spark_version, "2.2.0") == -1):
-            set_spark_classpath("BIGDL_CLASSPATH")
+            append_path("SPARK_CLASSPATH", BigDL_Classpath)
     except ImportError:
-        set_spark_classpath("BIGDL_CLASSPATH")
+        append_path("SPARK_CLASSPATH", BigDL_Classpath)
+
+def get_bigdl_classpath():
+    try:
+        bigdl_classpath = os.environ["BIGDL_CLASSPATH"]
+    except KeyError:
+        bigdl_classpath = ""
+    jar_dir = os.path.abspath(__file__ + "/../../")
+    jar_paths = glob.glob(os.path.join(jar_dir, "share/lib/*.jar"))
+    if jar_paths:
+        assert len(jar_paths) == 1, "Expecting one jar: %s" % len(jar_paths)
+        bigdl_classpath = jar_paths[0] + ":" + bigdl_classpath
+    return bigdl_classpath
 
 def compare_version(version1, version2):
     v1Arr = version1.split(".")
