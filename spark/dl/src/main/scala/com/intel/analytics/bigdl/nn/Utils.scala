@@ -16,9 +16,10 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
 
@@ -347,5 +348,50 @@ object Utils {
       if ((owidth - 1) * dW >= inputWidth + padW) owidth -= 1
     }
     (padH, padH, padW, padW, oheight, owidth)
+  }
+
+  private[nn] def allocate(shape: Array[Int], dataType: TensorDataType): Tensor[_] = {
+    import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric.NumericByteString
+    dataType match {
+      case FloatType =>
+        Tensor[Float](shape)
+      case DoubleType =>
+        Tensor[Double](shape)
+      case IntType =>
+        Tensor[Int](shape)
+      case LongType =>
+        Tensor[Long](shape)
+      case ShortType =>
+        Tensor[Short](shape)
+      case CharType =>
+        Tensor[Char](shape)
+      case StringType =>
+        Tensor[ByteString](shape)
+      case BooleanType =>
+        Tensor[Boolean](shape)
+    }
+  }
+
+  private[nn] def copy(dest: Tensor[_], src: Tensor[_]): Unit = {
+    import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric.NumericByteString
+    require(dest.getType() == src.getType())
+    dest.getType() match {
+      case FloatType =>
+        dest.asInstanceOf[Tensor[Float]].copy(src.asInstanceOf[Tensor[Float]])
+      case DoubleType =>
+        dest.asInstanceOf[Tensor[Double]].copy(src.asInstanceOf[Tensor[Double]])
+      case IntType =>
+        dest.asInstanceOf[Tensor[Int]].copy(src.asInstanceOf[Tensor[Int]])
+      case LongType =>
+        dest.asInstanceOf[Tensor[Long]].copy(src.asInstanceOf[Tensor[Long]])
+      case ShortType =>
+        dest.asInstanceOf[Tensor[Short]].copy(src.asInstanceOf[Tensor[Short]])
+      case CharType =>
+        dest.asInstanceOf[Tensor[Char]].copy(src.asInstanceOf[Tensor[Char]])
+      case StringType =>
+        dest.asInstanceOf[Tensor[ByteString]].copy(src.asInstanceOf[Tensor[ByteString]])
+      case BooleanType =>
+        dest.asInstanceOf[Tensor[Boolean]].copy(src.asInstanceOf[Tensor[Boolean]])
+    }
   }
 }

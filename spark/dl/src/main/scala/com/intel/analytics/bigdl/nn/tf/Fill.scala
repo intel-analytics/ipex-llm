@@ -15,38 +15,96 @@
  */
 package com.intel.analytics.bigdl.nn.tf
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.google.protobuf.ByteString
+import com.intel.analytics.bigdl.nn.Utils
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, TensorModule}
+import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
 /**
  * Creates a tensor filled with a scalar value. Input should be a 1-D tensor defining
  * the shape of the output tensor.
- * @param value the scalar value to be filled.
  */
 @SerialVersionUID(-471757174144422555L)
-private[bigdl] class Fill[T: ClassTag](value: T) (implicit ev: TensorNumeric[T])
-  extends TensorModule[T] {
+private[bigdl] class Fill[T: ClassTag]() (implicit ev: TensorNumeric[T])
+  extends AbstractModule[Table, Tensor[_], T] {
 
-  override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    if (output.dim() == 0) {
-      val shape = input.storage().array().map(ev.toType[Int])
-      output = Tensor(shape).fill(value)
+  override def updateOutput(input: Table): Tensor[_] = {
+    val shapeTensor = input[Tensor[Int]](1)
+    require(shapeTensor.nDimension() == 1, "shape tensor is not a vector")
+    val shape = new Array[Int](shapeTensor.nElement())
+    var i = 0
+    while (i < shapeTensor.nElement()) {
+      shape(i) = shapeTensor.valueAt(i + 1)
+      i = i + 1
     }
+    val value = input[Tensor[_]](2)
+    require(value.isScalar, "value tensor is not a scalar")
+    if (value.getType() != output.getType()) {
+      output = Utils.allocate(shape, value.getType())
+    } else {
+      output.resize(shape)
+    }
+
+    fill(output, value)
+
     output
   }
 
-  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    gradInput.resizeAs(input).zero()
+  private def fill(output: Tensor[_], valueTensor: Tensor[_]): Unit = {
+    require(output.getType() == valueTensor.getType(),
+      "fill tensor and value tensor are not the same type")
+    valueTensor.getType() match {
+      case FloatType =>
+        val value = valueTensor.asInstanceOf[Tensor[Float]].value()
+        output.asInstanceOf[Tensor[Float]].fill(value)
+      case DoubleType =>
+        val value = valueTensor.asInstanceOf[Tensor[Double]].value()
+        output.asInstanceOf[Tensor[Double]].fill(value)
+      case IntType =>
+        val value = valueTensor.asInstanceOf[Tensor[Int]].value()
+        output.asInstanceOf[Tensor[Int]].fill(value)
+      case LongType =>
+        val value = valueTensor.asInstanceOf[Tensor[Long]].value()
+        output.asInstanceOf[Tensor[Long]].fill(value)
+      case ShortType =>
+        val value = valueTensor.asInstanceOf[Tensor[Short]].value()
+        output.asInstanceOf[Tensor[Short]].fill(value)
+      case CharType =>
+        val value = valueTensor.asInstanceOf[Tensor[Char]].value()
+        output.asInstanceOf[Tensor[Char]].fill(value)
+      case StringType =>
+        val value = valueTensor.asInstanceOf[Tensor[ByteString]].value()
+        output.asInstanceOf[Tensor[ByteString]].fill(value)
+      case BooleanType =>
+        val value = valueTensor.asInstanceOf[Tensor[Boolean]].value()
+        output.asInstanceOf[Tensor[Boolean]].fill(value)
+    }
+  }
+
+  override def updateGradInput(input: Table, gradOutput: Tensor[_]): Table = {
+    if (gradInput.contains(1)) {
+      gradInput[Tensor[_]](1).resize(input[Tensor[_]](1).size()).zero()
+    } else {
+      gradInput(1) = Utils.allocate(input[Tensor[_]](1).size(), input[Tensor[_]](1).getType())
+    }
+
+    if (gradInput.contains(2)) {
+      gradInput[Tensor[_]](2).resize(input[Tensor[_]](2).size()).zero()
+    } else {
+      gradInput(2) = Utils.allocate(input[Tensor[_]](2).size(), input[Tensor[_]](2).getType())
+    }
+    gradInput
   }
 
 }
 
 private[bigdl] object Fill {
-  def apply[T: ClassTag](value: Double)
+  def apply[T: ClassTag]()
        (implicit ev: TensorNumeric[T]) : Fill[T] = {
-    new Fill[T](ev.fromType(value))
+    new Fill[T]()
   }
 }
