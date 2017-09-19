@@ -28,7 +28,7 @@ from pyspark.mllib.common import callJavaFunc
 from pyspark import SparkConf
 import numpy as np
 import threading
-from bigdl.util.engine import compare_version, get_bigdl_classpath
+from bigdl.util.engine import get_bigdl_classpath, is_spark_below_2_2_0
 
 INTMAX = 2147483647
 INTMIN = -2147483648
@@ -285,13 +285,8 @@ def create_spark_conf():
     bigdl_conf = get_bigdl_conf()
     sparkConf = SparkConf()
     sparkConf.setAll(bigdl_conf.items())
-    try:
-        import pyspark.version
-        spark_version = pyspark.version.__version__.split("+")[0]
-        if(compare_version(spark_version,"2.2.0")>=0):
-            add_driver_classpath(sparkConf, get_bigdl_classpath())
-    except ImportError:
-        pass
+    if not is_spark_below_2_2_0():
+        add_driver_classpath(sparkConf, get_bigdl_classpath())
     return sparkConf
 
 def get_spark_context(conf = None):

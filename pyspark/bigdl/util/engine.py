@@ -50,26 +50,26 @@ def __prepare_bigdl_env():
         assert len(conf_paths) == 1, "Expecting one conf: %s" % len(conf_paths)
         print("Prepending %s to sys.path" % conf_paths[0])
         sys.path.insert(0, conf_paths[0])
-
-    try:
-        import pyspark.version
-        spark_version = pyspark.version.__version__.split("+")[0]
-        if (compare_version(spark_version, "2.2.0") == -1):
-            append_path("SPARK_CLASSPATH", BigDL_Classpath)
-    except ImportError:
+    if is_spark_below_2_2_0():
         append_path("SPARK_CLASSPATH", BigDL_Classpath)
 
 def get_bigdl_classpath():
-    try:
-        bigdl_classpath = os.environ["BIGDL_CLASSPATH"]
-    except KeyError:
-        bigdl_classpath = ""
+    if(os.getenv("BIGDL_CLASSPATH")):
+        return os.environ["BIGDL_CLASSPATH"]
     jar_dir = os.path.abspath(__file__ + "/../../")
     jar_paths = glob.glob(os.path.join(jar_dir, "share/lib/*.jar"))
     if jar_paths:
         assert len(jar_paths) == 1, "Expecting one jar: %s" % len(jar_paths)
-        bigdl_classpath = jar_paths[0] + ":" + bigdl_classpath
-    return bigdl_classpath
+        return jar_paths[0]
+    return ""
+
+def is_spark_below_2_2_0():
+    import pyspark
+    if(hasattr(pyspark,"version")):
+        spark_version = getattr(pyspark,"version").__version__.split("+")[0]
+        if(compare_version(spark_version, "2.2.0")>=0):
+            return False
+    return True
 
 def compare_version(version1, version2):
     v1Arr = version1.split(".")
