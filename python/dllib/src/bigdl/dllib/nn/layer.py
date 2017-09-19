@@ -403,6 +403,36 @@ class Layer(JavaValue):
         callBigDlFunc(self.bigdl_type,
                         "setLayerUnFreeze", self.value)
 
+    def evaluate(self):
+        '''
+        Set this layer in the evaluation mode
+        '''
+        callJavaFunc(get_spark_context(), self.value.evaluate)
+        return self
+
+    def training(self):
+        '''
+        Set this layer in the training mode 
+        '''
+        callJavaFunc(get_spark_context(), self.value.training)
+        return self
+
+    def is_training(self):
+        '''
+        :return: Whether this layer is in the training mode
+        
+        >>> layer = Dropout()
+        creating: createDropout
+        >>> layer = layer.evaluate()
+        >>> layer.is_training()
+        False
+        >>> layer = layer.training()
+        >>> layer.is_training()
+        True
+        '''
+        return callJavaFunc(get_spark_context(), self.value.isTraining)
+
+
 
 
 class Container(Layer):
@@ -529,6 +559,21 @@ class Model(Container):
         """
         jmodel = callBigDlFunc(bigdl_type, "loadTF", path, inputs, outputs, byte_order)
         return Model.of(jmodel)
+
+    @staticmethod
+    def train(output, data, label, opt_method, criterion, batch_size, end_when, session=None, bigdl_type="float"):
+        from bigdl.util.tf_utils import get_path
+        from bigdl.util.common import Sample
+        output_name = output.name.split(":")[0]
+        path = get_path(output_name, session)
+        sc = get_spark_context()
+        rdd_train_images = sc.parallelize(data)
+        rdd_train_labels = sc.parallelize(label)
+        rdd_train_sample = rdd_train_images.zip(rdd_train_labels).map(lambda (features, label):
+                                                                      Sample.from_ndarray(features, label))
+        jmodel = callBigDlFunc(bigdl_type, "trainTF", path, output_name, rdd_train_sample, opt_method, criterion, batch_size, end_when)
+        return Model.of(jmodel)
+
 
     def freeze(self, freeze_layers, bigdl_type="float"):
         """
