@@ -75,8 +75,14 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
         ph = pw
       }
     }
-    Seq(SpatialConvolution[T](nInputPlane, nOutPlane, kw, kh, dw, dh, pw, ph, group)
-      .setName(getLayerName(layer)).inputs())
+    val layerType = getLayerType(layer).toUpperCase
+    if ("DECONVOLUTION" == layerType) {
+      Seq(SpatialFullConvolution[T](nOutPlane, nInputPlane, kw, kh, dw, dh, pw, ph, 0, 0, group)
+        .setName(getLayerName(layer)).inputs())
+    } else {
+      Seq(SpatialConvolution[T](nInputPlane, nOutPlane, kw, kh, dw, dh, pw, ph, group)
+        .setName(getLayerName(layer)).inputs())
+    }
   }
 
   override protected def fromCaffeInnerProduct(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
@@ -175,6 +181,53 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
     // build concolution layer
     Seq(layerParameter.build())
 
+  }
+
+  override protected def toCaffeDeConvolution(module : AbstractModule[Activity, Activity, T],
+    bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage] = {
+
+    val layerParameter = V1LayerParameter.newBuilder()
+
+    val layerName = module.getName
+
+    layerParameter.setName(layerName)
+
+    layerParameter.setType(LayerType.DECONVOLUTION)
+
+    // set bottom list and top list
+    setConnections(layerParameter, bottoms, nextSize)
+
+    // copy weight and bias
+    val (weightBuilder, biasBuilder) = copyParam(module)
+
+    // get deconvolution param map
+    val layerParams = toCaffeDeConvolutionParam(module)
+
+    val convolutionParam = ConvolutionParameter.newBuilder()
+
+    val ngroup = layerParams("ngroup")
+    val nInputPlane = layerParams("nInputPlane")
+    val nOutputPlane = layerParams("nOutputPlane")
+    convolutionParam.setGroup(ngroup)
+    convolutionParam.setNumOutput(nOutputPlane)
+    convolutionParam.setKernelW(layerParams("kernelW"))
+    convolutionParam.setKernelH(layerParams("kernelH"))
+    convolutionParam.setStrideW(layerParams("strideW"))
+    convolutionParam.setStrideH(layerParams("strideH"))
+    convolutionParam.setPadW(layerParams("padW"))
+    convolutionParam.setPadH(layerParams("padH"))
+    val withBias = if (layerParams("withBias") == 1) true else false
+    convolutionParam.setBiasTerm(withBias)
+
+    weightBuilder.setChannels(nInputPlane / ngroup)
+    weightBuilder.setNum(nOutputPlane)
+
+    setBlobs(layerParameter, weightBuilder, biasBuilder)
+
+    layerParameter.setConvolutionParam(convolutionParam.build)
+
+    // build deConcolution layer
+    Seq(layerParameter.build())
   }
 
   override protected def toCaffeRelu(module : AbstractModule[Activity, Activity, T],
