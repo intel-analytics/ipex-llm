@@ -15,38 +15,65 @@
  */
 package com.intel.analytics.bigdl.nn.tf
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
 /**
  * Creates a tensor filled with a scalar value. Input should be a 1-D tensor defining
  * the shape of the output tensor.
- * @param value the scalar value to be filled.
  */
 @SerialVersionUID(-471757174144422555L)
-private[bigdl] class Fill[T: ClassTag](value: T) (implicit ev: TensorNumeric[T])
-  extends TensorModule[T] {
+private[bigdl] class Fill[T: ClassTag]() (implicit ev: TensorNumeric[T])
+  extends AbstractModule[Table, Tensor[_], T] {
 
-  override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    if (output.dim() == 0) {
-      val shape = input.storage().array().map(ev.toType[Int])
-      output = Tensor(shape).fill(value)
+  override def updateOutput(input: Table): Tensor[_] = {
+    val shapeTensor = input[Tensor[Int]](1)
+    require(shapeTensor.nDimension() == 1, "shape tensor is not a vector")
+    val shape = new Array[Int](shapeTensor.nElement())
+    var i = 0
+    while (i < shapeTensor.nElement()) {
+      shape(i) = shapeTensor.valueAt(i + 1)
+      i = i + 1
     }
+    val value = input[Tensor[_]](2)
+    require(value.isScalar, "value tensor is not a scalar")
+    if (value.getType() != output.getType()) {
+      output = value.emptyInstance().resize(shape)
+    } else {
+      output.resize(shape)
+    }
+
+    output.forceFill(value.value())
+
     output
   }
 
-  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    gradInput.resizeAs(input).zero()
+  override def updateGradInput(input: Table, gradOutput: Tensor[_]): Table = {
+    if (gradInput.contains(1)) {
+      gradInput[Tensor[_]](1).resize(input[Tensor[_]](1).size()).zero()
+    } else {
+      val inputTensor = input[Tensor[_]](1)
+      gradInput(1) = inputTensor.emptyInstance().resize(inputTensor.size())
+    }
+
+    if (gradInput.contains(2)) {
+      gradInput[Tensor[_]](2).resize(input[Tensor[_]](2).size()).zero()
+    } else {
+      val inputTensor = input[Tensor[_]](2)
+      gradInput(2) = inputTensor.emptyInstance().resize(inputTensor.size())
+    }
+    gradInput
   }
 
 }
 
 private[bigdl] object Fill {
-  def apply[T: ClassTag](value: Double)
+  def apply[T: ClassTag]()
        (implicit ev: TensorNumeric[T]) : Fill[T] = {
-    new Fill[T](ev.fromType(value))
+    new Fill[T]()
   }
 }
