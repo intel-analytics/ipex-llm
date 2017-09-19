@@ -22,14 +22,52 @@ import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
-class OneHot[T: ClassTag](
+/**
+ * OneHot operation returns a one-hot tensor
+ *
+ * The input contains 4 elements which are `indices`, `depth`, `onValue` and `offValue`*[]:
+
+ * The locations represented by indices in `indices` take value `onValue`,
+ * while all other locations take value `offValue`.
+ *
+ * `onValue` and `offValue` must have matching data types.
+ * If dtype is also provided, they must be the same data type as specified by `D`.
+ *
+ * If on_value is not provided, it will default to the value 1 with type dtype
+ *
+ * If off_value is not provided, it will default to the value 0 with type dtype
+ *
+ * If the input indices is rank N, the output will have rank N+1.
+ * The new axis is created at dimension axis (default: the new axis is appended at the end).
+ *
+ * If indices is a scalar the output shape will be a vector of length depth
+ *
+ * If indices is a vector of length features, the output shape will be:
+ * features x depth if axis == -1
+ * depth x features if axis == 0
+ *
+ * If indices is a matrix (batch) with shape [batch, features], the output shape will be:
+ *
+ * batch x features x depth if axis == -1
+ * batch x depth x features if axis == 1
+ * depth x batch x features if axis == 0
+ *
+ * @param axis The new axis is created at dimension axis
+ * @tparam T Numeric type. Parameter tensor numeric type. Only support float/double now
+ * @tparam D Numeric type. Output tensor numeric type. Only support float/double now
+ */
+class OneHot[T: ClassTag, D: ClassTag](
   axis: Int
-)(implicit ev: TensorNumeric[T]) extends Operation[Table, Tensor[T], T] {
-  def updateOutput(input: Table): Tensor[T] = {
+)(implicit ev: TensorNumeric[T], ev1: TensorNumeric[D]) extends Operation[Table, Tensor[D], T] {
+  output = Activity.allocate[Tensor[D], D]()
+  def updateOutput(input: Table): Tensor[D] = {
     val indices = input[Tensor[Int]](1)
     val depth = input[Tensor[Int]](2).value()
-    val onValue = input[Tensor[T]](3).valueAt(1)
-    val offValue = input[Tensor[T]](4).valueAt(1)
+    val onValue = if (!input.contains(3)) ev1.one else input[Tensor[D]](3).value()
+    val offValue = if (!input.contains(4)) ev1.one else input[Tensor[D]](4).value()
+
+    require(input[Tensor[_]](3).getType() == input[Tensor[_]](4).getType(),
+    "onValue must have the same type as offValue")
 
     val size: Array[Int] = indices.size()
     require(indices.dim() <= 2 && indices.dim() > 0,
@@ -52,7 +90,7 @@ class OneHot[T: ClassTag](
     }
 
     output.resize(newSize)
-    output.copy(output.apply1(x => offValue))
+    output.apply1(x => offValue)
 
     if (size.length == 2) {
       i = 1
@@ -92,12 +130,12 @@ class OneHot[T: ClassTag](
 }
 
 object OneHot {
-  def apply[T: ClassTag](
+  def apply[T: ClassTag, D: ClassTag](
     axis: Int
   )
-    (implicit ev: TensorNumeric[T]): Operation[Activity, Activity, T]
+    (implicit ev: TensorNumeric[T], ev1: TensorNumeric[D]): Operation[Activity, Activity, T]
   = ModuleToOperation[T](
-    new OneHot(
+    new OneHot[T, D](
       axis = axis
     ))
 }

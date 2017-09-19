@@ -35,7 +35,7 @@ class OneHotSpec extends FlatSpec with Matchers {
         T(0.0, 0.5, 0.0)
       ))
 
-    val output = OneHot[Double](
+    val output = OneHot[Double, Double](
       axis = -1
     ).forward(input)
 
@@ -60,7 +60,32 @@ class OneHotSpec extends FlatSpec with Matchers {
         T(0.0, 0.0, 0.0))
       ))
 
-    val output = OneHot[Double](
+    val output = OneHot[Double, Double](
+      axis = -1
+    ).forward(input)
+
+    output should be(expectOutput)
+  }
+
+  "OneHot operation two dimension index with type _" should "works correctly" in {
+    import com.intel.analytics.bigdl.numeric.NumericDouble
+    val input =
+      T(
+        Tensor[Int](T(T(0, 2), T(1, -1))),
+        Tensor[Int](Array(3), shape = Array[Int]()),
+        Tensor[Double](Array(1.0), shape = Array[Int]()),
+        Tensor[Double](Array(0.0), shape = Array[Int]())
+      )
+
+    val expectOutput =
+      Tensor(T(
+        T(T(1.0, 0.0, 0.0),
+          T(0.0, 0.0, 1.0)),
+        T(T(0.0, 1.0, 0.0),
+          T(0.0, 0.0, 0.0))
+      ))
+
+    val output = OneHot[Double, Double](
       axis = -1
     ).forward(input)
 

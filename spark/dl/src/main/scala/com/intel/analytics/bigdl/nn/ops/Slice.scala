@@ -21,12 +21,26 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+/**
+ * This operation extracts a slice of size size from a tensor
+ * input starting at the location specified by begin.
+ * The slice size is represented as a tensor shape, where size[i] is
+ * the number of elements of the 'i'th dimension of input that you want to slice
+ * The starting location (begin) for the slice is represented as an offset in each
+ * dimension of input.
+ * In other words, begin[i] is the offset into the 'i'th dimension of input that you
+ * want to slice from.
+ *
+ * @param begin zero-based
+ * @param size one-based
+ * @tparam T Numeric type. Only support float/double now
+ */
 class Slice[T: ClassTag](
   begin: Array[Int],
   size: Array[Int])
-  (implicit ev: TensorNumeric[T]) extends Operation[Tensor[T], Tensor[T], T] {
+  (implicit ev: TensorNumeric[T]) extends Operation[Tensor[_], Tensor[_], T] {
 
-  def updateOutput(input: Tensor[T]): Tensor[T] = {
+  def updateOutput(input: Tensor[_]): Tensor[_] = {
     require(begin.length == size.length && begin.length == input.dim(),
       "the length of `begin`, `size` and the dimension of input should be the same")
 
@@ -37,9 +51,8 @@ class Slice[T: ClassTag](
       outputNarrow = outputNarrow.narrow(i + 1, begin(i) + 1, realSize)
       i += 1
     }
-    output
-      .resizeAs(outputNarrow)
-      .copy(outputNarrow)
+    output.resizeAs(outputNarrow)
+    output.forceCopy(outputNarrow)
 
     output
   }
