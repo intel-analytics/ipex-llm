@@ -15,9 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn.tf
 
-import com.google.protobuf.ByteString
-import com.intel.analytics.bigdl.nn.Utils
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, TensorModule}
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
@@ -49,40 +47,9 @@ private[bigdl] class Fill[T: ClassTag]() (implicit ev: TensorNumeric[T])
       output.resize(shape)
     }
 
-    fill(output, value)
+    output.forceFill(value.value())
 
     output
-  }
-
-  private def fill(output: Tensor[_], valueTensor: Tensor[_]): Unit = {
-    require(output.getType() == valueTensor.getType(),
-      "fill tensor and value tensor are not the same type")
-    valueTensor.getType() match {
-      case FloatType =>
-        val value = valueTensor.asInstanceOf[Tensor[Float]].value()
-        output.asInstanceOf[Tensor[Float]].fill(value)
-      case DoubleType =>
-        val value = valueTensor.asInstanceOf[Tensor[Double]].value()
-        output.asInstanceOf[Tensor[Double]].fill(value)
-      case IntType =>
-        val value = valueTensor.asInstanceOf[Tensor[Int]].value()
-        output.asInstanceOf[Tensor[Int]].fill(value)
-      case LongType =>
-        val value = valueTensor.asInstanceOf[Tensor[Long]].value()
-        output.asInstanceOf[Tensor[Long]].fill(value)
-      case ShortType =>
-        val value = valueTensor.asInstanceOf[Tensor[Short]].value()
-        output.asInstanceOf[Tensor[Short]].fill(value)
-      case CharType =>
-        val value = valueTensor.asInstanceOf[Tensor[Char]].value()
-        output.asInstanceOf[Tensor[Char]].fill(value)
-      case StringType =>
-        val value = valueTensor.asInstanceOf[Tensor[ByteString]].value()
-        output.asInstanceOf[Tensor[ByteString]].fill(value)
-      case BooleanType =>
-        val value = valueTensor.asInstanceOf[Tensor[Boolean]].value()
-        output.asInstanceOf[Tensor[Boolean]].fill(value)
-    }
   }
 
   override def updateGradInput(input: Table, gradOutput: Tensor[_]): Table = {

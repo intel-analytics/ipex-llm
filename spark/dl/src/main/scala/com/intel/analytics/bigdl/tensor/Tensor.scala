@@ -19,7 +19,6 @@ package com.intel.analytics.bigdl.tensor
 import java.io.Serializable
 
 import breeze.linalg.{DenseMatrix => BrzDenseMatrix, DenseVector => BrzDenseVector}
-import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.mkl.MKL
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -101,6 +100,16 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
    * @return current tensor
    */
   def fill(v: T): Tensor[T]
+
+  /**
+   * Fill with a given value. It will change the value of the current tensor and return itself
+   *
+   * Note the value should be an instance of T
+   *
+   * @param v value to fill the tensor
+   * @return current tensor
+   */
+  def forceFill(v: Any): Tensor[T]
 
   /**
    * Fill with zero. It will change the value of the current tensor and return itself

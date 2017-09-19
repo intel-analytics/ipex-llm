@@ -245,6 +245,10 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     this
   }
 
+  override def forceFill(v: Any): Tensor[T] = {
+    this.fill(v.asInstanceOf[T])
+  }
+
   override def zero(): Tensor[T] = {
     this.fill(ev.fromType[Int](0))
   }
