@@ -94,7 +94,7 @@ private[bigdl] class Scheduler[T] (
   def schedule(node: ModuleNode[T]): Unit = {
     // Update status of current node
     nodeStatus(node) = if (node.prevNodes.length == 0) {
-      if (node.element.isInstanceOf[com.intel.analytics.bigdl.nn.tf.Const[_]]) {
+      if (node.element.isInstanceOf[com.intel.analytics.bigdl.nn.tf.Const[_, _]]) {
         Const()
       } else {
         Ready()

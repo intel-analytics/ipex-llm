@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.tensor
 import java.io.Serializable
 
 import breeze.linalg.{DenseMatrix => BrzDenseMatrix, DenseVector => BrzDenseVector}
+import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.mkl.MKL
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -341,6 +342,13 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
   }
 
   /**
+   * return a new empty tensor of the same type
+   *
+   * @return new tensor
+   */
+  def emptyInstance(): Tensor[T]
+
+  /**
    * Resize the current tensor to the same size of the given tensor. It will still use the same
    * storage if the storage
    * is sufficient for the new size
@@ -468,6 +476,15 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
    * @return current tensor
    */
   def copy(other: Tensor[T]): Tensor[T]
+
+  /**
+   * Copy the value of the given tensor to the current. They should have same size.
+   * They should also have the same type.
+   *
+   * @param other source tensor
+   * @return current tensor
+   */
+  def forceCopy(other: Tensor[_]): Tensor[T]
 
   /**
    * Apply a function to each element of the tensor `t`

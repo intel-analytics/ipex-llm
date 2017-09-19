@@ -78,9 +78,9 @@ class JoinTable[T: ClassTag] (
       }
       i += 1
     }
-    val inputType = input[Tensor[_]](1).getType()
-    if (output.getType() != inputType) {
-      output = Utils.allocate(size, inputType)
+    val firstInput = input[Tensor[_]](1)
+    if (output.getType() != firstInput.getType()) {
+      output = firstInput.emptyInstance().resize(size)
     } else {
       output.resize(size)
     }
@@ -96,7 +96,7 @@ class JoinTable[T: ClassTag] (
       results(i) = Engine.model.invoke( () => {
         val target = output.narrow(dimension, _offset, currentOutput.size(dimension))
         if (target.isContiguous() || dimension > 2) {
-          Utils.copy(target, currentOutput)
+          target.forceCopy(currentOutput)
         } else {
           var f = 1
           while (f <= target.size(1)) {
@@ -104,7 +104,7 @@ class JoinTable[T: ClassTag] (
             val outputFrame = currentOutput.select(1, f)
             require(curFrame.isContiguous())
             require(outputFrame.isContiguous())
-            Utils.copy(curFrame, outputFrame)
+            curFrame.forceCopy(outputFrame)
             f += 1
           }
         }
@@ -127,10 +127,11 @@ class JoinTable[T: ClassTag] (
       val _i = i
       results(i) = Engine.model.invoke( () => {
         val narrowedTensor = gradOutput.narrow(dimension, _offset, currentOutput.size(dimension))
+        val inputTensor = input[Tensor[_]](_i + 1)
         if (!gradInput.contains(_i + 1)) gradInput(_i + 1) =
-          Utils.allocate(input[Tensor[_]](_i + 1).size(), input[Tensor[_]](_i + 1).getType())
+          inputTensor.emptyInstance().resize(inputTensor.size())
         if(narrowedTensor.isContiguous() || dimension > 2) {
-          Utils.copy(gradInput[Tensor[_]](_i + 1), narrowedTensor)
+          gradInput[Tensor[_]](_i + 1).forceCopy(narrowedTensor)
         } else {
           var b = 1
           while(b <= narrowedTensor.size(1)) {
@@ -138,7 +139,7 @@ class JoinTable[T: ClassTag] (
             val narrowFrame = narrowedTensor.select(1, b)
             require(curFrame.isContiguous())
             require(narrowFrame.isContiguous())
-            Utils.copy(curFrame, narrowFrame)
+            curFrame.forceCopy(narrowFrame)
             b += 1
           }
         }

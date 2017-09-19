@@ -29,8 +29,9 @@ private[bigdl] trait WithoutInput
  * @param value the constant tensor to be returned in forward
  */
 @SerialVersionUID(-4008935551091949324L)
-private[bigdl] class Const[T: ClassTag](value: Tensor[_])(implicit ev: TensorNumeric[T])
-  extends AbstractModule[Activity, Activity, T] with WithoutInput {
+private[bigdl] class Const[T: ClassTag, B: ClassTag](value: Tensor[B])
+  (implicit ev: TensorNumeric[T])
+  extends AbstractModule[Activity, Tensor[B], T] with WithoutInput {
 
   override def clearState(): this.type = {
     // Const do not have state, output should always be value
@@ -39,12 +40,12 @@ private[bigdl] class Const[T: ClassTag](value: Tensor[_])(implicit ev: TensorNum
 
   output = value
 
-  override def updateOutput(input: Activity): Activity = output
+  override def updateOutput(input: Activity): Tensor[B] = output
 
-  override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
-    require(gradOutput.asInstanceOf[Tensor[_]].isSameSizeAs(value),
+  override def updateGradInput(input: Activity, gradOutput: Tensor[B]): Activity = {
+    require(gradOutput.isSameSizeAs(value),
       s"Invalid gradOutput size. require (${value.size().mkString(",")}), but " +
-        s"(${gradOutput.asInstanceOf[Tensor[_]].size().mkString(",")})")
+        s"(${gradOutput.size().mkString(",")})")
     input match {
       case t: Tensor[T] =>
         if (gradInput == null || gradInput.isInstanceOf[Table]) {
@@ -67,8 +68,8 @@ private[bigdl] class Const[T: ClassTag](value: Tensor[_])(implicit ev: TensorNum
 }
 
 private[bigdl] object Const {
-  def apply[T: ClassTag](value: Tensor[_])
-      (implicit ev: TensorNumeric[T]): Const[T] = {
-    new Const[T](value)
+  def apply[T: ClassTag, B: ClassTag](value: Tensor[B])
+      (implicit ev: TensorNumeric[T]): Const[T, B] = {
+    new Const[T, B](value)
   }
 }

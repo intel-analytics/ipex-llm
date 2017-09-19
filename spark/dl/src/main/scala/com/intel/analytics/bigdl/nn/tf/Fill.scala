@@ -44,7 +44,7 @@ private[bigdl] class Fill[T: ClassTag]() (implicit ev: TensorNumeric[T])
     val value = input[Tensor[_]](2)
     require(value.isScalar, "value tensor is not a scalar")
     if (value.getType() != output.getType()) {
-      output = Utils.allocate(shape, value.getType())
+      output = value.emptyInstance().resize(shape)
     } else {
       output.resize(shape)
     }
@@ -89,13 +89,15 @@ private[bigdl] class Fill[T: ClassTag]() (implicit ev: TensorNumeric[T])
     if (gradInput.contains(1)) {
       gradInput[Tensor[_]](1).resize(input[Tensor[_]](1).size()).zero()
     } else {
-      gradInput(1) = Utils.allocate(input[Tensor[_]](1).size(), input[Tensor[_]](1).getType())
+      val inputTensor = input[Tensor[_]](1)
+      gradInput(1) = inputTensor.emptyInstance().resize(inputTensor.size())
     }
 
     if (gradInput.contains(2)) {
       gradInput[Tensor[_]](2).resize(input[Tensor[_]](2).size()).zero()
     } else {
-      gradInput(2) = Utils.allocate(input[Tensor[_]](2).size(), input[Tensor[_]](2).getType())
+      val inputTensor = input[Tensor[_]](2)
+      gradInput(2) = inputTensor.emptyInstance().resize(inputTensor.size())
     }
     gradInput
   }
