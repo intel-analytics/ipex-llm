@@ -246,7 +246,7 @@ object TensorflowToBigDL {
       BatchNormTF, AddConstTF1, AddConstTF2, AddTF, SoftMaxTF, ElementWiseMulTF, MulTF,
       SplitTF, PaddingTF, MeanTF, UnpackTF, StrideSliceTF, ShapeTF, FillTF, PackTF, ConstTF,
       Flatten, Conv2D2, Conv1D, FlattenV2, BatchNormV2NHWCTF, BatchNormV2NCHWTF, AddNTF,
-      ControlDependencyTF
+      ControlDependencyTF, FullConnectionWithoutBiasTF
     )
     res
   }
@@ -308,6 +308,31 @@ object FullConnectionTF extends TensorflowToBigDL{
     val (weight, gradWeight) = getOrSetTensor(weightNode, context, byteOrder, Some(Seq((1, 2))))
     Linear[T](inputSize = weight.size(2), outputSize = weight.size(1),
       initWeight = weight, initGradWeight = gradWeight, initBias = bias, initGradBias = gradBias)
+      .asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
+  }
+}
+
+object FullConnectionWithoutBiasTF extends TensorflowToBigDL{
+  private val graph = {
+    val mul = Node("MatMul")
+    Node("*") -> mul
+    Node("Const") -> Node("Identity") -> mul
+    mul.graph(reverse = true)
+  }
+  override def topology: DirectedGraph[String] = graph
+
+
+  override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
+                                  context: Context[T],
+                                  byteOrder: ByteOrder)(
+     implicit ev: TensorNumeric[T]): AbstractModule[Activity, Tensor[T], T] = {
+
+
+    val weightNode = tfGraph.source.prevNodes(1).prevNodes.head.element
+    val (weight, gradWeight) = getOrSetTensor(weightNode, context, byteOrder, Some(Seq((1, 2))))
+
+    Linear[T](inputSize = weight.size(2), outputSize = weight.size(1), withBias = false,
+      initWeight = weight, initGradWeight = gradWeight)
       .asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
   }
 }
