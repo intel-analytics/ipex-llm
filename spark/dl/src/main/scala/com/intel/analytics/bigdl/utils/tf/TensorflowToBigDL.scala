@@ -329,9 +329,7 @@ object FullConnectionWithoutBiasTF extends TensorflowToBigDL{
 
 
     val weightNode = tfGraph.source.prevNodes(1).prevNodes.head.element
-    val (weight, gradWeight) = getOrSetTensor(weightNode, context, byteOrder) { t =>
-      t.transpose(1, 2)
-    }
+    val (weight, gradWeight) = getOrSetTensor(weightNode, context, byteOrder, Some(Seq((1, 2))))
 
     Linear[T](inputSize = weight.size(2), outputSize = weight.size(1), withBias = false,
       initWeight = weight, initGradWeight = gradWeight)

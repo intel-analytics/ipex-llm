@@ -1720,7 +1720,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                batchSize: Int, endWhen: Trigger): AbstractModule[Activity, Activity, T] = {
     val nodeList = parse(modelPath)
 
-    val context = new mutable.HashMap[String, (Tensor[T], Tensor[T])]()
+    val context =
+      new mutable.HashMap[String, (Tensor[T], Tensor[T], Option[Seq[(Int, Int)]])]()
     val session = new BigDLSessionImpl[T](nodeList.asScala, context)
     val dataset = batching(samples, batchSize)
 

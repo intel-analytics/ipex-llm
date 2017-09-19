@@ -44,7 +44,7 @@ abstract class Session[T: ClassTag] {
 
 class BigDLSessionImpl[T: ClassTag](
        graph: Seq[NodeDef],
-       context: mutable.HashMap[String, (Tensor[T], Tensor[T])])
+       context: mutable.HashMap[String, (Tensor[T], Tensor[T], Option[Seq[(Int, Int)]])])
                          (implicit ev: TensorNumeric[T]) extends Session[T] {
   import scala.collection.JavaConverters._
 
@@ -52,14 +52,14 @@ class BigDLSessionImpl[T: ClassTag](
 
   private val inputOp = Set("ReaderReadV2", "QueueDequeueV2", "QueueDequeueManyV2", "Placeholder")
 
-  private val (wholeTFGraph, _) = TensorflowLoader.buildTFGraph(graph.asJava, null)
+  private val (wholeTFGraph, _, _) = TensorflowLoader.buildTFGraph(graph.asJava, null)
 
   private val name2Node = wholeTFGraph.
     DFS.filter(n => n.element != null).map(node => (node.element.getName, node)).toMap
 
   private def constructModel(endPoints: Seq[String]): (Graph[T], Node[NodeDef]) = {
     val isInputOp = (n: NodeDef) => inputOp(n.getOp)
-    val (tfGraph, inputs) = TensorflowLoader.buildTFGraph(graph.asJava, endPoints, isInputOp)
+    val (tfGraph, inputs, _) = TensorflowLoader.buildTFGraph(graph.asJava, endPoints, isInputOp)
 
     val inputNodes = inputs.map(name2Node)
 
