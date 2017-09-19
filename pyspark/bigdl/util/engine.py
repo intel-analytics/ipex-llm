@@ -66,7 +66,7 @@ def get_bigdl_classpath():
 def is_spark_below_2_2_0():
     import pyspark
     if(hasattr(pyspark,"version")):
-        spark_version = pyspark.__version__.split("+")[0]
+        spark_version = pyspark.version.__version__.split("+")[0]
         if(compare_version(spark_version, "2.2.0")>=0):
             return False
     return True
