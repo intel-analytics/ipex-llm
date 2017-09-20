@@ -19,7 +19,7 @@ import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.nn.{CrossEntropyCriterion, MSECriterion}
 import com.intel.analytics.bigdl.optim.{SGD, Trigger}
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.utils.{Engine, Table}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -74,7 +74,7 @@ class SessionSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val optim = new SGD[Float](0.001)
     val criterion = MSECriterion[Float]()
-    val endWhen = Trigger.maxEpoch(5)
+    val endWhen = Trigger.maxEpoch(2)
 
     val samples = data.zip(label).map { case (dataTensor, labelTensor) =>
       Sample(dataTensor, labelTensor)
