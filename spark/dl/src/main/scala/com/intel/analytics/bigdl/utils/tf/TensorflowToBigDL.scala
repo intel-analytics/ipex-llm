@@ -21,7 +21,7 @@ import java.util
 
 import collection.JavaConverters._
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Storage, Tensor}
 import org.tensorflow.framework.{AttrValue, DataType, NodeDef, TensorProto}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
 import com.intel.analytics.bigdl.nn.tf._
@@ -647,15 +647,16 @@ object ReshapeTF extends TensorflowToBigDL {
                                   byteOrder: ByteOrder)(
     implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
-    val sizes = TensorflowToBigDL.toTensor(
+    val sizes = TFUtils.parseTensor(
       tfGraph.source.prevNodes(1).element.getAttrMap.get("value").getTensor, byteOrder)
+      .asInstanceOf[Tensor[Int]]
 
     val batchMode = sizes.valueAt(1) == -1
     val arraySize = new Array[Int](if (batchMode) sizes.nElement() - 1 else sizes.nElement())
     var i = if (batchMode) 2 else 1
     var k = 0
     while(i <= sizes.nElement()) {
-      arraySize(k) = ev.toType[Int](sizes.valueAt(i))
+      arraySize(k) = sizes.valueAt(i)
       k += 1
       i += 1
     }
@@ -1274,16 +1275,16 @@ object Flatten extends TensorflowToBigDL {
     implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
     val shapetfTensor = tfGraph.source.prevNodes(1).prevNodes(0).prevNodes(0).element
       .getAttrMap.get("value").getTensor
-    val sizes = TensorflowToBigDL.toTensor(shapetfTensor, byteOrder)
+    val sizes = TFUtils.parseTensor(shapetfTensor, byteOrder).asInstanceOf[Tensor[Int]]
     val batchMode = false
 
     val arraySize = Array(
-      ev.toType[Int](sizes.valueAt(1)),
+      sizes.valueAt(1),
       {
         var prod = 1
         var i = 2
         while(i <= sizes.nElement()) {
-          prod = prod * ev.toType[Int](sizes.valueAt(i))
+          prod = prod * sizes.valueAt(i)
           i = i + 1
         }
         prod
@@ -1382,10 +1383,12 @@ object MulTF extends  TensorflowToBigDL{
                                   byteOrder: ByteOrder)(
     implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
-    val scale = TensorflowToBigDL.toTensor(
+    val scale = TFUtils.parseTensor(
       tfGraph.source.prevNodes(0).element.getAttrMap.get("value").getTensor, byteOrder)
-    require(scale.dim() == 1 && scale.size(1) == 1, s"scale must be one number")
-    val mul = MulConstant[T](ev.toType[Double](scale.valueAt(1)))
+      .asInstanceOf[Tensor[Float]]
+    require(scale.isScalar, s"scale must be a scalar")
+    val value = scale.value().toDouble
+    val mul = MulConstant[T](value)
     mul.asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
@@ -1450,18 +1453,19 @@ object PaddingTF extends TensorflowToBigDL{
                                   byteOrder: ByteOrder)(
     implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
-    val paddings = TensorflowToBigDL.toTensor(
+    val paddings = TFUtils.parseTensor(
       tfGraph.source.prevNodes(1).element.getAttrMap.get("value").getTensor, byteOrder)
+      .asInstanceOf[Tensor[Int]]
     val pad = ArrayBuffer[Int]()
     val padding = Sequential[T]()
 
     for(dim <- 1 to paddings.size(1)) {
       if (paddings.valueAt(dim, 1) != 0 || paddings.valueAt(dim, 2) != 0 ) {
         if (paddings(Array(dim, 1)) != 0) {
-          padding.add(Padding[T](dim, -ev.toType[Int](paddings.valueAt(dim, 1)), 4))
+          padding.add(Padding[T](dim, -paddings.valueAt(dim, 1), 4))
         }
         if (paddings(Array(dim, 2)) != 0) {
-          padding.add(Padding[T](dim, ev.toType[Int](paddings.valueAt(dim, 2)), 4))
+          padding.add(Padding[T](dim, paddings.valueAt(dim, 2), 4))
         }
       }
     }
@@ -1484,12 +1488,13 @@ object MeanTF extends TensorflowToBigDL{
                                   byteOrder: ByteOrder)(
     implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
-    val dims = TensorflowToBigDL.toTensor(
+    val dims = TFUtils.parseTensor(
       tfGraph.source.prevNodes(1).element.getAttrMap.get("value").getTensor, byteOrder)
+      .asInstanceOf[Tensor[Int]]
     val dim = ArrayBuffer[Int]()
     val mean = Sequential[T]()
     for (i <- 1 to dims.size(1)) {
-      dim += ev.toType[Int](dims.valueAt(i)) + 1
+      dim += dims.valueAt(i) + 1
     }
     dim.foreach(i => mean.add(Mean[T](i, squeeze = false)))
     mean.asInstanceOf[AbstractModule[Activity, Activity, T]]
