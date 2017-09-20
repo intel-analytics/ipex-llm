@@ -34,6 +34,7 @@ import serialization.Bigdl.{AttrValue, BigDLModule}
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
+import scala.reflect.runtime.universe
 import com.intel.analytics.bigdl.visualization.tensorboard.{FileWriter => TFFileWriter}
 import org.tensorflow.framework.GraphDef
 
@@ -648,20 +649,24 @@ object Graph extends ContainerSerializable {
     if (graph.variables.isDefined) {
       val (weights, bias) = graph.variables.get
       val weightAttrBuilder = AttrValue.newBuilder
-      DataConverter.setAttributeValue(weightAttrBuilder, weights)
+      DataConverter.setAttributeValue(weightAttrBuilder, weights,
+        universe.typeOf[Array[Tensor[_ <: Any]]])
       graphBuilder.putAttr("sharedWeight", weightAttrBuilder.build)
 
       val biasAttrBuilder = AttrValue.newBuilder
-      DataConverter.setAttributeValue(biasAttrBuilder, bias)
+      DataConverter.setAttributeValue(biasAttrBuilder, bias,
+        universe.typeOf[Array[Tensor[_ <: Any]]])
       graphBuilder.putAttr("sharedBias", biasAttrBuilder.build)
     }
 
     val inputNamesAttrBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(inputNamesAttrBuilder, inputsNames)
+    DataConverter.setAttributeValue(inputNamesAttrBuilder,
+      inputsNames, universe.typeOf[Array[String]])
     graphBuilder.putAttr("inputNames", inputNamesAttrBuilder.build)
 
     val outputNamesBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(outputNamesBuilder, outputsNames)
+    DataConverter.setAttributeValue(outputNamesBuilder,
+      outputsNames, universe.typeOf[Array[String]])
     graphBuilder.putAttr("outputNames", outputNamesBuilder.build)
 
   }
