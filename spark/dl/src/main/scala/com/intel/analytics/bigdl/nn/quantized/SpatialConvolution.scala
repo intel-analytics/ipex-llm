@@ -65,10 +65,14 @@ private[bigdl] class SpatialConvolution[T: ClassTag](
     }
 
     // dilated convolution has no group option
-    val weightTmp = if (weightFP32.nDimension() != 5) {
-      weightFP32.view(Array(nGroup, nOutputPlane / nGroup, nInputPlane / nGroup, kernelH, kernelW))
+    val weightTmp = if (format == DataFormat.NHWC) {
+      val groupWeight = weightFP32.view(Array(nGroup, kernelH, kernelW, nInputPlane / nGroup,
+        nOutputPlane / nGroup))
+
+      nn.Utils.shuffle(groupWeight, Array(1, 5, 2, 3, 4))
     } else {
-      weightFP32
+      weightFP32.view(Array(nGroup, nOutputPlane / nGroup, nInputPlane / nGroup,
+        kernelH, kernelW))
     }
 
     weight = new Array[Tensor[T]](nGroup)
@@ -98,9 +102,15 @@ private[bigdl] class SpatialConvolution[T: ClassTag](
     val inputWidth = input.size(dimWidth)
     val inputHeight = input.size(dimHeight)
 
-    val (_, _, _, _, outputHeight, outputWidth) = nn.Utils.getOutSizeAndPadding(
-      inputHeight, inputWidth, strideH, strideW, kernelH, kernelW, padH, padW,
-      false, dilationHeight, dilationWidth)
+    val (padTop, padBottom, padLeft, padRight, outputHeight, outputWidth) =
+      if (padW == -1 && padH == -1) {
+        nn.Utils.getSAMEOutSizeAndPadding(inputHeight, inputWidth, strideH, strideW, kernelH,
+          kernelW)
+      } else {
+        nn.Utils.getOutSizeAndPadding(inputHeight, inputWidth, strideH, strideW,
+          kernelH, kernelW, padH, padW, ceilMode = false, dilationWidth = dilationWidth,
+          dilationHeight = dilationHeight)
+      }
 
     val batchSize = if (input.dim() == 3) {
       output.resize(nn.Utils.getOutputShape(outputHeight, outputWidth, nOutputPlane,
@@ -113,10 +123,11 @@ private[bigdl] class SpatialConvolution[T: ClassTag](
     }
 
     val params = ConvDataParams(nInputPlane / nGroup, kernelH, kernelW,
-        strideH, strideW, padH, padW, dilationHeight, dilationWidth, 1,
+        strideH, strideW, padTop, padLeft, dilationHeight, dilationWidth, 1,
         inputHeight, inputWidth)
 
     if (data.params == null || data.params != params) {
+      data.release()
       data.set(QuantizedTensor[T](input.size(), params))
     }
 
@@ -133,12 +144,13 @@ private[bigdl] class SpatialConvolution[T: ClassTag](
     @inline def im2ColAndGemmFloat(batch: Int): Unit = {
       val batchOutput = output.select(1, batch + 1)
       val batchInput = input.select(1, batch + 1)
+      val channel = if (input.dim() == 3) { channelDim } else { channelDim - 1 }
 
       var group = 0
       while (group < nGroup) {
-        val groupBatchOutput = batchOutput.narrow(1, group * nOutputPlane / nGroup + 1,
+        val groupBatchOutput = batchOutput.narrow(channel, group * nOutputPlane / nGroup + 1,
           nOutputPlane / nGroup)
-        val groupBatchInput = batchInput.narrow(1, group * nInputPlane / nGroup + 1,
+        val groupBatchInput = batchInput.narrow(channel, group * nInputPlane / nGroup + 1,
           nInputPlane / nGroup)
         val groupWeight = weight(group).asInstanceOf[QuantizedTensor[T]]
         val offset = 0
@@ -165,7 +177,7 @@ private[bigdl] class SpatialConvolution[T: ClassTag](
 
       BigQuant.ConvDataInit(
         data.getNativeStorage, inputArray, inputOffset,
-        nInputPlane / nGroup, kernelH, kernelW, strideH, strideW, padH, padW,
+        nInputPlane / nGroup, kernelH, kernelW, strideH, strideW, padTop, padLeft,
         dilationHeight, dilationWidth, 1, inputHeight, inputWidth, QuantParams.THRESHOLD,
         quantFormat)
 

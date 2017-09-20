@@ -62,7 +62,7 @@ object Utils {
 
   /**
    * Resize table target as table src.
- *
+   *
    * @param target
    * @param src
    */
@@ -106,7 +106,7 @@ object Utils {
 
   /**
    * Apply function 'func' on all tensor in the table.
- *
+   *
    * @param x
    * @param func
    */
@@ -192,7 +192,7 @@ object Utils {
 
   /**
    * Fill the value to each Tensor in the table recursively
- *
+   *
    * @param x
    * @param value
    */
@@ -375,4 +375,49 @@ object Utils {
     }
   }
 
+  def shuffle[T: ClassTag](src: Tensor[T], permutation: Array[Int], buffer: Tensor[T] = null)(
+    implicit ev: TensorNumeric[T]): Tensor[T] = {
+    require(permutation.length == src.nDimension,
+      s"permutation length should be same as tensor dimension")
+    require(permutation.min >= 0 && permutation.max <= src.size().max,
+      s"permutation min value should be between 0 and ${src.size().max}")
+    require(permutation.distinct.size == src.nDimension, s"permutation has duplicated input")
+
+    var i = 0
+    val outSize = new Array[Int](src.nDimension)
+    while (i < permutation.length) {
+      outSize(i) = src.size(permutation(i))
+      i += 1
+    }
+
+    val out = if (buffer == null) {
+      Tensor[T]()
+    } else {
+      buffer
+    }
+
+    out.resize(outSize)
+
+    i = 0
+    val numOfElements = src.nElement()
+    while (i < numOfElements) {
+      var srcIndex = 0
+      var tmp = i
+
+      var j = 1
+      while (j <= src.nDimension) {
+        val curDim = tmp / out.stride(j)
+        tmp %= out.stride(j)
+
+        srcIndex += curDim * src.stride(permutation(j - 1))
+
+        j += 1
+      }
+
+      out.storage().array()(i) = src.storage().array()(srcIndex)
+      i += 1
+    }
+
+    out
+  }
 }

@@ -1759,7 +1759,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
 
   /**
    * Implements == operator comparing each element in a with b
- *
+   *
    * @param x
    * @param value
    * @return
@@ -1871,7 +1871,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
 
   /**
    * Implements >= operator comparing each element in x with value
- *
+   *
    * @param x
    * @param value
    * @return
@@ -1895,7 +1895,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
    * Accumulate the elements of tensor into the original tensor by adding to the indices
    * in the order given in index. The shape of tensor must exactly match the elements indexed
    * or an error will be thrown.
- *
+   *
    * @param dim
    * @param index
    * @param y
@@ -1928,7 +1928,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
    * create a new Tensor which indexes the original Tensor along dimension dim using the entries
    * in torch.LongTensor index. The returned Tensor has the same number of dimensions as the
    * original Tensor.
- *
+   *
    * @param dim
    * @param index
    * @param y
@@ -1974,6 +1974,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   override def getTensorNumeric(): TensorNumeric[T] = ev
 
   override def getTensorType: TensorType = DenseType
+
 }
 
 object DenseTensor {

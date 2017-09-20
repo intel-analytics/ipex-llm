@@ -725,7 +725,6 @@ object Recurrent extends ContainerSerializable with Quantable {
   override def quantize[T: ClassTag](module: Module[T])(
     implicit ev: TensorNumeric[T]): Module[T] = {
     val recurrent = module.asInstanceOf[Recurrent[T]]
-    recurrent.clearState()
 
     recurrent.topology = Quantizer.quantize(recurrent.topology).asInstanceOf[Cell[T]]
     if (recurrent.preTopology != null) {

@@ -37,7 +37,7 @@ object Utils {
   case class TestParams(folder: String = "./",
     model: String = "unkonwn_model",
     modelPath: String = "",
-    batchSize: Int = 32,
+    batchSize: Int = 30,
     quantize: Boolean = true)
 
   val testParser = new OptionParser[TestParams]("BigDL Models Test with Quant") {
@@ -78,6 +78,7 @@ object Utils {
       case m if m.toLowerCase.contains("resnet") && !m.toLowerCase.contains("cifar10") => imagenet
       case m if m.toLowerCase.contains("resnet") && m.toLowerCase.contains("cifar10") =>
         sc.parallelize(ResNetUtils.loadTest(folder), partitionNum)
+      case "vgg_16" => imagenet
 
       case _ => throw new UnsupportedOperationException(s"unknown model: $model")
     }
@@ -97,7 +98,7 @@ object Utils {
         BytesToGreyImg(28, 28) -> GreyImgNormalizer(LeNetUtils.testMean,
           LeNetUtils.testStd) -> GreyImgToSample()
 
-      case "vgg" =>
+      case "vgg_on_cifar" =>
         BytesToBGRImg() -> BGRImgNormalizer(VggUtils.testMean, VggUtils.testStd) -> BGRImgToSample()
 
       case m if m.contains("alexnet") => imagenetPreprocessing(227)
@@ -118,6 +119,11 @@ object Utils {
       case m if m.toLowerCase.contains("resnet") && m.toLowerCase.contains("cifar10") =>
         BytesToBGRImg() -> BGRImgNormalizer(ResNetCifar10DataSet.trainMean,
           ResNetCifar10DataSet.trainStd) -> BGRImgToSample()
+
+      case "vgg_16" =>
+        BytesToBGRImg(normalize = 1f) ->
+          BGRImgCropper(224, 224, CropCenter) ->
+          BGRImgNormalizer(123, 117, 104, 1, 1, 1) -> BGRImgToSample(toRGB = false)
 
       case _ => throw new UnsupportedOperationException(s"unknown model: $model")
     }

@@ -46,24 +46,36 @@ object Test {
       val transformer = getTransformer(name)
       val evaluationSet = transformer(rddData)
 
-      val model = if (param.model != "lenet") {
-        val m = Module.loadModule[Float](path)
-        if (param.quantize) {
-          m.quantize()
+      def loadTF(path: String): Module[Float] = {
+        val inputs = Seq("input")
+        val outputs = Seq("output")
+        Module.loadTF[Float](path, inputs, outputs)
+      }
+
+      val loadedModel = if (param.model != "lenet") {
+        if (path.endsWith(".pb")) {
+          Sequential[Float]()
+            .add(ShuffleWithPermutation(Array(1, 3, 4, 2))).add(loadTF(path))
         } else {
-          m
+          Module.loadModule[Float](path)
         }
       } else {
         val reshape = Reshape[Float](Array(1, 28, 28))
         val newModel = Sequential[Float]()
-        newModel.add(reshape)
-        newModel.add(Module.loadModule[Float](path))
 
-        if (param.quantize) {
-          newModel.quantize()
+        if (path.endsWith(".pb")) {
+          Sequential[Float]().add(Reshape(Array(1, 28, 28)))
+            .add(ShuffleWithPermutation(Array(1, 3, 4, 2))).add(loadTF(path))
         } else {
-          newModel
+          Sequential[Float]().add(Reshape(Array(1, 28, 28)))
+            .add(Module.loadModule[Float](path))
         }
+      }
+
+      val model = if (param.quantize) {
+        loadedModel.quantize()
+      } else {
+        loadedModel
       }
 
       test(model, evaluationSet, batchSize)
