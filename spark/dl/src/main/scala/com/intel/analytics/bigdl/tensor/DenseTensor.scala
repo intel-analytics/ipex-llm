@@ -909,16 +909,53 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
         }
         DenseTensorApply.apply2[T](this, x, func)
       }
-    } else {
-      // Try to do some broadcasting
-      DenseTensor.checkBroadcastDims(this, x)
-
+    } else if (DenseTensor.canFastBroadcast(this, x)) {
       // recursive add
       var i = 0
       while(i < this.size(1)) {
         this.select(1, i + 1).add(x)
         i += 1
       }
+    } else {
+      val targetSize = DenseTensor.expandSize(this, x)
+      val expandStrides = new Array[Int](targetSize.length)
+
+      val expandStridesX = new Array[Int](targetSize.length)
+      var i = targetSize.length - 1
+      val delta2 = targetSize.length - x.nDimension
+      while(i >= delta2) {
+        if (x.size(i + 1- delta2) != 1) expandStridesX(i) = x.stride(i + 1- delta2)
+        i -= 1
+      }
+      val expandX = new DenseTensor[T](
+        x.storage(),
+        x.storageOffset(),
+        targetSize,
+        expandStridesX
+      )
+
+      val expandTensor =
+        if (targetSize.product == this.nElement()) {
+          this
+        } else {
+          i = targetSize.length - 1
+          val delta1 = targetSize.length - this.nDimension
+          while (i >= delta1) {
+            if (this.size(i + 1 - delta1) != 1) expandStrides(i) = this.stride(i + 1 - delta1)
+            i -= 1
+          }
+          val tensor1 = new DenseTensor[T](
+            this.storage(),
+            this.storageOffset(),
+            targetSize,
+            expandStrides
+          )
+          val newTensor = new DenseTensor[T]().resize(targetSize).add(tensor1)
+          this.set(newTensor)
+          this
+        }
+
+      expandTensor.add(expandX)
     }
     this
   }
@@ -2393,23 +2430,50 @@ object DenseTensor {
     gauss
   }
 
-  private[tensor] def checkBroadcastDims[@specialized T: ClassTag](tensor: Tensor[T],
-    other: Tensor[T]): Unit = {
-    val errorMsg = s"tensor size not match ${tensor.size.mkString("x")} " +
-      s"${other.size.mkString("x")}"
-    require(tensor.nDimension >= other.nDimension(), errorMsg)
+  private[tensor] def canFastBroadcast[@specialized T: ClassTag](tensor: Tensor[T],
+    other: Tensor[T]): Boolean = {
+    if (tensor.nDimension < other.nDimension()) return false
+
     val delta = tensor.nDimension - other.nDimension()
     var d = other.nDimension()
     // Check dimensions
     var broadcasting = false
     while(d > 0) {
       if (broadcasting) {
-        require(other.size(d) == 1, errorMsg)
+        if (other.size(d) != 1) return false
       } else if (tensor.size(delta + d) != other.size(d)) {
-        require(other.size(d) == 1, errorMsg)
+        if (other.size(d) != 1) return false
         broadcasting = true
       }
       d -= 1
     }
+
+    return true
+  }
+
+  private[tensor] def expandSize[@specialized T: ClassTag](tensor: Tensor[T],
+    other: Tensor[T]): Array[Int] = {
+    val errorMsg = s"tensor size not match ${tensor.size.mkString("x")} " +
+      s"${other.size.mkString("x")}"
+    val longTensor = if (tensor.dim() > other.dim()) tensor else other
+    val shortTensor = if (tensor.dim() > other.dim()) other else tensor
+    val ndim = longTensor.nDimension()
+    val delta = longTensor.nDimension() - shortTensor.nDimension()
+    val size = new Array[Int](ndim)
+    var i = ndim - 1
+    while(i >= delta) {
+      require(longTensor.size(i + 1) == shortTensor.size(i + 1 - delta) ||
+        longTensor.size(i + 1) == 1 ||
+        shortTensor.size(i + 1 - delta) == 1, errorMsg)
+      size(i) = math.max(longTensor.size(i + 1), shortTensor.size(i + 1 - delta))
+      i -= 1
+    }
+
+    while(i >= 0) {
+      size(i) = longTensor.size(i + 1)
+      i -= 1
+    }
+
+    size
   }
 }
