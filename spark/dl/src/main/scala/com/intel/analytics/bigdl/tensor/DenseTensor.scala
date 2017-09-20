@@ -245,6 +245,10 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     this
   }
 
+  override def forceFill(v: Any): Tensor[T] = {
+    this.fill(v.asInstanceOf[T])
+  }
+
   override def zero(): Tensor[T] = {
     this.fill(ev.fromType[Int](0))
   }
@@ -382,8 +386,19 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     DenseTensor.newClone(this)
   }
 
+  override def emptyInstance(): Tensor[T] = {
+    Tensor[T]()
+  }
+
   override def copy(other: Tensor[T]): Tensor[T] = {
     DenseTensor.copy(this, other)
+    this
+  }
+
+  override def forceCopy(other: Tensor[_]): Tensor[T] = {
+    require(this.getType() == other.getType(),
+      "forceCopy should copy from a tensor of the same type")
+    DenseTensor.copy(this, other.asInstanceOf[Tensor[T]])
     this
   }
 
