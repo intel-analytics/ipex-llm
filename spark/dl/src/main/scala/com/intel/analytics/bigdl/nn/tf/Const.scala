@@ -29,7 +29,6 @@ private[bigdl] trait WithoutInput
  * @param value the constant tensor to be returned in forward
  */
 @SerialVersionUID(-4008935551091949324L)
-<<<<<<< 784554254db27c9fe7203471cfdcaaa7ea741755
 private[bigdl] class Const[T: ClassTag, B: ClassTag](value: Tensor[B])
   (implicit ev: TensorNumeric[T])
   extends AbstractModule[Activity, Tensor[B], T] with WithoutInput {
@@ -46,7 +45,7 @@ private[bigdl] class Const[T: ClassTag, B: ClassTag](value: Tensor[B])
   override def updateGradInput(input: Activity, gradOutput: Tensor[B]): Activity = {
     require(gradOutput.isSameSizeAs(value),
       s"Invalid gradOutput size. require (${value.size().mkString(",")}), but " +
-        s"(${gradOutput.asInstanceOf[Tensor[_]].size().mkString(",")})")
+        s"(${gradOutput.size().mkString(",")})")
     input match {
       case t: Tensor[T] =>
         if (gradInput == null || gradInput.isInstanceOf[Table]) {
