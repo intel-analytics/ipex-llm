@@ -521,15 +521,15 @@ object DataConverter extends DataConverter{
         case DataType.INT32 =>
           valueArray.getI32List.asScala.toArray.map(_.intValue)
         case DataType.INT64 =>
-          valueArray.getI64List.asScala.toArray
+          valueArray.getI64List.asScala.toArray.map(_.longValue())
         case DataType.DOUBLE =>
-          valueArray.getDblList.asScala.toArray
+          valueArray.getDblList.asScala.toArray.map(_.doubleValue())
         case DataType.FLOAT =>
-          valueArray.getFltList.asScala.toArray
+          valueArray.getFltList.asScala.toArray.map(_.floatValue())
         case DataType.STRING =>
           valueArray.getStrList.asScala.toArray
         case DataType.BOOL =>
-          valueArray.getBooleanList.asScala.toArray
+          valueArray.getBooleanList.asScala.toArray.map(_.booleanValue())
         case DataType.REGULARIZER =>
           val regularizers = new Array[Regularizer[T]](size)
           val regList = valueArray.getRegularizerList.asScala
