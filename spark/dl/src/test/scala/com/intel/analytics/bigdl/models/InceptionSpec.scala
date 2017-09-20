@@ -774,7 +774,7 @@ class InceptionSpec extends TorchSpec {
     val loss = criterion.forward(output, labels)
 
     // since we already set the seed, the loss should match exactly
-    loss should be (6.9011583f)
+    loss should be (6.901158f)
   }
 
   "Inception_Layer_V1 graph" should "be correct" in {
