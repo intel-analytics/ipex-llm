@@ -22,7 +22,7 @@ import org.scalatest.{FlatSpec, Matchers}
 class ExpandDimsSpec extends FlatSpec with Matchers {
   "ExpandDims operation Float" should "works correctly" in {
     import com.intel.analytics.bigdl.numeric.NumericFloat
-    val input = Tensor(Array(2, 3, 5))
+    val input = Tensor[Int](Array(2, 3, 5))
 
     val expectOutput1 = input.clone().resize(Array(1, 2, 3, 5))
     val expectOutput2 = input.clone().resize(Array(2, 3, 1, 5))
