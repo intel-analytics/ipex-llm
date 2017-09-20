@@ -24,6 +24,7 @@ import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.tensor.{FloatType, Tensor}
 import org.tensorflow.example.Example
 import org.tensorflow.framework.DataType
+import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric.NumericByteString
 
 class DecodeImageSpec extends FlatSpec with Matchers {
 
@@ -100,7 +101,7 @@ class DecodeImageSpec extends FlatSpec with Matchers {
     val imageByteString = example.getFeatures.getFeatureMap.get("image/encoded")
       .getBytesList.getValueList.get(0)
 
-    Tensor[ByteString](imageByteString)
+    Tensor[ByteString](Array(imageByteString), Array[Int]())
   }
 
 }

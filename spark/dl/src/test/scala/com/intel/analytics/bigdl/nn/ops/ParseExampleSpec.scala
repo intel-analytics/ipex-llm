@@ -20,6 +20,7 @@ import com.google.protobuf.{ByteString, CodedOutputStream}
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 import org.tensorflow.example._
+import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric.NumericByteString
 
 class ParseExampleSpec extends FlatSpec with Matchers {
 
@@ -49,11 +50,11 @@ class ParseExampleSpec extends FlatSpec with Matchers {
     val exampleParser = new ParseExample[Float](3,
       Seq(FloatType, LongType, StringType), Seq(Array(3), Array(3), Array()))
 
-    val serialized = Tensor[ByteString](ByteString.copyFrom(data))
+    val serialized = Tensor[ByteString](Array(ByteString.copyFrom(data)), Array[Int]())
     val names = Tensor[ByteString]()
-    val key1 = Tensor[ByteString](ByteString.copyFromUtf8("floatFeature"))
-    val key2 = Tensor[ByteString](ByteString.copyFromUtf8("longFeature"))
-    val key3 = Tensor[ByteString](ByteString.copyFromUtf8("bytesFeature"))
+    val key1 = Tensor[ByteString](Array(ByteString.copyFromUtf8("floatFeature")), Array[Int]())
+    val key2 = Tensor[ByteString](Array(ByteString.copyFromUtf8("longFeature")), Array[Int]())
+    val key3 = Tensor[ByteString](Array(ByteString.copyFromUtf8("bytesFeature")), Array[Int]())
 
     val default1 = Tensor[Float]()
     val default2 = Tensor[Long]()
@@ -69,7 +70,8 @@ class ParseExampleSpec extends FlatSpec with Matchers {
 
     floatTensor should be (Tensor[Float](T(0.0f, 1.0f, 2.0f)))
     longTensor should be (Tensor[Long](T(0L, 1L, 2L)))
-    stringTensor should be (Tensor[ByteString](ByteString.copyFromUtf8("abcd")))
+    stringTensor should be (Tensor[ByteString](
+      Array(ByteString.copyFromUtf8("abcd")), Array[Int]()))
   }
 
 }

@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 package com.intel.analytics.bigdl.nn.ops
-import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils.{T, Table}
 import com.google.protobuf.ByteString
 import org.tensorflow.example.{Example, Feature}
+import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric.NumericByteString
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag

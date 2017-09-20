@@ -23,12 +23,15 @@ import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
-
+/**
+ * Assert will assert the first input to be true, if not, throw the message in the second
+ * input. Assert has no output.
+ */
 class Assert[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Operation[Table, Activity, T] {
   override def updateOutput(input: Table): Tensor[T] = {
     val predicateTensor = input(1).asInstanceOf[Tensor[Boolean]]
     val messageTensor = input(2).asInstanceOf[Tensor[ByteString]]
-    // todo change to scalar
+
     val predicate = predicateTensor.value()
     val message = messageTensor.value()
 
