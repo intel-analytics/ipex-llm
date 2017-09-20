@@ -22,6 +22,15 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+/**
+ * Resize the input image with bilinear interpolation. The input image must be a float tensor with
+ * NHWC layout
+ *
+ * @param outputHeight output height
+ * @param outputWidth output width
+ * @param alignCorners align corner or not
+ * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
+ */
 class ResizeBilinear[T: ClassTag](val outputHeight: Int, val outputWidth: Int,
   val alignCorners: Boolean)(implicit ev: TensorNumeric[T])
   extends AbstractModule[Tensor[Float], Tensor[Float], T]{
