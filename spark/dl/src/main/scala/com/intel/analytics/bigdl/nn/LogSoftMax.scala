@@ -82,6 +82,7 @@ class LogSoftMax[T: ClassTag](
 
     var logSum = ev.zero
     in.apply1(v => {
+      // Use exp(v - maxInput) to avoid Infinity.
       logSum = ev.plus(logSum, ev.exp(ev.minus(v, maxInput))); v
     })
     logSum = ev.plus(maxInput, ev.log(logSum))
