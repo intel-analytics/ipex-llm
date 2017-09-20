@@ -22,6 +22,25 @@ import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
+/**
+ * Update 'ref' by assigning 'value' to it.
+ *
+ * This operation outputs a Tensor that holds the new value of 'ref' after
+ * the value has been assigned.
+ * This makes it easier to chain operations that need to use the reset value.
+ *
+ * The `input` has two elements, the first one is `ref`, the second is `value`.
+ *
+ * @param validateShape An optional bool. Defaults to True.
+ *                      If true, the operation will validate that the shape of
+ *                      'value' matches the shape of the Tensor being assigned to.
+ *                      If false, 'ref' will take on the shape of 'value'.
+ * @param useLocking An optional bool. Defaults to True.
+ *                   If True, the assignment will be protected by a lock;
+ *                   otherwise the behavior is undefined, but may exhibit less contention.
+ *
+ * @tparam T Numeric type. Only support float/double now
+ */
 class Assign[T: ClassTag](
   validateShape: Boolean = true,
   useLocking: Boolean = true
@@ -43,108 +62,13 @@ class Assign[T: ClassTag](
       }
     }
 
-
-    input1.getType() match {
-      case FloatType =>
-        if (output.getType() != FloatType) {
-          output = Activity.allocate[Tensor[Float], Float]()
-        }
-        val ref = input1.asInstanceOf[Tensor[Float]]
-        val value = input2.asInstanceOf[Tensor[Float]]
-        ref
-          .resizeAs(value)
-          .copy(value)
-        output.asInstanceOf[Tensor[Float]]
-          .resizeAs(value)
-          .copy(value)
-      case BooleanType =>
-        if (output.getType() != FloatType) {
-          output = Activity.allocate[Tensor[Float], Float]()
-        }
-        val ref = input1.asInstanceOf[Tensor[Float]]
-        val value = input2.asInstanceOf[Tensor[Float]]
-        ref
-          .resizeAs(value)
-          .copy(value)
-        output.asInstanceOf[Tensor[Float]]
-          .resizeAs(value)
-          .copy(value)
-      case DoubleType =>
-        if (output.getType() != FloatType) {
-          output = Activity.allocate[Tensor[Double], Double]()
-        }
-        val ref = input1.asInstanceOf[Tensor[Double]]
-        val value = input2.asInstanceOf[Tensor[Double]]
-        ref
-          .resizeAs(value)
-          .copy(value)
-        output.asInstanceOf[Tensor[Double]]
-          .resizeAs(value)
-          .copy(value)
-      case CharType =>
-        if (output.getType() != FloatType) {
-          output = Activity.allocate[Tensor[Char], Char]()
-        }
-        val ref = input1.asInstanceOf[Tensor[Char]]
-        val value = input2.asInstanceOf[Tensor[Char]]
-        ref
-          .resizeAs(value)
-          .copy(value)
-        output.asInstanceOf[Tensor[Char]]
-          .resizeAs(value)
-          .copy(value)
-      case StringType =>
-        if (output.getType() != FloatType) {
-          output = Activity.allocate[Tensor[String], String]()
-        }
-        val ref = input1.asInstanceOf[Tensor[String]]
-        val value = input2.asInstanceOf[Tensor[String]]
-        ref
-          .resizeAs(value)
-          .copy(value)
-        output.asInstanceOf[Tensor[String]]
-          .resizeAs(value)
-          .copy(value)
-      case LongType =>
-        if (output.getType() != FloatType) {
-          output = Activity.allocate[Tensor[Long], Long]()
-        }
-        val ref = input1.asInstanceOf[Tensor[Long]]
-        val value = input2.asInstanceOf[Tensor[Long]]
-        ref
-          .resizeAs(value)
-          .copy(value)
-        output.asInstanceOf[Tensor[Long]]
-          .resizeAs(value)
-          .copy(value)
-      case ShortType =>
-        if (output.getType() != FloatType) {
-          output = Activity.allocate[Tensor[Short], Short]()
-        }
-        val ref = input1.asInstanceOf[Tensor[Short]]
-        val value = input2.asInstanceOf[Tensor[Short]]
-        ref
-          .resizeAs(value)
-          .copy(value)
-        output.asInstanceOf[Tensor[Short]]
-          .resizeAs(value)
-          .copy(value)
-      case IntType =>
-        if (output.getType() != FloatType) {
-          output = Activity.allocate[Tensor[Int], Int]()
-        }
-        val ref = input1.asInstanceOf[Tensor[Int]]
-        val value = input2.asInstanceOf[Tensor[Int]]
-        ref
-          .resizeAs(value)
-          .copy(value)
-        output.asInstanceOf[Tensor[Int]]
-          .resizeAs(value)
-          .copy(value)
-      case _ => throw new RuntimeException("Unsupported tensor type")
-    }
+    input1
+      .resizeAs(input2)
+      .forceCopy(input2)
 
     output
+      .resizeAs(input2)
+      .forceCopy(input2)
   }
 }
 

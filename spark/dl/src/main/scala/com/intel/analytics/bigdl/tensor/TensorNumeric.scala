@@ -282,7 +282,7 @@ object TensorNumericMath {
       throw new UnsupportedOperationException(typeName +
         " in tensor does not support fromType operation")
 
-    def toType[@specialized(Float, Double, Int) K](t: T)(implicit c: ConvertableTo[K]): K =
+    def toType[K](t: T)(implicit c: ConvertableTo[K]): K =
       throw new UnsupportedOperationException(typeName +
         " in tensor does not support toType operation")
 
@@ -999,6 +999,9 @@ object TensorNumericMath {
         implicit c: ConvertableFrom[K]): Int =
         c.toInt(k)
 
+      override def toType[K](t: Int)
+        (implicit c: ConvertableTo[K]): K = c.fromInt(t)
+
       override def axpy(n: Int, da: Int, dx: Array[Int], _dx_offset: Int,
         incx: Int, dy: Array[Int],
         _dy_offset: Int, incy: Int): Unit = {
@@ -1065,6 +1068,9 @@ object TensorNumericMath {
         implicit c: ConvertableFrom[K]): Long =
         c.toLong(k)
 
+      override def toType[@specialized(Float, Double, Int) K](t: Long)
+        (implicit c: ConvertableTo[K]): K = c.fromLong(t)
+
       override def axpy(n: Int, da: Long, dx: Array[Long], _dx_offset: Int,
         incx: Int, dy: Array[Long],
         _dy_offset: Int, incy: Int): Unit = {
@@ -1130,6 +1136,9 @@ object TensorNumericMath {
       override def fromType[K](k: K)(
         implicit c: ConvertableFrom[K]): Short =
         c.toShort(k)
+
+      override def toType[@specialized(Float, Double, Int) K](t: Short)
+        (implicit c: ConvertableTo[K]): K = c.fromShort(t)
 
       override def axpy(n: Int, da: Short, dx: Array[Short], _dx_offset: Int,
         incx: Int, dy: Array[Short],

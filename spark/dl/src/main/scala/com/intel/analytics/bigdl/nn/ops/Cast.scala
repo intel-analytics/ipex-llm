@@ -21,119 +21,28 @@ import com.intel.analytics.bigdl.tensor._
 
 import scala.reflect.ClassTag
 
-class Cast[T: ClassTag, @specialized(Int, Double, Long, Float) DataType: ClassTag]()
-  (implicit ev: TensorNumeric[T], ev2: TensorNumeric[DataType])
-  extends Operation[Tensor[_], Tensor[DataType], T] {
+/**
+ * Casts a tensor to a new type.
+ *
+ * @tparam T Parameter tensor numeric type. Only support float/double now
+ * @tparam D A new type was cast to
+ */
+class Cast[T: ClassTag, D: ClassTag]()
+  (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
+  extends Operation[Tensor[_], Tensor[D], T] {
 
-  output = Activity.allocate[Tensor[DataType], DataType]()
+  output = Activity.allocate[Tensor[D], D]()
 
-  override def updateOutput(input: Tensor[_]): Tensor[DataType] = {
+  override def updateOutput(input: Tensor[_]): Tensor[D] = {
     output.resizeAs(input)
-    input.getType() match {
-      case FloatType =>
-        output.getType() match {
-          case FloatType => output.applyFun[Float](
-            input.toTensor[Float],
-            x => x.asInstanceOf[DataType])
-          case DoubleType => output.applyFun[Float](
-            input.toTensor[Float],
-            x => x.toDouble.asInstanceOf[DataType])
-          case IntType => output.applyFun[Float](
-            input.toTensor[Float],
-            x => x.toInt.asInstanceOf[DataType])
-          case ShortType => output.applyFun[Float](
-            input.toTensor[Float],
-            x => x.toShort.asInstanceOf[DataType])
-          case LongType => output.applyFun[Float](
-            input.toTensor[Float],
-            x => x.toLong.asInstanceOf[DataType])
-          case _ => throw new RuntimeException("Unsupported tensor type")
-        }
-      case DoubleType =>
-        output.getType() match {
-          case FloatType => output.applyFun[Double](
-            input.toTensor[Double],
-            x => x.asInstanceOf[DataType])
-          case DoubleType => output.applyFun[Double](
-            input.toTensor[Double],
-            x => x.asInstanceOf[DataType])
-          case IntType => output.applyFun[Double](
-            input.toTensor[Double],
-            x => x.toInt.asInstanceOf[DataType])
-          case ShortType => output.applyFun[Double](
-            input.toTensor[Double],
-            x => x.toShort.asInstanceOf[DataType])
-          case LongType => output.applyFun[Double](
-            input.toTensor[Double],
-            x => x.toLong.asInstanceOf[DataType])
-          case _ => throw new RuntimeException("Unsupported tensor type")
-        }
-      case LongType =>
-        output.getType() match {
-          case FloatType => output.applyFun[Long](
-            input.toTensor[Long],
-            x => x.asInstanceOf[DataType])
-          case DoubleType => output.applyFun[Long](
-            input.toTensor[Long],
-            x => x.toDouble.asInstanceOf[DataType])
-          case IntType => output.applyFun[Long](
-            input.toTensor[Long],
-            x => x.toInt.asInstanceOf[DataType])
-          case ShortType => output.applyFun[Long](
-            input.toTensor[Long],
-            x => x.toShort.asInstanceOf[DataType])
-          case LongType => output.applyFun[Long](
-            input.toTensor[Long],
-            x => x.asInstanceOf[DataType])
-          case _ => throw new RuntimeException("Unsupported tensor type")
-        }
-      case ShortType =>
-        output.getType() match {
-          case FloatType => output.applyFun[Short](
-            input.toTensor[Short],
-            x => x.asInstanceOf[DataType])
-          case DoubleType => output.applyFun[Short](
-            input.toTensor[Short],
-            x => x.toDouble.asInstanceOf[DataType])
-          case IntType => output.applyFun[Short](
-            input.toTensor[Short],
-            x => x.toInt.asInstanceOf[DataType])
-          case ShortType => output.applyFun[Short](
-            input.toTensor[Short],
-            x => x.asInstanceOf[DataType])
-          case LongType => output.applyFun[Short](
-            input.toTensor[Short],
-            x => x.toLong.asInstanceOf[DataType])
-          case _ => throw new RuntimeException("Unsupported tensor type")
-        }
-      case IntType =>
-        output.getType() match {
-          case FloatType => output.applyFun[Int](
-            input.toTensor[Int],
-            x => x.asInstanceOf[DataType])
-          case DoubleType => output.applyFun[Int](
-            input.toTensor[Int],
-            x => x.toDouble.asInstanceOf[DataType])
-          case IntType => output.applyFun[Int](
-            input.toTensor[Int],
-            x => x.asInstanceOf[DataType])
-          case ShortType => output.applyFun[Int](
-            input.toTensor[Int],
-            x => x.toShort.asInstanceOf[DataType])
-          case LongType => output.applyFun[Int](
-            input.toTensor[Int],
-            x => x.toLong.asInstanceOf[DataType])
-          case _ => throw new RuntimeException("Unsupported tensor type")
-        }
-      case _ => throw new RuntimeException("Unsupported tensor type")
-    }
+    input.cast[D](output)
 
     output
   }
 }
 
 object Cast {
-  def apply[T: ClassTag, DataType: ClassTag]()
-    (implicit ev: TensorNumeric[T], ev2: TensorNumeric[DataType]): Operation[Activity, Activity, T]
-  = ModuleToOperation[T](new Cast[T, DataType]())
+  def apply[T: ClassTag, D: ClassTag]()
+    (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]): Operation[Activity, Activity, T]
+  = ModuleToOperation[T](new Cast[T, D]())
 }
