@@ -42,10 +42,8 @@ class LogSoftMax[T: ClassTag](
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   @transient
   private var results: Array[Future[Unit]] = null
-  @transient
-  private var ones: Array[T] = null
-  @transient
-  private var buffer: Array[T] = null
+  private var ones: Tensor[T] = Tensor()
+  private var buffer: Tensor[T] = Tensor()
 
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
@@ -77,37 +75,21 @@ class LogSoftMax[T: ClassTag](
   }
 
   private def updateOutputFrame(in: Tensor[T], out: Tensor[T]): Unit = {
-    if (ones == null || ones.length < in.nElement) {
-      ones = Array.fill(in.nElement)(ev.fromType[Int](1))
+    if (ones.nElement() < in.nElement) {
+      ones.resizeAs(in).fill(ev.one)
     }
-    if (buffer == null || buffer.length < in.nElement) {
-      buffer = new Array[T](in.nElement)
+    if (buffer.nElement() != in.nElement) {
+      buffer.resizeAs(in)
     }
+    val maxInput = in.max()
 
-    ev.vExp(in.nElement,
-      in.storage.array,
-      in.storageOffset - 1,
-      buffer,
-      0)
+    var logsum = ev.zero
+    in.apply1(v => {
+      logsum = ev.plus(logsum, ev.exp(ev.minus(v, maxInput))); v
+    })
+    logsum = ev.plus(maxInput, ev.log(logsum))
 
-    val dot = ev.dot(in.nElement,
-      buffer,
-      0,
-      1,
-      ones,
-      0,
-      1)
-
-    val sum = ev.negative(ev.log(dot))
-
-    ev.axpy(in.nElement,
-      sum,
-      ones,
-      0,
-      1,
-      out.storage.array,
-      out.storageOffset - 1,
-      1)
+    out.add(ev.negative(logsum))
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
@@ -139,36 +121,19 @@ class LogSoftMax[T: ClassTag](
   }
 
   private def updateGradInputFrame(out: Tensor[T], gradOut: Tensor[T]): Unit = {
-    ev.vExp(out.nElement,
-      out.storage.array,
-      out.storageOffset - 1,
-      buffer,
-      0)
+    buffer.exp(out)
 
-    val dot = ev.dot(gradOut.nElement,
-      gradOut.storage.array,
-      gradOut.storageOffset - 1,
-      1,
-      ones,
-      0,
-      1)
+    val dot = gradOut.dot(ones)
 
     val sum = ev.negative(dot)
 
-    ev.axpy(gradOut.nElement,
-      sum,
-      buffer,
-      0,
-      1,
-      gradOut.storage.array,
-      gradOut.storageOffset - 1,
-      1)
+    gradOut.add(sum, buffer)
   }
 
   override def clearState() : this.type = {
     super.clearState()
-    ones = null
-    buffer = null
+    ones.set()
+    buffer.set()
     results = null
     this
   }
