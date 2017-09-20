@@ -375,7 +375,7 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
    * @tparam D new numeric type
    * @return return castTensort
    */
-  def cast[D: ClassTag](castTensor: Tensor[D])(implicit ev: TensorNumeric[D]): Tensor[T]
+  def cast[D: ClassTag](castTensor: Tensor[D])(implicit ev: TensorNumeric[D]): Tensor[D]
 
   /**
    * Resize the current tensor to the give shape

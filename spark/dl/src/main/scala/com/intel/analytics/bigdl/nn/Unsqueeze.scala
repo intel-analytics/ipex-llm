@@ -16,9 +16,9 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor._
 
 import scala.reflect.ClassTag
 
@@ -34,14 +34,13 @@ import scala.reflect.ClassTag
 class Unsqueeze[T: ClassTag](
   val pos: Int,
   var numInputDims: Int = Int.MinValue
-  )(implicit ev: TensorNumeric[T]) extends TensorModule[T]  {
-
+  )(implicit ev: TensorNumeric[T]) extends AbstractModule[Tensor[_], Tensor[_], T]  {
 
   def setNumInputDims(numInputDims: Int): Unit = {
     this.numInputDims = numInputDims
   }
 
-  private def getActualPosition(input: Tensor[T]) : Int = {
+  private def getActualPosition(input: Tensor[_]) : Int = {
     val dim = if (pos < 0) {
       input.dim() + pos + 1
     } else {
@@ -63,13 +62,39 @@ class Unsqueeze[T: ClassTag](
     actualPos
   }
 
-  override def updateOutput(input: Tensor[T]): Tensor[T] = {
+  override def updateOutput(input: Tensor[_]): Tensor[_] = {
     val actualPos = getActualPosition(input)
-    output.addSingletonDimension(input, actualPos)
+    input.getType() match {
+      case FloatType =>
+        if (output.getType() != FloatType) {
+          output = Activity.allocate[Tensor[Float], Float]()
+        }
+        output.toTensor[Float].addSingletonDimension(input.toTensor[Float], actualPos)
+      case DoubleType =>
+        if (output.getType() != DoubleType) {
+          output = Activity.allocate[Tensor[Double], Double]()
+        }
+        output.toTensor[Double].addSingletonDimension(input.toTensor[Double], actualPos)
+      case IntType =>
+        if (output.getType() != IntType) {
+          output = Activity.allocate[Tensor[Int], Int]()
+        }
+        output.toTensor[Int].addSingletonDimension(input.toTensor[Int], actualPos)
+      case ShortType =>
+        if (output.getType() != ShortType) {
+          output = Activity.allocate[Tensor[Short], Short]()
+        }
+        output.toTensor[Short].addSingletonDimension(input.toTensor[Short], actualPos)
+      case LongType =>
+        if (output.getType() != LongType) {
+          output = Activity.allocate[Tensor[Long], Long]()
+        }
+        output.toTensor[Long].addSingletonDimension(input.toTensor[Long], actualPos)
+    }
     output
   }
 
-  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+  override def updateGradInput(input: Tensor[_], gradOutput: Tensor[_]): Tensor[_] = {
     require(input.nElement() == gradOutput.nElement(),
       "input and gradOutput should be of the same size" +
       s"input size ${input.nElement()} gradOutput size ${gradOutput.nElement()}")

@@ -22,7 +22,75 @@ import org.scalatest.{FlatSpec, Matchers}
 class ExpandDimsSpec extends FlatSpec with Matchers {
   "ExpandDims operation Float" should "works correctly" in {
     import com.intel.analytics.bigdl.numeric.NumericFloat
+    val input = Tensor[Float](Array(2, 3, 5))
+
+    val expectOutput1 = input.clone().resize(Array(1, 2, 3, 5))
+    val expectOutput2 = input.clone().resize(Array(2, 3, 1, 5))
+    val expectOutput3 = input.clone().resize(Array(2, 3, 5, 1))
+
+    val output1 = ExpandDims(0).forward(input)
+    val output2 = ExpandDims(2).forward(input)
+    val output3 = ExpandDims(3).forward(input)
+
+    output1 should be(expectOutput1)
+    output2 should be(expectOutput2)
+    output3 should be(expectOutput3)
+  }
+
+  "ExpandDims operation Int" should "works correctly" in {
+    import com.intel.analytics.bigdl.numeric.NumericFloat
     val input = Tensor[Int](Array(2, 3, 5))
+
+    val expectOutput1 = input.clone().resize(Array(1, 2, 3, 5))
+    val expectOutput2 = input.clone().resize(Array(2, 3, 1, 5))
+    val expectOutput3 = input.clone().resize(Array(2, 3, 5, 1))
+
+    val output1 = ExpandDims(0).forward(input)
+    val output2 = ExpandDims(2).forward(input)
+    val output3 = ExpandDims(3).forward(input)
+
+    output1 should be(expectOutput1)
+    output2 should be(expectOutput2)
+    output3 should be(expectOutput3)
+  }
+
+  "ExpandDims operation Double" should "works correctly" in {
+    import com.intel.analytics.bigdl.numeric.NumericFloat
+    val input = Tensor[Double](Array(2, 3, 5))
+
+    val expectOutput1 = input.clone().resize(Array(1, 2, 3, 5))
+    val expectOutput2 = input.clone().resize(Array(2, 3, 1, 5))
+    val expectOutput3 = input.clone().resize(Array(2, 3, 5, 1))
+
+    val output1 = ExpandDims(0).forward(input)
+    val output2 = ExpandDims(2).forward(input)
+    val output3 = ExpandDims(3).forward(input)
+
+    output1 should be(expectOutput1)
+    output2 should be(expectOutput2)
+    output3 should be(expectOutput3)
+  }
+
+  "ExpandDims operation Short" should "works correctly" in {
+    import com.intel.analytics.bigdl.numeric.NumericFloat
+    val input = Tensor[Short](Array(2, 3, 5))
+
+    val expectOutput1 = input.clone().resize(Array(1, 2, 3, 5))
+    val expectOutput2 = input.clone().resize(Array(2, 3, 1, 5))
+    val expectOutput3 = input.clone().resize(Array(2, 3, 5, 1))
+
+    val output1 = ExpandDims(0).forward(input)
+    val output2 = ExpandDims(2).forward(input)
+    val output3 = ExpandDims(3).forward(input)
+
+    output1 should be(expectOutput1)
+    output2 should be(expectOutput2)
+    output3 should be(expectOutput3)
+  }
+
+  "ExpandDims operation Long" should "works correctly" in {
+    import com.intel.analytics.bigdl.numeric.NumericFloat
+    val input = Tensor[Long](Array(2, 3, 5))
 
     val expectOutput1 = input.clone().resize(Array(1, 2, 3, 5))
     val expectOutput2 = input.clone().resize(Array(2, 3, 1, 5))

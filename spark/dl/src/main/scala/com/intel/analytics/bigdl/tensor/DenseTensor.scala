@@ -108,7 +108,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
       case _ =>
         throw new RuntimeException("Unspported type")
     }
-    this
+    castTensor
   }
 
   override def resize(sizes: Array[Int], strides: Array[Int]): Tensor[T] = {
