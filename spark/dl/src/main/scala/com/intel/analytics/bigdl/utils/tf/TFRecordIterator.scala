@@ -28,7 +28,7 @@ import java.nio.{ByteBuffer, ByteOrder}
  *  uint32 masked_crc32_of_data
  *
  */
-private[tf] class TFRecordIterator(fileName: File) extends Iterator[Array[Byte]] {
+class TFRecordIterator(fileName: File) extends Iterator[Array[Byte]] {
 
   private val inputStream = new BufferedInputStream(new FileInputStream(fileName))
 
