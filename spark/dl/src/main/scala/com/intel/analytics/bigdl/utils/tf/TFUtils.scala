@@ -26,11 +26,103 @@ import scala.collection.JavaConverters._
 object TFUtils {
   import TFTensorNumeric.NumericByteString
 
-  /**
-   * convert tensorflow tensorProto to BigDL Tensor
-   */
-  def parseTensor(tfTensor: TensorProto, endian: ByteOrder): Tensor[_] = {
-    val shape = tfTensor.getTensorShape.getDimList.asScala.map(_.getSize.toInt).toArray
+  private def parseTensorFromContent(
+    dataType: DataType, content: Array[Byte], shape: Array[Int], endian: ByteOrder) = {
+    dataType match {
+      case DataType.DT_FLOAT =>
+        val buffer = ByteBuffer.wrap(content)
+        buffer.order(endian)
+        val params = buffer.asFloatBuffer()
+        val tmp = new Array[Float](params.capacity())
+        var j = 0
+        while (j < params.capacity()) {
+          tmp(j) = params.get(j)
+          j += 1
+        }
+        Tensor[Float](tmp, shape)
+      case DataType.DT_DOUBLE =>
+        val buffer = ByteBuffer.wrap(content)
+        buffer.order(endian)
+        val params = buffer.asDoubleBuffer()
+        val tmp = new Array[Double](params.capacity())
+        var j = 0
+        while (j < params.capacity()) {
+          tmp(j) = params.get(j)
+          j += 1
+        }
+        Tensor[Double](tmp, shape)
+      case DataType.DT_INT32 =>
+        val buffer = ByteBuffer.wrap(content)
+        buffer.order(endian)
+        val params = buffer.asIntBuffer()
+        val tmp = new Array[Int](params.capacity())
+        var j = 0
+        while (j < params.capacity()) {
+          tmp(j) = params.get(j)
+          j += 1
+        }
+        Tensor[Int](tmp, shape)
+      case DataType.DT_INT64 =>
+        val buffer = ByteBuffer.wrap(content)
+        buffer.order(endian)
+        val params = buffer.asLongBuffer()
+        val tmp = new Array[Long](params.capacity())
+        var j = 0
+        while (j < params.capacity()) {
+          tmp(j) = params.get(j)
+          j += 1
+        }
+        Tensor[Long](tmp, shape)
+      case DataType.DT_INT8 =>
+        val buffer = ByteBuffer.wrap(content)
+        buffer.order(endian)
+        val params = buffer
+        val tmp = new Array[Int](params.capacity())
+        var j = 0
+        while (j < params.capacity()) {
+          tmp(j) = params.get(j)
+          j += 1
+        }
+        Tensor(tmp, shape)
+      case DataType.DT_UINT8 =>
+        val buffer = ByteBuffer.wrap(content)
+        buffer.order(endian)
+        val params = buffer
+        val tmp = new Array[Int](params.capacity())
+        var j = 0
+        while (j < params.capacity()) {
+          tmp(j) = params.get(j) & 0xff
+          j += 1
+        }
+        Tensor(tmp, shape)
+      case DataType.DT_INT16 =>
+        val buffer = ByteBuffer.wrap(content)
+        buffer.order(endian)
+        val params = buffer.asShortBuffer()
+        val tmp = new Array[Int](params.capacity())
+        var j = 0
+        while (j < params.capacity()) {
+          tmp(j) = params.get(j)
+          j += 1
+        }
+        Tensor(tmp, shape)
+      case DataType.DT_UINT16 =>
+        val buffer = ByteBuffer.wrap(content)
+        buffer.order(endian)
+        val params = buffer.asShortBuffer()
+        val tmp = new Array[Int](params.capacity())
+        var j = 0
+        while (j < params.capacity()) {
+          tmp(j) = params.get(j) & 0xffff
+          j += 1
+        }
+        Tensor(tmp, shape)
+      case t => throw new IllegalArgumentException(s"DataType: $t not supported yet")
+    }
+  }
+
+  private def parseTensorFromField(
+    tfTensor: TensorProto, shape: Array[Int], endian: ByteOrder) = {
     tfTensor.getDtype match {
       case DataType.DT_FLOAT =>
         val tmp = tfTensor.getFloatValList.asScala.map(_.toFloat).toArray
@@ -48,53 +140,34 @@ object TFUtils {
         val tmp = tfTensor.getBoolValList.asScala.map(_.booleanValue()).toArray
         Tensor[Boolean](tmp, shape)
       case DataType.DT_STRING =>
-        Tensor[ByteString](Array(tfTensor.getStringVal(0)), shape)
+        val tmp = tfTensor.getStringValList.asScala.toArray
+        Tensor[ByteString](tmp, shape)
       case DataType.DT_INT8 =>
-        val buffer = ByteBuffer.wrap(tfTensor.getTensorContent.toByteArray)
-        buffer.order(endian)
-        val params = buffer
-        val tmp = new Array[Int](params.capacity())
-        var j = 0
-        while (j < params.capacity()) {
-          tmp(j) = params.get(j)
-          j += 1
-        }
+        val tmp = tfTensor.getIntValList.asScala.map(_.toInt).toArray
         Tensor(tmp, shape)
       case DataType.DT_UINT8 =>
-        val buffer = ByteBuffer.wrap(tfTensor.getTensorContent.toByteArray)
-        buffer.order(endian)
-        val params = buffer
-        val tmp = new Array[Int](params.capacity())
-        var j = 0
-        while (j < params.capacity()) {
-          tmp(j) = params.get(j) & 0xff
-          j += 1
-        }
+        val tmp = tfTensor.getIntValList.asScala.map(_.toInt).toArray
         Tensor(tmp, shape)
       case DataType.DT_INT16 =>
-        val buffer = ByteBuffer.wrap(tfTensor.getTensorContent.toByteArray)
-        buffer.order(endian)
-        val params = buffer
-        val tmp = new Array[Int](params.capacity())
-        var j = 0
-        while (j < params.capacity()) {
-          tmp(j) = params.get(j)
-          j += 1
-        }
+        val tmp = tfTensor.getIntValList.asScala.map(_.toInt).toArray
         Tensor(tmp, shape)
       case DataType.DT_UINT16 =>
-        val buffer = ByteBuffer.wrap(tfTensor.getTensorContent.toByteArray)
-        buffer.order(endian)
-        val params = buffer
-        val tmp = new Array[Int](params.capacity())
-        var j = 0
-        while (j < params.capacity()) {
-          tmp(j) = params.get(j) & 0xffff
-          j += 1
-        }
+        val tmp = tfTensor.getIntValList.asScala.map(_.toInt).toArray
         Tensor(tmp, shape)
       case t => throw new IllegalArgumentException(s"DataType: $t not supported yet")
     }
   }
 
+  /**
+   * convert tensorflow tensorProto to BigDL Tensor
+   */
+  def parseTensor(tfTensor: TensorProto, endian: ByteOrder): Tensor[_] = {
+    val shape = tfTensor.getTensorShape.getDimList.asScala.map(_.getSize.toInt).toArray
+    if (tfTensor.getTensorContent.isEmpty) {
+      parseTensorFromField(tfTensor, shape, endian)
+    } else {
+      parseTensorFromContent(tfTensor.getDtype,
+        tfTensor.getTensorContent.toByteArray, shape, endian)
+    }
+  }
 }

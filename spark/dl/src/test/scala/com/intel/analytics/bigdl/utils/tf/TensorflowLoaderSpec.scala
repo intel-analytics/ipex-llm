@@ -253,7 +253,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
 
     val optimizer = new DistriOptimizer[Float](container, dataSet, new MSECriterion[Float]())
       .setState(T("learningRate" -> 20.0))
-      .setEndWhen(Trigger.maxEpoch(5))
+      .setEndWhen(Trigger.maxEpoch(1))
     optimizer.optimize()
 
     val l1 = container.modules(1).asInstanceOf[Linear[Float]]
