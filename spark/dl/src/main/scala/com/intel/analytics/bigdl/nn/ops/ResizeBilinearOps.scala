@@ -29,11 +29,11 @@ class ResizeBilinearOps[T: ClassTag](alignCorner: Boolean)(implicit ev: TensorNu
 
   override def updateOutput(input: Activity): Tensor[Float] = {
     require(input.isTable, "Only accept two input tensors")
-    val size = input.toTable.apply[Tensor[Float]](2)
+    val size = input.toTable.apply[Tensor[Int]](2)
     if (module == null) {
       module = ResizeBilinear[T](
-        size.valueAt(1).toInt,
-        size.valueAt(2).toInt,
+        size.valueAt(1),
+        size.valueAt(2),
         alignCorner
       )
     } else {

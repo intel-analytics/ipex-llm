@@ -29,11 +29,11 @@ import scala.reflect.ClassTag
  */
 @SerialVersionUID(3457313421501931556L)
 class Pack[T: ClassTag] (val dimension: Int)(implicit ev: TensorNumeric[T])
-  extends AbstractModule[Table, Tensor[T], T] {
+  extends AbstractModule[Table, Tensor[_], T] {
 
   private def getPositiveDimension(input: Table): Int = {
     var nDim = this.dimension
-    val firstInput: Tensor[T] = input(1)
+    val firstInput: Tensor[_] = input(1)
 
     if (nDim < 0) {
       nDim = firstInput.dim() + nDim + 1
@@ -43,10 +43,10 @@ class Pack[T: ClassTag] (val dimension: Int)(implicit ev: TensorNumeric[T])
     nDim
   }
 
-  override def updateOutput(input: Table): Tensor[T] = {
+  override def updateOutput(input: Table): Tensor[_] = {
     val dimension = getPositiveDimension(input)
 
-    val firstInput: Tensor[T] = input(1)
+    val firstInput: Tensor[_] = input(1)
     val nDim = firstInput.nDimension()
     val size: Array[Int] = new Array[Int](nDim + 1)
 
@@ -62,36 +62,39 @@ class Pack[T: ClassTag] (val dimension: Int)(implicit ev: TensorNumeric[T])
       i = i + 1
     }
 
+    if (output.getType() != firstInput.getType()) {
+      output = firstInput.emptyInstance()
+    }
 
     output.resize(size)
 
     i = 1
     while (i <= input.length()) {
-      val currentOutput: Tensor[T] = input(i)
+      val currentOutput: Tensor[_] = input(i)
       output.narrow(dimension, i, 1)
-        .copy(currentOutput)
+        .forceCopy(currentOutput)
       i += 1
     }
 
     output
   }
 
-  override def updateGradInput(input: Table, gradOutput: Tensor[T]): Table = {
+  override def updateGradInput(input: Table, gradOutput: Tensor[_]): Table = {
     val dimension = getPositiveDimension(input)
 
     var i = 1
     while (i <= input.length()) {
       if (!gradInput.contains(i)) {
-        gradInput(i) = Tensor()
+        gradInput(i) = gradOutput.emptyInstance()
       }
-      gradInput[Tensor[T]](i).resizeAs(input(i))
+      gradInput[Tensor[_]](i).resizeAs(input(i))
       i += 1
     }
 
     i = 1
     while (i <= input.length()) {
       val currentGradInput = gradOutput.select(dimension, i)
-      gradInput[Tensor[T]](i).copy(currentGradInput)
+      gradInput[Tensor[_]](i).forceCopy(currentGradInput)
       i += 1
     }
     gradInput
@@ -99,7 +102,7 @@ class Pack[T: ClassTag] (val dimension: Int)(implicit ev: TensorNumeric[T])
 }
 
 object Pack {
-  def apply[@specialized(Float, Double) T: ClassTag](
+  def apply[T: ClassTag](
         dimension: Int)(implicit ev: TensorNumeric[T]): Pack[T] = {
     new Pack[T](dimension)
   }

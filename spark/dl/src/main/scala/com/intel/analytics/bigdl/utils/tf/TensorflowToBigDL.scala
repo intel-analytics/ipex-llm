@@ -781,6 +781,9 @@ object ConstTF extends TensorflowToBigDL {
                                   byteOrder: ByteOrder)(
     implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
+    if (tfGraph.source.element.getName() == "size") {
+      println()
+    }
     val value = TFUtils
       .parseTensor(tfGraph.source.element.getAttrMap.get("value").getTensor, byteOrder)
     Const(value).asInstanceOf[AbstractModule[Activity, Activity, T]]
@@ -1524,7 +1527,7 @@ object ResizeBilinearTF extends TensorflowToBigDL {
     context: Context[T],
     byteOrder: ByteOrder)
     (implicit ev: TensorNumeric[T])
-  : AbstractModule[Activity, Tensor[T], T] = {
+  : AbstractModule[Activity, Activity, T] = {
     val alignCorner = tfGraph.source.element.getAttrMap.get("align_corners").getB
     ResizeBilinearOps(alignCorner).asInstanceOf[AbstractModule[Activity, Tensor[T], T]]
   }

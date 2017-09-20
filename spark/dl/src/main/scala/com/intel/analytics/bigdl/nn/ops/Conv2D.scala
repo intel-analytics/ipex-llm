@@ -127,7 +127,7 @@ class Conv2DTranspose[T: ClassTag](
 
   override def updateOutput(input: Activity): Tensor[T] = {
     require(input.isTable, "Invalid input activity type")
-    val sizes = input.toTable.apply[Tensor[Float]](1).squeeze()
+    val sizes = input.toTable.apply[Tensor[Int]](1).squeeze()
     val kernel = input.toTable.apply[Tensor[T]](2)
     val data = input.toTable.apply[Tensor[T]](3)
 
@@ -135,9 +135,9 @@ class Conv2DTranspose[T: ClassTag](
     require(sizes.nDimension() == 1, s"Need a 1D size but is ${sizes.nDimension()}")
 
     val (nOutputPlane, nInputPlane) = if (format == DataFormat.NCHW) {
-      (data.size(2), sizes.valueAt(2).toInt)
+      (data.size(2), sizes.valueAt(2))
     } else {
-      (data.size(4), sizes.valueAt(4).toInt)
+      (data.size(4), sizes.valueAt(4))
     }
 
     if (module == null) {
@@ -155,8 +155,7 @@ class Conv2DTranspose[T: ClassTag](
         withBias = false
       )
 
-      dummyInput = Tensor[T](sizes.valueAt(1).toInt, sizes.valueAt(2).toInt,
-        sizes.valueAt(3).toInt, sizes.valueAt(4).toInt)
+      dummyInput = Tensor[T](sizes.valueAt(1), sizes.valueAt(2), sizes.valueAt(3), sizes.valueAt(4))
       module.forward(dummyInput)
     } else {
       val (nOutputPlanbe, nInputPlane) = if (format == DataFormat.NCHW) {
