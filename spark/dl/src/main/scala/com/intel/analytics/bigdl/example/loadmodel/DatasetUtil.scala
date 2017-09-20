@@ -27,12 +27,16 @@ import com.intel.analytics.bigdl.utils.File
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
+import scala.io.Source
+
 
 object AlexNetPreprocessor {
   val imageSize = 227
 
   def apply(path: String, batchSize: Int, meanFile: String, sc: SparkContext)
   : DataSet[MiniBatch[Float]] = {
+    // 'meanFile' specify the path to the pixel level mean data, one line per pixel
+    // following N * H * W * C order, 196608 in total (256 * 256 * 3)
     val means = createMeans(meanFile)
     DataSet.SeqFileFolder.files(path, sc, classNum = 1000) ->
       // do not normalize the pixel values to [0, 1]
@@ -52,14 +56,8 @@ object AlexNetPreprocessor {
     transfomer(dataSet)
   }
 
-  private def createMeans(meanFile : String) : Tensor[Float] = {
-    val lines = Files.readAllLines(Paths.get(meanFile), StandardCharsets.UTF_8)
-    val array = new Array[Float](lines.size)
-    lines.toArray.zipWithIndex.foreach {
-      x => {
-        array(x._2) = x._1.toString.toFloat
-      }
-    }
+  def createMeans(meanFile : String) : Tensor[Float] = {
+    val array = Source.fromFile("/home/jerry/Downloads/mean.txt").getLines().map(_.toFloat).toArray
     Tensor[Float](array, Array(array.length))
   }
 }
