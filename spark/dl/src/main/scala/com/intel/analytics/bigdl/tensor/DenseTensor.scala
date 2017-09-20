@@ -91,8 +91,9 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     this
   }
 
-  override def cast[D: ClassTag](castTensor: Tensor[D])
-    (implicit ev1: TensorNumeric[D]): Tensor[T] = {
+  override def cast[@specialized(Long, Int, Short, Double, Float) D: ClassTag]
+  (castTensor: Tensor[D])
+    (implicit ev1: TensorNumeric[D]): Tensor[D] = {
     castTensor.getType() match {
       case FloatType =>
         castTensor.applyFun[T](this, x => ev.toType[Float](x).asInstanceOf[D])
