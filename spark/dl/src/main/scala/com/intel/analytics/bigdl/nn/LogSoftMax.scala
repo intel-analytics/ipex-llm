@@ -42,8 +42,8 @@ class LogSoftMax[T: ClassTag](
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   @transient
   private var results: Array[Future[Unit]] = null
-  private var ones: Tensor[T] = Tensor()
-  private var buffer: Tensor[T] = Tensor()
+  private val ones: Tensor[T] = Tensor()
+  private val buffer: Tensor[T] = Tensor()
 
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
@@ -83,13 +83,13 @@ class LogSoftMax[T: ClassTag](
     }
     val maxInput = in.max()
 
-    var logsum = ev.zero
+    var logSum = ev.zero
     in.apply1(v => {
-      logsum = ev.plus(logsum, ev.exp(ev.minus(v, maxInput))); v
+      logSum = ev.plus(logSum, ev.exp(ev.minus(v, maxInput))); v
     })
-    logsum = ev.plus(maxInput, ev.log(logsum))
+    logSum = ev.plus(maxInput, ev.log(logSum))
 
-    out.add(ev.negative(logsum))
+    out.add(ev.negative(logSum))
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
@@ -122,11 +122,8 @@ class LogSoftMax[T: ClassTag](
 
   private def updateGradInputFrame(out: Tensor[T], gradOut: Tensor[T]): Unit = {
     buffer.exp(out)
-
     val dot = gradOut.dot(ones)
-
     val sum = ev.negative(dot)
-
     gradOut.add(sum, buffer)
   }
 
