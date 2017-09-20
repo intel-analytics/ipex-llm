@@ -19,18 +19,17 @@ import java.nio.charset.Charset
 import java.nio.{ByteBuffer, ByteOrder}
 import java.util
 
-import com.google.protobuf.ByteString
-
 import collection.JavaConverters._
 import com.intel.analytics.bigdl.nn._
+
 import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Storage, Tensor}
+import com.intel.analytics.bigdl.nn.ops.{Conv2DTranspose, ResizeBilinearOps}
+import com.intel.analytics.bigdl.tensor._
 import org.tensorflow.framework.{AttrValue, DataType, NodeDef, TensorProto}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
-import com.intel.analytics.bigdl.nn.ops.{Conv2DTranspose, ResizeBilinearOps}
+import com.intel.analytics.bigdl.nn.ops.{Equal, Assert, Greater, Rank, ParseExample}
 import com.intel.analytics.bigdl.nn.tf._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import TFTensorNumeric.NumericByteString
-import com.intel.analytics.bigdl.nn.ops.{Assert, Equal, Greater, Rank}
 import com.intel.analytics.bigdl.utils.{DirectedGraph, Node, T}
 import com.intel.analytics.bigdl.utils.tf.TensorflowLoader.Context
 import com.intel.analytics.bigdl.utils.tf.TensorflowToBigDL._
@@ -253,7 +252,7 @@ object TensorflowToBigDL {
       Flatten, Conv1D, FlattenV2, BatchNormV2NHWCTF, BatchNormV2NCHWTF, AddNTF,
       ControlDependencyTF, RandomShuffleTF, AssertTF, GreaterTF, ReaderReadTF, QueueDequeTF,
       QueueDequeManyTF, EqualTF, RankTF, EnqueueManyTF, EnqueueTF, QueueTF, RandomShuffleQueueTF,
-      FullConnectionWithoutBiasTF, DeConv2D, ResizeBilinearTF, Conv2D2, Conv2DWithoutBias
+      FullConnectionWithoutBiasTF, DeConv2D, ResizeBilinearTF, Conv2D2, Conv2DWithoutBias, ParseExampleTF
     )
     res
   }
@@ -1904,5 +1903,42 @@ object RandomShuffleQueueTF extends TensorflowToBigDL {
      implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
     new ControlDependency().asInstanceOf[AbstractModule[Activity, Activity, T]]
+  }
+}
+
+object ParseExampleTF extends TensorflowToBigDL {
+
+  private val graph = {
+    val node = Node("ParseExample")
+    Node("...") -> node
+    node.graph(reverse = true)
+  }
+
+  override def topology: DirectedGraph[String] = graph
+
+  override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
+                                  context: Context[T],
+                                  byteOrder: ByteOrder)(
+  implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
+
+    val node = tfGraph.source.element
+    val Ndense = node.getAttrMap.get("Ndense").getI.toInt
+    val Tdense = node.getAttrMap.get("Tdense")
+      .getList.getTypeList.asScala
+      .map {
+          case DataType.DT_INT64 => LongType
+          case DataType.DT_INT32 => IntType
+          case DataType.DT_FLOAT => FloatType
+          case DataType.DT_DOUBLE => DoubleType
+          case DataType.DT_STRING => StringType
+      }
+    val denseShapes = node.getAttrMap.get("dense_shapes")
+      .getList.getShapeList.asScala
+      .map { shapeProto =>
+        shapeProto.getDimList.asScala.map(_.getSize.toInt).toArray
+      }
+
+    new ParseExample(Ndense, Tdense, denseShapes)
+      .asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }

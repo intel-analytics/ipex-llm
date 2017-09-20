@@ -90,4 +90,24 @@ class SessionSpec extends FlatSpec with Matchers with BeforeAndAfter {
      module.forward(Tensor[Float](Array(1)))
   }
 
+  "Session" should "work" in {
+
+    val path = "/tmp/lenet/lenet.pbtxt"
+    val nodes = TensorflowLoader.parseTxt(path)
+    import scala.collection.JavaConverters._
+    val context =
+      new mutable.HashMap[String, (Tensor[Float], Tensor[Float], Option[Seq[(Int, Int)]])]()
+    val session = new BigDLSessionImpl[Float](nodes.asScala, context)
+
+    val cache = new mutable.HashMap[String, Array[Seq[Table]]]()
+    val endpoints = Seq(
+      "ParseSingleExample/Squeeze_image/class/label",
+      "ParseSingleExample/Squeeze_image/encoded",
+      "ParseSingleExample/Squeeze_image/format"
+    )
+    val rdd = session.constructDistributeData(endpoints, cache)
+    val result = rdd.first()
+    println(result)
+  }
+
 }
