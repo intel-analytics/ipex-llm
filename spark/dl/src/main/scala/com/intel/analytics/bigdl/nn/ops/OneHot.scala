@@ -64,7 +64,7 @@ class OneHot[T: ClassTag, D: ClassTag](
     val indices = input[Tensor[Int]](1)
     val depth = input[Tensor[Int]](2).value()
     val onValue = if (!input.contains(3)) ev1.one else input[Tensor[D]](3).value()
-    val offValue = if (!input.contains(4)) ev1.one else input[Tensor[D]](4).value()
+    val offValue = if (!input.contains(4)) ev1.zero else input[Tensor[D]](4).value()
 
     require(input[Tensor[_]](3).getType() == input[Tensor[_]](4).getType(),
     "onValue must have the same type as offValue")

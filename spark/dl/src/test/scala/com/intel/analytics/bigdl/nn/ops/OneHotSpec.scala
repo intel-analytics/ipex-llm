@@ -24,8 +24,8 @@ class OneHotSpec extends FlatSpec with Matchers {
     val input =
       T(Tensor[Int](T(0, 2, -1, 1)),
         Tensor[Int](Array(3), shape = Array[Int]()),
-        Tensor[Double](Array(0.5), shape = Array(1)),
-        Tensor[Double](Array(0.0), shape = Array(1)))
+        Tensor[Double](Array(0.5), shape = Array[Int]()),
+        Tensor[Double](Array(0.0), shape = Array[Int]()))
 
     val expectOutput =
       Tensor[Double](T(
@@ -48,8 +48,8 @@ class OneHotSpec extends FlatSpec with Matchers {
       T(
         Tensor[Int](T(T(0, 2), T(1, -1))),
         Tensor[Int](Array(3), shape = Array[Int]()),
-        Tensor[Double](Array(1.0), shape = Array(1)),
-        Tensor[Double](Array(0.0), shape = Array(1))
+        Tensor[Double](Array(1.0), shape = Array[Int]()),
+        Tensor[Double](Array(0.0), shape = Array[Int]())
       )
 
     val expectOutput =
