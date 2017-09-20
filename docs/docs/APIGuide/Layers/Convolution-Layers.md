@@ -196,9 +196,9 @@ module = VolumetricConvolution(n_input_plane, n_output_plane, k_t, k_w, k_h,
 ```
 
 Applies a 3D convolution over an input image composed of several input planes. The input tensor
-in forward(input) is expected to be a 5D tensor (`batch x nInputPlane x time x height x width`) or
+in forward(input) is expected to be a 5D tensor (`batch x nInputPlane x depth(time) x height x width`) or
 a 4D tensor (`nInputPlane x depth x height x width`).
-Output of forward(input) is also expected to be a 5D tensor (`batch x time x outputPlane x height x width`) or
+Output of forward(input) is also expected to be a 5D tensor (`batch x depth(time) x outputPlane x height x width`) or
 a 4D tensor (`outputPlane x depth x height x width`).
 
 * `nInputPlane` The number of expected input planes in the image given into forward()
@@ -1066,9 +1066,9 @@ adjH values used to construct the module). This module can be used without a bia
 parameter noBias = true while constructing the module.
 
 Applies a 3D convolution over an input image composed of several input planes. The input tensor
-in forward(input) is expected to be a 5D tensor (`batch x nInputPlane x time x height x width`) or
+in forward(input) is expected to be a 5D tensor (`batch x nInputPlane x depth(time) x height x width`) or
 a 4D tensor (`nInputPlane x depth x height x width`).
-Output of forward(input) is also expected to be a 5D tensor (`batch x time x outputPlane x height x width`) or
+Output of forward(input) is also expected to be a 5D tensor (`batch x depth(time) x outputPlane x height x width`) or
 a 4D tensor (`outputPlane x depth x height x width`).
 
 ```
