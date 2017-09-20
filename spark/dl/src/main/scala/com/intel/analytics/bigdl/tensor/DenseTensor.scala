@@ -37,9 +37,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
 
   override def isEmpty: Boolean = this.storage() == null || this.storage().length() == 0
 
-  override def isScalar: Boolean =
-    this.nDimension == 0 &&
-      this._storage.length() == 1
+  override def isScalar: Boolean = !this.isEmpty && this.nDimension == 0
 
   override def storage(): Storage[T] = _storage
 
@@ -372,14 +370,10 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     val _dimension = dim - 1
     val _sliceIndex = index - 1
 
-    if (this.nDimension > 1) {
-      val result = DenseTensor.newWithTensor(this)
-      DenseTensor.select(result, null, _dimension, _sliceIndex)
-      result
-    } else {
-      require(this.nDimension == 1, "empty tensor")
-      this.narrow(1, index, 1)
-    }
+    require(this.nDimension > 0, "empty or scalar tensor")
+    val result = DenseTensor.newWithTensor(this)
+    DenseTensor.select(result, null, _dimension, _sliceIndex)
+    result
   }
 
   override def clone(): Tensor[T] = {
@@ -464,13 +458,9 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     require(_index >= 0 && _index < this._size(0),
       s"out of range, ${_index}: 0 to ${this._size(0)}")
 
-    if (this.nDimension == 1) {
-      this.narrow(1, index, 1)
-    } else {
-      val result = DenseTensor.newWithTensor(this)
-      DenseTensor.select(result, null, 0, _index)
-      result
-    }
+    val result = DenseTensor.newWithTensor(this)
+    DenseTensor.select(result, null, 0, _index)
+    result
   }
 
   override def apply(table: Table): Tensor[T] = {
@@ -2262,7 +2252,7 @@ object DenseTensor {
     self: DenseTensor[T], source: Tensor[T], _dimension: Int, _sliceIndex: Int): Unit = {
     var src = source
     if (src == null) src = self
-    require(src.nDimension() > 1, "cannot select on a vector")
+    require(src.nDimension() > 0, "cannot select on a scalar")
     require(_dimension >= 0 && _dimension < src.nDimension(), "out of range")
     require(_sliceIndex >= 0 && _sliceIndex < src.size(_dimension + 1),
       s"${_sliceIndex} out of range 0 to ${src.size(_dimension + 1)}")
@@ -2335,7 +2325,7 @@ object DenseTensor {
   private[tensor] def copy[@specialized(Float, Double) T](
     self: DenseTensor[T], src: Tensor[T]): Unit = {
     require(self.nElement() == src.nElement())
-    if (self.nDimension == 0) {
+    if (self.isEmpty) {
       return
     }
     if (self.isContiguous() && src.isContiguous() && sameStride(self.stride(), src.stride())) {
