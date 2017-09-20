@@ -78,9 +78,6 @@ class LogSoftMax[T: ClassTag](
     if (ones.nElement() < in.nElement) {
       ones.resizeAs(in).fill(ev.one)
     }
-    if (buffer.nElement() != in.nElement) {
-      buffer.resizeAs(in)
-    }
     val maxInput = in.max()
 
     var logSum = ev.zero
@@ -121,10 +118,12 @@ class LogSoftMax[T: ClassTag](
   }
 
   private def updateGradInputFrame(out: Tensor[T], gradOut: Tensor[T]): Unit = {
+    if (buffer.nElement() != out.nElement) {
+      buffer.resizeAs(out)
+    }
     buffer.exp(out)
-    val dot = gradOut.dot(ones)
-    val sum = ev.negative(dot)
-    gradOut.add(sum, buffer)
+    val outSum = gradOut.dot(ones)
+    gradOut.add(ev.negative(outSum), buffer)
   }
 
   override def clearState() : this.type = {
