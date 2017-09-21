@@ -81,6 +81,7 @@ class LogSoftMax[T: ClassTag](
     if (buffer.nElement() != out.nElement) {
       buffer.resizeAs(out)
     }
+    // use exp(in - maxInput) to avoid Infinity error
     val maxInput = in.max()
 
     buffer.fill(ev.negative(maxInput))
