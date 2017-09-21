@@ -347,10 +347,6 @@ object TensorflowLoader{
       Seq[Node[NodeDef]]
     )] = {
 
-    if (graph.source.element.getOp == "ConcatV2") {
-      println()
-    }
-
     var i = 0
     while(i < patterns.length) {
       val (result, inputs) = matchGraph(graph, patterns(i).topology)
