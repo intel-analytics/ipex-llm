@@ -248,6 +248,7 @@ _picklable_classes = [
 def init_engine(bigdl_type="float"):
     callBigDlFunc(bigdl_type, "initEngine")
     print('Setting current log level to "INFO"')
+    print("You can call setLogLevel on SparkContext to change log level if you wish.")
     sc = get_spark_context()
     sc.setLogLevel("INFO")
 
