@@ -25,6 +25,9 @@ import org.apache.spark.SparkContext
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import java.io.{File => JFile}
 
+import com.google.protobuf.ByteString
+import org.tensorflow.framework.AttrValue
+
 import scala.collection.mutable
 
 class SessionSpec extends FlatSpec with Matchers with BeforeAndAfter {
@@ -90,24 +93,36 @@ class SessionSpec extends FlatSpec with Matchers with BeforeAndAfter {
      module.forward(Tensor[Float](Array(1)))
   }
 
-  "Session" should "work" in {
+  "Session" should "be able construct input data" in {
 
-    val path = "/tmp/lenet/lenet.pbtxt"
-    val nodes = TensorflowLoader.parseTxt(path)
+    val resource = getClass().getClassLoader().getResource("tf")
+    val modelPath = resource.getPath() + JFile.separator + "lenet.pbtxt"
+    val filePath = resource.getPath() + JFile.separator + "mnist_test.tfrecord"
+    val nodes = TensorflowLoader.parseTxt(modelPath)
     import scala.collection.JavaConverters._
+
+    val filenames = nodes.asScala.filter(_.getName == "parallel_read/filenames/Const").head
+
+    val newTensor = filenames.getAttrMap.get("value")
+      .getTensor.toBuilder.clearStringVal().addStringVal(ByteString.copyFromUtf8(filePath))
+
+    val newNode =
+      filenames.toBuilder
+        .putAttr("value", AttrValue.newBuilder().setTensor(newTensor).build())
+        .build()
+
+    val newModel = nodes.asScala.filterNot(_.getName == "parallel_read/filenames/Const") :+ newNode
+
     val context =
       new mutable.HashMap[String, (Tensor[Float], Tensor[Float], Option[Seq[(Int, Int)]])]()
-    val session = new BigDLSessionImpl[Float](nodes.asScala, context)
+    val session = new BigDLSessionImpl[Float](newModel, context)
 
-    val cache = new mutable.HashMap[String, Array[Seq[Table]]]()
     val endpoints = Seq(
-      "ParseSingleExample/Squeeze_image/class/label",
-      "ParseSingleExample/Squeeze_image/encoded",
-      "ParseSingleExample/Squeeze_image/format"
+      "ParseSingleExample/SerializedDependencies"
     )
-    val rdd = session.constructDistributeData(endpoints, cache)
-    val result = rdd.first()
-    println(result)
+    val rdd = session.getRDD(endpoints)
+    val result = rdd.count()
+    result should be (4)
   }
 
 }

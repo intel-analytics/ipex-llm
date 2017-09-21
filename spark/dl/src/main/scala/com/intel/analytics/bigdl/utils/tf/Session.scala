@@ -59,8 +59,6 @@ class BigDLSessionImpl[T: ClassTag](
 
   private val enqueueOp = Set("QueueEnqueueV2", "QueueEnqueueManyV2")
 
-  private val readerOps = Set("TFRecordReaderV2")
-
   private val (wholeTFGraph, _, _) = TensorflowLoader.buildTFGraph(graph.asJava, null)
 
   private val name2Node = wholeTFGraph.
@@ -366,7 +364,7 @@ class BigDLSessionImpl[T: ClassTag](
     }
   }
 
-  def constructDistributeData(endPoints: Seq[String], cache: DataCache): RDD[Table] = {
+  private def constructDistributeData(endPoints: Seq[String], cache: DataCache): RDD[Table] = {
     val isInputOp = (n: NodeDef) => inputOp(n.getOp)
     val (tfGraph, inputs, originInputs) =
       TensorflowLoader.buildTFGraph(graph.asJava, endPoints, isInputOp)
@@ -397,16 +395,14 @@ class BigDLSessionImpl[T: ClassTag](
       }
     }
 
-    if (!inputRdd.isEmpty()) {
-      val first = inputRdd.first()
-      println(first)
-    }
     val modelBroadCast = ModelBroadcast[T].broadcast(sc, transformer)
     inputRdd.map { tensors =>
       val trans = modelBroadCast.value()
       val output = trans.forward(tensors.flatten())
-      output.asInstanceOf[Table]
-      tensors
+      output match {
+        case t: Tensor[_] => T(t)
+        case t: Table => t
+      }
     }
   }
 
@@ -430,6 +426,12 @@ class BigDLSessionImpl[T: ClassTag](
     (model, inputNodes.head)
   }
 
+  /**
+   * Train the model specified by the model output
+   * @param outputs model output
+   * @param dataSet the training data set
+   * @return trained model
+   */
   override def train(outputs: Seq[String],
                      dataSet: DistributedDataSet[MiniBatch[T]],
                      optMethod: OptimMethod[T],
@@ -452,27 +454,15 @@ class BigDLSessionImpl[T: ClassTag](
     model
   }
 
-
-  def train(modelOutputs: Seq[String],
-                     labels: Seq[String],
-                     optMethod: OptimMethod[T],
-                     criterion: Criterion[T],
-                     endWhen: Trigger): Graph[T] = {
-    val (model, modelInput) = constructModel(modelOutputs)
-
-    val (transformerForLabel, labelInput) = constructModel(labels)
-
-    require(modelInput == labelInput, "data and label should come from the same queue")
-
-    val cache = new DataCache()
-
-    val data = constructDistributeData(modelOutputs ++ labels, cache)
-
-    throw new NotImplementedError()
-  }
-
-  def run(endPoints: Array[String], batchSize: Int): RDD[Array[Tensor[T]]] = {
-    throw new NotImplementedError()
+  /**
+   * Get and calculate the data up to the specified endpoints, and
+   * return as a RDD[Table]
+   * @param endPoints output endpoints
+   * @return
+   */
+  def getRDD(endPoints: Seq[String]): RDD[Table] = {
+    val cache = new mutable.HashMap[String, Array[Seq[Table]]]()
+    constructDistributeData(endPoints, cache)
   }
 
 

@@ -1742,6 +1742,7 @@ object ReaderReadTF extends TensorflowToBigDL {
 
   private val graph = {
     val node = Node("ReaderReadV2")
+    Node("*") -> node
     (Node("*") -> node).graph(reverse = true)
   }
 
