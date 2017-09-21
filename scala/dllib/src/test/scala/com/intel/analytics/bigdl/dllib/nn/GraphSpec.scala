@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.nn.ops.{ControlNodes, Less}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Edge, Engine, RandomGenerator, T, Table}
+import com.intel.analytics.bigdl.utils._
 
 import scala.reflect.ClassTag
 import scala.util.Random
@@ -86,7 +86,7 @@ class GraphSpec extends FlatSpec with Matchers {
     val output2 = ReLU().inputs(cadd)
 
     val graph = Graph(Array(fc1, fc2), Array(output1, output2))
-    intercept[IllegalArgumentException] {
+    intercept[LayerException] {
       graph.forward(Tensor(T(0.1f, 0.2f, -0.3f, -0.4f)))
     }
   }
@@ -145,7 +145,7 @@ class GraphSpec extends FlatSpec with Matchers {
 
     val graph = Graph(Array(fc1), Array(output1))
 
-    intercept[IllegalArgumentException] {
+    intercept[LayerException] {
       graph.forward(T(Tensor(T(0.1f, 0.2f, -0.3f, -0.4f)),
         Tensor(T(0.5f, 0.4f, -0.2f, -0.1f))))
     }
@@ -1148,7 +1148,7 @@ class GraphSpec extends FlatSpec with Matchers {
     val result = model.forward(T(Tensor[Float](T(1)), Tensor[Boolean](T(true))))
     result.toTensor should be(Tensor[Float](T(1)))
 
-    intercept[IllegalArgumentException] {
+    intercept[LayerException] {
       model.forward(T(Tensor[Float](T(1)), Tensor[Boolean](T(false))))
     }
   }
