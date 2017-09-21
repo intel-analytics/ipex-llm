@@ -4053,6 +4053,20 @@ class ConvLSTMPeephole3D(Layer):
         super(ConvLSTMPeephole3D, self).__init__(None, bigdl_type, input_size, output_size, kernel_i, kernel_c, stride,
                                                  wRegularizer, uRegularizer, bRegularizer, cRegularizer, with_peephole)
 
+class ResizeBilinear(Layer):
+    """
+    Resize the input image with bilinear interpolation. The input image must be a float tensor with
+    NHWC layout
+    
+    :param output_height: output height
+    :param output_width: output width
+    :param align_corner: align corner or not
+    
+    >>> resizeBilinear = ResizeBilinear(10, 20, false)
+    """
+    def __init__(self, output_height, output_width, align_corner):
+        super(ResizeBilinear, self).__init__(None, output_height, output_width, align_corner)
+
 def _test():
     import doctest
     from pyspark import SparkContext
