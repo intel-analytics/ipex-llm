@@ -57,7 +57,7 @@ object AlexNetPreprocessor {
   }
 
   def createMeans(meanFile : String) : Tensor[Float] = {
-    val array = Source.fromFile("/home/jerry/Downloads/mean.txt").getLines().map(_.toFloat).toArray
+    val array = Source.fromFile(meanFile).getLines().map(_.toFloat).toArray
     Tensor[Float](array, Array(array.length))
   }
 }
