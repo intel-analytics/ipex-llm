@@ -16,7 +16,7 @@
 package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.{NumericWildcard, TensorNumeric}
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils.Table
 
@@ -48,8 +48,8 @@ class Assign[T: ClassTag](
   (implicit ev: TensorNumeric[T]) extends Operation[Table, Tensor[_], T] {
 
   override def updateOutput(input: Table): Tensor[_] = {
-    val input1 = input[Tensor[_]](1)
-    val input2 = input[Tensor[_]](2)
+    val input1 = input[Tensor[NumericWildcard]](1)
+    val input2 = input[Tensor[NumericWildcard]](2)
 
     require(input1.getType() == input2.getType(),
       "ref and value must have the same tensor numeric type")
@@ -64,11 +64,11 @@ class Assign[T: ClassTag](
 
     input1
       .resizeAs(input2)
-      .forceCopy(input2)
+      .copy(input2)
 
-    output
+    output.asInstanceOf[Tensor[NumericWildcard]]
       .resizeAs(input2)
-      .forceCopy(input2)
+      .copy(input2)
   }
 }
 
