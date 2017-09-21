@@ -758,12 +758,12 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     a.rand()
     val b = a(2)
     b.storageOffset() should be(2)
-    b.size() should be(Array(1))
-    b.stride() should be(Array(1))
+    b.size() should be(Array())
+    b.stride() should be(Array())
     b.nElement() should be(1)
 
-    b.setValue(1, 0.01f)
-    b.valueAt(1) should be(0.01f)
+    b.setValue(0.01f)
+    b.value() should be(0.01f)
     a.valueAt(2) should be(0.01f)
   }
 
