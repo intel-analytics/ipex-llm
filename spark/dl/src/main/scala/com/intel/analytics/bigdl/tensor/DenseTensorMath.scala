@@ -45,7 +45,7 @@ object DenseTensorMath {
     self
   }
 
-  def cmul[@specialized(Float, Double) T](self: DenseTensor[T], x: Tensor[T], y: Tensor[T])
+  def cmul[@specialized T](self: DenseTensor[T], x: Tensor[T], y: Tensor[T])
     (implicit ev: TensorNumeric[T]): Tensor[T] = {
     require(self.nElement() == y.nElement() && self.nElement() == x.nElement(),
       "element number doesn't match")
@@ -433,7 +433,7 @@ object DenseTensorMath {
     result
   }
 
-  def sum[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], x: Tensor[T], _dim: Int)
+  def sum[@specialized T: ClassTag](self: DenseTensor[T], x: Tensor[T], _dim: Int)
     (implicit ev: TensorNumeric[T]): Tensor[T] = {
     require(_dim >= 0 && _dim < x.nDimension, s"dimension ${_dim + 1} out of range")
     val result = if (self == null) new DenseTensor[T]() else self

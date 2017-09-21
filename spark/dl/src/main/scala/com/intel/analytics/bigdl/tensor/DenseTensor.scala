@@ -584,7 +584,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def value(): T = {
-    require(0 == this.nDimension, s"invalid size: 0 == ${this.nDimension}")
+    require(1 == this.nElement(), s"invalid size: 1 == ${this.nElement()}")
     var offset = this._storageOffset
     this._storage(offset)
   }
@@ -2205,7 +2205,7 @@ object DenseTensor {
   }
 
 
-  private[tensor] def isSameSizeAs[@specialized(Float, Double) T](
+  private[tensor] def isSameSizeAs[@specialized T](
     self: DenseTensor[T], src: Tensor[_]): Boolean = {
     if (self.nDimension != src.nDimension()) {
       return false
@@ -2349,7 +2349,7 @@ object DenseTensor {
     new DenseTensor(new ArrayStorage(Array(get1d(self, x0))))
   }
 
-  private[tensor] def copy[@specialized(Float, Double) T](
+  private[tensor] def copy[@specialized T](
     self: DenseTensor[T], src: Tensor[T]): Unit = {
     require(self.nElement() == src.nElement())
     if (self.isEmpty) {
