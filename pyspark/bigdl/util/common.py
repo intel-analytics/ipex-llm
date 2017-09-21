@@ -247,6 +247,9 @@ _picklable_classes = [
 
 def init_engine(bigdl_type="float"):
     callBigDlFunc(bigdl_type, "initEngine")
+    print('Setting current log level to "INFO"')
+    sc = get_spark_context()
+    sc.setLogLevel("INFO")
 
 
 def get_bigdl_conf():
@@ -276,10 +279,12 @@ def to_list(a):
         return a
     return [a]
 
+
 def extend_spark_driver_cp(sparkConf, path):
     original_driver_classpath = ":" + sparkConf.get("spark.driver.extraClassPath") \
         if sparkConf.contains("spark.driver.extraClassPath") else ""
     sparkConf.set("spark.driver.extraClassPath", path + original_driver_classpath)
+
 
 def create_spark_conf():
     bigdl_conf = get_bigdl_conf()
@@ -288,6 +293,7 @@ def create_spark_conf():
     if not is_spark_below_2_2_0():
         extend_spark_driver_cp(sparkConf, get_bigdl_classpath())
     return sparkConf
+
 
 def get_spark_context(conf = None):
     """
