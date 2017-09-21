@@ -31,6 +31,7 @@ class TensorNumericMath
  */
 object TensorNumericMath {
 
+  type NumericWildCard = Any
   /**
    * define tensor math operation
    */

@@ -24,17 +24,48 @@ class PadSpec extends FlatSpec with Matchers {
     import com.intel.analytics.bigdl.numeric.NumericFloat
     val input =
       Tensor(T(
-        T(1f, 2f, 3f),
-        T(4f, 5f, 6f)
+        T(
+          T(1f, 2f, 3f),
+          T(4f, 5f, 6f)),
+        T(
+          T(1f, 2f, 3f),
+          T(4f, 5f, 6f))
       ))
-    val padding = Tensor[Int](T(T(1, 1), T(2, 2)))
+    val padding = Tensor[Int](T(T(1, 2), T(1, 2), T(1, 2)))
 
-    val expectOutput = Tensor(T(
-      T(0f, 0f, 0f, 0f, 0f, 0f, 0f),
-      T(0f, 0f, 1f, 2f, 3f, 0f, 0f),
-      T(0f, 0f, 4f, 5f, 6f, 0f, 0f),
-      T(0f, 0f, 0f, 0f, 0f, 0f, 0f)
-    ))
+    val expectOutput = Tensor(
+      T(
+        T(
+          T(0f, 0f, 0f, 0f, 0f, 0f),
+          T(0f, 0f, 0f, 0f, 0f, 0f),
+          T(0f, 0f, 0f, 0f, 0f, 0f),
+          T(0f, 0f, 0f, 0f, 0f, 0f),
+          T(0f, 0f, 0f, 0f, 0f, 0f)),
+        T(
+          T(0f, 0f, 0f, 0f, 0f, 0f),
+          T(0f, 1f, 2f, 3f, 0f, 0f),
+          T(0f, 4f, 5f, 6f, 0f, 0f),
+          T(0f, 0f, 0f, 0f, 0f, 0f),
+          T(0f, 0f, 0f, 0f, 0f, 0f)),
+        T(
+          T(0f, 0f, 0f, 0f, 0f, 0f),
+          T(0f, 1f, 2f, 3f, 0f, 0f),
+          T(0f, 4f, 5f, 6f, 0f, 0f),
+          T(0f, 0f, 0f, 0f, 0f, 0f),
+          T(0f, 0f, 0f, 0f, 0f, 0f)),
+        T(
+          T(0f, 0f, 0f, 0f, 0f, 0f),
+          T(0f, 0f, 0f, 0f, 0f, 0f),
+          T(0f, 0f, 0f, 0f, 0f, 0f),
+          T(0f, 0f, 0f, 0f, 0f, 0f),
+          T(0f, 0f, 0f, 0f, 0f, 0f)),
+        T(
+          T(0f, 0f, 0f, 0f, 0f, 0f),
+          T(0f, 0f, 0f, 0f, 0f, 0f),
+          T(0f, 0f, 0f, 0f, 0f, 0f),
+          T(0f, 0f, 0f, 0f, 0f, 0f),
+          T(0f, 0f, 0f, 0f, 0f, 0f)))
+    )
 
     val output = Pad[Float, Float](mode = "CONSTANT", 0.0f).forward(T(input, padding))
     output should be(expectOutput)

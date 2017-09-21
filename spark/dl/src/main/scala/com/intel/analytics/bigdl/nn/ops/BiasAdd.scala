@@ -16,7 +16,7 @@
 package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.{NumericWildCard, TensorNumeric}
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils.Table
 
@@ -24,98 +24,41 @@ import scala.reflect.ClassTag
 
 class BiasAdd[T: ClassTag]()
   (implicit ev: TensorNumeric[T]) extends Operation[Table, Tensor[_], T] {
-  val onesBias = Tensor()
+  var onesBias: Tensor[NumericWildCard] = _
 
   override def updateOutput(input: Table): Tensor[_] = {
-    val value = input[Tensor[_]](1)
-    val bias = input[Tensor[_]](2)
+    val value = input[Tensor[NumericWildCard]](1)
+    val bias = input[Tensor[NumericWildCard]](2)
     val sizes = value.size().toBuffer
     val last = sizes.last
     sizes.remove(value.nDimension() - 1)
     val sizeProduct = sizes.product
 
+    if (value.getType() != output.getType()) {
+      output = value.emptyInstance()
+    }
+
+    if (onesBias == null) {
+      onesBias = value.emptyInstance()
+    }
+
     if (onesBias.dim() != 1 || onesBias.size(1) != sizeProduct) {
       onesBias.resize(sizeProduct).fill(ev.fromType(1.0))
     }
 
-    value.getType() match {
-      case FloatType =>
-        if (output.getType() != FloatType) {
-          output = Activity.allocate[Tensor[Float], Float]()
-        }
-        output
-          .asInstanceOf[Tensor[Float]]
-          .resizeAs(value)
-          .copy(value.asInstanceOf[Tensor[Float]])
-        val value2d = output.view(Array(sizeProduct, last))
+    output.asInstanceOf[Tensor[NumericWildCard]]
+      .resizeAs(value)
+      .copy(value)
+    val value2d = output
+      .view(Array(sizeProduct, last))
+      .asInstanceOf[Tensor[NumericWildCard]]
 
-        value2d.asInstanceOf[Tensor[Float]]
-          .addr(
-            1f,
-            onesBias.asInstanceOf[Tensor[Float]],
-            bias.asInstanceOf[Tensor[Float]])
-      case IntType =>
-        if (output.getType() != IntType) {
-          output = Activity.allocate[Tensor[Int], Int]()
-        }
-        output
-          .asInstanceOf[Tensor[Int]]
-          .resizeAs(value)
-          .copy(value.asInstanceOf[Tensor[Int]])
-        val value2d = output.view(Array(sizeProduct, last))
 
-        value2d.asInstanceOf[Tensor[Int]]
-          .addr(
-            1,
-            onesBias.asInstanceOf[Tensor[Int]],
-            bias.asInstanceOf[Tensor[Int]])
-      case DoubleType =>
-        if (output.getType() != FloatType) {
-          output = Activity.allocate[Tensor[Double], Double]()
-        }
-        output
-          .asInstanceOf[Tensor[Double]]
-          .resizeAs(value)
-          .copy(value.asInstanceOf[Tensor[Double]])
-        val value2d = output.view(Array(sizeProduct, last))
-
-        value2d.asInstanceOf[Tensor[Double]]
-          .addr(
-            1.0,
-            onesBias.asInstanceOf[Tensor[Double]],
-            bias.asInstanceOf[Tensor[Double]])
-      case LongType =>
-        if (output.getType() != FloatType) {
-          output = Activity.allocate[Tensor[Long], Long]()
-        }
-        output
-          .asInstanceOf[Tensor[Long]]
-          .resizeAs(value)
-          .copy(value.asInstanceOf[Tensor[Long]])
-        val value2d = output.view(Array(sizeProduct, last))
-
-        value2d.asInstanceOf[Tensor[Long]]
-          .addr(
-            1L,
-            onesBias.asInstanceOf[Tensor[Long]],
-            bias.asInstanceOf[Tensor[Long]])
-      case ShortType =>
-        if (output.getType() != FloatType) {
-          output = Activity.allocate[Tensor[Short], Short]()
-        }
-        output
-          .asInstanceOf[Tensor[Short]]
-          .resizeAs(value)
-          .copy(value.asInstanceOf[Tensor[Short]])
-        val value2d = output.view(Array(sizeProduct, last))
-
-        value2d.asInstanceOf[Tensor[Short]]
-          .addr(
-            1.toShort,
-            onesBias.asInstanceOf[Tensor[Short]],
-            bias.asInstanceOf[Tensor[Short]])
-      case _ => throw new RuntimeException("Unsupported tensor type")
-    }
+    value2d
+      .addr(
+        value.getTensorNumeric().one,
+        onesBias,
+        bias)
 
     output
   }

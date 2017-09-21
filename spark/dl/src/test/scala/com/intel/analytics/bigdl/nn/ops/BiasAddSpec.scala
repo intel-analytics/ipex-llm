@@ -21,7 +21,7 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class BiasAddSpec extends FlatSpec with Matchers {
   "BiasAdd operation" should "works correctly" in {
-    import com.intel.analytics.bigdl.numeric.NumericFloat
+    import com.intel.analytics.bigdl.numeric.NumericDouble
     val input =
       T(
         Tensor(T(

@@ -16,7 +16,7 @@
 package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.tensor.{FloatType, Tensor}
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
 
@@ -33,9 +33,9 @@ class Pad[T: ClassTag, D: ClassTag](
     padding: Tensor[Int],
     output: Tensor[D]
   ): Unit = {
-    val inputOffset = input.storageOffset()
+    val inputOffset = input.storageOffset() - 1
     val inputData = input.storage()
-    val outputOffset = output.storageOffset()
+    val outputOffset = output.storageOffset() - 1
     val outputData = output.storage()
 
     val dim = input.nDimension()
@@ -67,44 +67,47 @@ class Pad[T: ClassTag, D: ClassTag](
       if (dim - 6 < 0) {
         dim6Flag = false
       } else {
-        dim6OuputOffset = (i + padding(Array(dim, 6))) *
-          output.size(1) * output.size(2) * output.size(3) * output.size(4) * output.size(5)
+        dim6OuputOffset = (i + padding(Array(dim - 5, 1))) * output.size(dim) *
+          output.size(dim - 1) * output.size(dim - 2) * output.size(dim - 3) * output.size(dim - 4)
         dim6InputOffset =
-          i * input.size(1) * input.size(2) * input.size(3) * input.size(4) * output.size(5)
+          i * input.size(dim) * input.size(dim - 1) * input.size(dim - 2) *
+            input.size(dim - 3) * input.size(dim - 4)
       }
       var j = 0
       while (dim5Flag && j < (if (dim - 5 >= 0) sizes(dim - 5) else Integer.MAX_VALUE)) {
         if (dim - 5 < 0) {
           dim5Flag = false
         } else {
-          dim5OuputOffset = (j + padding(Array(dim, 5))) *
-            output.size(1) * output.size(2) * output.size(3) * output.size(4)
-          dim5InputOffset = j * input.size(1) * input.size(2) * input.size(3) * input.size(4)
+          dim5OuputOffset = (j + padding(Array(dim - 4, 1))) *
+            output.size(dim) * output.size(dim - 1) * output.size(dim - 2) * output.size(dim - 3)
+          dim5InputOffset = j * input.size(dim) * input.size(dim - 1) *
+            input.size(dim - 2) * input.size(4)
         }
         var k = 0
         while (dim4Flag && k < (if (dim - 4 >= 0) sizes(dim - 4) else Integer.MAX_VALUE)) {
           if (dim - 4 < 0) {
             dim4Flag = false
           } else {
-            dim4OuputOffset = (k + padding(Array(dim, 4))) *
-              output.size(1) * output.size(2) * output.size(3)
-            dim4InputOffset = k * input.size(1) * input.size(2) * input.size(3)
+            dim4OuputOffset = (k + padding(Array(dim - 3, 1))) *
+              output.size(dim) * output.size(dim - 1) * output.size(dim - 2)
+            dim4InputOffset = k * input.size(dim) * input.size(dim - 1) * input.size(dim - 2)
           }
           var l = 0
           while (dim3Flag && l < (if (dim - 3 >= 0) sizes(dim - 3) else Integer.MAX_VALUE)) {
             if (dim - 3 < 0) {
               dim3Flag = false
             } else {
-              dim3OuputOffset = (l + padding(Array(dim, 3))) * output.size(1) * output.size(2)
-              dim3InputOffset = l * input.size(1) * input.size(2)
+              dim3OuputOffset = (l + padding(Array(dim - 2, 1))) *
+                output.size(dim) * output.size(dim - 1)
+              dim3InputOffset = l * input.size(dim) * input.size(dim - 1)
             }
             var m = 0
             while (dim2Flag && m < (if (dim - 2 >= 0) sizes(dim - 2) else Integer.MAX_VALUE)) {
               if (dim - 2 < 0) {
                 dim2Flag = false
               } else {
-                dim2OuputOffset = (m + padding(Array(dim, 2))) * output.size(1)
-                dim2InputOffset = m * input.size(1)
+                dim2OuputOffset = (m + padding(Array(dim - 1, 1))) * output.size(dim)
+                dim2InputOffset = m * input.size(dim)
               }
               var n = 0
               while (dim1Flag && n < (if (dim - 1 >= 0) sizes(dim - 1) else Integer.MAX_VALUE)) {
@@ -120,19 +123,19 @@ class Pad[T: ClassTag, D: ClassTag](
                   dim1OuputOffset) =
                   inputData(inputOffset + dim6InputOffset + dim5InputOffset
                     + dim4InputOffset + dim3InputOffset + dim2InputOffset +
-                    dim1OuputOffset)
+                    dim1InputOffset)
+                n += 1
               }
-              n += 1
+              m += 1
             }
-            m += 1
+            l += 1
           }
-          l += 1
+          k += 1
         }
-        k += 1
+        j += 1
       }
-      j += 1
+      i += 1
     }
-    i += 1
   }
 
   def updateOutput(inputs: Table): Tensor[D] = {
