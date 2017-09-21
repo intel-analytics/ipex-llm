@@ -31,6 +31,19 @@ class TensorNumericMath
  */
 object TensorNumericMath {
 
+  /**
+   * This type is used to denote that the numeric type of tensor is not restricted.
+   * The use-case usually is used to do some tensor operations when we do not make sure
+   * their concrete types, but they must have the same type.
+   *
+   * For example if we want to copy tensor1 from tensor2, and we only know they are
+   * the same type tensor without the information about their concrete type.
+   *
+   * We can use the following code:
+   *
+   * `tensor1.asInstanceOf[Tensor[NumericWildcard]]
+   * .copy(tensor2.asInstanceOf[Tensor[NumericWildcard]])`
+   */
   type NumericWildcard = Any
 
   /**
