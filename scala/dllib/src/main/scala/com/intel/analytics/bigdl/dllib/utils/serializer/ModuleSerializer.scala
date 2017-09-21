@@ -98,7 +98,7 @@ object ModuleSerializer extends ModuleSerializable{
       }
     } catch {
       case e: Exception =>
-        throw new RuntimeException("Loading module exception :", e)
+        throw new RuntimeException(s"Loading module ${model.getModuleType} exception :", e)
     }
   }
 

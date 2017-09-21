@@ -27,6 +27,7 @@ import serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
+import scala.reflect.runtime.universe
 import scala.util.control.Breaks._
 
 /**
@@ -466,12 +467,15 @@ object BinaryTreeLSTM extends ModuleSerializable {
 
     val composers = binaryTreeLSTM.composers.toArray
     val composersBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(composersBuilder, composers)
+    DataConverter.setAttributeValue(composersBuilder, composers,
+      universe.
+        typeOf[Array[_ <: AbstractModule[Activity, Activity, _ <: Any]]])
     binaryTreeLSTMBuilder.putAttr("composers", composersBuilder.build)
 
     val leafModules = binaryTreeLSTM.leafModules.toArray
     val leafModulesBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(leafModulesBuilder, leafModules)
+    DataConverter.setAttributeValue(leafModulesBuilder, leafModules, universe.
+      typeOf[Array[_ <: AbstractModule[Activity, Activity, _ <: Any]]])
     binaryTreeLSTMBuilder.putAttr("leafModules", leafModulesBuilder.build)
 
   }
