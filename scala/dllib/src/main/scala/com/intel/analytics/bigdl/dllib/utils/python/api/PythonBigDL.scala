@@ -1935,4 +1935,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def saveGraphTopology(model: Graph[T], logPath: String): Graph[T] = {
     model.saveGraphTopology(logPath)
   }
+
+  def createResizeBilinear(
+    outputHeight: Int,
+    outputWidth: Int,
+    alignCorner: Boolean
+  ): ResizeBilinear[T] = {
+    ResizeBilinear[T](outputHeight,
+      outputWidth,
+      alignCorner)
+  }
 }

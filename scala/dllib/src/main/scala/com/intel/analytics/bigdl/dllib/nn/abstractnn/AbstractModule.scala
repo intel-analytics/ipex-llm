@@ -233,7 +233,15 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    */
   final def forward(input: A): B = {
     val before = System.nanoTime()
-    updateOutput(input)
+    try {
+      updateOutput(input)
+    } catch {
+      case l: LayerException =>
+        l.layerMsg = this.toString() + "/" + l.layerMsg
+        throw l
+      case e: Throwable =>
+        throw new LayerException(this.toString(), e)
+    }
     forwardTime += System.nanoTime() - before
 
     output
