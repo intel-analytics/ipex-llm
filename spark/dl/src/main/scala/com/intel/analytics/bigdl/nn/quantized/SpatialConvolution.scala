@@ -24,6 +24,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData}
 import com.intel.analytics.bigdl.utils.{T, Table}
+import scala.reflect.runtime.universe
 import scala.reflect.ClassTag
 import serialization.Bigdl.{AttrValue, BigDLModule}
 
@@ -285,7 +286,12 @@ object SpatialConvolution extends QuantSerializer {
     modelBuilder: BigDLModule.Builder)(implicit ev: TensorNumeric[T]): Unit = {
     val conv = module.module.asInstanceOf[SpatialConvolution[T]]
     val weightBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(weightBuilder, conv.weight)
+    ev.getType() match {
+      case FloatType =>
+        DataConverter.setAttributeValue(weightBuilder, conv.weight,
+          universe.typeOf[Array[Tensor[Float]]])
+      case _ => throw new UnsupportedOperationException(s"Only support Float for quantized model")
+    }
     modelBuilder.putAttr("weights", weightBuilder.build)
   }
 

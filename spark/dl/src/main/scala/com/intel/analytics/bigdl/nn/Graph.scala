@@ -540,7 +540,9 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
 
   def resetModules(): Unit = {
     modules.clear()
-    modules.appendAll(forwardExecutions.filter(n => !n.eq(dummyOutput)).map(_.element))
+    modules.appendAll(backGraph.topologySort
+      .filterNot(_.element.isInstanceOf[ControlDependency[T]]).reverse
+      .filter(n => !n.eq(dummyOutput)).map(_.element))
   }
 }
 

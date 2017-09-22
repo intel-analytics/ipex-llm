@@ -19,12 +19,13 @@ package com.intel.analytics.bigdl.nn.quantized
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.bigquant.BigQuant
 import com.intel.analytics.bigdl.models.lenet.LeNet5
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.nn.quantized.Utils.ANode
 import com.intel.analytics.bigdl.nn.{Linear => NNLinear, SpatialConvolution => NNConv, SpatialDilatedConvolution => NNDilatedConv, _}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.{T, Table}
 import org.apache.log4j.Logger
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -416,7 +417,8 @@ class QuantizableSpec extends FlatSpec with Matchers {
     val model = Sequential[Float]()
     for (i <- 1 to 9) {
       val flag = if (i == 1) false else true
-      model.add(BiRecurrent[Float](isSplitInput = flag, merge = JoinTable[Float](2, 2))
+      model.add(BiRecurrent[Float](isSplitInput = flag, merge = JoinTable[Float](2, 2)
+        .asInstanceOf[AbstractModule[Table, Tensor[Float], Float]])
         .add(RnnCell[Float](inputSize, hiddenSize, HardTanh[Float](0, 20, inplace = true))))
     }
     logger.info(model)

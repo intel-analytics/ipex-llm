@@ -487,7 +487,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
   override def toString(): String = s"${getPrintName}${modules}"
 }
 
-object Recurrent extends ContainerSerializable with Quantable {
+object Recurrent extends ContainerSerializable with Quantizable {
 
   private val batchDim = 1
   private val timeDim = 2

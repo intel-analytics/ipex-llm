@@ -274,7 +274,6 @@ private[bigdl] class QuantizedTensor[@specialized(Float) T: ClassTag](
 
     this.desc = Desc.get(params, internalStorage, 0, maxOfRow, minOfRow)
   }
-
 }
 
 object QuantizedTensor {

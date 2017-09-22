@@ -179,7 +179,7 @@ object DataConverter extends DataConverter{
         val bs = ByteString.copyFrom(bytes)
         attributeBuilder.setBytesValue(bs)
       } else {
-        ArrayConverter.setAttributeValue(attributeBuilder, value)
+        ArrayConverter.setAttributeValue(attributeBuilder, value, valueType)
       }
     } else if (valueType == universe.typeOf[DataFormat]) {
       DataFormatConverter.setAttributeValue(attributeBuilder, value)
