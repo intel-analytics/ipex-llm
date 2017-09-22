@@ -36,7 +36,7 @@ object AlexNetPreprocessor {
   def apply(path: String, batchSize: Int, meanFile: String, sc: SparkContext)
   : DataSet[MiniBatch[Float]] = {
     // 'meanFile' specify the path to the pixel level mean data, one line per pixel
-    // following N * H * W * C order, 196608 in total (256 * 256 * 3)
+    // following H * W * C order, 196608 in total (256 * 256 * 3)
     val means = createMeans(meanFile)
     DataSet.SeqFileFolder.files(path, sc, classNum = 1000) ->
       // do not normalize the pixel values to [0, 1]
