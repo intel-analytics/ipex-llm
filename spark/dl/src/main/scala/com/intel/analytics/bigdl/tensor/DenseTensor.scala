@@ -96,15 +96,20 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     (implicit ev1: TensorNumeric[D]): Tensor[D] = {
     castTensor.getType() match {
       case FloatType =>
-        castTensor.applyFun[T](this, x => ev.toType[Float](x).asInstanceOf[D])
+        castTensor.applyFun[T](this.asInstanceOf[Tensor[T]],
+          x => ev.toType[Float](x).asInstanceOf[D])
       case DoubleType =>
-        castTensor.applyFun[T](this, x => ev.toType[Double](x).asInstanceOf[D])
+        castTensor.applyFun[T](this.asInstanceOf[Tensor[T]],
+          x => ev.toType[Double](x).asInstanceOf[D])
       case LongType =>
-        castTensor.applyFun[T](this, x => ev.toType[Long](x).asInstanceOf[D])
+        castTensor.applyFun[T](this.asInstanceOf[Tensor[T]],
+          x => ev.toType[Long](x).asInstanceOf[D])
       case IntType =>
-        castTensor.applyFun[T](this, x => ev.toType[Int](x).asInstanceOf[D])
+        castTensor.applyFun[T](this.asInstanceOf[Tensor[T]],
+          x => ev.toType[Int](x).asInstanceOf[D])
       case ShortType =>
-        castTensor.applyFun[T](this, x => ev.toType[Short](x).asInstanceOf[D])
+        castTensor.applyFun[T](this.asInstanceOf[Tensor[T]],
+          x => ev.toType[Short](x).asInstanceOf[D])
       case _ =>
         throw new RuntimeException("Unspported type")
     }
@@ -436,7 +441,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
       data2: Array[T], index2: Int): Unit = {
       data2(index2) = func(data1(index1))
     }
-    DenseTensorApply.apply1(t, this, func2)
+    DenseTensorApply.apply1[A, T](t, this, func2)
     this
   }
 
