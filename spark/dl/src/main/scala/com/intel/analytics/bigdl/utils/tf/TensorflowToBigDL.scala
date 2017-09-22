@@ -252,7 +252,8 @@ object TensorflowToBigDL {
       Flatten, Conv1D, FlattenV2, BatchNormV2NHWCTF, BatchNormV2NCHWTF, AddNTF,
       ControlDependencyTF, RandomShuffleTF, AssertTF, GreaterTF, ReaderReadTF, QueueDequeTF,
       QueueDequeManyTF, EqualTF, RankTF, EnqueueManyTF, EnqueueTF, QueueTF, RandomShuffleQueueTF,
-      FullConnectionWithoutBiasTF, DeConv2D, ResizeBilinearTF, Conv2D2, Conv2DWithoutBias, ParseExampleTF
+      FullConnectionWithoutBiasTF, DeConv2D, ResizeBilinearTF, Conv2D2, Conv2DWithoutBias,
+      ParseExampleTF
     )
     res
   }
