@@ -70,6 +70,7 @@ if __name__ == "__main__":
 
     sc = SparkContext(appName="lenet5", conf=create_spark_conf())
     init_engine()
+    redireSparkInfoLogs()
 
     if options.action == "train":
         def get_end_trigger():

@@ -1945,4 +1945,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       outputWidth,
       alignCorner)
   }
+
+  def redirectSparkInfoLogs(disableRedirect: String,
+                            enableSparkLogRedirect: String,
+                            logPath: String): Unit = {
+    LoggerFilter.redirectSparkInfoLogs(disableRedirect, enableSparkLogRedirect, logPath)
+  }
+
 }
