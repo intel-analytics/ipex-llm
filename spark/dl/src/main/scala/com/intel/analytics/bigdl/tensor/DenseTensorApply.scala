@@ -27,7 +27,7 @@ object DenseTensorApply {
    *                tensor2Offset)
    */
   def apply1[A, B](tensor1: Tensor[A], tensor2: Tensor[B],
-    func: (Array[A], Int, Array[B], Int) => Unit): Unit = {
+    func: TensorDiffTypeFunc4[A, B]): Unit = {
 
     if (tensor1.nDimension == 0) {
       return
