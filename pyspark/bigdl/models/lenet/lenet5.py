@@ -70,6 +70,7 @@ if __name__ == "__main__":
 
     sc = SparkContext(appName="lenet5", conf=create_spark_conf())
     init_engine()
+    print("Redirecting spark logs to "+os.getcwd()+"/bigdl.log")
     redireSparkInfoLogs()
 
     if options.action == "train":
