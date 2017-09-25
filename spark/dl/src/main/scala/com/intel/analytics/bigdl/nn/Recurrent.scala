@@ -273,10 +273,6 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
       // Clone N modules along the sequence dimension.
       initHidden(outputSize)
       cloneCells()
-      if (initState != null) {
-        hidden = initState
-        gradHidden = hidden
-      }
       
       currentInput(hidDim) = if (initState != null) initState
       else hidden
@@ -303,7 +299,10 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
         states = initStates
       }
       cloneCells()
-      cells.foreach(x => x.asInstanceOf[MultiCell[T]].states = states)
+      cells.foreach{x =>
+        x.asInstanceOf[MultiCell[T]].states = states
+        x.asInstanceOf[MultiCell[T]].gradStates = gradStates
+      }
 
       while (i <= times) {
         currentInput(inputDim) = Recurrent.selectCopy(outputCell, i, outputBuffer)
@@ -333,7 +332,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     initStates = states
   }
 
-  def getStates(): Unit = {
+  def getStates(): Array[Activity] = {
     require(topology.isInstanceOf[MultiCell[T]], "getStates only support for MultiCell")
     states
   }
@@ -413,7 +412,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
       while (i >= 1) {
         currentGradOutput(inputDim) = Recurrent.selectCopy(gradOutput, i, gradBuffer)
         _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
-        else hidden
+        else if (initState == null) hidden else initState
         _input(inputDim) = Recurrent.selectCopy(outputCell, i, outputBuffer)
         if (i == 1) {
           cells(i - 1).regluarized(true)
@@ -425,16 +424,8 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
         i -= 1
       }
     } else {
-      if (gradStates == null) {
-        gradStates = new Array[Activity](topology.asInstanceOf[MultiCell[T]].cells.length)
-      }
-      cells.foreach(x => x.asInstanceOf[MultiCell[T]].gradStates = gradStates)
-
       while (i >= 1) {
         currentGradOutput(inputDim) = Recurrent.selectCopy(gradOutput, i, gradBuffer)
-        if (i == times) {
-          currentGradOutput(hidDim) = gradHidden
-        }
         _input(inputDim) = Recurrent.selectCopy(outputCell, i, outputBuffer)
         if (i == 1) {
           cells(i - 1).regluarized(true)
