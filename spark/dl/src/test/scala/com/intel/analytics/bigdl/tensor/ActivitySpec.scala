@@ -22,7 +22,7 @@ import org.scalatest.{FlatSpec, Matchers}
 @com.intel.analytics.bigdl.tags.Parallel
 class ActivitySpec extends FlatSpec with Matchers {
   "Activity.allocate" should "be able to allocate table" in {
-    val r = Activity.allocate[Table, Any]()
+    val r = Activity.allocate[Table, Boolean]()
     r.isInstanceOf[Table] should be(true)
   }
 
@@ -75,7 +75,7 @@ class ActivitySpec extends FlatSpec with Matchers {
   }
 
   "Activity.allocate" should "be able to allocate nothing for Activity" in {
-    val r = Activity.allocate[Activity, Any]()
+    val r = Activity.allocate[Activity, Boolean]()
     r should be(null)
   }
 }
