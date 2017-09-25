@@ -263,7 +263,7 @@ class TestSimple():
             print(str(i) + "\n")
         print(len(p))
 
-        test_results = trained_model.test(trainingData, 32, [Top1Accuracy()])
+        test_results = trained_model.evaluate(trainingData, 32, [Top1Accuracy()])
         for test_result in test_results:
             print(test_result)
 
