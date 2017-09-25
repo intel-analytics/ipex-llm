@@ -325,6 +325,18 @@ object T {
   }
 
   /**
+   * Construct a table from an array
+   *
+   * The index + 1 will be used as the key
+   *
+   * @param data
+   * @return
+   */
+  def seq(data: Seq[Any]): Table = {
+    new Table(data.toArray)
+  }
+
+  /**
    * Construct a table from a sequence of pair.
    */
   def apply(tuple: Tuple2[Any, Any], tuples: Tuple2[Any, Any]*): Table = {

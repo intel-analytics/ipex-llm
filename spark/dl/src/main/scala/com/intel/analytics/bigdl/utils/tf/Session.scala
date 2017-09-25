@@ -69,14 +69,6 @@ class BigDLSessionImpl[T: ClassTag](
     }
   }
 
-  private def seqToTable(tensors: Seq[Tensor[T]]): Table = {
-    val table = new Table()
-    for (tensor <- tensors) {
-      table.insert(tensor)
-    }
-    table
-  }
-
   private def handleReaderNode(node: Node[NodeDef], cache: DataCache): RDD[Table] = {
     require(node.prevNodes.length == 2, "require ReaderReadV2 only has two inputs")
     val readerNode = node.prevNodes.head
@@ -302,7 +294,7 @@ class BigDLSessionImpl[T: ClassTag](
         result.narrow(dimension, index + 1, 1).copy(tensor)
       }
     }
-    seqToTable(results)
+    T.seq(results)
   }
 
   type DataCache = mutable.HashMap[String, Array[Seq[Table]]]
