@@ -38,7 +38,7 @@ class Predictor[T: ClassTag] private[optim](
   private val batchPerPartition = 4
 
   def predictClass(dataSet: RDD[Sample[T]], batchSize: Int = -1): RDD[Int] = {
-    val result = predict(dataSet, batchSize)
+    val result = predict(dataSet, batchSize, true)
     result.mapPartitions { partition =>
       partition.map(output => {
         val _output = output.toTensor[T]
