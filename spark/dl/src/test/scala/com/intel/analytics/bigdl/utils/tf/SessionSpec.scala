@@ -19,11 +19,14 @@ import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.nn.{CrossEntropyCriterion, MSECriterion}
 import com.intel.analytics.bigdl.optim.{SGD, Trigger}
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.utils.{Engine, Table}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import java.io.{File => JFile}
+
+import com.google.protobuf.ByteString
+import org.tensorflow.framework.AttrValue
 
 import scala.collection.mutable
 
@@ -61,7 +64,7 @@ class SessionSpec extends FlatSpec with Matchers with BeforeAndAfter {
     import scala.collection.JavaConverters._
     val context =
       new mutable.HashMap[String, (Tensor[Float], Tensor[Float], Option[Seq[(Int, Int)]])]()
-    val session = new BigDLSessionImpl[Float](nodes.asScala, context)
+    val session = new BigDLSessionImpl[Float](nodes.asScala, sc, context)
 
     val data = new Array[Tensor[Float]](100)
     val label = new Array[Tensor[Float]](100)
@@ -74,7 +77,7 @@ class SessionSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val optim = new SGD[Float](0.001)
     val criterion = MSECriterion[Float]()
-    val endWhen = Trigger.maxEpoch(5)
+    val endWhen = Trigger.maxEpoch(2)
 
     val samples = data.zip(label).map { case (dataTensor, labelTensor) =>
       Sample(dataTensor, labelTensor)
@@ -88,6 +91,38 @@ class SessionSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val module = session.train(Seq("output"), datasets, optim, criterion, endWhen)
      module.forward(Tensor[Float](Array(1)))
+  }
+
+  "Session" should "be able construct input data" in {
+
+    val resource = getClass().getClassLoader().getResource("tf")
+    val modelPath = resource.getPath() + JFile.separator + "lenet.pbtxt"
+    val filePath = resource.getPath() + JFile.separator + "mnist_test.tfrecord"
+    val nodes = TensorflowLoader.parseTxt(modelPath)
+    import scala.collection.JavaConverters._
+
+    val filenames = nodes.asScala.filter(_.getName == "parallel_read/filenames/Const").head
+
+    val newTensor = filenames.getAttrMap.get("value")
+      .getTensor.toBuilder.clearStringVal().addStringVal(ByteString.copyFromUtf8(filePath))
+
+    val newNode =
+      filenames.toBuilder
+        .putAttr("value", AttrValue.newBuilder().setTensor(newTensor).build())
+        .build()
+
+    val newModel = nodes.asScala.filterNot(_.getName == "parallel_read/filenames/Const") :+ newNode
+
+    val context =
+      new mutable.HashMap[String, (Tensor[Float], Tensor[Float], Option[Seq[(Int, Int)]])]()
+    val session = new BigDLSessionImpl[Float](newModel, sc, context)
+
+    val endpoints = Seq(
+      "ParseSingleExample/SerializedDependencies"
+    )
+    val rdd = session.getRDD(endpoints)
+    val result = rdd.count()
+    result should be (4)
   }
 
 }

@@ -25,8 +25,11 @@ class Rank[T: ClassTag]()
   (implicit ev: TensorNumeric[T]) extends Operation[Tensor[_], Tensor[Int], T] {
 
   override def updateOutput(input: Tensor[_]): Tensor[Int] = {
-    output.resizeAs(input(1))
-    output.setValue(1, input.nDimension())
+    if (output.getType() != IntType) {
+      output = Tensor[Int]()
+    }
+    output.resize(Array[Int]())
+    output.setValue(input.nDimension())
 
     output
   }
