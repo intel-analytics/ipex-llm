@@ -251,7 +251,7 @@ object TensorflowToBigDL {
       SplitTF, PaddingTF, MeanTF, UnpackTF, StrideSliceTF, ShapeTF, FillTF, PackTF, ConstTF,
       Flatten, Conv1D, FlattenV2, BatchNormV2NHWCTF, BatchNormV2NCHWTF, AddNTF,
       ControlDependencyTF, RandomShuffleTF, AssertTF, GreaterTF, ReaderReadTF, QueueDequeTF,
-      QueueDequeManyTF, EqualTF, RankTF, EnqueueManyTF, EnqueueTF, QueueTF, RandomShuffleQueueTF,
+      QueueDequeManyTF, EqualTF, RankTF, EnqueueManyTF, EnqueueTF,
       FullConnectionWithoutBiasTF, DeConv2D, ResizeBilinearTF, Conv2D2, Conv2DWithoutBias,
       ParseExampleTF
     )
@@ -1869,42 +1869,6 @@ object EnqueueManyTF extends TensorflowToBigDL {
      implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
     new Identity().asInstanceOf[AbstractModule[Activity, Activity, T]]
-  }
-}
-
-object QueueTF extends TensorflowToBigDL {
-
-  private val graph = {
-    val node = Node("FIFOQueueV2")
-    node.graph(reverse = true)
-  }
-
-  override def topology: DirectedGraph[String] = graph
-
-  override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
-                                  context: Context[T],
-                                  byteOrder: ByteOrder)(
-      implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
-
-    new ControlDependency().asInstanceOf[AbstractModule[Activity, Activity, T]]
-  }
-}
-
-object RandomShuffleQueueTF extends TensorflowToBigDL {
-
-  private val graph = {
-    val node = Node("RandomShuffleQueueV2")
-    node.graph(reverse = true)
-  }
-
-  override def topology: DirectedGraph[String] = graph
-
-  override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
-                                  context: Context[T],
-                                  byteOrder: ByteOrder)(
-     implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
-
-    new ControlDependency().asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
 

@@ -58,16 +58,12 @@ class BigDLSessionImpl[T: ClassTag](
 
   private val enqueueOp = Set("QueueEnqueueV2", "QueueEnqueueManyV2")
 
+  private val queueOp = Set("RandomShuffleQueueV2", "FIFOQueueV2")
+
   private val (wholeTFGraph, _, _) = TensorflowLoader.buildTFGraph(graph.asJava, null)
 
   private val name2Node = wholeTFGraph.
     DFS.filter(_.element != null).map(node => (node.element.getName, node)).toMap
-
-  private def tableToSeq(table: Table): Seq[Tensor[T]] = {
-    for (i <- 0 until table.length()) yield {
-      table(i).asInstanceOf[Tensor[T]]
-    }
-  }
 
   private def handleReaderNode(node: Node[NodeDef], cache: DataCache): RDD[Table] = {
     require(node.prevNodes.length == 2, "require ReaderReadV2 only has two inputs")
@@ -266,7 +262,7 @@ class BigDLSessionImpl[T: ClassTag](
   }
 
   private def pack(tables: Seq[Table], dimension: Int = 1): Table = {
-    val batch = tables.map(tableToSeq)
+    val batch = tables.map(_.toSeq[T])
     val firstSeq = batch.head
     val sizes = firstSeq.map { tensor =>
       val nDim = tensor.nDimension()
@@ -308,10 +304,21 @@ class BigDLSessionImpl[T: ClassTag](
     set.toSeq
   }
 
+  private def checkAndRemoveQueueNode(tfGraph: DirectedGraph[NodeDef]) = {
+    if (tfGraph.source.prevNodes.exists(n => enqueueOp(n.element.getOp))) {
+      tfGraph.source.prevNodes.foreach { node =>
+        val queueNodes = node.prevNodes.filter(n => queueOp(n.element.getOp))
+        queueNodes.foreach(n => n.delete(node))
+      }
+    }
+  }
+
   def constructLocalData(endPoints: Seq[String], cache: DataCache): Seq[Table] = {
     val isInputOp = (n: NodeDef) => inputOp(n.getOp)
     val (tfGraph, inputs, originInputs) = TensorflowLoader.
       buildTFGraph(graph.asJava, endPoints, isInputOp)
+
+    checkAndRemoveQueueNode(tfGraph)
 
     val adjustedInputs = adjustInputNames(originInputs)
     val transformer = TensorflowLoader.buildBigDLModel(
@@ -359,6 +366,8 @@ class BigDLSessionImpl[T: ClassTag](
     val isInputOp = (n: NodeDef) => inputOp(n.getOp)
     val (tfGraph, inputs, originInputs) =
       TensorflowLoader.buildTFGraph(graph.asJava, endPoints, isInputOp)
+
+    checkAndRemoveQueueNode(tfGraph)
 
     val adjustedInputs = adjustInputNames(originInputs)
 
