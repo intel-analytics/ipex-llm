@@ -19,6 +19,7 @@ import java.io.{File => JFile}
 import java.nio.ByteOrder
 import java.util.UUID
 
+import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim.{DistriOptimizer, Trigger}
@@ -28,7 +29,7 @@ import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import org.tensorflow.framework.NodeDef
+import org.tensorflow.framework.{DataType, NodeDef, TensorProto, TensorShapeProto}
 
 import scala.collection.mutable
 import scala.sys.process._
@@ -114,7 +115,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     val resource = getClass().getClassLoader().getResource("tf")
     val path = processPath(resource.getPath()) + JFile.separator + "test.pb"
     val results = TensorflowLoader.parse(path)
-    val (tfGraph, _) = TensorflowLoader.buildTFGraph(results, Seq("output"))
+    val (tfGraph, _, _) = TensorflowLoader.buildTFGraph(results, Seq("output"))
     tfGraph.size should be(15)  // there's a dummy output
     val topSort = tfGraph.topologySort// It can do topology sort
     topSort.length should be(15)
@@ -139,7 +140,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     val resource = getClass().getClassLoader().getResource("tf")
     val path = processPath(resource.getPath()) + JFile.separator + "test.pb"
     val results = TensorflowLoader.parse(path)
-    val (tfGraph, _) = TensorflowLoader.buildTFGraph(results, Seq("output"),
+    val (tfGraph, _, _) = TensorflowLoader.buildTFGraph(results, Seq("output"),
       (node: NodeDef) => node.getName == "Tanh")
     tfGraph.size should be(9)  // there's a dummy output
     val topSort = tfGraph.topologySort// It can do topology sort
@@ -253,7 +254,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
 
     val optimizer = new DistriOptimizer[Float](container, dataSet, new MSECriterion[Float]())
       .setState(T("learningRate" -> 20.0))
-      .setEndWhen(Trigger.maxEpoch(5))
+      .setEndWhen(Trigger.maxEpoch(1))
     optimizer.optimize()
 
     val l1 = container.modules(1).asInstanceOf[Linear[Float]]
@@ -522,7 +523,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     val tfNodes = TensorflowLoader.parse(modelFile)
 
     // filter node for gradient computing
-    val (tfGraph, inputs) =
+    val (tfGraph, inputs, _) =
       TensorflowLoader.buildTFGraph(tfNodes, endPoints.map(_.split(":")(0)),
         (node: NodeDef) => node.getName == "input_node")
     val context =
@@ -621,55 +622,5 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     } else {
       path
     }
-  }
-
-  "static multicell " should "have the same inference result as tensorflow" in {
-    //    tfCheck()
-    System.setProperty("bigdl.enableNHWC", "false")
-    val modelName = "rnn_multicell"
-//val modelName = "rnn_lstm"
-    // Generate command and prepare the temp folder
-    val s = JFile.separator
-    val modelsFolder = processPath(getClass().getClassLoader().getResource("tf").getPath()) +
-      s + "models"
-    val modelScript = modelsFolder + s + s"$modelName.py"
-    val tmpLocation = java.io.File.createTempFile("tensorflowLoaderTest" + UUID.randomUUID(),
-      modelName)
-    tmpLocation.delete()
-    tmpLocation.mkdir()
-
-    require(runPython(s"$modelScript $tmpLocation"), "error when run the model script")
-
-    // Load the model and input/output tensors
-    val modelFile = tmpLocation + s + "model.pb"
-
-    val results = TensorflowLoader.parse(modelFile)
-    val (tfGraph, inputs) =
-      TensorflowLoader.buildTFGraph(results.subList(0, results.size()-1), Seq("output"))
-    val model = TensorflowLoader.buildBigDLModel(tfGraph, inputs,
-      Seq("output"),
-      ByteOrder.LITTLE_ENDIAN, "")
-    val input = TensorflowToBigDL.toTensor(results.get(0).getAttrMap.get("value").getTensor,
-      ByteOrder.LITTLE_ENDIAN).contiguous()
-    val tfResult = TensorflowToBigDL.toTensor(results.get(results.size()-1)
-      .getAttrMap.get("value").getTensor, ByteOrder.LITTLE_ENDIAN)
-    model.getParameters()._1.fill(0.5f)
-    val bigDLResult = model.forward(input)
-    tfResult.almostEqual(bigDLResult.toTensor, 1e-5)
-
-    val t = Recurrent()
-    val cells = Array(LSTM[Float](
-      10, 10, includeTime = false), LSTM[Float](
-      10, 10, includeTime = false)).asInstanceOf[Array[Cell[Float]]]
-    
-    t.add(MultiCell[Float](cells))
-    val t3 = t.forward(input)
-    t3.almostEqual(bigDLResult.toTensor, 1e-6)
-        
-    val t5 = Tensor[Float](4, 2, 10).rand()
-    
-    val t7 = t.backward(input, t5)
-    
-    val t6 = 0
   }
 }

@@ -289,6 +289,25 @@ class Table private[bigdl](
     new Table(newState)
   }
 
+  /**
+   * Return the elements of this table as a Seq.
+   * This method assumes the key of this table are all
+   * the integers between 1 to this.length(),
+   * the values are all Tensor[T]
+   */
+  def toSeq[T]: Seq[Tensor[T]] = {
+    for (i <- 0 until this.length()) yield {
+      try {
+        this(i + 1).asInstanceOf[Tensor[T]]
+      } catch {
+        case e: NoSuchElementException =>
+          throw new UnsupportedOperationException("toSeq requires the key of this table are" +
+            " all the integers between 1 to this.length()", e)
+      }
+
+    }
+  }
+
   override def toTensor[D]
   (implicit ev: TensorNumeric[D]): Tensor[D] =
     throw new IllegalArgumentException("Table cannot be cast to Tensor")
@@ -322,6 +341,18 @@ object T {
    */
   def array(data: Array[Any]): Table = {
     new Table(data)
+  }
+
+  /**
+   * Construct a table from an array
+   *
+   * The index + 1 will be used as the key
+   *
+   * @param data
+   * @return
+   */
+  def seq(data: Seq[Any]): Table = {
+    new Table(data.toArray)
   }
 
   /**

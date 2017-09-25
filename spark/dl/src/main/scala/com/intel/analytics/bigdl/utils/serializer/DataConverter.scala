@@ -121,33 +121,33 @@ object DataConverter extends DataConverter{
     attributeBuilder : AttrValue.Builder, value: Any, valueType : universe.Type = typePlaceHolder)
     (implicit ev: TensorNumeric[T]): Unit = {
     // to make it compatible with Java types
-    if (valueType == universe.typeOf[Int] ||
-      valueType == universe.typeOf[java.lang.Integer]) {
+    if (valueType =:= universe.typeOf[Int] ||
+      valueType =:= universe.typeOf[java.lang.Integer]) {
       attributeBuilder.setDataType(DataType.INT32)
       attributeBuilder.setInt32Value(value.asInstanceOf[Int])
-    } else if (valueType == universe.typeOf[Long] ||
-      valueType == universe.typeOf[java.lang.Long]) {
+    } else if (valueType =:= universe.typeOf[Long] ||
+      valueType =:= universe.typeOf[java.lang.Long]) {
       attributeBuilder.setDataType(DataType.INT64)
       attributeBuilder.setInt64Value(value.asInstanceOf[Long])
-    } else if (valueType == universe.typeOf[Float] ||
-      valueType == universe.typeOf[java.lang.Float]) {
+    } else if (valueType =:= universe.typeOf[Float] ||
+      valueType =:= universe.typeOf[java.lang.Float]) {
       attributeBuilder.setDataType(DataType.FLOAT)
       attributeBuilder.setFloatValue(value.asInstanceOf[Float])
-    } else if (valueType == universe.typeOf[Double] ||
-      valueType == universe.typeOf[java.lang.Double]) {
+    } else if (valueType =:= universe.typeOf[Double] ||
+      valueType =:= universe.typeOf[java.lang.Double]) {
       attributeBuilder.setDataType(DataType.DOUBLE)
       attributeBuilder.setDoubleValue(value.asInstanceOf[Double])
-    } else if (valueType == universe.typeOf[String] ||
-      valueType == universe.typeOf[java.lang.String]) {
+    } else if (valueType =:= universe.typeOf[String] ||
+      valueType =:= universe.typeOf[java.lang.String]) {
       attributeBuilder.setDataType(DataType.STRING)
       attributeBuilder.setStringValue(value.asInstanceOf[String])
-    } else if (valueType == universe.typeOf[Boolean] ||
-      valueType == universe.typeOf[java.lang.Boolean]) {
+    } else if (valueType =:= universe.typeOf[Boolean] ||
+      valueType =:= universe.typeOf[java.lang.Boolean]) {
       attributeBuilder.setDataType(DataType.BOOL )
       attributeBuilder.setBoolValue(value.asInstanceOf[Boolean])
-    } else if (valueType == universe.typeOf[VariableFormat]) {
+    } else if (valueType =:= universe.typeOf[VariableFormat]) {
       VariableFormatConverter.setAttributeValue(attributeBuilder, value)
-    } else if (valueType == universe.typeOf[InitializationMethod]) {
+    } else if (valueType =:= universe.typeOf[InitializationMethod]) {
       InitMethodConverter.setAttributeValue(attributeBuilder, value)
     } else if (valueType.toString == ModuleSerializer.regularizerType.toString) {
       RegularizerConverter.setAttributeValue(attributeBuilder, value)
@@ -169,8 +169,8 @@ object DataConverter extends DataConverter{
       ModuleConverter.setAttributeValue(attributeBuilder, value)
     } else if (value.isInstanceOf[mutable.Map[String, _ <: Any]]) {
       NameListConverter.setAttributeValue(attributeBuilder, value)
-    } else if (value.isInstanceOf[Array[_ <: Any]]) {
-      ArrayConverter.setAttributeValue(attributeBuilder, value)
+    } else if (valueType <:< universe.typeOf[Array[_ <: Any]] ) {
+      ArrayConverter.setAttributeValue(attributeBuilder, value, valueType)
     } else if (valueType == universe.typeOf[DataFormat]) {
       DataFormatConverter.setAttributeValue(attributeBuilder, value)
     } else {
@@ -513,20 +513,23 @@ object DataConverter extends DataConverter{
     (attribute: AttrValue)(implicit ev: TensorNumeric[T]): AnyRef = {
       val valueArray = attribute.getArrayValue
       val size = valueArray.getSize
+      if (size == 0) {
+        return null
+      }
       val listType = valueArray.getDatatype
       val arr = listType match {
         case DataType.INT32 =>
           valueArray.getI32List.asScala.toArray.map(_.intValue)
         case DataType.INT64 =>
-          valueArray.getI64List.asScala.toArray
+          valueArray.getI64List.asScala.toArray.map(_.longValue())
         case DataType.DOUBLE =>
-          valueArray.getDblList.asScala.toArray
+          valueArray.getDblList.asScala.toArray.map(_.doubleValue())
         case DataType.FLOAT =>
-          valueArray.getFltList.asScala.toArray
+          valueArray.getFltList.asScala.toArray.map(_.floatValue())
         case DataType.STRING =>
           valueArray.getStrList.asScala.toArray
         case DataType.BOOL =>
-          valueArray.getBooleanList.asScala.toArray
+          valueArray.getBooleanList.asScala.toArray.map(_.booleanValue())
         case DataType.REGULARIZER =>
           val regularizers = new Array[Regularizer[T]](size)
           val regList = valueArray.getRegularizerList.asScala
@@ -638,81 +641,106 @@ object DataConverter extends DataConverter{
       value: Any, valueType: universe.Type = null)(implicit ev: TensorNumeric[T]): Unit = {
       attributeBuilder.setDataType(DataType.ARRAY_VALUE)
       val arrayBuilder = ArrayValue.newBuilder
-      if (value.isInstanceOf[Array[Int]]) {
-        val int32s = value.asInstanceOf[Array[Int]]
+      arrayBuilder.setSize(0)
+      if (valueType =:= universe.typeOf[Array[Int]]) {
         arrayBuilder.setDatatype(DataType.INT32)
-        int32s.foreach(i32 => arrayBuilder.addI32(i32))
-        arrayBuilder.setSize(int32s.size)
-      } else if (value.isInstanceOf[Array[Long]]) {
-        val int64s = value.asInstanceOf[Array[Long]]
+        if (value != null) {
+          val int32s = value.asInstanceOf[Array[Int]]
+          int32s.foreach(i32 => arrayBuilder.addI32(i32))
+          arrayBuilder.setSize(int32s.size)
+        }
+      } else if (valueType =:= universe.typeOf[Array[Long]]) {
         arrayBuilder.setDatatype(DataType.INT64)
-        int64s.foreach(i64 => arrayBuilder.addI64(i64))
-        arrayBuilder.setSize(int64s.size)
-      } else if (value.isInstanceOf[Array[Float]]) {
-        val flts = value.asInstanceOf[Array[Float]]
+        if (value != null) {
+          val int64s = value.asInstanceOf[Array[Long]]
+          int64s.foreach(i64 => arrayBuilder.addI64(i64))
+          arrayBuilder.setSize(int64s.size)
+        }
+      } else if (valueType =:= universe.typeOf[Array[Float]]) {
         arrayBuilder.setDatatype(DataType.FLOAT)
-        flts.foreach(flt => arrayBuilder.addFlt(flt))
-        arrayBuilder.setSize(flts.size)
-      } else if (value.isInstanceOf[Array[Double]]) {
-        val dbs = value.asInstanceOf[Array[Double]]
+        if (value != null) {
+          val flts = value.asInstanceOf[Array[Float]]
+          flts.foreach(flt => arrayBuilder.addFlt(flt))
+          arrayBuilder.setSize(flts.size)
+        }
+      } else if (valueType =:= universe.typeOf[Array[Double]]) {
         arrayBuilder.setDatatype(DataType.DOUBLE)
-        dbs.foreach(dbl => arrayBuilder.addDbl(dbl))
-        arrayBuilder.setSize(dbs.size)
-      } else if (value.isInstanceOf[Array[Boolean]]) {
-        val bls = value.asInstanceOf[Array[Boolean]]
+        if (value != null) {
+          val dbs = value.asInstanceOf[Array[Double]]
+          dbs.foreach(dbl => arrayBuilder.addDbl(dbl))
+          arrayBuilder.setSize(dbs.size)
+        }
+      } else if (valueType =:= universe.typeOf[Array[Boolean]]) {
         arrayBuilder.setDatatype(DataType.BOOL)
-        bls.foreach(bl => arrayBuilder.addBoolean(bl))
-        arrayBuilder.setSize(bls.size)
-      } else if (value.isInstanceOf[Array[String]]) {
-        val strs = value.asInstanceOf[Array[String]]
+        if (value != null) {
+          val bls = value.asInstanceOf[Array[Boolean]]
+          bls.foreach(bl => arrayBuilder.addBoolean(bl))
+          arrayBuilder.setSize(bls.size)
+        }
+      } else if (valueType =:= universe.typeOf[Array[String]]) {
         arrayBuilder.setDatatype(DataType.STRING)
-        strs.foreach(str => arrayBuilder.addStr(str))
-        arrayBuilder.setSize(strs.size)
-      } else if (value.isInstanceOf[Array[Regularizer[T]]]) {
+        if (value != null) {
+          val strs = value.asInstanceOf[Array[String]]
+          strs.foreach(str => arrayBuilder.addStr(str))
+          arrayBuilder.setSize(strs.size)
+        }
+      } else if (valueType <:< universe.typeOf[Array[_ <: Regularizer[_ <: Any]]]) {
         arrayBuilder.setDatatype(DataType.REGULARIZER)
-        val regularizers = value.asInstanceOf[Array[Regularizer[T]]]
-        regularizers.foreach(reg => {
-          val attrValueBuilder = AttrValue.newBuilder
-          RegularizerConverter.setAttributeValue(attrValueBuilder, reg)
-          arrayBuilder.addRegularizer(attrValueBuilder.getRegularizerValue)
-        })
-        arrayBuilder.setSize(regularizers.size)
-      } else if (value.isInstanceOf[Array[Tensor[T]]]) {
+        if (value != null) {
+          val regularizers = value.asInstanceOf[Array[Regularizer[T]]]
+          regularizers.foreach(reg => {
+            val attrValueBuilder = AttrValue.newBuilder
+            RegularizerConverter.setAttributeValue(attrValueBuilder, reg)
+            arrayBuilder.addRegularizer(attrValueBuilder.getRegularizerValue)
+          })
+          arrayBuilder.setSize(regularizers.size)
+        }
+      } else if (valueType <:< universe.
+        typeOf[Array[_ <: Tensor[_ <: Any]]]) {
         arrayBuilder.setDatatype(DataType.TENSOR)
-        val tensors = value.asInstanceOf[Array[Tensor[T]]]
-        tensors.foreach(tensor => {
-          val attrValueBuilder = AttrValue.newBuilder
-          TensorConverter.setAttributeValue(attrValueBuilder, tensor)
-          arrayBuilder.addTensor(attrValueBuilder.getTensorValue)
-        })
-        arrayBuilder.setSize(tensors.size)
-      } else if (value.isInstanceOf[Array[VariableFormat]]) {
+        if (value != null) {
+          val tensors = value.asInstanceOf[Array[Tensor[T]]]
+          tensors.foreach(tensor => {
+            val attrValueBuilder = AttrValue.newBuilder
+            TensorConverter.setAttributeValue(attrValueBuilder, tensor)
+            arrayBuilder.addTensor(attrValueBuilder.getTensorValue)
+          })
+          arrayBuilder.setSize(tensors.size)
+        }
+      } else if (valueType =:= universe.typeOf[Array[VariableFormat]]) {
         arrayBuilder.setDatatype(DataType.VARIABLE_FORMAT)
-        val formats = value.asInstanceOf[Array[VariableFormat]]
-        formats.foreach(format => {
-          val attrValueBuilder = AttrValue.newBuilder
-          VariableFormatConverter.setAttributeValue(attrValueBuilder, format)
-          arrayBuilder.addVariableFormat(attrValueBuilder.getVariableFormatValue)
-        })
-        arrayBuilder.setSize(formats.size)
-      } else if (value.isInstanceOf[Array[InitializationMethod]]) {
+        if (value != null) {
+          val formats = value.asInstanceOf[Array[VariableFormat]]
+          formats.foreach(format => {
+            val attrValueBuilder = AttrValue.newBuilder
+            VariableFormatConverter.setAttributeValue(attrValueBuilder, format)
+            arrayBuilder.addVariableFormat(attrValueBuilder.getVariableFormatValue)
+          })
+          arrayBuilder.setSize(formats.size)
+        }
+      } else if (valueType =:= universe.typeOf[Array[InitializationMethod]]) {
         arrayBuilder.setDatatype(DataType.INITMETHOD)
-        val methods = value.asInstanceOf[Array[InitializationMethod]]
-        methods.foreach(method => {
-          val attrValueBuilder = AttrValue.newBuilder
-          InitMethodConverter.setAttributeValue(attrValueBuilder, method)
-          arrayBuilder.addInitMethod(attrValueBuilder.getInitMethodValue)
-        })
-        arrayBuilder.setSize(methods.size)
-      } else if (value.isInstanceOf[Array[_ <: AbstractModule[Activity, Activity, T]]]) {
+        if (value != null) {
+          val methods = value.asInstanceOf[Array[InitializationMethod]]
+          methods.foreach(method => {
+            val attrValueBuilder = AttrValue.newBuilder
+            InitMethodConverter.setAttributeValue(attrValueBuilder, method)
+            arrayBuilder.addInitMethod(attrValueBuilder.getInitMethodValue)
+          })
+          arrayBuilder.setSize(methods.size)
+        }
+      } else if (valueType <:< universe.
+        typeOf[Array[_ <: AbstractModule[Activity, Activity, _ <: Any]]]) {
         arrayBuilder.setDatatype(DataType.MODULE)
-        val modules = value.asInstanceOf[Array[_ <: AbstractModule[Activity, Activity, T]]]
-        modules.foreach(module => {
-          val attrValueBuilder = AttrValue.newBuilder
-          ModuleConverter.setAttributeValue(attrValueBuilder, module)
-          arrayBuilder.addBigDLModule(attrValueBuilder.getBigDLModuleValue)
-        })
-        arrayBuilder.setSize(modules.size)
+        if (value != null) {
+          val modules = value.asInstanceOf[Array[_ <: AbstractModule[Activity, Activity, T]]]
+          modules.foreach(module => {
+            val attrValueBuilder = AttrValue.newBuilder
+            ModuleConverter.setAttributeValue(attrValueBuilder, module)
+            arrayBuilder.addBigDLModule(attrValueBuilder.getBigDLModuleValue)
+          })
+          arrayBuilder.setSize(modules.size)
+        }
       } else if (value.isInstanceOf[Array[Map[String, Any]]]) {
         arrayBuilder.setDatatype(DataType.NAME_ATTR_LIST)
         value.asInstanceOf[Array[Map[String, Any]]].foreach(map => {
@@ -720,24 +748,28 @@ object DataConverter extends DataConverter{
           NameListConverter.setAttributeValue(attrValueBuilder, map)
           arrayBuilder.addNameAttrList(attrValueBuilder.getNameAttrListValue)
         })
-      } else if (value.isInstanceOf[Array[DataFormat]]) {
+      } else if (valueType =:= universe.typeOf[Array[DataFormat]]) {
         arrayBuilder.setDatatype(DataType.DATA_FORMAT)
-        val formats = value.asInstanceOf[Array[DataFormat]]
-        formats.foreach(format => {
-          val attrValueBuilder = AttrValue.newBuilder
-          DataFormatConverter.setAttributeValue(attrValueBuilder, format)
-          arrayBuilder.addDataFormat(attrValueBuilder.getDataFormatValue)
-        })
-        arrayBuilder.setSize(formats.size)
+        if (value != null) {
+          val formats = value.asInstanceOf[Array[DataFormat]]
+          formats.foreach(format => {
+            val attrValueBuilder = AttrValue.newBuilder
+            DataFormatConverter.setAttributeValue(attrValueBuilder, format)
+            arrayBuilder.addDataFormat(attrValueBuilder.getDataFormatValue)
+          })
+          arrayBuilder.setSize(formats.size)
+        }
       } else {
         arrayBuilder.setDatatype(DataType.CUSTOM)
-        val customValues = value.asInstanceOf[Array[Any]]
-        customValues.foreach(custom => {
-          val attrValueBuilder = AttrValue.newBuilder
-          CustomConverterDelegator.setAttributeValue(attrValueBuilder, custom)
-          arrayBuilder.addCustom(attrValueBuilder.getCustomValue)
-        })
-        arrayBuilder.setSize(customValues.size)
+        if (value != null) {
+          val customValues = value.asInstanceOf[Array[Any]]
+          customValues.foreach(custom => {
+            val attrValueBuilder = AttrValue.newBuilder
+            CustomConverterDelegator.setAttributeValue(attrValueBuilder, custom)
+            arrayBuilder.addCustom(attrValueBuilder.getCustomValue)
+          })
+          arrayBuilder.setSize(customValues.size)
+        }
       }
       attributeBuilder.setArrayValue(arrayBuilder.build)
     }
