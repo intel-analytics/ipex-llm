@@ -95,7 +95,7 @@ class ColorJitter extends Transformer[LabeledBGRImage, LabeledBGRImage] {
     val order = Tensor.randperm[Float](3)
     var i = 1
     while (i <= order.size(1)) {
-      val idx = order(i).valueAt(1).toInt
+      val idx = order(i).value().toInt
       ts(idx)(input)
       i += 1
     }

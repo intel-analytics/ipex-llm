@@ -1017,6 +1017,15 @@ object Tensor {
   }
 
   /**
+   * Create a scalar tensor of this value
+   * @return the created scalar tensor
+   */
+  def scalar[T: ClassTag](value: T)(
+    implicit ev: TensorNumeric[T]): Tensor[T] = {
+    Tensor[T](Array(value), Array[Int]())
+  }
+
+  /**
    * This is equivalent to DenseTensor.randperm[T](size)
    *
    * @param size

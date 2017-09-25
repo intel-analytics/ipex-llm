@@ -1716,12 +1716,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                samples: JavaRDD[Sample],
                optMethod: OptimMethod[T],
                criterion: Criterion[T],
-               batchSize: Int, endWhen: Trigger): AbstractModule[Activity, Activity, T] = {
+               batchSize: Int,
+               endWhen: Trigger): AbstractModule[Activity, Activity, T] = {
     val nodeList = parse(modelPath)
 
     val context =
       new mutable.HashMap[String, (Tensor[T], Tensor[T], Option[Seq[(Int, Int)]])]()
-    val session = new BigDLSessionImpl[T](nodeList.asScala, context)
+    val session = new BigDLSessionImpl[T](nodeList.asScala, samples.sparkContext, context)
     val dataset = batching(samples, batchSize)
 
     val model = session.train(Seq(output), dataset,
