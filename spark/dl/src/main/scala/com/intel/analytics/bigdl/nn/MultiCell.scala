@@ -42,6 +42,9 @@ class MultiCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorNume
   override var cell: AbstractModule[Activity, Activity, T] = buildModel()
 
   var states: Array[Activity] = null
+  var gradStates: Array[Activity] = null
+  
+  var state0: Activity = null
   
   def buildModel(): Sequential[T] = {
     val seq = Sequential()
@@ -59,6 +62,7 @@ class MultiCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorNume
     var i = 0
     val result = T()
     result(inputDim) = input(inputDim)
+    state0 = states.head
     
     while (i < cells.length) {
       result(hidDim) = states(i)
@@ -72,6 +76,7 @@ class MultiCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorNume
         result(inputDim) = cells(i).preTopology.forward(result(inputDim)).toTensor[T]
       }
       cells(i).forward(result).toTable
+      // propogate state for next time step
       states(i) = cells(i).output.toTable(hidDim)
       result(inputDim) = cells(i).output.toTable(inputDim)
       i += 1
@@ -149,9 +154,10 @@ class MultiCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorNume
         cells(i - 1).preTopology.forward(input0)
       } else input0
         
-      nextInput(hidDim) = states(i - 1)
-      error(hidDim) = states(i - 1)
+      nextInput(hidDim) = if (i == 1) state0 else states(i - 2)
+      error(hidDim) = gradStates(i - 1)
       error = cells(i - 1).backward(nextInput, error)
+      gradStates(i - 1) = error(hidDim)
 
       if (cells(i - 1).preTopology != null) {
         error(inputDim) = cells(i - 1).preTopology.backward(input0,

@@ -64,7 +64,7 @@ class MultiCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
     }
   }
 
-  "A MultiCell " should "generate correct output" in {
+  "A MultiCell " should "generate correct output with convlstm" in {
     val hiddenSize = 3
     val inputSize = 3
     val seqLength = 2
@@ -91,7 +91,6 @@ class MultiCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val gradOutput = Tensor[Double](batchSize, seqLength, inputSize, 3, 3).rand
     val output = model.forward(input).toTensor[Double]
     val gradInput = model.backward(input, gradOutput).toTensor[Double]
-    val gradient = model.getParameters()._2
 
     val model2 = Sequential[Double]()
       .add(Recurrent[Double]().add(ConvLSTMPeephole[Double](
@@ -108,18 +107,22 @@ class MultiCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     val output2 = model2.forward(input).toTensor[Double]
     val gradInput2 = model2.backward(input, gradOutput).toTensor[Double]
-    val gradient2 = model2.getParameters()._2
 
     output.map(output2, (v1, v2) => {
       assert(abs(v1 - v2) < 1e-6)
       v1
     })
+
+    gradInput.map(gradInput2, (v1, v2) => {
+      assert(abs(v1 - v2) < 1e-6)
+      v1
+    })
   }
 
-  "A MultiCell " should "generate correct output2" in {
+  "A MultiCell " should "generate correct output with lstm" in {
     val hiddenSize = 10
     val inputSize = 10
-    val seqLength = 2
+    val seqLength = 1
     val batchSize = 2
     val rec = Recurrent[Double]()
     val cells = Array(LSTM[Double](
@@ -138,8 +141,7 @@ class MultiCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val gradOutput = Tensor[Double](batchSize, seqLength, hiddenSize).rand
     val output = model.forward(input).toTensor[Double]
     val gradInput = model.backward(input, gradOutput).toTensor[Double]
-    val gradient = model.getParameters()._2
-
+    
     val model2 = Sequential[Double]()
       .add(Recurrent[Double]().add(LSTM[Double](
         inputSize,
@@ -151,9 +153,13 @@ class MultiCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     val output2 = model2.forward(input).toTensor[Double]
     val gradInput2 = model2.backward(input, gradOutput).toTensor[Double]
-    val gradient2 = model2.getParameters()._2
-
+    
     output.map(output2, (v1, v2) => {
+      assert(abs(v1 - v2) < 1e-6)
+      v1
+    })
+
+    gradInput.map(gradInput2, (v1, v2) => {
       assert(abs(v1 - v2) < 1e-6)
       v1
     })
