@@ -50,7 +50,7 @@ class Predictor[T: ClassTag] private[optim](
   }
 
   def predict(dataSet: RDD[Sample[T]], batchSize: Int = -1,
-              repeatMemory: Boolean = false): RDD[Activity] = {
+              shareBuffer: Boolean = false): RDD[Activity] = {
     val modelBroad = ModelBroadcast[T].broadcast(dataSet.sparkContext, model.evaluate())
     val partitionNum = dataSet.partitions.length
     val totalBatch = if (batchSize > 0) {
@@ -62,7 +62,7 @@ class Predictor[T: ClassTag] private[optim](
     }
     val otherBroad = dataSet.sparkContext.broadcast(SampleToMiniBatch(
       batchSize = totalBatch,
-      partitionNum = Some(partitionNum)), repeatMemory)
+      partitionNum = Some(partitionNum)), shareBuffer)
     dataSet.mapPartitions { partition =>
       val localModel = modelBroad.value()
       val localTransformer = otherBroad.value._1.cloneTransformer()
@@ -70,7 +70,7 @@ class Predictor[T: ClassTag] private[optim](
       val miniBatch = localTransformer(partition)
       miniBatch.flatMap( batch => {
         val output = localModel.forward(batch.getInput).toTensor[T]
-        if (repeatMemory) {
+        if (shareBuffer) {
           output.split(1)
         } else {
           output.clone().split(1)

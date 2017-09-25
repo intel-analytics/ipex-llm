@@ -480,12 +480,12 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @param dataset dataset for prediction
    * @param batchSize total batchSize for all partitions.
    *                  if -1, default is 4 * partitionNumber of datatset
-   * @param repeatMemory whether to use same memory for each batch predict results
+   * @param shareBuffer whether to share same memory for each batch predict results
    */
   def predict(dataset: RDD[Sample[T]],
               batchSize: Int = -1,
-              repeatMemory: Boolean = false): RDD[Activity] = {
-    Predictor(this).predict(dataset, batchSize, repeatMemory)
+              shareBuffer: Boolean = false): RDD[Activity] = {
+    Predictor(this).predict(dataset, batchSize, shareBuffer)
   }
 
   /**
