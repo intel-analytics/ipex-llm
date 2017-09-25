@@ -97,7 +97,6 @@ object ModuleLoader {
           copiedParameterTable.get(name).get.asInstanceOf[Table])
       }
     })
-    definition
   }
 
   private def copyParams[T : ClassTag](params : Table, copyParams : Table) : Unit = {
