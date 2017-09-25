@@ -169,7 +169,7 @@ class Linear[T: ClassTag](
 
       if (withBias && scaleB != 0) {
         if (zeroGradFlag) {
-          gradBias.addmv(ev.fromType[Double](0.0),
+          gradBias.addmv(ev.zero,
             ev.fromType[Double](scaleB), gradOutput.t, addBuffer)
         } else {
           gradBias.addmv(ev.fromType[Double](scaleB), gradOutput.t, addBuffer)
