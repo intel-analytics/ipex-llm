@@ -143,7 +143,7 @@ class Linear[T: ClassTag](
     if (input.dim() == 1) {
       if (scaleW != 0) {
         if (zeroGradFlag) {
-          gradWeight.addr(ev.fromType[Double](0.0), gradOutput, ev.fromType[Double](scaleW), input)
+          gradWeight.addr(ev.zero, gradOutput, ev.fromType[Double](scaleW), input)
         } else {
           gradWeight.addr(ev.fromType[Double](scaleW), gradOutput, input)
         }
@@ -160,7 +160,7 @@ class Linear[T: ClassTag](
     else if (input.dim() == 2) {
       if (scaleW != 0) {
         if (zeroGradFlag) {
-          gradWeight.addmm(ev.fromType[Double](0.0),
+          gradWeight.addmm(ev.zero,
             ev.fromType[Double](scaleW), gradOutput.t, input)
         } else {
           gradWeight.addmm(ev.fromType[Double](scaleW), gradOutput.t, input)

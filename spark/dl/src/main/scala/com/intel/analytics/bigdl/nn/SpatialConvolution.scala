@@ -474,13 +474,13 @@ class SpatialConvolution[T: ClassTag](
         nOutputPlane * nInputPlane * kernelH * kernelW / nGroup).t
       val grad = gradWeight.view(nOutputPlane * nInputPlane * kernelH * kernelW / nGroup)
       val beta = if (zeroGradFlag) {
-        ev.fromType(0.0)
+        ev.zero
       } else {
-        ev.fromType(1.0)
+        ev.one
       }
-      grad.addmv(beta, ev.fromType(1.0), gradView, onesBatch)
+      grad.addmv(beta, ev.one, gradView, onesBatch)
       if (withBias) {
-        gradBias.addmv(beta, ev.fromType(1.0), gradientBiasMT.t, onesBatch)
+        gradBias.addmv(beta, ev.one, gradientBiasMT.t, onesBatch)
       }
     }
 
@@ -738,11 +738,6 @@ class SpatialConvolution[T: ClassTag](
         val sWDouble = ev.toType[Double](scaleW)
         val sBDouble = ev.toType[Double](scaleB)
         val gradBDouble = gradBias.asInstanceOf[Tensor[Double]]
-        val update = if (zeroGradFlag) {
-          (_: Double, y: Double) => y
-        } else {
-          (x: Double, y: Double) => x + y
-        }
         format match {
           case DataFormat.NCHW =>
             val outChannel = gradOutput.size(1)
@@ -757,18 +752,32 @@ class SpatialConvolution[T: ClassTag](
             }
             if (withBias && sBDouble != 0) {
               var i = 0
-              while (i < gradBias.size(1)) {
-                var sum = 0.0
-                val data = gradOutput2d.storage().array()
-                val offset = gradOutput2d.storageOffset() - 1 + i * gradOutput2d.stride(1)
-                var k = 0
-                while (k < gradOutput2d.size(2)) {
-                  sum += data(k + offset)
-                  k += 1
+              if (zeroGradFlag) {
+                while (i < gradBias.size(1)) {
+                  var sum = 0.0
+                  val data = gradOutput2d.storage().array()
+                  val offset = gradOutput2d.storageOffset() - 1 + i * gradOutput2d.stride(1)
+                  var k = 0
+                  while (k < gradOutput2d.size(2)) {
+                    sum += data(k + offset)
+                    k += 1
+                  }
+                  gradBDouble.setValue(i + 1, sBDouble * sum)
+                  i += 1
                 }
-                gradBDouble.setValue(i + 1,
-                  update(gradBDouble.valueAt(i + 1), (sBDouble * sum)))
-                i += 1
+              } else {
+                while (i < gradBias.size(1)) {
+                  var sum = 0.0
+                  val data = gradOutput2d.storage().array()
+                  val offset = gradOutput2d.storageOffset() - 1 + i * gradOutput2d.stride(1)
+                  var k = 0
+                  while (k < gradOutput2d.size(2)) {
+                    sum += data(k + offset)
+                    k += 1
+                  }
+                  gradBDouble.setValue(i + 1, gradBDouble.valueAt(i + 1) + (sBDouble * sum))
+                  i += 1
+                }
               }
             }
           case DataFormat.NHWC =>
@@ -790,20 +799,26 @@ class SpatialConvolution[T: ClassTag](
               val biasData = gradBDouble.storage().array()
               val biasOffset = gradBDouble.storageOffset() - 1
 
-              while (i < gradODouble.size(1)) {
-                val gradOffset = gradOutput2d.storageOffset() - 1 + i * gradOutput2d.stride(1)
-                var j = 0
-                while (j < gradOutput2d.size(2)) {
-                  biasData(biasOffset + j) = update(biasData(biasOffset + j),
-                    gradData(gradOffset + j))
-                  if (zeroGradFlag) {
+              if (zeroGradFlag) {
+                while (i < gradODouble.size(1)) {
+                  val gradOffset = gradOutput2d.storageOffset() - 1 + i * gradOutput2d.stride(1)
+                  var j = 0
+                  while (j < gradOutput2d.size(2)) {
                     biasData(biasOffset + j) = gradData(gradOffset + j)
-                  } else {
-                    biasData(biasOffset + j) += gradData(gradOffset + j)
+                    j = j + 1
                   }
-                  j = j + 1
+                  i = i + 1
                 }
-                i = i + 1
+              } else {
+                while (i < gradODouble.size(1)) {
+                  val gradOffset = gradOutput2d.storageOffset() - 1 + i * gradOutput2d.stride(1)
+                  var j = 0
+                  while (j < gradOutput2d.size(2)) {
+                    biasData(biasOffset + j) += gradData(gradOffset + j)
+                    j = j + 1
+                  }
+                  i = i + 1
+                }
               }
             }
         }
@@ -815,11 +830,6 @@ class SpatialConvolution[T: ClassTag](
         val sWFloat = ev.toType[Float](scaleW)
         val sBFloat = ev.toType[Float](scaleB)
         val gradBFloat = gradBias.asInstanceOf[Tensor[Float]]
-        val update = if (zeroGradFlag) {
-          (_: Float, y: Float) => y
-        } else {
-          (x: Float, y: Float) => x + y
-        }
         format match {
           case DataFormat.NCHW =>
             val outChannel = gradOutput.size(1)
@@ -835,18 +845,32 @@ class SpatialConvolution[T: ClassTag](
 
             if (withBias && sBFloat != 0) {
               var i = 0
-              while (i < gradBias.size(1)) {
-                var sum = 0.0f
-                val data = gradOutput2d.storage().array()
-                val offset = gradOutput2d.storageOffset() - 1 + i * gradOutput2d.stride(1)
-                var k = 0
-                while (k < gradOutput2d.size(2)) {
-                  sum += data(k + offset)
-                  k += 1
+              if (zeroGradFlag) {
+                while (i < gradBias.size(1)) {
+                  var sum = 0.0f
+                  val data = gradOutput2d.storage().array()
+                  val offset = gradOutput2d.storageOffset() - 1 + i * gradOutput2d.stride(1)
+                  var k = 0
+                  while (k < gradOutput2d.size(2)) {
+                    sum += data(k + offset)
+                    k += 1
+                  }
+                  gradBFloat.setValue(i + 1, (sBFloat * sum))
+                  i += 1
                 }
-                gradBFloat.setValue(i + 1,
-                  update(gradBFloat.valueAt(i + 1), (sBFloat * sum)))
-                i += 1
+              } else {
+                while (i < gradBias.size(1)) {
+                  var sum = 0.0f
+                  val data = gradOutput2d.storage().array()
+                  val offset = gradOutput2d.storageOffset() - 1 + i * gradOutput2d.stride(1)
+                  var k = 0
+                  while (k < gradOutput2d.size(2)) {
+                    sum += data(k + offset)
+                    k += 1
+                  }
+                  gradBFloat.setValue(i + 1, gradBFloat.valueAt(i + 1) + (sBFloat * sum))
+                  i += 1
+                }
               }
             }
           case DataFormat.NHWC =>
@@ -868,15 +892,26 @@ class SpatialConvolution[T: ClassTag](
               val biasData = gradBFloat.storage().array()
               val biasOffset = gradBFloat.storageOffset() - 1
 
-              while (i < gradOFloat.size(1)) {
-                val gradOffset = gradOutput2d.storageOffset() - 1 + i * gradOutput2d.stride(1)
-                var j = 0
-                while (j < gradOutput2d.size(2)) {
-                  biasData(biasOffset + j) = update(biasData(biasOffset + j),
-                    gradData(gradOffset + j))
-                  j = j + 1
+              if (zeroGradFlag) {
+                while (i < gradOFloat.size(1)) {
+                  val gradOffset = gradOutput2d.storageOffset() - 1 + i * gradOutput2d.stride(1)
+                  var j = 0
+                  while (j < gradOutput2d.size(2)) {
+                    biasData(biasOffset + j) = gradData(gradOffset + j)
+                    j = j + 1
+                  }
+                  i = i + 1
                 }
-                i = i + 1
+              } else {
+                while (i < gradOFloat.size(1)) {
+                  val gradOffset = gradOutput2d.storageOffset() - 1 + i * gradOutput2d.stride(1)
+                  var j = 0
+                  while (j < gradOutput2d.size(2)) {
+                    biasData(biasOffset + j) += gradData(gradOffset + j)
+                    j = j + 1
+                  }
+                  i = i + 1
+                }
               }
             }
         }
