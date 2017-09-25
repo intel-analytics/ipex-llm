@@ -73,7 +73,6 @@ class RnnCell[T : ClassTag] (
         withBias = isInputWithBias)
       .asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
-    
 
   override var cell: AbstractModule[Activity, Activity, T] = buildGraph
 

@@ -128,7 +128,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
    */
   private def initHidden(sizes: Array[Int]): Unit = {
     val batchSize = sizes(batchDim - 1)
-    
+
     val imageSize = sizes.drop(3)
     if (hidden == null) {
       cells.clear()
@@ -162,7 +162,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
       i += 1
     }
   }
-  
+
   private def cloneCells(): Unit = {
     var t = cells.length
     if (t < times) {
@@ -175,20 +175,6 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
         t += 1
       }
       share(cells)
-    }
-  }
-
-  /**
-   * set the cells' output and gradInput to recurrent's output and gradInput
-   * to decrease the copy expense.
-   * @param src
-   * @param dst
-   */
-  private def copy(src: Array[Tensor[T]], dst: Tensor[T], offset: Int): Unit = {
-    var t = 1
-    while ((t + offset) <= times) {
-      dst.select(timeDim, t + offset).copy(src(t - 1))
-      t += 1
     }
   }
 
@@ -259,7 +245,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     val outputSize = input.size()
     outputSize(2) = hiddenSize
     output.resize(outputSize)
-    
+
     /**
      * currentInput forms a T() type. It contains two elements, hidden and input.
      * Each time it will feed the cell with T(hidden, input) (or T(input, hidden) depends on
@@ -273,7 +259,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
       // Clone N modules along the sequence dimension.
       initHidden(outputSize)
       cloneCells()
-      
+
       currentInput(hidDim) = if (initState != null) initState
       else hidden
 
@@ -289,7 +275,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
         cells += topology
         states = new Array[Activity](topology.asInstanceOf[MultiCell[T]].cells.length)
       }
-      
+
       if (gradStates == null) {
         gradStates = new Array[Activity](topology.asInstanceOf[MultiCell[T]].cells.length)
       }
@@ -340,15 +326,15 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
     currentGradOutput(hidDim) = gradHidden
     /**
-      * Since we clone module along the time dimension, the output of each
-      * iteration have been recorded by the cloned modules. Thus, we can
-      * reuse these outputs during the backward operations by copying the
-      * outputs to _input variable.
-      *
-      * The output of Cell(i-1) should be one of the elements fed to the inputs
-      * of Cell(i)
-      * The first module in the cells array accepts zero hidden parameter.
-      */
+     * Since we clone module along the time dimension, the output of each
+     * iteration have been recorded by the cloned modules. Thus, we can
+     * reuse these outputs during the backward operations by copying the
+     * outputs to _input variable.
+     *
+     * The output of Cell(i-1) should be one of the elements fed to the inputs
+     * of Cell(i)
+     * The first module in the cells array accepts zero hidden parameter.
+     */
 
     var i = times
     while (i >= 1) {
@@ -374,9 +360,9 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
 
     gradInput = if (preTopology != null) {
       /**
-        * if preTopology is Sequential, it has not created gradInput.
-        * Thus, it needs to create a new Tensor.
-        */
+       * if preTopology is Sequential, it has not created gradInput.
+       * Thus, it needs to create a new Tensor.
+       */
       if (preTopology.gradInput == null) {
         preTopology.gradInput = Tensor[T]()
       }
@@ -405,36 +391,23 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
 
   override def backward(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     val st = System.nanoTime
-    currentGradOutput(hidDim) = gradHidden
     var i = times
 
-    if (!topology.isInstanceOf[MultiCell[T]]) {
-      while (i >= 1) {
-        currentGradOutput(inputDim) = Recurrent.selectCopy(gradOutput, i, gradBuffer)
-        _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
-        else if (initState == null) hidden else initState
-        _input(inputDim) = Recurrent.selectCopy(outputCell, i, outputBuffer)
-        if (i == 1) {
-          cells(i - 1).regluarized(true)
-        } else {
-          cells(i - 1).regluarized(false)
-        }
-        cells(i - 1).backward(_input, currentGradOutput)
-        currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
-        i -= 1
+    while (i >= 1) {
+      currentGradOutput(inputDim) = Recurrent.selectCopy(gradOutput, i, gradBuffer)
+      currentGradOutput(hidDim) = if (i == times) gradHidden
+        else cells(i).gradInput.toTable(hidDim)
+
+      _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
+      else if (initState == null) hidden else initState
+      _input(inputDim) = Recurrent.selectCopy(outputCell, i, outputBuffer)
+      if (i == 1) {
+        cells(i - 1).regluarized(true)
+      } else {
+        cells(i - 1).regluarized(false)
       }
-    } else {
-      while (i >= 1) {
-        currentGradOutput(inputDim) = Recurrent.selectCopy(gradOutput, i, gradBuffer)
-        _input(inputDim) = Recurrent.selectCopy(outputCell, i, outputBuffer)
-        if (i == 1) {
-          cells(i - 1).regluarized(true)
-        } else {
-          cells(i - 1).regluarized(false)
-        }
-        cells(i - 1).backward(_input, currentGradOutput)
-        i -= 1
-      }
+      cells(i - 1).backward(_input, currentGradOutput)
+      i -= 1
     }
 
     gradInput = if (preTopology != null) {
