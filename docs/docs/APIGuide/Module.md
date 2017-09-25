@@ -1,7 +1,7 @@
 ---
 ## Model Save
 
-BigDL supports saving models to local file system, HDFS and AWS S3. After a model is created, you can use `save` on created model to save it. Below example shows how to save a model. 
+BigDL supports saving models to local file system, HDFS and AWS S3. After a model is created, you can use `save` on created model to save it. Below example shows how to save a model.
 
 **Scala example**
 ```scala
@@ -56,10 +56,10 @@ model.evaluate(dataset,vMethods,batchSize = None)
 ```
 **Python**
 ```python
-model.test(val_rdd, batch_size, val_methods)
+model.evaluate(val_rdd, batch_size, val_methods)
 ```
 
-Use `evaluate` on the model for evaluation. The parameter `dataset` (Scala) or `val_rdd` (Python) in is the validation dataset, and `vMethods` (Scala) or `val_methods`(Python) is an array of ValidationMethods. Refer to [Metrics](Metrics.md) for the list of defined ValidationMethods. 
+Use `evaluate` on the model for evaluation. The parameter `dataset` (Scala) or `val_rdd` (Python) in is the validation dataset, and `vMethods` (Scala) or `val_methods`(Python) is an array of ValidationMethods. Refer to [Metrics](Metrics.md) for the list of defined ValidationMethods.
 
 **Scala example**
 ```scala
@@ -94,7 +94,7 @@ testSet = sc.parallelize(samples)
 
 //train a model or load an existing model...
 //model = ...
-evaluateResult = model.test(testSet, 1, [Top1Accuracy])
+evaluateResult = model.evaluate(testSet, 1, [Top1Accuracy])
 ```
 
 
@@ -110,7 +110,7 @@ model.predictClass(dataset)
 model.predict(data_rdd)
 model.predict_class(data_rdd)
 ```
-Use `predict` or `predictClass` or `predict_class` on model for Prediction. `predict` returns return the probability distribution of each class, and `predictClass`/`predict_class` returns the predict label. They both accepts the test dataset as parameter. 
+Use `predict` or `predictClass` or `predict_class` on model for Prediction. `predict` returns return the probability distribution of each class, and `predictClass`/`predict_class` returns the predict label. They both accepts the test dataset as parameter.
 
 **Scala example**
 ```scala
@@ -127,7 +127,7 @@ val predictSample = Sample(feature, label)
 val predictSet = sc.parallelize(Seq(predictSample))
 
 //train a new model or load an existing model
-//val model=... 
+//val model=...
 val preductResult = model.predict(predictSet)
 ```
 
