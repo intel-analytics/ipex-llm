@@ -24,7 +24,7 @@ class RankSpec extends FlatSpec with Matchers {
     val input =
         Tensor[Float](T(1f, 2f, 2f))
 
-    val expectOutput = Tensor[Int](T(1))
+    val expectOutput = Tensor.scalar(1)
 
     val output = Rank[Int]().forward(input)
     output should be(expectOutput)
@@ -34,7 +34,7 @@ class RankSpec extends FlatSpec with Matchers {
     val input =
         Tensor[Boolean](T(true, true, false))
 
-    val expectOutput = Tensor[Int](T(1))
+    val expectOutput = Tensor.scalar(1)
 
     val output = Rank[Int]().forward(input)
     output should be(expectOutput)
@@ -44,7 +44,7 @@ class RankSpec extends FlatSpec with Matchers {
     val input =
         Tensor[Double](T(2.0, 3.0, 2.0))
 
-    val expectOutput = Tensor[Int](T(1))
+    val expectOutput = Tensor.scalar(1)
 
     val output = Rank[Int]().forward(input)
     output should be(expectOutput)
@@ -54,7 +54,7 @@ class RankSpec extends FlatSpec with Matchers {
     val input =
         Tensor[Char](T('b', 'c', 'a'))
 
-    val expectOutput = Tensor[Int](T(1))
+    val expectOutput = Tensor.scalar(1)
 
     val output = Rank[Int]().forward(input)
     output should be(expectOutput)
@@ -64,7 +64,7 @@ class RankSpec extends FlatSpec with Matchers {
     val input =
         Tensor[Long](T(2L, 3L, 2L))
 
-    val expectOutput = Tensor[Int](T(1))
+    val expectOutput = Tensor.scalar(1)
 
     val output = Rank[Int]().forward(input)
     output should be(expectOutput)
@@ -74,7 +74,7 @@ class RankSpec extends FlatSpec with Matchers {
     val input =
         Tensor[String](T("aaa", "ccc", "aaa"))
 
-    val expectOutput = Tensor[Int](T(1))
+    val expectOutput = Tensor.scalar(1)
 
     val output = Rank[Int]().forward(input)
     output should be(expectOutput)
@@ -84,7 +84,7 @@ class RankSpec extends FlatSpec with Matchers {
     val input =
         Tensor[Short](T(2: Short, 3: Short, 2: Short))
 
-    val expectOutput = Tensor[Int](T(1))
+    val expectOutput = Tensor.scalar(1)
 
     val output = Rank[Int]().forward(input)
     output should be(expectOutput)
@@ -94,7 +94,7 @@ class RankSpec extends FlatSpec with Matchers {
     val input =
         Tensor[Int](T(2, 3, 2))
 
-    val expectOutput = Tensor[Int](T(1))
+    val expectOutput = Tensor.scalar(1)
 
     val output = Rank[Int]().forward(input)
     output should be(expectOutput)
