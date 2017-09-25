@@ -73,14 +73,6 @@ You can run BigDL examples using the `run.example.sh` script in home directory o
 
 After the training, you can check the log files and generated models in the home directory (e.g., `/home/ubuntu/`).  
 
----
-## **Run BigDL Notebook**
- 
-After launching the AWS Marketplace AMI, please log on to the instance and run the "notebook.sh" script to start Jupyter Notebook.
- 
-```bash
-  ./notebook.sh
-```
 
 ---
 ## **Run the "inception-v1" example**
