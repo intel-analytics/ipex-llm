@@ -91,6 +91,31 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     this
   }
 
+  override def cast[@specialized(Long, Int, Short, Double, Float) D: ClassTag]
+  (castTensor: Tensor[D])
+    (implicit ev1: TensorNumeric[D]): Tensor[D] = {
+    castTensor.getType() match {
+      case FloatType =>
+        castTensor.applyFun[T](this.asInstanceOf[Tensor[T]],
+          x => ev.toType[Float](x).asInstanceOf[D])
+      case DoubleType =>
+        castTensor.applyFun[T](this.asInstanceOf[Tensor[T]],
+          x => ev.toType[Double](x).asInstanceOf[D])
+      case LongType =>
+        castTensor.applyFun[T](this.asInstanceOf[Tensor[T]],
+          x => ev.toType[Long](x).asInstanceOf[D])
+      case IntType =>
+        castTensor.applyFun[T](this.asInstanceOf[Tensor[T]],
+          x => ev.toType[Int](x).asInstanceOf[D])
+      case ShortType =>
+        castTensor.applyFun[T](this.asInstanceOf[Tensor[T]],
+          x => ev.toType[Short](x).asInstanceOf[D])
+      case _ =>
+        throw new RuntimeException("Unspported type")
+    }
+    castTensor
+  }
+
   override def resize(sizes: Array[Int], strides: Array[Int]): Tensor[T] = {
     DenseTensor.resize(this, sizes, strides)
     this
@@ -411,12 +436,14 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   def applyFun[A: ClassTag](
     t: Tensor[A],
     func: (A) => T): Tensor[T] = {
-    def func2(
-      data1: Array[A], index1: Int,
-      data2: Array[T], index2: Int): Unit = {
-      data2(index2) = func(data1(index1))
+    val func2 = new TensorDiffTypeFunc4[A, T] {
+      override def apply(
+        data1: Array[A], index1: Int,
+        data2: Array[T], index2: Int): Unit = {
+        data2(index2) = func(data1(index1))
+      }
     }
-    DenseTensorApply.apply1(t, this, func2)
+    DenseTensorApply.apply1[A, T](t, this, func2)
     this
   }
 
@@ -880,7 +907,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     val elementsPerRow = index.size(dim)
     // TODO: the performance of contiguous tensor should be optimize
     DenseTensorDimApply.dimApply3[T](this, src, index, dim, (tdata, toffset, tstride,
-       tsize, vdata, voffset, vstride, vsize, idata, ioffset, istride, isize) => {
+      tsize, vdata, voffset, vstride, vsize, idata, ioffset, istride, isize) => {
       var i = 0
       while (i < elementsPerRow) {
         val idx = ev.toType[Int](idata(ioffset + i * istride))
@@ -969,7 +996,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     } else {
       val func = new TensorFunc6[T] {
         override def apply (data: Array[T], offset: Int, data1: Array[T],
-                           offset1: Int, data2: Array[T], offset2: Int): Unit = {
+          offset1: Int, data2: Array[T], offset2: Int): Unit = {
           data(offset1) = ev.plus(data1(offset1), data2(offset2))
         }
       }
@@ -980,7 +1007,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
 
   // Puts the result of x + value * y in current tensor
   override def add(x: Tensor[T], value: T, y: Tensor[T]): Tensor[T] =
-    DenseTensorMath.cadd(this, x, value, y)
+  DenseTensorMath.cadd(this, x, value, y)
 
   override def add(value: T): Tensor[T] = {
     if (this.isContiguous()) {
@@ -1021,7 +1048,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     } else {
       val func = new TensorFunc6[T] {
         override def apply (data: Array[T], offset: Int, data1: Array[T],
-                           offset1: Int, data2: Array[T], offset2: Int): Unit = {
+          offset1: Int, data2: Array[T], offset2: Int): Unit = {
           data(offset) = ev.minus(data1(offset1), data2(offset2))
         }
       }
@@ -1031,7 +1058,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   }
   // Puts the result of x - value * y in current tensor
   override def sub(x: Tensor[T], value: T, y: Tensor[T]): Tensor[T] =
-    DenseTensorMath.csub(this, x, value, y)
+  DenseTensorMath.csub(this, x, value, y)
 
   override def sub(value: T): Tensor[T] = {
     if (this.isContiguous()) {
@@ -1191,7 +1218,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
    * @return
    */
   override def addr(v1: T, t1: Tensor[T], v2: T, t2: Tensor[T], t3: Tensor[T]): Tensor[T] =
-    DenseTensorMath.addr(this, v1, t1, v2, t2, t3)
+  DenseTensorMath.addr(this, v1, t1, v2, t2, t3)
 
   override def addmv(beta: T, vec1: Tensor[T], alpha: T, mat: Tensor[T],
     vec2: Tensor[T]): Tensor[T] =
@@ -1539,7 +1566,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
 
     DenseTensorDimApply.dimApply3[T](this, resultTensor, indicesTensor, selectDim,
       (tdata, toffset, tstride, tsize, vdata, voffset, vstride, vsize, idata,
-      ioffset, istride, isize) => {
+        ioffset, istride, isize) => {
         var i = 0
         while (i < tsize) {
           tmpResult(i) = (tdata(toffset + i * tstride), i + 1)
@@ -1700,7 +1727,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     // todo: the performance of contiguous tensor should be optimized
     val func = new TensorFunc6[T] {
       def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int,
-                data3: Array[T], offset3: Int): Unit = {
+        data3: Array[T], offset3: Int): Unit = {
         if (ev.isGreater(data2(offset1), data3(offset2))) {
           data1(offset1) = ev.fromType(1)
         } else {
@@ -1722,7 +1749,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     // todo: the performance of contiguous tensor should be optimized
     val func = new TensorFunc6[T] {
       def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int,
-                data3: Array[T], offset3: Int): Unit = {
+        data3: Array[T], offset3: Int): Unit = {
         if (ev.toType[Double](ev.minus(data2(offset1), data3(offset2))) < 0) {
           data1(offset1) = ev.fromType(1)
         } else {
@@ -1745,7 +1772,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     // todo: the performance of contiguous tensor should be optimized
     val func = new TensorFunc6[T] {
       def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int,
-                data3: Array[T], offset3: Int): Unit = {
+        data3: Array[T], offset3: Int): Unit = {
         if (ev.toType[Double](ev.minus(data2(offset1), data3(offset2))) <= 0) {
           data1(offset1) = ev.fromType(1)
         } else {
@@ -1759,7 +1786,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
 
   /**
    * Implements == operator comparing each element in a with b
- *
+   *
    * @param x
    * @param value
    * @return
@@ -1871,7 +1898,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
 
   /**
    * Implements >= operator comparing each element in x with value
- *
+   *
    * @param x
    * @param value
    * @return
@@ -1895,7 +1922,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
    * Accumulate the elements of tensor into the original tensor by adding to the indices
    * in the order given in index. The shape of tensor must exactly match the elements indexed
    * or an error will be thrown.
- *
+   *
    * @param dim
    * @param index
    * @param y
@@ -1928,7 +1955,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
    * create a new Tensor which indexes the original Tensor along dimension dim using the entries
    * in torch.LongTensor index. The returned Tensor has the same number of dimensions as the
    * original Tensor.
- *
+   *
    * @param dim
    * @param index
    * @param y
@@ -2401,12 +2428,12 @@ object DenseTensor {
   }
 
   private[tensor] def gaussian1D[@specialized T: ClassTag](
-      size: Int = 3,
-      sigma: Double = 0.25,
-      amplitude: Int = 1,
-      normalize: Boolean = false,
-      mean: Double = 0.5,
-      tensor: Tensor[T] = null)(implicit ev: TensorNumeric[T]): Tensor[T] = {
+    size: Int = 3,
+    sigma: Double = 0.25,
+    amplitude: Int = 1,
+    normalize: Boolean = false,
+    mean: Double = 0.5,
+    tensor: Tensor[T] = null)(implicit ev: TensorNumeric[T]): Tensor[T] = {
     val gauss = if (null != tensor) {
       require(tensor.dim() == 1, "expecting 1D tensor")
       require(tensor.nElement() > 0, "expecting non-empty tensor")
