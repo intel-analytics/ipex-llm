@@ -60,6 +60,12 @@ private[tensor] class ArrayStorage[@specialized(Double, Float) T: ClassTag](
         offset - 1, offset - 1 + length, v)
       case v: Float => util.Arrays.fill(values.asInstanceOf[Array[Float]],
         offset - 1, offset - 1 + length, v)
+      case v: Int => util.Arrays.fill(values.asInstanceOf[Array[Int]],
+        offset - 1, offset - 1 + length, v)
+      case v: Long => util.Arrays.fill(values.asInstanceOf[Array[Long]],
+        offset - 1, offset - 1 + length, v)
+      case v: Short => util.Arrays.fill(values.asInstanceOf[Array[Short]],
+        offset - 1, offset - 1 + length, v)
       case _ => throw new IllegalArgumentException
     }
 
