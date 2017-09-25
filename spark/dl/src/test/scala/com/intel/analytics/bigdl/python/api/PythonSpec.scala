@@ -230,7 +230,7 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     // TODO: verify the parameters result
     val parameters = pp.modelGetParameters(trainedModel)
 //    println(parameters)
-    val testResult = pp.modelTest(trainedModel,
+    val testResult = pp.modelEvaluate(trainedModel,
       data.toJavaRDD(),
       batchSize = 32,
       valMethods = util.Arrays.asList(new Top1Accuracy()))
