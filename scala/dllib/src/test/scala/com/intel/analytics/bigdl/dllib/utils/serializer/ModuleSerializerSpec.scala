@@ -1879,6 +1879,21 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     res1 should be (res2)
   }
+
+  "Load by definition " should " work properly" in {
+    val linear1 = Linear(2, 2).setName("linear")
+    val sequential = Sequential().setName("sequential").add(linear1)
+    ModulePersister.saveToFile("/tmp/loadDef.bigdl", sequential, true)
+    val linear2 = Linear(2, 2).setName("linear")
+    val definition = Sequential().setName("sequential").add(linear2)
+    ModuleLoader.loadFromDefinition(definition, "/tmp/loadDef.bigdl")
+
+    val weight1 = linear1.weight
+
+    val weight2 = linear2.weight
+
+    weight1 should be (weight2)
+  }
 }
 
 class TestModule[T: ClassTag](val custom: CustomData)
