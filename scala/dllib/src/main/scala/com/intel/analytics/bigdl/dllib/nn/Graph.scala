@@ -297,8 +297,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
   /**
    * Execution plan
    */
-  private val forwardNodes = backGraph.DFS
-    .filterNot(_.element.isInstanceOf[ControlDependency[T]]).toArray
+  private val forwardNodes = backGraph.DFS.toArray
   private val forwardScheduler = new Scheduler(
     forwardNodes.filter(_.prevNodes.length == 0),
     Seq(dummyOutput)
@@ -347,7 +346,8 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
     require(forwardNodes.map(_.element.getName()).distinct.length == forwardNodes.length,
       "the name of node in the graph should be unique")
     val roots = forwardNodes.filter(_.prevNodes.size == 0)
-      .filter(node => !node.element.isInstanceOf[WithoutInput])
+      .filter(node => !node.element.isInstanceOf[WithoutInput]
+        && !node.element.isInstanceOf[ControlDependency[_]])
     require(roots.size == inputs.length,
       s"There're ${inputs.length} inputs, but graph has ${roots.size} roots")
     inputs.foreach(n =>
