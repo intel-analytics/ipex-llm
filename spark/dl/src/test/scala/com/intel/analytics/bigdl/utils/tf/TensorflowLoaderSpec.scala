@@ -104,19 +104,6 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     System.setProperty("bigdl.enableNHWC", "false")
   }
 
-  "TensorFlow loader" should "convert tensor protobuf to bigdl tensor" in {
-
-    val tftensorBuilder = TensorProto.newBuilder()
-      .setDtype(DataType.DT_INT32)
-      .setTensorShape(TensorShapeProto
-        .newBuilder().build())
-
-    tftensorBuilder.addIntVal(3)
-
-    val tensor = TFUtils.parseTensor(tftensorBuilder.build(), ByteOrder.LITTLE_ENDIAN)
-    println(tensor)
-  }
-
   "TensorFlow loader" should "read a list of nodes from pb file" in {
     val resource = getClass().getClassLoader().getResource("tf")
     val path = processPath(resource.getPath()) + JFile.separator + "test.pb"

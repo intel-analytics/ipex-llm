@@ -370,7 +370,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     val _dimension = dim - 1
     val _sliceIndex = index - 1
 
-    require(this.nDimension > 0, "empty or scalar tensor")
+    require(this.nDimension > 0, "empty or scalar tensor cannot be selected")
     val result = DenseTensor.newWithTensor(this)
     DenseTensor.select(result, null, _dimension, _sliceIndex)
     result

@@ -47,11 +47,10 @@ abstract class Session[T: ClassTag] {
 
 class BigDLSessionImpl[T: ClassTag](
        graph: Seq[NodeDef],
+       sc: SparkContext,
        context: mutable.HashMap[String, (Tensor[T], Tensor[T], Option[Seq[(Int, Int)]])])
                          (implicit ev: TensorNumeric[T]) extends Session[T] {
   import scala.collection.JavaConverters._
-
-  val sc = SparkContext.getOrCreate()
 
   private val inputOp = Set("ReaderReadV2", "QueueDequeueV2", "QueueDequeueManyV2", "Placeholder")
 

@@ -64,7 +64,7 @@ class SessionSpec extends FlatSpec with Matchers with BeforeAndAfter {
     import scala.collection.JavaConverters._
     val context =
       new mutable.HashMap[String, (Tensor[Float], Tensor[Float], Option[Seq[(Int, Int)]])]()
-    val session = new BigDLSessionImpl[Float](nodes.asScala, context)
+    val session = new BigDLSessionImpl[Float](nodes.asScala, sc, context)
 
     val data = new Array[Tensor[Float]](100)
     val label = new Array[Tensor[Float]](100)
@@ -115,7 +115,7 @@ class SessionSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val context =
       new mutable.HashMap[String, (Tensor[Float], Tensor[Float], Option[Seq[(Int, Int)]])]()
-    val session = new BigDLSessionImpl[Float](newModel, context)
+    val session = new BigDLSessionImpl[Float](newModel, sc, context)
 
     val endpoints = Seq(
       "ParseSingleExample/SerializedDependencies"

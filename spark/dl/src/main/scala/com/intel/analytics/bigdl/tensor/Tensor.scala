@@ -1006,6 +1006,11 @@ object Tensor {
     apply(Storage(matrix.toArray), 1, Array(matrix.numRows, matrix.numCols), strides)
   }
 
+  def scalar[T: ClassTag](value: T)(
+    implicit ev: TensorNumeric[T]): Tensor[T] = {
+    Tensor[T](Array(value), Array[Int]())
+  }
+
   /**
    * This is equivalent to DenseTensor.randperm[T](size)
    *
