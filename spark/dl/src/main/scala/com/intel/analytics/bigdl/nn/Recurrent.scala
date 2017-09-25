@@ -47,8 +47,8 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
   private val _input = T()
   private val batchDim = Recurrent.batchDim
   private val timeDim = Recurrent.timeDim
-  private val inputDim = 1
-  private val hidDim = 2
+  private val inputDim = Recurrent.inputDim
+  private val hidDim = Recurrent.hidDim
   private var (batchSize, times) = (0, 0)
   private var topology: Cell[T] = null
   private val outputBuffer = Tensor[T]()
@@ -126,7 +126,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
    * @param sizes, the first element is batchSize, the second is times, the third is hiddensize
     *             the left is size of images
    */
-  private def extend(sizes: Array[Int]): Unit = {
+  private def initHidden(sizes: Array[Int]): Unit = {
     val batchSize = sizes(batchDim - 1)
     
     val imageSize = sizes.drop(3)
@@ -150,7 +150,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     }
   }
 
-  private def extend2(sizes: Array[Int]): Unit = {
+  private def initHiddens(sizes: Array[Int]): Unit = {
     val batchSize = sizes(0)
     val imageSize = sizes.drop(3)
     val multiCells = topology.asInstanceOf[MultiCell[T]].cells
@@ -271,7 +271,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     // init state
     if (!topology.isInstanceOf[MultiCell[T]]) {
       // Clone N modules along the sequence dimension.
-      extend(outputSize)
+      initHidden(outputSize)
       cloneCells()
       if (initState != null) {
         hidden = initState
@@ -298,7 +298,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
         gradStates = new Array[Activity](topology.asInstanceOf[MultiCell[T]].cells.length)
       }
 
-      extend2(outputSize)
+      initHiddens(outputSize)
       if (initStates != null) {
         states = initStates
       }
@@ -339,9 +339,68 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
   }
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
+    currentGradOutput(hidDim) = gradHidden
+    /**
+      * Since we clone module along the time dimension, the output of each
+      * iteration have been recorded by the cloned modules. Thus, we can
+      * reuse these outputs during the backward operations by copying the
+      * outputs to _input variable.
+      *
+      * The output of Cell(i-1) should be one of the elements fed to the inputs
+      * of Cell(i)
+      * The first module in the cells array accepts zero hidden parameter.
+      */
+
+    var i = times
+    while (i >= 1) {
+      currentGradOutput(inputDim) = Recurrent.selectCopy(gradOutput, i, gradBuffer)
+      _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
+      else hidden
+      _input(inputDim) = Recurrent.selectCopy(outputCell, i, outputBuffer)
+      if (i == 1) {
+        cells(i - 1).regluarized(true)
+      } else {
+        cells(i - 1).regluarized(false)
+      }
+      cells(i - 1).accGradParameters(_input, currentGradOutput)
+      currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
+      i -= 1
+    }
+    if (preTopology != null) {
+      preTopology.accGradParameters(input, gradInputCell)
+    }
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+
+    gradInput = if (preTopology != null) {
+      /**
+        * if preTopology is Sequential, it has not created gradInput.
+        * Thus, it needs to create a new Tensor.
+        */
+      if (preTopology.gradInput == null) {
+        preTopology.gradInput = Tensor[T]()
+      }
+      preTopology.gradInput.toTensor[T]
+    } else {
+      gradInputCell
+    }
+    gradInputCell.resizeAs(outputCell)
+    currentGradOutput(hidDim) = gradHidden
+    var i = times
+    while (i >= 1) {
+      currentGradOutput(inputDim) = Recurrent.selectCopy(gradOutput, i, gradBuffer)
+      _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
+      else hidden
+      _input(inputDim) = Recurrent.selectCopy(outputCell, i, outputBuffer)
+      cells(i - 1).updateGradInput(_input, currentGradOutput)
+      currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
+      i -= 1
+    }
+    Recurrent.copy(cells.map(x => x.gradInput.toTable[Tensor[T]](inputDim)), gradInputCell)
+    if (preTopology != null) {
+      gradInput = preTopology.updateGradInput(input, gradInputCell).toTensor[T]
+    }
     gradInput
   }
 
@@ -519,6 +578,8 @@ object Recurrent extends ContainerSerializable {
 
   private val batchDim = 1
   private val timeDim = 2
+  val inputDim = 1
+  val hidDim = 2
 
   def apply[@specialized(Float, Double) T: ClassTag](
     batchNormParams: BatchNormParams[T] = null)

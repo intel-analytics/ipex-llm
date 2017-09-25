@@ -28,13 +28,13 @@ def main():
     tf.set_random_seed(1)
     n_steps = 2
     n_input = 10
-    n_hidden = 10
+    n_hidden = 20
     n_output = 5
     # xs = tf.placeholder(tf.float32, [None, n_steps, n_input])
     xs = tf.Variable(tf.random_uniform([4, n_steps, n_input]) + 10, name='input', dtype=tf.float32)
     xs = tf.identity(xs, "input_node")
-    # weight = tf.Variable(tf.random_uniform([n_hidden, n_output]) + 10, name="weight", dtype=tf.float32)
-    # bias = tf.Variable(tf.random_uniform([n_output]) + 10, name="bias", dtype=tf.float32)
+    weight = tf.Variable(tf.random_uniform([n_hidden, n_output]) + 10, name="weight", dtype=tf.float32)
+    bias = tf.Variable(tf.random_uniform([n_output]) + 10, name="bias", dtype=tf.float32)
 
     x = tf.unstack(xs, n_steps, 1)
 
@@ -42,8 +42,7 @@ def main():
 
     output, states = rnn.static_rnn(cell, x, dtype=tf.float32)
 
-    # final = tf.nn.bias_add(tf.matmul(output[-1], weight), bias, name='output')
-    final = tf.stack(output, name='output')
+    final = tf.nn.bias_add(tf.matmul(output[-1], weight), bias, name='output')
 
     net_outputs = map(lambda x: tf.get_default_graph().get_tensor_by_name(x), argv[2].split(','))
     run_model(net_outputs, argv[1], 'rnn', argv[3] == 'True')

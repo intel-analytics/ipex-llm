@@ -34,8 +34,8 @@ class MultiCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorNume
     hiddensShape = cells.last.hiddensShape,
     regularizers = cells.flatMap(_.regularizers)) {
   // inputDim and hidDim must be the same with Recurrent
-  private val inputDim = 1
-  private val hidDim = 2
+  private val inputDim = Recurrent.inputDim
+  private val hidDim = Recurrent.hidDim
 
   override var preTopology: AbstractModule[Activity, Activity, T] = null
   
@@ -87,57 +87,12 @@ class MultiCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorNume
   }
 
   override def updateGradInput(input: Table, gradOutput: Table): Table = {
-    var i = cells.length
-    var error = T()
-    error(inputDim) = gradOutput(inputDim)
-    val nextInput = T()
-
-    while (i >= 1) {
-      val input0: Tensor[T] = if (i > 1) {
-        cells(i - 2).output.toTable(inputDim)
-      } else input(inputDim)
-      nextInput(inputDim) = if (cells(i - 1).preTopology != null) {
-        cells(i - 1).preTopology.forward(input0)
-      } else input0
-
-      nextInput(hidDim) = states(i - 1)
-      error(hidDim) = states(i - 1)
-      error = cells(i - 1).updateGradInput(nextInput, error)
-
-      if (cells(i - 1).preTopology != null) {
-        error(inputDim) = cells(i - 1).preTopology.updateGradInput(input0,
-          cells(i - 1).gradInput.toTable[Tensor[T]](inputDim))
-      }
-      i -= 1
-    }
-
-    this.gradInput = error
+    throw new Exception("Should not enter MultiCell updateGradInput since backward is override")
     gradInput
   }
 
   override def accGradParameters(input: Table, gradOutput: Table): Unit = {
-    var i = cells.length
-    val currentGradOutput = T()
-    currentGradOutput(inputDim) = gradOutput(inputDim)
-    val nextInput = T()
-    while (i >= 1) {
-      val input0: Tensor[T] = if (i > 1) {
-        cells(i - 2).output.toTable(inputDim)
-      } else input(inputDim)
-
-      nextInput(inputDim) = if (cells(i - 1).preTopology != null) {
-        cells(i - 1).preTopology.forward(input0)
-      } else input0
-      nextInput(hidDim) = states(i - 1)
-      currentGradOutput(hidDim) = states(i - 1)
-      cells(i - 1).accGradParameters(nextInput, currentGradOutput)
-      
-      if (cells(i - 1).preTopology != null) {
-        cells(i - 1).preTopology.accGradParameters(input0,
-          cells(i - 1).gradInput.toTable[Tensor[T]](inputDim))
-      }
-      i -= 1
-    }
+    throw new Exception("Should not enter MultiCell accGradParameters since backward is override")
   }
 
   override def backward(input: Table, gradOutput: Table): Table = {
