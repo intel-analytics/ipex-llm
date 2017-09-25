@@ -256,7 +256,7 @@ def init_engine(bigdl_type="float"):
 def redireSparkInfoLogs(disableRedirect="false", enableSparkLogRedirect="true",
                         logPath=os.getcwd()+"/bigdl.log", bigdl_type="float"):
     """
-    Redirect Spark INFO level logs to the specified path.
+    Redirect Spark logs to the specified path.
     :param disableRedirect: "true" to disable redirecting logs of Spark and BigDL; "false" to enable redirection
     :param enableSparkLogRedirect: "true" to enable redirecting logs of Spark to logFile; "false" otherwise
     :param logPath: file path for logs to be redirected
