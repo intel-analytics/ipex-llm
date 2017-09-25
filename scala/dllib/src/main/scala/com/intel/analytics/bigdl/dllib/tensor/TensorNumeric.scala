@@ -31,6 +31,7 @@ class TensorNumericMath
  */
 object TensorNumericMath {
 
+  type NumericWildCard = Any
   /**
    * This type is used to denote that the numeric type of tensor is not restricted.
    * The use-case usually is used to do some tensor operations when we do not make sure
