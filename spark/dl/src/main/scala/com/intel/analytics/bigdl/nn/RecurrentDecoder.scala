@@ -125,7 +125,12 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
     currentGradOutput(hidDim) = gradHidden
     var i = times
     while (i >= 1) {
-      currentGradOutput(inputDim) = gradOutput.select(timeDim, i)
+      currentGradOutput(inputDim) = if (i == times) gradOutput.select(timeDim, i)
+      else {
+        gradOutput.select(timeDim, i).clone()
+          .add(cells(i).gradInput.toTable[Tensor[T]](inputDim).clone())
+      }
+      
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
       else hidden
       _input(inputDim) = outputCell.select(timeDim, i)
