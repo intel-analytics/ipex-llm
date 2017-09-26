@@ -263,14 +263,17 @@ rnnCell = RnnCell(input_size, hidden_size, Tanh(), w_regularizer, u_regularizer,
 
 Implementation of vanilla recurrent neural network cell
 
-* `i2h` weight matrix of input to hidden units
-* `h2h` weight matrix of hidden units to themselves through time
+The input tensor in `forward(input)` is expected to be a 3D tensor (`batch x time x inputSize`). output of
+`forward(input)` is also expected to be a 3D tensor (`batch x time x hiddenSize`).
 
 The updating is defined as:
 
 ```
 h_t = f(i2h * x_t + h2h * h_{t-1})
 ```
+where
+* `i2h` weight matrix of input to hidden units
+* `h2h` weight matrix of hidden units to themselves through time
 
 Parameters:
 
@@ -370,6 +373,8 @@ lstm = LSTM(input_size, hidden_size)
 ```
 
 Long Short Term Memory architecture.
+The input tensor in `forward(input)` is expected to be a 3D tensor (`batch x time x inputSize`). output of
+`forward(input)` is also expected to be a 3D tensor (`batch x time x hiddenSize`).
 
 Ref:
 
@@ -502,6 +507,8 @@ model = LSTMPeephole(
 
 Long Short Term Memory architecture with peephole.
 Ref.
+The input tensor in `forward(input)` is expected to be a 3D tensor (`batch x time x inputSize`). output of
+`forward(input)` is also expected to be a 3D tensor (`batch x time x hiddenSize`).
 
 1. http://arxiv.org/pdf/1303.5778v1 (blueprint for this module)
 2. http://web.eecs.utk.edu/~itamar/courses/ECE-692/Bobby_paper1.pdf
@@ -611,6 +618,8 @@ gru = GRU(inputSize, outputSize, p, w_regularizer, u_regularizer, b_regularizer)
 ```
 
 Gated Recurrent Units architecture. The first input in sequence uses zero value for cell and hidden state.
+The input tensor in `forward(input)` is expected to be a 3D tensor (`batch x time x inputSize`). output of
+`forward(input)` is also expected to be a 3D tensor (`batch x time x outputSize`).
 
 Ref.
 

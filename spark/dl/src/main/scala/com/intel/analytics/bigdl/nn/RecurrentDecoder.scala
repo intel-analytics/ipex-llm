@@ -104,8 +104,7 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
       outputCell = preTopology.updateOutput(newInput).toTensor[T]
     }
 
-    copy(cells.map(x => x.output.toTable[Tensor[T]](inputDim)),
-        output, 0)
+    Recurrent.copy(cells.map(x => x.output.toTable[Tensor[T]](inputDim)), output)
     output
   }
 
@@ -130,10 +129,11 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
         gradOutput.select(timeDim, i).clone()
           .add(cells(i).gradInput.toTable[Tensor[T]](inputDim).clone())
       }
-      
+
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
       else hidden
-      _input(inputDim) = outputCell.select(timeDim, i)
+      _input(inputDim) = Recurrent.selectCopy(outputCell, i, outputBuffer)
+
       if (i == 1) {
         cells(i - 1).regluarized(true)
       } else {
@@ -146,9 +146,9 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
 
     gradInput = if (preTopology != null) {
       /**
-        * if preTopology is Sequential, it has not created gradInput.
-        * Thus, it needs to create a new Tensor.
-        */
+       * if preTopology is Sequential, it has not created gradInput.
+       * Thus, it needs to create a new Tensor.
+       */
       if (preTopology.gradInput == null) {
         preTopology.gradInput = Tensor[T]()
       }
@@ -157,9 +157,7 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
       gradInputCell
     }
     gradInputCell.resizeAs(outputCell)
-    copy(cells.map(x => x.gradInput.toTable[Tensor[T]](inputDim)),
-      gradInputCell, 0)
-
+    Recurrent.copy(cells.map(x => x.gradInput.toTable[Tensor[T]](inputDim)), gradInputCell)
     if (preTopology != null) {
       gradInput = preTopology.backward(newInput, gradInputCell).toTensor[T]
     }

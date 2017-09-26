@@ -240,7 +240,7 @@ class DataConverterSpec extends FlatSpec with Matchers{
   "Array of int32 conversion " should " work properly " in {
     val arry = Array[Int](1, 2, 3)
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, arry)
+    DataConverter.setAttributeValue(attriBulder, arry, universe.typeOf[Array[Int]])
     val attr = attriBulder.build
     val retrievedValue = DataConverter.getAttributeValue(attr)
     retrievedValue should be (arry)
@@ -249,7 +249,7 @@ class DataConverterSpec extends FlatSpec with Matchers{
   "Array of int64 conversion " should " work properly " in {
     val arry = Array[Long](1L, 2L, 3L)
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, arry)
+    DataConverter.setAttributeValue(attriBulder, arry, universe.typeOf[Array[Long]])
     val attr = attriBulder.build
     val retrievedValue = DataConverter.getAttributeValue(attr)
     retrievedValue should be (arry)
@@ -258,7 +258,16 @@ class DataConverterSpec extends FlatSpec with Matchers{
   "Array of float conversion " should " work properly " in {
     val arry = Array[Float](1.0f, 2.0f, 3.0f)
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, arry)
+    DataConverter.setAttributeValue(attriBulder, arry, universe.typeOf[Array[Float]])
+    val attr = attriBulder.build
+    val retrievedValue = DataConverter.getAttributeValue(attr)
+    retrievedValue should be (arry)
+  }
+
+  "Null Array of float conversion " should " work properly " in {
+    val arry : Array[Float] = null
+    val attriBulder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(attriBulder, arry, universe.typeOf[Array[Float]])
     val attr = attriBulder.build
     val retrievedValue = DataConverter.getAttributeValue(attr)
     retrievedValue should be (arry)
@@ -267,7 +276,7 @@ class DataConverterSpec extends FlatSpec with Matchers{
   "Array of double conversion " should " work properly " in {
     val arry = Array[Double](1.0, 2.0, 3.0)
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, arry)
+    DataConverter.setAttributeValue(attriBulder, arry, universe.typeOf[Array[Double]])
     val attr = attriBulder.build
     val retrievedValue = DataConverter.getAttributeValue(attr)
     retrievedValue should be (arry)
@@ -279,7 +288,7 @@ class DataConverterSpec extends FlatSpec with Matchers{
     arry(0) = "test1"
     arry(1) = "test2"
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, arry)
+    DataConverter.setAttributeValue(attriBulder, arry, universe.typeOf[Array[String]])
     val attr = attriBulder.build
     val retrievedValue = DataConverter.getAttributeValue(attr)
     retrievedValue should be (arry)
@@ -288,7 +297,7 @@ class DataConverterSpec extends FlatSpec with Matchers{
   "Array of Boolean conversion " should " work properly" in {
     val arry = Array[Boolean](true, false)
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, arry)
+    DataConverter.setAttributeValue(attriBulder, arry, universe.typeOf[Array[Boolean]])
     val attr = attriBulder.build
     val retrievedValue = DataConverter.getAttributeValue(attr)
     retrievedValue should be (arry)
@@ -299,7 +308,7 @@ class DataConverterSpec extends FlatSpec with Matchers{
     arry(0) = L2Regularizer(1.0)
     arry(1) = L1Regularizer(1.0)
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, arry)
+    DataConverter.setAttributeValue(attriBulder, arry, universe.typeOf[Array[Regularizer[Float]]])
     val attr = attriBulder.build
     val retrievedValue = DataConverter.getAttributeValue(attr)
     retrievedValue should be (arry)
@@ -310,7 +319,7 @@ class DataConverterSpec extends FlatSpec with Matchers{
     val tensor2 = Tensor(2, 3).apply1(_ => Random.nextFloat())
     val tensorArray = Array(tensor1, tensor2)
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, tensorArray)
+    DataConverter.setAttributeValue(attriBulder, tensorArray, universe.typeOf[Array[Tensor[Float]]])
     val attr = attriBulder.build
     val retrievedValue = DataConverter.getAttributeValue(attr)
     retrievedValue.isInstanceOf[Array[Tensor[Float]]] should be (true)
@@ -321,7 +330,7 @@ class DataConverterSpec extends FlatSpec with Matchers{
     val arry = new Array[VariableFormat](1)
     arry(0) = Default
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, arry)
+    DataConverter.setAttributeValue(attriBulder, arry, universe.typeOf[Array[VariableFormat]])
     val attr = attriBulder.build
     val retrievedValue = DataConverter.getAttributeValue(attr)
     retrievedValue should be (arry)
@@ -332,7 +341,7 @@ class DataConverterSpec extends FlatSpec with Matchers{
     arry(0) = RandomUniform
     arry(1) = Zeros
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, arry)
+    DataConverter.setAttributeValue(attriBulder, arry, universe.typeOf[Array[InitializationMethod]])
     val attr = attriBulder.build
     val retrievedValue = DataConverter.getAttributeValue(attr)
     retrievedValue should be (arry)
@@ -343,7 +352,7 @@ class DataConverterSpec extends FlatSpec with Matchers{
     arry(0) = NCHW
     arry(1) = NHWC
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, arry)
+    DataConverter.setAttributeValue(attriBulder, arry, universe.typeOf[Array[DataFormat]])
     val attr = attriBulder.build
     val retrievedValue = DataConverter.getAttributeValue(attr)
     retrievedValue should be (arry)
@@ -354,12 +363,22 @@ class DataConverterSpec extends FlatSpec with Matchers{
     arry(0) = Linear[Float](2, 3).setName("l1")
     arry(1) = Linear[Float](2, 3).setName("l2")
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, arry)
+    DataConverter.setAttributeValue(attriBulder, arry,
+      universe.typeOf[Array[AbstractModule[Activity, Activity, Float]]])
     val attr = attriBulder.build
     val retrievedValue = DataConverter.getAttributeValue(attr)
     retrievedValue should be (arry)
   }
 
+  "Null Array of Modules conversion" should " work properly" in {
+    val arry : Array[AbstractModule[Activity, Activity, Float]] = null
+    val attriBulder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(attriBulder, arry,
+      universe.typeOf[Array[AbstractModule[Activity, Activity, Float]]])
+    val attr = attriBulder.build
+    val retrievedValue = DataConverter.getAttributeValue(attr)
+    retrievedValue should be (arry)
+  }
 
   "NameList conversion " should " work properly" in {
 
@@ -388,4 +407,5 @@ class DataConverterSpec extends FlatSpec with Matchers{
     retrievedValue should be (map)
 
   }
+
 }

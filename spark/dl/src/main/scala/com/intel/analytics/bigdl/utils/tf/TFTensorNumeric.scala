@@ -16,7 +16,7 @@
 package com.intel.analytics.bigdl.utils.tf
 
 import com.google.protobuf.ByteString
-import com.intel.analytics.bigdl.tensor.ConvertableFrom
+import com.intel.analytics.bigdl.tensor.{ConvertableFrom, StringType, TensorDataType}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.UndefinedTensorNumeric
 
 import scala.language.implicitConversions
@@ -24,6 +24,8 @@ import scala.language.implicitConversions
 object TFTensorNumeric {
 
   implicit object NumericByteString extends UndefinedTensorNumeric[ByteString]("ByteString") {
+
+    override def getType(): TensorDataType = StringType
     override def plus(x: ByteString, y: ByteString): ByteString = x.concat(y)
 
 

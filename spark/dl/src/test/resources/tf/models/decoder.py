@@ -21,6 +21,7 @@ from util import run_model
 
 def main():
 
+    tf.set_random_seed(1)
     n_steps = 2
     n_input = 10
     n_hidden = 10
@@ -41,9 +42,9 @@ def main():
         outputs.append(output)
 
     final = tf.identity(outputs, name="output")
+
     net_outputs = map(lambda x: tf.get_default_graph().get_tensor_by_name(x), argv[2].split(','))
     run_model(net_outputs, argv[1], 'rnn', argv[3] == 'True')
 
 if __name__ == "__main__":
     main()
-

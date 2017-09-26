@@ -281,6 +281,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
     val module = moduleNode.asInstanceOf[AbstractModule[_, _, _]]
     val model : Seq[GeneratedMessage] = module match {
       case convolution : SpatialConvolution[_] => toCaffeConvolution(moduleNode, bottoms, nextSize)
+      case deconv : SpatialFullConvolution[_] => toCaffeDeConvolution(moduleNode, bottoms, nextSize)
       case relu : ReLU[_] => toCaffeRelu(moduleNode, bottoms, nextSize)
       case crossMapLrn : SpatialCrossMapLRN[_] => toCaffeLRN(moduleNode, bottoms, nextSize)
       case inChannelLrn : SpatialWithinChannelLRN[_] => toCaffeLRN(moduleNode, bottoms, nextSize)
@@ -318,6 +319,9 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
   }
 
   protected def toCaffeConvolution(module : AbstractModule[Activity, Activity, T],
+    bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage]
+
+  protected def toCaffeDeConvolution(module : AbstractModule[Activity, Activity, T],
     bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage]
 
   protected def toCaffeRelu(module : AbstractModule[Activity, Activity, T],
@@ -430,6 +434,35 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
     map("padH") = padH
     map("ngroup") = ngroup
     map("withBias") = if (layer.withBias) 1 else 0
+    map
+  }
+
+  protected def toCaffeDeConvolutionParam(module : AbstractModule[Activity, Activity, T])
+  : mutable.HashMap[String, Int] = {
+    val map = new mutable.HashMap[String, Int]()
+    val layer = classOf[SpatialFullConvolution[T]].cast(module)
+    if (layer.adjW != 0 || layer.adjH != 0) {
+      throw new IllegalArgumentException("Caffe doesn't support extra width/height amending")
+    }
+    val nInputPlane = layer.nOutputPlane
+    val nOutputPlane = layer.nInputPlane
+    val kernelW = layer.kW
+    val kernelH = layer.kH
+    val strideW = layer.dW
+    val strideH = layer.dH
+    val padW = layer.padW
+    val padH = layer.padH
+    val ngroup = layer.nGroup
+    map("nInputPlane") = nInputPlane
+    map("nOutputPlane") = nOutputPlane
+    map("kernelW") = kernelW
+    map("kernelH") = kernelH
+    map("strideW") = strideW
+    map("strideH") = strideH
+    map("padW") = padW
+    map("padH") = padH
+    map("ngroup") = ngroup
+    map("withBias") = if (layer.noBias) 0 else 1
     map
   }
 
@@ -571,6 +604,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
 
   private def init() = {
     caffe2BigDL("CONVOLUTION") = fromCaffeConvolution
+    caffe2BigDL("DECONVOLUTION") = fromCaffeConvolution
     caffe2BigDL("INNERPRODUCT") = fromCaffeInnerProduct
     caffe2BigDL("INNER_PRODUCT") = fromCaffeInnerProduct
     caffe2BigDL("RELU") = fromCaffeReLU
