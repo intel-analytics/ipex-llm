@@ -1,9 +1,7 @@
 ---
 ## **AWS Marketplace AMI**
 
-The easiest way to get started with BigDL is the BigDL AMI in the AWS Marketplace. It includes Apache Spark, BigDL,
-Jupyter Notebooks, Python and more. Within minutes you can create a Jupyter Notebook, upload some data and begin
-experimenting with Deep Learning.
+The easiest way to get started with BigDL is the BigDL AMI in the AWS Marketplace. It includes Apache Spark, BigDL, Jupyter Notebooks, Python and more. Within minutes you can create a Jupyter Notebook, upload some data and begin experimenting with Deep Learning using BigDL.
  
 Please note that it is highly recommended to use EC2 instances with Xeon E5 v3 or v4 processors and at least 8 GB of RAM.
 
