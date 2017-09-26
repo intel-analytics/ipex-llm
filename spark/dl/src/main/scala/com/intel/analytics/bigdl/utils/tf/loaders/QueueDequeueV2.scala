@@ -33,3 +33,4 @@ class QueueDequeueV2 extends TensorflowOpsLoader {
     new IdentityModule[T]()
   }
 }
+

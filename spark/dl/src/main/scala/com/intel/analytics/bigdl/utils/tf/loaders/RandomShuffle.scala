@@ -33,3 +33,4 @@ class RandomShuffle extends TensorflowOpsLoader {
     new IdentityModule[T]()
   }
 }
+

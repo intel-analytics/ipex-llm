@@ -33,3 +33,4 @@ class Assert extends TensorflowOpsLoader {
     new AssertOperation[T]()
   }
 }
+

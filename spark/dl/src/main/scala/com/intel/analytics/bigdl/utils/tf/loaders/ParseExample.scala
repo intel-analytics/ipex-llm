@@ -51,3 +51,4 @@ class ParseExample extends TensorflowOpsLoader {
     new ParseExampleOperation[T](Ndense, Tdense, denseShapes)
   }
 }
+
