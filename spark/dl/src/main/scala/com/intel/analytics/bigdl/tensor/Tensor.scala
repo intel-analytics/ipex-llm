@@ -368,6 +368,16 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
   def resizeAs(src: Tensor[_]): Tensor[T]
 
   /**
+   * Cast the currenct tensor to a tensor with tensor numeric type D
+   * and set cast value to `castTensor`
+   *
+   * @param castTensor the cast value set to this tensor
+   * @tparam D new numeric type
+   * @return return castTensort
+   */
+  def cast[D: ClassTag](castTensor: Tensor[D])(implicit ev: TensorNumeric[D]): Tensor[D]
+
+  /**
    * Resize the current tensor to the give shape
    *
    * @param sizes   Array describe the size
@@ -1004,6 +1014,15 @@ object Tensor {
       Array(1, matrix.numRows) // column major
     }
     apply(Storage(matrix.toArray), 1, Array(matrix.numRows, matrix.numCols), strides)
+  }
+
+  /**
+   * Create a scalar tensor of this value
+   * @return the created scalar tensor
+   */
+  def scalar[T: ClassTag](value: T)(
+    implicit ev: TensorNumeric[T]): Tensor[T] = {
+    Tensor[T](Array(value), Array[Int]())
   }
 
   /**

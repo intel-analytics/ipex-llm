@@ -949,7 +949,7 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
 
   "addmv on 1 element vector" should "return right result 1" in {
     val mat = Tensor[Float](84, 1).fill(2.0f)
-    val vec = Tensor[Float](2).apply(2).fill(3.0f)
+    val vec = Tensor[Float](2).narrow(1, 2, 1).fill(3.0f)
 
     val r = Tensor[Float](84).fill(9.0f)
 
@@ -960,7 +960,7 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
 
   "addmv on 1 element vector" should "return right result 2" in {
     val mat = Tensor[Float](84, 2).narrow(2, 1, 1).fill(2.0f)
-    val vec = Tensor[Float](2).apply(1).fill(3.0f)
+    val vec = Tensor[Float](2).narrow(1, 1, 1).fill(3.0f)
 
     val r = Tensor[Float](84).fill(9.0f)
 

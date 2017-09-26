@@ -21,22 +21,28 @@ import com.intel.analytics.bigdl.tensor._
 
 import scala.reflect.ClassTag
 
-class Rank[T: ClassTag]()
-  (implicit ev: TensorNumeric[T]) extends Operation[Tensor[_], Tensor[Int], T] {
+/**
+ * Casts a tensor to a new type.
+ *
+ * @tparam T Parameter tensor numeric type. Only support float/double now
+ * @tparam D A new type was cast to
+ */
+class Cast[T: ClassTag, D: ClassTag]()
+  (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
+  extends Operation[Tensor[_], Tensor[D], T] {
 
-  override def updateOutput(input: Tensor[_]): Tensor[Int] = {
-    if (output.getType() != IntType) {
-      output = Tensor[Int]()
-    }
-    output.resize(Array[Int]())
-    output.setValue(input.nDimension())
+  output = Activity.allocate[Tensor[D], D]()
+
+  override def updateOutput(input: Tensor[_]): Tensor[D] = {
+    output.resizeAs(input)
+    input.cast[D](output)
 
     output
   }
 }
 
-object Rank {
-  def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]):
-  Operation[Activity, Activity, T]
-  = ModuleToOperation[T](new Rank())
+object Cast {
+  def apply[T: ClassTag, D: ClassTag]()
+    (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]): Operation[Activity, Activity, T]
+  = ModuleToOperation[T](new Cast[T, D]())
 }

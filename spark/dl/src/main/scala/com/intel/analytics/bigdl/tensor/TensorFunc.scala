@@ -51,6 +51,17 @@ trait TensorFunc6[@specialized(Float, Double) T] {
 }
 
 /**
+ * Tensor function contain four parameters with differentType
+ * @tparam T
+ */
+trait TensorDiffTypeFunc4[A, T] {
+  self =>
+  def apply(v1: Array[A], v2: Int, v3: Array[T], v4: Int): Unit
+
+  override def toString(): String = "<TensorDiffTypeFunc4>"
+}
+
+/**
  * Tensor function contain six parameters with differentType
  * @tparam T
  */
