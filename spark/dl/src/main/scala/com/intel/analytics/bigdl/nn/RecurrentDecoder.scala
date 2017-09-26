@@ -131,7 +131,7 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
       }
 
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
-      else hidden
+      else if (initState == null) hidden else initState
       _input(inputDim) = Recurrent.selectCopy(outputCell, i, outputBuffer)
 
       if (i == 1) {

@@ -119,9 +119,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     *             the left is size of images
    */
   protected def extend(sizes: Array[Int]): Unit = {
-    val times = sizes(timeDim - 1)
-    val batchSize = sizes(batchDim - 1)
-    val imageSize = sizes.drop(3)
+    val imageSize = sizes
     if (hidden == null) {
       require((preTopology == null && modules.length == 1) ||
         (topology != null && preTopology != null && modules.length == 2),
@@ -339,7 +337,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     while (i >= 1) {
       currentGradOutput(inputDim) = Recurrent.selectCopy(gradOutput, i, gradBuffer)
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
-      else hidden
+      else if (initState == null) hidden else initState
       _input(inputDim) = Recurrent.selectCopy(outputCell, i, outputBuffer)
       if (i == 1) {
         cells(i - 1).regluarized(true)
