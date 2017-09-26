@@ -774,47 +774,6 @@ class LSTMPeepholeSpec  extends TorchSpec {
     })
   }
 
-  "A LSTMPeepwhole " should "work with feedbackOutput correctly" in {
-    torchCheck()
-
-    import com.intel.analytics.bigdl.numeric.NumericDouble
-    val hiddenSize = 3
-    val inputSize = 3
-    val seqLength = 2
-    val seed = 100
-    val batchSize = 1
-
-    RNG.setSeed(seed)
-    val input = Tensor[Double](batchSize, inputSize).rand
-    val gradOutput = Tensor[Double](batchSize, seqLength, hiddenSize).rand
-
-    val model2 = Recurrent().add(LSTMPeephole(inputSize, hiddenSize))
-    model2.getParameters()._1.fill(0.5)
-
-    val rec = RecurrentDecoder(seqLength)
-    val model = rec
-        .add(LSTMPeephole(inputSize, hiddenSize))
-    model.getParameters()._1.fill(0.5)
-
-    val output = model.forward(input).toTensor
-    val gradInput = model.backward(input, gradOutput).toTensor
-
-    val input2 = Tensor(Array(batchSize, seqLength, hiddenSize))
-    input2.narrow(2, 1, 1).copy(input)
-    input2.narrow(2, 2, seqLength-1).copy(output.narrow(2, 1, seqLength-1))
-    val output2 = model2.forward(input2).toTensor
-    val gradInput2 = model2.backward(input2, gradOutput).toTensor
-
-    output.map(output2, (v1, v2) => {
-      assert(v1 - v2 < 1e-8)
-      v1
-    })
-    gradInput.map(gradInput2, (v1, v2) => {
-      assert(v1 - v2 < 1e-8)
-      v1
-    })
-  }
-
   private def reconstruct[T: ClassTag](tensor: Array[Tensor[T]], hiddenSize: Int):
     Array[Tensor[T]] = {
     val weightsTorchAfter = new ArrayBuffer[Tensor[T]]()
