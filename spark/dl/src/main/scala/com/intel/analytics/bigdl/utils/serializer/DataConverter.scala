@@ -169,9 +169,10 @@ object DataConverter extends DataConverter{
       ModuleConverter.setAttributeValue(attributeBuilder, value)
     } else if (value.isInstanceOf[mutable.Map[String, _ <: Any]]) {
       NameListConverter.setAttributeValue(attributeBuilder, value)
-    } else if (valueType <:< universe.typeOf[Array[_ <: Any]] ) {
+    } else if (valueType <:< universe.typeOf[Array[_]] ||
+      valueType.typeSymbol == universe.typeOf[Array[_ ]].typeSymbol) {
       ArrayConverter.setAttributeValue(attributeBuilder, value, valueType)
-    } else if (valueType == universe.typeOf[DataFormat]) {
+    } else if (valueType =:= universe.typeOf[DataFormat]) {
       DataFormatConverter.setAttributeValue(attributeBuilder, value)
     } else {
       CustomConverterDelegator.setAttributeValue(attributeBuilder, value, valueType)
