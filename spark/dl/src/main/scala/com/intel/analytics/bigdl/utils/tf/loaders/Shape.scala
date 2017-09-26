@@ -30,3 +30,4 @@ class Shape extends TensorflowOpsLoader {
     Shape[T]()
   }
 }
+

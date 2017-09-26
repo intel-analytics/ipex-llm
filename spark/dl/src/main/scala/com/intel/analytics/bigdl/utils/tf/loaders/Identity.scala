@@ -30,3 +30,4 @@ class Identity extends TensorflowOpsLoader {
     nnIdentity[T]()
   }
 }
+

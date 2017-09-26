@@ -30,3 +30,4 @@ class Softmax extends TensorflowOpsLoader {
     SoftMax[T]()
   }
 }
+

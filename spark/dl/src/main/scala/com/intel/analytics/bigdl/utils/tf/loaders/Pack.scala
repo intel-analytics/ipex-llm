@@ -32,3 +32,4 @@ class Pack extends TensorflowOpsLoader {
     Pack[T](dim).asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
+

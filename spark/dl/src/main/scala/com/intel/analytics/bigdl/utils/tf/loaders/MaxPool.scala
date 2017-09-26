@@ -57,3 +57,4 @@ class MaxPool extends TensorflowOpsLoader {
       format = DataFormat(format))
   }
 }
+

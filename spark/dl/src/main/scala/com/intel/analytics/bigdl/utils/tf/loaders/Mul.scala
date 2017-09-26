@@ -30,3 +30,4 @@ class Mul extends TensorflowOpsLoader {
     CMulTable[T]()
   }
 }
+

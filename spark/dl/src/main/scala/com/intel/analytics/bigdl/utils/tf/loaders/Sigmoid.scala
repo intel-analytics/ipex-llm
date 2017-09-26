@@ -30,3 +30,4 @@ class Sigmoid extends TensorflowOpsLoader {
     Sigmoid[T]()
   }
 }
+

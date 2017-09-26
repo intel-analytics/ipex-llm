@@ -33,3 +33,4 @@ class Const extends TensorflowOpsLoader {
     Const(value).asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
+

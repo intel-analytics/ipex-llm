@@ -59,3 +59,4 @@ class AvgPool extends TensorflowOpsLoader {
       countIncludePad = false, format = DataFormat(format))
   }
 }
+

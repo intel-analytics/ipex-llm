@@ -59,3 +59,4 @@ class Conv2DBackpropInput extends TensorflowOpsLoader {
     deconv.asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
+

@@ -40,3 +40,4 @@ class CMulTableSpec extends FlatSpec with Matchers {
     grads[Tensor[Float]](2).value() should be(14)
   }
 }
+
