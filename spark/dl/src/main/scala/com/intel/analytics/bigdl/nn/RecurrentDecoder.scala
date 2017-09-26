@@ -110,62 +110,13 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
   }
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
-    currentGradOutput(hidDim) = gradHidden
-    /**
-     * Since we clone module along the time dimension, the output of each
-     * iteration have been recorded by the cloned modules. Thus, we can
-     * reuse these outputs during the backward operations by copying the
-     * outputs to _input variable.
-     *
-     * The output of Cell(i-1) should be one of the elements fed to the inputs
-     * of Cell(i)
-     * The first module in the cells array accepts zero hidden parameter.
-     */
-
-    var i = times
-    while (i >= 1) {
-      currentGradOutput(inputDim) = gradOutput.select(timeDim, i)
-
-      if (i > 1) {
-        cells(i - 1).regluarized(false)
-      } else {
-        cells(i - 1).regluarized(true)
-      }
-      
-      _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
-      else hidden
-      _input(inputDim) = outputCell.select(timeDim, i)
-
-      cells(i - 1).accGradParameters(_input, currentGradOutput)
-      currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
-      i -= 1
-    }
-    if (preTopology != null) {
-      preTopology.accGradParameters(newInput, gradInputCell)
-    }
+    throw new Exception("Should not enter RecurrentDecoder accGradParameters" +
+      "as it has override backward")
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    gradInput = gradInputCell
-    gradInputCell.resizeAs(output)
-    currentGradOutput(hidDim) = gradHidden
-    var i = times
-    while (i >= 1) {
-      currentGradOutput(inputDim) = gradOutput.select(timeDim, i)
-      _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
-      else hidden
-      
-      _input(inputDim) = outputCell.select(timeDim, i)
-
-      cells(i - 1).updateGradInput(_input, currentGradOutput)
-      currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
-      i -= 1
-    }
-    copy(cells.map(x => x.gradInput.toTable[Tensor[T]](inputDim)),
-        gradInputCell, 0)
-    if (preTopology != null) {
-      gradInput = preTopology.updateGradInput(newInput, gradInputCell).toTensor[T]
-    }
+    throw new Exception("Should not enter RecurrentDecoder updateGradInput" +
+      "as it has override backward")
     gradInput
   }
 

@@ -232,11 +232,11 @@ class ConvLSTMPeephole3DSpec extends FlatSpec with BeforeAndAfter with Matchers 
     val gradInput = model.backward(input, gradOutput).toTensor
     val gradient = model.getParameters()._2
 
-    val model2 = Recurrent().add(ConvLSTMPeephole(inputSize, hiddenSize, 3, 3, 1))
+    val model2 = Recurrent().add(LSTM(inputSize, hiddenSize))
     model2.getParameters()._1.copy(weights)
     model2.zeroGradParameters()
 
-    val input2 = Tensor(Array(batchSize, seqLength, inputSize, 5, 5))
+    val input2 = Tensor(Array(batchSize, seqLength, inputSize))
     input2.narrow(2, 1, 1).copy(input)
     input2.narrow(2, 2, seqLength-1).copy(output.narrow(2, 1, seqLength-1))
     val output2 = model2.forward(input2).toTensor
