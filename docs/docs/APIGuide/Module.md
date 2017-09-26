@@ -52,14 +52,14 @@ model = Model.load("s3://...") //load from s3
 ## Model Evaluation
 **Scala**
 ```scala
-model.evaluate(dataset,vMethods,batchSize = None)
+model.evaluate(dataset, vMethods, batchSize = None)
 ```
 **Python**
 ```python
 model.evaluate(val_rdd, batch_size, val_methods)
 ```
 
-Use `evaluate` on the model for evaluation. The parameter `dataset` (Scala) or `val_rdd` (Python) in is the validation dataset, and `vMethods` (Scala) or `val_methods`(Python) is an array of ValidationMethods. Refer to [Metrics](Metrics.md) for the list of defined ValidationMethods.
+Use `evaluate` on the model for evaluation. The parameter `dataset` (Scala) or `val_rdd` (Python) is the validation dataset, and `vMethods` (Scala) or `val_methods`(Python) is an array of ValidationMethods. Refer to [Metrics](Metrics.md) for the list of defined ValidationMethods.
 
 **Scala example**
 ```scala
@@ -89,12 +89,17 @@ from bigdl.util.common import *
 from bigdl.optim.optimizer import *
 import numpy as np
 
-samples=[Sample.from_ndarray(np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]), np.array([2.0]))]
-testSet = sc.parallelize(samples)
+sc = SparkContext.getOrCreate(conf=create_spark_conf())
+init_engine()
 
-//train a model or load an existing model...
-//model = ...
-evaluateResult = model.evaluate(testSet, 1, [Top1Accuracy])
+samples=[Sample.from_ndarray(np.array([1.0, 2.0]), np.array([2.0]))]
+testSet = sc.parallelize(samples,1)
+
+//You can train a model or load an existing model before evaluation.
+model = Linear(2, 1)
+
+evaluateResult = model.evaluate(testSet, 1, [Top1Accuracy()])
+print(evaluateResult[0])
 ```
 
 
