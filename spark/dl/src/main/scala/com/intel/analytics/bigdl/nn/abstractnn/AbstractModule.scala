@@ -51,22 +51,21 @@ abstract class TensorModule[T: ClassTag]
  *
  * @tparam A Input data type
  * @tparam B Output data type
- * @tparam T Numeric type. Only support float/double now
+ * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
  */
-abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
-@specialized(Float, Double) T: ClassTag](
+abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, T: ClassTag](
   implicit ev: TensorNumeric[T]) extends Serializable {
 
   private val namePostfix = Integer.toHexString(java.util.UUID.randomUUID().hashCode())
   /**
    * The cached output. So we don't compute it again when need it
    */
-  var output: B = Activity[B, T]()
+  var output: B = Activity.allocate[B, T]()
 
   /**
    * The cached gradient of activities. So we don't compute it again when need it
    */
-  var gradInput: A = Activity[A, T]()
+  var gradInput: A = Activity.allocate[A, T]()
 
   /**
    * The scale of gradient weight and gradient bias
@@ -134,12 +133,12 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
    * @return
    */
   def clearState() : this.type = {
-    if (output.isInstanceOf[Tensor[T]]) {
-      output.asInstanceOf[Tensor[T]].set()
+    if (output.isInstanceOf[Tensor[_]]) {
+      output.asInstanceOf[Tensor[_]].set()
     }
 
-    if (gradInput.isInstanceOf[Tensor[T]]) {
-      gradInput.asInstanceOf[Tensor[T]].set()
+    if (gradInput.isInstanceOf[Tensor[_]]) {
+      gradInput.asInstanceOf[Tensor[_]].set()
     }
 
     this
@@ -174,7 +173,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
    */
   def getName() : String = {
     if (this.name == null) {
-      s"${this.getClass.getSimpleName}@${namePostfix}"
+      s"${this.getClass.getSimpleName}${namePostfix}"
     } else {
       this.name
     }
@@ -234,7 +233,15 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
    */
   final def forward(input: A): B = {
     val before = System.nanoTime()
-    updateOutput(input)
+    try {
+      updateOutput(input)
+    } catch {
+      case l: LayerException =>
+        l.layerMsg = this.toString() + "/" + l.layerMsg
+        throw l
+      case e: Throwable =>
+        throw new LayerException(this.toString(), e)
+    }
     forwardTime += System.nanoTime() - before
 
     output
@@ -651,16 +658,29 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
   }
 
   /**
-   * Some other modules point to current module
+   * Build graph: some other modules point to current module
    * @param nodes upstream module nodes
    * @return node containing current module
    */
   def inputs(nodes : ModuleNode[T]*): ModuleNode[T] = {
-    require(this.isInstanceOf[AbstractModule[_, Tensor[T], T]],
-      "AbstractModule: Only module with tensor output can be added into a graph node")
-    val curNode = new ModuleNode[T](this.asInstanceOf[AbstractModule[Activity, Tensor[T], T]])
+    val curNode = new ModuleNode[T](this)
     nodes.foreach(node => {
-      node -> curNode
+      node.add(curNode, Edge())
+    })
+    curNode
+  }
+
+  /**
+   * Build graph: some other modules point to current module
+   * @param first distinguish from another inputs when input parameter list is empty
+   * @param nodesWithIndex upstream module nodes and the output tensor index. The start index is 1.
+   * @return node containing current module
+   */
+  def inputs(first: (ModuleNode[T], Int), nodesWithIndex : (ModuleNode[T], Int)*): ModuleNode[T] = {
+    val curNode = new ModuleNode[T](this)
+    first._1.add(curNode, Edge(first._2))
+    nodesWithIndex.foreach(nodeWithIndex => {
+      nodeWithIndex._1.add(curNode, Edge(nodeWithIndex._2))
     })
     curNode
   }

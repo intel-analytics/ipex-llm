@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.LayerException
 import org.scalatest.FlatSpec
 
 class InferReshapeSpec extends FlatSpec {
@@ -46,11 +47,11 @@ class InferReshapeSpec extends FlatSpec {
       assert(gradOutput == gradOutputOrg)
     }
 
-    intercept[IllegalArgumentException] {
+    intercept[LayerException] {
       module.forward(Tensor[Double](2, 2))
     }
 
-    intercept[IllegalArgumentException] {
+    intercept[LayerException] {
       module.forward(Tensor[Double](3, 2, 2))
     }
   }
@@ -123,7 +124,7 @@ class InferReshapeSpec extends FlatSpec {
       assert(gradOutput == gradOutputOrg)
     }
 
-    intercept[IllegalArgumentException] {
+    intercept[LayerException] {
       module.forward(Tensor[Double](3, 1))
     }
   }

@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.utils.serializer
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.nn.{VolumetricFullConvolution, _}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
@@ -97,7 +97,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     res1 should be (res2)
   }
 
-  "BinaryTreeLSTM serializer" should " work properly" in {
+  "BinaryTreeLSTM serializer" should "work properly" in {
 
     RNG.setSeed(1000)
     val binaryTreeLSTM = BinaryTreeLSTM(2, 2)
@@ -497,7 +497,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     res1 should be (res2)
   }
 
-  "Echo serializer " should " work properly" in {
+  "Echo serializer" should "work properly" in {
     val echo = Echo()
     val tensor1 = Tensor(10).apply1(_ => Random.nextFloat())
     val tensor2 = Tensor()
@@ -1163,7 +1163,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     res1 should be (res2)
   }
 
-  "Recurrent serializer " should " work properly" in {
+  "Recurrent serializer " should "work properly" in {
     val recurrent = Recurrent()
       .add(RnnCell(5, 4, Tanh()))
     val input1 = Tensor(Array(10, 5, 5))
@@ -1857,6 +1857,26 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     ModulePersister.saveToFile("/tmp/testModule.bigdl", testModule, true)
     val loadedModule = ModuleLoader.loadFromFile("/tmp/testModule.bigdl")
     val res2 = loadedModule.forward(tensor2)
+    res1 should be (res2)
+  }
+
+  "2 Linears's weights use same storage" should "work properly" in {
+    val weight = Array(0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f)
+    val weight1 = Tensor(Storage(weight), 1, Array(2, 2))
+    val weight2 = Tensor(Storage(weight), 5, Array(2, 2))
+
+    val linear1 = Linear(2, 2, initWeight = weight1)
+    val linear2 = Linear(2, 2, initWeight = weight2)
+    val model = Sequential().add(linear1).add(linear2)
+
+    val input = Tensor(4, 2).rand
+
+    val res1 = model.forward(input)
+
+    ModulePersister.saveToFile("/tmp/2linears.with.a.storage.bigdl", model, true)
+    val loadedModel = ModuleLoader.loadFromFile("/tmp/2linears.with.a.storage.bigdl")
+    val res2 = loadedModel.forward(input)
+
     res1 should be (res2)
   }
 }

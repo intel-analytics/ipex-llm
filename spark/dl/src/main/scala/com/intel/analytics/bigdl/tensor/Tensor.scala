@@ -34,6 +34,18 @@ import scala.reflect.ClassTag
  * @tparam T should be Double or Float
  */
 trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
+
+  /**
+   * @return whether this tensor is an empty tensor. Note that nDimension == 0 is not
+   *         sufficient to determine a tensor is empty, because a scalar tensor's nDimension
+   *         is also 0.
+   */
+  def isEmpty: Boolean
+
+  /**
+   * @return whether this tensor is a scalar
+   */
+  def isScalar: Boolean
   /**
    * Dimension number of the tensor. For empty tensor, its dimension number is 0
    *
@@ -88,6 +100,16 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
    * @return current tensor
    */
   def fill(v: T): Tensor[T]
+
+  /**
+   * Fill with a given value. It will change the value of the current tensor and return itself
+   *
+   * Note the value should be an instance of T
+   *
+   * @param v value to fill the tensor
+   * @return current tensor
+   */
+  def forceFill(v: Any): Tensor[T]
 
   /**
    * Fill with zero. It will change the value of the current tensor and return itself
@@ -170,6 +192,12 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
    */
   def apply(indexes: Array[Int]): T
 
+
+  /**
+   * @return the value of a scalar. Requires the tensor to be a scalar.
+   */
+  def value(): T
+
   /**
    * Query the value on a given position. The number of parameters
    * should be equal to the dimension number of the tensor.
@@ -178,7 +206,6 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
    * @param d1,( d2, d3, d4, d5) the given position
    * @return the value on a given position
    */
-
   def valueAt(d1: Int): T
 
   def valueAt(d1: Int, d2: Int): T
@@ -232,6 +259,13 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
    */
   def update(indexes: Array[Int], value: T): Unit
 
+
+  /**
+   * Set value for a scalar tensor
+   * @param value the written value
+   * @return
+   */
+  def setValue(value: T): this.type
   /**
    * Write the value on a given position. The number of parameters
    * should be equal to the dimension number of the tensor.
@@ -315,6 +349,13 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
   override def clone(): Tensor[T] = {
     this
   }
+
+  /**
+   * return a new empty tensor of the same type
+   *
+   * @return new tensor
+   */
+  def emptyInstance(): Tensor[T]
 
   /**
    * Resize the current tensor to the same size of the given tensor. It will still use the same
@@ -446,12 +487,53 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
   def copy(other: Tensor[T]): Tensor[T]
 
   /**
+   * Copy the value of the given tensor to the current. They should have same size.
+   * They should also have the same type.
+   *
+   * @param other source tensor
+   * @return current tensor
+   */
+  def forceCopy(other: Tensor[_]): Tensor[T]
+
+  /**
+   * Apply a function to each element of the tensor `t`
+   * and set each value to self
+   *
+   * @param t tensor to be modified
+   * @param func applied function
+   * @return current tensor
+   */
+  def applyFun[A: ClassTag](
+    t: Tensor[A],
+    func: (A) => T): Tensor[T]
+
+  /**
    * Apply a function to each element of the tensor and modified it value if it return a double
    *
    * @param func applied function
    * @return current tensor
    */
   def apply1(func: T => T): Tensor[T]
+
+  /**
+   * Zip values of two other tensors with applying the function `func` on
+   * each two values element-wisely and assign the result value to the
+   * current tensor
+   *
+   * The two given tensors should has the same size of the current tensor
+   *
+   * @param t1 tensor 1
+   * @param t2 tensor 2
+   * @param func zip with the function
+   * @tparam A numeric type of tensor 1
+   * @tparam B numeric type of tensor 2
+   *
+   * @return self
+   */
+  def zipWith[A: ClassTag, B: ClassTag](
+    t1: Tensor[A],
+    t2: Tensor[B],
+    func: (A, B) => T): Tensor[T]
 
   /**
    * Map value of another tensor to corresponding value of current tensor and apply function on
@@ -678,15 +760,32 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
  */
 sealed trait TensorDataType
 
-object DoubleType extends TensorDataType
+object BooleanType extends TensorDataType
+
+object CharType extends TensorDataType
+
+object StringType extends TensorDataType
+
+object IntType extends TensorDataType
+
+object ShortType extends TensorDataType
+
+object LongType extends TensorDataType
 
 object FloatType extends TensorDataType
+
+object DoubleType extends TensorDataType
 
 object Tensor {
 
   // pre-load MKL library. If we do not do it here,
   // libjmkl.so will be loaded when one of the methods of in MKL is called.
   MKL.isMKLLoaded
+
+  /**
+   * Start index in BigDL. We count from 1.
+   */
+  val START_INDEX = 1
 
   /**
    * Returns an empty tensor.
@@ -731,7 +830,18 @@ object Tensor {
     val flatTable = xs.flatten()
     val content = new Array[T](flatTable.length())
     for (i <- 1 to content.length) {
-      content(i - 1) = flatTable(i)
+      content(i - 1) = flatTable[Any](i) match {
+        case e: Boolean => ev.fromType(e)
+        case e: Char => ev.fromType(e)
+        case e: Short => ev.fromType(e)
+        case e: Int => ev.fromType(e)
+        case e: Long => ev.fromType(e)
+        case e: Float => ev.fromType(e)
+        case e: Double => ev.fromType(e)
+        case e: String => ev.fromType(e)
+        case _ => throw new IllegalArgumentException(s"Not support numeric type " +
+          flatTable[Any](i).getClass.getName)
+      }
     }
 
     val dims = new ArrayBuffer[Int]()

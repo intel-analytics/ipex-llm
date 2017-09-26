@@ -767,4 +767,141 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     b.valueAt(3) should be (0.01f)
     a.valueAt(2, 3) should be (0.01f)
   }
+
+  "Scalar tensor" should "be able to construct" in {
+    val t: Tensor[Double] = DenseTensor[Double](1.0)
+    t.nDimension should be(0)
+    t.size().isEmpty should be (true)
+  }
+
+  "Scalar tensor" should "not have size" in {
+    val t: Tensor[Double] = DenseTensor[Double](1.0)
+    val thrown = intercept[Exception] {
+      t.size(1)
+    }
+    thrown.isInstanceOf[IllegalArgumentException] should be (true)
+  }
+
+  "Scalar tensor" should "be able to add" in {
+    val t: Tensor[Double] = DenseTensor[Double](1.0)
+    val y: Tensor[Double] = DenseTensor[Double](1.0)
+    t.add(1.0, y)
+    t should be (DenseTensor[Double](2.0))
+  }
+
+  "Scalar tensor" should "be able to set value" in {
+    val t: Tensor[Double] = DenseTensor[Double](1.0)
+    t.setValue(2.0)
+    t should be (DenseTensor[Double](2.0))
+  }
+
+  "Scalar tensor" should "be able to calc max" in {
+    val t: Tensor[Double] = DenseTensor[Double](1.0)
+    t.max() should be (1.0)
+  }
+
+  "Scalar tensor" should "be able to calc min" in {
+    val t: Tensor[Double] = DenseTensor[Double](1.0)
+    t.max() should be (1.0)
+  }
+
+  "Scalar tensor" should "be able to calc nElement" in {
+    val t: Tensor[Double] = DenseTensor[Double](1.0)
+    t.nElement() should be (1)
+  }
+
+  "Scalar tensor" should "be able to get element" in {
+    val t: Tensor[Double] = DenseTensor[Double](1.0)
+    t.apply(Array[Int]()) should be (1.0)
+  }
+
+  "Scalar tensor" should "be able to update" in {
+    val t: Tensor[Double] = DenseTensor[Double](1.0)
+    t.update(Array[Int](), 2.0)
+    t should be (DenseTensor[Double](2.0))
+  }
+
+  "Tensor add" should "support broadcasting" in {
+    val t1 = Tensor[Double](T(1, 2, 3))
+    val t2 = Tensor[Double](T(T(2, 5, 3), T(3, 6, 4)))
+    t2.add(t1) should be (Tensor[Double](T(T(3, 7, 6), T(4, 8, 7))))
+  }
+
+  "Tensor add" should "support broadcasting 2" in {
+    val t1 = Tensor[Double](T(
+      T(
+        T(1, 2, 3),
+        T(4, 5, 6)
+      ),
+      T(
+        T(2, 1, 6),
+        T(5, 4, 3)
+      ),
+      T(
+        T(4, 1, 3),
+        T(4, 5, 3)
+      )
+    ))
+    val t2 = Tensor[Double](T(
+      T(
+        T(2),
+        T(3)
+      )
+    ))
+
+    val cloneT1 = t1.clone()
+    val oldStorage = t1.storage()
+    t1.add(t2) should be (Tensor[Double](T(
+      T(
+        T(3, 4, 5),
+        T(7, 8, 9)
+      ),
+      T(
+        T(4, 3, 8),
+        T(8, 7, 6)
+      ),
+      T(
+        T(6, 3, 5),
+        T(7, 8, 6)
+      )
+    )))
+    oldStorage.eq(t1.storage()) should be(true)
+
+    t2.add(cloneT1) should be (Tensor[Double](T(
+      T(
+        T(3, 4, 5),
+        T(7, 8, 9)
+      ),
+      T(
+        T(4, 3, 8),
+        T(8, 7, 6)
+      ),
+      T(
+        T(6, 3, 5),
+        T(7, 8, 6)
+      )
+    )))
+  }
+
+  "Tensor add" should "support broadcasting with singleton dimension" in {
+    val t1 = Tensor[Double](T(T(1, 2, 3)))
+    val t2 = Tensor[Double](T(T(2, 5, 3), T(3, 6, 4)))
+    t2.add(t1) should be (Tensor[Double](T(T(3, 7, 6), T(4, 8, 7))))
+  }
+
+  "Tensor add" should "catch exception when broadcasting size not match" in {
+    val t1 = Tensor[Double](T(1, 2))
+    val t2 = Tensor[Double](T(T(2, 5, 3), T(3, 6, 4)))
+    intercept[IllegalArgumentException] {
+      t2.add(t1) should be (Tensor[Double](T(T(3, 7, 6), T(4, 8, 7))))
+    }
+  }
+
+  "Tensor add" should "catch exception when broadcasting size not match 2" in {
+    val t1 = Tensor[Double](T(T(1, 2, 3), T(1, 2, 3), T(1, 2, 3)))
+    val t2 = Tensor[Double](T(T(2, 5, 3), T(3, 6, 4)))
+    intercept[IllegalArgumentException] {
+      t2.add(t1) should be (Tensor[Double](T(T(3, 7, 6), T(4, 8, 7))))
+    }
+  }
 }

@@ -36,9 +36,13 @@ import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn.tf.{Const, Fill, Shape, SplitAndSelect}
-import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowSaver}
+import com.intel.analytics.bigdl.utils.tf.TensorflowLoader.{buildBigDLModel, buildTFGraph, parse}
+import com.intel.analytics.bigdl.utils.tf.{BigDLSessionImpl, TensorflowDataFormat, TensorflowSaver}
+import org.apache.spark.SparkContext
+import org.tensorflow.framework.NodeDef
 
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 import scala.language.existentials
 import scala.reflect.ClassTag
 
@@ -126,7 +130,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     // clone here in case the the size of storage larger then the size of tensor.
     require(tensor != null, "tensor cannot be null")
     if (tensor.nElement() == 0) {
-      JTensor(Array(0), Array(0), typeName)
+      JTensor(Array(), Array(0), typeName)
     } else {
       val cloneTensor = tensor.clone()
       val result = JTensor(cloneTensor.storage().array().map(i => ev.toType[Float](i)),
@@ -285,6 +289,15 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def createLogSoftMax(): LogSoftMax[T] = {
     LogSoftMax[T]()
+  }
+
+  def createTemporalMaxPooling(
+    kW: Int,
+    dW: Int)
+  : TemporalMaxPooling[T] = {
+    TemporalMaxPooling[T](
+      kW,
+      dW)
   }
 
   def createSpatialMaxPooling(kW: Int,
@@ -1491,6 +1504,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     new JavaRDD[JTensor](listRDD)
   }
 
+  def evaluate(module: AbstractModule[Activity, Activity, T]):
+  AbstractModule[Activity, Activity, T] = {
+    module.evaluate()
+  }
+
   def modelPredictClass(model: AbstractModule[Activity, Activity, T],
                       dataRdd: JavaRDD[Sample]): JavaRDD[Int] = {
     val tensorRDD = model.predictClass(dataRdd.rdd.map(toSample(_)))
@@ -1690,6 +1708,25 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
    */
   def saveTensorDictionary(tensors: JHashMap[String, JTensor], path: String): Unit = {
     File.save(tensors, path, true)
+  }
+
+  def trainTF(
+               modelPath: String,
+               output: String,
+               samples: JavaRDD[Sample],
+               optMethod: OptimMethod[T],
+               criterion: Criterion[T],
+               batchSize: Int, endWhen: Trigger): AbstractModule[Activity, Activity, T] = {
+    val nodeList = parse(modelPath)
+
+    val context =
+      new mutable.HashMap[String, (Tensor[T], Tensor[T], Option[Seq[(Int, Int)]])]()
+    val session = new BigDLSessionImpl[T](nodeList.asScala, context)
+    val dataset = batching(samples, batchSize)
+
+    val model = session.train(Seq(output), dataset,
+      optMethod, criterion, endWhen)
+    model
   }
 
   def createOptimizer(model: AbstractModule[Activity, Activity, T],
@@ -1893,5 +1930,19 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def setStopGradient(model: Graph[T], layers: JList[String]): Graph[T] = {
     model.stopGradient(layers.asScala.toArray)
+  }
+
+  def saveGraphTopology(model: Graph[T], logPath: String): Graph[T] = {
+    model.saveGraphTopology(logPath)
+  }
+
+  def createResizeBilinear(
+    outputHeight: Int,
+    outputWidth: Int,
+    alignCorner: Boolean
+  ): ResizeBilinear[T] = {
+    ResizeBilinear[T](outputHeight,
+      outputWidth,
+      alignCorner)
   }
 }

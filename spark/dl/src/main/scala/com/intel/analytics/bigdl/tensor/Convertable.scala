@@ -197,7 +197,7 @@ trait ConvertableFromLong extends ConvertableFrom[Long] {
     throw new UnsupportedOperationException("Float cannot be cast to Boolean type")
 }
 
-trait ConvertableFromBoolean {
+trait ConvertableFromBoolean extends ConvertableFrom[Boolean] {
   implicit def toFloat(a: Boolean): Float =
     throw new UnsupportedOperationException("Boolean cannot be cast to Float")
 
@@ -221,7 +221,7 @@ trait ConvertableFromBoolean {
   implicit def toBoolean(a: Boolean): Boolean = a
 }
 
-trait ConvertableFromString {
+trait ConvertableFromString extends ConvertableFrom[String] {
   implicit def toFloat(a: String): Float =
     throw new UnsupportedOperationException("Float cannot be cast to String")
 
@@ -246,7 +246,7 @@ trait ConvertableFromString {
   implicit def toString(a: String): String = a
 }
 
-trait ConvertableFromChar {
+trait ConvertableFromChar extends ConvertableFrom[Char] {
   implicit def toFloat(a: Char): Float = a.toFloat
 
   implicit def toDouble(a: Char): Double = a.toDouble
@@ -280,5 +280,7 @@ object ConvertableFrom {
   implicit object ConvertableFromLong extends ConvertableFromLong
 
   implicit object ConvertableFromString extends ConvertableFromString
+
+  implicit object ConvertableFromBoolean extends ConvertableFromBoolean
 }
 

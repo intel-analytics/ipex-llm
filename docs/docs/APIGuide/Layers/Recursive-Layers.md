@@ -70,6 +70,10 @@ Tree-LSTM is a kind of recursive neural networks, as described in the paper
 [Improved Semantic Representations From Tree-Structured Long Short-Term Memory Networks](https://arxiv.org/abs/1503.00075)
  by Kai Sheng Tai, Richard Socher, and Christopher Manning.
 
+The input tensor in `forward(input)` is expected to be a table, in which the first element is the 3D embedding tensor tree
+(`batch x tree node number x (number of branches + 1)`],
+the second elment is the a 3D tensor (`batch x leaf number x inputSize`). output of
+`forward(input)` is expected to be a 3D tensor (`batch x tree node number x hiddenSize`).
 
 Parameters:
 * `inputSize` the size of each input vector

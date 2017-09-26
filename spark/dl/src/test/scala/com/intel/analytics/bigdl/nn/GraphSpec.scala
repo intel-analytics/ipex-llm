@@ -17,20 +17,16 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.example.loadmodel.AlexNet_OWT
 import com.intel.analytics.bigdl.models.autoencoder.Autoencoder
-import com.intel.analytics.bigdl.models.inception.{Inception_Layer_v1, Inception_v1}
+import com.intel.analytics.bigdl.models.inception.Inception_v1_NoAuxClassifier
 import com.intel.analytics.bigdl.models.lenet.LeNet5
-import com.intel.analytics.bigdl.models.resnet.{Convolution, ResNet}
-import com.intel.analytics.bigdl.models.resnet.ResNet.{ShortcutType, iChannels}
 import com.intel.analytics.bigdl.models.vgg.{VggForCifar10, Vgg_16, Vgg_19}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import org.scalatest.{FlatSpec, Matchers}
+import com.intel.analytics.bigdl.nn.ops.{ControlNodes, Less}
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{RandomGenerator, T, Table}
+import com.intel.analytics.bigdl.utils._
 
 import scala.reflect.ClassTag
 import scala.util.Random
@@ -90,7 +86,7 @@ class GraphSpec extends FlatSpec with Matchers {
     val output2 = ReLU().inputs(cadd)
 
     val graph = Graph(Array(fc1, fc2), Array(output1, output2))
-    intercept[IllegalArgumentException] {
+    intercept[LayerException] {
       graph.forward(Tensor(T(0.1f, 0.2f, -0.3f, -0.4f)))
     }
   }
@@ -149,7 +145,7 @@ class GraphSpec extends FlatSpec with Matchers {
 
     val graph = Graph(Array(fc1), Array(output1))
 
-    intercept[IllegalArgumentException] {
+    intercept[LayerException] {
       graph.forward(T(Tensor(T(0.1f, 0.2f, -0.3f, -0.4f)),
         Tensor(T(0.5f, 0.4f, -0.2f, -0.1f))))
     }
@@ -212,6 +208,49 @@ class GraphSpec extends FlatSpec with Matchers {
     val output = graph.forward(T(Tensor(T(0.1f, 0.2f, -0.3f, -0.4f)),
       Tensor(T(0.5f, 0.4f, -0.2f, -0.1f))))
     output should be(T(Tensor(T(0.0f, 0.0f)), Tensor(T(3.8f, 3.8f))))
+  }
+
+  "Graph forward" should "be correct when contains multi output node" in {
+    val x = SplitTable(1).inputs()
+    val y1 = Identity().inputs(x(1))
+    val y2 = Identity().inputs(x(2))
+    val z = CAddTable().inputs(y1, y2)
+
+    val graph = Graph(x, z)
+    val output = graph.forward(Tensor(T(T(1, 2, 3), T(4, 2, 7))))
+    output should be(Tensor(T(5, 4, 10)))
+  }
+
+  "Graph forward" should "be correct when connect a table to a node" in {
+    val x = SplitTable(1).inputs()
+    val y = CAddTable().inputs(x)
+
+    val graph = Graph(x, y)
+    val output = graph.forward(Tensor(T(T(1, 2, 3), T(4, 2, 7))))
+    output should be(Tensor(T(5, 4, 10)))
+  }
+
+  "Graph forward" should "be correct when contains multi output node with table output" in {
+    val x = Identity().inputs()
+    val y = SplitTable(1).inputs(x)
+
+    val graph = Graph(x, y)
+    val output = graph.forward(Tensor(T(T(1, 2, 3), T(4, 2, 7))))
+    output.toTable[Tensor[Float]](1) should be(Tensor(T(1, 2, 3)))
+    output.toTable[Tensor[Float]](2) should be(Tensor(T(4, 2, 7)))
+  }
+
+  "Graph forward" should "be correct when contains nested output" in {
+    val x = Identity().inputs()
+    val y1 = SplitTable(1).inputs(x)
+    val y2 = Identity().inputs(y1(1))
+
+    val graph = Graph(x, Array(y1, y2))
+    val output = graph.forward(Tensor(T(T(1, 2, 3), T(4, 2, 7))))
+    val t1 = output.toTable[Table](1)
+    t1[Tensor[Float]](1) should be(Tensor(T(1, 2, 3)))
+    t1[Tensor[Float]](2) should be(Tensor(T(4, 2, 7)))
+    output.toTable[Tensor[Float]](2) should be(Tensor(T(1, 2, 3)))
   }
 
   "Graph backward" should "be successful" in {
@@ -323,6 +362,51 @@ class GraphSpec extends FlatSpec with Matchers {
     fc2.element.parameters()._2(0) should be(Tensor(T(T(1.5f, 1.2f, -0.6f, -0.3f),
       T(2.0f, 1.6f, -0.8f, -0.4f))))
     fc2.element.parameters()._2(1) should be(Tensor(T(3.0f, 4.0f)))
+  }
+
+  "Graph backward" should "be correct when contains multi output node" in {
+    val x = SplitTable(1).inputs()
+    val y1 = Identity().inputs(x(1))
+    val y2 = Identity().inputs(x(2))
+    val z = CAddTable().inputs(y1, y2)
+
+    val graph = Graph(x, z)
+    val output = graph.forward(Tensor(T(T(1, 2, 3), T(4, 2, 7))))
+    val grads = graph.backward(Tensor(T(T(1, 2, 3), T(4, 2, 7))), Tensor(T(5, 4, 10)))
+    grads should be(Tensor(T(T(5, 4, 10), T(5, 4, 10))))
+  }
+
+  "Graph backward" should "be correct when contains multi output node with table output" in {
+    val x = Identity().inputs()
+    val y = SplitTable(1).inputs(x)
+
+    val graph = Graph(x, y)
+    val output = graph.forward(Tensor(T(T(1, 2, 3), T(4, 2, 7))))
+    val grad = graph.backward(Tensor(T(T(1, 2, 3), T(4, 2, 7))),
+      T(Tensor(T(3, 2, 1)), Tensor(T(5, 7, 9))))
+    grad should be(Tensor(T(T(3, 2, 1), T(5, 7, 9))))
+  }
+
+  "Graph backward" should "be correct when connect a table to a node" in {
+    val x = SplitTable(1).inputs()
+    val y = CAddTable().inputs(x)
+
+    val graph = Graph(x, y)
+    val output = graph.forward(Tensor(T(T(1, 2, 3), T(4, 2, 7))))
+    val grads = graph.backward(Tensor(T(T(1, 2, 3), T(4, 2, 7))), Tensor(T(5, 4, 10)))
+    grads should be(Tensor(T(T(5, 4, 10), T(5, 4, 10))))
+  }
+
+  "Graph backward" should "be correct when contains nested output" in {
+    val x = Identity().inputs()
+    val y1 = SplitTable(1).inputs(x)
+    val y2 = Identity().inputs(y1(1))
+
+    val graph = Graph(x, Array(y1, y2))
+    val output = graph.forward(Tensor(T(T(1, 2, 3), T(4, 2, 7))))
+    val result = graph.backward(Tensor(T(T(1, 2, 3), T(4, 2, 7))),
+      T(T(Tensor(T(2, 7, 8)), Tensor(T(1, 5, 3))), Tensor(T(5, 4, 10))))
+    result should be(Tensor(T(T(7, 11, 18), T(1, 5, 3))))
   }
 
   "Graph forward/backward" should "be successful when there's output from internal node" in {
@@ -1040,6 +1124,51 @@ class GraphSpec extends FlatSpec with Matchers {
     fc1_1.element.gradInput should be (fc1.element.gradInput)
     fc1_1.element.parameters()._2 should be (fc1.element.parameters()._2)
     reshape.element.gradInput.toTensor.nElement() should be (0)
+  }
+
+  "save graph to tensorboard log dir" should "work" in {
+    System.setProperty("bigdl.localMode", "true")
+    Engine.init
+    val tmpFile = java.io.File.createTempFile("graph", "tensorboard")
+    val absolutePath = tmpFile.getAbsolutePath
+    tmpFile.delete()
+
+    val model = Inception_v1_NoAuxClassifier.graph(1000).asInstanceOf[Graph[Float]]
+    model.saveGraphTopology(absolutePath)
+  }
+
+  "graph" should "support switch with two branch" in {
+    val data = Input("data")
+    val condition = Input("condition")
+    val swtich = ControlNodes.switch(data, condition)
+    val echo1 = Echo().inputs(swtich.trueEdge())
+    val echo2 = Echo().inputs(swtich.falseEdge())
+
+    val model = Graph(Array(data, condition), Array(echo1), None, false)
+    val result = model.forward(T(Tensor[Float](T(1)), Tensor[Boolean](T(true))))
+    result.toTensor should be(Tensor[Float](T(1)))
+
+    intercept[LayerException] {
+      model.forward(T(Tensor[Float](T(1)), Tensor[Boolean](T(false))))
+    }
+  }
+
+  "graph" should "support switch with two branch with merge" in {
+    val data = Input("data")
+    val condition = Input("condition")
+    val swtich = ControlNodes.switch(data, condition)
+    val echo1 = Echo().inputs(swtich.trueEdge())
+    val echo2 = Echo().inputs(swtich.falseEdge())
+    val add1 = AddConstant(1).inputs(echo1)
+    val add5 = AddConstant(5).inputs(echo2)
+    val merge = ControlNodes.merge(add1, add5)
+    val output = Identity().inputs(merge)
+
+    val model = Graph(Array(data, condition), Array(output), None, false)
+    var result = model.forward(T(Tensor[Float](T(1)), Tensor[Boolean](T(true))))
+    result.toTensor should be(Tensor[Float](T(2)))
+    result = model.forward(T(Tensor[Float](T(1)), Tensor[Boolean](T(false))))
+    result.toTensor should be(Tensor[Float](T(6)))
   }
 }
 

@@ -32,6 +32,26 @@ trainedModel = optimizer.optimize()
 ```
 After you start to run your spark job, the train and validation summary will be saved to `mylogdir/myapp/train` and `mylogdir/myapp/validation` respectively (Note: you may want to use different `appName` for different job runs to avoid possible conflicts.)
 
+### Save graph model to summary so visualize model in tensorboard
+Model structure is very important for people to create/understand model. For sequential models, you can
+just print them out by using the ```toString``` method. For complex graph model, you can use tensorboard
+to visualize it.
+
+Here's how to save your graph model to summary log path to display it in the tensorboard.
+
+ **Example: Save graph model to summary in Scala**
+```scala
+val model = Graph(...)
+model.saveGraphTopology("logpath")
+```
+
+ **Example: Save graph model to summary in Python**
+```python
+model=Model(...)
+model.save_graph_topology("logpath")
+
+```
+
 ---
 
 ## **Retrieving summary info as readable format**
