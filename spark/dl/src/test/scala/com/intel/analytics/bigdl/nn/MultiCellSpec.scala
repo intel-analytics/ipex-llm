@@ -65,9 +65,9 @@ class MultiCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A MultiCell " should "generate correct output with convlstm" in {
-    val hiddenSize = 3
-    val inputSize = 3
-    val seqLength = 2
+    val hiddenSize = 7
+    val inputSize = 7
+    val seqLength = 3
     val batchSize = 2
     val kernalW = 3
     val kernalH = 3
@@ -122,7 +122,7 @@ class MultiCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
   "A MultiCell " should "generate correct output with lstm" in {
     val hiddenSize = 10
     val inputSize = 10
-    val seqLength = 1
+    val seqLength = 5
     val batchSize = 2
     val rec = Recurrent[Double]()
     val cells = Array(LSTM[Double](

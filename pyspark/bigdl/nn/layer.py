@@ -1059,6 +1059,31 @@ class Recurrent(Container):
         jstate, state_is_table = self.check_input(state)
         callBigDlFunc(self.bigdl_type, "setState", self.value, jstate, state_is_table)
 
+    def get_states(self):
+        """
+        get hidden states at last time step, only work for MultiCell.
+
+        :return: list of hidden state
+        """
+        states = callBigDlFunc(self.bigdl_type, "getStates", self.value)
+        for state in states:
+            for idx, tensor in enumerate(state):
+                state[idx] = tensor.to_ndarray()
+
+        return states
+
+    def set_states(self, states):
+        """
+        set hidden state and cell at first time step, only work for MultiCell.
+        """
+        jStates = []
+        state_is_tables = []
+        for state in states:
+            jstate, state_is_table = self.check_input(state)
+            jStates.append(jstate)
+            state_is_tables.append(state_is_table)
+        callBigDlFunc(self.bigdl_type, "setStates", self.value, jStates, state_is_tables)
+
 class LSTM(Layer):
     '''
 |   Long Short Term Memory architecture.
@@ -4052,6 +4077,24 @@ class ConvLSTMPeephole3D(Layer):
                  bRegularizer=None, cRegularizer=None, with_peephole=True, bigdl_type="float"):
         super(ConvLSTMPeephole3D, self).__init__(None, bigdl_type, input_size, output_size, kernel_i, kernel_c, stride,
                                                  wRegularizer, uRegularizer, bRegularizer, cRegularizer, with_peephole)
+
+
+class MultiCell(Layer):
+    '''
+    A cell that enables stack multiple simple rnn cells
+
+    >>> cells = []
+    >>> cells.append(ConvLSTMPeephole3D(4, 3, 3, 3, 1))
+    >>> cells.append(ConvLSTMPeephole3D(4, 3, 3, 3, 1))
+    >>> stacked_convlstm = MultiCell(cells)
+    creating: createConvLSTMPeephole3D
+    creating: createConvLSTMPeephole3D    
+    creating: createRecurrent
+    creating: createMultiCell
+    '''
+
+    def __init__(self, cells, bigdl_type="float"):
+        super(MultiCell, self).__init__(None, bigdl_type, cells)
 
 class ResizeBilinear(Layer):
     """

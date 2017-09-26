@@ -282,7 +282,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
 
       initHiddens(outputSize)
       if (initStates != null) {
-        states = initStates
+        states = initStates.clone()
       }
       cloneCells()
       cells.foreach{x =>

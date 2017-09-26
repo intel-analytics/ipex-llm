@@ -1911,6 +1911,21 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     rec.setState(stateActivity)
   }
 
+  def getStates(rec: Recurrent[T]): JList[JList[JTensor]] = {
+    val res = rec.getStates()
+    res.map { x =>
+      if (x.isTensor) List(toJTensor(x.toTensor)).asJava
+      else List(toJTensor(x.toTable.apply[Tensor[T]](1)),
+        toJTensor(x.toTable.apply[Tensor[T]](2))).asJava
+    }.toList.asJava
+  }
+
+  def setStates(rec: Recurrent[T], states: JList[JList[JTensor]], isTable: JList[Boolean]): Unit = {
+    rec.setStates((states.asScala, isTable.asScala).zipped.map { (state, table) =>
+      jTensorsToActivity(state, table)
+    }.toArray)
+  }
+
   def setLayerFreeze(model: AbstractModule[Activity, Activity, T])
   : AbstractModule[Activity, Activity, T] = {
     model.freeze()
@@ -1945,5 +1960,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     ResizeBilinear[T](outputHeight,
       outputWidth,
       alignCorner)
+  }
+
+  def createMultiCell(cells: JList[Cell[T]]): MultiCell[T] = {
+    MultiCell(cells.asScala.toArray)
   }
 }
