@@ -391,16 +391,6 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     }
   }
 
-  //  Need GPU to run this code
-  //  "Tensorflow Alexnet NCHW" should "be load correctly" in {
-  //    val output = Seq("alexnet_v2/pool5/MaxPool:0")
-  //    val comparePairs = testModel("alexnet_nchw", output, backward = false)
-  //    for (i <- output.indices) {
-  //      val (tf, bigdl) = comparePairs(i)
-  //      tf.almostEqual(bigdl, 1e-5) should be(true)
-  //    }
-  //  }
-
   "TensorFlow vgg_a" should "be load correctly" in {
     val output = Seq("vgg_a/fc8/squeezed:0")
     val comparePairs = testModel("vgga", output, backward = true)
@@ -494,9 +484,9 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
   }
 
   private def testModel(
-                         modelName: String,
-                         endPoints: Seq[String],
-                         backward: Boolean): Seq[(Tensor[Float], Tensor[Float])] = {
+    modelName: String,
+    endPoints: Seq[String],
+    backward: Boolean): Seq[(Tensor[Float], Tensor[Float])] = {
 
     tfCheck()
     // Generate command and prepare the temp folder
@@ -524,8 +514,8 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
 
     // filter node for gradient computing
     val (tfGraph, inputs, _) =
-    TensorflowLoader.buildTFGraph(tfNodes, endPoints.map(_.split(":")(0)),
-      (node: NodeDef) => node.getName == "input_node")
+      TensorflowLoader.buildTFGraph(tfNodes, endPoints.map(_.split(":")(0)),
+        (node: NodeDef) => node.getName == "input_node")
     val context =
       new mutable.HashMap[String, (Tensor[Float], Tensor[Float], Option[Seq[(Int, Int)]])]
     val model = TensorflowLoader.buildBigDLModel(tfGraph, inputs,
@@ -549,8 +539,8 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
 
     val comparePair = new mutable.ArrayBuffer[(Tensor[Float], Tensor[Float])]()
     val forwardPairs = tfOutputTensors.zip(bigdlOutputs).map { x =>
-      val tensor = TensorflowToBigDL.toTensor(x._1, ByteOrder.LITTLE_ENDIAN)
-      (tensor, x._2)
+        val tensor = TensorflowToBigDL.toTensor(x._1, ByteOrder.LITTLE_ENDIAN)
+        (tensor, x._2)
     }
     comparePair ++= forwardPairs
     println(s"Compare ${comparePair.length} pairs of output in this graph")
@@ -593,18 +583,18 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
       model.backward(input, gradInputs)
 
       val pairs = context.keySet.map { x =>
-        val name = s"${x}_grad"
-        var tensor = tfGradTensorsMap.get(name).orNull
-        var (_, grad, trans) = context(x)
-        trans match {
-          case Some(transpose) =>
-            for ((firstDim, secondDIm) <- transpose) {
-              tensor = tensor.transpose(firstDim, secondDIm)
-            }
-            tensor = tensor.contiguous()
-          case None =>
-        }
-        (tensor, grad)
+          val name = s"${x}_grad"
+          var tensor = tfGradTensorsMap.get(name).orNull
+          var (_, grad, trans) = context(x)
+          trans match {
+            case Some(transpose) =>
+              for ((firstDim, secondDIm) <- transpose) {
+                tensor = tensor.transpose(firstDim, secondDIm)
+              }
+              tensor = tensor.contiguous()
+            case None =>
+          }
+          (tensor, grad)
       }.toSeq.filter(_._1 != null)
       comparePair ++= pairs
       println(s"Compare ${pairs.length} pairs of gradient in this graph")

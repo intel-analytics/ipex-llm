@@ -38,6 +38,7 @@ import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn.tf.{Const, Fill, Shape, SplitAndSelect}
 import com.intel.analytics.bigdl.utils.tf.TensorflowLoader.{buildBigDLModel, buildTFGraph, parse}
 import com.intel.analytics.bigdl.utils.tf.{BigDLSessionImpl, TensorflowDataFormat, TensorflowSaver}
+import org.apache.log4j._
 import org.apache.spark.SparkContext
 import org.tensorflow.framework.NodeDef
 
@@ -45,6 +46,7 @@ import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.language.existentials
 import scala.reflect.ClassTag
+
 
 /**
  * [[com.intel.analytics.bigdl.dataset.Sample]] for python.
@@ -1950,4 +1952,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       outputWidth,
       alignCorner)
   }
+
+  def redirectSparkLogs(logPath: String): Unit = {
+    LoggerFilter.redirectSparkInfoLogs(logPath)
+  }
+
+  def showBigDlInfoLogs(): Unit = {
+    Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+  }
+
 }

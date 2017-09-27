@@ -26,6 +26,7 @@ import numpy as np
 import tempfile
 import pytest
 from numpy.testing import assert_allclose
+from bigdl.util.engine import compare_version
 
 
 class TestSimple():
@@ -410,6 +411,14 @@ class TestSimple():
         tensors["tensor2"] = JTensor.from_ndarray(np.random.rand(3, 2))
         # in old impl, this will throw an exception
         _py2java(self.sc, tensors)
+
+    def test_compare_version(self):
+        assert compare_version("2.1.1", "2.2.0") == -1
+        assert compare_version("2.2.0", "1.6.2") == 1
+        assert compare_version("2.2.0", "2.2.0") == 0
+        assert compare_version("1.6.0", "2.1.0") == -1
+        assert compare_version("2.1.0", "2.1.1") == -1
+        assert compare_version("2.0.1", "1.5.2") == 1
 
 if __name__ == "__main__":
     pytest.main([__file__])
