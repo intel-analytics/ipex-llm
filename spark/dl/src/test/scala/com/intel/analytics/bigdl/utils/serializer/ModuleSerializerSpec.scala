@@ -1894,6 +1894,30 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     weight1 should be (weight2)
   }
+
+  "Module toString" should "have same result" in {
+    val linear = Linear(2, 2)
+    ModulePersister.saveToFile("/tmp/mstr.bigdl", linear, true)
+    val loadedModel = ModuleLoader.loadFromFile("/tmp/mstr.bigdl")
+
+    linear.toString() should be (loadedModel.toString())
+  }
+
+  "Module in tain " should " keep the  state" in {
+    val linear = Linear(2, 2).training()
+    ModulePersister.saveToFile("/tmp/mstr.bigdl", linear, true)
+    val loadedModel = ModuleLoader.loadFromFile("/tmp/mstr.bigdl")
+
+    loadedModel.isTraining() should be (true)
+  }
+
+  "Module in evaluate " should " keep the  state" in {
+    val linear = Linear(2, 2).evaluate()
+    ModulePersister.saveToFile("/tmp/mstr.bigdl", linear, true)
+    val loadedModel = ModuleLoader.loadFromFile("/tmp/mstr.bigdl")
+
+    loadedModel.isTraining() should be (false)
+  }
 }
 
 class TestModule[T: ClassTag](val custom: CustomData)

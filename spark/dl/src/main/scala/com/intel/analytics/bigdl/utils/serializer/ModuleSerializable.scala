@@ -167,7 +167,15 @@ trait ModuleSerializable extends Loadable with Savable{
     val preModules = model.getPreModulesList.asScala
     val nextModules = model.getNextModulesList.asScala
     val bigDLModule = ModuleData(module, preModules, nextModules)
-    module.setName(model.getName)
+    if (model.getName != null && model.getName != "") {
+      module.setName(model.getName)
+    }
+    module.setNamePostfix(model.getNamePostfix)
+    if (model.getTrain) {
+      module.training()
+    } else {
+      module.evaluate()
+    }
     copy2BigDL(model, bigDLModule)
     bigDLModule
   }
@@ -177,7 +185,11 @@ trait ModuleSerializable extends Loadable with Savable{
   : BigDLModule = {
     module.pre.foreach(pre => modelBuilder.addPreModules(pre))
     module.next.foreach(next => modelBuilder.addNextModules(next))
-    modelBuilder.setName(module.module.getName)
+    if (module.module.hasName) {
+      modelBuilder.setName(module.module.getName)
+    }
+    modelBuilder.setNamePostfix(module.module.getNamePostfix)
+    modelBuilder.setTrain(module.module.isTraining())
     copyFromBigDL(module, modelBuilder)
     modelBuilder.build
   }

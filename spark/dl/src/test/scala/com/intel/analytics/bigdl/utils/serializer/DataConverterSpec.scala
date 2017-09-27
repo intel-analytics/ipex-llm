@@ -15,6 +15,7 @@
  */
 package com.intel.analytics.bigdl.utils.serializer
 
+import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.VariableFormat.{Default, ONE_D}
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat.{NCHW, NHWC}
@@ -33,6 +34,7 @@ import scala.util.Random
 
 
 class DataConverterSpec extends FlatSpec with Matchers{
+
 
   "Primitive Int type conversion " should " work properly" in {
     val intValue = 1

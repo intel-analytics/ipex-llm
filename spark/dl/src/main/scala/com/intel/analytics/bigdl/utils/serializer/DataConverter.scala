@@ -15,14 +15,19 @@
  */
 package com.intel.analytics.bigdl.utils.serializer
 
+import com.google.protobuf.ByteString
+
 import scala.collection.JavaConverters._
 import scala.reflect.runtime.universe
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat.{NCHW, NHWC}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
 import com.intel.analytics.bigdl.optim.{L1L2Regularizer, L1Regularizer, L2Regularizer, Regularizer}
+import com.intel.analytics.bigdl.tensor.ConvertableFrom.ConvertableFromBoolean
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.{NumericBoolean, NumericChar, NumericInt, NumericLong, NumericShort, NumericString}
+import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric.NumericByteString
 import serialization.Bigdl._
 import serialization.Bigdl.AttrValue.ArrayValue
 
@@ -151,7 +156,7 @@ object DataConverter extends DataConverter{
       InitMethodConverter.setAttributeValue(attributeBuilder, value)
     } else if (valueType.toString == ModuleSerializer.regularizerType.toString) {
       RegularizerConverter.setAttributeValue(attributeBuilder, value)
-    } else if (valueType.toString == ModuleSerializer.tensorType.toString) {
+    } else if (valueType <:< universe.typeOf[Tensor[_]]) {
       TensorConverter.setAttributeValue(attributeBuilder, value)
     } else if (valueType.toString == ModuleSerializer.tType.toString) {
       if (ev == com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericDouble) {
@@ -169,9 +174,10 @@ object DataConverter extends DataConverter{
       ModuleConverter.setAttributeValue(attributeBuilder, value)
     } else if (value.isInstanceOf[mutable.Map[String, _ <: Any]]) {
       NameListConverter.setAttributeValue(attributeBuilder, value)
-    } else if (valueType <:< universe.typeOf[Array[_ <: Any]] ) {
+    } else if (valueType <:< universe.typeOf[Array[_]] ||
+      valueType.typeSymbol == universe.typeOf[Array[_ ]].typeSymbol) {
       ArrayConverter.setAttributeValue(attributeBuilder, value, valueType)
-    } else if (valueType == universe.typeOf[DataFormat]) {
+    } else if (valueType =:= universe.typeOf[DataFormat]) {
       DataFormatConverter.setAttributeValue(attributeBuilder, value)
     } else {
       CustomConverterDelegator.setAttributeValue(attributeBuilder, value, valueType)
@@ -241,9 +247,6 @@ object DataConverter extends DataConverter{
       if (sizes.size == 0) {
         return null;
       }
-      if (dataType != DataType.DOUBLE && dataType != DataType.FLOAT) {
-        throw new IllegalArgumentException(s"$dataType not supported!")
-      }
       val strorageArray : Array[T] = dataType match {
         case DataType.FLOAT =>
           val data = serializedTensor.getFloatDataList.asScala
@@ -260,6 +263,69 @@ object DataConverter extends DataConverter{
           var i = 0;
           while (i < data.size) {
             strorageArray(i) = ev.fromType[Double](data(i))
+            i += 1
+          }
+          strorageArray
+        case DataType.BOOL =>
+          val data = serializedTensor.getBoolDataList.asScala
+          val strorageArray = new Array[T](data.size)
+          var i = 0;
+          while (i < data.size) {
+            strorageArray(i) = ev.fromType[Boolean](data(i))
+            i += 1
+          }
+          strorageArray
+        case DataType.CHAR =>
+          val data = serializedTensor.getIntDataList.asScala
+          val strorageArray = new Array[T](data.size)
+          var i = 0;
+          while (i < data.size) {
+            strorageArray(i) = ev.fromType[Int](data(i))
+            i += 1
+          }
+          strorageArray
+        case DataType.STRING =>
+          val data = serializedTensor.getStringDataList.asScala
+          val strorageArray = new Array[T](data.size)
+          var i = 0;
+          while (i < data.size) {
+            strorageArray(i) = ev.fromType[String](data(i))
+            i += 1
+          }
+          strorageArray
+        case DataType.INT32 =>
+          val data = serializedTensor.getIntDataList.asScala
+          val strorageArray = new Array[T](data.size)
+          var i = 0;
+          while (i < data.size) {
+            strorageArray(i) = ev.fromType[Int](data(i))
+            i += 1
+          }
+          strorageArray
+        case DataType.SHORT =>
+          val data = serializedTensor.getIntDataList.asScala
+          val strorageArray = new Array[T](data.size)
+          var i = 0;
+          while (i < data.size) {
+            strorageArray(i) = ev.fromType[Int](data(i))
+            i += 1
+          }
+          strorageArray
+        case DataType.INT64 =>
+          val data = serializedTensor.getLongDataList.asScala
+          val strorageArray = new Array[T](data.size)
+          var i = 0;
+          while (i < data.size) {
+            strorageArray(i) = ev.fromType[Long](data(i))
+            i += 1
+          }
+          strorageArray
+        case DataType.BYTES =>
+          val data = serializedTensor.getBytesDataList.asScala
+          val strorageArray = new Array[T](data.size)
+          var i = 0;
+          while (i < data.size) {
+            strorageArray(i) = data(i).asInstanceOf[T]
             i += 1
           }
           strorageArray
@@ -292,6 +358,34 @@ object DataConverter extends DataConverter{
           tensorBuilder.setDatatype(DataType.DOUBLE)
           tensor.storage().array().foreach(data => tensorBuilder.
             addDoubleData(ev.toType[Float](data)))
+        } else if (ev == NumericChar) {
+          tensorBuilder.setDatatype(DataType.CHAR)
+          tensor.storage().array().foreach(data =>
+            tensorBuilder.addIntData(data.asInstanceOf[Char].charValue()))
+        } else if (ev == NumericBoolean) {
+          tensorBuilder.setDatatype(DataType.BOOL)
+          tensor.storage().array().foreach(data =>
+            tensorBuilder.addBoolData(data.asInstanceOf[Boolean].booleanValue()))
+        } else if (ev == NumericString) {
+          tensorBuilder.setDatatype(DataType.STRING)
+          tensor.storage().array().foreach(data =>
+            tensorBuilder.addStringData(data.asInstanceOf[String]))
+        } else if (ev == NumericInt) {
+          tensorBuilder.setDatatype(DataType.INT32)
+          tensor.storage().array().foreach(data =>
+            tensorBuilder.addIntData(ev.toType[Int](data)))
+        } else if (ev == NumericShort) {
+          tensorBuilder.setDatatype(DataType.SHORT)
+          tensor.storage().array().foreach(data =>
+            tensorBuilder.addIntData(ev.toType[Int](data)))
+        } else if (ev == NumericLong) {
+          tensorBuilder.setDatatype(DataType.INT64)
+          tensor.storage().array().foreach(data =>
+            tensorBuilder.addLongData(ev.toType[Long](data)))
+        } else if (ev == NumericByteString) {
+          tensorBuilder.setDatatype(DataType.BYTES)
+          tensor.storage().array().foreach(data =>
+            tensorBuilder.addBytesData(data.asInstanceOf[ByteString]))
         }
         tensor.size().foreach(size => tensorBuilder.addSize(size))
         attributeBuilder.setTensorValue(tensorBuilder.build)
@@ -513,22 +607,40 @@ object DataConverter extends DataConverter{
     (attribute: AttrValue)(implicit ev: TensorNumeric[T]): AnyRef = {
       val valueArray = attribute.getArrayValue
       val size = valueArray.getSize
-      if (size == 0) {
+      if (size == -1) {
         return null
       }
       val listType = valueArray.getDatatype
       val arr = listType match {
         case DataType.INT32 =>
+          if (size == 0) {
+            return new Array[Int](0)
+          }
           valueArray.getI32List.asScala.toArray.map(_.intValue)
         case DataType.INT64 =>
+          if (size == 0) {
+            return new Array[Long](0)
+          }
           valueArray.getI64List.asScala.toArray.map(_.longValue())
         case DataType.DOUBLE =>
+          if (size == 0) {
+            return new Array[Double](0)
+          }
           valueArray.getDblList.asScala.toArray.map(_.doubleValue())
         case DataType.FLOAT =>
+          if (size == 0) {
+            return new Array[Float](0)
+          }
           valueArray.getFltList.asScala.toArray.map(_.floatValue())
         case DataType.STRING =>
+          if (size == 0) {
+            return new Array[String](0)
+          }
           valueArray.getStrList.asScala.toArray
         case DataType.BOOL =>
+          if (size == 0) {
+            return new Array[Boolean](0)
+          }
           valueArray.getBooleanList.asScala.toArray.map(_.booleanValue())
         case DataType.REGULARIZER =>
           val regularizers = new Array[Regularizer[T]](size)
@@ -641,7 +753,7 @@ object DataConverter extends DataConverter{
       value: Any, valueType: universe.Type = null)(implicit ev: TensorNumeric[T]): Unit = {
       attributeBuilder.setDataType(DataType.ARRAY_VALUE)
       val arrayBuilder = ArrayValue.newBuilder
-      arrayBuilder.setSize(0)
+      arrayBuilder.setSize(-1)
       if (valueType =:= universe.typeOf[Array[Int]]) {
         arrayBuilder.setDatatype(DataType.INT32)
         if (value != null) {

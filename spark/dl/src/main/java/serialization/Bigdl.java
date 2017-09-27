@@ -580,41 +580,53 @@ public final class Bigdl {
      */
     BOOL(5),
     /**
-     * <code>REGULARIZER = 6;</code>
+     * <code>CHAR = 6;</code>
      */
-    REGULARIZER(6),
+    CHAR(6),
     /**
-     * <code>TENSOR = 7;</code>
+     * <code>SHORT = 7;</code>
      */
-    TENSOR(7),
+    SHORT(7),
     /**
-     * <code>VARIABLE_FORMAT = 8;</code>
+     * <code>BYTES = 8;</code>
      */
-    VARIABLE_FORMAT(8),
+    BYTES(8),
     /**
-     * <code>INITMETHOD = 9;</code>
+     * <code>REGULARIZER = 9;</code>
      */
-    INITMETHOD(9),
+    REGULARIZER(9),
     /**
-     * <code>MODULE = 10;</code>
+     * <code>TENSOR = 10;</code>
      */
-    MODULE(10),
+    TENSOR(10),
     /**
-     * <code>NAME_ATTR_LIST = 11;</code>
+     * <code>VARIABLE_FORMAT = 11;</code>
      */
-    NAME_ATTR_LIST(11),
+    VARIABLE_FORMAT(11),
     /**
-     * <code>ARRAY_VALUE = 12;</code>
+     * <code>INITMETHOD = 12;</code>
      */
-    ARRAY_VALUE(12),
+    INITMETHOD(12),
     /**
-     * <code>DATA_FORMAT = 13;</code>
+     * <code>MODULE = 13;</code>
      */
-    DATA_FORMAT(13),
+    MODULE(13),
     /**
-     * <code>CUSTOM = 14;</code>
+     * <code>NAME_ATTR_LIST = 14;</code>
      */
-    CUSTOM(14),
+    NAME_ATTR_LIST(14),
+    /**
+     * <code>ARRAY_VALUE = 15;</code>
+     */
+    ARRAY_VALUE(15),
+    /**
+     * <code>DATA_FORMAT = 16;</code>
+     */
+    DATA_FORMAT(16),
+    /**
+     * <code>CUSTOM = 17;</code>
+     */
+    CUSTOM(17),
     UNRECOGNIZED(-1),
     ;
 
@@ -643,41 +655,53 @@ public final class Bigdl {
      */
     public static final int BOOL_VALUE = 5;
     /**
-     * <code>REGULARIZER = 6;</code>
+     * <code>CHAR = 6;</code>
      */
-    public static final int REGULARIZER_VALUE = 6;
+    public static final int CHAR_VALUE = 6;
     /**
-     * <code>TENSOR = 7;</code>
+     * <code>SHORT = 7;</code>
      */
-    public static final int TENSOR_VALUE = 7;
+    public static final int SHORT_VALUE = 7;
     /**
-     * <code>VARIABLE_FORMAT = 8;</code>
+     * <code>BYTES = 8;</code>
      */
-    public static final int VARIABLE_FORMAT_VALUE = 8;
+    public static final int BYTES_VALUE = 8;
     /**
-     * <code>INITMETHOD = 9;</code>
+     * <code>REGULARIZER = 9;</code>
      */
-    public static final int INITMETHOD_VALUE = 9;
+    public static final int REGULARIZER_VALUE = 9;
     /**
-     * <code>MODULE = 10;</code>
+     * <code>TENSOR = 10;</code>
      */
-    public static final int MODULE_VALUE = 10;
+    public static final int TENSOR_VALUE = 10;
     /**
-     * <code>NAME_ATTR_LIST = 11;</code>
+     * <code>VARIABLE_FORMAT = 11;</code>
      */
-    public static final int NAME_ATTR_LIST_VALUE = 11;
+    public static final int VARIABLE_FORMAT_VALUE = 11;
     /**
-     * <code>ARRAY_VALUE = 12;</code>
+     * <code>INITMETHOD = 12;</code>
      */
-    public static final int ARRAY_VALUE_VALUE = 12;
+    public static final int INITMETHOD_VALUE = 12;
     /**
-     * <code>DATA_FORMAT = 13;</code>
+     * <code>MODULE = 13;</code>
      */
-    public static final int DATA_FORMAT_VALUE = 13;
+    public static final int MODULE_VALUE = 13;
     /**
-     * <code>CUSTOM = 14;</code>
+     * <code>NAME_ATTR_LIST = 14;</code>
      */
-    public static final int CUSTOM_VALUE = 14;
+    public static final int NAME_ATTR_LIST_VALUE = 14;
+    /**
+     * <code>ARRAY_VALUE = 15;</code>
+     */
+    public static final int ARRAY_VALUE_VALUE = 15;
+    /**
+     * <code>DATA_FORMAT = 16;</code>
+     */
+    public static final int DATA_FORMAT_VALUE = 16;
+    /**
+     * <code>CUSTOM = 17;</code>
+     */
+    public static final int CUSTOM_VALUE = 17;
 
 
     public final int getNumber() {
@@ -704,15 +728,18 @@ public final class Bigdl {
         case 3: return DOUBLE;
         case 4: return STRING;
         case 5: return BOOL;
-        case 6: return REGULARIZER;
-        case 7: return TENSOR;
-        case 8: return VARIABLE_FORMAT;
-        case 9: return INITMETHOD;
-        case 10: return MODULE;
-        case 11: return NAME_ATTR_LIST;
-        case 12: return ARRAY_VALUE;
-        case 13: return DATA_FORMAT;
-        case 14: return CUSTOM;
+        case 6: return CHAR;
+        case 7: return SHORT;
+        case 8: return BYTES;
+        case 9: return REGULARIZER;
+        case 10: return TENSOR;
+        case 11: return VARIABLE_FORMAT;
+        case 12: return INITMETHOD;
+        case 13: return MODULE;
+        case 14: return NAME_ATTR_LIST;
+        case 15: return ARRAY_VALUE;
+        case 16: return DATA_FORMAT;
+        case 17: return CUSTOM;
         default: return null;
       }
     }
@@ -1040,6 +1067,33 @@ public final class Bigdl {
      */
     com.google.protobuf.ByteString
         getVersionBytes();
+
+    /**
+     * <pre>
+     * is module status in train
+     * </pre>
+     *
+     * <code>optional bool train = 10;</code>
+     */
+    boolean getTrain();
+
+    /**
+     * <pre>
+     * name post fix
+     * </pre>
+     *
+     * <code>optional string namePostfix = 11;</code>
+     */
+    java.lang.String getNamePostfix();
+    /**
+     * <pre>
+     * name post fix
+     * </pre>
+     *
+     * <code>optional string namePostfix = 11;</code>
+     */
+    com.google.protobuf.ByteString
+        getNamePostfixBytes();
   }
   /**
    * Protobuf type {@code serialization.BigDLModule}
@@ -1059,6 +1113,8 @@ public final class Bigdl {
       nextModules_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       moduleType_ = "";
       version_ = "";
+      train_ = false;
+      namePostfix_ = "";
     }
 
     @java.lang.Override
@@ -1167,6 +1223,17 @@ public final class Bigdl {
               java.lang.String s = input.readStringRequireUtf8();
 
               version_ = s;
+              break;
+            }
+            case 80: {
+
+              train_ = input.readBool();
+              break;
+            }
+            case 90: {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              namePostfix_ = s;
               break;
             }
           }
@@ -1642,6 +1709,61 @@ public final class Bigdl {
       }
     }
 
+    public static final int TRAIN_FIELD_NUMBER = 10;
+    private boolean train_;
+    /**
+     * <pre>
+     * is module status in train
+     * </pre>
+     *
+     * <code>optional bool train = 10;</code>
+     */
+    public boolean getTrain() {
+      return train_;
+    }
+
+    public static final int NAMEPOSTFIX_FIELD_NUMBER = 11;
+    private volatile java.lang.Object namePostfix_;
+    /**
+     * <pre>
+     * name post fix
+     * </pre>
+     *
+     * <code>optional string namePostfix = 11;</code>
+     */
+    public java.lang.String getNamePostfix() {
+      java.lang.Object ref = namePostfix_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        namePostfix_ = s;
+        return s;
+      }
+    }
+    /**
+     * <pre>
+     * name post fix
+     * </pre>
+     *
+     * <code>optional string namePostfix = 11;</code>
+     */
+    public com.google.protobuf.ByteString
+        getNamePostfixBytes() {
+      java.lang.Object ref = namePostfix_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        namePostfix_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -1686,6 +1808,12 @@ public final class Bigdl {
       }
       if (!getVersionBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 9, version_);
+      }
+      if (train_ != false) {
+        output.writeBool(10, train_);
+      }
+      if (!getNamePostfixBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 11, namePostfix_);
       }
     }
 
@@ -1741,6 +1869,13 @@ public final class Bigdl {
       if (!getVersionBytes().isEmpty()) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(9, version_);
       }
+      if (train_ != false) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(10, train_);
+      }
+      if (!getNamePostfixBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(11, namePostfix_);
+      }
       memoizedSize = size;
       return size;
     }
@@ -1781,6 +1916,10 @@ public final class Bigdl {
           other.internalGetAttr());
       result = result && getVersion()
           .equals(other.getVersion());
+      result = result && (getTrain()
+          == other.getTrain());
+      result = result && getNamePostfix()
+          .equals(other.getNamePostfix());
       return result;
     }
 
@@ -1821,6 +1960,11 @@ public final class Bigdl {
       }
       hash = (37 * hash) + VERSION_FIELD_NUMBER;
       hash = (53 * hash) + getVersion().hashCode();
+      hash = (37 * hash) + TRAIN_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+          getTrain());
+      hash = (37 * hash) + NAMEPOSTFIX_FIELD_NUMBER;
+      hash = (53 * hash) + getNamePostfix().hashCode();
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -1991,6 +2135,10 @@ public final class Bigdl {
         internalGetMutableAttr().clear();
         version_ = "";
 
+        train_ = false;
+
+        namePostfix_ = "";
+
         return this;
       }
 
@@ -2049,6 +2197,8 @@ public final class Bigdl {
         result.attr_ = internalGetAttr();
         result.attr_.makeImmutable();
         result.version_ = version_;
+        result.train_ = train_;
+        result.namePostfix_ = namePostfix_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -2155,6 +2305,13 @@ public final class Bigdl {
             other.internalGetAttr());
         if (!other.getVersion().isEmpty()) {
           version_ = other.version_;
+          onChanged();
+        }
+        if (other.getTrain() != false) {
+          setTrain(other.getTrain());
+        }
+        if (!other.getNamePostfix().isEmpty()) {
+          namePostfix_ = other.namePostfix_;
           onChanged();
         }
         onChanged();
@@ -3475,6 +3632,133 @@ public final class Bigdl {
         onChanged();
         return this;
       }
+
+      private boolean train_ ;
+      /**
+       * <pre>
+       * is module status in train
+       * </pre>
+       *
+       * <code>optional bool train = 10;</code>
+       */
+      public boolean getTrain() {
+        return train_;
+      }
+      /**
+       * <pre>
+       * is module status in train
+       * </pre>
+       *
+       * <code>optional bool train = 10;</code>
+       */
+      public Builder setTrain(boolean value) {
+        
+        train_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * is module status in train
+       * </pre>
+       *
+       * <code>optional bool train = 10;</code>
+       */
+      public Builder clearTrain() {
+        
+        train_ = false;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object namePostfix_ = "";
+      /**
+       * <pre>
+       * name post fix
+       * </pre>
+       *
+       * <code>optional string namePostfix = 11;</code>
+       */
+      public java.lang.String getNamePostfix() {
+        java.lang.Object ref = namePostfix_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          namePostfix_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <pre>
+       * name post fix
+       * </pre>
+       *
+       * <code>optional string namePostfix = 11;</code>
+       */
+      public com.google.protobuf.ByteString
+          getNamePostfixBytes() {
+        java.lang.Object ref = namePostfix_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          namePostfix_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <pre>
+       * name post fix
+       * </pre>
+       *
+       * <code>optional string namePostfix = 11;</code>
+       */
+      public Builder setNamePostfix(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        namePostfix_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * name post fix
+       * </pre>
+       *
+       * <code>optional string namePostfix = 11;</code>
+       */
+      public Builder clearNamePostfix() {
+        
+        namePostfix_ = getDefaultInstance().getNamePostfix();
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * name post fix
+       * </pre>
+       *
+       * <code>optional string namePostfix = 11;</code>
+       */
+      public Builder setNamePostfixBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        namePostfix_ = value;
+        onChanged();
+        return this;
+      }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return this;
@@ -4196,7 +4480,7 @@ public final class Bigdl {
 
     /**
      * <pre>
-     *tensor element
+     *float tensor element
      * </pre>
      *
      * <code>repeated float float_data = 3;</code>
@@ -4204,7 +4488,7 @@ public final class Bigdl {
     java.util.List<java.lang.Float> getFloatDataList();
     /**
      * <pre>
-     *tensor element
+     *float tensor element
      * </pre>
      *
      * <code>repeated float float_data = 3;</code>
@@ -4212,7 +4496,7 @@ public final class Bigdl {
     int getFloatDataCount();
     /**
      * <pre>
-     *tensor element
+     *float tensor element
      * </pre>
      *
      * <code>repeated float float_data = 3;</code>
@@ -4221,7 +4505,7 @@ public final class Bigdl {
 
     /**
      * <pre>
-     *tensor element
+     *double tensor element
      * </pre>
      *
      * <code>repeated double double_data = 4;</code>
@@ -4229,7 +4513,7 @@ public final class Bigdl {
     java.util.List<java.lang.Double> getDoubleDataList();
     /**
      * <pre>
-     *tensor element
+     *double tensor element
      * </pre>
      *
      * <code>repeated double double_data = 4;</code>
@@ -4237,12 +4521,147 @@ public final class Bigdl {
     int getDoubleDataCount();
     /**
      * <pre>
-     *tensor element
+     *double tensor element
      * </pre>
      *
      * <code>repeated double double_data = 4;</code>
      */
     double getDoubleData(int index);
+
+    /**
+     * <pre>
+     *boolean tensor element
+     * </pre>
+     *
+     * <code>repeated bool bool_data = 5;</code>
+     */
+    java.util.List<java.lang.Boolean> getBoolDataList();
+    /**
+     * <pre>
+     *boolean tensor element
+     * </pre>
+     *
+     * <code>repeated bool bool_data = 5;</code>
+     */
+    int getBoolDataCount();
+    /**
+     * <pre>
+     *boolean tensor element
+     * </pre>
+     *
+     * <code>repeated bool bool_data = 5;</code>
+     */
+    boolean getBoolData(int index);
+
+    /**
+     * <pre>
+     *string tensor element
+     * </pre>
+     *
+     * <code>repeated string string_data = 6;</code>
+     */
+    java.util.List<java.lang.String>
+        getStringDataList();
+    /**
+     * <pre>
+     *string tensor element
+     * </pre>
+     *
+     * <code>repeated string string_data = 6;</code>
+     */
+    int getStringDataCount();
+    /**
+     * <pre>
+     *string tensor element
+     * </pre>
+     *
+     * <code>repeated string string_data = 6;</code>
+     */
+    java.lang.String getStringData(int index);
+    /**
+     * <pre>
+     *string tensor element
+     * </pre>
+     *
+     * <code>repeated string string_data = 6;</code>
+     */
+    com.google.protobuf.ByteString
+        getStringDataBytes(int index);
+
+    /**
+     * <pre>
+     *int tensor element
+     * </pre>
+     *
+     * <code>repeated int32 int_data = 7;</code>
+     */
+    java.util.List<java.lang.Integer> getIntDataList();
+    /**
+     * <pre>
+     *int tensor element
+     * </pre>
+     *
+     * <code>repeated int32 int_data = 7;</code>
+     */
+    int getIntDataCount();
+    /**
+     * <pre>
+     *int tensor element
+     * </pre>
+     *
+     * <code>repeated int32 int_data = 7;</code>
+     */
+    int getIntData(int index);
+
+    /**
+     * <pre>
+     *int tensor element
+     * </pre>
+     *
+     * <code>repeated int64 long_data = 8;</code>
+     */
+    java.util.List<java.lang.Long> getLongDataList();
+    /**
+     * <pre>
+     *int tensor element
+     * </pre>
+     *
+     * <code>repeated int64 long_data = 8;</code>
+     */
+    int getLongDataCount();
+    /**
+     * <pre>
+     *int tensor element
+     * </pre>
+     *
+     * <code>repeated int64 long_data = 8;</code>
+     */
+    long getLongData(int index);
+
+    /**
+     * <pre>
+     *int tensor element
+     * </pre>
+     *
+     * <code>repeated bytes bytes_data = 9;</code>
+     */
+    java.util.List<com.google.protobuf.ByteString> getBytesDataList();
+    /**
+     * <pre>
+     *int tensor element
+     * </pre>
+     *
+     * <code>repeated bytes bytes_data = 9;</code>
+     */
+    int getBytesDataCount();
+    /**
+     * <pre>
+     *int tensor element
+     * </pre>
+     *
+     * <code>repeated bytes bytes_data = 9;</code>
+     */
+    com.google.protobuf.ByteString getBytesData(int index);
   }
   /**
    * Protobuf type {@code serialization.BigDLTensor}
@@ -4260,6 +4679,11 @@ public final class Bigdl {
       size_ = java.util.Collections.emptyList();
       floatData_ = java.util.Collections.emptyList();
       doubleData_ = java.util.Collections.emptyList();
+      boolData_ = java.util.Collections.emptyList();
+      stringData_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      intData_ = java.util.Collections.emptyList();
+      longData_ = java.util.Collections.emptyList();
+      bytesData_ = java.util.Collections.emptyList();
     }
 
     @java.lang.Override
@@ -4356,6 +4780,86 @@ public final class Bigdl {
               input.popLimit(limit);
               break;
             }
+            case 40: {
+              if (!((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
+                boolData_ = new java.util.ArrayList<java.lang.Boolean>();
+                mutable_bitField0_ |= 0x00000010;
+              }
+              boolData_.add(input.readBool());
+              break;
+            }
+            case 42: {
+              int length = input.readRawVarint32();
+              int limit = input.pushLimit(length);
+              if (!((mutable_bitField0_ & 0x00000010) == 0x00000010) && input.getBytesUntilLimit() > 0) {
+                boolData_ = new java.util.ArrayList<java.lang.Boolean>();
+                mutable_bitField0_ |= 0x00000010;
+              }
+              while (input.getBytesUntilLimit() > 0) {
+                boolData_.add(input.readBool());
+              }
+              input.popLimit(limit);
+              break;
+            }
+            case 50: {
+              java.lang.String s = input.readStringRequireUtf8();
+              if (!((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
+                stringData_ = new com.google.protobuf.LazyStringArrayList();
+                mutable_bitField0_ |= 0x00000020;
+              }
+              stringData_.add(s);
+              break;
+            }
+            case 56: {
+              if (!((mutable_bitField0_ & 0x00000040) == 0x00000040)) {
+                intData_ = new java.util.ArrayList<java.lang.Integer>();
+                mutable_bitField0_ |= 0x00000040;
+              }
+              intData_.add(input.readInt32());
+              break;
+            }
+            case 58: {
+              int length = input.readRawVarint32();
+              int limit = input.pushLimit(length);
+              if (!((mutable_bitField0_ & 0x00000040) == 0x00000040) && input.getBytesUntilLimit() > 0) {
+                intData_ = new java.util.ArrayList<java.lang.Integer>();
+                mutable_bitField0_ |= 0x00000040;
+              }
+              while (input.getBytesUntilLimit() > 0) {
+                intData_.add(input.readInt32());
+              }
+              input.popLimit(limit);
+              break;
+            }
+            case 64: {
+              if (!((mutable_bitField0_ & 0x00000080) == 0x00000080)) {
+                longData_ = new java.util.ArrayList<java.lang.Long>();
+                mutable_bitField0_ |= 0x00000080;
+              }
+              longData_.add(input.readInt64());
+              break;
+            }
+            case 66: {
+              int length = input.readRawVarint32();
+              int limit = input.pushLimit(length);
+              if (!((mutable_bitField0_ & 0x00000080) == 0x00000080) && input.getBytesUntilLimit() > 0) {
+                longData_ = new java.util.ArrayList<java.lang.Long>();
+                mutable_bitField0_ |= 0x00000080;
+              }
+              while (input.getBytesUntilLimit() > 0) {
+                longData_.add(input.readInt64());
+              }
+              input.popLimit(limit);
+              break;
+            }
+            case 74: {
+              if (!((mutable_bitField0_ & 0x00000100) == 0x00000100)) {
+                bytesData_ = new java.util.ArrayList<com.google.protobuf.ByteString>();
+                mutable_bitField0_ |= 0x00000100;
+              }
+              bytesData_.add(input.readBytes());
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -4372,6 +4876,21 @@ public final class Bigdl {
         }
         if (((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
           doubleData_ = java.util.Collections.unmodifiableList(doubleData_);
+        }
+        if (((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
+          boolData_ = java.util.Collections.unmodifiableList(boolData_);
+        }
+        if (((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
+          stringData_ = stringData_.getUnmodifiableView();
+        }
+        if (((mutable_bitField0_ & 0x00000040) == 0x00000040)) {
+          intData_ = java.util.Collections.unmodifiableList(intData_);
+        }
+        if (((mutable_bitField0_ & 0x00000080) == 0x00000080)) {
+          longData_ = java.util.Collections.unmodifiableList(longData_);
+        }
+        if (((mutable_bitField0_ & 0x00000100) == 0x00000100)) {
+          bytesData_ = java.util.Collections.unmodifiableList(bytesData_);
         }
         makeExtensionsImmutable();
       }
@@ -4444,7 +4963,7 @@ public final class Bigdl {
     private java.util.List<java.lang.Float> floatData_;
     /**
      * <pre>
-     *tensor element
+     *float tensor element
      * </pre>
      *
      * <code>repeated float float_data = 3;</code>
@@ -4455,7 +4974,7 @@ public final class Bigdl {
     }
     /**
      * <pre>
-     *tensor element
+     *float tensor element
      * </pre>
      *
      * <code>repeated float float_data = 3;</code>
@@ -4465,7 +4984,7 @@ public final class Bigdl {
     }
     /**
      * <pre>
-     *tensor element
+     *float tensor element
      * </pre>
      *
      * <code>repeated float float_data = 3;</code>
@@ -4479,7 +4998,7 @@ public final class Bigdl {
     private java.util.List<java.lang.Double> doubleData_;
     /**
      * <pre>
-     *tensor element
+     *double tensor element
      * </pre>
      *
      * <code>repeated double double_data = 4;</code>
@@ -4490,7 +5009,7 @@ public final class Bigdl {
     }
     /**
      * <pre>
-     *tensor element
+     *double tensor element
      * </pre>
      *
      * <code>repeated double double_data = 4;</code>
@@ -4500,7 +5019,7 @@ public final class Bigdl {
     }
     /**
      * <pre>
-     *tensor element
+     *double tensor element
      * </pre>
      *
      * <code>repeated double double_data = 4;</code>
@@ -4509,6 +5028,190 @@ public final class Bigdl {
       return doubleData_.get(index);
     }
     private int doubleDataMemoizedSerializedSize = -1;
+
+    public static final int BOOL_DATA_FIELD_NUMBER = 5;
+    private java.util.List<java.lang.Boolean> boolData_;
+    /**
+     * <pre>
+     *boolean tensor element
+     * </pre>
+     *
+     * <code>repeated bool bool_data = 5;</code>
+     */
+    public java.util.List<java.lang.Boolean>
+        getBoolDataList() {
+      return boolData_;
+    }
+    /**
+     * <pre>
+     *boolean tensor element
+     * </pre>
+     *
+     * <code>repeated bool bool_data = 5;</code>
+     */
+    public int getBoolDataCount() {
+      return boolData_.size();
+    }
+    /**
+     * <pre>
+     *boolean tensor element
+     * </pre>
+     *
+     * <code>repeated bool bool_data = 5;</code>
+     */
+    public boolean getBoolData(int index) {
+      return boolData_.get(index);
+    }
+    private int boolDataMemoizedSerializedSize = -1;
+
+    public static final int STRING_DATA_FIELD_NUMBER = 6;
+    private com.google.protobuf.LazyStringList stringData_;
+    /**
+     * <pre>
+     *string tensor element
+     * </pre>
+     *
+     * <code>repeated string string_data = 6;</code>
+     */
+    public com.google.protobuf.ProtocolStringList
+        getStringDataList() {
+      return stringData_;
+    }
+    /**
+     * <pre>
+     *string tensor element
+     * </pre>
+     *
+     * <code>repeated string string_data = 6;</code>
+     */
+    public int getStringDataCount() {
+      return stringData_.size();
+    }
+    /**
+     * <pre>
+     *string tensor element
+     * </pre>
+     *
+     * <code>repeated string string_data = 6;</code>
+     */
+    public java.lang.String getStringData(int index) {
+      return stringData_.get(index);
+    }
+    /**
+     * <pre>
+     *string tensor element
+     * </pre>
+     *
+     * <code>repeated string string_data = 6;</code>
+     */
+    public com.google.protobuf.ByteString
+        getStringDataBytes(int index) {
+      return stringData_.getByteString(index);
+    }
+
+    public static final int INT_DATA_FIELD_NUMBER = 7;
+    private java.util.List<java.lang.Integer> intData_;
+    /**
+     * <pre>
+     *int tensor element
+     * </pre>
+     *
+     * <code>repeated int32 int_data = 7;</code>
+     */
+    public java.util.List<java.lang.Integer>
+        getIntDataList() {
+      return intData_;
+    }
+    /**
+     * <pre>
+     *int tensor element
+     * </pre>
+     *
+     * <code>repeated int32 int_data = 7;</code>
+     */
+    public int getIntDataCount() {
+      return intData_.size();
+    }
+    /**
+     * <pre>
+     *int tensor element
+     * </pre>
+     *
+     * <code>repeated int32 int_data = 7;</code>
+     */
+    public int getIntData(int index) {
+      return intData_.get(index);
+    }
+    private int intDataMemoizedSerializedSize = -1;
+
+    public static final int LONG_DATA_FIELD_NUMBER = 8;
+    private java.util.List<java.lang.Long> longData_;
+    /**
+     * <pre>
+     *int tensor element
+     * </pre>
+     *
+     * <code>repeated int64 long_data = 8;</code>
+     */
+    public java.util.List<java.lang.Long>
+        getLongDataList() {
+      return longData_;
+    }
+    /**
+     * <pre>
+     *int tensor element
+     * </pre>
+     *
+     * <code>repeated int64 long_data = 8;</code>
+     */
+    public int getLongDataCount() {
+      return longData_.size();
+    }
+    /**
+     * <pre>
+     *int tensor element
+     * </pre>
+     *
+     * <code>repeated int64 long_data = 8;</code>
+     */
+    public long getLongData(int index) {
+      return longData_.get(index);
+    }
+    private int longDataMemoizedSerializedSize = -1;
+
+    public static final int BYTES_DATA_FIELD_NUMBER = 9;
+    private java.util.List<com.google.protobuf.ByteString> bytesData_;
+    /**
+     * <pre>
+     *int tensor element
+     * </pre>
+     *
+     * <code>repeated bytes bytes_data = 9;</code>
+     */
+    public java.util.List<com.google.protobuf.ByteString>
+        getBytesDataList() {
+      return bytesData_;
+    }
+    /**
+     * <pre>
+     *int tensor element
+     * </pre>
+     *
+     * <code>repeated bytes bytes_data = 9;</code>
+     */
+    public int getBytesDataCount() {
+      return bytesData_.size();
+    }
+    /**
+     * <pre>
+     *int tensor element
+     * </pre>
+     *
+     * <code>repeated bytes bytes_data = 9;</code>
+     */
+    public com.google.protobuf.ByteString getBytesData(int index) {
+      return bytesData_.get(index);
+    }
 
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -4546,6 +5249,33 @@ public final class Bigdl {
       }
       for (int i = 0; i < doubleData_.size(); i++) {
         output.writeDoubleNoTag(doubleData_.get(i));
+      }
+      if (getBoolDataList().size() > 0) {
+        output.writeUInt32NoTag(42);
+        output.writeUInt32NoTag(boolDataMemoizedSerializedSize);
+      }
+      for (int i = 0; i < boolData_.size(); i++) {
+        output.writeBoolNoTag(boolData_.get(i));
+      }
+      for (int i = 0; i < stringData_.size(); i++) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 6, stringData_.getRaw(i));
+      }
+      if (getIntDataList().size() > 0) {
+        output.writeUInt32NoTag(58);
+        output.writeUInt32NoTag(intDataMemoizedSerializedSize);
+      }
+      for (int i = 0; i < intData_.size(); i++) {
+        output.writeInt32NoTag(intData_.get(i));
+      }
+      if (getLongDataList().size() > 0) {
+        output.writeUInt32NoTag(66);
+        output.writeUInt32NoTag(longDataMemoizedSerializedSize);
+      }
+      for (int i = 0; i < longData_.size(); i++) {
+        output.writeInt64NoTag(longData_.get(i));
+      }
+      for (int i = 0; i < bytesData_.size(); i++) {
+        output.writeBytes(9, bytesData_.get(i));
       }
     }
 
@@ -4594,6 +5324,62 @@ public final class Bigdl {
         }
         doubleDataMemoizedSerializedSize = dataSize;
       }
+      {
+        int dataSize = 0;
+        dataSize = 1 * getBoolDataList().size();
+        size += dataSize;
+        if (!getBoolDataList().isEmpty()) {
+          size += 1;
+          size += com.google.protobuf.CodedOutputStream
+              .computeInt32SizeNoTag(dataSize);
+        }
+        boolDataMemoizedSerializedSize = dataSize;
+      }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < stringData_.size(); i++) {
+          dataSize += computeStringSizeNoTag(stringData_.getRaw(i));
+        }
+        size += dataSize;
+        size += 1 * getStringDataList().size();
+      }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < intData_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeInt32SizeNoTag(intData_.get(i));
+        }
+        size += dataSize;
+        if (!getIntDataList().isEmpty()) {
+          size += 1;
+          size += com.google.protobuf.CodedOutputStream
+              .computeInt32SizeNoTag(dataSize);
+        }
+        intDataMemoizedSerializedSize = dataSize;
+      }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < longData_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeInt64SizeNoTag(longData_.get(i));
+        }
+        size += dataSize;
+        if (!getLongDataList().isEmpty()) {
+          size += 1;
+          size += com.google.protobuf.CodedOutputStream
+              .computeInt32SizeNoTag(dataSize);
+        }
+        longDataMemoizedSerializedSize = dataSize;
+      }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < bytesData_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeBytesSizeNoTag(bytesData_.get(i));
+        }
+        size += dataSize;
+        size += 1 * getBytesDataList().size();
+      }
       memoizedSize = size;
       return size;
     }
@@ -4617,6 +5403,16 @@ public final class Bigdl {
           .equals(other.getFloatDataList());
       result = result && getDoubleDataList()
           .equals(other.getDoubleDataList());
+      result = result && getBoolDataList()
+          .equals(other.getBoolDataList());
+      result = result && getStringDataList()
+          .equals(other.getStringDataList());
+      result = result && getIntDataList()
+          .equals(other.getIntDataList());
+      result = result && getLongDataList()
+          .equals(other.getLongDataList());
+      result = result && getBytesDataList()
+          .equals(other.getBytesDataList());
       return result;
     }
 
@@ -4640,6 +5436,26 @@ public final class Bigdl {
       if (getDoubleDataCount() > 0) {
         hash = (37 * hash) + DOUBLE_DATA_FIELD_NUMBER;
         hash = (53 * hash) + getDoubleDataList().hashCode();
+      }
+      if (getBoolDataCount() > 0) {
+        hash = (37 * hash) + BOOL_DATA_FIELD_NUMBER;
+        hash = (53 * hash) + getBoolDataList().hashCode();
+      }
+      if (getStringDataCount() > 0) {
+        hash = (37 * hash) + STRING_DATA_FIELD_NUMBER;
+        hash = (53 * hash) + getStringDataList().hashCode();
+      }
+      if (getIntDataCount() > 0) {
+        hash = (37 * hash) + INT_DATA_FIELD_NUMBER;
+        hash = (53 * hash) + getIntDataList().hashCode();
+      }
+      if (getLongDataCount() > 0) {
+        hash = (37 * hash) + LONG_DATA_FIELD_NUMBER;
+        hash = (53 * hash) + getLongDataList().hashCode();
+      }
+      if (getBytesDataCount() > 0) {
+        hash = (37 * hash) + BYTES_DATA_FIELD_NUMBER;
+        hash = (53 * hash) + getBytesDataList().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -4767,6 +5583,16 @@ public final class Bigdl {
         bitField0_ = (bitField0_ & ~0x00000004);
         doubleData_ = java.util.Collections.emptyList();
         bitField0_ = (bitField0_ & ~0x00000008);
+        boolData_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000010);
+        stringData_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000020);
+        intData_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000040);
+        longData_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000080);
+        bytesData_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000100);
         return this;
       }
 
@@ -4807,6 +5633,31 @@ public final class Bigdl {
           bitField0_ = (bitField0_ & ~0x00000008);
         }
         result.doubleData_ = doubleData_;
+        if (((bitField0_ & 0x00000010) == 0x00000010)) {
+          boolData_ = java.util.Collections.unmodifiableList(boolData_);
+          bitField0_ = (bitField0_ & ~0x00000010);
+        }
+        result.boolData_ = boolData_;
+        if (((bitField0_ & 0x00000020) == 0x00000020)) {
+          stringData_ = stringData_.getUnmodifiableView();
+          bitField0_ = (bitField0_ & ~0x00000020);
+        }
+        result.stringData_ = stringData_;
+        if (((bitField0_ & 0x00000040) == 0x00000040)) {
+          intData_ = java.util.Collections.unmodifiableList(intData_);
+          bitField0_ = (bitField0_ & ~0x00000040);
+        }
+        result.intData_ = intData_;
+        if (((bitField0_ & 0x00000080) == 0x00000080)) {
+          longData_ = java.util.Collections.unmodifiableList(longData_);
+          bitField0_ = (bitField0_ & ~0x00000080);
+        }
+        result.longData_ = longData_;
+        if (((bitField0_ & 0x00000100) == 0x00000100)) {
+          bytesData_ = java.util.Collections.unmodifiableList(bytesData_);
+          bitField0_ = (bitField0_ & ~0x00000100);
+        }
+        result.bytesData_ = bytesData_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -4879,6 +5730,56 @@ public final class Bigdl {
           } else {
             ensureDoubleDataIsMutable();
             doubleData_.addAll(other.doubleData_);
+          }
+          onChanged();
+        }
+        if (!other.boolData_.isEmpty()) {
+          if (boolData_.isEmpty()) {
+            boolData_ = other.boolData_;
+            bitField0_ = (bitField0_ & ~0x00000010);
+          } else {
+            ensureBoolDataIsMutable();
+            boolData_.addAll(other.boolData_);
+          }
+          onChanged();
+        }
+        if (!other.stringData_.isEmpty()) {
+          if (stringData_.isEmpty()) {
+            stringData_ = other.stringData_;
+            bitField0_ = (bitField0_ & ~0x00000020);
+          } else {
+            ensureStringDataIsMutable();
+            stringData_.addAll(other.stringData_);
+          }
+          onChanged();
+        }
+        if (!other.intData_.isEmpty()) {
+          if (intData_.isEmpty()) {
+            intData_ = other.intData_;
+            bitField0_ = (bitField0_ & ~0x00000040);
+          } else {
+            ensureIntDataIsMutable();
+            intData_.addAll(other.intData_);
+          }
+          onChanged();
+        }
+        if (!other.longData_.isEmpty()) {
+          if (longData_.isEmpty()) {
+            longData_ = other.longData_;
+            bitField0_ = (bitField0_ & ~0x00000080);
+          } else {
+            ensureLongDataIsMutable();
+            longData_.addAll(other.longData_);
+          }
+          onChanged();
+        }
+        if (!other.bytesData_.isEmpty()) {
+          if (bytesData_.isEmpty()) {
+            bytesData_ = other.bytesData_;
+            bitField0_ = (bitField0_ & ~0x00000100);
+          } else {
+            ensureBytesDataIsMutable();
+            bytesData_.addAll(other.bytesData_);
           }
           onChanged();
         }
@@ -5056,7 +5957,7 @@ public final class Bigdl {
       }
       /**
        * <pre>
-       *tensor element
+       *float tensor element
        * </pre>
        *
        * <code>repeated float float_data = 3;</code>
@@ -5067,7 +5968,7 @@ public final class Bigdl {
       }
       /**
        * <pre>
-       *tensor element
+       *float tensor element
        * </pre>
        *
        * <code>repeated float float_data = 3;</code>
@@ -5077,7 +5978,7 @@ public final class Bigdl {
       }
       /**
        * <pre>
-       *tensor element
+       *float tensor element
        * </pre>
        *
        * <code>repeated float float_data = 3;</code>
@@ -5087,7 +5988,7 @@ public final class Bigdl {
       }
       /**
        * <pre>
-       *tensor element
+       *float tensor element
        * </pre>
        *
        * <code>repeated float float_data = 3;</code>
@@ -5101,7 +6002,7 @@ public final class Bigdl {
       }
       /**
        * <pre>
-       *tensor element
+       *float tensor element
        * </pre>
        *
        * <code>repeated float float_data = 3;</code>
@@ -5114,7 +6015,7 @@ public final class Bigdl {
       }
       /**
        * <pre>
-       *tensor element
+       *float tensor element
        * </pre>
        *
        * <code>repeated float float_data = 3;</code>
@@ -5129,7 +6030,7 @@ public final class Bigdl {
       }
       /**
        * <pre>
-       *tensor element
+       *float tensor element
        * </pre>
        *
        * <code>repeated float float_data = 3;</code>
@@ -5150,7 +6051,7 @@ public final class Bigdl {
       }
       /**
        * <pre>
-       *tensor element
+       *double tensor element
        * </pre>
        *
        * <code>repeated double double_data = 4;</code>
@@ -5161,7 +6062,7 @@ public final class Bigdl {
       }
       /**
        * <pre>
-       *tensor element
+       *double tensor element
        * </pre>
        *
        * <code>repeated double double_data = 4;</code>
@@ -5171,7 +6072,7 @@ public final class Bigdl {
       }
       /**
        * <pre>
-       *tensor element
+       *double tensor element
        * </pre>
        *
        * <code>repeated double double_data = 4;</code>
@@ -5181,7 +6082,7 @@ public final class Bigdl {
       }
       /**
        * <pre>
-       *tensor element
+       *double tensor element
        * </pre>
        *
        * <code>repeated double double_data = 4;</code>
@@ -5195,7 +6096,7 @@ public final class Bigdl {
       }
       /**
        * <pre>
-       *tensor element
+       *double tensor element
        * </pre>
        *
        * <code>repeated double double_data = 4;</code>
@@ -5208,7 +6109,7 @@ public final class Bigdl {
       }
       /**
        * <pre>
-       *tensor element
+       *double tensor element
        * </pre>
        *
        * <code>repeated double double_data = 4;</code>
@@ -5223,7 +6124,7 @@ public final class Bigdl {
       }
       /**
        * <pre>
-       *tensor element
+       *double tensor element
        * </pre>
        *
        * <code>repeated double double_data = 4;</code>
@@ -5231,6 +6132,518 @@ public final class Bigdl {
       public Builder clearDoubleData() {
         doubleData_ = java.util.Collections.emptyList();
         bitField0_ = (bitField0_ & ~0x00000008);
+        onChanged();
+        return this;
+      }
+
+      private java.util.List<java.lang.Boolean> boolData_ = java.util.Collections.emptyList();
+      private void ensureBoolDataIsMutable() {
+        if (!((bitField0_ & 0x00000010) == 0x00000010)) {
+          boolData_ = new java.util.ArrayList<java.lang.Boolean>(boolData_);
+          bitField0_ |= 0x00000010;
+         }
+      }
+      /**
+       * <pre>
+       *boolean tensor element
+       * </pre>
+       *
+       * <code>repeated bool bool_data = 5;</code>
+       */
+      public java.util.List<java.lang.Boolean>
+          getBoolDataList() {
+        return java.util.Collections.unmodifiableList(boolData_);
+      }
+      /**
+       * <pre>
+       *boolean tensor element
+       * </pre>
+       *
+       * <code>repeated bool bool_data = 5;</code>
+       */
+      public int getBoolDataCount() {
+        return boolData_.size();
+      }
+      /**
+       * <pre>
+       *boolean tensor element
+       * </pre>
+       *
+       * <code>repeated bool bool_data = 5;</code>
+       */
+      public boolean getBoolData(int index) {
+        return boolData_.get(index);
+      }
+      /**
+       * <pre>
+       *boolean tensor element
+       * </pre>
+       *
+       * <code>repeated bool bool_data = 5;</code>
+       */
+      public Builder setBoolData(
+          int index, boolean value) {
+        ensureBoolDataIsMutable();
+        boolData_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *boolean tensor element
+       * </pre>
+       *
+       * <code>repeated bool bool_data = 5;</code>
+       */
+      public Builder addBoolData(boolean value) {
+        ensureBoolDataIsMutable();
+        boolData_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *boolean tensor element
+       * </pre>
+       *
+       * <code>repeated bool bool_data = 5;</code>
+       */
+      public Builder addAllBoolData(
+          java.lang.Iterable<? extends java.lang.Boolean> values) {
+        ensureBoolDataIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, boolData_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *boolean tensor element
+       * </pre>
+       *
+       * <code>repeated bool bool_data = 5;</code>
+       */
+      public Builder clearBoolData() {
+        boolData_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000010);
+        onChanged();
+        return this;
+      }
+
+      private com.google.protobuf.LazyStringList stringData_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      private void ensureStringDataIsMutable() {
+        if (!((bitField0_ & 0x00000020) == 0x00000020)) {
+          stringData_ = new com.google.protobuf.LazyStringArrayList(stringData_);
+          bitField0_ |= 0x00000020;
+         }
+      }
+      /**
+       * <pre>
+       *string tensor element
+       * </pre>
+       *
+       * <code>repeated string string_data = 6;</code>
+       */
+      public com.google.protobuf.ProtocolStringList
+          getStringDataList() {
+        return stringData_.getUnmodifiableView();
+      }
+      /**
+       * <pre>
+       *string tensor element
+       * </pre>
+       *
+       * <code>repeated string string_data = 6;</code>
+       */
+      public int getStringDataCount() {
+        return stringData_.size();
+      }
+      /**
+       * <pre>
+       *string tensor element
+       * </pre>
+       *
+       * <code>repeated string string_data = 6;</code>
+       */
+      public java.lang.String getStringData(int index) {
+        return stringData_.get(index);
+      }
+      /**
+       * <pre>
+       *string tensor element
+       * </pre>
+       *
+       * <code>repeated string string_data = 6;</code>
+       */
+      public com.google.protobuf.ByteString
+          getStringDataBytes(int index) {
+        return stringData_.getByteString(index);
+      }
+      /**
+       * <pre>
+       *string tensor element
+       * </pre>
+       *
+       * <code>repeated string string_data = 6;</code>
+       */
+      public Builder setStringData(
+          int index, java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureStringDataIsMutable();
+        stringData_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *string tensor element
+       * </pre>
+       *
+       * <code>repeated string string_data = 6;</code>
+       */
+      public Builder addStringData(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureStringDataIsMutable();
+        stringData_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *string tensor element
+       * </pre>
+       *
+       * <code>repeated string string_data = 6;</code>
+       */
+      public Builder addAllStringData(
+          java.lang.Iterable<java.lang.String> values) {
+        ensureStringDataIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, stringData_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *string tensor element
+       * </pre>
+       *
+       * <code>repeated string string_data = 6;</code>
+       */
+      public Builder clearStringData() {
+        stringData_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000020);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *string tensor element
+       * </pre>
+       *
+       * <code>repeated string string_data = 6;</code>
+       */
+      public Builder addStringDataBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        ensureStringDataIsMutable();
+        stringData_.add(value);
+        onChanged();
+        return this;
+      }
+
+      private java.util.List<java.lang.Integer> intData_ = java.util.Collections.emptyList();
+      private void ensureIntDataIsMutable() {
+        if (!((bitField0_ & 0x00000040) == 0x00000040)) {
+          intData_ = new java.util.ArrayList<java.lang.Integer>(intData_);
+          bitField0_ |= 0x00000040;
+         }
+      }
+      /**
+       * <pre>
+       *int tensor element
+       * </pre>
+       *
+       * <code>repeated int32 int_data = 7;</code>
+       */
+      public java.util.List<java.lang.Integer>
+          getIntDataList() {
+        return java.util.Collections.unmodifiableList(intData_);
+      }
+      /**
+       * <pre>
+       *int tensor element
+       * </pre>
+       *
+       * <code>repeated int32 int_data = 7;</code>
+       */
+      public int getIntDataCount() {
+        return intData_.size();
+      }
+      /**
+       * <pre>
+       *int tensor element
+       * </pre>
+       *
+       * <code>repeated int32 int_data = 7;</code>
+       */
+      public int getIntData(int index) {
+        return intData_.get(index);
+      }
+      /**
+       * <pre>
+       *int tensor element
+       * </pre>
+       *
+       * <code>repeated int32 int_data = 7;</code>
+       */
+      public Builder setIntData(
+          int index, int value) {
+        ensureIntDataIsMutable();
+        intData_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *int tensor element
+       * </pre>
+       *
+       * <code>repeated int32 int_data = 7;</code>
+       */
+      public Builder addIntData(int value) {
+        ensureIntDataIsMutable();
+        intData_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *int tensor element
+       * </pre>
+       *
+       * <code>repeated int32 int_data = 7;</code>
+       */
+      public Builder addAllIntData(
+          java.lang.Iterable<? extends java.lang.Integer> values) {
+        ensureIntDataIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, intData_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *int tensor element
+       * </pre>
+       *
+       * <code>repeated int32 int_data = 7;</code>
+       */
+      public Builder clearIntData() {
+        intData_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000040);
+        onChanged();
+        return this;
+      }
+
+      private java.util.List<java.lang.Long> longData_ = java.util.Collections.emptyList();
+      private void ensureLongDataIsMutable() {
+        if (!((bitField0_ & 0x00000080) == 0x00000080)) {
+          longData_ = new java.util.ArrayList<java.lang.Long>(longData_);
+          bitField0_ |= 0x00000080;
+         }
+      }
+      /**
+       * <pre>
+       *int tensor element
+       * </pre>
+       *
+       * <code>repeated int64 long_data = 8;</code>
+       */
+      public java.util.List<java.lang.Long>
+          getLongDataList() {
+        return java.util.Collections.unmodifiableList(longData_);
+      }
+      /**
+       * <pre>
+       *int tensor element
+       * </pre>
+       *
+       * <code>repeated int64 long_data = 8;</code>
+       */
+      public int getLongDataCount() {
+        return longData_.size();
+      }
+      /**
+       * <pre>
+       *int tensor element
+       * </pre>
+       *
+       * <code>repeated int64 long_data = 8;</code>
+       */
+      public long getLongData(int index) {
+        return longData_.get(index);
+      }
+      /**
+       * <pre>
+       *int tensor element
+       * </pre>
+       *
+       * <code>repeated int64 long_data = 8;</code>
+       */
+      public Builder setLongData(
+          int index, long value) {
+        ensureLongDataIsMutable();
+        longData_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *int tensor element
+       * </pre>
+       *
+       * <code>repeated int64 long_data = 8;</code>
+       */
+      public Builder addLongData(long value) {
+        ensureLongDataIsMutable();
+        longData_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *int tensor element
+       * </pre>
+       *
+       * <code>repeated int64 long_data = 8;</code>
+       */
+      public Builder addAllLongData(
+          java.lang.Iterable<? extends java.lang.Long> values) {
+        ensureLongDataIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, longData_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *int tensor element
+       * </pre>
+       *
+       * <code>repeated int64 long_data = 8;</code>
+       */
+      public Builder clearLongData() {
+        longData_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000080);
+        onChanged();
+        return this;
+      }
+
+      private java.util.List<com.google.protobuf.ByteString> bytesData_ = java.util.Collections.emptyList();
+      private void ensureBytesDataIsMutable() {
+        if (!((bitField0_ & 0x00000100) == 0x00000100)) {
+          bytesData_ = new java.util.ArrayList<com.google.protobuf.ByteString>(bytesData_);
+          bitField0_ |= 0x00000100;
+         }
+      }
+      /**
+       * <pre>
+       *int tensor element
+       * </pre>
+       *
+       * <code>repeated bytes bytes_data = 9;</code>
+       */
+      public java.util.List<com.google.protobuf.ByteString>
+          getBytesDataList() {
+        return java.util.Collections.unmodifiableList(bytesData_);
+      }
+      /**
+       * <pre>
+       *int tensor element
+       * </pre>
+       *
+       * <code>repeated bytes bytes_data = 9;</code>
+       */
+      public int getBytesDataCount() {
+        return bytesData_.size();
+      }
+      /**
+       * <pre>
+       *int tensor element
+       * </pre>
+       *
+       * <code>repeated bytes bytes_data = 9;</code>
+       */
+      public com.google.protobuf.ByteString getBytesData(int index) {
+        return bytesData_.get(index);
+      }
+      /**
+       * <pre>
+       *int tensor element
+       * </pre>
+       *
+       * <code>repeated bytes bytes_data = 9;</code>
+       */
+      public Builder setBytesData(
+          int index, com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureBytesDataIsMutable();
+        bytesData_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *int tensor element
+       * </pre>
+       *
+       * <code>repeated bytes bytes_data = 9;</code>
+       */
+      public Builder addBytesData(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureBytesDataIsMutable();
+        bytesData_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *int tensor element
+       * </pre>
+       *
+       * <code>repeated bytes bytes_data = 9;</code>
+       */
+      public Builder addAllBytesData(
+          java.lang.Iterable<? extends com.google.protobuf.ByteString> values) {
+        ensureBytesDataIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, bytesData_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *int tensor element
+       * </pre>
+       *
+       * <code>repeated bytes bytes_data = 9;</code>
+       */
+      public Builder clearBytesData() {
+        bytesData_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000100);
         onChanged();
         return this;
       }
@@ -15637,76 +17050,80 @@ public final class Bigdl {
   static {
     java.lang.String[] descriptorData = {
       "\n\013bigdl.proto\022\rserialization\032\031google/pro" +
-      "tobuf/any.proto\"\352\002\n\013BigDLModule\022\014\n\004name\030" +
+      "tobuf/any.proto\"\216\003\n\013BigDLModule\022\014\n\004name\030" +
       "\001 \001(\t\022.\n\nsubModules\030\002 \003(\0132\032.serializatio" +
       "n.BigDLModule\022*\n\006weight\030\003 \001(\0132\032.serializ" +
       "ation.BigDLTensor\022(\n\004bias\030\004 \001(\0132\032.serial" +
       "ization.BigDLTensor\022\022\n\npreModules\030\005 \003(\t\022" +
       "\023\n\013nextModules\030\006 \003(\t\022\022\n\nmoduleType\030\007 \001(\t" +
       "\0222\n\004attr\030\010 \003(\0132$.serialization.BigDLModu" +
-      "le.AttrEntry\022\017\n\007version\030\t \001(\t\032E\n\tAttrEnt" +
-      "ry\022\013\n\003key\030\001 \001(\t\022\'\n\005value\030\002 \001(\0132\030.seriali",
-      "zation.AttrValue:\0028\001\"M\n\nInitMethod\0221\n\nme" +
-      "thodType\030\001 \001(\0162\035.serialization.InitMetho" +
-      "dType\022\014\n\004data\030\002 \003(\001\"o\n\013BigDLTensor\022)\n\010da" +
-      "tatype\030\001 \001(\0162\027.serialization.DataType\022\014\n" +
-      "\004size\030\002 \003(\005\022\022\n\nfloat_data\030\003 \003(\002\022\023\n\013doubl" +
-      "e_data\030\004 \003(\001\"[\n\013Regularizer\0227\n\017regulariz" +
-      "erType\030\001 \001(\0162\036.serialization.Regularizer" +
-      "Type\022\023\n\013regularData\030\002 \003(\001\"\332\t\n\tAttrValue\022" +
-      ")\n\010dataType\030\001 \001(\0162\027.serialization.DataTy" +
-      "pe\022\017\n\007subType\030\002 \001(\t\022\024\n\nint32Value\030\003 \001(\005H",
-      "\000\022\024\n\nint64Value\030\004 \001(\003H\000\022\024\n\nfloatValue\030\005 " +
-      "\001(\002H\000\022\025\n\013doubleValue\030\006 \001(\001H\000\022\025\n\013stringVa" +
-      "lue\030\007 \001(\tH\000\022\023\n\tboolValue\030\010 \001(\010H\000\0226\n\020regu" +
-      "larizerValue\030\t \001(\0132\032.serialization.Regul" +
-      "arizerH\000\0221\n\013tensorValue\030\n \001(\0132\032.serializ" +
-      "ation.BigDLTensorH\000\0227\n\023variableFormatVal" +
-      "ue\030\013 \001(\0162\030.serialization.VarFormatH\000\0224\n\017" +
-      "initMethodValue\030\014 \001(\0132\031.serialization.In" +
-      "itMethodH\000\0226\n\020bigDLModuleValue\030\r \001(\0132\032.s" +
-      "erialization.BigDLModuleH\000\0228\n\021nameAttrLi",
-      "stValue\030\016 \001(\0132\033.serialization.NameAttrLi" +
-      "stH\000\0229\n\narrayValue\030\017 \001(\0132#.serialization" +
-      ".AttrValue.ArrayValueH\000\0229\n\017dataFormatVal" +
-      "ue\030\020 \001(\0162\036.serialization.InputDataFormat" +
-      "H\000\022+\n\013customValue\030\021 \001(\0132\024.google.protobu" +
-      "f.AnyH\000\032\223\004\n\nArrayValue\022\014\n\004size\030\001 \001(\005\022)\n\010" +
-      "datatype\030\002 \001(\0162\027.serialization.DataType\022" +
-      "\013\n\003i32\030\003 \003(\005\022\013\n\003i64\030\004 \003(\003\022\013\n\003flt\030\005 \003(\002\022\013" +
-      "\n\003dbl\030\006 \003(\001\022\013\n\003str\030\007 \003(\t\022\017\n\007boolean\030\010 \003(" +
-      "\010\022/\n\013Regularizer\030\t \003(\0132\032.serialization.R",
-      "egularizer\022*\n\006tensor\030\n \003(\0132\032.serializati" +
-      "on.BigDLTensor\0220\n\016variableFormat\030\013 \003(\0162\030" +
-      ".serialization.VarFormat\022-\n\ninitMethod\030\014" +
-      " \003(\0132\031.serialization.InitMethod\022/\n\013bigDL" +
-      "Module\030\r \003(\0132\032.serialization.BigDLModule" +
-      "\0221\n\014nameAttrList\030\016 \003(\0132\033.serialization.N" +
-      "ameAttrList\0222\n\ndataFormat\030\017 \003(\0162\036.serial" +
-      "ization.InputDataFormat\022$\n\006custom\030\020 \003(\0132" +
-      "\024.google.protobuf.AnyB\007\n\005value\"\230\001\n\014NameA" +
-      "ttrList\022\014\n\004name\030\001 \001(\t\0223\n\004attr\030\002 \003(\0132%.se",
-      "rialization.NameAttrList.AttrEntry\032E\n\tAt" +
-      "trEntry\022\013\n\003key\030\001 \001(\t\022\'\n\005value\030\002 \001(\0132\030.se" +
-      "rialization.AttrValue:\0028\001*\260\001\n\tVarFormat\022" +
-      "\020\n\014EMPTY_FORMAT\020\000\022\013\n\007DEFAULT\020\001\022\t\n\005ONE_D\020" +
-      "\002\022\n\n\006IN_OUT\020\003\022\n\n\006OUT_IN\020\004\022\020\n\014IN_OUT_KW_K" +
-      "H\020\005\022\020\n\014OUT_IN_KW_KH\020\006\022\023\n\017GP_OUT_IN_KW_KH" +
-      "\020\007\022\023\n\017GP_IN_OUT_KW_KH\020\010\022\023\n\017OUT_IN_KT_KH_" +
-      "KW\020\t*\253\001\n\016InitMethodType\022\030\n\024EMPTY_INITIAL" +
-      "IZATION\020\000\022\022\n\016RANDOM_UNIFORM\020\001\022\030\n\024RANDOM_" +
-      "UNIFORM_PARAM\020\002\022\021\n\rRANDOM_NORMAL\020\003\022\t\n\005ZE",
-      "ROS\020\004\022\010\n\004ONES\020\005\022\t\n\005CONST\020\006\022\n\n\006XAVIER\020\007\022\022" +
-      "\n\016BILINEARFILLER\020\010*L\n\017RegularizerType\022\023\n" +
-      "\017L1L2Regularizer\020\000\022\021\n\rL1Regularizer\020\001\022\021\n" +
-      "\rL2Regularizer\020\002*%\n\017InputDataFormat\022\010\n\004N" +
-      "CHW\020\000\022\010\n\004NHWC\020\001*\335\001\n\010DataType\022\t\n\005INT32\020\000\022" +
-      "\t\n\005INT64\020\001\022\t\n\005FLOAT\020\002\022\n\n\006DOUBLE\020\003\022\n\n\006STR" +
-      "ING\020\004\022\010\n\004BOOL\020\005\022\017\n\013REGULARIZER\020\006\022\n\n\006TENS" +
-      "OR\020\007\022\023\n\017VARIABLE_FORMAT\020\010\022\016\n\nINITMETHOD\020" +
-      "\t\022\n\n\006MODULE\020\n\022\022\n\016NAME_ATTR_LIST\020\013\022\017\n\013ARR" +
-      "AY_VALUE\020\014\022\017\n\013DATA_FORMAT\020\r\022\n\n\006CUSTOM\020\016b",
-      "\006proto3"
+      "le.AttrEntry\022\017\n\007version\030\t \001(\t\022\r\n\005train\030\n" +
+      " \001(\010\022\023\n\013namePostfix\030\013 \001(\t\032E\n\tAttrEntry\022\013",
+      "\n\003key\030\001 \001(\t\022\'\n\005value\030\002 \001(\0132\030.serializati" +
+      "on.AttrValue:\0028\001\"M\n\nInitMethod\0221\n\nmethod" +
+      "Type\030\001 \001(\0162\035.serialization.InitMethodTyp" +
+      "e\022\014\n\004data\030\002 \003(\001\"\320\001\n\013BigDLTensor\022)\n\010datat" +
+      "ype\030\001 \001(\0162\027.serialization.DataType\022\014\n\004si" +
+      "ze\030\002 \003(\005\022\022\n\nfloat_data\030\003 \003(\002\022\023\n\013double_d" +
+      "ata\030\004 \003(\001\022\021\n\tbool_data\030\005 \003(\010\022\023\n\013string_d" +
+      "ata\030\006 \003(\t\022\020\n\010int_data\030\007 \003(\005\022\021\n\tlong_data" +
+      "\030\010 \003(\003\022\022\n\nbytes_data\030\t \003(\014\"[\n\013Regularize" +
+      "r\0227\n\017regularizerType\030\001 \001(\0162\036.serializati",
+      "on.RegularizerType\022\023\n\013regularData\030\002 \003(\001\"" +
+      "\332\t\n\tAttrValue\022)\n\010dataType\030\001 \001(\0162\027.serial" +
+      "ization.DataType\022\017\n\007subType\030\002 \001(\t\022\024\n\nint" +
+      "32Value\030\003 \001(\005H\000\022\024\n\nint64Value\030\004 \001(\003H\000\022\024\n" +
+      "\nfloatValue\030\005 \001(\002H\000\022\025\n\013doubleValue\030\006 \001(\001" +
+      "H\000\022\025\n\013stringValue\030\007 \001(\tH\000\022\023\n\tboolValue\030\010" +
+      " \001(\010H\000\0226\n\020regularizerValue\030\t \001(\0132\032.seria" +
+      "lization.RegularizerH\000\0221\n\013tensorValue\030\n " +
+      "\001(\0132\032.serialization.BigDLTensorH\000\0227\n\023var" +
+      "iableFormatValue\030\013 \001(\0162\030.serialization.V",
+      "arFormatH\000\0224\n\017initMethodValue\030\014 \001(\0132\031.se" +
+      "rialization.InitMethodH\000\0226\n\020bigDLModuleV" +
+      "alue\030\r \001(\0132\032.serialization.BigDLModuleH\000" +
+      "\0228\n\021nameAttrListValue\030\016 \001(\0132\033.serializat" +
+      "ion.NameAttrListH\000\0229\n\narrayValue\030\017 \001(\0132#" +
+      ".serialization.AttrValue.ArrayValueH\000\0229\n" +
+      "\017dataFormatValue\030\020 \001(\0162\036.serialization.I" +
+      "nputDataFormatH\000\022+\n\013customValue\030\021 \001(\0132\024." +
+      "google.protobuf.AnyH\000\032\223\004\n\nArrayValue\022\014\n\004" +
+      "size\030\001 \001(\005\022)\n\010datatype\030\002 \001(\0162\027.serializa",
+      "tion.DataType\022\013\n\003i32\030\003 \003(\005\022\013\n\003i64\030\004 \003(\003\022" +
+      "\013\n\003flt\030\005 \003(\002\022\013\n\003dbl\030\006 \003(\001\022\013\n\003str\030\007 \003(\t\022\017" +
+      "\n\007boolean\030\010 \003(\010\022/\n\013Regularizer\030\t \003(\0132\032.s" +
+      "erialization.Regularizer\022*\n\006tensor\030\n \003(\013" +
+      "2\032.serialization.BigDLTensor\0220\n\016variable" +
+      "Format\030\013 \003(\0162\030.serialization.VarFormat\022-" +
+      "\n\ninitMethod\030\014 \003(\0132\031.serialization.InitM" +
+      "ethod\022/\n\013bigDLModule\030\r \003(\0132\032.serializati" +
+      "on.BigDLModule\0221\n\014nameAttrList\030\016 \003(\0132\033.s" +
+      "erialization.NameAttrList\0222\n\ndataFormat\030",
+      "\017 \003(\0162\036.serialization.InputDataFormat\022$\n" +
+      "\006custom\030\020 \003(\0132\024.google.protobuf.AnyB\007\n\005v" +
+      "alue\"\230\001\n\014NameAttrList\022\014\n\004name\030\001 \001(\t\0223\n\004a" +
+      "ttr\030\002 \003(\0132%.serialization.NameAttrList.A" +
+      "ttrEntry\032E\n\tAttrEntry\022\013\n\003key\030\001 \001(\t\022\'\n\005va" +
+      "lue\030\002 \001(\0132\030.serialization.AttrValue:\0028\001*" +
+      "\260\001\n\tVarFormat\022\020\n\014EMPTY_FORMAT\020\000\022\013\n\007DEFAU" +
+      "LT\020\001\022\t\n\005ONE_D\020\002\022\n\n\006IN_OUT\020\003\022\n\n\006OUT_IN\020\004\022" +
+      "\020\n\014IN_OUT_KW_KH\020\005\022\020\n\014OUT_IN_KW_KH\020\006\022\023\n\017G" +
+      "P_OUT_IN_KW_KH\020\007\022\023\n\017GP_IN_OUT_KW_KH\020\010\022\023\n",
+      "\017OUT_IN_KT_KH_KW\020\t*\253\001\n\016InitMethodType\022\030\n" +
+      "\024EMPTY_INITIALIZATION\020\000\022\022\n\016RANDOM_UNIFOR" +
+      "M\020\001\022\030\n\024RANDOM_UNIFORM_PARAM\020\002\022\021\n\rRANDOM_" +
+      "NORMAL\020\003\022\t\n\005ZEROS\020\004\022\010\n\004ONES\020\005\022\t\n\005CONST\020\006" +
+      "\022\n\n\006XAVIER\020\007\022\022\n\016BILINEARFILLER\020\010*L\n\017Regu" +
+      "larizerType\022\023\n\017L1L2Regularizer\020\000\022\021\n\rL1Re" +
+      "gularizer\020\001\022\021\n\rL2Regularizer\020\002*%\n\017InputD" +
+      "ataFormat\022\010\n\004NCHW\020\000\022\010\n\004NHWC\020\001*\375\001\n\010DataTy" +
+      "pe\022\t\n\005INT32\020\000\022\t\n\005INT64\020\001\022\t\n\005FLOAT\020\002\022\n\n\006D" +
+      "OUBLE\020\003\022\n\n\006STRING\020\004\022\010\n\004BOOL\020\005\022\010\n\004CHAR\020\006\022",
+      "\t\n\005SHORT\020\007\022\t\n\005BYTES\020\010\022\017\n\013REGULARIZER\020\t\022\n" +
+      "\n\006TENSOR\020\n\022\023\n\017VARIABLE_FORMAT\020\013\022\016\n\nINITM" +
+      "ETHOD\020\014\022\n\n\006MODULE\020\r\022\022\n\016NAME_ATTR_LIST\020\016\022" +
+      "\017\n\013ARRAY_VALUE\020\017\022\017\n\013DATA_FORMAT\020\020\022\n\n\006CUS" +
+      "TOM\020\021b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -15726,7 +17143,7 @@ public final class Bigdl {
     internal_static_serialization_BigDLModule_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_serialization_BigDLModule_descriptor,
-        new java.lang.String[] { "Name", "SubModules", "Weight", "Bias", "PreModules", "NextModules", "ModuleType", "Attr", "Version", });
+        new java.lang.String[] { "Name", "SubModules", "Weight", "Bias", "PreModules", "NextModules", "ModuleType", "Attr", "Version", "Train", "NamePostfix", });
     internal_static_serialization_BigDLModule_AttrEntry_descriptor =
       internal_static_serialization_BigDLModule_descriptor.getNestedTypes().get(0);
     internal_static_serialization_BigDLModule_AttrEntry_fieldAccessorTable = new
@@ -15744,7 +17161,7 @@ public final class Bigdl {
     internal_static_serialization_BigDLTensor_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_serialization_BigDLTensor_descriptor,
-        new java.lang.String[] { "Datatype", "Size", "FloatData", "DoubleData", });
+        new java.lang.String[] { "Datatype", "Size", "FloatData", "DoubleData", "BoolData", "StringData", "IntData", "LongData", "BytesData", });
     internal_static_serialization_Regularizer_descriptor =
       getDescriptor().getMessageTypes().get(3);
     internal_static_serialization_Regularizer_fieldAccessorTable = new
