@@ -47,18 +47,14 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
     require(input.dim == 2 || input.dim == 4 || input.dim == 5,
       "Recurrent: input should be a 2D/4D/5D Tensor, e.g [batch, nDim], " +
         s"current input.dim = ${input.dim}")
-
-    batchSize = input.size(batchDim)
-
     val hiddenSize = topology.hiddensShape(0)
     val outputSize = input.size()
     outputSize(1) = hiddenSize
-    require(hiddenSize == input.size()(1), "hiddenSize is " +
-      "not the same with input size!! Please update cell settings or use Recurrent instead!")
+    batchSize = input.size(batchDim)
     val featureSizes = outputSize.drop(1)
     output.resize(Array(batchSize, times) ++ featureSizes)
-    // Clone N modules along the sequence dimension.    
-    initHidden(outputSize)
+    // Clone N modules along the sequence dimension.
+    initHidden(outputSize.drop(1))
     cloneCells()
     if (preTopology != null) newInput.resize(output.size())
     else outputCell.resize(output.size())
@@ -86,11 +82,12 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
 
       currentInput(inputDim) = if (preTopology != null) {
         newInput.narrow(2, i, 1).copy(inputTmp)
-        val sizes = 1 +: inputTmp.size()
-        inputTmp.resize(sizes)
-        val _input = preTopology.updateOutput(inputTmp).toTensor[T]
-        inputTmp.resize(sizes.takeRight(sizes.length - 1))
-        _input.select(1, 1)
+//        val sizes = 1 +: inputTmp.size()
+//        inputTmp.resize(sizes)
+//        val _input = preTopology.updateOutput(inputTmp).toTensor[T]
+//        inputTmp.resize(sizes.takeRight(sizes.length - 1))
+//        _input.select(1, 1)
+        preTopology.updateOutput(inputTmp).toTensor[T]
       } else {
         outputCell.narrow(2, i, 1).copy(inputTmp)
         inputTmp

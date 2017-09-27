@@ -125,11 +125,10 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null,
 
   /**
    * Clone N models; N depends on the time dimension of the input
-   * @param sizes, the first element is batchSize, the second is times, the third is hiddensize
-    *             the left is size of images
+   * @param sizes, the first element is hiddensize, the left is size of images
    */
   protected def initHidden(sizes: Array[Int]): Unit = {
-    val imageSize = sizes.drop(3)
+    val imageSize = sizes
     if (hidden == null) {
       cells.clear()
       cells += topology
@@ -151,7 +150,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null,
   }
 
   private def initHiddens(sizes: Array[Int]): Unit = {
-    val imageSize = sizes.drop(3)
+    val imageSize = sizes
     val multiCells = topology.asInstanceOf[MultiCell[T]].cells
 
     var i = 0
@@ -278,7 +277,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null,
       if (gradStates == null) {
         gradStates = new Array[Activity](topology.asInstanceOf[MultiCell[T]].cells.length)
       }
-      initHiddens(outputSize)
+      initHiddens(outputSize.drop(2))
       if (initStates != null) {
         states = initStates.clone()
       }
