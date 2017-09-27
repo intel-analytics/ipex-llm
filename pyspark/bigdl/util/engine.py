@@ -51,11 +51,14 @@ def __prepare_bigdl_env():
         print("Prepending %s to sys.path" % conf_paths[0])
         sys.path.insert(0, conf_paths[0])
 
-    if is_spark_below_2_2_0():
+    if bigdl_classpath and is_spark_below_2_2():
         append_path("SPARK_CLASSPATH", bigdl_classpath)
 
 
 def get_bigdl_classpath():
+    """
+    Get and return the jar path for bigdl if exists.
+    """
     if(os.getenv("BIGDL_CLASSPATH")):
         return os.environ["BIGDL_CLASSPATH"]
     jar_dir = os.path.abspath(__file__ + "/../../")
@@ -66,16 +69,28 @@ def get_bigdl_classpath():
     return ""
 
 
-def is_spark_below_2_2_0():
+def is_spark_below_2_2():
+    """
+    Check if spark version is below 2.2
+    """
     import pyspark
     if(hasattr(pyspark,"version")):
-        spark_version = pyspark.version.__version__.split("+")[0]
-        if(compare_version(spark_version, "2.2.0")>=0):
+        full_version = pyspark.version.__version__
+        # We only need the general spark version (eg, 1.6, 2.2).
+        parts = full_version.split(".")
+        spark_version = parts[0] + "." + parts[1]
+        if(compare_version(spark_version, "2.2")>=0):
             return False
     return True
 
 
 def compare_version(version1, version2):
+    """
+    Compare version strings.
+    :param version1;
+    :param version2;
+    :return: 1 if version1 is after version2; -1 if version1 is before version2; 0 if two versions are the same.
+    """
     v1Arr = version1.split(".")
     v2Arr = version2.split(".")
     len1 = len(v1Arr)

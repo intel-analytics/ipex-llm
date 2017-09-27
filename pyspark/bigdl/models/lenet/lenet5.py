@@ -69,9 +69,9 @@ if __name__ == "__main__":
     (options, args) = parser.parse_args(sys.argv)
 
     sc = SparkContext(appName="lenet5", conf=create_spark_conf())
+    redire_spark_logs()
+    show_bigdl_info_logs()
     init_engine()
-    print("Redirecting spark logs to "+os.getcwd()+"/bigdl.log")
-    redireSparkInfoLogs()
 
     if options.action == "train":
         def get_end_trigger():

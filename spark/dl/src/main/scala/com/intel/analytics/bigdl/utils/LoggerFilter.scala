@@ -88,12 +88,9 @@ object LoggerFilter {
    * 2. `-Dbigdl.utils.LoggerFilter.disable=true` will disable redirection.
    * 3. `-Dbigdl.utils.LoggerFilter.enableSparkLog=false` will not output spark log to file
    */
-  def redirectSparkInfoLogs(disableRedirect: String = "false",
-                            enableSparkLogRedirect: String = "true",
-                            logPath: String = defaultPath): Unit = {
-    val disable = System.getProperty("bigdl.utils.LoggerFilter.disable", disableRedirect)
-    val enableSparkLog = System.getProperty("bigdl.utils.LoggerFilter.enableSparkLog",
-      enableSparkLogRedirect)
+  def redirectSparkInfoLogs(logPath: String = defaultPath): Unit = {
+    val disable = System.getProperty("bigdl.utils.LoggerFilter.disable", "false")
+    val enableSparkLog = System.getProperty("bigdl.utils.LoggerFilter.enableSparkLog", "true")
 
     def getLogFile: String = {
       val logFile = System.getProperty("bigdl.utils.LoggerFilter.logFile", logPath)
