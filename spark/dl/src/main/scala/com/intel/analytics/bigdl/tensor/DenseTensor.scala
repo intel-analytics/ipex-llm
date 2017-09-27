@@ -27,7 +27,7 @@ import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 @SerialVersionUID(5876322619614900645L)
-private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
+private[tensor] class DenseTensor[@specialized T: ClassTag](
   private[tensor] var _storage: Storage[T],
   private[tensor] var _storageOffset: Int,
   private[tensor] var _size: Array[Int],
@@ -2447,7 +2447,7 @@ object DenseTensor {
     gauss
   }
 
-  private[tensor] def canFastBroadcast[@specialized T: ClassTag](tensor: Tensor[T],
+  private[tensor] def canFastBroadcast[@specialized T](tensor: Tensor[T],
     other: Tensor[T]): Boolean = {
     if (tensor.nDimension < other.nDimension()) return false
 

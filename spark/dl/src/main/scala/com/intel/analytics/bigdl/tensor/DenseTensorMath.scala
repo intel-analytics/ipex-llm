@@ -47,32 +47,52 @@ object DenseTensorMath {
 
   def cmul[@specialized T](self: DenseTensor[T], x: Tensor[T], y: Tensor[T])
     (implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(self.nElement() == y.nElement() && self.nElement() == x.nElement(),
-      "element number doesn't match")
-    if (self.isContiguous() && x.isContiguous() && y.isContiguous() && MKL.isMKLLoaded) {
-
-      ev.vMul(self.nElement(), x.storage().array(), x.storageOffset() - 1,
-        y.storage().array(), y.storageOffset() - 1, self.storage().array(), self.storageOffset()
-          - 1)
+    if (x.nElement() != y.nElement() && DenseTensor.canFastBroadcast(x, y)) {
+      require(self.nElement() == x.nElement(), "the self tensor nElement is not same as x" +
+        s"self(${self.nElement()}) x(${x.nElement()})")
+      // recursive cmul
+      var i = 0
+      while(i < x.size(1)) {
+        cmul(self.select(1, i + 1).asInstanceOf[DenseTensor[T]], x.select(1, i + 1), y)
+        i += 1
+      }
+    } else if (x.nElement() != y.nElement() && DenseTensor.canFastBroadcast(y, x)) {
+      require(self.nElement() == y.nElement(), "the self tensor nElement is not same as y" +
+        s"self(${self.nElement()}) y(${y.nElement()})")
+      // recursive cmul
+      var i = 0
+      while(i < y.size(1)) {
+        cmul(self.select(1, i + 1).asInstanceOf[DenseTensor[T]], x, y.select(1, i + 1))
+        i += 1
+      }
     } else {
-      val func6 = new TensorFunc6[T] {
-        override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int,
-                          data3: Array[T], offset3: Int): Unit = {
-          data1(offset1) = ev.times(data2(offset2), data3(offset3))
-        }
-      }
-      val func4 = new TensorFunc4[T] {
-        override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit = {
-          data1(offset1) = ev.times(data1(offset1), data2(offset2))
-        }
-      }
-      // For special case, we can use apply2 to instead of apply3
-      if (self == y) {
-        Apply.apply2(self, x, func4)
-      } else if (self == x) {
-        Apply.apply2(self, y, func4)
+      require(self.nElement() == y.nElement(), s"element number doesn't match " +
+        s"self(${self.nElement()}) y(${y.nElement()}) x(${x.nElement()})")
+      if (self.isContiguous() && x.isContiguous() && y.isContiguous() && MKL.isMKLLoaded) {
+
+        ev.vMul(self.nElement(), x.storage().array(), x.storageOffset() - 1,
+          y.storage().array(), y.storageOffset() - 1, self.storage().array(), self.storageOffset()
+            - 1)
       } else {
-        Apply.apply3[T](self, x, y, func6)
+        val func6 = new TensorFunc6[T] {
+          override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int,
+            data3: Array[T], offset3: Int): Unit = {
+            data1(offset1) = ev.times(data2(offset2), data3(offset3))
+          }
+        }
+        val func4 = new TensorFunc4[T] {
+          override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit = {
+            data1(offset1) = ev.times(data1(offset1), data2(offset2))
+          }
+        }
+        // For special case, we can use apply2 to instead of apply3
+        if (self == y) {
+          Apply.apply2(self, x, func4)
+        } else if (self == x) {
+          Apply.apply2(self, y, func4)
+        } else {
+          Apply.apply3[T](self, x, y, func6)
+        }
       }
     }
     self
