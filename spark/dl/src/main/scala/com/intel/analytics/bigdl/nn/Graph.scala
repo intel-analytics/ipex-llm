@@ -318,7 +318,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
     val gradGraph = backGraph.cloneGraph(true)
     dummyOutputGrad = gradGraph.source
     val originalNodes = gradGraph.DFS
-    originalNodes.filter(x => isStopGradient(x.element)).foreach(_.removeNextEdges())
+    originalNodes.filter(x => isStopGradient(x.element)).foreach(removeStopNodes(_))
     backwardNodes = gradGraph.DFS.filter(n => !n.eq(dummyOutputGrad))
       .filterNot(_.element.isInstanceOf[ControlDependency[_]]).toArray
     backwardScheduler = new Scheduler[T](
@@ -327,6 +327,12 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
     )
     clearState()
     this
+  }
+
+  private[bigdl] def removeStopNodes(n: Node[_]): Unit = {
+    val nodes = n.nextNodes
+    n.removeNextEdges()
+    nodes.filter(_.prevNodes.length == 0).foreach(removeStopNodes(_))
   }
 
 
