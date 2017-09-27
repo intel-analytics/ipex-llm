@@ -1170,6 +1170,24 @@ class GraphSpec extends FlatSpec with Matchers {
     result = model.forward(T(Tensor[Float](T(1)), Tensor[Boolean](T(false))))
     result.toTensor should be(Tensor[Float](T(6)))
   }
+
+  "graph backward with stopGradient" should "not remove stopGradient recursive" in {
+    val data = Input()
+    val d1 = Identity().inputs(data)
+    val d2 = Identity().inputs(d1)
+    val d3 = Identity().inputs(data)
+    val d4 = Identity().setName("d4").inputs(d3)
+    val d5 = Identity().inputs(d4)
+
+    val model = Graph(data, Array(d2, d5))
+    val output = model.forward(Tensor[Float](T(1, 2, 3))).toTable
+    output[Tensor[Float]](1) should be(Tensor[Float](T(1, 2, 3)))
+    output[Tensor[Float]](2) should be(Tensor[Float](T(1, 2, 3)))
+
+    model.stopGradient(Array("d4"))
+    model.backward(Tensor[Float](T(1, 2, 3)), T(Tensor[Float](T(2, 7, 9)),
+      Tensor[Float](T(1, 3, 5)))) should be(Tensor[Float](T(2, 7, 9)))
+  }
 }
 
 object ModelUntils {
