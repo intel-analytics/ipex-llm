@@ -37,7 +37,7 @@ class AdapterSpec extends FlatSpec with Matchers {
     }
     Reshape[Float](size = arraySize, Some(batchMode))
   })
-  
+
   "Adapter"  should "work correct" in {
     module.forward(T(Tensor[Float](3, 4), Tensor[Int](T(4, 3)))) should be(Tensor[Float](4, 3))
     module.forward(T(Tensor[Float](3, 4), Tensor[Int](T(4, 3)))) should be(Tensor[Float](4, 3))
