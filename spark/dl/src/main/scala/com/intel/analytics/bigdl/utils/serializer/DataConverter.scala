@@ -23,7 +23,6 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat.{NCHW, NHWC}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
 import com.intel.analytics.bigdl.optim.{L1L2Regularizer, L1Regularizer, L2Regularizer, Regularizer}
-import com.intel.analytics.bigdl.tensor.ConvertableFrom.ConvertableFromBoolean
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.{NumericBoolean, NumericChar, NumericInt, NumericLong, NumericShort, NumericString}
@@ -247,97 +246,68 @@ object DataConverter extends DataConverter{
       if (sizes.size == 0) {
         return null;
       }
-      val strorageArray : Array[T] = dataType match {
-        case DataType.FLOAT =>
-          val data = serializedTensor.getFloatDataList.asScala
-          val strorageArray = new Array[T](data.size)
-          var i = 0;
-          while (i < data.size) {
-            strorageArray(i) = ev.fromType[Float](data(i))
-            i += 1
-          }
-          strorageArray
-        case DataType.DOUBLE =>
-          val data = serializedTensor.getDoubleDataList.asScala
-          val strorageArray = new Array[T](data.size)
-          var i = 0;
-          while (i < data.size) {
-            strorageArray(i) = ev.fromType[Double](data(i))
-            i += 1
-          }
-          strorageArray
-        case DataType.BOOL =>
-          val data = serializedTensor.getBoolDataList.asScala
-          val strorageArray = new Array[T](data.size)
-          var i = 0;
-          while (i < data.size) {
-            strorageArray(i) = ev.fromType[Boolean](data(i))
-            i += 1
-          }
-          strorageArray
-        case DataType.CHAR =>
-          val data = serializedTensor.getIntDataList.asScala
-          val strorageArray = new Array[T](data.size)
-          var i = 0;
-          while (i < data.size) {
-            strorageArray(i) = ev.fromType[Int](data(i))
-            i += 1
-          }
-          strorageArray
-        case DataType.STRING =>
-          val data = serializedTensor.getStringDataList.asScala
-          val strorageArray = new Array[T](data.size)
-          var i = 0;
-          while (i < data.size) {
-            strorageArray(i) = ev.fromType[String](data(i))
-            i += 1
-          }
-          strorageArray
-        case DataType.INT32 =>
-          val data = serializedTensor.getIntDataList.asScala
-          val strorageArray = new Array[T](data.size)
-          var i = 0;
-          while (i < data.size) {
-            strorageArray(i) = ev.fromType[Int](data(i))
-            i += 1
-          }
-          strorageArray
-        case DataType.SHORT =>
-          val data = serializedTensor.getIntDataList.asScala
-          val strorageArray = new Array[T](data.size)
-          var i = 0;
-          while (i < data.size) {
-            strorageArray(i) = ev.fromType[Int](data(i))
-            i += 1
-          }
-          strorageArray
-        case DataType.INT64 =>
-          val data = serializedTensor.getLongDataList.asScala
-          val strorageArray = new Array[T](data.size)
-          var i = 0;
-          while (i < data.size) {
-            strorageArray(i) = ev.fromType[Long](data(i))
-            i += 1
-          }
-          strorageArray
-        case DataType.BYTES =>
-          val data = serializedTensor.getBytesDataList.asScala
-          val strorageArray = new Array[T](data.size)
-          var i = 0;
-          while (i < data.size) {
-            strorageArray(i) = data(i).asInstanceOf[T]
-            i += 1
-          }
-          strorageArray
-        case _ => throw new IllegalArgumentException(s"$dataType not supported in tensor now !")
-      }
       val sizeArray = new Array[Int](sizes.size)
       var i = 0;
       while (i < sizes.size) {
         sizeArray(i) = sizes(i)
         i += 1
       }
-      Tensor[T](strorageArray, sizeArray)
+      dataType match {
+        case DataType.FLOAT =>
+          val data = serializedTensor.getFloatDataList.asScala.toArray
+          val storageArray = new Array[Float](data.size)
+          Array.copy(data, 0, storageArray, 0, data.size)
+          Tensor[Float](storageArray, sizeArray)
+        case DataType.DOUBLE =>
+          val data = serializedTensor.getDoubleDataList.asScala.toArray
+          val storageArray = new Array[Double](data.size)
+          Array.copy(data, 0, storageArray, 0, data.size)
+          Tensor[Double](storageArray, sizeArray)
+        case DataType.BOOL =>
+          val data = serializedTensor.getBoolDataList.asScala.toArray
+          val storageArray = new Array[Boolean](data.size)
+          Array.copy(data, 0, storageArray, 0, data.size)
+          Tensor[Boolean](storageArray, sizeArray)
+        case DataType.CHAR =>
+          val data = serializedTensor.getIntDataList.asScala
+          val storageArray = new Array[Char](data.size)
+          var i = 0
+          while (i < data.size) {
+            storageArray(i) = NumericChar.fromType[Int](data(i))
+            i += 1
+          }
+          Tensor[Char](storageArray, sizeArray)
+        case DataType.STRING =>
+          val data = serializedTensor.getStringDataList.asScala.toArray
+          val storageArray = new Array[String](data.size)
+          Array.copy(data, 0, storageArray, 0, data.size)
+          Tensor[String](storageArray, sizeArray)
+        case DataType.INT32 =>
+          val data = serializedTensor.getIntDataList.asScala.toArray
+          val storageArray = new Array[Int](data.size)
+          Array.copy(data, 0, storageArray, 0, data.size)
+          Tensor[Int](storageArray, sizeArray)
+        case DataType.SHORT =>
+          val data = serializedTensor.getIntDataList.asScala
+          val storageArray = new Array[Short](data.size)
+          var i = 0
+          while (i < data.size) {
+            storageArray(i) = NumericShort.fromType[Int](data(i))
+            i += 1
+          }
+          Tensor[Short](storageArray, sizeArray)
+        case DataType.INT64 =>
+          val data = serializedTensor.getLongDataList.asScala.toArray
+          val storageArray = new Array[Long](data.size)
+          Array.copy(data, 0, storageArray, 0, data.size)
+          Tensor[Long](storageArray, sizeArray)
+        case DataType.BYTES =>
+          val data = serializedTensor.getBytesDataList.asScala.toArray
+          val storageArray = new Array[ByteString](data.size)
+          Array.copy(data, 0, storageArray, 0, data.size)
+          Tensor[ByteString](storageArray, sizeArray)
+        case _ => throw new IllegalArgumentException(s"$dataType not supported in tensor now !")
+      }
     }
 
     override def setAttributeValue[T: ClassTag]
@@ -348,41 +318,42 @@ object DataConverter extends DataConverter{
       import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericDouble
       attributeBuilder.setDataType(DataType.TENSOR)
       if (value != null) {
-        val tensor = value.asInstanceOf[Tensor[T]]
+        val tensor = value.asInstanceOf[Tensor[_]]
+        val tensorNumeric = tensor.getTensorNumeric()
         val tensorBuilder = BigDLTensor.newBuilder
-        if (ev == NumericFloat) {
+        if (tensorNumeric == NumericFloat) {
           tensorBuilder.setDatatype(DataType.FLOAT)
           tensor.storage().array().foreach(data => tensorBuilder.
-            addFloatData(ev.toType[Float](data)))
-        } else if (ev == NumericDouble) {
+            addFloatData(data.asInstanceOf[Float]))
+        } else if (tensorNumeric == NumericDouble) {
           tensorBuilder.setDatatype(DataType.DOUBLE)
           tensor.storage().array().foreach(data => tensorBuilder.
-            addDoubleData(ev.toType[Float](data)))
-        } else if (ev == NumericChar) {
+            addDoubleData(data.asInstanceOf[Double]))
+        } else if (tensorNumeric == NumericChar) {
           tensorBuilder.setDatatype(DataType.CHAR)
           tensor.storage().array().foreach(data =>
             tensorBuilder.addIntData(data.asInstanceOf[Char].charValue()))
-        } else if (ev == NumericBoolean) {
+        } else if (tensorNumeric == NumericBoolean) {
           tensorBuilder.setDatatype(DataType.BOOL)
           tensor.storage().array().foreach(data =>
             tensorBuilder.addBoolData(data.asInstanceOf[Boolean].booleanValue()))
-        } else if (ev == NumericString) {
+        } else if (tensorNumeric == NumericString) {
           tensorBuilder.setDatatype(DataType.STRING)
           tensor.storage().array().foreach(data =>
             tensorBuilder.addStringData(data.asInstanceOf[String]))
-        } else if (ev == NumericInt) {
+        } else if (tensorNumeric == NumericInt) {
           tensorBuilder.setDatatype(DataType.INT32)
           tensor.storage().array().foreach(data =>
-            tensorBuilder.addIntData(ev.toType[Int](data)))
-        } else if (ev == NumericShort) {
+            tensorBuilder.addIntData(data.asInstanceOf[Int]))
+        } else if (tensorNumeric == NumericShort) {
           tensorBuilder.setDatatype(DataType.SHORT)
           tensor.storage().array().foreach(data =>
-            tensorBuilder.addIntData(ev.toType[Int](data)))
-        } else if (ev == NumericLong) {
+            tensorBuilder.addIntData(data.asInstanceOf[Short]))
+        } else if (tensorNumeric == NumericLong) {
           tensorBuilder.setDatatype(DataType.INT64)
           tensor.storage().array().foreach(data =>
-            tensorBuilder.addLongData(ev.toType[Long](data)))
-        } else if (ev == NumericByteString) {
+            tensorBuilder.addLongData(data.asInstanceOf[Long]))
+        } else if (tensorNumeric == NumericByteString) {
           tensorBuilder.setDatatype(DataType.BYTES)
           tensor.storage().array().foreach(data =>
             tensorBuilder.addBytesData(data.asInstanceOf[ByteString]))
