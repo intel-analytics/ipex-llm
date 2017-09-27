@@ -45,6 +45,8 @@ class MultiCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorNume
   var gradStates: Array[Activity] = null
 
   var state0: Activity = null
+  
+  private val outputAfterPretopology = new Array[Tensor[T]](cells.length)
 
   def buildModel(): Sequential[T] = {
     val seq = Sequential()
@@ -74,6 +76,7 @@ class MultiCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorNume
 //        val outputTmp = cells(i).preTopology.forward(inputTmp).toTensor[T]
 //        result(inputDim) = outputTmp.select(1, 1)
         result(inputDim) = cells(i).preTopology.forward(result(inputDim)).toTensor[T]
+        outputAfterPretopology(i) = result(inputDim)
       }
       cells(i).forward(result).toTable
       // propogate state for next time step
@@ -102,11 +105,18 @@ class MultiCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorNume
 
     val nextInput = T()
     while (i >= 1) {
+//      val input0: Tensor[T] = if (i > 1) {
+//        cells(i - 2).output.toTable(inputDim)
+//      } else input(inputDim)
+//      nextInput(inputDim) = if (cells(i - 1).preTopology != null) {
+//        cells(i - 1).preTopology.forward(input0)
+//      } else input0
+
       val input0: Tensor[T] = if (i > 1) {
         cells(i - 2).output.toTable(inputDim)
       } else input(inputDim)
       nextInput(inputDim) = if (cells(i - 1).preTopology != null) {
-        cells(i - 1).preTopology.forward(input0)
+        outputAfterPretopology(i - 1)
       } else input0
 
       nextInput(hidDim) = if (i == 1) state0 else states(i - 2)
