@@ -2481,7 +2481,7 @@ object DenseTensor {
     val delta = longTensor.nDimension() - shortTensor.nDimension()
     val size = new Array[Int](ndim)
     var i = ndim - 1
-    while(i >= delta) {
+    while (i >= delta) {
       require(longTensor.size(i + 1) == shortTensor.size(i + 1 - delta) ||
         longTensor.size(i + 1) == 1 ||
         shortTensor.size(i + 1 - delta) == 1, errorMsg)
@@ -2489,11 +2489,38 @@ object DenseTensor {
       i -= 1
     }
 
-    while(i >= 0) {
+    while (i >= 0) {
       size(i) = longTensor.size(i + 1)
       i -= 1
     }
 
     size
+  }
+
+  def apply[T: ClassTag](
+        sparseTensor: Tensor[T],
+        res: Tensor[T] = null)(implicit ev: TensorNumeric[T]): Tensor[T] = {
+    if (sparseTensor.isInstanceOf[SparseTensor[T]]) {
+      val st = sparseTensor.asInstanceOf[SparseTensor[T]]
+      val dt = if (null == res) Tensor(st.size()) else res
+      var i = 0
+      val index = new Array[Int](dt.dim())
+      while (i < st._indices(0).length) {
+        var j = 0
+        while (j < index.length) {
+          index(j) = st._indices(j)(i) + 1
+          j += 1
+        }
+        dt(index) = st(index)
+        i += 1
+      }
+      dt
+    } else {
+      if (null == res) {
+        sparseTensor
+      } else {
+        res.resizeAs(sparseTensor).copy(sparseTensor)
+      }
+    }
   }
 }

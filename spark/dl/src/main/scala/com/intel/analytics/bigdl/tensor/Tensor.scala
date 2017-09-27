@@ -396,6 +396,10 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
 
   def resize(size1: Int, size2: Int, size3: Int, size4: Int, size5: Int): Tensor[T]
 
+  def resize(sizes: Array[Int], nElement: Int): Tensor[T] = {
+    throw new UnsupportedOperationException("resize with nElement for sparse tensor only")
+  }
+
   //  def repeatTensor(result: Tensor, tensor: Tensor, size: Int*)
 
   /**
@@ -1122,5 +1126,124 @@ object Tensor {
       mean: Double = 0.5,
       tensor: Tensor[T] = null)(implicit ev: TensorNumeric[T]): Tensor[T] = {
     DenseTensor.gaussian1D[T](size, sigma, amplitude, normalize, mean, tensor)
+  }
+
+  /**
+   * Create a SparseTensor.
+   *
+   * @param indices dimension-D array to describe the indices of values.
+   * @param values non-zero values in this SparseTensor.
+   * @param shape shape
+   * @param ev
+   * @tparam T
+   * @return
+   */
+  def sparse[T: ClassTag](
+        indices : Array[Array[Int]],
+        values : Storage[T],
+        shape : Array[Int])(
+        implicit ev: TensorNumeric[T]): Tensor[T] = {
+    SparseTensor(indices, values, shape, shape.length)
+  }
+
+  /**
+   * Create a SparseTensor.
+   *
+   * @param indices dimension-D array to describe the indices of values.
+   * @param values non-zero values in this SparseTensor.
+   * @param shape shape
+   * @param ev
+   * @tparam T
+   * @return
+   */
+  def sparse[T: ClassTag](
+      indices : Array[Array[Int]],
+      values : Array[T],
+      shape : Array[Int])(
+      implicit ev: TensorNumeric[T]): Tensor[T] = {
+    sparse(indices, Storage(values), shape, shape.length)
+  }
+
+  /**
+   * Create a SparseTensor.
+   *
+   * @param indices dimension-D array to describe the indices of values.
+   * @param values non-zero values in this SparseTensor.
+   * @param shape shape
+   * @param dimension dimension
+   * @param ev
+   * @tparam T
+   * @return
+   */
+  def sparse[T: ClassTag](
+        indices : Array[Array[Int]],
+        values : Storage[T],
+        shape : Array[Int],
+        dimension: Int)(
+        implicit ev: TensorNumeric[T]): Tensor[T] = {
+    SparseTensor(indices, values, shape, dimension)
+  }
+
+  /**
+   * Create a SparseTensor.
+   *
+   * @param indices dimension-D array to describe the indices of values.
+   * @param values non-zero values in this SparseTensor.
+   * @param shape shape
+   * @param dimension dimension
+   * @param ev
+   * @tparam T
+   * @return
+   */
+  def sparse[T: ClassTag](
+      indices : Array[Array[Int]],
+      values : Array[T],
+      shape : Array[Int],
+      dimension: Int)(
+      implicit ev: TensorNumeric[T]): Tensor[T] = {
+    sparse(indices, Storage(values), shape, dimension)
+  }
+
+  /**
+   * Transform a DenseTensor to SparseTensor.
+   * @param denseTensor
+   * @param ev
+   * @tparam T
+   * @return
+   */
+  def sparse[T: ClassTag](
+        denseTensor: Tensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
+    SparseTensor(denseTensor)
+  }
+
+  /**
+   * Create a sparse tensor with shape and number of non-zero elements.
+   * @param shape tensor's shape.
+   * @param nElement number of non-zero elements.
+   * @param ev
+   * @tparam T
+   * @return
+   */
+  def sparse[T: ClassTag](
+        shape : Array[Int],
+        nElement: Int = 1)(
+        implicit ev: TensorNumeric[T]): Tensor[T] = {
+    require(nElement <= shape.product)
+    SparseTensor(shape, nElement)
+  }
+
+  /**
+   * Transform a sparseTensor to DenseTensor.
+   *
+   * @param sparseTensor a sparse tensor
+   * @param res if defined, override to res, else will generate a new tensor.
+   * @param ev
+   * @tparam T
+   * @return a DenseTensor.
+   */
+  def dense[T: ClassTag](
+        sparseTensor: Tensor[T],
+        res: Tensor[T] = null)(implicit ev: TensorNumeric[T]): Tensor[T] = {
+    DenseTensor(sparseTensor, res)
   }
 }
