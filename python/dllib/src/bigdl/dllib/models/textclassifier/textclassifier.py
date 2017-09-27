@@ -168,6 +168,8 @@ if __name__ == "__main__":
         training_split = 0.8
         sc = SparkContext(appName="text_classifier",
                           conf=create_spark_conf())
+        redire_spark_logs()
+        show_bigdl_info_logs()
         init_engine()
         train(sc,
               batch_size,
