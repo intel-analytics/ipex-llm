@@ -255,6 +255,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Recurrent[T]()
   }
 
+  def createRecurrentDecoder(outputLength: Int): RecurrentDecoder[T] = {
+    RecurrentDecoder[T](outputLength)
+  }
+
   def createConvLSTMPeephole(
     inputSize: Int,
     outputSize: Int,
