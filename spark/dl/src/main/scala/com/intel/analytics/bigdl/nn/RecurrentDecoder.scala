@@ -42,6 +42,9 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
 
   times = seqLength
   private var initStates: Array[Activity] = null
+  private var states: Array[Activity] = null
+  private var gradStates: Array[Activity] = null
+
   def setStates(states: Array[Activity]): Unit = {
     require(topology.isInstanceOf[MultiCell[T]], "setStates only support for MultiCell")
     initStates = states
@@ -65,17 +68,16 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
   }
 
   /**
-    *
-    *  modules: -- preTopology
-    *           |- BatchNormalization (optional)
-    *           |- topology (cell)
-    *
-    * The topology (or cell) will be cloned for N times w.r.t the time dimension.
-    * The preTopology will be execute only once before the recurrence.
-    *
-    * @param module module to be add
-    * @return this container
-    */
+   *
+   *  modules: -- preTopology
+   *           |- topology (cell)
+   *
+   * The topology (or cell) will be cloned for N times w.r.t the time dimension.
+   * The preTopology will be execute only once before the recurrence.
+   *
+   * @param module module to be add
+   * @return this container
+   */
   override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]):
     RecurrentDecoder.this.type = {
     require(module.isInstanceOf[Cell[T]],
@@ -174,7 +176,7 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
       currentInput(hidDim) = cells(i - 1).output.toTable(hidDim)
       i += 1
     }
-    
+
     Recurrent.copy(cells.map(x => x.output.toTable[Tensor[T]](inputDim)), output)
     output
   }
@@ -211,7 +213,7 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
         gradOutput.select(timeDim, i).clone().add(_gradInput)
 //        gradOutput.select(timeDim, i).clone().add(cells(i).gradInput.toTable[Tensor[T]](inputDim))
       }
-      
+
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
       else if (initState == null) hidden else initState
       _input(inputDim) = Recurrent.selectCopy(outputCell, i, outputBuffer)

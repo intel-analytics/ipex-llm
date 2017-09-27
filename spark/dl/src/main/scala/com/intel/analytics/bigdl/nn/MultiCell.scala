@@ -45,7 +45,7 @@ class MultiCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorNume
   var gradStates: Array[Activity] = null
 
   var state0: Activity = null
-  
+
   private val outputAfterPretopology = new Array[Tensor[T]](cells.length)
 
   def buildModel(): Sequential[T] = {

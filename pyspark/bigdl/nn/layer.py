@@ -1059,31 +1059,6 @@ class Recurrent(Container):
         jstate, state_is_table = self.check_input(state)
         callBigDlFunc(self.bigdl_type, "setState", self.value, jstate, state_is_table)
 
-    def get_states(self):
-        """
-        get hidden states at last time step, only work for MultiCell.
-
-        :return: list of hidden state
-        """
-        states = callBigDlFunc(self.bigdl_type, "getStates", self.value)
-        for state in states:
-            for idx, tensor in enumerate(state):
-                state[idx] = tensor.to_ndarray()
-
-        return states
-
-    def set_states(self, states):
-        """
-        set hidden state and cell at first time step, only work for MultiCell.
-        """
-        jStates = []
-        state_is_tables = []
-        for state in states:
-            jstate, state_is_table = self.check_input(state)
-            jStates.append(jstate)
-            state_is_tables.append(state_is_table)
-        callBigDlFunc(self.bigdl_type, "setStates", self.value, jStates, state_is_tables)
-
 class RecurrentDecoder(Recurrent):
     '''
     RecurrentDecoder module is a container of rnn cells which used to make
@@ -1102,6 +1077,31 @@ class RecurrentDecoder(Recurrent):
 
     def __init__(self, output_length, bigdl_type="float"):
         super(Recurrent, self).__init__(None, bigdl_type, output_length)
+
+    def get_states(self):
+        """
+        get hidden states at last time step, only work for MultiCell.
+
+        :return: list of hidden state
+        """
+        states = callBigDlFunc(self.bigdl_type, "getStates", self.value)
+        for state in states:
+            for idx, tensor in enumerate(state):
+                state[idx] = tensor.to_ndarray()
+    
+        return states
+
+    def set_states(self, states):
+        """
+        set hidden state and cell at first time step, only work for MultiCell.
+        """
+        jStates = []
+        state_is_tables = []
+        for state in states:
+            jstate, state_is_table = self.check_input(state)
+            jStates.append(jstate)
+            state_is_tables.append(state_is_table)
+        callBigDlFunc(self.bigdl_type, "setStates", self.value, jStates, state_is_tables)
 
 class LSTM(Layer):
     '''

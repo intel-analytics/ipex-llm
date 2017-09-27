@@ -9,7 +9,7 @@ val module = Recurrent()
 module = Recurrent()
 ```
 
-Recurrent module is a container of rnn cells. Different types of rnn cells can be added using add() function.  
+Recurrent module is a container of rnn cells. Different types of rnn cells can be added using add() function. Don't support multiCell for performance issue. Use several Recurrent(cell) instead.  
 
 Recurrent supports returning state and cell of its rnn cells at last time step by using getState. output of getState
 is an Activity and it can be directly used for setState function, which will set hidden state and cell at the first time step.  
@@ -18,8 +18,6 @@ If contained cell is simple rnn, getState return value is a tensor(hidden state)
 If contained cell is lstm, getState return value is a table [hidden state, cell], both size is `batch x hiddenSize`.  
 If contained cell is convlstm, getState return value is a table [hidden state, cell], both size is `batch x outputPlane x height x width`.  
 If contained cell is convlstm3D, getState return value is a table [hidden state, cell], both size is `batch x outputPlane x height x width x length`.
-
-If contained cell is MultiCell, use getStates/setStates instead.
 
 **Scala example:**
 ```scala
@@ -176,6 +174,9 @@ Output for RecurrentDecoder has to be batch x outputLen???(depends on cell type)
 With RecurrentDecoder, inputsize and hiddensize of the cell must be the same.
 
 Different types of rnn cells can be added using add() function.
+
+RecurrentDecoder supports returning state and cell of its rnn cells at last time step by using getState.
+If contained cell is MultiCell, use getStates/setStates instead.
 
 Parameters:
 
@@ -1574,7 +1575,8 @@ val model = MultiCell(cells = multiCells)
 model = MultiCell(cells = multiCells)
 ```
 
-A cell that stack multiple simple rnn cells
+A cell that stack multiple simple rnn cells. Only works with RecurrentDecoder. If you want to
+stack multiple cells with Recurrent. Use Sequential().add(Recurrent(cell)).add(Recurrent(cell))... instead
 
 Parameters:
 
@@ -1591,13 +1593,13 @@ val hiddenSize = 2
 val inputSize = 2
 val batchSize = 2
 val seqLength = 2
-val input = Tensor(batchSize, seqLength, inputSize, 3, 3).rand()
+val input = Tensor(batchSize, inputSize, 3, 3).rand()
 val gradOutput = Tensor(batchSize, seqLength, hiddenSize, 3, 3).rand()
 
 val cells = Array(ConvLSTMPeephole(
   inputSize, hiddenSize, 3, 3, 1), ConvLSTMPeephole(
   inputSize, hiddenSize, 3, 3, 1)).asInstanceOf[Array[Cell[Float]]]
-val model = Recurrent().add(MultiCell[Float](cells))
+val model = RecurrentDecoder(seqLength).add(MultiCell[Float](cells))
 
 val output = model.forward(input)
 val gradientInput = model.backward(input, gradOutput)
@@ -1699,13 +1701,13 @@ input_size = 2
 output_size = 2
 seq_length = 2
 batch_size = 2
-input = np.randn(batch_size, seq_length, input_size, 3, 3)
-grad_output = np.randn(batch_size, seq_length, output_size, 3, 3)
+input = np.random.randn(batch_size, input_size, 3, 3)
+grad_output = np.random.randn(batch_size, seq_length, output_size, 3, 3)
 cells = []
 cells.append(ConvLSTMPeephole(input_size, output_size, 3, 3, 1, with_peephole = False))
 cells.append(ConvLSTMPeephole(input_size, output_size, 3, 3, 1, with_peephole = False))
 
-model = Recurrent().add(MultiCell(cells))
+model = RecurrentDecoder(seq_length).add(MultiCell(cells))
 
 output = model.forward(input)
 gradient_input = model.backward(input, grad_output)

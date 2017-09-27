@@ -58,8 +58,6 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
   private val timeBuffer =
     new ArrayBuffer[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)]
   private var layer: TensorModule[T] = null
-  protected var states: Array[Activity] = null
-  protected var gradStates: Array[Activity] = null
 
   /**
    *
@@ -231,7 +229,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     val outputSize = input.size()
     outputSize(2) = hiddenSize
     output.resize(outputSize)
-    
+
     /**
      * currentInput forms a T() type. It contains two elements, hidden and input.
      * Each time it will feed the cell with T(hidden, input) (or T(input, hidden) depends on
@@ -245,7 +243,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     cloneCells()
 
     currentInput(hidDim) = if (initState != null) initState
-    else if (initState == null) hidden else initState
+    else hidden
 
     while (i <= times) {
       currentInput(inputDim) = Recurrent.selectCopy(outputCell, i, outputBuffer)
@@ -253,7 +251,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
       currentInput(hidDim) = cells(i - 1).output.toTable(hidDim)
       i += 1
     }
-    
+
     Recurrent.copy(cells.map(x => x.output.toTable[Tensor[T]](inputDim)),
       output)
     output
@@ -287,7 +285,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     while (i >= 1) {
       currentGradOutput(inputDim) = Recurrent.selectCopy(gradOutput, i, gradBuffer)
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
-      else hidden
+      else if (initState == null) hidden else initState
       _input(inputDim) = Recurrent.selectCopy(outputCell, i, outputBuffer)
 
       if (i == 1) {
@@ -324,7 +322,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     while (i >= 1) {
       currentGradOutput(inputDim) = Recurrent.selectCopy(gradOutput, i, gradBuffer)
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
-      else hidden
+      else if (initState == null) hidden else initState
       _input(inputDim) = Recurrent.selectCopy(outputCell, i, outputBuffer)
 
       cells(i - 1).updateGradInput(_input, currentGradOutput)
