@@ -43,5 +43,11 @@ abstract class Operation[A <: Activity: ClassTag, B <: Activity: ClassTag, T: Cl
   override def backward(input: A, gradOutput: B): A = {
     throw new UnsupportedOperationException("Operation does not support backward() method")
   }
+
+  override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
+    // Do not try to call parameters from an operation
+    // Container should handle parameters()
+    throw new IllegalArgumentException("Operation doesn't have parameters")
+  }
 }
 

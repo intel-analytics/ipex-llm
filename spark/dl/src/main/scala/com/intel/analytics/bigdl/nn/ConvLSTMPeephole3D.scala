@@ -68,7 +68,7 @@ class ConvLSTMPeephole3D[T : ClassTag](
 
 //  override var preTopology: AbstractModule[Activity, Activity, T] = null
   override var preTopology: TensorModule[T] = null
-  override var cell: AbstractModule[Activity, Activity, T] = buildConvLSTM()
+  override var cell: AbstractModule[Activity, Activity, T] = buildModel()
 
   def buildGate(): Sequential[T] = {
     val i2g = Sequential()
@@ -169,7 +169,7 @@ class ConvLSTMPeephole3D[T : ClassTag](
     cellLayer
   }
 
-  def buildConvLSTM(): Sequential[T] = {
+  def buildModel(): Sequential[T] = {
     buildCell()
     buildOutputGate()
 
@@ -195,7 +195,6 @@ class ConvLSTMPeephole3D[T : ClassTag](
         .add(SelectTable(1))
         .add(Identity()))
 
-    cell = convlstm
     convlstm
   }
 

@@ -81,9 +81,9 @@ class RnnCell[T : ClassTag] (
       bRegularizer = bRegularizer,
       withBias = isInputWithBias)
 
-  override var cell: AbstractModule[Activity, Activity, T] = buildGraph
+  override var cell: AbstractModule[Activity, Activity, T] = buildModel()
 
-  private def buildGraph: Graph[T] = {
+  def buildModel(): Graph[T] = {
     val i2h = Input()
     val h2h = Linear[T](hiddenSize, hiddenSize,
       wRegularizer = uRegularizer, withBias = isHiddenWithBias).inputs()

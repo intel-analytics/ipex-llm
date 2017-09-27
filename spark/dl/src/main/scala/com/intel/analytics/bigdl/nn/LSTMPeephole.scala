@@ -68,13 +68,14 @@ class LSTMPeephole[T : ClassTag] (
   var hiddenLayer: ModuleNode[T] = _
   var cellLayer: ModuleNode[T] = _
   val featDim = 2
+
   override var cell: AbstractModule[Activity, Activity, T] =
     Sequential()
-    .add(FlattenTable())
-    .add(buildLSTM())
-    .add(ConcatTable()
-      .add(SelectTable(1))
-      .add(NarrowTable(2, 2)))
+      .add(FlattenTable())
+      .add(buildLSTM())
+      .add(ConcatTable()
+        .add(SelectTable(1))
+        .add(NarrowTable(2, 2)))
 
 //  override var preTopology: AbstractModule[Activity, Activity, T] = if (includeTime) {
 //    Sequential()
@@ -147,6 +148,7 @@ class LSTMPeephole[T : ClassTag] (
      */
 
     val i2h = Narrow(featDim, 1 + 2 * hiddenSize, hiddenSize).inputs(input1)
+
     val drop = Dropout(p).inputs(input2)
     val h2h = Linear(hiddenSize, hiddenSize, withBias = false,
       wRegularizer = uRegularizer).inputs(drop)

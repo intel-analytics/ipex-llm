@@ -64,12 +64,8 @@ class LSTM[T : ClassTag] (
   ) {
   var gates: Sequential[T] = _
   var cellLayer: Sequential[T] = _
-  override var cell: AbstractModule[Activity, Activity, T] = Sequential()
-    .add(FlattenTable())
-    .add(buildLSTM())
-    .add(ConcatTable()
-      .add(SelectTable(1))
-      .add(NarrowTable(2, 2)))
+
+  override var cell: AbstractModule[Activity, Activity, T] = buildModel()
 
 //  override var preTopology: AbstractModule[Activity, Activity, T] = if (p != 0) {
 //    null
@@ -144,6 +140,15 @@ class LSTM[T : ClassTag] (
       Tanh().inputs(split2),
       Sigmoid().inputs(split3),
       Sigmoid().inputs(split4))
+  }
+
+  def buildModel(): Sequential[T] = {
+    Sequential()
+      .add(FlattenTable())
+      .add(buildLSTM())
+      .add(ConcatTable()
+        .add(SelectTable(1))
+        .add(NarrowTable(2, 2)))
   }
 
   def buildLSTM(): Graph[T] = {
