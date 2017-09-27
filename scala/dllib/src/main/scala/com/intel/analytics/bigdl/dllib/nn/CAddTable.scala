@@ -35,27 +35,66 @@ class CAddTable[T: ClassTag](val inplace: Boolean = false)(
   implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T] {
 
   override def updateOutput(input: Table): Tensor[T] = {
-    if (inplace) {
-      output.set(input[Tensor[T]](1))
-    } else {
-      output.resizeAs(input[Tensor[T]](1)).copy(input[Tensor[T]](1))
-    }
-    var i = 2
+    var scalar = ev.zero
+    var hasTensor = false
+    var hasScalar = false
+    var initTensor = false
+
+    var i = 1
     while (i <= input.length()) {
-      output.add(input[Tensor[T]](i))
+      val curTensor = input[Tensor[T]](i)
+      if (curTensor.isScalar) {
+        scalar = ev.plus(scalar, curTensor.value())
+        hasScalar = true
+      } else if (curTensor.isTensor) {
+        if (initTensor) {
+          output = output.add(curTensor)
+        } else {
+          if (inplace) {
+            output.set(curTensor)
+          } else {
+            output.resizeAs(curTensor).copy(curTensor)
+          }
+          initTensor = true
+        }
+        hasTensor = true
+      }
       i += 1
     }
+
+    if (hasTensor && hasScalar) {
+      output.add(scalar)
+    } else if (hasScalar) {
+      if (inplace) {
+        output.set(input[Tensor[T]](1)).setValue(scalar)
+      } else {
+        output.resizeAs(input[Tensor[T]](1)).setValue(scalar)
+      }
+    }
+
     output
   }
 
   override def updateGradInput(input: Table, gradOutput: Tensor[T]) : Table = {
     var i = 1
+    var sum = ev.zero
+    var calculateSum = false
     while (i <= input.length()) {
       if (i > gradInput.length) gradInput.insert(i, Tensor[T]().resizeAs(input(1)))
       if (inplace) {
+        require(input[Tensor[T]](1).isSameSizeAs(gradOutput), "cannot use inplace for broadcast")
         gradInput[Tensor[T]](i).set(gradOutput)
       } else {
-        gradInput[Tensor[T]](i).resizeAs(gradOutput).copy(gradOutput)
+        if (input[Tensor[T]](i).isSameSizeAs(gradOutput)) {
+          gradInput[Tensor[T]](i).resizeAs(gradOutput).copy(gradOutput)
+        } else {
+          require(input[Tensor[T]](i).isScalar, "Only support scalar broadcast backward now")
+          if (!calculateSum) {
+            sum = gradOutput.sum()
+            calculateSum = true
+          }
+          gradInput[Tensor[T]](i).resizeAs(input[Tensor[T]](i)).setValue(sum)
+        }
       }
       i += 1
     }
@@ -81,3 +120,5 @@ object CAddTable {
     new CAddTable[T](inplace)
   }
 }
+
+
