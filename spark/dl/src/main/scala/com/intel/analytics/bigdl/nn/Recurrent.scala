@@ -33,8 +33,7 @@ import scala.reflect.ClassTag
  * [[Recurrent]] module is a container of rnn cells
  * Different types of rnn cells can be added using add() function
  */
-class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null,
-  val includeTime: Boolean = true)
+class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
   (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
 
   protected var hidden: Activity = null
@@ -59,8 +58,8 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null,
   private val timeBuffer =
     new ArrayBuffer[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)]
   private var layer: TensorModule[T] = null
-  private var states: Array[Activity] = null
-  private var gradStates: Array[Activity] = null
+  protected var states: Array[Activity] = null
+  protected var gradStates: Array[Activity] = null
 
   /**
    *
@@ -75,11 +74,12 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null,
    * @return this container
    */
   override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): Recurrent.this.type = {
-    require(module.isInstanceOf[Cell[T]],
-      "Recurrent: contained module should be Cell type")
+    require(module.isInstanceOf[Cell[T]] && !module.isInstanceOf[MultiCell[T]],
+      "Recurrent: contained module should be Cell type and" +
+        "it cannot be MultiCell for poorer performance")
 
     topology = module.asInstanceOf[Cell[T]]
-    preTopology = if (topology.preTopology != null && includeTime) {
+    preTopology = if (topology.preTopology != null) {
       TimeDistributed(topology.preTopology)
     } else topology.preTopology
 
@@ -146,18 +146,6 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null,
     } else {
       cells.head.hidResize(hidden = hidden, batchSize = batchSize, imageSize)
       gradHidden = hidden
-    }
-  }
-
-  private def initHiddens(sizes: Array[Int]): Unit = {
-    val imageSize = sizes
-    val multiCells = topology.asInstanceOf[MultiCell[T]].cells
-
-    var i = 0
-    while(i < states.size) {
-      states(i) = multiCells(i).hidResize(null, batchSize, imageSize)
-      gradStates(i) = multiCells(i).hidResize(null, batchSize, imageSize)
-      i += 1
     }
   }
 
@@ -252,47 +240,20 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null,
      * the updated hidden. Thus the currentInput will update its hidden element with this output.
      */
     var i = 1
-    // init state
-    if (!topology.isInstanceOf[MultiCell[T]]) {
-      // Clone N modules along the sequence dimension.
-      initHidden(outputSize.drop(2))
-      cloneCells()
+    // Clone N modules along the sequence dimension.
+    initHidden(outputSize.drop(2))
+    cloneCells()
 
-      currentInput(hidDim) = if (initState != null) initState
-      else if (initState == null) hidden else initState
+    currentInput(hidDim) = if (initState != null) initState
+    else if (initState == null) hidden else initState
 
-      while (i <= times) {
-        currentInput(inputDim) = Recurrent.selectCopy(outputCell, i, outputBuffer)
-        cells(i - 1).forward(currentInput)
-        currentInput(hidDim) = cells(i - 1).output.toTable(hidDim)
-        i += 1
-      }
-    } else {
-      if (states == null) {
-        cells.clear()
-        cells += topology
-        states = new Array[Activity](topology.asInstanceOf[MultiCell[T]].cells.length)
-      }
-
-      if (gradStates == null) {
-        gradStates = new Array[Activity](topology.asInstanceOf[MultiCell[T]].cells.length)
-      }
-      initHiddens(outputSize.drop(2))
-      if (initStates != null) {
-        states = initStates.clone()
-      }
-      cloneCells()
-      cells.foreach{x =>
-        x.asInstanceOf[MultiCell[T]].states = states
-        x.asInstanceOf[MultiCell[T]].gradStates = gradStates
-      }
-
-      while (i <= times) {
-        currentInput(inputDim) = Recurrent.selectCopy(outputCell, i, outputBuffer)
-        cells(i - 1).forward(currentInput)
-        i += 1
-      }
+    while (i <= times) {
+      currentInput(inputDim) = Recurrent.selectCopy(outputCell, i, outputBuffer)
+      cells(i - 1).forward(currentInput)
+      currentInput(hidDim) = cells(i - 1).output.toTable(hidDim)
+      i += 1
     }
+    
     Recurrent.copy(cells.map(x => x.output.toTable[Tensor[T]](inputDim)),
       output)
     output
@@ -307,17 +268,6 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null,
   protected var initState: Activity = null
   def setState(state: Activity): Unit = {
     initState = state
-  }
-
-  private var initStates: Array[Activity] = null
-  def setStates(states: Array[Activity]): Unit = {
-    require(topology.isInstanceOf[MultiCell[T]], "setStates only support for MultiCell")
-    initStates = states
-  }
-
-  def getStates(): Array[Activity] = {
-    require(topology.isInstanceOf[MultiCell[T]], "getStates only support for MultiCell")
-    states
   }
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
@@ -545,9 +495,9 @@ object Recurrent extends ContainerSerializable {
   val hidDim = 2
 
   def apply[@specialized(Float, Double) T: ClassTag](
-    batchNormParams: BatchNormParams[T] = null, includeTime: Boolean = true)
+    batchNormParams: BatchNormParams[T] = null)
     (implicit ev: TensorNumeric[T]) : Recurrent[T] = {
-    new Recurrent[T](batchNormParams, includeTime)
+    new Recurrent[T](batchNormParams)
   }
 
   /**

@@ -29,7 +29,7 @@ import scala.math._
 
 @com.intel.analytics.bigdl.tags.Parallel
 class RecurrentDecoderSpec extends FlatSpec with BeforeAndAfter with Matchers {
-  "A ConvLSTMPeepwhole forward" should "work with feedbackOutput correctly" in {
+  "A ConvLSTMPeepwhole forward" should "work with RecurrentDecoder" in {
     import com.intel.analytics.bigdl.numeric.NumericDouble
     val hiddenSize = 7
     val inputSize = 7
@@ -132,7 +132,7 @@ class RecurrentDecoderSpec extends FlatSpec with BeforeAndAfter with Matchers {
 //    })
 //  }
 
-  "A ConvLSTMPeepwhole " should "work with feedbackOutput correctly2" in {
+  "A ConvLSTMPeepwhole backward" should "work with RecurrentDecoder" in {
     import com.intel.analytics.bigdl.numeric.NumericDouble
     val hiddenSize = 3
     val inputSize = 3

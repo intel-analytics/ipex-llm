@@ -1917,7 +1917,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     rec.setState(stateActivity)
   }
 
-  def getStates(rec: Recurrent[T]): JList[JList[JTensor]] = {
+  def getStates(rec: RecurrentDecoder[T]): JList[JList[JTensor]] = {
     val res = rec.getStates()
     res.map { x =>
       if (x.isTensor) List(toJTensor(x.toTensor)).asJava
@@ -1926,7 +1926,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     }.toList.asJava
   }
 
-  def setStates(rec: Recurrent[T], states: JList[JList[JTensor]], isTable: JList[Boolean]): Unit = {
+  def setStates(rec: RecurrentDecoder[T], states: JList[JList[JTensor]], isTable: JList[Boolean]): Unit = {
     rec.setStates((states.asScala, isTable.asScala).zipped.map { (state, table) =>
       jTensorsToActivity(state, table)
     }.toArray)

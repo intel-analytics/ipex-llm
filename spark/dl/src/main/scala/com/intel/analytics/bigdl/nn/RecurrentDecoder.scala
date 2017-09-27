@@ -41,7 +41,28 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
   (implicit ev: TensorNumeric[T]) extends Recurrent[T] {
 
   times = seqLength
-  private val newInput = Tensor[T]()
+  private var initStates: Array[Activity] = null
+  def setStates(states: Array[Activity]): Unit = {
+    require(topology.isInstanceOf[MultiCell[T]], "setStates only support for MultiCell")
+    initStates = states
+  }
+
+  def getStates(): Array[Activity] = {
+    require(topology.isInstanceOf[MultiCell[T]], "getStates only support for MultiCell")
+    states
+  }
+
+  private def initHiddens(sizes: Array[Int]): Unit = {
+    val imageSize = sizes
+    val multiCells = topology.asInstanceOf[MultiCell[T]].cells
+
+    var i = 0
+    while(i < states.size) {
+      states(i) = multiCells(i).hidResize(null, batchSize, imageSize)
+      gradStates(i) = multiCells(i).hidResize(null, batchSize, imageSize)
+      i += 1
+    }
+  }
 
   /**
     *
@@ -86,17 +107,11 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
     batchSize = input.size(batchDim)
     val featureSizes = outputSize.drop(1)
     output.resize(Array(batchSize, times) ++ featureSizes)
-    // Clone N modules along the sequence dimension.
-    initHidden(outputSize.drop(1))
-    cloneCells()
-//    if (preTopology != null) newInput.resize(output.size())
-//    else outputCell.resize(output.size())
-      if (preTopology != null) {
-        val sizes = output.size()
-        sizes(2) = hiddenSize * 4
-        outputCell.resize(sizes)
-      }
-      else outputCell.resize(output.size())
+    if (preTopology != null) {
+      val sizes = output.size()
+      sizes(2) = hiddenSize * 4
+      outputCell.resize(sizes)
+    } else outputCell.resize(output.size())
 
     /**
      * currentInput forms a T() type. It contains two elements, hidden and input.
@@ -105,11 +120,35 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
      * identical elements T(output, output). One of the elements from the cell output is
      * the updated hidden. Thus the currentInput will update its hidden element with this output.
      */
-    var i = 1
-    // init state
-    currentInput(hidDim) = if (initState != null) initState
-    else hidden
+    if (!topology.isInstanceOf[MultiCell[T]]) {
+      // Clone N modules along the sequence dimension.
+      initHidden(outputSize.drop(1))
+      cloneCells()
 
+      currentInput(hidDim) = if (initState != null) initState
+      else hidden
+    } else {
+      if (states == null) {
+        cells.clear()
+        cells += topology
+        states = new Array[Activity](topology.asInstanceOf[MultiCell[T]].cells.length)
+      }
+
+      if (gradStates == null) {
+        gradStates = new Array[Activity](topology.asInstanceOf[MultiCell[T]].cells.length)
+      }
+      initHiddens(outputSize.drop(1))
+      if (initStates != null) {
+        states = initStates.clone()
+      }
+      cloneCells()
+      cells.foreach{x =>
+        x.asInstanceOf[MultiCell[T]].states = states
+        x.asInstanceOf[MultiCell[T]].gradStates = gradStates
+      }
+    }
+
+    var i = 1
     while (i <= times) {
       // input at t(0) is user input
       val inputTmp = if (i == 1) {
@@ -120,12 +159,12 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
       }
 
       currentInput(inputDim) = if (preTopology != null) {
-//        newInput.narrow(2, i, 1).copy(inputTmp)
-//        val sizes = 1 +: inputTmp.size()
-//        inputTmp.resize(sizes)
-//        val _input = preTopology.updateOutput(inputTmp).toTensor[T]
-//        inputTmp.resize(sizes.takeRight(sizes.length - 1))
-//        _input.select(1, 1)
+        //        newInput.narrow(2, i, 1).copy(inputTmp)
+        //        val sizes = 1 +: inputTmp.size()
+        //        inputTmp.resize(sizes)
+        //        val _input = preTopology.updateOutput(inputTmp).toTensor[T]
+        //        inputTmp.resize(sizes.takeRight(sizes.length - 1))
+        //        _input.select(1, 1)
         preTopology.updateOutput(inputTmp).toTensor[T]
       } else {
         inputTmp
@@ -135,12 +174,7 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
       currentInput(hidDim) = cells(i - 1).output.toTable(hidDim)
       i += 1
     }
-
-//    if (preTopology != null) {
-      // For backward preTopology use
-//      outputCell = preTopology.updateOutput(newInput).toTensor[T]
-//    }
-
+    
     Recurrent.copy(cells.map(x => x.output.toTable[Tensor[T]](inputDim)), output)
     output
   }
