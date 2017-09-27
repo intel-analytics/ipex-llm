@@ -16,7 +16,6 @@
 
 package com.intel.analytics.bigdl.tensor
 
-import com.amazonaws.services.rds.model.AddSourceIdentifierToSubscriptionRequest
 import com.intel.analytics.bigdl.tensor.TensorNumericMath._
 
 object SparseTensorBLAS {
@@ -41,9 +40,9 @@ object SparseTensorBLAS {
         beta: T,
         r: Tensor[T])(implicit ev: TensorNumeric[T]): Unit = {
     (alpha, mat, vec, beta, r)  match {
-//      case (alpha: Double, a: SparseTensor[Double], x: DenseTensor[Double],
-//      beta: Double, y: DenseTensor[Double]) =>
-//        dcoomv(alpha, a, x, beta, y)
+      case (alpha: Double, a: SparseTensor[Double], x: DenseTensor[Double],
+      beta: Double, y: DenseTensor[Double]) =>
+        dcoomv(alpha, a, x, beta, y)
       case (alpha: Float, a: SparseTensor[Float], x: DenseTensor[Float],
       beta: Float, y: DenseTensor[Float]) =>
         scoomv(alpha, a, x, beta, y)
@@ -51,12 +50,47 @@ object SparseTensorBLAS {
         throw new IllegalArgumentException(s"Sparse addmv doesn't support")
     }
   }
+
   private def scoomv(
-                alpha: Float,
-                A: SparseTensor[Float],
-                x: DenseTensor[Float],
-                beta: Float,
-                y: DenseTensor[Float]): Unit = {
+        alpha: Float,
+        A: SparseTensor[Float],
+        x: DenseTensor[Float],
+        beta: Float,
+        y: DenseTensor[Float]): Unit = {
+    val xValues = x.storage().array()
+    val xOffset = x.storageOffset() - 1
+    val yValues = y.storage().array()
+    val yOffset = y.storageOffset() - 1
+    val mA: Int = A._shape(0)
+    val nA: Int = A._shape(1)
+
+    val Avals = A._values.array()
+    val AstorageOffset = A.storageOffset() - 1
+    val Arows = A._indices(0)
+    val ArowOffset = A._indicesOffset(0)
+    val Acols = A._indices(1)
+    val AcolOffset = A._indicesOffset(1)
+
+    if (beta != 1.0) {
+      y.mul(beta)
+    }
+    // Perform matrix-vector multiplication and add to y
+    var valueCounter = 0
+    while (valueCounter < A.nElement()) {
+      val Arow = Arows(valueCounter + AstorageOffset) - ArowOffset
+      val Acol = Acols(valueCounter + AstorageOffset) - AcolOffset
+      val Aval = Avals(valueCounter + AstorageOffset)
+      yValues(Arow + yOffset) += Aval * alpha * xValues(Acol + xOffset)
+      valueCounter += 1
+    }
+  }
+
+  private def dcoomv(
+        alpha: Double,
+        A: SparseTensor[Double],
+        x: DenseTensor[Double],
+        beta: Double,
+        y: DenseTensor[Double]): Unit = {
     val xValues = x.storage().array()
     val xOffset = x.storageOffset() - 1
     val yValues = y.storage().array()
@@ -95,15 +129,15 @@ object SparseTensorBLAS {
       case (alpha: Float, a: SparseTensor[Float], x: DenseTensor[Float],
             beta: Float, y: DenseTensor[Float]) =>
         scoomm(alpha, a, x, beta, y)
-//      case (alpha: Double, a: SparseTensor[Double], x: DenseTensor[Double],
-//            beta: Double, y: DenseTensor[Double]) =>
-//        dcoomm(alpha, a, x, beta, y)
+      case (alpha: Double, a: SparseTensor[Double], x: DenseTensor[Double],
+            beta: Double, y: DenseTensor[Double]) =>
+        dcoomm(alpha, a, x, beta, y)
       case (alpha: Float, a: DenseTensor[Float], x: SparseTensor[Float],
             beta: Float, y: DenseTensor[Float]) =>
         scoomm(alpha, a, x, beta, y)
-//      case (alpha: Double, a: DenseTensor[Double], x: SparseTensor[Double],
-//            beta: Double, y: DenseTensor[Double]) =>
-//        dcoomm(alpha, a, x, beta, y)
+      case (alpha: Double, a: DenseTensor[Double], x: SparseTensor[Double],
+            beta: Double, y: DenseTensor[Double]) =>
+        dcoomm(alpha, a, x, beta, y)
       case _ =>
         throw new IllegalArgumentException(s"Sparse addmm doesn't support")
     }
@@ -172,12 +206,137 @@ object SparseTensorBLAS {
     }
   }
 
+  private def dcoomm(
+        alpha: Double,
+        A: SparseTensor[Double],
+        B: DenseTensor[Double],
+        beta: Double,
+        C: DenseTensor[Double]): Unit = {
+    val mA: Int = A._shape(0)
+    val nB: Int = B.size(2)
+    val kA: Int = A._shape(1)
+    val kB: Int = B.size(1)
+
+    val Avals = A._values.array()
+    val AstorageOffset = A.storageOffset() - 1
+    val ArowIndices = A._indices(0)
+    val ArowOffset = A._indicesOffset(0)
+    val AcolIndices = A._indices(1)
+    val AcolOffset = A._indicesOffset(1)
+
+    val Bvals = B.storage().array()
+    val bOffset = B.storageOffset() - 1
+    val Cvals = C.storage().array()
+    val cOffset = C.storageOffset() - 1
+
+    require(ArowIndices.length == AcolIndices.length, s"A: row indices number " +
+      s"${ArowIndices.length()} is not equal to col indices number ${AcolIndices.length()}")
+    require(ArowIndices.length == Avals.length, s"A: indices length ${ArowIndices.length()}" +
+      s"is not equal to values length ${Avals.length}")
+
+    // Scale matrix first if `beta` is not equal to 1.0
+    if (beta != 1.0) {
+      C.mul(beta)
+    }
+    // Perform matrix multiplication and add to C. The rows of A are multiplied by the columns of
+    // B, and added to C.
+    var index = 0
+    if (B.stride(2) == 1 && B.size(2) == B.stride(1)) {
+      while (index < A.nElement()) {
+        val curMA = ArowIndices(index + AstorageOffset) - ArowOffset
+        val curKA = AcolIndices(index + AstorageOffset) - AcolOffset
+        var n = 0
+        while (n < nB) {
+          Cvals(curMA * nB + n) += alpha * Avals(index + AstorageOffset) *
+            Bvals(curKA * nB + n + bOffset)
+          n += 1
+        }
+        index += 1
+      }
+    } else {
+      while (index < A.nElement()) {
+        val curMA = ArowIndices(index + AstorageOffset) - ArowOffset
+        val curKA = AcolIndices(index + AstorageOffset) - AcolOffset
+        var n = 0
+        while (n < nB) {
+          Cvals(curMA * nB + n + cOffset) += alpha * Avals(index + AstorageOffset) *
+            Bvals(curKA + n * kB + bOffset)
+          n += 1
+        }
+        index += 1
+      }
+
+    }
+  }
+
   private def scoomm(
         alpha: Float,
         A: DenseTensor[Float],
         B: SparseTensor[Float],
         beta: Float,
         C: DenseTensor[Float]): Unit = {
+    val kB: Int = B.size(1)
+    val nB: Int = B.size(2)
+    val mA: Int = A.size(1)
+    val kA: Int = A.size(2)
+
+    val Avals = A.storage().array()
+    val aOffset = A.storageOffset() - 1
+    val Cvals = C.storage().array()
+    val cOffset = C.storageOffset() - 1
+
+    val Bvals = B._values.array()
+    val BstorageOffset = B.storageOffset() - 1
+    val BrowIndices = B._indices(0)
+    val BrowIndicesOffset = B._indicesOffset(0)
+    val BcolIndices = B._indices(1)
+    val BcolIndicesOffset = B._indicesOffset(1)
+
+    require(BrowIndices.length == BcolIndices.length, s"B: row indices number " +
+      s"${BrowIndices.length()} is not equal to col indices number ${BcolIndices.length()}")
+    require(BrowIndices.length == Bvals.length, s"B: indices length ${BrowIndices.length()}" +
+      s"is not equal to values length ${Bvals.length}")
+
+    // Scale matrix first if `beta` is not equal to 1.0
+    if (beta != 1.0) {
+      C.mul(beta)
+    }
+    // Perform matrix multiplication and add to C. The rows of B are multiplied by the columns of
+    // A, and added to C.
+    var index = 0
+    if (A.stride(2) == 1 && A.size(2) == A.stride(1)) {
+      while (index < B.nElement()) {
+        val curKB = BrowIndices(index + BstorageOffset) - BrowIndicesOffset
+        val curNB = BcolIndices(index + BstorageOffset) - BcolIndicesOffset
+        var n = 0
+        while (n < mA) {
+          Cvals(n * nB + curNB + cOffset) += alpha * Bvals(index + BstorageOffset) *
+            Avals(n * kA + curKB + aOffset)
+          n += 1
+        }
+        index += 1
+      }
+    } else {
+      while (index < B.nElement()) {
+        val curKB = BrowIndices(index + BstorageOffset) - BrowIndicesOffset
+        val curNB = BcolIndices(index + BstorageOffset) - BcolIndicesOffset
+        var n = 0
+        while (n < mA) {
+          Cvals(n * nB + curNB + cOffset) += alpha * Bvals(index + BstorageOffset) *
+            Avals(n + mA * curKB + aOffset)
+          n += 1
+        }
+        index += 1
+      }
+    }
+  }
+
+  private def dcoomm(
+        alpha: Double,
+        A: DenseTensor[Double],
+        B: SparseTensor[Double],
+        beta: Double,
+        C: DenseTensor[Double]): Unit = {
     val kB: Int = B.size(1)
     val nB: Int = B.size(2)
     val mA: Int = A.size(1)
