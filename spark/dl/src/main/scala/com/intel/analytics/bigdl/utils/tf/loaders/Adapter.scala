@@ -43,15 +43,22 @@ class Adapter[T: ClassTag](
   private var dataIndexes: Array[Int] = _
   private var zeroGrads: Array[Tensor[_]] = _
   private var realInput: Activity = _
+  private var initTensors: Array[Tensor[_]] = _
 
   override def updateOutput(input: Table): Activity = {
     if (module == null) {
       val l = input.length()
       indexes = configIndexes.map(getPositiveIndex(_, l))
       val tensors = indexes.map(i => input[Tensor[_]](i))
+      initTensors = tensors.map(_.clone())
       module = build(tensors)
       dataIndexes = getDataIndexes(indexes, l)
       zeroGrads = tensors.map(t => t.emptyInstance().resizeAs(t))
+    } else {
+      indexes.map(i => input[Tensor[_]](i)).zip(initTensors).foreach(tensors => {
+        require(tensors._1 == tensors._2, s"constant tensor is changed. " +
+          s"\noriginal\n${tensors._2}\nnow\n${tensors._1}")
+      })
     }
 
     realInput = if (dataIndexes.length == 1) {
