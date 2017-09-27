@@ -79,9 +79,9 @@ For more API, navigate to *API Guide/Full API docs* on side bar.
 
 ---
 ## **SparseTensor**
-To describe an SparseTensor, we need indices, values, and shape:
-Indices means non-zero elements' indices; values means the values of the non-zero elements;
-Shape means the dense shape of this SparseTensor.
+To describe an SparseTensor, we need indices, values, and shape:  
+indices means non-zero elements' indices; values means the values of the non-zero elements;
+shape means the dense shape of this SparseTensor.
 
 For example, an 2D 3x4 DenseTensor:
 ```
@@ -89,14 +89,14 @@ For example, an 2D 3x4 DenseTensor:
 0, 2, 0, 0
 0, 0, 3, 0
 ```
-it's sparse representation should be 
+It's sparse representation should be 
 ```
 indices(0) = Array(0, 0, 1, 2)
 indices(1) = Array(0, 3, 1, 2)
 values     = Array(1, 4, 2, 3)
 shape      = Array(3, 4)
 ```
-The 2D SparseTensor looks like [zero-based coordinate matrix storage format](https://software.intel.com/en-us/mkl-developer-reference-fortran-sparse-blas-coordinate-matrix-storage-format)  
+This 2D SparseTensor representation is similar to [zero-based coordinate matrix storage format](https://software.intel.com/en-us/mkl-developer-reference-fortran-sparse-blas-coordinate-matrix-storage-format).
 
 **Scala example:**
 ```
