@@ -60,7 +60,7 @@ class JoinTable[T: ClassTag] (
       nDim += 1
     }
     require(firstInput.dim() >= dimension, "dimension exceeds input dimensions" +
-      s"dimension ${firstInput.dim()} input dimension${dimension}")
+      s" input dimension ${firstInput.dim()}, dimension ${dimension}")
     nDim
   }
 

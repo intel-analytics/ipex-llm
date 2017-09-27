@@ -28,6 +28,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{DirectedGraph, Edge, FileReader, Node}
 import com.intel.analytics.bigdl.utils.tf.TensorflowToBigDL._
+import com.intel.analytics.bigdl.utils.tf.loaders.TensorflowOpsLoader
 import com.intel.analytics.bigdl.utils.{DirectedGraph, FileReader, Node}
 import org.tensorflow.framework.{GraphDef, NodeDef}
 
@@ -261,9 +262,17 @@ object TensorflowLoader{
           """.stripMargin
 
         val (module, nodes, inputNodes) =
-          extract[T](n.graph(reverse = true), context, byteOrder).getOrElse(
-            throw new UnsupportedOperationException(errorMsg)
-          )
+          extract[T](n.graph(reverse = true), context, byteOrder).getOrElse({
+            try {
+              val cls = Class.forName("com.intel.analytics.bigdl.utils.tf.loaders." +
+                n.element.getOp)
+              val builder = cls.getConstructors()(0).newInstance().asInstanceOf[TensorflowOpsLoader]
+              (builder.build[T](n.element, byteOrder), Seq(n).asJava, Seq(n))
+            } catch {
+              case _ =>
+                throw new UnsupportedOperationException(errorMsg)
+            }
+          })
 
         // set name
         if (nodes.size() == 1) {
