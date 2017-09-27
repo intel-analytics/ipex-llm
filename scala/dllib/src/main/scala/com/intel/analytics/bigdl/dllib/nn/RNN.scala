@@ -56,6 +56,8 @@ class RnnCell[T : ClassTag] (
   (implicit ev: TensorNumeric[T])
   extends Cell[T](Array(hiddenSize)) {
 
+  override var cell: AbstractModule[Activity, Activity, T] = buildModel()
+
   override def preTopology: AbstractModule[Activity, Activity, T] =
     TimeDistributed[T](
       Linear[T](inputSize,
@@ -65,9 +67,7 @@ class RnnCell[T : ClassTag] (
         withBias = isInputWithBias))
     .asInstanceOf[AbstractModule[Activity, Activity, T]]
 
-  override var cell: AbstractModule[Activity, Activity, T] = buildGraph
-
-  private def buildGraph: Graph[T] = {
+  def buildModel(): Graph[T] = {
     val i2h = Input()
     val h2h = Linear[T](hiddenSize, hiddenSize,
       wRegularizer = uRegularizer, withBias = isHiddenWithBias).inputs()
