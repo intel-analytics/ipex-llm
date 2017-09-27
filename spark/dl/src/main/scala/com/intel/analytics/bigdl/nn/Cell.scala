@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -79,7 +79,8 @@ abstract class Cell[T : ClassTag](
    * Please refer to SimpleRNN or LSTM for reference.
    * @return
    */
-  var preTopology: AbstractModule[Activity, Activity, T]
+//  var preTopology: AbstractModule[Activity, Activity, T]
+  var preTopology: TensorModule[T]
 
   def hiddenSizeOfPreTopo: Int = hiddensShape(0)
 

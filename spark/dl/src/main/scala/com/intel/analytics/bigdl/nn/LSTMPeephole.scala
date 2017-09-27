@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -76,17 +76,22 @@ class LSTMPeephole[T : ClassTag] (
       .add(SelectTable(1))
       .add(NarrowTable(2, 2)))
 
-  override var preTopology: AbstractModule[Activity, Activity, T] = if (includeTime) {
-    Sequential()
-      .add(Dropout(p))
-      .add(TimeDistributed(Linear(inputSize, hiddenSize * 4, wRegularizer = wRegularizer,
-        bRegularizer = bRegularizer)))
-  } else {
+//  override var preTopology: AbstractModule[Activity, Activity, T] = if (includeTime) {
+//    Sequential()
+//      .add(Dropout(p))
+//      .add(TimeDistributed(Linear(inputSize, hiddenSize * 4, wRegularizer = wRegularizer,
+//        bRegularizer = bRegularizer)))
+//  } else {
+//    Sequential()
+//      .add(Dropout(p))
+//      .add(Linear(inputSize, hiddenSize * 4, wRegularizer = wRegularizer,
+//        bRegularizer = bRegularizer))
+//  }
+  override var preTopology: TensorModule[T] =
     Sequential()
       .add(Dropout(p))
       .add(Linear(inputSize, hiddenSize * 4, wRegularizer = wRegularizer,
-        bRegularizer = bRegularizer))
-  }
+        bRegularizer = bRegularizer)).asInstanceOf[TensorModule[T]]
 
   override def hiddenSizeOfPreTopo: Int = hiddenSize * 4
 

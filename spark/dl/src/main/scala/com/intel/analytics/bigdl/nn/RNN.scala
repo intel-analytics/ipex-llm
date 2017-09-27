@@ -57,22 +57,29 @@ class RnnCell[T : ClassTag] (
   (implicit ev: TensorNumeric[T])
   extends Cell[T](Array(hiddenSize)) {
 
-  override var preTopology: AbstractModule[Activity, Activity, T] = if (includeTime) {
-    TimeDistributed[T](
-      Linear[T](inputSize,
-        hiddenSize,
-        wRegularizer = wRegularizer,
-        bRegularizer = bRegularizer,
-        withBias = isInputWithBias))
-      .asInstanceOf[AbstractModule[Activity, Activity, T]]
-  } else {
-      Linear[T](inputSize,
-        hiddenSize,
-        wRegularizer = wRegularizer,
-        bRegularizer = bRegularizer,
-        withBias = isInputWithBias)
-      .asInstanceOf[AbstractModule[Activity, Activity, T]]
-  }
+//  override var preTopology: AbstractModule[Activity, Activity, T] = if (includeTime) {
+//    TimeDistributed[T](
+//      Linear[T](inputSize,
+//        hiddenSize,
+//        wRegularizer = wRegularizer,
+//        bRegularizer = bRegularizer,
+//        withBias = isInputWithBias))
+//      .asInstanceOf[AbstractModule[Activity, Activity, T]]
+//  } else {
+//      Linear[T](inputSize,
+//        hiddenSize,
+//        wRegularizer = wRegularizer,
+//        bRegularizer = bRegularizer,
+//        withBias = isInputWithBias)
+//      .asInstanceOf[AbstractModule[Activity, Activity, T]]
+//  }
+
+  override var preTopology: TensorModule[T] =
+    Linear[T](inputSize,
+      hiddenSize,
+      wRegularizer = wRegularizer,
+      bRegularizer = bRegularizer,
+      withBias = isInputWithBias)
 
   override var cell: AbstractModule[Activity, Activity, T] = buildGraph
 

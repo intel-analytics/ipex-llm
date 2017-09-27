@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData, ModuleSerializable, ModuleSerializer}
@@ -37,7 +37,7 @@ class MultiCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorNume
   private val inputDim = Recurrent.inputDim
   private val hidDim = Recurrent.hidDim
 
-  override var preTopology: AbstractModule[Activity, Activity, T] = null
+  override var preTopology: TensorModule[T] = null
 
   override var cell: AbstractModule[Activity, Activity, T] = buildModel()
 

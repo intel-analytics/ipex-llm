@@ -34,7 +34,8 @@ import scala.reflect.ClassTag
  * [[Recurrent]] module is a container of rnn cells
  * Different types of rnn cells can be added using add() function
  */
-class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
+class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null,
+  val includeTime: Boolean = true)
   (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
 
   private var hidden: Activity = null
@@ -79,7 +80,9 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
       "Recurrent: contained module should be Cell type")
 
     topology = module.asInstanceOf[Cell[T]]
-    preTopology = topology.preTopology
+    preTopology = if (topology.preTopology != null && includeTime) {
+      TimeDistributed(topology.preTopology)
+    } else topology.preTopology
 
     if (batchNormParams != null && preTopology == null) {
       throw new IllegalArgumentException(
@@ -546,9 +549,9 @@ object Recurrent extends ContainerSerializable {
   val hidDim = 2
 
   def apply[@specialized(Float, Double) T: ClassTag](
-    batchNormParams: BatchNormParams[T] = null)
+    batchNormParams: BatchNormParams[T] = null, includeTime: Boolean = true)
     (implicit ev: TensorNumeric[T]) : Recurrent[T] = {
-    new Recurrent[T](batchNormParams)
+    new Recurrent[T](batchNormParams, includeTime)
   }
 
   /**
