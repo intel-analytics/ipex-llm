@@ -28,7 +28,7 @@ from pyspark.mllib.common import callJavaFunc
 from pyspark import SparkConf
 import numpy as np
 import threading
-from bigdl.util.engine import prepare_env
+from bigdl.util.engine import get_bigdl_classpath, is_spark_below_2_2
 
 INTMAX = 2147483647
 INTMIN = -2147483648
@@ -249,6 +249,22 @@ def init_engine(bigdl_type="float"):
     callBigDlFunc(bigdl_type, "initEngine")
 
 
+def redire_spark_logs(bigdl_type="float", logPath=os.getcwd()+"/bigdl.log"):
+    """
+    Redirect spark logs to the specified path.
+    :param bigdl_type: "double" or "float"
+    :param logPath: the file path to be redirected to; the default file is under the current workspace named `bigdl.log`.
+    """
+    callBigDlFunc(bigdl_type, "redirectSparkLogs", logPath)
+
+def show_bigdl_info_logs(bigdl_type="float"):
+    """
+    Set BigDL log level to INFO.
+    :param bigdl_type: "double" or "float"
+    """
+    callBigDlFunc(bigdl_type, "showBigDlInfoLogs")
+
+
 def get_bigdl_conf():
     bigdl_conf_file = "spark-bigdl.conf"
     bigdl_python_wrapper = "python-api.zip"
@@ -277,11 +293,20 @@ def to_list(a):
     return [a]
 
 
+def extend_spark_driver_cp(sparkConf, path):
+    original_driver_classpath = ":" + sparkConf.get("spark.driver.extraClassPath") \
+        if sparkConf.contains("spark.driver.extraClassPath") else ""
+    sparkConf.set("spark.driver.extraClassPath", path + original_driver_classpath)
+
+
 def create_spark_conf():
     bigdl_conf = get_bigdl_conf()
     sparkConf = SparkConf()
     sparkConf.setAll(bigdl_conf.items())
+    if not is_spark_below_2_2():
+        extend_spark_driver_cp(sparkConf, get_bigdl_classpath())
     return sparkConf
+
 
 def get_spark_context(conf = None):
     """
