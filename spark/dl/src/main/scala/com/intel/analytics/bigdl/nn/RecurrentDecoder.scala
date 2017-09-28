@@ -42,6 +42,7 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
 
   times = seqLength
   private var initStates: Array[Activity] = null
+  private var initGradStates: Array[Activity] = null
   private var states: Array[Activity] = null
   private var gradStates: Array[Activity] = null
 
@@ -53,6 +54,16 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
   def getStates(): Array[Activity] = {
     require(topology.isInstanceOf[MultiCell[T]], "getStates only support for MultiCell")
     states
+  }
+
+  def setGradStates(gradStates: Array[Activity]): Unit = {
+    require(topology.isInstanceOf[MultiCell[T]], "setGradStates only support for MultiCell")
+    initGradStates = states
+  }
+
+  def getGradStates(): Array[Activity] = {
+    require(topology.isInstanceOf[MultiCell[T]], "getGradStates only support for MultiCell")
+    gradStates
   }
 
   private def initHiddens(sizes: Array[Int]): Unit = {
@@ -139,9 +150,13 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
       if (gradStates == null) {
         gradStates = new Array[Activity](topology.asInstanceOf[MultiCell[T]].cells.length)
       }
+      
       initHiddens(outputSize.drop(1))
       if (initStates != null) {
         states = initStates.clone()
+      }
+      if (initGradStates != null) {
+        gradStates = initGradStates.clone()
       }
       cloneCells()
       cells.foreach{x =>
@@ -195,7 +210,7 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
   override def backward(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     val st = System.nanoTime
     gradInput.resizeAs(output)
-    currentGradOutput(hidDim) = gradHidden
+    currentGradOutput(hidDim) = if (initGradState == null) gradHidden else initGradState
     var i = times
     while (i >= 1) {
       currentGradOutput(inputDim) = if (i == times) {

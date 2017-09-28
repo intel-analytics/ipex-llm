@@ -268,6 +268,17 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     initState = state
   }
 
+  def getGradState(): Activity = {
+    require(cells != null && cells(0).gradInput != null,
+      "getGradState need to be called after backward")
+    cells(0).gradInput.toTable(hidDim)
+  }
+
+  protected var initGradState: Activity = null
+  def setGradState(state: Activity): Unit = {
+    initGradState = state
+  }
+
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
     currentGradOutput(hidDim) = gradHidden
     /**
@@ -342,8 +353,8 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
 
     while (i >= 1) {
       currentGradOutput(inputDim) = Recurrent.selectCopy(gradOutput, i, gradBuffer)
-      currentGradOutput(hidDim) = if (i == times) gradHidden
-        else cells(i).gradInput.toTable(hidDim)
+      currentGradOutput(hidDim) = if (i != times) cells(i).gradInput.toTable(hidDim)
+        else if (initGradState == null) gradHidden else initGradState
 
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
       else if (initState == null) hidden else initState
@@ -450,6 +461,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     cells.clear()
     timeBuffer.clear()
     initState = null
+    initGradState = null
     outputBuffer.set()
     gradBuffer.set()
     this

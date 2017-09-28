@@ -39,7 +39,8 @@ class Seq2seq[T: ClassTag](encoderCells: Array[Cell[T]], decoderCells: Array[Cel
     encoder.add(rec)
   }
    
-  val decoder = RecurrentDecoder(outputLength).add(MultiCell(decoderCells))
+  val decoder = if (decoderCells.length == 1) RecurrentDecoder(outputLength).add(decoderCells.head)
+    else RecurrentDecoder(outputLength).add(MultiCell(decoderCells))
   
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim == 3 || input.dim == 5 || input.dim == 6,
@@ -48,13 +49,18 @@ class Seq2seq[T: ClassTag](encoderCells: Array[Cell[T]], decoderCells: Array[Cel
     
     val _output = encoder.forward(input).toTensor
     if (broadcastState) {
+      require(encoderCells.length == decoderCells.length)
       states = new Array[Activity](encoderCells.length)
       var i = 0
       while (i < encoderCells.length) {
         states(i) = recs(i).getState()
         i += 1
       }
-      decoder.setStates(states)
+      if (decoderCells.length == 1) {
+        decoder.setState(states(i - 1))
+      } else {
+        decoder.setStates(states)
+      }
     }
 
     val _outputSize = _output.size()
@@ -84,6 +90,9 @@ class Seq2seq[T: ClassTag](encoderCells: Array[Cell[T]], decoderCells: Array[Cel
 
   override def backward(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     val gradInputDecoder = decoder.backward(inputForDecoder, gradOutput)
+    val state = if (decoderCells.length == 1) decoder.getState()
+    else decoder.getStates().head
+    recs(encoderCells.length - 1).setState(state)
     gradInput = encoder.backward(input, gradInputDecoder).toTensor
     gradInput
   }
