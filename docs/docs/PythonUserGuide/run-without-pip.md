@@ -99,9 +99,9 @@ Please check [this page](../ScalaUserGuide/configuration.md)
   - Check if the path is pointing to python-api.zip: ```--py-files ${PYTHON_API_ZIP_PATH} ```
   - Check if the path is pointing to python-api.zip: ``` export PYTHONPATH=${PYTHON_API_ZIP_PATH}:$PYTHONPATH```
 
-- Python in worker has different version 2.7 than that in driver 3.4
-  - export PYSPARK_PYTHON=/usr/local/bin/python3.4  # This path should be valid on every worker node.
-  - export PYSPARK_DRIVER_PYTHON=/usr/local/bin/python3.4 # This path should be valid on every driver node.
+- Python in worker has a different version 2.7 than that in driver 3.4
+  - ```export PYSPARK_PYTHON=/usr/local/bin/python3.4```  This path should be valid on every worker node.
+  - ```export PYSPARK_DRIVER_PYTHON=/usr/local/bin/python3.4```  This path should be valid on every driver node.
   
 - TypeError: 'JavaPackage' object is not callable
   - Check if every path within the launch script is valid especially the path that ends with jar.
