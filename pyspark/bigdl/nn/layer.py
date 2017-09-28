@@ -4098,22 +4098,22 @@ class ConvLSTMPeephole3D(Layer):
                                                  wRegularizer, uRegularizer, bRegularizer, cRegularizer, with_peephole)
 
 
-class MultiCell(Layer):
+class MultiRNNCell(Layer):
     '''
     A cell that enables stack multiple simple rnn cells
 
     >>> cells = []
     >>> cells.append(ConvLSTMPeephole3D(4, 3, 3, 3, 1))
     >>> cells.append(ConvLSTMPeephole3D(4, 3, 3, 3, 1))
-    >>> stacked_convlstm = MultiCell(cells)
+    >>> stacked_convlstm = MultiRNNCell(cells)
     creating: createConvLSTMPeephole3D
     creating: createConvLSTMPeephole3D    
     creating: createRecurrent
-    creating: createMultiCell
+    creating: createMultiRNNCell
     '''
 
     def __init__(self, cells, bigdl_type="float"):
-        super(MultiCell, self).__init__(None, bigdl_type, cells)
+        super(MultiRNNCell, self).__init__(None, bigdl_type, cells)
 
 class ResizeBilinear(Layer):
     """

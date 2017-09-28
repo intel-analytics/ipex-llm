@@ -29,7 +29,7 @@ import scala.reflect.ClassTag
 /**
  * Enable user stack multiple simple cells.
  */
-class MultiCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorNumeric[T])
+class MultiRNNCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorNumeric[T])
   extends Cell[T](
     hiddensShape = cells.last.hiddensShape,
     regularizers = cells.flatMap(_.regularizers)) {
@@ -144,9 +144,9 @@ class MultiCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorNume
   }
 }
 
-object MultiCell {
+object MultiRNNCell {
   def apply[@specialized(Float, Double) T: ClassTag](cells: Array[Cell[T]]
-    )(implicit ev: TensorNumeric[T]): MultiCell[T] = {
-    new MultiCell[T](cells)
+    )(implicit ev: TensorNumeric[T]): MultiRNNCell[T] = {
+    new MultiRNNCell[T](cells)
   }
 }

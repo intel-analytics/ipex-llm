@@ -28,9 +28,9 @@ import scala.collection.mutable.ArrayBuffer
 import scala.math._
 
 @com.intel.analytics.bigdl.tags.Parallel
-class MultiCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
+class MultiRNNCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
-  "A MultiCell " should "work in BatchMode" in {
+  "A MultiRNNCell " should "work in BatchMode" in {
     val hiddenSize = 5
     val inputSize = 5
     val seqLength = 4
@@ -54,7 +54,7 @@ class MultiCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     val model = Sequential[Double]()
       .add(rec
-        .add(MultiCell[Double](cells)))
+        .add(MultiRNNCell[Double](cells)))
 
     val input = Tensor[Double](batchSize, inputSize, 10, 10).rand
     val output = model.forward(input).toTensor[Double]
@@ -64,7 +64,7 @@ class MultiCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
     }
   }
 
-//  "A MultiCell " should "generate correct output with convlstm" in {
+//  "A MultiRNNCell " should "generate correct output with convlstm" in {
 //    val hiddenSize = 7
 //    val inputSize = 7
 //    val seqLength = 3
@@ -165,7 +165,7 @@ class MultiCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
 //    })
 //  }
 
-  "A MultiCell " should "generate correct output with convlstm RecurrentDecoder" in {
+  "A MultiRNNCell " should "generate correct output with convlstm RecurrentDecoder" in {
     val hiddenSize = 7
     val inputSize = 7
     val seqLength = 3
@@ -185,7 +185,7 @@ class MultiCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     val model = Sequential[Double]()
       .add(rec
-        .add(MultiCell[Double](cells)))
+        .add(MultiRNNCell[Double](cells)))
     val weights = model.getParameters()._1.clone()
 
     val input = Tensor[Double](batchSize, inputSize, 3, 3).rand
@@ -217,7 +217,7 @@ class MultiCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
     })
   }
 
-  "A MultiCell " should "generate correct output with lstm RecurrentDecoder" in {
+  "A MultiRNNCell " should "generate correct output with lstm RecurrentDecoder" in {
     val hiddenSize = 7
     val inputSize = 7
     val seqLength = 3
@@ -231,7 +231,7 @@ class MultiCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     val model = Sequential[Double]()
       .add(rec
-        .add(MultiCell[Double](cells)))
+        .add(MultiRNNCell[Double](cells)))
     val weights = model.getParameters()._1.clone()
 
     val input = Tensor[Double](batchSize, inputSize).rand
