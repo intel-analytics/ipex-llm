@@ -4,18 +4,18 @@
 
 ## **Use an Interactive Shell**
  * export SPARK_HOME=path to spark-1.6.3-bin-hadoop2.6 
- * type `python` in commandline to start a REPL
+ * type `python` in command line to start a REPL
 
 ## **Use Jupyter Notebook**
  * export SPARK_HOME=path to spark-1.6.3-bin-hadoop2.6 
  * Start jupyter notebook as you normally did, e.g.
- ```bash
+```bash
  jupyter notebook --notebook-dir=./ --ip=* --no-browser
- ```
+```
 
 
 <a name="code.verification"></a>
-## Example code to verify if run successfully ##
+## Example code to verify if BigDL can run successfully ##
 ```python
 from bigdl.util.common import *
 from pyspark import SparkContext

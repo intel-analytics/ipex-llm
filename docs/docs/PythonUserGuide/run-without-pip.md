@@ -12,13 +12,13 @@ ${SPARK_HOME}/bin/pyspark --master local[4] \
 --properties-file ../conf/spark-bigdl.conf 
 ```
 
- [Example code to verify if run successfully](run-from-pip.md#code.verification)
+ [Example code to verify if BigDL can run successfully](run-from-pip.md#code.verification)
 
 
 ## **Run from spark-submit**
 
-- A BigDL Python program runs as a standard PySPark program, which requires all Python dependency (e.g., NumPy) used by the program be installed on each node in the Spark cluster. You can try run the BigDL [lenet Python example](https://github.com/intel-analytics/BigDL/tree/master/pyspark/bigdl/models/lenet) using [spark-submit](http://spark.apache.org/docs/latest/submitting-applications.html) as follows:
-- __Ensure every path is valid__ 
+- A BigDL Python program runs as a standard pyspark program, which requires all Python dependencies (e.g., NumPy) used by the program to be installed on each node in the Spark cluster. You can try running the BigDL [lenet Python example](https://github.com/intel-analytics/BigDL/tree/master/pyspark/bigdl/models/lenet) using [spark-submit](http://spark.apache.org/docs/latest/submitting-applications.html) as follows:
+- __Ensure every path is valid.__
 
 ```bash
    BigDL_HOME=...
@@ -32,10 +32,10 @@ ${SPARK_HOME}/bin/pyspark --master local[4] \
    ${SPARK_HOME}/bin/spark-submit \
        --master ${MASTER} \
        --driver-cores 5  \
-      --driver-memory 10g  \
-      --total-executor-cores 80  \
-      --executor-cores 10  \
-      --executor-memory 20g \
+       --driver-memory 10g  \
+       --total-executor-cores 80  \
+       --executor-cores 10  \
+       --executor-memory 20g \
        --py-files ${PYTHON_API_ZIP_PATH},${BigDL_HOME}/pyspark/bigdl/models/lenet/lenet5.py  \
        --properties-file ${BigDL_HOME}/dist/conf/spark-bigdl.conf \
        --jars ${BigDL_JAR_PATH} \
@@ -59,7 +59,7 @@ sudo pip install numpy scipy pandas scikit-learn matplotlib seaborn wordcloud
 ```
 
 - Then, you can launch the Jupyter notebook as follows:
-- __Ensure every path is valid__ 
+  __Ensure every path is valid.__
 
 ```bash
    BigDL_HOME=...                                                                                         
@@ -77,10 +77,10 @@ sudo pip install numpy scipy pandas scikit-learn matplotlib seaborn wordcloud
        --master ${MASTER} \
        --properties-file ${BigDL_HOME}/dist/conf/spark-bigdl.conf \
        --driver-cores 5  \
-      --driver-memory 10g  \
-      --total-executor-cores 8  \
-      --executor-cores 1  \
-      --executor-memory 20g \
+       --driver-memory 10g  \
+       --total-executor-cores 8  \
+       --executor-cores 1  \
+       --executor-memory 20g \
        --py-files ${PYTHON_API_ZIP_PATH} \
        --jars ${BigDL_JAR_PATH} \
        --conf spark.driver.extraClassPath=${BigDL_JAR_PATH} \
@@ -98,6 +98,7 @@ Please check [this page](../ScalaUserGuide/configuration.md)
 - ImportError   from bigdl.nn.layer import *
   - Check if the path is pointing to python-api.zip: ```--py-files ${PYTHON_API_ZIP_PATH} ```
   - Check if the path is pointing to python-api.zip: ``` export PYTHONPATH=${PYTHON_API_ZIP_PATH}:$PYTHONPATH```
+
 - Python in worker has different version 2.7 than that in driver 3.4
   - export PYSPARK_PYTHON=/usr/local/bin/python3.4  # This path should be valid on every worker node.
   - export PYSPARK_DRIVER_PYTHON=/usr/local/bin/python3.4 # This path should be valid on every driver node.
