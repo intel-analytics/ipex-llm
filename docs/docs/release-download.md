@@ -2,7 +2,7 @@
 
 These are built BigDL packages including dependency and Python files. You can download these packages instead of building them by yourself. This is useful when you want to do something like run some examples or develop Python code.
 
-NOTE: Only __Python 2.7__ and __Python 3.5__ are supported for now.
+__NOTE__: Only __Python 2.7__ and __Python 3.5__ are supported for now.
 ---
 ## **Nightly Build**
 
