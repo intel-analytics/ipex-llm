@@ -1918,6 +1918,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     loadedModel.isTraining() should be (false)
   }
+
 }
 
 class TestModule[T: ClassTag](val custom: CustomData)

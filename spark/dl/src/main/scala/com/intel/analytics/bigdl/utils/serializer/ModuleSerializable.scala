@@ -30,6 +30,7 @@ import serialization.Bigdl.{AttrValue, BigDLModule, BigDLTensor}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
+import scala.reflect.runtime.universe
 
 /**
  * [[ModuleSerializable]] trait inherits [[Loadable]] and [[Savable]]
@@ -93,7 +94,7 @@ trait ModuleSerializable extends Loadable with Savable{
       map.foreach(param => {
         val name = param.name.decodedName.toString
         val ptype = param.typeSignature
-        if (ptype.toString == "scala.reflect.ClassTag[T]") {
+        if (ptype <:< universe.typeOf[ClassTag[_]]) {
           args(i) = evidence
         } else if (ptype.toString ==
           tensorNumericType.toString) {
@@ -167,7 +168,7 @@ trait ModuleSerializable extends Loadable with Savable{
     val preModules = model.getPreModulesList.asScala
     val nextModules = model.getNextModulesList.asScala
     val bigDLModule = ModuleData(module, preModules, nextModules)
-    if (model.getName != null && model.getName != "") {
+    if (model.getName != "") {
       module.setName(model.getName)
     }
     module.setNamePostfix(model.getNamePostfix)
@@ -202,7 +203,7 @@ trait ModuleSerializable extends Loadable with Savable{
   protected def copy2BigDL[T: ClassTag](model : BigDLModule, module : ModuleData[T])
                                        (implicit ev: TensorNumeric[T]): Unit = {
     val paramTable : Table = module.module.getParametersTable
-    if (paramTable != null && paramTable.contains(model.getName)) {
+    if (paramTable != null && paramTable.contains(module.module.getName)) {
       val modulePramTable : Table = paramTable(module.module.getName)
       val weight : Tensor[T] = if (modulePramTable.contains("weight")) {
         modulePramTable("weight") }
