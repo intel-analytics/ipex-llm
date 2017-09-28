@@ -104,7 +104,7 @@ Please check [this page](../ScalaUserGuide/configuration.md)
   - export PYSPARK_DRIVER_PYTHON=/usr/local/bin/python3.4 # This path should be valid on every driver node.
   
 - TypeError: 'JavaPackage' object is not callable
-  - `Check if every path within the launch script is valid expecially the path end with jar `
+  - Check if every path within the launch script is valid especially the path that ends with jar.
 
 - java.lang.NoSuchMethodError:XXX
-  - `Check if the spark version is match i.e you are using Spark2.x but the underneath BigDL compiled with Spark1.6`
+  - Check if the Spark version matches, i.e check if you are using Spark2.x but the underneath BigDL is compiled with Spark1.6.

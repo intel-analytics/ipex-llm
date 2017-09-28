@@ -8,7 +8,7 @@
 
 ## **Use Jupyter Notebook**
  * export SPARK_HOME=path to spark-1.6.3-bin-hadoop2.6 
- * Start jupyter notebook as you normally did, e.g.
+ * Start jupyter notebook as you normally do, e.g.
 ```bash
  jupyter notebook --notebook-dir=./ --ip=* --no-browser
 ```
