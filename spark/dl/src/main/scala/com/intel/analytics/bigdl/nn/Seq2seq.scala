@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.{Activity, TensorModule}
-import com.intel.analytics.bigdl.nn.DecoderInput.DecoderInput
+import com.intel.analytics.bigdl.nn.DecoderInputType.DecoderInputType
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -25,11 +25,12 @@ import scala.reflect.ClassTag
 
 class Seq2seq[T: ClassTag](encoderCells: Array[Cell[T]], decoderCells: Array[Cell[T]],
   outputLength: Int, broadcastState: Boolean = false,
-  decoderInput: DecoderInput = DecoderInput.ENCODERINPUT)
+  decoderInputType: DecoderInputType = DecoderInputType.ENCODERINPUT)
   (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   var states: Array[Activity] = null
   var recs = new Array[Recurrent[T]](encoderCells.length)
-  var inputForDecoder: Tensor[T] = null
+  var decoderInput: Tensor[T] = null
+  var encoderOutput: Tensor[T] = null
     
   val encoder = Sequential()
   for (i <- 0 until encoderCells.size) {
@@ -47,7 +48,7 @@ class Seq2seq[T: ClassTag](encoderCells: Array[Cell[T]], decoderCells: Array[Cel
       "Recurrent: input should be a 3D/5D/6D Tensor, e.g [batch, times, nDim], " +
         s"current input.dim = ${input.dim}")
     
-    val _output = encoder.forward(input).toTensor
+    encoderOutput = encoder.forward(input).toTensor
     if (broadcastState) {
       require(encoderCells.length == decoderCells.length)
       states = new Array[Activity](encoderCells.length)
@@ -63,17 +64,17 @@ class Seq2seq[T: ClassTag](encoderCells: Array[Cell[T]], decoderCells: Array[Cel
       }
     }
 
-    val _outputSize = _output.size()
-    decoderInput match {
-      case DecoderInput.ENCODEROUTPUTSTATE =>
-        inputForDecoder = recs(encoderCells.size - 1).getState().toTable[Tensor[T]](1)
-      case DecoderInput.ENCODERINPUT => inputForDecoder = input.select(2, input.size(2))
-      case DecoderInput.ZEROS => inputForDecoder =
+    val _outputSize = encoderOutput.size()
+    decoderInputType match {
+      case DecoderInputType.ENCODEROUTPUT =>
+        decoderInput = encoderOutput.select(2, encoderOutput.size(2))
+      case DecoderInputType.ENCODERINPUT => decoderInput = input.select(2, input.size(2))
+      case DecoderInputType.ZEROS => decoderInput =
         Tensor[T](Array(_outputSize(0)) ++ _outputSize.drop(2))
       case _ => throw new IllegalArgumentException("Unknown decodeInput mode")
     }
     
-    output = decoder.forward(inputForDecoder)
+    output = decoder.forward(decoderInput)
     output
   }
 
@@ -89,11 +90,32 @@ class Seq2seq[T: ClassTag](encoderCells: Array[Cell[T]], decoderCells: Array[Cel
   }
 
   override def backward(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    val gradInputDecoder = decoder.backward(inputForDecoder, gradOutput)
-    val state = if (decoderCells.length == 1) decoder.getState()
-    else decoder.getStates().head
-    recs(encoderCells.length - 1).setState(state)
-    gradInput = encoder.backward(input, gradInputDecoder).toTensor
+    val gradInputDecoder = decoder.backward(decoderInput, gradOutput)
+    if (broadcastState) {
+      if (decoderCells.length == 1) {
+        val gradState = decoder.getGradState()
+        recs(encoderCells.length - 1).setGradState(gradState)
+      } else {
+        val gradStates = decoder.getGradStates()
+        var i = 0
+        while ( i < gradStates.length) {
+          recs(i).setGradState(gradStates(i))
+          i += 1
+        }
+      }
+    }
+
+    decoderInputType match {
+      case DecoderInputType.ENCODEROUTPUT =>
+        encoder.backward(input, gradInputDecoder).toTensor
+      case DecoderInputType.ENCODERINPUT => encoder.backward(input,
+        Tensor[T](encoderOutput.size())).toTensor
+      case DecoderInputType.ZEROS => gradInput = encoder.backward(input,
+        Tensor[T](encoderOutput.size())).toTensor
+        
+      case _ => throw new IllegalArgumentException("Unknown decodeInput mode")
+    }
+    
     gradInput
   }
 }
@@ -101,13 +123,13 @@ class Seq2seq[T: ClassTag](encoderCells: Array[Cell[T]], decoderCells: Array[Cel
 object Seq2seq {
   def apply[@specialized(Float, Double) T: ClassTag](encoderCells: Array[Cell[T]],
     decoderCells: Array[Cell[T]], outputLength: Int, broadcastState: Boolean = false,
-    decoderInput: DecoderInput = DecoderInput.ENCODERINPUT)
+    decoderInput: DecoderInputType = DecoderInputType.ENCODERINPUT)
     (implicit ev: TensorNumeric[T]): Seq2seq[T] = {
     new Seq2seq[T](encoderCells, decoderCells, outputLength, broadcastState, decoderInput)
   }
 }
 
-object DecoderInput extends Enumeration {
-  type DecoderInput = Value
-  val ZEROS, ENCODEROUTPUTSTATE, ENCODERINPUT = Value
+object DecoderInputType extends Enumeration {
+  type DecoderInputType = Value
+  val ZEROS, ENCODEROUTPUT, ENCODERINPUT = Value
 }

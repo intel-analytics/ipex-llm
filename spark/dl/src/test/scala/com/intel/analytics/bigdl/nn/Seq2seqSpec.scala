@@ -68,7 +68,7 @@ class Seq2seqSpec extends FlatSpec with BeforeAndAfter with Matchers {
       1)).asInstanceOf[Array[Cell[Double]]]
 
     val model = Seq2seq(encoderCells, decoderCells, seqLength, broadcastState = true,
-    decoderInput = DecoderInput.ENCODERINPUT)
+    decoderInput = DecoderInputType.ENCODERINPUT)
     
     for (i <- 0 until 3) {
       model.forward(input).toTensor
@@ -76,7 +76,7 @@ class Seq2seqSpec extends FlatSpec with BeforeAndAfter with Matchers {
     }
 
     val model2 = Seq2seq(encoderCells, decoderCells, seqLength, broadcastState = true,
-      decoderInput = DecoderInput.ENCODEROUTPUTSTATE)
+      decoderInput = DecoderInputType.ENCODEROUTPUT)
 
     for (i <- 0 until 3) {
       val output = model2.forward(input).toTensor
@@ -84,7 +84,7 @@ class Seq2seqSpec extends FlatSpec with BeforeAndAfter with Matchers {
     }
 
     val model3 = Seq2seq(encoderCells, decoderCells, seqLength, broadcastState = true,
-      decoderInput = DecoderInput.ZEROS)
+      decoderInput = DecoderInputType.ZEROS)
 
     for (i <- 0 until 3) {
       val output = model3.forward(input).toTensor
