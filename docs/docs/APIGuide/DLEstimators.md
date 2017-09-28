@@ -12,6 +12,7 @@ val estimator = new DLEstimator(model: Module[T], criterion: Criterion[T], val f
 estimator = DLEstimator(model, criterion, feature_size, label_size)
 ```
 Source code [here](https://github.com/intel-analytics/BigDL/blob/585818a3fb0e7339eb4e3831f08da82b7d5e47ba/spark/dl/src/main/scala/org/apache/spark/ml/DLEstimator.scala#L53).
+
 In machine learning context, "Estimation" is regarded as a mechanism for choosing the relatively "best model" according to the observation of reality. The API design of the `Estimator` abstracts the concept of a learning algorithm or any algorithm that fits or trains on data to make the training pipeline more clear and convinient for our users. Technically, an Estimator takes the user-presumed model and criterion with specification on feature and label dimension to prepare for the training. Within its class definition, it implements a method `fit()`, which accepts dataset to start training and produce a optimized DLModel with more accurate prediction.
 
 DLEstimator extends `org.apache.spark.ml.Estimator` and supports model training from Apache Spark DataFrame/Dataset. Different from many algorithms in Spark MLlib, DLEstimator supports more data types for the label column. In many deep learning applications, the label data could be a sequence or other data collection. DLEstimator supports feature and label data in the format of `Array[Double]`, `Array[Float]`, `org.apache.spark.mllib.linalg.Vector` (for Apache Spark 1.5, 1.6) and `org.apache.spark.ml.linalg.Vector` (for Apache Spark 2.0+). Also label data can be of `Double` type. User should specify the feature data dimensions and label data dimensions via the constructor parameters featureSize and labelSize respectively. Internally the feature and label data are converted to BigDL tensors, to further train a BigDL model efficiently.
@@ -67,11 +68,13 @@ Output is
 |[1.0, 2.0]|[2.0, 1.0]|[2.006953001022339, 1.0039551258087158]|
 |[2.0, 1.0]|[1.0, 2.0]|[1.0034767389297485, 2.006068706512451]|
 |[1.0, 2.0]|[2.0, 1.0]|[2.006953001022339, 1.0039551258087158]|
+
 &nbsp;
 
 ---
 ## **DLClassifier**
 Source code [here](https://github.com/intel-analytics/BigDL/blob/585818a3fb0e7339eb4e3831f08da82b7d5e47ba/spark/dl/src/main/scala/org/apache/spark/ml/DLClassifier.scala#L36).
+
 `DLClassifier` is a specialized `DLEstimator` that simplifies the data format for
 classification tasks where the label space is discrete. It only supports label column of DoubleType, and the fitted
 `DLClassifierModel` will have the prediction column of DoubleType.
@@ -140,6 +143,7 @@ val dlModel = new DLModel[T](model: Module[T], featureSize: Array[Int])
 dl_model = DLModel(model, feature_size)
 ```
 Source code [here](https://github.com/intel-analytics/BigDL/blob/585818a3fb0e7339eb4e3831f08da82b7d5e47ba/spark/dl/src/main/scala/org/apache/spark/ml/DLEstimator.scala#L155).
+
 You can see an internal method named [`wrapBigDLModel`](https://github.com/intel-analytics/BigDL/blob/master/spark/dl/src/main/scala/org/apache/spark/ml/DLEstimator.scala#L139) is called in our [`fit()`](https://github.com/intel-analytics/BigDL/blob/585818a3fb0e7339eb4e3831f08da82b7d5e47ba/spark/spark-version/2.0/src/main/scala/org/apache/spark/ml/DLEstimatorBase.scala#L74) method within the DLEstimatorBase class. It is designed to wrap the BigDL Module into a DLModel which is compatible with both spark 1.5-plus and 2.0 by entending the Spark's ML Transformer. It greatly improves the experience of Spark users because now you can use your BigDL DLModel as one of the transformers in your Spark ML pipeline stages.
 
 DLModel supports feature data in the format of Array[Double], Array[Float], org.apache.spark.mllib.linalg.{Vector, VectorUDT} for Spark 1.5, 1.6 and org.apache.spark.ml.linalg.{Vector, VectorUDT} for Spark 2.0+. Internally [[DLModel]] use features column as storage of the feature data, and create Tensors according to the constructor parameter featureSize.
@@ -154,6 +158,7 @@ DLModel supports feature data in the format of Array[Double], Array[Float], org.
 
 ## DLClassifierModel ##
 Source code [here](https://github.com/intel-analytics/BigDL/blob/585818a3fb0e7339eb4e3831f08da82b7d5e47ba/spark/dl/src/main/scala/org/apache/spark/ml/DLClassifier.scala#L63).
+
 DLClassifierModel extends DLModel, which is a specialized DLModel for classification tasks. The prediction column will have the datatype of Double. 
 * `model` fitted BigDL module to use in prediction
 * `featureSize` The size (Tensor dimensions) of the feature data. (e.g. an image may be with featureSize = 28 * 28)
