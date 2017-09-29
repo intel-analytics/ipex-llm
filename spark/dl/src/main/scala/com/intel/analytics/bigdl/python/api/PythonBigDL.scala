@@ -1912,8 +1912,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
         toJTensor(res.toTable.apply[Tensor[T]](2))).asJava
   }
 
-  def setHiddenState(rec: Recurrent[T], state: JList[JTensor], isTable: Boolean): Unit = {
-    val stateActivity = jTensorsToActivity(state, isTable)
+  def setHiddenState(rec: Recurrent[T], hiddenState: JList[JTensor], isTable: Boolean): Unit = {
+    val stateActivity = jTensorsToActivity(hiddenState, isTable)
     rec.setHiddenState(stateActivity)
   }
 
@@ -1926,10 +1926,39 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     }.toList.asJava
   }
 
-  def setHiddenStates(rec: RecurrentDecoder[T], states: JList[JList[JTensor]],
+  def setHiddenStates(rec: RecurrentDecoder[T], hiddenStates: JList[JList[JTensor]],
                       isTable: JList[Boolean]): Unit = {
-    rec.setHiddenStates((states.asScala, isTable.asScala).zipped.map { (state, table) =>
+    rec.setHiddenStates((hiddenStates.asScala, isTable.asScala).zipped.map { (state, table) =>
       jTensorsToActivity(state, table)
+    }.toArray)
+  }
+
+  def getGradHiddenState(rec: Recurrent[T]): JList[JTensor] = {
+    val res = rec.getGradHiddenState()
+    if (res.isTensor) return List(toJTensor(res.toTensor)).asJava
+    else return List(toJTensor(res.toTable.apply[Tensor[T]](1)),
+      toJTensor(res.toTable.apply[Tensor[T]](2))).asJava
+  }
+
+  def setGradHiddenState(rec: Recurrent[T], gradHiddenState: JList[JTensor], isTable: Boolean):
+    Unit = {
+    val stateActivity = jTensorsToActivity(gradHiddenState, isTable)
+    rec.setGradHiddenState(stateActivity)
+  }
+
+  def getGradHiddenStates(rec: RecurrentDecoder[T]): JList[JList[JTensor]] = {
+    val res = rec.getGradHiddenStates()
+    res.map { x =>
+      if (x.isTensor) List(toJTensor(x.toTensor)).asJava
+      else List(toJTensor(x.toTable.apply[Tensor[T]](1)),
+        toJTensor(x.toTable.apply[Tensor[T]](2))).asJava
+    }.toList.asJava
+  }
+
+  def setGradHiddenStates(rec: RecurrentDecoder[T], gradHiddenStates: JList[JList[JTensor]],
+                          isTable: JList[Boolean]): Unit = {
+    rec.setGradHiddenStates((gradHiddenStates.asScala, isTable.asScala).zipped.map {
+      (state, table) => jTensorsToActivity(state, table)
     }.toArray)
   }
 
@@ -1979,5 +2008,19 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def showBigDlInfoLogs(): Unit = {
     Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+  }
+
+  def createSeq2seq(encoderCells: JList[Cell[T]], decoderCells: JList[Cell[T]], outputLength: Int,
+    broadcastState: Boolean = false, decoderInput: String = "USERINPUT"): Seq2seq[T] = {
+    val input = decoderInput match {
+      case "USERINPUT" => DecoderInputType.USERINPUT
+      case "ZEROS" => DecoderInputType.ZEROS
+      case "ENCODEROUTPUT" => DecoderInputType.ENCODEROUTPUT
+      case n: String =>
+        throw new IllegalArgumentException(s"Only support 'USERINPUT', " +
+          s"'ZEROS', 'ENCODEROUTPUT': $n")
+    }
+    Seq2seq(encoderCells.asScala.toArray, decoderCells.asScala.toArray, outputLength,
+      broadcastState, input)
   }
 }

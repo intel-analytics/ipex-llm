@@ -150,7 +150,7 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
       if (gradHiddenStates == null) {
         gradHiddenStates = new Array[Activity](topology.asInstanceOf[MultiRNNCell[T]].cells.length)
       }
-      
+
       initHiddens(outputSize.drop(1))
       if (initHiddenStates != null) {
         hiddenStates = initHiddenStates.clone()

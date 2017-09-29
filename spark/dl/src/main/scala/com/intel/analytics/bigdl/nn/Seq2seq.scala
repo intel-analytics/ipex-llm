@@ -32,7 +32,7 @@ class Seq2seq[T: ClassTag](encoderCells: Array[Cell[T]], decoderCells: Array[Cel
   var recs = new Array[Recurrent[T]](encoderCells.length)
   var decoderInput: Tensor[T] = null
   var encoderOutput: Tensor[T] = null
-    
+
   val encoder = Sequential()
   for (i <- 0 until encoderCells.size) {
     val rec = Recurrent[T]()
@@ -40,17 +40,17 @@ class Seq2seq[T: ClassTag](encoderCells: Array[Cell[T]], decoderCells: Array[Cel
     recs(i) = rec
     encoder.add(rec)
   }
-   
+
   val decoder = if (decoderCells.length == 1) RecurrentDecoder(outputLength).add(decoderCells.head)
     else RecurrentDecoder(outputLength).add(MultiRNNCell(decoderCells))
 
   val module: AbstractModule[Activity, Activity, T] = Sequential().add(encoder).add(decoder)
-  
+
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim == 3 || input.dim == 5 || input.dim == 6,
       "Recurrent: input should be a 3D/5D/6D Tensor, e.g [batch, times, nDim], " +
         s"current input.dim = ${input.dim}")
-    
+
     encoderOutput = encoder.forward(input).toTensor
     if (broadcastState) {
       require(encoderCells.length == decoderCells.length)
@@ -76,7 +76,7 @@ class Seq2seq[T: ClassTag](encoderCells: Array[Cell[T]], decoderCells: Array[Cel
         Tensor[T](Array(_outputSize(0)) ++ _outputSize.drop(2))
       case _ => throw new IllegalArgumentException("Unknown decodeInput mode")
     }
-    
+
     output = decoder.forward(decoderInput)
     output
   }
@@ -115,10 +115,10 @@ class Seq2seq[T: ClassTag](encoderCells: Array[Cell[T]], decoderCells: Array[Cel
         Tensor[T](encoderOutput.size())).toTensor
       case DecoderInputType.ZEROS => gradInput = encoder.backward(input,
         Tensor[T](encoderOutput.size())).toTensor
-        
+
       case _ => throw new IllegalArgumentException("Unknown decodeInput mode")
     }
-    
+
     gradInput
   }
 

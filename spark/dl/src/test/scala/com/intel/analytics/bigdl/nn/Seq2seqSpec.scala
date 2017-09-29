@@ -69,7 +69,7 @@ class Seq2seqSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     val model = Seq2seq(encoderCells, decoderCells, seqLength, broadcastState = true,
     decoderInput = DecoderInputType.USERINPUT)
-    
+
     for (i <- 0 until 3) {
       model.forward(input).toTensor
       model.backward(input, gradOutput)
