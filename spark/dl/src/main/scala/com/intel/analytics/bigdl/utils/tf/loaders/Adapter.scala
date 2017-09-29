@@ -46,6 +46,10 @@ class Adapter[T: ClassTag](
   private var initTensors: Array[Tensor[_]] = _
 
   override def updateOutput(input: Table): Activity = {
+    if (getName().contains("softmax_cross_entropy_loss/num_present")) {
+      println()
+    }
+
     if (module == null) {
       val l = input.length()
       indexes = configIndexes.map(getPositiveIndex(_, l))

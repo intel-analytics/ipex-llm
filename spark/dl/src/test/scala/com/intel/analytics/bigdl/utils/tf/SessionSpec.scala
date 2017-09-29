@@ -63,9 +63,8 @@ class SessionSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val nodes = TensorflowLoader.parse(path)
 
     import scala.collection.JavaConverters._
-    val context =
-      new mutable.HashMap[String, (Tensor[Float], Tensor[Float], Option[Seq[(Int, Int)]])]()
-    val session = new BigDLSessionImpl[Float](nodes.asScala, sc, context)
+    val context = new Context[Float]()
+    val session = new BigDLSessionImpl[Float](nodes.asScala, context)
 
     val data = new Array[Tensor[Float]](100)
     val label = new Array[Tensor[Float]](100)
@@ -100,14 +99,13 @@ class SessionSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val lenetModel = getLenetModel("lenet_batch_2.pbtxt")
 
-    val context =
-      new mutable.HashMap[String, (Tensor[Float], Tensor[Float], Option[Seq[(Int, Int)]])]()
-    val session = new BigDLSessionImpl[Float](lenetModel, sc, context)
+    val context = new Context[Float]()
+    val session = new BigDLSessionImpl[Float](lenetModel, context)
 
     val endpoints = Seq(
       "fifo_queue_Dequeue"
     )
-    val rdd = session.getRDD(endpoints)
+    val rdd = session.getRDD(endpoints, sc)
     val result = rdd.collect()
     result.length should be (5)
     val imageSum = result.map(t => t[Tensor[Float]](1).sum()).sum
@@ -121,14 +119,13 @@ class SessionSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val lenetModel = getLenetModel("lenet_with_batch_3.pbtxt")
 
-    val context =
-      new mutable.HashMap[String, (Tensor[Float], Tensor[Float], Option[Seq[(Int, Int)]])]()
-    val session = new BigDLSessionImpl[Float](lenetModel, sc, context)
+    val context = new Context[Float]()
+    val session = new BigDLSessionImpl[Float](lenetModel, context)
 
     val endpoints = Seq(
       "fifo_queue_Dequeue"
     )
-    val rdd = session.getRDD(endpoints)
+    val rdd = session.getRDD(endpoints, sc)
     val result = rdd.collect()
     result.length should be (4)
     result.head[Tensor[Float]](1).size(1) should be (3)
