@@ -20,8 +20,9 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.VariableFormat.{Default, ONE_D}
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat.{NCHW, NHWC}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat, TensorModule}
+import com.intel.analytics.bigdl.nn.quantized.{LinearWeight, LinearWeightParams}
 import com.intel.analytics.bigdl.optim.{L1L2Regularizer, L1Regularizer, L2Regularizer, Regularizer}
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.tensor.{QuantizedTensor, Tensor, Storage}
 import org.scalatest.{FlatSpec, Matchers}
 import serialization.Bigdl.AttrValue
 
@@ -544,7 +545,7 @@ class DataConverterSpec extends FlatSpec with Matchers{
     retrievedValue should be (arry)
   }
 
-  "Array of Tensor conversion " should " work properly" in {
+  "Array of Tensor conversion" should "work properly" in {
     val tensor1 = Tensor(2, 3).apply1(_ => Random.nextFloat())
     val tensor2 = Tensor(2, 3).apply1(_ => Random.nextFloat())
     val tensorArray = Array(tensor1, tensor2)
@@ -666,5 +667,58 @@ class DataConverterSpec extends FlatSpec with Matchers{
 
   }
 
+  "Array of byte" should "work properly" in {
+    val bytes = new Array[Byte](5)
+    "HELLO".zipWithIndex.foreach(x => bytes(x._2) = x._1.toByte)
 
+    val attriBulder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(attriBulder, bytes, universe.typeOf[Array[Byte]])
+    val attr = attriBulder.build
+    val retrievedValue = DataConverter.getAttributeValue(attr).asInstanceOf[Array[Byte]]
+    retrievedValue should be (bytes)
+    retrievedValue.foreach(x => println(x.toChar))
+  }
+
+  "QuantizedTensor" should "work properly" in {
+    val bytes = new Array[Byte](5)
+    val min = Array[Float]('H')
+    val max = Array[Float]('O')
+    val sum = Array[Float]("HELLO".sum)
+    "HELLO".zipWithIndex.foreach(x => bytes(x._2) = x._1.toByte)
+    bytes.foreach(x => println(x.toChar))
+    val tensor = QuantizedTensor[Float](bytes, max, min, sum, Array(1, 5), LinearWeightParams(1, 5))
+
+    val attriBulder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(attriBulder, tensor, ModuleSerializer.tensorType)
+    val attr = attriBulder.build
+    val retrievedValue = DataConverter.getAttributeValue(attr)
+    attr.getDataType should be (DataType.TENSOR)
+
+    retrievedValue.hashCode() should be (tensor.hashCode())
+  }
+
+  "Array of QuantizedTensor" should "work properly" in {
+    val bytes = new Array[Byte](5)
+    val min = Array[Float]('H')
+    val max = Array[Float]('O')
+    val sum = Array[Float]("HELLO".sum)
+    "HELLO".zipWithIndex.foreach(x => bytes(x._2) = x._1.toByte)
+    bytes.foreach(x => println(x.toChar))
+    val tensor1 = QuantizedTensor[Float](bytes, max, min, sum, Array(1, 5),
+      LinearWeightParams(1, 5))
+    val tensor2 = QuantizedTensor[Float](bytes, max, min, sum, Array(1, 5),
+      LinearWeightParams(1, 5))
+    val array = new Array[QuantizedTensor[Float]](2)
+    array(0) = tensor1
+    array(1) = tensor2
+
+    val attriBulder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(attriBulder, array,
+      universe.typeOf[Array[QuantizedTensor[Float]]])
+    val attr = attriBulder.build
+    val retrievedValue = DataConverter.getAttributeValue(attr)
+//    attr.getDataType should be (DataType.TENSOR)
+
+    println("")
+  }
 }

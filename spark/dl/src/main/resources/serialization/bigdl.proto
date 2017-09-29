@@ -50,6 +50,11 @@ enum InputDataFormat {
     NHWC = 1;
 }
 
+enum TensorType {
+    DENSE = 0;
+    QUANT = 1;
+}
+
 message InitMethod {
     InitMethodType methodType = 1;
     repeated double data = 2;
@@ -64,6 +69,7 @@ message BigDLTensor{
     bool isScalar = 7; // is scalar tensor
     TensorStorage storage = 8; // reference to storage
     int32 id = 9; // tensor ID, used for tensor sharing
+    TensorType tensorType = 6;
 }
 
 message TensorStorage {
@@ -141,6 +147,7 @@ message AttrValue {
         ArrayValue arrayValue = 15; //array value of any type
         InputDataFormat dataFormatValue = 16; // data format
         google.protobuf.Any customValue = 17; // custom value
+        bytes bytesValue = 18;
     }
 }
 message NameAttrList {
