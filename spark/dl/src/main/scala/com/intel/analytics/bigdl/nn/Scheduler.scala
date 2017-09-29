@@ -38,7 +38,8 @@ import scala.reflect.ClassTag
  * @tparam T
  */
 private[bigdl] class Scheduler[T] (
-    inputNodes: Seq[ModuleNode[T]], outputNodes: Seq[ModuleNode[T]]
+    inputNodes: Seq[ModuleNode[T]], outputNodes: Seq[ModuleNode[T]],
+    executableNodes: Set[String] = null
   ) extends Serializable {
 
   import Scheduler._
@@ -81,7 +82,9 @@ private[bigdl] class Scheduler[T] (
   def fetch(): ModuleNode[T] = {
     var node = readyQueue.dequeue()
     while (nodeStatus.isConst(node) || node.element.isInstanceOf[ControlDependency[_]]) {
-      schedule(node)
+      if (!nodeStatus.isConst(node)) {
+        schedule(node)
+      }
       node = readyQueue.dequeue()
     }
     node
@@ -92,19 +95,21 @@ private[bigdl] class Scheduler[T] (
    * @param node
    */
   def schedule(node: ModuleNode[T]): Unit = {
-    // Update status of current node
-    nodeStatus(node) = if (node.prevNodes.length == 0) {
-      if (node.element.isInstanceOf[com.intel.analytics.bigdl.nn.tf.Const[_, _]]) {
-        Const()
+    if (!nodeStatus.isConst(node)) {
+      // Update status of current node
+      nodeStatus(node) = if (node.prevNodes.length == 0) {
+        if (node.element.isInstanceOf[com.intel.analytics.bigdl.nn.tf.Const[_, _]]) {
+          Const()
+        } else {
+          Ready()
+        }
       } else {
-        Ready()
-      }
-    } else {
-      val constNodes = node.prevNodes.filter(nodeStatus.isConst(_))
-      if (constNodes.length == node.prevNodes.length) {
-        Const()
-      } else {
-        Ready()
+        val constNodes = node.prevNodes.filter(nodeStatus.isConst(_))
+        if (constNodes.length == node.prevNodes.length) {
+          Const()
+        } else {
+          Ready()
+        }
       }
     }
 
@@ -121,7 +126,7 @@ private[bigdl] class Scheduler[T] (
   private def selectNexts(candidateNodes: Seq[ModuleNode[T]], curNode: ModuleNode[T]): Unit = {
     val nodeSet = new mutable.LinkedHashSet[ModuleNode[T]]()
     candidateNodes.foreach(nodeSet.add(_))  // remove duplicate nodes and keep the order
-    nodeSet.foreach(nextNode => {
+    nodeSet.filter(n => executableNodes.contains(n.element.getName())).foreach(nextNode => {
       if (nextNode.element.isInstanceOf[MergeOps[_]]) {
         val merge = nextNode.element.asInstanceOf[MergeOps[_]]
         require(nodeStatus.notExecuted(nextNode), s"Merge node(${nextNode.element.getName()}) " +
