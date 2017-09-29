@@ -16,16 +16,17 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.{Activity, TensorModule}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.nn.DecoderInputType.DecoderInputType
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
+import com.intel.analytics.bigdl.utils.{T, Table}
 
 class Seq2seq[T: ClassTag](encoderCells: Array[Cell[T]], decoderCells: Array[Cell[T]],
   outputLength: Int, broadcastState: Boolean = false,
-  decoderInputType: DecoderInputType = DecoderInputType.ENCODERINPUT)
+  decoderInputType: DecoderInputType = DecoderInputType.USERINPUT)
   (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   var states: Array[Activity] = null
   var recs = new Array[Recurrent[T]](encoderCells.length)
@@ -42,6 +43,8 @@ class Seq2seq[T: ClassTag](encoderCells: Array[Cell[T]], decoderCells: Array[Cel
    
   val decoder = if (decoderCells.length == 1) RecurrentDecoder(outputLength).add(decoderCells.head)
     else RecurrentDecoder(outputLength).add(MultiCell(decoderCells))
+
+  val module: AbstractModule[Activity, Activity, T] = Sequential().add(encoder).add(decoder)
   
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim == 3 || input.dim == 5 || input.dim == 6,
@@ -54,13 +57,13 @@ class Seq2seq[T: ClassTag](encoderCells: Array[Cell[T]], decoderCells: Array[Cel
       states = new Array[Activity](encoderCells.length)
       var i = 0
       while (i < encoderCells.length) {
-        states(i) = recs(i).getState()
+        states(i) = recs(i).getHiddenState()
         i += 1
       }
       if (decoderCells.length == 1) {
-        decoder.setState(states(i - 1))
+        decoder.setHiddenState(states.head)
       } else {
-        decoder.setStates(states)
+        decoder.setHiddenStates(states)
       }
     }
 
@@ -68,7 +71,7 @@ class Seq2seq[T: ClassTag](encoderCells: Array[Cell[T]], decoderCells: Array[Cel
     decoderInputType match {
       case DecoderInputType.ENCODEROUTPUT =>
         decoderInput = encoderOutput.select(2, encoderOutput.size(2))
-      case DecoderInputType.ENCODERINPUT => decoderInput = input.select(2, input.size(2))
+      case DecoderInputType.USERINPUT => decoderInput = input.select(2, input.size(2))
       case DecoderInputType.ZEROS => decoderInput =
         Tensor[T](Array(_outputSize(0)) ++ _outputSize.drop(2))
       case _ => throw new IllegalArgumentException("Unknown decodeInput mode")
@@ -93,13 +96,13 @@ class Seq2seq[T: ClassTag](encoderCells: Array[Cell[T]], decoderCells: Array[Cel
     val gradInputDecoder = decoder.backward(decoderInput, gradOutput)
     if (broadcastState) {
       if (decoderCells.length == 1) {
-        val gradState = decoder.getGradState()
-        recs(encoderCells.length - 1).setGradState(gradState)
+        val gradState = decoder.getGradHiddenState()
+        recs(encoderCells.length - 1).setGradHiddenState(gradState)
       } else {
-        val gradStates = decoder.getGradStates()
+        val gradStates = decoder.getGradHiddenStates()
         var i = 0
-        while ( i < gradStates.length) {
-          recs(i).setGradState(gradStates(i))
+        while (i < gradStates.length) {
+          recs(i).setGradHiddenState(gradStates(i))
           i += 1
         }
       }
@@ -108,7 +111,7 @@ class Seq2seq[T: ClassTag](encoderCells: Array[Cell[T]], decoderCells: Array[Cel
     decoderInputType match {
       case DecoderInputType.ENCODEROUTPUT =>
         encoder.backward(input, gradInputDecoder).toTensor
-      case DecoderInputType.ENCODERINPUT => encoder.backward(input,
+      case DecoderInputType.USERINPUT => encoder.backward(input,
         Tensor[T](encoderOutput.size())).toTensor
       case DecoderInputType.ZEROS => gradInput = encoder.backward(input,
         Tensor[T](encoderOutput.size())).toTensor
@@ -118,12 +121,20 @@ class Seq2seq[T: ClassTag](encoderCells: Array[Cell[T]], decoderCells: Array[Cel
     
     gradInput
   }
+
+  override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
+    module.parameters()
+  }
+
+  override def getParametersTable(): Table = {
+    module.getParametersTable()
+  }
 }
 
 object Seq2seq {
   def apply[@specialized(Float, Double) T: ClassTag](encoderCells: Array[Cell[T]],
     decoderCells: Array[Cell[T]], outputLength: Int, broadcastState: Boolean = false,
-    decoderInput: DecoderInputType = DecoderInputType.ENCODERINPUT)
+    decoderInput: DecoderInputType = DecoderInputType.USERINPUT)
     (implicit ev: TensorNumeric[T]): Seq2seq[T] = {
     new Seq2seq[T](encoderCells, decoderCells, outputLength, broadcastState, decoderInput)
   }
@@ -131,5 +142,5 @@ object Seq2seq {
 
 object DecoderInputType extends Enumeration {
   type DecoderInputType = Value
-  val ZEROS, ENCODEROUTPUT, ENCODERINPUT = Value
+  val ZEROS, ENCODEROUTPUT, USERINPUT = Value
 }

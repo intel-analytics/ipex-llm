@@ -242,7 +242,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     initHidden(outputSize.drop(2))
     cloneCells()
 
-    currentInput(hidDim) = if (initState != null) initState
+    currentInput(hidDim) = if (initHiddenState != null) initHiddenState
     else hidden
 
     while (i <= times) {
@@ -257,26 +257,26 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     output
   }
 
-  def getState(): Activity = {
+  def getHiddenState(): Activity = {
     require(cells != null && cells(times - 1).output != null,
-      "getState need to be called after updateOutput")
+      "getHiddenState need to be called after updateOutput")
     cells(times - 1).output.toTable(hidDim)
   }
 
-  protected var initState: Activity = null
-  def setState(state: Activity): Unit = {
-    initState = state
+  protected var initHiddenState: Activity = null
+  def setHiddenState(hiddenState: Activity): Unit = {
+    initHiddenState = hiddenState
   }
 
-  def getGradState(): Activity = {
+  def getGradHiddenState(): Activity = {
     require(cells != null && cells(0).gradInput != null,
-      "getGradState need to be called after backward")
+      "getGradHiddenState need to be called after backward")
     cells(0).gradInput.toTable(hidDim)
   }
 
-  protected var initGradState: Activity = null
-  def setGradState(state: Activity): Unit = {
-    initGradState = state
+  protected var initGradHiddenState: Activity = null
+  def setGradHiddenState(gradHiddenState: Activity): Unit = {
+    initGradHiddenState = gradHiddenState
   }
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
@@ -296,7 +296,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     while (i >= 1) {
       currentGradOutput(inputDim) = Recurrent.selectCopy(gradOutput, i, gradBuffer)
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
-      else if (initState == null) hidden else initState
+      else if (initHiddenState == null) hidden else initHiddenState
       _input(inputDim) = Recurrent.selectCopy(outputCell, i, outputBuffer)
 
       if (i == 1) {
@@ -333,7 +333,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     while (i >= 1) {
       currentGradOutput(inputDim) = Recurrent.selectCopy(gradOutput, i, gradBuffer)
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
-      else if (initState == null) hidden else initState
+      else if (initHiddenState == null) hidden else initHiddenState
       _input(inputDim) = Recurrent.selectCopy(outputCell, i, outputBuffer)
 
       cells(i - 1).updateGradInput(_input, currentGradOutput)
@@ -354,10 +354,10 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     while (i >= 1) {
       currentGradOutput(inputDim) = Recurrent.selectCopy(gradOutput, i, gradBuffer)
       currentGradOutput(hidDim) = if (i != times) cells(i).gradInput.toTable(hidDim)
-        else if (initGradState == null) gradHidden else initGradState
+        else if (initGradHiddenState == null) gradHidden else initGradHiddenState
 
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
-      else if (initState == null) hidden else initState
+      else if (initHiddenState == null) hidden else initHiddenState
       _input(inputDim) = Recurrent.selectCopy(outputCell, i, outputBuffer)
       if (i == 1) {
         cells(i - 1).regluarized(true)
@@ -460,8 +460,8 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     cells.foreach(x => x.clearState())
     cells.clear()
     timeBuffer.clear()
-    initState = null
-    initGradState = null
+    initHiddenState = null
+    initGradHiddenState = null
     outputBuffer.set()
     gradBuffer.set()
     this

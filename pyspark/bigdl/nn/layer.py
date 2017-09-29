@@ -1046,7 +1046,7 @@ class Recurrent(Container):
         
         :return: list of hidden state and cell
         """
-        state = callBigDlFunc(self.bigdl_type, "getState", self.value)
+        state = callBigDlFunc(self.bigdl_type, "getHiddenState", self.value)
         for idx, tensor in enumerate(state):
                 state[idx] = tensor.to_ndarray()
 
@@ -1057,7 +1057,7 @@ class Recurrent(Container):
         set hidden state and cell at first time step.
         """
         jstate, state_is_table = self.check_input(state)
-        callBigDlFunc(self.bigdl_type, "setState", self.value, jstate, state_is_table)
+        callBigDlFunc(self.bigdl_type, "setHiddenState", self.value, jstate, state_is_table)
 
 class RecurrentDecoder(Recurrent):
     '''
@@ -1078,20 +1078,20 @@ class RecurrentDecoder(Recurrent):
     def __init__(self, output_length, bigdl_type="float"):
         super(Recurrent, self).__init__(None, bigdl_type, output_length)
 
-    def get_states(self):
+    def get_hidden_states(self):
         """
         get hidden states at last time step, only work for MultiCell.
 
         :return: list of hidden state
         """
-        states = callBigDlFunc(self.bigdl_type, "getStates", self.value)
+        states = callBigDlFunc(self.bigdl_type, "getHiddenStates", self.value)
         for state in states:
             for idx, tensor in enumerate(state):
                 state[idx] = tensor.to_ndarray()
     
         return states
 
-    def set_states(self, states):
+    def set_hidden_states(self, states):
         """
         set hidden state and cell at first time step, only work for MultiCell.
         """
@@ -1101,7 +1101,7 @@ class RecurrentDecoder(Recurrent):
             jstate, state_is_table = self.check_input(state)
             jStates.append(jstate)
             state_is_tables.append(state_is_table)
-        callBigDlFunc(self.bigdl_type, "setStates", self.value, jStates, state_is_tables)
+        callBigDlFunc(self.bigdl_type, "setHiddenStates", self.value, jStates, state_is_tables)
 
 class LSTM(Layer):
     '''

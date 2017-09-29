@@ -675,7 +675,7 @@ class LSTMPeepholeSpec  extends TorchSpec {
 
     val output = model.forward(input).toTensor.transpose(1, 2)
 
-    rec.getState().toTable.foreach { case ((key: Int, value: Tensor[Double])) =>
+    rec.getHiddenState().toTable.foreach { case ((key: Int, value: Tensor[Double])) =>
       value.map(luaState(key), (v1, v2) => {
         assert(abs(v1 - v2) <= 1e-8)
         v1
@@ -704,7 +704,7 @@ class LSTMPeepholeSpec  extends TorchSpec {
       Tensor[Double](batchSize, hiddenSize).rand)
     val gradOutput = Tensor[Double](batchSize, seqLength, hiddenSize).rand
     val rec = Recurrent()
-    rec.setState(state)
+    rec.setHiddenState(state)
     val model = Sequential()
       .add(rec
         .add(LSTMPeephole(inputSize, hiddenSize)))

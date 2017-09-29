@@ -41,29 +41,29 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
   (implicit ev: TensorNumeric[T]) extends Recurrent[T] {
 
   times = seqLength
-  private var initStates: Array[Activity] = null
-  private var initGradStates: Array[Activity] = null
-  private var states: Array[Activity] = null
-  private var gradStates: Array[Activity] = null
+  private var initHiddenStates: Array[Activity] = null
+  private var initGradHiddenStates: Array[Activity] = null
+  private var hiddenStates: Array[Activity] = null
+  private var gradHiddenStates: Array[Activity] = null
 
-  def setStates(states: Array[Activity]): Unit = {
-    require(topology.isInstanceOf[MultiCell[T]], "setStates only support for MultiCell")
-    initStates = states
+  def setHiddenStates(hiddenStates: Array[Activity]): Unit = {
+    require(topology.isInstanceOf[MultiCell[T]], "setHiddenStates only support for MultiRNNCell")
+    initHiddenStates = hiddenStates
   }
 
-  def getStates(): Array[Activity] = {
-    require(topology.isInstanceOf[MultiCell[T]], "getStates only support for MultiCell")
-    states
+  def getHiddenStates(): Array[Activity] = {
+    require(topology.isInstanceOf[MultiCell[T]], "getHiddenStates only support for MultiRNNCell")
+    hiddenStates
   }
 
-  def setGradStates(gradStates: Array[Activity]): Unit = {
+  def setGradHiddenStates(gradHiddenStates: Array[Activity]): Unit = {
     require(topology.isInstanceOf[MultiCell[T]], "setGradStates only support for MultiCell")
-    initGradStates = states
+    initGradHiddenStates = hiddenStates
   }
 
-  def getGradStates(): Array[Activity] = {
+  def getGradHiddenStates(): Array[Activity] = {
     require(topology.isInstanceOf[MultiCell[T]], "getGradStates only support for MultiCell")
-    gradStates
+    gradHiddenStates
   }
 
   private def initHiddens(sizes: Array[Int]): Unit = {
@@ -71,9 +71,9 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
     val multiCells = topology.asInstanceOf[MultiCell[T]].cells
 
     var i = 0
-    while(i < states.size) {
-      states(i) = multiCells(i).hidResize(null, batchSize, imageSize)
-      gradStates(i) = multiCells(i).hidResize(null, batchSize, imageSize)
+    while(i < hiddenStates.size) {
+      hiddenStates(i) = multiCells(i).hidResize(null, batchSize, imageSize)
+      gradHiddenStates(i) = multiCells(i).hidResize(null, batchSize, imageSize)
       i += 1
     }
   }
@@ -138,30 +138,30 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
       initHidden(outputSize.drop(1))
       cloneCells()
 
-      currentInput(hidDim) = if (initState != null) initState
+      currentInput(hidDim) = if (initHiddenState != null) initHiddenState
       else hidden
     } else {
-      if (states == null) {
+      if (hiddenStates == null) {
         cells.clear()
         cells += topology
-        states = new Array[Activity](topology.asInstanceOf[MultiCell[T]].cells.length)
+        hiddenStates = new Array[Activity](topology.asInstanceOf[MultiCell[T]].cells.length)
       }
 
-      if (gradStates == null) {
-        gradStates = new Array[Activity](topology.asInstanceOf[MultiCell[T]].cells.length)
+      if (gradHiddenStates == null) {
+        gradHiddenStates = new Array[Activity](topology.asInstanceOf[MultiCell[T]].cells.length)
       }
       
       initHiddens(outputSize.drop(1))
-      if (initStates != null) {
-        states = initStates.clone()
+      if (initHiddenStates != null) {
+        hiddenStates = initHiddenStates.clone()
       }
-      if (initGradStates != null) {
-        gradStates = initGradStates.clone()
+      if (initGradHiddenStates != null) {
+        gradHiddenStates = initGradHiddenStates.clone()
       }
       cloneCells()
       cells.foreach{x =>
-        x.asInstanceOf[MultiCell[T]].states = states
-        x.asInstanceOf[MultiCell[T]].gradStates = gradStates
+        x.asInstanceOf[MultiCell[T]].states = hiddenStates
+        x.asInstanceOf[MultiCell[T]].gradStates = gradHiddenStates
       }
     }
 
@@ -210,7 +210,7 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
   override def backward(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     val st = System.nanoTime
     gradInput.resizeAs(output)
-    currentGradOutput(hidDim) = if (initGradState == null) gradHidden else initGradState
+    currentGradOutput(hidDim) = if (initGradHiddenState == null) gradHidden else initGradHiddenState
     var i = times
     while (i >= 1) {
       currentGradOutput(inputDim) = if (i == times) {
@@ -230,7 +230,7 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
       }
 
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
-      else if (initState == null) hidden else initState
+      else if (initHiddenState == null) hidden else initHiddenState
       _input(inputDim) = Recurrent.selectCopy(outputCell, i, outputBuffer)
 
       if (i == 1) {

@@ -11,13 +11,13 @@ module = Recurrent()
 
 Recurrent module is a container of rnn cells. Different types of rnn cells can be added using add() function. Don't support multiCell for performance issue. Use several Recurrent(cell) instead.  
 
-Recurrent supports returning state and cell of its rnn cells at last time step by using getState. output of getState
-is an Activity and it can be directly used for setState function, which will set hidden state and cell at the first time step.  
+Recurrent supports returning state and cell of its rnn cells at last time step by using getHiddenState. output of getHiddenState
+is an Activity and it can be directly used for setHiddenState function, which will set hidden state and cell at the first time step.  
 
-If contained cell is simple rnn, getState return value is a tensor(hidden state) which is `batch x hiddenSize`.  
-If contained cell is lstm, getState return value is a table [hidden state, cell], both size is `batch x hiddenSize`.  
-If contained cell is convlstm, getState return value is a table [hidden state, cell], both size is `batch x outputPlane x height x width`.  
-If contained cell is convlstm3D, getState return value is a table [hidden state, cell], both size is `batch x outputPlane x height x width x length`.
+If contained cell is simple rnn, getHiddenState return value is a tensor(hidden state) which is `batch x hiddenSize`.  
+If contained cell is lstm, getHiddenState return value is a table [hidden state, cell], both size is `batch x hiddenSize`.  
+If contained cell is convlstm, getHiddenState return value is a table [hidden state, cell], both size is `batch x outputPlane x height x width`.  
+If contained cell is convlstm3D, getHiddenState return value is a table [hidden state, cell], both size is `batch x outputPlane x height x width x length`.
 
 **Scala example:**
 ```scala
@@ -37,8 +37,8 @@ for (i <- 1 to 5) {
 
 val output = module.forward(input)
 
-val state = module.getState()
-module.setState(state)
+val state = module.getHiddenState()
+module.setHiddenState(state)
 
 > input
 (1,.,.) =
@@ -175,8 +175,8 @@ With RecurrentDecoder, inputsize and hiddensize of the cell must be the same.
 
 Different types of rnn cells can be added using add() function.
 
-RecurrentDecoder supports returning state and cell of its rnn cells at last time step by using getState.
-If contained cell is MultiCell, use getStates/setStates instead.
+RecurrentDecoder supports returning hidden state and cell of its rnn cells at last time step by using getHiddenState.
+If contained cell is MultiRNNCell, use getHiddenStates/setHiddenStates instead.
 
 Parameters:
 
@@ -1604,8 +1604,8 @@ val model = RecurrentDecoder(seqLength).add(MultiCell[Float](cells))
 val output = model.forward(input)
 val gradientInput = model.backward(input, gradOutput)
 
-val states = model.getStates()
-model.setStates(states)
+val states = model.getHiddenStates()
+model.setHiddenStates(states)
 -> print(output)
 (1,1,1,.,.) =
 0.035993136	0.04062611	0.038863156	
