@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{File, Table}
-import serialization.Bigdl.BigDLModule
+import serialization.Bigdl.{BigDLModule, DataType, TensorStorage}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -47,7 +47,10 @@ object ModuleLoader {
     cis.setSizeLimit(Integer.MAX_VALUE)
     modelBuilder.mergeFrom(cis)
     val bigDLModel = modelBuilder.build()
-    ModuleSerializer.load(bigDLModel).module
+    val storages = new mutable.HashMap[Int, TensorStorage]()
+      .asInstanceOf[mutable.HashMap[Int, Any]]
+    // loadAllStorages(bigDLModel, storages)
+    ModuleSerializer.load(DeserializeContext(bigDLModel, storages, ProtoStorageType)).module
   }
 
   /**
@@ -61,7 +64,7 @@ object ModuleLoader {
    */
 
   def loadFromDefinition[T : ClassTag](definition : AbstractModule[Activity, Activity, T],
-  modelPath : String, layers : mutable.HashSet[String] = null)(implicit ev: TensorNumeric[T])
+    modelPath : String, layers : mutable.HashSet[String] = null)(implicit ev: TensorNumeric[T])
   : Unit = {
     val loadedModule = loadFromFile(modelPath)
     val layersToCopy = if (layers == null) {
@@ -141,11 +144,13 @@ object ModulePersister {
    * @tparam T data type
    */
   def saveToFile[T: ClassTag](modelPath: String, module: AbstractModule[Activity, Activity, T],
-                              overwrite: Boolean = false)(implicit ev: TensorNumeric[T]): Unit = {
-
+                              overwrite: Boolean = false)
+                             (implicit ev: TensorNumeric[T]): Unit = {
     val bigDLModule = ModuleData(module
       , new ArrayBuffer[String](), new ArrayBuffer[String]())
-    val bigDLModel = ModuleSerializer.serialize(bigDLModule)
+    val storages = new mutable.HashMap[Int, Any]()
+    val context = SerializeContext(bigDLModule, storages, ProtoStorageType)
+    val bigDLModel = ModuleSerializer.serialize(context).bigDLModule
     File.saveBytes(bigDLModel.toByteArray, modelPath, overwrite)
   }
 
@@ -161,7 +166,9 @@ object ModulePersister {
     module : AbstractModule[Activity, Activity, T],
     overwrite : Boolean = false)(implicit ev: TensorNumeric[T]) : Unit = {
     val bigDLModule = ModuleData(module, new ArrayBuffer[String](), new ArrayBuffer[String]())
-    val bigDLModel = ModuleSerializer.serialize(bigDLModule)
+    val storages = new mutable.HashMap[Int, Any]()
+    val context = SerializeContext(bigDLModule, storages, ProtoStorageType)
+    val bigDLModel = ModuleSerializer.serialize(context).bigDLModule
     val bigDLModelWithoutWeightsAndBias = BigDLModule.newBuilder(bigDLModel)
     cleantWeightAndBias(bigDLModelWithoutWeightsAndBias)
     val model = bigDLModelWithoutWeightsAndBias.build

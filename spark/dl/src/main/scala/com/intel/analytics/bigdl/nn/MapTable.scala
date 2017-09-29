@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
-import com.intel.analytics.bigdl.utils.serializer.{ContainerSerializable, ModuleData}
+import com.intel.analytics.bigdl.utils.serializer.{ContainerSerializable, DeserializeContext, ModuleData, SerializeContext}
 import serialization.Bigdl.BigDLModule
 
 import scala.reflect.ClassTag
@@ -133,18 +133,18 @@ object MapTable extends ContainerSerializable {
     new MapTable[T](module)
   }
 
-  override def doLoadModule[T: ClassTag](model : BigDLModule)
+  override def doLoadModule[T: ClassTag](context: DeserializeContext)
     (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
-    val mapTable = super.doLoadModule(model).asInstanceOf[MapTable[T]]
+    val mapTable = super.doLoadModule(context).asInstanceOf[MapTable[T]]
     require(mapTable.modules.size >=1, "sub module should not be empty")
     mapTable.add(mapTable.modules(0))
     mapTable
   }
 
-  override def doSerializeModule[T: ClassTag](module : ModuleData[T],
-                                             mapBuilder : BigDLModule.Builder)
+  override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
+                                              mapBuilder : BigDLModule.Builder)
                                            (implicit ev: TensorNumeric[T]) : Unit = {
-    val mapTable = module.module.asInstanceOf[MapTable[T]]
+    val mapTable = context.moduleData.module.asInstanceOf[MapTable[T]]
     val subModules = mapTable.modules
     require(subModules.size >=1, "sub module should not be empty")
     // `modules` are created during forward() by 'n' times of the same module depends on input size,
@@ -152,6 +152,6 @@ object MapTable extends ContainerSerializable {
     val singleModule = subModules(0)
     mapTable.modules.clear()
     mapTable.modules.append(singleModule)
-    super.doSerializeModule(module, mapBuilder)
+    super.doSerializeModule(context, mapBuilder)
   }
 }
