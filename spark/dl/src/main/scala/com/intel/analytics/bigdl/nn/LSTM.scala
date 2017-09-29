@@ -54,8 +54,7 @@ class LSTM[T : ClassTag] (
   val p: Double = 0,
   var wRegularizer: Regularizer[T] = null,
   var uRegularizer: Regularizer[T] = null,
-  var bRegularizer: Regularizer[T] = null,
-  var includeTime : Boolean = true
+  var bRegularizer: Regularizer[T] = null
 )
   (implicit ev: TensorNumeric[T])
   extends Cell[T](
@@ -67,15 +66,6 @@ class LSTM[T : ClassTag] (
 
   override var cell: AbstractModule[Activity, Activity, T] = buildModel()
 
-//  override var preTopology: AbstractModule[Activity, Activity, T] = if (p != 0) {
-//    null
-//  } else if (includeTime) {
-//    TimeDistributed[T](Linear(inputSize, 4 * hiddenSize,
-//      wRegularizer = wRegularizer, bRegularizer = bRegularizer))
-//  } else {
-//    Linear(inputSize, 4 * hiddenSize,
-//      wRegularizer = wRegularizer, bRegularizer = bRegularizer)
-//  }
   override var preTopology: TensorModule[T] = if (p != 0) {
     null
   } else {
@@ -214,10 +204,9 @@ object LSTM {
     p: Double = 0,
     wRegularizer: Regularizer[T] = null,
     uRegularizer: Regularizer[T] = null,
-    bRegularizer: Regularizer[T] = null,
-    includeTime: Boolean = true
+    bRegularizer: Regularizer[T] = null
   )
     (implicit ev: TensorNumeric[T]): LSTM[T] = {
-    new LSTM[T](inputSize, hiddenSize, p, wRegularizer, uRegularizer, bRegularizer, includeTime)
+    new LSTM[T](inputSize, hiddenSize, p, wRegularizer, uRegularizer, bRegularizer)
   }
 }
