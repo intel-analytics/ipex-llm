@@ -82,7 +82,9 @@ private[bigdl] class Scheduler[T] (
   def fetch(): ModuleNode[T] = {
     var node = readyQueue.dequeue()
     while (nodeStatus.isConst(node) || node.element.isInstanceOf[ControlDependency[_]]) {
-      schedule(node)
+      if (!nodeStatus.isConst(node)) {
+        schedule(node)
+      }
       node = readyQueue.dequeue()
     }
     node
@@ -93,19 +95,21 @@ private[bigdl] class Scheduler[T] (
    * @param node
    */
   def schedule(node: ModuleNode[T]): Unit = {
-    // Update status of current node
-    nodeStatus(node) = if (node.prevNodes.length == 0) {
-      if (node.element.isInstanceOf[com.intel.analytics.bigdl.nn.tf.Const[_, _]]) {
-        Const()
+    if (!nodeStatus.isConst(node)) {
+      // Update status of current node
+      nodeStatus(node) = if (node.prevNodes.length == 0) {
+        if (node.element.isInstanceOf[com.intel.analytics.bigdl.nn.tf.Const[_, _]]) {
+          Const()
+        } else {
+          Ready()
+        }
       } else {
-        Ready()
-      }
-    } else {
-      val constNodes = node.prevNodes.filter(nodeStatus.isConst(_))
-      if (constNodes.length == node.prevNodes.length) {
-        Const()
-      } else {
-        Ready()
+        val constNodes = node.prevNodes.filter(nodeStatus.isConst(_))
+        if (constNodes.length == node.prevNodes.length) {
+          Const()
+        } else {
+          Ready()
+        }
       }
     }
 
