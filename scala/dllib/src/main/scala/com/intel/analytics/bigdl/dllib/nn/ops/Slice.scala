@@ -51,6 +51,9 @@ class Slice[T: ClassTag](
       outputNarrow = outputNarrow.narrow(i + 1, begin(i) + 1, realSize)
       i += 1
     }
+    if (output.getType() != input.getType()) {
+      output = input.emptyInstance()
+    }
     output.resizeAs(outputNarrow)
     output.forceCopy(outputNarrow)
 
