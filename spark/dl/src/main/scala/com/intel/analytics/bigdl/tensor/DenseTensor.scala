@@ -414,13 +414,6 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
     this
   }
 
-  override def forceCopy(other: Tensor[_]): Tensor[T] = {
-    require(this.getType() == other.getType(),
-      "forceCopy should copy from a tensor of the same type")
-    DenseTensor.copy(this, other.asInstanceOf[Tensor[T]])
-    this
-  }
-
   override def narrow(dim: Int, index: Int, size: Int): Tensor[T] = {
     val result = DenseTensor.newWithTensor(this)
     DenseTensor.narrow(result, null, dim - 1, index - 1, size)

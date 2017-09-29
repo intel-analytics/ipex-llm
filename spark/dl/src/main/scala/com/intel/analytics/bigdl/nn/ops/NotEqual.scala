@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
-class Equal[T: ClassTag]()
+class NotEqual[T: ClassTag]()
   (implicit ev: TensorNumeric[T]) extends Operation[Table, Tensor[Boolean], T] {
 
   output = Activity.allocate[Tensor[Boolean], Boolean]()
@@ -35,42 +35,42 @@ class Equal[T: ClassTag]()
         output.zipWith[Float, Float](
           input[Tensor[Float]](1),
           input[Tensor[Float]](2),
-          (a, b) => a == b)
+          (a, b) => a != b)
       case BooleanType =>
         output.zipWith[Boolean, Boolean](
           input[Tensor[Boolean]](1),
           input[Tensor[Boolean]](2),
-          (a, b) => a == b)
+          (a, b) => a != b)
       case DoubleType =>
         output.zipWith[Double, Double](
           input[Tensor[Double]](1),
           input[Tensor[Double]](2),
-          (a, b) => a == b)
+          (a, b) => a != b)
       case CharType =>
         output.zipWith[Char, Char](
           input[Tensor[Char]](1),
           input[Tensor[Char]](2),
-          (a, b) => a == b)
+          (a, b) => a != b)
       case StringType =>
         output.zipWith[ByteString, ByteString](
           input[Tensor[ByteString]](1),
           input[Tensor[ByteString]](2),
-          (a, b) => a.equals(b))
+          (a, b) => a != b)
       case LongType =>
         output.zipWith[Long, Long](
           input[Tensor[Long]](1),
           input[Tensor[Long]](2),
-          (a, b) => a == b)
+          (a, b) => a != b)
       case ShortType =>
         output.zipWith[Short, Short](
           input[Tensor[Short]](1),
           input[Tensor[Short]](2),
-          (a, b) => a == b)
+          (a, b) => a != b)
       case IntType =>
         output.zipWith[Int, Int](
           input[Tensor[Int]](1),
           input[Tensor[Int]](2),
-          (a, b) => a == b)
+          (a, b) => a != b)
       case _ => throw new RuntimeException("Unsupported tensor type")
     }
 
@@ -78,7 +78,7 @@ class Equal[T: ClassTag]()
   }
 }
 
-object Equal {
+object NotEqual {
   def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): Operation[Activity, Activity, T]
-  = ModuleToOperation[T](new Equal())
+  = ModuleToOperation[T](new NotEqual())
 }

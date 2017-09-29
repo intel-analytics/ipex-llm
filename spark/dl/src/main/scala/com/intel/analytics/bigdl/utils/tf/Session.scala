@@ -327,7 +327,8 @@ class BigDLSessionImpl[T: ClassTag](
       endPoints,
       ByteOrder.LITTLE_ENDIAN,
       "",
-      Some(context)
+      Some(context),
+      generatedBackward = false
     ).asInstanceOf[Graph[T]]
 
 
@@ -379,7 +380,8 @@ class BigDLSessionImpl[T: ClassTag](
       endPoints,
       ByteOrder.LITTLE_ENDIAN,
       "",
-      Some(context)
+      Some(context),
+      generatedBackward = false
     ).asInstanceOf[Graph[T]]
 
     val inputRdds = inputNodes.map { node => // this is the input op

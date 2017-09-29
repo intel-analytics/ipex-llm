@@ -50,7 +50,7 @@ class ParseExampleSpec extends FlatSpec with Matchers {
     val exampleParser = new ParseExample[Float](3,
       Seq(FloatType, LongType, StringType), Seq(Array(3), Array(3), Array()))
 
-    val serialized = Tensor[ByteString](Array(ByteString.copyFrom(data)), Array[Int]())
+    val serialized = Tensor[ByteString](Array(ByteString.copyFrom(data)), Array[Int](1))
     val names = Tensor[ByteString]()
     val key1 = Tensor[ByteString](Array(ByteString.copyFromUtf8("floatFeature")), Array[Int]())
     val key2 = Tensor[ByteString](Array(ByteString.copyFromUtf8("longFeature")), Array[Int]())

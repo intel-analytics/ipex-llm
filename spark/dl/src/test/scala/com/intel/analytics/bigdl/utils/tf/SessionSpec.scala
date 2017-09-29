@@ -19,7 +19,7 @@ import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.nn.{CrossEntropyCriterion, MSECriterion}
 import com.intel.analytics.bigdl.optim.{SGD, Trigger}
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Engine, Table}
+import com.intel.analytics.bigdl.utils.{Engine, T, Table}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -97,7 +97,8 @@ class SessionSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val resource = getClass().getClassLoader().getResource("tf")
     val modelPath = resource.getPath() + JFile.separator + "lenet.pbtxt"
-    val filePath = resource.getPath() + JFile.separator + "mnist_test.tfrecord"
+    val filePath = resource.getPath() + JFile.separator + "mnist_train.tfrecord"
+
     val nodes = TensorflowLoader.parseTxt(modelPath)
     import scala.collection.JavaConverters._
 
@@ -118,11 +119,11 @@ class SessionSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val session = new BigDLSessionImpl[Float](newModel, sc, context)
 
     val endpoints = Seq(
-      "ParseSingleExample/SerializedDependencies"
+      "control_dependency"
     )
     val rdd = session.getRDD(endpoints)
     val result = rdd.count()
-    result should be (4)
+    result should be (10)
   }
 
 }
