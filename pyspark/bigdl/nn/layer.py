@@ -1066,11 +1066,10 @@ class RecurrentDecoder(Recurrent):
     a prediction of the next timestep based on the prediction we made from
     the previous timestep. Input for RecurrentDecoder is dynamically composed
     during training. input at t(i) is output at t(i-1), input at t(0) is
-    user input, and user input has to be batch x ???(depends on cell type)
+    user input, and user input has to be batch x recordShape
     without time information.
 
-    Different types of rnn cells can be added using add() function. Currently
-    only support lstmpeephole, convlstm, convlstm3D cell.
+    Different types of rnn cells can be added using add() function.
 
     >>> recurrent_decoder = RecurrentDecoder(output_length = 5)
     creating: createRecurrentDecoder
