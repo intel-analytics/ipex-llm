@@ -47,28 +47,28 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
   private var gradHiddenStates: Array[Activity] = null
 
   def setHiddenStates(hiddenStates: Array[Activity]): Unit = {
-    require(topology.isInstanceOf[MultiCell[T]], "setHiddenStates only support for MultiRNNCell")
+    require(topology.isInstanceOf[MultiRNNCell[T]], "setHiddenStates only support for MultiRNNCell")
     initHiddenStates = hiddenStates
   }
 
   def getHiddenStates(): Array[Activity] = {
-    require(topology.isInstanceOf[MultiCell[T]], "getHiddenStates only support for MultiRNNCell")
+    require(topology.isInstanceOf[MultiRNNCell[T]], "getHiddenStates only support for MultiRNNCell")
     hiddenStates
   }
 
   def setGradHiddenStates(gradHiddenStates: Array[Activity]): Unit = {
-    require(topology.isInstanceOf[MultiCell[T]], "setGradStates only support for MultiCell")
+    require(topology.isInstanceOf[MultiRNNCell[T]], "setGradStates only support for MultiCell")
     initGradHiddenStates = hiddenStates
   }
 
   def getGradHiddenStates(): Array[Activity] = {
-    require(topology.isInstanceOf[MultiCell[T]], "getGradStates only support for MultiCell")
+    require(topology.isInstanceOf[MultiRNNCell[T]], "getGradStates only support for MultiCell")
     gradHiddenStates
   }
 
   private def initHiddens(sizes: Array[Int]): Unit = {
     val imageSize = sizes
-    val multiCells = topology.asInstanceOf[MultiCell[T]].cells
+    val multiCells = topology.asInstanceOf[MultiRNNCell[T]].cells
 
     var i = 0
     while(i < hiddenStates.size) {
@@ -133,7 +133,7 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
      * identical elements T(output, output). One of the elements from the cell output is
      * the updated hidden. Thus the currentInput will update its hidden element with this output.
      */
-    if (!topology.isInstanceOf[MultiCell[T]]) {
+    if (!topology.isInstanceOf[MultiRNNCell[T]]) {
       // Clone N modules along the sequence dimension.
       initHidden(outputSize.drop(1))
       cloneCells()
@@ -144,11 +144,11 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
       if (hiddenStates == null) {
         cells.clear()
         cells += topology
-        hiddenStates = new Array[Activity](topology.asInstanceOf[MultiCell[T]].cells.length)
+        hiddenStates = new Array[Activity](topology.asInstanceOf[MultiRNNCell[T]].cells.length)
       }
 
       if (gradHiddenStates == null) {
-        gradHiddenStates = new Array[Activity](topology.asInstanceOf[MultiCell[T]].cells.length)
+        gradHiddenStates = new Array[Activity](topology.asInstanceOf[MultiRNNCell[T]].cells.length)
       }
       
       initHiddens(outputSize.drop(1))
@@ -160,8 +160,8 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
       }
       cloneCells()
       cells.foreach{x =>
-        x.asInstanceOf[MultiCell[T]].states = hiddenStates
-        x.asInstanceOf[MultiCell[T]].gradStates = gradHiddenStates
+        x.asInstanceOf[MultiRNNCell[T]].states = hiddenStates
+        x.asInstanceOf[MultiRNNCell[T]].gradStates = gradHiddenStates
       }
     }
 
@@ -186,7 +186,7 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
       } else {
         inputTmp
       }
-      outputCell.narrow(2, i, 1).copy(currentInput(inputDim))
+      outputCell.select(2, i).copy(currentInput(inputDim))
       cells(i - 1).updateOutput(currentInput)
       currentInput(hidDim) = cells(i - 1).output.toTable(hidDim)
       i += 1
@@ -224,7 +224,7 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
         } else {
           cells(i).gradInput.toTable[Tensor[T]](inputDim)
         }
-        gradInput.narrow(timeDim, i + 1, 1).copy(_gradInput)
+        gradInput.select(timeDim, i + 1).copy(_gradInput)
         gradOutput.select(timeDim, i).clone().add(_gradInput)
 //        gradOutput.select(timeDim, i).clone().add(cells(i).gradInput.toTable[Tensor[T]](inputDim))
       }
@@ -263,7 +263,7 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
 
     val gradInput0 = if (preTopology == null) cells(0).gradInput.toTable[Tensor[T]](inputDim)
       else preTopology.backward(input, cells(0).gradInput.toTable[Tensor[T]](inputDim)).toTensor
-    gradInput.narrow(timeDim, 1, 1).copy(gradInput0)
+    gradInput.select(timeDim, 1).copy(gradInput0)
     this.backwardTime = System.nanoTime - st
     gradInput
   }

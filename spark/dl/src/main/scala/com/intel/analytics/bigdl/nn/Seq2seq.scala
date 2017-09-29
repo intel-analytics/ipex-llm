@@ -42,7 +42,7 @@ class Seq2seq[T: ClassTag](encoderCells: Array[Cell[T]], decoderCells: Array[Cel
   }
    
   val decoder = if (decoderCells.length == 1) RecurrentDecoder(outputLength).add(decoderCells.head)
-    else RecurrentDecoder(outputLength).add(MultiCell(decoderCells))
+    else RecurrentDecoder(outputLength).add(MultiRNNCell(decoderCells))
 
   val module: AbstractModule[Activity, Activity, T] = Sequential().add(encoder).add(decoder)
   

@@ -1969,8 +1969,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       alignCorner)
   }
 
-  def createMultiCell(cells: JList[Cell[T]]): MultiCell[T] = {
-    MultiCell(cells.asScala.toArray)
+  def createMultiRNNCell(cells: JList[Cell[T]]): MultiRNNCell[T] = {
+    MultiRNNCell(cells.asScala.toArray)
   }
 
   def redirectSparkLogs(logPath: String): Unit = {

@@ -9,7 +9,7 @@ val module = Recurrent()
 module = Recurrent()
 ```
 
-Recurrent module is a container of rnn cells. Different types of rnn cells can be added using add() function. Don't support multiCell for performance issue. Use several Recurrent(cell) instead.  
+Recurrent module is a container of rnn cells. Different types of rnn cells can be added using add() function. Don't support multiRNNCell for performance issue. Use several Recurrent(cell) instead.  
 
 Recurrent supports returning state and cell of its rnn cells at last time step by using getHiddenState. output of getHiddenState
 is an Activity and it can be directly used for setHiddenState function, which will set hidden state and cell at the first time step.  
@@ -164,7 +164,7 @@ RecurrentDecoder module is a container of rnn cells which used to make
 a prediction of the next timestep based on the prediction we made from
 the previous timestep.
 
-Input for RecurrentDecoder has to be batch x ???(depends on cell type) without time information. 
+Input for RecurrentDecoder has to be batch x features(depends on cell type) without time information. 
 
 During training, input at t(i) is output at t(i-1), input at t(0) is
 user input.
@@ -1563,19 +1563,19 @@ array([[[[ 0.1       ,  0.2       ],
 ```
 ---
 
-## MultiCell ##
+## MultiRNNCell ##
 
 **Scala:**
 ```scala
-val model = MultiCell(cells = multiCells)
+val model = MultiRNNCell(cells = multiRNNCells)
 
 ```
 **Python:**
 ```python
-model = MultiCell(cells = multiCells)
+model = MultiRNNCell(cells = multiRNNCells)
 ```
 
-A cell that stack multiple simple rnn cells. Only works with RecurrentDecoder. If you want to
+A cell that stack multiple rnn cells. Only works with RecurrentDecoder. If you want to
 stack multiple cells with Recurrent. Use Sequential().add(Recurrent(cell)).add(Recurrent(cell))... instead
 
 Parameters:
@@ -1599,7 +1599,7 @@ val gradOutput = Tensor(batchSize, seqLength, hiddenSize, 3, 3).rand()
 val cells = Array(ConvLSTMPeephole(
   inputSize, hiddenSize, 3, 3, 1), ConvLSTMPeephole(
   inputSize, hiddenSize, 3, 3, 1)).asInstanceOf[Array[Cell[Float]]]
-val model = RecurrentDecoder(seqLength).add(MultiCell[Float](cells))
+val model = RecurrentDecoder(seqLength).add(MultiRNNCell[Float](cells))
 
 val output = model.forward(input)
 val gradientInput = model.backward(input, gradOutput)
@@ -1707,7 +1707,7 @@ cells = []
 cells.append(ConvLSTMPeephole(input_size, output_size, 3, 3, 1, with_peephole = False))
 cells.append(ConvLSTMPeephole(input_size, output_size, 3, 3, 1, with_peephole = False))
 
-model = RecurrentDecoder(seq_length).add(MultiCell(cells))
+model = RecurrentDecoder(seq_length).add(MultiRNNCell(cells))
 
 output = model.forward(input)
 gradient_input = model.backward(input, grad_output)
