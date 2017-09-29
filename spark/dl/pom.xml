@@ -81,6 +81,17 @@
             </exclusions>
         </dependency>
         <dependency>
+          <groupId>com.intel.analytics.bigdl.bigquant</groupId>
+          <artifactId>bigquant-java</artifactId>
+          <version>${project.version}</version>
+          <exclusions>
+            <exclusion>
+              <groupId>com.intel.analytics.bigdl.bigquant</groupId>
+              <artifactId>bigquant-native</artifactId>
+            </exclusion>
+          </exclusions>
+        </dependency>
+        <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-core_${scala.major.version}</artifactId>
             <version>${spark.version}</version>
