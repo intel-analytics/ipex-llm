@@ -43,7 +43,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
   protected val currentGradOutput = T()
   protected val gradInputCell = Tensor[T]()
   protected var outputCell = Tensor[T]()
-  protected var _input = T()
+  protected val _input = T()
   protected val batchDim = Recurrent.batchDim
   protected val timeDim = Recurrent.timeDim
   protected val inputDim = 1
@@ -119,7 +119,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     *             the left is size of images
    */
   protected def extend(sizes: Array[Int]): Unit = {
-    val imageSize = sizes
+    val stepShape = sizes
     if (hidden == null) {
       require((preTopology == null && modules.length == 1) ||
         (topology != null && preTopology != null && modules.length == 2),
@@ -131,7 +131,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
       val cell = cells.head
 
       // The cell will help initialize or resize the hidden variable.
-      hidden = cell.hidResize(hidden = null, batchSize = batchSize, imageSize)
+      hidden = cell.hidResize(hidden = null, batchSize = batchSize, stepShape)
 
       /*
        * Since the gradHidden is only used as an empty Tensor or Table during
@@ -140,7 +140,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
        */
       gradHidden = hidden
     } else {
-      cells.head.hidResize(hidden = hidden, batchSize = batchSize, imageSize)
+      cells.head.hidResize(hidden = hidden, batchSize = batchSize, stepShape)
       gradHidden = hidden
     }
     var t = cells.length

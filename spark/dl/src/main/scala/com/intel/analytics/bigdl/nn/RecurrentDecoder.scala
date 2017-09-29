@@ -34,8 +34,8 @@ import scala.reflect.ClassTag
  * user input, and user input has to be batch x ???(depends on cell type)
  * without time information.
 
- * Different types of rnn cells can be added using add() function. Currently
- * only support lstmpeephole, convlstm, convlstm3D cell.
+ * Different types of rnn cells can be added using add() function.
+ * @param seqLength sequence length of the output
  */
 class RecurrentDecoder[T : ClassTag](seqLength: Int)
   (implicit ev: TensorNumeric[T]) extends Recurrent[T] {
