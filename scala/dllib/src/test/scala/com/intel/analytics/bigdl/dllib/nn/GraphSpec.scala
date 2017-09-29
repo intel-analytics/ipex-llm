@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.models.vgg.{VggForCifar10, Vgg_16, Vgg_19}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.ops.{ControlNodes, Less}
+import com.intel.analytics.bigdl.nn.tf.Const
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -1187,6 +1188,54 @@ class GraphSpec extends FlatSpec with Matchers {
     model.stopGradient(Array("d4"))
     model.backward(Tensor[Float](T(1, 2, 3)), T(Tensor[Float](T(2, 7, 9)),
       Tensor[Float](T(1, 3, 5)))) should be(Tensor[Float](T(2, 7, 9)))
+  }
+
+  "Graph forward" should "not execute unrelated node" in {
+    val data = Identity().setName("input").inputs()
+    var isExecuted = false
+    val l1 = Identity().setName("l1").inputs(data)
+    val l2 = Identity().setName("l2").inputs(l1)
+    val l3 = Identity().setName("l3").inputs(l2)
+    val l4 = Echo().setName("l4").setFeval((a, b) => isExecuted = true).inputs(l1)
+
+    val model = Graph(data, l3)
+    model.forward(Tensor(T(1)))
+    isExecuted should be(false)
+  }
+
+  "Graph backward" should "not execute unrelated node" in {
+    val data = Identity().setName("input").inputs()
+    val const = Const(Tensor(T(1, 2))).setName("const").inputs()
+    var isExecuted = false
+    val l1 = Echo().setName("l1").setBeval((a, b, c) => isExecuted = true).inputs(const)
+    val cadd = CAddTable().setName("cadd").inputs(data, l1)
+
+    val model = Graph(data, cadd)
+    model.forward(Tensor(T(3, 5))) should be(Tensor(T(4, 7)))
+    model.backward(Tensor(T(3, 5)), Tensor(T(1, 2))) should be(Tensor(T(1, 2)))
+    isExecuted should be(false)
+  }
+
+  "Graph backward" should "not execute unrelated node 2" in {
+    val data = Identity().setName("input").inputs()
+    val const = Const(Tensor(T(1, 2))).setName("const").inputs()
+    var isExecuted1 = false
+    val l1 = Echo().setName("l1").setBeval((a, b, c) => isExecuted1 = true).inputs(const)
+    val cadd = CAddTable().setName("cadd").inputs(data, l1)
+    val l2 = Identity().setName("l2").inputs(cadd)
+    var isExecuted2 = false
+    var isExecuted3 = false
+    val echo = Echo().setName("echo")
+      .setFeval((a, b) => isExecuted2 = true)
+      .setBeval((a, b, c) => isExecuted3 = true).inputs(cadd)
+    val l3 = Identity().setName("l3").inputs(echo)
+
+    val model = Graph(data, l2)
+    model.forward(Tensor(T(3, 5))) should be(Tensor(T(4, 7)))
+    model.backward(Tensor(T(3, 5)), Tensor(T(1, 2))) should be(Tensor(T(1, 2)))
+    isExecuted1 should be(false)
+    isExecuted2 should be(false)
+    isExecuted3 should be(false)
   }
 }
 

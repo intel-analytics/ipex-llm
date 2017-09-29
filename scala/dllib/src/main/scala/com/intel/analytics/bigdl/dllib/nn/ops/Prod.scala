@@ -17,15 +17,15 @@ package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.{NumericWildCard, TensorNumeric}
 
 import scala.reflect.ClassTag
 
 class Prod[T: ClassTag](
   axis: Int = 1,
   keepDim: Boolean = false)
-(implicit ev: TensorNumeric[T]) extends Operation[Tensor[T], Tensor[T], T] {
-  private def getPositiveDimension(input: Tensor[T]): Int = {
+(implicit ev: TensorNumeric[T]) extends Operation[Tensor[_], Tensor[_], T] {
+  private def getPositiveDimension(input: Tensor[_]): Int = {
     var dimension = this.axis
     if (dimension < 0) {
       dimension = input.dim() + dimension + 1
@@ -35,9 +35,13 @@ class Prod[T: ClassTag](
     dimension
   }
 
-  def updateOutput(input: Tensor[T]): Tensor[T] = {
+  def updateOutput(input: Tensor[_]): Tensor[_] = {
     val dimension = getPositiveDimension(input)
-    output.prod(input, dimension)
+    if (output.getType() != input.getType()) {
+      output = input.emptyInstance()
+    }
+    output.asInstanceOf[Tensor[NumericWildCard]]
+      .prod(input.asInstanceOf[Tensor[NumericWildCard]], dimension)
 
     if (output.nDimension() > 1 && !keepDim) {
       output.squeeze(dimension)
