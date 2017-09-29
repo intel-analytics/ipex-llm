@@ -38,7 +38,8 @@ import scala.reflect.ClassTag
  * @tparam T
  */
 private[bigdl] class Scheduler[T] (
-    inputNodes: Seq[ModuleNode[T]], outputNodes: Seq[ModuleNode[T]]
+    inputNodes: Seq[ModuleNode[T]], outputNodes: Seq[ModuleNode[T]],
+    executableNodes: Set[String] = null
   ) extends Serializable {
 
   import Scheduler._
@@ -121,7 +122,7 @@ private[bigdl] class Scheduler[T] (
   private def selectNexts(candidateNodes: Seq[ModuleNode[T]], curNode: ModuleNode[T]): Unit = {
     val nodeSet = new mutable.LinkedHashSet[ModuleNode[T]]()
     candidateNodes.foreach(nodeSet.add(_))  // remove duplicate nodes and keep the order
-    nodeSet.foreach(nextNode => {
+    nodeSet.filter(n => executableNodes.contains(n.element.getName())).foreach(nextNode => {
       if (nextNode.element.isInstanceOf[MergeOps[_]]) {
         val merge = nextNode.element.asInstanceOf[MergeOps[_]]
         require(nodeStatus.notExecuted(nextNode), s"Merge node(${nextNode.element.getName()}) " +

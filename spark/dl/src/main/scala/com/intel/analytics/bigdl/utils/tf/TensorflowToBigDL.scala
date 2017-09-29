@@ -245,7 +245,7 @@ object TensorflowToBigDL {
     val res = new ArrayBuffer[TensorflowToBigDL]()
     // ElementWiseMulTF must be after MulTF
     res.append(
-      FullConnectionTF, DropoutTF, Conv2D, BatchNormTF, Flatten, Conv1D, FlattenV2,
+      FullConnectionTF, DropoutTF, Conv2D, BatchNormTF, Conv1D,
       BatchNormV2NHWCTF, BatchNormV2NCHWTF,
       FullConnectionWithoutBiasTF, Conv2D2,
       Conv2DWithoutBias
@@ -885,129 +885,5 @@ object BatchNormTF extends TensorflowToBigDL{
     model.add(SelectTable(1))
     model.add(batchNorm)
     model.asInstanceOf[AbstractModule[Activity, Activity, T]]
-  }
-}
-
-object FlattenV2 extends TensorflowToBigDL {
-  private val graph = {
-    val reshapeNode = Node("Reshape")
-    val concatNode = Node("ConcatV2")
-    val sliceNode = Node("Slice")
-    val expandNode = Node("ExpandDims")
-    val prodNode = Node("Prod")
-    val sliceNode1 = Node("Slice")
-    val shapeNode = Node("Shape")
-    val beginNode = Node("Const")
-    val sizeNode = Node("Const")
-    val beginNode1 = Node("Const")
-    val sizeNode1 = Node("Const")
-    val constNode = Node("Const")
-    val dimNode = Node("Const")
-    val axisNode = Node("Const")
-    val inputNode = Node("*")
-
-    shapeNode -> sliceNode
-    beginNode -> sliceNode
-    sizeNode -> sliceNode
-
-    shapeNode -> sliceNode1
-    beginNode1 -> sliceNode1
-    sizeNode1 -> sliceNode1
-
-    sliceNode1 -> prodNode
-    constNode -> prodNode
-
-    prodNode -> expandNode
-    dimNode -> expandNode
-
-    sliceNode -> concatNode
-    expandNode -> concatNode
-    axisNode -> concatNode
-
-    inputNode -> reshapeNode
-    inputNode -> shapeNode
-    concatNode -> reshapeNode
-    reshapeNode.graph(reverse = true)
-  }
-
-  override def topology: DirectedGraph[String] = graph
-
-  override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
-           context: Context[T], byteOrder: ByteOrder)(
-    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
-
-    val layer = Sequential[T]()
-    layer.add(SelectTable(1))
-    layer.add(InferReshape[T](size = Array(-1), true))
-    layer.asInstanceOf[AbstractModule[Activity, Activity, T]]
-  }
-}
-
-object Flatten extends TensorflowToBigDL {
-  private val graph = {
-    val reshapeNode = Node("Reshape")
-    val concatNode = Node("ConcatV2")
-    val sliceNode = Node("Slice")
-    val expandNode = Node("ExpandDims")
-    val prodNode = Node("Prod")
-    val sliceNode1 = Node("Slice")
-    val shapeNode = Node("Const")
-    val beginNode = Node("Const")
-    val sizeNode = Node("Const")
-    val beginNode1 = Node("Const")
-    val sizeNode1 = Node("Const")
-    val constNode = Node("Const")
-    val dimNode = Node("Const")
-    val axisNode = Node("Const")
-
-    shapeNode -> sliceNode
-    beginNode -> sliceNode
-    sizeNode -> sliceNode
-
-    shapeNode -> sliceNode1
-    beginNode1 -> sliceNode1
-    sizeNode1 -> sliceNode1
-
-    sliceNode1 -> prodNode
-    constNode -> prodNode
-
-    prodNode -> expandNode
-    dimNode -> expandNode
-
-    sliceNode -> concatNode
-    expandNode -> concatNode
-    axisNode -> concatNode
-
-    Node("*") -> reshapeNode
-    concatNode -> reshapeNode
-    reshapeNode.graph(reverse = true)
-  }
-
-  override def topology: DirectedGraph[String] = graph
-
-  override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
-      context: Context[T],
-      byteOrder: ByteOrder)(
-    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
-    val shapetfTensor = tfGraph.source.prevNodes(1).prevNodes(0).prevNodes(0).element
-      .getAttrMap.get("value").getTensor
-    val sizes = TFUtils.parseTensor(shapetfTensor, byteOrder).asInstanceOf[Tensor[Int]]
-    val batchMode = false
-
-    val arraySize = Array(
-      sizes.valueAt(1),
-      {
-        var prod = 1
-        var i = 2
-        while(i <= sizes.nElement()) {
-          prod = prod * sizes.valueAt(i)
-          i = i + 1
-        }
-        prod
-      }
-    )
-
-    Reshape[T](size = arraySize, Some(batchMode))
-      .asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }

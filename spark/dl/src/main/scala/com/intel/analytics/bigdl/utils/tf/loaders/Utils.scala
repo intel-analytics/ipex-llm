@@ -61,7 +61,22 @@ object Utils {
     attrMap.get(key).getI.toInt
   }
 
+  private[loaders] def getBoolean(nodedef: NodeDef, key: String): Boolean = {
+    nodedef.getAttrMap.get(key).getB
+  }
+
   private[loaders] def getIntList(attrMap: util.Map[String, AttrValue], key: String): Seq[Int] = {
     attrMap.get(key).getList.getIList.asScala.map(_.toInt)
+  }
+
+  private[loaders] def toArray[T: ClassTag](tensor: Tensor[T]): Array[T] = {
+    require(tensor.nDimension() == 1, "require 1D tensor")
+    val array = new Array[T](tensor.nElement())
+    var i = 0
+    while(i < array.length) {
+      array(i) = tensor.valueAt(i + 1)
+      i += 1
+    }
+    array
   }
 }
