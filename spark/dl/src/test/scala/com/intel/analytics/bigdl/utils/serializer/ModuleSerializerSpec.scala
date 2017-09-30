@@ -1938,15 +1938,18 @@ case class CustomData(val constant_scalar: Double)
 case object TestSerializer extends ModuleSerializable
 
 object TestCustomDataConverter extends DataConverter {
-  override def getAttributeValue[T: ClassTag](attribute: Bigdl.AttrValue)
+
+  override def getAttributeValue[T: ClassTag](context: DeserializeContext,
+                                              attribute: Bigdl.AttrValue)
     (implicit ev: TensorNumeric[T]): AnyRef = {
     val customData = attribute.getCustomValue
     val customMsg = customData.unpack(classOf[TestCustomData.CustomData])
     CustomData(customMsg.getScalar)
   }
 
-  override def setAttributeValue[T: ClassTag](attributeBuilder: AttrValue.Builder,
-    value: Any, valueType: universe.Type)(implicit ev: TensorNumeric[T]): Unit = {
+  override def setAttributeValue[T: ClassTag](context: SerializeContext[T],
+    attributeBuilder: AttrValue.Builder, value: Any, valueType: universe.Type)
+    (implicit ev: TensorNumeric[T]): Unit = {
     val testCustomData = TestCustomData.CustomData.newBuilder
     testCustomData.setScalar(value.asInstanceOf[CustomData].constant_scalar)
     attributeBuilder.setCustomValue(com.google.protobuf.Any.pack(testCustomData.build()))

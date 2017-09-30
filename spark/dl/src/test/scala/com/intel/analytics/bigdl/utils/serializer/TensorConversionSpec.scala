@@ -20,10 +20,13 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 import serialization.Bigdl.AttrValue
 
+import scala.collection.mutable
 import scala.reflect.runtime.universe
 
 
 class TensorConversionSpec extends FlatSpec with Matchers{
+
+  val map = new mutable.HashMap[Int, Any]()
 
   "ByteString tensor conversion " should "work properly" in {
 
@@ -33,10 +36,12 @@ class TensorConversionSpec extends FlatSpec with Matchers{
       ByteString.copyFromUtf8("b")), Array(2))
 
     val attriBuilder = AttrValue.newBuilder()
-
-    DataConverter.setAttributeValue(attriBuilder, byteString, universe.typeOf[Tensor[ByteString]])
-
-    val retrievedValue = DataConverter.getAttributeValue(attriBuilder.build)
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType),
+      attriBuilder, byteString, universe.typeOf[Tensor[ByteString]])
+    map.clear()
+    val retrievedValue = DataConverter.
+      getAttributeValue(DeserializeContext(null, map, ProtoStorageType), attriBuilder.build)
 
     byteString should be (retrievedValue)
 
@@ -49,10 +54,12 @@ class TensorConversionSpec extends FlatSpec with Matchers{
     val chars = Tensor[Char](Array('a', 'b'), Array(2))
 
     val attriBuilder = AttrValue.newBuilder()
-
-    DataConverter.setAttributeValue(attriBuilder, chars, universe.typeOf[Tensor[Char]])
-
-    val retrievedValue = DataConverter.getAttributeValue(attriBuilder.build)
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType),
+      attriBuilder, chars, universe.typeOf[Tensor[Char]])
+    map.clear()
+    val retrievedValue = DataConverter.
+      getAttributeValue(DeserializeContext(null, map, ProtoStorageType), attriBuilder.build)
 
     chars should be (retrievedValue)
 
@@ -66,10 +73,12 @@ class TensorConversionSpec extends FlatSpec with Matchers{
     val ints = Tensor[Int](Array(2, 3), Array(2))
 
     val attriBuilder = AttrValue.newBuilder()
-
-    DataConverter.setAttributeValue(attriBuilder, ints, universe.typeOf[Tensor[Int]])
-
-    val retrievedValue = DataConverter.getAttributeValue(attriBuilder.build)
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType),
+      attriBuilder, ints, universe.typeOf[Tensor[Int]])
+    map.clear()
+    val retrievedValue = DataConverter.
+      getAttributeValue(DeserializeContext(null, map, ProtoStorageType), attriBuilder.build)
 
     ints should be (retrievedValue)
 
@@ -82,10 +91,12 @@ class TensorConversionSpec extends FlatSpec with Matchers{
     val longs = Tensor[Long](Array(2L, 3L), Array(2))
 
     val attriBuilder = AttrValue.newBuilder()
-
-    DataConverter.setAttributeValue(attriBuilder, longs, universe.typeOf[Tensor[Long]])
-
-    val retrievedValue = DataConverter.getAttributeValue(attriBuilder.build)
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType),
+      attriBuilder, longs, universe.typeOf[Tensor[Long]])
+    map.clear()
+    val retrievedValue = DataConverter.
+      getAttributeValue(DeserializeContext(null, map, ProtoStorageType), attriBuilder.build)
 
     longs should be (retrievedValue)
 
@@ -98,10 +109,12 @@ class TensorConversionSpec extends FlatSpec with Matchers{
     val shorts = Tensor[Short](Array[Short](2, 3), Array(2))
 
     val attriBuilder = AttrValue.newBuilder()
-
-    DataConverter.setAttributeValue(attriBuilder, shorts, universe.typeOf[Tensor[Short]])
-
-    val retrievedValue = DataConverter.getAttributeValue(attriBuilder.build)
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType),
+      attriBuilder, shorts, universe.typeOf[Tensor[Short]])
+    map.clear()
+    val retrievedValue = DataConverter.
+      getAttributeValue(DeserializeContext(null, map, ProtoStorageType), attriBuilder.build)
 
     shorts should be (retrievedValue)
 
@@ -114,10 +127,12 @@ class TensorConversionSpec extends FlatSpec with Matchers{
     val floats = Tensor[Float](Array[Float](2f, 3f), Array(2))
 
     val attriBuilder = AttrValue.newBuilder()
-
-    DataConverter.setAttributeValue(attriBuilder, floats, universe.typeOf[Tensor[Float]])
-
-    val retrievedValue = DataConverter.getAttributeValue(attriBuilder.build)
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType),
+      attriBuilder, floats, universe.typeOf[Tensor[Float]])
+    map.clear()
+    val retrievedValue = DataConverter.
+      getAttributeValue(DeserializeContext(null, map, ProtoStorageType), attriBuilder.build)
 
     floats should be (retrievedValue)
 
@@ -130,10 +145,12 @@ class TensorConversionSpec extends FlatSpec with Matchers{
     val doubles = Tensor[Double](Array[Double](2, 3), Array(2))
 
     val attriBuilder = AttrValue.newBuilder()
-
-    DataConverter.setAttributeValue(attriBuilder, doubles, universe.typeOf[Tensor[Double]])
-
-    val retrievedValue = DataConverter.getAttributeValue(attriBuilder.build)
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType),
+      attriBuilder, doubles, universe.typeOf[Tensor[Double]])
+    map.clear()
+    val retrievedValue = DataConverter.
+      getAttributeValue(DeserializeContext(null, map, ProtoStorageType), attriBuilder.build)
 
     doubles should be (retrievedValue)
 
@@ -146,12 +163,15 @@ class TensorConversionSpec extends FlatSpec with Matchers{
     val strings = Tensor[String](Array[String]("hello", "world"), Array(2))
 
     val attriBuilder = AttrValue.newBuilder()
-
-    DataConverter.setAttributeValue(attriBuilder, strings, universe.typeOf[Tensor[String]])
-
-    val retrievedValue = DataConverter.getAttributeValue(attriBuilder.build)
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType),
+      attriBuilder, strings, universe.typeOf[Tensor[String]])
+    map.clear()
+    val retrievedValue = DataConverter.
+      getAttributeValue(DeserializeContext(null, map, ProtoStorageType), attriBuilder.build)
 
     strings should be (retrievedValue)
 
   }
+
 }

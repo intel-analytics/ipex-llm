@@ -210,7 +210,7 @@ trait ModuleSerializable extends Loadable with Savable{
     }
     modelBuilder.setNamePostfix(module.module.getNamePostfix)
     modelBuilder.setTrain(module.module.isTraining())
-    modelBuilder.setId(module.module.hashCode)
+    modelBuilder.setId(System.identityHashCode(module.module))
     copyFromBigDL(context, modelBuilder)
     SerializeResult(modelBuilder.build, context.storages)
   }
@@ -229,13 +229,15 @@ trait ModuleSerializable extends Loadable with Savable{
         val attrValue = AttrValue.newBuilder
         attrValue.setTensorValue(context.bigdlModule.getWeight)
         val weight = TensorConverter.getAttributeValue(context, attrValue.build)
-        modulePramTable("weight") = weight
+        modulePramTable("weight").asInstanceOf[Tensor[T]].
+          copy(weight.asInstanceOf[Tensor[T]])
       }
       if (modulePramTable.contains("bias")) {
         val attrValue = AttrValue.newBuilder
         attrValue.setTensorValue(context.bigdlModule.getBias)
         val bias = TensorConverter.getAttributeValue(context, attrValue.build)
-        modulePramTable("bias") = bias
+        modulePramTable("bias").asInstanceOf[Tensor[T]].
+          copy(bias.asInstanceOf[Tensor[T]])
       }
     }
   }
@@ -268,7 +270,7 @@ trait ModuleSerializable extends Loadable with Savable{
         }
         if (bias != null) {
           val biasAttr = AttrValue.newBuilder
-          TensorConverter.setAttributeValue(context, biasAttr, biasAttr)
+          TensorConverter.setAttributeValue(context, biasAttr, bias)
           modelBuilder.setBias(biasAttr.getTensorValue)
         }
       } else {

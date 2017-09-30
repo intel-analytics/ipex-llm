@@ -353,7 +353,7 @@ object DataConverter extends DataConverter{
       val tensorNumeric = tensor.getTensorNumeric()
       val storageType = context.storageType
       val tensorStorage = tensor.storage()
-      val storageId = tensorStorage.hashCode
+      val storageId = System.identityHashCode(tensor.storage().array())
       val storages = context.storages
       if (storageType == ProtoStorageType) {
         if (storages.contains(storageId)) {
@@ -395,7 +395,7 @@ object DataConverter extends DataConverter{
         } else if (tensorNumeric == NumericShort) {
           tensorBuilder.setDatatype(DataType.SHORT)
           storageBuilder.setDatatype(DataType.SHORT)
-          tensor.storage().array().asInstanceOf[Array[Int]].
+          tensor.storage().array().asInstanceOf[Array[Short]].
             foreach(data => storageBuilder.addIntData(data))
         } else if (tensorNumeric == NumericLong) {
           tensorBuilder.setDatatype(DataType.INT64)
@@ -408,6 +408,7 @@ object DataConverter extends DataConverter{
           tensor.storage().array().asInstanceOf[Array[ByteString]].
             foreach(data => storageBuilder.addBytesData(data))
         }
+        storageBuilder.setId(storageId)
         val storage = storageBuilder.build
         tensorBuilder.setStorage(storage)
         storages(storageId) = storage
@@ -423,14 +424,15 @@ object DataConverter extends DataConverter{
       attributeBuilder.setDataType(DataType.TENSOR)
       if (value != null) {
         val tensor = value.asInstanceOf[Tensor[_]]
-        val tensorId = tensor.hashCode
+        val tensorId = System.identityHashCode(tensor)
         val storages = context.storages
         // Check if tensor has been shared
         if (storages.contains(tensorId)) {
-          attributeBuilder.setTensorValue(storages.get(tensorId).asInstanceOf[BigDLTensor])
+          attributeBuilder.setTensorValue(storages.get(tensorId).get
+            .asInstanceOf[BigDLTensor])
         } else {
           val tensorNumeric = tensor.getTensorNumeric()
-          val offSet = tensor.storageOffset() - 1
+          val offSet = tensor.storageOffset()
           val totalElement = tensor.nElement()
           val dimension = tensor.dim()
           val isScalar = tensor.isScalar
@@ -443,7 +445,9 @@ object DataConverter extends DataConverter{
           tensor.size().foreach(size => tensorBuilder.addSize(size))
           tensor.stride().foreach(stride => tensorBuilder.addStride(stride))
           setStorage(context, tensorBuilder, tensor)
-          attributeBuilder.setTensorValue(tensorBuilder.build)
+          val tensorBuild = tensorBuilder.build
+          attributeBuilder.setTensorValue(tensorBuild)
+          storages(tensorId) = tensorBuild
         }
       }
     }
