@@ -1196,11 +1196,13 @@ class RnnCell(Layer):
                  input_size,
                  hidden_size,
                  activation,
+                 isInputWithBias=True,
+                 isHiddenWithBias=True,
                  wRegularizer=None,
                  uRegularizer=None,
                  bRegularizer=None,
                  bigdl_type="float"):
-        super(RnnCell, self).__init__(None, bigdl_type, input_size, hidden_size, activation, wRegularizer, uRegularizer, bRegularizer)
+        super(RnnCell, self).__init__(None, bigdl_type, input_size, hidden_size, activation, isInputWithBias, isHiddenWithBias, wRegularizer, uRegularizer, bRegularizer)
 
 
 class TimeDistributed(Layer):
@@ -1594,7 +1596,7 @@ class BatchNormalization(Layer):
         return self
 
 
-class BifurcateSplitTable(Model):
+class BifurcateSplitTable(Layer):
     '''
     Creates a module that takes a Tensor as input and
     outputs two tables, splitting the Tensor along
@@ -1616,7 +1618,7 @@ class BifurcateSplitTable(Model):
                                        dimension)
 
 
-class Bilinear(Model):
+class Bilinear(Layer):
 
     '''
     a bilinear transformation with sparse inputs,
@@ -4082,10 +4084,11 @@ class ResizeBilinear(Layer):
     :param output_width: output width
     :param align_corner: align corner or not
     
-    >>> resizeBilinear = ResizeBilinear(10, 20, false)
+    >>> resizeBilinear = ResizeBilinear(10, 20, False)
+    creating: createResizeBilinear
     """
-    def __init__(self, output_height, output_width, align_corner):
-        super(ResizeBilinear, self).__init__(None, output_height, output_width, align_corner)
+    def __init__(self, output_height, output_width, align_corner, bigdl_type="float"):
+        super(ResizeBilinear, self).__init__(None, bigdl_type, output_height, output_width, align_corner)
 
 def _test():
     import doctest
