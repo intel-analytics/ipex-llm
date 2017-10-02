@@ -44,6 +44,7 @@ import org.tensorflow.framework.NodeDef
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 import scala.language.existentials
 import scala.reflect.ClassTag
 
@@ -109,7 +110,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       }.sortWith(_._1 < _._1).map(pair => pair._2).asJava
     }
   }
-
+  
   def toPySample(sample: JSample[T]): Sample = {
     val cls = implicitly[ClassTag[T]].runtimeClass
     Sample(toJTensor(sample.feature()), toJTensor(sample.label()), cls.getSimpleName)
@@ -1905,33 +1906,40 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     layer.setInitMethod(weightInitMethod, biasInitMethod)
   }
 
-  def getState(rec: Recurrent[T]): JList[JTensor] = {
-    val res = rec.getState()
-      if (res.isTensor) return List(toJTensor(res.toTensor)).asJava
-    else return List(toJTensor(res.toTable.apply[Tensor[T]](1)),
-        toJTensor(res.toTable.apply[Tensor[T]](2))).asJava
+  def getStates(rec: Recurrent[T]): JList[JList[JTensor]] = {
+    val states = rec.getStates()
+    var res: Array[JList[JTensor]] = null
+    if (!rec.containMultiRNNCell) {
+      res = new Array[JList[JTensor]](1)
+      res(0) = activityToJTensors(states)
+    }
+    else {
+      res = new Array[JList[JTensor]](states.toTable.getState().size)
+      states.toTable.getState().foreach { pair => {
+          val index = pair._1.asInstanceOf[Int]
+          res(index) = activityToJTensors(pair._2.asInstanceOf[Activity])
+        }
+      }
+    }
+    res.toList.asJava
   }
 
-  def setState(rec: Recurrent[T], state: JList[JTensor], isTable: Boolean): Unit = {
-    val stateActivity = jTensorsToActivity(state, isTable)
-    rec.setState(stateActivity)
-  }
-
-  def getStates(rec: RecurrentDecoder[T]): JList[JList[JTensor]] = {
-    val res = rec.getStates()
-    res.map { x =>
-      if (x.isTensor) List(toJTensor(x.toTensor)).asJava
-      else List(toJTensor(x.toTable.apply[Tensor[T]](1)),
-        toJTensor(x.toTable.apply[Tensor[T]](2))).asJava
-    }.toList.asJava
-  }
-
-  def setStates(rec: RecurrentDecoder[T], states: JList[JList[JTensor]],
+  def setStates(rec: Recurrent[T], states: JList[JList[JTensor]],
                 isTable: JList[Boolean]): Unit = {
-    rec.setStates((states.asScala, isTable.asScala).zipped.map { (state, table) =>
-      jTensorsToActivity(state, table)
-    }.toArray)
+    if (rec.containMultiRNNCell) {
+      val activities = (states.asScala, isTable.asScala).zipped.map { (state, table) =>
+        jTensorsToActivity(state, table)}.toArray
+      val newStates = T()
+      for((activity, i) <- activities.view.zipWithIndex) {
+        newStates(i) = activity
+      }
+      rec.setStates(newStates)
+    } else {
+      rec.setStates(jTensorsToActivity(states.asScala.head, isTable.asScala.head))
+    }
   }
+  
+  def containMultiRNNCell(rec: Recurrent[T]): Boolean = rec.containMultiRNNCell
 
   def setLayerFreeze(model: AbstractModule[Activity, Activity, T])
   : AbstractModule[Activity, Activity, T] = {

@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, Tensor
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer.{ContainerSerializable, DataConverter, ModuleData, ModuleSerializer}
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.{T, Table}
 import serialization.Bigdl.{AttrValue, BigDLModule}
 import scala.reflect.runtime.universe
 import scala.collection.JavaConverters._
@@ -75,7 +75,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     require(module.isInstanceOf[Cell[T]],
       "Recurrent: added module should be Cell type!")
     require(!module.isInstanceOf[MultiRNNCell[T]],
-      "Recurrent: added module cannot be MultiRNNCell due to performance issue," +
+      "Recurrent: added module cannot be MultiRNNCell," +
         "use Sequential().add(Recurrent(cell)).add(Recurrent(cell))... instead!")
 
     topology = module.asInstanceOf[Cell[T]]
@@ -244,7 +244,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     initHidden(outputSize.drop(2))
     cloneCells()
 
-    currentInput(hidDim) = if (initState != null) initState
+    currentInput(hidDim) = if (initStates != null) initStates
     else hidden
 
     while (i <= times) {
@@ -259,15 +259,15 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     output
   }
 
-  def getState(): Activity = {
+  def getStates(): Activity = {
     require(cells != null && cells(times - 1).output != null,
-      "getState need to be called after updateOutput")
+      "getStates need to be called after updateOutput")
     cells(times - 1).output.toTable(hidDim)
   }
 
-  protected var initState: Activity = null
-  def setState(state: Activity): Unit = {
-    initState = state
+  protected var initStates: Activity = null
+  def setStates(states: Activity): Unit = {
+    initStates = states
   }
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
@@ -287,7 +287,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     while (i >= 1) {
       currentGradOutput(inputDim) = Recurrent.selectCopy(gradOutput, i, gradBuffer)
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
-      else if (initState == null) hidden else initState
+      else if (initStates == null) hidden else initStates
       _input(inputDim) = Recurrent.selectCopy(outputCell, i, outputBuffer)
 
       if (i == 1) {
@@ -324,7 +324,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     while (i >= 1) {
       currentGradOutput(inputDim) = Recurrent.selectCopy(gradOutput, i, gradBuffer)
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
-      else if (initState == null) hidden else initState
+      else if (initStates == null) hidden else initStates
       _input(inputDim) = Recurrent.selectCopy(outputCell, i, outputBuffer)
 
       cells(i - 1).updateGradInput(_input, currentGradOutput)
@@ -348,7 +348,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
         else cells(i).gradInput.toTable(hidDim)
 
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
-      else if (initState == null) hidden else initState
+      else if (initStates == null) hidden else initStates
       _input(inputDim) = Recurrent.selectCopy(outputCell, i, outputBuffer)
       if (i == 1) {
         cells(i - 1).regluarized(true)
@@ -451,7 +451,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     cells.foreach(x => x.clearState())
     cells.clear()
     timeBuffer.clear()
-    initState = null
+    initStates = null
     outputBuffer.set()
     gradBuffer.set()
     this
@@ -468,6 +468,8 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     modules.foreach(_.reset())
     cells.clear()
   }
+  
+  lazy val containMultiRNNCell: Boolean = topology.isInstanceOf[MultiRNNCell[T]]
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[Recurrent[T]]
 
