@@ -93,14 +93,14 @@ abstract class Cell[T : ClassTag](
    *
    * @param hidden
    * @param batchSize batchSize
-   * @param recordShape For rnn/lstm/gru, it's embedding size. For convlstm/
+   * @param stepShape For rnn/lstm/gru, it's embedding size. For convlstm/
    *                     convlstm3D, it's a list of outputPlane, length, width, height
    * @return
    */
-  def hidResize(hidden: Activity, batchSize: Int, recordShape: Array[Int]): Activity = {
+  def hidResize(hidden: Activity, batchSize: Int, stepShape: Array[Int]): Activity = {
     if (hidden == null) {
       if (hiddensShape.length == 1) {
-        hidResize(Tensor[T](), batchSize, recordShape)
+        hidResize(Tensor[T](), batchSize, stepShape)
       } else {
         val _hidden = T()
         var i = 1
@@ -108,7 +108,7 @@ abstract class Cell[T : ClassTag](
           _hidden(i) = Tensor[T]()
           i += 1
         }
-        hidResize(_hidden, batchSize, recordShape)
+        hidResize(_hidden, batchSize, stepShape)
       }
     } else {
       if (hidden.isInstanceOf[Tensor[T]]) {
@@ -119,9 +119,9 @@ abstract class Cell[T : ClassTag](
         require(hidden.isInstanceOf[Table],
           "Cell: hidden should be a Table")
         var i = 1
-        val sizes = new Array[Int](recordShape.length + 1)
+        val sizes = new Array[Int](stepShape.length + 1)
         sizes(0) = batchSize
-        Array.copy(recordShape, 0, sizes, 1, recordShape.size)
+        Array.copy(stepShape, 0, sizes, 1, stepShape.size)
         while (i <= hidden.toTable.length()) {
           sizes(1) = hiddensShape(i - 1)
           hidden.toTable[Tensor[T]](i).resize(sizes)

@@ -1066,8 +1066,8 @@ class RecurrentDecoder(Recurrent):
     a prediction of the next timestep based on the prediction we made from
     the previous timestep. Input for RecurrentDecoder is dynamically composed
     during training. input at t(i) is output at t(i-1), input at t(0) is
-    user input, and user input has to be batch x recordShape
-    without time information.
+    user input, and user input has to be batch x stepShape(shape of the input
+    at a single time).
 
     Different types of rnn cells can be added using add() function.
 
