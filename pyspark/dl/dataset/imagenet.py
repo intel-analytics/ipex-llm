@@ -21,7 +21,7 @@ from os import listdir
 from os.path import join, basename
 import struct
 from scipy import misc
-from transformer import Resize
+from bigdl.dataset.transformer import Resize
 
 
 def read_local_path(folder, has_label=True):
