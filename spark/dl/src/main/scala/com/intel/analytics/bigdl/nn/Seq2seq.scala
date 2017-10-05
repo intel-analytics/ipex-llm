@@ -25,101 +25,113 @@ import scala.reflect.ClassTag
 import com.intel.analytics.bigdl.utils.{T, Table}
 
 class Seq2seq[T: ClassTag](encoderCells: Array[Cell[T]], decoderCells: Array[Cell[T]],
-  outputLength: Int, broadcastState: Boolean = false,
-  decoderInputType: DecoderInputType = DecoderInputType.USERINPUT)
-  (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
-  var states: Array[Activity] = null
-  var recs = new Array[Recurrent[T]](encoderCells.length)
+  preEncoder: AbstractModule[Activity, Activity, T] = null,
+  preDecoder: AbstractModule[Activity, Activity, T] = null,
+  feedPreviousOutput: Boolean = false, outputLength: Int = -1,
+  decoderInputType: DecoderInputType = DecoderInputType.ENCODERINPUTLASTTIME)
+  (implicit ev: TensorNumeric[T]) extends AbstractModule[Activity, Tensor[T], T] {
+  var encoderRecs = new Array[Recurrent[T]](encoderCells.length)
+  var decoderRecs = new Array[Recurrent[T]](decoderCells.length)
   var decoderInput: Tensor[T] = null
+  var encoderInput: Tensor[T] = null
   var encoderOutput: Tensor[T] = null
 
-  val encoder = Sequential()
+  val encoder = if (preDecoder == null) Sequential() else Sequential().add(preEncoder)
   for (i <- 0 until encoderCells.size) {
-    val rec = Recurrent[T]()
-    rec.add(encoderCells(i))
-    recs(i) = rec
+    val rec = Recurrent[T]().add(encoderCells(i))
+    encoderRecs(i) = rec
     encoder.add(rec)
   }
 
-  val decoder = if (decoderCells.length == 1) RecurrentDecoder(outputLength).add(decoderCells.head)
-    else RecurrentDecoder(outputLength).add(MultiRNNCell(decoderCells))
+  val decoder = if (preDecoder == null) Sequential() else Sequential().add(preDecoder)
+  if (feedPreviousOutput) {
+    require(outputLength >= 1, "output length must be greater than 0")
+    decoderRecs(0) = if (decoderCells.length == 1) {
+      RecurrentDecoder(outputLength).add(decoderCells.head)
+    } else RecurrentDecoder(outputLength).add(MultiRNNCell(decoderCells))
+    decoder.add(decoderRecs.head)
+  } else {
+    for ((x, i) <- decoderCells.view.zipWithIndex) {
+      decoderRecs(i) = Recurrent[T]().add(x)
+      decoder.add(decoderRecs(i))
+    }
+  }
 
   val module: AbstractModule[Activity, Activity, T] = Sequential().add(encoder).add(decoder)
 
-  override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.dim == 3 || input.dim == 5 || input.dim == 6,
-      "Recurrent: input should be a 3D/5D/6D Tensor, e.g [batch, times, nDim], " +
-        s"current input.dim = ${input.dim}")
-
-    encoderOutput = encoder.forward(input).toTensor
-    if (broadcastState) {
-      require(encoderCells.length == decoderCells.length)
-      states = new Array[Activity](encoderCells.length)
-      var i = 0
-      while (i < encoderCells.length) {
-        states(i) = recs(i).getHiddenState()
-        i += 1
-      }
-      if (decoderCells.length == 1) {
-        decoder.setHiddenState(states.head)
-      } else {
-        decoder.setHiddenStates(states)
-      }
-    }
-
-    val _outputSize = encoderOutput.size()
+  override def updateOutput(input: Activity): Tensor[T] = {
     decoderInputType match {
-      case DecoderInputType.ENCODEROUTPUT =>
-        decoderInput = encoderOutput.select(2, encoderOutput.size(2))
-      case DecoderInputType.USERINPUT => decoderInput = input.select(2, input.size(2))
-      case DecoderInputType.ZEROS => decoderInput =
-        Tensor[T](Array(_outputSize(0)) ++ _outputSize.drop(2))
+      case DecoderInputType.ENCODERINPUTSPLIT =>
+        encoderInput = input.toTable[Tensor[T]](1)
+        decoderInput = input.toTable[Tensor[T]](2)
+      case DecoderInputType.ENCODERINPUTLASTTIME =>
+        require(feedPreviousOutput == true, "ENCODERINPUTLASTTIME can" +
+          "only work with feedPreviousOuptput is true")
+        encoderInput = input.toTensor
+        decoderInput = input.toTensor.select(2, input.toTensor.size(2))
+      case DecoderInputType.ZEROS =>
+        encoderInput = input.toTensor
+        decoderInput = null
       case _ => throw new IllegalArgumentException("Unknown decodeInput mode")
     }
+    encoderOutput = encoder.forward(encoderInput).toTensor
+    if (decoderInput == null) {
+      decoderInput = if (feedPreviousOutput) {
+        val _outputSize = encoderOutput.size()
+        Tensor[T](Array(_outputSize(0)) ++ _outputSize.drop(2))
+      } else Tensor[T](encoderOutput.size())
+    }
 
-    output = decoder.forward(decoderInput)
+    if (feedPreviousOutput) {
+      if (decoderCells.length == 1) {
+        decoderRecs.head.setHiddenState(encoderRecs.map(_.getHiddenState()).head)
+      } else {
+        decoderRecs.head.asInstanceOf[RecurrentDecoder[T]]
+          .setHiddenStates(encoderRecs.map(_.getHiddenState()))
+      }
+    } else {
+      for ((x, i) <- encoderRecs.view.zipWithIndex) {
+        decoderRecs(i).setHiddenState(x.getHiddenState())
+      }
+    }
+
+    output = decoder.forward(decoderInput).toTensor
     output
   }
 
-  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
+  override def accGradParameters(input: Activity, gradOutput: Tensor[T]): Unit = {
     throw new Exception("Should not enter seq2seq accGradParameters" +
       "as it has override backward")
   }
 
-  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+  override def updateGradInput(input: Activity, gradOutput: Tensor[T]): Tensor[T] = {
     throw new Exception("Should not enter seq2seq updateGradInput" +
       "as it has override backward")
-    gradInput
+    gradInput.toTensor
   }
 
-  override def backward(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    val gradInputDecoder = decoder.backward(decoderInput, gradOutput)
-    if (broadcastState) {
+  override def backward(input: Activity, gradOutput: Tensor[T]): Tensor[T] = {
+    decoder.backward(decoderInput, gradOutput)
+    if (feedPreviousOutput) {
       if (decoderCells.length == 1) {
-        val gradState = decoder.getGradHiddenState()
-        recs(encoderCells.length - 1).setGradHiddenState(gradState)
+        val gradState = decoderRecs.head.getGradHiddenState()
+        encoderRecs(encoderCells.length - 1).setGradHiddenState(gradState)
       } else {
-        val gradStates = decoder.getGradHiddenStates()
-        var i = 0
-        while (i < gradStates.length) {
-          recs(i).setGradHiddenState(gradStates(i))
-          i += 1
+        val gradHiddenStates = decoderRecs.head
+          .asInstanceOf[RecurrentDecoder[T]].getGradHiddenStates()
+        for ((x, i) <- gradHiddenStates.view.zipWithIndex) {
+          encoderRecs(i).setGradHiddenState(x)
         }
       }
+    } else {
+      for ((x, i) <- encoderRecs.view.zipWithIndex) {
+        encoderRecs(i).setGradHiddenState(x.getGradHiddenState())
+      }
     }
-
-    decoderInputType match {
-      case DecoderInputType.ENCODEROUTPUT =>
-        encoder.backward(input, gradInputDecoder).toTensor
-      case DecoderInputType.USERINPUT => encoder.backward(input,
-        Tensor[T](encoderOutput.size())).toTensor
-      case DecoderInputType.ZEROS => gradInput = encoder.backward(input,
-        Tensor[T](encoderOutput.size())).toTensor
-
-      case _ => throw new IllegalArgumentException("Unknown decodeInput mode")
-    }
-
-    gradInput
+    
+    gradInput = encoder.backward(encoderInput, Tensor[T](encoderOutput.size())).toTensor
+    
+    gradInput.toTensor
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
@@ -133,14 +145,17 @@ class Seq2seq[T: ClassTag](encoderCells: Array[Cell[T]], decoderCells: Array[Cel
 
 object Seq2seq {
   def apply[@specialized(Float, Double) T: ClassTag](encoderCells: Array[Cell[T]],
-    decoderCells: Array[Cell[T]], outputLength: Int, broadcastState: Boolean = false,
-    decoderInput: DecoderInputType = DecoderInputType.USERINPUT)
+    decoderCells: Array[Cell[T]], preEncoder: AbstractModule[Activity, Activity, T] = null,
+    preDecoder: AbstractModule[Activity, Activity, T] = null,
+    outputLength: Int = -1, feedPreviousOutput: Boolean = false,
+    decoderInputType: DecoderInputType = DecoderInputType.ENCODERINPUTLASTTIME)
     (implicit ev: TensorNumeric[T]): Seq2seq[T] = {
-    new Seq2seq[T](encoderCells, decoderCells, outputLength, broadcastState, decoderInput)
+    new Seq2seq[T](encoderCells, decoderCells, preEncoder, preDecoder,
+      feedPreviousOutput, outputLength, decoderInputType)
   }
 }
 
 object DecoderInputType extends Enumeration {
   type DecoderInputType = Value
-  val ZEROS, ENCODEROUTPUT, USERINPUT = Value
+  val ZEROS, ENCODERINPUTSPLIT, ENCODERINPUTLASTTIME = Value
 }

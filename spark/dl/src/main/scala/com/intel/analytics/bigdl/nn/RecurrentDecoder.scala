@@ -226,6 +226,7 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
         }
         gradInput.select(timeDim, i + 1).copy(_gradInput)
         gradOutput.select(timeDim, i).clone().add(_gradInput)
+//        gradOutput.select(timeDim, i)
 //        gradOutput.select(timeDim, i).clone().add(cells(i).gradInput.toTable[Tensor[T]](inputDim))
       }
 
