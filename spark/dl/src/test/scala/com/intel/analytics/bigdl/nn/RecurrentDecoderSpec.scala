@@ -204,4 +204,93 @@ class RecurrentDecoderSpec extends FlatSpec with BeforeAndAfter with Matchers {
       v1
     })
   }
+
+  "A ConvLSTMPeepwhole " should "work with RecurrentDecoder get/setStates" in {
+    import com.intel.analytics.bigdl.numeric.NumericDouble
+    val hiddenSize = 3
+    val inputSize = 3
+    val seqLength = 2
+    val seed = 100
+    val batchSize = 2
+
+    val initStates = T(Tensor(batchSize, hiddenSize, 3, 3).rand(),
+      Tensor(batchSize, hiddenSize, 3, 3).rand())
+
+    RNG.setSeed(seed)
+    val input = Tensor[Double](batchSize, inputSize, 3, 3).rand
+    val gradOutput = Tensor[Double](batchSize, seqLength, hiddenSize, 3, 3).rand
+    val rec = RecurrentDecoder(seqLength)
+    val model = rec
+      .add(ConvLSTMPeephole(inputSize, hiddenSize, 3, 3, 1))
+
+    rec.setHiddenState(initStates)
+    val weights = model.getParameters()._1.clone()
+    model.zeroGradParameters()
+    val output = model.forward(input).toTensor
+    val gradInput = model.backward(input, gradOutput).toTensor
+    val gradient = model.getParameters()._2
+    val statesGet = rec.getHiddenState().toTable
+
+    val input2 = input.clone()
+    input2.resize(batchSize, 1, inputSize, 3, 3)
+    val model2 = ConvLSTMPeephole(inputSize, hiddenSize, 3, 3, 1)
+    model2.getParameters()._1.copy(weights)
+    model2.zeroGradParameters()
+
+    val model3 = ConvLSTMPeephole(inputSize, hiddenSize, 3, 3, 1)
+    var i = 0
+    while (i < model3.parameters()._1.length) {
+      model3.parameters()._1(i).set(model2.parameters()._1(i))
+      i += 1
+    }
+    i = 0
+    while (i < model3.parameters()._2.length) {
+      model3.parameters()._2(i).set(model2.parameters()._2(i))
+      i += 1
+    }
+
+    val state = initStates
+    val output2 = model2.forward(T(input, state))
+    val output3 = model3.forward(output2)
+
+    val gradState = T(Tensor(batchSize, hiddenSize, 3, 3), Tensor(batchSize, hiddenSize, 3, 3))
+    val gradOutput3 = gradOutput.select(2, 2)
+    val input3 = output2.clone()
+    val tmp = T(input3.toTable[Tensor[Double]](1).squeeze(2), input3.toTable(2))
+    val gradInput3 = model3.backward(tmp, T(gradOutput3, gradState))
+    val tmp_gradInput = gradInput3.clone
+    tmp_gradInput(1) = gradOutput.select(2, 1).add(gradInput3.toTable[Tensor[Double]](1))
+    val gradInput2 = model2.backward(T(input, state), tmp_gradInput)
+    val finalOutput = Tensor[Double](batchSize, seqLength, hiddenSize, 3, 3)
+    finalOutput.narrow(2, 1, 1).copy(output2.toTable[Tensor[Double]](1))
+    finalOutput.narrow(2, 2, 1).copy(output3.toTable[Tensor[Double]](1))
+    output.map(finalOutput, (v1, v2) => {
+      assert(abs(v1 - v2) <= 1e-8)
+      v1
+    })
+
+    val states1 = statesGet.getState()
+    val states2 = output3.toTable[Table](2)
+    for (k <- states1.keys) {
+      val t1 = states1(k).asInstanceOf[Tensor[Double]]
+      val t2 = states2(k).asInstanceOf[Tensor[Double]]
+      t1.map(t2, (v1, v2) => {
+        assert(abs(v1 - v2) <= 1e-8)
+        v1
+      })
+    }
+
+    gradient.map(model2.getParameters()._2, (v1, v2) => {
+      assert(abs(v1 - v2) <= 1e-8)
+      v1
+    })
+
+    val newGradInput = Tensor[Double](batchSize, seqLength, hiddenSize, 3, 3)
+    newGradInput.narrow(2, 1, 1).copy(gradInput2.toTable[Tensor[Double]](1))
+    newGradInput.narrow(2, 2, 1).copy(gradInput3.toTable[Tensor[Double]](1))
+    gradInput.map(newGradInput, (v1, v2) => {
+      assert(abs(v1 - v2) <= 1e-8)
+      v1
+    })
+  }
 }

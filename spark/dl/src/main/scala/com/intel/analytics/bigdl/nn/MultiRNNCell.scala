@@ -41,8 +41,8 @@ class MultiRNNCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorN
 
   override var cell: AbstractModule[Activity, Activity, T] = buildModel()
 
-  var states: Array[Activity] = null
-  var gradStates: Array[Activity] = null
+  var states = T()
+  var gradStates = T()
 
   var state0: Activity = null
 
@@ -60,11 +60,10 @@ class MultiRNNCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorN
   }
 
   override def updateOutput(input: Table): Table = {
-    require(states != null, "state of multicell cannot be null")
     var i = 0
     val result = T()
     result(inputDim) = input(inputDim)
-    state0 = states.head
+    state0 = states(0)
 
     while (i < cells.length) {
       result(hidDim) = states(i)

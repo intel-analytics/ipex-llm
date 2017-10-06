@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.{T, Table}
 import com.intel.analytics.bigdl.utils.serializer.{ContainerSerializable, DataConverter, ModuleData, ModuleSerializer}
 import serialization.Bigdl.{AttrValue, BigDLModule}
 
@@ -34,48 +35,43 @@ import scala.reflect.ClassTag
  * user input, and user input has to be batch x ???(depends on cell type)
  * without time information.
 
- * Different types of rnn cells can be added using add() function. Currently
- * only support lstmpeephole, convlstm, convlstm3D cell.
+ * Different types of rnn cells can be added using add() function.
  */
 class RecurrentDecoder[T : ClassTag](seqLength: Int)
   (implicit ev: TensorNumeric[T]) extends Recurrent[T] {
 
   times = seqLength
-  private var initHiddenStates: Array[Activity] = null
-  private var initGradHiddenStates: Array[Activity] = null
-  private var hiddenStates: Array[Activity] = null
-  private var gradHiddenStates: Array[Activity] = null
+  private val hiddenStates = T()
+  private val gradHiddenStates = T()
 
-  def setHiddenStates(hiddenStates: Array[Activity]): Unit = {
-    require(topology.isInstanceOf[MultiRNNCell[T]], "setHiddenStates only support for MultiRNNCell")
-    initHiddenStates = hiddenStates
+  override def getHiddenState(): Activity = {
+    if (containMultiRNNCell) {
+      hiddenStates
+    } else super.getHiddenState()
   }
 
-  def getHiddenStates(): Array[Activity] = {
-    require(topology.isInstanceOf[MultiRNNCell[T]], "getHiddenStates only support for MultiRNNCell")
-    hiddenStates
+  override def getGradHiddenState(): Activity = {
+    if (containMultiRNNCell) {
+      gradHiddenStates
+    } else super.getGradHiddenState()
   }
 
-  def setGradHiddenStates(gradHiddenStates: Array[Activity]): Unit = {
-    require(topology.isInstanceOf[MultiRNNCell[T]], "setGradStates only support for MultiCell")
-    initGradHiddenStates = hiddenStates
-  }
+  override def initHidden(sizes: Array[Int]): Unit = {
+    val stepSizes = sizes
+    if (containMultiRNNCell) {
+      if (hiddenStates.getState().size == 0) {
+        cells.clear()
+        cells += topology
+      }
 
-  def getGradHiddenStates(): Array[Activity] = {
-    require(topology.isInstanceOf[MultiRNNCell[T]], "getGradStates only support for MultiCell")
-    gradHiddenStates
-  }
-
-  private def initHiddens(sizes: Array[Int]): Unit = {
-    val imageSize = sizes
-    val multiCells = topology.asInstanceOf[MultiRNNCell[T]].cells
-
-    var i = 0
-    while(i < hiddenStates.size) {
-      hiddenStates(i) = multiCells(i).hidResize(null, batchSize, imageSize)
-      gradHiddenStates(i) = multiCells(i).hidResize(null, batchSize, imageSize)
-      i += 1
-    }
+      val multiCells = topology.asInstanceOf[MultiRNNCell[T]].cells
+      var i = 0
+      while (i < multiCells.length) {
+        hiddenStates(i) = multiCells(i).hidResize(null, batchSize, stepSizes)
+        gradHiddenStates(i) = multiCells(i).hidResize(null, batchSize, stepSizes)
+        i += 1
+      }
+    } else super.initHidden(sizes)
   }
 
   /**
@@ -125,6 +121,7 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
       sizes(2) = hiddenSize * 4
       outputCell.resize(sizes)
     } else outputCell.resize(output.size())
+    initHidden(outputSize.drop(1))
 
     /**
      * currentInput forms a T() type. It contains two elements, hidden and input.
@@ -133,30 +130,18 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
      * identical elements T(output, output). One of the elements from the cell output is
      * the updated hidden. Thus the currentInput will update its hidden element with this output.
      */
-    if (!topology.isInstanceOf[MultiRNNCell[T]]) {
+    if (!containMultiRNNCell) {
       // Clone N modules along the sequence dimension.
-      initHidden(outputSize.drop(1))
       cloneCells()
-
       currentInput(hidDim) = if (initHiddenState != null) initHiddenState
       else hidden
     } else {
-      if (hiddenStates == null) {
-        cells.clear()
-        cells += topology
-        hiddenStates = new Array[Activity](topology.asInstanceOf[MultiRNNCell[T]].cells.length)
+      initHidden(outputSize.drop(1))
+      if (initHiddenState != null) {
+        cloneStates(initHiddenState.toTable, hiddenStates)
       }
-
-      if (gradHiddenStates == null) {
-        gradHiddenStates = new Array[Activity](topology.asInstanceOf[MultiRNNCell[T]].cells.length)
-      }
-
-      initHiddens(outputSize.drop(1))
-      if (initHiddenStates != null) {
-        hiddenStates = initHiddenStates.clone()
-      }
-      if (initGradHiddenStates != null) {
-        gradHiddenStates = initGradHiddenStates.clone()
+      if (initGradHiddenState != null) {
+        cloneStates(initGradHiddenState.toTable, gradHiddenStates)
       }
       cloneCells()
       cells.foreach{x =>
@@ -232,6 +217,7 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
 
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
       else if (initHiddenState == null) hidden else initHiddenState
+
       _input(inputDim) = Recurrent.selectCopy(outputCell, i, outputBuffer)
 
       if (i == 1) {
@@ -282,6 +268,13 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
   override def hashCode(): Int = {
     val state = Seq(super.hashCode(), cells)
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
+
+  private def cloneStates(states: Table, res: Table): Unit = {
+    states.getState().foreach { pair =>
+      if (pair._2.isInstanceOf[Table]) cloneStates(pair._2.asInstanceOf[Table], res(pair._1))
+      else res(pair._1) = pair._2.asInstanceOf[Tensor[T]].clone()
+    }
   }
 }
 

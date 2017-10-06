@@ -83,12 +83,15 @@ class Seq2seq[T: ClassTag](encoderRecs: Array[Recurrent[T]], decoderRecs: Array[
     }
 
     if (feedbackPreviousOutput) {
-//      if (decoderCells.length == 1) {
-//        decoderRecs.head.setHiddenState(encoderRecs.map(_.getHiddenState()).head)
-//      } else {
-        decoderRecs.head.asInstanceOf[RecurrentDecoder[T]]
-          .setHiddenStates(encoderRecs.map(_.getHiddenState()))
-//      }
+      if (encoderRecs.size == 1) {
+        decoderRecs.head.setHiddenState(encoderRecs.head.getHiddenState())
+      } else {
+        val hiddenState = T()
+        for((rec, i) <- encoderRecs.view.zipWithIndex) {
+          hiddenState(i) = rec.getHiddenState()
+        }
+        decoderRecs.head.setHiddenState(hiddenState)
+      }
     } else {
       for ((x, i) <- encoderRecs.view.zipWithIndex) {
         decoderRecs(i).setHiddenState(x.getHiddenState())
@@ -111,26 +114,25 @@ class Seq2seq[T: ClassTag](encoderRecs: Array[Recurrent[T]], decoderRecs: Array[
   }
 
   override def backward(input: Activity, gradOutput: Tensor[T]): Tensor[T] = {
-    val ttt = decoder.backward(decoderInput, gradOutput)
+    decoder.backward(decoderInput, gradOutput)
     if (decoderRecs.head.isInstanceOf[RecurrentDecoder[T]]) {
-//      if (decoderCells.length == 1) {
-//        val gradState = decoderRecs.head.getGradHiddenState()
-//        encoderRecs(encoderCells.length - 1).setGradHiddenState(gradState)
-//      } else {
-        val gradHiddenStates = decoderRecs.head
-          .asInstanceOf[RecurrentDecoder[T]].getGradHiddenStates()
-        for ((x, i) <- gradHiddenStates.view.zipWithIndex) {
-          encoderRecs(i).setGradHiddenState(x)
+      val gradHiddenStates = decoderRecs.head
+        .asInstanceOf[RecurrentDecoder[T]].getGradHiddenState()
+      if (encoderRecs.size == 1) {
+        encoderRecs.head.setGradHiddenState(gradHiddenStates)
+      } else {
+        for ((x, i) <- encoderRecs.view.zipWithIndex) {
+          x.setGradHiddenState(gradHiddenStates.toTable(i))
         }
-//      }
+      }
     } else {
       for ((x, i) <- decoderRecs.view.zipWithIndex) {
         encoderRecs(i).setGradHiddenState(x.getGradHiddenState())
       }
     }
-    
+
     gradInput = encoder.backward(encoderInput, Tensor[T](encoderOutput.size())).toTensor
-    
+
     gradInput.toTensor
   }
 

@@ -27,7 +27,7 @@ import scala.math._
 
 @com.intel.analytics.bigdl.tags.Parallel
 class Seq2seqSpec extends FlatSpec with BeforeAndAfter with Matchers {
-  "A Seq2seq" should "work " in {
+  "A Seq2seq" should "work with multiRNN cell" in {
     import com.intel.analytics.bigdl.numeric.NumericDouble
     val hiddenSize = 7
     val inputSize = 7
@@ -97,6 +97,60 @@ class Seq2seqSpec extends FlatSpec with BeforeAndAfter with Matchers {
     }
   }
 
+  "A Seq2seq" should "work with single cell" in {
+    import com.intel.analytics.bigdl.numeric.NumericDouble
+    val hiddenSize = 7
+    val inputSize = 7
+    val kernalW = 3
+    val kernalH = 3
+    val seqLength = 5
+    val seed = 100
+    val batchSize = 4
+
+    RNG.setSeed(seed)
+    val input = Tensor[Double](batchSize, seqLength, inputSize, 5, 5).rand
+    val gradOutput = Tensor[Double](batchSize, seqLength, hiddenSize, 5, 5).rand
+
+    val encoderRecs = Array(Recurrent().add(ConvLSTMPeephole[Double](
+      inputSize,
+      hiddenSize,
+      kernalW, kernalH,
+      1)))
+
+    val decoderCells = ConvLSTMPeephole[Double](
+      inputSize,
+      hiddenSize,
+      kernalW, kernalH,
+      1)
+
+    var decoderRecs = Array(RecurrentDecoder(seqLength).add(decoderCells)
+      .asInstanceOf[Recurrent[Double]])
+    val model = Seq2seq(encoderRecs, decoderRecs,
+      decoderInputType = DecoderInputType.ENCODERINPUTLASTTIME)
+
+    for (i <- 0 until 3) {
+      model.forward(input).toTensor
+      model.backward(input, gradOutput)
+    }
+
+    decoderRecs = Array(Recurrent().add(decoderCells))
+    val model2 = Seq2seq(encoderRecs, decoderRecs,
+      decoderInputType = DecoderInputType.ENCODERINPUTSPLIT)
+
+    for (i <- 0 until 3) {
+      val output = model2.forward(T(input, input)).toTensor
+      model2.backward(input, gradOutput)
+    }
+
+    val model3 = Seq2seq(decoderRecs, decoderRecs,
+      decoderInputType = DecoderInputType.ZEROS)
+
+    for (i <- 0 until 3) {
+      val output = model3.forward(input).toTensor
+      model3.backward(input, gradOutput)
+    }
+  }
+
   "A Seq2seq" should "generate the same result with torch " in {
     import com.intel.analytics.bigdl.numeric.NumericDouble
     val hiddenSize = 2
@@ -132,7 +186,7 @@ class Seq2seqSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     val linear = Linear(hiddenSize, inputSize)
     val (linearW, linearG) = linear.getParameters()
-    
+
     val code =
       s"""
          |
@@ -215,7 +269,7 @@ class Seq2seqSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val preDecoder = Sequential().add(declookuptable)
     val seq2seq = Seq2seq(encoderRec, decoderRec, preEncoder = preEncoder,
       preDecoder = preDecoder, decoderInputType = DecoderInputType.ENCODERINPUTSPLIT)
-    
+
     val model = Sequential().add(seq2seq).add(TimeDistributed(linear))
       .add(TimeDistributed(LogSoftMax()))
     val output = model.forward(input).toTensor

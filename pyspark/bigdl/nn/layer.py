@@ -1040,43 +1040,65 @@ class Recurrent(Container):
     def __init__(self, bigdl_type="float"):
         super(Recurrent, self).__init__(None, bigdl_type)
 
+    def contain_multiRNNCell(self):
+            callBigDlFunc(self.bigdl_type, "containMultiRNNCell", self.value)
+
     def get_hidden_state(self):
         """
         get hidden state and cell at last time step.
         
         :return: list of hidden state and cell
         """
-        state = callBigDlFunc(self.bigdl_type, "getHiddenState", self.value)
-        for idx, tensor in enumerate(state):
+        states = callBigDlFunc(self.bigdl_type, "getHiddenState", self.value)
+        for state in states:
+            for idx, tensor in enumerate(state):
                 state[idx] = tensor.to_ndarray()
 
-        return state
-
-    def set_hidden_state(self, state):
+        if self.contain_multiRNNCell == True:
+            return states
+        else:
+            return states[0]
+    
+    def set_hidden_state(self, states):
         """
         set hidden state and cell at first time step.
         """
-        jstate, state_is_table = self.check_input(state)
-        callBigDlFunc(self.bigdl_type, "setHiddenState", self.value, jstate, state_is_table)
+        if self.contain_multiRNNCell:
+            jStates = []
+            state_is_tables = []
+            for state in states:
+                jstate, state_is_table = self.check_input(state)
+                jStates.append(jstate)
+                state_is_tables.append(state_is_table)
+            callBigDlFunc(self.bigdl_type, "setHiddenState", self.value, jStates, state_is_tables)
+        else:
+            jstate, state_is_table = self.check_input(states)
+            callBigDlFunc(self.bigdl_type, "setHiddenState", self.value, jstate, state_is_table)
 
     def get_grad_hidden_state(self):
         """
-        get gradient hidden state and cell at first time step.
+        get gradient hidden states at first time step.
 
-        :return: list of gradient hidden state and cell
+        :return: list of gradient hidden state
         """
-        state = callBigDlFunc(self.bigdl_type, "getGradHiddenState", self.value)
-        for idx, tensor in enumerate(state):
-            state[idx] = tensor.to_ndarray()
+        states = callBigDlFunc(self.bigdl_type, "getGradHiddenState", self.value)
+        for state in states:
+            for idx, tensor in enumerate(state):
+                state[idx] = tensor.to_ndarray()
 
-        return state
+        return states
 
-    def set_grad_hidden_state(self, state):
+    def set_grad_hidden_state(self, states):
         """
-        set hidden state and cell at last time step.
+        set gradient hidden state and cell at last time step.
         """
-        jstate, state_is_table = self.check_input(state)
-        callBigDlFunc(self.bigdl_type, "setGradHiddenState", self.value, jstate, state_is_table)
+        jStates = []
+        state_is_tables = []
+        for state in states:
+            jstate, state_is_table = self.check_input(state)
+            jStates.append(jstate)
+            state_is_tables.append(state_is_table)
+        callBigDlFunc(self.bigdl_type, "setGradHiddenState", self.value, jStates, state_is_tables)
 
 class RecurrentDecoder(Recurrent):
     '''
@@ -1095,56 +1117,6 @@ class RecurrentDecoder(Recurrent):
 
     def __init__(self, output_length, bigdl_type="float"):
         super(Recurrent, self).__init__(None, bigdl_type, output_length)
-
-    def get_hidden_states(self):
-        """
-        get hidden states at last time step, only work for MultiRNNCell.
-
-        :return: list of hidden state
-        """
-        states = callBigDlFunc(self.bigdl_type, "getHiddenStates", self.value)
-        for state in states:
-            for idx, tensor in enumerate(state):
-                state[idx] = tensor.to_ndarray()
-    
-        return states
-
-    def set_hidden_states(self, states):
-        """
-        set hidden state and cell at first time step, only work for MultiRNNCell.
-        """
-        jStates = []
-        state_is_tables = []
-        for state in states:
-            jstate, state_is_table = self.check_input(state)
-            jStates.append(jstate)
-            state_is_tables.append(state_is_table)
-        callBigDlFunc(self.bigdl_type, "setHiddenStates", self.value, jStates, state_is_tables)
-
-    def get_grad_hidden_states(self):
-        """
-        get gradient hidden states at first time step, only work for MultiRNNCell.
-
-        :return: list of gradient hidden state
-        """
-        states = callBigDlFunc(self.bigdl_type, "getGradHiddenStates", self.value)
-        for state in states:
-            for idx, tensor in enumerate(state):
-                state[idx] = tensor.to_ndarray()
-
-        return states
-
-    def set_grad_hidden_states(self, states):
-        """
-        set gradient hidden state and cell at last time step, only work for MultiRNNCell.
-        """
-        jStates = []
-        state_is_tables = []
-        for state in states:
-            jstate, state_is_table = self.check_input(state)
-            jStates.append(jstate)
-            state_is_tables.append(state_is_table)
-        callBigDlFunc(self.bigdl_type, "setGradHiddenStates", self.value, jStates, state_is_tables)
 
 class LSTM(Layer):
     '''

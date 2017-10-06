@@ -44,6 +44,7 @@ import org.tensorflow.framework.NodeDef
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 import scala.language.existentials
 import scala.reflect.ClassTag
 
@@ -109,7 +110,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       }.sortWith(_._1 < _._1).map(pair => pair._2).asJava
     }
   }
-
+  
   def toPySample(sample: JSample[T]): Sample = {
     val cls = implicitly[ClassTag[T]].runtimeClass
     Sample(toJTensor(sample.feature()), toJTensor(sample.label()), cls.getSimpleName)
@@ -1905,61 +1906,72 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     layer.setInitMethod(weightInitMethod, biasInitMethod)
   }
 
-  def getHiddenState(rec: Recurrent[T]): JList[JTensor] = {
-    val res = rec.getHiddenState()
-      if (res.isTensor) return List(toJTensor(res.toTensor)).asJava
-    else return List(toJTensor(res.toTable.apply[Tensor[T]](1)),
-        toJTensor(res.toTable.apply[Tensor[T]](2))).asJava
+  def getHiddenStates(rec: Recurrent[T]): JList[JList[JTensor]] = {
+    val states = rec.getHiddenState()
+    var res: Array[JList[JTensor]] = null
+    if (!rec.containMultiRNNCell) {
+      res = new Array[JList[JTensor]](1)
+      res(0) = activityToJTensors(states)
+    }
+    else {
+      res = new Array[JList[JTensor]](states.toTable.getState().size)
+      states.toTable.getState().foreach { pair => {
+          val index = pair._1.asInstanceOf[Int]
+          res(index) = activityToJTensors(pair._2.asInstanceOf[Activity])
+        }
+      }
+    }
+    res.toList.asJava
   }
 
-  def setHiddenState(rec: Recurrent[T], hiddenState: JList[JTensor], isTable: Boolean): Unit = {
-    val stateActivity = jTensorsToActivity(hiddenState, isTable)
-    rec.setHiddenState(stateActivity)
-  }
-
-  def getHiddenStates(rec: RecurrentDecoder[T]): JList[JList[JTensor]] = {
-    val res = rec.getHiddenStates()
-    res.map { x =>
-      if (x.isTensor) List(toJTensor(x.toTensor)).asJava
-      else List(toJTensor(x.toTable.apply[Tensor[T]](1)),
-        toJTensor(x.toTable.apply[Tensor[T]](2))).asJava
-    }.toList.asJava
-  }
-
-  def setHiddenStates(rec: RecurrentDecoder[T], hiddenStates: JList[JList[JTensor]],
+  def setHiddenStates(rec: Recurrent[T], hiddenStates: JList[JList[JTensor]],
                       isTable: JList[Boolean]): Unit = {
-    rec.setHiddenStates((hiddenStates.asScala, isTable.asScala).zipped.map { (state, table) =>
-      jTensorsToActivity(state, table)
-    }.toArray)
+    if (rec.containMultiRNNCell) {
+      val activities = (hiddenStates.asScala, isTable.asScala).zipped.map { (state, table) =>
+        jTensorsToActivity(state, table)}.toArray
+      val newStates = T()
+      for((activity, i) <- activities.view.zipWithIndex) {
+        newStates(i) = activity
+      }
+      rec.setHiddenState(newStates)
+    } else {
+      rec.setHiddenState(jTensorsToActivity(hiddenStates.asScala.head, isTable.asScala.head))
+    }
   }
+  
+  def containMultiRNNCell(rec: Recurrent[T]): Boolean = rec.containMultiRNNCell
 
-  def getGradHiddenState(rec: Recurrent[T]): JList[JTensor] = {
-    val res = rec.getGradHiddenState()
-    if (res.isTensor) return List(toJTensor(res.toTensor)).asJava
-    else return List(toJTensor(res.toTable.apply[Tensor[T]](1)),
-      toJTensor(res.toTable.apply[Tensor[T]](2))).asJava
+  def getGradHiddenStates(rec: Recurrent[T]): JList[JList[JTensor]] = {
+    val states = rec.getGradHiddenState()
+    var res: Array[JList[JTensor]] = null
+    if (!rec.containMultiRNNCell) {
+      res = new Array[JList[JTensor]](1)
+      res(0) = activityToJTensors(states)
+    }
+    else {
+      res = new Array[JList[JTensor]](states.toTable.getState().size)
+      states.toTable.getState().foreach { pair => {
+        val index = pair._1.asInstanceOf[Int]
+        res(index) = activityToJTensors(pair._2.asInstanceOf[Activity])
+      }
+      }
+    }
+    res.toList.asJava
   }
-
-  def setGradHiddenState(rec: Recurrent[T], gradHiddenState: JList[JTensor], isTable: Boolean):
-    Unit = {
-    val stateActivity = jTensorsToActivity(gradHiddenState, isTable)
-    rec.setGradHiddenState(stateActivity)
-  }
-
-  def getGradHiddenStates(rec: RecurrentDecoder[T]): JList[JList[JTensor]] = {
-    val res = rec.getGradHiddenStates()
-    res.map { x =>
-      if (x.isTensor) List(toJTensor(x.toTensor)).asJava
-      else List(toJTensor(x.toTable.apply[Tensor[T]](1)),
-        toJTensor(x.toTable.apply[Tensor[T]](2))).asJava
-    }.toList.asJava
-  }
-
-  def setGradHiddenStates(rec: RecurrentDecoder[T], gradHiddenStates: JList[JList[JTensor]],
-                          isTable: JList[Boolean]): Unit = {
-    rec.setGradHiddenStates((gradHiddenStates.asScala, isTable.asScala).zipped.map {
-      (state, table) => jTensorsToActivity(state, table)
-    }.toArray)
+  
+  def setGradHiddenStates(rec: Recurrent[T], hiddenStates: JList[JList[JTensor]],
+                      isTable: JList[Boolean]): Unit = {
+    if (rec.containMultiRNNCell) {
+      val activities = (hiddenStates.asScala, isTable.asScala).zipped.map { (state, table) =>
+        jTensorsToActivity(state, table)}.toArray
+      val newStates = T()
+      for((activity, i) <- activities.view.zipWithIndex) {
+        newStates(i) = activity
+      }
+      rec.setGradHiddenState(newStates)
+    } else {
+      rec.setGradHiddenState(jTensorsToActivity(hiddenStates.asScala.head, isTable.asScala.head))
+    }
   }
 
   def setLayerFreeze(model: AbstractModule[Activity, Activity, T])

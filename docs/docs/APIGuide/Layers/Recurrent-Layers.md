@@ -79,8 +79,8 @@ input[0][4][0] = 1
 
 output = module.forward(input)
 
-res = module.get_state()
-module.set_state(res)
+res = module.get_states()
+module.set_states(res)
 
 > input
 [[[ 0.  0.  0.  0.  1.]
@@ -1575,8 +1575,8 @@ val model = MultiRNNCell(cells = multiRNNCells)
 model = MultiRNNCell(cells = multiRNNCells)
 ```
 
-A cell that stack multiple rnn cells. Only works with RecurrentDecoder. If you want to
-stack multiple cells with Recurrent. Use Sequential().add(Recurrent(cell)).add(Recurrent(cell))... instead
+A cell that stack multiple rnn cells(simpleRNN/LSTM/LSTMPeephole/GRU/ConvLSTMPeephole/ConvLSTMPeephole3D).
+Only works with RecurrentDecoder. If you want to stack multiple cells with Recurrent. Use Sequential().add(Recurrent(cell)).add(Recurrent(cell))... instead
 
 Parameters:
 

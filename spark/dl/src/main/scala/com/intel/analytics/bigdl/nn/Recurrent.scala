@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, Tensor
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer.{ContainerSerializable, DataConverter, ModuleData, ModuleSerializer}
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.{T, Table}
 import serialization.Bigdl.{AttrValue, BigDLModule}
 import scala.reflect.runtime.universe
 import scala.collection.JavaConverters._
@@ -75,7 +75,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     require(module.isInstanceOf[Cell[T]],
       "Recurrent: added module should be Cell type!")
     require(!module.isInstanceOf[MultiRNNCell[T]],
-      "Recurrent: added module cannot be MultiRNNCell due to performance issue," +
+      "Recurrent: added module cannot be MultiRNNCell," +
         "use Sequential().add(Recurrent(cell)).add(Recurrent(cell))... instead!")
 
     topology = module.asInstanceOf[Cell[T]]
@@ -303,6 +303,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
       currentGradOutput(inputDim) = Recurrent.selectCopy(gradOutput, i, gradBuffer)
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
       else if (initHiddenState == null) hidden else initHiddenState
+
       _input(inputDim) = Recurrent.selectCopy(outputCell, i, outputBuffer)
 
       if (i == 1) {
@@ -364,6 +365,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
 
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
       else if (initHiddenState == null) hidden else initHiddenState
+
       _input(inputDim) = Recurrent.selectCopy(outputCell, i, outputBuffer)
       if (i == 1) {
         cells(i - 1).regluarized(true)
@@ -484,6 +486,8 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     modules.foreach(_.reset())
     cells.clear()
   }
+  
+  lazy val containMultiRNNCell: Boolean = topology.isInstanceOf[MultiRNNCell[T]]
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[Recurrent[T]]
 

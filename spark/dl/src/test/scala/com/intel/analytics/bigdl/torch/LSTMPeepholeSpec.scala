@@ -718,8 +718,10 @@ class LSTMPeepholeSpec  extends TorchSpec {
       Tensor[Double](batchSize, hiddenSize).rand)
     val gradOutput = Tensor[Double](batchSize, seqLength, hiddenSize).rand
     val rec = Recurrent()
+
     rec.setHiddenState(state)
     rec.setGradHiddenState(gradState)
+
     val model = Sequential()
       .add(rec
         .add(LSTMPeephole(inputSize, hiddenSize)))
