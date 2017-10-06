@@ -110,7 +110,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       }.sortWith(_._1 < _._1).map(pair => pair._2).asJava
     }
   }
-  
+
   def toPySample(sample: JSample[T]): Sample = {
     val cls = implicitly[ClassTag[T]].runtimeClass
     Sample(toJTensor(sample.feature()), toJTensor(sample.label()), cls.getSimpleName)
@@ -1938,7 +1938,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       rec.setHiddenState(jTensorsToActivity(hiddenStates.asScala.head, isTable.asScala.head))
     }
   }
-  
+
   def containMultiRNNCell(rec: Recurrent[T]): Boolean = rec.containMultiRNNCell
 
   def getGradHiddenStates(rec: Recurrent[T]): JList[JList[JTensor]] = {
@@ -1958,7 +1958,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     }
     res.toList.asJava
   }
-  
+
   def setGradHiddenStates(rec: Recurrent[T], hiddenStates: JList[JList[JTensor]],
                       isTable: JList[Boolean]): Unit = {
     if (rec.containMultiRNNCell) {

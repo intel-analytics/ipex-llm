@@ -191,10 +191,11 @@ class Seq2seqSpec extends FlatSpec with BeforeAndAfter with Matchers {
       s"""
          |
       |-- 1.4. Combine 1.1 and 1.3 to produce final model
-         |require 'rnn'         
+         |require 'rnn'
          |
          |local function forwardConnect(encLSTM, decLSTM)
-         |    decLSTM.userPrevOutput = nn.rnn.recursiveCopy(decLSTM.userPrevOutput, encLSTM.outputs[3])
+         |    decLSTM.userPrevOutput =
+         |      nn.rnn.recursiveCopy(decLSTM.userPrevOutput, encLSTM.outputs[3])
          |    decLSTM.userPrevCell = nn.rnn.recursiveCopy(decLSTM.userPrevCell, encLSTM.cells[3])
          |end
          |
@@ -211,11 +212,11 @@ class Seq2seqSpec extends FlatSpec with BeforeAndAfter with Matchers {
          |enc1:zeroGradParameters()
          |
          |local enc = nn.Sequential()
-         |local encLSTM = nn.FastLSTM(2, 2)         
+         |local encLSTM = nn.FastLSTM(2, 2)
          |enc:add(nn.Sequencer(encLSTM))
          |enc:add(nn.SelectTable(-1))
          |local parameters2, gradParameters2 = enc:getParameters()
-         |parameters2:copy(enclstm)         
+         |parameters2:copy(enclstm)
          |enc:zeroGradParameters()
          |
          |local dec = nn.Sequential()
@@ -243,11 +244,11 @@ class Seq2seqSpec extends FlatSpec with BeforeAndAfter with Matchers {
          |local Edec = criterion:forward(decOutput, decOut)
          |
          |local gEdec = criterion:backward(decOutput, decOut)
-         |local decGradInput = dec:backward(input2, gEdec)         
+         |local decGradInput = dec:backward(input2, gEdec)
          |backwardConnect(encLSTM, decLSTM)
-         |local zeroTensor = torch.zeros(encOutput:size())         
+         |local zeroTensor = torch.zeros(encOutput:size())
          |local encGradInput = enc:backward(enc1output, zeroTensor)
-         |local enc1GradInput = enc1:backward(input, encGradInput)       
+         |local enc1GradInput = enc1:backward(input, encGradInput)
     """.stripMargin
     scala.Seq
 

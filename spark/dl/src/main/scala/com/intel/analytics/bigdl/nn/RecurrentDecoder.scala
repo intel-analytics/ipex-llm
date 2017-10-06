@@ -118,7 +118,8 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
     output.resize(Array(batchSize, times) ++ featureSizes)
     if (preTopology != null) {
       val sizes = output.size()
-      sizes(2) = hiddenSize * 4
+      sizes(2) = if (topology.isInstanceOf[RnnCell[T]]) hiddenSize
+      else hiddenSize * 4
       outputCell.resize(sizes)
     } else outputCell.resize(output.size())
     initHidden(outputSize.drop(1))

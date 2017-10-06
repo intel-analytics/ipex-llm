@@ -40,7 +40,7 @@ object Utils {
                           stateSnapshot: Option[String] = None,
                           checkpoint: Option[String] = None,
                           batchSize: Int = 128,
-                          learningRate: Double = 0.001,
+                          learningRate: Double = 0.1,
                           momentum: Double = 0.0,
                           weightDecay: Double = 0.0,
                           dampening: Double = 0.0,
