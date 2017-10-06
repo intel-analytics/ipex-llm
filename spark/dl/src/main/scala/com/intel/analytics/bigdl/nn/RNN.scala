@@ -54,7 +54,8 @@ class RnnCell[T : ClassTag] (
   var uRegularizer: Regularizer[T] = null,
   var bRegularizer: Regularizer[T] = null)
   (implicit ev: TensorNumeric[T])
-  extends Cell[T](Array(hiddenSize)) {
+  extends Cell[T](Array(hiddenSize),
+    regularizers = Array(wRegularizer, uRegularizer, bRegularizer)) {
 
   override var preTopology: TensorModule[T] =
     Linear[T](inputSize,
