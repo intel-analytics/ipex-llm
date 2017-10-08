@@ -336,15 +336,16 @@ object DataSet {
    */
   def array[T: ClassTag](localData: Array[T], sc: SparkContext): DistributedDataSet[T] = {
     val nodeNumber = Engine.nodeNumber()
-    new CachedDistriDataSet[T](
-      sc.parallelize(localData, Engine.partitionNumber)
+    val rdd = sc.parallelize(localData, Engine.partitionNumber)
         // Keep this line, or the array will be send to worker every time
         .coalesce(Engine.partitionNumber, true)
         .mapPartitions(iter => {
           Iterator.single(iter.toArray)
         }).setName("cached dataset")
         .cache()
-    )
+    rdd.localCheckpoint()
+    rdd.count()
+    new CachedDistriDataSet[T](rdd)
   }
 
   /**
@@ -355,13 +356,14 @@ object DataSet {
    */
   def rdd[T: ClassTag](data: RDD[T]): DistributedDataSet[T] = {
     val nodeNumber = Engine.nodeNumber()
-    new CachedDistriDataSet[T](
-      data.coalesce(Engine.partitionNumber, true)
+    val rdd = data.coalesce(Engine.partitionNumber, true)
         .mapPartitions(iter => {
           Iterator.single(iter.toArray)
         }).setName("cached dataset")
         .cache()
-    )
+    rdd.localCheckpoint()
+    val c = rdd.count()
+    new CachedDistriDataSet[T](rdd)
   }
 
   /**

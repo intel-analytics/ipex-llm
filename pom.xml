@@ -546,6 +546,17 @@
             </properties>
         </profile>
         <profile>
+            <id>spark_2.3</id>
+            <properties>
+                <spark-version.project>2.3</spark-version.project>
+                <spark.version>2.1.1-drizzle</spark.version>
+                <scala.major.version>2.11</scala.major.version>
+                <scala.version>2.11.8</scala.version>
+                <scala.macros.version>2.1.0</scala.macros.version>
+                <guava.version>14.0.1</guava.version>
+            </properties>
+        </profile>
+        <profile>
             <id>scala_2.11</id>
             <properties>
                 <scala.major.version>2.11</scala.major.version>

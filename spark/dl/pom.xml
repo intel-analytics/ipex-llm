@@ -123,7 +123,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>11.0.2</version>
+            <version>${guava.version}</version>
         </dependency>
         <dependency>
             <groupId>com.github.scopt</groupId>
