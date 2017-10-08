@@ -119,11 +119,11 @@ class SessionSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val session = new BigDLSessionImpl[Float](newModel, sc, context)
 
     val endpoints = Seq(
-      "control_dependency"
+      "fifo_queue_Dequeue"
     )
     val rdd = session.getRDD(endpoints)
     val result = rdd.count()
-    result should be (10)
+    result should be (5)
   }
 
 }

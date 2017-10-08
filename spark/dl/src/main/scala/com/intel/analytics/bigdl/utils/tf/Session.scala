@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dataset.{DataSet, DistributedDataSet, MiniBatch
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Graph, Linear}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.{NumericWildcard, TensorNumeric}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils._
 import org.apache.spark.SparkContext
@@ -226,22 +226,25 @@ class BigDLSessionImpl[T: ClassTag](
   private def handleDistriDequeueManyNode(node: Node[NodeDef], cache: DataCache): RDD[Table] = {
     require(node.prevNodes.length == 2, "require QueueDequeueManyV2 only has two input")
     val queueNode = node.prevNodes.head
-    val enqueueNodes = queueNode.nextNodes.filter(n => enqueueOp(n.element.getOp))
+    val dequeueNodes = queueNode.nextNodes
+      .filter(n => n.element != null && dequeueOp(n.element.getOp))
+      .map(n => n.element.getName.split(":")(0)).toSet
+    require(dequeueNodes.size == 1, "only support one dequeue node after reader")
+    val enqueueNodes = queueNode.nextNodes
+      .filter(n => n.element != null && enqueueOp(n.element.getOp))
     // get previous rdd
     val rdd = enqueueNodes.map { enqueueNode =>
       val inputs = Seq(enqueueNode.element.getName)
       constructDistributeData(inputs, cache)
     }.reduce { (rdd1, rdd2) =>
-      rdd1.zip(rdd2).map { case (seq1, seq2) =>
-        seq1.add(seq2)
-      }
+      rdd1.union(rdd2)
     }
 
     // get batch size
     val batchSizeNode = node.prevNodes(1)
     require(batchSizeNode.element.getOp == "Const", "batchsize must be a const")
 
-    val batchSize = batchSizeNode.element.getAttrMap.get("value").getI.toInt
+    val batchSize = batchSizeNode.element.getAttrMap.get("value").getTensor.getIntVal(0)
 
     val batchRdd = rdd.mapPartitions { iter =>
 
@@ -250,47 +253,45 @@ class BigDLSessionImpl[T: ClassTag](
 
         override def next(): Table = {
           require(iter.hasNext, "Call next() on a empty iterator")
-          val batch = for (_ <- 0 until batchSize if iter.hasNext) yield {
+          val tables = for (_ <- 0 until batchSize if iter.hasNext) yield {
             iter.next()
           }
-          pack(batch)
+          val batch = tables.map(_.toSeq)
+          val firstSeq = batch.head
+          val sizes = firstSeq.map { tensor =>
+            val nDim = tensor.nDimension()
+            val size: Array[Int] = new Array[Int](nDim + 1)
+            var i = 1
+            while(i <= nDim + 1) {
+              if (i < 1) {
+                size(i-1) = tensor.size(i)
+              } else if (i == 1) {
+                size(i-1) = batch.length
+              } else {
+                size(i-1) = tensor.size(i - 1)
+              }
+              i = i + 1
+            }
+            size
+          }
+
+          val results = sizes.zipWithIndex.map { case (size, i) =>
+            firstSeq(i).emptyInstance().resize(size)
+          }
+
+          for ((seq, index) <- batch.zipWithIndex) {
+            results.zip(seq).foreach { case (result, tensor) =>
+              result.asInstanceOf[Tensor[NumericWildcard]]
+                .narrow(1, index + 1, 1)
+                .copy(tensor.asInstanceOf[Tensor[NumericWildcard]])
+            }
+          }
+          T.seq(results)
         }
       }
 
     }
     batchRdd
-  }
-
-  private def pack(tables: Seq[Table], dimension: Int = 1): Table = {
-    val batch = tables.map(_.toSeq[T])
-    val firstSeq = batch.head
-    val sizes = firstSeq.map { tensor =>
-      val nDim = tensor.nDimension()
-      val size: Array[Int] = new Array[Int](nDim + 1)
-      var i = 1
-      while(i <= nDim + 1) {
-        if (i < dimension) {
-          size(i-1) = tensor.size(i)
-        } else if (i == dimension) {
-          size(i-1) = batch.length
-        } else {
-          size(i-1) = tensor.size(i - 1)
-        }
-        i = i + 1
-      }
-      size
-    }
-
-    val results = sizes.map { size =>
-      Tensor[T](size)
-    }
-
-    for ((seq, index) <- batch.zipWithIndex) {
-      results.zip(seq).foreach { case (result, tensor) =>
-        result.narrow(dimension, index + 1, 1).copy(tensor)
-      }
-    }
-    T.seq(results)
   }
 
   type DataCache = mutable.HashMap[String, Array[Seq[Table]]]

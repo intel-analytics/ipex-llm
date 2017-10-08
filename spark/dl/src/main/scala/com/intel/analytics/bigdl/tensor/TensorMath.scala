@@ -411,6 +411,16 @@ trait TensorMath[T] {
   def div(value: T): Tensor[T]
 
   /**
+   * Element-wise divide
+   * x.cdiv(y) all elements of x divide all elements of y.
+   * x = x / y
+   *
+   * @param y tensor
+   * @return current tensor
+   */
+  def div(y: Tensor[T]): Tensor[T]
+
+  /**
    * put the result of x * value in current tensor
    *
    * @param value

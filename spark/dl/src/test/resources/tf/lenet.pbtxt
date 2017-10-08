@@ -4837,7 +4837,7 @@ node {
         dtype: DT_INT32
         tensor_shape {
         }
-        int_val: 32
+        int_val: 2
       }
     }
   }

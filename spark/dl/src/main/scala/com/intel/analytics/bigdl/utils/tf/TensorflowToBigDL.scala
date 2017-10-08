@@ -28,6 +28,7 @@ import org.tensorflow.framework.{AttrValue, DataType, NodeDef, TensorProto}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
 import com.intel.analytics.bigdl.nn.tf._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.tf.FullConnectionTF.getOrSetTensor
 import com.intel.analytics.bigdl.utils.{DirectedGraph, Node, T}
 import com.intel.analytics.bigdl.utils.tf.TensorflowLoader.Context
 import com.intel.analytics.bigdl.utils.tf.TensorflowToBigDL._
