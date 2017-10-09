@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
+import com.intel.analytics.bigdl.nn.quantized.{Quantizable, Quantizer}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
@@ -255,7 +256,7 @@ class TimeDistributed[T : ClassTag] (val layer: TensorModule[T])
     case that: TimeDistributed[T] =>
       super.equals(that) &&
         (that canEqual this) &&
-        layer.equals(layer) &&
+        layer.equals(that.layer) &&
         inputSize == that.inputSize &&
         gradOutputSize == that.gradOutputSize &&
         outputSize == that.outputSize
@@ -271,9 +272,16 @@ class TimeDistributed[T : ClassTag] (val layer: TensorModule[T])
   override def toString(): String = s"${getPrintName}${layer}"
 }
 
-object TimeDistributed {
+object TimeDistributed extends Quantizable {
   def apply[@specialized(Float, Double) T: ClassTag](layer: TensorModule[T])
     (implicit ev: TensorNumeric[T]): TimeDistributed[T] = {
     new TimeDistributed[T](layer)
+  }
+
+  def quantize[T: ClassTag](module: Module[T])(implicit ev: TensorNumeric[T]): Module[T] = {
+    val timeDist = module.asInstanceOf[TimeDistributed[T]]
+    val layer = Quantizer.quantize(timeDist.layer).asInstanceOf[TensorModule[T]]
+    val newtm = new TimeDistributed[T](layer)
+    newtm
   }
 }

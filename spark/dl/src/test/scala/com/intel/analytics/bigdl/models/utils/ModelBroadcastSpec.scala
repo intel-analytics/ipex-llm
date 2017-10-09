@@ -47,6 +47,21 @@ class ModelBroadcastSpec extends FlatSpec with Matchers with BeforeAndAfter {
     modelBroadCast.value().parameters()._1 should be(model.parameters()._1)
   }
 
+  "quantized model broadcast" should "work properly" in {
+    val model = LeNet5(10).quantize()
+
+    val modelBroadCast = ModelBroadcast[Float].broadcast(sc, model)
+    modelBroadCast.value().toString should be(model.toString)
+    val v1 = modelBroadCast.value().parameters()._1
+    val v2 = model.parameters()._1
+    for (i <- 0 until v1.length) {
+      val t = v1(i).eq(v2(i))
+      println("")
+      v1(i).equals(v2(i))
+      v1(i) should be (v2(i))
+    }
+  }
+
   after {
     if (sc != null) {
       sc.stop()

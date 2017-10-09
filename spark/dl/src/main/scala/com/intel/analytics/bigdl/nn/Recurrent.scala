@@ -19,7 +19,8 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn.quantized.{Quantizable, Quantizer}
+import com.intel.analytics.bigdl.tensor.{QuantizedTensor, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer.{ContainerSerializable, DataConverter, ModuleData, ModuleSerializer}
 import com.intel.analytics.bigdl.utils.T
@@ -146,8 +147,17 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     var t = cells.length
     if (t < times) {
       val cloneCell = cells.head.cloneModule()
-      cloneCell.parameters()._1.map(_.set())
+
+      cloneCell.parameters()._1.map { p =>
+        // for quantization, we should release the native memory first
+        if (p.isInstanceOf[QuantizedTensor[T]]) {
+          p.asInstanceOf[QuantizedTensor[T]].release()
+        }
+        p.set()
+      }
+
       cloneCell.parameters()._2.map(_.set())
+      cloneCell.clearState()
       while (t < times) {
         cells += cloneCell.cloneModule()
           .asInstanceOf[Cell[T]]
@@ -477,7 +487,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
   override def toString(): String = s"${getPrintName}${modules}"
 }
 
-object Recurrent extends ContainerSerializable {
+object Recurrent extends ContainerSerializable with Quantizable {
 
   private val batchDim = 1
   private val timeDim = 2
@@ -710,6 +720,24 @@ object Recurrent extends ContainerSerializable {
     recurrentBuilder.putAttr("bnorm", bNormBuilder.build)
 
     createSerializeBigDLModule(recurrentBuilder, module)
+  }
+
+  override def quantize[T: ClassTag](module: Module[T])(
+    implicit ev: TensorNumeric[T]): Module[T] = {
+    val recurrent = module.asInstanceOf[Recurrent[T]]
+
+    recurrent.topology = Quantizer.quantize(recurrent.topology).asInstanceOf[Cell[T]]
+    if (recurrent.preTopology != null) {
+      recurrent.preTopology = Quantizer.quantize(recurrent.preTopology)
+    }
+
+    recurrent.modules.clear()
+    if (recurrent.preTopology != null) {
+      recurrent.modules += recurrent.preTopology
+    }
+    recurrent.modules += recurrent.topology
+
+    recurrent
   }
 }
 

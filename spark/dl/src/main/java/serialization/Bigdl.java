@@ -551,6 +551,104 @@ public final class Bigdl {
   }
 
   /**
+   * Protobuf enum {@code serialization.TensorType}
+   */
+  public enum TensorType
+      implements com.google.protobuf.ProtocolMessageEnum {
+    /**
+     * <code>DENSE = 0;</code>
+     */
+    DENSE(0),
+    /**
+     * <code>QUANT = 1;</code>
+     */
+    QUANT(1),
+    UNRECOGNIZED(-1),
+    ;
+
+    /**
+     * <code>DENSE = 0;</code>
+     */
+    public static final int DENSE_VALUE = 0;
+    /**
+     * <code>QUANT = 1;</code>
+     */
+    public static final int QUANT_VALUE = 1;
+
+
+    public final int getNumber() {
+      if (this == UNRECOGNIZED) {
+        throw new java.lang.IllegalArgumentException(
+            "Can't get the number of an unknown enum value.");
+      }
+      return value;
+    }
+
+    /**
+     * @deprecated Use {@link #forNumber(int)} instead.
+     */
+    @java.lang.Deprecated
+    public static TensorType valueOf(int value) {
+      return forNumber(value);
+    }
+
+    public static TensorType forNumber(int value) {
+      switch (value) {
+        case 0: return DENSE;
+        case 1: return QUANT;
+        default: return null;
+      }
+    }
+
+    public static com.google.protobuf.Internal.EnumLiteMap<TensorType>
+        internalGetValueMap() {
+      return internalValueMap;
+    }
+    private static final com.google.protobuf.Internal.EnumLiteMap<
+        TensorType> internalValueMap =
+          new com.google.protobuf.Internal.EnumLiteMap<TensorType>() {
+            public TensorType findValueByNumber(int number) {
+              return TensorType.forNumber(number);
+            }
+          };
+
+    public final com.google.protobuf.Descriptors.EnumValueDescriptor
+        getValueDescriptor() {
+      return getDescriptor().getValues().get(ordinal());
+    }
+    public final com.google.protobuf.Descriptors.EnumDescriptor
+        getDescriptorForType() {
+      return getDescriptor();
+    }
+    public static final com.google.protobuf.Descriptors.EnumDescriptor
+        getDescriptor() {
+      return serialization.Bigdl.getDescriptor().getEnumTypes().get(4);
+    }
+
+    private static final TensorType[] VALUES = values();
+
+    public static TensorType valueOf(
+        com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+      if (desc.getType() != getDescriptor()) {
+        throw new java.lang.IllegalArgumentException(
+          "EnumValueDescriptor is not for this type.");
+      }
+      if (desc.getIndex() == -1) {
+        return UNRECOGNIZED;
+      }
+      return VALUES[desc.getIndex()];
+    }
+
+    private final int value;
+
+    private TensorType(int value) {
+      this.value = value;
+    }
+
+    // @@protoc_insertion_point(enum_scope:serialization.TensorType)
+  }
+
+  /**
    * Protobuf enum {@code serialization.DataType}
    */
   public enum DataType
@@ -615,6 +713,10 @@ public final class Bigdl {
      * <code>CUSTOM = 14;</code>
      */
     CUSTOM(14),
+    /**
+     * <code>BYTES = 15;</code>
+     */
+    BYTES(15),
     UNRECOGNIZED(-1),
     ;
 
@@ -678,6 +780,10 @@ public final class Bigdl {
      * <code>CUSTOM = 14;</code>
      */
     public static final int CUSTOM_VALUE = 14;
+    /**
+     * <code>BYTES = 15;</code>
+     */
+    public static final int BYTES_VALUE = 15;
 
 
     public final int getNumber() {
@@ -713,6 +819,7 @@ public final class Bigdl {
         case 12: return ARRAY_VALUE;
         case 13: return DATA_FORMAT;
         case 14: return CUSTOM;
+        case 15: return BYTES;
         default: return null;
       }
     }
@@ -739,7 +846,7 @@ public final class Bigdl {
     }
     public static final com.google.protobuf.Descriptors.EnumDescriptor
         getDescriptor() {
-      return serialization.Bigdl.getDescriptor().getEnumTypes().get(4);
+      return serialization.Bigdl.getDescriptor().getEnumTypes().get(5);
     }
 
     private static final DataType[] VALUES = values();
@@ -4243,6 +4350,24 @@ public final class Bigdl {
      * <code>repeated double double_data = 4;</code>
      */
     double getDoubleData(int index);
+
+    /**
+     * <pre>
+     * quantize tensor element
+     * </pre>
+     *
+     * <code>optional bytes bytes_data = 5;</code>
+     */
+    com.google.protobuf.ByteString getBytesData();
+
+    /**
+     * <code>optional .serialization.TensorType tensorType = 6;</code>
+     */
+    int getTensorTypeValue();
+    /**
+     * <code>optional .serialization.TensorType tensorType = 6;</code>
+     */
+    serialization.Bigdl.TensorType getTensorType();
   }
   /**
    * Protobuf type {@code serialization.BigDLTensor}
@@ -4260,6 +4385,8 @@ public final class Bigdl {
       size_ = java.util.Collections.emptyList();
       floatData_ = java.util.Collections.emptyList();
       doubleData_ = java.util.Collections.emptyList();
+      bytesData_ = com.google.protobuf.ByteString.EMPTY;
+      tensorType_ = 0;
     }
 
     @java.lang.Override
@@ -4354,6 +4481,17 @@ public final class Bigdl {
                 doubleData_.add(input.readDouble());
               }
               input.popLimit(limit);
+              break;
+            }
+            case 42: {
+
+              bytesData_ = input.readBytes();
+              break;
+            }
+            case 48: {
+              int rawValue = input.readEnum();
+
+              tensorType_ = rawValue;
               break;
             }
           }
@@ -4510,6 +4648,35 @@ public final class Bigdl {
     }
     private int doubleDataMemoizedSerializedSize = -1;
 
+    public static final int BYTES_DATA_FIELD_NUMBER = 5;
+    private com.google.protobuf.ByteString bytesData_;
+    /**
+     * <pre>
+     * quantize tensor element
+     * </pre>
+     *
+     * <code>optional bytes bytes_data = 5;</code>
+     */
+    public com.google.protobuf.ByteString getBytesData() {
+      return bytesData_;
+    }
+
+    public static final int TENSORTYPE_FIELD_NUMBER = 6;
+    private int tensorType_;
+    /**
+     * <code>optional .serialization.TensorType tensorType = 6;</code>
+     */
+    public int getTensorTypeValue() {
+      return tensorType_;
+    }
+    /**
+     * <code>optional .serialization.TensorType tensorType = 6;</code>
+     */
+    public serialization.Bigdl.TensorType getTensorType() {
+      serialization.Bigdl.TensorType result = serialization.Bigdl.TensorType.valueOf(tensorType_);
+      return result == null ? serialization.Bigdl.TensorType.UNRECOGNIZED : result;
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -4546,6 +4713,12 @@ public final class Bigdl {
       }
       for (int i = 0; i < doubleData_.size(); i++) {
         output.writeDoubleNoTag(doubleData_.get(i));
+      }
+      if (!bytesData_.isEmpty()) {
+        output.writeBytes(5, bytesData_);
+      }
+      if (tensorType_ != serialization.Bigdl.TensorType.DENSE.getNumber()) {
+        output.writeEnum(6, tensorType_);
       }
     }
 
@@ -4594,6 +4767,14 @@ public final class Bigdl {
         }
         doubleDataMemoizedSerializedSize = dataSize;
       }
+      if (!bytesData_.isEmpty()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(5, bytesData_);
+      }
+      if (tensorType_ != serialization.Bigdl.TensorType.DENSE.getNumber()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(6, tensorType_);
+      }
       memoizedSize = size;
       return size;
     }
@@ -4617,6 +4798,9 @@ public final class Bigdl {
           .equals(other.getFloatDataList());
       result = result && getDoubleDataList()
           .equals(other.getDoubleDataList());
+      result = result && getBytesData()
+          .equals(other.getBytesData());
+      result = result && tensorType_ == other.tensorType_;
       return result;
     }
 
@@ -4641,6 +4825,10 @@ public final class Bigdl {
         hash = (37 * hash) + DOUBLE_DATA_FIELD_NUMBER;
         hash = (53 * hash) + getDoubleDataList().hashCode();
       }
+      hash = (37 * hash) + BYTES_DATA_FIELD_NUMBER;
+      hash = (53 * hash) + getBytesData().hashCode();
+      hash = (37 * hash) + TENSORTYPE_FIELD_NUMBER;
+      hash = (53 * hash) + tensorType_;
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -4767,6 +4955,10 @@ public final class Bigdl {
         bitField0_ = (bitField0_ & ~0x00000004);
         doubleData_ = java.util.Collections.emptyList();
         bitField0_ = (bitField0_ & ~0x00000008);
+        bytesData_ = com.google.protobuf.ByteString.EMPTY;
+
+        tensorType_ = 0;
+
         return this;
       }
 
@@ -4807,6 +4999,8 @@ public final class Bigdl {
           bitField0_ = (bitField0_ & ~0x00000008);
         }
         result.doubleData_ = doubleData_;
+        result.bytesData_ = bytesData_;
+        result.tensorType_ = tensorType_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -4881,6 +5075,12 @@ public final class Bigdl {
             doubleData_.addAll(other.doubleData_);
           }
           onChanged();
+        }
+        if (other.getBytesData() != com.google.protobuf.ByteString.EMPTY) {
+          setBytesData(other.getBytesData());
+        }
+        if (other.tensorType_ != 0) {
+          setTensorTypeValue(other.getTensorTypeValue());
         }
         onChanged();
         return this;
@@ -5231,6 +5431,91 @@ public final class Bigdl {
       public Builder clearDoubleData() {
         doubleData_ = java.util.Collections.emptyList();
         bitField0_ = (bitField0_ & ~0x00000008);
+        onChanged();
+        return this;
+      }
+
+      private com.google.protobuf.ByteString bytesData_ = com.google.protobuf.ByteString.EMPTY;
+      /**
+       * <pre>
+       * quantize tensor element
+       * </pre>
+       *
+       * <code>optional bytes bytes_data = 5;</code>
+       */
+      public com.google.protobuf.ByteString getBytesData() {
+        return bytesData_;
+      }
+      /**
+       * <pre>
+       * quantize tensor element
+       * </pre>
+       *
+       * <code>optional bytes bytes_data = 5;</code>
+       */
+      public Builder setBytesData(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        bytesData_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * quantize tensor element
+       * </pre>
+       *
+       * <code>optional bytes bytes_data = 5;</code>
+       */
+      public Builder clearBytesData() {
+        
+        bytesData_ = getDefaultInstance().getBytesData();
+        onChanged();
+        return this;
+      }
+
+      private int tensorType_ = 0;
+      /**
+       * <code>optional .serialization.TensorType tensorType = 6;</code>
+       */
+      public int getTensorTypeValue() {
+        return tensorType_;
+      }
+      /**
+       * <code>optional .serialization.TensorType tensorType = 6;</code>
+       */
+      public Builder setTensorTypeValue(int value) {
+        tensorType_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .serialization.TensorType tensorType = 6;</code>
+       */
+      public serialization.Bigdl.TensorType getTensorType() {
+        serialization.Bigdl.TensorType result = serialization.Bigdl.TensorType.valueOf(tensorType_);
+        return result == null ? serialization.Bigdl.TensorType.UNRECOGNIZED : result;
+      }
+      /**
+       * <code>optional .serialization.TensorType tensorType = 6;</code>
+       */
+      public Builder setTensorType(serialization.Bigdl.TensorType value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        
+        tensorType_ = value.getNumber();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .serialization.TensorType tensorType = 6;</code>
+       */
+      public Builder clearTensorType() {
+        
+        tensorType_ = 0;
         onChanged();
         return this;
       }
@@ -6162,6 +6447,11 @@ public final class Bigdl {
      */
     com.google.protobuf.AnyOrBuilder getCustomValueOrBuilder();
 
+    /**
+     * <code>optional bytes bytesValue = 18;</code>
+     */
+    com.google.protobuf.ByteString getBytesValue();
+
     public serialization.Bigdl.AttrValue.ValueCase getValueCase();
   }
   /**
@@ -6356,6 +6646,11 @@ public final class Bigdl {
                 value_ = subBuilder.buildPartial();
               }
               valueCase_ = 17;
+              break;
+            }
+            case 146: {
+              valueCase_ = 18;
+              value_ = input.readBytes();
               break;
             }
           }
@@ -11818,6 +12113,7 @@ public final class Bigdl {
       ARRAYVALUE(15),
       DATAFORMATVALUE(16),
       CUSTOMVALUE(17),
+      BYTESVALUE(18),
       VALUE_NOT_SET(0);
       private final int value;
       private ValueCase(int value) {
@@ -11848,6 +12144,7 @@ public final class Bigdl {
           case 15: return ARRAYVALUE;
           case 16: return DATAFORMATVALUE;
           case 17: return CUSTOMVALUE;
+          case 18: return BYTESVALUE;
           case 0: return VALUE_NOT_SET;
           default: return null;
         }
@@ -12303,6 +12600,17 @@ public final class Bigdl {
       return com.google.protobuf.Any.getDefaultInstance();
     }
 
+    public static final int BYTESVALUE_FIELD_NUMBER = 18;
+    /**
+     * <code>optional bytes bytesValue = 18;</code>
+     */
+    public com.google.protobuf.ByteString getBytesValue() {
+      if (valueCase_ == 18) {
+        return (com.google.protobuf.ByteString) value_;
+      }
+      return com.google.protobuf.ByteString.EMPTY;
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -12370,6 +12678,10 @@ public final class Bigdl {
       }
       if (valueCase_ == 17) {
         output.writeMessage(17, (com.google.protobuf.Any) value_);
+      }
+      if (valueCase_ == 18) {
+        output.writeBytes(
+            18, (com.google.protobuf.ByteString)((com.google.protobuf.ByteString) value_));
       }
     }
 
@@ -12448,6 +12760,11 @@ public final class Bigdl {
       if (valueCase_ == 17) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(17, (com.google.protobuf.Any) value_);
+      }
+      if (valueCase_ == 18) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(
+              18, (com.google.protobuf.ByteString)((com.google.protobuf.ByteString) value_));
       }
       memoizedSize = size;
       return size;
@@ -12536,6 +12853,10 @@ public final class Bigdl {
           result = result && getCustomValue()
               .equals(other.getCustomValue());
           break;
+        case 18:
+          result = result && getBytesValue()
+              .equals(other.getBytesValue());
+          break;
         case 0:
         default:
       }
@@ -12617,6 +12938,10 @@ public final class Bigdl {
         case 17:
           hash = (37 * hash) + CUSTOMVALUE_FIELD_NUMBER;
           hash = (53 * hash) + getCustomValue().hashCode();
+          break;
+        case 18:
+          hash = (37 * hash) + BYTESVALUE_FIELD_NUMBER;
+          hash = (53 * hash) + getBytesValue().hashCode();
           break;
         case 0:
         default:
@@ -12842,6 +13167,9 @@ public final class Bigdl {
             result.value_ = customValueBuilder_.build();
           }
         }
+        if (valueCase_ == 18) {
+          result.value_ = value_;
+        }
         result.valueCase_ = valueCase_;
         onBuilt();
         return result;
@@ -12952,6 +13280,10 @@ public final class Bigdl {
           }
           case CUSTOMVALUE: {
             mergeCustomValue(other.getCustomValue());
+            break;
+          }
+          case BYTESVALUE: {
+            setBytesValue(other.getBytesValue());
             break;
           }
           case VALUE_NOT_SET: {
@@ -14721,6 +15053,39 @@ public final class Bigdl {
         onChanged();;
         return customValueBuilder_;
       }
+
+      /**
+       * <code>optional bytes bytesValue = 18;</code>
+       */
+      public com.google.protobuf.ByteString getBytesValue() {
+        if (valueCase_ == 18) {
+          return (com.google.protobuf.ByteString) value_;
+        }
+        return com.google.protobuf.ByteString.EMPTY;
+      }
+      /**
+       * <code>optional bytes bytesValue = 18;</code>
+       */
+      public Builder setBytesValue(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  valueCase_ = 18;
+        value_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bytes bytesValue = 18;</code>
+       */
+      public Builder clearBytesValue() {
+        if (valueCase_ == 18) {
+          valueCase_ = 0;
+          value_ = null;
+          onChanged();
+        }
+        return this;
+      }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return this;
@@ -15648,65 +16013,68 @@ public final class Bigdl {
       "ry\022\013\n\003key\030\001 \001(\t\022\'\n\005value\030\002 \001(\0132\030.seriali",
       "zation.AttrValue:\0028\001\"M\n\nInitMethod\0221\n\nme" +
       "thodType\030\001 \001(\0162\035.serialization.InitMetho" +
-      "dType\022\014\n\004data\030\002 \003(\001\"o\n\013BigDLTensor\022)\n\010da" +
-      "tatype\030\001 \001(\0162\027.serialization.DataType\022\014\n" +
-      "\004size\030\002 \003(\005\022\022\n\nfloat_data\030\003 \003(\002\022\023\n\013doubl" +
-      "e_data\030\004 \003(\001\"[\n\013Regularizer\0227\n\017regulariz" +
-      "erType\030\001 \001(\0162\036.serialization.Regularizer" +
-      "Type\022\023\n\013regularData\030\002 \003(\001\"\332\t\n\tAttrValue\022" +
-      ")\n\010dataType\030\001 \001(\0162\027.serialization.DataTy" +
-      "pe\022\017\n\007subType\030\002 \001(\t\022\024\n\nint32Value\030\003 \001(\005H",
-      "\000\022\024\n\nint64Value\030\004 \001(\003H\000\022\024\n\nfloatValue\030\005 " +
-      "\001(\002H\000\022\025\n\013doubleValue\030\006 \001(\001H\000\022\025\n\013stringVa" +
-      "lue\030\007 \001(\tH\000\022\023\n\tboolValue\030\010 \001(\010H\000\0226\n\020regu" +
-      "larizerValue\030\t \001(\0132\032.serialization.Regul" +
-      "arizerH\000\0221\n\013tensorValue\030\n \001(\0132\032.serializ" +
-      "ation.BigDLTensorH\000\0227\n\023variableFormatVal" +
-      "ue\030\013 \001(\0162\030.serialization.VarFormatH\000\0224\n\017" +
-      "initMethodValue\030\014 \001(\0132\031.serialization.In" +
-      "itMethodH\000\0226\n\020bigDLModuleValue\030\r \001(\0132\032.s" +
-      "erialization.BigDLModuleH\000\0228\n\021nameAttrLi",
-      "stValue\030\016 \001(\0132\033.serialization.NameAttrLi" +
-      "stH\000\0229\n\narrayValue\030\017 \001(\0132#.serialization" +
-      ".AttrValue.ArrayValueH\000\0229\n\017dataFormatVal" +
-      "ue\030\020 \001(\0162\036.serialization.InputDataFormat" +
-      "H\000\022+\n\013customValue\030\021 \001(\0132\024.google.protobu" +
-      "f.AnyH\000\032\223\004\n\nArrayValue\022\014\n\004size\030\001 \001(\005\022)\n\010" +
-      "datatype\030\002 \001(\0162\027.serialization.DataType\022" +
-      "\013\n\003i32\030\003 \003(\005\022\013\n\003i64\030\004 \003(\003\022\013\n\003flt\030\005 \003(\002\022\013" +
-      "\n\003dbl\030\006 \003(\001\022\013\n\003str\030\007 \003(\t\022\017\n\007boolean\030\010 \003(" +
-      "\010\022/\n\013Regularizer\030\t \003(\0132\032.serialization.R",
-      "egularizer\022*\n\006tensor\030\n \003(\0132\032.serializati" +
-      "on.BigDLTensor\0220\n\016variableFormat\030\013 \003(\0162\030" +
-      ".serialization.VarFormat\022-\n\ninitMethod\030\014" +
-      " \003(\0132\031.serialization.InitMethod\022/\n\013bigDL" +
-      "Module\030\r \003(\0132\032.serialization.BigDLModule" +
-      "\0221\n\014nameAttrList\030\016 \003(\0132\033.serialization.N" +
-      "ameAttrList\0222\n\ndataFormat\030\017 \003(\0162\036.serial" +
-      "ization.InputDataFormat\022$\n\006custom\030\020 \003(\0132" +
-      "\024.google.protobuf.AnyB\007\n\005value\"\230\001\n\014NameA" +
-      "ttrList\022\014\n\004name\030\001 \001(\t\0223\n\004attr\030\002 \003(\0132%.se",
-      "rialization.NameAttrList.AttrEntry\032E\n\tAt" +
-      "trEntry\022\013\n\003key\030\001 \001(\t\022\'\n\005value\030\002 \001(\0132\030.se" +
-      "rialization.AttrValue:\0028\001*\260\001\n\tVarFormat\022" +
-      "\020\n\014EMPTY_FORMAT\020\000\022\013\n\007DEFAULT\020\001\022\t\n\005ONE_D\020" +
-      "\002\022\n\n\006IN_OUT\020\003\022\n\n\006OUT_IN\020\004\022\020\n\014IN_OUT_KW_K" +
-      "H\020\005\022\020\n\014OUT_IN_KW_KH\020\006\022\023\n\017GP_OUT_IN_KW_KH" +
-      "\020\007\022\023\n\017GP_IN_OUT_KW_KH\020\010\022\023\n\017OUT_IN_KT_KH_" +
-      "KW\020\t*\253\001\n\016InitMethodType\022\030\n\024EMPTY_INITIAL" +
-      "IZATION\020\000\022\022\n\016RANDOM_UNIFORM\020\001\022\030\n\024RANDOM_" +
-      "UNIFORM_PARAM\020\002\022\021\n\rRANDOM_NORMAL\020\003\022\t\n\005ZE",
-      "ROS\020\004\022\010\n\004ONES\020\005\022\t\n\005CONST\020\006\022\n\n\006XAVIER\020\007\022\022" +
-      "\n\016BILINEARFILLER\020\010*L\n\017RegularizerType\022\023\n" +
-      "\017L1L2Regularizer\020\000\022\021\n\rL1Regularizer\020\001\022\021\n" +
-      "\rL2Regularizer\020\002*%\n\017InputDataFormat\022\010\n\004N" +
-      "CHW\020\000\022\010\n\004NHWC\020\001*\335\001\n\010DataType\022\t\n\005INT32\020\000\022" +
-      "\t\n\005INT64\020\001\022\t\n\005FLOAT\020\002\022\n\n\006DOUBLE\020\003\022\n\n\006STR" +
-      "ING\020\004\022\010\n\004BOOL\020\005\022\017\n\013REGULARIZER\020\006\022\n\n\006TENS" +
-      "OR\020\007\022\023\n\017VARIABLE_FORMAT\020\010\022\016\n\nINITMETHOD\020" +
-      "\t\022\n\n\006MODULE\020\n\022\022\n\016NAME_ATTR_LIST\020\013\022\017\n\013ARR" +
-      "AY_VALUE\020\014\022\017\n\013DATA_FORMAT\020\r\022\n\n\006CUSTOM\020\016b",
-      "\006proto3"
+      "dType\022\014\n\004data\030\002 \003(\001\"\262\001\n\013BigDLTensor\022)\n\010d" +
+      "atatype\030\001 \001(\0162\027.serialization.DataType\022\014" +
+      "\n\004size\030\002 \003(\005\022\022\n\nfloat_data\030\003 \003(\002\022\023\n\013doub" +
+      "le_data\030\004 \003(\001\022\022\n\nbytes_data\030\005 \001(\014\022-\n\nten" +
+      "sorType\030\006 \001(\0162\031.serialization.TensorType" +
+      "\"[\n\013Regularizer\0227\n\017regularizerType\030\001 \001(\016" +
+      "2\036.serialization.RegularizerType\022\023\n\013regu" +
+      "larData\030\002 \003(\001\"\360\t\n\tAttrValue\022)\n\010dataType\030",
+      "\001 \001(\0162\027.serialization.DataType\022\017\n\007subTyp" +
+      "e\030\002 \001(\t\022\024\n\nint32Value\030\003 \001(\005H\000\022\024\n\nint64Va" +
+      "lue\030\004 \001(\003H\000\022\024\n\nfloatValue\030\005 \001(\002H\000\022\025\n\013dou" +
+      "bleValue\030\006 \001(\001H\000\022\025\n\013stringValue\030\007 \001(\tH\000\022" +
+      "\023\n\tboolValue\030\010 \001(\010H\000\0226\n\020regularizerValue" +
+      "\030\t \001(\0132\032.serialization.RegularizerH\000\0221\n\013" +
+      "tensorValue\030\n \001(\0132\032.serialization.BigDLT" +
+      "ensorH\000\0227\n\023variableFormatValue\030\013 \001(\0162\030.s" +
+      "erialization.VarFormatH\000\0224\n\017initMethodVa" +
+      "lue\030\014 \001(\0132\031.serialization.InitMethodH\000\0226",
+      "\n\020bigDLModuleValue\030\r \001(\0132\032.serialization" +
+      ".BigDLModuleH\000\0228\n\021nameAttrListValue\030\016 \001(" +
+      "\0132\033.serialization.NameAttrListH\000\0229\n\narra" +
+      "yValue\030\017 \001(\0132#.serialization.AttrValue.A" +
+      "rrayValueH\000\0229\n\017dataFormatValue\030\020 \001(\0162\036.s" +
+      "erialization.InputDataFormatH\000\022+\n\013custom" +
+      "Value\030\021 \001(\0132\024.google.protobuf.AnyH\000\022\024\n\nb" +
+      "ytesValue\030\022 \001(\014H\000\032\223\004\n\nArrayValue\022\014\n\004size" +
+      "\030\001 \001(\005\022)\n\010datatype\030\002 \001(\0162\027.serialization" +
+      ".DataType\022\013\n\003i32\030\003 \003(\005\022\013\n\003i64\030\004 \003(\003\022\013\n\003f",
+      "lt\030\005 \003(\002\022\013\n\003dbl\030\006 \003(\001\022\013\n\003str\030\007 \003(\t\022\017\n\007bo" +
+      "olean\030\010 \003(\010\022/\n\013Regularizer\030\t \003(\0132\032.seria" +
+      "lization.Regularizer\022*\n\006tensor\030\n \003(\0132\032.s" +
+      "erialization.BigDLTensor\0220\n\016variableForm" +
+      "at\030\013 \003(\0162\030.serialization.VarFormat\022-\n\nin" +
+      "itMethod\030\014 \003(\0132\031.serialization.InitMetho" +
+      "d\022/\n\013bigDLModule\030\r \003(\0132\032.serialization.B" +
+      "igDLModule\0221\n\014nameAttrList\030\016 \003(\0132\033.seria" +
+      "lization.NameAttrList\0222\n\ndataFormat\030\017 \003(" +
+      "\0162\036.serialization.InputDataFormat\022$\n\006cus",
+      "tom\030\020 \003(\0132\024.google.protobuf.AnyB\007\n\005value" +
+      "\"\230\001\n\014NameAttrList\022\014\n\004name\030\001 \001(\t\0223\n\004attr\030" +
+      "\002 \003(\0132%.serialization.NameAttrList.AttrE" +
+      "ntry\032E\n\tAttrEntry\022\013\n\003key\030\001 \001(\t\022\'\n\005value\030" +
+      "\002 \001(\0132\030.serialization.AttrValue:\0028\001*\260\001\n\t" +
+      "VarFormat\022\020\n\014EMPTY_FORMAT\020\000\022\013\n\007DEFAULT\020\001" +
+      "\022\t\n\005ONE_D\020\002\022\n\n\006IN_OUT\020\003\022\n\n\006OUT_IN\020\004\022\020\n\014I" +
+      "N_OUT_KW_KH\020\005\022\020\n\014OUT_IN_KW_KH\020\006\022\023\n\017GP_OU" +
+      "T_IN_KW_KH\020\007\022\023\n\017GP_IN_OUT_KW_KH\020\010\022\023\n\017OUT" +
+      "_IN_KT_KH_KW\020\t*\253\001\n\016InitMethodType\022\030\n\024EMP",
+      "TY_INITIALIZATION\020\000\022\022\n\016RANDOM_UNIFORM\020\001\022" +
+      "\030\n\024RANDOM_UNIFORM_PARAM\020\002\022\021\n\rRANDOM_NORM" +
+      "AL\020\003\022\t\n\005ZEROS\020\004\022\010\n\004ONES\020\005\022\t\n\005CONST\020\006\022\n\n\006" +
+      "XAVIER\020\007\022\022\n\016BILINEARFILLER\020\010*L\n\017Regulari" +
+      "zerType\022\023\n\017L1L2Regularizer\020\000\022\021\n\rL1Regula" +
+      "rizer\020\001\022\021\n\rL2Regularizer\020\002*%\n\017InputDataF" +
+      "ormat\022\010\n\004NCHW\020\000\022\010\n\004NHWC\020\001*\"\n\nTensorType\022" +
+      "\t\n\005DENSE\020\000\022\t\n\005QUANT\020\001*\350\001\n\010DataType\022\t\n\005IN" +
+      "T32\020\000\022\t\n\005INT64\020\001\022\t\n\005FLOAT\020\002\022\n\n\006DOUBLE\020\003\022" +
+      "\n\n\006STRING\020\004\022\010\n\004BOOL\020\005\022\017\n\013REGULARIZER\020\006\022\n",
+      "\n\006TENSOR\020\007\022\023\n\017VARIABLE_FORMAT\020\010\022\016\n\nINITM" +
+      "ETHOD\020\t\022\n\n\006MODULE\020\n\022\022\n\016NAME_ATTR_LIST\020\013\022" +
+      "\017\n\013ARRAY_VALUE\020\014\022\017\n\013DATA_FORMAT\020\r\022\n\n\006CUS" +
+      "TOM\020\016\022\t\n\005BYTES\020\017b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -15744,7 +16112,7 @@ public final class Bigdl {
     internal_static_serialization_BigDLTensor_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_serialization_BigDLTensor_descriptor,
-        new java.lang.String[] { "Datatype", "Size", "FloatData", "DoubleData", });
+        new java.lang.String[] { "Datatype", "Size", "FloatData", "DoubleData", "BytesData", "TensorType", });
     internal_static_serialization_Regularizer_descriptor =
       getDescriptor().getMessageTypes().get(3);
     internal_static_serialization_Regularizer_fieldAccessorTable = new
@@ -15756,7 +16124,7 @@ public final class Bigdl {
     internal_static_serialization_AttrValue_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_serialization_AttrValue_descriptor,
-        new java.lang.String[] { "DataType", "SubType", "Int32Value", "Int64Value", "FloatValue", "DoubleValue", "StringValue", "BoolValue", "RegularizerValue", "TensorValue", "VariableFormatValue", "InitMethodValue", "BigDLModuleValue", "NameAttrListValue", "ArrayValue", "DataFormatValue", "CustomValue", "Value", });
+        new java.lang.String[] { "DataType", "SubType", "Int32Value", "Int64Value", "FloatValue", "DoubleValue", "StringValue", "BoolValue", "RegularizerValue", "TensorValue", "VariableFormatValue", "InitMethodValue", "BigDLModuleValue", "NameAttrListValue", "ArrayValue", "DataFormatValue", "CustomValue", "BytesValue", "Value", });
     internal_static_serialization_AttrValue_ArrayValue_descriptor =
       internal_static_serialization_AttrValue_descriptor.getNestedTypes().get(0);
     internal_static_serialization_AttrValue_ArrayValue_fieldAccessorTable = new

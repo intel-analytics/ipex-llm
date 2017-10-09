@@ -131,7 +131,8 @@ object Utils {
      evaluate: Boolean = true,
      sentFile: Option[String] = None,
      tokenFile: Option[String] = None,
-     batchSize: Int = 4
+     batchSize: Int = 4,
+     quantize: Boolean = false
   )
 
   val testParser = new OptionParser[TestParams]("BigDL rnn Test Example") {
@@ -164,6 +165,10 @@ object Utils {
     opt[Int]('b', "batchSize")
       .text("batchSize of rnn")
       .action((x, c) => c.copy(batchSize = x))
+
+    opt[Boolean]('q', "quantize")
+            .text("quantize the model")
+            .action((x, c) => c.copy(quantize = x))
   }
 
   private[bigdl] def readSentence(directory: String)
