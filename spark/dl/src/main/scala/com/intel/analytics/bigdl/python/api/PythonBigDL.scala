@@ -1426,7 +1426,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     RandomGenerator.RNG.setSeed(seed)
   }
 
-  def modelEvaluate(model: AbstractModule[Activity, Activity, T],
+  def modelTest(model: AbstractModule[Activity, Activity, T],
                 valRDD: JavaRDD[Sample],
                 batchSize: Int,
                 valMethods: JList[ValidationMethod[T]])
