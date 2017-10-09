@@ -1894,6 +1894,31 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     weight1 should be (weight2)
   }
+
+  "Module toString" should "have same result" in {
+    val linear = Linear(2, 2)
+    ModulePersister.saveToFile("/tmp/mstr.bigdl", linear, true)
+    val loadedModel = ModuleLoader.loadFromFile("/tmp/mstr.bigdl")
+
+    linear.toString() should be (loadedModel.toString())
+  }
+
+  "Module in tain " should " keep the  state" in {
+    val linear = Linear(2, 2).training()
+    ModulePersister.saveToFile("/tmp/mstr.bigdl", linear, true)
+    val loadedModel = ModuleLoader.loadFromFile("/tmp/mstr.bigdl")
+
+    loadedModel.isTraining() should be (true)
+  }
+
+  "Module in evaluate " should " keep the  state" in {
+    val linear = Linear(2, 2).evaluate()
+    ModulePersister.saveToFile("/tmp/mstr.bigdl", linear, true)
+    val loadedModel = ModuleLoader.loadFromFile("/tmp/mstr.bigdl")
+
+    loadedModel.isTraining() should be (false)
+  }
+
 }
 
 class TestModule[T: ClassTag](val custom: CustomData)
@@ -1913,15 +1938,18 @@ case class CustomData(val constant_scalar: Double)
 case object TestSerializer extends ModuleSerializable
 
 object TestCustomDataConverter extends DataConverter {
-  override def getAttributeValue[T: ClassTag](attribute: Bigdl.AttrValue)
+
+  override def getAttributeValue[T: ClassTag](context: DeserializeContext,
+                                              attribute: Bigdl.AttrValue)
     (implicit ev: TensorNumeric[T]): AnyRef = {
     val customData = attribute.getCustomValue
     val customMsg = customData.unpack(classOf[TestCustomData.CustomData])
     CustomData(customMsg.getScalar)
   }
 
-  override def setAttributeValue[T: ClassTag](attributeBuilder: AttrValue.Builder,
-    value: Any, valueType: universe.Type)(implicit ev: TensorNumeric[T]): Unit = {
+  override def setAttributeValue[T: ClassTag](context: SerializeContext[T],
+    attributeBuilder: AttrValue.Builder, value: Any, valueType: universe.Type)
+    (implicit ev: TensorNumeric[T]): Unit = {
     val testCustomData = TestCustomData.CustomData.newBuilder
     testCustomData.setScalar(value.asInstanceOf[CustomData].constant_scalar)
     attributeBuilder.setCustomValue(com.google.protobuf.Any.pack(testCustomData.build()))
