@@ -569,8 +569,8 @@ class Model(Container):
         sc = get_spark_context()
         rdd_train_images = sc.parallelize(data)
         rdd_train_labels = sc.parallelize(label)
-        rdd_train_sample = rdd_train_images.zip(rdd_train_labels).map(lambda (features, label):
-                                                                      Sample.from_ndarray(features, label))
+        rdd_train_sample = rdd_train_images.zip(rdd_train_labels).map(lambda input:
+                                                                      Sample.from_ndarray(input[0], input[1]))
         jmodel = callBigDlFunc(bigdl_type, "trainTF", path, output_name, rdd_train_sample, opt_method, criterion, batch_size, end_when)
         return Model.of(jmodel)
 
