@@ -41,8 +41,8 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
   protected var hiddenShape: Array[Int] = null
   protected val currentInput = T()
   protected val currentGradOutput = T()
-  protected val gradInputCell = Tensor[T]()
-  protected var outputCell = Tensor[T]()
+  protected val gradInput2Cell = Tensor[T]()
+  protected var input2Cell = Tensor[T]()
   protected val _input = T()
   protected val batchDim = Recurrent.batchDim
   protected val timeDim = Recurrent.timeDim
@@ -50,8 +50,8 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
   protected val hidDim = 2
   protected var (batchSize, times) = (0, 0)
   protected var topology: Cell[T] = null
-  protected val outputBuffer = Tensor[T]()
-  private val gradBuffer = Tensor[T]()
+  protected val stepInput2CellBuf = Tensor[T]()
+  protected val stepGradBuffer = Tensor[T]()
   protected var preTopology: AbstractModule[Activity, Activity, T] = null
   private val dropouts: ArrayBuffer[Array[Dropout[T]]] =
     new ArrayBuffer[Array[Dropout[T]]]
@@ -214,7 +214,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     batchSize = input.size(batchDim)
     times = input.size(timeDim)
 
-    outputCell = if (preTopology != null) {
+    input2Cell = if (preTopology != null) {
       preTopology.forward(input).toTensor[T]
     } else {
       input
@@ -240,7 +240,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
      else hidden
 
     while (i <= times) {
-      currentInput(inputDim) = Recurrent.selectCopy(outputCell, i, outputBuffer)
+      currentInput(inputDim) = Recurrent.selectCopy(input2Cell, i, stepInput2CellBuf)
       cells(i - 1).forward(currentInput)
       currentInput(hidDim) = cells(i - 1).output.toTable(hidDim)
       i += 1
@@ -276,10 +276,10 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
 
     var i = times
     while (i >= 1) {
-      currentGradOutput(inputDim) = Recurrent.selectCopy(gradOutput, i, gradBuffer)
+      currentGradOutput(inputDim) = Recurrent.selectCopy(gradOutput, i, stepGradBuffer)
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
         else hidden
-      _input(inputDim) = Recurrent.selectCopy(outputCell, i, outputBuffer)
+      _input(inputDim) = Recurrent.selectCopy(input2Cell, i, stepInput2CellBuf)
 
       if (i == 1) {
         cells(i - 1).regluarized(true)
@@ -291,7 +291,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
       i -= 1
     }
     if (preTopology != null) {
-      preTopology.accGradParameters(input, gradInputCell)
+      preTopology.accGradParameters(input, gradInput2Cell)
     }
   }
 
@@ -307,24 +307,24 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
       }
       preTopology.gradInput.toTensor[T]
     } else {
-      gradInputCell
+      gradInput2Cell
     }
-    gradInputCell.resizeAs(outputCell)
+    gradInput2Cell.resizeAs(input2Cell)
     currentGradOutput(hidDim) = gradHidden
     var i = times
     while (i >= 1) {
-      currentGradOutput(inputDim) = Recurrent.selectCopy(gradOutput, i, gradBuffer)
+      currentGradOutput(inputDim) = Recurrent.selectCopy(gradOutput, i, stepGradBuffer)
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
         else hidden
-      _input(inputDim) = Recurrent.selectCopy(outputCell, i, outputBuffer)
+      _input(inputDim) = Recurrent.selectCopy(input2Cell, i, stepInput2CellBuf)
 
       cells(i - 1).updateGradInput(_input, currentGradOutput)
       currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
       i -= 1
     }
-    Recurrent.copy(cells.map(x => x.gradInput.toTable[Tensor[T]](inputDim)), gradInputCell)
+    Recurrent.copy(cells.map(x => x.gradInput.toTable[Tensor[T]](inputDim)), gradInput2Cell)
     if (preTopology != null) {
-      gradInput = preTopology.updateGradInput(input, gradInputCell).toTensor[T]
+      gradInput = preTopology.updateGradInput(input, gradInput2Cell).toTensor[T]
     }
     gradInput
   }
@@ -335,10 +335,10 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     var i = times
 
     while (i >= 1) {
-      currentGradOutput(inputDim) = Recurrent.selectCopy(gradOutput, i, gradBuffer)
+      currentGradOutput(inputDim) = Recurrent.selectCopy(gradOutput, i, stepGradBuffer)
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
       else if (initState == null) hidden else initState
-      _input(inputDim) = Recurrent.selectCopy(outputCell, i, outputBuffer)
+      _input(inputDim) = Recurrent.selectCopy(input2Cell, i, stepInput2CellBuf)
       if (i == 1) {
         cells(i - 1).regluarized(true)
       } else {
@@ -359,13 +359,13 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
       }
       preTopology.gradInput.toTensor[T]
     } else {
-      gradInputCell
+      gradInput2Cell
     }
-    gradInputCell.resizeAs(outputCell)
-    Recurrent.copy(cells.map(x => x.gradInput.toTable[Tensor[T]](inputDim)), gradInputCell)
+    gradInput2Cell.resizeAs(input2Cell)
+    Recurrent.copy(cells.map(x => x.gradInput.toTable[Tensor[T]](inputDim)), gradInput2Cell)
 
     if (preTopology != null) {
-      gradInput = preTopology.backward(input, gradInputCell).toTensor[T]
+      gradInput = preTopology.backward(input, gradInput2Cell).toTensor[T]
     }
 
     this.backwardTime = System.nanoTime - st
@@ -433,8 +433,8 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     hidden = null
     gradHidden = null
     hiddenShape = null
-    gradInputCell.set()
-    outputCell.set()
+    gradInput2Cell.set()
+    input2Cell.set()
     currentInput.clear()
     currentGradOutput.clear()
     _input.clear()
@@ -442,8 +442,8 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     cells.clear()
     timeBuffer.clear()
     initState = null
-    outputBuffer.set()
-    gradBuffer.set()
+    stepInput2CellBuf.set()
+    stepGradBuffer.set()
     this
   }
 
