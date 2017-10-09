@@ -47,8 +47,7 @@ object ModuleLoader {
     cis.setSizeLimit(Integer.MAX_VALUE)
     modelBuilder.mergeFrom(cis)
     val bigDLModel = modelBuilder.build()
-    val storages = new mutable.HashMap[Int, TensorStorage]()
-      .asInstanceOf[mutable.HashMap[Int, Any]]
+    val storages = new mutable.HashMap[Int, Any]()
     // loadAllStorages(bigDLModel, storages)
     ModuleSerializer.load(DeserializeContext(bigDLModel, storages, ProtoStorageType)).module
   }

@@ -359,59 +359,59 @@ object DataConverter extends DataConverter{
         if (storages.contains(storageId)) {
           tensorBuilder.setStorage(storages.get(storageId).get
           .asInstanceOf[TensorStorage])
-          return
+        } else {
+          val storageBuilder = TensorStorage.newBuilder
+          if (tensorNumeric == NumericFloat) {
+            tensorBuilder.setDatatype(DataType.FLOAT)
+            storageBuilder.setDatatype(DataType.FLOAT)
+            tensor.storage().array().asInstanceOf[Array[Float]].
+              foreach(data => storageBuilder.addFloatData(data))
+          } else if (tensorNumeric == NumericDouble) {
+            tensorBuilder.setDatatype(DataType.DOUBLE)
+            storageBuilder.setDatatype(DataType.DOUBLE)
+            tensor.storage().array().asInstanceOf[Array[Double]].
+              foreach(data => storageBuilder.addDoubleData(data))
+          } else if (tensorNumeric == NumericChar) {
+            tensorBuilder.setDatatype(DataType.CHAR)
+            storageBuilder.setDatatype(DataType.CHAR)
+            tensor.storage().array().asInstanceOf[Array[Char]].
+              foreach(data => storageBuilder.addIntData(data))
+          } else if (tensorNumeric == NumericBoolean) {
+            tensorBuilder.setDatatype(DataType.BOOL)
+            storageBuilder.setDatatype(DataType.BOOL)
+            tensor.storage().array().asInstanceOf[Array[Boolean]].
+              foreach(data => storageBuilder.addBoolData(data))
+          } else if (tensorNumeric == NumericString) {
+            tensorBuilder.setDatatype(DataType.STRING)
+            storageBuilder.setDatatype(DataType.STRING)
+            tensor.storage().array().asInstanceOf[Array[String]].
+              foreach(data => storageBuilder.addStringData(data))
+          } else if (tensorNumeric == NumericInt) {
+            tensorBuilder.setDatatype(DataType.INT32)
+            storageBuilder.setDatatype(DataType.INT32)
+            tensor.storage().array().asInstanceOf[Array[Int]].
+              foreach(data => storageBuilder.addIntData(data))
+          } else if (tensorNumeric == NumericShort) {
+            tensorBuilder.setDatatype(DataType.SHORT)
+            storageBuilder.setDatatype(DataType.SHORT)
+            tensor.storage().array().asInstanceOf[Array[Short]].
+              foreach(data => storageBuilder.addIntData(data))
+          } else if (tensorNumeric == NumericLong) {
+            tensorBuilder.setDatatype(DataType.INT64)
+            storageBuilder.setDatatype(DataType.INT64)
+            tensor.storage().array().asInstanceOf[Array[Long]].
+              foreach(data => storageBuilder.addLongData(data))
+          } else if (tensorNumeric == NumericByteString) {
+            tensorBuilder.setDatatype(DataType.BYTES)
+            storageBuilder.setDatatype(DataType.BYTES)
+            tensor.storage().array().asInstanceOf[Array[ByteString]].
+              foreach(data => storageBuilder.addBytesData(data))
+          }
+          storageBuilder.setId(storageId)
+          val storage = storageBuilder.build
+          tensorBuilder.setStorage(storage)
+          storages(storageId) = storage
         }
-        val storageBuilder = TensorStorage.newBuilder
-        if (tensorNumeric == NumericFloat) {
-          tensorBuilder.setDatatype(DataType.FLOAT)
-          storageBuilder.setDatatype(DataType.FLOAT)
-          tensor.storage().array().asInstanceOf[Array[Float]].
-            foreach(data => storageBuilder.addFloatData(data))
-        } else if (tensorNumeric == NumericDouble) {
-          tensorBuilder.setDatatype(DataType.DOUBLE)
-          storageBuilder.setDatatype(DataType.DOUBLE)
-          tensor.storage().array().asInstanceOf[Array[Double]].
-            foreach(data => storageBuilder.addDoubleData(data))
-        } else if (tensorNumeric == NumericChar) {
-          tensorBuilder.setDatatype(DataType.CHAR)
-          storageBuilder.setDatatype(DataType.CHAR)
-          tensor.storage().array().asInstanceOf[Array[Char]].
-            foreach(data => storageBuilder.addIntData(data))
-        } else if (tensorNumeric == NumericBoolean) {
-          tensorBuilder.setDatatype(DataType.BOOL)
-          storageBuilder.setDatatype(DataType.BOOL)
-          tensor.storage().array().asInstanceOf[Array[Boolean]].
-            foreach(data => storageBuilder.addBoolData(data))
-        } else if (tensorNumeric == NumericString) {
-          tensorBuilder.setDatatype(DataType.STRING)
-          storageBuilder.setDatatype(DataType.STRING)
-          tensor.storage().array().asInstanceOf[Array[String]].
-            foreach(data => storageBuilder.addStringData(data))
-        } else if (tensorNumeric == NumericInt) {
-          tensorBuilder.setDatatype(DataType.INT32)
-          storageBuilder.setDatatype(DataType.INT32)
-          tensor.storage().array().asInstanceOf[Array[Int]].
-            foreach(data => storageBuilder.addIntData(data))
-        } else if (tensorNumeric == NumericShort) {
-          tensorBuilder.setDatatype(DataType.SHORT)
-          storageBuilder.setDatatype(DataType.SHORT)
-          tensor.storage().array().asInstanceOf[Array[Short]].
-            foreach(data => storageBuilder.addIntData(data))
-        } else if (tensorNumeric == NumericLong) {
-          tensorBuilder.setDatatype(DataType.INT64)
-          storageBuilder.setDatatype(DataType.INT64)
-          tensor.storage().array().asInstanceOf[Array[Long]].
-            foreach(data => storageBuilder.addLongData(data))
-        } else if (tensorNumeric == NumericByteString) {
-          tensorBuilder.setDatatype(DataType.BYTES)
-          storageBuilder.setDatatype(DataType.BYTES)
-          tensor.storage().array().asInstanceOf[Array[ByteString]].
-            foreach(data => storageBuilder.addBytesData(data))
-        }
-        storageBuilder.setId(storageId)
-        val storage = storageBuilder.build
-        tensorBuilder.setStorage(storage)
-        storages(storageId) = storage
       } else {
         throw new IllegalArgumentException(s"$storageType not supported")
       }
