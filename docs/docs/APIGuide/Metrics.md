@@ -128,7 +128,7 @@ top5accuracy = Top5Accuracy()
 ```python
 test_results = model.evaluate(trainingData, batch_size, [Top5Accuracy()])
 
->>> print test_results[0]
+>>> print test_results[1]
 Test result: 0.0, total_num: 10, method: Top5Accuracy
 ```
 
