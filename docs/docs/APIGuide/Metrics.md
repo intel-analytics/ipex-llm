@@ -49,7 +49,7 @@ loss = Loss(cri)
 ```
 example
 ```
-from pyspark import SparkContext
+from pyspark.context import SparkContext
 from bigdl.util.common import *
 from bigdl.nn.layer import *
 from bigdl.optim.optimizer import *
