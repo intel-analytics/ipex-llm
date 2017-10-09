@@ -61,9 +61,9 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
   def dim(): Int
 
   /**
-   * Size of tensor. Return an array of which each value represent the size on the
-   * dimension(i + 1), i is the index of the corresponding value
-   * It will generate a new array each time you invoke the method
+   * Size of tensor. Return an array of which each value represents the size on the
+   * dimension(i + 1), i is the index of the corresponding value.
+   * It will generate a new array each time method is invoked.
    *
    * @return size array
    */
@@ -78,15 +78,15 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
   def size(dim: Int): Int
 
   /**
-   * Jumps between element on the each dimension in the storage.
-   * It will generate a new array each time you invoke the method
+   * Jumps between elements on the each dimension in the storage.
+   * It will generate a new array each time method is invoked.
    *
    * @return strides array
    */
   def stride(): Array[Int]
 
   /**
-   * Jumps between element on the given dimension in the storage.
+   * Jumps between elements on the given dimension in the storage.
    *
    * @param dim dimension, count from 1
    * @return jump
@@ -217,12 +217,12 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
   def valueAt(d1: Int, d2: Int, d3: Int, d4: Int, d5: Int): T
 
   /**
-   * Subset the tensor by apply the element of the given table to corresponding dimension of the
-   * tensor. The element of the given table can be an Int or another Table.
+   * Subset the tensor by apply the elements of the given table to the corresponding dimension
+   * of the tensor. The elements of the given table can be an Int or another Table.
    * An Int means select on current dimension; A table means narrow on current dimension,
-   * the table should has two elements, of which the first is start index and
-   * the second is the end index. An empty table is equals to Table(1, size_of_current_dimension)
-   * If the table length is less than the tensor dimension, the missing dimension is applied by
+   * the table should have two elements, of which the first is the start index and
+   * the second is the end index. An empty table is equal to Table(1, size_of_current_dimension)
+   * If the table length is less than the tensor dimension, each missing dimension is token up by
    * an empty table
    *
    * @see select
@@ -243,8 +243,7 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
 
   /**
    * Copy the give tensor value to the select subset of the current tensor by the given index.
-   * The subset should
-   * has the same size of the given tensor
+   * The subset should have the same size of the given tensor
    *
    * @param index index
    * @param src   tensor to write
@@ -252,7 +251,7 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
   def update(index: Int, src: Tensor[T]): Unit
 
   /**
-   * Write the value to the value indexed by the given index array
+   * Write the value to the positions indexed by the given index array
    *
    * @param indexes index array. It should has same length with the tensor dimension
    * @param value   value to write
@@ -287,10 +286,10 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
   /**
    * Fill the select subset of the current tensor with the given value.
    * The element of the given table can be an Int or another Table. An Int means select on current
-   * dimension; A tablemeans narrow on current dimension, the table should has two elements,
-   * of which the first is start index and the second is the end index. An empty table is equals
+   * dimension; A table means narrow on the current dimension, the table should has two elements,
+   * of which the first is the start index and the second is the end index. An empty table is equal
    * to Table(1, size_of_current_dimension) If the table length is less than the tensor dimension,
-   * the missing dimension is applied by an empty table
+   * each missing dimension is applied by an empty table
    *
    * @param t     subset table
    * @param value value to write
@@ -298,12 +297,12 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
   def update(t: Table, value: T): Unit
 
   /**
-   * Copy the given tensor value to the select subset of the current tensor
-   * The element of the given table can be an Int or another Table. An Int means select on current
+   * Copy the given tensor values to the selected subset of the current tensor
+   * Each element of the given table can be an Int or another Table. An Int means select on current
    * dimension; A table means narrow on current dimension, the table should has two elements,
-   * of which the first is start index and the second is the end index. An empty table is equals
-   * to Table(1, size_of_current_dimension) If the table length is less than the tensor dimension,
-   * the missing dimension is applied by an empty table
+   * of which the first is start index and the second is the end index. An empty table is equal
+   * to Table(1, size_of_current_dimension). If the table's length is smaller than the tensor's
+   * dimension, the missing dimension is applied by an empty table.
    *
    * @param t   subset table
    * @param src tensor to copy
@@ -474,7 +473,7 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
 
   /**
    * Get a subset of the tensor on dim-th dimension. The offset is given by index, and length is
-   * give by size. The important difference with select is that it will not reduce the dimension
+   * given by size. The important difference with select is that it will not reduce the dimension
    * number. For Instance
    * tensor =
    * 1 2 3

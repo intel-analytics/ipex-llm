@@ -80,7 +80,7 @@ For more API, navigate to *API Guide/Full API docs* on side bar.
 ---
 ## **SparseTensor**
 To describe an SparseTensor, we need indices, values, and shape:  
-indices means non-zero elements' indices; values means the values of the non-zero elements;
+indices means the indices of non-zero elements; values means the values of the non-zero elements;
 shape means the dense shape of this SparseTensor.
 
 For example, an 2D 3x4 DenseTensor:
