@@ -32,7 +32,7 @@ import scala.reflect.ClassTag
  * the previous timestep. Input for RecurrentDecoder is dynamically composed
  * during training. input at t(i) is output at t(i-1), input at t(0) is
  * user input, and user input has to be batch x stepShape(shape of the input
- * at a single time).
+ * at a single time step).
 
  * Different types of rnn cells can be added using add() function.
  * @param seqLength sequence length of the output
@@ -123,8 +123,9 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
     currentGradOutput(hidDim) = gradHidden
     var i = times
     while (i >= 1) {
-      currentGradOutput(inputDim) = if (i == times) Recurrent.selectCopy(gradOutput, i, stepGradBuffer)
-      else {
+      currentGradOutput(inputDim) = if (i == times) {
+        Recurrent.selectCopy(gradOutput, i, stepGradBuffer)
+      } else {
         Recurrent.selectCopy(gradOutput, i, stepGradBuffer)
           .add(cells(i).gradInput.toTable[Tensor[T]](inputDim).clone())
       }
