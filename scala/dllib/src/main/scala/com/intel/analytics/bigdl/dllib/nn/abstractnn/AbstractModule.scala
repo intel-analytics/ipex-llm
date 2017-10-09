@@ -56,7 +56,12 @@ abstract class TensorModule[T: ClassTag]
 abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, T: ClassTag](
   implicit ev: TensorNumeric[T]) extends Serializable {
 
-  private val namePostfix = Integer.toHexString(java.util.UUID.randomUUID().hashCode())
+  private var namePostfix = Integer.toHexString(java.util.UUID.randomUUID().hashCode())
+
+  def getNamePostfix : String = namePostfix
+
+  def setNamePostfix(namePostfix : String) : Unit = this.namePostfix = namePostfix
+
   /**
    * The cached output. So we don't compute it again when need it
    */
@@ -154,6 +159,8 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * The name of the module
    */
   private var name : String = null
+
+  def hasName: Boolean = name != null
 
   /**
    * Set the module name
