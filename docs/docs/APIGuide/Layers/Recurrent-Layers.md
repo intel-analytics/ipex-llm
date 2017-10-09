@@ -18,6 +18,7 @@ If contained cell is simple rnn, getHiddenState return value is a tensor(hidden 
 If contained cell is lstm, getHiddenState return value is a table [hidden state, cell], both size is `batch x hiddenSize`.  
 If contained cell is convlstm, getHiddenState return value is a table [hidden state, cell], both size is `batch x outputPlane x height x width`.  
 If contained cell is convlstm3D, getHiddenState return value is a table [hidden state, cell], both size is `batch x outputPlane x height x width x length`.
+If contained cell is MultiRNNCell, getHiddenState return value is a nested table [index [hidden state, cell]], size of the table is number of cells.
 
 **Scala example:**
 ```scala
@@ -174,9 +175,6 @@ Output for RecurrentDecoder has to be batch x outputLen???(depends on cell type)
 With RecurrentDecoder, inputsize and hiddensize of the cell must be the same.
 
 Different types of rnn cells can be added using add() function.
-
-RecurrentDecoder supports returning hidden state and cell of its rnn cells at last time step by using getHiddenState.
-If contained cell is MultiRNNCell, use getHiddenStates/setHiddenStates instead.
 
 Parameters:
 
@@ -1604,8 +1602,8 @@ val model = RecurrentDecoder(seqLength).add(MultiRNNCell[Float](cells))
 val output = model.forward(input)
 val gradientInput = model.backward(input, gradOutput)
 
-val states = model.getHiddenStates()
-model.setHiddenStates(states)
+val states = model.getHiddenState()
+model.setHiddenState(states)
 -> print(output)
 (1,1,1,.,.) =
 0.035993136	0.04062611	0.038863156	

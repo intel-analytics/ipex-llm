@@ -149,7 +149,7 @@ object Seq2seq {
   def apply[@specialized(Float, Double) T: ClassTag](encoderCells: Array[Recurrent[T]],
     decoderCells: Array[Recurrent[T]], preEncoder: AbstractModule[Activity, Activity, T] = null,
     preDecoder: AbstractModule[Activity, Activity, T] = null,
-    decoderInputType: DecoderInputType = DecoderInputType.ENCODERINPUTLASTTIME)
+    decoderInputType: DecoderInputType = DecoderInputType.ZEROS)
     (implicit ev: TensorNumeric[T]): Seq2seq[T] = {
     new Seq2seq[T](encoderCells, decoderCells, preEncoder, preDecoder, decoderInputType)
   }

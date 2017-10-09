@@ -2022,17 +2022,19 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
   }
 
-//  def createSeq2seq(encoderCells: JList[Cell[T]], decoderCells: JList[Cell[T]], outputLength: Int,
-//    broadcastState: Boolean = false, decoderInput: String = "USERINPUT"): Seq2seq[T] = {
-//    val input = decoderInput match {
-//      case "USERINPUT" => DecoderInputType.ENCODERINPUTLASTTIME
-//      case "ZEROS" => DecoderInputType.ZEROS
-//      case "ENCODEROUTPUT" => DecoderInputType.ENCODERINPUTSPLIT
-//      case n: String =>
-//        throw new IllegalArgumentException(s"Only support 'USERINPUT', " +
-//          s"'ZEROS', 'ENCODEROUTPUT': $n")
-//    }
-//    Seq2seq(encoderCells.asScala.toArray, decoderCells.asScala.toArray, outputLength,
-//      broadcastState, input)
-//  }
+  def createSeq2seq(encoderCells: JList[Recurrent[T]], decoderCells: JList[Recurrent[T]],
+    preEncoder: AbstractModule[Activity, Activity, T] = null,
+    preDecoder: AbstractModule[Activity, Activity, T] = null,
+    decoderInput: String = "ZEROS"): Seq2seq[T] = {
+    val inputType = decoderInput match {
+      case "USERINPUT" => DecoderInputType.ENCODERINPUTLASTTIME
+      case "ZEROS" => DecoderInputType.ZEROS
+      case "ENCODEROUTPUT" => DecoderInputType.ENCODERINPUTSPLIT
+      case n: String =>
+        throw new IllegalArgumentException(s"Only support 'ENCODERINPUTSPLIT', " +
+          s"'ZEROS', 'ENCODERINPUTLASTTIME': $n")
+    }
+    Seq2seq(encoderCells.asScala.toArray, decoderCells.asScala.toArray, preEncoder,
+      preDecoder, inputType)
+  }
 }
