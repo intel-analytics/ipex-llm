@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils.{T, Table, serializer}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData, ModuleSerializable, ModuleSerializer}
+import com.intel.analytics.bigdl.utils.serializer._
 import serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.concurrent.Future
@@ -782,20 +782,20 @@ object SpatialFullConvolution extends ModuleSerializable {
       wRegularizer, bRegularizer)
   }
 
-  override def doLoadModule[T: ClassTag](model : BigDLModule)
+  override def doLoadModule[T: ClassTag](context: DeserializeContext)
     (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
 
-    val attrMap = model.getAttrMap
-    val intParams = DataConverter.getAttributeValue(attrMap.get("intParams")).
+    val attrMap = context.bigdlModule.getAttrMap
+    val intParams = DataConverter.getAttributeValue(context, attrMap.get("intParams")).
       asInstanceOf[Array[Int]]
 
-    val noBias = DataConverter.getAttributeValue(attrMap.get("noBias")).
+    val noBias = DataConverter.getAttributeValue(context, attrMap.get("noBias")).
       asInstanceOf[Boolean]
 
-    val wRegularizer = DataConverter.getAttributeValue(attrMap.get("wRegularizer")).
+    val wRegularizer = DataConverter.getAttributeValue(context, attrMap.get("wRegularizer")).
       asInstanceOf[Regularizer[T]]
 
-    val bRegularizer = DataConverter.getAttributeValue(attrMap.get("bRegularizer")).
+    val bRegularizer = DataConverter.getAttributeValue(context, attrMap.get("bRegularizer")).
       asInstanceOf[Regularizer[T]]
 
     val fullConv = SpatialFullConvolution(intParams(0), intParams(1), intParams(2), intParams(3),
@@ -804,30 +804,34 @@ object SpatialFullConvolution extends ModuleSerializable {
     fullConv
   }
 
-  override def doSerializeModule[T: ClassTag](module : ModuleData[T],
+  override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
                                             fullConvBuilder : BigDLModule.Builder)
                                            (implicit ev: TensorNumeric[T]) : Unit = {
 
-    val fullConv = module.module.asInstanceOf[SpatialFullConvolution[T]]
+    val fullConv = context.moduleData.module.asInstanceOf[SpatialFullConvolution[T]]
 
     val intParamsBuilder = AttrValue.newBuilder
     val intParams = Array(fullConv.nInputPlane, fullConv.nOutputPlane, fullConv.kW,
       fullConv.kH, fullConv.dW, fullConv.dH, fullConv.padW, fullConv.padH, fullConv.adjW,
       fullConv.adjH, fullConv.nGroup)
-    DataConverter.setAttributeValue(intParamsBuilder, intParams, universe.typeOf[Array[Int]])
+    DataConverter.setAttributeValue(context, intParamsBuilder, intParams,
+      universe.typeOf[Array[Int]])
     fullConvBuilder.putAttr("intParams", intParamsBuilder.build)
 
     val biasBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(biasBuilder, fullConv.noBias, universe.typeOf[Boolean])
+    DataConverter.setAttributeValue(context, biasBuilder,
+      fullConv.noBias, universe.typeOf[Boolean])
     fullConvBuilder.putAttr("noBias", biasBuilder.build)
 
     val wRegularizerBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(wRegularizerBuilder, fullConv.wRegularizer,
+    DataConverter.setAttributeValue(context, wRegularizerBuilder,
+      fullConv.wRegularizer,
       ModuleSerializer.regularizerType)
     fullConvBuilder.putAttr("wRegularizer", wRegularizerBuilder.build)
 
     val bRegularizerBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(bRegularizerBuilder, fullConv.bRegularizer,
+    DataConverter.setAttributeValue(context,
+      bRegularizerBuilder, fullConv.bRegularizer,
       ModuleSerializer.regularizerType)
     fullConvBuilder.putAttr("bRegularizer", bRegularizerBuilder.build)
 
