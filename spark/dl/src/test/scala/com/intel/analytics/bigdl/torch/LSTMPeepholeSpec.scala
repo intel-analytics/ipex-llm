@@ -21,7 +21,7 @@ import java.io.PrintWriter
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.optim.SGD
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.TorchObject.TYPE_DOUBLE_TENSOR
 import com.intel.analytics.bigdl.utils.{T, Table, TorchFile}

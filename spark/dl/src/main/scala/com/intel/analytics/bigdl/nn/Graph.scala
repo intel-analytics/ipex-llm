@@ -300,7 +300,8 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
   private val forwardNodes = backGraph.DFS.toArray
   private val forwardScheduler = new Scheduler(
     forwardNodes.filter(_.prevNodes.length == 0),
-    Seq(dummyOutput)
+    Seq(dummyOutput),
+    forwardNodes.map(_.element.getName()).toSet
   )
 
   private var backwardScheduler : Scheduler[T] = _
@@ -318,15 +319,35 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
     val gradGraph = backGraph.cloneGraph(true)
     dummyOutputGrad = gradGraph.source
     val originalNodes = gradGraph.DFS
-    originalNodes.filter(x => isStopGradient(x.element)).foreach(_.removeNextEdges())
+    originalNodes.filter(x => isStopGradient(x.element)).foreach(removeStopNodes(_))
     backwardNodes = gradGraph.DFS.filter(n => !n.eq(dummyOutputGrad))
       .filterNot(_.element.isInstanceOf[ControlDependency[_]]).toArray
+
+    val inputNames = inputs.map(_.element.getName()).toSet
+    val dummyBackwardEnd = Input()
+    val backwardTargets = backwardNodes
+      .filter(n => (n.element.parameters() != null && n.element.parameters()._1.length != 0)
+        || inputNames.contains(n.element.getName()))
+    backwardTargets.foreach(_ -> dummyBackwardEnd)
+    val graph = dummyBackwardEnd.graph(true)
+    val forwardNodeNames = forwardNodes.map(_.element.getName()).toSet
+    val executableNodes = graph.DFS.map(_.element.getName())
+      .filter(forwardNodeNames.contains(_)).toSet
+    dummyBackwardEnd.removePrevEdges()
+
     backwardScheduler = new Scheduler[T](
       Seq(dummyOutputGrad),
-      backwardNodes.filter(_.nextNodes.length == 0)
+      backwardTargets,
+      executableNodes
     )
     clearState()
     this
+  }
+
+  private[bigdl] def removeStopNodes(n: Node[_]): Unit = {
+    val nodes = n.nextNodes
+    n.removeNextEdges()
+    nodes.filter(_.prevNodes.length == 0).foreach(removeStopNodes(_))
   }
 
 
