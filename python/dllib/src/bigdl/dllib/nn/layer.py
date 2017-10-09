@@ -271,7 +271,7 @@ class Layer(JavaValue):
                                "modelPredictClass", self.value, data_rdd)
         return result
 
-    def evaluate(self, val_rdd, batch_size, val_methods):
+    def test(self, val_rdd, batch_size, val_methods):
         """
         A method to benchmark the model quality.
 
@@ -281,7 +281,7 @@ class Layer(JavaValue):
         :return:
         """
         return callBigDlFunc(self.bigdl_type,
-                             "modelEvaluate",
+                             "modelTest",
                              self.value,
                              val_rdd, batch_size, val_methods)
 
