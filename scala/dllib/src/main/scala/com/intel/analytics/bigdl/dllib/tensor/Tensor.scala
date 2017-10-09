@@ -746,6 +746,12 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
   def getTensorNumeric(): TensorNumeric[T]
 
   /**
+   * Return tensor type
+   * @return Dense / Quant
+   */
+  def getTensorType: TensorType
+
+  /**
    * Compare with other tensor. The shape of the other tensor must be same with this tensor.
    * If element wise difference is less than delta, return true.
    * @param other
@@ -785,6 +791,11 @@ object LongType extends TensorDataType
 object FloatType extends TensorDataType
 
 object DoubleType extends TensorDataType
+sealed trait TensorType
+
+object DenseType extends TensorType
+
+object QuantizedType extends TensorType
 
 object Tensor {
 
