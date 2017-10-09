@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.serializer.{ContainerSerializable, DataConverter, ModuleData, ModuleSerializer}
+import com.intel.analytics.bigdl.utils.serializer._
 import serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.collection.mutable.ArrayBuffer
@@ -188,30 +188,33 @@ object RecurrentDecoder extends ContainerSerializable {
     new RecurrentDecoder[T](outputLength)
   }
 
-  override def loadModule[T: ClassTag](model : BigDLModule)
+  override def loadModule[T: ClassTag](context: DeserializeContext)
     (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
-    val moduleData = super.loadModule(model)
+    val moduleData = super.loadModule(context)
     val recurrentDecoder = moduleData.module.asInstanceOf[RecurrentDecoder[T]]
-    val attrMap = model.getAttrMap
+    val attrMap = context.bigdlModule.getAttrMap
 
     val topologyAttr = attrMap.get("topology")
-    recurrentDecoder.topology = DataConverter.getAttributeValue(topologyAttr).
+    recurrentDecoder.topology = DataConverter.
+      getAttributeValue(context, topologyAttr).
       asInstanceOf[Cell[T]]
 
     moduleData
   }
 
-  override def serializeModule[T: ClassTag](module : ModuleData[T])
-    (implicit ev: TensorNumeric[T]) : BigDLModule = {
-    val containerBuilder = BigDLModule.newBuilder(super.serializeModule(module))
+  override def serializeModule[T: ClassTag](context: SerializeContext[T])
+    (implicit ev: TensorNumeric[T]) : SerializeResult = {
+    val containerBuilder = BigDLModule.
+      newBuilder(super.serializeModule(context).bigDLModule)
 
-    val recurrentDecoder = module.module.asInstanceOf[RecurrentDecoder[T]]
+    val recurrentDecoder = context.moduleData.module.asInstanceOf[RecurrentDecoder[T]]
 
     val topologyBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(topologyBuilder, recurrentDecoder.topology,
+    DataConverter.setAttributeValue(context,
+      topologyBuilder, recurrentDecoder.topology,
       ModuleSerializer.abstractModuleType)
     containerBuilder.putAttr("topology", topologyBuilder.build)
 
-    containerBuilder.build
+    SerializeResult(containerBuilder.build, context.storages)
   }
 }
