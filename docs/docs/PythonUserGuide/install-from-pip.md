@@ -2,6 +2,7 @@
 
 - Pip install supports __Mac__ and __Linux__ platforms but only __Spark1.6.x__ for now.
 - Pip install only supports __local__ mode. Might support cluster mode in the future.
+- For those who want to use BigDL in cluster mode, try to [install without pip](./install-without-pip.md)
 - We've tested this package with __Python 2.7__ and __Python 3.5__. Only these two Python versions are supported for now.
 
 
