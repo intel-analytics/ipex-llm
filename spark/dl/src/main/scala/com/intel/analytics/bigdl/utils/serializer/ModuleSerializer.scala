@@ -55,22 +55,23 @@ object ModuleSerializer extends ModuleSerializable{
    * @param bigDLModule : BigDL module to be serialized
    * @return protobuf format module instance
    */
-  def serialize[T: ClassTag](bigDLModule : ModuleData[T])
+  def serialize[T: ClassTag](bigDLModule : ModuleData[T], copyWeightAndBias : Boolean = true)
                             (implicit ev: TensorNumeric[T])
     : BigDLModule = {
     val module = bigDLModule.module
     // For those layers which have their own serialization/deserialization methods
     val clsName = module.getClass.getName
-    if (serializerMaps.contains(clsName)) {
-      serializerMaps(clsName).serializeModule(bigDLModule)
+    val serializer = if (serializerMaps.contains(clsName)) {
+      serializerMaps(clsName)
     } else {
       val module = bigDLModule.module.asInstanceOf[AbstractModule[_, _, _]]
       module match {
-        case container : Container[_, _, _] => ContainerSerializer.serializeModule(bigDLModule)
-        case cell : Cell[_] => CellSerializer.serializeModule(bigDLModule)
-        case _ => ModuleSerializer.serializeModule(bigDLModule)
+        case container : Container[_, _, _] => ContainerSerializer
+        case cell : Cell[_] => CellSerializer
+        case _ => ModuleSerializer
       }
     }
+    serializer.setCopyWeightAndBias(copyWeightAndBias).serializeModule(bigDLModule)
   }
 
   /**
@@ -78,24 +79,25 @@ object ModuleSerializer extends ModuleSerializable{
    *  @param model : BigDL module on protobuf for deserialization
    *  @return BigDL module
    */
-  def load[T: ClassTag](model: BigDLModule)
+  def load[T: ClassTag](model: BigDLModule, copyWeightAndBias : Boolean = true)
                        (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
     try {
-      if (serializerMaps.contains(model.getModuleType)) {
-        serializerMaps(model.getModuleType).loadModule(model)
+      val serializer = if (serializerMaps.contains(model.getModuleType)) {
+        serializerMaps(model.getModuleType)
       } else {
         val attrMap = model.getAttrMap
         val subModuleCount = model.getSubModulesCount
         if (subModuleCount > 0) {
-          ContainerSerializer.loadModule(model)
+          ContainerSerializer
         } else {
           if (attrMap.containsKey("is_cell_module")) {
-            CellSerializer.loadModule(model)
+            CellSerializer
           } else {
-            ModuleSerializer.loadModule(model)
+            ModuleSerializer
           }
         }
       }
+      serializer.setCopyWeightAndBias(copyWeightAndBias).loadModule(model)
     } catch {
       case e: Exception =>
         throw new RuntimeException(s"Loading module ${model.getModuleType} exception :", e)

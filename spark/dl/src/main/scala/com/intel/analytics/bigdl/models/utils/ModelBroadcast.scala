@@ -44,7 +44,7 @@ class ModelBroadcast[T: ClassTag](implicit ev: TensorNumeric[T]) extends Seriali
    * @return this
    */
   def broadcast(sc: SparkContext, model: Module[T]): this.type = {
-    val bcModel = model.cloneModule()
+    val bcModel = model.cloneModule(true)
     val weightsBias = getAndClearWeightBias(bcModel.parameters())
     broadcastModel = sc.broadcast(bcModel)
     broadcastParameters = sc.broadcast(weightsBias)
@@ -57,7 +57,7 @@ class ModelBroadcast[T: ClassTag](implicit ev: TensorNumeric[T]) extends Seriali
    * @return model
    */
   def value(): Module[T] = {
-    val localModel = broadcastModel.value.cloneModule()
+    val localModel = broadcastModel.value.cloneModule(false).evaluate()
     putWeightBias(broadcastParameters.value, localModel)
     localModel
   }

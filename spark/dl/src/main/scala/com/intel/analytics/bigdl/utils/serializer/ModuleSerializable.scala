@@ -41,6 +41,8 @@ trait ModuleSerializable extends Loadable with Savable{
 
   private val bigDLVersion = com.intel.analytics.bigdl.BIGDL_VERSION
 
+  protected var _copyWeightAndBias = true
+
   // Separate this two methods for reuse in sub-classes
   protected def checkVersion[T: ClassTag](module : BigDLModule)
                                          (implicit ev: TensorNumeric[T]) : Unit = {
@@ -54,6 +56,13 @@ trait ModuleSerializable extends Loadable with Savable{
   protected def setVersion[T: ClassTag](modelBuilder : BigDLModule.Builder)
                                        (implicit ev: TensorNumeric[T]) : Unit = {
     modelBuilder.setVersion(bigDLVersion)
+  }
+
+  protected def copyWeightAndBias() = _copyWeightAndBias
+
+  def setCopyWeightAndBias(copyWeightAndBias : Boolean): this.type = {
+    _copyWeightAndBias = copyWeightAndBias
+    this
   }
 
   /**
@@ -168,7 +177,9 @@ trait ModuleSerializable extends Loadable with Savable{
     val nextModules = model.getNextModulesList.asScala
     val bigDLModule = ModuleData(module, preModules, nextModules)
     module.setName(model.getName)
-    copy2BigDL(model, bigDLModule)
+    if(copyWeightAndBias) {
+      copy2BigDL(model, bigDLModule)
+    }
     bigDLModule
   }
 
@@ -178,7 +189,9 @@ trait ModuleSerializable extends Loadable with Savable{
     module.pre.foreach(pre => modelBuilder.addPreModules(pre))
     module.next.foreach(next => modelBuilder.addNextModules(next))
     modelBuilder.setName(module.module.getName)
-    copyFromBigDL(module, modelBuilder)
+    if (copyWeightAndBias) {
+      copyFromBigDL(module, modelBuilder)
+    }
     modelBuilder.build
   }
 
@@ -294,7 +307,7 @@ trait ContainerSerializable extends ModuleSerializable {
     val container = module.asInstanceOf[Container[Activity, Activity, T]]
     val subModules = model.getSubModulesList.asScala
     subModules.foreach(module => {
-      val subModuleData = ModuleSerializer.load(module)
+      val subModuleData = ModuleSerializer.load(module, copyWeightAndBias)
       container.modules.append(subModuleData.module)
     })
     module
@@ -308,7 +321,7 @@ trait ContainerSerializable extends ModuleSerializable {
     val subModulesData = module.module.asInstanceOf[Container[Activity, Activity, T]].modules
     subModulesData.foreach(module => {
       val subModule = ModuleSerializer.serialize(ModuleData(module,
-        new ArrayBuffer[String](), new ArrayBuffer[String]()))
+        new ArrayBuffer[String](), new ArrayBuffer[String]()), copyWeightAndBias)
       containerBuilder.addSubModules(subModule)
     })
   }

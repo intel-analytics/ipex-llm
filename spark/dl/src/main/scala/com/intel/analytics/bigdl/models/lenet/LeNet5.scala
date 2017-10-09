@@ -22,19 +22,19 @@ import com.intel.analytics.bigdl.nn._
 
 object LeNet5 {
   def apply(classNum: Int): Module[Float] = {
-    val model = Sequential()
-    model.add(Reshape(Array(1, 28, 28)))
+    val model = Sequential().setName("lenet")
+    model.add(Reshape(Array(1, 28, 28)).setName("reshap1"))
       .add(SpatialConvolution(1, 6, 5, 5).setName("conv1_5x5"))
-      .add(Tanh())
-      .add(SpatialMaxPooling(2, 2, 2, 2))
-      .add(Tanh())
+      .add(Tanh().setName("tanh1"))
+      .add(SpatialMaxPooling(2, 2, 2, 2).setName("maxpool1"))
+      .add(Tanh().setName("tanh2"))
       .add(SpatialConvolution(6, 12, 5, 5).setName("conv2_5x5"))
-      .add(SpatialMaxPooling(2, 2, 2, 2))
-      .add(Reshape(Array(12 * 4 * 4)))
+      .add(SpatialMaxPooling(2, 2, 2, 2).setName("maxpool2"))
+      .add(Reshape(Array(12 * 4 * 4)).setName("reshap2"))
       .add(Linear(12 * 4 * 4, 100).setName("fc1"))
-      .add(Tanh())
+      .add(Tanh().setName("tanh3"))
       .add(Linear(100, classNum).setName("fc2"))
-      .add(LogSoftMax())
+      .add(LogSoftMax().setName("softmax"))
   }
   def graph(classNum: Int): Module[Float] = {
     val input = Reshape(Array(1, 28, 28)).inputs()
