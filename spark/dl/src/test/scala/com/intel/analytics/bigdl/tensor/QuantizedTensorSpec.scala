@@ -27,33 +27,21 @@ class QuantizedTensorSpec extends FlatSpec with Matchers {
   "A QuantizeTensor set to empty" should "work correctly" in {
     val inputChannel = 4
     val outputChannel = 4
-    val batchSize = 3
 
-    val threshold = 64.0f
-
-    val fp32Tensor = Tensor(outputChannel, inputChannel).rand
-
+    val fp32Tensor = Tensor(outputChannel, inputChannel).rand()
     val tensor = QuantizedTensor[Float](fp32Tensor, LinearWeightParams(outputChannel, inputChannel))
-
-    val minArray = Array.fill[Float](outputChannel)(0)
-    val maxArray = Array.fill[Float](outputChannel)(0)
-
-    val desc = tensor.getNativeStorage
 
     tensor.set()
 
     tensor.getNativeStorage should be (0L)
     tensor.getStorage should be (null)
 
-    BigQuant.FreeMemory(desc)
+    tensor.release()
   }
 
   "A QuantizeTensor set to other tensor" should "work correctly" in {
     val inputChannel = 4
     val outputChannel = 4
-    val batchSize = 3
-
-    val threshold = 64.0f
 
     val fp32Tensor = Tensor(outputChannel, inputChannel).rand
 
@@ -62,23 +50,20 @@ class QuantizedTensorSpec extends FlatSpec with Matchers {
     val tensor2 = QuantizedTensor[Float](fp32Tensor,
       LinearWeightParams(outputChannel, inputChannel))
 
-    val desc = tensor2.getNativeStorage
-
+    tensor2.release()
     tensor2.set(tensor1)
 
     tensor2.getNativeStorage should be (tensor1.getNativeStorage)
     tensor2.getStorage should be (tensor1.getStorage)
 
     tensor1.release()
-    BigQuant.FreeMemory(desc)
   }
 
   "A QuantizeTensor set to itself" should "work correctly" in {
     val inputChannel = 4
     val outputChannel = 4
-    val batchSize = 3
 
-    val fp32Tensor = Tensor(outputChannel, inputChannel).rand
+    val fp32Tensor = Tensor(outputChannel, inputChannel).rand()
     val tensor = QuantizedTensor[Float](fp32Tensor, LinearWeightParams(outputChannel, inputChannel))
 
     tensor.set(tensor)
@@ -87,18 +72,14 @@ class QuantizedTensorSpec extends FlatSpec with Matchers {
     tensor.getStorage should not be null
 
     tensor.release()
-
     tensor.getNativeStorage should be (0L)
   }
 
   "A QuantizeTensor set" should "work correctly" in {
     val inputChannel = 4
     val outputChannel = 4
-    val batchSize = 3
 
-    val threshold = 64.0f
-
-    val fp32Tensor = Tensor(outputChannel, inputChannel).rand
+    val fp32Tensor = Tensor(outputChannel, inputChannel).rand()
 
     val tensor1 = QuantizedTensor[Float](fp32Tensor,
       LinearWeightParams(outputChannel, inputChannel))
@@ -124,13 +105,12 @@ class QuantizedTensorSpec extends FlatSpec with Matchers {
   "A QuantizeTensor serialzation" should "work correctly" in {
     val inputChannel = 4
     val outputChannel = 4
-    val batchSize = 3
 
-    val threshold = 64.0f
-
-    val fp32Tensor = Tensor(outputChannel, inputChannel).rand
+    val fp32Tensor = Tensor(outputChannel, inputChannel).rand()
 
     val tensor = QuantizedTensor[Float](fp32Tensor, LinearWeightParams(outputChannel, inputChannel))
+
+    val test = SerializationUtils.clone(fp32Tensor)
 
     val clone = SerializationUtils.clone(tensor).asInstanceOf[QuantizedTensor[Float]]
 
@@ -139,6 +119,6 @@ class QuantizedTensorSpec extends FlatSpec with Matchers {
     tensor.minOfRow should be (clone.minOfRow)
     tensor.sumOfRow should be (clone.sumOfRow)
 
-    tensor.getNativeStorage should not be (clone.getNativeStorage)
+    tensor.getNativeStorage should not be clone.getNativeStorage
   }
 }

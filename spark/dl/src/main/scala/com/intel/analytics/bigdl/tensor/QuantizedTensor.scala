@@ -23,7 +23,7 @@ import java.io.{IOException, ObjectInputStream}
 import scala.reflect.ClassTag
 
 @SerialVersionUID(- 1766499387282335147L)
-private[bigdl] class QuantizedTensor[@specialized(Float) T: ClassTag](
+private[bigdl] class QuantizedTensor[T: ClassTag](
   private var _size: Array[Int],
   private var _stride: Array[Int],
   var nDimension: Int)(implicit ev: TensorNumeric[T]) extends QuantizedTensorUnsupported[T] {
