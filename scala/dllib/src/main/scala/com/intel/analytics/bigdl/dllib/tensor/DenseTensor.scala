@@ -1989,6 +1989,9 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
   }
 
   override def getTensorNumeric(): TensorNumeric[T] = ev
+
+  override def getTensorType: TensorType = DenseType
+
 }
 
 object DenseTensor {
