@@ -34,9 +34,10 @@ do
     --ignore=../../../pyspark/bigdl/util/ \
     --ignore=../../../pyspark/bigdl/models/ && \
     $p -m pytest -v -n 4 ../../../pyspark/test/
-    if [ $? -ne 0 ];
+    exit_status=$?
+    if [ $exit_status -ne 0 ];
     then
-        exit $?
+        exit $exit_status
     fi
 done
 
