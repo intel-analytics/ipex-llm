@@ -27,6 +27,7 @@ import java.io.{File, FilenameFilter}
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
+import com.intel.analytics.bigdl.models.utils.ModelBroadcast
 import org.apache.commons.lang.exception.ExceptionUtils
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import org.apache.log4j.Logger
@@ -523,7 +524,11 @@ object DistriOptimizer {
     optimMethod: OptimMethod[T]
     )(implicit ev: TensorNumeric[T]) = {
     val sc = dataset.originRDD().sparkContext
-    val broadcast = sc.broadcast((model, criterion, state, validationMethods, optimMethod))
+    val broadcast = sc.broadcast((criterion, state, validationMethods, optimMethod))
+    // As cloneModel is using Serialization to implement deep copy, and will throw OOMError
+    // when model's size is bigger than SerializationUtils' buffer size. So we can use
+    // ModelBroadcast to clone model here.
+    val modelBroadcast = ModelBroadcast[T](false).broadcast(sc, model)
     val _subModelNumber = Engine.getEngineType match {
       case MklBlas => coresPerNode
       case _ => throw new IllegalArgumentException
@@ -538,7 +543,7 @@ object DistriOptimizer {
     val nExecutor = Engine.nodeNumber()
     val executorCores = Engine.coreNumber()
     val models = dataset.originRDD().mapPartitions(_ => {
-      val (broadcastModel, broadcastCriterion, broadcastState, broadcastMethod,
+      val (broadcastCriterion, broadcastState, broadcastMethod,
       broadcastOptim) = broadcast.value
       if (!Engine.checkSingleton()) {
         if (checkSingleton) {
@@ -554,7 +559,7 @@ object DistriOptimizer {
       }
       Engine.setNodeAndCore(nExecutor, executorCores)
       val cached = (0 until _subModelNumber).map { _ =>
-        val localModel = broadcastModel.cloneModule()
+        val localModel = modelBroadcast.value()
         val localCriterion = broadcastCriterion.cloneCriterion()
         val localState = broadcastState.clone()
         val localMethod =

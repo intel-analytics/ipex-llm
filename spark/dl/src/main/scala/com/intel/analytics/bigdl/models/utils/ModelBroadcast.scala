@@ -25,12 +25,13 @@ import org.apache.spark.broadcast.Broadcast
 import scala.reflect.ClassTag
 
 /**
- * ModelBroadcast is used to broadcast model when doing model inference.
- * Note: do not use it in model training since the broadcast models share weights and biases
- * It shortens the broadcast time, which is especially useful when the model size is large
+ * ModelBroadcast is used to broadcast model.
+ * Note: If you want to use this to broadcast training model, please set inference = false.
+ * @param inference inference or training.
  * @tparam T data type
  */
-class ModelBroadcast[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializable {
+class ModelBroadcast[T: ClassTag](
+      inference: Boolean = true)(implicit ev: TensorNumeric[T]) extends Serializable {
 
   private var broadcastModel: Broadcast[Module[T]] = _
   private var broadcastParameters: Broadcast[Array[Tensor[T]]] = _
@@ -44,10 +45,10 @@ class ModelBroadcast[T: ClassTag](implicit ev: TensorNumeric[T]) extends Seriali
    * @return this
    */
   def broadcast(sc: SparkContext, model: Module[T]): this.type = {
-    val bcModel = model.cloneModule()
-    val weightsBias = getAndClearWeightBias(bcModel.parameters())
-    broadcastModel = sc.broadcast(bcModel)
+    val weightsBias = getAndClearWeightBias(model.parameters())
+    broadcastModel = sc.broadcast(model)
     broadcastParameters = sc.broadcast(weightsBias)
+    putWeightBias(weightsBias, model)
     this
   }
 
@@ -58,7 +59,7 @@ class ModelBroadcast[T: ClassTag](implicit ev: TensorNumeric[T]) extends Seriali
    */
   def value(): Module[T] = {
     val localModel = broadcastModel.value.cloneModule()
-    putWeightBias(broadcastParameters.value, localModel)
+    putWeightBias(broadcastParameters.value, localModel, inference)
     localModel
   }
 
@@ -102,12 +103,17 @@ class ModelBroadcast[T: ClassTag](implicit ev: TensorNumeric[T]) extends Seriali
   }
 
   private def putWeightBias(broadcastWeightBias: Array[Tensor[T]],
-    localModel: Module[T]): Unit = {
-    val localWeightBias = localModel.parameters()._1
+    localModel: Module[T], inference: Boolean = true): Unit = {
+    val (localWeightBias, localGradWeightBias) = localModel.parameters()
     var i = 0
     while (i < localWeightBias.length) {
       if (localWeightBias(i) != null) {
-        localWeightBias(i).set(broadcastWeightBias(i))
+        if (!inference) {
+          localWeightBias(i).resizeAs(broadcastWeightBias(i)).copy(broadcastWeightBias(i))
+          localGradWeightBias(i).resizeAs(broadcastWeightBias(i))
+        } else {
+          localWeightBias(i).set(broadcastWeightBias(i))
+        }
       }
       i += 1
     }
@@ -116,6 +122,8 @@ class ModelBroadcast[T: ClassTag](implicit ev: TensorNumeric[T]) extends Seriali
 
 
 object ModelBroadcast {
-  def apply[@specialized(Float, Double) T: ClassTag]()(implicit ev: TensorNumeric[T])
-  : ModelBroadcast[T] = new ModelBroadcast
+  def apply[@specialized(Float, Double) T: ClassTag](
+      inference: Boolean = true)(implicit ev: TensorNumeric[T]) : ModelBroadcast[T] = {
+    new ModelBroadcast(inference)
+  }
 }

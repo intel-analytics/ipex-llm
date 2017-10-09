@@ -33,7 +33,7 @@ class ModelBroadcastSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "model broadcast" should "work properly" in {
     val model = LeNet5(10)
 
-    val modelBroadCast = ModelBroadcast[Float].broadcast(sc, model)
+    val modelBroadCast = ModelBroadcast[Float]().broadcast(sc, model)
     modelBroadCast.value().toString should be(model.toString)
     modelBroadCast.value().parameters()._1 should be(model.parameters()._1)
   }
@@ -42,7 +42,7 @@ class ModelBroadcastSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val model = LeNet5(10)
     model.getParameters()
 
-    val modelBroadCast = ModelBroadcast[Float].broadcast(sc, model)
+    val modelBroadCast = ModelBroadcast[Float]().broadcast(sc, model)
     modelBroadCast.value().toString should be(model.toString)
     modelBroadCast.value().parameters()._1 should be(model.parameters()._1)
   }
