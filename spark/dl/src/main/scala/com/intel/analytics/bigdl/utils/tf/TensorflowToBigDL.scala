@@ -924,14 +924,22 @@ object MeanTF extends TensorflowToBigDL{
     val squeeze = !getBoolean(attr, "keep_dims")
     val dataType = getType(attr, "T")
     dataType match {
-      case DataType.DT_INT8 => dim.foreach(i => mean.add(new Mean[T, Int](i, squeeze = squeeze)))
-      case DataType.DT_INT16 => dim.foreach(i => mean.add(new Mean[T, Int](i, squeeze = squeeze)))
-      case DataType.DT_UINT8 => dim.foreach(i => mean.add(new Mean[T, Int](i, squeeze = squeeze)))
-      case DataType.DT_UINT16 => dim.foreach(i => mean.add(new Mean[T, Int](i, squeeze = squeeze)))
-      case DataType.DT_INT32 => dim.foreach(i => mean.add(new Mean[T, Int](i, squeeze = squeeze)))
-      case DataType.DT_INT64 => dim.foreach(i => mean.add(new Mean[T, Long](i, squeeze = squeeze)))
-      case DataType.DT_FLOAT => dim.foreach(i => mean.add(new Mean[T, Float](i, squeeze = squeeze)))
-      case DataType.DT_DOUBLE => dim.foreach(i => mean.add(new Mean[T, Double](i, squeeze = squeeze)))
+      case DataType.DT_INT8 =>
+        dim.foreach(i => mean.add(new Mean[T, Int](i, squeeze = squeeze)))
+      case DataType.DT_INT16 =>
+        dim.foreach(i => mean.add(new Mean[T, Int](i, squeeze = squeeze)))
+      case DataType.DT_UINT8 =>
+        dim.foreach(i => mean.add(new Mean[T, Int](i, squeeze = squeeze)))
+      case DataType.DT_UINT16 =>
+        dim.foreach(i => mean.add(new Mean[T, Int](i, squeeze = squeeze)))
+      case DataType.DT_INT32 =>
+        dim.foreach(i => mean.add(new Mean[T, Int](i, squeeze = squeeze)))
+      case DataType.DT_INT64 =>
+        dim.foreach(i => mean.add(new Mean[T, Long](i, squeeze = squeeze)))
+      case DataType.DT_FLOAT =>
+        dim.foreach(i => mean.add(new Mean[T, Float](i, squeeze = squeeze)))
+      case DataType.DT_DOUBLE =>
+        dim.foreach(i => mean.add(new Mean[T, Double](i, squeeze = squeeze)))
     }
 
     mean.asInstanceOf[AbstractModule[Activity, Activity, T]]
@@ -1046,7 +1054,7 @@ object LogicalOrTF extends TensorflowToBigDL {
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
                                   context: Context[T],
                                   byteOrder: ByteOrder)(
-                                   implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
+    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
     LogicalOr()
       .asInstanceOf[AbstractModule[Activity, Activity, T]]
@@ -1067,7 +1075,7 @@ object LogicalAndTF extends TensorflowToBigDL {
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
                                   context: Context[T],
                                   byteOrder: ByteOrder)(
-                                   implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
+   implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
     LogicalAnd()
       .asInstanceOf[AbstractModule[Activity, Activity, T]]
@@ -1087,7 +1095,7 @@ object LogicalNotTF extends TensorflowToBigDL {
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
                                   context: Context[T],
                                   byteOrder: ByteOrder)(
-                                   implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
+    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
     LogicalNot()
       .asInstanceOf[AbstractModule[Activity, Activity, T]]
@@ -1195,7 +1203,7 @@ object NotEqualTF extends TensorflowToBigDL {
   override def layer[T: ClassTag](tfGraph: DirectedGraph[NodeDef],
                                   context: Context[T],
                                   byteOrder: ByteOrder)(
-                                   implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
+    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
 
     new NotEqual()
       .asInstanceOf[AbstractModule[Activity, Activity, T]]
