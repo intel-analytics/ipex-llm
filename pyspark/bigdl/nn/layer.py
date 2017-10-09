@@ -611,10 +611,13 @@ class Model(Container):
         """
         save current model graph to a folder, which can be display in tensorboard by running
             tensorboard --logdir logPath
-        :param log_path: 
-        :return: 
+        :param log_path: path to save the model graph
+        :param bigdl_type:
+        :return:
         """
         callBigDlFunc(bigdl_type, "saveGraphTopology", self.value, log_path)
+        return self
+
 
 class Linear(Layer):
 
