@@ -316,7 +316,6 @@ object ContainerSerializer extends ContainerSerializable
 
 trait StorageType
 object ProtoStorageType extends StorageType
-object BigDLStorageType extends StorageType
 
 case class SerializeContext[T: ClassTag](moduleData: ModuleData[T],
                                          storages: mutable.HashMap[Int, Any],
