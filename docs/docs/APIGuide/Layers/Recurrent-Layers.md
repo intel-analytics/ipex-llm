@@ -164,7 +164,7 @@ RecurrentDecoder module is a container of rnn cells which used to make
 a prediction of the next timestep based on the prediction we made from
 the previous timestep.
 
-Input for RecurrentDecoder has to be batch x stepShape(shape of the input at a single time). 
+Input for RecurrentDecoder has to be batch x stepShape(shape of the input at a single time step). 
 
 During training, input at t(i) is output at t(i-1), input at t(0) is
 user input.
