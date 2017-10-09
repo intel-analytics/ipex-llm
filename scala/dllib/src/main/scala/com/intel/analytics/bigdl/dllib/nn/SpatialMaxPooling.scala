@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFo
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Engine
-import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData, ModuleSerializable}
+import com.intel.analytics.bigdl.utils.serializer._
 import serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.reflect._
@@ -413,12 +413,12 @@ object SpatialMaxPooling extends ModuleSerializable {
     new SpatialMaxPooling[T](kW, kH, dW, dH, padW, padH, format)
   }
 
-  override def doLoadModule[T: ClassTag](model : BigDLModule)
+  override def doLoadModule[T: ClassTag](context: DeserializeContext)
     (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
-    val maxPooling = super.doLoadModule(model)
-    val attrMap = model.getAttrMap
+    val maxPooling = super.doLoadModule(context)
+    val attrMap = context.bigdlModule.getAttrMap
     val ceil_mode = DataConverter.
-      getAttributeValue(attrMap.get("ceil_mode")).
+      getAttributeValue(context, attrMap.get("ceil_mode")).
       asInstanceOf[Boolean]
     if (ceil_mode) {
       maxPooling.asInstanceOf[SpatialMaxPooling[T]].ceil()
@@ -426,14 +426,15 @@ object SpatialMaxPooling extends ModuleSerializable {
     maxPooling
   }
 
-  override def doSerializeModule[T: ClassTag](module : ModuleData[T],
+  override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
                                               maxPoolingBuilder : BigDLModule.Builder)
                                            (implicit ev: TensorNumeric[T]) : Unit = {
 
-    super.doSerializeModule(module, maxPoolingBuilder)
-    val maxPooling = module.module.asInstanceOf[SpatialMaxPooling[T]]
+    super.doSerializeModule(context, maxPoolingBuilder)
+    val maxPooling = context.moduleData.module.asInstanceOf[SpatialMaxPooling[T]]
     val ceilBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(ceilBuilder, maxPooling.ceilMode, universe.typeOf[Boolean])
+    DataConverter.setAttributeValue(context, ceilBuilder,
+      maxPooling.ceilMode, universe.typeOf[Boolean])
     maxPoolingBuilder.putAttr("ceil_mode", ceilBuilder.build)
 
   }
