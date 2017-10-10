@@ -91,9 +91,19 @@ object Train2 {
 
       val encoderRec = Array(Recurrent()
           .add(RnnCell[Float](hiddenSize, hiddenSize, Tanh[Float]())))
+      
       val decoderRec = Array(RecurrentDecoder(maxTrainLength / 2)
         .add(RnnCell[Float](hiddenSize, hiddenSize, Tanh[Float]()))
         .asInstanceOf[Recurrent[Float]])
+
+//      val encoderRec = Array(Recurrent()
+//        .add(RnnCell[Float](hiddenSize, hiddenSize, Tanh[Float]())),
+//        Recurrent()
+//          .add(RnnCell[Float](hiddenSize, hiddenSize, Tanh[Float]())))
+//      val decoderCell = Array(RnnCell[Float](hiddenSize, hiddenSize, Tanh[Float]()),
+//        RnnCell[Float](hiddenSize, hiddenSize, Tanh[Float]()).asInstanceOf[Cell[Float]])
+//      val decoderRec = Array(RecurrentDecoder(maxTrainLength / 2).add(MultiRNNCell(decoderCell))
+//        .asInstanceOf[Recurrent[Float]])
 
       val model = Sequential()
           .add(TimeDistributed[Float](Linear[Float](inputSize, hiddenSize)))
