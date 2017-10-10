@@ -247,20 +247,15 @@ class ConcatTable[T : ClassTag]
     str
   }
 
-  override def toGraphNodes(startEnd: (Array[ModuleNode[T]], Array[ModuleNode[T]])):
-  (Array[ModuleNode[T]], Array[ModuleNode[T]]) = {
+  override def getEndNodes(startNodes: Array[ModuleNode[T]]): Array[ModuleNode[T]] = {
     val outputs = ArrayBuffer[ModuleNode[T]]()
-    var outputTuple: (Array[ModuleNode[T]], Array[ModuleNode[T]]) = null
-    var startNodes = startEnd._1
-    val endNodes = startEnd._2
+    var outputTuple: Array[ModuleNode[T]] = null
     for (i <- 0 to modules.size - 1) {
-      outputTuple = modules(i).toGraphNodes((startNodes, endNodes))
-      outputs ++= outputTuple._2
+      outputTuple = modules(i).getEndNodes(startNodes)
+      outputs ++= outputTuple
     }
-    if (startNodes.isEmpty) startNodes = outputs.toArray
-    (startNodes, outputs.toArray)
+    outputs.toArray
   }
-
 }
 
 object ConcatTable {

@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.utils
 
 import com.intel.analytics.bigdl.example.loadmodel.AlexNet_OWT
 import com.intel.analytics.bigdl.models.Inception
+import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.models.resnet.ResNet
 import com.intel.analytics.bigdl.models.resnet.ResNet.{DatasetType, ShortcutType}
 import com.intel.analytics.bigdl.nn._
@@ -34,50 +35,44 @@ import scala.util.Random
 
 class GraphNodeSpec extends FlatSpec with Matchers {
 
-  "Inception bn+GraphNode" should "generate correct output" in {
+  "Inception bn to Graph" should "generate correct output" in {
+    val batchSize = 2
     Random.setSeed(3)
-    val input = Tensor[Float](4, 3, 224, 224).apply1(e => Random.nextFloat())
-    val labels = Tensor[Float](4).apply1(e => Random.nextInt(1000))
+    val input = Tensor[Float](batchSize, 3, 224, 224).apply1(e => Random.nextFloat())
+    val labels = Tensor[Float](batchSize).apply1(e => Random.nextInt(1000))
+
+    val inputNew = input.clone()
 
     val seed = 100
     RNG.setSeed(seed)
     val model = Inception.getModel[Float](1000, "inception-bn")
     RNG.setSeed(seed)
     val model2 = Inception.getModel[Float](1000, "inception-bn")
-    val start = System.nanoTime()
     val graphModel = model2.toGraph()
-    val end = System.nanoTime()
-    val scalaTime = end - start
-    println("Inception bn Module to Graph takes time " + scalaTime/1e9 + "s")
 
-    val outputStart1 = System.nanoTime()
     val output1 = model.forward(input).toTensor[Float]
-    val outputEnd1 = System.nanoTime()
-    println("Forward of Original Module takes time " + (outputEnd1-outputStart1)/1e9 + "s")
-    val outputStart2 = System.nanoTime()
     val output2 = graphModel.forward(input).toTensor[Float]
-    val outputEnd2 = System.nanoTime()
-    println("Forward of Graph Module takes time " + (outputEnd2-outputStart2)/1e9 + "s")
-    output1 should be (output2)
+    output1 should be(output2)
 
     val criterion = new ClassNLLCriterion[Float]()
     val loss = criterion.forward(output1, labels)
     val gradOutput = criterion.backward(output1, labels)
 
-    val gradOutputStart1 = System.nanoTime()
-    val gradInput1 = model.backward(input, gradOutput)
-    val gradOutputEnd1 = System.nanoTime()
-    println("Backward of Original Module takes time " + (gradOutputEnd1-gradOutputStart1)/1e9 + "s")
 
-    val gradOutputStart2 = System.nanoTime()
-    val gradInput2 = graphModel.backward(input, gradOutput)
-    val gradOutputEnd2 = System.nanoTime()
-    println("Backward of Graph Module takes time " + (gradOutputEnd2-gradOutputStart2)/1e9 + "s")
+    val gradInput1 = model.backward(input, gradOutput).toTensor
+    val gradInput2 = graphModel.backward(input, gradOutput).toTensor
 
-    gradInput1 should be (gradInput2)
+    val arr1 = gradInput1.storage().array()
+    val arr2 = gradInput2.storage().array()
+
+    for (i <- 0 to (arr1.length-1)) {
+      arr1(i) should be(arr2(i) +- 1e-5f)
+    }
+
+    // gradInput1.equals(gradInput2) should be(true)
   }
 
-  "ResNet+GraphNode" should "generate correct output" in {
+  "ResNet to Graph" should "generate correct output" in {
     val inputSeed = 1
     val depth = 18
     val batchSize = 4
@@ -97,40 +92,23 @@ class GraphNodeSpec extends FlatSpec with Matchers {
     val (weights, grad) = model.getParameters()
     val (w, g) = model2.getParameters()
     w.copy(weights)
-    val start = System.nanoTime()
     val graphModel = model2.toGraph()
-    val end = System.nanoTime()
-    val scalaTime = end - start
-    println("Module to Graph takes time " + scalaTime/1e9 + "s")
 
-    val outputStart1 = System.nanoTime()
     val output1 = model.forward(input).toTensor[Float]
-    val outputEnd1 = System.nanoTime()
-    println("Forward of Original Module takes time " + (outputEnd1-outputStart1)/1e9 + "s")
-    val outputStart2 = System.nanoTime()
     val output2 = graphModel.forward(input).toTensor[Float]
-    val outputEnd2 = System.nanoTime()
-    println("Forward of Graph Module takes time " + (outputEnd2-outputStart2)/1e9 + "s")
     output1 should be (output2)
 
     val criterion = new ClassNLLCriterion[Float]()
     val loss = criterion.forward(output1, labels)
     val gradOutput = criterion.backward(output1, labels)
 
-    val gradOutputStart1 = System.nanoTime()
     val gradInput1 = model.backward(input, gradOutput)
-    val gradOutputEnd1 = System.nanoTime()
-    println("Backward of Original Module takes time " + (gradOutputEnd1-gradOutputStart1)/1e9 + "s")
-
-    val gradOutputStart2 = System.nanoTime()
     val gradInput2 = graphModel.backward(input, gradOutput)
-    val gradOutputEnd2 = System.nanoTime()
-    println("Backward of Graph Module takes time " + (gradOutputEnd2-gradOutputStart2)/1e9 + "s")
 
     gradInput1 should be (gradInput2)
   }
 
-  "AlexNet+GraphNode" should "generate correct output" in {
+  "AlexNet to Graph" should "generate correct output" in {
     Random.setSeed(1)
     val input = Tensor[Float](8, 3, 224, 224).apply1(e => Random.nextFloat())
     val labels = Tensor[Float](8).apply1(e => Random.nextInt(100))
@@ -140,35 +118,47 @@ class GraphNodeSpec extends FlatSpec with Matchers {
     val model = AlexNet_OWT(1000, false, true)
     RNG.setSeed(seed)
     val model2 = AlexNet_OWT(1000, false, true)
-    val start = System.nanoTime()
     val graphModel = model2.toGraph()
-    val end = System.nanoTime()
-    val scalaTime = end - start
-    println("Module to Graph takes time " + scalaTime/1e9 + "s")
 
-    val outputStart1 = System.nanoTime()
     val output1 = model.forward(input).toTensor[Float]
-    val outputEnd1 = System.nanoTime()
-    println("Forward of Original Module takes time " + (outputEnd1-outputStart1)/1e9 + "s")
-    val outputStart2 = System.nanoTime()
     val output2 = graphModel.forward(input).toTensor[Float]
-    val outputEnd2 = System.nanoTime()
-    println("Forward of Graph Module takes time " + (outputEnd2-outputStart2)/1e9 + "s")
     output1 should be (output2)
 
     val criterion = new ClassNLLCriterion[Float]()
     val loss = criterion.forward(output1, labels)
     val gradOutput = criterion.backward(output1, labels)
 
-    val gradOutputStart1 = System.nanoTime()
     val gradInput1 = model.backward(input, gradOutput)
-    val gradOutputEnd1 = System.nanoTime()
-    println("Backward of Original Module takes time " + (gradOutputEnd1-gradOutputStart1)/1e9 + "s")
-
-    val gradOutputStart2 = System.nanoTime()
     val gradInput2 = graphModel.backward(input, gradOutput)
-    val gradOutputEnd2 = System.nanoTime()
-    println("Backward of Graph Module takes time " + (gradOutputEnd2-gradOutputStart2)/1e9 + "s")
+
+    gradInput1 should be (gradInput2)
+  }
+
+  "Recurrent+LSTM to graph" should "generate correct output" in {
+    Random.setSeed(1)
+    val input = Tensor[Float](8, 128, 128).apply1(e => Random.nextFloat())
+    val gradOutput = Tensor[Float](8, 128, 128).apply1(e => Random.nextFloat())
+
+    val seed = 100
+    val inputSize = 128
+    val hiddenSize = 128
+    val outputSize = 128
+
+    RNG.setSeed(seed)
+    val model = Sequential[Float]()
+    model.add(Recurrent[Float]()
+      .add(RnnCell[Float](inputSize, hiddenSize, Tanh[Float]())))
+      .add(TimeDistributed[Float](Linear[Float](hiddenSize, outputSize)))
+
+    val model2 = model.cloneModule()
+    val graphModel = model2.toGraph()
+
+    val output1 = model.forward(input).toTensor[Float]
+    val output2 = graphModel.forward(input).toTensor[Float]
+    output1 should be (output2)
+
+    val gradInput1 = model.backward(input, gradOutput)
+    val gradInput2 = graphModel.backward(input, gradOutput)
 
     gradInput1 should be (gradInput2)
   }

@@ -709,5 +709,27 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   def quantize(): Module[T] = {
     Quantization.quantize(this)
   }
+
+
+  /**
+   * Generate end nodes of current module with start nodes
+   * @param startNodes: current start nodes
+   * @return current end nodes
+   */
+  def getEndNodes(startNodes: Array[ModuleNode[T]]): Array[ModuleNode[T]] = {
+    val endNodes = Array(this.inputs(startNodes: _*))
+    endNodes
+  }
+
+  def toGraph(): Module[T] = {
+    val startNodes = Array(Input[T]())
+    toGraph(startNodes)
+  }
+
+  def toGraph(startNodes: Array[ModuleNode[T]]): Module[T] = {
+    require(!startNodes.isEmpty, "startNodes can not be empty")
+    val endNodes = this.getEndNodes(startNodes)
+    Graph(startNodes, endNodes)
+  }
 }
 
