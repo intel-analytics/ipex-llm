@@ -258,114 +258,33 @@ object DataConverter extends DataConverter{
       if (storages.contains(tensorId)) {
         return storages.get(tensorId).get.asInstanceOf[AnyRef]
       }
-      val tensorType = serializedTensor.getTensorType
       val dataType = serializedTensor.getDatatype
+      val tensorType = serializedTensor.getTensorType
       val sizes = serializedTensor.getSizeList.asScala.toArray.map(_.intValue())
       val strides = serializedTensor.getStrideList.asScala.toArray.map(_.intValue())
       val offSet = serializedTensor.getOffset
       val isScalr = serializedTensor.getIsScalar
       val serializedStorage = serializedTensor.getStorage
       val storageId = serializedStorage.getId
-
       val created = if (storages.contains(storageId)) {
         storages.get(storageId).get
       } else {
         null
       }
-      
-      def dense(): Tensor[T] = {
-        val tensor = dataType match {
-          case DataType.FLOAT =>
-            val storage : Storage[Float] = if (created == null ) {
-              val data = serializedStorage.getFloatDataList.asScala.toArray.map(_.floatValue())
-              val newStorage = Storage[Float](data)
-              storages(storageId) = newStorage
-              newStorage
-            } else created.asInstanceOf[Storage[Float]]
-            Tensor[Float](storage, offSet, sizes, strides)
-          case DataType.DOUBLE =>
-            val storage : Storage[Double] = if (created == null ) {
-              val data = serializedStorage.getDoubleDataList.asScala.toArray.map(_.doubleValue())
-              val newStorage = Storage[Double](data)
-              storages(storageId) = newStorage
-              newStorage
-            } else created.asInstanceOf[Storage[Double]]
-            Tensor[Double](storage, offSet, sizes, strides)
-          case DataType.BOOL =>
-            val storage : Storage[Boolean] = if (created == null ) {
-              val data = serializedStorage.getBoolDataList.asScala.toArray.map(_.booleanValue())
-              val newStorage = Storage[Boolean](data)
-              storages(storageId) = newStorage
-              newStorage
-            } else created.asInstanceOf[Storage[Boolean]]
-            Tensor[Boolean](storage, offSet, sizes, strides)
-          case DataType.CHAR =>
-            val storage: Storage[Char] = if (created == null ) {
-              val data = serializedStorage.getIntDataList.asScala.toArray.map(_.toChar.charValue())
-              val newStorage = Storage[Char](data)
-              storages(storageId) = newStorage
-              newStorage
-            } else created.asInstanceOf[Storage[Char]]
-            Tensor[Char](storage, offSet, sizes, strides)
-          case DataType.STRING =>
-            val storage: Storage[String] = if (created == null ) {
-              val data = serializedStorage.getStringDataList.asScala.toArray
-              val newStorage = Storage[String](data)
-              storages(storageId) = newStorage
-              newStorage
-            } else created.asInstanceOf[Storage[String]]
-            Tensor[String](storage, offSet, sizes, strides)
-          case DataType.INT32 =>
-            val storage: Storage[Int] = if (created == null ) {
-              val data = serializedStorage.getIntDataList.asScala.toArray.map(_.intValue())
-              val newStorage = Storage[Int](data)
-              storages(storageId) = newStorage
-              newStorage
-            } else created.asInstanceOf[Storage[Int]]
-            Tensor[Int](storage, offSet, sizes, strides)
-          case DataType.SHORT =>
-            val storage: Storage[Short] = if (created == null ) {
-              val data = serializedStorage.getIntDataList.asScala.toArray.map(_.shortValue())
-              val newStorage = Storage[Short](data)
-              storages(storageId) = newStorage
-              newStorage
-            } else created.asInstanceOf[Storage[Short]]
-            Tensor[Short](storage, offSet, sizes, strides)
-          case DataType.INT64 =>
-            val storage: Storage[Long] = if (created == null ) {
-              val data = serializedStorage.getLongDataList.asScala.toArray.map(_.longValue())
-              val newStorage = Storage[Long](data)
-              storages(storageId) = newStorage
-              newStorage
-            } else created.asInstanceOf[Storage[Long]]
-            Tensor[Long](storage, offSet, sizes, strides)
-          case DataType.BYTES =>
-            val storage: Storage[ByteString] = if (created == null ) {
-              val data = serializedStorage.getBytesDataList.asScala.toArray
-              val newStorage = Storage[ByteString](data)
-              storages(storageId) = newStorage
-              newStorage
-            } else created.asInstanceOf[Storage[ByteString]]
-            Tensor[ByteString](storage, offSet, sizes, strides)
-          case _ => throw new IllegalArgumentException(s"$dataType not supported in tensor now !")
-        }
-        storages(tensorId) = tensor
-        tensor
-      }
 
       def quant(): Tensor[T] = {
-        val bytes = serializedTensor.getBytesData.toByteArray
-        val paramsNum = sizes.head
-        val paramsArray = sizes.slice(1, paramsNum + 1).map(x => x.toInt).toArray
-        val descTypeEnum = sizes(1 + paramsNum).toInt
+        val bytes = serializedStorage.getBytesDataList.asScala.toArray.head.toByteArray
+        val serializedParams = serializedStorage.getIntDataList.asScala.toArray.map(_.intValue())
+        val paramsNum = serializedParams.head
+        val paramsArray = serializedParams.slice(1, paramsNum + 1)
+        val descTypeEnum = serializedParams(1 + paramsNum)
 
         val start = paramsNum + 2 // params number indicator + params number + desc type
-        val sizeArray = sizes.slice(start, sizes.size).map(_.toInt).toArray
 
-        val length = if (sizeArray.length == 1) {
+        val length = if (sizes.length == 1) {
           1 // if the size is 1, means it's a vector
         } else {
-          sizeArray(0)
+          sizes(0)
         }
         val max = new Array[T](length)
         val min = new Array[T](length)
@@ -373,7 +292,7 @@ object DataConverter extends DataConverter{
 
         dataType match {
           case DataType.FLOAT =>
-            val data = serializedTensor.getFloatDataList.asScala
+            val data = serializedStorage.getFloatDataList.asScala.toArray.map(_.floatValue())
             var i = 0
             while (i < length) {
               max(i) = ev.fromType[Float](data(i))
@@ -396,33 +315,146 @@ object DataConverter extends DataConverter{
             params = LinearWeightParams(paramsArray)
         }
 
-        QuantizedTensor[T](bytes, max, min, sum, sizeArray, params)
+        QuantizedTensor[T](bytes, max, min, sum, sizes, params)
       }
 
-      tensorType match {
-        case TensorType.DENSE => dense()
-        case TensorType.QUANT => quant()
+      val tensor = dataType match {
+        case DataType.FLOAT =>
+          tensorType match {
+            case TensorType.DENSE =>
+              val storage : Storage[Float] = if (created == null ) {
+                val data = serializedStorage.getFloatDataList.asScala.toArray.map(_.floatValue())
+                val newStorage = Storage[Float](data)
+                storages(storageId) = newStorage
+                newStorage
+              } else created.asInstanceOf[Storage[Float]]
+              Tensor[Float](storage, offSet, sizes, strides)
+            case TensorType.QUANT => quant()
+          }
+        case DataType.DOUBLE =>
+          val storage : Storage[Double] = if (created == null ) {
+            val data = serializedStorage.getDoubleDataList.asScala.toArray.map(_.doubleValue())
+            val newStorage = Storage[Double](data)
+            storages(storageId) = newStorage
+            newStorage
+          } else created.asInstanceOf[Storage[Double]]
+          Tensor[Double](storage, offSet, sizes, strides)
+        case DataType.BOOL =>
+          val storage : Storage[Boolean] = if (created == null ) {
+            val data = serializedStorage.getBoolDataList.asScala.toArray.map(_.booleanValue())
+            val newStorage = Storage[Boolean](data)
+            storages(storageId) = newStorage
+            newStorage
+          } else created.asInstanceOf[Storage[Boolean]]
+          Tensor[Boolean](storage, offSet, sizes, strides)
+        case DataType.CHAR =>
+          val storage: Storage[Char] = if (created == null ) {
+            val data = serializedStorage.getIntDataList.asScala.toArray.map(_.toChar.charValue())
+            val newStorage = Storage[Char](data)
+            storages(storageId) = newStorage
+            newStorage
+          } else created.asInstanceOf[Storage[Char]]
+          Tensor[Char](storage, offSet, sizes, strides)
+        case DataType.STRING =>
+          val storage: Storage[String] = if (created == null ) {
+            val data = serializedStorage.getStringDataList.asScala.toArray
+            val newStorage = Storage[String](data)
+            storages(storageId) = newStorage
+            newStorage
+          } else created.asInstanceOf[Storage[String]]
+          Tensor[String](storage, offSet, sizes, strides)
+        case DataType.INT32 =>
+          val storage: Storage[Int] = if (created == null ) {
+            val data = serializedStorage.getIntDataList.asScala.toArray.map(_.intValue())
+            val newStorage = Storage[Int](data)
+            storages(storageId) = newStorage
+            newStorage
+          } else created.asInstanceOf[Storage[Int]]
+          Tensor[Int](storage, offSet, sizes, strides)
+        case DataType.SHORT =>
+          val storage: Storage[Short] = if (created == null ) {
+            val data = serializedStorage.getIntDataList.asScala.toArray.map(_.shortValue())
+            val newStorage = Storage[Short](data)
+            storages(storageId) = newStorage
+            newStorage
+          } else created.asInstanceOf[Storage[Short]]
+          Tensor[Short](storage, offSet, sizes, strides)
+        case DataType.INT64 =>
+          val storage: Storage[Long] = if (created == null ) {
+            val data = serializedStorage.getLongDataList.asScala.toArray.map(_.longValue())
+            val newStorage = Storage[Long](data)
+            storages(storageId) = newStorage
+            newStorage
+          } else created.asInstanceOf[Storage[Long]]
+          Tensor[Long](storage, offSet, sizes, strides)
+        case DataType.BYTES =>
+          val storage: Storage[ByteString] = if (created == null ) {
+            val data = serializedStorage.getBytesDataList.asScala.toArray
+            val newStorage = Storage[ByteString](data)
+            storages(storageId) = newStorage
+            newStorage
+          } else created.asInstanceOf[Storage[ByteString]]
+          Tensor[ByteString](storage, offSet, sizes, strides)
+        case _ => throw new IllegalArgumentException(s"$dataType not supported in tensor now !")
       }
+      storages(tensorId) = tensor
+      tensor
     }
 
     private def setStorage[T: ClassTag](context: SerializeContext[T],
       tensorBuilder: BigDLTensor.Builder, tensor: Tensor[_]): Unit = {
       val tensorNumeric = tensor.getTensorNumeric()
       val storageType = context.storageType
-      val tensorStorage = tensor.storage()
-      val storageId = System.identityHashCode(tensor.storage().array())
+
+      val storageId = tensor.getTensorType match {
+        case DenseType =>
+          System.identityHashCode(tensor.storage().array())
+        case QuantizedType =>
+          System.identityHashCode(tensor.asInstanceOf[QuantizedTensor[T]].getStorage)
+      }
+
       val storages = context.storages
       if (storageType == ProtoStorageType) {
         if (storages.contains(storageId)) {
-          tensorBuilder.setStorage(storages.get(storageId).get
-          .asInstanceOf[TensorStorage])
+          val storage = storages(storageId).asInstanceOf[TensorStorage]
+          tensorBuilder.setStorage(storage)
+          // we should set back the datatype from existed storage
+          tensorBuilder.setDatatype(storage.getDatatype)
         } else {
           val storageBuilder = TensorStorage.newBuilder
           if (tensorNumeric == NumericFloat) {
-            tensorBuilder.setDatatype(DataType.FLOAT)
-            storageBuilder.setDatatype(DataType.FLOAT)
-            tensor.storage().array().asInstanceOf[Array[Float]].
-              foreach(data => storageBuilder.addFloatData(data))
+            tensor.getTensorType match {
+              case DenseType =>
+                tensorBuilder.setDatatype(DataType.FLOAT)
+                storageBuilder.setDatatype(DataType.FLOAT)
+                tensor.storage().array().asInstanceOf[Array[Float]].
+                  foreach(data => storageBuilder.addFloatData(data))
+              case QuantizedType =>
+                tensorBuilder.setDatatype(DataType.FLOAT)
+                storageBuilder.setDatatype(DataType.FLOAT)
+
+                val quantTensor = tensor.asInstanceOf[QuantizedTensor[Float]]
+                val bytes = quantTensor.getStorage
+                val bs = ByteString.copyFrom(bytes)
+                storageBuilder.addBytesData(bs)
+
+                // max, min, and sum
+                quantTensor.maxOfRow.foreach(data => storageBuilder.addFloatData(data))
+                quantTensor.minOfRow.foreach(data => storageBuilder.addFloatData(data))
+                quantTensor.sumOfRow.foreach(data => storageBuilder.addFloatData(data))
+
+                // params and desc type
+                val params = quantTensor.params.array
+                storageBuilder.addIntData(params.length)
+                params.foreach(param => storageBuilder.addIntData(param.asInstanceOf[Int]))
+
+                quantTensor.params.getType match {
+                  case ConvData => storageBuilder.addIntData(0)
+                  case ConvWeight => storageBuilder.addIntData(1)
+                  case LinearData => storageBuilder.addIntData(2)
+                  case LinearWeight => storageBuilder.addIntData(3)
+                }
+            }
           } else if (tensorNumeric == NumericDouble) {
             tensorBuilder.setDatatype(DataType.DOUBLE)
             storageBuilder.setDatatype(DataType.DOUBLE)
@@ -488,60 +520,24 @@ object DataConverter extends DataConverter{
           attributeBuilder.setTensorValue(storages.get(tensorId).get
             .asInstanceOf[BigDLTensor])
         } else {
-
-          val tensorNumeric = tensor.getTensorNumeric()
-          val offSet = tensor.storageOffset()
           val totalElement = tensor.nElement()
           val dimension = tensor.dim()
-          val isScalar = tensor.isScalar
           val tensorBuilder = BigDLTensor.newBuilder
-
-          def dense(): Unit = {
-            tensorBuilder.setId(tensorId)
-            tensorBuilder.setDimension(dimension)
-            tensorBuilder.setOffset(offSet)
-            tensorBuilder.setNElements(totalElement)
-            tensorBuilder.setIsScalar(isScalar)
-            tensor.size().foreach(size => tensorBuilder.addSize(size))
-            tensor.stride().foreach(stride => tensorBuilder.addStride(stride))
-            setStorage(context, tensorBuilder, tensor)
-          }
-
-          def quant(): Unit = {
+          tensorBuilder.setId(tensorId)
+          tensorBuilder.setDimension(dimension)
+          tensorBuilder.setNElements(totalElement)
+          if (tensor.getTensorType == DenseType) {
+            tensorBuilder.setOffset(tensor.storageOffset())
+            tensorBuilder.setIsScalar(tensor.isScalar)
+            tensorBuilder.setTensorType(TensorType.DENSE)
+          } else {
             tensorBuilder.setTensorType(TensorType.QUANT)
-            val quantTensor = tensor.asInstanceOf[QuantizedTensor[T]]
-            if (ev == NumericFloat) {
-              tensorBuilder.setDatatype(DataType.FLOAT)
-              val bytes = quantTensor.getStorage
-              val bs = ByteString.copyFrom(bytes)
-              tensorBuilder.setBytesData(bs)
-
-              // max, min, and sum
-              quantTensor.maxOfRow.foreach(data => tensorBuilder.addFloatData(ev.toType[Float](data)))
-              quantTensor.minOfRow.foreach(data => tensorBuilder.addFloatData(ev.toType[Float](data)))
-              quantTensor.sumOfRow.foreach(data => tensorBuilder.addFloatData(ev.toType[Float](data)))
-
-              // params and desc type
-              val params = quantTensor.params.array
-              tensorBuilder.addSize(params.length)
-              params.foreach(param => tensorBuilder.addSize(param.asInstanceOf[Int]))
-
-              quantTensor.params.getType match {
-                case ConvData => tensorBuilder.addSize(0)
-                case ConvWeight => tensorBuilder.addSize(1)
-                case LinearData => tensorBuilder.addSize(2)
-                case LinearWeight => tensorBuilder.addSize(3)
-              }
-            }
           }
-
-          tensor.getTensorType match {
-            case DenseType => dense()
-            case QuantizedType => quant()
-          }
-
           tensor.size().foreach(size => tensorBuilder.addSize(size))
-          attributeBuilder.setTensorValue(tensorBuilder.build)
+          tensor.stride().foreach(stride => tensorBuilder.addStride(stride))
+          setStorage(context, tensorBuilder, tensor)
+          val tensorBuild = tensorBuilder.build
+          attributeBuilder.setTensorValue(tensorBuild)
           storages(tensorId) = tensorBuild
         }
       }

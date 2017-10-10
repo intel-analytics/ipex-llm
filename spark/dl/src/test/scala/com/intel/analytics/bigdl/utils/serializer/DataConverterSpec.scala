@@ -667,18 +667,6 @@ class DataConverterSpec extends FlatSpec with Matchers{
 
   }
 
-  "Array of byte" should "work properly" in {
-    val bytes = new Array[Byte](5)
-    "HELLO".zipWithIndex.foreach(x => bytes(x._2) = x._1.toByte)
-
-    val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, bytes, universe.typeOf[Array[Byte]])
-    val attr = attriBulder.build
-    val retrievedValue = DataConverter.getAttributeValue(attr).asInstanceOf[Array[Byte]]
-    retrievedValue should be (bytes)
-    retrievedValue.foreach(x => println(x.toChar))
-  }
-
   "QuantizedTensor" should "work properly" in {
     val bytes = new Array[Byte](5)
     val min = Array[Float]('H')
@@ -688,10 +676,14 @@ class DataConverterSpec extends FlatSpec with Matchers{
     bytes.foreach(x => println(x.toChar))
     val tensor = QuantizedTensor[Float](bytes, max, min, sum, Array(1, 5), LinearWeightParams(1, 5))
 
+    map.clear()
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, tensor, ModuleSerializer.tensorType)
+    DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType), attriBulder,
+      tensor, ModuleSerializer.tensorType)
     val attr = attriBulder.build
-    val retrievedValue = DataConverter.getAttributeValue(attr)
+    map.clear()
+    val retrievedValue = DataConverter.getAttributeValue(DeserializeContext(null, map,
+      ProtoStorageType), attr)
     attr.getDataType should be (DataType.TENSOR)
 
     retrievedValue.hashCode() should be (tensor.hashCode())
@@ -712,13 +704,13 @@ class DataConverterSpec extends FlatSpec with Matchers{
     array(0) = tensor1
     array(1) = tensor2
 
+    map.clear()
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, array,
-      universe.typeOf[Array[QuantizedTensor[Float]]])
+    DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType), attriBulder,
+      array, universe.typeOf[Array[QuantizedTensor[Float]]])
     val attr = attriBulder.build
-    val retrievedValue = DataConverter.getAttributeValue(attr)
-//    attr.getDataType should be (DataType.TENSOR)
-
-    println("")
+    map.clear()
+    val retrievedValue = DataConverter.getAttributeValue(DeserializeContext(null, map,
+      ProtoStorageType), attr)
   }
 }
