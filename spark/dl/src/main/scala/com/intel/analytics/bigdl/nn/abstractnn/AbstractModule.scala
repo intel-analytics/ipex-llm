@@ -387,7 +387,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     this
   }
 
-  @deprecated(since = "0.3.0")
+  @deprecated("Please use clone instead", "0.3.0")
   def cloneModule(): AbstractModule[A, B, T] = {
     SerializationUtils.clone(this)
   }

@@ -681,7 +681,7 @@ object Graph extends ContainerSerializable {
       val currNode = execution.element
         .asInstanceOf[AbstractModule[Activity, Activity, T]]
       val subModel = ModuleSerializer.serialize(SerializeContext(
-        ModuleData(currNode, preNodes, nextNodes),context.storages, context.storageType),
+        ModuleData(currNode, preNodes, nextNodes), context.storages, context.storageType),
         copyWeightAndBias)
       // add edges
       val preNodeEdges = new mutable.HashMap[String, Int]()

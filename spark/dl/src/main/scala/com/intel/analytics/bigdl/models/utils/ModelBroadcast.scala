@@ -55,44 +55,6 @@ class ModelBroadcast[T: ClassTag](implicit ev: TensorNumeric[T]) extends Seriali
   def value(): Module[T] = {
     broadcastModel.value.clone(false)
   }
-
-
-  private def getAndClearWeightBias(parameters: (Array[Tensor[T]], Array[Tensor[T]]))
-  : Array[Tensor[T]] = {
-    var i = 0
-    val weightsBias = new Array[Tensor[T]](parameters._1.length)
-    while (i < parameters._1.length) {
-      if (parameters._1(i) != null) {
-        val wb = parameters._1(i)
-        weightsBias(i) = Tensor[T](Storage(wb.storage().array()),
-          wb.storageOffset(), wb.size(), wb.stride())
-      }
-      i += 1
-    }
-    i = 0
-    while (i < parameters._1.length) {
-      if (parameters._1(i) != null) {
-        parameters._1(i).set()
-      }
-      if (parameters._2(i) != null) {
-        parameters._2(i).set()
-      }
-      i += 1
-    }
-    weightsBias
-  }
-
-  private def putWeightBias(broadcastWeightBias: Array[Tensor[T]],
-    localModel: Module[T]): Unit = {
-    val localWeightBias = localModel.parameters()._1
-    var i = 0
-    while (i < localWeightBias.length) {
-      if (localWeightBias(i) != null) {
-        localWeightBias(i).set(broadcastWeightBias(i))
-      }
-      i += 1
-    }
-  }
 }
 
 
