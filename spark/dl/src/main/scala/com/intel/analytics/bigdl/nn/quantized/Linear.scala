@@ -20,8 +20,9 @@ import com.intel.analytics.bigdl.bigquant.BigQuant
 import com.intel.analytics.bigdl.nn.ErrorInfo
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
-import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData, ModuleSerializer}
+import com.intel.analytics.bigdl.utils.serializer._
 import com.intel.analytics.bigdl.utils.{T, Table}
+
 import scala.reflect.ClassTag
 import serialization.Bigdl.{AttrValue, BigDLModule}
 
@@ -161,20 +162,20 @@ object Linear extends QuantSerializer {
     linear.initWeightAndBias(initWeight, initBias)
   }
 
-  override def serializeWeight[T: ClassTag](module: ModuleData[T],
+  override def serializeWeight[T: ClassTag](context: SerializeContext[T],
     modelBuilder: BigDLModule.Builder)(implicit ev: TensorNumeric[T]): Unit = {
-    val linear = module.module.asInstanceOf[Linear[T]]
+    val linear = context.moduleData.module.asInstanceOf[Linear[T]]
     val weightBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(weightBuilder, linear.weight, ModuleSerializer.tensorType)
+    DataConverter.setAttributeValue(context, weightBuilder, linear.weight,
+      ModuleSerializer.tensorType)
     modelBuilder.putAttr("weight", weightBuilder.build)
   }
 
-  override def loadWeight[T: ClassTag](model: BigDLModule,
+  override def loadWeight[T: ClassTag](context: DeserializeContext,
     module: ModuleData[T])(implicit ev: TensorNumeric[T]): Unit = {
     val linear = module.module.asInstanceOf[Linear[T]]
-    val attrMap = model.getAttrMap
-
-    linear.weight = DataConverter.getAttributeValue(attrMap.get("weight"))
-            .asInstanceOf[QuantizedTensor[T]]
+    val attrMap = context.bigdlModule.getAttrMap
+    linear.weight = DataConverter.getAttributeValue(context, attrMap.get("weight"))
+      .asInstanceOf[QuantizedTensor[T]]
   }
 }
