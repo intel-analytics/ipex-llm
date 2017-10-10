@@ -25,6 +25,7 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 import serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
@@ -134,12 +135,12 @@ abstract class Cell[T : ClassTag](
   }
 
   override def updateOutput(input: Table): Table = {
-    output = if (combinePreTopology) {
+    if (combinePreTopology) {
       val inputTensor = input.toTable[Tensor[T]](Recurrent.inputDim)
       input(Recurrent.inputDim) = preTopology.updateOutput(inputTensor)
-      cell.forward(input).toTable
+      output = cell.forward(input).toTable
       input(Recurrent.inputDim) = inputTensor
-    } else cell.forward(input).toTable
+    } else output = cell.forward(input).toTable
     output
   }
 
@@ -253,18 +254,26 @@ abstract class Cell[T : ClassTag](
 
   override def zeroGradParameters(): Unit = {
     cell.zeroGradParameters()
+    if (combinePreTopology) preTopology.zeroGradParameters()
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
-    cell.parameters()
+    val _cell = if (combinePreTopology) {
+      Sequential().add(preTopology).add(cell)
+    } else cell
+    _cell.parameters()
   }
 
   override def getParametersTable(): Table = {
-    cell.getParametersTable()
+    val _cell = if (combinePreTopology) {
+      Sequential().add(preTopology).add(cell)
+    } else cell
+    _cell.getParametersTable()
   }
 
   override def reset(): Unit = {
     cell.reset()
+    if (combinePreTopology) preTopology.reset()
   }
 
   /**

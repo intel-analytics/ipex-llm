@@ -65,11 +65,11 @@ class RecurrentDecoderSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
   "A LSTM " should "work with feedbackOutput correctly" in {
     import com.intel.analytics.bigdl.numeric.NumericDouble
-    val hiddenSize = 7
-    val inputSize = 7
-    val seqLength = 5
+    val hiddenSize = 3
+    val inputSize = 3
+    val seqLength = 2
     val seed = 100
-    val batchSize = 4
+    val batchSize = 2
 
     RNG.setSeed(seed)
     val input = Tensor[Double](batchSize, inputSize).rand
