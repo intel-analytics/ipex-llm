@@ -272,7 +272,7 @@ private[bigdl] class FileReader(fileName: String) {
          fs.delete(path, true)
        }
     }
-    fs.close()
+    if (null != fs) fs.close()
   }
 
 }
