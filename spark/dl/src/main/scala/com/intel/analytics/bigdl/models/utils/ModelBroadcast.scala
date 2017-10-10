@@ -116,19 +116,31 @@ class ModelBroadcast[T: ClassTag](
     weightsBias
   }
 
-  private def putWeightBias(broadcastWeightBias: Array[Tensor[T]],
-    localModel: Module[T], inference: Boolean = true): Unit = {
+  private def putWeightBias(
+        broadcastWeightBias: Array[Tensor[T]],
+        localModel: Module[T],
+        inference: Boolean = true): Unit = {
     val (localWeightBias, localGradWeightBias) = localModel.parameters()
     var i = 0
     while (i < localWeightBias.length) {
       if (localWeightBias(i) != null) {
         localWeightBias(i).set(broadcastWeightBias(i))
-        if (!inference) {
-          // init gradWeight & gradBias
-          localGradWeightBias(i).resizeAs(broadcastWeightBias(i))
-        }
       }
       i += 1
+    }
+    // init gradient with a compacted storage
+    if (!inference) {
+      val storage = Storage[T](localGradWeightBias.map(_.nElement()).sum)
+      i = 0
+      while (i < localWeightBias.length) {
+        if (localWeightBias(i) != null) {
+          val wb = broadcastWeightBias(i)
+          if (!inference) {
+            localGradWeightBias(i).set(storage, wb.storageOffset(), wb.size(), wb.stride())
+          }
+        }
+        i += 1
+      }
     }
   }
 }
