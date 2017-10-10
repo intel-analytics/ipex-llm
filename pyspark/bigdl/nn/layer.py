@@ -403,13 +403,6 @@ class Layer(JavaValue):
         callBigDlFunc(self.bigdl_type,
                         "setLayerUnFreeze", self.value)
 
-    def evaluate(self):
-        '''
-        Set this layer in the evaluation mode
-        '''
-        callJavaFunc(get_spark_context(), self.value.evaluate)
-        return self
-
     def training(self):
         '''
         Set this layer in the training mode 
