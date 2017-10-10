@@ -44,6 +44,7 @@ import org.tensorflow.framework.NodeDef
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 import scala.language.existentials
 import scala.reflect.ClassTag
 
@@ -1905,16 +1906,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     layer.setInitMethod(weightInitMethod, biasInitMethod)
   }
 
-  def getState(rec: Recurrent[T]): JList[JTensor] = {
-    val res = rec.getState()
-      if (res.isTensor) return List(toJTensor(res.toTensor)).asJava
-    else return List(toJTensor(res.toTable.apply[Tensor[T]](1)),
-        toJTensor(res.toTable.apply[Tensor[T]](2))).asJava
+  def getHiddenStates(rec: Recurrent[T]): JList[JTensor] = {
+    val states = rec.getHiddenState()
+    activityToJTensors(states)
   }
 
-  def setState(rec: Recurrent[T], state: JList[JTensor], isTable: Boolean): Unit = {
-    val stateActivity = jTensorsToActivity(state, isTable)
-    rec.setState(stateActivity)
+  def setHiddenStates(rec: Recurrent[T], hiddenStates: JList[JTensor],
+                      isTable: Boolean): Unit = {
+      rec.setHiddenState(jTensorsToActivity(hiddenStates, isTable))
   }
 
   def setLayerFreeze(model: AbstractModule[Activity, Activity, T])
@@ -1953,6 +1952,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       alignCorner)
   }
 
+  def createMultiRNNCell(cells: JList[Cell[T]]): MultiRNNCell[T] = {
+    MultiRNNCell(cells.asScala.toArray)
+  }
+
   def redirectSparkLogs(logPath: String): Unit = {
     LoggerFilter.redirectSparkInfoLogs(logPath)
   }
@@ -1961,4 +1964,19 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
   }
 
+  def createSeq2seq(encoderCells: JList[Recurrent[T]], decoderCells: JList[Recurrent[T]],
+    preEncoder: AbstractModule[Activity, Activity, T] = null,
+    preDecoder: AbstractModule[Activity, Activity, T] = null,
+    decoderInput: String = "ZEROS"): Seq2seq[T] = {
+    val inputType = decoderInput match {
+      case "USERINPUT" => DecoderInputType.ENCODERINPUTLASTTIME
+      case "ZEROS" => DecoderInputType.ZEROS
+      case "ENCODEROUTPUT" => DecoderInputType.ENCODERINPUTSPLIT
+      case n: String =>
+        throw new IllegalArgumentException(s"Only support 'ENCODERINPUTSPLIT', " +
+          s"'ZEROS', 'ENCODERINPUTLASTTIME': $n")
+    }
+    Seq2seq(encoderCells.asScala.toArray, decoderCells.asScala.toArray, preEncoder,
+      preDecoder, inputType)
+  }
 }

@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -76,11 +76,9 @@ class LSTMPeephole[T : ClassTag] (
         .add(SelectTable(1))
         .add(NarrowTable(2, 2)))
 
-  override def preTopology: AbstractModule[Activity, Activity, T] =
-    Sequential()
-    .add(Dropout(p))
-    .add(TimeDistributed(Linear(inputSize, hiddenSize * 4, wRegularizer = wRegularizer,
-      bRegularizer = bRegularizer)))
+  override var preTopology: TensorModule[T] =
+    Linear(inputSize, hiddenSize * 4, wRegularizer = wRegularizer,
+        bRegularizer = bRegularizer)
 
   override def hiddenSizeOfPreTopo: Int = hiddenSize * 4
 
@@ -92,7 +90,8 @@ class LSTMPeephole[T : ClassTag] (
      * f(input1 + U * input2)
      */
 
-    val i2g = Narrow(dimension, offset, length).inputs(input1)
+    val inputAfterDrop = Dropout(p).inputs(input1)
+    val i2g = Narrow(dimension, offset, length).inputs(inputAfterDrop)
     val drop = Dropout(p).inputs(input2)
     val h2g = Linear(hiddenSize, hiddenSize,
       withBias = false, wRegularizer = uRegularizer).inputs(drop)
@@ -135,7 +134,8 @@ class LSTMPeephole[T : ClassTag] (
      * f(input1 + W * input2)
      */
 
-    val i2h = Narrow(featDim, 1 + 2 * hiddenSize, hiddenSize).inputs(input1)
+    val inputAfterDropout = Dropout(p).inputs(input1)
+    val i2h = Narrow(featDim, 1 + 2 * hiddenSize, hiddenSize).inputs(inputAfterDropout)
 
     val drop = Dropout(p).inputs(input2)
     val h2h = Linear(hiddenSize, hiddenSize, withBias = false,
@@ -229,7 +229,8 @@ object LSTMPeephole {
     bRegularizer: Regularizer[T] = null
   )
     (implicit ev: TensorNumeric[T]): LSTMPeephole[T] = {
-    new LSTMPeephole[T](inputSize, hiddenSize, p, wRegularizer, uRegularizer, bRegularizer)
+    new LSTMPeephole[T](inputSize, hiddenSize, p, wRegularizer, uRegularizer,
+      bRegularizer)
   }
 }
 

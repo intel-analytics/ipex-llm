@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -69,6 +69,8 @@ class ConvLSTMPeephole[T : ClassTag](
   override var cell: AbstractModule[Activity, Activity, T] = buildModel()
 //  val joinDim = 2
 
+  override var preTopology: TensorModule[T] = null
+//  override var preTopology: AbstractModule[Activity, Activity, T] = null
 //  override def preTopology: AbstractModule[Activity, Activity, T] =
 //    Sequential()
 //        .add(TimeDistributed(SpatialConvolution(inputSize, outputSize*4, kernelI, kernelI,

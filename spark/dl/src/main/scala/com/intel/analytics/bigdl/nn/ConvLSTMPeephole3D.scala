@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -66,6 +66,8 @@ class ConvLSTMPeephole3D[T : ClassTag](
   var hiddenLayer: Sequential[T] = _
   var cellLayer: Sequential[T] = _
 
+//  override var preTopology: AbstractModule[Activity, Activity, T] = null
+  override var preTopology: TensorModule[T] = null
   override var cell: AbstractModule[Activity, Activity, T] = buildModel()
 
   def buildGate(): Sequential[T] = {
