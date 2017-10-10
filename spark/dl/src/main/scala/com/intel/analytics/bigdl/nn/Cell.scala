@@ -44,7 +44,7 @@ import scala.reflect.ClassTag
  *                     [[LSTM]] as a concrete example.
  */
 abstract class Cell[T : ClassTag](
-  val hiddensShape: Array[Int],
+  val hiddensShape: Array[Int] = null,
   var regularizers: Array[Regularizer[T]] = null
 )(implicit ev: TensorNumeric[T])
   extends AbstractModule[Table, Table, T] {
@@ -80,6 +80,8 @@ abstract class Cell[T : ClassTag](
    * @return
    */
   var preTopology: TensorModule[T]
+  
+  private[nn] var combinePreTopology: Boolean = false
 
   def hiddenSizeOfPreTopo: Int = hiddensShape(0)
 
@@ -132,26 +134,45 @@ abstract class Cell[T : ClassTag](
   }
 
   override def updateOutput(input: Table): Table = {
-    output = cell.forward(input).toTable
+    output = if (combinePreTopology) {
+      val inputTensor = input(Recurrent.inputDim)
+      input(Recurrent.inputDim) =
+        preTopology.updateOutput(input.toTable[Tensor[T]](Recurrent.inputDim))
+      cell.forward(input).toTable
+      input(Recurrent.inputDim) = inputTensor
+    } else cell.forward(input).toTable
     output
   }
 
   override def updateGradInput(input: Table, gradOutput: Table): Table = {
-    gradInput = cell.updateGradInput(input, gradOutput).toTable
-    gradInput
+    throw new Exception("Should not enter Cell updateGradInput" +
+      "as it has override backward")
+    gradInput.toTable
   }
 
   override def accGradParameters(input: Table, gradOutput: Table): Unit = {
-    cell.accGradParameters(input, gradOutput)
+    throw new Exception("Should not enter Cell accGradParameters" +
+      "as it has override backward")
   }
 
   override def backward(input: Table, gradOutput: Table): Table = {
-    gradInput = cell.backward(input, gradOutput).toTable
+    if (combinePreTopology) {
+      val inputTensor = input.toTable[Tensor[T]](Recurrent.inputDim)
+      input(Recurrent.inputDim) = preTopology.output
+      gradInput = cell.backward(input, gradOutput)
+      gradInput(Recurrent.inputDim) =
+        preTopology.updateGradInput(inputTensor, gradInput.toTable[Tensor[T]](Recurrent.inputDim))
+      input(Recurrent.inputDim) = inputTensor
+    } else {
+      gradInput = cell.backward(input, gradOutput).toTable
+    }
+
     gradInput
   }
 
   override def updateParameters(learningRate: T): Unit = {
     cell.updateParameters(learningRate)
+    if (combinePreTopology) preTopology.updateParameters(learningRate)
   }
 
   private def initAddTimes(): Unit = {
