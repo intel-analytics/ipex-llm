@@ -39,7 +39,7 @@ private[bigdl] class CellUnit[T : ClassTag] (hidSize: Int)
   override def accGradParameters(input: Table, gradOutput: Table): Unit = {}
 
   override var cell: AbstractModule[Activity, Activity, T] = _
-  override var preTopology: TensorModule[T] = _
+//  override var preTopology: TensorModule[T] = _
 }
 
 @com.intel.analytics.bigdl.tags.Parallel

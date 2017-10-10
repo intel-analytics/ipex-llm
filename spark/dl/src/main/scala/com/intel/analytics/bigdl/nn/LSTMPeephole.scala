@@ -76,7 +76,7 @@ class LSTMPeephole[T : ClassTag] (
         .add(SelectTable(1))
         .add(NarrowTable(2, 2)))
 
-  override var preTopology: TensorModule[T] =
+  override val preTopology: TensorModule[T] =
     Linear(inputSize, hiddenSize * 4, wRegularizer = wRegularizer,
         bRegularizer = bRegularizer)
 

@@ -64,7 +64,7 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
 
     if (preTopology != null) {
       modules += preTopology
-      topology.combinePreTopology = true
+      topology.includePreTopology = true
     }
     modules += topology
 

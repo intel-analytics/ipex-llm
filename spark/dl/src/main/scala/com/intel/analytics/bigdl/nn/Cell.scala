@@ -80,9 +80,12 @@ abstract class Cell[T : ClassTag](
    * Please refer to SimpleRNN or LSTM for reference.
    * @return
    */
-  var preTopology: TensorModule[T]
+//  var preTopology: TensorModule[T]
+  def preTopology: TensorModule[T] = null
 
-  private[nn] var combinePreTopology: Boolean = false
+  private[nn] var includePreTopology: Boolean = false
+
+  private val gradInput2PreTopology = Tensor[T]()
 
   def hiddenSizeOfPreTopo: Int = hiddensShape(0)
 
@@ -135,7 +138,8 @@ abstract class Cell[T : ClassTag](
   }
 
   override def updateOutput(input: Table): Table = {
-    if (combinePreTopology) {
+    if (includePreTopology) {
+      assert(preTopology != null, "preTopology cannot be null if includePreTopology is true")
       val inputTensor = input.toTable[Tensor[T]](Recurrent.inputDim)
       input(Recurrent.inputDim) = preTopology.updateOutput(inputTensor)
       output = cell.forward(input).toTable
@@ -145,10 +149,12 @@ abstract class Cell[T : ClassTag](
   }
 
   override def updateGradInput(input: Table, gradOutput: Table): Table = {
-    if (combinePreTopology) {
+    if (includePreTopology) {
       val inputTensor = input.toTable[Tensor[T]](Recurrent.inputDim)
       input(Recurrent.inputDim) = preTopology.output
       gradInput = cell.updateGradInput(input, gradOutput).toTable
+      gradInput2PreTopology.resizeAs(gradInput.toTable[Tensor[T]](Recurrent.inputDim))
+      gradInput2PreTopology.copy(gradInput.toTable[Tensor[T]](Recurrent.inputDim))
       gradInput(Recurrent.inputDim) =
         preTopology.updateGradInput(inputTensor, gradInput.toTable[Tensor[T]](Recurrent.inputDim))
       input(Recurrent.inputDim) = inputTensor
@@ -159,17 +165,24 @@ abstract class Cell[T : ClassTag](
   }
 
   override def accGradParameters(input: Table, gradOutput: Table): Unit = {
-    throw new Exception("Should not enter Cell accGradParameters" +
-      "as it has override backward")
+    if (includePreTopology) {
+      val inputTensor = input.toTable[Tensor[T]](Recurrent.inputDim)
+      input(Recurrent.inputDim) = preTopology.output
+      cell.accGradParameters(input, gradOutput)
+      preTopology.accGradParameters(inputTensor, gradInput2PreTopology)
+      input(Recurrent.inputDim) = inputTensor
+    } else {
+      cell.accGradParameters(input, gradOutput)
+    }
   }
 
   override def backward(input: Table, gradOutput: Table): Table = {
-    if (combinePreTopology) {
+    if (includePreTopology) {
       val inputTensor = input.toTable[Tensor[T]](Recurrent.inputDim)
       input(Recurrent.inputDim) = preTopology.output
       gradInput = cell.backward(input, gradOutput)
       gradInput(Recurrent.inputDim) =
-        preTopology.updateGradInput(inputTensor, gradInput.toTable[Tensor[T]](Recurrent.inputDim))
+        preTopology.backward(inputTensor, gradInput.toTable[Tensor[T]](Recurrent.inputDim))
       input(Recurrent.inputDim) = inputTensor
     } else {
       gradInput = cell.backward(input, gradOutput).toTable
@@ -180,7 +193,7 @@ abstract class Cell[T : ClassTag](
 
   override def updateParameters(learningRate: T): Unit = {
     cell.updateParameters(learningRate)
-    if (combinePreTopology) preTopology.updateParameters(learningRate)
+    if (includePreTopology) preTopology.updateParameters(learningRate)
   }
 
   private def initAddTimes(): Unit = {
@@ -254,18 +267,18 @@ abstract class Cell[T : ClassTag](
 
   override def zeroGradParameters(): Unit = {
     cell.zeroGradParameters()
-    if (combinePreTopology) preTopology.zeroGradParameters()
+    if (includePreTopology) preTopology.zeroGradParameters()
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
-    val _cell = if (combinePreTopology) {
+    val _cell = if (includePreTopology) {
       Sequential().add(preTopology).add(cell)
     } else cell
     _cell.parameters()
   }
 
   override def getParametersTable(): Table = {
-    val _cell = if (combinePreTopology) {
+    val _cell = if (includePreTopology) {
       Sequential().add(preTopology).add(cell)
     } else cell
     _cell.getParametersTable()
@@ -273,7 +286,7 @@ abstract class Cell[T : ClassTag](
 
   override def reset(): Unit = {
     cell.reset()
-    if (combinePreTopology) preTopology.reset()
+    if (includePreTopology) preTopology.reset()
   }
 
   /**
@@ -326,6 +339,5 @@ object CellSerializer extends ModuleSerializable {
     DataConverter.setAttributeValue(context, cellBuilder, cellModule.cell,
       ModuleSerializer.abstractModuleType)
     cellModuleBuilder.putAttr("cell", cellBuilder.build)
-
   }
 }

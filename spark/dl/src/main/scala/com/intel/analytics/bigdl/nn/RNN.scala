@@ -57,7 +57,7 @@ class RnnCell[T : ClassTag] (
   extends Cell[T](Array(hiddenSize),
     regularizers = Array(wRegularizer, uRegularizer, bRegularizer)) {
 
-  override var preTopology: TensorModule[T] =
+  override val preTopology: TensorModule[T] =
     Linear[T](inputSize,
       hiddenSize,
       wRegularizer = wRegularizer,

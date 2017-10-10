@@ -229,12 +229,12 @@ class RecurrentDecoderSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val input2 = input.clone()
     input2.resize(batchSize, 1, inputSize)
     val model2 = LSTM(inputSize, hiddenSize)
-    model2.combinePreTopology = true
+    model2.includePreTopology = true
     model2.getParameters()._1.copy(weights)
     model2.zeroGradParameters()
 
     val model3 = LSTM(inputSize, hiddenSize)
-    model3.combinePreTopology = true
+    model3.includePreTopology = true
     var i = 0
     while (i < model3.parameters()._1.length) {
       model3.parameters()._1(i).set(model2.parameters()._1(i))
