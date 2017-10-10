@@ -141,7 +141,7 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
   override def backward(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     val st = System.nanoTime
     gradInput.resizeAs(output)
-    currentGradOutput(hidDim) = if (initGradHiddenState == null) gradHidden else initGradHiddenState
+    currentGradOutput(hidDim) = gradHidden
     var i = times
     while (i >= 1) {
       currentGradOutput(inputDim) = if (i == times) {
@@ -196,13 +196,6 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
   override def hashCode(): Int = {
     val state = Seq(super.hashCode(), cells)
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
-  }
-
-  private def cloneStates(states: Table, res: Table): Unit = {
-    states.getState().foreach { pair =>
-      if (pair._2.isInstanceOf[Table]) cloneStates(pair._2.asInstanceOf[Table], res(pair._1))
-      else res(pair._1) = pair._2.asInstanceOf[Tensor[T]].clone()
-    }
   }
 }
 

@@ -269,19 +269,6 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     initHiddenState = hiddenState
   }
 
-  // get gradient hidden state at the first time step
-  def getGradHiddenState(): Activity = {
-    require(cells != null && cells(0).gradInput != null,
-      "getGradHiddenState need to be called after backward")
-    cells(0).gradInput.toTable(hidDim)
-  }
-
-  protected var initGradHiddenState: Activity = null
-  // set gradient hiddent state at the last time step
-  def setGradHiddenState(gradHiddenState: Activity): Unit = {
-    initGradHiddenState = gradHiddenState
-  }
-
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
     currentGradOutput(hidDim) = gradHidden
     /**

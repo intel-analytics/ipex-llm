@@ -1911,8 +1911,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     activityToJTensors(states)
   }
 
-  def setHiddenStates(rec: Recurrent[T], hiddenStates: JList[JTensor],
-                      isTable: Boolean): Unit = {
+  def setHiddenStates(rec: Recurrent[T], hiddenStates: JList[JTensor], isTable: Boolean): Unit = {
       rec.setHiddenState(jTensorsToActivity(hiddenStates, isTable))
   }
 
@@ -1952,31 +1951,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       alignCorner)
   }
 
-  def createMultiRNNCell(cells: JList[Cell[T]]): MultiRNNCell[T] = {
-    MultiRNNCell(cells.asScala.toArray)
-  }
-
   def redirectSparkLogs(logPath: String): Unit = {
     LoggerFilter.redirectSparkInfoLogs(logPath)
   }
 
   def showBigDlInfoLogs(): Unit = {
     Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
-  }
-
-  def createSeq2seq(encoderCells: JList[Recurrent[T]], decoderCells: JList[Recurrent[T]],
-    preEncoder: AbstractModule[Activity, Activity, T] = null,
-    preDecoder: AbstractModule[Activity, Activity, T] = null,
-    decoderInput: String = "ZEROS"): Seq2seq[T] = {
-    val inputType = decoderInput match {
-      case "USERINPUT" => DecoderInputType.ENCODERINPUTLASTTIME
-      case "ZEROS" => DecoderInputType.ZEROS
-      case "ENCODEROUTPUT" => DecoderInputType.ENCODERINPUTSPLIT
-      case n: String =>
-        throw new IllegalArgumentException(s"Only support 'ENCODERINPUTSPLIT', " +
-          s"'ZEROS', 'ENCODERINPUTLASTTIME': $n")
-    }
-    Seq2seq(encoderCells.asScala.toArray, decoderCells.asScala.toArray, preEncoder,
-      preDecoder, inputType)
   }
 }

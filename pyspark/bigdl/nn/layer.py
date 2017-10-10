@@ -1040,65 +1040,24 @@ class Recurrent(Container):
     def __init__(self, bigdl_type="float"):
         super(Recurrent, self).__init__(None, bigdl_type)
 
-    def contain_multiRNNCell(self):
-            callBigDlFunc(self.bigdl_type, "containMultiRNNCell", self.value)
-
     def get_hidden_state(self):
         """
         get hidden state and cell at last time step.
         
         :return: list of hidden state and cell
         """
-        states = callBigDlFunc(self.bigdl_type, "getHiddenState", self.value)
-        for state in states:
-            for idx, tensor in enumerate(state):
-                state[idx] = tensor.to_ndarray()
+        state = callBigDlFunc(self.bigdl_type, "getHiddenState", self.value)        
+        for idx, tensor in enumerate(state):
+            state[idx] = tensor.to_ndarray()
 
-        if self.contain_multiRNNCell == True:
-            return states
-        else:
-            return states[0]
+        return state
     
     def set_hidden_state(self, states):
         """
         set hidden state and cell at first time step.
         """
-        if self.contain_multiRNNCell:
-            jStates = []
-            state_is_tables = []
-            for state in states:
-                jstate, state_is_table = self.check_input(state)
-                jStates.append(jstate)
-                state_is_tables.append(state_is_table)
-            callBigDlFunc(self.bigdl_type, "setHiddenState", self.value, jStates, state_is_tables)
-        else:
-            jstate, state_is_table = self.check_input(states)
-            callBigDlFunc(self.bigdl_type, "setHiddenState", self.value, jstate, state_is_table)
-
-    def get_grad_hidden_state(self):
-        """
-        get gradient hidden states at first time step.
-
-        :return: list of gradient hidden state
-        """
-        states = callBigDlFunc(self.bigdl_type, "getGradHiddenState", self.value)
-        for state in states:
-            for idx, tensor in enumerate(state):
-                state[idx] = tensor.to_ndarray()
-
-        return states
-
-    def set_grad_hidden_state(self, states):
-        """
-        set gradient hidden state and cell at last time step.
-        """
-        jStates = []
-        state_is_tables = []
-        for state in states:
-            jstate, state_is_table = self.check_input(state)
-            jStates.append(jstate)
-            state_is_tables.append(state_is_table)
-        callBigDlFunc(self.bigdl_type, "setGradHiddenState", self.value, jStates, state_is_tables)
+        jstate, state_is_table = self.check_input(states)
+        callBigDlFunc(self.bigdl_type, "setHiddenState", self.value, jstate, state_is_table)
 
 class RecurrentDecoder(Recurrent):
     '''
@@ -4112,23 +4071,6 @@ class ConvLSTMPeephole3D(Layer):
         super(ConvLSTMPeephole3D, self).__init__(None, bigdl_type, input_size, output_size, kernel_i, kernel_c, stride,
                                                  wRegularizer, uRegularizer, bRegularizer, cRegularizer, with_peephole)
 
-
-class MultiRNNCell(Layer):
-    '''
-    A cell that enables stack multiple simple rnn cells
-
-    >>> cells = []
-    >>> cells.append(ConvLSTMPeephole3D(4, 3, 3, 3, 1))
-    >>> cells.append(ConvLSTMPeephole3D(4, 3, 3, 3, 1))
-    >>> stacked_convlstm = MultiRNNCell(cells)
-    creating: createConvLSTMPeephole3D
-    creating: createConvLSTMPeephole3D
-    creating: createMultiRNNCell
-    '''
-
-    def __init__(self, cells, bigdl_type="float"):
-        super(MultiRNNCell, self).__init__(None, bigdl_type, cells)
-
 class ResizeBilinear(Layer):
     """
     Resize the input image with bilinear interpolation. The input image must be a float tensor with
@@ -4142,40 +4084,6 @@ class ResizeBilinear(Layer):
     """
     def __init__(self, output_height, output_width, align_corner):
         super(ResizeBilinear, self).__init__(None, output_height, output_width, align_corner)
-
-class Seq2seq(Layer):
-    '''
-|   Sequence to sequence mode.
-|   Ref.
-|   A.: https://arxiv.org/abs/1506.04214 (blueprint for this module)
-
-    :param encoder_cells: a list of cells used to compose encoder
-    :param decoder_cells: a list of cells used to compose decoder
-    :param output_length: sequence length of output
-    :param broadcast_state: whether broadcast state of encoder to decoder 
-    :param decoder_input: decoder input type, currently support "USERINPUT", "ZEROS", "ENCODEROUTPUT"
-
-    >>> encodercells = []
-    >>> encodercells.append(ConvLSTMPeephole3D(4, 3, 3, 3, 1))
-    >>> encodercells.append(ConvLSTMPeephole3D(4, 3, 3, 3, 1))
-    >>> decodercells = []
-    >>> decodercells.append(ConvLSTMPeephole3D(4, 3, 3, 3, 1))
-    >>> decodercells.append(ConvLSTMPeephole3D(4, 3, 3, 3, 1))
-    >>> layer = Seq2seq(encodercells, decoder_cells, 3, True)
-    creating: createConvLSTMPeephole3D
-    creating: createConvLSTMPeephole3D
-    creating: createConvLSTMPeephole3D
-    creating: createConvLSTMPeephole3D
-    creating: createRecurrent
-    creating: createMultiRNNCell
-    creating: createRecurrentDecoder
-    creating: createSeq2seq
-    '''
-
-    def __init__(self, encoder_cells, decoder_cells, output_length, broadcast_state=False,
-    decoder_input="USERINPUT", bigdl_type="float"):
-        super(Seq2seq, self).__init__(None, bigdl_type, encoder_cells, decoder_cells,
-                                      output_length, broadcast_state, decoder_input)
 
 def _test():
     import doctest
