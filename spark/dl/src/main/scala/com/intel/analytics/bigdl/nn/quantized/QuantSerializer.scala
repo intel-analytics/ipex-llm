@@ -19,20 +19,24 @@ package com.intel.analytics.bigdl.nn.quantized
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
-import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData, ModuleSerializable}
+import com.intel.analytics.bigdl.utils.serializer.DataConverter.TensorConverter
+import com.intel.analytics.bigdl.utils.serializer._
+import serialization.Bigdl.{AttrValue, BigDLModule}
+
 import scala.reflect.ClassTag
-import serialization.Bigdl.{AttrValue, BigDLModule, BigDLTensor}
-import scala.reflect.runtime.universe
 
 trait QuantSerializer extends ModuleSerializable {
-  def serializeWeight[T: ClassTag](module: ModuleData[T],
+  def serializeWeight[T: ClassTag](context: SerializeContext[T],
     modelBuilder: BigDLModule.Builder)(implicit ev: TensorNumeric[T]): Unit
 
-  def serializeBias[T: ClassTag](module: ModuleData[T],
+  def serializeBias[T: ClassTag](context: SerializeContext[T],
     modelBuilder: BigDLModule.Builder)(implicit ev: TensorNumeric[T]): Unit = {
-    val paramTable : Table = module.module.getParametersTable
-    if (paramTable != null && paramTable.contains(module.module.getName)) {
-      val modulePramTable: Table = paramTable(module.module.getName)
+    val moduleData = context.moduleData
+    val paramTable : Table = moduleData.module.getParametersTable()
+    val moduleName = moduleData.module.getName()
+
+    if (paramTable != null && paramTable.contains(moduleName)) {
+      val modulePramTable: Table = paramTable(moduleName)
       val bias: Tensor[T] = if (modulePramTable.contains("bias")) {
         modulePramTable("bias")
       } else {
@@ -40,25 +44,26 @@ trait QuantSerializer extends ModuleSerializable {
       }
 
       if (bias != null) {
-        val biasTensorBuilder = BigDLTensor.newBuilder
-        copyFromBigDLTensor(bias, biasTensorBuilder)
-        modelBuilder.setBias(biasTensorBuilder.build)
+        val biasAttr = AttrValue.newBuilder
+        TensorConverter.setAttributeValue(context, biasAttr, bias)
+        modelBuilder.setBias(biasAttr.getTensorValue)
       }
     }
   }
 
-  def serializeOthers[T: ClassTag](module: ModuleData[T],
+  def serializeOthers[T: ClassTag](context: SerializeContext[T],
     modelBuilder: BigDLModule.Builder)(implicit ev: TensorNumeric[T]): Unit = {
   }
 
-  def loadWeight[T: ClassTag](model: BigDLModule,
+  def loadWeight[T: ClassTag](context: DeserializeContext,
     module: ModuleData[T])(implicit ev: TensorNumeric[T]): Unit
 
-  def loadBias[T: ClassTag](model: BigDLModule,
-    module: ModuleData[T])(implicit ev: TensorNumeric[T]): Unit = {
-    val paramTable : Table = module.module.getParametersTable
-    if (paramTable != null && paramTable.contains(model.getName)) {
-      val modulePramTable : Table = paramTable(module.module.getName)
+  def loadBias[T: ClassTag](context: DeserializeContext,
+    moduleData: ModuleData[T])(implicit ev: TensorNumeric[T]): Unit = {
+    val moduleName = moduleData.module.getName()
+    val paramTable : Table = moduleData.module.getParametersTable
+    if (paramTable != null && paramTable.contains(moduleName)) {
+      val modulePramTable : Table = paramTable(moduleName)
       val bias : Tensor[T] = if (modulePramTable.contains("bias")) {
         modulePramTable("bias")
       } else {
@@ -66,27 +71,34 @@ trait QuantSerializer extends ModuleSerializable {
       }
 
       if (bias != null) {
-        copy2BigDLTensor(bias, model.getBias)
+        val attrValue = AttrValue.newBuilder
+        attrValue.setTensorValue(context.bigdlModule.getBias)
+        val bias = TensorConverter.getAttributeValue(context, attrValue.build)
+        modulePramTable("bias").asInstanceOf[Tensor[T]].copy(bias.asInstanceOf[Tensor[T]])
       }
     }
   }
 
-  def loadOthers[T: ClassTag](model: BigDLModule,
+  def loadOthers[T: ClassTag](context: DeserializeContext,
     module: ModuleData[T])(implicit ev: TensorNumeric[T]): Unit = {
-    val quantModule = module.module.asInstanceOf[QuantizedModule[T]]
   }
 
-  override protected def copyFromBigDL[T: ClassTag](module: ModuleData[T],
+  override protected def copyFromBigDL[T: ClassTag](context: SerializeContext[T],
     modelBuilder: BigDLModule.Builder)(implicit ev: TensorNumeric[T]): Unit = {
-    serializeWeight(module, modelBuilder)
-    serializeBias(module, modelBuilder)
-    serializeOthers(module, modelBuilder)
+    val storageType = context.storageType
+    if (storageType == ProtoStorageType) {
+      serializeWeight(context, modelBuilder)
+      serializeBias(context, modelBuilder)
+      serializeOthers(context, modelBuilder)
+    } else {
+      throw new IllegalArgumentException(s"$storageType not supported!")
+    }
   }
 
-  override protected def copy2BigDL[T: ClassTag](model: BigDLModule, module: ModuleData[T])
-          (implicit ev: TensorNumeric[T]): Unit = {
-    loadWeight(model, module)
-    loadBias(model, module)
-    loadOthers(model, module)
+  override protected def copy2BigDL[T: ClassTag](context: DeserializeContext, module: ModuleData[T])
+    (implicit ev: TensorNumeric[T]): Unit = {
+    loadWeight(context, module)
+    loadBias(context, module)
+    loadOthers(context, module)
   }
 }
