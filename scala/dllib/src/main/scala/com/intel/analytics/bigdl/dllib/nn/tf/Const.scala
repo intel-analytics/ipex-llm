@@ -29,7 +29,7 @@ private[bigdl] trait WithoutInput
  * @param value the constant tensor to be returned in forward
  */
 @SerialVersionUID(-4008935551091949324L)
-private[bigdl] class Const[T: ClassTag, B: ClassTag](value: Tensor[B])
+private[bigdl] class Const[T: ClassTag, B: ClassTag](val value: Tensor[B])
   (implicit ev: TensorNumeric[T])
   extends AbstractModule[Activity, Tensor[B], T] with WithoutInput {
 
