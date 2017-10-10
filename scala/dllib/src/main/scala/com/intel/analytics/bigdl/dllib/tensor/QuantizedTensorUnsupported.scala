@@ -544,14 +544,6 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
   override def save(path: String, overWrite: Boolean): this.type =
     throw new UnsupportedOperationException(errorString)
 
-  /**
-   * Return tensor numeric
-   *
-   * @return
-   */
-  override def getTensorNumeric(): TensorNumeric[T] =
-    throw new UnsupportedOperationException(errorString)
-
   // scalastyle:off methodName
   /**
    * Add all elements of this with value not in place.
