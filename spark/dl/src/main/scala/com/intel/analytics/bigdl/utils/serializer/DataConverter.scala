@@ -423,16 +423,13 @@ object DataConverter extends DataConverter{
         } else {
           val storageBuilder = TensorStorage.newBuilder
           if (tensorNumeric == NumericFloat) {
+            tensorBuilder.setDatatype(DataType.FLOAT)
+            storageBuilder.setDatatype(DataType.FLOAT)
             tensor.getTensorType match {
               case DenseType =>
-                tensorBuilder.setDatatype(DataType.FLOAT)
-                storageBuilder.setDatatype(DataType.FLOAT)
                 tensor.storage().array().asInstanceOf[Array[Float]].
                   foreach(data => storageBuilder.addFloatData(data))
               case QuantizedType =>
-                tensorBuilder.setDatatype(DataType.FLOAT)
-                storageBuilder.setDatatype(DataType.FLOAT)
-
                 val quantTensor = tensor.asInstanceOf[QuantizedTensor[Float]]
                 val bytes = quantTensor.getStorage
                 val bs = ByteString.copyFrom(bytes)
