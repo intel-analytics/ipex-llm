@@ -526,13 +526,15 @@ object DataConverter extends DataConverter{
           tensorBuilder.setId(tensorId)
           tensorBuilder.setDimension(dimension)
           tensorBuilder.setNElements(totalElement)
-          if (tensor.getTensorType == DenseType) {
-            tensorBuilder.setOffset(tensor.storageOffset())
-            tensorBuilder.setIsScalar(tensor.isScalar)
-            tensorBuilder.setTensorType(TensorType.DENSE)
-          } else {
-            tensorBuilder.setTensorType(TensorType.QUANT)
+          tensor.getTensorType match {
+            case DenseType =>
+              tensorBuilder.setOffset(tensor.storageOffset())
+              tensorBuilder.setIsScalar(tensor.isScalar)
+              tensorBuilder.setTensorType(TensorType.DENSE)
+            case QuantizedType =>
+              tensorBuilder.setTensorType(TensorType.QUANT)
           }
+
           tensor.size().foreach(size => tensorBuilder.addSize(size))
           tensor.stride().foreach(stride => tensorBuilder.addStride(stride))
           setStorage(context, tensorBuilder, tensor)
