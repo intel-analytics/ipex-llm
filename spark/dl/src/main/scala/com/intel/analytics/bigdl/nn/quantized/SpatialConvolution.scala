@@ -22,8 +22,9 @@ import com.intel.analytics.bigdl.nn.ErrorInfo
 import com.intel.analytics.bigdl.nn.abstractnn.{DataFormat, Initializable}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
-import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData}
+import com.intel.analytics.bigdl.utils.serializer.{DataConverter, DeserializeContext, ModuleData, SerializeContext}
 import com.intel.analytics.bigdl.utils.{T, Table}
+
 import scala.reflect.runtime.universe
 import scala.reflect.ClassTag
 import serialization.Bigdl.{AttrValue, BigDLModule}
@@ -282,24 +283,25 @@ object SpatialConvolution extends QuantSerializer {
     conv.initWeightAndBias(initWeight, initBias)
   }
 
-  override def serializeWeight[T: ClassTag](module: ModuleData[T],
+  override def serializeWeight[T: ClassTag](context: SerializeContext[T],
     modelBuilder: BigDLModule.Builder)(implicit ev: TensorNumeric[T]): Unit = {
-    val conv = module.module.asInstanceOf[SpatialConvolution[T]]
+    val module = context.moduleData.module
+    val conv = module.asInstanceOf[SpatialConvolution[T]]
     val weightBuilder = AttrValue.newBuilder
     ev.getType() match {
       case FloatType =>
-        DataConverter.setAttributeValue(weightBuilder, conv.weight,
+        DataConverter.setAttributeValue(context, weightBuilder, conv.weight,
           universe.typeOf[Array[Tensor[Float]]])
       case _ => throw new UnsupportedOperationException(s"Only support Float for quantized model")
     }
     modelBuilder.putAttr("weights", weightBuilder.build)
   }
 
-  override def loadWeight[T: ClassTag](model: BigDLModule,
-    module: ModuleData[T])(implicit ev: TensorNumeric[T]): Unit = {
-    val conv = module.module.asInstanceOf[SpatialConvolution[T]]
-    val attrMap = model.getAttrMap
-    conv.weight = DataConverter.getAttributeValue(attrMap.get("weights"))
+  override def loadWeight[T: ClassTag](context: DeserializeContext,
+    moduleData: ModuleData[T])(implicit ev: TensorNumeric[T]): Unit = {
+    val conv = moduleData.module.asInstanceOf[SpatialConvolution[T]]
+    val attrMap = context.bigdlModule.getAttrMap
+    conv.weight = DataConverter.getAttributeValue(context, attrMap.get("weights"))
       .asInstanceOf[Array[Tensor[T]]]
   }
 }
