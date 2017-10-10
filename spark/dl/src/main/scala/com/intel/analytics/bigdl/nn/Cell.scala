@@ -44,7 +44,7 @@ import scala.reflect.ClassTag
  *                     [[LSTM]] as a concrete example.
  */
 abstract class Cell[T : ClassTag](
-  val hiddensShape: Array[Int] = null,
+  val hiddensShape: Array[Int],
   var regularizers: Array[Regularizer[T]] = null
 )(implicit ev: TensorNumeric[T])
   extends AbstractModule[Table, Table, T] {
@@ -135,9 +135,8 @@ abstract class Cell[T : ClassTag](
 
   override def updateOutput(input: Table): Table = {
     output = if (combinePreTopology) {
-      val inputTensor = input(Recurrent.inputDim)
-      input(Recurrent.inputDim) =
-        preTopology.updateOutput(input.toTable[Tensor[T]](Recurrent.inputDim))
+      val inputTensor = input.toTable[Tensor[T]](Recurrent.inputDim)
+      input(Recurrent.inputDim) = preTopology.updateOutput(inputTensor)
       cell.forward(input).toTable
       input(Recurrent.inputDim) = inputTensor
     } else cell.forward(input).toTable
@@ -145,9 +144,17 @@ abstract class Cell[T : ClassTag](
   }
 
   override def updateGradInput(input: Table, gradOutput: Table): Table = {
-    throw new Exception("Should not enter Cell updateGradInput" +
-      "as it has override backward")
-    gradInput.toTable
+    if (combinePreTopology) {
+      val inputTensor = input.toTable[Tensor[T]](Recurrent.inputDim)
+      input(Recurrent.inputDim) = preTopology.output
+      gradInput = cell.updateGradInput(input, gradOutput).toTable
+      gradInput(Recurrent.inputDim) =
+        preTopology.updateGradInput(inputTensor, gradInput.toTable[Tensor[T]](Recurrent.inputDim))
+      input(Recurrent.inputDim) = inputTensor
+    } else {
+      gradInput = cell.updateGradInput(input, gradOutput).toTable
+    }
+    gradInput
   }
 
   override def accGradParameters(input: Table, gradOutput: Table): Unit = {

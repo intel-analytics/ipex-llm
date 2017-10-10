@@ -39,7 +39,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
   protected var hidden: Activity = null
   protected var gradHidden: Activity = null
   protected var hiddenShape: Array[Int] = null
-  protected val currentInput = T()
+  protected var currentInput = T()
   protected val currentGradOutput = T()
   protected val gradInput2Cell = Tensor[T]()
   protected var input2Cell = Tensor[T]()
@@ -354,6 +354,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
         cells(i - 1).regluarized(false)
       }
       cells(i - 1).backward(_input, currentGradOutput)
+      currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
       i -= 1
     }
 

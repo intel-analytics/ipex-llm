@@ -82,6 +82,7 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
     require(input.dim == 2 || input.dim == 4 || input.dim == 5,
       "Recurrent: input should be a 2D/4D/5D Tensor, e.g [batch, nDim], " +
         s"current input.dim = ${input.dim}")
+    batchSize = input.size(batchDim)
     val hiddenSize = topology.hiddensShape(0)
     val outputSize = input.size()
     require(hiddenSize == input.size()(1), "hiddenSize is " +
@@ -100,20 +101,18 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
      */
     // Clone N modules along the sequence dimension.
     cloneCells()
-    currentInput(hidDim) = if (initHiddenState != null) initHiddenState
-    else hidden
 
     var i = 1
     while (i <= times) {
       // input at t(0) is user input
-      currentInput(inputDim) = if (i == 1) input
-        else {
+      currentInput = if (i == 1) {
+        if (initHiddenState != null) T(input, initHiddenState)
+        else T(input, hidden)
+      } else {
         // input at t(i) is output at t(i-1)
-        cells(i - 2).output.toTable[Tensor[T]](inputDim)
+        cells(i - 2).output
       }
-
       cells(i - 1).updateOutput(currentInput)
-      currentInput(hidDim) = cells(i - 1).output.toTable(hidDim)
       i += 1
     }
     
