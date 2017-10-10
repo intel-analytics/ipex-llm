@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.utils.serializer
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.nn.{VolumetricFullConvolution, _}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
@@ -97,7 +97,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     res1 should be (res2)
   }
 
-  "BinaryTreeLSTM serializer" should " work properly" in {
+  "BinaryTreeLSTM serializer" should "work properly" in {
 
     RNG.setSeed(1000)
     val binaryTreeLSTM = BinaryTreeLSTM(2, 2)
@@ -1163,7 +1163,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     res1 should be (res2)
   }
 
-  "Recurrent serializer " should " work properly" in {
+  "Recurrent serializer " should "work properly" in {
     val recurrent = Recurrent()
       .add(RnnCell(5, 4, Tanh()))
     val input1 = Tensor(Array(10, 5, 5))
@@ -1859,6 +1859,66 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val res2 = loadedModule.forward(tensor2)
     res1 should be (res2)
   }
+
+  "2 Linears's weights use same storage" should "work properly" in {
+    val weight = Array(0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f)
+    val weight1 = Tensor(Storage(weight), 1, Array(2, 2))
+    val weight2 = Tensor(Storage(weight), 5, Array(2, 2))
+
+    val linear1 = Linear(2, 2, initWeight = weight1)
+    val linear2 = Linear(2, 2, initWeight = weight2)
+    val model = Sequential().add(linear1).add(linear2)
+
+    val input = Tensor(4, 2).rand
+
+    val res1 = model.forward(input)
+
+    ModulePersister.saveToFile("/tmp/2linears.with.a.storage.bigdl", model, true)
+    val loadedModel = ModuleLoader.loadFromFile("/tmp/2linears.with.a.storage.bigdl")
+    val res2 = loadedModel.forward(input)
+
+    res1 should be (res2)
+  }
+
+  "Load by definition " should " work properly" in {
+    val linear1 = Linear(2, 2).setName("linear")
+    val sequential = Sequential().setName("sequential").add(linear1)
+    ModulePersister.saveToFile("/tmp/loadDef.bigdl", sequential, true)
+    val linear2 = Linear(2, 2).setName("linear")
+    val definition = Sequential().setName("sequential").add(linear2)
+    ModuleLoader.loadFromDefinition(definition, "/tmp/loadDef.bigdl")
+
+    val weight1 = linear1.weight
+
+    val weight2 = linear2.weight
+
+    weight1 should be (weight2)
+  }
+
+  "Module toString" should "have same result" in {
+    val linear = Linear(2, 2)
+    ModulePersister.saveToFile("/tmp/mstr.bigdl", linear, true)
+    val loadedModel = ModuleLoader.loadFromFile("/tmp/mstr.bigdl")
+
+    linear.toString() should be (loadedModel.toString())
+  }
+
+  "Module in tain " should " keep the  state" in {
+    val linear = Linear(2, 2).training()
+    ModulePersister.saveToFile("/tmp/mstr.bigdl", linear, true)
+    val loadedModel = ModuleLoader.loadFromFile("/tmp/mstr.bigdl")
+
+    loadedModel.isTraining() should be (true)
+  }
+
+  "Module in evaluate " should " keep the  state" in {
+    val linear = Linear(2, 2).evaluate()
+    ModulePersister.saveToFile("/tmp/mstr.bigdl", linear, true)
+    val loadedModel = ModuleLoader.loadFromFile("/tmp/mstr.bigdl")
+
+    loadedModel.isTraining() should be (false)
+  }
+
 }
 
 class TestModule[T: ClassTag](val custom: CustomData)
@@ -1878,15 +1938,18 @@ case class CustomData(val constant_scalar: Double)
 case object TestSerializer extends ModuleSerializable
 
 object TestCustomDataConverter extends DataConverter {
-  override def getAttributeValue[T: ClassTag](attribute: Bigdl.AttrValue)
+
+  override def getAttributeValue[T: ClassTag](context: DeserializeContext,
+                                              attribute: Bigdl.AttrValue)
     (implicit ev: TensorNumeric[T]): AnyRef = {
     val customData = attribute.getCustomValue
     val customMsg = customData.unpack(classOf[TestCustomData.CustomData])
     CustomData(customMsg.getScalar)
   }
 
-  override def setAttributeValue[T: ClassTag](attributeBuilder: AttrValue.Builder,
-    value: Any, valueType: universe.Type)(implicit ev: TensorNumeric[T]): Unit = {
+  override def setAttributeValue[T: ClassTag](context: SerializeContext[T],
+    attributeBuilder: AttrValue.Builder, value: Any, valueType: universe.Type)
+    (implicit ev: TensorNumeric[T]): Unit = {
     val testCustomData = TestCustomData.CustomData.newBuilder
     testCustomData.setScalar(value.asInstanceOf[CustomData].constant_scalar)
     attributeBuilder.setCustomValue(com.google.protobuf.Any.pack(testCustomData.build()))

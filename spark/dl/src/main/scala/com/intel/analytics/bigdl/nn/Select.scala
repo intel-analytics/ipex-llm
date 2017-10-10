@@ -51,17 +51,25 @@ class Select[T: ClassTag](
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     val (dim, index) = getPositiveDimAndIndex(input)
-    val output = input.select(dim, index)
-    this.output.resizeAs(output)
+    if ((dim == 2) && (input.dim() > 2)) {
+      Recurrent.selectCopy(input, index, this.output)
+    } else {
+      val output = input.select(dim, index)
+      this.output.resizeAs(output)
 
-    this.output.copy(output)
+      this.output.copy(output)
+    }
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     val (dim, index) = getPositiveDimAndIndex(input)
     gradInput.resizeAs(input)
     gradInput.zero()
-    gradInput.select(dim, index).copy(gradOutput)
+    if ((dim == 2) && (gradInput.dim() > 2)) {
+      Recurrent.copyToIndex(gradOutput, gradInput, index)
+    } else {
+      gradInput.select(dim, index).copy(gradOutput)
+    }
     gradInput
   }
 

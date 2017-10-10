@@ -69,6 +69,8 @@ if __name__ == "__main__":
     (options, args) = parser.parse_args(sys.argv)
 
     sc = SparkContext(appName="lenet5", conf=create_spark_conf())
+    redire_spark_logs()
+    show_bigdl_info_logs()
     init_engine()
 
     if options.action == "train":
@@ -86,7 +88,6 @@ if __name__ == "__main__":
             .map(lambda rec_tuple: (normalizer(rec_tuple[0], mnist.TEST_MEAN, mnist.TEST_STD),
                                rec_tuple[1]))\
             .map(lambda t: Sample.from_ndarray(t[0], t[1]))
-
         optimizer = Optimizer(
             model=build_model(10),
             training_rdd=train_data,

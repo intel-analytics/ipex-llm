@@ -56,7 +56,12 @@ abstract class TensorModule[T: ClassTag]
 abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, T: ClassTag](
   implicit ev: TensorNumeric[T]) extends Serializable {
 
-  private val namePostfix = Integer.toHexString(java.util.UUID.randomUUID().hashCode())
+  private var namePostfix = Integer.toHexString(java.util.UUID.randomUUID().hashCode())
+
+  def getNamePostfix : String = namePostfix
+
+  def setNamePostfix(namePostfix : String) : Unit = this.namePostfix = namePostfix
+
   /**
    * The cached output. So we don't compute it again when need it
    */
@@ -155,6 +160,8 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    */
   private var name : String = null
 
+  def hasName: Boolean = name != null
+
   /**
    * Set the module name
    *
@@ -173,7 +180,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    */
   def getName() : String = {
     if (this.name == null) {
-      s"${this.getClass.getSimpleName}@${namePostfix}"
+      s"${this.getClass.getSimpleName}${namePostfix}"
     } else {
       this.name
     }
@@ -233,7 +240,15 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    */
   final def forward(input: A): B = {
     val before = System.nanoTime()
-    updateOutput(input)
+    try {
+      updateOutput(input)
+    } catch {
+      case l: LayerException =>
+        l.layerMsg = this.toString() + "/" + l.layerMsg
+        throw l
+      case e: Throwable =>
+        throw new LayerException(this.toString(), e)
+    }
     forwardTime += System.nanoTime() - before
 
     output
@@ -470,17 +485,24 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   /**
    * module predict, return the probability distribution
    * @param dataset dataset for prediction
+   * @param batchSize total batchSize for all partitions.
+   *                  if -1, default is 4 * partitionNumber of datatset
+   * @param shareBuffer whether to share same memory for each batch predict results
    */
-  def predict(dataset: RDD[Sample[T]]): RDD[Activity] = {
-    Predictor(this).predict(dataset)
+  def predict(dataset: RDD[Sample[T]],
+              batchSize: Int = -1,
+              shareBuffer: Boolean = false): RDD[Activity] = {
+    Predictor(this).predict(dataset, batchSize, shareBuffer)
   }
 
   /**
    * module predict, return the predict label
    * @param dataset dataset for prediction
+   * @param batchSize total batchSize for all partitions.
+   *                  if -1, default is 4 * partitionNumber of dataset
    */
-  def predictClass(dataset: RDD[Sample[T]]): RDD[Int] = {
-    Predictor(this).predictClass(dataset)
+  def predictClass(dataset: RDD[Sample[T]], batchSize: Int = -1): RDD[Int] = {
+    Predictor(this).predictClass(dataset, batchSize)
   }
 
   /**

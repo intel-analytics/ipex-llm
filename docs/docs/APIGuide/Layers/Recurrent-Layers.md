@@ -148,6 +148,108 @@ array([[[ 0.69091094,  0.97150528,  0.9562254 ,  1.14894259],
         [ 0.83814102,  1.11358368,  0.96752423,  1.00913286]]], dtype=float32)
 ```
 ---
+
+## RecurrentDecoder ##
+
+**Scala:**
+```scala
+val module = RecurrentDecoder(outputLength = 5)
+```
+**Python:**
+```python
+module = RecurrentDecoder(output_length = 5)
+```
+
+RecurrentDecoder module is a container of rnn cells which used to make
+a prediction of the next timestep based on the prediction we made from
+the previous timestep.
+
+Input for RecurrentDecoder has to be batch x ???(depends on cell type) without time information. 
+
+During training, input at t(i) is output at t(i-1), input at t(0) is
+user input.
+
+Output for RecurrentDecoder has to be batch x outputLen???(depends on cell type).
+ 
+With RecurrentDecoder, inputsize and hiddensize of the cell must be the same.
+
+Different types of rnn cells can be added using add() function.
+
+Parameters:
+
+* `outputLength` sequence length of output
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+
+val hiddenSize = 4
+val inputSize = 4
+val batchSize = 2
+val module = RecurrentDecoder(5).add(LSTMPeephole(inputSize, hiddenSize))
+val input = Tensor(Array(batchSize, inputSize)).rand()
+
+val output = module.forward(input)
+
+> input
+0.32985476	0.5081215	0.95177317	0.24744023	
+0.030384725	0.4868633	0.7781735	0.8046177	
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x4]
+
+> output
+(1,.,.) =
+-0.055717956	-0.14357334	0.011429226	0.10056843	
+-0.013699859	-0.078585915	0.050289743	0.027037282	
+0.011173044	-0.07941696	0.07381668	0.0020067326	
+0.016142089	-0.081511036	0.08775896	-0.011746041	
+0.0149942655	-0.08317861	0.09522702	-0.018894192	
+
+(2,.,.) =
+-0.041173447	-0.10931831	-0.04198869	0.1287807	
+0.010115819	-0.07071178	0.011613955	0.04737701	
+0.027745798	-0.07493171	0.054053202	0.010752724	
+0.02633817	-0.07929653	0.07783712	-0.008406129	
+0.020732995	-0.08214355	0.09030104	-0.017894702	
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x5x4]
+
+
+```
+
+**Python example:**
+```python
+from bigdl.nn.layer import *
+import numpy as np
+
+hidden_size = 4
+input_size = 4
+batch_size = 2
+module = RecurrentDecoder(5).add(LSTMPeephole(input_size, hidden_size))
+input = np.random.randn(batch_size, input_size)
+
+output = module.forward(input)
+
+> input
+[[ 0.81779139 -0.55165689 -1.5898894   0.03572801]
+ [ 0.77645041 -0.39702404  0.16826132  1.37081681]]
+
+> output
+[[[ 0.0492445  -0.26821002 -0.13461511  0.13712646]
+  [ 0.11038809 -0.22399209 -0.15706871  0.17625453]
+  [ 0.12579349 -0.20708388 -0.17392202  0.19129401]
+  [ 0.12953098 -0.20042329 -0.1886536   0.20086248]
+  [ 0.12905654 -0.19860952 -0.19987412  0.20697045]]
+
+ [[ 0.146652   -0.12099689  0.05711044  0.03263233]
+  [ 0.15229702 -0.12689863 -0.05258115  0.09761411]
+  [ 0.14552552 -0.13706802 -0.11870711  0.13544162]
+  [ 0.13672781 -0.15158641 -0.16068494  0.16216366]
+  [ 0.13007095 -0.16579619 -0.18658556  0.18039529]]]
+```
+---
 ## RNN ##
 
 **Scala:**
@@ -161,14 +263,17 @@ rnnCell = RnnCell(input_size, hidden_size, Tanh(), w_regularizer, u_regularizer,
 
 Implementation of vanilla recurrent neural network cell
 
-* `i2h` weight matrix of input to hidden units
-* `h2h` weight matrix of hidden units to themselves through time
+The input tensor in `forward(input)` is expected to be a 3D tensor (`batch x time x inputSize`). output of
+`forward(input)` is also expected to be a 3D tensor (`batch x time x hiddenSize`).
 
 The updating is defined as:
 
 ```
 h_t = f(i2h * x_t + h2h * h_{t-1})
 ```
+where
+* `i2h` weight matrix of input to hidden units
+* `h2h` weight matrix of hidden units to themselves through time
 
 Parameters:
 
@@ -268,6 +373,8 @@ lstm = LSTM(input_size, hidden_size)
 ```
 
 Long Short Term Memory architecture.
+The input tensor in `forward(input)` is expected to be a 3D tensor (`batch x time x inputSize`). output of
+`forward(input)` is also expected to be a 3D tensor (`batch x time x hiddenSize`).
 
 Ref:
 
@@ -400,6 +507,8 @@ model = LSTMPeephole(
 
 Long Short Term Memory architecture with peephole.
 Ref.
+The input tensor in `forward(input)` is expected to be a 3D tensor (`batch x time x inputSize`). output of
+`forward(input)` is also expected to be a 3D tensor (`batch x time x hiddenSize`).
 
 1. http://arxiv.org/pdf/1303.5778v1 (blueprint for this module)
 2. http://web.eecs.utk.edu/~itamar/courses/ECE-692/Bobby_paper1.pdf
@@ -509,6 +618,8 @@ gru = GRU(inputSize, outputSize, p, w_regularizer, u_regularizer, b_regularizer)
 ```
 
 Gated Recurrent Units architecture. The first input in sequence uses zero value for cell and hidden state.
+The input tensor in `forward(input)` is expected to be a 3D tensor (`batch x time x inputSize`). output of
+`forward(input)` is also expected to be a 3D tensor (`batch x time x outputSize`).
 
 Ref.
 
@@ -638,8 +749,12 @@ model = ConvLSTMPeephole(
 ```
 
 Convolution Long Short Term Memory architecture with peephole for 2 dimension images.
-The input tensor in `forward(input)` is expected to be a 5D tensor (`batch x time x nInputPlane x height x width`). output of
+The input tensor in `forward(input)` is expected to be a 4D or 5D tensor
+If ConvLSTM work with Recurrent, input is 5D tensor (`batch x time x nInputPlane x height x width`). output of
 `forward(input)` is also expected to be a 5D tensor (`batch x time x outputPlane x height x width`).
+
+If ConvLSTM work with RecurrentDecoder, input is 4D tensor (`batch x nInputPlane x height x width`). output of
+`forward(input)` is expected to be a 5D tensor (`batch x outputLen x outputPlane x height x width`).
 
 Ref.
 
@@ -872,8 +987,12 @@ model = ConvLSTMPeephole3D(
 ```
 
 Similar to Convlstm2D, it's a Convolution Long Short Term Memory architecture with peephole but for 3 spatial dimension images.
-The input tensor in `forward(input)` is expected to be a 6D tensor (`batch x time x nInputPlane x height x width x length`). output of
+The input tensor in `forward(input)` is expected to be a 5D or 6D tensor
+If work with Recurrent, input is 6D tensor (`batch x time x nInputPlane x height x width x length`). output of
 `forward(input)` is also expected to be a 6D tensor (`batch x time x outputPlane x height x width x length`).
+
+If work with RecurrentDecoder, input is 5D tensor (`batch x nInputPlane x height x width x length`). output of
+`forward(input)` is expected to be a 6D tensor (`batch x outputLen x outputPlane x height x width x length`).
 
 Parameters:
 

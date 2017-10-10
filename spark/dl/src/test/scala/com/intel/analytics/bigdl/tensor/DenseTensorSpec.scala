@@ -109,7 +109,8 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     val t: Tensor[Double] = new DenseTensor[Double](3, 3)
     var i = 0
     t.apply1(v => {
-      i = i + 1; i
+      i = i + 1;
+      i
     })
     t(Array(1, 1)) should be(1)
     t(Array(1, 2)) should be(2)
@@ -159,7 +160,8 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     val t: Tensor[Double] = new DenseTensor[Double](3, 2, 2)
     var i = 0
     t.apply1(v => {
-      i = i + 1; i
+      i = i + 1;
+      i
     })
 
     t(T(2, 2, 1)) should be(new DenseTensor[Double](1).fill(7))
@@ -216,7 +218,8 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     val t: Tensor[Double] = new DenseTensor[Double](3, 2)
     var i = 0
     t.apply1(v => {
-      i = i + 1; i
+      i = i + 1;
+      i
     })
     t(T(2, 2)) = 0
     t(Array(1, 1)) should be(1)
@@ -250,7 +253,8 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     val t: Tensor[Double] = new DenseTensor[Double](3, 2)
     var i = 0
     t.apply1(v => {
-      i = i + 1; i
+      i = i + 1;
+      i
     })
     val criteria: Double => Boolean = v => v >= 4
     t(criteria) = 0
@@ -323,7 +327,8 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     val t: Tensor[Double] = new DenseTensor[Double](3, 2)
     var i = 0
     t.apply1(v => {
-      i = i + 1; i
+      i = i + 1;
+      i
     })
     val t1 = t.select(1, 2)
     t1.nDimension() should be(1)
@@ -336,7 +341,8 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     val t: Tensor[Double] = new DenseTensor[Double](3, 2)
     var i = 0
     t.apply1(v => {
-      i = i + 1; i
+      i = i + 1;
+      i
     })
     val s = t.storage().asInstanceOf[Storage[Double]]
     var j = 0
@@ -357,7 +363,8 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     val t: Tensor[Double] = new DenseTensor[Double](3, 3)
     var i = 0
     t.apply1(v => {
-      i = i + 1; i
+      i = i + 1;
+      i
     })
     val t1 = t.narrow(1, 2, 2)
     t1.nDimension() should be(2)
@@ -398,7 +405,8 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     val t: Tensor[Double] = new DenseTensor[Double](2, 2)
     var i = 0
     t.apply1(v => {
-      i = i + 1; i
+      i = i + 1;
+      i
     })
     t(Array(1, 1)) should be(1)
     t(Array(1, 2)) should be(2)
@@ -410,12 +418,14 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     val t: Tensor[Double] = new DenseTensor[Double](2, 2)
     var i = 0
     t.apply1(v => {
-      i = i + 1; i
+      i = i + 1;
+      i
     })
     val t1: Tensor[Double] = new DenseTensor[Double](2, 2)
     i = 0
     t1.apply1(v => {
-      i = i + 1; i
+      i = i + 1;
+      i
     })
 
     t.map(t1, (a, b) => a * b)
@@ -463,14 +473,16 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     t = new DenseTensor[Double](3, 4)
     var i = 0
     t.apply1(v => {
-      i = i + 1; i
+      i = i + 1;
+      i
     })
     t.toString should be(MATRIX_STRING)
 
     t = new DenseTensor(2, 5, 3, 4)
     i = 0
     t.apply1(v => {
-      i = i + 1; i
+      i = i + 1;
+      i
     })
     println(t)
   }
@@ -532,7 +544,8 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     val x = Tensor[Double](3, 1)
     var i = 0
     x.apply1(e => {
-      i += 1; i
+      i += 1;
+      i
     })
 
     val result = x.expand(Array(3, 2))
@@ -736,42 +749,42 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     val input = Tensor[Float](4, 10).fill(1.0f)
     val output = input.narrow(1, 2, 1).squeezeNewTensor()
 
-    output.size() should be (Array(10))
-    input should be (Tensor[Float](4, 10).fill(1.0f))
+    output.size() should be(Array(10))
+    input should be(Tensor[Float](4, 10).fill(1.0f))
   }
 
   "tensor apply on 1D tensor" should "work correctly" in {
     val a = Tensor[Float](4)
     a.rand()
     val b = a(2)
-    b.storageOffset() should be (2)
-    b.size() should be (Array(1))
-    b.stride() should be (Array(1))
-    b.nElement() should be (1)
+    b.storageOffset() should be(2)
+    b.size() should be(Array())
+    b.stride() should be(Array())
+    b.nElement() should be(1)
 
-    b.setValue(1, 0.01f)
-    b.valueAt(1) should be (0.01f)
-    a.valueAt(2) should be (0.01f)
+    b.setValue(0.01f)
+    b.value() should be(0.01f)
+    a.valueAt(2) should be(0.01f)
   }
 
   "tensor apply on 2D tensor" should "work correctly" in {
     val a = Tensor[Float](3, 4)
     a.rand()
     val b = a(2)
-    b.storageOffset() should be (5)
-    b.size() should be (Array(4))
-    b.stride() should be (Array(1))
-    b.nElement() should be (4)
+    b.storageOffset() should be(5)
+    b.size() should be(Array(4))
+    b.stride() should be(Array(1))
+    b.nElement() should be(4)
 
     b.setValue(3, 0.01f)
-    b.valueAt(3) should be (0.01f)
-    a.valueAt(2, 3) should be (0.01f)
+    b.valueAt(3) should be(0.01f)
+    a.valueAt(2, 3) should be(0.01f)
   }
 
   "Scalar tensor" should "be able to construct" in {
     val t: Tensor[Double] = DenseTensor[Double](1.0)
     t.nDimension should be(0)
-    t.size().isEmpty should be (true)
+    t.size().isEmpty should be(true)
   }
 
   "Scalar tensor" should "not have size" in {
@@ -779,45 +792,135 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     val thrown = intercept[Exception] {
       t.size(1)
     }
-    thrown.isInstanceOf[IllegalArgumentException] should be (true)
+    thrown.isInstanceOf[IllegalArgumentException] should be(true)
   }
 
   "Scalar tensor" should "be able to add" in {
     val t: Tensor[Double] = DenseTensor[Double](1.0)
     val y: Tensor[Double] = DenseTensor[Double](1.0)
     t.add(1.0, y)
-    t should be (DenseTensor[Double](2.0))
+    t should be(DenseTensor[Double](2.0))
   }
 
   "Scalar tensor" should "be able to set value" in {
     val t: Tensor[Double] = DenseTensor[Double](1.0)
     t.setValue(2.0)
-    t should be (DenseTensor[Double](2.0))
+    t should be(DenseTensor[Double](2.0))
   }
 
   "Scalar tensor" should "be able to calc max" in {
     val t: Tensor[Double] = DenseTensor[Double](1.0)
-    t.max() should be (1.0)
+    t.max() should be(1.0)
   }
 
   "Scalar tensor" should "be able to calc min" in {
     val t: Tensor[Double] = DenseTensor[Double](1.0)
-    t.max() should be (1.0)
+    t.max() should be(1.0)
   }
 
   "Scalar tensor" should "be able to calc nElement" in {
     val t: Tensor[Double] = DenseTensor[Double](1.0)
-    t.nElement() should be (1)
+    t.nElement() should be(1)
   }
 
   "Scalar tensor" should "be able to get element" in {
     val t: Tensor[Double] = DenseTensor[Double](1.0)
-    t.apply(Array[Int]()) should be (1.0)
+    t.apply(Array[Int]()) should be(1.0)
   }
 
   "Scalar tensor" should "be able to update" in {
     val t: Tensor[Double] = DenseTensor[Double](1.0)
     t.update(Array[Int](), 2.0)
-    t should be (DenseTensor[Double](2.0))
+    t should be(DenseTensor[Double](2.0))
+  }
+
+  "Tensor add" should "support broadcasting" in {
+    val t1 = Tensor[Double](T(1, 2, 3))
+    val t2 = Tensor[Double](T(T(2, 5, 3), T(3, 6, 4)))
+    t2.add(t1) should be(Tensor[Double](T(T(3, 7, 6), T(4, 8, 7))))
+  }
+
+  "Tensor add" should "support broadcasting 2" in {
+    val t1 = Tensor[Double](T(
+      T(
+        T(1, 2, 3),
+        T(4, 5, 6)
+      ),
+      T(
+        T(2, 1, 6),
+        T(5, 4, 3)
+      ),
+      T(
+        T(4, 1, 3),
+        T(4, 5, 3)
+      )
+    ))
+    val t2 = Tensor[Double](T(
+      T(
+        T(2),
+        T(3)
+      )
+    ))
+
+    val cloneT1 = t1.clone()
+    val oldStorage = t1.storage()
+    t1.add(t2) should be(Tensor[Double](T(
+      T(
+        T(3, 4, 5),
+        T(7, 8, 9)
+      ),
+      T(
+        T(4, 3, 8),
+        T(8, 7, 6)
+      ),
+      T(
+        T(6, 3, 5),
+        T(7, 8, 6)
+      )
+    )))
+    oldStorage.eq(t1.storage()) should be(true)
+
+    t2.add(cloneT1) should be(Tensor[Double](T(
+      T(
+        T(3, 4, 5),
+        T(7, 8, 9)
+      ),
+      T(
+        T(4, 3, 8),
+        T(8, 7, 6)
+      ),
+      T(
+        T(6, 3, 5),
+        T(7, 8, 6)
+      )
+    )))
+  }
+
+  "Tensor add" should "support broadcasting with singleton dimension" in {
+    val t1 = Tensor[Double](T(T(1, 2, 3)))
+    val t2 = Tensor[Double](T(T(2, 5, 3), T(3, 6, 4)))
+    t2.add(t1) should be(Tensor[Double](T(T(3, 7, 6), T(4, 8, 7))))
+  }
+
+  "Tensor add" should "catch exception when broadcasting size not match" in {
+    val t1 = Tensor[Double](T(1, 2))
+    val t2 = Tensor[Double](T(T(2, 5, 3), T(3, 6, 4)))
+    intercept[IllegalArgumentException] {
+      t2.add(t1) should be(Tensor[Double](T(T(3, 7, 6), T(4, 8, 7))))
+    }
+  }
+
+  "Tensor add" should "catch exception when broadcasting size not match 2" in {
+    val t1 = Tensor[Double](T(T(1, 2, 3), T(1, 2, 3), T(1, 2, 3)))
+    val t2 = Tensor[Double](T(T(2, 5, 3), T(3, 6, 4)))
+    intercept[IllegalArgumentException] {
+      t2.add(t1) should be(Tensor[Double](T(T(3, 7, 6), T(4, 8, 7))))
+    }
+  }
+
+  "Select on a Vector " should "be a scalar" in {
+    val t: Tensor[Double] = new DenseTensor[Double](2)
+    val result = t.select(1, 1)
+    result.isScalar should be(true)
   }
 }

@@ -238,6 +238,15 @@ class Layer(JavaValue):
         return dict((layer_name, to_ndarray(params)) for layer_name, params in
                 name_to_params.items())
 
+    def evaluate(self):
+        """
+        Evaluate the model to set train = false, useful when doing test/forward
+        :return: layer itself
+        """
+        callBigDlFunc(self.bigdl_type,
+                      "evaluate", self.value)
+        return self
+
     def predict(self, data_rdd):
         """
         Model inference base on the given data.
@@ -394,6 +403,36 @@ class Layer(JavaValue):
         callBigDlFunc(self.bigdl_type,
                         "setLayerUnFreeze", self.value)
 
+    def evaluate(self):
+        '''
+        Set this layer in the evaluation mode
+        '''
+        callJavaFunc(get_spark_context(), self.value.evaluate)
+        return self
+
+    def training(self):
+        '''
+        Set this layer in the training mode 
+        '''
+        callJavaFunc(get_spark_context(), self.value.training)
+        return self
+
+    def is_training(self):
+        '''
+        :return: Whether this layer is in the training mode
+        
+        >>> layer = Dropout()
+        creating: createDropout
+        >>> layer = layer.evaluate()
+        >>> layer.is_training()
+        False
+        >>> layer = layer.training()
+        >>> layer.is_training()
+        True
+        '''
+        return callJavaFunc(get_spark_context(), self.value.isTraining)
+
+
 
 
 class Container(Layer):
@@ -521,6 +560,21 @@ class Model(Container):
         jmodel = callBigDlFunc(bigdl_type, "loadTF", path, inputs, outputs, byte_order)
         return Model.of(jmodel)
 
+    @staticmethod
+    def train(output, data, label, opt_method, criterion, batch_size, end_when, session=None, bigdl_type="float"):
+        from bigdl.util.tf_utils import get_path
+        from bigdl.util.common import Sample
+        output_name = output.name.split(":")[0]
+        path = get_path(output_name, session)
+        sc = get_spark_context()
+        rdd_train_images = sc.parallelize(data)
+        rdd_train_labels = sc.parallelize(label)
+        rdd_train_sample = rdd_train_images.zip(rdd_train_labels).map(lambda input:
+                                                                      Sample.from_ndarray(input[0], input[1]))
+        jmodel = callBigDlFunc(bigdl_type, "trainTF", path, output_name, rdd_train_sample, opt_method, criterion, batch_size, end_when)
+        return Model.of(jmodel)
+
+
     def freeze(self, freeze_layers, bigdl_type="float"):
         """
         set an array of layers to be freezed
@@ -557,10 +611,13 @@ class Model(Container):
         """
         save current model graph to a folder, which can be display in tensorboard by running
             tensorboard --logdir logPath
-        :param log_path: 
-        :return: 
+        :param log_path: path to save the model graph
+        :param bigdl_type:
+        :return:
         """
         callBigDlFunc(bigdl_type, "saveGraphTopology", self.value, log_path)
+        return self
+
 
 class Linear(Layer):
 
@@ -1005,6 +1062,26 @@ class Recurrent(Container):
         jstate, state_is_table = self.check_input(state)
         callBigDlFunc(self.bigdl_type, "setState", self.value, jstate, state_is_table)
 
+
+class RecurrentDecoder(Recurrent):
+    '''
+    RecurrentDecoder module is a container of rnn cells which used to make
+    a prediction of the next timestep based on the prediction we made from
+    the previous timestep. Input for RecurrentDecoder is dynamically composed
+    during training. input at t(i) is output at t(i-1), input at t(0) is
+    user input, and user input has to be batch x ???(depends on cell type)
+    without time information.
+
+    Different types of rnn cells can be added using add() function. Currently
+    only support lstmpeephole, convlstm, convlstm3D cell.
+
+    >>> recurrent_decoder = RecurrentDecoder(output_length = 5)
+    creating: createRecurrentDecoder
+    '''
+
+    def __init__(self, output_length, bigdl_type="float"):
+        super(Recurrent, self).__init__(None, bigdl_type, output_length)
+
 class LSTM(Layer):
     '''
 |   Long Short Term Memory architecture.
@@ -1122,11 +1199,13 @@ class RnnCell(Layer):
                  input_size,
                  hidden_size,
                  activation,
+                 isInputWithBias=True,
+                 isHiddenWithBias=True,
                  wRegularizer=None,
                  uRegularizer=None,
                  bRegularizer=None,
                  bigdl_type="float"):
-        super(RnnCell, self).__init__(None, bigdl_type, input_size, hidden_size, activation, wRegularizer, uRegularizer, bRegularizer)
+        super(RnnCell, self).__init__(None, bigdl_type, input_size, hidden_size, activation, isInputWithBias, isHiddenWithBias, wRegularizer, uRegularizer, bRegularizer)
 
 
 class TimeDistributed(Layer):
@@ -1520,7 +1599,7 @@ class BatchNormalization(Layer):
         return self
 
 
-class BifurcateSplitTable(Model):
+class BifurcateSplitTable(Layer):
     '''
     Creates a module that takes a Tensor as input and
     outputs two tables, splitting the Tensor along
@@ -1542,7 +1621,7 @@ class BifurcateSplitTable(Model):
                                        dimension)
 
 
-class Bilinear(Model):
+class Bilinear(Layer):
 
     '''
     a bilinear transformation with sparse inputs,
@@ -3998,6 +4077,21 @@ class ConvLSTMPeephole3D(Layer):
                  bRegularizer=None, cRegularizer=None, with_peephole=True, bigdl_type="float"):
         super(ConvLSTMPeephole3D, self).__init__(None, bigdl_type, input_size, output_size, kernel_i, kernel_c, stride,
                                                  wRegularizer, uRegularizer, bRegularizer, cRegularizer, with_peephole)
+
+class ResizeBilinear(Layer):
+    """
+    Resize the input image with bilinear interpolation. The input image must be a float tensor with
+    NHWC layout
+    
+    :param output_height: output height
+    :param output_width: output width
+    :param align_corner: align corner or not
+    
+    >>> resizeBilinear = ResizeBilinear(10, 20, False)
+    creating: createResizeBilinear
+    """
+    def __init__(self, output_height, output_width, align_corner, bigdl_type="float"):
+        super(ResizeBilinear, self).__init__(None, bigdl_type, output_height, output_width, align_corner)
 
 def _test():
     import doctest

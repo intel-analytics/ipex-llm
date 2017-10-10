@@ -31,6 +31,22 @@ class TensorNumericMath
  */
 object TensorNumericMath {
 
+  type NumericWildCard = Any
+  /**
+   * This type is used to denote that the numeric type of tensor is not restricted.
+   * The use-case usually is used to do some tensor operations when we do not make sure
+   * their concrete types, but they must have the same type.
+   *
+   * For example if we want to copy tensor1 from tensor2, and we only know they are
+   * the same type tensor without the information about their concrete type.
+   *
+   * We can use the following code:
+   *
+   * `tensor1.asInstanceOf[Tensor[NumericWildcard]]
+   * .copy(tensor2.asInstanceOf[Tensor[NumericWildcard]])`
+   */
+  type NumericWildcard = Any
+
   /**
    * define tensor math operation
    */
@@ -185,7 +201,7 @@ object TensorNumericMath {
 
     def prod(n: Int, a: Array[T], aOffset: Int, stride: Int): T =
       throw new UnsupportedOperationException(typeName +
-        " in tensor does not support exp operation")
+        " in tensor does not support prod operation")
 
     def log(x: T): T =
       throw new UnsupportedOperationException(typeName +
@@ -282,7 +298,7 @@ object TensorNumericMath {
       throw new UnsupportedOperationException(typeName +
         " in tensor does not support fromType operation")
 
-    def toType[@specialized(Float, Double, Int) K](t: T)(implicit c: ConvertableTo[K]): K =
+    def toType[K](t: T)(implicit c: ConvertableTo[K]): K =
       throw new UnsupportedOperationException(typeName +
         " in tensor does not support toType operation")
 
@@ -999,6 +1015,9 @@ object TensorNumericMath {
         implicit c: ConvertableFrom[K]): Int =
         c.toInt(k)
 
+      override def toType[K](t: Int)
+        (implicit c: ConvertableTo[K]): K = c.fromInt(t)
+
       override def axpy(n: Int, da: Int, dx: Array[Int], _dx_offset: Int,
         incx: Int, dy: Array[Int],
         _dy_offset: Int, incy: Int): Unit = {
@@ -1024,6 +1043,16 @@ object TensorNumericMath {
       override def isGreaterEq(x: Int, y: Int): Boolean = x >= y
 
       override def nearlyEqual(a: Int, b: Int, epsilon: Double): Boolean = a == b
+
+      override def prod(n: Int, a: Array[Int], aOffset: Int, stride: Int): Int = {
+        var i = 0
+        var r = 1
+        while (i < n) {
+          r *= a(aOffset + i * stride)
+          i += 1
+        }
+        r
+      }
     }
 
     implicit object NumericLong extends UndefinedTensorNumeric[Long]("Long") {
@@ -1064,6 +1093,9 @@ object TensorNumericMath {
       override def fromType[K](k: K)(
         implicit c: ConvertableFrom[K]): Long =
         c.toLong(k)
+
+      override def toType[@specialized(Float, Double, Int) K](t: Long)
+        (implicit c: ConvertableTo[K]): K = c.fromLong(t)
 
       override def axpy(n: Int, da: Long, dx: Array[Long], _dx_offset: Int,
         incx: Int, dy: Array[Long],
@@ -1130,6 +1162,9 @@ object TensorNumericMath {
       override def fromType[K](k: K)(
         implicit c: ConvertableFrom[K]): Short =
         c.toShort(k)
+
+      override def toType[@specialized(Float, Double, Int) K](t: Short)
+        (implicit c: ConvertableTo[K]): K = c.fromShort(t)
 
       override def axpy(n: Int, da: Short, dx: Array[Short], _dx_offset: Int,
         incx: Int, dy: Array[Short],

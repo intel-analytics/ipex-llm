@@ -18,6 +18,55 @@ package com.intel.analytics.bigdl.tensor
 
 object DenseTensorApply {
   /**
+   * Iterate through tensor1, and apply func to the elements,
+   * set function result to tensor 2
+   *
+   * @param tensor1 the tensor1
+   * @param tensor2 the result tensor
+   * @param func    (tensor1Data, tensor1Offset, tensor2Data,
+   *                tensor2Offset)
+   */
+  def apply1[A, B](tensor1: Tensor[A], tensor2: Tensor[B],
+    func: TensorDiffTypeFunc4[A, B]): Unit = {
+
+    if (tensor1.nDimension == 0) {
+      return
+    }
+
+    val stride1 = getStride(tensor1)
+    val stride2 = getStride(tensor2)
+    val (largestDim1, largestSize1) = getLargestContiguousSize(tensor1)
+    val (largestDim2, largestSize2) = getLargestContiguousSize(tensor2)
+    val counter1 = getCounter(largestDim1)
+    val counter2 = getCounter(largestDim2)
+    val data1 = tensor1.storage().array()
+    val data2 = tensor2.storage().array()
+    var offset1 = tensor1.storageOffset() - 1
+    var offset2 = tensor2.storageOffset() - 1
+    var hasFinished1 = false
+    var hasFinished2 = false
+    var i1 = 0
+    var i2 = 0
+    while (!hasFinished1 && !hasFinished2) {
+      while (i1 < largestSize1 && i2 < largestSize2) {
+        val index1 = offset1 + i1 * stride1
+        val index2 = offset2 + i2 * stride2
+        func(data1, index1, data2, index2)
+        i1 += 1
+        i2 += 1
+      }
+      val r1 = updateCounter(tensor1, counter1, offset1, largestDim1)
+      val r2 = updateCounter(tensor2, counter2, offset2, largestDim2)
+      hasFinished1 = r1._1
+      hasFinished2 = r2._1
+      offset1 = r1._2
+      offset2 = r2._2
+      i1 = 0
+      i2 = 0
+    }
+  }
+
+  /**
    * Iterate through tensor1, tensor2, and apply func to the elements
    *
    * @param tensor
@@ -165,7 +214,7 @@ object DenseTensorApply {
     require(tensor1.nElement() == tensor2.nElement() && tensor2.nElement() == tensor3.nElement(),
       "inconsistent tensor size")
 
-    if (tensor1.nDimension == 0) {
+    if (tensor1.isEmpty) {
       return
     }
 
@@ -323,7 +372,19 @@ object DenseTensorApply {
     require(tensor1.nElement() == tensor2.nElement(),
       s"inconsistent tensor size: ${tensor1.nElement()} == ${tensor2.nElement()}")
 
-    if (tensor1.nDimension == 0) {
+    if (tensor1.isEmpty) {
+      return
+    }
+
+    // shortcut for scalar
+    if (tensor1.isScalar && tensor2.isScalar) {
+      val tensor1Data = tensor1.storage().array()
+      val tensor2Data = tensor2.storage().array()
+      val tensor3Data = tensor3.storage().array()
+      val tensor1Index = tensor1.storageOffset() - 1
+      val tensor2Index = tensor2.storageOffset() - 1
+      val tensor3Index = tensor3.storageOffset() - 1
+      func(tensor1Data, tensor1Index, tensor2Data, tensor2Index, tensor3Data, tensor3Index)
       return
     }
 

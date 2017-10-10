@@ -22,10 +22,12 @@ import com.intel.analytics.bigdl.models.inception.Inception_v1_NoAuxClassifier
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.models.vgg.{VggForCifar10, Vgg_16, Vgg_19}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.nn.ops.{ControlNodes, Less}
+import com.intel.analytics.bigdl.nn.tf.Const
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T, Table}
+import com.intel.analytics.bigdl.utils._
 
 import scala.reflect.ClassTag
 import scala.util.Random
@@ -85,7 +87,7 @@ class GraphSpec extends FlatSpec with Matchers {
     val output2 = ReLU().inputs(cadd)
 
     val graph = Graph(Array(fc1, fc2), Array(output1, output2))
-    intercept[IllegalArgumentException] {
+    intercept[LayerException] {
       graph.forward(Tensor(T(0.1f, 0.2f, -0.3f, -0.4f)))
     }
   }
@@ -144,7 +146,7 @@ class GraphSpec extends FlatSpec with Matchers {
 
     val graph = Graph(Array(fc1), Array(output1))
 
-    intercept[IllegalArgumentException] {
+    intercept[LayerException] {
       graph.forward(T(Tensor(T(0.1f, 0.2f, -0.3f, -0.4f)),
         Tensor(T(0.5f, 0.4f, -0.2f, -0.1f))))
     }
@@ -1134,6 +1136,106 @@ class GraphSpec extends FlatSpec with Matchers {
 
     val model = Inception_v1_NoAuxClassifier.graph(1000).asInstanceOf[Graph[Float]]
     model.saveGraphTopology(absolutePath)
+  }
+
+  "graph" should "support switch with two branch" in {
+    val data = Input("data")
+    val condition = Input("condition")
+    val swtich = ControlNodes.switch(data, condition)
+    val echo1 = Echo().inputs(swtich.trueEdge())
+    val echo2 = Echo().inputs(swtich.falseEdge())
+
+    val model = Graph(Array(data, condition), Array(echo1), None, false)
+    val result = model.forward(T(Tensor[Float](T(1)), Tensor[Boolean](T(true))))
+    result.toTensor should be(Tensor[Float](T(1)))
+
+    intercept[LayerException] {
+      model.forward(T(Tensor[Float](T(1)), Tensor[Boolean](T(false))))
+    }
+  }
+
+  "graph" should "support switch with two branch with merge" in {
+    val data = Input("data")
+    val condition = Input("condition")
+    val swtich = ControlNodes.switch(data, condition)
+    val echo1 = Echo().inputs(swtich.trueEdge())
+    val echo2 = Echo().inputs(swtich.falseEdge())
+    val add1 = AddConstant(1).inputs(echo1)
+    val add5 = AddConstant(5).inputs(echo2)
+    val merge = ControlNodes.merge(add1, add5)
+    val output = Identity().inputs(merge)
+
+    val model = Graph(Array(data, condition), Array(output), None, false)
+    var result = model.forward(T(Tensor[Float](T(1)), Tensor[Boolean](T(true))))
+    result.toTensor should be(Tensor[Float](T(2)))
+    result = model.forward(T(Tensor[Float](T(1)), Tensor[Boolean](T(false))))
+    result.toTensor should be(Tensor[Float](T(6)))
+  }
+
+  "graph backward with stopGradient" should "not remove stopGradient recursive" in {
+    val data = Input()
+    val d1 = Identity().inputs(data)
+    val d2 = Identity().inputs(d1)
+    val d3 = Identity().inputs(data)
+    val d4 = Identity().setName("d4").inputs(d3)
+    val d5 = Identity().inputs(d4)
+
+    val model = Graph(data, Array(d2, d5))
+    val output = model.forward(Tensor[Float](T(1, 2, 3))).toTable
+    output[Tensor[Float]](1) should be(Tensor[Float](T(1, 2, 3)))
+    output[Tensor[Float]](2) should be(Tensor[Float](T(1, 2, 3)))
+
+    model.stopGradient(Array("d4"))
+    model.backward(Tensor[Float](T(1, 2, 3)), T(Tensor[Float](T(2, 7, 9)),
+      Tensor[Float](T(1, 3, 5)))) should be(Tensor[Float](T(2, 7, 9)))
+  }
+
+  "Graph forward" should "not execute unrelated node" in {
+    val data = Identity().setName("input").inputs()
+    var isExecuted = false
+    val l1 = Identity().setName("l1").inputs(data)
+    val l2 = Identity().setName("l2").inputs(l1)
+    val l3 = Identity().setName("l3").inputs(l2)
+    val l4 = Echo().setName("l4").setFeval((a, b) => isExecuted = true).inputs(l1)
+
+    val model = Graph(data, l3)
+    model.forward(Tensor(T(1)))
+    isExecuted should be(false)
+  }
+
+  "Graph backward" should "not execute unrelated node" in {
+    val data = Identity().setName("input").inputs()
+    val const = Const(Tensor(T(1, 2))).setName("const").inputs()
+    var isExecuted = false
+    val l1 = Echo().setName("l1").setBeval((a, b, c) => isExecuted = true).inputs(const)
+    val cadd = CAddTable().setName("cadd").inputs(data, l1)
+
+    val model = Graph(data, cadd)
+    model.forward(Tensor(T(3, 5))) should be(Tensor(T(4, 7)))
+    model.backward(Tensor(T(3, 5)), Tensor(T(1, 2))) should be(Tensor(T(1, 2)))
+    isExecuted should be(false)
+  }
+
+  "Graph backward" should "not execute unrelated node 2" in {
+    val data = Identity().setName("input").inputs()
+    val const = Const(Tensor(T(1, 2))).setName("const").inputs()
+    var isExecuted1 = false
+    val l1 = Echo().setName("l1").setBeval((a, b, c) => isExecuted1 = true).inputs(const)
+    val cadd = CAddTable().setName("cadd").inputs(data, l1)
+    val l2 = Identity().setName("l2").inputs(cadd)
+    var isExecuted2 = false
+    var isExecuted3 = false
+    val echo = Echo().setName("echo")
+      .setFeval((a, b) => isExecuted2 = true)
+      .setBeval((a, b, c) => isExecuted3 = true).inputs(cadd)
+    val l3 = Identity().setName("l3").inputs(echo)
+
+    val model = Graph(data, l2)
+    model.forward(Tensor(T(3, 5))) should be(Tensor(T(4, 7)))
+    model.backward(Tensor(T(3, 5)), Tensor(T(1, 2))) should be(Tensor(T(1, 2)))
+    isExecuted1 should be(false)
+    isExecuted2 should be(false)
+    isExecuted3 should be(false)
   }
 }
 

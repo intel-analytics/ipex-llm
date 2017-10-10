@@ -12,6 +12,9 @@ message BigDLModule
     string moduleType = 7; //module type to identify a module like linear, graph, etc
     map<string, AttrValue> attr = 8; // module attributes
     string version = 9; //version of this module
+    bool train = 10; // is module status in train
+    string namePostfix = 11; // name post fix
+    int32 id = 12; // unique ID of this module , used for shared modules
 }
 enum VarFormat {
     EMPTY_FORMAT = 0;
@@ -54,9 +57,27 @@ message InitMethod {
 message BigDLTensor{
     DataType datatype = 1;
     repeated int32 size = 2; //size of tensor
-    repeated float float_data = 3; //tensor element
-    repeated double double_data = 4; //tensor element
+    repeated int32 stride = 3; //stride of tensor
+    int32 offset = 4; //offset
+    int32 dimension = 5; // dimension
+    int32 nElements = 6; //total number of elements
+    bool isScalar = 7; // is scalar tensor
+    TensorStorage storage = 8; // reference to storage
+    int32 id = 9; // tensor ID, used for tensor sharing
 }
+
+message TensorStorage {
+    DataType datatype = 1;
+    repeated float float_data = 2; //float tensor element
+    repeated double double_data = 3; //double tensor element
+    repeated bool bool_data = 4; //boolean tensor element
+    repeated string string_data = 5; //string tensor element
+    repeated int32 int_data = 6; //int tensor element
+    repeated int64 long_data = 7; //long tensor element
+    repeated bytes bytes_data = 8; //byte tensor element
+    int32 id = 9; // storage Id, used for storage sharing
+}
+
 message Regularizer {
     RegularizerType regularizerType = 1;
     repeated double regularData = 2;
@@ -69,15 +90,18 @@ enum DataType {
     DOUBLE = 3;
     STRING = 4;
     BOOL = 5;
-    REGULARIZER = 6;
-    TENSOR = 7;
-    VARIABLE_FORMAT= 8;
-    INITMETHOD = 9;
-    MODULE = 10;
-    NAME_ATTR_LIST = 11;
-    ARRAY_VALUE = 12;
-    DATA_FORMAT = 13;
-    CUSTOM = 14;
+    CHAR = 6;
+    SHORT = 7;
+    BYTES = 8;
+    REGULARIZER = 9;
+    TENSOR = 10;
+    VARIABLE_FORMAT= 11;
+    INITMETHOD = 12;
+    MODULE = 13;
+    NAME_ATTR_LIST = 14;
+    ARRAY_VALUE = 15;
+    DATA_FORMAT = 16;
+    CUSTOM = 17;
 }
 
 message AttrValue {

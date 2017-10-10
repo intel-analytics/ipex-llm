@@ -50,4 +50,34 @@ class SelectSpec extends TorchSpec {
 
     println("Test case : Select, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
   }
+
+  "Select(2, 5)" should "generate correct output and grad" in {
+      torchCheck()
+      def randn(): Double = RandomGenerator.RNG.uniform(-10, 10)
+      val layer = new Select[Double](2, 5)
+      val input = Tensor[Double](3, 5, 5)
+      input.apply1(x => randn())
+      val gradOutput = Tensor[Double](3, 5, 1)
+      gradOutput.apply1(x => randn())
+
+      val start = System.nanoTime()
+      val output = layer.forward(input)
+      val gradInput = layer.backward(input, gradOutput)
+      val end = System.nanoTime()
+      val scalaTime = end - start
+
+      val code = "module = nn.Select(2, 5)\n" +
+        "output = module:forward(input)\n" +
+        "gradInput = module:backward(input,gradOutput)"
+
+      val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+          Array("output", "gradInput"))
+      val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
+      val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
+
+      output should be (luaOutput)
+      gradInput should be (luaGradInput)
+
+      println("Test case : Select, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+  }
 }
