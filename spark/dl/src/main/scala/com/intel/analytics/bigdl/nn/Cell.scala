@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, Tensor
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData, ModuleSerializable, ModuleSerializer}
+import com.intel.analytics.bigdl.utils.serializer._
 import com.intel.analytics.bigdl.utils.{T, Table}
 import serialization.Bigdl.{AttrValue, BigDLModule}
 
@@ -298,32 +298,32 @@ abstract class Cell[T : ClassTag](
 
 object CellSerializer extends ModuleSerializable {
 
-  override def doLoadModule[T: ClassTag](model : BigDLModule)
+  override def doLoadModule[T: ClassTag](context : DeserializeContext)
     (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
-    val module = super.doLoadModule(model)
+    val module = super.doLoadModule(context)
     val cellModule = module.asInstanceOf[Cell[T]]
 
-    val attrMap = model.getAttrMap
-    cellModule.cell = DataConverter.getAttributeValue(attrMap.get("cell")).
+    val attrMap = context.bigdlModule.getAttrMap
+    cellModule.cell = DataConverter.getAttributeValue(context, attrMap.get("cell")).
       asInstanceOf[AbstractModule[Activity, Activity, T]]
 
     cellModule
   }
 
-  override def doSerializeModule[T: ClassTag](module : ModuleData[T],
+  override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
                                               cellModuleBuilder : BigDLModule.Builder)
                                            (implicit ev: TensorNumeric[T]) : Unit = {
 
-    super.doSerializeModule(module, cellModuleBuilder)
-    val cellModule = module.module.asInstanceOf[Cell[T]]
+    super.doSerializeModule(context, cellModuleBuilder)
+    val cellModule = context.moduleData.module.asInstanceOf[Cell[T]]
 
     val cellSerializerFlagBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(cellSerializerFlagBuilder, true,
+    DataConverter.setAttributeValue(context, cellSerializerFlagBuilder, true,
       scala.reflect.runtime.universe.typeOf[Boolean])
     cellModuleBuilder.putAttr("is_cell_module", cellSerializerFlagBuilder.build)
 
     val cellBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(cellBuilder, cellModule.cell,
+    DataConverter.setAttributeValue(context, cellBuilder, cellModule.cell,
       ModuleSerializer.abstractModuleType)
     cellModuleBuilder.putAttr("cell", cellBuilder.build)
 

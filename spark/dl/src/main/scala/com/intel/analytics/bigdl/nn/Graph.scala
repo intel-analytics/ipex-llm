@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.nn.ops.ControlOps
 import com.intel.analytics.bigdl.nn.tf.{ControlDependency, WithoutInput}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.serializer.{ContainerSerializable, DataConverter, ModuleData, ModuleSerializer}
+import com.intel.analytics.bigdl.utils.serializer._
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.utils.tf.{BigDLToTensorflow, Tensorflow, TensorflowSaver}
 import serialization.Bigdl.{AttrValue, BigDLModule}
@@ -603,17 +603,18 @@ object Graph extends ContainerSerializable {
     new Graph[T](Array(input), Array(output))
   }
 
-  override def doLoadModule[T: ClassTag](module : BigDLModule)
+  override def doLoadModule[T: ClassTag](context: DeserializeContext)
     (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
 
+    val module = context.bigdlModule
     val subModules = module.getSubModulesList.asScala
 
     val attributes = module.getAttrMap
     val inputNames = new ArrayBuffer[String]
     val outputNames = new ArrayBuffer[String]
-    DataConverter.getAttributeValue(attributes.get("inputNames"))
+    DataConverter.getAttributeValue(context, attributes.get("inputNames"))
       .asInstanceOf[Array[String]].map(name => inputNames.append(name))
-    DataConverter.getAttributeValue(attributes.get("outputNames"))
+    DataConverter.getAttributeValue(context, attributes.get("outputNames"))
       .asInstanceOf[Array[String]].map(name => outputNames.append(name))
 
     val inputs = new ArrayBuffer[ModuleNode[T]]
@@ -622,16 +623,25 @@ object Graph extends ContainerSerializable {
     // layer name to layer node mapping
     val layerMap = new mutable.HashMap[String, (ModuleNode[T], Seq[String])]()
     subModules.foreach(subModule => {
-      val bigDLModule = ModuleSerializer.load(subModule)
+      val bigDLModule = ModuleSerializer.load(DeserializeContext(subModule,
+        context.storages, context.storageType))
       val moduleNode = bigDLModule.module.inputs()
       val preNodes = bigDLModule.pre
       layerMap(bigDLModule.module.getName) = (moduleNode, preNodes)
     })
 
     layerMap.values.foreach(moduleNode => {
+      val edges = DataConverter.getAttributeValue(context,
+        attributes.get(s"${moduleNode._1.element.getName}_edges")).
+        asInstanceOf[mutable.HashMap[String, mutable.HashMap[String, Int]]]
+      val edgeMap = edges.get(moduleNode._1.element.getName).get
       moduleNode._2.foreach(pre => {
         if (layerMap.contains(pre)) {
-          layerMap(pre)._1 -> moduleNode._1
+          val edge : Edge = edgeMap.get(pre).get match {
+            case -1 => Edge()
+            case index: Int => Edge(index)
+          }
+          layerMap(pre)._1.add(moduleNode._1, edge)
         }
       })
     })
@@ -643,50 +653,75 @@ object Graph extends ContainerSerializable {
     if (attributes.containsKey("sharedWeight") && attributes.containsKey("sharedBias")) {
       val weights = attributes.get("sharedWeight")
       val biases = attributes.get("sharedBias")
-      val weightArray = DataConverter.getAttributeValue(weights).asInstanceOf[Array[Tensor[T]]]
-      val biasArray = DataConverter.getAttributeValue(biases).asInstanceOf[Array[Tensor[T]]]
+      val weightArray = DataConverter.getAttributeValue(context, weights)
+        .asInstanceOf[Array[Tensor[T]]]
+      val biasArray = DataConverter.getAttributeValue(context, biases)
+        .asInstanceOf[Array[Tensor[T]]]
       sharedVariables = Some(weightArray, biasArray)
     }
     Graph[T](inputs.toArray, outputs.toArray, sharedVariables)
   }
 
-  override def doSerializeModule[T: ClassTag](module : ModuleData[T],
+  override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
                                               graphBuilder : BigDLModule.Builder)
                                            (implicit ev: TensorNumeric[T]) : Unit = {
-
+    val module = context.moduleData
     module.next.foreach(_ => graphBuilder.addAllPreModules(_))
     module.pre.foreach(_ => graphBuilder.addAllNextModules(_))
     val graph = module.module.asInstanceOf[Graph[T]]
     val inputsNames = graph.inputs.map(_.element.getName).toArray
     val outputsNames = graph.outputs.map(_.element.getName).toArray
     graph.getForwardExecutions.foreach(execution => {
-      val preNodes = execution.prevNodes.map(_.element.getName)
-      val nextNodes = execution.nextNodes.map(_.element.getName)
+
+      val edgeMap = new mutable.HashMap[String, mutable.Map[String, Int]]
+
+      val preNodesAndEdges = execution.prevNodesAndEdges
+      val preNodes = preNodesAndEdges.map(_._1.element.getName)
+      val nextNodes = preNodesAndEdges.map(_._1.element.getName)
       val currNode = execution.element
         .asInstanceOf[AbstractModule[Activity, Activity, T]]
-      val subModel = ModuleSerializer.serialize(ModuleData(currNode, preNodes, nextNodes))
-      graphBuilder.addSubModules(subModel)
+      val subModel = ModuleSerializer.serialize(SerializeContext(
+        ModuleData(currNode, preNodes, nextNodes), context.storages, context.storageType))
+      // add edges
+      val preNodeEdges = new mutable.HashMap[String, Int]()
+
+      preNodesAndEdges.foreach(pre => {
+        val preNodeName = pre._1.element.getName
+        val preEdgeIndex = pre._2.fromIndex match {
+          case Some(i) => i
+          case None => -1
+        }
+        preNodeEdges(preNodeName) = preEdgeIndex
+      })
+      edgeMap(execution.element.getName) = preNodeEdges
+      val attriBulder = AttrValue.newBuilder
+      DataConverter.setAttributeValue(context, attriBulder, edgeMap)
+
+      graphBuilder.putAttr(s"${execution.element.getName}_edges", attriBulder.build)
+      graphBuilder.addSubModules(subModel.bigDLModule)
     })
+
+
     if (graph.variables.isDefined) {
       val (weights, bias) = graph.variables.get
       val weightAttrBuilder = AttrValue.newBuilder
-      DataConverter.setAttributeValue(weightAttrBuilder, weights,
+      DataConverter.setAttributeValue(context, weightAttrBuilder, weights,
         universe.typeOf[Array[Tensor[_ <: Any]]])
       graphBuilder.putAttr("sharedWeight", weightAttrBuilder.build)
 
       val biasAttrBuilder = AttrValue.newBuilder
-      DataConverter.setAttributeValue(biasAttrBuilder, bias,
+      DataConverter.setAttributeValue(context, biasAttrBuilder, bias,
         universe.typeOf[Array[Tensor[_ <: Any]]])
       graphBuilder.putAttr("sharedBias", biasAttrBuilder.build)
     }
 
     val inputNamesAttrBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(inputNamesAttrBuilder,
+    DataConverter.setAttributeValue(context, inputNamesAttrBuilder,
       inputsNames, universe.typeOf[Array[String]])
     graphBuilder.putAttr("inputNames", inputNamesAttrBuilder.build)
 
     val outputNamesBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(outputNamesBuilder,
+    DataConverter.setAttributeValue(context, outputNamesBuilder,
       outputsNames, universe.typeOf[Array[String]])
     graphBuilder.putAttr("outputNames", outputNamesBuilder.build)
 

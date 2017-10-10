@@ -15,14 +15,19 @@
  */
 package com.intel.analytics.bigdl.utils.serializer
 
+import com.google.protobuf.ByteString
+
 import scala.collection.JavaConverters._
 import scala.reflect.runtime.universe
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat.{NCHW, NHWC}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
+import com.intel.analytics.bigdl.nn.quantized._
 import com.intel.analytics.bigdl.optim.{L1L2Regularizer, L1Regularizer, L2Regularizer, Regularizer}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{DenseType, QuantizedTensor, QuantizedType, Tensor, Storage}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.{NumericBoolean, NumericChar, NumericDouble, NumericFloat, NumericInt, NumericLong, NumericShort, NumericString}
+import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric.NumericByteString
 import serialization.Bigdl._
 import serialization.Bigdl.AttrValue.ArrayValue
 
@@ -38,21 +43,25 @@ trait DataConverter {
 /**
  * Get attribute value from protobuf attribute data
  * @tparam T data type
+ * @param context deserialization context
  * @param attribute  protobuf generated Attribute instance
  * @return BigDL compatible param value
  */
-  def getAttributeValue[T : ClassTag](attribute: AttrValue)(
+  def getAttributeValue[T : ClassTag](context: DeserializeContext,
+                                      attribute: AttrValue)(
     implicit ev: TensorNumeric[T]) : AnyRef
 
 /**
  * Set attribute value to protobuf format
  * @tparam T data type
+ * @param context serialization context
  * @param attributeBuilder  the attribute value writable instance
  * @param value the value to be written to protobuf file
  * @param valueType the type of the value to help set the data type
  */
-  def setAttributeValue[T : ClassTag](attributeBuilder : AttrValue.Builder, value: Any,
-                                      valueType : universe.Type = null)
+  def setAttributeValue[T : ClassTag](context: SerializeContext[T],
+                                      attributeBuilder : AttrValue.Builder, value: Any,
+                                      valueType: universe.Type = null)
     (implicit ev: TensorNumeric[T]) : Unit
 }
 
@@ -94,7 +103,7 @@ object DataConverter extends DataConverter{
     }
   }
 
-  override def getAttributeValue[T : ClassTag](attribute: AttrValue)
+  override def getAttributeValue[T : ClassTag](context: DeserializeContext, attribute: AttrValue)
     (implicit ev: TensorNumeric[T]) : AnyRef = {
     attribute.getDataType match {
       case DataType.INT32 => Integer.valueOf(attribute.getInt32Value)
@@ -103,22 +112,24 @@ object DataConverter extends DataConverter{
       case DataType.FLOAT => Float.box(attribute.getFloatValue)
       case DataType.STRING => attribute.getStringValue
       case DataType.BOOL => Boolean.box(attribute.getBoolValue)
-      case DataType.REGULARIZER => RegularizerConverter.getAttributeValue(attribute)
-      case DataType.TENSOR => TensorConverter.getAttributeValue(attribute)
-      case DataType.VARIABLE_FORMAT => VariableFormatConverter.getAttributeValue(attribute)
-      case DataType.INITMETHOD => InitMethodConverter.getAttributeValue(attribute)
-      case DataType.MODULE => ModuleConverter.getAttributeValue(attribute)
-      case DataType.NAME_ATTR_LIST => NameListConverter.getAttributeValue(attribute)
-      case DataType.ARRAY_VALUE => ArrayConverter.getAttributeValue(attribute)
-      case DataType.DATA_FORMAT => DataFormatConverter.getAttributeValue(attribute)
-      case DataType.CUSTOM => CustomConverterDelegator.getAttributeValue(attribute)
+      case DataType.REGULARIZER => RegularizerConverter.getAttributeValue(context, attribute)
+      case DataType.TENSOR => TensorConverter.getAttributeValue(context, attribute)
+      case DataType.VARIABLE_FORMAT =>
+        VariableFormatConverter.getAttributeValue(context, attribute)
+      case DataType.INITMETHOD => InitMethodConverter.getAttributeValue(context, attribute)
+      case DataType.MODULE => ModuleConverter.getAttributeValue(context, attribute)
+      case DataType.NAME_ATTR_LIST => NameListConverter.getAttributeValue(context, attribute)
+      case DataType.ARRAY_VALUE => ArrayConverter.getAttributeValue(context, attribute)
+      case DataType.DATA_FORMAT => DataFormatConverter.getAttributeValue(context, attribute)
+      case DataType.CUSTOM => CustomConverterDelegator.getAttributeValue(context, attribute)
       case _ => throw new IllegalArgumentException
         (s"${attribute.getDataType} can not be recognized")
     }
   }
 
   override def setAttributeValue[T : ClassTag](
-    attributeBuilder : AttrValue.Builder, value: Any, valueType : universe.Type = typePlaceHolder)
+    context: SerializeContext[T], attributeBuilder: AttrValue.Builder,
+    value: Any, valueType : universe.Type = typePlaceHolder)
     (implicit ev: TensorNumeric[T]): Unit = {
     // to make it compatible with Java types
     if (valueType =:= universe.typeOf[Int] ||
@@ -146,13 +157,13 @@ object DataConverter extends DataConverter{
       attributeBuilder.setDataType(DataType.BOOL )
       attributeBuilder.setBoolValue(value.asInstanceOf[Boolean])
     } else if (valueType =:= universe.typeOf[VariableFormat]) {
-      VariableFormatConverter.setAttributeValue(attributeBuilder, value)
+      VariableFormatConverter.setAttributeValue(context, attributeBuilder, value)
     } else if (valueType =:= universe.typeOf[InitializationMethod]) {
-      InitMethodConverter.setAttributeValue(attributeBuilder, value)
+      InitMethodConverter.setAttributeValue(context, attributeBuilder, value)
     } else if (valueType.toString == ModuleSerializer.regularizerType.toString) {
-      RegularizerConverter.setAttributeValue(attributeBuilder, value)
-    } else if (valueType.toString == ModuleSerializer.tensorType.toString) {
-      TensorConverter.setAttributeValue(attributeBuilder, value)
+      RegularizerConverter.setAttributeValue(context, attributeBuilder, value)
+    } else if (valueType <:< universe.typeOf[Tensor[_]]) {
+      TensorConverter.setAttributeValue(context, attributeBuilder, value)
     } else if (valueType.toString == ModuleSerializer.tType.toString) {
       if (ev == com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericDouble) {
         attributeBuilder.setDataType(DataType.DOUBLE)
@@ -166,15 +177,16 @@ object DataConverter extends DataConverter{
       || valueType.toString == ModuleSerializer.moduleType.toString
       || valueType.toString == ModuleSerializer.boundedModuleType.toString
       ) {
-      ModuleConverter.setAttributeValue(attributeBuilder, value)
+      ModuleConverter.setAttributeValue(context, attributeBuilder, value)
     } else if (value.isInstanceOf[mutable.Map[String, _ <: Any]]) {
-      NameListConverter.setAttributeValue(attributeBuilder, value)
-    } else if (valueType <:< universe.typeOf[Array[_ <: Any]] ) {
-      ArrayConverter.setAttributeValue(attributeBuilder, value, valueType)
-    } else if (valueType == universe.typeOf[DataFormat]) {
-      DataFormatConverter.setAttributeValue(attributeBuilder, value)
+      NameListConverter.setAttributeValue(context, attributeBuilder, value)
+    } else if (valueType <:< universe.typeOf[Array[_]] ||
+      valueType.typeSymbol == universe.typeOf[Array[_ ]].typeSymbol) {
+      ArrayConverter.setAttributeValue(context, attributeBuilder, value, valueType)
+    } else if (valueType =:= universe.typeOf[DataFormat]) {
+      DataFormatConverter.setAttributeValue(context, attributeBuilder, value)
     } else {
-      CustomConverterDelegator.setAttributeValue(attributeBuilder, value, valueType)
+      CustomConverterDelegator.setAttributeValue(context, attributeBuilder, value, valueType)
     }
   }
 
@@ -183,7 +195,8 @@ object DataConverter extends DataConverter{
  */
   object RegularizerConverter extends DataConverter {
 
-    override def getAttributeValue[T : ClassTag](attribute: AttrValue)
+    override def getAttributeValue[T : ClassTag](context: DeserializeContext,
+                                                 attribute: AttrValue)
       (implicit ev: TensorNumeric[T]): AnyRef = {
       val regularizer = attribute.getRegularizerValue
       val regularizerType = regularizer.getRegularizerType
@@ -205,7 +218,7 @@ object DataConverter extends DataConverter{
     }
 
     override def setAttributeValue[T : ClassTag]
-    (attributeBuilder: AttrValue.Builder, value: Any,
+    (context: SerializeContext[T], attributeBuilder: AttrValue.Builder, value: Any,
      valueType : universe.Type = null)
     (implicit ev: TensorNumeric[T]): Unit = {
       attributeBuilder.setDataType(DataType.REGULARIZER)
@@ -233,71 +246,301 @@ object DataConverter extends DataConverter{
  */
   object TensorConverter extends DataConverter {
 
-    override def getAttributeValue[T: ClassTag](attribute: AttrValue)
+    override def getAttributeValue[T: ClassTag](context: DeserializeContext,
+                                                attribute: AttrValue)
       (implicit ev: TensorNumeric[T]): AnyRef = {
       val serializedTensor = attribute.getTensorValue
+      if (!serializedTensor.hasStorage) {
+        return null
+      }
+      val storages = context.storages
+      val tensorId = serializedTensor.getId
+      if (storages.contains(tensorId)) {
+        return storages.get(tensorId).get.asInstanceOf[AnyRef]
+      }
       val dataType = serializedTensor.getDatatype
-      val sizes = serializedTensor.getSizeList.asScala
-      if (sizes.size == 0) {
-        return null;
+      val tensorType = serializedTensor.getTensorType
+      val sizes = serializedTensor.getSizeList.asScala.toArray.map(_.intValue())
+      val strides = serializedTensor.getStrideList.asScala.toArray.map(_.intValue())
+      val offSet = serializedTensor.getOffset
+      val isScalr = serializedTensor.getIsScalar
+      val serializedStorage = serializedTensor.getStorage
+      val storageId = serializedStorage.getId
+      val created = if (storages.contains(storageId)) {
+        storages.get(storageId).get
+      } else {
+        null
       }
-      if (dataType != DataType.DOUBLE && dataType != DataType.FLOAT) {
-        throw new IllegalArgumentException(s"$dataType not supported!")
+
+      def quant(): Tensor[T] = {
+        val bytes = serializedStorage.getBytesDataList.asScala.toArray.head.toByteArray
+        val serializedParams = serializedStorage.getIntDataList.asScala.toArray.map(_.intValue())
+        val paramsNum = serializedParams.head
+        val paramsArray = serializedParams.slice(1, paramsNum + 1)
+        val descTypeEnum = serializedParams(1 + paramsNum)
+
+        val start = paramsNum + 2 // params number indicator + params number + desc type
+
+        val length = if (sizes.length == 1) {
+          1 // if the size is 1, means it's a vector
+        } else {
+          sizes(0)
+        }
+        val max = new Array[T](length)
+        val min = new Array[T](length)
+        val sum = new Array[T](length)
+
+        dataType match {
+          case DataType.FLOAT =>
+            val data = serializedStorage.getFloatDataList.asScala.toArray.map(_.floatValue())
+            var i = 0
+            while (i < length) {
+              max(i) = ev.fromType[Float](data(i))
+              min(i) = ev.fromType[Float](data(i + length))
+              sum(i) = ev.fromType[Float](data(i + 2 * length))
+              i += 1
+            }
+        }
+
+        var params: DescParams = null
+
+        descTypeEnum match {
+          case 0 =>
+            params = ConvDataParams(paramsArray)
+          case 1 =>
+            params = ConvWeightParams(paramsArray)
+          case 2 =>
+            params = LinearDataParams(paramsArray)
+          case 3 =>
+            params = LinearWeightParams(paramsArray)
+        }
+
+        QuantizedTensor[T](bytes, max, min, sum, sizes, params)
       }
-      val strorageArray : Array[T] = dataType match {
+
+      val tensor = dataType match {
         case DataType.FLOAT =>
-          val data = serializedTensor.getFloatDataList.asScala
-          val strorageArray = new Array[T](data.size)
-          var i = 0;
-          while (i < data.size) {
-            strorageArray(i) = ev.fromType[Float](data(i))
-            i += 1
+          tensorType match {
+            case TensorType.DENSE =>
+              val storage : Storage[Float] = if (created == null ) {
+                val data = serializedStorage.getFloatDataList.asScala.toArray.map(_.floatValue())
+                val newStorage = Storage[Float](data)
+                storages(storageId) = newStorage
+                newStorage
+              } else created.asInstanceOf[Storage[Float]]
+              Tensor[Float](storage, offSet, sizes, strides)
+            case TensorType.QUANT => quant()
           }
-          strorageArray
         case DataType.DOUBLE =>
-          val data = serializedTensor.getDoubleDataList.asScala
-          val strorageArray = new Array[T](data.size)
-          var i = 0;
-          while (i < data.size) {
-            strorageArray(i) = ev.fromType[Double](data(i))
-            i += 1
-          }
-          strorageArray
+          val storage : Storage[Double] = if (created == null ) {
+            val data = serializedStorage.getDoubleDataList.asScala.toArray.map(_.doubleValue())
+            val newStorage = Storage[Double](data)
+            storages(storageId) = newStorage
+            newStorage
+          } else created.asInstanceOf[Storage[Double]]
+          Tensor[Double](storage, offSet, sizes, strides)
+        case DataType.BOOL =>
+          val storage : Storage[Boolean] = if (created == null ) {
+            val data = serializedStorage.getBoolDataList.asScala.toArray.map(_.booleanValue())
+            val newStorage = Storage[Boolean](data)
+            storages(storageId) = newStorage
+            newStorage
+          } else created.asInstanceOf[Storage[Boolean]]
+          Tensor[Boolean](storage, offSet, sizes, strides)
+        case DataType.CHAR =>
+          val storage: Storage[Char] = if (created == null ) {
+            val data = serializedStorage.getIntDataList.asScala.toArray.map(_.toChar.charValue())
+            val newStorage = Storage[Char](data)
+            storages(storageId) = newStorage
+            newStorage
+          } else created.asInstanceOf[Storage[Char]]
+          Tensor[Char](storage, offSet, sizes, strides)
+        case DataType.STRING =>
+          val storage: Storage[String] = if (created == null ) {
+            val data = serializedStorage.getStringDataList.asScala.toArray
+            val newStorage = Storage[String](data)
+            storages(storageId) = newStorage
+            newStorage
+          } else created.asInstanceOf[Storage[String]]
+          Tensor[String](storage, offSet, sizes, strides)
+        case DataType.INT32 =>
+          val storage: Storage[Int] = if (created == null ) {
+            val data = serializedStorage.getIntDataList.asScala.toArray.map(_.intValue())
+            val newStorage = Storage[Int](data)
+            storages(storageId) = newStorage
+            newStorage
+          } else created.asInstanceOf[Storage[Int]]
+          Tensor[Int](storage, offSet, sizes, strides)
+        case DataType.SHORT =>
+          val storage: Storage[Short] = if (created == null ) {
+            val data = serializedStorage.getIntDataList.asScala.toArray.map(_.shortValue())
+            val newStorage = Storage[Short](data)
+            storages(storageId) = newStorage
+            newStorage
+          } else created.asInstanceOf[Storage[Short]]
+          Tensor[Short](storage, offSet, sizes, strides)
+        case DataType.INT64 =>
+          val storage: Storage[Long] = if (created == null ) {
+            val data = serializedStorage.getLongDataList.asScala.toArray.map(_.longValue())
+            val newStorage = Storage[Long](data)
+            storages(storageId) = newStorage
+            newStorage
+          } else created.asInstanceOf[Storage[Long]]
+          Tensor[Long](storage, offSet, sizes, strides)
+        case DataType.BYTES =>
+          val storage: Storage[ByteString] = if (created == null ) {
+            val data = serializedStorage.getBytesDataList.asScala.toArray
+            val newStorage = Storage[ByteString](data)
+            storages(storageId) = newStorage
+            newStorage
+          } else created.asInstanceOf[Storage[ByteString]]
+          Tensor[ByteString](storage, offSet, sizes, strides)
         case _ => throw new IllegalArgumentException(s"$dataType not supported in tensor now !")
       }
-      val sizeArray = new Array[Int](sizes.size)
-      var i = 0;
-      while (i < sizes.size) {
-        sizeArray(i) = sizes(i)
-        i += 1
+      storages(tensorId) = tensor
+      tensor
+    }
+
+    private def setStorage[T: ClassTag](context: SerializeContext[T],
+      tensorBuilder: BigDLTensor.Builder, tensor: Tensor[_]): Unit = {
+      val tensorNumeric = tensor.getTensorNumeric()
+      val storageType = context.storageType
+
+      val storageId = tensor.getTensorType match {
+        case DenseType =>
+          System.identityHashCode(tensor.storage().array())
+        case QuantizedType =>
+          System.identityHashCode(tensor.asInstanceOf[QuantizedTensor[T]].getStorage)
       }
-      Tensor[T](strorageArray, sizeArray)
+
+      val storages = context.storages
+      if (storageType == ProtoStorageType) {
+        if (storages.contains(storageId)) {
+          val storage = storages(storageId).asInstanceOf[TensorStorage]
+          tensorBuilder.setStorage(storage)
+          // we should set back the datatype from existed storage
+          tensorBuilder.setDatatype(storage.getDatatype)
+        } else {
+          val storageBuilder = TensorStorage.newBuilder
+          if (tensorNumeric == NumericFloat) {
+            tensorBuilder.setDatatype(DataType.FLOAT)
+            storageBuilder.setDatatype(DataType.FLOAT)
+            tensor.getTensorType match {
+              case DenseType =>
+                tensor.storage().array().asInstanceOf[Array[Float]].
+                  foreach(data => storageBuilder.addFloatData(data))
+              case QuantizedType =>
+                val quantTensor = tensor.asInstanceOf[QuantizedTensor[Float]]
+                val bytes = quantTensor.getStorage
+                val bs = ByteString.copyFrom(bytes)
+                storageBuilder.addBytesData(bs)
+
+                // max, min, and sum
+                quantTensor.maxOfRow.foreach(data => storageBuilder.addFloatData(data))
+                quantTensor.minOfRow.foreach(data => storageBuilder.addFloatData(data))
+                quantTensor.sumOfRow.foreach(data => storageBuilder.addFloatData(data))
+
+                // params and desc type
+                val params = quantTensor.params.array
+                storageBuilder.addIntData(params.length)
+                params.foreach(param => storageBuilder.addIntData(param.asInstanceOf[Int]))
+
+                quantTensor.params.getType match {
+                  case ConvData => storageBuilder.addIntData(0)
+                  case ConvWeight => storageBuilder.addIntData(1)
+                  case LinearData => storageBuilder.addIntData(2)
+                  case LinearWeight => storageBuilder.addIntData(3)
+                }
+            }
+          } else if (tensorNumeric == NumericDouble) {
+            tensorBuilder.setDatatype(DataType.DOUBLE)
+            storageBuilder.setDatatype(DataType.DOUBLE)
+            tensor.storage().array().asInstanceOf[Array[Double]].
+              foreach(data => storageBuilder.addDoubleData(data))
+          } else if (tensorNumeric == NumericChar) {
+            tensorBuilder.setDatatype(DataType.CHAR)
+            storageBuilder.setDatatype(DataType.CHAR)
+            tensor.storage().array().asInstanceOf[Array[Char]].
+              foreach(data => storageBuilder.addIntData(data))
+          } else if (tensorNumeric == NumericBoolean) {
+            tensorBuilder.setDatatype(DataType.BOOL)
+            storageBuilder.setDatatype(DataType.BOOL)
+            tensor.storage().array().asInstanceOf[Array[Boolean]].
+              foreach(data => storageBuilder.addBoolData(data))
+          } else if (tensorNumeric == NumericString) {
+            tensorBuilder.setDatatype(DataType.STRING)
+            storageBuilder.setDatatype(DataType.STRING)
+            tensor.storage().array().asInstanceOf[Array[String]].
+              foreach(data => storageBuilder.addStringData(data))
+          } else if (tensorNumeric == NumericInt) {
+            tensorBuilder.setDatatype(DataType.INT32)
+            storageBuilder.setDatatype(DataType.INT32)
+            tensor.storage().array().asInstanceOf[Array[Int]].
+              foreach(data => storageBuilder.addIntData(data))
+          } else if (tensorNumeric == NumericShort) {
+            tensorBuilder.setDatatype(DataType.SHORT)
+            storageBuilder.setDatatype(DataType.SHORT)
+            tensor.storage().array().asInstanceOf[Array[Short]].
+              foreach(data => storageBuilder.addIntData(data))
+          } else if (tensorNumeric == NumericLong) {
+            tensorBuilder.setDatatype(DataType.INT64)
+            storageBuilder.setDatatype(DataType.INT64)
+            tensor.storage().array().asInstanceOf[Array[Long]].
+              foreach(data => storageBuilder.addLongData(data))
+          } else if (tensorNumeric == NumericByteString) {
+            tensorBuilder.setDatatype(DataType.BYTES)
+            storageBuilder.setDatatype(DataType.BYTES)
+            tensor.storage().array().asInstanceOf[Array[ByteString]].
+              foreach(data => storageBuilder.addBytesData(data))
+          }
+          storageBuilder.setId(storageId)
+          val storage = storageBuilder.build
+          tensorBuilder.setStorage(storage)
+          storages(storageId) = storage
+        }
+      } else {
+        throw new IllegalArgumentException(s"$storageType not supported")
+      }
     }
 
     override def setAttributeValue[T: ClassTag]
-      (attributeBuilder: AttrValue.Builder, value: Any,
+      (context: SerializeContext[T], attributeBuilder: AttrValue.Builder, value: Any,
        valueType : universe.Type = null)
       (implicit ev: TensorNumeric[T]): Unit = {
-      import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
-      import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericDouble
       attributeBuilder.setDataType(DataType.TENSOR)
       if (value != null) {
-        val tensor = value.asInstanceOf[Tensor[T]]
-        val tensorBuilder = BigDLTensor.newBuilder
-        if (ev == NumericFloat) {
-          tensorBuilder.setDatatype(DataType.FLOAT)
-          tensor.storage().array().foreach(data => tensorBuilder.
-            addFloatData(ev.toType[Float](data)))
-        } else if (ev == NumericDouble) {
-          tensorBuilder.setDatatype(DataType.DOUBLE)
-          tensor.storage().array().foreach(data => tensorBuilder.
-            addDoubleData(ev.toType[Float](data)))
+        val tensor = value.asInstanceOf[Tensor[_]]
+        val tensorId = System.identityHashCode(tensor)
+        val storages = context.storages
+        // Check if tensor has been shared
+        if (storages.contains(tensorId)) {
+          attributeBuilder.setTensorValue(storages.get(tensorId).get
+            .asInstanceOf[BigDLTensor])
+        } else {
+          val totalElement = tensor.nElement()
+          val dimension = tensor.dim()
+          val tensorBuilder = BigDLTensor.newBuilder
+          tensorBuilder.setId(tensorId)
+          tensorBuilder.setDimension(dimension)
+          tensorBuilder.setNElements(totalElement)
+          tensor.getTensorType match {
+            case DenseType =>
+              tensorBuilder.setOffset(tensor.storageOffset())
+              tensorBuilder.setIsScalar(tensor.isScalar)
+              tensorBuilder.setTensorType(TensorType.DENSE)
+            case QuantizedType =>
+              tensorBuilder.setTensorType(TensorType.QUANT)
+          }
+
+          tensor.size().foreach(size => tensorBuilder.addSize(size))
+          tensor.stride().foreach(stride => tensorBuilder.addStride(stride))
+          setStorage(context, tensorBuilder, tensor)
+          val tensorBuild = tensorBuilder.build
+          attributeBuilder.setTensorValue(tensorBuild)
+          storages(tensorId) = tensorBuild
         }
-        tensor.size().foreach(size => tensorBuilder.addSize(size))
-        attributeBuilder.setTensorValue(tensorBuilder.build)
       }
     }
-
   }
 
 /**
@@ -305,7 +548,7 @@ object DataConverter extends DataConverter{
  */
   object VariableFormatConverter extends DataConverter {
 
-    override def getAttributeValue[T: ClassTag](attribute: AttrValue)
+    override def getAttributeValue[T: ClassTag](context: DeserializeContext, attribute: AttrValue)
       (implicit ev: TensorNumeric[T]): AnyRef = {
       val format = attribute.getVariableFormatValue
       format match {
@@ -322,7 +565,8 @@ object DataConverter extends DataConverter{
       }
     }
 
-    override def setAttributeValue[T: ClassTag](attributeBuilder: AttrValue.Builder,
+    override def setAttributeValue[T: ClassTag](
+    context: SerializeContext[T], attributeBuilder: AttrValue.Builder,
       value: Any, valueType: universe.Type = null)(implicit ev: TensorNumeric[T]): Unit = {
       attributeBuilder.setDataType(DataType.VARIABLE_FORMAT)
       if (value != null) {
@@ -349,7 +593,7 @@ object DataConverter extends DataConverter{
  */
   object InitMethodConverter extends DataConverter {
 
-    override def getAttributeValue[T: ClassTag](attribute: AttrValue)
+    override def getAttributeValue[T: ClassTag](context: DeserializeContext, attribute: AttrValue)
       (implicit ev: TensorNumeric[T]): AnyRef = {
       val initMemethod = attribute.getInitMethodValue
       val initType = initMemethod.getMethodType
@@ -369,7 +613,8 @@ object DataConverter extends DataConverter{
       }
    }
 
-    override def setAttributeValue[T: ClassTag](attributeBuilder: AttrValue.Builder,
+    override def setAttributeValue[T: ClassTag](
+    context: SerializeContext[T], attributeBuilder: AttrValue.Builder,
       value: Any, valueType: universe.Type = null)(implicit ev: TensorNumeric[T]): Unit = {
       attributeBuilder.setDataType(DataType.INITMETHOD)
       val initMethodBuilder = InitMethod.newBuilder
@@ -410,7 +655,7 @@ object DataConverter extends DataConverter{
    * DataConverter for [[com.intel.analytics.bigdl.nn.abstractnn.DataFormat]]
    */
   object DataFormatConverter extends DataConverter {
-    override def getAttributeValue[T: ClassTag](attribute: AttrValue)
+    override def getAttributeValue[T: ClassTag](context: DeserializeContext, attribute: AttrValue)
       (implicit ev: TensorNumeric[T]): AnyRef = {
       val dataFormat = attribute.getDataFormatValue
       dataFormat match {
@@ -421,7 +666,8 @@ object DataConverter extends DataConverter{
     }
 
     override def setAttributeValue[T: ClassTag]
-    (attributeBuilder: AttrValue.Builder, value: Any, valueType: universe.Type)
+    (context: SerializeContext[T],
+     attributeBuilder: AttrValue.Builder, value: Any, valueType: universe.Type)
     (implicit ev: TensorNumeric[T]): Unit = {
       attributeBuilder.setDataType(DataType.DATA_FORMAT)
       if (value != null) {
@@ -440,24 +686,27 @@ object DataConverter extends DataConverter{
  */
   object ModuleConverter extends DataConverter {
 
-    override def getAttributeValue[T: ClassTag](attribute: AttrValue)
+    override def getAttributeValue[T: ClassTag](context: DeserializeContext, attribute: AttrValue)
      (implicit ev: TensorNumeric[T]): AnyRef = {
      val serializedModule = attribute.getBigDLModuleValue
       if (serializedModule.getModuleType != null && serializedModule.getModuleType != "") {
-        ModuleSerializer.load(serializedModule).module
+        ModuleSerializer.load(DeserializeContext(serializedModule,
+            context.storages, context.storageType)).module
       } else {
         null
       }
    }
 
-    override def setAttributeValue[T: ClassTag](attributeBuilder: AttrValue.Builder,
+    override def setAttributeValue[T: ClassTag](context: SerializeContext[T],
+      attributeBuilder: AttrValue.Builder,
       value: Any, valueType: universe.Type = null)(implicit ev: TensorNumeric[T]): Unit = {
       attributeBuilder.setDataType(DataType.MODULE)
       if (value != null) {
         val module = value.asInstanceOf[AbstractModule[Activity, Activity, T]]
         val serializableModule = ModuleSerializer.
-          serialize(ModuleData(module, Seq[String](), Seq[String]()))
-        attributeBuilder.setBigDLModuleValue(serializableModule)
+            serialize(SerializeContext(ModuleData(module, Seq[String](), Seq[String]()),
+              context.storages, context.storageType)).bigDLModule
+          attributeBuilder.setBigDLModuleValue(serializableModule)
       }
     }
   }
@@ -468,7 +717,7 @@ object DataConverter extends DataConverter{
   object NameListConverter extends DataConverter {
 
     override def getAttributeValue[T: ClassTag]
-      (attribute: AttrValue)(implicit ev: TensorNumeric[T]): AnyRef = {
+      (context: DeserializeContext, attribute: AttrValue)(implicit ev: TensorNumeric[T]): AnyRef = {
       val nameListMap = new mutable.HashMap[String, mutable.Map[String, Any]]()
       val listMap = new mutable.HashMap[String, Any]()
       val nameAttrListValue = attribute.getNameAttrListValue
@@ -476,14 +725,15 @@ object DataConverter extends DataConverter{
       nameAttrListValue.getAttrMap.asScala.foreach(attributePair => {
         val name = attributePair._1
         val attrValue = attributePair._2
-        val convetedObj = DataConverter.getAttributeValue(attrValue)
+        val convetedObj = DataConverter.getAttributeValue(context, attrValue)
         listMap(name) = convetedObj
       })
       nameListMap(listName) = listMap
       nameListMap
     }
 
-    override def setAttributeValue[T: ClassTag](attributeBuilder: AttrValue.Builder,
+    override def setAttributeValue[T: ClassTag](context: SerializeContext[T],
+      attributeBuilder: AttrValue.Builder,
       value: Any, valueType: universe.Type = null)(implicit ev: TensorNumeric[T]): Unit = {
       attributeBuilder.setDataType(DataType.NAME_ATTR_LIST)
       val listMap = value.asInstanceOf[mutable.Map[String, mutable.Map[String, Any]]]
@@ -494,7 +744,7 @@ object DataConverter extends DataConverter{
         val name = attributePair._1
         val obj = attributePair._2
         val nextedAttr = AttrValue.newBuilder
-        DataConverter.setAttributeValue(nextedAttr, obj, getRuntimeType(obj))
+        DataConverter.setAttributeValue(context, nextedAttr, obj, getRuntimeType(obj))
         nameAttrList.putAttr(name, nextedAttr.build)
       })
       attributeBuilder.setNameAttrListValue(nameAttrList.build)
@@ -510,25 +760,43 @@ object DataConverter extends DataConverter{
   object ArrayConverter extends DataConverter {
 
     override def getAttributeValue[T: ClassTag]
-    (attribute: AttrValue)(implicit ev: TensorNumeric[T]): AnyRef = {
+    (context: DeserializeContext, attribute: AttrValue)(implicit ev: TensorNumeric[T]): AnyRef = {
       val valueArray = attribute.getArrayValue
       val size = valueArray.getSize
-      if (size == 0) {
+      if (size == -1) {
         return null
       }
       val listType = valueArray.getDatatype
       val arr = listType match {
         case DataType.INT32 =>
+          if (size == 0) {
+            return new Array[Int](0)
+          }
           valueArray.getI32List.asScala.toArray.map(_.intValue)
         case DataType.INT64 =>
+          if (size == 0) {
+            return new Array[Long](0)
+          }
           valueArray.getI64List.asScala.toArray.map(_.longValue())
         case DataType.DOUBLE =>
+          if (size == 0) {
+            return new Array[Double](0)
+          }
           valueArray.getDblList.asScala.toArray.map(_.doubleValue())
         case DataType.FLOAT =>
+          if (size == 0) {
+            return new Array[Float](0)
+          }
           valueArray.getFltList.asScala.toArray.map(_.floatValue())
         case DataType.STRING =>
+          if (size == 0) {
+            return new Array[String](0)
+          }
           valueArray.getStrList.asScala.toArray
         case DataType.BOOL =>
+          if (size == 0) {
+            return new Array[Boolean](0)
+          }
           valueArray.getBooleanList.asScala.toArray.map(_.booleanValue())
         case DataType.REGULARIZER =>
           val regularizers = new Array[Regularizer[T]](size)
@@ -539,7 +807,7 @@ object DataConverter extends DataConverter{
             attrValue.setDataType(DataType.REGULARIZER)
             attrValue.setRegularizerValue(reg)
             regularizers(i) = RegularizerConverter.
-              getAttributeValue(attrValue.build).asInstanceOf[Regularizer[T]]
+              getAttributeValue(context, attrValue.build).asInstanceOf[Regularizer[T]]
             i += 1
           })
           regularizers
@@ -552,7 +820,7 @@ object DataConverter extends DataConverter{
             attrValue.setDataType(DataType.TENSOR)
             attrValue.setTensorValue(tensor)
             tensors(i) = TensorConverter.
-              getAttributeValue(attrValue.build).asInstanceOf[Tensor[T]]
+              getAttributeValue(context, attrValue.build).asInstanceOf[Tensor[T]]
             i += 1
           })
           tensors
@@ -565,7 +833,7 @@ object DataConverter extends DataConverter{
             attrValue.setDataType(DataType.VARIABLE_FORMAT)
             attrValue.setVariableFormatValue(format)
             formats(i) = VariableFormatConverter.
-              getAttributeValue(attrValue.build).asInstanceOf[VariableFormat]
+              getAttributeValue(context, attrValue.build).asInstanceOf[VariableFormat]
           })
           formats
         case DataType.INITMETHOD =>
@@ -576,7 +844,7 @@ object DataConverter extends DataConverter{
             val attrValue = AttrValue.newBuilder
             attrValue.setDataType(DataType.INITMETHOD)
             attrValue.setInitMethodValue(method)
-            methods(i) = InitMethodConverter.getAttributeValue(attrValue.build)
+            methods(i) = InitMethodConverter.getAttributeValue(context, attrValue.build)
             .asInstanceOf[InitializationMethod]
             i += 1
           })
@@ -589,8 +857,8 @@ object DataConverter extends DataConverter{
             val attrValue = AttrValue.newBuilder
             attrValue.setDataType(DataType.MODULE)
             attrValue.setBigDLModuleValue(module)
-            modules(i) = ModuleConverter.
-              getAttributeValue(attrValue.build).asInstanceOf[AbstractModule[Activity, Activity, T]]
+            modules(i) = ModuleConverter.getAttributeValue(context, attrValue.build)
+              .asInstanceOf[AbstractModule[Activity, Activity, T]]
             i += 1
           })
           modules
@@ -602,7 +870,7 @@ object DataConverter extends DataConverter{
             val attrValue = AttrValue.newBuilder
             attrValue.setDataType(DataType.NAME_ATTR_LIST)
             attrValue.setNameAttrListValue(nameList)
-            nameArray(i) = NameListConverter.getAttributeValue(attrValue.build)
+            nameArray(i) = NameListConverter.getAttributeValue(context, attrValue.build)
               .asInstanceOf[Map[String, Map[String, Any]]]
             i += 1
           })
@@ -616,7 +884,7 @@ object DataConverter extends DataConverter{
             attrValue.setDataType(DataType.DATA_FORMAT)
             attrValue.setDataFormatValue(format)
             dataFormats(i) = DataFormatConverter.
-              getAttributeValue(attrValue.build).asInstanceOf[DataFormat]
+              getAttributeValue(context, attrValue.build).asInstanceOf[DataFormat]
             i += 1
           })
           dataFormats
@@ -629,7 +897,7 @@ object DataConverter extends DataConverter{
             attrValue.setDataType(DataType.CUSTOM)
             attrValue.setCustomValue(custom)
             customValues(i) = CustomConverterDelegator.
-              getAttributeValue(attrValue.build)
+              getAttributeValue(context, attrValue.build)
             i += 1
           })
           customValues
@@ -637,11 +905,12 @@ object DataConverter extends DataConverter{
       arr
     }
 
-    override def setAttributeValue[T: ClassTag](attributeBuilder: AttrValue.Builder,
+    override def setAttributeValue[T: ClassTag](context: SerializeContext[T],
+                                                attributeBuilder: AttrValue.Builder,
       value: Any, valueType: universe.Type = null)(implicit ev: TensorNumeric[T]): Unit = {
       attributeBuilder.setDataType(DataType.ARRAY_VALUE)
       val arrayBuilder = ArrayValue.newBuilder
-      arrayBuilder.setSize(0)
+      arrayBuilder.setSize(-1)
       if (valueType =:= universe.typeOf[Array[Int]]) {
         arrayBuilder.setDatatype(DataType.INT32)
         if (value != null) {
@@ -690,7 +959,7 @@ object DataConverter extends DataConverter{
           val regularizers = value.asInstanceOf[Array[Regularizer[T]]]
           regularizers.foreach(reg => {
             val attrValueBuilder = AttrValue.newBuilder
-            RegularizerConverter.setAttributeValue(attrValueBuilder, reg)
+            RegularizerConverter.setAttributeValue(context, attrValueBuilder, reg)
             arrayBuilder.addRegularizer(attrValueBuilder.getRegularizerValue)
           })
           arrayBuilder.setSize(regularizers.size)
@@ -702,7 +971,7 @@ object DataConverter extends DataConverter{
           val tensors = value.asInstanceOf[Array[Tensor[T]]]
           tensors.foreach(tensor => {
             val attrValueBuilder = AttrValue.newBuilder
-            TensorConverter.setAttributeValue(attrValueBuilder, tensor)
+            TensorConverter.setAttributeValue(context, attrValueBuilder, tensor)
             arrayBuilder.addTensor(attrValueBuilder.getTensorValue)
           })
           arrayBuilder.setSize(tensors.size)
@@ -713,7 +982,7 @@ object DataConverter extends DataConverter{
           val formats = value.asInstanceOf[Array[VariableFormat]]
           formats.foreach(format => {
             val attrValueBuilder = AttrValue.newBuilder
-            VariableFormatConverter.setAttributeValue(attrValueBuilder, format)
+            VariableFormatConverter.setAttributeValue(context, attrValueBuilder, format)
             arrayBuilder.addVariableFormat(attrValueBuilder.getVariableFormatValue)
           })
           arrayBuilder.setSize(formats.size)
@@ -724,7 +993,7 @@ object DataConverter extends DataConverter{
           val methods = value.asInstanceOf[Array[InitializationMethod]]
           methods.foreach(method => {
             val attrValueBuilder = AttrValue.newBuilder
-            InitMethodConverter.setAttributeValue(attrValueBuilder, method)
+            InitMethodConverter.setAttributeValue(context, attrValueBuilder, method)
             arrayBuilder.addInitMethod(attrValueBuilder.getInitMethodValue)
           })
           arrayBuilder.setSize(methods.size)
@@ -736,7 +1005,7 @@ object DataConverter extends DataConverter{
           val modules = value.asInstanceOf[Array[_ <: AbstractModule[Activity, Activity, T]]]
           modules.foreach(module => {
             val attrValueBuilder = AttrValue.newBuilder
-            ModuleConverter.setAttributeValue(attrValueBuilder, module)
+            ModuleConverter.setAttributeValue(context, attrValueBuilder, module)
             arrayBuilder.addBigDLModule(attrValueBuilder.getBigDLModuleValue)
           })
           arrayBuilder.setSize(modules.size)
@@ -745,7 +1014,7 @@ object DataConverter extends DataConverter{
         arrayBuilder.setDatatype(DataType.NAME_ATTR_LIST)
         value.asInstanceOf[Array[Map[String, Any]]].foreach(map => {
           val attrValueBuilder = AttrValue.newBuilder
-          NameListConverter.setAttributeValue(attrValueBuilder, map)
+          NameListConverter.setAttributeValue(context, attrValueBuilder, map)
           arrayBuilder.addNameAttrList(attrValueBuilder.getNameAttrListValue)
         })
       } else if (valueType =:= universe.typeOf[Array[DataFormat]]) {
@@ -754,7 +1023,7 @@ object DataConverter extends DataConverter{
           val formats = value.asInstanceOf[Array[DataFormat]]
           formats.foreach(format => {
             val attrValueBuilder = AttrValue.newBuilder
-            DataFormatConverter.setAttributeValue(attrValueBuilder, format)
+            DataFormatConverter.setAttributeValue(context, attrValueBuilder, format)
             arrayBuilder.addDataFormat(attrValueBuilder.getDataFormatValue)
           })
           arrayBuilder.setSize(formats.size)
@@ -765,7 +1034,7 @@ object DataConverter extends DataConverter{
           val customValues = value.asInstanceOf[Array[Any]]
           customValues.foreach(custom => {
             val attrValueBuilder = AttrValue.newBuilder
-            CustomConverterDelegator.setAttributeValue(attrValueBuilder, custom)
+            CustomConverterDelegator.setAttributeValue(context, attrValueBuilder, custom)
             arrayBuilder.addCustom(attrValueBuilder.getCustomValue)
           })
           arrayBuilder.setSize(customValues.size)
@@ -779,21 +1048,22 @@ object DataConverter extends DataConverter{
    * DataConvert for custom value
    */
   object CustomConverterDelegator extends DataConverter {
-    override def getAttributeValue[T: ClassTag](attribute: AttrValue)
+    override def getAttributeValue[T: ClassTag](context: DeserializeContext, attribute: AttrValue)
                                                (implicit ev: TensorNumeric[T]): AnyRef = {
       val subType = attribute.getSubType
       require(customizedConverter.contains(subType), s"unrecognized type $subType")
       val customConverter = customizedConverter.get(subType).get
-      customConverter.getAttributeValue(attribute)
+      customConverter.getAttributeValue(context, attribute)
     }
 
-    override def setAttributeValue[T: ClassTag](attributeBuilder: AttrValue.Builder,
+    override def setAttributeValue[T: ClassTag](context: SerializeContext[T],
+                                                attributeBuilder: AttrValue.Builder,
       value: Any, valueType: universe.Type)(implicit ev: TensorNumeric[T]): Unit = {
       require(customizedConverter.contains(valueType.toString), s"unrecognized type $valueType")
       val customConverter = customizedConverter.get(valueType.toString).get
       attributeBuilder.setDataType(DataType.CUSTOM)
       attributeBuilder.setSubType(valueType.toString)
-      customConverter.setAttributeValue(attributeBuilder, value, valueType)
+      customConverter.setAttributeValue(context, attributeBuilder, value, valueType)
     }
   }
 }
