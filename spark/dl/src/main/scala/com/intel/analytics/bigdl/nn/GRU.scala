@@ -69,7 +69,7 @@ class GRU[T : ClassTag] (
 
   override var cell: AbstractModule[Activity, Activity, T] = buildModel()
 
-  override val preTopology: TensorModule[T] =
+  override def preTopology: TensorModule[T] =
   if (p != 0) { null } else {
     Linear(inputSize, 3 * outputSize,
       wRegularizer = wRegularizer, bRegularizer = bRegularizer)

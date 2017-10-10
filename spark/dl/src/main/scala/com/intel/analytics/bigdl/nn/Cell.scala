@@ -85,7 +85,7 @@ abstract class Cell[T : ClassTag](
 
   private[nn] var includePreTopology: Boolean = false
 
-  private val gradInput2PreTopology = Tensor[T]()
+//  private val gradInput2PreTopology = Tensor[T]()
 
   def hiddenSizeOfPreTopo: Int = hiddensShape(0)
 
@@ -153,8 +153,8 @@ abstract class Cell[T : ClassTag](
       val inputTensor = input.toTable[Tensor[T]](Recurrent.inputDim)
       input(Recurrent.inputDim) = preTopology.output
       gradInput = cell.updateGradInput(input, gradOutput).toTable
-      gradInput2PreTopology.resizeAs(gradInput.toTable[Tensor[T]](Recurrent.inputDim))
-      gradInput2PreTopology.copy(gradInput.toTable[Tensor[T]](Recurrent.inputDim))
+//      gradInput2PreTopology.resizeAs(gradInput.toTable[Tensor[T]](Recurrent.inputDim))
+//      gradInput2PreTopology.copy(gradInput.toTable[Tensor[T]](Recurrent.inputDim))
       gradInput(Recurrent.inputDim) =
         preTopology.updateGradInput(inputTensor, gradInput.toTable[Tensor[T]](Recurrent.inputDim))
       input(Recurrent.inputDim) = inputTensor
@@ -169,7 +169,7 @@ abstract class Cell[T : ClassTag](
       val inputTensor = input.toTable[Tensor[T]](Recurrent.inputDim)
       input(Recurrent.inputDim) = preTopology.output
       cell.accGradParameters(input, gradOutput)
-      preTopology.accGradParameters(inputTensor, gradInput2PreTopology)
+//      preTopology.accGradParameters(inputTensor, gradInput2PreTopology)
       input(Recurrent.inputDim) = inputTensor
     } else {
       cell.accGradParameters(input, gradOutput)

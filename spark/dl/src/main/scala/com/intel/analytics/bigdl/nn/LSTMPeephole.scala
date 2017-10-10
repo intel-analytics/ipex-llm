@@ -76,9 +76,12 @@ class LSTMPeephole[T : ClassTag] (
         .add(SelectTable(1))
         .add(NarrowTable(2, 2)))
 
-  override val preTopology: TensorModule[T] =
-    Linear(inputSize, hiddenSize * 4, wRegularizer = wRegularizer,
-        bRegularizer = bRegularizer)
+  override def preTopology: TensorModule[T] = if (p != 0) {
+    null
+  } else {
+    Linear(inputSize, 4 * hiddenSize,
+      wRegularizer = wRegularizer, bRegularizer = bRegularizer)
+  }
 
   override def hiddenSizeOfPreTopo: Int = hiddenSize * 4
 
@@ -89,12 +92,45 @@ class LSTMPeephole[T : ClassTag] (
     /**
      * f(input1 + U * input2)
      */
+    var i2g: ModuleNode[T] = null
+    var h2g: ModuleNode[T] = null
+    if (p != 0) {
+      val dropi2g1 = Dropout(p).inputs(input1)
+      val dropi2g2 = Dropout(p).inputs(input1)
+      val dropi2g3 = Dropout(p).inputs(input1)
+      val dropi2g4 = Dropout(p).inputs(input1)
 
-    val inputAfterDrop = Dropout(p).inputs(input1)
-    val i2g = Narrow(dimension, offset, length).inputs(inputAfterDrop)
-    val drop = Dropout(p).inputs(input2)
-    val h2g = Linear(hiddenSize, hiddenSize,
-      withBias = false, wRegularizer = uRegularizer).inputs(drop)
+      val lineari2g1 = Linear(inputSize, hiddenSize,
+        wRegularizer = wRegularizer, bRegularizer = bRegularizer).inputs(dropi2g1)
+      val lineari2g2 = Linear(inputSize, hiddenSize,
+        wRegularizer = wRegularizer, bRegularizer = bRegularizer).inputs(dropi2g2)
+      val lineari2g3 = Linear(inputSize, hiddenSize,
+        wRegularizer = wRegularizer, bRegularizer = bRegularizer).inputs(dropi2g3)
+      val lineari2g4 = Linear(inputSize, hiddenSize,
+        wRegularizer = wRegularizer, bRegularizer = bRegularizer).inputs(dropi2g4)
+
+      i2g = JoinTable(1, 1).inputs(lineari2g1, lineari2g2, lineari2g3, lineari2g4)
+
+      val droph2g1 = Dropout(p).inputs(input2)
+      val droph2g2 = Dropout(p).inputs(input2)
+      val droph2g3 = Dropout(p).inputs(input2)
+      val droph2g4 = Dropout(p).inputs(input2)
+
+      val linearh2g1 = Linear(hiddenSize, hiddenSize,
+        wRegularizer = wRegularizer, bRegularizer = bRegularizer).inputs(droph2g1)
+      val linearh2g2 = Linear(hiddenSize, hiddenSize,
+        wRegularizer = wRegularizer, bRegularizer = bRegularizer).inputs(droph2g2)
+      val linearh2g3 = Linear(hiddenSize, hiddenSize,
+        wRegularizer = wRegularizer, bRegularizer = bRegularizer).inputs(droph2g3)
+      val linearh2g4 = Linear(hiddenSize, hiddenSize,
+        wRegularizer = wRegularizer, bRegularizer = bRegularizer).inputs(droph2g4)
+
+      h2g = JoinTable(1, 1).inputs(linearh2g1, linearh2g2, linearh2g3, linearh2g4)
+    } else {
+      i2g = Narrow(dimension, offset, length).inputs(input1)
+      h2g = Linear(hiddenSize, hiddenSize,
+        withBias = false, wRegularizer = uRegularizer).inputs(input2)
+    }
     val cMul = CMul(Array(hiddenSize)).inputs(input3)
 
     val cadd = CAddTable().inputs(i2g, h2g, cMul)
@@ -134,8 +170,7 @@ class LSTMPeephole[T : ClassTag] (
      * f(input1 + W * input2)
      */
 
-    val inputAfterDropout = Dropout(p).inputs(input1)
-    val i2h = Narrow(featDim, 1 + 2 * hiddenSize, hiddenSize).inputs(inputAfterDropout)
+    val i2h = Narrow(featDim, 1 + 2 * hiddenSize, hiddenSize).inputs(input1)
 
     val drop = Dropout(p).inputs(input2)
     val h2h = Linear(hiddenSize, hiddenSize, withBias = false,

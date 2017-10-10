@@ -66,7 +66,7 @@ class LSTM[T : ClassTag] (
 
   override var cell: AbstractModule[Activity, Activity, T] = buildModel()
 
-  override val preTopology: TensorModule[T] = if (p != 0) {
+  override def preTopology: TensorModule[T] = if (p != 0) {
     null
   } else {
     Linear(inputSize, 4 * hiddenSize,
