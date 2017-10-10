@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.models.utils
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.tensor.{QuantizedTensor, Storage, Tensor}
+import com.intel.analytics.bigdl.tensor.{QuantizedTensor, QuantizedType, Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import org.apache.spark.SparkContext
 import org.apache.spark.broadcast.Broadcast
@@ -45,6 +45,7 @@ class ModelBroadcast[T: ClassTag](
    * @return this
    */
   def broadcast(sc: SparkContext, model: Module[T]): this.type = {
+    if (!inference) model.getParameters() // ensure training model's parameter is compacted.
     val weightsBias = getAndClearWeightBias(model.parameters())
     broadcastModel = sc.broadcast(model)
     broadcastParameters = sc.broadcast(weightsBias)
@@ -68,35 +69,48 @@ class ModelBroadcast[T: ClassTag](
   : Array[Tensor[T]] = {
     var i = 0
     val weightsBias = new Array[Tensor[T]](parameters._1.length)
+    val isQuantized = parameters._1.exists(_.getTensorType == QuantizedType)
+    val (isCompacted, storage) = if (!isQuantized) {
+      val storage = Storage(parameters._1(0).storage.array())
+      (parameters._1.map(_.nElement()).sum == storage.length(), storage)
+    } else {
+      (false, null)
+    }
+
     while (i < parameters._1.length) {
       if (parameters._1(i) != null) {
         val wb = parameters._1(i)
-        wb match {
-          case quantTensor: QuantizedTensor[T] =>
+        wb.getTensorType match {
+          case QuantizedType =>
+            val quantTensor = wb.asInstanceOf[QuantizedTensor[T]]
             weightsBias(i) = QuantizedTensor[T](quantTensor.getStorage, quantTensor.maxOfRow,
               quantTensor.minOfRow, quantTensor.sumOfRow, quantTensor.size(), quantTensor.params)
           case _ =>
-            weightsBias(i) = Tensor[T](Storage(wb.storage().array()),
-              wb.storageOffset(), wb.size(), wb.stride())
+            weightsBias(i) = if (isCompacted) {
+              Tensor[T](storage, wb.storageOffset(), wb.size(), wb.stride())
+            } else {
+              Tensor[T](Storage(wb.storage().array()), wb.storageOffset(), wb.size(), wb.stride())
+            }
         }
+        i += 1
       }
-      i += 1
-    }
-    i = 0
-    while (i < parameters._1.length) {
-      if (parameters._1(i) != null) {
-        parameters._1(i).set()
-      }
-      i += 1
-    }
 
-    // because in quantized mode, the weight number may be different with gradWeight number
-    i = 0
-    while (i < parameters._2.length) {
-      if (parameters._2(i) != null) {
-        parameters._2(i).set()
+      i = 0
+      while (i < parameters._1.length) {
+        if (parameters._1(i) != null) {
+          parameters._1(i).set()
+        }
+        i += 1
       }
-      i += 1
+
+      // because in quantized mode, the weight number may be different with gradWeight number
+      i = 0
+      while (i < parameters._2.length) {
+        if (parameters._2(i) != null) {
+          parameters._2(i).set()
+        }
+        i += 1
+      }
     }
 
     weightsBias
