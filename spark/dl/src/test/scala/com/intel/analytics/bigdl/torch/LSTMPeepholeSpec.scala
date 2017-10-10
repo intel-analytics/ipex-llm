@@ -704,7 +704,7 @@ class LSTMPeepholeSpec  extends TorchSpec {
     RNG.setSeed(seed)
     val input = Tensor[Double](batchSize, seqLength, inputSize).rand
     val state = T(Tensor[Double](batchSize, hiddenSize).rand,
-      Tensor[Double](batchSize, hiddenSize).rand)    
+      Tensor[Double](batchSize, hiddenSize).rand)
     val gradOutput = Tensor[Double](batchSize, seqLength, hiddenSize).rand
     val rec = Recurrent()
 

@@ -43,8 +43,6 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
 
   times = seqLength
 
-//  private var coreCell: RecurrentDecoderCell[T] = null
-
   /**
    *
    *  modules: -- preTopology
@@ -74,7 +72,6 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
       (topology != null && preTopology != null && modules.length == 2),
       "Recurrent extend: should contain only one cell or plus a pre-topology" +
         " to process input")
-//    coreCell = new RecurrentDecoderCell[T](modules)
     this
   }
 
@@ -115,7 +112,7 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
       cells(i - 1).updateOutput(currentInput)
       i += 1
     }
-    
+
     Recurrent.copy(cells.map(x => x.output.toTable[Tensor[T]](inputDim)), output)
     output
   }
@@ -143,7 +140,7 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
         val _gradInput = cells(i).gradInput.toTable[Tensor[T]](inputDim)
         Recurrent.selectCopy(gradOutput, i, stepGradBuffer).add(_gradInput)
       }
-      
+
       _input = if (i == 1) {
         if (initHiddenState == null) T(input, hidden)
         else T(input, initHiddenState)
@@ -220,25 +217,3 @@ object RecurrentDecoder extends ContainerSerializable {
     containerBuilder.build
   }
 }
-
-//private class RecurrentDecoderCell[T : ClassTag]
-//  (modules: Array[AbstractModule[Activity, Activity, T]])(implicit ev: TensorNumeric[T])
-//  extends Cell[T] {
-//  override var cell: AbstractModule[Activity, Activity, T] = buildCell()
-//
-//  override var preTopology: TensorModule[T] = null
-//  
-//  def buildCell(): Sequential[T] = {
-//    if (modules.length == 1) return modules.head
-//    val cell = Sequential()
-//    modules.foreach(cell.add(_))
-//    return cell
-//  }
-//
-//  override def reset(): Unit = {
-//    super.reset()
-//    cell.reset()
-//  }
-//
-//  override def toString: String = s"RecurrentDecoderCell()"
-//}

@@ -81,7 +81,7 @@ abstract class Cell[T : ClassTag](
    * @return
    */
   var preTopology: TensorModule[T]
-  
+
   private[nn] var combinePreTopology: Boolean = false
 
   def hiddenSizeOfPreTopo: Int = hiddensShape(0)
