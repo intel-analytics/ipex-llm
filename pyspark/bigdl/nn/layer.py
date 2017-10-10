@@ -238,14 +238,32 @@ class Layer(JavaValue):
         return dict((layer_name, to_ndarray(params)) for layer_name, params in
                 name_to_params.items())
 
-    def evaluate(self):
+    def evaluate(self, *args):
         """
+        No argument passed in:
         Evaluate the model to set train = false, useful when doing test/forward
         :return: layer itself
+
+        Three arguments passed in:
+        A method to benchmark the model quality.
+
+        :param val_rdd: the input data
+        :param batch_size: batch size
+        :param val_methods: a list of validation methods. i.e: Top1Accuracy,Top5Accuracy and Loss.
+        :return:
         """
-        callBigDlFunc(self.bigdl_type,
-                      "evaluate", self.value)
-        return self
+        if len(args) == 0:
+            callBigDlFunc(self.bigdl_type,
+                          "evaluate", self.value)
+            return self
+        elif len(args) == 3:
+            val_rdd, batch_size, val_methods = args
+            return callBigDlFunc(self.bigdl_type,
+                                 "modelEvaluate",
+                                 self.value,
+                                 val_rdd, batch_size, val_methods)
+        else:
+            raise Exception("Error when calling evaluate(): it takes no argument or exactly three arguments only")
 
     def predict(self, data_rdd):
         """
@@ -270,20 +288,6 @@ class Layer(JavaValue):
         result = callBigDlFunc(self.bigdl_type,
                                "modelPredictClass", self.value, data_rdd)
         return result
-
-    def evaluate(self, val_rdd, batch_size, val_methods):
-        """
-        A method to benchmark the model quality.
-
-        :param val_rdd: the input data
-        :param batch_size: batch size
-        :param val_methods: a list of validation methods. i.e: Top1Accuracy,Top5Accuracy and Loss.
-        :return:
-        """
-        return callBigDlFunc(self.bigdl_type,
-                             "modelEvaluate",
-                             self.value,
-                             val_rdd, batch_size, val_methods)
 
     def set_weights(self, weights):
         """
