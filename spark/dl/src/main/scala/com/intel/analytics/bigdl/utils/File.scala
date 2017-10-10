@@ -266,12 +266,13 @@ private[bigdl] class FileReader(fileName: String) {
    */
   def close(): Unit = {
     if (null != inputStream) inputStream.close()
-    fs.close()
+
     if(fileName != exactFileName) {
        if (fs.exists(path)) {
          fs.delete(path, true)
        }
     }
+    fs.close()
   }
 
 }
