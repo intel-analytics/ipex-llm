@@ -114,11 +114,6 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
     batchSize = input.size(batchDim)
     val featureSizes = outputSize.drop(1)
     output.resize(Array(batchSize, times) ++ featureSizes)
-    if (preTopology != null) {
-      val sizes = output.size()
-      sizes(2) = hiddenSize * 4
-      outputCell.resize(sizes)
-    } else outputCell.resize(output.size())
     initHidden(outputSize.drop(1))
 
     /**
@@ -154,7 +149,7 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
         cells(i - 2).output.toTable[Tensor[T]](inputDim)
       }
 
-      currentInput(inputDim) = if (preTopology != null) {
+      val stepInput2Cell = if (preTopology != null) {
         //        newInput.narrow(2, i, 1).copy(inputTmp)
         //        val sizes = 1 +: inputTmp.size()
         //        inputTmp.resize(sizes)
@@ -165,7 +160,14 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
       } else {
         inputTmp
       }
-      outputCell.select(2, i).copy(currentInput(inputDim))
+      if (outputCell.nElement() !=
+        stepInput2Cell.asInstanceOf[Tensor[T]].nElement() * times) {
+        val sizes = output.size()
+        sizes(2) = stepInput2Cell.asInstanceOf[Tensor[T]].size(2)
+        outputCell.resize(sizes)
+      }
+      outputCell.select(2, i).copy(stepInput2Cell)
+      currentInput(inputDim) = stepInput2Cell
       cells(i - 1).updateOutput(currentInput)
       currentInput(hidDim) = cells(i - 1).output.toTable(hidDim)
       i += 1
