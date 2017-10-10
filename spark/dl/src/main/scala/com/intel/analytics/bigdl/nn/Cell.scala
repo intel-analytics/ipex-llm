@@ -80,12 +80,11 @@ abstract class Cell[T : ClassTag](
    * Please refer to SimpleRNN or LSTM for reference.
    * @return
    */
-//  var preTopology: TensorModule[T]
-  def preTopology: TensorModule[T] = null
+  var preTopology: TensorModule[T]
 
   private[nn] var includePreTopology: Boolean = false
 
-//  private val gradInput2PreTopology = Tensor[T]()
+  private val gradInput2PreTopology = Tensor[T]()
 
   def hiddenSizeOfPreTopo: Int = hiddensShape(0)
 
@@ -153,8 +152,8 @@ abstract class Cell[T : ClassTag](
       val inputTensor = input.toTable[Tensor[T]](Recurrent.inputDim)
       input(Recurrent.inputDim) = preTopology.output
       gradInput = cell.updateGradInput(input, gradOutput).toTable
-//      gradInput2PreTopology.resizeAs(gradInput.toTable[Tensor[T]](Recurrent.inputDim))
-//      gradInput2PreTopology.copy(gradInput.toTable[Tensor[T]](Recurrent.inputDim))
+      gradInput2PreTopology.resizeAs(gradInput.toTable[Tensor[T]](Recurrent.inputDim))
+      gradInput2PreTopology.copy(gradInput.toTable[Tensor[T]](Recurrent.inputDim))
       gradInput(Recurrent.inputDim) =
         preTopology.updateGradInput(inputTensor, gradInput.toTable[Tensor[T]](Recurrent.inputDim))
       input(Recurrent.inputDim) = inputTensor
@@ -169,7 +168,7 @@ abstract class Cell[T : ClassTag](
       val inputTensor = input.toTable[Tensor[T]](Recurrent.inputDim)
       input(Recurrent.inputDim) = preTopology.output
       cell.accGradParameters(input, gradOutput)
-//      preTopology.accGradParameters(inputTensor, gradInput2PreTopology)
+      preTopology.accGradParameters(inputTensor, gradInput2PreTopology)
       input(Recurrent.inputDim) = inputTensor
     } else {
       cell.accGradParameters(input, gradOutput)
@@ -320,6 +319,10 @@ object CellSerializer extends ModuleSerializable {
     cellModule.cell = DataConverter.getAttributeValue(context, attrMap.get("cell")).
       asInstanceOf[AbstractModule[Activity, Activity, T]]
 
+    val preTopologyAttr = attrMap.get("preTopology")
+    cellModule.preTopology = DataConverter.getAttributeValue(context, preTopologyAttr).
+      asInstanceOf[TensorModule[T]]
+
     cellModule
   }
 
@@ -339,5 +342,10 @@ object CellSerializer extends ModuleSerializable {
     DataConverter.setAttributeValue(context, cellBuilder, cellModule.cell,
       ModuleSerializer.abstractModuleType)
     cellModuleBuilder.putAttr("cell", cellBuilder.build)
+
+    val preTopologyBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, preTopologyBuilder,
+      cellModule.preTopology, ModuleSerializer.tensorModuleType)
+    cellModuleBuilder.putAttr("preTopology", preTopologyBuilder.build)
   }
 }

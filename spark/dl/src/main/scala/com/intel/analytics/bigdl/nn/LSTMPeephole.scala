@@ -76,7 +76,7 @@ class LSTMPeephole[T : ClassTag] (
         .add(SelectTable(1))
         .add(NarrowTable(2, 2)))
 
-  override def preTopology: TensorModule[T] = if (p != 0) {
+  override var preTopology: TensorModule[T] = if (p != 0) {
     null
   } else {
     Linear(inputSize, 4 * hiddenSize,
