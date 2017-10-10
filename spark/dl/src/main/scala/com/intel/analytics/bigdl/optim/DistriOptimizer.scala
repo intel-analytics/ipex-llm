@@ -522,6 +522,8 @@ object DistriOptimizer {
     // As cloneModel is using Serialization to implement deep copy, and will throw OOMError
     // when model's size is bigger than SerializationUtils' buffer size. So we can use
     // ModelBroadcast to clone model here.
+    // Notes: All models returned by modelBroadcast.value() share the same weight&bias, while
+    // gradWeight&gradBias is unshared.
     val modelBroadcast = ModelBroadcast[T](false).broadcast(sc, model)
     val _subModelNumber = Engine.getEngineType match {
       case MklBlas => coresPerNode
@@ -562,14 +564,8 @@ object DistriOptimizer {
         (localModel, weights, grads, localCriterion, localState, localMethod)
       }.toArray
 
-      val weights = cached.head._2
-      cached.map(c =>
-        if (!c._2.eq(weights)) {
-          c._2.storage().set(weights.storage())
-        }
-      )
-
       logger.info("model thread pool size is " + Engine.model.getPoolSize)
+      val weights = cached.head._2
       parameters.init(weights)
 
       Iterator.single(Cache(
