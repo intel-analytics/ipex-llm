@@ -44,6 +44,8 @@ trait ModuleSerializable extends Loadable with Savable{
 
   private val bigDLVersion = com.intel.analytics.bigdl.BIGDL_VERSION
 
+  protected var _copyWeightAndBias = true
+
   // Separate this two methods for reuse in sub-classes
   protected def checkVersion[T: ClassTag](module : BigDLModule)
                                          (implicit ev: TensorNumeric[T]) : Unit = {
@@ -57,6 +59,13 @@ trait ModuleSerializable extends Loadable with Savable{
   protected def setVersion[T: ClassTag](modelBuilder : BigDLModule.Builder)
                                        (implicit ev: TensorNumeric[T]) : Unit = {
     modelBuilder.setVersion(bigDLVersion)
+  }
+
+  protected def copyWeightAndBias() = _copyWeightAndBias
+
+  def setCopyWeightAndBias(copyWeightAndBias : Boolean): this.type = {
+    _copyWeightAndBias = copyWeightAndBias
+    this
   }
 
   /**
@@ -195,7 +204,9 @@ trait ModuleSerializable extends Loadable with Savable{
     } else {
       module.evaluate()
     }
-    copy2BigDL(context, bigDLModule)
+    if(copyWeightAndBias) {
+      copy2BigDL(context, bigDLModule)
+    }
     bigDLModule
   }
 
@@ -211,7 +222,9 @@ trait ModuleSerializable extends Loadable with Savable{
     modelBuilder.setNamePostfix(module.module.getNamePostfix)
     modelBuilder.setTrain(module.module.isTraining())
     modelBuilder.setId(System.identityHashCode(module.module))
-    copyFromBigDL(context, modelBuilder)
+    if(copyWeightAndBias) {
+      copyFromBigDL(context, modelBuilder)
+    }
     SerializeResult(modelBuilder.build, context.storages)
   }
 
@@ -290,7 +303,7 @@ trait ContainerSerializable extends ModuleSerializable {
     val subModules = context.bigdlModule.getSubModulesList.asScala
     subModules.foreach(module => {
       val subModuleData = ModuleSerializer.load(DeserializeContext(module,
-      context.storages, context.storageType))
+      context.storages, context.storageType), copyWeightAndBias)
       container.modules.append(subModuleData.module)
     })
     module
@@ -306,7 +319,7 @@ trait ContainerSerializable extends ModuleSerializable {
     subModulesData.foreach(module => {
       val subModule = ModuleSerializer.serialize(SerializeContext(ModuleData(module,
         new ArrayBuffer[String](), new ArrayBuffer[String]()), context.storages,
-      context.storageType))
+      context.storageType), copyWeightAndBias)
       containerBuilder.addSubModules(subModule.bigDLModule)
     })
   }

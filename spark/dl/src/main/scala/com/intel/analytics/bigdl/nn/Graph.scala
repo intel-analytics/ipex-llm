@@ -624,7 +624,7 @@ object Graph extends ContainerSerializable {
     val layerMap = new mutable.HashMap[String, (ModuleNode[T], Seq[String])]()
     subModules.foreach(subModule => {
       val bigDLModule = ModuleSerializer.load(DeserializeContext(subModule,
-        context.storages, context.storageType))
+        context.storages, context.storageType), copyWeightAndBias)
       val moduleNode = bigDLModule.module.inputs()
       val preNodes = bigDLModule.pre
       layerMap(bigDLModule.module.getName) = (moduleNode, preNodes)
@@ -681,7 +681,8 @@ object Graph extends ContainerSerializable {
       val currNode = execution.element
         .asInstanceOf[AbstractModule[Activity, Activity, T]]
       val subModel = ModuleSerializer.serialize(SerializeContext(
-        ModuleData(currNode, preNodes, nextNodes), context.storages, context.storageType))
+        ModuleData(currNode, preNodes, nextNodes),context.storages, context.storageType),
+        copyWeightAndBias)
       // add edges
       val preNodeEdges = new mutable.HashMap[String, Int]()
 

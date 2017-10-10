@@ -52,27 +52,28 @@ object ModuleSerializer extends ModuleSerializable{
 
   /**
    * Serialization entry for all modules based on corresponding class instance of module
-   * @param serializerContext : serialization context
+   * @param serializerContext  serialization context
+   * @param copyWeightAndBias flag to copy weight & bias
    * @return protobuf format module instance
    */
-  def serialize[T: ClassTag](serializerContext : SerializeContext[T])
+  def serialize[T: ClassTag](serializerContext : SerializeContext[T],
+                             copyWeightAndBias : Boolean = true)
                             (implicit ev: TensorNumeric[T])
     : SerializeResult = {
     val module = serializerContext.moduleData.module
     // For those layers which have their own serialization/deserialization methods
     val clsName = module.getClass.getName
-    if (serializerMaps.contains(clsName)) {
-      serializerMaps(clsName).serializeModule(serializerContext)
+    val serializer = if (serializerMaps.contains(clsName)) {
+      serializerMaps(clsName)
     } else {
       val m = module.asInstanceOf[AbstractModule[_, _, _]]
       m match {
-        case container : Container[_, _, _] =>
-          ContainerSerializer.serializeModule(serializerContext)
-        case cell : Cell[_] =>
-          CellSerializer.serializeModule(serializerContext)
-        case _ => ModuleSerializer.serializeModule(serializerContext)
+        case container : Container[_, _, _] => ContainerSerializer
+        case cell : Cell[_] => CellSerializer
+        case _ => ModuleSerializer
       }
     }
+    serializer.setCopyWeightAndBias(copyWeightAndBias).serializeModule(serializerContext)
   }
 
   /**
@@ -80,25 +81,26 @@ object ModuleSerializer extends ModuleSerializable{
    *  @param context : context for deserialization
    *  @return BigDL module
    */
-  def load[T: ClassTag](context: DeserializeContext)
+  def load[T: ClassTag](context: DeserializeContext, copyWeightAndBias : Boolean = true)
                        (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
     try {
       val model = context.bigdlModule
-      if (serializerMaps.contains(model.getModuleType)) {
-        serializerMaps(model.getModuleType).loadModule(context)
+      val deSerializer = if (serializerMaps.contains(model.getModuleType)) {
+        serializerMaps(model.getModuleType)
       } else {
         val attrMap = model.getAttrMap
         val subModuleCount = model.getSubModulesCount
         if (subModuleCount > 0) {
-          ContainerSerializer.loadModule(context)
+          ContainerSerializer
         } else {
           if (attrMap.containsKey("is_cell_module")) {
-            CellSerializer.loadModule(context)
+            CellSerializer
           } else {
-            ModuleSerializer.loadModule(context)
+            ModuleSerializer
           }
         }
       }
+      deSerializer.setCopyWeightAndBias(copyWeightAndBias).loadModule(context)
     } catch {
       case e: Exception =>
         throw new RuntimeException(
