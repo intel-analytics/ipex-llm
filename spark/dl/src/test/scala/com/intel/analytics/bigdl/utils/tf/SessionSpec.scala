@@ -19,7 +19,7 @@ import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.nn.{CrossEntropyCriterion, MSECriterion}
 import com.intel.analytics.bigdl.optim.{SGD, Trigger}
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Engine, T, Table}
+import com.intel.analytics.bigdl.utils.{Engine, File, T, Table}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -28,6 +28,7 @@ import java.io.{File => JFile}
 import com.google.protobuf.ByteString
 import org.tensorflow.framework.AttrValue
 
+import scala.collection.JavaConverters._
 import scala.collection.mutable
 
 class SessionSpec extends FlatSpec with Matchers with BeforeAndAfter {
@@ -93,14 +94,31 @@ class SessionSpec extends FlatSpec with Matchers with BeforeAndAfter {
      module.forward(Tensor[Float](Array(1)))
   }
 
+
+
   "Session" should "be able construct input data" in {
 
+    val lenetModel = getLenetModel()
+
+    val context =
+      new mutable.HashMap[String, (Tensor[Float], Tensor[Float], Option[Seq[(Int, Int)]])]()
+    val session = new BigDLSessionImpl[Float](lenetModel, sc, context)
+
+    val endpoints = Seq(
+      "fifo_queue_Dequeue"
+    )
+    val rdd = session.getRDD(endpoints)
+    val result = rdd.count()
+    result should be (5)
+  }
+
+  private def getLenetModel() = {
     val resource = getClass().getClassLoader().getResource("tf")
     val modelPath = resource.getPath() + JFile.separator + "lenet.pbtxt"
+
     val filePath = resource.getPath() + JFile.separator + "mnist_train.tfrecord"
 
     val nodes = TensorflowLoader.parseTxt(modelPath)
-    import scala.collection.JavaConverters._
 
     val filenames = nodes.asScala.filter(_.getName == "parallel_read/filenames/Const").head
 
@@ -112,18 +130,7 @@ class SessionSpec extends FlatSpec with Matchers with BeforeAndAfter {
         .putAttr("value", AttrValue.newBuilder().setTensor(newTensor).build())
         .build()
 
-    val newModel = nodes.asScala.filterNot(_.getName == "parallel_read/filenames/Const") :+ newNode
-
-    val context =
-      new mutable.HashMap[String, (Tensor[Float], Tensor[Float], Option[Seq[(Int, Int)]])]()
-    val session = new BigDLSessionImpl[Float](newModel, sc, context)
-
-    val endpoints = Seq(
-      "fifo_queue_Dequeue"
-    )
-    val rdd = session.getRDD(endpoints)
-    val result = rdd.count()
-    result should be (5)
+    nodes.asScala.filterNot(_.getName == "parallel_read/filenames/Const") :+ newNode
   }
 
 }

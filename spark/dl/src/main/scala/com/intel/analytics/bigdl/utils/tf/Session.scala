@@ -306,12 +306,11 @@ class BigDLSessionImpl[T: ClassTag](
   }
 
   private def checkAndRemoveQueueNode(tfGraph: DirectedGraph[NodeDef]) = {
-    if (tfGraph.source.prevNodes.exists(n => enqueueOp(n.element.getOp))) {
-      tfGraph.source.prevNodes.foreach { node =>
+    tfGraph.DFS.filter(n => n.element != null && enqueueOp(n.element.getOp))
+      .foreach { node =>
         val queueNodes = node.prevNodes.filter(n => queueOp(n.element.getOp))
         queueNodes.foreach(n => n.delete(node))
       }
-    }
   }
 
   def constructLocalData(endPoints: Seq[String], cache: DataCache): Seq[Table] = {
@@ -412,15 +411,20 @@ class BigDLSessionImpl[T: ClassTag](
 
   private def constructModel(endPoints: Seq[String]): (Graph[T], Node[NodeDef]) = {
     val isInputOp = (n: NodeDef) => inputOp(n.getOp)
-    val (tfGraph, inputs, _) = TensorflowLoader.buildTFGraph(graph.asJava, endPoints, isInputOp)
+    val (tfGraph, inputs, originInputs) =
+      TensorflowLoader.buildTFGraph(graph.asJava, endPoints, isInputOp)
 
-    val inputNodes = inputs.map(name2Node)
+    checkAndRemoveQueueNode(tfGraph)
+
+    val adjustedInputs = adjustInputNames(originInputs)
+
+    val inputNodes = adjustedInputs.map(name2Node)
 
     require(inputNodes.length == 1, "Only support one model input")
 
     val model = TensorflowLoader.buildBigDLModel(
       tfGraph,
-      inputNodes.map(_.element.getName),
+      inputs,
       endPoints,
       ByteOrder.LITTLE_ENDIAN,
       "",
@@ -451,7 +455,7 @@ class BigDLSessionImpl[T: ClassTag](
       dataSet,
       criterion
     )
-    val optMethod = new SGD[T]()
+
     opt.setOptimMethod(optMethod).setEndWhen(endWhen)
       .optimize()
     model

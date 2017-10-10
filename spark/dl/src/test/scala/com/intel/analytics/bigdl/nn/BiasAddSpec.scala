@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn.ops
+package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
@@ -21,7 +21,7 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class BiasAddSpec extends FlatSpec with Matchers {
   "BiasAdd operation" should "works correctly" in {
-    import com.intel.analytics.bigdl.numeric.NumericDouble
+    import com.intel.analytics.bigdl.numeric.NumericFloat
     val input =
       T(
         Tensor(T(
@@ -50,8 +50,25 @@ class BiasAddSpec extends FlatSpec with Matchers {
           T(5f, 5f, 5f),
           T(4f, 4f, 4f)
         )))
+    val expectedGradValue = Tensor(
+      T(
+        T(
+          T(4f, 4f, 4f),
+          T(5f, 5f, 5f),
+          T(6f, 6f, 6f)
+        ),
+        T(
+          T(6f, 6f, 6f),
+          T(5f, 5f, 5f),
+          T(4f, 4f, 4f)
+        )))
 
-    val output = BiasAdd().forward(input)
+    val expectedGradBias = Tensor(T(30f, 30f, 30f))
+    val layer = BiasAdd()
+    val output = layer.forward(input)
+    val gradInput = layer.backward(input, output)
     output should be(expectOutput)
+    gradInput[Tensor[Float]](1) should be(expectedGradValue)
+    gradInput[Tensor[Float]](2) should be(expectedGradBias)
   }
 }

@@ -61,8 +61,8 @@ object Utils {
     attrMap.get(key).getI.toInt
   }
 
-  private[loaders] def getBoolean(nodedef: NodeDef, key: String): Boolean = {
-    nodedef.getAttrMap.get(key).getB
+  private[loaders] def getBoolean(attrMap: util.Map[String, AttrValue], key: String): Boolean = {
+    attrMap.get(key).getB
   }
 
   private[loaders] def getIntList(attrMap: util.Map[String, AttrValue], key: String): Seq[Int] = {
