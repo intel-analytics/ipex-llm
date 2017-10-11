@@ -108,8 +108,13 @@ class SessionSpec extends FlatSpec with Matchers with BeforeAndAfter {
       "fifo_queue_Dequeue"
     )
     val rdd = session.getRDD(endpoints)
-    val result = rdd.count()
-    result should be (5)
+    val result = rdd.collect()
+    result.length should be (5)
+    val imageSum = result.map(t => t[Tensor[Float]](1).sum()).sum
+    val labelSum = result.map(t => t[Tensor[Float]](2).sum()).sum
+
+    (imageSum - (-6009.5)) < 1e-7 should be (true)
+    labelSum should be (10)
   }
 
   private def getLenetModel() = {
