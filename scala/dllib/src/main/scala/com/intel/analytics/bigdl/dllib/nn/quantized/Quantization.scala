@@ -16,7 +16,12 @@
 
 package com.intel.analytics.bigdl.nn.quantized
 
+import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.nn.quantized.Utils._
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import java.nio.ByteBuffer
+import scala.reflect.ClassTag
 
 object Quantization {
   def findMax(src: Array[Float], start: Int, end: Int): Float = {
@@ -158,5 +163,18 @@ object Quantization {
     val end = before.nElement()
 
     loss(beforeArray, afterArray, start, end) / beforeArray.sum
+  }
+
+  def quantize[T: ClassTag](model: Module[T])(implicit ev: TensorNumeric[T]): Module[T] = {
+    // deep copy a new model then substitute with all quantized version modules
+    val clonedModel = model.cloneModule()
+    println("Converting model now")
+    val quantizedModel = Quantizer.quantize(clonedModel)
+    println("Converting model successfully")
+
+    val paras = quantizedModel.parameters()._1
+    reorganizeParameters(paras)
+
+    quantizedModel
   }
 }
