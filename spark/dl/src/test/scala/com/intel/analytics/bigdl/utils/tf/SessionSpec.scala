@@ -98,7 +98,7 @@ class SessionSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "Session" should "be able construct input data" in {
 
-    val lenetModel = getLenetModel()
+    val lenetModel = getLenetModel("lenet_batch_2.pbtxt")
 
     val context =
       new mutable.HashMap[String, (Tensor[Float], Tensor[Float], Option[Seq[(Int, Int)]])]()
@@ -117,9 +117,26 @@ class SessionSpec extends FlatSpec with Matchers with BeforeAndAfter {
     labelSum should be (10)
   }
 
-  private def getLenetModel() = {
+  "Session" should "be work with arbitrary batch size" in {
+
+    val lenetModel = getLenetModel("lenet_with_batch_3.pbtxt")
+
+    val context =
+      new mutable.HashMap[String, (Tensor[Float], Tensor[Float], Option[Seq[(Int, Int)]])]()
+    val session = new BigDLSessionImpl[Float](lenetModel, sc, context)
+
+    val endpoints = Seq(
+      "fifo_queue_Dequeue"
+    )
+    val rdd = session.getRDD(endpoints)
+    val result = rdd.collect()
+    result.length should be (4)
+    result.head[Tensor[Float]](1).size(1) should be (3)
+  }
+
+  private def getLenetModel(name: String) = {
     val resource = getClass().getClassLoader().getResource("tf")
-    val modelPath = resource.getPath() + JFile.separator + "lenet.pbtxt"
+    val modelPath = resource.getPath() + JFile.separator + name
 
     val filePath = resource.getPath() + JFile.separator + "mnist_train.tfrecord"
 

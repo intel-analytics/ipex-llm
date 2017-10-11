@@ -301,12 +301,26 @@ class BigDLSessionImpl[T: ClassTag](
     val batchRdd = rdd.mapPartitions { iter =>
 
       new Iterator[Table] {
+        private var firstBatch: Array[Table] = null
         override def hasNext: Boolean = iter.hasNext
 
         override def next(): Table = {
           require(iter.hasNext, "Call next() on a empty iterator")
-          val tables = for (_ <- 0 until batchSize if iter.hasNext) yield {
-            iter.next()
+          val tables = new Array[Table](batchSize)
+          var index = 0
+          for (i <- 0 until batchSize) {
+            if (iter.hasNext) {
+              tables(i) = iter.next()
+            } else if (firstBatch == null) {
+              tables(i) = tables(index)
+              index = index + 1
+            } else {
+              tables(i) = firstBatch(index)
+              index = index + 1
+            }
+          }
+          if (firstBatch == null) {
+            firstBatch = tables
           }
           val batch = tables.map(_.toSeq)
           val firstSeq = batch.head
