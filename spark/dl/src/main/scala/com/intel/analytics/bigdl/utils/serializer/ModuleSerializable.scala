@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
 import com.intel.analytics.bigdl.utils.serializer.DataConverter.TensorConverter
-import com.intel.analytics.bigdl.utils.serializer.ModuleSerializer._
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializer.{getClass, _}
 import serialization.Bigdl.DataType
 import serialization.Bigdl.{AttrValue, BigDLModule, BigDLTensor}
 
@@ -45,6 +45,8 @@ trait ModuleSerializable extends Loadable with Savable{
   private val bigDLVersion = com.intel.analytics.bigdl.BIGDL_VERSION
 
   protected var _copyWeightAndBias = true
+
+  protected val lock = new Object
 
   // Separate this two methods for reuse in sub-classes
   protected def checkVersion[T: ClassTag](module : BigDLModule)
@@ -113,24 +115,28 @@ trait ModuleSerializable extends Loadable with Savable{
     val constructorFullParams = constructorMirror.symbol.paramss
     val args = new Array[Object](constructorFullParams(0).size + constructorFullParams(1).size)
     var i = 0;
-    constructorFullParams.foreach(map => {
-      map.foreach(param => {
-        val name = param.name.decodedName.toString
-        val ptype = param.typeSignature
-        if (ptype <:< universe.typeOf[ClassTag[_]]) {
-          args(i) = evidence
-        } else if (ptype.toString ==
-          tensorNumericType.toString) {
-          args(i) = ev
-        } else {
-          require(modelAttributes.containsKey(name), s"$name value cannot be found")
-          val attribute = modelAttributes.get(name)
-          val value = DataConverter.getAttributeValue(context, attribute)
-          args(i) = value
-        }
-        i+= 1
+    lock.synchronized {
+      constructorFullParams.foreach(map => {
+        map.foreach(param => {
+          val name = param.name.decodedName.toString
+          val ptype = param.typeSignature
+          if (ptype <:< universe.typeOf[ClassTag[_]] ||
+            ptype.typeSymbol == universe.typeOf[ClassTag[_]].typeSymbol) {
+            args(i) = evidence
+          } else if (ptype.toString ==
+            tensorNumericType.toString) {
+            args(i) = ev
+          } else {
+            require(modelAttributes.containsKey(name), s"$name value cannot be found $ptype" +
+              s"${ptype.typeSymbol}")
+            val attribute = modelAttributes.get(name)
+            val value = DataConverter.getAttributeValue(context, attribute)
+            args(i) = value
+          }
+          i += 1
+        })
       })
-    })
+    }
    constructorMirror.apply(args : _*).
       asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
@@ -168,23 +174,25 @@ trait ModuleSerializable extends Loadable with Savable{
     val cls = module.getClass
     val fullParams = getCostructorMirror(cls).symbol.paramss
     val constructorParams = fullParams(0)
-    constructorParams.foreach(param => {
-      val paramName = param.name.decodedName.toString
-      var ptype = param.typeSignature
-      val attrBuilder = AttrValue.newBuilder
-      // For some modules, fields are declared inside but passed to Super directly
-      var field : Field = null
-      try {
-        field = cls.getDeclaredField(paramName)
-      } catch {
-        case e : NoSuchFieldException =>
-          field = cls.getSuperclass.getDeclaredField(paramName)
-      }
-      field.setAccessible(true)
-      val fieldValue = field.get(module)
-      DataConverter.setAttributeValue(context, attrBuilder, fieldValue, ptype)
-      bigDLModelBuilder.putAttr(paramName, attrBuilder.build)
-    })
+    lock.synchronized {
+      constructorParams.foreach(param => {
+        val paramName = param.name.decodedName.toString
+        var ptype = param.typeSignature
+        val attrBuilder = AttrValue.newBuilder
+        // For some modules, fields are declared inside but passed to Super directly
+        var field: Field = null
+        try {
+          field = cls.getDeclaredField(paramName)
+        } catch {
+          case e: NoSuchFieldException =>
+            field = cls.getSuperclass.getDeclaredField(paramName)
+        }
+        field.setAccessible(true)
+        val fieldValue = field.get(module)
+        DataConverter.setAttributeValue(context, attrBuilder, fieldValue, ptype)
+        bigDLModelBuilder.putAttr(paramName, attrBuilder.build)
+      })
+    }
   }
 
   protected def createBigDLModule[T: ClassTag](context: DeserializeContext,

@@ -121,15 +121,16 @@ object ModuleSerializer extends ModuleSerializable{
 
   private[serializer] def getCostructorMirror[T : ClassTag](cls : Class[_]):
     universe.MethodMirror = {
-
-    val clsSymbol = runtimeMirror.classSymbol(cls)
-    val cm = runtimeMirror.reflectClass(clsSymbol)
-    // to make it compatible with both 2.11 and 2.10
-    val ctorCs = clsSymbol.toType.declaration(universe.nme.CONSTRUCTOR)
-    val primary : Option[universe.MethodSymbol] = ctorCs.asTerm.alternatives.collectFirst{
-      case cstor : universe.MethodSymbol if cstor.isPrimaryConstructor => cstor
+    lock.synchronized {
+      val clsSymbol = runtimeMirror.classSymbol(cls)
+      val cm = runtimeMirror.reflectClass(clsSymbol)
+      // to make it compatible with both 2.11 and 2.10
+      val ctorCs = clsSymbol.toType.declaration(universe.nme.CONSTRUCTOR)
+      val primary: Option[universe.MethodSymbol] = ctorCs.asTerm.alternatives.collectFirst {
+        case cstor: universe.MethodSymbol if cstor.isPrimaryConstructor => cstor
+      }
+      cm.reflectConstructor(primary.get)
     }
-    cm.reflectConstructor(primary.get)
   }
 
   private def init() : Unit = {
