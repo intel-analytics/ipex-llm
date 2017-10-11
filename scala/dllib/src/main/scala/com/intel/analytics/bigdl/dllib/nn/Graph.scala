@@ -549,6 +549,13 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
     writer.close()
     this
   }
+
+  def resetModules(): Unit = {
+    modules.clear()
+    modules.appendAll(backGraph.topologySort
+      .filterNot(_.element.isInstanceOf[ControlDependency[T]]).reverse
+      .filter(n => !n.eq(dummyOutput)).map(_.element))
+  }
 }
 
 object Graph extends ContainerSerializable {
