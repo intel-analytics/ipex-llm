@@ -1961,4 +1961,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
   }
 
+  def quantize(module: AbstractModule[Activity, Activity, T]): Module[T] = {
+    module.quantize()
+  }
 }

@@ -432,7 +432,87 @@ class Layer(JavaValue):
         '''
         return callJavaFunc(get_spark_context(), self.value.isTraining)
 
+    def quantize(self):
+        '''
+        Clone self and quantize it, at last return a new quantized model.
+        :return: A new quantized model.
 
+        >>> fc = Linear(4, 2)
+        creating: createLinear
+        >>> fc.set_weights([np.ones((4, 2)), np.ones((2,))])
+        >>> input = np.ones((2, 4))
+        >>> fc.forward(input)
+        array([[ 5.,  5.],
+               [ 5.,  5.]], dtype=float32)
+        >>> quantized_fc = fc.quantize()
+        >>> quantized_fc.forward(input)
+        array([[ 5.,  5.],
+               [ 5.,  5.]], dtype=float32)
+
+        >>> assert("quantized.Linear" in quantized_fc.__str__())
+        >>> conv = SpatialConvolution(1, 2, 3, 3)
+        creating: createSpatialConvolution
+        >>> conv.set_weights([np.ones((2, 1, 3, 3)), np.zeros((2,))])
+        >>> input = np.ones((2, 1, 4, 4))
+        >>> conv.forward(input)
+        array([[[[ 9.,  9.],
+                 [ 9.,  9.]],
+        <BLANKLINE>
+                [[ 9.,  9.],
+                 [ 9.,  9.]]],
+        <BLANKLINE>
+        <BLANKLINE>
+               [[[ 9.,  9.],
+                 [ 9.,  9.]],
+        <BLANKLINE>
+                [[ 9.,  9.],
+                 [ 9.,  9.]]]], dtype=float32)
+        >>> quantized_conv = conv.quantize()
+        >>> quantized_conv.forward(input)
+        array([[[[ 9.,  9.],
+                 [ 9.,  9.]],
+        <BLANKLINE>
+                [[ 9.,  9.],
+                 [ 9.,  9.]]],
+        <BLANKLINE>
+        <BLANKLINE>
+               [[[ 9.,  9.],
+                 [ 9.,  9.]],
+        <BLANKLINE>
+                [[ 9.,  9.],
+                 [ 9.,  9.]]]], dtype=float32)
+        >>> assert("quantized.SpatialConvolution" in quantized_conv.__str__())
+        >>> seq = Sequential()
+        creating: createSequential
+        >>> seq = seq.add(conv)
+        >>> seq = seq.add(Reshape([8, 4], False))
+        creating: createReshape
+        >>> seq = seq.add(fc)
+        >>> input = np.ones([1, 1, 6, 6])
+        >>> seq.forward(input)
+        array([[ 37.,  37.],
+               [ 37.,  37.],
+               [ 37.,  37.],
+               [ 37.,  37.],
+               [ 37.,  37.],
+               [ 37.,  37.],
+               [ 37.,  37.],
+               [ 37.,  37.]], dtype=float32)
+        >>> quantized_seq = seq.quantize()
+        >>> quantized_seq.forward(input)
+        array([[ 37.,  37.],
+               [ 37.,  37.],
+               [ 37.,  37.],
+               [ 37.,  37.],
+               [ 37.,  37.],
+               [ 37.,  37.],
+               [ 37.,  37.],
+               [ 37.,  37.]], dtype=float32)
+        >>> assert("quantized.Linear" in quantized_seq.__str__())
+        >>> assert("quantized.SpatialConvolution" in quantized_seq.__str__())
+        '''
+        quantized_model = callBigDlFunc(self.bigdl_type, "quantize", self.value)
+        return Layer.of(quantized_model)
 
 
 class Container(Layer):
@@ -617,7 +697,6 @@ class Model(Container):
         """
         callBigDlFunc(bigdl_type, "saveGraphTopology", self.value, log_path)
         return self
-
 
 class Linear(Layer):
 
