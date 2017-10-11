@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.utils
 
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.utils.caffe.CaffeLoader
+import com.intel.analytics.bigdl.numeric.NumericFloat
 import scopt.OptionParser
 
 object ConvertModel {
@@ -28,53 +29,90 @@ object ConvertModel {
     input: String = "",
     output: String = "",
     prototxt: String = "",
+    tf_inputs: String = "",
+    tf_outputs: String = "",
     quantize: Boolean = false
   )
 
+  val fromSupports = Set("bigdl", "caffe", "torch", "tensorflow")
+  val toSupports = Set("bigdl", "caffe", "torch")
+
   val converterParser = new OptionParser[ConverterParam]("Convert caffe model to bigdl model") {
     opt[String]("from")
-            .text("What's the type origin model (caffe, torch, bigdl)?")
-            .action((x, c) => c.copy(from = x))
-            .required()
+      .text(s"What's the type origin model ${fromSupports.mkString(",")}?")
+      .action((x, c) => c.copy(from = x))
+      .validate(x =>
+        if (fromSupports.contains(x.toLowerCase)) {
+          success
+        } else {
+          failure(s"Only support ${fromSupports.mkString(",")}")
+        })
+      .required()
     opt[String]("to")
-            .text("What's the type of model you want (bigdl, torch)?")
-            .action((x, c) => c.copy(to = x))
-            .required()
+      .text(s"What's the type of model you want ${toSupports.mkString(",")}?")
+      .action((x, c) => c.copy(to = x))
+      .validate(x =>
+        if (toSupports.contains(x.toLowerCase)) {
+          success
+        } else {
+          failure(s"Only support ${toSupports.mkString(",")}")
+        })
+      .required()
     opt[String]("input")
-            .text("Where's the origin model file?")
-            .action((x, c) => c.copy(input = x))
-            .required()
+      .text("Where's the origin model file?")
+      .action((x, c) => c.copy(input = x))
+      .required()
     opt[String]("output")
-            .text("Where's the bigdl model file to save?")
-            .action((x, c) => c.copy(output = x))
-            .required()
+      .text("Where's the bigdl model file to save?")
+      .action((x, c) => c.copy(output = x))
+      .required()
     opt[String]("prototxt")
-            .text("Where's the caffe deploy prototxt?")
-            .action((x, c) => c.copy(prototxt = x))
+      .text("Where's the caffe deploy prototxt?")
+      .action((x, c) => c.copy(prototxt = x))
     opt[Boolean]("quantize")
-            .text("Do you want to quantize the model?")
-            .action((x, c) => c.copy(quantize = x))
+      .text("Do you want to quantize the model?")
+      .action((x, c) => c.copy(quantize = x))
+    opt[String]("tf_inputs")
+      .text("Inputs for Tensorflow")
+      .action((x, c) => c.copy(tf_inputs = x))
+    opt[String]("tf_outputs")
+      .text("Outputs for Tensorflow")
+      .action((x, c) => c.copy(tf_outputs = x))
+
+    checkConfig(c =>
+      if (c.from.toLowerCase == "caffe" && c.prototxt.isEmpty) {
+        failure(s"If model is converted from caffe, the prototxt should be given with --prototxt.")
+      } else if (c.from.toLowerCase == "tensorflow" &&
+        (c.tf_inputs.isEmpty || c.tf_outputs.isEmpty)) {
+        failure(s"If model is converted from tensorflow, inputs and outputs should be given")
+      } else if (c.quantize == true && c.to.toLowerCase != "bigdl") {
+        failure(s"Only support quantizing models to BigDL model now.")
+      } else {
+        success
+      }
+    )
   }
 
   def main(args: Array[String]): Unit = {
     converterParser.parse(args, ConverterParam()).foreach { param =>
       val input = param.input
       val output = param.output
+      val ifs = ","
 
-      val loadedModel = param.from.toLowerCase match {
+      var loadedModel = param.from.toLowerCase match {
         case "bigdl" =>
-          Module.loadModule[Float](input)
+          Module.loadModule(input)
         case "torch" =>
-          Module.loadTorch[Float](input)
+          Module.loadTorch(input)
         case "caffe" =>
-          CaffeLoader.loadCaffe[Float](param.prototxt, input)._1
-        case _ =>
-          throw new UnsupportedOperationException(s"Unsupported model type.")
+          CaffeLoader.loadCaffe(param.prototxt, input)._1
+        case "tensorflow" =>
+          val inputs = param.tf_inputs.split(ifs)
+          val outputs = param.tf_outputs.split(ifs)
+          Module.loadTF(input, inputs, outputs)
       }
 
       val model = if (param.quantize) {
-        require(param.to.toLowerCase == "bigdl",
-          s"Only support quantizing models to BigDL model now.")
         loadedModel.quantize()
       } else {
         loadedModel
@@ -87,8 +125,6 @@ object ConvertModel {
           model.saveTorch(output)
         case "caffe" =>
           model.saveCaffe(param.prototxt, output)
-        case _ =>
-          throw new UnsupportedOperationException(s"Unsupported model type.")
       }
     }
   }
