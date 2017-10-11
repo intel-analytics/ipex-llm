@@ -109,7 +109,7 @@ if __name__ == "__main__":
         test_data = get_mnist(sc, "test").map(
             normalizer(mnist.TEST_MEAN, mnist.TEST_STD))
         model = Model.load(options.modelPath)
-        results = model.test(test_data, options.batchSize, [Top1Accuracy()])
+        results = model.evaluate(test_data, options.batchSize, [Top1Accuracy()])
         for result in results:
             print(result)
     sc.stop()
