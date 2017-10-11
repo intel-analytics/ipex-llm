@@ -20,6 +20,7 @@ import java.nio.ByteOrder
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import org.tensorflow.framework.NodeDef
+import com.intel.analytics.bigdl.nn.tf.{BiasAdd => BiasAddOp}
 import Utils._
 
 import scala.reflect.ClassTag
