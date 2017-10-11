@@ -2497,7 +2497,7 @@ object DenseTensor {
     size
   }
 
-  def apply[T: ClassTag](
+  private[tensor] def apply[T: ClassTag](
         sparseTensor: Tensor[T],
         res: Tensor[T] = null)(implicit ev: TensorNumeric[T]): Tensor[T] = {
     if (sparseTensor.isInstanceOf[SparseTensor[T]]) {
