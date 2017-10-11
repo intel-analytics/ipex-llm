@@ -95,6 +95,6 @@ package object ops {
     def apply[T: ClassTag](axis: Int)
       (implicit ev: TensorNumeric[T]): Operation[Activity, Activity, T]
     = ModuleToOperation[T](
-      com.intel.analytics.bigdl.nn.Unsqueeze(axis + 1))
+      com.intel.analytics.bigdl.nn.Unsqueeze(axis))
   }
 }

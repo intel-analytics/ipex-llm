@@ -91,27 +91,7 @@ class BigDLSessionImpl[T: ClassTag](
         val inputs = Seq(enqueueNode.element.getName)
         val result = constructLocalData(inputs, new DataCache())
         if (enqueueNode.element.getOp == "QueueEnqueueManyV2") {
-          result.flatMap { table =>
-            val nElem = table.length()
-            require(nElem >= 1, "EnqueueManyV2 encounter a empty table")
-            val first = table[Tensor[ByteString]](1)
-            require(first.nDimension() >= 1)
-            val depth = first.size(1)
-            val result = new Array[Table](depth)
-            var i = 0
-            while(i < depth) {
-              var j = 0
-              val newTable = new Table()
-              while (j < nElem) {
-                val elem = table[Tensor[ByteString]](j + 1)
-                newTable.insert(elem(i + 1))
-                j = j + 1
-              }
-              result(i) = newTable
-              i = i + 1
-            }
-            result
-          }
+          result.flatMap(splitTensorByFirstDim)
         } else {
           result
         }
@@ -127,6 +107,7 @@ class BigDLSessionImpl[T: ClassTag](
 
     readerNode.element.getOp match {
       case "TFRecordReaderV2" => readTFRecord(filesSeq)
+      case "FixedLengthRecordReaderV2" => readFixedLengthRecord(filesSeq, readerNode.element)
     }
   }
 
@@ -170,6 +151,40 @@ class BigDLSessionImpl[T: ClassTag](
     resultRdd
   }
 
+  private def readFixedLengthRecord(filesTable: Seq[Table], readerNode: NodeDef): RDD[Table] = {
+
+    val footerBytes = readerNode.getAttrMap.get("footer_bytes").getI.toInt
+    val headerBytes = readerNode.getAttrMap.get("header_bytes").getI.toInt
+    val hopBytes = readerNode.getAttrMap.get("hop_bytes").getI.toInt
+    val recordBytes = readerNode.getAttrMap.get("record_bytes").getI.toInt
+
+    val result = filesTable.map { t =>
+      require(t.length() == 1 && t(1).isInstanceOf[Tensor[ByteString]],
+        "Reader can only read one file at a time")
+      val fileTensor = t[Tensor[ByteString]](1)
+      require(fileTensor.isScalar)
+      val file = fileTensor.value()
+      file
+    }.flatMap { file =>
+      val iter = new FixedLengthRecordReader(
+        new java.io.File(file.toStringUtf8),
+        footerBytes,
+        headerBytes,
+        hopBytes,
+        recordBytes)
+      iter
+    }.map { record =>
+      val table = T()
+      val key = Tensor[ByteString](Array(ByteString.copyFromUtf8("somekey")), Array[Int]())
+      val value = Tensor[ByteString](Array(ByteString.copyFrom(record)), Array[Int]())
+      table.insert(key)
+      table.insert(value)
+      table
+    }
+    val resultRdd = sc.parallelize(result, numSlices = Engine.coreNumber())
+    resultRdd
+  }
+
   private def handleLocalDequeue(node: Node[NodeDef], cache: DataCache): Seq[Table] = {
     require(node.prevNodes.length == 1, "require QueueDequeueV2 only has one input")
     val queueNode = node.prevNodes.head
@@ -192,7 +207,12 @@ class BigDLSessionImpl[T: ClassTag](
     } else {
       val allResult = enqueueNodes.map { enqueueNode =>
         val inputs = Seq(enqueueNode.element.getName)
-        constructLocalData(inputs, new DataCache())
+        val result = constructLocalData(inputs, new DataCache())
+        if (enqueueNode.element.getOp == "QueueEnqueueManyV2") {
+          result.flatMap(splitTensorByFirstDim)
+        } else {
+          result
+        }
       }.reduce { (outerSeq1, outerSeq2) =>
         outerSeq1.zip(outerSeq2).map { case (seq1, seq2) =>
           seq1.add(seq2)
@@ -216,11 +236,38 @@ class BigDLSessionImpl[T: ClassTag](
       .filter(n => n.element != null && enqueueOp(n.element.getOp))
     val rdd = enqueueNodes.map { enqueueNode =>
       val inputs = Seq(enqueueNode.element.getName)
-      constructDistributeData(inputs, cache)
+      val result = constructDistributeData(inputs, cache)
+      if (enqueueNode.element.getOp == "QueueEnqueueManyV2") {
+        result.flatMap(splitTensorByFirstDim)
+      } else {
+        result
+      }
     }.reduce { (rdd1, rdd2) =>
       rdd1.union(rdd2)
     }
     rdd
+  }
+
+  private def splitTensorByFirstDim(table: Table): Array[Table] = {
+    val nElem = table.length()
+    require(nElem >= 1, "EnqueueManyV2 encounter a empty table")
+    val first = table[Tensor[_]](1)
+    require(first.nDimension() >= 1)
+    val depth = first.size(1)
+    val result = new Array[Table](depth)
+    var i = 0
+    while(i < depth) {
+      var j = 0
+      val newTable = new Table()
+      while (j < nElem) {
+        val elem = table[Tensor[ByteString]](j + 1)
+        newTable.insert(elem(i + 1))
+        j = j + 1
+      }
+      result(i) = newTable
+      i = i + 1
+    }
+    result
   }
 
   private def handleDistriDequeueManyNode(node: Node[NodeDef], cache: DataCache): RDD[Table] = {
@@ -235,7 +282,12 @@ class BigDLSessionImpl[T: ClassTag](
     // get previous rdd
     val rdd = enqueueNodes.map { enqueueNode =>
       val inputs = Seq(enqueueNode.element.getName)
-      constructDistributeData(inputs, cache)
+      val result = constructDistributeData(inputs, cache)
+      if (enqueueNode.element.getOp == "QueueEnqueueManyV2") {
+        result.flatMap(splitTensorByFirstDim)
+      } else {
+        result
+      }
     }.reduce { (rdd1, rdd2) =>
       rdd1.union(rdd2)
     }
