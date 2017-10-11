@@ -46,10 +46,6 @@ class Tile[T: ClassTag]()(implicit ev: TensorNumeric[T])
     require(input.nDimension() == multiples.size(1),
       "Length of multiples must be the same as the number of dimensions in input")
 
-//    val newSize = input.size().zip(multiples.storage().array()).map(x => x._1 * x._2)
-//
-//    output.resize(newSize)
-
     output.asInstanceOf[Tensor[Tensor[NumericWildcard]]].resizeAs(input).copy(input)
 
     for (j <- 1 to input.nDimension()) {
