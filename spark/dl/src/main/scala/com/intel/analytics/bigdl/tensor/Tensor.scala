@@ -1245,6 +1245,7 @@ object Tensor {
   def dense[T: ClassTag](
         sparseTensor: Tensor[T],
         res: Tensor[T] = null)(implicit ev: TensorNumeric[T]): Tensor[T] = {
-    DenseTensor(sparseTensor, res)
+    require(sparseTensor.isInstanceOf[SparseTensor[T]])
+    DenseTensor(sparseTensor.asInstanceOf[SparseTensor[T]], res)
   }
 }

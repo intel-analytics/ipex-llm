@@ -2498,29 +2498,20 @@ object DenseTensor {
   }
 
   private[tensor] def apply[T: ClassTag](
-        sparseTensor: Tensor[T],
+        sparseTensor: SparseTensor[T],
         res: Tensor[T] = null)(implicit ev: TensorNumeric[T]): Tensor[T] = {
-    if (sparseTensor.isInstanceOf[SparseTensor[T]]) {
-      val st = sparseTensor.asInstanceOf[SparseTensor[T]]
-      val dt = if (null == res) Tensor(st.size()) else res
-      var i = 0
-      val index = new Array[Int](dt.dim())
-      while (i < st._indices(0).length) {
-        var j = 0
-        while (j < index.length) {
-          index(j) = st._indices(j)(i) + 1
-          j += 1
-        }
-        dt(index) = st(index)
-        i += 1
+    val dt = if (null == res) Tensor(sparseTensor.size()) else res
+    var i = 0
+    val index = new Array[Int](dt.dim())
+    while (i < sparseTensor._indices(0).length) {
+      var j = 0
+      while (j < index.length) {
+        index(j) = sparseTensor._indices(j)(i) + 1
+        j += 1
       }
-      dt
-    } else {
-      if (null == res) {
-        sparseTensor
-      } else {
-        res.resizeAs(sparseTensor).copy(sparseTensor)
-      }
+      dt(index) = sparseTensor(index)
+      i += 1
     }
+    dt
   }
 }
