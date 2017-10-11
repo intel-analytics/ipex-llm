@@ -69,32 +69,34 @@ class ModelBroadcast[T: ClassTag](
 
   private def getAndClearWeightBias(parameters: (Array[Tensor[T]], Array[Tensor[T]]))
   : Array[Tensor[T]] = {
-    var i = 0
-    val weightsBias = new Array[Tensor[T]](parameters._1.length)
-    val isQuantized = parameters._1.exists(_.getTensorType == QuantizedType)
-    val (isCompacted, storage) = if (!isQuantized) {
-      val storage = Storage(parameters._1(0).storage.array())
-      (parameters._1.map(_.nElement()).sum == storage.length(), storage)
-    } else {
-      (false, null)
-    }
+    if (parameters._1.length != 0) {
+      var i = 0
+      val weightsBias = new Array[Tensor[T]](parameters._1.length)
+      val isQuantized = parameters._1.exists(_.getTensorType == QuantizedType)
+      val (isCompacted, storage) = if (!isQuantized) {
+        val storage = Storage(parameters._1(0).storage.array())
+        (parameters._1.map(_.nElement()).sum == storage.length(), storage)
+      } else {
+        (false, null)
+      }
 
-    while (i < parameters._1.length) {
-      if (parameters._1(i) != null) {
-        val wb = parameters._1(i)
-        wb.getTensorType match {
-          case QuantizedType =>
-            val quantTensor = wb.asInstanceOf[QuantizedTensor[T]]
-            weightsBias(i) = QuantizedTensor[T](quantTensor.getStorage, quantTensor.maxOfRow,
-              quantTensor.minOfRow, quantTensor.sumOfRow, quantTensor.size(), quantTensor.params)
-          case _ =>
-            weightsBias(i) = if (isCompacted) {
-              Tensor[T](storage, wb.storageOffset(), wb.size(), wb.stride())
-            } else {
-              Tensor[T](Storage(wb.storage().array()), wb.storageOffset(), wb.size(), wb.stride())
-            }
+      while (i < parameters._1.length) {
+        if (parameters._1(i) != null) {
+          val wb = parameters._1(i)
+          wb.getTensorType match {
+            case QuantizedType =>
+              val quantTensor = wb.asInstanceOf[QuantizedTensor[T]]
+              weightsBias(i) = QuantizedTensor[T](quantTensor.getStorage, quantTensor.maxOfRow,
+                quantTensor.minOfRow, quantTensor.sumOfRow, quantTensor.size(), quantTensor.params)
+            case _ =>
+              weightsBias(i) = if (isCompacted) {
+                Tensor[T](storage, wb.storageOffset(), wb.size(), wb.stride())
+              } else {
+                Tensor[T](Storage(wb.storage().array()), wb.storageOffset(), wb.size(), wb.stride())
+              }
+          }
+          i += 1
         }
-        i += 1
       }
 
       i = 0
@@ -113,9 +115,10 @@ class ModelBroadcast[T: ClassTag](
         }
         i += 1
       }
+      weightsBias
+    } else {
+      Array()
     }
-
-    weightsBias
   }
 
   private def putWeightBias(
