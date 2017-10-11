@@ -322,6 +322,10 @@ object CellSerializer extends ModuleSerializable {
     cellModule.preTopology = DataConverter.getAttributeValue(context, preTopologyAttr).
       asInstanceOf[TensorModule[T]]
 
+    val includePreTopologyAttr = attrMap.get("includePreTopology")
+    cellModule.includePreTopology = DataConverter.getAttributeValue(context,
+      includePreTopologyAttr).asInstanceOf[Boolean]
+
     cellModule
   }
 
@@ -346,5 +350,10 @@ object CellSerializer extends ModuleSerializable {
     DataConverter.setAttributeValue(context, preTopologyBuilder,
       cellModule.preTopology, ModuleSerializer.tensorModuleType)
     cellModuleBuilder.putAttr("preTopology", preTopologyBuilder.build)
+
+    val includePreTopologyBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, includePreTopologyBuilder,
+      cellModule.includePreTopology, scala.reflect.runtime.universe.typeOf[Boolean])
+    cellModuleBuilder.putAttr("includePreTopology", includePreTopologyBuilder.build)
   }
 }
