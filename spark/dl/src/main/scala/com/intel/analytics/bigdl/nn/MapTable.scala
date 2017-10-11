@@ -15,12 +15,14 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
 import com.intel.analytics.bigdl.utils.serializer.{ContainerSerializable, DeserializeContext, ModuleData, SerializeContext}
 import serialization.Bigdl.BigDLModule
 
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
@@ -41,7 +43,7 @@ class MapTable[T: ClassTag](
   }
 
   private def extend(n: Int): Unit = {
-    var i = 1
+    var i = 2
     while (i <= n && modules.size <= i) {
       if (modules.length <= i) {
         modules.append(module
@@ -98,6 +100,16 @@ class MapTable[T: ClassTag](
     }
   }
 
+  override def getEndNodes(startNodes: Array[ModuleNode[T]]): Array[ModuleNode[T]] = {
+    val outputs = ArrayBuffer[ModuleNode[T]]()
+    var outputTuple: Array[ModuleNode[T]] = null
+    extend(startNodes.length)
+    for (i <- 0 to modules.size - 1) {
+      outputTuple = modules(i).getEndNodes(Array(startNodes(i)))
+      outputs ++= outputTuple
+    }
+    outputs.toArray
+  }
 
   override def zeroGradParameters(): Unit = {
     if (module != null) {

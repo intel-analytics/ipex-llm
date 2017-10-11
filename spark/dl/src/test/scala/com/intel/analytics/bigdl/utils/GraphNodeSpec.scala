@@ -29,7 +29,9 @@ import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.torch.TH
 import com.intel.analytics.bigdl.utils.{RandomGenerator, T, Table}
+import spire.syntax.module
 
 import scala.util.Random
 
@@ -162,4 +164,91 @@ class GraphNodeSpec extends FlatSpec with Matchers {
 
     gradInput1 should be (gradInput2)
   }
+
+  "ParallelTable to graph" should "generate correct output" in {
+    Random.setSeed(1)
+    val batchSize = 4
+    val hiddenSize = 12
+    val input = T(Tensor[Float](batchSize, hiddenSize).apply1(e => Random.nextFloat()),
+      Tensor[Float](batchSize, hiddenSize).apply1(e => Random.nextFloat()))
+    val gradOutput = T(Tensor[Float](batchSize, hiddenSize).apply1(e => Random.nextFloat()),
+      Tensor[Float](batchSize, hiddenSize).apply1(e => Random.nextFloat()))
+
+    val seed = 100
+    RNG.setSeed(seed)
+    val model = ParallelTable()
+        .add(Linear(hiddenSize, hiddenSize))
+        .add(Linear(hiddenSize, hiddenSize))
+
+    val model2 = model.cloneModule()
+    val graphModel = model2.toGraph(Input(), Input())
+
+    val output1 = model.forward(input)
+    val output2 = graphModel.forward(input)
+    output1 should be (output2)
+
+    val gradInput1 = model.backward(input, gradOutput)
+    val gradInput2 = graphModel.backward(input, gradOutput)
+
+    gradInput1 should be (gradInput2)
+  }
+
+  "MapTable to graph" should "generate correct output" in {
+    Random.setSeed(1)
+    val batchSize = 4
+    val hiddenSize = 12
+    val input = T(Tensor[Float](batchSize, hiddenSize).apply1(e => Random.nextFloat()),
+      Tensor[Float](batchSize, hiddenSize).apply1(e => Random.nextFloat()))
+    val gradOutput = T(Tensor[Float](batchSize, hiddenSize).apply1(e => Random.nextFloat()),
+      Tensor[Float](batchSize, hiddenSize).apply1(e => Random.nextFloat()))
+
+    val seed = 100
+    RNG.setSeed(seed)
+    val model = MapTable(Linear(hiddenSize, hiddenSize))
+
+    val model2 = model.cloneModule()
+    val graphModel = model2.toGraph(Input(), Input())
+
+    val output1 = model.forward(input)
+    val output2 = graphModel.forward(input)
+    output1 should be (output2)
+
+    val gradInput1 = model.backward(input, gradOutput)
+    val gradInput2 = graphModel.backward(input, gradOutput)
+
+    gradInput1 should be (gradInput2)
+  }
+
+  "CAddTable to graph" should "generate correct output" in {
+    val module = CAddTable[Float]().toGraph(Input(), Input())
+    val scalar = Tensor[Float](Array(2.0f), Array[Int]())
+    val tensor = Tensor[Float](T(1, 2, 3))
+    val output = module.forward(T(scalar, tensor))
+    output should be(Tensor[Float](T(3, 4, 5)))
+    val grads = module.backward(T(scalar, tensor), Tensor[Float](T(1, 2, 3))).toTable
+    grads[Tensor[Float]](1).value() should be(6)
+    grads[Tensor[Float]](2) should be(Tensor[Float](T(1, 2, 3)))
+  }
+
+  "Bottle to graph" should "generate correct output" in {
+    val seed = 100
+    RNG.setSeed(seed)
+    val model = Bottle[Double](Linear[Double](10, 2), 2, 2)
+    model.add(Linear(10, 2))
+
+    val input = Tensor[Double](4, 5, 10).apply1(_ => Random.nextDouble())
+    val gradOutput = Tensor[Double](4, 10).apply1(_ => Random.nextDouble())
+
+    val graphModel = model.cloneModule().toGraph(Input())
+
+    val output1 = model.forward(input)
+    val output2 = graphModel.forward(input)
+    output1 should be (output2)
+
+    val gradInput1 = model.backward(input, gradOutput)
+    val gradInput2 = graphModel.backward(input, gradOutput)
+
+    gradInput1 should be (gradInput2)
+  }
+
 }
