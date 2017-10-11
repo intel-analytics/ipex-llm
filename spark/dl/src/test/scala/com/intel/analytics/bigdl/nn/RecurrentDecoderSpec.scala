@@ -280,6 +280,40 @@ class RecurrentDecoderSpec extends FlatSpec with BeforeAndAfter with Matchers {
     })
   }
 
+  "A LSTM backward with RecurrentDecoder" should "get the same result with updateGradInput" in {
+    import com.intel.analytics.bigdl.numeric.NumericDouble
+    val hiddenSize = 7
+    val inputSize = 7
+    val seqLength = 5
+    val seed = 100
+    val batchSize = 4
+
+    RNG.setSeed(seed)
+    val input = Tensor[Double](batchSize, inputSize).rand
+    val gradOutput = Tensor[Double](batchSize, seqLength, hiddenSize).rand
+    val rec = RecurrentDecoder(seqLength)
+    val model = rec
+      .add(LSTM(inputSize, hiddenSize))
+
+    val weights = model.getParameters()._1.clone()
+    model.zeroGradParameters()
+    val output = model.forward(input).toTensor
+    val gradInput = model.backward(input, gradOutput).toTensor
+    val gradient = model.getParameters()._2
+
+    val rec2 = RecurrentDecoder(seqLength)
+    val model2 = rec2
+      .add(LSTM(inputSize, hiddenSize))
+    model2.getParameters()._1.copy(weights)
+    model2.zeroGradParameters()
+    val output2 = model2.forward(input).toTensor
+    val gradInput2 = model2.updateGradInput(input, gradOutput).toTensor
+    model2.accGradParameters(input, gradOutput)
+    val gradient2 = model2.getParameters()._2
+    require(gradInput.almostEqual(gradInput2, 1e-8) == true)
+    require(gradient.almostEqual(gradient2, 1e-8) == true)
+  }
+
   "A ConvLSTMPeepwhole " should "work with RecurrentDecoder get/setStates" in {
     import com.intel.analytics.bigdl.numeric.NumericDouble
     val hiddenSize = 3
