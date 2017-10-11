@@ -79,8 +79,7 @@ class BigDLSessionImpl[T: ClassTag](
     val index = nameToIndex(node.element.getName)
     val nSlices = dequeNodeNames.size
 
-    val enqueueNodes = queueNode.nextNodes
-      .filter(n => n.element != null && enqueueOp(n.element.getOp))
+    val enqueueNodes = findEnqueueNodes(queueNode)
     val filesSeq = if (cache.contains(queueNode.element.getName)) {
       val resultArray = cache(queueNode.element.getName)
       val result = resultArray(index)
@@ -185,10 +184,34 @@ class BigDLSessionImpl[T: ClassTag](
     resultRdd
   }
 
+  private val identityOp = Set("Switch", "Identity", "Merge")
+  private def findEnqueueNodes(queueNode: Node[NodeDef]): Seq[Node[NodeDef]] = {
+    val queue = mutable.Queue[Node[NodeDef]]()
+    val enqueNodes = mutable.ArrayBuffer[Node[NodeDef]]()
+    queue.enqueue(queueNode.nextNodes: _*)
+    val visited = mutable.HashSet[Node[NodeDef]]()
+    while(queue.nonEmpty) {
+      val node = queue.dequeue()
+      if (!visited(node)) {
+        if (node.element != null && enqueueOp(node.element.getOp)) {
+          enqueNodes += node
+        } else if (node.element != null && identityOp(node.element.getOp)) {
+          queue.enqueue(node.nextNodes: _*)
+        }
+      }
+    }
+    if (enqueNodes.isEmpty) {
+      throw new IllegalArgumentException(
+        s"Cannot find enqueue node for queue: ${queueNode.element}")
+    } else {
+      enqueNodes
+    }
+  }
+
   private def handleLocalDequeue(node: Node[NodeDef], cache: DataCache): Seq[Table] = {
     require(node.prevNodes.length == 1, "require QueueDequeueV2 only has one input")
     val queueNode = node.prevNodes.head
-    val enqueueNodes = queueNode.nextNodes.filter(n => enqueueOp(n.element.getOp))
+    val enqueueNodes = findEnqueueNodes(queueNode)
     val dequeNodeNames = mutable.LinkedHashSet[String]()
 
     queueNode.nextNodes
@@ -232,8 +255,7 @@ class BigDLSessionImpl[T: ClassTag](
       .filter(n => n.element != null && dequeueOp(n.element.getOp))
       .map(n => n.element.getName.split(":")(0)).toSet
     require(dequeueNodes.size == 1, "only support one dequeue node after reader")
-    val enqueueNodes = queueNode.nextNodes
-      .filter(n => n.element != null && enqueueOp(n.element.getOp))
+    val enqueueNodes = findEnqueueNodes(queueNode)
     val rdd = enqueueNodes.map { enqueueNode =>
       val inputs = Seq(enqueueNode.element.getName)
       val result = constructDistributeData(inputs, cache)
@@ -277,8 +299,7 @@ class BigDLSessionImpl[T: ClassTag](
       .filter(n => n.element != null && dequeueOp(n.element.getOp))
       .map(n => n.element.getName.split(":")(0)).toSet
     require(dequeueNodes.size == 1, "only support one dequeue node after reader")
-    val enqueueNodes = queueNode.nextNodes
-      .filter(n => n.element != null && enqueueOp(n.element.getOp))
+    val enqueueNodes = findEnqueueNodes(queueNode)
     // get previous rdd
     val rdd = enqueueNodes.map { enqueueNode =>
       val inputs = Seq(enqueueNode.element.getName)
@@ -374,8 +395,7 @@ class BigDLSessionImpl[T: ClassTag](
   private def checkAndRemoveQueueNode(tfGraph: DirectedGraph[NodeDef]) = {
     tfGraph.DFS.filter(n => n.element != null && enqueueOp(n.element.getOp))
       .foreach { node =>
-        val queueNodes = node.prevNodes.filter(n => queueOp(n.element.getOp))
-        queueNodes.foreach(n => n.delete(node))
+        node.prevNodes.head.delete(node)
       }
   }
 
