@@ -50,6 +50,7 @@ class ModelBroadcast[T: ClassTag](
     broadcastModel = sc.broadcast(model)
     broadcastParameters = sc.broadcast(weightsBias)
     putWeightBias(weightsBias, model)
+    initGradWeightBias(weightsBias, model)
     this
   }
 
@@ -60,7 +61,8 @@ class ModelBroadcast[T: ClassTag](
    */
   def value(): Module[T] = {
     val localModel = broadcastModel.value.cloneModule()
-    putWeightBias(broadcastParameters.value, localModel, inference)
+    putWeightBias(broadcastParameters.value, localModel)
+    initGradWeightBias(broadcastParameters.value, localModel)
     localModel
   }
 
@@ -118,9 +120,8 @@ class ModelBroadcast[T: ClassTag](
 
   private def putWeightBias(
         broadcastWeightBias: Array[Tensor[T]],
-        localModel: Module[T],
-        inference: Boolean = true): Unit = {
-    val (localWeightBias, localGradWeightBias) = localModel.parameters()
+        localModel: Module[T]): Unit = {
+    val localWeightBias = localModel.parameters()._1
     var i = 0
     while (i < localWeightBias.length) {
       if (localWeightBias(i) != null) {
@@ -128,19 +129,21 @@ class ModelBroadcast[T: ClassTag](
       }
       i += 1
     }
+  }
+
+  private def initGradWeightBias(
+        broadcastWeightBias: Array[Tensor[T]],
+        localModel: Module[T]): Unit = {
+    val (localWeightBias, localGradWeightBias) = localModel.parameters()
     // init gradient with a compacted storage
-    if (!inference) {
-      val storage = Storage[T](localGradWeightBias.map(_.nElement()).sum)
-      i = 0
-      while (i < localWeightBias.length) {
-        if (localWeightBias(i) != null) {
-          val wb = broadcastWeightBias(i)
-          if (!inference) {
-            localGradWeightBias(i).set(storage, wb.storageOffset(), wb.size(), wb.stride())
-          }
-        }
-        i += 1
+    val storage = Storage[T](localGradWeightBias.map(_.nElement()).sum)
+    var i = 0
+    while (i < localWeightBias.length) {
+      if (localWeightBias(i) != null) {
+        val wb = broadcastWeightBias(i)
+        localGradWeightBias(i).set(storage, wb.storageOffset(), wb.size(), wb.stride())
       }
+      i += 1
     }
   }
 }
