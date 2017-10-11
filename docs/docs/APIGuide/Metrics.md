@@ -49,7 +49,7 @@ loss = Loss(cri)
 ```
 example
 ```
-from pyspark.context import SparkContext
+from pyspark import SparkContext
 from bigdl.util.common import *
 from bigdl.nn.layer import *
 from bigdl.optim.optimizer import *
@@ -71,7 +71,7 @@ trainingData = sc.parallelize(range(0, data_len)).map(
 
 model = Sequential()
 model.add(Linear(4, 5))
-test_results = model.test(trainingData, batch_size, [Loss()])
+test_results = model.evaluate(trainingData, batch_size, [Loss()])
 
 >>> print test_results[0]
 Test result: 0.116546951234, total_num: 10, method: Loss
@@ -99,7 +99,7 @@ top1accuracy = Top1Accuracy()
 ```
 
 ```python
-test_results = model.test(trainingData, batch_size, [Top1Accuracy()])
+test_results = model.evaluate(trainingData, batch_size, [Top1Accuracy()])
 
 >>> print test_results[0]
 Test result: 0.0, total_num: 10, method: Top1Accuracy
@@ -126,9 +126,9 @@ res18: Array[(com.intel.analytics.bigdl.optim.ValidationResult, com.intel.analyt
 top5accuracy = Top5Accuracy()
 ```
 ```python
-test_results = model.test(trainingData, batch_size, [Top5Accuracy()])
+test_results = model.evaluate(trainingData, batch_size, [Top5Accuracy()])
 
->>> print test_results[1]
+>>> print test_results[0]
 Test result: 0.0, total_num: 10, method: Top5Accuracy
 ```
 
