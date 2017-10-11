@@ -84,7 +84,7 @@ class LSTMPeephole[T : ClassTag] (
   }
 
   override def hiddenSizeOfPreTopo: Int = hiddenSize * 4
-  
+
   def buildGate(dimension: Int, offset: Int, length: Int)
                (input1: ModuleNode[T], input2: ModuleNode[T], input3: ModuleNode[T])
   : ModuleNode[T] = {
@@ -95,14 +95,12 @@ class LSTMPeephole[T : ClassTag] (
     var i2g: ModuleNode[T] = null
     var h2g: ModuleNode[T] = null
     if (p != 0) {
-      i2g = Sequential()
-            .add(Dropout(p))
-            .add(Linear(inputSize, hiddenSize, wRegularizer = wRegularizer,
-              bRegularizer = bRegularizer)).inputs(input1)
-      h2g = Sequential()
-        .add(Dropout(p))
-        .add(Linear(hiddenSize, hiddenSize, withBias = false,
-          wRegularizer = uRegularizer)).inputs(input2)
+      val input1Drop = Dropout(p).inputs(input1)
+      i2g = Linear(inputSize, hiddenSize, wRegularizer = wRegularizer,
+              bRegularizer = bRegularizer).inputs(input1Drop)
+      val input2Drop = Dropout(p).inputs(input2)
+      h2g = Linear(hiddenSize, hiddenSize, withBias = false,
+          wRegularizer = uRegularizer).inputs(input2Drop)
     } else {
       i2g = Narrow(dimension, offset, length).inputs(input1)
       h2g = Linear(hiddenSize, hiddenSize,
@@ -150,15 +148,13 @@ class LSTMPeephole[T : ClassTag] (
     var i2h: ModuleNode[T] = null
     var h2h: ModuleNode[T] = null
     if (p != 0) {
-      i2h = Sequential()
-        .add(Dropout(p))
-        .add(Linear(inputSize, hiddenSize, wRegularizer = wRegularizer,
-          bRegularizer = bRegularizer)).inputs(input1)
+      val input1Drop = Dropout(p).inputs(input1)
+      i2h = Linear(inputSize, hiddenSize, wRegularizer = wRegularizer,
+          bRegularizer = bRegularizer).inputs(input1Drop)
 
-      h2h = Sequential()
-        .add(Dropout(p))
-        .add(Linear(hiddenSize, hiddenSize, withBias = false,
-          wRegularizer = uRegularizer)).inputs(input2)
+      val input2Drop = Dropout(p).inputs(input2)
+      h2h = Linear(hiddenSize, hiddenSize, withBias = false,
+          wRegularizer = uRegularizer).inputs(input2Drop)
     } else {
       i2h = Narrow(featDim, 1 + 2 * hiddenSize, hiddenSize).inputs(input1)
       h2h = Linear(hiddenSize, hiddenSize, withBias = false,
