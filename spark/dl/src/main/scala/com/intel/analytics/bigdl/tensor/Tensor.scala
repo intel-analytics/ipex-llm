@@ -798,6 +798,8 @@ sealed trait TensorType
 
 object DenseType extends TensorType
 
+object SparseType extends TensorType
+
 object QuantizedType extends TensorType
 
 object Tensor {

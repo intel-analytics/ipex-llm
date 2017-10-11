@@ -986,6 +986,8 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
         castTensor: Tensor[D])(implicit ev: TensorNumeric[D]): Tensor[D] = {
     throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
   }
+
+  override def getTensorType: TensorType = SparseType
 }
 
 object SparseTensor{
