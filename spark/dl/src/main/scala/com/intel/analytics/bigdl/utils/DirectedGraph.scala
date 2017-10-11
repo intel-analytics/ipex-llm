@@ -172,7 +172,7 @@ class DirectedGraph[T](val source : Node[T], val reverse : Boolean = false) exte
  * @tparam T element type
  */
 @SerialVersionUID(- 6021651923538325999L)
-class Node[T](val element: T) extends Serializable {
+class Node[T](var element: T) extends Serializable {
   /**
    * The nodes pointed by current node
    * @return
@@ -293,6 +293,11 @@ class Node[T](val element: T) extends Serializable {
       )
     )
     nexts.clear()
+    this
+  }
+
+  def setElement(e: T): this.type = {
+    element = e
     this
   }
 
