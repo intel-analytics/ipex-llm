@@ -13,22 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn.ops
+package com.intel.analytics.bigdl.nn.tf
 
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.{NumericWildCard, TensorNumeric}
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
 class BiasAdd[T: ClassTag]()
-  (implicit ev: TensorNumeric[T]) extends Operation[Table, Tensor[_], T] {
-  var onesBias: Tensor[NumericWildCard] = _
+  (implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T] {
+  var onesBias: Tensor[T] = _
 
-  override def updateOutput(input: Table): Tensor[_] = {
-    val value = input[Tensor[NumericWildCard]](1)
-    val bias = input[Tensor[NumericWildCard]](2)
+  override def updateOutput(input: Table): Tensor[T] = {
+    val value = input[Tensor[T]](1)
+    val bias = input[Tensor[T]](2)
     val sizes = value.size().toBuffer
     val last = sizes.last
     sizes.remove(value.nDimension() - 1)
@@ -46,12 +46,9 @@ class BiasAdd[T: ClassTag]()
       onesBias.resize(sizeProduct).fill(ev.fromType(1.0))
     }
 
-    output.asInstanceOf[Tensor[NumericWildCard]]
-      .resizeAs(value)
+    output.resizeAs(value)
       .copy(value)
-    val value2d = output
-      .view(Array(sizeProduct, last))
-      .asInstanceOf[Tensor[NumericWildCard]]
+    val value2d = output.view(Array(sizeProduct, last))
 
 
     value2d
@@ -59,14 +56,42 @@ class BiasAdd[T: ClassTag]()
         value.getTensorNumeric().one,
         onesBias,
         bias)
-
     output
+  }
+
+  override def updateGradInput(input: Table, gradOutput: Tensor[T]): Table = {
+    val value = input[Tensor[T]](1)
+    val bias = input[Tensor[T]](2)
+
+    val sizes = value.size().toBuffer
+    val last = sizes.last
+    sizes.remove(value.nDimension() - 1)
+    val sizeProduct = sizes.product
+
+    if (!gradInput.contains(1)) {
+      gradInput(1) = value.emptyInstance()
+    }
+
+    if (!gradInput.contains(2)) {
+      gradInput(2) = bias.emptyInstance()
+    }
+
+    val gradValue = gradInput[Tensor[T]](1)
+    val gradBias = gradInput[Tensor[T]](2)
+
+    gradValue.resizeAs(value).copy(gradOutput)
+
+    val gradOutput2d = gradOutput.view(Array(sizeProduct, last))
+
+    gradBias.resizeAs(bias).addmv(ev.fromType(1.0), gradOutput2d.t, onesBias)
+
+    gradInput
   }
 }
 
 object BiasAdd {
   def apply[T: ClassTag]()
     (implicit ev: TensorNumeric[T]):
-  Operation[Activity, Activity, T]
-  = ModuleToOperation[T](new BiasAdd())
+  BiasAdd[T]
+  = new BiasAdd[T]()
 }
