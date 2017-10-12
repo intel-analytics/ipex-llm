@@ -467,6 +467,7 @@ class ParallelCriterion(Criterion):
 class KLDCriterion(Criterion):
 
     '''
+    Computes the KL-divergence of the Gaussian distribution.
     >>> KLDCriterion = KLDCriterion()
     creating: createKLDCriterion
     '''
@@ -478,6 +479,7 @@ class KLDCriterion(Criterion):
 class GaussianCriterion(Criterion):
 
     '''
+    Computes the log-likelihood of a sample x given a Gaussian distribution p.
     >>> GaussianCriterion = GaussianCriterion()
     creating: createGaussianCriterion
     '''

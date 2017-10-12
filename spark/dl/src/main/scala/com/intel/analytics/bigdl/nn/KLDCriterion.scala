@@ -15,6 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import breeze.numerics.exp
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractCriterion, AbstractModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -22,6 +23,9 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
+/**
+ * Computes the KL-divergence of the Gaussian distribution.
+ */
 class KLDCriterion[@specialized(Float, Double) T: ClassTag](
   implicit ev: TensorNumeric[T]) extends AbstractCriterion[Table, Tensor[T], T] {
 
@@ -53,13 +57,11 @@ class KLDCriterion[@specialized(Float, Double) T: ClassTag](
     if (!gradInput.contains(1)) gradInput(1) = Tensor()
     if (!gradInput.contains(2)) gradInput(2) = Tensor()
 
-    mean.resizeAs(input[Tensor[T]](1)).copy(input(1))
-    vari.resizeAs(input[Tensor[T]](2)).copy(input(2))
-
     // d_L/d_mu = mu
-    gradInput[Tensor[T]](1).resizeAs(mean).copy(mean)
+    gradInput[Tensor[T]](1).resizeAs(input(1)).copy(input(1))
     // d_L/d_sigma = 0.5*(exp(log_sq_sigma)-1)
-    gradInput(2) = vari.exp().add(ev.fromType(-1)).mul(ev.fromType(0.5))
+    gradInput[Tensor[T]](2).resizeAs(input(2)).copy(input(2))
+    gradInput[Tensor[T]](2).exp().add(ev.fromType(-1)).mul(ev.fromType(0.5))
 
     gradInput
   }

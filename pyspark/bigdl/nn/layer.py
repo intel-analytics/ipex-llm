@@ -4092,6 +4092,7 @@ class ResizeBilinear(Layer):
 
 class GaussianSampler(Layer):
     """
+    Takes {mean, log_variance} as input and samples from the Gaussian distribution
     >>> sampler = GaussianSampler()
     creating: createGaussianSampler
     """

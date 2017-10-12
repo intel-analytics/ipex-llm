@@ -41,11 +41,11 @@ class GaussianCriterionSpec extends FlatSpec with Matchers{
 
     loss should be(6.575727f +- 1e-3f)
 
-    val gardTarget1 = Tensor(Array(0.38693744f, 0.48488575f, -0.43506682f,
-      0.3983949f, 0.49381834f, -0.053951025f), Array(2, 3))
+    val gardTarget1 = Tensor(Array(-0.054713856f, 0.39738163f, -0.5449059f,
+    -0.034790944f, 0.25486523f, -0.28528172f), Array(2, 3))
 
-    val gardTarget2 = Tensor(Array(0.38693744f, 0.48488575f, -0.43506682f,
-      0.3983949f, 0.49381834f, -0.053951025f), Array(2, 3))
+    val gardTarget2 = Tensor(Array(0.49651626f, 0.408394f, 0.35083658f,
+    0.4992921f, 0.46332347f, 0.45096576f), Array(2, 3))
 
     gradInput[Tensor[Float]](1) should be(gardTarget1)
     gradInput[Tensor[Float]](2) should be(gardTarget2)

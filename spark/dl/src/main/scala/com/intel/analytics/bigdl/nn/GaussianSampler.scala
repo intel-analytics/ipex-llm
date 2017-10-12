@@ -23,7 +23,9 @@ import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
-
+/**
+ * Takes {mean, log_variance} as input and samples from the Gaussian distribution
+ */
 class GaussianSampler[@specialized(Float, Double) T: ClassTag](
   implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T] {
 

@@ -23,6 +23,9 @@ import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
+/**
+ * Computes the log-likelihood of a sample x given a Gaussian distribution p.
+ */
 class GaussianCriterion[@specialized(Float, Double) T: ClassTag](
   implicit ev: TensorNumeric[T]) extends AbstractCriterion[Table, Tensor[T], T]  {
 
@@ -64,10 +67,10 @@ class GaussianCriterion[@specialized(Float, Double) T: ClassTag](
     expVar.exp()
 
     // -(x-mu)/sigma^2
-    gradInput(1) = mean.add(ev.fromType(-1), target).cdiv(expVar)
+    gradInput[Tensor[T]](1).resizeAs(mean).copy(mean.add(ev.fromType(-1), target))
+    gradInput[Tensor[T]](1).cdiv(expVar)
     // 0.5 - 0.5 * (x - mu)^2 / sigma^2
-    gradInput(2) = mean.add(ev.fromType(-1), target).pow(ev.fromType(2)).cdiv(expVar).
-      mul(ev.fromType(-0.5)).add(ev.fromType(0.5))
+    gradInput(2) = mean.cmul(gradInput[Tensor[T]](1)).mul(ev.fromType(-0.5)).add(ev.fromType(0.5))
 
     gradInput
   }
