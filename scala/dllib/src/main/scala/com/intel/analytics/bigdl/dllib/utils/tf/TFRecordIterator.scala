@@ -30,7 +30,7 @@ import java.nio.{ByteBuffer, ByteOrder}
  */
 class TFRecordIterator(fileName: File) extends Iterator[Array[Byte]] {
 
-  private val inputStream = new BufferedInputStream(new FileInputStream(fileName))
+  private val inputStream = new FileInputStream(fileName)
 
   private var dataBuffer: Array[Byte] = null
 
