@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.models.utils
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.tensor.{QuantizedTensor, Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import org.apache.spark.SparkContext
 import org.apache.spark.broadcast.Broadcast
@@ -70,8 +70,14 @@ class ModelBroadcast[T: ClassTag](implicit ev: TensorNumeric[T]) extends Seriali
     while (i < parameters._1.length) {
       if (parameters._1(i) != null) {
         val wb = parameters._1(i)
-        weightsBias(i) = Tensor[T](Storage(wb.storage().array()),
-          wb.storageOffset(), wb.size(), wb.stride())
+        wb match {
+          case value1: QuantizedTensor[T] =>
+            weightsBias(i) = QuantizedTensor[T](value1.getStorage, value1.maxOfRow,
+              value1.minOfRow, value1.sumOfRow, value1.size(), value1.params)
+          case _ =>
+            weightsBias(i) = Tensor[T](Storage(wb.storage().array()),
+              wb.storageOffset(), wb.size(), wb.stride())
+        }
       }
       i += 1
     }
@@ -80,11 +86,18 @@ class ModelBroadcast[T: ClassTag](implicit ev: TensorNumeric[T]) extends Seriali
       if (parameters._1(i) != null) {
         parameters._1(i).set()
       }
+      i += 1
+    }
+
+    // because in quantized mode, the parameters are not the same length.
+    i = 0
+    while (i < parameters._2.length) {
       if (parameters._2(i) != null) {
         parameters._2(i).set()
       }
       i += 1
     }
+
     weightsBias
   }
 
