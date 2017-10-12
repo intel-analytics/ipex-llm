@@ -209,7 +209,7 @@ class Sample(object):
             label = np.array(label)
         return cls(
             features=[JTensor.from_ndarray(f) for f in features],
-            label=label,
+            label=JTensor.from_ndarray(label),
             bigdl_type=bigdl_type)
 
     def __reduce__(self):
