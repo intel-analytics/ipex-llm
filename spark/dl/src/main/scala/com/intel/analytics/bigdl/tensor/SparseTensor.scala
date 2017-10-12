@@ -881,13 +881,6 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
       d += 1
     }
 
-    println(_indices.map(_.array()).deep == other._indices.map(_.array()).deep)
-    println(_indices(0).array.deep == other._indices(0).array().deep)
-    println(_indices(1).array.deep == other._indices(1).array().deep)
-    println(_values.array().deep == other._values.array().deep)
-    println(this._shape.deep == other._shape.deep)
-    println(this._nElement == other._nElement)
-
     _indices.map(_.array()).deep == other._indices.map(_.array()).deep &&
       _values.array().deep == other._values.array().deep &&
       this._shape.deep == other._shape.deep &&
