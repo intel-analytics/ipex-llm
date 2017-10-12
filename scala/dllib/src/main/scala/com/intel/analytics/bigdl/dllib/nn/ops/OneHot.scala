@@ -61,7 +61,7 @@ class OneHot[T: ClassTag, D: ClassTag](
 )(implicit ev: TensorNumeric[T], ev1: TensorNumeric[D]) extends Operation[Table, Tensor[D], T] {
   output = Activity.allocate[Tensor[D], D]()
   def updateOutput(input: Table): Tensor[D] = {
-    val indices = input[Tensor[Int]](1)
+    val indices = input[Tensor[Long]](1)
     val depth = input[Tensor[Int]](2).value()
     val onValue = if (!input.contains(3)) ev1.one else input[Tensor[D]](3).value()
     val offValue = if (!input.contains(4)) ev1.zero else input[Tensor[D]](4).value()
@@ -97,7 +97,7 @@ class OneHot[T: ClassTag, D: ClassTag](
       while (i <= size(0)) {
         j = 1
         while (j <= size(1)) {
-          val index = indices(Array(i, j)) + 1
+          val index = (indices(Array(i, j)) + 1).toInt
           if (index > 0) {
             if (realAxis == 0) {
               output.setValue(index, i, j, onValue)
@@ -114,7 +114,7 @@ class OneHot[T: ClassTag, D: ClassTag](
     } else {
       i = 1
       while (i <= size(0)) {
-        val index = indices(Array(i)) + 1
+        val index = (indices(Array(i)) + 1).toInt
         if (index > 0) {
           if (realAxis == 0) {
             output.setValue(index, i, onValue)

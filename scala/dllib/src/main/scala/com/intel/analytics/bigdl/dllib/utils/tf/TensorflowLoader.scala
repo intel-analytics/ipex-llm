@@ -24,6 +24,7 @@ import com.google.protobuf.{CodedInputStream, TextFormat}
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.Graph
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.ops.{SwitchControlNode, SwitchOps}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{DirectedGraph, Edge, FileReader, Node}
@@ -127,6 +128,7 @@ object TensorflowLoader{
 
     def connect(nodes: Seq[Node[NodeDef]]): (Seq[String], Seq[String]) = {
       var inputCounter = 0
+      var dependencyCounter = 0
       val queue = new mutable.Queue[Node[NodeDef]]()
       val visited = mutable.Set[Node[NodeDef]]()
       val inputs = new mutable.ArrayBuffer[String]()
@@ -162,8 +164,9 @@ object TensorflowLoader{
                 val dependencyNode = Node(NodeDef.newBuilder()
                   .setOp("DependencyNode")
                   .addInput(preNode.element.getName)
-                  .setName(s"depends_on_${preNode.element.getName}")
+                  .setName(s"depends_on_${preNode.element.getName}_$dependencyCounter")
                   .build())
+                dependencyCounter = dependencyCounter + 1
                 dependencyNode -> node
                 dependencyNode
               } else {
@@ -223,7 +226,8 @@ object TensorflowLoader{
       outputs: Seq[String],
       byteOrder: ByteOrder,
       graphPrototxt: String,
-      ctx: Option[Context[T]] = None
+      ctx: Option[Context[T]] = None,
+      generatedBackward: Boolean = true
     )(implicit ev: TensorNumeric[T]): Module[T] = {
     import scala.collection.JavaConverters._
 
@@ -290,7 +294,11 @@ object TensorflowLoader{
             module.setName(name + "/" + module.getName())
           }
         }
-        val node = new Node(module)
+        val node = module match {
+          case _: SwitchOps[_] => new SwitchControlNode(module)
+          case _ => Node(module)
+        }
+
         nodes.asScala.foreach(m => {
           convertedNode(m) = node
           nameToNode(m.element.getName) = node
@@ -340,7 +348,8 @@ object TensorflowLoader{
       gradients += grad
     }
 
-    Graph(inputNodes.toArray, outputNodes.toArray, Some((weights.toArray, gradients.toArray)))
+    Graph(inputNodes.toArray, outputNodes.toArray, Some((weights.toArray, gradients.toArray)),
+      generatedBackward)
   }
 
   /**
@@ -374,6 +383,7 @@ object TensorflowLoader{
     val patternToGraph = new mutable.HashMap[Node[String], Node[NodeDef]]()
     val inputs = new ArrayBuffer[Node[NodeDef]]()
     patternToGraph(pattern.source) = graph.source
+    inputs.append(graph.source)
 
     pattern.BFS.foreach(patternNode => {
       if (patternNode.element != N_INPUT_PLACEHOLDER && patternNode.element != INPUT_PLACEHOLDER) {

@@ -15,6 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
+import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
@@ -86,10 +87,16 @@ class EqualSpec extends FlatSpec with Matchers {
   }
 
   "Equal String operation" should "works correctly" in {
+    import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric.NumericByteString
     val input =
       T(
-        Tensor[String](T("abc", "bbb", "aaa")),
-        Tensor[String](T("aaa", "ccc", "aaa"))
+
+        Tensor[ByteString](Array(ByteString.copyFromUtf8("abc"),
+          ByteString.copyFromUtf8("bbb"),
+          ByteString.copyFromUtf8("aaaa").substring(0, 3)), Array(3)),
+        Tensor[ByteString](Array(ByteString.copyFromUtf8("aaa"),
+          ByteString.copyFromUtf8("ccc"),
+          ByteString.copyFromUtf8("aaa")), Array(3))
       )
 
     val expectOutput = Tensor[Boolean](T(false, false, true))

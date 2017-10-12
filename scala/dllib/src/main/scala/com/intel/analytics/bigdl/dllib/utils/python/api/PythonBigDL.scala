@@ -711,7 +711,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def createMean(dimension: Int = 1,
                  nInputDims: Int = -1,
                  squeeze: Boolean = true)
-  : Mean[T] = {
+  : Mean[T, T] = {
     Mean[T](dimension,
       nInputDims,
       squeeze)
@@ -1100,7 +1100,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                 sizeAverage: Boolean = false,
                 squeeze: Boolean = true
                )
-  : Sum[T] = {
+  : Sum[T, T] = {
     Sum[T](dimension,
       nInputDims,
       sizeAverage,

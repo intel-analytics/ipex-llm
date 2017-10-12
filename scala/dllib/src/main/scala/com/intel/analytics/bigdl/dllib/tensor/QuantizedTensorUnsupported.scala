@@ -1380,12 +1380,13 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
 
   override def emptyInstance(): Tensor[T] = throw new UnsupportedOperationException(errorString)
 
-  override def forceCopy(other: Tensor[_]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
-
   override def applyFun[A: ClassTag](t: Tensor[A], func: (A) => T): Tensor[T] =
     throw new UnsupportedOperationException(errorString)
 
   override def cast[D: ClassTag](castTensor: Tensor[D])(implicit ev: TensorNumeric[D]): Tensor[D] =
     throw new UnsupportedOperationException(errorString)
+
+  override def div(y: Tensor[T]): Tensor[T] =
+    throw new UnsupportedOperationException(errorString)
+
 }

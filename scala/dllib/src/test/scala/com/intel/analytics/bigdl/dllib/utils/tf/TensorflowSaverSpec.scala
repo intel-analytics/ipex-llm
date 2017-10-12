@@ -105,7 +105,7 @@ class TensorflowSaverSpec extends TensorflowSpecHelper {
 
   "Squeeze" should "be correctly saved" in {
     System.setProperty("bigdl.enableNHWC", "false")
-    val layer = Squeeze(3)
+    val layer = Squeeze(3).asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]]
     val input = Tensor[Float](4, 2, 1, 2).rand()
     test(layer, input) should be(true)
   }
