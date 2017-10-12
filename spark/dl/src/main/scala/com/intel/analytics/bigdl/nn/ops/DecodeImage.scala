@@ -145,7 +145,7 @@ class DecodeGif[T: ClassTag]()(implicit ev: TensorNumeric[T])
 }
 
 class DecodeRaw[T: ClassTag](val outType: DataType,
-                             val byteOrder: ByteOrder)(implicit ev: TensorNumeric[T])
+                             val littleEndian: Boolean)(implicit ev: TensorNumeric[T])
   extends Operation[Tensor[ByteString], Activity, T] {
   output = {
     outType match {
@@ -159,6 +159,9 @@ class DecodeRaw[T: ClassTag](val outType: DataType,
       case _ => throw new IllegalArgumentException(s"$outType are not supported")
     }
   }
+
+  @transient private val byteOrder =
+    if (littleEndian) ByteOrder.LITTLE_ENDIAN else ByteOrder.BIG_ENDIAN
 
   override def updateOutput(input: Tensor[ByteString]): Activity = {
     require(input.isContiguous(), "only support contiguous input")

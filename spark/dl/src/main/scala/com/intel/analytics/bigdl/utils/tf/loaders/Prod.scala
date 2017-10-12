@@ -34,7 +34,7 @@ class Prod extends TensorflowOpsLoader {
     (implicit ev: TensorNumeric[T]): Module[T] = {
     Adapter[T](Array(2), tensorArrays => {
       val axis = tensorArrays(0).asInstanceOf[Tensor[Int]].value() + 1
-      val keepDims = getBoolean(nodeDef, "keep_dims")
+      val keepDims = getBoolean(nodeDef.getAttrMap, "keep_dims")
       Prod[T](axis)
     })
   }

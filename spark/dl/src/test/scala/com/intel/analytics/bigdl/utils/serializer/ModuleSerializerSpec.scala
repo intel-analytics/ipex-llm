@@ -1682,7 +1682,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     res1 should be (res2)
   }
 
-  "Sum serializer " should " work properly" in {
+  "Sum serializer" should "work properly" in {
     val sum = Sum(2)
     val input1 = Tensor(5, 5).apply1(_ => Random.nextFloat())
     val input2 = Tensor()

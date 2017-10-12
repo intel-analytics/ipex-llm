@@ -114,8 +114,8 @@ trait ModuleSerializable extends Loadable with Savable{
           if (ptype <:< universe.typeOf[ClassTag[_]]||
             ptype.typeSymbol == universe.typeOf[ClassTag[_]].typeSymbol) {
             args(i) = evidence
-          } else if (ptype.toString ==
-            tensorNumericType.toString) {
+          } else if (ptype <:< universe.typeOf[TensorNumeric[_]]
+            || ptype.typeSymbol == universe.typeOf[TensorNumeric[_]].typeSymbol) {
             args(i) = ev
           } else {
             require(modelAttributes.containsKey(name), s"$name value cannot be found")

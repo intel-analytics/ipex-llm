@@ -127,8 +127,8 @@ class SpatialSubtractiveNormalization[T: ClassTag](
 
     // compute mean
     localsums = meanestimator.updateOutput(input).toTensor[T]
-    adjustedsums = divider.updateOutput(T(localsums, coef))
-    output = subtractor.updateOutput(T(input, adjustedsums))
+    adjustedsums = divider.updateOutput(T(localsums, coef)).asInstanceOf[Tensor[T]]
+    output = subtractor.updateOutput(T(input, adjustedsums)).asInstanceOf[Tensor[T]]
 
     output
   }
