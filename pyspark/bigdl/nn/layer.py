@@ -4090,6 +4090,14 @@ class ResizeBilinear(Layer):
     def __init__(self, output_height, output_width, align_corner, bigdl_type="float"):
         super(ResizeBilinear, self).__init__(None, bigdl_type, output_height, output_width, align_corner)
 
+class GaussianSampler(Layer):
+    """
+    >>> sampler = GaussianSampler()
+    creating: createGaussianSampler
+    """
+    def __init__(self, bigdl_type="float"):
+        super(GaussianSampler, self).__init__(None, bigdl_type)
+
 def _test():
     import doctest
     from pyspark import SparkContext

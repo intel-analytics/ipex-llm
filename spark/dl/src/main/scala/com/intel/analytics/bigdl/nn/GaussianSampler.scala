@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.utils.Table
 import scala.reflect.ClassTag
 
 
-class Sampler[@specialized(Float, Double) T: ClassTag](
+class GaussianSampler[@specialized(Float, Double) T: ClassTag](
   implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T] {
 
   val eps = Tensor[T]()
@@ -58,9 +58,9 @@ class Sampler[@specialized(Float, Double) T: ClassTag](
   }
 }
 
-object Sampler {
-  def apply[@specialized(Float, Double) T: ClassTag](
-   implicit ev: TensorNumeric[T]) : Sampler[T] = {
-    new Sampler[T]()
+object GaussianSampler {
+  def apply[@specialized(Float, Double) T: ClassTag]()(
+   implicit ev: TensorNumeric[T]) : GaussianSampler[T] = {
+    new GaussianSampler[T]()
   }
 }

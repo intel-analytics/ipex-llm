@@ -27,13 +27,16 @@ class GaussianCriterion[@specialized(Float, Double) T: ClassTag](
   implicit ev: TensorNumeric[T]) extends AbstractCriterion[Table, Tensor[T], T]  {
 
   @transient
-  private val mean = Tensor[T]()
+  private var mean: Tensor[T] = null
   @transient
-  private val vari = Tensor[T]()
+  private var vari: Tensor[T] = null
   @transient
-  private val expVar = Tensor[T]()
+  private var expVar: Tensor[T] = null
 
   override def updateOutput(input: Table, target: Tensor[T]): T = {
+    if (mean == null) mean = Tensor[T]()
+    if (vari == null) vari = Tensor[T]()
+    if (expVar == null) expVar = Tensor[T]()
     /*
     log(sigma) + 0.5 *log(2pi) + 0.5 * (x - mu)^2/sigma^2
     input[1] = mu
@@ -45,8 +48,8 @@ class GaussianCriterion[@specialized(Float, Double) T: ClassTag](
 
     expVar.exp()
     vari.mul(ev.fromType(0.5)).add(ev.fromType(0.5 * math.log(2 * math.Pi)))
-    vari.add(mean.add(ev.fromType(-1), target).pow(ev.fromType(2))
-      .cdiv(expVar).mul(ev.fromType(0.5)))
+
+    vari.add(ev.fromType(0.5), mean.add(ev.fromType(-1), target).pow(ev.fromType(2)).cdiv(expVar))
 
     output = vari.sum()
     return output
@@ -67,5 +70,12 @@ class GaussianCriterion[@specialized(Float, Double) T: ClassTag](
       mul(ev.fromType(-0.5)).add(ev.fromType(0.5))
 
     gradInput
+  }
+}
+
+object GaussianCriterion {
+  def apply[@specialized(Float, Double) T: ClassTag]()
+    (implicit ev: TensorNumeric[T]) : GaussianCriterion[T] = {
+    new GaussianCriterion[T]()
   }
 }

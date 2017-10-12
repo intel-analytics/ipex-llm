@@ -464,6 +464,26 @@ class ParallelCriterion(Criterion):
         self.value.add(criterion.value, weight)
         return self
 
+class KLDCriterion(Criterion):
+
+    '''
+    >>> KLDCriterion = KLDCriterion()
+    creating: createKLDCriterion
+    '''
+
+    def __init__(self, bigdl_type="float"):
+        super(KLDCriterion, self).__init__(None, bigdl_type)
+
+
+class GaussianCriterion(Criterion):
+
+    '''
+    >>> GaussianCriterion = GaussianCriterion()
+    creating: createGaussianCriterion
+    '''
+
+    def __init__(self, bigdl_type="float"):
+        super(GaussianCriterion, self).__init__(None, bigdl_type)
 
 class SmoothL1Criterion(Criterion):
 

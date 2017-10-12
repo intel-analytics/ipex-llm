@@ -1151,6 +1151,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Identity[T]()
   }
 
+  def createGaussianSampler(): GaussianSampler[T] = {
+    GaussianSampler[T]()
+  }
+
   def createMultiLabelSoftMarginCriterion(weights: JTensor = null,
                                           sizeAverage: Boolean = true)
   : MultiLabelSoftMarginCriterion[T] = {
@@ -1386,6 +1390,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def createParallelCriterion(repeatTarget: Boolean = false)
   : ParallelCriterion[T] = {
     ParallelCriterion[T](repeatTarget)
+  }
+
+  def createKLDCriterion(): KLDCriterion[T] = {
+    KLDCriterion[T]()
+  }
+
+  def createGaussianCriterion(): GaussianCriterion[T] = {
+    GaussianCriterion[T]()
   }
 
   def createSmoothL1Criterion(sizeAverage: Boolean = true)
