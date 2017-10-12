@@ -253,9 +253,9 @@ object DistriOptimizer {
               val offset = tid * taskSize + math.min(tid, extraTask)
               val length = taskSize + (if (tid < extraTask) 1 else 0)
               var i = 1
-              while (i < cached.modelGradients.length) {
+              while (i < finishedGradients.length) {
                   finishedGradients(0).narrow(1, offset + 1, length)
-                    .add(cached.modelGradients(i).narrow(1, offset + 1, length))
+                    .add(finishedGradients(i).narrow(1, offset + 1, length))
                 i += 1
               }
             }))
