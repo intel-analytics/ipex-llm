@@ -19,7 +19,7 @@ import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.nn.{CrossEntropyCriterion, MSECriterion}
 import com.intel.analytics.bigdl.optim.{SGD, Trigger}
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Engine, Table}
+import com.intel.analytics.bigdl.utils.{Engine, File, T, Table}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -28,6 +28,7 @@ import java.io.{File => JFile}
 import com.google.protobuf.ByteString
 import org.tensorflow.framework.AttrValue
 
+import scala.collection.JavaConverters._
 import scala.collection.mutable
 
 class SessionSpec extends FlatSpec with Matchers with BeforeAndAfter {
@@ -93,13 +94,53 @@ class SessionSpec extends FlatSpec with Matchers with BeforeAndAfter {
      module.forward(Tensor[Float](Array(1)))
   }
 
+
+
   "Session" should "be able construct input data" in {
 
+    val lenetModel = getLenetModel("lenet_batch_2.pbtxt")
+
+    val context =
+      new mutable.HashMap[String, (Tensor[Float], Tensor[Float], Option[Seq[(Int, Int)]])]()
+    val session = new BigDLSessionImpl[Float](lenetModel, sc, context)
+
+    val endpoints = Seq(
+      "fifo_queue_Dequeue"
+    )
+    val rdd = session.getRDD(endpoints)
+    val result = rdd.collect()
+    result.length should be (5)
+    val imageSum = result.map(t => t[Tensor[Float]](1).sum()).sum
+    val labelSum = result.map(t => t[Tensor[Float]](2).sum()).sum
+
+    (imageSum - (-6009.5)) < 1e-7 should be (true)
+    labelSum should be (10)
+  }
+
+  "Session" should "be work with arbitrary batch size" in {
+
+    val lenetModel = getLenetModel("lenet_with_batch_3.pbtxt")
+
+    val context =
+      new mutable.HashMap[String, (Tensor[Float], Tensor[Float], Option[Seq[(Int, Int)]])]()
+    val session = new BigDLSessionImpl[Float](lenetModel, sc, context)
+
+    val endpoints = Seq(
+      "fifo_queue_Dequeue"
+    )
+    val rdd = session.getRDD(endpoints)
+    val result = rdd.collect()
+    result.length should be (4)
+    result.head[Tensor[Float]](1).size(1) should be (3)
+  }
+
+  private def getLenetModel(name: String) = {
     val resource = getClass().getClassLoader().getResource("tf")
-    val modelPath = resource.getPath() + JFile.separator + "lenet.pbtxt"
-    val filePath = resource.getPath() + JFile.separator + "mnist_test.tfrecord"
+    val modelPath = resource.getPath() + JFile.separator + name
+
+    val filePath = resource.getPath() + JFile.separator + "mnist_train.tfrecord"
+
     val nodes = TensorflowLoader.parseTxt(modelPath)
-    import scala.collection.JavaConverters._
 
     val filenames = nodes.asScala.filter(_.getName == "parallel_read/filenames/Const").head
 
@@ -111,18 +152,7 @@ class SessionSpec extends FlatSpec with Matchers with BeforeAndAfter {
         .putAttr("value", AttrValue.newBuilder().setTensor(newTensor).build())
         .build()
 
-    val newModel = nodes.asScala.filterNot(_.getName == "parallel_read/filenames/Const") :+ newNode
-
-    val context =
-      new mutable.HashMap[String, (Tensor[Float], Tensor[Float], Option[Seq[(Int, Int)]])]()
-    val session = new BigDLSessionImpl[Float](newModel, sc, context)
-
-    val endpoints = Seq(
-      "ParseSingleExample/SerializedDependencies"
-    )
-    val rdd = session.getRDD(endpoints)
-    val result = rdd.count()
-    result should be (4)
+    nodes.asScala.filterNot(_.getName == "parallel_read/filenames/Const") :+ newNode
   }
 
 }

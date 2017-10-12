@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.tf.TensorflowLoader.Context
 import com.intel.analytics.bigdl.utils.tf.TensorflowToBigDL.toTensor
-import org.tensorflow.framework.{AttrValue, NodeDef}
+import org.tensorflow.framework.{AttrValue, DataType, NodeDef}
 
 import scala.reflect.ClassTag
 import collection.JavaConverters._
@@ -61,12 +61,16 @@ object Utils {
     attrMap.get(key).getI.toInt
   }
 
-  private[loaders] def getBoolean(nodedef: NodeDef, key: String): Boolean = {
-    nodedef.getAttrMap.get(key).getB
+  private[loaders] def getBoolean(attrMap: util.Map[String, AttrValue], key: String): Boolean = {
+    attrMap.get(key).getB
   }
 
   private[loaders] def getIntList(attrMap: util.Map[String, AttrValue], key: String): Seq[Int] = {
     attrMap.get(key).getList.getIList.asScala.map(_.toInt)
+  }
+
+  private[loaders] def getType(attrMap: util.Map[String, AttrValue], key: String): DataType = {
+    attrMap.get(key).getType
   }
 
   private[loaders] def toArray[T: ClassTag](tensor: Tensor[T]): Array[T] = {

@@ -50,6 +50,11 @@ enum InputDataFormat {
     NHWC = 1;
 }
 
+enum TensorType {
+    DENSE = 0;
+    QUANT = 1;
+}
+
 message InitMethod {
     InitMethodType methodType = 1;
     repeated double data = 2;
@@ -64,6 +69,7 @@ message BigDLTensor{
     bool isScalar = 7; // is scalar tensor
     TensorStorage storage = 8; // reference to storage
     int32 id = 9; // tensor ID, used for tensor sharing
+    TensorType tensorType = 10;
 }
 
 message TensorStorage {

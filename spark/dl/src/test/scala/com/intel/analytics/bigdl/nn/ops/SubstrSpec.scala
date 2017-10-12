@@ -15,35 +15,20 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
+import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
-class MatMulSpec extends FlatSpec with Matchers {
-  "MatMul operation" should "works correctly" in {
-    import com.intel.analytics.bigdl.numeric.NumericFloat
-    val input =
-      T(
-        Tensor(
-          T(
-            T(1f, 2f, 3f),
-            T(4f, 5f, 6f))
-        ),
-        Tensor(
-          T(
-            T(1f, 4f),
-            T(2f, 5f),
-            T(3f, 6f))
-        )
-      )
+class SubstrSpec extends FlatSpec with Matchers {
+  "Substr operation" should "works correctly" in {
+    import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric.NumericByteString
+    val data = Tensor.scalar(ByteString.copyFromUtf8("abc"))
+    val pos = Tensor.scalar(0)
+    val len = Tensor.scalar(2)
+    val expectOutput = Tensor.scalar(ByteString.copyFromUtf8("ab"))
 
-    val expectOutput = Tensor(
-      T(
-        T(14f, 32f),
-        T(32f, 77f))
-    )
-
-    val output = MatMul().forward(input)
+    val output = Substr().forward(T(data, pos, len))
     output should be(expectOutput)
   }
 }

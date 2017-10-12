@@ -28,9 +28,9 @@ class ExpandDimsSpec extends FlatSpec with Matchers {
     val expectOutput2 = input.clone().resize(Array(2, 3, 1, 5))
     val expectOutput3 = input.clone().resize(Array(2, 3, 5, 1))
 
-    val output1 = ExpandDims(0).forward(input)
-    val output2 = ExpandDims(2).forward(input)
-    val output3 = ExpandDims(3).forward(input)
+    val output1 = ExpandDims(1).forward(input)
+    val output2 = ExpandDims(3).forward(input)
+    val output3 = ExpandDims(4).forward(input)
 
     output1 should be(expectOutput1)
     output2 should be(expectOutput2)
@@ -45,9 +45,9 @@ class ExpandDimsSpec extends FlatSpec with Matchers {
     val expectOutput2 = input.clone().resize(Array(2, 3, 1, 5))
     val expectOutput3 = input.clone().resize(Array(2, 3, 5, 1))
 
-    val output1 = ExpandDims(0).forward(input)
-    val output2 = ExpandDims(2).forward(input)
-    val output3 = ExpandDims(3).forward(input)
+    val output1 = ExpandDims(1).forward(input)
+    val output2 = ExpandDims(3).forward(input)
+    val output3 = ExpandDims(4).forward(input)
 
     output1 should be(expectOutput1)
     output2 should be(expectOutput2)
@@ -62,9 +62,9 @@ class ExpandDimsSpec extends FlatSpec with Matchers {
     val expectOutput2 = input.clone().resize(Array(2, 3, 1, 5))
     val expectOutput3 = input.clone().resize(Array(2, 3, 5, 1))
 
-    val output1 = ExpandDims(0).forward(input)
-    val output2 = ExpandDims(2).forward(input)
-    val output3 = ExpandDims(3).forward(input)
+    val output1 = ExpandDims(1).forward(input)
+    val output2 = ExpandDims(3).forward(input)
+    val output3 = ExpandDims(4).forward(input)
 
     output1 should be(expectOutput1)
     output2 should be(expectOutput2)
@@ -79,9 +79,9 @@ class ExpandDimsSpec extends FlatSpec with Matchers {
     val expectOutput2 = input.clone().resize(Array(2, 3, 1, 5))
     val expectOutput3 = input.clone().resize(Array(2, 3, 5, 1))
 
-    val output1 = ExpandDims(0).forward(input)
-    val output2 = ExpandDims(2).forward(input)
-    val output3 = ExpandDims(3).forward(input)
+    val output1 = ExpandDims(1).forward(input)
+    val output2 = ExpandDims(3).forward(input)
+    val output3 = ExpandDims(4).forward(input)
 
     output1 should be(expectOutput1)
     output2 should be(expectOutput2)
@@ -96,9 +96,9 @@ class ExpandDimsSpec extends FlatSpec with Matchers {
     val expectOutput2 = input.clone().resize(Array(2, 3, 1, 5))
     val expectOutput3 = input.clone().resize(Array(2, 3, 5, 1))
 
-    val output1 = ExpandDims(0).forward(input)
-    val output2 = ExpandDims(2).forward(input)
-    val output3 = ExpandDims(3).forward(input)
+    val output1 = ExpandDims(1).forward(input)
+    val output2 = ExpandDims(3).forward(input)
+    val output3 = ExpandDims(4).forward(input)
 
     output1 should be(expectOutput1)
     output2 should be(expectOutput2)

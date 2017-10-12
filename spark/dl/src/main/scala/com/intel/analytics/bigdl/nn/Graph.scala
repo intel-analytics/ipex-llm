@@ -90,7 +90,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
           .map(n => {
             n._2.fromIndex match {
               case Some(i) =>
-                if (i == 1 && n._1.element.output.isTensor) {
+                if (n._1.element.output == null || (i == 1 && n._1.element.output.isTensor)) {
                   n._1.element.output
                 } else {
                   n._1.element.output.toTable.apply[Activity](i)
@@ -549,6 +549,13 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
     writer.close()
     this
   }
+
+  def resetModules(): Unit = {
+    modules.clear()
+    modules.appendAll(backGraph.topologySort
+      .filterNot(_.element.isInstanceOf[ControlDependency[T]]).reverse
+      .filter(n => !n.eq(dummyOutput)).map(_.element))
+  }
 }
 
 object Graph extends ContainerSerializable {
@@ -631,9 +638,17 @@ object Graph extends ContainerSerializable {
     })
 
     layerMap.values.foreach(moduleNode => {
+      val edges = DataConverter.getAttributeValue(context,
+        attributes.get(s"${moduleNode._1.element.getName}_edges")).
+        asInstanceOf[mutable.HashMap[String, mutable.HashMap[String, Int]]]
+      val edgeMap = edges.get(moduleNode._1.element.getName).get
       moduleNode._2.foreach(pre => {
         if (layerMap.contains(pre)) {
-          layerMap(pre)._1 -> moduleNode._1
+          val edge : Edge = edgeMap.get(pre).get match {
+            case -1 => Edge()
+            case index: Int => Edge(index)
+          }
+          layerMap(pre)._1.add(moduleNode._1, edge)
         }
       })
     })
@@ -664,14 +679,36 @@ object Graph extends ContainerSerializable {
     val inputsNames = graph.inputs.map(_.element.getName).toArray
     val outputsNames = graph.outputs.map(_.element.getName).toArray
     graph.getForwardExecutions.foreach(execution => {
-      val preNodes = execution.prevNodes.map(_.element.getName)
-      val nextNodes = execution.nextNodes.map(_.element.getName)
+
+      val edgeMap = new mutable.HashMap[String, mutable.Map[String, Int]]
+
+      val preNodesAndEdges = execution.prevNodesAndEdges
+      val preNodes = preNodesAndEdges.map(_._1.element.getName)
+      val nextNodes = preNodesAndEdges.map(_._1.element.getName)
       val currNode = execution.element
         .asInstanceOf[AbstractModule[Activity, Activity, T]]
       val subModel = ModuleSerializer.serialize(SerializeContext(
         ModuleData(currNode, preNodes, nextNodes), context.storages, context.storageType))
+      // add edges
+      val preNodeEdges = new mutable.HashMap[String, Int]()
+
+      preNodesAndEdges.foreach(pre => {
+        val preNodeName = pre._1.element.getName
+        val preEdgeIndex = pre._2.fromIndex match {
+          case Some(i) => i
+          case None => -1
+        }
+        preNodeEdges(preNodeName) = preEdgeIndex
+      })
+      edgeMap(execution.element.getName) = preNodeEdges
+      val attriBulder = AttrValue.newBuilder
+      DataConverter.setAttributeValue(context, attriBulder, edgeMap)
+
+      graphBuilder.putAttr(s"${execution.element.getName}_edges", attriBulder.build)
       graphBuilder.addSubModules(subModel.bigDLModule)
     })
+
+
     if (graph.variables.isDefined) {
       val (weights, bias) = graph.variables.get
       val weightAttrBuilder = AttrValue.newBuilder

@@ -167,7 +167,7 @@ class TestSimple():
         output1 = ReLU()(cadd)
         output2 = Threshold(10.0)(cadd)
         model = Model([fc1, fc2], [output1, output2])
-        model.save_graph_topology(tempfile.mkdtemp)
+        model.save_graph_topology(tempfile.mkdtemp())
 
     def test_load_zip_conf(self):
         from bigdl.util.common import get_bigdl_conf
@@ -263,7 +263,7 @@ class TestSimple():
             print(str(i) + "\n")
         print(len(p))
 
-        test_results = trained_model.test(trainingData, 32, [Top1Accuracy()])
+        test_results = trained_model.evaluate(trainingData, 32, [Top1Accuracy()])
         for test_result in test_results:
             print(test_result)
 

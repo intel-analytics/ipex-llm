@@ -713,7 +713,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def createMean(dimension: Int = 1,
                  nInputDims: Int = -1,
                  squeeze: Boolean = true)
-  : Mean[T] = {
+  : Mean[T, T] = {
     Mean[T](dimension,
       nInputDims,
       squeeze)
@@ -1102,7 +1102,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                 sizeAverage: Boolean = false,
                 squeeze: Boolean = true
                )
-  : Sum[T] = {
+  : Sum[T, T] = {
     Sum[T](dimension,
       nInputDims,
       sizeAverage,
@@ -1151,6 +1151,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def createIdentity()
   : Identity[T] = {
     Identity[T]()
+  }
+
+  def createGaussianSampler(): GaussianSampler[T] = {
+    GaussianSampler[T]()
   }
 
   def createMultiLabelSoftMarginCriterion(weights: JTensor = null,
@@ -1390,6 +1394,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     ParallelCriterion[T](repeatTarget)
   }
 
+  def createKLDCriterion(): KLDCriterion[T] = {
+    KLDCriterion[T]()
+  }
+
+  def createGaussianCriterion(): GaussianCriterion[T] = {
+    GaussianCriterion[T]()
+  }
+
   def createSmoothL1Criterion(sizeAverage: Boolean = true)
   : SmoothL1Criterion[T] = {
     SmoothL1Criterion[T](sizeAverage)
@@ -1428,7 +1440,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     RandomGenerator.RNG.setSeed(seed)
   }
 
-  def modelTest(model: AbstractModule[Activity, Activity, T],
+  def modelEvaluate(model: AbstractModule[Activity, Activity, T],
                 valRDD: JavaRDD[Sample],
                 batchSize: Int,
                 valMethods: JList[ValidationMethod[T]])
@@ -1963,6 +1975,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
   }
 
+  def quantize(module: AbstractModule[Activity, Activity, T]): Module[T] = {
+    module.quantize()
+  }
+  
   def createDLEstimator(model: Module[T], criterion: Criterion[T],
                         featureSize: JArrayList[Int], labelSize: JArrayList[Int]): DLEstimator[T] = {
     new DLEstimator[T](model, criterion, featureSize.asScala.toArray, labelSize.asScala.toArray)
@@ -1994,5 +2010,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def dlClassifierModelTransform(dlClassifierModel: DLClassifierModel[T], dataSet: DataFrame): DataFrame = {
     dlClassifierModel.transform(dataSet)
   }
+
+
 
 }

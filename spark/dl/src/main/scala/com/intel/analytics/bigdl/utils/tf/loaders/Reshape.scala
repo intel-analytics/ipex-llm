@@ -35,7 +35,12 @@ class Reshape extends TensorflowOpsLoader {
     Adapter[T](Array(2), tensorArrays => {
       val sizes = tensorArrays(0).asInstanceOf[Tensor[Int]]
 
-      val batchMode = sizes.valueAt(1) == -1
+      val batchMode = if (sizes.nDimension() >= 1) {
+        sizes.valueAt(1) == -1
+      } else {
+        false
+      }
+
       val arraySize = new Array[Int](if (batchMode) sizes.nElement() - 1 else sizes.nElement())
       var i = if (batchMode) 2 else 1
       var k = 0
