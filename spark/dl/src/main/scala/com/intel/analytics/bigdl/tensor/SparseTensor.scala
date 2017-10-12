@@ -991,6 +991,186 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
 }
 
 object SparseTensor{
+
+  private[bigdl] def concat[T: ClassTag](
+        dim: Int,
+        tensors: Seq[Tensor[T]],
+        res: Tensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
+    require(dim == 1 || dim == 2)
+    var size = tensors.head.size()
+    require(size.length <= 2, "Dimension larger than 2 are not supported yet!")
+    tensors.foreach{tensor =>
+      // todo: check size
+      require(tensor.isInstanceOf[SparseTensor[T]])
+      require(tensor.dim() == size.length)
+    }
+    val dim1Concat = if (size.length == 1 && dim == 1) true else false
+    if (dim1Concat) size = Array(1) ++ size
+    var i = 1
+    while (i < tensors.length) {
+      size(dim - 1) += (if (dim1Concat) 1 else tensors(i).size(dim))
+      i += 1
+    }
+    val totalLength = tensors.map(_.nElement()).sum
+
+    val result = if (null == res) {
+      SparseTensor(size, totalLength)
+    } else {
+      res.resize(size, totalLength).asInstanceOf[SparseTensor[T]]
+    }
+    if (dim1Concat) {
+      concat(tensors.map(_.asInstanceOf[SparseTensor[T]]), result)
+    }
+    else {
+      concat(dim, tensors.map(_.asInstanceOf[SparseTensor[T]]), result)
+    }
+  }
+
+  /**
+   * Concatenate a sequence of SparseTensor of 1-dim to 2-dim SparseTensor.
+   *
+   * @param tensors a sequence of tensors
+   * @param res the resulted 2-dim SparseTensor
+   * @return res
+   */
+  private def concat[T: ClassTag](
+        tensors: Seq[SparseTensor[T]],
+        res: SparseTensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
+    val numOfIndices = res.dim()  // usually is 2
+    require(tensors.head.dim() == 1, "Not suitable for this interface.")
+    var i, offset, dimOffset = 0
+    while (i < tensors.length) {
+      val currentTensor = tensors(i)
+      val curLength = currentTensor.nElement()
+      val curTensorOffset = currentTensor.storageOffset() - 1
+      // copy to concat _values
+      ev.arraycopy(currentTensor.storage().array(), curTensorOffset,
+        res.storage().array(), offset, curLength)
+      // make new Indices
+      var indicesIndex = 0
+      while (indicesIndex < numOfIndices) {
+        if (indicesIndex == 0) {
+          val storage = Storage[Int](curLength)
+          val storageArray = storage.array()
+          for (j <- 0 until curLength) storageArray(j) = dimOffset
+          System.arraycopy(storageArray, 0, res._indices(indicesIndex).array(),
+            offset, curLength)
+        }
+        else {
+          // copy directly
+          System.arraycopy(currentTensor._indices(indicesIndex - 1).array(),
+            curTensorOffset, res._indices(indicesIndex).array(),
+            offset, curLength)
+        }
+        indicesIndex += 1
+      }
+      offset += curLength
+      dimOffset += 1
+      i += 1
+    }
+    res
+  }
+
+  private def concat[T: ClassTag](
+        dim: Int,
+        tensors: Seq[SparseTensor[T]],
+        res: SparseTensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
+    val numOfIndices = res.dim()
+    dim match {
+      case 1 =>
+        var i = 0
+        var offset = 0
+        var dimOffset = 0
+        while (i < tensors.length) {
+          val currentTensor = tensors(i)
+          val curLength = currentTensor.nElement()
+          val curTensorOffset = currentTensor.storageOffset() - 1
+
+          ev.arraycopy(currentTensor.storage().array(), currentTensor.storageOffset() - 1,
+            res.storage().array(), offset, currentTensor.nElement())
+
+          var indicesIndex = 0
+          while (indicesIndex < numOfIndices) {
+            val indicesIndexArray = currentTensor._indices(indicesIndex).array()
+            val resultIndicesArray = res._indices(indicesIndex).array()
+            if (i == 0 || indicesIndex != dim - 1) {
+              // copy directly
+              System.arraycopy(currentTensor._indices(indicesIndex).array(),
+                curTensorOffset, res._indices(indicesIndex).array(),
+                offset, curLength)
+            } else {
+              // add size
+              var j = 0
+              while (j < curLength) {
+                resultIndicesArray(offset + j) = indicesIndexArray(curTensorOffset + j) +
+                  dimOffset
+                j += 1
+              }
+            }
+            indicesIndex += 1
+          }
+
+          offset += curLength
+          dimOffset += currentTensor.size(dim)
+          i += 1
+        }
+      case 2 =>
+        var start = res._storageOffset
+        var end = res._storageOffset
+        val tensorsOffset = tensors.map(_.storageOffset() - 1).toArray
+        var j = 0
+        while (j < res.size(dim - 1)) {
+          var index = 0
+          var offset = 0
+          while (index < tensors.size) {
+            val currentTensor = tensors(index)
+            val findIndexStart = currentTensor._indices(0).array().indexOf(j, tensorsOffset(index))
+            val findIndexEnd = currentTensor._indices(0).array().lastIndexOf(j)
+            val curLength = if (findIndexStart != -1 && findIndexEnd != -1) {
+              findIndexEnd - findIndexStart + 1
+            } else {
+              0
+            }
+
+            if (0 != curLength) {
+              end += curLength
+
+              // copy values
+              ev.arraycopy(currentTensor.storage().array(), tensorsOffset(index),
+                res.storage().array(), start, curLength)
+
+              // copy indices
+              var indicesIndex = 0
+              while (indicesIndex < numOfIndices) {
+                val indicesIndexArray = currentTensor._indices(indicesIndex).array()
+                val resultIndicesArray = res._indices(indicesIndex).array()
+                if (indicesIndex != dim - 1 || index == 0) {
+                  // copy directly
+                  System.arraycopy(currentTensor._indices(indicesIndex).array(),
+                    tensorsOffset(index), res._indices(indicesIndex).array(), start, curLength)
+                } else {
+                  // add size
+                  var i = 0
+                  while (i < curLength) {
+                    resultIndicesArray(start + i) = indicesIndexArray(tensorsOffset(index) + i) +
+                      offset
+                    i += 1
+                  }
+                }
+                indicesIndex += 1
+              }
+              tensorsOffset(index) += curLength
+              start = end
+            }
+            offset += currentTensor.size(dim)
+            index += 1
+          }
+          j += 1
+        }
+    }
+    res
+  }
+
   private[tensor] def apply[T: ClassTag](
         shape : Array[Int],
         nElement: Int = 1)(
