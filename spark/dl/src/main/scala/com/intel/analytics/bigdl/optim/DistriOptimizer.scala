@@ -241,14 +241,11 @@ object DistriOptimizer {
           }
 
           if (finishedThreads.nonEmpty) {
+            val finishedGradients = finishedThreads.map(cached.modelGradients(_))
             time = System.nanoTime()
-            val gradLength = cached.modelGradients(0).nElement()
+            val gradLength = finishedGradients(0).nElement()
             val taskSize = gradLength / _subModelNumber
             val extraTask = gradLength % _subModelNumber
-
-            (0 until _subModelNumber).diff(finishedThreads).foreach(i =>
-              cached.modelGradients(i).zero()
-            )
 
             // Aggregate multi-model's gradient to the first model's gradient
             val parallelNum = if (taskSize == 0) extraTask else _subModelNumber
@@ -257,18 +254,24 @@ object DistriOptimizer {
               val length = taskSize + (if (tid < extraTask) 1 else 0)
               var i = 1
               while (i < cached.modelGradients.length) {
-                  cached.modelGradients(0).narrow(1, offset + 1, length)
+                  finishedGradients(0).narrow(1, offset + 1, length)
                     .add(cached.modelGradients(i).narrow(1, offset + 1, length))
                 i += 1
               }
             }))
             driverMetrics.add("aggregate gradient time", System.nanoTime() - time)
+            val putG = System.nanoTime()
+            // Put first finished model's gradient who aggregated
+            // all other models' gradient to AllReduceParameter
+            parameters.putGradients(finishedGradients(0))
+            driverMetrics.add("put gradient", System.nanoTime() - putG)
+          } else {
+            val putG = System.nanoTime()
+            // zero gradient in BlockManager when no thread finished.
+            parameters.putGradients(cached.modelGradients(0).zero())
+            driverMetrics.add("put gradient", System.nanoTime() - putG)
           }
 
-          val putG = System.nanoTime()
-          // Put first model's gradient who aggregated all model's gradient to AllReduceParameter
-          parameters.putGradients(cached.modelGradients(0))
-          driverMetrics.add("put gradient", System.nanoTime() - putG)
           tasks ++= Engine.default.invoke {
             (0 until _subModelNumber).map { i =>
               () => {
