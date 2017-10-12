@@ -182,22 +182,6 @@ abstract class Container[A <: Activity : ClassTag,
     this
   }
 
-  /**
-   * set an array of layers that match the given ```names``` to be "freezed",
-   * i.e. their parameters(weight/bias, if exists) are not changed in training process
-   * @param names an array of layer names
-   * @return current graph model
-   */
-  def freeze(names: Array[String]): this.type = {
-    names.foreach(name => {
-      val layer = this (name)
-      require(layer.isDefined, s"cannot find layer match ${name}")
-      layer.get.setScaleW(0)
-      layer.get.setScaleB(0)
-    })
-    this
-  }
-
   override def apply(name : String): Option[AbstractModule[Activity, Activity, T]] = {
     if (this.getName() == name) {
       Some(this)
