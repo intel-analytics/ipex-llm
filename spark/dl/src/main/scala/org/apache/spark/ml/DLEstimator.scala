@@ -83,7 +83,7 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag](
    * Default: 100
    */
   val maxEpoch = new IntParam(this, "maxEpoch", "number of max Epoch", ParamValidators.gt(0))
-  setDefault(maxEpoch -> 100)
+  setDefault(maxEpoch -> 10)
 
   def getMaxEpoch: Int = $(maxEpoch)
 
@@ -271,7 +271,7 @@ object DLModel {
 trait HasBatchSize extends Params {
 
   final val batchSize: Param[Int] = new Param[Int](this, "batchSize", "batchSize")
-  setDefault(batchSize -> 1)
+  setDefault(batchSize -> 4)
 
   final def getBatchSize: Int = $(batchSize)
 }

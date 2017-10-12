@@ -40,6 +40,8 @@ import com.intel.analytics.bigdl.utils.tf.TensorflowLoader.{buildBigDLModel, bui
 import com.intel.analytics.bigdl.utils.tf.{BigDLSessionImpl, TensorflowDataFormat, TensorflowSaver}
 import org.apache.log4j._
 import org.apache.spark.SparkContext
+import org.apache.spark.ml.{DLClassifierModel, DLEstimator, DLClassifier, DLModel}
+import org.apache.spark.sql.DataFrame
 import org.tensorflow.framework.NodeDef
 
 import scala.collection.JavaConverters._
@@ -1959,6 +1961,38 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def showBigDlInfoLogs(): Unit = {
     Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+  }
+
+  def createDLEstimator(model: Module[T], criterion: Criterion[T],
+                        featureSize: JArrayList[Int], labelSize: JArrayList[Int]): DLEstimator[T] = {
+    new DLEstimator[T](model, criterion, featureSize.asScala.toArray, labelSize.asScala.toArray)
+  }
+
+  def fitEstimator(estimator: DLEstimator[T], dataSet: DataFrame): DLModel[T] = {
+    estimator.fit(dataSet)
+  }
+
+  def createDLModel(model: Module[T], featureSize: JArrayList[Int]): DLModel[T] = {
+    new DLModel[T](model, featureSize.asScala.toArray)
+  }
+
+  def dlModelTransform(dlModel: DLModel[T], dataSet: DataFrame): DataFrame = {
+    dlModel.transform(dataSet)
+  }
+
+  def createDLClassifier(model: Module[T], criterion: Criterion[T],
+                         featureSize: JArrayList[Int], labelSize: JArrayList[Int]) = {
+    new DLClassifier[T](model, criterion, featureSize.asScala.toArray)
+  }
+  def fitClassifier(classifier: DLClassifier[T], dataSet: DataFrame): DLModel[T] = {
+    classifier.fit(dataSet)
+  }
+
+  def createDLClassifierModel(model: Module[T], featureSize: JArrayList[Int]): DLClassifierModel[T] = {
+    new DLClassifierModel[T](model, featureSize.asScala.toArray)
+  }
+  def dlClassifierModelTransform(dlClassifierModel: DLClassifierModel[T], dataSet: DataFrame): DataFrame = {
+    dlClassifierModel.transform(dataSet)
   }
 
 }
