@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.optim.SGD
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.utils.{Engine, T}
 import org.scalatest.{FlatSpec, Matchers}
@@ -27,6 +27,274 @@ import scala.math._
 
 @com.intel.analytics.bigdl.tags.Serial
 class RecurrentSpec extends FlatSpec with Matchers {
+
+  "A Cell class " should "call addTimes() correctly" in {
+    val hiddenSize = 5
+    val inputSize = 5
+    val outputSize = 5
+    val batchSize = 5
+    val time = 4
+    val seed = 100
+    RNG.setSeed(seed)
+    val rnnCell1 = RnnCell[Double](inputSize, hiddenSize, Tanh[Double]())
+    val rnnCell2 = RnnCell[Double](inputSize, hiddenSize, Tanh[Double]())
+    val rnnCell3 = RnnCell[Double](inputSize, hiddenSize, Tanh[Double]())
+    val rnnCell4 = RnnCell[Double](inputSize, hiddenSize, Tanh[Double]())
+
+    val input = Tensor[Double](batchSize, inputSize).randn
+    val hidden = Tensor[Double](batchSize, hiddenSize).randn
+    val gradOutput = Tensor[Double](batchSize, outputSize).randn
+    val gradHidden = Tensor[Double](batchSize, outputSize).randn
+
+    rnnCell1.forward(T(input, hidden))
+    rnnCell1.backward(T(input, hidden), T(gradOutput, gradHidden))
+    rnnCell2.forward(T(input, hidden))
+    rnnCell2.backward(T(input, hidden), T(gradOutput, gradHidden))
+    rnnCell3.forward(T(input, hidden))
+    rnnCell3.backward(T(input, hidden), T(gradOutput, gradHidden))
+    rnnCell4.forward(T(input, hidden))
+    rnnCell4.backward(T(input, hidden), T(gradOutput, gradHidden))
+
+    val forwardSum = new Array[Long](6)
+    val backwardSum = new Array[Long](6)
+
+    for (i <- 0 until 6) {
+      forwardSum(i) += rnnCell1.getTimes()(i)._2
+      backwardSum(i) += rnnCell1.getTimes()(i)._3
+    }
+    for (i <- 0 until 6) {
+      forwardSum(i) += rnnCell2.getTimes()(i)._2
+      backwardSum(i) += rnnCell2.getTimes()(i)._3
+    }
+    for (i <- 0 until 6) {
+      forwardSum(i) += rnnCell3.getTimes()(i)._2
+      backwardSum(i) += rnnCell3.getTimes()(i)._3
+    }
+    for (i <- 0 until 6) {
+      forwardSum(i) += rnnCell4.getTimes()(i)._2
+      backwardSum(i) += rnnCell4.getTimes()(i)._3
+    }
+
+    rnnCell1.addTimes(rnnCell2)
+    rnnCell1.addTimes(rnnCell3)
+    rnnCell1.addTimes(rnnCell4)
+
+    for (i <- 0 until 6) {
+      forwardSum(i) should be (rnnCell1.getTimes()(i)._2)
+      backwardSum(i) should be (rnnCell1.getTimes()(i)._3)
+    }
+  }
+
+  "A Recurrent" should " call getTimes correctly" in {
+    val hiddenSize = 128
+    val inputSize = 1280
+    val outputSize = 128
+    val time = 30
+    val batchSize1 = 100
+    val batchSize2 = 8
+    val seed = 100
+    RNG.setSeed(seed)
+
+    val model = Sequential[Double]()
+      .add(Recurrent[Double]()
+
+        .add(LSTM[Double](inputSize, hiddenSize)))
+      .add(Select(2, 1))
+    //      .add(Linear[Double](hiddenSize, outputSize))
+
+    val input = Tensor[Double](Array(batchSize1, time, inputSize)).rand
+    val gradOutput = Tensor[Double](batchSize1, outputSize).rand
+
+    model.clearState()
+
+    model.resetTimes
+    model.getTimes
+
+    for (i <- 1 to 10) {
+      model.resetTimes
+      model.forward(input)
+      model.backward(input, gradOutput)
+      model.getTimes()
+    }
+    model.resetTimes()
+
+    var st = System.nanoTime()
+    model.forward(input)
+    val etaForward = System.nanoTime() - st
+    println(s"forward eta = ${etaForward}")
+    st = System.nanoTime()
+    model.backward(input, gradOutput)
+    val etaBackward = System.nanoTime() - st
+    println(s"backward eta = ${etaBackward}")
+    println()
+    var forwardSum = 0L
+    var backwardSum = 0L
+
+    model.getTimes.foreach(x => {
+      println(x._1 + ", " + x._2 + ", " + x._3)
+      forwardSum += x._2
+      backwardSum += x._3
+    })
+    println()
+    println(s"forwardSum = ${forwardSum}")
+    println(s"backwardSum = ${backwardSum}")
+
+    assert(abs((etaForward - forwardSum) / etaForward) < 0.1)
+    assert(abs((etaBackward - backwardSum) / etaBackward) < 0.1)
+  }
+
+  "A Recurrent with LSTMPeephole cell " should " add batchNormalization correctly" in {
+    val hiddenSize = 4
+    val inputSize = 5
+    val outputSize = 5
+    val batchSize = 4
+    val time = 2
+    val seed = 100
+    RNG.setSeed(seed)
+
+    val model = Sequential[Double]()
+      .add(Recurrent[Double](BatchNormParams())
+        .add(LSTMPeephole[Double](inputSize, hiddenSize)))
+      .add(TimeDistributed[Double](Linear[Double](hiddenSize, outputSize)))
+
+    println(model)
+
+    val input = Tensor[Double](batchSize, time, inputSize)
+    val gradOutput = Tensor[Double](batchSize, time, outputSize)
+
+    val output = model.forward(input)
+    val gradInput = model.backward(input, gradOutput)
+
+    println("add normalization")
+  }
+
+  "A Recurrent with GRU cell " should " add batchNormalization correctly" in {
+    val hiddenSize = 4
+    val inputSize = 5
+    val outputSize = 5
+    val batchSize = 4
+    val time = 2
+    val seed = 100
+    RNG.setSeed(seed)
+
+    val model = Sequential[Double]()
+      .add(Recurrent[Double](BatchNormParams())
+        .add(GRU[Double](inputSize, hiddenSize)))
+      .add(TimeDistributed[Double](Linear[Double](hiddenSize, outputSize)))
+
+    println(model)
+
+    val input = Tensor[Double](batchSize, time, inputSize)
+    val gradOutput = Tensor[Double](batchSize, time, outputSize)
+
+    val output = model.forward(input)
+    val gradInput = model.backward(input, gradOutput)
+
+    println("add normalization")
+  }
+
+  "A Recurrent with LSTM cell " should " add batchNormalization correctly" in {
+    val hiddenSize = 4
+    val inputSize = 5
+    val outputSize = 5
+    val batchSize = 4
+    val time = 2
+    val seed = 100
+    RNG.setSeed(seed)
+
+    val model = Sequential[Double]()
+      .add(Recurrent[Double](BatchNormParams())
+        .add(LSTM[Double](inputSize, hiddenSize)))
+      .add(TimeDistributed[Double](Linear[Double](hiddenSize, outputSize)))
+
+    println(model)
+
+    val input = Tensor[Double](batchSize, time, inputSize)
+    val gradOutput = Tensor[Double](batchSize, time, outputSize)
+
+    val output = model.forward(input)
+    val gradInput = model.backward(input, gradOutput)
+
+    println("add normalization")
+  }
+
+  "A Recurrent with SimpleRNN cell " should " add batchNormalization correctly" in {
+    val hiddenSize = 4
+    val inputSize = 5
+    val batchSize = 2
+    val time = 2
+    val seed = 100
+    RNG.setSeed(seed)
+
+    val cell = RnnCell[Double](inputSize, hiddenSize, ReLU[Double]())
+    val model = Sequential[Double]()
+      .add(Recurrent[Double](BatchNormParams())
+        .add(cell))
+
+    val (weightsArray, gradWeightsArray) = model.parameters()
+    weightsArray(0).set(Tensor[Double](Array(0.038822557355026155,
+      0.15308625574211315, -0.1982324504512677, -0.07866809418407278,
+      -0.06751351799422134, 0.023597193777786962, 0.3083771498964048,
+      -0.31429738377130323, -0.4429929170091549, -0.30704694098520874,
+      -0.33847886911170505, -0.2804322767460886, 0.15272262323432112,
+      -0.2592875227066882, 0.2914515643266326, -0.0422707164265147,
+      -0.32493950675524846, 0.3310656372548169, 0.06716552027607742, -0.39025554201755425),
+      Array(4, 5)))
+    weightsArray(1).set(Tensor[Double](Array(0.3500089930447004,
+      0.11118793394460541,
+      -0.2600975267200473,
+      0.020882861472978465), Array(4)))
+
+    weightsArray(2).set(Tensor[Double](Array(0.18532821908593178,
+    0.5622962701600045,
+    0.10837689251638949,
+    0.005817196564748883),
+      Array(4)))
+
+    weightsArray(4).set(Tensor[Double](Array(-0.28030250454321504,
+      -0.19257679535076022, 0.4786237839143723, 0.45018431078642607,
+    0.31168314907699823, -0.37334575527347624, -0.3280589876230806, -0.4210121303331107,
+    0.31622475129552186, -0.18864686344750226, -0.22592625673860312, 0.13238358590751886,
+    -0.06829581526108086, 0.1993589240591973, 0.44002981553785503, 0.14196494384668767),
+      Array(4, 4)))
+    weightsArray(5).set(Tensor[Double](Array(0.3176493758801371,
+    0.4200237800832838,
+    -0.16388805187307298,
+    -0.20112364063970745), Array(4)))
+
+    val input = Tensor[Double](Array(0.1754104527644813, 0.5687455364968628,
+      0.3728320465888828, 0.17862433078698814, 0.005688507109880447,
+    0.5325737004168332, 0.2524263544473797, 0.6466914659831673, 0.7956625143997371,
+      0.14206538046710193, 0.015254967380315065, 0.5813889650162309, 0.5988433782476932,
+      0.4791899386327714, 0.6038045417517424, 0.3864191132597625, 0.1051476860884577,
+      0.44046495063230395, 0.3819434456527233, 0.40475733182393014),
+      Array(batchSize, time, inputSize))
+    val gradOutput = Tensor[Double](Array(0.015209059891239357, 0.08723655440707856,
+      1.2730716350771312, 0.17783007683002253, 0.9809208554215729,
+      0.7760053128004074, 0.05994199030101299, 0.550958373118192,
+    1.1344734990039382, -0.1642483852831349, 0.585060822398516, 0.6124844773937481,
+    0.7424796849954873, 0.95687689865008, 0.6301839421503246, 0.17582130827941),
+      Array(batchSize, time, hiddenSize))
+
+    val output = model.forward(input)
+    val gradInput = model.backward(input, gradOutput)
+
+    output should be (Tensor[Double](Array(0.6299258968399799,
+      1.3642297404555106, 0.0, 0.0,
+    0.0, 0.0, 0.0, 0.0361454784986459,
+    0.25696697120146866, 0.19273657953649884, 0.0, 0.0,
+    0.12799813658263415, 0.24882574216093045, 0.0, 0.0),
+      Array(batchSize, time, hiddenSize)))
+
+    gradInput should be (Tensor[Double](Array(-0.027275798942804907,
+      -0.1383686829541865, 0.16717516624801407, 0.11372249422239256,
+      0.08955797331273728, -0.08873463347124873, -0.38487333246986216,
+      0.48437215964262187, 0.2417856458208813, 0.19281229062491595,
+    0.03225607513585589, -0.36656214055421815, 0.2795038794253451,
+      0.8385161794048844, 0.549019363159085, 0.08375435727819777,
+      0.8898041559782669, -0.9310512053159811, -1.1940243194481583, -0.8313896270967381),
+      Array(batchSize, time, inputSize)))
+  }
 
   "A Recurrent" should " converge when batchSize changes" in {
     val hiddenSize = 4
@@ -70,13 +338,15 @@ class RecurrentSpec extends FlatSpec with Matchers {
     model.backward(input1, gradOutput1)
     val gradInput1compare =
       Tensor[Double](batchSize1, time, inputSize).copy(model.gradInput.toTensor[Double])
-    val output1compare = Tensor[Double](batchSize1, outputSize).copy(model.output.toTensor[Double])
+    val output1compare = Tensor[Double](batchSize1, outputSize)
+      .copy(model.output.toTensor[Double])
 
     model.forward(input2)
     model.backward(input2, gradOutput2)
     val gradInput2compare =
       Tensor[Double](batchSize2, time, inputSize).copy(model.gradInput.toTensor[Double])
-    val output2compare = Tensor[Double](batchSize2, outputSize).copy(model.output.toTensor[Double])
+    val output2compare = Tensor[Double](batchSize2, outputSize)
+      .copy(model.output.toTensor[Double])
 
     model.hashCode()
 
@@ -321,5 +591,24 @@ class RecurrentSpec extends FlatSpec with Matchers {
 
     rec.setState(state)
     model.forward(input)
+  }
+
+  "A Recurrent Module " should " work good with copy " in {
+    val input = Tensor[Float](3, 2, 6, 10).randn()
+    val input1 = input.select(2, 1).clone()
+    val input2 = input.select(2, 2).clone()
+
+    val arrInput = new ArrayBuffer[Tensor[Float]](2)
+    arrInput.append(input1)
+    arrInput.append(input2)
+
+    val output1 = Tensor[Float]()
+    val output2 = Tensor[Float]().resizeAs(input)
+
+    Recurrent.selectCopy(input, 2, output1)
+    output1 should be (input.select(2, 2))
+
+    Recurrent.copy(arrInput, output2)
+    output2 should be (input)
   }
 }

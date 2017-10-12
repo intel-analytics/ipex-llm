@@ -48,14 +48,12 @@ def get_mnist(sc, data_type="train", location="/tmp/mnist"):
     :param sc: SparkContext
     :param data_type: training data or testing data
     :param location: Location storing the mnist
-    :return: A RDD of Sample
+    :return: A RDD of (features: Ndarray, label: Ndarray)
     """
     (images, labels) = mnist.read_data_sets(location, data_type)
     images = sc.parallelize(images)
-    labels = sc.parallelize(labels)
-    # Target start from 1 in BigDL
-    record = images.zip(labels).map(lambda features_label:
-                                    Sample.from_ndarray(features_label[0], features_label[1] + 1))
+    labels = sc.parallelize(labels + 1) # Target start from 1 in BigDL
+    record = images.zip(labels)
     return record
 
 
@@ -71,6 +69,8 @@ if __name__ == "__main__":
     (options, args) = parser.parse_args(sys.argv)
 
     sc = SparkContext(appName="lenet5", conf=create_spark_conf())
+    redire_spark_logs()
+    show_bigdl_info_logs()
     init_engine()
 
     if options.action == "train":
@@ -80,11 +80,14 @@ if __name__ == "__main__":
             else:
                 return MaxIteration(options.endTriggerNum)
 
-        train_data = get_mnist(sc, "train").map(
-            normalizer(mnist.TRAIN_MEAN, mnist.TRAIN_STD))
-        test_data = get_mnist(sc, "test").map(
-            normalizer(mnist.TEST_MEAN, mnist.TEST_STD))
-
+        train_data = get_mnist(sc, "train")\
+            .map(lambda rec_tuple: (normalizer(rec_tuple[0], mnist.TRAIN_MEAN, mnist.TRAIN_STD),
+                               rec_tuple[1]))\
+            .map(lambda t: Sample.from_ndarray(t[0], t[1]))
+        test_data = get_mnist(sc, "test")\
+            .map(lambda rec_tuple: (normalizer(rec_tuple[0], mnist.TEST_MEAN, mnist.TEST_STD),
+                               rec_tuple[1]))\
+            .map(lambda t: Sample.from_ndarray(t[0], t[1]))
         optimizer = Optimizer(
             model=build_model(10),
             training_rdd=train_data,
@@ -106,7 +109,7 @@ if __name__ == "__main__":
         test_data = get_mnist(sc, "test").map(
             normalizer(mnist.TEST_MEAN, mnist.TEST_STD))
         model = Model.load(options.modelPath)
-        results = model.test(test_data, options.batchSize, [Top1Accuracy()])
+        results = model.evaluate(test_data, options.batchSize, [Top1Accuracy()])
         for result in results:
             print(result)
     sc.stop()

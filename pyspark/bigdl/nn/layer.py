@@ -238,6 +238,33 @@ class Layer(JavaValue):
         return dict((layer_name, to_ndarray(params)) for layer_name, params in
                 name_to_params.items())
 
+    def evaluate(self, *args):
+        """
+        No argument passed in:
+        Evaluate the model to set train = false, useful when doing test/forward
+        :return: layer itself
+
+        Three arguments passed in:
+        A method to benchmark the model quality.
+
+        :param val_rdd: the input data
+        :param batch_size: batch size
+        :param val_methods: a list of validation methods. i.e: Top1Accuracy,Top5Accuracy and Loss.
+        :return:
+        """
+        if len(args) == 0:
+            callBigDlFunc(self.bigdl_type,
+                          "evaluate", self.value)
+            return self
+        elif len(args) == 3:
+            val_rdd, batch_size, val_methods = args
+            return callBigDlFunc(self.bigdl_type,
+                                 "modelEvaluate",
+                                 self.value,
+                                 val_rdd, batch_size, val_methods)
+        else:
+            raise Exception("Error when calling evaluate(): it takes no argument or exactly three arguments only")
+
     def predict(self, data_rdd):
         """
         Model inference base on the given data.
@@ -261,20 +288,6 @@ class Layer(JavaValue):
         result = callBigDlFunc(self.bigdl_type,
                                "modelPredictClass", self.value, data_rdd)
         return result
-
-    def test(self, val_rdd, batch_size, val_methods):
-        """
-        A method to benchmark the model quality.
-
-        :param val_rdd: the input data
-        :param batch_size: batch size
-        :param val_methods: a list of validation methods. i.e: Top1Accuracy,Top5Accuracy and Loss.
-        :return:
-        """
-        return callBigDlFunc(self.bigdl_type,
-                             "modelTest",
-                             self.value,
-                             val_rdd, batch_size, val_methods)
 
     def set_weights(self, weights):
         """
@@ -311,7 +324,7 @@ class Layer(JavaValue):
         ... except Py4JJavaError as err:
         ...     print(err.java_exception)
         ...
-        java.lang.IllegalArgumentException: requirement failed: the number of input weight/bias is not consistant with number of weight/bias of this layer
+        java.lang.IllegalArgumentException: requirement failed: the number of input weight/bias is not consistant with number of weight/bias of this layer, number of input 1, number of output 2
         >>> cAdd = CAdd([4, 1])
         creating: createCAdd
         >>> cAdd.set_weights(np.ones([4, 1]))
@@ -337,6 +350,9 @@ class Layer(JavaValue):
 
     def save(self, path, over_write = False):
         callBigDlFunc(self.bigdl_type, "modelSave", self.value, path,
+                      over_write)
+    def saveModel(self, path, over_write = False):
+        callBigDlFunc(self.bigdl_type, "saveBigDLModule", self.value, path,
                       over_write)
 
     def save_caffe(self, prototxt_path, model_path, use_v2 = True, overwrite = False):
@@ -375,6 +391,125 @@ class Layer(JavaValue):
         :return:
         '''
         self.value.bRegularizer = bRegularizer.value
+
+    def freeze(self):
+        '''
+        freeze layer
+        '''
+        callBigDlFunc(self.bigdl_type,
+                        "setLayerFreeze", self.value)
+        return self
+
+    def unfreeze(self):
+        '''
+        unfreeze layer
+        '''
+        callBigDlFunc(self.bigdl_type,
+                        "setLayerUnFreeze", self.value)
+
+    def training(self):
+        '''
+        Set this layer in the training mode 
+        '''
+        callJavaFunc(get_spark_context(), self.value.training)
+        return self
+
+    def is_training(self):
+        '''
+        :return: Whether this layer is in the training mode
+        
+        >>> layer = Dropout()
+        creating: createDropout
+        >>> layer = layer.evaluate()
+        >>> layer.is_training()
+        False
+        >>> layer = layer.training()
+        >>> layer.is_training()
+        True
+        '''
+        return callJavaFunc(get_spark_context(), self.value.isTraining)
+
+    def quantize(self):
+        '''
+        Clone self and quantize it, at last return a new quantized model.
+        :return: A new quantized model.
+
+        >>> fc = Linear(4, 2)
+        creating: createLinear
+        >>> fc.set_weights([np.ones((4, 2)), np.ones((2,))])
+        >>> input = np.ones((2, 4))
+        >>> fc.forward(input)
+        array([[ 5.,  5.],
+               [ 5.,  5.]], dtype=float32)
+        >>> quantized_fc = fc.quantize()
+        >>> quantized_fc.forward(input)
+        array([[ 5.,  5.],
+               [ 5.,  5.]], dtype=float32)
+
+        >>> assert("quantized.Linear" in quantized_fc.__str__())
+        >>> conv = SpatialConvolution(1, 2, 3, 3)
+        creating: createSpatialConvolution
+        >>> conv.set_weights([np.ones((2, 1, 3, 3)), np.zeros((2,))])
+        >>> input = np.ones((2, 1, 4, 4))
+        >>> conv.forward(input)
+        array([[[[ 9.,  9.],
+                 [ 9.,  9.]],
+        <BLANKLINE>
+                [[ 9.,  9.],
+                 [ 9.,  9.]]],
+        <BLANKLINE>
+        <BLANKLINE>
+               [[[ 9.,  9.],
+                 [ 9.,  9.]],
+        <BLANKLINE>
+                [[ 9.,  9.],
+                 [ 9.,  9.]]]], dtype=float32)
+        >>> quantized_conv = conv.quantize()
+        >>> quantized_conv.forward(input)
+        array([[[[ 9.,  9.],
+                 [ 9.,  9.]],
+        <BLANKLINE>
+                [[ 9.,  9.],
+                 [ 9.,  9.]]],
+        <BLANKLINE>
+        <BLANKLINE>
+               [[[ 9.,  9.],
+                 [ 9.,  9.]],
+        <BLANKLINE>
+                [[ 9.,  9.],
+                 [ 9.,  9.]]]], dtype=float32)
+        >>> assert("quantized.SpatialConvolution" in quantized_conv.__str__())
+        >>> seq = Sequential()
+        creating: createSequential
+        >>> seq = seq.add(conv)
+        >>> seq = seq.add(Reshape([8, 4], False))
+        creating: createReshape
+        >>> seq = seq.add(fc)
+        >>> input = np.ones([1, 1, 6, 6])
+        >>> seq.forward(input)
+        array([[ 37.,  37.],
+               [ 37.,  37.],
+               [ 37.,  37.],
+               [ 37.,  37.],
+               [ 37.,  37.],
+               [ 37.,  37.],
+               [ 37.,  37.],
+               [ 37.,  37.]], dtype=float32)
+        >>> quantized_seq = seq.quantize()
+        >>> quantized_seq.forward(input)
+        array([[ 37.,  37.],
+               [ 37.,  37.],
+               [ 37.,  37.],
+               [ 37.,  37.],
+               [ 37.,  37.],
+               [ 37.,  37.],
+               [ 37.,  37.],
+               [ 37.,  37.]], dtype=float32)
+        >>> assert("quantized.Linear" in quantized_seq.__str__())
+        >>> assert("quantized.SpatialConvolution" in quantized_seq.__str__())
+        '''
+        quantized_model = callBigDlFunc(self.bigdl_type, "quantize", self.value)
+        return Layer.of(quantized_model)
 
 
 class Container(Layer):
@@ -444,6 +579,17 @@ class Model(Container):
         return Layer.of(jmodel)
 
     @staticmethod
+    def loadModel(path, bigdl_type="float"):
+        """
+        Load a pre-trained Bigdl model.
+
+        :param path: The path containing the pre-trained model.
+        :return: A pre-trained model.
+        """
+        jmodel = callBigDlFunc(bigdl_type, "loadBigDLModule", path)
+        return Layer.of(jmodel)
+
+    @staticmethod
     def load_torch(path, bigdl_type="float"):
         """
         Load a pre-trained Torch model.
@@ -491,6 +637,63 @@ class Model(Container):
         jmodel = callBigDlFunc(bigdl_type, "loadTF", path, inputs, outputs, byte_order)
         return Model.of(jmodel)
 
+    @staticmethod
+    def train(output, data, label, opt_method, criterion, batch_size, end_when, session=None, bigdl_type="float"):
+        from bigdl.util.tf_utils import get_path
+        from bigdl.util.common import Sample
+        output_name = output.name.split(":")[0]
+        path = get_path(output_name, session)
+        sc = get_spark_context()
+        rdd_train_images = sc.parallelize(data)
+        rdd_train_labels = sc.parallelize(label)
+        rdd_train_sample = rdd_train_images.zip(rdd_train_labels).map(lambda input:
+                                                                      Sample.from_ndarray(input[0], input[1]))
+        jmodel = callBigDlFunc(bigdl_type, "trainTF", path, output_name, rdd_train_sample, opt_method, criterion, batch_size, end_when)
+        return Model.of(jmodel)
+
+
+    def freeze(self, freeze_layers, bigdl_type="float"):
+        """
+        set an array of layers to be freezed
+        :param freeze_layers: an array of layer names
+        :param bigdl_type:
+        :return:
+        """
+        callBigDlFunc(bigdl_type, "setFreeze", self.value, freeze_layers)
+        return self
+
+    def unfreeze(self, bigdl_type="float"):
+        """
+        set all layers to be trainable
+        :param bigdl_type:
+        :return:
+        """
+        callBigDlFunc(bigdl_type, "unFreeze", self.value)
+        return self
+
+    def stop_gradient(self, stop_layers, bigdl_type="float"):
+        """
+        stop the input gradient of layers that match the given ```names```
+        their input gradient are not computed.
+        And they will not contributed to the input gradient computation of
+        layers that depend on them.
+        :param stop_layers:  an array of layer names
+        :param bigdl_type:
+        :return:
+        """
+        callBigDlFunc(bigdl_type, "setStopGradient", self.value, stop_layers)
+        return self
+
+    def save_graph_topology(self, log_path, bigdl_type="float"):
+        """
+        save current model graph to a folder, which can be display in tensorboard by running
+            tensorboard --logdir logPath
+        :param log_path: path to save the model graph
+        :param bigdl_type:
+        :return:
+        """
+        callBigDlFunc(bigdl_type, "saveGraphTopology", self.value, log_path)
+        return self
 
 class Linear(Layer):
 
@@ -802,6 +1005,32 @@ class SpatialConvolution(Layer):
         return self
 
 
+class TemporalMaxPooling(Layer):
+
+    '''
+    Applies 1D max-pooling operation in kW regions by step size dW steps.
+    Input sequence composed of nInputFrame frames.
+    The input tensor in forward(input) is expected to be a 2D tensor (nInputFrame x inputFrameSize)
+     or a 3D tensor (nBatchFrame x nInputFrame x inputFrameSize).
+
+    If the input sequence is a 2D tensor of dimension nInputFrame x inputFrameSize,
+    the output sequence will be nOutputFrame x inputFrameSize where
+
+    nOutputFrame = (nInputFrame - k_w) / d_w + 1
+
+    :param k_w:              kernel width
+    :param d_w:              step size in width
+
+    >>> temporalMaxPooling = TemporalMaxPooling(2, 2)
+    creating: createTemporalMaxPooling
+    '''
+
+    def __init__(self,
+                 k_w,
+                 d_w,
+                 bigdl_type="float"):
+        super(TemporalMaxPooling, self).__init__(None, bigdl_type, k_w,
+                                                d_w)
 class SpatialMaxPooling(Layer):
 
     '''
@@ -813,6 +1042,18 @@ class SpatialMaxPooling(Layer):
     oheight = op((height + 2*padH - kH) / dH + 1)
     op is a rounding operator. By default, it is floor.
     It can be changed by calling :ceil() or :floor() methods.
+    
+    When padW and padH are both -1, we use a padding algorithm similar to the "SAME"
+    padding of tensorflow. That is
+ 
+     outHeight = Math.ceil(inHeight.toFloat/strideH.toFloat)
+     outWidth = Math.ceil(inWidth.toFloat/strideW.toFloat)
+ 
+     padAlongHeight = Math.max(0, (outHeight - 1) * strideH + kernelH - inHeight)
+     padAlongWidth = Math.max(0, (outWidth - 1) * strideW + kernelW - inWidth)
+ 
+     padTop = padAlongHeight / 2
+     padLeft = padAlongWidth / 2
 
     :param kW:              kernel width
     :param kH:              kernel height
@@ -820,8 +1061,11 @@ class SpatialMaxPooling(Layer):
     :param dH:              step size in height
     :param padW:            padding in width
     :param padH:            padding in height
+    :param format:          "NCHW" or "NHWC", indicating the input data format
 
     >>> spatialMaxPooling = SpatialMaxPooling(2, 2, 2, 2)
+    creating: createSpatialMaxPooling
+    >>> spatialMaxPooling = SpatialMaxPooling(2, 2, 2, 2, -1, -1, True, "NHWC")
     creating: createSpatialMaxPooling
     '''
     # to_ceil: call floor() when False; call ceil() when True
@@ -833,6 +1077,7 @@ class SpatialMaxPooling(Layer):
                  pad_w=0,
                  pad_h=0,
                  to_ceil=False,
+                 format="NCHW",
                  bigdl_type="float"):
         super(SpatialMaxPooling, self).__init__(None, bigdl_type, kw,
                                                 kh,
@@ -840,7 +1085,8 @@ class SpatialMaxPooling(Layer):
                                                 dh,
                                                 pad_w,
                                                 pad_h,
-                                                to_ceil)
+                                                to_ceil,
+                                                format)
 
 
 class Select(Layer):
@@ -891,6 +1137,26 @@ class Recurrent(Container):
         """
         jstate, state_is_table = self.check_input(state)
         callBigDlFunc(self.bigdl_type, "setState", self.value, jstate, state_is_table)
+
+
+class RecurrentDecoder(Recurrent):
+    '''
+    RecurrentDecoder module is a container of rnn cells which used to make
+    a prediction of the next timestep based on the prediction we made from
+    the previous timestep. Input for RecurrentDecoder is dynamically composed
+    during training. input at t(i) is output at t(i-1), input at t(0) is
+    user input, and user input has to be batch x ???(depends on cell type)
+    without time information.
+
+    Different types of rnn cells can be added using add() function. Currently
+    only support lstmpeephole, convlstm, convlstm3D cell.
+
+    >>> recurrent_decoder = RecurrentDecoder(output_length = 5)
+    creating: createRecurrentDecoder
+    '''
+
+    def __init__(self, output_length, bigdl_type="float"):
+        super(Recurrent, self).__init__(None, bigdl_type, output_length)
 
 class LSTM(Layer):
     '''
@@ -989,12 +1255,15 @@ class RnnCell(Layer):
     :param input_size: the size of each input vector
     :param hidden_size: Hidden unit size in simple RNN
     :param activation: activation function
+    :param isInputWithBias: boolean
+    :param isHiddenWithBias: boolean
+
     :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices.
     :param uRegularizer: instance [[Regularizer]](eg. L1 or L2 regularization), applied to the recurrent weights matrices.
     :param bRegularizer: instance of [[Regularizer]](../regularizers.md),applied to the bias.
 
 
-    >>> reshape = RnnCell(4, 3, Tanh(), L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
+    >>> reshape = RnnCell(4, 3, Tanh(), True, True, L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
     creating: createTanh
     creating: createL1Regularizer
     creating: createL1Regularizer
@@ -1006,11 +1275,13 @@ class RnnCell(Layer):
                  input_size,
                  hidden_size,
                  activation,
+                 isInputWithBias=True,
+                 isHiddenWithBias=True,
                  wRegularizer=None,
                  uRegularizer=None,
                  bRegularizer=None,
                  bigdl_type="float"):
-        super(RnnCell, self).__init__(None, bigdl_type, input_size, hidden_size, activation, wRegularizer, uRegularizer, bRegularizer)
+        super(RnnCell, self).__init__(None, bigdl_type, input_size, hidden_size, activation, isInputWithBias, isHiddenWithBias, wRegularizer, uRegularizer, bRegularizer)
 
 
 class TimeDistributed(Layer):
@@ -1070,7 +1341,18 @@ class SpatialAveragePooling(Layer):
     '''
     Applies 2D average-pooling operation in kWxkH regions by step size dWxdH steps.
     The number of output features is equal to the number of input planes.
-
+    
+    When padW and padH are both -1, we use a padding algorithm similar to the "SAME"
+    padding of tensorflow. That is
+ 
+     outHeight = Math.ceil(inHeight.toFloat/strideH.toFloat)
+     outWidth = Math.ceil(inWidth.toFloat/strideW.toFloat)
+ 
+     padAlongHeight = Math.max(0, (outHeight - 1) * strideH + kernelH - inHeight)
+     padAlongWidth = Math.max(0, (outWidth - 1) * strideW + kernelW - inWidth)
+ 
+     padTop = padAlongHeight / 2
+     padLeft = padAlongWidth / 2
 
     :param kW: kernel width
     :param kH: kernel height
@@ -1083,9 +1365,12 @@ class SpatialAveragePooling(Layer):
     :param ceilMode: whether the output size is to be ceiled or floored
     :param countIncludePad: whether to include padding when dividing thenumber of elements in pooling region
     :param divide: whether to do the averaging
+    :param format:          "NCHW" or "NHWC", indicating the input data format
 
 
     >>> spatialAveragePooling = SpatialAveragePooling(7,7)
+    creating: createSpatialAveragePooling
+    >>> spatialAveragePooling = SpatialAveragePooling(2, 2, 2, 2, -1, -1, True, format="NHWC")
     creating: createSpatialAveragePooling
     '''
 
@@ -1100,6 +1385,7 @@ class SpatialAveragePooling(Layer):
                  ceil_mode=False,
                  count_include_pad=True,
                  divide=True,
+                 format="NCHW",
                  bigdl_type="float"):
         super(SpatialAveragePooling, self).__init__(None, bigdl_type,
                                                     kw,
@@ -1111,7 +1397,11 @@ class SpatialAveragePooling(Layer):
                                                     global_pooling,
                                                     ceil_mode,
                                                     count_include_pad,
-                                                    divide)
+                                                    divide,
+                                                    format)
+
+    def set_weights(self, weights):
+        super(SpatialAveragePooling, self).set_weights(weights)
 
 
 class SpatialBatchNormalization(Layer):
@@ -1383,6 +1673,28 @@ class BatchNormalization(Layer):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
         return self
+
+
+class BifurcateSplitTable(Layer):
+    '''
+    Creates a module that takes a Tensor as input and
+    outputs two tables, splitting the Tensor along
+    the specified dimension `dimension`.
+
+    The input to this layer is expected to be a tensor, or a batch of tensors;
+
+    :param dimension to be split along this dimension
+    :param T Numeric type. Only support float/double now
+
+    >>> bifurcateSplitTable = BifurcateSplitTable(1)
+    creating: createBifurcateSplitTable
+    '''
+
+    def __init__(self,
+                 dimension,
+                 bigdl_type="float"):
+        super(BifurcateSplitTable, self).__init__(None, bigdl_type,
+                                       dimension)
 
 
 class Bilinear(Layer):
@@ -3619,6 +3931,18 @@ class SpatialConvolutionMap(Layer):
     This class is a generalization of SpatialConvolution.
     It uses a generic connection table between input and output features.
     The SpatialConvolution is equivalent to using a full connection table.
+    
+    When padW and padH are both -1, we use a padding algorithm similar to the "SAME"
+    padding of tensorflow. That is
+ 
+     outHeight = Math.ceil(inHeight.toFloat/strideH.toFloat)
+     outWidth = Math.ceil(inWidth.toFloat/strideW.toFloat)
+ 
+     padAlongHeight = Math.max(0, (outHeight - 1) * strideH + kernelH - inHeight)
+     padAlongWidth = Math.max(0, (outWidth - 1) * strideW + kernelW - inWidth)
+ 
+     padTop = padAlongHeight / 2
+     padLeft = padAlongWidth / 2
 
     :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices.
     :param bRegularizer: instance of [[Regularizer]]applied to the bias.
@@ -3829,6 +4153,21 @@ class ConvLSTMPeephole3D(Layer):
                  bRegularizer=None, cRegularizer=None, with_peephole=True, bigdl_type="float"):
         super(ConvLSTMPeephole3D, self).__init__(None, bigdl_type, input_size, output_size, kernel_i, kernel_c, stride,
                                                  wRegularizer, uRegularizer, bRegularizer, cRegularizer, with_peephole)
+
+class ResizeBilinear(Layer):
+    """
+    Resize the input image with bilinear interpolation. The input image must be a float tensor with
+    NHWC layout
+    
+    :param output_height: output height
+    :param output_width: output width
+    :param align_corner: align corner or not
+    
+    >>> resizeBilinear = ResizeBilinear(10, 20, False)
+    creating: createResizeBilinear
+    """
+    def __init__(self, output_height, output_width, align_corner, bigdl_type="float"):
+        super(ResizeBilinear, self).__init__(None, bigdl_type, output_height, output_width, align_corner)
 
 def _test():
     import doctest

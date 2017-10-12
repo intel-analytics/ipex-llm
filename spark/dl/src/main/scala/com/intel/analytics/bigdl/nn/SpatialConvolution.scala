@@ -16,7 +16,9 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, DataFormat, TensorModule}
+import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.nn.abstractnn.{DataFormat, Initializable, TensorModule}
+import com.intel.analytics.bigdl.nn.quantized.Quantizable
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
@@ -36,8 +38,8 @@ import scala.reflect.ClassTag
  * outHeight = Math.ceil(inHeight.toFloat/strideH.toFloat)
  * outWidth = Math.ceil(inWidth.toFloat/strideW.toFloat)
  *
- * padAlongHeight = (outHeight - 1) * strideH + kernelH - inHeight
- * padAlongWidth = (outWidth - 1) * strideW + kernelW - inWidth
+ * padAlongHeight = Math.max(0, (outHeight - 1) * strideH + kernelH - inHeight)
+ * padAlongWidth = Math.max(0, (outWidth - 1) * strideW + kernelW - inWidth)
  *
  * padTop = padAlongHeight / 2
  * padLeft = padAlongWidth / 2
@@ -70,8 +72,17 @@ class SpatialConvolution[T: ClassTag](
   val format: DataFormat = DataFormat.NCHW
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
-  require(nInputPlane % nGroup == 0, "Number of input channels should be multiples of group.")
-  require(nOutputPlane % nGroup == 0, "Number of output channels should be multiples of group.")
+
+  require(nOutputPlane % nGroup == 0, s"Number of input channels " +
+    s"should be multiples of group " +
+    s"number of input channels ${nInputPlane}, " +
+    s"group ${nGroup}.")
+  require(nOutputPlane % nGroup == 0,
+    "Number of output channels " +
+      "should be multiples of group " +
+      s"(number of output channels ${nOutputPlane}, " +
+      s"group ${nGroup}).")
+
   if (nGroup != 1) {
     require(format == DataFormat.NCHW, "group convolution is not supported in NHWC format " )
   }
@@ -229,11 +240,13 @@ class SpatialConvolution[T: ClassTag](
     val inputWidth = input.size(dimWidth)
     val inputHeight = input.size(dimHeight)
 
-    // deal with SAME padding
-    val (padTop, padBottom, padLeft, padRight) = getPadding(inputHeight, inputWidth)
-
-    val outputWidth = (inputWidth + padLeft + padRight - kernelW) / strideW + 1
-    val outputHeight = (inputHeight + padTop + padBottom - kernelH) / strideH + 1
+    val (padTop, padBottom, padLeft, padRight, outputHeight, outputWidth) =
+      if (padW == -1 && padH == -1) {
+        Utils.getSAMEOutSizeAndPadding(inputHeight, inputWidth, strideH, strideW, kernelH, kernelW)
+      } else {
+        Utils.getOutSizeAndPadding(inputHeight, inputWidth, strideH, strideW,
+          kernelH, kernelW, padH, padW, ceilMode = false)
+      }
 
     require(outputWidth >= 1 && outputHeight >= 1,
       s"output size is too small. outputWidth: $outputWidth, outputHeight: $outputHeight")
@@ -387,7 +400,9 @@ class SpatialConvolution[T: ClassTag](
   }
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
-    require(input.nDimension() == 3 || input.nDimension() == 4, "Only support 3D or 4D input")
+    require(input.nDimension() == 3 || input.nDimension() == 4,
+      "Only support 3D or 4D input," +
+        s"but input has ${input.nDimension()} dimensions")
     require(gradOutput.isContiguous())
 
     val (ohDim, owDim, cDim) = format.getHWCDims(input.dim())
@@ -922,7 +937,7 @@ class SpatialConvolution[T: ClassTag](
   }
 }
 
-object SpatialConvolution {
+object SpatialConvolution extends Quantizable {
   def apply[@specialized(Float, Double) T: ClassTag](
       nInputPlane: Int,
       nOutputPlane: Int,
@@ -946,5 +961,14 @@ object SpatialConvolution {
     new SpatialConvolution[T](nInputPlane, nOutputPlane, kernelW, kernelH,
       strideW, strideH, padW, padH, nGroup, propagateBack, wRegularizer,
       bRegularizer, initWeight, initBias, initGradWeight, initGradBias, withBias, format)
+  }
+
+  override def quantize[T: ClassTag](module: Module[T])(
+    implicit ev: TensorNumeric[T]): Module[T] = {
+    val conv = module.asInstanceOf[SpatialConvolution[T]]
+    quantized.SpatialConvolution[T](
+      conv.nInputPlane, conv.nOutputPlane, conv.kernelW, conv.kernelH, conv.strideW,
+      conv.strideH, conv.padW, conv.padH, conv.nGroup, initWeight = conv.weight,
+      initBias = conv.bias, conv.format).setName(conv.getName())
   }
 }

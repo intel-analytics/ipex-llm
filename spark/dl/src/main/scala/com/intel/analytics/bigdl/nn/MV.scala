@@ -39,8 +39,10 @@ class MV[T: ClassTag](val trans: Boolean = false)
       input(2).isInstanceOf[Tensor[T]], "Input must be two tensors")
     val m: Tensor[T] = input(1)
     val v: Tensor[T] = input(2)
-    require(m.dim() == 2 || m.dim() == 3, "input matrix must be 2D or 3D")
-    require(v.dim() == 1 || v.dim() == 2, "input vector must be 1D or 2D")
+    require(m.dim() == 2 || m.dim() == 3, "input matrix must be 2D or 3D" +
+      s"input dim ${m.dim()}")
+    require(v.dim() == 1 || v.dim() == 2, "input vector must be 1D or 2D" +
+      s"input dim ${v.dim()}")
 
     (m, v)
   }
@@ -49,23 +51,30 @@ class MV[T: ClassTag](val trans: Boolean = false)
     var (m, v) = checkInputFormat(input)
 
     if (m.dim() == 2) {
-      require(v.dim() == 1, "vector must be 1D")
+      require(v.dim() == 1, "vector must be 1D" +
+        s"dim ${v.dim()}")
 
       if (trans) {
         m = m.transpose(1, 2)
       }
-      require(m.size(2) == v.size(1), "matrix row count and vector length do not match")
+      require(m.size(2) == v.size(1), "matrix row count and vector length do not match" +
+        s"matrix row count ${m.size(2)}" +
+        s"vector length ${v.size(1)}")
 
       output.resize(m.size(1)).zero()
       output.mv(m, v)
     } else {
-      require(v.dim() == 2, "vector must be 2D (batch dimension)")
-      require(m.size(1) == v.size(1), "inputs must contain the same number of minibatches")
+      require(v.dim() == 2, "vector must be 2D (batch dimension)" +
+        s"dimension ${v.dim()}" )
+      require(m.size(1) == v.size(1), "inputs must contain the same number of minibatches" +
+        s"The numbers are ${m.size(1)} and ${v.size(1)}")
 
       if (trans) {
         m = m.transpose(2, 3)
       }
-      require(m.size(3) == v.size(2), "matrix row count and vector length do not match")
+      require(m.size(3) == v.size(2), "matrix row count and vector length do not match" +
+        s"matrix row count ${m.size(3)}" +
+        s"vector length ${v.size(2)}")
 
       output.resize(m.size(1), m.size(2), 1).zero()
       output.bmm(m, v.view(v.size(1), v.size(2), 1)).resize(m.size(1), m.size(2))
@@ -81,11 +90,14 @@ class MV[T: ClassTag](val trans: Boolean = false)
     gradInput[Tensor[T]](2).resizeAs(v).zero()
 
     require(gradOutput.dim() == 1 || gradOutput.dim() == 2,
-      "arguments must be a 1D or 2D Tensor")
+      "arguments must be a 1D or 2D Tensor" +
+        s"arguments dim ${gradOutput.dim()}")
 
     if (gradOutput.dim() == 2) {
-      require(m.dim() == 3, "matrix must must be 3D (batched)")
-      require(v.dim() == 2, "vector must be 2D (batched)")
+      require(m.dim() == 3, "matrix must must be 3D (batched)" +
+        s"matrix dim ${m.dim()}")
+      require(v.dim() == 2, "vector must be 2D (batched)" +
+        s"vector dim ${v.dim()}")
       val bdim = m.size(1)
       val odim = m.size(2)
       val idim = m.size(3)
@@ -99,8 +111,10 @@ class MV[T: ClassTag](val trans: Boolean = false)
           odim, 1))
       }
     } else {
-      require(m.dim() == 2, "matrix must be 2D")
-      require(v.dim() == 1, "vector must be 1D")
+      require(m.dim() == 2, "matrix must be 2D" +
+        s"matrix dimension ${m.dim()}")
+      require(v.dim() == 1, "vector must be 1D" +
+        s"vector dimension ${v.dim()}")
 
       if (trans) {
         gradInput[Tensor[T]](1).set(v.clone().resize(v.size(1), 1) *

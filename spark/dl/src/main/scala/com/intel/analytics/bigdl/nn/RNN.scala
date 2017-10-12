@@ -48,26 +48,29 @@ class RnnCell[T : ClassTag] (
   inputSize: Int = 4,
   hiddenSize: Int = 3,
   activation: TensorModule[T],
+  isInputWithBias: Boolean = true,
+  isHiddenWithBias: Boolean = true,
   var wRegularizer: Regularizer[T] = null,
   var uRegularizer: Regularizer[T] = null,
   var bRegularizer: Regularizer[T] = null)
   (implicit ev: TensorNumeric[T])
   extends Cell[T](Array(hiddenSize)) {
 
+  override var cell: AbstractModule[Activity, Activity, T] = buildModel()
+
   override def preTopology: AbstractModule[Activity, Activity, T] =
     TimeDistributed[T](
       Linear[T](inputSize,
         hiddenSize,
         wRegularizer = wRegularizer,
-        bRegularizer = bRegularizer))
+        bRegularizer = bRegularizer,
+        withBias = isInputWithBias))
     .asInstanceOf[AbstractModule[Activity, Activity, T]]
 
-  override var cell: AbstractModule[Activity, Activity, T] = buildGraph
-
-  private def buildGraph: Graph[T] = {
+  def buildModel(): Graph[T] = {
     val i2h = Input()
     val h2h = Linear[T](hiddenSize, hiddenSize,
-      wRegularizer = uRegularizer).inputs()
+      wRegularizer = uRegularizer, withBias = isHiddenWithBias).inputs()
     val add = CAddTable[T](false).inputs(i2h, h2h)
     val activate = activation.inputs(add)
     val out1 = Identity[T].inputs(activate)
@@ -111,10 +114,20 @@ object RnnCell {
     inputSize: Int = 4,
     hiddenSize: Int = 3,
     activation: TensorModule[T],
+    isInputWithBias: Boolean = true,
+    isHiddenWithBias: Boolean = true,
     wRegularizer: Regularizer[T] = null,
     uRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null)
    (implicit ev: TensorNumeric[T]) : RnnCell[T] = {
-    new RnnCell[T](inputSize, hiddenSize, activation, wRegularizer, uRegularizer, bRegularizer)
+    new RnnCell[T](
+      inputSize,
+      hiddenSize,
+      activation,
+      isInputWithBias,
+      isHiddenWithBias,
+      wRegularizer,
+      uRegularizer,
+      bRegularizer)
   }
 }

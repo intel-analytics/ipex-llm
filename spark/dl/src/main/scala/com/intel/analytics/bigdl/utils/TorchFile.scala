@@ -162,6 +162,7 @@ object TorchFile {
       case "nn.SpatialConvolution" => readSpatialConvolutionWithType(elements)
       case "nn.SpatialConvolutionMap" => readSpatialConvolutionMapWithType(elements)
       case "nn.SpatialConvolutionMM" => readSpatialConvolutionWithType(elements)
+      case "nn.SpatialCrossMapLRN" => readSpatialCrossMapLRNWithType(elements)
       case "nn.SpatialZeroPadding" => readSpatialZeroPaddingWithType(elements)
       case "nn.Threshold" => readThresholdWithType(elements)
       case "nn.View" => readViewWithType(elements)
@@ -294,6 +295,9 @@ object TorchFile {
       case m: LogSoftMax[_] =>
         writeVersionAndClass("V 1", "nn.LogSoftMax", rawData, path)
         writeLogSoftMax(m, rawData, path)
+      case m: SpatialCrossMapLRN[_] =>
+        writeVersionAndClass("V 1", "nn.SpatialCrossMapLRN", rawData, path)
+        writeSpatialCrossMapLRN(m, rawData, path)
       case _ => throw new Error(s"Unimplemented module $module")
     }
 
@@ -497,7 +501,22 @@ object TorchFile {
     table("padW") = source.padW
     table("padH") = source.padH
     table("indices") = source.indices
-    table("ceil_mode") = source.ceil_mode
+    table("ceil_mode") = source.ceilMode
+    writeObject(table, rawData, path, TYPE_TABLE)
+    byteWrite(rawData, path)
+  }
+
+
+  private def writeSpatialCrossMapLRN(source: SpatialCrossMapLRN[_],
+                                      rawData: ByteBuffer, path: Path): Unit = {
+    val table: Table = T()
+    writeGeneralParameters(source, table)
+    table("prePad") = source.prePad
+    table("size") = source.size
+    table("alpha") = source.alpha
+    table("beta") = source.beta
+    table("k") = source.k
+
     writeObject(table, rawData, path, TYPE_TABLE)
     byteWrite(rawData, path)
   }
@@ -941,6 +960,19 @@ object TorchFile {
     )
     result.weight.copy(weight)
     result.bias.copy(bias)
+    result
+  }
+
+  private def readSpatialCrossMapLRNWithType[T: ClassTag](elements: Table)(
+    implicit ev: TensorNumeric[T]): SpatialCrossMapLRN[T] = {
+    val weight = elements.getOrElse("weight", null).asInstanceOf[Tensor[T]]
+    val bias = elements.getOrElse("bias", null).asInstanceOf[Tensor[T]]
+    val result = SpatialCrossMapLRN[T](
+      size = elements.getOrElse("size", 5.0).toInt,
+      alpha = elements.getOrElse("alpha", 1.0),
+      beta = elements.getOrElse("beta", 0.75),
+      k = elements.getOrElse("k", 1.0)
+    )
     result
   }
 

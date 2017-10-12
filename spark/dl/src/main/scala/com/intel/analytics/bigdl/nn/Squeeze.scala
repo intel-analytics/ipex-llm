@@ -61,7 +61,9 @@ class Squeeze[T: ClassTag](
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    require(input.nElement() == gradOutput.nElement())
+    require(input.nElement() == gradOutput.nElement(),
+      "input and gradoutput shoule be of the same size" +
+        s"input size ${input.nElement()} gradoutput size ${gradOutput.nElement()}")
     gradInput.set(gradOutput.view(input.size()))
     gradInput
   }
@@ -98,6 +100,6 @@ object Squeeze {
   def apply[T: ClassTag](
     dims : Array[Int], batchMode: Boolean)(implicit ev: TensorNumeric[T])
   : Squeeze[T] = {
-    new Squeeze[T](dims.sortWith(_>_), batchMode)
+    new Squeeze[T](if (dims != null) dims.sortWith(_>_) else null, batchMode)
   }
 }

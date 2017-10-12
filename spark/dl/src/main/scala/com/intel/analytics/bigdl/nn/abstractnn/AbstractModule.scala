@@ -23,13 +23,16 @@ import com.intel.analytics.bigdl.tensor.{Tensor, TensorDataType}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.nn.{Graph, InitializationMethod, Module, Zeros}
+import com.intel.analytics.bigdl.nn.{Module, Utils}
 import com.intel.analytics.bigdl.utils.TorchObject.TYPE_MODULE
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.spark.rdd.RDD
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch, Sample}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.nn.quantized.Quantization
 import com.intel.analytics.bigdl.utils.caffe.CaffePersister
+import com.intel.analytics.bigdl.utils.serializer.ModulePersister
 import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowSaver}
 
 import scala.reflect.ClassTag
@@ -49,22 +52,26 @@ abstract class TensorModule[T: ClassTag]
  *
  * @tparam A Input data type
  * @tparam B Output data type
- * @tparam T Numeric type. Only support float/double now
+ * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
  */
-abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
-@specialized(Float, Double) T: ClassTag](
+abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, T: ClassTag](
   implicit ev: TensorNumeric[T]) extends Serializable {
 
-  private val namePostfix = Integer.toHexString(java.util.UUID.randomUUID().hashCode())
+  private var namePostfix = Integer.toHexString(java.util.UUID.randomUUID().hashCode())
+
+  def getNamePostfix : String = namePostfix
+
+  def setNamePostfix(namePostfix : String) : Unit = this.namePostfix = namePostfix
+
   /**
    * The cached output. So we don't compute it again when need it
    */
-  var output: B = Activity[B, T]()
+  var output: B = Activity.allocate[B, T]()
 
   /**
    * The cached gradient of activities. So we don't compute it again when need it
    */
-  var gradInput: A = Activity[A, T]()
+  var gradInput: A = Activity.allocate[A, T]()
 
   /**
    * The scale of gradient weight and gradient bias
@@ -132,12 +139,12 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
    * @return
    */
   def clearState() : this.type = {
-    if (output.isInstanceOf[Tensor[T]]) {
-      output.asInstanceOf[Tensor[T]].set()
+    if (output.isInstanceOf[Tensor[_]]) {
+      output.asInstanceOf[Tensor[_]].set()
     }
 
-    if (gradInput.isInstanceOf[Tensor[T]]) {
-      gradInput.asInstanceOf[Tensor[T]].set()
+    if (gradInput.isInstanceOf[Tensor[_]]) {
+      gradInput.asInstanceOf[Tensor[_]].set()
     }
 
     this
@@ -153,6 +160,8 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
    * The name of the module
    */
   private var name : String = null
+
+  def hasName: Boolean = name != null
 
   /**
    * Set the module name
@@ -172,7 +181,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
    */
   def getName() : String = {
     if (this.name == null) {
-      s"${this.getClass.getSimpleName}@${namePostfix}"
+      s"${this.getClass.getSimpleName}${namePostfix}"
     } else {
       this.name
     }
@@ -204,6 +213,26 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
   }
 
   /**
+   * freeze the layer, its parameters(weight/bias, if exists)
+   * are not changed in training process
+   */
+  def freeze(): this.type = {
+    setScaleW(0)
+    setScaleB(0)
+    this
+  }
+
+  /**
+   * "unfreeze" layer, i.e. make the layer parameters(weight/bias, if exists)
+   * to be trained(updated) in training process
+   */
+  def unFreeze(): this.type = {
+    setScaleW(1)
+    setScaleB(1)
+    this
+  }
+
+  /**
    * Takes an input object, and computes the corresponding output of the module. After a forward,
    * the output state variable should have been updated to the new value.
    *
@@ -212,7 +241,15 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
    */
   final def forward(input: A): B = {
     val before = System.nanoTime()
-    updateOutput(input)
+    try {
+      updateOutput(input)
+    } catch {
+      case l: LayerException =>
+        l.layerMsg = this.toString() + "/" + l.layerMsg
+        throw l
+      case e: Throwable =>
+        throw new LayerException(this.toString(), e)
+    }
     forwardTime += System.nanoTime() - before
 
     output
@@ -380,9 +417,38 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
    * @param overWrite if overwrite
    * @return self
    */
+  @deprecated("please use recommended saveModule(path, overWrite)")
   def save(path : String, overWrite: Boolean = false) : this.type = {
     this.clearState()
     File.save(this, path, overWrite)
+    this
+  }
+
+  /**
+   * Save this module to path with protobuf format
+   * @param path path to save module, local file system, HDFS and Amazon S3 is supported.
+   *             HDFS path should be like "hdfs://[host]:[port]/xxx"
+   *             Amazon S3 path should be like "s3a://bucket/xxx"
+   * @param overWrite if overwrite
+   * @return self
+   */
+  def saveModule(path : String, overWrite: Boolean = false) : this.type = {
+    this.clearState()
+    ModulePersister.saveToFile(path, this, overWrite)
+    this
+  }
+
+  /**
+   * Save this module definition to path.
+   * @param path path to save module, local file system, HDFS and Amazon S3 is supported.
+   *             HDFS path should be like "hdfs://[host]:[port]/xxx"
+   *             Amazon S3 path should be like "s3a://bucket/xxx"
+   * @param overWrite if overwrite
+   * @return self
+   */
+  def saveDefinition(path : String, overWrite: Boolean = false) : this.type = {
+    this.clearState()
+    ModulePersister.saveModelDefinitionToFile(path, this, overWrite)
     this
   }
 
@@ -420,17 +486,24 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
   /**
    * module predict, return the probability distribution
    * @param dataset dataset for prediction
+   * @param batchSize total batchSize for all partitions.
+   *                  if -1, default is 4 * partitionNumber of datatset
+   * @param shareBuffer whether to share same memory for each batch predict results
    */
-  def predict(dataset: RDD[Sample[T]]): RDD[Activity] = {
-    Predictor(this).predict(dataset)
+  def predict(dataset: RDD[Sample[T]],
+              batchSize: Int = -1,
+              shareBuffer: Boolean = false): RDD[Activity] = {
+    Predictor(this).predict(dataset, batchSize, shareBuffer)
   }
 
   /**
    * module predict, return the predict label
    * @param dataset dataset for prediction
+   * @param batchSize total batchSize for all partitions.
+   *                  if -1, default is 4 * partitionNumber of dataset
    */
-  def predictClass(dataset: RDD[Sample[T]]): RDD[Int] = {
-    Predictor(this).predictClass(dataset)
+  def predictClass(dataset: RDD[Sample[T]], batchSize: Int = -1): RDD[Int] = {
+    Predictor(this).predictClass(dataset, batchSize)
   }
 
   /**
@@ -441,7 +514,10 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
   def setWeightsBias(newWeights: Array[Tensor[T]]): this.type = {
     require(parameters() != null, "this layer does not have weight/bias")
     require(parameters()._1.length == newWeights.length,
-      "the number of input weight/bias is not consistant with number of weight/bias of this layer")
+      "the number of input weight/bias is not consistant with " +
+        "number of weight/bias of this layer, " +
+        s"number of input ${parameters()._1.length}," +
+        s" number of output ${newWeights.length}")
     val weights = parameters()._1
     for(i <- newWeights.indices) {
       weights(i).copy(newWeights(i))
@@ -532,16 +608,29 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
   }
 
   /**
-   * Some other modules point to current module
+   * Build graph: some other modules point to current module
    * @param nodes upstream module nodes
    * @return node containing current module
    */
   def inputs(nodes : ModuleNode[T]*): ModuleNode[T] = {
-    require(this.isInstanceOf[AbstractModule[_, Tensor[T], T]],
-      "AbstractModule: Only module with tensor output can be added into a graph node")
-    val curNode = new ModuleNode[T](this.asInstanceOf[AbstractModule[Activity, Tensor[T], T]])
+    val curNode = new ModuleNode[T](this)
     nodes.foreach(node => {
-      node -> curNode
+      node.add(curNode, Edge())
+    })
+    curNode
+  }
+
+  /**
+   * Build graph: some other modules point to current module
+   * @param first distinguish from another inputs when input parameter list is empty
+   * @param nodesWithIndex upstream module nodes and the output tensor index. The start index is 1.
+   * @return node containing current module
+   */
+  def inputs(first: (ModuleNode[T], Int), nodesWithIndex : (ModuleNode[T], Int)*): ModuleNode[T] = {
+    val curNode = new ModuleNode[T](this)
+    first._1.add(curNode, Edge(first._2))
+    nodesWithIndex.foreach(nodeWithIndex => {
+      nodeWithIndex._1.add(curNode, Edge(nodeWithIndex._2))
     })
     curNode
   }
@@ -579,6 +668,10 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
                vMethods: Array[ValidationMethod[T]]
               ): Array[(ValidationResult, ValidationMethod[T])] = {
     Validator(this, dataSet).test(vMethods)
+  }
+
+  def quantize(): Module[T] = {
+    Quantization.quantize(this)
   }
 }
 

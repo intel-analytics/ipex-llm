@@ -754,7 +754,7 @@ class InceptionSpec extends TorchSpec {
     val loss = criterion.forward(output, labels)
 
     // since we already set the seed, the loss should match exactly
-    loss should be (6.8930426f)
+    loss should be (6.893043f)
   }
 
   "InceptionV1 " should "init right" in {
@@ -774,7 +774,7 @@ class InceptionSpec extends TorchSpec {
     val loss = criterion.forward(output, labels)
 
     // since we already set the seed, the loss should match exactly
-    loss should be (6.9011583f)
+    loss should be (6.901158f)
   }
 
   "Inception_Layer_V1 graph" should "be correct" in {
@@ -840,7 +840,21 @@ class InceptionSpec extends TorchSpec {
     val gradInput2 = graphModel.backward(input, gradOutput).toTensor[Float]
     gradInput1 should be(gradInput2)
 
-    model.getParametersTable().equals(graphModel.getParametersTable()) should be (true)
+    val table1 = model.getParametersTable()
+    val table2 = graphModel.getParametersTable()
+    table1.keySet.foreach(key => {
+      table1(key).asInstanceOf[Table]("weight").asInstanceOf[Tensor[Float]] should be
+      table2(key).asInstanceOf[Table]("weight").asInstanceOf[Tensor[Float]]
+
+      table1(key).asInstanceOf[Table]("bias").asInstanceOf[Tensor[Float]] should be
+      table2(key).asInstanceOf[Table]("bias").asInstanceOf[Tensor[Float]]
+
+      table1(key).asInstanceOf[Table]("gradWeight").asInstanceOf[Tensor[Float]] should be
+      table2(key).asInstanceOf[Table]("gradWeight").asInstanceOf[Tensor[Float]]
+
+      table1(key).asInstanceOf[Table]("gradBias").asInstanceOf[Tensor[Float]] should be
+      table2(key).asInstanceOf[Table]("gradBias").asInstanceOf[Tensor[Float]]
+    })
   }
 
   "Inception_v1 graph" should "be correct" in {
@@ -882,7 +896,21 @@ class InceptionSpec extends TorchSpec {
     val gradInput2 = graphModel.backward(input, gradOutput).toTensor[Float]
     gradInput1 should be(gradInput2)
 
-    model.getParametersTable().equals(graphModel.getParametersTable()) should be (true)
+    val table1 = model.getParametersTable()
+    val table2 = graphModel.getParametersTable()
+    table1.keySet.foreach(key => {
+      table1(key).asInstanceOf[Table]("weight").asInstanceOf[Tensor[Float]] should be
+      table2(key).asInstanceOf[Table]("weight").asInstanceOf[Tensor[Float]]
+
+      table1(key).asInstanceOf[Table]("bias").asInstanceOf[Tensor[Float]] should be
+      table2(key).asInstanceOf[Table]("bias").asInstanceOf[Tensor[Float]]
+
+      table1(key).asInstanceOf[Table]("gradWeight").asInstanceOf[Tensor[Float]] should be
+      table2(key).asInstanceOf[Table]("gradWeight").asInstanceOf[Tensor[Float]]
+
+      table1(key).asInstanceOf[Table]("gradBias").asInstanceOf[Tensor[Float]] should be
+      table2(key).asInstanceOf[Table]("gradBias").asInstanceOf[Tensor[Float]]
+    })
   }
 
   "Inception_v2_NoAuxClassifier graph" should "be correct" in {
@@ -903,7 +931,21 @@ class InceptionSpec extends TorchSpec {
     val gradInput2 = graphModel.backward(input, gradOutput).toTensor[Float]
     gradInput1 should be(gradInput2)
 
-    model.getParametersTable().equals(graphModel.getParametersTable()) should be (true)
+    val table1 = model.getParametersTable()
+    val table2 = graphModel.getParametersTable()
+    table1.keySet.foreach(key => {
+      table1(key).asInstanceOf[Table]("weight").asInstanceOf[Tensor[Float]] should be
+      table2(key).asInstanceOf[Table]("weight").asInstanceOf[Tensor[Float]]
+
+      table1(key).asInstanceOf[Table]("bias").asInstanceOf[Tensor[Float]] should be
+      table2(key).asInstanceOf[Table]("bias").asInstanceOf[Tensor[Float]]
+
+      table1(key).asInstanceOf[Table]("gradWeight").asInstanceOf[Tensor[Float]] should be
+      table2(key).asInstanceOf[Table]("gradWeight").asInstanceOf[Tensor[Float]]
+
+      table1(key).asInstanceOf[Table]("gradBias").asInstanceOf[Tensor[Float]] should be
+      table2(key).asInstanceOf[Table]("gradBias").asInstanceOf[Tensor[Float]]
+    })
   }
 
   "Inception_v2 graph" should "be correct" in {

@@ -46,8 +46,8 @@ import scala.reflect.ClassTag
  */
 @SerialVersionUID(- 9012115082607155821L)
 class RReLU[T: ClassTag](
-  lower: Double = 1.0/8,
-  upper: Double = 1.0/3,
+  val lower: Double = 1.0/8,
+  val upper: Double = 1.0/3,
   inplace: Boolean = false)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T]  {
   @transient
@@ -119,7 +119,9 @@ class RReLU[T: ClassTag](
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    require(input.isSameSizeAs(gradOutput))
+    require(input.isSameSizeAs(gradOutput),
+      "input and gradOutput should be same size" +
+        s"input ${input.nElement()} gradOutput ${gradOutput.nElement()}")
     if (noise == null) {
       noise = Tensor[T]()
     }
@@ -164,6 +166,13 @@ class RReLU[T: ClassTag](
 
   override def toString: String = {
     "nn.RReLU"
+  }
+
+  override def clearState(): this.type = {
+    if (!inplace) {
+      super.clearState()
+    }
+    this
   }
 }
 

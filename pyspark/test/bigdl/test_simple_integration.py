@@ -19,12 +19,14 @@ from bigdl.nn.initialization_method import *
 from bigdl.nn.criterion import *
 from bigdl.optim.optimizer import *
 from bigdl.util.common import *
+from bigdl.util.common import _py2java
 from bigdl.nn.initialization_method import *
 from bigdl.dataset import movielens
 import numpy as np
 import tempfile
 import pytest
 from numpy.testing import assert_allclose
+from bigdl.util.engine import compare_version
 
 
 class TestSimple():
@@ -76,6 +78,15 @@ class TestSimple():
         tmp_path = tempfile.mktemp()
         fc1.save(tmp_path, True)
         fc1_loaded = Model.load(tmp_path)
+        assert_allclose(fc1_loaded.get_weights()[0],
+                        fc1.get_weights()[0])
+
+    def test_load_model_proto(self):
+        fc1 = Linear(4, 2)
+        fc1.set_weights([np.ones((4, 2)), np.ones((2,))])
+        tmp_path = tempfile.mktemp()
+        fc1.saveModel(tmp_path, True)
+        fc1_loaded = Model.loadModel(tmp_path)
         assert_allclose(fc1_loaded.get_weights()[0],
                         fc1.get_weights()[0])
 
@@ -149,6 +160,15 @@ class TestSimple():
         assert_allclose(gradInput[1],
                         np.array([6.0, 6.0, 6.0, 6.0]))
 
+    def test_save_graph_topology(self):
+        fc1 = Linear(4, 2)()
+        fc2 = Linear(4, 2)()
+        cadd = CAddTable()([fc1, fc2])
+        output1 = ReLU()(cadd)
+        output2 = Threshold(10.0)(cadd)
+        model = Model([fc1, fc2], [output1, output2])
+        model.save_graph_topology(tempfile.mkdtemp())
+
     def test_load_zip_conf(self):
         from bigdl.util.common import get_bigdl_conf
         import sys
@@ -179,7 +199,7 @@ class TestSimple():
 
         def gen_rand_sample():
             features = np.random.uniform(0, 1, (FEATURES_DIM))
-            label = (2 * features).sum() + 0.4
+            label = np.array((2 * features).sum() + 0.4)
             return Sample.from_ndarray(features, label)
 
         trainingData = self.sc.parallelize(range(0, data_len)).map(
@@ -243,7 +263,7 @@ class TestSimple():
             print(str(i) + "\n")
         print(len(p))
 
-        test_results = trained_model.test(trainingData, 32, [Top1Accuracy()])
+        test_results = trained_model.evaluate(trainingData, 32, [Top1Accuracy()])
         for test_result in test_results:
             print(test_result)
 
@@ -385,6 +405,20 @@ class TestSimple():
         for i in range(0, 2):
             assert_allclose(data[i], data2[i])
 
+    def test_save_jtensor_dict(self):
+        tensors = {}
+        tensors["tensor1"] = JTensor.from_ndarray(np.random.rand(3, 2))
+        tensors["tensor2"] = JTensor.from_ndarray(np.random.rand(3, 2))
+        # in old impl, this will throw an exception
+        _py2java(self.sc, tensors)
+
+    def test_compare_version(self):
+        assert compare_version("2.1.1", "2.2.0") == -1
+        assert compare_version("2.2.0", "1.6.2") == 1
+        assert compare_version("2.2.0", "2.2.0") == 0
+        assert compare_version("1.6.0", "2.1.0") == -1
+        assert compare_version("2.1.0", "2.1.1") == -1
+        assert compare_version("2.0.1", "1.5.2") == 1
 
 if __name__ == "__main__":
     pytest.main([__file__])

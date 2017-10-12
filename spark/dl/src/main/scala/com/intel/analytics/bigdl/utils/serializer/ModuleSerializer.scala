@@ -35,10 +35,7 @@ object ModuleSerializer extends ModuleSerializable{
 
   private val runtimeMirror = universe.runtimeMirror(getClass.getClassLoader)
 
-  private val moduleMaps = new mutable.HashMap[String, Class[_]]()
-  private val classMaps = new mutable.HashMap[Class[_], String]()
-  private val deserializerMaps = new mutable.HashMap[String, ModuleSerializable]()
-  private val serializerMaps = new mutable.HashMap[Class[_], ModuleSerializable]()
+  private val serializerMaps = new mutable.HashMap[String, ModuleSerializable]()
 
   // generic type definition for type matching
 
@@ -55,50 +52,69 @@ object ModuleSerializer extends ModuleSerializable{
 
   /**
    * Serialization entry for all modules based on corresponding class instance of module
-   * @param bigDLModule : BigDL module to be serialized
+   * @param serializerContext : serialization context
    * @return protobuf format module instance
    */
-  def serialize[T: ClassTag](bigDLModule : ModuleData[T])
+  def serialize[T: ClassTag](serializerContext : SerializeContext[T])
                             (implicit ev: TensorNumeric[T])
-    : BigDLModule = {
-    val module = bigDLModule.module
-    val cls = module.getClass
-    serializerMaps(cls).serializeModule(bigDLModule)
+    : SerializeResult = {
+    val module = serializerContext.moduleData.module
+    // For those layers which have their own serialization/deserialization methods
+    val clsName = module.getClass.getName
+    if (serializerMaps.contains(clsName)) {
+      serializerMaps(clsName).serializeModule(serializerContext)
+    } else {
+      val m = module.asInstanceOf[AbstractModule[_, _, _]]
+      m match {
+        case container : Container[_, _, _] =>
+          ContainerSerializer.serializeModule(serializerContext)
+        case cell : Cell[_] =>
+          CellSerializer.serializeModule(serializerContext)
+        case _ => ModuleSerializer.serializeModule(serializerContext)
+      }
+    }
   }
 
   /**
    *  Deserialization entry for all modules based on corresponding module type
-   *  @param model : BigDL module on protobuf for deserialization
+   *  @param context : context for deserialization
    *  @return BigDL module
    */
-  def load[T: ClassTag](model: BigDLModule)
+  def load[T: ClassTag](context: DeserializeContext)
                        (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
-    deserializerMaps(model.getModuleType).loadModule(model)
+    try {
+      val model = context.bigdlModule
+      if (serializerMaps.contains(model.getModuleType)) {
+        serializerMaps(model.getModuleType).loadModule(context)
+      } else {
+        val attrMap = model.getAttrMap
+        val subModuleCount = model.getSubModulesCount
+        if (subModuleCount > 0) {
+          ContainerSerializer.loadModule(context)
+        } else {
+          if (attrMap.containsKey("is_cell_module")) {
+            CellSerializer.loadModule(context)
+          } else {
+            ModuleSerializer.loadModule(context)
+          }
+        }
+      }
+    } catch {
+      case e: Exception =>
+        throw new RuntimeException(
+          s"Loading module ${context.bigdlModule.getModuleType} exception :", e)
+    }
   }
 
 
   /**
    * register module for single module, used for standard BigDL module and user defined module
    * @param moduleType,must be unique
-   * @param moduleCls class for module
    * @param serializer serialzable implementation for this module
    */
-  def registerModule(moduleType : String, moduleCls : Class[_],
-    serializer : ModuleSerializable) : Unit = {
-    moduleMaps(moduleType) = moduleCls
-    classMaps(moduleCls) = moduleType
-    serializerMaps(moduleCls) = serializer
-    deserializerMaps(moduleType) = serializer
-  }
-
-  private[serializer] def getModuleClsByType(moduleType : String) : Class[_] = {
-    require(moduleMaps.contains(moduleType), s"$moduleType is not supported")
-    moduleMaps(moduleType)
-  }
-
-  private[serializer] def getModuleTypeByCls(cls : Class[_]) : String = {
-    require(classMaps.contains(cls), s"$cls is not supported")
-    classMaps(cls)
+  def registerModule(moduleType : String, serializer : ModuleSerializable) : Unit = {
+    require(!serializerMaps.contains(moduleType), s"$moduleType already registered!")
+    serializerMaps(moduleType) = serializer
   }
 
   private[serializer] def getCostructorMirror[T : ClassTag](cls : Class[_]):
@@ -116,6 +132,7 @@ object ModuleSerializer extends ModuleSerializable{
 
   private def init() : Unit = {
     initializeDeclaredTypes
+    registerModules
   }
 
   private def initializeDeclaredTypes() : Unit = {
@@ -145,6 +162,40 @@ object ModuleSerializer extends ModuleSerializable{
         }
       })
     })
+  }
+  // Add those layers that need to overwrite serialization method
+
+  private def registerModules : Unit = {
+
+    registerModule("com.intel.analytics.bigdl.nn.BatchNormalization", BatchNormalization)
+    registerModule("com.intel.analytics.bigdl.nn.SpatialBatchNormalization", BatchNormalization)
+    registerModule("com.intel.analytics.bigdl.nn.BinaryTreeLSTM", BinaryTreeLSTM)
+    registerModule("com.intel.analytics.bigdl.nn.BiRecurrent", BiRecurrent)
+    registerModule("com.intel.analytics.bigdl.nn.Graph", Graph)
+    registerModule("com.intel.analytics.bigdl.nn.MapTable", MapTable)
+    registerModule("com.intel.analytics.bigdl.nn.MaskedSelect", MaskedSelect)
+    registerModule("com.intel.analytics.bigdl.nn.Recurrent", Recurrent)
+    registerModule("com.intel.analytics.bigdl.nn.Reshape", Reshape)
+    registerModule("com.intel.analytics.bigdl.nn.Scale", Scale)
+    registerModule("com.intel.analytics.bigdl.nn.SpatialContrastiveNormalization",
+      SpatialContrastiveNormalization)
+    registerModule("com.intel.analytics.bigdl.nn.SpatialDivisiveNormalization",
+      SpatialDivisiveNormalization)
+    registerModule("com.intel.analytics.bigdl.nn.SpatialFullConvolution",
+      SpatialFullConvolution)
+    registerModule("com.intel.analytics.bigdl.nn.SpatialMaxPooling",
+      SpatialMaxPooling)
+    registerModule("com.intel.analytics.bigdl.nn.SpatialSubtractiveNormalization",
+      SpatialSubtractiveNormalization)
+    registerModule("com.intel.analytics.bigdl.nn.Transpose", Transpose)
+    registerModule("com.intel.analytics.bigdl.nn.VolumetricMaxPooling", VolumetricMaxPooling)
+    registerModule("com.intel.analytics.bigdl.nn.Echo", Echo)
+    registerModule("com.intel.analytics.bigdl.nn.quantized.SpatialConvolution",
+      quantized.SpatialConvolution)
+    registerModule("com.intel.analytics.bigdl.nn.quantized.SpatialDilatedConvolution",
+      quantized.SpatialDilatedConvolution)
+    registerModule("com.intel.analytics.bigdl.nn.quantized.Linear",
+      quantized.Linear)
   }
 }
 

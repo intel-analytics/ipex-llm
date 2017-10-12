@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.optim.{L2Regularizer, SGD}
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer
@@ -60,7 +61,7 @@ class ConvLSTMPeephole3DSpec extends FlatSpec with BeforeAndAfter with Matchers 
     val batchSize = 2
     val kernalW = 3
     val kernalH = 3
-    val model = Recurrent[Double]
+    val model = Recurrent[Double]()
         .add(ConvLSTMPeephole3D[Double](
           inputSize,
           hiddenSize,

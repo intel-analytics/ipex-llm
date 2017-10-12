@@ -115,6 +115,14 @@ trait TensorMath[T] {
   def sum(): T
 
   /**
+   * returns the product of the elements of this
+   * @return
+   */
+  def prod(): T
+
+  def prod(x: Tensor[T], dim: Int): Tensor[T]
+
+  /**
    * performs the sum operation over the dimension dim
    * @param dim
    * @return
@@ -228,6 +236,12 @@ trait TensorMath[T] {
    * @return
    */
   def sqrt(): Tensor[T]
+
+  /**
+   * replaces all elements in-place with the tanh root of the elements of this.
+   * @return
+   */
+  def tanh(): Tensor[T]
 
   /**
    * replaces all elements in-place with the absolute values of the elements of this.
@@ -552,6 +566,8 @@ trait TensorMath[T] {
   def exp(y: Tensor[T]): Tensor[T]
 
   def sqrt(y: Tensor[T]): Tensor[T]
+
+  def tanh(y: Tensor[T]): Tensor[T]
 
   def log1p(y: Tensor[T]): Tensor[T]
 
