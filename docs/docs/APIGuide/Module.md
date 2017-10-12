@@ -170,6 +170,8 @@ its parameters(weight/bias, if exists) are not changed in training process
 * stop the input gradient of layers that match the given names. Their input gradient are not computed.
 And they will not contributed to the input gradient computation of layers that depend on them.
 
+Note that stopGradient is only supported in Graph model.
+
 **Python**
 ```python
 layer.freeze()
