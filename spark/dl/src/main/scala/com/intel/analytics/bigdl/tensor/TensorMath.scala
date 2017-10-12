@@ -412,7 +412,7 @@ trait TensorMath[T] {
 
   /**
    * Element-wise divide
-   * x.cdiv(y) all elements of x divide all elements of y.
+   * x.div(y) all elements of x divide all elements of y.
    * x = x / y
    *
    * @param y tensor
