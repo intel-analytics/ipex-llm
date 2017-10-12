@@ -834,13 +834,25 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     t should be(DenseTensor[Double](2.0))
   }
 
-  "Tensor add" should "support broadcasting" in {
+  "Tensor add and sub" should "support broadcasting" in {
     val t1 = Tensor[Double](T(1, 2, 3))
     val t2 = Tensor[Double](T(T(2, 5, 3), T(3, 6, 4)))
-    t2.add(t1) should be(Tensor[Double](T(T(3, 7, 6), T(4, 8, 7))))
+    t2.add(t1) should be (Tensor[Double](T(T(3, 7, 6), T(4, 8, 7))))
   }
 
-  "Tensor add" should "support broadcasting 2" in {
+  "Tensor sub" should "support broadcasting" in {
+    val t1 = Tensor[Double](T(1, 2, 3))
+    val t2 = Tensor[Double](T(T(2, 5, 3), T(3, 6, 4)))
+    t2.sub(t1) should be (Tensor[Double](T(T(1, 3, 0), T(2, 4, 1))))
+  }
+
+  "Tensor div" should "support broadcasting" in {
+    val t1 = Tensor[Double](T(1, 2, 3))
+    val t2 = Tensor[Double](T(T(2, 4, 6), T(3, 6, 9)))
+    t2.div(t1) should be (Tensor[Double](T(T(2, 2, 2), T(3, 3, 3))))
+  }
+
+  "Tensor add " should "support broadcasting 2" in {
     val t1 = Tensor[Double](T(
       T(
         T(1, 2, 3),

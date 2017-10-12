@@ -500,15 +500,6 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
   def copy(other: Tensor[T]): Tensor[T]
 
   /**
-   * Copy the value of the given tensor to the current. They should have same size.
-   * They should also have the same type.
-   *
-   * @param other source tensor
-   * @return current tensor
-   */
-  def forceCopy(other: Tensor[_]): Tensor[T]
-
-  /**
    * Apply a function to each element of the tensor `t`
    * and set each value to self
    *
@@ -777,7 +768,7 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
 /**
  * Numeric type of tensor.
  */
-sealed trait TensorDataType
+sealed trait TensorDataType extends Serializable
 
 object BooleanType extends TensorDataType
 

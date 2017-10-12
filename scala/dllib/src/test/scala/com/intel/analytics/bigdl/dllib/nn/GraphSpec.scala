@@ -1141,7 +1141,7 @@ class GraphSpec extends FlatSpec with Matchers {
   "graph" should "support switch with two branch" in {
     val data = Input("data")
     val condition = Input("condition")
-    val swtich = ControlNodes.switch(data, condition)
+    val swtich = ControlNodes.switch(condition, data)
     val echo1 = Echo().inputs(swtich.trueEdge())
     val echo2 = Echo().inputs(swtich.falseEdge())
 
@@ -1157,7 +1157,7 @@ class GraphSpec extends FlatSpec with Matchers {
   "graph" should "support switch with two branch with merge" in {
     val data = Input("data")
     val condition = Input("condition")
-    val swtich = ControlNodes.switch(data, condition)
+    val swtich = ControlNodes.switch(condition, data)
     val echo1 = Echo().inputs(swtich.trueEdge())
     val echo2 = Echo().inputs(swtich.falseEdge())
     val add1 = AddConstant(1).inputs(echo1)
