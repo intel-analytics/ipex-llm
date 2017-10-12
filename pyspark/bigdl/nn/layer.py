@@ -4112,6 +4112,53 @@ class ConvLSTMPeephole3D(Layer):
         super(ConvLSTMPeephole3D, self).__init__(None, bigdl_type, input_size, output_size, kernel_i, kernel_c, stride,
                                                  wRegularizer, uRegularizer, bRegularizer, cRegularizer, with_peephole)
 
+class Seq2seq(Layer):
+    '''
+|   Sequence to sequence mode.
+|   Ref.
+|   A.: https://arxiv.org/abs/1506.04214 (blueprint for this module)
+
+    :param encoder_cells: a list of cells used to compose encoder
+    :param decoder_cells: a list of cells used to compose decoder
+
+    >>> encoderRecs = []
+    >>> encoderRecs.append(Recurrent().add(ConvLSTMPeephole3D(4, 3, 3, 3, 1)))
+    >>> encoderRecs.append(Recurrent().add(ConvLSTMPeephole3D(4, 3, 3, 3, 1)))
+    >>> decodercells = []
+    >>> decodercells.append(ConvLSTMPeephole3D(4, 3, 3, 3, 1))
+    >>> decodercells.append(ConvLSTMPeephole3D(4, 3, 3, 3, 1))
+    >>> decoderRecs = []
+    >>> decoderRecs.append(RecurrentDecoder(2).add(MultiRNNCell(decodercells)))
+    >>> layer = Seq2seq(encoderRecs, decoderRecs)
+    creating: createConvLSTMPeephole3D
+    creating: createConvLSTMPeephole3D
+    creating: createConvLSTMPeephole3D
+    creating: createConvLSTMPeephole3D
+    creating: createRecurrent
+    creating: createMultiRNNCell
+    creating: createRecurrentDecoder
+    creating: createSeq2seq
+    '''
+    def __init__(self, encoder_recs, decoder_recs, bigdl_type="float"):
+        super(Seq2seq, self).__init__(None, bigdl_type, encoder_recs, decoder_recs)
+
+class RecurrentDecoder(Recurrent):
+    '''
+    RecurrentDecoder module is a container of rnn cells which used to make
+    a prediction of the next timestep based on the prediction we made from
+    the previous timestep. Input for RecurrentDecoder is dynamically composed
+    during training. input at t(i) is output at t(i-1), input at t(0) is
+    user input, and user input has to be batch x ???(depends on cell type)
+    without time information.
+
+    Different types of rnn cells can be added using add() function.
+
+    >>> recurrent_decoder = RecurrentDecoder(output_length = 5)
+    creating: createRecurrentDecoder
+    '''
+
+    def __init__(self, output_length, bigdl_type="float"):
+        super(Recurrent, self).__init__(None, bigdl_type, output_length)
 
 class MultiRNNCell(Layer):
     '''
@@ -4142,40 +4189,6 @@ class ResizeBilinear(Layer):
     """
     def __init__(self, output_height, output_width, align_corner):
         super(ResizeBilinear, self).__init__(None, output_height, output_width, align_corner)
-
-class Seq2seq(Layer):
-    '''
-|   Sequence to sequence mode.
-|   Ref.
-|   A.: https://arxiv.org/abs/1506.04214 (blueprint for this module)
-
-    :param encoder_cells: a list of cells used to compose encoder
-    :param decoder_cells: a list of cells used to compose decoder
-    :param output_length: sequence length of output
-    :param broadcast_state: whether broadcast state of encoder to decoder 
-    :param decoder_input: decoder input type, currently support "USERINPUT", "ZEROS", "ENCODEROUTPUT"
-
-    >>> encodercells = []
-    >>> encodercells.append(ConvLSTMPeephole3D(4, 3, 3, 3, 1))
-    >>> encodercells.append(ConvLSTMPeephole3D(4, 3, 3, 3, 1))
-    >>> decodercells = []
-    >>> decodercells.append(ConvLSTMPeephole3D(4, 3, 3, 3, 1))
-    >>> decodercells.append(ConvLSTMPeephole3D(4, 3, 3, 3, 1))
-    >>> layer = Seq2seq(encodercells, decoder_cells, 3, True)
-    creating: createConvLSTMPeephole3D
-    creating: createConvLSTMPeephole3D
-    creating: createConvLSTMPeephole3D
-    creating: createConvLSTMPeephole3D
-    creating: createRecurrent
-    creating: createMultiRNNCell
-    creating: createRecurrentDecoder
-    creating: createSeq2seq
-    '''
-
-    def __init__(self, encoder_cells, decoder_cells, output_length, broadcast_state=False,
-    decoder_input="USERINPUT", bigdl_type="float"):
-        super(Seq2seq, self).__init__(None, bigdl_type, encoder_cells, decoder_cells,
-                                      output_length, broadcast_state, decoder_input)
 
 def _test():
     import doctest
