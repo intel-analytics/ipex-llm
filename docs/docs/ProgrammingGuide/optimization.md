@@ -219,6 +219,7 @@ See details in [Visualization](visualization.md)
 
 ## Performance tunning
 For performance investigation, BigDL records the time-consuming distribution on each node for each step(e.g. sync weight, computing).The information can be displayed in the driver log. By default, it is suspended.To turn it on, please follow these steps:
+
 1.Prepare a log4j property file
 ```
 # Root logger option
