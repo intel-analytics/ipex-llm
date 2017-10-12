@@ -125,7 +125,7 @@ import numpy as np
 
 image = np.random.rand(3, 32, 32)
 label = np.array(1)
-Sample.from_ndarray(image, label)
+sample = Sample.from_ndarray(image, label)
 ```
 
 ---
