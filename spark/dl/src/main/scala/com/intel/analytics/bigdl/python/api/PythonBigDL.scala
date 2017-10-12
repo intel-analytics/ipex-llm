@@ -181,6 +181,25 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       toTensor(initWeight), toTensor(initBias), toTensor(initGradWeight), toTensor(initGradBias))
   }
 
+  def createSparseLinear(inputSize: Int, outputSize: Int,
+                   withBias: Boolean,
+                   backwardStart: Int = -1,
+                   backwardLength: Int = -1,
+                   wRegularizer: Regularizer[T] = null,
+                   bRegularizer: Regularizer[T] = null,
+                   initWeight: JTensor = null,
+                   initBias: JTensor = null,
+                   initGradWeight: JTensor = null,
+                   initGradBias: JTensor = null): SparseLinear[T] = {
+    SparseLinear[T](inputSize, outputSize, withBias, backwardStart, backwardLength,
+      wRegularizer, bRegularizer, toTensor(initWeight), toTensor(initBias),
+      toTensor(initGradWeight), toTensor(initGradBias))
+  }
+
+  def createDenseToSparse(): DenseToSparse[T] = {
+    DenseToSparse[T]()
+  }
+
   def createReLU(ip: Boolean = false): ReLU[T] = {
     ReLU[T](ip)
   }
@@ -632,6 +651,12 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   : JoinTable[T] = {
     JoinTable[T](dimension,
       nInputDims)
+  }
+
+  def createSparseJoinTable(dimension: Int,
+                      nInputDims: Int)
+  : SparseJoinTable[T] = {
+    SparseJoinTable[T](dimension)
   }
 
   def createL1Cost()

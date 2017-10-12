@@ -24,16 +24,16 @@ import scala.reflect.ClassTag
 
 /**
  * SparseLinear is the sparse version of module Linear. SparseLinear has two different from Linear:
- * firstly, SparseLinear's * input Tensor is a SparseTensor. Secondly, SparseLinear doesn't backward
+ * firstly, SparseLinear's input Tensor is a SparseTensor. Secondly, SparseLinear doesn't backward
  * gradient to next layer in the backpropagation by default, as the gradInput of SparseLinear is
- * useless in most cases.
+ * useless and very big in most cases.
  *
  * But, considering model like Wide&Deep, we provide backwardStart and backwardLength to backward
  * part of the gradient to next layer.
  *
  * @param inputSize the size the each input sample
  * @param outputSize the size of the module output of each sample
- * @param backwardStart backwardStart index, start from 1
+ * @param backwardStart backwardStart index, counting from 1
  * @param backwardLength backward length
  * @param withBias if has bias
  * @param wRegularizer: instance of [[Regularizer]]

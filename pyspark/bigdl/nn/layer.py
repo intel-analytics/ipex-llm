@@ -744,6 +744,74 @@ class Linear(Layer):
                                    weight_init_method, bias_init_method)
         return self
 
+class SparseLinear(Layer):
+
+    '''
+    SparseLinear is the sparse version of module Linear. SparseLinear has two different from Linear:
+    firstly, SparseLinear's input Tensor is a SparseTensor. Secondly, SparseLinear doesn't backward
+    gradient to next layer in the backpropagation by default, as the gradInput of SparseLinear is
+    useless and very big in most cases.
+
+    But, considering model like Wide&Deep, we provide backwardStart and backwardLength to backward
+    part of the gradient to next layer.
+
+    :param input_size the size the each input sample
+    :param output_size the size of the module output of each sample
+    :param backwardStart backwardStart index, counting from 1
+    :param backwardLength backward length
+    :param withBias if has bias
+    :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices.
+    :param bRegularizer: instance of [[Regularizer]]applied to the bias.
+    :param init_weight: the optional initial value for the weight
+    :param init_bias: the optional initial value for the bias
+    :param init_grad_weight: the optional initial value for the grad_weight
+    :param init_grad_bias: the optional initial value for the grad_bias
+
+
+    >>> sparselinear = SparseLinear(100, 10, True, L1Regularizer(0.5), L1Regularizer(0.5))
+    creating: createL1Regularizer
+    creating: createL1Regularizer
+    creating: createSparseLinear
+    >>> import numpy as np
+    >>> init_weight = np.random.randn(10, 100)
+    >>> init_bias = np.random.randn(10)
+    >>> init_grad_weight = np.zeros([10, 100])
+    >>> init_grad_bias = np.zeros([10])
+    >>> sparselinear = SparseLinear(100, 10, True, L1Regularizer(0.5), L1Regularizer(0.5), init_weight, init_bias, init_grad_weight, init_grad_bias)
+    creating: createL1Regularizer
+    creating: createL1Regularizer
+    creating: createSparseLinear
+    '''
+
+    def __init__(self, input_size, output_size, backwardStart=-1, backwardLength=-1, with_bias=True,
+                 wRegularizer=None, bRegularizer=None, init_weight=None, init_bias=None,
+                 init_grad_weight=None, init_grad_bias=None, bigdl_type="float"):
+        super(SparseLinear, self).__init__(None, bigdl_type, input_size, output_size,
+                                     backwardStart, backwardLength, with_bias,
+                                     wRegularizer, bRegularizer,
+                                     JTensor.from_ndarray(init_weight),
+                                     JTensor.from_ndarray(init_bias),
+                                     JTensor.from_ndarray(init_grad_weight),
+                                     JTensor.from_ndarray(init_grad_bias))
+
+    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+        callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
+                      weight_init_method, bias_init_method)
+        return self
+
+class DenseToSparse(Layer):
+
+    '''
+    Convert DenseTensor to SparseTensor.
+
+
+    >>> DenseToSparse = DenseToSparse()
+    creating: createDenseToSparse
+    '''
+
+    def __init__(self,
+                 bigdl_type="float"):
+        super(DenseToSparse, self).__init__(None, bigdl_type)
 
 class ReLU(Layer):
 
@@ -2295,6 +2363,28 @@ class JoinTable(Layer):
         super(JoinTable, self).__init__(None, bigdl_type,
                                         dimension,
                                         n_input_dims)
+
+class SparseJoinTable(Layer):
+
+    '''
+    :: Experimental ::
+
+    Sparse version of JoinTable. Backward just pass the origin gradOutput back to
+    the next layers without split. So this layer may just works in Wide&Deep like models.
+
+
+    :param dimension: to be join in this dimension
+
+
+    >>> joinTable = SparseJoinTable(1)
+    creating: createSparseJoinTable
+    '''
+
+    def __init__(self,
+                 dimension,
+                 bigdl_type="float"):
+        super(JoinTable, self).__init__(None, bigdl_type,
+                                        dimension)
 
 
 class L1Penalty(Layer):
