@@ -400,12 +400,34 @@ class Layer(JavaValue):
                         "setLayerFreeze", self.value)
         return self
 
-    def unfreeze(self):
+    def unfreeze(self, scale_w=1, scale_b=1):
         '''
         unfreeze layer
+        :param scale_w Set the scale of gradientWeight
+        :param scale_b Set the scale of gradientBias
         '''
         callBigDlFunc(self.bigdl_type,
-                        "setLayerUnFreeze", self.value)
+                        "setLayerUnFreeze", self.value, scale_w, scale_b)
+
+    def freeze(self, names):
+        """
+        set an array of layers to be freezed
+        :param names: an array of layer names
+        :return:
+        """
+        callBigDlFunc(self.bigdl_type, "setFreeze", self.value, names)
+        return self
+
+    def unfreeze(self, names, scale_w=1, scale_b=1):
+        """
+        set layers that match given names to be trainable
+        :param names: an array of layer names
+        :param scale_w Set the scale of gradientWeight
+        :param scale_b Set the scale of gradientBias
+        :return:
+        """
+        callBigDlFunc(self.bigdl_type, "unFreeze", self.value, names, scale_w, scale_b)
+        return self
 
     def training(self):
         '''
@@ -650,26 +672,6 @@ class Model(Container):
                                                                       Sample.from_ndarray(input[0], input[1]))
         jmodel = callBigDlFunc(bigdl_type, "trainTF", path, output_name, rdd_train_sample, opt_method, criterion, batch_size, end_when)
         return Model.of(jmodel)
-
-
-    def freeze(self, freeze_layers, bigdl_type="float"):
-        """
-        set an array of layers to be freezed
-        :param freeze_layers: an array of layer names
-        :param bigdl_type:
-        :return:
-        """
-        callBigDlFunc(bigdl_type, "setFreeze", self.value, freeze_layers)
-        return self
-
-    def unfreeze(self, bigdl_type="float"):
-        """
-        set all layers to be trainable
-        :param bigdl_type:
-        :return:
-        """
-        callBigDlFunc(bigdl_type, "unFreeze", self.value)
-        return self
 
     def stop_gradient(self, stop_layers, bigdl_type="float"):
         """

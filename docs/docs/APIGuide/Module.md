@@ -156,17 +156,17 @@ val preductResult = model.predict(predictSet)
 To "freeze" a module means to exclude some layers of model from training.
 
 ```scala
-layer.freeze()
-layer.unFreeze()
-model.freeze(Array("layer1", "layer2"))
-model.unFreeze()
-model.stopGradient(Array("layer1"))
+module.freeze()
+module.unFreeze(scaleW = 2, scaleB = 1)
+module.freeze(Array("layer1", "layer2"))
+module.unFreeze(Array("layer1", "layer2"), scaleW = 2, scaleB = 1)
+module.stopGradient(Array("layer1"))
 ```
-* A single layer can be "freezed" by calling ```freeze()```. If a layer is freezed,
+* The whole module can be "freezed" by calling ```freeze()```. If a module is freezed,
 its parameters(weight/bias, if exists) are not changed in training process
-* A single layer can be "unFreezed" by calling ```unFreeze()```.
-* User can set freeze of list of layers in model by calling ```freeze```
-* User can unfreeze all layers by calling ```unFreeze```
+* The whole module can be "unFreezed" by calling ```unFreeze()```
+* User can freeze list of layers in model by calling ```freeze```
+* User can unfreeze list of layers by calling ```unFreeze```
 * stop the input gradient of layers that match the given names. Their input gradient are not computed.
 And they will not contributed to the input gradient computation of layers that depend on them.
 
@@ -174,11 +174,11 @@ Note that stopGradient is only supported in Graph model.
 
 **Python**
 ```python
-layer.freeze()
-layer.unfreeze()
-model.freeze(["layer1", "layer2"])
-model.unfreeze()
-model.stop_gradient(["layer1"])
+module.freeze()
+module.unfreeze(scale_w = 2, scale_b = 1)
+module.freeze(["layer1", "layer2"])
+module.unfreeze(["layer1", "layer2"], scale_w = 2, scale_b = 1)
+module.stop_gradient(["layer1"])
 ```
 
 **Scala**

@@ -1922,17 +1922,18 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     model.freeze()
   }
 
-  def setLayerUnFreeze(model: AbstractModule[Activity, Activity, T])
+  def setLayerUnFreeze(model: AbstractModule[Activity, Activity, T], scaleW: Double, scaleB: Double)
   : AbstractModule[Activity, Activity, T] = {
-    model.unFreeze()
+    model.unFreeze(scaleW, scaleB)
   }
 
   def setFreeze(model: Graph[T], freezeLayers: JList[String]): Graph[T] = {
     model.freeze(freezeLayers.asScala.toArray)
   }
 
-  def unFreeze(model: Graph[T]): Graph[T] = {
-    model.unFreeze()
+  def unFreeze(model: Graph[T], names: JList[String],
+    scaleW: Double, scaleB: Double): Graph[T] = {
+    model.unFreeze(names.asScala.toArray, scaleW, scaleB)
   }
 
   def setStopGradient(model: Graph[T], layers: JList[String]): Graph[T] = {

@@ -223,12 +223,35 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   }
 
   /**
-   * "unfreeze" layer, i.e. make the layer parameters(weight/bias, if exists)
+   * "unfreeze" all layers, i.e. make the layer parameters(weight/bias, if exists)
    * to be trained(updated) in training process
+   *
+   * @param scaleW Set the scale of gradientWeight
+   * @param scaleB Set the scale of gradientBias
    */
-  def unFreeze(): this.type = {
-    setScaleW(1)
-    setScaleB(1)
+  def unFreeze(scaleW: Double = 1, scaleB: Double = 1): this.type = {
+    setScaleW(scaleW)
+    setScaleB(scaleB)
+    this
+  }
+
+  /**
+   * "unfreeze" layers by given name, i.e. make the layer parameters(weight/bias, if exists)
+   * to be trained(updated) in training process
+   *
+   * @param names array of module names to unFreeze
+   * @param scaleW Set the scale of gradientWeight
+   * @param scaleB Set the scale of gradientBias
+   */
+  def unFreeze(names: Array[String], scaleW: Double = 1, scaleB: Double = 1): this.type = {
+    names.foreach(name => {
+      this (name) match {
+        case Some(x) =>
+          x.unFreeze(scaleW, scaleB)
+        case _ =>
+          throw new Exception(s"cannot match module named $name")
+      }
+    })
     this
   }
 
