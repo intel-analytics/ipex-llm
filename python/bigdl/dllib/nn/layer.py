@@ -1119,25 +1119,24 @@ class Recurrent(Container):
     def __init__(self, bigdl_type="float"):
         super(Recurrent, self).__init__(None, bigdl_type)
 
-    def get_state(self):
+    def get_hidden_state(self):
         """
         get hidden state and cell at last time step.
         
         :return: list of hidden state and cell
         """
-        state = callBigDlFunc(self.bigdl_type, "getState", self.value)
+        state = callBigDlFunc(self.bigdl_type, "getHiddenState", self.value)        
         for idx, tensor in enumerate(state):
-                state[idx] = tensor.to_ndarray()
+            state[idx] = tensor.to_ndarray()
 
         return state
-
-    def set_state(self, state):
+    
+    def set_hidden_state(self, states):
         """
         set hidden state and cell at first time step.
         """
-        jstate, state_is_table = self.check_input(state)
-        callBigDlFunc(self.bigdl_type, "setState", self.value, jstate, state_is_table)
-
+        jstate, state_is_table = self.check_input(states)
+        callBigDlFunc(self.bigdl_type, "setHiddenState", self.value, jstate, state_is_table)
 
 class RecurrentDecoder(Recurrent):
     '''
@@ -1145,11 +1144,10 @@ class RecurrentDecoder(Recurrent):
     a prediction of the next timestep based on the prediction we made from
     the previous timestep. Input for RecurrentDecoder is dynamically composed
     during training. input at t(i) is output at t(i-1), input at t(0) is
-    user input, and user input has to be batch x ???(depends on cell type)
-    without time information.
+    user input, and user input has to be batch x stepShape(shape of the input
+    at a single time step).
 
-    Different types of rnn cells can be added using add() function. Currently
-    only support lstmpeephole, convlstm, convlstm3D cell.
+    Different types of rnn cells can be added using add() function.
 
     >>> recurrent_decoder = RecurrentDecoder(output_length = 5)
     creating: createRecurrentDecoder
