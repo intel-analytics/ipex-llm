@@ -44,6 +44,7 @@ import org.tensorflow.framework.NodeDef
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 import scala.language.existentials
 import scala.reflect.ClassTag
 
@@ -711,7 +712,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def createMean(dimension: Int = 1,
                  nInputDims: Int = -1,
                  squeeze: Boolean = true)
-  : Mean[T] = {
+  : Mean[T, T] = {
     Mean[T](dimension,
       nInputDims,
       squeeze)
@@ -1100,7 +1101,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                 sizeAverage: Boolean = false,
                 squeeze: Boolean = true
                )
-  : Sum[T] = {
+  : Sum[T, T] = {
     Sum[T](dimension,
       nInputDims,
       sizeAverage,
@@ -1917,16 +1918,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     layer.setInitMethod(weightInitMethod, biasInitMethod)
   }
 
-  def getState(rec: Recurrent[T]): JList[JTensor] = {
-    val res = rec.getState()
-      if (res.isTensor) return List(toJTensor(res.toTensor)).asJava
-    else return List(toJTensor(res.toTable.apply[Tensor[T]](1)),
-        toJTensor(res.toTable.apply[Tensor[T]](2))).asJava
+  def getHiddenStates(rec: Recurrent[T]): JList[JTensor] = {
+    val states = rec.getHiddenState()
+    activityToJTensors(states)
   }
 
-  def setState(rec: Recurrent[T], state: JList[JTensor], isTable: Boolean): Unit = {
-    val stateActivity = jTensorsToActivity(state, isTable)
-    rec.setState(stateActivity)
+  def setHiddenStates(rec: Recurrent[T], hiddenStates: JList[JTensor], isTable: Boolean): Unit = {
+      rec.setHiddenState(jTensorsToActivity(hiddenStates, isTable))
   }
 
   def setLayerFreeze(model: AbstractModule[Activity, Activity, T])

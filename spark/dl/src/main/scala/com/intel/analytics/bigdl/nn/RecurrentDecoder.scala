@@ -17,50 +17,78 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.{T, Table}
 import com.intel.analytics.bigdl.utils.serializer._
 import serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
+import scala.reflect.runtime._
 
 /**
  * [[RecurrentDecoder]] module is a container of rnn cells that used to make
  * a prediction of the next timestep based on the prediction we made from
  * the previous timestep. Input for RecurrentDecoder is dynamically composed
  * during training. input at t(i) is output at t(i-1), input at t(0) is
- * user input, and user input has to be batch x ???(depends on cell type)
- * without time information.
+ * user input, and user input has to be batch x stepShape(shape of the input
+ * at a single time step).
 
- * Different types of rnn cells can be added using add() function. Currently
- * only support lstmpeephole, convlstm, convlstm3D cell.
+ * Different types of rnn cells can be added using add() function.
+ * @param seqLength sequence length of the output
  */
-class RecurrentDecoder[T : ClassTag](seqLength: Int)
+class RecurrentDecoder[T : ClassTag](val seqLength: Int)
   (implicit ev: TensorNumeric[T]) extends Recurrent[T] {
 
   times = seqLength
-  private val newInput = Tensor[T]()
+
+  /**
+   *
+   *  modules: -- preTopology
+   *           |- topology (cell)
+   *
+   * The topology (or cell) will be cloned for N times w.r.t the time dimension.
+   * The preTopology will be execute only once before the recurrence.
+   *
+   * @param module module to be add
+   * @return this container
+   */
+  override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]):
+    RecurrentDecoder.this.type = {
+    require(module.isInstanceOf[Cell[T]],
+      "Recurrent: contained module should be Cell type")
+
+    topology = module.asInstanceOf[Cell[T]]
+    preTopology = topology.preTopology
+
+    if (preTopology != null) {
+      modules += preTopology
+      topology.includePreTopology = true
+    }
+    modules += topology
+
+    require((preTopology == null && modules.length == 1) ||
+      (topology != null && preTopology != null && modules.length == 2),
+      "Recurrent extend: should contain only one cell or plus a pre-topology" +
+        " to process input")
+    this
+  }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim == 2 || input.dim == 4 || input.dim == 5,
       "Recurrent: input should be a 2D/4D/5D Tensor, e.g [batch, nDim], " +
         s"current input.dim = ${input.dim}")
-
     batchSize = input.size(batchDim)
-
     val hiddenSize = topology.hiddensShape(0)
     val outputSize = input.size()
-    outputSize(1) = hiddenSize
     require(hiddenSize == input.size()(1), "hiddenSize is " +
       "not the same with input size!! Please update cell settings or use Recurrent instead!")
     val featureSizes = outputSize.drop(1)
     output.resize(Array(batchSize, times) ++ featureSizes)
     // Clone N modules along the sequence dimension.
-    extend(featureSizes)
-    if (preTopology != null) newInput.resize(output.size())
-    else outputCell.resize(output.size())
+    initHidden(featureSizes)
 
     /**
      * currentInput forms a T() type. It contains two elements, hidden and input.
@@ -69,39 +97,21 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
      * identical elements T(output, output). One of the elements from the cell output is
      * the updated hidden. Thus the currentInput will update its hidden element with this output.
      */
-    var i = 1
-    // init state
-    currentInput(hidDim) = if (initState != null) initState
-     else hidden
+    // Clone N modules along the sequence dimension.
+    cloneCells()
 
+    var i = 1
     while (i <= times) {
       // input at t(0) is user input
-      val inputTmp = if (i == 1) {
-        input
+      currentInput = if (i == 1) {
+        if (initHiddenState != null) T(input, initHiddenState)
+        else T(input, hidden)
       } else {
         // input at t(i) is output at t(i-1)
-        cells(i - 2).output.toTable[Tensor[T]](inputDim)
-      }
-
-      currentInput(inputDim) = if (preTopology != null) {
-        newInput.narrow(2, i, 1).copy(inputTmp)
-        val sizes = 1 +: inputTmp.size()
-        inputTmp.resize(sizes)
-        val _input = preTopology.updateOutput(inputTmp).toTensor[T]
-        inputTmp.resize(sizes.takeRight(sizes.length - 1))
-        _input.select(1, 1)
-      } else {
-        outputCell.narrow(2, i, 1).copy(inputTmp)
-        inputTmp
+        cells(i - 2).output
       }
       cells(i - 1).updateOutput(currentInput)
-      currentInput(hidDim) = cells(i - 1).output.toTable(hidDim)
       i += 1
-    }
-
-    if (preTopology != null) {
-      // For backward preTopology use
-      outputCell = preTopology.updateOutput(newInput).toTensor[T]
     }
 
     Recurrent.copy(cells.map(x => x.output.toTable[Tensor[T]](inputDim)), output)
@@ -109,30 +119,74 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
   }
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
-    throw new Exception("Should not enter RecurrentDecoder accGradParameters" +
-      "as it has override backward")
+    currentGradOutput(hidDim) = gradHidden
+    var i = times
+    while (i >= 1) {
+      currentGradOutput(inputDim) = if (i == times) {
+        Recurrent.selectCopy(gradOutput, i, stepGradBuffer)
+      } else {
+        val _gradInput = cells(i).gradInput.toTable[Tensor[T]](inputDim)
+        Recurrent.selectCopy(gradOutput, i, stepGradBuffer).add(_gradInput)
+      }
+
+      _input = if (i == 1) {
+        if (initHiddenState == null) T(input, hidden)
+        else T(input, initHiddenState)
+      } else cells(i - 2).output
+
+      if (i == 1) {
+        cells(i - 1).regluarized(true)
+      } else {
+        cells(i - 1).regluarized(false)
+      }
+      cells(i - 1).accGradParameters(_input, currentGradOutput)
+      currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
+      i -= 1
+    }
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    throw new Exception("Should not enter RecurrentDecoder updateGradInput" +
-      "as it has override backward")
+    gradInput.resizeAs(output)
+    currentGradOutput(hidDim) = gradHidden
+    var i = times
+    while (i >= 1) {
+      currentGradOutput(inputDim) = if (i == times) {
+        Recurrent.selectCopy(gradOutput, i, stepGradBuffer)
+      } else {
+        val _gradInput = cells(i).gradInput.toTable[Tensor[T]](inputDim)
+        Recurrent.selectCopy(gradOutput, i, stepGradBuffer).add(_gradInput)
+      }
+
+      _input = if (i == 1) {
+        if (initHiddenState == null) T(input, hidden)
+        else T(input, initHiddenState)
+      } else cells(i - 2).output
+
+      cells(i - 1).updateGradInput(_input, currentGradOutput)
+      currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
+      i -= 1
+    }
+    Recurrent.copy(cells.map(x => x.gradInput.toTable[Tensor[T]](inputDim)), gradInput)
     gradInput
   }
 
   override def backward(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     val st = System.nanoTime
+    gradInput.resizeAs(output)
     currentGradOutput(hidDim) = gradHidden
     var i = times
     while (i >= 1) {
-      currentGradOutput(inputDim) = if (i == times) gradOutput.select(timeDim, i)
-      else {
-        gradOutput.select(timeDim, i).clone()
-          .add(cells(i).gradInput.toTable[Tensor[T]](inputDim).clone())
+      currentGradOutput(inputDim) = if (i == times) {
+        Recurrent.selectCopy(gradOutput, i, stepGradBuffer)
+      } else {
+        val _gradInput = cells(i).gradInput.toTable[Tensor[T]](inputDim)
+        Recurrent.selectCopy(gradOutput, i, stepGradBuffer).add(_gradInput)
       }
 
-      _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
-      else if (initState == null) hidden else initState
-      _input(inputDim) = Recurrent.selectCopy(outputCell, i, outputBuffer)
+      _input = if (i == 1) {
+        if (initHiddenState == null) T(input, hidden)
+        else T(input, initHiddenState)
+      } else cells(i - 2).output
 
       if (i == 1) {
         cells(i - 1).regluarized(true)
@@ -143,25 +197,7 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
       currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
       i -= 1
     }
-
-    gradInput = if (preTopology != null) {
-      /**
-       * if preTopology is Sequential, it has not created gradInput.
-       * Thus, it needs to create a new Tensor.
-       */
-      if (preTopology.gradInput == null) {
-        preTopology.gradInput = Tensor[T]()
-      }
-      preTopology.gradInput.toTensor[T]
-    } else {
-      gradInputCell
-    }
-    gradInputCell.resizeAs(outputCell)
-    Recurrent.copy(cells.map(x => x.gradInput.toTable[Tensor[T]](inputDim)), gradInputCell)
-    if (preTopology != null) {
-      gradInput = preTopology.backward(newInput, gradInputCell).toTensor[T]
-    }
-
+    Recurrent.copy(cells.map(x => x.gradInput.toTable[Tensor[T]](inputDim)), gradInput)
     this.backwardTime = System.nanoTime - st
     gradInput
   }
@@ -179,6 +215,14 @@ class RecurrentDecoder[T : ClassTag](seqLength: Int)
   override def hashCode(): Int = {
     val state = Seq(super.hashCode(), cells)
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
+
+  override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
+    topology.parameters()
+  }
+
+  override def getParametersTable(): Table = {
+    topology.getParametersTable()
   }
 }
 
@@ -199,6 +243,15 @@ object RecurrentDecoder extends ContainerSerializable {
       getAttributeValue(context, topologyAttr).
       asInstanceOf[Cell[T]]
 
+    val preTopologyAttr = attrMap.get("preTopology")
+    recurrentDecoder.preTopology = DataConverter.
+      getAttributeValue(context, preTopologyAttr).
+      asInstanceOf[Cell[T]]
+    if (recurrentDecoder.preTopology != null) {
+      recurrentDecoder.modules.append(recurrentDecoder.preTopology)
+    }
+    recurrentDecoder.modules.append(recurrentDecoder.topology)
+
     moduleData
   }
 
@@ -213,6 +266,12 @@ object RecurrentDecoder extends ContainerSerializable {
       topologyBuilder, recurrentDecoder.topology,
       ModuleSerializer.abstractModuleType)
     containerBuilder.putAttr("topology", topologyBuilder.build)
+
+    val preTopologyBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context,
+      preTopologyBuilder, recurrentDecoder.preTopology,
+      ModuleSerializer.tensorModuleType)
+    containerBuilder.putAttr("preTopology", topologyBuilder.build)
 
     SerializeResult(containerBuilder, context.storages)
   }

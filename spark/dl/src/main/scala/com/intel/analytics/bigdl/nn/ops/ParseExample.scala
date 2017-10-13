@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 package com.intel.analytics.bigdl.nn.ops
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.{NumericWildcard, TensorNumeric}
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils.{T, Table}
 import com.google.protobuf.ByteString
@@ -33,11 +33,13 @@ class ParseExample[T: ClassTag](nDense: Int,
   type StringType = ByteString
 
   override def updateOutput(input: Table): Table = {
-    val serialized = input(1).asInstanceOf[Tensor[StringType]].value()
+    require(input[Tensor[StringType]](1).size(1) == 1, "only support one example at a time")
+    val serialized = input[Tensor[StringType]](1).valueAt(1)
     val denseKeys = Range(3, 3 + nDense).map(index => input(index).asInstanceOf[Tensor[StringType]])
       .map(_.value().toStringUtf8)
     val denseDefault = Range(3 + nDense, 3 + 2 * nDense)
-      .map(index => input(index).asInstanceOf[Tensor[StringType]])
+      .map(index => input(index).asInstanceOf[Tensor[_]])
+
 
     val example = Example.parseFrom(serialized)
 
@@ -55,6 +57,7 @@ class ParseExample[T: ClassTag](nDense: Int,
     }
 
     for (elem <- outputs) {
+      elem.asInstanceOf[Tensor[NumericWildcard]].addSingletonDimension()
       output.insert(elem)
     }
     output

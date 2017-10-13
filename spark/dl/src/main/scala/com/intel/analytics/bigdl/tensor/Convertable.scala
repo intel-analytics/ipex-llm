@@ -45,10 +45,12 @@ trait ConvertableTo[@spec A] {
   implicit def fromShort(a: Short): A
 
   implicit def fromLong(a: Long): A
+
+  implicit def fromBoolean(a: Boolean): A
 }
 
 trait ConvertableToLong extends ConvertableTo[Long] {
-  implicit def fromFloat(a: Float): Long = a
+  implicit def fromFloat(a: Float): Long = a.toLong
 
   implicit def fromDouble(a: Double): Long = a.toLong
 
@@ -57,11 +59,13 @@ trait ConvertableToLong extends ConvertableTo[Long] {
   implicit def fromShort(a: Short): Long = a.toLong
 
   implicit def fromLong(a: Long): Long = a.toLong
+
+  implicit def fromBoolean(a: Boolean): Long = if (a) 1L else 0L
 }
 
 
 trait ConvertableToShort extends ConvertableTo[Short] {
-  implicit def fromFloat(a: Float): Short = a
+  implicit def fromFloat(a: Float): Short = a.toShort
 
   implicit def fromDouble(a: Double): Short = a.toShort
 
@@ -70,6 +74,8 @@ trait ConvertableToShort extends ConvertableTo[Short] {
   implicit def fromShort(a: Short): Short = a.toShort
 
   implicit def fromLong(a: Long): Short = a.toShort
+
+  implicit def fromBoolean(a: Boolean): Short = if (a) 1 else 0
 }
 
 
@@ -83,6 +89,8 @@ trait ConvertableToFloat extends ConvertableTo[Float] {
   implicit def fromShort(a: Short): Float = a.toFloat
 
   implicit def fromLong(a: Long): Float = a.toFloat
+
+  implicit def fromBoolean(a: Boolean): Float = if (a) 1.0f else 0.0f
 }
 
 trait ConvertableToDouble extends ConvertableTo[Double] {
@@ -95,6 +103,8 @@ trait ConvertableToDouble extends ConvertableTo[Double] {
   implicit def fromShort(a: Short): Double = a.toDouble
 
   implicit def fromLong(a: Long): Double = a.toDouble
+
+  implicit def fromBoolean(a: Boolean): Double = if (a) 1.0 else 0.0
 }
 
 trait ConvertableToInt extends ConvertableTo[Int] {
@@ -106,7 +116,9 @@ trait ConvertableToInt extends ConvertableTo[Int] {
 
   implicit def fromShort(a: Short): Int = a.toShort
 
-  implicit def fromLong(a: Long): Int = a.toLong
+  implicit def fromLong(a: Long): Int = a.toInt
+
+  implicit def fromBoolean(a: Boolean): Int = if (a) 1 else 0
 }
 
 object ConvertableTo {

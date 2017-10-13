@@ -216,3 +216,30 @@ optimizer.set_val_summary(val_summary)
 ```
 
 See details in [Visualization](visualization.md)
+
+## Performance tunning
+For performance investigation, BigDL records the time-consuming distribution on each node for each step(e.g. sync weight, computing).The information can be displayed in the driver log. By default, it is suspended.To turn it on, please follow these steps:
+
+1.Prepare a log4j property file
+```
+# Root logger option
+log4j.rootLogger=INFO, stdout
+# Direct log messages to stdout
+log4j.appender.stdout=org.apache.log4j.ConsoleAppender
+log4j.appender.stdout.Target=System.out
+log4j.appender.stdout.layout=org.apache.log4j.PatternLayout
+log4j.appender.stdout.layout.ConversionPattern=%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n
+log4j.logger.com.intel.analytics.bigdl.optim=DEBUG,myappender
+log4j.addivity.com.intel.analytics.bigdl.optim=false
+log4j.appender.myappender=org.apache.log4j.ConsoleAppender
+log4j.appender.myappender.Target=System.out
+log4j.appender.myappender.layout=org.apache.log4j.PatternLayout
+log4j.appender.myappender.layout.ConversionPattern=%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n
+```
+2.Add an option to your spark-submit command
+
+--conf "spark.driver.extraJavaOptions=-Dlog4j.configuration=file:where_is_your_log4j_file"
+
+
+
+

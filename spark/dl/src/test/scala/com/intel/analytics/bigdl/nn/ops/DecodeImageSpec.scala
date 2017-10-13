@@ -32,7 +32,7 @@ class DecodeImageSpec extends FlatSpec with Matchers {
 
     val input = getInputs("raw")
 
-    val decoder = new DecodeRaw[Float](DataType.DT_UINT8, ByteOrder.LITTLE_ENDIAN)
+    val decoder = new DecodeRaw[Float](DataType.DT_UINT8, true)
 
     val output = decoder.forward(input).asInstanceOf[Tensor[Int]]
 
@@ -75,7 +75,7 @@ class DecodeImageSpec extends FlatSpec with Matchers {
   private def getRaw(): Tensor[Int] = {
     val input = getInputs("raw")
 
-    val decoder = new DecodeRaw[Float](DataType.DT_UINT8, ByteOrder.LITTLE_ENDIAN)
+    val decoder = new DecodeRaw[Float](DataType.DT_UINT8, true)
 
     val output = decoder.forward(input).asInstanceOf[Tensor[Int]]
 

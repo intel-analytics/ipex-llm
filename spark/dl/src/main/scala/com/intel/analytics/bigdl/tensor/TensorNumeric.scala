@@ -985,6 +985,9 @@ object TensorNumericMath {
         implicit c: ConvertableFrom[K]): Boolean =
         c.toBoolean(k)
 
+      override def toType[K](t: Boolean)(
+        implicit c: ConvertableTo[K]): K = c.fromBoolean(t)
+
       override def nearlyEqual(a: Boolean, b: Boolean, epsilon: Double): Boolean = {
         a == b
       }
@@ -1049,6 +1052,16 @@ object TensorNumericMath {
         var r = 1
         while (i < n) {
           r *= a(aOffset + i * stride)
+          i += 1
+        }
+        r
+      }
+
+      override def sum(n: Int, a: Array[Int], aOffset: Int, stride: Int): Int = {
+        var i = 0
+        var r = 0
+        while (i < n) {
+          r += a(aOffset + i * stride)
           i += 1
         }
         r

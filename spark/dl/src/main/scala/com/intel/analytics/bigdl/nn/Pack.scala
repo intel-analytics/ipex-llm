@@ -15,10 +15,10 @@
  */
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.{NumericWildcard, TensorNumeric}
+import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
@@ -29,7 +29,7 @@ import scala.reflect.ClassTag
  */
 @SerialVersionUID(3457313421501931556L)
 class Pack[T: ClassTag] (val dimension: Int)(implicit ev: TensorNumeric[T])
-  extends AbstractModule[Table, Tensor[_], T] {
+  extends AbstractModule[Activity, Tensor[_], T] {
 
   private def getPositiveDimension(input: Table): Int = {
     var nDim = this.dimension
@@ -43,10 +43,16 @@ class Pack[T: ClassTag] (val dimension: Int)(implicit ev: TensorNumeric[T])
     nDim
   }
 
-  override def updateOutput(input: Table): Tensor[_] = {
-    val dimension = getPositiveDimension(input)
+  override def updateOutput(input: Activity): Tensor[_] = {
 
-    val firstInput: Tensor[_] = input(1)
+    val tableInput = input match {
+      case t: Tensor[_] => T(t)
+      case t: Table => t
+    }
+
+    val dimension = getPositiveDimension(tableInput)
+
+    val firstInput: Tensor[_] = tableInput(1)
     val nDim = firstInput.nDimension()
     val size: Array[Int] = new Array[Int](nDim + 1)
 
@@ -55,7 +61,7 @@ class Pack[T: ClassTag] (val dimension: Int)(implicit ev: TensorNumeric[T])
       if (i < dimension) {
         size(i-1) = firstInput.size(i)
       } else if (i == dimension) {
-        size(i-1) = input.length()
+        size(i-1) = tableInput.length()
       } else {
         size(i-1) = firstInput.size(i - 1)
       }
@@ -69,34 +75,53 @@ class Pack[T: ClassTag] (val dimension: Int)(implicit ev: TensorNumeric[T])
     output.resize(size)
 
     i = 1
-    while (i <= input.length()) {
-      val currentOutput: Tensor[_] = input(i)
-      output.narrow(dimension, i, 1)
-        .forceCopy(currentOutput)
+    while (i <= tableInput.length()) {
+      val currentOutput = tableInput[Tensor[NumericWildcard]](i)
+      output.narrow(dimension, i, 1).asInstanceOf[Tensor[NumericWildcard]]
+        .copy(currentOutput)
       i += 1
     }
 
     output
   }
 
-  override def updateGradInput(input: Table, gradOutput: Tensor[_]): Table = {
-    val dimension = getPositiveDimension(input)
+  override def updateGradInput(input: Activity, gradOutput: Tensor[_]): Activity = {
+    val tableInput = input match {
+      case t: Tensor[_] => T(t)
+      case t: Table => t
+    }
+    val dimension = getPositiveDimension(tableInput)
 
-    var i = 1
-    while (i <= input.length()) {
-      if (!gradInput.contains(i)) {
-        gradInput(i) = gradOutput.emptyInstance()
+    val firstInput = tableInput[Tensor[_]](1)
+
+    if (input.isTensor) {
+      if (gradInput == null ||
+        gradInput.asInstanceOf[Tensor[_]].getType() != firstInput.getType()) {
+        gradInput = firstInput.emptyInstance()
       }
-      gradInput[Tensor[_]](i).resizeAs(input(i))
-      i += 1
+      val gradInputTensor = gradInput.asInstanceOf[Tensor[NumericWildcard]]
+      gradInputTensor.resizeAs(firstInput)
+      gradInputTensor.copy(firstInput.asInstanceOf[Tensor[NumericWildcard]])
+    } else {
+      if (gradInput == null) gradInput = T()
+      val gradInputTable = gradInput.toTable
+      var i = 1
+      while (i <= tableInput.length()) {
+        if (!gradInputTable.contains(i)) {
+          gradInputTable(i) = gradOutput.emptyInstance()
+        }
+        gradInputTable[Tensor[_]](i).resizeAs(tableInput(i))
+        i += 1
+      }
+
+      i = 1
+      while (i <= tableInput.length()) {
+        val currentGradInput = gradOutput.select(dimension, i).asInstanceOf[Tensor[NumericWildcard]]
+        gradInputTable[Tensor[NumericWildcard]](i).copy(currentGradInput)
+        i += 1
+      }
     }
 
-    i = 1
-    while (i <= input.length()) {
-      val currentGradInput = gradOutput.select(dimension, i)
-      gradInput[Tensor[_]](i).forceCopy(currentGradInput)
-      i += 1
-    }
     gradInput
   }
 }

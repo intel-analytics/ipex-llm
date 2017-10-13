@@ -90,7 +90,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
           .map(n => {
             n._2.fromIndex match {
               case Some(i) =>
-                if (i == 1 && n._1.element.output.isTensor) {
+                if (n._1.element.output == null || (i == 1 && n._1.element.output.isTensor)) {
                   n._1.element.output
                 } else {
                   n._1.element.output.toTable.apply[Activity](i)

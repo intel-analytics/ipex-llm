@@ -90,4 +90,27 @@ class PackSpec extends FlatSpec with Matchers {
     gradInput2 should be(input)
     gradInput3 should be(input)
   }
+
+  "Pack" should "work with tensor input" in {
+    val module1 = new Pack[Double](1)
+
+    val input1 = Tensor[Double](2, 2)
+    input1(Array(1, 1)) = 1
+    input1(Array(1, 2)) = 2
+    input1(Array(2, 1)) = 3
+    input1(Array(2, 2)) = 4
+
+    val output1 = module1.forward(input1)
+
+    val expectOutput1 = Tensor[Double](1, 2, 2)
+    expectOutput1(Array(1, 1, 1)) = 1
+    expectOutput1(Array(1, 1, 2)) = 2
+    expectOutput1(Array(1, 2, 1)) = 3
+    expectOutput1(Array(1, 2, 2)) = 4
+
+    val gradInput1 = module1.backward(input1, output1)
+
+    output1 should be(expectOutput1)
+    gradInput1 should be(input1)
+  }
 }
