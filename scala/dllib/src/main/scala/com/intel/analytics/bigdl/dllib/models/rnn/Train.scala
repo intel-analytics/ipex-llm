@@ -33,7 +33,7 @@ object Train {
   Logger.getLogger("org").setLevel(Level.ERROR)
   Logger.getLogger("akka").setLevel(Level.ERROR)
   Logger.getLogger("breeze").setLevel(Level.ERROR)
-  Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+
   import Utils._
   val logger = Logger.getLogger(getClass)
   def main(args: Array[String]): Unit = {
