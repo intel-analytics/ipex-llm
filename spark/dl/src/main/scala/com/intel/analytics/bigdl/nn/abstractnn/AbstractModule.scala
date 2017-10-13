@@ -218,7 +218,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   /**
    * freeze the module,
    * i.e. their parameters(weight/bias, if exists) are not changed in training process
-   * if names is not null,
+   * if names is not empty,
    * set an array of layers that match the given ```names``` to be "freezed",
    *
    * @param names an array of layer names
@@ -244,7 +244,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   /**
    * "unfreeze" module, i.e. make the module parameters(weight/bias, if exists)
    * to be trained(updated) in training process
-   * if names is not null, unfreeze layers that match given names
+   * if names is not empty, unfreeze layers that match given names
    *
    * @param names array of module names to unFreeze
    */
