@@ -41,7 +41,10 @@ object Utils {
     maxEpoch: Int = 90,
     overWriteCheckpoint: Boolean = false,
     learningRate: Double = 0.01,
-    weightDecay: Double = 0.0005
+    weightDecay: Double = 0.0005,
+    nodeNum: Int = -1,
+    partitionNum: Int = -1,
+    corePerTask: Int = -1
   )
 
   val trainParser = new OptionParser[TrainParams]("BigDL Vgg on Cifar10 Example") {
@@ -72,6 +75,15 @@ object Utils {
     opt[Double]('l', "learningRate")
       .text("inital learning rate")
       .action((x, c) => c.copy(learningRate = x))
+    opt[Int]("nodeNumber")
+      .text("node numbers")
+      .action((x, c) => c.copy(nodeNum = x))
+    opt[Int]("partitionNumber")
+      .text("partition number")
+      .action((x, c) => c.copy(partitionNum = x))
+    opt[Int]("corePerTask")
+      .text("core number per task")
+      .action((x, c) => c.copy(corePerTask = x))
   }
 
   case class TestParams(

@@ -37,7 +37,12 @@ object Train {
         // Will throw exception without this config when has only one executor
           .set("spark.rpc.message.maxSize", "200")
       val sc = new SparkContext(conf)
-      Engine.init
+      if (param.nodeNum == -1) {
+        Engine.init
+      } else {
+        Engine.init(param.nodeNum, param.corePerTask, true)
+        Engine.setPartitionNumber(param.partitionNum)
+      }
 
       val trainDataSet = DataSet.array(Utils.loadTrain(param.folder), sc) ->
         BytesToBGRImg() -> BGRImgNormalizer(trainMean, trainStd) ->
