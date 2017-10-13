@@ -269,7 +269,8 @@ class TestSimple():
 
     def test_multiple_input(self):
         """
-        Test training data of samples with several tensors as feature using a sequential model with multiple inputs
+        Test training data of samples with several tensors as feature
+        using a sequential model with multiple inputs.
         """
         FEATURES_DIM = 2
         data_len = 100
@@ -279,8 +280,8 @@ class TestSimple():
         def gen_rand_sample():
             features1 = np.random.uniform(0, 1, (FEATURES_DIM))
             features2 = np.random.uniform(0, 1, (FEATURES_DIM))
-            label = np.array((2 * (features1+features2)).sum() + 0.4)
-            return Sample.from_ndarray([features1,features2], label)
+            label = np.array((2 * (features1 + features2)).sum() + 0.4)
+            return Sample.from_ndarray([features1, features2], label)
 
         trainingData = self.sc.parallelize(range(0, data_len)).map(
             lambda i: gen_rand_sample())
