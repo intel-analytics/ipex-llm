@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.example.MLPipeline
-
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.optim.LBFGS
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericDouble
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.spark.SparkContext
 import org.apache.spark.ml.DLEstimator
@@ -38,6 +37,8 @@ object DLEstimatorMultiLabelLR {
     val model = Sequential().add(Linear(2, 2))
     val criterion = MSECriterion()
     val estimator = new DLEstimator(model, criterion, Array(2), Array(2))
+      .setOptimMethod(new LBFGS[Double]())
+      .setLearningRate(1.0)
       .setBatchSize(4)
       .setMaxEpoch(10)
     val data = sc.parallelize(Seq(
