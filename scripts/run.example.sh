@@ -24,6 +24,7 @@ SPARK2_DIR=spark-2.0.2-bin-hadoop2.7
 SPARK2_LINK=https://www.apache.org/dist/spark/spark-2.0.2/$SPARK2_DIR.tgz
 SPARK_DIR=$SPARK1_DIR
 SPARK_LINK=$SPARK1_LINK
+SPARK_SUBMIT=./$SPARK_DIR/bin/spark-submit
 CURRENT=`pwd`
 BIGDL2_JAR=$HOME/.m2/repository/com/intel/analytics/bigdl/bigdl-SPARK_2.0/${BIGDL_VERSION}/bigdl-SPARK_2.0-${BIGDL_VERSION}-jar-with-dependencies.jar
 BIGDL1_JAR=$HOME/.m2/repository/com/intel/analytics/bigdl/bigdl/${BIGDL_VERSION}/bigdl-${BIGDL_VERSION}-jar-with-dependencies.jar
@@ -36,7 +37,7 @@ LEARNING_RATE=0.01
 MAX_EPOCH=90
 ME=`basename "$0"`
 
-options=$(getopt -o p:m:c:s:o:r:n:b:t:l:f:e:h -l spark:,model:,class:,spark-url:,cores:,memory:,nodes:,batch-size:,trained-model:,learning-rate:,hdfs-data-dir:,max-epoch:,help -- "$@")
+options=$(getopt -o p:m:c:s:o:r:n:b:t:l:f:e:j:h -l spark:,model:,class:,spark-url:,cores:,memory:,nodes:,batch-size:,trained-model:,learning-rate:,hdfs-data-dir:,max-epoch:,bigdl-jar:,help -- "$@")
 
 eval set -- "$options"
 
@@ -47,11 +48,14 @@ while true; do
 				SPARK_DIR=$SPARK2_DIR
 				SPARK_LINK=$SPARK2_LINK
 				BIGDL_JAR=$BIGDL2_JAR
+				SPARK_SUBMIT=./$SPARK_DIR/bin/spark-submit
+			elif [ "$2" == "spark_buildIn" ]; then
+				SPARK_SUBMIT=spark-submit	
 			fi
 			shift 2 ;;
 		-m|--model) MODEL=$2; shift 2 ;;
 		-c|--class) CLASS=$2; shift 2 ;;
-		-s|--spark-url) SPARK_URL=$2; shift 2 ;;
+		-s|--spark-url) SPARK_URL="--master $2"; shift 2 ;;
 		-o|--cores) CORES=$2; shift 2 ;;
 		-r|--memory) MEMORY=$2; shift 2 ;;
 		-n|--nodes) NODES=$2; shift 2 ;;
@@ -60,6 +64,7 @@ while true; do
 		-l|--learning-rate) LEARNING_RATE=$2; shift 2 ;;
 		-f|--hdfs-data-dir) HDFS_DATA_DIR=$2; shift 2 ;;
 		-e|--max-epoch) MAX_EPOCH=$2; shift 2 ;;
+		-j|--bigdl-jar) BIGDL_JAR=$2; shift 2 ;;
 		-h|--help)
 			echo "Example:"
 			echo "train lenet: $ME --model lenet --spark-url spark://10.0.0.1:7077 --cores 32 --memory 200g --nodes 4 --batch-size 512"
@@ -71,8 +76,10 @@ while true; do
 		--) shift; break ;;
 	esac
 done
-
-if [ -d $SPARK_DIR ]; then
+# echo $SPARK_SUBMIT
+if [ $SPARK_SUBMIT == "spark-submit" ]; then
+	echo "Using build in spark"
+elif [ -d $SPARK_DIR ]; then
 	echo "Using existing spark dir $SPARK_DIR"
 else
 	echo "Downloading $SPARK_DIR from $SPARK_LINK ..."
@@ -171,19 +178,19 @@ fi
 cd $CURRENT
 
 if [ "$MODEL" == "lenet" ] || [ "$MODEL" == "vgg" ]; then
-	if [ "$CLASS" == "train" ]; then
-		./$SPARK_DIR/bin/spark-submit \
-			--master $SPARK_URL \
-            --total-executor-cores $(($CORES * $NODES)) \
-            --executor-cores $CORES \
+	if [ "$CLASS" == "train" ]; then	     
+		$SPARK_SUBMIT \
+			$SPARK_URL \
+			--total-executor-cores $(($CORES * $NODES)) \
+			--executor-cores $CORES \
 			--driver-cores $CORES \
 			--driver-memory $MEMORY \
 			--executor-memory $MEMORY \
 			--num-executors $NODES \
 			--class com.intel.analytics.bigdl.models.$MODEL.Train $BIGDL_JAR -f $DATA_DIR/ -b $BATCH_SIZE --maxEpoch $MAX_EPOCH --overWrite --checkpoint $MODEL_DIR
 	else
-		./$SPARK_DIR/bin/spark-submit \
-			--master $SPARK_URL \
+		$SPARK_SUBMIT \
+			$SPARK_URL \
             --total-executor-cores $(($CORES * $NODES)) \
             --executor-cores $CORES \
 			--driver-cores $CORES \
@@ -196,8 +203,8 @@ elif [ "$MODEL" == "inception-v1" ]; then
 #echo $SPARK_URL
 #echo $BIGDL_JAR
 	if [ "$CLASS" == "train" ]; then
-		./$SPARK_DIR/bin/spark-submit \
-			--master $SPARK_URL \
+		$SPARK_SUBMIT \
+			$SPARK_URL \
             --total-executor-cores $(($CORES * $NODES))  \
             --executor-cores $CORES  \
 			--driver-cores $CORES \
@@ -207,8 +214,8 @@ elif [ "$MODEL" == "inception-v1" ]; then
 			--driver-class-path $BIGDL_JAR \
 			--class com.intel.analytics.bigdl.models.inception.TrainInceptionV1 $BIGDL_JAR --batchSize $BATCH_SIZE --maxEpoch $MAX_EPOCH --overWrite --learningRate $LEARNING_RATE -f $HDFS_DATA_DIR --checkpoint $MODEL_DIR
 	else
-		./$SPARK_DIR/bin/spark-submit \
-			--master $SPARK_URL \
+		$SPARK_SUBMIT \
+			$SPARK_URL \
 			--driver-cores $CORES \
 			--driver-memory $MEMORY \
             --total-executor-cores $(($CORES * $NODES))  \
@@ -219,8 +226,8 @@ elif [ "$MODEL" == "inception-v1" ]; then
 			--class com.intel.analytics.bigdl.models.inception.Test $BIGDL_JAR --batchSize $BATCH_SIZE -f $HDFS_DATA_DIR/val
 	fi
 elif [ "$MODEL" == "perf" ]; then
-	./$SPARK_DIR/bin/spark-submit \
-		--master $SPARK_URL \
+	$SPARK_SUBMIT \
+		$SPARK_URL \
 		--driver-cores $CORES \
 		--driver-memory $MEMORY \
         --total-executor-cores $(($CORES * $NODES))  \
