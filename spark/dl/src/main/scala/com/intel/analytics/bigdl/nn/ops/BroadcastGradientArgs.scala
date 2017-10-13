@@ -43,8 +43,8 @@ class BroadcastGradientArgs[T: ClassTag]()
 
     // Reverse the shape of x and y for convenience.
     // After the reverse, 0-th is the inner-most dimension.
-    val rx = Tensor[Int](Storage(input1.toBreezeVector().toArray.reverse))
-    val ry = Tensor[Int](Storage(input2.toBreezeVector().toArray.reverse))
+    val rx = Tensor[Int](Storage(input1.storage().array().reverse))
+    val ry = Tensor[Int](Storage(input2.storage().array().reverse))
 
     if (rx.size(1) < ry.size(1)) {
       rx.resizeAs(ry)
