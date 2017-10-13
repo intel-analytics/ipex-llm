@@ -768,7 +768,7 @@ class SparseLinear(Layer):
     :param init_grad_bias: the optional initial value for the grad_bias
 
 
-    >>> sparselinear = SparseLinear(100, 10, True, L1Regularizer(0.5), L1Regularizer(0.5))
+    >>> sparselinear = SparseLinear(100, 10, True, wRegularizer=L1Regularizer(0.5), bRegularizer=L1Regularizer(0.5))
     creating: createL1Regularizer
     creating: createL1Regularizer
     creating: createSparseLinear
@@ -777,7 +777,7 @@ class SparseLinear(Layer):
     >>> init_bias = np.random.randn(10)
     >>> init_grad_weight = np.zeros([10, 100])
     >>> init_grad_bias = np.zeros([10])
-    >>> sparselinear = SparseLinear(100, 10, True, L1Regularizer(0.5), L1Regularizer(0.5), init_weight, init_bias, init_grad_weight, init_grad_bias)
+    >>> sparselinear = SparseLinear(100, 10, True, 1, 5, L1Regularizer(0.5), L1Regularizer(0.5), init_weight, init_bias, init_grad_weight, init_grad_bias)
     creating: createL1Regularizer
     creating: createL1Regularizer
     creating: createSparseLinear
