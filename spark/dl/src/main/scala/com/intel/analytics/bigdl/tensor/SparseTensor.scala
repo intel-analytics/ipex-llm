@@ -984,8 +984,7 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
 }
 
 object SparseTensor{
-
-  private[bigdl] def concat[T: ClassTag](
+  private[tensor] def concat[T: ClassTag](
         dim: Int,
         tensors: Seq[Tensor[T]],
         res: Tensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
@@ -1064,6 +1063,14 @@ object SparseTensor{
     res
   }
 
+  /**
+   * Concatenate a sequence of SparseTensor of n-dim to n-dim SparseTensor.
+   * The size at n-dim will be concated.
+   *
+   * @param tensors a sequence of tensors
+   * @param res the resulted 2-dim SparseTensor
+   * @return res
+   */
   private def concat[T: ClassTag](
         dim: Int,
         tensors: Seq[SparseTensor[T]],

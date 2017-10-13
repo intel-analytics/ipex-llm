@@ -653,9 +653,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       nInputDims)
   }
 
-  def createSparseJoinTable(dimension: Int,
-                      nInputDims: Int)
-  : SparseJoinTable[T] = {
+  def createSparseJoinTable(dimension: Int): SparseJoinTable[T] = {
     SparseJoinTable[T](dimension)
   }
 

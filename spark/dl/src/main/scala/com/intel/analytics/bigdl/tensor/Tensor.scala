@@ -1245,7 +1245,17 @@ object Tensor {
     }
   }
 
-  def sparseConcat[T: ClassTag](
+  /**
+   * Concat a sequence of tensors to res tensor.
+   *
+   * @param dim concat at dim-th dimension.
+   * @param tensors a sequence of tensors.
+   * @param res result tensor.
+   * @param ev
+   * @tparam T
+   * @return
+   */
+  private[bigdl] def sparseConcat[T: ClassTag](
         dim: Int,
         tensors: Table,
         res: Tensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {

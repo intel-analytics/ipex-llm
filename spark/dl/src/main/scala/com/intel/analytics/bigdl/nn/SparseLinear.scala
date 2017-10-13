@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.optim.Regularizer
-import com.intel.analytics.bigdl.tensor.{SparseTensorBLAS, SparseTensorMath, Tensor}
+import com.intel.analytics.bigdl.tensor.{SparseTensorBLAS, SparseTensorMath, SparseType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
@@ -56,7 +56,10 @@ class SparseLinear[T: ClassTag](
   inputSize, outputSize, withBias, wRegularizer, bRegularizer,
   initWeight, initBias, initGradWeight, initGradBias) {
 
+  // input should be a sparseTensor
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
+    require(input.getTensorType == SparseType, s"SparseLinear's input must be a SparseTensor," +
+      s"but got ${input.getTensorType}")
     require(input.dim() == 2,
       "SparseLinear: " + ErrorInfo.constrainInputAsVectorOrBatch)
 
@@ -72,17 +75,16 @@ class SparseLinear[T: ClassTag](
       addBuffer.resize(Array(nFrame)).fill(ev.one)
     }
 
-    SparseTensorBLAS.coomm(ev.one, input, weight.t, ev.zero, output)
-    if (withBias) output.addr(ev.one, addBuffer, bias)
+    SparseTensorMath.addmm(output, ev.zero, output, ev.one, input, weight.t)
+    if(withBias) output.addr(ev.one, addBuffer, bias)
     output
   }
 
-  // just backward a part of the gradOutput.
+  // just backward a part of the gradOutput. Input is sparse, while gradOutput is dense.
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     require(input.dim() == 2,
       "SparseLinear: " + ErrorInfo.constrainInputAsVectorOrBatch)
     if (backwardStart >= 0 && backwardLength > 0) {
-      // TODO: _input to dense
       val _inputSize = Array(input.size(1), backwardLength)
       val _weight = weight.narrow(2, backwardStart, backwardLength)
 
@@ -92,7 +94,7 @@ class SparseLinear[T: ClassTag](
         gradInput.zero()
       }
 
-      gradInput.addmm(ev.fromType[Int](0), ev.fromType[Int](1), gradOutput, _weight)
+      gradInput.addmm(ev.zero, ev.one, gradOutput, _weight)
     }
     gradInput
   }
