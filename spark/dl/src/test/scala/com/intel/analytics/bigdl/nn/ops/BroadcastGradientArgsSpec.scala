@@ -29,7 +29,7 @@ class BroadcastGradientArgsSpec extends FlatSpec with Matchers {
         Tensor(T(2, 2, 1))
       )
 
-    val expectOutput = Tensor(T(3, 2, 4))
+    val expectOutput = T(Tensor(T(1, 2)), Tensor(T(2, 3)))
 
     val output = BroadcastGradientArgs().forward(input)
     output should be(expectOutput)
