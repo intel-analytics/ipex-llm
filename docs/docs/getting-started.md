@@ -101,9 +101,8 @@ BigDL provides a convinient way to monitor/visualize your training progress. It 
 ## **Tuning**
 
 There're several strategies that may be useful when tuning an optimization. 
+
  * Change the learning Rate Schedule in SGD. Refer to [SGD docs](APIdocs/Optimizers/Optim-Methods.md#sgd) for details. 
  * If overfit is seen, try use Regularization. Refer to [Regularizers](APIdocs/Regularizers.md). 
  * Try change the initialization methods. Refer to [Initailizers](APIdocs/Initializers.md).
  * Try Adam or Adagrad at the first place. If they can't achive a good score, use SGD and find a proper learning rate schedule - it usually takes time, though. RMSProp is recommended for RNN models. Refer to [Optimization Algorithms](APIdocs/Optimizers/Optim-Methods.md) for a list of supported optimization methods. 
- 
- 
