@@ -144,11 +144,17 @@ class ModelBroadcast[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Seria
     val (localWeightBias, localGradWeightBias) = localModel.parameters()
     // init gradient with a compacted storage
     val storage = Storage[T](localGradWeightBias.map(_.nElement()).sum)
+    val isQuantized = broadcastWeightBias.exists(_.getTensorType == QuantizedType)
     var i = 0
     while (i < localWeightBias.length) {
       if (localWeightBias(i) != null) {
         val wb = broadcastWeightBias(i)
-        localGradWeightBias(i).set(storage, wb.storageOffset(), wb.size(), wb.stride())
+        wb.getTensorType match {
+          case QuantizedType =>
+            localGradWeightBias(i).set(Tensor(1))
+          case _ =>
+            localGradWeightBias(i).set(storage, wb.storageOffset(), wb.size(), wb.stride())
+        }
       }
       i += 1
     }
