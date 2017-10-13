@@ -522,12 +522,14 @@ object DistriOptimizer {
     )(implicit ev: TensorNumeric[T]) = {
     val sc = dataset.originRDD().sparkContext
     val broadcast = sc.broadcast((criterion, state, validationMethods, optimMethod))
+    // ensure model's parameter is compacted for getting a better performance when broadcasting
+    model.getParameters()
     // As cloneModel is using Serialization to implement deep copy, and will throw OOMError
     // when model's size is bigger than SerializationUtils' buffer size. So we can use
     // ModelBroadcast to clone model here.
     // Notes: All models returned by modelBroadcast.value() share the same weight&bias, while
     // gradWeight&gradBias is unshared.
-    val modelBroadcast = ModelBroadcast[T](false).broadcast(sc, model)
+    val modelBroadcast = ModelBroadcast[T]().broadcast(sc, model)
     val _subModelNumber = Engine.getEngineType match {
       case MklBlas => coresPerNode
       case _ => throw new IllegalArgumentException
@@ -558,7 +560,7 @@ object DistriOptimizer {
       }
       Engine.setNodeAndCore(nExecutor, executorCores)
       val cached = (0 until _subModelNumber).map { _ =>
-        val localModel = modelBroadcast.value()
+        val localModel = modelBroadcast.value(true)
         val localCriterion = broadcastCriterion.cloneCriterion()
         val localState = broadcastState.clone()
         val localMethod =

@@ -26,12 +26,13 @@ import scala.reflect.ClassTag
 
 /**
  * ModelBroadcast is used to broadcast model.
- * Note: If you want to use this to broadcast training model, please set inference = false.
- * @param inference inference or training.
+ *
+ * Note: If you want to use this to broadcast training model, please use value(true) to get
+ * the model. And before broadcasting please make sure the model's parameter is compacted.
+ *
  * @tparam T data type
  */
-class ModelBroadcast[T: ClassTag](
-      inference: Boolean = true)(implicit ev: TensorNumeric[T]) extends Serializable {
+class ModelBroadcast[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Serializable {
 
   private var broadcastModel: Broadcast[Module[T]] = _
   private var broadcastParameters: Broadcast[Array[Tensor[T]]] = _
@@ -45,7 +46,6 @@ class ModelBroadcast[T: ClassTag](
    * @return this
    */
   def broadcast(sc: SparkContext, model: Module[T]): this.type = {
-    if (!inference) model.getParameters() // ensure training model's parameter is compacted.
     val weightsBias = getAndClearWeightBias(model.parameters())
     broadcastModel = sc.broadcast(model.cloneModule())
     broadcastParameters = sc.broadcast(weightsBias)
@@ -57,12 +57,16 @@ class ModelBroadcast[T: ClassTag](
   /**
    * get the broadcast model
    * put the weight and bias back to the model
+   *
+   * @param initGradient if init gradParameter.
    * @return model
    */
-  def value(): Module[T] = {
+  def value(initGradient: Boolean = false): Module[T] = {
     val localModel = broadcastModel.value.cloneModule()
     putWeightBias(broadcastParameters.value, localModel)
-    initGradWeightBias(broadcastParameters.value, localModel)
+    if (initGradient) {
+      initGradWeightBias(broadcastParameters.value, localModel)
+    }
     localModel
   }
 
@@ -80,6 +84,7 @@ class ModelBroadcast[T: ClassTag](
         (false, null)
       }
 
+      // get weight and bias
       while (i < parameters._1.length) {
         if (parameters._1(i) != null) {
           val wb = parameters._1(i)
@@ -98,26 +103,25 @@ class ModelBroadcast[T: ClassTag](
           i += 1
         }
       }
-
-      i = 0
-      while (i < parameters._1.length) {
-        if (parameters._1(i) != null) {
-          parameters._1(i).set()
-        }
-        i += 1
-      }
-
+      // clear parameters
+      clearTensor(parameters._1)
       // because in quantized mode, the weight number may be different with gradWeight number
-      i = 0
-      while (i < parameters._2.length) {
-        if (parameters._2(i) != null) {
-          parameters._2(i).set()
-        }
-        i += 1
-      }
+      clearTensor(parameters._2)
+
       weightsBias
     } else {
+      // just return an empty array when parameters is empty.
       Array()
+    }
+  }
+
+  private def clearTensor(tensors: Array[Tensor[T]]): Unit = {
+    var i = 0
+    while (i < tensors.length) {
+      if (tensors(i) != null) {
+        tensors(i).set()
+      }
+      i += 1
     }
   }
 
@@ -153,8 +157,8 @@ class ModelBroadcast[T: ClassTag](
 
 
 object ModelBroadcast {
-  def apply[@specialized(Float, Double) T: ClassTag](
-      inference: Boolean = true)(implicit ev: TensorNumeric[T]) : ModelBroadcast[T] = {
-    new ModelBroadcast(inference)
+  def apply[@specialized(Float, Double) T: ClassTag]()
+        (implicit ev: TensorNumeric[T]) : ModelBroadcast[T] = {
+    new ModelBroadcast()
   }
 }
