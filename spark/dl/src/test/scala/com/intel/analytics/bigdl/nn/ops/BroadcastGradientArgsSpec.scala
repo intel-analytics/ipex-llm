@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
 class BroadcastGradientArgsSpec extends FlatSpec with Matchers {
-  "BroadcastGradientArgs operation Float" should "works correctly" in {
+  "BroadcastGradientArgs operation" should "works correctly" in {
     import com.intel.analytics.bigdl.numeric.NumericInt
     val input =
       T(
@@ -29,7 +29,21 @@ class BroadcastGradientArgsSpec extends FlatSpec with Matchers {
         Tensor(T(2, 2, 1))
       )
 
-    val expectOutput = T(Tensor(T(1, 2)), Tensor(T(2, 3)))
+    val expectOutput = T(Tensor(T(0)), Tensor(T(2)))
+
+    val output = BroadcastGradientArgs().forward(input)
+    output should be(expectOutput)
+  }
+
+  "BroadcastGradientArgs operation empty" should "works correctly" in {
+    import com.intel.analytics.bigdl.numeric.NumericInt
+    val input =
+      T(
+        Tensor(T(1, 2, 3)),
+        Tensor()
+      )
+
+    val expectOutput = T(Tensor(T(0)), Tensor(T(0, 1, 2)))
 
     val output = BroadcastGradientArgs().forward(input)
     output should be(expectOutput)

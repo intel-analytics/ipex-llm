@@ -43,40 +43,59 @@ class BroadcastGradientArgs[T: ClassTag]()
 
     // Reverse the shape of x and y for convenience.
     // After the reverse, 0-th is the inner-most dimension.
-    val rx = Tensor[Int](Storage(input1.storage().array().reverse))
-    val ry = Tensor[Int](Storage(input2.storage().array().reverse))
+    val rx =
+      if (input1.storage() == null) Array[Int]().toBuffer
+      else input1.storage().array().reverse.toBuffer
+    val ry =
+      if (input2.storage() == null) Array[Int]().toBuffer
+      else input2.storage().array().reverse.toBuffer
 
-    if (rx.size(1) < ry.size(1)) {
-      rx.resizeAs(ry)
+    if (rx.length < ry.length) {
+      while (rx.length < ry.length) {
+        rx.append(1)
+      }
     } else {
-      ry.resizeAs(rx)
+      while (rx.length > ry.length) {
+        ry.append(1)
+      }
     }
 
     val xReducedIndexBuffer = new ArrayBuffer[Int]()
     val yReducedIndexBuffer = new ArrayBuffer[Int]()
 
-    val size = rx.size(1)
+    val n = rx.length
 
-    for (i <- 1 to size) {
-      val xi = rx(Array(i))
-      val yi = ry(Array(i))
+    for (i <- 0 until n) {
+      val xi = rx(i)
+      val yi = ry(i)
 
       if (xi == yi) {
-        xReducedIndexBuffer.append(size + 1 - i)
-        yReducedIndexBuffer.append(size + 1 - i)
+        if (xi == 1) {
+          xReducedIndexBuffer.append(n - 1 - i)
+          yReducedIndexBuffer.append(n - 1 - i)
+        }
       } else if (xi == 1) {
-        xReducedIndexBuffer.append(size + 1 - i)
+        xReducedIndexBuffer.append(n - 1 - i)
       } else if (yi == 1) {
-        yReducedIndexBuffer.append(size + 1 - i)
+        yReducedIndexBuffer.append(n - 1 - i)
       } else {
         return output
       }
     }
 
-    output1.resize(Array(xReducedIndexBuffer.length))
-      .set(Tensor[Int](Storage(xReducedIndexBuffer.reverse.toArray)))
-    output2.resize(Array(yReducedIndexBuffer.length))
-      .set(Tensor[Int](Storage(yReducedIndexBuffer.reverse.toArray)))
+    if (xReducedIndexBuffer.isEmpty) {
+      input(1) = Tensor[Int]()
+    } else {
+      output1.resize(Array(xReducedIndexBuffer.length))
+        .set(Tensor[Int](Storage(xReducedIndexBuffer.reverse.toArray)))
+    }
+
+    if (yReducedIndexBuffer.isEmpty) {
+      input(2) = Tensor[Int]()
+    } else {
+      output2.resize(Array(yReducedIndexBuffer.length))
+        .set(Tensor[Int](Storage(yReducedIndexBuffer.reverse.toArray)))
+    }
 
     output
   }
