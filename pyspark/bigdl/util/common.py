@@ -194,6 +194,7 @@ class Sample(object):
         :param features: an ndarray or a list of ndarrays
         :param label: an ndarray or a scalar
         :param bigdl_type: "double" or "float"
+
         >>> import numpy as np
         >>> from bigdl.util.common import callBigDlFunc
         >>> from numpy.testing import assert_allclose
