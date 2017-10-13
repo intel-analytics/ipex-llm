@@ -55,7 +55,7 @@ import scala.reflect.ClassTag
  * @param label labels
  * @param bigdlType bigdl numeric type
  */
-case class Sample(features: JTensor,
+case class Sample(features: JList[JTensor],
                   label: JTensor,
                   bigdlType: String)
 
@@ -113,7 +113,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def toPySample(sample: JSample[T]): Sample = {
     val cls = implicitly[ClassTag[T]].runtimeClass
-    Sample(toJTensor(sample.feature()), toJTensor(sample.label()), cls.getSimpleName)
+    val features = new JArrayList[JTensor]()
+    features.add(toJTensor(sample.feature()))
+    Sample(features, toJTensor(sample.label()), cls.getSimpleName)
   }
 
   def toTensor(jTensor: JTensor): Tensor[T] = {
@@ -156,7 +158,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def toSample(record: Sample): JSample[T] = {
     require(record.bigdlType == this.typeName,
       s"record.bigdlType: ${record.bigdlType} == this.typeName: ${this.typeName}")
-    JSample[T](toTensor(record.features), toTensor(record.label))
+    JSample[T](record.features.asScala.toArray.map(toTensor(_)), toTensor(record.label))
   }
 
   private def batching(rdd: RDD[Sample], batchSize: Int)
