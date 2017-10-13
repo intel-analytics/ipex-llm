@@ -1022,7 +1022,7 @@ class ConvLSTMPeepholeSpec extends FlatSpec with BeforeAndAfter with Matchers {
     )
 
     val output = model.forward(input).asInstanceOf[Tensor[Double]]
-    val state = rec.getState()
+    val state = rec.getHiddenState()
     val hiddenState = state.toTable.apply(1).asInstanceOf[Tensor[Double]]
     val cell = state.toTable.apply(2).asInstanceOf[Tensor[Double]]
     hiddenState.map(output.select(2, seqLength), (v1, v2) => {
@@ -1036,7 +1036,7 @@ class ConvLSTMPeepholeSpec extends FlatSpec with BeforeAndAfter with Matchers {
       v1
     })
 
-    rec.setState(state)
+    rec.setHiddenState(state)
     model.forward(input)
   }
 
@@ -1063,7 +1063,7 @@ class ConvLSTMPeepholeSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     val output = model.forward(input).asInstanceOf[Tensor[Double]]
 
-    rec2.setState(T(Tensor[Double](batchSize, hiddenSize, 3, 4).rand,
+    rec2.setHiddenState(T(Tensor[Double](batchSize, hiddenSize, 3, 4).rand,
       Tensor[Double](batchSize, hiddenSize, 3, 4).rand))
     val output2 = model2.forward(input).asInstanceOf[Tensor[Double]]
 
