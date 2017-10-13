@@ -44,8 +44,8 @@ import scala.reflect.ClassTag
 class SparseLinear[T: ClassTag](
       inputSize: Int,
       outputSize: Int,
-      backwardStart: Int = -1,
-      backwardLength: Int = -1,
+      val backwardStart: Int = -1,
+      val backwardLength: Int = -1,
       withBias: Boolean = true,
       wRegularizer: Regularizer[T] = null,
       bRegularizer: Regularizer[T] = null,
@@ -98,8 +98,8 @@ class SparseLinear[T: ClassTag](
   }
 
   override def accGradParameters(
-                                  input: Tensor[T],
-                                  gradOutput: Tensor[T]): Unit = {
+        input: Tensor[T],
+        gradOutput: Tensor[T]): Unit = {
     require(input.dim() == 2,
       "SparseLinear: " + ErrorInfo.constrainInputAsVectorOrBatch)
 
@@ -127,6 +127,22 @@ class SparseLinear[T: ClassTag](
 
   override def toString() : String = {
     s"nn.SparseLinear($inputSize -> $outputSize)"
+  }
+
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[SparseLinear[T]]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: SparseLinear[T] =>
+      super.equals(that) &&
+        (that canEqual this) &&
+        backwardStart == that.backwardStart &&
+        backwardLength == that.backwardLength
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    val state = Seq(super.hashCode(), backwardStart, backwardLength)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
 

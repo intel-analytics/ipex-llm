@@ -38,6 +38,8 @@ class DenseToSparse[T: ClassTag](implicit ev: TensorNumeric[T]) extends TensorMo
     Tensor.dense(gradOutput, gradInput)
     this.gradInput
   }
+
+  override def toString(): String = s"DenseToSparse()"
 }
 
 object DenseToSparse {

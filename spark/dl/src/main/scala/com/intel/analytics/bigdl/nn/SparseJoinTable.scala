@@ -79,6 +79,23 @@ class SparseJoinTable[T: ClassTag] (
     this
   }
 
+  override def toString: String = s"nn.SparseJoinTable($dimension)"
+
+
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[SparseJoinTable[T]]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: SparseJoinTable[T] =>
+      super.equals(that) &&
+        (that canEqual this) &&
+        dimension == that.dimension
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    val state = Seq(super.hashCode(), dimension)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
 }
 
 object SparseJoinTable {
