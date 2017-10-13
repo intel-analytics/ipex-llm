@@ -783,11 +783,11 @@ class SparseLinear(Layer):
     creating: createSparseLinear
     '''
 
-    def __init__(self, input_size, output_size, backwardStart=-1, backwardLength=-1, with_bias=True,
+    def __init__(self, input_size, output_size, with_bias=True, backwardStart=-1, backwardLength=-1,
                  wRegularizer=None, bRegularizer=None, init_weight=None, init_bias=None,
                  init_grad_weight=None, init_grad_bias=None, bigdl_type="float"):
         super(SparseLinear, self).__init__(None, bigdl_type, input_size, output_size,
-                                     backwardStart, backwardLength, with_bias,
+                                     with_bias, backwardStart, backwardLength,
                                      wRegularizer, bRegularizer,
                                      JTensor.from_ndarray(init_weight),
                                      JTensor.from_ndarray(init_bias),
@@ -2383,7 +2383,7 @@ class SparseJoinTable(Layer):
     def __init__(self,
                  dimension,
                  bigdl_type="float"):
-        super(JoinTable, self).__init__(None, bigdl_type,
+        super(SparseJoinTable, self).__init__(None, bigdl_type,
                                         dimension)
 
 

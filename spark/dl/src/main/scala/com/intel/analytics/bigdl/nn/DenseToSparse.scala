@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.{TensorCriterion, TensorModule}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{DenseType, SparseType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
@@ -30,6 +30,8 @@ import scala.reflect.ClassTag
  */
 class DenseToSparse[T: ClassTag](implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
+    require(input.getTensorType == DenseType, "DenseToSparse: input should be a DenseTensor," +
+      s"but got ${input.getTensorType}")
     output = Tensor.sparse(input)
     output
   }
