@@ -200,7 +200,7 @@ class Sample(object):
         >>> from numpy.testing import assert_allclose
         >>> sample = Sample.from_ndarray(np.random.random((2,3)), np.random.random((2,3)))
         >>> sample_back = callBigDlFunc("float", "testSample", sample)
-        >>> assert_allclose(sample.features.to_ndarray(), sample_back.features.to_ndarray())
+        >>> assert_allclose(sample.features[0].to_ndarray(), sample_back.features[0].to_ndarray())
         >>> assert_allclose(sample.label.to_ndarray(), sample_back.label.to_ndarray())
         """
         if isinstance(features, np.ndarray):
