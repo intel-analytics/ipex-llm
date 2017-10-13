@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -69,13 +69,11 @@ class GRU[T : ClassTag] (
 
   override var cell: AbstractModule[Activity, Activity, T] = buildModel()
 
-  override def preTopology: AbstractModule[Activity, Activity, T] =
-    if (p != 0) {
-      null
-    } else {
-      TimeDistributed[T](Linear(inputSize, 3 * outputSize,
-        wRegularizer = wRegularizer, bRegularizer = bRegularizer))
-    }
+  override var preTopology: TensorModule[T] =
+  if (p != 0) { null } else {
+    Linear(inputSize, 3 * outputSize,
+      wRegularizer = wRegularizer, bRegularizer = bRegularizer)
+  }
 
   override def hiddenSizeOfPreTopo: Int = 3 * outputSize
 
