@@ -179,7 +179,7 @@ class Sample(object):
     def __init__(self, features, label, bigdl_type="float"):
         """
         User should always use Sample.from_ndarray to construct Sample.
-        :param features: a JTensor
+        :param features: a list of JTensors
         :param label: a JTensor
         :param bigdl_type: "double" or "float"
         """
@@ -191,21 +191,27 @@ class Sample(object):
     def from_ndarray(cls, features, label, bigdl_type="float"):
         """
         Convert a ndarray of features and label to Sample, which would be used in Java side.
+        :param features: an ndarray or a list of ndarrays
+        :param label: an ndarray or a scalar
+        :param bigdl_type: "double" or "float"
 
         >>> import numpy as np
         >>> from bigdl.util.common import callBigDlFunc
         >>> from numpy.testing import assert_allclose
         >>> sample = Sample.from_ndarray(np.random.random((2,3)), np.random.random((2,3)))
         >>> sample_back = callBigDlFunc("float", "testSample", sample)
-        >>> assert_allclose(sample.features.to_ndarray(), sample_back.features.to_ndarray())
+        >>> assert_allclose(sample.features[0].to_ndarray(), sample_back.features[0].to_ndarray())
         >>> assert_allclose(sample.label.to_ndarray(), sample_back.label.to_ndarray())
         """
-        assert isinstance(features, np.ndarray), \
-            "features should be a np.ndarray, not %s" % type(features)
+        if isinstance(features, np.ndarray):
+            features = [features]
+        else:
+            assert all(isinstance(feature, np.ndarray) for feature in features), \
+                "features should be a list of np.ndarray, not %s" % type(features)
         if not isinstance(label, np.ndarray): # in case label is a scalar.
             label = np.array(label)
         return cls(
-            features=JTensor.from_ndarray(features),
+            features=[JTensor.from_ndarray(f) for f in features],
             label=JTensor.from_ndarray(label),
             bigdl_type=bigdl_type)
 

@@ -217,7 +217,7 @@ object BigDLSerDe extends BigDLSerDeBase with Serializable {
       if (args.length != 3) {
         throw new PickleException("should be 3, not : " + args.length)
       }
-      new Sample(args(0).asInstanceOf[JTensor],
+      new Sample(args(0).asInstanceOf[JList[JTensor]],
         args(1).asInstanceOf[JTensor],
         args(2).asInstanceOf[String])
     }
