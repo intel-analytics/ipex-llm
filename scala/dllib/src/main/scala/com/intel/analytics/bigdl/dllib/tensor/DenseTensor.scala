@@ -2319,7 +2319,7 @@ object DenseTensor {
     require(src.nDimension() > 0, "cannot select on a scalar")
     require(_dimension >= 0 && _dimension < src.nDimension(), "out of range")
     require(_sliceIndex >= 0 && _sliceIndex < src.size(_dimension + 1),
-      s"${_sliceIndex} out of range 0 to ${src.size(_dimension + 1)}")
+      s"${_sliceIndex} out of range 0 to ${src.size(_dimension + 1) - 1}")
 
     set(self, src)
     narrow(self, null, _dimension, _sliceIndex, 1)
