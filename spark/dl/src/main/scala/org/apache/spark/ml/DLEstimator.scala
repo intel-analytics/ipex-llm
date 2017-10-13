@@ -214,7 +214,7 @@ class DLModel[@specialized(Float, Double) T: ClassTag](
       featureData: RDD[Seq[AnyVal]], dataset: DataFrame): DataFrame = {
 
     model.evaluate()
-    val modelBroadCast = ModelBroadcast[T].broadcast(featureData.sparkContext, model)
+    val modelBroadCast = ModelBroadcast[T]().broadcast(featureData.sparkContext, model)
     val predictRdd = featureData.map { f =>
       // convert feature data type to the same type with model
       f.head match {
