@@ -47,7 +47,7 @@ class ModelBroadcast[T: ClassTag](
   def broadcast(sc: SparkContext, model: Module[T]): this.type = {
     if (!inference) model.getParameters() // ensure training model's parameter is compacted.
     val weightsBias = getAndClearWeightBias(model.parameters())
-    broadcastModel = sc.broadcast(model)
+    broadcastModel = sc.broadcast(model.cloneModule())
     broadcastParameters = sc.broadcast(weightsBias)
     putWeightBias(weightsBias, model)
     initGradWeightBias(weightsBias, model)
