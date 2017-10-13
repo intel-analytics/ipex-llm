@@ -417,7 +417,7 @@ object DataConverter extends DataConverter{
       if (storageType == ProtoStorageType) {
         if (storages.contains(storageId)) {
           val storage = storages(storageId).asInstanceOf[TensorStorage]
-          tensorBuilder.setStorage(storage)
+          tensorBuilder.setStorage(resetStorage(storage))
           // we should set back the datatype from existed storage
           tensorBuilder.setDatatype(storage.getDatatype)
         } else {
@@ -495,7 +495,7 @@ object DataConverter extends DataConverter{
           }
           storageBuilder.setId(storageId)
           val storage = storageBuilder.build
-          tensorBuilder.setStorage(storage)
+          tensorBuilder.setStorage(resetStorage(storage))
           storages(storageId) = storage
         }
       } else {
@@ -514,8 +514,8 @@ object DataConverter extends DataConverter{
         val storages = context.storages
         // Check if tensor has been shared
         if (storages.contains(tensorId)) {
-          attributeBuilder.setTensorValue(storages.get(tensorId).get
-            .asInstanceOf[BigDLTensor])
+          attributeBuilder.setTensorValue(resetTensor(storages.get(tensorId).get
+            .asInstanceOf[BigDLTensor]))
         } else {
           val totalElement = tensor.nElement()
           val dimension = tensor.dim()
@@ -536,10 +536,27 @@ object DataConverter extends DataConverter{
           tensor.stride().foreach(stride => tensorBuilder.addStride(stride))
           setStorage(context, tensorBuilder, tensor)
           val tensorBuild = tensorBuilder.build
-          attributeBuilder.setTensorValue(tensorBuild)
+          attributeBuilder.setTensorValue(resetTensor(tensorBuild))
           storages(tensorId) = tensorBuild
         }
       }
+    }
+
+
+    private def resetStorage(originStorage : TensorStorage) : TensorStorage = {
+      val storageBuilder = TensorStorage.newBuilder
+      storageBuilder.setDatatype(originStorage.getDatatype)
+      storageBuilder.setId(originStorage.getId)
+      storageBuilder.build
+    }
+
+    private def resetTensor(originTensor: BigDLTensor) : BigDLTensor = {
+      val tensorBuilder = BigDLTensor.newBuilder(originTensor)
+      tensorBuilder.clearStorage
+      tensorBuilder.setDatatype(originTensor.getDatatype)
+      tensorBuilder.setId(originTensor.getId)
+      tensorBuilder.setStorage(resetStorage(originTensor.getStorage))
+      tensorBuilder.build
     }
   }
 
