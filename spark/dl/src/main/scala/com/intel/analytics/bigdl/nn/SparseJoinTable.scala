@@ -64,42 +64,10 @@ class SparseJoinTable[T: ClassTag] (
   }
 
   override def updateGradInput(input: Table, gradOutput: Tensor[T]): Table = {
-    if (gradOutput.size != size) {
-      var i = 1
-      while (i <= input.length()) {
-        gradInput(i) = gradOutput
-        i += 1
-      }
-    } else {
-      var offset = 1
-      var i = 0
-      while (i < input.length) {
-        val currentOutput = input(i + 1).asInstanceOf[Tensor[_]]
-        val _offset = offset
-        val _i = i
-        results(i) = Engine.model.invoke( () => {
-          val narrowedTensor = gradOutput.narrow(dimension, _offset, currentOutput.size(dimension))
-          val inputTensor = input[Tensor[_]](_i + 1)
-          if (!gradInput.contains(_i + 1)) gradInput(_i + 1) =
-            inputTensor.emptyInstance().resize(inputTensor.size())
-          if(narrowedTensor.isContiguous() || dimension > 2) {
-            gradInput[Tensor[_]](_i + 1).forceCopy(narrowedTensor)
-          } else {
-            var b = 1
-            while(b <= narrowedTensor.size(1)) {
-              val curFrame = gradInput[Tensor[_]](_i + 1).select(1, b)
-              val narrowFrame = narrowedTensor.select(1, b)
-              require(curFrame.isContiguous())
-              require(narrowFrame.isContiguous())
-              curFrame.forceCopy(narrowFrame)
-              b += 1
-            }
-          }
-        })
-        i += 1
-        offset += currentOutput.size(dimension)
-      }
-      Engine.model.sync(results)
+    var i = 1
+    while (i <= input.length()) {
+      gradInput(i) = gradOutput
+      i += 1
     }
     gradInput
   }
