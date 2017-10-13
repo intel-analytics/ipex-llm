@@ -28,7 +28,7 @@ import org.apache.spark.SparkContext
 
 object Train {
   LoggerFilter.redirectSparkInfoLogs()
-  Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+
 
   import Utils._
 
