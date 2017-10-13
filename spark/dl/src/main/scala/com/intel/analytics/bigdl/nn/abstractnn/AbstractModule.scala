@@ -213,61 +213,50 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   }
 
   /**
-   * freeze the layer, its parameters(weight/bias, if exists)
-   * are not changed in training process
-   */
-  def freeze(): this.type = {
-    setScaleW(0)
-    setScaleB(0)
-    this
-  }
-
-  /**
-   * "unfreeze" all layers, i.e. make the layer parameters(weight/bias, if exists)
-   * to be trained(updated) in training process
+   * freeze the module,
+   * i.e. their parameters(weight/bias, if exists) are not changed in training process
+   * if names is not null,
+   * set an array of layers that match the given ```names``` to be "freezed",
    *
-   * @param scaleW Set the scale of gradientWeight
-   * @param scaleB Set the scale of gradientBias
+   * @param names an array of layer names
+   * @return current graph model
    */
-  def unFreeze(scaleW: Double = 1, scaleB: Double = 1): this.type = {
-    setScaleW(scaleW)
-    setScaleB(scaleB)
+  def freeze(names: Array[String] = null): this.type = {
+    if (null == names) {
+      setScaleW(0)
+      setScaleB(0)
+    } else {
+      names.foreach(name => {
+        this (name) match {
+          case Some(x) => x.freeze()
+          case _ => throw new Exception(s"cannot match module named $name")
+        }
+      })
+    }
     this
   }
 
   /**
-   * "unfreeze" layers by given name, i.e. make the layer parameters(weight/bias, if exists)
+   * "unfreeze" module, i.e. make the module parameters(weight/bias, if exists)
    * to be trained(updated) in training process
+   * if names is not null, unfreeze layers that match given names
    *
    * @param names array of module names to unFreeze
    * @param scaleW Set the scale of gradientWeight
    * @param scaleB Set the scale of gradientBias
    */
-  def unFreeze(names: Array[String], scaleW: Double = 1, scaleB: Double = 1): this.type = {
-    names.foreach(name => {
-      this (name) match {
-        case Some(x) =>
-          x.unFreeze(scaleW, scaleB)
-        case _ =>
-          throw new Exception(s"cannot match module named $name")
-      }
-    })
-    this
-  }
-
-  /**
-   * set an array of layers that match the given ```names``` to be "freezed",
-   * i.e. their parameters(weight/bias, if exists) are not changed in training process
-   * @param names an array of layer names
-   * @return current graph model
-   */
-  def freeze(names: Array[String]): this.type = {
-    names.foreach(name => {
-      val layer = this (name)
-      require(layer.isDefined, s"cannot find layer match ${name}")
-      layer.get.setScaleW(0)
-      layer.get.setScaleB(0)
-    })
+  def unFreeze(scaleW: Double = 1, scaleB: Double = 1, names: Array[String] = null): this.type = {
+    if (null == names) {
+      setScaleW(scaleW)
+      setScaleB(scaleB)
+    } else {
+      names.foreach(name => {
+        this (name) match {
+          case Some(x) => x.unFreeze(scaleW, scaleB)
+          case _ => throw new Exception(s"cannot match module named $name")
+        }
+      })
+    }
     this
   }
 

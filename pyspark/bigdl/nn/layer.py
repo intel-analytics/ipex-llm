@@ -392,41 +392,25 @@ class Layer(JavaValue):
         '''
         self.value.bRegularizer = bRegularizer.value
 
-    def freeze(self):
-        '''
-        freeze layer
-        '''
-        callBigDlFunc(self.bigdl_type,
-                        "setLayerFreeze", self.value)
-        return self
-
-    def unfreeze(self, scale_w=1, scale_b=1):
-        '''
-        unfreeze layer
-        :param scale_w Set the scale of gradientWeight
-        :param scale_b Set the scale of gradientBias
-        '''
-        callBigDlFunc(self.bigdl_type,
-                        "setLayerUnFreeze", self.value, scale_w, scale_b)
-
-    def freeze(self, names):
+    def freeze(self, names=None):
         """
-        set an array of layers to be freezed
+        freeze module, if names is not None, set an array of layers that match given names
+        to be freezed
         :param names: an array of layer names
         :return:
         """
-        callBigDlFunc(self.bigdl_type, "setFreeze", self.value, names)
+        callBigDlFunc(self.bigdl_type, "freeze", self.value, names)
         return self
 
-    def unfreeze(self, names, scale_w=1, scale_b=1):
+    def unfreeze(self, scale_w=1.0, scale_b=1.0, names=None):
         """
-        set layers that match given names to be trainable
-        :param names: an array of layer names
+        unfreeze module, if names is not None, unfreeze layers that match given names
         :param scale_w Set the scale of gradientWeight
         :param scale_b Set the scale of gradientBias
+        :param names: an array of layer names
         :return:
         """
-        callBigDlFunc(self.bigdl_type, "unFreeze", self.value, names, scale_w, scale_b)
+        callBigDlFunc(self.bigdl_type, "unFreeze", self.value, scale_w, scale_b, names)
         return self
 
     def training(self):
