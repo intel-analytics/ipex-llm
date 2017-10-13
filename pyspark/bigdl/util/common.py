@@ -179,7 +179,7 @@ class Sample(object):
     def __init__(self, features, label, bigdl_type="float"):
         """
         User should always use Sample.from_ndarray to construct Sample.
-        :param features: a JTensor or a list of JTensors
+        :param features: a list of JTensors
         :param label: a JTensor
         :param bigdl_type: "double" or "float"
         """
@@ -191,7 +191,9 @@ class Sample(object):
     def from_ndarray(cls, features, label, bigdl_type="float"):
         """
         Convert a ndarray of features and label to Sample, which would be used in Java side.
-
+        :param features: an ndarray or a list of ndarrays
+        :param label: an ndarray or a scalar
+        :param bigdl_type: "double" or "float"
         >>> import numpy as np
         >>> from bigdl.util.common import callBigDlFunc
         >>> from numpy.testing import assert_allclose
