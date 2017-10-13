@@ -212,6 +212,9 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     backwardTime = 0
   }
 
+  private var scaleWCache: Double = scaleW
+  private var scaleBCache: Double = scaleB
+
   /**
    * freeze the module,
    * i.e. their parameters(weight/bias, if exists) are not changed in training process
@@ -221,10 +224,12 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @param names an array of layer names
    * @return current graph model
    */
-  def freeze(names: Array[String] = null): this.type = {
-    if (null == names) {
-      setScaleW(0)
-      setScaleB(0)
+  def freeze(names: String*): this.type = {
+    if (names.isEmpty) {
+      scaleWCache = scaleW
+      scaleBCache = scaleB
+      scaleW = 0
+      scaleB = 0
     } else {
       names.foreach(name => {
         this (name) match {
@@ -242,17 +247,15 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * if names is not null, unfreeze layers that match given names
    *
    * @param names array of module names to unFreeze
-   * @param scaleW Set the scale of gradientWeight
-   * @param scaleB Set the scale of gradientBias
    */
-  def unFreeze(scaleW: Double = 1, scaleB: Double = 1, names: Array[String] = null): this.type = {
-    if (null == names) {
-      setScaleW(scaleW)
-      setScaleB(scaleB)
+  def unFreeze(names: String*): this.type = {
+    if (names.isEmpty) {
+      scaleW = scaleWCache
+      scaleB = scaleBCache
     } else {
       names.foreach(name => {
         this (name) match {
-          case Some(x) => x.unFreeze(scaleW, scaleB)
+          case Some(x) => x.unFreeze()
           case _ => throw new Exception(s"cannot match module named $name")
         }
       })

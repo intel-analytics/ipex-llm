@@ -1919,15 +1919,15 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def freeze(model: AbstractModule[Activity, Activity, T], freezeLayers: JList[String])
   : AbstractModule[Activity, Activity, T] = {
-    if (null == freezeLayers) model.freeze() else model.freeze(freezeLayers.asScala.toArray)
+    if (null == freezeLayers) model.freeze() else model.freeze(freezeLayers.asScala: _*)
   }
 
   def unFreeze(model: AbstractModule[Activity, Activity, T],
-    scaleW: Double, scaleB: Double, names: JList[String]): AbstractModule[Activity, Activity, T] = {
+    names: JList[String]): AbstractModule[Activity, Activity, T] = {
     if (names == null) {
-      model.unFreeze(scaleW, scaleB)
+      model.unFreeze()
     } else {
-      model.unFreeze(scaleW, scaleB, names.asScala.toArray)
+      model.unFreeze(names.asScala: _*)
     }
   }
 

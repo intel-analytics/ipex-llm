@@ -156,16 +156,15 @@ val preductResult = model.predict(predictSet)
 To "freeze" a module means to exclude some layers of model from training.
 
 ```scala
-module.freeze(Array("layer1", "layer2"))
-module.unFreeze(scaleW = 2, scaleB = 1, names = Array("layer1", "layer2"))
+module.freeze("layer1", "layer2")
+module.unFreeze("layer1", "layer2")
 module.stopGradient(Array("layer1"))
 ```
 * The whole module can be "freezed" by calling ```freeze()```. If a module is freezed,
 its parameters(weight/bias, if exists) are not changed in training process.
-If an array of module names are provided, then layers that match the given names will be freezed.
+If module names are passed, then layers that match the given names will be freezed.
 * The whole module can be "unFreezed" by calling ```unFreeze()```.
-User can also pass scaleW and scaleB to set the scale of gradientWeight and gradientBias.
-If an array of module names are provided, then layers that match the given names will be unFreezed.
+If module names are provided, then layers that match the given names will be unFreezed.
 * stop the input gradient of layers that match the given names. Their input gradient are not computed.
 And they will not contributed to the input gradient computation of layers that depend on them.
 
@@ -174,7 +173,7 @@ Note that stopGradient is only supported in Graph model.
 **Python**
 ```python
 module.freeze(["layer1", "layer2"])
-module.unfreeze(scale_w = 2, scale_b = 1, names = ["layer1", "layer2"])
+module.unfreeze(["layer1", "layer2"])
 module.stop_gradient(["layer1"])
 ```
 
@@ -223,7 +222,7 @@ println("fc2 weight \n", fc2.element.parameters()._1(0))
 fc1.element.getParameters()._1.apply1(_ => 1.0f)
 fc2.element.getParameters()._1.apply1(_ => 2.0f)
 model.zeroGradParameters()
-model.freeze(Array("fc2"))
+model.freeze("fc2")
 println("output2: \n", model.forward(input))
 model.backward(input, gradOutput)
 model.updateParameters(1)
