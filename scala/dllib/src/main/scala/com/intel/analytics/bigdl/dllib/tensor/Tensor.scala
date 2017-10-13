@@ -1236,7 +1236,35 @@ object Tensor {
   def dense[T: ClassTag](
         sparseTensor: Tensor[T],
         res: Tensor[T] = null)(implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(sparseTensor.isInstanceOf[SparseTensor[T]])
-    DenseTensor(sparseTensor.asInstanceOf[SparseTensor[T]], res)
+    if (sparseTensor.isInstanceOf[SparseTensor[T]]) {
+      DenseTensor(sparseTensor.asInstanceOf[SparseTensor[T]], res)
+    } else if (sparseTensor.isInstanceOf[DenseTensor[T]]) {
+      res.copy(sparseTensor)
+    } else {
+      throw new IllegalArgumentException("Tensor.dense: Illegal tensor type.")
+    }
+  }
+
+  /**
+   * Concat a sequence of tensors to res tensor.
+   *
+   * @param dim concat at dim-th dimension.
+   * @param tensors a sequence of tensors.
+   * @param res result tensor.
+   * @param ev
+   * @tparam T
+   * @return
+   */
+  private[bigdl] def sparseConcat[T: ClassTag](
+        dim: Int,
+        tensors: Table,
+        res: Tensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
+    val seqTensors = new Array[Tensor[T]](tensors.length())
+    var i = 0
+    while (i < seqTensors.length) {
+      seqTensors(i) = tensors[Tensor[T]](i + 1)
+      i += 1
+    }
+    SparseTensor.concat(dim, seqTensors, res)
   }
 }
