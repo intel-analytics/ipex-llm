@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.intel.analytics.bigdl.example.MLPipeline
+
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim.LBFGS
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericDouble
