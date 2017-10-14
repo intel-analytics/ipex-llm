@@ -64,7 +64,7 @@ class DLClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
     assert(estimator.getLabelCol == "label")
     assert(estimator.getMaxEpoch == 100)
     assert(estimator.getBatchSize == 1)
-    assert(estimator.getLearningRate == 1.0)
+    assert(estimator.getLearningRate == 1e-3)
     assert(estimator.getLearningRateDecay == 0)
   }
 
@@ -72,6 +72,8 @@ class DLClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
     val criterion = ClassNLLCriterion[Float]()
     val classifier = new DLClassifier[Float](model, criterion, Array(6))
+      .setOptimMethod(new LBFGS[Float]())
+      .setLearningRate(0.1)
       .setBatchSize(nRecords)
       .setMaxEpoch(maxEpoch)
     val data = sc.parallelize(smallData)
@@ -138,7 +140,8 @@ class DLClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
       val criterion = ClassNLLCriterion[Float]()
       val estimator = new DLClassifier[Float](model, criterion, Array(6))
         .setBatchSize(nRecords)
-        // intentionally set low since this only validates data format compatibitliy
+        .setOptimMethod(new LBFGS[Float]())
+        .setLearningRate(0.1)
         .setMaxEpoch(maxEpoch)
         .setFeaturesCol("scaled")
       val pipeline = new Pipeline().setStages(Array(scaler, estimator))
