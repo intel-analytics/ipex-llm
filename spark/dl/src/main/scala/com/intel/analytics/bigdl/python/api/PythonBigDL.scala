@@ -59,7 +59,8 @@ case class Sample(features: JList[JTensor],
                   label: JTensor,
                   bigdlType: String)
 
-case class JTensor(storage: Array[Float], shape: Array[Int], bigdlType: String)
+case class JTensor(storage: Array[Float], shape: Array[Int],
+                   bigdlType: String, indices: Array[Int] = null)
 
 /**
  * [[ValidationResult]] for python
@@ -135,11 +136,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     // clone here in case the the size of storage larger then the size of tensor.
     require(tensor != null, "tensor cannot be null")
     if (tensor.nElement() == 0) {
-      JTensor(Array(), Array(0), typeName)
+      JTensor(Array(), Array(0), bigdlType = typeName)
     } else {
       val cloneTensor = tensor.clone()
       val result = JTensor(cloneTensor.storage().array().map(i => ev.toType[Float](i)),
-        cloneTensor.size(), typeName)
+        cloneTensor.size(), bigdlType = typeName)
       result
     }
   }

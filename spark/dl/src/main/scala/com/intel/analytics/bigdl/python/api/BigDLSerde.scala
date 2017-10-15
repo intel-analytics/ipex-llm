@@ -258,10 +258,11 @@ object BigDLSerDe extends BigDLSerDeBase with Serializable {
       if (args.length != 3) {
         throw new PickleException("should be 3, not : " + args.length)
       }
-      val bigdl_type = args(2).asInstanceOf[String]
+      val bigdl_type = args(3).asInstanceOf[String]
       val storage = objToFloatArray(args(0))
-      val shape = objToInt32Array(args(1))
-      val result = new JTensor(storage, shape, bigdl_type)
+      val indices = objToInt32Array(args(1))
+      val shape = objToInt32Array(args(2))
+      val result = new JTensor(storage, shape, bigdl_type, indices)
       result
     }
   }
