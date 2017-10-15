@@ -94,7 +94,7 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag](
    * Default: 1.0
    */
   val learningRate = new DoubleParam(this, "learningRate", "learningRate", ParamValidators.gt(0))
-  setDefault(learningRate -> 1.0)
+  setDefault(learningRate -> 1e-3)
 
   def getLearningRate: Double = $(learningRate)
 
