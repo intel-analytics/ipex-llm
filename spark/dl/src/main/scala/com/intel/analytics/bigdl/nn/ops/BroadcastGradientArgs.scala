@@ -65,7 +65,8 @@ class BroadcastGradientArgs[T: ClassTag]()
 
     val n = rx.length
 
-    for (i <- 0 until n) {
+    var i = 0
+    while (i < n) {
       val xi = rx(i)
       val yi = ry(i)
 
@@ -81,6 +82,7 @@ class BroadcastGradientArgs[T: ClassTag]()
       } else {
         return output
       }
+      i += 1
     }
 
     if (xReducedIndexBuffer.isEmpty) {
