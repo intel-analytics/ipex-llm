@@ -299,7 +299,7 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     t.valueAt(3) should be(3)
   }
 
-  "resize as" should "get the correct tensor" in {
+  "resise as" should "get the correct tensor" in {
     val t: Tensor[Double] = new DenseTensor[Double](3, 4)
     val t1: Tensor[Double] = new DenseTensor[Double](5, 5)
     val t2: Tensor[Double] = new DenseTensor[Double](2, 2)
@@ -485,39 +485,6 @@ class DenseTensorSpec extends FlatSpec with Matchers {
       i
     })
     println(t)
-  }
-
-  "toString" should "be elegant if the tensor is too large" in {
-    val t = new DenseTensor[Float](1000)
-    var i = 0
-    t.apply1(v => {
-      i = i + 1; i
-    })
-    val OneD_STRING =
-      "1.0\n2.0\n3.0\n...\n998.0\n999.0\n1000.0\n" +
-        "[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 1000]"
-    t.toString should be(OneD_STRING)
-    val s = new DenseTensor[Float](50, 50)
-    i = 0
-    s.apply1(v => {
-      i = i + 1; i
-    })
-    val MATRIX_STRING =
-      "1.0\t2.0\t3.0\t...\t48.0\t49.0\t50.0\t\n" +
-        "51.0\t52.0\t53.0\t...\t98.0\t99.0\t100.0\t\n" +
-        "101.0\t102.0\t103.0\t...\t148.0\t149.0\t150.0\t\n" +
-        "...\n" +
-        "2351.0\t2352.0\t2353.0\t...\t2398.0\t2399.0\t2400.0\t\n" +
-        "2401.0\t2402.0\t2403.0\t...\t2448.0\t2449.0\t2450.0\t\n" +
-        "2451.0\t2452.0\t2453.0\t...\t2498.0\t2499.0\t2500.0\t\n" +
-        "[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 50x50]"
-    s.toString should be(MATRIX_STRING)
-    val r = new DenseTensor[Float](2, 10, 50, 50)
-    i = 0
-    r.apply1(v => {
-      i = i + 1; i
-    })
-    println(r)
   }
 
   "squeeze" should "be correct" in {
