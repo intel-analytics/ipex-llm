@@ -226,10 +226,15 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    */
   def freeze(names: String*): this.type = {
     if (names.isEmpty) {
-      scaleWCache = scaleW
-      scaleBCache = scaleB
-      scaleW = 0
-      scaleB = 0
+      // in case when freeze is called many times
+      if (scaleW != 0) {
+        scaleWCache = scaleW
+        scaleW = 0
+      }
+      if (scaleB != 0) {
+        scaleBCache = scaleB
+        scaleB = 0
+      }
     } else {
       names.foreach(name => {
         this (name) match {
