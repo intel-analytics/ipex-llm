@@ -21,7 +21,7 @@ import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, M
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{Identity => DIdentity, Sample => JSample, _}
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.nn.abstractnn._
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, _}
 import com.intel.analytics.bigdl.numeric._
 import com.intel.analytics.bigdl.optim.{Optimizer, _}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
@@ -1952,22 +1952,18 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       rec.setHiddenState(jTensorsToActivity(hiddenStates, isTable))
   }
 
-  def setLayerFreeze(model: AbstractModule[Activity, Activity, T])
+  def freeze(model: AbstractModule[Activity, Activity, T], freezeLayers: JList[String])
   : AbstractModule[Activity, Activity, T] = {
-    model.freeze()
+    if (null == freezeLayers) model.freeze() else model.freeze(freezeLayers.asScala: _*)
   }
 
-  def setLayerUnFreeze(model: AbstractModule[Activity, Activity, T])
-  : AbstractModule[Activity, Activity, T] = {
-    model.unFreeze()
-  }
-
-  def setFreeze(model: Graph[T], freezeLayers: JList[String]): Graph[T] = {
-    model.freeze(freezeLayers.asScala.toArray)
-  }
-
-  def unFreeze(model: Graph[T]): Graph[T] = {
-    model.unFreeze()
+  def unFreeze(model: AbstractModule[Activity, Activity, T],
+    names: JList[String]): AbstractModule[Activity, Activity, T] = {
+    if (names == null) {
+      model.unFreeze()
+    } else {
+      model.unFreeze(names.asScala: _*)
+    }
   }
 
   def setStopGradient(model: Graph[T], layers: JList[String]): Graph[T] = {

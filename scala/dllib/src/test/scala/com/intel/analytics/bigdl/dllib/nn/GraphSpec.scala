@@ -1061,7 +1061,7 @@ class GraphSpec extends FlatSpec with Matchers {
     fc1.element.getParameters()._1.apply1(_ => 1.0f)
     fc2.element.getParameters()._1.apply1(_ => 2.0f)
     model.zeroGradParameters()
-    model.freeze(Array("fc2"))
+    model.freeze("fc2")
     println("output2: \n", model.forward(input))
     model.backward(input, gradOutput)
     model.updateParameters(1)
