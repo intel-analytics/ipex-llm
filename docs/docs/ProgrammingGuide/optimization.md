@@ -19,7 +19,7 @@ Your training data. As we train models on Spark, one of
 the most common distributed data structures is RDD. Of course
 you can use DataFrame. Please check the BigDL pipeline example.
 
-The element in the RDD is [Sample](../APIdocs/Data.md#sample), which is actually a sequence of
+The element in the RDD is [Sample](../APIGuide/Data.md#sample), which is actually a sequence of
 Tensors. You need to convert your data record(image, audio, text)
 to Tensors before you feed them into Optimizer. We also provide
 many utilities to do it.
@@ -31,7 +31,7 @@ the model with the ground truth(the labels of the training data). It
 outputs a loss value to measure how good the model is(the lower the
 better). It also provides a gradient to indicate how to tune the model.
 
-In BigDL, all loss functions are subclass of Criterion. Refer to [Losses](../APIdocs/Losses.md) for a list of defined losses.
+In BigDL, all loss functions are subclass of Criterion. Refer to [Losses](../APIGuide/Losses.md) for a list of defined losses.
 
 * **batch size**
 
@@ -199,7 +199,7 @@ optimizer.set_checkpoint(path, trigger,isOverWrite=True)
 ## Resume Training
 
 
-After training stops, you can resume from any saved point. Choose one of   the model snapshots and the corresponding optim-method snapshot to resume (saved in checkpoint path, details see [Checkpointing](#checkpointing)).     Use `Module.load` (Scala) or `Model.load`(Python) to load the model         snapshot into an model object, and `OptimMethod.load` (Scala and Python) to load optimization method into an OptimMethod  object. Then create a new `Optimizer` with the loaded model and optim       method. Call `Optimizer.optimize`, and you will resume from the point       where the snapshot is taken. Refer to [OptimMethod Load](../APIdocs/Optimizers/OptimMethod.md#load-method) and [Model Load](../APIdocs/Module.md#model-load) for details.
+After training stops, you can resume from any saved point. Choose one of   the model snapshots and the corresponding optim-method snapshot to resume (saved in checkpoint path, details see [Checkpointing](#checkpointing)).     Use `Module.load` (Scala) or `Model.load`(Python) to load the model         snapshot into an model object, and `OptimMethod.load` (Scala and Python) to load optimization method into an OptimMethod  object. Then create a new `Optimizer` with the loaded model and optim       method. Call `Optimizer.optimize`, and you will resume from the point       where the snapshot is taken. Refer to [OptimMethod Load](../APIGuide/Optimizers/OptimMethod.md#load-method) and [Model Load](../APIGuide/Module.md#model-load) for details.
 
 You can also resume training without loading the optim method, if you       intend to change the learning rate schedule or even the optimization        algorithm. Just create an `Optimizer` with loaded model and a new instance  of OptimMethod (both Scala and Python).
 
@@ -216,3 +216,25 @@ optimizer.set_val_summary(val_summary)
 ```
 
 See details in [Visualization](visualization.md)
+
+## Performance tunning
+For performance investigation, BigDL records the time-consuming distribution on each node for each step(e.g. sync weight, computing).The information can be displayed in the driver log. By default, it is suspended.To turn it on, please follow these steps:
+
+1.Prepare a log4j property file
+```
+# Root logger option
+log4j.rootLogger=INFO, stdout
+# Direct log messages to stdout
+log4j.appender.stdout=org.apache.log4j.ConsoleAppender
+log4j.appender.stdout.Target=System.out
+log4j.appender.stdout.layout=org.apache.log4j.PatternLayout
+log4j.appender.stdout.layout.ConversionPattern=%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n
+log4j.logger.com.intel.analytics.bigdl.optim=DEBUG
+```
+2.Add an option to your spark-submit command
+
+--conf "spark.driver.extraJavaOptions=-Dlog4j.configuration=file:where_is_your_log4j_file"
+
+
+
+
