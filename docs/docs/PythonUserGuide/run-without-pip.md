@@ -1,3 +1,4 @@
+## **Precondition**
 First of all, you need to obtain the BigDL libs. Refer to [Install from pre built](../ScalaUserGuide/install-pre-built.md) or [Install from source code](../ScalaUserGuide/install-build-src.md) for more details
 
 
@@ -113,6 +114,6 @@ Please check [this page](../ScalaUserGuide/configuration.md)
 ```python
 from bigdl.util.common import *
 
-redire_spark_logs(log_path=file path to redirect logs)
+redire_spark_logs(log_path=file path to redirect logs to)
 show_bigdl_info_logs()
 ```

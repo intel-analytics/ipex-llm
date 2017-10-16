@@ -37,6 +37,6 @@ linear = Linear(2, 3) # Try to create a Linear layer
 ```python
 from bigdl.util.common import *
 
-redire_spark_logs(log_path=file path to redirect logs)
+redire_spark_logs(log_path=file path to redirect logs to)
 show_bigdl_info_logs()
 ```
