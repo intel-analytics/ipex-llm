@@ -334,8 +334,13 @@ class SampleToMiniBatch[T: ClassTag] private[bigdl](
             i += 1
           }
           if (null == miniBatchBuffer) {
-            miniBatchBuffer = MiniBatch(sampleData(0).numFeature(), sampleData(0).numLabel(),
-              featurePaddingParam, labelPaddingParam)
+            val firstSample = sampleData(0)
+            miniBatchBuffer = if (firstSample.isInstanceOf[SampleWithSparse[T]]) {
+              MiniBatchWithSparse(firstSample.numFeature(), firstSample.numLabel())
+            } else {
+              MiniBatch(firstSample.numFeature(), firstSample.numLabel(),
+                featurePaddingParam, labelPaddingParam)
+            }
           }
 
           if (i < batchSize) {

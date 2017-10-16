@@ -217,7 +217,7 @@ object BigDLSerDe extends BigDLSerDeBase with Serializable {
       if (args.length != 3) {
         throw new PickleException("should be 3, not : " + args.length)
       }
-      new Sample(args(0).asInstanceOf[JList[JTensor]],
+      Sample(args(0).asInstanceOf[JList[JTensor]],
         args(1).asInstanceOf[JTensor],
         args(2).asInstanceOf[String])
     }
@@ -255,14 +255,23 @@ object BigDLSerDe extends BigDLSerDeBase with Serializable {
 
 
     def construct(args: Array[Object]): Object = {
-      if (args.length != 3) {
-        throw new PickleException("should be 3, not : " + args.length)
+      if (args.length != 3 && args.length != 4) {
+        throw new PickleException("should be 3 or 4, not : " + args.length)
       }
-      val bigdl_type = args(3).asInstanceOf[String]
       val storage = objToFloatArray(args(0))
-      val indices = objToInt32Array(args(1))
-      val shape = objToInt32Array(args(2))
-      val result = new JTensor(storage, shape, bigdl_type, indices)
+      val shape = objToInt32Array(args(1))
+      val result = if (args.length == 3) {
+        val bigdl_type = args(2).asInstanceOf[String]
+        JTensor(storage, shape, bigdl_type)
+      } else {
+        val bigdl_type = args(3).asInstanceOf[String]
+        val nElement = storage.length
+        val indicesArray = objToInt32Array(args(2))
+        val indices = Array.range(0, shape.length).map(i =>
+          indicesArray.slice(i * nElement, (i + 1) * nElement)
+        )
+        JTensor(storage, shape, bigdl_type, indices)
+      }
       result
     }
   }

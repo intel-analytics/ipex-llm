@@ -60,7 +60,7 @@ case class Sample(features: JList[JTensor],
                   bigdlType: String)
 
 case class JTensor(storage: Array[Float], shape: Array[Int],
-                   bigdlType: String, indices: Array[Int] = null)
+                   bigdlType: String, indices: Array[Array[Int]] = null)
 
 /**
  * [[ValidationResult]] for python
@@ -124,9 +124,18 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
     this.typeName match {
       case "float" =>
-        Tensor(jTensor.storage.map(x => ev.fromType(x.toFloat)), jTensor.shape)
+        if (null == jTensor.indices) {
+          Tensor(jTensor.storage.map(x => ev.fromType(x)), jTensor.shape)
+        } else {
+          Tensor.sparse(jTensor.indices, jTensor.storage.map(x => ev.fromType(x)), jTensor.shape)
+        }
       case "double" =>
-        Tensor(jTensor.storage.map(x => ev.fromType(x.toDouble)), jTensor.shape)
+        if (null == jTensor.indices) {
+          Tensor(jTensor.storage.map(x => ev.fromType(x.toDouble)), jTensor.shape)
+        } else {
+          Tensor.sparse(jTensor.indices,
+            jTensor.storage.map(x => ev.fromType(x.toDouble)), jTensor.shape)
+        }
       case t: String =>
         throw new IllegalArgumentException(s"Not supported type: ${t}")
     }
