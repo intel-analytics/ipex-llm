@@ -31,7 +31,7 @@ def __prepare_spark_env():
         import pyspark
         if spark_home and not pyspark.__file__.startswith(spark_home):
             raise Exception(
-                """Find two unmatched spark sources. pyspark found in """
+                """Find two unmatched spark sources. pyspark is found in """
                 + pyspark.__file__ + ", while SPARK_HOME env is set to " + spark_home
                 + ". Please use one spark source only. For example, you can unset SPARK_HOME and use pyspark only.")
     else:
