@@ -434,6 +434,18 @@ def _test():
     if failure_count:
         exit(-1)
 
+class TransformationError(BaseException):
+    pass
+
+def ndarray_to_rdd(X, y):
+    if type(X) != np.ndarray or type(y) != np.ndarray:
+        raise TransformationError('Input arrays should be numpy ndarrays')
+    if X.shape[0] != y.shape[0]:
+        raise TransformationError('Input arrays should have the same lenght')
+    sc = get_spark_context()    
+    return sc.parallelize(X).zip(sc.parallelize(y)).map(
+            lambda x: Sample.from_ndarray(x[0], x[1]))
+
 
 if __name__ == "__main__":
     _test()
