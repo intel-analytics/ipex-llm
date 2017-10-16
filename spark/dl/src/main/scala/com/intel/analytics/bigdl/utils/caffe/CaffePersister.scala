@@ -77,7 +77,7 @@ class CaffePersister[T: ClassTag](val prototxtPath: String,
     val graph = toGraph()
     val top2Layers = new mutable.HashMap[String, String]()
     val layers = new mutable.HashMap[String, GeneratedMessage]()
-    val executions = graph.getExecutions
+    val executions = graph.getSortedForwardExecutions
     netparam.setName(module.getName)
     executions.foreach(execution => {
       val preModules = execution.prevNodes

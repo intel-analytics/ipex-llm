@@ -63,7 +63,7 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     assert(estimator.getLabelCol == "label")
     assert(estimator.getMaxEpoch == 100)
     assert(estimator.getBatchSize == 1)
-    assert(estimator.getLearningRate == 1.0)
+    assert(estimator.getLearningRate == 1e-3)
     assert(estimator.getLearningRateDecay == 0)
 
   }
@@ -73,6 +73,8 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val criterion = ClassNLLCriterion[Float]()
     val estimator = new DLEstimator[Float](model, criterion, Array(6), Array(1))
       .setBatchSize(nRecords)
+      .setOptimMethod(new LBFGS[Float]())
+      .setLearningRate(0.1)
       .setMaxEpoch(maxEpoch)
     val data = sc.parallelize(smallData)
     val df = sqlContext.createDataFrame(data).toDF("features", "label")
@@ -143,11 +145,12 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       .setMaxEpoch(1)
       .setBatchSize(nRecords)
 
-    val featureData = Tensor(10)
-    val labelData = Tensor(1).fill(1.0f)
-    val miniBatch = sc.parallelize(Seq(
-      MinibatchData[Float](featureData.storage().array(), labelData.storage().array())
-    ))
+    val featureData = Array.tabulate(100)(_ => Tensor(10))
+    val labelData = Array.tabulate(100)(_ => Tensor(1).fill(1.0f))
+    val miniBatch = sc.parallelize(
+      featureData.zip(labelData).map(v =>
+        MinibatchData(v._1.storage.array, v._2.storage.array))
+    )
     val trainingDF: DataFrame = sqlContext.createDataFrame(miniBatch).toDF("features", "label")
 
     val dlModel = estimator.fit(trainingDF)
@@ -221,6 +224,8 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
       val criterion = ClassNLLCriterion[Float]()
       val estimator = new DLEstimator[Float](model, criterion, Array(6), Array(1))
+        .setOptimMethod(new LBFGS[Float]())
+        .setLearningRate(0.1)
         .setBatchSize(nRecords)
         .setMaxEpoch(maxEpoch)
         .setFeaturesCol("scaled")

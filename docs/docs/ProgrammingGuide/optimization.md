@@ -230,6 +230,7 @@ log4j.appender.stdout.Target=System.out
 log4j.appender.stdout.layout=org.apache.log4j.PatternLayout
 log4j.appender.stdout.layout.ConversionPattern=%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n
 log4j.logger.com.intel.analytics.bigdl.optim=DEBUG
+
 ```
 2.Add an option to your spark-submit command
 

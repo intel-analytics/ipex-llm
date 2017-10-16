@@ -54,7 +54,11 @@ class Input[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends TensorModule[T
 }
 
 object Input {
-  def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): ModuleNode[T] = {
-    new Node(new Input().asInstanceOf[AbstractModule[Activity, Tensor[T], T]])
+  def apply[T: ClassTag](name : String = null)(implicit ev: TensorNumeric[T]): ModuleNode[T] = {
+    val module = new Input()
+    if (name != null) {
+      module.setName(name)
+    }
+    new Node(module.asInstanceOf[AbstractModule[Activity, Activity, T]])
   }
 }

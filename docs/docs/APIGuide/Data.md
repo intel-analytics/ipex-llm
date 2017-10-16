@@ -78,6 +78,60 @@ res: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 For more API, navigate to *API Guide/Full API docs* on side bar.
 
 ---
+## **SparseTensor**
+To describe an SparseTensor, we need indices, values, and shape:  
+indices means the indices of non-zero elements; values means the values of the non-zero elements;
+shape means the dense shape of this SparseTensor.
+
+For example, an 2D 3x4 DenseTensor:
+```
+1, 0, 0, 4
+0, 2, 0, 0
+0, 0, 3, 0
+```
+It's sparse representation should be 
+```
+indices(0) = Array(0, 0, 1, 2)
+indices(1) = Array(0, 3, 1, 2)
+values     = Array(1, 4, 2, 3)
+shape      = Array(3, 4)
+```
+This 2D SparseTensor representation is similar to [zero-based coordinate matrix storage format](https://software.intel.com/en-us/mkl-developer-reference-fortran-sparse-blas-coordinate-matrix-storage-format).
+
+**Scala example:**
+```
+scala> import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.Tensor
+
+scala> import com.intel.analytics.bigdl.numeric.NumericFloat
+import com.intel.analytics.bigdl.numeric.NumericFloat
+
+scala> val indices = Array(Array(0, 0, 1, 2), Array(0, 3, 1, 2))
+indices: Array[Array[Int]] = Array(Array(0, 0, 1, 2), Array(0, 3, 1, 2))
+
+scala> val values = Array(1, 4, 2, 3)
+values: Array[Int] = Array(1, 4, 2, 3)
+
+scala> val shape = Array(3, 4)
+shape: Array[Int] = Array(3, 4)
+
+scala> val sparseTensor = Tensor.sparse(indices, values, shape)
+sparseTensor: com.intel.analytics.bigdl.tensor.Tensor[Int] =
+(0, 0) : 1
+(0, 3) : 4
+(1, 1) : 2
+(2, 2) : 3
+[com.intel.analytics.bigdl.tensor.SparseTensor of size 3x4]
+
+scala> val denseTensor = Tensor.dense(sparseTensor)
+denseTensor: com.intel.analytics.bigdl.tensor.Tensor[Int] =
+1	0	0	4
+0	2	0	0
+0	0	3	0
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 3x4]
+```
+
+---
 ## **Table**
 
 Modeled after the [Table](https://github.com/torch/nn/blob/master/doc/table.md) class in [Torch](http://torch.ch/), the ```Table``` class (defined in package ```com.intel.analytics.bigdl.utils```) is widely used in BigDL (e.g., a ```Table``` of ```Tensor``` can be used as the input or output of neural networks). In essence, a ```Table``` can be considered as a key-value map, and there is also a syntax sugar to create a ```Table``` using ```T()``` in BigDL.
@@ -125,7 +179,7 @@ import numpy as np
 
 image = np.random.rand(3, 32, 32)
 label = np.array(1)
-Sample.from_ndarray(image, label)
+sample = Sample.from_ndarray(image, label)
 ```
 
 ---

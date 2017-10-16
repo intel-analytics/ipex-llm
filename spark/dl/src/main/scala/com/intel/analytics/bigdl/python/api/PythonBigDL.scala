@@ -21,7 +21,7 @@ import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, M
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{Identity => DIdentity, Sample => JSample, _}
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.nn.abstractnn._
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, _}
 import com.intel.analytics.bigdl.numeric._
 import com.intel.analytics.bigdl.optim.{Optimizer, _}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
@@ -36,27 +36,30 @@ import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn.tf.{Const, Fill, Shape, SplitAndSelect}
-import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowSaver}
+import com.intel.analytics.bigdl.utils.tf.TensorflowLoader.{buildBigDLModel, buildTFGraph, parse}
+import com.intel.analytics.bigdl.utils.tf.{BigDLSessionImpl, TensorflowDataFormat, TensorflowSaver}
+import org.apache.log4j._
+import org.apache.spark.SparkContext
+import org.tensorflow.framework.NodeDef
 
 import scala.collection.JavaConverters._
+import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 import scala.language.existentials
 import scala.reflect.ClassTag
+
 
 /**
  * [[com.intel.analytics.bigdl.dataset.Sample]] for python.
  * @param features features
  * @param label labels
- * @param featuresShape feature size
- * @param labelShape label size
  * @param bigdlType bigdl numeric type
  */
-case class Sample(features: JList[Any],
-                  label: JList[Any],
-                  featuresShape: JList[Int],
-                  labelShape: JList[Int],
+case class Sample(features: JList[JTensor],
+                  label: JTensor,
                   bigdlType: String)
 
-case class JTensor(storage: JList[Any], shape: JList[Int], bigdlType: String)
+case class JTensor(storage: Array[Float], shape: Array[Int], bigdlType: String)
 
 /**
  * [[ValidationResult]] for python
@@ -109,29 +112,36 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def toPySample(sample: JSample[T]): Sample = {
-    val featureList = sample.feature().contiguous().storage().toArray[T].toList.asJava
-    val labelList = sample.label().contiguous().storage().toArray[T].toList.asJava
     val cls = implicitly[ClassTag[T]].runtimeClass
-    Sample(featureList.asInstanceOf[JList[Any]],
-      labelList.asInstanceOf[JList[Any]],
-      sample.feature().size().toList.asJava,
-      sample.label().size().toList.asJava,
-      cls.getSimpleName)
+    val features = new JArrayList[JTensor]()
+    features.add(toJTensor(sample.feature()))
+    Sample(features, toJTensor(sample.label()), cls.getSimpleName)
   }
 
   def toTensor(jTensor: JTensor): Tensor[T] = {
-    if (jTensor == null) null else {
-      Tensor(jTensor.storage.asScala.map(_.asInstanceOf[T]).toArray,
-        jTensor.shape.asScala.toArray)
+    if (jTensor == null) return null
+
+    this.typeName match {
+      case "float" =>
+        Tensor(jTensor.storage.map(x => ev.fromType(x.toFloat)), jTensor.shape)
+      case "double" =>
+        Tensor(jTensor.storage.map(x => ev.fromType(x.toDouble)), jTensor.shape)
+      case t: String =>
+        throw new IllegalArgumentException(s"Not supported type: ${t}")
     }
   }
 
   def toJTensor(tensor: Tensor[T]): JTensor = {
     // clone here in case the the size of storage larger then the size of tensor.
     require(tensor != null, "tensor cannot be null")
-    val cloneTensor = tensor.clone()
-    JTensor(cloneTensor.storage().toList.map(_.asInstanceOf[Any]).asJava,
-      cloneTensor.size().toList.asJava, typeName)
+    if (tensor.nElement() == 0) {
+      JTensor(Array(), Array(0), typeName)
+    } else {
+      val cloneTensor = tensor.clone()
+      val result = JTensor(cloneTensor.storage().array().map(i => ev.toType[Float](i)),
+        cloneTensor.size(), typeName)
+      result
+    }
   }
 
   def testTensor(jTensor: JTensor): JTensor = {
@@ -139,34 +149,16 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     toJTensor(tensor)
   }
 
+
+  def testSample(sample: Sample): Sample = {
+    val jsample = toSample(sample)
+    toPySample(jsample)
+  }
+
   def toSample(record: Sample): JSample[T] = {
     require(record.bigdlType == this.typeName,
       s"record.bigdlType: ${record.bigdlType} == this.typeName: ${this.typeName}")
-    val sample = this.typeName match {
-      case "float" =>
-        val feature = Tensor[Float](Storage[Float](
-          record.features.asInstanceOf[JList[Double]].asScala.map(_.toFloat).toArray[Float]),
-          1,
-          record.featuresShape.asScala.toArray[Int])
-        val label = Tensor[Float](
-          Storage(record.label.asInstanceOf[JList[Double]].asScala.map(_.toFloat).toArray[Float]),
-          1,
-          record.labelShape.asScala.toArray[Int])
-        JSample[Float](feature, label)
-      case "double" =>
-        val feature = Tensor[Double](Storage[Double](
-          record.features.asInstanceOf[JList[Double]].asScala.toArray[Double]),
-          1,
-          record.featuresShape.asScala.toArray[Int])
-        val label = Tensor[Double](
-          Storage(record.label.asInstanceOf[JList[Double]].asScala.toArray[Double]),
-          1,
-          record.labelShape.asScala.toArray[Int])
-        JSample[Double](feature, label)
-      case t: String =>
-        throw new IllegalArgumentException(s"Not supported type: ${t}")
-    }
-    sample.asInstanceOf[JSample[T]]
+    JSample[T](record.features.asScala.toArray.map(toTensor(_)), toTensor(record.label))
   }
 
   private def batching(rdd: RDD[Sample], batchSize: Int)
@@ -192,6 +184,25 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       toTensor(initWeight), toTensor(initBias), toTensor(initGradWeight), toTensor(initGradBias))
   }
 
+  def createSparseLinear(inputSize: Int, outputSize: Int,
+                   withBias: Boolean,
+                   backwardStart: Int = -1,
+                   backwardLength: Int = -1,
+                   wRegularizer: Regularizer[T] = null,
+                   bRegularizer: Regularizer[T] = null,
+                   initWeight: JTensor = null,
+                   initBias: JTensor = null,
+                   initGradWeight: JTensor = null,
+                   initGradBias: JTensor = null): SparseLinear[T] = {
+    SparseLinear[T](inputSize, outputSize, withBias, backwardStart, backwardLength,
+      wRegularizer, bRegularizer, toTensor(initWeight), toTensor(initBias),
+      toTensor(initGradWeight), toTensor(initGradBias))
+  }
+
+  def createDenseToSparse(): DenseToSparse[T] = {
+    DenseToSparse[T]()
+  }
+
   def createReLU(ip: Boolean = false): ReLU[T] = {
     ReLU[T](ip)
   }
@@ -212,10 +223,19 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def createRnnCell(inputSize: Int,
                     hiddenSize: Int,
                     activation: TensorModule[T],
+                    isInputWithBias: Boolean = true,
+                    isHiddenWithBias: Boolean = true,
                     wRegularizer: Regularizer[T] = null,
                     uRegularizer: Regularizer[T] = null,
                     bRegularizer: Regularizer[T] = null): RnnCell[T] = {
-    RnnCell[T](inputSize, hiddenSize, activation, wRegularizer, uRegularizer, bRegularizer)
+    RnnCell[T](inputSize,
+      hiddenSize,
+      activation,
+      isInputWithBias,
+      isHiddenWithBias,
+      wRegularizer,
+      uRegularizer,
+      bRegularizer)
   }
 
   def createTimeDistributedCriterion(critrn: TensorCriterion[T],
@@ -257,6 +277,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Recurrent[T]()
   }
 
+  def createRecurrentDecoder(outputLength: Int): RecurrentDecoder[T] = {
+    RecurrentDecoder[T](outputLength)
+  }
+
   def createConvLSTMPeephole(
     inputSize: Int,
     outputSize: Int,
@@ -295,20 +319,31 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     LogSoftMax[T]()
   }
 
+  def createTemporalMaxPooling(
+    kW: Int,
+    dW: Int)
+  : TemporalMaxPooling[T] = {
+    TemporalMaxPooling[T](
+      kW,
+      dW)
+  }
+
   def createSpatialMaxPooling(kW: Int,
                               kH: Int,
                               dW: Int,
                               dH: Int,
                               padW: Int = 0,
                               padH: Int = 0,
-                              ceilMode: Boolean = false)
+                              ceilMode: Boolean = false,
+                              format: String = "NCHW")
   : SpatialMaxPooling[T] = {
     val maxpooling = SpatialMaxPooling[T](kW,
       kH,
       dW,
       dH,
       padW,
-      padH)
+      padH,
+      format = DataFormat(format))
     if (ceilMode) maxpooling.ceil()
     else maxpooling
   }
@@ -376,10 +411,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                                   globalPooling: Boolean = false,
                                   ceilMode: Boolean = false,
                                   countIncludePad: Boolean = true,
-                                  divide: Boolean = true)
+                                  divide: Boolean = true,
+                                  format: String = "NCHW")
   : SpatialAveragePooling[T] = {
     SpatialAveragePooling[T](kW, kH, dW, dH, padW, padH, globalPooling,
-      ceilMode, countIncludePad, divide)
+      ceilMode, countIncludePad, divide, format = DataFormat(format))
   }
 
   def createSpatialBatchNormalization(nOutput: Int,
@@ -620,6 +656,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       nInputDims)
   }
 
+  def createSparseJoinTable(dimension: Int): SparseJoinTable[T] = {
+    SparseJoinTable[T](dimension)
+  }
+
   def createL1Cost()
   : L1Cost[T] = {
     L1Cost[T]()
@@ -697,7 +737,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def createMean(dimension: Int = 1,
                  nInputDims: Int = -1,
                  squeeze: Boolean = true)
-  : Mean[T] = {
+  : Mean[T, T] = {
     Mean[T](dimension,
       nInputDims,
       squeeze)
@@ -1052,6 +1092,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       padBottom)
   }
 
+  def createBifurcateSplitTable(dimension: Int)
+  : BifurcateSplitTable[T] = {
+    BifurcateSplitTable[T](dimension)
+  }
+
   def createSplitTable(dimension: Int,
                        nInputDims: Int = -1)
   : SplitTable[T] = {
@@ -1081,7 +1126,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                 sizeAverage: Boolean = false,
                 squeeze: Boolean = true
                )
-  : Sum[T] = {
+  : Sum[T, T] = {
     Sum[T](dimension,
       nInputDims,
       sizeAverage,
@@ -1130,6 +1175,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def createIdentity()
   : Identity[T] = {
     Identity[T]()
+  }
+
+  def createGaussianSampler(): GaussianSampler[T] = {
+    GaussianSampler[T]()
   }
 
   def createMultiLabelSoftMarginCriterion(weights: JTensor = null,
@@ -1369,6 +1418,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     ParallelCriterion[T](repeatTarget)
   }
 
+  def createKLDCriterion(): KLDCriterion[T] = {
+    KLDCriterion[T]()
+  }
+
+  def createGaussianCriterion(): GaussianCriterion[T] = {
+    GaussianCriterion[T]()
+  }
+
   def createSmoothL1Criterion(sizeAverage: Boolean = true)
   : SmoothL1Criterion[T] = {
     SmoothL1Criterion[T](sizeAverage)
@@ -1407,7 +1464,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     RandomGenerator.RNG.setSeed(seed)
   }
 
-  def modelTest(model: AbstractModule[Activity, Activity, T],
+  def modelEvaluate(model: AbstractModule[Activity, Activity, T],
                 valRDD: JavaRDD[Sample],
                 batchSize: Int,
                 valMethods: JList[ValidationMethod[T]])
@@ -1423,6 +1480,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def loadBigDL(path: String): AbstractModule[Activity, Activity, T] = {
     Module.load[T](path)
+  }
+
+  def loadBigDLModule(path: String): AbstractModule[Activity, Activity, T] = {
+    Module.loadModule[T](path)
   }
 
   def loadTorch(path: String): AbstractModule[Activity, Activity, T] = {
@@ -1487,6 +1548,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     new JavaRDD[JTensor](listRDD)
   }
 
+  def evaluate(module: AbstractModule[Activity, Activity, T]):
+  AbstractModule[Activity, Activity, T] = {
+    module.evaluate()
+  }
+
   def modelPredictClass(model: AbstractModule[Activity, Activity, T],
                       dataRdd: JavaRDD[Sample]): JavaRDD[Int] = {
     val tensorRDD = model.predictClass(dataRdd.rdd.map(toSample(_)))
@@ -1516,6 +1582,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def modelSave(module: AbstractModule[Activity, Activity, T],
                 path: String, overWrite: Boolean): Unit = {
     module.save(path, overWrite)
+  }
+
+  def saveBigDLModule(module: AbstractModule[Activity, Activity, T],
+                path: String, overWrite: Boolean): Unit = {
+    module.saveModule(path, overWrite)
   }
 
   def saveCaffe(module: AbstractModule[Activity, Activity, T],
@@ -1676,6 +1747,32 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     method.save(path, overWrite)
   }
 
+  /**
+   * Save tensor dictionary to a Java hashmap object file
+   */
+  def saveTensorDictionary(tensors: JHashMap[String, JTensor], path: String): Unit = {
+    File.save(tensors, path, true)
+  }
+
+  def trainTF(
+               modelPath: String,
+               output: String,
+               samples: JavaRDD[Sample],
+               optMethod: OptimMethod[T],
+               criterion: Criterion[T],
+               batchSize: Int,
+               endWhen: Trigger): AbstractModule[Activity, Activity, T] = {
+    val nodeList = parse(modelPath)
+
+    val context =
+      new mutable.HashMap[String, (Tensor[T], Tensor[T], Option[Seq[(Int, Int)]])]()
+    val session = new BigDLSessionImpl[T](nodeList.asScala, samples.sparkContext, context)
+    val dataset = batching(samples, batchSize)
+
+    val model = session.train(Seq(output), dataset,
+      optMethod, criterion, endWhen)
+    model
+  }
 
   def createOptimizer(model: AbstractModule[Activity, Activity, T],
                       trainingRdd: JavaRDD[Sample],
@@ -1846,15 +1943,56 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     layer.setInitMethod(weightInitMethod, biasInitMethod)
   }
 
-  def getState(rec: Recurrent[T]): JList[JTensor] = {
-    val res = rec.getState()
-      if (res.isTensor) return List(toJTensor(res.toTensor)).asJava
-    else return List(toJTensor(res.toTable.apply[Tensor[T]](1)),
-        toJTensor(res.toTable.apply[Tensor[T]](2))).asJava
+  def getHiddenStates(rec: Recurrent[T]): JList[JTensor] = {
+    val states = rec.getHiddenState()
+    activityToJTensors(states)
   }
 
-  def setState(rec: Recurrent[T], state: JList[JTensor], isTable: Boolean): Unit = {
-    val stateActivity = jTensorsToActivity(state, isTable)
-    rec.setState(stateActivity)
+  def setHiddenStates(rec: Recurrent[T], hiddenStates: JList[JTensor], isTable: Boolean): Unit = {
+      rec.setHiddenState(jTensorsToActivity(hiddenStates, isTable))
+  }
+
+  def freeze(model: AbstractModule[Activity, Activity, T], freezeLayers: JList[String])
+  : AbstractModule[Activity, Activity, T] = {
+    if (null == freezeLayers) model.freeze() else model.freeze(freezeLayers.asScala: _*)
+  }
+
+  def unFreeze(model: AbstractModule[Activity, Activity, T],
+    names: JList[String]): AbstractModule[Activity, Activity, T] = {
+    if (names == null) {
+      model.unFreeze()
+    } else {
+      model.unFreeze(names.asScala: _*)
+    }
+  }
+
+  def setStopGradient(model: Graph[T], layers: JList[String]): Graph[T] = {
+    model.stopGradient(layers.asScala.toArray)
+  }
+
+  def saveGraphTopology(model: Graph[T], logPath: String): Graph[T] = {
+    model.saveGraphTopology(logPath)
+  }
+
+  def createResizeBilinear(
+    outputHeight: Int,
+    outputWidth: Int,
+    alignCorner: Boolean
+  ): ResizeBilinear[T] = {
+    ResizeBilinear[T](outputHeight,
+      outputWidth,
+      alignCorner)
+  }
+
+  def redirectSparkLogs(logPath: String): Unit = {
+    LoggerFilter.redirectSparkInfoLogs(logPath)
+  }
+
+  def showBigDlInfoLogs(): Unit = {
+    Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+  }
+
+  def quantize(module: AbstractModule[Activity, Activity, T]): Module[T] = {
+    module.quantize()
   }
 }

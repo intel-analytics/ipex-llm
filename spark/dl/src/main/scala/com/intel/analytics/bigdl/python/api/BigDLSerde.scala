@@ -19,9 +19,11 @@
 package org.apache.spark.bigdl.api.python
 
 import java.io.OutputStream
+import java.nio.charset.StandardCharsets
+import java.nio.{ByteBuffer, ByteOrder}
 import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, Map => JMap}
 
-import com.intel.analytics.bigdl.python.api.{JTensor, Sample, EvaluatedResult}
+import com.intel.analytics.bigdl.python.api.{EvaluatedResult, JTensor, Sample}
 import net.razorvine.pickle._
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.api.python.SerDeUtil
@@ -98,7 +100,6 @@ object BigDLSerDe extends BigDLSerDeBase with Serializable {
   val PYSPARK_PACKAGE = "bigdl.util.common"
   val LATIN1 = "ISO-8859-1"
 
-
   /**
    * Base class used for pickle
    */
@@ -145,12 +146,57 @@ object BigDLSerDe extends BigDLSerDeBase with Serializable {
       out.write(code)
     }
 
+    protected def saveBytes(out: OutputStream, pickler: Pickler, bytes: Array[Byte]): Unit = {
+      out.write(Opcodes.BINSTRING)
+      out.write(PickleUtils.integer_to_bytes(bytes.length))
+      out.write(bytes)
+    }
+
     protected def getBytes(obj: Object): Array[Byte] = {
       if (obj.getClass.isArray) {
         obj.asInstanceOf[Array[Byte]]
       } else {
-        obj.asInstanceOf[String].getBytes(LATIN1)
+        // This must be ISO 8859-1 / Latin 1, not UTF-8, to interoperate correctly
+        obj.asInstanceOf[String].getBytes(StandardCharsets.ISO_8859_1)
       }
+    }
+
+    protected def objToInt32Array(obj: Object): Array[Int] = {
+      val bytes = getBytes(obj)
+      val bb = ByteBuffer.wrap(bytes, 0, bytes.length)
+      bb.order(ByteOrder.nativeOrder())
+      val db = bb.asIntBuffer()
+      val ans = new Array[Int](bytes.length / 4)
+      db.get(ans)
+      ans
+    }
+
+    protected def objToFloatArray(obj: Object): Array[Float] = {
+      val bytes = getBytes(obj)
+      val bb = ByteBuffer.wrap(bytes, 0, bytes.length)
+      bb.order(ByteOrder.nativeOrder())
+      val db = bb.asFloatBuffer()
+      val ans = new Array[Float](bytes.length / 4)
+      db.get(ans)
+      ans
+    }
+
+    protected def floatArrayToBytes(arr: Array[Float]): Array[Byte] = {
+      val bytes = new Array[Byte](4 * arr.size)
+      val bb = ByteBuffer.wrap(bytes)
+      bb.order(ByteOrder.nativeOrder())
+      val db = bb.asFloatBuffer()
+      db.put(arr)
+      bytes
+    }
+
+    protected def int32ArrayToBytes(arr: Array[Int]): Array[Byte] = {
+      val bytes = new Array[Byte](4 * arr.size)
+      val bb = ByteBuffer.wrap(bytes)
+      bb.order(ByteOrder.nativeOrder())
+      val db = bb.asIntBuffer()
+      db.put(arr)
+      bytes
     }
 
     private[python] def saveState(obj: Object, out: OutputStream, pickler: Pickler)
@@ -163,18 +209,17 @@ object BigDLSerDe extends BigDLSerDeBase with Serializable {
       saveObjects(out,
         pickler,
         record.features,
-        record.label, record.featuresShape, record.labelShape)
+        record.label,
+        record.bigdlType)
     }
 
     def construct(args: Array[Object]): Object = {
-      if (args.length != 5) {
-        throw new PickleException("should be 5, not : " + args.length)
+      if (args.length != 3) {
+        throw new PickleException("should be 3, not : " + args.length)
       }
-      new Sample(args(0).asInstanceOf[JArrayList[Any]],
-        args(1).asInstanceOf[JArrayList[Any]],
-        args(2).asInstanceOf[JArrayList[Int]],
-        args(3).asInstanceOf[JArrayList[Int]],
-        args(4).asInstanceOf[String])
+      new Sample(args(0).asInstanceOf[JList[JTensor]],
+        args(1).asInstanceOf[JTensor],
+        args(2).asInstanceOf[String])
     }
   }
 
@@ -201,30 +246,23 @@ object BigDLSerDe extends BigDLSerDeBase with Serializable {
   private[python] class JTensorPickler extends BigDLBasePickler[JTensor] {
 
     def saveState(obj: Object, out: OutputStream, pickler: Pickler): Unit = {
-      val testResult = obj.asInstanceOf[JTensor]
-      saveObjects(out,
-        pickler,
-        testResult.storage,
-        testResult.shape, testResult.bigdlType)
+      val jTensor = obj.asInstanceOf[JTensor]
+      saveBytes(out, pickler, floatArrayToBytes(jTensor.storage))
+      saveBytes(out, pickler, int32ArrayToBytes(jTensor.shape))
+      pickler.save(jTensor.bigdlType)
+      out.write(Opcodes.TUPLE3)
     }
+
 
     def construct(args: Array[Object]): Object = {
       if (args.length != 3) {
         throw new PickleException("should be 3, not : " + args.length)
       }
       val bigdl_type = args(2).asInstanceOf[String]
-      // Only allow float and double for now same as Tensor
-      val rawStorage = args(0).asInstanceOf[JArrayList[Double]].asScala
-      val storage = bigdl_type match {
-        case "float" =>
-          rawStorage.map(_.toFloat).toList.asJava
-        case "double" =>
-          rawStorage.toList.asJava
-        case _ => throw new IllegalArgumentException("Only support float and double for now")
-      }
-      new JTensor(storage.asInstanceOf[JList[Any]],
-        args(1).asInstanceOf[JArrayList[Int]],
-        bigdl_type)
+      val storage = objToFloatArray(args(0))
+      val shape = objToInt32Array(args(1))
+      val result = new JTensor(storage, shape, bigdl_type)
+      result
     }
   }
 

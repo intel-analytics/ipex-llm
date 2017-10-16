@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.python.api
 
 import java.util
-import java.util.{List => JList, Map => JMap}
+import java.util.{ArrayList => JArrayList, List => JList, Map => JMap}
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn._
@@ -138,6 +138,15 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     require(output == expectedResult)
   }
 
+  "to jtensor with empty tensor" should "be test" in {
+    val pythonBigDL = PythonBigDL.ofFloat()
+    val tensor: Tensor[Float] = Tensor[Float]()
+    val jTensor = pythonBigDL.toJTensor(tensor)
+    println(jTensor.shape)
+    val tensorBack = pythonBigDL.toTensor(jTensor)
+    require(tensorBack == tensor)
+  }
+
   "Double prototype" should "be test" in {
     TestUtils.cancelOnWindows()
 
@@ -150,13 +159,12 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val labelShape = util.Arrays.asList(1)
 
     val data = sc.parallelize(0 to 100).map {i =>
-      Sample(
-        Range(0, 100).toList.map(_ => Random.nextDouble()).asJava.asInstanceOf[JList[Any]],
-        util.Arrays.asList(i % 2 + 1.0d),
-        featuresShape,
-        labelShape,
-        "double"
-      )
+      val label = JTensor(Array(i % 2 + 1.0f), Array(1), "double")
+      val feature = JTensor(Range(0, 100).map(_ => Random.nextFloat()).toArray,
+        Array(100), "double")
+      val features = new JArrayList[JTensor]()
+      features.add(feature)
+      Sample(features, label, "double")
     }
 
     BigDLSerDe.javaToPython(data.toJavaRDD().asInstanceOf[JavaRDD[Any]])
@@ -224,7 +232,7 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     // TODO: verify the parameters result
     val parameters = pp.modelGetParameters(trainedModel)
 //    println(parameters)
-    val testResult = pp.modelTest(trainedModel,
+    val testResult = pp.modelEvaluate(trainedModel,
       data.toJavaRDD(),
       batchSize = 32,
       valMethods = util.Arrays.asList(new Top1Accuracy()))

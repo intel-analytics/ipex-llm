@@ -24,6 +24,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.File
 import com.intel.analytics.bigdl.utils.caffe.CaffeLoader
+import com.intel.analytics.bigdl.utils.serializer.ModuleLoader
 import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowLoader}
 
 import scala.reflect.ClassTag
@@ -38,8 +39,23 @@ object Module {
    * @tparam T numeric type
    * @return model loaded from path
    */
+  @deprecated("Java based serialization not recommended any more, please use loadModule instead")
   def load[T: ClassTag](path : String) : AbstractModule[Activity, Activity, T] = {
     File.load[AbstractModule[Activity, Activity, T]](path)
+  }
+
+  /**
+   * Load model from path.
+   *
+   * @param path path to save module, local file system, HDFS and Amazon S3 is supported.
+   *             HDFS path should be like "hdfs://[host]:[port]/xxx"
+   *             Amazon S3 path should be like "s3a://bucket/xxx"
+   * @tparam T numeric type
+   * @return model loaded from path
+   */
+  def loadModule[T: ClassTag](path : String)(implicit ev: TensorNumeric[T])
+  : AbstractModule[Activity, Activity, T] = {
+    ModuleLoader.loadFromFile(path)
   }
 
   def loadTorch[T: ClassTag](path : String) : AbstractModule[Activity, Activity, T] = {
@@ -86,7 +102,7 @@ object Module {
     var i = 0
     var length = 0
     while (i < parameters.length) {
-      require(parameters(i).isContiguous())
+      require(parameters(i).isContiguous(), "parameters should be contiguous")
       length += parameters(i).nElement()
       i += 1
     }
@@ -109,7 +125,10 @@ object Module {
 
   def isCompact[@specialized(Float, Double) T: ClassTag](paramters: Array[Tensor[T]])(
     implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(paramters.length > 0)
+    require(paramters.length > 0,
+      "The length of paramters should >= 0" +
+      "parameter length" +
+        s" ${paramters.length}")
     var i = 1
     val storage = paramters(0).storage()
     var length = paramters(0).nElement()

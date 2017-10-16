@@ -30,7 +30,7 @@ val model = Module.loadCaffe(bigdlModel, caffe.prototxt, caffe.model, matchAll =
 
 * Python Example
 ```python
-model = Model.load_caffe_model(bigdlModel, caffe.prototxt, caffe.model, match_all=True)
+model = Model.load_caffe(bigdlModel, caffe.prototxt, caffe.model, match_all=True)
 ```
 
 Note that if ```matchAll/match_all = false```, then only layers with same name will be loaded, the rest will use initialized parameters.

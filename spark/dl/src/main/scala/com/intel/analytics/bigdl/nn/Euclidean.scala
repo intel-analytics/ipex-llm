@@ -60,7 +60,8 @@ class Euclidean[T: ClassTag](val inputSize: Int, val outputSize: Int,
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
 
     require(input.dim() == 1 || input.dim() == 2,
-      "Euclidean: " + ErrorInfo.constrainInputAsVectorOrBatch)
+      "Euclidean: " + ErrorInfo.constrainInputAsVectorOrBatch +
+      s"input dim ${input.dim()}")
 
     if (input.dim() == 1) {
       if (input.isContiguous()) {
@@ -99,7 +100,8 @@ class Euclidean[T: ClassTag](val inputSize: Int, val outputSize: Int,
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     require(input.dim() == 1 || input.dim() == 2,
-      "Euclidean: " + ErrorInfo.constrainInputAsVectorOrBatch)
+      "Euclidean: " + ErrorInfo.constrainInputAsVectorOrBatch +
+    s"input dim ${input.dim()}")
 
     if (!fastBackward) {
       updateOutput(input)

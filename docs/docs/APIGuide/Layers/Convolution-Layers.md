@@ -13,14 +13,16 @@ SpatialConvolution is a module that applies a 2D convolution over an input image
 
 The input tensor in `forward(input)` is expected to be
 either a 4D tensor (`batch x nInputPlane x height x width`) or a 3D tensor (` nInputPlane x height x width`). The convolution is performed on the last two dimensions.
+output of `forward(input)` is also expected to be a 4D tensor (`batch x outputPlane x height x width`)
+or a 3D tensor (`outputPlane x height x width`)..
 
 As for padding, when padW and padH are both -1, we use a padding algorithm similar to the "SAME" padding of tensorflow. That is
 ```scala
  outHeight = Math.ceil(inHeight.toFloat/strideH.toFloat)
  outWidth = Math.ceil(inWidth.toFloat/strideW.toFloat)
 
- padAlongHeight = (outHeight - 1) * strideH + kernelH - inHeight
- padAlongWidth = (outWidth - 1) * strideW + kernelW - inWidth
+ padAlongHeight = Math.max(0, (outHeight - 1) * strideH + kernelH - inHeight)
+ padAlongWidth = Math.max(0, (outWidth - 1) * strideW + kernelW - inWidth)
 
  padTop = padAlongHeight / 2
  padLeft = padAlongWidth / 2
@@ -194,7 +196,10 @@ module = VolumetricConvolution(n_input_plane, n_output_plane, k_t, k_w, k_h,
 ```
 
 Applies a 3D convolution over an input image composed of several input planes. The input tensor
-in forward(input) is expected to be a 4D tensor (nInputPlane x time x height x width).
+in forward(input) is expected to be a 5D tensor (`batch x nInputPlane x depth(time) x height x width`) or
+a 4D tensor (`nInputPlane x depth x height x width`).
+Output of forward(input) is also expected to be a 5D tensor (`batch x depth(time) x outputPlane x height x width`) or
+a 4D tensor (`outputPlane x depth x height x width`).
 
 * `nInputPlane` The number of expected input planes in the image given into forward()
 * `nOutputPlane` The number of output planes the convolution layer will produce.
@@ -317,7 +322,10 @@ layer = SpatialDilatedConvolution(
 
 Apply a 2D dilated convolution over an input image.
 
-The input tensor is expected to be a 3D or 4D(with batch) tensor.
+The input tensor in `forward(input)` is expected to be
+either a 4D tensor (`batch x nInputPlane x height x width`) or a 3D tensor (` nInputPlane x height x width`).
+output of `forward(input)` is also expected to be a 4D tensor (`batch x outputPlane x height x width`)
+or a 3D tensor (`outputPlane x height x width`).
 
 For a normal SpatialConvolution, the kernel will multiply with input
 image element-by-element contiguous. In dilated convolution, it’s possible
@@ -437,8 +445,10 @@ layer = SpatialShareConvolution(nInputPlane, nOutputPlane, kW, kH, dW, dH, padW,
 ```
 
  Applies a 2D convolution over an input image composed of several input planes.
- The input tensor in forward(input) is expected to be
- a 3D tensor (nInputPlane x height x width).
+ The input tensor in `forward(input)` is expected to be
+ either a 4D tensor (`batch x nInputPlane x height x width`) or a 3D tensor (` nInputPlane x height x width`).
+ output of `forward(input)` is also expected to be a 4D tensor (`batch x outputPlane x height x width`)
+ or a 3D tensor (`outputPlane x height x width`).
 
  This layer has been optimized to save memory. If using this layer to construct multiple convolution
  layers, please add sharing script for the fInput and fGradInput. Please refer to the ResNet example.
@@ -554,7 +564,10 @@ m = SpatialFullConvolution(n_input_plane,n_output_plane,kw,kh,dw=1,dh=1,pad_w=0,
 SpatialFullConvolution is a module that applies a 2D full convolution over an input image. 
 
 The input tensor in `forward(input)` is expected to be
-either a 4D tensor (`batch x nInputPlane x height x width`) or a 3D tensor (`nInputPlane x height x width`). The convolution is performed on the last two dimensions. `adjW` and `adjH` are used to adjust the size of the output image. The size of output tensor of `forward` will be :
+either a 4D tensor (`batch x nInputPlane x height x width`) or a 3D tensor (` nInputPlane x height x width`).
+output of `forward(input)` is also expected to be a 4D tensor (`batch x outputPlane x height x width`)
+or a 3D tensor (`outputPlane x height x width`).
+The convolution is performed on the last two dimensions. `adjW` and `adjH` are used to adjust the size of the output image. The size of output tensor of `forward` will be :
 ```
   output width  = (width  - 1) * dW - 2*padW + kW + adjW
   output height = (height - 1) * dH - 2*padH + kH + adjH
@@ -925,10 +938,13 @@ module = TemporalConvolution(
   )
 ```
 
-Applies a 1D convolution over an input sequence composed of nInputFrame frames.
-The input tensor in `forward(input)` is expected to be a 2D tensor
-(`nInputFrame` x `inputFrameSize`) or a 3D tensor
-(`nBatchFrame` x `nInputFrame` x `inputFrameSize`).
+ Applies a 1D convolution over an input sequence composed of nInputFrame frames.
+ The input tensor in `forward(input)` is expected to be a 3D tensor
+ (`nBatchFrame` x `nInputFrame` x `inputFrameSize`) or a 2D tensor
+ (`nInputFrame` x `inputFrameSize`).
+ Output of `forward(input)` is expected to be a 3D tensor
+ (`nBatchFrame` x `nOutputFrame` x `outputFrameSize`) or a 2D tensor
+ (`nOutputFrame` x `outputFrameSize`).
 
  * `inputFrameSize` The input frame size expected in sequences given into `forward()`.
  * `outputFrameSize` The output frame size the convolution layer will produce.
@@ -1018,6 +1034,97 @@ gradInput = layer.backward(input, gradOutput)
 ```
 
 ---
+## TemporalMaxPooling
+
+**scala:**
+```scala
+val m = TemporalMaxPooling(k_w, d_w = k_w)
+```
+
+```python
+m = TemporalMaxPooling(k_w, d_w = k_w)
+```
+
+Applies 1D max-pooling operation in `k_w` regions by step size `d_w` steps.
+Input sequence composed of nInputFrame frames.
+The input tensor in forward(input) is expected to be a 2D tensor
+(nInputFrame x inputFrameSize) or a 3D tensor (nBatchFrame x nInputFrame x inputFrameSize).
+
+If the input sequence is a 2D tensor of dimension nInputFrame x inputFrameSize,
+the output sequence will be nOutputFrame x inputFrameSize where
+
+```
+nOutputFrame = (nInputFrame - k_w) / d_w + 1
+```
+
+  * k_w: kernel width
+  * d_w: step size in width
+
+```scala
+scala>
+import com.intel.analytics.bigdl.numeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.Tensor
+
+val module = TemporalMaxPooling(4)
+val input = Tensor(1, 8, 5).rand()
+val output = module.forward(input)
+val gradOutput = Tensor(1, 2, 5).rand()
+val gradInput = module.backward(input, gradOutput)
+
+scala>
+println(output)
+(1,.,.) =
+0.6248109817970544	0.7783127573784441	0.8484677821397781	0.6721713887527585	0.9674506767187268	
+0.9587726043537259	0.8359494411852211	0.6541860734578222	0.7671433456707746	0.8246882800012827	
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x2x5]
+
+scala>
+println(gradInput)
+(1,.,.) =
+0.0	0.0	0.0	0.0	0.012729122070595622	
+0.0	0.1717955127824098	0.00636984477750957	0.0	0.0	
+0.0	0.0	0.0	0.24560829368419945	0.0	
+0.8350501179229468	0.0	0.0	0.0	0.0	
+0.0	0.9017464134376496	0.662078354973346	0.4239895506761968	0.0	
+0.09446275723166764	0.0	0.0	0.0	0.974747731583193	
+0.0	0.0	0.0	0.0	0.0	
+0.0	0.0	0.0	0.0	0.0	
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x8x5]
+```
+
+```python
+from bigdl.nn.layer import *
+import numpy as np
+
+module = TemporalMaxPooling(4)
+input = np.random.rand(1, 8, 5)
+output = module.forward(input)
+grad_output = np.random.rand(1, 2, 5)
+grad_input = module.backward(input, gradOutput)
+
+print "output is :",output
+print "gradient input m is :",grad_input
+```
+
+```
+creating: createTemporalMaxPooling
+output is : [[[0.6248109817970544	0.7783127573784441	0.8484677821397781	0.6721713887527585	0.9674506767187268]	
+[0.9587726043537259	0.8359494411852211	0.6541860734578222	0.7671433456707746	0.8246882800012827]]]	
+gradient input m is : [[[0.0	0.0	0.0	0.0	0.012729122070595622]	
+[0.0	0.1717955127824098	0.00636984477750957	0.0	0.0]	
+[0.0	0.0	0.0	0.24560829368419945	0.0	]
+[0.8350501179229468	0.0	0.0	0.0	0.0	]
+[0.0	0.9017464134376496	0.662078354973346	0.4239895506761968	0.0]	
+[0.09446275723166764	0.0	0.0	0.0	0.974747731583193]	
+[0.0	0.0	0.0	0.0	0.0]	
+[0.0	0.0	0.0	0.0	0.0]]]	
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x8x5]
+```
+---
 ## VolumetricFullConvolution ##
 
 **Scala:**
@@ -1049,7 +1156,12 @@ and the size of sizeTensor is used to set the size of the output (will ignore th
 adjH values used to construct the module). This module can be used without a bias by setting
 parameter noBias = true while constructing the module.
 
-If input is a 4D tensor nInputPlane x depth x height x width,
+Applies a 3D convolution over an input image composed of several input planes. The input tensor
+in forward(input) is expected to be a 5D tensor (`batch x nInputPlane x depth(time) x height x width`) or
+a 4D tensor (`nInputPlane x depth x height x width`).
+Output of forward(input) is also expected to be a 5D tensor (`batch x depth(time) x outputPlane x height x width`) or
+a 4D tensor (`outputPlane x depth x height x width`).
+
 ```
 odepth  = (depth  - 1) * dT - 2*padT + kT + adjT
 owidth  = (width  - 1) * dW - 2*padW + kW + adjW

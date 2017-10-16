@@ -30,7 +30,7 @@ class ValidationSpec extends FlatSpec with Matchers {
         T(0.0, 1.0, 0.0, 0.0)))
 
     val target = Tensor[Double](
-      T(3.0))
+      T(T(3.0)))
 
     val validation = new TreeNNAccuracy[Double]()
     val result = validation(output, target)

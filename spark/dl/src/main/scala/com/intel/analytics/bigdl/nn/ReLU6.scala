@@ -39,6 +39,13 @@ class ReLU6[T: ClassTag](inplace: Boolean = false)
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     super.updateGradInput(input, gradOutput)
   }
+
+  override def clearState(): this.type = {
+    if (!inplace) {
+      super.clearState()
+    }
+    this
+  }
 }
 
 object ReLU6 {

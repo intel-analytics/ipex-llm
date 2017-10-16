@@ -34,12 +34,13 @@ import scala.reflect.ClassTag
 class ConcatTable[T : ClassTag]
   (implicit ev: TensorNumeric[T]) extends Container[Activity, Table, T] {
   override def updateOutput(input: Activity): Table = {
+    require(modules.length > 0, "empty modules of concat table")
     if (gradInput == null) {
       gradInput = allocateAs(input)
     }
     var i = 0
     while (i < modules.length) {
-      val currentOutput = modules(i).updateOutput(input)
+      val currentOutput = modules(i).forward(input)
       output.toTable(i + 1) = currentOutput
       i += 1
     }
@@ -55,7 +56,9 @@ class ConcatTable[T : ClassTag]
   private def addTable(out: Activity, in: Activity) : Unit = {
     if (in.isInstanceOf[Tensor[T]] && out.isInstanceOf[Tensor[T]]) {
       require(in.toTensor[T].nElement() == out.toTensor[T].nElement(),
-        "gradInput should have the same size")
+        "gradInput should have the same size" +
+          s"The sizes are ${in.toTensor[T].nElement()} " +
+          s"and ${out.toTensor[T].nElement()}")
       out.toTensor[T].add(in.toTensor[T])
     } else {
       var i = 1
@@ -106,6 +109,7 @@ class ConcatTable[T : ClassTag]
   }
 
   override def updateGradInput(input: Activity, gradOutput: Table): Activity = {
+    require(modules.length > 0, "empty modules of concat table")
     val isInputTable = input.isInstanceOf[Table]
     val wasGradInputTable = gradInput.isInstanceOf[Table]
 
@@ -152,6 +156,7 @@ class ConcatTable[T : ClassTag]
   }
 
   override def backward(input: Activity, gradOutput: Table): Activity = {
+    require(modules.length > 0, "empty modules of concat table")
     val isInputTable = input.isInstanceOf[Table]
     val wasGradInputTable = gradInput.isInstanceOf[Table]
 

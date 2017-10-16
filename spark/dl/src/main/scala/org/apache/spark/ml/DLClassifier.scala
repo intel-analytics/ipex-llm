@@ -18,7 +18,8 @@ package org.apache.spark.ml
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.{Criterion, Module}
-import org.apache.spark.ml.util.SchemaUtils
+import org.apache.spark.ml.param.ParamMap
+import org.apache.spark.ml.util.{Identifiable, SchemaUtils}
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.types._
 
@@ -37,7 +38,7 @@ class DLClassifier[@specialized(Float, Double) T: ClassTag](
     override val model: Module[T],
     override val criterion : Criterion[T],
     override val featureSize : Array[Int],
-    override val uid: String = "DLClassifier"
+    override val uid: String = Identifiable.randomUID("dlClassifier")
   )(implicit ev: TensorNumeric[T])
   extends DLEstimator[T](model, criterion, featureSize, Array(1)) {
 
@@ -50,6 +51,10 @@ class DLClassifier[@specialized(Float, Double) T: ClassTag](
   override def transformSchema(schema : StructType): StructType = {
     validateSchema(schema)
     SchemaUtils.appendColumn(schema, $(predictionCol), DoubleType)
+  }
+
+  override def copy(extra: ParamMap): DLClassifier[T] = {
+    copyValues(new DLClassifier(model, criterion, featureSize), extra)
   }
 }
 

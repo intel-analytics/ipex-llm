@@ -34,6 +34,18 @@ import scala.reflect.ClassTag
  * @tparam T should be Double or Float
  */
 trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
+
+  /**
+   * @return whether this tensor is an empty tensor. Note that nDimension == 0 is not
+   *         sufficient to determine a tensor is empty, because a scalar tensor's nDimension
+   *         is also 0.
+   */
+  def isEmpty: Boolean
+
+  /**
+   * @return whether this tensor is a scalar
+   */
+  def isScalar: Boolean
   /**
    * Dimension number of the tensor. For empty tensor, its dimension number is 0
    *
@@ -49,9 +61,9 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
   def dim(): Int
 
   /**
-   * Size of tensor. Return an array of which each value represent the size on the
-   * dimension(i + 1), i is the index of the corresponding value
-   * It will generate a new array each time you invoke the method
+   * Size of tensor. Return an array of which each value represents the size on the
+   * dimension(i + 1), i is the index of the corresponding value.
+   * It will generate a new array each time method is invoked.
    *
    * @return size array
    */
@@ -66,15 +78,15 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
   def size(dim: Int): Int
 
   /**
-   * Jumps between element on the each dimension in the storage.
-   * It will generate a new array each time you invoke the method
+   * Jumps between elements on the each dimension in the storage.
+   * It will generate a new array each time method is invoked.
    *
    * @return strides array
    */
   def stride(): Array[Int]
 
   /**
-   * Jumps between element on the given dimension in the storage.
+   * Jumps between elements on the given dimension in the storage.
    *
    * @param dim dimension, count from 1
    * @return jump
@@ -88,6 +100,16 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
    * @return current tensor
    */
   def fill(v: T): Tensor[T]
+
+  /**
+   * Fill with a given value. It will change the value of the current tensor and return itself
+   *
+   * Note the value should be an instance of T
+   *
+   * @param v value to fill the tensor
+   * @return current tensor
+   */
+  def forceFill(v: Any): Tensor[T]
 
   /**
    * Fill with zero. It will change the value of the current tensor and return itself
@@ -170,6 +192,12 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
    */
   def apply(indexes: Array[Int]): T
 
+
+  /**
+   * @return the value of a scalar. Requires the tensor to be a scalar.
+   */
+  def value(): T
+
   /**
    * Query the value on a given position. The number of parameters
    * should be equal to the dimension number of the tensor.
@@ -178,7 +206,6 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
    * @param d1,( d2, d3, d4, d5) the given position
    * @return the value on a given position
    */
-
   def valueAt(d1: Int): T
 
   def valueAt(d1: Int, d2: Int): T
@@ -190,12 +217,12 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
   def valueAt(d1: Int, d2: Int, d3: Int, d4: Int, d5: Int): T
 
   /**
-   * Subset the tensor by apply the element of the given table to corresponding dimension of the
-   * tensor. The element of the given table can be an Int or another Table.
+   * Subset the tensor by apply the elements of the given table to the corresponding dimension
+   * of the tensor. The elements of the given table can be an Int or another Table.
    * An Int means select on current dimension; A table means narrow on current dimension,
-   * the table should has two elements, of which the first is start index and
-   * the second is the end index. An empty table is equals to Table(1, size_of_current_dimension)
-   * If the table length is less than the tensor dimension, the missing dimension is applied by
+   * the table should have two elements, of which the first is the start index and
+   * the second is the end index. An empty table is equal to Table(1, size_of_current_dimension)
+   * If the table length is less than the tensor dimension, each missing dimension is token up by
    * an empty table
    *
    * @see select
@@ -216,8 +243,7 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
 
   /**
    * Copy the give tensor value to the select subset of the current tensor by the given index.
-   * The subset should
-   * has the same size of the given tensor
+   * The subset should have the same size of the given tensor
    *
    * @param index index
    * @param src   tensor to write
@@ -225,13 +251,20 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
   def update(index: Int, src: Tensor[T]): Unit
 
   /**
-   * Write the value to the value indexed by the given index array
+   * Write the value to the positions indexed by the given index array
    *
    * @param indexes index array. It should has same length with the tensor dimension
    * @param value   value to write
    */
   def update(indexes: Array[Int], value: T): Unit
 
+
+  /**
+   * Set value for a scalar tensor
+   * @param value the written value
+   * @return
+   */
+  def setValue(value: T): this.type
   /**
    * Write the value on a given position. The number of parameters
    * should be equal to the dimension number of the tensor.
@@ -253,10 +286,10 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
   /**
    * Fill the select subset of the current tensor with the given value.
    * The element of the given table can be an Int or another Table. An Int means select on current
-   * dimension; A tablemeans narrow on current dimension, the table should has two elements,
-   * of which the first is start index and the second is the end index. An empty table is equals
+   * dimension; A table means narrow on the current dimension, the table should has two elements,
+   * of which the first is the start index and the second is the end index. An empty table is equal
    * to Table(1, size_of_current_dimension) If the table length is less than the tensor dimension,
-   * the missing dimension is applied by an empty table
+   * each missing dimension is applied by an empty table
    *
    * @param t     subset table
    * @param value value to write
@@ -264,12 +297,12 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
   def update(t: Table, value: T): Unit
 
   /**
-   * Copy the given tensor value to the select subset of the current tensor
-   * The element of the given table can be an Int or another Table. An Int means select on current
+   * Copy the given tensor values to the selected subset of the current tensor
+   * Each element of the given table can be an Int or another Table. An Int means select on current
    * dimension; A table means narrow on current dimension, the table should has two elements,
-   * of which the first is start index and the second is the end index. An empty table is equals
-   * to Table(1, size_of_current_dimension) If the table length is less than the tensor dimension,
-   * the missing dimension is applied by an empty table
+   * of which the first is start index and the second is the end index. An empty table is equal
+   * to Table(1, size_of_current_dimension). If the table's length is smaller than the tensor's
+   * dimension, the missing dimension is applied by an empty table.
    *
    * @param t   subset table
    * @param src tensor to copy
@@ -317,6 +350,13 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
   }
 
   /**
+   * return a new empty tensor of the same type
+   *
+   * @return new tensor
+   */
+  def emptyInstance(): Tensor[T]
+
+  /**
    * Resize the current tensor to the same size of the given tensor. It will still use the same
    * storage if the storage
    * is sufficient for the new size
@@ -325,6 +365,16 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
    * @return current tensor
    */
   def resizeAs(src: Tensor[_]): Tensor[T]
+
+  /**
+   * Cast the currenct tensor to a tensor with tensor numeric type D
+   * and set cast value to `castTensor`
+   *
+   * @param castTensor the cast value set to this tensor
+   * @tparam D new numeric type
+   * @return return castTensort
+   */
+  def cast[D: ClassTag](castTensor: Tensor[D])(implicit ev: TensorNumeric[D]): Tensor[D]
 
   /**
    * Resize the current tensor to the give shape
@@ -344,6 +394,10 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
   def resize(size1: Int, size2: Int, size3: Int, size4: Int): Tensor[T]
 
   def resize(size1: Int, size2: Int, size3: Int, size4: Int, size5: Int): Tensor[T]
+
+  def resize(sizes: Array[Int], nElement: Int): Tensor[T] = {
+    throw new UnsupportedOperationException("resize with nElement for sparse tensor only")
+  }
 
   //  def repeatTensor(result: Tensor, tensor: Tensor, size: Int*)
 
@@ -419,7 +473,7 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
 
   /**
    * Get a subset of the tensor on dim-th dimension. The offset is given by index, and length is
-   * give by size. The important difference with select is that it will not reduce the dimension
+   * given by size. The important difference with select is that it will not reduce the dimension
    * number. For Instance
    * tensor =
    * 1 2 3
@@ -446,12 +500,44 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
   def copy(other: Tensor[T]): Tensor[T]
 
   /**
+   * Apply a function to each element of the tensor `t`
+   * and set each value to self
+   *
+   * @param t tensor to be modified
+   * @param func applied function
+   * @return current tensor
+   */
+  def applyFun[A: ClassTag](
+    t: Tensor[A],
+    func: (A) => T): Tensor[T]
+
+  /**
    * Apply a function to each element of the tensor and modified it value if it return a double
    *
    * @param func applied function
    * @return current tensor
    */
   def apply1(func: T => T): Tensor[T]
+
+  /**
+   * Zip values of two other tensors with applying the function `func` on
+   * each two values element-wisely and assign the result value to the
+   * current tensor
+   *
+   * The two given tensors should has the same size of the current tensor
+   *
+   * @param t1 tensor 1
+   * @param t2 tensor 2
+   * @param func zip with the function
+   * @tparam A numeric type of tensor 1
+   * @tparam B numeric type of tensor 2
+   *
+   * @return self
+   */
+  def zipWith[A: ClassTag, B: ClassTag](
+    t1: Tensor[A],
+    t2: Tensor[B],
+    func: (A, B) => T): Tensor[T]
 
   /**
    * Map value of another tensor to corresponding value of current tensor and apply function on
@@ -654,6 +740,12 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
   def getTensorNumeric(): TensorNumeric[T]
 
   /**
+   * Return tensor type
+   * @return Dense / Quant
+   */
+  def getTensorType: TensorType
+
+  /**
    * Compare with other tensor. The shape of the other tensor must be same with this tensor.
    * If element wise difference is less than delta, return true.
    * @param other
@@ -676,17 +768,41 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
 /**
  * Numeric type of tensor.
  */
-sealed trait TensorDataType
+sealed trait TensorDataType extends Serializable
 
-object DoubleType extends TensorDataType
+object BooleanType extends TensorDataType
+
+object CharType extends TensorDataType
+
+object StringType extends TensorDataType
+
+object IntType extends TensorDataType
+
+object ShortType extends TensorDataType
+
+object LongType extends TensorDataType
 
 object FloatType extends TensorDataType
+
+object DoubleType extends TensorDataType
+sealed trait TensorType
+
+object DenseType extends TensorType
+
+object SparseType extends TensorType
+
+object QuantizedType extends TensorType
 
 object Tensor {
 
   // pre-load MKL library. If we do not do it here,
   // libjmkl.so will be loaded when one of the methods of in MKL is called.
   MKL.isMKLLoaded
+
+  /**
+   * Start index in BigDL. We count from 1.
+   */
+  val START_INDEX = 1
 
   /**
    * Returns an empty tensor.
@@ -731,7 +847,18 @@ object Tensor {
     val flatTable = xs.flatten()
     val content = new Array[T](flatTable.length())
     for (i <- 1 to content.length) {
-      content(i - 1) = flatTable(i)
+      content(i - 1) = flatTable[Any](i) match {
+        case e: Boolean => ev.fromType(e)
+        case e: Char => ev.fromType(e)
+        case e: Short => ev.fromType(e)
+        case e: Int => ev.fromType(e)
+        case e: Long => ev.fromType(e)
+        case e: Float => ev.fromType(e)
+        case e: Double => ev.fromType(e)
+        case e: String => ev.fromType(e)
+        case _ => throw new IllegalArgumentException(s"Not support numeric type " +
+          flatTable[Any](i).getClass.getName)
+      }
     }
 
     val dims = new ArrayBuffer[Int]()
@@ -897,6 +1024,15 @@ object Tensor {
   }
 
   /**
+   * Create a scalar tensor of this value
+   * @return the created scalar tensor
+   */
+  def scalar[T: ClassTag](value: T)(
+    implicit ev: TensorNumeric[T]): Tensor[T] = {
+    Tensor[T](Array(value), Array[Int]())
+  }
+
+  /**
    * This is equivalent to DenseTensor.randperm[T](size)
    *
    * @param size
@@ -982,5 +1118,153 @@ object Tensor {
       mean: Double = 0.5,
       tensor: Tensor[T] = null)(implicit ev: TensorNumeric[T]): Tensor[T] = {
     DenseTensor.gaussian1D[T](size, sigma, amplitude, normalize, mean, tensor)
+  }
+
+  /**
+   * Create a SparseTensor.
+   *
+   * @param indices dimension-D array to describe the indices of values.
+   * @param values non-zero values in this SparseTensor.
+   * @param shape shape
+   * @param ev
+   * @tparam T
+   * @return
+   */
+  def sparse[T: ClassTag](
+        indices : Array[Array[Int]],
+        values : Storage[T],
+        shape : Array[Int])(
+        implicit ev: TensorNumeric[T]): Tensor[T] = {
+    SparseTensor(indices, values, shape, shape.length)
+  }
+
+  /**
+   * Create a SparseTensor.
+   *
+   * @param indices dimension-D array to describe the indices of values.
+   * @param values non-zero values in this SparseTensor.
+   * @param shape shape
+   * @param ev
+   * @tparam T
+   * @return
+   */
+  def sparse[T: ClassTag](
+      indices : Array[Array[Int]],
+      values : Array[T],
+      shape : Array[Int])(
+      implicit ev: TensorNumeric[T]): Tensor[T] = {
+    sparse(indices, Storage(values), shape, shape.length)
+  }
+
+  /**
+   * Create a SparseTensor.
+   *
+   * @param indices dimension-D array to describe the indices of values.
+   * @param values non-zero values in this SparseTensor.
+   * @param shape shape
+   * @param dimension dimension
+   * @param ev
+   * @tparam T
+   * @return
+   */
+  def sparse[T: ClassTag](
+        indices : Array[Array[Int]],
+        values : Storage[T],
+        shape : Array[Int],
+        dimension: Int)(
+        implicit ev: TensorNumeric[T]): Tensor[T] = {
+    SparseTensor(indices, values, shape, dimension)
+  }
+
+  /**
+   * Create a SparseTensor.
+   *
+   * @param indices dimension-D array to describe the indices of values.
+   * @param values non-zero values in this SparseTensor.
+   * @param shape shape
+   * @param dimension dimension
+   * @param ev
+   * @tparam T
+   * @return
+   */
+  def sparse[T: ClassTag](
+      indices : Array[Array[Int]],
+      values : Array[T],
+      shape : Array[Int],
+      dimension: Int)(
+      implicit ev: TensorNumeric[T]): Tensor[T] = {
+    sparse(indices, Storage(values), shape, dimension)
+  }
+
+  /**
+   * Transform a DenseTensor to SparseTensor.
+   * @param denseTensor
+   * @param ev
+   * @tparam T
+   * @return
+   */
+  def sparse[T: ClassTag](
+        denseTensor: Tensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
+    SparseTensor(denseTensor)
+  }
+
+  /**
+   * Create a sparse tensor with shape and number of non-zero elements.
+   * @param shape tensor's shape.
+   * @param nElement number of non-zero elements.
+   * @param ev
+   * @tparam T
+   * @return
+   */
+  def sparse[T: ClassTag](
+        shape : Array[Int],
+        nElement: Int = 1)(
+        implicit ev: TensorNumeric[T]): Tensor[T] = {
+    require(nElement <= shape.product)
+    SparseTensor(shape, nElement)
+  }
+
+  /**
+   * Transform a sparseTensor to DenseTensor.
+   *
+   * @param sparseTensor a sparse tensor
+   * @param res if defined, override to res, else will generate a new tensor.
+   * @param ev
+   * @tparam T
+   * @return a DenseTensor.
+   */
+  def dense[T: ClassTag](
+        sparseTensor: Tensor[T],
+        res: Tensor[T] = null)(implicit ev: TensorNumeric[T]): Tensor[T] = {
+    if (sparseTensor.isInstanceOf[SparseTensor[T]]) {
+      DenseTensor(sparseTensor.asInstanceOf[SparseTensor[T]], res)
+    } else if (sparseTensor.isInstanceOf[DenseTensor[T]]) {
+      res.copy(sparseTensor)
+    } else {
+      throw new IllegalArgumentException("Tensor.dense: Illegal tensor type.")
+    }
+  }
+
+  /**
+   * Concat a sequence of tensors to res tensor.
+   *
+   * @param dim concat at dim-th dimension.
+   * @param tensors a sequence of tensors.
+   * @param res result tensor.
+   * @param ev
+   * @tparam T
+   * @return
+   */
+  private[bigdl] def sparseConcat[T: ClassTag](
+        dim: Int,
+        tensors: Table,
+        res: Tensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
+    val seqTensors = new Array[Tensor[T]](tensors.length())
+    var i = 0
+    while (i < seqTensors.length) {
+      seqTensors(i) = tensors[Tensor[T]](i + 1)
+      i += 1
+    }
+    SparseTensor.concat(dim, seqTensors, res)
   }
 }
