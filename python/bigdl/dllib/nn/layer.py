@@ -392,20 +392,24 @@ class Layer(JavaValue):
         '''
         self.value.bRegularizer = bRegularizer.value
 
-    def freeze(self):
-        '''
-        freeze layer
-        '''
-        callBigDlFunc(self.bigdl_type,
-                        "setLayerFreeze", self.value)
+    def freeze(self, names=None):
+        """
+        freeze module, if names is not None, set an array of layers that match given names
+        to be freezed
+        :param names: an array of layer names
+        :return:
+        """
+        callBigDlFunc(self.bigdl_type, "freeze", self.value, names)
         return self
 
-    def unfreeze(self):
-        '''
-        unfreeze layer
-        '''
-        callBigDlFunc(self.bigdl_type,
-                        "setLayerUnFreeze", self.value)
+    def unfreeze(self, names=None):
+        """
+        unfreeze module, if names is not None, unfreeze layers that match given names
+        :param names: an array of layer names
+        :return:
+        """
+        callBigDlFunc(self.bigdl_type, "unFreeze", self.value, names)
+        return self
 
     def training(self):
         '''
@@ -650,26 +654,6 @@ class Model(Container):
                                                                       Sample.from_ndarray(input[0], input[1]))
         jmodel = callBigDlFunc(bigdl_type, "trainTF", path, output_name, rdd_train_sample, opt_method, criterion, batch_size, end_when)
         return Model.of(jmodel)
-
-
-    def freeze(self, freeze_layers, bigdl_type="float"):
-        """
-        set an array of layers to be freezed
-        :param freeze_layers: an array of layer names
-        :param bigdl_type:
-        :return:
-        """
-        callBigDlFunc(bigdl_type, "setFreeze", self.value, freeze_layers)
-        return self
-
-    def unfreeze(self, bigdl_type="float"):
-        """
-        set all layers to be trainable
-        :param bigdl_type:
-        :return:
-        """
-        callBigDlFunc(bigdl_type, "unFreeze", self.value)
-        return self
 
     def stop_gradient(self, stop_layers, bigdl_type="float"):
         """
