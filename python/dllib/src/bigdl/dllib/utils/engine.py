@@ -18,14 +18,27 @@ import sys
 import os
 import glob
 
+def exist_pyspark():
+    try:
+        import pyspark
+        return True
+    except ImportError:
+        return False
+
 def __prepare_spark_env():
-    modules = sys.modules
-    if "pyspark" not in modules or "py4j" not in modules:
-        spark_home = os.environ.get('SPARK_HOME', None)
+    spark_home = os.environ.get('SPARK_HOME', None)
+    if exist_pyspark():
+        import pyspark
+        if spark_home and not pyspark.__file__.startswith(spark_home):
+            raise Exception(
+                """Find two unmatched spark sources. pyspark is found in """
+                + pyspark.__file__ + ", while SPARK_HOME env is set to " + spark_home
+                + ". Please use one spark source only. For example, you can unset SPARK_HOME and use pyspark only.")
+    else:
         if not spark_home:
             raise ValueError(
-                """Could not find Spark. Pls make sure SPARK_HOME env is set:
-                   export SPARK_HOME=path to your spark home directory""")
+                """Could not find Spark. Please make sure SPARK_HOME env is set:
+                   export SPARK_HOME=path to your spark home directory.""")
         print("Using %s" % spark_home)
         py4j = glob.glob(os.path.join(spark_home, 'python/lib', 'py4j-*.zip'))[0]
         pyspark = glob.glob(os.path.join(spark_home, 'python/lib', 'pyspark*.zip'))[0]
