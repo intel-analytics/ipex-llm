@@ -255,13 +255,13 @@ def init_engine(bigdl_type="float"):
     callBigDlFunc(bigdl_type, "initEngine")
 
 
-def redire_spark_logs(bigdl_type="float", logPath=os.getcwd()+"/bigdl.log"):
+def redire_spark_logs(bigdl_type="float", log_path=os.getcwd()+"/bigdl.log"):
     """
     Redirect spark logs to the specified path.
     :param bigdl_type: "double" or "float"
-    :param logPath: the file path to be redirected to; the default file is under the current workspace named `bigdl.log`.
+    :param log_path: the file path to be redirected to; the default file is under the current workspace named `bigdl.log`.
     """
-    callBigDlFunc(bigdl_type, "redirectSparkLogs", logPath)
+    callBigDlFunc(bigdl_type, "redirectSparkLogs", log_path)
 
 def show_bigdl_info_logs(bigdl_type="float"):
     """
