@@ -133,7 +133,7 @@ val predictSet = sc.parallelize(Seq(predictSample))
 
 //train a new model or load an existing model
 //val model=...
-val preductResult = model.predict(predictSet)
+val predictResult = model.predict(predictSet)
 ```
 
 **Python example**
@@ -149,7 +149,7 @@ val preductResult = model.predict(predictSet)
 
  //train a model or load an existing model...
  //model = ...
- preductResult = model.predict(predictSet)
+ predictResult = model.predict(predictSet)
 ```
 
 ## Module Freeze
