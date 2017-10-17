@@ -70,3 +70,8 @@ INFO  DistriOptimizer$:522 - Top1Accuracy is Accuracy(correct: 9572, count: 1000
 
 
 ```
+
+Or you can train a LeNet model directly in shell after installing BigDL from pip:
+```
+python .../models/lenet/lenet5.py
+```
