@@ -110,7 +110,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       }.sortWith(_._1 < _._1).map(pair => pair._2).asJava
     }
   }
-  
+
   def toPySample(sample: JSample[T]): Sample = {
     val cls = implicitly[ClassTag[T]].runtimeClass
     val features = new JArrayList[JTensor]()
@@ -1975,7 +1975,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       rec.setHiddenState(jTensorsToActivity(states.asScala.head, isTable.asScala.head))
     }
   }
-  
+
   def containMultiRNNCell(rec: Recurrent[T]): Boolean = rec.containMultiRNNCell
 
   def freeze(model: AbstractModule[Activity, Activity, T], freezeLayers: JList[String])

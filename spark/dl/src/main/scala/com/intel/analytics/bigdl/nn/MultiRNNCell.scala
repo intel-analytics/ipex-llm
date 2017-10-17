@@ -41,14 +41,6 @@ class MultiRNNCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorN
 
   override var cell: AbstractModule[Activity, Activity, T] = buildModel()
 
-  var states = T()
-  var gradStates = T()
-  
-  val outputStates = T()
-  val outputGradStates = T()
-
-  var state0: Activity = null
-
   def buildModel(): Sequential[T] = {
     val seq = Sequential()
     cells.foreach{ cell =>
@@ -61,19 +53,15 @@ class MultiRNNCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorN
   }
 
   override def updateOutput(input: Table): Table = {
-    require(states != null, "state of multicell cannot be null")
-    var i = 0
     val result = T()
     result(inputDim) = input(inputDim)
-//    state0 = states(0)
-    states = input(hidDim)
+    val states = input(hidDim).asInstanceOf[Table]
+    val outputStates = T()
 
+    var i = 0
     while (i < cells.length) {
       result(hidDim) = states(i)
-
       cells(i).forward(result).toTable
-      // propogate state for next time step
-//      states(i) = cells(i).output.toTable(hidDim)
       result(inputDim) = cells(i).output.toTable(inputDim)
       outputStates(i) = cells(i).output.toTable(hidDim)
       i += 1
@@ -85,20 +73,12 @@ class MultiRNNCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorN
   }
 
   override def updateGradInput(input: Table, gradOutput: Table): Table = {
-    throw new Exception("Should not enter MultiCell updateGradInput since backward is override")
-    gradInput
-  }
-
-  override def accGradParameters(input: Table, gradOutput: Table): Unit = {
-    throw new Exception("Should not enter MultiCell accGradParameters since backward is override")
-  }
-
-  override def backward(input: Table, gradOutput: Table): Table = {
     var i = cells.length
     var error = T()
     error(inputDim) = gradOutput(inputDim)
-    states = input(hidDim)
-    gradStates = gradOutput(hidDim)
+    val states = input(hidDim).asInstanceOf[Table]
+    val gradStates = gradOutput(hidDim).asInstanceOf[Table]
+    val outputGradStates = T()
 
     val nextInput = T()
     while (i >= 1) {
@@ -107,11 +87,58 @@ class MultiRNNCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorN
       } else input(inputDim)
       nextInput(inputDim) = input0
 
-//      nextInput(hidDim) = if (i == 1) state0 else states(i - 2)
+      nextInput(hidDim) = states(i - 1)
+      error(hidDim) = gradStates(i - 1)
+      error = cells(i - 1).updateGradInput(nextInput, error)
+      outputGradStates(i - 1) = error(hidDim)
+      i -= 1
+    }
+
+    this.gradInput = error
+    gradInput(hidDim) = outputGradStates
+    gradInput
+  }
+
+  override def accGradParameters(input: Table, gradOutput: Table): Unit = {
+    var i = cells.length
+    val error = T()
+    error(inputDim) = gradOutput(inputDim)
+    val states = input(hidDim).asInstanceOf[Table]
+    val gradStates = gradOutput(hidDim).asInstanceOf[Table]
+
+    val nextInput = T()
+    while (i >= 1) {
+      val input0: Tensor[T] = if (i > 1) {
+        cells(i - 2).output.toTable(inputDim)
+      } else input(inputDim)
+      nextInput(inputDim) = input0
+
+      nextInput(hidDim) = states(i - 1)
+      error(hidDim) = gradStates(i - 1)
+      cells(i - 1).accGradParameters(nextInput, error)
+      error(inputDim) = cells(i - 1).gradInput.toTable(inputDim)
+      i -= 1
+    }
+  }
+
+  override def backward(input: Table, gradOutput: Table): Table = {
+    var i = cells.length
+    var error = T()
+    error(inputDim) = gradOutput(inputDim)
+    val states = input(hidDim).asInstanceOf[Table]
+    val gradStates = gradOutput(hidDim).asInstanceOf[Table]
+    val outputGradStates = T()
+
+    val nextInput = T()
+    while (i >= 1) {
+      val input0: Tensor[T] = if (i > 1) {
+        cells(i - 2).output.toTable(inputDim)
+      } else input(inputDim)
+      nextInput(inputDim) = input0
+
       nextInput(hidDim) = states(i - 1)
       error(hidDim) = gradStates(i - 1)
       error = cells(i - 1).backward(nextInput, error)
-//      gradStates(i - 1) = error(hidDim)
       outputGradStates(i - 1) = error(hidDim)
       i -= 1
     }

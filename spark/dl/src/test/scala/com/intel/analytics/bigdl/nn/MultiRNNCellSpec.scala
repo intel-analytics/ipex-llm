@@ -168,7 +168,7 @@ class MultiRNNCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
 //      v1
 //    })
 //
-//    gradient.almostEqual(gradient2, 1e-8)
+//    require(gradient.almostEqual(gradient2, 1e-8) == true)
 //  }
 
   "A MultiRNNCell " should "generate correct output with convlstm RecurrentDecoder" in {
@@ -223,7 +223,7 @@ class MultiRNNCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
     })
   }
 
-  "A MultiRNCell ConvLSTMPeepwhole backward" should "work with RecurrentDecoder" in {
+  "A MultiRNCell backward" should "work with ConvLSTMPeepwhole RecurrentDecoder" in {
     import com.intel.analytics.bigdl.numeric.NumericDouble
     val hiddenSize = 3
     val inputSize = 3
@@ -261,7 +261,8 @@ class MultiRNNCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
     model2.getParameters()._1.copy(weights.narrow(1, 1, weights.nElement()/2))
     model2.zeroGradParameters()
     val model4 = ConvLSTMPeephole(inputSize, hiddenSize, 3, 3, 1)
-    model4.getParameters()._1.copy(weights.narrow(1, weights.nElement()/2 + 1, weights.nElement()/2))
+    model4.getParameters()._1
+      .copy(weights.narrow(1, weights.nElement()/2 + 1, weights.nElement()/2))
     model4.zeroGradParameters()
 
     val model3 = ConvLSTMPeephole(inputSize, hiddenSize, 3, 3, 1)
@@ -310,7 +311,7 @@ class MultiRNNCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
       Tensor[Double](batchSize, hiddenSize, 3, 3))
     val gradOutput5 = gradOutput.select(2, 2)
     val gradInput5 = model5.backward(input5, T(gradOutput5, gradState))
-    
+
     val gradInput3 = model3.backward(input3, T(gradInput5(1), gradState2))
     val tmp_gradInput = gradInput3.clone
     tmp_gradInput(1) = gradOutput.select(2, 1).add(gradInput3.toTable[Tensor[Double]](1))
@@ -324,8 +325,8 @@ class MultiRNNCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val finalOutput = Tensor[Double](batchSize, seqLength, hiddenSize, 3, 3)
     finalOutput.narrow(2, 1, 1).copy(output4.toTable[Tensor[Double]](1))
     finalOutput.narrow(2, 2, 1).copy(output5.toTable[Tensor[Double]](1))
-    output.almostEqual(finalOutput, 1e-8)
-    
+    require(output.almostEqual(finalOutput, 1e-8) == true)
+
     require(gradient.narrow(1, 1, gradient.nElement()/2)
       .almostEqual(model2.getParameters()._2, 1e-8) == true)
     require(gradient.narrow(1, gradient.nElement()/2 + 1, gradient.nElement()/2)
@@ -334,7 +335,7 @@ class MultiRNNCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val newGradInput = Tensor[Double](batchSize, seqLength, hiddenSize, 3, 3)
     newGradInput.narrow(2, 1, 1).copy(gradInput2.toTable[Tensor[Double]](1))
     newGradInput.narrow(2, 2, 1).copy(gradInput3.toTable[Tensor[Double]](1))
-    gradInput.almostEqual(newGradInput, 1e-8)
+    require(gradInput.almostEqual(newGradInput, 1e-8) == true)
   }
 
   "A MultiRNNCell " should "generate correct output with lstm RecurrentDecoder" in {
@@ -479,7 +480,7 @@ class MultiRNNCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val finalOutput = Tensor[Double](batchSize, seqLength, hiddenSize)
     finalOutput.narrow(2, 1, 1).copy(output4.toTable[Tensor[Double]](1))
     finalOutput.narrow(2, 2, 1).copy(output5.toTable[Tensor[Double]](1))
-    output.almostEqual(finalOutput, 1e-8)
+    require(output.almostEqual(finalOutput, 1e-8) == true)
 
     require(gradient.narrow(1, 1, gradient.nElement()/2)
       .almostEqual(model2.getParameters()._2, 1e-8) == true)
@@ -489,7 +490,55 @@ class MultiRNNCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val newGradInput = Tensor[Double](batchSize, seqLength, hiddenSize)
     newGradInput.narrow(2, 1, 1).copy(gradInput2.toTable[Tensor[Double]](1))
     newGradInput.narrow(2, 2, 1).copy(gradInput3.toTable[Tensor[Double]](1))
-    gradInput.almostEqual(newGradInput, 1e-8)
+    require(gradInput.almostEqual(newGradInput, 1e-8) == true)
+  }
+
+  "A MultiRNCell updateGradInput/acc" should "work with lstm RecurrentDecoder" in {
+    import com.intel.analytics.bigdl.numeric.NumericDouble
+    val hiddenSize = 3
+    val inputSize = 3
+    val seqLength = 2
+    val seed = 100
+    val batchSize = 2
+
+    RNG.setSeed(seed)
+    val input = Tensor[Double](batchSize, inputSize).rand
+    val gradOutput = Tensor[Double](batchSize, seqLength, hiddenSize).rand
+    val rec = RecurrentDecoder(seqLength)
+    val cells = Array(LSTM[Double](
+      inputSize,
+      hiddenSize), LSTM[Double](
+      inputSize,
+      hiddenSize)).asInstanceOf[Array[Cell[Double]]]
+    val model = rec
+      .add(MultiRNNCell(cells))
+
+    val rec2 = RecurrentDecoder(seqLength)
+    val cells2 = Array(LSTM[Double](
+      inputSize,
+      hiddenSize), LSTM[Double](
+      inputSize,
+      hiddenSize)).asInstanceOf[Array[Cell[Double]]]
+    val model2 = rec2
+      .add(MultiRNNCell(cells2))
+
+    val weights = model.getParameters()._1.clone()
+    model.zeroGradParameters()
+    model2.getParameters()._1.copy(weights)
+    model2.zeroGradParameters()
+
+    val output = model.forward(input).toTensor
+    val gradInput = model.backward(input, gradOutput).toTensor
+    val gradient = model.getParameters()._2
+
+    val output2 = model2.forward(input).toTensor
+    val gradInput2 = model2.updateGradInput(input, gradOutput).toTensor
+    model2.accGradParameters(input, gradOutput)
+    val gradient2 = model2.getParameters()._2
+
+    require(output.almostEqual(output2, 1e-8) == true)
+    require(gradient.almostEqual(gradient2, 1e-8) == true)
+    require(gradInput.almostEqual(gradInput2, 1e-8) == true)
   }
 
   "A MultiRNNCell " should "work with set/getHiddenState" in {
