@@ -127,6 +127,14 @@ class JTensor(object):
     >>>
     """
     def __init__(self, storage, shape, bigdl_type="float", indices=None):
+        """
+
+        :param storage: values in this tensor
+        :param shape: shape of this tensor
+        :param bigdl_type: numeric type
+        :param indices: if indices is provided, means this is a SparseTensor;
+                        if not provided, means this is a DenseTensor
+        """
         if isinstance(storage, bytes) and isinstance(shape, bytes):
             self.storage = np.frombuffer(storage, dtype=get_dtype(bigdl_type))
             self.shape = np.frombuffer(shape, dtype=np.int32)
@@ -142,7 +150,7 @@ class JTensor(object):
     @classmethod
     def from_ndarray(cls, a_ndarray, bigdl_type="float"):
         """
-        Convert a ndarray to Tensor which would be used in Java side.
+        Convert a ndarray to a DenseTensor which would be used in Java side.
 
         >>> import numpy as np
         >>> from bigdl.util.common import JTensor
@@ -169,7 +177,22 @@ class JTensor(object):
     @classmethod
     def sparse(cls, a_ndarray, i_ndarray, shape, bigdl_type="float"):
         """
-        Convert a ndarray to SparseTensor which would be used in Java side.
+        Convert a three ndarray to SparseTensor which would be used in Java side.
+        For example:
+        a_ndarray = [1, 3, 2, 4]
+        i_ndarray = [[0, 0, 1, 2],
+                     [0, 3, 2, 1]]
+        shape = [3, 4]
+        Present a dense tensor
+        [[ 1,  0,  0,  3],
+         [ 0,  0,  2,  0],
+         [ 0,  4,  0,  0]]
+
+        :param a_ndarray non-zero elements in this SparseTensor
+        :param i_ndarray zero-based indices for non-zero element
+                         i_ndarray's shape should be (shape.size, a_ndarray.size)
+                         And the i-th non-zero elements indices is i_ndarray[:, 1]
+        :param shape     shape as a DenseTensor.
 
         >>> import numpy as np
         >>> from bigdl.util.common import JTensor
@@ -205,16 +228,12 @@ class JTensor(object):
             return JTensor, (self.storage.tostring(), self.shape.tostring(), self.indices.tostring(), self.bigdl_type)
 
     def __str__(self):
-        if self.indices is None:
-            return "JTensor: storage: %s, shape: %s" % (self.storage, self.shape)
-        else:
-            return "JTensor: storage: %s, shape: %s, indices: %s" % (self.storage, self.shape, self.shape)
+        indices = "" if self.indices is None else ",indices %s" % self.indices
+        return "JTensor: storage: %s, shape: %s %s" % (self.storage, self.shape, self.shape, indices)
 
     def __repr__(self):
-        if self.indices is None:
-            return "JTensor: storage: %s, shape: %s" % (self.storage, self.shape)
-        else:
-            return "JTensor: storage: %s, shape: %s, indices: %s" % (self.storage, self.shape, self.shape)
+        indices = "" if self.indices is None else ",indices %s" % self.indices
+        return "JTensor: storage: %s, shape: %s %s" % (self.storage, self.shape, self.shape, indices)
 
 
 class Sample(object):

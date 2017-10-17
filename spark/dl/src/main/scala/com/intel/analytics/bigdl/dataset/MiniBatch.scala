@@ -574,7 +574,7 @@ case class FixedLength(fixedLength: Array[Int]) extends PaddingStrategy {
   }
 }
 
-class MiniBatchWithSparse[T: ClassTag](
+class SparseMiniBatch[T: ClassTag](
       inputData: Array[Tensor[T]],
       targetData: Array[Tensor[T]])(
       implicit ev: TensorNumeric[T]) extends ArrayTensorMiniBatch[T](inputData, targetData) {
@@ -596,8 +596,8 @@ class MiniBatchWithSparse[T: ClassTag](
 
   override def set(samples: Seq[Sample[T]])(implicit ev: TensorNumeric[T]): this.type = {
     require(samples.length > 0, "samples is empty")
-    require(samples(0).isInstanceOf[SampleWithSparse[T]])
-    val _samples = samples.map(_.asInstanceOf[SampleWithSparse[T]])
+    require(samples(0).isInstanceOf[TensorSample[T]])
+    val _samples = samples.map(_.asInstanceOf[TensorSample[T]])
     require(batchSize == 0 || samples.length <= batchSize, "setValue: samples's size doesn't " +
       s"match mini batch size, excepted ${size()} got ${samples.length}")
     val features = _samples.map(_.features)
@@ -610,14 +610,14 @@ class MiniBatchWithSparse[T: ClassTag](
 
     var i = 0
     while (i < inputData.length) {
-      MiniBatchWithSparse.concat(1, features.map(_.apply(i)), inputData(i))
+      SparseMiniBatch.concat(1, features.map(_.apply(i)), inputData(i))
       i += 1
     }
 
     if (!unlabeled) {
       var j = 0
       while (j < targetData.length) {
-        MiniBatchWithSparse.concat(1, labels.map(_.apply(j)), targetData(j))
+        SparseMiniBatch.concat(1, labels.map(_.apply(j)), targetData(j))
         j += 1
       }
     }
@@ -626,11 +626,11 @@ class MiniBatchWithSparse[T: ClassTag](
   }
 }
 
-object MiniBatchWithSparse{
+object SparseMiniBatch{
   def apply[T: ClassTag](
       nInputs: Int,
       nTargets: Int)(implicit ev: TensorNumeric[T]): MiniBatch[T] = {
-    new MiniBatchWithSparse[T](new Array[Tensor[T]](nInputs), new Array[Tensor[T]](nTargets))
+    new SparseMiniBatch[T](new Array[Tensor[T]](nInputs), new Array[Tensor[T]](nTargets))
   }
 
   private[bigdl] def concat[T: ClassTag](

@@ -344,7 +344,7 @@ object Sample {
     if (featureTensor.getTensorType == DenseType) {
       ArraySample(featureTensor, labelTensor)
     } else {
-      SampleWithSparse(featureTensor, labelTensor)
+      TensorSample(featureTensor, labelTensor)
     }
   }
 
@@ -355,7 +355,7 @@ object Sample {
     if (featureTensor.getTensorType == DenseType) {
       ArraySample(featureTensor, label)
     } else {
-      SampleWithSparse(featureTensor, label)
+      TensorSample(featureTensor, label)
     }
   }
 
@@ -363,7 +363,7 @@ object Sample {
         featureTensors: Array[Tensor[T]],
         labelTensor: Tensor[T])(implicit ev: TensorNumeric[T]) : Sample[T] = {
     if (featureTensors.exists(_.getTensorType == SparseType)) {
-      SampleWithSparse(featureTensors, labelTensor)
+      TensorSample(featureTensors, labelTensor)
     } else {
       ArraySample(featureTensors, labelTensor)
     }
@@ -373,7 +373,7 @@ object Sample {
         featureTensors: Array[Tensor[T]],
         labelTensors: Array[Tensor[T]])(implicit ev: TensorNumeric[T]) : Sample[T] = {
     if (featureTensors.exists(_.getTensorType == SparseType)) {
-      SampleWithSparse(featureTensors, labelTensors)
+      TensorSample(featureTensors, labelTensors)
     } else {
       ArraySample(featureTensors, labelTensors)
     }
@@ -383,7 +383,7 @@ object Sample {
         featureTensor: Tensor[T])(implicit ev: TensorNumeric[T]) : Sample[T] = {
     require(featureTensor.isContiguous(), "featureTensor is not contiguous")
     if (featureTensor.getTensorType == SparseType) {
-      SampleWithSparse(featureTensor)
+      TensorSample(featureTensor)
     } else {
       ArraySample(featureTensor)
     }
@@ -392,7 +392,7 @@ object Sample {
   def apply[T: ClassTag](
         featureTensors: Array[Tensor[T]])(implicit ev: TensorNumeric[T]) : Sample[T] = {
     if (featureTensors.exists(_.getTensorType == SparseType)) {
-      SampleWithSparse(featureTensors)
+      TensorSample(featureTensors)
     } else {
       ArraySample(featureTensors)
     }
@@ -405,7 +405,7 @@ object Sample {
  * @param labels label tensors
  * @tparam T numeric type
  */
-private[bigdl] class SampleWithSparse[T: ClassTag](
+private[bigdl] class TensorSample[T: ClassTag](
       val features: Array[Tensor[T]],
       val labels: Array[Tensor[T]]) extends Sample[T] {
   val featureSize = features.map(_.size())
@@ -440,37 +440,37 @@ private[bigdl] class SampleWithSparse[T: ClassTag](
   }
 }
 
-object SampleWithSparse {
+object TensorSample {
   def apply[T: ClassTag](
         featureTensors: Array[Tensor[T]])(implicit ev: TensorNumeric[T]) : Sample[T] = {
-    new SampleWithSparse[T](featureTensors, Array())
+    new TensorSample[T](featureTensors, Array())
   }
 
   def apply[T: ClassTag](
         featureTensors: Tensor[T])(implicit ev: TensorNumeric[T]) : Sample[T] = {
-    new SampleWithSparse[T](Array(featureTensors), Array())
+    new TensorSample[T](Array(featureTensors), Array())
   }
   def apply[T: ClassTag](
         featureTensors: Array[Tensor[T]],
         labelTensors: Array[Tensor[T]])(implicit ev: TensorNumeric[T]) : Sample[T] = {
-    new SampleWithSparse[T](featureTensors, labelTensors)
+    new TensorSample[T](featureTensors, labelTensors)
   }
 
   def apply[T: ClassTag](
         featureTensors: Array[Tensor[T]],
         labelTensors: Tensor[T])(implicit ev: TensorNumeric[T]) : Sample[T] = {
-    new SampleWithSparse[T](featureTensors, Array(labelTensors))
+    new TensorSample[T](featureTensors, Array(labelTensors))
   }
 
   def apply[T: ClassTag](
         featureTensors: Tensor[T],
         labelTensors: Tensor[T])(implicit ev: TensorNumeric[T]) : Sample[T] = {
-    new SampleWithSparse[T](Array(featureTensors), Array(labelTensors))
+    new TensorSample[T](Array(featureTensors), Array(labelTensors))
   }
 
   def apply[T: ClassTag](
         featureTensors: Tensor[T],
         label: T)(implicit ev: TensorNumeric[T]) : Sample[T] = {
-    new SampleWithSparse[T](Array(featureTensors), Array(Tensor(1).fill(label)))
+    new TensorSample[T](Array(featureTensors), Array(Tensor(1).fill(label)))
   }
 }
