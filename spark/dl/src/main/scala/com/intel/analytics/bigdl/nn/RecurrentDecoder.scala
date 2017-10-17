@@ -45,29 +45,34 @@ class RecurrentDecoder[T : ClassTag](val seqLength: Int)
   times = seqLength
 
   // states, gradStates only used with multirnncell and key starts from 0
-  private val hiddenStates: Table = T()
-  private val gradHiddenStates = T()
+//  private val hiddenStates: Table = T()
+//  private val gradHiddenStates = T()
 
-  override def getHiddenState(): Activity = {
-    if (containMultiRNNCell) {
-      hiddenStates
-    } else super.getHiddenState()
-  }
+//  override def getHiddenState(): Activity = {
+//    if (containMultiRNNCell) {
+//      hiddenStates
+//    } else super.getHiddenState()
+//  }
 
   override def initHidden(sizes: Array[Int]): Unit = {
     val stepSizes = sizes
 
     if (containMultiRNNCell) {
-      if (hiddenStates.getState().size == 0) {
+      if (hidden == null) {
+//      if (hiddenStates.getState().size == 0) {
         cells.clear()
         cells += topology
+        hidden = T()
+        gradHidden = T()
       }
 
       val multiCells = topology.asInstanceOf[MultiRNNCell[T]].cells
       var i = 0
       while (i < multiCells.size) {
-        hiddenStates(i) = multiCells(i).hidResize(null, batchSize, stepSizes)
-        gradHiddenStates(i) = multiCells(i).hidResize(null, batchSize, stepSizes)
+//        hiddenStates(i) = multiCells(i).hidResize(null, batchSize, stepSizes)
+//        gradHiddenStates(i) = multiCells(i).hidResize(null, batchSize, stepSizes)
+        hidden.toTable(i) = multiCells(i).hidResize(null, batchSize, stepSizes)
+        gradHidden.toTable(i) = multiCells(i).hidResize(null, batchSize, stepSizes)
         i += 1
       }
     } else super.initHidden(sizes)
@@ -130,13 +135,14 @@ class RecurrentDecoder[T : ClassTag](val seqLength: Int)
       cloneCells()
     } else {
       if (initHiddenState != null) {
-        cloneStates(initHiddenState.toTable, hiddenStates)
+//        cloneStates(initHiddenState.toTable, hiddenStates)
+        cloneStates(initHiddenState.toTable, hidden.toTable)
       }
       cloneCells()
-      cells.foreach{x =>
-        x.asInstanceOf[MultiRNNCell[T]].states = hiddenStates
-        x.asInstanceOf[MultiRNNCell[T]].gradStates = gradHiddenStates
-      }
+//      cells.foreach{x =>
+//        x.asInstanceOf[MultiRNNCell[T]].states = hiddenStates
+//        x.asInstanceOf[MultiRNNCell[T]].gradStates = gradHiddenStates
+//      }
     }
 
     var i = 1
