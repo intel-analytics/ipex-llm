@@ -9,7 +9,7 @@ val module = Recurrent()
 module = Recurrent()
 ```
 
-Recurrent module is a container of rnn cells. Different types of rnn cells can be added using add() function. Don't support multiRNNCell for performance issue. Use several Recurrent(cell) instead.  
+Recurrent module is a container of rnn cells. Different types of rnn cells can be added using add() function.  
 
 Recurrent supports returning state and cell of its rnn cells at last time step by using getHiddenState. output of getHiddenState
 is an Activity and it can be directly used for setHiddenState function, which will set hidden state and cell at the first time step.  
@@ -175,8 +175,6 @@ With RecurrentDecoder, inputsize and hiddensize of the cell must be the same.
 
 Different types of rnn cells can be added using add() function.
 
-RecurrentDecoder supports returning state and cell of its rnn cells at last time step by using getStates.
-With MultiRNNCell, it will return hiddenstate of each single cell at last time step.
 Parameters:
 
 * `outputLength` sequence length of output

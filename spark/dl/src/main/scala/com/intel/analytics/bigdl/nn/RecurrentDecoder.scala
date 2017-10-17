@@ -44,22 +44,11 @@ class RecurrentDecoder[T : ClassTag](val seqLength: Int)
 
   times = seqLength
 
-  // states, gradStates only used with multirnncell and key starts from 0
-//  private val hiddenStates: Table = T()
-//  private val gradHiddenStates = T()
-
-//  override def getHiddenState(): Activity = {
-//    if (containMultiRNNCell) {
-//      hiddenStates
-//    } else super.getHiddenState()
-//  }
-
   override def initHidden(sizes: Array[Int]): Unit = {
     val stepSizes = sizes
 
     if (containMultiRNNCell) {
       if (hidden == null) {
-//      if (hiddenStates.getState().size == 0) {
         cells.clear()
         cells += topology
         hidden = T()
@@ -69,8 +58,6 @@ class RecurrentDecoder[T : ClassTag](val seqLength: Int)
       val multiCells = topology.asInstanceOf[MultiRNNCell[T]].cells
       var i = 0
       while (i < multiCells.size) {
-//        hiddenStates(i) = multiCells(i).hidResize(null, batchSize, stepSizes)
-//        gradHiddenStates(i) = multiCells(i).hidResize(null, batchSize, stepSizes)
         hidden.toTable(i) = multiCells(i).hidResize(null, batchSize, stepSizes)
         gradHidden.toTable(i) = multiCells(i).hidResize(null, batchSize, stepSizes)
         i += 1
