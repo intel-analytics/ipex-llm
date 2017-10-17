@@ -1,7 +1,7 @@
 ---
 ## Model Save
 
-BigDL supports saving models to local file system, HDFS and AWS S3. After a model is created, you can use `save` on created model to save it. Below example shows how to save a model. 
+BigDL supports saving models to local file system, HDFS and AWS S3. After a model is created, you can use `save` on created model to save it. Below example shows how to save a model.
 
 **Scala example**
 ```scala
@@ -52,14 +52,14 @@ model = Model.load("s3://...") //load from s3
 ## Model Evaluation
 **Scala**
 ```scala
-model.evaluate(dataset,vMethods,batchSize = None)
+model.evaluate(dataset, vMethods, batchSize = None)
 ```
 **Python**
 ```python
-model.test(val_rdd, batch_size, val_methods)
+model.evaluate(val_rdd, batch_size, val_methods)
 ```
 
-Use `evaluate` on the model for evaluation. The parameter `dataset` (Scala) or `val_rdd` (Python) in is the validation dataset, and `vMethods` (Scala) or `val_methods`(Python) is an array of ValidationMethods. Refer to [Metrics](Metrics.md) for the list of defined ValidationMethods. 
+Use `evaluate` on the model for evaluation. The parameter `dataset` (Scala) or `val_rdd` (Python) is the validation dataset, and `vMethods` (Scala) or `val_methods`(Python) is an array of ValidationMethods. Refer to [Metrics](Metrics.md) for the list of defined ValidationMethods.
 
 **Scala example**
 ```scala
@@ -89,12 +89,17 @@ from bigdl.util.common import *
 from bigdl.optim.optimizer import *
 import numpy as np
 
-samples=[Sample.from_ndarray(np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]), np.array([2.0]))]
-testSet = sc.parallelize(samples)
+sc = SparkContext.getOrCreate(conf=create_spark_conf())
+init_engine()
 
-//train a model or load an existing model...
-//model = ...
-evaluateResult = model.test(testSet, 1, [Top1Accuracy])
+samples=[Sample.from_ndarray(np.array([1.0, 2.0]), np.array([2.0]))]
+testSet = sc.parallelize(samples,1)
+
+//You can train a model or load an existing model before evaluation.
+model = Linear(2, 1)
+
+evaluateResult = model.evaluate(testSet, 1, [Top1Accuracy()])
+print(evaluateResult[0])
 ```
 
 
@@ -110,7 +115,7 @@ model.predictClass(dataset)
 model.predict(data_rdd)
 model.predict_class(data_rdd)
 ```
-Use `predict` or `predictClass` or `predict_class` on model for Prediction. `predict` returns return the probability distribution of each class, and `predictClass`/`predict_class` returns the predict label. They both accepts the test dataset as parameter. 
+Use `predict` or `predictClass` or `predict_class` on model for Prediction. `predict` returns return the probability distribution of each class, and `predictClass`/`predict_class` returns the predict label. They both accepts the test dataset as parameter.
 
 **Scala example**
 ```scala
@@ -127,7 +132,7 @@ val predictSample = Sample(feature, label)
 val predictSet = sc.parallelize(Seq(predictSample))
 
 //train a new model or load an existing model
-//val model=... 
+//val model=...
 val preductResult = model.predict(predictSet)
 ```
 
@@ -151,27 +156,25 @@ val preductResult = model.predict(predictSet)
 To "freeze" a module means to exclude some layers of model from training.
 
 ```scala
-layer.freeze()
-layer.unFreeze()
-model.freeze(Array("layer1", "layer2"))
-model.unFreeze()
-model.stopGradient(Array("layer1"))
+module.freeze("layer1", "layer2")
+module.unFreeze("layer1", "layer2")
+module.stopGradient(Array("layer1"))
 ```
-* A single layer can be "freezed" by calling ```freeze()```. If a layer is freezed,
-its parameters(weight/bias, if exists) are not changed in training process
-* A single layer can be "unFreezed" by calling ```unFreeze()```.
-* User can set freeze of list of layers in model by calling ```freeze```
-* User can unfreeze all layers by calling ```unFreeze```
+* The whole module can be "freezed" by calling ```freeze()```. If a module is freezed,
+its parameters(weight/bias, if exists) are not changed in training process.
+If module names are passed, then layers that match the given names will be freezed.
+* The whole module can be "unFreezed" by calling ```unFreeze()```.
+If module names are provided, then layers that match the given names will be unFreezed.
 * stop the input gradient of layers that match the given names. Their input gradient are not computed.
 And they will not contributed to the input gradient computation of layers that depend on them.
 
+Note that stopGradient is only supported in Graph model.
+
 **Python**
 ```python
-layer.freeze()
-layer.unfreeze()
-model.freeze(["layer1", "layer2"])
-model.unfreeze()
-model.stop_gradient(["layer1"])
+module.freeze(["layer1", "layer2"])
+module.unfreeze(["layer1", "layer2"])
+module.stop_gradient(["layer1"])
 ```
 
 **Scala**
@@ -219,7 +222,7 @@ println("fc2 weight \n", fc2.element.parameters()._1(0))
 fc1.element.getParameters()._1.apply1(_ => 1.0f)
 fc2.element.getParameters()._1.apply1(_ => 2.0f)
 model.zeroGradParameters()
-model.freeze(Array("fc2"))
+model.freeze("fc2")
 println("output2: \n", model.forward(input))
 model.backward(input, gradOutput)
 model.updateParameters(1)
@@ -305,9 +308,6 @@ println("fc2 weight \n", fc2.element.parameters()._1(0))
 
 **Python**
 ```python
-from bigdl.nn.layer import *
-import numpy as np
-
 from bigdl.nn.layer import *
 import numpy as np
 

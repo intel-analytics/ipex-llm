@@ -617,7 +617,7 @@ class LSTMPeepholeSpec  extends TorchSpec {
     val checkFlag = gradCheck.checkLayer(model, input, labels)
   }
 
-  "A LSTMPeepwhole " should "get state correctly" in {
+  "A LSTMPeepwhole " should "get hiddenState correctly" in {
     torchCheck()
 
     import com.intel.analytics.bigdl.numeric.NumericDouble
@@ -629,6 +629,7 @@ class LSTMPeepholeSpec  extends TorchSpec {
 
     RNG.setSeed(seed)
     val input = Tensor[Double](batchSize, seqLength, inputSize).rand
+    val gradOutput = Tensor[Double](batchSize, seqLength, hiddenSize).rand
 
     val rec = Recurrent()
 
@@ -662,20 +663,22 @@ class LSTMPeepholeSpec  extends TorchSpec {
          |local parameters, gradParameters = model:getParameters()
          |parameters:copy(weights)
       |local output = model:forward(input)
+      |local gradInput = model:backward(input, gradOutput)
       |local state = lstm:getHiddenState($seqLength)
     """.stripMargin
     scala.Seq
 
     val (luaTime, torchResult) = TH.run(code,
-      Map("input" -> input.transpose(1, 2), "weights" -> weights2Torch),
-      Array("output", "state"))
+      Map("input" -> input.transpose(1, 2), "weights" -> weights2Torch,
+        "gradOutput" -> gradOutput.transpose(1, 2)), Array("output", "state"))
 
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaState = torchResult("state").asInstanceOf[Table]
 
     val output = model.forward(input).toTensor.transpose(1, 2)
+    model.backward(input, gradOutput)
 
-    rec.getStates().toTable.foreach { case ((key: Int, value: Tensor[Double])) =>
+    rec.getHiddenState().toTable.foreach { case ((key: Int, value: Tensor[Double])) =>
       value.map(luaState(key), (v1, v2) => {
         assert(abs(v1 - v2) <= 1e-8)
         v1
@@ -688,7 +691,7 @@ class LSTMPeepholeSpec  extends TorchSpec {
     })
   }
 
-  "A LSTMPeepwhole " should "set state correctly" in {
+  "A LSTMPeepwhole " should "set hiddenState correctly" in {
     torchCheck()
 
     import com.intel.analytics.bigdl.numeric.NumericDouble
@@ -704,7 +707,7 @@ class LSTMPeepholeSpec  extends TorchSpec {
       Tensor[Double](batchSize, hiddenSize).rand)
     val gradOutput = Tensor[Double](batchSize, seqLength, hiddenSize).rand
     val rec = Recurrent()
-    rec.setStates(state)
+    rec.setHiddenState(state)
     val model = Sequential()
       .add(rec
         .add(LSTMPeephole(inputSize, hiddenSize)))
@@ -745,7 +748,7 @@ class LSTMPeepholeSpec  extends TorchSpec {
     val (luaTime, torchResult) = TH.run(code,
       Map("input" -> input.transpose(1, 2), "weights" -> weights2Torch, "state" -> state,
         "gradOutput" -> gradOutput.transpose(1, 2)),
-        Array("output", "gradInput", "gradParameters"))
+      Array("output", "gradInput", "gradParameters"))
 
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]

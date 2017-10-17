@@ -15,12 +15,14 @@
  */
 package com.intel.analytics.bigdl.utils.serializer
 
+import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.VariableFormat.{Default, ONE_D}
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat.{NCHW, NHWC}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat, TensorModule}
+import com.intel.analytics.bigdl.nn.quantized.{LinearWeight, LinearWeightParams}
 import com.intel.analytics.bigdl.optim.{L1L2Regularizer, L1Regularizer, L2Regularizer, Regularizer}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{QuantizedTensor, Tensor, Storage}
 import org.scalatest.{FlatSpec, Matchers}
 import serialization.Bigdl.AttrValue
 
@@ -34,125 +36,286 @@ import scala.util.Random
 
 class DataConverterSpec extends FlatSpec with Matchers{
 
-  "Primitive Int type conversion " should " work properly" in {
+  val map = new mutable.HashMap[Int, Any]()
+
+  "Primitive Int type conversion" should "work properly" in {
     val intValue = 1
     val attriBulder = AttrValue.newBuilder
     val intType = universe.typeOf[Int]
-    DataConverter.setAttributeValue(attriBulder, intValue, intType)
-    val retrievedValue = DataConverter.getAttributeValue(attriBulder.build)
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, null),
+      attriBulder, intValue, intType)
+    map.clear()
+    val retrievedValue = DataConverter.getAttributeValue(DeserializeContext(null, map, null),
+      attriBulder.build)
     retrievedValue should be (intValue)
   }
 
-  "Primitive Long type conversion " should " work properly" in {
+  "Primitive Long type conversion" should "work properly" in {
     val longValue = 1L
     val attriBulder = AttrValue.newBuilder
     val longType = universe.typeOf[Long]
-    DataConverter.setAttributeValue(attriBulder, longValue, longType)
-    val retrievedValue = DataConverter.getAttributeValue(attriBulder.build)
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, null),
+      attriBulder, longValue, longType)
+    map.clear()
+    val retrievedValue = DataConverter.getAttributeValue(DeserializeContext(null, map, null)
+      , attriBulder.build)
     retrievedValue should be (longValue)
   }
 
-  "Primitive Float type conversion " should " work properly" in {
+  "Primitive Float type conversion" should "work properly" in {
     val floatValue = 1.0f
     val attriBulder = AttrValue.newBuilder
     val floatType = universe.typeOf[Float]
-    DataConverter.setAttributeValue(attriBulder, floatValue, floatType)
-    val retrievedValue = DataConverter.getAttributeValue(attriBulder.build)
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, null),
+      attriBulder, floatValue, floatType)
+    map.clear()
+    val retrievedValue = DataConverter.getAttributeValue(DeserializeContext(null, map, null)
+      , attriBulder.build)
     retrievedValue should be (floatValue)
   }
 
-  "Primitive Double type conversion " should " work properly" in {
+  "Primitive Double type conversion" should "work properly" in {
     val doubleValue = 1.0
     val attriBulder = AttrValue.newBuilder
     val doubleType = universe.typeOf[Double]
-    DataConverter.setAttributeValue(attriBulder, doubleValue, doubleType)
-    val retrievedValue = DataConverter.getAttributeValue(attriBulder.build)
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, null),
+      attriBulder, doubleValue, doubleType)
+    map.clear()
+    val retrievedValue = DataConverter.getAttributeValue(DeserializeContext(null, map, null),
+      attriBulder.build)
     retrievedValue should be (doubleValue)
   }
 
-  "Primitive String type conversion " should " work properly" in {
+  "Primitive String type conversion" should "work properly" in {
     val strValue = "test"
     val attriBulder = AttrValue.newBuilder
     val strType = universe.typeOf[String]
-    DataConverter.setAttributeValue(attriBulder, strValue, strType)
-    val retrievedValue = DataConverter.getAttributeValue(attriBulder.build)
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, null),
+      attriBulder, strValue, strType)
+    map.clear()
+    val retrievedValue = DataConverter.getAttributeValue(DeserializeContext(null, map, null),
+      attriBulder.build)
     retrievedValue should be (strValue)
   }
 
-  "Primitive Boolean type conversion " should " work properly" in {
+  "Primitive Boolean type conversion" should  "work properly" in {
     val boolValue = false
     val attriBulder = AttrValue.newBuilder
     val boolType = universe.typeOf[Boolean]
-    DataConverter.setAttributeValue(attriBulder, boolValue, boolType)
-    val retrievedValue = DataConverter.getAttributeValue(attriBulder.build)
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, null),
+      attriBulder, boolValue, boolType)
+    map.clear()
+    val retrievedValue = DataConverter.getAttributeValue(DeserializeContext(null, map, null),
+      attriBulder.build)
     retrievedValue.isInstanceOf[Boolean] should be (true)
     retrievedValue.asInstanceOf[Boolean] should be (boolValue)
   }
 
-  "L1L2Regularizer conversion " should  " work properly" in {
+  "L1L2Regularizer conversion" should  "work properly" in {
     val regularizer = L1L2Regularizer(1.0, 2.0)
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, regularizer, ModuleSerializer.regularizerType)
-    val retrievedValue = DataConverter.getAttributeValue(attriBulder.build)
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, null),
+      attriBulder, regularizer, ModuleSerializer.regularizerType)
+    map.clear()
+    val retrievedValue = DataConverter.getAttributeValue(DeserializeContext(null, map, null),
+      attriBulder.build)
     retrievedValue.isInstanceOf[L1L2Regularizer[Float]] should be (true)
     retrievedValue.asInstanceOf[L1L2Regularizer[Float]].l1 should be (regularizer.l1)
     retrievedValue.asInstanceOf[L1L2Regularizer[Float]].l2 should be (regularizer.l2)
   }
 
-  "L1Regularizer conversion " should  " work properly" in {
+  "L1Regularizer conversion" should  "work properly" in {
     val regularizer = L1Regularizer(1.0)
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, regularizer, ModuleSerializer.regularizerType)
-    val retrievedValue = DataConverter.getAttributeValue(attriBulder.build)
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, null),
+      attriBulder, regularizer, ModuleSerializer.regularizerType)
+    map.clear()
+    val retrievedValue = DataConverter.getAttributeValue(DeserializeContext(null, map, null),
+      attriBulder.build)
     retrievedValue.isInstanceOf[L1Regularizer[Float]] should be (true)
     retrievedValue.asInstanceOf[L1Regularizer[Float]].l1 should be (regularizer.l1)
   }
 
-  "L2Regularizer conversion " should  " work properly" in {
+  "L2Regularizer conversion" should  "work properly" in {
     val regularizer = L2Regularizer(1.0)
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, regularizer, ModuleSerializer.regularizerType)
-    val retrievedValue = DataConverter.getAttributeValue(attriBulder.build)
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, null),
+      attriBulder, regularizer, ModuleSerializer.regularizerType)
+    map.clear()
+    val retrievedValue = DataConverter.getAttributeValue(DeserializeContext(null, map, null),
+      attriBulder.build)
     retrievedValue.isInstanceOf[L2Regularizer[Float]] should be (true)
     retrievedValue.asInstanceOf[L2Regularizer[Float]].l2 should be (regularizer.l2)
   }
 
-  "Empty Regularizer conversion " should  " work properly" in {
+  "Empty Regularizer conversion" should  "work properly" in {
     val regularizer : L1L2Regularizer[Float] = null
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, regularizer, ModuleSerializer.regularizerType)
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, null),
+      attriBulder, regularizer, ModuleSerializer.regularizerType)
     val attr = attriBulder.build
-    val retrievedValue = DataConverter.getAttributeValue(attr)
+    map.clear()
+    val retrievedValue = DataConverter.getAttributeValue(DeserializeContext(null, map, null),
+      attr)
     attr.getDataType should be (DataType.REGULARIZER)
     retrievedValue should be (regularizer)
   }
 
-  "Tensor conversion " should " work properly" in {
+  "Tensor conversion" should "work properly" in {
     val tensor = Tensor(5, 5).apply1(e => Random.nextFloat())
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, tensor, ModuleSerializer.tensorType)
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType),
+      attriBulder, tensor, ModuleSerializer.tensorType)
     val attr = attriBulder.build
-    val retrievedValue = DataConverter.getAttributeValue(attr)
+    map.clear()
+    val retrievedValue = DataConverter.
+      getAttributeValue(DeserializeContext(null, map, ProtoStorageType), attr)
     attr.getDataType should be (DataType.TENSOR)
     retrievedValue should be (tensor)
   }
 
-  "Empty Tensor conversion " should " work properly" in {
+  "Empty Tensor conversion" should "work properly" in {
     val tensor : Tensor[Float] = null
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, tensor, ModuleSerializer.tensorType)
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType),
+      attriBulder, tensor, ModuleSerializer.tensorType)
     val attr = attriBulder.build
-    val retrievedValue = DataConverter.getAttributeValue(attr)
+    map.clear()
+    val retrievedValue = DataConverter.
+      getAttributeValue(DeserializeContext(null, map, ProtoStorageType), attr)
     attr.getDataType should be (DataType.TENSOR)
     retrievedValue should be (tensor)
   }
+
+  "Two tensors to the same object conversion" should "work properly" in {
+    val tensor1 = Tensor(5, 5).apply1(e => Random.nextFloat())
+    val tensor2 = tensor1
+
+    map.clear()
+
+    val attriBulder1 = AttrValue.newBuilder
+
+    DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType),
+      attriBulder1, tensor1, ModuleSerializer.tensorType)
+
+    val attr1 = attriBulder1.build
+
+    val attriBulder2 = AttrValue.newBuilder
+
+    DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType),
+      attriBulder2, tensor2, ModuleSerializer.tensorType)
+    val attr2 = attriBulder2.build
+
+    map.clear()
+
+    val retrievedValue1 = DataConverter.
+      getAttributeValue(DeserializeContext(null, map, ProtoStorageType), attr1)
+
+    val retrievedValue2 = DataConverter.
+      getAttributeValue(DeserializeContext(null, map, ProtoStorageType), attr2)
+
+    retrievedValue1.asInstanceOf[Tensor[Float]].resize(1, 25)
+
+    retrievedValue2 should be (retrievedValue1)
+  }
+
+  "Two tensor share the same memory" should "work properly" in {
+    val array = Array[Float](1.0f, 2.0f, 3.0f, 4.0f)
+    val storage = Storage[Float](array)
+    val tensor1 = Tensor(storage, 1)
+    val tensor2 = Tensor(storage, 1)
+
+    map.clear()
+
+    val attriBulder1 = AttrValue.newBuilder
+
+    DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType),
+      attriBulder1, tensor1, ModuleSerializer.tensorType)
+
+    val attr1 = attriBulder1.build
+
+    val attriBulder2 = AttrValue.newBuilder
+
+    DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType),
+      attriBulder2, tensor2, ModuleSerializer.tensorType)
+    val attr2 = attriBulder2.build
+
+    map.clear()
+
+    val retrievedValue1 = DataConverter.
+      getAttributeValue(DeserializeContext(null, map, ProtoStorageType), attr1)
+      .asInstanceOf[Tensor[Float]]
+
+    retrievedValue1.storage().array()(0) = 10.0f
+
+    val retrievedValue2 = DataConverter.
+      getAttributeValue(DeserializeContext(null, map, ProtoStorageType), attr2)
+      .asInstanceOf[Tensor[Float]]
+
+    retrievedValue1.storage() should be (retrievedValue2.storage())
+  }
+
+  "Two tensors share the same storage" should "work properly" in {
+    val weight = Array(0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f)
+
+    val storage = Storage(weight)
+    val tensor1 = Tensor(Storage(weight), 1, Array(2, 2))
+    val tensor2 = Tensor(Storage(weight), 5, Array(2, 2))
+
+    map.clear()
+
+    val attriBulder1 = AttrValue.newBuilder
+
+    DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType),
+      attriBulder1, tensor1, ModuleSerializer.tensorType)
+
+    val attr1 = attriBulder1.build
+
+    val attriBulder2 = AttrValue.newBuilder
+
+    DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType),
+      attriBulder2, tensor2, ModuleSerializer.tensorType)
+    val attr2 = attriBulder2.build
+
+    map.clear()
+
+    val retrievedValue1 = DataConverter.
+      getAttributeValue(DeserializeContext(null, map, ProtoStorageType), attr1)
+      .asInstanceOf[Tensor[Float]]
+
+    val retrievedValue2 = DataConverter.
+      getAttributeValue(DeserializeContext(null, map, ProtoStorageType), attr2)
+      .asInstanceOf[Tensor[Float]]
+
+    retrievedValue1.storage().array().update(1, 0.1f)
+
+    retrievedValue1.storage() should be (retrievedValue2.storage())
+
+  }
+
 
   "VariableFormat conversion " should " work properly" in {
     val format : VariableFormat = Default
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, format, universe.typeOf[VariableFormat])
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType),
+      attriBulder, format, universe.typeOf[VariableFormat])
     val attr = attriBulder.build
-    val retrievedValue = DataConverter.getAttributeValue(attr)
+    map.clear()
+    val retrievedValue = DataConverter.
+      getAttributeValue(DeserializeContext(null, map, ProtoStorageType), attr)
     attr.getDataType should be (DataType.VARIABLE_FORMAT)
     retrievedValue should be (format)
   }
@@ -160,9 +323,13 @@ class DataConverterSpec extends FlatSpec with Matchers{
   "VariableFormat conversion With Param " should " work properly" in {
     val format : VariableFormat = ONE_D
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, format, universe.typeOf[VariableFormat])
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType),
+      attriBulder, format, universe.typeOf[VariableFormat])
     val attr = attriBulder.build
-    val retrievedValue = DataConverter.getAttributeValue(attr)
+    map.clear()
+    val retrievedValue = DataConverter.
+      getAttributeValue(DeserializeContext(null, map, ProtoStorageType), attr)
     attr.getDataType should be (DataType.VARIABLE_FORMAT)
     retrievedValue should be (format)
   }
@@ -170,9 +337,13 @@ class DataConverterSpec extends FlatSpec with Matchers{
   "Empty VariableFormat conversion " should " work properly" in {
     val format : VariableFormat = null
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, format, universe.typeOf[VariableFormat])
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType),
+      attriBulder, format, universe.typeOf[VariableFormat])
     val attr = attriBulder.build
-    val retrievedValue = DataConverter.getAttributeValue(attr)
+    map.clear()
+    val retrievedValue = DataConverter.
+      getAttributeValue(DeserializeContext(null, map, ProtoStorageType), attr)
     attr.getDataType should be (DataType.VARIABLE_FORMAT)
     retrievedValue should be (format)
   }
@@ -180,9 +351,13 @@ class DataConverterSpec extends FlatSpec with Matchers{
   "Init Method conversion " should " work properly" in {
     val initMethod = RandomUniform
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, initMethod, universe.typeOf[InitializationMethod])
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType),
+      attriBulder, initMethod, universe.typeOf[InitializationMethod])
     val attr = attriBulder.build
-    val retrievedValue = DataConverter.getAttributeValue(attr)
+    map.clear()
+    val retrievedValue = DataConverter.
+      getAttributeValue(DeserializeContext(null, map, ProtoStorageType), attr)
     attr.getDataType should be (DataType.INITMETHOD)
     retrievedValue should be (initMethod)
   }
@@ -190,29 +365,45 @@ class DataConverterSpec extends FlatSpec with Matchers{
   "Empty Init Method conversion " should " work properly" in {
     val initMethod : InitializationMethod = null
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, initMethod, universe.typeOf[InitializationMethod])
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType),
+      attriBulder, initMethod, universe.typeOf[InitializationMethod])
     val attr = attriBulder.build
-    val retrievedValue = DataConverter.getAttributeValue(attr)
+    map.clear()
+    val retrievedValue = DataConverter.
+      getAttributeValue(DeserializeContext(null, map, ProtoStorageType), attr)
     attr.getDataType should be (DataType.INITMETHOD)
     retrievedValue should be (initMethod)
   }
 
+
   "Module Conversion " should " work properly" in {
     val linear = Linear(5, 5).setName("linear")
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, linear, ModuleSerializer.abstractModuleType)
+    val moduleData = ModuleData(linear, Seq(), Seq())
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(moduleData, map, ProtoStorageType),
+      attriBulder, linear, ModuleSerializer.abstractModuleType)
     val attr = attriBulder.build
-    val retrievedValue = DataConverter.getAttributeValue(attr)
+    map.clear()
+    val retrievedValue = DataConverter.
+      getAttributeValue(DeserializeContext(attr.getBigDLModuleValue
+        , map, ProtoStorageType), attr)
     attr.getDataType should be (DataType.MODULE)
     retrievedValue should be (linear)
   }
 
+
   "Nullable Module Conversion " should " work properly" in {
     val linear : TensorModule[Float] = null
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, linear, ModuleSerializer.abstractModuleType)
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType),
+      attriBulder, linear, ModuleSerializer.abstractModuleType)
     val attr = attriBulder.build
-    val retrievedValue = DataConverter.getAttributeValue(attr)
+    map.clear()
+    val retrievedValue = DataConverter.
+      getAttributeValue(DeserializeContext(null, map, ProtoStorageType), attr)
     attr.getDataType should be (DataType.MODULE)
     retrievedValue should be (linear)
   }
@@ -220,9 +411,13 @@ class DataConverterSpec extends FlatSpec with Matchers{
   "NHWC DataFormat conversion " should " work properly" in {
     val format : DataFormat = NHWC
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, format, universe.typeOf[DataFormat])
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, null),
+      attriBulder, format, universe.typeOf[DataFormat])
     val attr = attriBulder.build
-    val retrievedValue = DataConverter.getAttributeValue(attr)
+    map.clear()
+    val retrievedValue = DataConverter.
+      getAttributeValue(DeserializeContext(null, map, null), attr)
     attr.getDataType should be (DataType.DATA_FORMAT)
     retrievedValue should be (format)
   }
@@ -230,9 +425,13 @@ class DataConverterSpec extends FlatSpec with Matchers{
   "NCHW DataFormat conversion " should " work properly" in {
     val format : DataFormat = NCHW
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, format, universe.typeOf[DataFormat])
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, null),
+      attriBulder, format, universe.typeOf[DataFormat])
     val attr = attriBulder.build
-    val retrievedValue = DataConverter.getAttributeValue(attr)
+    map.clear()
+    val retrievedValue = DataConverter.
+      getAttributeValue(DeserializeContext(null, map, ProtoStorageType), attr)
     attr.getDataType should be (DataType.DATA_FORMAT)
     retrievedValue should be (format)
   }
@@ -240,45 +439,65 @@ class DataConverterSpec extends FlatSpec with Matchers{
   "Array of int32 conversion " should " work properly " in {
     val arry = Array[Int](1, 2, 3)
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, arry, universe.typeOf[Array[Int]])
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, null),
+      attriBulder, arry, universe.typeOf[Array[Int]])
     val attr = attriBulder.build
-    val retrievedValue = DataConverter.getAttributeValue(attr)
+    map.clear()
+    val retrievedValue = DataConverter.
+      getAttributeValue(DeserializeContext(null, map, null), attr)
     retrievedValue should be (arry)
   }
 
   "Array of int64 conversion " should " work properly " in {
     val arry = Array[Long](1L, 2L, 3L)
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, arry, universe.typeOf[Array[Long]])
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, null),
+      attriBulder, arry, universe.typeOf[Array[Long]])
     val attr = attriBulder.build
-    val retrievedValue = DataConverter.getAttributeValue(attr)
+    map.clear()
+    val retrievedValue = DataConverter.
+      getAttributeValue(DeserializeContext(null, map, null), attr)
     retrievedValue should be (arry)
   }
 
   "Array of float conversion " should " work properly " in {
     val arry = Array[Float](1.0f, 2.0f, 3.0f)
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, arry, universe.typeOf[Array[Float]])
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, null),
+      attriBulder, arry, universe.typeOf[Array[Float]])
     val attr = attriBulder.build
-    val retrievedValue = DataConverter.getAttributeValue(attr)
+    map.clear()
+    val retrievedValue = DataConverter.
+      getAttributeValue(DeserializeContext(null, map, null), attr)
     retrievedValue should be (arry)
   }
 
   "Null Array of float conversion " should " work properly " in {
     val arry : Array[Float] = null
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, arry, universe.typeOf[Array[Float]])
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, null),
+      attriBulder, arry, universe.typeOf[Array[Float]])
     val attr = attriBulder.build
-    val retrievedValue = DataConverter.getAttributeValue(attr)
+    map.clear()
+    val retrievedValue = DataConverter.
+      getAttributeValue(DeserializeContext(null, map, null), attr)
     retrievedValue should be (arry)
   }
 
   "Array of double conversion " should " work properly " in {
     val arry = Array[Double](1.0, 2.0, 3.0)
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, arry, universe.typeOf[Array[Double]])
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, null),
+      attriBulder, arry, universe.typeOf[Array[Double]])
     val attr = attriBulder.build
-    val retrievedValue = DataConverter.getAttributeValue(attr)
+    map.clear()
+    val retrievedValue = DataConverter.
+      getAttributeValue(DeserializeContext(null, map, null), attr)
     retrievedValue should be (arry)
   }
 
@@ -288,18 +507,26 @@ class DataConverterSpec extends FlatSpec with Matchers{
     arry(0) = "test1"
     arry(1) = "test2"
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, arry, universe.typeOf[Array[String]])
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, null),
+      attriBulder, arry, universe.typeOf[Array[String]])
     val attr = attriBulder.build
-    val retrievedValue = DataConverter.getAttributeValue(attr)
+    map.clear()
+    val retrievedValue = DataConverter.
+      getAttributeValue(DeserializeContext(null, map, null), attr)
     retrievedValue should be (arry)
   }
 
   "Array of Boolean conversion " should " work properly" in {
     val arry = Array[Boolean](true, false)
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, arry, universe.typeOf[Array[Boolean]])
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, null),
+      attriBulder, arry, universe.typeOf[Array[Boolean]])
     val attr = attriBulder.build
-    val retrievedValue = DataConverter.getAttributeValue(attr)
+    map.clear()
+    val retrievedValue = DataConverter.
+      getAttributeValue(DeserializeContext(null, map, null), attr)
     retrievedValue should be (arry)
   }
 
@@ -308,20 +535,28 @@ class DataConverterSpec extends FlatSpec with Matchers{
     arry(0) = L2Regularizer(1.0)
     arry(1) = L1Regularizer(1.0)
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, arry, universe.typeOf[Array[Regularizer[Float]]])
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, null),
+      attriBulder, arry, universe.typeOf[Array[Regularizer[Float]]])
     val attr = attriBulder.build
-    val retrievedValue = DataConverter.getAttributeValue(attr)
+    map.clear()
+    val retrievedValue = DataConverter.
+      getAttributeValue(DeserializeContext(null, map, null), attr)
     retrievedValue should be (arry)
   }
 
-  "Array of Tensor conversion " should " work properly" in {
+  "Array of Tensor conversion" should "work properly" in {
     val tensor1 = Tensor(2, 3).apply1(_ => Random.nextFloat())
     val tensor2 = Tensor(2, 3).apply1(_ => Random.nextFloat())
     val tensorArray = Array(tensor1, tensor2)
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, tensorArray, universe.typeOf[Array[Tensor[Float]]])
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType),
+      attriBulder, tensorArray, universe.typeOf[Array[Tensor[Float]]])
     val attr = attriBulder.build
-    val retrievedValue = DataConverter.getAttributeValue(attr)
+    map.clear()
+    val retrievedValue = DataConverter.
+      getAttributeValue(DeserializeContext(null, map, null), attr)
     retrievedValue.isInstanceOf[Array[Tensor[Float]]] should be (true)
     retrievedValue should be (tensorArray)
   }
@@ -330,9 +565,13 @@ class DataConverterSpec extends FlatSpec with Matchers{
     val arry = new Array[VariableFormat](1)
     arry(0) = Default
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, arry, universe.typeOf[Array[VariableFormat]])
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, null),
+      attriBulder, arry, universe.typeOf[Array[VariableFormat]])
     val attr = attriBulder.build
-    val retrievedValue = DataConverter.getAttributeValue(attr)
+    map.clear()
+    val retrievedValue = DataConverter.
+      getAttributeValue(DeserializeContext(null, map, null), attr)
     retrievedValue should be (arry)
   }
 
@@ -341,9 +580,13 @@ class DataConverterSpec extends FlatSpec with Matchers{
     arry(0) = RandomUniform
     arry(1) = Zeros
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, arry, universe.typeOf[Array[InitializationMethod]])
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, null),
+      attriBulder, arry, universe.typeOf[Array[InitializationMethod]])
     val attr = attriBulder.build
-    val retrievedValue = DataConverter.getAttributeValue(attr)
+    map.clear()
+    val retrievedValue = DataConverter.
+      getAttributeValue(DeserializeContext(null, map, null), attr)
     retrievedValue should be (arry)
   }
 
@@ -352,9 +595,13 @@ class DataConverterSpec extends FlatSpec with Matchers{
     arry(0) = NCHW
     arry(1) = NHWC
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, arry, universe.typeOf[Array[DataFormat]])
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, null),
+      attriBulder, arry, universe.typeOf[Array[DataFormat]])
     val attr = attriBulder.build
-    val retrievedValue = DataConverter.getAttributeValue(attr)
+    map.clear()
+    val retrievedValue = DataConverter.
+      getAttributeValue(DeserializeContext(null, map, null), attr)
     retrievedValue should be (arry)
   }
 
@@ -363,26 +610,34 @@ class DataConverterSpec extends FlatSpec with Matchers{
     arry(0) = Linear[Float](2, 3).setName("l1")
     arry(1) = Linear[Float](2, 3).setName("l2")
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, arry,
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType),
+      attriBulder, arry,
       universe.typeOf[Array[AbstractModule[Activity, Activity, Float]]])
     val attr = attriBulder.build
-    val retrievedValue = DataConverter.getAttributeValue(attr)
+    map.clear()
+    val retrievedValue = DataConverter.
+      getAttributeValue(DeserializeContext(null, map, ProtoStorageType), attr)
     retrievedValue should be (arry)
   }
 
   "Null Array of Modules conversion" should " work properly" in {
     val arry : Array[AbstractModule[Activity, Activity, Float]] = null
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, arry,
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, null),
+      attriBulder, arry,
       universe.typeOf[Array[AbstractModule[Activity, Activity, Float]]])
     val attr = attriBulder.build
-    val retrievedValue = DataConverter.getAttributeValue(attr)
+    map.clear()
+    val retrievedValue = DataConverter.
+      getAttributeValue(DeserializeContext(null, map, null), attr)
     retrievedValue should be (arry)
   }
 
   "NameList conversion " should " work properly" in {
 
-    val map = new mutable.HashMap[String, mutable.Map[String, Any]]
+    val map1 = new mutable.HashMap[String, mutable.Map[String, Any]]
 
     val attrsMap = new mutable.HashMap[String, Any]
 
@@ -396,16 +651,66 @@ class DataConverterSpec extends FlatSpec with Matchers{
     attrsMap("dataformat") = NCHW
     attrsMap("module") = Linear(3, 4).setName("linear")
 
-    map("test") = attrsMap
+    map1("test") = attrsMap
 
     val attriBulder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(attriBulder, map)
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType),
+      attriBulder, map1)
     val attr = attriBulder.build
-    val retrievedValue = DataConverter.getAttributeValue(attr).
+    map.clear()
+    val retrievedValue = DataConverter.
+      getAttributeValue(DeserializeContext(null, map, ProtoStorageType), attr).
       asInstanceOf[mutable.HashMap[String, mutable.Map[String, Any]]]
 
-    retrievedValue should be (map)
+    retrievedValue should be (map1)
 
   }
 
+  "QuantizedTensor" should "work properly" in {
+    val bytes = new Array[Byte](5)
+    val min = Array[Float]('H')
+    val max = Array[Float]('O')
+    val sum = Array[Float]("HELLO".sum)
+    "HELLO".zipWithIndex.foreach(x => bytes(x._2) = x._1.toByte)
+    bytes.foreach(x => println(x.toChar))
+    val tensor = QuantizedTensor[Float](bytes, max, min, sum, Array(1, 5), LinearWeightParams(1, 5))
+
+    map.clear()
+    val attriBulder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType), attriBulder,
+      tensor, ModuleSerializer.tensorType)
+    val attr = attriBulder.build
+    map.clear()
+    val retrievedValue = DataConverter.getAttributeValue(DeserializeContext(null, map,
+      ProtoStorageType), attr)
+    attr.getDataType should be (DataType.TENSOR)
+
+    retrievedValue.hashCode() should be (tensor.hashCode())
+  }
+
+  "Array of QuantizedTensor" should "work properly" in {
+    val bytes = new Array[Byte](5)
+    val min = Array[Float]('H')
+    val max = Array[Float]('O')
+    val sum = Array[Float]("HELLO".sum)
+    "HELLO".zipWithIndex.foreach(x => bytes(x._2) = x._1.toByte)
+    bytes.foreach(x => println(x.toChar))
+    val tensor1 = QuantizedTensor[Float](bytes, max, min, sum, Array(1, 5),
+      LinearWeightParams(1, 5))
+    val tensor2 = QuantizedTensor[Float](bytes, max, min, sum, Array(1, 5),
+      LinearWeightParams(1, 5))
+    val array = new Array[QuantizedTensor[Float]](2)
+    array(0) = tensor1
+    array(1) = tensor2
+
+    map.clear()
+    val attriBulder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType), attriBulder,
+      array, universe.typeOf[Array[QuantizedTensor[Float]]])
+    val attr = attriBulder.build
+    map.clear()
+    val retrievedValue = DataConverter.getAttributeValue(DeserializeContext(null, map,
+      ProtoStorageType), attr)
+  }
 }

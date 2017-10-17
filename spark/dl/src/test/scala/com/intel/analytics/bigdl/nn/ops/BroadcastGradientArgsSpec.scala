@@ -19,31 +19,32 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
-class MatMulSpec extends FlatSpec with Matchers {
-  "MatMul operation" should "works correctly" in {
-    import com.intel.analytics.bigdl.numeric.NumericFloat
+class BroadcastGradientArgsSpec extends FlatSpec with Matchers {
+  "BroadcastGradientArgs operation" should "works correctly" in {
+    import com.intel.analytics.bigdl.numeric.NumericInt
     val input =
       T(
-        Tensor(
-          T(
-            T(1f, 2f, 3f),
-            T(4f, 5f, 6f))
-        ),
-        Tensor(
-          T(
-            T(1f, 4f),
-            T(2f, 5f),
-            T(3f, 6f))
-        )
+        Tensor(T(1, 2, 3)),
+        Tensor(T(2, 2, 1))
       )
 
-    val expectOutput = Tensor(
-      T(
-        T(14f, 32f),
-        T(32f, 77f))
-    )
+    val expectOutput = T(Tensor(T(0)), Tensor(T(2)))
 
-    val output = MatMul().forward(input)
+    val output = BroadcastGradientArgs().forward(input)
+    output should be(expectOutput)
+  }
+
+  "BroadcastGradientArgs operation empty" should "works correctly" in {
+    import com.intel.analytics.bigdl.numeric.NumericInt
+    val input =
+      T(
+        Tensor(T(1, 2, 3)),
+        Tensor()
+      )
+
+    val expectOutput = T(Tensor(T(0)), Tensor(T(0, 1, 2)))
+
+    val output = BroadcastGradientArgs().forward(input)
     output should be(expectOutput)
   }
 }

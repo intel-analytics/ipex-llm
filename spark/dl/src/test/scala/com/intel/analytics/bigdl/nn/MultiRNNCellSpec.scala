@@ -260,7 +260,7 @@ class MultiRNNCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
     })
   }
 
-  "A MultiRNNCell " should "work with set/getStates" in {
+  "A MultiRNNCell " should "work with set/getHiddenState" in {
     val hiddenSize = 7
     val inputSize = 7
     val seqLength = 3
@@ -294,7 +294,7 @@ class MultiRNNCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val initStates = new Table(map)
     val initStates_0 = new Table(map0)
     val initStates_1 = new Table(map1)
-    rec.setStates(initStates)
+    rec.setHiddenState(initStates)
     val output = model.forward(input).toTensor[Double]
     val gradInput = model.backward(input, gradOutput).toTensor[Double]
 
@@ -304,11 +304,11 @@ class MultiRNNCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val rec0 = Recurrent[Double]().add(LSTM[Double](
       inputSize,
       hiddenSize))
-    rec0.setStates(initStates_0)
+    rec0.setHiddenState(initStates_0)
     val rec1 = Recurrent[Double]().add(LSTM[Double](
       inputSize,
       hiddenSize))
-    rec1.setStates(initStates_1)
+    rec1.setHiddenState(initStates_1)
     val model2 = Sequential[Double]()
       .add(rec0)
       .add(rec1)
@@ -321,10 +321,10 @@ class MultiRNNCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
       v1
     })
 
-    val state_decoder0 = rec.getStates().toTable[Table](0).getState()
-    val state_decoder1 = rec.getStates().toTable[Table](1).getState()
-    val stateGet0 = rec0.getStates().toTable.getState()
-    val stateGet1 = rec1.getStates().toTable.getState()
+    val state_decoder0 = rec.getHiddenState().toTable[Table](0).getState()
+    val state_decoder1 = rec.getHiddenState().toTable[Table](1).getState()
+    val stateGet0 = rec0.getHiddenState().toTable.getState()
+    val stateGet1 = rec1.getHiddenState().toTable.getState()
     for (k <- state_decoder0.keys) {
       val t1 = state_decoder0(k).asInstanceOf[Tensor[Double]]
       val t2 = stateGet0(k).asInstanceOf[Tensor[Double]]
@@ -350,7 +350,7 @@ class MultiRNNCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
       v1
     })
 
-    rec.setStates(rec.getStates())
+    rec.setHiddenState(rec.getHiddenState())
     model.forward(input)
   }
 }

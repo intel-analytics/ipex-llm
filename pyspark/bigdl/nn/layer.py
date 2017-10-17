@@ -238,14 +238,32 @@ class Layer(JavaValue):
         return dict((layer_name, to_ndarray(params)) for layer_name, params in
                 name_to_params.items())
 
-    def evaluate(self):
+    def evaluate(self, *args):
         """
+        No argument passed in:
         Evaluate the model to set train = false, useful when doing test/forward
         :return: layer itself
+
+        Three arguments passed in:
+        A method to benchmark the model quality.
+
+        :param val_rdd: the input data
+        :param batch_size: batch size
+        :param val_methods: a list of validation methods. i.e: Top1Accuracy,Top5Accuracy and Loss.
+        :return:
         """
-        callBigDlFunc(self.bigdl_type,
-                      "evaluate", self.value)
-        return self
+        if len(args) == 0:
+            callBigDlFunc(self.bigdl_type,
+                          "evaluate", self.value)
+            return self
+        elif len(args) == 3:
+            val_rdd, batch_size, val_methods = args
+            return callBigDlFunc(self.bigdl_type,
+                                 "modelEvaluate",
+                                 self.value,
+                                 val_rdd, batch_size, val_methods)
+        else:
+            raise Exception("Error when calling evaluate(): it takes no argument or exactly three arguments only")
 
     def predict(self, data_rdd):
         """
@@ -270,20 +288,6 @@ class Layer(JavaValue):
         result = callBigDlFunc(self.bigdl_type,
                                "modelPredictClass", self.value, data_rdd)
         return result
-
-    def test(self, val_rdd, batch_size, val_methods):
-        """
-        A method to benchmark the model quality.
-
-        :param val_rdd: the input data
-        :param batch_size: batch size
-        :param val_methods: a list of validation methods. i.e: Top1Accuracy,Top5Accuracy and Loss.
-        :return:
-        """
-        return callBigDlFunc(self.bigdl_type,
-                             "modelTest",
-                             self.value,
-                             val_rdd, batch_size, val_methods)
 
     def set_weights(self, weights):
         """
@@ -388,26 +392,23 @@ class Layer(JavaValue):
         '''
         self.value.bRegularizer = bRegularizer.value
 
-    def freeze(self):
-        '''
-        freeze layer
-        '''
-        callBigDlFunc(self.bigdl_type,
-                        "setLayerFreeze", self.value)
+    def freeze(self, names=None):
+        """
+        freeze module, if names is not None, set an array of layers that match given names
+        to be freezed
+        :param names: an array of layer names
+        :return:
+        """
+        callBigDlFunc(self.bigdl_type, "freeze", self.value, names)
         return self
 
-    def unfreeze(self):
-        '''
-        unfreeze layer
-        '''
-        callBigDlFunc(self.bigdl_type,
-                        "setLayerUnFreeze", self.value)
-
-    def evaluate(self):
-        '''
-        Set this layer in the evaluation mode
-        '''
-        callJavaFunc(get_spark_context(), self.value.evaluate)
+    def unfreeze(self, names=None):
+        """
+        unfreeze module, if names is not None, unfreeze layers that match given names
+        :param names: an array of layer names
+        :return:
+        """
+        callBigDlFunc(self.bigdl_type, "unFreeze", self.value, names)
         return self
 
     def training(self):
@@ -432,7 +433,87 @@ class Layer(JavaValue):
         '''
         return callJavaFunc(get_spark_context(), self.value.isTraining)
 
+    def quantize(self):
+        '''
+        Clone self and quantize it, at last return a new quantized model.
+        :return: A new quantized model.
 
+        >>> fc = Linear(4, 2)
+        creating: createLinear
+        >>> fc.set_weights([np.ones((4, 2)), np.ones((2,))])
+        >>> input = np.ones((2, 4))
+        >>> fc.forward(input)
+        array([[ 5.,  5.],
+               [ 5.,  5.]], dtype=float32)
+        >>> quantized_fc = fc.quantize()
+        >>> quantized_fc.forward(input)
+        array([[ 5.,  5.],
+               [ 5.,  5.]], dtype=float32)
+
+        >>> assert("quantized.Linear" in quantized_fc.__str__())
+        >>> conv = SpatialConvolution(1, 2, 3, 3)
+        creating: createSpatialConvolution
+        >>> conv.set_weights([np.ones((2, 1, 3, 3)), np.zeros((2,))])
+        >>> input = np.ones((2, 1, 4, 4))
+        >>> conv.forward(input)
+        array([[[[ 9.,  9.],
+                 [ 9.,  9.]],
+        <BLANKLINE>
+                [[ 9.,  9.],
+                 [ 9.,  9.]]],
+        <BLANKLINE>
+        <BLANKLINE>
+               [[[ 9.,  9.],
+                 [ 9.,  9.]],
+        <BLANKLINE>
+                [[ 9.,  9.],
+                 [ 9.,  9.]]]], dtype=float32)
+        >>> quantized_conv = conv.quantize()
+        >>> quantized_conv.forward(input)
+        array([[[[ 9.,  9.],
+                 [ 9.,  9.]],
+        <BLANKLINE>
+                [[ 9.,  9.],
+                 [ 9.,  9.]]],
+        <BLANKLINE>
+        <BLANKLINE>
+               [[[ 9.,  9.],
+                 [ 9.,  9.]],
+        <BLANKLINE>
+                [[ 9.,  9.],
+                 [ 9.,  9.]]]], dtype=float32)
+        >>> assert("quantized.SpatialConvolution" in quantized_conv.__str__())
+        >>> seq = Sequential()
+        creating: createSequential
+        >>> seq = seq.add(conv)
+        >>> seq = seq.add(Reshape([8, 4], False))
+        creating: createReshape
+        >>> seq = seq.add(fc)
+        >>> input = np.ones([1, 1, 6, 6])
+        >>> seq.forward(input)
+        array([[ 37.,  37.],
+               [ 37.,  37.],
+               [ 37.,  37.],
+               [ 37.,  37.],
+               [ 37.,  37.],
+               [ 37.,  37.],
+               [ 37.,  37.],
+               [ 37.,  37.]], dtype=float32)
+        >>> quantized_seq = seq.quantize()
+        >>> quantized_seq.forward(input)
+        array([[ 37.,  37.],
+               [ 37.,  37.],
+               [ 37.,  37.],
+               [ 37.,  37.],
+               [ 37.,  37.],
+               [ 37.,  37.],
+               [ 37.,  37.],
+               [ 37.,  37.]], dtype=float32)
+        >>> assert("quantized.Linear" in quantized_seq.__str__())
+        >>> assert("quantized.SpatialConvolution" in quantized_seq.__str__())
+        '''
+        quantized_model = callBigDlFunc(self.bigdl_type, "quantize", self.value)
+        return Layer.of(quantized_model)
 
 
 class Container(Layer):
@@ -569,30 +650,10 @@ class Model(Container):
         sc = get_spark_context()
         rdd_train_images = sc.parallelize(data)
         rdd_train_labels = sc.parallelize(label)
-        rdd_train_sample = rdd_train_images.zip(rdd_train_labels).map(lambda (features, label):
-                                                                      Sample.from_ndarray(features, label))
+        rdd_train_sample = rdd_train_images.zip(rdd_train_labels).map(lambda input:
+                                                                      Sample.from_ndarray(input[0], input[1]))
         jmodel = callBigDlFunc(bigdl_type, "trainTF", path, output_name, rdd_train_sample, opt_method, criterion, batch_size, end_when)
         return Model.of(jmodel)
-
-
-    def freeze(self, freeze_layers, bigdl_type="float"):
-        """
-        set an array of layers to be freezed
-        :param freeze_layers: an array of layer names
-        :param bigdl_type:
-        :return:
-        """
-        callBigDlFunc(bigdl_type, "setFreeze", self.value, freeze_layers)
-        return self
-
-    def unfreeze(self, bigdl_type="float"):
-        """
-        set all layers to be trainable
-        :param bigdl_type:
-        :return:
-        """
-        callBigDlFunc(bigdl_type, "unFreeze", self.value)
-        return self
 
     def stop_gradient(self, stop_layers, bigdl_type="float"):
         """
@@ -611,10 +672,12 @@ class Model(Container):
         """
         save current model graph to a folder, which can be display in tensorboard by running
             tensorboard --logdir logPath
-        :param log_path: 
-        :return: 
+        :param log_path: path to save the model graph
+        :param bigdl_type:
+        :return:
         """
         callBigDlFunc(bigdl_type, "saveGraphTopology", self.value, log_path)
+        return self
 
 class Linear(Layer):
 
@@ -665,6 +728,74 @@ class Linear(Layer):
                                    weight_init_method, bias_init_method)
         return self
 
+class SparseLinear(Layer):
+
+    '''
+    SparseLinear is the sparse version of module Linear. SparseLinear has two different from Linear:
+    firstly, SparseLinear's input Tensor is a SparseTensor. Secondly, SparseLinear doesn't backward
+    gradient to next layer in the backpropagation by default, as the gradInput of SparseLinear is
+    useless and very big in most cases.
+
+    But, considering model like Wide&Deep, we provide backwardStart and backwardLength to backward
+    part of the gradient to next layer.
+
+    :param input_size the size the each input sample
+    :param output_size the size of the module output of each sample
+    :param backwardStart backwardStart index, counting from 1
+    :param backwardLength backward length
+    :param withBias if has bias
+    :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices.
+    :param bRegularizer: instance of [[Regularizer]]applied to the bias.
+    :param init_weight: the optional initial value for the weight
+    :param init_bias: the optional initial value for the bias
+    :param init_grad_weight: the optional initial value for the grad_weight
+    :param init_grad_bias: the optional initial value for the grad_bias
+
+
+    >>> sparselinear = SparseLinear(100, 10, True, wRegularizer=L1Regularizer(0.5), bRegularizer=L1Regularizer(0.5))
+    creating: createL1Regularizer
+    creating: createL1Regularizer
+    creating: createSparseLinear
+    >>> import numpy as np
+    >>> init_weight = np.random.randn(10, 100)
+    >>> init_bias = np.random.randn(10)
+    >>> init_grad_weight = np.zeros([10, 100])
+    >>> init_grad_bias = np.zeros([10])
+    >>> sparselinear = SparseLinear(100, 10, True, 1, 5, L1Regularizer(0.5), L1Regularizer(0.5), init_weight, init_bias, init_grad_weight, init_grad_bias)
+    creating: createL1Regularizer
+    creating: createL1Regularizer
+    creating: createSparseLinear
+    '''
+
+    def __init__(self, input_size, output_size, with_bias=True, backwardStart=-1, backwardLength=-1,
+                 wRegularizer=None, bRegularizer=None, init_weight=None, init_bias=None,
+                 init_grad_weight=None, init_grad_bias=None, bigdl_type="float"):
+        super(SparseLinear, self).__init__(None, bigdl_type, input_size, output_size,
+                                     with_bias, backwardStart, backwardLength,
+                                     wRegularizer, bRegularizer,
+                                     JTensor.from_ndarray(init_weight),
+                                     JTensor.from_ndarray(init_bias),
+                                     JTensor.from_ndarray(init_grad_weight),
+                                     JTensor.from_ndarray(init_grad_bias))
+
+    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+        callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
+                      weight_init_method, bias_init_method)
+        return self
+
+class DenseToSparse(Layer):
+
+    '''
+    Convert DenseTensor to SparseTensor.
+
+
+    >>> DenseToSparse = DenseToSparse()
+    creating: createDenseToSparse
+    '''
+
+    def __init__(self,
+                 bigdl_type="float"):
+        super(DenseToSparse, self).__init__(None, bigdl_type)
 
 class ReLU(Layer):
 
@@ -1043,13 +1174,13 @@ class Recurrent(Container):
     def contain_multiRNNCell(self):
             callBigDlFunc(self.bigdl_type, "containMultiRNNCell", self.value)
 
-    def get_states(self):
+    def get_hidden_state(self):
         """
         get hidden state and cell at last time step.
         
         :return: list of hidden state and cell
         """
-        states = callBigDlFunc(self.bigdl_type, "getStates", self.value)
+        states = callBigDlFunc(self.bigdl_type, "getHiddenState", self.value)
         for state in states:
             for idx, tensor in enumerate(state):
                 state[idx] = tensor.to_ndarray()
@@ -1059,7 +1190,7 @@ class Recurrent(Container):
         else:
             return states[0]
 
-    def set_states(self, states):
+    def set_hidden_state(self, states):
         """
         set hidden state and cell at first time step.
         """
@@ -1070,10 +1201,10 @@ class Recurrent(Container):
                 jstate, state_is_table = self.check_input(state)
                 jStates.append(jstate)
                 state_is_tables.append(state_is_table)
-            callBigDlFunc(self.bigdl_type, "setStates", self.value, jStates, state_is_tables)
+            callBigDlFunc(self.bigdl_type, "setHiddenState", self.value, jStates, state_is_tables)
         else:
             jstate, state_is_table = self.check_input(states)
-            callBigDlFunc(self.bigdl_type, "setStates", self.value, jstate, state_is_table)
+            callBigDlFunc(self.bigdl_type, "setHiddenState", self.value, jstate, state_is_table)
 
 class RecurrentDecoder(Recurrent):
     '''
@@ -1081,11 +1212,10 @@ class RecurrentDecoder(Recurrent):
     a prediction of the next timestep based on the prediction we made from
     the previous timestep. Input for RecurrentDecoder is dynamically composed
     during training. input at t(i) is output at t(i-1), input at t(0) is
-    user input, and user input has to be batch x ???(depends on cell type)
-    without time information.
+    user input, and user input has to be batch x stepShape(shape of the input
+    at a single time step).
 
-    Different types of rnn cells can be added using add() function. Currently
-    only support lstmpeephole, convlstm, convlstm3D cell.
+    Different types of rnn cells can be added using add() function.
 
     >>> recurrent_decoder = RecurrentDecoder(output_length = 5)
     creating: createRecurrentDecoder
@@ -1211,11 +1341,13 @@ class RnnCell(Layer):
                  input_size,
                  hidden_size,
                  activation,
+                 isInputWithBias=True,
+                 isHiddenWithBias=True,
                  wRegularizer=None,
                  uRegularizer=None,
                  bRegularizer=None,
                  bigdl_type="float"):
-        super(RnnCell, self).__init__(None, bigdl_type, input_size, hidden_size, activation, wRegularizer, uRegularizer, bRegularizer)
+        super(RnnCell, self).__init__(None, bigdl_type, input_size, hidden_size, activation, isInputWithBias, isHiddenWithBias, wRegularizer, uRegularizer, bRegularizer)
 
 
 class TimeDistributed(Layer):
@@ -1609,7 +1741,7 @@ class BatchNormalization(Layer):
         return self
 
 
-class BifurcateSplitTable(Model):
+class BifurcateSplitTable(Layer):
     '''
     Creates a module that takes a Tensor as input and
     outputs two tables, splitting the Tensor along
@@ -1631,7 +1763,7 @@ class BifurcateSplitTable(Model):
                                        dimension)
 
 
-class Bilinear(Model):
+class Bilinear(Layer):
 
     '''
     a bilinear transformation with sparse inputs,
@@ -2229,6 +2361,28 @@ class JoinTable(Layer):
         super(JoinTable, self).__init__(None, bigdl_type,
                                         dimension,
                                         n_input_dims)
+
+class SparseJoinTable(Layer):
+
+    '''
+    :: Experimental ::
+
+    Sparse version of JoinTable. Backward just pass the origin gradOutput back to
+    the next layers without split. So this layer may just works in Wide&Deep like models.
+
+
+    :param dimension: to be join in this dimension
+
+
+    >>> joinTable = SparseJoinTable(1)
+    creating: createSparseJoinTable
+    '''
+
+    def __init__(self,
+                 dimension,
+                 bigdl_type="float"):
+        super(SparseJoinTable, self).__init__(None, bigdl_type,
+                                        dimension)
 
 
 class L1Penalty(Layer):
@@ -4115,10 +4269,20 @@ class ResizeBilinear(Layer):
     :param output_width: output width
     :param align_corner: align corner or not
     
-    >>> resizeBilinear = ResizeBilinear(10, 20, false)
+    >>> resizeBilinear = ResizeBilinear(10, 20, False)
+    creating: createResizeBilinear
     """
-    def __init__(self, output_height, output_width, align_corner):
-        super(ResizeBilinear, self).__init__(None, output_height, output_width, align_corner)
+    def __init__(self, output_height, output_width, align_corner, bigdl_type="float"):
+        super(ResizeBilinear, self).__init__(None, bigdl_type, output_height, output_width, align_corner)
+
+class GaussianSampler(Layer):
+    """
+    Takes {mean, log_variance} as input and samples from the Gaussian distribution
+    >>> sampler = GaussianSampler()
+    creating: createGaussianSampler
+    """
+    def __init__(self, bigdl_type="float"):
+        super(GaussianSampler, self).__init__(None, bigdl_type)
 
 def _test():
     import doctest

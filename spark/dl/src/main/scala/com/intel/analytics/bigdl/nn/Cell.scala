@@ -20,11 +20,12 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, Tensor
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData, ModuleSerializable, ModuleSerializer}
+import com.intel.analytics.bigdl.utils.serializer._
 import com.intel.analytics.bigdl.utils.{T, Table}
 import serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
@@ -79,8 +80,11 @@ abstract class Cell[T : ClassTag](
    * Please refer to SimpleRNN or LSTM for reference.
    * @return
    */
-//  var preTopology: AbstractModule[Activity, Activity, T]
   var preTopology: TensorModule[T]
+
+  private[nn] var includePreTopology: Boolean = false
+
+  private var gradOutput2PreTopology = Tensor[T]()
 
   def hiddenSizeOfPreTopo: Int = hiddensShape(0)
 
@@ -93,14 +97,14 @@ abstract class Cell[T : ClassTag](
    *
    * @param hidden
    * @param batchSize batchSize
-   * @param featuresSize feature sizes. For rnn/lstm/gru, it's embedding size. For convlstm/
+   * @param stepShape For rnn/lstm/gru, it's embedding size. For convlstm/
    *                     convlstm3D, it's a list of outputPlane, length, width, height
    * @return
    */
-  def hidResize(hidden: Activity, batchSize: Int, featuresSize: Array[Int] = null): Activity = {
+  def hidResize(hidden: Activity, batchSize: Int, stepShape: Array[Int]): Activity = {
     if (hidden == null) {
       if (hiddensShape.length == 1) {
-        hidResize(Tensor[T](), batchSize)
+        hidResize(Tensor[T](), batchSize, stepShape)
       } else {
         val _hidden = T()
         var i = 1
@@ -108,7 +112,7 @@ abstract class Cell[T : ClassTag](
           _hidden(i) = Tensor[T]()
           i += 1
         }
-        hidResize(_hidden, batchSize, featuresSize)
+        hidResize(_hidden, batchSize, stepShape)
       }
     } else {
       if (hidden.isInstanceOf[Tensor[T]]) {
@@ -119,20 +123,13 @@ abstract class Cell[T : ClassTag](
         require(hidden.isInstanceOf[Table],
           "Cell: hidden should be a Table")
         var i = 1
-        if (null == featuresSize) {
-          while (i <= hidden.toTable.length()) {
-            hidden.toTable[Tensor[T]](i).resize(batchSize, hiddensShape(i - 1))
-            i += 1
-          }
-        } else {
-          val sizes = new Array[Int](featuresSize.length + 1)
-          sizes(0) = batchSize
-          Array.copy(featuresSize, 0, sizes, 1, featuresSize.size)
-          while (i <= hidden.toTable.length()) {
-            sizes(1) = hiddensShape(i - 1)
-            hidden.toTable[Tensor[T]](i).resize(sizes)
-            i += 1
-          }
+        val sizes = new Array[Int](stepShape.length + 1)
+        sizes(0) = batchSize
+        Array.copy(stepShape, 0, sizes, 1, stepShape.size)
+        while (i <= hidden.toTable.length()) {
+          sizes(1) = hiddensShape(i - 1)
+          hidden.toTable[Tensor[T]](i).resize(sizes)
+          i += 1
         }
         hidden
       }
@@ -140,26 +137,61 @@ abstract class Cell[T : ClassTag](
   }
 
   override def updateOutput(input: Table): Table = {
-    output = cell.forward(input).toTable
+    if (includePreTopology) {
+      assert(preTopology != null, "preTopology cannot be null if includePreTopology is true")
+      val inputTensor = input.toTable[Tensor[T]](Recurrent.inputDim)
+      input(Recurrent.inputDim) = preTopology.updateOutput(inputTensor)
+      output = cell.forward(input).toTable
+      input(Recurrent.inputDim) = inputTensor
+    } else output = cell.forward(input).toTable
     output
   }
 
   override def updateGradInput(input: Table, gradOutput: Table): Table = {
-    gradInput = cell.updateGradInput(input, gradOutput).toTable
+    if (includePreTopology) {
+      val inputTensor = input.toTable[Tensor[T]](Recurrent.inputDim)
+      input(Recurrent.inputDim) = preTopology.output
+      gradInput = cell.updateGradInput(input, gradOutput).toTable
+      gradOutput2PreTopology = gradInput.toTable[Tensor[T]](Recurrent.inputDim)
+      gradInput(Recurrent.inputDim) =
+        preTopology.updateGradInput(inputTensor, gradInput.toTable[Tensor[T]](Recurrent.inputDim))
+      input(Recurrent.inputDim) = inputTensor
+    } else {
+      gradInput = cell.updateGradInput(input, gradOutput).toTable
+    }
     gradInput
   }
 
   override def accGradParameters(input: Table, gradOutput: Table): Unit = {
-    cell.accGradParameters(input, gradOutput)
+    if (includePreTopology) {
+      val inputTensor = input.toTable[Tensor[T]](Recurrent.inputDim)
+      input(Recurrent.inputDim) = preTopology.output
+      cell.accGradParameters(input, gradOutput)
+      preTopology.accGradParameters(inputTensor, gradOutput2PreTopology)
+      input(Recurrent.inputDim) = inputTensor
+    } else {
+      cell.accGradParameters(input, gradOutput)
+    }
   }
 
   override def backward(input: Table, gradOutput: Table): Table = {
-    gradInput = cell.backward(input, gradOutput).toTable
+    if (includePreTopology) {
+      val inputTensor = input.toTable[Tensor[T]](Recurrent.inputDim)
+      input(Recurrent.inputDim) = preTopology.output
+      gradInput = cell.backward(input, gradOutput)
+      gradInput(Recurrent.inputDim) =
+        preTopology.backward(inputTensor, gradInput.toTable[Tensor[T]](Recurrent.inputDim))
+      input(Recurrent.inputDim) = inputTensor
+    } else {
+      gradInput = cell.backward(input, gradOutput).toTable
+    }
+
     gradInput
   }
 
   override def updateParameters(learningRate: T): Unit = {
     cell.updateParameters(learningRate)
+    if (includePreTopology) preTopology.updateParameters(learningRate)
   }
 
   private def initAddTimes(): Unit = {
@@ -233,18 +265,26 @@ abstract class Cell[T : ClassTag](
 
   override def zeroGradParameters(): Unit = {
     cell.zeroGradParameters()
+    if (includePreTopology) preTopology.zeroGradParameters()
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
-    cell.parameters()
+    val _cell = if (includePreTopology) {
+      Sequential().add(preTopology).add(cell)
+    } else cell
+    _cell.parameters()
   }
 
   override def getParametersTable(): Table = {
-    cell.getParametersTable()
+    val _cell = if (includePreTopology) {
+      Sequential().add(preTopology).add(cell)
+    } else cell
+    _cell.getParametersTable()
   }
 
   override def reset(): Unit = {
     cell.reset()
+    if (includePreTopology) preTopology.reset()
   }
 
   /**
@@ -269,34 +309,51 @@ abstract class Cell[T : ClassTag](
 
 object CellSerializer extends ModuleSerializable {
 
-  override def doLoadModule[T: ClassTag](model : BigDLModule)
+  override def doLoadModule[T: ClassTag](context : DeserializeContext)
     (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
-    val module = super.doLoadModule(model)
+    val module = super.doLoadModule(context)
     val cellModule = module.asInstanceOf[Cell[T]]
 
-    val attrMap = model.getAttrMap
-    cellModule.cell = DataConverter.getAttributeValue(attrMap.get("cell")).
+    val attrMap = context.bigdlModule.getAttrMap
+    cellModule.cell = DataConverter.getAttributeValue(context, attrMap.get("cell")).
       asInstanceOf[AbstractModule[Activity, Activity, T]]
+
+    val preTopologyAttr = attrMap.get("preTopology")
+    cellModule.preTopology = DataConverter.getAttributeValue(context, preTopologyAttr).
+      asInstanceOf[TensorModule[T]]
+
+    val includePreTopologyAttr = attrMap.get("includePreTopology")
+    cellModule.includePreTopology = DataConverter.getAttributeValue(context,
+      includePreTopologyAttr).asInstanceOf[Boolean]
 
     cellModule
   }
 
-  override def doSerializeModule[T: ClassTag](module : ModuleData[T],
+  override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
                                               cellModuleBuilder : BigDLModule.Builder)
                                            (implicit ev: TensorNumeric[T]) : Unit = {
 
-    super.doSerializeModule(module, cellModuleBuilder)
-    val cellModule = module.module.asInstanceOf[Cell[T]]
+    super.doSerializeModule(context, cellModuleBuilder)
+    val cellModule = context.moduleData.module.asInstanceOf[Cell[T]]
 
     val cellSerializerFlagBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(cellSerializerFlagBuilder, true,
+    DataConverter.setAttributeValue(context, cellSerializerFlagBuilder, true,
       scala.reflect.runtime.universe.typeOf[Boolean])
     cellModuleBuilder.putAttr("is_cell_module", cellSerializerFlagBuilder.build)
 
     val cellBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(cellBuilder, cellModule.cell,
+    DataConverter.setAttributeValue(context, cellBuilder, cellModule.cell,
       ModuleSerializer.abstractModuleType)
     cellModuleBuilder.putAttr("cell", cellBuilder.build)
 
+    val preTopologyBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, preTopologyBuilder,
+      cellModule.preTopology, ModuleSerializer.tensorModuleType)
+    cellModuleBuilder.putAttr("preTopology", preTopologyBuilder.build)
+
+    val includePreTopologyBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, includePreTopologyBuilder,
+      cellModule.includePreTopology, scala.reflect.runtime.universe.typeOf[Boolean])
+    cellModuleBuilder.putAttr("includePreTopology", includePreTopologyBuilder.build)
   }
 }

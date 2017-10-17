@@ -167,7 +167,7 @@ class TestSimple():
         output1 = ReLU()(cadd)
         output2 = Threshold(10.0)(cadd)
         model = Model([fc1, fc2], [output1, output2])
-        model.save_graph_topology(tempfile.mkdtemp)
+        model.save_graph_topology(tempfile.mkdtemp())
 
     def test_load_zip_conf(self):
         from bigdl.util.common import get_bigdl_conf
@@ -263,9 +263,54 @@ class TestSimple():
             print(str(i) + "\n")
         print(len(p))
 
-        test_results = trained_model.test(trainingData, 32, [Top1Accuracy()])
+        test_results = trained_model.evaluate(trainingData, 32, [Top1Accuracy()])
         for test_result in test_results:
             print(test_result)
+
+    def test_multiple_input(self):
+        """
+        Test training data of samples with several tensors as feature
+        using a sequential model with multiple inputs.
+        """
+        FEATURES_DIM = 2
+        data_len = 100
+        batch_size = 32
+        epoch_num = 5
+
+        def gen_rand_sample():
+            features1 = np.random.uniform(0, 1, (FEATURES_DIM))
+            features2 = np.random.uniform(0, 1, (FEATURES_DIM))
+            label = np.array((2 * (features1 + features2)).sum() + 0.4)
+            return Sample.from_ndarray([features1, features2], label)
+
+        trainingData = self.sc.parallelize(range(0, data_len)).map(
+            lambda i: gen_rand_sample())
+
+        model_test = Sequential()
+        branches = ParallelTable()
+        branch1 = Sequential().add(Linear(FEATURES_DIM, 1)).add(ReLU())
+        branch2 = Sequential().add(Linear(FEATURES_DIM, 1)).add(ReLU())
+        branches.add(branch1).add(branch2)
+        model_test.add(branches).add(CAddTable())
+
+        optim_method = SGD(learningrate=0.01, learningrate_decay=0.0002, weightdecay=0.0,
+                           momentum=0.0, dampening=0.0, nesterov=False,
+                           leaningrate_schedule=Poly(0.5, int((data_len / batch_size) * epoch_num)))
+        optimizer = Optimizer(
+            model=model_test,
+            training_rdd=trainingData,
+            criterion=MSECriterion(),
+            optim_method=optim_method,
+            end_trigger=MaxEpoch(epoch_num),
+            batch_size=batch_size)
+        optimizer.set_validation(
+            batch_size=batch_size,
+            val_rdd=trainingData,
+            trigger=EveryEpoch(),
+            val_method=[Top1Accuracy()]
+        )
+
+        optimizer.optimize()
 
     def test_forward_backward(self):
         from bigdl.nn.layer import Linear

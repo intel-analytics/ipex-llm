@@ -201,7 +201,7 @@ object TensorNumericMath {
 
     def prod(n: Int, a: Array[T], aOffset: Int, stride: Int): T =
       throw new UnsupportedOperationException(typeName +
-        " in tensor does not support exp operation")
+        " in tensor does not support prod operation")
 
     def log(x: T): T =
       throw new UnsupportedOperationException(typeName +
@@ -985,6 +985,9 @@ object TensorNumericMath {
         implicit c: ConvertableFrom[K]): Boolean =
         c.toBoolean(k)
 
+      override def toType[K](t: Boolean)(
+        implicit c: ConvertableTo[K]): K = c.fromBoolean(t)
+
       override def nearlyEqual(a: Boolean, b: Boolean, epsilon: Double): Boolean = {
         a == b
       }
@@ -1043,6 +1046,26 @@ object TensorNumericMath {
       override def isGreaterEq(x: Int, y: Int): Boolean = x >= y
 
       override def nearlyEqual(a: Int, b: Int, epsilon: Double): Boolean = a == b
+
+      override def prod(n: Int, a: Array[Int], aOffset: Int, stride: Int): Int = {
+        var i = 0
+        var r = 1
+        while (i < n) {
+          r *= a(aOffset + i * stride)
+          i += 1
+        }
+        r
+      }
+
+      override def sum(n: Int, a: Array[Int], aOffset: Int, stride: Int): Int = {
+        var i = 0
+        var r = 0
+        while (i < n) {
+          r += a(aOffset + i * stride)
+          i += 1
+        }
+        r
+      }
     }
 
     implicit object NumericLong extends UndefinedTensorNumeric[Long]("Long") {

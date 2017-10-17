@@ -21,11 +21,11 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.serializer.{ContainerSerializable, DataConverter, ModuleData, ModuleSerializer}
-import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.utils.serializer._
+import com.intel.analytics.bigdl.utils.serializer.{ContainerSerializable, DataConverter, ModuleSerializer}
+import com.intel.analytics.bigdl.utils.T
 import serialization.Bigdl.{AttrValue, BigDLModule}
 import scala.reflect.runtime.universe
-import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
@@ -39,19 +39,19 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
   protected var hidden: Activity = null
   protected var gradHidden: Activity = null
   protected var hiddenShape: Array[Int] = null
-  protected val currentInput = T()
+  protected var currentInput = T()
   protected val currentGradOutput = T()
-  protected val gradInputCell = Tensor[T]()
-  protected var outputCell = Tensor[T]()
-  protected val _input = T()
+  protected val gradInput2Cell = Tensor[T]()
+  protected var input2Cell = Tensor[T]()
+  protected var _input = T()
   protected val batchDim = Recurrent.batchDim
   protected val timeDim = Recurrent.timeDim
   protected val inputDim = 1
   protected val hidDim = 2
   protected var (batchSize, times) = (0, 0)
   protected var topology: Cell[T] = null
-  protected val outputBuffer = Tensor[T]()
-  private val gradBuffer = Tensor[T]()
+  protected val stepInput2CellBuf = Tensor[T]()
+  protected val stepGradBuffer = Tensor[T]()
   protected var preTopology: AbstractModule[Activity, Activity, T] = null
   private val dropouts: ArrayBuffer[Array[Dropout[T]]] =
     new ArrayBuffer[Array[Dropout[T]]]
@@ -128,14 +128,14 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
    * @param sizes, the first element is hiddensize, the left is size of images
    */
   protected def initHidden(sizes: Array[Int]): Unit = {
-    val imageSize = sizes
+    val stepShape = sizes
     if (hidden == null) {
       cells.clear()
       cells += topology
       val cell = cells.head
 
       // The cell will help initialize or resize the hidden variable.
-      hidden = cell.hidResize(hidden = null, batchSize = batchSize, imageSize)
+      hidden = cell.hidResize(hidden = null, batchSize = batchSize, stepShape)
 
       /*
        * Since the gradHidden is only used as an empty Tensor or Table during
@@ -144,7 +144,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
        */
       gradHidden = hidden
     } else {
-      cells.head.hidResize(hidden = hidden, batchSize = batchSize, imageSize)
+      cells.head.hidResize(hidden = hidden, batchSize = batchSize, stepShape)
       gradHidden = hidden
     }
   }
@@ -221,7 +221,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     batchSize = input.size(batchDim)
     times = input.size(timeDim)
 
-    outputCell = if (preTopology != null) {
+    input2Cell = if (preTopology != null) {
       preTopology.forward(input).toTensor[T]
     } else {
       input
@@ -244,11 +244,11 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     initHidden(outputSize.drop(2))
     cloneCells()
 
-    currentInput(hidDim) = if (initStates != null) initStates
+    currentInput(hidDim) = if (initHiddenState != null) initHiddenState
     else hidden
 
     while (i <= times) {
-      currentInput(inputDim) = Recurrent.selectCopy(outputCell, i, outputBuffer)
+      currentInput(inputDim) = Recurrent.selectCopy(input2Cell, i, stepInput2CellBuf)
       cells(i - 1).forward(currentInput)
       currentInput(hidDim) = cells(i - 1).output.toTable(hidDim)
       i += 1
@@ -259,15 +259,17 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     output
   }
 
-  def getStates(): Activity = {
+  // get hidden state at the last time step
+  def getHiddenState(): Activity = {
     require(cells != null && cells(times - 1).output != null,
-      "getStates need to be called after updateOutput")
+      "getHiddenState need to be called after updateOutput")
     cells(times - 1).output.toTable(hidDim)
   }
 
-  protected var initStates: Activity = null
-  def setStates(states: Activity): Unit = {
-    initStates = states
+  // set hidden state at the first time step
+  protected var initHiddenState: Activity = null
+  def setHiddenState(hiddenState: Activity): Unit = {
+    initHiddenState = hiddenState
   }
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
@@ -285,10 +287,10 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
 
     var i = times
     while (i >= 1) {
-      currentGradOutput(inputDim) = Recurrent.selectCopy(gradOutput, i, gradBuffer)
+      currentGradOutput(inputDim) = Recurrent.selectCopy(gradOutput, i, stepGradBuffer)
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
-      else if (initStates == null) hidden else initStates
-      _input(inputDim) = Recurrent.selectCopy(outputCell, i, outputBuffer)
+      else if (initHiddenState == null) hidden else initHiddenState
+      _input(inputDim) = Recurrent.selectCopy(input2Cell, i, stepInput2CellBuf)
 
       if (i == 1) {
         cells(i - 1).regluarized(true)
@@ -300,7 +302,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
       i -= 1
     }
     if (preTopology != null) {
-      preTopology.accGradParameters(input, gradInputCell)
+      preTopology.accGradParameters(input, gradInput2Cell)
     }
   }
 
@@ -316,46 +318,46 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
       }
       preTopology.gradInput.toTensor[T]
     } else {
-      gradInputCell
+      gradInput2Cell
     }
-    gradInputCell.resizeAs(outputCell)
+    gradInput2Cell.resizeAs(input2Cell)
     currentGradOutput(hidDim) = gradHidden
     var i = times
     while (i >= 1) {
-      currentGradOutput(inputDim) = Recurrent.selectCopy(gradOutput, i, gradBuffer)
+      currentGradOutput(inputDim) = Recurrent.selectCopy(gradOutput, i, stepGradBuffer)
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
-      else if (initStates == null) hidden else initStates
-      _input(inputDim) = Recurrent.selectCopy(outputCell, i, outputBuffer)
-
+        else if (initHiddenState == null) hidden else initHiddenState
+      _input(inputDim) = Recurrent.selectCopy(input2Cell, i, stepInput2CellBuf)
       cells(i - 1).updateGradInput(_input, currentGradOutput)
       currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
       i -= 1
     }
-    Recurrent.copy(cells.map(x => x.gradInput.toTable[Tensor[T]](inputDim)), gradInputCell)
+    Recurrent.copy(cells.map(x => x.gradInput.toTable[Tensor[T]](inputDim)), gradInput2Cell)
     if (preTopology != null) {
-      gradInput = preTopology.updateGradInput(input, gradInputCell).toTensor[T]
+      gradInput = preTopology.updateGradInput(input, gradInput2Cell).toTensor[T]
     }
     gradInput
   }
 
   override def backward(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     val st = System.nanoTime
+    currentGradOutput(hidDim) = gradHidden
     var i = times
 
     while (i >= 1) {
-      currentGradOutput(inputDim) = Recurrent.selectCopy(gradOutput, i, gradBuffer)
-      currentGradOutput(hidDim) = if (i == times) gradHidden
-        else cells(i).gradInput.toTable(hidDim)
+      currentGradOutput(inputDim) = Recurrent.selectCopy(gradOutput, i, stepGradBuffer)
 
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
-      else if (initStates == null) hidden else initStates
-      _input(inputDim) = Recurrent.selectCopy(outputCell, i, outputBuffer)
+      else if (initHiddenState == null) hidden else initHiddenState
+
+      _input(inputDim) = Recurrent.selectCopy(input2Cell, i, stepInput2CellBuf)
       if (i == 1) {
         cells(i - 1).regluarized(true)
       } else {
         cells(i - 1).regluarized(false)
       }
       cells(i - 1).backward(_input, currentGradOutput)
+      currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
       i -= 1
     }
 
@@ -369,13 +371,13 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
       }
       preTopology.gradInput.toTensor[T]
     } else {
-      gradInputCell
+      gradInput2Cell
     }
-    gradInputCell.resizeAs(outputCell)
-    Recurrent.copy(cells.map(x => x.gradInput.toTable[Tensor[T]](inputDim)), gradInputCell)
+    gradInput2Cell.resizeAs(input2Cell)
+    Recurrent.copy(cells.map(x => x.gradInput.toTable[Tensor[T]](inputDim)), gradInput2Cell)
 
     if (preTopology != null) {
-      gradInput = preTopology.backward(input, gradInputCell).toTensor[T]
+      gradInput = preTopology.backward(input, gradInput2Cell).toTensor[T]
     }
 
     this.backwardTime = System.nanoTime - st
@@ -443,17 +445,17 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     hidden = null
     gradHidden = null
     hiddenShape = null
-    gradInputCell.set()
-    outputCell.set()
+    gradInput2Cell.set()
+    input2Cell.set()
     currentInput.clear()
     currentGradOutput.clear()
     _input.clear()
     cells.foreach(x => x.clearState())
     cells.clear()
     timeBuffer.clear()
-    initStates = null
-    outputBuffer.set()
-    gradBuffer.set()
+    initHiddenState = null
+    stepInput2CellBuf.set()
+    stepGradBuffer.set()
     this
   }
 
@@ -592,13 +594,13 @@ object Recurrent extends ContainerSerializable {
     dst
   }
 
-  override def doLoadModule[T: ClassTag](model : BigDLModule)
+  override def doLoadModule[T: ClassTag](context : DeserializeContext)
     (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
 
-    val attrMap = model.getAttrMap
+    val attrMap = context.bigdlModule.getAttrMap
 
     val flag = DataConverter
-      .getAttributeValue(attrMap.get("bnorm"))
+      .getAttributeValue(context, attrMap.get("bnorm"))
       .asInstanceOf[Boolean]
     val recurrent = if (flag) {
       Recurrent[T](BatchNormParams[T]())
@@ -607,11 +609,11 @@ object Recurrent extends ContainerSerializable {
     }
 
     val topologyAttr = attrMap.get("topology")
-    recurrent.topology = DataConverter.getAttributeValue(topologyAttr).
+    recurrent.topology = DataConverter.getAttributeValue(context, topologyAttr).
       asInstanceOf[Cell[T]]
 
     val preTopologyAttr = attrMap.get("preTopology")
-    recurrent.preTopology = DataConverter.getAttributeValue(preTopologyAttr).
+    recurrent.preTopology = DataConverter.getAttributeValue(context, preTopologyAttr).
       asInstanceOf[AbstractModule[Activity, Activity, T]]
 
     if (recurrent.preTopology != null) {
@@ -622,94 +624,93 @@ object Recurrent extends ContainerSerializable {
     if (flag) {
       val bnormEpsAttr = attrMap.get("bnormEps")
       recurrent.batchNormParams.eps =
-        DataConverter.getAttributeValue(bnormEpsAttr)
+        DataConverter.getAttributeValue(context, bnormEpsAttr)
           .asInstanceOf[Double]
 
       val bnormMomentumAttr = attrMap.get("bnormMomentum")
       recurrent.batchNormParams.momentum =
-        DataConverter.getAttributeValue(bnormMomentumAttr)
+        DataConverter.getAttributeValue(context, bnormMomentumAttr)
           .asInstanceOf[Double]
 
       val bnormInitWeightAttr = attrMap.get("bnormInitWeight")
       recurrent.batchNormParams.initWeight =
-        DataConverter.getAttributeValue(bnormInitWeightAttr)
+        DataConverter.getAttributeValue(context, bnormInitWeightAttr)
           .asInstanceOf[Tensor[T]]
 
       val bnormInitBiasAttr = attrMap.get("bnormInitBias")
       recurrent.batchNormParams.initBias =
-        DataConverter.getAttributeValue(bnormInitBiasAttr)
+        DataConverter.getAttributeValue(context, bnormInitBiasAttr)
           .asInstanceOf[Tensor[T]]
 
       val bnormInitGradWeightAttr = attrMap.get("bnormInitGradWeight")
       recurrent.batchNormParams.initGradWeight =
-        DataConverter.getAttributeValue(bnormInitGradWeightAttr)
+        DataConverter.getAttributeValue(context, bnormInitGradWeightAttr)
           .asInstanceOf[Tensor[T]]
 
       val bnormInitGradBiasAttr = attrMap.get("bnormInitGradBias")
       recurrent.batchNormParams.initGradBias =
-        DataConverter.getAttributeValue(bnormInitGradBiasAttr)
+        DataConverter.getAttributeValue(context, bnormInitGradBiasAttr)
           .asInstanceOf[Tensor[T]]
 
       val bnormAffineAttr = attrMap.get("bnormAffine")
       recurrent.batchNormParams.affine =
-        DataConverter.getAttributeValue(bnormAffineAttr)
+        DataConverter.getAttributeValue(context, bnormAffineAttr)
         .asInstanceOf[Boolean]
     }
 
-    createBigDLModule(model, recurrent)
     recurrent
   }
 
-  override def doSerializeModule[T: ClassTag](module : ModuleData[T],
+  override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
                                             recurrentBuilder : BigDLModule.Builder)
                                            (implicit ev: TensorNumeric[T]) : Unit = {
 
-    val recurrent = module.module.asInstanceOf[Recurrent[T]]
+    val recurrent = context.moduleData.module.asInstanceOf[Recurrent[T]]
 
     val topologyBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(topologyBuilder, recurrent.topology,
+    DataConverter.setAttributeValue(context, topologyBuilder, recurrent.topology,
       ModuleSerializer.abstractModuleType)
     recurrentBuilder.putAttr("topology", topologyBuilder.build)
 
     val preTopologyBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(preTopologyBuilder,
+    DataConverter.setAttributeValue(context, preTopologyBuilder,
       recurrent.preTopology, ModuleSerializer.abstractModuleType)
     recurrentBuilder.putAttr("preTopology", preTopologyBuilder.build)
 
     val flag = if (recurrent.batchNormParams != null) {
 
       val bnormEpsBuilder = AttrValue.newBuilder
-      DataConverter.setAttributeValue(bnormEpsBuilder,
+      DataConverter.setAttributeValue(context, bnormEpsBuilder,
         recurrent.batchNormParams.eps, universe.typeOf[Double])
       recurrentBuilder.putAttr("bnormEps", bnormEpsBuilder.build)
 
       val bnormMomentumBuilder = AttrValue.newBuilder
-      DataConverter.setAttributeValue(bnormMomentumBuilder,
+      DataConverter.setAttributeValue(context, bnormMomentumBuilder,
         recurrent.batchNormParams.momentum, universe.typeOf[Double])
       recurrentBuilder.putAttr("bnormMomentum", bnormMomentumBuilder.build)
 
       val bnormInitWeightBuilder = AttrValue.newBuilder
-      DataConverter.setAttributeValue(bnormInitWeightBuilder,
+      DataConverter.setAttributeValue(context, bnormInitWeightBuilder,
         recurrent.batchNormParams.initWeight, ModuleSerializer.tensorType)
       recurrentBuilder.putAttr("bnormInitWeight", bnormInitWeightBuilder.build)
 
       val bnormInitBiasBuilder = AttrValue.newBuilder
-      DataConverter.setAttributeValue(bnormInitBiasBuilder,
+      DataConverter.setAttributeValue(context, bnormInitBiasBuilder,
         recurrent.batchNormParams.initBias, ModuleSerializer.tensorType)
       recurrentBuilder.putAttr("bnormInitBias", bnormInitBiasBuilder.build)
 
       val bnormInitGradWeightBuilder = AttrValue.newBuilder
-      DataConverter.setAttributeValue(bnormInitGradWeightBuilder,
+      DataConverter.setAttributeValue(context, bnormInitGradWeightBuilder,
         recurrent.batchNormParams.initGradWeight, ModuleSerializer.tensorType)
       recurrentBuilder.putAttr("bnormInitGradWeight", bnormInitGradWeightBuilder.build)
 
       val bnormInitGradBiasBuilder = AttrValue.newBuilder
-      DataConverter.setAttributeValue(bnormInitGradBiasBuilder,
+      DataConverter.setAttributeValue(context, bnormInitGradBiasBuilder,
         recurrent.batchNormParams.initGradBias, ModuleSerializer.tensorType)
       recurrentBuilder.putAttr("bnormInitGradBias", bnormInitGradBiasBuilder.build)
 
       val bnormAffineBuilder = AttrValue.newBuilder
-      DataConverter.setAttributeValue(bnormAffineBuilder,
+      DataConverter.setAttributeValue(context, bnormAffineBuilder,
         recurrent.batchNormParams.affine, universe.typeOf[Boolean])
       recurrentBuilder.putAttr("bnormAffine", bnormAffineBuilder.build)
 
@@ -719,11 +720,10 @@ object Recurrent extends ContainerSerializable {
     }
 
     val bNormBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(bNormBuilder,
+    DataConverter.setAttributeValue(context, bNormBuilder,
       flag, universe.typeOf[Boolean])
     recurrentBuilder.putAttr("bnorm", bNormBuilder.build)
 
-    createSerializeBigDLModule(recurrentBuilder, module)
   }
 }
 

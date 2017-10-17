@@ -15,43 +15,20 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
+import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
-class BiasAddSpec extends FlatSpec with Matchers {
-  "BiasAdd operation" should "works correctly" in {
-    import com.intel.analytics.bigdl.numeric.NumericDouble
-    val input =
-      T(
-        Tensor(T(
-          T(
-            T(1f, 2f, 3f),
-            T(2f, 3f, 4f),
-            T(3f, 4f, 5f)
-          ),
-          T(
-            T(3f, 4f, 5f),
-            T(2f, 3f, 4f),
-            T(1f, 2f, 3f)
-          ))),
-        Tensor(T(3f, 2f, 1f))
-      )
+class SubstrSpec extends FlatSpec with Matchers {
+  "Substr operation" should "works correctly" in {
+    import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric.NumericByteString
+    val data = Tensor.scalar(ByteString.copyFromUtf8("abc"))
+    val pos = Tensor.scalar(0)
+    val len = Tensor.scalar(2)
+    val expectOutput = Tensor.scalar(ByteString.copyFromUtf8("ab"))
 
-    val expectOutput = Tensor(
-      T(
-        T(
-          T(4f, 4f, 4f),
-          T(5f, 5f, 5f),
-          T(6f, 6f, 6f)
-        ),
-        T(
-          T(6f, 6f, 6f),
-          T(5f, 5f, 5f),
-          T(4f, 4f, 4f)
-        )))
-
-    val output = BiasAdd().forward(input)
+    val output = Substr().forward(T(data, pos, len))
     output should be(expectOutput)
   }
 }

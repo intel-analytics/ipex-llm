@@ -50,7 +50,7 @@ class ParseExampleSpec extends FlatSpec with Matchers {
     val exampleParser = new ParseExample[Float](3,
       Seq(FloatType, LongType, StringType), Seq(Array(3), Array(3), Array()))
 
-    val serialized = Tensor[ByteString](Array(ByteString.copyFrom(data)), Array[Int]())
+    val serialized = Tensor[ByteString](Array(ByteString.copyFrom(data)), Array[Int](1))
     val names = Tensor[ByteString]()
     val key1 = Tensor[ByteString](Array(ByteString.copyFromUtf8("floatFeature")), Array[Int]())
     val key2 = Tensor[ByteString](Array(ByteString.copyFromUtf8("longFeature")), Array[Int]())
@@ -68,10 +68,10 @@ class ParseExampleSpec extends FlatSpec with Matchers {
     val longTensor = output(2).asInstanceOf[Tensor[Long]]
     val stringTensor = output(3).asInstanceOf[Tensor[ByteString]]
 
-    floatTensor should be (Tensor[Float](T(0.0f, 1.0f, 2.0f)))
-    longTensor should be (Tensor[Long](T(0L, 1L, 2L)))
+    floatTensor should be (Tensor[Float](T(T(0.0f, 1.0f, 2.0f))))
+    longTensor should be (Tensor[Long](T(T(0L, 1L, 2L))))
     stringTensor should be (Tensor[ByteString](
-      Array(ByteString.copyFromUtf8("abcd")), Array[Int]()))
+      Array(ByteString.copyFromUtf8("abcd")), Array[Int](1)))
   }
 
 }

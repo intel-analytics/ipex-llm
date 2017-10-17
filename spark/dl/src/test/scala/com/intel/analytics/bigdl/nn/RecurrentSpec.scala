@@ -602,14 +602,14 @@ class RecurrentSpec extends FlatSpec with Matchers {
     val input = Tensor[Double](Array(batchSize, time, inputSize)).rand
 
     val output = model.forward(input).asInstanceOf[Tensor[Double]]
-    val state = rec.getStates()
+    val state = rec.getHiddenState()
 
     state.toTensor[Double].map(output.asInstanceOf[Tensor[Double]].select(2, time), (v1, v2) => {
       assert(abs(v1 - v2) == 0)
       v1
     })
 
-    rec.setStates(state)
+    rec.setHiddenState(state)
     model.forward(input)
   }
 

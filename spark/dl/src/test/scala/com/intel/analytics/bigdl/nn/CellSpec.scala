@@ -39,7 +39,7 @@ private[bigdl] class CellUnit[T : ClassTag] (hidSize: Int)
   override def accGradParameters(input: Table, gradOutput: Table): Unit = {}
 
   override var cell: AbstractModule[Activity, Activity, T] = _
-  override var preTopology: TensorModule[T] = _
+  override var preTopology: TensorModule[T] = null
 }
 
 @com.intel.analytics.bigdl.tags.Parallel
@@ -47,7 +47,8 @@ class CellSpec extends FlatSpec with Matchers {
 
   "A Cell" should "hidResize correctly" in {
     val cell = new CellUnit[Double](4)
-    val hidden = cell.hidResize(hidden = null, batchSize = 5)
+    val stepShape = Array(1)
+    val hidden = cell.hidResize(hidden = null, batchSize = 5, stepShape)
 
     hidden.isInstanceOf[Table] should be (true)
     var i = 1
@@ -57,7 +58,7 @@ class CellSpec extends FlatSpec with Matchers {
     }
 
     val hidden2 = T(Tensor[Double](3, 4), Tensor[Double](4, 5), Tensor[Double](5, 6))
-    cell.hidResize(hidden2, 5)
+    cell.hidResize(hidden2, 5, stepShape)
     hidden2(1).asInstanceOf[Tensor[Double]].size should be (Array(5, 4))
     hidden2(2).asInstanceOf[Tensor[Double]].size should be (Array(5, 4))
     hidden2(3).asInstanceOf[Tensor[Double]].size should be (Array(5, 4))

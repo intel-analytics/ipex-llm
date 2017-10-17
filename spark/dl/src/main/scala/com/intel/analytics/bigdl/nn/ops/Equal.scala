@@ -15,6 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
+import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -51,10 +52,10 @@ class Equal[T: ClassTag]()
           input[Tensor[Char]](2),
           (a, b) => a == b)
       case StringType =>
-        output.zipWith[String, String](
-          input[Tensor[String]](1),
-          input[Tensor[String]](2),
-          (a, b) => a == b)
+        output.zipWith[ByteString, ByteString](
+          input[Tensor[ByteString]](1),
+          input[Tensor[ByteString]](2),
+          (a, b) => a.equals(b))
       case LongType =>
         output.zipWith[Long, Long](
           input[Tensor[Long]](1),
