@@ -196,13 +196,11 @@ class JTensor(object):
 
         >>> import numpy as np
         >>> from bigdl.util.common import JTensor
-        >>> from bigdl.util.common import callBigDlFunc
         >>> np.random.seed(123)
         >>> data = np.random.uniform(0, 1, (6)).astype("float32")
         >>> indices = np.arange(1, 7)
         >>> shape = np.array([10])
         >>> result = JTensor.sparse(data, indices, shape)
-        True
         """
         if a_ndarray is None:
             return None
@@ -225,7 +223,7 @@ class JTensor(object):
         if self.indices is None:
             return JTensor, (self.storage.tostring(), self.shape.tostring(), self.bigdl_type)
         else:
-            return JTensor, (self.storage.tostring(), self.shape.tostring(), self.indices.tostring(), self.bigdl_type)
+            return JTensor, (self.storage.tostring(), self.shape.tostring(), self.bigdl_type, self.indices.tostring())
 
     def __str__(self):
         indices = "" if self.indices is None else ",indices %s" % self.indices

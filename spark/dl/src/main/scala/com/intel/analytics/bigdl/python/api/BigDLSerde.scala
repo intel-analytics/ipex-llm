@@ -260,13 +260,12 @@ object BigDLSerDe extends BigDLSerDeBase with Serializable {
       }
       val storage = objToFloatArray(args(0))
       val shape = objToInt32Array(args(1))
+      val bigdl_type = args(2).asInstanceOf[String]
       val result = if (args.length == 3) {
-        val bigdl_type = args(2).asInstanceOf[String]
         JTensor(storage, shape, bigdl_type)
       } else {
-        val bigdl_type = args(3).asInstanceOf[String]
         val nElement = storage.length
-        val indicesArray = objToInt32Array(args(2))
+        val indicesArray = objToInt32Array(args(3))
         val indices = Array.range(0, shape.length).map(i =>
           indicesArray.slice(i * nElement, (i + 1) * nElement)
         )

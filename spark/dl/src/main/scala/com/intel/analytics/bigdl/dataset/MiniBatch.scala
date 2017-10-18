@@ -687,6 +687,14 @@ object SparseMiniBatch{
     new SparseMiniBatch[T](new Array[Tensor[T]](nInputs), new Array[Tensor[T]](nTargets))
   }
 
+  /**
+   * Batch a seq of tensors to a big tensor.
+   * @param dim apply batch on which dimension
+   * @param tensors a seq of tensors
+   * @param res result tensor
+   * @param ev
+   * @tparam T
+   */
   private[bigdl] def batch[T: ClassTag](
       dim: Int,
       tensors: Seq[Tensor[T]],
@@ -694,17 +702,17 @@ object SparseMiniBatch{
     if (res.getTensorType == SparseType) {
       Tensor.sparseConcat(dim, tensors, res)
     } else if (res.getTensorType == DenseType) {
-      denseBatch(tensors, res)
+      denseBatch(dim, tensors, res)
     } else {
       throw new IllegalArgumentException(s"MiniBatchWithSparse: unsupported tensor type " +
         s"${res.getTensorType}")
     }
   }
 
-  def denseBatch[T: ClassTag](
+  private def denseBatch[T: ClassTag](
+        dim: Int,
         tensors: Seq[Tensor[T]],
-        res: Tensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
-    val dim = 1
+        result: Tensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
     val size = tensors.head.size()
     var i = 1
     while (i < tensors.length) {
@@ -712,11 +720,7 @@ object SparseMiniBatch{
       i += 1
     }
 
-    val result = if (res == null) {
-      Tensor(size)
-    } else {
-      res.resize(size)
-    }
+    result.resize(size)
 
     i = 0
     var offset = 1
