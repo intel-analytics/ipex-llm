@@ -196,6 +196,7 @@ class JTensor(object):
 
         >>> import numpy as np
         >>> from bigdl.util.common import JTensor
+        >>> from bigdl.util.common import callBigDlFunc
         >>> np.random.seed(123)
         >>> data = np.arrange(1, 7).astype("float32")
         >>> indices = np.arange(1, 7)
