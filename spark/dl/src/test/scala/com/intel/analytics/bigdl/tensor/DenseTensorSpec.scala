@@ -935,4 +935,11 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     val result = t.select(1, 1)
     result.isScalar should be(true)
   }
+
+  "Negative" should "be correct" in {
+    val x = Tensor[Float](T(1, 2, 3))
+    val y = Tensor[Float](3)
+    y.negative(x) should be(Tensor[Float](T(-1, -2, -3)))
+    x.negative(x) should be(Tensor[Float](T(-1, -2, -3)))
+  }
 }
