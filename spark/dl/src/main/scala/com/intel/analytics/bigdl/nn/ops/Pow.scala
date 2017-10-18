@@ -15,28 +15,26 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.{NumericWildCard, TensorNumeric}
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
-class Floor[T: ClassTag]()
-  (implicit ev: TensorNumeric[T]) extends Operation[Tensor[_], Tensor[_], T] {
+class Pow[T: ClassTag]()
+  (implicit ev: TensorNumeric[T]) extends Operation[Table, Tensor[_], T]{
 
-  override def updateOutput(input: Tensor[_]): Tensor[_] = {
-    if (output.getType() != input.getType()) {
-      output = input.emptyInstance()
+  override def updateOutput(input: Table): Tensor[_] = {
+    val v = input[Tensor[NumericWildCard]](2).value()
+    val t = input[Tensor[NumericWildCard]](1)
+    if (output.getType() != t.getType()) {
+      output = t.emptyInstance()
     }
-    output.resizeAs(input)
-    output.asInstanceOf[Tensor[NumericWildCard]].floor(input.asInstanceOf[Tensor[NumericWildCard]])
-    output
+    output.resizeAs(t)
+    output.asInstanceOf[Tensor[NumericWildCard]].pow(t, v)
   }
 }
 
-object Floor {
-  def apply[T: ClassTag]()
-    (implicit ev: TensorNumeric[T]):
-  Operation[Activity, Activity, T]
-  = ModuleToOperation[T](new Floor())
+object Pow {
+  def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): Pow[T] = new Pow[T]()
 }

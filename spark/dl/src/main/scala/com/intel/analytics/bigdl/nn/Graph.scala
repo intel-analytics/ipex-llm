@@ -363,15 +363,27 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
 
   private val gradOutputCache = new mutable.HashMap[String, Activity]()
 
+  private def duplicatedNames(names: Seq[String]): mutable.Set[String] = {
+    names.sortWith(_ < _)
+    val buffer = new mutable.HashSet[String]()
+    var i = 1
+    while(i < names.length) {
+      if (names(i) == names(i - 1)) buffer.add(names(i))
+      i += 1
+    }
+    buffer
+  }
+
   private def checkRoots: Unit = {
     require(forwardNodes.map(_.element.getName()).distinct.length == forwardNodes.length,
-      "the name of node in the graph should be unique")
+      s"the name of node in the graph should be unique, but find dumplicated name " +
+        s"${duplicatedNames(forwardNodes.map(_.element.getName())).mkString(", ")}")
     val roots = forwardNodes.filter(_.prevNodes.size == 0)
       .filter(node => !node.element.isInstanceOf[WithoutInput]
         && !node.element.isInstanceOf[ControlDependency[_]])
-    require(roots.size == inputs.length,
+    require(roots.size == inputs.filter(node => !node.element.isInstanceOf[WithoutInput]).length,
       s"There're ${inputs.length} inputs, but graph has ${roots.size} roots")
-    inputs.foreach(n =>
+    inputs.filter(node => !node.element.isInstanceOf[WithoutInput]).foreach(n =>
       require(roots.contains(n), "inputs and graph roots are not match")
     )
   }

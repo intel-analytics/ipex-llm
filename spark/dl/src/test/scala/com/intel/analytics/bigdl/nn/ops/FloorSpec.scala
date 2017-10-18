@@ -39,4 +39,14 @@ class FloorSpec extends FlatSpec with Matchers {
     val output = Floor[Double]().forward(input)
     output should be(expectOutput)
   }
+
+  "Floor Int operation" should "works correctly" in {
+    val input =
+      Tensor[Int](T(1, 2, 2))
+
+    val expectOutput = Tensor[Int](T(1, 2, 2))
+
+    val output = Floor[Int]().forward(input)
+    output should be(expectOutput)
+  }
 }
