@@ -38,4 +38,4 @@ Category|Property|Default value|Description
 |bigdl.failure.retryTimes|*5*|How many times to retry when there's failure in distributed Training.
 |bigdl.failure.retryTimeInterval|*120*|Unit is second. How long recount the retry times.
 |bigdl.check.singleton|*false*|Whether to check if multiple partition run on a same executor, which is bad for performance.
-
+**Tensor**|bigdl.tensor.fold|1000|How many elements in a tensor to determine it is a large tensor, and thus print only part of it.
