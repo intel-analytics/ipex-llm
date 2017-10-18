@@ -1434,24 +1434,23 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
   }
 
   override def toString(): String = {
+    val foldThreshold = System.getProperty("bigdl.tensor.fold", "1000").toInt
     this.nDimension match {
       case 0 => s"[${this.getClass.getName} with no dimension]"
       case 1 =>
         val sb = new StringBuilder
-        if (this.size().product < 1000) {
+        if (this.size().product < foldThreshold) {
           this.apply1(e => {
             sb.append(e).append('\n')
             e
           })
-        }
-        else {
+        } else {
           var i = 0
           this.apply1(e => {
             i = i + 1
             if (i < 3 || i > this.size(1) - 3) {
               sb.append(e).append('\n')
-            }
-            else if (i == 3) sb.append(e).append("\n...\n")
+            } else if (i == 3) sb.append(e).append("\n...\n")
             e
           })
         }
@@ -1460,7 +1459,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
       case 2 =>
         val sb = new StringBuilder
         val indexer = Array(0, 0)
-        if (this.size().product < 1000) {
+        if (this.size().product < foldThreshold) {
           var i = 1
           while (i <= this.size(1)) {
             var j = 1
@@ -1473,8 +1472,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
             sb.append('\n')
             i += 1
           }
-        }
-        else {
+        } else {
           var i = 1
           while (i <= this.size(1)) {
             var j = 1
@@ -1484,8 +1482,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
                 indexer(1) = j
                 if (j < 3 || j > this.size(2) - 3) {
                   sb.append(this.apply(indexer)).append('\t')
-                }
-                else if (j == 3) {
+                } else if (j == 3) {
                   sb.append(this.apply(indexer)).append("\t...\t")
                 }
                 j += 1
@@ -1508,21 +1505,21 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
         var d = _secLastDim - 1
         val total = this.nElement()
         while (!done) {
-          // print header
-
           var i = 0
           var needPrint = true
-          if (this.size.product > 1000) {
+          if (this.size.product > foldThreshold) {
             while (i < _secLastDim) {
-              if (indexer(i) <= 3 || indexer(i) > size(i) - 3) i += 1
+              if (indexer(i) <= 2 || indexer(i) > size(i) - 2) i += 1
               else {
                 needPrint = false
                 i = _secLastDim
               }
+              if (indexer(i) == size(i) - 1) sb.append("...\n\n")
             }
           }
 
           if (needPrint) {
+            // print header
             sb.append('(')
             i = 0
             while (i < _secLastDim) {
@@ -1533,7 +1530,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
 
             // print current matrix
             i = 1
-            if (this.size(_secLastDim + 1) * this.size(_lastDim + 1) < 1000) {
+            if (this.size(_secLastDim + 1) * this.size(_lastDim + 1) < foldThreshold) {
               while (i <= this.size(_secLastDim + 1)) {
                 var j = 1
                 while (j <= this.size(_lastDim + 1)) {
@@ -1545,8 +1542,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
                 sb.append('\n')
                 i += 1
               }
-            }
-            else {
+            } else {
               while (i <= this.size(_secLastDim + 1)) {
                 var j = 1
                 if (i <= 3 || i > this.size(_secLastDim + 1) - 3) {
@@ -1567,7 +1563,6 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
                 i += 1
               }
             }
-
             sb.append('\n')
           }
 
