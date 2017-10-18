@@ -172,6 +172,8 @@ object TensorNumericMath {
       b: Array[T], bOffset: Int): Unit
 
     def nearlyEqual(a: T, b: T, epsilon: Double): Boolean
+
+    def floor(a: T): T
   }
 
   /**
@@ -396,6 +398,10 @@ object TensorNumericMath {
     def nearlyEqual(a: T, b: T, epsilon: Double): Boolean =
       throw new UnsupportedOperationException(typeName +
         " in tensor does not support nearlyEqual operation")
+
+    override def floor(a: T): T =
+      throw new UnsupportedOperationException(typeName +
+        " in tensor does not support floor operation")
   }
 
   /**
@@ -677,6 +683,8 @@ object TensorNumericMath {
           i += 1
         }
       }
+
+      override def floor(a: Float): Float = math.floor(a).toFloat
     }
 
     implicit object NumericDouble extends UndefinedTensorNumeric[Double]("Double") {
@@ -948,6 +956,8 @@ object TensorNumericMath {
           i += 1
         }
       }
+
+      override def floor(a: Double): Double = math.floor(a)
     }
 
     implicit object NumericString extends UndefinedTensorNumeric[String]("String") {
@@ -1066,6 +1076,16 @@ object TensorNumericMath {
         }
         r
       }
+
+      override def floor(a: Int): Int = a
+
+      override def sub(n: Int, a: Array[Int], offset: Int, v: Int, stride: Int): Unit = {
+        var i = 0
+        while(i < n) {
+          a(i * stride + offset) -= v
+          i += 1
+        }
+      }
     }
 
     implicit object NumericLong extends UndefinedTensorNumeric[Long]("Long") {
@@ -1135,6 +1155,8 @@ object TensorNumericMath {
 
         result
       }
+
+      override def floor(a: Long): Long = a
     }
 
     implicit object NumericShort extends UndefinedTensorNumeric[Short]("Short") {
@@ -1204,6 +1226,8 @@ object TensorNumericMath {
 
         result
       }
+
+      override def floor(a: Short): Short = a
     }
 
     implicit object NumericChar extends UndefinedTensorNumeric[Char]("Char") {
