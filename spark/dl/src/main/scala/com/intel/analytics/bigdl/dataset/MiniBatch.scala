@@ -574,10 +574,51 @@ case class FixedLength(fixedLength: Array[Int]) extends PaddingStrategy {
   }
 }
 
+/**
+ * SparseMiniBatch is a MiniBatch type for TensorSample. And SparseMiniBatch could
+ * deal with SparseTensors in TensorSample.
+ *
+ * @param inputData           a set of input tensor
+ * @param targetData          a set of target tensor
+ * @param ev$1
+ * @param ev
+ * @tparam T Numeric type
+ */
 class SparseMiniBatch[T: ClassTag](
       inputData: Array[Tensor[T]],
       targetData: Array[Tensor[T]])(
       implicit ev: TensorNumeric[T]) extends ArrayTensorMiniBatch[T](inputData, targetData) {
+  private var input: Activity = null
+  private var target: Activity = null
+
+  override def getInput(): Activity = {
+    if (null == input) {
+      require(!inputData.exists(_ == null), "SparseMiniBatch.getInput: " +
+        "data didn't fill in this miniBatch")
+      input = if (inputData.length == 1) {
+        inputData.head
+      } else {
+        T.array(inputData.map(_.asInstanceOf[Any]))
+      }
+    }
+
+    input
+  }
+
+  override def getTarget(): Activity = {
+    if (null == target && targetData.length != 0) {
+      require(!targetData.exists(_ == null), "SparseMiniBatch.getInput: " +
+        "data didn't fill in this miniBatch")
+      target = if (targetData.length == 1) {
+        targetData.head
+      } else {
+        T.array(targetData.map(_.asInstanceOf[Any]))
+      }
+    }
+
+    target
+  }
+
   def init(features: Array[Tensor[T]], labels: Array[Tensor[T]]): Unit = {
     var i = 0
     while (i < inputData.length) {
@@ -587,8 +628,21 @@ class SparseMiniBatch[T: ClassTag](
       } else if (featureI.getTensorType == DenseType) {
         Tensor[T](Array(batchSize) ++ featureI.size())
       } else {
-        throw new IllegalArgumentException(s"MiniBatchWithSparse: unsupported tensor type " +
+        throw new IllegalArgumentException(s"MiniBatchWithSparse: unsupported feature type " +
           s"${featureI.getTensorType}")
+      }
+      i += 1
+    }
+    i = 0
+    while (i < targetData.length) {
+      val labelI = labels(i)
+      targetData(i) = if (labelI.getTensorType == SparseType) {
+        Tensor.sparse[T](Array(batchSize) ++ labelI.size())
+      } else if (labelI.getTensorType == DenseType) {
+        Tensor[T](Array(batchSize) ++ labelI.size())
+      } else {
+        throw new IllegalArgumentException(s"MiniBatchWithSparse: unsupported label type " +
+          s"${labelI.getTensorType}")
       }
       i += 1
     }
@@ -610,14 +664,14 @@ class SparseMiniBatch[T: ClassTag](
 
     var i = 0
     while (i < inputData.length) {
-      SparseMiniBatch.concat(1, features.map(_.apply(i)), inputData(i))
+      SparseMiniBatch.batch(1, features.map(_.apply(i)), inputData(i))
       i += 1
     }
 
     if (!unlabeled) {
       var j = 0
       while (j < targetData.length) {
-        SparseMiniBatch.concat(1, labels.map(_.apply(j)), targetData(j))
+        SparseMiniBatch.batch(1, labels.map(_.apply(j)), targetData(j))
         j += 1
       }
     }
@@ -633,24 +687,24 @@ object SparseMiniBatch{
     new SparseMiniBatch[T](new Array[Tensor[T]](nInputs), new Array[Tensor[T]](nTargets))
   }
 
-  private[bigdl] def concat[T: ClassTag](
+  private[bigdl] def batch[T: ClassTag](
       dim: Int,
       tensors: Seq[Tensor[T]],
       res: Tensor[T])(implicit ev: TensorNumeric[T]): Unit = {
     if (res.getTensorType == SparseType) {
       Tensor.sparseConcat(dim, tensors, res)
     } else if (res.getTensorType == DenseType) {
-      denseConcat(dim, tensors, res)
+      denseBatch(tensors, res)
     } else {
       throw new IllegalArgumentException(s"MiniBatchWithSparse: unsupported tensor type " +
         s"${res.getTensorType}")
     }
   }
 
-  def denseConcat[T: ClassTag](
-        dim: Int,
+  def denseBatch[T: ClassTag](
         tensors: Seq[Tensor[T]],
-        res: Tensor[T] = null)(implicit ev: TensorNumeric[T]): Tensor[T] = {
+        res: Tensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
+    val dim = 1
     val size = tensors.head.size()
     var i = 1
     while (i < tensors.length) {
@@ -693,4 +747,5 @@ object SparseMiniBatch{
     result
 
   }
+
 }
