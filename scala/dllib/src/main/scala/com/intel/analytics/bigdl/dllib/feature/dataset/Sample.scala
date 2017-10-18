@@ -18,8 +18,9 @@ package com.intel.analytics.bigdl.dataset
 
 
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.tensor.{DenseType, SparseType, Storage, Tensor}
 import org.apache.commons.lang3.SerializationUtils
+import org.apache.zookeeper.KeeperException.UnimplementedException
 
 import scala.reflect.ClassTag
 
@@ -100,7 +101,9 @@ abstract class Sample[T: ClassTag] extends Serializable {
         featureData: Array[T],
         labelData: Array[T],
         featureSize: Array[Int],
-        labelSize: Array[Int])(implicit ev: TensorNumeric[T]): Sample[T]
+        labelSize: Array[Int])(implicit ev: TensorNumeric[T]): Sample[T] = {
+    throw new UnsupportedOperationException("Sample.set(): unimplemented deprecated method")
+  }
 
   /**
    * Get feature sizes
@@ -223,11 +226,11 @@ private[bigdl] class ArraySample[T: ClassTag](
   }
 }
 
-object Sample {
+object ArraySample {
   def apply[T: ClassTag](
-      data: Array[T],
-      featureSize: Array[Array[Int]],
-      labelSize: Array[Array[Int]]): Sample[T] = {
+        data: Array[T],
+        featureSize: Array[Array[Int]],
+        labelSize: Array[Array[Int]]): Sample[T] = {
     new ArraySample(data, featureSize, labelSize)
   }
 
@@ -291,8 +294,8 @@ object Sample {
   }
 
   private def copy[T: ClassTag](
-      data: Array[T],
-      tensors: Array[Tensor[T]])(implicit ev: TensorNumeric[T]) : Array[T] = {
+        data: Array[T],
+        tensors: Array[Tensor[T]])(implicit ev: TensorNumeric[T]) : Array[T] = {
     var offset = 0
     var i = 0
     while (i < tensors.length) {
@@ -322,5 +325,152 @@ object Sample {
       i += 1
     }
     true
+  }
+}
+
+object Sample {
+  def apply[T: ClassTag](
+      data: Array[T],
+      featureSize: Array[Array[Int]],
+      labelSize: Array[Array[Int]]): Sample[T] = {
+    ArraySample(data, featureSize, labelSize)
+  }
+
+  def apply[T: ClassTag](
+        featureTensor: Tensor[T],
+        labelTensor: Tensor[T])(implicit ev: TensorNumeric[T]) : Sample[T] = {
+    require(featureTensor.isContiguous(), "featureTensor is not contiguous")
+    require(labelTensor.isContiguous(), "labelTensor is not contiguous")
+    if (featureTensor.getTensorType == DenseType) {
+      ArraySample(featureTensor, labelTensor)
+    } else {
+      TensorSample(featureTensor, labelTensor)
+    }
+  }
+
+  def apply[T: ClassTag](
+        featureTensor: Tensor[T],
+        label: T)(implicit ev: TensorNumeric[T]) : Sample[T] = {
+    require(featureTensor.isContiguous(), "featureTensor is not contiguous")
+    if (featureTensor.getTensorType == DenseType) {
+      ArraySample(featureTensor, label)
+    } else {
+      TensorSample(featureTensor, label)
+    }
+  }
+
+  def apply[T: ClassTag](
+        featureTensors: Array[Tensor[T]],
+        labelTensor: Tensor[T])(implicit ev: TensorNumeric[T]) : Sample[T] = {
+    if (featureTensors.exists(_.getTensorType == SparseType)) {
+      TensorSample(featureTensors, labelTensor)
+    } else {
+      ArraySample(featureTensors, labelTensor)
+    }
+  }
+
+  def apply[T: ClassTag](
+        featureTensors: Array[Tensor[T]],
+        labelTensors: Array[Tensor[T]])(implicit ev: TensorNumeric[T]) : Sample[T] = {
+    if (featureTensors.exists(_.getTensorType == SparseType)) {
+      TensorSample(featureTensors, labelTensors)
+    } else {
+      ArraySample(featureTensors, labelTensors)
+    }
+  }
+
+  def apply[T: ClassTag](
+        featureTensor: Tensor[T])(implicit ev: TensorNumeric[T]) : Sample[T] = {
+    require(featureTensor.isContiguous(), "featureTensor is not contiguous")
+    if (featureTensor.getTensorType == SparseType) {
+      TensorSample(featureTensor)
+    } else {
+      ArraySample(featureTensor)
+    }
+  }
+
+  def apply[T: ClassTag](
+        featureTensors: Array[Tensor[T]])(implicit ev: TensorNumeric[T]) : Sample[T] = {
+    if (featureTensors.exists(_.getTensorType == SparseType)) {
+      TensorSample(featureTensors)
+    } else {
+      ArraySample(featureTensors)
+    }
+  }
+}
+
+/**
+ * A kind of Sample who hold both DenseTensor and SparseTensor as features.
+ * @param features feature tensors
+ * @param labels label tensors
+ * @tparam T numeric type
+ */
+private[bigdl] class TensorSample[T: ClassTag](
+      val features: Array[Tensor[T]],
+      val labels: Array[Tensor[T]]) extends Sample[T] {
+  val featureSize = features.map(_.size())
+  val labelSize = features.map(_.size())
+
+  def featureLength(index: Int): Int = {
+    features(0).size(1)
+  }
+
+  def labelLength(index: Int): Int = {
+    labels(0).size(1)
+  }
+
+  def numFeature(): Int = {
+    features.length
+  }
+
+  def numLabel(): Int = {
+    labels.length
+  }
+
+  def getFeatureSize(): Array[Array[Int]] = {
+    featureSize
+  }
+
+  def getLabelSize(): Array[Array[Int]] = {
+    labelSize
+  }
+
+  def getData(): Array[T] = {
+    throw new UnimplementedException()
+  }
+}
+
+object TensorSample {
+  def apply[T: ClassTag](
+        featureTensors: Array[Tensor[T]])(implicit ev: TensorNumeric[T]) : Sample[T] = {
+    new TensorSample[T](featureTensors, Array())
+  }
+
+  def apply[T: ClassTag](
+        featureTensors: Tensor[T])(implicit ev: TensorNumeric[T]) : Sample[T] = {
+    new TensorSample[T](Array(featureTensors), Array())
+  }
+  def apply[T: ClassTag](
+        featureTensors: Array[Tensor[T]],
+        labelTensors: Array[Tensor[T]])(implicit ev: TensorNumeric[T]) : Sample[T] = {
+    new TensorSample[T](featureTensors, labelTensors)
+  }
+
+  def apply[T: ClassTag](
+        featureTensors: Array[Tensor[T]],
+        labelTensors: Tensor[T])(implicit ev: TensorNumeric[T]) : Sample[T] = {
+    new TensorSample[T](featureTensors, Array(labelTensors))
+  }
+
+  def apply[T: ClassTag](
+        featureTensors: Tensor[T],
+        labelTensors: Tensor[T])(implicit ev: TensorNumeric[T]) : Sample[T] = {
+    new TensorSample[T](Array(featureTensors), Array(labelTensors))
+  }
+
+  def apply[T: ClassTag](
+        featureTensors: Tensor[T],
+        label: T)(implicit ev: TensorNumeric[T]) : Sample[T] = {
+    new TensorSample[T](Array(featureTensors), Array(Tensor(1).fill(label)))
   }
 }
