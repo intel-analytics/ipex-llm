@@ -456,8 +456,12 @@ class DenseTensorSpec extends FlatSpec with Matchers {
   "toString" should "be correct" in {
     var t: Tensor[Double] = new DenseTensor[Double]()
     val EMPTY_STRING =
-      """[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp with no dimension]"""
+      """Empty Tensor"""
     t.toString should be(EMPTY_STRING)
+
+    t = Tensor.scalar[Double](1)
+    t.toString should be("Scalar(1.0)")
+
     t = new DenseTensor(Storage(Array(1.0, 2.0, 3.0)))
     val OneD_STRING =
       "1.0\n" +
@@ -1002,5 +1006,32 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     val t: Tensor[Double] = new DenseTensor[Double](2)
     val result = t.select(1, 1)
     result.isScalar should be(true)
+  }
+
+  "Negative" should "be correct" in {
+    val x = Tensor[Float](T(1, 2, 3))
+    val y = Tensor[Float](3)
+    y.negative(x) should be(Tensor[Float](T(-1, -2, -3)))
+    x.negative(x) should be(Tensor[Float](T(-1, -2, -3)))
+  }
+
+  "Floor" should "be correct" in {
+    val x = Tensor[Float](T(1.1, 2.5, 3.7))
+    x.floor() should be(Tensor[Float](T(1, 2, 3)))
+
+    val y = Tensor[Double](T(1.1, 2.5, 3.7))
+    y.floor() should be(Tensor[Double](T(1, 2, 3)))
+
+    val z = Tensor[Int](T(1, 2, 3))
+    z.floor() should be(Tensor[Int](T(1, 2, 3)))
+  }
+
+  "mm" should "be correct when multiply twice" in {
+    val o = Tensor[Float]().resize(2, 2)
+    val x = Tensor[Float](T(T(1, 2, 3), T(4, 5, 6)))
+    val y = Tensor[Float](T(T(1, 2), T(3, 4), T(5, 6)))
+    o.mm(x, y)
+    o.mm(x, y)
+    o should be(Tensor[Float](T(T(22, 28), T(49, 64))))
   }
 }
