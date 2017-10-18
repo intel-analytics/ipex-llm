@@ -981,6 +981,18 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def getTensorType: TensorType = SparseType
+
+  override def floor(y: Tensor[T]): Tensor[T] = {
+    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+  }
+
+  override def floor(): Tensor[T] = {
+    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+  }
+
+  override def negative(x: Tensor[T]): Tensor[T] = {
+    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+  }
 }
 
 object SparseTensor{
