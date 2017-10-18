@@ -932,7 +932,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
     this
   }
 
-  private def expandTensor(x: Tensor[T]): Tensor[T] = {
+  private[tensor] def expandTensor(x: Tensor[T]): Tensor[T] = {
     val targetSize = DenseTensor.expandSize(this, x)
     val expandStrides = new Array[Int](targetSize.length)
 
@@ -1218,7 +1218,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
     DenseTensorMath.addmm(this, v1, this, v2, mat1, mat2)
 
   override def mm(mat1: Tensor[T], mat2: Tensor[T]): Tensor[T] =
-    DenseTensorMath.addmm(this, ev.fromType[Int](1), this, ev.fromType[Int](1), mat1, mat2)
+    DenseTensorMath.addmm(this, ev.zero, this, ev.fromType[Int](1), mat1, mat2)
 
   override def addr(t1: Tensor[T], t2: Tensor[T]): Tensor[T] =
     DenseTensorMath.addr[T](this, ev.fromType[Int](1), this, ev.fromType[Int](1), t1, t2)
@@ -1436,7 +1436,12 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
   override def toString(): String = {
     val foldThreshold = System.getProperty("bigdl.tensor.fold", "1000").toInt
     this.nDimension match {
-      case 0 => s"[${this.getClass.getName} with no dimension]"
+      case 0 =>
+        if (this.isScalar) {
+          s"Scalar(${this.value()})"
+        } else {
+          s"Empty Tensor"
+        }
       case 1 =>
         val sb = new StringBuilder
         if (this.size().product < foldThreshold) {
@@ -2097,6 +2102,18 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
 
   override def getTensorType: TensorType = DenseType
 
+  override def floor(y: Tensor[T]): Tensor[T] = {
+    this.map(y, (a, b) => ev.floor(b))
+  }
+
+  override def floor(): Tensor[T] = {
+    this.apply1(a => ev.floor(a))
+  }
+
+  override def negative(x: Tensor[T]): Tensor[T] = {
+    this.map(x, (a, b) => ev.negative(b))
+    this
+  }
 }
 
 object DenseTensor {
@@ -2459,7 +2476,8 @@ object DenseTensor {
 
   private[tensor] def copy[@specialized T](
     self: DenseTensor[T], src: Tensor[T]): Unit = {
-    require(self.nElement() == src.nElement())
+    require(self.nElement() == src.nElement(), s"self element number(${self.nElement()}) is not" +
+      s" equal to source element number(${src.nElement()})")
     if (self.isEmpty) {
       return
     }
