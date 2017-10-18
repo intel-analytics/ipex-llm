@@ -28,6 +28,7 @@ import org.apache.log4j.Logger
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
+import scala.collection.mutable.ArrayBuffer
 import scala.io.Source
 import scala.reflect.ClassTag
 
@@ -194,6 +195,50 @@ object SequencePreprocess {
       .flatMap(x => x).mapPartitions(x => SentenceBiPadding().apply(x))
       .mapPartitions(x => sentenceTokenizer.apply(x))
     tokens
+  }
+
+  def apply(
+    fileDirect: String,
+    vocabSize: Int): (Array[Float], Array[Float], Array[Float], Dictionary) = {
+
+    val trainPath = new File(fileDirect, "ptb.train.txt").toString
+    val validPath = new File(fileDirect, "ptb.valid.txt").toString
+    val testPath = new File(fileDirect, "ptb.test.txt").toString
+
+    val dictionary = Dictionary(readWords(trainPath).toArray, vocabSize - 1)
+    val trainData = fileToWordIdx(trainPath, dictionary)
+    val validData = fileToWordIdx(validPath, dictionary)
+    val testData = fileToWordIdx(testPath, dictionary)
+
+    (trainData.toArray, validData.toArray, testData.toArray, dictionary)
+  }
+
+  def reader(rawData: Array[Float], numSteps: Int): Array[Array[Float]] = {
+    var offset = 0
+    val length = rawData.length - 1 - numSteps
+    val buffer = new ArrayBuffer[Array[Float]]
+    while (offset <= length) {
+      val slice = new Array[Float](numSteps + 1)
+      Array.copy(rawData, offset, slice, 0, numSteps + 1)
+      buffer.append(slice)
+      offset += numSteps
+    }
+    buffer.toArray[Array[Float]]
+  }
+
+  private[bigdl] def fileToWordIdx(fileName: String, dictionary: Dictionary)
+  : Iterator[Float] = {
+    val words = readWords(fileName)
+    words.map(x => dictionary.getIndex(x).toFloat + 1.0f)
+  }
+
+  private[bigdl] def readWords(fileName: String): Iterator[String] = {
+    val buffer = new ArrayBuffer[String]
+    val readWords = Source.fromFile(fileName).getLines.foreach(x => {
+      val words = x.split(" ").foreach(t => buffer.append(t))
+      buffer.append("<eos>")
+    })
+    buffer.toIterator
   }
 
   private[bigdl] def load(fileName: String): Array[String] = {

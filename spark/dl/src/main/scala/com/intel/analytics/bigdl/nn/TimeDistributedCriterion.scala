@@ -47,6 +47,8 @@ class TimeDistributedCriterion[T : ClassTag](
   @transient
   protected var results: Array[Future[Unit]] = _
 
+  private val timeDim = 1
+
 
   /**
    * Clone N criterions; N depends on the time dimension of the input
@@ -70,7 +72,6 @@ class TimeDistributedCriterion[T : ClassTag](
      * target.size = [B, T] => fTarget.size = [B]
      * If sizeAverage is true, the output is averaged through time dimension
      */
-    val timeDim = 2
     require(input.size(timeDim) == target.size(timeDim),
       "target should have as many elements as input, " +
         s"input ${input.size(timeDim)}, target ${target.size(timeDim)}")
@@ -110,7 +111,6 @@ class TimeDistributedCriterion[T : ClassTag](
      * Take each time slice of input and target, and calculate gradInput of each slice
      * If sizeAverage is true, the gradInput is also averaged through time dimension
      */
-    val timeDim = 2
     require(input.size(timeDim) == target.size(timeDim),
       s"target should have as many elements as input, " +
         s"input ${input.size(timeDim)}, target ${target.size(timeDim)}")
