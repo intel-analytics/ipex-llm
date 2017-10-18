@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, _}
 import com.intel.analytics.bigdl.numeric._
 import com.intel.analytics.bigdl.optim.{Optimizer, _}
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.tensor.{DenseType, SparseType, Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Table, _}
 import com.intel.analytics.bigdl.visualization.{Summary, TrainSummary, ValidationSummary}
@@ -59,7 +59,8 @@ case class Sample(features: JList[JTensor],
                   label: JTensor,
                   bigdlType: String)
 
-case class JTensor(storage: Array[Float], shape: Array[Int], bigdlType: String)
+case class JTensor(storage: Array[Float], shape: Array[Int],
+                   bigdlType: String, indices: Array[Array[Int]] = null)
 
 /**
  * [[ValidationResult]] for python
@@ -123,9 +124,18 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
     this.typeName match {
       case "float" =>
-        Tensor(jTensor.storage.map(x => ev.fromType(x.toFloat)), jTensor.shape)
+        if (null == jTensor.indices) {
+          Tensor(jTensor.storage.map(x => ev.fromType(x)), jTensor.shape)
+        } else {
+          Tensor.sparse(jTensor.indices, jTensor.storage.map(x => ev.fromType(x)), jTensor.shape)
+        }
       case "double" =>
-        Tensor(jTensor.storage.map(x => ev.fromType(x.toDouble)), jTensor.shape)
+        if (null == jTensor.indices) {
+          Tensor(jTensor.storage.map(x => ev.fromType(x.toDouble)), jTensor.shape)
+        } else {
+          Tensor.sparse(jTensor.indices,
+            jTensor.storage.map(x => ev.fromType(x.toDouble)), jTensor.shape)
+        }
       case t: String =>
         throw new IllegalArgumentException(s"Not supported type: ${t}")
     }
@@ -134,13 +144,30 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def toJTensor(tensor: Tensor[T]): JTensor = {
     // clone here in case the the size of storage larger then the size of tensor.
     require(tensor != null, "tensor cannot be null")
-    if (tensor.nElement() == 0) {
-      JTensor(Array(), Array(0), typeName)
-    } else {
-      val cloneTensor = tensor.clone()
-      val result = JTensor(cloneTensor.storage().array().map(i => ev.toType[Float](i)),
-        cloneTensor.size(), typeName)
-      result
+    tensor.getTensorType match {
+      case SparseType =>
+        // Note: as SparseTensor's indices is inaccessible here,
+        // so we will transfer it to DenseTensor. Just for testing.
+        if (tensor.nElement() == 0) {
+          JTensor(Array(), Array(0), bigdlType = typeName)
+        } else {
+          val cloneTensor = Tensor.dense(tensor)
+          val result = JTensor(cloneTensor.storage().array().map(i => ev.toType[Float](i)),
+            cloneTensor.size(), bigdlType = typeName)
+          result
+        }
+      case DenseType =>
+        if (tensor.nElement() == 0) {
+          JTensor(Array(), Array(0), bigdlType = typeName)
+        } else {
+          val cloneTensor = tensor.clone()
+          val result = JTensor(cloneTensor.storage().array().map(i => ev.toType[Float](i)),
+            cloneTensor.size(), bigdlType = typeName)
+          result
+        }
+      case _ =>
+        throw new IllegalArgumentException(s"toJTensor: Unsupported tensor type" +
+          s" ${tensor.getTensorType}")
     }
   }
 
