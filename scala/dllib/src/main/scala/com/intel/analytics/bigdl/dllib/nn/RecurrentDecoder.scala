@@ -257,8 +257,7 @@ object RecurrentDecoder extends ContainerSerializable {
 
   override def serializeModule[T: ClassTag](context: SerializeContext[T])
     (implicit ev: TensorNumeric[T]) : SerializeResult = {
-    val containerBuilder = BigDLModule.
-      newBuilder(super.serializeModule(context).bigDLModule)
+    val containerBuilder = (super.serializeModule(context).bigDLModule)
 
     val recurrentDecoder = context.moduleData.module.asInstanceOf[RecurrentDecoder[T]]
 
@@ -274,6 +273,6 @@ object RecurrentDecoder extends ContainerSerializable {
       ModuleSerializer.tensorModuleType)
     containerBuilder.putAttr("preTopology", topologyBuilder.build)
 
-    SerializeResult(containerBuilder.build, context.storages)
+    SerializeResult(containerBuilder, context.storages)
   }
 }

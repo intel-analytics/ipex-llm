@@ -180,6 +180,7 @@ trait ModuleSerializable extends Loadable with Savable{
         field.setAccessible(true)
         val fieldValue = field.get(module)
         DataConverter.setAttributeValue(context, attrBuilder, fieldValue, ptype)
+
         bigDLModelBuilder.putAttr(paramName, attrBuilder.build)
       })
     }
@@ -219,7 +220,7 @@ trait ModuleSerializable extends Loadable with Savable{
     modelBuilder.setTrain(module.module.isTraining())
     modelBuilder.setId(System.identityHashCode(module.module))
     copyFromBigDL(context, modelBuilder)
-    SerializeResult(modelBuilder.build, context.storages)
+    SerializeResult(modelBuilder, context.storages)
   }
 
   /**
@@ -331,7 +332,7 @@ case class DeserializeContext(bigdlModule : BigDLModule,
                               storages: mutable.HashMap[Int, Any],
                               storageType: StorageType)
 
-case class SerializeResult(bigDLModule: BigDLModule, storages: mutable.HashMap[Int, Any])
+case class SerializeResult(bigDLModule: BigDLModule.Builder, storages: mutable.HashMap[Int, Any])
 
 case class ModuleData[T: ClassTag](module : AbstractModule[Activity, Activity, T],
                                     pre : Seq[String], next : Seq[String])
