@@ -155,6 +155,27 @@ abstract class Optimizer[T: ClassTag, D](
   }
 
   /**
+   * Set validate evaluation
+   * @param trigger how often to evaluation validation set
+   * @param sampleRDD validate data set in type of [[RDD]] of [[Sample]]
+   * @param vMethods a set of validation method [[ValidationMethod]]
+   * @param batchSize batch size
+   * @param miniBatch construct MiniBatch with a specified miniBatch type
+   * @return
+   */
+  def setValidation(trigger: Trigger, sampleRDD: RDD[Sample[T]],
+                    vMethods : Array[ValidationMethod[T]], batchSize: Int, miniBatch: MiniBatch[T])
+  : this.type = {
+    this.validationTrigger = Some(trigger)
+    val dataSet =
+      (DataSet.rdd(sampleRDD) -> SampleToMiniBatch(miniBatch, batchSize, None))
+        .asInstanceOf[DistributedDataSet[MiniBatch[T]]]
+    this.validationDataSet = Some(dataSet)
+    this.validationMethods = Some(vMethods)
+    this
+  }
+
+  /**
    * Set a check point saved at `path` triggered by `trigger`
    *
    * @param path the directory to save
