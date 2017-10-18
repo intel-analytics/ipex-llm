@@ -456,8 +456,12 @@ class DenseTensorSpec extends FlatSpec with Matchers {
   "toString" should "be correct" in {
     var t: Tensor[Double] = new DenseTensor[Double]()
     val EMPTY_STRING =
-      """[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp with no dimension]"""
+      """Empty Tensor"""
     t.toString should be(EMPTY_STRING)
+
+    t = Tensor.scalar[Double](1)
+    t.toString should be("Scalar(1.0)")
+
     t = new DenseTensor(Storage(Array(1.0, 2.0, 3.0)))
     val OneD_STRING =
       "1.0\n" +
