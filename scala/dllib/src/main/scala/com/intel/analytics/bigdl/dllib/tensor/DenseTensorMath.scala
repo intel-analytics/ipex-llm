@@ -65,6 +65,9 @@ object DenseTensorMath {
         cmul(self.select(1, i + 1).asInstanceOf[DenseTensor[T]], x, y.select(1, i + 1))
         i += 1
       }
+    } else if (x.nElement() != y.nElement()) {
+      self.resizeAs(x).copy(x)
+      self.cmul(self.expandTensor(y))
     } else {
       require(self.nElement() == y.nElement(), s"element number doesn't match " +
         s"self(${self.nElement()}) y(${y.nElement()}) x(${x.nElement()})")

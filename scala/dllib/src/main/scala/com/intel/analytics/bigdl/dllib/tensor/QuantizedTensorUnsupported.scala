@@ -1389,4 +1389,11 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
   override def div(y: Tensor[T]): Tensor[T] =
     throw new UnsupportedOperationException(errorString)
 
+  override def floor(y: Tensor[T]): Tensor[T] = throw new UnsupportedOperationException(errorString)
+
+  override def floor(): Tensor[T] = throw new UnsupportedOperationException(errorString)
+
+  override def negative(x: Tensor[T]): Tensor[T] =
+    throw new UnsupportedOperationException(errorString)
+
 }
