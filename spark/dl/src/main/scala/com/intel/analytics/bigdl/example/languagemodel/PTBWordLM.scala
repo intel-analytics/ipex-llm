@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.example.ptbModel
+package com.intel.analytics.bigdl.example.languagemodel
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.text.{LabeledSentenceToSample, _}
@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
-import com.intel.analytics.bigdl.example.ptbModel.Utils._
+import com.intel.analytics.bigdl.example.languagemodel.Utils._
 import com.intel.analytics.bigdl.models.rnn.SequencePreprocess
 
 object PTBWordLM {
@@ -88,7 +88,7 @@ object PTBWordLM {
         model = model,
         dataset = trainSet,
         criterion = TimeDistributedCriterion[Float](
-          CrossEntropyCriterion[Float](), sizeAverage = false)
+          CrossEntropyCriterion[Float](), sizeAverage = false, averageDim = 1)
       )
 
       if (param.checkpoint.isDefined) {
@@ -103,7 +103,7 @@ object PTBWordLM {
         .setValidation(Trigger.everyEpoch, validationSet, Array(new Loss[Float](
           TimeDistributedCriterion[Float](
             CrossEntropyCriterion[Float](),
-            sizeAverage = false))))
+            sizeAverage = false, averageDim = 1))))
         .setOptimMethod(optimMethod)
         .setEndWhen(Trigger.maxEpoch(param.nEpochs))
         .optimize()

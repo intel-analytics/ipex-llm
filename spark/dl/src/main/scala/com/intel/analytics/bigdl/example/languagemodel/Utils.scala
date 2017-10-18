@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.example.ptbModel
+package com.intel.analytics.bigdl.example.languagemodel
 
 import scopt.OptionParser
 import java.io._
@@ -38,17 +38,14 @@ object Utils {
 
   case class TrainParams(
                           dataFolder: String = "./",
-                          saveFolder: String = "./",
                           modelSnapshot: Option[String] = None,
                           stateSnapshot: Option[String] = None,
                           checkpoint: Option[String] = None,
                           batchSize: Int = 20,
                           learningRate: Double = 0.01,
-                          momentum: Double = 0.0,
-                          weightDecay: Double = 0.5,
-                          learningRateDecay: Double = 0.0,
+                          learningRateDecay: Double = 0.001,
                           hiddenSize: Int = 200,
-                          vocabSize: Int = 10001,
+                          vocabSize: Int = 10000,
                           nEpochs: Int = 4,
                           numLayers: Int = 2,
                           numSteps: Int = 20,
@@ -59,11 +56,6 @@ object Utils {
     opt[String]('f', "dataFolder")
       .text("where you put the text data")
       .action((x, c) => c.copy(dataFolder = x))
-      .required()
-
-    opt[String]('s', "saveFolder")
-      .text("where you save the processed text data")
-      .action((x, c) => c.copy(saveFolder = x))
       .required()
 
     opt[String]("model")
@@ -85,14 +77,6 @@ object Utils {
     opt[Double]('r', "learningRate")
       .text("learning rate")
       .action((x, c) => c.copy(learningRate = x))
-
-    opt[Double]('m', "momentum")
-      .text("momentum")
-      .action((x, c) => c.copy(momentum = x))
-
-    opt[Double]("weightDecay")
-      .text("weight decay")
-      .action((x, c) => c.copy(weightDecay = x))
 
     opt[Double]("learningRateDecay")
       .text("learningRateDecay")

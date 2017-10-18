@@ -30,12 +30,16 @@ import scala.reflect.ClassTag
  * Apply Any Provided Criterion to every temporal slice of an input.
  *
  * @param critrn embedded criterion
- * @param sizeAverage whether to divide the sequence length
+ * @param sizeAverage whether to divide the length of input along averageDim.
+ * @param averageDim the dim to do average
+ *                  if sizeAverage=true, and averageDim=1, it means to divide the batch size;
+ *                  if sizeAverage=true, and averageDim=2, it means to divide the sequence length
  */
 
 class TimeDistributedCriterion[T : ClassTag](
   val critrn : TensorCriterion[T],
-  val sizeAverage: Boolean = false)
+  val sizeAverage: Boolean = false,
+  val averageDim: Int = 2)
   (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
 
   private var fInput: Tensor[T] = Tensor[T]()
@@ -47,7 +51,7 @@ class TimeDistributedCriterion[T : ClassTag](
   @transient
   protected var results: Array[Future[Unit]] = _
 
-  private val timeDim = 1
+  private val timeDim = averageDim
 
 
   /**
@@ -141,8 +145,8 @@ class TimeDistributedCriterion[T : ClassTag](
 
 object TimeDistributedCriterion {
   def apply[@specialized(Float, Double) T: ClassTag](
-    critrn: TensorCriterion[T] = null, sizeAverage: Boolean = false)
+    critrn: TensorCriterion[T] = null, sizeAverage: Boolean = false, averageDim: Int = 2)
     (implicit ev: TensorNumeric[T]) : TimeDistributedCriterion[T] = {
-    new TimeDistributedCriterion[T](critrn, sizeAverage)
+    new TimeDistributedCriterion[T](critrn, sizeAverage, averageDim)
   }
 }

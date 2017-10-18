@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.example.ptbModel
+package com.intel.analytics.bigdl.example.languagemodel
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.Graph._

@@ -112,7 +112,7 @@ class LabeledSentenceToSample[T: ClassTag](
 
         val startTokenIndex = sentence.getData(0)
         val endTokenIndex = if (labelLength == 1) 0
-        else ev.toType[Int](sentence.getLabel(sentence.labelLength - 1))
+          else ev.toType[Int](sentence.getLabel(sentence.labelLength - 1))
 
         var i = 0
         while (i < sentence.dataLength) {
