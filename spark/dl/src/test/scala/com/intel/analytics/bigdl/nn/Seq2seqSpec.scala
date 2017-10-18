@@ -29,8 +29,6 @@ import scala.math._
 class Seq2seqSpec extends FlatSpec with BeforeAndAfter with Matchers {
   "A Seq2seq" should "work with multiRNN cell" in {
     import com.intel.analytics.bigdl.numeric.NumericDouble
-    val hiddenSize = 7
-    val inputSize = 7
     val kernalW = 3
     val kernalH = 3
     val seqLength = 5
@@ -38,34 +36,34 @@ class Seq2seqSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val batchSize = 4
 
     RNG.setSeed(seed)
-    val input = Tensor[Double](batchSize, seqLength, inputSize, 5, 5).rand
-    val gradOutput = Tensor[Double](batchSize, seqLength, hiddenSize, 5, 5).rand
+    val input = Tensor[Double](batchSize, seqLength, 3, 5, 5).rand
+    val gradOutput = Tensor[Double](batchSize, seqLength, 3, 5, 5).rand
 
     val encoderRecs = Array(Recurrent().add(ConvLSTMPeephole[Double](
-      inputSize,
-      hiddenSize,
+      3,
+      7,
       kernalW, kernalH,
       1)), Recurrent().add(ConvLSTMPeephole[Double](
-      inputSize,
-      hiddenSize,
+      7,
+      12,
       kernalW, kernalH,
       1)), Recurrent().add(ConvLSTMPeephole[Double](
-      inputSize,
-      hiddenSize,
+      12,
+      3,
       kernalW, kernalH,
       1)))
 
     val decoderCells = Array(ConvLSTMPeephole[Double](
-      inputSize,
-      hiddenSize,
+      3,
+      7,
       kernalW, kernalH,
       1), ConvLSTMPeephole[Double](
-      inputSize,
-      hiddenSize,
+      7,
+      12,
       kernalW, kernalH,
       1), ConvLSTMPeephole[Double](
-      inputSize,
-      hiddenSize,
+      12,
+      3,
       kernalW, kernalH,
       1)).asInstanceOf[Array[Cell[Double]]]
 
@@ -275,7 +273,7 @@ class Seq2seqSpec extends FlatSpec with BeforeAndAfter with Matchers {
       .add(TimeDistributed(LogSoftMax()))
     val output = model.forward(input).toTensor
     for (i <- 1 to 4) {
-      output.select(2, i).almostEqual(luaOutput.toTable[Tensor[Double]](i), 1e-8)
+      require(output.select(2, i).almostEqual(luaOutput.toTable[Tensor[Double]](i), 1e-8) == true)
     }
 
     val criterion = TimeDistributedCriterion(ClassNLLCriterion())
@@ -290,8 +288,8 @@ class Seq2seqSpec extends FlatSpec with BeforeAndAfter with Matchers {
     for (i <- 1 to 3) {
       luaencGradInput.toTable[Tensor[Double]](i).almostEqual(enclstm.gradInput.select(2, i), 1e-8)
     }
-    luaenclstmG.almostEqual(enclstmG, 1e-8)
-    luadeclstmG.almostEqual(declstmG, 1e-8)
+    require(luaenclstmG.almostEqual(enclstmG, 1e-8) == true)
+    require(luadeclstmG.almostEqual(declstmG, 1e-8) == true)
   }
 }
 
