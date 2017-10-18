@@ -197,10 +197,15 @@ class JTensor(object):
         >>> import numpy as np
         >>> from bigdl.util.common import JTensor
         >>> np.random.seed(123)
-        >>> data = np.random.uniform(0, 1, (6)).astype("float32")
+        >>> data = np.arrange(1, 7).astype("float32")
         >>> indices = np.arange(1, 7)
         >>> shape = np.array([10])
         >>> result = JTensor.sparse(data, indices, shape)
+        >>> tensor1 = callBigDlFunc("float", "testTensor", result)  # noqa
+        >>> array_from_tensor = tensor1.to_ndarray()
+        >>> expected_ndarray = np.array([0, 1, 2, 3, 4, 5, 6, 7, 0, 0])
+        >>> (array_from_tensor == expected_ndarray).all()
+        True
         """
         if a_ndarray is None:
             return None
@@ -216,6 +221,11 @@ class JTensor(object):
            bigdl_type= bigdl_type)
 
     def to_ndarray(self):
+        """
+        Transfer JTensor to ndarray.
+        As SparseTensor may generate an very big ndarray, so we don't support this function for SparseTensor.
+        :return: a ndarray
+        """
         assert self.indices is None, "sparseTensor to ndarray is not supported"
         return np.array(self.storage, dtype=get_dtype(self.bigdl_type)).reshape(self.shape)  # noqa
 
