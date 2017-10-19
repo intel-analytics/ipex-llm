@@ -3824,6 +3824,23 @@ class Threshold(Layer):
                                         v,
                                         ip)
 
+class Negative(Layer):
+
+    '''
+    Create an Negative layer.  Computing negative value of each element of input tensor
+
+    :param inplace: if output tensor reuse input tensor storage. Default value is false
+
+
+    >>> negative = Negative(False)
+    creating: createNegative
+    '''
+
+    def __init__(self,
+                 inplace = False,
+                 bigdl_type="float"):
+        super(Negative, self).__init__(None, bigdl_type, inplace)
+
 
 class Unsqueeze(Layer):
 
