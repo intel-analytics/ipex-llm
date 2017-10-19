@@ -293,6 +293,7 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
     }
     this._nElement = 0
     this._storageOffset = 0
+    this.nDimension = 0
     this._shape = Array()
     this
   }
@@ -436,21 +437,25 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
     throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
   }
 
+  private def resizeIndices(nElement: Int): Unit = {
+    var i = 0
+    while (i < _indices.length) {
+      _indices(i).resize(nElement + _indicesOffset(i))
+      i += 1
+    }
+  }
+
   override def resize(size: Array[Int], nElement: Int): Tensor[T] = {
-    if (this.nElement() < nElement) {
-      storage.resize(nElement)
-      if (size.length == _indices.length) {
-        _indices.foreach(_.resize(nElement))
-      } else if (size.length < _indices.length) {
+    if (storage.length() + _storageOffset < nElement) {
+      storage.resize(nElement + _storageOffset)
+      if (size.length < _indices.length) {
         _indices = _indices.slice(0, size.length)
-        _indices.foreach(_.resize(nElement))
-      } else {
+      } else if (size.length > _indices.length) {
         val _addIndices = new Array[Storage[Int]](size.length - _indices.length)
         for (i <- _addIndices.indices) _addIndices(i) = Storage[Int](nElement)
         _indices ++= _addIndices
-        _indices.foreach(_.resize(nElement))
       }
-      _storageOffset = 0
+      resizeIndices(nElement)
     }
     _nElement = nElement
     _shape = size
