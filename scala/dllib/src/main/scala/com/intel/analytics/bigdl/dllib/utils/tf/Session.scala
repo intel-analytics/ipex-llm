@@ -90,7 +90,7 @@ class BigDLSessionImpl[T: ClassTag](
         val inputs = Seq(enqueueNode.element.getName)
         val result = constructLocalData(inputs, new DataCache())
         if (enqueueNode.element.getOp == "QueueEnqueueManyV2") {
-          result.flatMap(splitTensorByFirstDim)
+          result.flatMap(BigDLSessionImpl.splitTensorByFirstDim)
         } else {
           result
         }
@@ -232,7 +232,7 @@ class BigDLSessionImpl[T: ClassTag](
         val inputs = Seq(enqueueNode.element.getName)
         val result = constructLocalData(inputs, new DataCache())
         if (enqueueNode.element.getOp == "QueueEnqueueManyV2") {
-          result.flatMap(splitTensorByFirstDim)
+          result.flatMap(BigDLSessionImpl.splitTensorByFirstDim)
         } else {
           result
         }
@@ -260,7 +260,7 @@ class BigDLSessionImpl[T: ClassTag](
       val inputs = Seq(enqueueNode.element.getName)
       val result = constructDistributeData(inputs, cache)
       if (enqueueNode.element.getOp == "QueueEnqueueManyV2") {
-        result.flatMap(splitTensorByFirstDim)
+        result.flatMap(BigDLSessionImpl.splitTensorByFirstDim)
       } else {
         result
       }
@@ -268,28 +268,6 @@ class BigDLSessionImpl[T: ClassTag](
       rdd1.union(rdd2)
     }
     rdd
-  }
-
-  private def splitTensorByFirstDim(table: Table): Array[Table] = {
-    val nElem = table.length()
-    require(nElem >= 1, "EnqueueManyV2 encounter a empty table")
-    val first = table[Tensor[_]](1)
-    require(first.nDimension() >= 1)
-    val depth = first.size(1)
-    val result = new Array[Table](depth)
-    var i = 0
-    while(i < depth) {
-      var j = 0
-      val newTable = new Table()
-      while (j < nElem) {
-        val elem = table[Tensor[ByteString]](j + 1)
-        newTable.insert(elem(i + 1))
-        j = j + 1
-      }
-      result(i) = newTable
-      i = i + 1
-    }
-    result
   }
 
   private def handleDistriDequeueManyNode(node: Node[NodeDef], cache: DataCache): RDD[Table] = {
@@ -305,7 +283,7 @@ class BigDLSessionImpl[T: ClassTag](
       val inputs = Seq(enqueueNode.element.getName)
       val result = constructDistributeData(inputs, cache)
       if (enqueueNode.element.getOp == "QueueEnqueueManyV2") {
-        result.flatMap(splitTensorByFirstDim)
+        result.flatMap(BigDLSessionImpl.splitTensorByFirstDim)
       } else {
         result
       }
@@ -559,4 +537,28 @@ class BigDLSessionImpl[T: ClassTag](
   }
 
 
+}
+
+object BigDLSessionImpl {
+  private def splitTensorByFirstDim(table: Table): Array[Table] = {
+    val nElem = table.length()
+    require(nElem >= 1, "EnqueueManyV2 encounter a empty table")
+    val first = table[Tensor[_]](1)
+    require(first.nDimension() >= 1)
+    val depth = first.size(1)
+    val result = new Array[Table](depth)
+    var i = 0
+    while(i < depth) {
+      var j = 0
+      val newTable = new Table()
+      while (j < nElem) {
+        val elem = table[Tensor[ByteString]](j + 1)
+        newTable.insert(elem(i + 1))
+        j = j + 1
+      }
+      result(i) = newTable
+      i = i + 1
+    }
+    result
+  }
 }
