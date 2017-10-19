@@ -451,13 +451,16 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
     if (size.length < _indices.length) {
       _indices = _indices.slice(0, size.length)
       _indicesOffset = _indicesOffset.slice(0, size.length)
+      resizeIndices(nElement)
     } else if (size.length > _indices.length) {
       val _addIndices = new Array[Storage[Int]](size.length - _indices.length)
       for (i <- _addIndices.indices) _addIndices(i) = Storage[Int](nElement)
       _indicesOffset ++= new Array[Int](size.length - _indicesOffset.length)
       _indices ++= _addIndices
+      resizeIndices(nElement)
+    } else if (_indices(0).length() - _indicesOffset(0) < nElement) {
+      resizeIndices(nElement)
     }
-    resizeIndices(nElement)
 
     if (storage.length() - _storageOffset < nElement) {
       storage.resize(nElement + _storageOffset)

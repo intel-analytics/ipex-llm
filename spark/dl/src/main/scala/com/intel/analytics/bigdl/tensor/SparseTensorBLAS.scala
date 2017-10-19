@@ -166,10 +166,12 @@ object SparseTensorBLAS {
     val Cvals = C.storage().array()
     val cOffset = C.storageOffset() - 1
 
-    require(ArowIndices.length == AcolIndices.length, s"A: row indices number " +
-      s"${ArowIndices.length()} is not equal to col indices number ${AcolIndices.length()}")
-    require(ArowIndices.length == Avals.length, s"A: indices length ${ArowIndices.length()}" +
-      s"is not equal to values length ${Avals.length}")
+    require(ArowIndices.length - ArowOffset == AcolIndices.length - AcolOffset,
+      s"A: row indices number ${ArowIndices.length() - ArowOffset} is not equal " +
+        s"to col indices number ${AcolIndices.length() - AcolOffset}")
+    require(ArowIndices.length - ArowOffset == Avals.length - AstorageOffset,
+      s"A: indices length ${ArowIndices.length() - ArowOffset} " +
+        s"is not equal to values length ${Avals.length - AstorageOffset}")
 
     // Scale matrix first if `beta` is not equal to 1.0
     if (beta != 1.0) {
@@ -229,10 +231,12 @@ object SparseTensorBLAS {
     val Cvals = C.storage().array()
     val cOffset = C.storageOffset() - 1
 
-    require(ArowIndices.length == AcolIndices.length, s"A: row indices number " +
-      s"${ArowIndices.length()} is not equal to col indices number ${AcolIndices.length()}")
-    require(ArowIndices.length == Avals.length, s"A: indices length ${ArowIndices.length()}" +
-      s"is not equal to values length ${Avals.length}")
+    require(ArowIndices.length - ArowOffset == AcolIndices.length - AcolOffset,
+      s"A: row indices number ${ArowIndices.length() - ArowOffset} is not equal " +
+        s"to col indices number ${AcolIndices.length() - AcolOffset}")
+    require(ArowIndices.length - ArowOffset == Avals.length - AstorageOffset,
+      s"A: indices length ${ArowIndices.length() - ArowOffset} " +
+        s"is not equal to values length ${Avals.length - AstorageOffset}")
 
     // Scale matrix first if `beta` is not equal to 1.0
     if (beta != 1.0) {
@@ -292,10 +296,12 @@ object SparseTensorBLAS {
     val BcolIndices = B._indices(1)
     val BcolIndicesOffset = B._indicesOffset(1)
 
-    require(BrowIndices.length == BcolIndices.length, s"B: row indices number " +
-      s"${BrowIndices.length()} is not equal to col indices number ${BcolIndices.length()}")
-    require(BrowIndices.length == Bvals.length, s"B: indices length ${BrowIndices.length()}" +
-      s"is not equal to values length ${Bvals.length}")
+    require(BrowIndices.length - BrowIndicesOffset == BcolIndices.length - BcolIndicesOffset,
+      s"B: row indices number ${BrowIndices.length() - BrowIndicesOffset} is not equal " +
+        s"to col indices number ${BcolIndices.length() - BcolIndicesOffset}")
+    require(BrowIndices.length - BrowIndicesOffset == Bvals.length - BstorageOffset,
+      s"B: indices length ${BrowIndices.length() - BrowIndicesOffset} " +
+        s"is not equal to values length ${Bvals.length - BstorageOffset}")
 
     // Scale matrix first if `beta` is not equal to 1.0
     if (beta != 1.0) {
@@ -354,10 +360,12 @@ object SparseTensorBLAS {
     val BcolIndices = B._indices(1)
     val BcolIndicesOffset = B._indicesOffset(1)
 
-    require(BrowIndices.length == BcolIndices.length, s"B: row indices number " +
-      s"${BrowIndices.length()} is not equal to col indices number ${BcolIndices.length()}")
-    require(BrowIndices.length == Bvals.length, s"B: indices length ${BrowIndices.length()}" +
-      s"is not equal to values length ${Bvals.length}")
+    require(BrowIndices.length - BrowIndicesOffset == BcolIndices.length - BcolIndicesOffset,
+      s"B: row indices number ${BrowIndices.length() - BrowIndicesOffset} is not equal " +
+        s"to col indices number ${BcolIndices.length() - BcolIndicesOffset}")
+    require(BrowIndices.length - BrowIndicesOffset == Bvals.length - BstorageOffset,
+      s"B: indices length ${BrowIndices.length() - BrowIndicesOffset} " +
+        s"is not equal to values length ${Bvals.length - BstorageOffset}")
 
     // Scale matrix first if `beta` is not equal to 1.0
     if (beta != 1.0) {
