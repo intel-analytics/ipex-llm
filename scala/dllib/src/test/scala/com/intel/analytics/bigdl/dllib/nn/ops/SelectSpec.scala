@@ -19,20 +19,22 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
-class SumSpec extends FlatSpec with Matchers {
-  "Sum operation" should "works correctly" in {
-    val input =
-      Tensor[Int](T(
-        T(1, 1, 1),
-        T(1, 1, 1)
-      ))
-    val op = Sum[Float, Int]()
-    op.forward(T(input, Tensor[Int]())) should be(input)
-    op.forward(T(input, Tensor.scalar[Int](1))) should be(Tensor[Int](T(2, 2, 2)))
-    op.forward(T(input, Tensor[Int](T(1)))) should be(Tensor[Int](T(2, 2, 2)))
-    op.forward(T(input, Tensor.scalar[Int](2))) should be(Tensor[Int](T(3, 3)))
-    val op1 = Sum[Float, Int](keepDims = true)
-    op1.forward(T(input, Tensor.scalar[Int](2))) should be(Tensor[Int](T(T(3), T(3))))
-    op.forward(T(input, Tensor[Int](T(1, 2)))) should be(Tensor.scalar[Int](6))
+class SelectSpec extends FlatSpec with Matchers {
+  "select" should "be correct when condition is true" in {
+    val cond = Tensor.scalar[Boolean](true)
+    val t = Tensor[Int](T(1))
+    val e = Tensor[Int](T(2))
+
+    val ops = Select[Float]()
+    ops.forward(T(cond, t, e)) should be(t)
+  }
+
+  "select" should "be correct when condition is false" in {
+    val cond = Tensor.scalar[Boolean](false)
+    val t = Tensor[Int](T(1))
+    val e = Tensor[Int](T(2))
+
+    val ops = Select[Float]()
+    ops.forward(T(cond, t, e)) should be(e)
   }
 }
