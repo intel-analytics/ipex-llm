@@ -20,15 +20,16 @@ import java.nio.ByteOrder
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.tf.Const
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.tf.TFUtils
+import com.intel.analytics.bigdl.utils.tf.{Context, TFUtils}
 import org.tensorflow.framework.NodeDef
 
 import scala.reflect.ClassTag
 
 class Const extends TensorflowOpsLoader {
-  override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder)
-    (implicit ev: TensorNumeric[T]): Module[T] = {
+  override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder,
+    context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
     val value = TFUtils.parseTensor(nodeDef.getAttrMap.get("value").getTensor, byteOrder)
     Const(value).asInstanceOf[AbstractModule[Activity, Activity, T]]
   }

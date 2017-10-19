@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.nn.Identity
 import com.intel.analytics.bigdl.nn.ops.Slice
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.tf.Context
 import org.tensorflow.framework.NodeDef
 
 import scala.reflect.ClassTag
@@ -30,8 +31,8 @@ class Slice extends TensorflowOpsLoader {
 
   import Utils._
 
-  override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder)
-    (implicit ev: TensorNumeric[T]): Module[T] = {
+  override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder,
+    context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
     Adapter[T](Array(2, 3), tensorArrays => {
       val size = tensorArrays(1).asInstanceOf[Tensor[Int]]
       Slice[T](toArray(tensorArrays(0).asInstanceOf[Tensor[Int]]),
