@@ -133,7 +133,8 @@ class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val target = Map(
       "spark.shuffle.reduceLocality.enabled" -> "false",
       "spark.shuffle.blockTransferService" -> "nio",
-      "spark.scheduler.minRegisteredResourcesRatio" -> "1.0"
+      "spark.scheduler.minRegisteredResourcesRatio" -> "1.0",
+      "spark.speculation" -> "true"
     )
     conf.length should be(target.keys.size)
     conf.foreach(s => {
@@ -146,7 +147,8 @@ class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val conf = Engine.readConf
     val target = Map(
       "spark.shuffle.reduceLocality.enabled" -> "false",
-      "spark.scheduler.minRegisteredResourcesRatio" -> "1.0"
+      "spark.scheduler.minRegisteredResourcesRatio" -> "1.0",
+      "spark.speculation" -> "true"
     )
     conf.length should be(target.keys.size)
     conf.foreach(s => {
