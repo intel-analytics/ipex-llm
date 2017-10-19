@@ -448,18 +448,19 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def resize(size: Array[Int], nElement: Int): Tensor[T] = {
-    if (storage.length() + _storageOffset < nElement) {
+    if (size.length < _indices.length) {
+      _indices = _indices.slice(0, size.length)
+      _indicesOffset = _indicesOffset.slice(0, size.length)
+    } else if (size.length > _indices.length) {
+      val _addIndices = new Array[Storage[Int]](size.length - _indices.length)
+      for (i <- _addIndices.indices) _addIndices(i) = Storage[Int](nElement)
+      _indicesOffset ++= new Array[Int](size.length - _indicesOffset.length)
+      _indices ++= _addIndices
+    }
+    resizeIndices(nElement)
+
+    if (storage.length() - _storageOffset < nElement) {
       storage.resize(nElement + _storageOffset)
-      if (size.length < _indices.length) {
-        _indices = _indices.slice(0, size.length)
-        _indicesOffset = _indicesOffset.slice(0, size.length)
-      } else if (size.length > _indices.length) {
-        val _addIndices = new Array[Storage[Int]](size.length - _indices.length)
-        for (i <- _addIndices.indices) _addIndices(i) = Storage[Int](nElement)
-        _indicesOffset ++= new Array[Int](size.length - _indicesOffset.length)
-        _indices ++= _addIndices
-      }
-      resizeIndices(nElement)
     }
     _nElement = nElement
     _shape = size

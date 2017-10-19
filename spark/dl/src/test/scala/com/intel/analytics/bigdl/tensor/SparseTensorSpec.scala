@@ -90,4 +90,13 @@ class SparseTensorSpec  extends FlatSpec with Matchers {
     sTensor.storageOffset() should be (6)
   }
 
+  "resize 2D tensor to 1D tensor" should "return right result2" in {
+    val sTensor = Tensor.sparse(Tensor(6, 5).range(1, 30, 1))
+    sTensor.resize(Array(30), 30)
+    sTensor.size() should be (Array(30))
+    sTensor.nElement() should be (30)
+    sTensor.storage().array.length should be (30)
+    sTensor.storageOffset() should be (1)
+  }
+
 }
