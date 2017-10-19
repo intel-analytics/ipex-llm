@@ -59,11 +59,11 @@ class TransposeSpec extends TorchSpec {
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
 
-    luaOutput1.map(output, (v1, v2) => {
+    luaOutput1.map(output.asInstanceOf[Tensor[Double]], (v1, v2) => {
       assert(abs(v1 - v2) < 1e-6);
       v1
     })
-    luaOutput2.map(gradInput, (v1, v2) => {
+    luaOutput2.map(gradInput.asInstanceOf[Tensor[Double]], (v1, v2) => {
       assert(abs(v1 - v2) < 1e-6);
       v1
     })
@@ -108,11 +108,11 @@ class TransposeSpec extends TorchSpec {
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
 
-    luaOutput1.map(output, (v1, v2) => {
+    luaOutput1.map(output.asInstanceOf[Tensor[Double]], (v1, v2) => {
       assert(abs(v1 - v2) < 1e-6);
       v1
     })
-    luaOutput2.map(gradInput, (v1, v2) => {
+    luaOutput2.map(gradInput.asInstanceOf[Tensor[Double]], (v1, v2) => {
       assert(abs(v1 - v2) < 1e-6);
       v1
     })
