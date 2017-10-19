@@ -285,8 +285,10 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
 
   override def set(): Tensor[T] = {
     if (this._indices != null) {
-      for (ind <- this._indices)
-          ind.resize(0)
+      _indices.foreach(ind => ind.resize(0))
+      for (i <- 0 until _indicesOffset.length) {
+        _indicesOffset(i) = 0
+      }
     }
     if (this._values != null) {
       this._values.resize(0)
@@ -450,9 +452,11 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
       storage.resize(nElement + _storageOffset)
       if (size.length < _indices.length) {
         _indices = _indices.slice(0, size.length)
+        _indicesOffset = _indicesOffset.slice(0, size.length)
       } else if (size.length > _indices.length) {
         val _addIndices = new Array[Storage[Int]](size.length - _indices.length)
         for (i <- _addIndices.indices) _addIndices(i) = Storage[Int](nElement)
+        _indicesOffset ++= new Array[Int](size.length - _indicesOffset.length)
         _indices ++= _addIndices
       }
       resizeIndices(nElement)
