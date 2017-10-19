@@ -174,11 +174,11 @@ class DecodeRaw[T: ClassTag](val outType: DataType,
     outType match {
       case DataType.DT_UINT8 => decodeUint8(input, buffer.array().length)
       case DataType.DT_INT8 => decodeInt8(input, buffer.array().length)
-      case DataType.DT_INT16 => decodeInt16(input, buffer.asShortBuffer().array().length)
-      case DataType.DT_INT32 => decodeInt32(input, buffer.asIntBuffer().array().length)
-      case DataType.DT_INT64 => decodeInt64(input, buffer.asLongBuffer().array().length)
-      case DataType.DT_FLOAT => decodeFloat(input, buffer.asFloatBuffer().array().length)
-      case DataType.DT_DOUBLE => decodeDouble(input, buffer.asDoubleBuffer().array().length)
+      case DataType.DT_INT16 => decodeInt16(input, buffer.asShortBuffer().capacity())
+      case DataType.DT_INT32 => decodeInt32(input, buffer.asIntBuffer().capacity())
+      case DataType.DT_INT64 => decodeInt64(input, buffer.asLongBuffer().capacity())
+      case DataType.DT_FLOAT => decodeFloat(input, buffer.asFloatBuffer().capacity())
+      case DataType.DT_DOUBLE => decodeDouble(input, buffer.asDoubleBuffer().capacity())
     }
     output
   }
@@ -199,11 +199,12 @@ class DecodeRaw[T: ClassTag](val outType: DataType,
       val bytes = inputData(inputOffset + i).toByteArray
       val buffer = ByteBuffer.wrap(bytes)
       buffer.order(byteOrder)
-      val typedInputData = buffer.asDoubleBuffer().array()
-      require(typedInputData.length == featureSize,
-        s"each element should have the same size, first elem size: $featureSize, " +
-          s"${i}th elem size: ${typedInputData.length}")
-      System.arraycopy(typedInputData, 0, outputData, outputOffset + i * featureSize, featureSize)
+      val typedInputData = buffer.asDoubleBuffer()
+      var j = 0
+      while (j < featureSize) {
+        outputData(outputOffset + i * featureSize + j) = typedInputData.get(j)
+        j = j + 1
+      }
       i = i + 1
     }
   }
@@ -224,11 +225,12 @@ class DecodeRaw[T: ClassTag](val outType: DataType,
       val bytes = inputData(inputOffset + i).toByteArray
       val buffer = ByteBuffer.wrap(bytes)
       buffer.order(byteOrder)
-      val typedInputData = buffer.asFloatBuffer().array()
-      require(typedInputData.length == featureSize,
-        s"each element should have the same size, first elem size: $featureSize, " +
-          s"${i}th elem size: ${typedInputData.length}")
-      System.arraycopy(typedInputData, 0, outputData, outputOffset + i * featureSize, featureSize)
+      val typedInputData = buffer.asFloatBuffer()
+      var j = 0
+      while (j < featureSize) {
+        outputData(outputOffset + i * featureSize + j) = typedInputData.get(j)
+        j = j + 1
+      }
       i = i + 1
     }
   }
@@ -249,11 +251,12 @@ class DecodeRaw[T: ClassTag](val outType: DataType,
       val bytes = inputData(inputOffset + i).toByteArray
       val buffer = ByteBuffer.wrap(bytes)
       buffer.order(byteOrder)
-      val typedInputData = buffer.asIntBuffer().array()
-      require(typedInputData.length == featureSize,
-        s"each element should have the same size, first elem size: $featureSize, " +
-          s"${i}th elem size: ${typedInputData.length}")
-      System.arraycopy(typedInputData, 0, outputData, outputOffset + i * featureSize, featureSize)
+      val typedInputData = buffer.asIntBuffer()
+      var j = 0
+      while (j < featureSize) {
+        outputData(outputOffset + i * featureSize + j) = typedInputData.get(j)
+        j = j + 1
+      }
       i = i + 1
     }
   }
@@ -274,11 +277,12 @@ class DecodeRaw[T: ClassTag](val outType: DataType,
       val bytes = inputData(inputOffset + i).toByteArray
       val buffer = ByteBuffer.wrap(bytes)
       buffer.order(byteOrder)
-      val typedInputData = buffer.asLongBuffer().array()
-      require(typedInputData.length == featureSize,
-        s"each element should have the same size, first elem size: $featureSize, " +
-          s"${i}th elem size: ${typedInputData.length}")
-      System.arraycopy(typedInputData, 0, outputData, outputOffset + i * featureSize, featureSize)
+      val typedInputData = buffer.asLongBuffer()
+      var j = 0
+      while (j < featureSize) {
+        outputData(outputOffset + i * featureSize + j) = typedInputData.get(j)
+        j = j + 1
+      }
       i = i + 1
     }
   }
@@ -299,11 +303,12 @@ class DecodeRaw[T: ClassTag](val outType: DataType,
       val bytes = inputData(inputOffset + i).toByteArray
       val buffer = ByteBuffer.wrap(bytes)
       buffer.order(byteOrder)
-      val typedInputData = buffer.asShortBuffer().array()
-      require(typedInputData.length == featureSize,
-        s"each element should have the same size, first elem size: $featureSize, " +
-          s"${i}th elem size: ${typedInputData.length}")
-      System.arraycopy(typedInputData, 0, outputData, outputOffset + i * featureSize, featureSize)
+      val typedInputData = buffer.asShortBuffer()
+      var j = 0
+      while (j < featureSize) {
+        outputData(outputOffset + i * featureSize + j) = typedInputData.get(j)
+        j = j + 1
+      }
       i = i + 1
     }
   }
