@@ -3,7 +3,11 @@
 
 ** Talks:**
 
-* [ Strata 2017 London:Building deep learning-powered big data](https://conferences.oreilly.com/strata/strata-eu/public/schedule/detail/60651) [[Slides Download]](https://cdn.oreillystatic.com/en/assets/1/event/228/Building%20deep%20learning-powered%20big%20data%20Presentation.pdf)
+* [AI Conference 2017 San Francisco](https://conferences.oreilly.com/artificial-intelligence/ai-ca/public/schedule/detail/63197):Very large-scale distributed deep learning with BigDL [[Slides]](https://github.com/bigdl-project/bigdl-project.github.io/blob/master/talks/AI_Conf_BigDL_Jason_Ding.pdf)
+
+* [ Strata 2017 NY:](https://conferences.oreilly.com/strata/strata-ny/public/schedule/detail/61977)Building advanced analytics and deep learning on Apache Spark with BigDL[[Slides]](https://github.com/bigdl-project/bigdl-project.github.io/blob/master/talks/Advanced%20Data%20Analytics%20and%20Deep%20Learning%20on%20Apache%20Spark%20with%20BigDL.pdf)
+
+* [ Strata 2017 London:](https://conferences.oreilly.com/strata/strata-eu-2017/public/schedule/detail/58035)Distributed deep learning at scale on Apache Spark with BigDL[[Slides]](https://github.com/bigdl-project/bigdl-project.github.io/blob/master/talks/Distributed%20Deep%20Learning%20at%20Scale%20on%20Apache%20Spark%20with%20BigDL_Strata.pdf)
 
 * [Strata 2017 Beijing: Building deep learning power big data analytics on Apache Spark using BigDL](https://strata.oreilly.com.cn/strata-cn/public/schedule/detail/63040) [[Slides Download]](https://raw.githubusercontent.com/bigdl-project/bigdl-project.github.io/master/img/session_Building%20deep%20learning%20power%20big%20data%20analytics%20on%20Apache%20Spark%20using%20BigDL%E2%80%94sponsored%20by%20Intel.pdf)
 
