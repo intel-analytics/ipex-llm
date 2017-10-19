@@ -31,8 +31,8 @@ class StridedSlice extends TensorflowOpsLoader {
 
   import Utils._
 
-  override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder
-    ,context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
+  override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder,
+    context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
 
     Adapter[T](Array(2, 3, 4), tensorArrays => {
       // this must be defined inside this function, otherwise the loader will be
