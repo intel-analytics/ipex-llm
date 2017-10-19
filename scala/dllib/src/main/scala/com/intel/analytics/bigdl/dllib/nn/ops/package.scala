@@ -48,13 +48,6 @@ package object ops {
     = ModuleToOperation[T](CDivTable())
   }
 
-  object Sum {
-    def apply[T: ClassTag](axis: Int, keepDim: Boolean = false)
-      (implicit ev: TensorNumeric[T]): Operation[Activity, Activity, T]
-    = ModuleToOperation[T](
-      com.intel.analytics.bigdl.nn.Sum(dimension = axis, squeeze = !keepDim))
-  }
-
   object Reshape {
     def apply[T: ClassTag](size: Array[Int])
       (implicit ev: TensorNumeric[T]): Operation[Activity, Activity, T]

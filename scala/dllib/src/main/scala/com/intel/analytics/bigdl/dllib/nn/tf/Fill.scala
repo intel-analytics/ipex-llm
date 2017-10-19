@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.nn.tf
 
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor._
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.{NumericWildCard, TensorNumeric}
 import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
@@ -32,22 +32,30 @@ private[bigdl] class Fill[T: ClassTag]() (implicit ev: TensorNumeric[T])
 
   override def updateOutput(input: Table): Tensor[_] = {
     val shapeTensor = input[Tensor[Int]](1)
-    require(shapeTensor.nDimension() == 1, "shape tensor is not a vector")
-    val shape = new Array[Int](shapeTensor.nElement())
-    var i = 0
-    while (i < shapeTensor.nElement()) {
-      shape(i) = shapeTensor.valueAt(i + 1)
-      i = i + 1
-    }
     val value = input[Tensor[_]](2)
-    require(value.isScalar, "value tensor is not a scalar")
-    if (value.getType() != output.getType()) {
-      output = value.emptyInstance().resize(shape)
+    if (shapeTensor.isEmpty) {
+      if (value.getType() != output.getType()) {
+        output = value.emptyInstance()
+      }
+      output.resizeAs(value).asInstanceOf[Tensor[NumericWildCard]]
+        .copy(value.asInstanceOf[Tensor[NumericWildCard]])
     } else {
-      output.resize(shape)
-    }
+      require(shapeTensor.nDimension() == 1, "shape tensor is not a vector")
+      val shape = new Array[Int](shapeTensor.nElement())
+      var i = 0
+      while (i < shapeTensor.nElement()) {
+        shape(i) = shapeTensor.valueAt(i + 1)
+        i = i + 1
+      }
+      require(value.isScalar, "value tensor is not a scalar")
+      if (value.getType() != output.getType()) {
+        output = value.emptyInstance().resize(shape)
+      } else {
+        output.resize(shape)
+      }
 
-    output.forceFill(value.value())
+      output.forceFill(value.value())
+    }
 
     output
   }
