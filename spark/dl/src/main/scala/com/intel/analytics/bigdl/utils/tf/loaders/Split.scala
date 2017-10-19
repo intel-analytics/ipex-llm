@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.nn.ConcatTable
 import com.intel.analytics.bigdl.nn.tf.SplitAndSelect
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.tf.Context
 import org.tensorflow.framework.NodeDef
 
 import scala.reflect.ClassTag
@@ -30,8 +31,8 @@ class Split extends TensorflowOpsLoader {
 
   import Utils._
 
-  override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder)
-    (implicit ev: TensorNumeric[T]): Module[T] = {
+  override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder,
+    context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
     Adapter[T](Array(1), tensorArrays => {
       val numSplit = nodeDef.getAttrMap.get("num_split").getI.toInt
       val dim = tensorArrays(0).asInstanceOf[Tensor[Int]].value() + 1
