@@ -19,28 +19,28 @@ import java.io.{DataInputStream, InputStream, FileReader => JFileReader}
 import java.nio.ByteOrder
 import java.util
 import java.util.List
+import java.util.{HashMap => JHashMap}
 
 import com.google.protobuf.{CodedInputStream, TextFormat}
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.Graph
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.ops.{SwitchControlNode, SwitchOps}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn.ops.AssignGrad
+import com.intel.analytics.bigdl.python.api.{JTensor, PythonBigDL, PythonBigDLUtils}
+import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{DirectedGraph, Edge, FileReader, Node}
+import com.intel.analytics.bigdl.utils._
+import com.intel.analytics.bigdl.nn.ops.{SwitchControlNode, SwitchOps}
 import com.intel.analytics.bigdl.utils.tf.TensorflowToBigDL._
 import com.intel.analytics.bigdl.utils.tf.loaders.TensorflowOpsLoader
-import com.intel.analytics.bigdl.utils.{DirectedGraph, FileReader, Node}
 import org.tensorflow.framework.{GraphDef, NodeDef}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
+import scala.collection.JavaConverters._
 
 object TensorflowLoader{
-
-  type Context[T] = mutable.HashMap[String, (Tensor[T], Tensor[T], Option[Seq[(Int, Int)]])]
-
   /**
    * Load tensorflow model from a prototxt file
    * @param graphPrototxt where is the tensorflow protobuf file
@@ -50,17 +50,34 @@ object TensorflowLoader{
    * @return
    */
   def load[T: ClassTag](graphPrototxt: String, inputs: Seq[String], outputs: Seq[String],
-        byteOrder: ByteOrder)(
+        byteOrder: ByteOrder, binFile: Option[String] = None)(
     implicit ev: TensorNumeric[T]): Module[T] = {
     // Get node list
     val nodeList = parse(graphPrototxt)
 
     // Construct tf node graph
-    val (tfGraph, adjustedInputs, _) =
+    val (tfGraph, adjustedInputsMap, _) =
       buildTFGraph(nodeList, outputs, (node: NodeDef) => inputs.contains(node.getName))
 
+    val adjustedInputs = ArrayBuffer[String]()
+    inputs.foreach(i => {
+      if (adjustedInputsMap.isDefinedAt(i)) {
+        adjustedInputsMap(i).foreach(n => adjustedInputs.append(n))
+      }
+    })
+    // Try to load variables
+    val context = binFile.map(loadBinFiles(_))
+
     // Build BigDL model from the tf node graph
-    buildBigDLModel(tfGraph, adjustedInputs, outputs, byteOrder, graphPrototxt)
+    buildBigDLModel(tfGraph, adjustedInputs, outputs, byteOrder, graphPrototxt, context)
+  }
+
+  def checkpoints[T: ClassTag](graphFile: String, binFile: String, byteOrder: ByteOrder)(
+    implicit ev: TensorNumeric[T]): Session[T] = {
+    // Get node list
+    val nodeList = parse(graphFile)
+
+    new BigDLSessionImpl[T](nodeList.asScala, loadBinFiles(binFile), byteOrder)
   }
 
   /**
@@ -84,6 +101,20 @@ object TensorflowLoader{
       if (in != null) in.close()
     }
 
+  }
+
+  private def loadBinFiles[T: ClassTag](file: String)(implicit ev: TensorNumeric[T]): Context[T] = {
+    val m = File.load(file).asInstanceOf[JHashMap[String, JTensor]].asScala
+    val map = new mutable.HashMap[String, (Tensor[T], Tensor[T], Option[Seq[(Int, Int)]])]()
+    for (k <- m.keys) {
+      val tensor = ev.getType() match {
+        case FloatType => PythonBigDLUtils.toTensor(m(k), "float")
+        case DoubleType => PythonBigDLUtils.toTensor(m(k), "double")
+      }
+
+      map(k) = (tensor, tensor.clone(), None)
+    }
+    new Context[T](map)
   }
 
   /**
@@ -112,8 +143,7 @@ object TensorflowLoader{
    */
   private[bigdl] def buildTFGraph(nodes : List[NodeDef], outputNodeNames: Seq[String],
                                   isInput: (NodeDef) => Boolean = (_: NodeDef) => false)
-  : (DirectedGraph[NodeDef], Seq[String], Seq[String]) = {
-    import scala.collection.JavaConverters._
+  : (DirectedGraph[NodeDef], mutable.HashMap[String, ArrayBuffer[String]], Seq[String]) = {
     val name2Node = nodes.asScala.map(n => n.getName -> new Node(n)).toMap
 
     // Build graph
@@ -126,12 +156,14 @@ object TensorflowLoader{
       results
     }
 
-    def connect(nodes: Seq[Node[NodeDef]]): (Seq[String], Seq[String]) = {
+    def connect(nodes: Seq[Node[NodeDef]]): (mutable.HashMap[String, ArrayBuffer[String]],
+      Seq[String]) = {
+
       var inputCounter = 0
-      var dependencyCounter = 0
+      var depCounter = 0
       val queue = new mutable.Queue[Node[NodeDef]]()
       val visited = mutable.Set[Node[NodeDef]]()
-      val inputs = new mutable.ArrayBuffer[String]()
+      val inputs = new mutable.HashMap[String, ArrayBuffer[String]]()
       val originInputs = new mutable.ArrayBuffer[String]()
 
       // Do a BFS to connect the nodes
@@ -164,9 +196,9 @@ object TensorflowLoader{
                 val dependencyNode = Node(NodeDef.newBuilder()
                   .setOp("DependencyNode")
                   .addInput(preNode.element.getName)
-                  .setName(s"depends_on_${preNode.element.getName}_$dependencyCounter")
+                  .setName(s"depends_on_${preNode.element.getName}$depCounter")
                   .build())
-                dependencyCounter = dependencyCounter + 1
+                depCounter += 1
                 dependencyNode -> node
                 dependencyNode
               } else {
@@ -177,29 +209,35 @@ object TensorflowLoader{
               queue.enqueue(preNode)
             }
           } else {
+            if (inputs.get(node.element.getName).isEmpty) {
+              inputs(node.element.getName) = new ArrayBuffer[String]()
+            }
             if (isInput(node.element) && node.element.getOp != "Placeholder") {
               // if the predefined input node is not a Placeholder, add one to match the Input node
               val inputNum = getInputNumber(node.element)
-              var i = 0
-              while (i < inputNum) {
-                val name = s"input$inputCounter"
-                val placeholder = NodeDef.newBuilder()
-                  .setName(name)
-                  .setOp("Placeholder").build()
-                inputCounter = inputCounter + 1
-                val n = Node(placeholder)
-                n -> node
-                inputs += name
-                i = i + 1
+              if (inputNum == 0) {
+                inputs(node.element.getName).append(node.element.getName)
+              } else {
+                var i = 0
+                while (i < inputNum) {
+                  val name = s"input$inputCounter"
+                  val placeholder = NodeDef.newBuilder()
+                    .setName(name)
+                    .setOp("Placeholder").build()
+                  inputCounter = inputCounter + 1
+                  val n = Node(placeholder)
+                  n -> node
+                  inputs(node.element.getName).append(name)
+                  i = i + 1
+                }
               }
               originInputs += node.element.getName
             } else if (node.element.getOp == "Placeholder") {
-              inputs += node.element.getName
+              inputs(node.element.getName).append(node.element.getName)
               originInputs += node.element.getName
             }
           }
         }
-
       }
       (inputs, originInputs)
     }
@@ -241,8 +279,7 @@ object TensorflowLoader{
       new mutable.HashMap[Node[AbstractModule[Activity, Activity, T]], Seq[Node[NodeDef]]]()
     val moduleToAllNodes =
       new mutable.HashMap[Node[AbstractModule[Activity, Activity, T]], Set[Node[NodeDef]]]()
-    val context = ctx.getOrElse(
-      new mutable.HashMap[String, (Tensor[T], Tensor[T], Option[Seq[(Int, Int)]])])
+    val context = ctx.getOrElse(new Context[T])
 
     // BFS to keep the input order same
     tfGraph.BFS.foreach(n => {
@@ -271,9 +308,11 @@ object TensorflowLoader{
               val cls = Class.forName("com.intel.analytics.bigdl.utils.tf.loaders." +
                 n.element.getOp)
               val builder = cls.getConstructors()(0).newInstance().asInstanceOf[TensorflowOpsLoader]
-              (builder.build[T](n.element, byteOrder), Seq(n).asJava, Seq(n))
+              (builder.build[T](n.element, byteOrder, context), Seq(n).asJava, Seq(n))
             } catch {
               case _ =>
+                println("com.intel.analytics.bigdl.utils.tf.loaders." +
+                  n.element.getOp)
                 throw new UnsupportedOperationException(errorMsg)
             }
           })
@@ -310,6 +349,10 @@ object TensorflowLoader{
       }
     })
 
+    /**
+     * Go through all tensorflow nodes
+     * @param outputModuleNode
+     */
     def connect(outputModuleNode: Seq[Node[AbstractModule[Activity, Activity, T]]]) = {
       val queue = new mutable.Queue[Node[AbstractModule[Activity, Activity, T]]]()
       val visited = mutable.Set[Node[AbstractModule[Activity, Activity, T]]]()
@@ -322,7 +365,8 @@ object TensorflowLoader{
           val inputNodes = moduleToInputNodes(currNode)
           val allNodes = moduleToAllNodes(currNode)
           val inputModuleNodes = inputNodes.flatMap(_.prevNodesAndEdges)
-            .filterNot(n => context.contains(n._1.element.getName))
+            .filterNot(n => context.containsTensor(n._1.element.getName) &&
+              n._1.element.getOp() != "VariableV2")
             .filterNot(n => allNodes(n._1))
             .map(n => (convertedNode(n._1), n._2.newInstance())).filter(n => n._1 != currNode)
           inputModuleNodes.foreach(n => n._1.add(currNode, n._2))
@@ -343,12 +387,23 @@ object TensorflowLoader{
 
     val weights = ArrayBuffer[Tensor[T]]()
     val gradients = ArrayBuffer[Tensor[T]]()
-    for ((weight, grad, _) <- context.values) {
+    for ((weight, grad, _) <- context.tensors) {
       weights += weight
       gradients += grad
     }
 
-    Graph(inputNodes.toArray, outputNodes.toArray, Some((weights.toArray, gradients.toArray)),
+    // Append assign nodes
+    val adjustOutputs = if (context.assignGrads.isDefined) {
+      outputNodes.map(n => {
+        val matchNode = context.assignGrads.get.filter(_._2 == n.element.getName())
+        require(matchNode.size == 1, "Invalid gradients output")
+        new AssignGrad[T](context(matchNode.head._1)._2).inputs(n)
+      })
+    } else {
+      outputNodes
+    }
+
+    Graph(inputNodes.toArray, adjustOutputs.toArray, Some((weights.toArray, gradients.toArray)),
       generatedBackward)
   }
 
