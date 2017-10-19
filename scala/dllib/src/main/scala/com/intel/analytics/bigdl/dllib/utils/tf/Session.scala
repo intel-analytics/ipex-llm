@@ -34,7 +34,9 @@ import com.intel.analytics.bigdl.models.utils.ModelBroadcast
 import TFTensorNumeric.NumericByteString
 
 import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
+import scala.util.Random
 
 abstract class Session[T: ClassTag] {
 
@@ -277,81 +279,20 @@ class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
     dataSeq
   }
 
-  private def handleDistriDequeue(node: Node[NodeDef], cache: DataCache,
-    sc: SparkContext): RDD[Table] = {
-    require(node.prevNodes.length == 1, "require QueueDequeueV2 only has one input")
-    val queueNode = node.prevNodes.head
-    val dequeueNodes = queueNode.nextNodes
-      .filter(n => n.element != null && dequeueOp(n.element.getOp))
-      .map(n => n.element.getName.split(":")(0)).toSet
-    require(dequeueNodes.size == 1, "only support one dequeue node after reader")
-    val enqueueNodes = findEnqueueNodes(queueNode)
-    val rdd = enqueueNodes.map { enqueueNode =>
-      val inputs = Seq(enqueueNode.element.getName)
-      val result = constructDistributeData(inputs, cache, sc)
-      if (enqueueNode.element.getOp == "QueueEnqueueManyV2") {
-        result.flatMap(BigDLSessionImpl.splitTensorByFirstDim)
-      } else {
-        result
-      }
-    }.reduce { (rdd1, rdd2) =>
-      rdd1.union(rdd2)
-    }
-    rdd
-  }
-
-  private def handleDistriDequeueManyNode(node: Node[NodeDef], cache: DataCache,
-    sc: SparkContext): RDD[Table] = {
-    require(node.prevNodes.length == 2, "require QueueDequeueManyV2 only has two input")
-    val queueNode = node.prevNodes.head
-    val dequeueNodes = queueNode.nextNodes
-      .filter(n => n.element != null && dequeueOp(n.element.getOp))
-      .map(n => n.element.getName.split(":")(0)).toSet
-    require(dequeueNodes.size == 1, "only support one dequeue node after reader")
-    val enqueueNodes = findEnqueueNodes(queueNode)
-    // get previous rdd
-    val rdd = enqueueNodes.map { enqueueNode =>
-      val inputs = Seq(enqueueNode.element.getName)
-      val result = constructDistributeData(inputs, cache, sc)
-      if (enqueueNode.element.getOp == "QueueEnqueueManyV2") {
-        result.flatMap(BigDLSessionImpl.splitTensorByFirstDim)
-      } else {
-        result
-      }
-    }.reduce { (rdd1, rdd2) =>
-      rdd1.union(rdd2)
-    }
-
-    // get batch size
-    val batchSizeNode = node.prevNodes(1)
-    require(batchSizeNode.element.getOp == "Const", "batchsize must be a const")
-
-    val batchSize = batchSizeNode.element.getAttrMap.get("value").getTensor.getIntVal(0)
-
-    val batchRdd = rdd.mapPartitions { iter =>
+  private def batchRdd(rdd: RDD[Table], batchSize: Int): RDD[Table] = {
+    rdd.mapPartitions { iter =>
 
       new Iterator[Table] {
-        private var firstBatch: Array[Table] = null
         override def hasNext: Boolean = iter.hasNext
 
         override def next(): Table = {
           require(iter.hasNext, "Call next() on a empty iterator")
-          val tables = new Array[Table](batchSize)
-          var index = 0
-          for (i <- 0 until batchSize) {
-            if (iter.hasNext) {
-              tables(i) = iter.next()
-            } else if (firstBatch == null) {
-              tables(i) = tables(index)
-              index = index + 1
-            } else {
-              tables(i) = firstBatch(index)
-              index = index + 1
+
+          val tables =
+            for (i <- 0 until batchSize if iter.hasNext) yield {
+              iter.next()
             }
-          }
-          if (firstBatch == null) {
-            firstBatch = tables
-          }
+
           val batch = tables.map(_.toSeq)
           val firstSeq = batch.head
           val sizes = firstSeq.map { tensor =>
@@ -387,7 +328,38 @@ class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
       }
 
     }
-    batchRdd
+  }
+
+  private def handleDistriDequeue(node: Node[NodeDef], cache: DataCache,
+                                 sc: SparkContext): RDD[Table] = {
+    val queueNode = node.prevNodes.head
+    val dequeueNodes = queueNode.nextNodes
+      .filter(n => n.element != null && dequeueOp(n.element.getOp))
+      .map(n => n.element.getName.split(":")(0)).toSet
+    require(dequeueNodes.size == 1, "only support one dequeue node after reader")
+    val enqueueNodes = findEnqueueNodes(queueNode)
+    // get previous rdd
+    var rdd = enqueueNodes.map { enqueueNode =>
+      val inputs = Seq(enqueueNode.element.getName)
+      val result = constructDistributeData(inputs, cache, sc)
+      if (enqueueNode.element.getOp == "QueueEnqueueManyV2") {
+        result.flatMap(BigDLSessionImpl.splitTensorByFirstDim)
+      } else {
+        result
+      }
+    }.reduce { (rdd1, rdd2) =>
+      rdd1.union(rdd2)
+    }
+
+    if (node.element.getOp == "QueueDequeueManyV2") {
+      // get batch size
+      val batchSizeNode = node.prevNodes(1)
+      require(batchSizeNode.element.getOp == "Const", "batchsize must be a const")
+
+      val batchSize = batchSizeNode.element.getAttrMap.get("value").getTensor.getIntVal(0)
+      rdd = batchRdd(rdd, batchSize)
+    }
+    rdd
   }
 
   type DataCache = mutable.HashMap[String, Array[Seq[Table]]]
@@ -484,7 +456,7 @@ class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
       node.element.getOp match {
         case "ReaderReadV2" => handleReaderNode(node, cache, sc)
         case "QueueDequeueV2" => handleDistriDequeue(node, cache, sc)
-        case "QueueDequeueManyV2" => handleDistriDequeueManyNode(node, cache, sc)
+        case "QueueDequeueManyV2" => handleDistriDequeue(node, cache, sc)
       }
     }
     val inputRdd = inputRdds.reduce { (rdd1, rdd2) =>
@@ -534,11 +506,21 @@ class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
    * Get and calculate the data up to the specified endpoints, and
    * return as a RDD[Table]
    * @param endPoints output endpoints
+   * @param hasToBatch indicate whether the subgraph to be executed already has
+   *        to batch operation. If yes, the batch operation will be undone at
+   *        the end of this execution, that is split each tensor by their first dimension.
    * @return
    */
-  def getRDD(endPoints: Seq[String], sc: SparkContext): RDD[Table] = {
+  private[bigdl] def getRDD(endPoints: Seq[String], sc: SparkContext,
+                            hasToBatch: Boolean = true): RDD[Table] = {
     val cache = new mutable.HashMap[String, Array[Seq[Table]]]()
-    constructDistributeData(endPoints, cache, sc)
+    val result = if (!hasToBatch) {
+      constructDistributeData(endPoints, cache, sc)
+    } else {
+      val batchRdd = constructDistributeData(endPoints, cache, sc)
+      batchRdd.flatMap(BigDLSessionImpl.splitTensorByFirstDim)
+    }
+    result
   }
 }
 
@@ -573,5 +555,13 @@ object BigDLSessionImpl {
       i = i + 1
     }
     result
+  }
+
+  private def toSample[T: ClassTag](rdd: RDD[Table])
+                           (implicit ev: TensorNumeric[T]): RDD[Sample[T]] = {
+    rdd.map{ t =>
+      val arr = t.toSeq[T].toArray
+      Sample[T](arr)
+    }
   }
 }
