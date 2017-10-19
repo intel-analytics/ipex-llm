@@ -60,6 +60,8 @@ class ParallelTable[T: ClassTag]
   override def getEndNodes(startNodes: Array[ModuleNode[T]]): Array[ModuleNode[T]] = {
     val outputs = ArrayBuffer[ModuleNode[T]]()
     var outputTuple: Array[ModuleNode[T]] = null
+    require(startNodes.length == modules.length, s"ParallelTable: " +
+      s"startNodes length ${startNodes.length} is more than modules length ${modules.length}")
     for (i <- 0 to modules.size - 1) {
       outputTuple = modules(i).getEndNodes(Array(startNodes(i)))
       outputs ++= outputTuple

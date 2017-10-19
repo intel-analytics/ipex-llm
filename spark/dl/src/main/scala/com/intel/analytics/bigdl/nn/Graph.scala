@@ -280,7 +280,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
   }
 
   // todo: expand the graph
-  override def toGraph(startNodes: Seq[ModuleNode[T]]): Graph[T] = this
+  override def toGraph(startNodes: ModuleNode[T]*): Graph[T] = this
 
   // Add a dummy output node, to get an one end graph. So the nodes that are not dependent by
   // the outputs will be excluded

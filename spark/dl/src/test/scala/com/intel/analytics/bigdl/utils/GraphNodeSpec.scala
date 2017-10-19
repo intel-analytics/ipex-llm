@@ -19,7 +19,6 @@ package com.intel.analytics.bigdl.utils
 
 import com.intel.analytics.bigdl.example.loadmodel.AlexNet_OWT
 import com.intel.analytics.bigdl.models.Inception
-import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.models.resnet.ResNet
 import com.intel.analytics.bigdl.models.resnet.ResNet.{DatasetType, ShortcutType}
 import com.intel.analytics.bigdl.nn._
@@ -29,7 +28,6 @@ import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.torch.TH
 import com.intel.analytics.bigdl.utils.{RandomGenerator, T, Table}
 import spire.syntax.module
 
@@ -179,32 +177,6 @@ class GraphNodeSpec extends FlatSpec with Matchers {
     val model = ParallelTable()
         .add(Linear(hiddenSize, hiddenSize))
         .add(Linear(hiddenSize, hiddenSize))
-
-    val model2 = model.cloneModule()
-    val graphModel = model2.toGraph(Input(), Input())
-
-    val output1 = model.forward(input)
-    val output2 = graphModel.forward(input)
-    output1 should be (output2)
-
-    val gradInput1 = model.backward(input, gradOutput)
-    val gradInput2 = graphModel.backward(input, gradOutput)
-
-    gradInput1 should be (gradInput2)
-  }
-
-  "MapTable to graph" should "generate correct output" in {
-    Random.setSeed(1)
-    val batchSize = 4
-    val hiddenSize = 12
-    val input = T(Tensor[Float](batchSize, hiddenSize).apply1(e => Random.nextFloat()),
-      Tensor[Float](batchSize, hiddenSize).apply1(e => Random.nextFloat()))
-    val gradOutput = T(Tensor[Float](batchSize, hiddenSize).apply1(e => Random.nextFloat()),
-      Tensor[Float](batchSize, hiddenSize).apply1(e => Random.nextFloat()))
-
-    val seed = 100
-    RNG.setSeed(seed)
-    val model = MapTable(Linear(hiddenSize, hiddenSize))
 
     val model2 = model.cloneModule()
     val graphModel = model2.toGraph(Input(), Input())

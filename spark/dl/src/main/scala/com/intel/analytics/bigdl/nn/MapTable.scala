@@ -47,7 +47,7 @@ class MapTable[T: ClassTag](
     while (i <= n && modules.size <= i) {
       if (modules.length <= i) {
         modules.append(module
-          .cloneModule()
+          .cloneModule().setName(module.getName() + i)
           .asInstanceOf[AbstractModule[Activity, Activity, T]])
       }
       i += 1
@@ -101,14 +101,7 @@ class MapTable[T: ClassTag](
   }
 
   override def getEndNodes(startNodes: Array[ModuleNode[T]]): Array[ModuleNode[T]] = {
-    val outputs = ArrayBuffer[ModuleNode[T]]()
-    var outputTuple: Array[ModuleNode[T]] = null
-    extend(startNodes.length)
-    for (i <- 0 to modules.size - 1) {
-      outputTuple = modules(i).getEndNodes(Array(startNodes(i)))
-      outputs ++= outputTuple
-    }
-    outputs.toArray
+    throw new IllegalArgumentException("Can not transform Container MapTable to graph")
   }
 
   override def zeroGradParameters(): Unit = {
