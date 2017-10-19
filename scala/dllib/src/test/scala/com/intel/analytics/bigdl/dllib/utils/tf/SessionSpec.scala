@@ -16,10 +16,10 @@
 package com.intel.analytics.bigdl.utils.tf
 
 import com.intel.analytics.bigdl.dataset._
-import com.intel.analytics.bigdl.nn.{CrossEntropyCriterion, MSECriterion}
+import com.intel.analytics.bigdl.nn.MSECriterion
 import com.intel.analytics.bigdl.optim.{SGD, Trigger}
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Engine, File, T, Table}
+import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -105,14 +105,16 @@ class SessionSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val endpoints = Seq(
       "fifo_queue_Dequeue"
     )
-    val rdd = session.getRDD(endpoints, sc)
-    val result = rdd.collect()
-    result.length should be (5)
-    val imageSum = result.map(t => t[Tensor[Float]](1).sum()).sum
-    val labelSum = result.map(t => t[Tensor[Float]](2).sum()).sum
 
-    (imageSum - (-6009.5)) < 1e-7 should be (true)
-    labelSum should be (10)
+    val rdd = session.getRDD(endpoints, sc)
+    val result1 = rdd.collect()
+
+    result1.length should be (10)
+    val rowSum1 = result1.map(t => t[Tensor[Float]](1).sum())
+    val allSum1 = rowSum1.sum
+    val labelSum1 = result1.map(t => t[Tensor[Float]](2).sum()).sum
+    (allSum1 - (-6009.5)) < 1e-7 should be (true)
+    labelSum1 should be (10)
   }
 
   "Session" should "be work with arbitrary batch size" in {
@@ -127,8 +129,13 @@ class SessionSpec extends FlatSpec with Matchers with BeforeAndAfter {
     )
     val rdd = session.getRDD(endpoints, sc)
     val result = rdd.collect()
-    result.length should be (4)
-    result.head[Tensor[Float]](1).size(1) should be (3)
+    result.length should be (10)
+    val labelSize = Array(10)
+    val featureSize = Array(28, 28, 1)
+    result.foreach { t =>
+      t[Tensor[Float]](1).size should be (featureSize)
+      t[Tensor[Int]](2).size should be (labelSize)
+    }
   }
 
   private def getLenetModel(name: String) = {
