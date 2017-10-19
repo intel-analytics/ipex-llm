@@ -105,7 +105,7 @@ private[bigdl] class Scheduler[T] (
         }
       } else {
         val constNodes = node.prevNodes.filter(nodeStatus.isConst(_))
-        if (constNodes.length == node.prevNodes.length) {
+        if (constNodes.length == node.prevNodes.length && !node.element.isInstanceOf[RandomNode]) {
           Const()
         } else {
           Ready()
