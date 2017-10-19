@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.{NumericWildcard, TensorNumeric}
 import com.intel.analytics.bigdl.utils.serializer._
 import serialization.Bigdl.{AttrValue, BigDLModule}
 
@@ -31,29 +31,38 @@ import scala.reflect.runtime.universe
  */
 @SerialVersionUID(8543726779794064339L)
 class Transpose[T: ClassTag](
-  val permutations: Array[(Int, Int)])(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+  val permutations: Array[(Int, Int)])(implicit ev: TensorNumeric[T])
+  extends AbstractModule[Tensor[_], Tensor[_], T] {
 
-  var buffer: Tensor[T] = _
+  var buffer: Tensor[_] = _
 
-  override def updateOutput(input: Tensor[T]): Tensor[T] = {
+  override def updateOutput(input: Tensor[_]): Tensor[_] = {
+    if (output.getType() != input.getType()) {
+      output = input.emptyInstance()
+    }
     var i = 0
     buffer = input
     while (i < permutations.length) {
       buffer = buffer.transpose(permutations(i)._1, permutations(i)._2)
       i += 1
     }
-    output.resizeAs(buffer).copy(buffer)
+    output.resizeAs(buffer).asInstanceOf[Tensor[NumericWildcard]]
+      .copy(buffer.asInstanceOf[Tensor[NumericWildcard]])
     output
   }
 
-  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+  override def updateGradInput(input: Tensor[_], gradOutput: Tensor[_]): Tensor[_] = {
+    if (gradInput.getType() != input.getType()) {
+      gradInput = input.emptyInstance()
+    }
     var i = permutations.length - 1
     buffer = gradOutput
     while (i >= 0) {
       buffer = buffer.transpose(permutations(i)._1, permutations(i)._2)
       i -= 1
     }
-    gradInput.resizeAs(buffer).copy(buffer)
+    gradInput.resizeAs(buffer).asInstanceOf[Tensor[NumericWildcard]]
+      .copy(buffer.asInstanceOf[Tensor[NumericWildcard]])
     gradInput
   }
 
