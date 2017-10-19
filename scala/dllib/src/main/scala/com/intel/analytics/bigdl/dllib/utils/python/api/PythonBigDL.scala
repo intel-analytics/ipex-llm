@@ -37,7 +37,7 @@ import java.nio.ByteOrder
 import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn.tf.{Const, Fill, Shape, SplitAndSelect}
 import com.intel.analytics.bigdl.utils.tf.TensorflowLoader.{buildBigDLModel, buildTFGraph, parse}
-import com.intel.analytics.bigdl.utils.tf.{BigDLSessionImpl, TensorflowDataFormat, TensorflowSaver}
+import com.intel.analytics.bigdl.utils.tf.{BigDLSessionImpl, Context, TensorflowDataFormat, TensorflowSaver}
 import org.apache.log4j._
 import org.apache.spark.SparkContext
 import org.tensorflow.framework.NodeDef
@@ -1796,9 +1796,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     endWhen: Trigger): AbstractModule[Activity, Activity, T] = {
     val nodeList = parse(modelPath)
 
-    val context =
-      new mutable.HashMap[String, (Tensor[T], Tensor[T], Option[Seq[(Int, Int)]])]()
-    val session = new BigDLSessionImpl[T](nodeList.asScala, samples.sparkContext, context)
+    val context = new Context[T]()
+    val session = new BigDLSessionImpl[T](nodeList.asScala, context, ByteOrder.LITTLE_ENDIAN)
     val dataset = batching(samples, batchSize)
 
     val model = session.train(Seq(output), dataset,

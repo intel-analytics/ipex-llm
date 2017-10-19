@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.nn.Identity
 import com.intel.analytics.bigdl.nn.ops.ExpandDims
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.tf.Context
 import org.tensorflow.framework.NodeDef
 
 import scala.reflect.ClassTag
@@ -30,11 +31,11 @@ class ExpandDims extends TensorflowOpsLoader {
 
   import Utils._
 
-  override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder)
-    (implicit ev: TensorNumeric[T]): Module[T] = {
+  override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder,
+    context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
     Adapter[T](Array(2), tensorArrays => {
-      val axis = tensorArrays(0).asInstanceOf[Tensor[Int]].value() + 1
-      ExpandDims[T](axis)
+      val axis = tensorArrays(0).asInstanceOf[Tensor[Int]].value()
+      ExpandDims[T](if (axis < 0) axis + 1 else axis + 1)
     })
   }
 }

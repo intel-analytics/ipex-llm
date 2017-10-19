@@ -80,17 +80,31 @@ object Module {
   }
   /**
    * Load tensorflow model from its saved protobuf file.
-   * @param file where is the protobuf model file
+   * @param graphFile where is the protobuf model file
    * @param inputs input node names
    * @param outputs output node names, the output tensor order is same with the node order
    * @param byteOrder byte order in the tensorflow file. The default value is little endian
+   * @param binFile where is the model variable file
    * @return BigDL model
    */
-  def loadTF[T: ClassTag](file: String, inputs: Seq[String], outputs: Seq[String],
-            byteOrder: ByteOrder = ByteOrder.LITTLE_ENDIAN)(
+  def loadTF[T: ClassTag](graphFile: String, inputs: Seq[String], outputs: Seq[String],
+            byteOrder: ByteOrder = ByteOrder.LITTLE_ENDIAN,
+            binFile: Option[String] = None)(
     implicit ev: TensorNumeric[T]): Module[T] = {
 
-    TensorflowLoader.load(file, inputs, outputs, byteOrder)
+    TensorflowLoader.load(graphFile, inputs, outputs, byteOrder, binFile)
+  }
+
+  /**
+   * Load tensorflow checkpoints
+   * @param graphFile
+   * @param binFile
+   * @tparam T
+   * @return
+   */
+  def tensorflowCheckpoints[T: ClassTag](graphFile: String, binFile: String,
+    byteOrder: ByteOrder = ByteOrder.LITTLE_ENDIAN)(implicit ev: TensorNumeric[T]): Session[T] = {
+    TensorflowLoader.checkpoints(graphFile, binFile, byteOrder)
   }
 
   def flatten[@specialized(Float, Double) T: ClassTag](parameters: Array[Tensor[T]])(
