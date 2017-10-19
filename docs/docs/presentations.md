@@ -3,7 +3,7 @@
 
 ** Talks:**
 
-* [AI Conference 2017 San Francisco](https://conferences.oreilly.com/artificial-intelligence/ai-ca/public/schedule/detail/63197):Very large-scale distributed deep learning with BigDL [[Slides]](https://github.com/bigdl-project/bigdl-project.github.io/blob/master/presentations/AI_Conf_BigDL_Jason_Ding.pdf)https://github.com/bigdl-project/bigdl-project.github.io/blob/master//AI_Conf_BigDL_Jason_Ding.pdf
+* [AI Conference 2017 San Francisco](https://conferences.oreilly.com/artificial-intelligence/ai-ca/public/schedule/detail/63197):Very large-scale distributed deep learning with BigDL [[Slides]](https://github.com/bigdl-project/bigdl-project.github.io/blob/master/presentations/AI_Conf_BigDL_Jason_Ding.pdf)
 
 * [ Strata 2017 NY:](https://conferences.oreilly.com/strata/strata-ny/public/schedule/detail/61977)Building advanced analytics and deep learning on Apache Spark with BigDL[[Slides]](https://github.com/bigdl-project/bigdl-project.github.io/blob/master/presentations/Advanced%20Data%20Analytics%20and%20Deep%20Learning%20on%20Apache%20Spark%20with%20BigDL.pdf)
 
