@@ -49,35 +49,6 @@ abstract class Session[T: ClassTag] {
             optMethod: OptimMethod[T],
             criterion: Criterion[T],
             endWhen: Trigger): Graph[T]
-
-  /**
-   * Execute distributed training on the given graph
-   * @param endPoints
-   * @param optMethod
-   * @param endWhen
-   * @return
-   */
-  def fit(endPoints: Seq[String], optMethod: OptimMethod[T], endWhen: Trigger): this.type
-
-  /**
-   * Get the result from the given nodes
-   * @return
-   */
-  def predict(outputs: Seq[String]): RDD[Sample[_]]
-
-  /**
-   * Export the weights to the bin file
-   * @param binFile
-   * @return
-   */
-  def exportWeights(binFile: String): this.type
-
-  /**
-   * Load the weights from the bin file
-   * @param binFile
-   * @return
-   */
-  def loadWeights(binFile: String): this.type
 }
 
 class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
@@ -106,31 +77,6 @@ class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
     opt.setOptimMethod(optMethod).setEndWhen(endWhen)
       .optimize()
     model
-  }
-
-  override def fit(endPoints: Seq[String], optMethod: OptimMethod[T], endWhen: Trigger)
-  : this.type = {
-    val outputs = endPoints
-    val updaterSet = new mutable.HashSet[String]
-    val weightsAndGrads = endPoints.map(e => name2Node(e)).map(n => n.graph(true).DFS).flatten
-      .map(n => TFUpdater(n.element)).flatten.toSet
-
-    require(weightsAndGrads.size != 0, "Cannot find updater nodes")
-    context.setAssignGrads(weightsAndGrads)
-    val (model, input) = constructModel(weightsAndGrads.map(_._2).toSeq, byteOrder)
-    this
-  }
-
-  override def predict(outputs: Seq[String]): RDD[Sample[_]] = {
-    null
-  }
-
-  override def exportWeights(binFile: String): this.type = {
-    this
-  }
-
-  override def loadWeights(binFile: String): this.type = {
-    this
   }
 
   private val inputOp = Set("ReaderReadV2", "QueueDequeueV2", "QueueDequeueManyV2", "Placeholder")
@@ -354,7 +300,8 @@ class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
     rdd
   }
 
-  private def handleDistriDequeueManyNode(node: Node[NodeDef], cache: DataCache): RDD[Table] = {
+  private def handleDistriDequeueManyNode(node: Node[NodeDef], cache: DataCache,
+    sc: SparkContext): RDD[Table] = {
     require(node.prevNodes.length == 2, "require QueueDequeueManyV2 only has two input")
     val queueNode = node.prevNodes.head
     val dequeueNodes = queueNode.nextNodes
