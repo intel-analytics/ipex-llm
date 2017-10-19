@@ -67,6 +67,7 @@ class Dictionary()
    * @param word
    */
   def getIndex(word: String): Int = {
+//    println(s"getWord ${word}, dictionary.isContains = ${_word2index.contains(word)}")
     _word2index.getOrElse(word, _vocabSize)
   }
 
@@ -153,6 +154,17 @@ class Dictionary()
     update(freqDict, vocabSize)
   }
 
+  def this(words: Array[String],
+           vocabSize: Int) = {
+    this()
+    val freqDict = words
+      .foldLeft(Map.empty[String, Int]) {
+        (count, word) => count + (word -> (count.getOrElse(word, 0) + 1))
+      }.toSeq.sortBy(_._2)
+
+    update(freqDict, vocabSize)
+  }
+
   def this(sentences: Stream[Array[String]],
            vocabSize: Int) = {
     this()
@@ -211,8 +223,11 @@ class Dictionary()
 }
 
 object Dictionary {
-  def apply[S <: Iterator[Array[String]]](sentences: S, vocabSize: Int)
+  def apply(sentences: Iterator[Array[String]], vocabSize: Int)
   : Dictionary = new Dictionary(sentences, vocabSize)
+
+  def apply(words: Array[String], vocabSize: Int)
+  : Dictionary = new Dictionary(words, vocabSize)
 
   def apply(dataset: Stream[Array[String]], vocabSize: Int)
   : Dictionary = new Dictionary(dataset, vocabSize)

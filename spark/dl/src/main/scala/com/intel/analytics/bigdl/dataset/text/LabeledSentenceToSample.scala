@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.dataset.{Sample, Transformer}
 import scala.collection.Iterator
 import java.util
 
+import com.intel.analytics.bigdl.mkl.MKL
 import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -35,17 +36,35 @@ object LabeledSentenceToSample {
   : LabeledSentenceToSample[T] =
     new LabeledSentenceToSample[T](
       vocabLength,
+      true,
+      fixDataLength,
+      fixLabelLength)
+  def apply[T: ClassTag]
+  (oneHot: Boolean,
+   fixDataLength: Option[Int],
+   fixLabelLength: Option[Int])
+  (implicit ev: TensorNumeric[T])
+  : LabeledSentenceToSample[T] =
+    new LabeledSentenceToSample[T](
+      vocabLength = 0,
+      oneHot,
       fixDataLength,
       fixLabelLength)
 }
 
 /**
+ * if oneHot = true:
  * Transform labeled sentences to one-hot format samples
  * e.g. sentence._data: [0, 2, 3]
  *      sentence._label: [2, 3, 1]
  *      vocabLength: 4
  *      => input: [[1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
  *         target: [3, 4, 2]
+ *
+ * else:
+ * The model will use LookupTable for word embedding.
+ *      => input: [1, 2, 3]
+ *      => label: [2, 3, 4]
  * The input is an iterator of LabeledSentence class
  * The output is an iterator of Sample class
  *
@@ -54,6 +73,7 @@ object LabeledSentenceToSample {
  * @param fixLabelLength optional parameter for fixed length of labels
  */
 class LabeledSentenceToSample[T: ClassTag](vocabLength: Int,
+                                           oneHot: Boolean = true,
                               fixDataLength: Option[Int],
                               fixLabelLength: Option[Int])
   (implicit ev: TensorNumeric[T])
@@ -68,16 +88,17 @@ class LabeledSentenceToSample[T: ClassTag](vocabLength: Int,
       val dataLength = fixDataLength.getOrElse(sentence.dataLength())
       val labelLength = fixLabelLength.getOrElse(sentence.labelLength())
 
-      // initialize featureBuffer
-      feature.resize(dataLength, vocabLength)
-      feature.zero()
-      label.resize(labelLength)
-      label.zero()
+      if (oneHot) {
+        // initialize featureBuffer
+        feature.resize(dataLength, vocabLength)
+        feature.zero()
+        label.resize(labelLength)
+        label.zero()
 
-      val featureBuffer = feature.storage().array()
-      val labelBuffer = label.storage().array()
+        val featureBuffer = feature.storage().array()
+        val labelBuffer = label.storage().array()
 
-      /* One-Hot format for feature
+        /* One-Hot format for feature
        * Expected transformed format should be:
        *
        * Example1: Input = [0, 2, 3], label = [2, 3, 1], dictionary length = 4
@@ -90,31 +111,40 @@ class LabeledSentenceToSample[T: ClassTag](vocabLength: Int,
        */
 
 
-      val startTokenIndex = sentence.getData(0)
-      val endTokenIndex = if (labelLength == 1) 0
+        val startTokenIndex = sentence.getData(0)
+        val endTokenIndex = if (labelLength == 1) 0
         else ev.toType[Int](sentence.getLabel(sentence.labelLength - 1))
 
-      var i = 0
-      while (i < sentence.dataLength) {
-        featureBuffer(i*vocabLength + ev.toType[Int](sentence.getData(i)))
-          = ev.fromType[Float](1.0f)
-        i += 1
-      }
-      while (i < dataLength) {
-        featureBuffer(i*vocabLength + endTokenIndex) = ev.fromType[Float](1.0f)
-        i += 1
-      }
+        var i = 0
+        while (i < sentence.dataLength) {
+          featureBuffer(i * vocabLength + ev.toType[Int](sentence.getData(i)))
+            = ev.fromType[Float](1.0f)
+          i += 1
+        }
+        while (i < dataLength) {
+          featureBuffer(i * vocabLength + endTokenIndex) = ev.fromType[Float](1.0f)
+          i += 1
+        }
 
-      i = 0
-      while (i < sentence.labelLength) {
-        labelBuffer(i) = ev.plus(sentence.label()(i), ev.fromType[Float](1.0f))
-        i += 1
-      }
-      while (i < labelLength) {
-        labelBuffer(i) = ev.plus(startTokenIndex, ev.fromType[Float](1.0f))
-        i += 1
-      }
+        i = 0
+        while (i < sentence.labelLength) {
+          labelBuffer(i) = ev.plus(sentence.label()(i), ev.fromType[Float](1.0f))
+          i += 1
+        }
+        while (i < labelLength) {
+          labelBuffer(i) = ev.plus(startTokenIndex, ev.fromType[Float](1.0f))
+          i += 1
+        }
+      } else {
+        feature.resize(dataLength).zero
+        label.resize(labelLength).zero
 
+        val featureBuffer = feature.storage().array()
+        val labelBuffer = label.storage().array()
+
+        Array.copy(sentence.data, 0, featureBuffer, 0, dataLength)
+        Array.copy(sentence.label, 0, labelBuffer, 0, labelLength)
+      }
       Sample[T](feature, label)
     })
   }
