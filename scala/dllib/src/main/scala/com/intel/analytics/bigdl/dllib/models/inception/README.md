@@ -11,7 +11,7 @@ You can download imagenet-2012 data from <http://image-net.org/download-images>.
 After you download the files(**ILSVRC2012_img_train.tar** and **ILSVRC2012_img_val.tar**), 
 run the follow commands to prepare the data.
 
-classes.lst and img_class.lst used below can be found at bigdl_folder/scripts folder
+classes.lst and img_class.lst used below can be found in the current folder.
 ```bash
 mkdir train
 mv ILSVRC2012_img_train.tar train/
