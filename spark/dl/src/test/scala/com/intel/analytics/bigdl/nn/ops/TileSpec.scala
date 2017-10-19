@@ -61,4 +61,10 @@ class TileSpec extends FlatSpec with Matchers {
     val output = Tile().forward(input)
     output should be(expectOutput)
   }
+
+  "Tile operation" should "handle empty multiples tensor" in {
+    val scalar = Tensor.scalar(1)
+    val multiply = Tensor[Int]()
+    Tile[Float]().forward(T(scalar, multiply)) should be(Tensor.scalar(1))
+  }
 }

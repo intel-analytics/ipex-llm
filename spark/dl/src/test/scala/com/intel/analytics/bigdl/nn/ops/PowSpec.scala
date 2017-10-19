@@ -19,20 +19,19 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
-class SumSpec extends FlatSpec with Matchers {
-  "Sum operation" should "works correctly" in {
-    val input =
-      Tensor[Int](T(
-        T(1, 1, 1),
-        T(1, 1, 1)
-      ))
-    val op = Sum[Float, Int]()
-    op.forward(T(input, Tensor[Int]())) should be(input)
-    op.forward(T(input, Tensor.scalar[Int](1))) should be(Tensor[Int](T(2, 2, 2)))
-    op.forward(T(input, Tensor[Int](T(1)))) should be(Tensor[Int](T(2, 2, 2)))
-    op.forward(T(input, Tensor.scalar[Int](2))) should be(Tensor[Int](T(3, 3)))
-    val op1 = Sum[Float, Int](keepDims = true)
-    op1.forward(T(input, Tensor.scalar[Int](2))) should be(Tensor[Int](T(T(3), T(3))))
-    op.forward(T(input, Tensor[Int](T(1, 2)))) should be(Tensor.scalar[Int](6))
+class PowSpec extends FlatSpec with Matchers {
+
+  "Power float" should "be right" in {
+    val v = Tensor[Float](T(2))
+    val t = Tensor[Float](T(1, 2, 3))
+    val ops = Pow[Float]()
+    ops.forward(T(t, v)) should be(Tensor[Float](T(1, 4, 9)))
+  }
+
+  "Power double" should "be right" in {
+    val v = Tensor[Double](T(2))
+    val t = Tensor[Double](T(1, 2, 3))
+    val ops = Pow[Double]()
+    ops.forward(T(t, v)) should be(Tensor[Double](T(1, 4, 9)))
   }
 }

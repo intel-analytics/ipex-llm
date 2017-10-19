@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.File
 import com.intel.analytics.bigdl.utils.caffe.CaffeLoader
 import com.intel.analytics.bigdl.utils.serializer.ModuleLoader
-import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowLoader}
+import com.intel.analytics.bigdl.utils.tf.{Session, TensorflowDataFormat, TensorflowLoader}
 
 import scala.reflect.ClassTag
 

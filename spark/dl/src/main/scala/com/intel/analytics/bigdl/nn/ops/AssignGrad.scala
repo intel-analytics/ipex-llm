@@ -16,27 +16,17 @@
 package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.{NumericWildCard, TensorNumeric}
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
-class Floor[T: ClassTag]()
-  (implicit ev: TensorNumeric[T]) extends Operation[Tensor[_], Tensor[_], T] {
+class AssignGrad[T: ClassTag](grad: Tensor[T])(implicit ev: TensorNumeric[T])
+  extends Operation[Tensor[T], Activity, T]{
 
-  override def updateOutput(input: Tensor[_]): Tensor[_] = {
-    if (output.getType() != input.getType()) {
-      output = input.emptyInstance()
-    }
-    output.resizeAs(input)
-    output.asInstanceOf[Tensor[NumericWildCard]].floor(input.asInstanceOf[Tensor[NumericWildCard]])
-    output
+  override def updateOutput(input: Tensor[T]): Activity = {
+    grad.copy(input)
+    null
   }
-}
-
-object Floor {
-  def apply[T: ClassTag]()
-    (implicit ev: TensorNumeric[T]):
-  Operation[Activity, Activity, T]
-  = ModuleToOperation[T](new Floor())
 }
