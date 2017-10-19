@@ -172,6 +172,7 @@ class TestSimple():
     def test_load_zip_conf(self):
         from bigdl.util.common import get_bigdl_conf
         import sys
+        sys_path_back = sys.path
         sys.path = [path for path in sys.path if "spark-bigdl.conf" not in path]
         sys.path.insert(0, os.path.join(os.path.split(__file__)[0],
                                         "resources/conf/python-api.zip"))  # noqa
@@ -179,6 +180,7 @@ class TestSimple():
                                         "resources/conf/invalid-python-api.zip"))  # noqa
         result = get_bigdl_conf()
         assert result.get("spark.executorEnv.OMP_WAIT_POLICY"), "passive"
+        sys.path = sys_path_back
 
     def test_set_seed(self):
         w_init = Xavier()
