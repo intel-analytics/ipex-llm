@@ -32,51 +32,53 @@ class Transpose extends TensorflowOpsLoader {
 
   override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder)
                                  (implicit ev: TensorNumeric[T]): Module[T] = {
+
     Adapter[T](Array(2), tensorArrays => {
+      // this must be defined inside this function, otherwise the loader will be
+      // serialized
+      def permToPair(perm: Array[Int]): Array[(Int, Int)] = {
+        val numToRank = perm.zipWithIndex.toMap
+        val arr = perm.indices.toArray
+        val pairs = ArrayBuffer[(Int, Int)]()
+
+        def sort(arr: Array[Int], low: Int, high: Int): Unit = {
+          var i = low
+          var j = high
+          val pivot = arr(low + (high - low)/2)
+
+          while (i <= j) {
+            while (arr(i) < pivot) i += 1
+            while (arr(j) > pivot) j -= 1
+
+            if (i <= j) {
+              exchangeNumbers(arr, i, j)
+              i += 1
+              j -= 1
+            }
+          }
+
+          if (low < j) sort(arr, low, j)
+          if (i < high) sort(arr, i, high)
+        }
+
+        def exchangeNumbers(arr: Array[Int], i: Int, j: Int): Unit = {
+          val temp = arr(i)
+          arr(i) = arr(j)
+          arr(j) = temp
+          pairs += ((i, j))
+        }
+
+        sort(arr.map(numToRank), 0, arr.length-1)
+
+        pairs.filter(pair => pair._1 != pair._2).toArray
+      }
+
       val perm = tensorArrays(0).asInstanceOf[Tensor[Int]].storage().array()
       val paris = permToPair(perm)
       val layer = Sequential()
-      layer.add(Transpose[T](paris))
+      layer.add(Transpose[T](paris.map(x => (x._1 + 1, x._2 + 1))))
       layer.add(Contiguous())
       layer
     })
-  }
-
-  private def permToPair(perm: Array[Int]): Array[(Int, Int)] = {
-
-    val numToRank = perm.zipWithIndex.toMap
-    val arr = perm.indices.toArray
-    val pairs = ArrayBuffer[(Int, Int)]()
-
-    def sort(arr: Array[Int], low: Int, high: Int): Unit = {
-      var i = low
-      var j = high
-      val pivot = arr(low + (high - low)/2)
-
-      while (i <= j) {
-        while (arr(i) < pivot) i += 1
-        while (arr(j) > pivot) j -= 1
-
-        if (i <= j) {
-          exchangeNumbers(arr, i, j)
-          i += 1
-          j -= 1
-        }
-      }
-
-      if (low < j) sort(arr, low, j)
-      if (i < high) sort(arr, i, high)
-    }
-
-    def exchangeNumbers(arr: Array[Int], i: Int, j: Int): Unit = {
-      val temp = arr(i)
-      arr(i) = arr(j)
-      arr(j) = temp
-      pairs += ((i, j))
-    }
-
-    sort(arr.map(numToRank), 0, arr.length-1)
-
-    pairs.filter(pair => pair._1 != pair._2).toArray
   }
 }
