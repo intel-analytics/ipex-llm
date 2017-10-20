@@ -320,7 +320,7 @@ class Sample(object):
         return "Sample: features: %s, label: %s," % (self.features, self.label)
 
     def __repr__(self):
-        return "Sample: features: %s, label: %s" % (self.storage, self.shape)
+        return "Sample: features: %s, label: %s" % (self.features, self.label)
 
 class RNG():
     """
