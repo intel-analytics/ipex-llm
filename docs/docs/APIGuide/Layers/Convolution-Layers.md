@@ -28,7 +28,7 @@ As for padding, when padW and padH are both -1, we use a padding algorithm simil
  padLeft = padAlongWidth / 2
 ```
 
-Detailed paramter explaination for the constructor.
+Detailed parameter explanation for the constructor.
  
  * `nInputPlane` The number of expected input planes in the image given into forward()
  * `nOutputPlane` The number of output planes the convolution layer will produce.
@@ -581,7 +581,7 @@ Other frameworks may call this operation "In-network Upsampling", "Fractionally-
  
 Reference: Long J, Shelhamer E, Darrell T. Fully convolutional networks for semantic segmentation[C]//Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition. 2015: 3431-3440.
 
-Detailed explaination of arguments in constructor. 
+Detailed explanation of arguments in constructor. 
 
  * `nInputPlane` The number of expected input planes in the image given into forward()
  * `nOutputPlane` The number of output planes the convolution layer will produce.

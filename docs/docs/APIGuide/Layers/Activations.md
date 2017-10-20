@@ -305,7 +305,7 @@ relu = ReLU(ip)
 
 ReLU applies the element-wise rectified linear unit (ReLU) function to the input
 
-`ip` illustrate if the ReLU fuction is done on the origin input
+`ip` illustrate if the ReLU function is done on the origin input
 ```
 ReLU function : f(x) = max(0, x)
 ```

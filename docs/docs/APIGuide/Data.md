@@ -43,7 +43,7 @@ b: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 3.0	2.0	1.0
 [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x3]
 ```
-`+` `-` `*` `/` can be applied to tensor. When the second parameter is a constant value, `+` `-` `*` `*` is element-wise operation. But when the second parameter is a tensor, `+` `-` `/` is element-wise operation to the tensor too, but `*` is a matrix multipy on two 2D tensors. 
+`+` `-` `*` `/` can be applied to tensor. When the second parameter is a constant value, `+` `-` `*` `*` is element-wise operation. But when the second parameter is a tensor, `+` `-` `/` is element-wise operation to the tensor too, but `*` is a matrix multiply on two 2D tensors. 
 ```scala
 scala> a + 1
 res: com.intel.analytics.bigdl.tensor.Tensor[Float] =
@@ -291,7 +291,7 @@ Output is
 ## **DataSet**
 `DataSet` is a set of data which is used in the model optimization process. You can use `DataSet.array()` and `DataSet.rdd()` function to create a `Dataset`. The `DataSet` can be accessed in a random data sample sequence. In the training process, the data sequence is a looped endless sequence. While in the validation process, the data sequence is a limited length sequence. User can use the `data()` method to get the data sequence. 
 
-Notice: In most case, we recommand using a RDD[Sample] for `Optimizer`. Only when you want to write an application with some advanced optimization, using `DataSet` directly is recommanded.  
+Notice: In most case, we recommend using a RDD[Sample] for `Optimizer`. Only when you want to write an application with some advanced optimization, using `DataSet` directly is recommended.  
 
 **Scala example:**
 ```scala

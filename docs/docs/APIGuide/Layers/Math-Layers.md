@@ -176,7 +176,7 @@ add_layer = Add(input_size)
 ```
 
 A.K.A BiasAdd. This layer adds input tensor with a parameter tensor and output the result.
-If the input is 1D, this layer just do a element-wise add. If the input has multiple dimentions,
+If the input is 1D, this layer just do a element-wise add. If the input has multiple dimensions,
 this layer will treat the first dimension as batch dimension, resize the input tensor to a 2D 
 tensor(batch-dimension x input_size) and do a broadcast add between the 2D tensor and the 
 parameter.

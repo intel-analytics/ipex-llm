@@ -143,9 +143,9 @@ optimizer = Optimizer(model, train_data, MSECriterion(), MaxIteration(100), 4, o
 ```
 
 ## Validate your model in training
-Sometimes, people want to evaluate the model with a seperated dataset. When model
+Sometimes, people want to evaluate the model with a separated dataset. When model
 performs well on train dataset, but bad on validation dataset, we call the model is overfit or
-weak generalization. People may want to evaluate the model every serveral iterations or 
+weak generalization. People may want to evaluate the model every several iterations or 
 epochs. BigDL can easily do this by
 
 **scala**
@@ -160,7 +160,7 @@ optimizer.set_validation(batch_size, val_rdd, trigger, validationMethod)
 For validation, you need to provide
 
 * trigger: how often to do validation, maybe each several iterations or epochs
-* test data: the seperate dataset for test
+* test data: the separate dataset for test
 * validation method: how to evaluate the model, maybe top1 accuracy, etc.
 * batch size: how many data evaluate in one time
 
@@ -217,7 +217,7 @@ optimizer.set_val_summary(val_summary)
 
 See details in [Visualization](visualization.md)
 
-## Performance tunning
+## Performance tuning
 For performance investigation, BigDL records the time-consuming distribution on each node for each step(e.g. sync weight, computing).The information can be displayed in the driver log. By default, it is suspended.To turn it on, please follow these steps:
 
 1.Prepare a log4j property file
