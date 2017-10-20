@@ -198,7 +198,7 @@ private[bigdl] class SpatialConvolution[T: ClassTag](
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
-    (weight :+ bias, Array.fill[Tensor[T]](nGroup)(empty) :+ empty)
+    (weight :+ bias, Array.fill[Tensor[T]](nGroup + 1)(empty)) // nGroup's weight + bias
   }
 
   override def getParametersTable(): Table = {
