@@ -13,7 +13,7 @@ s reached.
 ```python
  trigger = EveryEpoch()
 ```
-   A trigger that triggers an action when each epoch finishs.
+   A trigger that triggers an action when each epoch finishes.
    Could be used as trigger in `setValidation` and `setCheckpoint`
    in Optimizer, and also in `TrainSummary.setSummaryTrigger`.
 

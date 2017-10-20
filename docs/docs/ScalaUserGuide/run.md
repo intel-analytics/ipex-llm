@@ -26,7 +26,7 @@ scala>import com.intel.analytics.bigdl.utils.Engine
 scala>Engine.init
 ```
 
-Once the engine is successfully initialted, you'll be able to play with BigDL API's. 
+Once the engine is successfully initiated, you'll be able to play with BigDL API's. 
 For instance, to experiment with the ````Tensor```` APIs in BigDL, you may try below code:
 ```scala
 scala> import com.intel.analytics.bigdl.tensor.Tensor
@@ -90,7 +90,7 @@ If you are to run your own program, do remember to create SparkContext and initi
 ## **Run as a Local Java/Scala program**
 You can try BigDL program as a local Java/Scala program. 
 
-To run the BigDL model as a local Java/Scala program, you need to set Java property `bigdl.localMode` to `true`. If you want to specify how many cores to be used for training/testing/prediction, you need to set Java property `bigdl.coreNumber` to the core number. You can either call `System.setProperty("bigdl.localMode", "true")` and `System.setProperty("bigdl.coreNumber", core_number)` in the Java/Scala code, or pass -Dbigdl.localMode=true and -Dbigdl.coreNumber=core_number when runing the program.
+To run the BigDL model as a local Java/Scala program, you need to set Java property `bigdl.localMode` to `true`. If you want to specify how many cores to be used for training/testing/prediction, you need to set Java property `bigdl.coreNumber` to the core number. You can either call `System.setProperty("bigdl.localMode", "true")` and `System.setProperty("bigdl.coreNumber", core_number)` in the Java/Scala code, or pass -Dbigdl.localMode=true and -Dbigdl.coreNumber=core_number when running the program.
 
 For example, you may run the [Lenet](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/example/lenetLocal) model as a local Scala/Java program as follows:
 

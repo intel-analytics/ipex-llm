@@ -27,7 +27,7 @@ softmax = Softmax()(sigmoid)
 model = Model([linear], [softmax])
 ```
 
-An easy way to understand the Funtional API is to think of each layer in the model as a directed
+An easy way to understand the Functional API is to think of each layer in the model as a directed
 edge connecting its input and output
 
 In the above code, first we create an input node named as linear by using
