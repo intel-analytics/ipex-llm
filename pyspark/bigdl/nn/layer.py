@@ -4139,8 +4139,11 @@ class Seq2seq(Layer):
     creating: createRecurrentDecoder
     creating: createSeq2seq
     '''
-    def __init__(self, encoder_recs, decoder_recs, bigdl_type="float"):
-        super(Seq2seq, self).__init__(None, bigdl_type, encoder_recs, decoder_recs)
+    def __init__(self, encoder_recs, decoder_recs, pre_encoder=None, pre_decoder=None,
+                 shrink_encoder_hiddenstate=None, decoder_input_type="ENCODERINPUTLASTTIME",
+                  bigdl_type="float"):
+        super(Seq2seq, self).__init__(None, bigdl_type, encoder_recs, decoder_recs,
+          pre_encoder, pre_decoder, shrink_encoder_hiddenstate, decoder_input_type)
 
 class RecurrentDecoder(Recurrent):
     '''

@@ -2022,16 +2022,27 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
   }
 
-  def createSeq2seq(encoderCells: JList[Recurrent[T]], decoderCells: JList[Recurrent[T]])
-    : Seq2seq[T] = {
-//    val inputType = decoderInput match {
-//      case "ENCODERINPUTSPLIT" => DecoderInputType.ENCODERINPUTLASTTIME
-//      case "ZEROS" => DecoderInputType.ZEROS
-//      case "ENCODERINPUTLASTTIME" => DecoderInputType.ENCODERINPUTSPLIT
-//      case n: String =>
-//        throw new IllegalArgumentException(s"Only support 'ENCODERINPUTSPLIT', " +
-//          s"'ZEROS', 'ENCODERINPUTLASTTIME': $n")
-//    }
-    Seq2seq(encoderCells.asScala.toArray, decoderCells.asScala.toArray)
+  def createSeq2seq(encoderCells: JList[Recurrent[T]], decoderCells: JList[Recurrent[T]],
+    preEncoder: AbstractModule[Activity, Activity, T],
+    preDecoder: AbstractModule[Activity, Activity, T],
+    shrinkHiddenStateModules: JList[JList[TensorModule[T]]],
+    decoderInputType: String
+    ): Seq2seq[T] = {
+    val inputType = decoderInputType match {
+      case "ENCODERINPUTSPLIT" => DecoderInputType.ENCODERINPUTSPLIT
+      case "ENCODERINPUTLASTTIME" => DecoderInputType.ENCODERINPUTLASTTIME
+      case n: String =>
+        throw new IllegalArgumentException(s"Only support 'ENCODERINPUTSPLIT', " +
+          s", 'ENCODERINPUTLASTTIME': $n")
+    }
+    
+    val shrinkModules = if (shrinkHiddenStateModules != null) {
+      shrinkHiddenStateModules.asScala.toArray.map{x =>
+        if (x != null) x.asScala.toArray
+        else null
+      }
+    } else null
+    Seq2seq(encoderCells.asScala.toArray, decoderCells.asScala.toArray, preEncoder,
+      preDecoder, shrinkModules, inputType)
   }
 }

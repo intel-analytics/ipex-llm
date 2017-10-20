@@ -58,6 +58,36 @@ def get_mnist(sc, data_type="train", location="/tmp/mnist"):
 
 
 if __name__ == "__main__":
+    input_size = 3
+    hidden_size = 7
+    output_size = 5
+    seq_len = 3
+    nlayers = 3
+    batch_size = 2
+    # hidden_size must be set to 1 to match output size
+    encoder_cell = Recurrent().add(ConvLSTMPeephole3D(
+        input_size, hidden_size, 3, 3, 1))
+    encoder = [encoder_cell] + [Recurrent().add(ConvLSTMPeephole3D(
+        hidden_size, hidden_size, 3, 3, 1
+    )) for _ in range(nlayers - 1)]
+    decoder_cell = []
+    for _ in range(nlayers):
+        decoder_cell.append(ConvLSTMPeephole3D(
+            output_size, output_size, 3, 3, 1))
+    decoder = [RecurrentDecoder(seq_len).add(MultiRNNCell(decoder_cell))]
+    shrink_hiddenstate = [[VolumetricConvolution(hidden_size, output_size, 3, 3, 3, 1, 1, 1, 1, 1, 1),
+                           VolumetricConvolution(hidden_size, output_size, 3, 3, 3, 1, 1, 1, 1, 1, 1)] for _ in
+                          range(nlayers)]
+
+    pre_decoder = Sequential().add(Contiguous())\
+        .add(VolumetricConvolution(input_size, output_size, 3, 3, 3, 1, 1, 1, 1, 1, 1))
+    layer = Seq2seq(encoder, decoder, pre_decoder = pre_decoder, shrink_encoder_hiddenstate=shrink_hiddenstate)
+    input = np.random.randn(batch_size, seq_len, input_size, 5, 5, 5)
+    grad_output = np.random.randn(batch_size, seq_len, output_size, 5, 5, 5)
+    layer.forward(input)
+    layer.backward(input, grad_output)
+
+
     parser = OptionParser()
     parser.add_option("-a", "--action", dest="action", default="train")
     parser.add_option("-b", "--batchSize", type=int, dest="batchSize", default="128")

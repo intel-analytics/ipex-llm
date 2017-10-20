@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.Seq2seq
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, TensorModule}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.torch.TH
 import com.intel.analytics.bigdl.utils.RandomGenerator._
@@ -85,16 +86,128 @@ class Seq2seqSpec extends FlatSpec with BeforeAndAfter with Matchers {
       val output = model2.forward(T(input, input)).toTensor
       model2.backward(input, gradOutput)
     }
-
-    val model3 = Seq2seq(decoderRecs, decoderRecs,
-      decoderInputType = DecoderInputType.ZEROS)
-
-    for (i <- 0 until 3) {
-      val output = model3.forward(input).toTensor
-      model3.backward(input, gradOutput)
-    }
   }
 
+  "A Seq2seq" should "work with shrinkEncoderHiddenState" in {
+    import com.intel.analytics.bigdl.numeric.NumericDouble
+    val kernalW = 3
+    val kernalH = 3
+    val seqLength = 5
+    val seed = 100
+    val batchSize = 4
+
+    RNG.setSeed(seed)
+    val input = Tensor[Double](batchSize, seqLength, 3, 5, 5).rand
+    val gradOutput = Tensor[Double](batchSize, seqLength, 3, 5, 5).rand
+
+    val encoderRecs = Array(Recurrent().add(ConvLSTMPeephole[Double](
+      3,
+      7,
+      kernalW, kernalH,
+      1)), Recurrent().add(ConvLSTMPeephole[Double](
+      7,
+      12,
+      kernalW, kernalH,
+      1)), Recurrent().add(ConvLSTMPeephole[Double](
+      12,
+      3,
+      kernalW, kernalH,
+      1)))
+
+    val decoderCells = Array(ConvLSTMPeephole[Double](
+      3,
+      14,
+      kernalW, kernalH,
+      1), ConvLSTMPeephole[Double](
+      14,
+      25,
+      kernalW, kernalH,
+      1), ConvLSTMPeephole[Double](
+      25,
+      3,
+      kernalW, kernalH,
+      1)).asInstanceOf[Array[Cell[Double]]]
+
+    val decoderRecs = Array(RecurrentDecoder(seqLength).add(MultiRNNCell(decoderCells))
+      .asInstanceOf[Recurrent[Double]])
+    val shirnkStatesModules = Array(
+      Array(SpatialConvolution[Double](7, 14, kernalW, kernalW, 1, 1, kernalW/2, kernalW/2),
+      SpatialConvolution[Double](7, 14, kernalH, kernalH, 1, 1, kernalH/2, kernalH/2)),
+      Array(SpatialConvolution[Double](12, 25, kernalW, kernalW, 1, 1, kernalW/2, kernalW/2),
+        SpatialConvolution[Double](12, 25, kernalH, kernalH, 1, 1, kernalH/2, kernalH/2)), null
+    ).asInstanceOf[Array[Array[TensorModule[Double]]]]
+    val model = Seq2seq(encoderRecs, decoderRecs,
+      shrinkHiddenStateModules = shirnkStatesModules,
+      decoderInputType = DecoderInputType.ENCODERINPUTLASTTIME)
+
+    for (i <- 0 until 3) {
+      model.forward(input).toTensor
+      model.backward(input, gradOutput)
+    }
+  }
+  
+  "A Seq2seq" should "work with shrinkEncoderHiddenState2" in {
+    import com.intel.analytics.bigdl.numeric.NumericDouble
+    val kernalW = 3
+    val kernalH = 3
+    val seqLength = 5
+    val seed = 100
+    val batchSize = 4
+
+    RNG.setSeed(seed)
+    val input = Tensor[Double](batchSize, seqLength, 3, 5, 5, 5).rand
+    val gradOutput = Tensor[Double](batchSize, seqLength, 5, 5, 5, 5).rand
+
+    val encoderRecs = Array(Recurrent().add(ConvLSTMPeephole3D[Double](
+      3,
+      7,
+      kernalW, kernalH,
+      1)), Recurrent().add(ConvLSTMPeephole3D[Double](
+      7,
+      7,
+      kernalW, kernalH,
+      1)), Recurrent().add(ConvLSTMPeephole3D[Double](
+      7,
+      7,
+      kernalW, kernalH,
+      1)))
+
+    val decoderCells = Array(ConvLSTMPeephole3D[Double](
+      5,
+      5,
+      kernalW, kernalH,
+      1), ConvLSTMPeephole3D[Double](
+      5,
+      5,
+      kernalW, kernalH,
+      1), ConvLSTMPeephole3D[Double](
+      5,
+      5,
+      kernalW, kernalH,
+      1)).asInstanceOf[Array[Cell[Double]]]
+
+    val decoderRecs = Array(RecurrentDecoder(seqLength).add(MultiRNNCell(decoderCells))
+      .asInstanceOf[Recurrent[Double]])
+    val shirnkStatesModules = Array(
+      Array(VolumetricConvolution[Double](7, 5, 3, 3, 3, 1, 1, 1, 1, 1, 1),
+        VolumetricConvolution[Double](7, 5, 3, 3, 3, 1, 1, 1, 1, 1, 1)),
+      Array(VolumetricConvolution[Double](7, 5, 3, 3, 3, 1, 1, 1, 1, 1, 1),
+        VolumetricConvolution[Double](7, 5, 3, 3, 3, 1, 1, 1, 1, 1, 1)),
+      Array(VolumetricConvolution[Double](7, 5, 3, 3, 3, 1, 1, 1, 1, 1, 1),
+        VolumetricConvolution[Double](7, 5, 3, 3, 3, 1, 1, 1, 1, 1, 1))
+    ).asInstanceOf[Array[Array[TensorModule[Double]]]]
+//    val preEncoder = TimeDistributed(VolumetricConvolution[Double](3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1))
+    val preDecoder = Sequential().add(Contiguous())
+      .add(VolumetricConvolution[Double](3, 5, 3, 3, 3, 1, 1, 1, 1, 1, 1))
+    val model = Seq2seq(encoderRecs, decoderRecs, preDecoder = preDecoder,
+      shrinkHiddenStateModules = shirnkStatesModules)
+
+    for (i <- 0 until 3) {
+      model.forward(input).toTensor
+      model.backward(input, gradOutput)
+    }
+  }
+  
   "A Seq2seq" should "work with single cell" in {
     import com.intel.analytics.bigdl.numeric.NumericDouble
     val hiddenSize = 7
@@ -138,14 +251,6 @@ class Seq2seqSpec extends FlatSpec with BeforeAndAfter with Matchers {
     for (i <- 0 until 3) {
       val output = model2.forward(T(input, input)).toTensor
       model2.backward(input, gradOutput)
-    }
-
-    val model3 = Seq2seq(decoderRecs, decoderRecs,
-      decoderInputType = DecoderInputType.ZEROS)
-
-    for (i <- 0 until 3) {
-      val output = model3.forward(input).toTensor
-      model3.backward(input, gradOutput)
     }
   }
 
@@ -264,8 +369,8 @@ class Seq2seqSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val luaenclstmG = torchResult("gradParameters2").asInstanceOf[Tensor[Double]]
     val luadeclstmG = torchResult("gradParameters4").asInstanceOf[Tensor[Double]]
 
-    val preEncoder = Sequential().add(enclookuptable)
-    val preDecoder = Sequential().add(declookuptable)
+    val preEncoder = enclookuptable
+    val preDecoder = declookuptable
     val seq2seq = Seq2seq(encoderRec, decoderRec, preEncoder = preEncoder,
       preDecoder = preDecoder, decoderInputType = DecoderInputType.ENCODERINPUTSPLIT)
 
