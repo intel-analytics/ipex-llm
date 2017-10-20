@@ -103,6 +103,22 @@ object TensorflowLoader{
 
   }
 
+  private[bigdl] def saveBinFile[T: ClassTag](file: String, context: Context[T])
+    (implicit ev: TensorNumeric[T]): Unit = {
+    val save = new JHashMap[String, JTensor]()
+    context.tensorNames().foreach(n => {
+      val tensor = context(n)._1
+      val saveTensor = ev.getType() match {
+        case FloatType => new JTensor(tensor.asInstanceOf[Tensor[Float]].storage().array(),
+          tensor.size(), "float")
+        case DoubleType => new JTensor(tensor.asInstanceOf[Tensor[Double]].storage().array()
+          .map(_.toFloat), tensor.size(), "double")
+      }
+      save.put(n, saveTensor)
+    })
+    File.save(save, file, true)
+  }
+
   private def loadBinFiles[T: ClassTag](file: String)(implicit ev: TensorNumeric[T]): Context[T] = {
     val m = File.load(file).asInstanceOf[JHashMap[String, JTensor]].asScala
     val map = new mutable.HashMap[String, (Tensor[T], Tensor[T], Option[Seq[(Int, Int)]])]()
@@ -291,15 +307,7 @@ object TensorflowLoader{
         val errorMsg =
           s"""
             | Cannot convert the given tensorflow operation graph to BigDL model. The convert fails
-            | at node ${n.element.getName}.
-            | To investigate the model. Please use the dump_tf_graph.py to dump the graph, then use
-            | Tensorboard to visualize the model.
-            |
-            | python dump_tf_graph.py $graphPrototxt
-            | tensorboard --logdir ./log
-            |
-            | You can find the dump_tf_graph.py in the bin folder of the dist package, or scripts
-            | folder in the source code.
+            | at node ${n.element.getName}. Operation type is ${n.element.getOp}
           """.stripMargin
 
         val (module, nodes, inputNodes) =
@@ -311,8 +319,6 @@ object TensorflowLoader{
               (builder.build[T](n.element, byteOrder, context), Seq(n).asJava, Seq(n))
             } catch {
               case _ =>
-                println("com.intel.analytics.bigdl.utils.tf.loaders." +
-                  n.element.getOp)
                 throw new UnsupportedOperationException(errorMsg)
             }
           })
@@ -396,8 +402,12 @@ object TensorflowLoader{
     val adjustOutputs = if (context.assignGrads.isDefined) {
       outputNodes.map(n => {
         val matchNode = context.assignGrads.get.filter(_._2 == n.element.getName())
-        require(matchNode.size == 1, "Invalid gradients output")
-        new AssignGrad[T](context(matchNode.head._1)._2).inputs(n)
+        require(matchNode.size <= 1, "Invalid gradients output")
+        if (matchNode.size == 1) {
+          new AssignGrad[T](context(matchNode.head._1)._2).inputs(n)
+        } else {
+          n
+        }
       })
     } else {
       outputNodes
