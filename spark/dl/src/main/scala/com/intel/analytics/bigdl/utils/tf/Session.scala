@@ -149,9 +149,7 @@ class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
       weightsAndGrads.map(_._2).toSeq
     }
     val (model, input) = constructModel(modelOutputs, byteOrder, false, Some(context))
-    val a = getRDD(Seq(input.element.getName), sc, isDataBatch).first()
     val data = BigDLSessionImpl.toSample[T](getRDD(Seq(input.element.getName), sc, isDataBatch))
-    val d = data.first()
 
     val opt = Optimizer[T](
       model,

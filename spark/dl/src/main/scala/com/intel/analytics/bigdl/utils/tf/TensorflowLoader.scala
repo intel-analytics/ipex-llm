@@ -318,8 +318,8 @@ object TensorflowLoader{
               val builder = cls.getConstructors()(0).newInstance().asInstanceOf[TensorflowOpsLoader]
               (builder.build[T](n.element, byteOrder, context), Seq(n).asJava, Seq(n))
             } catch {
-              case _ =>
-                throw new UnsupportedOperationException(errorMsg)
+              case e: Throwable =>
+                throw new UnsupportedOperationException(errorMsg, e)
             }
           })
 
