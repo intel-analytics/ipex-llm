@@ -165,7 +165,7 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
         Array(100), "double")
       val features = new JArrayList[JTensor]()
       features.add(feature)
-      Sample(features, label, "double")
+      PSample(features, label, "double")
     }
 
     BigDLSerDe.javaToPython(data.toJavaRDD().asInstanceOf[JavaRDD[Any]])
@@ -185,7 +185,7 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val pp = PythonBigDL.ofDouble()
     val optimMethod = new SGD[Double]()
     optimMethod.learningRateSchedule = SGD.Poly(0.5, math.ceil(1281167.toDouble / batchSize).toInt)
-    val optimizer = pp.createOptimizer(
+    val optimizer = pp.createDistriOptimizer(
       model,
       data.toJavaRDD(),
       ClassNLLCriterion[Double](),
@@ -239,4 +239,42 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
       valMethods = util.Arrays.asList(new Top1Accuracy()))
     println(testResult)
   }
+
+  "local optimizer" should "be test" in {
+
+    TestUtils.cancelOnWindows()
+
+    Logger.getLogger("org").setLevel(Level.WARN)
+    Logger.getLogger("akka").setLevel(Level.WARN)
+
+    import collection.JavaConverters._
+
+    val featuresShape = util.Arrays.asList(100)
+    val labelShape = util.Arrays.asList(1)
+    val pp = PythonBigDL.ofDouble()
+
+    val X = pp.toJTensor(Tensor[Double](Array(100, 100)).randn())
+    val y = pp.toJTensor(Tensor[Double](Array(100, 1)).zero().add(1))
+
+    val model = Sequential[Double]()
+    model.add(Linear[Double](100, 10))
+    model.add(ReLU[Double]())
+    model.add(LogSoftMax[Double]())
+    val batchSize = 32
+    val optimMethod = new SGD[Double]()
+    val optimizer = pp.createLocalOptimizer(
+      X,
+      y,
+      model,
+      ClassNLLCriterion[Double](),
+      optimMethod,
+      Trigger.maxEpoch(2),
+      32,
+      2)
+    val trainedModel = optimizer.optimize()
+    val predictedResult = pp.predictLocal(
+      trainedModel, pp.toJTensor(Tensor[Double](Array(34, 100)).randn()))
+    println(predictedResult)
+  }
+
 }

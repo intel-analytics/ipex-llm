@@ -79,5 +79,9 @@ class LocalModule[T: ClassTag] private(model: Module[T], weightsBias: Array[Tens
   def predict(dataSet: Array[Sample[T]]): Array[Activity] = {
     predictor.predict(dataSet)
   }
+
+  def predictSeq(dataSet: Array[Sample[T]]): Array[Activity] = {
+    predictor.predict(dataSet)
+  }
 }
 

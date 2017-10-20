@@ -126,6 +126,42 @@ class LocalPredictor[T: ClassTag] private[optim](model: Module[T], weightsBias: 
             val currentMiniBatch = batch.slice(offset, length)
             val input = currentMiniBatch.getInput()
             val output = workingModels(b).forward(input).toTensor[T]
+            output.clone()
+          }
+        )
+      )
+      val batchResult = result.flatMap(_.split(1)).map(_.asInstanceOf[Activity])
+      batchResult
+    }).toArray.flatten
+
+  }
+
+  def predictSeq(dataSet: Array[Sample[T]]): Array[Activity] = {
+    val iter = dataSet.iterator
+    val transformer = SampleToBatch[T](
+      batchSize = batchPerCore * subModelNumber, None, None, None,
+      partitionNum = Some(1))
+    val dataIter = transformer(iter)
+
+    val workingModels = (1 to subModelNumber).map(_ => {
+      val submodel = model.cloneModule().evaluate()
+      putWeightBias(weightsBias, submodel)
+      submodel
+    }).toArray
+
+    dataIter.map(batch => {
+      val stackSize = batch.size() / subModelNumber
+      val extraSize = batch.size() % subModelNumber
+      val parallelism = if (stackSize == 0) extraSize else subModelNumber
+      val start = System.nanoTime()
+      val result = Engine.default.invokeAndWaitSeq(
+        (0 until parallelism).map(b =>
+          () => {
+            val offset = b * stackSize + math.min(b, extraSize) + 1
+            val length = stackSize + (if (b < extraSize) 1 else 0)
+            val currentMiniBatch = batch.slice(offset, length)
+            val input = currentMiniBatch.getInput()
+            val output = workingModels(b).forward(input).toTensor[T]
             output
 
           }

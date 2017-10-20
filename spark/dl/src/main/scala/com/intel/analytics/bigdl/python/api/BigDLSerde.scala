@@ -23,7 +23,7 @@ import java.nio.charset.StandardCharsets
 import java.nio.{ByteBuffer, ByteOrder}
 import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, Map => JMap}
 
-import com.intel.analytics.bigdl.python.api.{EvaluatedResult, JTensor, Sample}
+import com.intel.analytics.bigdl.python.api.{EvaluatedResult, JTensor, PSample}
 import net.razorvine.pickle._
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.api.python.SerDeUtil
@@ -202,10 +202,10 @@ object BigDLSerDe extends BigDLSerDeBase with Serializable {
     private[python] def saveState(obj: Object, out: OutputStream, pickler: Pickler)
   }
 
-  private[python] class SamplePickler extends BigDLBasePickler[Sample] {
+  private[python] class SamplePickler extends BigDLBasePickler[PSample] {
 
     def saveState(obj: Object, out: OutputStream, pickler: Pickler): Unit = {
-      val record = obj.asInstanceOf[Sample]
+      val record = obj.asInstanceOf[PSample]
       saveObjects(out,
         pickler,
         record.features,
@@ -217,7 +217,7 @@ object BigDLSerDe extends BigDLSerDeBase with Serializable {
       if (args.length != 3) {
         throw new PickleException("should be 3, not : " + args.length)
       }
-      Sample(args(0).asInstanceOf[JList[JTensor]],
+      new PSample(args(0).asInstanceOf[JList[JTensor]],
         args(1).asInstanceOf[JTensor],
         args(2).asInstanceOf[String])
     }

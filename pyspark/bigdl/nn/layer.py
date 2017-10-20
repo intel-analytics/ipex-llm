@@ -267,6 +267,19 @@ class Layer(JavaValue):
         else:
             raise Exception("Error when calling evaluate(): it takes no argument or exactly three arguments only")
 
+    def predict_local(self, X):
+        result = callBigDlFunc(self.bigdl_type,
+                             "predictLocal", self.value, JTensor.from_ndarray(X))
+        return [r.to_ndarray() for r in result]
+
+    def predict_local_class(self, X):
+        result = callBigDlFunc(self.bigdl_type,
+                             "predictLocal", self.value, JTensor.from_ndarray(X))
+        return [r.to_ndarray() for r in result]
+
+    def predict_class_local(self, X, batch=32):
+        pass
+
     def predict(self, data_rdd):
         """
         Model inference base on the given data.

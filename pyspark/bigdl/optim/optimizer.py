@@ -27,7 +27,7 @@ from bigdl.util.common import callJavaFunc
 from bigdl.util.common import get_spark_context
 from bigdl.util.common import to_list
 from py4j.java_gateway import JavaObject
-
+import multiprocessing
 
 if sys.version >= '3':
     long = int
@@ -520,6 +520,84 @@ class MultiStep(JavaValue):
         JavaValue.__init__(self, None, bigdl_type, step_sizes, gamma)
 
 
+class DistriOptimizer(JavaValue):
+    def __init__(self,
+                 model,
+                 training_data,
+                 criterion,
+                 end_trigger,
+                 batch_size,
+                 optim_method=None,
+                 bigdl_type="float"):
+        """
+        Create an optimizer.
+
+
+        :param model: the neural net model
+        :param training_data: the training dataset
+        :param criterion: the loss function
+        :param optim_method: the algorithm to use for optimization,
+           e.g. SGD, Adagrad, etc. If optim_method is None, the default algorithm is SGD.
+        :param end_trigger: when to end the optimization
+        :param batch_size: training batch size
+        """
+        JavaValue.__init__(self, None, bigdl_type, model.value,
+                           training_rdd, criterion,
+                           optim_method if optim_method else SGD(), end_trigger, batch_size)
+
+
+class LocalOptimizer(JavaValue):
+    """
+    Create an optimizer.
+
+
+    :param model: the neural net model
+    :param training_data: the training dataset
+    :param criterion: the loss function
+    :param optim_method: the algorithm to use for optimization,
+       e.g. SGD, Adagrad, etc. If optim_method is None, the default algorithm is SGD.
+    :param end_trigger: when to end the optimization
+    :param batch_size: training batch size
+    """
+    def __init__(self,
+                 X,
+                 y,
+                 model,
+                 criterion,
+                 end_trigger,
+                 batch_size,
+                 optim_method=None,
+                 cores=None,
+                 bigdl_type="float"):
+        """
+        Create an optimizer.
+
+
+        :param model: the neural net model
+        :param training_rdd: the training dataset
+        :param criterion: the loss function
+        :param optim_method: the algorithm to use for optimization,
+           e.g. SGD, Adagrad, etc. If optim_method is None, the default algorithm is SGD.
+        :param end_trigger: when to end the optimization
+        :param batch_size: training batch size
+        """
+        if cores is None:
+            cores = multiprocessing.cpu_count()
+        JavaValue.__init__(self, None, bigdl_type,
+                           JTensor.from_ndarray(X),
+                           JTensor.from_ndarray(y),
+                           model.value,
+                           criterion,
+                           optim_method if optim_method else SGD(), end_trigger, batch_size, cores)
+
+    def optimize(self):
+        """
+        Do an optimization.
+        """
+        jmodel = callJavaFunc(get_spark_context(), self.value.optimize)
+        from bigdl.nn.layer import Layer
+        return Layer.of(jmodel)
+
 class Optimizer(JavaValue):
     """
     An optimizer is in general to minimize any function with respect
@@ -529,27 +607,35 @@ class Optimizer(JavaValue):
     """
     def __init__(self,
                  model,
-                 training_rdd,
+                 training_data,
                  criterion,
                  end_trigger,
                  batch_size,
                  optim_method=None,
                  bigdl_type="float"):
-       """
-       Create an optimizer.
+        """
+        Create an optimizer.
 
 
-       :param model: the neural net model
-       :param training_rdd: the training dataset
-       :param criterion: the loss function
-       :param optim_method: the algorithm to use for optimization, 
-          e.g. SGD, Adagrad, etc. If optim_method is None, the default algorithm is SGD.
-       :param end_trigger: when to end the optimization
-       :param batch_size: training batch size
-       """
-       JavaValue.__init__(self, None, bigdl_type, model.value,
-                           training_rdd, criterion,
-                          optim_method if optim_method else SGD(), end_trigger, batch_size)
+        :param model: the neural net model
+        :param training_rdd: the training dataset
+        :param criterion: the loss function
+        :param optim_method: the algorithm to use for optimization,
+           e.g. SGD, Adagrad, etc. If optim_method is None, the default algorithm is SGD.
+        :param end_trigger: when to end the optimization
+        :param batch_size: training batch size
+        """
+        self.pvalue = DistriOptimizer(model,
+                                      training_data,
+                                      criterion,
+                                      end_trigger,
+                                      batch_size,
+                                      optim_method,
+                                      bigdl_type)
+        self.value = self.pvalue.value
+        self.bigdl_type = self.pvalue.bigdl_type
+
+
 
     def set_validation(self, batch_size, val_rdd, trigger, val_method=None):
         """

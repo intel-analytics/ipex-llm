@@ -27,6 +27,8 @@ import tempfile
 import pytest
 from numpy.testing import assert_allclose
 from bigdl.util.engine import compare_version
+np.random.seed(1337)  # for reproducibility
+
 
 
 class TestSimple():
@@ -467,6 +469,38 @@ class TestSimple():
         assert compare_version("1.6.0", "2.1.0") == -1
         assert compare_version("2.1.0", "2.1.1") == -1
         assert compare_version("2.0.1", "1.5.2") == 1
+
+    def test_local_optimizer(self):
+        feature_num = 2
+        data_len = 1000
+        batch_size = 32
+        epoch_num = 500
+
+        X_ = np.random.uniform(0, 1, (data_len, feature_num))
+        y_ = (2 * X_).sum(1) + 0.4
+        model = Sequential()
+        l1 = Linear(feature_num, 1)
+        model.add(l1)
+
+        localOptimizer = LocalOptimizer(
+            model=model,
+            X =X_,
+            y=y_,
+            criterion=MSECriterion(),
+            optim_method=SGD(learningrate=1e-2),
+            end_trigger=MaxEpoch(epoch_num),
+            batch_size=batch_size)
+        trained_model = localOptimizer.optimize()
+        w = trained_model.get_weights()
+        assert_allclose(w[0], np.array([2, 2]).reshape([1, 2]), rtol=1e-1)
+        assert_allclose(w[1], np.array([0.4]), rtol=1e-1)
+
+        predict_result = trained_model.predict_local(X_)
+        assert_allclose(Y_, predict_result, rtol=1e-1)
+
+        predict_result2 = trained_model.predict_local_class(X_)
+        print predict_result
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
