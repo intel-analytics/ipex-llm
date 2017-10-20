@@ -80,7 +80,7 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
           kw, kh, dw, dh, pw, ph, 0, 0, group, !withBias).setName(getLayerName(layer)).inputs())
       } else {
         Seq(SpatialConvolution[T](nInputPlane.toInt, nOutPlane.toInt,
-          kw, kh, dw, dh, pw, ph, group, withBias).setName(getLayerName(layer)).inputs())
+          kw, kh, dw, dh, pw, ph, group, withBias = vwithBias).setName(getLayerName(layer)).inputs())
       }
     } else {
       val dilation = param.getDilation(0)
