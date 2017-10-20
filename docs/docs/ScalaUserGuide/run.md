@@ -92,6 +92,9 @@ You can try BigDL program as a local Java/Scala program.
 
 To run the BigDL model as a local Java/Scala program, you need to set Java property `bigdl.localMode` to `true`. If you want to specify how many cores to be used for training/testing/prediction, you need to set Java property `bigdl.coreNumber` to the core number. You can either call `System.setProperty("bigdl.localMode", "true")` and `System.setProperty("bigdl.coreNumber", core_number)` in the Java/Scala code, or pass -Dbigdl.localMode=true and -Dbigdl.coreNumber=core_number when runing the program.
 
+You need a full jar package to run local program. In our distributed jar, we exclude the spark dependency classes. To get the full jar package, you need to build from the source code.
+Please refer the [Build Page](/ScalaUserGuide/install-build-src/). You can find a bigdl-VERSION-jar-with-dependencies-and-spark.jar under the spark/dl/target/ of the source folder.
+
 For example, you may run the [Lenet](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/example/lenetLocal) model as a local Scala/Java program as follows:
 
 1.First, you can download the MNIST Data from [here](http://yann.lecun.com/exdb/mnist/). Unzip all the files and put them in one folder(e.g. mnist).
