@@ -166,13 +166,6 @@ object SparseTensorBLAS {
     val Cvals = C.storage().array()
     val cOffset = C.storageOffset() - 1
 
-    require(ArowIndices.length - ArowOffset == AcolIndices.length - AcolOffset,
-      s"A: row indices number ${ArowIndices.length() - ArowOffset} is not equal " +
-        s"to col indices number ${AcolIndices.length() - AcolOffset}")
-    require(ArowIndices.length - ArowOffset == Avals.length - AstorageOffset,
-      s"A: indices length ${ArowIndices.length() - ArowOffset} " +
-        s"is not equal to values length ${Avals.length - AstorageOffset}")
-
     // Scale matrix first if `beta` is not equal to 1.0
     if (beta != 1.0) {
       C.mul(beta)
@@ -230,13 +223,6 @@ object SparseTensorBLAS {
     val bOffset = B.storageOffset() - 1
     val Cvals = C.storage().array()
     val cOffset = C.storageOffset() - 1
-
-    require(ArowIndices.length - ArowOffset == AcolIndices.length - AcolOffset,
-      s"A: row indices number ${ArowIndices.length() - ArowOffset} is not equal " +
-        s"to col indices number ${AcolIndices.length() - AcolOffset}")
-    require(ArowIndices.length - ArowOffset == Avals.length - AstorageOffset,
-      s"A: indices length ${ArowIndices.length() - ArowOffset} " +
-        s"is not equal to values length ${Avals.length - AstorageOffset}")
 
     // Scale matrix first if `beta` is not equal to 1.0
     if (beta != 1.0) {
@@ -296,13 +282,6 @@ object SparseTensorBLAS {
     val BcolIndices = B._indices(1)
     val BcolIndicesOffset = B._indicesOffset(1)
 
-    require(BrowIndices.length - BrowIndicesOffset == BcolIndices.length - BcolIndicesOffset,
-      s"B: row indices number ${BrowIndices.length() - BrowIndicesOffset} is not equal " +
-        s"to col indices number ${BcolIndices.length() - BcolIndicesOffset}")
-    require(BrowIndices.length - BrowIndicesOffset == Bvals.length - BstorageOffset,
-      s"B: indices length ${BrowIndices.length() - BrowIndicesOffset} " +
-        s"is not equal to values length ${Bvals.length - BstorageOffset}")
-
     // Scale matrix first if `beta` is not equal to 1.0
     if (beta != 1.0) {
       C.mul(beta)
@@ -359,13 +338,6 @@ object SparseTensorBLAS {
     val BrowIndicesOffset = B._indicesOffset(0)
     val BcolIndices = B._indices(1)
     val BcolIndicesOffset = B._indicesOffset(1)
-
-    require(BrowIndices.length - BrowIndicesOffset == BcolIndices.length - BcolIndicesOffset,
-      s"B: row indices number ${BrowIndices.length() - BrowIndicesOffset} is not equal " +
-        s"to col indices number ${BcolIndices.length() - BcolIndicesOffset}")
-    require(BrowIndices.length - BrowIndicesOffset == Bvals.length - BstorageOffset,
-      s"B: indices length ${BrowIndices.length() - BrowIndicesOffset} " +
-        s"is not equal to values length ${Bvals.length - BstorageOffset}")
 
     // Scale matrix first if `beta` is not equal to 1.0
     if (beta != 1.0) {
