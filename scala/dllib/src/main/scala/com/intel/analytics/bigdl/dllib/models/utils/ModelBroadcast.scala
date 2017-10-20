@@ -105,7 +105,6 @@ class ModelBroadcast[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Seria
       }
       // clear parameters
       clearTensor(parameters._1)
-      // because in quantized mode, the weight number may be different with gradWeight number
       clearTensor(parameters._2)
 
       weightsBias
