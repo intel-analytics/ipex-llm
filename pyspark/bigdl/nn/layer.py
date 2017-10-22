@@ -1218,7 +1218,7 @@ class TemporalMaxPooling(Layer):
 
     def __init__(self,
                  k_w,
-                 d_w,
+                 d_w=-1,
                  bigdl_type="float"):
         super(TemporalMaxPooling, self).__init__(None, bigdl_type, k_w,
                                                 d_w)
