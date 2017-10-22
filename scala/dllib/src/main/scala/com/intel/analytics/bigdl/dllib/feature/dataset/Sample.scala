@@ -289,8 +289,7 @@ object ArraySample {
         featureTensors: Array[Tensor[T]])(implicit ev: TensorNumeric[T]) : Sample[T] = {
     val data = new Array[T](featureTensors.map(_.nElement()).sum)
     copy(data, featureTensors)
-    new ArraySample[T](featureTensors.flatMap(_.storage().array()),
-      getSize(featureTensors), null)
+    new ArraySample[T](data, getSize(featureTensors), null)
   }
 
   private def copy[T: ClassTag](
