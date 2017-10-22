@@ -20,7 +20,7 @@ import java.nio.{ByteOrder, DoubleBuffer, FloatBuffer}
 import com.intel.analytics.bigdl.Criterion
 import com.intel.analytics.bigdl.dataset.{DataSet, DistributedDataSet, MiniBatch, Sample}
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Graph, Linear}
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractCriterion, AbstractModule, Activity}
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.{NumericWildcard, TensorNumeric}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
@@ -32,6 +32,7 @@ import org.tensorflow.framework.{GraphDef, NodeDef}
 import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.models.utils.ModelBroadcast
 import TFTensorNumeric.NumericByteString
+import com.intel.analytics.bigdl.utils.tf.BigDLSessionImpl.FakeCriterion
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -41,16 +42,63 @@ import scala.util.Random
 abstract class Session[T: ClassTag] {
 
   /**
-   * Train the model specified by the model output
-   * @param outputs model output
-   * @param dataSet the training data set
-   * @return trained model
+   * Train the tensorflow graph
+   * @param outputs
+   * @param dataSet
+   * @param optMethod
+   * @param criterion
+   * @param endWhen
+   * @return
    */
   def train(outputs: Seq[String],
             dataSet: DistributedDataSet[MiniBatch[T]],
             optMethod: OptimMethod[T],
             criterion: Criterion[T],
             endWhen: Trigger): Graph[T]
+
+
+  /**
+   * Train the tensorflow graph. The model must be fed data with a queue
+   * @param endPoints
+   * @param optMethod
+   * @param endWhen
+   * @param isDataBatch if the model input is the batch
+   * @param batchSize batch size, which should be original batch size * total core number
+   * @param sc
+   * @param loss
+   * @return
+   */
+  def train(
+    endPoints: Seq[String],
+    optMethod: OptimMethod[T],
+    endWhen: Trigger,
+    isDataBatch: Boolean,
+    batchSize: Int,
+    sc: SparkContext,
+    loss: Option[String]
+  ): this.type
+
+  /**
+   * Predict data with tensorflow graph. The data must hold in a queue
+   * @param endPoints
+   * @param isDataBatch if the model input is the batch
+   * @param batchSize batch size, which should be original batch size * total core number
+   * @param sc
+   * @return
+   */
+  def predict(
+    endPoints: Seq[String],
+    isDataBatch: Boolean,
+    batchSize: Int,
+    sc: SparkContext
+  ): RDD[Activity]
+
+  /**
+   * Dump varaible contents to a file
+   * @param binFile
+   * @return
+   */
+  def saveParameters(binFile: String): this.type
 }
 
 class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
@@ -65,7 +113,7 @@ class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
     criterion: Criterion[T],
     endWhen: Trigger): Graph[T] = {
 
-    val (model, input) = constructModel(outputs, byteOrder)
+    val (model, input) = constructModel(outputs, byteOrder, true, None)
 
     require(input.element.getOp == "Placeholder",
       "only support Placeholder as input when in-memory input data is provided")
@@ -75,10 +123,59 @@ class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
       dataSet,
       criterion
     )
-    val optMethod = new SGD[T]()
     opt.setOptimMethod(optMethod).setEndWhen(endWhen)
       .optimize()
     model
+  }
+
+  override def train(
+    endPoints: Seq[String],
+    optMethod: OptimMethod[T],
+    endWhen: Trigger,
+    isDataBatch: Boolean,
+    batchSize: Int,
+    sc: SparkContext,
+    loss: Option[String]
+  )
+  : this.type = {
+    val weightsAndGrads = endPoints.map(e => name2Node(e)).map(n => n.graph(true).DFS).flatten
+      .map(n => TFUpdater(n.element)).flatten.toSet
+
+    require(weightsAndGrads.size != 0, "Cannot find updater nodes")
+    context.setAssignGrads(weightsAndGrads)
+    val modelOutputs = if (loss.isDefined) {
+      Seq(loss.get) ++ weightsAndGrads.map(_._2).toSeq
+    } else {
+      weightsAndGrads.map(_._2).toSeq
+    }
+    val (model, input) = constructModel(modelOutputs, byteOrder, false, Some(context))
+    val data = BigDLSessionImpl.toSample[T](getRDD(Seq(input.element.getName), sc, isDataBatch))
+
+    val opt = Optimizer[T](
+      model,
+      data,
+      new FakeCriterion[T](),
+      batchSize
+    )
+    opt.setOptimMethod(optMethod).setEndWhen(endWhen)
+      .optimize()
+    this
+  }
+
+  override def predict(
+    endPoints: Seq[String],
+    isDataBatch: Boolean,
+    batchSize: Int,
+    sc: SparkContext
+  ): RDD[Activity] = {
+    val (model, input) = constructModel(endPoints, byteOrder, true, Some(context))
+    val data = BigDLSessionImpl.toSample[T](getRDD(Seq(input.element.getName), sc, isDataBatch))
+    model.predict(data)
+  }
+
+  override def saveParameters(binFile: String): this.type = {
+    TensorflowLoader.saveBinFile(binFile, context)
+    this
   }
 
   private val inputOp = Set("ReaderReadV2", "QueueDequeueV2", "QueueDequeueManyV2", "Placeholder")
@@ -394,7 +491,7 @@ class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
       endPoints,
       ByteOrder.LITTLE_ENDIAN,
       "",
-      Some(context),
+      None,
       generatedBackward = false
     ).asInstanceOf[Graph[T]]
 
@@ -448,7 +545,7 @@ class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
       endPoints,
       ByteOrder.LITTLE_ENDIAN,
       "",
-      Some(context),
+      None,
       generatedBackward = false
     ).asInstanceOf[Graph[T]]
 
@@ -477,7 +574,8 @@ class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
   }
 
 
-  private def constructModel(endPoints: Seq[String], byteOrder: ByteOrder)
+  private def constructModel(endPoints: Seq[String], byteOrder: ByteOrder,
+    generateBackward: Boolean, context: Option[Context[T]])
       : (Graph[T], Node[NodeDef]) = {
     val isInputOp = (n: NodeDef) => inputOp(n.getOp)
     val (tfGraph, inputs, originInputs) =
@@ -497,7 +595,8 @@ class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
       endPoints,
       byteOrder,
       "",
-      Some(context)
+      context,
+      generateBackward
     ).asInstanceOf[Graph[T]]
     (model, inputNodes.head)
   }
@@ -535,6 +634,23 @@ object TFUpdater {
 }
 
 object BigDLSessionImpl {
+
+  class FakeCriterion[T: ClassTag](enable: Boolean = false)(implicit ev: TensorNumeric[T])
+    extends AbstractCriterion[Activity, Activity, T] {
+
+    override def updateOutput(input: Activity, target: Activity): T = {
+      if (enable) {
+        ev.fromType(0.0)
+      } else {
+        input.toTable.apply[Tensor[T]](1).value()
+      }
+    }
+
+    override def updateGradInput(input: Activity, target: Activity): Activity = {
+      null
+    }
+  }
+
   private def splitTensorByFirstDim(table: Table): Array[Table] = {
     val nElem = table.length()
     require(nElem >= 1, "EnqueueManyV2 encounter a empty table")
