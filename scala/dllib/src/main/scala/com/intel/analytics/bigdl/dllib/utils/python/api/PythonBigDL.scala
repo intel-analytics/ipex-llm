@@ -37,7 +37,12 @@ import java.nio.ByteOrder
 import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn.tf.{Const, Fill, Shape, SplitAndSelect}
 import com.intel.analytics.bigdl.utils.tf.TensorflowLoader.{buildBigDLModel, buildTFGraph, parse}
+
 import com.intel.analytics.bigdl.utils.tf.{BigDLSessionImpl, Context, TensorflowDataFormat, TensorflowSaver}
+
+import org.apache.spark.ml.{DLClassifierModel, DLEstimator, DLClassifier, DLModel}
+import org.apache.spark.sql.DataFrame
+
 import org.apache.log4j._
 import org.apache.spark.SparkContext
 import org.tensorflow.framework.NodeDef
@@ -2025,6 +2030,86 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def quantize(module: AbstractModule[Activity, Activity, T]): Module[T] = {
     module.quantize()
+  }
+
+  def createDLEstimator(model: Module[T], criterion: Criterion[T],
+                        featureSize: JArrayList[Int],
+                        labelSize: JArrayList[Int]): DLEstimator[T] = {
+    new DLEstimator[T](model, criterion, featureSize.asScala.toArray, labelSize.asScala.toArray)
+  }
+
+  def createDLClassifier(model: Module[T], criterion: Criterion[T],
+                         featureSize: JArrayList[Int],
+                         labelSize: JArrayList[Int]): DLClassifier[T] = {
+    new DLClassifier[T](model, criterion, featureSize.asScala.toArray)
+  }
+
+  def fitEstimator(estimator: DLEstimator[T], dataSet: DataFrame): DLModel[T] = {
+    estimator.fit(dataSet)
+  }
+
+  def fitClassifier(classifier: DLClassifier[T], dataSet: DataFrame): DLModel[T] = {
+    classifier.fit(dataSet)
+  }
+
+  def setBatchSizeDLEstimator(estimator: DLEstimator[T], batchSize: Int): DLEstimator[T] = {
+    estimator.setBatchSize(batchSize)
+  }
+
+  def setBatchSizeDLClassifier(classifier: DLClassifier[T], batchSize: Int): DLClassifier[T] = {
+    classifier.setBatchSize(batchSize)
+  }
+
+  def setMaxEpochDLEstimator(estimator: DLEstimator[T], maxEpoch: Int): DLEstimator[T] = {
+    estimator.setMaxEpoch(maxEpoch)
+  }
+
+  def setMaxEpochDLClassifier(classifier: DLClassifier[T], maxEpoch: Int): DLClassifier[T] = {
+    classifier.setMaxEpoch(maxEpoch)
+  }
+
+  def setLearningRateDLEstimator(estimator: DLEstimator[T], lr: Double): DLEstimator[T] = {
+    estimator.setLearningRate(lr)
+  }
+
+  def setLearningRateDLClassifier(classifier: DLClassifier[T], lr: Double): DLClassifier[T] = {
+    classifier.setLearningRate(lr)
+  }
+
+  def createDLModel(model: Module[T], featureSize: JArrayList[Int]): DLModel[T] = {
+    new DLModel[T](model, featureSize.asScala.toArray)
+  }
+
+  def createDLClassifierModel(model: Module[T],
+                              featureSize: JArrayList[Int]): DLClassifierModel[T] = {
+    new DLClassifierModel[T](model, featureSize.asScala.toArray)
+  }
+
+  def dlModelTransform(dlModel: DLModel[T], dataSet: DataFrame): DataFrame = {
+    dlModel.transform(dataSet)
+  }
+
+  def dlClassifierModelTransform(dlClassifierModel: DLClassifierModel[T],
+                                 dataSet: DataFrame): DataFrame = {
+    dlClassifierModel.transform(dataSet)
+  }
+
+  def setFeatureSizeDLModel(dlModel: DLModel[T], featureSize: JArrayList[Int]): DLModel[T] = {
+    dlModel.setFeatureSize(featureSize.asScala.toArray)
+  }
+
+  def setFeatureSizeDLClassifierModel(dlClassifierModel: DLClassifierModel[T],
+                                      featureSize: JArrayList[Int]): DLClassifierModel[T] = {
+    dlClassifierModel.setFeatureSize(featureSize.asScala.toArray)
+  }
+
+  def setBatchSizeDLModel(dlModel: DLModel[T], batchSize: Int): DLModel[T] = {
+    dlModel.setBatchSize(batchSize)
+  }
+
+  def setBatchSizeDLClassifierModel(dlClassifierModel: DLClassifierModel[T],
+                                    batchSize: Int): DLClassifierModel[T] = {
+    dlClassifierModel.setBatchSize(batchSize)
   }
 }
 
