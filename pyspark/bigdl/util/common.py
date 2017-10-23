@@ -243,7 +243,7 @@ class JTensor(object):
         self.__repr__()
 
     def __repr__(self):
-        indices = "" if self.indices is None else " ,indices %s" % self.indices
+        indices = "" if self.indices is None else " ,indices %s" % str(self.indices)
         return "JTensor: storage: %s, shape: %s%s, %s" % (str(self.storage), str(self.shape), indices, self.bigdl_type)
 
 
