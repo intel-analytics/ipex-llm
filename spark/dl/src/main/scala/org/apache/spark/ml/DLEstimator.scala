@@ -90,11 +90,13 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag](
   def setMaxEpoch(value: Int): this.type = set(maxEpoch, value)
 
   /**
-   * learning rate for the optimizer.
-   * Default: 1.0
+   * learning rate for the optimizer in the DLEstimator.
+   * Default: 0.001
    */
   val learningRate = new DoubleParam(this, "learningRate", "learningRate", ParamValidators.gt(0))
+
   setDefault(learningRate -> 1e-3)
+
 
   def getLearningRate: Double = $(learningRate)
 
