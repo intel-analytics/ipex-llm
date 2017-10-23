@@ -166,11 +166,6 @@ object SparseTensorBLAS {
     val Cvals = C.storage().array()
     val cOffset = C.storageOffset() - 1
 
-    require(ArowIndices.length == AcolIndices.length, s"A: row indices number " +
-      s"${ArowIndices.length()} is not equal to col indices number ${AcolIndices.length()}")
-    require(ArowIndices.length == Avals.length, s"A: indices length ${ArowIndices.length()}" +
-      s"is not equal to values length ${Avals.length}")
-
     // Scale matrix first if `beta` is not equal to 1.0
     if (beta != 1.0) {
       C.mul(beta)
@@ -228,11 +223,6 @@ object SparseTensorBLAS {
     val bOffset = B.storageOffset() - 1
     val Cvals = C.storage().array()
     val cOffset = C.storageOffset() - 1
-
-    require(ArowIndices.length == AcolIndices.length, s"A: row indices number " +
-      s"${ArowIndices.length()} is not equal to col indices number ${AcolIndices.length()}")
-    require(ArowIndices.length == Avals.length, s"A: indices length ${ArowIndices.length()}" +
-      s"is not equal to values length ${Avals.length}")
 
     // Scale matrix first if `beta` is not equal to 1.0
     if (beta != 1.0) {
@@ -292,11 +282,6 @@ object SparseTensorBLAS {
     val BcolIndices = B._indices(1)
     val BcolIndicesOffset = B._indicesOffset(1)
 
-    require(BrowIndices.length == BcolIndices.length, s"B: row indices number " +
-      s"${BrowIndices.length()} is not equal to col indices number ${BcolIndices.length()}")
-    require(BrowIndices.length == Bvals.length, s"B: indices length ${BrowIndices.length()}" +
-      s"is not equal to values length ${Bvals.length}")
-
     // Scale matrix first if `beta` is not equal to 1.0
     if (beta != 1.0) {
       C.mul(beta)
@@ -353,11 +338,6 @@ object SparseTensorBLAS {
     val BrowIndicesOffset = B._indicesOffset(0)
     val BcolIndices = B._indices(1)
     val BcolIndicesOffset = B._indicesOffset(1)
-
-    require(BrowIndices.length == BcolIndices.length, s"B: row indices number " +
-      s"${BrowIndices.length()} is not equal to col indices number ${BcolIndices.length()}")
-    require(BrowIndices.length == Bvals.length, s"B: indices length ${BrowIndices.length()}" +
-      s"is not equal to values length ${Bvals.length}")
 
     // Scale matrix first if `beta` is not equal to 1.0
     if (beta != 1.0) {
