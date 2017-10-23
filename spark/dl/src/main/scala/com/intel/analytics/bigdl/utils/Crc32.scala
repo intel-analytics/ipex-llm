@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.utils
 import netty.Crc32c
 
 
-object Crc32 {
+private[bigdl] object Crc32 {
 
   def maskedCRC32(crc32c: Crc32c, data: Array[Byte], offset: Int, length: Int): Long = {
     crc32c.reset()
