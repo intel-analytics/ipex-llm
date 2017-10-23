@@ -158,6 +158,12 @@ class JTensor(object):
         >>> np.random.seed(123)
         >>> data = np.random.uniform(0, 1, (2, 3)).astype("float32")
         >>> result = JTensor.from_ndarray(data)
+        >>> print(result)
+        JTensor: storage: [[ 0.69646919  0.28613934  0.22685145]
+         [ 0.55131477  0.71946895  0.42310646]], shape: [2 3], float
+        >>> result
+        JTensor: storage: [[ 0.69646919  0.28613934  0.22685145]
+         [ 0.55131477  0.71946895  0.42310646]], shape: [2 3], float
         >>> data_back = result.to_ndarray()
         >>> (data == data_back).all()
         True
@@ -240,7 +246,7 @@ class JTensor(object):
             return JTensor, (self.storage.tostring(), self.shape.tostring(), self.bigdl_type, self.indices.tostring())
 
     def __str__(self):
-        self.__repr__()
+        return self.__repr__()
 
     def __repr__(self):
         indices = "" if self.indices is None else " ,indices %s" % str(self.indices)
@@ -270,10 +276,15 @@ class Sample(object):
         >>> import numpy as np
         >>> from bigdl.util.common import callBigDlFunc
         >>> from numpy.testing import assert_allclose
+        >>> np.random.seed(123)
         >>> sample = Sample.from_ndarray(np.random.random((2,3)), np.random.random((2,3)))
         >>> sample_back = callBigDlFunc("float", "testSample", sample)
         >>> assert_allclose(sample.features[0].to_ndarray(), sample_back.features[0].to_ndarray())
         >>> assert_allclose(sample.label.to_ndarray(), sample_back.label.to_ndarray())
+        >>> print(sample)
+        Sample: features: [JTensor: storage: [[ 0.69646919  0.28613934  0.22685145]
+         [ 0.55131477  0.71946895  0.42310646]], shape: [2 3], float], label: JTensor: storage: [[ 0.98076421  0.68482971  0.48093191]
+         [ 0.39211753  0.343178    0.72904968]], shape: [2 3], float
         """
         if isinstance(features, np.ndarray):
             features = [features]
