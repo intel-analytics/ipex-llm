@@ -285,14 +285,17 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
 
   override def set(): Tensor[T] = {
     if (this._indices != null) {
-      for (ind <- this._indices)
-          ind.resize(0)
+      _indices.foreach(ind => ind.resize(0))
+      for (i <- 0 until _indicesOffset.length) {
+        _indicesOffset(i) = 0
+      }
     }
     if (this._values != null) {
       this._values.resize(0)
     }
     this._nElement = 0
     this._storageOffset = 0
+    this.nDimension = 0
     this._shape = Array()
     this
   }
@@ -436,21 +439,31 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
     throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
   }
 
+  private def resizeIndices(nElement: Int): Unit = {
+    var i = 0
+    while (i < _indices.length) {
+      _indices(i).resize(nElement + _indicesOffset(i))
+      i += 1
+    }
+  }
+
   override def resize(size: Array[Int], nElement: Int): Tensor[T] = {
-    if (this.nElement() < nElement) {
-      storage.resize(nElement)
-      if (size.length == _indices.length) {
-        _indices.foreach(_.resize(nElement))
-      } else if (size.length < _indices.length) {
-        _indices = _indices.slice(0, size.length)
-        _indices.foreach(_.resize(nElement))
-      } else {
-        val _addIndices = new Array[Storage[Int]](size.length - _indices.length)
-        for (i <- _addIndices.indices) _addIndices(i) = Storage[Int](nElement)
-        _indices ++= _addIndices
-        _indices.foreach(_.resize(nElement))
-      }
-      _storageOffset = 0
+    if (size.length < _indices.length) {
+      _indices = _indices.slice(0, size.length)
+      _indicesOffset = _indicesOffset.slice(0, size.length)
+      resizeIndices(nElement)
+    } else if (size.length > _indices.length) {
+      val _addIndices = new Array[Storage[Int]](size.length - _indices.length)
+      for (i <- _addIndices.indices) _addIndices(i) = Storage[Int](nElement)
+      _indicesOffset ++= new Array[Int](size.length - _indicesOffset.length)
+      _indices ++= _addIndices
+      resizeIndices(nElement)
+    } else if (_indices(0).length() - _indicesOffset(0) < nElement) {
+      resizeIndices(nElement)
+    }
+
+    if (storage.length() - _storageOffset < nElement) {
+      storage.resize(nElement + _storageOffset)
     }
     _nElement = nElement
     _shape = size
