@@ -279,6 +279,9 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
       "A graph container should not be changed after it is constructed")
   }
 
+  // todo: expand the graph
+  override def toGraph(startNodes: ModuleNode[T]*): Graph[T] = this
+
   // Add a dummy output node, to get an one end graph. So the nodes that are not dependent by
   // the outputs will be excluded
   private val dummyOutput = new ModuleNode[T](new Identity[T]())
