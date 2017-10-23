@@ -73,6 +73,9 @@ pages:
     - Optimization Algorithms: APIGuide/Optimizers/Optim-Methods.md
   - Triggers: APIGuide/Triggers.md
   - Metrics:  APIGuide/Metrics.md
+  - Spark ML:
+    - DLEstimator: APIGuide/MLPipeline/DLEstimator/DLEstimator.md
+    - DLClassifier: APIGuide/MLPipeline/DLClassifier/DLClassifier.md
   - Full API docs:
     - Scala Docs: APIGuide/scaladoc.md
     - Python API Docs: APIGuide/python-api-doc.md
