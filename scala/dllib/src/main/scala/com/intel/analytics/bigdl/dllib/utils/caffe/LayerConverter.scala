@@ -115,14 +115,29 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
     }
   }
 
-  override protected def fromCaffeBatchNormalization(layer : GeneratedMessage) :
+  override protected def fromCaffeBatchNormalization(layer: GeneratedMessage):
   Seq[ModuleNode[T]] = {
-    val  weightBlob = getBlob(layer, 0).get
-    val nOutPlane = if (weightBlob.hasShape) weightBlob.getShape.getDim(0)
+    val weightBlob = getBlob(layer, 0).get
+    val nOutPlane = if (weightBlob.hasShape) weightBlob.getShape.getDim(0).toInt
     else weightBlob.getNum
     val param = layer.asInstanceOf[LayerParameter].getBatchNormParam
     val eps = param.getEps
-    Seq(SpatialBatchNormalization[T](nOutPlane.toInt, eps).setName(getLayerName(layer)).inputs())
+    val batchNorm = SpatialBatchNormalization[T](nOutPlane.toInt, eps, affine = false)
+        .setName(getLayerName(layer))
+    val scaleData = getBlob(layer, 2).get.getData(0)
+    val scale = if (scaleData == 0) 0 else 1 / scaleData
+    val means = getBlob(layer, 0).get.getDataList
+    val variances = getBlob(layer, 1).get.getDataList
+    batchNorm.runningMean.resize(nOutPlane)
+    batchNorm.runningVar.resize(nOutPlane)
+
+    batchNorm.saveMean.resize(nOutPlane)
+    batchNorm.saveStd.resize(nOutPlane)
+    (1 to nOutPlane).foreach(i => {
+      batchNorm.runningMean.setValue(i, ev.fromType[Float](means.get(i - 1) * scale))
+      batchNorm.runningVar.setValue(i, ev.fromType[Float](variances.get(i - 1) * scale))
+    })
+    Seq(batchNorm.inputs())
   }
 
   override protected def fromCaffeELU(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
