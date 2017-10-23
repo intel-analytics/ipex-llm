@@ -180,6 +180,16 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
     Seq(Replicate[T](tiles, axis).setName(getLayerName(layer)).inputs())
   }
 
+  override protected def fromCaffeInput(layer: GeneratedMessage): Seq[ModuleNode[T]] = {
+    val layerParam = layer.asInstanceOf[LayerParameter]
+    val tops = layerParam.getTopList
+    (0 until tops.size()).map(i => {
+      val input = Input()
+      input.element.setName(tops.get(i))
+      input
+    })
+  }
+
   override protected def toCaffeConvolution(module : AbstractModule[Activity, Activity, T],
     bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage] = {
     val layerParameter = LayerParameter.newBuilder()
