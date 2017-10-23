@@ -37,7 +37,8 @@ object ConvertModel {
   val fromSupports = Set("bigdl", "caffe", "torch", "tensorflow")
   val toSupports = Set("bigdl", "caffe", "torch")
 
-  val converterParser = new OptionParser[ConverterParam]("Convert caffe model to bigdl model") {
+  val converterParser = new OptionParser[ConverterParam](
+    "Convert models between different dl frameworks") {
     opt[String]("from")
       .text(s"What's the type origin model ${fromSupports.mkString(",")}?")
       .action((x, c) => c.copy(from = x))
@@ -70,7 +71,8 @@ object ConvertModel {
       .text("Where's the caffe deploy prototxt?")
       .action((x, c) => c.copy(prototxt = x))
     opt[Boolean]("quantize")
-      .text("Do you want to quantize the model?")
+      .text("Do you want to quantize the model? Only works when \"--to\" is bigdl;" +
+        "you can only perform inference using the new quantized model.")
       .action((x, c) => c.copy(quantize = x))
     opt[String]("tf_inputs")
       .text("Inputs for Tensorflow")
