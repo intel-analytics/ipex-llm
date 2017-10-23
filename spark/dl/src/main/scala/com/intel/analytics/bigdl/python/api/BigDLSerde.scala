@@ -249,9 +249,9 @@ object BigDLSerDe extends BigDLSerDeBase with Serializable {
       val jTensor = obj.asInstanceOf[JTensor]
       saveBytes(out, pickler, floatArrayToBytes(jTensor.storage))
       saveBytes(out, pickler, int32ArrayToBytes(jTensor.shape))
-      out.write(Opcodes.NONE)
-      // TODO: Find a way to pass TUPLE4
-//      pickler.save(jTensor.bigdlType)
+      pickler.save(jTensor.bigdlType)
+      // TODO: Find a way to pass sparseTensor's indices back to python
+      //      out.write(Opcodes.NONE)
       out.write(Opcodes.TUPLE3)
     }
 

@@ -126,7 +126,7 @@ class JTensor(object):
     >>> np.random.seed(123)
     >>>
     """
-    def __init__(self, storage, shape, indices=None, bigdl_type="float"):
+    def __init__(self, storage, shape, bigdl_type="float", indices=None):
         """
 
         :param storage: values in this tensor
@@ -178,7 +178,6 @@ class JTensor(object):
             "input should be a np.ndarray, not %s" % type(a_ndarray)
         return cls(a_ndarray,
                    a_ndarray.shape if a_ndarray.shape else (a_ndarray.size),
-                   None,
                    bigdl_type)
 
     @classmethod
@@ -227,8 +226,8 @@ class JTensor(object):
             "size of values and indices should match."
         return cls(a_ndarray,
                    shape,
-                   i_ndarray,
-                   bigdl_type)
+                   bigdl_type,
+                   i_ndarray)
 
     def to_ndarray(self):
         """
@@ -284,7 +283,7 @@ class Sample(object):
         >>> print(sample)
         Sample: features: [JTensor: storage: [[ 0.69646919  0.28613934  0.22685145]
          [ 0.55131477  0.71946895  0.42310646]], shape: [2 3], float], label: JTensor: storage: [[ 0.98076421  0.68482971  0.48093191]
-         [ 0.39211753  0.343178    0.72904968]], shape: [2 3], float
+         [ 0.39211753  0.343178    0.72904968]], shape: [2 3], float,
         """
         if isinstance(features, np.ndarray):
             features = [features]
