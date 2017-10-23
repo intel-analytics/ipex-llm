@@ -252,6 +252,8 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
 
   protected def fromCaffeTile(layer : GeneratedMessage) : Seq[ModuleNode[T]]
 
+  protected def fromCaffeInput(layer: GeneratedMessage): Seq[ModuleNode[T]]
+
   protected def getLayerType(layer : GeneratedMessage) : String
 
   protected def getLayerName(layer : GeneratedMessage) : String
@@ -635,7 +637,9 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
     caffe2BigDL("SLICE") = fromCaffeSlice
     caffe2BigDL("TILE") = fromCaffeTile
     caffe2BigDL("ELTWISE") = fromCaffeEltwise
-    caffe2BigDL("INPUT") = null
-    caffe2BigDL("DATA") = null
+    caffe2BigDL("INPUT") = fromCaffeInput
+    caffe2BigDL("DATA") = fromCaffeInput
+    caffe2BigDL("DUMMYDATA") = fromCaffeInput
+    caffe2BigDL("ANNOTATEDDATA") = fromCaffeInput
   }
 }
