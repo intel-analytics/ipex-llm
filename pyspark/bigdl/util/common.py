@@ -126,7 +126,7 @@ class JTensor(object):
     >>> np.random.seed(123)
     >>>
     """
-    def __init__(self, storage, shape, bigdl_type="float", indices=None):
+    def __init__(self, storage, shape, indices=None, bigdl_type="float"):
         """
 
         :param storage: values in this tensor
@@ -172,7 +172,8 @@ class JTensor(object):
             "input should be a np.ndarray, not %s" % type(a_ndarray)
         return cls(a_ndarray,
                    a_ndarray.shape if a_ndarray.shape else (a_ndarray.size),
-                   bigdl_type=bigdl_type)
+                   None,
+                   bigdl_type)
 
     @classmethod
     def sparse(cls, a_ndarray, i_ndarray, shape, bigdl_type="float"):
@@ -198,13 +199,15 @@ class JTensor(object):
         >>> from bigdl.util.common import JTensor
         >>> from bigdl.util.common import callBigDlFunc
         >>> np.random.seed(123)
-        >>> data = np.arrange(1, 7).astype("float32")
+        >>> data = np.arange(1, 7).astype("float32")
         >>> indices = np.arange(1, 7)
         >>> shape = np.array([10])
         >>> result = JTensor.sparse(data, indices, shape)
+        >>> result
+        JTensor: storage: [ 1.  2.  3.  4.  5.  6.], shape: [10] ,indices [1 2 3 4 5 6], float
         >>> tensor1 = callBigDlFunc("float", "testTensor", result)  # noqa
         >>> array_from_tensor = tensor1.to_ndarray()
-        >>> expected_ndarray = np.array([0, 1, 2, 3, 4, 5, 6, 7, 0, 0])
+        >>> expected_ndarray = np.array([0, 1, 2, 3, 4, 5, 6, 0, 0, 0])
         >>> (array_from_tensor == expected_ndarray).all()
         True
         """
@@ -219,7 +222,7 @@ class JTensor(object):
         return cls(a_ndarray,
                    shape,
                    i_ndarray,
-           bigdl_type= bigdl_type)
+                   bigdl_type)
 
     def to_ndarray(self):
         """
@@ -237,12 +240,11 @@ class JTensor(object):
             return JTensor, (self.storage.tostring(), self.shape.tostring(), self.bigdl_type, self.indices.tostring())
 
     def __str__(self):
-        indices = "" if self.indices is None else ",indices %s" % self.indices
-        return "JTensor: storage: %s, shape: %s %s" % (self.storage, self.shape, self.shape, indices)
+        self.__repr__()
 
     def __repr__(self):
-        indices = "" if self.indices is None else ",indices %s" % self.indices
-        return "JTensor: storage: %s, shape: %s %s" % (self.storage, self.shape, self.shape, indices)
+        indices = "" if self.indices is None else " ,indices %s" % self.indices
+        return "JTensor: storage: %s, shape: %s%s, %s" % (str(self.storage), str(self.shape), indices, self.bigdl_type)
 
 
 class Sample(object):
@@ -297,8 +299,8 @@ class Sample(object):
         >>> data = np.random.uniform(0, 1, (6)).astype("float32")
         >>> indices = np.arange(1, 7)
         >>> shape = np.array([10])
-        >>> feature0 = JTensor.from_ndarray(data, indices, shape)
-        >>> feature1 = JTensor.from_ndarray(np.random((2, 3)))
+        >>> feature0 = JTensor.sparse(data, indices, shape)
+        >>> feature1 = JTensor.from_ndarray(np.random.uniform(0, 1, (2, 3)).astype("float32"))
         >>> sample = Sample.from_jtensor([feature0, feature1], 1)
         """
         if isinstance(features, JTensor):
