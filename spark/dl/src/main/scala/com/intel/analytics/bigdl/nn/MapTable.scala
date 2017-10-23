@@ -15,12 +15,14 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
 import com.intel.analytics.bigdl.utils.serializer.{ContainerSerializable, DeserializeContext, ModuleData, SerializeContext}
 import serialization.Bigdl.BigDLModule
 
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
@@ -41,11 +43,11 @@ class MapTable[T: ClassTag](
   }
 
   private def extend(n: Int): Unit = {
-    var i = 1
+    var i = 2
     while (i <= n && modules.size <= i) {
       if (modules.length <= i) {
         modules.append(module
-          .cloneModule()
+          .cloneModule().setName(module.getName() + i)
           .asInstanceOf[AbstractModule[Activity, Activity, T]])
       }
       i += 1
@@ -98,6 +100,9 @@ class MapTable[T: ClassTag](
     }
   }
 
+  override def getEndNodes(startNodes: Array[ModuleNode[T]]): Array[ModuleNode[T]] = {
+    throw new IllegalArgumentException("Can not transform Container MapTable to graph")
+  }
 
   override def zeroGradParameters(): Unit = {
     if (module != null) {
