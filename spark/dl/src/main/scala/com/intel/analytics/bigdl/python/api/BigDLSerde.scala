@@ -250,6 +250,8 @@ object BigDLSerDe extends BigDLSerDeBase with Serializable {
       saveBytes(out, pickler, floatArrayToBytes(jTensor.storage))
       saveBytes(out, pickler, int32ArrayToBytes(jTensor.shape))
       pickler.save(jTensor.bigdlType)
+      // TODO: Find a way to pass sparseTensor's indices back to python
+      //      out.write(Opcodes.NONE)
       out.write(Opcodes.TUPLE3)
     }
 
