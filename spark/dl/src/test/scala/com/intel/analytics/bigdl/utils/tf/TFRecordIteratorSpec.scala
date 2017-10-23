@@ -26,7 +26,7 @@ class TFRecordIteratorSpec extends FlatSpec with Matchers {
     val path = processPath(resource.getPath) + JFile.separator + "text.tfrecord"
     val file = new JFile(path)
 
-    val iter = new TFRecordIterator(file)
+    val iter = TFRecordIterator(file)
 
     iter.map(a => new String(a)).toSeq should be (Seq("abcd"))
   }

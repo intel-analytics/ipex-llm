@@ -21,7 +21,7 @@ import org.apache.hadoop.mapreduce.RecordWriter
 import org.apache.hadoop.mapreduce.TaskAttemptContext
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat
 
-class TFRecordFileOutputFormat extends FileOutputFormat[BytesWritable, NullWritable]{
+class TFRecordOutputFormat extends FileOutputFormat[BytesWritable, NullWritable]{
   override def getRecordWriter(taskAttemptContext: TaskAttemptContext):
   RecordWriter[BytesWritable, NullWritable] = {
     val conf = taskAttemptContext.getConfiguration

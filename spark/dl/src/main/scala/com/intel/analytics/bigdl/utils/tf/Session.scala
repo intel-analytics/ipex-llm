@@ -33,6 +33,7 @@ import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.models.utils.ModelBroadcast
 import TFTensorNumeric.NumericByteString
 import com.intel.analytics.bigdl.utils.tf.BigDLSessionImpl.FakeCriterion
+import org.apache.hadoop.io.{BytesWritable, NullWritable}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -255,26 +256,49 @@ class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
   }
 
   private def readTFRecord(filesTable: Seq[Table], sc: SparkContext): RDD[Table] = {
-    val result = filesTable.map { t =>
-        require(t.length() == 1 && t(1).isInstanceOf[Tensor[ByteString]],
-          "Reader can only read one file at a time")
-        val fileTensor = t[Tensor[ByteString]](1)
-        require(fileTensor.isScalar)
-        val file = fileTensor.value()
-        file
-    }.flatMap { file =>
-      val iter = new TFRecordIterator(new java.io.File(file.toStringUtf8))
-      iter
-    }.map { record =>
-      val table = T()
-      val key = Tensor[ByteString](Array(ByteString.copyFromUtf8("somekey")), Array[Int]())
-      val value = Tensor[ByteString](Array(ByteString.copyFrom(record)), Array[Int]())
-      table.insert(key)
-      table.insert(value)
-      table
+    if (filesTable.isEmpty) {
+      return sc.parallelize(Seq.empty[Table], numSlices = Engine.coreNumber())
     }
-    val resultRdd = sc.parallelize(result, numSlices = Engine.coreNumber())
-    resultRdd
+    val fileNames = filesTable.map { t =>
+      require(t.length() == 1 && t(1).isInstanceOf[Tensor[ByteString]],
+        "Reader can only read one file at a time")
+      val fileTensor = t[Tensor[ByteString]](1)
+      require(fileTensor.isScalar)
+      val file = fileTensor.value()
+      file.toStringUtf8
+    }
+
+    val isHdfs = fileNames.map(_.startsWith("hdfs:"))
+    if (isHdfs.reduceLeft(_ && _)) {
+      // all files are hdfs files
+      fileNames.map { fileName =>
+        val rdd = sc.newAPIHadoopFile[BytesWritable, NullWritable, TFRecordInputFormat](fileName)
+        rdd.map { case (k, v) =>
+          val table = T()
+          val key = Tensor.scalar[ByteString](ByteString.copyFromUtf8("fake_key"))
+          val value = Tensor.scalar[ByteString](ByteString.copyFrom(k.copyBytes()))
+          table.insert(key)
+          table.insert(value)
+          table
+        }
+      }.reduceLeft(_.union(_))
+    } else if (isHdfs.map(!_).reduceLeft(_ && _)) {
+      // all files are local files
+      val result = fileNames.flatMap { file =>
+        val iter = TFRecordIterator(new java.io.File(file))
+        iter
+      }.map { record =>
+        val table = T()
+        val key = Tensor.scalar[ByteString](ByteString.copyFromUtf8("fake_key"))
+        val value = Tensor.scalar[ByteString](ByteString.copyFrom(record))
+        table.insert(key)
+        table.insert(value)
+        table
+      }
+      sc.parallelize(result, numSlices = Engine.coreNumber())
+    } else {
+      throw new IllegalArgumentException("filenames contain both local and hdfs path")
+    }
   }
 
   private def readFixedLengthRecord(filesTable: Seq[Table], readerNode: NodeDef, sc: SparkContext)

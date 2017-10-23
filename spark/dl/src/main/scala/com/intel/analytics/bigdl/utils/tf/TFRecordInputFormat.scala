@@ -19,12 +19,11 @@ import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.{BytesWritable, NullWritable}
 import org.apache.hadoop.mapreduce.{InputSplit, JobContext, RecordReader, TaskAttemptContext}
 import org.apache.hadoop.mapreduce.lib.input.{FileInputFormat, FileSplit}
+import org.apache.hadoop.fs.FSDataInputStream
 
 class TFRecordInputFormat extends FileInputFormat[BytesWritable, NullWritable] {
   override def createRecordReader(inputSplit: InputSplit, context: TaskAttemptContext):
   RecordReader[BytesWritable, NullWritable] = new RecordReader[BytesWritable, NullWritable] {
-
-    import org.apache.hadoop.fs.FSDataInputStream
 
     private var inputStream: FSDataInputStream = null
     private var reader: TFRecordIterator = null

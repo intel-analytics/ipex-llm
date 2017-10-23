@@ -29,7 +29,6 @@ import com.google.protobuf.ByteString
 import org.tensorflow.framework.AttrValue
 
 import scala.collection.JavaConverters._
-import scala.collection.mutable
 
 class SessionSpec extends FlatSpec with Matchers with BeforeAndAfter {
   Logger.getLogger("org").setLevel(Level.WARN)
