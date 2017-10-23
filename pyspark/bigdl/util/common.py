@@ -161,7 +161,7 @@ class JTensor(object):
             "input should be a np.ndarray, not %s" % type(a_ndarray)
         return cls(a_ndarray,
                    a_ndarray.shape if a_ndarray.shape else (a_ndarray.size),
-                   bigdl_type = bigdl_type)
+                   bigdl_type= bigdl_type)
 
     def to_ndarray(self):
         return np.array(self.storage, dtype=get_dtype(self.bigdl_type)).reshape(self.shape)  # noqa
