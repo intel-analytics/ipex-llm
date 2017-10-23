@@ -136,6 +136,15 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
     throw new UnsupportedOperationException("Tile is not supported in V1 Layer")
   }
 
+  override protected def fromCaffeInput(layer: GeneratedMessage): Seq[ModuleNode[T]] = {
+    val tops = layer.asInstanceOf[V1LayerParameter].getTopList
+    (0 until tops.size()).map(i => {
+      val input = Input()
+      input.element.setName(tops.get(i))
+      input
+    })
+  }
+
   override protected def toCaffeConvolution(module : AbstractModule[Activity, Activity, T],
     bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage] = {
     val layerParameter = V1LayerParameter.newBuilder()
