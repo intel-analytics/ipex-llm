@@ -44,6 +44,7 @@ pages:
   - Run on Google Cloud Dataproc: ProgrammingGuide/run-on-dataproc.md
   - Tensorflow Support: ProgrammingGuide/tensorflow-support.md
   - Caffe Support: ProgrammingGuide/caffe-support.md
+  - Quantization Support: ProgrammingGuide/quantization-support.md
 - API Guide:
   - Data: APIGuide/Data.md
   - Model: APIGuide/Module.md
