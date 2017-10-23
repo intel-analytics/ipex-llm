@@ -265,28 +265,31 @@ class Layer(JavaValue):
         else:
             raise Exception("Error when calling evaluate(): it takes no argument or exactly three arguments only")
 
-    def predict(self, data_rdd):
+    def predict(self, data_rdd, batch_size=-1, share_buffer=False):
         """
         Model inference base on the given data.
         You need to invoke collect() to trigger those action \
         as the returning result is an RDD.
 
         :param data_rdd: the data to be predict.
+        :param batch_size: total batchSize for all partitions. If -1, default is 4 * partitionNumber of datatset.
+        :param whether to share same memory for each batch predict results
         :return: An RDD represent the predict result.
         """
         result = callBigDlFunc(self.bigdl_type,
-                             "modelPredictRDD", self.value, data_rdd)
+                             "modelPredictRDD", self.value, data_rdd, batch_size, share_buffer)
         return result.map(lambda data: data.to_ndarray())
 
-    def predict_class(self, data_rdd):
+    def predict_class(self, data_rdd, batch_size=-1):
         """
         module predict, return the predict label
 
         :param data_rdd: the data to be predict.
+        :param batch_size: total batchSize for all partitions. If -1, default is 4 * partitionNumber of datatset
         :return: An RDD represent the predict label.
         """
         result = callBigDlFunc(self.bigdl_type,
-                               "modelPredictClass", self.value, data_rdd)
+                               "modelPredictClass", self.value, data_rdd, batch_size)
         return result
 
     def set_weights(self, weights):
