@@ -1210,7 +1210,7 @@ class TemporalMaxPooling(Layer):
     nOutputFrame = (nInputFrame - k_w) / d_w + 1
 
     :param k_w:              kernel width
-    :param d_w:              step size in width
+    :param d_w:              step size in width, default is -1, means the `d_w` equals `k_w`
 
     >>> temporalMaxPooling = TemporalMaxPooling(2, 2)
     creating: createTemporalMaxPooling

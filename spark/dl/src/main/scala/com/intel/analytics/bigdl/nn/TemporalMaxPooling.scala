@@ -33,7 +33,7 @@ import scala.reflect.ClassTag
  * nOutputFrame = (nInputFrame - kW) / dW + 1
  *
  * @param kW kernel width
- * @param dW step size in width
+ * @param dW step size in width, default is -1, means the `dW` equals `kW`
  * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
  */
 class TemporalMaxPooling[T: ClassTag](
