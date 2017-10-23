@@ -1,10 +1,10 @@
 ## Introduction
 
-Quantization is a method that will use low-precision caculations to substitute float caculations. It will improve the inference performance and reduce the size of model with 3/4.
+Quantization is a method that will use low-precision caculations to substitute float caculations. It will improve the inference performance and reduce the size of model by up to 4x.
 
 ## Quantize the pretrained model
 
-BigDL supports converting the pretrained model to quantized model with parameter `--quantize true`.
+BigDL provide command line tools for converting the pretrained (BigDL, Caffe, Torch and Tensorflow) model to quantized model with parameter `--quantize true`.
 
 ```bash
 #!/bin/bash
@@ -30,7 +30,7 @@ ConvertModel supports converting different types of pretrained models to bigdlmo
 It also supports converting bigdlmodel to other types. The help is
 
 ```
-Usage: Convert caffe model to bigdl model [options]
+Usage: Convert models between different dl frameworks [options]
 
   --from <value>
         What's the type origin model bigdl,caffe,torch,tensorflow?
@@ -43,16 +43,17 @@ Usage: Convert caffe model to bigdl model [options]
   --prototxt <value>
         Where's the caffe deploy prototxt?
   --quantize <value>
-        Do you want to quantize the model?
+        Do you want to quantize the model? Only works when "--to" is bigdl;you can only perform inference using the new quantized model.
   --tf_inputs <value>
         Inputs for Tensorflow
   --tf_outputs <value>
         Outputs for Tensorflow
+
 ```
 
 ## Quantize model in code
 
-You can use `quantize()` method to quantize the model. It will deep copy original model and generate new one. You can do inference based on the new quantized model.
+You can call `quantize()` method to quantize the model. It will deep copy original model and generate new one. You can only perform inference using the new quantized model.
 
 ```scala
 val model = xxx
