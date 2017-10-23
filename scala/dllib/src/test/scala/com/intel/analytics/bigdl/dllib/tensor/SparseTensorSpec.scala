@@ -45,4 +45,58 @@ class SparseTensorSpec  extends FlatSpec with Matchers {
     sTensor3.storageOffset() should be (11)
     sTensor3.asInstanceOf[SparseTensor[Float]]._indicesOffset should be (Array(2, 0))
   }
+
+  "resize" should "return right result" in {
+    val sTensor = Tensor.sparse(Tensor(6, 5).range(1, 30, 1))
+    sTensor.resize(Array(10, 10), 50)
+    sTensor.size() should be (Array(10, 10))
+    sTensor.nElement() should be (50)
+    sTensor.storage().array.length should be (50)
+  }
+
+  "resize on empty tensor" should "return right result" in {
+    val sTensor = Tensor.sparse(Tensor(6, 5).range(1, 30, 1))
+    sTensor.set()
+    sTensor.resize(Array(10, 10), 50)
+    sTensor.size() should be (Array(10, 10))
+    sTensor.nElement() should be (50)
+    sTensor.storage().array.length should be (50)
+  }
+
+  "resize on narrowed tensor" should "return right result" in {
+    val sTensor = Tensor.sparse(Tensor(6, 5).range(1, 30, 1)).narrow(1, 2, 4)
+    sTensor.resize(Array(10, 10), 50)
+    sTensor.size() should be (Array(10, 10))
+    sTensor.nElement() should be (50)
+    sTensor.storage().array.length should be (55)
+    sTensor.storageOffset() should be (6)
+  }
+
+  "resize 2D tensor to 3D tensor" should "return right result" in {
+    val sTensor = Tensor.sparse(Tensor(6, 5).range(1, 30, 1)).narrow(1, 2, 4)
+    sTensor.resize(Array(10, 10, 10), 50)
+    sTensor.size() should be (Array(10, 10, 10))
+    sTensor.nElement() should be (50)
+    sTensor.storage().array.length should be (55)
+    sTensor.storageOffset() should be (6)
+  }
+
+  "resize 2D tensor to 1D tensor" should "return right result" in {
+    val sTensor = Tensor.sparse(Tensor(6, 5).range(1, 30, 1)).narrow(1, 2, 4)
+    sTensor.resize(Array(10), 5)
+    sTensor.size() should be (Array(10))
+    sTensor.nElement() should be (5)
+    sTensor.storage().array.length should be (30)
+    sTensor.storageOffset() should be (6)
+  }
+
+  "resize 2D tensor to 1D tensor" should "return right result2" in {
+    val sTensor = Tensor.sparse(Tensor(6, 5).range(1, 30, 1))
+    sTensor.resize(Array(30), 30)
+    sTensor.size() should be (Array(30))
+    sTensor.nElement() should be (30)
+    sTensor.storage().array.length should be (30)
+    sTensor.storageOffset() should be (1)
+  }
+
 }
