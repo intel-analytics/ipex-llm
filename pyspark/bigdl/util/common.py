@@ -141,10 +141,14 @@ class JTensor(object):
         else:
             self.storage = np.array(storage, dtype=get_dtype(bigdl_type))
             self.shape = np.array(shape, dtype=np.int32)
-        if indices is not None:
-            self.indices = np.array(indices, dtype=np.int32)
-        else:
+        if indices is None:
             self.indices = None
+        elif isinstance(indices, bytes):
+            self.indices = np.frombuffer(indices, dtype=np.int32)
+        else:
+            assert isinstance(indices, np.ndarray), \
+            "indices should be a np.ndarray, not %s, %s" % (type(a_ndarray), str(indices))
+            self.indices = np.array(indices, dtype=np.int32)
         self.bigdl_type = bigdl_type
 
     @classmethod
