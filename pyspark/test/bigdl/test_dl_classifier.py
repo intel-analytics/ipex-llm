@@ -135,8 +135,8 @@ class TestDLClassifer():
         for i in range(count):
             row_label = data[i]['label']
             row_prediction = data[i]['prediction']
-            assert_allclose(row_label[0], row_prediction[0], atol=0.01, rtol=0)
-            assert_allclose(row_label[1], row_prediction[1], atol=0.01, rtol=0)
+            assert_allclose(row_label[0], row_prediction[0], atol=0, rtol=1e-1)
+            assert_allclose(row_label[1], row_prediction[1], atol=0, rtol=1e-1)
 
     def test_dlclassifier_fit_dlclassifiermodel_transform(self):
         model = Sequential().add(Linear(2, 2))
