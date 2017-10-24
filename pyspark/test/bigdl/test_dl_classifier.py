@@ -126,7 +126,7 @@ class TestDLClassifer():
         df = self.sqlContext.createDataFrame(data, schema)
         dlModel = estimator.fit(df)
 
-        dlModel.transform(df).createTempView("dlModelDF")
+        dlModel.transform(df).registerTempTable("dlModelDF")  # Compatible with spark 1.6
         results = self.sqlContext.table("dlModelDF")
 
         count = results.rdd.count()
@@ -135,8 +135,8 @@ class TestDLClassifer():
         for i in range(count):
             row_label = data[i]['label']
             row_prediction = data[i]['prediction']
-            assert_allclose(row_label[0], row_prediction[0], atol=0.01, rtol=0)
-            assert_allclose(row_label[1], row_prediction[1], atol=0.01, rtol=0)
+            assert_allclose(row_label[0], row_prediction[0], atol=0, rtol=1e-1)
+            assert_allclose(row_label[1], row_prediction[1], atol=0, rtol=1e-1)
 
     def test_dlclassifier_fit_dlclassifiermodel_transform(self):
         model = Sequential().add(Linear(2, 2))
@@ -155,7 +155,7 @@ class TestDLClassifer():
         df = self.sqlContext.createDataFrame(data, schema)
         dlClassifierModel = classifier.fit(df)
 
-        dlClassifierModel.transform(df).createTempView("dlClassifierModelDF")
+        dlClassifierModel.transform(df).registerTempTable("dlClassifierModelDF")
         results = self.sqlContext.table("dlClassifierModelDF")
 
         count = results.rdd.count()
