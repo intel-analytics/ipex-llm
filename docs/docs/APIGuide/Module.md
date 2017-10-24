@@ -106,16 +106,16 @@ print(evaluateResult[0])
 ## Model Prediction
 **Scala**
 ```scala
-model.predict(dataset)
-model.predictClass(dataset)
+model.predict(dataset, batchSize=-1, shareBuffer=false)
+model.predictClass(dataset, batchSize=-1)
 ```
 
 **Python**
 ```python
-model.predict(data_rdd)
-model.predict_class(data_rdd)
+model.predict(data_rdd, batch_size=-1, share_buffer=False)
+model.predict_class(data_rdd, batch_size=-1)
 ```
-Use `predict` or `predictClass` or `predict_class` on model for Prediction. `predict` returns return the probability distribution of each class, and `predictClass`/`predict_class` returns the predict label. They both accepts the test dataset as parameter.
+Use `predict` or `predictClass` or `predict_class` on model for Prediction. `predict` returns return the probability distribution of each class, and `predictClass`/`predict_class` returns the predict label. They both accepts the test dataset as parameter.`batchSize` or `batch_size` is total batchSize for all partitions. If -1, default is 4 * partitionNumber. `shareBuffer` or `share_buffer` is whether to share same memory for each batch predict results.
 
 **Scala example**
 ```scala
