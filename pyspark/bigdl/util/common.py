@@ -442,7 +442,7 @@ def get_spark_context(conf = None):
 
 def get_spark_sql_context(sc):
     if "getOrCreate" in SQLContext.__dict__:
-        return SQLContext.getOrCreate()
+        return SQLContext.getOrCreate(sc)
     else:
         return SQLContext(sc)  # Compatible with Spark1.5.1
 
