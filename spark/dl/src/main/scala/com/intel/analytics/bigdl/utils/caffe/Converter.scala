@@ -225,7 +225,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
       case EltwiseOp.PROD => CMulTable[T]().setName(layerName).inputs()
       case EltwiseOp.MAX => CMaxTable[T]().setName(layerName).inputs()
       case EltwiseOp.SUM =>
-        val coeff2 = param.getCoeff(1)
+        val coeff2 = if (param.getCoeffCount == 0) 1 else param.getCoeff(1)
         if (coeff2 > 0) {
           CAddTable[T]().setName(layerName).inputs()
         } else {
