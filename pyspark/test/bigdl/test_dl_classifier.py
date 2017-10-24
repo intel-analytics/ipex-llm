@@ -126,7 +126,7 @@ class TestDLClassifer():
         df = self.sqlContext.createDataFrame(data, schema)
         dlModel = estimator.fit(df)
 
-        dlModel.transform(df).registerTempTable("dlModelDF") # Compatible with spark 1.6
+        dlModel.transform(df).registerTempTable("dlModelDF")  # Compatible with spark 1.6
         results = self.sqlContext.table("dlModelDF")
 
         count = results.rdd.count()
