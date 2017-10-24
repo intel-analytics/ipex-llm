@@ -170,10 +170,10 @@ class JTensor(object):
         return JTensor, (self.storage.tostring(), self.shape.tostring(), self.bigdl_type)
 
     def __str__(self):
-        return "JTensor: storage: %s, shape: %s" % (self.storage, self.shape)
+        return "JTensor: storage: %s, shape: %s" % (str(self.storage), str(self.shape))
 
     def __repr__(self):
-        return "JTensor: storage: %s, shape: %s" % (self.storage, self.shape)
+        return "JTensor: storage: %s, shape: %s" % (str(self.storage), str(self.shape))
 
 
 class Sample(object):
@@ -218,7 +218,7 @@ class Sample(object):
         return "Sample: features: %s, label: %s," % (self.features, self.label)
 
     def __repr__(self):
-        return "Sample: features: %s, label: %s" % (self.storage, self.shape)
+        return "Sample: features: %s, label: %s" % (self.features, self.label)
 
 class RNG():
     """
