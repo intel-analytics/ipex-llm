@@ -25,14 +25,14 @@ class ShapeSpec extends FlatSpec with Matchers {
   "Shape forward" should "be success" in {
     val layer = Shape()
     val input = Tensor(T(T(0.1f, 0.2f), T(0.1f, 0.2f), T(0.1f, 0.2f)))
-    layer.forward(input) should be(Tensor(T(3.0f, 2.0f)))
+    layer.forward(input) should be(Tensor[Int](T(3, 2)))
   }
 
   "Shape backward" should "be correct" in {
     val layer = Shape()
     val input = Tensor(T(T(0.1f, 0.2f), T(0.1f, 0.2f), T(0.1f, 0.2f)))
-    val gradOutput = Tensor(T(3.0f, 2.0f))
-    layer.forward(input) should be(Tensor(T(3.0f, 2.0f)))
+    val gradOutput = Tensor[Int](T(3, 2))
+    layer.forward(input) should be(Tensor[Int](T(3, 2)))
     layer.backward(input, gradOutput) should be(Tensor(T(
       T(0.0f, 0.0f),
       T(0.0f, 0.0f),
