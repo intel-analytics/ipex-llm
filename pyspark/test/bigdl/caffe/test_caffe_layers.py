@@ -27,6 +27,7 @@ from caffe_layers import testlayers
 
 
 def test_caffe_layers():
+    print "~~~running caffe unittest!"
     temp = tempfile.mkdtemp()
     for testlayer in testlayers:
         name = testlayer.name
