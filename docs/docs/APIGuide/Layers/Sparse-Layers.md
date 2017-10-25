@@ -64,7 +64,7 @@ scala> println(module.forward(input))
 **Python example:**
 ```python
 from bigdl.nn.layer import *
-from bigdl.nn.common import *
+from bigdl.util.common import *
 import numpy as np
 
 module = SparseLinear(1000, 5)
@@ -136,7 +136,7 @@ Gives the output,
 **Python example:**
 ```python
 from bigdl.nn.layer import *
-from bigdl.nn.common import *
+from bigdl.util.common import *
 import numpy as np
 
 module = SparseJoinTable(2)
@@ -148,7 +148,7 @@ input2 = JTensor.sparse(np.array([7, 8, 9, 10, 11, 12]),
     np.array([0, 0, 0, 1, 1, 1, 2, 3, 4, 1, 2, 3]),
     np.array([2, 5]))
 
-print(module.forward(input))
+print(module.forward([input1, input2]))
 ```
 Gives the output,
 this output is a dense numpy array, due to we couldn't pick SparseTensor back to python currently.
@@ -195,7 +195,7 @@ Gives the output,
 **Python example:**
 ```python
 from bigdl.nn.layer import *
-from bigdl.nn.common import *
+from bigdl.util.common import *
 import numpy as np
 
 module = DenseToSparse()
