@@ -70,7 +70,7 @@ def init_env():
 
 def setup_package():
     metadata = dict(
-        name='BigDL',
+        name='BigDLttt',
         version=VERSION,
         description='Distributed Deep Learning Library for Apache Spark',
         author='BigDL Authors',
