@@ -16,6 +16,19 @@
 # limitations under the License.
 #
 
+#
+# Use this script to bump bigdl source code version. It will search through the files listed in the
+# python.version.lst, scala.version.lst(both in the scripts folder) and all pom.xml files, and
+# replace the old version string with the new one.
+# Usage: bump-version.sh [python|scala] old-version new-version
+# The first argument specify which type of code you want to modify. The version formats of python
+# and scala are different.
+#
+# The script will replace the old-version with new-version. The python version format is x.x.x for
+# a release version number and x.x.x.devx for a developing version number. The x here is a digit
+# number. The scala version format are similar but x.x.x-SNAPSHOT for a developing version number.
+#
+
 set -e
 
 BASEDIR=$(dirname "$0")
@@ -49,6 +62,7 @@ verify_scala_version()
     fi
 }
 
+# Script execution start from here
 if [ "$#" -ne 3 ]; then
     echo "Invalid parameter number. Usage: bump-version.sh [python|scala] from_version to_version"
     exit 1
@@ -70,6 +84,7 @@ elif [ "$1" = "scala" ]; then
         update_file "$BASEDIR/../$p" $2 $3
     done <$BASEDIR/scala.version.lst
 
+    # Find all pom.xml files and update
     for p in $(find $BASEDIR/../ -name pom.xml); do
         update_file "$BASEDIR/../$p" $2 $3
     done
