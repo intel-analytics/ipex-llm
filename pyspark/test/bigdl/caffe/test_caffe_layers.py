@@ -53,7 +53,7 @@ def test_caffe_layers():
         if len(inputs) == 1:
             inputs = inputs[0]
         bigdlResult = model.forward(inputs)
-        assert_allclose(cafferesult, bigdlResult, atol=1e-6, rtol=0)
+        assert_allclose(cafferesult, bigdlResult, atol=1e-5, rtol=0)
 
 if __name__ == "__main__":
     pytest.main([__file__])
