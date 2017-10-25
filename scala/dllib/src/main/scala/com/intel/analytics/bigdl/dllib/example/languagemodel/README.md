@@ -23,11 +23,13 @@ Example command
 ```
 spark-submit \
 --master spark://... \
+--driver-memory 40g  \
+--executor-memory 100g  \
 --executor-cores cores_per_executor \
 --total-executor-cores total_cores_for_the_job \
 --class com.intel.analytics.bigdl.example.languagemodel.PTBWordLM \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
--f $HOME/simple-examples/data -b 420 --checkpoint $HOME/model --numLayers 2 --vocab 10001 -h 1500 --numSteps 35 -r 0.005 -e 20 --learningRateDecay 0.001 --keepProb 0.5 --overWriteCheckpoint
+-f $HOME/simple-examples/data -b 40 --checkpoint $HOME/model --numLayers 2 --vocab 10001 --hidden 650 --numSteps 35 --learningRate 0.005 -e 20 --learningRateDecay 0.001 --keepProb 0.5 --overWrite
 ```
 
 In the above commands:
@@ -36,10 +38,10 @@ In the above commands:
 ```--checkpoint```: Where you cache the model/train_state snapshot.
 ```--learningRate```: learning rate for adagrad
 ```--learningRateDecay```: learning rate decay for adagrad
-```--hiddenSize```: hiddensize for lstm
+```--hidden```: hiddensize for lstm
 ```--vocabSize```: vocabulary size, default 10000
 ```--nEpochs```: epochs to run
 ```--numLayers```: numbers of lstm cell, default 2 lstm cells
 ```--numSteps```: number of words per record in LM
-```--overWriteCheckpoint```: do overwrite when saving checkpoint
+```--overWrite```: do overwrite when saving checkpoint
 ```--keepProb```: the probability to do dropout
