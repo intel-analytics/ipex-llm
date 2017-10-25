@@ -131,24 +131,22 @@ class Layer(JavaValue):
     @staticmethod
     def check_input(input):
         """
-        :param input: ndarray or list of ndarray
+        :param input: ndarray or list of ndarray or JTensor or list of JTensor.
         :return: (list of JTensor, isTable)
         """
+        def to_jtensor(i):
+            if isinstance(i, np.ndarray):
+                return JTensor.from_ndarray(i)
+            elif isinstance(i, JTensor):
+                return i
+            else:
+                raise Exception("Error unknown input type %s" % type(i))
         if type(input) is list:
             if len(input) == 0:
                 raise Exception('Error when checking: empty input')
-            return list(map(lambda i: Layer.to_jtensor(i), input)), True
+            return list(map(lambda i: to_jtensor(i), input)), True
         else:
-            return [Layer.to_jtensor(input)], False
-
-    @staticmethod
-    def to_jtensor(i):
-        if isinstance(i, np.ndarray):
-            return JTensor.from_ndarray(i)
-        elif isinstance(i, JTensor):
-            return i
-        else:
-            raise Exception("Error unknown input type %s" % type(i))
+            return [to_jtensor(input)], False
 
     @staticmethod
     def convert_output(output):
@@ -165,6 +163,7 @@ class Layer(JavaValue):
         Takes an input object, and computes the corresponding output of the module
 
         :param input: ndarray or list of ndarray
+        :param input: ndarray or list of ndarray or JTensor or list of JTensor.
         :return: ndarray or list of ndarray
         """
         jinput, input_is_table = self.check_input(input)
@@ -183,8 +182,8 @@ class Layer(JavaValue):
         input. This is necessary for optimization reasons. If you do not respect this rule, backward()
         will compute incorrect gradients.
 
-        :param input: ndarray or list of ndarray
-        :param grad_output: ndarray or list of ndarray
+        :param input: ndarray or list of ndarray or JTensor or list of JTensor.
+        :param grad_output: ndarray or list of ndarray or JTensor or list of JTensor.
         :return: ndarray or list of ndarray
         """
         jinput, input_is_table = self.check_input(input)
