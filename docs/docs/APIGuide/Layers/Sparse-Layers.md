@@ -55,7 +55,6 @@ println(module.forward(input))
 
 Gives the output,
 ```
-scala> println(module.forward(input))
 0.047791008	0.069045454	0.020120896	0.019826084	0.10610865	
 -0.059406646	-0.13536823	-0.13861635	0.070304416	0.009570055	
 [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x5]
