@@ -4079,10 +4079,11 @@ class ConvLSTMPeephole(Layer):
     creating: createConvLSTMPeephole
     '''
 
-    def __init__(self, input_size, output_size, kernel_i, kernel_c, stride, wRegularizer=None, uRegularizer=None,
+    def __init__(self, input_size, output_size, kernel_i, kernel_c, stride = 1, padding = -1,
+                 wRegularizer=None, uRegularizer=None,
                  bRegularizer=None, cRegularizer=None, with_peephole=True, bigdl_type="float"):
         super(ConvLSTMPeephole, self).__init__(None, bigdl_type, input_size, output_size, kernel_i, kernel_c, stride,
-                                                 wRegularizer, uRegularizer, bRegularizer, cRegularizer, with_peephole)
+                                                 padding, wRegularizer, uRegularizer, bRegularizer, cRegularizer, with_peephole)
 
 
 class ConvLSTMPeephole3D(Layer):
@@ -4107,10 +4108,11 @@ class ConvLSTMPeephole3D(Layer):
     creating: createConvLSTMPeephole3D
     '''
 
-    def __init__(self, input_size, output_size, kernel_i, kernel_c, stride, wRegularizer=None, uRegularizer=None,
+    def __init__(self, input_size, output_size, kernel_i, kernel_c, stride = 1, padding = -1,
+                 wRegularizer=None, uRegularizer=None,
                  bRegularizer=None, cRegularizer=None, with_peephole=True, bigdl_type="float"):
         super(ConvLSTMPeephole3D, self).__init__(None, bigdl_type, input_size, output_size, kernel_i, kernel_c, stride,
-                                                 wRegularizer, uRegularizer, bRegularizer, cRegularizer, with_peephole)
+                                                 padding, wRegularizer, uRegularizer, bRegularizer, cRegularizer, with_peephole)
 
 class Seq2seq(Layer):
     '''

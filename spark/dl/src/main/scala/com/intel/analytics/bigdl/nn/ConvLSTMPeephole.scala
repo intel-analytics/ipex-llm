@@ -33,7 +33,9 @@ import scala.reflect.ClassTag
  * @param outputSize number of output planes the convolution layer will produce
  * @param kernelI Convolutional filter size to convolve input
  * @param kernelC Convolutional filter size to convolve cell
- * @param stride The step of the convolution
+ * @param stride The step of the convolution, default is 1
+ * @param padding The step of the convolution, default is -1,
+ *                which ensure last 2 dim of output shape is the same with input
  * @param wRegularizer: instance of [[Regularizer]]
             (eg. L1 or L2 regularization), applied to the input weights matrices.
  * @param uRegularizer: instance [[Regularizer]]
@@ -49,7 +51,8 @@ class ConvLSTMPeephole[T : ClassTag](
   val outputSize: Int,
   val kernelI: Int,
   val kernelC: Int,
-  val stride: Int,
+  val stride: Int = 1,
+  val padding: Int = -1,
   var wRegularizer: Regularizer[T] = null,
   var uRegularizer: Regularizer[T] = null,
   var bRegularizer: Regularizer[T] = null,
@@ -83,12 +86,12 @@ class ConvLSTMPeephole[T : ClassTag](
     val i2g = Sequential()
       .add(Contiguous())
       .add(SpatialConvolution(inputSize, outputSize, kernelI, kernelI,
-        stride, stride, kernelI/2, kernelI/2, wRegularizer = wRegularizer,
+        stride, stride, padding, padding, wRegularizer = wRegularizer,
         bRegularizer = bRegularizer))
     val h2g = Sequential()
       .add(Contiguous())
       .add(SpatialConvolution(outputSize, outputSize, kernelC, kernelC,
-      stride, stride, kernelC/2, kernelC/2, withBias = false,
+      stride, stride, padding, padding, withBias = false,
       wRegularizer = uRegularizer))
 
     val gate = Sequential()
@@ -136,12 +139,12 @@ class ConvLSTMPeephole[T : ClassTag](
     val i2h = Sequential()
       .add(Contiguous())
       .add(SpatialConvolution(inputSize, outputSize, kernelI, kernelI,
-        stride, stride, kernelI/2, kernelI/2, wRegularizer = wRegularizer,
+        stride, stride, padding, padding, wRegularizer = wRegularizer,
         bRegularizer = bRegularizer))
     val h2h = Sequential()
       .add(Contiguous())
       .add(SpatialConvolution(outputSize, outputSize, kernelC, kernelC,
-      stride, stride, kernelC/2, kernelC/2, withBias = false,
+      stride, stride, padding, padding, withBias = false,
       wRegularizer = uRegularizer))
 
     hidden
@@ -247,13 +250,14 @@ object ConvLSTMPeephole {
     kernelI: Int,
     kernelC: Int,
     stride: Int = 1,
+    padding: Int = -1,
     wRegularizer: Regularizer[T] = null,
     uRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
     cRegularizer: Regularizer[T] = null,
     withPeephole: Boolean = true
   )(implicit ev: TensorNumeric[T]): ConvLSTMPeephole[T] = {
-    new ConvLSTMPeephole[T](inputSize, outputSize, kernelI, kernelC, stride,
+    new ConvLSTMPeephole[T](inputSize, outputSize, kernelI, kernelC, stride, padding,
       wRegularizer, uRegularizer, bRegularizer, cRegularizer, withPeephole)
   }
 }

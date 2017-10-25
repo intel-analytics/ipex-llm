@@ -49,7 +49,8 @@ class ConvLSTMPeephole3D[T : ClassTag](
   val outputSize: Int,
   val kernelI: Int,
   val kernelC: Int,
-  val stride: Int,
+  val stride: Int = 1,
+  val padding: Int = -1,
   var wRegularizer: Regularizer[T] = null,
   var uRegularizer: Regularizer[T] = null,
   var bRegularizer: Regularizer[T] = null,
@@ -74,12 +75,12 @@ class ConvLSTMPeephole3D[T : ClassTag](
     val i2g = Sequential()
       .add(Contiguous())
       .add(VolumetricConvolution(inputSize, outputSize, kernelI, kernelI, kernelI,
-        stride, stride, stride, kernelI/2, kernelI/2, kernelI/2, wRegularizer = wRegularizer,
+        stride, stride, stride, padding, padding, padding, wRegularizer = wRegularizer,
         bRegularizer = bRegularizer))
     val h2g = Sequential()
       .add(Contiguous())
       .add(VolumetricConvolution(outputSize, outputSize, kernelC, kernelC, kernelC,
-      stride, stride, stride, kernelC/2, kernelC/2, kernelC/2, wRegularizer = uRegularizer,
+      stride, stride, stride, padding, padding, padding, wRegularizer = uRegularizer,
       withBias = false))
 
     val gate = Sequential()
@@ -123,12 +124,12 @@ class ConvLSTMPeephole3D[T : ClassTag](
     val i2h = Sequential()
       .add(Contiguous())
       .add(VolumetricConvolution(inputSize, outputSize, kernelI, kernelI, kernelI,
-        stride, stride, stride, kernelI/2, kernelI/2, kernelI/2, wRegularizer = wRegularizer,
+        stride, stride, stride, padding, padding, padding, wRegularizer = wRegularizer,
         bRegularizer = bRegularizer))
     val h2h = Sequential()
       .add(Contiguous())
       .add(VolumetricConvolution(outputSize, outputSize, kernelC, kernelC, kernelC,
-      stride, stride, stride, kernelC/2, kernelC/2, kernelC/2, withBias = false,
+      stride, stride, stride, padding, padding, padding, withBias = false,
       wRegularizer = uRegularizer))
 
     hidden
@@ -234,13 +235,14 @@ object ConvLSTMPeephole3D {
     kernelI: Int,
     kernelC: Int,
     stride: Int = 1,
+    padding: Int = -1,
     wRegularizer: Regularizer[T] = null,
     uRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
     cRegularizer: Regularizer[T] = null,
     withPeephole: Boolean = true
   )(implicit ev: TensorNumeric[T]): ConvLSTMPeephole3D[T] = {
-    new ConvLSTMPeephole3D[T](inputSize, outputSize, kernelI, kernelC, stride,
+    new ConvLSTMPeephole3D[T](inputSize, outputSize, kernelI, kernelC, stride, padding,
       wRegularizer, uRegularizer, bRegularizer, cRegularizer, withPeephole)
   }
 }

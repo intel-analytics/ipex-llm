@@ -334,14 +334,20 @@ class SpatialAveragePooling[T: ClassTag](
       kH = inputHeight
       kW = inputWidth
     }
-
-    val (padTop, padBottom, padLeft, padRight, outputHeight, outputWidth) =
+    
+    val sizes =
       if (padW == -1 && padH == -1) {
         Utils.getSAMEOutSizeAndPadding(inputHeight, inputWidth, dH, dW, kH, kW)
       } else {
         Utils.getOutSizeAndPadding(inputHeight, inputWidth, dH, dW, kH, kW, padH, padW, ceilMode)
       }
-
+    val padTop = sizes(0)
+    val padBottom = sizes(1)
+    val padLeft = sizes(2)
+    val padRight = sizes(3)
+    val outputHeight = sizes(4)
+    val outputWidth = sizes(5)
+    
     if (input.dim() == 3) {
       format match {
         case DataFormat.NCHW =>
@@ -637,7 +643,8 @@ class SpatialAveragePooling[T: ClassTag](
     val inputHeight = input.size(dimh)
     val inputWidth = input.size(dimw)
 
-    val (padTop, padBottom, padLeft, padRight, outputHeight, outputWidth) =
+//    val (padTop, padBottom, padLeft, padRight, outputHeight, outputWidth) =
+    val sizes =
       if (padW == -1 && padH == -1) {
         // no ceil/floor mode in SAME padding
         Utils.getSAMEOutSizeAndPadding(inputHeight, inputWidth, dH, dW, kH, kW)
@@ -647,6 +654,12 @@ class SpatialAveragePooling[T: ClassTag](
         require(kW / 2 >= padW && kH / 2 >= padH, "pad should be smaller than half of kernel size")
         Utils.getOutSizeAndPadding(inputHeight, inputWidth, dH, dW, kH, kW, padH, padW, ceilMode)
       }
+    val padTop = sizes(0)
+    val padBottom = sizes(1)
+    val padLeft = sizes(2)
+    val padRight = sizes(3)
+    val outputHeight = sizes(4)
+    val outputWidth = sizes(5)
 
     gradInput.resizeAs(input).zero()
     if (input.dim() == 3) {

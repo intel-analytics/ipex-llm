@@ -302,18 +302,28 @@ object Utils {
    * @return (padTop, padBottom, padLeft, padRight, outputHeight, outputWidth)
    */
   private[nn] def getSAMEOutSizeAndPadding(
-                                  inputHeight: Int,
-                                  inputWidth: Int,
-                                  dH: Int,
-                                  dW: Int,
-                                  kH: Int,
-                                  kW: Int
-                                ): (Int, Int, Int, Int, Int, Int) = {
+    inputHeight: Int,
+    inputWidth: Int,
+    dH: Int,
+    dW: Int,
+    kH: Int,
+    kW: Int,
+    inputDepth: Int = -1,
+    dT: Int = -1,
+    kT: Int = -1): Array[Int] = {
     val oW = Math.ceil(inputWidth.toFloat / dW.toFloat).toInt
     val oH = Math.ceil(inputHeight.toFloat / dH.toFloat).toInt
     val padAlongWidth = Math.max(0, (oW -1) * dW + kW - inputWidth)
     val padAlongHeight = Math.max(0, (oH - 1) * dH + kH - inputHeight)
-    (padAlongHeight/2, padAlongHeight - padAlongHeight/2,
+    if (inputDepth != -1) {
+      require(dT != -1 && kT != -1, "kernel size and strideSize cannot greater than 0")
+      val oT = Math.ceil(inputDepth.toFloat / dT.toFloat).toInt
+      val padAlongDepth = Math.max(0, (oT -1) * dT + kT - inputDepth)
+      return Array(padAlongDepth/2, padAlongDepth - padAlongDepth/2, padAlongHeight/2,
+        padAlongHeight - padAlongHeight/2, padAlongWidth/2, padAlongWidth - padAlongWidth/2,
+        oT, oH, oW)
+    }
+    Array(padAlongHeight/2, padAlongHeight - padAlongHeight/2,
       padAlongWidth/2, padAlongWidth - padAlongWidth/2,
         oH, oW)
   }
@@ -323,30 +333,49 @@ object Utils {
    * @return (padLeft, padRight, padTop, padBottom, outputHeight, outputWidth)
    */
   private[nn] def getOutSizeAndPadding(
-                                        inputHeight: Int,
-                                        inputWidth: Int,
-                                        dH: Int,
-                                        dW: Int,
-                                        kH: Int,
-                                        kW: Int,
-                                        padH: Int,
-                                        padW: Int,
-                                        ceilMode: Boolean
-                               ): (Int, Int, Int, Int, Int, Int) = {
+    inputHeight: Int,
+    inputWidth: Int,
+    dH: Int,
+    dW: Int,
+    kH: Int,
+    kW: Int,
+    padH: Int,
+    padW: Int,
+    ceilMode: Boolean,
+    inputDepth: Int = -1,
+    dT: Int = -1,
+    kT: Int = -1,
+    padT: Int = -1
+    ): Array[Int] = {
     var oheight = 0
     var owidth = 0
+    var odepth = 0
     if (ceilMode) {
       oheight = math.ceil(1.0 * (inputHeight - kH + 2*padH) / dH).toInt + 1
       owidth = math.ceil(1.0 * (inputWidth - kW + 2*padW) / dW).toInt + 1
+      if (inputDepth != -1) {
+        require(dT > 0 && kT > 0 && padT >= 0,
+          "kernel size, stride size, padding size need greater than 0")
+        odepth = math.ceil(1.0 * (inputDepth - kT + 2*padT) / dT).toInt + 1
+      }
     } else {
       oheight = math.floor(1.0 * (inputHeight - kH + 2*padH) / dH).toInt + 1
       owidth = math.floor(1.0 * (inputWidth - kW + 2*padW) / dW).toInt + 1
+      if (inputDepth != -1) {
+        require(dT > 0 && kT > 0 && padT >= 0,
+          "kernel size, stride size, padding size need greater than 0")
+        odepth = math.floor(1.0 * (inputDepth - kT + 2*padT) / dT).toInt + 1
+      }
     }
 
     if (padH != 0 || padW != 0) {
       if ((oheight - 1) * dH >= inputHeight + padH) oheight -= 1
       if ((owidth - 1) * dW >= inputWidth + padW) owidth -= 1
     }
-    (padH, padH, padW, padW, oheight, owidth)
+    if (inputDepth != -1) {
+      if (padT != 0 && (odepth - 1) * dT >= inputDepth + padT) oheight -= 1
+      return Array(padT, padT, padH, padH, padW, padW, odepth, oheight, owidth)
+    }
+    Array(padH, padH, padW, padW, oheight, owidth)
   }
 }
