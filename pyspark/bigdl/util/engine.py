@@ -17,6 +17,7 @@
 import sys
 import os
 import glob
+import warnings
 
 def exist_pyspark():
     try:
@@ -30,10 +31,12 @@ def __prepare_spark_env():
     if exist_pyspark():
         import pyspark
         if spark_home and not pyspark.__file__.startswith(spark_home):
-            raise Exception(
-                """Find two unmatched spark sources. pyspark is found in """
-                + pyspark.__file__ + ", while SPARK_HOME env is set to " + spark_home
-                + ". Please use one spark source only. For example, you can unset SPARK_HOME and use pyspark only.")
+            warning_msg = "Find both SPARK_HOME and pyspark. You may need to check whether they " + \
+                          "match with each other. SPARK_HOME environment variable is set to: " + spark_home + \
+                          ", and pyspark is found in: " + pyspark.__file__ + ". If they are unmatched, " + \
+                          "please use one source only to avoid conflict. " + \
+                          "For example, you can unset SPARK_HOME and use pyspark only."
+            warnings.warn(warning_msg)
     else:
         if not spark_home:
             raise ValueError(
