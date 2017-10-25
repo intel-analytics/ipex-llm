@@ -193,6 +193,11 @@ Reset gradParameters to zero.
 
 ReInitialize the parameter and reset gradParameter to zero
 
+You may notice that in the layer we don't define how to use g to update w. Layers just provide
+gradient and parameters. How to use gradient to update parameter is handled by
+[optimize methods](APIGuide/Optimizers/Optim-Methods.md) and
+[optimizer](APIGuide/Optimizers/Optimizer.md).
+
 ## Create a criterion in scala
 To create your own criterion, you need to extend the **AbstractCriterion** class. The criterion
 take two inputs, and calculate some scalar 'distance' between them, and the gradient indicting how
