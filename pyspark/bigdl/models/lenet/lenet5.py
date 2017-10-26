@@ -58,6 +58,18 @@ def get_mnist(sc, data_type="train", location="/tmp/mnist"):
 
 
 if __name__ == "__main__":
+
+    output_size = 4
+    input_size = 3
+    seq_len = 2
+    batch_size = 1
+
+    input = np.random.randn(batch_size, seq_len, input_size, 5, 5, 5)
+    rec = Recurrent()
+    model = Sequential().add(
+        rec.add(ConvLSTMPeephole3D(input_size, output_size, 4, 4, with_peephole=False)))
+    output = model.forward(input)
+
     parser = OptionParser()
     parser.add_option("-a", "--action", dest="action", default="train")
     parser.add_option("-b", "--batchSize", type=int, dest="batchSize", default="128")

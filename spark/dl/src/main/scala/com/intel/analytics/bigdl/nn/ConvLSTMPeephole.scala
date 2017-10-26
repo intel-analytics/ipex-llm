@@ -82,17 +82,17 @@ class ConvLSTMPeephole[T : ClassTag](
 
 //  def buildGate(offset: Int, length: Int): Sequential[T] = {
 //    val i2g = Narrow(joinDim, offset, length)
-  def buildGate(): Sequential[T] = {
+  def buildGate(name: String = null): Sequential[T] = {
     val i2g = Sequential()
       .add(Contiguous())
       .add(SpatialConvolution(inputSize, outputSize, kernelI, kernelI,
         stride, stride, padding, padding, wRegularizer = wRegularizer,
-        bRegularizer = bRegularizer))
+        bRegularizer = bRegularizer).setName(name + "_i2g"))
     val h2g = Sequential()
       .add(Contiguous())
       .add(SpatialConvolution(outputSize, outputSize, kernelC, kernelC,
       stride, stride, padding, padding, withBias = false,
-      wRegularizer = uRegularizer))
+      wRegularizer = uRegularizer).setName(name + "_h2g"))
 
     val gate = Sequential()
     if (withPeephole) {
@@ -115,19 +115,19 @@ class ConvLSTMPeephole[T : ClassTag](
 
   def buildInputGate(): Sequential[T] = {
 //    inputGate = buildGate(1 + outputSize, outputSize)
-    inputGate = buildGate()
+    inputGate = buildGate("InputGate")
     inputGate
   }
 
   def buildForgetGate(): Sequential[T] = {
 //    forgetGate = buildGate(1, outputSize)
-    forgetGate = buildGate()
+    forgetGate = buildGate("ForgetGate")
     forgetGate
   }
 
   def buildOutputGate(): Sequential[T] = {
 //    outputGate = buildGate(1 + 3 * outputSize, outputSize)
-    outputGate = buildGate()
+    outputGate = buildGate("OutputGate")
     outputGate
   }
 
@@ -140,12 +140,12 @@ class ConvLSTMPeephole[T : ClassTag](
       .add(Contiguous())
       .add(SpatialConvolution(inputSize, outputSize, kernelI, kernelI,
         stride, stride, padding, padding, wRegularizer = wRegularizer,
-        bRegularizer = bRegularizer))
+        bRegularizer = bRegularizer).setName("Hidden_i2h"))
     val h2h = Sequential()
       .add(Contiguous())
       .add(SpatialConvolution(outputSize, outputSize, kernelC, kernelC,
       stride, stride, padding, padding, withBias = false,
-      wRegularizer = uRegularizer))
+      wRegularizer = uRegularizer).setName("Hidden_h2h"))
 
     hidden
       .add(ParallelTable()
