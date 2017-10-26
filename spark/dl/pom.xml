@@ -300,6 +300,19 @@
                         </exclusion>
                     </exclusions>
                 </dependency>
+
+                <dependency>
+                    <groupId>com.intel.analytics.bigdl.bigquant</groupId>
+                    <artifactId>${bigquant-java-os-version}</artifactId>
+                    <version>0.3.0-SNAPSHOT</version>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>com.intel.analytics.bigdl.bigquant</groupId>
+                            <artifactId>bigquant-native</artifactId>
+                        </exclusion>
+                    </exclusions>
+                </dependency>
+
                 <dependency>
                     <groupId>com.intel.analytics.bigdl</groupId>
                     <artifactId>bigdl-core</artifactId>

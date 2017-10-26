@@ -177,6 +177,8 @@
         <spark-scope>provided</spark-scope>
 
         <mkl-java-os-version>mkl-java</mkl-java-os-version>
+        <bigquant-java-os-version>bigquant-java</bigquant-java-os-version>
+
     </properties>
 
     <modules>
@@ -579,6 +581,7 @@
             <id>mac</id>
             <properties>
                 <mkl-java-os-version>mkl-java-mac</mkl-java-os-version>
+                <bigquant-java-os-version>bigquant-java-mac</bigquant-java-os-version>
                 <os-flag>mac</os-flag>
             </properties>
         </profile>
@@ -592,6 +595,7 @@
             <id>win64</id>
             <properties>
                 <mkl-java-os-version>mkl-java-win64</mkl-java-os-version>
+                <bigquant-java-os-version>bigquant-java-win64</bigquant-java-os-version>
                 <os-flag>win64</os-flag>
             </properties>
         </profile>
