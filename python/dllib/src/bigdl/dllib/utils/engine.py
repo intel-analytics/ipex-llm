@@ -17,24 +17,35 @@
 import sys
 import os
 import glob
+import warnings
 
 def exist_pyspark():
+    # check whether pyspark package exists
     try:
         import pyspark
         return True
     except ImportError:
         return False
 
+def check_spark_source_conflict(spark_home, pyspark_path):
+    # check if both spark_home env var and pyspark package exist
+    # trigger a warning if two spark sources don't match
+    if spark_home and not pyspark_path.startswith(spark_home):
+        warning_msg = "Find both SPARK_HOME and pyspark. You may need to check whether they " + \
+                      "match with each other. SPARK_HOME environment variable is set to: " + spark_home + \
+                      ", and pyspark is found in: " + pyspark_path + ". If they are unmatched, " + \
+                      "please use one source only to avoid conflict. " + \
+                      "For example, you can unset SPARK_HOME and use pyspark only."
+        warnings.warn(warning_msg)
+
 def __prepare_spark_env():
     spark_home = os.environ.get('SPARK_HOME', None)
     if exist_pyspark():
+        # use pyspark as the spark source
         import pyspark
-        if spark_home and not pyspark.__file__.startswith(spark_home):
-            raise Exception(
-                """Find two unmatched spark sources. pyspark is found in """
-                + pyspark.__file__ + ", while SPARK_HOME env is set to " + spark_home
-                + ". Please use one spark source only. For example, you can unset SPARK_HOME and use pyspark only.")
+        check_spark_source_conflict(spark_home, pyspark.__file__)
     else:
+        # use SPARK_HOME as the spark source
         if not spark_home:
             raise ValueError(
                 """Could not find Spark. Please make sure SPARK_HOME env is set:
