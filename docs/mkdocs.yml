@@ -64,6 +64,7 @@ pages:
     - Distance Layers: APIGuide/Layers/Distance-Layers.md
     - Recurrent Layers:  APIGuide/Layers/Recurrent-Layers.md
     - Recursive Layers:  APIGuide/Layers/Recursive-Layers.md
+    - Sparse Layers:  APIGuide/Layers/Sparse-Layers.md
     - Utilities: APIGuide/Layers/Utilities.md
   - Losses: APIGuide/Losses.md
   - Initalizers: APIGuide/Initializers.md
