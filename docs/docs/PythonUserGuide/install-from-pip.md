@@ -1,7 +1,7 @@
 ## **NOTES**
 
 - Pip install supports __Mac__ and __Linux__ platforms.
-- This package is built with JDK7 by default, so you need to install Java __>= JDK7__ before runing BigDL.  
+- This package is built with JDK7 by default, so you need to install Java >= JDK7 before runing BigDL.
 - Pip install only supports __local__ mode. Might support cluster mode in the future. For those who want to use BigDL in cluster mode, try to [install without pip](./install-without-pip.md).
 - We've tested this package with __Python 2.7__ and __Python 3.5__. Only these two Python versions are supported for now.
 
