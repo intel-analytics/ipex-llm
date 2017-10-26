@@ -509,14 +509,17 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
         activity.toTensor[T].add(other.toTensor[T])
       } else {
         val actTable = activity.toTable
-        val actLen = actTable.length()
         val otherTable = other.toTable
-        val otherLen = otherTable.length()
-        require(actLen == otherLen, "table length is not equal")
+        val maxActIndex = actTable.keySet.map(_.asInstanceOf[Int]).max
+        val maxOtherIndex = otherTable.keySet.map(_.asInstanceOf[Int]).max
+        val maxIndex = Math.max(maxActIndex, maxOtherIndex)
         var i = 1
-        while(i <= actLen) {
-          require(actTable[Activity](i) != null, "Invalid table element")
-          accActivity(actTable[Activity](i), otherTable[Activity](i))
+        while(i <= maxIndex) {
+          if (actTable.contains(i) && otherTable.contains(i)) {
+            accActivity(actTable[Activity](i), otherTable[Activity](i))
+          } else if (otherTable.contains(i)) {
+            actTable.insert(i, otherTable(i))
+          }
           i += 1
         }
         actTable

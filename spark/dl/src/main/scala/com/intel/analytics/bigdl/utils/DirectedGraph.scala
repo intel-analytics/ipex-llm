@@ -148,12 +148,17 @@ class DirectedGraph[T](val source : Node[T], val reverse : Boolean = false) exte
     })
     bfs.foreach(node => {
       if (reverseEdge) {
-        node.prevNodesAndEdges.foreach(prevNodeAndEdge => {
-          oldToNew.get(node).add(oldToNew.get(prevNodeAndEdge._1), prevNodeAndEdge._2)
+        node.nextNodesAndEdges.foreach(nextNodeAndEdge => {
+          // some node may be ignored
+          if (oldToNew.containsKey(nextNodeAndEdge._1)) {
+            oldToNew.get(nextNodeAndEdge._1).add(oldToNew.get(node), nextNodeAndEdge._2)
+          }
         })
       } else {
-        node.prevNodesAndEdges.foreach(prevNodeAndEdge => {
-          oldToNew.get(prevNodeAndEdge._1).add(oldToNew.get(node), prevNodeAndEdge._2)
+        node.nextNodesAndEdges.foreach(nextNodeAndEdge => {
+          if (oldToNew.containsKey(nextNodeAndEdge._1)) {
+            oldToNew.get(node).add(oldToNew.get(nextNodeAndEdge._1), nextNodeAndEdge._2)
+          }
         })
       }
     })
