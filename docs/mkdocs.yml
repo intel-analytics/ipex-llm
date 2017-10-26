@@ -44,6 +44,8 @@ pages:
   - Run on Google Cloud Dataproc: ProgrammingGuide/run-on-dataproc.md
   - Tensorflow Support: ProgrammingGuide/tensorflow-support.md
   - Caffe Support: ProgrammingGuide/caffe-support.md
+  - Quantization Support: ProgrammingGuide/quantization-support.md
+  - Define new Layer/Criterion: ProgrammingGuide/add-layer-criterion.md
 - API Guide:
   - Data: APIGuide/Data.md
   - Model: APIGuide/Module.md
@@ -62,6 +64,7 @@ pages:
     - Distance Layers: APIGuide/Layers/Distance-Layers.md
     - Recurrent Layers:  APIGuide/Layers/Recurrent-Layers.md
     - Recursive Layers:  APIGuide/Layers/Recursive-Layers.md
+    - Sparse Layers:  APIGuide/Layers/Sparse-Layers.md
     - Utilities: APIGuide/Layers/Utilities.md
   - Losses: APIGuide/Losses.md
   - Initalizers: APIGuide/Initializers.md

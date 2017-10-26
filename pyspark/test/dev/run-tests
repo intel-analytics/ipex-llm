@@ -30,7 +30,7 @@ do
     export PYSPARK_DRIVER_PYTHON=$p
     $p -m pytest -v --doctest-modules ../../../pyspark/bigdl \
     --ignore=../../../pyspark/bigdl/dataset/ \
-    --ignore=../../../pyspark/bigdl/util/ \
+    --ignore=../../../pyspark/bigdl/util/tf_utils.py \
     --ignore=../../../pyspark/bigdl/models/ && \
     $p -m pytest -v -n 4 ../../../pyspark/test/
     exit_status=$?
