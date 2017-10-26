@@ -14,47 +14,61 @@
 # limitations under the License.
 #
 
-import pytest
-import tempfile
 from bigdl.nn.layer import *
 from bigdl.optim.optimizer import *
 from bigdl.util.common import *
-from numpy import random
+import numpy as np
+import pytest
 from numpy.testing import assert_allclose
 
 import caffe
 from caffe_layers import testlayers
 
 
-def test_caffe_layers():
-    print "~~~running caffe unittest!"
-    temp = tempfile.mkdtemp()
-    for testlayer in testlayers:
-        name = testlayer.name
-        definition = testlayer.definition
-        shapes = testlayer.shapes
-        prototxtfile = temp + name + ".prototxt"
-        weightfile = temp + name + ".caffemodel"
-        prototxt = open(prototxtfile, 'w')
-        prototxt.write(definition)
-        prototxt.close()
-        caffe.set_mode_cpu()
-        caffe.set_random_seed(100)
-        net = caffe.Net(prototxtfile, caffe.TEST)
-        inputs = []
-        for shape in shapes:
-            (inputName, size) = shape.items()[0]
-            input = random.uniform(size=size)
-            net.blobs[inputName].data[...] = input
-            inputs.append(input)
-        cafferesult = net.forward().get(name)
-        net.save(weightfile)
-        model = Model.load_caffe_model(prototxtfile, weightfile, bigdl_type="float")
-        model.set_seed(100)
-        if len(inputs) == 1:
-            inputs = inputs[0]
-        bigdlResult = model.forward(inputs)
-        assert_allclose(cafferesult, bigdlResult, atol=1e-5, rtol=0)
+class TestCaffeLayers():
+    def setup_method(self, method):
+        """ setup any state tied to the execution of the given method in a
+        class.  setup_method is invoked for every test method of a class.
+        """
+        sparkConf = create_spark_conf()
+        self.sc = SparkContext(master="local[4]", appName="test caffe layers",
+                               conf=sparkConf)
+        init_engine()
+
+    def teardown_method(self, method):
+        """ teardown any state that was previously setup with a setup_method
+        call.
+        """
+        self.sc.stop()
+
+    def test_caffe_layers(self):
+        temp = tempfile.mkdtemp()
+        for testlayer in testlayers:
+            name = testlayer.name
+            definition = testlayer.definition
+            shapes = testlayer.shapes
+            prototxtfile = temp + name + ".prototxt"
+            weightfile = temp + name + ".caffemodel"
+            prototxt = open(prototxtfile, 'w')
+            prototxt.write(definition)
+            prototxt.close()
+            caffe.set_mode_cpu()
+            caffe.set_random_seed(100)
+            net = caffe.Net(prototxtfile, caffe.TEST)
+            inputs = []
+            for shape in shapes:
+                (inputName, size) = shape.items()[0]
+                input = random.uniform(size=size)
+                net.blobs[inputName].data[...] = input
+                inputs.append(input)
+            cafferesult = net.forward().get(name)
+            net.save(weightfile)
+            model = Model.load_caffe_model(prototxtfile, weightfile, bigdl_type="float")
+            model.set_seed(100)
+            if len(inputs) == 1:
+                inputs = inputs[0]
+            bigdlResult = model.forward(inputs)
+            assert_allclose(cafferesult, bigdlResult, atol=1e-5, rtol=0)
 
 if __name__ == "__main__":
     pytest.main([__file__])

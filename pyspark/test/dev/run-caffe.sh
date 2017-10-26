@@ -28,9 +28,11 @@ echo "${cyan}Using python version: $p${reset}"
 export PYTHON_EXECUTABLE=$p
 export PYSPARK_PYTHON=$p
 export PYSPARK_DRIVER_PYTHON=$p
-$p -m pytest -v -n 4 ../../../pyspark/test/bigdl/caffe/
+$p -m pytest -v  ../../../pyspark/test/bigdl/caffe/ \
+--ignore=../../../pyspark/test/bigdl/caffe/caffe_layers.py &&
 exit_status=$?
+echo "running caffe layer unit tests"
 if [ $exit_status -ne 0 ];
-    then
-        exit $exit_status
+then
+   exit $exit_status
 fi
