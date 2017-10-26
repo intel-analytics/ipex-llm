@@ -146,6 +146,9 @@ class DirectedGraph[T](val source : Node[T], val reverse : Boolean = false) exte
     bfs.foreach(node => {
       oldToNew.put(node, new Node[T](node.element))
     })
+    // Keep the order in the nextNodes array and prevNodes array of the current node.
+    // As we go through all node in bfs from source, the prevNodes order can be preserved.
+    // For each node, we iterate and add their nextNodes, the nextNodes order can also be preserved.
     bfs.foreach(node => {
       if (reverseEdge) {
         node.nextNodesAndEdges.foreach(nextNodeAndEdge => {

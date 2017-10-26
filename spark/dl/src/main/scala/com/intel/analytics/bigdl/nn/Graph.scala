@@ -508,6 +508,12 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
         require(activity.isTensor, "Cannot add a table to a tensor")
         activity.toTensor[T].add(other.toTensor[T])
       } else {
+        // if 'activity' and 'other' are both table, we need to merge 'other' to 'activity'
+        // first find the maxIndex from two tables (their index may not be contiguous)
+        // then iterate index over [1, maxIndex],
+        // if 'other' and 'activity' both contains the index, update 'activity' by sum
+        // if 'other' contains the index while 'activity' does not,
+        // just insert the corresponding tensor to 'activity'
         val actTable = activity.toTable
         val otherTable = other.toTable
         val maxActIndex = actTable.keySet.map(_.asInstanceOf[Int]).max
