@@ -131,21 +131,22 @@ class Layer(JavaValue):
     @staticmethod
     def check_input(input):
         """
-        :param input: ndarray or list of ndarray
+        :param input: ndarray or list of ndarray or JTensor or list of JTensor.
         :return: (list of JTensor, isTable)
         """
+        def to_jtensor(i):
+            if isinstance(i, np.ndarray):
+                return JTensor.from_ndarray(i)
+            elif isinstance(i, JTensor):
+                return i
+            else:
+                raise Exception("Error unknown input type %s" % type(i))
         if type(input) is list:
             if len(input) == 0:
                 raise Exception('Error when checking: empty input')
-            if not hasattr(input[0], 'shape'):
-                raise Exception(
-                    'Error when checking: expecting list of ndarray')
-            return [JTensor.from_ndarray(i) for i in input], True
+            return list(map(lambda i: to_jtensor(i), input)), True
         else:
-            if not hasattr(input, 'shape'):
-                raise Exception(
-                    'Error when checking: expecting list of ndarray')
-            return [JTensor.from_ndarray(input)], False
+            return [to_jtensor(input)], False
 
     @staticmethod
     def convert_output(output):
@@ -162,6 +163,7 @@ class Layer(JavaValue):
         Takes an input object, and computes the corresponding output of the module
 
         :param input: ndarray or list of ndarray
+        :param input: ndarray or list of ndarray or JTensor or list of JTensor.
         :return: ndarray or list of ndarray
         """
         jinput, input_is_table = self.check_input(input)
@@ -180,8 +182,8 @@ class Layer(JavaValue):
         input. This is necessary for optimization reasons. If you do not respect this rule, backward()
         will compute incorrect gradients.
 
-        :param input: ndarray or list of ndarray
-        :param grad_output: ndarray or list of ndarray
+        :param input: ndarray or list of ndarray or JTensor or list of JTensor.
+        :param grad_output: ndarray or list of ndarray or JTensor or list of JTensor.
         :return: ndarray or list of ndarray
         """
         jinput, input_is_table = self.check_input(input)
@@ -765,6 +767,15 @@ class SparseLinear(Layer):
     creating: createL1Regularizer
     creating: createL1Regularizer
     creating: createSparseLinear
+    >>> np.random.seed(123)
+    >>> init_weight = np.random.randn(5, 1000)
+    >>> init_bias = np.random.randn(5)
+    >>> sparselinear = SparseLinear(1000, 5, init_weight=init_weight, init_bias=init_bias)
+    creating: createSparseLinear
+    >>> input = JTensor.sparse(np.array([1, 3, 5, 2, 4, 6]), np.array([0, 0, 0, 1, 1, 1, 1, 5, 300, 2, 100, 500]), np.array([2, 1000]))
+    >>> print(sparselinear.forward(input))
+    [[ 10.09569263 -10.94844246  -4.1086688    1.02527523  11.80737209]
+     [  7.9651413    9.7131443  -10.22719955   0.02345783  -3.74368906]]
     '''
 
     def __init__(self, input_size, output_size, with_bias=True, backwardStart=-1, backwardLength=-1,
