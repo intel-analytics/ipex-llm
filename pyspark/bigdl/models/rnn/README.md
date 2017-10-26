@@ -15,7 +15,7 @@ Please build BigDL referring to [Build Page](https://github.com/intel-analytics/
 ## Prepare the Input Data
 You can download the Tiny Shakespeare Texts corpus from [here](https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt).
 
-After downloading the text, please place it into an appropriate directory (e.g /opt/text/input.txt). Please separate it into train.txt and val.txt. In our case, we just select 80 percentage of the input to be train and remaining 20 percentage to be val. The program will later read in the original text file from this directory.
+After downloading the text, please place it into an appropriate directory (e.g `/opt/text/input.txt`). Please separate it into `train.txt` and `val.txt`. In our case, we just select 80 percentage of the input to be train and remaining 20 percentage to be val. The program will later read in the original text file from this directory.
 ```shell
 export LANG=en_US.UTF-8
 head -n 8000 input.txt > val.txt
@@ -78,10 +78,10 @@ http_proxy=...
 PYSPARK_DRIVER_PYTHON=./venv/bin/python PYSPARK_PYTHON=./venv.zip/venv/bin/python ${SPARK_HOME}/bin/spark-submit \
        --master ${MASTER} \
        --deploy-mode client \
-      --conf spark.executorEnv.http_proxy=${http_proxy} \
-      --driver-memory 10g  \
-      --executor-cores 1  \
-      --executor-memory 60g \
+       --conf spark.executorEnv.http_proxy=${http_proxy} \
+       --driver-memory 10g  \
+       --executor-cores 1  \
+       --executor-memory 60g \
        --py-files ${PYTHON_API_PATH} \
        --properties-file ${BigDL_HOME}/dist/conf/spark-bigdl.conf \
        --jars ${BigDL_JAR_PATH} \
