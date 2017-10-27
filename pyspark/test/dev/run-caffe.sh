@@ -29,7 +29,7 @@ export PYTHON_EXECUTABLE=$p
 export PYSPARK_PYTHON=$p
 export PYSPARK_DRIVER_PYTHON=$p
 $p -m pytest -v  ../../../pyspark/test/bigdl/caffe/ \
---ignore=../../../pyspark/test/bigdl/caffe/caffe_layers.py &&
+--ignore=../../../pyspark/test/bigdl/caffe/caffe_layers.py
 exit_status=$?
 echo "running caffe layer unit tests"
 if [ $exit_status -ne 0 ];
