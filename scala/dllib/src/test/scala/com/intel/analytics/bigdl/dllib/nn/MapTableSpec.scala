@@ -75,4 +75,12 @@ class MapTableSpec  extends FlatSpec with Matchers {
 
     mapGradInput should equal (expectedGradInput)
   }
+
+  "A MapTable clearstate" should "add not change modules" in {
+    val linear1 = new Linear[Float](10, 3)
+    val map = new MapTable[Float](linear1)
+
+    map.clearState()
+    map.modules.length should be (1)
+  }
 }
