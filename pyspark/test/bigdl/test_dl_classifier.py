@@ -133,8 +133,9 @@ class TestDLClassifer():
         data = results.rdd.collect()
 
         for i in range(count):
-            row_label = data[i]['label']
-            row_prediction = data[i]['prediction']
+            row_label = data[i][1]
+            row_prediction = data[i][2]
+
             assert_allclose(row_label[0], row_prediction[0], atol=0, rtol=1e-1)
             assert_allclose(row_label[1], row_prediction[1], atol=0, rtol=1e-1)
 
@@ -156,14 +157,15 @@ class TestDLClassifer():
         dlClassifierModel = classifier.fit(df)
 
         dlClassifierModel.transform(df).registerTempTable("dlClassifierModelDF")
+
         results = self.sqlContext.table("dlClassifierModelDF")
 
         count = results.rdd.count()
         data = results.rdd.collect()
 
         for i in range(count):
-            row_label = data[i]['label']
-            row_prediction = data[i]['prediction']
+            row_label = data[i][1]
+            row_prediction = data[i][2]
             assert row_label == row_prediction
 
 if __name__ == "__main__":
