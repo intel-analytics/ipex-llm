@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.utils
 
 import java.io._
+import java.net.URI
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FSDataInputStream, FSDataOutputStream, FileSystem, Path}
@@ -199,7 +200,7 @@ object File {
     var fs: FileSystem = null
     var in: FSDataInputStream = null
     try {
-      fs = src.getFileSystem(new Configuration())
+      fs = FileSystem.newInstance(new URI(fileName), new Configuration())
       in = fs.open(src)
       val byteArrayOut = new ByteArrayOutputStream()
       IOUtils.copyBytes(in, byteArrayOut, 1024, true)
