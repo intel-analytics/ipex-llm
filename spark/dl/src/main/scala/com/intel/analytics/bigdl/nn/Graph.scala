@@ -508,17 +508,19 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
         require(activity.isTensor, "Cannot add a table to a tensor")
         activity.toTensor[T].add(other.toTensor[T])
       } else {
+        // if 'activity' and 'other' are both table, we need to merge 'other' to 'activity'
+        // if 'other' and 'activity' both contains the index, update 'activity' by sum
+        // if 'other' contains the index while 'activity' does not,
+        // just insert the corresponding tensor of 'other' to 'activity'
         val actTable = activity.toTable
-        val actLen = actTable.length()
         val otherTable = other.toTable
-        val otherLen = otherTable.length()
-        require(actLen == otherLen, "table length is not equal")
-        var i = 1
-        while(i <= actLen) {
-          require(actTable[Activity](i) != null, "Invalid table element")
-          accActivity(actTable[Activity](i), otherTable[Activity](i))
-          i += 1
-        }
+        otherTable.keySet.foreach(index => {
+          if (actTable.contains(index)) {
+            accActivity(actTable[Activity](index), otherTable[Activity](index))
+          } else {
+            actTable.insert(index.asInstanceOf[Int], otherTable(index))
+          }
+        })
         actTable
       }
     }
