@@ -29,9 +29,8 @@ $ [/tmp/news20]$ tree . -L 1
 - If you install BigDL via pip, you can run this example locally by the following command:
   - Check [Run after pip install](../../../../docs/docs/PythonUserGuide/run-from-pip.md)
 ```
-export SPARK_HOME=path to spark-1.6.3
 python ${BigDL_HOME}/pyspark/bigdl/models/textclassifier/textclassifier.py --max_epoch 3 --model cnn
-             
+      
 ```
 
 - You can also use `spark-submit` to launch this example:
