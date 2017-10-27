@@ -57,8 +57,8 @@ python ${BigDL_HOME}/pyspark/bigdl/models/textclassifier/textclassifier.py --max
             --conf spark.executor.extraClassPath=bigdl-VERSION-jar-with-dependencies.jar \
             --conf spark.executorEnv.PYTHONHASHSEED=${PYTHONHASHSEED} \
             ${BigDL_HOME}/pyspark/bigdl/models/textclassifier/textclassifier.py \
-            --data_path /tmp/news20/
-            --max_epoch 3
+            --data_path /tmp/news20/ \
+            --max_epoch 3 \
             --model cnn
 ```
 * `--data_path` option can be used to set the path for downloading news20 data, the default value is /tmp/news20. Make sure that you have write permission to the specified path.
