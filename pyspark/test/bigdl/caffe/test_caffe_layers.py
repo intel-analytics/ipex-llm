@@ -28,20 +28,6 @@ from caffe_layers import testlayers
 
 
 class TestCaffeLayers():
-    def setup_method(self, method):
-        """ setup any state tied to the execution of the given method in a
-        class.  setup_method is invoked for every test method of a class.
-        """
-        sparkConf = create_spark_conf()
-        self.sc = SparkContext(master="local[4]", appName="test caffe layers",
-                               conf=sparkConf)
-        init_engine()
-
-    def teardown_method(self, method):
-        """ teardown any state that was previously setup with a setup_method
-        call.
-        """
-        self.sc.stop()
 
     def test_caffe_layers(self):
         temp = tempfile.mkdtemp()
