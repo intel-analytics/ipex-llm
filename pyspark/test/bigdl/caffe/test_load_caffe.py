@@ -26,7 +26,7 @@ class TestLoadCaffe():
 
     def test_load_caffe(self):
         # test load caffe with match all parameters
-        resource_path = os.path.join(os.path.split(__file__)[0], "resources")
+        resource_path = os.path.join(os.path.split(__file__)[0], "../resources")
         proto_txt = os.path.join(resource_path, "test.prototxt")
         model_path = os.path.join(resource_path, "test.caffemodel")
 
