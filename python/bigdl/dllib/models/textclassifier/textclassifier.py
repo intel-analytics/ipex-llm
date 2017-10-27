@@ -99,11 +99,11 @@ def build_model(class_num):
     return model
 
 
-def train(sc,
+def train(sc, data_path,
           batch_size,
           sequence_len, max_words, embedding_dim, training_split):
     print('Processing text dataset')
-    texts = news20.get_news20()
+    texts = news20.get_news20(source_dir=data_path)
     data_rdd = sc.parallelize(texts, 2)
 
     word_to_ic = analyze_texts(data_rdd)
@@ -155,6 +155,7 @@ if __name__ == "__main__":
     parser.add_option("-m", "--max_epoch", dest="max_epoch", default="15")
     parser.add_option("--model", dest="model_type", default="cnn")
     parser.add_option("-p", "--p", dest="p", default="0.0")
+    parser.add_option("-d", "--data_path", dest="data_path", default="/tmp/news20/")
 
     (options, args) = parser.parse_args(sys.argv)
     if options.action == "train":
@@ -168,10 +169,11 @@ if __name__ == "__main__":
         training_split = 0.8
         sc = SparkContext(appName="text_classifier",
                           conf=create_spark_conf())
+        data_path = options.data_path
         redire_spark_logs()
         show_bigdl_info_logs()
         init_engine()
-        train(sc,
+        train(sc, data_path,
               batch_size,
               sequence_len, max_words, embedding_dim, training_split)
         sc.stop()
