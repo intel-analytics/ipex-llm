@@ -132,6 +132,9 @@ class MapTable[T: ClassTag](
 
   override def clearState(): this.type = {
     modules.clear()
+    if ( module != null) {
+      this.add(module)
+    }
     this
   }
 }
