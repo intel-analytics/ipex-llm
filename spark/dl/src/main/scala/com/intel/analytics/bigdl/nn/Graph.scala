@@ -509,25 +509,18 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
         activity.toTensor[T].add(other.toTensor[T])
       } else {
         // if 'activity' and 'other' are both table, we need to merge 'other' to 'activity'
-        // first find the maxIndex from two tables (their index may not be contiguous)
-        // then iterate index over [1, maxIndex],
         // if 'other' and 'activity' both contains the index, update 'activity' by sum
         // if 'other' contains the index while 'activity' does not,
-        // just insert the corresponding tensor to 'activity'
+        // just insert the corresponding tensor of 'other' to 'activity'
         val actTable = activity.toTable
         val otherTable = other.toTable
-        val maxActIndex = actTable.keySet.map(_.asInstanceOf[Int]).max
-        val maxOtherIndex = otherTable.keySet.map(_.asInstanceOf[Int]).max
-        val maxIndex = Math.max(maxActIndex, maxOtherIndex)
-        var i = 1
-        while(i <= maxIndex) {
-          if (actTable.contains(i) && otherTable.contains(i)) {
-            accActivity(actTable[Activity](i), otherTable[Activity](i))
-          } else if (otherTable.contains(i)) {
-            actTable.insert(i, otherTable(i))
+        otherTable.keySet.foreach(index => {
+          if (actTable.contains(index)) {
+            accActivity(actTable[Activity](index), otherTable[Activity](index))
+          } else {
+            actTable.insert(index.asInstanceOf[Int], otherTable(index))
           }
-          i += 1
-        }
+        })
         actTable
       }
     }
