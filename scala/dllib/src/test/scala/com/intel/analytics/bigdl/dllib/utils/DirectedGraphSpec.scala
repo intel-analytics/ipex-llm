@@ -315,7 +315,13 @@ class DirectedGraphSpec extends FlatSpec with Matchers {
 
     val graph = nodeA.graph()
     val cloneGraph = graph.cloneGraph()
-    graph.topologySort.map(_.element) should be(cloneGraph.topologySort.map(_.element))
+    val sort1 = graph.topologySort
+    val sort2 = cloneGraph.topologySort
+    sort1.map(_.element) should be(sort2.map(_.element))
+    sort1.zip(sort2).foreach(x => {
+      x._1.prevNodes.map(_.element) should be (x._2.prevNodes.map(_.element))
+      x._1.nextNodes.map(_.element) should be (x._2.nextNodes.map(_.element))
+    })
   }
 
   "Clone graph" should "should reuse the edge" in {
