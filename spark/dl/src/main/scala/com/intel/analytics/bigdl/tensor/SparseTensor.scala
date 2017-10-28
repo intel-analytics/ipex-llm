@@ -1149,8 +1149,11 @@ object SparseTensor{
           var offset = 0
           while (index < tensors.size) {
             val currentTensor = tensors(index)
-            val findIndexStart = currentTensor._indices(0).array().indexOf(j, tensorsOffset(index))
-            val findIndexEnd = currentTensor._indices(0).array().lastIndexOf(j)
+            val currentIndicesOffset = currentTensor._indicesOffset
+            val findIndexStart = currentTensor._indices(0).array().indexOf(
+              j + currentIndicesOffset(0), tensorsOffset(index))
+            val findIndexEnd = currentTensor._indices(0).array().lastIndexOf(
+              j + currentIndicesOffset(0))
             val curLength = if (findIndexStart != -1 && findIndexEnd != -1) {
               findIndexEnd - findIndexStart + 1
             } else {
@@ -1169,8 +1172,10 @@ object SparseTensor{
               while (indicesIndex < numOfIndices) {
                 val indicesIndexArray = currentTensor._indices(indicesIndex).array()
                 val resultIndicesArray = res._indices(indicesIndex).array()
-                if (indicesIndex != dim - 1 || index == 0) {
+                if (indicesIndex == 0) {
                   // copy directly
+                  res._indices(indicesIndex).fill(j, start + 1, curLength)
+                } else if (index == 0) {
                   System.arraycopy(currentTensor._indices(indicesIndex).array(),
                     tensorsOffset(index), res._indices(indicesIndex).array(), start, curLength)
                 } else {
@@ -1178,7 +1183,7 @@ object SparseTensor{
                   var i = 0
                   while (i < curLength) {
                     resultIndicesArray(start + i) = indicesIndexArray(tensorsOffset(index) + i) +
-                      offset
+                      offset - currentIndicesOffset(indicesIndex)
                     i += 1
                   }
                 }
