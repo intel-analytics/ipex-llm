@@ -19,9 +19,9 @@ package com.intel.analytics.bigdl.dataset.text
 import java.io.{File, PrintWriter, Serializable}
 
 import org.apache.log4j.Logger
-import org.apache.log4j.spi.LoggerFactory
 import org.apache.spark.rdd.RDD
 
+import scala.collection.mutable
 import scala.util.Random
 
 /**
@@ -76,6 +76,12 @@ class Dictionary()
 
   def getWord(index: Double): String = {
     getWord(index.toInt)
+  }
+
+  def addWord(word: String): Unit = {
+    _word2index.update(word, _vocabSize)
+    _index2word.update(_vocabSize, word)
+    _vocabSize += 1
   }
 
   /**
@@ -215,8 +221,8 @@ class Dictionary()
 
   private var _vocabSize: Int = 0
   private var _discardSize: Int = 0
-  private var _word2index: Map[String, Int] = null
-  private var _index2word: Map[Int, String] = null
+  private var _word2index: mutable.Map[String, Int] = null
+  private var _index2word: mutable.Map[Int, String] = null
   private var _vocabulary: Seq[String] = null
   private var _discardVocab: Seq[String] = null
 }
