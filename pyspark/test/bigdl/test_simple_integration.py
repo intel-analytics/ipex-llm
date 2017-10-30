@@ -366,6 +366,7 @@ class TestSimple():
             None
         ]
         special_initializers = [
+            MsraFiller(False),
             Xavier(),
             RandomUniform(),
         ]
