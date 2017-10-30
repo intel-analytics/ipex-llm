@@ -290,9 +290,7 @@ case object Xavier extends InitializationMethod {
  *
  * It fills the incoming matrix by randomly sampling Gaussian data with std =
  * sqrt(2 / n) where n is the fanIn, fanOut, or their average, depending on
- * the varianceNormAverage parameter. You should make sure the input blob has shape
- * (num, a, b, c) where a * b * c = fan_in and num * b * c = fan_out. Note that this
- * is currently not the case for Linear layers.
+ * the varianceNormAverage parameter.
  *
  * @param varianceNormAverage VarianceNorm use average of (fanIn + fanOut) or just fanOut
  */
