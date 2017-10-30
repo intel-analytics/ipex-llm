@@ -43,10 +43,11 @@ import scala.reflect.ClassTag
  *
  * @param _indices non-zero elements' indices
  * @param _values values of the non-zero elements
- * @param _storageOffset storageOffset
+ * @param _storageOffset storageOffset, both _values and _indices's storage offset.
  * @param _nElement number of non-zero elements
  * @param _shape dense shape
  * @param _indicesOffset indices' offset, Default is zeros, will vary in narrowed/selected tensor.
+ *                       The true indices should be (_indices - _indicesOffset).
  * @param nDimension dimensions.
  * @tparam T should be Double or Float
  */
@@ -152,7 +153,7 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def transpose(dim1: Int, dim2: Int): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    throw new UnsupportedOperationException(s"SparseTennewIndicesOffsetsor: Unimplemented method")
   }
 
   override def t(): Tensor[T] = {
@@ -442,26 +443,36 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
   private def resizeIndices(nElement: Int): Unit = {
     var i = 0
     while (i < _indices.length) {
-      _indices(i).resize(nElement + _indicesOffset(i))
+      _indices(i).resize(nElement + _storageOffset)
       i += 1
     }
   }
 
+  /**
+   * Notice: if size.length < dimension, will delete last (dimension - size.length)th _indices.
+   * if size.length > dimension, will add indices to the front of _indices array.
+   */
   override def resize(size: Array[Int], nElement: Int): Tensor[T] = {
+    // if reset number of _indices
+    // TODO: implement addSingletonDimension and squeeze to add/delete specified dimension.
     if (size.length < _indices.length) {
+      // need to delete last (_indices.length - size.length) dimension
       _indices = _indices.slice(0, size.length)
       _indicesOffset = _indicesOffset.slice(0, size.length)
-      resizeIndices(nElement)
     } else if (size.length > _indices.length) {
+      // add (size.length - _indices.length) dimension to the first dimension
       val _addIndices = new Array[Storage[Int]](size.length - _indices.length)
-      for (i <- _addIndices.indices) _addIndices(i) = Storage[Int](nElement)
-      _indicesOffset ++= new Array[Int](size.length - _indicesOffset.length)
+      for (i <- _addIndices.indices) _addIndices(i) = Storage[Int](nElement + _storageOffset)
+      _indicesOffset = new Array[Int](size.length - _indicesOffset.length) ++ _indicesOffset
       _indices ++= _addIndices
-      resizeIndices(nElement)
-    } else if (_indices(0).length() - _indicesOffset(0) < nElement) {
+    }
+
+    // resize _indices's length
+    if (_indices(0).length() - _storageOffset < nElement) {
       resizeIndices(nElement)
     }
 
+    // resize _values's length
     if (storage.length() - _storageOffset < nElement) {
       storage.resize(nElement + _storageOffset)
     }
@@ -910,7 +921,7 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
         val storageOffset = _storageOffset
         val indicesOffset = _indicesOffset(0)
         for (i <- 0 until this.nElement)
-          sb.append((indices(0)(i + storageOffset) + indicesOffset)
+          sb.append((indices(0)(i + storageOffset) - indicesOffset)
             + " : " + values(i + storageOffset)).append('\n')
 
         s"${sb}[${this.getClass.getName} of size ${this.size(1)}]"
@@ -1149,8 +1160,11 @@ object SparseTensor{
           var offset = 0
           while (index < tensors.size) {
             val currentTensor = tensors(index)
-            val findIndexStart = currentTensor._indices(0).array().indexOf(j, tensorsOffset(index))
-            val findIndexEnd = currentTensor._indices(0).array().lastIndexOf(j)
+            val currentIndicesOffset = currentTensor._indicesOffset
+            val findIndexStart = currentTensor._indices(0).array().indexOf(
+              j + currentIndicesOffset(0), tensorsOffset(index))
+            val findIndexEnd = currentTensor._indices(0).array().lastIndexOf(
+              j + currentIndicesOffset(0))
             val curLength = if (findIndexStart != -1 && findIndexEnd != -1) {
               findIndexEnd - findIndexStart + 1
             } else {
@@ -1169,8 +1183,11 @@ object SparseTensor{
               while (indicesIndex < numOfIndices) {
                 val indicesIndexArray = currentTensor._indices(indicesIndex).array()
                 val resultIndicesArray = res._indices(indicesIndex).array()
-                if (indicesIndex != dim - 1 || index == 0) {
-                  // copy directly
+                if (indicesIndex == 0) {
+                  // fill the first indices
+                  res._indices(indicesIndex).fill(j, start + 1, curLength)
+                } else if (index == 0) {
+                  // copy directly for the first tensor's indices
                   System.arraycopy(currentTensor._indices(indicesIndex).array(),
                     tensorsOffset(index), res._indices(indicesIndex).array(), start, curLength)
                 } else {
@@ -1178,7 +1195,7 @@ object SparseTensor{
                   var i = 0
                   while (i < curLength) {
                     resultIndicesArray(start + i) = indicesIndexArray(tensorsOffset(index) + i) +
-                      offset
+                      offset - currentIndicesOffset(indicesIndex)
                     i += 1
                   }
                 }
