@@ -16,28 +16,23 @@
 # limitations under the License.
 #
 
+
 . `dirname $0`/prepare_env.sh
 
 cd "`dirname $0`"
 
 export DL_CORE_NUMBER=4
 
-for p in ${PYTHON_EXECUTABLES[@]}
-do
-    echo "${cyan}Using python version: $p${reset}"
-    export PYTHON_EXECUTABLE=$p
-    export PYSPARK_PYTHON=$p
-    export PYSPARK_DRIVER_PYTHON=$p
-    $p -m pytest -v --doctest-modules ../../../pyspark/bigdl \
-    --ignore=../../../pyspark/bigdl/dataset/ \
-    --ignore=../../../pyspark/bigdl/util/tf_utils.py \
-    --ignore=../../../pyspark/bigdl/models/ && \
-    $p -m pytest -v -n 4 ../../../pyspark/test/ \
-    --ignore=../../../pyspark/test/bigdl/caffe/
-    exit_status=$?
-    if [ $exit_status -ne 0 ];
-    then
-        exit $exit_status
-    fi
-done
-
+p="python2.7"
+echo "${cyan}Using python version: $p${reset}"
+export PYTHON_EXECUTABLE=$p
+export PYSPARK_PYTHON=$p
+export PYSPARK_DRIVER_PYTHON=$p
+$p -m pytest -v  ../../../pyspark/test/bigdl/caffe/ \
+--ignore=../../../pyspark/test/bigdl/caffe/caffe_layers.py
+exit_status=$?
+echo "running caffe layer unit tests"
+if [ $exit_status -ne 0 ];
+then
+   exit $exit_status
+fi
