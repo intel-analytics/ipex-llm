@@ -43,10 +43,11 @@ import scala.reflect.ClassTag
  *
  * @param _indices non-zero elements' indices
  * @param _values values of the non-zero elements
- * @param _storageOffset storageOffset
+ * @param _storageOffset storageOffset, both _values and _indices's storage offset.
  * @param _nElement number of non-zero elements
  * @param _shape dense shape
  * @param _indicesOffset indices' offset, Default is zeros, will vary in narrowed/selected tensor.
+ *                       The true indices should be (_indices - _indicesOffset).
  * @param nDimension dimensions.
  * @tparam T should be Double or Float
  */
@@ -442,26 +443,29 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
   private def resizeIndices(nElement: Int): Unit = {
     var i = 0
     while (i < _indices.length) {
-      _indices(i).resize(nElement + _indicesOffset(i))
+      _indices(i).resize(nElement + _storageOffset)
       i += 1
     }
   }
 
   override def resize(size: Array[Int], nElement: Int): Tensor[T] = {
+    // if reset number of _indices
     if (size.length < _indices.length) {
       _indices = _indices.slice(0, size.length)
       _indicesOffset = _indicesOffset.slice(0, size.length)
-      resizeIndices(nElement)
     } else if (size.length > _indices.length) {
       val _addIndices = new Array[Storage[Int]](size.length - _indices.length)
-      for (i <- _addIndices.indices) _addIndices(i) = Storage[Int](nElement)
+      for (i <- _addIndices.indices) _addIndices(i) = Storage[Int](nElement + _storageOffset)
       _indicesOffset ++= new Array[Int](size.length - _indicesOffset.length)
       _indices ++= _addIndices
-      resizeIndices(nElement)
-    } else if (_indices(0).length() - _indicesOffset(0) < nElement) {
+    }
+
+    // resize _indices's length
+    if (_indices(0).length() - _storageOffset < nElement) {
       resizeIndices(nElement)
     }
 
+    // resize _values's length
     if (storage.length() - _storageOffset < nElement) {
       storage.resize(nElement + _storageOffset)
     }
@@ -910,7 +914,7 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
         val storageOffset = _storageOffset
         val indicesOffset = _indicesOffset(0)
         for (i <- 0 until this.nElement)
-          sb.append((indices(0)(i + storageOffset) + indicesOffset)
+          sb.append((indices(0)(i + storageOffset) - indicesOffset)
             + " : " + values(i + storageOffset)).append('\n')
 
         s"${sb}[${this.getClass.getName} of size ${this.size(1)}]"
