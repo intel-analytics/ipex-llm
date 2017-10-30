@@ -98,8 +98,6 @@ After that, you can find that the three jar packages in `PATH_To_BigDL`/target/,
 
 Note that the instructions above will build BigDL with Spark 1.5.x or 1.6.x (using Scala 2.10) for Linux, and skip the build of native library code. Similarly, you may customize the default behaviors by passing the following parameters to maven:
 
- - `-P mac`: build for maxOS
- - `-P win64`: build for windows
  - `-P spark_2.x`: build for Spark 2.0 and above (using Scala 2.11). (Again, it is highly recommended to use _**Java 8**_ when running with Spark 2.0; otherwise you may observe very poor performance.)
  * `-P full-build`: full build
  * `-P scala_2.10` (or `-P scala_2.11`): build using Scala 2.10 (or Scala 2.11) 
