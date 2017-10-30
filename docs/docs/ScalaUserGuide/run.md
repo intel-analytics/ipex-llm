@@ -101,7 +101,7 @@ For example, you may run the [Lenet](https://github.com/intel-analytics/BigDL/tr
 
 2.Run below command to train lenet as local Java/Scala program:
 ```bash
-java -cp spark/dl/target/bigdl-VERSION-jar-with-dependencies-and-spark.jar \
+scala -cp spark/dl/target/bigdl-VERSION-jar-with-dependencies-and-spark.jar \
 com.intel.analytics.bigdl.example.lenetLocal.Train \
 -f path_to_mnist_folder \
 -c core_number \
@@ -122,7 +122,7 @@ safety of your model files.
 3.The above commands will cache the model in specified path(--checkpoint). Run this command will
    use the trained model to do a validation.
 ```bash
-java -cp spark/dl/target/bigdl-VERSION-jar-with-dependencies-and-spark.jar \
+scala -cp spark/dl/target/bigdl-VERSION-jar-with-dependencies-and-spark.jar \
 com.intel.analytics.bigdl.example.lenetLocal.Test \
 -f path_to_mnist_folder \
 --model ./model/model.iteration \
@@ -138,7 +138,7 @@ In the above command
    
 4.Run below command to predict with trained model:
 ```bash
-java -cp spark/dl/target/bigdl-VERSION-jar-with-dependencies-and-spark.jar \
+scala -cp spark/dl/target/bigdl-VERSION-jar-with-dependencies-and-spark.jar \
 com.intel.analytics.bigdl.example.lenetLocal.Predict \
 -f path_to_mnist_folder \
 -c core_number \
