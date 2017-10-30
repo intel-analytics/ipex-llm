@@ -21,9 +21,9 @@ Here are the folders for nightly build packages. The packages are built from lat
 ## **Release 0.3.0**
 |               | Download Link |
 | ------------- | --------- |
-| Spark 1.5.2   | [download](https://repo1.maven.org/maven2/com/intel/analytics/bigdl/dist-spark-1.5.2-scala-2.10.5-linux64/0.3.0/dist-spark-1.5.2-scala-2.10.5-linux64-0.2.0-dist.zip) |
-| Spark 1.6.2   | [download](https://repo1.maven.org/maven2/com/intel/analytics/bigdl/dist-spark-1.6.2-scala-2.10.5-linux64/0.3.0/dist-spark-1.6.2-scala-2.10.5-linux64-0.2.0-dist.zip) |
-| Spark 2.1.1   | [download](https://repo1.maven.org/maven2/com/intel/analytics/bigdl/dist-spark-2.1.1-scala-2.11.8-linux64/0.3.0/dist-spark-2.1.1-scala-2.11.8-linux64-0.2.0-dist.zip) |
+| Spark 1.5.2   | [download](https://repo1.maven.org/maven2/com/intel/analytics/bigdl/dist-spark-1.5.2-scala-2.10.5-linux64/0.3.0/dist-spark-1.5.2-scala-2.10.5-linux64-0.3.0-dist.zip) |
+| Spark 1.6.2   | [download](https://repo1.maven.org/maven2/com/intel/analytics/bigdl/dist-spark-1.6.2-scala-2.10.5-linux64/0.3.0/dist-spark-1.6.2-scala-2.10.5-linux64-0.3.0-dist.zip) |
+| Spark 2.1.1   | [download](https://repo1.maven.org/maven2/com/intel/analytics/bigdl/dist-spark-2.1.1-scala-2.11.8-linux64/0.3.0/dist-spark-2.1.1-scala-2.11.8-linux64-0.3.0-dist.zip) |
 | Spark 2.2.0   | [download](https://repo1.maven.org/maven2/com/intel/analytics/bigdl/dist-spark-2.2.0-scala-2.11.8-linux64/0.3.0/dist-spark-2.2.0-scala-2.11.8-linux64-0.3.0-dist.zip) |
 
 
