@@ -153,7 +153,7 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def transpose(dim1: Int, dim2: Int): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    throw new UnsupportedOperationException(s"SparseTennewIndicesOffsetsor: Unimplemented method")
   }
 
   override def t(): Tensor[T] = {
@@ -448,15 +448,22 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
     }
   }
 
+  /**
+   * Notice: if size.length < dimension, will delete last (dimension - size.length)th _indices.
+   * if size.length > dimension, will add indices to the front of _indices array.
+   */
   override def resize(size: Array[Int], nElement: Int): Tensor[T] = {
     // if reset number of _indices
+    // TODO: implement addSingletonDimension and squeeze to add/delete specified dimension.
     if (size.length < _indices.length) {
+      // need to delete last (_indices.length - size.length) dimension
       _indices = _indices.slice(0, size.length)
       _indicesOffset = _indicesOffset.slice(0, size.length)
     } else if (size.length > _indices.length) {
+      // add (size.length - _indices.length) dimension to the first dimension
       val _addIndices = new Array[Storage[Int]](size.length - _indices.length)
       for (i <- _addIndices.indices) _addIndices(i) = Storage[Int](nElement + _storageOffset)
-      _indicesOffset ++= new Array[Int](size.length - _indicesOffset.length)
+      _indicesOffset = new Array[Int](size.length - _indicesOffset.length) ++ _indicesOffset
       _indices ++= _addIndices
     }
 
