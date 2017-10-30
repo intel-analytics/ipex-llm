@@ -67,4 +67,42 @@ class SparseJoinTableSpec  extends FlatSpec with Matchers {
 
   }
 
+  "Sparse JoinTable on narrowed table" should "return the same result" in {
+    Random.setSeed(2)
+    RandomGenerator.RNG.setSeed(1)
+    val input = Tensor(8, 10).apply1(_ => Random.nextInt(10) / 5 * Random.nextFloat())
+    println(input)
+    val input2 = Tensor(4, 10).apply1(_ => Random.nextInt(10) / 5 * Random.nextFloat())
+    println(input2)
+    val sparseModel = Sequential().add(ParallelTable().add(Identity()).add(Identity()))
+      .add(SparseJoinTable(2))
+    val denseInput = Tensor(4, 20)
+    denseInput.narrow(2, 1, 10).copy(input.narrow(1, 4, 4))
+    denseInput.narrow(2, 11, 10).copy(input2)
+
+    val sparseInput = T(Tensor.sparse(input).narrow(1, 4, 4), Tensor.sparse(input2))
+    val out1 = sparseModel.forward(sparseInput).toTensor[Float]
+    val exceptOut = Tensor.sparse(denseInput)
+    out1 shouldEqual exceptOut
+    Tensor.dense(out1) shouldEqual denseInput
+  }
+
+  "Sparse JoinTable on narrowed table" should "return the same result 2" in {
+    Random.setSeed(2)
+    RandomGenerator.RNG.setSeed(1)
+    val input = Tensor(4, 10).apply1(_ => Random.nextInt(10) / 5 * Random.nextFloat())
+    val input2 = Tensor(8, 10).apply1(_ => Random.nextInt(10) / 5 * Random.nextFloat())
+    val sparseModel = Sequential().add(ParallelTable().add(Identity()).add(Identity()))
+      .add(SparseJoinTable(2))
+    val denseInput = Tensor(4, 20)
+    denseInput.narrow(2, 1, 10).copy(input)
+    denseInput.narrow(2, 11, 10).copy(input2.narrow(1, 4, 4))
+
+    val sparseInput = T(Tensor.sparse(input), Tensor.sparse(input2).narrow(1, 4, 4))
+    val out1 = sparseModel.forward(sparseInput).toTensor[Float]
+    val exceptOut = Tensor.sparse(denseInput)
+    out1 shouldEqual exceptOut
+    Tensor.dense(out1) shouldEqual denseInput
+  }
+
 }
