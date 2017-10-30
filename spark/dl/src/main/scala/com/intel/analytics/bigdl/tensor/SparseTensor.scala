@@ -1184,9 +1184,10 @@ object SparseTensor{
                 val indicesIndexArray = currentTensor._indices(indicesIndex).array()
                 val resultIndicesArray = res._indices(indicesIndex).array()
                 if (indicesIndex == 0) {
-                  // copy directly
+                  // fill the first indices
                   res._indices(indicesIndex).fill(j, start + 1, curLength)
                 } else if (index == 0) {
+                  // copy directly for the first tensor's indices
                   System.arraycopy(currentTensor._indices(indicesIndex).array(),
                     tensorsOffset(index), res._indices(indicesIndex).array(), start, curLength)
                 } else {
