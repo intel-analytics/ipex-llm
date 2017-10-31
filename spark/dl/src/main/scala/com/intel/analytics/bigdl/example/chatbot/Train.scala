@@ -15,26 +15,33 @@
  */
 package com.intel.analytics.bigdl.example.chatbot
 
-import com.intel.analytics.bigdl.dataset.{DataSet, FixedLength, PaddingParam, SampleToMiniBatch}
-import com.intel.analytics.bigdl.dataset.text.{Dictionary, LabeledSentenceToSample, TextToLabeledSentence}
-import com.intel.analytics.bigdl.dataset.text.utils.SentenceToken
-import com.intel.analytics.bigdl.models.rnn.Train._
-import com.intel.analytics.bigdl.models.rnn.{SequencePreprocess, SimpleRNN, Utils}
-import com.intel.analytics.bigdl.models.rnn.Utils.{TrainParams, _}
+import com.intel.analytics.bigdl.dataset._
+import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.dataset.text.{SentenceTokenizer, _}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.numeric.NumericFloat
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Engine, T}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
+import org.apache.spark.ml.feature
+import org.apache.spark.rdd.RDD
 
-class Train {
+import scala.collection.Iterator
+import scala.io.Source
+import scala.reflect.ClassTag
+
+object Train {
   Logger.getLogger("org").setLevel(Level.ERROR)
   Logger.getLogger("akka").setLevel(Level.ERROR)
   Logger.getLogger("breeze").setLevel(Level.ERROR)
 
   import Utils._
+
   val logger = Logger.getLogger(getClass)
+
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {
 
@@ -44,82 +51,82 @@ class Train {
       val sc = new SparkContext(conf)
       Engine.init
 
-      val tokens = SequencePreprocess(
-        param.dataFolder + "twitter_en.txt",
-        sc = sc,
-        param.sentFile,
-        param.tokenFile)
+      val lines = Source
+        .fromFile(param.dataFolder + "twitter_en.txt")
+        .getLines
+        .zipWithIndex
 
-      val Array(trainingRDD, valRDD) = sampleRDD.randomSplit(
+      val evenLines = lines.filter(x => x._2 % 2 == 0)
+        .map(_._1)
+      val oddLines = lines.filter(x => x._2 % 2 != 0)
+        .map(_._1)
+
+      val evenTokens = (SentenceBiPadding() -> SentenceTokenizer()).apply(evenLines)
+      val oddTokens = (SentenceBiPadding() -> SentenceTokenizer()).apply(oddLines)
+
+      val sample = evenTokens.zip(oddTokens).toSeq
+      val tokens = sc.parallelize(sample)
+
+      val Array(trainRDD, valRDD) = tokens.randomSplit(
         Array(param.trainingSplit, 1 - param.trainingSplit))
 
-      val dictionary = Dictionary(tokens, param.vocabSize)
-      val vocabSize = dictionary.getVocabSize()
+      val dictionary = Dictionary(tokens.map(_._1) ++ tokens.map(_._2), param.vocabSize)
       val padding = "###"
       dictionary.addWord(padding)
       dictionary.save(param.saveFolder)
+      val vocabSize = dictionary.getVocabSize() + 1
 
-      val maxTrainLength = tokens.map(x => x.length).max
+      val maxTrainLength = tokens.map(x => math.max(x._1.length, x._2.length)).max
 
-      logger.info(s"maxTrain length = ${maxTrainLength}, maxVal = ${maxValLength}")
+      //      logger.info(s"maxTrain length = ${maxTrainLength}, maxVal = ${maxValLength}")
 
       val padId = dictionary.getIndex(padding) + 1
-      val padFeature = Tensor[Float](T(padding))
-      val padLabel = Tensor[Float](T(padding))
-      val featurePadding = PaddingParam(Some(Array(padFeature)),
-        FixedLength(Array(maxTrainLength)))
-      val labelPadding = PaddingParam(Some(Array(padLabel)),
-        FixedLength(Array(maxTrainLength)))
+      val padFeature = Tensor[Float](T(padId))
+      val padLabel = Tensor[Float](T(padId))
 
-      val trainSet = DataSet.rdd(tokens)
-        .transform(TextToLabeledSentence[Float](dictionary))
-        .transform(LabeledSentenceToSample[Float](totalVocabLength))
-        .transform(SampleToMiniBatch[Float](
-          param.batchSize,
-          Some(featurePadding),
-          Some(labelPadding)))
+      val trainSet = trainRDD
+        .map(chatToLabeledChat(dictionary, _))
+        .map(x => labeledChatToSample(x))
 
-      val validationSet = DataSet.rdd(valtokens)
-        .transform(TextToLabeledSentence[Float](dictionary, zeroIndexed = false))
-        .transform(LabeledSentenceToSample[Float](oneHot = false))
-        .transform(SampleToMiniBatch[Float](param.batchSize,
-          Some(featurePadding), Some(labelPadding)))
+      val validationSet = valRDD
+        .map(chatToLabeledChat(dictionary, _))
+        .map(x => labeledChatToSample(x))
 
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
       } else {
-        val encoderCells =
+        val encoder =
           Array(
             Recurrent().add(LSTM(param.embedDim, param.embedDim)),
             Recurrent().add(LSTM(param.embedDim, param.embedDim)),
             Recurrent().add(LSTM(param.embedDim, param.embedDim))
           )
 
-        val decoderCells =
+        val decoder =
           Array(
             Recurrent().add(LSTM(param.embedDim, param.embedDim)),
             Recurrent().add(LSTM(param.embedDim, param.embedDim)),
             Recurrent().add(LSTM(param.embedDim, param.embedDim))
           )
+        val enclookuptable = LookupTable(vocabSize, param.embedDim)
+        val (enclookuptableW, enclookuptableG) = enclookuptable.getParameters()
 
-        var encoderRecs = Array(Recurrent().add(MultiRNNCell(decoderCells))
-          .asInstanceOf[Recurrent[Double]])
-        var decoderRecs = Array(RecurrentDecoder(seqLength).add(MultiRNNCell(decoderCells))
-          .asInstanceOf[Recurrent[Double]])
+        val declookuptable = LookupTable(vocabSize, param.embedDim)
+        val preEncoder = enclookuptable
+        val preDecoder = declookuptable
 
-        val model = Seq2seq(encoderRecs, decoderRecs,
-          decoderInputType = DecoderInputType.ENCODERINPUTLASTTIME)
-
-        for (i <- 0 until 3) {
-          model.forward(input).toTensor
-          model.backward(input, gradOutput)
-        }
-
-        decoderRecs = decoderCells.map(Recurrent().add(_))
-        val model2 = Seq2seq(encoderRecs, decoderRecs,
-          decoderInputType = DecoderInputType.ENCODERINPUTSPLIT)
-        curModel.reset()
-        curModel
+        val model = Sequential()
+          .add(
+            Seq2seq(encoder, decoder,
+              preEncoder = preEncoder,
+              preDecoder = preDecoder,
+//              preEncoder = LookupTable(vocabSize, param.embedDim),
+//              preDecoder = LookupTable(vocabSize, param.embedDim),
+              decoderInputType = DecoderInputType.ENCODERINPUTSPLIT))
+          .add(TimeDistributed(Linear(param.embedDim, vocabSize)))
+          .add(TimeDistributed(LogSoftMax()))
+        model.reset()
+        model
       }
 
       val optimMethod = if (param.stateSnapshot.isDefined) {
@@ -131,27 +138,65 @@ class Train {
 
       val optimizer = Optimizer(
         model = model,
-        dataset = trainSet,
-        criterion = TimeDistributedCriterion[Float](
-          CrossEntropyCriterion[Float](), sizeAverage = true)
-      )
+        sampleRDD = trainSet,
+        criterion = TimeDistributedCriterion(ClassNLLCriterion()),
+        batchSize = param.batchSize,
+        featurePaddingParam = PaddingParam[Float](
+          paddingTensor =
+            Some(Array(padFeature, padFeature))),
+        labelPaddingParam = PaddingParam[Float](
+          paddingTensor =
+            Some(Array(padLabel))))
 
       if (param.checkpoint.isDefined) {
         optimizer.setCheckpoint(param.checkpoint.get, Trigger.everyEpoch)
       }
 
-      if(param.overWriteCheckpoint) {
+      if (param.overWriteCheckpoint) {
         optimizer.overWriteCheckpoint()
       }
 
       optimizer
-        .setValidation(Trigger.everyEpoch, validationSet, Array(new Loss[Float](
-          TimeDistributedCriterion[Float](CrossEntropyCriterion[Float](), sizeAverage = true))))
+        .setValidation(
+          Trigger.everyEpoch,
+          validationSet,
+          Array(new Loss[Float](
+            TimeDistributedCriterion(ClassNLLCriterion()))),
+          param.batchSize,
+          featurePaddingParam = PaddingParam[Float](
+            paddingTensor =
+              Some(Array(padFeature, padFeature))),
+          labelPaddingParam = PaddingParam[Float](
+            paddingTensor =
+              Some(Array(padLabel))))
         .setOptimMethod(optimMethod)
         .setEndWhen(Trigger.maxEpoch(param.nEpochs))
         .setCheckpoint(param.checkpoint.get, Trigger.everyEpoch)
         .optimize()
       sc.stop()
     })
+  }
+
+
+  def chatToLabeledChat[T: ClassTag](
+    dictionary: Dictionary,
+    chat: (Array[String], Array[String]))(implicit ev: TensorNumeric[T])
+  : (Array[T], Array[T], Array[T]) = {
+    val (indices1, indices2) =
+      (chat._1.map(x => ev.fromType[Int](dictionary.getIndex(x) + 1)),
+        chat._2.map(x => ev.fromType[Int](dictionary.getIndex(x) + 1)))
+    val label = indices2.drop(1)
+    (indices1, indices2.take(indices2.length - 1), label)
+  }
+
+  def labeledChatToSample[T: ClassTag](
+    labeledChat: (Array[T], Array[T], Array[T]))
+    (implicit ev: TensorNumeric[T]): Sample[T] = {
+
+    val sentence1: Tensor[T] = Tensor(Storage(labeledChat._1))
+    val sentence2: Tensor[T] = Tensor(Storage(labeledChat._2))
+    val label: Tensor[T] = Tensor(Storage(labeledChat._3))
+
+    Sample(featureTensors = Array(sentence1, sentence2), labelTensor = label)
   }
 }

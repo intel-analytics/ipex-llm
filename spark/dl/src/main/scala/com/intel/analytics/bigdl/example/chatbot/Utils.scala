@@ -16,22 +16,16 @@
 
 package com.intel.analytics.bigdl.example.chatbot
 
-import scopt.OptionParser
 import java.io._
 
-import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.DataSet
 import com.intel.analytics.bigdl.dataset.text._
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-
-import scala.util.Random
-import org.apache.log4j.Logger
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
+import scopt.OptionParser
 
 import scala.collection.mutable.ArrayBuffer
 import scala.io.Source
-import scala.reflect.ClassTag
 
 object Utils {
 
@@ -40,8 +34,8 @@ object Utils {
                           saveFolder: String = "./",
                           modelSnapshot: Option[String] = None,
                           stateSnapshot: Option[String] = None,
-                          checkpoint: Option[String] = None,
-                          batchSize: Int = 128,
+                          checkpoint: Option[String] = Some("/tmp/"),
+                          batchSize: Int = 32,
                           learningRate: Double = 0.1,
                           momentum: Double = 0.0,
                           weightDecay: Double = 0.0,
@@ -51,7 +45,7 @@ object Utils {
                           bptt: Int = 4,
                           nEpochs: Int = 30,
                           trainingSplit: Double = 0.8,
-                          embedDim: Int = 1024,
+                          embedDim: Int = 200,
                           sentFile: Option[String] = None,
                           tokenFile: Option[String] = None,
                           overWriteCheckpoint: Boolean = false)
@@ -117,11 +111,11 @@ object Utils {
 
     opt[Double]('s', "trainSplit")
       .text("train split")
-      .action((x, c) => c.copy(nEpochs = x))
+      .action((x, c) => c.copy(trainingSplit = x))
 
     opt[Int]("embedDims")
       .text("embedding dimensions")
-      .action((x, c) => c.copy(nEpochs = x))
+      .action((x, c) => c.copy(embedDim = x))
 
     opt[String]("sent")
       .text("sentence dictionary to split document into sentences")

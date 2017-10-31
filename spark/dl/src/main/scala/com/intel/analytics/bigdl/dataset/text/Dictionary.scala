@@ -48,7 +48,7 @@ class Dictionary()
    */
   def word2Index(): Map[String, Int] = _word2index
 
-  def index2Word(): Map[Int, String] = _index2word
+  def index2Word(): mutable.Map[Int, String] = _index2word
 
   /**
    * Return the array of all selected words.
@@ -148,7 +148,7 @@ class Dictionary()
   }
 
   def this(sentences: Iterator[Array[String]],
-           vocabSize: Int) = {
+    vocabSize: Int) = {
     this()
     val freqDict = sentences
       .flatMap(x => x)
@@ -171,7 +171,7 @@ class Dictionary()
   }
 
   def this(sentences: Stream[Array[String]],
-           vocabSize: Int) = {
+    vocabSize: Int) = {
     this()
     val freqDict = sentences
       .flatMap(x => x)
@@ -194,10 +194,10 @@ class Dictionary()
       "discardFile does not exist or is not a File type.")
 
     import scala.io.Source
-    _word2index = Source.fromFile(dictionaryFile.getAbsolutePath)
+    _word2index = mutable.Map(Source.fromFile(dictionaryFile.getAbsolutePath)
       .getLines.map(_.stripLineEnd.split("->", -1))
       .map(fields => fields(0).stripSuffix(" ") -> fields(1).stripPrefix(" ").toInt)
-      .toMap[String, Int]
+      .toMap[String, Int].toSeq: _*)
     _index2word = _word2index.map(x => (x._2, x._1))
     _vocabulary = _word2index.keys.toSeq
     _vocabSize = _word2index.size
@@ -210,7 +210,7 @@ class Dictionary()
     val length = math.min(vocabSize, freqDict.length)
     _vocabulary = freqDict.drop(freqDict.length - length).map(_._1)
     _vocabSize = _vocabulary.length
-    _word2index = _vocabulary.zipWithIndex.toMap
+    _word2index = mutable.Map(_vocabulary.zipWithIndex.toMap.toSeq: _*)
     _index2word = _word2index.map(x => (x._2, x._1))
     _discardVocab = freqDict.take(freqDict.length - length).map(_._1)
     _discardSize = _discardVocab.length
