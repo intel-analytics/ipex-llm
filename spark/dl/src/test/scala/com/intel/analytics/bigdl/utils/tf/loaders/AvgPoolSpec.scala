@@ -31,7 +31,7 @@ class AvgPoolSpec extends TensorflowSpecHelper {
         .putAttr("ksize", kernelAttr(4, 4, TensorflowDataFormat.NHWC))
         .putAttr("strides", strideAttr(1, 1, TensorflowDataFormat.NHWC))
         .putAttr("padding", PaddingType.PADDING_SAME.value),
-      Seq(Tensor[Float](4, 32, 32, 3)),
+      Seq(Tensor[Float](4, 32, 32, 3).rand()),
       0
     )
 
@@ -44,7 +44,7 @@ class AvgPoolSpec extends TensorflowSpecHelper {
         .putAttr("ksize", kernelAttr(4, 4, TensorflowDataFormat.NHWC))
         .putAttr("strides", strideAttr(1, 1, TensorflowDataFormat.NHWC))
         .putAttr("padding", PaddingType.PADDING_VALID.value),
-      Seq(Tensor[Float](4, 32, 32, 3)),
+      Seq(Tensor[Float](4, 32, 32, 3).rand()),
       0
     )
   }
