@@ -175,4 +175,38 @@ class SpatialConvolutionSpec extends TorchSpec {
 
     require(output.equals(luaOutput) == true)
   }
+
+  "A SpatialConvolution init with msrafiller" should "generate correct output" in {
+    torchCheck()
+    val seed = 100
+
+    val nInputPlane = 3
+    val nOutputPlane = 64
+    val kW = 11
+    val kH = 11
+    val dW = 4
+    val dH = 4
+    val padW = 2
+    val padH = 2
+    val layer = new SpatialConvolution[Double](nInputPlane, nOutputPlane, kW, kH, dW, dH,
+      padW, padH, withBias = false)
+    RNG.setSeed(seed)
+    layer.setInitMethod(MsraFiller(false), Zeros)
+
+    val input = Tensor[Double](16, 3, 224, 224).apply1(e => Random.nextDouble())
+
+    val code = "layer = nn.SpatialConvolutionMM(3, 64, 11, 11, 4, 4, 2, 2)\n" +
+      "torch.manualSeed(" + seed + ")\n" +
+      "n = layer.kW*layer.kH*layer.nOutputPlane\n" +
+      "weight = layer.weight\n" +
+      "std = math.sqrt(2/n)" +
+      "weight:normal(0, std)"
+
+    val (luaTime, torchResult) = TH.run(code, Map("input" -> input),
+      Array("weight", "std"))
+    val luaWeight = torchResult("weight").asInstanceOf[Tensor[Double]]
+    val luaStd = torchResult("std")
+
+    luaWeight should be (layer.weight.resize(64, 363))
+  }
 }
