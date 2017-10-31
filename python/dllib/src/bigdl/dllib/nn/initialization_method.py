@@ -81,6 +81,14 @@ class Xavier(InitializationMethod):
     def __init__(self, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type)
 
+class MsraFiller(InitializationMethod):
+    """
+    MsraFiller Initializer.
+    See https://www.cv-foundation.org/openaccess/content_iccv_2015/papers/He_Delving_Deep_into_ICCV_2015_paper.pdf
+    """
+    def __init__(self, varianceNormAverage=True, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type, varianceNormAverage)
+
 class BilinearFiller(InitializationMethod):
     """
     Initialize the weight with coefficients for bilinear interpolation.
