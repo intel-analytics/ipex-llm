@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.VariableFormat.Default
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.RandomGenerator
 
 /**
  * VariableFormat describe the meaning of each dimension of the variable
@@ -278,6 +279,35 @@ case object Xavier extends InitializationMethod {
     variable.rand(-stdv, stdv)
   }
 
+}
+
+/**
+ * A Filler based on the paper [He, Zhang, Ren and Sun 2015]: Specifically
+ * accounts for ReLU nonlinearities.
+ *
+ * Aside: for another perspective on the scaling factor, see the derivation of
+ * [Saxe, McClelland, and Ganguli 2013 (v3)].
+ *
+ * It fills the incoming matrix by randomly sampling Gaussian data with std =
+ * sqrt(2 / n) where n is the fanIn, fanOut, or their average, depending on
+ * the varianceNormAverage parameter.
+ *
+ * @param varianceNormAverage VarianceNorm use average of (fanIn + fanOut) or just fanOut
+ */
+case class MsraFiller(varianceNormAverage: Boolean = true) extends InitializationMethod {
+  def init[T](variable: Tensor[T], dataFormat: VariableFormat)
+             (implicit ev: TensorNumeric[T]): Unit = {
+    val shape = variable.size()
+    val fanIn = dataFormat.getFanIn(shape)
+    val fanOut = dataFormat.getFanOut(shape)
+    val n = if (varianceNormAverage) {
+      (fanIn + fanOut) / 2
+    } else {
+      fanOut
+    }
+    val std = math.sqrt(2.0 / n)
+    variable.apply1(_ => ev.fromType(RandomGenerator.RNG.normal(0, std)))
+  }
 }
 
 /**
