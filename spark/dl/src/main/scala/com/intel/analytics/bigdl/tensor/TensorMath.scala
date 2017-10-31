@@ -552,6 +552,19 @@ trait TensorMath[T] {
   def pow(n: T): Tensor[T]
 
   /**
+   * Populate the given tensor with the floor result of elements
+   * @param y
+   * @return
+   */
+  def floor(y: Tensor[T]): Tensor[T]
+
+  /**
+   * Replaces all elements in-place with the floor result of elements
+   * @return
+   */
+  def floor(): Tensor[T]
+
+  /**
    * Get the top k smallest values and their indices.
    *
    * @param result   result buffer
@@ -730,4 +743,11 @@ trait TensorMath[T] {
    * @return this tensor
    */
   def range(xmin: Double, xmax: Double, step: Int = 1): Tensor[T]
+
+  /**
+   * Computes numerical negative value element-wise. y = -x
+   * @param x
+   * @return this tensor
+   */
+  def negative(x : Tensor[T]): Tensor[T]
 }

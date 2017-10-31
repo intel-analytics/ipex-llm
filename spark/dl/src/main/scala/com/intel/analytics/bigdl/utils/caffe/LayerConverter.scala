@@ -80,7 +80,7 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
           kw, kh, dw, dh, pw, ph, 0, 0, group, !withBias).setName(getLayerName(layer)).inputs())
       } else {
         Seq(SpatialConvolution[T](nInputPlane.toInt, nOutPlane.toInt,
-          kw, kh, dw, dh, pw, ph, group, withBias).setName(getLayerName(layer)).inputs())
+          kw, kh, dw, dh, pw, ph, group, withBias = withBias).setName(getLayerName(layer)).inputs())
       }
     } else {
       val dilation = param.getDilation(0)
@@ -115,14 +115,29 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
     }
   }
 
-  override protected def fromCaffeBatchNormalization(layer : GeneratedMessage) :
+  override protected def fromCaffeBatchNormalization(layer: GeneratedMessage):
   Seq[ModuleNode[T]] = {
-    val  weightBlob = getBlob(layer, 0).get
-    val nOutPlane = if (weightBlob.hasShape) weightBlob.getShape.getDim(0)
+    val weightBlob = getBlob(layer, 0).get
+    val nOutPlane = if (weightBlob.hasShape) weightBlob.getShape.getDim(0).toInt
     else weightBlob.getNum
     val param = layer.asInstanceOf[LayerParameter].getBatchNormParam
     val eps = param.getEps
-    Seq(SpatialBatchNormalization[T](nOutPlane.toInt, eps).setName(getLayerName(layer)).inputs())
+    val batchNorm = SpatialBatchNormalization[T](nOutPlane.toInt, eps, affine = false)
+        .setName(getLayerName(layer))
+    val scaleData = getBlob(layer, 2).get.getData(0)
+    val scale = if (scaleData == 0) 0 else 1 / scaleData
+    val means = getBlob(layer, 0).get.getDataList
+    val variances = getBlob(layer, 1).get.getDataList
+    batchNorm.runningMean.resize(nOutPlane)
+    batchNorm.runningVar.resize(nOutPlane)
+
+    batchNorm.saveMean.resize(nOutPlane)
+    batchNorm.saveStd.resize(nOutPlane)
+    (1 to nOutPlane).foreach(i => {
+      batchNorm.runningMean.setValue(i, ev.fromType[Float](means.get(i - 1) * scale))
+      batchNorm.runningVar.setValue(i, ev.fromType[Float](variances.get(i - 1) * scale))
+    })
+    Seq(batchNorm.inputs())
   }
 
   override protected def fromCaffeELU(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
@@ -178,6 +193,16 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
     val axis = param.getAxis
     val tiles = param.getTiles
     Seq(Replicate[T](tiles, axis).setName(getLayerName(layer)).inputs())
+  }
+
+  override protected def fromCaffeInput(layer: GeneratedMessage): Seq[ModuleNode[T]] = {
+    val layerParam = layer.asInstanceOf[LayerParameter]
+    val tops = layerParam.getTopList
+    (0 until tops.size()).map(i => {
+      val input = Input()
+      input.element.setName(tops.get(i))
+      input
+    })
   }
 
   override protected def toCaffeConvolution(module : AbstractModule[Activity, Activity, T],

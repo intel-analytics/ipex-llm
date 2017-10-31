@@ -21,7 +21,7 @@ import java.util
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.tf.TensorflowLoader.Context
+import com.intel.analytics.bigdl.utils.tf.Context
 import com.intel.analytics.bigdl.utils.tf.TensorflowToBigDL.toTensor
 import org.tensorflow.framework.{AttrValue, DataType, NodeDef}
 
@@ -34,7 +34,7 @@ object Utils {
     trans: Option[Seq[(Int, Int)]] = None)(
     implicit ev: TensorNumeric[T]): (Tensor[T], Tensor[T]) = {
 
-    if (context.contains(node.getName)) {
+    if (context.containsTensor(node.getName)) {
       val result = context(node.getName)
       (result._1, result._2)
     } else {
@@ -48,7 +48,7 @@ object Utils {
         case _ =>
       }
       val gradient = Tensor[T](weight.size())
-      context.put(node.getName, (weight, gradient, trans))
+      context.putTensor(node.getName, (weight, gradient, trans))
       (weight, gradient)
     }
   }

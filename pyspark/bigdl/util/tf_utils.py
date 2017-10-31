@@ -157,7 +157,8 @@ def dump_model(path, sess=None, graph=None, bigdl_type="float"):
 
     # dump grap to pb file
     graph = sess.graph if graph is None else graph
-    tf.train.write_graph(graph, path, 'model.pb')
+    with gfile.GFile(path + "/model.pb", "wb") as f:
+        f.write(graph.as_graph_def().SerializeToString())
     try:
         shutil.rmtree(temp)
     except OSError as e:

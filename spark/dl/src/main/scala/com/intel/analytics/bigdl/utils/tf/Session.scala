@@ -20,7 +20,7 @@ import java.nio.{ByteOrder, DoubleBuffer, FloatBuffer}
 import com.intel.analytics.bigdl.Criterion
 import com.intel.analytics.bigdl.dataset.{DataSet, DistributedDataSet, MiniBatch, Sample}
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Graph, Linear}
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractCriterion, AbstractModule, Activity}
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.{NumericWildcard, TensorNumeric}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
@@ -32,25 +32,151 @@ import org.tensorflow.framework.{GraphDef, NodeDef}
 import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.models.utils.ModelBroadcast
 import TFTensorNumeric.NumericByteString
+import com.intel.analytics.bigdl.utils.tf.BigDLSessionImpl.FakeCriterion
 
 import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
+import scala.util.Random
 
 abstract class Session[T: ClassTag] {
 
+  /**
+   * Train the tensorflow graph
+   * @param outputs
+   * @param dataSet
+   * @param optMethod
+   * @param criterion
+   * @param endWhen
+   * @return
+   */
   def train(outputs: Seq[String],
             dataSet: DistributedDataSet[MiniBatch[T]],
             optMethod: OptimMethod[T],
             criterion: Criterion[T],
             endWhen: Trigger): Graph[T]
+
+
+  /**
+   * Train the tensorflow graph. The model must be fed data with a queue
+   * @param endPoints
+   * @param optMethod
+   * @param endWhen
+   * @param isDataBatch if the model input is the batch
+   * @param batchSize batch size, which should be original batch size * total core number
+   * @param sc
+   * @param loss
+   * @return
+   */
+  def train(
+    endPoints: Seq[String],
+    optMethod: OptimMethod[T],
+    endWhen: Trigger,
+    isDataBatch: Boolean,
+    batchSize: Int,
+    sc: SparkContext,
+    loss: Option[String]
+  ): this.type
+
+  /**
+   * Predict data with tensorflow graph. The data must hold in a queue
+   * @param endPoints
+   * @param isDataBatch if the model input is the batch
+   * @param batchSize batch size, which should be original batch size * total core number
+   * @param sc
+   * @return
+   */
+  def predict(
+    endPoints: Seq[String],
+    isDataBatch: Boolean,
+    batchSize: Int,
+    sc: SparkContext
+  ): RDD[Activity]
+
+  /**
+   * Dump varaible contents to a file
+   * @param binFile
+   * @return
+   */
+  def saveParameters(binFile: String): this.type
 }
 
-class BigDLSessionImpl[T: ClassTag](
-       graph: Seq[NodeDef],
-       sc: SparkContext,
-       context: mutable.HashMap[String, (Tensor[T], Tensor[T], Option[Seq[(Int, Int)]])])
-                         (implicit ev: TensorNumeric[T]) extends Session[T] {
+class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
+  byteOrder: ByteOrder = ByteOrder.LITTLE_ENDIAN)
+  (implicit ev: TensorNumeric[T]) extends Session[T] {
+
   import scala.collection.JavaConverters._
+
+  override def train(outputs: Seq[String],
+    dataSet: DistributedDataSet[MiniBatch[T]],
+    optMethod: OptimMethod[T],
+    criterion: Criterion[T],
+    endWhen: Trigger): Graph[T] = {
+
+    val (model, input) = constructModel(outputs, byteOrder, true, None)
+
+    require(input.element.getOp == "Placeholder",
+      "only support Placeholder as input when in-memory input data is provided")
+
+    val opt = new DistriOptimizer(
+      model,
+      dataSet,
+      criterion
+    )
+    opt.setOptimMethod(optMethod).setEndWhen(endWhen)
+      .optimize()
+    model
+  }
+
+  override def train(
+    endPoints: Seq[String],
+    optMethod: OptimMethod[T],
+    endWhen: Trigger,
+    isDataBatch: Boolean,
+    batchSize: Int,
+    sc: SparkContext,
+    loss: Option[String]
+  )
+  : this.type = {
+    val weightsAndGrads = endPoints.map(e => name2Node(e)).map(n => n.graph(true).DFS).flatten
+      .map(n => TFUpdater(n.element)).flatten.toSet
+
+    require(weightsAndGrads.size != 0, "Cannot find updater nodes")
+    context.setAssignGrads(weightsAndGrads)
+    val modelOutputs = if (loss.isDefined) {
+      Seq(loss.get) ++ weightsAndGrads.map(_._2).toSeq
+    } else {
+      weightsAndGrads.map(_._2).toSeq
+    }
+    val (model, input) = constructModel(modelOutputs, byteOrder, false, Some(context))
+    val data = BigDLSessionImpl.toSample[T](getRDD(Seq(input.element.getName), sc, isDataBatch))
+
+    val opt = Optimizer[T](
+      model,
+      data,
+      new FakeCriterion[T](),
+      batchSize
+    )
+    opt.setOptimMethod(optMethod).setEndWhen(endWhen)
+      .optimize()
+    this
+  }
+
+  override def predict(
+    endPoints: Seq[String],
+    isDataBatch: Boolean,
+    batchSize: Int,
+    sc: SparkContext
+  ): RDD[Activity] = {
+    val (model, input) = constructModel(endPoints, byteOrder, true, Some(context))
+    val data = BigDLSessionImpl.toSample[T](getRDD(Seq(input.element.getName), sc, isDataBatch))
+    model.predict(data)
+  }
+
+  override def saveParameters(binFile: String): this.type = {
+    TensorflowLoader.saveBinFile(binFile, context)
+    this
+  }
 
   private val inputOp = Set("ReaderReadV2", "QueueDequeueV2", "QueueDequeueManyV2", "Placeholder")
 
@@ -65,7 +191,8 @@ class BigDLSessionImpl[T: ClassTag](
   private val name2Node = wholeTFGraph.
     DFS.filter(_.element != null).map(node => (node.element.getName, node)).toMap
 
-  private def handleReaderNode(node: Node[NodeDef], cache: DataCache): RDD[Table] = {
+  private def handleReaderNode(node: Node[NodeDef], cache: DataCache,
+    sc: SparkContext): RDD[Table] = {
     require(node.prevNodes.length == 2, "require ReaderReadV2 only has two inputs")
     val readerNode = node.prevNodes.head
     val queueNode = node.prevNodes(1)
@@ -90,7 +217,7 @@ class BigDLSessionImpl[T: ClassTag](
         val inputs = Seq(enqueueNode.element.getName)
         val result = constructLocalData(inputs, new DataCache())
         if (enqueueNode.element.getOp == "QueueEnqueueManyV2") {
-          result.flatMap(splitTensorByFirstDim)
+          result.flatMap(BigDLSessionImpl.splitTensorByFirstDim)
         } else {
           result
         }
@@ -105,8 +232,8 @@ class BigDLSessionImpl[T: ClassTag](
     }
 
     readerNode.element.getOp match {
-      case "TFRecordReaderV2" => readTFRecord(filesSeq)
-      case "FixedLengthRecordReaderV2" => readFixedLengthRecord(filesSeq, readerNode.element)
+      case "TFRecordReaderV2" => readTFRecord(filesSeq, sc)
+      case "FixedLengthRecordReaderV2" => readFixedLengthRecord(filesSeq, readerNode.element, sc)
     }
   }
 
@@ -127,7 +254,7 @@ class BigDLSessionImpl[T: ClassTag](
     result
   }
 
-  private def readTFRecord(filesTable: Seq[Table]): RDD[Table] = {
+  private def readTFRecord(filesTable: Seq[Table], sc: SparkContext): RDD[Table] = {
     val result = filesTable.map { t =>
         require(t.length() == 1 && t(1).isInstanceOf[Tensor[ByteString]],
           "Reader can only read one file at a time")
@@ -150,7 +277,8 @@ class BigDLSessionImpl[T: ClassTag](
     resultRdd
   }
 
-  private def readFixedLengthRecord(filesTable: Seq[Table], readerNode: NodeDef): RDD[Table] = {
+  private def readFixedLengthRecord(filesTable: Seq[Table], readerNode: NodeDef, sc: SparkContext)
+    : RDD[Table] = {
 
     val footerBytes = readerNode.getAttrMap.get("footer_bytes").getI.toInt
     val headerBytes = readerNode.getAttrMap.get("header_bytes").getI.toInt
@@ -232,7 +360,7 @@ class BigDLSessionImpl[T: ClassTag](
         val inputs = Seq(enqueueNode.element.getName)
         val result = constructLocalData(inputs, new DataCache())
         if (enqueueNode.element.getOp == "QueueEnqueueManyV2") {
-          result.flatMap(splitTensorByFirstDim)
+          result.flatMap(BigDLSessionImpl.splitTensorByFirstDim)
         } else {
           result
         }
@@ -248,101 +376,20 @@ class BigDLSessionImpl[T: ClassTag](
     dataSeq
   }
 
-  private def handleDistriDequeue(node: Node[NodeDef], cache: DataCache): RDD[Table] = {
-    require(node.prevNodes.length == 1, "require QueueDequeueV2 only has one input")
-    val queueNode = node.prevNodes.head
-    val dequeueNodes = queueNode.nextNodes
-      .filter(n => n.element != null && dequeueOp(n.element.getOp))
-      .map(n => n.element.getName.split(":")(0)).toSet
-    require(dequeueNodes.size == 1, "only support one dequeue node after reader")
-    val enqueueNodes = findEnqueueNodes(queueNode)
-    val rdd = enqueueNodes.map { enqueueNode =>
-      val inputs = Seq(enqueueNode.element.getName)
-      val result = constructDistributeData(inputs, cache)
-      if (enqueueNode.element.getOp == "QueueEnqueueManyV2") {
-        result.flatMap(splitTensorByFirstDim)
-      } else {
-        result
-      }
-    }.reduce { (rdd1, rdd2) =>
-      rdd1.union(rdd2)
-    }
-    rdd
-  }
-
-  private def splitTensorByFirstDim(table: Table): Array[Table] = {
-    val nElem = table.length()
-    require(nElem >= 1, "EnqueueManyV2 encounter a empty table")
-    val first = table[Tensor[_]](1)
-    require(first.nDimension() >= 1)
-    val depth = first.size(1)
-    val result = new Array[Table](depth)
-    var i = 0
-    while(i < depth) {
-      var j = 0
-      val newTable = new Table()
-      while (j < nElem) {
-        val elem = table[Tensor[ByteString]](j + 1)
-        newTable.insert(elem(i + 1))
-        j = j + 1
-      }
-      result(i) = newTable
-      i = i + 1
-    }
-    result
-  }
-
-  private def handleDistriDequeueManyNode(node: Node[NodeDef], cache: DataCache): RDD[Table] = {
-    require(node.prevNodes.length == 2, "require QueueDequeueManyV2 only has two input")
-    val queueNode = node.prevNodes.head
-    val dequeueNodes = queueNode.nextNodes
-      .filter(n => n.element != null && dequeueOp(n.element.getOp))
-      .map(n => n.element.getName.split(":")(0)).toSet
-    require(dequeueNodes.size == 1, "only support one dequeue node after reader")
-    val enqueueNodes = findEnqueueNodes(queueNode)
-    // get previous rdd
-    val rdd = enqueueNodes.map { enqueueNode =>
-      val inputs = Seq(enqueueNode.element.getName)
-      val result = constructDistributeData(inputs, cache)
-      if (enqueueNode.element.getOp == "QueueEnqueueManyV2") {
-        result.flatMap(splitTensorByFirstDim)
-      } else {
-        result
-      }
-    }.reduce { (rdd1, rdd2) =>
-      rdd1.union(rdd2)
-    }
-
-    // get batch size
-    val batchSizeNode = node.prevNodes(1)
-    require(batchSizeNode.element.getOp == "Const", "batchsize must be a const")
-
-    val batchSize = batchSizeNode.element.getAttrMap.get("value").getTensor.getIntVal(0)
-
-    val batchRdd = rdd.mapPartitions { iter =>
+  private def batchRdd(rdd: RDD[Table], batchSize: Int): RDD[Table] = {
+    rdd.mapPartitions { iter =>
 
       new Iterator[Table] {
-        private var firstBatch: Array[Table] = null
         override def hasNext: Boolean = iter.hasNext
 
         override def next(): Table = {
           require(iter.hasNext, "Call next() on a empty iterator")
-          val tables = new Array[Table](batchSize)
-          var index = 0
-          for (i <- 0 until batchSize) {
-            if (iter.hasNext) {
-              tables(i) = iter.next()
-            } else if (firstBatch == null) {
-              tables(i) = tables(index)
-              index = index + 1
-            } else {
-              tables(i) = firstBatch(index)
-              index = index + 1
+
+          val tables =
+            for (i <- 0 until batchSize if iter.hasNext) yield {
+              iter.next()
             }
-          }
-          if (firstBatch == null) {
-            firstBatch = tables
-          }
+
           val batch = tables.map(_.toSeq)
           val firstSeq = batch.head
           val sizes = firstSeq.map { tensor =>
@@ -378,7 +425,38 @@ class BigDLSessionImpl[T: ClassTag](
       }
 
     }
-    batchRdd
+  }
+
+  private def handleDistriDequeue(node: Node[NodeDef], cache: DataCache,
+                                 sc: SparkContext): RDD[Table] = {
+    val queueNode = node.prevNodes.head
+    val dequeueNodes = queueNode.nextNodes
+      .filter(n => n.element != null && dequeueOp(n.element.getOp))
+      .map(n => n.element.getName.split(":")(0)).toSet
+    require(dequeueNodes.size == 1, "only support one dequeue node after reader")
+    val enqueueNodes = findEnqueueNodes(queueNode)
+    // get previous rdd
+    var rdd = enqueueNodes.map { enqueueNode =>
+      val inputs = Seq(enqueueNode.element.getName)
+      val result = constructDistributeData(inputs, cache, sc)
+      if (enqueueNode.element.getOp == "QueueEnqueueManyV2") {
+        result.flatMap(BigDLSessionImpl.splitTensorByFirstDim)
+      } else {
+        result
+      }
+    }.reduce { (rdd1, rdd2) =>
+      rdd1.union(rdd2)
+    }
+
+    if (node.element.getOp == "QueueDequeueManyV2") {
+      // get batch size
+      val batchSizeNode = node.prevNodes(1)
+      require(batchSizeNode.element.getOp == "Const", "batchsize must be a const")
+
+      val batchSize = batchSizeNode.element.getAttrMap.get("value").getTensor.getIntVal(0)
+      rdd = batchRdd(rdd, batchSize)
+    }
+    rdd
   }
 
   type DataCache = mutable.HashMap[String, Array[Seq[Table]]]
@@ -399,7 +477,7 @@ class BigDLSessionImpl[T: ClassTag](
       }
   }
 
-  def constructLocalData(endPoints: Seq[String], cache: DataCache): Seq[Table] = {
+  private def constructLocalData(endPoints: Seq[String], cache: DataCache): Seq[Table] = {
     val isInputOp = (n: NodeDef) => inputOp(n.getOp)
     val (tfGraph, inputs, originInputs) = TensorflowLoader.
       buildTFGraph(graph.asJava, endPoints, isInputOp)
@@ -409,11 +487,11 @@ class BigDLSessionImpl[T: ClassTag](
     val adjustedInputs = adjustInputNames(originInputs)
     val transformer = TensorflowLoader.buildBigDLModel(
       tfGraph,
-      inputs,
+      inputs.toSeq.map(_._2).flatten,
       endPoints,
       ByteOrder.LITTLE_ENDIAN,
       "",
-      Some(context),
+      None,
       generatedBackward = false
     ).asInstanceOf[Graph[T]]
 
@@ -449,7 +527,8 @@ class BigDLSessionImpl[T: ClassTag](
     }
   }
 
-  private def constructDistributeData(endPoints: Seq[String], cache: DataCache): RDD[Table] = {
+  private def constructDistributeData(endPoints: Seq[String], cache: DataCache,
+      sc: SparkContext): RDD[Table] = {
     val isInputOp = (n: NodeDef) => inputOp(n.getOp)
     val (tfGraph, inputs, originInputs) =
       TensorflowLoader.buildTFGraph(graph.asJava, endPoints, isInputOp)
@@ -462,19 +541,19 @@ class BigDLSessionImpl[T: ClassTag](
 
     val transformer = TensorflowLoader.buildBigDLModel(
       tfGraph,
-      inputs,
+      inputs.toSeq.map(_._2).flatten,
       endPoints,
       ByteOrder.LITTLE_ENDIAN,
       "",
-      Some(context),
+      None,
       generatedBackward = false
     ).asInstanceOf[Graph[T]]
 
     val inputRdds = inputNodes.map { node => // this is the input op
       node.element.getOp match {
-        case "ReaderReadV2" => handleReaderNode(node, cache)
-        case "QueueDequeueV2" => handleDistriDequeue(node, cache)
-        case "QueueDequeueManyV2" => handleDistriDequeueManyNode(node, cache)
+        case "ReaderReadV2" => handleReaderNode(node, cache, sc)
+        case "QueueDequeueV2" => handleDistriDequeue(node, cache, sc)
+        case "QueueDequeueManyV2" => handleDistriDequeue(node, cache, sc)
       }
     }
     val inputRdd = inputRdds.reduce { (rdd1, rdd2) =>
@@ -495,7 +574,9 @@ class BigDLSessionImpl[T: ClassTag](
   }
 
 
-  private def constructModel(endPoints: Seq[String]): (Graph[T], Node[NodeDef]) = {
+  private def constructModel(endPoints: Seq[String], byteOrder: ByteOrder,
+    generateBackward: Boolean, context: Option[Context[T]])
+      : (Graph[T], Node[NodeDef]) = {
     val isInputOp = (n: NodeDef) => inputOp(n.getOp)
     val (tfGraph, inputs, originInputs) =
       TensorflowLoader.buildTFGraph(graph.asJava, endPoints, isInputOp)
@@ -510,53 +591,93 @@ class BigDLSessionImpl[T: ClassTag](
 
     val model = TensorflowLoader.buildBigDLModel(
       tfGraph,
-      inputs,
+      inputs.toSeq.map(_._2).flatten,
       endPoints,
-      ByteOrder.LITTLE_ENDIAN,
+      byteOrder,
       "",
-      Some(context)
+      context,
+      generateBackward
     ).asInstanceOf[Graph[T]]
     (model, inputNodes.head)
-  }
-
-  /**
-   * Train the model specified by the model output
-   * @param outputs model output
-   * @param dataSet the training data set
-   * @return trained model
-   */
-  override def train(outputs: Seq[String],
-                     dataSet: DistributedDataSet[MiniBatch[T]],
-                     optMethod: OptimMethod[T],
-                     criterion: Criterion[T],
-                     endWhen: Trigger): Graph[T] = {
-
-    val (model, input) = constructModel(outputs)
-
-    require(input.element.getOp == "Placeholder",
-      "only support Placeholder as input when in-memory input data is provided")
-
-    val opt = new DistriOptimizer(
-      model,
-      dataSet,
-      criterion
-    )
-
-    opt.setOptimMethod(optMethod).setEndWhen(endWhen)
-      .optimize()
-    model
   }
 
   /**
    * Get and calculate the data up to the specified endpoints, and
    * return as a RDD[Table]
    * @param endPoints output endpoints
+   * @param hasToBatch indicate whether the subgraph to be executed already has
+   *        to batch operation. If yes, the batch operation will be undone at
+   *        the end of this execution, that is split each tensor by their first dimension.
    * @return
    */
-  def getRDD(endPoints: Seq[String]): RDD[Table] = {
+  private[bigdl] def getRDD(endPoints: Seq[String], sc: SparkContext,
+                            hasToBatch: Boolean = true): RDD[Table] = {
     val cache = new mutable.HashMap[String, Array[Seq[Table]]]()
-    constructDistributeData(endPoints, cache)
+    val result = if (!hasToBatch) {
+      constructDistributeData(endPoints, cache, sc)
+    } else {
+      val batchRdd = constructDistributeData(endPoints, cache, sc)
+      batchRdd.flatMap(BigDLSessionImpl.splitTensorByFirstDim)
+    }
+    result
+  }
+}
+
+object TFUpdater {
+  def apply(node: NodeDef): Option[(String, String)] = {
+    node.getOp match {
+      case "ApplyRMSProp" =>
+        Some((node.getInput(0), node.getInput(7)))
+      case _ => None
+    }
+  }
+}
+
+object BigDLSessionImpl {
+
+  class FakeCriterion[T: ClassTag](enable: Boolean = false)(implicit ev: TensorNumeric[T])
+    extends AbstractCriterion[Activity, Activity, T] {
+
+    override def updateOutput(input: Activity, target: Activity): T = {
+      if (enable) {
+        ev.fromType(0.0)
+      } else {
+        input.toTable.apply[Tensor[T]](1).value()
+      }
+    }
+
+    override def updateGradInput(input: Activity, target: Activity): Activity = {
+      null
+    }
   }
 
+  private def splitTensorByFirstDim(table: Table): Array[Table] = {
+    val nElem = table.length()
+    require(nElem >= 1, "EnqueueManyV2 encounter a empty table")
+    val first = table[Tensor[_]](1)
+    require(first.nDimension() >= 1)
+    val depth = first.size(1)
+    val result = new Array[Table](depth)
+    var i = 0
+    while(i < depth) {
+      var j = 0
+      val newTable = new Table()
+      while (j < nElem) {
+        val elem = table[Tensor[ByteString]](j + 1)
+        newTable.insert(elem(i + 1))
+        j = j + 1
+      }
+      result(i) = newTable
+      i = i + 1
+    }
+    result
+  }
 
+  private def toSample[T: ClassTag](rdd: RDD[Table])
+                           (implicit ev: TensorNumeric[T]): RDD[Sample[T]] = {
+    rdd.map{ t =>
+      val arr = t.toSeq[T].toArray
+      Sample[T](arr)
+    }
+  }
 }

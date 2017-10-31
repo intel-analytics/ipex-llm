@@ -1267,4 +1267,11 @@ object Tensor {
     }
     SparseTensor.concat(dim, seqTensors, res)
   }
+
+  private[bigdl] def sparseConcat[T: ClassTag](
+        dim: Int,
+        tensors: Seq[Tensor[T]],
+        res: Tensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
+    SparseTensor.concat(dim, tensors, res)
+  }
 }

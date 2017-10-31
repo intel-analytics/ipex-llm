@@ -26,7 +26,7 @@ import scala.reflect.ClassTag
 
 class Variable[T: ClassTag](val variableValue: Tensor[T], val variableGradient: Tensor[T])
                            (implicit ev: TensorNumeric[T])
-  extends Operation[Activity, Tensor[T], T] {
+  extends Operation[Activity, Tensor[T], T] with WithoutInput{
 
   override def clearState(): this.type = {
     this
@@ -69,4 +69,9 @@ class Variable[T: ClassTag](val variableValue: Tensor[T], val variableGradient: 
   override def accGradParameters(input: Activity, gradOutput: Tensor[T]): Unit = {
     this.variableGradient.add(ev.fromType[Double](1.0), gradOutput)
   }
+}
+
+object Variable {
+  def apply[T: ClassTag](variableValue: Tensor[T], variableGradient: Tensor[T])
+    (implicit ev: TensorNumeric[T]): Variable[T] = new Variable(variableValue, variableGradient)
 }

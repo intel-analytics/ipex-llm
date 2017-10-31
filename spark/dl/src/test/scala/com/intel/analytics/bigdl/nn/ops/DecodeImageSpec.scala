@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.nn.ops
 import com.intel.analytics.bigdl.utils.tf.TFRecordIterator
 import org.scalatest.{FlatSpec, Matchers}
 import java.io.{File => JFile}
-import java.nio.ByteOrder
+import java.nio.{ByteBuffer, ByteOrder}
 
 import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.tensor.{FloatType, Tensor}
@@ -37,6 +37,24 @@ class DecodeImageSpec extends FlatSpec with Matchers {
     val output = decoder.forward(input).asInstanceOf[Tensor[Int]]
 
     output.size() should be (Array(28*28))
+  }
+
+  "DecodeRaw " should "be able to decode float raw bytes" in {
+
+    val data = ByteBuffer.allocate(16)
+    data.order(ByteOrder.LITTLE_ENDIAN)
+    data.putFloat(1.0f)
+    data.putFloat(2.0f)
+    data.putFloat(3.0f)
+    data.putFloat(4.0f)
+
+    val input = Tensor.scalar(ByteString.copyFrom(data.array()))
+
+    val decoder = new DecodeRaw[Float](DataType.DT_FLOAT, true)
+
+    val output = decoder.forward(input).asInstanceOf[Tensor[Int]]
+
+    output should be (Tensor[Float](Array(1.0f, 2.0f, 3.0f, 4.0f), Array(4)))
   }
 
   "DecodePng " should "be able to decode png" in {
@@ -91,7 +109,7 @@ class DecodeImageSpec extends FlatSpec with Matchers {
     }
 
     val resource = getClass.getClassLoader.getResource("tf")
-    val path = resource.getPath + JFile.separator + "mnist_test.tfrecord"
+    val path = resource.getPath + JFile.separator + "decode_image_test_case.tfrecord"
     val file = new JFile(path)
 
     val bytesVector = new TFRecordIterator(file).toVector

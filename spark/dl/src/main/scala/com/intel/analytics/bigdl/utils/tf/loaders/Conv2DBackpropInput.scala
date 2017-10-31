@@ -25,10 +25,12 @@ import org.tensorflow.framework.NodeDef
 
 import scala.reflect.ClassTag
 import Utils._
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.tf.Context
 
 class Conv2DBackpropInput extends TensorflowOpsLoader {
-  override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder)
-    (implicit ev: TensorNumeric[T]): Module[T] = {
+  override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder,
+    context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
 
     val attributes = nodeDef.getAttrMap
     val (pW, pH) =

@@ -516,9 +516,8 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     val (tfGraph, inputs, _) =
       TensorflowLoader.buildTFGraph(tfNodes, endPoints.map(_.split(":")(0)),
         (node: NodeDef) => node.getName == "input_node")
-    val context =
-      new mutable.HashMap[String, (Tensor[Float], Tensor[Float], Option[Seq[(Int, Int)]])]
-    val model = TensorflowLoader.buildBigDLModel(tfGraph, inputs,
+    val context = new Context[Float]()
+    val model = TensorflowLoader.buildBigDLModel(tfGraph, inputs.toSeq.map(_._2).flatten,
       endPoints.map(_.split(":")(0)), ByteOrder.LITTLE_ENDIAN, "", Some(context))
 
     // Compare the tensor contents
@@ -572,7 +571,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
       }
 
       // find all gradients tensor of variables in tensorflow graph
-      val tfGradTensorsMap = context.keySet.map{
+      val tfGradTensorsMap = context.tensorNames().map{
         node =>
           val t = tfNodes.asScala.filter(_.getName.contains(node + "_grad"))(0)
           t.getName ->
@@ -582,7 +581,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
       // do backward
       model.backward(input, gradInputs)
 
-      val pairs = context.keySet.map { x =>
+      val pairs = context.tensorNames().map { x =>
           val name = s"${x}_grad"
           var tensor = tfGradTensorsMap.get(name).orNull
           var (_, grad, trans) = context(x)

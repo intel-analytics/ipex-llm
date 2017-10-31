@@ -279,6 +279,9 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
       "A graph container should not be changed after it is constructed")
   }
 
+  // todo: expand the graph
+  override def toGraph(startNodes: ModuleNode[T]*): Graph[T] = this
+
   // Add a dummy output node, to get an one end graph. So the nodes that are not dependent by
   // the outputs will be excluded
   private val dummyOutput = new ModuleNode[T](new Identity[T]())
@@ -363,15 +366,27 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
 
   private val gradOutputCache = new mutable.HashMap[String, Activity]()
 
+  private def duplicatedNames(names: Seq[String]): mutable.Set[String] = {
+    names.sortWith(_ < _)
+    val buffer = new mutable.HashSet[String]()
+    var i = 1
+    while(i < names.length) {
+      if (names(i) == names(i - 1)) buffer.add(names(i))
+      i += 1
+    }
+    buffer
+  }
+
   private def checkRoots: Unit = {
     require(forwardNodes.map(_.element.getName()).distinct.length == forwardNodes.length,
-      "the name of node in the graph should be unique")
+      s"the name of node in the graph should be unique, but find dumplicated name " +
+        s"${duplicatedNames(forwardNodes.map(_.element.getName())).mkString(", ")}")
     val roots = forwardNodes.filter(_.prevNodes.size == 0)
       .filter(node => !node.element.isInstanceOf[WithoutInput]
         && !node.element.isInstanceOf[ControlDependency[_]])
-    require(roots.size == inputs.length,
+    require(roots.size == inputs.filter(node => !node.element.isInstanceOf[WithoutInput]).length,
       s"There're ${inputs.length} inputs, but graph has ${roots.size} roots")
-    inputs.foreach(n =>
+    inputs.filter(node => !node.element.isInstanceOf[WithoutInput]).foreach(n =>
       require(roots.contains(n), "inputs and graph roots are not match")
     )
   }
@@ -493,17 +508,19 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
         require(activity.isTensor, "Cannot add a table to a tensor")
         activity.toTensor[T].add(other.toTensor[T])
       } else {
+        // if 'activity' and 'other' are both table, we need to merge 'other' to 'activity'
+        // if 'other' and 'activity' both contains the index, update 'activity' by sum
+        // if 'other' contains the index while 'activity' does not,
+        // just insert the corresponding tensor of 'other' to 'activity'
         val actTable = activity.toTable
-        val actLen = actTable.length()
         val otherTable = other.toTable
-        val otherLen = otherTable.length()
-        require(actLen == otherLen, "table length is not equal")
-        var i = 1
-        while(i <= actLen) {
-          require(actTable[Activity](i) != null, "Invalid table element")
-          accActivity(actTable[Activity](i), otherTable[Activity](i))
-          i += 1
-        }
+        otherTable.keySet.foreach(index => {
+          if (actTable.contains(index)) {
+            accActivity(actTable[Activity](index), otherTable[Activity](index))
+          } else {
+            actTable.insert(index.asInstanceOf[Int], otherTable(index))
+          }
+        })
         actTable
       }
     }

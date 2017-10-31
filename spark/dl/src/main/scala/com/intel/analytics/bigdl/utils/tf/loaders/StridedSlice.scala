@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.nn.tf.StrideSlice
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Node
+import com.intel.analytics.bigdl.utils.tf.Context
 import org.tensorflow.framework.NodeDef
 
 import scala.reflect.ClassTag
@@ -30,9 +31,23 @@ class StridedSlice extends TensorflowOpsLoader {
 
   import Utils._
 
-  override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder)
-    (implicit ev: TensorNumeric[T]): Module[T] = {
+  override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder,
+    context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
+
     Adapter[T](Array(2, 3, 4), tensorArrays => {
+      // this must be defined inside this function, otherwise the loader will be
+      // serialized
+      def oneDTensorToArray(tensor: Tensor[Int]): Array[Int] = {
+        require(tensor.nDimension() == 1, "1D tensor required")
+        val result = new Array[Int](tensor.nElement())
+        var i = 0
+        while(i < tensor.nElement()) {
+          result(i) = tensor.valueAt(i + 1)
+          i += 1
+        }
+        result
+      }
+
       val start = oneDTensorToArray(tensorArrays(0).asInstanceOf[Tensor[Int]])
       val end = oneDTensorToArray(tensorArrays(1).asInstanceOf[Tensor[Int]])
       val stride = oneDTensorToArray(tensorArrays(2).asInstanceOf[Tensor[Int]])
@@ -43,17 +58,6 @@ class StridedSlice extends TensorflowOpsLoader {
 
       StrideSlice[T](specs)
     })
-  }
-
-  private def oneDTensorToArray(tensor: Tensor[Int]): Array[Int] = {
-    require(tensor.nDimension() == 1, "1D tensor required")
-    val result = new Array[Int](tensor.nElement())
-    var i = 0
-    while(i < tensor.nElement()) {
-      result(i) = tensor.valueAt(i + 1)
-      i += 1
-    }
-    result
   }
 }
 

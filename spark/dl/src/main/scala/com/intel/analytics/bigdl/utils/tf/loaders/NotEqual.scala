@@ -20,6 +20,7 @@ import java.nio.ByteOrder
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.ops.{NotEqual => NotEqualOperation}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.tf.Context
 import org.tensorflow.framework.NodeDef
 
 import scala.reflect.ClassTag
@@ -28,8 +29,8 @@ class NotEqual extends TensorflowOpsLoader {
 
   import Utils._
 
-  override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder)
-                                 (implicit ev: TensorNumeric[T]): Module[T] = {
+  override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder
+    , context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
     new NotEqualOperation[T]()
   }
 }

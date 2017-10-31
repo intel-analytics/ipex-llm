@@ -140,7 +140,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
 
   private def fromCaffeSoftmax(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val layerName = getLayerName(layer)
-    Seq(LogSoftMax().setName(layerName).inputs())
+    Seq(SoftMax().setName(layerName).inputs())
   }
 
   private def fromCaffeTanh(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
@@ -221,15 +221,21 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
     val param = getEltWiseParam(layer).get
     val layerName = getLayerName(layer)
     val opsType = param.getOperation
-    val coeff2 = if (param.getCoeffCount == 0) 1 else param.getCoeff(0)
     val ops = opsType match {
       case EltwiseOp.PROD => CMulTable[T]().setName(layerName).inputs()
       case EltwiseOp.MAX => CMaxTable[T]().setName(layerName).inputs()
       case EltwiseOp.SUM =>
-        if (coeff2 < 0) {
+        val coeff1 = if (param.getCoeffCount == 0) 1 else param.getCoeff(0)
+        val coeff2 = if (param.getCoeffCount == 0) 1 else param.getCoeff(1)
+        if (coeff1 == 1 && coeff2 == 1) {
           CAddTable[T]().setName(layerName).inputs()
-        } else {
+        } else if (coeff1 == 1 && coeff2 == -1) {
           CSubTable[T]().setName(layerName).inputs()
+        } else {
+          val mul1 = MulConstant[T](coeff1.toFloat).inputs()
+          val mul2 = MulConstant[T](coeff2.toFloat).inputs()
+          val caddTable = CAddTable[T]().setName(layerName).inputs(mul1, mul2)
+          Graph[T](Array(mul1, mul2), Array(caddTable)).inputs()
         }
       case _ => null
     }
@@ -251,6 +257,8 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
   protected def fromCaffeBias(layer : GeneratedMessage) : Seq[ModuleNode[T]]
 
   protected def fromCaffeTile(layer : GeneratedMessage) : Seq[ModuleNode[T]]
+
+  protected def fromCaffeInput(layer: GeneratedMessage): Seq[ModuleNode[T]]
 
   protected def getLayerType(layer : GeneratedMessage) : String
 
@@ -635,7 +643,10 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
     caffe2BigDL("SLICE") = fromCaffeSlice
     caffe2BigDL("TILE") = fromCaffeTile
     caffe2BigDL("ELTWISE") = fromCaffeEltwise
-    caffe2BigDL("INPUT") = null
-    caffe2BigDL("DATA") = null
+    caffe2BigDL("INPUT") = fromCaffeInput
+    caffe2BigDL("DATA") = fromCaffeInput
+    caffe2BigDL("DUMMYDATA") = fromCaffeInput
+    caffe2BigDL("ANNOTATEDDATA") = fromCaffeInput
+    caffe2BigDL("SILENCE") = null
   }
 }

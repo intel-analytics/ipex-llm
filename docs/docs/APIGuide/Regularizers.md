@@ -11,7 +11,7 @@ regularizerl1 = L1Regularizer(rate)
 
 L1 regularizer is used to add penalty to the gradWeight to avoid overfitting.
 
-In our code implmenation, gradWeight = gradWeight + alpha * abs(weight)
+In our code implementation, gradWeight = gradWeight + alpha * abs(weight)
 
 For more details, please refer to [wiki](https://en.wikipedia.org/wiki/Regularization_(mathematics)).
 
@@ -103,7 +103,7 @@ regularizerl2 = L2Regularizer(rate)
 
 L2 regularizer is used to add penalty to the gradWeight to avoid overfitting.
 
-In our code implmenation, gradWeight = gradWeight + alpha * weight * weight
+In our code implementation, gradWeight = gradWeight + alpha * weight * weight
 
 For more details, please refer to [wiki](https://en.wikipedia.org/wiki/Regularization_(mathematics)).
 
@@ -191,7 +191,7 @@ regularizerl1l2 = L1L2Regularizer(l1rate, l2rate)
 
 L1L2 regularizer is used to add penalty to the gradWeight to avoid overfitting.
 
-In our code implmenation, we will apply L1regularizer and L2regularizer sequentially.
+In our code implementation, we will apply L1regularizer and L2regularizer sequentially.
 
 For more details, please refer to [wiki](https://en.wikipedia.org/wiki/Regularization_(mathematics)).
 
