@@ -28,8 +28,6 @@ import org.apache.log4j.Logger
 
 class TensorflowSaverSpec extends TensorflowSpecHelper {
 
-  private val logger = Logger.getLogger(getClass)
-
   before {
     System.setProperty("bigdl.enableNHWC", "true")
   }

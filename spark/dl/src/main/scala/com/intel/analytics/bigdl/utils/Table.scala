@@ -339,8 +339,8 @@ object T {
    * @param data
    * @return
    */
-  def array(data: Array[Any]): Table = {
-    new Table(data)
+  def array(data: Array[_]): Table = {
+    new Table(data.asInstanceOf[Array[Any]])
   }
 
   /**
@@ -351,8 +351,8 @@ object T {
    * @param data
    * @return
    */
-  def seq(data: Seq[Any]): Table = {
-    new Table(data.toArray)
+  def seq(data: Seq[_]): Table = {
+    new Table(data.toArray.asInstanceOf[Array[Any]])
   }
 
   /**
