@@ -1970,6 +1970,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Xavier
   }
 
+  def createMsraFiller(varianceNormAverage: Boolean = true): MsraFiller = {
+    MsraFiller(varianceNormAverage)
+  }
+
   def createBilinearFiller(): BilinearFiller.type = {
     BilinearFiller
   }
