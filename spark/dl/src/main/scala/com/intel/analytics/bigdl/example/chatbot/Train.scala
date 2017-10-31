@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.example.chatbot
 import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.text.{SentenceTokenizer, _}
+import com.intel.analytics.bigdl.models.rnn.SimpleRNN
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.numeric.NumericFloat
@@ -54,12 +55,13 @@ object Train {
       val lines = Source
         .fromFile(param.dataFolder + "twitter_en.txt")
         .getLines
+        .toList
         .zipWithIndex
 
       val evenLines = lines.filter(x => x._2 % 2 == 0)
-        .map(_._1)
+        .map(_._1).toIterator
       val oddLines = lines.filter(x => x._2 % 2 != 0)
-        .map(_._1)
+        .map(_._1).toIterator
 
       val evenTokens = (SentenceBiPadding() -> SentenceTokenizer()).apply(evenLines)
       val oddTokens = (SentenceBiPadding() -> SentenceTokenizer()).apply(oddLines)
@@ -97,16 +99,16 @@ object Train {
       } else {
         val encoder =
           Array(
-            Recurrent().add(LSTM(param.embedDim, param.embedDim)),
-            Recurrent().add(LSTM(param.embedDim, param.embedDim)),
-            Recurrent().add(LSTM(param.embedDim, param.embedDim))
+//            Recurrent().add(RnnCell(param.embedDim, param.embedDim, Tanh())),
+//            Recurrent().add(RnnCell(param.embedDim, param.embedDim, Tanh())),
+            Recurrent().add(RnnCell(param.embedDim, param.embedDim, Tanh()))
           )
 
         val decoder =
           Array(
-            Recurrent().add(LSTM(param.embedDim, param.embedDim)),
-            Recurrent().add(LSTM(param.embedDim, param.embedDim)),
-            Recurrent().add(LSTM(param.embedDim, param.embedDim))
+//            Recurrent().add(RnnCell(param.embedDim, param.embedDim, Tanh())),
+//            Recurrent().add(RnnCell(param.embedDim, param.embedDim, Tanh())),
+            Recurrent().add(RnnCell(param.embedDim, param.embedDim, Tanh()))
           )
         val enclookuptable = LookupTable(vocabSize, param.embedDim)
         val (enclookuptableW, enclookuptableG) = enclookuptable.getParameters()

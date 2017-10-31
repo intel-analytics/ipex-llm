@@ -36,7 +36,7 @@ object Utils {
                           stateSnapshot: Option[String] = None,
                           checkpoint: Option[String] = Some("/tmp/"),
                           batchSize: Int = 32,
-                          learningRate: Double = 0.1,
+                          learningRate: Double = 0.0001,
                           momentum: Double = 0.0,
                           weightDecay: Double = 0.0,
                           dampening: Double = 0.0,
