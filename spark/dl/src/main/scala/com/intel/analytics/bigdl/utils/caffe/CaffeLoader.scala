@@ -193,8 +193,11 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
 
   private def loadParameters(name: String, params: Table): Unit = {
     logger.info(s"load parameters for $name ...")
-    val caffeWeight = getBlob(name, 0)
-    if (caffeWeight.isDefined) {
+    // for Bias layer, there is no weight but has bias so the bias is the first blob
+    var index = 0
+    val caffeWeight = getBlob(name, index)
+    if (caffeWeight.isDefined && params.contains("weight")) {
+      index += 1
       require(params.contains("weight"), s"$name should contain weight")
       val caffeWeightData = caffeWeight.get.getDataList
       val weight = params[Tensor[T]]("weight")
@@ -212,7 +215,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
       }
     }
 
-    val caffeBias = getBlob(name, 1)
+    val caffeBias = getBlob(name, index)
     if (caffeBias.isDefined) {
       require(params.contains("bias"), s"$name should contain bias")
       val caffeBiasList = caffeBias.get.getDataList
