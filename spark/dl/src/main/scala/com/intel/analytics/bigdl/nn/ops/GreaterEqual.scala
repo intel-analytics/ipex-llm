@@ -17,30 +17,30 @@ package com.intel.analytics.bigdl.nn.ops
 
 import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
-class Equal[T: ClassTag]()
-  (implicit ev: TensorNumeric[T]) extends Compare[T] {
-  override def compareFloat(a: Float, b: Float): Boolean = a == b
+class GreaterEqual[T: ClassTag]()
+                          (implicit ev: TensorNumeric[T]) extends Compare[T] {
+  override def compareFloat(a: Float, b: Float): Boolean = a >= b
 
-  override def compareDouble(a: Double, b: Double): Boolean = a == b
+  override def compareDouble(a: Double, b: Double): Boolean = a >= b
 
-  override def compareChar(a: Char, b: Char): Boolean = a == b
+  override def compareChar(a: Char, b: Char): Boolean = a >= b
 
-  override def compareLong(a: Long, b: Long): Boolean = a == b
+  override def compareLong(a: Long, b: Long): Boolean = a >= b
 
-  override def compareShort(a: Short, b: Short): Boolean = a == b
+  override def compareShort(a: Short, b: Short): Boolean = a >= b
 
-  override def compareInt(a: Int, b: Int): Boolean = a == b
+  override def compareInt(a: Int, b: Int): Boolean = a >= b
 
-  override def compareByteString(a: ByteString, b: ByteString): Boolean = a.equals(b)
+  override def compareByteString(a: ByteString, b: ByteString): Boolean = {
+    throw new UnsupportedOperationException("Does not support GreaterEqual on ByteString")
+  }
 }
 
-object Equal {
+object GreaterEqual {
   def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): Operation[Activity, Activity, T]
-  = ModuleToOperation[T](new Equal())
+  = ModuleToOperation[T](new GreaterEqual())
 }

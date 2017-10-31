@@ -23,26 +23,27 @@ import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
-class Less[T: ClassTag]()
-  (implicit ev: TensorNumeric[T]) extends Compare[T] {
-  override def compareFloat(a: Float, b: Float): Boolean = a < b
+class ApproximateEqual[T: ClassTag](tolerance: Float)
+                        (implicit ev: TensorNumeric[T]) extends Compare[T] {
+  override def compareFloat(a: Float, b: Float): Boolean = math.abs(a - b) < tolerance
 
-  override def compareDouble(a: Double, b: Double): Boolean = a < b
+  override def compareDouble(a: Double, b: Double): Boolean = math.abs(a - b) < tolerance
 
-  override def compareChar(a: Char, b: Char): Boolean = a < b
+  override def compareChar(a: Char, b: Char): Boolean = math.abs(a - b) < tolerance
 
-  override def compareLong(a: Long, b: Long): Boolean = a < b
+  override def compareLong(a: Long, b: Long): Boolean = math.abs(a - b) < tolerance
 
-  override def compareShort(a: Short, b: Short): Boolean = a < b
+  override def compareShort(a: Short, b: Short): Boolean = math.abs(a - b) < tolerance
 
-  override def compareInt(a: Int, b: Int): Boolean = a < b
+  override def compareInt(a: Int, b: Int): Boolean = math.abs(a - b) < tolerance
 
   override def compareByteString(a: ByteString, b: ByteString): Boolean = {
-    throw new UnsupportedOperationException("Does not support Less on ByteString")
+    throw new UnsupportedOperationException("Does not support ApproximateEqual on ByteString")
   }
 }
 
-object Less {
-  def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): Operation[Activity, Activity, T]
-  = ModuleToOperation[T](new Less())
+object ApproximateEqual {
+  def apply[T: ClassTag](tolerance: Float)
+     (implicit ev: TensorNumeric[T]): Operation[Activity, Activity, T]
+  = ModuleToOperation[T](new ApproximateEqual(tolerance))
 }
