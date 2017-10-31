@@ -30,7 +30,7 @@ import org.tensorflow.framework.{GraphDef, NodeDef}
 
 import scala.sys.process._
 
-class TensorflowSpecHelper extends BigDLSpecHelper {
+abstract class TensorflowSpecHelper extends BigDLSpecHelper {
 
   protected def tfCheck(): Unit = {
     var exitValue : String = ""
