@@ -38,6 +38,16 @@ class Adamax[@specialized(Float, Double) T: ClassTag](
    var Epsilon: Double = 1e-38
  )(implicit ev: TensorNumeric[T]) extends OptimMethod[T] {
 
+  @transient
+  val buffer1 = Tensor[T]()
+  @transient
+  val buffer2 = Tensor[T]()
+  @transient
+  val buffer3 = Tensor[T]()
+  @transient
+  val buffer4 = Tensor[T]()
+  @transient
+  val buffer5 = Tensor[T]()
   /**
    * An implementation of Adamax http://arxiv.org/pdf/1412.6980.pdf
    *
@@ -61,17 +71,45 @@ class Adamax[@specialized(Float, Double) T: ClassTag](
     val (_m, _u, _left, _right) =
       if (state.get[Tensor[T]]("m").isDefined) {
         (state.get[Tensor[T]]("m").get, state.get[Tensor[T]]("u").get,
-          Tensor[T]().resizeAs(dfdx).zero(), Tensor[T]().resizeAs(dfdx).zero())
+          buffer3.resizeAs(dfdx).zero(), buffer4.resizeAs(dfdx).zero())
       } else {
-        (Tensor[T]().resizeAs(dfdx).zero(), Tensor[T]().resizeAs(dfdx).zero(),
-          Tensor[T]().resizeAs(dfdx).zero(), Tensor[T]().resizeAs(dfdx).zero())
+        (buffer1.resizeAs(dfdx).zero(), buffer2.resizeAs(dfdx).zero(),
+          buffer3.resizeAs(dfdx).zero(), buffer4.resizeAs(dfdx).zero())
       }
+
+    // used as MKL.axpy: 1 * a + y = y
+    if (buffer5.nElement < dfdx.nElement) {
+      buffer5.resizeAs(dfdx).fill(ev.fromType[Int](1))
+    }
 
     timestep = timestep + 1
 
     _m.mul(ev.fromType[Double](beta1)).add(ev.fromType[Double](1-beta1), dfdx)
-    _left.resizeAs(_u).copy(_u).mul(ev.fromType[Double](beta2))
-    _right.copy(dfdx).abs().add(ev.fromType[Double](eps))
+
+    ev.axpy(_u.nElement,
+      ev.fromType[Double](beta2),
+      _u.storage.array,
+      _u.storageOffset - 1,
+      1,
+      _left.storage.array,
+      _left.storageOffset - 1,
+      1)
+
+    ev.vAbs(dfdx.nElement,
+      dfdx.storage.array,
+      dfdx.storageOffset - 1,
+      _right.storage.array,
+      _right.storageOffset - 1)
+
+    ev.axpy(dfdx.nElement,
+      ev.fromType[Double](eps),
+      buffer5.storage.array,
+      buffer5.storageOffset - 1,
+      1,
+      _right.storage.array,
+      _right.storageOffset - 1,
+      1)
+
     _u.cmax(_left, _right)
     val biasCorrection1 = 1 - pow(beta1, timestep)
     val stepSize = lr / biasCorrection1
