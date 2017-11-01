@@ -1497,6 +1497,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Pack(dimension)
   }
 
+  def createTile(dim : Int, copies : Int): Tile[T] = {
+    Tile(dim, copies)
+  }
+
+  def createBinaryThreshold(th: Double, ip: Boolean): BinaryThreshold[T] = {
+    BinaryThreshold(th, ip)
+  }
+
   def setModelSeed(seed: Long): Unit = {
     RandomGenerator.RNG.setSeed(seed)
   }
