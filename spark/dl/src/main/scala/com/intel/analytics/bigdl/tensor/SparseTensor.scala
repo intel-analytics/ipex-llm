@@ -1014,6 +1014,14 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
     throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
   }
 
+  override def ceil(): Tensor[T] = {
+    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+  }
+
+  override def inv(): Tensor[T] = {
+    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+  }
+
   override def negative(x: Tensor[T]): Tensor[T] = {
     throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
   }

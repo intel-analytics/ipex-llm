@@ -1932,12 +1932,12 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
   override def sign(): Tensor[T] = {
     val func = new TensorFunc2[T] {
       override def apply(data1: Array[T], offset1: Int): Unit = {
-        if (ev.isGreater(data1(offset1), ev.fromType(0))) {
-          data1(offset1) = ev.fromType(1)
-        } else if (ev.isGreater(ev.fromType(0), data1(offset1))) {
+        if (ev.isGreater(data1(offset1), ev.zero)) {
+          data1(offset1) = ev.one
+        } else if (ev.isGreater(ev.zero, data1(offset1))) {
           data1(offset1) = ev.fromType(-1)
         } else {
-          data1(offset1) = ev.fromType(0)
+          data1(offset1) = ev.zero
         }
       }
     }
@@ -2110,9 +2110,17 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
     this.apply1(a => ev.floor(a))
   }
 
+  override def ceil(): Tensor[T] = {
+    this.apply1(a => ev.ceil(a))
+  }
+
   override def negative(x: Tensor[T]): Tensor[T] = {
     this.map(x, (a, b) => ev.negative(b))
     this
+  }
+
+  override def inv(): Tensor[T] = {
+    this.apply1(a => ev.inv(a))
   }
 }
 

@@ -565,6 +565,18 @@ trait TensorMath[T] {
   def floor(): Tensor[T]
 
   /**
+   * Replaces all elements in-place with the ceil result of elements
+   * @return
+   */
+  def ceil(): Tensor[T]
+
+  /**
+   * Computes the reciprocal of this tensor element-wise and update the content inplace
+   * @return
+   */
+  def inv(): Tensor[T]
+
+  /**
    * Get the top k smallest values and their indices.
    *
    * @param result   result buffer
