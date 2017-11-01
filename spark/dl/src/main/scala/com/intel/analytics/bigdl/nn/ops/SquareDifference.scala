@@ -15,12 +15,10 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath._
-import com.intel.analytics.bigdl.utils.{Engine, Table}
+import com.intel.analytics.bigdl.utils.Table
 
-import scala.concurrent.Future
 import scala.reflect.ClassTag
 
 /**
@@ -45,9 +43,10 @@ class SquareDifference[T: ClassTag]()(implicit ev: TensorNumeric[T])
 
     output
   }
+
 }
 
 object SquareDifference {
-  def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): Operation[Activity, Activity, T]
-  = ModuleToOperation[T](new SquareDifference())
+  def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): SquareDifference[T]
+  = new SquareDifference()
 }
