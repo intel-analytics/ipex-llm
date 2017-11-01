@@ -77,7 +77,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
 
   var dataSet: DistributedDataSet[MiniBatch[Float]] = null
 
-  before {
+  override def doBefore(): Unit = {
     sc = new SparkContext("local[1]", "RDDOptimizerSpec")
 
     val rdd = sc.parallelize(1 to (256 * 4), 4).map(prepareData)
@@ -97,7 +97,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     System.setProperty("bigdl.enableNHWC", "true")
   }
 
-  after {
+  override def doAfter(): Unit = {
     if (sc != null) {
       sc.stop()
     }
