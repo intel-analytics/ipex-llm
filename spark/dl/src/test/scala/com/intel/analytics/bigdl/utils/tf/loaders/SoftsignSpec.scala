@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 package com.intel.analytics.bigdl.utils.tf.loaders
-import com.intel.analytics.bigdl.tensor.Tensor
 
+import com.intel.analytics.bigdl.tensor.Tensor
 
 class SoftsignSpec extends UnaryOpBase {
   override def getOpName: String = "Softsign"
