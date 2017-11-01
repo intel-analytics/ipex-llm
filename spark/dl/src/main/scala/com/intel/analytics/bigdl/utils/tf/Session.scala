@@ -268,13 +268,13 @@ class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
 
   private def readTFRecord(filesTable: Seq[Table], sc: SparkContext): RDD[Table] = {
     if (filesTable.isEmpty) {
-      return sc.parallelize(Seq.empty[Table], numSlices = Engine.coreNumber())
+      return sc.parallelize(Seq.empty[Table], numSlices = Engine.coreNumber() * Engine.nodeNumber())
     }
     val fileNames = filesTable.map { t =>
-      require(t.length() == 1 && t(1).isInstanceOf[Tensor[ByteString]],
-        "Reader can only read one file at a time")
+      require(t.length() == 1, "Reader can only read one file at a time")
       val fileTensor = t[Tensor[ByteString]](1)
-      require(fileTensor.isScalar)
+      require(fileTensor.isScalar, s"require fileTensor to be a scalar," +
+        s" but got size: ${fileTensor.size()}")
       val file = fileTensor.value()
       file.toStringUtf8
     }
@@ -306,7 +306,7 @@ class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
         table.insert(value)
         table
       }
-      sc.parallelize(result, numSlices = Engine.coreNumber())
+      sc.parallelize(result, numSlices = Engine.coreNumber() * Engine.nodeNumber())
     }
   }
 
@@ -364,7 +364,7 @@ class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
         table.insert(value)
         table
       }
-      sc.parallelize(result, numSlices = Engine.coreNumber())
+      sc.parallelize(result, numSlices = Engine.coreNumber() * Engine.nodeNumber())
     }
   }
 
