@@ -4226,6 +4226,24 @@ class ConvLSTMPeephole(Layer):
         super(ConvLSTMPeephole, self).__init__(None, bigdl_type, input_size, output_size, kernel_i, kernel_c, stride,
                                                  wRegularizer, uRegularizer, bRegularizer, cRegularizer, with_peephole)
 
+class Tile(Layer):
+    '''
+    Replicate 'copies' copy along 'dim' dimension
+
+    >>> layer = Tile(1, 2)
+    creating: createTile
+    '''
+    def __init__(self, dim = 1, copies = 2, bigdl_type="float"):
+        super(Tile, self).__init__(None, bigdl_type, dim, copies)
+
+class BinaryThreshold(Layer):
+    '''
+    Binary threshold, 1 if value > th, 0 otherwise
+    >>> layer = BinaryThreshold(0.1, False)
+    creating: createBinaryThreshold
+    '''
+    def __init__(self, th=1e-6, ip = False, bigdl_type="float"):
+        super(BinaryThreshold, self).__init__(None, bigdl_type, th, ip)
 
 class ConvLSTMPeephole3D(Layer):
     '''
