@@ -69,8 +69,10 @@ abstract class TensorflowSpecHelper extends BigDLSpecHelper {
    * @param nodeDefBuilder
    * @param inputs
    * @param outputIndex start from 0
+   * @param delta error tolerant
    */
-  protected def compare(nodeDefBuilder: NodeDef.Builder, inputs: Seq[Tensor[_]], outputIndex: Int)
+  protected def compare(nodeDefBuilder: NodeDef.Builder, inputs: Seq[Tensor[_]], outputIndex: Int,
+      delta: Double = 1e-5)
   : Unit = {
     val graphFile = saveGraph(nodeDefBuilder, inputs)
     val bigdlOutput = runGraphBigDL(graphFile, nodeDefBuilder.getName)
@@ -82,7 +84,7 @@ abstract class TensorflowSpecHelper extends BigDLSpecHelper {
     }
     val tfOutput = runGraphTF(graphFile, nodeDefBuilder.getName + s":$outputIndex")
     bigdlOutput.asInstanceOf[Tensor[NumericWildCard]]
-      .equals(tfOutput.asInstanceOf[Tensor[NumericWildCard]]) should be(true)
+      .almostEqual(tfOutput.asInstanceOf[Tensor[NumericWildCard]], delta) should be(true)
   }
 
   private def saveGraph(nodeDefBuilder: NodeDef.Builder, inputs: Seq[Tensor[_]]): String = {
