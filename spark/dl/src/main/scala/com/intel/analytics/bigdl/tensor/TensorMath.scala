@@ -587,7 +587,7 @@ trait TensorMath[T] {
    * @return
    */
   def topk(k: Int, dim: Int = -1, increase: Boolean = true, result: Tensor[T] = null,
-    indices: Tensor[T] = null)
+    indices: Tensor[T] = null, sortedResult: Boolean = true)
   : (Tensor[T], Tensor[T])
 
   /**

@@ -774,7 +774,7 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def topk(k: Int, dim: Int, increase: Boolean, result: Tensor[T],
-                    indices: Tensor[T]): (Tensor[T], Tensor[T]) = {
+      indices: Tensor[T], sortedResult: Boolean = true): (Tensor[T], Tensor[T]) = {
     throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
   }
 
