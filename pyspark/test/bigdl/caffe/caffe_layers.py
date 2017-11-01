@@ -37,11 +37,11 @@ input_shape{dim:2 dim :2}
   top: "relu"
 }
 """
-reluShapes = [{"data" : (2, 2)}]
+reluShapes = [{"data": (2, 2)}]
 reluName = "relu"
 
 
-#Test Data for SpatialCrossMapLRN
+# Test Data for SpatialCrossMapLRN
 crossMapLrnDefinition = """
 name : "SpatialCrossMapLRNTest"
 input : "data"
@@ -59,11 +59,11 @@ layer {
   }
 }
 """
-crossMapLrnShapes = [{"data" : (1, 3, 224, 224)}]
+crossMapLrnShapes = [{"data": (1, 3, 224, 224)}]
 crossMapLrnName = "crossMapLrn"
 
 
-#Test Data for SpatialWithinChannelLRN
+# Test Data for SpatialWithinChannelLRN
 withinChannelLRNDefinition = """
 name : "SpatialWithinChannelLRNTest"
 input : "data"
@@ -82,7 +82,7 @@ layer {
   }
 }
 """
-withinChannelLRNShapes = [{"data" : (1, 3, 224, 224)}]
+withinChannelLRNShapes = [{"data": (1, 3, 224, 224)}]
 withinChannelLRNName = "withinChannelLRN"
 
 # Test data for Inner product
@@ -101,7 +101,7 @@ layer {
 }
 """
 
-innerProductShapes = [{"data" : (2, 10)}]
+innerProductShapes = [{"data": (2, 10)}]
 innerProductName = "innerProduct"
 
 # Test data for max pooling
@@ -121,7 +121,7 @@ layer {
   }
 }
 """
-maxpoolingShapes = [{"data" : (1, 3, 3, 3)}]
+maxpoolingShapes = [{"data": (1, 3, 3, 3)}]
 maxpoolingName = "maxpooling"
 
 # Test data for average pooling
@@ -141,7 +141,7 @@ layer {
   }
 }
 """
-avepoolingShapes = [{"data" : (1, 3, 3, 3)}]
+avepoolingShapes = [{"data": (1, 3, 3, 3)}]
 avepoolingName = "avepooling"
 
 # Test data for SoftMax
@@ -156,7 +156,7 @@ layer {
   top: "softMax"
 }
 """
-softMaxShapes = [{"data" : (2, 2)}]
+softMaxShapes = [{"data": (2, 2)}]
 softMaxName = "softMax"
 
 # Test data for Tanh
@@ -171,7 +171,7 @@ layer {
   top: "tanh"
 }
 """
-tanhShapes = [{"data" : (2, 2)}]
+tanhShapes = [{"data": (2, 2)}]
 tanhName = "tanh"
 
 # Test data for Sigmoid
@@ -186,7 +186,7 @@ layer {
   top: "sigmoid"
 }
 """
-sigmoidShapes = [{"data" : (2, 2)}]
+sigmoidShapes = [{"data": (2, 2)}]
 sigmoidName = "sigmoid"
 
 # Test data for Abs
@@ -201,7 +201,7 @@ layer {
   top: "abs"
 }
 """
-absShapes = [{"data" : (2, 2)}]
+absShapes = [{"data": (2, 2)}]
 absName = "abs"
 
 # Test data for BatchNormalization
@@ -236,7 +236,7 @@ layer {
         }
 }
 """
-batchNormShapes = [{"data" : (1, 3, 224, 224)}]
+batchNormShapes = [{"data": (1, 3, 224, 224)}]
 batchNormName = "batchNorm"
 
 # Test data for Concat
@@ -266,7 +266,7 @@ layer {
   top: "concat"
 }
 """
-concatShapes = [{"data1" : (2, 2)}, {"data2" : (2, 2)}]
+concatShapes = [{"data1": (2, 2)}, {"data2": (2, 2)}]
 concatName = "concat"
 
 # Test data for Elu
@@ -281,7 +281,7 @@ layer {
   top: "elu"
 }
 """
-eluShapes = [{"data" : (2, 2)}]
+eluShapes = [{"data": (2, 2)}]
 eluName = "elu"
 
 # Test data for Flattern
@@ -296,7 +296,7 @@ layer {
   top: "flatten"
 }
 """
-flattenShapes = [{"data" : (2, 2)}]
+flattenShapes = [{"data": (2, 2)}]
 flattenName = "flatten"
 
 # Test data for Log
@@ -311,7 +311,7 @@ layer {
   top: "log"
 }
 """
-logShapes = [{"data" : (2, 2)}]
+logShapes = [{"data": (2, 2)}]
 logName = "log"
 
 # Test data for Power
@@ -326,7 +326,7 @@ layer {
   top: "power"
 }
 """
-powerShapes = [{"data" : (2, 2)}]
+powerShapes = [{"data": (2, 2)}]
 powerName = "power"
 
 # Test data for PReLU
@@ -341,7 +341,7 @@ layer {
   top: "prelu"
 }
 """
-preluShapes = [{"data" : (2, 5)}]
+preluShapes = [{"data": (2, 5)}]
 preluName = "prelu"
 
 # Test data for Reshape
@@ -357,7 +357,7 @@ layer {
   reshape_param { shape { dim:  0 dim:  -1  dim:  4 } }
 }
 """
-reshapeShapes = [{"data" : (2, 8)}]
+reshapeShapes = [{"data": (2, 8)}]
 reshapeName = "reshape"
 
 # Test data for Scale
@@ -372,7 +372,7 @@ layer {
   top: "scale"
 }
 """
-scaleShapes = [{"data" : (2, 2)}]
+scaleShapes = [{"data": (2, 2)}]
 scaleName = "scale"
 
 # Test data for Bias
@@ -387,7 +387,7 @@ layer {
   top: "bias"
 }
 """
-biasShapes = [{"data" : (2, 2)}]
+biasShapes = [{"data": (2, 2)}]
 biasName = "bias"
 
 # Test data for Threshold
@@ -405,7 +405,7 @@ layer {
   }
 }
 """
-thresholdShapes = [{"data" : (2, 2)}]
+thresholdShapes = [{"data": (2, 2)}]
 thresholdName = "threshold"
 
 # Test data for Exp
@@ -420,7 +420,7 @@ layer {
   top: "exp"
 }
 """
-expShapes = [{"data" : (2, 2)}]
+expShapes = [{"data": (2, 2)}]
 expName = "exp"
 
 # Test data for Slice
@@ -435,7 +435,7 @@ layer {
   top: "slice"
 }
 """
-sliceShapes = [{"data" : (2, 2)}]
+sliceShapes = [{"data": (2, 2)}]
 sliceName = "slice"
 
 # Test data for Tile
@@ -454,7 +454,7 @@ layer {
   }
 }
 """
-tileShapes = [{"data" : (2, 2)}]
+tileShapes = [{"data": (2, 2)}]
 tileName = "tile"
 
 # Test data for Eltwise MAX
@@ -487,7 +487,7 @@ layer {
   }
 }
 """
-eltwiseMaxShapes = [{"data1" : (2, 2)}, {"data2" : (2, 2)}]
+eltwiseMaxShapes = [{"data1": (2, 2)}, {"data2": (2, 2)}]
 eltwiseMaxName = "eltwiseMax"
 
 # Test data for Eltwise Prod
@@ -520,7 +520,7 @@ layer {
   }
 }
 """
-eltwiseProdShapes = [{"data1" : (2, 2)}, {"data2" : (2, 2)}]
+eltwiseProdShapes = [{"data1": (2, 2)}, {"data2": (2, 2)}]
 eltwiseProdName = "eltwiseProd"
 
 # Test data for Eltwise SUM
@@ -554,10 +554,10 @@ layer {
   }
 }
 """
-eltwiseSUMShapes = [{"data1" : (2, 2)}, {"data2" : (2, 2)}]
+eltwiseSUMShapes = [{"data1": (2, 2)}, {"data2": (2, 2)}]
 eltwiseSUMName = "eltwiseSUM"
 
-deconvolutionDefinition="""
+deconvolutionDefinition = """
 name : "deconvolution"
 input : "data"
 input_shape {dim:1 dim :3 dim :5 dim :5}
@@ -578,7 +578,7 @@ layer {
 }
 
 """
-deconvolutionShapes = [{"data" : (1, 3, 5, 5)}]
+deconvolutionShapes = [{"data": (1, 3, 5, 5)}]
 deconvolutionName = "deconvolution"
 
 # End layer definitions
