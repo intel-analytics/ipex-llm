@@ -176,8 +176,8 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
       } else {
         numOfAxis = numOfAxis + axis
       }
-      val size = shape.getDimList.subList(axis, numOfAxis).asScala.map(_.toInt).toArray
-      Seq(Scale[T](size).setName(layerName).inputs())
+      val size = shape.getDimList.subList(axis - 1, numOfAxis - 1).asScala.map(_.toInt).toArray
+      Seq(CMul[T](size).setName(layerName).inputs())
     }
   }
 
@@ -192,7 +192,8 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
     val param = layer.asInstanceOf[LayerParameter].getTileParam
     val axis = param.getAxis
     val tiles = param.getTiles
-    Seq(Replicate[T](tiles, axis).setName(getLayerName(layer)).inputs())
+    Seq(Tile[T](axis + 1, tiles).setName(getLayerName(layer)).inputs())
+
   }
 
   override protected def fromCaffeInput(layer: GeneratedMessage): Seq[ModuleNode[T]] = {
@@ -768,7 +769,7 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
     Some(layer.asInstanceOf[LayerParameter].getEltwiseParam)
   }
 
-  private def getBlob(layer : GeneratedMessage, ind: Int): Option[Caffe.BlobProto] = {
+  protected def getBlob(layer : GeneratedMessage, ind: Int): Option[Caffe.BlobProto] = {
     if (layer.asInstanceOf[LayerParameter].getBlobsCount > ind) {
       Some(layer.asInstanceOf[LayerParameter].getBlobs(ind))
     } else {
