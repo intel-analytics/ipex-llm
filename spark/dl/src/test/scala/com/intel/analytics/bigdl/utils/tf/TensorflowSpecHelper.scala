@@ -22,7 +22,7 @@ import java.nio.ByteOrder
 import com.google.protobuf.CodedOutputStream
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{BooleanType, StringType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.NumericWildCard
 import com.intel.analytics.bigdl.utils.{BigDLSpecHelper, FileWriter, T}
 import com.intel.analytics.bigdl.utils.tf.Tensorflow.const
@@ -83,8 +83,15 @@ abstract class TensorflowSpecHelper extends BigDLSpecHelper {
       bigdlOutput.toTable.apply[Tensor[_]](outputIndex + 1)
     }
     val tfOutput = runGraphTF(graphFile, nodeDefBuilder.getName + s":$outputIndex")
-    bigdlOutputTensor.asInstanceOf[Tensor[NumericWildCard]]
-      .almostEqual(tfOutput.asInstanceOf[Tensor[NumericWildCard]], delta) should be(true)
+
+    val dataType = bigdlOutputTensor.getType()
+    if (dataType == BooleanType || dataType == StringType) {
+      tfOutput.asInstanceOf[Tensor[NumericWildCard]]
+        .equals(bigdlOutputTensor.asInstanceOf[Tensor[NumericWildCard]]) should be(true)
+    } else {
+      tfOutput.asInstanceOf[Tensor[NumericWildCard]]
+        .almostEqual(bigdlOutputTensor.asInstanceOf[Tensor[NumericWildCard]], delta) should be(true)
+    }
   }
 
   protected def getResult[T](nodeDefBuilder: NodeDef.Builder, inputs: Seq[Tensor[_]],

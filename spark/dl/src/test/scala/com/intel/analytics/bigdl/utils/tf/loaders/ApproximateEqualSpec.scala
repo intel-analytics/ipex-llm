@@ -13,19 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn.ops
+package com.intel.analytics.bigdl.utils.tf.loaders
+import com.intel.analytics.bigdl.tensor.Tensor
+import org.tensorflow.framework.AttrValue
 
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.nn.{ELU => ELULayer}
 
-import scala.reflect.ClassTag
+class ApproximateEqualSpec extends BinaryOpBase {
+  override def getOpName: String = "ApproximateEqual"
 
-class EluGrad[T: ClassTag](implicit ev: TensorNumeric[T])
-  extends UnaryGrad[T](true, true) {
+  override def getInputs: Seq[Tensor[_]] =
+    Seq(Tensor[Float](4).rand(), Tensor[Float](4).rand())
 
-  override val module: Module = ELULayer[T]()
-}
-
-object EluGrad {
-  def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): EluGrad[T] = new EluGrad()
+  override def getAttrs: Seq[(String, AttrValue)] =
+    Seq(("tolerance", AttrValue.newBuilder().setF(1e-6f).build()))
 }

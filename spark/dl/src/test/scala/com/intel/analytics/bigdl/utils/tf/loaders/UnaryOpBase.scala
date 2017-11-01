@@ -16,14 +16,25 @@
 package com.intel.analytics.bigdl.utils.tf.loaders
 
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.tf.{PaddingType, TensorflowDataFormat, TensorflowSpecHelper}
+import com.intel.analytics.bigdl.utils.tf.TensorflowSpecHelper
 import org.tensorflow.framework.{DataType, NodeDef}
 import com.intel.analytics.bigdl.utils.tf.Tensorflow._
 
-class SquaredDifferenceSpec extends BinaryOpBase {
+abstract class UnaryOpBase extends TensorflowSpecHelper {
 
-  override def getOpName: String = "SquaredDifference"
+  def getOpName: String
 
-  override def getInputs: Seq[Tensor[_]] =
-    Seq(Tensor[Float](4, 32, 32, 3).rand(), Tensor[Float](4, 32, 32, 3).rand())
+  def getInput: Tensor[_]
+
+  s"$getOpName forward float" should "be correct" in {
+    compare(
+      NodeDef.newBuilder()
+        .setName(s"${getOpName}Test")
+        .setOp(s"$getOpName")
+        .putAttr("T", typeAttr(DataType.DT_FLOAT)),
+      Seq(getInput),
+      0
+    )
+  }
+
 }

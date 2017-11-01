@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import scala.reflect.ClassTag
 
 class SoftplusGrad[T: ClassTag](implicit ev: TensorNumeric[T])
-  extends UnaryGrad[T](true) {
+  extends UnaryGrad[T](true, true) {
 
   override val module: Module = SoftPlus[T]()
 }

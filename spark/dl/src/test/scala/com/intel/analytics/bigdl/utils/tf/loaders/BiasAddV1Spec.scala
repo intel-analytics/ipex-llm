@@ -13,19 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn.ops
+package com.intel.analytics.bigdl.utils.tf.loaders
 
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.nn.{ELU => ELULayer}
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.tf.{PaddingType, TensorflowDataFormat, TensorflowSpecHelper}
+import org.tensorflow.framework.{DataType, NodeDef}
+import com.intel.analytics.bigdl.utils.tf.Tensorflow._
 
-import scala.reflect.ClassTag
+class BiasAddV1Spec extends BinaryOpBase {
 
-class EluGrad[T: ClassTag](implicit ev: TensorNumeric[T])
-  extends UnaryGrad[T](true, true) {
+  override def getOpName: String = "BiasAddV1"
 
-  override val module: Module = ELULayer[T]()
-}
-
-object EluGrad {
-  def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): EluGrad[T] = new EluGrad()
+  override def getInputs: Seq[Tensor[_]] =
+    Seq(Tensor[Float](4, 32, 32, 3).rand(), Tensor[Float](3).rand())
 }

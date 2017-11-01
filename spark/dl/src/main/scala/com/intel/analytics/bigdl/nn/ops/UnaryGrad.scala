@@ -22,7 +22,8 @@ import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
-abstract class UnaryGrad[T: ClassTag](gradFirst: Boolean = false)(implicit ev: TensorNumeric[T])
+abstract class UnaryGrad[T: ClassTag](gradFirst: Boolean = false,
+                                      needForward: Boolean = false)(implicit ev: TensorNumeric[T])
   extends Operation[Table, Tensor[T], T]{
 
   type Module = AbstractModule[Tensor[T], Tensor[T], T]
@@ -34,6 +35,10 @@ abstract class UnaryGrad[T: ClassTag](gradFirst: Boolean = false)(implicit ev: T
       (input[Tensor[T]](1), input[Tensor[T]](2))
     } else {
       (input[Tensor[T]](2), input[Tensor[T]](1))
+    }
+
+    if (needForward) {
+      module.forward(inputs)
     }
 
     output = module.updateGradInput(inputs, grads).toTensor[T]

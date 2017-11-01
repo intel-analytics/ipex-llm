@@ -17,13 +17,31 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.tf.{PaddingType, TensorflowDataFormat, TensorflowSpecHelper}
-import org.tensorflow.framework.{DataType, NodeDef}
+import org.tensorflow.framework.{AttrValue, DataType, NodeDef}
 import com.intel.analytics.bigdl.utils.tf.Tensorflow._
 
-class SquaredDifferenceSpec extends BinaryOpBase {
+abstract class BinaryOpBase extends TensorflowSpecHelper {
 
-  override def getOpName: String = "SquaredDifference"
+  def getOpName: String
 
-  override def getInputs: Seq[Tensor[_]] =
-    Seq(Tensor[Float](4, 32, 32, 3).rand(), Tensor[Float](4, 32, 32, 3).rand())
+  def getInputs: Seq[Tensor[_]]
+
+  def getAttrs: Seq[(String, AttrValue)] = Seq.empty
+
+  s"$getOpName forward" should "be correct" in {
+
+    val builder = NodeDef.newBuilder()
+      .setName(s"${getOpName}Test")
+      .setOp(getOpName)
+      .putAttr("T", typeAttr(DataType.DT_FLOAT))
+
+    for ((k, v) <- getAttrs) {
+      builder.putAttr(k, v)
+    }
+    compare(
+      builder,
+      getInputs,
+      0
+    )
+  }
 }

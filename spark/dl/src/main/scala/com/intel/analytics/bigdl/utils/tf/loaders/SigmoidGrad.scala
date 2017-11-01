@@ -13,27 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn.ops
+package com.intel.analytics.bigdl.utils.tf.loaders
 
+import java.nio.ByteOrder
+
+import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.nn.ops.SigmoidGrad
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.nn.Sigmoid
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.tf.Context
+import org.tensorflow.framework.NodeDef
 
 import scala.reflect.ClassTag
 
-class SigmoidGrad[T: ClassTag](implicit ev: TensorNumeric[T])
-  extends Operation[Table, Tensor[T], T]{
-
-  private val module = Sigmoid[T]()
-  override def updateOutput(input: Table): Tensor[T] = {
-    val (y, grads) = (input[Tensor[T]](1), input[Tensor[T]](2))
-
-    output = module.updateGradInputInternal(y, grads).toTensor[T]
-    output
+class SigmoidGrad extends TensorflowOpsLoader {
+  override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder,
+                                  context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
+    SigmoidGrad[T]()
   }
 }
 
-object SigmoidGrad {
-  def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): SigmoidGrad[T] = new SigmoidGrad()
-}
