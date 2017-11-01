@@ -1379,3 +1379,84 @@ output = module.forward(input)
         [ 0.80000001,  0.80000001]]], dtype=float32)]
 ```
 
+---
+## BinaryThreshold ##
+
+**Scala:**
+```scala
+val module = BinaryThreshold(th = 1e-6, ip = false)
+```
+**Python:**
+```python
+module = BinaryThreshold(th = 1e-6, ip = False)
+```
+
+Thresholds each element of the input Tensor.
+Threshold is defined as:
+
+```
+     ⎧ 1        if x >= th
+ y = ⎨ 
+     ⎩ 0    if x <  th
+```
+
+- th: The value to threshold at
+- ip: can optionally do the operation in-place
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+
+val module = BinaryThreshold(1.0, false)
+val input = Tensor(2, 2, 2).randn()
+val output = module.forward(input)
+
+> input
+(1,.,.) =
+1.1792974	0.018979544	
+-0.13787155	0.13737771	
+
+(2,.,.) =
+1.6100508	1.6385884	
+-0.68968344	1.2385004	
+
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x2x2]
+
+> output
+(1,.,.) =
+1.0	0.0	
+0.0	0.0	
+
+(2,.,.) =
+1.0	1.0	
+0.0	1.0	
+
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x2x2]
+
+```
+
+**Python example:**
+```python
+from bigdl.nn.layer import *
+import numpy as np
+
+module = BinaryThreshold(1.0, False)
+input = np.random.randn(2, 2, 2)
+output = module.forward(input)
+
+> input
+array([[[ 1.31269589,  1.61489065],
+        [ 2.51183099,  0.84722749]],
+
+       [[ 0.03064015,  0.68828065],
+        [-1.72576145, -1.49504843]]])
+  
+> output
+array([[[ 1.,  1.],
+        [ 1.,  0.]],
+
+       [[ 0.,  0.],
+        [ 0.,  0.]]], dtype=float32)
+```

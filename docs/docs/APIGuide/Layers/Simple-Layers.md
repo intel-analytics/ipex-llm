@@ -1078,3 +1078,48 @@ Gives the gradInput,
        [  8.,  10.,  12.]], dtype=float32), array([[  0.73362803,   1.98743176,  -7.66922569],
        [-15.81199932, -10.7408371 , -17.73489189]], dtype=float32)]
 ```
+---
+## Tile ##
+
+**Scala:**
+```scala
+val module = Tile(dim = 1, copies = 2)
+```
+**Python:**
+```python
+module = Tile(dim = 1, copies = 2)
+```
+Replicate repeats input `copies` times along its `dim` dimension
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor._
+
+val module = Tile(2, 2)
+
+println(module.forward(Tensor(2, 2).rand()))
+```
+Gives the output,
+```
+0.7358665	0.3615518	0.7358665	0.3615518	
+0.026456108	0.796913	0.026456108	0.796913	
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x4]
+```
+
+**Python example:**
+```python
+from bigdl.nn.layer import *
+import numpy as np
+
+module = Tile(2, 2)
+
+print(module.forward(np.random.randn(2, 2)))
+```
+Gives the output, 
+```
+[[ 1.09474885 -1.07475126  1.09474885 -1.07475126]
+ [-0.31582478  0.42006344 -0.31582478  0.42006344]]
+
+```
