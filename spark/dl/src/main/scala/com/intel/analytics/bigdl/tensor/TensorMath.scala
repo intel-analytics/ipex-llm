@@ -551,6 +551,8 @@ trait TensorMath[T] {
 
   def pow(n: T): Tensor[T]
 
+  def square(): Tensor[T]
+
   /**
    * Populate the given tensor with the floor result of elements
    * @param y

@@ -24,7 +24,7 @@ import scala.reflect.ClassTag
 /**
  * Returns (x - y)(x - y) element-wise.
  */
-class SquareDifference[T: ClassTag]()(implicit ev: TensorNumeric[T])
+class SquaredDifference[T: ClassTag]()(implicit ev: TensorNumeric[T])
   extends Operation[Table, Tensor[_], T] {
 
   def updateOutput(inputs: Table): Tensor[_] = {
@@ -39,14 +39,14 @@ class SquareDifference[T: ClassTag]()(implicit ev: TensorNumeric[T])
     }
 
     output.asInstanceOf[Tensor[NumericWildcard]]
-      .resizeAs(x).copy(x).sub(y).pow(2)
+      .resizeAs(x).copy(x).sub(y).square()
 
     output
   }
 
 }
 
-object SquareDifference {
-  def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): SquareDifference[T]
-  = new SquareDifference()
+object SquaredDifference {
+  def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): SquaredDifference[T]
+  = new SquaredDifference()
 }
