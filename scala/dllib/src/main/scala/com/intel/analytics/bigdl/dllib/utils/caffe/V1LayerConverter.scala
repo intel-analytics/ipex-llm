@@ -675,7 +675,7 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
     Some(layer.asInstanceOf[V1LayerParameter].getEltwiseParam)
   }
 
-  private def getBlob(layer : GeneratedMessage, ind: Int): Option[Caffe.BlobProto] = {
+  protected def getBlob(layer : GeneratedMessage, ind: Int): Option[Caffe.BlobProto] = {
     if (layer.asInstanceOf[V1LayerParameter].getBlobsCount > ind) {
       Some(layer.asInstanceOf[V1LayerParameter].getBlobs(ind))
     } else {
