@@ -147,7 +147,7 @@ def main():
         os.remove(LOG_FILE)
     python_execs = opts.python_executables.split(',')
     modules_to_test = []
-    for module_name in opts.modules.split(','):
+    for module_name in opts.layers.split(','):
         if module_name in python_modules:
             modules_to_test.append(python_modules[module_name])
         else:

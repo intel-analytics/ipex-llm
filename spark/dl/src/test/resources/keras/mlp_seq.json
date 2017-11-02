@@ -1,0 +1,102 @@
+{
+  "class_name": "Sequential",
+  "keras_version": "1.2.2",
+  "config": [
+    {
+      "class_name": "Dense",
+      "config": {
+        "W_constraint": null,
+        "b_constraint": null,
+        "name": "dense_10",
+        "output_dim": 5,
+        "activity_regularizer": null,
+        "trainable": true,
+        "init": "glorot_uniform",
+        "bias": true,
+        "input_dtype": "float32",
+        "input_dim": 10,
+        "b_regularizer": null,
+        "W_regularizer": null,
+        "activation": "linear",
+        "batch_input_shape": [
+          null,
+          10
+        ]
+      }
+    },
+    {
+      "class_name": "Activation",
+      "config": {
+        "activation": "relu",
+        "trainable": true,
+        "name": "activation_10"
+      }
+    },
+    {
+      "class_name": "Dropout",
+      "config": {
+        "p": 0.2,
+        "trainable": true,
+        "name": "dropout_7"
+      }
+    },
+    {
+      "class_name": "Dense",
+      "config": {
+        "W_constraint": null,
+        "b_constraint": null,
+        "name": "dense_11",
+        "activity_regularizer": null,
+        "trainable": true,
+        "init": "glorot_uniform",
+        "bias": true,
+        "input_dim": 5,
+        "b_regularizer": null,
+        "W_regularizer": null,
+        "activation": "linear",
+        "output_dim": 3
+      }
+    },
+    {
+      "class_name": "Activation",
+      "config": {
+        "activation": "relu",
+        "trainable": true,
+        "name": "activation_11"
+      }
+    },
+    {
+      "class_name": "Dropout",
+      "config": {
+        "p": 0.2,
+        "trainable": true,
+        "name": "dropout_8"
+      }
+    },
+    {
+      "class_name": "Dense",
+      "config": {
+        "W_constraint": null,
+        "b_constraint": null,
+        "name": "dense_12",
+        "activity_regularizer": null,
+        "trainable": true,
+        "init": "glorot_uniform",
+        "bias": true,
+        "input_dim": 3,
+        "b_regularizer": null,
+        "W_regularizer": null,
+        "activation": "linear",
+        "output_dim": 2
+      }
+    },
+    {
+      "class_name": "Activation",
+      "config": {
+        "activation": "softmax",
+        "trainable": true,
+        "name": "activation_12"
+      }
+    }
+  ]
+}
