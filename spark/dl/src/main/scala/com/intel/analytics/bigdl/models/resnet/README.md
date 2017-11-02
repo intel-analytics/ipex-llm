@@ -24,6 +24,7 @@ You can build one by refer to the
 * Spark local, example command
 ```shell
 spark-submit --master local[physical_core_number] \
+--driver-memory 3G \
 --class com.intel.analytics.bigdl.models.resnet.Train \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f Cifar-10/ \

@@ -7,7 +7,7 @@
     <groupId>com.intel.analytics.bigdl</groupId>
     <artifactId>bigdl-parent</artifactId>
     <packaging>pom</packaging>
-    <version>0.3.0-SNAPSHOT</version>
+    <version>0.4.0-SNAPSHOT</version>
 
     <name>BigDL</name>
     <description>A distributed deep learning library for Apache Spark.</description>
@@ -177,6 +177,8 @@
         <spark-scope>provided</spark-scope>
 
         <mkl-java-os-version>mkl-java</mkl-java-os-version>
+        <bigquant-java-os-version>bigquant-java</bigquant-java-os-version>
+
     </properties>
 
     <modules>
@@ -579,6 +581,7 @@
             <id>mac</id>
             <properties>
                 <mkl-java-os-version>mkl-java-mac</mkl-java-os-version>
+                <bigquant-java-os-version>bigquant-java-mac</bigquant-java-os-version>
                 <os-flag>mac</os-flag>
             </properties>
         </profile>
@@ -586,12 +589,14 @@
             <id>rh5</id>
             <properties>
                 <mkl-java-os-version>mkl-java-rh5</mkl-java-os-version>
+                <bigquant-java-os-version>bigquant-java-rh5</bigquant-java-os-version>
             </properties>
         </profile>
         <profile>
             <id>win64</id>
             <properties>
                 <mkl-java-os-version>mkl-java-win64</mkl-java-os-version>
+                <bigquant-java-os-version>bigquant-java-win64</bigquant-java-os-version>
                 <os-flag>win64</os-flag>
             </properties>
         </profile>

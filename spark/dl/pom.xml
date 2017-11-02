@@ -5,7 +5,7 @@
     <parent>
         <artifactId>spark_bigdl</artifactId>
         <groupId>com.intel.analytics.bigdl</groupId>
-        <version>0.3.0-SNAPSHOT</version>
+        <version>0.4.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -69,7 +69,7 @@
         <dependency>
             <groupId>com.intel.analytics.bigdl</groupId>
             <artifactId>bigdl-core</artifactId>
-            <version>0.3.0-SNAPSHOT</version>
+            <version>0.4.0-SNAPSHOT</version>
             <type>pom</type>
         </dependency>
         <dependency>
@@ -283,6 +283,46 @@
     </reporting>
 
     <profiles>
+        <profile>
+            <id>per_platform</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.intel.analytics.bigdl.native</groupId>
+                    <artifactId>${mkl-java-os-version}</artifactId>
+                    <version>0.4.0-SNAPSHOT</version>
+                    <exclusions>
+                        <!-- We already copy the dynamic lib files of this project to mkl-java, so we
+                        need not the dependency, which will break assembly step.
+                         -->
+                        <exclusion>
+                            <groupId>com.intel.analytics.bigdl.native</groupId>
+                            <artifactId>bigdl-native</artifactId>
+                        </exclusion>
+                    </exclusions>
+                </dependency>
+
+                <dependency>
+                    <groupId>com.intel.analytics.bigdl.bigquant</groupId>
+                    <artifactId>${bigquant-java-os-version}</artifactId>
+                    <version>0.4.0-SNAPSHOT</version>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>com.intel.analytics.bigdl.bigquant</groupId>
+                            <artifactId>bigquant-native</artifactId>
+                        </exclusion>
+                    </exclusions>
+                </dependency>
+
+                <dependency>
+                    <groupId>com.intel.analytics.bigdl</groupId>
+                    <artifactId>bigdl-core</artifactId>
+                    <version>0.4.0-SNAPSHOT</version>
+                    <scope>provided</scope>
+                    <type>pom</type>
+                </dependency>
+            </dependencies>
+        </profile>
+
         <profile>
             <id>parallel-tests</id>
             <properties>

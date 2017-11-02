@@ -15,6 +15,7 @@
  */
 package com.intel.analytics.bigdl.utils.caffe
 
+import caffe.Caffe
 import caffe.Caffe._
 import caffe.Caffe.EltwiseParameter.EltwiseOp
 import caffe.Caffe.LRNParameter.NormRegion
@@ -188,7 +189,10 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
 
   private def fromCaffePreLU(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val layerName = getLayerName(layer)
-    Seq(PReLU[T]().setName(layerName).inputs())
+    val weightBlob = getBlob(layer, 0).get
+    val nOutPlane = if (weightBlob.hasShape) weightBlob.getShape.getDim(0)
+    else weightBlob.getNum
+    Seq(PReLU[T](nOutPlane.toInt).setName(layerName).inputs())
   }
 
   private def fromCaffeRecurrent(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
@@ -202,7 +206,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
     if (param.hasThreshold) {
       threshold = param.getThreshold
     }
-    Seq(Threshold[T](threshold).setName(getLayerName(layer)).inputs())
+    Seq(BinaryThreshold[T](threshold).setName(getLayerName(layer)).inputs())
   }
 
   private def fromCaffeExp(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
@@ -225,11 +229,17 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
       case EltwiseOp.PROD => CMulTable[T]().setName(layerName).inputs()
       case EltwiseOp.MAX => CMaxTable[T]().setName(layerName).inputs()
       case EltwiseOp.SUM =>
-        val coeff2 = param.getCoeff(1)
-        if (coeff2 > 0) {
+        val coeff1 = if (param.getCoeffCount == 0) 1 else param.getCoeff(0)
+        val coeff2 = if (param.getCoeffCount == 0) 1 else param.getCoeff(1)
+        if (coeff1 == 1 && coeff2 == 1) {
           CAddTable[T]().setName(layerName).inputs()
-        } else {
+        } else if (coeff1 == 1 && coeff2 == -1) {
           CSubTable[T]().setName(layerName).inputs()
+        } else {
+          val mul1 = MulConstant[T](coeff1.toFloat).inputs()
+          val mul2 = MulConstant[T](coeff2.toFloat).inputs()
+          val caddTable = CAddTable[T]().setName(layerName).inputs(mul1, mul2)
+          Graph[T](Array(mul1, mul2), Array(caddTable)).inputs()
         }
       case _ => null
     }
@@ -603,6 +613,8 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
     tileParameter.setAxis(axis)
     tileParameter.build
   }
+
+  protected def getBlob(layer : GeneratedMessage, ind: Int): Option[Caffe.BlobProto]
 
   private def init() = {
     caffe2BigDL("CONVOLUTION") = fromCaffeConvolution
