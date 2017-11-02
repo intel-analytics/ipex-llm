@@ -18,16 +18,24 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.ELU
+import com.intel.analytics.bigdl.nn.{ELU, ReLU6}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.tf.Context
-import org.tensorflow.framework.NodeDef
+import com.intel.analytics.bigdl.utils.tf.loaders.Utils.getType
+import org.tensorflow.framework.{DataType, NodeDef}
 
 import scala.reflect.ClassTag
 
 class Elu extends TensorflowOpsLoader {
   override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder,
      context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
-    ELU[T]()
+    val t = getType(nodeDef.getAttrMap, "T")
+    if (t == DataType.DT_FLOAT) {
+      ELU[T, Float]()
+    } else if (t == DataType.DT_DOUBLE) {
+      ELU[T, Double]()
+    } else {
+      throw new UnsupportedOperationException(s"Not support load ELU when type is ${t}")
+    }
   }
 }

@@ -20,12 +20,15 @@ import com.intel.analytics.bigdl.nn.{ReLU6 => ReLU6Layer}
 
 import scala.reflect.ClassTag
 
-class Relu6Grad[T: ClassTag](implicit ev: TensorNumeric[T])
-  extends UnaryGrad[T](true) {
+class Relu6Grad[T: ClassTag, D: ClassTag]
+(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
+  extends UnaryGrad[T, D](true) {
 
-  val module: Module = ReLU6Layer[T]()
+  val module: Module = ReLU6Layer[T, D]()
 }
 
 object Relu6Grad {
-  def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): Relu6Grad[T] = new Relu6Grad()
+  def apply[T: ClassTag, D: ClassTag]()
+      (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]): Relu6Grad[T, D] =
+    new Relu6Grad[T, D]()
 }

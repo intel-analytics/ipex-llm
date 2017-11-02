@@ -22,18 +22,21 @@ import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
-class SigmoidGrad[T: ClassTag](implicit ev: TensorNumeric[T])
-  extends Operation[Table, Tensor[T], T]{
+class SigmoidGrad[T: ClassTag, D: ClassTag]
+(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
+  extends Operation[Table, Tensor[D], T]{
 
-  private val module = Sigmoid[T]()
-  override def updateOutput(input: Table): Tensor[T] = {
-    val (y, grads) = (input[Tensor[T]](1), input[Tensor[T]](2))
+  private val module = Sigmoid[D]()
+  override def updateOutput(input: Table): Tensor[D] = {
+    val (y, grads) = (input[Tensor[D]](1), input[Tensor[D]](2))
 
-    output = module.updateGradInputInternal(y, grads).toTensor[T]
+    output = module.updateGradInputInternal(y, grads).toTensor[D]
     output
   }
 }
 
 object SigmoidGrad {
-  def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): SigmoidGrad[T] = new SigmoidGrad()
+  def apply[T: ClassTag, D: ClassTag]()
+       (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]): SigmoidGrad[T, D] =
+    new SigmoidGrad[T, D]()
 }

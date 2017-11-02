@@ -21,14 +21,22 @@ import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.ops.SigmoidGrad
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.tf.Context
-import org.tensorflow.framework.NodeDef
+import com.intel.analytics.bigdl.utils.tf.loaders.Utils.getType
+import org.tensorflow.framework.{DataType, NodeDef}
 
 import scala.reflect.ClassTag
 
 class SigmoidGrad extends TensorflowOpsLoader {
   override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder,
                                   context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
-    SigmoidGrad[T]()
+    val t = getType(nodeDef.getAttrMap, "T")
+    if (t == DataType.DT_FLOAT) {
+      SigmoidGrad[T, Float]()
+    } else if (t == DataType.DT_DOUBLE) {
+      SigmoidGrad[T, Double]()
+    } else {
+      throw new UnsupportedOperationException(s"Not support load SigmoidGrad when type is ${t}")
+    }
   }
 }
 

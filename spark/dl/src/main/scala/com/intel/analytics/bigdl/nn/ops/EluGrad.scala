@@ -20,12 +20,14 @@ import com.intel.analytics.bigdl.nn.{ELU => ELULayer}
 
 import scala.reflect.ClassTag
 
-class EluGrad[T: ClassTag](implicit ev: TensorNumeric[T])
-  extends UnaryGrad[T](true, true) {
+class EluGrad[T: ClassTag, D: ClassTag]
+(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
+  extends UnaryGrad[T, D](true, true) {
 
-  override val module: Module = ELULayer[T]()
+  override val module: Module = ELULayer[T, D]()
 }
 
 object EluGrad {
-  def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): EluGrad[T] = new EluGrad()
+  def apply[T: ClassTag, D: ClassTag]()
+      (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]): EluGrad[T, D] = new EluGrad[T, D]()
 }

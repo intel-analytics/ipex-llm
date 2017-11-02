@@ -19,15 +19,24 @@ import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.SoftPlus
+import com.intel.analytics.bigdl.nn.ops.Relu6Grad
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.tf.Context
-import org.tensorflow.framework.NodeDef
+import com.intel.analytics.bigdl.utils.tf.loaders.Utils.getType
+import org.tensorflow.framework.{DataType, NodeDef}
 
 import scala.reflect.ClassTag
 
 class Softplus extends TensorflowOpsLoader {
   override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder,
                                   context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
-    SoftPlus[T]()
+    val t = getType(nodeDef.getAttrMap, "T")
+    if (t == DataType.DT_FLOAT) {
+      SoftPlus[T, Float]()
+    } else if (t == DataType.DT_DOUBLE) {
+      SoftPlus[T, Double]()
+    } else {
+      throw new UnsupportedOperationException(s"Not support load SoftPlus when type is ${t}")
+    }
   }
 }

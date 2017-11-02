@@ -35,7 +35,7 @@ class Log1p extends TensorflowOpsLoader {
     } else if (t == DataType.DT_DOUBLE) {
       Log1p[T, Double]()
     } else {
-     throw new UnsupportedOperationException(s"Not support load Inv when type is ${t}")
+     throw new UnsupportedOperationException(s"Not support load Log1p when type is ${t}")
     }
   }
 }
