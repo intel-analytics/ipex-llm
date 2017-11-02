@@ -1141,7 +1141,7 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @return
    */
   override def topk(k: Int, dim: Int, increase: Boolean, result: Tensor[T],
-    indices: Tensor[T]): (Tensor[T], Tensor[T]) =
+    indices: Tensor[T], sortedResult: Boolean = true): (Tensor[T], Tensor[T]) =
     throw new UnsupportedOperationException(errorString)
 
   /**
@@ -1393,7 +1393,11 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
 
   override def floor(): Tensor[T] = throw new UnsupportedOperationException(errorString)
 
+  override def ceil(): Tensor[T] = throw new UnsupportedOperationException(errorString)
+
   override def negative(x: Tensor[T]): Tensor[T] =
     throw new UnsupportedOperationException(errorString)
 
+  override def inv(): Tensor[T] =
+    throw new UnsupportedOperationException(errorString)
 }
