@@ -375,6 +375,28 @@ layer {
 scaleShapes = [{"data": (2, 2)}]
 scaleName = "scale"
 
+# Test data for Scale
+scalewithbiasDefinition = """
+name : "ScaleTestWithBias"
+input : "data"
+input_shape{dim: 2 dim: 2}
+layer {
+  name: "scalewithbias"
+  type: "Scale"
+  bottom: "data"
+  top: "scalewithbias"
+  scale_param {
+    bias_term : true
+    bias_filler {
+        type: "constant"
+        value: 1.0
+    }
+  }
+}
+"""
+scalewithbiasShapes = [{"data": (2, 2)}]
+scalewithbiasName = "scalewithbias"
+
 # Test data for Bias
 biasDefinition = """
 name : "BiasTest"
@@ -615,6 +637,7 @@ registerTestLayer(powerName, powerDefinition, powerShapes)
 registerTestLayer(preluName, preluDefinition, preluShapes)
 registerTestLayer(reshapeName, reshapeDefinition, reshapeShapes)
 registerTestLayer(scaleName, scaleDefinition, scaleShapes)
+registerTestLayer(scalewithbiasName, scalewithbiasDefinition, scalewithbiasShapes)
 registerTestLayer(biasName, biasDefinition, biasShapes)
 registerTestLayer(thresholdName, thresholdDefinition, thresholdShapes)
 registerTestLayer(expName, expDefinition, expShapes)
