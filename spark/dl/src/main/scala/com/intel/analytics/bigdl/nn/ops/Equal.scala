@@ -37,7 +37,7 @@ class Equal[T: ClassTag]()
 
   override def compareInt(a: Int, b: Int): Boolean = a == b
 
-  override def compareBoolean(a: Boolean, b: Boolean) = a == b
+  override def compareBoolean(a: Boolean, b: Boolean): Boolean = a == b
 
   override def compareByteString(a: ByteString, b: ByteString): Boolean = a.equals(b)
 }
