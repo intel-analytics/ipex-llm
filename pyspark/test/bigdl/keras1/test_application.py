@@ -158,19 +158,19 @@ class TestApplication(BigDLTestCase):
     #     self.assert_allclose(keras_output, bigdl_output, rtol=1e-5, atol=1e-5)
     #
     #
-    # def test_inception_v3(self): # DIFF STILL NO IDEA
-    #     keras.backend.set_image_dim_ordering("th")
-    #     kmodel = inception_v3.InceptionV3(include_top=False, input_shape=(3, 299, 299))
-    #     input_data = np.random.random([2, 3, 299, 299])
-    #
-    #     bmodel = DefinitionLoader.from_kmodel(kmodel)
-    #     WeightLoader.load_weights_from_kmodel(bmodel, kmodel, by_name=True)
-    #
-    #     keras_output = kmodel.predict(input_data)
-    #     bmodel.training(is_training=False)
-    #     bigdl_output = bmodel.forward(input_data)
-    #
-    #     self.assert_allclose(keras_output, bigdl_output, rtol=1e-2, atol=1e-2)
+    def test_inception_v3(self): # DIFF STILL NO IDEA
+        keras.backend.set_image_dim_ordering("th")
+        kmodel = inception_v3.InceptionV3(include_top=False, input_shape=(3, 299, 299))
+        input_data = np.random.random([2, 3, 299, 299])
+
+        bmodel = DefinitionLoader.from_kmodel(kmodel)
+        WeightLoader.load_weights_from_kmodel(bmodel, kmodel, by_name=True)
+
+        keras_output = kmodel.predict(input_data)
+        bmodel.training(is_training=False)
+        bigdl_output = bmodel.forward(input_data)
+
+        self.assert_allclose(keras_output, bigdl_output, rtol=1e-3, atol=1e-3)
 
 if __name__ == "__main__":
     pytest.main([__file__])

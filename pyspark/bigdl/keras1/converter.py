@@ -888,6 +888,26 @@ class LayerConverter:
                  bigdl_type="float")
         return blayer
 
+    def create_averagepooling2d(self, klayer, kclayer):
+        bigdl_order = self.to_bigdl_2d_ordering(klayer.dim_ordering)
+        bpadW, bpadH = self.to_bigdl_2d_padding(klayer.border_mode)
+        # The implementation in BigDL would refer the stack_size base on `format`
+        blayer = BLayer.SpatialAveragePooling(
+            kw=klayer.pool_size[0],
+            kh=klayer.pool_size[1],
+            dw=klayer.strides[0],
+            dh=klayer.strides[1],
+            pad_w=bpadW,
+            pad_h=bpadH,
+            global_pooling=False,
+            ceil_mode=False,
+            count_include_pad=False,
+            divide=True,
+            format=bigdl_order,
+            bigdl_type="float"
+        )
+        return blayer
+
     def create_globalmaxpooling2d(self, klayer, kclayer):
         bigdl_order = self.to_bigdl_2d_ordering(klayer.dim_ordering)
         input_shape = klayer.get_input_shape_at(0)
@@ -959,7 +979,7 @@ class LayerConverter:
             pad_h=0,
             global_pooling=False,
             ceil_mode=False,
-            count_include_pad=True,
+            count_include_pad=False,
             divide=True,
             format="NHWC",
             bigdl_type="float"
@@ -1007,33 +1027,13 @@ class LayerConverter:
             pad_h=bpadH,
             global_pooling=False,
             ceil_mode=False,
-            count_include_pad=True,
+            count_include_pad=False,
             divide=True,
             format="NHWC",
             bigdl_type="float"
         )
         seq.add(blayer)
         return seq
-
-    def create_averagepooling2d(self, klayer, kclayer):
-        bigdl_order = self.to_bigdl_2d_ordering(klayer.dim_ordering)
-        bpadW, bpadH = self.to_bigdl_2d_padding(klayer.border_mode)
-        # The implementation in BigDL would refer the stack_size base on `format`
-        blayer = BLayer.SpatialAveragePooling(
-            kw=klayer.pool_size[0],
-            kh=klayer.pool_size[1],
-            dw=klayer.strides[0],
-            dh=klayer.strides[1],
-            pad_w=bpadW,
-            pad_h=bpadH,
-            global_pooling=False,
-            ceil_mode=False,
-            count_include_pad=True,
-            divide=True,
-            format=bigdl_order,
-            bigdl_type="float"
-        )
-        return blayer
 
     def create_globalaveragepooling2d(self, klayer, kclayer):
         bigdl_order = self.to_bigdl_2d_ordering(klayer.dim_ordering)
@@ -1056,7 +1056,7 @@ class LayerConverter:
             pad_h=0,
             global_pooling=False,
             ceil_mode=False,
-            count_include_pad=True,
+            count_include_pad=False,
             divide=True,
             format=bigdl_order,
             bigdl_type="float"
