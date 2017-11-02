@@ -112,7 +112,7 @@ class DecodeImageSpec extends FlatSpec with Matchers {
     val path = resource.getPath + JFile.separator + "decode_image_test_case.tfrecord"
     val file = new JFile(path)
 
-    val bytesVector = new TFRecordIterator(file).toVector
+    val bytesVector = TFRecordIterator(file).toVector
     val pngBytes = bytesVector(index)
 
     val example = Example.parseFrom(pngBytes)
