@@ -712,7 +712,7 @@ object TensorNumericMath {
 
       override def ceil(a: Float): Float = math.ceil(a).toFloat
 
-      override def isFinite(a: Float): Boolean = java.lang.Float.isFinite(a)
+      override def isFinite(a: Float): Boolean = !java.lang.Float.isInfinite(a)
 
       override def isNan(a: Float): Boolean = java.lang.Float.isNaN(a)
 
@@ -993,7 +993,7 @@ object TensorNumericMath {
 
       override def ceil(a: Double): Double = math.ceil(a)
 
-      override def isFinite(a: Double): Boolean = java.lang.Double.isFinite(a)
+      override def isFinite(a: Double): Boolean = !java.lang.Double.isInfinite(a)
 
       override def isNan(a: Double): Boolean = java.lang.Double.isNaN(a)
 
