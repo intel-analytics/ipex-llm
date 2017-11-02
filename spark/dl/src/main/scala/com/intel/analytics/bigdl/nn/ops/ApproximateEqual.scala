@@ -37,6 +37,10 @@ class ApproximateEqual[T: ClassTag](tolerance: Float)
 
   override def compareInt(a: Int, b: Int): Boolean = math.abs(a - b) < tolerance
 
+  override def compareBoolean(a: Boolean, b: Boolean): Boolean = {
+    throw new UnsupportedOperationException("Does not support ApproximateEqual on Boolean")
+  }
+
   override def compareByteString(a: ByteString, b: ByteString): Boolean = {
     throw new UnsupportedOperationException("Does not support ApproximateEqual on ByteString")
   }

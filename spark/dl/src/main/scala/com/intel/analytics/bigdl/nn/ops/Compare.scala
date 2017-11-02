@@ -38,6 +38,8 @@ abstract class Compare[T: ClassTag]()
 
   def compareInt(a: Int, b: Int): Boolean
 
+  def compareBoolean(a: Boolean, b: Boolean): Boolean
+
   def compareByteString(a: ByteString, b: ByteString): Boolean
 
   output = Activity.allocate[Tensor[Boolean], Boolean]()
@@ -75,6 +77,11 @@ abstract class Compare[T: ClassTag]()
           input[Tensor[Int]](1),
           input[Tensor[Int]](2),
           (a, b) => compareInt(a, b))
+      case BooleanType =>
+        output.zipWith[Boolean, Boolean](
+          input[Tensor[Boolean]](1),
+          input[Tensor[Boolean]](2),
+          (a, b) => compareBoolean(a, b))
       case StringType =>
         output.zipWith[ByteString, ByteString](
           input[Tensor[ByteString]](1),

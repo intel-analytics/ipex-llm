@@ -35,6 +35,10 @@ class LessEqual[T: ClassTag]()
 
   override def compareInt(a: Int, b: Int): Boolean = a <= b
 
+  override def compareBoolean(a: Boolean, b: Boolean): Boolean = {
+    throw new UnsupportedOperationException("Does not support LessEqual on Boolean")
+  }
+
   override def compareByteString(a: ByteString, b: ByteString): Boolean = {
     throw new UnsupportedOperationException("Does not support LessEqual on ByteString")
   }
