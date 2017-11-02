@@ -26,8 +26,8 @@ import org.tensorflow.framework.NodeDef
 import scala.reflect.ClassTag
 
 class Div extends TensorflowOpsLoader {
-  override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder
-                                  , context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
+  override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder,
+                                  context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
     RealDivOp()
   }
 }

@@ -26,4 +26,6 @@ class ApproximateEqualSpec extends BinaryOpBase {
 
   override def getAttrs: Seq[(String, AttrValue)] =
     Seq(("tolerance", AttrValue.newBuilder().setF(1e-6f).build()))
+
+  override def compareExactly: Boolean = true
 }

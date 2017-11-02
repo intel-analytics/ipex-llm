@@ -22,4 +22,6 @@ class LessEqualSpec extends BinaryOpBase {
 
   override def getInputs: Seq[Tensor[_]] =
     Seq(Tensor[Float](4).rand(), Tensor[Float](4).rand())
+
+  override def compareExactly: Boolean = true
 }

@@ -28,6 +28,8 @@ abstract class BinaryOpBase extends TensorflowSpecHelper {
 
   def getAttrs: Seq[(String, AttrValue)] = Seq.empty
 
+  def compareExactly: Boolean = false
+
   s"$getOpName forward" should "be correct" in {
 
     val builder = NodeDef.newBuilder()
@@ -38,10 +40,16 @@ abstract class BinaryOpBase extends TensorflowSpecHelper {
     for ((k, v) <- getAttrs) {
       builder.putAttr(k, v)
     }
-    compare(
-      builder,
-      getInputs,
-      0
-    )
+
+    if (!compareExactly) {
+      compare(
+        builder,
+        getInputs,
+        0
+      )
+    } else {
+      val (bigdl, tf) = getResult(builder, getInputs, 0)
+      bigdl should be (tf)
+    }
   }
 }
