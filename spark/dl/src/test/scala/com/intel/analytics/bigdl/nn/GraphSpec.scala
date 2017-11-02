@@ -1136,6 +1136,7 @@ class GraphSpec extends FlatSpec with Matchers {
 
     val model = Inception_v1_NoAuxClassifier.graph(1000).asInstanceOf[Graph[Float]]
     model.saveGraphTopology(absolutePath)
+    System.clearProperty("bigdl.localMode")
   }
 
   "graph" should "support switch with two branch" in {
