@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.utils.tf
 
-import java.io.{BufferedInputStream, File, FileInputStream}
+import java.io.{BufferedInputStream, File, FileInputStream, InputStream}
 import java.nio.{ByteBuffer, ByteOrder}
 
 /**
@@ -28,9 +28,7 @@ import java.nio.{ByteBuffer, ByteOrder}
  *  uint32 masked_crc32_of_data
  *
  */
-class TFRecordIterator(fileName: File) extends Iterator[Array[Byte]] {
-
-  private val inputStream = new FileInputStream(fileName)
+class TFRecordIterator(inputStream: InputStream) extends Iterator[Array[Byte]] {
 
   private var dataBuffer: Array[Byte] = null
 
@@ -70,5 +68,12 @@ class TFRecordIterator(fileName: File) extends Iterator[Array[Byte]] {
     } else {
       throw new NoSuchElementException("next on empty iterator")
     }
+  }
+}
+
+object TFRecordIterator {
+  def apply(file: File): TFRecordIterator = {
+    val inputStream = new FileInputStream(file)
+    new TFRecordIterator(inputStream)
   }
 }
