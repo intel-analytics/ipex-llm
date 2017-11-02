@@ -1646,7 +1646,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
   }
 
   override def topk(k: Int, dim: Int, increase: Boolean, result: Tensor[T],
-    indices: Tensor[T]): (Tensor[T], Tensor[T]) = {
+    indices: Tensor[T], sortedResult: Boolean = true): (Tensor[T], Tensor[T]) = {
     val selectDim = if (dim == -1) this.dim() else dim
     require(selectDim > 0 && selectDim <= this.nDimension)
 
@@ -1676,8 +1676,13 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
           if (increase) ev.isGreater(r._1, l._1) else ev.isGreater(l._1, r._1))
         i = 0
         while (i < k) {
-          vdata(voffset + i * vstride) = sorted(i)._1
-          idata(ioffset + i * istride) = ev.fromType(sorted(i)._2)
+          if (sortedResult) {
+            vdata(voffset + i * vstride) = sorted(i)._1
+            idata(ioffset + i * istride) = ev.fromType(sorted(i)._2)
+          } else {
+            vdata(voffset + (k - i - 1) * vstride) = sorted(i)._1
+            idata(ioffset + (k - i - 1) * istride) = ev.fromType(sorted(i)._2)
+          }
           i += 1
         }
       })
@@ -1932,12 +1937,12 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
   override def sign(): Tensor[T] = {
     val func = new TensorFunc2[T] {
       override def apply(data1: Array[T], offset1: Int): Unit = {
-        if (ev.isGreater(data1(offset1), ev.fromType(0))) {
-          data1(offset1) = ev.fromType(1)
-        } else if (ev.isGreater(ev.fromType(0), data1(offset1))) {
+        if (ev.isGreater(data1(offset1), ev.zero)) {
+          data1(offset1) = ev.one
+        } else if (ev.isGreater(ev.zero, data1(offset1))) {
           data1(offset1) = ev.fromType(-1)
         } else {
-          data1(offset1) = ev.fromType(0)
+          data1(offset1) = ev.zero
         }
       }
     }
@@ -2110,9 +2115,17 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
     this.apply1(a => ev.floor(a))
   }
 
+  override def ceil(): Tensor[T] = {
+    this.apply1(a => ev.ceil(a))
+  }
+
   override def negative(x: Tensor[T]): Tensor[T] = {
     this.map(x, (a, b) => ev.negative(b))
     this
+  }
+
+  override def inv(): Tensor[T] = {
+    this.apply1(a => ev.inv(a))
   }
 }
 

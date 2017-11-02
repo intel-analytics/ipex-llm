@@ -174,6 +174,14 @@ object TensorNumericMath {
     def nearlyEqual(a: T, b: T, epsilon: Double): Boolean
 
     def floor(a: T): T
+
+    def ceil(a: T): T
+
+    def isFinite(a: T): Boolean
+
+    def isNan(a: T): Boolean
+
+    def isInf(a: T): Boolean
   }
 
   /**
@@ -402,6 +410,22 @@ object TensorNumericMath {
     override def floor(a: T): T =
       throw new UnsupportedOperationException(typeName +
         " in tensor does not support floor operation")
+
+    override def ceil(a: T): T =
+      throw new UnsupportedOperationException(typeName +
+        " in tensor does not support ceil operation")
+
+    override def isInf(a: T): Boolean =
+      throw new UnsupportedOperationException(typeName +
+        " in tensor does not support isInf operation")
+
+    override def isFinite(a: T): Boolean =
+      throw new UnsupportedOperationException(typeName +
+        " in tensor does not support isFinite operation")
+
+    override def isNan(a: T): Boolean =
+      throw new UnsupportedOperationException(typeName +
+        " in tensor does not support isNan operation")
   }
 
   /**
@@ -685,6 +709,14 @@ object TensorNumericMath {
       }
 
       override def floor(a: Float): Float = math.floor(a).toFloat
+
+      override def ceil(a: Float): Float = math.ceil(a).toFloat
+
+      override def isFinite(a: Float): Boolean = !java.lang.Float.isInfinite(a)
+
+      override def isNan(a: Float): Boolean = java.lang.Float.isNaN(a)
+
+      override def isInf(a: Float): Boolean = java.lang.Float.isInfinite(a)
     }
 
     implicit object NumericDouble extends UndefinedTensorNumeric[Double]("Double") {
@@ -958,6 +990,14 @@ object TensorNumericMath {
       }
 
       override def floor(a: Double): Double = math.floor(a)
+
+      override def ceil(a: Double): Double = math.ceil(a)
+
+      override def isFinite(a: Double): Boolean = !java.lang.Double.isInfinite(a)
+
+      override def isNan(a: Double): Boolean = java.lang.Double.isNaN(a)
+
+      override def isInf(a: Double): Boolean = java.lang.Double.isInfinite(a)
     }
 
     implicit object NumericString extends UndefinedTensorNumeric[String]("String") {
