@@ -19,12 +19,30 @@ import java.nio.{ByteBuffer, ByteOrder}
 
 import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.T
+import org.apache.hadoop.io.{BytesWritable, NullWritable}
+import org.apache.spark.SparkContext
 import org.tensorflow.framework.{DataType, TensorProto}
+
 import scala.collection.JavaConverters._
 
 
 object TFUtils {
   import TFTensorNumeric.NumericByteString
+
+  /**
+   * Read the local files into RDD and write to specified path in HDFS
+   */
+  def saveToHDFS(localFiles: Seq[String], outputPath: String,
+                 numPartitions: Int, sc: SparkContext): Unit = {
+    val result = localFiles.flatMap { file =>
+      val iter = TFRecordIterator(new java.io.File(file))
+      iter
+    }
+    sc.parallelize(result, numPartitions)
+      .map(bytes => (new BytesWritable(bytes), NullWritable.get()))
+      .saveAsNewAPIHadoopFile[TFRecordOutputFormat](outputPath)
+  }
 
   private def parseTensorFromContent(
     dataType: DataType, content: Array[Byte], shape: Array[Int], endian: ByteOrder) = {
