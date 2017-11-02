@@ -143,10 +143,9 @@ class CAdd[T: ClassTag](
       } else {
         expand.expandAs(gradOutput)
         if (zeroGradFlag) {
-          expand.mul(gradOutput, ev.fromType[Double](scaleB))
-        } else {
-          expand.add(ev.fromType[Double](scaleB), gradOutput)
+          gradBias.zero()
         }
+        expand.add(ev.fromType[Double](scaleB), gradOutput)
       }
     }
     if (null != bRegularizer) {
