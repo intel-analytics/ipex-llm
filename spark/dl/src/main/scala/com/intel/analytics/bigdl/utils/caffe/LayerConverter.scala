@@ -171,13 +171,18 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
       val shape = inputBlob.getShape
       val axis = param.getAxis
       var numOfAxis = param.getNumAxes
+      val hasBias = param.getBiasTerm
       if (numOfAxis == -1) {
         numOfAxis = shape.getDimList.size() - 1
       } else {
         numOfAxis = numOfAxis + axis
       }
       val size = shape.getDimList.subList(axis - 1, numOfAxis - 1).asScala.map(_.toInt).toArray
-      Seq(CMul[T](size).setName(layerName).inputs())
+      if (hasBias) {
+        Seq(Scale[T](size).setName(layerName).inputs())
+      } else {
+        Seq(CMul[T](size).setName(layerName).inputs())
+      }
     }
   }
 
