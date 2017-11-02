@@ -68,6 +68,7 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     require(pythonBigDL.toTensor(joutput) == expectedOutput, "forward output should be the same")
 
     // test backward for linear
+    val loss = mse.forward(pythonBigDL.toTensor(joutput), target)
     val mseGradOutput = mse.backward(pythonBigDL.toTensor(joutput), target).toTensor[Float]
     val expectedLinearGradOutput = linear.backward(input, mseGradOutput)
     val jLinearGradOutput = pythonBigDL.modelBackward(linear,
