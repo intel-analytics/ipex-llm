@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import com.intel.analytics.bigdl.tensor.Tensor
 
 
-class Relu6GradSpec extends BinaryOpBase {
+class Relu6GradSpec extends BinaryOpBaseSpec {
   override def getOpName: String = "Relu6Grad"
 
   override def getInputs: Seq[Tensor[_]] =

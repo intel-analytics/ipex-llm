@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import com.intel.analytics.bigdl.tensor.Tensor
 
 
-class LogSoftmaxSpec extends UnaryOpBase {
+class LogSoftmaxSpec extends UnaryOpBaseSpec {
   override def getOpName: String = "LogSoftmax"
 
   override def getInput: Tensor[_] = Tensor[Float](4, 32).rand()

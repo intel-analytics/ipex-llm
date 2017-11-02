@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import com.intel.analytics.bigdl.tensor.Tensor
 
 
-class Relu6Spec extends UnaryOpBase {
+class Relu6Spec extends UnaryOpBaseSpec {
   override def getOpName: String = "Relu6"
 
   override def getInput: Tensor[_] = Tensor[Float](4, 32, 32, 3).rand()

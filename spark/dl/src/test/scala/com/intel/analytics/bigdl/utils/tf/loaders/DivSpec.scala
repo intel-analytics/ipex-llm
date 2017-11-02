@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import com.intel.analytics.bigdl.tensor.Tensor
 
 
-class DivSpec extends BinaryOpBase {
+class DivSpec extends BinaryOpBaseSpec {
   override def getOpName: String = "Div"
 
   override def getInputs: Seq[Tensor[_]] =

@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import com.intel.analytics.bigdl.tensor.Tensor
 
 
-class SigmoidGradSpec extends BinaryOpBase {
+class SigmoidGradSpec extends BinaryOpBaseSpec {
   override def getOpName: String = "SigmoidGrad"
 
   override def getInputs: Seq[Tensor[_]] =

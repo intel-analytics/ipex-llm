@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import com.intel.analytics.bigdl.tensor.Tensor
 
 
-class GreaterEqualSpec extends BinaryOpBase {
+class GreaterEqualSpec extends BinaryOpBaseSpec {
   override def getOpName: String = "GreaterEqual"
 
   override def getInputs: Seq[Tensor[_]] =

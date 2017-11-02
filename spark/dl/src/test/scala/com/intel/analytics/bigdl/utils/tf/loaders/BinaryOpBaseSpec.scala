@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.utils.tf.{PaddingType, TensorflowDataFormat, Te
 import org.tensorflow.framework.{AttrValue, DataType, NodeDef}
 import com.intel.analytics.bigdl.utils.tf.Tensorflow._
 
-abstract class BinaryOpBase extends TensorflowSpecHelper {
+abstract class BinaryOpBaseSpec extends TensorflowSpecHelper {
 
   def getOpName: String
 

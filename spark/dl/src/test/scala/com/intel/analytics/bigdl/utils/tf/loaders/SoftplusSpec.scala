@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import com.intel.analytics.bigdl.tensor.Tensor
 
 
-class SoftplusSpec extends UnaryOpBase {
+class SoftplusSpec extends UnaryOpBaseSpec {
   override def getOpName: String = "Softplus"
 
   override def getInput: Tensor[_] = Tensor[Float](4, 32, 32, 3).rand()

@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import com.intel.analytics.bigdl.tensor.Tensor
 
 
-class Log1pSpec extends UnaryOpBase {
+class Log1pSpec extends UnaryOpBaseSpec {
   override def getOpName: String = "Log1p"
 
   override def getInput: Tensor[_] = Tensor[Float](4, 32, 32, 3).rand()

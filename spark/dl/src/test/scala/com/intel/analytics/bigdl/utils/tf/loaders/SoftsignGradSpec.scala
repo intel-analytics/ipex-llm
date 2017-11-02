@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import com.intel.analytics.bigdl.tensor.Tensor
 
 
-class SoftsignGradSpec extends BinaryOpBase {
+class SoftsignGradSpec extends BinaryOpBaseSpec {
   override def getOpName: String = "SoftsignGrad"
 
   override def getInputs: Seq[Tensor[_]] =

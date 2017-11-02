@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.utils.tf.TensorflowSpecHelper
 import org.tensorflow.framework.{DataType, NodeDef}
 import com.intel.analytics.bigdl.utils.tf.Tensorflow._
 
-abstract class UnaryOpBase extends TensorflowSpecHelper {
+abstract class UnaryOpBaseSpec extends TensorflowSpecHelper {
 
   def getOpName: String
 

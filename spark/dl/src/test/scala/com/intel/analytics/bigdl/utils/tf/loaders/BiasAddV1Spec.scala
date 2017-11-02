@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.utils.tf.{PaddingType, TensorflowDataFormat, Te
 import org.tensorflow.framework.{DataType, NodeDef}
 import com.intel.analytics.bigdl.utils.tf.Tensorflow._
 
-class BiasAddV1Spec extends BinaryOpBase {
+class BiasAddV1Spec extends BinaryOpBaseSpec {
 
   override def getOpName: String = "BiasAddV1"
 

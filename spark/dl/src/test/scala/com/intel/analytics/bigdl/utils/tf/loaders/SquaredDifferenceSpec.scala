@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 
 import com.intel.analytics.bigdl.tensor.Tensor
 
-class SquaredDifferenceSpec extends BinaryOpBase {
+class SquaredDifferenceSpec extends BinaryOpBaseSpec {
 
   override def getOpName: String = "SquaredDifference"
 

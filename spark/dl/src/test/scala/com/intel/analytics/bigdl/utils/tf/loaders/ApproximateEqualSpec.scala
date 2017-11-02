@@ -18,7 +18,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import org.tensorflow.framework.AttrValue
 
 
-class ApproximateEqualSpec extends BinaryOpBase {
+class ApproximateEqualSpec extends BinaryOpBaseSpec {
   override def getOpName: String = "ApproximateEqual"
 
   override def getInputs: Seq[Tensor[_]] =
