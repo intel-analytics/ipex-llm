@@ -20,14 +20,22 @@ import java.nio.ByteOrder
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.Log1p
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import org.tensorflow.framework.NodeDef
+import org.tensorflow.framework.{DataType, NodeDef}
 import com.intel.analytics.bigdl.utils.tf.Context
 
 import scala.reflect.ClassTag
 
 class Log1p extends TensorflowOpsLoader {
+  import Utils._
   override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder,
                                   context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
-    Log1p[T]()
+    val t = getType(nodeDef.getAttrMap, "T")
+    if (t == DataType.DT_FLOAT) {
+      Log1p[T, Float]()
+    } else if (t == DataType.DT_DOUBLE) {
+      Log1p[T, Double]()
+    } else {
+     throw new UnsupportedOperationException(s"Not support load Inv when type is ${t}")
+    }
   }
 }

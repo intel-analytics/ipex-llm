@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -26,20 +26,20 @@ import scala.reflect.ClassTag
  * The [[Log]] module applies a log transformation to the input data
  */
 @SerialVersionUID(952324213749625368L)
-class Log1p[T: ClassTag] (implicit ev: TensorNumeric[T])
-  extends TensorModule[T] {
-  private val buffer: Tensor[T] = Tensor[T]()
-  override def updateOutput(input: Tensor[T]): Tensor[T] = {
+class Log1p[T: ClassTag, D: ClassTag] (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
+  extends AbstractModule[Tensor[D], Tensor[D], T] {
+  private val buffer: Tensor[D] = Tensor[D]()
+  override def updateOutput(input: Tensor[D]): Tensor[D] = {
     output.resizeAs(input)
       .copy(input)
       .log1p()
     output
   }
-  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+  override def updateGradInput(input: Tensor[D], gradOutput: Tensor[D]): Tensor[D] = {
     buffer.resizeAs(input)
-    buffer.copy(input).add(ev.fromType[Double](1.0))
+    buffer.copy(input).add(ev2.fromType[Double](1.0))
     gradInput.resizeAs(input)
-      .fill(ev.fromType[Double](1.0))
+      .fill(ev2.fromType[Double](1.0))
       .cdiv(buffer)
       .cmul(gradOutput)
 
@@ -48,8 +48,8 @@ class Log1p[T: ClassTag] (implicit ev: TensorNumeric[T])
 }
 
 object Log1p {
-  def apply[@specialized(Float, Double) T: ClassTag]()
-        (implicit ev: TensorNumeric[T]) : Log1p[T] = {
-    new Log1p[T]()
+  def apply[T: ClassTag, D: ClassTag]()
+        (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]) : Log1p[T, D] = {
+    new Log1p[T, D]()
   }
 }
