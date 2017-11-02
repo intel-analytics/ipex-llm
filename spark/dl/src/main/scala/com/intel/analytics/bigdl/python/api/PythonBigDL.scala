@@ -2212,7 +2212,16 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def isWithWeights(module: Module[T]): Boolean = {
-    return null != module.getWeightsBias()
+    val weights = module.getWeightsBias()
+    return weights != null && !weights.isEmpty
+  }
+
+  def setRunningMean(module: BatchNormalization[T], runningMean: JTensor): Unit = {
+    module.runningMean.set(toTensor(runningMean))
+  }
+
+  def setRunningStd(module: BatchNormalization[T], runningStd: JTensor): Unit = {
+    module.runningVar.set(toTensor(runningStd))
   }
 }
 

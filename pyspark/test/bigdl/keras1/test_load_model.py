@@ -31,9 +31,9 @@ class TestLoadModel(BigDLTestCase):
     def __kmodel_load_def_weight_test(self, kmodel, input_data):
         keras_model_path_json, keras_model_path_hdf5 = self._dump_keras(kmodel, dump_weights=True)
         bmodel = DefinitionLoader.from_json_path(keras_model_path_json)
-        WeightLoader.load_weights(bmodel,
-                                  kmodel,
-                                  keras_model_path_hdf5)
+        WeightLoader.load_weights_from_hdf5(bmodel,
+                                            kmodel,
+                                            keras_model_path_hdf5)
         bmodel.training(False)
         boutput = bmodel.forward(input_data)
         koutput = kmodel.predict(input_data)

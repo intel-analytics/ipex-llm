@@ -21,12 +21,25 @@ np.random.seed(1337)  # for reproducibility
 from bigdl.keras1.backend import use_bigdl_backend
 import numpy as np
 import pytest
+import keras
+from keras.applications import *
+from keras.applications.music_tagger_crnn import MusicTaggerCRNN
+from bigdl.keras1.converter import *
 
 from test.bigdl.test_utils import BigDLTestCase, TestModels
 
 
 class TestApplication(BigDLTestCase):
 
+    def assert_model(self, input_data, kmodel, rtol=1e-5, atol=1e-5):
+        bmodel = DefinitionLoader.from_kmodel(kmodel)
+        WeightLoader.load_weights_from_kmodel(bmodel, kmodel, by_name=True)
+
+        keras_output = kmodel.predict(input_data)
+        bmodel.training(is_training=False)
+        bigdl_output = bmodel.forward(input_data)
+
+        self.assert_allclose(keras_output, bigdl_output, rtol=rtol, atol=atol)
     def test_lenet(self):
         kmodel, input_data, output_data = TestModels.kmodel_seq_lenet_mnist()
         self.modelTest(input_data, kmodel, dump_weights=True)
@@ -57,8 +70,7 @@ class TestApplication(BigDLTestCase):
         nb_epoch = 2
 
         print('Loading data...')
-        (X_train, y_train), (X_test, y_test) = imdb.load_data(
-            path="/Users/lizhichao/god/data/imdb_full.pkl", nb_words=max_features)
+        (X_train, y_train), (X_test, y_test) = imdb.load_data(nb_words=max_features)
         print(len(X_train), 'train sequences')
         print(len(X_test), 'test sequences')
 
@@ -71,16 +83,9 @@ class TestApplication(BigDLTestCase):
         print('Build model...')
         model = Sequential()
 
-        # we start off with an efficient embedding layer which maps
-        # our vocab indices into embedding_dims dimensions
-        # model.add(Embedding(max_features,
-        #                     embedding_dims,
-        #                     input_length=maxlen,
-        #                     dropout=0.2)) # Exception if specify Dropout
-
         model.add(Embedding(max_features,
                             embedding_dims,
-                            input_length=maxlen))  # Exception if specify Dropout
+                            input_length=maxlen))  # Exception if specify Dropout dropout=0.2
 
         # we add a Convolution1D, which will learn nb_filter
         # word group filters of size filter_length:
@@ -90,8 +95,8 @@ class TestApplication(BigDLTestCase):
                                 activation='relu',
                                 subsample_length=1))
         # we use max pooling:
-        # model.add(GlobalMaxPooling1D()) #TODO: Why there's exception for GlobalMaxPooling1D?
-        model.add(GlobalAveragePooling1D())
+        model.add(GlobalMaxPooling1D())
+        # model.add(GlobalAveragePooling1D())
 
         # We add a vanilla hidden layer:
         model.add(Dense(hidden_dims))
@@ -107,16 +112,65 @@ class TestApplication(BigDLTestCase):
                       metrics=['accuracy'])
         model = use_bigdl_backend(model)
 
-        # model.fit(X_train, y_train,
-        #           batch_size=batch_size,
-        #           nb_epoch=nb_epoch,
-        #           validation_data=(X_test, y_test))
+        model.fit(X_train, y_train,
+                  batch_size=batch_size,
+                  nb_epoch=nb_epoch,
+                  validation_data=(X_test, y_test))
         # 2017-09-22 15:53:45 INFO  DistriOptimizer$:657
         # - Top1Accuracy is Accuracy(correct: 21557, count: 25000, accuracy: 0.86228)
         # this result is from GlobalAveragePooling not GlobalMaxPooling.
         model.predict(X_test)  # OK
         model.evaluate(X_test, y_test)
         print(model)
+
+    def test_resnet50(self):
+        keras.backend.set_image_dim_ordering("th")
+        kmodel = resnet50.ResNet50(include_top=False, input_shape=(3, 224, 224))
+        input_data = np.random.random([2, 3, 224, 224])
+        self.assert_model(input_data, kmodel)
+
+    def test_vgg16(self):
+        keras.backend.set_image_dim_ordering("th")
+        kmodel = vgg16.VGG16(include_top=False, input_shape=(3, 224, 224))
+        input_data = np.random.random([2, 3, 224, 224])
+        self.assert_model(input_data, kmodel)
+
+    def test_vgg19(self):
+        keras.backend.set_image_dim_ordering("th")
+        kmodel = vgg19.VGG19(include_top=False, input_shape=(3, 224, 224))
+        input_data = np.random.random([2, 3, 224, 224])
+        self.assert_model(input_data, kmodel)
+
+
+    # def test_music_tagger_crnn(self):  # for th order: Exception: We don't support layer: Permute for now
+    #     # TF we don't support NHWC for batchnorm
+    #     keras.backend.set_image_dim_ordering("tf")
+    #     kmodel = MusicTaggerCRNN(include_top=False)
+    #     input_data = np.random.random([2, 96, 1366, 1])
+    #
+    #     bmodel = DefinitionLoader.from_kmodel(kmodel)
+    #     WeightLoader.load_weights_from_kmodel(bmodel, kmodel, by_name=True)
+    #
+    #     keras_output = kmodel.predict(input_data)
+    #     bmodel.training(is_training=False)
+    #     bigdl_output = bmodel.forward(input_data)
+    #
+    #     self.assert_allclose(keras_output, bigdl_output, rtol=1e-5, atol=1e-5)
+    #
+    #
+    # def test_inception_v3(self): # DIFF STILL NO IDEA
+    #     keras.backend.set_image_dim_ordering("th")
+    #     kmodel = inception_v3.InceptionV3(include_top=False, input_shape=(3, 299, 299))
+    #     input_data = np.random.random([2, 3, 299, 299])
+    #
+    #     bmodel = DefinitionLoader.from_kmodel(kmodel)
+    #     WeightLoader.load_weights_from_kmodel(bmodel, kmodel, by_name=True)
+    #
+    #     keras_output = kmodel.predict(input_data)
+    #     bmodel.training(is_training=False)
+    #     bigdl_output = bmodel.forward(input_data)
+    #
+    #     self.assert_allclose(keras_output, bigdl_output, rtol=1e-2, atol=1e-2)
 
 if __name__ == "__main__":
     pytest.main([__file__])

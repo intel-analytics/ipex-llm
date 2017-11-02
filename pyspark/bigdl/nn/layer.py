@@ -70,6 +70,22 @@ class Layer(JavaValue):
                 bigdl_type, JavaValue.jvm_class_constructor(self), *args)
         self.bigdl_type = bigdl_type
 
+    def set_running_mean(self, running_mean):
+        """
+        :param running_mean: a ndarray
+        """
+        callBigDlFunc(self.bigdl_type, "setRunningMean",
+                      self.value, JTensor.from_ndarray(running_mean))
+        return self
+
+    def set_running_std(self, running_std):
+        """
+        :param running_mean: a ndarray
+        """
+        callBigDlFunc(self.bigdl_type, "setRunningStd",
+                      self.value, JTensor.from_ndarray(running_std))
+        return self
+
     def __str__(self):
         """
         >>> conv2 = SpatialConvolution(6, 12, 5, 5).set_name("conv2")
@@ -1809,6 +1825,7 @@ class BatchNormalization(Layer):
                                                  JTensor.from_ndarray(init_bias),
                                                  JTensor.from_ndarray(init_grad_weight),
                                                  JTensor.from_ndarray(init_grad_bias))
+
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)

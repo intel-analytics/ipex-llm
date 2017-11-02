@@ -26,7 +26,7 @@ class TestKerasApplications():
         # compare the result of two models given the same input.
         bmodel = DefinitionLoader.from_kmodel(kmodel)
         bmodel.evaluate()
-        WeightLoader.load_weights(bmodel, kmodel, weights_path)
+        WeightLoader.load_weights_from_hdf5(bmodel, kmodel, weights_path)
         keras_output = kmodel.predict(input_data)
         bigdl_output = bmodel.forward(input_data)
         np.testing.assert_allclose(keras_output, bigdl_output, rtol=1e-6, atol=1e-6)

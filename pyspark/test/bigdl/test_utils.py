@@ -155,9 +155,9 @@ class BigDLTestCase(TestCase):
     def _load_keras(self, json_path, hdf5_path):
         with open(json_path, "r") as jp:
             kmodel = model_from_json(jp.read())
-        kmodel.load_weights(hdf5_path)
+        kmodel.load_weights_from_hdf5(hdf5_path)
         bmodel = DefinitionLoader.from_json_path(json_path)
-        WeightLoader.load_weights(bmodel, kmodel, hdf5_path)  # TODO: refactor reability of this api
+        WeightLoader.load_weights_from_hdf5(bmodel, kmodel, hdf5_path)  # TODO: refactor reability of this api
         return kmodel, bmodel
 
     def _dump_keras(self, keras_model, dump_weights=False):
@@ -220,7 +220,7 @@ class BigDLTestCase(TestCase):
         #                      rtol=rtol,
         #                      atol=atol)
         if dump_weights:  # load weights if possible
-            WeightLoader.load_weights(bigdl_model, keras_model, keras_model_hdf5_path)
+            WeightLoader.load_weights_from_hdf5(bigdl_model, keras_model, keras_model_hdf5_path)
             bweights = bigdl_model.get_weights()
             bweights_from_keras = WeightsConverter.get_bigdl_weigths_from_keras(keras_model)
 

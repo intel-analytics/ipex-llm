@@ -90,9 +90,9 @@ class TestLayer(BigDLTestCase):
     def _load_keras(self, json_path, hdf5_path):
         with open(json_path, "r") as jp:
             kmodel = model_from_json(jp.read())
-        kmodel.load_weights(hdf5_path)
+        kmodel.load_weights_from_hdf5(hdf5_path)
         bmodel = DefinitionLoader.from_json_path(json_path)
-        WeightLoader.load_weights(bmodel, kmodel, hdf5_path)  # TODO: refactor reability of this api
+        WeightLoader.load_weights_from_hdf5(bmodel, kmodel, hdf5_path)  # TODO: refactor reability of this api
         return kmodel, bmodel
 
     def test_conv2D(self):
@@ -177,15 +177,15 @@ class TestLayer(BigDLTestCase):
 
     def test_batchnormalization(self):
         # TODO: test training stage result, as the calc logic is not the same for mode 0
-        image_dim_orders = ["tf", "th"]
+        image_dim_orders = ["th"]
         modes = ["valid", "same"]
         for order in image_dim_orders:
             keras.backend.set_image_dim_ordering(order)
             print("Testing with %s order" % keras.backend.image_dim_ordering())
             for mode in modes:
                 print("Testing with mode %s" % mode)
-                input_data = np.random.random_sample([2, 3, 20, 20])
-                layer = BatchNormalization(input_shape=(3, 20, 20))
+                input_data = np.random.random_sample([2, 6, 128, 128])
+                layer = BatchNormalization(input_shape=(6, 128, 128), axis=1)
                 self.modelTestSingleLayer(input_data, layer,
                                           dump_weights=True, functional_api=True)
                 self.modelTestSingleLayer(input_data, layer,
