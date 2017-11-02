@@ -20,7 +20,6 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.Table
-
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
@@ -44,6 +43,11 @@ class CMulSpec extends FlatSpec with Matchers {
     val gradInput1 = layer1.backward(input, gradOutput)
     val output2 = layer2.forward(input)
     val gradInput2 = layer2.backward(input, gradOutput)
+    val cmul = CMul[Float](Array[Int](300, 4096))
+    cmul.weight.randn()
+    val input1 = Tensor[Float](300, 4096).randn()
+    cmul.forward(input1)
+
 
     output1 should be (output2)
     gradInput1 should be (gradInput2)

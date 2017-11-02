@@ -82,7 +82,10 @@ class CMul[T: ClassTag](
   }
 
   private def mulOneDimWeight(dim: Int, expand: Tensor[T], output: Tensor[T]): Unit = {
-    val (innerNum, outerNum) = Utils.getInnerOuterNum(dim, output)
+    val multiplyDimSize = expand.size(dim)
+    var dimOfoutput : Int = 1
+    while(output.size(dimOfoutput) != multiplyDimSize) dimOfoutput += 1
+    val (innerNum, outerNum) = Utils.getInnerOuterNum(dimOfoutput, output)
     val weightData = expand.storage().array()
     val weightOffset = expand.storageOffset() - 1
     var outer = 0
