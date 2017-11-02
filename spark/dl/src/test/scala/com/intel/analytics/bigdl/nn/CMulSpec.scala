@@ -44,14 +44,23 @@ class CMulSpec extends FlatSpec with Matchers {
     val output2 = layer2.forward(input)
     val gradInput2 = layer2.backward(input, gradOutput)
     val cmul = CMul[Float](Array[Int](1, 4096, 1, 1))
-    cmul.weight.randn()
+    val cmul2 = cmul.cloneModule().asInstanceOf[CMul[Float]]
     val input1 = Tensor[Float](300, 4096).randn()
-    cmul.forward(input1)
+    i = 0
+    input1.apply1(_ => {i += 1; i})
+    val gradOutput_1 = Tensor[Float](300, 4096)
+    i = 0
+    gradOutput_1.apply1(_ => {i += 1; i})
+    val output3 = cmul.forward(input1)
+    val gradInput3 = cmul.backward(input1, gradOutput_1)
+    val output4 = cmul2.forward(input1)
+    val gradInput4 = cmul2.backward(input1, gradOutput_1)
 
 
     output1 should be (output2)
     gradInput1 should be (gradInput2)
-
+    output3 should be (output4)
+    gradInput3 should be (gradInput4)
     layer2.gradWeight should be (layer1.gradWeight.mul(0.5))
   }
 }
