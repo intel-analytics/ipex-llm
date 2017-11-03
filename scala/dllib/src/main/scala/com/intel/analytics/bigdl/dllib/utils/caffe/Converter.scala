@@ -156,7 +156,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
 
   private def fromCaffeAbsVal(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val layerName = getLayerName(layer)
-    Seq(Abs[T]().setName(layerName).inputs())
+    Seq(Abs[T, T]().setName(layerName).inputs())
   }
 
   private def fromCaffeConcat(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
@@ -173,7 +173,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
 
   private def fromCaffeLog(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val layerName = getLayerName(layer)
-    Seq(Log[T]().setName(layerName).inputs())
+    Seq(Log[T, T]().setName(layerName).inputs())
   }
 
   private def fromCaffePower(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
@@ -304,13 +304,13 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
       case logSoftMax : LogSoftMax[_] => toCaffeLogSoftMax(moduleNode, bottoms, nextSize)
       case tanh : Tanh[_] => toCaffeTanh(moduleNode, bottoms, nextSize)
       case sigmoid : Sigmoid[_] => toCaffeSigmoid(moduleNode, bottoms, nextSize)
-      case abs : Abs[_] => toCaffeAbs(moduleNode, bottoms, nextSize)
+      case abs : Abs[_, _] => toCaffeAbs(moduleNode, bottoms, nextSize)
       case bartchNorm : SpatialBatchNormalization[_] =>
         toCaffeBatchNormalization(moduleNode, bottoms, nextSize)
       case joinTable : JoinTable[_] => toCaffeConcat(moduleNode, bottoms, nextSize)
-      case elu : ELU[_] => toCaffeElu(moduleNode, bottoms, nextSize)
+      case elu : ELU[_, _] => toCaffeElu(moduleNode, bottoms, nextSize)
       case infershape : InferReshape[_] => toCaffeFlattern(moduleNode, bottoms, nextSize)
-      case log : Log[_] => toCaffeLog(moduleNode, bottoms, nextSize)
+      case log : Log[_, _] => toCaffeLog(moduleNode, bottoms, nextSize)
       case power : Power[_] => toCaffePower(moduleNode, bottoms, nextSize)
       case prelu : PReLU[_] => toCaffePReLu(moduleNode, bottoms, nextSize)
       case recurrent : Recurrent[_] => toCaffeRecurrent(moduleNode, bottoms, nextSize)
@@ -543,7 +543,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
 
   protected def toCaffeEluParam(module : AbstractModule[Activity, Activity, T]) : ELUParameter = {
     val eLUParameter = ELUParameter.newBuilder()
-    val layer = classOf[ELU[T]].cast(module)
+    val layer = classOf[ELU[T, T]].cast(module)
     eLUParameter.setAlpha(layer.alpha.toFloat)
     eLUParameter.build()
   }

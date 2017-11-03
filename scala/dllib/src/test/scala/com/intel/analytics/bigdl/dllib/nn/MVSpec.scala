@@ -26,7 +26,7 @@ class MVSpec extends FlatSpec with Matchers {
     val m2 = new MV[Double]()
     val m3 = new MV[Double](true)
     val m4 = new MV[Double]()
-    val log = new Log[Double]()
+    val log = new Log[Double, Double]()
     com.intel.analytics.bigdl.tensor.Tensor
     val input1 = Tensor[Double](3, 3).randn()
     val input2 = Tensor[Double](3).randn()
@@ -46,7 +46,7 @@ class MVSpec extends FlatSpec with Matchers {
     val m2 = new MV[Double]()
     val m3 = new MV[Double](true)
     val m4 = new MV[Double]()
-    val log = new Log[Double]()
+    val log = new Log[Double, Double]()
     com.intel.analytics.bigdl.tensor.Tensor
     val input1 = Tensor[Double](3, 3).randn()
     val input2 = Tensor[Double](3).randn()

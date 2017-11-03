@@ -1130,6 +1130,9 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
   override def pow(n: T): Tensor[T] =
     throw new UnsupportedOperationException(errorString)
 
+  override def square(): Tensor[T] =
+    throw new UnsupportedOperationException(errorString)
+
   /**
    * Get the top k smallest values and their indices.
    *
