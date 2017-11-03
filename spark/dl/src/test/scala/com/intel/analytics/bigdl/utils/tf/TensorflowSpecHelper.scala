@@ -83,8 +83,22 @@ abstract class TensorflowSpecHelper extends BigDLSpecHelper {
       bigdlOutput.toTable.apply[Tensor[_]](outputIndex + 1)
     }
     val tfOutput = runGraphTF(graphFile, nodeDefBuilder.getName + s":$outputIndex")
-    bigdlOutput.asInstanceOf[Tensor[NumericWildCard]]
+    bigdlOutputTensor.asInstanceOf[Tensor[NumericWildCard]]
       .almostEqual(tfOutput.asInstanceOf[Tensor[NumericWildCard]], delta) should be(true)
+  }
+
+  protected def getResult[T](nodeDefBuilder: NodeDef.Builder, inputs: Seq[Tensor[_]],
+    outputIndex: Int): (Tensor[T], Tensor[T]) = {
+    val graphFile = saveGraph(nodeDefBuilder, inputs)
+    val bigdlOutput = runGraphBigDL(graphFile, nodeDefBuilder.getName)
+    val bigdlOutputTensor = if (bigdlOutput.isTensor) {
+      require(outputIndex == 0, s"invalid output index $outputIndex")
+      bigdlOutput.asInstanceOf[Tensor[T]]
+    } else {
+      bigdlOutput.toTable.apply[Tensor[T]](outputIndex + 1)
+    }
+    val tfOutput = runGraphTF(graphFile, nodeDefBuilder.getName + s":$outputIndex")
+    (bigdlOutputTensor, tfOutput.asInstanceOf[Tensor[T]])
   }
 
   private def saveGraph(nodeDefBuilder: NodeDef.Builder, inputs: Seq[Tensor[_]]): String = {

@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -25,16 +25,17 @@ import scala.reflect.ClassTag
  *  an element-wise abs operation
  */
 @SerialVersionUID(3070101246787506364L)
-class Abs[T: ClassTag]
- (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+class Abs[T: ClassTag, D: ClassTag]
+ (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
+  extends AbstractModule[Tensor[D], Tensor[D], T] {
 
-  override def updateOutput(input: Tensor[T]): Tensor[T] = {
+  override def updateOutput(input: Tensor[D]): Tensor[D] = {
     output.resizeAs(input)
     output.abs(input)
     output
   }
 
-  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+  override def updateGradInput(input: Tensor[D], gradOutput: Tensor[D]): Tensor[D] = {
     require(input.isContiguous() && gradOutput.isContiguous(),
       "Abs: input and gradOutput should be contiguous")
     gradInput.resizeAs(input).copy(gradOutput)
@@ -47,17 +48,17 @@ class Abs[T: ClassTag]
     while(i < gradInput.nElement()) {
       val g = gradArray(i)
       val z = inputArray(i)
-      gradArray(i + gradOffset) = ev.times(g,
-        if (ev.isGreater(z, ev.fromType(0))) ev.fromType(1) else ev.fromType(-1))
+      gradArray(i + gradOffset) = ev2.times(g,
+        if (ev2.isGreater(z, ev2.fromType(0))) ev2.fromType(1) else ev2.fromType(-1))
       i += 1
     }
     gradInput
   }
 
-  override def canEqual(other: Any): Boolean = other.isInstanceOf[Abs[T]]
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[Abs[T, D]]
 
   override def equals(other: Any): Boolean = other match {
-    case that: Abs[T] =>
+    case that: Abs[T, D] =>
       super.equals(that) &&
         (that canEqual this)
     case _ => false
@@ -71,8 +72,8 @@ class Abs[T: ClassTag]
 }
 
 object Abs {
-  def apply[@specialized(Float, Double) T: ClassTag]()
-      (implicit ev: TensorNumeric[T]) : Abs[T] = {
-    new Abs[T]()
+  def apply[@specialized(Float, Double) T: ClassTag, D: ClassTag]()
+      (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]) : Abs[T, D] = {
+    new Abs[T, D]()
   }
 }

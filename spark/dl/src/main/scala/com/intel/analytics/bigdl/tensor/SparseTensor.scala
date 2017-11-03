@@ -773,8 +773,12 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
     throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
   }
 
+  override def square(): Tensor[T] = {
+    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+  }
+
   override def topk(k: Int, dim: Int, increase: Boolean, result: Tensor[T],
-                    indices: Tensor[T]): (Tensor[T], Tensor[T]) = {
+      indices: Tensor[T], sortedResult: Boolean = true): (Tensor[T], Tensor[T]) = {
     throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
   }
 
@@ -1011,6 +1015,14 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def floor(): Tensor[T] = {
+    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+  }
+
+  override def ceil(): Tensor[T] = {
+    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+  }
+
+  override def inv(): Tensor[T] = {
     throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
   }
 

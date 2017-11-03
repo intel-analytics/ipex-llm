@@ -28,7 +28,7 @@ class ModuleSpec extends FlatSpec with Matchers {
   "hashcode()" should "behave correctly" in {
     val r1 = new ReLU[Double]()
     val r2 = new ReLU[Double]()
-    val log = new Log[Double]()
+    val log = new Log[Double, Double]()
     val r3 = new ReLU[Float]()
     val r4 = new ReLU[Double]()
     val r5 = new ReLU[Double]()
@@ -49,7 +49,7 @@ class ModuleSpec extends FlatSpec with Matchers {
   "equals()" should "behave correctly" in {
     val r1 = new ReLU[Double]()
     val r2 = new ReLU[Double]()
-    val log = new Log[Double]()
+    val log = new Log[Double, Double]()
     val mNull = null
     val r3 = new ReLU[Float]()
     val r4 = new ReLU[Double]()

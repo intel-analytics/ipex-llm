@@ -552,6 +552,13 @@ trait TensorMath[T] {
   def pow(n: T): Tensor[T]
 
   /**
+   * Replaces all elements in-place with the elements of x squared
+   *
+   * @return current tensor reference
+   */
+  def square(): Tensor[T]
+
+  /**
    * Populate the given tensor with the floor result of elements
    * @param y
    * @return
@@ -565,6 +572,18 @@ trait TensorMath[T] {
   def floor(): Tensor[T]
 
   /**
+   * Replaces all elements in-place with the ceil result of elements
+   * @return
+   */
+  def ceil(): Tensor[T]
+
+  /**
+   * Computes the reciprocal of this tensor element-wise and update the content inplace
+   * @return
+   */
+  def inv(): Tensor[T]
+
+  /**
    * Get the top k smallest values and their indices.
    *
    * @param result   result buffer
@@ -575,7 +594,7 @@ trait TensorMath[T] {
    * @return
    */
   def topk(k: Int, dim: Int = -1, increase: Boolean = true, result: Tensor[T] = null,
-    indices: Tensor[T] = null)
+    indices: Tensor[T] = null, sortedResult: Boolean = true)
   : (Tensor[T], Tensor[T])
 
   /**

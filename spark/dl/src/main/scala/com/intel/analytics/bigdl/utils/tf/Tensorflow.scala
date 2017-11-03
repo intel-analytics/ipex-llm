@@ -451,11 +451,11 @@ object Tensorflow {
       .build()
   }
 
-  private def booleanAttr(value: Boolean): AttrValue = {
+  private[bigdl] def booleanAttr(value: Boolean): AttrValue = {
     AttrValue.newBuilder().setB(value).build()
   }
 
-  private def intAttr(value: Int): AttrValue = {
+  private[bigdl] def intAttr(value: Int): AttrValue = {
     AttrValue.newBuilder().setI(value).build()
   }
 
