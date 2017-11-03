@@ -156,33 +156,34 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
   override protected def fromCaffeScale(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val param = layer.asInstanceOf[LayerParameter].getScaleParam
     val layerName = getLayerName(layer)
-    // second blob as weight for scale
-    val weightBlob = getBlob(layer, 1)
-    if (weightBlob.isDefined) {
-      val blob = weightBlob.get
-      val size : Array[Int] = if (blob.getShape.getDimCount == 1) {
-        Array(1, blob.getShape.getDim(0).toInt, 1, 1)
-      } else {
-        blob.getShape.getDimList.asScala.map(_.toInt).toArray
+    val weightBlob = getBlob(layer, 0)
+    val axis = param.getAxis
+    val numOfAix = param.getNumAxes
+    val weightSize = weightBlob.get.getShape.
+      getDimList.asScala.map(_.toInt).toArray
+
+    val size = if (numOfAix == 1) {
+      if (axis == 1) {
+        weightSize ++ Array(1, 1)
+      } else if (axis == 2) {
+        Array(1) ++ weightSize ++ Array(1)
+      } else if (axis == 3) {
+        Array(1, 1) ++ weightSize
       }
-      Seq(Scale[T](size).setName(layerName).inputs())
+    } else if (numOfAix == 2) {
+      if (axis == 1) {
+        weightSize ++ Array(1)
+      } else if (axis == 2) {
+        Array(1) ++ weightSize
+      }
     } else {
-      val inputBlob = getBlob(layer, 0).get
-      val shape = inputBlob.getShape
-      val axis = param.getAxis
-      var numOfAxis = param.getNumAxes
-      val hasBias = param.getBiasTerm
-      if (numOfAxis == -1) {
-        numOfAxis = shape.getDimList.size() - 1
-      } else {
-        numOfAxis = numOfAxis + axis
-      }
-      val size = shape.getDimList.subList(axis - 1, numOfAxis - 1).asScala.map(_.toInt).toArray
-      if (hasBias) {
-        Seq(Scale[T](size).setName(layerName).inputs())
-      } else {
-        Seq(CMul[T](size).setName(layerName).inputs())
-      }
+      weightSize
+    }
+    val hasBias = param.getBiasTerm
+    if (hasBias) {
+      Seq(Scale[T](size.asInstanceOf[Array[Int]]).setName(layerName).inputs())
+    } else {
+      Seq(CMul[T](size.asInstanceOf[Array[Int]]).setName(layerName).inputs())
     }
   }
 

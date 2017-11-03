@@ -364,7 +364,7 @@ reshapeName = "reshape"
 scaleDefinition = """
 name : "ScaleTest"
 input : "data"
-input_shape{dim: 2 dim: 2}
+input_shape{dim: 2 dim: 2 dim: 2 dim: 2}
 layer {
   name: "scale"
   type: "Scale"
@@ -372,14 +372,14 @@ layer {
   top: "scale"
 }
 """
-scaleShapes = [{"data": (2, 2)}]
+scaleShapes = [{"data": (2, 2, 2, 2)}]
 scaleName = "scale"
 
 # Test data for ScaleWithBias
 scalewithbiasDefinition = """
 name : "ScaleTestWithBias"
 input : "data"
-input_shape{dim: 2 dim: 2}
+input_shape{dim: 2 dim: 2 dim: 2 dim: 2}
 layer {
   name: "scalewithbias"
   type: "Scale"
@@ -387,14 +387,19 @@ layer {
   top: "scalewithbias"
   scale_param {
     bias_term : true
+    num_axes : 2
     bias_filler {
         type: "constant"
         value: 1.0
     }
+    filler {
+        type: "gaussian"
+        std: 0.02
+    }
   }
 }
 """
-scalewithbiasShapes = [{"data": (2, 2)}]
+scalewithbiasShapes = [{"data": (2, 2, 2, 2)}]
 scalewithbiasName = "scalewithbias"
 
 # Test data for Bias
