@@ -19,6 +19,7 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
+import bigdl.nn.layer as BLayer
 from bigdl.keras1.backend import WeightLoader
 from bigdl.keras1.converter import DefinitionLoader
 
@@ -38,6 +39,13 @@ class TestLoadModel(BigDLTestCase):
         boutput = bmodel.forward(input_data)
         koutput = kmodel.predict(input_data)
         assert_allclose(boutput, koutput, rtol=1e-5)
+
+    def test_load_api(self):
+        kmodel, input_data, output_data = TestModels.kmodel_graph_1_layer()
+        keras_model_json_path, keras_model_hdf5_path = self._dump_keras(kmodel, dump_weights=True)
+        bmodel = BLayer.Model.load_keras(keras_model_json_path, keras_model_hdf5_path)
+        self.assert_allclose(kmodel.predict(input_data,
+                                            bmodel.forward(input_data)))
 
     # TODO: These unitest can be unify via reflection.
     def test_load_def_weights_1_layers_graph(self):

@@ -238,6 +238,7 @@ class WeightsConverter:
         w4 = weights[7].T
         return [w1, w2, w3, w4]
 
+
 class DefinitionLoader:
 
     def __init__(self, kmodel):

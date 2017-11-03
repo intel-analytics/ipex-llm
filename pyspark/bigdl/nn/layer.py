@@ -19,6 +19,8 @@ import sys
 
 import numpy as np
 
+from bigdl.keras1.converter import DefinitionLoader as KDefinitionLoader
+from bigdl.keras1.converter import WeightLoader as KWeightLoader
 from bigdl.util.common import JTensor
 from bigdl.util.common import JavaValue
 from bigdl.util.common import callBigDlFunc
@@ -689,6 +691,20 @@ class Model(Container):
         """
         jmodel = callBigDlFunc(bigdl_type, "loadTorch", path)
         return Layer.of(jmodel)
+
+    @staticmethod
+    def load_keras(def_path, weights_path=None, by_name=False):
+        """
+        Load a pre-trained Keras model.
+
+        :param def_path: The json path containing the keras model definition.
+        :param weights_path: The HDF5 path containing the pre-trained keras model weights.
+        :return: A pre-trained model.
+        """
+        bmodel = KDefinitionLoader.from_json_path(def_path)
+        if weights_path:
+            KWeightLoader.load_weights_from_hdf5(bmodel, weights_path, by_name=by_name)
+        return bmodel
 
     @staticmethod
     def load_caffe(model, defPath, modelPath, match_all=True, bigdl_type="float"):
