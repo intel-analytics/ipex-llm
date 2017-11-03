@@ -1694,6 +1694,8 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
 
   override def pow(n: T): Tensor[T] = DenseTensorMath.pow[T](this, this, n)
 
+  override def square(): Tensor[T] = pow(ev.fromType(2.0))
+
   override def log(x: Tensor[T]): Tensor[T] = DenseTensorMath.log[T](this, x)
 
   override def log(): Tensor[T] = DenseTensorMath.log[T](this, this)
