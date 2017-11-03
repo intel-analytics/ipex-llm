@@ -552,6 +552,13 @@ trait TensorMath[T] {
   def pow(n: T): Tensor[T]
 
   /**
+   * Replaces all elements in-place with the elements of x squared
+   *
+   * @return current tensor reference
+   */
+  def square(): Tensor[T]
+
+  /**
    * Populate the given tensor with the floor result of elements
    * @param y
    * @return

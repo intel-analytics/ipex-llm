@@ -628,14 +628,21 @@ class SpatialAveragePooling[T: ClassTag](
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    require(input.dim() == 3 || input.dim() == 4,
-      "SpatialAveragePooling: " + ErrorInfo.constrainInputAs3DOrBatch +
-    s"input dimension ${input.dim()}")
-    val (dimh, dimw, dimc) = format.getHWCDims(input.dim())
+    val inputSize = input.size()
+    updateGradInputInternal(inputSize, gradOutput)
+  }
 
-    val nInputPlane = input.size(dimc)
-    val inputHeight = input.size(dimh)
-    val inputWidth = input.size(dimw)
+  private[bigdl] def updateGradInputInternal(inputSize: Array[Int],
+                                             gradOutput: Tensor[T]): Tensor[T] = {
+    require(inputSize.length == 3 || inputSize.length == 4,
+      "SpatialAveragePooling: " + ErrorInfo.constrainInputAs3DOrBatch +
+    s"input dimension ${inputSize.length}")
+    // dimh, dimw, dimc start with 1
+    val (dimh, dimw, dimc) = format.getHWCDims(inputSize.length)
+
+    val nInputPlane = inputSize(dimc - 1)
+    val inputHeight = inputSize(dimh - 1)
+    val inputWidth = inputSize(dimw - 1)
 
     val (padTop, padBottom, padLeft, padRight, outputHeight, outputWidth) =
       if (padW == -1 && padH == -1) {
@@ -648,8 +655,8 @@ class SpatialAveragePooling[T: ClassTag](
         Utils.getOutSizeAndPadding(inputHeight, inputWidth, dH, dW, kH, kW, padH, padW, ceilMode)
       }
 
-    gradInput.resizeAs(input).zero()
-    if (input.dim() == 3) {
+    gradInput.resize(inputSize).zero()
+    if (inputSize.length == 3) {
       format match {
         case DataFormat.NCHW =>
           if (classTag[T] == classTag[Double]) {
@@ -677,7 +684,7 @@ class SpatialAveragePooling[T: ClassTag](
           }
       }
     } else {
-      val nBatch = input.size(1)
+      val nBatch = inputSize(0)
 
       if (results == null || results.length != nBatch) {
         results = new Array[Future[Unit]](nBatch)

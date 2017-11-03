@@ -61,6 +61,10 @@ object Utils {
     attrMap.get(key).getI.toInt
   }
 
+  private[loaders] def getFloat(attrMap: util.Map[String, AttrValue], key: String): Float = {
+    attrMap.get(key).getF
+  }
+
   private[loaders] def getBoolean(attrMap: util.Map[String, AttrValue], key: String): Boolean = {
     attrMap.get(key).getB
   }
