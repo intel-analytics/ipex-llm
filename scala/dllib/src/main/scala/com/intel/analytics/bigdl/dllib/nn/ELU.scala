@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, TensorModule}
 import com.intel.analytics.bigdl.tensor.{DenseTensorApply, Tensor, TensorFunc6}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -28,18 +28,19 @@ import scala.reflect.ClassTag
  */
 
 @SerialVersionUID( - 3525781855978085005L)
-class ELU[T: ClassTag](
+class ELU[T: ClassTag, D: ClassTag](
   val alpha: Double = 1.0,
   val inplace: Boolean = false)(
-  implicit ev: TensorNumeric[T]) extends TensorModule[T]  {
-  val _alpha = ev.fromType[Double](alpha)
+  implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
+  extends AbstractModule[Tensor[D], Tensor[D], T]  {
+  val _alpha = ev2.fromType[Double](alpha)
 
   // Todo: Improve the performance of contiguous tensor
-  override def updateOutput(input: Tensor[T]): Tensor[T] = {
+  override def updateOutput(input: Tensor[D]): Tensor[D] = {
     if (inplace) {
       input.apply1(in => {
-        if (ev.isGreaterEq(ev.fromType[Double](0), in)) {
-          ev.times(ev.minus(ev.exp(in), ev.fromType[Double](1)), _alpha)
+        if (ev2.isGreaterEq(ev2.fromType[Double](0), in)) {
+          ev2.times(ev2.minus(ev2.exp(in), ev2.fromType[Double](1)), _alpha)
         } else {
           in
         }
@@ -48,8 +49,8 @@ class ELU[T: ClassTag](
     } else {
       output.resizeAs(input)
       output.map(input, (out, in) => {
-        if (ev.isGreaterEq(ev.fromType[Int](0), in)) {
-          ev.times(ev.minus(ev.exp(in), ev.fromType[Double](1)), _alpha)
+        if (ev2.isGreaterEq(ev2.fromType[Int](0), in)) {
+          ev2.times(ev2.minus(ev2.exp(in), ev2.fromType[Double](1)), _alpha)
         } else {
           in
         }
@@ -58,14 +59,14 @@ class ELU[T: ClassTag](
     output
   }
 
-  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+  override def updateGradInput(input: Tensor[D], gradOutput: Tensor[D]): Tensor[D] = {
     require(input.isSameSizeAs(gradOutput),
       "input should have the same size with gradOutput" +
         s"input (${input.dim()}) gradOutput (${gradOutput.dim()}")
     if (inplace) {
       gradOutput.map(output, (grad, out) => {
-        if (ev.isGreaterEq(ev.fromType[Int](0), out)) {
-          ev.times(ev.plus(out, _alpha), grad)
+        if (ev2.isGreaterEq(ev2.fromType[Int](0), out)) {
+          ev2.times(ev2.plus(out, _alpha), grad)
         } else {
           grad
         }
@@ -73,17 +74,17 @@ class ELU[T: ClassTag](
       gradInput.set(gradOutput)
     } else {
       gradInput.resizeAs(input)
-      val func = new TensorFunc6[T] {
-        override def apply (data1: Array[T], offset1: Int, data2: Array[T],
-          offset2: Int, data3: Array[T], offset3: Int): Unit = {
-          data1(offset1) = if (ev.isGreater(data3(offset3), ev.fromType[Int](0))) {
+      val func = new TensorFunc6[D] {
+        override def apply (data1: Array[D], offset1: Int, data2: Array[D],
+          offset2: Int, data3: Array[D], offset3: Int): Unit = {
+          data1(offset1) = if (ev2.isGreater(data3(offset3), ev2.fromType[Int](0))) {
             data2(offset2)
           } else {
-            ev.times(ev.plus(data3(offset3), _alpha), data2(offset2))
+            ev2.times(ev2.plus(data3(offset3), _alpha), data2(offset2))
           }
         }
       }
-      DenseTensorApply.apply3[T](gradInput, gradOutput, output, func)
+      DenseTensorApply.apply3[D](gradInput, gradOutput, output, func)
     }
     gradInput
   }
@@ -97,9 +98,10 @@ class ELU[T: ClassTag](
 }
 
 object ELU {
-  def apply[@specialized(Float, Double) T: ClassTag](
+  def apply[@specialized(Float, Double) T: ClassTag, D: ClassTag](
       alpha: Double = 1.0,
-      inplace: Boolean = false)(implicit ev: TensorNumeric[T]) : ELU[T] = {
-    new ELU[T](alpha, inplace)
+      inplace: Boolean = false)
+      (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]) : ELU[T, D] = {
+    new ELU[T, D](alpha, inplace)
   }
 }

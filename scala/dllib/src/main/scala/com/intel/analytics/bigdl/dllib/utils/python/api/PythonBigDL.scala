@@ -488,8 +488,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createAbs()
-  : Abs[T] = {
-    Abs[T]()
+  : Abs[T, T] = {
+    Abs[T, T]()
   }
 
   def createAdd(inputSize: Int)
@@ -592,8 +592,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def createClamp(min: Int,
     max: Int)
-  : Clamp[T] = {
-    Clamp[T](min,
+  : Clamp[T, T] = {
+    Clamp[T, T](min,
       max)
   }
 
@@ -632,8 +632,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def createELU(alpha: Double = 1.0,
     inplace: Boolean = false)
-  : ELU[T] = {
-    ELU[T](alpha,
+  : ELU[T, T] = {
+    ELU[T, T](alpha,
       inplace)
   }
 
@@ -669,8 +669,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def createHardTanh(minValue: Double = -1,
     maxValue: Double = 1,
     inplace: Boolean = false)
-  : HardTanh[T] = {
-    HardTanh[T](minValue,
+  : HardTanh[T, T] = {
+    HardTanh[T, T](minValue,
       maxValue,
       inplace)
   }
@@ -719,8 +719,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createLog()
-  : Log[T] = {
-    Log[T]()
+  : Log[T, T] = {
+    Log[T, T]()
   }
 
   def createLogSigmoid()
@@ -874,8 +874,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createReLU6(inplace: Boolean = false)
-  : ReLU6[T] = {
-    ReLU6[T](inplace)
+  : ReLU6[T, T] = {
+    ReLU6[T, T](inplace)
   }
 
   def createReplicate(nFeatures: Int,
@@ -927,8 +927,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createSoftPlus(beta: Double = 1.0)
-  : SoftPlus[T] = {
-    SoftPlus[T](beta)
+  : SoftPlus[T, T] = {
+    SoftPlus[T, T](beta)
   }
 
   def createSoftShrink(lambda: Double = 0.5)
@@ -937,8 +937,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createSoftSign()
-  : SoftSign[T] = {
-    SoftSign[T]()
+  : SoftSign[T, T] = {
+    SoftSign[T, T]()
   }
 
   def createSpatialDilatedConvolution(nInputPlane: Int,
