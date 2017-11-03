@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import com.intel.analytics.bigdl.tensor.Tensor
 
 
-class SqrtGradSpec extends BinaryOpBase {
+class SqrtGradSpec extends BinaryOpBaseSpec {
   override def getOpName: String = "SqrtGrad"
 
   override def getInputs: Seq[Tensor[_]] =

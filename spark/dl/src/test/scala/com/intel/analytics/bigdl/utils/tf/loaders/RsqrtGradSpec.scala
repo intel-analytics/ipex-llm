@@ -17,9 +17,10 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import com.intel.analytics.bigdl.tensor.Tensor
 
 
-class RsqrtGradSpec extends BinaryOpBase {
+class RsqrtGradSpec extends BinaryOpBaseSpec {
   override def getOpName: String = "RsqrtGrad"
 
   override def getInputs: Seq[Tensor[_]] =
     Seq(Tensor[Float](4).rand(), Tensor[Float](4).rand())
+
 }

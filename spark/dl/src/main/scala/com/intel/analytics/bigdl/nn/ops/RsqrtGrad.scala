@@ -15,33 +15,26 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.{NumericWildcard, TensorNumeric}
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
-class RsqrtGrad[T: ClassTag](implicit ev: TensorNumeric[T])
-  extends Operation[Table, Tensor[_], T] {
+class RsqrtGrad[T: ClassTag, D: ClassTag](implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
+  extends Operation[Table, Tensor[D], T] {
 
-  override def updateOutput(inputs: Table): Tensor[_] = {
-    val grads = inputs[Tensor[NumericWildcard]](2)
-    val y = inputs[Tensor[NumericWildcard]](1)
+  override def updateOutput(inputs: Table): Tensor[D] = {
+    val grads = inputs[Tensor[D]](2)
+    val y = inputs[Tensor[D]](1)
 
-    require(grads.getType() == y.getType(), "The numeric type of x and y must be the same," +
-      " but got x: ${grads.getType()}, y: ${y.getType()}")
-
-    if (output.getType() != grads.getType()) {
-      output = grads.emptyInstance()
-    }
-
-    output.asInstanceOf[Tensor[NumericWildcard]]
-      .resizeAs(y).copy(y).pow(3.0f).mul(-0.5f).cmul(grads)
+    output.resizeAs(y).copy(y).pow(ev2.fromType(3.0)).mul(ev2.fromType(-0.5f)).cmul(grads)
 
     output
   }
 }
 
 object RsqrtGrad {
-  def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): RsqrtGrad[T] = new RsqrtGrad()
+  def apply[T: ClassTag, D: ClassTag]()
+    (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]): RsqrtGrad[T, D] = new RsqrtGrad[T, D]()
 }

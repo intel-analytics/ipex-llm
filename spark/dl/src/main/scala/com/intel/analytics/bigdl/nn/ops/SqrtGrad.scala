@@ -21,27 +21,20 @@ import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
-class SqrtGrad[T: ClassTag](implicit ev: TensorNumeric[T])
-  extends Operation[Table, Tensor[_], T] {
+class SqrtGrad[T: ClassTag, D: ClassTag](implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
+  extends Operation[Table, Tensor[D], T] {
 
-  override def updateOutput(inputs: Table): Tensor[_] = {
-    val grads = inputs[Tensor[NumericWildcard]](2)
-    val y = inputs[Tensor[NumericWildcard]](1)
+  override def updateOutput(inputs: Table): Tensor[D] = {
+    val grads = inputs[Tensor[D]](2)
+    val y = inputs[Tensor[D]](1)
 
-    require(grads.getType() == y.getType(), "The numeric type of x and y must be the same," +
-      " but got x: ${grads.getType()}, y: ${y.getType()}")
-
-    if (output.getType() != grads.getType()) {
-      output = grads.emptyInstance()
-    }
-
-    output.asInstanceOf[Tensor[NumericWildcard]]
-      .resizeAs(grads).copy(grads).mul(0.5f).div(y)
+    output.resizeAs(grads).copy(grads).mul(ev2.fromType(0.5)).div(y)
 
     output
   }
 }
 
 object SqrtGrad {
-  def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): SqrtGrad[T] = new SqrtGrad()
+  def apply[T: ClassTag, D: ClassTag]()
+    (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]): SqrtGrad[T, D] = new SqrtGrad[T, D]()
 }
