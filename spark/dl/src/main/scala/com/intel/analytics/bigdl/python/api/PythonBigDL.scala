@@ -2201,11 +2201,6 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     dlClassifierModel.setBatchSize(batchSize)
   }
 
-  def kerasLoadGraph(modelPath: String): Graph[T] = {
-    new KerasLoader(modelPath).loadModule()
-  }.asInstanceOf[Graph[T]]
-
-
   def getContainerModules(module: Container[Activity, Activity, T])
   : JList[AbstractModule[Activity, Activity, T]] = {
     module.modules.toList.asJava
