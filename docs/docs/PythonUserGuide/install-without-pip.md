@@ -2,7 +2,9 @@
 ## **Install without pip**
 __NOTE__: Only __Python 2.7__ and __Python 3.5__ are supported for now.
 
-1. [Install Spark](https://spark.apache.org/downloads.html)
+**This is mainly for development purpose**. For regular user, we strong suggest you use pip to install bigdl
+
+1. [Download Spark](https://spark.apache.org/downloads.html)
 
 2. You can download the BigDL release and nightly build from the [Release Page](../release-download.md)
   or build the BigDL package from [source](../ScalaUserGuide/install-build-src.md).

@@ -25,6 +25,10 @@
           <include>dump_tf_graph.py</include>
           <include>launch-dataproc.sh</include>
           <include>export_tf_checkpoint.py</include>
+          <include>pyspark-with-bigdl.sh</include>
+          <include>spark-submit-with-bigdl.sh</include>
+          <include>juptyer-with-bigdl.sh</include>
+          <include>spark-shell-with-bigdl.sh</include>
       </includes>
     </fileSet>
     <fileSet>
