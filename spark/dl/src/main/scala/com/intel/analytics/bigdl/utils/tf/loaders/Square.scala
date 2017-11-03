@@ -35,7 +35,7 @@ class Square extends TensorflowOpsLoader {
     } else if (t == DataType.DT_DOUBLE) {
       Power[T, Double](2.0)
     } else {
-      throw new UnsupportedOperationException(s"Not support load Power when type is $t")
+      throw new UnsupportedOperationException(s"Not support load Square when type is $t")
     }
   }
 }
