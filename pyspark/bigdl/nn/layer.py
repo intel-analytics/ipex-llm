@@ -277,9 +277,6 @@ class Layer(JavaValue):
                              "predictLocal", self.value, JTensor.from_ndarray(X))
         return [r.to_ndarray() for r in result]
 
-    def predict_class_local(self, X, batch=32):
-        pass
-
     def predict(self, data_rdd):
         """
         Model inference base on the given data.

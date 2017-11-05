@@ -552,12 +552,14 @@ class LocalOptimizer(JavaValue):
 
 
     :param model: the neural net model
-    :param training_data: the training dataset
+    :param X: the training features which is an ndarray or list of ndarray
+    :param Y: the training label which is an ndarray
     :param criterion: the loss function
     :param optim_method: the algorithm to use for optimization,
        e.g. SGD, Adagrad, etc. If optim_method is None, the default algorithm is SGD.
     :param end_trigger: when to end the optimization
     :param batch_size: training batch size
+    :param cores: by default is the total physical cores.
     """
     def __init__(self,
                  X,
@@ -569,18 +571,6 @@ class LocalOptimizer(JavaValue):
                  optim_method=None,
                  cores=None,
                  bigdl_type="float"):
-        """
-        Create an optimizer.
-
-
-        :param model: the neural net model
-        :param training_rdd: the training dataset
-        :param criterion: the loss function
-        :param optim_method: the algorithm to use for optimization,
-           e.g. SGD, Adagrad, etc. If optim_method is None, the default algorithm is SGD.
-        :param end_trigger: when to end the optimization
-        :param batch_size: training batch size
-        """
         if cores is None:
             cores = multiprocessing.cpu_count()
         JavaValue.__init__(self, None, bigdl_type,
@@ -601,7 +591,8 @@ class LocalOptimizer(JavaValue):
 class Optimizer(JavaValue):
     """
     An optimizer is in general to minimize any function with respect
-    to a set of parameters. In case of training a neural network,
+    to a set of parameters and its a distrubuted optimizer.
+    In case of training a neural network,
     an optimizer tries to minimize the loss of the neural net with
     respect to its weights/biases, over the training set.
     """
