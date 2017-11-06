@@ -18,28 +18,25 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.nn.Power
 import com.intel.analytics.bigdl.nn.ops.RsqrtGrad
-import com.intel.analytics.bigdl.nn.{Identity, Power}
-import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.tf.Context
+import com.intel.analytics.bigdl.utils.tf.loaders.Utils.getType
 import org.tensorflow.framework.{DataType, NodeDef}
 
 import scala.reflect.ClassTag
 
-class Rsqrt extends TensorflowOpsLoader {
-
-  import Utils._
-
+class Sqrt extends TensorflowOpsLoader {
   override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder,
-    context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
+                                  context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
     val t = getType(nodeDef.getAttrMap, "T")
     if (t == DataType.DT_FLOAT) {
-      Power[T, Float](-0.5, 1, 0)
+      Power[T, Float](0.5)
     } else if (t == DataType.DT_DOUBLE) {
-      Power[T, Double](-0.5, 1, 0)
+      Power[T, Double](0.5)
     } else {
-      throw new UnsupportedOperationException(s"Not support load Rsqrt when type is $t")
+      throw new UnsupportedOperationException(s"Not support load Sqrt when type is $t")
     }
   }
 }

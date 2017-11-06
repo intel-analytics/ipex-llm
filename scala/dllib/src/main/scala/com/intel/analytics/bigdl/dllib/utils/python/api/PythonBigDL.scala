@@ -858,8 +858,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def createPower(power: Double,
     scale: Double = 1,
     shift: Double = 0)
-  : Power[T] = {
-    Power[T](power,
+  : Power[T, T] = {
+    Power[T, T](power,
       scale,
       shift)
   }
@@ -1142,13 +1142,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createSqrt()
-  : Sqrt[T] = {
-    Sqrt[T]()
+  : Sqrt[T, T] = {
+    Sqrt[T, T]()
   }
 
   def createSquare()
-  : Square[T] = {
-    Square[T]()
+  : Square[T, T] = {
+    Square[T, T]()
   }
 
   def createSqueeze(dim: Int = Int.MinValue,
