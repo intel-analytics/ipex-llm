@@ -745,6 +745,15 @@ trait TensorMath[T] {
   def cmax(y: Tensor[T]): Tensor[T]
 
   /**
+   * stores the element-wise maximum of x and y in x.
+   * x.cmin(y) = min(x, y)
+   *
+   * @param y tensor
+   * @return current tensor
+   */
+  def cmin(y: Tensor[T]): Tensor[T]
+
+  /**
    * stores the element-wise maximum of x and y in z.
    * z.cmax(x, y) means z = max(x, y)
    *
@@ -752,6 +761,15 @@ trait TensorMath[T] {
    * @param y tensor
    */
   def cmax(x: Tensor[T], y: Tensor[T]): Tensor[T]
+
+  /**
+   * stores the element-wise maximum of x and y in z.
+   * z.cmin(x, y) means z = min(x, y)
+   *
+   * @param x tensor
+   * @param y tensor
+   */
+  def cmin(x: Tensor[T], y: Tensor[T]): Tensor[T]
 
   /**
    * resize this tensor size to floor((xmax - xmin) / step) + 1 and set values from
