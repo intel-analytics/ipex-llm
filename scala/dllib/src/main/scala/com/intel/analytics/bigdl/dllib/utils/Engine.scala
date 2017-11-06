@@ -140,7 +140,7 @@ object Engine {
   @volatile private var _default: ThreadPool = null
 
   // Thread pool for layer use
-  @volatile private var _model: ThreadPool = new ThreadPool(1).setMKLThread(MKL.getNumThreads)
+  @volatile private var _model: ThreadPool = new ThreadPool(1).setMKLThread(MKL.getMklNumThreads)
 
   /**
    * If user undefine the property bigdl.coreNumber, it will return physical core number
@@ -253,7 +253,7 @@ object Engine {
 
     if(_model == null || _model.getPoolSize != modelPoolSize) {
       _model = new ThreadPool(modelPoolSize)
-      _model.setMKLThread(MKL.getNumThreads)
+      _model.setMKLThread(MKL.getMklNumThreads)
     }
   }
 
