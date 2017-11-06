@@ -872,6 +872,14 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
     throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
   }
 
+  override def cmin(y: Tensor[T]): Tensor[T] = {
+    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+  }
+
+  override def cmin(x: Tensor[T], y: Tensor[T]): Tensor[T] = {
+    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+  }
+
   override def range(xmin: Double, xmax: Double, step: Int): Tensor[T] = {
     throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
   }

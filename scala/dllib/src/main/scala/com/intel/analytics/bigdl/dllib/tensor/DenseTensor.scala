@@ -1160,6 +1160,10 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
    */
   override def cmax(x: Tensor[T], y: Tensor[T]): Tensor[T] = DenseTensorMath.cmax(this, x, y)
 
+  override def cmin(y: Tensor[T]): Tensor[T] = DenseTensorMath.cmin(this, this, y)
+
+  override def cmin(x: Tensor[T], y: Tensor[T]): Tensor[T] = DenseTensorMath.cmin(this, x, y)
+
   override def mul(x: Tensor[T], value: T): Tensor[T] = DenseTensorMath.mul(this, x, value)
 
   override def mul(value: T): Tensor[T] = DenseTensorMath.mul(this, null, value)
