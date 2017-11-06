@@ -13,24 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn
+package com.intel.analytics.bigdl.utils.tf.loaders
+import com.intel.analytics.bigdl.tensor.Tensor
 
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
-import scala.reflect.ClassTag
+class SqrtGradSpec extends BinaryOpBaseSpec {
+  override def getOpName: String = "SqrtGrad"
 
-/**
- * Apply an element-wise sqrt operation.
- */
-
-@SerialVersionUID(223597921741020277L)
-class Sqrt[T: ClassTag, D: ClassTag](implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
-  extends Power[T, D](0.5, 1, 0) {
-}
-
-object Sqrt {
-  def apply[@specialized(Float, Double) T: ClassTag, D: ClassTag]()
-      (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]) : Sqrt[T, D] = {
-    new Sqrt[T, D]()
-  }
+  override def getInputs: Seq[Tensor[_]] =
+    Seq(Tensor[Float](4).rand(), Tensor[Float](4).rand())
 }
