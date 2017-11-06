@@ -184,7 +184,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
     var shift = 0.0
     if (param.hasScale) scale = param.getScale
     if (param.hasShift) shift = param.getShift
-    Seq(Power[T](power, scale, shift).setName(layerName).inputs())
+    Seq(Power[T, T](power, scale, shift).setName(layerName).inputs())
   }
 
   private def fromCaffePreLU(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
@@ -311,7 +311,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
       case elu : ELU[_, _] => toCaffeElu(moduleNode, bottoms, nextSize)
       case infershape : InferReshape[_] => toCaffeFlattern(moduleNode, bottoms, nextSize)
       case log : Log[_, _] => toCaffeLog(moduleNode, bottoms, nextSize)
-      case power : Power[_] => toCaffePower(moduleNode, bottoms, nextSize)
+      case power : Power[_, _] => toCaffePower(moduleNode, bottoms, nextSize)
       case prelu : PReLU[_] => toCaffePReLu(moduleNode, bottoms, nextSize)
       case recurrent : Recurrent[_] => toCaffeRecurrent(moduleNode, bottoms, nextSize)
       case reshape : Reshape[_] => toCaffeReshape(moduleNode, bottoms, nextSize)
@@ -551,7 +551,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
   protected def toCaffePowerParam(module : AbstractModule[Activity, Activity, T])
   : PowerParameter = {
     val powerParameter = PowerParameter.newBuilder
-    val layer = classOf[Power[T]].cast(module)
+    val layer = classOf[Power[T, T]].cast(module)
     powerParameter.setPower(layer.power.toFloat)
     powerParameter.setScale(layer.scale.toFloat)
     powerParameter.setShift(layer.shift.toFloat)
