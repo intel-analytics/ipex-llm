@@ -69,6 +69,8 @@ object TensorNumericMath {
 
     def max(x: T, y: T): T
 
+    def min(x: T, y: T): T
+
     def sqrt(x: T): T
 
     def tanh(x: T): T
@@ -220,6 +222,10 @@ object TensorNumericMath {
     def max(x: T, y: T): T =
       throw new UnsupportedOperationException(typeName +
         " in tensor does not support max operation")
+
+    def min(x: T, y: T): T =
+      throw new UnsupportedOperationException(typeName +
+        " in tensor does not support min operation")
 
     def sqrt(x: T): T =
       throw new UnsupportedOperationException(typeName +
@@ -460,6 +466,8 @@ object TensorNumericMath {
       override def log(x: Float): Float = java.lang.Math.log(x).toFloat
 
       override def max(x: Float, y: Float): Float = java.lang.Math.max(x, y)
+
+      override def min(x: Float, y: Float): Float = java.lang.Math.min(x, y)
 
       override def sqrt(x: Float): Float = Math.sqrt(x.toDouble).toFloat
 
@@ -733,6 +741,8 @@ object TensorNumericMath {
       override def log(x: Double): Double = java.lang.Math.log(x)
 
       override def max(x: Double, y: Double): Double = java.lang.Math.max(x, y)
+
+      override def min(x: Double, y: Double): Double = java.lang.Math.min(x, y)
 
       override def sqrt(x: Double): Double = Math.sqrt(x)
 
@@ -1060,6 +1070,8 @@ object TensorNumericMath {
 
       override def max(x: Int, y: Int): Int = java.lang.Math.max(x, y)
 
+      override def min(x: Int, y: Int): Int = java.lang.Math.min(x, y)
+
       override def sqrt(x: Int): Int = Math.sqrt(x.toDouble).toInt
 
       override def tanh(x: Int): Int = Math.tanh(x.toDouble).toInt
@@ -1145,6 +1157,8 @@ object TensorNumericMath {
 
       override def max(x: Long, y: Long): Long = java.lang.Math.max(x, y)
 
+      override def min(x: Long, y: Long): Long = java.lang.Math.min(x, y)
+
       override def sqrt(x: Long): Long = Math.sqrt(x.toDouble).toLong
 
       override def tanh(x: Long): Long = Math.tanh(x.toDouble).toLong
@@ -1215,6 +1229,8 @@ object TensorNumericMath {
       override def log(x: Short): Short = java.lang.Math.log(x).toShort
 
       override def max(x: Short, y: Short): Short = java.lang.Math.max(x, y).toShort
+
+      override def min(x: Short, y: Short): Short = java.lang.Math.min(x, y).toShort
 
       override def sqrt(x: Short): Short = Math.sqrt(x.toDouble).toShort
 
