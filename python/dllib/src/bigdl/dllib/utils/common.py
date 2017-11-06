@@ -400,10 +400,11 @@ def get_bigdl_conf():
         if bigdl_python_wrapper in p and os.path.isfile(p):
             import zipfile
             with zipfile.ZipFile(p, 'r') as zip_conf:
-                content = zip_conf.read(bigdl_conf_file)
-                if sys.version_info >= (3,):
-                    content = str(content, 'latin-1')
-                return load_conf(content)
+                if bigdl_conf_file  in zip_conf.namelist():
+                    content = zip_conf.read(bigdl_conf_file)
+                    if sys.version_info >= (3,):
+                        content = str(content, 'latin-1')
+                    return load_conf(content)
     raise Exception("Cannot find spark-bigdl.conf.Pls add it to PYTHONPATH.")
 
 
