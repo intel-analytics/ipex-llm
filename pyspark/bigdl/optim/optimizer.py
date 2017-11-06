@@ -562,7 +562,7 @@ class LocalOptimizer(JavaValue):
     :param cores: by default is the total physical cores.
     """
     def __init__(self,
-                 X,
+                 Xs,
                  y,
                  model,
                  criterion,
@@ -574,7 +574,7 @@ class LocalOptimizer(JavaValue):
         if cores is None:
             cores = multiprocessing.cpu_count()
         JavaValue.__init__(self, None, bigdl_type,
-                           JTensor.from_ndarray(X),
+                           [JTensor.from_ndarray(X) for X in to_list(Xs)],
                            JTensor.from_ndarray(y),
                            model.value,
                            criterion,

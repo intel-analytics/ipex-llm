@@ -165,7 +165,7 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
         Array(100), "double")
       val features = new JArrayList[JTensor]()
       features.add(feature)
-      PSample(features, label, "double")
+      Sample(features, label, "double")
     }
 
     BigDLSerDe.javaToPython(data.toJavaRDD().asInstanceOf[JavaRDD[Any]])
@@ -263,7 +263,7 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val batchSize = 32
     val optimMethod = new SGD[Double]()
     val optimizer = pp.createLocalOptimizer(
-      X,
+      List(X).asJava,
       y,
       model,
       ClassNLLCriterion[Double](),
@@ -273,7 +273,7 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
       2)
     val trainedModel = optimizer.optimize()
     val predictedResult = pp.predictLocal(
-      trainedModel, pp.toJTensor(Tensor[Double](Array(34, 100)).randn()))
+      trainedModel, List(pp.toJTensor(Tensor[Double](Array(34, 100)).randn())).asJava)
     println(predictedResult)
   }
 

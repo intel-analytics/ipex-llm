@@ -268,14 +268,31 @@ class Layer(JavaValue):
             raise Exception("Error when calling evaluate(): it takes no argument or exactly three arguments only")
 
     def predict_local(self, X):
+        """
+        :param X: X can be a ndarray or list of ndarray if the model has multiple inputs.
+                  The first dimension of X should be batch.
+        :return: ndarray as the prediction result.
+        """
+
         result = callBigDlFunc(self.bigdl_type,
-                             "predictLocal", self.value, JTensor.from_ndarray(X))
-        return [r.to_ndarray() for r in result]
+                             "predictLocal",
+                               self.value,
+                               [JTensor.from_ndarray(i) for i in to_list(X)])
+
+        return np.stack(result)
 
     def predict_local_class(self, X):
+        """
+
+        :param X: X can be a ndarray or list of ndarray if the model has multiple inputs.
+                  The first dimension of X should be batch.
+        :return: a ndarray as the prediction result.
+        """
         result = callBigDlFunc(self.bigdl_type,
-                             "predictLocal", self.value, JTensor.from_ndarray(X))
-        return [r.to_ndarray() for r in result]
+                             "predictLocalClass",
+                               self.value,
+                               [JTensor.from_ndarray(i) for i in to_list(X)])
+        return np.stack(result)
 
     def predict(self, data_rdd):
         """

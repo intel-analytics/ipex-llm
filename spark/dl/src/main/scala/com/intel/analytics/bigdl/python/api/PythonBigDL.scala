@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.python.api
 import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, Map => JMap}
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.{Identity => DIdentity, Sample, _}
+import com.intel.analytics.bigdl.dataset.{Identity => DIdentity, Sample => JSample, _}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, _}
 import com.intel.analytics.bigdl.numeric._
@@ -60,9 +60,9 @@ import scala.reflect.ClassTag
  * @param label labels
  * @param bigdlType bigdl numeric type
  */
-case class PSample(features: JList[JTensor],
-                   label: JTensor,
-                   bigdlType: String)
+case class Sample(features: JList[JTensor],
+                  label: JTensor,
+                  bigdlType: String)
 
 case class JTensor(storage: Array[Float], shape: Array[Int],
                    bigdlType: String, indices: Array[Array[Int]] = null)
@@ -118,11 +118,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     }
   }
 
-  def toPySample(sample: Sample[T]): PSample = {
+  def toPySample(sample: JSample[T]): Sample = {
     val cls = implicitly[ClassTag[T]].runtimeClass
     val features = new JArrayList[JTensor]()
     features.add(toJTensor(sample.feature()))
-    PSample(features, toJTensor(sample.label()), cls.getSimpleName)
+    Sample(features, toJTensor(sample.label()), cls.getSimpleName)
   }
 
   def toTensor(jTensor: JTensor): Tensor[T] = {
@@ -183,38 +183,40 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
 
-  def testSample(sample: PSample): PSample = {
+  def testSample(sample: Sample): Sample = {
     val jsample = toSample(sample)
     toPySample(jsample)
   }
 
-  def toSample(record: PSample): Sample[T] = {
+  def toSample(record: Sample): JSample[T] = {
     require(record.bigdlType == this.typeName,
       s"record.bigdlType: ${record.bigdlType} == this.typeName: ${this.typeName}")
-    Sample[T](record.features.asScala.toArray.map(toTensor(_)), toTensor(record.label))
+    JSample[T](record.features.asScala.toArray.map(toTensor(_)), toTensor(record.label))
   }
 
-  def toSample(psamples: RDD[PSample]): RDD[Sample[T]] = {
+  def toSample(psamples: RDD[Sample]): RDD[JSample[T]] = {
     psamples.map(toSample(_))
   }
 
   // The first dimension is batch for both X and y
-  private def toSampleArray(X: Tensor[T], y: Tensor[T] = null): Array[Sample[T]] = {
-    val totalNum = X.size()(0)
+  private def toSampleArray(Xs: List[Tensor[T]], y: Tensor[T] = null): Array[JSample[T]] = {
+    require(!Xs.isEmpty, "Xs should not be empty")
+    val totalNum = Xs(0).size()(0)
     var i = 1
-    val samples = new Array[Sample[T]](totalNum)
+    val samples = new Array[JSample[T]](totalNum)
 
     if (y != null) {
-      require(X.size()(0) == y.size()(0),
-        s"The batch dim should be equal, but we got: ${X.size()(0)} vs ${y.size()(0)}")
+      // TODO: we should check the other x as well not just the first one
+      require(Xs(0).size()(0) == y.size()(0),
+        s"The batch dim should be equal, but we got: ${Xs(0).size()(0)} vs ${y.size()(0)}")
       while (i <= totalNum) {
-        samples(i-1) = Sample(X.select(1, i), y.select(1, i))
+        samples(i-1) = JSample(Xs.map{X => X.select(1, i)}.toArray, y.select(1, i))
         i += 1
       }
     } else {
       val dummyTensor = Tensor[T](1).fill(ev.fromType(1))
       while (i <= totalNum) {
-        samples(i-1) = Sample(X.select(1, i), dummyTensor)
+        samples(i-1) = JSample(Xs.map{X => X.select(1, i)}.toArray, dummyTensor)
         i += 1
       }
     }
@@ -223,7 +225,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
 
-  def batching(dataset: DataSet[Sample[T]], batchSize: Int)
+  def batching(dataset: DataSet[JSample[T]], batchSize: Int)
   : DataSet[MiniBatch[T]] = {
     dataset -> SampleToMiniBatch[T](batchSize)
   }
@@ -1550,7 +1552,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def modelEvaluate(model: AbstractModule[Activity, Activity, T],
-                    valRDD: JavaRDD[PSample],
+                    valRDD: JavaRDD[Sample],
                     batchSize: Int,
                     valMethods: JList[ValidationMethod[T]])
   : JList[EvaluatedResult] = {
@@ -1622,24 +1624,23 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def predictLocal(model: AbstractModule[Activity, Activity, T],
-                   X: JTensor): JList[JTensor] = {
-    val sampleArray = toSampleArray(toTensor(X))
+                   features: JList[JTensor]): JList[JTensor] = {
+    val sampleArray = toSampleArray(features.asScala.toList.map{f => toTensor(f)})
     val localModel = LocalModule(model)
     val result = localModel.predict(sampleArray)
     result.map{a => toJTensor(a.asInstanceOf[Tensor[T]])}.toList.asJava
   }
 
   def predictLocalClass(model: AbstractModule[Activity, Activity, T],
-                   X: JTensor): JList[JTensor] = {
-    val sampleArray = toSampleArray(toTensor(X))
+                        features: JList[JTensor]): JList[Int] = {
+    val sampleArray = toSampleArray(features.asScala.toList.map{f => toTensor(f)})
     val localModel = LocalModule(model)
     val result = localModel.predictClass(sampleArray)
-    result.map{a => toJTensor(a.asInstanceOf[Tensor[T]])}.toList.asJava
+    result.toList.asJava
   }
 
-
   def modelPredictRDD(model: AbstractModule[Activity, Activity, T],
-                      dataRdd: JavaRDD[PSample]): JavaRDD[JTensor] = {
+                      dataRdd: JavaRDD[Sample]): JavaRDD[JTensor] = {
     val tensorRDD = model.predict(dataRdd.rdd.map(toSample(_)))
     val listRDD = tensorRDD.map { res =>
       val tensor = res.asInstanceOf[Tensor[T]]
@@ -1656,7 +1657,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def modelPredictClass(model: AbstractModule[Activity, Activity, T],
-                      dataRdd: JavaRDD[PSample]): JavaRDD[Int] = {
+                      dataRdd: JavaRDD[Sample]): JavaRDD[Int] = {
     val sampleRdd = toSample(dataRdd)
     val tensorRDD = model.predictClass(sampleRdd)
     new JavaRDD[Int](tensorRDD)
@@ -1860,7 +1861,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def trainTF(
                modelPath: String,
                output: String,
-               samples: JavaRDD[PSample],
+               samples: JavaRDD[Sample],
                optMethod: OptimMethod[T],
                criterion: Criterion[T],
                batchSize: Int,
@@ -1876,7 +1877,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     model
   }
 
-  def createLocalOptimizer(X: JTensor,
+  def createLocalOptimizer(features: JList[JTensor],
                            y: JTensor,
                            model: AbstractModule[Activity, Activity, T],
                            criterion: Criterion[T],
@@ -1884,7 +1885,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                            endTrigger: Trigger,
                            batchSize: Int,
                            localCores: Int): Optimizer[T, MiniBatch[T]] = {
-    val sampleArray = toSampleArray(toTensor(X), toTensor(y))
+    val sampleArray = toSampleArray(features.asScala.toList.map{f => toTensor(f)}, toTensor(y))
     val optimizer = new LocalOptimizer[T](
       model,
       batching(DataSet.array(sampleArray), batchSize)
@@ -1896,7 +1897,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createDistriOptimizer(model: AbstractModule[Activity, Activity, T],
-                            trainingRdd: JavaRDD[PSample],
+                            trainingRdd: JavaRDD[Sample],
                             criterion: Criterion[T],
                             optimMethod: OptimMethod[T],
                             endTrigger: Trigger,
@@ -1927,7 +1928,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def setValidation(optimizer: Optimizer[T, MiniBatch[T]],
                     batchSize: Int,
                     trigger: Trigger,
-                    valRdd: JavaRDD[PSample],
+                    valRdd: JavaRDD[Sample],
                     vMethods: JList[ValidationMethod[T]]): Unit = {
     val sampleRDD = toSample(valRdd)
     optimizer.setValidation(trigger, batching(DataSet.rdd(sampleRDD), batchSize.toInt),

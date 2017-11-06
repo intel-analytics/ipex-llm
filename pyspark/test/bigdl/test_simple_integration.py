@@ -25,7 +25,7 @@ from bigdl.dataset import movielens
 import numpy as np
 import tempfile
 import pytest
-from numpy.testing import assert_allclose
+from numpy.testing import assert_allclose, assert_array_equal
 from bigdl.util.engine import compare_version
 np.random.seed(1337)  # for reproducibility
 
@@ -501,29 +501,15 @@ class TestSimple():
 
     def test_local_predict_class(self):
         feature_num = 2
-        data_len = 1000
-        batch_size = 32
-        epoch_num = 500
-
-        X_ = np.random.uniform(0, 1, (data_len, feature_num))
-        y_ = np.where((0.4 * X_).sum(1) + 0.1 > 0.5, 1, 0)
+        data_len = 3
+        X_ = np.random.uniform(-1, 1, (data_len, feature_num))
         model = Sequential()
         l1 = Linear(feature_num, 1)
         model.add(l1)
         model.add(Sigmoid())
-
-        localOptimizer = LocalOptimizer(
-            model=model,
-            X =X_,
-            y=y_,
-            criterion=BCECriterion(),
-            optim_method=SGD(learningrate=1e-2),
-            end_trigger=MaxEpoch(epoch_num),
-            batch_size=batch_size)
-        trained_model = localOptimizer.optimize()
-
-        predict_result2 = model.predict_local_class(X_)
-        print predict_result2
+        model.set_seed(1234).reset()
+        predict_result = model.predict_local_class(X_)
+        assert_array_equal(predict_result, np.ones([3]))
 
 
 if __name__ == "__main__":
