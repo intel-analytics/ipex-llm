@@ -127,7 +127,6 @@ import com.intel.analytics.bigdl.tensor.Tensor
 
 //create some dummy dataset for prediction as example
 val feature = Tensor(10).rand()
-val label = Tensor(1).randn()
 val predictSample = Sample(feature)
 val predictSet = sc.parallelize(Seq(predictSample))
 
