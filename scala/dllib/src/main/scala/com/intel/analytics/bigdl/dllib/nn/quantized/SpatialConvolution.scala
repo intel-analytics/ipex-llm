@@ -46,7 +46,16 @@ private[bigdl] class SpatialConvolution[T: ClassTag](
   require(nInputPlane % nGroup == 0, "Number of input channels should be multiples of group.")
   require(nOutputPlane % nGroup == 0, "Number of output channels should be multiples of group.")
 
-  var weight: Array[Tensor[T]] = null
+  val params = ConvWeightParams(nOutputPlane / nGroup, nInputPlane / nGroup, kernelH, kernelW,
+    quantFormat)
+  val weight: Array[Tensor[T]] = {
+    val array = new Array[Tensor[T]](nGroup)
+    for (i <- 0 until nGroup) {
+      array(i) = QuantizedTensor[T](Tensor[T](Array(nGroup, kernelH, kernelW, nInputPlane / nGroup,
+        nOutputPlane / nGroup)), params)
+    }
+    array
+  }
   private val data: QuantizedTensor[T] = QuantizedDummyTensor[T]()
   val bias: Tensor[T] = Tensor[T](nOutputPlane)
 
@@ -77,13 +86,11 @@ private[bigdl] class SpatialConvolution[T: ClassTag](
         kernelH, kernelW))
     }
 
-    weight = new Array[Tensor[T]](nGroup)
-    val params = ConvWeightParams(nOutputPlane / nGroup, nInputPlane / nGroup, kernelH, kernelW,
-      quantFormat)
     for (i <- 1 to nGroup) {
       val groupWeight = weightTmp.select(1, i)
       ev.getType() match {
         case FloatType =>
+          weight(i - 1).asInstanceOf[QuantizedTensor[T]].release()
           weight(i - 1) = QuantizedTensor[T](groupWeight, params)
         case _ => throw new UnsupportedOperationException(s"Only support Float for quantized model")
       }
@@ -308,8 +315,12 @@ object SpatialConvolution extends QuantSerializer {
     moduleData: ModuleData[T])(implicit ev: TensorNumeric[T]): Unit = {
     val conv = moduleData.module.asInstanceOf[SpatialConvolution[T]]
     val attrMap = context.bigdlModule.getAttrMap
-    conv.weight = DataConverter.getAttributeValue(context, attrMap.get("weights"))
+    val weights = DataConverter.getAttributeValue(context, attrMap.get("weights"))
       .asInstanceOf[Array[Tensor[T]]]
+    for (i <- 0 until conv.weight.length) {
+      conv.weight(i).asInstanceOf[QuantizedTensor[T]].release()
+      conv.weight(i).set(weights(i))
+    }
   }
 }
 
