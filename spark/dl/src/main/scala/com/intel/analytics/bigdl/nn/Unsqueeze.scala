@@ -41,7 +41,7 @@ class Unsqueeze[T: ClassTag](
   }
 
   private def getActualPosition(input: Tensor[_]) : Int = {
-    val dim = if (pos < 0) {
+    val dim = if (pos <= 0) {
       input.dim() + pos + 1
     } else {
       pos

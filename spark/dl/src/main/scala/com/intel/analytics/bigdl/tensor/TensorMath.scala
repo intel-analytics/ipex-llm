@@ -552,6 +552,38 @@ trait TensorMath[T] {
   def pow(n: T): Tensor[T]
 
   /**
+   * Replaces all elements in-place with the elements of x squared
+   *
+   * @return current tensor reference
+   */
+  def square(): Tensor[T]
+
+  /**
+   * Populate the given tensor with the floor result of elements
+   * @param y
+   * @return
+   */
+  def floor(y: Tensor[T]): Tensor[T]
+
+  /**
+   * Replaces all elements in-place with the floor result of elements
+   * @return
+   */
+  def floor(): Tensor[T]
+
+  /**
+   * Replaces all elements in-place with the ceil result of elements
+   * @return
+   */
+  def ceil(): Tensor[T]
+
+  /**
+   * Computes the reciprocal of this tensor element-wise and update the content inplace
+   * @return
+   */
+  def inv(): Tensor[T]
+
+  /**
    * Get the top k smallest values and their indices.
    *
    * @param result   result buffer
@@ -562,7 +594,7 @@ trait TensorMath[T] {
    * @return
    */
   def topk(k: Int, dim: Int = -1, increase: Boolean = true, result: Tensor[T] = null,
-    indices: Tensor[T] = null)
+    indices: Tensor[T] = null, sortedResult: Boolean = true)
   : (Tensor[T], Tensor[T])
 
   /**
@@ -713,6 +745,15 @@ trait TensorMath[T] {
   def cmax(y: Tensor[T]): Tensor[T]
 
   /**
+   * stores the element-wise maximum of x and y in x.
+   * x.cmin(y) = min(x, y)
+   *
+   * @param y tensor
+   * @return current tensor
+   */
+  def cmin(y: Tensor[T]): Tensor[T]
+
+  /**
    * stores the element-wise maximum of x and y in z.
    * z.cmax(x, y) means z = max(x, y)
    *
@@ -720,6 +761,15 @@ trait TensorMath[T] {
    * @param y tensor
    */
   def cmax(x: Tensor[T], y: Tensor[T]): Tensor[T]
+
+  /**
+   * stores the element-wise maximum of x and y in z.
+   * z.cmin(x, y) means z = min(x, y)
+   *
+   * @param x tensor
+   * @param y tensor
+   */
+  def cmin(x: Tensor[T], y: Tensor[T]): Tensor[T]
 
   /**
    * resize this tensor size to floor((xmax - xmin) / step) + 1 and set values from
@@ -730,4 +780,11 @@ trait TensorMath[T] {
    * @return this tensor
    */
   def range(xmin: Double, xmax: Double, step: Int = 1): Tensor[T]
+
+  /**
+   * Computes numerical negative value element-wise. y = -x
+   * @param x
+   * @return this tensor
+   */
+  def negative(x : Tensor[T]): Tensor[T]
 }

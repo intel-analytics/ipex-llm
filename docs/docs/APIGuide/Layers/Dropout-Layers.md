@@ -15,13 +15,13 @@ module = Dropout(
   scale=True)
 ```
 
-Dropout masks(set to zero) parts of input using a bernoulli distribution.
+Dropout masks(set to zero) parts of input using a Bernoulli distribution.
 Each input element has a probability `initP` of being dropped. If `scale` is
 true(true by default), the outputs are scaled by a factor of `1/(1-initP)` during training.
 During evaluating, output is the same as input.
 
 It has been proven an effective approach for regularization and preventing
-co-adaptation of feature detectors. For more details, plese see
+co-adaptation of feature detectors. For more details, please see
 [Improving neural networks by preventing co-adaptation of feature detectors]
 (https://arxiv.org/abs/1207.0580)
 

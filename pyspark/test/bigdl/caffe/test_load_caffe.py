@@ -23,24 +23,10 @@ from numpy.testing import assert_allclose
 
 
 class TestLoadCaffe():
-    def setup_method(self, method):
-        """ setup any state tied to the execution of the given method in a
-        class.  setup_method is invoked for every test method of a class.
-        """
-        sparkConf = create_spark_conf()
-        self.sc = SparkContext(master="local[4]", appName="test model",
-                               conf=sparkConf)
-        init_engine()
-
-    def teardown_method(self, method):
-        """ teardown any state that was previously setup with a setup_method
-        call.
-        """
-        self.sc.stop()
 
     def test_load_caffe(self):
         # test load caffe with match all parameters
-        resource_path = os.path.join(os.path.split(__file__)[0], "resources")
+        resource_path = os.path.join(os.path.split(__file__)[0], "../resources")
         proto_txt = os.path.join(resource_path, "test.prototxt")
         model_path = os.path.join(resource_path, "test.caffemodel")
 

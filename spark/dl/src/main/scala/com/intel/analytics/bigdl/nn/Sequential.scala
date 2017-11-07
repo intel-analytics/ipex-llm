@@ -16,10 +16,12 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.{Activity, AbstractModule}
+import com.intel.analytics.bigdl.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
+import scala.collection.mutable.ArrayBuffer
 
 /**
  * Sequential provides a means to plug layers together
@@ -147,6 +149,15 @@ class Sequential[T: ClassTag]
       }$line}"
   }
 
+  override def getEndNodes(startNodes: Array[ModuleNode[T]]): Array[ModuleNode[T]] = {
+    var startnodes = startNodes
+    var curNodes: Array[ModuleNode[T]] = null
+    for (i <- 0 to modules.size - 1) {
+      curNodes = modules(i).getEndNodes(startnodes)
+      startnodes = curNodes
+    }
+    curNodes
+  }
 }
 
 object Sequential {

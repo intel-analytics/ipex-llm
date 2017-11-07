@@ -28,12 +28,12 @@ model.save("/tmp/model.bigdl", True) //save to local fs
 model.save("hdfs://...") //save to hdfs
 model.save("s3://...") //save to s3
 ```
-In `model.save`, the first parameter is the path where we want to save our model, the second paramter is to specify if we need to overwrite the file if it already exists, it's set to false by default
+In `model.save`, the first parameter is the path where we want to save our model, the second parameter is to specify if we need to overwrite the file if it already exists, it's set to false by default
 
 
 ## Model Load
 
-Use `Module.load`(in Scala) or `Model.load` (in Python) to load an existing model.  `Module` (Scala) or `Model`(Python) is a utilily class provided in BigDL. We just need to specify the model path where we previously saved the model to load it to memory for resume training or prediction purpose.
+Use `Module.load`(in Scala) or `Model.load` (in Python) to load an existing model.  `Module` (Scala) or `Model`(Python) is a utility class provided in BigDL. We just need to specify the model path where we previously saved the model to load it to memory for resume training or prediction purpose.
 
 **Scala example**
 ```scala
@@ -79,7 +79,7 @@ val testSet = sc.parallelize(Seq(testSample))
 
 //train a new model or load an existing model
 //val model=...
-val evaluateResult = model.evaluate(testSet, Array(new Top1Accuracy))
+val evaluateResult = model.evaluate(testSet, Array(new Top1Accuracy), None)
 ```
 
 **Python example**
@@ -127,13 +127,12 @@ import com.intel.analytics.bigdl.tensor.Tensor
 
 //create some dummy dataset for prediction as example
 val feature = Tensor(10).rand()
-val label = Tensor(1).randn()
-val predictSample = Sample(feature, label)
+val predictSample = Sample(feature)
 val predictSet = sc.parallelize(Seq(predictSample))
 
 //train a new model or load an existing model
 //val model=...
-val preductResult = model.predict(predictSet)
+val predictResult = model.predict(predictSet)
 ```
 
 **Python example**
@@ -149,7 +148,7 @@ val preductResult = model.predict(predictSet)
 
  //train a model or load an existing model...
  //model = ...
- preductResult = model.predict(predictSet)
+ predictResult = model.predict(predictSet)
 ```
 
 ## Module Freeze

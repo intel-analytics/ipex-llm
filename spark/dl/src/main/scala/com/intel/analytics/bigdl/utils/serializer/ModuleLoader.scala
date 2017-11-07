@@ -21,10 +21,11 @@ import scala.collection.JavaConverters._
 import com.google.protobuf.CodedInputStream
 import com.intel.analytics.bigdl.nn.Container
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{DenseType, QuantizedTensor, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.DataConverter.TensorConverter
 import com.intel.analytics.bigdl.utils.{File, Table}
-import serialization.Bigdl.{BigDLModule, DataType, TensorStorage}
+import serialization.Bigdl._
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -48,8 +49,30 @@ object ModuleLoader {
     modelBuilder.mergeFrom(cis)
     val bigDLModel = modelBuilder.build()
     val storages = new mutable.HashMap[Int, Any]()
-    // loadAllStorages(bigDLModel, storages)
+    val deserializationContext = DeserializeContext(bigDLModel, storages, ProtoStorageType)
+    initTensorStorage(deserializationContext)
     ModuleSerializer.load(DeserializeContext(bigDLModel, storages, ProtoStorageType)).module
+  }
+
+  private def initTensorStorage[T: ClassTag](context: DeserializeContext)
+                                            (implicit ev: TensorNumeric[T]): Unit = {
+    val attrMap = context.bigdlModule.getAttrMap
+
+    val storagesMap = attrMap.get("global_storage").getNameAttrListValue.getAttrMap
+
+    storagesMap.asScala.foreach(map => {
+      val storages = context.storages
+      val tensorId = map._1.toInt
+      val tensorValue = map._2.getTensorValue
+      val storageId = tensorValue.getStorage.getId
+      val tensor = TensorConverter.getAttributeValue(context, map._2).asInstanceOf[Tensor[_]]
+      val tensorStorage = tensorValue.getTensorType match {
+        case TensorType.DENSE => tensor.storage()
+        case TensorType.QUANT => tensor.asInstanceOf[QuantizedTensor[_]].getStorage
+      }
+      storages(tensorId) = tensor
+      storages(storageId) = tensorStorage
+    })
   }
 
   /**
@@ -149,8 +172,34 @@ object ModulePersister {
       , new ArrayBuffer[String](), new ArrayBuffer[String]())
     val storages = new mutable.HashMap[Int, Any]()
     val context = SerializeContext(bigDLModule, storages, ProtoStorageType)
-    val bigDLModel = ModuleSerializer.serialize(context).bigDLModule
-    File.saveBytes(bigDLModel.toByteArray, modelPath, overwrite)
+    val serializeResult = ModuleSerializer.serialize(context)
+    setTensorStorage(serializeResult.bigDLModule, serializeResult.storages)
+    File.saveBytes(serializeResult.bigDLModule.build.toByteArray, modelPath, overwrite)
+  }
+
+  private def setTensorStorage(bigDLModule: BigDLModule.Builder,
+    storages: mutable.HashMap[Int, Any]) : Unit = {
+    val storageIds = new mutable.HashSet[Int]
+    val tensorStorages = storages.filter(_._2.isInstanceOf[TensorStorage])
+    var nameAttributes = NameAttrList.newBuilder().setName("global_storage")
+    storages.values.filter(_.isInstanceOf[BigDLTensor]).foreach(storage => {
+      val bigdlTensor = storage.asInstanceOf[BigDLTensor]
+      val storageId = bigdlTensor.getStorage.getId
+      if (!storageIds.contains(storageId)) {
+        val tensorBuilder = BigDLTensor.newBuilder(bigdlTensor)
+        tensorBuilder.clearStorage()
+        require(tensorStorages.contains(storageId), s"${storageId} does not exist")
+        tensorBuilder.setStorage(tensorStorages.get(storageId).
+          get.asInstanceOf[TensorStorage])
+        val attrValueBuilder = AttrValue.newBuilder
+        attrValueBuilder.setTensorValue(tensorBuilder.build)
+        nameAttributes.putAttr(tensorBuilder.getId.toString, attrValueBuilder.build)
+        storageIds.add(storageId)
+      }
+    })
+    val attrValueBuilder = AttrValue.newBuilder
+    attrValueBuilder.setNameAttrListValue(nameAttributes)
+    bigDLModule.putAttr("global_storage", attrValueBuilder.build)
   }
 
   /**
@@ -168,9 +217,8 @@ object ModulePersister {
     val storages = new mutable.HashMap[Int, Any]()
     val context = SerializeContext(bigDLModule, storages, ProtoStorageType)
     val bigDLModel = ModuleSerializer.serialize(context).bigDLModule
-    val bigDLModelWithoutWeightsAndBias = BigDLModule.newBuilder(bigDLModel)
-    cleantWeightAndBias(bigDLModelWithoutWeightsAndBias)
-    val model = bigDLModelWithoutWeightsAndBias.build
+    cleantWeightAndBias(bigDLModel)
+    val model = bigDLModel.build
     val byteArrayOut = new ByteArrayOutputStream()
     byteArrayOut.write(model.toString.getBytes)
     File.saveBytes(byteArrayOut.toByteArray, definitionPath, overwrite)

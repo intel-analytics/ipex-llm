@@ -126,7 +126,8 @@ class SpatialShareConvolutionSpec extends FlatSpec with Matchers {
     sharedInception.getParameters()._1.equals(
       inception.getParameters()._1) should be (true)
 
-    val input = Tensor(4, 3, 224, 224).rand()
+    Random.setSeed(100)
+    val input = Tensor(4, 3, 224, 224).apply1(_ => Random.nextFloat())
     RandomGenerator.RNG.setSeed(100)
     val output1 = inception.forward(input).toTensor
     val gradOutput = output1.clone().apply1(_ => Random.nextFloat())
@@ -149,7 +150,8 @@ class SpatialShareConvolutionSpec extends FlatSpec with Matchers {
     sharedVgg.getParameters()._1.equals(
       vgg.getParameters()._1) should be (true)
 
-    val input = Tensor(4, 3, 224, 224).rand()
+    Random.setSeed(100)
+    val input = Tensor(4, 3, 224, 224).apply1(_ => Random.nextFloat())
     RandomGenerator.RNG.setSeed(100)
     val output1 = vgg.forward(input).toTensor
     val gradOutput = output1.clone().apply1(_ => Random.nextFloat())
@@ -173,7 +175,8 @@ class SpatialShareConvolutionSpec extends FlatSpec with Matchers {
       "depth" -> 18, "dataset" -> DatasetType.ImageNet)))
     sharedResnet.getParameters()._1.copy(resnet.getParameters()._1)
 
-    val input = Tensor(4, 3, 224, 224).rand()
+    Random.setSeed(100)
+    val input = Tensor(4, 3, 224, 224).apply1(_ => Random.nextFloat())
     RandomGenerator.RNG.setSeed(100)
     val output1 = resnet.forward(input).toTensor
     val gradOutput = output1.clone().apply1(_ => Random.nextFloat())

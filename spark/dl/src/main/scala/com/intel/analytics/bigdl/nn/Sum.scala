@@ -42,7 +42,7 @@ import scala.reflect.ClassTag
 
 @SerialVersionUID(- 8025422596092583688L)
 class Sum[T: ClassTag, D: ClassTag](
-  dimension: Int = 1,
+  private var dimension: Int = 1,
   nInputDims: Int = -1,
   sizeAverage: Boolean = false,
   squeeze: Boolean = true)
@@ -69,6 +69,11 @@ class Sum[T: ClassTag, D: ClassTag](
     dimension
   }
 
+  def changeSumDims(d: Int): this.type = {
+    dimension = d
+    this
+  }
+
   override def updateOutput(input: Tensor[D]): Tensor[D] = {
     val dimension = getPositiveDimension(input)
     output.sum(input, dimension)
@@ -79,6 +84,10 @@ class Sum[T: ClassTag, D: ClassTag](
 
     if (output.nDimension() > 1 && squeeze) {
       output.squeeze(dimension)
+    }
+
+    if (output.nElement() == 1 && squeeze) {
+      output = Tensor.scalar[D](output.storage.apply(output.storageOffset() - 1))
     }
 
     output
@@ -106,12 +115,11 @@ class Sum[T: ClassTag, D: ClassTag](
 }
 
 object Sum {
-
-  def apply[@specialized(Float, Double) T: ClassTag](
-      dimension: Int = 1,
-      nInputDims: Int = -1,
-      sizeAverage: Boolean = false,
-      squeeze: Boolean = true)(implicit ev: TensorNumeric[T]) : Sum[T, T] = {
-    new Sum[T, T](dimension, nInputDims, sizeAverage, squeeze)
+  def apply[T: ClassTag, D: ClassTag](
+    dimension: Int = 1,
+    nInputDims: Int = -1,
+    sizeAverage: Boolean = false,
+    squeeze: Boolean = true)(implicit ev: TensorNumeric[T], evd: TensorNumeric[D]) : Sum[T, D] = {
+    new Sum[T, D](dimension, nInputDims, sizeAverage, squeeze)
   }
 }

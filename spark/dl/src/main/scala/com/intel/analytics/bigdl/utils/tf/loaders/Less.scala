@@ -21,12 +21,13 @@ import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import org.tensorflow.framework.NodeDef
 import com.intel.analytics.bigdl.nn.ops.{Less => LessOp}
+import com.intel.analytics.bigdl.utils.tf.Context
 
 import scala.reflect.ClassTag
 
 class Less extends TensorflowOpsLoader {
-  override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder)
-                                 (implicit ev: TensorNumeric[T]): Module[T] = {
+  override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder
+    , context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
     new LessOp[T]()
   }
 }

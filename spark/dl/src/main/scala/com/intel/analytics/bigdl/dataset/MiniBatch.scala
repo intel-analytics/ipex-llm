@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.dataset
 
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Tensor}
+import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
 
@@ -113,8 +113,8 @@ private[bigdl] class ArrayTensorMiniBatch[T: ClassTag](
       featurePaddingParam: Option[PaddingParam[T]] = None,
       labelPaddingParam: Option[PaddingParam[T]] = None) extends MiniBatch[T]{
   require(inputData.length > 0, "Input data in MiniBatch is empty.")
-  private var batchSize = 0
-  private var unlabeled = false
+  protected var batchSize = 0
+  protected var unlabeled = false
 
   val (featurePadding, featurePaddingStrategy) = if (featurePaddingParam.isDefined) {
     (featurePaddingParam.get.paddingTensor, featurePaddingParam.get.paddingStrategy)
@@ -572,4 +572,184 @@ case class FixedLength(fixedLength: Array[Int]) extends PaddingStrategy {
     }
     sizes
   }
+}
+
+/**
+ * SparseMiniBatch is a MiniBatch type for TensorSample. And SparseMiniBatch could
+ * deal with SparseTensors in TensorSample.
+ *
+ * @param inputData           a set of input tensor
+ * @param targetData          a set of target tensor
+ * @param ev$1
+ * @param ev
+ * @tparam T Numeric type
+ */
+class SparseMiniBatch[T: ClassTag](
+      inputData: Array[Tensor[T]],
+      targetData: Array[Tensor[T]])(
+      implicit ev: TensorNumeric[T]) extends ArrayTensorMiniBatch[T](inputData, targetData) {
+  private var input: Activity = null
+  private var target: Activity = null
+
+  override def getInput(): Activity = {
+    if (null == input) {
+      require(!inputData.exists(_ == null), "SparseMiniBatch.getInput: " +
+        "data didn't fill in this miniBatch")
+      input = if (inputData.length == 1) {
+        inputData.head
+      } else {
+        T.array(inputData.map(_.asInstanceOf[Any]))
+      }
+    }
+
+    input
+  }
+
+  override def getTarget(): Activity = {
+    if (null == target && targetData.length != 0) {
+      require(!targetData.exists(_ == null), "SparseMiniBatch.getInput: " +
+        "data didn't fill in this miniBatch")
+      target = if (targetData.length == 1) {
+        targetData.head
+      } else {
+        T.array(targetData.map(_.asInstanceOf[Any]))
+      }
+    }
+
+    target
+  }
+
+  def init(features: Array[Tensor[T]], labels: Array[Tensor[T]]): Unit = {
+    var i = 0
+    while (i < inputData.length) {
+      val featureI = features(i)
+      inputData(i) = if (featureI.getTensorType == SparseType) {
+        Tensor.sparse[T](Array(batchSize) ++ featureI.size())
+      } else if (featureI.getTensorType == DenseType) {
+        Tensor[T](Array(batchSize) ++ featureI.size())
+      } else {
+        throw new IllegalArgumentException(s"MiniBatchWithSparse: unsupported feature type " +
+          s"${featureI.getTensorType}")
+      }
+      i += 1
+    }
+    i = 0
+    while (i < targetData.length) {
+      val labelI = labels(i)
+      targetData(i) = if (labelI.getTensorType == SparseType) {
+        Tensor.sparse[T](Array(batchSize) ++ labelI.size())
+      } else if (labelI.getTensorType == DenseType) {
+        Tensor[T](Array(batchSize) ++ labelI.size())
+      } else {
+        throw new IllegalArgumentException(s"MiniBatchWithSparse: unsupported label type " +
+          s"${labelI.getTensorType}")
+      }
+      i += 1
+    }
+  }
+
+  override def set(samples: Seq[Sample[T]])(implicit ev: TensorNumeric[T]): this.type = {
+    require(samples.length > 0, "samples is empty")
+    require(samples(0).isInstanceOf[TensorSample[T]])
+    val _samples = samples.map(_.asInstanceOf[TensorSample[T]])
+    require(batchSize == 0 || samples.length <= batchSize, "setValue: samples's size doesn't " +
+      s"match mini batch size, excepted ${size()} got ${samples.length}")
+    val features = _samples.map(_.features)
+    val labels = _samples.map(_.labels)
+    if (batchSize == 0) {
+      batchSize = samples.length // set a batchSize when set data.
+      unlabeled = samples.head.numLabel() == 0
+      init(features.head, labels.head)
+    }
+
+    var i = 0
+    while (i < inputData.length) {
+      SparseMiniBatch.batch(1, features.map(_.apply(i)), inputData(i))
+      i += 1
+    }
+
+    if (!unlabeled) {
+      var j = 0
+      while (j < targetData.length) {
+        SparseMiniBatch.batch(1, labels.map(_.apply(j)), targetData(j))
+        j += 1
+      }
+    }
+
+    this
+  }
+}
+
+object SparseMiniBatch{
+  def apply[T: ClassTag](
+      nInputs: Int,
+      nTargets: Int)(implicit ev: TensorNumeric[T]): MiniBatch[T] = {
+    new SparseMiniBatch[T](new Array[Tensor[T]](nInputs), new Array[Tensor[T]](nTargets))
+  }
+
+  /**
+   * Batch a seq of tensors to a big tensor.
+   * @param dim apply batch on which dimension
+   * @param tensors a seq of tensors
+   * @param res result tensor
+   * @param ev
+   * @tparam T
+   */
+  private[bigdl] def batch[T: ClassTag](
+      dim: Int,
+      tensors: Seq[Tensor[T]],
+      res: Tensor[T])(implicit ev: TensorNumeric[T]): Unit = {
+    if (res.getTensorType == SparseType) {
+      Tensor.sparseConcat(dim, tensors, res)
+    } else if (res.getTensorType == DenseType) {
+      denseBatch(dim, tensors, res)
+    } else {
+      throw new IllegalArgumentException(s"MiniBatchWithSparse: unsupported tensor type " +
+        s"${res.getTensorType}")
+    }
+  }
+
+  private def denseBatch[T: ClassTag](
+        dim: Int,
+        tensors: Seq[Tensor[T]],
+        result: Tensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
+    val size = tensors.head.size()
+    var i = 1
+    while (i < tensors.length) {
+      size(dim - 1) += tensors(i).size(dim)
+      i += 1
+    }
+
+    result.resize(size)
+
+    i = 0
+    var offset = 1
+    while (i < tensors.length) {
+      val current = tensors(i)
+      val target = result.narrow(dim, offset, current.size(dim))
+
+      if (target.isContiguous() || dim > 2) {
+        // Copy directly when target is Contiguous or dimension is larger than 2
+        // in which case the contiguous region in target tensor is fairly small in practice
+        target.copy(current)
+      } else {
+        // Divide target into contiguous frames when target isn't contiguous
+        var f = 1
+        while (f <= target.size(1)) {
+          val curFrame = target.select(1, f)
+          val outputFrame = current.select(1, f)
+          require(curFrame.isContiguous())
+          require(outputFrame.isContiguous())
+          curFrame.copy(outputFrame)
+          f += 1
+        }
+      }
+
+      offset += current.size(dim)
+      i += 1
+    }
+    result
+
+  }
+
 }

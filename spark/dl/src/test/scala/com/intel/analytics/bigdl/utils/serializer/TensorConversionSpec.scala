@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.utils.serializer
 import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
-import serialization.Bigdl.AttrValue
+import serialization.Bigdl.{AttrValue, BigDLTensor, TensorStorage}
 
 import scala.collection.mutable
 import scala.reflect.runtime.universe
@@ -39,6 +39,14 @@ class TensorConversionSpec extends FlatSpec with Matchers{
     map.clear()
     DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType),
       attriBuilder, byteString, universe.typeOf[Tensor[ByteString]])
+
+    val tensorBuilder = BigDLTensor.newBuilder(map.get(System.
+      identityHashCode(byteString)).get.asInstanceOf[BigDLTensor])
+    tensorBuilder.setStorage(map.get(System.
+      identityHashCode(byteString.storage.array())).get.asInstanceOf[TensorStorage])
+
+    attriBuilder.setTensorValue(tensorBuilder.build)
+
     map.clear()
     val retrievedValue = DataConverter.
       getAttributeValue(DeserializeContext(null, map, ProtoStorageType), attriBuilder.build)
@@ -57,6 +65,14 @@ class TensorConversionSpec extends FlatSpec with Matchers{
     map.clear()
     DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType),
       attriBuilder, chars, universe.typeOf[Tensor[Char]])
+
+    val tensorBuilder = BigDLTensor.newBuilder(map.get(System.
+      identityHashCode(chars)).get.asInstanceOf[BigDLTensor])
+    tensorBuilder.setStorage(map.get(System.
+      identityHashCode(chars.storage.array())).get.asInstanceOf[TensorStorage])
+
+    attriBuilder.setTensorValue(tensorBuilder.build)
+
     map.clear()
     val retrievedValue = DataConverter.
       getAttributeValue(DeserializeContext(null, map, ProtoStorageType), attriBuilder.build)
@@ -76,6 +92,14 @@ class TensorConversionSpec extends FlatSpec with Matchers{
     map.clear()
     DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType),
       attriBuilder, ints, universe.typeOf[Tensor[Int]])
+
+    val tensorBuilder = BigDLTensor.newBuilder(map.get(System.
+      identityHashCode(ints)).get.asInstanceOf[BigDLTensor])
+    tensorBuilder.setStorage(map.get(System.
+      identityHashCode(ints.storage.array())).get.asInstanceOf[TensorStorage])
+
+    attriBuilder.setTensorValue(tensorBuilder.build)
+
     map.clear()
     val retrievedValue = DataConverter.
       getAttributeValue(DeserializeContext(null, map, ProtoStorageType), attriBuilder.build)
@@ -94,6 +118,14 @@ class TensorConversionSpec extends FlatSpec with Matchers{
     map.clear()
     DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType),
       attriBuilder, longs, universe.typeOf[Tensor[Long]])
+
+    val tensorBuilder = BigDLTensor.newBuilder(map.get(System.
+      identityHashCode(longs)).get.asInstanceOf[BigDLTensor])
+    tensorBuilder.setStorage(map.get(System.
+      identityHashCode(longs.storage.array())).get.asInstanceOf[TensorStorage])
+
+    attriBuilder.setTensorValue(tensorBuilder.build)
+
     map.clear()
     val retrievedValue = DataConverter.
       getAttributeValue(DeserializeContext(null, map, ProtoStorageType), attriBuilder.build)
@@ -112,6 +144,14 @@ class TensorConversionSpec extends FlatSpec with Matchers{
     map.clear()
     DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType),
       attriBuilder, shorts, universe.typeOf[Tensor[Short]])
+
+    val tensorBuilder = BigDLTensor.newBuilder(map.get(System.
+      identityHashCode(shorts)).get.asInstanceOf[BigDLTensor])
+    tensorBuilder.setStorage(map.get(System.
+      identityHashCode(shorts.storage.array())).get.asInstanceOf[TensorStorage])
+
+    attriBuilder.setTensorValue(tensorBuilder.build)
+
     map.clear()
     val retrievedValue = DataConverter.
       getAttributeValue(DeserializeContext(null, map, ProtoStorageType), attriBuilder.build)
@@ -130,6 +170,14 @@ class TensorConversionSpec extends FlatSpec with Matchers{
     map.clear()
     DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType),
       attriBuilder, floats, universe.typeOf[Tensor[Float]])
+
+    val tensorBuilder = BigDLTensor.newBuilder(map.get(System.
+      identityHashCode(floats)).get.asInstanceOf[BigDLTensor])
+    tensorBuilder.setStorage(map.get(System.
+      identityHashCode(floats.storage.array())).get.asInstanceOf[TensorStorage])
+
+    attriBuilder.setTensorValue(tensorBuilder.build)
+
     map.clear()
     val retrievedValue = DataConverter.
       getAttributeValue(DeserializeContext(null, map, ProtoStorageType), attriBuilder.build)
@@ -148,6 +196,14 @@ class TensorConversionSpec extends FlatSpec with Matchers{
     map.clear()
     DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType),
       attriBuilder, doubles, universe.typeOf[Tensor[Double]])
+
+    val tensorBuilder = BigDLTensor.newBuilder(map.get(System.
+      identityHashCode(doubles)).get.asInstanceOf[BigDLTensor])
+    tensorBuilder.setStorage(map.get(System.
+      identityHashCode(doubles.storage.array())).get.asInstanceOf[TensorStorage])
+
+    attriBuilder.setTensorValue(tensorBuilder.build)
+
     map.clear()
     val retrievedValue = DataConverter.
       getAttributeValue(DeserializeContext(null, map, ProtoStorageType), attriBuilder.build)
@@ -166,6 +222,14 @@ class TensorConversionSpec extends FlatSpec with Matchers{
     map.clear()
     DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType),
       attriBuilder, strings, universe.typeOf[Tensor[String]])
+
+    val tensorBuilder = BigDLTensor.newBuilder(map.get(System.
+      identityHashCode(strings)).get.asInstanceOf[BigDLTensor])
+    tensorBuilder.setStorage(map.get(System.
+      identityHashCode(strings.storage.array())).get.asInstanceOf[TensorStorage])
+
+    attriBuilder.setTensorValue(tensorBuilder.build)
+
     map.clear()
     val retrievedValue = DataConverter.
       getAttributeValue(DeserializeContext(null, map, ProtoStorageType), attriBuilder.build)

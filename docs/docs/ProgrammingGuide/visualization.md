@@ -119,7 +119,7 @@ And “weights”, “bias”, “gradientWeights” and “gradientBias” unde
 
 If you're using Jupyter notebook, you can also draw the training curves using popular plotting tools (e.g. matplotlib) and show the plots inline. 
 
-First, retrieve the summaries as instructed in [Retrieve Summary](#retrieving-summary-info-as-readable-format). The retrived summary is a list of tuples. Each tuple is a recorded event in format (iteration count, recorded value, timestamp). You can convert it to numpy array or dataframe to plot it. See example below:  
+First, retrieve the summaries as instructed in [Retrieve Summary](#retrieving-summary-info-as-readable-format). The retrieved summary is a list of tuples. Each tuple is a recorded event in format (iteration count, recorded value, timestamp). You can convert it to numpy array or dataframe to plot it. See example below:  
 
 _**Example: Plot the train/validation loss in Jupyter**_
 
@@ -140,7 +140,7 @@ plt.legend();
 
 ## **Logging**
 
-BigDL also has a stright-forward logging output on the console along the    training, as shown below. You can see real-time epoch/iteration/loss/       throughput in the log.
+BigDL also has a straight-forward logging output on the console along the    training, as shown below. You can see real-time epoch/iteration/loss/       throughput in the log.
 
 ```
   2017-01-10 10:03:55 INFO  DistriOptimizer$:241 - [Epoch 1 0/               5000][Iteration 1][Wall Clock XXX] Train 512 in   XXXseconds. Throughput    is XXX records/second. Loss is XXX.

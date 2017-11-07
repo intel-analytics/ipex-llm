@@ -785,6 +785,7 @@ object LongType extends TensorDataType
 object FloatType extends TensorDataType
 
 object DoubleType extends TensorDataType
+
 sealed trait TensorType
 
 object DenseType extends TensorType
@@ -1266,5 +1267,12 @@ object Tensor {
       i += 1
     }
     SparseTensor.concat(dim, seqTensors, res)
+  }
+
+  private[bigdl] def sparseConcat[T: ClassTag](
+        dim: Int,
+        tensors: Seq[Tensor[T]],
+        res: Tensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
+    SparseTensor.concat(dim, tensors, res)
   }
 }

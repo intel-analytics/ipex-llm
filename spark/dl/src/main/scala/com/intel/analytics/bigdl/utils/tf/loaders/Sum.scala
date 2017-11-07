@@ -18,51 +18,39 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.{Sequential, Sum => SumOp}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn.ops.Sum
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.tf.Context
 import org.tensorflow.framework.{DataType, NodeDef}
 
-import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 class Sum extends TensorflowOpsLoader {
 
   import Utils._
 
-  override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder)
-                                 (implicit ev: TensorNumeric[T]): Module[T] = {
-    Adapter[T](Array(2), tensorArrays => {
-      val attr = nodeDef.getAttrMap
-
-      val squeeze = !getBoolean(attr, "keep_dims")
-      val dims = tensorArrays(0).asInstanceOf[Tensor[Int]]
-      val dim = ArrayBuffer[Int]()
-      val sum = Sequential[T]()
-      for (i <- 1 to dims.size(1)) {
-        dim += dims.valueAt(i) + 1
-      }
-
-      val dataType = getType(attr, "T")
-      dataType match {
-        case DataType.DT_INT8 =>
-          dim.foreach(i => sum.add(new SumOp[T, Int](i, squeeze = squeeze)))
-        case DataType.DT_INT16 =>
-          dim.foreach(i => sum.add(new SumOp[T, Int](i, squeeze = squeeze)))
-        case DataType.DT_UINT8 =>
-          dim.foreach(i => sum.add(new SumOp[T, Int](i, squeeze = squeeze)))
-        case DataType.DT_UINT16 =>
-          dim.foreach(i => sum.add(new SumOp[T, Int](i, squeeze = squeeze)))
-        case DataType.DT_INT32 =>
-          dim.foreach(i => sum.add(new SumOp[T, Int](i, squeeze = squeeze)))
-        case DataType.DT_INT64 =>
-          dim.foreach(i => sum.add(new SumOp[T, Long](i, squeeze = squeeze)))
-        case DataType.DT_FLOAT =>
-          dim.foreach(i => sum.add(new SumOp[T, Float](i, squeeze = squeeze)))
-        case DataType.DT_DOUBLE =>
-          dim.foreach(i => sum.add(new SumOp[T, Double](i, squeeze = squeeze)))
-      }
-      sum
-    })
+  override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder
+    , context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
+    val attr = nodeDef.getAttrMap
+    val keepDims = getBoolean(attr, "keep_dims")
+    val dataType = getType(attr, "T")
+    dataType match {
+      case DataType.DT_INT8 =>
+        Sum[T, Int](keepDims, startFromZero = true)
+      case DataType.DT_INT16 =>
+        Sum[T, Int](keepDims, startFromZero = true)
+      case DataType.DT_UINT8 =>
+        Sum[T, Int](keepDims, startFromZero = true)
+      case DataType.DT_UINT16 =>
+        Sum[T, Int](keepDims, startFromZero = true)
+      case DataType.DT_INT32 =>
+        Sum[T, Int](keepDims, startFromZero = true)
+      case DataType.DT_INT64 =>
+        Sum[T, Int](keepDims, startFromZero = true)
+      case DataType.DT_FLOAT =>
+        Sum[T, Float](keepDims, startFromZero = true)
+      case DataType.DT_DOUBLE =>
+        Sum[T, Double](keepDims, startFromZero = true)
+    }
   }
 }

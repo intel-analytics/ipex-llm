@@ -43,6 +43,11 @@ class Tile[T: ClassTag]()(implicit ev: TensorNumeric[T])
     val input = inputs[Tensor[Tensor[NumericWildcard]]](1)
     val multiples = inputs[Tensor[Int]](2)
 
+    if (multiples.isEmpty) {
+      output = input
+      return output
+    }
+
     require(input.nDimension() == multiples.size(1),
       "Length of multiples must be the same as the number of dimensions in input")
 

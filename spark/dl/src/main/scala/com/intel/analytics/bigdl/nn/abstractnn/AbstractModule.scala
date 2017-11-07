@@ -22,8 +22,7 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.{Tensor, TensorDataType}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
-import com.intel.analytics.bigdl.nn.{Graph, InitializationMethod, Module, Zeros}
-import com.intel.analytics.bigdl.nn.{Module, Utils}
+import com.intel.analytics.bigdl.nn.{Module, _}
 import com.intel.analytics.bigdl.utils.TorchObject.TYPE_MODULE
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.spark.rdd.RDD
@@ -708,6 +707,28 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
 
   def quantize(): Module[T] = {
     Quantization.quantize(this)
+  }
+
+
+  /**
+   * Generate end nodes of current module with start nodes
+   * @param startNodes: current start nodes
+   * @return current end nodes
+   */
+  private[bigdl] def getEndNodes(startNodes: Array[ModuleNode[T]]): Array[ModuleNode[T]] = {
+    val endNodes = Array(this.inputs(startNodes: _*))
+    endNodes
+  }
+
+  /**
+   * Generate graph module with start nodes
+   * @param startNodes
+   * @return
+   */
+  def toGraph(startNodes: ModuleNode[T]*): Graph[T] = {
+    val starts = if (startNodes.isEmpty) Array(Input[T]()) else startNodes.toArray
+    val endNodes = this.getEndNodes(starts)
+    Graph(starts, endNodes)
   }
 }
 
