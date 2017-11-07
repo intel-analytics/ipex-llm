@@ -184,18 +184,18 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
 
   def testSample(sample: Sample): Sample = {
-    val jsample = toSample(sample)
+    val jsample = toJSample(sample)
     toPySample(jsample)
   }
 
-  def toSample(record: Sample): JSample[T] = {
+  private def toJSample(record: Sample): JSample[T] = {
     require(record.bigdlType == this.typeName,
       s"record.bigdlType: ${record.bigdlType} == this.typeName: ${this.typeName}")
     JSample[T](record.features.asScala.toArray.map(toTensor(_)), toTensor(record.label))
   }
 
-  def toSample(psamples: RDD[Sample]): RDD[JSample[T]] = {
-    psamples.map(toSample(_))
+  def toJSample(psamples: RDD[Sample]): RDD[JSample[T]] = {
+    psamples.map(toJSample(_))
   }
 
   // The first dimension is batch for both X and y
@@ -206,7 +206,6 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     val samples = new Array[JSample[T]](totalNum)
 
     if (y != null) {
-      // TODO: we should check the other x as well not just the first one
       require(Xs(0).size()(0) == y.size()(0),
         s"The batch dim should be equal, but we got: ${Xs(0).size()(0)} vs ${y.size()(0)}")
       while (i <= totalNum) {
@@ -1556,7 +1555,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                     batchSize: Int,
                     valMethods: JList[ValidationMethod[T]])
   : JList[EvaluatedResult] = {
-    val resultArray = model.evaluate(valRDD.rdd.map(toSample(_)),
+    val resultArray = model.evaluate(valRDD.rdd.map(toJSample(_)),
       valMethods.asScala.toArray, Some(batchSize))
     val testResultArray = resultArray.map { result =>
       EvaluatedResult(result._1.result()._1, result._1.result()._2,
@@ -1641,7 +1640,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def modelPredictRDD(model: AbstractModule[Activity, Activity, T],
                       dataRdd: JavaRDD[Sample]): JavaRDD[JTensor] = {
-    val tensorRDD = model.predict(dataRdd.rdd.map(toSample(_)))
+    val tensorRDD = model.predict(dataRdd.rdd.map(toJSample(_)))
     val listRDD = tensorRDD.map { res =>
       val tensor = res.asInstanceOf[Tensor[T]]
       val cloneTensor = tensor.clone()
@@ -1658,7 +1657,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def modelPredictClass(model: AbstractModule[Activity, Activity, T],
                       dataRdd: JavaRDD[Sample]): JavaRDD[Int] = {
-    val sampleRdd = toSample(dataRdd)
+    val sampleRdd = toJSample(dataRdd)
     val tensorRDD = model.predictClass(sampleRdd)
     new JavaRDD[Int](tensorRDD)
   }
@@ -1870,7 +1869,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
     val context = new Context[T]()
     val session = new BigDLSessionImpl[T](nodeList.asScala, context, ByteOrder.LITTLE_ENDIAN)
-    val dataset = batching(DataSet.rdd(toSample(samples)),
+    val dataset = batching(DataSet.rdd(toJSample(samples)),
       batchSize).asInstanceOf[DistributedDataSet[MiniBatch[T]]]
     val model = session.train(Seq(output), dataset,
       optMethod, criterion, endWhen)
@@ -1902,7 +1901,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                             optimMethod: OptimMethod[T],
                             endTrigger: Trigger,
                             batchSize: Int): Optimizer[T, MiniBatch[T]] = {
-    val sampleRDD = toSample(trainingRdd)
+    val sampleRDD = toJSample(trainingRdd)
 
     val optimizer = new DistriOptimizer(
       _model = model,
@@ -1930,7 +1929,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                     trigger: Trigger,
                     valRdd: JavaRDD[Sample],
                     vMethods: JList[ValidationMethod[T]]): Unit = {
-    val sampleRDD = toSample(valRdd)
+    val sampleRDD = toJSample(valRdd)
     optimizer.setValidation(trigger, batching(DataSet.rdd(sampleRDD), batchSize.toInt),
       vMethods.asScala.toArray)
   }

@@ -552,7 +552,7 @@ class LocalOptimizer(JavaValue):
 
 
     :param model: the neural net model
-    :param X: the training features which is an ndarray or list of ndarray
+    :param Xs: the training features which is an ndarray or list of ndarray
     :param Y: the training label which is an ndarray
     :param criterion: the loss function
     :param optim_method: the algorithm to use for optimization,
@@ -588,17 +588,19 @@ class LocalOptimizer(JavaValue):
         from bigdl.nn.layer import Layer
         return Layer.of(jmodel)
 
+
 class Optimizer(JavaValue):
     """
+    This is a distrubuted optimizer.
     An optimizer is in general to minimize any function with respect
-    to a set of parameters and its a distrubuted optimizer.
+    to a set of parameters.
     In case of training a neural network,
     an optimizer tries to minimize the loss of the neural net with
     respect to its weights/biases, over the training set.
     """
     def __init__(self,
                  model,
-                 training_data,
+                 training_rdd,
                  criterion,
                  end_trigger,
                  batch_size,
@@ -617,7 +619,7 @@ class Optimizer(JavaValue):
         :param batch_size: training batch size
         """
         self.pvalue = DistriOptimizer(model,
-                                      training_data,
+                                      training_rdd,
                                       criterion,
                                       end_trigger,
                                       batch_size,
