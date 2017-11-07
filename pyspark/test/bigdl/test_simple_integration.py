@@ -30,7 +30,6 @@ from bigdl.util.engine import compare_version
 np.random.seed(1337)  # for reproducibility
 
 
-
 class TestSimple():
     def setup_method(self, method):
         """ setup any state tied to the execution of the given method in a
@@ -484,7 +483,7 @@ class TestSimple():
 
         localOptimizer = LocalOptimizer(
             model=model,
-            X =X_,
+            X=X_,
             y=y_,
             criterion=MSECriterion(),
             optim_method=SGD(learningrate=1e-2),
@@ -510,6 +509,23 @@ class TestSimple():
         model.set_seed(1234).reset()
         predict_result = model.predict_local_class(X_)
         assert_array_equal(predict_result, np.ones([3]))
+
+    def test_local_predict_multiple_input(self):
+        l1 = Linear(3, 2)()
+        l2 = Linear(3, 3)()
+        joinTable = JoinTable(dimension=1, n_input_dims=1)([l1, l2])
+        model = Model(inputs=[l1, l2], outputs=joinTable)
+        result = model.predict_local([np.ones([4, 3]), np.ones([4, 3])])
+        assert result.shape == (4, 5)
+        result2 = model.predict_local_class([np.ones([4, 3]), np.ones([4, 3])])
+        assert result2.shape == (4,)
+
+        result3 = model.predict_local([JTensor.from_ndarray(np.ones([4, 3])),
+                                      JTensor.from_ndarray(np.ones([4, 3]))])
+        assert result3.shape == (4, 5)
+        result4 = model.predict_local_class([JTensor.from_ndarray(np.ones([4, 3])),
+                                      JTensor.from_ndarray(np.ones([4, 3]))])
+        assert result4.shape == (4,)
 
 
 if __name__ == "__main__":

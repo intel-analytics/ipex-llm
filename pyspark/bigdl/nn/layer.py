@@ -267,19 +267,31 @@ class Layer(JavaValue):
         else:
             raise Exception("Error when calling evaluate(): it takes no argument or exactly three arguments only")
 
+    def _to_jtensors(self, x):
+        if not x:
+            raise Exception("Empty input")
+        x = to_list(x)
+        if isinstance(x[0], np.ndarray):
+            return [JTensor.from_ndarray(i) for i in x]
+        elif isinstance(x[0], JTensor):
+            return x
+        else:
+            raise Exception("Not supported type: %s" % type(x[0]))
+
+
     def predict_local(self, X):
         """
         :param X: X can be a ndarray or list of ndarray if the model has multiple inputs.
                   The first dimension of X should be batch.
-        :return: ndarray as the prediction result.
+        :return: a ndarray as the prediction result.
         """
 
-        result = callBigDlFunc(self.bigdl_type,
+        jresults = callBigDlFunc(self.bigdl_type,
                              "predictLocal",
                                self.value,
-                               [JTensor.from_ndarray(i) for i in to_list(X)])
+                               self._to_jtensors(X))
 
-        return np.stack(result)
+        return np.stack([j.to_ndarray()for j in jresults])
 
     def predict_local_class(self, X):
         """
@@ -291,7 +303,7 @@ class Layer(JavaValue):
         result = callBigDlFunc(self.bigdl_type,
                              "predictLocalClass",
                                self.value,
-                               [JTensor.from_ndarray(i) for i in to_list(X)])
+                               self._to_jtensors(X))
         return np.stack(result)
 
     def predict(self, data_rdd):
