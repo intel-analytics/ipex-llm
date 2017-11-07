@@ -184,7 +184,7 @@
                 </configuration>
                 <executions>
                     <execution>
-			            <id>shade</id>
+                        <id>shade</id>
                         <phase>package</phase>
                         <goals>
                             <goal>shade</goal>
@@ -198,13 +198,13 @@
                         </configuration>
                     </execution>
                     <execution>
-			            <id>without-spark</id>
+                        <id>without-spark</id>
                         <phase>package</phase>
                         <goals>
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-			                <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
                             <shadedClassifierName>jar-with-dependencies</shadedClassifierName>
                         </configuration>
                     </execution>
