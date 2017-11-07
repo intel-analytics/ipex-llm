@@ -79,7 +79,7 @@ val testSet = sc.parallelize(Seq(testSample))
 
 //train a new model or load an existing model
 //val model=...
-val evaluateResult = model.evaluate(testSet, Array(new Top1Accuracy))
+val evaluateResult = model.evaluate(testSet, Array(new Top1Accuracy), None)
 ```
 
 **Python example**
@@ -127,8 +127,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 
 //create some dummy dataset for prediction as example
 val feature = Tensor(10).rand()
-val label = Tensor(1).randn()
-val predictSample = Sample(feature, label)
+val predictSample = Sample(feature)
 val predictSet = sc.parallelize(Seq(predictSample))
 
 //train a new model or load an existing model
