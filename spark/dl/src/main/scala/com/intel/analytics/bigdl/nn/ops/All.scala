@@ -25,7 +25,14 @@ import scala.reflect.ClassTag
 class All[T: ClassTag](keepDim : Boolean = false)
   (implicit ev: TensorNumeric[T]) extends Operation[Table,
   Tensor[Boolean], T] {
+
+  output = Tensor[Boolean]()
+
   override def updateOutput(input: Table): Tensor[Boolean] = {
-    val input[Tensor[Boolean]](1)
+    val data = input[Tensor[Boolean]](1)
+    val indices = input[Tensor[Int]](2)
+    require(indices.nDimension() == 1, "indices must be 1D tensor")
+    data.sum()
+
   }
 }
