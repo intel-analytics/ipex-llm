@@ -1061,7 +1061,7 @@ class GraphSpec extends FlatSpec with Matchers {
     fc1.element.getParameters()._1.apply1(_ => 1.0f)
     fc2.element.getParameters()._1.apply1(_ => 2.0f)
     model.zeroGradParameters()
-    model.freeze(Array("fc2"))
+    model.freeze("fc2")
     println("output2: \n", model.forward(input))
     model.backward(input, gradOutput)
     model.updateParameters(1)
@@ -1136,12 +1136,13 @@ class GraphSpec extends FlatSpec with Matchers {
 
     val model = Inception_v1_NoAuxClassifier.graph(1000).asInstanceOf[Graph[Float]]
     model.saveGraphTopology(absolutePath)
+    System.clearProperty("bigdl.localMode")
   }
 
   "graph" should "support switch with two branch" in {
     val data = Input("data")
     val condition = Input("condition")
-    val swtich = ControlNodes.switch(data, condition)
+    val swtich = ControlNodes.switch(condition, data)
     val echo1 = Echo().inputs(swtich.trueEdge())
     val echo2 = Echo().inputs(swtich.falseEdge())
 
@@ -1157,7 +1158,7 @@ class GraphSpec extends FlatSpec with Matchers {
   "graph" should "support switch with two branch with merge" in {
     val data = Input("data")
     val condition = Input("condition")
-    val swtich = ControlNodes.switch(data, condition)
+    val swtich = ControlNodes.switch(condition, data)
     val echo1 = Echo().inputs(swtich.trueEdge())
     val echo2 = Echo().inputs(swtich.falseEdge())
     val add1 = AddConstant(1).inputs(echo1)

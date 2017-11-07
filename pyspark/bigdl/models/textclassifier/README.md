@@ -27,11 +27,10 @@ $ [/tmp/news20]$ tree . -L 1
 ```
 - The example code would automatically download the data during the first run.
 - If you install BigDL via pip, you can run this example locally by the following command:
-  - Check [Run after pip install](../../../../docs/docs/PythonSupport/run-from-pip.md)
+  - Check [Run after pip install](../../../../docs/docs/PythonUserGuide/run-from-pip.md)
 ```
-export SPARK_HOME=path to spark-1.6.3
 python ${BigDL_HOME}/pyspark/bigdl/models/textclassifier/textclassifier.py --max_epoch 3 --model cnn
-             
+      
 ```
 
 - You can also use `spark-submit` to launch this example:
@@ -58,14 +57,16 @@ python ${BigDL_HOME}/pyspark/bigdl/models/textclassifier/textclassifier.py --max
             --conf spark.executor.extraClassPath=bigdl-VERSION-jar-with-dependencies.jar \
             --conf spark.executorEnv.PYTHONHASHSEED=${PYTHONHASHSEED} \
             ${BigDL_HOME}/pyspark/bigdl/models/textclassifier/textclassifier.py \
-             --max_epoch 3
-             --model cnn
+            --data_path /tmp/news20/ \
+            --max_epoch 3 \
+            --model cnn
 ```
+* `--data_path` option can be used to set the path for downloading news20 data, the default value is /tmp/news20. Make sure that you have write permission to the specified path.
 
-* `--max_epoch` option can be used to set how many epochs the model to be trained
+* `--max_epoch` option can be used to set how many epochs the model to be trained.
 
 * `--model` option can be used to choose a model to be trained, three models are supported in this example,
-which are `cnn`, `lstm` and `gru`, default is `cnn`
+which are `cnn`, `lstm` and `gru`, default is `cnn`.
 
 * `--batchSize` option can be used to set batch size, the default value is 128.
 

@@ -16,7 +16,8 @@
 
 package com.intel.analytics.bigdl.example.loadmodel
 
-import java.nio.file.{Paths, Path}
+import java.nio.charset.StandardCharsets
+import java.nio.file.{Files, Path, Paths}
 
 import com.intel.analytics.bigdl.DataSet
 import com.intel.analytics.bigdl.dataset._
@@ -26,29 +27,38 @@ import com.intel.analytics.bigdl.utils.File
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
+import scala.io.Source
+
 
 object AlexNetPreprocessor {
   val imageSize = 227
 
   def apply(path: String, batchSize: Int, meanFile: String, sc: SparkContext)
   : DataSet[MiniBatch[Float]] = {
-    val means = File.load[Tensor[Float]](meanFile)
+    // 'meanFile' specify the path to the pixel level mean data, one line per pixel
+    // following H * W * C order, 196608 in total (256 * 256 * 3)
+    val means = createMeans(meanFile)
     DataSet.SeqFileFolder.files(path, sc, classNum = 1000) ->
       // do not normalize the pixel values to [0, 1]
-      BytesToBGRImg(normalize = 1f) ->
+      BytesToBGRImg(normalize = 1f, 256, 256) ->
       BGRImgPixelNormalizer(means) -> BGRImgCropper(imageSize, imageSize, CropCenter) ->
       BGRImgToBatch(batchSize, toRGB = false)
   }
 
   def rdd(path: String, batchSize: Int, meanFile: String, sc: SparkContext)
   : RDD[Sample[Float]] = {
-    val means = File.load[Tensor[Float]](meanFile)
+    val means = createMeans(meanFile)
     val dataSet = DataSet.SeqFileFolder.filesToRdd(path, sc, 1000)
       // do not normalize the pixel values to [0, 1]
-    val transfomer = BytesToBGRImg(normalize = 1f) ->
+    val transfomer = BytesToBGRImg(normalize = 1f, 256, 256) ->
       BGRImgPixelNormalizer(means) -> BGRImgCropper(imageSize, imageSize, CropCenter) ->
       BGRImgToSample(toRGB = false)
     transfomer(dataSet)
+  }
+
+  def createMeans(meanFile : String) : Tensor[Float] = {
+    val array = Source.fromFile(meanFile).getLines().map(_.toFloat).toArray
+    Tensor[Float](array, Array(array.length))
   }
 }
 

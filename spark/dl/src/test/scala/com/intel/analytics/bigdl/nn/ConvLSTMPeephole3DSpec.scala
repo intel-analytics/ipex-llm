@@ -72,7 +72,7 @@ class ConvLSTMPeephole3DSpec extends FlatSpec with BeforeAndAfter with Matchers 
 
     val output = model.forward(input)
 
-    val state = model.getState()
+    val state = model.getHiddenState()
     val hidden = state.asInstanceOf[Table].apply(1).asInstanceOf[Tensor[Double]]
     hidden.map(output.select(2, seqLength), (v1, v2) => {
       assert(abs(v1 - v2) == 0)

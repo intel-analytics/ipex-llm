@@ -544,14 +544,6 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
   override def save(path: String, overWrite: Boolean): this.type =
     throw new UnsupportedOperationException(errorString)
 
-  /**
-   * Return tensor numeric
-   *
-   * @return
-   */
-  override def getTensorNumeric(): TensorNumeric[T] =
-    throw new UnsupportedOperationException(errorString)
-
   // scalastyle:off methodName
   /**
    * Add all elements of this with value not in place.
@@ -1138,6 +1130,9 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
   override def pow(n: T): Tensor[T] =
     throw new UnsupportedOperationException(errorString)
 
+  override def square(): Tensor[T] =
+    throw new UnsupportedOperationException(errorString)
+
   /**
    * Get the top k smallest values and their indices.
    *
@@ -1149,7 +1144,7 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @return
    */
   override def topk(k: Int, dim: Int, increase: Boolean, result: Tensor[T],
-    indices: Tensor[T]): (Tensor[T], Tensor[T]) =
+    indices: Tensor[T], sortedResult: Boolean = true): (Tensor[T], Tensor[T]) =
     throw new UnsupportedOperationException(errorString)
 
   /**
@@ -1324,6 +1319,16 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
     throw new UnsupportedOperationException(errorString)
 
   /**
+   * stores the element-wise maximum of x and y in x.
+   * x.cmin(y) = min(x, y)
+   *
+   * @param y tensor
+   * @return current tensor
+   */
+  override def cmin(y: Tensor[T]): Tensor[T] =
+    throw new UnsupportedOperationException(errorString)
+
+  /**
    * stores the element-wise maximum of x and y in z.
    * z.cmax(x, y) means z = max(x, y)
    *
@@ -1331,6 +1336,16 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param y tensor
    */
   override def cmax(x: Tensor[T], y: Tensor[T]): Tensor[T] =
+    throw new UnsupportedOperationException(errorString)
+
+  /**
+   * stores the element-wise maximum of x and y in z.
+   * z.cmin(x, y) means z = min(x, y)
+   *
+   * @param x tensor
+   * @param y tensor
+   */
+  override def cmin(x: Tensor[T], y: Tensor[T]): Tensor[T] =
     throw new UnsupportedOperationException(errorString)
 
   /**
@@ -1388,12 +1403,24 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
 
   override def emptyInstance(): Tensor[T] = throw new UnsupportedOperationException(errorString)
 
-  override def forceCopy(other: Tensor[_]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
-
   override def applyFun[A: ClassTag](t: Tensor[A], func: (A) => T): Tensor[T] =
     throw new UnsupportedOperationException(errorString)
 
   override def cast[D: ClassTag](castTensor: Tensor[D])(implicit ev: TensorNumeric[D]): Tensor[D] =
+    throw new UnsupportedOperationException(errorString)
+
+  override def div(y: Tensor[T]): Tensor[T] =
+    throw new UnsupportedOperationException(errorString)
+
+  override def floor(y: Tensor[T]): Tensor[T] = throw new UnsupportedOperationException(errorString)
+
+  override def floor(): Tensor[T] = throw new UnsupportedOperationException(errorString)
+
+  override def ceil(): Tensor[T] = throw new UnsupportedOperationException(errorString)
+
+  override def negative(x: Tensor[T]): Tensor[T] =
+    throw new UnsupportedOperationException(errorString)
+
+  override def inv(): Tensor[T] =
     throw new UnsupportedOperationException(errorString)
 }

@@ -72,19 +72,6 @@ class LessSpec extends FlatSpec with Matchers {
     output should be(expectOutput)
   }
 
-  "Less String operation" should "works correctly" in {
-    val input =
-      T(
-        Tensor[String](T("abc", "bbb", "aaa")),
-        Tensor[String](T("aaa", "ccc", "aaa"))
-      )
-
-    val expectOutput = Tensor[Boolean](T(false, true, false))
-
-    val output = Less[Float]().forward(input)
-    output should be(expectOutput)
-  }
-
   "Less Short operation" should "works correctly" in {
     val input =
       T(

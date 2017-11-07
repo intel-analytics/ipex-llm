@@ -81,7 +81,7 @@ class Conv2DSep extends FlatSpec with Matchers {
       ))
 
 
-    val output = Conv2D[Double](Array(1, 2, 1, 1), "SAME").forward(T(input, filter))
+    val output = Conv2D[Double](2, 1, -1, -1).forward(T(input, filter))
     output should equal(expectOutput)
   }
 }

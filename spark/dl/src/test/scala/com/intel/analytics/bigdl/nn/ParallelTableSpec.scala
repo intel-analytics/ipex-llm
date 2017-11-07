@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.utils.T
 @com.intel.analytics.bigdl.tags.Parallel
 class ParallelTableSpec extends FlatSpec with Matchers {
   "hashcode()" should "behave correctly" in {
-    val log = new Log[Double]()
+    val log = new Log[Double, Double]()
     val exp = new Exp[Double]()
     val m1 = new ParallelTable[Double]()
     m1.add(log)
@@ -49,7 +49,7 @@ class ParallelTableSpec extends FlatSpec with Matchers {
   }
 
   "equals()" should "behave correctly" in {
-    val log = new Log[Double]()
+    val log = new Log[Double, Double]()
     val exp = new Exp[Double]()
     val m1 = new ParallelTable[Double]()
     m1.add(log)

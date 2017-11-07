@@ -27,14 +27,11 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 import org.apache.log4j.Logger
 
 class TensorflowSaverSpec extends TensorflowSpecHelper {
-
-  private val logger = Logger.getLogger(getClass)
-
-  before {
+  override def doBefore(): Unit = {
     System.setProperty("bigdl.enableNHWC", "true")
   }
 
-  after {
+  override def doAfter(): Unit = {
     System.setProperty("bigdl.enableNHWC", "false")
   }
 
@@ -105,7 +102,7 @@ class TensorflowSaverSpec extends TensorflowSpecHelper {
 
   "Squeeze" should "be correctly saved" in {
     System.setProperty("bigdl.enableNHWC", "false")
-    val layer = Squeeze(3)
+    val layer = Squeeze(3).asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]]
     val input = Tensor[Float](4, 2, 1, 2).rand()
     test(layer, input) should be(true)
   }

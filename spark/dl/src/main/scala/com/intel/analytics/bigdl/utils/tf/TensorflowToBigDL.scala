@@ -21,17 +21,15 @@ import java.util
 
 import collection.JavaConverters._
 import com.intel.analytics.bigdl.nn._
-
 import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Storage, Tensor}
-import com.intel.analytics.bigdl.nn.ops.{Conv2DTranspose, ResizeBilinearOps}
+import com.intel.analytics.bigdl.nn.ops._
 import com.intel.analytics.bigdl.tensor._
 import org.tensorflow.framework.{AttrValue, DataType, NodeDef, TensorProto}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
-import com.intel.analytics.bigdl.nn.ops.{Equal, Assert, Greater, Rank, ParseExample}
 import com.intel.analytics.bigdl.nn.tf._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.tf.FullConnectionTF.getOrSetTensor
 import com.intel.analytics.bigdl.utils.{DirectedGraph, Node, T}
-import com.intel.analytics.bigdl.utils.tf.TensorflowLoader.Context
 import com.intel.analytics.bigdl.utils.tf.TensorflowToBigDL._
 
 import scala.collection.mutable.ArrayBuffer
@@ -65,7 +63,7 @@ trait TensorflowToBigDL {
     trans: Option[Seq[(Int, Int)]] = None)(
     implicit ev: TensorNumeric[T]): (Tensor[T], Tensor[T]) = {
 
-    if (context.contains(node.getName)) {
+    if (context.containsTensor(node.getName)) {
       val result = context(node.getName)
       (result._1, result._2)
     } else {
@@ -79,7 +77,7 @@ trait TensorflowToBigDL {
         case _ =>
       }
       val gradient = Tensor[T](weight.size())
-      context.put(node.getName, (weight, gradient, trans))
+      context.putTensor(node.getName, (weight, gradient, trans))
       (weight, gradient)
     }
   }
@@ -94,6 +92,14 @@ trait TensorflowToBigDL {
 
   protected def getIntList(attrMap: util.Map[String, AttrValue], key: String): Seq[Int] = {
     attrMap.get(key).getList.getIList.asScala.map(_.toInt)
+  }
+
+  protected def getBoolean(attrMap: util.Map[String, AttrValue], key: String): Boolean = {
+    attrMap.get(key).getB
+  }
+
+  protected def getType(attrMap: util.Map[String, AttrValue], key: String): DataType = {
+    attrMap.get(key).getType
   }
 }
 
@@ -887,3 +893,4 @@ object BatchNormTF extends TensorflowToBigDL{
     model.asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }
+

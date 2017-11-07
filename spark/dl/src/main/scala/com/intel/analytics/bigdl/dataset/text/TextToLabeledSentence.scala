@@ -27,6 +27,8 @@ object TextToLabeledSentence {
            (implicit ev: TensorNumeric[T])
   : TextToLabeledSentence[T] =
     new TextToLabeledSentence[T](dictionary)
+  def apply[T: ClassTag](numSteps: Int)(implicit ev: TensorNumeric[T])
+  : TextToSentenceWithSteps[T] = new TextToSentenceWithSteps[T](numSteps)
 }
 
 /**
@@ -54,6 +56,43 @@ class TextToLabeledSentence[T: ClassTag](dictionary: Dictionary)
       val data = indexes.take(nWords)
       val label = indexes.drop(1)
       buffer.copy(data, label)
+    })
+  }
+}
+
+/**
+ * Transform a sequence of integers to LabeledSentence.
+ * e.g. input = [0, 1, 2, 3, 4, 5, 6, ..]
+ *      numSteps = 3
+ *
+ *      xbuffer = [0, 1, 2]
+ *      ybuffer = [1, 2, 3]
+ *
+ * next:
+ *      xbuffer = [3, 4, 5]
+ *      ybuffer = [4, 5, 6]
+ * @param numSteps
+ * @param ev$1
+ * @param ev
+ * @tparam T
+ */
+private[bigdl] class TextToSentenceWithSteps[T: ClassTag](numSteps: Int)
+  (implicit ev: TensorNumeric[T])
+  extends Transformer[Array[T], LabeledSentence[T]] {
+  val xbuffer = new Array[T](numSteps)
+  val ybuffer = new Array[T](numSteps)
+  val buffer = new LabeledSentence[T]()
+
+  override def apply(prev: Iterator[Array[T]]): Iterator[LabeledSentence[T]] = {
+    prev.map(sentence => {
+      require(sentence.length >= numSteps + 1,
+        "input sentence length should be numSteps + 1, " +
+          s"sentence.length = ${sentence.length}, numSteps = ${numSteps}")
+      Array.copy(sentence, 0, xbuffer, 0, numSteps)
+      Array.copy(sentence, 1, ybuffer, 0, numSteps)
+
+      buffer.copy(xbuffer, ybuffer)
+      buffer
     })
   }
 }

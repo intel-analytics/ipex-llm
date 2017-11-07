@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.models.utils
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.tensor.{QuantizedTensor, QuantizedType, Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import org.apache.spark.SparkContext
 import org.apache.spark.broadcast.Broadcast
@@ -25,12 +25,14 @@ import org.apache.spark.broadcast.Broadcast
 import scala.reflect.ClassTag
 
 /**
- * ModelBroadcast is used to broadcast model when doing model inference.
- * Note: do not use it in model training since the broadcast models share weights and biases
- * It shortens the broadcast time, which is especially useful when the model size is large
+ * ModelBroadcast is used to broadcast model.
+ *
+ * Note: If you want to use this to broadcast training model, please use value(true) to get
+ * the model. And before broadcasting please make sure the model's parameter is compacted.
+ *
  * @tparam T data type
  */
-class ModelBroadcast[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializable {
+class ModelBroadcast[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Serializable {
 
   private var broadcastModel: Broadcast[Module[T]] = _
 
@@ -50,15 +52,86 @@ class ModelBroadcast[T: ClassTag](implicit ev: TensorNumeric[T]) extends Seriali
   /**
    * get the broadcast model
    * put the weight and bias back to the model
+   *
+   * @param initGradient if init gradParameter.
    * @return model
    */
-  def value(): Module[T] = {
-    broadcastModel.value.clone(false)
+  def value(initGradient: Boolean = false): Module[T] = {
+    val localModel = broadcastModel.value.clone(false)
+    if (initGradient) {
+      initGradWeightBias(getWeightBias(localModel.parameters()), localModel)
+    }
+    localModel
+  }
+
+
+  private def getWeightBias(parameters: (Array[Tensor[T]], Array[Tensor[T]]))
+  : Array[Tensor[T]] = {
+    if (parameters._1.length != 0) {
+      var i = 0
+      val weightsBias = new Array[Tensor[T]](parameters._1.length)
+      val isQuantized = parameters._1.exists(_.getTensorType == QuantizedType)
+      val (isCompacted, storage) = if (!isQuantized) {
+        val storage = Storage(parameters._1(0).storage.array())
+        (parameters._1.map(_.nElement()).sum == storage.length(), storage)
+      } else {
+        (false, null)
+      }
+
+      // get weight and bias
+      while (i < parameters._1.length) {
+        if (parameters._1(i) != null) {
+          val wb = parameters._1(i)
+          wb.getTensorType match {
+            case QuantizedType =>
+              val quantTensor = wb.asInstanceOf[QuantizedTensor[T]]
+              weightsBias(i) = QuantizedTensor[T](quantTensor.getStorage, quantTensor.maxOfRow,
+                quantTensor.minOfRow, quantTensor.sumOfRow, quantTensor.size(), quantTensor.params)
+            case _ =>
+              weightsBias(i) = if (isCompacted) {
+                Tensor[T](storage, wb.storageOffset(), wb.size(), wb.stride())
+              } else {
+                Tensor[T](Storage(wb.storage().array()), wb.storageOffset(), wb.size(), wb.stride())
+              }
+          }
+          i += 1
+        }
+      }
+
+      weightsBias
+    } else {
+      // just return an empty array when parameters is empty.
+      Array()
+    }
+  }
+  
+  private def initGradWeightBias(
+        broadcastWeightBias: Array[Tensor[T]],
+        localModel: Module[T]): Unit = {
+    val (localWeightBias, localGradWeightBias) = localModel.parameters()
+    // init gradient with a compacted storage
+    val storage = Storage[T](localGradWeightBias.map(_.nElement()).sum)
+    val isQuantized = broadcastWeightBias.exists(_.getTensorType == QuantizedType)
+    var i = 0
+    while (i < localWeightBias.length) {
+      if (localWeightBias(i) != null) {
+        val wb = broadcastWeightBias(i)
+        wb.getTensorType match {
+          case QuantizedType =>
+            localGradWeightBias(i).set(Tensor(1))
+          case _ =>
+            localGradWeightBias(i).set(storage, wb.storageOffset(), wb.size(), wb.stride())
+        }
+      }
+      i += 1
+    }
   }
 }
 
 
 object ModelBroadcast {
-  def apply[@specialized(Float, Double) T: ClassTag]()(implicit ev: TensorNumeric[T])
-  : ModelBroadcast[T] = new ModelBroadcast
+  def apply[@specialized(Float, Double) T: ClassTag]()
+        (implicit ev: TensorNumeric[T]) : ModelBroadcast[T] = {
+    new ModelBroadcast()
+  }
 }

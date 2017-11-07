@@ -182,6 +182,34 @@ abstract class Container[A <: Activity : ClassTag,
     this
   }
 
+  override def freeze(names: String*): this.type = {
+    if (names.isEmpty) {
+      modules.foreach(_.freeze())
+    } else {
+      names.foreach(name => {
+        this (name) match {
+          case Some(x) => x.freeze()
+          case _ => throw new Exception(s"cannot match module named $name")
+        }
+      })
+    }
+    this
+  }
+
+  override def unFreeze(names: String*): this.type = {
+    if (names.isEmpty) {
+      modules.foreach(_.unFreeze())
+    } else {
+      names.foreach(name => {
+        this (name) match {
+          case Some(x) => x.unFreeze()
+          case _ => throw new Exception(s"cannot match module named $name")
+        }
+      })
+    }
+    this
+  }
+
   override def apply(name : String): Option[AbstractModule[Activity, Activity, T]] = {
     if (this.getName() == name) {
       Some(this)

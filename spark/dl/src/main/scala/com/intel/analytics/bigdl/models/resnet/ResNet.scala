@@ -231,7 +231,7 @@ object ResNet {
       iChannels = 64
       logger.info(" | ResNet-" + depth + " ImageNet")
 
-      model.add(Convolution(3, 64, 7, 7, 2, 2, 3, 3, optnet = optnet))
+      model.add(Convolution(3, 64, 7, 7, 2, 2, 3, 3, optnet = optnet, propagateBack = false))
         .add(SpatialBatchNormalization(64))
         .add(ReLU(true))
         .add(SpatialMaxPooling(3, 3, 2, 2, 1, 1))
@@ -249,7 +249,7 @@ object ResNet {
       iChannels = 16
       logger.info(" | ResNet-" + depth + " CIFAR-10")
 
-      model.add(Convolution(3, 16, 3, 3, 1, 1, 1, 1, optnet = optnet))
+      model.add(Convolution(3, 16, 3, 3, 1, 1, 1, 1, optnet = optnet, propagateBack = false))
       model.add(SpatialBatchNormalization(16))
       model.add(ReLU(true))
       model.add(layer(basicBlock, 16, n))
@@ -360,7 +360,8 @@ object ResNet {
       logger.info(" | ResNet-" + depth + " ImageNet")
 
       val input = Input()
-      val conv1 = Convolution(3, 64, 7, 7, 2, 2, 3, 3, optnet = optnet).inputs(input)
+      val conv1 = Convolution(3, 64, 7, 7, 2, 2, 3, 3,
+        optnet = optnet, propagateBack = false).inputs(input)
       val bn = SpatialBatchNormalization(64).inputs(conv1)
       val relu = ReLU(true).inputs(bn)
       val pool = SpatialMaxPooling(3, 3, 2, 2, 1, 1).inputs(relu)
@@ -380,7 +381,8 @@ object ResNet {
       logger.info(" | ResNet-" + depth + " CIFAR-10")
 
       val input = Input()
-      val conv1 = Convolution(3, 16, 3, 3, 1, 1, 1, 1, optnet = optnet).inputs(input)
+      val conv1 = Convolution(3, 16, 3, 3, 1, 1, 1, 1,
+        optnet = optnet, propagateBack = false).inputs(input)
       val bn = SpatialBatchNormalization(16).inputs(conv1)
       val relu = ReLU(true).inputs(bn)
       val layer1 = layer(basicBlockFunc, 16, n)(relu)

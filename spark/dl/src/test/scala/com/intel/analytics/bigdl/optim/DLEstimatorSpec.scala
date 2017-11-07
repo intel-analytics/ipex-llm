@@ -63,7 +63,7 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     assert(estimator.getLabelCol == "label")
     assert(estimator.getMaxEpoch == 100)
     assert(estimator.getBatchSize == 1)
-    assert(estimator.getLearningRate == 1.0)
+    assert(estimator.getLearningRate == 1e-3)
     assert(estimator.getLearningRateDecay == 0)
 
   }
@@ -73,6 +73,8 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val criterion = ClassNLLCriterion[Float]()
     val estimator = new DLEstimator[Float](model, criterion, Array(6), Array(1))
       .setBatchSize(nRecords)
+      .setOptimMethod(new LBFGS[Float]())
+      .setLearningRate(0.1)
       .setMaxEpoch(maxEpoch)
     val data = sc.parallelize(smallData)
     val df = sqlContext.createDataFrame(data).toDF("features", "label")
@@ -222,6 +224,8 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
       val criterion = ClassNLLCriterion[Float]()
       val estimator = new DLEstimator[Float](model, criterion, Array(6), Array(1))
+        .setOptimMethod(new LBFGS[Float]())
+        .setLearningRate(0.1)
         .setBatchSize(nRecords)
         .setMaxEpoch(maxEpoch)
         .setFeaturesCol("scaled")

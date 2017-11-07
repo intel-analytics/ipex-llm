@@ -21,9 +21,9 @@ import java.util
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.tf.TensorflowLoader.Context
+import com.intel.analytics.bigdl.utils.tf.Context
 import com.intel.analytics.bigdl.utils.tf.TensorflowToBigDL.toTensor
-import org.tensorflow.framework.{AttrValue, NodeDef}
+import org.tensorflow.framework.{AttrValue, DataType, NodeDef}
 
 import scala.reflect.ClassTag
 import collection.JavaConverters._
@@ -34,7 +34,7 @@ object Utils {
     trans: Option[Seq[(Int, Int)]] = None)(
     implicit ev: TensorNumeric[T]): (Tensor[T], Tensor[T]) = {
 
-    if (context.contains(node.getName)) {
+    if (context.containsTensor(node.getName)) {
       val result = context(node.getName)
       (result._1, result._2)
     } else {
@@ -48,7 +48,7 @@ object Utils {
         case _ =>
       }
       val gradient = Tensor[T](weight.size())
-      context.put(node.getName, (weight, gradient, trans))
+      context.putTensor(node.getName, (weight, gradient, trans))
       (weight, gradient)
     }
   }
@@ -61,12 +61,20 @@ object Utils {
     attrMap.get(key).getI.toInt
   }
 
-  private[loaders] def getBoolean(nodedef: NodeDef, key: String): Boolean = {
-    nodedef.getAttrMap.get(key).getB
+  private[loaders] def getFloat(attrMap: util.Map[String, AttrValue], key: String): Float = {
+    attrMap.get(key).getF
+  }
+
+  private[loaders] def getBoolean(attrMap: util.Map[String, AttrValue], key: String): Boolean = {
+    attrMap.get(key).getB
   }
 
   private[loaders] def getIntList(attrMap: util.Map[String, AttrValue], key: String): Seq[Int] = {
     attrMap.get(key).getList.getIList.asScala.map(_.toInt)
+  }
+
+  private[loaders] def getType(attrMap: util.Map[String, AttrValue], key: String): DataType = {
+    attrMap.get(key).getType
   }
 
   private[loaders] def toArray[T: ClassTag](tensor: Tensor[T]): Array[T] = {

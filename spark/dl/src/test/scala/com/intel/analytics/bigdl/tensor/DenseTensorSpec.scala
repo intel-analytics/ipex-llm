@@ -299,7 +299,7 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     t.valueAt(3) should be(3)
   }
 
-  "resise as" should "get the correct tensor" in {
+  "resize as" should "get the correct tensor" in {
     val t: Tensor[Double] = new DenseTensor[Double](3, 4)
     val t1: Tensor[Double] = new DenseTensor[Double](5, 5)
     val t2: Tensor[Double] = new DenseTensor[Double](2, 2)
@@ -456,8 +456,12 @@ class DenseTensorSpec extends FlatSpec with Matchers {
   "toString" should "be correct" in {
     var t: Tensor[Double] = new DenseTensor[Double]()
     val EMPTY_STRING =
-      """[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp with no dimension]"""
+      """Empty Tensor"""
     t.toString should be(EMPTY_STRING)
+
+    t = Tensor.scalar[Double](1)
+    t.toString should be("Scalar(1.0)")
+
     t = new DenseTensor(Storage(Array(1.0, 2.0, 3.0)))
     val OneD_STRING =
       "1.0\n" +
@@ -473,7 +477,7 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     t = new DenseTensor[Double](3, 4)
     var i = 0
     t.apply1(v => {
-      i = i + 1;
+      i = i + 1
       i
     })
     t.toString should be(MATRIX_STRING)
@@ -481,10 +485,78 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     t = new DenseTensor(2, 5, 3, 4)
     i = 0
     t.apply1(v => {
-      i = i + 1;
+      i = i + 1
       i
     })
     println(t)
+  }
+
+  "toString" should "be elegant if the tensor is too large" in {
+    val t = new DenseTensor[Float](1000)
+    var i = 0
+    t.apply1(v => {
+      i = i + 1; i
+    })
+    val OneD_STRING =
+      "1.0\n2.0\n3.0\n...\n998.0\n999.0\n1000.0\n" +
+        "[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 1000]"
+    t.toString should be(OneD_STRING)
+    val s = new DenseTensor[Float](50, 50)
+    i = 0
+    s.apply1(v => {
+      i = i + 1; i
+    })
+    val MATRIX_STRING =
+      "1.0\t2.0\t3.0\t...\t48.0\t49.0\t50.0\t\n" +
+        "51.0\t52.0\t53.0\t...\t98.0\t99.0\t100.0\t\n" +
+        "101.0\t102.0\t103.0\t...\t148.0\t149.0\t150.0\t\n" +
+        "...\n" +
+        "2351.0\t2352.0\t2353.0\t...\t2398.0\t2399.0\t2400.0\t\n" +
+        "2401.0\t2402.0\t2403.0\t...\t2448.0\t2449.0\t2450.0\t\n" +
+        "2451.0\t2452.0\t2453.0\t...\t2498.0\t2499.0\t2500.0\t\n" +
+        "[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 50x50]"
+    s.toString should be(MATRIX_STRING)
+    val r = new DenseTensor[Float](1, 10, 50, 50)
+    i = 0
+    r.apply1(v => {
+      i = i + 1; i
+    })
+    val MULTIPLE_MATRIX_STRING =
+      "(1,1,.,.) =\n" +
+      "1.0\t2.0\t3.0\t...\t48.0\t49.0\t50.0\t\n" +
+        "51.0\t52.0\t53.0\t...\t98.0\t99.0\t100.0\t\n" +
+        "101.0\t102.0\t103.0\t...\t148.0\t149.0\t150.0\t\n" +
+        "...\n" +
+        "2351.0\t2352.0\t2353.0\t...\t2398.0\t2399.0\t2400.0\t\n" +
+        "2401.0\t2402.0\t2403.0\t...\t2448.0\t2449.0\t2450.0\t\n" +
+        "2451.0\t2452.0\t2453.0\t...\t2498.0\t2499.0\t2500.0\t\n\n" +
+      "(1,2,.,.) =\n" +
+        "2501.0\t2502.0\t2503.0\t...\t2548.0\t2549.0\t2550.0\t\n" +
+        "2551.0\t2552.0\t2553.0\t...\t2598.0\t2599.0\t2600.0\t\n" +
+        "2601.0\t2602.0\t2603.0\t...\t2648.0\t2649.0\t2650.0\t\n" +
+        "...\n" +
+        "4851.0\t4852.0\t4853.0\t...\t4898.0\t4899.0\t4900.0\t\n" +
+        "4901.0\t4902.0\t4903.0\t...\t4948.0\t4949.0\t4950.0\t\n" +
+        "4951.0\t4952.0\t4953.0\t...\t4998.0\t4999.0\t5000.0\t\n\n" +
+      "...\n\n" +
+      "(1,9,.,.) =\n" +
+        "20001.0\t20002.0\t20003.0\t...\t20048.0\t20049.0\t20050.0\t\n" +
+        "20051.0\t20052.0\t20053.0\t...\t20098.0\t20099.0\t20100.0\t\n" +
+        "20101.0\t20102.0\t20103.0\t...\t20148.0\t20149.0\t20150.0\t\n" +
+        "...\n" +
+        "22351.0\t22352.0\t22353.0\t...\t22398.0\t22399.0\t22400.0\t\n" +
+        "22401.0\t22402.0\t22403.0\t...\t22448.0\t22449.0\t22450.0\t\n" +
+        "22451.0\t22452.0\t22453.0\t...\t22498.0\t22499.0\t22500.0\t\n\n" +
+      "(1,10,.,.) =\n" +
+        "22501.0\t22502.0\t22503.0\t...\t22548.0\t22549.0\t22550.0\t\n" +
+        "22551.0\t22552.0\t22553.0\t...\t22598.0\t22599.0\t22600.0\t\n" +
+        "22601.0\t22602.0\t22603.0\t...\t22648.0\t22649.0\t22650.0\t\n" +
+        "...\n" +
+        "24851.0\t24852.0\t24853.0\t...\t24898.0\t24899.0\t24900.0\t\n" +
+        "24901.0\t24902.0\t24903.0\t...\t24948.0\t24949.0\t24950.0\t\n" +
+        "24951.0\t24952.0\t24953.0\t...\t24998.0\t24999.0\t25000.0\t\n\n" +
+    "[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 1x10x50x50]"
+    r.toString should be(MULTIPLE_MATRIX_STRING)
   }
 
   "squeeze" should "be correct" in {
@@ -834,13 +906,25 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     t should be(DenseTensor[Double](2.0))
   }
 
-  "Tensor add" should "support broadcasting" in {
+  "Tensor add and sub" should "support broadcasting" in {
     val t1 = Tensor[Double](T(1, 2, 3))
     val t2 = Tensor[Double](T(T(2, 5, 3), T(3, 6, 4)))
-    t2.add(t1) should be(Tensor[Double](T(T(3, 7, 6), T(4, 8, 7))))
+    t2.add(t1) should be (Tensor[Double](T(T(3, 7, 6), T(4, 8, 7))))
   }
 
-  "Tensor add" should "support broadcasting 2" in {
+  "Tensor sub" should "support broadcasting" in {
+    val t1 = Tensor[Double](T(1, 2, 3))
+    val t2 = Tensor[Double](T(T(2, 5, 3), T(3, 6, 4)))
+    t2.sub(t1) should be (Tensor[Double](T(T(1, 3, 0), T(2, 4, 1))))
+  }
+
+  "Tensor div" should "support broadcasting" in {
+    val t1 = Tensor[Double](T(1, 2, 3))
+    val t2 = Tensor[Double](T(T(2, 4, 6), T(3, 6, 9)))
+    t2.div(t1) should be (Tensor[Double](T(T(2, 2, 2), T(3, 3, 3))))
+  }
+
+  "Tensor add " should "support broadcasting 2" in {
     val t1 = Tensor[Double](T(
       T(
         T(1, 2, 3),
@@ -922,5 +1006,32 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     val t: Tensor[Double] = new DenseTensor[Double](2)
     val result = t.select(1, 1)
     result.isScalar should be(true)
+  }
+
+  "Negative" should "be correct" in {
+    val x = Tensor[Float](T(1, 2, 3))
+    val y = Tensor[Float](3)
+    y.negative(x) should be(Tensor[Float](T(-1, -2, -3)))
+    x.negative(x) should be(Tensor[Float](T(-1, -2, -3)))
+  }
+
+  "Floor" should "be correct" in {
+    val x = Tensor[Float](T(1.1, 2.5, 3.7))
+    x.floor() should be(Tensor[Float](T(1, 2, 3)))
+
+    val y = Tensor[Double](T(1.1, 2.5, 3.7))
+    y.floor() should be(Tensor[Double](T(1, 2, 3)))
+
+    val z = Tensor[Int](T(1, 2, 3))
+    z.floor() should be(Tensor[Int](T(1, 2, 3)))
+  }
+
+  "mm" should "be correct when multiply twice" in {
+    val o = Tensor[Float]().resize(2, 2)
+    val x = Tensor[Float](T(T(1, 2, 3), T(4, 5, 6)))
+    val y = Tensor[Float](T(T(1, 2), T(3, 4), T(5, 6)))
+    o.mm(x, y)
+    o.mm(x, y)
+    o should be(Tensor[Float](T(T(22, 28), T(49, 64))))
   }
 }

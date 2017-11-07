@@ -268,6 +268,8 @@ private[bigdl] class QuantizedTensor[T: ClassTag](
     this
   }
 
+  override def getTensorNumeric(): TensorNumeric[T] = ev
+
   @throws(classOf[IOException])
   private def readObject(in: ObjectInputStream): Unit = {
     in.defaultReadObject()

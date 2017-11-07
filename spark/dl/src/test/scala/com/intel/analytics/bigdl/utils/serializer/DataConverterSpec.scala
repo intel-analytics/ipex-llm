@@ -20,14 +20,15 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.VariableFormat.{Default, ONE_D}
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat.{NCHW, NHWC}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat, TensorModule}
+import com.intel.analytics.bigdl.nn.quantized.{LinearWeight, LinearWeightParams}
 import com.intel.analytics.bigdl.optim.{L1L2Regularizer, L1Regularizer, L2Regularizer, Regularizer}
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.tensor.{QuantizedTensor, Storage, Tensor}
 import org.scalatest.{FlatSpec, Matchers}
-import serialization.Bigdl.AttrValue
+import serialization.Bigdl.{AttrValue, BigDLTensor, DataType, TensorStorage}
 
 import scala.reflect.runtime.universe
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
-import serialization.Bigdl.DataType
+import serialization.Bigdl.AttrValue.ArrayValue
 
 import scala.collection.mutable
 import scala.util.Random
@@ -176,6 +177,11 @@ class DataConverterSpec extends FlatSpec with Matchers{
     map.clear()
     DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType),
       attriBulder, tensor, ModuleSerializer.tensorType)
+    val tensorBuilder = BigDLTensor.newBuilder(map.get(System.
+      identityHashCode(tensor)).get.asInstanceOf[BigDLTensor])
+    tensorBuilder.setStorage(map.get(System.
+      identityHashCode(tensor.storage.array())).get.asInstanceOf[TensorStorage])
+    attriBulder.setTensorValue(tensorBuilder.build)
     val attr = attriBulder.build
     map.clear()
     val retrievedValue = DataConverter.
@@ -209,12 +215,23 @@ class DataConverterSpec extends FlatSpec with Matchers{
     DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType),
       attriBulder1, tensor1, ModuleSerializer.tensorType)
 
+    val tensorBuilder1 = BigDLTensor.newBuilder(map.get(System.
+      identityHashCode(tensor1)).get.asInstanceOf[BigDLTensor])
+    tensorBuilder1.setStorage(map.get(System.
+      identityHashCode(tensor1.storage.array())).get.asInstanceOf[TensorStorage])
+    attriBulder1.setTensorValue(tensorBuilder1.build)
     val attr1 = attriBulder1.build
+
 
     val attriBulder2 = AttrValue.newBuilder
 
     DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType),
       attriBulder2, tensor2, ModuleSerializer.tensorType)
+    val tensorBuilder2 = BigDLTensor.newBuilder(map.get(System.
+      identityHashCode(tensor2)).get.asInstanceOf[BigDLTensor])
+    tensorBuilder2.setStorage(map.get(System.
+      identityHashCode(tensor2.storage.array())).get.asInstanceOf[TensorStorage])
+    attriBulder2.setTensorValue(tensorBuilder2.build)
     val attr2 = attriBulder2.build
 
     map.clear()
@@ -376,24 +393,18 @@ class DataConverterSpec extends FlatSpec with Matchers{
   }
 
 
-  "Module Conversion " should " work properly" in {
+  "Module Conversion" should "work properly" in {
     val linear = Linear(5, 5).setName("linear")
-    val attriBulder = AttrValue.newBuilder
     val moduleData = ModuleData(linear, Seq(), Seq())
     map.clear()
-    DataConverter.setAttributeValue(SerializeContext(moduleData, map, ProtoStorageType),
-      attriBulder, linear, ModuleSerializer.abstractModuleType)
-    val attr = attriBulder.build
+    ModulePersister.saveToFile("/tmp/linear.bigdl", linear, true)
     map.clear()
-    val retrievedValue = DataConverter.
-      getAttributeValue(DeserializeContext(attr.getBigDLModuleValue
-        , map, ProtoStorageType), attr)
-    attr.getDataType should be (DataType.MODULE)
+    val retrievedValue = ModuleLoader.loadFromFile("/tmp/linear.bigdl")
     retrievedValue should be (linear)
   }
 
 
-  "Nullable Module Conversion " should " work properly" in {
+  "Nullable Module Conversion" should "work properly" in {
     val linear : TensorModule[Float] = null
     val attriBulder = AttrValue.newBuilder
     map.clear()
@@ -544,7 +555,7 @@ class DataConverterSpec extends FlatSpec with Matchers{
     retrievedValue should be (arry)
   }
 
-  "Array of Tensor conversion " should " work properly" in {
+  "Array of Tensor conversion" should "work properly" in {
     val tensor1 = Tensor(2, 3).apply1(_ => Random.nextFloat())
     val tensor2 = Tensor(2, 3).apply1(_ => Random.nextFloat())
     val tensorArray = Array(tensor1, tensor2)
@@ -552,6 +563,19 @@ class DataConverterSpec extends FlatSpec with Matchers{
     map.clear()
     DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType),
       attriBulder, tensorArray, universe.typeOf[Array[Tensor[Float]]])
+
+    attriBulder.clearArrayValue()
+    val arrayValue = ArrayValue.newBuilder
+    arrayValue.setDatatype(DataType.TENSOR)
+    tensorArray.foreach(t => {
+      val tensorBuilder = BigDLTensor.newBuilder(map.get(System.
+        identityHashCode(t)).get.asInstanceOf[BigDLTensor])
+      tensorBuilder.setStorage(map.get(System.
+        identityHashCode(t.storage.array())).get.asInstanceOf[TensorStorage])
+      arrayValue.addTensor(tensorBuilder.build)
+    })
+    arrayValue.setSize(2)
+    attriBulder.setArrayValue(arrayValue.build)
     val attr = attriBulder.build
     map.clear()
     val retrievedValue = DataConverter.
@@ -604,22 +628,6 @@ class DataConverterSpec extends FlatSpec with Matchers{
     retrievedValue should be (arry)
   }
 
-  "Array of Modules conversion" should " work properly" in {
-    val arry = new Array[AbstractModule[Activity, Activity, Float]](2)
-    arry(0) = Linear[Float](2, 3).setName("l1")
-    arry(1) = Linear[Float](2, 3).setName("l2")
-    val attriBulder = AttrValue.newBuilder
-    map.clear()
-    DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType),
-      attriBulder, arry,
-      universe.typeOf[Array[AbstractModule[Activity, Activity, Float]]])
-    val attr = attriBulder.build
-    map.clear()
-    val retrievedValue = DataConverter.
-      getAttributeValue(DeserializeContext(null, map, ProtoStorageType), attr)
-    retrievedValue should be (arry)
-  }
-
   "Null Array of Modules conversion" should " work properly" in {
     val arry : Array[AbstractModule[Activity, Activity, Float]] = null
     val attriBulder = AttrValue.newBuilder
@@ -634,7 +642,7 @@ class DataConverterSpec extends FlatSpec with Matchers{
     retrievedValue should be (arry)
   }
 
-  "NameList conversion " should " work properly" in {
+  "NameList conversion" should "work properly" in {
 
     val map1 = new mutable.HashMap[String, mutable.Map[String, Any]]
 
@@ -646,9 +654,7 @@ class DataConverterSpec extends FlatSpec with Matchers{
     attrsMap("double") = 4.0
     attrsMap("string") = "str"
     attrsMap("bool") = true
-    attrsMap("tensor") = Tensor(2, 2).apply1(_ => Random.nextFloat())
     attrsMap("dataformat") = NCHW
-    attrsMap("module") = Linear(3, 4).setName("linear")
 
     map1("test") = attrsMap
 
@@ -666,5 +672,71 @@ class DataConverterSpec extends FlatSpec with Matchers{
 
   }
 
+  "QuantizedTensor" should "work properly" in {
+    val bytes = new Array[Byte](5)
+    val min = Array[Float]('H')
+    val max = Array[Float]('O')
+    val sum = Array[Float]("HELLO".sum)
+    "HELLO".zipWithIndex.foreach(x => bytes(x._2) = x._1.toByte)
+    bytes.foreach(x => println(x.toChar))
+    val tensor = QuantizedTensor[Float](bytes, max, min, sum, Array(1, 5), LinearWeightParams(1, 5))
 
+    map.clear()
+    val attriBulder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType), attriBulder,
+      tensor, ModuleSerializer.tensorType)
+
+    val tensorBuilder = BigDLTensor.newBuilder(map.get(System.
+      identityHashCode(tensor)).get.asInstanceOf[BigDLTensor])
+    tensorBuilder.setStorage(map.get(System.
+      identityHashCode(tensor.getStorage)).get.asInstanceOf[TensorStorage])
+    attriBulder.setTensorValue(tensorBuilder.build)
+
+    val attr = attriBulder.build
+    map.clear()
+    val retrievedValue = DataConverter.getAttributeValue(DeserializeContext(null, map,
+      ProtoStorageType), attr)
+    attr.getDataType should be (DataType.TENSOR)
+
+    retrievedValue.hashCode() should be (tensor.hashCode())
+  }
+
+  "Array of QuantizedTensor" should "work properly" in {
+    val bytes = new Array[Byte](5)
+    val min = Array[Float]('H')
+    val max = Array[Float]('O')
+    val sum = Array[Float]("HELLO".sum)
+    "HELLO".zipWithIndex.foreach(x => bytes(x._2) = x._1.toByte)
+    bytes.foreach(x => println(x.toChar))
+    val tensor1 = QuantizedTensor[Float](bytes, max, min, sum, Array(1, 5),
+      LinearWeightParams(1, 5))
+    val tensor2 = QuantizedTensor[Float](bytes, max, min, sum, Array(1, 5),
+      LinearWeightParams(1, 5))
+    val array = new Array[QuantizedTensor[Float]](2)
+    array(0) = tensor1
+    array(1) = tensor2
+
+    map.clear()
+    val attriBulder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType), attriBulder,
+      array, universe.typeOf[Array[QuantizedTensor[Float]]])
+
+    attriBulder.clearArrayValue()
+    val arrayValue = ArrayValue.newBuilder
+    arrayValue.setDatatype(DataType.TENSOR)
+    array.foreach(t => {
+      val tensorBuilder = BigDLTensor.newBuilder(map.get(System.
+        identityHashCode(t)).get.asInstanceOf[BigDLTensor])
+      tensorBuilder.setStorage(map.get(System.
+        identityHashCode(t.getStorage)).get.asInstanceOf[TensorStorage])
+      arrayValue.addTensor(tensorBuilder.build)
+    })
+    arrayValue.setSize(2)
+    attriBulder.setArrayValue(arrayValue.build)
+
+    val attr = attriBulder.build
+    map.clear()
+    val retrievedValue = DataConverter.getAttributeValue(DeserializeContext(null, map,
+      ProtoStorageType), attr)
+  }
 }

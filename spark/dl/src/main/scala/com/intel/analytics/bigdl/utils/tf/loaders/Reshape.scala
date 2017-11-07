@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.Reshape
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.tf.TFUtils
+import com.intel.analytics.bigdl.utils.tf.{Context, TFUtils}
 import org.tensorflow.framework.NodeDef
 
 import scala.reflect.ClassTag
@@ -30,12 +30,17 @@ class Reshape extends TensorflowOpsLoader {
 
   import Utils._
 
-  override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder)
-    (implicit ev: TensorNumeric[T]): Module[T] = {
+  override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder,
+    context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
     Adapter[T](Array(2), tensorArrays => {
       val sizes = tensorArrays(0).asInstanceOf[Tensor[Int]]
 
-      val batchMode = sizes.valueAt(1) == -1
+      val batchMode = if (sizes.nDimension() >= 1) {
+        sizes.valueAt(1) == -1
+      } else {
+        false
+      }
+
       val arraySize = new Array[Int](if (batchMode) sizes.nElement() - 1 else sizes.nElement())
       var i = if (batchMode) 2 else 1
       var k = 0

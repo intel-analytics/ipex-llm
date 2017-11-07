@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.utils.{RandomGenerator, T, Table}
 
 import scala.reflect.ClassTag
 import RandomGenerator._
+import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
 import com.intel.analytics.bigdl.optim.Regularizer
 
@@ -239,7 +240,7 @@ class Linear[T: ClassTag](
   }
 }
 
-object Linear {
+object Linear extends quantized.Quantizable {
   def apply[@specialized(Float, Double) T: ClassTag](
       inputSize: Int,
       outputSize: Int,
@@ -253,5 +254,13 @@ object Linear {
   )(implicit ev: TensorNumeric[T]) : Linear[T] = {
     new Linear[T](inputSize, outputSize,
       withBias, wRegularizer, bRegularizer, initWeight, initBias, initGradWeight, initGradBias)
+  }
+
+  override def quantize[T: ClassTag](module: Module[T])(
+    implicit ev: TensorNumeric[T]): Module[T] = {
+    val linear = module.asInstanceOf[Linear[T]]
+    val quantizedLinear = quantized.Linear[T](linear.weight.size(2), linear.weight.size(1),
+      initWeight = linear.weight, initBias = linear.bias)
+    quantizedLinear.setName(linear.getName())
   }
 }

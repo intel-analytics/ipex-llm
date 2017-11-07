@@ -16,7 +16,7 @@
 package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.{NumericWildCard, TensorNumeric}
 import com.intel.analytics.bigdl.tensor._
 
 import scala.reflect.ClassTag
@@ -25,26 +25,11 @@ class Floor[T: ClassTag]()
   (implicit ev: TensorNumeric[T]) extends Operation[Tensor[_], Tensor[_], T] {
 
   override def updateOutput(input: Tensor[_]): Tensor[_] = {
-    input.getType() match {
-      case FloatType =>
-        if (output.getType() != FloatType) {
-          output = Activity.allocate[Tensor[Float], Float]()
-        }
-        output.resizeAs(input)
-        output.asInstanceOf[Tensor[Float]].applyFun[Float](
-          input.asInstanceOf[Tensor[Float]],
-          scala.math.floor(_).asInstanceOf[Float])
-      case DoubleType =>
-        if (output.getType() != DoubleType) {
-          output = Activity.allocate[Tensor[Double], Double]()
-        }
-        output.resizeAs(input)
-        output.asInstanceOf[Tensor[Double]].applyFun[Double](
-          input.asInstanceOf[Tensor[Double]],
-          scala.math.floor)
-      case _ => throw new RuntimeException("Unsupported tensor type")
+    if (output.getType() != input.getType()) {
+      output = input.emptyInstance()
     }
-
+    output.resizeAs(input)
+    output.asInstanceOf[Tensor[NumericWildCard]].floor(input.asInstanceOf[Tensor[NumericWildCard]])
     output
   }
 }

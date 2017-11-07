@@ -154,9 +154,9 @@ class SpatialDivisiveNormalization[T: ClassTag](
     }
 
     // normalize std dev
-    adjustedstds = divider.updateOutput(T(localstds, coef))
+    adjustedstds = divider.updateOutput(T(localstds, coef)).asInstanceOf[Tensor[T]]
     thresholdedstds = thresholder.updateOutput(adjustedstds)
-    output = normalizer.updateOutput(T(input, thresholdedstds))
+    output = normalizer.updateOutput(T(input, thresholdedstds)).asInstanceOf[Tensor[T]]
 
     output
   }

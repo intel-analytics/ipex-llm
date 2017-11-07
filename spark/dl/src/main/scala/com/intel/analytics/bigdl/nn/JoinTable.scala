@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.nn
 import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor._
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.{NumericWildcard, TensorNumeric}
 import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric.NumericByteString
 import com.intel.analytics.bigdl.utils.{Engine, Table}
 
@@ -91,12 +91,13 @@ class JoinTable[T: ClassTag] (
     var offset = 1
     i = 0
     while (i < input.length) {
-      val currentOutput = input(i + 1).asInstanceOf[Tensor[_]]
+      val currentOutput = input(i + 1).asInstanceOf[Tensor[NumericWildcard]]
       val _offset = offset
       results(i) = Engine.model.invoke( () => {
         val target = output.narrow(dimension, _offset, currentOutput.size(dimension))
+          .asInstanceOf[Tensor[NumericWildcard]]
         if (target.isContiguous() || dimension > 2) {
-          target.forceCopy(currentOutput)
+          target.copy(currentOutput)
         } else {
           var f = 1
           while (f <= target.size(1)) {
@@ -104,7 +105,7 @@ class JoinTable[T: ClassTag] (
             val outputFrame = currentOutput.select(1, f)
             require(curFrame.isContiguous())
             require(outputFrame.isContiguous())
-            curFrame.forceCopy(outputFrame)
+            curFrame.copy(outputFrame)
             f += 1
           }
         }
@@ -127,19 +128,21 @@ class JoinTable[T: ClassTag] (
       val _i = i
       results(i) = Engine.model.invoke( () => {
         val narrowedTensor = gradOutput.narrow(dimension, _offset, currentOutput.size(dimension))
+          .asInstanceOf[Tensor[NumericWildcard]]
         val inputTensor = input[Tensor[_]](_i + 1)
         if (!gradInput.contains(_i + 1)) gradInput(_i + 1) =
           inputTensor.emptyInstance().resize(inputTensor.size())
         if(narrowedTensor.isContiguous() || dimension > 2) {
-          gradInput[Tensor[_]](_i + 1).forceCopy(narrowedTensor)
+          gradInput[Tensor[NumericWildcard]](_i + 1).copy(narrowedTensor)
         } else {
           var b = 1
           while(b <= narrowedTensor.size(1)) {
             val curFrame = gradInput[Tensor[_]](_i + 1).select(1, b)
+              .asInstanceOf[Tensor[NumericWildcard]]
             val narrowFrame = narrowedTensor.select(1, b)
             require(curFrame.isContiguous())
             require(narrowFrame.isContiguous())
-            curFrame.forceCopy(narrowFrame)
+            curFrame.copy(narrowFrame)
             b += 1
           }
         }

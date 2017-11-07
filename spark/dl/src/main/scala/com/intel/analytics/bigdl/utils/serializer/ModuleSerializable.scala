@@ -44,6 +44,7 @@ trait ModuleSerializable extends Loadable with Savable{
 
   private val bigDLVersion = com.intel.analytics.bigdl.BIGDL_VERSION
 
+
   protected var _copyWeightAndBias = true
 
   protected val lock = new Object
@@ -105,7 +106,6 @@ trait ModuleSerializable extends Loadable with Savable{
    */
   protected def doLoadModule[T: ClassTag](context: DeserializeContext)
     (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
-
     val evidence = scala.reflect.classTag[T]
     val model = context.bigdlModule
     val modelAttributes = model.getAttrMap
@@ -120,20 +120,20 @@ trait ModuleSerializable extends Loadable with Savable{
         map.foreach(param => {
           val name = param.name.decodedName.toString
           val ptype = param.typeSignature
-          if (ptype <:< universe.typeOf[ClassTag[_]] ||
+          if (ptype <:< universe.typeOf[ClassTag[_]]||
             ptype.typeSymbol == universe.typeOf[ClassTag[_]].typeSymbol) {
             args(i) = evidence
-          } else if (ptype.toString ==
-            tensorNumericType.toString) {
+          } else if (ptype <:< universe.typeOf[TensorNumeric[_]]
+            || ptype.typeSymbol == universe.typeOf[TensorNumeric[_]].typeSymbol) {
             args(i) = ev
           } else {
-            require(modelAttributes.containsKey(name), s"$name value cannot be found $ptype" +
-              s"${ptype.typeSymbol}")
+            require(modelAttributes.containsKey(name), s"$name value cannot be found")
             val attribute = modelAttributes.get(name)
             val value = DataConverter.getAttributeValue(context, attribute)
             args(i) = value
           }
           i += 1
+
         })
       })
     }
@@ -180,11 +180,11 @@ trait ModuleSerializable extends Loadable with Savable{
         var ptype = param.typeSignature
         val attrBuilder = AttrValue.newBuilder
         // For some modules, fields are declared inside but passed to Super directly
-        var field: Field = null
+        var field : Field = null
         try {
           field = cls.getDeclaredField(paramName)
         } catch {
-          case e: NoSuchFieldException =>
+          case e : NoSuchFieldException =>
             field = cls.getSuperclass.getDeclaredField(paramName)
         }
         field.setAccessible(true)
@@ -193,6 +193,7 @@ trait ModuleSerializable extends Loadable with Savable{
         bigDLModelBuilder.putAttr(paramName, attrBuilder.build)
       })
     }
+
   }
 
   protected def createBigDLModule[T: ClassTag](context: DeserializeContext,
@@ -230,10 +231,11 @@ trait ModuleSerializable extends Loadable with Savable{
     modelBuilder.setNamePostfix(module.module.getNamePostfix)
     modelBuilder.setTrain(module.module.isTraining())
     modelBuilder.setId(System.identityHashCode(module.module))
+
     if(copyWeightAndBias) {
       copyFromBigDL(context, modelBuilder)
     }
-    SerializeResult(modelBuilder.build, context.storages)
+    SerializeResult(modelBuilder, context.storages)
   }
 
   /**
@@ -345,7 +347,7 @@ case class DeserializeContext(bigdlModule : BigDLModule,
                               storages: mutable.HashMap[Int, Any],
                               storageType: StorageType)
 
-case class SerializeResult(bigDLModule: BigDLModule, storages: mutable.HashMap[Int, Any])
+case class SerializeResult(bigDLModule: BigDLModule.Builder, storages: mutable.HashMap[Int, Any])
 
 case class ModuleData[T: ClassTag](module : AbstractModule[Activity, Activity, T],
                                     pre : Seq[String], next : Seq[String])

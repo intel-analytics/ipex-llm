@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.nn.abstractnn
 
+import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
@@ -74,6 +75,9 @@ object Activity {
       } else if (classTag[String] == classTag[T]) {
         import com.intel.analytics.bigdl.numeric.NumericString
         Tensor[String]()
+      } else if (classTag[ByteString] == classTag[T]) {
+        import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric.NumericByteString
+        Tensor[ByteString]()
       } else {
         throw new IllegalArgumentException("Type T activity is not supported")
       }
