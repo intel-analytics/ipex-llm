@@ -18,11 +18,8 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl._
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.numeric.NumericFloat
-<<<<<<< HEAD
 import com.intel.analytics.bigdl.tensor.Tensor
-=======
 import com.intel.analytics.bigdl.utils.{T, Table}
->>>>>>> upstream/master
 
 class AbstractModuleSpec extends FlatSpec with Matchers {
   "Get name" should "find the module if it exists" in {
