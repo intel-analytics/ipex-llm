@@ -243,7 +243,8 @@ class AbstractModuleSpec extends FlatSpec with Matchers {
 
     val res2 = deepCopy.forward(input)
 
-    res1 should be (res2)
+    res1 should be(res2)
+  }
 
   "freeze and unfreeze" should "work properly" in {
     def inceptionLayerV1Seq(inputSize: Int, config: Table) : Module[Float] = {

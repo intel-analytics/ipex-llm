@@ -104,7 +104,7 @@ class ModelBroadcast[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Seria
       Array()
     }
   }
-  
+
   private def initGradWeightBias(
         broadcastWeightBias: Array[Tensor[T]],
         localModel: Module[T]): Unit = {

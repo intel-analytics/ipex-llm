@@ -434,9 +434,10 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     val storages = new mutable.HashMap[Int, Any]()
     val context = SerializeContext(moduleData, storages, ProtoStorageType)
     val serializedModule = ModuleSerializer.serialize[T](context, false)
+      .bigDLModule.build
 
     storages.clear()
-    val copy = ModuleSerializer.load[T](DeserializeContext(serializedModule.bigDLModule,
+    val copy = ModuleSerializer.load[T](DeserializeContext(serializedModule,
       storages, ProtoStorageType), false).module
       .asInstanceOf[AbstractModule[A, B, T]]
     setWeightAndBias(copy, deepCopy)
