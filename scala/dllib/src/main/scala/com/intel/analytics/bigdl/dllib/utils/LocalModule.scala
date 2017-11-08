@@ -53,7 +53,7 @@ object LocalModule {
 
   def apply[T: ClassTag](model: Module[T])
                         (implicit ev: TensorNumeric[T]): LocalModule[T] = {
-    val weightsBias = getAndClearWeightBias(model.parameters())
+    val weightsBias = getAndClearWeightBias(model.cloneModule().parameters())
     new LocalModule[T](model, weightsBias)
   }
 }
