@@ -184,21 +184,62 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
 
   def testSample(sample: Sample): Sample = {
-    val jsample = toSample(sample)
+    val jsample = toJSample(sample)
     toPySample(jsample)
   }
 
-  def toSample(record: Sample): JSample[T] = {
+  def toJSample(record: Sample): JSample[T] = {
     require(record.bigdlType == this.typeName,
       s"record.bigdlType: ${record.bigdlType} == this.typeName: ${this.typeName}")
     JSample[T](record.features.asScala.toArray.map(toTensor(_)), toTensor(record.label))
   }
 
-  private def batching(rdd: RDD[Sample], batchSize: Int)
-  : DistributedDataSet[MiniBatch[T]] = {
-    val recordRDD = rdd.map(toSample(_))
-    (DataSet.rdd(recordRDD) -> SampleToMiniBatch[T](batchSize))
-      .asInstanceOf[DistributedDataSet[MiniBatch[T]]]
+  def toJSample(psamples: RDD[Sample]): RDD[JSample[T]] = {
+    psamples.map(toJSample(_))
+  }
+
+  // The first dimension is batch for both X and y
+  private def toSampleArray(Xs: List[Tensor[T]], y: Tensor[T] = null): Array[JSample[T]] = {
+    require(!Xs.isEmpty, "Xs should not be empty")
+    val totalNum = Xs(0).size()(0)
+    var i = 1
+    val samples = new Array[JSample[T]](totalNum)
+
+    if (y != null) {
+      require(Xs(0).size()(0) == y.size()(0),
+        s"The batch dim should be equal, but we got: ${Xs(0).size()(0)} vs ${y.size()(0)}")
+      while (i <= totalNum) {
+        samples(i-1) = JSample(Xs.map{X => X.select(1, i)}.toArray, y.select(1, i))
+        i += 1
+      }
+    } else {
+      val dummyTensor = Tensor[T](1).fill(ev.fromType(1))
+      while (i <= totalNum) {
+        samples(i-1) = JSample(Xs.map{X => X.select(1, i)}.toArray, dummyTensor)
+        i += 1
+      }
+    }
+
+    samples
+  }
+
+
+  def batching(dataset: DataSet[JSample[T]], batchSize: Int)
+  : DataSet[MiniBatch[T]] = {
+    dataset -> SampleToMiniBatch[T](batchSize)
+  }
+
+  private def enrichOptimizer[T](optimizer: Optimizer[T, MiniBatch[T]],
+                                 endTrigger: Trigger,
+                                 optimMethod: OptimMethod[T]): Optimizer[T, MiniBatch[T]] = {
+    optimizer.setEndWhen(endTrigger)
+
+    optimizer.setOptimMethod(optimMethod)
+
+    // TODO: remove this
+    optimizer.disableCheckSingleton()
+
+    optimizer
   }
 
   def createSequential(): Sequential[T] = {
@@ -1510,11 +1551,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def modelEvaluate(model: AbstractModule[Activity, Activity, T],
-    valRDD: JavaRDD[Sample],
-    batchSize: Int,
-    valMethods: JList[ValidationMethod[T]])
+                    valRDD: JavaRDD[Sample],
+                    batchSize: Int,
+                    valMethods: JList[ValidationMethod[T]])
   : JList[EvaluatedResult] = {
-    val resultArray = model.evaluate(valRDD.rdd.map(toSample(_)),
+    val resultArray = model.evaluate(valRDD.rdd.map(toJSample(_)),
       valMethods.asScala.toArray, Some(batchSize))
     val testResultArray = resultArray.map { result =>
       EvaluatedResult(result._1.result()._1, result._1.result()._2,
@@ -1581,9 +1622,25 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     model.saveTF(scalaInputs, path, order, format)
   }
 
+  def predictLocal(model: AbstractModule[Activity, Activity, T],
+                   features: JList[JTensor]): JList[JTensor] = {
+    val sampleArray = toSampleArray(features.asScala.toList.map{f => toTensor(f)})
+    val localModel = LocalModule(model)
+    val result = localModel.predict(sampleArray)
+    result.map{a => toJTensor(a.asInstanceOf[Tensor[T]])}.toList.asJava
+  }
+
+  def predictLocalClass(model: AbstractModule[Activity, Activity, T],
+                        features: JList[JTensor]): JList[Int] = {
+    val sampleArray = toSampleArray(features.asScala.toList.map{f => toTensor(f)})
+    val localModel = LocalModule(model)
+    val result = localModel.predictClass(sampleArray)
+    result.toList.asJava
+  }
+
   def modelPredictRDD(model: AbstractModule[Activity, Activity, T],
-    dataRdd: JavaRDD[Sample]): JavaRDD[JTensor] = {
-    val tensorRDD = model.predict(dataRdd.rdd.map(toSample(_)))
+                      dataRdd: JavaRDD[Sample]): JavaRDD[JTensor] = {
+    val tensorRDD = model.predict(dataRdd.rdd.map(toJSample(_)))
     val listRDD = tensorRDD.map { res =>
       val tensor = res.asInstanceOf[Tensor[T]]
       val cloneTensor = tensor.clone()
@@ -1599,8 +1656,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def modelPredictClass(model: AbstractModule[Activity, Activity, T],
-    dataRdd: JavaRDD[Sample]): JavaRDD[Int] = {
-    val tensorRDD = model.predictClass(dataRdd.rdd.map(toSample(_)))
+                      dataRdd: JavaRDD[Sample]): JavaRDD[Int] = {
+    val sampleRdd = toJSample(dataRdd)
+    val tensorRDD = model.predictClass(sampleRdd)
     new JavaRDD[Int](tensorRDD)
   }
 
@@ -1800,45 +1858,58 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def trainTF(
-    modelPath: String,
-    output: String,
-    samples: JavaRDD[Sample],
-    optMethod: OptimMethod[T],
-    criterion: Criterion[T],
-    batchSize: Int,
-    endWhen: Trigger): AbstractModule[Activity, Activity, T] = {
+               modelPath: String,
+               output: String,
+               samples: JavaRDD[Sample],
+               optMethod: OptimMethod[T],
+               criterion: Criterion[T],
+               batchSize: Int,
+               endWhen: Trigger): AbstractModule[Activity, Activity, T] = {
     val nodeList = parse(modelPath)
 
     val context = new Context[T]()
     val session = new BigDLSessionImpl[T](nodeList.asScala, context, ByteOrder.LITTLE_ENDIAN)
-    val dataset = batching(samples, batchSize)
-
+    val dataset = batching(DataSet.rdd(toJSample(samples)),
+      batchSize).asInstanceOf[DistributedDataSet[MiniBatch[T]]]
     val model = session.train(Seq(output), dataset,
       optMethod, criterion, endWhen)
     model
   }
 
-  def createOptimizer(model: AbstractModule[Activity, Activity, T],
-    trainingRdd: JavaRDD[Sample],
-    criterion: Criterion[T],
-    optimMethod: OptimMethod[T],
-    endTrigger: Trigger,
-    batchSize: Int): Optimizer[T, MiniBatch[T]] = {
+  def createLocalOptimizer(features: JList[JTensor],
+                           y: JTensor,
+                           model: AbstractModule[Activity, Activity, T],
+                           criterion: Criterion[T],
+                           optimMethod: OptimMethod[T],
+                           endTrigger: Trigger,
+                           batchSize: Int,
+                           localCores: Int): Optimizer[T, MiniBatch[T]] = {
+    val sampleArray = toSampleArray(features.asScala.toList.map{f => toTensor(f)}, toTensor(y))
+    val optimizer = new LocalOptimizer[T](
+      model,
+      batching(DataSet.array(sampleArray), batchSize)
+        .asInstanceOf[LocalDataSet[MiniBatch[T]]],
+      criterion
+    ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
+    Engine.setNodeAndCore(1, localCores)
+    enrichOptimizer(optimizer, endTrigger, optimMethod)
+  }
+
+  def createDistriOptimizer(model: AbstractModule[Activity, Activity, T],
+                            trainingRdd: JavaRDD[Sample],
+                            criterion: Criterion[T],
+                            optimMethod: OptimMethod[T],
+                            endTrigger: Trigger,
+                            batchSize: Int): Optimizer[T, MiniBatch[T]] = {
+    val sampleRDD = toJSample(trainingRdd)
+
     val optimizer = new DistriOptimizer(
       _model = model,
-      dataset = batching(trainingRdd, batchSize),
+      dataset = batching(DataSet.rdd(sampleRDD), batchSize)
+        .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
       criterion = criterion
     ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
-    // TODO: we should provide a more convenient way to create Table
-
-    optimizer.setEndWhen(endTrigger)
-
-    optimizer.setOptimMethod(optimMethod)
-
-    // TODO: remove this
-    optimizer.disableCheckSingleton()
-
-    optimizer
+    enrichOptimizer(optimizer, endTrigger, optimMethod)
   }
 
   def createL1L2Regularizer(l1: Double, l2: Double): L1L2Regularizer[T] = {
@@ -1854,11 +1925,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def setValidation(optimizer: Optimizer[T, MiniBatch[T]],
-    batchSize: Int,
-    trigger: Trigger,
-    valRdd: JavaRDD[Sample],
-    vMethods: JList[ValidationMethod[T]]): Unit = {
-    optimizer.setValidation(trigger, batching(valRdd, batchSize.toInt), vMethods.asScala.toArray)
+                    batchSize: Int,
+                    trigger: Trigger,
+                    valRdd: JavaRDD[Sample],
+                    vMethods: JList[ValidationMethod[T]]): Unit = {
+    val sampleRDD = toJSample(valRdd)
+    optimizer.setValidation(trigger, batching(DataSet.rdd(sampleRDD), batchSize.toInt),
+      vMethods.asScala.toArray)
   }
 
   def setCheckPoint(optimizer: Optimizer[T, MiniBatch[T]],
