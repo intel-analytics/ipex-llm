@@ -268,8 +268,6 @@ class Layer(JavaValue):
             raise Exception("Error when calling evaluate(): it takes no argument or exactly three arguments only")
 
     def _to_jtensors(self, x):
-        if not x:
-            raise Exception("Empty input")
         x = to_list(x)
         if isinstance(x[0], np.ndarray):
             return [JTensor.from_ndarray(i) for i in x]

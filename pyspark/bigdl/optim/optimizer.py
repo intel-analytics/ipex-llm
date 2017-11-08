@@ -552,7 +552,7 @@ class LocalOptimizer(JavaValue):
 
 
     :param model: the neural net model
-    :param Xs: the training features which is an ndarray or list of ndarray
+    :param X: the training features which is an ndarray or list of ndarray
     :param Y: the training label which is an ndarray
     :param criterion: the loss function
     :param optim_method: the algorithm to use for optimization,
@@ -562,7 +562,7 @@ class LocalOptimizer(JavaValue):
     :param cores: by default is the total physical cores.
     """
     def __init__(self,
-                 Xs,
+                 X,
                  y,
                  model,
                  criterion,
@@ -574,7 +574,7 @@ class LocalOptimizer(JavaValue):
         if cores is None:
             cores = multiprocessing.cpu_count()
         JavaValue.__init__(self, None, bigdl_type,
-                           [JTensor.from_ndarray(X) for X in to_list(Xs)],
+                           [JTensor.from_ndarray(X) for X in to_list(X)],
                            JTensor.from_ndarray(y),
                            model.value,
                            criterion,

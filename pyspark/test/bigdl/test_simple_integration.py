@@ -496,7 +496,7 @@ class TestSimple():
         assert_allclose(w[1], np.array([0.4]), rtol=1e-1)
 
         predict_result = trained_model.predict_local(X_)
-        assert_allclose(y_, predict_result, rtol=1e-1)
+        assert_allclose(y_, predict_result.reshape((data_len,)), rtol=1e-1)
 
     def test_local_predict_class(self):
         feature_num = 2
