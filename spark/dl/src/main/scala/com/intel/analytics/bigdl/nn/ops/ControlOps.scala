@@ -66,14 +66,14 @@ abstract class IdentityControl[T: ClassTag]()(implicit ev: TensorNumeric[T]) ext
  * User should use ControlNodes.whileLoop or ControlNodes.switch to use this operation
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
  */
-private[nn] class SwitchOps[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends ControlOps[T] {
+private[bigdl] class SwitchOps[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends ControlOps[T] {
   override def updateOutput(input: Activity): Activity = {
-    val condition = input.toTable[Tensor[Boolean]](1)
-    val data = input.toTable[Activity](2)
-    if (condition.valueAt(1)) {
-      this.output = T(data, null)
-    } else {
+    val condition = input.toTable[Tensor[Boolean]](2)
+    val data = input.toTable[Activity](1)
+    if (condition.value()) {
       this.output = T(null, data)
+    } else {
+      this.output = T(data, null)
     }
     this.output
   }
@@ -88,7 +88,7 @@ private[nn] class SwitchOps[T: ClassTag]()(implicit ev: TensorNumeric[T]) extend
  * @param switch which dependency node is avaliable
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
  */
-private[nn] class MergeOps[T: ClassTag](private var switch : Int = 1)(
+private[bigdl] class MergeOps[T: ClassTag](private var switch : Int = 1)(
   implicit ev: TensorNumeric[T]) extends ControlOps[T] {
 
   def setSwitch(s: Int) : this.type = {
@@ -110,21 +110,21 @@ private[nn] class MergeOps[T: ClassTag](private var switch : Int = 1)(
  * @param element element
  * @tparam T element type
  */
-sealed class SwitchControlNode[T] private[ops] (element: T) extends Node[T](element) {
+sealed class  SwitchControlNode[T] (element: T) extends Node[T](element) {
 
   /**
    * The output edge which will be run when condition scalar is true. You should not connect one
    * node with both type edges.
    * @return
    */
-  def trueEdge() : ((Node[T], Int)) = (this, 1)
+  def trueEdge() : ((Node[T], Int)) = (this, 2)
 
   /**
    * The output edge which will be run when condition scalar is false. You should not connect one
    * node with both type edges.
    * @return
    */
-  def falseEdge() : ((Node[T], Int)) = (this, 2)
+  def falseEdge() : ((Node[T], Int)) = (this, 1)
 
   /**
    * Return nodes triggered by current node
@@ -134,15 +134,15 @@ sealed class SwitchControlNode[T] private[ops] (element: T) extends Node[T](elem
     val bothNodes = this.nextNodesAndEdges.filter(_._2.fromIndex.isEmpty).map(_._1).distinct
     require(bothNodes.length == 0, "You should not connect to one node with both type of edges")
 
-    val trueNodes = this.nextNodesAndEdges.filter(_._2.fromIndex.get == 1).map(_._1).distinct
-    val falseNodes = this.nextNodesAndEdges.filter(_._2.fromIndex.get == 2).map(_._1).distinct
+    val trueNodes = this.nextNodesAndEdges.filter(_._2.fromIndex.get == 2).map(_._1).distinct
+    val falseNodes = this.nextNodesAndEdges.filter(_._2.fromIndex.get == 1).map(_._1).distinct
     trueNodes.foreach( n =>
       require(!falseNodes.contains(n),
         "You should not connect to one node with both type of edges")
     )
 
-    val swtich = element.asInstanceOf[SwitchOps[T]]
-    if (swtich.output.toTable(1) == null) {
+    val switch = element.asInstanceOf[SwitchOps[T]]
+    if (switch.output.toTable(1) != null) {
       falseNodes
     } else {
       trueNodes

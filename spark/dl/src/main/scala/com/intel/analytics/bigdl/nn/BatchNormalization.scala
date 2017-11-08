@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.utils.{Engine, T, Table}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData, ModuleSerializable, ModuleSerializer}
+import com.intel.analytics.bigdl.utils.serializer._
 import serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.concurrent.Future
@@ -747,54 +747,54 @@ object BatchNormalization extends ModuleSerializable {
     new BatchNormalization[T](nOutput = affine.getOrElse(1), affine = affine.isDefined)
   }
 
-  override def doLoadModule[T: ClassTag](model : BigDLModule)
+  override def doLoadModule[T: ClassTag](context: DeserializeContext)
     (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
-    val attrMap = model.getAttrMap
-    val batchNorm = super.doLoadModule(model).asInstanceOf[BatchNormalization[T]]
+    val attrMap = context.bigdlModule.getAttrMap
+    val batchNorm = super.doLoadModule(context).asInstanceOf[BatchNormalization[T]]
 
     batchNorm.runningMean = DataConverter.
-      getAttributeValue(attrMap.get("runningMean")).
+      getAttributeValue(context, attrMap.get("runningMean")).
       asInstanceOf[Tensor[T]]
 
     batchNorm.runningVar = DataConverter.
-      getAttributeValue(attrMap.get("runningVar")).
+      getAttributeValue(context, attrMap.get("runningVar")).
       asInstanceOf[Tensor[T]]
 
     batchNorm.saveMean = DataConverter.
-      getAttributeValue(attrMap.get("saveMean")).
+      getAttributeValue(context, attrMap.get("saveMean")).
       asInstanceOf[Tensor[T]]
 
     batchNorm.saveStd = DataConverter.
-      getAttributeValue(attrMap.get("saveStd")).
+      getAttributeValue(context, attrMap.get("saveStd")).
       asInstanceOf[Tensor[T]]
 
     batchNorm
   }
-  override def doSerializeModule[T: ClassTag](module : ModuleData[T],
+  override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
                                               batchNormBuilder : BigDLModule.Builder)
                                              (implicit ev: TensorNumeric[T]) : Unit = {
 
-    super.doSerializeModule(module, batchNormBuilder)
+    super.doSerializeModule(context, batchNormBuilder)
 
-    val batchNorm = module.module.asInstanceOf[BatchNormalization[T]]
+    val batchNorm = context.moduleData.module.asInstanceOf[BatchNormalization[T]]
 
     val runningMeanBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(runningMeanBuilder,
+    DataConverter.setAttributeValue(context, runningMeanBuilder,
       batchNorm.runningMean, ModuleSerializer.tensorType)
     batchNormBuilder.putAttr("runningMean", runningMeanBuilder.build)
 
     val runningVarBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(runningVarBuilder,
+    DataConverter.setAttributeValue(context, runningVarBuilder,
       batchNorm.runningVar, ModuleSerializer.tensorType)
     batchNormBuilder.putAttr("runningVar", runningVarBuilder.build)
 
     val saveMeanBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(saveMeanBuilder,
+    DataConverter.setAttributeValue(context, saveMeanBuilder,
       batchNorm.saveMean, ModuleSerializer.tensorType)
     batchNormBuilder.putAttr("saveMean", saveMeanBuilder.build)
 
     val saveStdBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(saveStdBuilder,
+    DataConverter.setAttributeValue(context, saveStdBuilder,
       batchNorm.saveStd, ModuleSerializer.tensorType)
     batchNormBuilder.putAttr("saveStd", saveStdBuilder.build)
 

@@ -4,6 +4,7 @@ pandas
 scikit-learn
 matplotlib
 seaborn
+IPython==5.0
 jupyter
 tensorboard
 wordcloud

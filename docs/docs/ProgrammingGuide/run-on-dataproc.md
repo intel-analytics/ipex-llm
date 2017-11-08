@@ -2,7 +2,7 @@
 
 ## **The Google Cloud Dataproc Initialization Script**
 
-To make it easier to try out BigDL examples on Spark using Google Cloud Dataproc, a public initialization script is provided (the source script is also avaliable in this repo path `scripts/launch-dataproc.sh`). The script will automatically retrieve BigDL package (version 0.2.0), run it on Dataproc's Spark Yarn cluster, then configure and setup the Jupyter Notebook and Tensorboard for the interactive usage. Two examples, including LeNet and Text Classifier, will be provided in the Notebook.
+To make it easier to try out BigDL examples on Spark using Google Cloud Dataproc, a public initialization script is provided (the source script is also available in this repo path `scripts/launch-dataproc.sh`). The script will automatically retrieve BigDL package (version 0.2.0), run it on Dataproc's Spark Yarn cluster, then configure and setup the Jupyter Notebook and Tensorboard for the interactive usage. Two examples, including LeNet and Text Classifier, will be provided in the Notebook.
 
 ---
 ## **Before You Start**

@@ -43,8 +43,15 @@ class Sigmoid[@specialized(Float, Double) T: ClassTag](
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    gradInput.resizeAs(input).copy(gradOutput)
-    gradInput.cmul(output).cmul(buffer.add(ev.fromType(-1))).cmul(output)
+    updateGradInputInternal(output, gradOutput)
+  }
+
+  private[bigdl] def updateGradInputInternal(output: Tensor[T],
+                                             gradOutput: Tensor[T]): Tensor[T] = {
+    gradInput.resizeAs(gradOutput).copy(gradOutput)
+    buffer.resizeAs(gradOutput)
+    buffer.fill(ev.one).sub(output)
+    gradInput.cmul(output).cmul(buffer)
     gradInput
   }
 

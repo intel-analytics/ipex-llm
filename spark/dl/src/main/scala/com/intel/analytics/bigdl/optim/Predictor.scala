@@ -51,7 +51,7 @@ class Predictor[T: ClassTag] private[optim](
 
   def predict(dataSet: RDD[Sample[T]], batchSize: Int = -1,
               shareBuffer: Boolean = false): RDD[Activity] = {
-    val modelBroad = ModelBroadcast[T].broadcast(dataSet.sparkContext, model.evaluate())
+    val modelBroad = ModelBroadcast[T]().broadcast(dataSet.sparkContext, model.evaluate())
     val partitionNum = dataSet.partitions.length
     val totalBatch = if (batchSize > 0) {
       require(batchSize % partitionNum == 0, s"Predictor.predict: total batch size $batchSize " +

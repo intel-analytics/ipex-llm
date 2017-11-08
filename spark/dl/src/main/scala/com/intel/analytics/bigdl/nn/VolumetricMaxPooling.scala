@@ -19,7 +19,8 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData, ModuleSerializable, ModuleSerializer}
+import com.intel.analytics.bigdl.utils.serializer._
+import org.codehaus.jackson.map.DeserializationContext
 import serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.reflect._
@@ -557,31 +558,33 @@ object VolumetricMaxPooling extends ModuleSerializable {
   (kT: Int, kW: Int, kH: Int)(implicit ev: TensorNumeric[T])
   : VolumetricMaxPooling[T] = new VolumetricMaxPooling[T](kT, kW, kH)
 
-  override def doLoadModule[T: ClassTag](model : BigDLModule)
+  override def doLoadModule[T: ClassTag](context : DeserializeContext)
     (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
 
-    val maxPooling = super.doLoadModule(model).asInstanceOf[VolumetricMaxPooling[T]]
-    val attrMap = model.getAttrMap
-    maxPooling.ceilMode = DataConverter.getAttributeValue(attrMap.get("ceilMode")).
-      asInstanceOf[Boolean]
-    maxPooling.indices = DataConverter.getAttributeValue(attrMap.get("indices")).
-      asInstanceOf[Tensor[Float]]
+    val maxPooling = super.doLoadModule(context).asInstanceOf[VolumetricMaxPooling[T]]
+    val attrMap = context.bigdlModule.getAttrMap
+    maxPooling.ceilMode = DataConverter.getAttributeValue(context,
+      attrMap.get("ceilMode")).asInstanceOf[Boolean]
+    maxPooling.indices = DataConverter.getAttributeValue(context,
+      attrMap.get("indices")).asInstanceOf[Tensor[Float]]
     maxPooling
   }
 
-  override def doSerializeModule[T: ClassTag](module : ModuleData[T],
+  override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
                                             volumetricMaxBuilder : BigDLModule.Builder)
                                            (implicit ev: TensorNumeric[T]) : Unit = {
-    val maxPooling = module.module.asInstanceOf[VolumetricMaxPooling[T]]
+    val maxPooling = context.moduleData.module.asInstanceOf[VolumetricMaxPooling[T]]
 
-    super.doSerializeModule(module, volumetricMaxBuilder)
+    super.doSerializeModule(context, volumetricMaxBuilder)
 
     val ceilModeBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(ceilModeBuilder, maxPooling.ceilMode, universe.typeOf[Boolean])
+    DataConverter.setAttributeValue(context, ceilModeBuilder,
+      maxPooling.ceilMode, universe.typeOf[Boolean])
     volumetricMaxBuilder.putAttr("ceilMode", ceilModeBuilder.build)
 
     val indicesBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(indicesBuilder, maxPooling.indices, ModuleSerializer.tensorType)
+    DataConverter.setAttributeValue(context,
+      indicesBuilder, maxPooling.indices, ModuleSerializer.tensorType)
     volumetricMaxBuilder.putAttr("indices", indicesBuilder.build)
 
   }

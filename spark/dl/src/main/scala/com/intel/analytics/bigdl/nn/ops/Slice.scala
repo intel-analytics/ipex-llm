@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.{NumericWildcard, TensorNumeric}
 
 import scala.reflect.ClassTag
 
@@ -51,8 +51,12 @@ class Slice[T: ClassTag](
       outputNarrow = outputNarrow.narrow(i + 1, begin(i) + 1, realSize)
       i += 1
     }
+    if (output.getType() != input.getType()) {
+      output = input.emptyInstance()
+    }
     output.resizeAs(outputNarrow)
-    output.forceCopy(outputNarrow)
+    output.asInstanceOf[Tensor[NumericWildcard]]
+      .copy(outputNarrow.asInstanceOf[Tensor[NumericWildcard]])
 
     output
   }

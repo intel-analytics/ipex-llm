@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData, ModuleSerializable, ModuleSerializer}
+import com.intel.analytics.bigdl.utils.serializer._
 import serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.reflect.ClassTag
@@ -111,30 +111,30 @@ object SpatialContrastiveNormalization extends ModuleSerializable {
     new SpatialContrastiveNormalization[T](nInputPlane, kernel, threshold, thresval)
   }
 
-  override def doLoadModule[T: ClassTag](model : BigDLModule)
+  override def doLoadModule[T: ClassTag](context : DeserializeContext)
     (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
 
-    val spatialContrastiveNormaModule = super.doLoadModule(model).
+    val spatialContrastiveNormaModule = super.doLoadModule(context).
       asInstanceOf[SpatialContrastiveNormalization[T]]
 
-    val attrMap = model.getAttrMap
+    val attrMap = context.bigdlModule.getAttrMap
 
     spatialContrastiveNormaModule.normalizer = DataConverter.
-      getAttributeValue(attrMap.get("normalizer")).
+      getAttributeValue(context, attrMap.get("normalizer")).
       asInstanceOf[Sequential[T]]
 
     spatialContrastiveNormaModule
   }
 
-  override def doSerializeModule[T: ClassTag](module : ModuleData[T],
+  override def doSerializeModule[T: ClassTag](context : SerializeContext[T],
                                             contrastiveNormBuilder : BigDLModule.Builder)
                                            (implicit ev: TensorNumeric[T]) : Unit = {
-    super.doSerializeModule(module, contrastiveNormBuilder)
-    val spatialContrastiveNormaModule = module.module.
+    super.doSerializeModule(context, contrastiveNormBuilder)
+    val spatialContrastiveNormaModule = context.moduleData.module.
       asInstanceOf[SpatialContrastiveNormalization[T]]
 
     val normalizerBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(normalizerBuilder,
+    DataConverter.setAttributeValue(context, normalizerBuilder,
       spatialContrastiveNormaModule.normalizer,
       ModuleSerializer.tensorModuleType)
     contrastiveNormBuilder.putAttr("normalizer", normalizerBuilder.build)

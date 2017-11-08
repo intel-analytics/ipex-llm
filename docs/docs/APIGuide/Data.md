@@ -43,7 +43,7 @@ b: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 3.0	2.0	1.0
 [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x3]
 ```
-`+` `-` `*` `/` can be applied to tensor. When the second parameter is a constant value, `+` `-` `*` `*` is element-wise operation. But when the second parameter is a tensor, `+` `-` `/` is element-wise operation to the tensor too, but `*` is a matrix multipy on two 2D tensors. 
+`+` `-` `*` `/` can be applied to tensor. When the second parameter is a constant value, `+` `-` `*` `*` is element-wise operation. But when the second parameter is a tensor, `+` `-` `/` is element-wise operation to the tensor too, but `*` is a matrix multiply on two 2D tensors. 
 ```scala
 scala> a + 1
 res: com.intel.analytics.bigdl.tensor.Tensor[Float] =
@@ -76,6 +76,60 @@ res: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
 ```
 For more API, navigate to *API Guide/Full API docs* on side bar.
+
+---
+## **SparseTensor**
+To describe an SparseTensor, we need indices, values, and shape:  
+indices means the indices of non-zero elements; values means the values of the non-zero elements;
+shape means the dense shape of this SparseTensor.
+
+For example, an 2D 3x4 DenseTensor:
+```
+1, 0, 0, 4
+0, 2, 0, 0
+0, 0, 3, 0
+```
+It's sparse representation should be 
+```
+indices(0) = Array(0, 0, 1, 2)
+indices(1) = Array(0, 3, 1, 2)
+values     = Array(1, 4, 2, 3)
+shape      = Array(3, 4)
+```
+This 2D SparseTensor representation is similar to [zero-based coordinate matrix storage format](https://software.intel.com/en-us/mkl-developer-reference-fortran-sparse-blas-coordinate-matrix-storage-format).
+
+**Scala example:**
+```
+scala> import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.Tensor
+
+scala> import com.intel.analytics.bigdl.numeric.NumericFloat
+import com.intel.analytics.bigdl.numeric.NumericFloat
+
+scala> val indices = Array(Array(0, 0, 1, 2), Array(0, 3, 1, 2))
+indices: Array[Array[Int]] = Array(Array(0, 0, 1, 2), Array(0, 3, 1, 2))
+
+scala> val values = Array(1, 4, 2, 3)
+values: Array[Int] = Array(1, 4, 2, 3)
+
+scala> val shape = Array(3, 4)
+shape: Array[Int] = Array(3, 4)
+
+scala> val sparseTensor = Tensor.sparse(indices, values, shape)
+sparseTensor: com.intel.analytics.bigdl.tensor.Tensor[Int] =
+(0, 0) : 1
+(0, 3) : 4
+(1, 1) : 2
+(2, 2) : 3
+[com.intel.analytics.bigdl.tensor.SparseTensor of size 3x4]
+
+scala> val denseTensor = Tensor.dense(sparseTensor)
+denseTensor: com.intel.analytics.bigdl.tensor.Tensor[Int] =
+1	0	0	4
+0	2	0	0
+0	0	3	0
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 3x4]
+```
 
 ---
 ## **Table**
@@ -125,7 +179,7 @@ import numpy as np
 
 image = np.random.rand(3, 32, 32)
 label = np.array(1)
-Sample.from_ndarray(image, label)
+sample = Sample.from_ndarray(image, label)
 ```
 
 ---
@@ -237,7 +291,7 @@ Output is
 ## **DataSet**
 `DataSet` is a set of data which is used in the model optimization process. You can use `DataSet.array()` and `DataSet.rdd()` function to create a `Dataset`. The `DataSet` can be accessed in a random data sample sequence. In the training process, the data sequence is a looped endless sequence. While in the validation process, the data sequence is a limited length sequence. User can use the `data()` method to get the data sequence. 
 
-Notice: In most case, we recommand using a RDD[Sample] for `Optimizer`. Only when you want to write an application with some advanced optimization, using `DataSet` directly is recommanded.  
+Notice: In most case, we recommend using a RDD[Sample] for `Optimizer`. Only when you want to write an application with some advanced optimization, using `DataSet` directly is recommended.  
 
 **Scala example:**
 ```scala

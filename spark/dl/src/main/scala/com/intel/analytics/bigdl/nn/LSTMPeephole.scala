@@ -76,9 +76,12 @@ class LSTMPeephole[T : ClassTag] (
         .add(SelectTable(1))
         .add(NarrowTable(2, 2)))
 
-  override var preTopology: TensorModule[T] =
-    Linear(inputSize, hiddenSize * 4, wRegularizer = wRegularizer,
-        bRegularizer = bRegularizer)
+  override var preTopology: TensorModule[T] = if (p != 0) {
+    null
+  } else {
+    Linear(inputSize, 4 * hiddenSize,
+      wRegularizer = wRegularizer, bRegularizer = bRegularizer)
+  }
 
   override def hiddenSizeOfPreTopo: Int = hiddenSize * 4
 
@@ -89,12 +92,20 @@ class LSTMPeephole[T : ClassTag] (
     /**
      * f(input1 + U * input2)
      */
-
-    val inputAfterDrop = Dropout(p).inputs(input1)
-    val i2g = Narrow(dimension, offset, length).inputs(inputAfterDrop)
-    val drop = Dropout(p).inputs(input2)
-    val h2g = Linear(hiddenSize, hiddenSize,
-      withBias = false, wRegularizer = uRegularizer).inputs(drop)
+    var i2g: ModuleNode[T] = null
+    var h2g: ModuleNode[T] = null
+    if (p != 0) {
+      val input1Drop = Dropout(p).inputs(input1)
+      i2g = Linear(inputSize, hiddenSize, wRegularizer = wRegularizer,
+              bRegularizer = bRegularizer).inputs(input1Drop)
+      val input2Drop = Dropout(p).inputs(input2)
+      h2g = Linear(hiddenSize, hiddenSize, withBias = false,
+          wRegularizer = uRegularizer).inputs(input2Drop)
+    } else {
+      i2g = Narrow(dimension, offset, length).inputs(input1)
+      h2g = Linear(hiddenSize, hiddenSize,
+        withBias = false, wRegularizer = uRegularizer).inputs(input2)
+    }
     val cMul = CMul(Array(hiddenSize)).inputs(input3)
 
     val cadd = CAddTable().inputs(i2g, h2g, cMul)
@@ -133,14 +144,23 @@ class LSTMPeephole[T : ClassTag] (
     /**
      * f(input1 + W * input2)
      */
+    var i2h: ModuleNode[T] = null
+    var h2h: ModuleNode[T] = null
+    if (p != 0) {
+      val input1Drop = Dropout(p).inputs(input1)
+      i2h = Linear(inputSize, hiddenSize, wRegularizer = wRegularizer,
+          bRegularizer = bRegularizer).inputs(input1Drop)
 
-    val inputAfterDropout = Dropout(p).inputs(input1)
-    val i2h = Narrow(featDim, 1 + 2 * hiddenSize, hiddenSize).inputs(inputAfterDropout)
-
-    val drop = Dropout(p).inputs(input2)
-    val h2h = Linear(hiddenSize, hiddenSize, withBias = false,
-      wRegularizer = uRegularizer).inputs(drop)
+      val input2Drop = Dropout(p).inputs(input2)
+      h2h = Linear(hiddenSize, hiddenSize, withBias = false,
+          wRegularizer = uRegularizer).inputs(input2Drop)
+    } else {
+      i2h = Narrow(featDim, 1 + 2 * hiddenSize, hiddenSize).inputs(input1)
+      h2h = Linear(hiddenSize, hiddenSize, withBias = false,
+        wRegularizer = uRegularizer).inputs(input2)
+    }
     val cadd = CAddTable().inputs(i2h, h2h)
+
     val tanh = Tanh().inputs(cadd)
 
     this.hiddenLayer = tanh

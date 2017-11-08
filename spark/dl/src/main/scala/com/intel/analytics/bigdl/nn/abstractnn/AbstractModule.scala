@@ -22,14 +22,14 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.{Tensor, TensorDataType}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
-import com.intel.analytics.bigdl.nn.{Graph, InitializationMethod, Module, Zeros}
-import com.intel.analytics.bigdl.nn.{Module, Utils}
+import com.intel.analytics.bigdl.nn.{Module, _}
 import com.intel.analytics.bigdl.utils.TorchObject.TYPE_MODULE
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.spark.rdd.RDD
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch, Sample}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.nn.quantized.Quantization
 import com.intel.analytics.bigdl.utils.caffe.CaffePersister
 import com.intel.analytics.bigdl.utils.serializer.ModulePersister
 import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowSaver}
@@ -56,7 +56,12 @@ abstract class TensorModule[T: ClassTag]
 abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, T: ClassTag](
   implicit ev: TensorNumeric[T]) extends Serializable {
 
-  private val namePostfix = Integer.toHexString(java.util.UUID.randomUUID().hashCode())
+  private var namePostfix = Integer.toHexString(java.util.UUID.randomUUID().hashCode())
+
+  def getNamePostfix : String = namePostfix
+
+  def setNamePostfix(namePostfix : String) : Unit = this.namePostfix = namePostfix
+
   /**
    * The cached output. So we don't compute it again when need it
    */
@@ -155,6 +160,8 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    */
   private var name : String = null
 
+  def hasName: Boolean = name != null
+
   /**
    * Set the module name
    *
@@ -204,23 +211,59 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     backwardTime = 0
   }
 
+  private var scaleWCache: Double = scaleW
+  private var scaleBCache: Double = scaleB
+
   /**
-   * freeze the layer, its parameters(weight/bias, if exists)
-   * are not changed in training process
+   * freeze the module,
+   * i.e. their parameters(weight/bias, if exists) are not changed in training process
+   * if names is not empty,
+   * set an array of layers that match the given ```names``` to be "freezed",
+   *
+   * @param names an array of layer names
+   * @return current graph model
    */
-  def freeze(): this.type = {
-    setScaleW(0)
-    setScaleB(0)
+  def freeze(names: String*): this.type = {
+    if (names.isEmpty) {
+      // in case when freeze is called many times
+      if (scaleW != 0) {
+        scaleWCache = scaleW
+        scaleW = 0
+      }
+      if (scaleB != 0) {
+        scaleBCache = scaleB
+        scaleB = 0
+      }
+    } else {
+      names.foreach(name => {
+        this (name) match {
+          case Some(x) => x.freeze()
+          case _ => throw new Exception(s"cannot match module named $name")
+        }
+      })
+    }
     this
   }
 
   /**
-   * "unfreeze" layer, i.e. make the layer parameters(weight/bias, if exists)
+   * "unfreeze" module, i.e. make the module parameters(weight/bias, if exists)
    * to be trained(updated) in training process
+   * if names is not empty, unfreeze layers that match given names
+   *
+   * @param names array of module names to unFreeze
    */
-  def unFreeze(): this.type = {
-    setScaleW(1)
-    setScaleB(1)
+  def unFreeze(names: String*): this.type = {
+    if (names.isEmpty) {
+      scaleW = scaleWCache
+      scaleB = scaleBCache
+    } else {
+      names.foreach(name => {
+        this (name) match {
+          case Some(x) => x.unFreeze()
+          case _ => throw new Exception(s"cannot match module named $name")
+        }
+      })
+    }
     this
   }
 
@@ -660,6 +703,32 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
                vMethods: Array[ValidationMethod[T]]
               ): Array[(ValidationResult, ValidationMethod[T])] = {
     Validator(this, dataSet).test(vMethods)
+  }
+
+  def quantize(): Module[T] = {
+    Quantization.quantize(this)
+  }
+
+
+  /**
+   * Generate end nodes of current module with start nodes
+   * @param startNodes: current start nodes
+   * @return current end nodes
+   */
+  private[bigdl] def getEndNodes(startNodes: Array[ModuleNode[T]]): Array[ModuleNode[T]] = {
+    val endNodes = Array(this.inputs(startNodes: _*))
+    endNodes
+  }
+
+  /**
+   * Generate graph module with start nodes
+   * @param startNodes
+   * @return
+   */
+  def toGraph(startNodes: ModuleNode[T]*): Graph[T] = {
+    val starts = if (startNodes.isEmpty) Array(Input[T]()) else startNodes.toArray
+    val endNodes = this.getEndNodes(starts)
+    Graph(starts, endNodes)
   }
 }
 

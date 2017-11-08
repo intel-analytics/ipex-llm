@@ -29,6 +29,13 @@ class FillSpec extends FlatSpec with Matchers {
     layer.forward(T(shape, value)) should be(Tensor(T(T(0.1f, 0.1f, 0.1f), T(0.1f, 0.1f, 0.1f))))
   }
 
+  "Fill forward scalar" should "be correct" in {
+    val layer = Fill[Double]()
+    val shape = Tensor[Int]()
+    val value = Tensor[Float](Array(0.1f), Array[Int]())
+    layer.forward(T(shape, value)) should be(Tensor.scalar[Float](0.1f))
+  }
+
   "Fill backward" should "be correct" in {
     val layer = Fill()
     val shape = Tensor[Int](T(2, 3))

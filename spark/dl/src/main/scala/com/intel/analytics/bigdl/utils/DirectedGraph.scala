@@ -146,14 +146,22 @@ class DirectedGraph[T](val source : Node[T], val reverse : Boolean = false) exte
     bfs.foreach(node => {
       oldToNew.put(node, new Node[T](node.element))
     })
+    // Keep the order in the nextNodes array and prevNodes array of the current node.
+    // As we go through all node in bfs from source, the prevNodes order can be preserved.
+    // For each node, we iterate and add their nextNodes, the nextNodes order can also be preserved.
     bfs.foreach(node => {
       if (reverseEdge) {
-        node.prevNodesAndEdges.foreach(prevNodeAndEdge => {
-          oldToNew.get(node).add(oldToNew.get(prevNodeAndEdge._1), prevNodeAndEdge._2)
+        node.nextNodesAndEdges.foreach(nextNodeAndEdge => {
+          // Some next nodes may be not included in the graph
+          if (oldToNew.containsKey(nextNodeAndEdge._1)) {
+            oldToNew.get(nextNodeAndEdge._1).add(oldToNew.get(node), nextNodeAndEdge._2)
+          }
         })
       } else {
-        node.prevNodesAndEdges.foreach(prevNodeAndEdge => {
-          oldToNew.get(prevNodeAndEdge._1).add(oldToNew.get(node), prevNodeAndEdge._2)
+        node.nextNodesAndEdges.foreach(nextNodeAndEdge => {
+          if (oldToNew.containsKey(nextNodeAndEdge._1)) {
+            oldToNew.get(node).add(oldToNew.get(nextNodeAndEdge._1), nextNodeAndEdge._2)
+          }
         })
       }
     })
@@ -172,7 +180,7 @@ class DirectedGraph[T](val source : Node[T], val reverse : Boolean = false) exte
  * @tparam T element type
  */
 @SerialVersionUID(- 6021651923538325999L)
-class Node[T](val element: T) extends Serializable {
+class Node[T](var element: T) extends Serializable {
   /**
    * The nodes pointed by current node
    * @return
@@ -293,6 +301,11 @@ class Node[T](val element: T) extends Serializable {
       )
     )
     nexts.clear()
+    this
+  }
+
+  def setElement(e: T): this.type = {
+    element = e
     this
   }
 

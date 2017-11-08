@@ -27,6 +27,7 @@ import java.io.{File, FilenameFilter}
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
+import com.intel.analytics.bigdl.models.utils.ModelBroadcast
 import org.apache.commons.lang.exception.ExceptionUtils
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import org.apache.log4j.Logger
@@ -51,7 +52,6 @@ object DistriOptimizer {
    * @param modelGradients gradients of the cached models
    * @param localCriterions cached criterion
    * @param localStates cached state
-   * @param gradient tensor buffer
    * @tparam T Tensor element type
    */
   case class Cache[T](
@@ -60,7 +60,6 @@ object DistriOptimizer {
     modelGradients: Array[Tensor[T]],
     localCriterions: Array[Criterion[T]],
     localStates: Array[Table],
-    gradient: Tensor[T],
     var moduleTimeList: Array[Long] = null,
     localMethods: Array[Option[Array[ValidationMethod[T]]]],
     optimMethod: OptimMethod[T]
@@ -242,38 +241,37 @@ object DistriOptimizer {
           }
 
           if (finishedThreads.nonEmpty) {
+            val finishedGradients = finishedThreads.map(cached.modelGradients(_))
             time = System.nanoTime()
-            val gradLength = cached.modelGradients(0).nElement()
+            val gradLength = finishedGradients(0).nElement()
             val taskSize = gradLength / _subModelNumber
             val extraTask = gradLength % _subModelNumber
 
-            (0 until _subModelNumber).diff(finishedThreads).foreach(i =>
-              cached.modelGradients(i).zero()
-            )
-
-            // copy multi-model gradient to the buffer
+            // Aggregate multi-model's gradient to the first model's gradient
             val parallelNum = if (taskSize == 0) extraTask else _subModelNumber
             Engine.default.invokeAndWait((0 until parallelNum).map(tid => () => {
               val offset = tid * taskSize + math.min(tid, extraTask)
               val length = taskSize + (if (tid < extraTask) 1 else 0)
-              var i = 0
-              while (i < cached.modelGradients.length) {
-                if (i == 0) {
-                  cached.gradient.narrow(1, offset + 1, length)
-                    .copy(cached.modelGradients(i).narrow(1, offset + 1, length))
-                } else {
-                  cached.gradient.narrow(1, offset + 1, length)
-                    .add(cached.modelGradients(i).narrow(1, offset + 1, length))
-                }
+              var i = 1
+              while (i < finishedGradients.length) {
+                  finishedGradients(0).narrow(1, offset + 1, length)
+                    .add(finishedGradients(i).narrow(1, offset + 1, length))
                 i += 1
               }
             }))
             driverMetrics.add("aggregate gradient time", System.nanoTime() - time)
+            val putG = System.nanoTime()
+            // Put first finished model's gradient who aggregated
+            // all other models' gradient to AllReduceParameter
+            parameters.putGradients(finishedGradients(0))
+            driverMetrics.add("put gradient", System.nanoTime() - putG)
+          } else {
+            val putG = System.nanoTime()
+            // zero gradient in BlockManager when no thread finished.
+            parameters.putGradients(cached.modelGradients(0).zero())
+            driverMetrics.add("put gradient", System.nanoTime() - putG)
           }
 
-          val putG = System.nanoTime()
-          parameters.putGradients(cached.gradient)
-          driverMetrics.add("put gradient", System.nanoTime() - putG)
           tasks ++= Engine.default.invoke {
             (0 until _subModelNumber).map { i =>
               () => {
@@ -523,7 +521,15 @@ object DistriOptimizer {
     optimMethod: OptimMethod[T]
     )(implicit ev: TensorNumeric[T]) = {
     val sc = dataset.originRDD().sparkContext
-    val broadcast = sc.broadcast((model, criterion, state, validationMethods, optimMethod))
+    val broadcast = sc.broadcast((criterion, state, validationMethods, optimMethod))
+    // ensure model's parameter is compacted for getting a better performance when broadcasting
+    model.getParameters()
+    // As cloneModel is using Serialization to implement deep copy, and will throw OOMError
+    // when model's size is bigger than SerializationUtils' buffer size. So we can use
+    // ModelBroadcast to clone model here.
+    // Notes: All models returned by modelBroadcast.value() share the same weight&bias, while
+    // gradWeight&gradBias is unshared.
+    val modelBroadcast = ModelBroadcast[T]().broadcast(sc, model)
     val _subModelNumber = Engine.getEngineType match {
       case MklBlas => coresPerNode
       case _ => throw new IllegalArgumentException
@@ -538,7 +544,7 @@ object DistriOptimizer {
     val nExecutor = Engine.nodeNumber()
     val executorCores = Engine.coreNumber()
     val models = dataset.originRDD().mapPartitions(_ => {
-      val (broadcastModel, broadcastCriterion, broadcastState, broadcastMethod,
+      val (broadcastCriterion, broadcastState, broadcastMethod,
       broadcastOptim) = broadcast.value
       if (!Engine.checkSingleton()) {
         if (checkSingleton) {
@@ -554,7 +560,7 @@ object DistriOptimizer {
       }
       Engine.setNodeAndCore(nExecutor, executorCores)
       val cached = (0 until _subModelNumber).map { _ =>
-        val localModel = broadcastModel.cloneModule()
+        val localModel = modelBroadcast.value(true)
         val localCriterion = broadcastCriterion.cloneCriterion()
         val localState = broadcastState.clone()
         val localMethod =
@@ -563,14 +569,8 @@ object DistriOptimizer {
         (localModel, weights, grads, localCriterion, localState, localMethod)
       }.toArray
 
-      val weights = cached.head._2
-      cached.map(c =>
-        if (!c._2.eq(weights)) {
-          c._2.storage().set(weights.storage())
-        }
-      )
-
       logger.info("model thread pool size is " + Engine.model.getPoolSize)
+      val weights = cached.head._2
       parameters.init(weights)
 
       Iterator.single(Cache(
@@ -579,7 +579,6 @@ object DistriOptimizer {
         cached.map(_._3), // gradients
         cached.map(_._4), // criterions
         cached.map(_._5), // states
-        cached.head._2.clone(), // a tensor buffer
         new Array[Long](_subModelNumber * computeThresholdbatchSize),
         cached.map(_._6),
         broadcastOptim.clone()

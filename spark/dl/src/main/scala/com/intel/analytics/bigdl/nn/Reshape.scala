@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData, ModuleSerializable, ModuleSerializer}
+import com.intel.analytics.bigdl.utils.serializer._
 import serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.reflect.ClassTag
@@ -152,13 +152,13 @@ object Reshape extends ModuleSerializable {
     new Reshape[T](size, batchMode)
   }
 
-  override def doLoadModule[T: ClassTag](model : BigDLModule)
+  override def doLoadModule[T: ClassTag](context: DeserializeContext)
     (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
 
-    val attrMap = model.getAttrMap
-    val size = DataConverter.getAttributeValue(attrMap.get("size")).
+    val attrMap = context.bigdlModule.getAttrMap
+    val size = DataConverter.getAttributeValue(context, attrMap.get("size")).
       asInstanceOf[Array[Int]]
-    val batchModeV = DataConverter.getAttributeValue(attrMap.get("batchMode")).
+    val batchModeV = DataConverter.getAttributeValue(context, attrMap.get("batchMode")).
       asInstanceOf[Int]
     var batchMode : Option[Boolean] = None
     if (batchModeV == 1) {
@@ -169,14 +169,14 @@ object Reshape extends ModuleSerializable {
     Reshape(size, batchMode).asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 
-  override def doSerializeModule[T: ClassTag](module : ModuleData[T],
+  override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
                                            reshapeBuilder : BigDLModule.Builder)
                                            (implicit ev: TensorNumeric[T]) : Unit = {
 
-    val reshape = module.module.asInstanceOf[Reshape[T]]
+    val reshape = context.moduleData.module.asInstanceOf[Reshape[T]]
 
     val sizeBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(sizeBuilder, reshape.size,
+    DataConverter.setAttributeValue(context, sizeBuilder, reshape.size,
       universe.typeOf[Array[Int]])
     reshapeBuilder.putAttr("size", sizeBuilder.build)
 
@@ -185,7 +185,7 @@ object Reshape extends ModuleSerializable {
       batchMode = if (reshape.batchMode.get == false) 1 else 2
     }
     val batchModeBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(batchModeBuilder, batchMode,
+    DataConverter.setAttributeValue(context, batchModeBuilder, batchMode,
       universe.typeOf[Int])
     reshapeBuilder.putAttr("batchMode", batchModeBuilder.build)
   }

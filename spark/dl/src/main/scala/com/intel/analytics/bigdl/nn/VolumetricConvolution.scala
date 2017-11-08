@@ -192,7 +192,8 @@ class VolumetricConvolution[T: ClassTag](
         dW, kH, kW, inputDepth, dT, kT)
     } else {
       Utils.getOutSizeAndPadding(inputHeight, inputWidth, dH,
-        dW, kH, kW, padH, padW, ceilMode = false, inputDepth, dT, kT, padT)
+        dW, kH, kW, padH, padW, ceilMode = false, inputdepth = inputDepth,
+        dt = dT, kt = kT, padt = padT)
     }
     val padFront = sizes(0)
     val padBack = sizes(1)
@@ -307,7 +308,8 @@ class VolumetricConvolution[T: ClassTag](
         dW, kH, kW, inputDepth, dT, kT)
     } else {
       Utils.getOutSizeAndPadding(inputHeight, inputWidth, dH,
-        dW, kH, kW, padH, padW, ceilMode = false, inputDepth, dT, kT, padT)
+        dW, kH, kW, padH, padW, ceilMode = false, inputdepth = inputDepth,
+      dt = dT, kt = kT, padt = padT)
     }
     val padFront = sizes(0)
     val padBack = sizes(1)

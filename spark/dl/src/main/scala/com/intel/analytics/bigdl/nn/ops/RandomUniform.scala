@@ -22,35 +22,37 @@ import com.intel.analytics.bigdl.utils.RandomGenerator
 
 import scala.reflect.ClassTag
 
-class RandomUniform[T: ClassTag, DataType: ClassTag](
-  minVal: DataType,
-  maxVal: DataType,
-  seed: Int = 0
-)
-  (implicit ev: TensorNumeric[T], ev2: TensorNumeric[DataType])
-extends Operation[Tensor[DataType], Tensor[DataType], T] {
+private[bigdl] trait RandomNode
 
-  RandomGenerator.RNG.setSeed(seed)
+class RandomUniform[T: ClassTag, D: ClassTag](
+  minVal: D, maxVal: D, seed: Option[Int] = None
+)(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
+  extends Operation[Tensor[Int], Tensor[D], T] with RandomNode {
 
-  output = Activity.allocate[Tensor[DataType], DataType]()
-  override def updateOutput(input: Tensor[DataType]): Tensor[DataType] = {
+  if (seed.isDefined) {
+    RandomGenerator.RNG.setSeed(seed.get)
+  }
+
+  output = Activity.allocate[Tensor[D], D]()
+
+  override def updateOutput(input: Tensor[Int]): Tensor[D] = {
     require(input.nDimension() == 1, "the shape should be a one-dimensional tensor.")
 
-    val shape = input.asInstanceOf[Tensor[Int]].storage().toArray
+    val shape = input.storage().toArray
     output.resize(shape).rand(
-      minVal.asInstanceOf[Double],
-      maxVal.asInstanceOf[Double])
+      ev2.toType[Double](minVal),
+      ev2.toType[Double](maxVal))
 
     output
   }
 }
 
 object RandomUniform {
-  def apply[T: ClassTag, DataType: ClassTag](
-    minVal: DataType,
-    maxVal: DataType,
-    seed: Int = 0)
-    (implicit ev: TensorNumeric[T], ev2: TensorNumeric[DataType]):
+  def apply[T: ClassTag, D: ClassTag](
+    minVal: D,
+    maxVal: D,
+    seed: Option[Int] = None)
+    (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]):
   Operation[Activity, Activity, T]
   = ModuleToOperation[T](new RandomUniform(minVal, maxVal, seed))
 }

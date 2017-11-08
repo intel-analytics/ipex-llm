@@ -29,6 +29,7 @@ import scala.reflect.ClassTag
  * This layer is a particular case of a convolution, where the width of the convolution would be 1.
  * Input should be a 1D or 2D tensor filled with indices. Indices are corresponding to the position
  * in weight. For each index element of input, it outputs the selected index part of weight.
+ * Elements of input should be in range of (1, nIndex)
  * This layer is often used in word embedding.
  * @param nIndex Indices of input row
  * @param nOutput the last dimension size of output
@@ -168,12 +169,22 @@ class LookupTable[T: ClassTag]
       s"LookupTable: ${ErrorInfo.constrainInputAsVectorOrBatch}, input dim [${input.dim()}]"  )
     renorm(input)
     inputBuffer = input.contiguous()
-    if (inputBuffer.dim() == 1) {
-      output.index(1, inputBuffer, weight)
-    } else if (inputBuffer.dim() == 2) {
-      output.index(1, inputBuffer.view(inputBuffer.nElement()), weight)
-      output = output.view(inputBuffer.size(1), inputBuffer.size(2), weight.size(2))
+    try {
+      if (inputBuffer.dim() == 1) {
+        output.index(1, inputBuffer, weight)
+      } else if (inputBuffer.dim() == 2) {
+        output.index(1, inputBuffer.view(inputBuffer.nElement()), weight)
+        output = output.view(inputBuffer.size(1), inputBuffer.size(2), weight.size(2))
+      }
+    } catch {
+      case e: IllegalArgumentException =>
+        throw new IllegalArgumentException(
+          s"LookupTable updateOutput get exception:${e.getMessage}\n" +
+          s"please ensure elements of your input will not exceed ${nIndex}")
+      case e: Exception =>
+        throw e
     }
+
     output
   }
 
@@ -237,7 +248,13 @@ class LookupTable[T: ClassTag]
   }
 
   override def toString(): String = {
-    s"${getPrintName}($nIndex, $nOutput, $paddingValue, $maxNorm, $normType)"
+    val s = s"${getPrintName}" +
+      s"(nIndex=$nIndex,nOutput=$nOutput,paddingValue=$paddingValue,normType=$normType"
+    if (maxNorm == Double.MaxValue) {
+      s + ")"
+    } else {
+      s + s" ,maxNorm=$maxNorm)"
+    }
   }
 
   override def zeroGradParameters(): Unit = {

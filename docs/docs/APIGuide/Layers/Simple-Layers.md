@@ -983,3 +983,98 @@ Gives the gradInput,
 ```
 [array([[ 2.,  3.,  4.,  5.,  6.]], dtype=float32)]
 ```
+
+## GaussianSampler ##
+
+Takes {mean, log_variance} as input and samples from the Gaussian distribution
+
+**Scala:**
+```scala
+val sampler = GaussianSampler()
+```
+
+**Python:**
+```python
+sampler = GaussianSampler()
+```
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.nn.GaussianSampler
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.T
+
+val input1 = Tensor[Float](2, 3).range(1, 6, 1)
+val input2 = Tensor[Float](2, 3).range(1, 12, 2)
+val input = T(input1, input2)
+
+val gradOutput = Tensor[Float](2, 3).range(2, 13, 2)
+    
+val sampler = new GaussianSampler()
+val output = sampler.forward(input)
+println(output)
+
+val gradInput = sampler.backward(input, gradOutput)
+println(gradOutput)
+```
+Gives the output,
+```
+output: com.intel.analytics.bigdl.tensor.Tensor[Float] = 
+4.507061	9.247583	-14.053247	
+34.783264	-70.69336	-333.97656	
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x3]
+```
+Gives the gradInput,
+
+```
+gradInput: com.intel.analytics.bigdl.utils.Table = 
+ {
+	1: 2.0	4.0     6.0	
+	   8.0	10.0	12.0	
+	   [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
+    2: 3.5070612	14.495168	-51.159744	
+       123.13305	-378.4668	-2039.8594	
+       [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
+ }
+```
+
+**Python example:**
+```python
+from bigdl.nn.layer import *
+from bigdl.nn.criterion import *
+from bigdl.optim.optimizer import *
+from bigdl.util.common import *
+import numpy as np
+
+sampler = GaussianSampler()
+
+input1 = np.arange(1, 7, 1).astype("float32")
+input2 = np.arange(1, 12, 2).astype("float32")
+input2 = input1.reshape(2, 3)
+input2 = input2.reshape(2, 3)
+input = [input1, input2]
+
+gradOutput = np.arange(2, 13, 2).astype("float32")
+gradOutput = gradOutput.reshape(2, 3)
+
+output = sampler.forward(input)
+gradInput = sampler.backward(input, gradOutput)
+
+```
+Gives the output,
+```
+>>> print output
+[[ 1.73362803  2.99371576  0.44359136]
+ [ 0.04700017  2.85183263  3.04418468]]
+```
+
+Gives the gradInput,
+
+```
+>>> print gradInput
+[array([[  2.,   4.,   6.],
+       [  8.,  10.,  12.]], dtype=float32), array([[  0.73362803,   1.98743176,  -7.66922569],
+       [-15.81199932, -10.7408371 , -17.73489189]], dtype=float32)]
+```

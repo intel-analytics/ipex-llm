@@ -58,18 +58,6 @@ def get_mnist(sc, data_type="train", location="/tmp/mnist"):
 
 
 if __name__ == "__main__":
-
-    output_size = 4
-    input_size = 3
-    seq_len = 2
-    batch_size = 1
-
-    input = np.random.randn(batch_size, seq_len, input_size, 5, 5, 5)
-    rec = Recurrent()
-    model = Sequential().add(
-        rec.add(ConvLSTMPeephole3D(input_size, output_size, 4, 4, with_peephole=False)))
-    output = model.forward(input)
-
     parser = OptionParser()
     parser.add_option("-a", "--action", dest="action", default="train")
     parser.add_option("-b", "--batchSize", type=int, dest="batchSize", default="128")
@@ -77,6 +65,7 @@ if __name__ == "__main__":
     parser.add_option("-c", "--checkpointPath", dest="checkpointPath", default="/tmp/lenet5")
     parser.add_option("-t", "--endTriggerType", dest="endTriggerType", default="epoch")
     parser.add_option("-n", "--endTriggerNum", type=int, dest="endTriggerNum", default="20")
+    parser.add_option("-d", "--dataPath", dest="dataPath", default="/tmp/mnist")
 
     (options, args) = parser.parse_args(sys.argv)
 
@@ -92,11 +81,11 @@ if __name__ == "__main__":
             else:
                 return MaxIteration(options.endTriggerNum)
 
-        train_data = get_mnist(sc, "train")\
+        train_data = get_mnist(sc, "train", options.dataPath)\
             .map(lambda rec_tuple: (normalizer(rec_tuple[0], mnist.TRAIN_MEAN, mnist.TRAIN_STD),
                                rec_tuple[1]))\
             .map(lambda t: Sample.from_ndarray(t[0], t[1]))
-        test_data = get_mnist(sc, "test")\
+        test_data = get_mnist(sc, "test", options.dataPath)\
             .map(lambda rec_tuple: (normalizer(rec_tuple[0], mnist.TEST_MEAN, mnist.TEST_STD),
                                rec_tuple[1]))\
             .map(lambda t: Sample.from_ndarray(t[0], t[1]))
@@ -121,7 +110,7 @@ if __name__ == "__main__":
         test_data = get_mnist(sc, "test").map(
             normalizer(mnist.TEST_MEAN, mnist.TEST_STD))
         model = Model.load(options.modelPath)
-        results = model.test(test_data, options.batchSize, [Top1Accuracy()])
+        results = model.evaluate(test_data, options.batchSize, [Top1Accuracy()])
         for result in results:
             print(result)
     sc.stop()
