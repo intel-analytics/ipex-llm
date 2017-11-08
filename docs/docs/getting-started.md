@@ -106,4 +106,3 @@ There're several strategies that may be useful when tuning an optimization.
  * If overfit is seen, try use Regularization. Refer to [Regularizers](APIGuide/Regularizers.md). 
  * Try change the initialization methods. Refer to [Initailizers](APIGuide/Initializers.md).
  * Try Adam or Adagrad at the first place. If they can't achieve a good score, use SGD and find a proper learning rate schedule - it usually takes time, though. RMSProp is recommended for RNN models. Refer to [Optimization Algorithms](APIGuide/Optimizers/Optim-Methods.md) for a list of supported optimization methods. 
-

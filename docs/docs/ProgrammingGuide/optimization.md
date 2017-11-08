@@ -239,4 +239,3 @@ log4j.logger.com.intel.analytics.bigdl.optim=DEBUG
 
 
 
-
