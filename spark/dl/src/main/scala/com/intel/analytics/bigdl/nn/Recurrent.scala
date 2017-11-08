@@ -379,7 +379,6 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
 
   override def backward(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     val st = System.nanoTime
-//    currentGradOutput(hidDim) = gradHidden
     var i = times
 
     while (i >= 1) {
@@ -398,7 +397,6 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
         cells(i - 1).regluarized(false)
       }
       cells(i - 1).backward(_input, currentGradOutput)
-      currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
       i -= 1
     }
 

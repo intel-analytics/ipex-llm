@@ -4348,24 +4348,6 @@ class Seq2seq(Layer):
         super(Seq2seq, self).__init__(None, bigdl_type, encoder_recs, decoder_recs,
           pre_encoder, pre_decoder, shrink_encoder_hiddenstate, decoder_input_type)
 
-class RecurrentDecoder(Recurrent):
-    '''
-    RecurrentDecoder module is a container of rnn cells which used to make
-    a prediction of the next timestep based on the prediction we made from
-    the previous timestep. Input for RecurrentDecoder is dynamically composed
-    during training. input at t(i) is output at t(i-1), input at t(0) is
-    user input, and user input has to be batch x ???(depends on cell type)
-    without time information.
-
-    Different types of rnn cells can be added using add() function.
-
-    >>> recurrent_decoder = RecurrentDecoder(output_length = 5)
-    creating: createRecurrentDecoder
-    '''
-
-    def __init__(self, output_length, bigdl_type="float"):
-        super(Recurrent, self).__init__(None, bigdl_type, output_length)
-
 class MultiRNNCell(Layer):
     '''
     A cell that enables stack multiple simple rnn cells
