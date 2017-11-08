@@ -1138,6 +1138,15 @@ object TensorNumericMath {
       }
 
       override def round(a: Int): Int = a
+
+      override def vDiv(n: Int, a: Array[Int], aOffset: Int, b: Array[Int], bOffset: Int,
+        y: Array[Int], yOffset: Int): Unit = {
+        var i = 0
+        while(i < n) {
+          y(i + yOffset) = a(i + aOffset) / b(i + bOffset)
+          i += 1
+        }
+      }
     }
 
     implicit object NumericLong extends UndefinedTensorNumeric[Long]("Long") {
