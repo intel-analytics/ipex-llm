@@ -104,7 +104,7 @@ private[bigdl] class SpatialConvolution[T: ClassTag](
     val inputWidth = input.size(dimWidth)
     val inputHeight = input.size(dimHeight)
 
-    val (padTop, padBottom, padLeft, padRight, outputHeight, outputWidth) =
+    val sizes =
       if (padW == -1 && padH == -1) {
         nn.Utils.getSAMEOutSizeAndPadding(inputHeight, inputWidth, strideH, strideW, kernelH,
           kernelW)
@@ -113,6 +113,13 @@ private[bigdl] class SpatialConvolution[T: ClassTag](
           kernelH, kernelW, padH, padW, ceilMode = false, dilationWidth = dilationWidth,
           dilationHeight = dilationHeight)
       }
+
+    val padTop = sizes(0)
+    val padBottom = sizes(1)
+    val padLeft = sizes(2)
+    val padRight = sizes(3)
+    val outputHeight = sizes(4)
+    val outputWidth = sizes(5)
 
     val batchSize = if (input.dim() == 3) {
       output.resize(nn.Utils.getOutputShape(outputHeight, outputWidth, nOutputPlane,
