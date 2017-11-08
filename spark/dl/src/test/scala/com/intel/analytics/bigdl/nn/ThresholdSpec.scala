@@ -131,4 +131,12 @@ class ThresholdSpec extends FlatSpec {
     assert(output == input)
     assert(gradInput == gradOutput)
   }
+
+  "A Threshold Module with inPlace = true clearstate" should "not clear input" in {
+    val module = new Threshold[Double](1, 0.8, true)
+    val input = Tensor[Double](2, 2, 2)
+    module.forward(input)
+    module.clearState()
+    assert(input.nElement() == 8)
+  }
 }

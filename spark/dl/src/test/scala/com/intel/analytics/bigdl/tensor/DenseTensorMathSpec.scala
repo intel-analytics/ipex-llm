@@ -949,7 +949,7 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
 
   "addmv on 1 element vector" should "return right result 1" in {
     val mat = Tensor[Float](84, 1).fill(2.0f)
-    val vec = Tensor[Float](2).apply(2).fill(3.0f)
+    val vec = Tensor[Float](2).narrow(1, 2, 1).fill(3.0f)
 
     val r = Tensor[Float](84).fill(9.0f)
 
@@ -960,7 +960,7 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
 
   "addmv on 1 element vector" should "return right result 2" in {
     val mat = Tensor[Float](84, 2).narrow(2, 1, 1).fill(2.0f)
-    val vec = Tensor[Float](2).apply(1).fill(3.0f)
+    val vec = Tensor[Float](2).narrow(1, 1, 1).fill(3.0f)
 
     val r = Tensor[Float](84).fill(9.0f)
 
@@ -978,5 +978,21 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
     DenseTensorMath.addmv[Float](r, 0.5f, r, 2.0f, mat, vec)
 
     r should be (Tensor[Float](3).fill(16.5f))
+  }
+
+  "dot on 1D vector" should "return right result 70" in {
+    val x = Tensor[Float](Storage(Array[Float](1, 2, 3, 4)))
+    val y = Tensor[Float](Storage(Array[Float](5, 6, 7, 8)))
+    val s = x.dot(y)
+
+    s should be (70)
+  }
+
+  "dot on 2D vector" should "return right result 70" in {
+    val x = Tensor[Float](Storage(Array[Float](1, 2, 3, 4)), 1, Array(2, 2))
+    val y = Tensor[Float](Storage(Array[Float](5, 6, 7, 8)), 1, Array(2, 2))
+    val s = x.dot(y)
+
+    s should be (70)
   }
 }

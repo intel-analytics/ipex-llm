@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -63,19 +63,17 @@ class LSTM[T : ClassTag] (
   ) {
   var gates: Sequential[T] = _
   var cellLayer: Sequential[T] = _
-  override var cell: AbstractModule[Activity, Activity, T] = Sequential()
-    .add(FlattenTable())
-    .add(buildLSTM())
-    .add(ConcatTable()
-      .add(SelectTable(1))
-      .add(NarrowTable(2, 2)))
 
-  override def preTopology: AbstractModule[Activity, Activity, T] = if (p != 0) {
+  override var cell: AbstractModule[Activity, Activity, T] = buildModel()
+
+  override var preTopology: TensorModule[T] = if (p != 0) {
     null
   } else {
-    TimeDistributed[T](Linear(inputSize, 4 * hiddenSize,
-      wRegularizer = wRegularizer, bRegularizer = bRegularizer))
+    Linear(inputSize, 4 * hiddenSize,
+      wRegularizer = wRegularizer, bRegularizer = bRegularizer)
   }
+
+  override def hiddenSizeOfPreTopo: Int = 4 * hiddenSize
 
   def buildGates()(input1: ModuleNode[T], input2: ModuleNode[T])
   : (ModuleNode[T], ModuleNode[T], ModuleNode[T], ModuleNode[T]) = {
@@ -132,6 +130,15 @@ class LSTM[T : ClassTag] (
       Tanh().inputs(split2),
       Sigmoid().inputs(split3),
       Sigmoid().inputs(split4))
+  }
+
+  def buildModel(): Sequential[T] = {
+    Sequential()
+      .add(FlattenTable())
+      .add(buildLSTM())
+      .add(ConcatTable()
+        .add(SelectTable(1))
+        .add(NarrowTable(2, 2)))
   }
 
   def buildLSTM(): Graph[T] = {

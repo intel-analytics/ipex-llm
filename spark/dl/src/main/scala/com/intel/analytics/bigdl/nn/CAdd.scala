@@ -38,7 +38,7 @@ import scala.reflect.ClassTag
  * @tparam T numeric type
  */
 @SerialVersionUID(3917196591309935383L)
-class CAdd[@specialized(Float, Double) T: ClassTag](
+class CAdd[T: ClassTag](
   val size: Array[Int],
   var bRegularizer: Regularizer[T] = null)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {

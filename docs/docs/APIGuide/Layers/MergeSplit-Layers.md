@@ -562,7 +562,7 @@ batch using `nInputDims`.
 
 Parameters:
 * `dimension`  to be join in this dimension
-* `nInputDims` specify the number of dimensions that this module will receiveIf it is more than the dimension of input tensors, the first dimensionwould be considered as batch size
+* `nInputDims` specify the number of dimensions that this module will receiveIf it is more than the dimension of input tensors, the first dimension would be considered as batch size
 
 ```
 +----------+             +-----------+

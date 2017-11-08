@@ -15,6 +15,8 @@
  */
 package com.intel.analytics
 
+import java.util.Properties
+
 import com.intel.analytics.bigdl.dataset.AbstractDataSet
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 
@@ -37,4 +39,39 @@ package object bigdl {
   val numeric = com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
   type DataSet[D] = AbstractDataSet[D, _]
+
+  private object BigDLBuildInfo {
+
+      val version: String = {
+
+      val resourceStream = Thread.currentThread().getContextClassLoader.
+        getResourceAsStream("bigdl-version-info.properties")
+
+      try {
+        val unknownProp = "<unknown>"
+        val props = new Properties()
+        props.load(resourceStream)
+        props.getProperty("version", unknownProp)
+      } catch {
+        case npe: NullPointerException =>
+          throw new IllegalArgumentException
+          ("Error while locating file bigdl-version-info.properties")
+        case e: Exception =>
+          throw new IllegalArgumentException
+          ("Error loading properties from bigdl-version-info.propertiess")
+      } finally {
+        if (resourceStream != null) {
+          try {
+            resourceStream.close()
+          } catch {
+            case e: Exception =>
+              throw new IllegalArgumentException
+              ("Error closing bigdl build info resource stream", e)
+          }
+        }
+      }
+    }
+  }
+
+  val BIGDL_VERSION = BigDLBuildInfo.version
 }

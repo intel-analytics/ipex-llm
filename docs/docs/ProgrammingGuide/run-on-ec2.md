@@ -1,5 +1,11 @@
 ---
+## **AWS Marketplace AMI**
 
+The easiest way to get started with BigDL is the BigDL AMI in the AWS Marketplace. It includes Apache Spark, BigDL, Jupyter Notebooks, Python and more. Within minutes you can create a Jupyter Notebook, upload some data and begin experimenting with Deep Learning using BigDL.
+ 
+Please note that it is highly recommended to use EC2 instances with Xeon E5 v3 or v4 processors and at least 8 GB of RAM.
+
+---
 ## **The Public AMI**
 
 To make it easier to try out BigDL examples on Spark using EC2, a public AMI is provided. It will automatically retrieve the latest BigDL package, download the necessary input data, and then run the specified BigDL example (using Java 8 on a Spark cluster). The details of the public AMI are shown in the table below.
@@ -30,31 +36,38 @@ Before running the BigDL examples, you need to launch a Spark cluster on EC2 (yo
 
 
 You can run BigDL examples using the `run.example.sh` script in home directory of your BigDL Client instance (e.g. `/home/ubuntu/`) with the following parameters:
+
 * Mandatory parameters:
-  * `-m|--model` which model to train, including
-    * lenet: train the [LeNet](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/lenet) example
-    * vgg: train the [VGG](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/vgg) example
-    * inception-v1: train the [Inception v1](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/inception) example
-    * perf: test the training speed using the [Inception v1](https://github.com/intel-analytics/BigDL/blob/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/inception/Inception_v1.scala) model with dummy data
+  
+    * `-m|--model` which model to train, including
+    
+        * lenet: train the [LeNet](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/lenet) example
+    
+        * vgg: train the [VGG](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/vgg) example
 
-  * `-s|--spark-url` the master URL for the Spark cluster
+        * inception-v1: train the [Inception v1](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/inception) example
 
-  * `-n|--nodes` number of Spark slave nodes
+        * perf: test the training speed using the [Inception v1](https://github.com/intel-analytics/BigDL/blob/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/inception/Inception_v1.scala) model with dummy data
 
-  * `-o|--cores` number of cores used on each node
+    * `-s|--spark-url` the master URL for the Spark cluster
 
-  * `-r|--memory` memory used on each node, e.g. 200g
+    * `-n|--nodes` number of Spark slave nodes
 
-  * `-b|--batch-size` batch size when training the model; it is expected to be a multiple of "nodes * cores"
+    * `-o|--cores` number of cores used on each node
 
-  * `-f|--hdfs-data-dir` HDFS directory for the input images (for the "inception-v1" model training only)
+    * `-r|--memory` memory used on each node, e.g. 200g
+
+    * `-b|--batch-size` batch size when training the model; it is expected to be a multiple of "nodes * cores"
+
+    * `-f|--hdfs-data-dir` HDFS directory for the input images (for the "inception-v1" model training only)
 
 * Optional parameters:
-  * `-e|--max-epoch` the maximum number of epochs (i.e., going through all the input data once) used in the training; default to 90 if not specified
 
-  * `-p|--spark` by default the example will run with Spark 1.5 or 1.6; to use Spark 2.0, please specify "spark_2.0" here (it is highly recommended to use _**Java 8**_ when running BigDL for Spark 2.0, otherwise you may observe very poor performance)
+    * `-e|--max-epoch` the maximum number of epochs (i.e., going through all the input data once) used in the training; default to 90 if not specified
 
-  * `-l|--learning-rate` by default the the example will use an initial learning rate of "0.01"; you can specify a different value here
+    * `-p|--spark` by default the example will run with Spark 1.5 or 1.6; to use Spark 2.0, please specify "spark_2.0" here (it is highly recommended to use _**Java 8**_ when running BigDL for Spark 2.0, otherwise you may observe very poor performance)
+
+    * `-l|--learning-rate` by default the the example will use an initial learning rate of "0.01"; you can specify a different value here
 
 After the training, you can check the log files and generated models in the home directory (e.g., `/home/ubuntu/`).  
 

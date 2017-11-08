@@ -48,7 +48,9 @@ class L1HingeEmbeddingCriterion[@specialized(Float, Double) T: ClassTag](val mar
 
   override def updateOutput(input: Table, target: Tensor[T]): T = {
     require(target.dim() == 1 && target.nElement() == 1,
-      "L1HingeEmbeddingCriterion.updateOutput: target should be vector with one element")
+      "L1HingeEmbeddingCriterion.updateOutput: " +
+        "target should be vector with one element," +
+        s" target shape [${target.dim()},${target.nElement()}]")
     val y = target.valueAt(1)
     val input1 = input[Tensor[T]](1)
     val input2 = input[Tensor[T]](2)
@@ -62,7 +64,9 @@ class L1HingeEmbeddingCriterion[@specialized(Float, Double) T: ClassTag](val mar
 
   override def updateGradInput(input: Table, target: Tensor[T]): Table = {
     require(target.dim() == 1 && target.nElement() == 1,
-      "L1HingeEmbeddingCriterion.updateGradInput: target should be vector with one element")
+      s"L1HingeEmbeddingCriterion.updateOutput:" +
+        " target should be vector with one element," +
+        s" target shape [${target.dim()},${target.nElement()}]")
     val y = target.valueAt(1)
     if (!gradInput.contains(1)) gradInput.insert(1, Tensor[T])
     if (!gradInput.contains(2)) gradInput.insert(2, Tensor[T])

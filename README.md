@@ -1,3 +1,9 @@
+<div align="center">
+  <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/img/bigdl-logo-bw.jpg"><br>
+</div>
+
+--------
+
 # BigDL: Distributed Deep Learning on Apache Spark
 
 ## What is BigDL?

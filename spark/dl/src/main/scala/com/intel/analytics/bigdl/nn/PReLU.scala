@@ -136,7 +136,9 @@ class PReLU[T: ClassTag](
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     require(input.isContiguous(), "input must be contiguous")
     require(gradOutput.isContiguous(), "gradOuput must be contiguous")
-    require(input.nElement() == gradOutput.nElement())
+    require(input.nElement() == gradOutput.nElement(),
+      "input and gradoutput size should be equal" +
+      s"input ${input.nElement()}, gradOutput ${gradOutput.nElement()}")
     gradInput.resizeAs(input)
 
     if (nOutputPlane == 0) {

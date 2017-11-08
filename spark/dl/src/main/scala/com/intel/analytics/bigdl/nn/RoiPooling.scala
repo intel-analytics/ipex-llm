@@ -47,12 +47,16 @@ class RoiPooling[T: ClassTag](val pooledW: Int, val pooledH: Int, val spatialSca
   gradInput.insert(gradInputTensor)
 
   override def updateOutput(input: Table): Tensor[T] = {
-    require(input.length() == 2, "there must have two tensors in the table")
+    require(input.length() == 2,
+      "there must have two tensors in the table," +
+      s" number of tensors ${input.length()}")
 
     val data = input[Tensor[T]](1) // Input data to ROIPooling
     val rois = input[Tensor[T]](2) // Input label to ROIPooling
 
-    require(rois.size().length > 1 && rois.size(2) == 5, "roi input shape should be (R, 5)")
+    require(rois.size().length > 1 && rois.size(2) == 5,
+      "roi input shape should be (R, 5), " +
+        s"input shape [${rois.size().length},${rois.size(2)}]")
 
     output.resize(rois.size(1), data.size(2), pooledH, pooledW)
       .fill(ev.fromType[Double](Double.MinValue))

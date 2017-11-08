@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -66,15 +66,16 @@ class GRU[T : ClassTag] (
   var i2g: ModuleNode[T] = _
   var h2g: ModuleNode[T] = _
   val featDim = 2
-  override var cell: AbstractModule[Activity, Activity, T] = buildGRU()
 
-  override def preTopology: AbstractModule[Activity, Activity, T] =
-    if (p != 0) {
-      null
-    } else {
-      TimeDistributed[T](Linear(inputSize, 3 * outputSize,
-        wRegularizer = wRegularizer, bRegularizer = bRegularizer))
-    }
+  override var cell: AbstractModule[Activity, Activity, T] = buildModel()
+
+  override var preTopology: TensorModule[T] =
+  if (p != 0) { null } else {
+    Linear(inputSize, 3 * outputSize,
+      wRegularizer = wRegularizer, bRegularizer = bRegularizer)
+  }
+
+  override def hiddenSizeOfPreTopo: Int = 3 * outputSize
 
   def buildGates()(input1: ModuleNode[T], input2: ModuleNode[T])
   : (ModuleNode[T], ModuleNode[T]) = {
@@ -111,7 +112,7 @@ class GRU[T : ClassTag] (
     (sigmoid1, sigmoid2)
   }
 
-  def buildGRU(): Graph[T] = {
+  def buildModel(): Graph[T] = {
     val x = Input()
     val h = Input()
     val (r, z) = buildGates()(x, h) // x(t), h(t - 1), r(t), z(t)

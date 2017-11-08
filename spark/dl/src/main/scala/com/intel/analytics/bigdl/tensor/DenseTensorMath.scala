@@ -45,34 +45,57 @@ object DenseTensorMath {
     self
   }
 
-  def cmul[@specialized(Float, Double) T](self: DenseTensor[T], x: Tensor[T], y: Tensor[T])
+  def cmul[@specialized T](self: DenseTensor[T], x: Tensor[T], y: Tensor[T])
     (implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(self.nElement() == y.nElement() && self.nElement() == x.nElement(),
-      "element number doesn't match")
-    if (self.isContiguous() && x.isContiguous() && y.isContiguous() && MKL.isMKLLoaded) {
-
-      ev.vMul(self.nElement(), x.storage().array(), x.storageOffset() - 1,
-        y.storage().array(), y.storageOffset() - 1, self.storage().array(), self.storageOffset()
-          - 1)
+    if (x.nElement() != y.nElement() && DenseTensor.canFastBroadcast(x, y)) {
+      require(self.nElement() == x.nElement(), "the self tensor nElement is not same as x" +
+        s"self(${self.nElement()}) x(${x.nElement()})")
+      // recursive cmul
+      var i = 0
+      while(i < x.size(1)) {
+        cmul(self.select(1, i + 1).asInstanceOf[DenseTensor[T]], x.select(1, i + 1), y)
+        i += 1
+      }
+    } else if (x.nElement() != y.nElement() && DenseTensor.canFastBroadcast(y, x)) {
+      require(self.nElement() == y.nElement(), "the self tensor nElement is not same as y" +
+        s"self(${self.nElement()}) y(${y.nElement()})")
+      // recursive cmul
+      var i = 0
+      while(i < y.size(1)) {
+        cmul(self.select(1, i + 1).asInstanceOf[DenseTensor[T]], x, y.select(1, i + 1))
+        i += 1
+      }
+    } else if (x.nElement() != y.nElement()) {
+      self.resizeAs(x).copy(x)
+      self.cmul(self.expandTensor(y))
     } else {
-      val func6 = new TensorFunc6[T] {
-        override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int,
-                          data3: Array[T], offset3: Int): Unit = {
-          data1(offset1) = ev.times(data2(offset2), data3(offset3))
-        }
-      }
-      val func4 = new TensorFunc4[T] {
-        override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit = {
-          data1(offset1) = ev.times(data1(offset1), data2(offset2))
-        }
-      }
-      // For special case, we can use apply2 to instead of apply3
-      if (self == y) {
-        Apply.apply2(self, x, func4)
-      } else if (self == x) {
-        Apply.apply2(self, y, func4)
+      require(self.nElement() == y.nElement(), s"element number doesn't match " +
+        s"self(${self.nElement()}) y(${y.nElement()}) x(${x.nElement()})")
+      if (self.isContiguous() && x.isContiguous() && y.isContiguous() && MKL.isMKLLoaded) {
+
+        ev.vMul(self.nElement(), x.storage().array(), x.storageOffset() - 1,
+          y.storage().array(), y.storageOffset() - 1, self.storage().array(), self.storageOffset()
+            - 1)
       } else {
-        Apply.apply3[T](self, x, y, func6)
+        val func6 = new TensorFunc6[T] {
+          override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int,
+            data3: Array[T], offset3: Int): Unit = {
+            data1(offset1) = ev.times(data2(offset2), data3(offset3))
+          }
+        }
+        val func4 = new TensorFunc4[T] {
+          override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit = {
+            data1(offset1) = ev.times(data1(offset1), data2(offset2))
+          }
+        }
+        // For special case, we can use apply2 to instead of apply3
+        if (self == y) {
+          Apply.apply2(self, x, func4)
+        } else if (self == x) {
+          Apply.apply2(self, y, func4)
+        } else {
+          Apply.apply3[T](self, x, y, func6)
+        }
       }
     }
     self
@@ -358,6 +381,23 @@ object DenseTensorMath {
     self
   }
 
+  def tanh[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], x: Tensor[T])
+                                                   (implicit ev: TensorNumeric[T]): Tensor[T] = {
+    require(self.nElement() == x.nElement())
+    if (MKL.isMKLLoaded && self.isContiguous() && x.isContiguous()) {
+      ev.vTanh(self.nElement(), x.storage().array(), x.storageOffset() - 1,
+        self.storage().array(), self.storageOffset() - 1)
+    } else {
+      val func = new TensorFunc4[T] {
+        override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit = {
+          data1(offset1) = ev.tanh(data2(offset2))
+        }
+      }
+      DenseTensorApply.apply2[T](self, x, func)
+    }
+    self
+  }
+
   def log1p[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], x: Tensor[T])
     (implicit ev: TensorNumeric[T]): Tensor[T] = {
     require(self.nElement() == x.nElement())
@@ -377,6 +417,18 @@ object DenseTensorMath {
     self
   }
 
+  def prodAll[@specialized(Float, Double) T](self: DenseTensor[T])(
+    implicit ev: TensorNumeric[T]): T = {
+    var product = ev.fromType[Int](1)
+    val func = new TensorFunc2[T] {
+      override def apply(data: Array[T], index: Int): Unit = {
+        product = ev.times(data(index), product)
+      }
+    }
+    Apply.apply1[T](self, func)
+    product
+  }
+
   def sumAll[@specialized(Float, Double) T](self: DenseTensor[T])(
     implicit ev: TensorNumeric[T]): T = {
     var sum = ev.fromType[Int](0)
@@ -389,7 +441,22 @@ object DenseTensorMath {
     sum
   }
 
-  def sum[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], x: Tensor[T], _dim: Int)
+  def prod[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], x: Tensor[T], _dim: Int)
+    (implicit ev: TensorNumeric[T]): Tensor[T] = {
+    require(_dim >= 0 && _dim < x.nDimension, s"dimension ${_dim + 1} out of range")
+    val result = if (self == null) new DenseTensor[T]() else self
+    val sizes = x.size()
+    sizes(_dim) = 1
+    result.resize(sizes)
+    DenseTensorDimApply.dimApply2[T](result, x, _dim,
+      (rData, rOffset, rStride, rSize, tData, tOffset, tStride, tSize) => {
+        rData(rOffset) = ev.prod(tSize, tData, tOffset, tStride)
+      })
+
+    result
+  }
+
+  def sum[@specialized T: ClassTag](self: DenseTensor[T], x: Tensor[T], _dim: Int)
     (implicit ev: TensorNumeric[T]): Tensor[T] = {
     require(_dim >= 0 && _dim < x.nDimension, s"dimension ${_dim + 1} out of range")
     val result = if (self == null) new DenseTensor[T]() else self
@@ -706,58 +773,7 @@ object DenseTensorMath {
 
   def nearlyEqual[@specialized(Float, Double) T](a: T, b: T, epsilon: Double)(
     implicit ev: TensorNumeric[T]): Boolean = {
-    ev.getType() match {
-      case FloatType =>
-        val floatA = ev.toType[Float](a)
-        val floatB = ev.toType[Float](b)
-        val absA = math.abs(floatA)
-        val absB = math.abs(floatB)
-        val diff = math.abs(floatA - floatB)
-
-        val result = if (floatA == floatB) {
-          true
-        } else if (floatA == 0 || floatB == 0 || diff < java.lang.Float.MIN_NORMAL) {
-          diff < (epsilon * java.lang.Float.MIN_NORMAL)
-        } else {
-          diff / (absA + absB) < epsilon
-        }
-
-        if (!result) {
-          if (floatA == b) {
-            true
-          } else if (floatA == 0 || floatB == 0 || diff < java.lang.Float.MIN_NORMAL) {
-            diff < (epsilon * java.lang.Float.MIN_NORMAL)
-          } else {
-            diff / (absA + absB) < epsilon
-          }
-        }
-        result
-      case DoubleType =>
-        val doubleA = ev.toType[Double](a)
-        val doubleB = ev.toType[Double](b)
-        val absA = math.abs(doubleA)
-        val absB = math.abs(doubleB)
-        val diff = math.abs(doubleA - doubleB)
-
-        val result = if (doubleA == doubleB) {
-          true
-        } else if (doubleA == 0 || doubleB == 0 || diff < java.lang.Double.MIN_NORMAL) {
-          diff < (epsilon * java.lang.Double.MIN_NORMAL)
-        } else {
-          diff / (absA + absB) < epsilon
-        }
-
-        if (!result) {
-          if (doubleA == b) {
-            true
-          } else if (doubleA == 0 || doubleB == 0 || diff < java.lang.Double.MIN_NORMAL) {
-            diff < (epsilon * java.lang.Double.MIN_NORMAL)
-          } else {
-            diff / (absA + absB) < epsilon
-          }
-        }
-        result
-    }
+    ev.nearlyEqual(a, b, epsilon)
   }
 
   def cmax[@specialized(Float, Double) T](self: DenseTensor[T], x: Tensor[T], y: Tensor[T])
@@ -774,6 +790,21 @@ object DenseTensorMath {
     Apply.apply3[T](self, x, y, func)
     self
   }
+  def cmin[@specialized(Float, Double) T](self: DenseTensor[T], x: Tensor[T], y: Tensor[T])
+                                         (implicit ev: TensorNumeric[T]): Tensor[T] = {
+    require(self.nElement() == y.nElement() && self.nElement() == x.nElement(),
+      "element number doesn't match")
+    // todo: the performance of contiguous tensor should be optimized
+    val func = new TensorFunc6[T] {
+      override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int,
+                         data3: Array[T], offset3: Int): Unit = {
+        data1(offset1) = ev.min(data2(offset2), data3(offset3))
+      }
+    }
+    Apply.apply3[T](self, x, y, func)
+    self
+  }
+
 
   val doubleEpsilon = System.getProperty("DoubleTensorEpsilon", "0.0000001").toDouble
   val floatEpsilon = System.getProperty("FloatTensorEpsilon", "0.00001").toDouble
