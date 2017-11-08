@@ -20,19 +20,64 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
 
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
-class All[T: ClassTag](keepDim : Boolean = false)
+class All[T: ClassTag](keepDim : Boolean = false, startFromZero : Boolean = false)
   (implicit ev: TensorNumeric[T]) extends Operation[Table,
   Tensor[Boolean], T] {
 
   output = Tensor[Boolean]()
 
+  private var buffer = Tensor[Boolean]()
+
   override def updateOutput(input: Table): Tensor[Boolean] = {
     val data = input[Tensor[Boolean]](1)
     val indices = input[Tensor[Int]](2)
     require(indices.nDimension() == 1, "indices must be 1D tensor")
-    data.sum()
+    output.resizeAs(data)
+    buffer.resizeAs(data).copy(data)
+    val reduceDims = new ArrayBuffer[Int]()
+    val size = output.size()
+    var i = 1
+    while(i <= indices.size(1)) {
+      val dim = if (indices.valueAt(i) < 0) {
+        data.nDimension() + indices.valueAt(i) + 1
+      } else if (startFromZero) {
+        indices.valueAt(i) + 1
+      } else {
+        indices.valueAt(i)
+      }
+      if (size(dim - 1) != 1) {
+        size(dim - 1) = 1
+        reduceDims += dim
+        output.resize(size)
+        buffer.reduce(dim, output, (a, b) => a && b)
+        buffer.resizeAs(output).copy(output)
+      }
+      i += 1
+    }
 
+    if (!keepDim) {
+      val sizeBuffer = new ArrayBuffer[Int]()
+      i = 1
+      while (i <= data.nDimension()) {
+        if (!reduceDims.contains(i)) sizeBuffer.append(data.size(i))
+        i += 1
+      }
+      output.resize(sizeBuffer.toArray)
+    }
+    output
   }
+
+  override def clearState(): this.type = {
+    super.clearState()
+    buffer.set()
+    this
+  }
+}
+
+object All {
+  def apply[T: ClassTag](keepDim: Boolean = false, startFromZero : Boolean = false)
+    (implicit ev: TensorNumeric[T]): All[T] = new All[T](keepDim, startFromZero)
 }
