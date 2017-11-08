@@ -523,7 +523,7 @@ class MultiStep(JavaValue):
 class DistriOptimizer(JavaValue):
     def __init__(self,
                  model,
-                 training_data,
+                 training_rdd,
                  criterion,
                  end_trigger,
                  batch_size,
