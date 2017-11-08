@@ -35,7 +35,8 @@ import scala.reflect.ClassTag
  * @param kernelC Convolutional filter size to convolve cell
  * @param stride The step of the convolution, default is 1
  * @param padding The step of the convolution, default is -1,
- *                which ensure last 2 dim of output shape is the same with input
+  *               behaves same with SAME padding in tensorflow.
+ *                Default stride,padding ensure last 2 dim of output shape is the same with input
  * @param wRegularizer: instance of [[Regularizer]]
             (eg. L1 or L2 regularization), applied to the input weights matrices.
  * @param uRegularizer: instance [[Regularizer]]

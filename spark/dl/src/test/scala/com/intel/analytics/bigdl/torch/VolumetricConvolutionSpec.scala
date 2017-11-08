@@ -474,9 +474,6 @@ class VolumetricConvolutionSpec extends TorchSpec {
     val output = layer.updateOutput(input)
     val gradInput = layer.backward(input, output)
     output.storage().array() should be (Array(0.0f, 2, 6, 8, 18, 20, 24, 26))
-//    gradInput.storage().array() should be (Array(
-//      0.0f, 0, 2, 0, 0, 0, 0, 0, 8, 0, 10, 0, 0, 0, 0, 0
-//    ))
   }
 }
 

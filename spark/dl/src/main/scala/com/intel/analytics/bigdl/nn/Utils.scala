@@ -300,6 +300,8 @@ object Utils {
   /**
    *
    * @return (padTop, padBottom, padLeft, padRight, outputHeight, outputWidth)
+   *         or (padFront, padBackward, padTop, padBottom, padLeft, padRight,
+   *         outputDepth, outputHeight, outputWidth)
    */
   private[nn] def getSAMEOutSizeAndPadding(
     inputHeight: Int,
@@ -330,25 +332,27 @@ object Utils {
 
   /**
    *
-   * @return (padLeft, padRight, padTop, padBottom, outputHeight, outputWidth)
+   * @return Array(padLeft, padRight, padTop, padBottom, outputHeight, outputWidth)
+   *         or Array(padFront, padBack, padLeft, padRight, padTop, padBottom,
+   *         outputDepth, outputHeight, outputWidth)
    */
   private[nn] def getOutSizeAndPadding(
-                                        inputHeight: Int,
-                                        inputWidth: Int,
-                                        dH: Int,
-                                        dW: Int,
-                                        kH: Int,
-                                        kW: Int,
-                                        padH: Int,
-                                        padW: Int,
-                                        ceilMode: Boolean,
-                                        dilationHeight: Int = 1,
-                                        dilationWidth: Int = 1,
-                                        inputdepth: Int = -1,
-                                        dt: Int = -1,
-                                        kt: Int = -1,
-                                        padt: Int = -1,
-                                        dilationDepth: Int = 1): Array[Int] = {
+    inputHeight: Int,
+    inputWidth: Int,
+    dH: Int,
+    dW: Int,
+    kH: Int,
+    kW: Int,
+    padH: Int,
+    padW: Int,
+    ceilMode: Boolean,
+    dilationHeight: Int = 1,
+    dilationWidth: Int = 1,
+    inputdepth: Int = -1,
+    dt: Int = -1,
+    kt: Int = -1,
+    padt: Int = -1,
+    dilationDepth: Int = 1): Array[Int] = {
     var oheight = 0
     var owidth = 0
     var odepth = 0

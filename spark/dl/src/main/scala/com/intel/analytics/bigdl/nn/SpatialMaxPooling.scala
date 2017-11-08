@@ -97,7 +97,6 @@ class SpatialMaxPooling[T: ClassTag](
     val inputHeight = input.size(dimh)
     val inputWidth = input.size(dimw)
 
-//    val (padTop, _, padLeft, _, oHeight, oWidth) =
     val sizes =
       if (padW == -1 && padH == -1) {
         // no ceil/floor mode in SAME padding
