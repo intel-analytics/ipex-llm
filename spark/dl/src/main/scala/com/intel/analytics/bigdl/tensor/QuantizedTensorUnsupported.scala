@@ -1319,6 +1319,16 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
     throw new UnsupportedOperationException(errorString)
 
   /**
+   * stores the element-wise maximum of x and y in x.
+   * x.cmin(y) = min(x, y)
+   *
+   * @param y tensor
+   * @return current tensor
+   */
+  override def cmin(y: Tensor[T]): Tensor[T] =
+    throw new UnsupportedOperationException(errorString)
+
+  /**
    * stores the element-wise maximum of x and y in z.
    * z.cmax(x, y) means z = max(x, y)
    *
@@ -1326,6 +1336,16 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param y tensor
    */
   override def cmax(x: Tensor[T], y: Tensor[T]): Tensor[T] =
+    throw new UnsupportedOperationException(errorString)
+
+  /**
+   * stores the element-wise maximum of x and y in z.
+   * z.cmin(x, y) means z = min(x, y)
+   *
+   * @param x tensor
+   * @param y tensor
+   */
+  override def cmin(x: Tensor[T], y: Tensor[T]): Tensor[T] =
     throw new UnsupportedOperationException(errorString)
 
   /**

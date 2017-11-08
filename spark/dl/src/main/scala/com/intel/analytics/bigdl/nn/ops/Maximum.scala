@@ -13,24 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn
+package com.intel.analytics.bigdl.nn.ops
 
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
-/**
- * Apply an element-wise sqrt operation.
- */
+class Maximum[T: ClassTag, D: ClassTag]
+(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
+  extends Operation[Table, Tensor[D], T] {
+  override def updateOutput(input: Table): Tensor[D] = {
+    val x = input[Tensor[D]](1)
+    val y = input[Tensor[D]](2)
 
-@SerialVersionUID(223597921741020277L)
-class Sqrt[T: ClassTag, D: ClassTag](implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
-  extends Power[T, D](0.5, 1, 0) {
+    require(x.size().sameElements(y.size()), "require the shape of x, y to be the same")
+
+    output.resizeAs(x).cmax(x, y)
+  }
 }
 
-object Sqrt {
-  def apply[@specialized(Float, Double) T: ClassTag, D: ClassTag]()
-      (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]) : Sqrt[T, D] = {
-    new Sqrt[T, D]()
-  }
+object Maximum {
+  def apply[T: ClassTag, D: ClassTag]()
+  (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]): Maximum[T, D] =
+    new Maximum[T, D]()
 }

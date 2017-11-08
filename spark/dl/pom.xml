@@ -167,11 +167,6 @@
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>3.0.0</version>
                 <configuration>
-                    <artifactSet>
-                        <includes>
-                            <include>com.google.protobuf</include>
-                        </includes>
-                    </artifactSet>
                     <filters>
                         <filter>
                             <artifact>com.google.protobuf</artifact>
@@ -189,30 +184,36 @@
                 </configuration>
                 <executions>
                     <execution>
+                        <id>shade</id>
                         <phase>package</phase>
                         <goals>
                             <goal>shade</goal>
                         </goals>
+                        <configuration>
+                            <artifactSet>
+                                <includes>
+                                    <include>com.google.protobuf</include>
+                                </includes>
+                            </artifactSet>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>without-spark</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>jar-with-dependencies</shadedClassifierName>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <executions>
-                    <execution>
-                        <id>without-spark</id>
-                        <configuration>
-                            <descriptorRefs>
-                                <descriptorRef>jar-with-dependencies</descriptorRef>
-                            </descriptorRefs>
-                        </configuration>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
                     <execution>
                         <id>with-spark</id>
                         <configuration>
