@@ -182,6 +182,8 @@ object TensorNumericMath {
     def isNan(a: T): Boolean
 
     def isInf(a: T): Boolean
+
+    def round(a: T): T
   }
 
   /**
@@ -426,6 +428,10 @@ object TensorNumericMath {
     override def isNan(a: T): Boolean =
       throw new UnsupportedOperationException(typeName +
         " in tensor does not support isNan operation")
+
+    override def round(a: T): T =
+      throw new UnsupportedOperationException(typeName +
+        " in tensor does not support round operation")
   }
 
   /**
@@ -717,6 +723,8 @@ object TensorNumericMath {
       override def isNan(a: Float): Boolean = java.lang.Float.isNaN(a)
 
       override def isInf(a: Float): Boolean = java.lang.Float.isInfinite(a)
+
+      override def round(a: Float): Float = Math.round(a).toFloat
     }
 
     implicit object NumericDouble extends UndefinedTensorNumeric[Double]("Double") {
@@ -998,6 +1006,8 @@ object TensorNumericMath {
       override def isNan(a: Double): Boolean = java.lang.Double.isNaN(a)
 
       override def isInf(a: Double): Boolean = java.lang.Double.isInfinite(a)
+
+      override def round(a: Double): Double = Math.round(a).toDouble
     }
 
     implicit object NumericString extends UndefinedTensorNumeric[String]("String") {
@@ -1126,6 +1136,8 @@ object TensorNumericMath {
           i += 1
         }
       }
+
+      override def round(a: Int): Int = a
     }
 
     implicit object NumericLong extends UndefinedTensorNumeric[Long]("Long") {
