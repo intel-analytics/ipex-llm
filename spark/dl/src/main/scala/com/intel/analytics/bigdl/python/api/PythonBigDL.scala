@@ -188,7 +188,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     toPySample(jsample)
   }
 
-  private def toJSample(record: Sample): JSample[T] = {
+  def toJSample(record: Sample): JSample[T] = {
     require(record.bigdlType == this.typeName,
       s"record.bigdlType: ${record.bigdlType} == this.typeName: ${this.typeName}")
     JSample[T](record.features.asScala.toArray.map(toTensor(_)), toTensor(record.label))
