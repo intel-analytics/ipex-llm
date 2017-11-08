@@ -135,6 +135,17 @@ object TFUtils {
           j += 1
         }
         Tensor(tmp, shape)
+      case DataType.DT_BOOL =>
+        val buffer = ByteBuffer.wrap(content)
+        buffer.order(endian)
+        val params = buffer
+        val tmp = new Array[Boolean](params.capacity())
+        var j = 0
+        while (j < params.capacity()) {
+          tmp(j) = if (params.get(j) == 0) false else true
+          j += 1
+        }
+        Tensor(tmp, shape)
       case t => throw new IllegalArgumentException(s"DataType: $t not supported yet")
     }
   }

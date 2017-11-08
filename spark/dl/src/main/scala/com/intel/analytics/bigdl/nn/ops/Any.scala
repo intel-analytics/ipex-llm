@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.utils.Table
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
-class All[T: ClassTag](keepDim : Boolean = false, startFromZero : Boolean = false)
+class Any[T: ClassTag](keepDim : Boolean = false, startFromZero : Boolean = false)
   (implicit ev: TensorNumeric[T]) extends Operation[Table,
   Tensor[Boolean], T] {
 
@@ -52,7 +52,7 @@ class All[T: ClassTag](keepDim : Boolean = false, startFromZero : Boolean = fals
         size(dim - 1) = 1
         reduceDims += dim
         output.resize(size)
-        buffer.reduce(dim, output, (a, b) => a && b)
+        buffer.reduce(dim, output, (a, b) => a || b)
         buffer.resizeAs(output).copy(output)
       }
     } else {
@@ -69,7 +69,7 @@ class All[T: ClassTag](keepDim : Boolean = false, startFromZero : Boolean = fals
           size(dim - 1) = 1
           reduceDims += dim
           output.resize(size)
-          buffer.reduce(dim, output, (a, b) => a && b)
+          buffer.reduce(dim, output, (a, b) => a || b)
           buffer.resizeAs(output).copy(output)
         }
         i += 1
@@ -95,7 +95,7 @@ class All[T: ClassTag](keepDim : Boolean = false, startFromZero : Boolean = fals
   }
 }
 
-object All {
+object Any {
   def apply[T: ClassTag](keepDim: Boolean = false, startFromZero : Boolean = false)
-    (implicit ev: TensorNumeric[T]): All[T] = new All[T](keepDim, startFromZero)
+    (implicit ev: TensorNumeric[T]): Any[T] = new Any[T](keepDim, startFromZero)
 }
