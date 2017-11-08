@@ -2162,6 +2162,23 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
 
     array
   }
+
+  override def erf(): Tensor[T] = {
+    this.apply1(a => ev.erf(a))
+  }
+
+  override def erfc(): Tensor[T] = {
+    this.apply1(a => ev.erfc(a))
+  }
+
+  override def logGamma(): Tensor[T] = {
+    this.apply1(a => ev.logGamma(a))
+  }
+
+  override def digamma(): Tensor[T] = {
+    this.apply1(a => ev.digamma(a))
+  }
+
 }
 
 object DenseTensor {
