@@ -62,6 +62,11 @@ object Train {
           learningRateSchedule = SGD.EpochStep(25, 0.5))
       }
 
+      val state = T(
+                    "useDrizzle" -> param.useDrizzle,
+                    "drizzleGroupSize" -> param.drizzleGroupSize
+                  )
+
       val optimizer = Optimizer(
         model = model,
         dataset = trainDataSet,
@@ -81,6 +86,7 @@ object Train {
       optimizer
         .setValidation(Trigger.everyEpoch, validateSet, Array(new Top1Accuracy[Float]))
         .setOptimMethod(optimMethod)
+        .setState(state)
         .setEndWhen(Trigger.maxEpoch(param.maxEpoch))
         .optimize()
 

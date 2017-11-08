@@ -81,6 +81,11 @@ object TrainInceptionV1 {
           learningRateSchedule = SGD.Poly(0.5, param.maxIteration))
       }
 
+      val state = T(
+                    "useDrizzle" -> param.useDrizzle,
+                    "drizzleGroupSize" -> param.drizzleGroupSize
+                  )
+
       val optimizer = Optimizer(
         model = model,
         dataset = trainSet,
@@ -110,6 +115,7 @@ object TrainInceptionV1 {
         .setValidation(testTrigger,
           valSet, Array(new Top1Accuracy[Float], new Top5Accuracy[Float]))
         .setEndWhen(endTrigger)
+        .setState(state)
         .optimize()
       sc.stop()
     })
