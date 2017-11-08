@@ -546,9 +546,9 @@
             </properties>
         </profile>
         <profile>
-            <id>spark_2.3</id>
+            <id>spark_drizzle</id>
             <properties>
-                <spark-version.project>2.3</spark-version.project>
+                <spark-version.project>spark-drizzle</spark-version.project>
                 <spark.version>2.1.1-drizzle</spark.version>
                 <scala.major.version>2.11</scala.major.version>
                 <scala.version>2.11.8</scala.version>
