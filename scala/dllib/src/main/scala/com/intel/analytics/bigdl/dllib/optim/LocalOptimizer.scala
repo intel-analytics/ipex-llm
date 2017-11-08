@@ -38,7 +38,7 @@ object LocalOptimizer {
  * @param dataset data set
  * @param criterion criterion to be used
  */
-class LocalOptimizer[T: ClassTag] private[optim](
+class LocalOptimizer[T: ClassTag] (
   model: Module[T],
   dataset: LocalDataSet[MiniBatch[T]],
   criterion: Criterion[T]
