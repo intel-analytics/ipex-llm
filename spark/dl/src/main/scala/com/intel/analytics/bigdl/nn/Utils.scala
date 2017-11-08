@@ -299,8 +299,8 @@ object Utils {
 
   /**
    *
-   * @return (padTop, padBottom, padLeft, padRight, outputHeight, outputWidth)
-   *         or (padFront, padBackward, padTop, padBottom, padLeft, padRight,
+   * @return Array(padTop, padBottom, padLeft, padRight, outputHeight, outputWidth)
+   *         or Array(padFront, padBackward, padTop, padBottom, padLeft, padRight,
    *         outputDepth, outputHeight, outputWidth)
    */
   private[nn] def getSAMEOutSizeAndPadding(
@@ -318,7 +318,7 @@ object Utils {
     val padAlongWidth = Math.max(0, (oW -1) * dW + kW - inputWidth)
     val padAlongHeight = Math.max(0, (oH - 1) * dH + kH - inputHeight)
     if (inputDepth != -1) {
-      require(dT != -1 && kT != -1, "kernel size and strideSize cannot greater than 0")
+      require(dT > 0 && kT > 0, "kernel size and strideSize cannot be smaller than 0")
       val oT = Math.ceil(inputDepth.toFloat / dT.toFloat).toInt
       val padAlongDepth = Math.max(0, (oT -1) * dT + kT - inputDepth)
       return Array(padAlongDepth/2, padAlongDepth - padAlongDepth/2, padAlongHeight/2,
@@ -366,7 +366,7 @@ object Utils {
       owidth = math.ceil(1.0 * (inputWidth - dilationKernelWidth + 2*padW) / dW).toInt + 1
       if (inputdepth > 0) {
         require(dt > 0 && kt > 0 && padt >= 0,
-          "kernel size, stride size, padding size need greater than 0")
+          "kernel size, stride size, padding size cannot be smaller than 0")
         odepth = math.ceil(1.0 * (inputdepth - dilationKernelDepth + 2*padt) / dt).toInt + 1
       }
     } else {
@@ -374,18 +374,18 @@ object Utils {
       owidth = math.floor(1.0 * (inputWidth - dilationKernelWidth + 2*padW) / dW).toInt + 1
       if (inputdepth > 0) {
         require(dt > 0 && kt > 0 && padt >= 0,
-          "kernel size, stride size, padding size need greater than 0")
+          "kernel size, stride size, padding size cannot be smaller than 0")
         odepth = math.floor(1.0 * (inputdepth - dilationKernelDepth + 2*padt) / dt).toInt + 1
       }
     }
 
-    if (padH != 0 || padW != 0) {
+    if (padH != 0 || padW != 0 || padt != 0) {
       if ((oheight - 1) * dH >= inputHeight + padH) oheight -= 1
       if ((owidth - 1) * dW >= inputWidth + padW) owidth -= 1
-    }
-    if (inputdepth > 0) {
-      if ((odepth - 1) * dt >= inputdepth + padt) oheight -= 1
-      return Array(padt, padt, padH, padH, padW, padW, odepth, oheight, owidth)
+      if (inputdepth > 0) {
+        if ((odepth - 1) * dt >= inputdepth + padt) odepth -= 1
+        return Array(padt, padt, padH, padH, padW, padW, odepth, oheight, owidth)
+      }
     }
     Array(padH, padH, padW, padW, oheight, owidth)
   }

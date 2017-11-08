@@ -1008,7 +1008,7 @@ Parameters:
 * `kernelC` convolutional filter size to convolve cell
 * `stride` step of the convolution, default is 1
 * `padding` step of the convolution, default is -1, behaves same with SAME padding in tensorflow
-                 Default stride,padding value ensure last 2 dim of output shape is the same with input
+                 Default stride,padding value ensure last 3 dim of output shape is the same with input
 * `wRegularizer` instance of [[Regularizer]]
                    (eg. L1 or L2 regularization), applied to the input weights matrices.
 * `uRegularizer` instance [[Regularizer]]
