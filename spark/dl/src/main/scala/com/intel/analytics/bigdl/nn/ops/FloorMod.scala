@@ -21,22 +21,29 @@ import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
-class TruncateDiv[T: ClassTag, D: ClassTag]()(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
+class FloorMod[T: ClassTag, D: ClassTag]()(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
   extends Operation[Table, Tensor[D], T]{
 
   output = Tensor[D]()
+  private val buffer = Tensor[D]()
 
   override def updateOutput(input: Table): Tensor[D] = {
     val input1 = input[Tensor[D]](1)
     val input2 = input[Tensor[D]](2)
-
     output.resizeAs(input1).copy(input1)
-    output.div(input2).apply1(ev2.truncate(_))
-    output
+    buffer.resizeAs(output).copy(output)
+    buffer.map(input2, (a, b) => ev2.floorDiv(a, b)).cmul(input2)
+    output.sub(buffer)
+  }
+
+  override def clearState(): FloorMod.this.type = {
+    super.clearState()
+    buffer.set()
+    this
   }
 }
 
-object TruncateDiv {
-  def apply[T: ClassTag, D: ClassTag]()(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]):
-  TruncateDiv[T, D] = new TruncateDiv()
+object FloorMod {
+  def apply[T: ClassTag, D: ClassTag]()(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
+  : FloorMod[T, D] = new FloorMod()
 }
