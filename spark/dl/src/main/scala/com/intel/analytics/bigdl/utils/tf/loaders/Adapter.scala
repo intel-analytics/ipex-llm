@@ -18,8 +18,11 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.utils.serializer._
+import com.intel.analytics.bigdl.utils.{T, Table, serializer}
+import serialization.Bigdl.{AttrValue, BigDLModule}
 
+import scala.reflect.runtime.universe
 import scala.reflect.ClassTag
 
 /**
@@ -51,9 +54,9 @@ class Adapter[T: ClassTag](
       indexes = configIndexes.map(getPositiveIndex(_, l))
       val tensors = indexes.map(i => input[Tensor[_]](i))
       initTensors = tensors.map(_.clone())
-      module = build(tensors)
       dataIndexes = getDataIndexes(indexes, l)
       zeroGrads = tensors.map(t => t.emptyInstance().resizeAs(t))
+      module = build(tensors)
     } else {
       indexes.map(i => input[Tensor[_]](i)).zip(initTensors).foreach(tensors => {
         require(tensors._1 == tensors._2, s"constant tensor is changed. " +
@@ -106,10 +109,69 @@ class Adapter[T: ClassTag](
   }
 }
 
-object Adapter {
+object Adapter extends ModuleSerializable {
   def apply[T: ClassTag](
     configIndexes: Array[Int], build: Array[Tensor[_]] => AbstractModule[Activity, Activity, T]
   )(implicit ev: TensorNumeric[T]): Adapter[T] = {
     new Adapter(configIndexes, build)
+  }
+
+  override def doLoadModule[T: ClassTag](context: DeserializeContext)
+    (implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
+    val attrMap = context.bigdlModule.getAttrMap
+    val configIndexes = DataConverter.getAttributeValue(context, attrMap.get("configIndexes")).
+      asInstanceOf[Array[Int]]
+
+    val adapter = Adapter[T](configIndexes, null)
+
+
+    adapter.module = DataConverter.getAttributeValue(context, attrMap.get("module")).
+      asInstanceOf[AbstractModule[Activity, Activity, T]]
+
+    adapter.initTensors = DataConverter.getAttributeValue(context, attrMap.get("tensors")).
+      asInstanceOf[Array[Tensor[_]]]
+
+    adapter.indexes = DataConverter.getAttributeValue(context, attrMap.get("indexes")).
+      asInstanceOf[Array[Int]]
+
+    adapter.dataIndexes = DataConverter.getAttributeValue(context, attrMap.get("dataIndexes")).
+      asInstanceOf[Array[Int]]
+
+    adapter.zeroGrads = adapter.initTensors.map(t => t.emptyInstance().resizeAs(t))
+
+    adapter
+  }
+
+  override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
+    bigDLModelBuilder: BigDLModule.Builder)(implicit ev: TensorNumeric[T]): Unit = {
+    val adapterModule = context.moduleData.module.asInstanceOf[Adapter[T]]
+
+    val moduleBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, moduleBuilder, adapterModule.module,
+      serializer.ModuleSerializer.abstractModuleType)
+    bigDLModelBuilder.putAttr("module", moduleBuilder.build)
+
+    val configIndexesBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, configIndexesBuilder, adapterModule.configIndexes,
+      universe.typeOf[Array[Int]])
+    bigDLModelBuilder.putAttr("configIndexes", moduleBuilder.build)
+
+    val indexesBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, indexesBuilder, adapterModule.indexes,
+      universe.typeOf[Array[Int]])
+    bigDLModelBuilder.putAttr("indexes", indexesBuilder.build)
+
+    val dataIndexesBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, dataIndexesBuilder, adapterModule.dataIndexes,
+      universe.typeOf[Array[Int]])
+    bigDLModelBuilder.putAttr("dataIndexes", dataIndexesBuilder.build)
+
+    val tensorsBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, tensorsBuilder, adapterModule.initTensors,
+      universe.typeOf[Array[Tensor[_]]])
+    bigDLModelBuilder.putAttr("tensors", tensorsBuilder.build)
+
+    bigDLModelBuilder.putAttr("configIndexes", moduleBuilder.build)
+
   }
 }

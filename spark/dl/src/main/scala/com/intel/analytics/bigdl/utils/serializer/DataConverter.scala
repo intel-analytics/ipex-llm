@@ -531,10 +531,21 @@ object DataConverter extends DataConverter{
             case QuantizedType =>
               tensorBuilder.setTensorType(TensorType.QUANT)
           }
-
-          tensor.size().foreach(size => tensorBuilder.addSize(size))
-          tensor.stride().foreach(stride => tensorBuilder.addStride(stride))
-          setStorage(context, tensorBuilder, tensor)
+          if (!tensor.isEmpty) {
+            tensor.size().foreach(size => tensorBuilder.addSize(size))
+          }
+          if (!tensor.isEmpty) {
+            tensor.stride().foreach(stride => tensorBuilder.addStride(stride))
+          }
+          val storageIsNull = tensor.getTensorType match {
+            case DenseType =>
+              tensor.storage == null
+            case QuantizedType =>
+              tensor.asInstanceOf[QuantizedTensor[T]].getStorage == null
+          }
+          if (!storageIsNull) {
+            setStorage(context, tensorBuilder, tensor)
+          }
           val tensorBuild = tensorBuilder.build
           attributeBuilder.setTensorValue(resetTensor(tensorBuild))
           storages(tensorId) = tensorBuild
