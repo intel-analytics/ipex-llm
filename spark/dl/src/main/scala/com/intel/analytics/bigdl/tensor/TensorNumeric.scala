@@ -1200,7 +1200,11 @@ object TensorNumericMath {
       override def truncate(a: Int): Int = a
 
       override def floorDiv(a: Int, b: Int): Int = {
-        Math.floorDiv(a, b)
+        var var2 = a / b
+        if ((a ^ b) < 0 && var2 * b != a) {
+          var2 -= 1
+        }
+        var2
       }
     }
 
