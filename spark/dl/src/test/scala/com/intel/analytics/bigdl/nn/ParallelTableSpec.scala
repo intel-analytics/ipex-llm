@@ -122,12 +122,10 @@ class ParallelTableSpec extends FlatSpec with Matchers {
     val mapOutput = module.forward(input)
 
     val mapGradInput = module.backward(input, gradOutput)
-    val a = module.getTimes()
     module.getTimes.foreach{m =>
       m._2 should be > 0L
       m._3 should be > 0L
     }
-    println(module.getTimes)
   }
 
 }
