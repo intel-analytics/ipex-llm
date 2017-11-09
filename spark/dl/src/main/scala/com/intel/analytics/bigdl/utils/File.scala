@@ -17,8 +17,9 @@
 package com.intel.analytics.bigdl.utils
 
 import java.io._
+import java.net.URL
 import java.net.URI
-
+import org.apache.commons.io.FilenameUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FSDataInputStream, FSDataOutputStream, FileSystem, Path}
 import org.apache.hadoop.io.IOUtils
@@ -218,18 +219,39 @@ object File {
  */
 private[bigdl] class FileReader(fileName: String) {
   private var inputStream: InputStream = null
+  private var exactFileName: String = fileName
   private val conf = File.getConfiguration(fileName)
-  private val path = new Path(fileName)
-  private val fs: FileSystem = path.getFileSystem(conf)
+  private var path: Path = null
+  private var fs: FileSystem = null
+  private val httpPrefix: String = "http://"
+  private val httpsPrefix: String = "https://"
+  /* load  file according to url
+   * @param url
+   * @param dir
+   */
+  private def downloadFromUrl(url: String, dir: String): Unit = {
+    val httpurl = new URL(url)
+    import sys.process._
+    val s = "wget" + " -P /tmp " + httpurl !!
 
+  }
   /**
    * get an InputStream
    * @return
    */
   def open(): InputStream = {
     require(inputStream == null, s"File $fileName has been opened already.")
+    if(fileName.startsWith(httpPrefix) || fileName.startsWith(httpsPrefix)) {
+      downloadFromUrl(fileName, "/tmp/")
+      exactFileName = "/tmp/" +
+        FilenameUtils.getBaseName(fileName) + '.' +
+        FilenameUtils.getExtension(fileName)
+    }
+    path = new Path(exactFileName)
+    fs = path.getFileSystem(conf)
     require(fs.exists(path), s"$fileName is empty!")
     inputStream = fs.open(path)
+
     inputStream
   }
 
@@ -238,7 +260,13 @@ private[bigdl] class FileReader(fileName: String) {
    */
   def close(): Unit = {
     if (null != inputStream) inputStream.close()
-    fs.close()
+
+    if(fileName != exactFileName) {
+      if (fs.exists(path)) {
+        fs.delete(path, true)
+      }
+    }
+    if (null != fs) fs.close()
   }
 }
 
