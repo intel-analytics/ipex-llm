@@ -15,16 +15,19 @@
  */
 package com.intel.analytics.bigdl.utils.serializer
 
+import com.google.protobuf.{ByteString, CodedOutputStream}
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.ops.ParseExample
 import com.intel.analytics.bigdl.nn.{VolumetricFullConvolution, _}
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.utils.caffe.CaffeLoader
 import com.intel.analytics.bigdl.utils.{T, Table}
 import org.scalatest.{FlatSpec, Matchers}
+import org.tensorflow.example._
 import serialization.Bigdl
 import serialization.Bigdl.AttrValue
 import serializer.TestCustomData
@@ -1904,7 +1907,53 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val res2 = loadedLinear.forward(input)
     res1 should be (res2)
   }
+  "ParseExample serializer" should "work properly" in {
+    import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric.NumericByteString
 
+    val floatBuilder = FloatList.newBuilder()
+      .addValue(0.0f).addValue(1.0f).addValue(2.0f)
+    val floatFeature = Feature.newBuilder().setFloatList(floatBuilder).build()
+
+    val longBuilder = Int64List.newBuilder()
+      .addValue(0).addValue(1).addValue(2)
+    val longFeature = Feature.newBuilder().setInt64List(longBuilder).build()
+
+    val bytesBuilder = BytesList.newBuilder().addValue(ByteString.copyFromUtf8("abcd"))
+    val bytesFeature = Feature.newBuilder().setBytesList(bytesBuilder).build()
+
+    val features = Features.newBuilder()
+      .putFeature("floatFeature", floatFeature)
+      .putFeature("longFeature", longFeature)
+      .putFeature("bytesFeature", bytesFeature)
+    val example = Example.newBuilder().setFeatures(features).build()
+    val length = example.getSerializedSize
+    val data = new Array[Byte](length)
+    val outputStream = CodedOutputStream.newInstance(data)
+    example.writeTo(outputStream)
+
+    val exampleParser = new ParseExample[Float](3,
+      Seq(FloatType, LongType, StringType), Seq(Array(3), Array(3), Array()))
+
+    val serialized = Tensor[ByteString](Array(ByteString.copyFrom(data)), Array[Int](1))
+    val names = Tensor[ByteString]()
+    val key1 = Tensor[ByteString](Array(ByteString.copyFromUtf8("floatFeature")), Array[Int]())
+    val key2 = Tensor[ByteString](Array(ByteString.copyFromUtf8("longFeature")), Array[Int]())
+    val key3 = Tensor[ByteString](Array(ByteString.copyFromUtf8("bytesFeature")), Array[Int]())
+
+    val default1 = Tensor[Float]()
+    val default2 = Tensor[Long]()
+    val default3 = Tensor[ByteString]()
+
+    val input = T(serialized, names, key1, key2, key3, default1, default2, default3)
+
+    val res1 = exampleParser.forward(input)
+
+    ModulePersister.saveToFile("/tmp/exampleParser.bigdl", exampleParser, true)
+    val loadedExampleParser = ModuleLoader.loadFromFile[Float]("/tmp/exampleParser.bigdl")
+    val res2 = loadedExampleParser.forward(input)
+    res1 should be (res2)
+
+  }
   "Customized Module " should "work properly" in {
     val testModule = new TestModule(CustomData(1.0))
     DataConverter.registerConverter(universe.typeOf[CustomData].toString, TestCustomDataConverter)
