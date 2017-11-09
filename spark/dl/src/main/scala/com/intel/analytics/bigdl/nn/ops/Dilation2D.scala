@@ -23,6 +23,29 @@ import scala.reflect.ClassTag
 
 /**
  * Computes the grayscale dilation of 4-D `input` and 3-D `filter` tensors.
+ *
+ * This layer takes a Table of two tensors as inputs, namely `input` and `filter`.
+ * The `input` tensor has shape `[batch, in_height, in_width, depth]` and the `filter`
+ * tensor has shape `[filter_height, filter_width, depth]`, i.e., each input channel is
+ * processed independently of the others with its own structing fucntion. The `output` tensor
+ * has shape `[batch, out_height, out_width, depth]`. The spatial dimensions of the output
+ * tensor depend on the `padding` algorithm. We currently only support the "NHWC" DataFormat.
+ *
+ * In detail, the grayscale morphological 2-D dilation is the max-sum correlation
+ *
+ * output[b, y, x, c] =
+ *     max_{dy, dx} input[b,
+ *                        strides[1] * y + rates[1] * dy,
+ *                        strides[2] * x +, rates[2] * dx,
+ *                        c] +
+ *                  filter[dy, dx, c]
+ *
+ * Max-pooling is a special case when the filter has size equal to the pooling kernel size and
+ * contains all zeros.
+ *
+ * Note on duality: The dilation of `input` by the `filter` is equal to the negation of the
+ * erosion of `-input` by the reflected `filter`.
+ *
  */
 class Dilation2D[T: ClassTag, D: ClassTag](strides: Seq[Int], rates: Seq[Int], padding: String)
        (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
