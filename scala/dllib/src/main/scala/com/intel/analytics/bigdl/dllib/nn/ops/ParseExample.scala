@@ -18,15 +18,19 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.{NumericWildcard, Tens
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils.{T, Table}
 import com.google.protobuf.ByteString
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.utils.serializer.{DataConverter, DeserializeContext, ModuleSerializable, SerializeContext}
 import org.tensorflow.example.{Example, Feature}
 import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric.NumericByteString
+import serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
+import scala.reflect.runtime.universe
 
-class ParseExample[T: ClassTag](nDense: Int,
-                                tDense: Seq[TensorDataType],
-                                denseShape: Seq[Array[Int]])
+class ParseExample[T: ClassTag](val nDense: Int,
+                                val tDense: Seq[TensorDataType],
+                                val denseShape: Seq[Array[Int]])
      (implicit ev: TensorNumeric[T])
   extends Operation[Table, Table, T] {
 
@@ -82,5 +86,84 @@ class ParseExample[T: ClassTag](nDense: Int,
 
   override def updateGradInput(input: Table, gradOutput: Table): Table = {
     throw new UnsupportedOperationException("no backward on ParseExample")
+  }
+}
+
+object ParseExample extends ModuleSerializable {
+  def apply[T: ClassTag](nDense: Int,
+            tDense: Seq[TensorDataType],
+            denseShape: Seq[Array[Int]])
+           (implicit ev: TensorNumeric[T]): ParseExample[T] =
+          new ParseExample[T](nDense, tDense, denseShape)
+
+  override def doLoadModule[T: ClassTag](context: DeserializeContext)
+    (implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
+
+    val attrMap = context.bigdlModule.getAttrMap
+
+    val nDense = DataConverter.getAttributeValue(context, attrMap.get("nDense")).
+      asInstanceOf[Int]
+
+    val tDense = DataConverter.getAttributeValue(context, attrMap.get("tDense")).
+      asInstanceOf[Array[String]].map(toTensorType(_))
+
+    val shapeSize = DataConverter.getAttributeValue(context, attrMap.get("shapeSize")).
+      asInstanceOf[Int]
+
+    val denseShape = new Array[Array[Int]](shapeSize)
+    for (i <- 1 to shapeSize) {
+      denseShape(i - 1) = DataConverter.getAttributeValue(context,
+        attrMap.get(s"shapeSize_${i - 1}")).
+        asInstanceOf[Array[Int]]
+    }
+    ParseExample[T](nDense, tDense.toSeq, denseShape.toSeq)
+  }
+
+  override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
+    bigDLModelBuilder: BigDLModule.Builder)(implicit ev: TensorNumeric[T]): Unit = {
+
+    val parseExample = context.moduleData.module.asInstanceOf[ParseExample[T]]
+
+    val nDenseBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, nDenseBuilder, parseExample.nDense,
+      universe.typeOf[Int])
+    bigDLModelBuilder.putAttr("nDense", nDenseBuilder.build)
+
+    val tensorTypeBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, tensorTypeBuilder,
+      parseExample.tDense.toArray.map(fromTensorType(_)),
+      universe.typeOf[Array[String]])
+    bigDLModelBuilder.putAttr("tDense", tensorTypeBuilder.build)
+
+    val shapeSizeBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, shapeSizeBuilder,
+      parseExample.denseShape.size,
+      universe.typeOf[Int])
+    bigDLModelBuilder.putAttr("shapeSize", shapeSizeBuilder.build)
+
+    parseExample.denseShape.zipWithIndex.foreach(shape => {
+      val shapeBuilder = AttrValue.newBuilder
+      DataConverter.setAttributeValue(context, shapeBuilder,
+        parseExample.denseShape(shape._2),
+        universe.typeOf[Array[Int]])
+      bigDLModelBuilder.putAttr(s"shapeSize_${shape._2}", shapeBuilder.build)
+    })
+
+  }
+
+  private def fromTensorType(ttype : TensorDataType): String = {
+    ttype match {
+      case LongType => "Long"
+      case FloatType => "Float"
+      case StringType => "String"
+    }
+  }
+
+  private def toTensorType(ttype : String): TensorDataType = {
+    ttype match {
+      case "Long" => LongType
+      case "Float" => FloatType
+      case "String" => StringType
+    }
   }
 }
