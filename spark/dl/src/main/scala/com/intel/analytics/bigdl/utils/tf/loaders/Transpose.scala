@@ -80,7 +80,7 @@ object TransposeLoadTF {
 
 class TransposeLoadTF[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Adapter[T](Array(2)) {
   import TransposeLoadTF._
-  
+
   override def build(tensorArrays: Array[Tensor[_]]): AbstractModule[Activity, Activity, T] = {
     val perm = tensorArrays(0).asInstanceOf[Tensor[Int]].storage().array()
     val paris = permToPair(perm)
