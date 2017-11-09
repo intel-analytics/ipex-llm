@@ -46,7 +46,7 @@ class Dictionary()
   /**
    * Word encoding by its index in the dictionary
    */
-  def word2Index(): Map[String, Int] = _word2index
+  def word2Index(): mutable.Map[String, Int] = _word2index
 
   def index2Word(): mutable.Map[Int, String] = _index2word
 
