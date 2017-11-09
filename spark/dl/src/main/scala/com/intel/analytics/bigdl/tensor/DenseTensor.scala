@@ -35,7 +35,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
   var nDimension: Int)(implicit ev: TensorNumeric[T])
   extends Tensor[T] {
 
-  override def isEmpty: Boolean = this.storage() == null || this.storage().length() == 0
+  override def isEmpty: Boolean = this.nElement() == 0
 
   override def isScalar: Boolean = !this.isEmpty && this.nDimension == 0
 
@@ -46,7 +46,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
   override def dim(): Int = nDimension
 
   override def nElement(): Int = {
-    if (this.isEmpty) {
+    if (this._size == null) {
       0
     } else {
       var n = 1
@@ -68,7 +68,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
     result.squeeze()
   }
 
-  override def size(): Array[Int] = _size.slice(0, this.nDimension)
+  override def size(): Array[Int] = if (_size == null) null else _size.slice(0, this.nDimension)
 
   override def size(dim: Int): Int = {
     require(dim > 0 && dim <= this.nDimension,
@@ -2217,6 +2217,13 @@ object DenseTensor {
     self: DenseTensor[T], nDim: Int, _size: Array[Int], _stride: Array[Int])
   : DenseTensor[T] = {
 
+    // resize as empty
+    if (_size == null) {
+      self._size = null
+      self._stride == null
+      return self
+    }
+
     // resize as a scalar
     if (nDim == 0 && _size.isEmpty) {
       self._size = Array[Int]()
@@ -2236,7 +2243,7 @@ object DenseTensor {
     var d = 0
     var break = false
     while (d < nDim && !break) {
-      if (_size(d) > 0) {
+      if (_size(d) >= 0) {
         nDim_ = nDim_ + 1
         if (self.nDimension > d && _size(d) != self._size(d)) {
           hasCorrectSize = false
