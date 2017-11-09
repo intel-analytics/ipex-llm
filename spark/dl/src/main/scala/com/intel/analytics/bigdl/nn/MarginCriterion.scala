@@ -31,7 +31,7 @@ import scala.reflect.ClassTag
 
 @SerialVersionUID( - 5028892499250398130L)
 class MarginCriterion[@specialized(Float, Double) T: ClassTag]
- (val margin: Double = 1.0, val sizeAverage: Boolean = true)
+ (val margin: Double = 1.0, val sizeAverage: Boolean = true, squared: Boolean = false)
  (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
@@ -40,7 +40,13 @@ class MarginCriterion[@specialized(Float, Double) T: ClassTag]
     val func = new TensorFunc4[T] {
       override def apply(data1: Array[T], index1: Int, data2: Array[T], index2: Int): Unit = {
         val z = ev.minus(ev.fromType(margin), ev.times(data1(index1), data2(index2)))
-        if (ev.isGreater(z, ev.fromType(0))) sum = ev.plus(sum, z)
+        if (ev.isGreater(z, ev.fromType(0))) {
+          if (squared) {
+            sum = ev.plus(sum, ev.times(z, z))
+          } else {
+            sum = ev.plus(sum, z)
+          }
+        }
       }
     }
     DenseTensorApply.apply2[T](input, target, func)
@@ -57,7 +63,15 @@ class MarginCriterion[@specialized(Float, Double) T: ClassTag]
       override def apply (data1: Array[T], offset1: Int, data2: Array[T],
                           offset2: Int, data3: Array[T], offset3: Int): Unit = {
         if (ev.isGreater(ev.fromType(margin), ev.times(data2(offset2), data3(offset3)))) {
-          data1(offset1) = ev.times(norm, data3(offset3))
+          if (squared) {
+            // dl/dx = 2y(1-xy)
+            data1(offset1) = ev.times(
+              ev.times(ev.fromType(2), data3(offset3)),
+              ev.minus(ev.fromType(margin),
+                ev.times(data2(offset2), data3(offset3))))
+          } else {
+            data1(offset1) = ev.times(norm, data3(offset3))
+          }
         }
       }
     }
@@ -90,7 +104,8 @@ class MarginCriterion[@specialized(Float, Double) T: ClassTag]
 object MarginCriterion {
   def apply[@specialized(Float, Double) T: ClassTag](
       margin: Double = 1.0,
-      sizeAverage: Boolean = true)(implicit ev: TensorNumeric[T]) : MarginCriterion[T] = {
-    new MarginCriterion[T](margin, sizeAverage)
+      sizeAverage: Boolean = true,
+      squared: Boolean = false)(implicit ev: TensorNumeric[T]) : MarginCriterion[T] = {
+    new MarginCriterion[T](margin, sizeAverage, squared)
   }
 }
