@@ -32,7 +32,9 @@ private[ml] trait DLParams extends HasFeaturesCol with HasPredictionCol {
     val dataTypes = Seq(
       new ArrayType(DoubleType, false),
       new ArrayType(FloatType, false),
-      new VectorUDT)
+      new VectorUDT,
+      new org.apache.spark.mllib.linalg.VectorUDT
+    )
 
     // TODO use SchemaUtils.checkColumnTypes after convert to 2.0
     val actualDataType = schema($(featuresCol)).dataType
@@ -44,6 +46,8 @@ private[ml] trait DLParams extends HasFeaturesCol with HasPredictionCol {
   def supportedTypesToSeq(row: Row, colType: DataType, index: Int): Seq[AnyVal] = {
     val featureArr = if (colType == new VectorUDT) {
       row.getAs[Vector](index).toArray.toSeq
+    } else if (colType == new org.apache.spark.mllib.linalg.VectorUDT) {
+      row.getAs[org.apache.spark.mllib.linalg.Vector](index).toArray.toSeq
     } else if (colType == ArrayType(DoubleType, false)) {
       row.getSeq[Double](index)
     } else if (colType == ArrayType(FloatType, false)) {

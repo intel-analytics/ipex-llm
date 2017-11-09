@@ -29,13 +29,38 @@ import scala.reflect.ClassTag
 @SerialVersionUID(8888147326550637025L)
 class CMulTable[T: ClassTag]()(
   implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T]{
+
+  private var scalarIndexes : Array[Int] = _
+
   override def updateOutput(input: Table): Tensor[T] = {
-    output.resizeAs(input(1)).copy(input(1))
-    var i = 2
+    var scalar = ev.one
+    var hasTensor = false
+    var hasScalar = false
+    var initTensor = false
+    var i = 1
     while (i <= input.length()) {
-      output.cmul(input(i))
+      val curTensor = input[Tensor[T]](i)
+      if (curTensor.isScalar) {
+        scalar = ev.times(scalar, curTensor.value())
+        hasScalar = true
+      } else if (curTensor.isTensor) {
+        if (initTensor) {
+          output.cmul(curTensor)
+        } else {
+          output.resizeAs(curTensor).copy(curTensor)
+          initTensor = true
+        }
+        hasTensor = true
+      }
       i += 1
     }
+
+    if (hasTensor && hasScalar) {
+      output.mul(scalar)
+    } else if (hasScalar) {
+      output.resizeAs(input[Tensor[T]](1)).setValue(scalar)
+    }
+
     output
   }
 
@@ -43,11 +68,21 @@ class CMulTable[T: ClassTag]()(
     var i = 1
     while (i <= input.length()) {
       if (!gradInput.contains(i)) gradInput.insert(i, Tensor[T]())
-      gradInput[Tensor[T]](i).resizeAs(input(i)).copy(gradOutput)
+      gradInput[Tensor[T]](i).resizeAs(gradOutput).copy(gradOutput)
       var j = 1
       while (j <= input.length()) {
-        if (i != j) gradInput[Tensor[T]](i).cmul(input(j))
+        if (i != j) {
+          if (input[Tensor[T]](j).isScalar) {
+            gradInput[Tensor[T]](i).mul(input[Tensor[T]](j).value())
+          } else {
+            gradInput[Tensor[T]](i).cmul(input(j))
+          }
+        }
         j += 1
+      }
+      if (input[Tensor[T]](i).isScalar) {
+        val sum = gradInput[Tensor[T]](i).sum()
+        gradInput(i) = gradInput[Tensor[T]](i).resizeAs(input(i)).setValue(sum)
       }
       i += 1
     }

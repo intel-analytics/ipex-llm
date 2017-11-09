@@ -84,6 +84,7 @@ class LocalOptimizer[T: ClassTag] private[optim](
     state("neval") = state.get[Int]("neval").getOrElse(1)
     state("isLayerwiseScaled") = Utils.isLayerwiseScaled(model)
     dataset.shuffle()
+    val numSamples = dataset.data(train = false).map(_.size()).reduce(_ + _)
     var iter = dataset.data(train = true)
     logger.info("model thread pool size is " + Engine.model.getPoolSize)
     while (!endWhen(state)) {
@@ -149,8 +150,7 @@ class LocalOptimizer[T: ClassTag] private[optim](
       val end = System.nanoTime()
       wallClockTime += end - start
       count += batch.size()
-      val head =
-        header(state[Int]("epoch"), count, dataset.size(), state[Int]("neval"), wallClockTime)
+      val head = header(state[Int]("epoch"), count, numSamples, state[Int]("neval"), wallClockTime)
       logger.info(s"$head " +
         s"loss is $loss, iteration time is ${(end - start) / 1e9}s " +
         s"data fetch time is ${(dataFetchTime - start) / 1e9}s, " +
@@ -160,7 +160,7 @@ class LocalOptimizer[T: ClassTag] private[optim](
         )
       state("neval") = state[Int]("neval") + 1
 
-      if (count >= dataset.size()) {
+      if (count >= numSamples) {
         state("epoch") = state[Int]("epoch") + 1
         dataset.shuffle()
         iter = dataset.toLocal().data(train = true)

@@ -19,7 +19,7 @@ import sys
 import glob
 from py4j.protocol import Py4JJavaError
 from py4j.java_gateway import JavaObject
-from py4j.java_collections import ListConverter, JavaArray, JavaList, JavaMap
+from py4j.java_collections import ListConverter, JavaArray, JavaList, JavaMap, MapConverter
 
 from pyspark import RDD, SparkContext
 from pyspark.serializers import PickleSerializer, AutoBatchedSerializer
@@ -28,7 +28,7 @@ from pyspark.mllib.common import callJavaFunc
 from pyspark import SparkConf
 import numpy as np
 import threading
-from bigdl.util.engine import prepare_env
+from bigdl.util.engine import get_bigdl_classpath, is_spark_below_2_2
 
 INTMAX = 2147483647
 INTMIN = -2147483648
@@ -113,26 +113,48 @@ class EvaluatedResult():
         return "Evaluated result: %s, total_num: %s, method: %s" % (
             self.result, self.total_num, self.method)
 
+def get_dtype(bigdl_type):
+    # Always return float32 for now
+    return "float32"
 
 class JTensor(object):
     """
     A wrapper to easy our work when need to pass or return Tensor to/from Scala.
-
 
     >>> import numpy as np
     >>> from bigdl.util.common import JTensor
     >>> np.random.seed(123)
     >>>
     """
-    def __init__(self, storage, shape, bigdl_type="float"):
-        self.storage = storage
-        self.shape = shape
+    def __init__(self, storage, shape, bigdl_type="float", indices=None):
+        """
+
+        :param storage: values in this tensor
+        :param shape: shape of this tensor
+        :param bigdl_type: numeric type
+        :param indices: if indices is provided, means this is a SparseTensor;
+                        if not provided, means this is a DenseTensor
+        """
+        if isinstance(storage, bytes) and isinstance(shape, bytes):
+            self.storage = np.frombuffer(storage, dtype=get_dtype(bigdl_type))
+            self.shape = np.frombuffer(shape, dtype=np.int32)
+        else:
+            self.storage = np.array(storage, dtype=get_dtype(bigdl_type))
+            self.shape = np.array(shape, dtype=np.int32)
+        if indices is None:
+            self.indices = None
+        elif isinstance(indices, bytes):
+            self.indices = np.frombuffer(indices, dtype=np.int32)
+        else:
+            assert isinstance(indices, np.ndarray), \
+            "indices should be a np.ndarray, not %s, %s" % (type(a_ndarray), str(indices))
+            self.indices = np.array(indices, dtype=np.int32)
         self.bigdl_type = bigdl_type
 
     @classmethod
     def from_ndarray(cls, a_ndarray, bigdl_type="float"):
         """
-        Convert a ndarray to Tensor which would be used in Java side.
+        Convert a ndarray to a DenseTensor which would be used in Java side.
 
         >>> import numpy as np
         >>> from bigdl.util.common import JTensor
@@ -140,6 +162,12 @@ class JTensor(object):
         >>> np.random.seed(123)
         >>> data = np.random.uniform(0, 1, (2, 3)).astype("float32")
         >>> result = JTensor.from_ndarray(data)
+        >>> print(result)
+        JTensor: storage: [[ 0.69646919  0.28613934  0.22685145]
+         [ 0.55131477  0.71946895  0.42310646]], shape: [2 3], float
+        >>> result
+        JTensor: storage: [[ 0.69646919  0.28613934  0.22685145]
+         [ 0.55131477  0.71946895  0.42310646]], shape: [2 3], float
         >>> data_back = result.to_ndarray()
         >>> (data == data_back).all()
         True
@@ -148,75 +176,167 @@ class JTensor(object):
         >>> (array_from_tensor == data).all()
         True
         """
-        return cls(*JTensor.flatten_ndarray(a_ndarray),
-                   bigdl_type= bigdl_type) if a_ndarray is not None else None  # noqa
-
-    def to_ndarray(self):
-        def get_dtype():
-            if "float" == self.bigdl_type:
-                return "float32"
-            else:
-                return "float64"
-        return np.array(self.storage, dtype=get_dtype()).reshape(self.shape)  # noqa
+        if a_ndarray is None:
+            return None
+        assert isinstance(a_ndarray, np.ndarray), \
+            "input should be a np.ndarray, not %s" % type(a_ndarray)
+        return cls(a_ndarray,
+                   a_ndarray.shape if a_ndarray.shape else (a_ndarray.size),
+                   bigdl_type)
 
     @classmethod
-    def flatten_ndarray(cls, a_ndarray):
+    def sparse(cls, a_ndarray, i_ndarray, shape, bigdl_type="float"):
         """
-        Utility method to flatten a ndarray
+        Convert a three ndarray to SparseTensor which would be used in Java side.
+        For example:
+        a_ndarray = [1, 3, 2, 4]
+        i_ndarray = [[0, 0, 1, 2],
+                     [0, 3, 2, 1]]
+        shape = [3, 4]
+        Present a dense tensor
+        [[ 1,  0,  0,  3],
+         [ 0,  0,  2,  0],
+         [ 0,  4,  0,  0]]
 
-        :return: (storage, shape)
+        :param a_ndarray non-zero elements in this SparseTensor
+        :param i_ndarray zero-based indices for non-zero element
+                         i_ndarray's shape should be (shape.size, a_ndarray.size)
+                         And the i-th non-zero elements indices is i_ndarray[:, 1]
+        :param shape     shape as a DenseTensor.
 
+        >>> import numpy as np
         >>> from bigdl.util.common import JTensor
+        >>> from bigdl.util.common import callBigDlFunc
         >>> np.random.seed(123)
-        >>> data = np.random.uniform(0, 1, (2, 3))
-        >>> (storage, shape) = JTensor.flatten_ndarray(data)
-        >>> shape
-        [2, 3]
-        >>> (storage, shape) = JTensor.flatten_ndarray(np.array(2))
-        >>> shape
-        [1]
+        >>> data = np.arange(1, 7).astype("float32")
+        >>> indices = np.arange(1, 7)
+        >>> shape = np.array([10])
+        >>> result = JTensor.sparse(data, indices, shape)
+        >>> result
+        JTensor: storage: [ 1.  2.  3.  4.  5.  6.], shape: [10] ,indices [1 2 3 4 5 6], float
+        >>> tensor1 = callBigDlFunc("float", "testTensor", result)  # noqa
+        >>> array_from_tensor = tensor1.to_ndarray()
+        >>> expected_ndarray = np.array([0, 1, 2, 3, 4, 5, 6, 0, 0, 0])
+        >>> (array_from_tensor == expected_ndarray).all()
+        True
         """
-        storage = [float(i) for i in a_ndarray.ravel()]
-        shape = list(a_ndarray.shape) if a_ndarray.shape else [a_ndarray.size]
-        return storage, shape
+        if a_ndarray is None:
+            return None
+        assert isinstance(a_ndarray, np.ndarray), \
+            "values array should be a np.ndarray, not %s" % type(a_ndarray)
+        assert isinstance(i_ndarray, np.ndarray), \
+            "indices array should be a np.ndarray, not %s" % type(a_ndarray)
+        assert i_ndarray.size == a_ndarray.size * shape.size, \
+            "size of values and indices should match."
+        return cls(a_ndarray,
+                   shape,
+                   bigdl_type,
+                   i_ndarray)
+
+    def to_ndarray(self):
+        """
+        Transfer JTensor to ndarray.
+        As SparseTensor may generate an very big ndarray, so we don't support this function for SparseTensor.
+        :return: a ndarray
+        """
+        assert self.indices is None, "sparseTensor to ndarray is not supported"
+        return np.array(self.storage, dtype=get_dtype(self.bigdl_type)).reshape(self.shape)  # noqa
 
     def __reduce__(self):
-        return (JTensor, (self.storage, self.shape, self.bigdl_type))
+        if self.indices is None:
+            return JTensor, (self.storage.tostring(), self.shape.tostring(), self.bigdl_type)
+        else:
+            return JTensor, (self.storage.tostring(), self.shape.tostring(), self.bigdl_type, self.indices.tostring())
 
     def __str__(self):
-        return "storage: %s, shape: %s," % (self.storage, self.storage)
+        return self.__repr__()
+
+    def __repr__(self):
+        indices = "" if self.indices is None else " ,indices %s" % str(self.indices)
+        return "JTensor: storage: %s, shape: %s%s, %s" % (str(self.storage), str(self.shape), indices, self.bigdl_type)
 
 
 class Sample(object):
-    def __init__(self, features, label, features_shape, label_shape,
-                 bigdl_type="float"):
-        def get_dtype():
-            if "float" == bigdl_type:
-                return "float32"
-            else:
-                return "float64"
-        self.features = np.array(features, dtype=get_dtype()).reshape(features_shape)  # noqa
-        self.label = np.array(label, dtype=get_dtype()).reshape(label_shape)
+    def __init__(self, features, label, bigdl_type="float"):
+        """
+        User should always use Sample.from_ndarray to construct Sample.
+        :param features: a list of JTensors
+        :param label: a JTensor
+        :param bigdl_type: "double" or "float"
+        """
+        self.features = features
+        self.label = label
         self.bigdl_type = bigdl_type
 
     @classmethod
     def from_ndarray(cls, features, label, bigdl_type="float"):
+        """
+        Convert a ndarray of features and label to Sample, which would be used in Java side.
+        :param features: an ndarray or a list of ndarrays
+        :param label: an ndarray or a scalar
+        :param bigdl_type: "double" or "float"
+
+        >>> import numpy as np
+        >>> from bigdl.util.common import callBigDlFunc
+        >>> from numpy.testing import assert_allclose
+        >>> np.random.seed(123)
+        >>> sample = Sample.from_ndarray(np.random.random((2,3)), np.random.random((2,3)))
+        >>> sample_back = callBigDlFunc("float", "testSample", sample)
+        >>> assert_allclose(sample.features[0].to_ndarray(), sample_back.features[0].to_ndarray())
+        >>> assert_allclose(sample.label.to_ndarray(), sample_back.label.to_ndarray())
+        >>> print(sample)
+        Sample: features: [JTensor: storage: [[ 0.69646919  0.28613934  0.22685145]
+         [ 0.55131477  0.71946895  0.42310646]], shape: [2 3], float], label: JTensor: storage: [[ 0.98076421  0.68482971  0.48093191]
+         [ 0.39211753  0.343178    0.72904968]], shape: [2 3], float,
+        """
+        if isinstance(features, np.ndarray):
+            features = [features]
+        else:
+            assert all(isinstance(feature, np.ndarray) for feature in features), \
+                "features should be a list of np.ndarray, not %s" % type(features)
+        if not isinstance(label, np.ndarray): # in case label is a scalar.
+            label = np.array(label)
         return cls(
-            features=[float(i) for i in features.ravel()],
-            label=[float(i) for i in label.ravel()],
-            features_shape=list(features.shape),
-            label_shape=list(label.shape) if label.shape else [label.size],
+            features=[JTensor.from_ndarray(f) for f in features],
+            label=JTensor.from_ndarray(label),
+            bigdl_type=bigdl_type)
+
+    @classmethod
+    def from_jtensor(cls, features, label, bigdl_type="float"):
+        """
+        Convert a sequence of JTensor to Sample, which would be used in Java side.
+        :param features: an JTensor or a list of JTensor
+        :param label: an JTensor or a scalar
+        :param bigdl_type: "double" or "float"
+
+        >>> import numpy as np
+        >>> data = np.random.uniform(0, 1, (6)).astype("float32")
+        >>> indices = np.arange(1, 7)
+        >>> shape = np.array([10])
+        >>> feature0 = JTensor.sparse(data, indices, shape)
+        >>> feature1 = JTensor.from_ndarray(np.random.uniform(0, 1, (2, 3)).astype("float32"))
+        >>> sample = Sample.from_jtensor([feature0, feature1], 1)
+        """
+        if isinstance(features, JTensor):
+            features = [features]
+        else:
+            assert all(isinstance(feature, JTensor) for feature in features), \
+                "features should be a list of JTensor, not %s" % type(features)
+        if not isinstance(label, JTensor): # in case label is a scalar.
+            label = JTensor.from_ndarray(np.array(label))
+        return cls(
+            features=features,
+            label=label,
             bigdl_type=bigdl_type)
 
     def __reduce__(self):
-        (features_storage, features_shape) = JTensor.flatten_ndarray(self.features)
-        (label_storage, label_shape) = JTensor.flatten_ndarray(self.label)
-        return (Sample, (
-            features_storage, label_storage, features_shape, label_shape,
-            self.bigdl_type))
+        return Sample, (self.features, self.label, self.bigdl_type)
 
     def __str__(self):
-        return "features: %s, label: %s," % (self.features, self.label)
+        return "Sample: features: %s, label: %s," % (self.features, self.label)
+
+    def __repr__(self):
+        return "Sample: features: %s, label: %s" % (self.features, self.label)
 
 class RNG():
     """
@@ -249,6 +369,22 @@ def init_engine(bigdl_type="float"):
     callBigDlFunc(bigdl_type, "initEngine")
 
 
+def redire_spark_logs(bigdl_type="float", log_path=os.getcwd()+"/bigdl.log"):
+    """
+    Redirect spark logs to the specified path.
+    :param bigdl_type: "double" or "float"
+    :param log_path: the file path to be redirected to; the default file is under the current workspace named `bigdl.log`.
+    """
+    callBigDlFunc(bigdl_type, "redirectSparkLogs", log_path)
+
+def show_bigdl_info_logs(bigdl_type="float"):
+    """
+    Set BigDL log level to INFO.
+    :param bigdl_type: "double" or "float"
+    """
+    callBigDlFunc(bigdl_type, "showBigDlInfoLogs")
+
+
 def get_bigdl_conf():
     bigdl_conf_file = "spark-bigdl.conf"
     bigdl_python_wrapper = "python-api.zip"
@@ -264,10 +400,11 @@ def get_bigdl_conf():
         if bigdl_python_wrapper in p and os.path.isfile(p):
             import zipfile
             with zipfile.ZipFile(p, 'r') as zip_conf:
-                content = zip_conf.read(bigdl_conf_file)
-                if sys.version_info >= (3,):
-                    content = str(content, 'latin-1')
-                return load_conf(content)
+                if bigdl_conf_file  in zip_conf.namelist():
+                    content = zip_conf.read(bigdl_conf_file)
+                    if sys.version_info >= (3,):
+                        content = str(content, 'latin-1')
+                    return load_conf(content)
     raise Exception("Cannot find spark-bigdl.conf.Pls add it to PYTHONPATH.")
 
 
@@ -277,11 +414,20 @@ def to_list(a):
     return [a]
 
 
+def extend_spark_driver_cp(sparkConf, path):
+    original_driver_classpath = ":" + sparkConf.get("spark.driver.extraClassPath") \
+        if sparkConf.contains("spark.driver.extraClassPath") else ""
+    sparkConf.set("spark.driver.extraClassPath", path + original_driver_classpath)
+
+
 def create_spark_conf():
     bigdl_conf = get_bigdl_conf()
     sparkConf = SparkConf()
     sparkConf.setAll(bigdl_conf.items())
+    if not is_spark_below_2_2():
+        extend_spark_driver_cp(sparkConf, get_bigdl_classpath())
     return sparkConf
+
 
 def get_spark_context(conf = None):
     """
@@ -301,7 +447,7 @@ def get_spark_context(conf = None):
 
 def get_spark_sql_context(sc):
     if "getOrCreate" in SQLContext.__dict__:
-        return SQLContext.getOrCreate()
+        return SQLContext.getOrCreate(sc)
     else:
         return SQLContext(sc)  # Compatible with Spark1.5.1
 
@@ -375,10 +521,10 @@ def _py2java(sc, obj):
                                       sc._gateway._gateway_client)
     elif isinstance(obj, dict):
         result = {}
+        print(obj.keys())
         for (key, value) in obj.items():
-            result[key] = _py2java(sc, value) if isinstance(value, JavaValue) else value  # noqa
-        obj = result
-
+            result[key] = _py2java(sc, value)
+        obj = MapConverter().convert(result, sc._gateway._gateway_client)
     elif isinstance(obj, JavaValue):
         obj = obj.value
     elif isinstance(obj, JavaObject):

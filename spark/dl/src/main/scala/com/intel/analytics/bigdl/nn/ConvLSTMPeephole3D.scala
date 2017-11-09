@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -66,7 +66,8 @@ class ConvLSTMPeephole3D[T : ClassTag](
   var hiddenLayer: Sequential[T] = _
   var cellLayer: Sequential[T] = _
 
-  override var cell: AbstractModule[Activity, Activity, T] = buildConvLSTM()
+  override var preTopology: TensorModule[T] = null
+  override var cell: AbstractModule[Activity, Activity, T] = buildModel()
 
   def buildGate(): Sequential[T] = {
     val i2g = Sequential()
@@ -167,7 +168,7 @@ class ConvLSTMPeephole3D[T : ClassTag](
     cellLayer
   }
 
-  def buildConvLSTM(): Sequential[T] = {
+  def buildModel(): Sequential[T] = {
     buildCell()
     buildOutputGate()
 
@@ -193,7 +194,6 @@ class ConvLSTMPeephole3D[T : ClassTag](
         .add(SelectTable(1))
         .add(Identity()))
 
-    cell = convlstm
     convlstm
   }
 

@@ -54,15 +54,24 @@ class PredictorSpec extends FlatSpec with Matchers with BeforeAndAfter{
     }
     val model = LeNet5(classNum = 10)
     val dataSet = sc.parallelize(data, 2)
-    val result = model.predict(dataSet)
 
-    val prob = result.map(_.toTensor[Float].clone()).collect()
+    var result = model.predict(dataSet)
+    var prob = result.collect()
+
     prob(0) should be (model.forward(data(0).feature))
     prob(11) should be (model.forward(data(11).feature))
     prob(31) should be (model.forward(data(31).feature))
     prob(51) should be (model.forward(data(51).feature))
     prob(71) should be (model.forward(data(71).feature))
     prob(91) should be (model.forward(data(91).feature))
+
+    result = model.predict(dataSet, 20, true)
+    prob = result.collect()
+
+    prob(0) should be(prob(10))
+    prob(5) should be(prob(15))
+    prob(0) should be(prob(20))
+    prob(8) should be(prob(38))
   }
 
   "model.predictClass" should "be correct" in {

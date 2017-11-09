@@ -83,7 +83,7 @@ def setup_package():
                   'bigdl.optim',
                   'bigdl.util',
                   'bigdl.share'],
-        install_requires=['numpy>=1.7'],
+        install_requires=['numpy>=1.7', 'pyspark>=2.2'],
         dependency_links=['https://d3kbcqa49mib13.cloudfront.net/spark-2.0.0-bin-hadoop2.7.tgz'],
         include_package_data=True,
         package_data={"bigdl.share": ['bigdl/share/lib', 'bigdl/share/conf', 'bigdl/share/bin']},

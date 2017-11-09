@@ -29,6 +29,7 @@ def main():
     input_width = 32
     input_channel = 3
     inputs = tf.Variable(tf.random_uniform((1, input_width, input_channel)), name='input')
+    inputs = tf.identity(inputs, "input_node")
     filter_width = 4
     output_channels = 6
     filters = tf.Variable(tf.random_uniform((filter_width, input_channel, output_channels)))

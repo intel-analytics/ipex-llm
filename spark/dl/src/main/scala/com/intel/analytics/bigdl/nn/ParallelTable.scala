@@ -15,9 +15,11 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
 
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
@@ -53,6 +55,18 @@ class ParallelTable[T: ClassTag]
       modules(i).accGradParameters(input(i + 1), gradOutput(i + 1))
       i += 1
     }
+  }
+
+  override def getEndNodes(startNodes: Array[ModuleNode[T]]): Array[ModuleNode[T]] = {
+    val outputs = ArrayBuffer[ModuleNode[T]]()
+    var outputTuple: Array[ModuleNode[T]] = null
+    require(startNodes.length == modules.length, s"ParallelTable: " +
+      s"startNodes length ${startNodes.length} is more than modules length ${modules.length}")
+    for (i <- 0 to modules.size - 1) {
+      outputTuple = modules(i).getEndNodes(Array(startNodes(i)))
+      outputs ++= outputTuple
+    }
+    outputs.toArray
   }
 
   override def toString: String = {

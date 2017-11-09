@@ -36,12 +36,13 @@ import scala.reflect.ClassTag
  * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
  */
 @SerialVersionUID(- 8525406230282608924L)
-class Input[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
-  override def updateOutput(input: Tensor[T]): Tensor[T] = {
+class Input[T: ClassTag]()(implicit ev: TensorNumeric[T])
+  extends AbstractModule[Activity, Activity, T] {
+  override def updateOutput(input: Activity): Activity = {
     output = input
     output
   }
-  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+  override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
     gradInput = gradOutput
     gradInput
   }
@@ -54,7 +55,11 @@ class Input[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends TensorModule[T
 }
 
 object Input {
-  def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): ModuleNode[T] = {
-    new Node(new Input().asInstanceOf[AbstractModule[Activity, Tensor[T], T]])
+  def apply[T: ClassTag](name : String = null)(implicit ev: TensorNumeric[T]): ModuleNode[T] = {
+    val module = new Input()
+    if (name != null) {
+      module.setName(name)
+    }
+    new Node(module.asInstanceOf[AbstractModule[Activity, Activity, T]])
   }
 }

@@ -64,16 +64,12 @@ function deploy {
     cd spark-version && mvn deploy -DskipTests -P sign -Dspark.version=$1 -DSPARK_PLATFORM=$2 $3 && cd ..
     cd dl && mvn deploy -DskipTests -P sign -Dspark.version=$1 -DSPARK_PLATFORM=$2 $3 && cd ..
     cd dist && mvn deploy -DskipTests -P sign -Dspark.version=$1 -DSPARK_PLATFORM=$2 $3 && cd ..
-    mvn clean install -DskipTests -P sign -Dspark.version=$1 -DSPARK_PLATFORM=$2 -P mac $3
-    cd dist && mvn deploy -DskipTests -P sign -Dspark.version=$1 -DSPARK_PLATFORM=$2 -P mac $3 && cd ..
-    mvn clean install -DskipTests -P sign -Dspark.version=$1 -DSPARK_PLATFORM=$2 -P win64 $3
-    cd dist && mvn deploy -DskipTests -P sign -Dspark.version=$1 -DSPARK_PLATFORM=$2 -P win64 $3 && cd ..
 }
 
 deploy 1.5.2 SPARK_1.5 ''
 deploy 1.6.2 SPARK_1.6 ''
-deploy 2.0.2 SPARK_2.0 '-P spark_2.x'
 deploy 2.1.1 SPARK_2.1 '-P spark_2.x'
+deploy 2.2.0 SPARK_2.2 '-P spark_2.x'
 
 mv dl/pom.xml.origin dl/pom.xml
 mv spark-version/1.5-plus/pom.xml.origin spark-version/1.5-plus/pom.xml

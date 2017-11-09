@@ -31,7 +31,7 @@ import scala.reflect.ClassTag
  * @param padBottom pad bottom position
  */
 @SerialVersionUID(- 5144173515559923276L)
-class SpatialZeroPadding[@specialized(Float, Double) T: ClassTag](
+class SpatialZeroPadding[T: ClassTag](
   padLeft: Int, padRight: Int, padTop: Int, padBottom: Int)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   def this(padLeft: Int)(implicit ev: TensorNumeric[T]) = this(padLeft, padLeft, padLeft, padLeft)

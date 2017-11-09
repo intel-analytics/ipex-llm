@@ -59,7 +59,8 @@ class DiceCoefficientCriterion[@specialized(Float, Double) T: ClassTag]
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     require((input.dim() == target.dim()) && (input.isSameSizeAs(target)),
-      "DiceCoefficientCriterion: " + ErrorInfo.constrainInputSizeSameAsTarget)
+      "DiceCoefficientCriterion: " + ErrorInfo.constrainInputSizeSameAsTarget +
+    s"input (${input.dim()}) target(${target.dim()})")
 
     _input = if (input.dim() == 1) input.view(1, input.nElement()) else input
     _target = if (target.dim() == 1) target.view(1, target.nElement()) else target

@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.utils.{RandomGenerator, T, Table}
 
 import scala.reflect.ClassTag
 import RandomGenerator._
+import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
 import com.intel.analytics.bigdl.optim.Regularizer
 
@@ -47,10 +48,10 @@ class Linear[T: ClassTag](
   val withBias: Boolean = true,
   var wRegularizer: Regularizer[T] = null,
   var bRegularizer: Regularizer[T] = null,
-  initWeight: Tensor[T] = null,
-  initBias: Tensor[T] = null,
-  initGradWeight: Tensor[T] = null,
-  initGradBias: Tensor[T] = null
+  private val initWeight: Tensor[T] = null,
+  private val initBias: Tensor[T] = null,
+  private val initGradWeight: Tensor[T] = null,
+  private val initGradBias: Tensor[T] = null
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
   val weight: Tensor[T] =
     if (initWeight != null) initWeight else Tensor[T](outputSize, inputSize)
@@ -82,7 +83,9 @@ class Linear[T: ClassTag](
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim() == 1 || input.dim() == 2,
-      "Linear: " + ErrorInfo.constrainInputAsVectorOrBatch)
+      "Linear: " + ErrorInfo.constrainInputAsVectorOrBatch +
+      s"input dim ${input.dim()}")
+
 
     if (input.dim() == 1) {
       output.resize(Array(outputSize))
@@ -110,7 +113,8 @@ class Linear[T: ClassTag](
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     require(input.dim() == 1 || input.dim() == 2,
-      "Linear: " + ErrorInfo.constrainInputAsVectorOrBatch)
+      "Linear: " + ErrorInfo.constrainInputAsVectorOrBatch +
+    s"input dim ${input.dim()}")
 
     val nElement = gradInput.nElement()
     gradInput.resizeAs(input)
@@ -128,7 +132,8 @@ class Linear[T: ClassTag](
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
     require(input.dim() == 1 || input.dim() == 2,
-      "Linear: " + ErrorInfo.constrainInputAsVectorOrBatch)
+      "Linear: " + ErrorInfo.constrainInputAsVectorOrBatch +
+    s"input dim ${input.dim()}")
 
     gradWeight.resize(outputSize, inputSize)
     if (withBias) {
@@ -235,7 +240,7 @@ class Linear[T: ClassTag](
   }
 }
 
-object Linear {
+object Linear extends quantized.Quantizable {
   def apply[@specialized(Float, Double) T: ClassTag](
       inputSize: Int,
       outputSize: Int,
@@ -249,5 +254,13 @@ object Linear {
   )(implicit ev: TensorNumeric[T]) : Linear[T] = {
     new Linear[T](inputSize, outputSize,
       withBias, wRegularizer, bRegularizer, initWeight, initBias, initGradWeight, initGradBias)
+  }
+
+  override def quantize[T: ClassTag](module: Module[T])(
+    implicit ev: TensorNumeric[T]): Module[T] = {
+    val linear = module.asInstanceOf[Linear[T]]
+    val quantizedLinear = quantized.Linear[T](linear.weight.size(2), linear.weight.size(1),
+      initWeight = linear.weight, initBias = linear.bias)
+    quantizedLinear.setName(linear.getName())
   }
 }

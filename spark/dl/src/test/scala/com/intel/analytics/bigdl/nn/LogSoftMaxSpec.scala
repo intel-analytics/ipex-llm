@@ -21,6 +21,8 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.torch.TH
 import com.intel.analytics.bigdl.utils.Engine
 
+import scala.util.Random
+
 @com.intel.analytics.bigdl.tags.Parallel
 class LogSoftMaxSpec extends FlatSpec with Matchers with BeforeAndAfter {
   before {
@@ -115,5 +117,13 @@ class LogSoftMaxSpec extends FlatSpec with Matchers with BeforeAndAfter {
     gradInput should be(expectedGrad)
     input should be(inputOrg)
     gradOutput should be(gradOutputOrg)
+  }
+
+  "LogSoftMax float module" should "won't return Infinity when input is bigger than 89" in {
+    val module = new LogSoftMax[Float]()
+    Random.setSeed(100)
+    val input = Tensor[Float](2, 5).apply1(e => Random.nextFloat() + 90)
+    val output = module.forward(input).toTensor[Float]
+    output.apply1(v => {v.isInfinity should be (false); v})
   }
 }

@@ -37,7 +37,6 @@ import org.apache.spark.sql.SQLContext
 object DLClassifierLeNet {
 
   LoggerFilter.redirectSparkInfoLogs()
-  Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
 
   def main(args: Array[String]): Unit = {
     val inputs = Array[String]("Feature data", "Label data")

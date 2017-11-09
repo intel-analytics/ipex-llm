@@ -31,18 +31,27 @@ import scala.reflect.ClassTag
 @SerialVersionUID(9062199894710333035L)
 class Tanh[@specialized(Float, Double) T: ClassTag](
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+
+  private val buffer: Tensor[T] = Tensor[T]()
+
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     output.resizeAs(input)
-    output.map(input, (_, inputVal) => ev.fromType[Double](tanh(ev.toType[Double](inputVal))))
+    output.tanh(input)
     output
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     gradInput.resizeAs(gradOutput)
-    gradInput.copy(gradOutput)
-    gradInput.map(output, (gradValue, outputValue) => ev.times(
-      gradValue, ev.minus(ev.fromType[Int](1), ev.times(outputValue, outputValue))))
+    buffer.resizeAs(output)
+    buffer.pow(output, ev.fromType(2)).cmul(gradOutput)
+    gradInput.sub(gradOutput, buffer)
     gradInput
+  }
+
+  override def clearState(): this.type = {
+    super.clearState()
+    buffer.set()
+    this
   }
 }
 

@@ -301,7 +301,9 @@ class TemporalConvolution[T: ClassTag](
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
     // Require input of 2 dimensions or 3 dimensions
-    require(input.nDimension() == 2 || input.nDimension() == 3, "Only support 2D or 3D input")
+    require(input.nDimension() == 2 || input.nDimension() == 3,
+      "Only support 2D or 3D input, " +
+        s"input ${input.nDimension()}")
     // Require input to be contiguous
     require(gradOutput.isContiguous())
 

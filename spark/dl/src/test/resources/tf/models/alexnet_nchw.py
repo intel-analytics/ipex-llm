@@ -31,6 +31,7 @@ def main():
     if len(argv) == 5:
         batchSize = int(argv[4])
     inputs = tf.Variable(tf.random_uniform((batchSize, 3, height, width)), name = 'input')
+    inputs = tf.identity(inputs, "input_node")
     net, end_points = alexnet_v1(inputs, is_training=False, spatial_squeeze=False)
         
     print("nodes in the graph")

@@ -62,7 +62,7 @@ class LeakyReLUSpec  extends TorchSpec {
     val seed = 100
     RNG.setSeed(seed)
 
-    val module = new LeakyReLU[Double](inplace = false)
+    val module = new LeakyReLU[Double](inplace = true)
     val input = Tensor[Double](2, 2, 2)
     input.apply1(x => random())
     val gradOutput = Tensor[Double](2, 2, 2)

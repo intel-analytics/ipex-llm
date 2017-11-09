@@ -25,7 +25,7 @@ import scala.reflect.ClassTag
  * Applies element-wise exp to input tensor.
  */
 @SerialVersionUID(4918769744611296463L)
-class Exp[@specialized(Float, Double) T: ClassTag] (implicit ev: TensorNumeric[T])
+class Exp[T: ClassTag] (implicit ev: TensorNumeric[T])
   extends TensorModule[T] {
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {

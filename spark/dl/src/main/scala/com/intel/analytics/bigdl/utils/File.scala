@@ -18,10 +18,8 @@ package com.intel.analytics.bigdl.utils
 
 import java.io._
 import java.net.URL
-
-import com.intel.analytics.bigdl
-import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FilenameUtils
+import java.net.URI
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FSDataInputStream, FSDataOutputStream, FileSystem, Path}
 import org.apache.hadoop.io.IOUtils
@@ -203,7 +201,7 @@ object File {
     var fs: FileSystem = null
     var in: FSDataInputStream = null
     try {
-      fs = src.getFileSystem(new Configuration())
+      fs = FileSystem.newInstance(new URI(fileName), new Configuration())
       in = fs.open(src)
       val byteArrayOut = new ByteArrayOutputStream()
       IOUtils.copyBytes(in, byteArrayOut, 1024, true)
@@ -229,16 +227,16 @@ private[bigdl] class FileReader(fileName: String) {
   private var fs: FileSystem = null
   private val httpPrefix: String = "http://"
   private val httpsPrefix: String = "https://"
-  /**
-   * load  file according to url
+  /** load  file according to url
    * @param url
    * @param dir
    */
   private def downloadFromUrl(url: String, dir: String): Unit = {
     val httpurl = new URL(url)
-    val fileName = FilenameUtils.getBaseName(url) + '.' + FilenameUtils.getExtension(url)
-    val f = new File(dir + fileName)
-    FileUtils.copyURLToFile(httpurl, f)
+
+    import sys.process._
+    val s = "wget" + " -P /tmp " + httpurl !!
+
 
   }
   /**
@@ -268,9 +266,10 @@ private[bigdl] class FileReader(fileName: String) {
     if (null != inputStream) inputStream.close()
 
     if(fileName != exactFileName) {
-       if (fs.exists(path)) {
-         fs.delete(path, true)
-       }
+
+      if (fs.exists(path)) {
+        fs.delete(path, true)
+      }
     }
     if (null != fs) fs.close()
   }

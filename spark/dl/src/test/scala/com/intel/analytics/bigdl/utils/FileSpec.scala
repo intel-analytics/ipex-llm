@@ -22,6 +22,7 @@ import java.io.File
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.example.loadmodel.AlexNet_OWT
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.nn.Module
 import org.apache.hadoop.fs.Path
@@ -73,10 +74,23 @@ class FileSpec extends FlatSpec with Matchers {
   }
   "download files according to URL" should "work properly" in {
 
-    val Testmodel = Module.load[Float]("https://github.com/lopelopelope" +
+    val module = new Sequential[Double]
+
+    module.add(new SpatialConvolution(1, 6, 5, 5))
+    module.add(new Tanh())
+    module.add(new SpatialMaxPooling(2, 2, 2, 2))
+    // stage 2 : filter bank -> squashing -> max pooling
+    module.add(new SpatialConvolution(6, 12, 5, 5))
+    module.add(new Tanh())
+    module.add(new SpatialMaxPooling(2, 2, 2, 2))
+    // stage 3 : standard 2-layer neural network
+    module.add(new Reshape(Array(12 * 5 * 5)))
+    module.add(new Linear(12 * 5 * 5, 100))
+    module.add(new Tanh())
+    module.add(new Linear(100, 6))
+    module.add(new LogSoftMax[Double]())
+    val Testmodel: Module[Double] = File.load("https://github.com/lopelopelope" +
       "/bigdlModel/raw/master/model.bigdl")
-    Testmodel.output should be (null)
+    Testmodel.getParameters()._1.dim() should be (module.getParameters()._1.dim())
   }
-
-
 }
