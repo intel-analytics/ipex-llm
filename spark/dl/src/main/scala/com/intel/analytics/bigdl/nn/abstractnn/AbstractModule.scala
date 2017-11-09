@@ -53,6 +53,7 @@ abstract class TensorModule[T: ClassTag]
  * @tparam B Output data type
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
  */
+@SerialVersionUID(1L)
 abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, T: ClassTag](
   implicit ev: TensorNumeric[T]) extends Serializable {
 
