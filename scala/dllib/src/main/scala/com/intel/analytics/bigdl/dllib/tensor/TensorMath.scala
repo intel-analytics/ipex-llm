@@ -787,4 +787,13 @@ trait TensorMath[T] {
    * @return this tensor
    */
   def negative(x : Tensor[T]): Tensor[T]
+
+  /**
+   * Reduce along the given dimension with the given reducer, and copy the result to the result
+   * tensor
+   * @param dim
+   * @param result
+   * @param reducer
+   */
+  def reduce(dim: Int, result: Tensor[T], reducer: (T, T) => T): Tensor[T]
 }
