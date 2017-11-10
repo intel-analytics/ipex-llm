@@ -184,6 +184,12 @@ object TensorNumericMath {
     def isNan(a: T): Boolean
 
     def isInf(a: T): Boolean
+
+    def round(a: T): T
+
+    def truncate(a: T): T
+
+    def floorDiv(a: T, b: T): T
   }
 
   /**
@@ -432,6 +438,18 @@ object TensorNumericMath {
     override def isNan(a: T): Boolean =
       throw new UnsupportedOperationException(typeName +
         " in tensor does not support isNan operation")
+
+    override def round(a: T): T =
+      throw new UnsupportedOperationException(typeName +
+        " in tensor does not support round operation")
+
+    override def truncate(a: T): T =
+      throw new UnsupportedOperationException(typeName +
+        " in tensor does not support truncate operation")
+
+    override def floorDiv(a: T, b: T): T =
+      throw new UnsupportedOperationException(typeName +
+        " in tensor does not support floorDiv operation")
   }
 
   /**
@@ -725,6 +743,22 @@ object TensorNumericMath {
       override def isNan(a: Float): Boolean = java.lang.Float.isNaN(a)
 
       override def isInf(a: Float): Boolean = java.lang.Float.isInfinite(a)
+
+      override def round(a: Float): Float = Math.round(a).toFloat
+
+      override def truncate(a: Float): Float = {
+        if (a >= 0) {
+          Math.floor(a).toFloat
+        } else if (a == Math.floor(a)) {
+          a
+        } else {
+          Math.floor(a).toFloat + 1
+        }
+      }
+
+      override def floorDiv(a: Float, b: Float): Float = {
+        Math.floor(a / b).toFloat
+      }
     }
 
     implicit object NumericDouble extends UndefinedTensorNumeric[Double]("Double") {
@@ -1008,6 +1042,22 @@ object TensorNumericMath {
       override def isNan(a: Double): Boolean = java.lang.Double.isNaN(a)
 
       override def isInf(a: Double): Boolean = java.lang.Double.isInfinite(a)
+
+      override def round(a: Double): Double = Math.round(a).toDouble
+
+      override def truncate(a: Double): Double = {
+        if (a >= 0) {
+          Math.floor(a)
+        } else if (a == Math.floor(a)) {
+          a
+        } else {
+          Math.floor(a) + 1
+        }
+      }
+
+      override def floorDiv(a: Double, b: Double): Double = {
+        Math.floor(a / b)
+      }
     }
 
     implicit object NumericString extends UndefinedTensorNumeric[String]("String") {
@@ -1137,6 +1187,36 @@ object TensorNumericMath {
           a(i * stride + offset) -= v
           i += 1
         }
+      }
+
+      override def round(a: Int): Int = a
+
+      override def vDiv(n: Int, a: Array[Int], aOffset: Int, b: Array[Int], bOffset: Int,
+        y: Array[Int], yOffset: Int): Unit = {
+        var i = 0
+        while(i < n) {
+          y(i + yOffset) = a(i + aOffset) / b(i + bOffset)
+          i += 1
+        }
+      }
+
+      override def vMul(n: Int, a: Array[Int], aOffset: Int, b: Array[Int], bOffset: Int,
+        y: Array[Int], yOffset: Int): Unit = {
+        var i = 0
+        while(i < n) {
+          y(i + yOffset) = a(i + aOffset) * b(i + bOffset)
+          i += 1
+        }
+      }
+
+      override def truncate(a: Int): Int = a
+
+      override def floorDiv(a: Int, b: Int): Int = {
+        var var2 = a / b
+        if ((a ^ b) < 0 && var2 * b != a) {
+          var2 -= 1
+        }
+        var2
       }
     }
 
