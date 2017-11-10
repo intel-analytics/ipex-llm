@@ -19,6 +19,7 @@ import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.Identity
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.ops.Prod
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -33,10 +34,13 @@ class Prod extends TensorflowOpsLoader {
 
   override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder,
     context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
-    Adapter[T](Array(2), tensorArrays => {
-      val axis = tensorArrays(0).asInstanceOf[Tensor[Int]].value() + 1
-      val keepDims = getBoolean(nodeDef.getAttrMap, "keep_dims")
-      Prod[T](axis)
-    })
+    new ProdLoadTF[T]()
+  }
+}
+
+class ProdLoadTF[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Adapter[T](Array(2)) {
+  override def build(tensorArrays: Array[Tensor[_]]): AbstractModule[Activity, Activity, T] = {
+    val axis = tensorArrays(0).asInstanceOf[Tensor[Int]].value() + 1
+    Prod[T](axis)
   }
 }
