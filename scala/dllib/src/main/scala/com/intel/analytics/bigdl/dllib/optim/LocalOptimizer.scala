@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch}
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.models.utils.ModelBroadcast
 import com.intel.analytics.bigdl.nn.Utils
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -56,6 +57,22 @@ class LocalOptimizer[T: ClassTag] (
     case _ => throw new IllegalArgumentException
   }
 
+  private val workingModels = {
+    val modelBroadcast = ModelBroadcast()
+    model.getParameters()
+    val wb = modelBroadcast.getAndClearWeightBias(model.parameters())
+
+    val models = (1 to subModelNumber).map(i => {
+      logger.info(s"Clone $i model...")
+      val m = model.cloneModule()
+      modelBroadcast.putWeightBias(wb, m)
+      modelBroadcast.initGradWeightBias(wb, m)
+      m
+    }).toArray
+    modelBroadcast.putWeightBias(wb, model)
+    modelBroadcast.initGradWeightBias(wb, model)
+    models
+  }
   private val (weight, grad) = model.getParameters()
   private val gradLength = grad.nElement()
   private val syncGradTaskSize = gradLength / subModelNumber
@@ -63,14 +80,7 @@ class LocalOptimizer[T: ClassTag] (
   private val syncGradParallelNum =
     if (syncGradTaskSize == 0) syncGradExtraTask else subModelNumber
 
-  private val workingModels = (1 to subModelNumber).map(i => {
-    logger.info(s"Clone $i model...")
-    model.cloneModule()
-  }).toArray
-
   private val workingModelWAndG = workingModels.map(_.getParameters())
-
-  workingModelWAndG.foreach(_._1.storage().set(weight.storage()))
 
   private val workingCriterion =
     (1 to subModelNumber).map(_ => criterion.cloneCriterion()).toArray

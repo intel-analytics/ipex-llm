@@ -71,7 +71,7 @@ class ModelBroadcast[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Seria
   }
 
 
-  private def getAndClearWeightBias(parameters: (Array[Tensor[T]], Array[Tensor[T]]))
+  private[bigdl] def getAndClearWeightBias(parameters: (Array[Tensor[T]], Array[Tensor[T]]))
   : Array[Tensor[T]] = {
     if (parameters._1.length != 0) {
       var i = 0
@@ -124,7 +124,7 @@ class ModelBroadcast[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Seria
     }
   }
 
-  private def putWeightBias(
+  private[bigdl] def putWeightBias(
         broadcastWeightBias: Array[Tensor[T]],
         localModel: Module[T]): Unit = {
     val localWeightBias = localModel.parameters()._1
@@ -137,7 +137,7 @@ class ModelBroadcast[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Seria
     }
   }
 
-  private def initGradWeightBias(
+  private[bigdl] def initGradWeightBias(
         broadcastWeightBias: Array[Tensor[T]],
         localModel: Module[T]): Unit = {
     val (localWeightBias, localGradWeightBias) = localModel.parameters()
