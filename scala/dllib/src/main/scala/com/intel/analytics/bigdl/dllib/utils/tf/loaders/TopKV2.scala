@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.ops.TopK
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -39,19 +40,31 @@ class TopKV2 extends TensorflowOpsLoader {
       true
     }
     val t = getType(nodeDef.getAttrMap, "T")
+    val ts = if (t == DataType.DT_FLOAT) {
+      "Float"
+    } else if (t == DataType.DT_DOUBLE) {
+      "Double"
+    } else {
+      throw new UnsupportedOperationException(s"Not support load Inv when type is ${t}")
+    }
 
-    Adapter[T](Array(2), tensorArrays => {
-      val kTensor = tensorArrays(0).asInstanceOf[Tensor[Int]]
-      require(kTensor.isScalar, "Invalid input k")
-      val k = kTensor.value()
+    new TopKV2LoadTF[T](s, ts)
+  }
+}
 
-      if (t == DataType.DT_FLOAT) {
-        TopK[T, Float](k, s, startIndex = 0)
-      } else if (t == DataType.DT_DOUBLE) {
-        TopK[T, Double](k, s, startIndex = 0)
-      } else {
-        throw new UnsupportedOperationException(s"Not support load Inv when type is ${t}")
-      }
-    })
+class TopKV2LoadTF[T: ClassTag](s: Boolean, t: String)(implicit ev: TensorNumeric[T])
+  extends Adapter[T](Array(2)) {
+  override def build(tensorArrays: Array[Tensor[_]]): AbstractModule[Activity, Activity, T] = {
+    val kTensor = tensorArrays(0).asInstanceOf[Tensor[Int]]
+    require(kTensor.isScalar, "Invalid input k")
+    val k = kTensor.value()
+
+    if (t == "Float") {
+      TopK[T, Float](k, s, startIndex = 0)
+    } else if (t == "Double") {
+      TopK[T, Double](k, s, startIndex = 0)
+    } else {
+      throw new UnsupportedOperationException(s"Not support load Inv when type is ${t}")
+    }
   }
 }
