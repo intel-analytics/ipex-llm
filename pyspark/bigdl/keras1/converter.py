@@ -31,16 +31,20 @@ class WeightLoader:
             bigdl_weights = WeightsConverter.get_bigdl_weigths_from_keras(k)
             b.set_weights(bigdl_weights)
 
-    # TODO: add unitest to cover this
+    # TODO: add more unitest
     @staticmethod
-    def __load_weights_by_name(bmodel, kmodel):
+    def __load_weights_by_name(bmodel, kmodel, by_name=False):
         keras_name_to_layer = WeightLoader.__keras_name_to_Layers(kmodel, with_weights=True)
         bigdl_name_to_layer = WeightLoader.__bigdl_name_to_Layers(bmodel, with_weights=True)
         layers_not_in_keras = set(bigdl_name_to_layer.keys()) - set(keras_name_to_layer.keys())
         if layers_not_in_keras:
             raise Exception("Layers %s can be found in bigdl, but not in keras" % repr(layers_not_in_keras))  # noqa
         layers_not_in_bigdl = set(keras_name_to_layer.keys()) - set(bigdl_name_to_layer.keys())
-        warnings.warn("Ignore weight of layers %s as it cannot be found in bigdl" % repr(layers_not_in_bigdl))  # noqa
+        if layers_not_in_bigdl:
+            if by_name:
+                warnings.warn("Ignore weight of layers %s as it cannot be found in bigdl" % repr(layers_not_in_bigdl))  # noqa
+            else:
+                raise Exception("Layers %s can be found in bigdl, but not in keras" % repr(layers_not_in_keras))  # noqa
         for blayer in bigdl_name_to_layer.values():
             if blayer.name() in keras_name_to_layer:
                 klayer = keras_name_to_layer[blayer.name()]
@@ -83,7 +87,7 @@ class WeightLoader:
         some of the layers have changed.
         '''
         kmodel.load_weights(filepath=filepath, by_name=by_name)
-        WeightLoader.load_weights_from_kmodel(bmodel, kmodel)
+        WeightLoader.load_weights_from_kmodel(bmodel, kmodel, by_name=by_name)
 
     @staticmethod
     def __keras_name_to_Layers(model, with_weights=False):
