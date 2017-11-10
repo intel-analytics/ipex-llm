@@ -351,7 +351,7 @@ object Utils {
     inputdepth: Int = -1,
     dt: Int = -1,
     kt: Int = -1,
-    padt: Int = -1,
+    padt: Int = 0,
     dilationDepth: Int = 1): Array[Int] = {
     var oheight = 0
     var owidth = 0
@@ -386,6 +386,8 @@ object Utils {
         if ((odepth - 1) * dt >= inputdepth + padt) odepth -= 1
         return Array(padt, padt, padH, padH, padW, padW, odepth, oheight, owidth)
       }
+    } else if (inputdepth > 0) {
+        return Array(padt, padt, padH, padH, padW, padW, odepth, oheight, owidth)
     }
     Array(padH, padH, padW, padW, oheight, owidth)
   }
