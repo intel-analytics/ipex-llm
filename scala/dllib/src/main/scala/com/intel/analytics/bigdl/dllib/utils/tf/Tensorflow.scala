@@ -123,6 +123,8 @@ object Tensorflow {
       DataType.DT_FLOAT
     } else if (value.getType() == IntType) {
       DataType.DT_INT32
+    } else if (value.getType() == BooleanType) {
+      DataType.DT_BOOL
     } else {
       throw new UnsupportedOperationException(s"data type ${value.getType()} is not supported")
     }
@@ -507,6 +509,19 @@ object Tensorflow {
         i += 1
       }
       (buffer, DataType.DT_INT32)
+    } else if (value.getType() == BooleanType) {
+      val array = value.asInstanceOf[Tensor[Boolean]].storage().array()
+      val offset = value.storageOffset() - 1
+      val buffer = ByteBuffer.allocate(array.length)
+      buffer.order(byteOrder)
+      val t : Byte = 1
+      val f : Byte = 0
+      var i = 0
+      while (i < value.nElement()) {
+        buffer.put(if (array(i + offset)) t else f)
+        i += 1
+      }
+      (buffer, DataType.DT_BOOL)
     } else {
       throw new UnsupportedOperationException(s"")
     }
