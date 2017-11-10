@@ -30,12 +30,12 @@ import com.intel.analytics.bigdl.utils.Engine
  * classes. If provided, the optional argument weights should be a 1D Tensor assigning weight to
  * each of the classes. This is particularly useful when you have an unbalanced training set.
  *
- * The input given through a forward() is expected to contain log-probabilities of each class:
- * input has to be a 1D Tensor of size n. Obtaining log-probabilities in a neural network is easily
- * achieved by adding a LogSoftMax layer in the last layer of your neural network. You may use
- * CrossEntropyCriterion instead, if you prefer not to add an extra layer to your network. This
- * criterion expects a class index (1 to the number of class) as target when calling
- * forward(input, target) and backward(input, target).
+ * The input given through a forward() is expected to contain log-probabilities/probabilities of
+ * each class: input has to be a 1D Tensor of size n. Obtaining log-probabilities in a neural
+ * network is easily achieved by adding a LogSoftMax layer in the last layer of your neural
+ * network. You may use CrossEntropyCriterion instead, if you prefer not to add an extra layer
+ * to your network. This criterion expects a class index (1 to the number of class) as target
+ * when calling forward(input, target) and backward(input, target).
  *
  * The loss can be described as:
  *     loss(x, class) = -x[class]
@@ -53,12 +53,14 @@ import com.intel.analytics.bigdl.utils.Engine
  *
  * @param weights weights of each element of the input
  * @param sizeAverage size average of batch
+ * @param acceptProb indicating whether to accept log-probabilities or probabilities as input.
+ *                   True means accepting probabilities as input.
  * @param ev numeric operator
  * @tparam T numeric type
  */
 @SerialVersionUID(- 8696382776046599502L)
 class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
-(weights: Tensor[T] = null, sizeAverage: Boolean = true)
+(weights: Tensor[T] = null, sizeAverage: Boolean = true, acceptProb: Boolean = false)
   (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
   private var total_weight = ev.fromType[Int](0)
   if (weights != null) require(weights.dim() == 1,
@@ -85,7 +87,14 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
         s"curTarget ${curTarget} is out of range, should be 1 to ${nClasses}")
       total_weight = if (weights != null) weights(Array(curTarget)) else ev.fromType[Int](1)
       output = if (curTarget == -1) ev.zero
-      else ev.times(ev.negative(input.valueAt(curTarget)), total_weight)
+      else {
+        if (acceptProb) {
+          ev.times(ev.negative(ev.log(input.valueAt(curTarget))), total_weight)
+        } else {
+          ev.times(ev.negative(input.valueAt(curTarget)), total_weight)
+        }
+      }
+
     } else if (input.dim() == 2) {
       val batchSize = input.size(1)
       val targetSize = target.size()
@@ -111,7 +120,12 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
           if (curTarget == -1) (ev.zero, ev.one)
           else {
             val curWeight = if (weights != null) weights.valueAt(curTarget) else ev.fromType[Int](1)
-            (ev.times(input.valueAt(_i, curTarget), curWeight), curWeight)
+            if (acceptProb) {
+              (ev.times(ev.log(input.valueAt(_i, curTarget)), curWeight), curWeight)
+            } else {
+              (ev.times(input.valueAt(_i, curTarget), curWeight), curWeight)
+            }
+
           }
         })
         i += 1
@@ -152,6 +166,8 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
       else ev.fromType[Int](-1))
       if (sizeAverage) gradInput.setValue(curTarget, ev.divide(gradInput.valueAt(curTarget),
         total_weight))
+      if (acceptProb) gradInput.setValue(curTarget,
+        ev.times(gradInput.valueAt(curTarget), ev.inv(input.valueAt(curTarget))))
     }
     else if (input.dim() == 2) {
       val batchSize = input.size(1)
@@ -172,6 +188,10 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
             else ev.fromType[Int](-1))
             if (sizeAverage) gradInput.setValue(_i, curTarget, ev.divide(gradInput.valueAt(_i,
               curTarget), total_weight))
+            if (acceptProb) {
+              gradInput.setValue(_i, curTarget,
+                ev.times(gradInput.valueAt(_i, curTarget), ev.inv(input.valueAt(_i, curTarget))))
+            }
           }
         })
         i += 1
@@ -191,7 +211,8 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
 object ClassNLLCriterion {
   def apply[@specialized(Float, Double) T: ClassTag](
     weights: Tensor[T] = null,
-    sizeAverage: Boolean = true)(implicit ev: TensorNumeric[T]) : ClassNLLCriterion[T] = {
-    new ClassNLLCriterion[T](weights, sizeAverage)
+    sizeAverage: Boolean = true,
+    acceptProb: Boolean = false)(implicit ev: TensorNumeric[T]) : ClassNLLCriterion[T] = {
+    new ClassNLLCriterion[T](weights, sizeAverage, acceptProb)
   }
 }

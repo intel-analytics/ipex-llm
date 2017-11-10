@@ -22,11 +22,12 @@ import com.intel.analytics.bigdl.tensor.{DenseTensorApply, Tensor, TensorFunc4, 
 import scala.reflect.ClassTag
 
 /**
- * Creates a criterion that optimizes a two-class classification hinge loss (margin-based loss)
- * between input x (a Tensor of dimension 1) and output y.
+ * Creates a criterion that optimizes a two-class classification (squared)
+ * hinge loss (margin-based loss) between input x (a Tensor of dimension 1) and output y.
  *
  * @param margin if unspecified, is by default 1.
  * @param sizeAverage whether to average the loss
+ * @param squared whether to calculate the squared hinge loss
  */
 
 @SerialVersionUID( - 5028892499250398130L)
@@ -55,7 +56,7 @@ class MarginCriterion[@specialized(Float, Double) T: ClassTag]
   }
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
-    val norm = ev.fromType(if (sizeAverage) -1.0 / input.nElement() else 1.0)
+    val norm = ev.fromType(if (sizeAverage) -1.0 / input.nElement() else -1.0)
     gradInput.resizeAs(input)
 
     // todo: the performance of contiguous tensor should be optimized
@@ -64,9 +65,9 @@ class MarginCriterion[@specialized(Float, Double) T: ClassTag]
                           offset2: Int, data3: Array[T], offset3: Int): Unit = {
         if (ev.isGreater(ev.fromType(margin), ev.times(data2(offset2), data3(offset3)))) {
           if (squared) {
-            // dl/dx = 2y(1-xy)
+            // dl/dx = -2y(1-xy)
             data1(offset1) = ev.times(
-              ev.times(ev.fromType(2), data3(offset3)),
+              ev.times(ev.times(ev.fromType(2), norm), data3(offset3)),
               ev.minus(ev.fromType(margin),
                 ev.times(data2(offset2), data3(offset3))))
           } else {
