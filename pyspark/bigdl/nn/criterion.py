@@ -131,7 +131,7 @@ class ClassNLLCriterion(Criterion):
 
     >>> np.random.seed(123)
     >>> weights = np.random.uniform(0, 1, (2,)).astype("float32")
-    >>> classNLLCriterion = ClassNLLCriterion(weights,True)
+    >>> classNLLCriterion = ClassNLLCriterion(weights,True, False)
     creating: createClassNLLCriterion
     >>> classNLLCriterion = ClassNLLCriterion()
     creating: createClassNLLCriterion
@@ -349,7 +349,7 @@ class MarginCriterion(Criterion):
     :param size_average: size average in a mini-batch
 
 
-    >>> marginCriterion = MarginCriterion(1e-5, True)
+    >>> marginCriterion = MarginCriterion(1e-5, True, False)
     creating: createMarginCriterion
     '''
 
