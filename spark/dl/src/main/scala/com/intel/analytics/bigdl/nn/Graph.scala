@@ -282,6 +282,21 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
   // todo: expand the graph
   override def toGraph(startNodes: ModuleNode[T]*): Graph[T] = this
 
+  /**
+   * Return the corresponding node has the given name. If the given name doesn't match any node,
+   * NoSuchElementException will be thrown
+   * @param name
+   * @return
+   */
+  def node(name: String): ModuleNode[T] = {
+    val matchNodes = backGraph.BFS.filter(_.element.getName() == name).toArray
+    if (matchNodes.length == 0) {
+      throw new NoSuchElementException(s"Can not find node with name $name")
+    } else {
+      return matchNodes.head
+    }
+  }
+
   // Add a dummy output node, to get an one end graph. So the nodes that are not dependent by
   // the outputs will be excluded
   private val dummyOutput = new ModuleNode[T](new Identity[T]())
