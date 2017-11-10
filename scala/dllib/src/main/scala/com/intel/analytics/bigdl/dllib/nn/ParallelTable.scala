@@ -34,7 +34,7 @@ class ParallelTable[T: ClassTag]
   override def updateOutput(input: Table): Table = {
     var i = 0
     while (i < input.length()) {
-      output.update(i + 1, modules(i).updateOutput(input(i + 1)))
+      output.update(i + 1, modules(i).forward(input(i + 1)))
       i += 1
     }
     output
@@ -55,6 +55,15 @@ class ParallelTable[T: ClassTag]
       modules(i).accGradParameters(input(i + 1), gradOutput(i + 1))
       i += 1
     }
+  }
+
+  override def backward(input: Table, gradOutput: Table): Table = {
+    var i = 0
+    while (i < input.length()) {
+      gradInput.update(i + 1, modules(i).backward(input(i + 1), gradOutput(i + 1)))
+      i += 1
+    }
+    gradInput
   }
 
   override def getEndNodes(startNodes: Array[ModuleNode[T]]): Array[ModuleNode[T]] = {
