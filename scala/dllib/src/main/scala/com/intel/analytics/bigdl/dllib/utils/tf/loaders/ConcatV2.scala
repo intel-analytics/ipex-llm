@@ -19,6 +19,7 @@ import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.JoinTable
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.tf.Context
@@ -32,10 +33,14 @@ class ConcatV2 extends TensorflowOpsLoader {
 
   override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder,
     context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
-    Adapter[T](Array(-1), tensorArrays => {
-      val axis = tensorArrays(0).value().asInstanceOf[Int] + 1
-      JoinTable[T](dimension = axis, nInputDims = -1)
-    })
+    new ConcatV2LoadTF[T]()
+  }
+}
+
+class ConcatV2LoadTF[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Adapter[T](Array(-1)) {
+  override def build(tensorArrays: Array[Tensor[_]]): AbstractModule[Activity, Activity, T] = {
+    val axis = tensorArrays(0).value().asInstanceOf[Int] + 1
+    JoinTable[T](dimension = axis, nInputDims = -1)
   }
 }
 

@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.{Padding, Sequential}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -33,24 +34,28 @@ class Pad extends TensorflowOpsLoader {
 
   override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder,
     context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
-    Adapter[T](Array(2), tensorArrays => {
-      val paddings = tensorArrays(0).asInstanceOf[Tensor[Int]]
-      val pad = ArrayBuffer[Int]()
-      val padding = Sequential[T]()
+    new PadLoadTF[T]()
+  }
+}
 
-      for(dim <- 1 to paddings.size(1)) {
-        if (paddings.valueAt(dim, 1) != 0 || paddings.valueAt(dim, 2) != 0 ) {
-          if (paddings(Array(dim, 1)) != 0) {
-            padding.add(Padding[T](dim, -paddings.valueAt(dim, 1), 4))
-          }
-          if (paddings(Array(dim, 2)) != 0) {
-            padding.add(Padding[T](dim, paddings.valueAt(dim, 2), 4))
-          }
+class PadLoadTF[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Adapter[T](Array(2)) {
+  override def build(tensorArrays: Array[Tensor[_]]): AbstractModule[Activity, Activity, T] = {
+    val paddings = tensorArrays(0).asInstanceOf[Tensor[Int]]
+    val pad = ArrayBuffer[Int]()
+    val padding = Sequential[T]()
+
+    for(dim <- 1 to paddings.size(1)) {
+      if (paddings.valueAt(dim, 1) != 0 || paddings.valueAt(dim, 2) != 0 ) {
+        if (paddings(Array(dim, 1)) != 0) {
+          padding.add(Padding[T](dim, -paddings.valueAt(dim, 1), 4))
+        }
+        if (paddings(Array(dim, 2)) != 0) {
+          padding.add(Padding[T](dim, paddings.valueAt(dim, 2), 4))
         }
       }
+    }
 
-      padding
-    })
+    padding
   }
 }
 
