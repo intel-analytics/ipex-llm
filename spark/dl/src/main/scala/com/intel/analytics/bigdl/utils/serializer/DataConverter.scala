@@ -607,8 +607,6 @@ object DataConverter extends DataConverter{
 
           if (!tensorEmpty) {
             tensor.size().foreach(size => tensorBuilder.addSize(size))
-          }
-          if (!tensorEmpty) {
             tensor.stride().foreach(stride => tensorBuilder.addStride(stride))
           }
           setStorage(context, tensorBuilder, tensor)
