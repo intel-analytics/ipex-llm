@@ -28,8 +28,20 @@ class FloorDivSpec extends TensorflowSpecHelper {
         .setName("floorDiv_test")
         .putAttr("T", typeAttr(DataType.DT_FLOAT))
         .setOp("FloorDiv"),
-      Seq(Tensor[Float](T(1, 1.44, 4.8, -1, -1.44, -4.8)),
-        Tensor[Float](T(1, 1.2, 3, 1, 1.2, 3))),
+      Seq(Tensor[Float](T(1, 1.44, 4.8, -1, -1.44, -4.8, 5)),
+        Tensor[Float](T(1, 1.2, 3, 1, 1.2, 3, -2))),
+      0
+    )
+  }
+
+  "FloorDiv" should "be correct for Int" in {
+    compare(
+      NodeDef.newBuilder()
+        .setName("floorDiv_test")
+        .putAttr("T", typeAttr(DataType.DT_INT32))
+        .setOp("FloorDiv"),
+      Seq(Tensor[Int](T(1, 1.44, 4.8, -1, -1.44, -4.8, 5)),
+        Tensor[Int](T(1, 1.2, 3, 1, 1.2, 3, -2))),
       0
     )
   }
@@ -40,8 +52,8 @@ class FloorDivSpec extends TensorflowSpecHelper {
         .setName("floorDiv_test")
         .putAttr("T", typeAttr(DataType.DT_DOUBLE))
         .setOp("FloorDiv"),
-      Seq(Tensor[Double](T(1, 1.44, 4.8, -1, -1.44, -4.8)),
-        Tensor[Double](T(1, 1.2, 3, 1, 1.2, 3))),
+      Seq(Tensor[Double](T(1, 1.44, 4.8, -1, -1.44, -4.8, 5)),
+        Tensor[Double](T(1, 1.2, 3, 1, 1.2, 3, -2))),
       0
     )
   }

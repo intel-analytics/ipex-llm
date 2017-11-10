@@ -30,8 +30,7 @@ class FloorDiv[T: ClassTag, D: ClassTag]()(implicit ev: TensorNumeric[T], ev2: T
     val input1 = input[Tensor[D]](1)
     val input2 = input[Tensor[D]](2)
     output.resizeAs(input1).copy(input1)
-    output.div(input2)
-    output.floor()
+    output.map(input2, (a, b) => {ev2.floorDiv(a, b)})
     output
   }
 }
