@@ -74,6 +74,9 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
   override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): Recurrent.this.type = {
     require(module.isInstanceOf[Cell[T]],
       "Recurrent: added module should be Cell type!")
+    require(!module.isInstanceOf[MultiRNNCell[T]],
+      "Recurrent: added module cannot be MultiRNNCell," +
+        "use Sequential().add(Recurrent(cell)).add(Recurrent(cell))... instead!")
 
     topology = module.asInstanceOf[Cell[T]]
     preTopology = if (topology.preTopology != null) {
@@ -145,6 +148,31 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
       gradHidden = hidden
     }
   }
+
+  // used for multirnncell, for internal test
+//  def initHidden2(sizes: Array[Int]): Unit = {
+//    val stepSizes = sizes
+//
+//    if (containMultiRNNCell) {
+//      if (hidden == null) {
+//        //      if (hiddenStates.getState().size == 0) {
+//        cells.clear()
+//        cells += topology
+//        hidden = T()
+//        gradHidden = T()
+//      }
+//
+//      val multiCells = topology.asInstanceOf[MultiRNNCell[T]].cells
+//      var i = 0
+//      while (i < multiCells.size) {
+//        //        hiddenStates(i) = multiCells(i).hidResize(null, batchSize, stepSizes)
+//        //        gradHiddenStates(i) = multiCells(i).hidResize(null, batchSize, stepSizes)
+//        hidden.toTable(i) = multiCells(i).hidResize(null, batchSize, stepSizes)
+//        gradHidden.toTable(i) = multiCells(i).hidResize(null, batchSize, stepSizes)
+//        i += 1
+//      }
+//    } else initHidden(sizes)
+//  }
 
   protected def cloneCells(): Unit = {
     var t = cells.length
@@ -269,6 +297,19 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     initHiddenState = hiddenState
   }
 
+  // get gradient hidden state at the first time step
+  def getGradHiddenState(): Activity = {
+    require(cells != null && cells(0).gradInput != null,
+      "getGradHiddenState need to be called after backward")
+    cells(0).gradInput.toTable(hidDim)
+  }
+
+  protected var initGradHiddenState: Activity = null
+  // set gradient hiddent state at the last time step
+  def setGradHiddenState(gradHiddenState: Activity): Unit = {
+    initGradHiddenState = gradHiddenState
+  }
+
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
     currentGradOutput(hidDim) = gradHidden
     /**
@@ -338,23 +379,24 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
 
   override def backward(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     val st = System.nanoTime
-    currentGradOutput(hidDim) = gradHidden
     var i = times
 
     while (i >= 1) {
+      currentGradOutput(hidDim) = if (i != times) cells(i).gradInput.toTable(hidDim)
+        else if (initGradHiddenState == null) gradHidden else initGradHiddenState
       currentGradOutput(inputDim) = Recurrent.selectCopy(gradOutput, i, stepGradBuffer)
 
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
       else if (initHiddenState == null) hidden else initHiddenState
 
       _input(inputDim) = Recurrent.selectCopy(input2Cell, i, stepInput2CellBuf)
+
       if (i == 1) {
         cells(i - 1).regluarized(true)
       } else {
         cells(i - 1).regluarized(false)
       }
       cells(i - 1).backward(_input, currentGradOutput)
-      currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
       i -= 1
     }
 
@@ -451,6 +493,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     cells.clear()
     timeBuffer.clear()
     initHiddenState = null
+    initGradHiddenState = null
     stepInput2CellBuf.set()
     stepGradBuffer.set()
     this
@@ -467,6 +510,8 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     modules.foreach(_.reset())
     cells.clear()
   }
+
+  lazy val containMultiRNNCell: Boolean = topology.isInstanceOf[MultiRNNCell[T]]
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[Recurrent[T]]
 

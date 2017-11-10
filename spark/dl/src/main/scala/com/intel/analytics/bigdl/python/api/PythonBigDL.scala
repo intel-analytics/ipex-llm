@@ -365,12 +365,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     kernelI: Int,
     kernelC: Int,
     stride: Int = 1,
+    padding: Int = -1,
     wRegularizer: Regularizer[T] = null,
     uRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
     cRegularizer: Regularizer[T] = null,
     withPeephole: Boolean = true): ConvLSTMPeephole[T] = {
-    ConvLSTMPeephole[T](inputSize, outputSize, kernelI, kernelC, stride,
+    ConvLSTMPeephole[T](inputSize, outputSize, kernelI, kernelC, stride, padding,
       wRegularizer, uRegularizer, bRegularizer, cRegularizer, withPeephole)
   }
 
@@ -380,12 +381,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     kernelI: Int,
     kernelC: Int,
     stride: Int = 1,
+    padding: Int = -1,
     wRegularizer: Regularizer[T] = null,
     uRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
     cRegularizer: Regularizer[T] = null,
     withPeephole: Boolean = true): ConvLSTMPeephole3D[T] = {
-    ConvLSTMPeephole3D[T](inputSize, outputSize, kernelI, kernelC, stride,
+    ConvLSTMPeephole3D[T](inputSize, outputSize, kernelI, kernelC, stride, padding,
       wRegularizer, uRegularizer, bRegularizer, cRegularizer, withPeephole)
   }
 
@@ -2064,13 +2066,77 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     layer.setInitMethod(weightInitMethod, biasInitMethod)
   }
 
-  def getHiddenStates(rec: Recurrent[T]): JList[JTensor] = {
+  def getHiddenStates(rec: Recurrent[T]): JList[JList[JTensor]] = {
     val states = rec.getHiddenState()
-    activityToJTensors(states)
+    var res: Array[JList[JTensor]] = null
+    if (!rec.containMultiRNNCell) {
+      res = new Array[JList[JTensor]](1)
+      res(0) = activityToJTensors(states)
+    }
+    else {
+      res = new Array[JList[JTensor]](states.toTable.getState().size)
+      states.toTable.getState().foreach { pair => {
+          val index = pair._1.asInstanceOf[Int]
+          res(index) = activityToJTensors(pair._2.asInstanceOf[Activity])
+        }
+      }
+    }
+    res.toList.asJava
   }
 
-  def setHiddenStates(rec: Recurrent[T], hiddenStates: JList[JTensor], isTable: Boolean): Unit = {
-      rec.setHiddenState(jTensorsToActivity(hiddenStates, isTable))
+  def setHiddenStates(rec: Recurrent[T], hiddenStates: JList[JList[JTensor]],
+                      isTable: JList[Boolean]): Unit = {
+    if (rec.containMultiRNNCell) {
+      val activities = (hiddenStates.asScala, isTable.asScala).zipped.map { (state, table) =>
+        jTensorsToActivity(state, table)}.toArray
+      val newStates = T()
+      for((activity, i) <- activities.view.zipWithIndex) {
+        newStates(i) = activity
+      }
+      rec.setHiddenState(newStates)
+    } else {
+      rec.setHiddenState(jTensorsToActivity(hiddenStates.asScala.head, isTable.asScala.head))
+    }
+  }
+
+  def containMultiRNNCell(rec: Recurrent[T]): Boolean = rec.containMultiRNNCell
+
+  def getGradHiddenStates(rec: Recurrent[T]): JList[JList[JTensor]] = {
+    val states = rec.getGradHiddenState()
+    var res: Array[JList[JTensor]] = null
+    if (!rec.containMultiRNNCell) {
+      res = new Array[JList[JTensor]](1)
+      res(0) = activityToJTensors(states)
+    }
+    else {
+      res = new Array[JList[JTensor]](states.toTable.getState().size)
+      states.toTable.getState().foreach { pair => {
+        val index = pair._1.asInstanceOf[Int]
+        res(index) = activityToJTensors(pair._2.asInstanceOf[Activity])
+      }
+      }
+    }
+    res.toList.asJava
+  }
+
+  def setGradHiddenStates(rec: Recurrent[T], hiddenStates: JList[JList[JTensor]],
+                      isTable: JList[Boolean]): Unit = {
+    if (rec.containMultiRNNCell) {
+      val activities = (hiddenStates.asScala, isTable.asScala).zipped.map { (state, table) =>
+        jTensorsToActivity(state, table)}.toArray
+      val newStates = T()
+      for((activity, i) <- activities.view.zipWithIndex) {
+        newStates(i) = activity
+      }
+      rec.setGradHiddenState(newStates)
+    } else {
+      rec.setGradHiddenState(jTensorsToActivity(hiddenStates.asScala.head, isTable.asScala.head))
+    }
+  }
+
+  def setLayerFreeze(model: AbstractModule[Activity, Activity, T])
+  : AbstractModule[Activity, Activity, T] = {
+    model.freeze()
   }
 
   def freeze(model: AbstractModule[Activity, Activity, T], freezeLayers: JList[String])
@@ -2105,12 +2171,40 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       alignCorner)
   }
 
+  def createMultiRNNCell(cells: JList[Cell[T]]): MultiRNNCell[T] = {
+    MultiRNNCell(cells.asScala.toArray)
+  }
+
   def redirectSparkLogs(logPath: String): Unit = {
     LoggerFilter.redirectSparkInfoLogs(logPath)
   }
 
   def showBigDlInfoLogs(): Unit = {
     Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+  }
+
+  def createSeq2seq(encoderCells: JList[Recurrent[T]], decoderCells: JList[Recurrent[T]],
+    preEncoder: AbstractModule[Activity, Activity, T],
+    preDecoder: AbstractModule[Activity, Activity, T],
+    shrinkHiddenStateModules: JList[JList[TensorModule[T]]],
+    decoderInputType: String
+    ): Seq2seq[T] = {
+    val inputType = decoderInputType match {
+      case "ENCODERINPUTSPLIT" => DecoderInputType.ENCODERINPUTSPLIT
+      case "ENCODERINPUTLASTTIME" => DecoderInputType.ENCODERINPUTLASTTIME
+      case n: String =>
+        throw new IllegalArgumentException(s"Only support 'ENCODERINPUTSPLIT', " +
+          s", 'ENCODERINPUTLASTTIME': $n")
+    }
+
+    val shrinkModules = if (shrinkHiddenStateModules != null) {
+      shrinkHiddenStateModules.asScala.toArray.map { x =>
+        if (x != null) x.asScala.toArray
+        else null
+      }
+    } else null
+    Seq2seq(encoderCells.asScala.toArray, decoderCells.asScala.toArray, preEncoder,
+      preDecoder, shrinkModules, inputType)
   }
 
   def quantize(module: AbstractModule[Activity, Activity, T]): Module[T] = {
