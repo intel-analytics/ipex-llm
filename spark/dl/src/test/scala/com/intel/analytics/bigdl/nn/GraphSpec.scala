@@ -1255,6 +1255,10 @@ class GraphSpec extends FlatSpec with Matchers {
 
     val model = Graph(data, l2)
     model.node("l1") should be(l1)
+
+    intercept[NoSuchElementException] {
+      model.node("ll1")
+    }
   }
 }
 
