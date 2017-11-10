@@ -19,8 +19,6 @@ import sys
 
 import numpy as np
 
-from bigdl.keras1.converter import DefinitionLoader as KDefinitionLoader
-from bigdl.keras1.converter import WeightLoader as KWeightLoader
 from bigdl.util.common import JTensor
 from bigdl.util.common import JavaValue
 from bigdl.util.common import callBigDlFunc
@@ -701,9 +699,11 @@ class Model(Container):
         :param weights_path: The HDF5 path containing the pre-trained keras model weights.
         :return: A pre-trained model.
         """
-        bmodel = KDefinitionLoader.from_json_path(def_path)
+        from bigdl.keras1.converter import DefinitionLoader, WeightLoader
         if weights_path:
-            KWeightLoader.load_weights_from_hdf5(bmodel, weights_path, by_name=by_name)
+            return WeightLoader.load_weights_from_json_hdf5(def_path, weights_path, by_name=by_name)
+        else:
+            return DefinitionLoader.from_json_path(def_path)
         return bmodel
 
     @staticmethod

@@ -18,12 +18,8 @@ from __future__ import print_function
 from keras.layers import *
 
 np.random.seed(1337)  # for reproducibility
-from bigdl.keras1.backend import use_bigdl_backend
-import numpy as np
 import pytest
-import keras
 from keras.applications import *
-from keras.applications.music_tagger_crnn import MusicTaggerCRNN
 from bigdl.keras1.converter import *
 
 from test.bigdl.test_utils import BigDLTestCase, TestModels
@@ -40,6 +36,7 @@ class TestApplication(BigDLTestCase):
         bigdl_output = bmodel.forward(input_data)
 
         self.assert_allclose(keras_output, bigdl_output, rtol=rtol, atol=atol)
+
     def test_lenet(self):
         kmodel, input_data, output_data = TestModels.kmodel_seq_lenet_mnist()
         self.modelTest(input_data, kmodel, dump_weights=True)
@@ -119,7 +116,7 @@ class TestApplication(BigDLTestCase):
         # 2017-09-22 15:53:45 INFO  DistriOptimizer$:657
         # - Top1Accuracy is Accuracy(correct: 21557, count: 25000, accuracy: 0.86228)
         # this result is from GlobalAveragePooling not GlobalMaxPooling.
-        model.predict(X_test)  # OK
+        model.predict(X_test)
         model.evaluate(X_test, y_test)
         print(model)
 
@@ -141,24 +138,7 @@ class TestApplication(BigDLTestCase):
         input_data = np.random.random([2, 3, 224, 224])
         self.assert_model(input_data, kmodel)
 
-
-    # def test_music_tagger_crnn(self):  # for th order: Exception: We don't support layer: Permute for now
-    #     # TF we don't support NHWC for batchnorm
-    #     keras.backend.set_image_dim_ordering("tf")
-    #     kmodel = MusicTaggerCRNN(include_top=False)
-    #     input_data = np.random.random([2, 96, 1366, 1])
-    #
-    #     bmodel = DefinitionLoader.from_kmodel(kmodel)
-    #     WeightLoader.load_weights_from_kmodel(bmodel, kmodel, by_name=True)
-    #
-    #     keras_output = kmodel.predict(input_data)
-    #     bmodel.training(is_training=False)
-    #     bigdl_output = bmodel.forward(input_data)
-    #
-    #     self.assert_allclose(keras_output, bigdl_output, rtol=1e-5, atol=1e-5)
-    #
-    #
-    def test_inception_v3(self): # DIFF STILL NO IDEA
+    def test_inception_v3(self):
         keras.backend.set_image_dim_ordering("th")
         kmodel = inception_v3.InceptionV3(include_top=False, input_shape=(3, 299, 299))
         input_data = np.random.random([2, 3, 299, 299])

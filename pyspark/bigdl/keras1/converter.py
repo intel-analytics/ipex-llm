@@ -16,45 +16,6 @@ def unsupport_exp(name):
     raise Exception("We don't support %s for now" % name)
 
 
-class OptimConverter:
-
-    @staticmethod
-    def to_bigdl_metrics(metrics):
-        metrics = bcommon.to_list(metrics)
-        bmetrics = []
-        for metric in metrics:
-            if metric == "accuracy":
-                bmetrics.append(boptimizer.Top1Accuracy())
-            else:
-                unsupport_exp(metric)
-        return bmetrics
-
-    @staticmethod
-    def to_bigdl_criterion(kloss):
-        # TODO: it may pass in an object and with parameters
-        if kloss == "categorical_crossentropy":
-            return bcriterion.ClassNLLCriterion()
-        elif kloss == "mse" or kloss == "mean_squared_error":
-            return bcriterion.MSECriterion()
-        elif kloss == "binary_crossentropy":
-            return bcriterion.BCECriterion()
-        elif kloss == "mae" or kloss == "mean_absolute_error":
-            return bcriterion.AbsCriterion()
-        else:
-            raise Exception("Not supported type: %s" % kloss)
-
-    @staticmethod
-    def to_bigdl_optim_method(koptim_method):
-        # This is always be an object
-        if isinstance(koptim_method, koptimizers.Adagrad):
-            return boptimizer.Adagrad()
-        elif isinstance(koptim_method, koptimizers.SGD):
-            return boptimizer.SGD(learningrate=0.01)  # TODO: enrich parameters, sgd.lr return a variable!!!not float
-        elif isinstance(koptim_method, koptimizers.Adam):
-            return boptimizer.Adam()
-        else:
-            unsupport_exp(koptim_method)
-
 class WeightLoader:
 
     @staticmethod
@@ -98,6 +59,14 @@ class WeightLoader:
             WeightLoader.__load_weights_by_name(bmodel, kmodel)
         else:
             WeightLoader.__load_weights_by_execution_seq(bmodel, kmodel)
+
+    @staticmethod
+    def load_weights_from_json_hdf5(def_json, weights_hdf5, by_name=False):
+        with open(def_json, "r") as jp:
+            kmodel = model_from_json(jp.read())
+        bmodel = DefinitionLoader.from_json_path(def_json)
+        WeightLoader.load_weights_from_hdf5(bmodel, kmodel, weights_hdf5, by_name)
+        return bmodel
 
     @staticmethod
     def load_weights_from_hdf5(bmodel, kmodel, filepath, by_name=False):
@@ -152,7 +121,7 @@ class WeightsConverter:
         return converter
 
     @staticmethod
-    # weights is a list of ndarray to a ndarray
+    # weights is a list of ndarray or a ndarray
     # convert keras weights per layer to bigdl format
     def to_bigdl_weights(class_name, weights):
         return WeightsConverter.get_converter(class_name)(weights)
@@ -168,7 +137,7 @@ class WeightsConverter:
 
     @staticmethod
     def get_bigdl_weights_from_klayer(klayer):
-        # not klayer.weights
+        # we should use get_weights instead of klayer.weights
         return WeightsConverter.to_bigdl_weights(klayer.__class__.__name__, klayer.get_weights())
 
     @staticmethod
@@ -204,7 +173,6 @@ class WeightsConverter:
 
     @staticmethod
     def convert_convolution2d(weights):
-        # return weights
         weight = np.expand_dims(weights[0], 0)  # bigdl has a leading dim with value 1
         if len(weights) > 1:
             return [weight, weights[1]]
@@ -274,7 +242,6 @@ class DefinitionLoader:
     def from_json_path(cls, json_path):
         with open(json_path, "r") as jp:
             return DefinitionLoader.from_json_str(jp.read())
-            kmodel = model_from_json(jp.read())
 
     @classmethod
     def from_json_str(cls, json_str):
@@ -389,8 +356,8 @@ class LayerConverter:
         config = kclayer["config"]
         # Multiple inputs should share the same input_dim for Dense layer
         # We don't need to respect the tensor index for method `get_input_shape_at`
-        # which is internel implementation and `get_input_shape_at` has hided that for us,
-        # we only need to know the input index, not node index, not tensor index.
+        # which is internal implementation and `get_input_shape_at` has hided that for us,
+        # What we need to use is the input index, not node index, not tensor index.
         input_shape = klayer.get_input_shape_at(0)
         blayer = BLayer.Linear(
             input_size=input_shape[1],
@@ -500,8 +467,6 @@ class LayerConverter:
             raise Exception("Invalid merge mode: `%s`. Lambda/function as merge mode is not supported for now." % klayer.mode)
         return blayer
 
-    # Advanced Activation Layers
-    # SReLU not supported for now.
     def create_elu(self, klayer, kclayer):
         return BLayer.ELU(alpha=float(klayer.alpha),
                           inplace=False,
@@ -531,7 +496,6 @@ class LayerConverter:
                                 ip=False,
                                 bigdl_type="float")
 
-    # ZeroPadding layers
     def __generate_zeropadding1d(self, pad_top, pad_bottom):
         return BLayer.SpatialZeroPadding(pad_left=0,
                                          pad_right=0,
@@ -541,9 +505,9 @@ class LayerConverter:
 
     def create_zeropadding1d(self, klayer, kclayer):
         padding = klayer.padding
-        if isinstance(padding, int):  # int
+        if isinstance(padding, int):
             return self.__generate_zeropadding1d(padding, padding)
-        elif isinstance(padding, dict):  # dictionary
+        elif isinstance(padding, dict):
             return self.__generate_zeropadding1d(padding.get('left_pad', 0), padding.get('right_pad', 0))
         else:  # tuple of int (length 2)
             padding = tuple(padding)
@@ -581,7 +545,7 @@ class LayerConverter:
         model.add(paddinglayer4)
         return model
 
-    # Only dim_ordering="tf" is supported due to keras limitations in saving models.
+    # NB: zeropadding doesn't serialize dim_ording to jason file
     def create_zeropadding2d(self, klayer, kclayer):
         padding = klayer.padding
         input_shape = klayer.get_input_shape_at(0)
@@ -603,7 +567,7 @@ class LayerConverter:
                 return self.__generate_zeropadding2d(dim1, dim2, len(input_shape) - 1,
                                                      -padding[0], padding[1], -padding[2], padding[3])
 
-    # Only dim_ordering="tf" is supported due to keras limitations in saving models.
+    # NB: zeropadding doesn't serialize dim_ording to jason file
     def create_zeropadding3d(self, klayer, kclayer):
         padding = tuple(klayer.padding)
         input_shape = klayer.get_input_shape_at(0)
@@ -652,13 +616,11 @@ class LayerConverter:
         model.add(paddinglayer6)
         return model
 
-    # Cropping layers
-    # Only cropping1d is supported for now.
     def create_cropping1d(self, klayer, kclayer):
         cropping = tuple(klayer.cropping)
         return BLayer.SpatialZeroPadding(0, 0, -cropping[0], -cropping[1])
 
-    def return_sequences(self, return_sequences, blayer):
+    def __return_sequences(self, return_sequences, blayer):
         # For recurrent layers, handle whether to return the last output sentence or the full sequence.
         if return_sequences:
             return blayer
@@ -668,7 +630,6 @@ class LayerConverter:
             model.add(BLayer.Select(2, -1))
             return model
 
-    # Recurrent Layers
     def create_simplernn(self, klayer, kclayer):
         rec = BLayer.Recurrent()
         input_shape = klayer.get_input_shape_at(0)
@@ -676,7 +637,7 @@ class LayerConverter:
         self.check_constraint_in_config(config)
         activation = self.to_bigdl_activation(config["activation"],
                                               "%s_%s" % (config["name"], config["activation"]))
-        #TODO: dropout
+        # TODO: throw exception for dropout
         rnn = BLayer.RnnCell(input_size=input_shape[2],
                              hidden_size=klayer.output_dim,
                              activation=activation,
@@ -685,7 +646,7 @@ class LayerConverter:
                              uRegularizer=self.to_bigdl_reg(config["U_regularizer"]),
                              bRegularizer=self.to_bigdl_reg(config["b_regularizer"]),
                              bigdl_type="float")
-        return self.return_sequences(klayer.return_sequences, rec.add(rnn))
+        return self.__return_sequences(klayer.return_sequences, rec.add(rnn))
 
     def create_lstm(self, klayer, kclayer):
         rec = BLayer.Recurrent()
@@ -700,7 +661,7 @@ class LayerConverter:
                                               "%s_%s" % (config["name"], config["inner_activation"]))
         if not isinstance(inner_activation, BLayer.Sigmoid):
             raise Exception("For inner_activation, only `sigmond` is supported for now.")
-        #TODO: dropout
+        # TODO: throw exception for dropout
         lstm = BLayer.LSTM(input_size=input_shape[2],
                            hidden_size=klayer.output_dim,
                            p=klayer.dropout_W,
@@ -708,7 +669,7 @@ class LayerConverter:
                            uRegularizer=self.to_bigdl_reg(config["U_regularizer"]),
                            bRegularizer=self.to_bigdl_reg(config["b_regularizer"]),
                            bigdl_type="float")
-        return self.return_sequences(klayer.return_sequences, rec.add(lstm))
+        return self.__return_sequences(klayer.return_sequences, rec.add(lstm))
 
     def create_gru(self, klayer, kclayer):
         rec = BLayer.Recurrent()
@@ -723,7 +684,7 @@ class LayerConverter:
                                                     "%s_%s" % (config["name"], config["inner_activation"]))
         if not isinstance(inner_activation, BLayer.Sigmoid):
             raise Exception("For inner_activation, only `sigmond` is supported for now.")
-        # TODO: dropout
+        # TODO: throw exception for dropout
         gru = BLayer.GRU(input_size=input_shape[2],
                          hidden_size=klayer.output_dim,
                          p=klayer.dropout_W,
@@ -731,13 +692,13 @@ class LayerConverter:
                          uRegularizer=self.to_bigdl_reg(config["U_regularizer"]),
                          bRegularizer=self.to_bigdl_reg(config["b_regularizer"]),
                          bigdl_type="float")
-        return self.return_sequences(klayer.return_sequences, rec.add(gru))
+        return self.__return_sequences(klayer.return_sequences, rec.add(gru))
 
     def create_batchnormalization(self, klayer, kclayer):
         config = kclayer["config"]
 
         self.__check_is_share_weights(kclayer)
-        if keras.backend.image_dim_ordering() != "th" and klayer.axis != 1:
+        if keras.backend.image_dim_ordering() != "th" or klayer.axis != 1:
             raise Exception("""We only support th image order for BatchNormalization \n
                               which meaning NCHW for now. but the current order is %s and axis is %s
             """ % (keras.backend.image_dim_ordering(), klayer.axis))  # noqa
@@ -776,6 +737,17 @@ class LayerConverter:
         blayer.set_running_std(k_running_std)
         return blayer
 
+    def get_bdim_order(self, kclayer):
+        return self.to_bigdl_2d_ordering(self.get_kdim_order(kclayer))
+
+    def get_kdim_order(self, kclayer):
+        config = kclayer["config"]
+        if "dim_ordering" in config:
+            return config["dim_ordering"]
+        else:
+            warnings.warn("Cannot find dim_ordering from json definition. Use default instead.")
+            return keras.backend.image_dim_ordering()
+
     def to_bigdl_2d_ordering(self, order):
         if order == "tf":
             return "NHWC"
@@ -813,7 +785,6 @@ class LayerConverter:
         bpadW, bpadH = self.to_bigdl_2d_padding(klayer.border_mode)
         seq = BLayer.Sequential()
         seq.add(BLayer.Reshape([input_shape[1], 1, input_shape[2]], True))
-        # seq.add(BLayer.View([1, input_shape[1], input_shape[2]], num_input_dims=3))
         blayer = BLayer.SpatialConvolution(
                  n_input_plane = stack_size,
                  n_output_plane = klayer.nb_filter,
@@ -840,7 +811,7 @@ class LayerConverter:
 
     def create_convolution2d(self, klayer, kclayer):
         config = kclayer["config"]
-        bigdl_order = self.to_bigdl_2d_ordering(klayer.dim_ordering)
+        bigdl_order = self.get_bdim_order(kclayer)
         input_shape = klayer.get_input_shape_at(0)
 
         if bigdl_order == "NCHW":
@@ -872,11 +843,9 @@ class LayerConverter:
 
         return self.combo_parameter_layer(blayer, config)
 
-    # Pooling Layers
     def create_maxpooling2d(self, klayer, kclayer):
-        bigdl_order = self.to_bigdl_2d_ordering(klayer.dim_ordering)
+        bigdl_order = self.get_bdim_order(kclayer)
         bpadW, bpadH = self.to_bigdl_2d_padding(klayer.border_mode)
-        # The implementation in BigDL would refer the stack_size base on `format`
         blayer = BLayer.SpatialMaxPooling(
                  kw = klayer.pool_size[0],
                  kh = klayer.pool_size[1],
@@ -890,9 +859,8 @@ class LayerConverter:
         return blayer
 
     def create_averagepooling2d(self, klayer, kclayer):
-        bigdl_order = self.to_bigdl_2d_ordering(klayer.dim_ordering)
+        bigdl_order = self.get_bdim_order(kclayer)
         bpadW, bpadH = self.to_bigdl_2d_padding(klayer.border_mode)
-        # The implementation in BigDL would refer the stack_size base on `format`
         blayer = BLayer.SpatialAveragePooling(
             kw=klayer.pool_size[0],
             kh=klayer.pool_size[1],
@@ -910,22 +878,21 @@ class LayerConverter:
         return blayer
 
     def create_globalmaxpooling2d(self, klayer, kclayer):
-        bigdl_order = self.to_bigdl_2d_ordering(klayer.dim_ordering)
+        bigdl_order = self.get_bdim_order(kclayer)
         input_shape = klayer.get_input_shape_at(0)
         if bigdl_order == "NCHW":
-            b_kw = input_shape[2]
-            b_kh = input_shape[3]
-        else:
-            b_kw = input_shape[1]
+            b_kw = input_shape[3]
             b_kh = input_shape[2]
+        else:
+            b_kw = input_shape[2]
+            b_kh = input_shape[1]
 
         seq = BLayer.Sequential()
-        # The implementation in BigDL would refer the stack_size base on `format`
         blayer = BLayer.SpatialMaxPooling(
             kw=b_kw,
             kh=b_kh,
-            dw=0,
-            dh=0,
+            dw=b_kw,
+            dh=b_kh,
             pad_w=0,
             pad_h=0,
             to_ceil=False,
@@ -933,9 +900,12 @@ class LayerConverter:
             bigdl_type="float"
         )
         seq.add(blayer)
-        seq.add(BLayer.Squeeze(3, num_input_dims=3))
-        seq.add(BLayer.Squeeze(2, num_input_dims=2))
-
+        if bigdl_order == "NCHW":
+            seq.add(BLayer.Squeeze(3, num_input_dims=3))
+            seq.add(BLayer.Squeeze(2, num_input_dims=2))
+        else:
+            seq.add(BLayer.Squeeze(2, num_input_dims=3))
+            seq.add(BLayer.Squeeze(1, num_input_dims=2))
         return seq
 
     def create_globalmaxpooling1d(self, klayer, kclayer):
@@ -945,7 +915,6 @@ class LayerConverter:
 
         seq = BLayer.Sequential()
         seq.add(BLayer.View([input_shape[1], 1, input_shape[2]], num_input_dims=2))
-        # The implementation in BigDL would refer the stack_size base on `format`
         blayer = BLayer.SpatialMaxPooling(
             kw=b_kw,
             kh=b_kh,
@@ -960,7 +929,6 @@ class LayerConverter:
         seq.add(blayer)
         seq.add(BLayer.Squeeze(2, num_input_dims=2))
         seq.add(BLayer.Squeeze(1, num_input_dims=1))
-
         return seq
 
     def create_globalaveragepooling1d(self, klayer, kclayer):
@@ -970,7 +938,6 @@ class LayerConverter:
 
         seq = BLayer.Sequential()
         seq.add(BLayer.View([input_shape[1], 1, input_shape[2]], num_input_dims=2))
-        # The implementation in BigDL would refer the stack_size base on `format`
         blayer = BLayer.SpatialAveragePooling(
             kw=b_kw,
             kh=b_kh,
@@ -997,7 +964,6 @@ class LayerConverter:
 
         seq = BLayer.Sequential()
         seq.add(BLayer.View([1, input_shape[1], input_shape[2]], num_input_dims=3))
-        # The implementation in BigDL would refer the stack_size base on `format`
         blayer = BLayer.SpatialMaxPooling(
             kw=klayer.pool_length,
             kh=1,
@@ -1018,7 +984,6 @@ class LayerConverter:
 
         seq = BLayer.Sequential()
         seq.add(BLayer.View([1, input_shape[1], input_shape[2]], num_input_dims=3))
-        # The implementation in BigDL would refer the stack_size base on `format`
         blayer = BLayer.SpatialAveragePooling(
             kw=klayer.pool_length,
             kh=1,
@@ -1037,22 +1002,21 @@ class LayerConverter:
         return seq
 
     def create_globalaveragepooling2d(self, klayer, kclayer):
-        bigdl_order = self.to_bigdl_2d_ordering(klayer.dim_ordering)
+        bigdl_order = self.get_bdim_order(kclayer)
         input_shape = klayer.get_input_shape_at(0)
         if bigdl_order == "NCHW":
-            b_kw = input_shape[2]
-            b_kh = input_shape[3]
-        else:
-            b_kw = input_shape[1]
+            b_kw = input_shape[3]
             b_kh = input_shape[2]
+        else:
+            b_kw = input_shape[2]
+            b_kh = input_shape[1]
 
         seq = BLayer.Sequential()
-        # The implementation in BigDL would refer the stack_size base on `format`
         blayer = BLayer.SpatialAveragePooling(
             kw=b_kw,
             kh=b_kh,
-            dw=0,
-            dh=0,
+            dw=b_kw,
+            dh=b_kh,
             pad_w=0,
             pad_h=0,
             global_pooling=False,
@@ -1063,12 +1027,13 @@ class LayerConverter:
             bigdl_type="float"
         )
         seq.add(blayer)
-        seq.add(BLayer.Squeeze(3, num_input_dims=3))
-        seq.add(BLayer.Squeeze(2, num_input_dims=2))
-
+        if bigdl_order == "NCHW":
+            seq.add(BLayer.Squeeze(3, num_input_dims=3))
+            seq.add(BLayer.Squeeze(2, num_input_dims=2))
+        else:
+            seq.add(BLayer.Squeeze(2, num_input_dims=3))
+            seq.add(BLayer.Squeeze(1, num_input_dims=2))
         return seq
-
-
 
     def check_constraint_in_config(self, config):
         if "W_constraint" in config:

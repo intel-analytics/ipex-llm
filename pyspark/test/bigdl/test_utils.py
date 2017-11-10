@@ -45,19 +45,7 @@ class TestModels:
         return kmodel, input_data, output_data
 
     @staticmethod
-    def kmodel_graph_2_layer():
-        input1 = Input(shape=(3,))
-        dense = Dense(2)(input1)
-        kmodel = Model(input=input1, output=dense)
-        kmodel.compile(loss='categorical_crossentropy',
-                       optimizer=RMSprop(),
-                       metrics=['accuracy'])
-        input_data = np.random.sample([1, 3])
-        output_data = np.random.sample([1, 2])
-        return kmodel, input_data, output_data
-
-    @staticmethod
-    def kmodel_graph_4_layer():
+    def kmodel_graph_activation_is_layer():
         input1 = Input(shape=(20,))
         dense = Dense(10)(input1)
         activation = Activation('relu')(dense)
@@ -73,23 +61,8 @@ class TestModels:
         return kmodel, input_data, output_data
 
     @staticmethod
-    def kmodel_graph_5_layer():
-        input1 = Input(shape=(20,))
-        dense = Dense(10)(input1)
-        activation = Activation('relu')(dense)
-        dense2 = Dense(10, activation='relu')(activation)
-        dense3 = Dense(5)(dense2)
-        activation2 = Activation('softmax')(dense3)
-        kmodel = Model(input=input1, output=activation2)
-        kmodel.compile(loss='categorical_crossentropy',
-                       optimizer='Adagrad',
-                       metrics=['accuracy'])
-        input_data = np.random.random([4, 20])
-        output_data = np.random.random([4, 5])
-        return kmodel, input_data, output_data
-
-    @staticmethod
     def kmodel_seq_lenet_mnist():
+        # Part of the code is from keras example
         # assuming channel first
         input_shape = [1, 28, 28]
         b_input_shape = input_shape[:]
@@ -157,7 +130,7 @@ class BigDLTestCase(TestCase):
             kmodel = model_from_json(jp.read())
         kmodel.load_weights_from_hdf5(hdf5_path)
         bmodel = DefinitionLoader.from_json_path(json_path)
-        WeightLoader.load_weights_from_hdf5(bmodel, kmodel, hdf5_path)  # TODO: refactor reability of this api
+        WeightLoader.load_weights_from_hdf5(bmodel, kmodel, hdf5_path)
         return kmodel, bmodel
 
     def _dump_keras(self, keras_model, dump_weights=False):
@@ -236,14 +209,61 @@ class BigDLTestCase(TestCase):
                              rtol=rtol,
                              atol=atol)
 
+    def modelTestSingleLayerWithOrdersModes(self,
+                                            input_data,
+                                            output_layer_creator,  # a keras layer
+                                            dim_orderings=["tf", "th"],
+                                            border_modes=["valid", "same"],
+                                            dump_weights=False,
+                                            is_training=False,
+                                            rtol=1e-7,
+                                            atol=1e-7):
+        for dim_ordering in dim_orderings:
+            print("Testing with dim_ordering %s" % dim_ordering)
+            keras.backend.set_image_dim_ordering(dim_ordering)
+            for border_mode in border_modes:
+                print("Testing with border_mode %s" % border_mode)
+                output_layer = output_layer_creator()
+                if not hasattr(output_layer, "dim_ordering") and "1D" not in output_layer.__class__.__name__:  # noqa
+                    raise Exception("cannot set dim order for %s" % output_layer)
+                output_layer.dim_ordering = dim_ordering
+                if hasattr(output_layer, "border_mode"):
+                    output_layer.border_mode = border_mode
+                elif border_mode is not None:
+                    raise Exception("cannot set border_mode for %s" % output_layer)
+                self.modelTestSingleLayer(input_data,
+                                          output_layer,  # a keras layer
+                                          dump_weights,
+                                          is_training,
+                                          rtol,
+                                          atol)
+
     def modelTestSingleLayer(self,
                              input_data,
                              output_layer,  # a keras layer
-                             functional_api=True,
                              dump_weights=False,
                              is_training=False,
                              rtol=1e-7,
-                             atol=1e-7):
+                             atol=1e-7,
+                             functional_apis=[True, False]):
+        for api in functional_apis:
+            self._do_modelTestSingleLayer(
+                input_data,
+                output_layer,  # a keras layer
+                functional_api=api,
+                dump_weights=dump_weights,
+                is_training=is_training,
+                rtol=rtol,
+                atol=atol)
+
+    def _do_modelTestSingleLayer(self,
+                                 input_data,
+                                 output_layer,  # a keras layer
+                                 functional_api=True,
+                                 dump_weights=False,
+                                 is_training=False,
+                                 rtol=1e-7,
+                                 atol=1e-7):
         keras_model = self.__generate_keras_model(functional_api=functional_api,
                                                   input_data=input_data,
                                                   output_layer=output_layer)
