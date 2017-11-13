@@ -218,11 +218,11 @@ object DistriOptimizer {
 
             // ======================Start train models===================================
             var time = System.nanoTime()
-            if(dropPercentage > 0 && iteration > warmupIterationNum + computeThresholdbatchSize - 1) {
+            if(dropPercentage > 0 && curIter > warmupIterationNum + computeThresholdbatchSize - 1) {
               timeout = threshold - weightSyncTime
             }
             val lossArray = new Array[Double](_subModelNumber)
-            val pre = (iteration % computeThresholdbatchSize) * _subModelNumber
+            val pre = (curIter % computeThresholdbatchSize) * _subModelNumber
             val trainingThreads = Engine.default.invokeAndWait2((0 until _subModelNumber).map(i =>
               () => {
                 val trainStart = System.nanoTime()
@@ -303,33 +303,36 @@ object DistriOptimizer {
             }
           }.groupByKey(dummyPartitioner)
 
-        val putGradients = finishedModels.mapPartitions { iter =>
-          if (iter.hasNext && partitionNum != Engine.nodeNumber()) {
-            val executorId = SparkEnv.get.executorId
-            val parameters = AllReduceParameterManager.get(pid, executorId).get
-            var t = System.nanoTime()
-            val gradient = parameters.aggregateLocalGradient()
-            driverMetrics.add("aggregate local gradient", System.nanoTime() - t)
+        val putGradients = {
+          finishedModels.mapPartitions { iter =>
+            if (iter.hasNext) {
+              if (partitionNum != Engine.nodeNumber()) {
+                val executorId = SparkEnv.get.executorId
+                val parameters = AllReduceParameterManager.get(pid, executorId).get
+                var t = System.nanoTime()
+                val gradient = parameters.aggregateLocalGradient()
+                driverMetrics.add("aggregate local gradient", System.nanoTime() - t)
+  
+                t = System.nanoTime()
+                parameters.putGradientsExecutor(gradient)
+                driverMetrics.add("put gradient", System.nanoTime() - t)
+              }
+              val modelValues = iter.map(_._2).next()
+              assert(iter.isEmpty) // Should be only 1 key per partition
+              val finishedModelNum = modelValues.map(x => x._1).sum
+              val lossSum = modelValues.map(_._2).sum
+              val recordNumSum = modelValues.map(_._3).sum
 
-            t = System.nanoTime()
-            parameters.putGradientsExecutor(gradient)
-            driverMetrics.add("put gradient", System.nanoTime() - t)
-
-            val modelValues = iter.map(_._2).next()
-            assert(iter.isEmpty) // Should be only 1 key per partition
-            val finishedModelNum = modelValues.map(x => x._1).sum
-            val lossSum = modelValues.map(_._2).sum
-            val recordNumSum = modelValues.map(_._3).sum
-            
-            // Emit one key per partition of dummyRDD
-            (0 until Engine.nodeNumber()).map { p =>
-              (p, (finishedModelNum, lossSum, recordNumSum))
-            }.iterator
-          } else {
-            Iterator.empty
-          }
-        }.partitionBy(dummyPartitioner).values
-
+              // Emit one key per partition of dummyRDD
+              (0 until Engine.nodeNumber()).map { p =>
+                (p, (finishedModelNum, lossSum, recordNumSum))
+              }.iterator
+            } else {
+              Iterator.empty
+            }
+          }.partitionBy(dummyPartitioner).values
+        }
+        
         val aggregatedModels = putGradients.mapPartitions { iter =>
           val outIter = if (iter.hasNext) {
             val (finishedModelNum, lossSum, recordNumSum) = iter.next()
