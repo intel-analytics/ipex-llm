@@ -453,17 +453,18 @@ object DataConverter extends DataConverter{
       val tensorNumeric = tensor.getTensorNumeric()
       val storageType = context.storageType
 
+      val isEmpty = isEmptyTensor(tensor)
+
       val storageId = tensor.getTensorType match {
         case DenseType =>
-          if (tensor.isEmpty) -1 else System.identityHashCode(tensor.storage().array())
+          if (isEmpty) -1 else System.identityHashCode(tensor.storage().array())
         case QuantizedType =>
-          if (tensor.asInstanceOf[QuantizedTensor[T]].getStorage == null) {
+          if (isEmpty) {
             -1
           } else {
             System.identityHashCode(tensor.asInstanceOf[QuantizedTensor[T]].getStorage)
           }
       }
-      val isEmpty = isEmptyTensor(tensor)
       val storages = context.storages
       if (storageType == ProtoStorageType) {
         if (storages.contains(storageId)) {
