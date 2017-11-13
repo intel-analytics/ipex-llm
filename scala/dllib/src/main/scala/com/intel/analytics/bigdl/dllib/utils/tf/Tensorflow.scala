@@ -461,7 +461,7 @@ object Tensorflow {
     AttrValue.newBuilder().setI(value).build()
   }
 
-  private def listIntAttr(value: Seq[Int]): AttrValue = {
+  private[bigdl] def listIntAttr(value: Seq[Int]): AttrValue = {
     val list = ListValue.newBuilder()
     value.foreach(list.addI(_))
     AttrValue.newBuilder().setList(list).build()
