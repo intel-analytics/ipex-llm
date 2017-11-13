@@ -29,6 +29,7 @@ import com.intel.analytics.bigdl.utils.tf.Tensorflow.const
 import org.tensorflow.framework.{GraphDef, NodeDef}
 
 import scala.sys.process._
+import scala.util.control.NonFatal
 
 abstract class TensorflowSpecHelper extends BigDLSpecHelper {
 
@@ -38,7 +39,7 @@ abstract class TensorflowSpecHelper extends BigDLSpecHelper {
       exitValue = ((Seq("python", "-c", "import sys; print ','.join(sys.path)"))!!)
       ((Seq("python", "-c", "import tensorflow"))!!)
     } catch {
-      case _: Throwable => cancel("python or tensorflow is not installed")
+      case NonFatal(e) => cancel("python or tensorflow is not installed", e)
     }
 
     if (!exitValue.contains("models")) {
@@ -52,7 +53,7 @@ abstract class TensorflowSpecHelper extends BigDLSpecHelper {
       val proc = s"python $cmd".run
       return proc.exitValue() == 0
     } catch {
-      case _: Throwable => false
+      case NonFatal(e) => false
     }
   }
 
