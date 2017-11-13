@@ -33,6 +33,7 @@ object TrainInceptionV1 {
       val imageSize = 224
       val conf = Engine.createSparkConf().setAppName("BigDL InceptionV1 Train Example")
         .set("spark.task.maxFailures", "1")
+      conf.set("spark.executor.drizzle.barrierAcrossBatches", "true")
       val sc = new SparkContext(conf)
       if (param.nodeNum == -1) {
         Engine.init

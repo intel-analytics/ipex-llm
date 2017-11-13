@@ -36,6 +36,7 @@ object Train {
       val conf = Engine.createSparkConf().setAppName("Train Vgg on Cifar10")
         // Will throw exception without this config when has only one executor
           .set("spark.rpc.message.maxSize", "200")
+      conf.set("spark.executor.drizzle.barrierAcrossBatches", "true")
       val sc = new SparkContext(conf)
       if (param.nodeNum == -1) {
         Engine.init
