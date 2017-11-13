@@ -117,9 +117,14 @@ def save_variable_bigdl(tensors, target_path, bigdl_type="float"):
     :param bigdl_type: model variable numeric type
     :return: nothing
     """
+    import numpy as np
     jtensors = {}
     for tn in tensors.keys():
-        jtensors[tn] = JTensor.from_ndarray(tensors[tn])
+        if not isinstance(tensors[tn], np.ndarray):
+            value = np.array(tensors[tn])
+        else:
+            value = tensors[tn]
+        jtensors[tn] = JTensor.from_ndarray(value)
         
     callBigDlFunc(bigdl_type, "saveTensorDictionary", jtensors, target_path)
 
