@@ -34,10 +34,12 @@ class Squeeze extends TensorflowOpsLoader {
   override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder,
     context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
 
-    val dims = nodeDef.getAttrOrThrow("squeeze_dims").getList().getIList()
-      .asScala.map(_.toInt).toArray
+    var dims = nodeDef.getAttrOrThrow("squeeze_dims").getList().getIList()
+      .asScala.map(_.toInt + 1).toArray
 
-    Squeeze[T](dims, batchMode = true)
+    dims = if (dims.isEmpty) null else dims
+
+    Squeeze[T](dims, batchMode = false)
 
   }
 }
