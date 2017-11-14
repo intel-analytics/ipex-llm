@@ -29,9 +29,6 @@ from numpy.testing import assert_allclose, assert_array_equal
 from bigdl.util.engine import compare_version
 np.random.seed(1337)  # for reproducibility
 
-from keras.layers.core import *
-from keras.layers.convolutional import *
-from keras.layers import *
 
 class TestSimple():
     def setup_method(self, method):
@@ -48,57 +45,6 @@ class TestSimple():
         call.
         """
         self.sc.stop()
-
-    def test_keras(self):
-        from keras.models import Model
-        import keras.backend as K
-        import numpy as np
-        import tempfile
-
-        np.random.seed(1337)  # for reproducibility
-
-        def create_tmp_path(name):
-            tmp_file = tempfile.NamedTemporaryFile(prefix="UnitTest-keras-" + name + "-")
-            tmp_file.close()
-            return tmp_file.name
-
-        input_tensor = Input(shape=[3])
-        output_tensor = Activation(activation="relu")(
-            input_tensor)  # Dense(4, init='zero', activation="relu", input_shape=(10, ))(input_tensor)
-        model = Model(input=input_tensor, output=output_tensor)
-
-        nb_sample = 2
-        input_shape = input_tensor.shape.as_list()
-        input_shape[0] = nb_sample
-        X = np.random.uniform(0, 1, input_shape)
-
-        grad_input = K.get_session().run(K.gradients(model.output, model.input),
-                                         feed_dict={input_tensor: X})  # grad_input
-
-        grad_weight = K.get_session().run(K.gradients(model.output, model.trainable_weights),
-                                          # grad_weight
-                                          feed_dict={input_tensor: X})
-        output = model.predict(X)
-        result_list = []
-        for item in [("grad_input", grad_input), ("grad_weight", grad_weight), ("output", output)]:
-            if isinstance(item[1], list):
-                if not item[1]:
-                    continue
-                elif len(item[1]) > 1:
-                    for i in range(len(item[1])):
-                        result_list.append((item[0] + "_" + str(i), item[1][i]))
-                else:
-                    result_list.append((item[0], item[1][0]))
-            else:
-                result_list.append(item)
-        result_list
-        # for result in result_list:
-        #     value_path = create_tmp_path(result[0] + "_value")
-        #     shape_path = create_tmp_path(result[0] + "_shape")
-        #     np.savetxt(shape_path, result[1].shape)
-        #     np.savetxt(value_path, result[1].ravel())
-        #     print(shape_path)
-        #     print(value_path)
 
     def test_training(self):
         cadd = CAdd([5, 1])

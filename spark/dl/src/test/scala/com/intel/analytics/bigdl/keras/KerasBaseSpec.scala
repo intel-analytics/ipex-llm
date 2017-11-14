@@ -19,8 +19,6 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 class KerasBaseSpec extends FlatSpec with BeforeAndAfter with Matchers {
-  def kerasCheck(): Unit = {}
-
 
   private def defaultWeightConverter(in: Array[Tensor[Float]]) = in
 

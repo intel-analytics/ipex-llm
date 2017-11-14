@@ -121,6 +121,10 @@ object KerasRunner {
       key -> value
     }.toMap
 
+    resultPaths.foreach {path =>
+      new File(path).delete()
+    }
+
     val grad_input = getNoneWeightRelate(pvalues, "grad_input")
 
     val grad_weight = getWeightRelate(pvalues, "grad_weight")
