@@ -15,15 +15,39 @@
  */
 package com.intel.analytics.bigdl.utils.tf
 
-import com.intel.analytics.bigdl.nn.Reshape
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.{Module, Reshape}
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.{BigDLSpecHelper, T}
 import com.intel.analytics.bigdl.utils.tf.loaders.Adapter
 import org.scalatest.{FlatSpec, Matchers}
 
-class AdapterSpec extends FlatSpec with Matchers {
+class AdapterSpec extends BigDLSpecHelper {
 
-  private val module = Adapter[Float](Array(2), tensorArrays => {
+  private val module = new AdapterForTest()
+
+  "Adapter"  should "work correct" in {
+    module.forward(T(Tensor[Float](3, 4), Tensor[Int](T(4, 3)))) should be(Tensor[Float](4, 3))
+    module.forward(T(Tensor[Float](3, 4), Tensor[Int](T(4, 3)))) should be(Tensor[Float](4, 3))
+  }
+
+  "Adapter"  should "rebuild module when const tensor is changed" in {
+    module.forward(T(Tensor[Float](3, 4), Tensor[Int](T(4, 3)))) should be(Tensor[Float](4, 3))
+    module.forward(T(Tensor[Float](3, 4), Tensor[Int](T(2, 6)))) should be(Tensor[Float](2, 6))
+  }
+
+  "Adapter" should "be able to serialized and deserialized" in {
+    val tmpFile = createTmpFile()
+    tmpFile.delete()
+    module.saveModule(tmpFile.getAbsolutePath)
+    val loadModule = Module.loadModule[Float](tmpFile.getAbsolutePath)
+    loadModule.forward(T(Tensor[Float](3, 4), Tensor[Int](T(4, 3)))) should be(Tensor[Float](4, 3))
+  }
+}
+
+class AdapterForTest extends Adapter[Float](Array(2)) {
+  override def build(tensorArrays: Array[Tensor[_]])
+  : AbstractModule[Activity, Activity, Float] = {
     val sizes = tensorArrays(0).asInstanceOf[Tensor[Int]]
 
     val batchMode = sizes.valueAt(1) == -1
@@ -36,17 +60,5 @@ class AdapterSpec extends FlatSpec with Matchers {
       i += 1
     }
     Reshape[Float](size = arraySize, Some(batchMode))
-  })
-
-  "Adapter"  should "work correct" in {
-    module.forward(T(Tensor[Float](3, 4), Tensor[Int](T(4, 3)))) should be(Tensor[Float](4, 3))
-    module.forward(T(Tensor[Float](3, 4), Tensor[Int](T(4, 3)))) should be(Tensor[Float](4, 3))
-  }
-
-  "Adapter"  should "throw exception when const tensor is changed" in {
-    module.forward(T(Tensor[Float](3, 4), Tensor[Int](T(4, 3)))) should be(Tensor[Float](4, 3))
-    intercept[Exception] {
-      module.forward(T(Tensor[Float](3, 4), Tensor[Int](T(2, 6))))
-    }
   }
 }

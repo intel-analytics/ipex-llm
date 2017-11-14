@@ -200,6 +200,7 @@ in forward(input) is expected to be a 5D tensor (`batch x nInputPlane x depth(ti
 a 4D tensor (`nInputPlane x depth x height x width`).
 Output of forward(input) is also expected to be a 5D tensor (`batch x depth(time) x outputPlane x height x width`) or
 a 4D tensor (`outputPlane x depth x height x width`).
+As for padding, when padW,padH, padT are all -1, we use a padding algorithm similar to the "SAME" padding of tensorflow.
 
 * `nInputPlane` The number of expected input planes in the image given into forward()
 * `nOutputPlane` The number of output planes the convolution layer will produce.

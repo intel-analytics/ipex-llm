@@ -601,7 +601,7 @@ class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
       endPoints,
       ByteOrder.LITTLE_ENDIAN,
       "",
-      None,
+      Some(context),
       generatedBackward = false
     ).asInstanceOf[Graph[T]]
 

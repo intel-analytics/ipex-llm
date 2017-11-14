@@ -190,8 +190,22 @@ class DataConverterSpec extends FlatSpec with Matchers{
     retrievedValue should be (tensor)
   }
 
-  "Empty Tensor conversion" should "work properly" in {
+  "Null Tensor conversion" should "work properly" in {
     val tensor : Tensor[Float] = null
+    val attriBulder = AttrValue.newBuilder
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType),
+      attriBulder, tensor, ModuleSerializer.tensorType)
+    val attr = attriBulder.build
+    map.clear()
+    val retrievedValue = DataConverter.
+      getAttributeValue(DeserializeContext(null, map, ProtoStorageType), attr)
+    attr.getDataType should be (DataType.TENSOR)
+    retrievedValue should be (tensor)
+  }
+
+  "Empty Tensor conversion" should "work properly" in {
+    val tensor : Tensor[Float] = Tensor[Float]()
     val attriBulder = AttrValue.newBuilder
     map.clear()
     DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType),

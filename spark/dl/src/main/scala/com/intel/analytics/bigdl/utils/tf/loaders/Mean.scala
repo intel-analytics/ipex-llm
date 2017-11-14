@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.{Sequential, Mean => MeanNN}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -33,37 +34,50 @@ class Mean extends TensorflowOpsLoader {
 
   override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder
     , context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
-
-    Adapter[T](Array(2), tensorArrays => {
-      val attr = nodeDef.getAttrMap
-      val dataType = getType(attr, "T")
-      val squeeze = !getBoolean(attr, "keep_dims")
-      val dims = tensorArrays(0).asInstanceOf[Tensor[Int]]
-      val dim = ArrayBuffer[Int]()
-      val mean = Sequential[T]()
-      for (i <- 1 to dims.size(1)) {
-        dim += dims.valueAt(i) + 1
-      }
-      dataType match {
-        case DataType.DT_INT8 =>
-          dim.foreach(i => mean.add(new MeanNN[T, Int](i, squeeze = squeeze)))
-        case DataType.DT_INT16 =>
-          dim.foreach(i => mean.add(new MeanNN[T, Int](i, squeeze = squeeze)))
-        case DataType.DT_UINT8 =>
-          dim.foreach(i => mean.add(new MeanNN[T, Int](i, squeeze = squeeze)))
-        case DataType.DT_UINT16 =>
-          dim.foreach(i => mean.add(new MeanNN[T, Int](i, squeeze = squeeze)))
-        case DataType.DT_INT32 =>
-          dim.foreach(i => mean.add(new MeanNN[T, Int](i, squeeze = squeeze)))
-        case DataType.DT_INT64 =>
-          dim.foreach(i => mean.add(new MeanNN[T, Long](i, squeeze = squeeze)))
-        case DataType.DT_FLOAT =>
-          dim.foreach(i => mean.add(new MeanNN[T, Float](i, squeeze = squeeze)))
-        case DataType.DT_DOUBLE =>
-          dim.foreach(i => mean.add(new MeanNN[T, Double](i, squeeze = squeeze)))
-      }
-      mean
-    })
+    val attr = nodeDef.getAttrMap
+    val dataType = getType(attr, "T")
+    val squeeze = !getBoolean(attr, "keep_dims")
+    val dt = dataType match {
+      case DataType.DT_INT8 =>
+        "Int"
+      case DataType.DT_INT16 =>
+        "Int"
+      case DataType.DT_UINT8 =>
+        "Int"
+      case DataType.DT_UINT16 =>
+        "Int"
+      case DataType.DT_INT32 =>
+        "Int"
+      case DataType.DT_INT64 =>
+        "Long"
+      case DataType.DT_FLOAT =>
+        "Float"
+      case DataType.DT_DOUBLE =>
+        "Double"
+    }
+    new MeanLoadTF[T](dt, squeeze)
   }
 }
 
+class MeanLoadTF[T: ClassTag](dataType: String, squeeze: Boolean)(implicit ev: TensorNumeric[T])
+  extends Adapter[T](Array(2)) {
+  override def build(tensorArrays: Array[Tensor[_]]): AbstractModule[Activity, Activity, T] = {
+    val dims = tensorArrays(0).asInstanceOf[Tensor[Int]]
+    val dim = ArrayBuffer[Int]()
+    val mean = Sequential[T]()
+    for (i <- 1 to dims.size(1)) {
+      dim += dims.valueAt(i) + 1
+    }
+    dataType match {
+      case "Int" =>
+        dim.foreach(i => mean.add(new MeanNN[T, Int](i, squeeze = squeeze)))
+      case "Long" =>
+        dim.foreach(i => mean.add(new MeanNN[T, Long](i, squeeze = squeeze)))
+      case "Float" =>
+        dim.foreach(i => mean.add(new MeanNN[T, Float](i, squeeze = squeeze)))
+      case "Double" =>
+        dim.foreach(i => mean.add(new MeanNN[T, Double](i, squeeze = squeeze)))
+    }
+    mean
+  }
+}

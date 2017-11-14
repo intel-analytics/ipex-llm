@@ -2133,6 +2133,19 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
   override def inv(): Tensor[T] = {
     this.apply1(a => ev.inv(a))
   }
+
+  override def reduce(dim: Int, result: Tensor[T], reducer: (T, T) => T): Tensor[T] = {
+    DenseTensorDimApply.dimApply2[T](result.asInstanceOf[DenseTensor[T]], this, dim - 1,
+      (r, rOffset, rStride, rSize, t, tOffset, tStride, tSize) => {
+        r(rOffset) = t(tOffset)
+        var i = 1
+        while(i < tSize) {
+          r(rOffset) = reducer(r(rOffset), t(tOffset + i * tStride))
+          i += 1
+        }
+      })
+    result
+  }
 }
 
 object DenseTensor {

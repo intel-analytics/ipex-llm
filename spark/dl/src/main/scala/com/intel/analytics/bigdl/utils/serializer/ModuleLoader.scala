@@ -185,7 +185,7 @@ object ModulePersister {
     storages.values.filter(_.isInstanceOf[BigDLTensor]).foreach(storage => {
       val bigdlTensor = storage.asInstanceOf[BigDLTensor]
       val storageId = bigdlTensor.getStorage.getId
-      if (!storageIds.contains(storageId)) {
+      if (!storageIds.contains(storageId) && storageId != -1) {
         val tensorBuilder = BigDLTensor.newBuilder(bigdlTensor)
         tensorBuilder.clearStorage()
         require(tensorStorages.contains(storageId), s"${storageId} does not exist")

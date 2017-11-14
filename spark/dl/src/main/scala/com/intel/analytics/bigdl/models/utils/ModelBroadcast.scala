@@ -64,7 +64,6 @@ class ModelBroadcast[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Seria
     localModel
   }
 
-
   private def getWeightBias(parameters: (Array[Tensor[T]], Array[Tensor[T]]))
   : Array[Tensor[T]] = {
     if (parameters._1.length != 0) {
@@ -104,8 +103,8 @@ class ModelBroadcast[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Seria
       Array()
     }
   }
-
-  private def initGradWeightBias(
+  
+  private[bigdl] def initGradWeightBias(
         broadcastWeightBias: Array[Tensor[T]],
         localModel: Module[T]): Unit = {
     val (localWeightBias, localGradWeightBias) = localModel.parameters()
