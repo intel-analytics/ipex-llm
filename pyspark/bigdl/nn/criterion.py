@@ -359,10 +359,12 @@ class MarginCriterion(Criterion):
     def __init__(self,
                  margin=1.0,
                  size_average=True,
+                 squared=False,
                  bigdl_type="float"):
         super(MarginCriterion, self).__init__(None, bigdl_type,
                                               margin,
-                                              size_average)
+                                              size_average,
+                                              squared)
 
 
 class MarginRankingCriterion(Criterion):
