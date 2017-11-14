@@ -59,7 +59,7 @@ class ModelBroadcast[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Seria
   def value(initGradient: Boolean = false): Module[T] = {
     val localModel = broadcastModel.value.clone(false)
     if (initGradient) {
-      initGradWeightBias(getAndClearWeightBias(localModel.parameters()), localModel)
+      initGradWeightBias(getWeightBias(localModel.parameters()), localModel)
     }
     localModel
   }
