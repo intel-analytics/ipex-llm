@@ -1,9 +1,5 @@
 # Inception Model on Imagenet
-This example demonstrates how to use BigDL to train and evaluate [Inception v1](https://arxiv.org/abs/1409.4842) architecture on the [ImageNet](http://image-net.org/index) data.
-## Get the JAR
-You can build one by refer to the
-[Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page) from the source code. We
-will release a pre-build package soon.
+This example demonstrates how to use BigDL with Drizzle to train [Inception v1](https://arxiv.org/abs/1409.4842) architecture on the [ImageNet](http://image-net.org/index) data.
 
 ## Prepare the data
 You can download imagenet-2012 data from <http://image-net.org/download-images>.
@@ -45,6 +41,8 @@ java -cp bigdl_folder/spark/dl/target/bigdl-VERSION-jar-with-dependencies-and-sp
 It will generate the hadoop sequence files in the output folder.
 
 ## Train the Model
+Please use Spark Drizzle when you run BigDL with Drizzle examples
+
 * Spark standalone, example command
 ```bash
 spark-submit \
@@ -57,7 +55,12 @@ dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 --batchSize batch_size \
 --learningRate learningRate \
 -f hdfs://.../imagenet \
---checkpoint ~/models
+--checkpoint ~/models \
+--partitionNumber partition_number \
+--nodeNumber node_number \
+--corePerTask cores_per_task \
+--drizzleGroupSize drizzleGroupSize \
+--useDrizzle useDrizzle
 ```
 * Spark yarn client mode, example command
 ```bash
@@ -74,7 +77,12 @@ dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 --weightDecay weightDecay \
 --checkpointIteration checkpointIteration \
 -f hdfs://.../imagenet \
---checkpoint ~/models
+--checkpoint ~/models \
+--partitionNumber partition_number \
+--nodeNumber node_number \
+--corePerTask core_per_task \
+--drizzleGroupSize drizzleGroupSize \
+--useDrizzle useDrizzle
 ```
 In the above commands
 * -f: where you put your ImageNet data, it should be a hdfs folder
@@ -89,37 +97,8 @@ core_number. In this example, node_number is 1 and the mini-batch size is sugges
 policy.
 * --weightDecay: weight decay.
 * --checkpointIteration: the checkpoint interval in iteration.
-
-## Test the Model
-* Spark standalone, example command
-```bash
-spark-submit \
---master spark://xxx.xxx.xxx.xxx:xxxx \
---executor-cores cores_per_executor \
---total-executor-cores total_cores_for_the_job \
---driver-class-path dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
---class com.intel.analytics.bigdl.models.inception.Test \
-dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
---batchSize batch_size \
--f hdfs://.../imagenet/val \
---model model.file
-```
-* Spark yarn client mode, example command
-```bash
-spark-submit \
---master yarn \
---deploy-mode client \
---executor-cores cores_per_executor \
---num-executors executors_number \
---driver-class-path dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
---class com.intel.analytics.bigdl.models.inception.Test \
-dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
---batchSize batch_size \
--f hdfs://.../imagenet/val \
---model model.file
-```
-In the above command
-* -f: where you put your ImageNet data, it should be a hdfs folder
-* --model: the model snapshot file
-* --batchSize: The mini-batch size. It is expected that the mini-batch size is a multiple of
-node_number * core_number. In this example, node_number is 1 and the mini-batch size is suggested to be set to core_number * 4
+* --partitionNumber: partitions you want to have
+* --nodeNumber: node numbers you want to use 
+* --corePerTask: core numbers you want to use for each Spark task
+* --drizzleGroupSize: drizzle group size
+* --useDrizzle: whether use drizzle

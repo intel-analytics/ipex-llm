@@ -1,4 +1,4 @@
-# BigDL: Distributed Deep Learning on Apache Spark
+# BigDL with Drizzle: Accelerating Large-Scale Distributed Deep Learning on Apache Spark
 
 ## What is BigDL?
 BigDL is a distributed deep learning library for Apache Spark; with BigDL, users can write their deep learning applications as standard Spark programs, which can directly run on top of existing Spark or Hadoop clusters.
@@ -8,23 +8,25 @@ BigDL is a distributed deep learning library for Apache Spark; with BigDL, users
 
 * **Efficiently scale-out.** BigDL can efficiently scale out to perform data analytics at "Big Data scale", by leveraging [Apache Spark](http://spark.apache.org/) (a lightning fast distributed data processing framework), as well as efficient implementations of synchronous SGD and all-reduce communications on Spark. 
 
-## Why BigDL?
-You may want to write your deep learning programs using BigDL if:
-* You want to analyze a large amount of data on the same Big Data (Hadoop/Spark) cluster where the data are stored (in, say, HDFS, HBase, Hive, etc.).
+## What is Drizzle?
+Drizzle is a low latency execution engine for Apache Spark that is targeted at stream processing and iterative workloads. Currently, Spark uses a BSP computation model, and notifies the scheduler at the end of each task. Invoking the scheduler at the end of each task adds overheads and results in decreased throughput and increased latency.
 
-* You want to add deep learning functionalities (either training or prediction) to your Big Data (Spark) programs and/or workflow.
+In Drizzle, we introduce group scheduling, where multiple batches (or a group) of computation are scheduled at once. This helps decouple the granularity of task execution from scheduling and amortize the costs of task serialization and launch.
 
-* You want to leverage existing Hadoop/Spark clusters to run your deep learning applications, which can be then dynamically shared with other workloads (e.g., ETL, data warehouse, feature engineering, classical machine learning, graph analytics, etc.)
+More information can be found at the Spark Drizzle project website:
 
-## How to use BigDL?
-* More information can be found at the BigDL project website:
+https://github.com/amplab/drizzle-spark
+
+## How to run BigDL with drizzle?
+* Clone and build drizzle-spark. 
+  1. git clone https://github.com/amplab/drizzle-spark 
+  2. ./build/sbt -Phadoop-2.6 -Pyarn -Pmesos -Phive publish-local package 
   
-  https://bigdl-project.github.io/
-  
-  In particular, you can check out the [Getting Started page](https://bigdl-project.github.io/master/#getting-started/) for a quick overview of how to use BigDL
-  
-* For step-by-step deep leaning tutorials on BigDL (using Python), you can check out the [BigDL Tutorials project](https://github.com/intel-analytics/BigDL-tutorials)
+   This will install the 2.1.1-drizzle Maven pom files.
+* Clone the BigDL fork 
+  git clone https://github.com/intel-analytics/BigDL -b new_parametermanager_drizzle
 
-* You can join the [BigDL Google Group](https://groups.google.com/forum/#!forum/bigdl-user-group) (or subscribe to the [Mail List](mailto:bigdl-user-group+subscribe@googlegroups.com)) for more questions and discussions on BigDL
+* Build BigDL using the spark_drizzle profile  
+  bash make-dist.sh -P spark_drizzle
 
-* You can post bug reports and feature requests at the [Issue Page](https://github.com/intel-analytics/BigDL/issues)
+* Restart Spark using the Drizzle Spark jars and then run VGG/Inception benchmark. 
