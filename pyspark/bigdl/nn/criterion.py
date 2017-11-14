@@ -125,6 +125,9 @@ class ClassNLLCriterion(Criterion):
     By default, the losses are averaged over observations for each minibatch. However, if the field
     sizeAverage is set to false, the losses are instead summed for each minibatch.
 
+    In particular, when weights=None, size_average=True and logProbAsInput=False, this is same as
+    `sparse_categorical_crossentropy` loss in keras.
+
 
     :param weights: weights of each class
     :param size_average: whether to average or not
@@ -347,6 +350,8 @@ class MarginCriterion(Criterion):
     Creates a criterion that optimizes a two-class classification hinge loss (margin-based loss)
     between input x (a Tensor of dimension 1) and output y.
 
+    When margin = 1, size_average = True and squared = False, this is the same as hinge loss in keras;
+    When margin = 1, size_average = False and squared = True, this is the same as squared_hinge loss in keras.
 
     :param margin: if unspecified, is by default 1.
     :param size_average: size average in a mini-batch

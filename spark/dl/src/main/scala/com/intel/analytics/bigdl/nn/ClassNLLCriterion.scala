@@ -53,6 +53,9 @@ import com.intel.analytics.bigdl.utils.Engine
  * By default, the losses are averaged over observations for each minibatch. However, if the field
  * sizeAverage is set to false, the losses are instead summed for each minibatch.
  *
+ * In particular, when weights=None, size_average=True and logProbAsInput=False, this is same as
+ * `sparse_categorical_crossentropy` loss in keras.
+ *
  * @param weights weights of each element of the input
  * @param sizeAverage size average of batch
  * @param logProbAsInput indicating whether to accept log-probabilities or probabilities as input.
