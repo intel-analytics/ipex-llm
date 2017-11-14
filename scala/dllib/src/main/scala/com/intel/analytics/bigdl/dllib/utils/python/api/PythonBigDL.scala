@@ -1419,10 +1419,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createClassNLLCriterion(weights: JTensor = null,
-    sizeAverage: Boolean = true)
+    sizeAverage: Boolean = true, logProbAsInput: Boolean = true)
   : ClassNLLCriterion[T] = {
     ClassNLLCriterion[T](if (weights == null) null else toTensor(weights),
-      sizeAverage)
+      sizeAverage, logProbAsInput)
   }
 
   def createMSECriterion: MSECriterion[T] = {
@@ -1470,10 +1470,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createMarginCriterion(margin: Double = 1.0,
-    sizeAverage: Boolean = true)
+    sizeAverage: Boolean = true, squared: Boolean = false)
   : MarginCriterion[T] = {
     MarginCriterion[T](margin,
-      sizeAverage)
+      sizeAverage, squared)
   }
 
   def createMarginRankingCriterion(margin: Double = 1.0,
