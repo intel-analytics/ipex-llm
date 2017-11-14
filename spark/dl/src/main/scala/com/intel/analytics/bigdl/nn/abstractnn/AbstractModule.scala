@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.nn.abstractnn
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.tensor.{Tensor, TensorDataType}
+import com.intel.analytics.bigdl.tensor.{QuantizedTensor, Tensor, TensorDataType}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.nn.{Module, _}
@@ -469,11 +469,9 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
                         deepCopy : Boolean, paraName : String) : Unit = {
     if (params.contains(paraName)) {
       // this is for quantization tensors where the weight might be an array
-      if (copyParams.get(paraName).get
+      if (params.get(paraName).get
         .isInstanceOf[Array[Tensor[T]]]) {
-        require(params.get(paraName).get
-          .isInstanceOf[Array[Tensor[T]]], "param type mismatch!")
-        val copies = params.get(paraName).get
+        val copies = copyParams.get(paraName).get
           .asInstanceOf[Array[Tensor[T]]]
         val origins = params.get(paraName).get
           .asInstanceOf[Array[Tensor[T]]]
@@ -491,7 +489,9 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   }
 
   private def copyTensor(t1 : Tensor[T], t2 : Tensor[T], deepCopy : Boolean) = {
-    t2.resizeAs(t1)
+    if (t2.isInstanceOf[QuantizedTensor[_]]) {
+           t2.asInstanceOf[QuantizedTensor[_]].release()
+    }
     if (deepCopy) {
       t2.copy(t1)
     } else {
