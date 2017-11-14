@@ -59,7 +59,7 @@ class ModelBroadcast[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Seria
   def value(initGradient: Boolean = false): Module[T] = {
     val localModel = broadcastModel.value.clone(false)
     if (initGradient) {
-      initGradWeightBias(getWeightBias(localModel.parameters()), localModel)
+      initGradWeightBias(getAndClearWeightBias(localModel.parameters()), localModel)
     }
     localModel
   }
@@ -96,14 +96,34 @@ class ModelBroadcast[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Seria
           i += 1
         }
       }
-
       weightsBias
     } else {
       // just return an empty array when parameters is empty.
       Array()
     }
   }
-  
+
+  private[bigdl] def getAndClearWeightBias(parameters: (Array[Tensor[T]], Array[Tensor[T]]))
+  : Array[Tensor[T]] = {
+    val weightBias = getWeightBias(parameters)
+    if (parameters._1.length != 0) {
+      // clear parameters
+      clearTensor(parameters._1)
+      clearTensor(parameters._2)
+    }
+    weightBias
+  }
+
+  private def clearTensor(tensors: Array[Tensor[T]]): Unit = {
+    var i = 0
+    while (i < tensors.length) {
+      if (tensors(i) != null) {
+        tensors(i).set()
+      }
+      i += 1
+    }
+  }
+
   private[bigdl] def initGradWeightBias(
         broadcastWeightBias: Array[Tensor[T]],
         localModel: Module[T]): Unit = {
@@ -121,6 +141,19 @@ class ModelBroadcast[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Seria
           case _ =>
             localGradWeightBias(i).set(storage, wb.storageOffset(), wb.size(), wb.stride())
         }
+      }
+      i += 1
+    }
+  }
+
+  private[bigdl] def putWeightBias(
+                                    broadcastWeightBias: Array[Tensor[T]],
+                                    localModel: Module[T]): Unit = {
+    val localWeightBias = localModel.parameters()._1
+    var i = 0
+    while (i < localWeightBias.length) {
+      if (localWeightBias(i) != null) {
+        localWeightBias(i).set(broadcastWeightBias(i))
       }
       i += 1
     }
