@@ -15,11 +15,8 @@
  */
 package com.intel.analytics.bigdl.keras
 
-import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.{Linear, Ones, ReLU, Zeros}
+import com.intel.analytics.bigdl.nn.{Linear, ReLU}
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.sun.javafx.css.converters.FontConverter.FontWeightConverter
 
 class TestKerasBaseSpec extends KerasBaseSpec{
 

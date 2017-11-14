@@ -20,7 +20,7 @@ import java.io.{File, PrintWriter}
 import com.intel.analytics.bigdl.tensor.Tensor
 
 import scala.io.Source
-import sys.process._
+import scala.sys.process._
 
 object KerasRunner {
 
