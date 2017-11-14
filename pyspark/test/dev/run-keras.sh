@@ -28,7 +28,7 @@ do
     export PYTHON_EXECUTABLE=$p
     export PYSPARK_PYTHON=$p
     export PYSPARK_DRIVER_PYTHON=$p
-    $p -m pytest -v -n 4 ../../../pyspark/test/bigdl/keras1
+    $p -m pytest -v  ../../../pyspark/test/bigdl/keras1
     exit_status=$?
     if [ $exit_status -ne 0 ];
     then
