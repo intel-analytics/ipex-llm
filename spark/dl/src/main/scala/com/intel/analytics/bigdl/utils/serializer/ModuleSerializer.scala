@@ -27,7 +27,6 @@ import com.intel.analytics.bigdl.nn.ops.ParseExample
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.{Tensor, TensorNumericMath}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.tf.loaders.Adapter
 import serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.collection.mutable
@@ -54,28 +53,27 @@ object ModuleSerializer extends ModuleSerializable{
 
   /**
    * Serialization entry for all modules based on corresponding class instance of module
-   * @param serializerContext  serialization context
-   * @param copyWeightAndBias flag to copy weight & bias
+   * @param serializerContext : serialization context
    * @return protobuf format module instance
    */
-  def serialize[T: ClassTag](serializerContext : SerializeContext[T],
-                             copyWeightAndBias : Boolean = true)
+  def serialize[T: ClassTag](serializerContext : SerializeContext[T])
                             (implicit ev: TensorNumeric[T])
     : SerializeResult = {
     val module = serializerContext.moduleData.module
     // For those layers which have their own serialization/deserialization methods
     val clsName = module.getClass.getName
-    val serializer = if (serializerMaps.contains(clsName)) {
-      serializerMaps(clsName)
+    if (serializerMaps.contains(clsName)) {
+      serializerMaps(clsName).serializeModule(serializerContext)
     } else {
       val m = module.asInstanceOf[AbstractModule[_, _, _]]
       m match {
-        case container : Container[_, _, _] => ContainerSerializer
-        case cell : Cell[_] => CellSerializer
-        case _ => ModuleSerializer
+        case container : Container[_, _, _] =>
+          ContainerSerializer.serializeModule(serializerContext)
+        case cell : Cell[_] =>
+          CellSerializer.serializeModule(serializerContext)
+        case _ => ModuleSerializer.serializeModule(serializerContext)
       }
     }
-    serializer.setCopyWeightAndBias(copyWeightAndBias).serializeModule(serializerContext)
   }
 
   /**
@@ -83,26 +81,25 @@ object ModuleSerializer extends ModuleSerializable{
    *  @param context : context for deserialization
    *  @return BigDL module
    */
-  def load[T: ClassTag](context: DeserializeContext, copyWeightAndBias : Boolean = true)
+  def load[T: ClassTag](context: DeserializeContext)
                        (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
     try {
       val model = context.bigdlModule
-      val deSerializer = if (serializerMaps.contains(model.getModuleType)) {
-        serializerMaps(model.getModuleType)
+      if (serializerMaps.contains(model.getModuleType)) {
+        serializerMaps(model.getModuleType).loadModule(context)
       } else {
         val attrMap = model.getAttrMap
         val subModuleCount = model.getSubModulesCount
         if (subModuleCount > 0) {
-          ContainerSerializer
+          ContainerSerializer.loadModule(context)
         } else {
           if (attrMap.containsKey("is_cell_module")) {
-            CellSerializer
+            CellSerializer.loadModule(context)
           } else {
-            ModuleSerializer
+            ModuleSerializer.loadModule(context)
           }
         }
       }
-      deSerializer.setCopyWeightAndBias(copyWeightAndBias).loadModule(context)
     } catch {
       case e: Exception =>
         throw new RuntimeException(
@@ -201,9 +198,7 @@ object ModuleSerializer extends ModuleSerializable{
       quantized.SpatialDilatedConvolution)
     registerModule("com.intel.analytics.bigdl.nn.quantized.Linear",
       quantized.Linear)
-    registerModule("com.intel.analytics.bigdl.utils.tf.loaders.Adapter", Adapter)
     registerModule("com.intel.analytics.bigdl.nn.ops.ParseExample", ParseExample)
-
   }
 }
 

@@ -66,6 +66,7 @@ class ModelBroadcast[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Seria
 
 
   private def getWeightBias(parameters: (Array[Tensor[T]], Array[Tensor[T]]))
+
   : Array[Tensor[T]] = {
     if (parameters._1.length != 0) {
       var i = 0
@@ -105,9 +106,32 @@ class ModelBroadcast[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Seria
     }
   }
 
-  private def initGradWeightBias(
+  private def clearTensor(tensors: Array[Tensor[T]]): Unit = {
+    var i = 0
+    while (i < tensors.length) {
+      if (tensors(i) != null) {
+        tensors(i).set()
+      }
+      i += 1
+    }
+  }
+
+  private[bigdl] def putWeightBias(
         broadcastWeightBias: Array[Tensor[T]],
         localModel: Module[T]): Unit = {
+    val localWeightBias = localModel.parameters()._1
+    var i = 0
+    while (i < localWeightBias.length) {
+      if (localWeightBias(i) != null) {
+        localWeightBias(i).set(broadcastWeightBias(i))
+      }
+      i += 1
+    }
+  }
+
+  private[bigdl] def initGradWeightBias(
+                                         broadcastWeightBias: Array[Tensor[T]],
+                                         localModel: Module[T]): Unit = {
     val (localWeightBias, localGradWeightBias) = localModel.parameters()
     // init gradient with a compacted storage
     val storage = Storage[T](localGradWeightBias.map(_.nElement()).sum)

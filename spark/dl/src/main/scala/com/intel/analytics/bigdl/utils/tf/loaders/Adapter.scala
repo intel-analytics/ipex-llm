@@ -18,11 +18,8 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.serializer._
-import com.intel.analytics.bigdl.utils.{T, Table, serializer}
-import serialization.Bigdl.{AttrValue, BigDLModule}
+import com.intel.analytics.bigdl.utils.{T, Table}
 
-import scala.reflect.runtime.universe
 import scala.reflect.ClassTag
 
 /**
@@ -32,12 +29,10 @@ import scala.reflect.ClassTag
  *
  * Please note you must guarantee the input parameter won't change each time.
  * @param configIndexes configuration tensor indexes, start from 1 and -1 specify the last one
- * @param build build function
  * @tparam T Numeric type. Only support float/double now
  */
-class Adapter[T: ClassTag](
-  val configIndexes: Array[Int],
-  val build: Array[Tensor[_]] => AbstractModule[Activity, Activity, T]
+abstract class Adapter[T: ClassTag](
+  val configIndexes: Array[Int]
 )(implicit ev: TensorNumeric[T])
   extends AbstractModule[Table, Activity, T]{
 
@@ -48,20 +43,28 @@ class Adapter[T: ClassTag](
   private var realInput: Activity = _
   private var initTensors: Array[Tensor[_]] = _
 
+  def build(tensorArrays: Array[Tensor[_]]): AbstractModule[Activity, Activity, T]
+
   override def updateOutput(input: Table): Activity = {
+    var rebuildModule = false
     if (module == null) {
+      rebuildModule = true
+    } else {
+      indexes.map(i => input[Tensor[_]](i)).zip(initTensors).foreach(tensors => {
+        if (tensors._1 != tensors._2) {
+          rebuildModule = true
+        }
+      })
+    }
+
+    if (rebuildModule) {
       val l = input.length()
       indexes = configIndexes.map(getPositiveIndex(_, l))
       val tensors = indexes.map(i => input[Tensor[_]](i))
       initTensors = tensors.map(_.clone())
+      module = build(tensors)
       dataIndexes = getDataIndexes(indexes, l)
       zeroGrads = tensors.map(t => t.emptyInstance().resizeAs(t))
-      module = build(tensors)
-    } else {
-      indexes.map(i => input[Tensor[_]](i)).zip(initTensors).foreach(tensors => {
-        require(tensors._1 == tensors._2, s"constant tensor is changed. " +
-          s"\noriginal\n${tensors._2}\nnow\n${tensors._1}")
-      })
     }
 
     realInput = if (dataIndexes.length == 1) {
@@ -106,72 +109,5 @@ class Adapter[T: ClassTag](
 
   override def accGradParameters(input: Table, gradOutput: Activity): Unit = {
     module.accGradParameters(realInput, gradOutput)
-  }
-}
-
-object Adapter extends ModuleSerializable {
-  def apply[T: ClassTag](
-    configIndexes: Array[Int], build: Array[Tensor[_]] => AbstractModule[Activity, Activity, T]
-  )(implicit ev: TensorNumeric[T]): Adapter[T] = {
-    new Adapter(configIndexes, build)
-  }
-
-  override def doLoadModule[T: ClassTag](context: DeserializeContext)
-    (implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
-    val attrMap = context.bigdlModule.getAttrMap
-    val configIndexes = DataConverter.getAttributeValue(context, attrMap.get("configIndexes")).
-      asInstanceOf[Array[Int]]
-
-    val adapter = Adapter[T](configIndexes, null)
-
-
-    adapter.module = DataConverter.getAttributeValue(context, attrMap.get("module")).
-      asInstanceOf[AbstractModule[Activity, Activity, T]]
-
-    adapter.initTensors = DataConverter.getAttributeValue(context, attrMap.get("tensors")).
-      asInstanceOf[Array[Tensor[_]]]
-
-    adapter.indexes = DataConverter.getAttributeValue(context, attrMap.get("indexes")).
-      asInstanceOf[Array[Int]]
-
-    adapter.dataIndexes = DataConverter.getAttributeValue(context, attrMap.get("dataIndexes")).
-      asInstanceOf[Array[Int]]
-
-    adapter.zeroGrads = adapter.initTensors.map(t => t.emptyInstance().resizeAs(t))
-
-    adapter
-  }
-
-  override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
-    bigDLModelBuilder: BigDLModule.Builder)(implicit ev: TensorNumeric[T]): Unit = {
-    val adapterModule = context.moduleData.module.asInstanceOf[Adapter[T]]
-
-    val moduleBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(context, moduleBuilder, adapterModule.module,
-      serializer.ModuleSerializer.abstractModuleType)
-    bigDLModelBuilder.putAttr("module", moduleBuilder.build)
-
-    val configIndexesBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(context, configIndexesBuilder, adapterModule.configIndexes,
-      universe.typeOf[Array[Int]])
-    bigDLModelBuilder.putAttr("configIndexes", moduleBuilder.build)
-
-    val indexesBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(context, indexesBuilder, adapterModule.indexes,
-      universe.typeOf[Array[Int]])
-    bigDLModelBuilder.putAttr("indexes", indexesBuilder.build)
-
-    val dataIndexesBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(context, dataIndexesBuilder, adapterModule.dataIndexes,
-      universe.typeOf[Array[Int]])
-    bigDLModelBuilder.putAttr("dataIndexes", dataIndexesBuilder.build)
-
-    val tensorsBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(context, tensorsBuilder, adapterModule.initTensors,
-      universe.typeOf[Array[Tensor[_]]])
-    bigDLModelBuilder.putAttr("tensors", tensorsBuilder.build)
-
-    bigDLModelBuilder.putAttr("configIndexes", moduleBuilder.build)
-
   }
 }

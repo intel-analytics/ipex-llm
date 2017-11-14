@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.torch
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim.{L2Regularizer, SGD}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.T
 
@@ -438,6 +438,42 @@ class VolumetricConvolutionSpec extends TorchSpec {
 
     weights1 should be(weights2)
     loss1 should be(loss2)
+  }
+
+  "A VolumetricConvolution layer" should "work with SAME padding" in {
+    import tensor.TensorNumericMath.TensorNumeric.NumericFloat
+    val nInputPlane = 1
+    val nOutputPlane = 1
+    val kW = 1
+    val kH = 1
+    val kT = 1
+    val dT = 2
+    val dW = 2
+    val dH = 2
+    val padW = -1
+    val padH = -1
+    val padT = -1
+    val layer = new VolumetricConvolution(nInputPlane, nOutputPlane,
+      kT, kW, kH, dT, dW, dH, padT, padW, padH)
+
+    val inputData = Array(
+      0.0f, 1.0f, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+      20, 21, 22, 23, 24, 25, 26
+    )
+
+    val kernelData = Array(
+      1.0f
+    )
+
+    val biasData = Array(0.0f)
+
+    layer.weight.copy(Tensor(Storage(kernelData), 1, Array(nOutputPlane,
+      nInputPlane, kT, kH, kW)))
+    layer.bias.copy(Tensor(Storage(biasData), 1, Array(nOutputPlane)))
+    val input = Tensor(Storage(inputData), 1, Array(1, 3, 3, 3))
+    val output = layer.updateOutput(input)
+    val gradInput = layer.backward(input, output)
+    output.storage().array() should be (Array(0.0f, 2, 6, 8, 18, 20, 24, 26))
   }
 }
 
