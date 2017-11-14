@@ -190,6 +190,8 @@ object TensorNumericMath {
     def truncate(a: T): T
 
     def floorDiv(a: T, b: T): T
+
+    def clip(a: T, lower: T, upper: T): T
   }
 
   /**
@@ -450,6 +452,10 @@ object TensorNumericMath {
     override def floorDiv(a: T, b: T): T =
       throw new UnsupportedOperationException(typeName +
         " in tensor does not support floorDiv operation")
+
+    def clip(a: T, lower: T, upper: T): T =
+      throw new UnsupportedOperationException(typeName +
+        " in tensor does not support clip operation")
   }
 
   /**
@@ -759,6 +765,12 @@ object TensorNumericMath {
       override def floorDiv(a: Float, b: Float): Float = {
         Math.floor(a / b).toFloat
       }
+
+      override def clip(a: Float, lower: Float, upper: Float): Float = {
+        require(lower <= upper, "lower bound must be less or equal than upper bound")
+        math.min(math.max(a, lower), upper)
+      }
+
     }
 
     implicit object NumericDouble extends UndefinedTensorNumeric[Double]("Double") {
@@ -1057,6 +1069,11 @@ object TensorNumericMath {
 
       override def floorDiv(a: Double, b: Double): Double = {
         Math.floor(a / b)
+      }
+
+      override def clip(a: Double, lower: Double, upper: Double): Double = {
+        require(lower <= upper, "lower bound must be less or equal than upper bound")
+        math.min(math.max(a, lower), upper)
       }
     }
 
