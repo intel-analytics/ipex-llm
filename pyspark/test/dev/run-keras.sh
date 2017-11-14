@@ -28,14 +28,7 @@ do
     export PYTHON_EXECUTABLE=$p
     export PYSPARK_PYTHON=$p
     export PYSPARK_DRIVER_PYTHON=$p
-    $p -m pytest -v --doctest-modules ../../../pyspark/bigdl \
-    --ignore=../../../pyspark/bigdl/dataset/ \
-    --ignore=../../../pyspark/bigdl/util/tf_utils.py \
-    --ignore=../../../pyspark/test/bigdl/keras1/test_application.py \
-    --ignore=../../../pyspark/bigdl/models/ && \
-    $p -m pytest -v -n 4 ../../../pyspark/test/ \
-    --ignore=../../../pyspark/test/bigdl/caffe/ \
-    --ignore=../../../pyspark/test/bigdl/keras1/
+    $p -m pytest -v -n 4 ../../../pyspark/test/bigdl/keras1
     exit_status=$?
     if [ $exit_status -ne 0 ];
     then
