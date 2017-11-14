@@ -1419,10 +1419,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createClassNLLCriterion(weights: JTensor = null,
-    sizeAverage: Boolean = true, acceptProb: Boolean = false)
+    sizeAverage: Boolean = true, logProbAsInput: Boolean = true)
   : ClassNLLCriterion[T] = {
     ClassNLLCriterion[T](if (weights == null) null else toTensor(weights),
-      sizeAverage, acceptProb)
+      sizeAverage, logProbAsInput)
   }
 
   def createMSECriterion: MSECriterion[T] = {

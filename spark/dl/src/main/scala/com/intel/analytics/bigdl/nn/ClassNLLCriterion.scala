@@ -31,16 +31,18 @@ import com.intel.analytics.bigdl.utils.Engine
  * each of the classes. This is particularly useful when you have an unbalanced training set.
  *
  * The input given through a forward() is expected to contain log-probabilities/probabilities of
- * each class: input has to be a 1D Tensor of size n. Obtaining log-probabilities in a neural
- * network is easily achieved by adding a LogSoftMax layer in the last layer of your neural
- * network. You may use CrossEntropyCriterion instead, if you prefer not to add an extra layer
- * to your network. This criterion expects a class index (1 to the number of class) as target
- * when calling forward(input, target) and backward(input, target).
+ * each class: input has to be a 1D Tensor of size n. Obtaining log-probabilities/probabilities
+ * in a neural network is easily achieved by adding a LogSoftMax/SoftMax layer in the last layer
+ * of your neural network. You may use CrossEntropyCriterion instead, if you prefer not to add
+ * an extra layer to your network. This criterion expects a class index (1 to the number of class)
+ * as target when calling forward(input, target) and backward(input, target).
  *
+ * In the log-probabilities case,
  * The loss can be described as:
  *     loss(x, class) = -x[class]
  * or in the case of the weights argument it is specified as follows:
  *     loss(x, class) = -weights[class] * x[class]
+ *
  * Due to the behaviour of the backend code, it is necessary to set sizeAverage to false when
  * calculating losses in non-batch mode.
  *
@@ -53,14 +55,14 @@ import com.intel.analytics.bigdl.utils.Engine
  *
  * @param weights weights of each element of the input
  * @param sizeAverage size average of batch
- * @param acceptProb indicating whether to accept log-probabilities or probabilities as input.
- *                   True means accepting probabilities as input.
+ * @param logProbAsInput indicating whether to accept log-probabilities or probabilities as input.
+ *                   True means accepting log-probabilities as input.
  * @param ev numeric operator
  * @tparam T numeric type
  */
 @SerialVersionUID(- 8696382776046599502L)
 class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
-(weights: Tensor[T] = null, sizeAverage: Boolean = true, acceptProb: Boolean = false)
+(weights: Tensor[T] = null, sizeAverage: Boolean = true, logProbAsInput: Boolean = true)
   (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
   private var total_weight = ev.fromType[Int](0)
   if (weights != null) require(weights.dim() == 1,
@@ -71,6 +73,12 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
   private var results: Array[Future[(T, T)]] = null
   @transient
   private var resultsBackward: Array[Future[_]] = null
+
+  private val epsilon: T = ev.fromType(1e-8)
+
+  private val oneMinusEpsilon: T = ev.minus(ev.one, epsilon)
+
+
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     require(input.dim() == 1 || input.dim() == 2,
@@ -88,8 +96,9 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
       total_weight = if (weights != null) weights(Array(curTarget)) else ev.fromType[Int](1)
       output = if (curTarget == -1) ev.zero
       else {
-        if (acceptProb) {
-          ev.times(ev.negative(ev.log(input.valueAt(curTarget))), total_weight)
+        if (!logProbAsInput) {
+          val clipped = ev.clip(input.valueAt(curTarget), epsilon, oneMinusEpsilon)
+          ev.times(ev.negative(ev.log(clipped)), total_weight)
         } else {
           ev.times(ev.negative(input.valueAt(curTarget)), total_weight)
         }
@@ -120,8 +129,9 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
           if (curTarget == -1) (ev.zero, ev.one)
           else {
             val curWeight = if (weights != null) weights.valueAt(curTarget) else ev.fromType[Int](1)
-            if (acceptProb) {
-              (ev.times(ev.log(input.valueAt(_i, curTarget)), curWeight), curWeight)
+            if (!logProbAsInput) {
+              val clipped = ev.clip(input.valueAt(_i, curTarget), epsilon, oneMinusEpsilon)
+              (ev.times(ev.log(clipped), curWeight), curWeight)
             } else {
               (ev.times(input.valueAt(_i, curTarget), curWeight), curWeight)
             }
@@ -166,8 +176,11 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
       else ev.fromType[Int](-1))
       if (sizeAverage) gradInput.setValue(curTarget, ev.divide(gradInput.valueAt(curTarget),
         total_weight))
-      if (acceptProb) gradInput.setValue(curTarget,
-        ev.times(gradInput.valueAt(curTarget), ev.inv(input.valueAt(curTarget))))
+      if (!logProbAsInput) {
+        val clipped = ev.clip(input.valueAt(curTarget), epsilon, oneMinusEpsilon)
+        gradInput.setValue(curTarget,
+          ev.times(gradInput.valueAt(curTarget), ev.inv(clipped)))
+      }
     }
     else if (input.dim() == 2) {
       val batchSize = input.size(1)
@@ -188,9 +201,10 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
             else ev.fromType[Int](-1))
             if (sizeAverage) gradInput.setValue(_i, curTarget, ev.divide(gradInput.valueAt(_i,
               curTarget), total_weight))
-            if (acceptProb) {
+            if (!logProbAsInput) {
+              val clipped = ev.clip(input.valueAt(_i, curTarget), epsilon, oneMinusEpsilon)
               gradInput.setValue(_i, curTarget,
-                ev.times(gradInput.valueAt(_i, curTarget), ev.inv(input.valueAt(_i, curTarget))))
+                ev.times(gradInput.valueAt(_i, curTarget), ev.inv(clipped)))
             }
           }
         })
@@ -212,7 +226,7 @@ object ClassNLLCriterion {
   def apply[@specialized(Float, Double) T: ClassTag](
     weights: Tensor[T] = null,
     sizeAverage: Boolean = true,
-    acceptProb: Boolean = false)(implicit ev: TensorNumeric[T]) : ClassNLLCriterion[T] = {
-    new ClassNLLCriterion[T](weights, sizeAverage, acceptProb)
+    logProbAsInput: Boolean = true)(implicit ev: TensorNumeric[T]) : ClassNLLCriterion[T] = {
+    new ClassNLLCriterion[T](weights, sizeAverage, logProbAsInput)
   }
 }

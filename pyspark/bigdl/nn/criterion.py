@@ -103,13 +103,14 @@ class ClassNLLCriterion(Criterion):
     classes. If provided, the optional argument weights should be a 1D Tensor assigning weight to
     each of the classes. This is particularly useful when you have an unbalanced training set.
 
-    The input given through a forward() is expected to contain log-probabilities of each class:
-    input has to be a 1D Tensor of size n. Obtaining log-probabilities in a neural network is easily
-    achieved by adding a LogSoftMax layer in the last layer of your neural network. You may use
-    CrossEntropyCriterion instead, if you prefer not to add an extra layer to your network. This
-    criterion expects a class index (1 to the number of class) as target when calling
-    forward(input, target) and backward(input, target).
+    The input given through a forward() is expected to contain log-probabilities/probabilities of
+    each class: input has to be a 1D Tensor of size n. Obtaining log-probabilities/probabilities
+    in a neural network is easily achieved by adding a LogSoftMax/SoftMax layer in the last layer
+    of your neural network. You may use CrossEntropyCriterion instead, if you prefer not to add an
+    extra layer to your network. This criterion expects a class index (1 to the number of class) as
+    target when calling forward(input, target) and backward(input, target).
 
+    In the log-probabilities case,
     The loss can be described as:
         loss(x, class) = -x[class]
     or in the case of the weights argument it is specified as follows:
@@ -127,11 +128,12 @@ class ClassNLLCriterion(Criterion):
 
     :param weights: weights of each class
     :param size_average: whether to average or not
+    :param logProbAsInput: indicating whether to accept log-probabilities or probabilities as input.
 
 
     >>> np.random.seed(123)
     >>> weights = np.random.uniform(0, 1, (2,)).astype("float32")
-    >>> classNLLCriterion = ClassNLLCriterion(weights,True, False)
+    >>> classNLLCriterion = ClassNLLCriterion(weights, True, True)
     creating: createClassNLLCriterion
     >>> classNLLCriterion = ClassNLLCriterion()
     creating: createClassNLLCriterion
@@ -140,10 +142,11 @@ class ClassNLLCriterion(Criterion):
     def __init__(self,
                  weights=None,
                  size_average=True,
+                 logProbAsInput=True,
                  bigdl_type="float"):
         super(ClassNLLCriterion, self).__init__(None, bigdl_type,
                                                 JTensor.from_ndarray(weights),
-                                                size_average)
+                                                size_average, logProbAsInput)
 
 
 class MSECriterion(Criterion):

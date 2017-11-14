@@ -247,7 +247,7 @@ class ClassNLLCriterionSpec extends FlatSpec with Matchers {
     val prob = softMax.forward(input)
 
     val referenceLayer = ClassNLLCriterion[Float]()
-    val testedLayer = ClassNLLCriterion[Float](acceptProb = true)
+    val testedLayer = ClassNLLCriterion[Float](logProbAsInput = false)
 
     val expectedLoss = referenceLayer.forward(logProb, target)
     val loss = testedLayer.forward(prob, target)
@@ -271,7 +271,7 @@ class ClassNLLCriterionSpec extends FlatSpec with Matchers {
     val prob = softMax.forward(input)
 
     val referenceLayer = ClassNLLCriterion[Float]()
-    val testedLayer = ClassNLLCriterion[Float](acceptProb = true)
+    val testedLayer = ClassNLLCriterion[Float](logProbAsInput = false)
 
     val expectedLoss = referenceLayer.forward(logProb, target)
     val loss = testedLayer.forward(prob, target)

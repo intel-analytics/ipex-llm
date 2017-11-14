@@ -263,11 +263,11 @@ Gives the gradInput,
 
 **Scala:**
 ```scala
-val criterion = ClassNLLCriterion(weights = null, sizeAverage = true, acceptProb=false)
+val criterion = ClassNLLCriterion(weights = null, sizeAverage = true, logProbAsInput=true)
 ```
 **Python:**
 ```python
-criterion = ClassNLLCriterion(weights=None, size_average=True, acceptProb=False)
+criterion = ClassNLLCriterion(weights=None, size_average=True, logProbAsInput=true)
 ```
 
 The negative log likelihood criterion. It is useful to train a classification problem with n
@@ -275,12 +275,13 @@ classes. If provided, the optional argument weights should be a 1D Tensor assign
 each of the classes. This is particularly useful when you have an unbalanced training set.
 
 The input given through a `forward()` is expected to contain log-probabilities/probabilities of each class:
-input has to be a 1D Tensor of size `n`. Obtaining log-probabilities in a neural network is easily
-achieved by adding a `LogSoftMax` layer in the last layer of your neural network. You may use
+input has to be a 1D Tensor of size `n`. Obtaining log-probabilities/probabilities in a neural network is easily
+achieved by adding a `LogSoftMax`/`SoftMax` layer in the last layer of your neural network. You may use
 `CrossEntropyCriterion` instead, if you prefer not to add an extra layer to your network. This
 criterion expects a class index (1 to the number of class) as target when calling
 `forward(input, target)` and `backward(input, target)`.
 
+ In the log-probabilities case,
  The loss can be described as:
      `loss(x, class) = -x[class]`
  or in the case of the weights argument it is specified as follows:
@@ -300,8 +301,8 @@ Parameters:
 * `weights` weights of each element of the input
 * `sizeAverage` A boolean indicating whether normalizing by the number of elements in the input.
                   Default: true
-* `acceptProb` indicating whether to accept log-probabilities or probabilities as input. True means accepting
-               probabilities as input.
+* `logProbAsInput` indicating whether to accept log-probabilities or probabilities as input. True means accepting
+               log-probabilities as input.
 
 **Scala example:**
 ```scala
