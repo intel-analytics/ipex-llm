@@ -103,13 +103,14 @@ class ClassNLLCriterion(Criterion):
     classes. If provided, the optional argument weights should be a 1D Tensor assigning weight to
     each of the classes. This is particularly useful when you have an unbalanced training set.
 
-    The input given through a forward() is expected to contain log-probabilities of each class:
-    input has to be a 1D Tensor of size n. Obtaining log-probabilities in a neural network is easily
-    achieved by adding a LogSoftMax layer in the last layer of your neural network. You may use
-    CrossEntropyCriterion instead, if you prefer not to add an extra layer to your network. This
-    criterion expects a class index (1 to the number of class) as target when calling
-    forward(input, target) and backward(input, target).
+    The input given through a forward() is expected to contain log-probabilities/probabilities of
+    each class: input has to be a 1D Tensor of size n. Obtaining log-probabilities/probabilities
+    in a neural network is easily achieved by adding a LogSoftMax/SoftMax layer in the last layer
+    of your neural network. You may use CrossEntropyCriterion instead, if you prefer not to add an
+    extra layer to your network. This criterion expects a class index (1 to the number of class) as
+    target when calling forward(input, target) and backward(input, target).
 
+    In the log-probabilities case,
     The loss can be described as:
         loss(x, class) = -x[class]
     or in the case of the weights argument it is specified as follows:
@@ -124,14 +125,18 @@ class ClassNLLCriterion(Criterion):
     By default, the losses are averaged over observations for each minibatch. However, if the field
     sizeAverage is set to false, the losses are instead summed for each minibatch.
 
+    In particular, when weights=None, size_average=True and logProbAsInput=False, this is same as
+    `sparse_categorical_crossentropy` loss in keras.
+
 
     :param weights: weights of each class
     :param size_average: whether to average or not
+    :param logProbAsInput: indicating whether to accept log-probabilities or probabilities as input.
 
 
     >>> np.random.seed(123)
     >>> weights = np.random.uniform(0, 1, (2,)).astype("float32")
-    >>> classNLLCriterion = ClassNLLCriterion(weights,True)
+    >>> classNLLCriterion = ClassNLLCriterion(weights, True, True)
     creating: createClassNLLCriterion
     >>> classNLLCriterion = ClassNLLCriterion()
     creating: createClassNLLCriterion
@@ -140,10 +145,11 @@ class ClassNLLCriterion(Criterion):
     def __init__(self,
                  weights=None,
                  size_average=True,
+                 logProbAsInput=True,
                  bigdl_type="float"):
         super(ClassNLLCriterion, self).__init__(None, bigdl_type,
                                                 JTensor.from_ndarray(weights),
-                                                size_average)
+                                                size_average, logProbAsInput)
 
 
 class MSECriterion(Criterion):
@@ -344,22 +350,27 @@ class MarginCriterion(Criterion):
     Creates a criterion that optimizes a two-class classification hinge loss (margin-based loss)
     between input x (a Tensor of dimension 1) and output y.
 
+    When margin = 1, size_average = True and squared = False, this is the same as hinge loss in keras;
+    When margin = 1, size_average = False and squared = True, this is the same as squared_hinge loss in keras.
 
     :param margin: if unspecified, is by default 1.
     :param size_average: size average in a mini-batch
+    :param squared: whether to calculate the squared hinge loss
 
 
-    >>> marginCriterion = MarginCriterion(1e-5, True)
+    >>> marginCriterion = MarginCriterion(1e-5, True, False)
     creating: createMarginCriterion
     '''
 
     def __init__(self,
                  margin=1.0,
                  size_average=True,
+                 squared=False,
                  bigdl_type="float"):
         super(MarginCriterion, self).__init__(None, bigdl_type,
                                               margin,
-                                              size_average)
+                                              size_average,
+                                              squared)
 
 
 class MarginRankingCriterion(Criterion):
