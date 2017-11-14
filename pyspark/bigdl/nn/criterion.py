@@ -350,6 +350,7 @@ class MarginCriterion(Criterion):
 
     :param margin: if unspecified, is by default 1.
     :param size_average: size average in a mini-batch
+    :param squared: whether to calculate the squared hinge loss
 
 
     >>> marginCriterion = MarginCriterion(1e-5, True, False)
