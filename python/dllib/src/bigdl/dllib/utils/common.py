@@ -28,7 +28,8 @@ from pyspark.mllib.common import callJavaFunc
 from pyspark import SparkConf
 import numpy as np
 import threading
-from bigdl.util.engine import get_bigdl_classpath, is_spark_below_2_2
+import tempfile
+from bigdl.util.engine import prepare_env, get_bigdl_classpath, is_spark_below_2_2
 
 INTMAX = 2147483647
 INTMIN = -2147483648
@@ -439,7 +440,7 @@ def get_spark_context(conf = None):
         return SparkContext.getOrCreate(conf=conf or create_spark_conf())
     else:
         # Might have threading issue but we cann't add _lock here
-        # as it's not RLock in spark1.5
+        # as it's not RLock in spark1.5;
         if SparkContext._active_spark_context is None:
             SparkContext(conf=conf or create_spark_conf())
         return SparkContext._active_spark_context
@@ -457,7 +458,6 @@ def callBigDlFunc(bigdl_type, name, *args):
     sc = get_spark_context()
     api = getattr(jinstance, name)
     return callJavaFunc(sc, api, *args)
-
 
 def _java2py(sc, r, encoding="bytes"):
     if isinstance(r, JavaObject):
@@ -535,6 +535,11 @@ def _py2java(sc, obj):
         data = bytearray(PickleSerializer().dumps(obj))
         obj = sc._jvm.org.apache.spark.bigdl.api.python.BigDLSerDe.loads(data)
     return obj
+
+def create_tmp_path():
+    tmp_file = tempfile.NamedTemporaryFile(prefix="bigdl")
+    tmp_file.close()
+    return tmp_file.name
 
 
 def _test():
