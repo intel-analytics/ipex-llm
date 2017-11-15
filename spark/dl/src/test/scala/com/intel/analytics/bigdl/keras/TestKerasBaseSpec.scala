@@ -24,7 +24,7 @@ class TestKerasBaseSpec extends KerasBaseSpec{
     val kerasCode =
       """
         |input_tensor = Input(shape=[3])
-        |output_tensor = Dense(2, init='one')(input_tensor)
+        |output_tensor = Dense(2, init='uniform')(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val linear = new Linear[Float](3, 2)
