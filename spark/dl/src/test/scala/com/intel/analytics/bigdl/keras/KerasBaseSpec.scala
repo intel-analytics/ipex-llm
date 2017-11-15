@@ -27,7 +27,8 @@ class KerasBaseSpec extends FlatSpec with BeforeAndAfter with Matchers {
     fieldDefinition.setAccessible(true)
     return fieldDefinition.get(obj)
   }
-
+  // weightConverter: convert keras weight to BigDL format,
+  // do nothing for the default converter
   def checkOutputAndGrad(bmodel: AbstractModule[Tensor[Float], Tensor[Float], Float],
                          kerasCode: String,
                          weightConverter: (Array[Tensor[Float]]) => Array[Tensor[Float]]
