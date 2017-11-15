@@ -66,6 +66,22 @@ class Layer(JavaValue):
                 bigdl_type, JavaValue.jvm_class_constructor(self), *args)
         self.bigdl_type = bigdl_type
 
+    def set_running_mean(self, running_mean):
+        """
+        :param running_mean: a ndarray
+        """
+        callBigDlFunc(self.bigdl_type, "setRunningMean",
+                      self.value, JTensor.from_ndarray(running_mean))
+        return self
+
+    def set_running_std(self, running_std):
+        """
+        :param running_mean: a ndarray
+        """
+        callBigDlFunc(self.bigdl_type, "setRunningStd",
+                      self.value, JTensor.from_ndarray(running_std))
+        return self
+
     def __str__(self):
         """
         >>> conv2 = SpatialConvolution(6, 12, 5, 5).set_name("conv2")
@@ -387,6 +403,10 @@ class Layer(JavaValue):
             print("The layer does not have weight/bias")
             return None
 
+    def is_with_weights(self):
+        return callBigDlFunc(self.bigdl_type,
+                  "isWithWeights", self.value)
+
     def save(self, path, over_write = False):
         callBigDlFunc(self.bigdl_type, "modelSave", self.value, path,
                       over_write)
@@ -450,17 +470,20 @@ class Layer(JavaValue):
         callBigDlFunc(self.bigdl_type, "unFreeze", self.value, names)
         return self
 
-    def training(self):
+    def training(self, is_training=True):
         '''
-        Set this layer in the training mode 
+        Set this layer in the training mode or in predition mode if is_training=False
         '''
-        callJavaFunc(get_spark_context(), self.value.training)
+        if is_training:
+            callJavaFunc(get_spark_context(), self.value.training)
+        else:
+            callJavaFunc(get_spark_context(), self.value.evaluate)
         return self
 
     def is_training(self):
         '''
         :return: Whether this layer is in the training mode
-        
+
         >>> layer = Dropout()
         creating: createDropout
         >>> layer = layer.evaluate()
@@ -479,7 +502,7 @@ class Layer(JavaValue):
 
         >>> fc = Linear(4, 2)
         creating: createLinear
-        >>> fc.set_weights([np.ones((4, 2)), np.ones((2,))])
+        >>> fc.set_weights([np.ones((2, 4)), np.ones((2,))])
         >>> input = np.ones((2, 4))
         >>> fc.forward(input)
         array([[ 5.,  5.],
@@ -568,6 +591,12 @@ class Container(Layer):
         self.value.add(model.value)
         return self
 
+    @property
+    def layers(self):
+        jlayers = callBigDlFunc(self.bigdl_type, "getContainerModules" , self)
+        layers = [Layer.of(jlayer) for jlayer in jlayers]
+        return layers
+
 
 class Model(Container):
     """
@@ -599,8 +628,12 @@ class Model(Container):
     def __init__(self,
                  inputs,
                  outputs,
+                 jvalue=None,
                  bigdl_type="float", byte_order="little_endian", model_type="bigdl"):
-        if model_type == "bigdl":
+        if jvalue:
+            self.value = jvalue
+            self.bigdl_type = bigdl_type
+        elif model_type == "bigdl":
             super(Model, self).__init__(None, bigdl_type,
                                     to_list(inputs),
                                     to_list(outputs))
@@ -609,6 +642,20 @@ class Model(Container):
             model = convert(to_list(inputs), to_list(outputs), byte_order, bigdl_type)
             super(Model, self).__init__(model, bigdl_type)
 
+
+    @staticmethod
+    def from_jvalue(jvalue, bigdl_type="float"):
+        """
+        Create a Python Model base on the given java value
+        :param jvalue: Java object create by Py4j
+        :return: A Python Model
+        """
+        model = Model([], [], jvalue=jvalue)
+        model.value = jvalue
+        return model
+
+    def __str__(self):
+        return "->".join(self.layers())
 
     @staticmethod
     def load(path, bigdl_type="float"):
@@ -642,6 +689,22 @@ class Model(Container):
         """
         jmodel = callBigDlFunc(bigdl_type, "loadTorch", path)
         return Layer.of(jmodel)
+
+    @staticmethod
+    def load_keras(def_path, weights_path=None, by_name=False):
+        """
+        Load a pre-trained Keras model.
+
+        :param def_path: The json path containing the keras model definition.
+        :param weights_path: The HDF5 path containing the pre-trained keras model weights.
+        :return: A pre-trained model.
+        """
+        from bigdl.keras1.converter import DefinitionLoader, WeightLoader
+        if weights_path:
+            return WeightLoader.load_weights_from_json_hdf5(def_path, weights_path, by_name=by_name)
+        else:
+            return DefinitionLoader.from_json_path(def_path)
+        return bmodel
 
     @staticmethod
     def load_caffe(model, defPath, modelPath, match_all=True, bigdl_type="float"):
@@ -1225,12 +1288,12 @@ class Recurrent(Container):
         
         :return: list of hidden state and cell
         """
-        state = callBigDlFunc(self.bigdl_type, "getHiddenState", self.value)        
+        state = callBigDlFunc(self.bigdl_type, "getHiddenState", self.value)
         for idx, tensor in enumerate(state):
             state[idx] = tensor.to_ndarray()
 
         return state
-    
+
     def set_hidden_state(self, states):
         """
         set hidden state and cell at first time step.
@@ -1767,6 +1830,7 @@ class BatchNormalization(Layer):
                                                  JTensor.from_ndarray(init_bias),
                                                  JTensor.from_ndarray(init_grad_weight),
                                                  JTensor.from_ndarray(init_grad_bias))
+
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
@@ -4315,11 +4379,11 @@ class ResizeBilinear(Layer):
     """
     Resize the input image with bilinear interpolation. The input image must be a float tensor with
     NHWC layout
-    
+
     :param output_height: output height
     :param output_width: output width
     :param align_corner: align corner or not
-    
+
     >>> resizeBilinear = ResizeBilinear(10, 20, False)
     creating: createResizeBilinear
     """
