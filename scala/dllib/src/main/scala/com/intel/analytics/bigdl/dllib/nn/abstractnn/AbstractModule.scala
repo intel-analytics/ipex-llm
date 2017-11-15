@@ -555,6 +555,10 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
         s" number of output ${newWeights.length}")
     val weights = parameters()._1
     for(i <- newWeights.indices) {
+      // TODO: enable this checking as we don't respect shape right now.
+//      require(weights(i).size().deep == newWeights(i).size().deep,
+//        s"Mismatch shape, ${weights(i).size().mkString(",")}" +
+//          s" vs ${newWeights(i).size().mkString(",")} ")
       weights(i).copy(newWeights(i))
     }
     this
