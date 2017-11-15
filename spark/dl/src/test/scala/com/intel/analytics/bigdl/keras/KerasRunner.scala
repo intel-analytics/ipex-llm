@@ -23,7 +23,7 @@ import scala.io.Source
 import scala.sys.process._
 
 object KerasRunner {
-
+  // scalastyle:off
   val code_head =
     """
       |from keras.layers.core import *
@@ -77,7 +77,7 @@ object KerasRunner {
       |
       |
     """.stripMargin
-
+  // scalastyle:on
   private def getWeightRelate(pvalues: Map[String, Array[Float]],
                               keyName: String): Array[Tensor[Float]] = {
     if (!pvalues.keySet.filter(key => key.contains(keyName)).isEmpty) {
