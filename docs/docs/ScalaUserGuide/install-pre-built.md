@@ -77,3 +77,45 @@ SBT developers can use
 ```sbt
 resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 ```
+Note: if you use sbt on branch 0.3 and before, you should add this configuration to `build.sbt` like below.
+
+```scala
+val repo = "http://repo1.maven.org/maven2"
+def mkl_native(os: String): String = {
+    s"${repo}/com/intel/analytics/bigdl/native/mkl-java-${os}/0.3.0/mkl-java-${os}-0.3.0.jar"
+}
+
+def bigquant_native(os: String): String = {
+    s"${repo}/com/intel/analytics/bigdl/bigquant/bigquant-java-${os}/0.3.0/bigquant-java-${os}-0.3.0.jar"
+
+}
+
+libraryDependencies += "com.intel.analytics.bigdl" % "bigdl-SPARK_2.1" % "0.3.0" exclude("com.intel.analytics.bigdl", "bigdl-core")
+libraryDependencies += "com.intel.analytics.bigdl.native" % "mkl-java-mac" % "0.3.0" from mkl_native("mac")
+libraryDependencies += "com.intel.analytics.bigdl.bigquant" % "bigquant-java-mac" % "0.3.0" from bigquant_native("mac")
+```
+
+If you want to run it on other platforms too, append below,
+
+```scala
+// Linux
+libraryDependencies += "com.intel.analytics.bigdl.native" % "mkl-java" % "0.3.0"
+libraryDependencies += "com.intel.analytics.bigdl.bigquant" % "bigquant-java" % "0.3.0"
+
+// Windows
+libraryDependencies += "com.intel.analytics.bigdl.native" % "mkl-java-win64" % "0.3.0" from mkl_native("win64")
+libraryDependencies += "com.intel.analytics.bigdl.bigquant" % "bigquant-java-win64" % "0.3.0" from bigquant_native("win64")
+```
+
+If you will assemble all dependencies to a jar. You need to add merge strategy like below.
+
+
+```scala
+assemblyMergeStrategy in assembly := {
+    case x if x.contains("com/intel/analytics/bigdl/bigquant/") => MergeStrategy.first
+    case x if x.contains("com/intel/analytics/bigdl/mkl/") => MergeStrategy.first
+    case x =>
+      val oldStrategy = (assemblyMergeStrategy in assembly).value
+      oldStrategy(x)
+}
+```
