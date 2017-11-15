@@ -502,7 +502,7 @@ class Layer(JavaValue):
 
         >>> fc = Linear(4, 2)
         creating: createLinear
-        >>> fc.set_weights([np.ones((4, 2)), np.ones((2,))])
+        >>> fc.set_weights([np.ones((2, 4)), np.ones((2,))])
         >>> input = np.ones((2, 4))
         >>> fc.forward(input)
         array([[ 5.,  5.],
