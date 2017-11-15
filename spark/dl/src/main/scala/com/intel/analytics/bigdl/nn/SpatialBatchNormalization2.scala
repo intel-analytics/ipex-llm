@@ -136,24 +136,29 @@ class SpatialBatchNormalization2[T: ClassTag](
       ones.resize(frameSize)
       ones.fill(ev.one)
     }
+    if (sumBuffer.nElement() != spatialBatchSize * nInput) {
+      sumBuffer.resize(spatialBatchSize * nInput)
+    }
     ev.getType() match {
       case DoubleType =>
         val inputDouble = _input.asInstanceOf[Tensor[Double]]
         val outputDouble = output.asInstanceOf[Tensor[Double]]
-        SpatialBatchNormalizationWithRelu.updateOutputDouble(
+        SpatialBatchNormalization2.updateOutputDouble(
           n, nInput, momentum, eps, train,
           spatialBatchSize, nDim, needFix, inputDouble,
-          outputDouble, ones.toTensor[Double], saveMean.toTensor[Double], saveStd.toTensor[Double],
+          outputDouble, ones.toTensor[Double], sumBuffer.toTensor[Double],
+          saveMean.toTensor[Double], saveStd.toTensor[Double],
           runningMean.toTensor[Double], runningVar.toTensor[Double],
           weight.toTensor[Double], bias.toTensor[Double])
 
       case FloatType =>
         val inputFloat = _input.asInstanceOf[Tensor[Float]]
         val outputFloat = output.asInstanceOf[Tensor[Float]]
-        SpatialBatchNormalizationWithRelu.updateOutputFloat(
+        SpatialBatchNormalization2.updateOutputFloat(
           n, nInput, momentum.toFloat, eps.toFloat, train,
           spatialBatchSize, nDim, needFix, inputFloat,
-          outputFloat, ones.toTensor[Float], saveMean.toTensor[Float], saveStd.toTensor[Float],
+          outputFloat, ones.toTensor[Float], sumBuffer.toTensor[Float],
+          saveMean.toTensor[Float], saveStd.toTensor[Float],
           runningMean.toTensor[Float], runningVar.toTensor[Float],
           weight.toTensor[Float], bias.toTensor[Float])
     }
@@ -162,6 +167,8 @@ class SpatialBatchNormalization2[T: ClassTag](
   }
 
   var ones = Tensor()
+  var sumBuffer = Tensor()
+
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     backward(input, gradOutput, gradInput, null, null)
@@ -590,6 +597,7 @@ object SpatialBatchNormalization2 extends ModuleSerializable {
                                      nDim: Float, needFix: Boolean,
                                      input: Tensor[Float], output: Tensor[Float],
                                      ones: Tensor[Float],
+                                     sumBuff: Tensor[Float],
                                      saveMean: Tensor[Float],
                                      saveStd: Tensor[Float],
                                      runningMean: Tensor[Float],
@@ -618,6 +626,7 @@ object SpatialBatchNormalization2 extends ModuleSerializable {
     val biasArray = bias.storage.array
     val biasOffset = bias.storageOffset - 1
     val frameSize = if (nDim == 2) n else n / spatialBatchSize
+    System.arraycopy(inputArray, inputOffset, outputArray, outputOffset, n * nInput)
 
     if (train) {
       var f = 1
@@ -626,7 +635,7 @@ object SpatialBatchNormalization2 extends ModuleSerializable {
         var i = 0
         while (i < spatialBatchSize) {
           sum += MKL.vsdot(frameSize, inputArray, inputOffset + (f - 1 + i * nInput)
-            * inputStride2, inputStride, onesArray, 0, 1)
+            * inputStride2, 1, onesArray, 0, 1)
           i += 1
         }
         val mean = sum / n
@@ -636,14 +645,14 @@ object SpatialBatchNormalization2 extends ModuleSerializable {
         i = 0
         while (i < spatialBatchSize) {
           MKL.vsaxpy(frameSize, -mean, onesArray, 0, 1, outputArray,
-            inputOffset + (f - 1 + i * nInput), inputStride)
+            inputOffset + (f - 1 + i * nInput) * inputStride2, 1)
           i += 1
         }
 
         f += 1
       }
 
-      MKL.vsPowx(n * nInput, outputArray, inputOffset, 2, outputArray, inputOffset)
+      MKL.vsPowx(n * nInput, outputArray, outputOffset, 2, outputArray, outputOffset)
 
       f = 1
       while (f <= nInput) {
@@ -652,22 +661,20 @@ object SpatialBatchNormalization2 extends ModuleSerializable {
         var i = 0
         while (i < spatialBatchSize) {
           sum +=  MKL.vsdot(frameSize, outputArray,
-            inputOffset + (f - 1 + i * nInput) * inputStride2,
-            inputStride, onesArray, 0, 1)
+            outputOffset + (f - 1 + i * nInput) * inputStride2,
+            1, onesArray, 0, 1)
           i += 1
         }
 
-        val invstd = if (sum == 0 && eps == 0.0) {
+        saveStdArray(f - 1) = if (sum == 0 && eps == 0.0) {
           0.0f
         } else {
           1.0f / Math.sqrt(sum / n + eps).toFloat
         }
-        saveStdArray(f - 1) = invstd
 
         runningMeanArray(f - 1) = momentum * mean  + (1- momentum) * runningMeanArray(f - 1)
 
-        val unbiasedVar = sum / (n - 1)
-        runningVarArray(f - 1) = momentum * unbiasedVar + (1 - momentum) * runningVarArray(f - 1)
+        runningVarArray(f - 1) = momentum * sum / (n - 1) + (1 - momentum) * runningVarArray(f - 1)
         f += 1
       }
       System.arraycopy(inputArray, inputOffset, outputArray, outputOffset, n * nInput)
@@ -696,9 +703,9 @@ object SpatialBatchNormalization2 extends ModuleSerializable {
       var i = 0
       while (i < spatialBatchSize) {
         MKL.vsscal(frameSize, w * invstd, outputArray,
-          inputOffset + (f - 1 + i * nInput) * inputStride2, inputStride)
+          inputOffset + (f - 1 + i * nInput) * inputStride2, 1)
         MKL.vsaxpy(frameSize, b - mean * invstd * w, onesArray, 0, 1,
-          outputArray, inputOffset + (f - 1 + i * nInput) * inputStride2, inputStride)
+          outputArray, inputOffset + (f - 1 + i * nInput) * inputStride2, 1)
         i += 1
       }
 
@@ -713,6 +720,7 @@ object SpatialBatchNormalization2 extends ModuleSerializable {
                                      nDim: Double, needFix: Boolean,
                                      input: Tensor[Double], output: Tensor[Double],
                                      ones: Tensor[Double],
+                                     sumBuff: Tensor[Double],
                                      saveMean: Tensor[Double],
                                      saveStd: Tensor[Double],
                                      runningMean: Tensor[Double],
@@ -741,6 +749,7 @@ object SpatialBatchNormalization2 extends ModuleSerializable {
     val biasArray = bias.storage.array
     val biasOffset = bias.storageOffset - 1
     val frameSize = if (nDim == 2) n else n / spatialBatchSize
+    System.arraycopy(inputArray, inputOffset, outputArray, outputOffset, n * nInput)
 
     if (train) {
       var f = 1
@@ -749,7 +758,7 @@ object SpatialBatchNormalization2 extends ModuleSerializable {
         var i = 0
         while (i < spatialBatchSize) {
           sum += MKL.vddot(frameSize, inputArray, inputOffset + (f - 1 + i * nInput)
-            * inputStride2, inputStride, onesArray, 0, 1)
+            * inputStride2, 1, onesArray, 0, 1)
           i += 1
         }
         val mean = sum / n
@@ -759,7 +768,7 @@ object SpatialBatchNormalization2 extends ModuleSerializable {
         i = 0
         while (i < spatialBatchSize) {
           MKL.vdaxpy(frameSize, -mean, onesArray, 0, 1, outputArray,
-            inputOffset + (f - 1 + i * nInput), inputStride)
+            inputOffset + (f - 1 + i * nInput) * inputStride2, 1)
           i += 1
         }
 
@@ -776,7 +785,7 @@ object SpatialBatchNormalization2 extends ModuleSerializable {
         while (i < spatialBatchSize) {
           sum +=  MKL.vddot(frameSize, outputArray,
             inputOffset + (f - 1 + i * nInput) * inputStride2,
-            inputStride, onesArray, 0, 1)
+            1, onesArray, 0, 1)
           i += 1
         }
 
@@ -819,9 +828,9 @@ object SpatialBatchNormalization2 extends ModuleSerializable {
       var i = 0
       while (i < spatialBatchSize) {
         MKL.vdscal(frameSize, w * invstd, outputArray,
-          inputOffset + (f - 1 + i * nInput) * inputStride2, inputStride)
+          inputOffset + (f - 1 + i * nInput) * inputStride2, 1)
         MKL.vdaxpy(frameSize, b - mean * invstd * w, onesArray, 0, 1,
-          outputArray, inputOffset + (f - 1 + i * nInput) * inputStride2, inputStride)
+          outputArray, inputOffset + (f - 1 + i * nInput) * inputStride2, 1)
         i += 1
       }
 
