@@ -36,7 +36,9 @@ do
     --ignore=../../../pyspark/bigdl/models/ && \
     $p -m pytest -v -n 4 ../../../pyspark/test/ \
     --ignore=../../../pyspark/test/bigdl/caffe/ \
-    --ignore=../../../pyspark/test/bigdl/keras1/
+    --ignore=../../../pyspark/test/bigdl/keras1/ \
+    --ignore=../../../pyspark/test/bigdl/test_utils.py
+
     exit_status=$?
     if [ $exit_status -ne 0 ];
     then
