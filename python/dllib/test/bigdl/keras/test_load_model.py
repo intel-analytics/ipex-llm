@@ -20,8 +20,8 @@ import pytest
 from numpy.testing import assert_allclose
 
 import bigdl.nn.layer as BLayer
-from bigdl.keras1.converter import WeightLoader
-from bigdl.keras1.converter import DefinitionLoader
+from bigdl.keras.converter import WeightLoader
+from bigdl.keras.converter import DefinitionLoader
 
 np.random.seed(1337)  # for reproducibility
 from test.bigdl.test_utils import BigDLTestCase, TestModels
