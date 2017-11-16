@@ -36,7 +36,9 @@ class KerasBaseSpec extends FlatSpec with BeforeAndAfter with Matchers {
                          precision: Double = 1e-5): Unit = {
     val (gradInput, gradWeight, weights, input, output) = KerasRunner.run(kerasCode)
     // Ensure they share the same weights
-    bmodel.setWeightsBias(weightConverter(weights))
+    if (weights != null) {
+      bmodel.setWeightsBias(weightConverter(weights))
+    }
 
     val boutput = bmodel.forward(input)
     boutput.almostEqual(output, precision) should be(true)

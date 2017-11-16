@@ -34,21 +34,13 @@ class TestKerasBaseSpec extends KerasBaseSpec{
   }
 
   "Layer without weights" should "be ok" in {
-    val code =
+    val kerasCode =
       """
         |input_tensor = Input(shape=[2])
         |output_tensor = Activation(activation="relu")(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
-    val (gradInput, gradWeight, weights, input, output) = KerasRunner.run(code)
-
     val relu = new ReLU[Float]()
-    val boutput = relu.forward(input)
-    boutput should be (output)
-
-    val bGradInput = relu.backward(input, boutput)
-    bGradInput.div(boutput) should be (gradInput)
+    checkOutputAndGrad(relu, kerasCode)
   }
-
-
 }
