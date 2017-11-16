@@ -43,7 +43,7 @@ class KerasBaseSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val boutput = bmodel.forward(input)
     boutput.almostEqual(output, precision) should be(true)
 
-    val bgradInput = bmodel.backward(input, boutput.fill(1))
+    val bgradInput = bmodel.backward(input, boutput.clone().fill(1))
     bgradInput.almostEqual(gradInput, precision) should be(true)
 
     // assuming the first one is weight, the second one is bias
