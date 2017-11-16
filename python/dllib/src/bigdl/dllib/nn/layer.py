@@ -699,7 +699,7 @@ class Model(Container):
         :param weights_path: The HDF5 path containing the pre-trained keras model weights.
         :return: A pre-trained model.
         """
-        from bigdl.keras1.converter import DefinitionLoader, WeightLoader
+        from bigdl.keras.converter import DefinitionLoader, WeightLoader
         if weights_path:
             return WeightLoader.load_weights_from_json_hdf5(def_path, weights_path, by_name=by_name)
         else:
