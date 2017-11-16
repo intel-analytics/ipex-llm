@@ -721,8 +721,8 @@ class LayerConverter:
 
         # init gamma and beta
         # TODO: replace this with to_bigdl_init in the future
-        gamma = self.get_value_from_init(klayer.gamma_init.func_name, (n_input_channel,))
-        beta = self.get_value_from_init(klayer.beta_init.func_name, (n_input_channel,))
+        gamma = self.get_value_from_init(klayer.gamma_init.__name__, (n_input_channel,))
+        beta = self.get_value_from_init(klayer.beta_init.__name__, (n_input_channel,))
 
         blayer = BLayer.SpatialBatchNormalization(
                  n_output=n_input_channel,
