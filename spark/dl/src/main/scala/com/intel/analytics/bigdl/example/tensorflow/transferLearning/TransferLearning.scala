@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.example.tensorflow.transferLearing
+package com.intel.analytics.bigdl.example.tensorflow.transferLearning
 
 import java.nio.ByteOrder
 
@@ -66,7 +66,7 @@ object TransferLearning {
       val conf = Engine.createSparkConf()
         .setAppName("Transfer Learning")
         .set("spark.task.maxFailures", "1")
-        .setMaster("local[2]")
+
       val sc = new SparkContext(conf)
       Engine.init
 

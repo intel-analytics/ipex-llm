@@ -30,7 +30,7 @@ tf.app.flags.DEFINE_string(
     'Directory contains the flowers data.')
 
 tf.app.flags.DEFINE_string(
-    'checkpoint_file_path', '/Users/yangwang/workspace/inception-v1/checkoutpoints/inception_v1.ckpt',
+    'checkpoint_file_path', '/tmp/checkpoints/inception_v1.ckpt',
     'The path to a checkpoint from which to fine-tune.')
 
 tf.app.flags.DEFINE_string(
