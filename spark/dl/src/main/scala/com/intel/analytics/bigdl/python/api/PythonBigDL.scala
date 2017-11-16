@@ -37,12 +37,9 @@ import java.nio.ByteOrder
 import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn.tf.{Const, Fill, Shape, SplitAndSelect}
 import com.intel.analytics.bigdl.utils.tf.TensorflowLoader.{buildBigDLModel, buildTFGraph, parse}
-
-import com.intel.analytics.bigdl.utils.tf.{BigDLSessionImpl, Context, TensorflowDataFormat, TensorflowSaver}
-
-import org.apache.spark.ml.{DLClassifierModel, DLEstimator, DLClassifier, DLModel}
+import com.intel.analytics.bigdl.utils.tf._
+import org.apache.spark.ml.{DLClassifier, DLClassifierModel, DLEstimator, DLModel}
 import org.apache.spark.sql.DataFrame
-
 import org.apache.log4j._
 import org.apache.spark.SparkContext
 import org.tensorflow.framework.NodeDef
@@ -1590,13 +1587,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def loadTF(path: String, inputs: JList[String], outputs: JList[String],
-    byteOrder: String): AbstractModule[Activity, Activity, T] = {
+    byteOrder: String, binFile: String = null): AbstractModule[Activity, Activity, T] = {
     val order = byteOrder match {
       case "little_endian" => ByteOrder.LITTLE_ENDIAN
       case "big_endian" => ByteOrder.BIG_ENDIAN
       case _ => throw new IllegalArgumentException(s"No support byte order $byteOrder")
     }
-    Module.loadTF[T](path, inputs.asScala, outputs.asScala, order)
+    Module.loadTF[T](path, inputs.asScala, outputs.asScala, order, Some(binFile))
   }
 
   def saveTF(model: AbstractModule[Activity, Activity, T],

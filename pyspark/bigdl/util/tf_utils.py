@@ -129,7 +129,7 @@ def save_variable_bigdl(tensors, target_path, bigdl_type="float"):
     callBigDlFunc(bigdl_type, "saveTensorDictionary", jtensors, target_path)
 
 
-def dump_model(path, sess=None, graph=None, bigdl_type="float"):
+def dump_model(path, graph=None, sess=None, ckpt_file=None, bigdl_type="float"):
     """
     Dump a tensorflow model to files. The graph will be dumped to path/model.pb, and the checkpoint will
     be dumped to path/model.bin
@@ -145,30 +145,32 @@ def dump_model(path, sess=None, graph=None, bigdl_type="float"):
         print("Folder " + path + " does not exist")
         raise
 
-    if sess is None:
-        sess = tf.Session()
-        init = tf.global_variables_initializer()
-        sess.run(init)
-
-    temp = tempfile.mkdtemp()
-    # dump checkpoint to temp files
-    checkpoint = temp + '/model.chkp'
-    saver = tf.train.Saver()
-    saver.save(sess, checkpoint)
+    temp = None
+    if ckpt_file is None:
+        if sess is None:
+            sess = tf.Session()
+            init = tf.global_variables_initializer()
+            sess.run(init)
+            temp = tempfile.mkdtemp()
+            ckpt_file = temp
+        # dump checkpoint to temp files
+        saver = tf.train.Saver()
+        saver.save(sess, ckpt_file)
 
     # generate bin files
-    tensors = export_checkpoint(checkpoint)
+    tensors = export_checkpoint(ckpt_file)
     save_variable_bigdl(tensors, path + "/model.bin", bigdl_type)
 
     # dump grap to pb file
     graph = sess.graph if graph is None else graph
     with gfile.GFile(path + "/model.pb", "wb") as f:
         f.write(graph.as_graph_def().SerializeToString())
-    try:
-        shutil.rmtree(temp)
-    except OSError as e:
-        if e.errno != errno.ENOENT:
-            raise
+    if temp is not None:
+        try:
+            shutil.rmtree(temp)
+        except OSError as e:
+            if e.errno != errno.ENOENT:
+                raise
 
 
 def merge_checkpoint(input_graph,

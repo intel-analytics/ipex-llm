@@ -671,13 +671,18 @@ class Model(Container):
         return Layer.of(jmodel)
 
     @staticmethod
-    def load_tensorflow(path, inputs, outputs, byte_order = "little_endian", bigdl_type="float"):
+    def load_tensorflow(path, inputs, outputs, byte_order = "little_endian",
+                        bin_file = None, bigdl_type="float"):
         """
         Load a pre-trained Tensorflow model.
         :param path: The path containing the pre-trained model.
+        :param inputs: The input node of this graph
+        :param outputs: The output node of this graph
+        :param byte_order: byte_order of the file, `little_endian` or `big_endian`
+        :param bin_file: the optional bin file produced by bigdl dump_model util function to store the weights
         :return: A pre-trained model.
         """
-        jmodel = callBigDlFunc(bigdl_type, "loadTF", path, inputs, outputs, byte_order)
+        jmodel = callBigDlFunc(bigdl_type, "loadTF", path, inputs, outputs, byte_order, bin_file)
         return Model.of(jmodel)
 
     @staticmethod
