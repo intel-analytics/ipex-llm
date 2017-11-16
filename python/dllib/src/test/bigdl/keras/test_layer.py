@@ -22,7 +22,7 @@ np.random.seed(1337)  # for reproducibility
 from keras.layers.core import *
 from keras.layers.convolutional import *
 from keras.layers import Dense, Input
-from bigdl.keras1.converter import *
+from bigdl.keras.converter import *
 from test.bigdl.test_utils import BigDLTestCase
 
 
