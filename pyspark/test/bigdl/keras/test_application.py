@@ -20,7 +20,7 @@ from keras.layers import *
 np.random.seed(1337)  # for reproducibility
 import pytest
 from keras.applications import *
-from bigdl.keras1.converter import *
+from bigdl.keras.converter import *
 
 from test.bigdl.test_utils import BigDLTestCase, TestModels
 

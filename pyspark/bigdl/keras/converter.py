@@ -364,7 +364,7 @@ class LayerConverter:
         # What we need to use is the input index, not node index, not tensor index.
         input_shape = klayer.get_input_shape_at(0)
         blayer = BLayer.Linear(
-            input_size=input_shape[1],
+            input_size=int(input_shape[1]),
             output_size=config["output_dim"],
             with_bias=config["bias"],
             wRegularizer=self.to_bigdl_reg(config["W_regularizer"]),
@@ -378,7 +378,7 @@ class LayerConverter:
         print(input_shape)
         print(config["output_dim"])
         blayer = BLayer.TimeDistributed(BLayer.Linear(
-            input_size=input_shape[2],
+            input_size=int(input_shape[2]),
             output_size=config["output_dim"],
             with_bias=config["bias"],
             wRegularizer=self.to_bigdl_reg(config["W_regularizer"]),
@@ -389,7 +389,7 @@ class LayerConverter:
     def create_embedding(self, klayer, kclayer):
         config = kclayer["config"]
         input_shape = klayer.get_input_shape_at(0) # batch, seq_len
-        seq_len = input_shape[1]
+        seq_len = int(input_shape[1])
         if klayer.input_length and klayer.input_length != seq_len:
             raise Exception(
                 "The input_length doesn't match: %s vs %s" % (seq_len, klayer.input_length))
@@ -423,7 +423,7 @@ class LayerConverter:
     def create_flatten(self, klayer, kclayer):
         self.__check_is_share_weights(kclayer)
         input_shape = klayer.input_shape
-        blayer = BLayer.Reshape([np.prod(input_shape[1:])], None)
+        blayer = BLayer.Reshape([int(np.prod(input_shape[1:]))], None)
         return blayer
 
     def create_reshape(self, klayer, kclayer):
@@ -642,7 +642,7 @@ class LayerConverter:
         activation = self.to_bigdl_activation(config["activation"],
                                               "%s_%s" % (config["name"], config["activation"]))
         # TODO: throw exception for dropout
-        rnn = BLayer.RnnCell(input_size=input_shape[2],
+        rnn = BLayer.RnnCell(input_size=int(input_shape[2]),
                              hidden_size=klayer.output_dim,
                              activation=activation,
                              isInputWithBias=False,
@@ -666,7 +666,7 @@ class LayerConverter:
         if not isinstance(inner_activation, BLayer.Sigmoid):
             raise Exception("For inner_activation, only `sigmond` is supported for now.")
         # TODO: throw exception for dropout
-        lstm = BLayer.LSTM(input_size=input_shape[2],
+        lstm = BLayer.LSTM(input_size=int(input_shape[2]),
                            hidden_size=klayer.output_dim,
                            p=klayer.dropout_W,
                            wRegularizer=self.to_bigdl_reg(config["W_regularizer"]),
@@ -689,7 +689,7 @@ class LayerConverter:
         if not isinstance(inner_activation, BLayer.Sigmoid):
             raise Exception("For inner_activation, only `sigmond` is supported for now.")
         # TODO: throw exception for dropout
-        gru = BLayer.GRU(input_size=input_shape[2],
+        gru = BLayer.GRU(input_size=int(input_shape[2]),
                          hidden_size=klayer.output_dim,
                          p=klayer.dropout_W,
                          wRegularizer=self.to_bigdl_reg(config["W_regularizer"]),
@@ -717,7 +717,7 @@ class LayerConverter:
             raise Exception("We don't support beta_regularizer for now")
 
         input_shape = klayer.get_input_shape_at(0)
-        n_input_channel = input_shape[klayer.axis]  # default is -1 which is channel-last
+        n_input_channel = int(input_shape[klayer.axis])  # default is -1 which is channel-last
 
         # init gamma and beta
         # TODO: replace this with to_bigdl_init in the future
@@ -784,11 +784,11 @@ class LayerConverter:
         config = kclayer["config"]
         input_shape = klayer.get_input_shape_at(0)
         # batch, steps, dim, batch is None here, so you cannot use it directly.
-        stack_size = input_shape[2]
+        stack_size = int(input_shape[2])
 
         bpadW, bpadH = self.to_bigdl_2d_padding(klayer.border_mode)
         seq = BLayer.Sequential()
-        seq.add(BLayer.Reshape([input_shape[1], 1, input_shape[2]], True))
+        seq.add(BLayer.Reshape([int(input_shape[1]), 1, int(input_shape[2])], True))
         blayer = BLayer.SpatialConvolution(
                  n_input_plane = stack_size,
                  n_output_plane = klayer.nb_filter,
@@ -819,9 +819,9 @@ class LayerConverter:
         input_shape = klayer.get_input_shape_at(0)
 
         if bigdl_order == "NCHW":
-            stack_size = input_shape[1]
+            stack_size = int(input_shape[1])
         elif bigdl_order == "NHWC":
-            stack_size = input_shape[3]
+            stack_size = int(input_shape[3])
 
         bpadW, bpadH = self.to_bigdl_2d_padding(klayer.border_mode)
         blayer = BLayer.SpatialConvolution(
@@ -885,11 +885,11 @@ class LayerConverter:
         bigdl_order = self.get_bdim_order(kclayer)
         input_shape = klayer.get_input_shape_at(0)
         if bigdl_order == "NCHW":
-            b_kw = input_shape[3]
-            b_kh = input_shape[2]
+            b_kw = int(input_shape[3])
+            b_kh = int(input_shape[2])
         else:
-            b_kw = input_shape[2]
-            b_kh = input_shape[1]
+            b_kw = int(input_shape[2])
+            b_kh = int(input_shape[1])
 
         seq = BLayer.Sequential()
         blayer = BLayer.SpatialMaxPooling(
@@ -915,10 +915,10 @@ class LayerConverter:
     def create_globalmaxpooling1d(self, klayer, kclayer):
         input_shape = klayer.get_input_shape_at(0) # batch, step, dim
         b_kw = 1
-        b_kh = input_shape[1]
+        b_kh = int(input_shape[1])
 
         seq = BLayer.Sequential()
-        seq.add(BLayer.View([input_shape[1], 1, input_shape[2]], num_input_dims=2))
+        seq.add(BLayer.View([int(input_shape[1]), 1, int(input_shape[2])], num_input_dims=2))
         blayer = BLayer.SpatialMaxPooling(
             kw=b_kw,
             kh=b_kh,
@@ -938,10 +938,10 @@ class LayerConverter:
     def create_globalaveragepooling1d(self, klayer, kclayer):
         input_shape = klayer.get_input_shape_at(0) # batch, step, dim
         b_kw = 1
-        b_kh = input_shape[1]
+        b_kh = int(input_shape[1])
 
         seq = BLayer.Sequential()
-        seq.add(BLayer.View([input_shape[1], 1, input_shape[2]], num_input_dims=2))
+        seq.add(BLayer.View([int(input_shape[1]), 1, int(input_shape[2])], num_input_dims=2))
         blayer = BLayer.SpatialAveragePooling(
             kw=b_kw,
             kh=b_kh,
@@ -967,7 +967,7 @@ class LayerConverter:
         bpadW, bpadH = self.to_bigdl_2d_padding(klayer.border_mode)
 
         seq = BLayer.Sequential()
-        seq.add(BLayer.View([1, input_shape[1], input_shape[2]], num_input_dims=3))
+        seq.add(BLayer.View([1, int(input_shape[1]), int(input_shape[2])], num_input_dims=3))
         blayer = BLayer.SpatialMaxPooling(
             kw=klayer.pool_length,
             kh=1,
@@ -987,7 +987,7 @@ class LayerConverter:
         bpadW, bpadH = self.to_bigdl_2d_padding(klayer.border_mode)
 
         seq = BLayer.Sequential()
-        seq.add(BLayer.View([1, input_shape[1], input_shape[2]], num_input_dims=3))
+        seq.add(BLayer.View([1, int(input_shape[1]), int(input_shape[2])], num_input_dims=3))
         blayer = BLayer.SpatialAveragePooling(
             kw=klayer.pool_length,
             kh=1,
@@ -1009,11 +1009,11 @@ class LayerConverter:
         bigdl_order = self.get_bdim_order(kclayer)
         input_shape = klayer.get_input_shape_at(0)
         if bigdl_order == "NCHW":
-            b_kw = input_shape[3]
-            b_kh = input_shape[2]
+            b_kw = int(input_shape[3])
+            b_kh = int(input_shape[2])
         else:
-            b_kw = input_shape[2]
-            b_kh = input_shape[1]
+            b_kw = int(input_shape[2])
+            b_kh = int(input_shape[1])
 
         seq = BLayer.Sequential()
         blayer = BLayer.SpatialAveragePooling(
