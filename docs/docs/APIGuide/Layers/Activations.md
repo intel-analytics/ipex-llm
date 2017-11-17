@@ -1378,4 +1378,64 @@ output = module.forward(input)
        [[ 2.32017946,  1.00003302],
         [ 0.80000001,  0.80000001]]], dtype=float32)]
 ```
+## HardSigmoid ##
+
+**Scala:**
+```scala
+val module = HardSigmoid()
+```
+**Python:**
+```python
+module = HardSigmoid()
+```
+
+Activate each element as below
+
+```
+           ⎧  0, if x < -2.5
+    f(x) = ⎨  1, if x > 2.5
+           ⎩  0.2 * x + 0.5, otherwise
+```
+
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+
+val module = HardSigmoid()
+val input = Tensor(2, 2).randn()
+val output = module.forward(input)
+
+> input
+-1.7260494	-0.17521624	
+-1.6705151	0.013930867	
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x2]
+
+> output
+0.15479012	0.46495676	
+0.16589698	0.50278616	
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x2]
+
+```
+
+**Python example:**
+```python
+from bigdl.nn.layer import *
+import numpy as np
+
+module = HardSigmoid()
+input = np.random.randn(2, 2)
+output = module.forward(input)
+
+> input
+array([[-1.45094354, -1.78217815],
+       [ 0.84914007,  0.7104982 ]])
+  
+> output
+array([[ 0.20981129,  0.14356437],
+       [ 0.669828  ,  0.64209962]], dtype=float32)
+
+```
 

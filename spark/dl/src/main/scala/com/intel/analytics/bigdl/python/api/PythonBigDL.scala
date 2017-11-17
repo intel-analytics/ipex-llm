@@ -2062,6 +2062,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     BilinearFiller
   }
 
+  def createHardSigmoid : HardSigmoid[T] = {
+    HardSigmoid()
+  }
+
   def setInitMethod(layer: Initializable, weightInitMethod: InitializationMethod,
     biasInitMethod: InitializationMethod): layer.type = {
     layer.setInitMethod(weightInitMethod, biasInitMethod)
