@@ -4408,7 +4408,7 @@ class HardSigmoid(Layer):
                |  0.2 * x + 0.5, otherwise
 ```
     >>> hardSigmoid = HardSigmoid()
-    creating:HardSigmoid
+    creating: createHardSigmoid
     """
     def __init__(self, bigdl_type="float"):
         super(HardSigmoid, self).__init__(None, bigdl_type)
