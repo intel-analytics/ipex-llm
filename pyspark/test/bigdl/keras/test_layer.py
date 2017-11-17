@@ -29,25 +29,6 @@ from keras.metrics import *
 
 class TestLayer(BigDLTestCase):
 
-    def test_tt(self):
-        from keras.models import Model
-        import keras.backend as K
-        import numpy as np
-        import tempfile
-
-        np.random.seed(1337)  # for reproducibility
-
-        input_tensor = Input(shape=[3])
-        target_tensor = Input(shape=[3])
-        loss = mean_squared_error(input_tensor, target_tensor)
-        input_tensor_value = np.random.uniform(0, 1, [1, 3])
-        target_tensor_value = np.random.uniform(0, 1, [1, 3])
-
-        grad_input = K.get_session().run(K.gradients(loss, [input_tensor]),
-                                         feed_dict={input_tensor: input_tensor_value, target_tensor: target_tensor_value})  # grad_input
-        output = K.get_session().run(loss, feed_dict={input_tensor: input_tensor_value, target_tensor: target_tensor_value})
-        print(grad_input)
-
     def test_dense(self):
         input_data = np.random.random_sample([1, 10])
         dense = Dense(2, init='one', activation="relu", input_shape=(10, ))
