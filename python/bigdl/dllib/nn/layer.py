@@ -4399,6 +4399,20 @@ class GaussianSampler(Layer):
     def __init__(self, bigdl_type="float"):
         super(GaussianSampler, self).__init__(None, bigdl_type)
 
+class HardSigmoid(Layer):
+    """
+    Apply Hard-sigmoid function
+```   
+               |  0, if x < -2.5
+        f(x) = |  1, if x > 2.5
+               |  0.2 * x + 0.5, otherwise
+```
+    >>> hardSigmoid = HardSigmoid()
+    creating: createHardSigmoid
+    """
+    def __init__(self, bigdl_type="float"):
+        super(HardSigmoid, self).__init__(None, bigdl_type)
+
 def _test():
     import doctest
     from pyspark import SparkContext
