@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 class TestKerasBaseSpec extends KerasBaseSpec{
 
   "Layer with weights" should "be ok" in {
+    ifskipTest()
     val kerasCode =
       """
         |input_tensor = Input(shape=[3])
@@ -35,6 +36,7 @@ class TestKerasBaseSpec extends KerasBaseSpec{
   }
 
   "Layer without weights" should "be ok" in {
+    ifskipTest()
     val kerasCode =
       """
         |input_tensor = Input(shape=[2])
@@ -47,6 +49,7 @@ class TestKerasBaseSpec extends KerasBaseSpec{
   }
 
   "MSE loss" should "be ok" in {
+    ifskipTest()
     val kerasCode =
       """
         |input_tensor = Input(shape=[3])

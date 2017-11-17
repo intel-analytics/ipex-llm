@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 package com.intel.analytics.bigdl.keras
-import com.intel.analytics.bigdl.Criterion
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractCriterion, AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractCriterion, AbstractModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
-import org.scalatest.{BeforeAndAfterEach, FlatSpec, Matchers}
+import com.intel.analytics.bigdl.utils.BigDLSpecHelper
 
 import scala.sys.process._
 
-class KerasBaseSpec extends FlatSpec with BeforeAndAfterEach with Matchers {
+abstract class KerasBaseSpec extends BigDLSpecHelper {
 
   protected def ifskipTest(): Unit = {
     // Skip unitest if environment is not ready
@@ -31,10 +30,6 @@ class KerasBaseSpec extends FlatSpec with BeforeAndAfterEach with Matchers {
     } catch {
       case e: Throwable => cancel("python or keras or tensorflow is not installed", e)
     }
-  }
-
-  override def beforeEach() {
-    ifskipTest()
   }
 
   private def defaultWeightConverter(in: Array[Tensor[Float]]) = in
