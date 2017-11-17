@@ -34,18 +34,18 @@ class GaussianNoiseSpec extends FlatSpec with Matchers {
 
     val module = new GaussianNoise[Double](0.2)
 
-    //training mode
+    // training mode
     module.training()
     val output = module.forward(input)
-    assertIntArrayEqual(output.size(),input.size())
+    assertIntArrayEqual(output.size(), input.size())
 
     val gradInput = module.backward(input, gradOutput)
-    assertIntArrayEqual(gradInput.size(),gradOutput.size())
+    assertIntArrayEqual(gradInput.size(), gradOutput.size())
 
-    //evaluation mode
+    // evaluation mode
     module.evaluate()
     val outputEval = module.forward(input)
-    //output should be the same as input
+    // output should be the same as input
     assert(input equals outputEval)
 
   }

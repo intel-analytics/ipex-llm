@@ -41,15 +41,15 @@ class GaussianDropout[T: ClassTag](
 
   var noise = Tensor[T]()
 
-  val stddev:Double = Math.sqrt(rate / (1.0-rate))
+  val stddev: Double = Math.sqrt(rate / (1.0-rate))
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    //TODO may support inplace
+
     this.output.resizeAs(input).copy(input)
 
     if(train) {
       noise.resizeAs(input)
-      noise.randn(1.0,stddev)
+      noise.randn(1.0, stddev)
       this.output.cmul(noise)
     } else {
       this.output
@@ -58,8 +58,7 @@ class GaussianDropout[T: ClassTag](
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
 
-    if (train){
-      //TODO, support inplace update
+    if (train) {
       this.gradInput.resizeAs(gradOutput).copy(gradOutput)
       this.gradInput.cmul(noise)
     } else {

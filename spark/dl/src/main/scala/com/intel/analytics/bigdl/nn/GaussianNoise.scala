@@ -43,12 +43,12 @@ class GaussianNoise[T: ClassTag](
   var noise = Tensor[T]()
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    //TODO may support inplace
+
     this.output.resizeAs(input).copy(input)
 
     if(train) {
       noise.resizeAs(input)
-      noise.randn(0.0,stddev)
+      noise.randn(0.0, stddev)
       this.output.add(noise)
     } else {
       this.output
@@ -57,8 +57,7 @@ class GaussianNoise[T: ClassTag](
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
 
-    if (train){
-      //TODO, support inplace update
+    if (train) {
       this.gradInput.resizeAs(gradOutput).copy(gradOutput)
     } else {
       throw new IllegalArgumentException("backprop only defined while training")
