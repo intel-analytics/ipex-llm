@@ -16,8 +16,8 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn.abstractnn.{DataFormat, TensorModule}
+import com.intel.analytics.bigdl.tensor.{FloatType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Engine
 
@@ -41,7 +41,8 @@ import scala.reflect._
  */
 @SerialVersionUID(3641570491004969703L)
 class SpatialCrossMapLRN[T: ClassTag]
-(val size: Int = 5, val alpha: Double = 1.0, val beta: Double = 0.75, val k: Double = 1.0)(
+(val size: Int = 5, val alpha: Double = 1.0, val beta: Double = 0.75, val k: Double = 1.0,
+  val format: DataFormat = DataFormat.NCHW)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   @transient
@@ -113,8 +114,19 @@ class SpatialCrossMapLRN[T: ClassTag]
     while (b <= batchNum) {
       val _b = b
       results(b - 1) = Engine.model.invoke(() => {
-        SpatialCrossMapLRN.forwardFrame(input.select(1, _b), output.select(1, _b),
-          scale.select(1, _b), alpha, size, beta, k)
+        if (format == DataFormat.NCHW) {
+          SpatialCrossMapLRN.forwardFrameNCHW(input.select(1, _b), output.select(1, _b),
+            scale.select(1, _b), alpha, size, beta, k)
+        } else {
+          if (ev.getType() == FloatType) {
+            SpatialCrossMapLRN.forwardFrameNHWCFloat(
+              input.select(1, _b).asInstanceOf[Tensor[Float]],
+              output.select(1, _b).asInstanceOf[Tensor[Float]],
+              alpha, size, beta, k)
+          } else {
+            throw new NotImplementedError(s"Not support numeric type ${ev.getType()} in NHWC")
+          }
+        }
       })
       b += 1
     }
@@ -151,9 +163,21 @@ class SpatialCrossMapLRN[T: ClassTag]
     while (b <= batchNum) {
       val _b = b
       results(b - 1) = Engine.model.invoke(() => {
-        SpatialCrossMapLRN.backwardFrame(input.select(1, _b), output.select(1, _b),
-          scale.select(1, _b), gradOutput.select(1, _b), gradInput.select(1, _b),
-          paddedRatio.select(1, _b), accumRatio.select(1, _b), alpha, size, beta)
+        if (format == DataFormat.NCHW) {
+          SpatialCrossMapLRN.backwardFrame(input.select(1, _b), output.select(1, _b),
+            scale.select(1, _b), gradOutput.select(1, _b), gradInput.select(1, _b),
+            paddedRatio.select(1, _b), accumRatio.select(1, _b), alpha, size, beta)
+        } else {
+          if (ev.getType() == FloatType) {
+            SpatialCrossMapLRN.backwardFrameNHWCFloat(
+              gradOutput.select(1, _b).asInstanceOf[Tensor[Float]],
+              input.select(1, _b).asInstanceOf[Tensor[Float]],
+              gradInput.select(1, _b).asInstanceOf[Tensor[Float]],
+              alpha, size, beta, k)
+          } else {
+            throw new NotImplementedError(s"Not support numeric type ${ev.getType()} in NHWC")
+          }
+        }
       })
       b += 1
     }
@@ -169,11 +193,13 @@ object SpatialCrossMapLRN {
       size: Int = 5,
       alpha: Double = 1.0,
       beta: Double = 0.75,
-      k: Double = 1.0)(implicit ev: TensorNumeric[T]) : SpatialCrossMapLRN[T] = {
-    new SpatialCrossMapLRN[T](size, alpha, beta, k)
+      k: Double = 1.0,
+      format: DataFormat = DataFormat.NCHW)
+    (implicit ev: TensorNumeric[T]) : SpatialCrossMapLRN[T] = {
+    new SpatialCrossMapLRN[T](size, alpha, beta, k, format)
   }
 
-  private def forwardFrame[T](input: Tensor[T], output: Tensor[T],
+  private[bigdl] def forwardFrameNCHW[T](input: Tensor[T], output: Tensor[T],
     scale: Tensor[T], alpha: Double, size: Int, beta: Double, k: Double)
     (implicit ev: TensorNumeric[T]): Unit = {
     val channels = input.size(1)
@@ -211,6 +237,48 @@ object SpatialCrossMapLRN {
     output.cmul(input)
   }
 
+  def forwardFrameNHWCFloat(
+    input: Tensor[Float],
+    output: Tensor[Float],
+    alpha: Double,
+    size: Int,
+    beta: Double,
+    k: Double
+  ): Unit = {
+    output.copy(input)
+    val channel = input.size(3)
+    val outputOffset = output.storageOffset() - 1
+    val outputArray = output.storage().array()
+    val nElement = output.nElement()
+    var l2sum = 0f
+    var i = 0
+    while(i < nElement) {
+      val p = i % channel
+      if (p == 0) {
+        var c = 0
+        l2sum = 0
+        val depth = Math.min((size - 1) / 2 + 1, channel)
+        while (c < depth) {
+          val e = outputArray(outputOffset + i + c)
+          l2sum += e * e
+          c += 1
+        }
+      }
+      outputArray(outputOffset + i) = outputArray(outputOffset + i) *
+        Math.pow(k + alpha * l2sum, -beta).toFloat
+
+      if (p + (size - 1) / 2 < channel) {
+        val e = outputArray(outputOffset + i + (size - 1) / 2)
+        l2sum += e * e
+      }
+      if (p - (size - 1) / 2 >= 0) {
+        val e = outputArray(outputOffset + i - (size - 1) / 2)
+        l2sum -= e * e
+      }
+      i += 1
+    }
+  }
+
   private def backwardFrame[T](
     input: Tensor[T], output: Tensor[T], scale: Tensor[T],
     gradOutput: Tensor[T], gradInput: Tensor[T], paddedRatio: Tensor[T],
@@ -232,6 +300,63 @@ object SpatialCrossMapLRN {
       gradInput.select(1, c).addcmul(cacheRatioValue, input.select(1, c), accumRatio)
       accumRatio.add(ev.fromType(-1), paddedRatio.select(1, c))
       c += 1
+    }
+  }
+
+  def backwardFrameNHWCFloat(
+    gradOutput: Tensor[Float],
+    input: Tensor[Float],
+    gradInput: Tensor[Float],
+    alpha: Double,
+    size: Int,
+    beta: Double,
+    k: Double
+  ): Unit = {
+    gradInput.copy(input)
+    val channel = input.size(3)
+    val inputOffset = input.storageOffset() - 1
+    val inputArray = input.storage().array()
+    val gradOutputOffset = gradOutput.storageOffset() - 1
+    val gradOutputArray = gradOutput.storage().array()
+    val gradInputOffset = gradInput.storageOffset() - 1
+    val gradInputArray = gradInput.storage().array()
+    val nElement = gradInput.nElement()
+    var l2sum = 0f
+    var glsum = 0f
+    var i = 0
+    while(i < nElement) {
+      val p = i % channel
+      if (p == 0) {
+        var c = 0
+        l2sum = 0
+        glsum = 0
+        val depth = Math.min((size - 1) / 2 + 1, channel)
+        while (c < depth) {
+          val x = inputArray(inputOffset + i + c)
+          val g = gradOutputArray(gradOutputOffset + i + c)
+          glsum = g * x
+          l2sum += x * x
+          c += 1
+        }
+      }
+      val s = k + alpha * l2sum
+      val x = inputArray(inputOffset + i)
+      val g = gradOutputArray(gradOutputOffset + i)
+      gradInputArray(gradInputOffset + i) = (g * Math.pow(s, -beta) -
+        2 * beta * x * alpha * Math.pow(s, -beta - 1) * glsum).toFloat
+      if (p + (size - 1) / 2 < channel) {
+        val x = inputArray(inputOffset + i + (size - 1) / 2)
+        val g = gradOutputArray(gradOutputOffset + i + (size - 1) / 2)
+        l2sum += x * x
+        glsum += g * x
+      }
+      if (p - (size - 1) / 2 >= 0) {
+        val x = inputArray(inputOffset + i - (size - 1) / 2)
+        val g = gradOutputArray(gradOutputOffset + i - (size - 1) / 2)
+        l2sum -= x * x
+        glsum -= g * x
+      }
+      i += 1
     }
   }
 }
