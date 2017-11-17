@@ -14,11 +14,28 @@
  * limitations under the License.
  */
 package com.intel.analytics.bigdl.keras
-import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.Criterion
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractCriterion, AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import org.scalatest.{BeforeAndAfterEach, FlatSpec, Matchers}
 
-class KerasBaseSpec extends FlatSpec with BeforeAndAfter with Matchers {
+import scala.sys.process._
+
+class KerasBaseSpec extends FlatSpec with BeforeAndAfterEach with Matchers {
+
+  protected def ifskipTest(): Unit = {
+    // Skip unitest if environment is not ready
+    try {
+    Seq("python", "-c", "import keras; import tensorflow").!!
+    } catch {
+      case e: Throwable => cancel("python or keras or tensorflow is not installed", e)
+    }
+  }
+
+  override def beforeEach() {
+    ifskipTest()
+  }
 
   private def defaultWeightConverter(in: Array[Tensor[Float]]) = in
 
@@ -34,7 +51,7 @@ class KerasBaseSpec extends FlatSpec with BeforeAndAfter with Matchers {
                          weightConverter: (Array[Tensor[Float]]) => Array[Tensor[Float]]
                          = defaultWeightConverter,
                          precision: Double = 1e-5): Unit = {
-    val (gradInput, gradWeight, weights, input, output) = KerasRunner.run(kerasCode)
+    val (gradInput, gradWeight, weights, input, target, output) = KerasRunner.run(kerasCode)
     // Ensure they share the same weights
     if (weights != null) {
       bmodel.setWeightsBias(weightConverter(weights))
@@ -56,6 +73,22 @@ class KerasBaseSpec extends FlatSpec with BeforeAndAfter with Matchers {
         bgradBias.almostEqual(weightConverter(gradWeight)(1), precision) should be(true)
       }
     }
+  }
+
+  def checkOutputAndGradForLoss(bmodel: AbstractCriterion[Tensor[Float], Tensor[Float], Float],
+                                kerasCode: String,
+                                precision: Double = 1e-5): Unit = {
+    val (gradInput, gradWeight, weights, input, target, output) =
+      KerasRunner.run(kerasCode, is_loss = true)
+
+    val boutput = bmodel.forward(input, target)
+      require(output.size().length == 1 && output.size()(0) == 1,
+        s"output should only contain one element, but we got: ${output.size().mkString("x")}")
+    NumericFloat.nearlyEqual(boutput, output.storage.array()(0), precision)
+
+    val bgradInput = bmodel.backward(input, target.clone().fill(1))
+    bgradInput.almostEqual(gradInput, precision) should be(true)
+
   }
 }
 

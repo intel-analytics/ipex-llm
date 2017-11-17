@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.keras
 
-import com.intel.analytics.bigdl.nn.{Linear, ReLU}
+import com.intel.analytics.bigdl.nn.{Linear, MSECriterion, ReLU}
 import com.intel.analytics.bigdl.tensor.Tensor
 
 class TestKerasBaseSpec extends KerasBaseSpec{
@@ -42,5 +42,18 @@ class TestKerasBaseSpec extends KerasBaseSpec{
       """.stripMargin
     val relu = new ReLU[Float]()
     checkOutputAndGrad(relu, kerasCode)
+  }
+
+  "MSE loss" should "be ok" in {
+    val kerasCode =
+      """
+        |input_tensor = Input(shape=[3])
+        |target_tensor = Input(shape=[3])
+        |loss = mean_squared_error(input_tensor, target_tensor)
+        |input = np.random.uniform(0, 1, [1, 3])
+        |Y = np.random.uniform(0, 1, [1, 3])
+      """.stripMargin
+    val mse = new MSECriterion[Float]()
+    checkOutputAndGradForLoss(mse, kerasCode)
   }
 }
