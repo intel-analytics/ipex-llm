@@ -55,8 +55,8 @@ class TestKerasBaseSpec extends KerasBaseSpec{
         |input_tensor = Input(shape=[3])
         |target_tensor = Input(shape=[3])
         |loss = mean_squared_error(input_tensor, target_tensor)
-        |input = np.random.uniform(0, 1, [1, 3])
-        |Y = np.random.uniform(0, 1, [1, 3])
+        |input = np.random.uniform(0, 1, [2, 3])
+        |Y = np.random.uniform(0, 1, [2, 3])
       """.stripMargin
     val mse = new MSECriterion[Float]()
     checkOutputAndGradForLoss(mse, kerasCode)
