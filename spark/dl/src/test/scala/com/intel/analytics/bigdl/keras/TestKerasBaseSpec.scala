@@ -24,6 +24,7 @@ class TestKerasBaseSpec extends KerasBaseSpec{
     val kerasCode =
       """
         |input_tensor = Input(shape=[3])
+        |input = np.random.uniform(0, 1, [1, 3])
         |output_tensor = Dense(2, init='uniform')(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
@@ -37,6 +38,7 @@ class TestKerasBaseSpec extends KerasBaseSpec{
     val kerasCode =
       """
         |input_tensor = Input(shape=[2])
+        |input = np.random.uniform(0, 1, [1, 2])
         |output_tensor = Activation(activation="relu")(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin

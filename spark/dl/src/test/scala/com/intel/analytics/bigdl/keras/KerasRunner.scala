@@ -54,10 +54,6 @@ object KerasRunner {
   """.stripMargin
   val code_for_layer =
     """
-      |nb_sample= 1
-      |input_shape = input_tensor.shape.as_list()
-      |input_shape[0] = nb_sample
-      |input = np.random.uniform(0, 1, input_shape)
       |Y = []
       |grad_input = K.get_session().run(K.gradients(model.output, model.input), feed_dict={input_tensor: input}) # grad_input
       |

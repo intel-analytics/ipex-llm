@@ -82,8 +82,7 @@ class KerasBaseSpec extends FlatSpec with BeforeAndAfterEach with Matchers {
       KerasRunner.run(kerasCode, is_loss = true)
 
     val boutput = bmodel.forward(input, target)
-      require(output.size().length == 1 && output.size()(0) == 1,
-        s"output should only contain one element, but we got: ${output.size().mkString("x")}")
+    require(output.isScalar, s"output should be scalar, but we got: ${output}")
     NumericFloat.nearlyEqual(boutput, output.storage.array()(0), precision)
 
     val bgradInput = bmodel.backward(input, target.clone().fill(1))
