@@ -4399,6 +4399,23 @@ class GaussianSampler(Layer):
     def __init__(self, bigdl_type="float"):
         super(GaussianSampler, self).__init__(None, bigdl_type)
 
+class Masking(Layer):
+
+    '''
+    Use a mask value to skip timesteps for a sequence
+    ```
+   :param mask_value: mask value
+
+    >>> masking = Masking(0.0)
+    creating: createMasking
+    '''
+
+    def __init__(self,
+                 mask_value,
+                 bigdl_type="float"):
+        super(Masking, self).__init__(None, bigdl_type,
+                                         mask_value)
+
 def _test():
     import doctest
     from pyspark import SparkContext
