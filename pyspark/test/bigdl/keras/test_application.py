@@ -21,6 +21,7 @@ np.random.seed(1337)  # for reproducibility
 import pytest
 from keras.applications import *
 from bigdl.keras.converter import *
+from keras.applications.music_tagger_crnn import MusicTaggerCRNN
 
 from test.bigdl.test_utils import BigDLTestCase, TestModels
 
@@ -137,6 +138,22 @@ class TestApplication(BigDLTestCase):
         kmodel = vgg19.VGG19(include_top=False, input_shape=(3, 224, 224))
         input_data = np.random.random([2, 3, 224, 224])
         self.assert_model(input_data, kmodel)
+
+    def test_music_tagger_crnn(self):
+        # Remove the first BatchNormalization layer in the model as we don't support `axis=3`
+        # Set `inner_activation` in GRU to be `sigmoid`
+        keras.backend.set_image_dim_ordering("th")
+        kmodel = MusicTaggerCRNN(include_top=False)
+        input_data = np.random.random([2, 1, 96, 1366])
+
+        bmodel = DefinitionLoader.from_kmodel(kmodel)
+        WeightLoader.load_weights_from_kmodel(bmodel, kmodel, by_name=True)
+
+        keras_output = kmodel.predict(input_data)
+        bmodel.training(is_training=False)
+        bigdl_output = bmodel.forward(input_data)
+
+        self.assert_allclose(keras_output, bigdl_output, rtol=1e-6, atol=1e-6)
 
     def test_inception_v3(self):
         keras.backend.set_image_dim_ordering("th")
