@@ -24,6 +24,7 @@ from keras.layers.convolutional import *
 from keras.layers import Dense, Input
 from bigdl.keras.converter import *
 from test.bigdl.test_utils import BigDLTestCase
+from keras.metrics import *
 
 
 class TestLayer(BigDLTestCase):
