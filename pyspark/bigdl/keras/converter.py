@@ -456,7 +456,7 @@ class LayerConverter:
     def create_permute(self, klayer, kclayer):
         swaps = self.__perm_to_pair(list(klayer.dims))
         swaps.reverse()
-        swaps = map(lambda (a, b): (a+1, b+1), swaps)
+        swaps = map(lambda pair: (pair[0]+1, pair[1]+1), swaps)
         return BLayer.Transpose(swaps)
 
     def __perm_to_pair(self, perm):
