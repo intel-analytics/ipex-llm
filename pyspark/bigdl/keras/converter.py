@@ -814,8 +814,8 @@ class LayerConverter:
 
         self.__check_is_share_weights(kclayer)
         if keras.backend.image_dim_ordering() != "th" or klayer.axis != 1:
-            raise Exception("""For BatchNormalization, we only support `th` image ordering " +
-                              (i.e. `NCHW`) with axis = 1 for now, but the current order is %s and axis is %s
+            raise Exception("""For BatchNormalization, we only support th image ordering (i.e. NCHW) """ +
+                            """with axis = 1 for now, but the current order is %s and axis is %s
             """ % (keras.backend.image_dim_ordering(), klayer.axis))  # noqa
         if klayer.mode != 0:
             raise Exception(
@@ -1394,6 +1394,8 @@ class LayerConverter:
             activation = BLayer.Tanh()
         elif activation_name == "sigmoid":
             activation = BLayer.Sigmoid()
+        elif activation_name == "hard_sigmoid":
+            activation = BLayer.HardSigmoid()
         elif activation_name == "relu":
             activation = BLayer.ReLU()
         elif activation_name == "softmax":

@@ -40,6 +40,8 @@ class TestLayer(BigDLTestCase):
         layer3 = Dense(2, init='one', input_shape=(10, ),
                        W_regularizer=keras.regularizers.WeightRegularizer(l1=0.1))
         self.modelTestSingleLayer(input_data, layer3, dump_weights=True)
+        layer4 = Dense(2, init='glorot_uniform', activation="hard_sigmoid", input_shape=(10, ))
+        self.modelTestSingleLayer(input_data, layer4, dump_weights=True)
 
     def test_timedistributeddense(self):
         input_data = np.random.random_sample([2, 4, 5])
