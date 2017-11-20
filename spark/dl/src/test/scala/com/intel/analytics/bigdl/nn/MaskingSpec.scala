@@ -35,8 +35,8 @@ class MaskingSpec extends KerasBaseSpec {
     val masking = Masking[Double](mask_value)
 
     val output = masking.forward(input)
-    val gradInput = Tensor[Double](output.size()).fill(1.0)
-    val gradOutput = masking.backward(input, gradInput)
+    val gradOutput = Tensor[Double](output.size()).fill(1.0)
+    val gradInput = masking.backward(input, gradOutput)
 
     val expectOutput = Array[Double](1.0, 1, 2, 2, 3, 3, 4, 4, 5, 5, -1, 1, 2, 2, 3, 3, 4, 4, 5, 5,
       1, 1, 0, 0, 3, 3, 4, 4, 5, 5)
@@ -44,7 +44,7 @@ class MaskingSpec extends KerasBaseSpec {
       1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1)
     require(output.toTensor[Double].almostEqual(Tensor[Double](expectOutput,
       Array(batchSize, times, features)), 0))
-    require(gradOutput.toTensor[Double].almostEqual(Tensor[Double](expectgradInput,
+    require(gradInput.toTensor[Double].almostEqual(Tensor[Double](expectgradInput,
       Array(batchSize, times, features)), 0))
   }
 }

@@ -1078,3 +1078,171 @@ Gives the gradInput,
        [  8.,  10.,  12.]], dtype=float32), array([[  0.73362803,   1.98743176,  -7.66922569],
        [-15.81199932, -10.7408371 , -17.73489189]], dtype=float32)]
 ```
+
+## Masking ##
+
+Use a mask value to skip timesteps for a sequence
+
+**Scala:**
+```scala
+val mask = Masking(0.0)
+```
+
+**Python:**
+```python
+mask = Masking(0.0)
+```
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.nn.Masking
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.utils.T
+
+val batchSize = 3
+val times = 5
+val features = 2
+val inputData = Array[Double](1.0, 1, 2, 2, 3, 3, 4, 4, 5, 5, -1, 1, 2, 2, 3, 3, 4, 4, 5, 5,
+  1, 1, -1, -1, 3, 3, 4, 4, 5, 5)
+val input = Tensor[Double](inputData, Array(batchSize, times, features))
+val gradOutput = Tensor[Double](Array(batchSize, times, features)).fill(1.0)
+val maskValue = -1
+
+val mask = Masking(maskValue)
+val output = mask.forward(input)
+println(output)
+
+val gradInput = mask.backward(input, gradOutput)
+println(gradOutput)
+```
+Gives the output,
+```
+output: = 
+(1,.,.) =
+1.0	1.0	
+2.0	2.0	
+3.0	3.0	
+4.0	4.0	
+5.0	5.0	
+
+(2,.,.) =
+-1.0	1.0	
+2.0	2.0	
+3.0	3.0	
+4.0	4.0	
+5.0	5.0	
+
+(3,.,.) =
+1.0	1.0	
+0.0	0.0	
+3.0	3.0	
+4.0	4.0	
+5.0	5.0	
+
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 3x5x2]
+```
+Gives the gradInput,
+
+```
+gradInput: 
+(1,.,.) =
+1.0	1.0	
+1.0	1.0	
+1.0	1.0	
+1.0	1.0	
+1.0	1.0	
+
+(2,.,.) =
+1.0	1.0	
+1.0	1.0	
+1.0	1.0	
+1.0	1.0	
+1.0	1.0	
+
+(3,.,.) =
+1.0	1.0	
+0.0	0.0	
+1.0	1.0	
+1.0	1.0	
+1.0	1.0	
+
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 3x5x2]
+```
+
+**Python example:**
+```python
+from bigdl.nn.layer import *
+from bigdl.util.common import *
+import numpy as np
+
+n_samples = 3
+n_timesteps = 7
+n_features = 2
+mask_value = -1.0
+input = np.array([1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, -1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7,
+                 1, 1, 2, 2, 3, 3, -1, -1, 5, 5, 6, 6, 7, 7]).reshape(n_samples, n_timesteps, n_features)
+gradOutput = np.ones((n_samples, n_timesteps, n_features))
+model = Sequential()
+model.add(Masking(mask_value=mask_value))
+
+output = model.forward(input)
+gradInput = model.backward(input, gradOutput)
+
+```
+Gives the output,
+```
+>>> print output
+[[[ 1.  1.]
+  [ 2.  2.]
+  [ 3.  3.]
+  [ 4.  4.]
+  [ 5.  5.]
+  [ 6.  6.]
+  [ 7.  7.]]
+
+ [[-1.  1.]
+  [ 2.  2.]
+  [ 3.  3.]
+  [ 4.  4.]
+  [ 5.  5.]
+  [ 6.  6.]
+  [ 7.  7.]]
+
+ [[ 1.  1.]
+  [ 2.  2.]
+  [ 3.  3.]
+  [ 0.  0.]
+  [ 5.  5.]
+  [ 6.  6.]
+  [ 7.  7.]]]
+```
+
+Gives the gradInput,
+
+```
+>>> print gradInput
+[[[ 1.  1.]
+  [ 1.  1.]
+  [ 1.  1.]
+  [ 1.  1.]
+  [ 1.  1.]
+  [ 1.  1.]
+  [ 1.  1.]]
+
+ [[ 1.  1.]
+  [ 1.  1.]
+  [ 1.  1.]
+  [ 1.  1.]
+  [ 1.  1.]
+  [ 1.  1.]
+  [ 1.  1.]]
+
+ [[ 1.  1.]
+  [ 1.  1.]
+  [ 1.  1.]
+  [ 0.  0.]
+  [ 1.  1.]
+  [ 1.  1.]
+  [ 1.  1.]]]
+```
