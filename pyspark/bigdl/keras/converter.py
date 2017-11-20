@@ -467,7 +467,7 @@ class LayerConverter:
         def sort(arr, low, high):
             i = low
             j = high
-            pivot = arr[low + (high - low) / 2]
+            pivot = arr[low + int((high - low) / 2)]
             while i <= j:
                 while arr[i] < pivot:
                     i += 1
