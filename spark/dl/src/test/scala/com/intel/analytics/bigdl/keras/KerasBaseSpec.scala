@@ -78,9 +78,9 @@ abstract class KerasBaseSpec extends BigDLSpecHelper {
 
     val boutput = bmodel.forward(input, target)
     require(output.nElement() == 1, s"output should only contain 1 element, but we got: ${output}")
-    NumericFloat.nearlyEqual(boutput, output.storage.array()(0), precision)
+    NumericFloat.nearlyEqual(boutput, output.storage.array()(0), precision) should be(true)
 
-    val bgradInput = bmodel.backward(input, target.clone().fill(1))
+    val bgradInput = bmodel.backward(input, target.clone())
     bgradInput.almostEqual(gradInput, precision) should be(true)
 
   }
