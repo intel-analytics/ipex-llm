@@ -33,14 +33,22 @@ class LRNGrad[T: ClassTag](
   output = Tensor[Float]()
 
   override def updateOutput(input: Table): Tensor[Float] = {
-    val gradOuput = input[Tensor[Float]](1)
+    val gradOutput = input[Tensor[Float]](1)
     val inputTensor = input[Tensor[Float]](2)
     val outputTensor = input[Tensor[Float]](3)
 
     output.resizeAs(inputTensor)
-    SpatialCrossMapLRN.backwardFrameNHWCFloat(
-      gradOuput, inputTensor, output, alpha, 2 * depthRadius + 1, beta, bias
-    )
+    var b = 1
+    while(b <= inputTensor.size(1)) {
+      SpatialCrossMapLRN.backwardFrameNHWCFloat(
+        gradOutput.select(1, b),
+        inputTensor.select(1, b),
+        output.select(1, b),
+        outputTensor.select(1, b),
+        alpha * (2 * depthRadius + 1), 2 * depthRadius + 1, beta, bias
+      )
+      b += 1
+    }
     output
   }
 }

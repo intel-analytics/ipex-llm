@@ -39,7 +39,7 @@ class LRN extends TensorflowOpsLoader {
     SpatialCrossMapLRN[T](
       size = size * 2 + 1,
       k = k,
-      alpha = alpha,
+      alpha = alpha * (size * 2 + 1),
       beta = beta,
       format = DataFormat.NHWC
     )

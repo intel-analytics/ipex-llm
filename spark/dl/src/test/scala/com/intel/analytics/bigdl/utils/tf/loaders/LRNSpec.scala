@@ -35,4 +35,20 @@ class LRNSpec extends TensorflowSpecHelper {
       0
     )
   }
+
+  "LRN" should "be correct for float tensor2" in {
+    val t = Tensor[Float](4, 8, 8, 3).fill(1f)
+    compare(
+      NodeDef.newBuilder()
+        .setName("lrn_test")
+        .putAttr("T", typeAttr(DataType.DT_FLOAT))
+        .putAttr("depth_radius", intAttr(1))
+        .putAttr("beta", floatAttr(1f))
+        .putAttr("alpha", floatAttr(1))
+        .putAttr("bias", floatAttr(0))
+        .setOp("LRN"),
+      Seq(t),
+      0
+    )
+  }
 }

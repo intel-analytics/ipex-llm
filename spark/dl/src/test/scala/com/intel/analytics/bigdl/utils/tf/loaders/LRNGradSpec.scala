@@ -15,6 +15,8 @@
  */
 package com.intel.analytics.bigdl.utils.tf.loaders
 
+import com.intel.analytics.bigdl.nn.SpatialCrossMapLRN
+import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.tf.Tensorflow.{floatAttr, intAttr, typeAttr}
 import com.intel.analytics.bigdl.utils.tf.TensorflowSpecHelper
@@ -22,6 +24,29 @@ import org.tensorflow.framework.{DataType, NodeDef}
 
 class LRNGradSpec extends TensorflowSpecHelper {
   "LRNGrad" should "be correct for float tensor" in {
+    val op = SpatialCrossMapLRN[Float](7, 7, 0.5, 1, DataFormat.NHWC)
+    val input = Tensor[Float](4, 8, 8, 3).rand()
+    val t = op.forward(input)
+    val g = Tensor[Float](4, 8, 8, 3).rand()
+    compare(
+      NodeDef.newBuilder()
+        .setName("lrn_grad_test")
+        .putAttr("T", typeAttr(DataType.DT_FLOAT))
+        .putAttr("depth_radius", intAttr(3))
+        .putAttr("beta", floatAttr(0.5f))
+        .putAttr("alpha", floatAttr(1))
+        .putAttr("bias", floatAttr(1))
+        .setOp("LRNGrad"),
+      Seq(g, input, t),
+      0, 1e-2
+    )
+  }
+
+  "LRNGrad" should "be correct for float tensor2" in {
+    val op = SpatialCrossMapLRN[Float](3, 3, 1, 0, DataFormat.NHWC)
+    val input = Tensor[Float](4, 8, 8, 3).rand()
+    val t = op.forward(input)
+    val g = Tensor[Float](4, 8, 8, 3).rand()
     compare(
       NodeDef.newBuilder()
         .setName("lrn_grad_test")
@@ -31,9 +56,8 @@ class LRNGradSpec extends TensorflowSpecHelper {
         .putAttr("alpha", floatAttr(1))
         .putAttr("bias", floatAttr(0))
         .setOp("LRNGrad"),
-      Seq(Tensor[Float](4, 8, 8, 3).fill(1f), Tensor[Float](4, 8, 8, 3).fill(1f),
-        Tensor[Float](4, 8, 8, 3).fill(0.5f)),
-      0
+      Seq(g, input, t),
+      0, 1e-2
     )
   }
 }
