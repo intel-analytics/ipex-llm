@@ -25,11 +25,10 @@ class HardSigmoidSpec extends KerasBaseSpec {
     val sigmoidCode =
       """
         |input_tensor = Input(shape=[5])
+        |input = np.random.uniform(0, 1, [4, 5])
         |output_tensor = Activation(activation="hard_sigmoid")(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
-    val (gradInput, gradWeight, weights, input, output) = KerasRunner.run(sigmoidCode)
-
     val hardSigmoid = HardSigmoid[Float]()
 
     checkOutputAndGrad(hardSigmoid, sigmoidCode)
