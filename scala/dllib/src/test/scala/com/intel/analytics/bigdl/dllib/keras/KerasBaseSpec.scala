@@ -46,6 +46,7 @@ abstract class KerasBaseSpec extends BigDLSpecHelper {
                          weightConverter: (Array[Tensor[Float]]) => Array[Tensor[Float]]
                          = defaultWeightConverter,
                          precision: Double = 1e-5): Unit = {
+    ifskipTest()
     val (gradInput, gradWeight, weights, input, target, output) = KerasRunner.run(kerasCode)
     // Ensure they share the same weights
     if (weights != null) {
@@ -73,6 +74,8 @@ abstract class KerasBaseSpec extends BigDLSpecHelper {
   def checkOutputAndGradForLoss(bmodel: AbstractCriterion[Tensor[Float], Tensor[Float], Float],
                                 kerasCode: String,
                                 precision: Double = 1e-5): Unit = {
+    ifskipTest()
+
     val (gradInput, gradWeight, weights, input, target, output) =
       KerasRunner.run(kerasCode, is_loss = true)
 
