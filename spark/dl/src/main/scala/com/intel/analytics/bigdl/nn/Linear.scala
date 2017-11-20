@@ -142,20 +142,38 @@ class Linear[T: ClassTag](
 
     if (input.dim() == 1) {
       if (scaleW != 0) {
-        gradWeight.addr(ev.fromType[Double](scaleW), gradOutput, input)
+        if (zeroGradFlag) {
+          gradWeight.addr(ev.zero, gradOutput, ev.fromType[Double](scaleW), input)
+        } else {
+          gradWeight.addr(ev.fromType[Double](scaleW), gradOutput, input)
+        }
       }
 
       if (withBias && scaleB != 0) {
-        gradBias.add(ev.fromType[Double](scaleB), gradOutput)
+        if (zeroGradFlag) {
+          gradBias.mul(gradOutput, ev.fromType[Double](scaleB))
+        } else {
+          gradBias.add(ev.fromType[Double](scaleB), gradOutput)
+        }
       }
     }
     else if (input.dim() == 2) {
       if (scaleW != 0) {
-        gradWeight.addmm(ev.fromType[Double](scaleW), gradOutput.t, input)
+        if (zeroGradFlag) {
+          gradWeight.addmm(ev.zero,
+            ev.fromType[Double](scaleW), gradOutput.t, input)
+        } else {
+          gradWeight.addmm(ev.fromType[Double](scaleW), gradOutput.t, input)
+        }
       }
 
       if (withBias && scaleB != 0) {
-        gradBias.addmv(ev.fromType[Double](scaleB), gradOutput.t, addBuffer)
+        if (zeroGradFlag) {
+          gradBias.addmv(ev.zero,
+            ev.fromType[Double](scaleB), gradOutput.t, addBuffer)
+        } else {
+          gradBias.addmv(ev.fromType[Double](scaleB), gradOutput.t, addBuffer)
+        }
       }
     }
 
@@ -165,6 +183,7 @@ class Linear[T: ClassTag](
     if (null != bRegularizer && scaleB != 0) {
       bRegularizer.accRegularization(bias, gradBias, scaleB)
     }
+    zeroGradFlag = false
   }
 
   override def updateParameters(learningRate: T): Unit = {
@@ -174,11 +193,10 @@ class Linear[T: ClassTag](
 
   override def zeroGradParameters(): Unit = {
     gradWeight.resize(outputSize, inputSize)
-    gradWeight.zero()
     if (withBias) {
       gradBias.resize(outputSize)
-      gradBias.zero()
     }
+    zeroGradFlag = true
   }
 
   override def clearState() : this.type = {

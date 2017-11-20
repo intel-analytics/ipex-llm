@@ -386,6 +386,52 @@ class LinearSpec extends FlatSpec with Matchers {
 
     linear2.gradWeight should be(linear.gradWeight.mul(0.5))
     linear2.gradBias should be(linear.gradBias.mul(2))
+
+  }
+
+  "Linear zero gradient " should "be correct" in {
+    val weight = Tensor[Double](T(
+      T(1.0, 2.0, 3.0),
+      T(4.0, 5.0, 6.0)
+    ))
+    val bias = Tensor[Double](T(7.0, 8.0))
+    val linear = new Linear[Double](inputSize = 3, outputSize = 2,
+      initWeight = weight, initBias = bias)
+    val linear2 = linear.cloneModule().asInstanceOf[Linear[Double]].setScaleB(2.0).setScaleW(0.5)
+
+    val input = Tensor[Double](T(0.1, 0.2, 0.3))
+
+    val output1 = linear.forward(input)
+    linear2.forward(input)
+
+    val gradOutput = Tensor(output1)
+    linear.backward(input, gradOutput)
+    linear2.backward(input, gradOutput)
+    linear2.gradWeight should be(linear.gradWeight.mul(0.5))
+    linear2.gradBias should be(linear.gradBias.mul(2))
+
+    linear.zeroGradParameters()
+    linear2.zeroGradParameters()
+    linear.backward(input, gradOutput)
+    linear2.backward(input, gradOutput)
+    linear2.gradWeight should be(linear.gradWeight.mul(0.5))
+    linear2.gradBias should be(linear.gradBias.mul(2))
+
+
+    val input2 = Tensor[Double](T(
+      T(0.1, 0.2, 0.3),
+      T(1.0, 2.0, 3.0)
+    ))
+    // val input2 = Tensor[Double](2, 3).rand()
+    val output2 = linear.forward(input2)
+    linear2.forward(input2)
+    val gradOutput2 = Tensor(output2)
+    linear.zeroGradParameters()
+    linear2.zeroGradParameters()
+    linear.backward(input2, gradOutput2)
+    linear2.backward(input2, gradOutput2)
+    linear2.gradWeight should be(linear.gradWeight.mul(0.5))
+    linear2.gradBias should be(linear.gradBias.mul(2))
   }
 
   "Xavier" should "init right in SpatialConvolution" in {

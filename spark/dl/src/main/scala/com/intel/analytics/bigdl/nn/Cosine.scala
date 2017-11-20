@@ -148,7 +148,12 @@ class Cosine[T: ClassTag](val inputSize : Int, val outputSize : Int)(
       var weightNorm = Tensor[T]()
       weightNorm = _weightNorm.view(outputSize)
       _gradOutput.cdiv(weightNorm)
-      gradWeight.addr(ev.divide(ev.fromType[Double](scaleW), __norm), _gradOutput, input)
+      if (zeroGradFlag) {
+        gradWeight.addr(ev.fromType[Double](0.0), _gradOutput,
+          ev.divide(ev.fromType[Double](scaleW), __norm), input)
+      } else {
+        gradWeight.addr(ev.divide(ev.fromType[Double](scaleW), __norm), _gradOutput, input)
+      }
 
       _gradOutput.cdiv(weightNorm)
       _gradOutput.cmul(output)
@@ -172,12 +177,13 @@ class Cosine[T: ClassTag](val inputSize : Int, val outputSize : Int)(
       input_.cdiv(_inputNorm.expandAs(input))
       _weight.addmm(ev.fromType(-1), _weight, ev.fromType(1), gradOutput.t(), input_)
       _weight.cdiv(_weightNorm.expandAs(_weight))
-      gradWeight.add(_weight)
+      if (zeroGradFlag) {
+        gradWeight.copy(_weight)
+      } else {
+        gradWeight.add(_weight)
+      }
     }
-  }
-
-  override def zeroGradParameters(): Unit = {
-    gradWeight.zero()
+    zeroGradFlag = false
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {

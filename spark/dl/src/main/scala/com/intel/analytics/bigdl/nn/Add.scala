@@ -72,23 +72,36 @@ class Add[T: ClassTag](val inputSize: Int
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
     if (scaleB != 0) {
       if (gradBias.size(1) == 1) {
-        gradBias(1) = gradBias(1).add(ev.times(ev.fromType[Double](scaleB), gradOutput.sum()))
+        if (zeroGradFlag) {
+          gradBias(1).fill(ev.times(ev.fromType[Double](scaleB), gradOutput.sum()))
+          zeroGradFlag = false
+        } else {
+          gradBias(1) = gradBias(1).add(ev.times(ev.fromType[Double](scaleB), gradOutput.sum()))
+        }
       } else {
         if (input.isSameSizeAs(bias)) {
-          gradBias.add(ev.fromType[Double](scaleB), gradOutput)
+          if (zeroGradFlag) {
+            gradBias.map(gradOutput, (_, y) => (ev.times(ev.fromType[Double](scaleB), y)))
+            zeroGradFlag = false
+          } else {
+            gradBias.add(ev.fromType[Double](scaleB), gradOutput)
+          }
         } else {
           val gradOutputLocal = gradOutput.view(input.size(1),
             gradOutput.size.product/input.size(1))
-          gradBias.view(gradBias.size().product).addmv(ev.fromType[Double](scaleB),
-            gradOutputLocal.t(), ones)
+          if (zeroGradFlag) {
+            gradBias.view(gradBias.size().product).addmv(ev.fromType[Double](0.0),
+              ev.fromType[Double](scaleB), gradOutputLocal.t(), ones)
+            zeroGradFlag = false
+          } else {
+            gradBias.view(gradBias.size().product).addmv(ev.fromType[Double](scaleB),
+              gradOutputLocal.t(), ones)
+          }
         }
       }
     }
   }
 
-  override def zeroGradParameters(): Unit = {
-    gradBias.zero()
-  }
 
   override def clearState() : this.type = {
     super.clearState()

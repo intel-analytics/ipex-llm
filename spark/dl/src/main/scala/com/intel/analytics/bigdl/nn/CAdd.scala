@@ -106,7 +106,11 @@ class CAdd[T: ClassTag](
       return
     }
     if (bias.nElement() == gradOutput.nElement()) {
-      gradBias.add(ev.fromType[Double](scaleB), gradOutput)
+      if (zeroGradFlag) {
+        gradBias.mul(gradOutput, ev.fromType[Double](scaleB))
+      } else {
+        gradBias.add(ev.fromType[Double](scaleB), gradOutput)
+      }
     } else {
       val expand = if (bias.dim() == gradOutput.dim()) {
         gradBias.view(gradBias.size())
@@ -124,8 +128,13 @@ class CAdd[T: ClassTag](
         while (outer < outerNum) {
           k = 0
           while (k < expand.nElement()) {
-            biasData(k) = ev.plus(ev.times(ev.sum(innerNum, gradOutputData, offset, 1),
-              ev.fromType[Double](scaleB)), biasData(k))
+            if (zeroGradFlag) {
+              biasData(k) = ev.times(ev.sum(innerNum, gradOutputData, offset, 1),
+                ev.fromType[Double](scaleB))
+            } else {
+              biasData(k) = ev.plus(ev.times(ev.sum(innerNum, gradOutputData, offset, 1),
+                ev.fromType[Double](scaleB)), biasData(k))
+            }
             offset += innerNum
             k += 1
           }
@@ -133,20 +142,20 @@ class CAdd[T: ClassTag](
         }
       } else {
         expand.expandAs(gradOutput)
+        if (zeroGradFlag) {
+          gradBias.zero()
+        }
         expand.add(ev.fromType[Double](scaleB), gradOutput)
       }
     }
     if (null != bRegularizer) {
       bRegularizer.accRegularization(bias, gradBias, scaleB)
     }
+    zeroGradFlag = false
   }
 
   override def updateParameters(learningRate: T): Unit = {
     bias.map(gradBias, (a, b) => ev.minus(a, ev.times(learningRate, b)))
-  }
-
-  override def zeroGradParameters(): Unit = {
-    gradBias.zero()
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {

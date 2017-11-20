@@ -159,6 +159,56 @@ class BatchNormalizationSpec extends FlatSpec with Matchers {
     bn.gradBias(Array(3)) should be(1.8 +- 0.0001)
   }
 
+  "A BatchNormalization zero gradients" should "clean gradient" in {
+    val bn = new BatchNormalization[Double](3)
+    bn.weight(1) = 0.1
+    bn.weight(2) = 0.2
+    bn.weight(3) = 0.3
+
+    bn.bias(1) = 0.1
+    bn.bias(2) = 0.2
+    bn.bias(3) = 0.3
+    val input = Tensor[Double](3, 3)
+    var i = 0
+    input.apply1(_ => {
+      i += 1; i
+    })
+    bn.forward(input)
+
+    val gradOutput = Tensor[Double](3, 3)
+    var j = 0.0
+    gradOutput.apply1(_ => {
+      j += 0.1; j
+    })
+    bn.backward(input, gradOutput)
+
+    bn.gradWeight.nDimension() should be(1)
+    bn.gradWeight.size(1) should be(3)
+    bn.gradWeight(Array(1)) should be(0.7348 +- 0.0001)
+    bn.gradWeight(Array(2)) should be(0.7348 +- 0.0001)
+    bn.gradWeight(Array(3)) should be(0.7348 +- 0.0001)
+
+    bn.gradBias.nDimension() should be(1)
+    bn.gradBias.size(1) should be(3)
+    bn.gradBias(Array(1)) should be(1.2 +- 0.0001)
+    bn.gradBias(Array(2)) should be(1.5 +- 0.0001)
+    bn.gradBias(Array(3)) should be(1.8 +- 0.0001)
+
+    bn.zeroGradParameters()
+    bn.backward(input, gradOutput)
+    bn.gradWeight.nDimension() should be(1)
+    bn.gradWeight.size(1) should be(3)
+    bn.gradWeight(Array(1)) should be(0.7348 +- 0.0001)
+    bn.gradWeight(Array(2)) should be(0.7348 +- 0.0001)
+    bn.gradWeight(Array(3)) should be(0.7348 +- 0.0001)
+
+    bn.gradBias.nDimension() should be(1)
+    bn.gradBias.size(1) should be(3)
+    bn.gradBias(Array(1)) should be(1.2 +- 0.0001)
+    bn.gradBias(Array(2)) should be(1.5 +- 0.0001)
+    bn.gradBias(Array(3)) should be(1.8 +- 0.0001)
+  }
+
   "A BatchNormalization evaluating" should "generate correct output" in {
     val bn = new BatchNormalization[Double](3)
     bn.weight(1) = 0.1
