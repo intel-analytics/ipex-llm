@@ -35,7 +35,6 @@ import scala.reflect.ClassTag
 class ModelBroadcast[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Serializable {
 
   private var broadcastModel: Broadcast[Module[T]] = _
-  private var broadcastParameters: Broadcast[Array[Tensor[T]]] = _
 
   /**
    * broadcast the model
@@ -46,11 +45,7 @@ class ModelBroadcast[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Seria
    * @return this
    */
   def broadcast(sc: SparkContext, model: Module[T]): this.type = {
-    val weightsBias = getAndClearWeightBias(model.parameters())
-    broadcastModel = sc.broadcast(model.cloneModule())
-    broadcastParameters = sc.broadcast(weightsBias)
-    putWeightBias(weightsBias, model)
-    initGradWeightBias(weightsBias, model)
+    broadcastModel = sc.broadcast(model)
     this
   }
 
@@ -62,16 +57,16 @@ class ModelBroadcast[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Seria
    * @return model
    */
   def value(initGradient: Boolean = false): Module[T] = {
-    val localModel = broadcastModel.value.cloneModule()
-    putWeightBias(broadcastParameters.value, localModel)
+    val localModel = broadcastModel.value.clone(false)
     if (initGradient) {
-      initGradWeightBias(broadcastParameters.value, localModel)
+      initGradWeightBias(getWeightBias(localModel.parameters()), localModel)
     }
     localModel
   }
 
 
-  private[bigdl] def getAndClearWeightBias(parameters: (Array[Tensor[T]], Array[Tensor[T]]))
+  private def getWeightBias(parameters: (Array[Tensor[T]], Array[Tensor[T]]))
+
   : Array[Tensor[T]] = {
     if (parameters._1.length != 0) {
       var i = 0
@@ -103,9 +98,6 @@ class ModelBroadcast[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Seria
           i += 1
         }
       }
-      // clear parameters
-      clearTensor(parameters._1)
-      clearTensor(parameters._2)
 
       weightsBias
     } else {
@@ -138,8 +130,8 @@ class ModelBroadcast[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Seria
   }
 
   private[bigdl] def initGradWeightBias(
-        broadcastWeightBias: Array[Tensor[T]],
-        localModel: Module[T]): Unit = {
+                                         broadcastWeightBias: Array[Tensor[T]],
+                                         localModel: Module[T]): Unit = {
     val (localWeightBias, localGradWeightBias) = localModel.parameters()
     // init gradient with a compacted storage
     val storage = Storage[T](localGradWeightBias.map(_.nElement()).sum)

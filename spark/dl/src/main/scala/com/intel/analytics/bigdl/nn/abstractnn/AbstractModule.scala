@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.nn.abstractnn
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.tensor.{Tensor, TensorDataType}
+import com.intel.analytics.bigdl.tensor.{QuantizedTensor, Tensor, TensorDataType}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.nn.{Module, _}
@@ -31,9 +31,10 @@ import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch, Sample}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.quantized.Quantization
 import com.intel.analytics.bigdl.utils.caffe.CaffePersister
-import com.intel.analytics.bigdl.utils.serializer.ModulePersister
+import com.intel.analytics.bigdl.utils.serializer._
 import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowSaver}
 
+import scala.collection.mutable
 import scala.reflect.ClassTag
 
 /**
@@ -422,8 +423,82 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     this
   }
 
+  @deprecated("Please use clone instead", "0.3.0")
   def cloneModule(): AbstractModule[A, B, T] = {
     SerializationUtils.clone(this)
+  }
+
+  def clone(deepCopy : Boolean = true): AbstractModule[A, B, T] = {
+    val moduleData = ModuleData[T](this.
+      asInstanceOf[AbstractModule[Activity, Activity, T]], Seq[String](), Seq[String]())
+    val storages = new mutable.HashMap[Int, Any]()
+    val context = SerializeContext(moduleData, storages, ProtoStorageType)
+    val serializedModule = ModuleSerializer.serialize[T](context, false)
+      .bigDLModule.build
+
+    storages.clear()
+    val copy = ModuleSerializer.load[T](DeserializeContext(serializedModule,
+      storages, ProtoStorageType), false).module
+      .asInstanceOf[AbstractModule[A, B, T]]
+    setWeightAndBias(copy, deepCopy)
+    copy
+  }
+
+  private def setWeightAndBias(copy : AbstractModule[A, B, T], deepCopy : Boolean): Unit = {
+    val parameterTable = this.getParametersTable
+    val copiedModuleParamTable = copy.getParametersTable
+    if (parameterTable != null) {
+      require(copiedModuleParamTable != null, "cloned module should have params")
+      parameterTable.foreach {
+        case (name: String, params: Table) =>
+          require(copiedModuleParamTable.get(name) != None, s"cloned module should have for $name")
+          setLayerWeightAndBias(params,
+            copiedModuleParamTable.get(name).get.asInstanceOf[Table], deepCopy)
+      }
+    }
+  }
+
+  private def setLayerWeightAndBias(params : Table,
+                                    copyParams : Table, deepCopy : Boolean): Unit = {
+
+    copyParam(params, copyParams, deepCopy, "weight")
+    copyParam(params, copyParams, deepCopy, "bias")
+  }
+
+  private def copyParam(params : Table, copyParams : Table,
+                        deepCopy : Boolean, paraName : String) : Unit = {
+    if (params.contains(paraName)) {
+      // this is for quantization tensors where the weight might be an array
+      if (params.get(paraName).get
+        .isInstanceOf[Array[Tensor[T]]]) {
+        require(params.get(paraName).get
+          .isInstanceOf[Array[Tensor[T]]], "param type mismatch!")
+        val copies = copyParams.get(paraName).get
+          .asInstanceOf[Array[Tensor[T]]]
+        val origins = params.get(paraName).get
+          .asInstanceOf[Array[Tensor[T]]]
+        var i = 0
+        while (i < copies.length) {
+          copyTensor(origins(i), copies(i), deepCopy)
+          i += 1
+        }
+      } else {
+        // For normal layers, their params are just tensors
+        copyTensor(params.get(paraName).get.asInstanceOf[Tensor[T]],
+          copyParams.get(paraName).get.asInstanceOf[Tensor[T]], deepCopy)
+      }
+    }
+  }
+
+  private def copyTensor(t1 : Tensor[T], t2 : Tensor[T], deepCopy : Boolean) = {
+    if (t2.isInstanceOf[QuantizedTensor[_]]) {
+      t2.asInstanceOf[QuantizedTensor[_]].release()
+    }
+    if (deepCopy) {
+      t2.copy(t1)
+    } else {
+      t2.set(t1)
+    }
   }
 
   def canEqual(other: Any): Boolean = other.isInstanceOf[AbstractModule[A, B, T]]
