@@ -1,7 +1,7 @@
 import tensorflow as tf
 import os
-from inception import inception_v1
-from inception import flowers
+from nets.inception import inception_v1
+from nets.inception import inception_v1_arg_scope
 
 slim = tf.contrib.slim
 
@@ -81,8 +81,8 @@ class InceptionModel(object):
         images, labels = self._load_batch(dataset, height=image_height, width=image_width)
 
         # Create the model, use the default arg scope to configure the batch norm parameters.
-        with slim.arg_scope(inception_v1.inception_v1_arg_scope()):
-            logits, end_points = inception_v1.inception_v1(images, num_classes=num_classes, is_training=is_training)
+        with slim.arg_scope(inception_v1_arg_scope()):
+            logits, end_points = inception_v1(images, num_classes=num_classes, is_training=is_training)
 
         # Specify the loss function:
         one_hot_labels = slim.one_hot_encoding(labels, num_classes)

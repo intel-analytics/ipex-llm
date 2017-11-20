@@ -13,6 +13,24 @@ and only train a linear model on these features.
 
 # Preparation
 
+## Make sure Spark, BigDL (both scala and python api) and Tensorflow are successfully install
+
+Please refer to [BigDL](https://bigdl-project.github.io/master/), [Tensorflow](https://www.tensorflow.org/versions/r1.2/install/) for more information.
+
+We currently support Tensorflow r1.2.
+
+## Install the TF-slim image models library
+
+Please checkout this [page](https://github.com/tensorflow/models/tree/master/research/slim#installing-the-tf-slim-image-models-library)
+to install the TF-slim image models library. And add the library to `PYTHONPATH`.
+
+For example,
+
+```shell
+SLIM_PATH=/your/path/to/slim/model/
+export PYTHONPATH=$SLIM_PATH:$PYTHONPATH
+```
+
 ## Get the flowers datasets
 
 ```shell
@@ -35,10 +53,10 @@ tar -xzvf inception_v1_2016_08_28.tar.gz
 
 By reading directly from tensorflow's computational graph, BigDL can recover
 the entire training pipeline, including the in-graph preprocessing step and the
-model, and return the extracted feature an RDD. 
+model, and return the extracted features as an RDD. 
 
-To apply this pipeline to a new dataset, you should made some little modifications to your original training
-pipeline as illustrated in the dump_model_example.py script:
+To apply this pipeline to a new dataset, you should made a few modifications to your original training
+code as illustrated in the dump_model_example.py script:
 
   1. Change the original dataset to the new one of the problem at hand.
   2. We may also set the model in evaluation model, since we only treat
@@ -114,13 +132,18 @@ The `TransferLearning.scala` contains the entire code for this task.
 To run this example, you can modify and execute the following command:
 
 ```shell
-spark-submit \
+SPARK_HOME=...
+BIGDL_HOME=...
+BIGDL_VERSION=...
+$SPARK_HOME/bin/spark-submit \
 --master spark://... \
+--driver-memory driver-memory \
+--executor-memory executor-memory \
 --executor-cores cores_per_executor \
 --total-executor-cores total_cores_for_the_job \
---driver-class-path dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
+--driver-class-path $BIGDL_HOME/lib/bigdl-$BIGDL_VERSION-jar-with-dependencies.jar \
 --class com.intel.analytics.bigdl.example.tensorflow.transferLearning.TransferLearning  \
-dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
+$BIGDL_HOME/lib/bigdl-$BIGDL_VERSION-jar-with-dependencies.jar \
 -t /tmp/tf_model_train/ -v /tmp/tf_model_validation/ \
 -b batch_size -e nEpochs
 ```

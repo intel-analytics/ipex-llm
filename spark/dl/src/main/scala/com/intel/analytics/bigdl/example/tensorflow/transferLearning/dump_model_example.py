@@ -15,7 +15,7 @@
 #
 
 import tensorflow as tf
-from inception import flowers
+from datasets import flowers
 from inception_model import InceptionModel
 
 
