@@ -2221,6 +2221,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def setRunningStd(module: BatchNormalization[T], runningStd: JTensor): Unit = {
     module.runningVar.set(toTensor(runningStd))
   }
+
+  def createCosineProximityCriterion(): CosineProximityCriterion[T] = {
+    CosineProximityCriterion[T]()
+  }
 }
 
 object PythonBigDLUtils {
