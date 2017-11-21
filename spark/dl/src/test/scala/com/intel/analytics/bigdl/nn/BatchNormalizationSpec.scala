@@ -250,4 +250,5 @@ class BatchNormalizationSpec extends FlatSpec with Matchers {
     val outputNCHW = bnNCHW.forward(inputNCHW)
     val outputNHWC = bnNHWC.forward(inputNHWC)
     outputNCHW.almostEqual(outputNHWC.transpose(2, 4).transpose(3, 4), 1e-5) should be(true)
+  }
 }
