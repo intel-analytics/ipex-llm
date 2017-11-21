@@ -603,6 +603,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     CAddTable[T](inplace)
   }
 
+  def createCAveTable(inplace: Boolean = false)
+  : CAveTable[T] = {
+    CAveTable[T](inplace)
+  }
+
   def createCDivTable()
   : CDivTable[T] = {
     CDivTable[T]()
@@ -1366,6 +1371,21 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     padW: Int = 0,
     padH: Int = 0): VolumetricMaxPooling[T] = {
     VolumetricMaxPooling[T](kT, kW, kH, dT, dW, dH, padT, padW, padH)
+  }
+
+  def createVolumetricAveragePooling(kT: Int,
+                                 kW: Int,
+                                 kH: Int,
+                                 dT: Int,
+                                 dW: Int,
+                                 dH: Int,
+                                 padT: Int = 0,
+                                 padW: Int = 0,
+                                 padH: Int = 0,
+                                 countIncludePad: Boolean = true,
+                                 ceilMode: Boolean = false):
+  VolumetricAveragePooling[T] = {
+    VolumetricAveragePooling[T](kT, kW, kH, dT, dW, dH, padT, padW, padH, countIncludePad, ceilMode)
   }
 
   def createSpatialDivisiveNormalization(nInputPlane: Int = 1,
