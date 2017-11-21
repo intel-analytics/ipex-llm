@@ -262,7 +262,7 @@ class LinearSpec extends FlatSpec with Matchers {
     assert(err < 1e-6)
   }
 
-  "Linear module in batch mode without bias" should "converate to correct weight and bias" in {
+  "Linear module in batch mode without bias" should "converge to correct weight and bias" in {
     val inputN = 5
     val outputN = 2
     val batchN = 3
@@ -388,7 +388,7 @@ class LinearSpec extends FlatSpec with Matchers {
     linear2.gradBias should be(linear.gradBias.mul(2))
   }
 
-  "Xavier" should "init right in SpatialConvolution" in {
+  "Xavier" should "init right in Linear" in {
     RandomGenerator.RNG.setSeed(1)
     val linear = Linear[Float](3, 5)
       .setInitMethod(Xavier, Zeros)

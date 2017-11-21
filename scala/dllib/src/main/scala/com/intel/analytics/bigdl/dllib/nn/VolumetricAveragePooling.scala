@@ -27,7 +27,7 @@ import scala.reflect._
 import scala.reflect.runtime.universe
 
 /**
- * Applies 3D max-pooling operation in kTxkWxkH regions by step size dTxdWxdH.
+ * Applies 3D average-pooling operation in kTxkWxkH regions by step size dTxdWxdH.
  * The number of output features is equal to the number of input planes / dT.
  * The input can optionally be padded with zeros. Padding should be smaller than
  * half of kernel size. That is, padT < kT/2, padW < kW/2 and padH < kH/2
@@ -40,17 +40,19 @@ import scala.reflect.runtime.universe
  * @param padT The padding in the time dimension
  * @param padW The padding in the width dimension
  * @param padH The padding in the height dimension
+ * @param countIncludePad Whether to include padding when dividing the
+ *                        number of elements in pooling region
+ * @param ceilMode Whether the output size is to be ceiled or floored
  * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
  */
-@SerialVersionUID(-4330398221120919890L)
-class VolumetricMaxPooling[T: ClassTag](
+// TODO: add serialization
+class VolumetricAveragePooling[T: ClassTag](
   val kT: Int, val kW: Int, val kH: Int,
   val dT: Int, val dW: Int, val dH: Int,
-  val padT: Int = 0, val padW: Int = 0, val padH: Int = 0)
+  val padT: Int = 0, val padW: Int = 0, val padH: Int = 0,
+  private var countIncludePad: Boolean = true,
+  private var ceilMode: Boolean = false)
   (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
-
-  var ceilMode = false
-  private var indices = Tensor[Float]()
 
   def this(kT: Int, kW: Int, kH: Int)(implicit ev: TensorNumeric[T]) {
     this(kT, kW, kH, kT, kW, kH)
@@ -60,7 +62,7 @@ class VolumetricMaxPooling[T: ClassTag](
    * set ceil mode
    * @return this
    */
-  def ceil(): VolumetricMaxPooling[T] = {
+  def ceil(): VolumetricAveragePooling[T] = {
     ceilMode = true
     this
   }
@@ -69,8 +71,26 @@ class VolumetricMaxPooling[T: ClassTag](
    * set floor mode
    * @return this
    */
-  def floor(): VolumetricMaxPooling[T] = {
+  def floor(): VolumetricAveragePooling[T] = {
     ceilMode = false
+    this
+  }
+
+  /**
+   * set countIncludePad to true
+   * @return this
+   */
+  def setCountIncludePad(): VolumetricAveragePooling[T] = {
+    countIncludePad = true
+    this
+  }
+
+  /**
+   * set countIncludePad to false
+   * @return this
+   */
+  def setCountExcludePad(): VolumetricAveragePooling[T] = {
+    countIncludePad = false
     this
   }
 
@@ -98,15 +118,19 @@ class VolumetricMaxPooling[T: ClassTag](
     val dimt = input.dim() - 2
     val dimh = input.dim() - 1
     val dimw = input.dim()
+    require(input.size(dimw) >= kW && input.size(dimh) >= kH && input.size(dimt) >= kT,
+      s"input image (T: ${input.size(dimt)} H: ${input.size(dimh)} W: ${input.size(dimw)}) " +
+        s"smaller than kernel size (kT: $kT kH: $kH kW: $kW)")
+
     val nslices = input.size(input.dim() - 3)
     val itime = input.size(dimt)
     val iheight = input.size(dimh)
     val iwidth = input.size(dimw)
 
-
     var otime: Int = 0
     var oheight: Int = 0
     var owidth: Int = 0
+
     if (ceilMode) {
       otime = math.ceil(1.0 * (itime - kT + 2 * padT) / dT).toInt + 1
       oheight = math.ceil(1.0 * (iheight - kH + 2 * padH) / dH).toInt + 1
@@ -131,20 +155,17 @@ class VolumetricMaxPooling[T: ClassTag](
     if (input.dim() == 4) {
       // non-batch mode
       output.resize(nslices, otime, oheight, owidth)
-      indices.resize(nslices, otime, oheight, owidth)
       if (classTag[T] == classTag[Double]) {
-        volumetricMaxPoolingForwardDouble(
+        volumetricAveragePoolingForwardDouble(
           input.asInstanceOf[Tensor[Double]].storage().array(), input.storageOffset() - 1,
           output.asInstanceOf[Tensor[Double]].storage().array(), output.storageOffset() - 1,
-          indices.storage().array(), indices.storageOffset() - 1,
-          nslices, itime, iwidth, iheight, otime, owidth, oheight,
+          countIncludePad, nslices, itime, iwidth, iheight, otime, owidth, oheight,
           kT, kW, kH, dT, dW, dH, padT, padW, padH)
       } else if (classTag[T] == classTag[Float]) {
-        volumetricMaxPoolingForwardFloat(
+        volumetricAveragePoolingForwardFloat(
           input.asInstanceOf[Tensor[Float]].storage().array(), input.storageOffset() - 1,
           output.asInstanceOf[Tensor[Float]].storage().array(), output.storageOffset() - 1,
-          indices.storage().array(), indices.storageOffset() - 1,
-          nslices, itime, iwidth, iheight, otime, owidth, oheight,
+          countIncludePad, nslices, itime, iwidth, iheight, otime, owidth, oheight,
           kT, kW, kH, dT, dW, dH, padT, padW, padH)
       } else {
         throw new IllegalArgumentException("currently only support type float or double")
@@ -154,21 +175,17 @@ class VolumetricMaxPooling[T: ClassTag](
       val nBatch = input.size(1)
 
       output.resize(nBatch, nslices, otime, oheight, owidth)
-      indices.resize(nBatch, nslices, otime, oheight, owidth)
 
       var p = 0
       if (classTag[T] == classTag[Double]) {
         while (p < nBatch) {
           val curInput = input(p + 1)
           val curOutput = output(p + 1)
-          val curIndices = indices(p + 1)
-          volumetricMaxPoolingForwardDouble(
+          volumetricAveragePoolingForwardDouble(
             curInput.asInstanceOf[Tensor[Double]].storage().array(),
             curInput.storageOffset() - 1,
             curOutput.asInstanceOf[Tensor[Double]].storage().array(),
-            curOutput.storageOffset() - 1,
-            curIndices.storage().array(),
-            curIndices.storageOffset() - 1,
+            curOutput.storageOffset() - 1, countIncludePad,
             nslices, itime, iwidth, iheight, otime, owidth, oheight,
             kT, kW, kH, dT, dW, dH, padT, padW, padH)
           p += 1
@@ -177,14 +194,11 @@ class VolumetricMaxPooling[T: ClassTag](
         while (p < nBatch) {
           val curInput = input(p + 1)
           val curOutput = output(p + 1)
-          val curIndices = indices(p + 1)
-          volumetricMaxPoolingForwardFloat(
+          volumetricAveragePoolingForwardFloat(
             curInput.asInstanceOf[Tensor[Float]].storage().array(),
             curInput.storageOffset() - 1,
             curOutput.asInstanceOf[Tensor[Float]].storage().array(),
-            curOutput.storageOffset() - 1,
-            curIndices.storage().array(),
-            curIndices.storageOffset() - 1,
+            curOutput.storageOffset() - 1, countIncludePad,
             nslices, itime, iwidth, iheight, otime, owidth, oheight,
             kT, kW, kH, dT, dW, dH, padT, padW, padH)
           p += 1
@@ -224,18 +238,16 @@ class VolumetricMaxPooling[T: ClassTag](
     if (input.dim() == 4) {
       // non-batch mode
       if (classTag[T] == classTag[Double]) {
-        volumetricMaxPoolingBackwardDouble(
+        volumetricAveragePoolingBackwardDouble(
           gradInput.asInstanceOf[Tensor[Double]].storage().array(), gradInput.storageOffset() - 1,
           gradOutput.asInstanceOf[Tensor[Double]].storage().array(), gradOutput.storageOffset() - 1,
-          indices.storage().array(), indices.storageOffset() - 1,
-          nslices, itime, iwidth, iheight, otime, owidth, oheight,
+          countIncludePad, nslices, itime, iwidth, iheight, otime, owidth, oheight,
           dT, dW, dH, padT, padW, padH)
       } else if (classTag[T] == classTag[Float]) {
-        volumetricMaxPoolingBackwardFloat(
+        volumetricAveragePoolingBackwardFloat(
           gradInput.asInstanceOf[Tensor[Float]].storage().array(), gradInput.storageOffset() - 1,
           gradOutput.asInstanceOf[Tensor[Float]].storage().array(), gradOutput.storageOffset() - 1,
-          indices.storage().array(), indices.storageOffset() - 1,
-          nslices, itime, iwidth, iheight, otime, owidth, oheight,
+          countIncludePad, nslices, itime, iwidth, iheight, otime, owidth, oheight,
           dT, dW, dH, padT, padW, padH)
       } else {
         throw new IllegalArgumentException("currently only support type float or double")
@@ -250,13 +262,11 @@ class VolumetricMaxPooling[T: ClassTag](
         while (p < nBatch) {
           val curGradInput = gradInput(p + 1)
           val curGradOutput = gradOutput(p + 1)
-          val curIndices = indices(p + 1)
-          volumetricMaxPoolingBackwardDouble(
+          volumetricAveragePoolingBackwardDouble(
             curGradInput.asInstanceOf[Tensor[Double]].storage().array(),
             curGradInput.storageOffset() - 1,
             curGradOutput.asInstanceOf[Tensor[Double]].storage().array(),
-            curGradOutput.storageOffset() - 1,
-            curIndices.storage().array(), curIndices.storageOffset() - 1,
+            curGradOutput.storageOffset() - 1, countIncludePad,
             nslices, itime, iwidth, iheight, otime, owidth, oheight,
             dT, dW, dH, padT, padW, padH)
           p += 1
@@ -265,13 +275,11 @@ class VolumetricMaxPooling[T: ClassTag](
         while (p < nBatch) {
           val curGradInput = gradInput(p + 1)
           val curGradOutput = gradOutput(p + 1)
-          val curIndices = indices(p + 1)
-          volumetricMaxPoolingBackwardFloat(
+          volumetricAveragePoolingBackwardFloat(
             curGradInput.asInstanceOf[Tensor[Float]].storage().array(),
             curGradInput.storageOffset() - 1,
             curGradOutput.asInstanceOf[Tensor[Float]].storage().array(),
-            curGradOutput.storageOffset() - 1,
-            curIndices.storage().array(), curIndices.storageOffset() - 1,
+            curGradOutput.storageOffset() - 1, countIncludePad,
             nslices, itime, iwidth, iheight, otime, owidth, oheight,
             dT, dW, dH, padT, padW, padH)
           p += 1
@@ -289,10 +297,10 @@ class VolumetricMaxPooling[T: ClassTag](
       return false
     }
 
-    if (!obj.isInstanceOf[VolumetricMaxPooling[T]]) {
+    if (!obj.isInstanceOf[VolumetricAveragePooling[T]]) {
       return false
     }
-    val other = obj.asInstanceOf[VolumetricMaxPooling[T]]
+    val other = obj.asInstanceOf[VolumetricAveragePooling[T]]
     if (this.eq(other)) {
       return true
     }
@@ -307,7 +315,7 @@ class VolumetricMaxPooling[T: ClassTag](
       padW == other.padW &&
       padH == other.padH &&
       ceilMode == other.ceilMode &&
-      indices == other.indices
+      countIncludePad == other.countIncludePad
   }
 
   override def hashCode(): Int = {
@@ -323,28 +331,29 @@ class VolumetricMaxPooling[T: ClassTag](
     hash = hash * seed + padW.hashCode()
     hash = hash * seed + padH.hashCode()
     hash = hash * seed + ceilMode.hashCode()
-    hash = hash * seed + indices.hashCode()
+    hash = hash * seed + countIncludePad.hashCode()
 
     hash
   }
 
   override def toString(): String = {
-    s"${getPrintName}($kT, $kW, $kH, $dT, $dW, $dH, $padT, $padW, $padH)"
+    s"${getPrintName}($kT, $kW, $kH, $dT, $dW, $dH, $padT, $padW, $padH, " +
+      s"$countIncludePad, $ceilMode)"
   }
 
   override def clearState(): this.type = {
     super.clearState()
-    indices.set()
     this
   }
 
-  private def volumetricMaxPoolingForwardDouble(input: Array[Double], inputOffset: Int,
-    output: Array[Double], outputOffset: Int,
-    indices: Array[Float], indicesOffset: Int,
+  private def volumetricAveragePoolingForwardDouble(input: Array[Double], inputOffset: Int,
+    output: Array[Double], outputOffset: Int, countIncludePad: Boolean,
     nSlices: Int, iTime: Int, iWidth: Int, iHeight: Int, oTime: Int, oWidth: Int, oHeight: Int,
     kT: Int, kW: Int, kH: Int, dT: Int, dW: Int, dH: Int, padT: Int, padW: Int, padH: Int): Unit = {
     var k = 0
     while (k < nSlices) {
+      val inputStart = inputOffset + k * iTime * iWidth * iHeight
+      val outputStart = outputOffset + k * oTime * oWidth * oHeight
       var ti = 0
       while (ti < oTime) {
         var i = 0
@@ -354,51 +363,36 @@ class VolumetricMaxPooling[T: ClassTag](
             var tstart = ti * dT - padT
             var hstart = i * dH - padH
             var wstart = j * dW - padW
-            val kernelT = math.min(tstart + kT, kT)
-            val kernelH = math.min(hstart + kH, kH)
-            val kernelW = math.min(wstart + kW, kW)
+            var tend = math.min(tstart + kT, iTime + padT)
+            var hend = math.min(hstart + kH, iHeight + padH)
+            var wend = math.min(wstart + kW, iWidth + padW)
+            var poolSize = (tend - tstart) * (hend - hstart) * (wend - wstart)
             tstart = math.max(tstart, 0)
             hstart = math.max(hstart, 0)
             wstart = math.max(wstart, 0)
+            tend = math.min(tend, iTime)
+            hend = math.min(hend, iHeight)
+            wend = math.min(wend, iWidth)
 
-            val inputStart = inputOffset + k * iTime * iWidth * iHeight +
-              tstart * iWidth * iHeight + hstart * iWidth + wstart
+            val divide_factor = if (countIncludePad) poolSize
+            else (tend - tstart) * (hend - hstart) * (wend - wstart)
 
-            var maxindex = 0 // default is 0
-            var maxval = Double.MinValue
-            var mx = 0
-            var my = 0
-            var mz = 0
-            var z = 0
-            while (z < kernelT) {
-              var y = 0
-              while (y < kernelH) {
-                var x = 0
-                while (x < kernelW) {
-                  if ((tstart + z < iTime) && (hstart + y < iHeight) && (wstart + x < iWidth)) {
-                    // k, z, y, x input indexers
-                    val value = input(z * iWidth * iHeight + y * iWidth + x + inputStart)
-                    if (value > maxval) {
-                      maxval = value
-                      // Store indices w.r.t the kernel dimension
-                      mz = z + kT - kernelT
-                      my = y + kH - kernelH
-                      mx = x + kW - kernelW
-                    }
-                  }
+            var sum = 0.0
+            var z = tstart
+            while (z < tend) {
+              var y = hstart
+              while (y < hend) {
+                var x = wstart
+                while (x < wend) {
+                  val value = input(z * iWidth * iHeight + y * iWidth + x + inputStart)
+                  sum += value
                   x += 1
                 }
                 y += 1
               }
               z += 1
             }
-            output(outputOffset + k * oTime * oWidth * oHeight
-              + ti * oWidth * oHeight + i * oWidth + j) = maxval
-            maxindex += ((mz & 0xff) << 24)
-            maxindex += ((my & 0xff) << 16)
-            maxindex += ((mx & 0xff) << 8)
-            indices(indicesOffset + k * oTime * oWidth * oHeight
-              + ti * oWidth * oHeight + i * oWidth + j) = maxindex
+            output(ti * oWidth * oHeight + i * oWidth + j + outputStart) = sum / divide_factor
             j += 1
           }
           i += 1
@@ -409,13 +403,14 @@ class VolumetricMaxPooling[T: ClassTag](
     }
   }
 
-  private def volumetricMaxPoolingForwardFloat(input: Array[Float], inputOffset: Int,
-    output: Array[Float], outputOffset: Int,
-    indices: Array[Float], indicesOffset: Int,
+  private def volumetricAveragePoolingForwardFloat(input: Array[Float], inputOffset: Int,
+    output: Array[Float], outputOffset: Int, countIncludePad: Boolean,
     nSlices: Int, iTime: Int, iWidth: Int, iHeight: Int, oTime: Int, oWidth: Int, oHeight: Int,
     kT: Int, kW: Int, kH: Int, dT: Int, dW: Int, dH: Int, padT: Int, padW: Int, padH: Int): Unit = {
     var k = 0
     while (k < nSlices) {
+      val inputStart = inputOffset + k * iTime * iWidth * iHeight
+      val outputStart = outputOffset + k * oTime * oWidth * oHeight
       var ti = 0
       while (ti < oTime) {
         var i = 0
@@ -425,51 +420,36 @@ class VolumetricMaxPooling[T: ClassTag](
             var tstart = ti * dT - padT
             var hstart = i * dH - padH
             var wstart = j * dW - padW
-            val kernelT = math.min(tstart + kT, kT)
-            val kernelH = math.min(hstart + kH, kH)
-            val kernelW = math.min(wstart + kW, kW)
+            var tend = math.min(tstart + kT, iTime + padT)
+            var hend = math.min(hstart + kH, iHeight + padH)
+            var wend = math.min(wstart + kW, iWidth + padW)
+            var poolSize = (tend - tstart) * (hend - hstart) * (wend - wstart)
             tstart = math.max(tstart, 0)
             hstart = math.max(hstart, 0)
             wstart = math.max(wstart, 0)
+            tend = math.min(tend, iTime)
+            hend = math.min(hend, iHeight)
+            wend = math.min(wend, iWidth)
 
-            val inputStart = inputOffset + k * iTime * iWidth * iHeight +
-              tstart * iWidth * iHeight + hstart * iWidth + wstart
+            val divide_factor = if (countIncludePad) poolSize
+                                else (tend - tstart) * (hend - hstart) * (wend - wstart)
 
-            var maxindex = 0 // default is 0
-            var maxval = Float.MinValue
-            var mx = 0
-            var my = 0
-            var mz = 0
-            var z = 0
-            while (z < kernelT) {
-              var y = 0
-              while (y < kernelH) {
-                var x = 0
-                while (x < kernelW) {
-                  if ((tstart + z < iTime) && (hstart + y < iHeight) && (wstart + x < iWidth)) {
-                    // k, z, y, x input indexers
-                    val value = input(z * iWidth * iHeight + y * iWidth + x + inputStart)
-                    if (value > maxval) {
-                      maxval = value
-                      // Store indices w.r.t the kernel dimension
-                      mz = z + kT - kernelT
-                      my = y + kH - kernelH
-                      mx = x + kW - kernelW
-                    }
-                  }
+            var sum = 0.0f
+            var z = tstart
+            while (z < tend) {
+              var y = hstart
+              while (y < hend) {
+                var x = wstart
+                while (x < wend) {
+                  val value = input(z * iWidth * iHeight + y * iWidth + x + inputStart)
+                  sum += value
                   x += 1
                 }
                 y += 1
               }
               z += 1
             }
-            output(outputOffset + k * oTime * oWidth * oHeight
-              + ti * oWidth * oHeight + i * oWidth + j) = maxval
-            maxindex += ((mz & 0xff) << 24)
-            maxindex += ((my & 0xff) << 16)
-            maxindex += ((mx & 0xff) << 8)
-            indices(indicesOffset + k * oTime * oWidth * oHeight
-              + ti * oWidth * oHeight + i * oWidth + j) = maxindex
+            output(ti * oWidth * oHeight + i * oWidth + j + outputStart) = sum / divide_factor
             j += 1
           }
           i += 1
@@ -481,29 +461,53 @@ class VolumetricMaxPooling[T: ClassTag](
   }
 
 
-  private def volumetricMaxPoolingBackwardDouble(gradInput: Array[Double], gradInputOffset: Int,
-    gradOutput: Array[Double], gradOutputOffset: Int,
-    indices: Array[Float], indicesOffset: Int,
-    nslices: Int, itime: Int, iwidth: Int, iheight: Int,
-    otime: Int, owidth: Int, oheight: Int,
-    dT: Int, dW: Int, dH: Int, padT: Int, padW: Int, padH: Int): Unit = {
+  private def volumetricAveragePoolingBackwardDouble(gradInput: Array[Double], gradInputOffset: Int,
+   gradOutput: Array[Double], gradOutputOffset: Int, countIncludePad: Boolean,
+   nslices: Int, iTime: Int, iWidth: Int, iHeight: Int,
+   oTime: Int, oWidth: Int, oHeight: Int,
+   dT: Int, dW: Int, dH: Int, padT: Int, padW: Int, padH: Int): Unit = {
     var k = 0
     while (k < nslices) {
-      val gradInputK = gradInputOffset + k * itime * iwidth * iheight
-      val gradOutputK = gradOutputOffset + k * otime * owidth * oheight
-      val indicesK = indicesOffset + k * otime * owidth * oheight
+      val gradInputK = gradInputOffset + k * iTime * iWidth * iHeight
+      val gradOutputK = gradOutputOffset + k * oTime * oWidth * oHeight
       var ti = 0
-      while (ti < otime) {
+      while (ti < oTime) {
         var i = 0
-        while (i < oheight) {
+        while (i < oHeight) {
           var j = 0
-          while (j < owidth) {
-            val maxIndex = indices(indicesK + ti * oheight * owidth + i * owidth + j).toInt
-            val maxti = ((maxIndex >> 24) & 0xff) + ti * dT - padT
-            val maxi = ((maxIndex >> 16) & 0xff) + i * dH - padH
-            val maxj = ((maxIndex >> 8) & 0xff) + j * dW - padW
-            gradInput(maxti * iheight * iwidth + maxi * iwidth + maxj + gradInputK) +=
-              gradOutput(ti * oheight * owidth + i * owidth + j + gradOutputK)
+          while (j < oWidth) {
+            var tstart = ti * dT - padT
+            var hstart = i * dH - padH
+            var wstart = j * dW - padW
+            var tend = math.min(tstart + kT, iTime + padT)
+            var hend = math.min(hstart + kH, iHeight + padH)
+            var wend = math.min(wstart + kW, iWidth + padW)
+            val poolSize = (tend - tstart) * (hend - hstart) * (wend - wstart)
+            tstart = math.max(tstart, 0)
+            hstart = math.max(hstart, 0)
+            wstart = math.max(wstart, 0)
+            tend = math.min(tend, iTime)
+            hend = math.min(hend, iHeight)
+            wend = math.min(wend, iWidth)
+
+            val divide_factor = if (countIncludePad) poolSize
+                                else (tend - tstart) * (hend - hstart) * (wend - wstart)
+
+            val s = gradOutput(ti * oWidth * oHeight + i * oWidth + j + gradOutputK)
+            var z = tstart
+            while (z < tend) {
+              var y = hstart
+              while (y < hend) {
+                var x = wstart
+                while (x < wend) {
+                  gradInput(z * iWidth * iHeight + y * iWidth +
+                    x + gradInputK) += s / divide_factor
+                  x += 1
+                }
+                y += 1
+              }
+              z += 1
+            }
             j += 1
           }
           i += 1
@@ -514,29 +518,53 @@ class VolumetricMaxPooling[T: ClassTag](
     }
   }
 
-  private def volumetricMaxPoolingBackwardFloat(gradInput: Array[Float], gradInputOffset: Int,
-    gradOutput: Array[Float], gradOutputOffset: Int,
-    indices: Array[Float], indicesOffset: Int,
-    nslices: Int, itime: Int, iwidth: Int, iheight: Int,
-    otime: Int, owidth: Int, oheight: Int,
+  private def volumetricAveragePoolingBackwardFloat(gradInput: Array[Float], gradInputOffset: Int,
+    gradOutput: Array[Float], gradOutputOffset: Int, countIncludePad: Boolean,
+    nslices: Int, iTime: Int, iWidth: Int, iHeight: Int,
+    oTime: Int, oWidth: Int, oHeight: Int,
     dT: Int, dW: Int, dH: Int, padT: Int, padW: Int, padH: Int): Unit = {
     var k = 0
     while (k < nslices) {
-      val gradInputK = gradInputOffset + k * itime * iwidth * iheight
-      val gradOutputK = gradOutputOffset + k * otime * owidth * oheight
-      val indicesK = indicesOffset + k * otime * owidth * oheight
+      val gradInputK = gradInputOffset + k * iTime * iWidth * iHeight
+      val gradOutputK = gradOutputOffset + k * oTime * oWidth * oHeight
       var ti = 0
-      while (ti < otime) {
+      while (ti < oTime) {
         var i = 0
-        while (i < oheight) {
+        while (i < oHeight) {
           var j = 0
-          while (j < owidth) {
-            val maxIndex = indices(indicesK + ti * oheight * owidth + i * owidth + j).toInt
-            val maxti = ((maxIndex >> 24) & 0xff) + ti * dT - padT
-            val maxi = ((maxIndex >> 16) & 0xff) + i * dH - padH
-            val maxj = ((maxIndex >> 8) & 0xff) + j * dW - padW
-            gradInput(maxti * iheight * iwidth + maxi * iwidth + maxj + gradInputK) +=
-              gradOutput(ti * oheight * owidth + i * owidth + j + gradOutputK)
+          while (j < oWidth) {
+            var tstart = ti * dT - padT
+            var hstart = i * dH - padH
+            var wstart = j * dW - padW
+            var tend = math.min(tstart + kT, iTime + padT)
+            var hend = math.min(hstart + kH, iHeight + padH)
+            var wend = math.min(wstart + kW, iWidth + padW)
+            val poolSize = (tend - tstart) * (hend - hstart) * (wend - wstart)
+            tstart = math.max(tstart, 0)
+            hstart = math.max(hstart, 0)
+            wstart = math.max(wstart, 0)
+            tend = math.min(tend, iTime)
+            hend = math.min(hend, iHeight)
+            wend = math.min(wend, iWidth)
+
+            val divide_factor = if (countIncludePad) poolSize
+                                else (tend - tstart) * (hend - hstart) * (wend - wstart)
+
+            val s = gradOutput(ti * oWidth * oHeight + i * oWidth + j + gradOutputK)
+            var z = tstart
+            while (z < tend) {
+              var y = hstart
+              while (y < hend) {
+                var x = wstart
+                while (x < wend) {
+                  gradInput(z * iWidth * iHeight + y * iWidth +
+                    x + gradInputK) += s / divide_factor
+                  x += 1
+                }
+                y += 1
+              }
+              z += 1
+            }
             j += 1
           }
           i += 1
@@ -548,44 +576,39 @@ class VolumetricMaxPooling[T: ClassTag](
   }
 }
 
-object VolumetricMaxPooling extends ModuleSerializable {
+object VolumetricAveragePooling extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag]
   (kT: Int, kW: Int, kH: Int, dT: Int, dW: Int, dH: Int,
-    padT: Int = 0, padW: Int = 0, padH: Int = 0)(implicit ev: TensorNumeric[T])
-  : VolumetricMaxPooling[T] = new VolumetricMaxPooling[T](kT, kW, kH, dT, dW, dH, padT, padW, padH)
+   padT: Int = 0, padW: Int = 0, padH: Int = 0,
+   countIncludePad: Boolean = true, ceilMode: Boolean = false)(implicit ev: TensorNumeric[T])
+  : VolumetricAveragePooling[T] =
+    new VolumetricAveragePooling[T](kT, kW, kH, dT, dW, dH, padT, padW, padH, countIncludePad)
 
   def apply[@specialized(Float, Double) T: ClassTag]
   (kT: Int, kW: Int, kH: Int)(implicit ev: TensorNumeric[T])
-  : VolumetricMaxPooling[T] = new VolumetricMaxPooling[T](kT, kW, kH)
+  : VolumetricAveragePooling[T] = new VolumetricAveragePooling[T](kT, kW, kH)
 
   override def doLoadModule[T: ClassTag](context : DeserializeContext)
-    (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
+  (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
 
-    val maxPooling = super.doLoadModule(context).asInstanceOf[VolumetricMaxPooling[T]]
+    val averagePooling = super.doLoadModule(context).asInstanceOf[VolumetricAveragePooling[T]]
     val attrMap = context.bigdlModule.getAttrMap
-    maxPooling.ceilMode = DataConverter.getAttributeValue(context,
+    averagePooling.ceilMode = DataConverter.getAttributeValue(context,
       attrMap.get("ceilMode")).asInstanceOf[Boolean]
-    maxPooling.indices = DataConverter.getAttributeValue(context,
-      attrMap.get("indices")).asInstanceOf[Tensor[Float]]
-    maxPooling
+    averagePooling
   }
 
   override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
-                                            volumetricMaxBuilder : BigDLModule.Builder)
-                                           (implicit ev: TensorNumeric[T]) : Unit = {
-    val maxPooling = context.moduleData.module.asInstanceOf[VolumetricMaxPooling[T]]
+                                              volumetricAverageBuilder : BigDLModule.Builder)
+                                             (implicit ev: TensorNumeric[T]) : Unit = {
+    val averagePooling = context.moduleData.module.asInstanceOf[VolumetricAveragePooling[T]]
 
-    super.doSerializeModule(context, volumetricMaxBuilder)
+    super.doSerializeModule(context, volumetricAverageBuilder)
 
     val ceilModeBuilder = AttrValue.newBuilder
     DataConverter.setAttributeValue(context, ceilModeBuilder,
-      maxPooling.ceilMode, universe.typeOf[Boolean])
-    volumetricMaxBuilder.putAttr("ceilMode", ceilModeBuilder.build)
-
-    val indicesBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(context,
-      indicesBuilder, maxPooling.indices, ModuleSerializer.tensorType)
-    volumetricMaxBuilder.putAttr("indices", indicesBuilder.build)
+      averagePooling.ceilMode, universe.typeOf[Boolean])
+    volumetricAverageBuilder.putAttr("ceilMode", ceilModeBuilder.build)
 
   }
 }
