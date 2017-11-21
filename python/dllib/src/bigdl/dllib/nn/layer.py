@@ -1977,6 +1977,26 @@ class CAddTable(Layer):
         super(CAddTable, self).__init__(None, bigdl_type,
                                         inplace)
 
+class CAveTable(Layer):
+
+    '''
+    Merge the input tensors in the input table by element wise taking the average. The input
+    table is actually an array of tensor with same size.
+
+
+    :param inplace: reuse the input memory
+
+
+    >>> cAveTable = CAveTable(True)
+    creating: createCAveTable
+    '''
+
+    def __init__(self,
+                 inplace=False,
+                 bigdl_type="float"):
+        super(CAveTable, self).__init__(None, bigdl_type,
+                                        inplace)
+
 
 class CDivTable(Layer):
 
@@ -3743,6 +3763,57 @@ class VolumetricMaxPooling(Layer):
                                                     pad_w,
                                                     pad_h)
 
+
+class VolumetricAveragePooling(Layer):
+
+    '''
+    Applies 3D average-pooling operation in kTxkWxkH regions by step size dTxdWxdH.
+    The number of output features is equal to the number of input planes / dT.
+    The input can optionally be padded with zeros. Padding should be smaller than
+    half of kernel size. That is, padT < kT/2, padW < kW/2 and padH < kH/2
+
+    :param k_t: The kernel size
+    :param k_w: The kernel width
+    :param k_h: The kernel height
+    :param d_t: The step in the time dimension
+    :param d_w: The step in the width dimension
+    :param d_h: The step in the height dimension
+    :param pad_t: The padding in the time dimension
+    :param pad_w: The padding in the width dimension
+    :param pad_h: The padding in the height dimension
+    :param count_include_pad: whether to include padding when dividing the number of elements in pooling region
+    :param ceil_mode: whether the output size is to be ceiled or floored
+
+
+    >>> volumetricAveragePooling = VolumetricAveragePooling(5, 5, 5, 1, 1, 1)
+    creating: createVolumetricAveragePooling
+    '''
+
+    def __init__(self,
+                 k_t,
+                 k_w,
+                 k_h,
+                 d_t,
+                 d_w,
+                 d_h,
+                 pad_t=0,
+                 pad_w=0,
+                 pad_h=0,
+                 count_include_pad=True,
+                 ceil_mode=False,
+                 bigdl_type="float"):
+        super(VolumetricAveragePooling, self).__init__(None, bigdl_type,
+                                                        k_t,
+                                                        k_w,
+                                                        k_h,
+                                                        d_t,
+                                                        d_w,
+                                                        d_h,
+                                                        pad_t,
+                                                        pad_w,
+                                                        pad_h,
+                                                        count_include_pad,
+                                                        ceil_mode)
 
 class SpatialZeroPadding(Layer):
 
