@@ -24,15 +24,24 @@ from keras.layers.convolutional import *
 from keras.layers import Dense, Input
 from bigdl.keras.converter import *
 from test.bigdl.test_utils import BigDLTestCase
-from keras.metrics import *
+from keras.regularizers import l1, l2, l1l2
 
 
 class TestLayer(BigDLTestCase):
 
     def test_dense(self):
         input_data = np.random.random_sample([1, 10])
-        dense = Dense(2, init='one', activation="relu", input_shape=(10, ))
-        self.modelTestSingleLayer(input_data, dense, dump_weights=True)
+        layer = Dense(2, init='one', activation="relu",
+                      input_shape=(10, ), W_regularizer=l1l2(l1=0.01, l2=0.02))
+        self.modelTestSingleLayer(input_data, layer, dump_weights=True)
+        layer2 = Dense(2, init='one', activation="softplus",
+                       input_shape=(10, ), b_regularizer=l2(0.02))
+        self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
+        layer3 = Dense(2, init='one', input_shape=(10, ),
+                       W_regularizer=keras.regularizers.WeightRegularizer(l1=0.1))
+        self.modelTestSingleLayer(input_data, layer3, dump_weights=True)
+        layer4 = Dense(2, init='glorot_uniform', activation="hard_sigmoid", input_shape=(10, ))
+        self.modelTestSingleLayer(input_data, layer4, dump_weights=True)
 
     def test_timedistributeddense(self):
         input_data = np.random.random_sample([2, 4, 5])
@@ -106,17 +115,67 @@ class TestLayer(BigDLTestCase):
                                                  layer,
                                                  dump_weights=True, rtol=1e-5, atol=1e-5)
 
+    def test_conv3D(self):
+        input_data = np.random.random_sample([1, 3, 32, 32, 32])
+        layer = Convolution3D(12, 5, 3, 4, dim_ordering="th",
+                              border_mode="valid", subsample=(1, 1, 2),
+                              input_shape=(3, 32, 32, 32))
+        self.modelTestSingleLayer(input_data, layer,
+                                  dump_weights=True, rtol=1e-5, atol=1e-5)
+
+    def test_atrousconvolution1d(self):
+        input_data = np.random.random_sample([2, 10, 32])
+        layer = AtrousConvolution1D(64, 3, atrous_rate=2,
+                                    border_mode="valid", activation='relu',
+                                    input_shape=(10, 32))
+        self.modelTestSingleLayer(input_data, layer, dump_weights=True)
+
+    def test_atrousconvolution2d(self):
+        input_data = np.random.random_sample([1, 3, 128, 128])
+        layer = AtrousConvolution2D(64, 3, 4, atrous_rate=(2, 2), dim_ordering="th",
+                                    border_mode="valid", activation='tanh',
+                                    input_shape=(3, 128, 128))
+        self.modelTestSingleLayer(input_data, layer, dump_weights=True)
+
+    def test_deconvolution2d(self):
+        input_data = np.random.random_sample([32, 3, 12, 12])
+        layer = Deconvolution2D(3, 3, 3, output_shape=(None, 3, 14, 14),
+                                border_mode="valid", dim_ordering="th",
+                                input_shape=(3, 12, 12))
+        self.modelTestSingleLayer(input_data, layer, dump_weights=True)
+        layer2 = Deconvolution2D(3, 3, 3, output_shape=(None, 3, 25, 25),
+                                 border_mode="valid", subsample=(2, 2),
+                                 dim_ordering="th", input_shape=(3, 12, 12))
+        self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
+
+    def test_maxpooling3d(self):
+        input_data = np.random.random_sample([1, 3, 20, 15, 35])
+        layer = MaxPooling3D(pool_size=(2, 2, 4), strides=(3, 1, 5), dim_ordering="th",
+                             border_mode="valid", input_shape=(3, 20, 15, 35))
+        self.modelTestSingleLayer(input_data, layer)
+
     def test_maxpooling2d(self):
         input_data = np.random.random_sample([1, 3, 20, 20])
-        layer = lambda: MaxPooling2D(pool_size=[3, 3], strides=[2, 2],
+        layer = lambda: MaxPooling2D(pool_size=[2, 3], strides=[4, 2],
                                      border_mode="valid", input_shape=(3, 20, 20))
         self.modelTestSingleLayerWithOrdersModes(input_data, layer)
+        layer2 = lambda: MaxPooling2D(pool_size=[1, 1], strides=[2, 2],
+                                      border_mode="valid", input_shape=(3, 20, 20))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer2)
 
     def test_maxpooling1d(self):
-        input_data = np.random.random_sample([1, 3, 20])
-        layer = MaxPooling1D(pool_length=2, stride=None,
-                             border_mode='valid',
-                             input_shape=(3, 20),)
+        input_data = np.random.random_sample([5, 96, 64])
+        layer = MaxPooling1D(pool_length=4, stride=None,
+                             border_mode='valid', input_shape=(96, 64))
+        self.modelTestSingleLayer(input_data, layer)
+        input_data2 = np.random.random_sample([1, 3, 20])
+        layer2 = MaxPooling1D(pool_length=2, stride=None,
+                              border_mode='valid', input_shape=(3, 20))
+        self.modelTestSingleLayer(input_data2, layer2)
+
+    def test_globalmaxpooling3d(self):
+        input_data = np.random.random_sample([1, 5, 20, 25, 35])
+        layer = GlobalMaxPooling3D(dim_ordering="th", input_shape=(5, 20, 25, 35))
         self.modelTestSingleLayer(input_data, layer)
 
     def test_globalmaxpooling2d(self):
@@ -130,22 +189,36 @@ class TestLayer(BigDLTestCase):
         layer = GlobalMaxPooling1D(input_shape=(3, 20))
         self.modelTestSingleLayer(input_data, layer)
 
+    def test_averagepooling3d(self):
+        input_data = np.random.random_sample([2, 6, 20, 15, 35])
+        layer = AveragePooling3D(pool_size=(2, 3, 4), strides=(3, 1, 5), dim_ordering="th",
+                                 border_mode="valid", input_shape=(3, 20, 15, 35))
+        self.modelTestSingleLayer(input_data, layer)
+
     def test_averagepooling2d(self):
         input_data = np.random.random_sample([1, 3, 20, 20])
-        layer = lambda: AveragePooling2D(pool_size=[3, 3], strides=[2, 2],
+        layer = lambda: AveragePooling2D(pool_size=[2, 3], strides=[4, 2],
                                          border_mode="valid", input_shape=(3, 20, 20))
         self.modelTestSingleLayerWithOrdersModes(input_data, layer)
+        layer2 = lambda: AveragePooling2D(pool_size=[1, 1], strides=[2, 2],
+                                          border_mode="valid", input_shape=(3, 20, 20))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer2)
 
     def test_averagepooling1d(self):
-        input_data = np.random.random_sample([1, 3, 20])
-        layer = lambda: AveragePooling1D(pool_length=2, stride=None,
-                                         border_mode='valid', input_shape=(3, 20))
+        input_data = np.random.random_sample([5, 96, 64])
+        layer = lambda: AveragePooling1D(pool_length=4, stride=None,
+                                         border_mode='valid', input_shape=(96, 64))
         self.modelTestSingleLayerWithOrdersModes(input_data, layer, dim_orderings=["tf"])
+
+    def test_globalaveragepooling3d(self):
+        input_data = np.random.random_sample([1, 5, 20, 25, 35])
+        layer = GlobalAveragePooling3D(dim_ordering="th", input_shape=(5, 20, 25, 35))
+        self.modelTestSingleLayer(input_data, layer, rtol=1e-5, atol=1e-5)
 
     def test_globalaveragepooling2d(self):
         input_data = np.random.random_sample([1, 3, 20, 20])
         layer = lambda: GlobalAveragePooling2D(input_shape=(3, 20, 20))
-        self.modelTestSingleLayerWithOrdersModes(input_data, layer, rtol=1e-6, atol=1e-6,
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer,
                                                  border_modes=[None])
 
     def test_globalaveragepooling1d(self):
@@ -156,13 +229,23 @@ class TestLayer(BigDLTestCase):
     def test_batchnormalization(self):
         input_data = np.random.random_sample([2, 6, 128, 128])
         layer = BatchNormalization(input_shape=(6, 128, 128), axis=1)
-        self.modelTestSingleLayer(input_data, layer,
-                                  dump_weights=True)
+        self.modelTestSingleLayer(input_data, layer, dump_weights=True, random_weights=False)
 
     def test_flatten(self):
         input_data = np.random.random_sample([1, 2, 3])
         layer = Flatten(input_shape=(2, 3))
         self.modelTestSingleLayer(input_data, layer)
+
+    def test_permute(self):
+        input_data = np.random.random_sample([5, 4, 3, 2, 6])
+        layer1 = Permute((4, 1, 2, 3), input_shape=(4, 3, 2, 6))
+        self.modelTestSingleLayer(input_data, layer1)
+        layer2 = Permute((4, 3, 2, 1), input_shape=(4, 3, 2, 6))
+        self.modelTestSingleLayer(input_data, layer2)
+        layer3 = Permute((1, 2, 3, 4), input_shape=(4, 3, 2, 6))
+        self.modelTestSingleLayer(input_data, layer3)
+        layer4 = Permute((1, 4, 2, 3), input_shape=(4, 3, 2, 6))
+        self.modelTestSingleLayer(input_data, layer4)
 
     def test_reshape(self):
         input_data = np.random.random_sample([1, 3, 5, 4])
@@ -232,10 +315,20 @@ class TestLayer(BigDLTestCase):
                       np.random.random([2, 3, 6, 7])]
         self.modelTestSingleLayer(input_data, layer, functional_apis=[False])
 
+    def test_merge_ave(self):
+        inputLayer1 = InputLayer(input_shape=(3, 6, 7))
+        inputLayer2 = InputLayer(input_shape=(3, 6, 7))
+        inputLayer3 = InputLayer(input_shape=(3, 6, 7))
+
+        layer = Merge([inputLayer1, inputLayer2, inputLayer3], mode='ave')
+        input_data = [np.random.random([2, 3, 6, 7]),
+                      np.random.random([2, 3, 6, 7]),
+                      np.random.random([2, 3, 6, 7])]
+        self.modelTestSingleLayer(input_data, layer, functional_apis=[False])
+
     def test_merge_dot(self):
-        # use batch_input_shape for merge dot
-        inputLayer1 = InputLayer(batch_input_shape=(2, 3))
-        inputLayer2 = InputLayer(batch_input_shape=(2, 3))
+        inputLayer1 = InputLayer(input_shape=(3, ))
+        inputLayer2 = InputLayer(input_shape=(3, ))
 
         layer = Merge([inputLayer1, inputLayer2], mode='dot')
         input_data = [np.random.random([2, 3]),
@@ -265,7 +358,7 @@ class TestLayer(BigDLTestCase):
     def test_parametricsoftplus(self):
         input_data = np.random.random_sample([1, 2, 3])
         layer = ParametricSoftplus(alpha_init=0.4, beta_init=2.5, input_shape=(2, 3))
-        self.modelTestSingleLayer(input_data, layer)
+        self.modelTestSingleLayer(input_data, layer, random_weights=False)
 
     def test_zeropadding1d(self):
         input_data = np.random.uniform(0, 1, [3, 2, 3])
@@ -300,15 +393,11 @@ class TestLayer(BigDLTestCase):
     def test_simplernn(self):
         input_data = np.random.random([3, 4, 5])
         layer = SimpleRNN(5, input_shape=(4, 5), return_sequences=True)
-        self.modelTestSingleLayer(input_data, layer,
-                                  dump_weights=True, rtol=1e-6, atol=1e-6)
-
+        self.modelTestSingleLayer(input_data, layer, dump_weights=True)
         layer2 = SimpleRNN(3, input_shape=(4, 5), return_sequences=False)
-        self.modelTestSingleLayer(input_data, layer2,
-                                  dump_weights=True, rtol=1e-6, atol=1e-6)
+        self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
         layer3 = SimpleRNN(3, input_shape=(4, 5), activation='relu')
-        self.modelTestSingleLayer(input_data, layer3,
-                                  dump_weights=True, rtol=1e-6, atol=1e-6)
+        self.modelTestSingleLayer(input_data, layer3, dump_weights=True)
 
     def test_lstm(self):
         input_data = np.random.random([3, 4, 5])
@@ -316,6 +405,12 @@ class TestLayer(BigDLTestCase):
         self.modelTestSingleLayer(input_data, layer, dump_weights=True)
         layer2 = LSTM(3, input_shape=(4, 5), return_sequences=False, inner_activation='sigmoid')
         self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
+
+    def test_convlstm2d(self):
+        input_data = np.random.random_sample([4, 8, 40, 40, 32])
+        layer = ConvLSTM2D(32, 4, 4, input_shape=(8, 40, 40, 32), return_sequences=True,
+                           inner_activation='sigmoid', border_mode='same')
+        self.modelTestSingleLayer(input_data, layer, dump_weights=True, random_weights=True)
 
     def test_gru(self):
         input_data = np.random.random([3, 4, 5])

@@ -173,13 +173,27 @@ class BigDLTestCase(TestCase):
             keras_model = self.__generate_sequence(input_data, output_layer)
         return keras_model
 
+    def __generate_random_weights(self, weights):
+        # weights: a list of ndarray; weights from keras
+        # Randomly generate a new list with the same shape to serve as the new weights for testing
+        new_weights = []
+        for weight in weights:
+            new_weights.append(np.random.random(list(weight.shape)))
+        return new_weights
+
     def modelTest(self,
                   input_data,
                   keras_model,
+                  random_weights=True,
                   dump_weights=False,
                   is_training=False,
-                  rtol=1e-7,
-                  atol=1e-7):
+                  rtol=1e-6,
+                  atol=1e-6):
+        if random_weights:
+            # Randomly generate weights instead of using initial weights
+            kweights = keras_model.get_weights()
+            new_kweights = self.__generate_random_weights(kweights)
+            keras_model.set_weights(new_kweights)
         # weight_converter is a function keras [ndarray]-> bigdl [ndarray]
         keras_model_json_path, keras_model_hdf5_path = self._dump_keras(keras_model, dump_weights)
         bigdl_model = DefinitionLoader.from_json_path(keras_model_json_path)
@@ -214,10 +228,11 @@ class BigDLTestCase(TestCase):
                                             output_layer_creator,  # a keras layer
                                             dim_orderings=["tf", "th"],
                                             border_modes=["valid", "same"],
+                                            random_weights=True,
                                             dump_weights=False,
                                             is_training=False,
-                                            rtol=1e-7,
-                                            atol=1e-7):
+                                            rtol=1e-6,
+                                            atol=1e-6):
         for dim_ordering in dim_orderings:
             print("Testing with dim_ordering %s" % dim_ordering)
             keras.backend.set_image_dim_ordering(dim_ordering)
@@ -233,6 +248,7 @@ class BigDLTestCase(TestCase):
                     raise Exception("cannot set border_mode for %s" % output_layer)
                 self.modelTestSingleLayer(input_data,
                                           output_layer,  # a keras layer
+                                          random_weights,
                                           dump_weights,
                                           is_training,
                                           rtol,
@@ -241,16 +257,18 @@ class BigDLTestCase(TestCase):
     def modelTestSingleLayer(self,
                              input_data,
                              output_layer,  # a keras layer
+                             random_weights=True,
                              dump_weights=False,
                              is_training=False,
-                             rtol=1e-7,
-                             atol=1e-7,
+                             rtol=1e-6,
+                             atol=1e-6,
                              functional_apis=[True, False]):
         for api in functional_apis:
             self._do_modelTestSingleLayer(
                 input_data,
                 output_layer,  # a keras layer
                 functional_api=api,
+                random_weights=random_weights,
                 dump_weights=dump_weights,
                 is_training=is_training,
                 rtol=rtol,
@@ -260,15 +278,17 @@ class BigDLTestCase(TestCase):
                                  input_data,
                                  output_layer,  # a keras layer
                                  functional_api=True,
+                                 random_weights=True,
                                  dump_weights=False,
                                  is_training=False,
-                                 rtol=1e-7,
-                                 atol=1e-7):
+                                 rtol=1e-6,
+                                 atol=1e-6):
         keras_model = self.__generate_keras_model(functional_api=functional_api,
                                                   input_data=input_data,
                                                   output_layer=output_layer)
         self.modelTest(input_data,
                        keras_model,
+                       random_weights=random_weights,
                        dump_weights=dump_weights,
                        is_training=is_training,
                        rtol=rtol,
