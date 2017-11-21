@@ -335,11 +335,14 @@ class SampleToMiniBatch[T: ClassTag] private[bigdl](
           }
           if (null == miniBatchBuffer) {
             val firstSample = sampleData(0)
-            miniBatchBuffer = if (firstSample.isInstanceOf[TensorSample[T]]) {
-              SparseMiniBatch(firstSample.numFeature(), firstSample.numLabel())
-            } else {
-              MiniBatch(firstSample.numFeature(), firstSample.numLabel(),
-                featurePaddingParam, labelPaddingParam)
+            miniBatchBuffer = firstSample match {
+              case sample: TensorSample[T] =>
+                SparseMiniBatch(sample.numFeature(), sample.numLabel())
+              case _: TableSample[T] =>
+                MiniBatch(T(), T())
+              case _ =>
+                MiniBatch(firstSample.numFeature(), firstSample.numLabel(),
+                  featurePaddingParam, labelPaddingParam)
             }
           }
 

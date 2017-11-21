@@ -714,4 +714,26 @@ class SampleSpec extends FlatSpec with Matchers {
 
     result.getInput() should be (exceptedInput)
   }
+
+  "Array[TableSample] toMiniBatch" should "return right result" in {
+
+    val samples: Array[Sample[Float]] = new Array[Sample[Float]](3)
+    samples(0) = Sample[Float](T(Tensor[Float](2, 3).range(1, 6),
+      Tensor[Double](3).fill(1)), T(Tensor[Int](1).fill(1)))
+    samples(1) = Sample[Float](T(Tensor[Float](2, 3).range(7, 12),
+      Tensor[Double](3).fill(2)), T(Tensor[Int](1).fill(2)))
+    samples(2) = Sample[Float](T(Tensor[Float](2, 3).range(13, 18),
+      Tensor[Double](3).fill(3)), T(Tensor[Int](1).fill(3)))
+    val result = MiniBatch(T(), T()).set(samples)
+    val exceptedInput = T(Tensor[Float](3, 2, 3).range(1, 18), Tensor[Double](3, 3))
+    exceptedInput[Tensor[Double]](2)(1).fill(1)
+    exceptedInput[Tensor[Double]](2)(2).fill(2)
+    exceptedInput[Tensor[Double]](2)(3).fill(3)
+    val exceptedTarget = Tensor[Int](3, 1).range(1, 3)
+
+    result.getInput() should be (exceptedInput)
+    result.getTarget() should be (exceptedTarget)
+  }
 }
+
+

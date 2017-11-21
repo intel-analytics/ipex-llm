@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.dataset
 
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{DenseType, SparseType, Storage, Tensor}
+import com.intel.analytics.bigdl.utils.{T, Table}
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.zookeeper.KeeperException.UnimplementedException
 
@@ -396,6 +397,17 @@ object Sample {
       ArraySample(featureTensors)
     }
   }
+
+  def apply[T: ClassTag](
+      featureTensors: Table)(implicit ev: TensorNumeric[T]) : Sample[T] = {
+    new TableSample(featureTensors, T())
+  }
+
+  def apply[T: ClassTag](
+      featureTensors: Table,
+      labelTensors: Table)(implicit ev: TensorNumeric[T]) : Sample[T] = {
+    new TableSample[T](featureTensors, labelTensors)
+  }
 }
 
 /**
@@ -471,5 +483,56 @@ object TensorSample {
         featureTensors: Tensor[T],
         label: T)(implicit ev: TensorNumeric[T]) : Sample[T] = {
     new TensorSample[T](Array(featureTensors), Array(Tensor(1).fill(label)))
+  }
+}
+
+/**
+ * A kind of Sample who holds different types of tensors as features.
+ * @param features feature tensors
+ * @param labels label tensors
+ * @tparam T numeric type
+ */
+private[bigdl] class TableSample[T: ClassTag](
+                                                val features: Table,
+                                                val labels: Table) extends Sample[T] {
+
+  private def getSize(features: Table): Array[Array[Int]] = {
+    val size = new Array[Array[Int]](features.length())
+    var i = 1
+    while (i <= features.length()) {
+      size(i - 1) = features[Tensor[_]](i).size()
+      i = i + 1
+    }
+    size
+  }
+  val featureSize = getSize(features)
+  val labelSize = getSize(labels)
+
+  def featureLength(index: Int): Int = {
+    featureSize(index)(0)
+  }
+
+  def labelLength(index: Int): Int = {
+    labelSize(index)(0)
+  }
+
+  def numFeature(): Int = {
+    features.length()
+  }
+
+  def numLabel(): Int = {
+    labels.length()
+  }
+
+  def getFeatureSize(): Array[Array[Int]] = {
+    featureSize
+  }
+
+  def getLabelSize(): Array[Array[Int]] = {
+    labelSize
+  }
+
+  def getData(): Array[T] = {
+    throw new UnimplementedException()
   }
 }
