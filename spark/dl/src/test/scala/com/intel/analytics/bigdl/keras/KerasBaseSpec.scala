@@ -35,6 +35,7 @@ class KerasBaseSpec extends FlatSpec with BeforeAndAfter with Matchers {
                          = defaultWeightConverter,
                          precision: Double = 1e-5): Unit = {
     val (gradInput, gradWeight, weights, input, output) = KerasRunner.run(kerasCode)
+    
     // Ensure they share the same weights
     if (weights != null) {
       bmodel.setWeightsBias(weightConverter(weights))
@@ -48,12 +49,12 @@ class KerasBaseSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     // assuming the first one is weight, the second one is bias
     if (gradWeight != null) {
-      val bgradWeight = getFieldByReflect(bmodel, "gradWeight").asInstanceOf[Tensor[Float]]
-      bgradWeight.almostEqual(weightConverter(gradWeight)(0), precision) should be(true)
-
-      if (gradWeight.length > 1) {
-        val bgradBias = getFieldByReflect(bmodel, "gradBias").asInstanceOf[Tensor[Float]]
-        bgradBias.almostEqual(weightConverter(gradWeight)(1), precision) should be(true)
+      val bgradient = bmodel.parameters()._2
+      val newW = weightConverter(gradWeight)
+      bgradient(0).almostEqual(newW(0), precision) should be(true)
+      
+      if (bgradient.length > 1) {
+        bgradient(1).almostEqual(newW(1), precision) should be(true)
       }
     }
   }
