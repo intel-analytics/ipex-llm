@@ -127,35 +127,6 @@ class VolumetricConvolution[T: ClassTag](
     }
   }
 
-  private def updateOutputFrame(input: Tensor[T], output: Tensor[T], weight: Tensor[T],
-    bias: Tensor[T], fInput: Tensor[T], kT: Int, kW: Int, kH: Int, dT: Int, dW: Int,
-    dH: Int, padFront: Int, padLeft: Int, padTop: Int, padBack: Int, padRight: Int, padBottom: Int,
-    nInputPlane: Int, inputDepth: Int,
-    inputWidth: Int, inputHeight: Int, nOutputPlane: Int, outputDepth: Int, outputWidth: Int,
-    outputHeight: Int): Unit = {
-    val output2d = output.view(nOutputPlane, outputDepth * outputHeight * outputWidth)
-
-    ev.getType() match {
-      case DoubleType =>
-        NNPrimitive.unfoldedCopyVolDouble(fInput.asInstanceOf[Tensor[Double]],
-          input.asInstanceOf[Tensor[Double]], kT, kW, kH, dT, dW, dH,
-          padFront, padLeft, padTop, padBack, padRight, padBottom,
-          nInputPlane,
-          inputDepth, inputWidth, inputHeight, outputDepth, outputWidth, outputHeight)
-      case FloatType =>
-        NNPrimitive.unfoldedCopyVolFloat(fInput.asInstanceOf[Tensor[Float]],
-          input.asInstanceOf[Tensor[Float]], kT, kW, kH, dT, dW, dH,
-          padFront, padLeft, padTop, padBack, padRight, padBottom,
-          nInputPlane,
-          inputDepth, inputWidth, inputHeight, outputDepth, outputWidth, outputHeight)
-    }
-
-    output2d.addmm(ev.zero, output2d, ev.one, weight, fInput)
-    if (withBias) {
-      output2d.addr(ev.one, bias, onesBias)
-    }
-  }
-
   /**
    * Computes the output using the current parameter set of the class and input. This function
    * returns the result which is stored in the output field.
@@ -171,75 +142,18 @@ class VolumetricConvolution[T: ClassTag](
       weightMM = weight.view(nOutputPlane, nInputPlane * kT * kH * kW)
     }
 
-    val dimDepth = if (input.dim() == 4) 2 else 3
-    val dimWidth = if (input.dim() == 4) 4 else 5
-    val dimHeight = if (input.dim() == 4) 3 else 4
-
-    val inputWidth = input.size(dimWidth)
-    val inputHeight = input.size(dimHeight)
-    val inputDepth = input.size(dimDepth)
-
-    val sizes = if (padW == -1 && padH == -1 && padT == -1) {
-      Utils.getSAMEOutSizeAndPadding(inputHeight, inputWidth, dH,
-        dW, kH, kW, inputDepth, dT, kT)
-    } else {
-      Utils.getOutSizeAndPadding(inputHeight, inputWidth, dH,
-        dW, kH, kW, padH, padW, ceilMode = false, inputdepth = inputDepth,
-        dt = dT, kt = kT, padt = padT)
-    }
-    val padFront = sizes(0)
-    val padBack = sizes(1)
-    val padLeft = sizes(4)
-    val padRight = sizes(5)
-    val padTop = sizes(2)
-    val padBottom = sizes(3)
-    val outputDepth = sizes(6)
-    val outputHeight = sizes(7)
-    val outputWidth = sizes(8)
-
-    require(outputWidth >= 1 && outputDepth >= 1 && outputHeight >= 1,
-      s"Given input size: (${ input.size().mkString("x") })." +
-        s" Calculated output size:" +
-        s" (${ nOutputPlane }x${ outputDepth }x${ outputHeight }x${ outputWidth })." +
-        s" Output size is too small")
-
     require(weight.dim() == 2 || weight.dim() == 5,
       s"weight tensor should be 2D or 5D - got ${ weight.dim() }")
 
-    if (withBias && (onesBias.dim() != 1 || onesBias.size(1) !=
-      outputHeight * outputWidth * outputDepth)) {
-      onesBias.resize(Array(outputHeight * outputWidth * outputDepth)).fill(ev.one)
-    }
 
     if (input.dim() == 4) {
       require(input.size(1) == nInputPlane, s"input.size(1) should be equal to nInputPlane. " +
         s"But In ${this.getName()} : input.size(1) is: ${ input.size(1) } ," +
         s" nInputPlane is: ${ nInputPlane }")
-      fInput.resize(kT * kW * kH * nInputPlane, outputDepth * outputHeight * outputWidth)
-      output.resize(nOutputPlane, outputDepth, outputHeight, outputWidth)
-      updateOutputFrame(input, output, weightMM, bias, fInput, kT, kW, kH, dT, dW, dH,
-        padFront, padLeft, padTop, padBack, padRight, padBottom, nInputPlane,
-        inputDepth, inputWidth, inputHeight,
-        nOutputPlane, outputDepth, outputWidth, outputHeight)
-    } else {
-      fInput.resize(input.size(1), kT * kW * kH * nInputPlane,
-        outputDepth * outputHeight * outputWidth)
-      output.resize(input.size(1), nOutputPlane, outputDepth, outputHeight, outputWidth)
-
-      var t = 1
-      while (t <= input.size(1)) {
-        val inputT = input.select(1, t)
-        val outputT = output.select(1, t)
-        val fInputT = fInput.select(1, t)
-        updateOutputFrame(inputT, outputT, weightMM, bias, fInputT,
-          kT, kW, kH,
-          dT, dW, dH,
-          padFront, padLeft, padTop, padBack, padRight, padBottom,
-          nInputPlane, inputDepth, inputWidth, inputHeight,
-          nOutputPlane, outputDepth, outputWidth, outputHeight)
-        t += 1
-      }
     }
+
+    VolumetricConvolution.conv3d(input, output, weightMM, bias, onesBias, fInput,
+      nInputPlane, nOutputPlane, withBias, kT, kW, kH, dT, dW, dH, padT, padW, padH)
     output
   }
 
@@ -399,5 +313,114 @@ object VolumetricConvolution {
   )(implicit ev: TensorNumeric[T]): VolumetricConvolution[T] = {
     new VolumetricConvolution[T](nInputPlane, nOutputPlane, kT, kW, kH,
       dT, dW, dH, padT, padW, padH, withBias, wRegularizer, bRegularizer)
+  }
+
+  private[bigdl] def conv3d[T](input: Tensor[T],
+                               output: Tensor[T],
+                               weightMM: Tensor[T],
+                               bias: Tensor[T],
+                               onesBias: Tensor[T],
+                               fInput: Tensor[T],
+                               nInputPlane: Int,
+                               nOutputPlane: Int,
+                               withBias: Boolean,
+                               kT: Int, kW: Int, kH: Int,
+                               dT: Int, dW: Int, dH: Int,
+                               padT: Int, padW: Int, padH: Int
+                              )(implicit ev: TensorNumeric[T]): Unit = {
+    val dimDepth = if (input.dim() == 4) 2 else 3
+    val dimWidth = if (input.dim() == 4) 4 else 5
+    val dimHeight = if (input.dim() == 4) 3 else 4
+
+    val inputWidth = input.size(dimWidth)
+    val inputHeight = input.size(dimHeight)
+    val inputDepth = input.size(dimDepth)
+
+    val sizes = if (padW == -1 && padH == -1 && padT == -1) {
+      Utils.getSAMEOutSizeAndPadding(inputHeight, inputWidth, dH,
+        dW, kH, kW, inputDepth, dT, kT)
+    } else {
+      Utils.getOutSizeAndPadding(inputHeight, inputWidth, dH,
+        dW, kH, kW, padH, padW, ceilMode = false, inputdepth = inputDepth,
+        dt = dT, kt = kT, padt = padT)
+    }
+    val padFront = sizes(0)
+    val padBack = sizes(1)
+    val padLeft = sizes(4)
+    val padRight = sizes(5)
+    val padTop = sizes(2)
+    val padBottom = sizes(3)
+    val outputDepth = sizes(6)
+    val outputHeight = sizes(7)
+    val outputWidth = sizes(8)
+
+    require(outputWidth >= 1 && outputDepth >= 1 && outputHeight >= 1,
+      s"Given input size: (${ input.size().mkString("x") })." +
+        s" Calculated output size:" +
+        s" (${ nOutputPlane }x${ outputDepth }x${ outputHeight }x${ outputWidth })." +
+        s" Output size is too small")
+
+    if (withBias && (onesBias.dim() != 1 || onesBias.size(1) !=
+      outputHeight * outputWidth * outputDepth)) {
+      onesBias.resize(Array(outputHeight * outputWidth * outputDepth)).fill(ev.one)
+    }
+
+    if (input.dim() == 4) {
+      fInput.resize(kT * kW * kH * nInputPlane, outputDepth * outputHeight * outputWidth)
+      output.resize(nOutputPlane, outputDepth, outputHeight, outputWidth)
+      updateOutputFrame(input, output, weightMM, bias, fInput, kT, kW, kH, dT, dW, dH,
+        padFront, padLeft, padTop, padBack, padRight, padBottom, nInputPlane,
+        inputDepth, inputWidth, inputHeight,
+        nOutputPlane, outputDepth, outputWidth, outputHeight, withBias, onesBias)
+    } else {
+      fInput.resize(input.size(1), kT * kW * kH * nInputPlane,
+        outputDepth * outputHeight * outputWidth)
+      output.resize(input.size(1), nOutputPlane, outputDepth, outputHeight, outputWidth)
+
+      var t = 1
+      while (t <= input.size(1)) {
+        val inputT = input.select(1, t)
+        val outputT = output.select(1, t)
+        val fInputT = fInput.select(1, t)
+        updateOutputFrame(inputT, outputT, weightMM, bias, fInputT,
+          kT, kW, kH,
+          dT, dW, dH,
+          padFront, padLeft, padTop, padBack, padRight, padBottom,
+          nInputPlane, inputDepth, inputWidth, inputHeight,
+          nOutputPlane, outputDepth, outputWidth, outputHeight, withBias, onesBias)
+        t += 1
+      }
+    }
+  }
+
+  private def updateOutputFrame[T](
+    input: Tensor[T], output: Tensor[T], weight: Tensor[T],
+    bias: Tensor[T], fInput: Tensor[T], kT: Int, kW: Int, kH: Int, dT: Int, dW: Int, dH: Int,
+    padFront: Int, padLeft: Int, padTop: Int, padBack: Int, padRight: Int, padBottom: Int,
+    nInputPlane: Int, inputDepth: Int, inputWidth: Int, inputHeight: Int,
+    nOutputPlane: Int, outputDepth: Int, outputWidth: Int, outputHeight: Int,
+    withBias: Boolean, onesBias: Tensor[T])
+                                  (implicit ev: TensorNumeric[T]): Unit = {
+    val output2d = output.view(nOutputPlane, outputDepth * outputHeight * outputWidth)
+
+    ev.getType() match {
+      case DoubleType =>
+        NNPrimitive.unfoldedCopyVolDouble(fInput.asInstanceOf[Tensor[Double]],
+          input.asInstanceOf[Tensor[Double]], kT, kW, kH, dT, dW, dH,
+          padFront, padLeft, padTop, padBack, padRight, padBottom,
+          nInputPlane,
+          inputDepth, inputWidth, inputHeight, outputDepth, outputWidth, outputHeight)
+      case FloatType =>
+        NNPrimitive.unfoldedCopyVolFloat(fInput.asInstanceOf[Tensor[Float]],
+          input.asInstanceOf[Tensor[Float]], kT, kW, kH, dT, dW, dH,
+          padFront, padLeft, padTop, padBack, padRight, padBottom,
+          nInputPlane,
+          inputDepth, inputWidth, inputHeight, outputDepth, outputWidth, outputHeight)
+    }
+
+    output2d.addmm(ev.zero, output2d, ev.one, weight, fInput)
+    if (withBias) {
+      output2d.addr(ev.one, bias, onesBias)
+    }
   }
 }
