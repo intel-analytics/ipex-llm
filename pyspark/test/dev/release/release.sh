@@ -68,4 +68,4 @@ ${wheel_command}
 upload_command="twine upload dist/BigDL-${bigdl_version}-py2.py3-none-${verbose_pname}.whl"
 echo "Please manually upload with this command:  $upload_command"
 
-
+$upload_command
