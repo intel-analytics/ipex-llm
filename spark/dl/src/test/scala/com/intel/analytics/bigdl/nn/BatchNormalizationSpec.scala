@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
@@ -236,6 +237,17 @@ class BatchNormalizationSpec extends FlatSpec with Matchers {
 
     bn2.gradWeight should be(bn1.gradWeight.mul(0.5))
     bn2.gradBias should be(bn1.gradBias.mul(2))
-
   }
+
+  "A BatchNormalization" should "generate same output for NHWC and NCHW" in {
+    val inputNCHW = Tensor[Float](4, 256, 8, 8).rand()
+    val inputNHWC = inputNCHW.transpose(2, 4).transpose(2, 3).contiguous()
+    val weight = Tensor[Float](256).rand()
+    val bias = Tensor[Float](256).rand()
+    val bnNCHW = BatchNormalization[Float](nOutput = 256, initWeight = weight, initBias = bias)
+    val bnNHWC = BatchNormalization[Float](nOutput = 256, dataFormat = DataFormat.NHWC,
+      initWeight = weight, initBias = bias)
+    val outputNCHW = bnNCHW.forward(inputNCHW)
+    val outputNHWC = bnNHWC.forward(inputNHWC)
+    outputNCHW.almostEqual(outputNHWC.transpose(2, 4).transpose(3, 4), 1e-5) should be(true)
 }

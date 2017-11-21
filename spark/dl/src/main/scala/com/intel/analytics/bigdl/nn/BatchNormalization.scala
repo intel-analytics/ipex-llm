@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, Initializable, TensorModule}
+import com.intel.analytics.bigdl.nn.abstractnn._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.utils.{Engine, T, Table}
@@ -57,16 +57,17 @@ class BatchNormalization[T: ClassTag](
   private val initWeight: Tensor[T] = null,
   private val initBias: Tensor[T] = null,
   private val initGradWeight: Tensor[T] = null,
-  private val initGradBias: Tensor[T] = null
+  private val initGradBias: Tensor[T] = null,
+  val dataFormat: DataFormat = DataFormat.NCHW
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
   require(nOutput > 0)
 
-  val nDim = 2
+  val nDim = 4
   var runningMean = if (affine) Tensor[T](nOutput) else Tensor[T]()
   var runningVar = if (affine) Tensor[T](nOutput).fill(ev.fromType[Int](1)) else Tensor[T]()
   var saveMean = if (affine) Tensor[T](nOutput) else Tensor[T]()
-  var saveStd = if (affine) Tensor[T](nOutput).fill(ev.fromType[Int](1)) else Tensor[T]()
+  var saveStd = if (affine) Tensor[T](nOutput).fill(ev.zero) else Tensor[T]()
 
   val weight: Tensor[T] =
     if (initWeight != null) initWeight else if (affine) Tensor[T](nOutput) else null
@@ -145,7 +146,7 @@ class BatchNormalization[T: ClassTag](
     }
 
     saveMean.resizeAs(runningMean).zero
-    saveStd.resizeAs(runningVar).fill(ev.fromType[Int](1))
+    saveStd.resizeAs(runningVar).fill(ev.zero)
 
     if (results == null || results.length > nInput) {
       results = new Array[Future[_]](nInput)
@@ -162,6 +163,7 @@ class BatchNormalization[T: ClassTag](
         val outputData = outputDouble.storage().array()
         val outputOffset = outputDouble.storageOffset() - 1
         val outputStride = output.stride(1)
+        require(dataFormat == DataFormat.NCHW, "BatchNorm Double only support NCHW")
         updateOutputDouble(inputData, inputOffset, inputStride, outputData, outputOffset,
           outputStride, nInput, n, inputStride2)
 
@@ -175,8 +177,23 @@ class BatchNormalization[T: ClassTag](
         val outputData = outputFloat.storage().array()
         val outputOffset = outputFloat.storageOffset() - 1
         val outputStride = output.stride(1)
-        updateOutputFloat(inputData, inputOffset, inputStride, outputData, outputOffset,
-          outputStride, nInput, n, inputStride2)
+        if (dataFormat == DataFormat.NCHW) {
+          updateOutputFloat(inputData, inputOffset, inputStride, outputData, outputOffset,
+            outputStride, nInput, n, inputStride2)
+        } else {
+          require(ev.getType() == FloatType, "BatchNorm NHWC only support Float type")
+          if (train) {
+            BatchNormalization.updateOutputFloatNHWCTrain(inputFloat, outputFloat,
+              saveMean.asInstanceOf[Tensor[Float]], saveStd.asInstanceOf[Tensor[Float]],
+              runningMean.asInstanceOf[Tensor[Float]], runningVar.asInstanceOf[Tensor[Float]],
+              weight.asInstanceOf[Tensor[Float]], bias.asInstanceOf[Tensor[Float]],
+              eps.toFloat, momentum.toFloat)
+          } else {
+            BatchNormalization.updateOutputFloatNHWCInfer(inputFloat, outputFloat,
+              runningMean.asInstanceOf[Tensor[Float]], runningVar.asInstanceOf[Tensor[Float]],
+              weight.asInstanceOf[Tensor[Float]], bias.asInstanceOf[Tensor[Float]])
+          }
+        }
     }
 
     output
@@ -738,9 +755,13 @@ object BatchNormalization extends ModuleSerializable {
     initWeight: Tensor[T] = null,
     initBias: Tensor[T] = null,
     initGradWeight: Tensor[T] = null,
-    initGradBias: Tensor[T] = null)(implicit ev: TensorNumeric[T]): BatchNormalization[T] = {
+    initGradBias: Tensor[T] = null,
+    dataFormat: DataFormat = DataFormat.NCHW)
+    (implicit ev: TensorNumeric[T]): BatchNormalization[T] = {
+
     new BatchNormalization[T](
-      nOutput, eps, momentum, affine, initWeight, initBias, initGradWeight, initGradBias)
+      nOutput, eps, momentum, affine, initWeight, initBias, initGradWeight, initGradBias,
+      dataFormat)
   }
   def apply[@specialized(Float, Double) T: ClassTag](
     affine: Option[Int])(implicit ev: TensorNumeric[T]): BatchNormalization[T] = {
@@ -798,5 +819,121 @@ object BatchNormalization extends ModuleSerializable {
       batchNorm.saveStd, ModuleSerializer.tensorType)
     batchNormBuilder.putAttr("saveStd", saveStdBuilder.build)
 
+  }
+
+  private[bigdl] def updateOutputFloatNHWCInfer(input: Tensor[Float], output: Tensor[Float],
+    mean: Tensor[Float], std: Tensor[Float], scale: Tensor[Float], offset: Tensor[Float]): Unit = {
+
+    require(input.isContiguous(), "BatchNorm NHWC require a contiguous input")
+    val inputData = input.storage().array()
+    val inputOffset = input.storageOffset() - 1
+    val outputData = output.storage().array()
+    val outputOffset = output.storageOffset() - 1
+    val nChannels = input.size(4)
+    val n = input.nElement()
+    val meanData = mean.storage().array()
+    val stdData = std.storage().array()
+
+    val scaleData = scale.storage().array()
+    val offsetData = offset.storage().array()
+    var i = 0
+    while(i < n) {
+      var c = 0
+      while(c < nChannels) {
+        outputData(i + outputOffset + c) = (inputData(i + inputOffset + c) - meanData(c)) *
+          stdData(c) * scaleData(c) + offsetData(c)
+        c += 1
+      }
+      i += nChannels
+    }
+  }
+  private[bigdl] def updateOutputFloatNHWCTrain(input: Tensor[Float], output: Tensor[Float],
+    saveMean: Tensor[Float], saveStd: Tensor[Float], runningMean: Tensor[Float],
+    runningVar: Tensor[Float], scale: Tensor[Float], offset: Tensor[Float],
+    eps: Float, momentum: Float,
+    batchVar: Tensor[Float] = null, saveVar: Tensor[Float] = null): Unit = {
+    require(input.isContiguous(), "BatchNorm NHWC require a contiguous input")
+    val inputData = input.storage().array()
+    val inputOffset = input.storageOffset() - 1
+    val outputData = output.storage().array()
+    val outputOffset = output.storageOffset() - 1
+    val nChannels = input.size(4)
+    if(saveMean.size(1) != nChannels) {
+      saveMean.resize(nChannels)
+      saveStd.resize(nChannels)
+      runningMean.resize(nChannels)
+      runningVar.resize(nChannels)
+    }
+    val mean = saveMean.storage().array()
+    var i = 0
+    val n = input.nElement()
+    val frameSize = n / nChannels
+    while(i < n) {
+      var c = 0
+      while(c < nChannels) {
+        mean(c) += inputData(inputOffset + i + c)
+        c += 1
+      }
+      i += nChannels
+    }
+
+    var c = 0
+    val runningMeanData = runningMean.storage().array()
+    while(c < nChannels) {
+      mean(c) /= frameSize
+      runningMeanData(c) = mean(c) * momentum + (1 - momentum) * runningMeanData(c)
+      c += 1
+    }
+
+    val std = saveStd.storage().array()
+    i = 0
+    while(i < n) {
+      var c = 0
+      while(c < nChannels) {
+        val diff = (inputData(inputOffset + i + c) - mean(c))
+        std(c) += diff * diff
+        c += 1
+      }
+      i += nChannels
+    }
+
+    c = 0
+    val runningVarData = runningVar.storage().array()
+    while(c < nChannels) {
+      if (std(c) == 0 && eps == 0) {
+        std(c) = 0
+        if (saveVar != null) {
+          saveVar.setValue(c + 1, 0f)
+        }
+        if (batchVar != null) {
+          batchVar.setValue(c + 1, 0f)
+        }
+      } else {
+        val s = std(c)
+        val unbiasedVar = s / (frameSize - 1)
+        if (saveVar != null) {
+          saveVar.setValue(c + 1, s / frameSize)
+        }
+        if (batchVar != null) {
+          batchVar.setValue(c + 1, unbiasedVar)
+        }
+        std(c) = 1.0f / Math.sqrt(s / frameSize + eps).toFloat
+        runningVarData(c) = momentum * unbiasedVar + (1 - momentum) * runningVarData(c)
+      }
+      c += 1
+    }
+
+    val scaleData = scale.storage().array()
+    val offsetData = offset.storage().array()
+    i = 0
+    while(i < n) {
+      var c = 0
+      while(c < nChannels) {
+        outputData(i + outputOffset + c) = (inputData(i + inputOffset + c) - mean(c)) * std(c) *
+          scaleData(c) + offsetData(c)
+        c += 1
+      }
+      i += nChannels
+    }
   }
 }
