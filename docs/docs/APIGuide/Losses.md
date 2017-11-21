@@ -1967,7 +1967,7 @@ val target = Tensor[Float](2, 3).rand()
 val loss = criterion.forward(input, target)
 
 > loss
-loss: Float = -1.6775236
+loss: Float = -0.28007346
 ```
 
 **Python example:**
@@ -1985,5 +1985,5 @@ target = target.reshape(2, 3)
 loss = criterion.forward(input, target)
 
 > loss
--1.9999999
+-0.3333333
 ```

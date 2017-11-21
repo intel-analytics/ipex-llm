@@ -26,8 +26,8 @@ class CosineCriterionSpec extends  KerasBaseSpec{
         |input_tensor = Input(shape=[3])
         |target_tensor = Input(shape=[3])
         |loss = cosine_proximity(input_tensor, target_tensor)
-        |input = np.random.uniform(0, 1, [1, 3])
-        |Y = np.random.uniform(0, 1, [1, 3])
+        |input = np.random.uniform(0, 1, [2, 3])
+        |Y = np.random.uniform(0, 1, [2, 3])
       """.stripMargin
     val cosineProximity = new CosineProximityCriterion[Float]()
     checkOutputAndGradForLoss(cosineProximity, kerasCode)

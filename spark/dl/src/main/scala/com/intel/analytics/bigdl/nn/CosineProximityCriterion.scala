@@ -27,7 +27,7 @@ import scala.reflect.ClassTag
  * The cosine proximity is defined as below:
  * x'(i) = x(i) / sqrt(max(sum(x(i)^2), 1e-12))
  * y'(i) = y(i) / sqrt(max(sum(x(i)^2), 1e-12))
- * cosine_proximity(x, y) = sum_i(-1 * x'(i) * y'(i))
+ * cosine_proximity(x, y) = mean(-1 * x'(i) * y'(i))
  */
 class CosineProximityCriterion[@specialized(Float, Double) T: ClassTag]
 (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
@@ -43,6 +43,7 @@ class CosineProximityCriterion[@specialized(Float, Double) T: ClassTag]
       }
     }
     DenseTensorApply.apply1(mul, func)
+    loss = ev.divide(loss, ev.fromType(mul.nElement()))
     loss
   }
 
@@ -78,6 +79,7 @@ class CosineProximityCriterion[@specialized(Float, Double) T: ClassTag]
   }
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
+
     gradInput.resizeAs(input)
 
     // Calculate target norm (yi/Sqrt(y1^2 + y2^2 .... + yn^2))
@@ -107,6 +109,9 @@ class CosineProximityCriterion[@specialized(Float, Double) T: ClassTag]
     DenseTensorApply.apply3[T](gradInput, input, inputTargetNomSumTiled, func1)
 
     // Then appy -1/sqrt((x1^2 + ... xn^2)^(3/2)) * ((x1^2 + ... xn^2) - grad(xi))
+
+    val total = input.nElement()
+
     val func2 = new TensorFunc6[T] {
       override def apply(data1: Array[T], offset1: Int, data2: Array[T],
                          offset2: Int, data3: Array[T], offset3: Int): Unit = {
@@ -116,7 +121,8 @@ class CosineProximityCriterion[@specialized(Float, Double) T: ClassTag]
           val f1 = ev.divide(ev.fromType[Double](1.0),
             ev.times(data3(offset3), ev.sqrt(data3(offset3))))
           val s1 = ev.times(data3(offset3), data2(offset2))
-          data1(offset1) = ev.negative(ev.times(f1, ev.minus(s1, data1(offset1))))
+          data1(offset1) = ev.divide(ev.negative(ev.times(f1, ev.minus(s1, data1(offset1))))
+            , ev.fromType(total))
         }
       }
     }
