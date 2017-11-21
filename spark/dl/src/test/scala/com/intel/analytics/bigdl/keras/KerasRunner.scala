@@ -29,6 +29,7 @@ object KerasRunner {
       |from keras.layers.core import *
       |from keras.layers.convolutional import *
       |from keras.layers import *
+      |from keras.metrics import *
       |from keras.models import Model
       |import keras.backend as K
       |import numpy as np
@@ -42,21 +43,29 @@ object KerasRunner {
       |    return tmp_file.name
       |
     """.stripMargin
-  val code_bottom =
+
+  val code_for_loss =
+  """
+    |grad_input = K.get_session().run(K.gradients(loss, [input_tensor]),
+    |                           feed_dict={input_tensor: input, target_tensor: Y})
+    |output = K.get_session().run(loss, feed_dict={input_tensor: input, target_tensor: Y})
+    |weights = []
+    |grad_weight = []
+  """.stripMargin
+  val code_for_layer =
     """
-      |nb_sample= 1
-      |input_shape = input_tensor.shape.as_list()
-      |input_shape[0] = nb_sample
-      |X = np.random.uniform(0, 1, input_shape)
-      |
-      |grad_input = K.get_session().run(K.gradients(model.output, model.input), feed_dict={input_tensor: X}) # grad_input
+      |Y = []
+      |grad_input = K.get_session().run(K.gradients(model.output, model.input), feed_dict={input_tensor: input}) # grad_input
       |
       |grad_weight = K.get_session().run(K.gradients(model.output, model.trainable_weights),  # grad_weight
-      |                        feed_dict={input_tensor: X})
+      |                        feed_dict={input_tensor: input})
+      |output = model.predict(input)
       |weights = model.get_weights()
-      |output = model.predict(X)
+
+      """.stripMargin
+  val code_for_save = """
       |result_list = []
-      |for item in [("weights", weights), ("input", X), ("grad_input", grad_input), ("grad_weight", grad_weight), ("output",output)]:
+      |for item in [("weights", weights), ("input", input), ("target", Y), ("grad_input", grad_input), ("grad_weight", grad_weight), ("output",output)]:
       |    if isinstance(item[1], list):
       |        if len(item[1]) > 1:
       |            for i in range(len(item[1])):
@@ -94,36 +103,34 @@ object KerasRunner {
 
   private def getNoneWeightRelate(pvalues: Map[String, Array[Float]],
                                   keyName: String): Tensor[Float] = {
-    Tensor[Float](
-      data = pvalues(s"${keyName}_value"),
-      shape = pvalues(s"${keyName}_shape").map(_.toInt))
+    if (!pvalues.keySet.filter(key => key.contains(keyName)).isEmpty) {
+      Tensor[Float](
+        data = pvalues(s"${keyName}_value"),
+        shape = pvalues(s"${keyName}_shape").map(_.toInt))
+    } else {
+      null
+    }
   }
 
-  // return: (grad_input, grad_weight, weights, input, output)
-  def run(code: String): (Tensor[Float], Array[Tensor[Float]],
-    Array[Tensor[Float]], Tensor[Float], Tensor[Float]) = {
+  // return: (grad_input, grad_weight, weights, input, target, output)
+  def run(code: String, is_loss: Boolean = false): (Tensor[Float], Array[Tensor[Float]],
+    Array[Tensor[Float]], Tensor[Float], Tensor[Float], Tensor[Float]) = {
     val pcodeFile = java.io.File.createTempFile("UnitTest", "keras")
     val writer = new PrintWriter(pcodeFile)
     writer.write(code_head)
     writer.write(code)
-    writer.write(code_bottom)
+    writer.write(if (is_loss) {code_for_loss} else {code_for_layer})
+    writer.write(code_for_save)
     writer.close()
     val pcodeFileAbsPath = pcodeFile.getAbsolutePath
     println("python code file: " + pcodeFileAbsPath)
     val resultPaths = s"python ${pcodeFileAbsPath}".!!.split("\n")
-    if (pcodeFile.exists()) {
-      pcodeFile.delete()
-    }
 
     val pvalues = resultPaths.map {file =>
       val value = Source.fromFile(file).getLines().map(_.toFloat).toArray
       val key = file.split("-")(2)
       key -> value
     }.toMap
-
-    resultPaths.foreach {path =>
-      new File(path).delete()
-    }
 
     val grad_input = getNoneWeightRelate(pvalues, "grad_input")
 
@@ -133,9 +140,18 @@ object KerasRunner {
 
     val input = getNoneWeightRelate(pvalues, "input")
 
-    val output = getNoneWeightRelate(pvalues, "output")
+    val target = getNoneWeightRelate(pvalues, "target")
 
-    (grad_input, grad_weight, weights, input, output)
+    var output = getNoneWeightRelate(pvalues, "output")
+
+    resultPaths.foreach {path =>
+      new File(path).delete()
+    }
+    if (pcodeFile.exists()) {
+      pcodeFile.delete()
+    }
+
+    (grad_input, grad_weight, weights, input, target, output)
   }
 
 }
