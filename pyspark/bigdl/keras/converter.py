@@ -490,7 +490,7 @@ class LayerConverter:
 
         sort(perm, 0, len(perm) - 1)
 
-        return filter(lambda pair: pair[0] != pair[1], pairs)
+        return list(filter(lambda pair: pair[0] != pair[1], pairs))
 
     def create_reshape(self, klayer, kclayer):
         self.__check_is_share_weights(kclayer)
@@ -771,7 +771,7 @@ class LayerConverter:
             raise Exception("Only equal stride is supported for now. "
                             "Please set subsample to be a tuple with equal values.")
 
-        blayer = BLayer.ConvLSTMPeephole(input_size=input_shape[2],
+        blayer = BLayer.ConvLSTMPeephole(input_size=int(input_shape[2]),
                                          output_size=config["nb_filter"],
                                          kernel_i=config["nb_col"],
                                          kernel_c=config["nb_row"],
@@ -971,7 +971,7 @@ class LayerConverter:
 
         bpadT, bpadW, bpadH = self.to_bigdl_3d_padding(klayer.border_mode)
         blayer = BLayer.VolumetricConvolution(
-            n_input_plane=input_shape[1],
+            n_input_plane=int(input_shape[1]),
             n_output_plane=klayer.nb_filter,
             k_t=klayer.kernel_dim1,
             k_w=klayer.kernel_dim3,
@@ -1001,9 +1001,9 @@ class LayerConverter:
         bpadW, bpadH = self.to_bigdl_2d_padding(klayer.border_mode)
         seq = BLayer.Sequential()
         seq.add(BLayer.Transpose([(2, 3)]))
-        seq.add(BLayer.Reshape([input_shape[2], input_shape[1], 1], True))
+        seq.add(BLayer.Reshape([int(input_shape[2]), int(input_shape[1]), 1], True))
         blayer = BLayer.SpatialDilatedConvolution(
-            n_input_plane=input_shape[2],
+            n_input_plane=int(input_shape[2]),
             n_output_plane=config["nb_filter"],
             kw=1,
             kh=config["filter_length"],
@@ -1035,7 +1035,7 @@ class LayerConverter:
             raise Exception("Unsupported border mode: %s" % klayer.border_mode)
         bpadW, bpadH = self.to_bigdl_2d_padding(klayer.border_mode)
         blayer = BLayer.SpatialDilatedConvolution(
-            n_input_plane=input_shape[1],
+            n_input_plane=int(input_shape[1]),
             n_output_plane=config["nb_filter"],
             kw=config["nb_col"],
             kh=config["nb_row"],
@@ -1059,7 +1059,7 @@ class LayerConverter:
 
         bpadW, bpadH = self.to_bigdl_2d_padding(klayer.border_mode)
         blayer = BLayer.SpatialFullConvolution(
-            n_input_plane=input_shape[1],
+            n_input_plane=int(input_shape[1]),
             n_output_plane=klayer.nb_filter,
             kw=klayer.nb_col,
             kh=klayer.nb_row,
@@ -1112,9 +1112,9 @@ class LayerConverter:
     def create_globalmaxpooling3d(self, klayer, kclayer):
         input_shape = klayer.get_input_shape_at(0)
         if klayer.dim_ordering == "th":
-            b_kt = input_shape[2]
-            b_kw = input_shape[4]
-            b_kh = input_shape[3]
+            b_kt = int(input_shape[2])
+            b_kw = int(input_shape[4])
+            b_kh = int(input_shape[3])
         else:
             raise Exception("Please use `th` for dim_ordering. `%s` is not supported for now." % klayer.dim_ordering)
 
@@ -1141,9 +1141,9 @@ class LayerConverter:
     def create_globalaveragepooling3d(self, klayer, kclayer):
         input_shape = klayer.get_input_shape_at(0)
         if klayer.dim_ordering == "th":
-            b_kt = input_shape[2]
-            b_kw = input_shape[4]
-            b_kh = input_shape[3]
+            b_kt = int(input_shape[2])
+            b_kw = int(input_shape[4])
+            b_kh = int(input_shape[3])
         else:
             raise Exception("Please use `th` for dim_ordering. `%s` is not supported for now." % klayer.dim_ordering)
 
