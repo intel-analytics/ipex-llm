@@ -118,7 +118,7 @@ class TestLayer(BigDLTestCase):
     def test_conv3D(self):
         input_data = np.random.random_sample([1, 3, 32, 32, 32])
         layer = Convolution3D(12, 5, 3, 4, dim_ordering="th",
-                              border_mode="valid",
+                              border_mode="valid", subsample=(1, 1, 2),
                               input_shape=(3, 32, 32, 32))
         self.modelTestSingleLayer(input_data, layer,
                                   dump_weights=True, rtol=1e-5, atol=1e-5)
@@ -156,16 +156,22 @@ class TestLayer(BigDLTestCase):
 
     def test_maxpooling2d(self):
         input_data = np.random.random_sample([1, 3, 20, 20])
-        layer = lambda: MaxPooling2D(pool_size=[3, 3], strides=[2, 2],
+        layer = lambda: MaxPooling2D(pool_size=[2, 3], strides=[4, 2],
                                      border_mode="valid", input_shape=(3, 20, 20))
         self.modelTestSingleLayerWithOrdersModes(input_data, layer)
+        layer2 = lambda: MaxPooling2D(pool_size=[1, 1], strides=[2, 2],
+                                      border_mode="valid", input_shape=(3, 20, 20))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer2)
 
     def test_maxpooling1d(self):
         input_data = np.random.random_sample([5, 96, 64])
         layer = MaxPooling1D(pool_length=4, stride=None,
-                             border_mode='valid',
-                             input_shape=(96, 64),)
+                             border_mode='valid', input_shape=(96, 64))
         self.modelTestSingleLayer(input_data, layer)
+        input_data2 = np.random.random_sample([1, 3, 20])
+        layer2 = MaxPooling1D(pool_length=2, stride=None,
+                              border_mode='valid', input_shape=(3, 20))
+        self.modelTestSingleLayer(input_data2, layer2)
 
     def test_globalmaxpooling3d(self):
         input_data = np.random.random_sample([1, 5, 20, 25, 35])
@@ -191,9 +197,12 @@ class TestLayer(BigDLTestCase):
 
     def test_averagepooling2d(self):
         input_data = np.random.random_sample([1, 3, 20, 20])
-        layer = lambda: AveragePooling2D(pool_size=[3, 3], strides=[2, 2],
+        layer = lambda: AveragePooling2D(pool_size=[2, 3], strides=[4, 2],
                                          border_mode="valid", input_shape=(3, 20, 20))
         self.modelTestSingleLayerWithOrdersModes(input_data, layer)
+        layer2 = lambda: AveragePooling2D(pool_size=[1, 1], strides=[2, 2],
+                                          border_mode="valid", input_shape=(3, 20, 20))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer2)
 
     def test_averagepooling1d(self):
         input_data = np.random.random_sample([5, 96, 64])

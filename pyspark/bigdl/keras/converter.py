@@ -873,16 +873,16 @@ class LayerConverter:
 
     def to_bigdl_3d_padding(self, border_mode):
         if border_mode == "valid":
-            return (0, 0, 0)
+            return 0, 0, 0
         # TODO: border_mode=`same`
         else:
             raise Exception("Unsupported border mode: %s" % border_mode)
 
     def to_bigdl_2d_padding(self, border_mode):
         if border_mode == "same":
-            return (-1, -1)
+            return -1, -1
         elif border_mode == "valid":
-            return (0, 0)
+            return 0, 0
         else:
             raise Exception("Unsupported border mode: %s" % border_mode)
 
@@ -977,8 +977,8 @@ class LayerConverter:
             k_w=klayer.kernel_dim3,
             k_h=klayer.kernel_dim2,
             d_t=klayer.subsample[0],
-            d_w=klayer.subsample[1],
-            d_h=klayer.subsample[2],
+            d_w=klayer.subsample[2],
+            d_h=klayer.subsample[1],
             pad_t=bpadT,
             pad_w=bpadW,
             pad_h=bpadH,
@@ -1098,10 +1098,10 @@ class LayerConverter:
         bigdl_order = self.get_bdim_order(kclayer)
         bpadW, bpadH = self.to_bigdl_2d_padding(klayer.border_mode)
         blayer = BLayer.SpatialMaxPooling(
-                 kw = klayer.pool_size[0],
-                 kh = klayer.pool_size[1],
-                 dw = klayer.strides[0],
-                 dh = klayer.strides[1],
+                 kw=klayer.pool_size[1],
+                 kh=klayer.pool_size[0],
+                 dw=klayer.strides[1],
+                 dh=klayer.strides[0],
                  pad_w=bpadW,
                  pad_h=bpadH,
                  to_ceil=False,
@@ -1172,10 +1172,10 @@ class LayerConverter:
         bigdl_order = self.get_bdim_order(kclayer)
         bpadW, bpadH = self.to_bigdl_2d_padding(klayer.border_mode)
         blayer = BLayer.SpatialAveragePooling(
-            kw=klayer.pool_size[0],
-            kh=klayer.pool_size[1],
-            dw=klayer.strides[0],
-            dh=klayer.strides[1],
+            kw=klayer.pool_size[1],
+            kh=klayer.pool_size[0],
+            dw=klayer.strides[1],
+            dh=klayer.strides[0],
             pad_w=bpadW,
             pad_h=bpadH,
             global_pooling=False,
@@ -1291,12 +1291,12 @@ class LayerConverter:
         bpadW, bpadH = self.to_bigdl_2d_padding(klayer.border_mode)
 
         seq = BLayer.Sequential()
-        seq.add(BLayer.View([1, int(input_shape[1]), int(input_shape[2])], num_input_dims=3))
+        seq.add(BLayer.Reshape([int(input_shape[1]), 1, int(input_shape[2])], True))
         blayer = BLayer.SpatialMaxPooling(
-            kw=klayer.pool_length,
-            kh=1,
-            dw=klayer.stride,
-            dh=1,
+            kw=1,
+            kh=klayer.pool_length,
+            dw=1,
+            dh=klayer.stride,
             pad_w=bpadW,
             pad_h=bpadH,
             to_ceil=False,
@@ -1304,7 +1304,7 @@ class LayerConverter:
             bigdl_type="float"
         )
         seq.add(blayer)
-        seq.add(BLayer.Squeeze(2))
+        seq.add(BLayer.Squeeze(3))
         return seq
 
     def create_averagepooling1d(self, klayer, kclayer):
@@ -1312,12 +1312,12 @@ class LayerConverter:
         bpadW, bpadH = self.to_bigdl_2d_padding(klayer.border_mode)
 
         seq = BLayer.Sequential()
-        seq.add(BLayer.View([1, int(input_shape[1]), int(input_shape[2])], num_input_dims=3))
+        seq.add(BLayer.Reshape([int(input_shape[1]), 1, int(input_shape[2])], True))
         blayer = BLayer.SpatialAveragePooling(
-            kw=klayer.pool_length,
-            kh=1,
-            dw=klayer.stride,
-            dh=1,
+            kw=1,
+            kh=klayer.pool_length,
+            dw=1,
+            dh=klayer.stride,
             pad_w=bpadW,
             pad_h=bpadH,
             global_pooling=False,
@@ -1328,7 +1328,7 @@ class LayerConverter:
             bigdl_type="float"
         )
         seq.add(blayer)
-        seq.add(BLayer.Squeeze(2))
+        seq.add(BLayer.Squeeze(3))
         return seq
 
     def create_globalaveragepooling2d(self, klayer, kclayer):
