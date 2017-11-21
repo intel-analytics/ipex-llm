@@ -58,18 +58,32 @@ def get_mnist(sc, data_type="train", location="/tmp/mnist"):
 
 
 if __name__ == "__main__":
-    n_samples = 3
-    n_timesteps = 7
-    n_features = 2
-    mask_value = -1.0
-    input = np.array([1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, -1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7,
-                     1, 1, 2, 2, 3, 3, -1, -1, 5, 5, 6, 6, 7, 7]).reshape(n_samples, n_timesteps, n_features)
-    gradOutput = np.ones((n_samples, n_timesteps, n_features))
-    model = Sequential()
-    model.add(Masking(mask_value=mask_value))
+    # n_samples = 3
+    # n_timesteps = 7
+    # n_features = 2
+    # mask_value = -1.0
+    # input = np.array([1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, -1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7,
+    #                  1, 1, 2, 2, 3, 3, -1, -1, 5, 5, 6, 6, 7, 7]).reshape(n_samples, n_timesteps, n_features)
+    # gradOutput = np.ones((n_samples, n_timesteps, n_features))
+    # model = Sequential()
+    # model.add(Masking(mask_value=mask_value))
+    #
+    # output = model.forward(input)
+    # gradInput = model.backward(input, gradOutput)
+    # print output
+    # print "hehe"
+    # print gradInput
 
-    output = model.forward(input)
-    gradInput = model.backward(input, gradOutput)
+    input_size = 2
+    batch_size = 3
+    output_size = 5
+    maxout_number = 3
+
+    input = np.random.rand(batch_size, input_size)
+    maxout = Maxout(input_size, output_size, maxout_number)
+    output = maxout.forward(input)
+    gradOutput = np.random.rand(batch_size, output_size)
+    gradInput = maxout.backward(input, gradOutput)
     print output
     print "hehe"
     print gradInput

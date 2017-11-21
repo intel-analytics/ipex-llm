@@ -2246,6 +2246,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   : Masking[T] = {
     Masking[T](maskValue)
   }
+
+  def createMaxout(inputSize: Int, outputSize: Int, maxoutNumber: Int, withBias: Boolean = true,
+    wRegularizer: Regularizer[T] = null, bRegularizer: Regularizer[T] = null,
+    initWeight: Tensor[T] = null, initBias: Tensor[T] = null)
+  : Maxout[T] = {
+    Maxout[T](inputSize, outputSize, maxoutNumber, withBias, wRegularizer, bRegularizer,
+      initWeight, initBias)
+  }
 }
 
 object PythonBigDLUtils {

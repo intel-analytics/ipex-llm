@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.{DenseTensorApply, Tensor, TensorFunc6}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
@@ -24,24 +25,33 @@ import com.intel.analytics.bigdl.utils.Table
 import scala.reflect.ClassTag
 
 /**
- * [[Maxout]] Use a mask value to skip timesteps for a sequence
+ * [[Maxout]] A linear maxout layer
+ * Maxout layer select the element-wise maximum value of
+ * maxoutNumber Linear(inputSize, outputSize) layers
  *
- * @param inputSize mask value
+ * @param inputSize: the size the each input sample
+ * @param outputSize: the size of the module output of each sample
+ * @param maxoutNumber: number of Linear layers to use
+ * @param withBias: whether use bias in Linear
+ * @param wRegularizer: instance of [[Regularizer]]
+ *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
+ * @param bRegularizer: instance of [[Regularizer]]
+ *                    applied to the bias.
+ * @param initWeight: initial weight
+ * @param initBias: initial bias
  */
-class Maxout[T: ClassTag](inputSize: Int, outputSize: Int, maxoutNumber: Int)
+class Maxout[T: ClassTag](inputSize: Int, outputSize: Int, maxoutNumber: Int,
+  withBias: Boolean = true, wRegularizer: Regularizer[T] = null,
+  bRegularizer: Regularizer[T] = null, initWeight: Tensor[T] = null, initBias: Tensor[T] = null)
   (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
-  val lineart = Linear(inputSize, outputSize * maxoutNumber)
-  val viewt = View(maxoutNumber, outputSize).setNumInputDims(1)
-  val maxt = Max(1, 2)
-  val layer = Sequential().add(lineart)
-    .add(viewt)
-    .add(maxt)
+  val layer = Sequential().add(Linear(inputSize, outputSize * maxoutNumber, withBias = withBias,
+    wRegularizer = wRegularizer, bRegularizer = bRegularizer, initWeight = initWeight,
+    initBias = initBias))
+    .add(View(maxoutNumber, outputSize).setNumInputDims(1))
+    .add(Max(1, 2))
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-//    output = layer.updateOutput(input)
-    val o1 = lineart.forward(input)
-    val o2 = viewt.forward(o1)
-    output = maxt.forward(o2)
+    output = layer.updateOutput(input)
     output
   }
 
@@ -68,7 +78,10 @@ class Maxout[T: ClassTag](inputSize: Int, outputSize: Int, maxoutNumber: Int)
 }
 
 object Maxout {
-  def apply[T : ClassTag](inputSize: Int, outputSize: Int, maxoutNumber: Int)
+  def apply[T : ClassTag](inputSize: Int, outputSize: Int, maxoutNumber: Int,
+    withBias: Boolean = true, wRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null, initWeight: Tensor[T] = null, initBias: Tensor[T] = null)
     (implicit ev: TensorNumeric[T]): Maxout[T]
-    = new Maxout[T](inputSize, outputSize, maxoutNumber)
+    = new Maxout[T](inputSize, outputSize, maxoutNumber, withBias, wRegularizer,
+    bRegularizer, initWeight, initBias)
 }

@@ -16,35 +16,49 @@
 
 package com.intel.analytics.bigdl.keras
 
-import com.intel.analytics.bigdl.nn.Masking
-import com.intel.analytics.bigdl.python.api.PythonBigDL
-import com.intel.analytics.bigdl.tensor.Tensor
-
+import com.intel.analytics.bigdl.nn.{Masking}
 
 class MaskingSpec extends KerasBaseSpec {
 
-  "Masking" should "be ok" in {
-    val batchSize = 3
-    val times = 5
-    val features = 2
-    val inputData = Array[Double](1.0, 1, 2, 2, 3, 3, 4, 4, 5, 5, -1, 1, 2, 2, 3, 3, 4, 4, 5, 5,
-      1, 1, -1, -1, 3, 3, 4, 4, 5, 5)
-    val input = Tensor[Double](inputData, Array(batchSize, times, features))
-
+  "Masking" should "generate corrent result when batchsize == 1" in {
+    val inputSize = 2
+    val times = 7
+    val batchSize = 1
     val mask_value = -1
-    val masking = Masking[Double](mask_value)
 
-    val output = masking.forward(input)
-    val gradOutput = Tensor[Double](output.size()).fill(1.0)
-    val gradInput = masking.backward(input, gradOutput)
+    val sigmoidCode =
+      s"""
+         |input_tensor = Input(shape=[${times}, ${inputSize}])
+         |input = np.array([1, 1, ${mask_value}, 2, 3, 3, 4, 4, ${mask_value}, ${mask_value}, 6, 6,
+         |7, 7]).reshape(${batchSize}, ${times}, ${inputSize})
+         |output_tensor = Masking(${mask_value})(input_tensor)
+         |model = Model(input=input_tensor, output=output_tensor)
+      """.stripMargin
 
-    val expectOutput = Array[Double](1.0, 1, 2, 2, 3, 3, 4, 4, 5, 5, -1, 1, 2, 2, 3, 3, 4, 4, 5, 5,
-      1, 1, 0, 0, 3, 3, 4, 4, 5, 5)
-    val expectgradInput = Array[Double](1.0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-      1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1)
-    require(output.toTensor[Double].almostEqual(Tensor[Double](expectOutput,
-      Array(batchSize, times, features)), 0))
-    require(gradInput.toTensor[Double].almostEqual(Tensor[Double](expectgradInput,
-      Array(batchSize, times, features)), 0))
+    val masking = Masking[Float](mask_value)
+
+    checkOutputAndGrad(masking, sigmoidCode)
+  }
+
+  "Masking" should "generate corrent result when batchsize != 1" in {
+    val inputSize = 2
+    val times = 7
+    val batchSize = 3
+    val mask_value = -1
+
+    val sigmoidCode =
+      s"""
+        |input_tensor = Input(shape=[${times}, ${inputSize}])
+        |input = np.array([1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, ${mask_value}, 1, 2,
+        |        2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 1, 1, 2, 2, 3, 3,
+        |        ${mask_value}, ${mask_value}, 5,
+        |        5, 6, 6, 7, 7]).reshape(${batchSize}, ${times}, ${inputSize})
+        |output_tensor = Masking(${mask_value})(input_tensor)
+        |model = Model(input=input_tensor, output=output_tensor)
+      """.stripMargin
+
+    val masking = Masking[Float](mask_value)
+
+    checkOutputAndGrad(masking, sigmoidCode)
   }
 }

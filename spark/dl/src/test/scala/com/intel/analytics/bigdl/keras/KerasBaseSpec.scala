@@ -64,7 +64,7 @@ abstract class KerasBaseSpec extends BigDLSpecHelper {
       val bgradient = bmodel.parameters()._2
       val newW = weightConverter(gradWeight)
       bgradient(0).almostEqual(newW(0), precision) should be(true)
-      
+
       if (bgradient.length > 1) {
         bgradient(1).almostEqual(newW(1), precision) should be(true)
       }

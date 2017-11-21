@@ -20,28 +20,14 @@ import com.intel.analytics.bigdl.nn.Maxout
 import com.intel.analytics.bigdl.tensor.Tensor
 
 class MaxoutSpec extends KerasBaseSpec {
-  "Maxout" should "work with batchSize != 1" in {
-    val batchSize = 3
+  "Maxout" should "generate corrent result when batchsize == 1" in {
     val inputSize = 2
     val outputSize = 4
     val maxoutNumber = 3
-    val inputData = Array[Double](1.0, 2, 3, 4, 5, 6)
-    val input = Tensor[Double](inputData, Array(batchSize, inputSize))
-
-    val maxout = Maxout[Double](inputSize, outputSize, maxoutNumber)
-
-    val output = maxout.forward(input)
-    val gradOutput = Tensor[Double](output.size()).fill(1.0)
-    val gradInput = maxout.backward(input, gradOutput)
-  }
-
-  "Maxout" should "generate corrent result" in {
-    val inputSize = 2
-    val outputSize = 4
-    val maxoutNumber = 3
+    val batchSize = 1
 
     val sigmoidCode =
-      """
+      s"""
         |#w1 = np.array([[[1.0, 2.0, 3.0, 4.0],
         |#               [5, 6, 7, 8.0]],
         |#              [[-1, -2, -3, -4],
@@ -53,15 +39,16 @@ class MaxoutSpec extends KerasBaseSpec {
         |#       [ 0.0,  0.0,  0.0,  0.0]])
         |# w = [w1, b]
         |
-        |input_tensor = Input(shape=[2])
-        |#output_tensor = MaxoutDense(output_dim=4, input_dim=2, nb_feature=3, weights=w)(input_tensor)
-        |output_tensor = MaxoutDense(output_dim=4, input_dim=2, nb_feature=3)(input_tensor)
+        |input_tensor = Input(shape=[${inputSize}])
+        |input = np.random.uniform(0, 1, [${batchSize}, ${inputSize}])
+        |#output_tensor=MaxoutDense(output_dim=4,input_dim=2,nb_feature=3,weights=w)(input_tensor)
+        |output_tensor = MaxoutDense(output_dim=${outputSize}, input_dim=${inputSize},
+        |nb_feature=${maxoutNumber})(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
-    val (gradInput, gradWeight, weights, input, output) = KerasRunner.run(sigmoidCode)
-         
+
     val maxout = Maxout[Float](inputSize, outputSize, maxoutNumber)
-    
+
     val wc = (data: Array[Tensor[Float]]) => {
       val out = new Array[Tensor[Float]](data.length)
       out(0) = Tensor(inputSize, maxoutNumber * outputSize)
@@ -78,7 +65,54 @@ class MaxoutSpec extends KerasBaseSpec {
       }
       out
     }
-    
+    checkOutputAndGrad(maxout, sigmoidCode, weightConverter = wc)
+  }
+
+  "Maxout" should "generate corrent result when batchsize != 1" in {
+    val inputSize = 5
+    val outputSize = 4
+    val maxoutNumber = 3
+    val batchSize = 4
+
+    val sigmoidCode =
+      s"""
+        |#w1 = np.array([[[1.0, 2.0, 3.0, 4.0],
+        |#               [5, 6, 7, 8.0]],
+        |#              [[-1, -2, -3, -4],
+        |#               [-5, -6, -7, -8]],
+        |#              [[9, 10, 11, 12],
+        |#               [-9, -10, -11, -12]]])
+        |#b = np.array([[ 0.0,  0.0,  0.0,  0.0],
+        |#       [ 0.0,  0.0,  0.0,  0.0],
+        |#       [ 0.0,  0.0,  0.0,  0.0]])
+        |# w = [w1, b]
+        |
+        |input_tensor = Input(shape=[${inputSize}])
+        |input = np.random.uniform(0, 1, [${batchSize}, ${inputSize}])
+        |#output_tensor=MaxoutDense(output_dim=4,input_dim=2,nb_feature=3,weights=w)(input_tensor)
+        |output_tensor = MaxoutDense(output_dim=${outputSize}, input_dim=${inputSize},
+        |nb_feature=${maxoutNumber})(input_tensor)
+        |model = Model(input=input_tensor, output=output_tensor)
+      """.stripMargin
+
+    val maxout = Maxout[Float](inputSize, outputSize, maxoutNumber)
+
+    val wc = (data: Array[Tensor[Float]]) => {
+      val out = new Array[Tensor[Float]](data.length)
+      out(0) = Tensor(inputSize, maxoutNumber * outputSize)
+      val weight = out.head.storage().array()
+      var index = 0
+      for (i <- 1 to maxoutNumber) {
+        val sliceW = data(0).select(1, i).t.clone().storage().array()
+        System.arraycopy(sliceW, 0, weight, index, sliceW.size)
+        index += sliceW.size
+      }
+
+      if (data.length > 1) {
+        out(1) = data(1)
+      }
+      out
+    }
     checkOutputAndGrad(maxout, sigmoidCode, weightConverter = wc)
   }
 }
