@@ -726,6 +726,7 @@ val model = ConvLSTMPeephole(
   kernelI = 3,
   kernelC = 3,
   stride = 1,
+  padding = -1,
   wRegularizer = null,
   uRegularizer = null,
   bRegularizer = null,
@@ -741,6 +742,7 @@ model = ConvLSTMPeephole(
   kernel_i = 3,
   kernel_c = 3,
   stride = 1,
+  padding = -1,
   wRegularizer=None,
   uRegularizer=None,
   bRegularizer=None,
@@ -767,7 +769,9 @@ Parameters:
 * `outputSize` number of output planes the convolution layer will produce
 * `kernelI` convolutional filter size to convolve input
 * `kernelC` convolutional filter size to convolve cell
-* `stride` step of the convolution
+* `stride` step of the convolution, default is 1
+* `padding` step of the convolution, default is -1, behaves same with SAME padding in tensorflow
+                 Default stride,padding value ensure last 2 dim of output shape is the same with input
 * `wRegularizer` instance of [[Regularizer]]
                    (eg. L1 or L2 regularization), applied to the input weights matrices.
 * `uRegularizer` instance [[Regularizer]]
@@ -964,6 +968,7 @@ val model = ConvLSTMPeephole3D(
   kernelI = 3,
   kernelC = 3,
   stride = 1,
+  padding = -1,
   wRegularizer = null,
   uRegularizer = null,
   bRegularizer = null,
@@ -979,6 +984,7 @@ model = ConvLSTMPeephole3D(
   kernel_i = 3,
   kernel_c = 3,
   stride = 1,
+  padding = -1,
   wRegularizer=None,
   uRegularizer=None,
   bRegularizer=None,
@@ -1000,7 +1006,9 @@ Parameters:
 * `outputSize` number of output planes the convolution layer will produce
 * `kernelI` convolutional filter size to convolve input
 * `kernelC` convolutional filter size to convolve cell
-* `stride` step of the convolution
+* `stride` step of the convolution, default is 1
+* `padding` step of the convolution, default is -1, behaves same with SAME padding in tensorflow
+                 Default stride,padding value ensure last 3 dim of output shape is the same with input
 * `wRegularizer` instance of [[Regularizer]]
                    (eg. L1 or L2 regularization), applied to the input weights matrices.
 * `uRegularizer` instance [[Regularizer]]

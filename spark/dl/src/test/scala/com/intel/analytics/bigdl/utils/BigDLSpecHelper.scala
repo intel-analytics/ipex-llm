@@ -28,7 +28,7 @@ abstract class BigDLSpecHelper extends FlatSpec with Matchers with BeforeAndAfte
   private val tmpFiles : ArrayBuffer[JFile] = new ArrayBuffer[JFile]()
 
   protected def createTmpFile(): JFile = {
-    val file = java.io.File.createTempFile("UnitTest", "TensorflowLoaderSpecBase")
+    val file = java.io.File.createTempFile("UnitTest", "BigDLSpecBase")
     logger.info(s"created file $file")
     tmpFiles.append(file)
     file

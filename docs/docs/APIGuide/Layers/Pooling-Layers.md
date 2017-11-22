@@ -355,6 +355,133 @@ array([[[[ 0.        ,  0.        ,  0.        ],
          [ 0.        ,  0.        ,  0.        ]]]], dtype=float32)
 ```
 
+## VolumetricAveragePooling ##
+
+**Scala:**
+```scala
+val layer = VolumetricMaxPooling(
+  kT, kW, kH, dT, dW, dH,
+  padT=0, padW=0, padH=0,
+  countIncludePad=true, ceilMode=false
+)
+```
+**Python:**
+```python
+layer = VolumetricMaxPooling(
+  k_t, k_w, k_h, d_t, d_w, d_h
+  pad_t=0, pad_w=0, pad_h=0,
+  count_include_pad=True, ceil_mode=False
+)
+```
+
+Applies 3D average-pooling operation in kernel kT x kW x kH regions by step size dT x dW x dH.
+The number of output features is equal to the number of input planes / dT.
+The input can optionally be padded with zeros. Padding should be smaller than
+half of kernel size. That is, padT < kT/2, padW < kW/2 and padH < kH/2
+
+The input layout should be [batch, plane, time, height, width] or [plane, time, height, width]
+
+By default, countIncludePad=true, which means to include padding when dividing the number of elements in pooling region.
+One can use ceilMode to control whether the output size is to be ceiled or floored.
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+
+val layer = VolumetricAveragePooling(
+  2, 2, 2,
+  1, 1, 1,
+  0, 0, 0
+)
+
+val input = Tensor(T(T(
+  T(
+    T(1.0f, 2.0f, 3.0f),
+    T(4.0f, 5.0f, 6.0f),
+    T(7.0f, 8.0f, 9.0f)
+  ),
+  T(
+    T(4.0f, 5.0f, 6.0f),
+    T(1.0f, 3.0f, 9.0f),
+    T(2.0f, 3.0f, 7.0f)
+  )
+)))
+layer.forward(input)
+layer.backward(input, Tensor(T(T(T(
+  T(0.1f, 0.2f),
+  T(0.3f, 0.4f)
+)))))
+```
+
+Its output should be
+```
+(1,1,.,.) =
+3.125	4.875
+4.125	6.25
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x1x2x2]
+
+(1,1,.,.) =
+0.0125	0.0375	0.025
+0.05	0.125	0.075
+0.0375	0.087500006	0.05
+
+(1,2,.,.) =
+0.0125	0.0375	0.025
+0.05	0.125	0.075
+0.0375	0.087500006	0.05
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x2x3x3]
+```
+
+**Python example:**
+```python
+from bigdl.nn.layer import VolumetricAveragePooling
+import numpy as np
+
+layer = VolumetricAveragePooling(
+  2, 2, 2,
+  1, 1, 1,
+  0, 0, 0
+)
+
+input = np.array([[
+  [
+    [1.0, 2.0, 3.0],
+    [4.0, 5.0, 6.0],
+    [7.0, 8.0, 9.0]
+  ],
+  [
+    [4.0, 5.0, 6.0],
+    [1.0, 3.0, 9.0],
+    [2.0, 3.0, 7.0]
+  ]
+]])
+layer.forward(input)
+layer.backward(input, np.array([[[
+  [0.1, 0.2],
+  [0.3, 0.4]
+]]]))
+```
+
+
+Its output should be
+```
+array([[[[ 3.125  4.875]
+         [ 4.125  6.25 ]]]], dtype=float32)
+
+array([[[[ 0.0125      0.0375      0.025     ]
+         [ 0.05        0.125       0.075     ]
+         [ 0.0375      0.08750001  0.05      ]]
+
+        [[ 0.0125      0.0375      0.025     ]
+         [ 0.05        0.125       0.075     ]
+         [ 0.0375      0.08750001  0.05      ]]]], dtype=float32)
+```
+
 ## RoiPooling ##
 
 **Scala:**

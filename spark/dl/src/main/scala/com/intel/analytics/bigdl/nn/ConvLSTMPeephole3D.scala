@@ -34,6 +34,9 @@ import scala.reflect.ClassTag
  * @param kernelI Convolutional filter size to convolve input
  * @param kernelC Convolutional filter size to convolve cell
  * @param stride The step of the convolution
+ * @param padding The step of the convolution, default is -1,
+ *               behaves same with SAME padding in tensorflow.
+ *               Default stride,padding ensure last 3 dim of output shape is the same with input
  * @param wRegularizer: instance of [[Regularizer]]
             (eg. L1 or L2 regularization), applied to the input weights matrices.
  * @param uRegularizer: instance [[Regularizer]]
@@ -49,7 +52,8 @@ class ConvLSTMPeephole3D[T : ClassTag](
   val outputSize: Int,
   val kernelI: Int,
   val kernelC: Int,
-  val stride: Int,
+  val stride: Int = 1,
+  val padding: Int = -1,
   var wRegularizer: Regularizer[T] = null,
   var uRegularizer: Regularizer[T] = null,
   var bRegularizer: Regularizer[T] = null,
@@ -69,17 +73,17 @@ class ConvLSTMPeephole3D[T : ClassTag](
   override var preTopology: TensorModule[T] = null
   override var cell: AbstractModule[Activity, Activity, T] = buildModel()
 
-  def buildGate(): Sequential[T] = {
+  def buildGate(name: String = null): Sequential[T] = {
     val i2g = Sequential()
       .add(Contiguous())
       .add(VolumetricConvolution(inputSize, outputSize, kernelI, kernelI, kernelI,
-        stride, stride, stride, kernelI/2, kernelI/2, kernelI/2, wRegularizer = wRegularizer,
-        bRegularizer = bRegularizer))
+        stride, stride, stride, padding, padding, padding, wRegularizer = wRegularizer,
+        bRegularizer = bRegularizer).setName(name + "_i2g"))
     val h2g = Sequential()
       .add(Contiguous())
       .add(VolumetricConvolution(outputSize, outputSize, kernelC, kernelC, kernelC,
-      stride, stride, stride, kernelC/2, kernelC/2, kernelC/2, wRegularizer = uRegularizer,
-      withBias = false))
+      stride, stride, stride, padding, padding, padding, wRegularizer = uRegularizer,
+      withBias = false).setName(name + "_h2g"))
 
     val gate = Sequential()
     if (withPeephole) {
@@ -101,17 +105,17 @@ class ConvLSTMPeephole3D[T : ClassTag](
   }
 
   def buildInputGate(): Sequential[T] = {
-    inputGate = buildGate()
+    inputGate = buildGate("InputGate")
     inputGate
   }
 
   def buildForgetGate(): Sequential[T] = {
-    forgetGate = buildGate()
+    forgetGate = buildGate("ForgetGate")
     forgetGate
   }
 
   def buildOutputGate(): Sequential[T] = {
-    outputGate = buildGate()
+    outputGate = buildGate("OutputGate")
     outputGate
   }
 
@@ -122,13 +126,13 @@ class ConvLSTMPeephole3D[T : ClassTag](
     val i2h = Sequential()
       .add(Contiguous())
       .add(VolumetricConvolution(inputSize, outputSize, kernelI, kernelI, kernelI,
-        stride, stride, stride, kernelI/2, kernelI/2, kernelI/2, wRegularizer = wRegularizer,
-        bRegularizer = bRegularizer))
+        stride, stride, stride, padding, padding, padding, wRegularizer = wRegularizer,
+        bRegularizer = bRegularizer).setName("Hidden_i2h"))
     val h2h = Sequential()
       .add(Contiguous())
       .add(VolumetricConvolution(outputSize, outputSize, kernelC, kernelC, kernelC,
-      stride, stride, stride, kernelC/2, kernelC/2, kernelC/2, withBias = false,
-      wRegularizer = uRegularizer))
+      stride, stride, stride, padding, padding, padding, withBias = false,
+      wRegularizer = uRegularizer).setName("Hidden_h2h"))
 
     hidden
       .add(ParallelTable()
@@ -233,13 +237,14 @@ object ConvLSTMPeephole3D {
     kernelI: Int,
     kernelC: Int,
     stride: Int = 1,
+    padding: Int = -1,
     wRegularizer: Regularizer[T] = null,
     uRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
     cRegularizer: Regularizer[T] = null,
     withPeephole: Boolean = true
   )(implicit ev: TensorNumeric[T]): ConvLSTMPeephole3D[T] = {
-    new ConvLSTMPeephole3D[T](inputSize, outputSize, kernelI, kernelC, stride,
+    new ConvLSTMPeephole3D[T](inputSize, outputSize, kernelI, kernelC, stride, padding,
       wRegularizer, uRegularizer, bRegularizer, cRegularizer, withPeephole)
   }
 }

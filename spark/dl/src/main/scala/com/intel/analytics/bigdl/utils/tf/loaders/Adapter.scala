@@ -29,12 +29,10 @@ import scala.reflect.ClassTag
  *
  * Please note you must guarantee the input parameter won't change each time.
  * @param configIndexes configuration tensor indexes, start from 1 and -1 specify the last one
- * @param build build function
  * @tparam T Numeric type. Only support float/double now
  */
-class Adapter[T: ClassTag](
-  val configIndexes: Array[Int],
-  val build: Array[Tensor[_]] => AbstractModule[Activity, Activity, T]
+abstract class Adapter[T: ClassTag](
+  val configIndexes: Array[Int]
 )(implicit ev: TensorNumeric[T])
   extends AbstractModule[Table, Activity, T]{
 
@@ -45,8 +43,21 @@ class Adapter[T: ClassTag](
   private var realInput: Activity = _
   private var initTensors: Array[Tensor[_]] = _
 
+  def build(tensorArrays: Array[Tensor[_]]): AbstractModule[Activity, Activity, T]
+
   override def updateOutput(input: Table): Activity = {
+    var rebuildModule = false
     if (module == null) {
+      rebuildModule = true
+    } else {
+      indexes.map(i => input[Tensor[_]](i)).zip(initTensors).foreach(tensors => {
+        if (tensors._1 != tensors._2) {
+          rebuildModule = true
+        }
+      })
+    }
+
+    if (rebuildModule) {
       val l = input.length()
       indexes = configIndexes.map(getPositiveIndex(_, l))
       val tensors = indexes.map(i => input[Tensor[_]](i))
@@ -54,11 +65,6 @@ class Adapter[T: ClassTag](
       module = build(tensors)
       dataIndexes = getDataIndexes(indexes, l)
       zeroGrads = tensors.map(t => t.emptyInstance().resizeAs(t))
-    } else {
-      indexes.map(i => input[Tensor[_]](i)).zip(initTensors).foreach(tensors => {
-        require(tensors._1 == tensors._2, s"constant tensor is changed. " +
-          s"\noriginal\n${tensors._2}\nnow\n${tensors._1}")
-      })
     }
 
     realInput = if (dataIndexes.length == 1) {
@@ -103,13 +109,5 @@ class Adapter[T: ClassTag](
 
   override def accGradParameters(input: Table, gradOutput: Activity): Unit = {
     module.accGradParameters(realInput, gradOutput)
-  }
-}
-
-object Adapter {
-  def apply[T: ClassTag](
-    configIndexes: Array[Int], build: Array[Tensor[_]] => AbstractModule[Activity, Activity, T]
-  )(implicit ev: TensorNumeric[T]): Adapter[T] = {
-    new Adapter(configIndexes, build)
   }
 }

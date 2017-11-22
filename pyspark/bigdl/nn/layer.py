@@ -66,6 +66,22 @@ class Layer(JavaValue):
                 bigdl_type, JavaValue.jvm_class_constructor(self), *args)
         self.bigdl_type = bigdl_type
 
+    def set_running_mean(self, running_mean):
+        """
+        :param running_mean: a ndarray
+        """
+        callBigDlFunc(self.bigdl_type, "setRunningMean",
+                      self.value, JTensor.from_ndarray(running_mean))
+        return self
+
+    def set_running_std(self, running_std):
+        """
+        :param running_mean: a ndarray
+        """
+        callBigDlFunc(self.bigdl_type, "setRunningStd",
+                      self.value, JTensor.from_ndarray(running_std))
+        return self
+
     def __str__(self):
         """
         >>> conv2 = SpatialConvolution(6, 12, 5, 5).set_name("conv2")
@@ -267,6 +283,43 @@ class Layer(JavaValue):
         else:
             raise Exception("Error when calling evaluate(): it takes no argument or exactly three arguments only")
 
+    def _to_jtensors(self, x):
+        x = to_list(x)
+        if isinstance(x[0], np.ndarray):
+            return [JTensor.from_ndarray(i) for i in x]
+        elif isinstance(x[0], JTensor):
+            return x
+        else:
+            raise Exception("Not supported type: %s" % type(x[0]))
+
+
+    def predict_local(self, X):
+        """
+        :param X: X can be a ndarray or list of ndarray if the model has multiple inputs.
+                  The first dimension of X should be batch.
+        :return: a ndarray as the prediction result.
+        """
+
+        jresults = callBigDlFunc(self.bigdl_type,
+                             "predictLocal",
+                               self.value,
+                               self._to_jtensors(X))
+
+        return np.stack([j.to_ndarray()for j in jresults])
+
+    def predict_local_class(self, X):
+        """
+
+        :param X: X can be a ndarray or list of ndarray if the model has multiple inputs.
+                  The first dimension of X should be batch.
+        :return: a ndarray as the prediction result.
+        """
+        result = callBigDlFunc(self.bigdl_type,
+                             "predictLocalClass",
+                               self.value,
+                               self._to_jtensors(X))
+        return np.stack(result)
+
     def predict(self, data_rdd):
         """
         Model inference base on the given data.
@@ -350,6 +403,10 @@ class Layer(JavaValue):
             print("The layer does not have weight/bias")
             return None
 
+    def is_with_weights(self):
+        return callBigDlFunc(self.bigdl_type,
+                  "isWithWeights", self.value)
+
     def save(self, path, over_write = False):
         callBigDlFunc(self.bigdl_type, "modelSave", self.value, path,
                       over_write)
@@ -413,17 +470,20 @@ class Layer(JavaValue):
         callBigDlFunc(self.bigdl_type, "unFreeze", self.value, names)
         return self
 
-    def training(self):
+    def training(self, is_training=True):
         '''
-        Set this layer in the training mode 
+        Set this layer in the training mode or in predition mode if is_training=False
         '''
-        callJavaFunc(get_spark_context(), self.value.training)
+        if is_training:
+            callJavaFunc(get_spark_context(), self.value.training)
+        else:
+            callJavaFunc(get_spark_context(), self.value.evaluate)
         return self
 
     def is_training(self):
         '''
         :return: Whether this layer is in the training mode
-        
+
         >>> layer = Dropout()
         creating: createDropout
         >>> layer = layer.evaluate()
@@ -442,7 +502,7 @@ class Layer(JavaValue):
 
         >>> fc = Linear(4, 2)
         creating: createLinear
-        >>> fc.set_weights([np.ones((4, 2)), np.ones((2,))])
+        >>> fc.set_weights([np.ones((2, 4)), np.ones((2,))])
         >>> input = np.ones((2, 4))
         >>> fc.forward(input)
         array([[ 5.,  5.],
@@ -531,6 +591,12 @@ class Container(Layer):
         self.value.add(model.value)
         return self
 
+    @property
+    def layers(self):
+        jlayers = callBigDlFunc(self.bigdl_type, "getContainerModules" , self)
+        layers = [Layer.of(jlayer) for jlayer in jlayers]
+        return layers
+
 
 class Model(Container):
     """
@@ -562,8 +628,12 @@ class Model(Container):
     def __init__(self,
                  inputs,
                  outputs,
+                 jvalue=None,
                  bigdl_type="float", byte_order="little_endian", model_type="bigdl"):
-        if model_type == "bigdl":
+        if jvalue:
+            self.value = jvalue
+            self.bigdl_type = bigdl_type
+        elif model_type == "bigdl":
             super(Model, self).__init__(None, bigdl_type,
                                     to_list(inputs),
                                     to_list(outputs))
@@ -572,6 +642,20 @@ class Model(Container):
             model = convert(to_list(inputs), to_list(outputs), byte_order, bigdl_type)
             super(Model, self).__init__(model, bigdl_type)
 
+
+    @staticmethod
+    def from_jvalue(jvalue, bigdl_type="float"):
+        """
+        Create a Python Model base on the given java value
+        :param jvalue: Java object create by Py4j
+        :return: A Python Model
+        """
+        model = Model([], [], jvalue=jvalue)
+        model.value = jvalue
+        return model
+
+    def __str__(self):
+        return "->".join(self.layers())
 
     @staticmethod
     def load(path, bigdl_type="float"):
@@ -605,6 +689,22 @@ class Model(Container):
         """
         jmodel = callBigDlFunc(bigdl_type, "loadTorch", path)
         return Layer.of(jmodel)
+
+    @staticmethod
+    def load_keras(def_path, weights_path=None, by_name=False):
+        """
+        Load a pre-trained Keras model.
+
+        :param def_path: The json path containing the keras model definition.
+        :param weights_path: The HDF5 path containing the pre-trained keras model weights.
+        :return: A pre-trained model.
+        """
+        from bigdl.keras.converter import DefinitionLoader, WeightLoader
+        if weights_path:
+            return WeightLoader.load_weights_from_json_hdf5(def_path, weights_path, by_name=by_name)
+        else:
+            return DefinitionLoader.from_json_path(def_path)
+        return bmodel
 
     @staticmethod
     def load_caffe(model, defPath, modelPath, match_all=True, bigdl_type="float"):
@@ -1746,6 +1846,7 @@ class BatchNormalization(Layer):
                                                  JTensor.from_ndarray(init_bias),
                                                  JTensor.from_ndarray(init_grad_weight),
                                                  JTensor.from_ndarray(init_grad_bias))
+
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
@@ -1890,6 +1991,26 @@ class CAddTable(Layer):
                  inplace=False,
                  bigdl_type="float"):
         super(CAddTable, self).__init__(None, bigdl_type,
+                                        inplace)
+
+class CAveTable(Layer):
+
+    '''
+    Merge the input tensors in the input table by element wise taking the average. The input
+    table is actually an array of tensor with same size.
+
+
+    :param inplace: reuse the input memory
+
+
+    >>> cAveTable = CAveTable(True)
+    creating: createCAveTable
+    '''
+
+    def __init__(self,
+                 inplace=False,
+                 bigdl_type="float"):
+        super(CAveTable, self).__init__(None, bigdl_type,
                                         inplace)
 
 
@@ -3659,6 +3780,57 @@ class VolumetricMaxPooling(Layer):
                                                     pad_h)
 
 
+class VolumetricAveragePooling(Layer):
+
+    '''
+    Applies 3D average-pooling operation in kTxkWxkH regions by step size dTxdWxdH.
+    The number of output features is equal to the number of input planes / dT.
+    The input can optionally be padded with zeros. Padding should be smaller than
+    half of kernel size. That is, padT < kT/2, padW < kW/2 and padH < kH/2
+
+    :param k_t: The kernel size
+    :param k_w: The kernel width
+    :param k_h: The kernel height
+    :param d_t: The step in the time dimension
+    :param d_w: The step in the width dimension
+    :param d_h: The step in the height dimension
+    :param pad_t: The padding in the time dimension
+    :param pad_w: The padding in the width dimension
+    :param pad_h: The padding in the height dimension
+    :param count_include_pad: whether to include padding when dividing the number of elements in pooling region
+    :param ceil_mode: whether the output size is to be ceiled or floored
+
+
+    >>> volumetricAveragePooling = VolumetricAveragePooling(5, 5, 5, 1, 1, 1)
+    creating: createVolumetricAveragePooling
+    '''
+
+    def __init__(self,
+                 k_t,
+                 k_w,
+                 k_h,
+                 d_t,
+                 d_w,
+                 d_h,
+                 pad_t=0,
+                 pad_w=0,
+                 pad_h=0,
+                 count_include_pad=True,
+                 ceil_mode=False,
+                 bigdl_type="float"):
+        super(VolumetricAveragePooling, self).__init__(None, bigdl_type,
+                                                        k_t,
+                                                        k_w,
+                                                        k_h,
+                                                        d_t,
+                                                        d_w,
+                                                        d_h,
+                                                        pad_t,
+                                                        pad_w,
+                                                        pad_h,
+                                                        count_include_pad,
+                                                        ceil_mode)
+
 class SpatialZeroPadding(Layer):
 
     '''
@@ -4222,14 +4394,15 @@ class ConvLSTMPeephole(Layer):
     :param output_size: number of output planes the convolution layer will produce
     :param kernel_i Convolutional filter size to convolve input
     :param kernel_c Convolutional filter size to convolve cell
-    :param stride The step of the convolution
+    :param stride The step of the convolution, default is 1
+    :param padding The additional zeros added, default is -1
     :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices
     :param uRegularizer: instance [[Regularizer]](eg. L1 or L2 regularization), applied to the recurrent weights matrices
     :param bRegularizer: instance of [[Regularizer]]applied to the bias.
     :param cRegularizer: instance of [[Regularizer]]applied to peephole.
     :param with_peephole: whether use last cell status control a gate.
 
-    >>> convlstm = ConvLSTMPeephole(4, 3, 3, 3, 1, L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
+    >>> convlstm = ConvLSTMPeephole(4, 3, 3, 3, 1, -1, L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
     creating: createL1Regularizer
     creating: createL1Regularizer
     creating: createL1Regularizer
@@ -4237,10 +4410,10 @@ class ConvLSTMPeephole(Layer):
     creating: createConvLSTMPeephole
     '''
 
-    def __init__(self, input_size, output_size, kernel_i, kernel_c, stride, wRegularizer=None, uRegularizer=None,
+    def __init__(self, input_size, output_size, kernel_i, kernel_c, stride=1, padding=-1, wRegularizer=None, uRegularizer=None,
                  bRegularizer=None, cRegularizer=None, with_peephole=True, bigdl_type="float"):
         super(ConvLSTMPeephole, self).__init__(None, bigdl_type, input_size, output_size, kernel_i, kernel_c, stride,
-                                                 wRegularizer, uRegularizer, bRegularizer, cRegularizer, with_peephole)
+                                                padding, wRegularizer, uRegularizer, bRegularizer, cRegularizer, with_peephole)
 
 class Tile(Layer):
     '''
@@ -4269,13 +4442,14 @@ class ConvLSTMPeephole3D(Layer):
     :param kernel_i Convolutional filter size to convolve input
     :param kernel_c Convolutional filter size to convolve cell
     :param stride The step of the convolution
+    :param padding The additional zeros added
     :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices
     :param uRegularizer: instance [[Regularizer]](eg. L1 or L2 regularization), applied to the recurrent weights matrices
     :param bRegularizer: instance of [[Regularizer]]applied to the bias.
     :param cRegularizer: instance of [[Regularizer]]applied to peephole.
     :param with_peephole: whether use last cell status control a gate.
 
-    >>> convlstm = ConvLSTMPeephole3D(4, 3, 3, 3, 1, L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
+    >>> convlstm = ConvLSTMPeephole3D(4, 3, 3, 3, 1, -1, L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
     creating: createL1Regularizer
     creating: createL1Regularizer
     creating: createL1Regularizer
@@ -4283,10 +4457,10 @@ class ConvLSTMPeephole3D(Layer):
     creating: createConvLSTMPeephole3D
     '''
 
-    def __init__(self, input_size, output_size, kernel_i, kernel_c, stride, wRegularizer=None, uRegularizer=None,
+    def __init__(self, input_size, output_size, kernel_i, kernel_c, stride=1, padding=-1, wRegularizer=None, uRegularizer=None,
                  bRegularizer=None, cRegularizer=None, with_peephole=True, bigdl_type="float"):
         super(ConvLSTMPeephole3D, self).__init__(None, bigdl_type, input_size, output_size, kernel_i, kernel_c, stride,
-                                                 wRegularizer, uRegularizer, bRegularizer, cRegularizer, with_peephole)
+                                                 padding, wRegularizer, uRegularizer, bRegularizer, cRegularizer, with_peephole)
 
 
 class MultiRNNCell(Layer):
@@ -4310,11 +4484,11 @@ class ResizeBilinear(Layer):
     """
     Resize the input image with bilinear interpolation. The input image must be a float tensor with
     NHWC layout
-    
+
     :param output_height: output height
     :param output_width: output width
     :param align_corner: align corner or not
-    
+
     >>> resizeBilinear = ResizeBilinear(10, 20, False)
     creating: createResizeBilinear
     """
@@ -4329,6 +4503,20 @@ class GaussianSampler(Layer):
     """
     def __init__(self, bigdl_type="float"):
         super(GaussianSampler, self).__init__(None, bigdl_type)
+
+class HardSigmoid(Layer):
+    """
+    Apply Hard-sigmoid function
+```   
+               |  0, if x < -2.5
+        f(x) = |  1, if x > 2.5
+               |  0.2 * x + 0.5, otherwise
+```
+    >>> hardSigmoid = HardSigmoid()
+    creating: createHardSigmoid
+    """
+    def __init__(self, bigdl_type="float"):
+        super(HardSigmoid, self).__init__(None, bigdl_type)
 
 def _test():
     import doctest
