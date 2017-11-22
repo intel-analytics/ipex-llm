@@ -16,35 +16,39 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Table
+
 
 import scala.reflect.ClassTag
 
-class Highway[T: ClassTag](size: Int, activation: String = "tanh")
-  (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+class Highway[T: ClassTag](size: Int, withBias: Boolean = true,
+  activation: String = null)
+  (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
 
   var input = Input()
-  var gate = Linear(size, size).inputs(input)
-  gate = Sigmoid().inputs(gate)
-  val negatedGate = AddConstant(-1, true).inputs(Negative(true).inputs(gate))
-  var transformed = Linear(size, size).inputs(input)
-  transformed = act.inputs(input)
-  val transformedGated = CMulTable().inputs(gate, transformed)
+  val l1 = Linear(size, size, withBias = withBias).inputs(input)
+  val transformWeight = Sigmoid().inputs(l1)
+  val negatedGate = AddConstant(1).inputs(Negative().inputs(transformWeight))
+  val l2 = Linear(size, size, withBias = withBias).inputs(input)
+  val transformed = if (null != act) act.inputs(l2) else l2
+  val transformedGated = CMulTable().inputs(transformWeight, transformed)
   val identityGate = CMulTable().inputs(negatedGate, input)
   val value = CAddTable().inputs(transformedGated, identityGate)
   val highway = Graph(Array(input), Array(value))
 
+  modules.append(highway)
+
   private def act = activation match {
     case "tanh" => Tanh()
+    case _ => null
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     val dim = input.size(2)
     require(dim == size, "the given size is not equal to the input size")
-    output = highway.forward(input).toTensor[T]
+    output = highway.updateOutput(input).toTensor[T]
     output
   }
 
@@ -57,19 +61,10 @@ class Highway[T: ClassTag](size: Int, activation: String = "tanh")
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
     highway.accGradParameters(input, gradOutput)
   }
-
-
-  override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
-    highway.parameters()
-  }
-
-
-  override def getParametersTable(): Table = {
-    highway.getParametersTable()
-  }
 }
 
 object Highway {
-  def apply[@specialized(Float, Double) T: ClassTag](size: Int, activation: String = "tanh")
-    (implicit ev: TensorNumeric[T]): Highway[T] = new Highway(size, activation)
+  def apply[@specialized(Float, Double) T: ClassTag](size: Int, withBias: Boolean = true,
+    activation: String = null)
+    (implicit ev: TensorNumeric[T]): Highway[T] = new Highway(size, withBias, activation)
 }

@@ -16,7 +16,8 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.keras.KerasBaseSpec
+import com.intel.analytics.bigdl.keras.{KerasBaseSpec, KerasRunner}
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 
 class HighwaySpec extends KerasBaseSpec {
@@ -25,11 +26,59 @@ class HighwaySpec extends KerasBaseSpec {
       """
         |input_tensor = Input(shape=[2])
         |input = np.random.uniform(0, 1, [3, 2])
-        |output_tensor = Highway()(input_tensor)
+        |output_tensor = Highway(activation='tanh')(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
-    val highway = new Highway[Float](2)
-    def weightConverter(in: Array[Tensor[Float]]): Array[Tensor[Float]] = Array(in(0).t(), in(1))
+    val highway = new Highway[Float](2, activation = "tanh")
+    def weightConverter(in: Array[Tensor[Float]]): Array[Tensor[Float]] =
+      Array(in(1).t(), in(3), in(0).t(), in(2))
     checkOutputAndGrad(highway, kerasCode, weightConverter)
+  }
+
+  "highway forward backward noBias" should "work properly" in {
+    val kerasCode =
+      """
+        |input_tensor = Input(shape=[2])
+        |input = np.random.uniform(0, 1, [3, 2])
+        |output_tensor = Highway(activation='tanh', bias=None)(input_tensor)
+        |model = Model(input=input_tensor, output=output_tensor)
+      """.stripMargin
+    val highway = new Highway[Float](2, activation = "tanh", withBias = false)
+    def weightConverter(in: Array[Tensor[Float]]): Array[Tensor[Float]] =
+      Array(in(1).t(), in(0).t())
+
+    checkOutputAndGrad(highway, kerasCode, weightConverter)
+  }
+
+  "highway forward backward no activation" should "work properly" in {
+    val kerasCode =
+      """
+        |input_tensor = Input(shape=[2])
+        |input = np.random.uniform(0, 1, [3, 2])
+        |output_tensor = Highway(bias=None)(input_tensor)
+        |model = Model(input=input_tensor, output=output_tensor)
+      """.stripMargin
+    val highway = new Highway[Float](2, withBias = false)
+    def weightConverter(in: Array[Tensor[Float]]): Array[Tensor[Float]] =
+      Array(in(1).t(), in(0).t())
+
+    checkOutputAndGrad(highway, kerasCode, weightConverter)
+  }
+
+  override def checkOutputAndGrad(bmodel: AbstractModule[Tensor[Float], Tensor[Float], Float],
+    kerasCode: String,
+    weightConverter: (Array[Tensor[Float]]) => Array[Tensor[Float]],
+    precision: Double = 1e-5): Unit = {
+    ifskipTest()
+    val (gradInput, gradWeight, weights, input, target, output) = KerasRunner.run(kerasCode)
+    // Ensure they share the same weights
+    if (weights != null) {
+      bmodel.setWeightsBias(weightConverter(weights))
+    }
+    val boutput = bmodel.forward(input)
+    boutput.almostEqual(output, precision) should be(true)
+
+    val bgradInput = bmodel.backward(input, boutput.clone().fill(1))
+    bgradInput.almostEqual(gradInput, precision) should be(true)
   }
 }
