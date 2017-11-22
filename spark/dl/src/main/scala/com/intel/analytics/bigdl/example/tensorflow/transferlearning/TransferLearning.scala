@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.example.tensorflow.transferLearning
+package com.intel.analytics.bigdl.example.tensorflow.transferlearning
 
 import java.nio.ByteOrder
 
