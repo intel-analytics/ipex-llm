@@ -354,24 +354,24 @@ object VolumetricConvolution {
     }
   }
 
-  private[bigdl] def conv3DBackpropInput[T](input: Tensor[T],
-                                         gradInput: Tensor[T],
-                                         gradOutput: Tensor[T],
-                                         weightMM: Tensor[T],
-                                         fGradInput: Tensor[T],
-                                         kT: Int, kW: Int, kH: Int,
-                                         dT: Int, dW: Int, dH: Int,
-                                         padT: Int, padW: Int, padH: Int
-                                        )(implicit ev: TensorNumeric[T]) = {
-    val dimChannel = if (input.dim() == 4) 1 else 2
-    val dimDepth = if (input.dim() == 4) 2 else 3
-    val dimWidth = if (input.dim() == 4) 4 else 5
-    val dimHeight = if (input.dim() == 4) 3 else 4
+  private[bigdl] def conv3DBackpropInput[T](inputSize: Array[Int],
+                                            gradInput: Tensor[T],
+                                            gradOutput: Tensor[T],
+                                            weightMM: Tensor[T],
+                                            fGradInput: Tensor[T],
+                                            kT: Int, kW: Int, kH: Int,
+                                            dT: Int, dW: Int, dH: Int,
+                                            padT: Int, padW: Int, padH: Int
+                                           )(implicit ev: TensorNumeric[T]): Unit = {
+    val dimChannel = if (inputSize.length == 4) 1 else 2
+    val dimDepth = if (inputSize.length == 4) 3 else 3
+    val dimWidth = if (inputSize.length == 4) 4 else 5
+    val dimHeight = if (inputSize.length == 4) 3 else 4
 
-    val nInputPlane = input.size(dimChannel)
-    val inputWidth = input.size(dimWidth)
-    val inputHeight = input.size(dimHeight)
-    val inputDepth = input.size(dimDepth)
+    val nInputPlane = inputSize(dimChannel - 1)
+    val inputWidth = inputSize(dimWidth - 1)
+    val inputHeight = inputSize(dimHeight - 1)
+    val inputDepth = inputSize(dimDepth - 1)
 
 
     val outputDepth = gradOutput.size(dimDepth)
@@ -393,9 +393,9 @@ object VolumetricConvolution {
     val padTop = sizes(2)
     val padBottom = sizes(3)
 
-    gradInput.resizeAs(input)
+    gradInput.resize(inputSize)
 
-    if (input.dim() == 4) {
+    if (inputSize.length == 4) {
       fGradInput.resize(kT * kW * kH * nInputPlane, outputDepth * outputHeight * outputWidth)
       require(gradOutput.isContiguous(), "gradOutput should be contiguous")
       updateGradInputFrame(gradInput, gradOutput, weightMM.transpose(1, 2), fGradInput,
@@ -403,11 +403,11 @@ object VolumetricConvolution {
         dT, dW, dH,
         padFront, padLeft, padTop, padBack, padRight, padBottom)
     } else {
-      fGradInput.resize(input.size(1), kT * kW * kH * nInputPlane,
+      fGradInput.resize(inputSize(0), kT * kW * kH * nInputPlane,
         outputDepth * outputHeight * outputWidth)
       // batch mode
       var t = 1
-      while (t <= input.size(1)) {
+      while (t <= inputSize(0)) {
         val gradInputT = gradInput.select(1, t)
         val gradOutputT = gradOutput.select(1, t)
         val fGradInputT = fGradInput.select(1, t)
@@ -419,6 +419,19 @@ object VolumetricConvolution {
         t += 1
       }
     }
+  }
+
+  private[bigdl] def conv3DBackpropInput[T](input: Tensor[T],
+                                         gradInput: Tensor[T],
+                                         gradOutput: Tensor[T],
+                                         weightMM: Tensor[T],
+                                         fGradInput: Tensor[T],
+                                         kT: Int, kW: Int, kH: Int,
+                                         dT: Int, dW: Int, dH: Int,
+                                         padT: Int, padW: Int, padH: Int
+                                        )(implicit ev: TensorNumeric[T]): Unit = {
+    conv3DBackpropInput(input.size(), gradInput, gradOutput, weightMM, fGradInput,
+      kT, kW, kH, dT, dW, dH, padT, padW, padH)
   }
 
   private def updateGradInputFrame[T](
