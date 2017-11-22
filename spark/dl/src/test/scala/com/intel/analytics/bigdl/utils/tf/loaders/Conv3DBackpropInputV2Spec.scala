@@ -25,13 +25,13 @@ import com.intel.analytics.bigdl.utils.tf.Tensorflow._
 
 class Conv3DBackpropInputV2Spec extends TensorflowSpecHelper {
 
-  "Conv3DBackpropInputV2 forward" should "be correct" in {
+  "Conv3DBackpropInputV2 forward with VALID padding" should "be correct" in {
 
     val dataFormat = AttrValue.newBuilder().setS(ByteString
       .copyFrom("NDHWC", Charset.defaultCharset())).build()
 
     val builder = NodeDef.newBuilder()
-      .setName(s"Conv3DBackpropInputTest")
+      .setName(s"Conv3DBackpropInputV2Test")
       .setOp("Conv3DBackpropInputV2")
       .putAttr("T", typeAttr(DataType.DT_FLOAT))
       .putAttr("strides", listIntAttr(Seq(1, 1, 1, 1, 1)))
@@ -41,6 +41,31 @@ class Conv3DBackpropInputV2Spec extends TensorflowSpecHelper {
     val inputSize = Tensor[Int](Array(4, 20, 30, 40, 3), Array(5))
     val filter = Tensor[Float](2, 3, 4, 3, 4).rand()
     val outputBackprop = Tensor[Float](4, 19, 28, 37, 4)
+
+    compare(
+      builder,
+      Seq(inputSize, filter, outputBackprop),
+      0,
+      1e-4
+    )
+  }
+
+  "Conv3DBackpropInputV2 forward with SAME padding" should "be correct" in {
+
+    val dataFormat = AttrValue.newBuilder().setS(ByteString
+      .copyFrom("NDHWC", Charset.defaultCharset())).build()
+
+    val builder = NodeDef.newBuilder()
+      .setName(s"Conv3DBackpropInputV2Test")
+      .setOp("Conv3DBackpropInputV2")
+      .putAttr("T", typeAttr(DataType.DT_FLOAT))
+      .putAttr("strides", listIntAttr(Seq(1, 1, 1, 1, 1)))
+      .putAttr("padding", PaddingType.PADDING_SAME.value)
+      .putAttr("data_format", dataFormat)
+
+    val inputSize = Tensor[Int](Array(4, 20, 30, 40, 3), Array(5))
+    val filter = Tensor[Float](2, 3, 4, 3, 4).rand()
+    val outputBackprop = Tensor[Float](4, 20, 30, 40, 4)
 
     compare(
       builder,

@@ -15,59 +15,51 @@
  */
 package com.intel.analytics.bigdl.utils.tf.loaders
 
-import java.nio.charset.Charset
 
-import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.tf.{PaddingType, TensorflowSpecHelper}
-import org.tensorflow.framework.{AttrValue, DataType, NodeDef}
+import org.tensorflow.framework.{DataType, NodeDef}
 import com.intel.analytics.bigdl.utils.tf.Tensorflow._
 
-class Conv3DSpec extends TensorflowSpecHelper {
+class Conv3DBackpropFilterSpec extends TensorflowSpecHelper {
 
-  "Conv3D forward with VALID padding" should "be correct" in {
-
-    val dataFormat = AttrValue.newBuilder().setS(ByteString
-      .copyFrom("NDHWC", Charset.defaultCharset())).build()
+  "Conv3DBackpropFilter forward with VALID padding" should "be correct" in {
 
     val builder = NodeDef.newBuilder()
-      .setName(s"Conv3DTest")
-      .setOp("Conv3D")
+      .setName(s"Conv3DBackpropFilterTest")
+      .setOp("Conv3DBackpropFilter")
       .putAttr("T", typeAttr(DataType.DT_FLOAT))
       .putAttr("strides", listIntAttr(Seq(1, 1, 1, 1, 1)))
       .putAttr("padding", PaddingType.PADDING_VALID.value)
-      .putAttr("data_format", dataFormat)
 
     val input = Tensor[Float](4, 20, 30, 40, 3).rand()
     val filter = Tensor[Float](2, 3, 4, 3, 4).rand()
+    val outputBackprop = Tensor[Float](4, 19, 28, 37, 4)
 
     compare(
       builder,
-      Seq(input, filter),
+      Seq(input, filter, outputBackprop),
       0,
       1e-4
     )
   }
 
-  "Conv3D forward with SAME padding" should "be correct" in {
-
-    val dataFormat = AttrValue.newBuilder().setS(ByteString
-      .copyFrom("NDHWC", Charset.defaultCharset())).build()
+  "Conv3DBackpropFilter forward with SAME padding" should "be correct" in {
 
     val builder = NodeDef.newBuilder()
-      .setName(s"Conv3DTest")
-      .setOp("Conv3D")
+      .setName(s"Conv3DBackpropFilterTest")
+      .setOp("Conv3DBackpropFilter")
       .putAttr("T", typeAttr(DataType.DT_FLOAT))
       .putAttr("strides", listIntAttr(Seq(1, 1, 1, 1, 1)))
       .putAttr("padding", PaddingType.PADDING_SAME.value)
-      .putAttr("data_format", dataFormat)
 
     val input = Tensor[Float](4, 20, 30, 40, 3).rand()
     val filter = Tensor[Float](2, 3, 4, 3, 4).rand()
+    val outputBackprop = Tensor[Float](4, 20, 30, 40, 4)
 
     compare(
       builder,
-      Seq(input, filter),
+      Seq(input, filter, outputBackprop),
       0,
       1e-4
     )

@@ -23,55 +23,55 @@ import com.intel.analytics.bigdl.utils.tf.{PaddingType, TensorflowSpecHelper}
 import org.tensorflow.framework.{AttrValue, DataType, NodeDef}
 import com.intel.analytics.bigdl.utils.tf.Tensorflow._
 
-class Conv3DSpec extends TensorflowSpecHelper {
+class Conv3DBackpropFilterV2Spec extends TensorflowSpecHelper {
 
-  "Conv3D forward with VALID padding" should "be correct" in {
+  "Conv3DBackpropFilter forward with VALID padding" should "be correct" in {
 
     val dataFormat = AttrValue.newBuilder().setS(ByteString
       .copyFrom("NDHWC", Charset.defaultCharset())).build()
 
     val builder = NodeDef.newBuilder()
-      .setName(s"Conv3DTest")
-      .setOp("Conv3D")
+      .setName(s"Conv3DBackpropFilterV2Test")
+      .setOp("Conv3DBackpropFilterV2")
       .putAttr("T", typeAttr(DataType.DT_FLOAT))
       .putAttr("strides", listIntAttr(Seq(1, 1, 1, 1, 1)))
       .putAttr("padding", PaddingType.PADDING_VALID.value)
       .putAttr("data_format", dataFormat)
 
     val input = Tensor[Float](4, 20, 30, 40, 3).rand()
-    val filter = Tensor[Float](2, 3, 4, 3, 4).rand()
+    val filter = Tensor[Int](Array(2, 3, 4, 3, 4), Array(5))
+    val outputBackprop = Tensor[Float](4, 19, 28, 37, 4)
 
     compare(
       builder,
-      Seq(input, filter),
+      Seq(input, filter, outputBackprop),
       0,
       1e-4
     )
   }
 
-  "Conv3D forward with SAME padding" should "be correct" in {
+  "Conv3DBackpropFilter forward with SAME padding" should "be correct" in {
 
     val dataFormat = AttrValue.newBuilder().setS(ByteString
       .copyFrom("NDHWC", Charset.defaultCharset())).build()
 
     val builder = NodeDef.newBuilder()
-      .setName(s"Conv3DTest")
-      .setOp("Conv3D")
+      .setName(s"Conv3DBackpropFilterV2Test")
+      .setOp("Conv3DBackpropFilterV2")
       .putAttr("T", typeAttr(DataType.DT_FLOAT))
       .putAttr("strides", listIntAttr(Seq(1, 1, 1, 1, 1)))
       .putAttr("padding", PaddingType.PADDING_SAME.value)
       .putAttr("data_format", dataFormat)
 
     val input = Tensor[Float](4, 20, 30, 40, 3).rand()
-    val filter = Tensor[Float](2, 3, 4, 3, 4).rand()
+    val filter = Tensor[Int](Array(2, 3, 4, 3, 4), Array(5))
+    val outputBackprop = Tensor[Float](4, 20, 30, 40, 4)
 
     compare(
       builder,
-      Seq(input, filter),
+      Seq(input, filter, outputBackprop),
       0,
       1e-4
     )
   }
-
-
 }

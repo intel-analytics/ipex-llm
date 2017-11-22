@@ -18,15 +18,15 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
-import com.intel.analytics.bigdl.nn.ops.Conv3DBackpropInput
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
+import com.intel.analytics.bigdl.nn.ops.Conv3DBackpropFilterV2
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.tf.Context
 import org.tensorflow.framework.NodeDef
 
 import scala.reflect.ClassTag
 
-class Conv3DBackpropInput extends TensorflowOpsLoader {
+class Conv3DBackpropFilterV2 extends TensorflowOpsLoader {
 
   import Utils._
 
@@ -42,10 +42,23 @@ class Conv3DBackpropInput extends TensorflowOpsLoader {
     val strideList = getIntList(attributes, "strides")
     require(strideList.head == 1, s"not support strides on batch")
 
-    require(strideList(4) == 1, s"not support strides on depth")
-    val dT = strideList(1)
-    val dW = strideList(2)
-    val dH = strideList(3)
-    Conv3DBackpropInput[T](dT, dW, dH, pT, pW, pH, DataFormat.NHWC)
+    val format = getString(attributes, "data_format")
+    val conv = format match {
+      case "NDHWC" =>
+        require(strideList(4) == 1, s"not support strides on depth")
+        val dT = strideList(1)
+        val dW = strideList(2)
+        val dH = strideList(3)
+        Conv3DBackpropFilterV2[T](dT, dW, dH, pT, pW, pH, DataFormat.NHWC)
+      case "NCDHW" =>
+        require(strideList(1) == 1, s"not support strides on depth")
+        val dT = strideList(2)
+        val dW = strideList(3)
+        val dH = strideList(4)
+        Conv3DBackpropFilterV2[T](dT, dW, dH, pT, pW, pH, DataFormat.NCHW)
+      case _ =>
+        throw new IllegalArgumentException(s"not supported data format: $format")
+    }
+    conv.asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }

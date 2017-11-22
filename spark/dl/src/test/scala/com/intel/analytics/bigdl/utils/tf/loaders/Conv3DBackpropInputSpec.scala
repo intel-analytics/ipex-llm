@@ -15,17 +15,14 @@
  */
 package com.intel.analytics.bigdl.utils.tf.loaders
 
-import java.nio.charset.Charset
-
-import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.tf.{PaddingType, TensorflowSpecHelper}
-import org.tensorflow.framework.{AttrValue, DataType, NodeDef}
+import org.tensorflow.framework.{DataType, NodeDef}
 import com.intel.analytics.bigdl.utils.tf.Tensorflow._
 
 class Conv3DBackpropInputSpec extends TensorflowSpecHelper {
 
-  "Conv3DBackpropInput forward" should "be correct" in {
+  "Conv3DBackpropInput forward with VALID padding" should "be correct" in {
 
     val builder = NodeDef.newBuilder()
       .setName(s"Conv3DBackpropInputTest")
@@ -37,6 +34,27 @@ class Conv3DBackpropInputSpec extends TensorflowSpecHelper {
     val input = Tensor[Float](4, 20, 30, 40, 3).rand()
     val filter = Tensor[Float](2, 3, 4, 3, 4).rand()
     val outputBackprop = Tensor[Float](4, 19, 28, 37, 4)
+
+    compare(
+      builder,
+      Seq(input, filter, outputBackprop),
+      0,
+      1e-4
+    )
+  }
+
+  "Conv3DBackpropInput forward with SAME padding" should "be correct" in {
+
+    val builder = NodeDef.newBuilder()
+      .setName(s"Conv3DBackpropInputTest")
+      .setOp("Conv3DBackpropInput")
+      .putAttr("T", typeAttr(DataType.DT_FLOAT))
+      .putAttr("strides", listIntAttr(Seq(1, 1, 1, 1, 1)))
+      .putAttr("padding", PaddingType.PADDING_SAME.value)
+
+    val input = Tensor[Float](4, 20, 30, 40, 3).rand()
+    val filter = Tensor[Float](2, 3, 4, 3, 4).rand()
+    val outputBackprop = Tensor[Float](4, 20, 30, 40, 4)
 
     compare(
       builder,

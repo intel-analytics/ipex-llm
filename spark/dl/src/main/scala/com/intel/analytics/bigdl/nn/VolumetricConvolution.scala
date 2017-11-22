@@ -173,51 +173,15 @@ class VolumetricConvolution[T: ClassTag](
     gradInput
   }
 
-  def accGradParametersFrame(gradOutput: Tensor[T], gradWeight: Tensor[T], gradBias: Tensor[T],
-    fInput: Tensor[T], scaleW: T, scaleB: T): Unit = {
-    val gradOutput2d = gradOutput.view(gradOutput.size(1), gradOutput.size(2) *
-      gradOutput.size(3) * gradOutput.size(4))
-    val fInputT = fInput.transpose(1, 2)
-    if (scaleW != 0) {
-      gradWeight.addmm(ev.one, gradWeight, scaleW, gradOutput2d, fInputT)
-    }
-    if (withBias && scaleB != 0) {
-      var i = 0
-      while (i < gradBias.size(1)) {
-        var sum = ev.zero
-        val data = gradOutput2d.storage().array()
-        val offset = gradOutput2d.storageOffset() - 1 + i * gradOutput2d.stride(1)
-        var k = 0
-        while (k < gradOutput2d.size(2)) {
-          sum = ev.plus(sum, data(k + offset))
-          k += 1
-        }
-        gradBias.setValue(i + 1, ev.plus(gradBias.valueAt(i + 1),
-          ev.times(scaleB, sum)))
-        i += 1
-      }
-    }
-  }
-
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
     require(gradOutput.isContiguous(), "gradOutput should be contiguous")
     if (gradWeightMM == null || gradWeightMM.storage().isEmpty) {
       gradWeightMM = gradWeight.view(nOutputPlane, nInputPlane * kT * kH * kW)
     }
-    if (input.dim() == 4) {
-      accGradParametersFrame(gradOutput, gradWeightMM, gradBias, fInput,
-        ev.fromType[Double](scaleW), ev.fromType[Double](scaleB))
-    } else {
-      // batch mode
-      var t = 1
-      while (t <= input.size(1)) {
-        val gradOutputT = gradOutput.select(1, t)
-        val fInputT = fInput.select(1, t)
-        accGradParametersFrame(gradOutputT, gradWeightMM, gradBias, fInputT,
-          ev.fromType[Double](scaleW), ev.fromType[Double](scaleB))
-        t += 1
-      }
-    }
+
+    VolumetricConvolution.conv3DBackpropFilter(input, gradOutput, gradWeightMM, gradBias,
+      fInput, scaleB, scaleW, withBias)
+
     if (null != wRegularizer) {
       wRegularizer.accRegularization(weight, gradWeight, scaleW)
     }
@@ -364,7 +328,7 @@ object VolumetricConvolution {
                                             padT: Int, padW: Int, padH: Int
                                            )(implicit ev: TensorNumeric[T]): Unit = {
     val dimChannel = if (inputSize.length == 4) 1 else 2
-    val dimDepth = if (inputSize.length == 4) 3 else 3
+    val dimDepth = if (inputSize.length == 4) 2 else 3
     val dimWidth = if (inputSize.length == 4) 4 else 5
     val dimHeight = if (inputSize.length == 4) 3 else 4
 
@@ -461,6 +425,149 @@ object VolumetricConvolution {
           gradOutput.size(2), gradOutput.size(4), gradOutput.size(3))
     }
 
+  }
+
+  private[bigdl] def populateFInput[T](
+                               input: Tensor[T],
+                               fInput: Tensor[T],
+                               nInputPlane: Int,
+                               nOutputPlane: Int,
+                               kT: Int, kW: Int, kH: Int,
+                               dT: Int, dW: Int, dH: Int,
+                               padT: Int, padW: Int, padH: Int
+                              )(implicit ev: TensorNumeric[T]): Unit = {
+    val dimDepth = if (input.dim() == 4) 2 else 3
+    val dimWidth = if (input.dim() == 4) 4 else 5
+    val dimHeight = if (input.dim() == 4) 3 else 4
+
+    val inputWidth = input.size(dimWidth)
+    val inputHeight = input.size(dimHeight)
+    val inputDepth = input.size(dimDepth)
+
+    val sizes = if (padW == -1 && padH == -1 && padT == -1) {
+      Utils.getSAMEOutSizeAndPadding(inputHeight, inputWidth, dH,
+        dW, kH, kW, inputDepth, dT, kT)
+    } else {
+      Utils.getOutSizeAndPadding(inputHeight, inputWidth, dH,
+        dW, kH, kW, padH, padW, ceilMode = false, inputdepth = inputDepth,
+        dt = dT, kt = kT, padt = padT)
+    }
+    val padFront = sizes(0)
+    val padBack = sizes(1)
+    val padLeft = sizes(4)
+    val padRight = sizes(5)
+    val padTop = sizes(2)
+    val padBottom = sizes(3)
+    val outputDepth = sizes(6)
+    val outputHeight = sizes(7)
+    val outputWidth = sizes(8)
+
+    require(outputWidth >= 1 && outputDepth >= 1 && outputHeight >= 1,
+      s"Given input size: (${ input.size().mkString("x") })." +
+        s" Calculated output size:" +
+        s" (${ nOutputPlane }x${ outputDepth }x${ outputHeight }x${ outputWidth })." +
+        s" Output size is too small")
+
+
+    if (input.dim() == 4) {
+      fInput.resize(kT * kW * kH * nInputPlane, outputDepth * outputHeight * outputWidth)
+      im2colWrapper(input, fInput, kT, kW, kH, dT, dW, dH,
+        padFront, padLeft, padTop, padBack, padRight, padBottom, nInputPlane,
+        inputDepth, inputWidth, inputHeight,
+        nOutputPlane, outputDepth, outputWidth, outputHeight)
+    } else {
+      fInput.resize(input.size(1), kT * kW * kH * nInputPlane,
+        outputDepth * outputHeight * outputWidth)
+
+      var t = 1
+      while (t <= input.size(1)) {
+        val inputT = input.select(1, t)
+        val fInputT = fInput.select(1, t)
+        im2colWrapper(inputT, fInputT,
+          kT, kW, kH,
+          dT, dW, dH,
+          padFront, padLeft, padTop, padBack, padRight, padBottom,
+          nInputPlane, inputDepth, inputWidth, inputHeight,
+          nOutputPlane, outputDepth, outputWidth, outputHeight)
+        t += 1
+      }
+    }
+  }
+
+  private def im2colWrapper[T](
+      input: Tensor[T],
+      fInput: Tensor[T], kT: Int, kW: Int, kH: Int, dT: Int, dW: Int, dH: Int,
+      padFront: Int, padLeft: Int, padTop: Int, padBack: Int, padRight: Int, padBottom: Int,
+      nInputPlane: Int, inputDepth: Int, inputWidth: Int, inputHeight: Int,
+      nOutputPlane: Int, outputDepth: Int, outputWidth: Int, outputHeight: Int)
+                              (implicit ev: TensorNumeric[T]): Unit = {
+    ev.getType() match {
+      case DoubleType =>
+        NNPrimitive.unfoldedCopyVolDouble(fInput.asInstanceOf[Tensor[Double]],
+          input.asInstanceOf[Tensor[Double]], kT, kW, kH, dT, dW, dH,
+          padFront, padLeft, padTop, padBack, padRight, padBottom,
+          nInputPlane,
+          inputDepth, inputWidth, inputHeight, outputDepth, outputWidth, outputHeight)
+      case FloatType =>
+        NNPrimitive.unfoldedCopyVolFloat(fInput.asInstanceOf[Tensor[Float]],
+          input.asInstanceOf[Tensor[Float]], kT, kW, kH, dT, dW, dH,
+          padFront, padLeft, padTop, padBack, padRight, padBottom,
+          nInputPlane,
+          inputDepth, inputWidth, inputHeight, outputDepth, outputWidth, outputHeight)
+    }
+  }
+
+  private[bigdl] def conv3DBackpropFilter[T](input: Tensor[T],
+                              gradOutput: Tensor[T],
+                              gradWeightMM: Tensor[T],
+                              gradBias: Tensor[T],
+                              fInput: Tensor[T],
+                              scaleW: Double, scaleB: Double,
+                              withBias: Boolean)
+                             (implicit ev: TensorNumeric[T]): Unit = {
+
+    if (input.dim() == 4) {
+      accGradParametersFrame(gradOutput, gradWeightMM, gradBias, fInput,
+        ev.fromType[Double](scaleW), ev.fromType[Double](scaleB), withBias)
+    } else {
+      // batch mode
+      var t = 1
+      while (t <= input.size(1)) {
+        val gradOutputT = gradOutput.select(1, t)
+        val fInputT = fInput.select(1, t)
+        accGradParametersFrame(gradOutputT, gradWeightMM, gradBias, fInputT,
+          ev.fromType[Double](scaleW), ev.fromType[Double](scaleB), withBias)
+        t += 1
+      }
+    }
+  }
+
+  private def accGradParametersFrame[T](
+       gradOutput: Tensor[T], gradWeight: Tensor[T], gradBias: Tensor[T],
+       fInput: Tensor[T], scaleW: T, scaleB: T, withBias: Boolean)
+       (implicit ev: TensorNumeric[T]): Unit = {
+    val gradOutput2d = gradOutput.view(gradOutput.size(1), gradOutput.size(2) *
+      gradOutput.size(3) * gradOutput.size(4))
+    val fInputT = fInput.transpose(1, 2)
+    if (scaleW != 0) {
+      gradWeight.addmm(ev.one, gradWeight, scaleW, gradOutput2d, fInputT)
+    }
+    if (withBias && scaleB != 0) {
+      var i = 0
+      while (i < gradBias.size(1)) {
+        var sum = ev.zero
+        val data = gradOutput2d.storage().array()
+        val offset = gradOutput2d.storageOffset() - 1 + i * gradOutput2d.stride(1)
+        var k = 0
+        while (k < gradOutput2d.size(2)) {
+          sum = ev.plus(sum, data(k + offset))
+          k += 1
+        }
+        gradBias.setValue(i + 1, ev.plus(gradBias.valueAt(i + 1),
+          ev.times(scaleB, sum)))
+        i += 1
+      }
+    }
   }
 
 }

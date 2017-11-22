@@ -15,7 +15,6 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
-import com.intel.analytics.bigdl.nn.VolumetricConvolution
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -23,36 +22,31 @@ import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
-class Conv3DBackpropInputV2[T: ClassTag](dT: Int, dH: Int, dW: Int,
-                                        padT: Int, padH: Int, padW: Int,
-                                         format: DataFormat)
- (implicit ev: TensorNumeric[T])
-  extends Conv3DBackpropInput(dT, dH, dW, padT, padH, padW, format) {
+class Conv3DBackpropFilterV2[T: ClassTag](
+        dT: Int,
+        dH: Int,
+        dW: Int,
+        padT: Int,
+        padH: Int,
+        padW: Int,
+        format: DataFormat)
+        (implicit ev: TensorNumeric[T])
+  extends Conv3DBackpropFilter(dT, dH, dW, padT, padH, padW, format) {
 
-  private val fGradInput = Tensor[T]()
+  override protected def getParams(inputs: Table): (Int, Int, Int, Int, Int) = {
+    val filterSize: Tensor[Int] = inputs[Tensor[Int]](2)
 
-  override protected def getInputSize(inputs: Table): Array[Int] = {
-    val inputSize: Tensor[Int] = inputs[Tensor[Int]](1)
+    val kT = filterSize.valueAt(1)
+    val kH = filterSize.valueAt(2)
+    val kW = filterSize.valueAt(3)
+    val nInputPlane = filterSize.valueAt(4)
+    val nOutputPlane = filterSize.valueAt(5)
 
-    if (format == DataFormat.NHWC) {
-      val N = inputSize.valueAt(1)
-      val D = inputSize.valueAt(2)
-      val H = inputSize.valueAt(3)
-      val W = inputSize.valueAt(4)
-      val C = inputSize.valueAt(5)
-      Array(N, C, D, H, W)
-    } else {
-      val N = inputSize.valueAt(1)
-      val C = inputSize.valueAt(2)
-      val D = inputSize.valueAt(3)
-      val H = inputSize.valueAt(4)
-      val W = inputSize.valueAt(5)
-      Array(N, C, D, H, W)
-    }
+    (kT, kH, kW, nInputPlane, nOutputPlane)
   }
 }
 
-object Conv3DBackpropInputV2 {
+object Conv3DBackpropFilterV2 {
   def apply[T: ClassTag](
                           dT: Int,
                           dH: Int,
@@ -61,6 +55,6 @@ object Conv3DBackpropInputV2 {
                           padH: Int,
                           padW: Int,
                           format: DataFormat
-                        )(implicit ev: TensorNumeric[T]): Conv3DBackpropInputV2[T]
-  = new Conv3DBackpropInputV2[T](dT, dH, dW, padT, padH, padW, format)
+                        )(implicit ev: TensorNumeric[T]): Conv3DBackpropFilterV2[T]
+  = new Conv3DBackpropFilterV2[T](dT, dH, dW, padT, padH, padW, format)
 }

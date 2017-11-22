@@ -35,20 +35,39 @@ class Conv3DBackpropInput[T: ClassTag](
 
   private val fGradInput = Tensor[T]()
 
+  protected def getInputSize(inputs: Table): Array[Int] = {
+    val input: Tensor[T] = inputs[Tensor[T]](1)
+
+    if (format == DataFormat.NHWC) {
+      val N = input.size(1)
+      val D = input.size(2)
+      val H = input.size(3)
+      val W = input.size(4)
+      val C = input.size(5)
+      Array(N, C, D, H, W)
+    } else {
+      val N = input.size(1)
+      val C = input.size(2)
+      val D = input.size(3)
+      val H = input.size(4)
+      val W = input.size(5)
+      Array(N, C, D, H, W)
+    }
+  }
 
   override def updateOutput(inputs: Table): Tensor[T] = {
-    val input: Tensor[T] = inputs[Tensor[T]](1)
+
     val filter: Tensor[T] = inputs[Tensor[T]](2)
     val outputBackprop: Tensor[T] = inputs[Tensor[T]](3)
 
-    val (transInput, transOutBackprop) = if (format == DataFormat.NHWC) {
+    val transOutBackprop = if (format == DataFormat.NHWC) {
       // backpropInput only use input size, so we do not need it to be contiguous
-      val in = input.transpose(2, 5).transpose(3, 5).transpose(4, 5)
-      val out = outputBackprop.transpose(2, 5).transpose(3, 5).transpose(4, 5).contiguous()
-      (in, out)
+      outputBackprop.transpose(2, 5).transpose(3, 5).transpose(4, 5).contiguous()
     } else {
-      (input, outputBackprop)
+      outputBackprop
     }
+
+    val transInputSize = getInputSize(inputs)
 
     val kT = filter.size(1)
     val kH = filter.size(2)
@@ -62,7 +81,7 @@ class Conv3DBackpropInput[T: ClassTag](
     transWeight = transWeight.contiguous()
     val weightMM = transWeight.view(nOutputPlane, nInputPlane * kT * kH * kW)
 
-    VolumetricConvolution.conv3DBackpropInput(transInput, output, transOutBackprop,
+    VolumetricConvolution.conv3DBackpropInput(transInputSize, output, transOutBackprop,
       weightMM, fGradInput, kT, kW, kH, dT, dW, dH, padT, padW, padH)
 
     if (format == DataFormat.NHWC) {

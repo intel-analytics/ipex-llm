@@ -37,7 +37,7 @@ class Conv3D extends TensorflowOpsLoader {
     val attributes = nodeDef.getAttrMap
     val (pT, pW, pH) =
       if (getString(attributes, "padding") == "SAME") {
-        throw new IllegalArgumentException("SAME padding is not supported for now")
+        (-1, -1, -1)
       } else {
         (0, 0, 0)
       }

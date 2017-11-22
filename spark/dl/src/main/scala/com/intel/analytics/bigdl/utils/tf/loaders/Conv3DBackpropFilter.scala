@@ -19,14 +19,14 @@ import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
-import com.intel.analytics.bigdl.nn.ops.Conv3DBackpropInput
+import com.intel.analytics.bigdl.nn.ops.Conv3DBackpropFilter
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.tf.Context
 import org.tensorflow.framework.NodeDef
 
 import scala.reflect.ClassTag
 
-class Conv3DBackpropInput extends TensorflowOpsLoader {
+class Conv3DBackpropFilter extends TensorflowOpsLoader {
 
   import Utils._
 
@@ -46,6 +46,6 @@ class Conv3DBackpropInput extends TensorflowOpsLoader {
     val dT = strideList(1)
     val dW = strideList(2)
     val dH = strideList(3)
-    Conv3DBackpropInput[T](dT, dW, dH, pT, pW, pH, DataFormat.NHWC)
+    Conv3DBackpropFilter[T](dT, dW, dH, pT, pW, pH, DataFormat.NHWC)
   }
 }
