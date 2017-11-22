@@ -3265,10 +3265,6 @@ class SReLU(Layer):
 
 
 
-    :param t_left_init: initialization function for the left part intercept
-    :param a_left_init: initialization function for the left part slope
-    :param t_right_init: initialization function for the right part intercept
-    :param a_right_init: initialization function for the right part slope
     :param shared_axes: the axes along which to share learnable
             parameters for the activation function.
             For example, if the incoming feature maps
