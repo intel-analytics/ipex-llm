@@ -33,6 +33,7 @@ import scala.reflect.ClassTag
  * @param dataFormat `[batch, channels, depth, height, width]` (for 'th' dim_ordering)
  * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
  */
+@SerialVersionUID(3462228835945094156L)
 class UpSampling3D[T: ClassTag](size: Array[Int], dataFormat: String = "th")
   (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
