@@ -157,33 +157,6 @@ class VolumetricConvolution[T: ClassTag](
     output
   }
 
-  private def updateGradInputFrame(gradInput: Tensor[T], gradOutput: Tensor[T], weight: Tensor[T],
-    fGradInput: Tensor[T], kT: Int, kW: Int, kH: Int, dT: Int, dW: Int, dH: Int,
-    padFront: Int, padLeft: Int, padTop: Int, padBack: Int, padRight: Int, padBottom: Int):
-    Unit = {
-    val gradOutput2d = gradOutput.view(gradOutput.size(1),
-      gradOutput.size(2) * gradOutput.size(3) * gradOutput.size(4))
-    fGradInput.addmm(ev.zero, fGradInput,
-      ev.one, weight, gradOutput2d)
-
-    gradInput.zero()
-    ev.getType() match {
-      case DoubleType =>
-        NNPrimitive.unfoldedAccVolDouble(fGradInput.asInstanceOf[Tensor[Double]],
-          gradInput.asInstanceOf[Tensor[Double]], kT, kW, kH, dT, dW, dH,
-          padFront, padLeft, padTop, padBack, padRight, padBottom,
-          gradInput.size(1), gradInput.size(2), gradInput.size(4), gradInput.size(3),
-          gradOutput.size(2), gradOutput.size(4), gradOutput.size(3))
-      case FloatType =>
-        NNPrimitive.unfoldedAccVolFloat(fGradInput.asInstanceOf[Tensor[Float]],
-          gradInput.asInstanceOf[Tensor[Float]], kT, kW, kH, dT, dW, dH,
-          padFront, padLeft, padTop, padBack, padRight, padBottom,
-          gradInput.size(1), gradInput.size(2), gradInput.size(4), gradInput.size(3),
-          gradOutput.size(2), gradOutput.size(4), gradOutput.size(3))
-    }
-
-  }
-
   /**
    * Computing the gradient of the module with respect to its own input. This is returned in
    * gradInput. Also, the gradInput state variable is updated accordingly.
@@ -195,51 +168,8 @@ class VolumetricConvolution[T: ClassTag](
     require(input.dim() == 4 || input.dim() == 5,
       s"4D or 5D (batch mode) tensor expected for input, but got: ${ input.dim() }d")
 
-    val dimDepth = if (input.dim() == 4) 2 else 3
-    val dimWidth = if (input.dim() == 4) 4 else 5
-    val dimHeight = if (input.dim() == 4) 3 else 4
-
-    val inputWidth = input.size(dimWidth)
-    val inputHeight = input.size(dimHeight)
-    val inputDepth = input.size(dimDepth)
-    val sizes = if (padW == -1 && padH == -1 && padT == -1) {
-      Utils.getSAMEOutSizeAndPadding(inputHeight, inputWidth, dH,
-        dW, kH, kW, inputDepth, dT, kT)
-    } else {
-      Utils.getOutSizeAndPadding(inputHeight, inputWidth, dH,
-        dW, kH, kW, padH, padW, ceilMode = false, inputdepth = inputDepth,
-      dt = dT, kt = kT, padt = padT)
-    }
-    val padFront = sizes(0)
-    val padBack = sizes(1)
-    val padLeft = sizes(4)
-    val padRight = sizes(5)
-    val padTop = sizes(2)
-    val padBottom = sizes(3)
-
-    gradInput.resizeAs(input)
-    fGradInput.resizeAs(fInput).zero()
-    if (input.dim() == 4) {
-      require(gradOutput.isContiguous(), "gradOutput should be contiguous")
-      updateGradInputFrame(gradInput, gradOutput, weightMM.transpose(1, 2), fGradInput,
-        kT, kW, kH,
-        dT, dW, dH,
-        padFront, padLeft, padTop, padBack, padRight, padBottom)
-    } else {
-      // batch mode
-      var t = 1
-      while (t <= input.size(1)) {
-        val gradInputT = gradInput.select(1, t)
-        val gradOutputT = gradOutput.select(1, t)
-        val fGradInputT = fGradInput.select(1, t)
-        require(gradOutputT.isContiguous(), "each batch of gradOutput should be contiguous")
-        updateGradInputFrame(gradInputT, gradOutputT, weightMM.transpose(1, 2), fGradInputT,
-          kT, kW, kH,
-          dT, dW, dH,
-          padFront, padLeft, padTop, padBack, padRight, padBottom)
-        t += 1
-      }
-    }
+    VolumetricConvolution.conv3DBackpropInput(input, gradInput, gradOutput, weightMM,
+      fGradInput, kT, kW, kH, dT, dW, dH, padT, padW, padH)
     gradInput
   }
 
@@ -423,4 +353,101 @@ object VolumetricConvolution {
       output2d.addr(ev.one, bias, onesBias)
     }
   }
+
+  private[bigdl] def conv3DBackpropInput[T](input: Tensor[T],
+                                         gradInput: Tensor[T],
+                                         gradOutput: Tensor[T],
+                                         weightMM: Tensor[T],
+                                         fGradInput: Tensor[T],
+                                         kT: Int, kW: Int, kH: Int,
+                                         dT: Int, dW: Int, dH: Int,
+                                         padT: Int, padW: Int, padH: Int
+                                        )(implicit ev: TensorNumeric[T]) = {
+    val dimChannel = if (input.dim() == 4) 1 else 2
+    val dimDepth = if (input.dim() == 4) 2 else 3
+    val dimWidth = if (input.dim() == 4) 4 else 5
+    val dimHeight = if (input.dim() == 4) 3 else 4
+
+    val nInputPlane = input.size(dimChannel)
+    val inputWidth = input.size(dimWidth)
+    val inputHeight = input.size(dimHeight)
+    val inputDepth = input.size(dimDepth)
+
+
+    val outputDepth = gradOutput.size(dimDepth)
+    val outputHeight = gradOutput.size(dimHeight)
+    val outputWidth = gradOutput.size(dimWidth)
+
+    val sizes = if (padW == -1 && padH == -1 && padT == -1) {
+      Utils.getSAMEOutSizeAndPadding(inputHeight, inputWidth, dH,
+        dW, kH, kW, inputDepth, dT, kT)
+    } else {
+      Utils.getOutSizeAndPadding(inputHeight, inputWidth, dH,
+        dW, kH, kW, padH, padW, ceilMode = false, inputdepth = inputDepth,
+        dt = dT, kt = kT, padt = padT)
+    }
+    val padFront = sizes(0)
+    val padBack = sizes(1)
+    val padLeft = sizes(4)
+    val padRight = sizes(5)
+    val padTop = sizes(2)
+    val padBottom = sizes(3)
+
+    gradInput.resizeAs(input)
+
+    if (input.dim() == 4) {
+      fGradInput.resize(kT * kW * kH * nInputPlane, outputDepth * outputHeight * outputWidth)
+      require(gradOutput.isContiguous(), "gradOutput should be contiguous")
+      updateGradInputFrame(gradInput, gradOutput, weightMM.transpose(1, 2), fGradInput,
+        kT, kW, kH,
+        dT, dW, dH,
+        padFront, padLeft, padTop, padBack, padRight, padBottom)
+    } else {
+      fGradInput.resize(input.size(1), kT * kW * kH * nInputPlane,
+        outputDepth * outputHeight * outputWidth)
+      // batch mode
+      var t = 1
+      while (t <= input.size(1)) {
+        val gradInputT = gradInput.select(1, t)
+        val gradOutputT = gradOutput.select(1, t)
+        val fGradInputT = fGradInput.select(1, t)
+        require(gradOutputT.isContiguous(), "each batch of gradOutput should be contiguous")
+        updateGradInputFrame(gradInputT, gradOutputT, weightMM.transpose(1, 2), fGradInputT,
+          kT, kW, kH,
+          dT, dW, dH,
+          padFront, padLeft, padTop, padBack, padRight, padBottom)
+        t += 1
+      }
+    }
+  }
+
+  private def updateGradInputFrame[T](
+    gradInput: Tensor[T], gradOutput: Tensor[T], weight: Tensor[T],
+    fGradInput: Tensor[T], kT: Int, kW: Int, kH: Int, dT: Int, dW: Int, dH: Int,
+    padFront: Int, padLeft: Int, padTop: Int, padBack: Int, padRight: Int, padBottom: Int)
+                                     (implicit ev: TensorNumeric[T]):
+  Unit = {
+    val gradOutput2d = gradOutput.view(gradOutput.size(1),
+      gradOutput.size(2) * gradOutput.size(3) * gradOutput.size(4))
+    fGradInput.addmm(ev.zero, fGradInput,
+      ev.one, weight, gradOutput2d)
+
+    gradInput.zero()
+    ev.getType() match {
+      case DoubleType =>
+        NNPrimitive.unfoldedAccVolDouble(fGradInput.asInstanceOf[Tensor[Double]],
+          gradInput.asInstanceOf[Tensor[Double]], kT, kW, kH, dT, dW, dH,
+          padFront, padLeft, padTop, padBack, padRight, padBottom,
+          gradInput.size(1), gradInput.size(2), gradInput.size(4), gradInput.size(3),
+          gradOutput.size(2), gradOutput.size(4), gradOutput.size(3))
+      case FloatType =>
+        NNPrimitive.unfoldedAccVolFloat(fGradInput.asInstanceOf[Tensor[Float]],
+          gradInput.asInstanceOf[Tensor[Float]], kT, kW, kH, dT, dW, dH,
+          padFront, padLeft, padTop, padBack, padRight, padBottom,
+          gradInput.size(1), gradInput.size(2), gradInput.size(4), gradInput.size(3),
+          gradOutput.size(2), gradOutput.size(4), gradOutput.size(3))
+    }
+
+  }
+
 }
