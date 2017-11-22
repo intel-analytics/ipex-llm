@@ -190,3 +190,10 @@ case class L2Regularizer[T: ClassTag](
   override val l2: Double
 ) (implicit ev: TensorNumeric[T])
   extends L1L2Regularizer[T](0, l2)
+
+@SerialVersionUID(- 914200537885623822L)
+case class ActivityRegularization[T: ClassTag](
+  override val l1: Double,
+  override val l2: Double
+) (implicit ev: TensorNumeric[T])
+  extends L1L2Regularizer[T](l1, l2)
