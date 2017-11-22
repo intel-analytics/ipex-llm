@@ -4493,11 +4493,13 @@ class Highway(Layer):
     """
     Densely connected highway network.
     Highway layers are a natural extension of LSTMs to feedforward networks.
-    >>> highway = Highway(2)
-    creating: createHighway
+
     :param size input size
     :param with_bias whether to include a bias
     :param activation name of activation function to use
+
+    >>> highway = Highway(2)
+    creating: createHighway
     """
     def __init__(self, size, with_bias=True, activation = None, bigdl_type="float"):
         super(Highway, self).__init__(None, bigdl_type, size, with_bias, activation)
