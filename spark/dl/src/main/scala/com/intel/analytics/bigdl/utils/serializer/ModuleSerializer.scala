@@ -211,3 +211,9 @@ private case class GenericTypeWrapper[T: ClassTag](tensor : Tensor[T],
   ttpe : T
   )(implicit ev: TensorNumeric[T])
 
+// ModelTag is an unique identifier for a serialized model
+case class ModuleTag(publisher : String,
+                    name : String, dataSet : String, version : String)
+
+case class ModuleWithTag[T: ClassTag](module : AbstractModule[Activity, Activity, T],
+                                      moduleTag: ModuleTag)

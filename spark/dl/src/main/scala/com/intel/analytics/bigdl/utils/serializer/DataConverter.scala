@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.DataFormat.{NCHW, NHWC}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
 import com.intel.analytics.bigdl.nn.quantized._
 import com.intel.analytics.bigdl.optim.{L1L2Regularizer, L1Regularizer, L2Regularizer, Regularizer}
-import com.intel.analytics.bigdl.tensor.{DenseType, QuantizedTensor, QuantizedType, Tensor, Storage}
+import com.intel.analytics.bigdl.tensor.{DenseType, QuantizedTensor, QuantizedType, Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.{NumericBoolean, NumericChar, NumericDouble, NumericFloat, NumericInt, NumericLong, NumericShort, NumericString}
 import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric.NumericByteString
@@ -122,6 +122,7 @@ object DataConverter extends DataConverter{
       case DataType.ARRAY_VALUE => ArrayConverter.getAttributeValue(context, attribute)
       case DataType.DATA_FORMAT => DataFormatConverter.getAttributeValue(context, attribute)
       case DataType.CUSTOM => CustomConverterDelegator.getAttributeValue(context, attribute)
+      case DataType.MODULE_TAG => ModelTagConverter.getAttributeValue(context, attribute)
       case _ => throw new IllegalArgumentException
         (s"${attribute.getDataType} can not be recognized")
     }
@@ -185,6 +186,8 @@ object DataConverter extends DataConverter{
       ArrayConverter.setAttributeValue(context, attributeBuilder, value, valueType)
     } else if (valueType =:= universe.typeOf[DataFormat]) {
       DataFormatConverter.setAttributeValue(context, attributeBuilder, value)
+    } else if (valueType =:= universe.typeOf[ModuleTag]) {
+      ModelTagConverter.setAttributeValue(context, attributeBuilder, value)
     } else {
       CustomConverterDelegator.setAttributeValue(context, attributeBuilder, value, valueType)
     }
@@ -1137,6 +1140,30 @@ object DataConverter extends DataConverter{
     }
 
   }
+
+  object ModelTagConverter extends DataConverter {
+    override def getAttributeValue[T: ClassTag]
+    (context: DeserializeContext, attribute: AttrValue)
+    (implicit ev: TensorNumeric[T]): AnyRef = {
+      val modelTag = attribute.getTagValue
+      ModuleTag(modelTag.getPublisher,
+        modelTag.getName, modelTag.getDataSet, modelTag.getVersion)
+    }
+
+    override def setAttributeValue[T: ClassTag](context: SerializeContext[T],
+      attributeBuilder: AttrValue.Builder, value: Any, valueType: universe.Type)
+        (implicit ev: TensorNumeric[T]): Unit = {
+      val modelTag = value.asInstanceOf[ModuleTag]
+      val modelTagBuilder = serialization.Bigdl.ModuleTag.newBuilder
+      modelTagBuilder.setPublisher(modelTag.publisher)
+      modelTagBuilder.setName(modelTag.name)
+      modelTagBuilder.setDataSet(modelTag.dataSet)
+      modelTagBuilder.setVersion(modelTag.version)
+      attributeBuilder.setTagValue(modelTagBuilder.build)
+      attributeBuilder.setDataType(DataType.MODULE_TAG)
+    }
+  }
+
   /**
    * DataConvert for custom value
    */

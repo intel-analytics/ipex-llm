@@ -31,7 +31,7 @@ import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch, Sample}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.quantized.Quantization
 import com.intel.analytics.bigdl.utils.caffe.CaffePersister
-import com.intel.analytics.bigdl.utils.serializer.ModulePersister
+import com.intel.analytics.bigdl.utils.serializer.{ModulePersister, ModuleTag}
 import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowSaver}
 
 import scala.reflect.ClassTag
@@ -470,6 +470,22 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   def saveModule(path : String, overWrite: Boolean = false) : this.type = {
     this.clearState()
     ModulePersister.saveToFile(path, this, overWrite)
+    this
+  }
+
+  /**
+   * Save this module with class tag to path with protobuf format
+   * @param path path to save module, local file system, HDFS and Amazon S3 is supported.
+   *             HDFS path should be like "hdfs://[host]:[port]/xxx"
+   *             Amazon S3 path should be like "s3a://bucket/xxx"
+   * @param moduleTag  module tag
+   * @param overWrite if overwrite
+   * @return self
+   */
+  def saveModuleWithTag(path : String, moduleTag : ModuleTag, overWrite
+    : Boolean = false) : this.type = {
+    this.clearState()
+    ModulePersister.saveToFileWithTag(path, this, moduleTag, overWrite)
     this
   }
 

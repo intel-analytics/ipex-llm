@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.File
 import com.intel.analytics.bigdl.utils.caffe.CaffeLoader
-import com.intel.analytics.bigdl.utils.serializer.ModuleLoader
+import com.intel.analytics.bigdl.utils.serializer.{ModuleLoader, ModuleTag, ModuleWithTag}
 import com.intel.analytics.bigdl.utils.tf.{Session, TensorflowDataFormat, TensorflowLoader}
 
 import scala.reflect.ClassTag
@@ -56,6 +56,20 @@ object Module {
   def loadModule[T: ClassTag](path : String)(implicit ev: TensorNumeric[T])
   : AbstractModule[Activity, Activity, T] = {
     ModuleLoader.loadFromFile(path)
+  }
+
+  /**
+   * Load model from path.
+   *
+   * @param path path to save module, local file system, HDFS and Amazon S3 is supported.
+   *             HDFS path should be like "hdfs://[host]:[port]/xxx"
+   *             Amazon S3 path should be like "s3a://bucket/xxx"
+   * @tparam T numeric type
+   * @return model loaded from path
+   */
+  def loadModuleWithTag[T: ClassTag](path : String)(implicit ev: TensorNumeric[T])
+  : ModuleWithTag[T] = {
+    ModuleLoader.loadWithTagFromFile(path)
   }
 
   def loadTorch[T: ClassTag](path : String) : AbstractModule[Activity, Activity, T] = {

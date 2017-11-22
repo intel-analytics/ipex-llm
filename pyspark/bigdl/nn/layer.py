@@ -26,6 +26,7 @@ from bigdl.util.common import callJavaFunc
 from bigdl.util.common import get_spark_context
 from bigdl.util.common import to_list
 from bigdl.util.common import INTMAX, INTMIN, DOUBLEMAX
+from bigdl.util.serializer import *
 from bigdl.optim.optimizer import L1Regularizer, L2Regularizer, L1L2Regularizer
 from py4j.java_gateway import JavaObject
 
@@ -412,7 +413,12 @@ class Layer(JavaValue):
                       over_write)
     def saveModel(self, path, over_write = False):
         callBigDlFunc(self.bigdl_type, "saveBigDLModule", self.value, path,
-                      over_write)
+                      None, None, None, None, over_write)
+
+    def saveModelWithTag(self, path, modelTag, over_write = False):
+        callBigDlFunc(self.bigdl_type, "saveBigDLModule", self.value, path,
+                      modelTag.publisher, modelTag.name, modelTag.dataset,
+                      modelTag.version,over_write)
 
     def save_caffe(self, prototxt_path, model_path, use_v2 = True, overwrite = False):
         callBigDlFunc(self.bigdl_type, "saveCaffe", self.value, prototxt_path,
@@ -678,6 +684,23 @@ class Model(Container):
         """
         jmodel = callBigDlFunc(bigdl_type, "loadBigDLModule", path)
         return Layer.of(jmodel)
+
+    @staticmethod
+    def loadModelWithTag(path, bigdl_type="float"):
+        """
+        Load a pre-trained Bigdl model with model tag.
+
+        :param path: The path containing the pre-trained model.
+        :return: A pre-trained model.
+        """
+        result = callBigDlFunc(bigdl_type, "loadBigDLModuleWithTag", path)
+        layer = Layer.of(result[0])
+        publisher = result[1]
+        name = result[2]
+        dataset = result[3]
+        version = result[4]
+        modelTag = ModelTag(publisher, name, dataset, version)
+        return ModelWithTag(layer, modelTag)
 
     @staticmethod
     def load_torch(path, bigdl_type="float"):

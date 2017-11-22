@@ -725,6 +725,10 @@ public final class Bigdl {
      * <code>CUSTOM = 17;</code>
      */
     CUSTOM(17),
+    /**
+     * <code>MODULE_TAG = 18;</code>
+     */
+    MODULE_TAG(18),
     UNRECOGNIZED(-1),
     ;
 
@@ -800,6 +804,10 @@ public final class Bigdl {
      * <code>CUSTOM = 17;</code>
      */
     public static final int CUSTOM_VALUE = 17;
+    /**
+     * <code>MODULE_TAG = 18;</code>
+     */
+    public static final int MODULE_TAG_VALUE = 18;
 
 
     public final int getNumber() {
@@ -838,6 +846,7 @@ public final class Bigdl {
         case 15: return ARRAY_VALUE;
         case 16: return DATA_FORMAT;
         case 17: return CUSTOM;
+        case 18: return MODULE_TAG;
         default: return null;
       }
     }
@@ -1201,6 +1210,19 @@ public final class Bigdl {
      * <code>int32 id = 12;</code>
      */
     int getId();
+
+    /**
+     * <code>.serialization.ModuleTag tag = 13;</code>
+     */
+    boolean hasTag();
+    /**
+     * <code>.serialization.ModuleTag tag = 13;</code>
+     */
+    serialization.Bigdl.ModuleTag getTag();
+    /**
+     * <code>.serialization.ModuleTag tag = 13;</code>
+     */
+    serialization.Bigdl.ModuleTagOrBuilder getTagOrBuilder();
   }
   /**
    * Protobuf type {@code serialization.BigDLModule}
@@ -1352,6 +1374,19 @@ public final class Bigdl {
             case 96: {
 
               id_ = input.readInt32();
+              break;
+            }
+            case 106: {
+              serialization.Bigdl.ModuleTag.Builder subBuilder = null;
+              if (tag_ != null) {
+                subBuilder = tag_.toBuilder();
+              }
+              tag_ = input.readMessage(serialization.Bigdl.ModuleTag.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(tag_);
+                tag_ = subBuilder.buildPartial();
+              }
+
               break;
             }
           }
@@ -1896,6 +1931,27 @@ public final class Bigdl {
       return id_;
     }
 
+    public static final int TAG_FIELD_NUMBER = 13;
+    private serialization.Bigdl.ModuleTag tag_;
+    /**
+     * <code>.serialization.ModuleTag tag = 13;</code>
+     */
+    public boolean hasTag() {
+      return tag_ != null;
+    }
+    /**
+     * <code>.serialization.ModuleTag tag = 13;</code>
+     */
+    public serialization.Bigdl.ModuleTag getTag() {
+      return tag_ == null ? serialization.Bigdl.ModuleTag.getDefaultInstance() : tag_;
+    }
+    /**
+     * <code>.serialization.ModuleTag tag = 13;</code>
+     */
+    public serialization.Bigdl.ModuleTagOrBuilder getTagOrBuilder() {
+      return getTag();
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -1946,6 +2002,9 @@ public final class Bigdl {
       }
       if (id_ != 0) {
         output.writeInt32(12, id_);
+      }
+      if (tag_ != null) {
+        output.writeMessage(13, getTag());
       }
       unknownFields.writeTo(output);
     }
@@ -2013,6 +2072,10 @@ public final class Bigdl {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(12, id_);
       }
+      if (tag_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(13, getTag());
+      }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
@@ -2059,6 +2122,11 @@ public final class Bigdl {
           .equals(other.getNamePostfix());
       result = result && (getId()
           == other.getId());
+      result = result && (hasTag() == other.hasTag());
+      if (hasTag()) {
+        result = result && getTag()
+            .equals(other.getTag());
+      }
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -2107,6 +2175,10 @@ public final class Bigdl {
       hash = (53 * hash) + getNamePostfix().hashCode();
       hash = (37 * hash) + ID_FIELD_NUMBER;
       hash = (53 * hash) + getId();
+      if (hasTag()) {
+        hash = (37 * hash) + TAG_FIELD_NUMBER;
+        hash = (53 * hash) + getTag().hashCode();
+      }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -2294,6 +2366,12 @@ public final class Bigdl {
 
         id_ = 0;
 
+        if (tagBuilder_ == null) {
+          tag_ = null;
+        } else {
+          tag_ = null;
+          tagBuilder_ = null;
+        }
         return this;
       }
 
@@ -2355,6 +2433,11 @@ public final class Bigdl {
         result.train_ = train_;
         result.namePostfix_ = namePostfix_;
         result.id_ = id_;
+        if (tagBuilder_ == null) {
+          result.tag_ = tag_;
+        } else {
+          result.tag_ = tagBuilder_.build();
+        }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -2472,6 +2555,9 @@ public final class Bigdl {
         }
         if (other.getId() != 0) {
           setId(other.getId());
+        }
+        if (other.hasTag()) {
+          mergeTag(other.getTag());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -3960,6 +4046,123 @@ public final class Bigdl {
         id_ = 0;
         onChanged();
         return this;
+      }
+
+      private serialization.Bigdl.ModuleTag tag_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          serialization.Bigdl.ModuleTag, serialization.Bigdl.ModuleTag.Builder, serialization.Bigdl.ModuleTagOrBuilder> tagBuilder_;
+      /**
+       * <code>.serialization.ModuleTag tag = 13;</code>
+       */
+      public boolean hasTag() {
+        return tagBuilder_ != null || tag_ != null;
+      }
+      /**
+       * <code>.serialization.ModuleTag tag = 13;</code>
+       */
+      public serialization.Bigdl.ModuleTag getTag() {
+        if (tagBuilder_ == null) {
+          return tag_ == null ? serialization.Bigdl.ModuleTag.getDefaultInstance() : tag_;
+        } else {
+          return tagBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>.serialization.ModuleTag tag = 13;</code>
+       */
+      public Builder setTag(serialization.Bigdl.ModuleTag value) {
+        if (tagBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          tag_ = value;
+          onChanged();
+        } else {
+          tagBuilder_.setMessage(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>.serialization.ModuleTag tag = 13;</code>
+       */
+      public Builder setTag(
+          serialization.Bigdl.ModuleTag.Builder builderForValue) {
+        if (tagBuilder_ == null) {
+          tag_ = builderForValue.build();
+          onChanged();
+        } else {
+          tagBuilder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <code>.serialization.ModuleTag tag = 13;</code>
+       */
+      public Builder mergeTag(serialization.Bigdl.ModuleTag value) {
+        if (tagBuilder_ == null) {
+          if (tag_ != null) {
+            tag_ =
+              serialization.Bigdl.ModuleTag.newBuilder(tag_).mergeFrom(value).buildPartial();
+          } else {
+            tag_ = value;
+          }
+          onChanged();
+        } else {
+          tagBuilder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>.serialization.ModuleTag tag = 13;</code>
+       */
+      public Builder clearTag() {
+        if (tagBuilder_ == null) {
+          tag_ = null;
+          onChanged();
+        } else {
+          tag_ = null;
+          tagBuilder_ = null;
+        }
+
+        return this;
+      }
+      /**
+       * <code>.serialization.ModuleTag tag = 13;</code>
+       */
+      public serialization.Bigdl.ModuleTag.Builder getTagBuilder() {
+        
+        onChanged();
+        return getTagFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>.serialization.ModuleTag tag = 13;</code>
+       */
+      public serialization.Bigdl.ModuleTagOrBuilder getTagOrBuilder() {
+        if (tagBuilder_ != null) {
+          return tagBuilder_.getMessageOrBuilder();
+        } else {
+          return tag_ == null ?
+              serialization.Bigdl.ModuleTag.getDefaultInstance() : tag_;
+        }
+      }
+      /**
+       * <code>.serialization.ModuleTag tag = 13;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          serialization.Bigdl.ModuleTag, serialization.Bigdl.ModuleTag.Builder, serialization.Bigdl.ModuleTagOrBuilder> 
+          getTagFieldBuilder() {
+        if (tagBuilder_ == null) {
+          tagBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              serialization.Bigdl.ModuleTag, serialization.Bigdl.ModuleTag.Builder, serialization.Bigdl.ModuleTagOrBuilder>(
+                  getTag(),
+                  getParentForChildren(),
+                  isClean());
+          tag_ = null;
+        }
+        return tagBuilder_;
       }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -9441,6 +9644,31 @@ public final class Bigdl {
      */
     com.google.protobuf.AnyOrBuilder getCustomValueOrBuilder();
 
+    /**
+     * <pre>
+     * model tag value
+     * </pre>
+     *
+     * <code>.serialization.ModuleTag tagValue = 18;</code>
+     */
+    boolean hasTagValue();
+    /**
+     * <pre>
+     * model tag value
+     * </pre>
+     *
+     * <code>.serialization.ModuleTag tagValue = 18;</code>
+     */
+    serialization.Bigdl.ModuleTag getTagValue();
+    /**
+     * <pre>
+     * model tag value
+     * </pre>
+     *
+     * <code>.serialization.ModuleTag tagValue = 18;</code>
+     */
+    serialization.Bigdl.ModuleTagOrBuilder getTagValueOrBuilder();
+
     public serialization.Bigdl.AttrValue.ValueCase getValueCase();
   }
   /**
@@ -9639,6 +9867,20 @@ public final class Bigdl {
                 value_ = subBuilder.buildPartial();
               }
               valueCase_ = 17;
+              break;
+            }
+            case 146: {
+              serialization.Bigdl.ModuleTag.Builder subBuilder = null;
+              if (valueCase_ == 18) {
+                subBuilder = ((serialization.Bigdl.ModuleTag) value_).toBuilder();
+              }
+              value_ =
+                  input.readMessage(serialization.Bigdl.ModuleTag.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom((serialization.Bigdl.ModuleTag) value_);
+                value_ = subBuilder.buildPartial();
+              }
+              valueCase_ = 18;
               break;
             }
           }
@@ -15121,6 +15363,7 @@ public final class Bigdl {
       ARRAYVALUE(15),
       DATAFORMATVALUE(16),
       CUSTOMVALUE(17),
+      TAGVALUE(18),
       VALUE_NOT_SET(0);
       private final int value;
       private ValueCase(int value) {
@@ -15151,6 +15394,7 @@ public final class Bigdl {
           case 15: return ARRAYVALUE;
           case 16: return DATAFORMATVALUE;
           case 17: return CUSTOMVALUE;
+          case 18: return TAGVALUE;
           case 0: return VALUE_NOT_SET;
           default: return null;
         }
@@ -15676,6 +15920,44 @@ public final class Bigdl {
       return com.google.protobuf.Any.getDefaultInstance();
     }
 
+    public static final int TAGVALUE_FIELD_NUMBER = 18;
+    /**
+     * <pre>
+     * model tag value
+     * </pre>
+     *
+     * <code>.serialization.ModuleTag tagValue = 18;</code>
+     */
+    public boolean hasTagValue() {
+      return valueCase_ == 18;
+    }
+    /**
+     * <pre>
+     * model tag value
+     * </pre>
+     *
+     * <code>.serialization.ModuleTag tagValue = 18;</code>
+     */
+    public serialization.Bigdl.ModuleTag getTagValue() {
+      if (valueCase_ == 18) {
+         return (serialization.Bigdl.ModuleTag) value_;
+      }
+      return serialization.Bigdl.ModuleTag.getDefaultInstance();
+    }
+    /**
+     * <pre>
+     * model tag value
+     * </pre>
+     *
+     * <code>.serialization.ModuleTag tagValue = 18;</code>
+     */
+    public serialization.Bigdl.ModuleTagOrBuilder getTagValueOrBuilder() {
+      if (valueCase_ == 18) {
+         return (serialization.Bigdl.ModuleTag) value_;
+      }
+      return serialization.Bigdl.ModuleTag.getDefaultInstance();
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -15743,6 +16025,9 @@ public final class Bigdl {
       }
       if (valueCase_ == 17) {
         output.writeMessage(17, (com.google.protobuf.Any) value_);
+      }
+      if (valueCase_ == 18) {
+        output.writeMessage(18, (serialization.Bigdl.ModuleTag) value_);
       }
       unknownFields.writeTo(output);
     }
@@ -15822,6 +16107,10 @@ public final class Bigdl {
       if (valueCase_ == 17) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(17, (com.google.protobuf.Any) value_);
+      }
+      if (valueCase_ == 18) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(18, (serialization.Bigdl.ModuleTag) value_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -15910,6 +16199,10 @@ public final class Bigdl {
           result = result && getCustomValue()
               .equals(other.getCustomValue());
           break;
+        case 18:
+          result = result && getTagValue()
+              .equals(other.getTagValue());
+          break;
         case 0:
         default:
       }
@@ -15992,6 +16285,10 @@ public final class Bigdl {
         case 17:
           hash = (37 * hash) + CUSTOMVALUE_FIELD_NUMBER;
           hash = (53 * hash) + getCustomValue().hashCode();
+          break;
+        case 18:
+          hash = (37 * hash) + TAGVALUE_FIELD_NUMBER;
+          hash = (53 * hash) + getTagValue().hashCode();
           break;
         case 0:
         default:
@@ -16228,6 +16525,13 @@ public final class Bigdl {
             result.value_ = customValueBuilder_.build();
           }
         }
+        if (valueCase_ == 18) {
+          if (tagValueBuilder_ == null) {
+            result.value_ = value_;
+          } else {
+            result.value_ = tagValueBuilder_.build();
+          }
+        }
         result.valueCase_ = valueCase_;
         onBuilt();
         return result;
@@ -16338,6 +16642,10 @@ public final class Bigdl {
           }
           case CUSTOMVALUE: {
             mergeCustomValue(other.getCustomValue());
+            break;
+          }
+          case TAGVALUE: {
+            mergeTagValue(other.getTagValue());
             break;
           }
           case VALUE_NOT_SET: {
@@ -18178,6 +18486,178 @@ public final class Bigdl {
         onChanged();;
         return customValueBuilder_;
       }
+
+      private com.google.protobuf.SingleFieldBuilderV3<
+          serialization.Bigdl.ModuleTag, serialization.Bigdl.ModuleTag.Builder, serialization.Bigdl.ModuleTagOrBuilder> tagValueBuilder_;
+      /**
+       * <pre>
+       * model tag value
+       * </pre>
+       *
+       * <code>.serialization.ModuleTag tagValue = 18;</code>
+       */
+      public boolean hasTagValue() {
+        return valueCase_ == 18;
+      }
+      /**
+       * <pre>
+       * model tag value
+       * </pre>
+       *
+       * <code>.serialization.ModuleTag tagValue = 18;</code>
+       */
+      public serialization.Bigdl.ModuleTag getTagValue() {
+        if (tagValueBuilder_ == null) {
+          if (valueCase_ == 18) {
+            return (serialization.Bigdl.ModuleTag) value_;
+          }
+          return serialization.Bigdl.ModuleTag.getDefaultInstance();
+        } else {
+          if (valueCase_ == 18) {
+            return tagValueBuilder_.getMessage();
+          }
+          return serialization.Bigdl.ModuleTag.getDefaultInstance();
+        }
+      }
+      /**
+       * <pre>
+       * model tag value
+       * </pre>
+       *
+       * <code>.serialization.ModuleTag tagValue = 18;</code>
+       */
+      public Builder setTagValue(serialization.Bigdl.ModuleTag value) {
+        if (tagValueBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          value_ = value;
+          onChanged();
+        } else {
+          tagValueBuilder_.setMessage(value);
+        }
+        valueCase_ = 18;
+        return this;
+      }
+      /**
+       * <pre>
+       * model tag value
+       * </pre>
+       *
+       * <code>.serialization.ModuleTag tagValue = 18;</code>
+       */
+      public Builder setTagValue(
+          serialization.Bigdl.ModuleTag.Builder builderForValue) {
+        if (tagValueBuilder_ == null) {
+          value_ = builderForValue.build();
+          onChanged();
+        } else {
+          tagValueBuilder_.setMessage(builderForValue.build());
+        }
+        valueCase_ = 18;
+        return this;
+      }
+      /**
+       * <pre>
+       * model tag value
+       * </pre>
+       *
+       * <code>.serialization.ModuleTag tagValue = 18;</code>
+       */
+      public Builder mergeTagValue(serialization.Bigdl.ModuleTag value) {
+        if (tagValueBuilder_ == null) {
+          if (valueCase_ == 18 &&
+              value_ != serialization.Bigdl.ModuleTag.getDefaultInstance()) {
+            value_ = serialization.Bigdl.ModuleTag.newBuilder((serialization.Bigdl.ModuleTag) value_)
+                .mergeFrom(value).buildPartial();
+          } else {
+            value_ = value;
+          }
+          onChanged();
+        } else {
+          if (valueCase_ == 18) {
+            tagValueBuilder_.mergeFrom(value);
+          }
+          tagValueBuilder_.setMessage(value);
+        }
+        valueCase_ = 18;
+        return this;
+      }
+      /**
+       * <pre>
+       * model tag value
+       * </pre>
+       *
+       * <code>.serialization.ModuleTag tagValue = 18;</code>
+       */
+      public Builder clearTagValue() {
+        if (tagValueBuilder_ == null) {
+          if (valueCase_ == 18) {
+            valueCase_ = 0;
+            value_ = null;
+            onChanged();
+          }
+        } else {
+          if (valueCase_ == 18) {
+            valueCase_ = 0;
+            value_ = null;
+          }
+          tagValueBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * model tag value
+       * </pre>
+       *
+       * <code>.serialization.ModuleTag tagValue = 18;</code>
+       */
+      public serialization.Bigdl.ModuleTag.Builder getTagValueBuilder() {
+        return getTagValueFieldBuilder().getBuilder();
+      }
+      /**
+       * <pre>
+       * model tag value
+       * </pre>
+       *
+       * <code>.serialization.ModuleTag tagValue = 18;</code>
+       */
+      public serialization.Bigdl.ModuleTagOrBuilder getTagValueOrBuilder() {
+        if ((valueCase_ == 18) && (tagValueBuilder_ != null)) {
+          return tagValueBuilder_.getMessageOrBuilder();
+        } else {
+          if (valueCase_ == 18) {
+            return (serialization.Bigdl.ModuleTag) value_;
+          }
+          return serialization.Bigdl.ModuleTag.getDefaultInstance();
+        }
+      }
+      /**
+       * <pre>
+       * model tag value
+       * </pre>
+       *
+       * <code>.serialization.ModuleTag tagValue = 18;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          serialization.Bigdl.ModuleTag, serialization.Bigdl.ModuleTag.Builder, serialization.Bigdl.ModuleTagOrBuilder> 
+          getTagValueFieldBuilder() {
+        if (tagValueBuilder_ == null) {
+          if (!(valueCase_ == 18)) {
+            value_ = serialization.Bigdl.ModuleTag.getDefaultInstance();
+          }
+          tagValueBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              serialization.Bigdl.ModuleTag, serialization.Bigdl.ModuleTag.Builder, serialization.Bigdl.ModuleTagOrBuilder>(
+                  (serialization.Bigdl.ModuleTag) value_,
+                  getParentForChildren(),
+                  isClean());
+          value_ = null;
+        }
+        valueCase_ = 18;
+        onChanged();;
+        return tagValueBuilder_;
+      }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFieldsProto3(unknownFields);
@@ -19060,6 +19540,939 @@ public final class Bigdl {
 
   }
 
+  public interface ModuleTagOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:serialization.ModuleTag)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>string publisher = 1;</code>
+     */
+    java.lang.String getPublisher();
+    /**
+     * <code>string publisher = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getPublisherBytes();
+
+    /**
+     * <code>string name = 2;</code>
+     */
+    java.lang.String getName();
+    /**
+     * <code>string name = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getNameBytes();
+
+    /**
+     * <code>string dataSet = 3;</code>
+     */
+    java.lang.String getDataSet();
+    /**
+     * <code>string dataSet = 3;</code>
+     */
+    com.google.protobuf.ByteString
+        getDataSetBytes();
+
+    /**
+     * <code>string version = 4;</code>
+     */
+    java.lang.String getVersion();
+    /**
+     * <code>string version = 4;</code>
+     */
+    com.google.protobuf.ByteString
+        getVersionBytes();
+  }
+  /**
+   * Protobuf type {@code serialization.ModuleTag}
+   */
+  public  static final class ModuleTag extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:serialization.ModuleTag)
+      ModuleTagOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use ModuleTag.newBuilder() to construct.
+    private ModuleTag(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private ModuleTag() {
+      publisher_ = "";
+      name_ = "";
+      dataSet_ = "";
+      version_ = "";
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private ModuleTag(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownFieldProto3(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              publisher_ = s;
+              break;
+            }
+            case 18: {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              name_ = s;
+              break;
+            }
+            case 26: {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              dataSet_ = s;
+              break;
+            }
+            case 34: {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              version_ = s;
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return serialization.Bigdl.internal_static_serialization_ModuleTag_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return serialization.Bigdl.internal_static_serialization_ModuleTag_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              serialization.Bigdl.ModuleTag.class, serialization.Bigdl.ModuleTag.Builder.class);
+    }
+
+    public static final int PUBLISHER_FIELD_NUMBER = 1;
+    private volatile java.lang.Object publisher_;
+    /**
+     * <code>string publisher = 1;</code>
+     */
+    public java.lang.String getPublisher() {
+      java.lang.Object ref = publisher_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        publisher_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string publisher = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getPublisherBytes() {
+      java.lang.Object ref = publisher_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        publisher_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int NAME_FIELD_NUMBER = 2;
+    private volatile java.lang.Object name_;
+    /**
+     * <code>string name = 2;</code>
+     */
+    public java.lang.String getName() {
+      java.lang.Object ref = name_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        name_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string name = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getNameBytes() {
+      java.lang.Object ref = name_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        name_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int DATASET_FIELD_NUMBER = 3;
+    private volatile java.lang.Object dataSet_;
+    /**
+     * <code>string dataSet = 3;</code>
+     */
+    public java.lang.String getDataSet() {
+      java.lang.Object ref = dataSet_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        dataSet_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string dataSet = 3;</code>
+     */
+    public com.google.protobuf.ByteString
+        getDataSetBytes() {
+      java.lang.Object ref = dataSet_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        dataSet_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int VERSION_FIELD_NUMBER = 4;
+    private volatile java.lang.Object version_;
+    /**
+     * <code>string version = 4;</code>
+     */
+    public java.lang.String getVersion() {
+      java.lang.Object ref = version_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        version_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string version = 4;</code>
+     */
+    public com.google.protobuf.ByteString
+        getVersionBytes() {
+      java.lang.Object ref = version_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        version_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (!getPublisherBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, publisher_);
+      }
+      if (!getNameBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 2, name_);
+      }
+      if (!getDataSetBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 3, dataSet_);
+      }
+      if (!getVersionBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 4, version_);
+      }
+      unknownFields.writeTo(output);
+    }
+
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (!getPublisherBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, publisher_);
+      }
+      if (!getNameBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, name_);
+      }
+      if (!getDataSetBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, dataSet_);
+      }
+      if (!getVersionBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, version_);
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof serialization.Bigdl.ModuleTag)) {
+        return super.equals(obj);
+      }
+      serialization.Bigdl.ModuleTag other = (serialization.Bigdl.ModuleTag) obj;
+
+      boolean result = true;
+      result = result && getPublisher()
+          .equals(other.getPublisher());
+      result = result && getName()
+          .equals(other.getName());
+      result = result && getDataSet()
+          .equals(other.getDataSet());
+      result = result && getVersion()
+          .equals(other.getVersion());
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (37 * hash) + PUBLISHER_FIELD_NUMBER;
+      hash = (53 * hash) + getPublisher().hashCode();
+      hash = (37 * hash) + NAME_FIELD_NUMBER;
+      hash = (53 * hash) + getName().hashCode();
+      hash = (37 * hash) + DATASET_FIELD_NUMBER;
+      hash = (53 * hash) + getDataSet().hashCode();
+      hash = (37 * hash) + VERSION_FIELD_NUMBER;
+      hash = (53 * hash) + getVersion().hashCode();
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static serialization.Bigdl.ModuleTag parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static serialization.Bigdl.ModuleTag parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static serialization.Bigdl.ModuleTag parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static serialization.Bigdl.ModuleTag parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static serialization.Bigdl.ModuleTag parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static serialization.Bigdl.ModuleTag parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static serialization.Bigdl.ModuleTag parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static serialization.Bigdl.ModuleTag parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static serialization.Bigdl.ModuleTag parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static serialization.Bigdl.ModuleTag parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static serialization.Bigdl.ModuleTag parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static serialization.Bigdl.ModuleTag parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(serialization.Bigdl.ModuleTag prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code serialization.ModuleTag}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:serialization.ModuleTag)
+        serialization.Bigdl.ModuleTagOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return serialization.Bigdl.internal_static_serialization_ModuleTag_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return serialization.Bigdl.internal_static_serialization_ModuleTag_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                serialization.Bigdl.ModuleTag.class, serialization.Bigdl.ModuleTag.Builder.class);
+      }
+
+      // Construct using serialization.Bigdl.ModuleTag.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
+      }
+      public Builder clear() {
+        super.clear();
+        publisher_ = "";
+
+        name_ = "";
+
+        dataSet_ = "";
+
+        version_ = "";
+
+        return this;
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return serialization.Bigdl.internal_static_serialization_ModuleTag_descriptor;
+      }
+
+      public serialization.Bigdl.ModuleTag getDefaultInstanceForType() {
+        return serialization.Bigdl.ModuleTag.getDefaultInstance();
+      }
+
+      public serialization.Bigdl.ModuleTag build() {
+        serialization.Bigdl.ModuleTag result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public serialization.Bigdl.ModuleTag buildPartial() {
+        serialization.Bigdl.ModuleTag result = new serialization.Bigdl.ModuleTag(this);
+        result.publisher_ = publisher_;
+        result.name_ = name_;
+        result.dataSet_ = dataSet_;
+        result.version_ = version_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof serialization.Bigdl.ModuleTag) {
+          return mergeFrom((serialization.Bigdl.ModuleTag)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(serialization.Bigdl.ModuleTag other) {
+        if (other == serialization.Bigdl.ModuleTag.getDefaultInstance()) return this;
+        if (!other.getPublisher().isEmpty()) {
+          publisher_ = other.publisher_;
+          onChanged();
+        }
+        if (!other.getName().isEmpty()) {
+          name_ = other.name_;
+          onChanged();
+        }
+        if (!other.getDataSet().isEmpty()) {
+          dataSet_ = other.dataSet_;
+          onChanged();
+        }
+        if (!other.getVersion().isEmpty()) {
+          version_ = other.version_;
+          onChanged();
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        serialization.Bigdl.ModuleTag parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (serialization.Bigdl.ModuleTag) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+
+      private java.lang.Object publisher_ = "";
+      /**
+       * <code>string publisher = 1;</code>
+       */
+      public java.lang.String getPublisher() {
+        java.lang.Object ref = publisher_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          publisher_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>string publisher = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getPublisherBytes() {
+        java.lang.Object ref = publisher_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          publisher_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string publisher = 1;</code>
+       */
+      public Builder setPublisher(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        publisher_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string publisher = 1;</code>
+       */
+      public Builder clearPublisher() {
+        
+        publisher_ = getDefaultInstance().getPublisher();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string publisher = 1;</code>
+       */
+      public Builder setPublisherBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        publisher_ = value;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object name_ = "";
+      /**
+       * <code>string name = 2;</code>
+       */
+      public java.lang.String getName() {
+        java.lang.Object ref = name_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          name_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>string name = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getNameBytes() {
+        java.lang.Object ref = name_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          name_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string name = 2;</code>
+       */
+      public Builder setName(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        name_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string name = 2;</code>
+       */
+      public Builder clearName() {
+        
+        name_ = getDefaultInstance().getName();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string name = 2;</code>
+       */
+      public Builder setNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        name_ = value;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object dataSet_ = "";
+      /**
+       * <code>string dataSet = 3;</code>
+       */
+      public java.lang.String getDataSet() {
+        java.lang.Object ref = dataSet_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          dataSet_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>string dataSet = 3;</code>
+       */
+      public com.google.protobuf.ByteString
+          getDataSetBytes() {
+        java.lang.Object ref = dataSet_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          dataSet_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string dataSet = 3;</code>
+       */
+      public Builder setDataSet(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        dataSet_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string dataSet = 3;</code>
+       */
+      public Builder clearDataSet() {
+        
+        dataSet_ = getDefaultInstance().getDataSet();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string dataSet = 3;</code>
+       */
+      public Builder setDataSetBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        dataSet_ = value;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object version_ = "";
+      /**
+       * <code>string version = 4;</code>
+       */
+      public java.lang.String getVersion() {
+        java.lang.Object ref = version_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          version_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>string version = 4;</code>
+       */
+      public com.google.protobuf.ByteString
+          getVersionBytes() {
+        java.lang.Object ref = version_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          version_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string version = 4;</code>
+       */
+      public Builder setVersion(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        version_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string version = 4;</code>
+       */
+      public Builder clearVersion() {
+        
+        version_ = getDefaultInstance().getVersion();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string version = 4;</code>
+       */
+      public Builder setVersionBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        version_ = value;
+        onChanged();
+        return this;
+      }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFieldsProto3(unknownFields);
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:serialization.ModuleTag)
+    }
+
+    // @@protoc_insertion_point(class_scope:serialization.ModuleTag)
+    private static final serialization.Bigdl.ModuleTag DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new serialization.Bigdl.ModuleTag();
+    }
+
+    public static serialization.Bigdl.ModuleTag getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<ModuleTag>
+        PARSER = new com.google.protobuf.AbstractParser<ModuleTag>() {
+      public ModuleTag parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new ModuleTag(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<ModuleTag> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ModuleTag> getParserForType() {
+      return PARSER;
+    }
+
+    public serialization.Bigdl.ModuleTag getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_serialization_BigDLModule_descriptor;
   private static final 
@@ -19110,6 +20523,11 @@ public final class Bigdl {
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_serialization_NameAttrList_AttrEntry_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_serialization_ModuleTag_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_serialization_ModuleTag_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -19120,7 +20538,7 @@ public final class Bigdl {
   static {
     java.lang.String[] descriptorData = {
       "\n\013bigdl.proto\022\rserialization\032\031google/pro" +
-      "tobuf/any.proto\"\232\003\n\013BigDLModule\022\014\n\004name\030" +
+      "tobuf/any.proto\"\301\003\n\013BigDLModule\022\014\n\004name\030" +
       "\001 \001(\t\022.\n\nsubModules\030\002 \003(\0132\032.serializatio" +
       "n.BigDLModule\022*\n\006weight\030\003 \001(\0132\032.serializ" +
       "ation.BigDLTensor\022(\n\004bias\030\004 \001(\0132\032.serial" +
@@ -19128,80 +20546,84 @@ public final class Bigdl {
       "\023\n\013nextModules\030\006 \003(\t\022\022\n\nmoduleType\030\007 \001(\t" +
       "\0222\n\004attr\030\010 \003(\0132$.serialization.BigDLModu" +
       "le.AttrEntry\022\017\n\007version\030\t \001(\t\022\r\n\005train\030\n" +
-      " \001(\010\022\023\n\013namePostfix\030\013 \001(\t\022\n\n\002id\030\014 \001(\005\032E\n",
-      "\tAttrEntry\022\013\n\003key\030\001 \001(\t\022\'\n\005value\030\002 \001(\0132\030" +
-      ".serialization.AttrValue:\0028\001\"M\n\nInitMeth" +
-      "od\0221\n\nmethodType\030\001 \001(\0162\035.serialization.I" +
-      "nitMethodType\022\014\n\004data\030\002 \003(\001\"\210\002\n\013BigDLTen" +
-      "sor\022)\n\010datatype\030\001 \001(\0162\027.serialization.Da" +
-      "taType\022\014\n\004size\030\002 \003(\005\022\016\n\006stride\030\003 \003(\005\022\016\n\006" +
-      "offset\030\004 \001(\005\022\021\n\tdimension\030\005 \001(\005\022\021\n\tnElem" +
-      "ents\030\006 \001(\005\022\020\n\010isScalar\030\007 \001(\010\022-\n\007storage\030" +
-      "\010 \001(\0132\034.serialization.TensorStorage\022\n\n\002i" +
-      "d\030\t \001(\005\022-\n\ntensorType\030\n \001(\0162\031.serializat",
-      "ion.TensorType\"\320\001\n\rTensorStorage\022)\n\010data" +
-      "type\030\001 \001(\0162\027.serialization.DataType\022\022\n\nf" +
-      "loat_data\030\002 \003(\002\022\023\n\013double_data\030\003 \003(\001\022\021\n\t" +
-      "bool_data\030\004 \003(\010\022\023\n\013string_data\030\005 \003(\t\022\020\n\010" +
-      "int_data\030\006 \003(\005\022\021\n\tlong_data\030\007 \003(\003\022\022\n\nbyt" +
-      "es_data\030\010 \003(\014\022\n\n\002id\030\t \001(\005\"[\n\013Regularizer" +
-      "\0227\n\017regularizerType\030\001 \001(\0162\036.serializatio" +
-      "n.RegularizerType\022\023\n\013regularData\030\002 \003(\001\"\332" +
-      "\t\n\tAttrValue\022)\n\010dataType\030\001 \001(\0162\027.seriali" +
-      "zation.DataType\022\017\n\007subType\030\002 \001(\t\022\024\n\nint3",
-      "2Value\030\003 \001(\005H\000\022\024\n\nint64Value\030\004 \001(\003H\000\022\024\n\n" +
-      "floatValue\030\005 \001(\002H\000\022\025\n\013doubleValue\030\006 \001(\001H" +
-      "\000\022\025\n\013stringValue\030\007 \001(\tH\000\022\023\n\tboolValue\030\010 " +
-      "\001(\010H\000\0226\n\020regularizerValue\030\t \001(\0132\032.serial" +
-      "ization.RegularizerH\000\0221\n\013tensorValue\030\n \001" +
-      "(\0132\032.serialization.BigDLTensorH\000\0227\n\023vari" +
-      "ableFormatValue\030\013 \001(\0162\030.serialization.Va" +
-      "rFormatH\000\0224\n\017initMethodValue\030\014 \001(\0132\031.ser" +
-      "ialization.InitMethodH\000\0226\n\020bigDLModuleVa" +
-      "lue\030\r \001(\0132\032.serialization.BigDLModuleH\000\022",
-      "8\n\021nameAttrListValue\030\016 \001(\0132\033.serializati" +
-      "on.NameAttrListH\000\0229\n\narrayValue\030\017 \001(\0132#." +
-      "serialization.AttrValue.ArrayValueH\000\0229\n\017" +
-      "dataFormatValue\030\020 \001(\0162\036.serialization.In" +
-      "putDataFormatH\000\022+\n\013customValue\030\021 \001(\0132\024.g" +
-      "oogle.protobuf.AnyH\000\032\223\004\n\nArrayValue\022\014\n\004s" +
-      "ize\030\001 \001(\005\022)\n\010datatype\030\002 \001(\0162\027.serializat" +
-      "ion.DataType\022\013\n\003i32\030\003 \003(\005\022\013\n\003i64\030\004 \003(\003\022\013" +
-      "\n\003flt\030\005 \003(\002\022\013\n\003dbl\030\006 \003(\001\022\013\n\003str\030\007 \003(\t\022\017\n" +
-      "\007boolean\030\010 \003(\010\022/\n\013Regularizer\030\t \003(\0132\032.se",
-      "rialization.Regularizer\022*\n\006tensor\030\n \003(\0132" +
-      "\032.serialization.BigDLTensor\0220\n\016variableF" +
-      "ormat\030\013 \003(\0162\030.serialization.VarFormat\022-\n" +
-      "\ninitMethod\030\014 \003(\0132\031.serialization.InitMe" +
-      "thod\022/\n\013bigDLModule\030\r \003(\0132\032.serializatio" +
-      "n.BigDLModule\0221\n\014nameAttrList\030\016 \003(\0132\033.se" +
-      "rialization.NameAttrList\0222\n\ndataFormat\030\017" +
-      " \003(\0162\036.serialization.InputDataFormat\022$\n\006" +
-      "custom\030\020 \003(\0132\024.google.protobuf.AnyB\007\n\005va" +
-      "lue\"\230\001\n\014NameAttrList\022\014\n\004name\030\001 \001(\t\0223\n\004at",
-      "tr\030\002 \003(\0132%.serialization.NameAttrList.At" +
-      "trEntry\032E\n\tAttrEntry\022\013\n\003key\030\001 \001(\t\022\'\n\005val" +
-      "ue\030\002 \001(\0132\030.serialization.AttrValue:\0028\001*\260" +
-      "\001\n\tVarFormat\022\020\n\014EMPTY_FORMAT\020\000\022\013\n\007DEFAUL" +
-      "T\020\001\022\t\n\005ONE_D\020\002\022\n\n\006IN_OUT\020\003\022\n\n\006OUT_IN\020\004\022\020" +
-      "\n\014IN_OUT_KW_KH\020\005\022\020\n\014OUT_IN_KW_KH\020\006\022\023\n\017GP" +
-      "_OUT_IN_KW_KH\020\007\022\023\n\017GP_IN_OUT_KW_KH\020\010\022\023\n\017" +
-      "OUT_IN_KT_KH_KW\020\t*\253\001\n\016InitMethodType\022\030\n\024" +
-      "EMPTY_INITIALIZATION\020\000\022\022\n\016RANDOM_UNIFORM" +
-      "\020\001\022\030\n\024RANDOM_UNIFORM_PARAM\020\002\022\021\n\rRANDOM_N",
-      "ORMAL\020\003\022\t\n\005ZEROS\020\004\022\010\n\004ONES\020\005\022\t\n\005CONST\020\006\022" +
-      "\n\n\006XAVIER\020\007\022\022\n\016BILINEARFILLER\020\010*L\n\017Regul" +
-      "arizerType\022\023\n\017L1L2Regularizer\020\000\022\021\n\rL1Reg" +
-      "ularizer\020\001\022\021\n\rL2Regularizer\020\002*%\n\017InputDa" +
-      "taFormat\022\010\n\004NCHW\020\000\022\010\n\004NHWC\020\001*\"\n\nTensorTy" +
-      "pe\022\t\n\005DENSE\020\000\022\t\n\005QUANT\020\001*\375\001\n\010DataType\022\t\n" +
-      "\005INT32\020\000\022\t\n\005INT64\020\001\022\t\n\005FLOAT\020\002\022\n\n\006DOUBLE" +
-      "\020\003\022\n\n\006STRING\020\004\022\010\n\004BOOL\020\005\022\010\n\004CHAR\020\006\022\t\n\005SH" +
-      "ORT\020\007\022\t\n\005BYTES\020\010\022\017\n\013REGULARIZER\020\t\022\n\n\006TEN" +
-      "SOR\020\n\022\023\n\017VARIABLE_FORMAT\020\013\022\016\n\nINITMETHOD",
-      "\020\014\022\n\n\006MODULE\020\r\022\022\n\016NAME_ATTR_LIST\020\016\022\017\n\013AR" +
-      "RAY_VALUE\020\017\022\017\n\013DATA_FORMAT\020\020\022\n\n\006CUSTOM\020\021" +
-      "b\006proto3"
+      " \001(\010\022\023\n\013namePostfix\030\013 \001(\t\022\n\n\002id\030\014 \001(\005\022%\n",
+      "\003tag\030\r \001(\0132\030.serialization.ModuleTag\032E\n\t" +
+      "AttrEntry\022\013\n\003key\030\001 \001(\t\022\'\n\005value\030\002 \001(\0132\030." +
+      "serialization.AttrValue:\0028\001\"M\n\nInitMetho" +
+      "d\0221\n\nmethodType\030\001 \001(\0162\035.serialization.In" +
+      "itMethodType\022\014\n\004data\030\002 \003(\001\"\210\002\n\013BigDLTens" +
+      "or\022)\n\010datatype\030\001 \001(\0162\027.serialization.Dat" +
+      "aType\022\014\n\004size\030\002 \003(\005\022\016\n\006stride\030\003 \003(\005\022\016\n\006o" +
+      "ffset\030\004 \001(\005\022\021\n\tdimension\030\005 \001(\005\022\021\n\tnEleme" +
+      "nts\030\006 \001(\005\022\020\n\010isScalar\030\007 \001(\010\022-\n\007storage\030\010" +
+      " \001(\0132\034.serialization.TensorStorage\022\n\n\002id",
+      "\030\t \001(\005\022-\n\ntensorType\030\n \001(\0162\031.serializati" +
+      "on.TensorType\"\320\001\n\rTensorStorage\022)\n\010datat" +
+      "ype\030\001 \001(\0162\027.serialization.DataType\022\022\n\nfl" +
+      "oat_data\030\002 \003(\002\022\023\n\013double_data\030\003 \003(\001\022\021\n\tb" +
+      "ool_data\030\004 \003(\010\022\023\n\013string_data\030\005 \003(\t\022\020\n\010i" +
+      "nt_data\030\006 \003(\005\022\021\n\tlong_data\030\007 \003(\003\022\022\n\nbyte" +
+      "s_data\030\010 \003(\014\022\n\n\002id\030\t \001(\005\"[\n\013Regularizer\022" +
+      "7\n\017regularizerType\030\001 \001(\0162\036.serialization" +
+      ".RegularizerType\022\023\n\013regularData\030\002 \003(\001\"\210\n" +
+      "\n\tAttrValue\022)\n\010dataType\030\001 \001(\0162\027.serializ",
+      "ation.DataType\022\017\n\007subType\030\002 \001(\t\022\024\n\nint32" +
+      "Value\030\003 \001(\005H\000\022\024\n\nint64Value\030\004 \001(\003H\000\022\024\n\nf" +
+      "loatValue\030\005 \001(\002H\000\022\025\n\013doubleValue\030\006 \001(\001H\000" +
+      "\022\025\n\013stringValue\030\007 \001(\tH\000\022\023\n\tboolValue\030\010 \001" +
+      "(\010H\000\0226\n\020regularizerValue\030\t \001(\0132\032.seriali" +
+      "zation.RegularizerH\000\0221\n\013tensorValue\030\n \001(" +
+      "\0132\032.serialization.BigDLTensorH\000\0227\n\023varia" +
+      "bleFormatValue\030\013 \001(\0162\030.serialization.Var" +
+      "FormatH\000\0224\n\017initMethodValue\030\014 \001(\0132\031.seri" +
+      "alization.InitMethodH\000\0226\n\020bigDLModuleVal",
+      "ue\030\r \001(\0132\032.serialization.BigDLModuleH\000\0228" +
+      "\n\021nameAttrListValue\030\016 \001(\0132\033.serializatio" +
+      "n.NameAttrListH\000\0229\n\narrayValue\030\017 \001(\0132#.s" +
+      "erialization.AttrValue.ArrayValueH\000\0229\n\017d" +
+      "ataFormatValue\030\020 \001(\0162\036.serialization.Inp" +
+      "utDataFormatH\000\022+\n\013customValue\030\021 \001(\0132\024.go" +
+      "ogle.protobuf.AnyH\000\022,\n\010tagValue\030\022 \001(\0132\030." +
+      "serialization.ModuleTagH\000\032\223\004\n\nArrayValue" +
+      "\022\014\n\004size\030\001 \001(\005\022)\n\010datatype\030\002 \001(\0162\027.seria" +
+      "lization.DataType\022\013\n\003i32\030\003 \003(\005\022\013\n\003i64\030\004 ",
+      "\003(\003\022\013\n\003flt\030\005 \003(\002\022\013\n\003dbl\030\006 \003(\001\022\013\n\003str\030\007 \003" +
+      "(\t\022\017\n\007boolean\030\010 \003(\010\022/\n\013Regularizer\030\t \003(\013" +
+      "2\032.serialization.Regularizer\022*\n\006tensor\030\n" +
+      " \003(\0132\032.serialization.BigDLTensor\0220\n\016vari" +
+      "ableFormat\030\013 \003(\0162\030.serialization.VarForm" +
+      "at\022-\n\ninitMethod\030\014 \003(\0132\031.serialization.I" +
+      "nitMethod\022/\n\013bigDLModule\030\r \003(\0132\032.seriali" +
+      "zation.BigDLModule\0221\n\014nameAttrList\030\016 \003(\013" +
+      "2\033.serialization.NameAttrList\0222\n\ndataFor" +
+      "mat\030\017 \003(\0162\036.serialization.InputDataForma",
+      "t\022$\n\006custom\030\020 \003(\0132\024.google.protobuf.AnyB" +
+      "\007\n\005value\"\230\001\n\014NameAttrList\022\014\n\004name\030\001 \001(\t\022" +
+      "3\n\004attr\030\002 \003(\0132%.serialization.NameAttrLi" +
+      "st.AttrEntry\032E\n\tAttrEntry\022\013\n\003key\030\001 \001(\t\022\'" +
+      "\n\005value\030\002 \001(\0132\030.serialization.AttrValue:" +
+      "\0028\001\"N\n\tModuleTag\022\021\n\tpublisher\030\001 \001(\t\022\014\n\004n" +
+      "ame\030\002 \001(\t\022\017\n\007dataSet\030\003 \001(\t\022\017\n\007version\030\004 " +
+      "\001(\t*\260\001\n\tVarFormat\022\020\n\014EMPTY_FORMAT\020\000\022\013\n\007D" +
+      "EFAULT\020\001\022\t\n\005ONE_D\020\002\022\n\n\006IN_OUT\020\003\022\n\n\006OUT_I" +
+      "N\020\004\022\020\n\014IN_OUT_KW_KH\020\005\022\020\n\014OUT_IN_KW_KH\020\006\022",
+      "\023\n\017GP_OUT_IN_KW_KH\020\007\022\023\n\017GP_IN_OUT_KW_KH\020" +
+      "\010\022\023\n\017OUT_IN_KT_KH_KW\020\t*\253\001\n\016InitMethodTyp" +
+      "e\022\030\n\024EMPTY_INITIALIZATION\020\000\022\022\n\016RANDOM_UN" +
+      "IFORM\020\001\022\030\n\024RANDOM_UNIFORM_PARAM\020\002\022\021\n\rRAN" +
+      "DOM_NORMAL\020\003\022\t\n\005ZEROS\020\004\022\010\n\004ONES\020\005\022\t\n\005CON" +
+      "ST\020\006\022\n\n\006XAVIER\020\007\022\022\n\016BILINEARFILLER\020\010*L\n\017" +
+      "RegularizerType\022\023\n\017L1L2Regularizer\020\000\022\021\n\r" +
+      "L1Regularizer\020\001\022\021\n\rL2Regularizer\020\002*%\n\017In" +
+      "putDataFormat\022\010\n\004NCHW\020\000\022\010\n\004NHWC\020\001*\"\n\nTen" +
+      "sorType\022\t\n\005DENSE\020\000\022\t\n\005QUANT\020\001*\215\002\n\010DataTy",
+      "pe\022\t\n\005INT32\020\000\022\t\n\005INT64\020\001\022\t\n\005FLOAT\020\002\022\n\n\006D" +
+      "OUBLE\020\003\022\n\n\006STRING\020\004\022\010\n\004BOOL\020\005\022\010\n\004CHAR\020\006\022" +
+      "\t\n\005SHORT\020\007\022\t\n\005BYTES\020\010\022\017\n\013REGULARIZER\020\t\022\n" +
+      "\n\006TENSOR\020\n\022\023\n\017VARIABLE_FORMAT\020\013\022\016\n\nINITM" +
+      "ETHOD\020\014\022\n\n\006MODULE\020\r\022\022\n\016NAME_ATTR_LIST\020\016\022" +
+      "\017\n\013ARRAY_VALUE\020\017\022\017\n\013DATA_FORMAT\020\020\022\n\n\006CUS" +
+      "TOM\020\021\022\016\n\nMODULE_TAG\020\022b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -19221,7 +20643,7 @@ public final class Bigdl {
     internal_static_serialization_BigDLModule_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_serialization_BigDLModule_descriptor,
-        new java.lang.String[] { "Name", "SubModules", "Weight", "Bias", "PreModules", "NextModules", "ModuleType", "Attr", "Version", "Train", "NamePostfix", "Id", });
+        new java.lang.String[] { "Name", "SubModules", "Weight", "Bias", "PreModules", "NextModules", "ModuleType", "Attr", "Version", "Train", "NamePostfix", "Id", "Tag", });
     internal_static_serialization_BigDLModule_AttrEntry_descriptor =
       internal_static_serialization_BigDLModule_descriptor.getNestedTypes().get(0);
     internal_static_serialization_BigDLModule_AttrEntry_fieldAccessorTable = new
@@ -19257,7 +20679,7 @@ public final class Bigdl {
     internal_static_serialization_AttrValue_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_serialization_AttrValue_descriptor,
-        new java.lang.String[] { "DataType", "SubType", "Int32Value", "Int64Value", "FloatValue", "DoubleValue", "StringValue", "BoolValue", "RegularizerValue", "TensorValue", "VariableFormatValue", "InitMethodValue", "BigDLModuleValue", "NameAttrListValue", "ArrayValue", "DataFormatValue", "CustomValue", "Value", });
+        new java.lang.String[] { "DataType", "SubType", "Int32Value", "Int64Value", "FloatValue", "DoubleValue", "StringValue", "BoolValue", "RegularizerValue", "TensorValue", "VariableFormatValue", "InitMethodValue", "BigDLModuleValue", "NameAttrListValue", "ArrayValue", "DataFormatValue", "CustomValue", "TagValue", "Value", });
     internal_static_serialization_AttrValue_ArrayValue_descriptor =
       internal_static_serialization_AttrValue_descriptor.getNestedTypes().get(0);
     internal_static_serialization_AttrValue_ArrayValue_fieldAccessorTable = new
@@ -19276,6 +20698,12 @@ public final class Bigdl {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_serialization_NameAttrList_AttrEntry_descriptor,
         new java.lang.String[] { "Key", "Value", });
+    internal_static_serialization_ModuleTag_descriptor =
+      getDescriptor().getMessageTypes().get(7);
+    internal_static_serialization_ModuleTag_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_serialization_ModuleTag_descriptor,
+        new java.lang.String[] { "Publisher", "Name", "DataSet", "Version", });
     com.google.protobuf.AnyProto.getDescriptor();
   }
 

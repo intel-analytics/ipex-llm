@@ -753,4 +753,17 @@ class DataConverterSpec extends FlatSpec with Matchers{
     val retrievedValue = DataConverter.getAttributeValue(DeserializeContext(null, map,
       ProtoStorageType), attr)
   }
+
+  "ModelTag conversion" should "work properly" in {
+    val modelTag = ModuleTag("bigdl", "test_model", "test_dataset", "0.1")
+    val attriBulder = AttrValue.newBuilder
+    val tagType = universe.typeOf[ModuleTag]
+    map.clear()
+    DataConverter.setAttributeValue(SerializeContext(null, map, null),
+      attriBulder, modelTag, tagType)
+    map.clear()
+    val retrievedValue = DataConverter.getAttributeValue(DeserializeContext(null, map, null),
+      attriBulder.build)
+    retrievedValue should be (modelTag)
+  }
 }
