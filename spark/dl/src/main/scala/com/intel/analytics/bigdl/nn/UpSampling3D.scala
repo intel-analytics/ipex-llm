@@ -30,15 +30,15 @@ import scala.reflect.ClassTag
  *
  * @param size Repeats the depth, height, width dimensions of the data by
  *             size[0], size[1] and size[2] respectively.
- * @param dataFormat `[batch, channels, depth, height, width]` (for 'th' dim_ordering)
+ * @param dimOrdering `[batch, channels, depth, height, width]` (for 'th' dim_ordering)
  * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
  */
 @SerialVersionUID(3462228835945094156L)
-class UpSampling3D[T: ClassTag](size: Array[Int], dataFormat: String = "th")
+class UpSampling3D[T: ClassTag](size: Array[Int], dimOrdering: String = "th")
   (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   require(size != null && size.length == 3, "the size should be 3 dims")
-  require(dataFormat == "th", "currently only support th mode")
+  require(dimOrdering == "th", "currently only support th mode")
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim() == 5, "only supports 5d tensors")
