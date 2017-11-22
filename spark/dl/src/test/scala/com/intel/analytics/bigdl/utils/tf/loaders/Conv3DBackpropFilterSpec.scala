@@ -64,6 +64,4 @@ class Conv3DBackpropFilterSpec extends TensorflowSpecHelper {
       1e-4
     )
   }
-
-
 }

@@ -72,6 +72,4 @@ class Conv3DSpec extends TensorflowSpecHelper {
       1e-4
     )
   }
-
-
 }
