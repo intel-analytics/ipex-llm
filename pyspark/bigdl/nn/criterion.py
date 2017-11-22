@@ -803,6 +803,32 @@ class CosineProximityCriterion(Criterion):
                  bigdl_type="float"):
         super(CosineProximityCriterion, self).__init__(None, bigdl_type)
 
+class MeanAbsolutePercentageCriterion(Criterion):
+
+    '''
+    compute mean absolute percentage error for intput and target
+
+    >>> error = MeanAbsolutePercentageCriterion()
+    creating: createMeanAbsolutePercentageCriterion
+    '''
+
+    def __init__(self,
+                 bigdl_type="float"):
+        super(MeanAbsolutePercentageCriterion, self).__init__(None, bigdl_type)
+
+class MeanSquaredLogarithmicCriterion(Criterion):
+
+    '''
+    compute L1 norm for input, and sign of input
+
+    >>> error = MeanSquaredLogarithmicCriterion()
+    creating: createMeanSquaredLogarithmicCriterion
+    '''
+
+    def __init__(self,
+                 bigdl_type="float"):
+        super(MeanSquaredLogarithmicCriterion, self).__init__(None, bigdl_type)
+
 def _test():
     import doctest
     from pyspark import SparkContext
