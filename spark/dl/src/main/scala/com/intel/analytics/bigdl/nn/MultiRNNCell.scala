@@ -41,6 +41,19 @@ class MultiRNNCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorN
 
   override var cell: AbstractModule[Activity, Activity, T] = buildModel()
 
+  override def hidResize(hidden: Activity, batchSize: Int, stepShape: Array[Int]): Activity = {
+    if (hidden == null) {
+      hidResize(T(), batchSize, stepShape)
+    } else {
+      var i = 0
+      while (i < cells.size) {
+        hidden.toTable(i) = cells(i).hidResize(null, batchSize, stepShape)
+        i += 1
+      }
+      hidden
+    }
+  }
+
   def buildModel(): Sequential[T] = {
     val seq = Sequential()
     cells.foreach{ cell =>
@@ -73,7 +86,7 @@ class MultiRNNCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorN
   }
 
   override def updateGradInput(input: Table, gradOutput: Table): Table = {
-    var i = cells.length
+    var i = cells.length - 1
     var error = T()
     error(inputDim) = gradOutput(inputDim)
     val states = input(hidDim).asInstanceOf[Table]
@@ -81,16 +94,16 @@ class MultiRNNCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorN
     val outputGradStates = T()
 
     val nextInput = T()
-    while (i >= 1) {
-      val input0: Tensor[T] = if (i > 1) {
-        cells(i - 2).output.toTable(inputDim)
+    while (i >= 0) {
+      val input0: Tensor[T] = if (i > 0) {
+        cells(i - 1).output.toTable(inputDim)
       } else input(inputDim)
       nextInput(inputDim) = input0
 
-      nextInput(hidDim) = states(i - 1)
-      error(hidDim) = gradStates(i - 1)
-      error = cells(i - 1).updateGradInput(nextInput, error)
-      outputGradStates(i - 1) = error(hidDim)
+      nextInput(hidDim) = states(i)
+      error(hidDim) = gradStates(i)
+      error = cells(i).updateGradInput(nextInput, error)
+      outputGradStates(i) = error(hidDim)
       i -= 1
     }
 
@@ -100,29 +113,29 @@ class MultiRNNCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorN
   }
 
   override def accGradParameters(input: Table, gradOutput: Table): Unit = {
-    var i = cells.length
+    var i = cells.length - 1
     val error = T()
     error(inputDim) = gradOutput(inputDim)
     val states = input(hidDim).asInstanceOf[Table]
     val gradStates = gradOutput(hidDim).asInstanceOf[Table]
 
     val nextInput = T()
-    while (i >= 1) {
-      val input0: Tensor[T] = if (i > 1) {
-        cells(i - 2).output.toTable(inputDim)
+    while (i >= 0) {
+      val input0: Tensor[T] = if (i > 0) {
+        cells(i - 1).output.toTable(inputDim)
       } else input(inputDim)
       nextInput(inputDim) = input0
 
-      nextInput(hidDim) = states(i - 1)
-      error(hidDim) = gradStates(i - 1)
-      cells(i - 1).accGradParameters(nextInput, error)
-      error(inputDim) = cells(i - 1).gradInput.toTable(inputDim)
+      nextInput(hidDim) = states(i)
+      error(hidDim) = gradStates(i)
+      cells(i).accGradParameters(nextInput, error)
+      error(inputDim) = cells(i).gradInput.toTable(inputDim)
       i -= 1
     }
   }
 
   override def backward(input: Table, gradOutput: Table): Table = {
-    var i = cells.length
+    var i = cells.length - 1
     var error = T()
     error(inputDim) = gradOutput(inputDim)
     val states = input(hidDim).asInstanceOf[Table]
@@ -130,16 +143,16 @@ class MultiRNNCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorN
     val outputGradStates = T()
 
     val nextInput = T()
-    while (i >= 1) {
-      val input0: Tensor[T] = if (i > 1) {
-        cells(i - 2).output.toTable(inputDim)
+    while (i >= 0) {
+      val input0: Tensor[T] = if (i > 0) {
+        cells(i - 1).output.toTable(inputDim)
       } else input(inputDim)
       nextInput(inputDim) = input0
 
-      nextInput(hidDim) = states(i - 1)
-      error(hidDim) = gradStates(i - 1)
-      error = cells(i - 1).backward(nextInput, error)
-      outputGradStates(i - 1) = error(hidDim)
+      nextInput(hidDim) = states(i)
+      error(hidDim) = gradStates(i)
+      error = cells(i).backward(nextInput, error)
+      outputGradStates(i) = error(hidDim)
       i -= 1
     }
 

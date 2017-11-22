@@ -1564,11 +1564,13 @@ array([[[[ 0.1       ,  0.2       ],
 
 **Scala:**
 ```scala
+// cells should be an array of Cell
 val model = MultiRNNCell(cells = multiRNNCells)
 
 ```
 **Python:**
 ```python
+# cells should be a list of Cell
 model = MultiRNNCell(cells = multiRNNCells)
 ```
 

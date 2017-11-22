@@ -44,27 +44,6 @@ class RecurrentDecoder[T : ClassTag](val seqLength: Int)
 
   times = seqLength
 
-  override def initHidden(sizes: Array[Int]): Unit = {
-    val stepSizes = sizes
-
-    if (containMultiRNNCell) {
-      if (hidden == null) {
-        cells.clear()
-        cells += topology
-        hidden = T()
-        gradHidden = T()
-      }
-
-      val multiCells = topology.asInstanceOf[MultiRNNCell[T]].cells
-      var i = 0
-      while (i < multiCells.size) {
-        hidden.toTable(i) = multiCells(i).hidResize(null, batchSize, stepSizes)
-        gradHidden.toTable(i) = multiCells(i).hidResize(null, batchSize, stepSizes)
-        i += 1
-      }
-    } else super.initHidden(sizes)
-  }
-
   /**
    *
    * modules: -- preTopology
@@ -234,13 +213,6 @@ class RecurrentDecoder[T : ClassTag](val seqLength: Int)
   override def hashCode(): Int = {
     val state = Seq(super.hashCode(), cells)
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
-  }
-
-  private def cloneStates(states: Table, res: Table): Unit = {
-    states.getState().foreach { pair =>
-      if (pair._2.isInstanceOf[Table]) cloneStates(pair._2.asInstanceOf[Table], res(pair._1))
-      else res(pair._1) = pair._2.asInstanceOf[Tensor[T]].clone()
-    }
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
