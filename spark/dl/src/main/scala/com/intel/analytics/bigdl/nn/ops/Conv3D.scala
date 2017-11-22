@@ -16,6 +16,7 @@
 package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.nn.VolumetricConvolution
+import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
@@ -28,7 +29,8 @@ class Conv3D[T: ClassTag](
                            dW: Int,
                            padT: Int,
                            padH: Int,
-                           padW: Int
+                           padW: Int,
+                           format: DataFormat
                          )(implicit ev: TensorNumeric[T]) extends Operation[Table, Tensor[T], T] {
 
   private val onesBias = null
@@ -48,11 +50,33 @@ class Conv3D[T: ClassTag](
     val nInputPlane = filter.size(4)
     val nOutputPlane = filter.size(5)
 
-    val filterMM = filter.view(nInputPlane * kT * kH * kW, nOutputPlane).t()
+    val transInput = if (format == DataFormat.NHWC) {
+      var buffer = input
+      buffer = buffer.transpose(2, 5)
+      buffer = buffer.transpose(3, 5)
+      buffer = buffer.transpose(4, 5)
+      buffer = buffer.contiguous()
 
-    VolumetricConvolution.conv3d(input, output, filterMM, bias, onesBias, fInput,
+      buffer
+    } else {
+      input
+    }
+
+    var transWeight = filter.transpose(1, 5)
+    transWeight = transWeight.transpose(2, 4)
+    transWeight = transWeight.transpose(3, 5)
+    transWeight = transWeight.contiguous()
+    val weightMM = transWeight.view(nOutputPlane, nInputPlane * kT * kH * kW)
+
+    VolumetricConvolution.conv3d(transInput, output, weightMM, bias, onesBias, fInput,
       nInputPlane, nOutputPlane, withBias = false, kT, kW, kH, dT, dW, dH, padT, padW, padH)
 
+    if (format == DataFormat.NHWC) {
+      output = output.transpose(2, 5)
+      output = output.transpose(2, 4)
+      output = output.transpose(2, 3)
+      output = output.contiguous()
+    }
     output
   }
 }
@@ -64,7 +88,8 @@ object Conv3D {
                           dW: Int,
                           padT: Int,
                           padH: Int,
-                          padW: Int
+                          padW: Int,
+                          format: DataFormat
                         )(implicit ev: TensorNumeric[T]): Conv3D[T]
-  = new Conv3D[T](dT, dH, dW, padT, padH, padW)
+  = new Conv3D[T](dT, dH, dW, padT, padH, padW, format)
 }

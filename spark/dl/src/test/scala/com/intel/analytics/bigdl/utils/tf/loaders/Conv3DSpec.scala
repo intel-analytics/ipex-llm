@@ -38,13 +38,14 @@ class Conv3DSpec extends TensorflowSpecHelper {
       .putAttr("padding", PaddingType.PADDING_VALID.value)
       .putAttr("data_format", dataFormat)
 
-    val input = Tensor[Float](4, 20, 30, 40, 3)
-    val filter = Tensor[Float](2, 3, 4, 3, 4)
+    val input = Tensor[Float](4, 20, 30, 40, 3).rand()
+    val filter = Tensor[Float](2, 3, 4, 3, 4).rand()
 
     compare(
       builder,
       Seq(input, filter),
-      0
+      0,
+      1e-4
     )
   }
 

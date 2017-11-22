@@ -52,22 +52,13 @@ class Conv3D extends TensorflowOpsLoader {
         val dW = strideList(2)
         val dH = strideList(3)
 
-        val trans = Node(Transpose(Array((2, 5), (3, 5), (4, 5)))
-          .asInstanceOf[AbstractModule[Activity, Activity, T]])
-        val contiguous = Contiguous().inputs(trans)
-        val identity = Node(Identity()
-          .asInstanceOf[AbstractModule[Activity, Activity, T]])
-        val conv3d = Conv3D[T](dT, dW, dH, pT, pW, pH).inputs(contiguous, identity)
-        val trans2 = Transpose(Array((2, 5), (2, 3), (3, 4))).inputs(conv3d)
-        val contiguous2 = Contiguous().inputs(trans2)
-        Graph(Array(trans, identity), contiguous2)
+        Conv3D[T](dT, dW, dH, pT, pW, pH, DataFormat.NHWC)
       case "NCDHW" =>
         require(strideList(1) == 1, s"not support strides on depth")
         val dT = strideList(2)
         val dW = strideList(3)
         val dH = strideList(4)
-        val conv3d = Conv3D[T](dT, dW, dH, pT, pW, pH)
-        conv3d
+        Conv3D[T](dT, dW, dH, pT, pW, pH, DataFormat.NCHW)
       case _ =>
         throw new IllegalArgumentException(s"not supported data format: $format")
     }
