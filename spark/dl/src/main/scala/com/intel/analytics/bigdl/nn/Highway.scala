@@ -23,6 +23,14 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+/**
+ * Densely connected highway network.
+ * Highway layers are a natural extension of LSTMs to feedforward networks.
+ * @param size input size
+ * @param withBias whether to include a bias
+ * @param activation name of activation function to use
+ * @tparam T Numeric type. Only support float/double now
+ */
 class Highway[T: ClassTag](size: Int, withBias: Boolean = true,
   activation: String = null)
   (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
