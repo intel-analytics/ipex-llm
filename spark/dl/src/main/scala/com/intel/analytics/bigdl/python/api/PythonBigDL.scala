@@ -1593,7 +1593,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       case "big_endian" => ByteOrder.BIG_ENDIAN
       case _ => throw new IllegalArgumentException(s"No support byte order $byteOrder")
     }
-    Module.loadTF[T](path, inputs.asScala, outputs.asScala, order, Some(binFile))
+    Module.loadTF[T](path, inputs.asScala, outputs.asScala, order, Option(binFile))
   }
 
   def saveTF(model: AbstractModule[Activity, Activity, T],
