@@ -2229,6 +2229,24 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     module.modules.toList.asJava
   }
 
+  def getFlattenModules(module: Container[Activity, Activity, T])
+  : JList[AbstractModule[Activity, Activity, T]] = {
+    val result = ArrayBuffer[AbstractModule[Activity, Activity, T]]()
+    doGetFlattenModules(module, result)
+    result.toList.asJava
+  }
+
+  private def doGetFlattenModules(module: Container[Activity, Activity, T],
+    result: ArrayBuffer[AbstractModule[Activity, Activity, T]]): Unit = {
+    module.modules.foreach {m =>
+      if (m.isInstanceOf[Container[Activity, Activity, T]]) {
+        doGetFlattenModules(m.asInstanceOf[Container[Activity, Activity, T]], result)
+      } else {
+        result.append(m)
+      }
+    }
+  }
+
   def isWithWeights(module: Module[T]): Boolean = {
     val weights = module.getWeightsBias()
     return weights != null && !weights.isEmpty
