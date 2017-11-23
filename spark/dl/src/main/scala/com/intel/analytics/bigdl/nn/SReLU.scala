@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
-import com.intel.analytics.bigdl.tensor.{Tensor, TensorFunc6}
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
 
@@ -44,18 +44,15 @@ import scala.reflect.ClassTag
 @SerialVersionUID(7173457290010080259L)
 class SReLU[T: ClassTag](shared_axes: Array[Int] = null)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
-  val weight: Tensor[T] = Tensor[T]()
-  val gradWeight: Tensor[T] = Tensor[T]()
-
   val weightsLen = 4
-  val weights: Array[Tensor[T]] = new Array[Tensor[T]](weightsLen)
-  val gradWeights: Array[Tensor[T]] = new Array[Tensor[T]](weightsLen)
+  val weights: Array[Tensor[T]] = Array.fill[Tensor[T]](4)(Tensor[T]())
+  val gradWeights: Array[Tensor[T]] = Array.fill[Tensor[T]](4)(Tensor[T]())
 
   val weightsInit: Array[InitializationMethod] = Array(Zeros, Xavier, Xavier, Ones)
   private val (tLeft, aLeft, tRight, aRight) = (0, 1, 2, 3)
 
   private def init(input: Tensor[T]): Unit = {
-    val shape = input.size()
+    val shape = input.size().slice(1, input.size().length)
     if (shared_axes != null) {
       var i = 1
       while (i < shape.length) {
@@ -65,23 +62,20 @@ class SReLU[T: ClassTag](shared_axes: Array[Int] = null)(
         i += 1
       }
     }
-    shape(0) = weightsLen
-
-    weight.resize(shape)
-    gradWeight.resize(shape)
 
     val variableFormat = shape.length match {
-      case 3 => VariableFormat.IN_OUT
-      case m if m == 4 || m == 5 => VariableFormat.OUT_IN_KW_KH
+      case 2 => VariableFormat.IN_OUT
+      case 4 => VariableFormat.OUT_IN_KW_KH
+      case 5 => VariableFormat.OUT_IN_KT_KH_KW
       case _ => VariableFormat.Default
     }
 
     var i = 0
     while (i < weightsLen) {
-      weights(i) = weight.select(1, i + 1)
+      weights(i).resize(shape)
       weightsInit(i).init(weights(i), variableFormat)
 
-      gradWeights(i) = gradWeight.select(1, i + 1)
+      gradWeights(i).resize(shape)
       gradWeights(i).resizeAs(weights(i)).zero()
 
       i += 1
@@ -106,7 +100,7 @@ class SReLU[T: ClassTag](shared_axes: Array[Int] = null)(
     output.resizeAs(input)
 
     // the weight's size depends on the input
-    if (weight.isEmpty) {
+    if (weights.exists(_.isEmpty)) {
       init(input)
     }
 
@@ -247,12 +241,12 @@ class SReLU[T: ClassTag](shared_axes: Array[Int] = null)(
   override def setWeightsBias(newWeights: Array[Tensor[T]]): this.type = {
     // SReLU will split the weights from a tensor
     if (!newWeights.isEmpty) {
-      weight.set(newWeights(0))
-      gradWeight.resizeAs(weight)
       var i = 0
       while (i < weightsLen) {
-        weights(i) = weight.select(1, i + 1)
-        gradWeights(i) = gradWeight.select(1, i + 1)
+        val weight = newWeights(i)
+        weights(i).resizeAs(weight).set(weight)
+        gradWeights(i) = Tensor[T]().resizeAs(weight)
+
         i += 1
       }
 
@@ -264,11 +258,15 @@ class SReLU[T: ClassTag](shared_axes: Array[Int] = null)(
   }
 
   override def getParametersTable(): Table = {
-    T("weight" -> weight)
+    T(getName() -> T(
+      "tLeft" -> weights(tLeft),
+      "aLeft" -> weights(aLeft),
+      "tRight" -> weights(tRight),
+      "aRight" -> weights(aRight)))
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
-    (Array(weight), Array(gradWeight))
+    (weights, gradWeights)
   }
 
   def setInitMethod(

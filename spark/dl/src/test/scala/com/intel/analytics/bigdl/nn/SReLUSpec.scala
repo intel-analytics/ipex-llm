@@ -20,24 +20,6 @@ import com.intel.analytics.bigdl.keras.KerasBaseSpec
 import com.intel.analytics.bigdl.tensor.Tensor
 
 class SReLUSpec extends KerasBaseSpec {
-
-  def multiWeightsConverter(in: Array[Tensor[Float]]): Array[Tensor[Float]] = {
-    val shape = Array(in.length) ++ in(0).size()
-    val len = in(0).nElement()
-    val weight = Tensor[Float]().resize(shape)
-
-    var i = 0
-    while (i < in.length) {
-      require(len == in(i).nElement(), s"the shape must be same as the first.")
-
-      System.arraycopy(in(i).storage().array(), in(i).storageOffset() - 1,
-        weight.storage().array(), weight.storageOffset() - 1 + i * len, len)
-      i += 1
-    }
-
-    Array(weight)
-  }
-
   "SReLU without share axes" should "same as keras" in {
     val keras =
       """
@@ -48,7 +30,7 @@ class SReLUSpec extends KerasBaseSpec {
       """.stripMargin
 
     val srelu = SReLU[Float]()
-    checkOutputAndGrad(srelu, keras, multiWeightsConverter)
+    checkOutputAndGrad(srelu, keras)
   }
 
   "SReLU with share axes" should "same as keras" in {
@@ -63,6 +45,14 @@ class SReLUSpec extends KerasBaseSpec {
       """.stripMargin
 
     val srelu = SReLU[Float](Array(1, 2))
-    checkOutputAndGrad(srelu, keras, multiWeightsConverter)
+    checkOutputAndGrad(srelu, keras)
+  }
+
+  // do not delete this, it's for testing the initialization of SReLU
+  "SReLU init" should "same as keras" in {
+    val srelu = SReLU[Float]()
+    val input = Tensor[Float](5, 2, 3, 4).randn()
+    srelu.forward(input)
+    println(srelu.output)
   }
 }
