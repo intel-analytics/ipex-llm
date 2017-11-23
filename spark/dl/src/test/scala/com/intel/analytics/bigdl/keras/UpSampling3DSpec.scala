@@ -23,6 +23,7 @@ class UpSampling3DSpec extends KerasBaseSpec {
     val kerasCode =
       """
         |input_tensor = Input(shape=[1, 2, 3, 4])
+        |input = np.random.uniform(0, 1, [2, 1, 2, 3, 4])
         |output_tensor = UpSampling3D((1, 1, 1))(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
@@ -34,6 +35,7 @@ class UpSampling3DSpec extends KerasBaseSpec {
     val kerasCode =
       """
         |input_tensor = Input(shape=[1, 1, 2, 4])
+        |input = np.random.uniform(0, 1, [2, 1, 1, 2, 4])
         |output_tensor = UpSampling3D((2, 2, 2), dim_ordering = 'th')(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
@@ -45,6 +47,7 @@ class UpSampling3DSpec extends KerasBaseSpec {
     val kerasCode =
       """
         |input_tensor = Input(shape=[2, 3, 2, 4])
+        |input = np.random.uniform(0, 1, [2, 2, 3, 2, 4])
         |output_tensor = UpSampling3D((2, 3, 4), dim_ordering = 'th')(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
