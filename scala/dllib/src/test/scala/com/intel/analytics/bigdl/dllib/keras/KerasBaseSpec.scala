@@ -34,11 +34,6 @@ abstract class KerasBaseSpec extends BigDLSpecHelper {
 
   private def defaultWeightConverter(in: Array[Tensor[Float]]) = in
 
-  private def getFieldByReflect(obj: Object, name: String): Object = {
-    val fieldDefinition = obj.getClass().getDeclaredField(name)
-    fieldDefinition.setAccessible(true)
-    return fieldDefinition.get(obj)
-  }
   // weightConverter: convert keras weight to BigDL format,
   // do nothing for the default converter
   def checkOutputAndGrad(bmodel: AbstractModule[Tensor[Float], Tensor[Float], Float],
@@ -59,14 +54,12 @@ abstract class KerasBaseSpec extends BigDLSpecHelper {
     val bgradInput = bmodel.backward(input, boutput.clone().fill(1))
     bgradInput.almostEqual(gradInput, precision) should be(true)
 
-    // assuming the first one is weight, the second one is bias
-    if (gradWeight != null) {
-      val bgradWeight = getFieldByReflect(bmodel, "gradWeight").asInstanceOf[Tensor[Float]]
-      bgradWeight.almostEqual(weightConverter(gradWeight)(0), precision) should be(true)
 
-      if (gradWeight.length > 1) {
-        val bgradBias = getFieldByReflect(bmodel, "gradBias").asInstanceOf[Tensor[Float]]
-        bgradBias.almostEqual(weightConverter(gradWeight)(1), precision) should be(true)
+    val parameters = bmodel.parameters()
+    if (parameters != null) {
+      val bgradWeights = parameters._2
+      (bgradWeights, weightConverter(gradWeight)).zipped.foreach { (bgrad, kgrad) =>
+        bgrad.almostEqual(kgrad, precision) should be(true)
       }
     }
   }
