@@ -329,6 +329,9 @@ class DefinitionLoader:
 
 class LayerConverter:
 
+    def __init__(self):
+        self.created_layers = {}
+
     def __check_is_share_weights(self, kclayer):
         # For Merge layer len(kclayer["inbound_nodes"]) is equal to 1
         # "inbound_nodes": [
