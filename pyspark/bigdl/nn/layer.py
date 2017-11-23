@@ -607,7 +607,7 @@ class Model(Container):
         else:
             from bigdl.util.tf_utils import convert
             model = convert(to_list(inputs), to_list(outputs), byte_order, bigdl_type)
-            super(Model, self).__init__(model, bigdl_type)
+            super(Model, self).__init__(model.value, bigdl_type)
 
 
     @staticmethod

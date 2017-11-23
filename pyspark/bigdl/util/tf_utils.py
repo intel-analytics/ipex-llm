@@ -57,27 +57,19 @@ def convert(input_ops, output_ops, byte_order, bigdl_type):
     Convert tensorflow model to bigdl model
     :param input_ops: operation list used for input, should be placeholders
     :param output_ops: operations list used for output
-    :param sess: current tensorflow session
     :return: bigdl model
     """
-    sess = tf.Session()
-    init = tf.global_variables_initializer()
-    sess.run(init)
 
     input_names = map(lambda x: x.name.split(":")[0], input_ops)
     output_names = map(lambda x: x.name.split(":")[0], output_ops)
     temp = tempfile.mkdtemp()
 
-    saver = tf.train.Saver()
-    saver.save(sess, temp + '/model.chkp')
-    tf.train.write_graph(sess.graph, temp, 'model.pbtxt')
+    dump_model(path=temp)
+    model_path = temp + '/model.pb'
+    bin_path = temp + '/model.bin'
 
-    merge_checkpoint(temp + '/model.pbtxt',
-                     temp + '/model.chkp',
-                     output_names,
-                     temp + '/model.pb', sess)
-
-    model = Model.load_tensorflow(temp + '/model.pb', input_names, output_names, byte_order, bigdl_type)
+    model = Model.load_tensorflow(model_path, input_names, output_names,
+                                  byte_order, bin_path, bigdl_type)
 
     try:
         shutil.rmtree(temp)
@@ -142,8 +134,7 @@ def dump_model(path, graph=None, sess=None, ckpt_file=None, bigdl_type="float"):
     :return: nothing
     """
     if not os.path.isdir(path):
-        print("Folder " + path + " does not exist")
-        raise
+        raise ValueError("Folder " + path + " does not exist")
 
     temp = None
     if ckpt_file is None:
