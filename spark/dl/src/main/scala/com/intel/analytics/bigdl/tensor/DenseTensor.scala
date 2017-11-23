@@ -373,10 +373,11 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
   }
 
   override def set(): Tensor[T] = {
-    this.resize(0)
-    if(this._storage != null) {
+    if (this._storage != null) {
       this._storage.resize(0)
     }
+    this.nDimension = 0
+    this._size = null
     this
   }
 
