@@ -45,7 +45,7 @@ import scala.reflect.runtime.universe
  * @param ceilMode Whether the output size is to be ceiled or floored
  * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
  */
-// TODO: add serialization
+@SerialVersionUID(- 7829953407414301872L)
 class VolumetricAveragePooling[T: ClassTag](
   val kT: Int, val kW: Int, val kH: Int,
   val dT: Int, val dW: Int, val dH: Int,
