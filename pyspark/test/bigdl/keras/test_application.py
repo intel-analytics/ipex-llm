@@ -30,7 +30,7 @@ class TestApplication(BigDLTestCase):
 
     def assert_model(self, input_data, kmodel, rtol=1e-5, atol=1e-5):
         bmodel = DefinitionLoader.from_kmodel(kmodel)
-        WeightLoader.load_weights_from_kmodel(bmodel, kmodel, by_name=True)
+        WeightLoader.load_weights_from_kmodel(bmodel, kmodel)
 
         keras_output = kmodel.predict(input_data)
         bmodel.training(is_training=False)
@@ -147,7 +147,7 @@ class TestApplication(BigDLTestCase):
         input_data = np.random.random([2, 1, 96, 1366])
 
         bmodel = DefinitionLoader.from_kmodel(kmodel)
-        WeightLoader.load_weights_from_kmodel(bmodel, kmodel, by_name=True)
+        WeightLoader.load_weights_from_kmodel(bmodel, kmodel)
 
         keras_output = kmodel.predict(input_data)
         bmodel.training(is_training=False)
@@ -161,7 +161,7 @@ class TestApplication(BigDLTestCase):
         input_data = np.random.random([2, 3, 299, 299])
 
         bmodel = DefinitionLoader.from_kmodel(kmodel)
-        WeightLoader.load_weights_from_kmodel(bmodel, kmodel, by_name=True)
+        WeightLoader.load_weights_from_kmodel(bmodel, kmodel)
 
         keras_output = kmodel.predict(input_data)
         bmodel.training(is_training=False)
