@@ -55,11 +55,12 @@ object KerasRunner {
   val code_for_layer =
     """
       |Y = []
-      |grad_input = K.get_session().run(K.gradients(model.output, model.input), feed_dict={input_tensor: input}) # grad_input
-      |
-      |grad_weight = K.get_session().run(K.gradients(model.output, model.trainable_weights),  # grad_weight
-      |                        feed_dict={input_tensor: input})
       |output = model.predict(input)
+      |
+      |grad_input = K.get_session().run(K.gradients(model.output * output, model.input), feed_dict={input_tensor: input}) # grad_input
+      |
+      |grad_weight = K.get_session().run(K.gradients(model.output * output, model.trainable_weights),  # grad_weight
+      |                        feed_dict={input_tensor: input})
       |weights = model.get_weights()
 
       """.stripMargin
@@ -86,6 +87,7 @@ object KerasRunner {
       |
       |
     """.stripMargin
+
   // scalastyle:on
   private def getWeightRelate(pvalues: Map[String, Array[Float]],
                               keyName: String): Array[Tensor[Float]] = {
