@@ -26,14 +26,16 @@ import org.tensorflow.framework.{DataType, NodeDef}
 
 import scala.reflect.ClassTag
 
-class FusedBatchNorm extends TensorflowOpsLoader {
+class FusedBatchNormV2 extends TensorflowOpsLoader {
 
   import Utils._
 
   override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder, context: Context[T])
     (implicit ev: TensorNumeric[T]): Module[T] = {
     val t = getType(nodeDef.getAttrMap, "T")
-    require(t == DataType.DT_FLOAT, "Only support float batch normal")
+    val u = getType(nodeDef.getAttrMap, "U")
+    require(t == DataType.DT_FLOAT, "T: Only support float batch normal")
+    require(u == DataType.DT_FLOAT, "U: Only support float batch normal")
     val eps = getFloat(nodeDef.getAttrMap, "epsilon")
     val dataFormat = getString(nodeDef.getAttrMap, "data_format")
     val isTrain = getBoolean(nodeDef.getAttrMap, "is_training")

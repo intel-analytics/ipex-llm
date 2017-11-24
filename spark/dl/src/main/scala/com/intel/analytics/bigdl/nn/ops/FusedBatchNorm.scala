@@ -16,15 +16,19 @@
 package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.nn.BatchNormalization
+import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
-class FusedBatchNorm[T: ClassTag](epsilon: Float = 0.0001f, isTrainning: Boolean = true,
-  momentum: Float = 0.1f)
-  (implicit ev: TensorNumeric[T]) extends Operation[Table, Table, T]{
+class FusedBatchNorm[T: ClassTag](
+  epsilon: Float = 0.0001f,
+  isTraining: Boolean = true,
+  momentum: Float = 0.1f,
+  dataFormat: DataFormat = DataFormat.NHWC
+)(implicit ev: TensorNumeric[T]) extends Operation[Table, Table, T]{
 
   @transient
   private var runningMean: Tensor[Float] = null
@@ -60,16 +64,29 @@ class FusedBatchNorm[T: ClassTag](epsilon: Float = 0.0001f, isTrainning: Boolean
     val saveMean = output[Tensor[Float]](4)
     val saveVar = output[Tensor[Float]](5)
 
-    if (isTrainning) {
-      BatchNormalization.updateOutputFloatNHWCTrain(
-        x, y, batchMean, saveStd, runningMean, runningVar, scale, offset, epsilon, momentum,
-        batchVar, saveVar
-      )
+    if (isTraining) {
+      if (dataFormat == DataFormat.NHWC) {
+        BatchNormalization.updateOutputFloatNHWCTrain(
+          x, y, batchMean, saveStd, runningMean, runningVar, scale, offset, epsilon, momentum,
+          batchVar, saveVar
+        )
+      } else {
+        BatchNormalization.updateOutputFloatNCHWTrain(
+          x, y, batchMean, saveStd, runningMean, runningVar, scale, offset, epsilon, momentum,
+          batchVar, saveVar
+        )
+      }
       saveMean.copy(batchMean)
     } else {
-      BatchNormalization.updateOutputFloatNHWCInfer(
-        x, y, mean, variance, scale, offset
-      )
+      if (dataFormat == DataFormat.NHWC) {
+        BatchNormalization.updateOutputFloatNHWCInfer(
+          x, y, mean, variance, scale, offset
+        )
+      } else {
+        BatchNormalization.updateOutputFloatNCHWInfer(
+          x, y, mean, variance, scale, offset
+        )
+      }
     }
 
     output
@@ -78,6 +95,7 @@ class FusedBatchNorm[T: ClassTag](epsilon: Float = 0.0001f, isTrainning: Boolean
 
 object FusedBatchNorm {
   def apply[T: ClassTag](epsilon: Float = 0.0001f, isTrainning: Boolean = true,
-    momentum: Float = 0.1f)(implicit ev: TensorNumeric[T]): FusedBatchNorm[T]
-  = new FusedBatchNorm(epsilon, isTrainning, momentum)
+    momentum: Float = 0.1f, dataFormat: DataFormat = DataFormat.NHWC)
+    (implicit ev: TensorNumeric[T]): FusedBatchNorm[T]
+  = new FusedBatchNorm(epsilon, isTrainning, momentum, dataFormat)
 }
