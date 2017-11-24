@@ -296,6 +296,24 @@ class TestLayer(BigDLTestCase):
                        dump_weights=True,
                        is_training=False)
 
+    def test_merge_method_mix_concat(self):
+        input_data1 = np.random.random_sample([2, 4])
+        input_data2 = np.random.random_sample([2, 3])
+        input1 = Input((4,))
+        input2 = Input((3,))
+        out1 = Dense(4)(input1)
+        branch1 = Model(input1, out1)(input1)
+        branch2 = Dense(3)(input2)
+        from keras.engine import merge
+        m = merge([branch1, branch2], mode="concat", concat_axis=1)
+        kmodel = Model(input=[input1, input2], output=m)
+
+        self.modelTest([input_data1, input_data2],
+                       kmodel,
+                       random_weights=False,
+                       dump_weights=True,
+                       is_training=False)
+
     def test_merge_model_seq_concat(self):
         input_data1 = np.random.random_sample([2, 4])
         input_data2 = np.random.random_sample([2, 3])
@@ -365,18 +383,6 @@ class TestLayer(BigDLTestCase):
                                   functional_apis=[False])
 
     def test_merge_concat(self):
-        # input_data1 = np.random.random_sample([2, 3, 5])
-        # input_data2 = np.random.random_sample([2, 3, 6])
-        # model1 = Sequential()
-        # model1.add(Dense(20, input_dim=2))
-        # model1.add(Dense(20, input_dim=2))
-        #
-        # model2 = Sequential()
-        # model2.add(Input(input_dim=32))
-        #
-        # merged_model = Sequential()
-        # merged_model.add(Merge([model1, model2], mode='concat', concat_axis=0))
-
         inputLayer1 = InputLayer(input_shape=(3, 6, 7))
         inputLayer2 = InputLayer(input_shape=(3, 6, 8))
         inputLayer3 = InputLayer(input_shape=(3, 6, 9))

@@ -107,16 +107,6 @@ class WeightsConverter:
     def to_bigdl_weights(class_name, weights):
         return WeightsConverter.get_converter(class_name)(weights)
 
-    # TODO: delete me please
-    @staticmethod
-    def get_bigdl_weigths_from_keras(k):
-        if isinstance(k, keras.engine.Model):
-            return WeightsConverter.get_weights_from_kmodel(k)
-        elif isinstance(k, keras.engine.Layer):
-            return WeightsConverter.get_bigdl_weights_from_klayer(k)
-        else:
-            raise Exception("Unsupport type: %s", k)
-
     @staticmethod
     def get_bigdl_weights_from_klayer(klayer):
         # we should use get_weights instead of klayer.weights
@@ -238,6 +228,20 @@ class DefinitionLoader:
         if hasattr(kmodel, "flattened_layers"):
             gather_result(kmodel.flattened_layers)  # it's a expensive operation
 
+    @staticmethod
+    def __build_node_id_2_kclayer(kmodel, node_id_to_config_layer):
+        if isinstance(kmodel, Sequential):
+            for layer_config in kmodel.get_config():
+                layer_name = layer_config["config"]["name"]
+                node_id_to_config_layer[layer_name] = layer_config
+        elif isinstance(kmodel, Model):
+            for layerConfig in kmodel.get_config()["layers"]:
+                node_id_to_config_layer[layerConfig["name"]] = layerConfig
+        elif isinstance(kmodel, Layer):
+            node_id_to_config_layer[kmodel.name] = kmodel.get_config()
+        else:
+            raise Exception("should not enter here: %s" % kmodel)
+
     def __init__(self, kmodel):
         self.node_id_to_instance = {}
         self.node_id_to_layer = {}
@@ -246,18 +250,7 @@ class DefinitionLoader:
         self.kconfig = self.kmodel.get_config()
 
         DefinitionLoader.__build_node_id_2_klayer(kmodel, self.node_id_to_layer)
-
-        if isinstance(self.kmodel, Sequential):
-            for layer_config in self.kmodel.get_config():
-                layer_name = layer_config["config"]["name"]
-                self.node_id_to_config_layer[layer_name] = layer_config
-        elif isinstance(self.kmodel, Model):
-            for layerConfig in self.kconfig["layers"]:
-                self.node_id_to_config_layer[layerConfig["name"]] = layerConfig
-        elif isinstance(self.kmodel, Layer):
-            self.node_id_to_config_layer[self.kmodel.name] = self.kconfig
-        else:
-            raise Exception("should not enter here: %s" % self.kmodel)
+        DefinitionLoader.__build_node_id_2_kclayer(kmodel, self.node_id_to_config_layer)
 
     def __to_bigdl(self):
         if isinstance(self.kmodel, Sequential):
@@ -326,15 +319,12 @@ class DefinitionLoader:
         bseq = BLayer.Sequential()
         layerConverter = LayerConverter()
         for layer in self.kmodel.layers:
-            # TODO: ADD recursive for nested seq or model
+            # recursive logic is within create method.
             blayer = layerConverter.create(layer, self.node_id_to_config_layer[layer.name])
             bseq.add(blayer)
         return bseq
 
 class LayerConverter:
-
-    def __init__(self):
-        self.created_layers = {}
 
     def __check_is_share_weights(self, kclayer):
         # For Merge layer len(kclayer["inbound_nodes"]) is equal to 1
@@ -384,7 +374,6 @@ class LayerConverter:
 
         api = getattr(self, function_name)
         blayer = api(klayer, kclayer)
-        self.created_layers[klayer.name] = blayer
         return blayer.set_name(klayer.name)
 
     def create_model(self, klayer, kclayer):
@@ -459,7 +448,6 @@ class LayerConverter:
         return BLayer.Dropout(klayer.p)
 
     def create_flatten(self, klayer, kclayer):
-        self.__check_is_share_weights(kclayer)
         input_shape = klayer.input_shape
         blayer = BLayer.Reshape([int(np.prod(input_shape[1:]))], None)
         return blayer
@@ -504,7 +492,6 @@ class LayerConverter:
         return list(filter(lambda pair: pair[0] != pair[1], pairs))
 
     def create_reshape(self, klayer, kclayer):
-        self.__check_is_share_weights(kclayer)  # TODO: move this to create method !!
         blayer = BLayer.Reshape(klayer.target_shape, None)
         return blayer
 
@@ -515,8 +502,8 @@ class LayerConverter:
 
     def __is_from_sequential(self, klayer, kclayer):
         return "layers" in kclayer["config"] and hasattr(klayer, "layers") and klayer.layers is not None  # noqa
+
     def create_merge(self, klayer, kclayer):
-        self.__check_is_share_weights(kclayer)
         input_shape = klayer.get_input_shape_at(0)
         if klayer.output_shape and not isinstance(klayer.output_shape, tuple):
             raise Exception("Only output_shape=None or a shape tuple is supported for now")
@@ -834,8 +821,6 @@ class LayerConverter:
 
     def create_batchnormalization(self, klayer, kclayer):
         config = kclayer["config"]
-
-        self.__check_is_share_weights(kclayer)
         if keras.backend.image_dim_ordering() != "th" or klayer.axis != 1:
             raise Exception("""For BatchNormalization, we only support th image ordering (i.e. NCHW) """ +
                             """with axis = 1 for now, but the current order is %s and axis is %s
