@@ -30,7 +30,7 @@ class TestApplication(BigDLTestCase):
 
     def assert_model(self, input_data, kmodel, rtol=1e-5, atol=1e-5):
         bmodel = DefinitionLoader.from_kmodel(kmodel)
-        WeightLoader.load_weights_from_kmodel(bmodel, kmodel, by_name=True)
+        WeightLoader.load_weights_from_kmodel(bmodel, kmodel)
 
         keras_output = kmodel.predict(input_data)
         bmodel.training(is_training=False)
@@ -42,10 +42,13 @@ class TestApplication(BigDLTestCase):
         kmodel, input_data, output_data = TestModels.kmodel_seq_lenet_mnist()
         self.modelTest(input_data, kmodel, dump_weights=True)
 
+    @pytest.mark.skip(reason="need to fix todo before running the test")
     def test_text_classification(self):
         '''This example demonstrates the use of Convolution1D for text classification.
            This example is from Keras
         '''
+
+        # TODO: support backend support
 
         import numpy as np
         np.random.seed(1337)  # for reproducibility
@@ -123,31 +126,38 @@ class TestApplication(BigDLTestCase):
 
     def test_resnet50(self):
         keras.backend.set_image_dim_ordering("th")
-        kmodel = resnet50.ResNet50(include_top=False, input_shape=(3, 224, 224))
+        kmodel = resnet50.ResNet50(include_top=False,
+                                   input_shape=(3, 224, 224),
+                                   weights=None)
         input_data = np.random.random([2, 3, 224, 224])
         self.assert_model(input_data, kmodel)
 
     def test_vgg16(self):
         keras.backend.set_image_dim_ordering("th")
-        kmodel = vgg16.VGG16(include_top=False, input_shape=(3, 224, 224))
+        kmodel = vgg16.VGG16(include_top=False,
+                             input_shape=(3, 224, 224),
+                             weights=None)
         input_data = np.random.random([2, 3, 224, 224])
         self.assert_model(input_data, kmodel)
 
     def test_vgg19(self):
         keras.backend.set_image_dim_ordering("th")
-        kmodel = vgg19.VGG19(include_top=False, input_shape=(3, 224, 224))
+        kmodel = vgg19.VGG19(include_top=False,
+                             input_shape=(3, 224, 224),
+                             weights=None)
         input_data = np.random.random([2, 3, 224, 224])
         self.assert_model(input_data, kmodel)
 
+    @pytest.mark.skip(reason="need to fix todo before running the test")
     def test_music_tagger_crnn(self):
-        # Remove the first BatchNormalization layer in the model as we don't support `axis=3`
-        # Set `inner_activation` in GRU to be `sigmoid`
+        # TODO: Remove the first BatchNormalization layer in the model as we don't support `axis=3`
+        # TODO: Set `inner_activation` in GRU to be `sigmoid`
         keras.backend.set_image_dim_ordering("th")
-        kmodel = MusicTaggerCRNN(include_top=False)
+        kmodel = MusicTaggerCRNN(include_top=False, weights=None)
         input_data = np.random.random([2, 1, 96, 1366])
 
         bmodel = DefinitionLoader.from_kmodel(kmodel)
-        WeightLoader.load_weights_from_kmodel(bmodel, kmodel, by_name=True)
+        WeightLoader.load_weights_from_kmodel(bmodel, kmodel)
 
         keras_output = kmodel.predict(input_data)
         bmodel.training(is_training=False)
@@ -157,11 +167,13 @@ class TestApplication(BigDLTestCase):
 
     def test_inception_v3(self):
         keras.backend.set_image_dim_ordering("th")
-        kmodel = inception_v3.InceptionV3(include_top=False, input_shape=(3, 299, 299))
+        kmodel = inception_v3.InceptionV3(include_top=False,
+                                          input_shape=(3, 299, 299),
+                                          weights=None)
         input_data = np.random.random([2, 3, 299, 299])
 
         bmodel = DefinitionLoader.from_kmodel(kmodel)
-        WeightLoader.load_weights_from_kmodel(bmodel, kmodel, by_name=True)
+        WeightLoader.load_weights_from_kmodel(bmodel, kmodel)
 
         keras_output = kmodel.predict(input_data)
         bmodel.training(is_training=False)

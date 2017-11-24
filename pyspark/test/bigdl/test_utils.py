@@ -21,10 +21,9 @@ np.random.seed(1337)  # for reproducibility
 from keras.layers.core import *
 from keras.layers.convolutional import *
 from keras.layers import Dense, Dropout, Input
-from keras.models import model_from_json
 from keras.optimizers import RMSprop
 from bigdl.util.common import create_tmp_path
-from bigdl.keras.converter import DefinitionLoader
+from bigdl.keras.converter import *
 import numpy as np
 from unittest import TestCase
 import keras
@@ -208,14 +207,6 @@ class BigDLTestCase(TestCase):
         #                      atol=atol)
         if dump_weights:  # load weights if possible
             WeightLoader.load_weights_from_hdf5(bigdl_model, keras_model, keras_model_hdf5_path)
-            bweights = bigdl_model.get_weights()
-            bweights_from_keras = WeightsConverter.get_bigdl_weigths_from_keras(keras_model)
-
-            # bweights and bweights_from_keras are all list
-            assert isinstance(bweights, list)
-            assert len(bweights) == len(bweights_from_keras)
-            for i in range(len(bweights)):
-                self.assert_allclose(bweights[i], bweights_from_keras[i], rtol, atol)
 
         bigdl_output2 = bigdl_model.forward(input_data)
         self.assert_allclose(bigdl_output2,
