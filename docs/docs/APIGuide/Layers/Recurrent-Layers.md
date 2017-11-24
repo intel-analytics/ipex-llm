@@ -1567,4 +1567,66 @@ array([[[[ 0.1       ,  0.2       ],
          [ 0.30000001,  0.40000001]]]], dtype=float32)
 ```
 
+---
+## Highway ##
+
+**Scala:**
+```scala
+val layer = Highway(2, activation = "tanh")
+```
+**Python:**
+```python
+layer = Highway(2, activation = "tanh")
+```
+
+This layer is Densely connected highway network.
+Highway layers are a natural extension of LSTMs to feedforward networks.
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+
+val module = Highway(2, activation = "tanh")
+
+val input = Tensor(3, 2).randn()
+println(input)
+val output = module.forward(input)
+println(output)
+```
+Gives the output,
+```
+1.096164	0.08578972
+0.2580359	1.629636
+-0.7571692	0.28832582
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 3x2]
+0.65883696	0.108842306
+-0.032798193	0.047720015
+-0.5495165	-0.16949607
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 3x2]
+```
+
+**Python example:**
+```python
+from bigdl.nn.layer import *
+import numpy as np
+
+input = np.random.rand(3, 2)
+print "input is :",input
+
+m = Highway(2, activation = "tanh")
+out = m.forward(input)
+print "output is :",out
+```
+Gives the output,
+```
+input is : [[ 0.65776902  0.63354682]
+ [ 0.57766285  0.50117516]
+ [ 0.15317826  0.60807496]]
+creating: createHighway
+output is : [[ 0.44779509 -0.10608637]
+ [ 0.41307163 -0.14994906]
+ [ 0.25687078  0.00718814]]
+```
 
