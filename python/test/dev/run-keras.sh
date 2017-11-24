@@ -32,8 +32,7 @@ echo "${cyan}Using python version: $p${reset}"
 export PYTHON_EXECUTABLE=$p
 export PYSPARK_PYTHON=$p
 export PYSPARK_DRIVER_PYTHON=$p
-$1 -m pytest -v  ../../../pyspark/test/bigdl/keras \
- --ignore=../../../pyspark/test/bigdl/keras/test_application.py
+$1 -m pytest -v  ../../../pyspark/test/bigdl/keras
 
 exit_status=$?
 if [ $exit_status -ne 0 ];
