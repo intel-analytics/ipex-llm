@@ -41,7 +41,7 @@ class ReshapeLoadTF[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Adapte
   override def build(tensorArrays: Array[Tensor[_]]): AbstractModule[Activity, Activity, T] = {
     val sizes = tensorArrays(0).asInstanceOf[Tensor[Int]]
 
-    val batchMode = if (sizes.nDimension() >= 1) {
+    val batchMode = if (sizes.nDimension() >= 1 && sizes.nElement() > 0) {
       sizes.valueAt(1) == -1
     } else {
       false

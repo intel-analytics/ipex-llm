@@ -373,10 +373,11 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
   }
 
   override def set(): Tensor[T] = {
-    this.resize(0)
-    if(this._storage != null) {
+    if (this._storage != null) {
       this._storage.resize(0)
     }
+    this.nDimension = 0
+    this._size = null
     this
   }
 
@@ -2247,19 +2248,14 @@ object DenseTensor {
     var hasCorrectSize = true
     var nDim_ = 0
     var d = 0
-    var break = false
-    while (d < nDim && !break) {
-      if (_size(d) > 0) {
-        nDim_ = nDim_ + 1
-        if (self.nDimension > d && _size(d) != self._size(d)) {
-          hasCorrectSize = false
-        }
-        if (self.nDimension > d && _stride != null && _stride(d) >= 0 &&
-          _stride(d) != self._stride(d)) {
-          hasCorrectSize = false
-        }
-      } else {
-        break = true
+    while (d < nDim) {
+      nDim_ = nDim_ + 1
+      if (self.nDimension > d && _size(d) != self._size(d)) {
+        hasCorrectSize = false
+      }
+      if (self.nDimension > d && _stride != null && _stride(d) >= 0 &&
+        _stride(d) != self._stride(d)) {
+        hasCorrectSize = false
       }
       d += 1
     }
