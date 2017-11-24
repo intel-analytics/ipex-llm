@@ -57,9 +57,9 @@ class UpSampling3DSpec extends KerasBaseSpec {
   }
 
   "updample3d serializer" should "work properly" in {
-    val module = UpSampling3D[Float](Array(2, 3, 4), dimOrdering = "th")
+    val module = UpSampling3D[Float](Array(2, 2, 2), dimOrdering = "th")
 
-    val input = Tensor[Float](1, 1, 2, 3, 4).randn()
+    val input = Tensor[Float](1, 2, 2, 2, 2).randn()
     val res1 = module.forward(input).clone()
     val tmpFile = java.io.File.createTempFile("module", ".bigdl")
     module.saveModule(tmpFile.getAbsolutePath, true)
