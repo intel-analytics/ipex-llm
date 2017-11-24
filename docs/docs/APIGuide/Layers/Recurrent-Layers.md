@@ -254,11 +254,27 @@ output = module.forward(input)
 
 **Scala:**
 ```scala
-val rnnCell = RnnCell[Double](inputSize, hiddenSize, activation, wRegularizer, uRegularizer, bRegularizer)
+val rnnCell = RnnCell[Double](
+  inputSize,
+  hiddenSize,
+  activation,
+  isInputWithBias = true,
+  isHiddenWithBias = true,
+  wRegularizer = null,
+  uRegularizer = null,
+  bRegularizer = null)
 ```
 **Python:**
 ```python
-rnnCell = RnnCell(input_size, hidden_size, Tanh(), w_regularizer, u_regularizer, b_regularizer)
+rnnCell = RnnCell(
+  input_size,
+  hidden_size,
+  activation,
+  isInputWithBias=True,
+  isHiddenWithBias=True,
+  wRegularizer=None,
+  uRegularizer=None,
+  bRegularizer=None)
 ```
 
 Implementation of vanilla recurrent neural network cell
@@ -279,7 +295,10 @@ Parameters:
 
 * `inputSize` input size. Default: 4
 * `hiddenSize`  hidden layer size. Default: 3
-* `activation` activation function f for non-linearity
+* `activation` instance of activation function for non-linearity.
+  For Python, one can also pass the name of an existing activation as a string, eg. 'tanh', 'relu', 'sigmoid', 'hard_sigmoid', 'softmax' etc.
+* `isInputWithBias` boolean, whether to contain bias for input. Default: true
+* `isHiddenWithBias` boolean, whether to contain bias for hidden layer. Default: true
 * `wRegularizer` instance of `Regularizer`(eg. L1 or L2 regularization), applied to the input weights matrices. Default: null
 * `uRegularizer` instance of `Regularizer`(eg. L1 or L2 regularization), applied to the recurrent weights matrices. Default: null
 * `bRegularizer` instance of `Regularizer`(eg. L1 or L2 regularization), applied to the bias. Default: null
@@ -365,11 +384,27 @@ gradient = model.backward(input, grad_output)
 
 **Scala:**
 ```scala
-val lstm = LSTM(inputSize, hiddenSize)
+val lstm = LSTM(
+  inputSize,
+  hiddenSize,
+  p = 0.0,
+  activation = null,
+  innerActivation = null,
+  wRegularizer = null,
+  uRegularizer = null,
+  bRegularizer = null)
 ```
 **Python:**
 ```python
-lstm = LSTM(input_size, hidden_size)
+lstm = LSTM(
+  input_size,
+  hidden_size,
+  p=0.0,
+  activation=None,
+  inner_activation=None,
+  wRegularizer=None,
+  uRegularizer=None,
+  bRegularizer=None)
 ```
 
 Long Short Term Memory architecture.
@@ -382,6 +417,27 @@ Ref:
 2. http://web.eecs.utk.edu/~itamar/courses/ECE-692/Bobby_paper1.pdf
 3. http://arxiv.org/pdf/1503.04069v1.pdf
 4. https://github.com/wojzaremba/lstm
+
+
+Parameters:
+
+* `inputSize` the size of each input vector
+* `hiddenSize` Hidden unit size in the LSTM
+* `p` is used for [[Dropout]] probability. For more details about
+           RNN dropouts, please refer to
+           [RnnDrop: A Novel Dropout for RNNs in ASR]
+           (http://www.stat.berkeley.edu/~tsmoon/files/Conference/asru2015.pdf)
+           [A Theoretically Grounded Application of Dropout in Recurrent Neural Networks]
+           (https://arxiv.org/pdf/1512.05287.pdf)
+* `activation` activation function, by default to be `Tanh` if not specified.
+  For Python, one can also pass the name of an existing activation as a string, eg. 'tanh', 'relu', 'sigmoid', 'hard_sigmoid', 'softmax' etc.
+* `innerActivation` activation function for inner cells, by default to be `Sigmoid` if not specified.
+  For Python, one can also pass the name of an existing activation as a string, eg. 'tanh', 'relu', 'sigmoid', 'hard_sigmoid', 'softmax' etc.
+* `wRegularizer` instance of [[Regularizer]]
+                   (eg. L1 or L2 regularization), applied to the input weights matrices.
+* `uRegularizer` instance [[Regularizer]]
+          (eg. L1 or L2 regularization), applied to the recurrent weights matrices.
+* `bRegularizer` instance of [[Regularizer]] applied to the bias.
 
 **Scala example:**
 ```scala
@@ -506,16 +562,19 @@ model = LSTMPeephole(
 ```
 
 Long Short Term Memory architecture with peephole.
-Ref.
 The input tensor in `forward(input)` is expected to be a 3D tensor (`batch x time x inputSize`). output of
 `forward(input)` is also expected to be a 3D tensor (`batch x time x hiddenSize`).
+
+Ref.
 
 1. http://arxiv.org/pdf/1303.5778v1 (blueprint for this module)
 2. http://web.eecs.utk.edu/~itamar/courses/ECE-692/Bobby_paper1.pdf
 3. http://arxiv.org/pdf/1503.04069v1.pdf
 4. https://github.com/wojzaremba/lstm
 
+
 Parameters:
+
 * `inputSize` the size of each input vector
 * `hiddenSize` Hidden unit size in the LSTM
 * `p` is used for [[Dropout]] probability. For more details about
@@ -610,11 +669,27 @@ output = model.forward(input)
 
 **Scala:**
 ```scala
-val gru = GRU(inputSize, outputSize, p, wRegularizer, uRegularizer, bRegularizer)
+val gru = GRU(
+  inputSize,
+  outputSize,
+  p = 0.0,
+  activation = null,
+  innerActivation = null,
+  wRegularizer = null,
+  uRegularizer = null,
+  bRegularizer = null)
 ```
 **Python:**
 ```python
-gru = GRU(inputSize, outputSize, p, w_regularizer, u_regularizer, b_regularizer)
+gru = GRU(
+  inputSize,
+  outputSize,
+  p=0.0,
+  activation=None,
+  inner_activation=None,
+  wRegularizer=None,
+  uRegularizer=None,
+  bRegularizer=None)
 ```
 
 Gated Recurrent Units architecture. The first input in sequence uses zero value for cell and hidden state.
@@ -635,6 +710,10 @@ Parameters:
           RNN dropouts, please refer to
            [RnnDrop: A Novel Dropout for RNNs in ASR](http://www.stat.berkeley.edu/~tsmoon/files/Conference/asru2015.pdf)
             and [A Theoretically Grounded Application of Dropout in Recurrent Neural Networks](https://arxiv.org/pdf/1512.05287.pdf). Default: 0.0
+* `activation` activation function, by default to be `Tanh` if not specified.
+  For Python, one can also pass the name of an existing activation as a string, eg. 'tanh', 'relu', 'sigmoid', 'hard_sigmoid', 'softmax' etc.
+* `innerActivation` activation function for inner cells, by default to be `Sigmoid` if not specified.
+  For Python, one can also pass the name of an existing activation as a string, eg. 'tanh', 'relu', 'sigmoid', 'hard_sigmoid', 'softmax' etc.
 * `wRegularizer` instance of `Regularizer`(eg. L1 or L2 regularization), applied to the input weights matrices. Default: null
 * `uRegularizer` instance of `Regularizer`(eg. L1 or L2 regularization), applied to the recurrent weights matrices. Default: null
 * `bRegularizer` instance of `Regularizer`(eg. L1 or L2 regularization), applied to the bias. Default: null
@@ -727,6 +806,8 @@ val model = ConvLSTMPeephole(
   kernelC = 3,
   stride = 1,
   padding = -1,
+  activation = null,
+  innerActivation = null,
   wRegularizer = null,
   uRegularizer = null,
   bRegularizer = null,
@@ -743,9 +824,11 @@ model = ConvLSTMPeephole(
   kernel_c = 3,
   stride = 1,
   padding = -1,
-  wRegularizer=None,
-  uRegularizer=None,
-  bRegularizer=None,
+  activation = None,
+  inner_activation = None,
+  wRegularizer = None,
+  uRegularizer = None,
+  bRegularizer = None,
   cRegularizer = None,
   with_peephole = True)
 ```
@@ -772,6 +855,10 @@ Parameters:
 * `stride` step of the convolution, default is 1
 * `padding` step of the convolution, default is -1, behaves same with SAME padding in tensorflow
                  Default stride,padding value ensure last 2 dim of output shape is the same with input
+* `activation` activation function, by default to be `Tanh` if not specified.
+  For Python, one can also pass the name of an existing activation as a string, eg. 'tanh', 'relu', 'sigmoid', 'hard_sigmoid', 'softmax' etc.
+* `innerActivation` activation function for inner cells, by default to be `Sigmoid` if not specified.
+  For Python, one can also pass the name of an existing activation as a string, eg. 'tanh', 'relu', 'sigmoid', 'hard_sigmoid', 'softmax' etc.
 * `wRegularizer` instance of [[Regularizer]]
                    (eg. L1 or L2 regularization), applied to the input weights matrices.
 * `uRegularizer` instance [[Regularizer]]

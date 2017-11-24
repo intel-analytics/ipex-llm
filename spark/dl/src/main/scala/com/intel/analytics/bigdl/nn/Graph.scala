@@ -379,7 +379,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
 
   private def checkRoots: Unit = {
     require(forwardNodes.map(_.element.getName()).distinct.length == forwardNodes.length,
-      s"the name of node in the graph should be unique, but find dumplicated name " +
+      s"the name of node in the graph should be unique, but find duplicated name " +
         s"${duplicatedNames(forwardNodes.map(_.element.getName())).mkString(", ")}")
     val roots = forwardNodes.filter(_.prevNodes.size == 0)
       .filter(node => !node.element.isInstanceOf[WithoutInput]
