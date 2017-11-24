@@ -162,12 +162,16 @@ class SReLU[T: ClassTag](shared_axes: Array[Int] = null)(
     while (batch < gradInput.size(1)) {
       val sliceInput = input.select(1, batch + 1)
       val sliceGradInput = gradInput.select(1, batch + 1)
+      val sliceGradOutput = gradOutput.select(1, batch + 1)
 
       val xArr = sliceInput.storage().array()
       var xOffset = sliceInput.storageOffset() - 1
 
       val yArr = sliceGradInput.storage().array()
       var yOffset = sliceGradInput.storageOffset() - 1
+
+      val zArr = sliceGradOutput.storage().array()
+      var zOffset = sliceGradOutput.storageOffset() - 1
 
       // if share axes array is not null, do some groups
       val groups = sliceInput.nElement() / weights(tLeft).nElement()
@@ -179,6 +183,7 @@ class SReLU[T: ClassTag](shared_axes: Array[Int] = null)(
 
         xOffset += (i * len)
         yOffset += (i * len)
+        zOffset += (i * len)
 
         while (i < len) {
           val tr = getValue(weights, i, tRight)
@@ -187,14 +192,14 @@ class SReLU[T: ClassTag](shared_axes: Array[Int] = null)(
           val al = getValue(weights, i, aLeft)
           val x = xArr(xOffset + i)
 
-          yArr(yOffset + i) = if (ev.isGreaterEq(x, tr)) {
-            ar
+          val t = if (ev.isGreaterEq(x, tr)) {
+            ev.times(ar, zArr(zOffset + i))
           } else if (ev.isGreaterEq(tl, x)) {
-            al
+            ev.times(al, zArr(zOffset + i))
           } else {
-            ev.fromType[Int](1)
+            zArr(zOffset + i)
           }
-
+          yArr(yOffset + i) = ev.plus(yArr(yOffset + i), t)
           i += 1
         }
         g += 1
@@ -210,24 +215,36 @@ class SReLU[T: ClassTag](shared_axes: Array[Int] = null)(
     var batch = 0
     while (batch < gradInput.size(1)) {
       val sliceInput = input.select(1, batch + 1)
+      val sliceGradOutput = gradOutput.select(1, batch + 1)
 
       val x = sliceInput.storage().array()
       val xOffset = sliceInput.storageOffset() - 1
+
+      val z = sliceGradOutput.storage().array()
+      val zOffset = sliceGradOutput.storageOffset() - 1
 
       var i = 0
       while (i < sliceInput.nElement()) {
 
         if (ev.isGreaterEq(x(xOffset + i), getValue(weights, i, tRight))) {
-          setValue(gradWeights, i, tRight, ev.minus(ev.fromType(1), getValue(weights, i, aRight)))
-          setValue(gradWeights, i, aRight, ev.minus(x(xOffset + i), getValue(weights, i, tRight)))
+          setValue(gradWeights, i, tRight, ev.times(ev.minus(ev.fromType(1),
+            getValue(weights, i, aRight)),
+            z(zOffset + i)))
+          setValue(gradWeights, i, aRight, ev.times(ev.minus(x(xOffset + i),
+            getValue(weights, i, tRight)),
+            z(zOffset + i)))
         } else {
           setValue(gradWeights, i, tRight, ev.fromType(0))
           setValue(gradWeights, i, aRight, ev.fromType(0))
         }
 
         if (ev.isGreaterEq(getValue(weights, i, tLeft), x(xOffset + i))) {
-          setValue(gradWeights, i, tLeft, ev.minus(ev.fromType(1), getValue(weights, i, aLeft)))
-          setValue(gradWeights, i, aLeft, ev.minus(x(xOffset + i), getValue(weights, i, tLeft)))
+          setValue(gradWeights, i, tLeft, ev.times(ev.minus(ev.fromType(1),
+            getValue(weights, i, aLeft)),
+            z(zOffset + i)))
+          setValue(gradWeights, i, aLeft, ev.times(ev.minus(x(xOffset + i),
+            getValue(weights, i, tLeft)),
+            z(zOffset + i)))
         } else {
           setValue(gradWeights, i, tLeft, ev.fromType(0))
           setValue(gradWeights, i, aLeft, ev.fromType(0))
