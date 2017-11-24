@@ -51,7 +51,7 @@ abstract class KerasBaseSpec extends BigDLSpecHelper {
     val boutput = bmodel.forward(input)
     boutput.almostEqual(output, precision) should be(true)
 
-    val bgradInput = bmodel.backward(input, boutput.clone().fill(1))
+    val bgradInput = bmodel.backward(input, boutput.clone())
     bgradInput.almostEqual(gradInput, precision) should be(true)
 
 
