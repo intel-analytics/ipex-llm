@@ -25,7 +25,8 @@ import scala.reflect.ClassTag
 /**
  * This method is same as `mean_absolute_percentage_error` loss in keras.
  * It caculates diff = K.abs((x - y) / K.clip(K.abs(x), K.epsilon(), None))
- * and return 100. * K.mean(diff) as outpout
+ * and return 100 * K.mean(diff) as outpout
+ * Here, the x and y can have or not have a batch.
  * @param ev$1
  * @param ev
  * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
