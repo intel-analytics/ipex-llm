@@ -129,13 +129,21 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     this.typeName match {
       case "float" =>
         if (null == jTensor.indices) {
-          Tensor(jTensor.storage.map(x => ev.fromType(x)), jTensor.shape)
+          if (jTensor.shape == null || jTensor.shape.length == 0) {
+            Tensor()
+          } else {
+            Tensor(jTensor.storage.map(x => ev.fromType(x)), jTensor.shape)
+          }
         } else {
           Tensor.sparse(jTensor.indices, jTensor.storage.map(x => ev.fromType(x)), jTensor.shape)
         }
       case "double" =>
         if (null == jTensor.indices) {
-          Tensor(jTensor.storage.map(x => ev.fromType(x.toDouble)), jTensor.shape)
+          if (jTensor.shape == null || jTensor.shape.length == 0) {
+            Tensor()
+          } else {
+            Tensor(jTensor.storage.map(x => ev.fromType(x.toDouble)), jTensor.shape)
+          }
         } else {
           Tensor.sparse(jTensor.indices,
             jTensor.storage.map(x => ev.fromType(x.toDouble)), jTensor.shape)
@@ -162,7 +170,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
         }
       case DenseType =>
         if (tensor.nElement() == 0) {
-          JTensor(Array(), Array(0), bigdlType = typeName)
+          if (tensor.dim() == 0) {
+            JTensor(null, null, bigdlType = typeName)
+          } else {
+            JTensor(Array(), tensor.size(), bigdlType = typeName)
+          }
         } else {
           val cloneTensor = tensor.clone()
           val result = JTensor(cloneTensor.storage().array().map(i => ev.toType[Float](i)),
