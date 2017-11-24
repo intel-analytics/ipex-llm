@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
-import com.intel.analytics.bigdl.nn.BatchNormalization
+import com.intel.analytics.bigdl.nn.SpatialBatchNormalization
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -66,12 +66,12 @@ class FusedBatchNorm[T: ClassTag](
 
     if (isTraining) {
       if (dataFormat == DataFormat.NHWC) {
-        BatchNormalization.updateOutputFloatNHWCTrain(
+        SpatialBatchNormalization.updateOutputNHWCTrainFloat(
           x, y, batchMean, saveStd, runningMean, runningVar, scale, offset, epsilon, momentum,
           batchVar, saveVar
         )
       } else {
-        BatchNormalization.updateOutputFloatNCHWTrain(
+        SpatialBatchNormalization.updateOutputNCHWTrainFloat(
           x, y, batchMean, saveStd, runningMean, runningVar, scale, offset, epsilon, momentum,
           batchVar, saveVar
         )
@@ -79,11 +79,11 @@ class FusedBatchNorm[T: ClassTag](
       saveMean.copy(batchMean)
     } else {
       if (dataFormat == DataFormat.NHWC) {
-        BatchNormalization.updateOutputFloatNHWCInfer(
+        SpatialBatchNormalization.updateOutputNHWCInferFloat(
           x, y, mean, variance, scale, offset
         )
       } else {
-        BatchNormalization.updateOutputFloatNCHWInfer(
+        SpatialBatchNormalization.updateOutputNCHWInferFloat(
           x, y, mean, variance, scale, offset
         )
       }

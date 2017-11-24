@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
-import com.intel.analytics.bigdl.nn.BatchNormalization
+import com.intel.analytics.bigdl.nn.{BatchNormalization, SpatialBatchNormalization}
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -51,15 +51,16 @@ class FusedBatchNormGrad[T: ClassTag](
     val gradBias = output[Tensor[Float]](3)
 
     if (isTraining) {
-      BatchNormalization.updateGradInputFloatNHWCTrain(
+      SpatialBatchNormalization.updateGradInputNHWCTrainFloat(
         x, gradOutput, gradInput, scale, saveMean, saveStd, gMean, gxMean)
     } else {
-      BatchNormalization.updateGradInputFloatNHWCInfer(
+      SpatialBatchNormalization.updateGradInputNHWCInferFloat(
         gradOutput, gradInput, scale, saveStd)
     }
     gradWeight.zero()
     gradBias.zero()
-    BatchNormalization.accGradientNHWC(gradOutput, gradWeight, gradBias, x, saveMean, saveStd)
+    SpatialBatchNormalization.accGradientNHWCFloat(
+      gradOutput, gradWeight, gradBias, x, saveMean, saveStd)
 
     output
   }
