@@ -34,7 +34,7 @@ import scala.reflect.ClassTag
  * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
  */
 @SerialVersionUID(3462228835945094156L)
-class UpSampling3D[T: ClassTag](size: Array[Int], dimOrdering: String = "th")
+class UpSampling3D[T: ClassTag](val size: Array[Int], val dimOrdering: String = "th")
   (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   require(size != null && size.length == 3, "the size should be 3 dims")

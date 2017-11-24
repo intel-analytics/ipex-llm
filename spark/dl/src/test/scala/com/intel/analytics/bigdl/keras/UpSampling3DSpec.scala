@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.keras
 
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.Tensor
 
 class UpSampling3DSpec extends KerasBaseSpec {
   "updample3d forward with size 1" should "work properly" in {
@@ -53,5 +54,20 @@ class UpSampling3DSpec extends KerasBaseSpec {
       """.stripMargin
     val model = UpSampling3D[Float](Array(2, 3, 4), dimOrdering = "th")
     checkOutputAndGrad(model, kerasCode)
+  }
+
+  "updample3d serializer" should "work properly" in {
+    val module = UpSampling3D[Float](Array(2, 3, 4), dimOrdering = "th")
+
+    val input = Tensor[Float](1, 1, 2, 3, 4).randn()
+    val res1 = module.forward(input).clone()
+    val tmpFile = java.io.File.createTempFile("module", ".bigdl")
+    module.saveModule(tmpFile.getAbsolutePath, true)
+    val loaded = Module.loadModule[Float](tmpFile.getAbsolutePath)
+    val res2 = loaded.forward(input)
+    res1 should be(res2)
+    if (tmpFile.exists()) {
+      tmpFile.delete()
+    }
   }
 }
