@@ -251,4 +251,43 @@ class BatchNormalizationSpec extends FlatSpec with Matchers {
     val outputNHWC = bnNHWC.forward(inputNHWC)
     outputNCHW.almostEqual(outputNHWC.transpose(2, 4).transpose(3, 4), 1e-5) should be(true)
   }
+
+  "A BatchNormalization update gradinput" should "generate same output for NHWC and NCHW" in {
+    val inputNCHW = Tensor[Float](4, 256, 8, 8).rand()
+    val inputNHWC = inputNCHW.transpose(2, 4).transpose(2, 3).contiguous()
+    val gradientNCHW = Tensor[Float](4, 256, 8, 8).rand()
+    val gradientNHWC = gradientNCHW.transpose(2, 4).transpose(2, 3).contiguous()
+    val weight = Tensor[Float](256).rand()
+    val bias = Tensor[Float](256).rand()
+    val bnNCHW = BatchNormalization[Float](nOutput = 256, initWeight = weight, initBias = bias)
+    val bnNHWC = BatchNormalization[Float](nOutput = 256, dataFormat = DataFormat.NHWC,
+      initWeight = weight, initBias = bias)
+    val outputNCHW = bnNCHW.forward(inputNCHW)
+    val outputNHWC = bnNHWC.forward(inputNHWC)
+
+    val backpropNCHW = bnNCHW.updateGradInput(inputNCHW, gradientNCHW)
+    val backpropNHWC = bnNHWC.updateGradInput(inputNHWC, gradientNHWC)
+
+    backpropNCHW.almostEqual(backpropNHWC.transpose(2, 4).transpose(3, 4), 1e-5) should be(true)
+  }
+
+  "A BatchNormalization acc gradient" should "generate same output for NHWC and NCHW" in {
+    val inputNCHW = Tensor[Float](4, 256, 8, 8).rand()
+    val inputNHWC = inputNCHW.transpose(2, 4).transpose(2, 3).contiguous()
+    val gradientNCHW = Tensor[Float](4, 256, 8, 8).rand()
+    val gradientNHWC = gradientNCHW.transpose(2, 4).transpose(2, 3).contiguous()
+    val weight = Tensor[Float](256).rand()
+    val bias = Tensor[Float](256).rand()
+    val bnNCHW = BatchNormalization[Float](nOutput = 256, initWeight = weight, initBias = bias)
+    val bnNHWC = BatchNormalization[Float](nOutput = 256, dataFormat = DataFormat.NHWC,
+      initWeight = weight, initBias = bias)
+    val outputNCHW = bnNCHW.forward(inputNCHW)
+    val outputNHWC = bnNHWC.forward(inputNHWC)
+
+    bnNCHW.accGradParameters(inputNCHW, gradientNCHW)
+    bnNHWC.accGradParameters(inputNHWC, gradientNHWC)
+
+    bnNCHW.gradWeight.almostEqual(bnNHWC.gradWeight, 1e-5)
+    bnNCHW.gradBias.almostEqual(bnNHWC.gradBias, 1e-5)
+  }
 }

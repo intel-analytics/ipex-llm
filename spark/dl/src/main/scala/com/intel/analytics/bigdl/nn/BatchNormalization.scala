@@ -178,8 +178,22 @@ class BatchNormalization[T: ClassTag](
         val outputOffset = outputFloat.storageOffset() - 1
         val outputStride = output.stride(1)
         if (dataFormat == DataFormat.NCHW) {
-          updateOutputFloat(inputData, inputOffset, inputStride, outputData, outputOffset,
-            outputStride, nInput, n, inputStride2)
+          val isOld = true
+          if (isOld) {
+            updateOutputFloat(inputData, inputOffset, inputStride, outputData, outputOffset,
+              outputStride, nInput, n, inputStride2)
+          } else {
+            require(ev.getType() == FloatType, "BatchNorm NCHW only support Float type")
+            if (train) {
+              BatchNormalization.updateOutputFloatNCHWTrain(inputFloat, outputFloat,
+                saveMean.asInstanceOf[Tensor[Float]], saveStd.asInstanceOf[Tensor[Float]],
+                runningMean.asInstanceOf[Tensor[Float]], runningVar.asInstanceOf[Tensor[Float]],
+                weight.asInstanceOf[Tensor[Float]], bias.asInstanceOf[Tensor[Float]],
+                eps.toFloat, momentum.toFloat)
+            } else {
+              ???
+            }
+          }
         } else {
           require(ev.getType() == FloatType, "BatchNorm NHWC only support Float type")
           if (train) {
@@ -340,8 +354,30 @@ class BatchNormalization[T: ClassTag](
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    backward(input, gradOutput, gradInput, null, null)
+    if (dataFormat == DataFormat.NCHW) {
+      val isOld = false
+      if (isOld) {
+        backward(input, gradOutput, gradInput, null, null)
+      } else {
+        require(ev.getType() == FloatType, "NCHW only support float now")
+        BatchNormalization.updateGradInputFloatNCHWTrain(
+          input.asInstanceOf[Tensor[Float]], gradOutput.asInstanceOf[Tensor[Float]],
+          gradInput.asInstanceOf[Tensor[Float]], weight.asInstanceOf[Tensor[Float]],
+          saveMean.asInstanceOf[Tensor[Float]], saveStd.asInstanceOf[Tensor[Float]], gMean, gxMean)
+        gradInput
+      }
+    } else {
+      require(ev.getType() == FloatType, "NHWC only support float now")
+      BatchNormalization.updateGradInputFloatNHWCTrain(
+        input.asInstanceOf[Tensor[Float]], gradOutput.asInstanceOf[Tensor[Float]],
+        gradInput.asInstanceOf[Tensor[Float]], weight.asInstanceOf[Tensor[Float]],
+        saveMean.asInstanceOf[Tensor[Float]], saveStd.asInstanceOf[Tensor[Float]], gMean, gxMean)
+      gradInput
+    }
   }
+
+  private val gMean = Tensor[Float]()
+  private val gxMean = Tensor[Float]()
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
     backward(input, gradOutput, null, gradWeight, gradBias)
@@ -818,7 +854,6 @@ object BatchNormalization extends ModuleSerializable {
     DataConverter.setAttributeValue(context, saveStdBuilder,
       batchNorm.saveStd, ModuleSerializer.tensorType)
     batchNormBuilder.putAttr("saveStd", saveStdBuilder.build)
-
   }
 
   private[bigdl] def updateOutputFloatNHWCInfer(input: Tensor[Float], output: Tensor[Float],
@@ -847,6 +882,7 @@ object BatchNormalization extends ModuleSerializable {
       i += nChannels
     }
   }
+
   private[bigdl] def updateOutputFloatNHWCTrain(input: Tensor[Float], output: Tensor[Float],
     saveMean: Tensor[Float], saveStd: Tensor[Float], runningMean: Tensor[Float],
     runningVar: Tensor[Float], scale: Tensor[Float], offset: Tensor[Float],
@@ -934,6 +970,488 @@ object BatchNormalization extends ModuleSerializable {
         c += 1
       }
       i += nChannels
+    }
+  }
+
+  private[bigdl] def updateOutputFloatNCHWInfer(input: Tensor[Float], output: Tensor[Float],
+    mean: Tensor[Float], std: Tensor[Float], scale: Tensor[Float], offset: Tensor[Float]): Unit = {
+
+    require(input.isContiguous(), "BatchNorm NCHW require a contiguous input")
+    val inputData = input.storage().array()
+    val inputOffset = input.storageOffset() - 1
+    val outputData = output.storage().array()
+    val outputOffset = output.storageOffset() - 1
+    val meanData = mean.storage().array()
+    val meanOffset = mean.storageOffset() - 1
+    val stdData = std.storage().array()
+    val stdOffset = std.storageOffset() - 1
+    val nChannels = input.size(2)
+    val nBatch = input.size(1)
+    val nFrame = input.size(3) * input.size(4)
+
+    val scaleData = scale.storage().array()
+    val offsetData = offset.storage().array()
+    var i = inputOffset
+    var b = 0
+    while(b < nBatch) {
+      var c = 0
+      while(c < nChannels) {
+        var k = 0
+        while(k < nFrame) {
+          outputData(i + outputOffset) = (inputData(i) - meanData(c + meanOffset)) *
+            stdData(c + stdOffset) * scaleData(c) + offsetData(c)
+          k += 1
+          i += 1
+        }
+        c += 1
+      }
+      b += 1
+    }
+  }
+
+  private[bigdl] def updateGradInputFloatNHWCTrain(
+    input: Tensor[Float],
+    gradOutput: Tensor[Float],
+    gradInput: Tensor[Float],
+    scale: Tensor[Float],
+    saveMean: Tensor[Float],
+    saveStd: Tensor[Float],
+    gMean: Tensor[Float],
+    gxMean: Tensor[Float]
+  ): Unit = {
+    require(input.nDimension() == 4, "BN require a 4D input")
+    require(input.isContiguous(), "input is not contiguous")
+    require(gradOutput.nDimension() == 4, "BN require a 4D gradient")
+    require(gradOutput.isContiguous(), "gradient is not contiguous")
+    val nChannel = gradOutput.size(4)
+    require(scale.size(1) == nChannel, "scale length is not consist with channel number")
+    require(saveMean.size(1) == nChannel, "saveMean length is not consist with channel number")
+    require(saveStd.size(1) == nChannel, "saveStd length is not consist with channel number")
+
+    gradInput.resizeAs(gradOutput)
+    if (gMean.isEmpty) {
+      gMean.resize(scale.size(1))
+      gxMean.resize(scale.size(1))
+    }
+
+    val inputData = input.storage().array()
+    val inputOffset = input.storageOffset() - 1
+    val gradOutputData = gradOutput.storage().array()
+    val gradOutputOffset = gradOutput.storageOffset() - 1
+    val gradInputData = gradInput.storage().array()
+    val gradInputOffset = gradInput.storageOffset() - 1
+    val scaleData = scale.storage().array()
+    val scaleOffset = scale.storageOffset() - 1
+    val saveMeanData = saveMean.storage().array()
+    val saveMeanOffset = saveMean.storageOffset() - 1
+    val saveStdData = saveStd.storage().array()
+    val saveStdOffset = saveStd.storageOffset() - 1
+    val gMeanData = gMean.storage().array()
+    val gxMeanData = gxMean.storage().array()
+
+    val n = gradOutput.nElement()
+    var i = 0
+    while(i < n) {
+      var c = 0
+      while(c < nChannel) {
+        gMeanData(c) += gradOutputData(i + gradOutputOffset)
+        gxMeanData(c) += gradOutputData(i + gradOutputOffset) *
+          (inputData(i + inputOffset) - saveMeanData(c + saveMeanOffset))
+        c += 1
+        i += 1
+      }
+    }
+
+    var c = 0
+    val size = n / nChannel
+    while(c < nChannel) {
+      gMeanData(c) /= size
+      gxMeanData(c) /= size
+      c += 1
+    }
+
+    i = 0
+    while(i < n) {
+      var c = 0
+      while(c < nChannel) {
+        val invStd = saveStdData(saveStdOffset + c)
+        gradInputData(gradInputOffset + i) = scaleData(scaleOffset + c) *
+          invStd * (gradOutputData(gradOutputOffset + i) - gMeanData(c) -
+          gxMeanData(c) * invStd * invStd * (inputData(inputOffset + i) -
+            saveMeanData(saveMeanOffset + c)))
+        c += 1
+        i += 1
+      }
+    }
+  }
+
+  private[bigdl] def updateGradInputFloatNHWCInfer(
+    gradOutput: Tensor[Float],
+    gradInput: Tensor[Float],
+    scale: Tensor[Float],
+    saveStd: Tensor[Float]
+  ): Unit = {
+    require(gradOutput.nDimension() == 4, "BN require a 4D gradient")
+    require(gradOutput.isContiguous(), "gradient is not contiguous")
+    val nChannel = gradOutput.size(4)
+    require(scale.size(1) == nChannel, "scale length is not consist with channel number")
+    require(saveStd.size(1) == nChannel, "saveStd length is not consist with channel number")
+
+    gradInput.resizeAs(gradOutput)
+    val gradOutputData = gradOutput.storage().array()
+    val gradOutputOffset = gradOutput.storageOffset() - 1
+    val gradInputData = gradInput.storage().array()
+    val gradInputOffset = gradInput.storageOffset() - 1
+    val scaleData = scale.storage().array()
+    val scaleOffset = scale.storageOffset() - 1
+    val saveStdData = saveStd.storage().array()
+    val saveStdOffset = saveStd.storageOffset() - 1
+
+    val n = gradOutput.nElement()
+    var i = 0
+    while(i < n) {
+      var c = 0
+      while(c < nChannel) {
+        val invStd = saveStdData(saveStdOffset + c)
+        gradInputData(gradInputOffset + i) = scaleData(scaleOffset + c) *
+          invStd * gradOutputData(gradOutputOffset + i)
+        c += 1
+        i += 1
+      }
+    }
+  }
+
+  private[bigdl] def updateOutputFloatNCHWTrain(input: Tensor[Float], output: Tensor[Float],
+    saveMean: Tensor[Float], saveStd: Tensor[Float], runningMean: Tensor[Float],
+    runningVar: Tensor[Float], scale: Tensor[Float], offset: Tensor[Float],
+    eps: Float, momentum: Float,
+    batchVar: Tensor[Float] = null, saveVar: Tensor[Float] = null): Unit = {
+    require(input.isContiguous(), "BatchNorm NCHW require a contiguous input")
+    val inputData = input.storage().array()
+    val inputOffset = input.storageOffset() - 1
+    val outputData = output.storage().array()
+    val outputOffset = output.storageOffset() - 1
+    val nChannels = input.size(2)
+    val nBatch = input.size(1)
+    val nFrame = input.size(3) * input.size(4)
+    if(saveMean.size(1) != nChannels) {
+      saveMean.resize(nChannels)
+      saveStd.resize(nChannels)
+      runningMean.resize(nChannels)
+      runningVar.resize(nChannels)
+    }
+    val mean = saveMean.storage().array()
+    var i = inputOffset
+    var b = 0
+    while(b < nBatch) {
+      var c = 0
+      while (c < nChannels) {
+        var k = 0
+        var meanSum = 0f
+        while(k < nFrame) {
+          meanSum += inputData(i)
+          k += 1
+          i += 1
+        }
+        mean(c) += meanSum
+        c += 1
+      }
+      b += 1
+    }
+
+    val n = input.nElement()
+    val frameSize = n / nChannels
+    var c = 0
+    val runningMeanData = runningMean.storage().array()
+    while(c < nChannels) {
+      mean(c) /= frameSize
+      runningMeanData(c) = mean(c) * momentum + (1 - momentum) * runningMeanData(c)
+      c += 1
+    }
+
+    val std = saveStd.storage().array()
+    i = inputOffset
+    b = 0
+    while(b < nBatch) {
+      var c = 0
+      while(c < nChannels) {
+        var k = 0
+        var stdSum = 0f
+        while(k < nFrame) {
+          val diff = (inputData(i) - mean(c))
+          stdSum += diff * diff
+          k += 1
+          i += 1
+        }
+        std(c) += stdSum
+        c += 1
+      }
+      b += 1
+    }
+
+    c = 0
+    val runningVarData = runningVar.storage().array()
+    while(c < nChannels) {
+      if (std(c) == 0 && eps == 0) {
+        std(c) = 0
+        if (saveVar != null) {
+          saveVar.setValue(c + 1, 0f)
+        }
+        if (batchVar != null) {
+          batchVar.setValue(c + 1, 0f)
+        }
+      } else {
+        val s = std(c)
+        val unbiasedVar = s / (frameSize - 1)
+        if (saveVar != null) {
+          saveVar.setValue(c + 1, s / frameSize)
+        }
+        if (batchVar != null) {
+          batchVar.setValue(c + 1, unbiasedVar)
+        }
+        std(c) = 1.0f / Math.sqrt(s / frameSize + eps).toFloat
+        runningVarData(c) = momentum * unbiasedVar + (1 - momentum) * runningVarData(c)
+      }
+      c += 1
+    }
+
+    val scaleData = scale.storage().array()
+    val offsetData = offset.storage().array()
+    i = inputOffset
+    b = 0
+    while(b < nBatch) {
+      var c = 0
+      while(c < nChannels) {
+        var k = 0
+        while(k < nFrame) {
+          outputData(i) = (inputData(i) - mean(c)) * std(c) *
+            scaleData(c) + offsetData(c)
+          k += 1
+          i += 1
+        }
+        c += 1
+      }
+      b += 1
+    }
+  }
+
+  private[bigdl] def updateGradInputFloatNCHWTrain(
+    input: Tensor[Float],
+    gradOutput: Tensor[Float],
+    gradInput: Tensor[Float],
+    scale: Tensor[Float],
+    saveMean: Tensor[Float],
+    saveStd: Tensor[Float],
+    gMean: Tensor[Float],
+    gxMean: Tensor[Float]
+  ): Unit = {
+    require(input.nDimension() == 4, "BN require a 4D input")
+    require(input.isContiguous(), "input is not contiguous")
+    require(gradOutput.nDimension() == 4, "BN require a 4D gradient")
+    require(gradOutput.isContiguous(), "gradient is not contiguous")
+    val nChannel = gradOutput.size(2)
+    require(scale.size(1) == nChannel, "scale length is not consist with channel number")
+    require(saveMean.size(1) == nChannel, "saveMean length is not consist with channel number")
+    require(saveStd.size(1) == nChannel, "saveStd length is not consist with channel number")
+
+    gradInput.resizeAs(gradOutput)
+    if (gMean.isEmpty) {
+      gMean.resize(scale.size(1))
+      gxMean.resize(scale.size(1))
+    }
+
+    val inputData = input.storage().array()
+    val inputOffset = input.storageOffset() - 1
+    val gradOutputData = gradOutput.storage().array()
+    val gradOutputOffset = gradOutput.storageOffset() - 1
+    val gradInputData = gradInput.storage().array()
+    val gradInputOffset = gradInput.storageOffset() - 1
+    val scaleData = scale.storage().array()
+    val scaleOffset = scale.storageOffset() - 1
+    val saveMeanData = saveMean.storage().array()
+    val saveMeanOffset = saveMean.storageOffset() - 1
+    val saveStdData = saveStd.storage().array()
+    val saveStdOffset = saveStd.storageOffset() - 1
+    val gMeanData = gMean.storage().array()
+    val gxMeanData = gxMean.storage().array()
+
+    val nBatch = gradOutput.size(1)
+    val frameSize = gradOutput.size(3) * gradOutput.size(4)
+    val n = gradOutput.nElement()
+    var b = 0
+    var i = 0
+    while(b < nBatch) {
+      var c = 0
+      while(c < nChannel) {
+        var k = 0
+        while(k < frameSize) {
+          gMeanData(c) += gradOutputData(i + gradOutputOffset)
+          gxMeanData(c) += gradOutputData(i + gradOutputOffset) *
+            (inputData(i + inputOffset) - saveMeanData(c + saveMeanOffset))
+          k += 1
+          i += 1
+        }
+        c += 1
+      }
+      b += 1
+    }
+
+    var c = 0
+    val size = n / nChannel
+    while(c < nChannel) {
+      gMeanData(c) /= size
+      gxMeanData(c) /= size
+      c += 1
+    }
+
+    i = 0
+    b = 0
+    while(b < nBatch) {
+      var c = 0
+      while(c < nChannel) {
+        var k = 0
+        while(k < frameSize) {
+          val invStd = saveStdData(saveStdOffset + c)
+          gradInputData(gradInputOffset + i) = scaleData(scaleOffset + c) *
+            invStd * (gradOutputData(gradOutputOffset + i) - gMeanData(c) -
+            gxMeanData(c) * invStd * invStd * (inputData(inputOffset + i) -
+              saveMeanData(saveMeanOffset + c)))
+          k += 1
+          i += 1
+        }
+        c += 1
+      }
+      b += 1
+    }
+  }
+
+  private[bigdl] def updateGradInputFloatNCHWInfer(
+    gradOutput: Tensor[Float],
+    gradInput: Tensor[Float],
+    scale: Tensor[Float],
+    saveStd: Tensor[Float]
+  ): Unit = {
+    require(gradOutput.nDimension() == 4, "BN require a 4D gradient")
+    require(gradOutput.isContiguous(), "gradient is not contiguous")
+    val nChannel = gradOutput.size(2)
+    require(scale.size(1) == nChannel, "scale length is not consist with channel number")
+    require(saveStd.size(1) == nChannel, "saveStd length is not consist with channel number")
+
+    gradInput.resizeAs(gradOutput)
+    val gradOutputData = gradOutput.storage().array()
+    val gradOutputOffset = gradOutput.storageOffset() - 1
+    val gradInputData = gradInput.storage().array()
+    val gradInputOffset = gradInput.storageOffset() - 1
+    val scaleData = scale.storage().array()
+    val scaleOffset = scale.storageOffset() - 1
+    val saveStdData = saveStd.storage().array()
+    val saveStdOffset = saveStd.storageOffset() - 1
+
+    val nBatch = gradOutput.size(1)
+    val frameSize = gradOutput.size(3) * gradOutput.size(4)
+    var b = 0
+    var i = 0
+    while(b < nBatch) {
+      var c = 0
+      while(c < nChannel) {
+        var k = 0
+        while(k < frameSize) {
+          val invStd = saveStdData(saveStdOffset + c)
+          gradInputData(gradInputOffset + i) = scaleData(scaleOffset + c) *
+            invStd * gradOutputData(gradOutputOffset + i)
+          k += 1
+          i += 1
+        }
+        c += 1
+      }
+      b += 1
+    }
+  }
+
+  private[bigdl] def accGradientNHWC(gradOutput: Tensor[Float],
+    gradWeight: Tensor[Float], gradBias: Tensor[Float],
+    input: Tensor[Float], saveMean: Tensor[Float],
+    saveStd: Tensor[Float]): Unit = {
+    require(gradOutput.isContiguous(), "gradOutput must be contiguous")
+    require(gradWeight.isContiguous(), "gradWeight must be contiguous")
+    require(gradBias.isContiguous(), "gradBias must be contiguous")
+    require(input.isContiguous(), "gradWeight must be contiguous")
+    require(saveMean.nDimension() == 1, "saveMean must be 1D")
+    require(saveStd.nDimension() == 1, "saveStd must be 1D")
+    val nChannel = saveMean.size(1)
+    val gradOutputData = gradOutput.storage().array()
+    val gradOutputOffset = gradOutput.storageOffset() - 1
+    val gradWeightData = gradWeight.storage().array()
+    val gradWeightOffset = gradWeight.storageOffset() - 1
+    val gradBiasData = gradBias.storage().array()
+    val gradBiasOffset = gradBias.storageOffset() - 1
+    val inputData = input.storage().array()
+    val inputOffset = input.storageOffset() - 1
+    val saveMeanData = saveMean.storage().array()
+    val saveMeanOffset = saveMean.storageOffset() - 1
+    val saveStdData = saveStd.storage().array()
+    val saveStdOffset = saveStd.storageOffset() - 1
+
+    var i = 0
+    val n = input.nElement()
+    while(i < n) {
+      var c = 0
+      while(c < nChannel) {
+        val g = gradOutputData(gradOutputOffset + i)
+        gradWeightData(c + gradWeightOffset) += g *
+          (inputData(inputOffset + i) - saveMeanData(saveMeanOffset + c)) *
+          saveStdData(saveStdOffset + c)
+        gradBiasData(c + gradBiasOffset) += g
+        i += 1
+        c += 1
+      }
+    }
+  }
+
+  private[bigdl] def accGradientNCHW(gradOutput: Tensor[Float],
+    gradWeight: Tensor[Float], gradBias: Tensor[Float],
+    input: Tensor[Float], saveMean: Tensor[Float],
+    saveStd: Tensor[Float]): Unit = {
+    require(gradOutput.isContiguous(), "gradOutput must be contiguous")
+    require(gradWeight.isContiguous(), "gradWeight must be contiguous")
+    require(gradBias.isContiguous(), "gradBias must be contiguous")
+    require(input.isContiguous(), "gradWeight must be contiguous")
+    require(saveMean.nDimension() == 1, "saveMean must be 1D")
+    require(saveStd.nDimension() == 1, "saveStd must be 1D")
+    val nChannel = saveMean.size(1)
+    val gradOutputData = gradOutput.storage().array()
+    val gradOutputOffset = gradOutput.storageOffset() - 1
+    val gradWeightData = gradWeight.storage().array()
+    val gradWeightOffset = gradWeight.storageOffset() - 1
+    val gradBiasData = gradBias.storage().array()
+    val gradBiasOffset = gradBias.storageOffset() - 1
+    val inputData = input.storage().array()
+    val inputOffset = input.storageOffset() - 1
+    val saveMeanData = saveMean.storage().array()
+    val saveMeanOffset = saveMean.storageOffset() - 1
+    val saveStdData = saveStd.storage().array()
+    val saveStdOffset = saveStd.storageOffset() - 1
+
+    val nBatch = gradOutput.size(1)
+    val frameSize = gradOutput.size(3) * gradOutput.size(4)
+    var i = 0
+    var b = 0
+    while(b < nBatch) {
+      var c = 0
+      while (c < nChannel) {
+        var k = 0
+        while(k < frameSize) {
+          val g = gradOutputData(gradOutputOffset + i)
+          gradWeightData(c + gradWeightOffset) += g *
+            (inputData(inputOffset + i) - saveMeanData(saveMeanOffset + c)) *
+            saveStdData(saveStdOffset + c)
+          gradBiasData(c + gradBiasOffset) += g
+          k += 1
+          i += 1
+        }
+        c += 1
+      }
+      b += 1
     }
   }
 }
