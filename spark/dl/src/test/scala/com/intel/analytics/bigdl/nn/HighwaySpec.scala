@@ -17,7 +17,6 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.keras.{KerasBaseSpec, KerasRunner}
-import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 
 class HighwaySpec extends KerasBaseSpec {
@@ -29,10 +28,10 @@ class HighwaySpec extends KerasBaseSpec {
         |output_tensor = Highway(activation='tanh')(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
-    val highway = new Highway[Float](2, activation = "tanh")
+    val highway = Highway[Float](2, activation = "tanh")
     def weightConverter(in: Array[Tensor[Float]]): Array[Tensor[Float]] =
       Array(in(1).t(), in(3), in(0).t(), in(2))
-    checkOutputAndGrad(highway, kerasCode, weightConverter)
+    checkHighwayOutputAndGrad(highway, kerasCode, weightConverter)
   }
 
   "highway forward backward noBias" should "work properly" in {
@@ -43,11 +42,11 @@ class HighwaySpec extends KerasBaseSpec {
         |output_tensor = Highway(activation='tanh', bias=None)(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
-    val highway = new Highway[Float](2, activation = "tanh", withBias = false)
+    val highway = Highway[Float](2, activation = "tanh", withBias = false)
     def weightConverter(in: Array[Tensor[Float]]): Array[Tensor[Float]] =
       Array(in(1).t(), in(0).t())
 
-    checkOutputAndGrad(highway, kerasCode, weightConverter)
+    checkHighwayOutputAndGrad(highway, kerasCode, weightConverter)
   }
 
   "highway forward backward no activation" should "work properly" in {
@@ -58,14 +57,14 @@ class HighwaySpec extends KerasBaseSpec {
         |output_tensor = Highway(bias=None)(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
-    val highway = new Highway[Float](2, withBias = false)
+    val highway = Highway[Float](2, withBias = false)
     def weightConverter(in: Array[Tensor[Float]]): Array[Tensor[Float]] =
       Array(in(1).t(), in(0).t())
 
-    checkOutputAndGrad(highway, kerasCode, weightConverter)
+    checkHighwayOutputAndGrad(highway, kerasCode, weightConverter)
   }
 
-  override def checkOutputAndGrad(bmodel: AbstractModule[Tensor[Float], Tensor[Float], Float],
+  def checkHighwayOutputAndGrad(bmodel: Graph[Float],
     kerasCode: String,
     weightConverter: (Array[Tensor[Float]]) => Array[Tensor[Float]],
     precision: Double = 1e-5): Unit = {
@@ -75,10 +74,29 @@ class HighwaySpec extends KerasBaseSpec {
     if (weights != null) {
       bmodel.setWeightsBias(weightConverter(weights))
     }
-    val boutput = bmodel.forward(input)
+    val boutput = bmodel.forward(input).toTensor[Float]
     boutput.almostEqual(output, precision) should be(true)
 
-    val bgradInput = bmodel.backward(input, boutput.clone().fill(1))
+    val bgradInput = bmodel.backward(input, boutput.clone().fill(1)).toTensor[Float]
     bgradInput.almostEqual(gradInput, precision) should be(true)
+  }
+
+  "Highway serializer" should "work properly" in {
+    val module = Highway[Float](2, activation = "tanh")
+
+    val input = Tensor[Float](3, 2).randn()
+    val res1 = module.forward(input.clone()).toTensor[Float].clone()
+    val clone = module.cloneModule()
+    val tmpFile = java.io.File.createTempFile("module", ".bigdl")
+    module.saveModule(tmpFile.getAbsolutePath, true)
+    val loaded = Module.loadModule[Float](tmpFile.getAbsolutePath)
+
+    val res2 = loaded.forward(input.clone())
+    val namedModule = Utils.getNamedModules[Float](clone)
+    val namedModule2 = Utils.getNamedModules[Float](loaded)
+    res1 should be(res2)
+    if (tmpFile.exists()) {
+      tmpFile.delete()
+    }
   }
 }

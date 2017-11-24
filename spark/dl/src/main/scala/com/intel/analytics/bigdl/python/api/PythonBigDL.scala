@@ -2141,7 +2141,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       alignCorner)
   }
 
-  def createHighway(size: Int, withBias: Boolean, activation: String): Highway[T] = {
+  def createHighway(size: Int, withBias: Boolean, activation: String): Graph[T] = {
     Highway(size, withBias, activation)
   }
 
