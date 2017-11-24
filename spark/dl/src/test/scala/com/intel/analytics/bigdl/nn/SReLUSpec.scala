@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.keras.KerasBaseSpec
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.serializer.{ModuleLoader, ModulePersister}
 
 class SReLUSpec extends KerasBaseSpec {
   "SReLU without share axes" should "same as keras" in {
@@ -54,5 +55,16 @@ class SReLUSpec extends KerasBaseSpec {
     val input = Tensor[Float](5, 2, 3, 4).randn()
     srelu.forward(input)
     println(srelu.output)
+  }
+
+  "SReLU serialize" should "work correctly" in {
+    val srelu = SReLU[Float]()
+    val input = Tensor[Float](5, 2, 3, 4).randn()
+    val res1 = srelu.forward(input)
+
+    ModulePersister.saveToFile[Float]("/tmp/srelu.bigdl", srelu, true)
+    val loadSrelu = ModuleLoader.loadFromFile[Float]("/tmp/srelu.bigdl")
+    val res2 = loadSrelu.forward(input)
+    res1 should be (res2)
   }
 }

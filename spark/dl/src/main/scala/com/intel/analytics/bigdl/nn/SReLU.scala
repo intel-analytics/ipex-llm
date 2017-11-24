@@ -16,10 +16,12 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer._
 import com.intel.analytics.bigdl.utils.{T, Table}
+import serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.reflect.ClassTag
 
@@ -44,12 +46,12 @@ import scala.reflect.ClassTag
 @SerialVersionUID(7173457290010080259L)
 class SReLU[T: ClassTag](shared_axes: Array[Int] = null)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+  import SReLU._
   val weightsLen = 4
   val weights: Array[Tensor[T]] = Array.fill[Tensor[T]](4)(Tensor[T]())
   val gradWeights: Array[Tensor[T]] = Array.fill[Tensor[T]](4)(Tensor[T]())
 
   val weightsInit: Array[InitializationMethod] = Array(Zeros, Xavier, Xavier, Ones)
-  private val (tLeft, aLeft, tRight, aRight) = (0, 1, 2, 3)
 
   private def init(input: Tensor[T]): Unit = {
     val shape = input.size().slice(1, input.size().length)
@@ -287,10 +289,65 @@ class SReLU[T: ClassTag](shared_axes: Array[Int] = null)(
 }
 
 
-object SReLU {
+object SReLU extends ModuleSerializable {
   def apply[T: ClassTag](share_axes: Array[Int] = null)(implicit ev: TensorNumeric[T])
   : SReLU[T] = {
     new SReLU[T](share_axes)
+  }
+
+  val (tLeft, aLeft, tRight, aRight) = (0, 1, 2, 3)
+
+  override def doLoadModule[T: ClassTag](context: DeserializeContext)
+    (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
+    val attrMap = context.bigdlModule.getAttrMap
+    val srelu = super.doLoadModule(context).asInstanceOf[SReLU[T]]
+
+    srelu.weights(tLeft) = DataConverter.
+      getAttributeValue(context, attrMap.get("tLeft")).
+      asInstanceOf[Tensor[T]]
+
+    srelu.weights(aLeft) = DataConverter.
+      getAttributeValue(context, attrMap.get("aLeft")).
+      asInstanceOf[Tensor[T]]
+
+    srelu.weights(tRight) = DataConverter.
+      getAttributeValue(context, attrMap.get("tRight")).
+      asInstanceOf[Tensor[T]]
+
+    srelu.weights(aRight) = DataConverter.
+      getAttributeValue(context, attrMap.get("aRight")).
+      asInstanceOf[Tensor[T]]
+
+
+    srelu
+  }
+  override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
+    sreluBuilder : BigDLModule.Builder)
+    (implicit ev: TensorNumeric[T]) : Unit = {
+
+    super.doSerializeModule(context, sreluBuilder)
+
+    val srelu = context.moduleData.module.asInstanceOf[SReLU[T]]
+
+    val runningMeanBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, runningMeanBuilder,
+      srelu.weights(tLeft), ModuleSerializer.tensorType)
+    sreluBuilder.putAttr("tLeft", runningMeanBuilder.build)
+
+    val runningVarBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, runningVarBuilder,
+      srelu.weights(aLeft), ModuleSerializer.tensorType)
+    sreluBuilder.putAttr("aLeft", runningVarBuilder.build)
+
+    val saveMeanBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, saveMeanBuilder,
+      srelu.weights(tRight), ModuleSerializer.tensorType)
+    sreluBuilder.putAttr("tRight", saveMeanBuilder.build)
+
+    val saveStdBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, saveStdBuilder,
+      srelu.weights(aRight), ModuleSerializer.tensorType)
+    sreluBuilder.putAttr("aRight", saveStdBuilder.build)
   }
 }
 
