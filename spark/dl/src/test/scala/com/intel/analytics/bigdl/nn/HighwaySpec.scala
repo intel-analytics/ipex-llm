@@ -77,7 +77,7 @@ class HighwaySpec extends KerasBaseSpec {
     val boutput = bmodel.forward(input).toTensor[Float]
     boutput.almostEqual(output, precision) should be(true)
 
-    val bgradInput = bmodel.backward(input, boutput.clone().fill(1)).toTensor[Float]
+    val bgradInput = bmodel.backward(input, boutput.clone()).toTensor[Float]
     bgradInput.almostEqual(gradInput, precision) should be(true)
   }
 
