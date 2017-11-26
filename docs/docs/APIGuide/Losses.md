@@ -2086,3 +2086,100 @@ loss = criterion.forward(input, target)
 > loss
 50.0
 ```
+
+
+## KullbackLeiblerDivergenceCriterion ##
+**Scala:**
+```scala
+val criterion = KullbackLeiblerDivergenceCriterion()
+```
+**Python:**
+```python
+criterion = KullbackLeiblerDivergenceCriterion()
+```
+
+compute Kullback Leibler Divergence Criterion error for intput and target
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn.KullbackLeiblerDivergenceCriterion
+import com.intel.analytics.bigdl.utils.T
+
+val criterion = KullbackLeiblerDivergenceCriterion[Float]()
+val input = Tensor[Float](Array(0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f), Array(2, 3))
+val target = Tensor[Float](Array(0.6f, 0.5f, 0.4f, 0.3f, 0.2f, 0.1f), Array(2, 3))
+val loss = criterion.forward(input, target)
+
+> loss
+loss: Float = 0.59976757
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.criterion import *
+from bigdl.optim.optimizer import *
+from bigdl.util.common import *
+
+criterion = KullbackLeiblerDivergenceCriterion()
+
+y_pred = np.matrix('0.1 0.2 0.3; 0.4 0.5 0.6')
+y_true = np.matrix('0.6 0.5 0.4; 0.3 0.2 0.1')
+
+loss = criterion.forward(y_pred, y_true)
+
+> loss
+0.59976757
+```
+
+## PoissonCriterion ##
+**Scala:**
+```scala
+val criterion = PoissonCriterion()
+```
+**Python:**
+```python
+criterion = PoissonCriterion()
+```
+
+compute Poisson error for intput and target
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn.PoissonCriterion
+import com.intel.analytics.bigdl.utils.T
+
+val criterion = PoissonCriterion()
+val input = Tensor[Float](2, 3).range(1, 6, 1)
+val target = Tensor[Float](2, 3).range(2, 13, 2)
+val loss = criterion.forward(input, target)
+
+> loss
+loss = -6.1750183
+
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.criterion import *
+from bigdl.optim.optimizer import *
+from bigdl.util.common import *
+
+criterion = PoissonCriterion()
+input = np.arange(1, 7, 1).astype("float32")
+input = input.reshape(2, 3)
+target = np.arange(2, 13, 2).astype("float32")
+target = target.reshape(2, 3)
+
+loss = criterion.forward(input, target)
+
+> loss
+-6.1750183
+```
