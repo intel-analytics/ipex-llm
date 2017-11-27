@@ -218,6 +218,37 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     res1 should be (res2)
   }
 
+  "CAveTable serializer" should "work properly" in {
+    val input1 = Tensor(5, 5).apply1(e => Random.nextFloat())
+    val input2 = Tensor(5, 5).apply1(e => Random.nextFloat())
+    var input = new Table()
+    input(1.toFloat) = input1
+    input(2.toFloat) = input2
+
+    val caveTable = CAveTable(false)
+
+    val res1 = caveTable.forward(input)
+    ModulePersister.saveToFile("/tmp/caveTable.bigdl", caveTable, true)
+    val loadedCaddTable = ModuleLoader.loadFromFile("/tmp/caveTable.bigdl")
+    val res2 = loadedCaddTable.forward(input)
+    res1 should be (res2)
+  }
+
+  "VolumetricAveragePooling serializer" should "work properly" in {
+        val volumetricAveragePooling = VolumetricAveragePooling(2, 2, 2, 1, 1, 1, 0, 0, 0)
+        val input1 = Tensor(1, 2, 3, 3).apply1(_ => Random.nextFloat())
+        val input2 = Tensor(1, 2, 3, 3)
+        input2.copy(input1)
+        val res1 = volumetricAveragePooling.forward(input1)
+
+        ModulePersister.saveToFile("/tmp/volumetricAveragePooling.bigdl",
+          volumetricAveragePooling, true)
+        val loadedVolumetricAveragePooling =
+          ModuleLoader.loadFromFile("/tmp/volumetricAveragePooling.bigdl")
+        val res2 = loadedVolumetricAveragePooling.forward(input1)
+        res1 should be (res2)
+  }
+
 
   "CDivTable serializer" should "work properly" in {
     val cdivTable = new CDivTable()
