@@ -1285,14 +1285,12 @@ object SpatialBatchNormalization {
       var c = 0
       while(c < nChannels) {
         var k = 0
-        var stdSum = 0d
         while(k < nFrame) {
           val diff = (inputData(i + inputOffset) - meanData(c + meanOffset))
-          stdSum += diff * diff
+          stdData(c + stdOffset) += diff * diff
           k += 1
           i += 1
         }
-        stdData(c + stdOffset) += stdSum
         c += 1
       }
       b += 1

@@ -97,18 +97,17 @@ class SpatialBatchNormalizationSpec extends TorchSpec {
 
     val gradInput = sbn.backward(input, gradOutput2)
 
-    outputTorch.almostEqual(output, 1e-5)
+    outputTorch.map(output, (v1, v2) => {
+      assert(abs(v1 - v2) == 0)
+      v1
+    })
 
     gradInputTorch.map(gradInput, (v1, v2) => {
-      if (abs(v1 - v2) != 0) println(s"$v1 $v2")
+      assert(abs(v1 - v2) == 0)
       v1
     })
 
-    gradparametersTorch.map(gradparameters, (v1, v2) => {
-      if (abs(v1 - v2) != 0) println(s"$v1 $v2")
-      v1
-    })
-
+    gradparametersTorch.almostEqual(gradparameters, 1e-10)
   }
 
   "A SpatialBatchNormalization evaluating" should "generate correct output" in {
@@ -187,6 +186,9 @@ class SpatialBatchNormalizationSpec extends TorchSpec {
     sbn.evaluate()
     val output = sbn.forward(input)
 
-    outputTorch.almostEqual(output, 1e-5)
+    outputTorch.map(output, (v1, v2) => {
+      assert(abs(v1 - v2) == 0)
+      v1
+    })
   }
 }
