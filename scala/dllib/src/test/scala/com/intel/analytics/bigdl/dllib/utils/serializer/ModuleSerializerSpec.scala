@@ -631,13 +631,13 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     res1 should be (res2)
   }
 
-  "Graph with variables serializer " should "work properly" in {
+  "Graph with variables serializer" should "work properly" in {
     val linear = Linear(2, 2)
     val linearNode = linear.inputs()
     val linearWeight = linear.weight
     val linearBias = linear.bias
     val variables = Some(Array(linearWeight), Array(linearBias))
-    val graph = Graph(Array(linearNode), Array(linearNode), variables)
+    val graph = Graph(Array(linearNode), Array(linearNode), variables, false)
     val tensor1 = Tensor(2).apply1(_ => Random.nextFloat())
     val tensor2 = Tensor()
     val res1 = graph.forward(tensor1)

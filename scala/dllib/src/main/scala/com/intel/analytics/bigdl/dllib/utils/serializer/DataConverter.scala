@@ -250,7 +250,7 @@ object DataConverter extends DataConverter{
     private def isEmptyTensor(tensor : Tensor[_]): Boolean = {
       val emptyTensor = tensor.getTensorType match {
         case DenseType =>
-          tensor.storage == null
+          tensor.isEmpty
         case QuantizedType =>
           tensor.asInstanceOf[QuantizedTensor[_]].getStorage == null
       }
