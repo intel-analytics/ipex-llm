@@ -1596,11 +1596,11 @@ output m is : [[[[[ 0.24059629  0.11875484 -0.07601731  0.18490529]
 
 **Scala:**
 ```scala
-val module = UpSampling3D(size = Array(2, 3, 4))
+val module = UpSampling3D(size: Array[Int])
 ```
 **Python:**
 ```python
-m = UpSampling3D(size = [2, 3, 4])
+m = UpSampling3D(size)
 ```
 
 Upsampling3D is a module that upsamples for 3D inputs.
