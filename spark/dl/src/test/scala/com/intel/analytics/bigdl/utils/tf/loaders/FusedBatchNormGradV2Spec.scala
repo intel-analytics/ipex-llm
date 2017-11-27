@@ -148,3 +148,4 @@ class FusedBatchNormGradV2Spec extends TensorflowSpecHelper {
     )
   }
 }
+

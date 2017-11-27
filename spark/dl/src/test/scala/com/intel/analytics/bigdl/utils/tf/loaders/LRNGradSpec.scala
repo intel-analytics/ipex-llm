@@ -61,3 +61,4 @@ class LRNGradSpec extends TensorflowSpecHelper {
     )
   }
 }
+

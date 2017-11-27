@@ -101,3 +101,4 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
     bnNCHW.gradBias.almostEqual(bnNHWC.gradBias, 1e-5)
   }
 }
+
