@@ -72,14 +72,14 @@ class SpatialBatchNormalization[T: ClassTag](
             saveMean.asInstanceOf[Tensor[Float]], saveStd.asInstanceOf[Tensor[Float]],
             runningMean.asInstanceOf[Tensor[Float]], runningVar.asInstanceOf[Tensor[Float]],
             weight.asInstanceOf[Tensor[Float]], bias.asInstanceOf[Tensor[Float]],
-            eps.toFloat, momentum.toFloat)
+            eps.toFloat, momentum.toFloat, needFix = needFix)
         } else {
           SpatialBatchNormalization.updateOutputNCHWTrainDouble(
             _input.asInstanceOf[Tensor[Double]], output.asInstanceOf[Tensor[Double]],
             saveMean.asInstanceOf[Tensor[Double]], saveStd.asInstanceOf[Tensor[Double]],
             runningMean.asInstanceOf[Tensor[Double]], runningVar.asInstanceOf[Tensor[Double]],
             weight.asInstanceOf[Tensor[Double]], bias.asInstanceOf[Tensor[Double]],
-            eps, momentum)
+            eps, momentum, needFix = needFix)
         }
       } else {
         if (ev.getType() == FloatType) {
@@ -1088,7 +1088,8 @@ object SpatialBatchNormalization {
     saveMean: Tensor[Float], saveStd: Tensor[Float], runningMean: Tensor[Float],
     runningVar: Tensor[Float], scale: Tensor[Float], offset: Tensor[Float],
     eps: Float, momentum: Float,
-    batchVar: Tensor[Float] = null, saveVar: Tensor[Float] = null): Unit = {
+    batchVar: Tensor[Float] = null, saveVar: Tensor[Float] = null, needFix: Boolean = false)
+  : Unit = {
     require(input.isContiguous(), "BatchNorm NCHW require a contiguous input")
     val inputData = input.storage().array()
     val inputOffset = input.storageOffset() - 1
@@ -1184,6 +1185,14 @@ object SpatialBatchNormalization {
       c += 1
     }
 
+    if (needFix) {
+      c = 0
+      while(c < nChannels) {
+        meanData(c + meanOffset) = 0
+        stdData(c + stdOffset) = 0.0001f
+      }
+    }
+
     if (scale != null) {
       val scaleData = scale.storage().array()
       val scaleOffset = scale.storageOffset() - 1
@@ -1230,7 +1239,8 @@ object SpatialBatchNormalization {
     saveMean: Tensor[Double], saveStd: Tensor[Double], runningMean: Tensor[Double],
     runningVar: Tensor[Double], scale: Tensor[Double], offset: Tensor[Double],
     eps: Double, momentum: Double,
-    batchVar: Tensor[Double] = null, saveVar: Tensor[Double] = null): Unit = {
+    batchVar: Tensor[Double] = null, saveVar: Tensor[Double] = null, needFix: Boolean = false)
+  : Unit = {
     require(input.isContiguous(), "BatchNorm NCHW require a contiguous input")
     val inputData = input.storage().array()
     val inputOffset = input.storageOffset() - 1
@@ -1322,6 +1332,14 @@ object SpatialBatchNormalization {
           runningVarData(c + runningVarOffset)
       }
       c += 1
+    }
+
+    if (needFix) {
+      c = 0
+      while(c < nChannels) {
+        meanData(c + meanOffset) = 0
+        stdData(c + stdOffset) = 0.0001
+      }
     }
 
     if (scale != null) {
