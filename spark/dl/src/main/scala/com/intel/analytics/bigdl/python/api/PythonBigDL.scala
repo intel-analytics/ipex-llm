@@ -2160,6 +2160,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       alignCorner)
   }
 
+  def createUpSampling3D(size: JList[Int]): UpSampling3D[T] = {
+    UpSampling3D(size.asScala.toArray)
   def createHighway(size: Int, withBias: Boolean, activation: String,
     wRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null): Graph[T] = {

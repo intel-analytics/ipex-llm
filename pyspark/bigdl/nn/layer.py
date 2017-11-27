@@ -4615,12 +4615,11 @@ class UpSampling3D(Layer):
     The input data is assumed to be of the form `minibatch x channels x depth x height x width`.
 
     :param size Repeats the depth, height, width dimensions of the data by
-    :param dataFormat `[batch, channels, depth, height, width]` (for 'th' dim_ordering)
     >>> upsample3d = UpSampling3D([1, 2, 3])
     creating: createUpSampling3D
     """
-    def __init__(self, size, dim_ordering="th", bigdl_type="float"):
-        super(UpSampling3D, self).__init__(None, bigdl_type, size, dim_ordering)
+    def __init__(self, size, bigdl_type="float"):
+        super(UpSampling3D, self).__init__(None, bigdl_type, size)
 
 def _test():
     import doctest

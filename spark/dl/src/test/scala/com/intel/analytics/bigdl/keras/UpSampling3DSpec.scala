@@ -40,7 +40,7 @@ class UpSampling3DSpec extends KerasBaseSpec {
         |output_tensor = UpSampling3D((2, 2, 2), dim_ordering = 'th')(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
-    val model = UpSampling3D[Float](Array(2, 2, 2), dimOrdering = "th")
+    val model = UpSampling3D[Float](Array(2, 2, 2))
     checkOutputAndGrad(model, kerasCode)
   }
 
@@ -52,12 +52,12 @@ class UpSampling3DSpec extends KerasBaseSpec {
         |output_tensor = UpSampling3D((2, 3, 4), dim_ordering = 'th')(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
-    val model = UpSampling3D[Float](Array(2, 3, 4), dimOrdering = "th")
+    val model = UpSampling3D[Float](Array(2, 3, 4))
     checkOutputAndGrad(model, kerasCode)
   }
 
   "updample3d serializer" should "work properly" in {
-    val module = UpSampling3D[Float](Array(2, 2, 2), dimOrdering = "th")
+    val module = UpSampling3D[Float](Array(2, 2, 2))
 
     val input = Tensor[Float](1, 2, 2, 2, 2).randn()
     val res1 = module.forward(input).clone()

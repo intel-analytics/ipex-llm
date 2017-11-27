@@ -1596,11 +1596,11 @@ output m is : [[[[[ 0.24059629  0.11875484 -0.07601731  0.18490529]
 
 **Scala:**
 ```scala
-val module = UpSampling3D(Array(2, 3, 4), dimOrdering = "th")
+val module = UpSampling3D(size = Array(2, 3, 4))
 ```
 **Python:**
 ```python
-m = UpSampling3D([2, 3, 4], dim_ordering='th')
+m = UpSampling3D(size = [2, 3, 4])
 ```
 
 Upsampling3D is a module that upsamples for 3D inputs.
@@ -1616,7 +1616,7 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.tensor.Storage
 
-val module = UpSampling3D(Array(2, 2, 2), dimOrdering = "th")
+val module = UpSampling3D(Array(2, 2, 2))
 val input = Tensor(1, 2, 2, 2, 2).randn()
 val output = module.forward(input)
 
@@ -1700,7 +1700,7 @@ import numpy as np
 input = np.random.rand(1,2,2,2,2)
 print "input is :",input
 
-m = UpSampling3D([2,2,2], dim_ordering='th')
+m = UpSampling3D([2,2,2])
 out = m.forward(input)
 print "output m is :",out
 ```

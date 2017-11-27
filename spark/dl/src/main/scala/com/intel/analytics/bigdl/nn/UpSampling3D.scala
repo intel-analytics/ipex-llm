@@ -30,18 +30,17 @@ import scala.reflect.ClassTag
  *
  * @param size Repeats the depth, height, width dimensions of the data by
  *             size[0], size[1] and size[2] respectively.
- * @param dimOrdering `[batch, channels, depth, height, width]` (for 'th' dim_ordering)
  * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
  */
 @SerialVersionUID(3462228835945094156L)
-class UpSampling3D[T: ClassTag](val size: Array[Int], val dimOrdering: String = "th")
+class UpSampling3D[T: ClassTag](val size: Array[Int])
   (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   require(size != null && size.length == 3, "the size should be 3 dims")
-  require(dimOrdering == "th", "currently only support th mode")
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim() == 5, "only supports 5d tensors")
+    require(input.isContiguous(), "input need to be contiguous")
 
     val inputDepth = input.size(3)
     val inputHeight = input.size(4)
@@ -228,7 +227,6 @@ class UpSampling3D[T: ClassTag](val size: Array[Int], val dimOrdering: String = 
 }
 
 object UpSampling3D {
-  def apply[@specialized(Float, Double) T: ClassTag]
-  (size: Array[Int], dimOrdering: String = "th")
-    (implicit ev: TensorNumeric[T]): UpSampling3D[T] = new UpSampling3D(size, dimOrdering)
+  def apply[@specialized(Float, Double) T: ClassTag](size: Array[Int])
+    (implicit ev: TensorNumeric[T]): UpSampling3D[T] = new UpSampling3D(size)
 }
