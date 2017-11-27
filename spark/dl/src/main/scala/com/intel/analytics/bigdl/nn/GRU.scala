@@ -44,6 +44,9 @@ import scala.reflect.ClassTag
  *           (http://www.stat.berkeley.edu/~tsmoon/files/Conference/asru2015.pdf)
  *           [A Theoretically Grounded Application of Dropout in Recurrent Neural Networks]
  *           (https://arxiv.org/pdf/1512.05287.pdf)
+ * @param activation: activation function, by default to be Tanh if not specified.
+ * @param innerActivation: activation function for inner cells,
+ *                       by default to be Sigmoid if not specified.
  * @param wRegularizer: instance of [[Regularizer]]
  *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
  * @param uRegularizer: instance [[Regularizer]]
@@ -56,6 +59,8 @@ class GRU[T : ClassTag] (
   val inputSize: Int,
   val outputSize: Int,
   val p: Double = 0,
+  var activation: TensorModule[T] = null,
+  var innerActivation: TensorModule[T] = null,
   var wRegularizer: Regularizer[T] = null,
   var uRegularizer: Regularizer[T] = null,
   var bRegularizer: Regularizer[T] = null)(implicit ev: TensorNumeric[T])
@@ -63,6 +68,9 @@ class GRU[T : ClassTag] (
     hiddensShape = Array(outputSize),
     regularizers = Array(wRegularizer, uRegularizer, bRegularizer)
   ) {
+
+  if (activation == null) activation = Tanh[T]()
+  if (innerActivation == null) innerActivation = Sigmoid[T]()
   var i2g: ModuleNode[T] = _
   var h2g: ModuleNode[T] = _
   val featDim = 2
@@ -106,10 +114,13 @@ class GRU[T : ClassTag] (
     val narrow1 = Narrow[T](featDim, 1, outputSize).inputs(cadd)
     val narrow2 = Narrow[T](featDim, 1 + outputSize, outputSize).inputs(cadd)
 
-    val sigmoid1 = Sigmoid().inputs(narrow1)
-    val sigmoid2 = Sigmoid().inputs(narrow2)
+    val innerActivation2 = innerActivation.cloneModule()
+    innerActivation2.setName(Integer.toHexString(java.util.UUID.randomUUID().hashCode()))
 
-    (sigmoid1, sigmoid2)
+    val inner1 = innerActivation.inputs(narrow1)
+    val inner2 = innerActivation2.inputs(narrow2)
+
+    (inner1, inner2)
   }
 
   def buildModel(): Graph[T] = {
@@ -133,7 +144,7 @@ class GRU[T : ClassTag] (
                wRegularizer = uRegularizer).inputs(drop2)
 
     val cadd2 = CAddTable(true).inputs(f2g, linear2)
-    val h_hat = Tanh().inputs(cadd2)
+    val h_hat = activation.inputs(cadd2)
 
     // h_t (1 - z) * h + z * h_hat
     val mulConst = MulConstant(-1).inputs(z)
@@ -173,9 +184,12 @@ object GRU {
     inputSize: Int = 4,
     outputSize: Int = 3,
     p: Double = 0,
+    activation: TensorModule[T] = null,
+    innerActivation: TensorModule[T] = null,
     wRegularizer: Regularizer[T] = null,
     uRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null)(implicit ev: TensorNumeric[T]): GRU[T] = {
-    new GRU[T](inputSize, outputSize, p, wRegularizer, uRegularizer, bRegularizer)
+    new GRU[T](inputSize, outputSize, p, activation, innerActivation,
+      wRegularizer, uRegularizer, bRegularizer)
   }
 }

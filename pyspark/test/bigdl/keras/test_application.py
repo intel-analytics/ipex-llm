@@ -150,8 +150,7 @@ class TestApplication(BigDLTestCase):
 
     @pytest.mark.skip(reason="need to fix todo before running the test")
     def test_music_tagger_crnn(self):
-        # TODO: Remove the first BatchNormalization layer in the model as we don't support `axis=3`
-        # TODO: Set `inner_activation` in GRU to be `sigmoid`
+        # TODO: For the first BatchNormalization layer in the model, we don't support `axis=3`
         keras.backend.set_image_dim_ordering("th")
         kmodel = MusicTaggerCRNN(include_top=False, weights=None)
         input_data = np.random.random([2, 1, 96, 1366])
