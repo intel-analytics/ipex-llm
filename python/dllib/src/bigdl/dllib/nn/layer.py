@@ -1750,6 +1750,49 @@ class Dropout(Layer):
                                       scale)
 
 
+class GaussianDropout(Layer):
+
+    '''
+    Apply multiplicative 1-centered Gaussian noise.
+    The multiplicative noise will have standard deviation `sqrt(rate / (1 - rate)).
+
+    As it is a regularization layer, it is only active at training time.
+
+    :param rate: drop probability (as with `Dropout`).
+
+
+    >>> GaussianDropout = GaussianDropout(0.5)
+    creating: createGaussianDropout
+    '''
+
+    def __init__(self,
+                 rate,
+                 bigdl_type="float"):
+        super(GaussianDropout, self).__init__(None, bigdl_type,
+                                              rate)
+
+
+class GaussianNoise(Layer):
+
+    '''
+    Apply additive zero-centered Gaussian noise.
+    This is useful to mitigate overfitting
+    (you could see it as a form of random data augmentation).
+    Gaussian Noise (GS) is a natural choice as corruption process for real valued inputs.
+
+    As it is a regularization layer, it is only active at training time.
+
+    :param stdev: standard deviation of the noise distribution
+
+    >>> GaussianNoise = GaussianNoise(0.5)
+    creating: createGaussianNoise
+    '''
+    def __init__(self,
+                 stddev,
+                 bigdl_type="float"):
+        super(GaussianNoise, self).__init__(None, bigdl_type,
+                                            stddev)
+
 class View(Layer):
 
     '''
