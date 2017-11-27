@@ -536,11 +536,40 @@ def _py2java(sc, obj):
         obj = sc._jvm.org.apache.spark.bigdl.api.python.BigDLSerDe.loads(data)
     return obj
 
+
 def create_tmp_path():
     tmp_file = tempfile.NamedTemporaryFile(prefix="bigdl")
     tmp_file.close()
     return tmp_file.name
 
+
+def get_activation_by_name(activation_name, activation_id=None):
+    """ Convert to a bigdl activation layer
+        given the name of the activation as a string  """
+    import bigdl.nn.layer as BLayer
+    activation = None
+    activation_name = activation_name.lower()
+    if activation_name == "tanh":
+        activation = BLayer.Tanh()
+    elif activation_name == "sigmoid":
+        activation = BLayer.Sigmoid()
+    elif activation_name == "hard_sigmoid":
+        activation = BLayer.HardSigmoid()
+    elif activation_name == "relu":
+        activation = BLayer.ReLU()
+    elif activation_name == "softmax":
+        activation = BLayer.SoftMax()
+    elif activation_name == "softplus":
+        activation = BLayer.SoftPlus(beta=1.0)
+    elif activation_name == "softsign":
+        activation = BLayer.SoftSign()
+    elif activation_name == "linear":
+        activation = BLayer.Identity()
+    else:
+        raise Exception("Unsupported activation type: %s" % activation_name)
+    if not activation_id:
+        activation.set_name(activation_id)
+    return activation
 
 def _test():
     import doctest
