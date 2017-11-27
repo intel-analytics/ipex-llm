@@ -200,6 +200,7 @@ class BigDLTestCase(TestCase):
                   keras_model,
                   random_weights=True,
                   dump_weights=False,
+                  weight_converter=None,
                   is_training=False,
                   rtol=1e-6,
                   atol=1e-6):
@@ -253,6 +254,22 @@ class BigDLTestCase(TestCase):
                                  rtol=rtol,
                                  atol=atol)
 
+        # compare gradient weights
+        keras_grad_weights = weight_converter(sess.run(K.gradients(keras_model.output * keras_output, keras_model.trainable_weights),
+                                              feed_dict=feed_dict))
+        bgrad_weights = bigdl_model.parameters()
+        bigdl_grad_weights = []
+        for layer in bgrad_weights.keys():
+            if 'gradWeight' in bgrad_weights[layer]:
+                bigdl_grad_weights.append(bigdl_grad_weights[layer]['gradWeight'])
+            if 'gradWeight' in bgrad_weights[layer]:
+                bigdl_grad_weights.append(bigdl_grad_weights[layer]['gradBias'])
+        for k in range(0, len(keras_grad_weights)):
+            self.assert_allclose(bigdl_grad_weights[k],
+                                 keras_grad_weights[k],
+                                 rtol=rtol,
+                                 atol=atol)
+
 
     def modelTestSingleLayerWithOrdersModes(self,
                                             input_data,
@@ -261,6 +278,7 @@ class BigDLTestCase(TestCase):
                                             border_modes=["valid", "same"],
                                             random_weights=True,
                                             dump_weights=False,
+                                            weight_converter=None,
                                             is_training=False,
                                             rtol=1e-6,
                                             atol=1e-6):
@@ -281,6 +299,7 @@ class BigDLTestCase(TestCase):
                                           output_layer,  # a keras layer
                                           random_weights,
                                           dump_weights,
+                                          weight_converter,
                                           is_training,
                                           rtol,
                                           atol)
@@ -290,6 +309,7 @@ class BigDLTestCase(TestCase):
                              output_layer,  # a keras layer
                              random_weights=True,
                              dump_weights=False,
+                             weight_converter=None,
                              is_training=False,
                              rtol=1e-6,
                              atol=1e-6,
@@ -301,6 +321,7 @@ class BigDLTestCase(TestCase):
                 functional_api=api,
                 random_weights=random_weights,
                 dump_weights=dump_weights,
+                weight_converter=weight_converter,
                 is_training=is_training,
                 rtol=rtol,
                 atol=atol)
@@ -311,6 +332,7 @@ class BigDLTestCase(TestCase):
                                  functional_api=True,
                                  random_weights=True,
                                  dump_weights=False,
+                                 weight_converter=None,
                                  is_training=False,
                                  rtol=1e-6,
                                  atol=1e-6):
@@ -321,6 +343,7 @@ class BigDLTestCase(TestCase):
                        keras_model,
                        random_weights=random_weights,
                        dump_weights=dump_weights,
+                       weight_converter=weight_converter,
                        is_training=is_training,
                        rtol=rtol,
                        atol=atol)

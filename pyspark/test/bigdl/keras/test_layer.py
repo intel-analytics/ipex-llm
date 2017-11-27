@@ -65,6 +65,7 @@ class TestLayer(BigDLTestCase):
         self.modelTestSingleLayer(input_data, layer)
 
     def test_dense(self):
+        # problem with weight regularizer
         input_data = np.random.random_sample([1, 10])
         layer = Dense(2, init='one', activation="relu",
                       input_shape=(10, ), W_regularizer=l1l2(l1=0.01, l2=0.02))
