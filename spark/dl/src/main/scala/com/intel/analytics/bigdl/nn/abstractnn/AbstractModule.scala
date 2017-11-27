@@ -467,25 +467,14 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @param overWrite if overwrite
    * @return self
    */
-  def saveModule(path : String, overWrite: Boolean = false) : this.type = {
+  def saveModule(path : String, overWrite: Boolean = false, moduleTag : ModuleTag = null)
+    : this.type = {
     this.clearState()
-    ModulePersister.saveToFile(path, this, overWrite)
-    this
-  }
-
-  /**
-   * Save this module with class tag to path with protobuf format
-   * @param path path to save module, local file system, HDFS and Amazon S3 is supported.
-   *             HDFS path should be like "hdfs://[host]:[port]/xxx"
-   *             Amazon S3 path should be like "s3a://bucket/xxx"
-   * @param moduleTag  module tag
-   * @param overWrite if overwrite
-   * @return self
-   */
-  def saveModuleWithTag(path : String, moduleTag : ModuleTag, overWrite
-    : Boolean = false) : this.type = {
-    this.clearState()
-    ModulePersister.saveToFileWithTag(path, this, moduleTag, overWrite)
+    if (moduleTag == null) {
+      ModulePersister.saveToFile(path, this, overWrite)
+    } else {
+      ModulePersister.saveToFileWithTag(path, this, moduleTag, overWrite)
+    }
     this
   }
 

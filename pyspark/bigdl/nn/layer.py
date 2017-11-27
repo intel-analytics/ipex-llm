@@ -411,14 +411,12 @@ class Layer(JavaValue):
     def save(self, path, over_write = False):
         callBigDlFunc(self.bigdl_type, "modelSave", self.value, path,
                       over_write)
-    def saveModel(self, path, over_write = False):
-        callBigDlFunc(self.bigdl_type, "saveBigDLModule", self.value, path,
-                      None, None, None, None, over_write)
-
-    def saveModelWithTag(self, path, modelTag, over_write = False):
-        callBigDlFunc(self.bigdl_type, "saveBigDLModule", self.value, path,
-                      modelTag.publisher, modelTag.name, modelTag.dataset,
-                      modelTag.version,over_write)
+    def saveModel(self, path, over_write = False, modelTag = None):
+        if modelTag is None:
+            callBigDlFunc(self.bigdl_type, "saveBigDLModule", self.value, path, over_write)
+        else:
+            callBigDlFunc(self.bigdl_type, "saveBigDLModule", self.value, path, over_write,
+                          modelTag.publisher, modelTag.name, modelTag.dataset,modelTag.version)
 
     def save_caffe(self, prototxt_path, model_path, use_v2 = True, overwrite = False):
         callBigDlFunc(self.bigdl_type, "saveCaffe", self.value, prototxt_path,

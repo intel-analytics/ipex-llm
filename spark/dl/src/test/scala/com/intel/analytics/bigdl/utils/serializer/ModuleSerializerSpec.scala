@@ -2059,13 +2059,12 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
   }
 
   "Module with tag" should "work properly" in {
-    val linear=  Linear(2 ,2)
-    val tag = ModuleTag("bigdl", "linear" ,"test", "0.1")
+    val linear = Linear(2, 2)
+    val tag = ModuleTag("bigdl", "linear", "test", "0.1")
     ModulePersister.saveToFileWithTag("/tmp/linearWithTag.bigdl", linear,
       tag, true)
     val loadedModel = ModuleLoader.loadWithTagFromFile("/tmp/linearWithTag.bigdl")
 
-    loadedModel.moduleTag should be (linear)
     loadedModel.moduleTag should be (tag)
   }
 
