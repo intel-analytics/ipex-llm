@@ -72,7 +72,7 @@ import org.tensorflow.framework.GraphDef
 class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
   private val outputs : Seq[ModuleNode[T]],
   private val variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None,
-  generateBackward: Boolean = true
+  private val generateBackward: Boolean = true
 )(implicit ev: TensorNumeric[T])
     extends Container[Activity, Activity, T]{
 
@@ -667,7 +667,11 @@ object Graph extends ContainerSerializable {
         .asInstanceOf[Array[Tensor[T]]]
       sharedVariables = Some(weightArray, biasArray)
     }
-    Graph[T](inputs.toArray, outputs.toArray, sharedVariables)
+
+    val generateBackward = DataConverter.getAttributeValue(context, attributes
+      .get("generateBackward")).asInstanceOf[Boolean]
+
+    Graph[T](inputs.toArray, outputs.toArray, sharedVariables, generateBackward)
   }
 
   override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
@@ -732,6 +736,11 @@ object Graph extends ContainerSerializable {
     DataConverter.setAttributeValue(context, outputNamesBuilder,
       outputsNames, universe.typeOf[Array[String]])
     graphBuilder.putAttr("outputNames", outputNamesBuilder.build)
+
+    val generateBackwardBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, generateBackwardBuilder,
+      graph.generateBackward, universe.typeOf[Boolean])
+    graphBuilder.putAttr("generateBackward", generateBackwardBuilder.build)
 
   }
 }
