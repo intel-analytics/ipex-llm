@@ -37,6 +37,8 @@ import scala.reflect.ClassTag
  * @param inputSize input size
  * @param hiddenSize hidden layer size
  * @param activation activation function f for non-linearity
+ * @param isInputWithBias boolean
+ * @param isHiddenWithBias boolean
  * @param wRegularizer: instance of [[Regularizer]]
  *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
  * @param uRegularizer: instance [[Regularizer]]
