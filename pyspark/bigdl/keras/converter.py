@@ -79,7 +79,7 @@ class WeightLoader:
     def __bigdl_name_to_Layers(model, with_weights=False):
         # NB: Container in BigDL is_with_weights() is true if one of the nested layer with_weights
         # but in Keras container get_weights() return false even if the nested layer with_weights
-        all_layers = model.layers + model.flattened_layers
+        all_layers = model.flattened_layers(include_container=True)
         if with_weights:
             layers = [l for l in all_layers if l.is_with_weights()]
         else:
