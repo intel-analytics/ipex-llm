@@ -24,16 +24,29 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
-class UpSampling1D[T: ClassTag] (size: Int)
+/**
+ * Upsampling layer for 1D inputs.
+ * Repeats each temporal step length times along the time axis.
+ *
+ * If input's size is (batch, steps, features),
+ * then the output's size is (batch, steps * length, features)
+ *
+ * @param length integer, upsampling factor.
+ * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
+ */
+class UpSampling1D[T: ClassTag] (length: Int)
   (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+  require(length > 0, "UpSampling1D's length should be bigger than 0," +
+    s"but got $length")
+
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim() == 3, "UpSampling1D only supports 3D input")
     require(input.isContiguous(), "input should be contiguous")
 
     val inputLength = input.size(3)
-    val outputLength = inputLength * size
+    val outputLength = inputLength * length
 
-    output.resize(input.size(1), input.size(2) * size, input.size(3))
+    output.resize(input.size(1), input.size(2) * length, input.size(3))
 
     val inputData = input.storage().array()
     val inputOffset = input.storageOffset() - 1
@@ -44,7 +57,7 @@ class UpSampling1D[T: ClassTag] (size: Int)
     var i = 0
     while (i < input.size(1) * input.size(2)) {
       var j = 0
-      while (j < size) {
+      while (j < length) {
         ev.arraycopy(inputData, inputOffset + i * inputLength,
           outputData, outputOffset + i * outputLength + inputLength * j, inputLength)
         j += 1
@@ -67,13 +80,13 @@ class UpSampling1D[T: ClassTag] (size: Int)
     val gradOutputOffset = gradOutput.storageOffset() - 1
 
     val gradInputLength = gradInput.size(3)
-    val gradOutputLength = gradInputLength * size
+    val gradOutputLength = gradInputLength * length
 
 
     var i = 0
     while (i < input.size(1) * input.size(2)) {
       var j = 0
-      while (j < size) {
+      while (j < length) {
         ev.axpy(gradInputLength, ev.one, gradOutputData,
           gradOutputOffset + i * gradOutputLength + gradInputLength * j, 1,
           gradInputData, gradInputOffset + i * gradInputLength, 1)
@@ -87,8 +100,8 @@ class UpSampling1D[T: ClassTag] (size: Int)
 }
 
 object UpSampling1D {
-  def apply[T: ClassTag](size: Int)
+  def apply[T: ClassTag](length: Int)
                         (implicit ev: TensorNumeric[T]): UpSampling1D[T] = {
-    new UpSampling1D(size)
+    new UpSampling1D(length)
   }
 }

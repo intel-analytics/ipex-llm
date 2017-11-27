@@ -22,8 +22,20 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
-class UpSampling2D[T: ClassTag] (size: Array[Int], format: DataFormat = DataFormat.NCHW)
+/**
+ * Upsampling layer for 2D inputs.
+ * Repeats the heights and widths of the data by size._1 and size._2 respectively.
+ *
+ * If input's dataformat is NCHW, then the size of output is (N, C, H * size._1, W * size._2)
+ *
+ * @param size tuple of 2 integers. The upsampling factors for heights and widths.
+ * @param format DataFormat, NCHW or NHWC
+ * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
+ */
+class UpSampling2D[T: ClassTag] (size: (Int, Int), format: DataFormat = DataFormat.NCHW)
   (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+  require(size._1 > 0 & size._2 > 0, "UpSampling2D's size should be bigger than 0," +
+    s"but got $size")
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim() == 4, "UpSampling2D only supports 4D input")
@@ -56,19 +68,26 @@ class UpSampling2D[T: ClassTag] (size: Array[Int], format: DataFormat = DataForm
 }
 
 object UpSampling2D {
-  def apply[T: ClassTag](size: Array[Int], format: DataFormat = DataFormat.NCHW)
+  def apply[T: ClassTag](size: (Int, Int), format: DataFormat = DataFormat.NCHW)
            (implicit ev: TensorNumeric[T]): UpSampling2D[T] = {
     new UpSampling2D(size, format)
+  }
+
+  def apply[T: ClassTag](size: Array[Int], format: DataFormat = DataFormat.NCHW)
+           (implicit ev: TensorNumeric[T]): UpSampling2D[T] = {
+    require(size.length == 2, s"UpSampling2D's size should be an array containing" +
+      s" 2 elements, but got $size")
+    new UpSampling2D((size(0), size(1)), format)
   }
 
   protected def updateOutputNchw[T: ClassTag](
         input: Tensor[T],
         output: Tensor[T],
-        size: Array[Int])(implicit ev: TensorNumeric[T]) : Tensor[T] = {
+        size: (Int, Int))(implicit ev: TensorNumeric[T]) : Tensor[T] = {
     val inputHeight = input.size(3)
     val inputWeight = input.size(4)
-    val outputHeight = inputHeight * size(0)
-    val outputWeight = inputWeight * size(1)
+    val outputHeight = inputHeight * size._1
+    val outputWeight = inputWeight * size._2
     output.resize(input.size(1), input.size(2), outputHeight, outputWeight)
 
 
@@ -86,7 +105,7 @@ object UpSampling2D {
         // copy column
         while (columnIndex < input.size(4)) {
           var colReplicate = 0
-          while (colReplicate < size(1)) {
+          while (colReplicate < size._2) {
             outputData(outputOffset) = inputData(inputOffset)
             outputOffset += 1
             colReplicate += 1
@@ -97,12 +116,12 @@ object UpSampling2D {
 
         // copy row
         var rowReplicate = 1
-        while (rowReplicate < size(0)) {
+        while (rowReplicate < size._1) {
           ev.arraycopy(outputData, outputOffset - outputWeight,
             outputData, outputOffset + (rowReplicate - 1) * outputWeight, outputWeight)
           rowReplicate += 1
         }
-        outputOffset += outputWeight * (size(0) - 1)
+        outputOffset += outputWeight * (size._1 - 1)
 
         rowIndex += 1
       }
@@ -117,11 +136,11 @@ object UpSampling2D {
   protected def updateOutputNhwc[T: ClassTag](
         input: Tensor[T],
         output: Tensor[T],
-        size: Array[Int])(implicit ev: TensorNumeric[T]) : Tensor[T] = {
+        size: (Int, Int))(implicit ev: TensorNumeric[T]) : Tensor[T] = {
     val inputHeight = input.size(2)
     val inputWeight = input.size(3)
-    val outputHeight = inputHeight * size(0)
-    val outputWeight = inputWeight * size(1)
+    val outputHeight = inputHeight * size._1
+    val outputWeight = inputWeight * size._2
     output.resize(input.size(1), outputHeight, outputWeight, input.size(4))
 
     val channel = input.size(4)
@@ -141,24 +160,24 @@ object UpSampling2D {
         // copy column
         while (columnIndex < input.size(3)) {
           var colReplicate = 0
-          while (colReplicate < size(1)) {
+          while (colReplicate < size._2) {
             ev.arraycopy(inputData, inputOffset,
               outputData, outputOffset + colReplicate * channel, channel)
             colReplicate += 1
           }
-          outputOffset += channel * size(1)
+          outputOffset += channel * size._2
           inputOffset += channel
           columnIndex += 1
         }
 
         // copy row
         var rowReplicate = 1
-        while (rowReplicate < size(0)) {
+        while (rowReplicate < size._1) {
           ev.arraycopy(outputData, outputOffset - owc, outputData,
             outputOffset + (rowReplicate - 1) * owc, owc)
           rowReplicate += 1
         }
-        outputOffset += owc * (size(0) - 1)
+        outputOffset += owc * (size._1 - 1)
 
         rowIndex += 1
       }
@@ -171,7 +190,7 @@ object UpSampling2D {
   protected def updateGradInputNhwc[T: ClassTag](
         gradInput: Tensor[T],
         gradOutput: Tensor[T],
-        size: Array[Int])(implicit ev: TensorNumeric[T]) : Tensor[T] = {
+        size: (Int, Int))(implicit ev: TensorNumeric[T]) : Tensor[T] = {
     val gradInputData = gradInput.storage().array()
     var gradInputOffset = gradInput.storageOffset() - 1
 
@@ -191,9 +210,9 @@ object UpSampling2D {
         var colIndex = 0
         while (colIndex < gradInput.size(3)) {
           var rowReplicate = 0
-          while (rowReplicate < size(0)) {
+          while (rowReplicate < size._1) {
             var colReplicate = 0
-            while (colReplicate < size(1)) {
+            while (colReplicate < size._2) {
               ev.axpy(channel, ev.one, gradOutputData,
                 gradOutputOffset + channel * colReplicate + rowReplicate * ocw, 1,
                 gradInputData, gradInputOffset, 1)
@@ -202,10 +221,10 @@ object UpSampling2D {
             rowReplicate += 1
           }
           gradInputOffset += channel
-          gradOutputOffset += size(1) * channel
+          gradOutputOffset += size._2 * channel
           colIndex += 1
         }
-        gradOutputOffset += (size(0) - 1) * ocw
+        gradOutputOffset += (size._1 - 1) * ocw
         rowIndex += 1
       }
 
@@ -218,7 +237,7 @@ object UpSampling2D {
   protected def updateGradInputNchw[T: ClassTag](
         gradInput: Tensor[T],
         gradOutput: Tensor[T],
-        size: Array[Int])(implicit ev: TensorNumeric[T]) : Tensor[T] = {
+        size: (Int, Int))(implicit ev: TensorNumeric[T]) : Tensor[T] = {
 
     val gradInputData = gradInput.storage().array()
     var gradInputOffset = gradInput.storageOffset() - 1
@@ -232,11 +251,11 @@ object UpSampling2D {
     var i = 0
     while (i < gradInput.size(1) * gradInput.size(2) * gradInput.size(3)) {
       var row = 0
-      while (row < size(0)) {
+      while (row < size._1) {
         var col = 0
-        while (col < size(1)) {
+        while (col < size._2) {
           ev.axpy(gradInputWidth, ev.one, gradOutputData,
-            gradOutputOffset + col, size(1),
+            gradOutputOffset + col, size._2,
             gradInputData, gradInputOffset, 1)
           col += 1
         }
