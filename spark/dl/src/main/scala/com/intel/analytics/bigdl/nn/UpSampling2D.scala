@@ -32,7 +32,7 @@ import scala.reflect.ClassTag
  * @param format DataFormat, NCHW or NHWC
  * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
  */
-class UpSampling2D[T: ClassTag] (size: Array[Int], format: DataFormat = DataFormat.NCHW)
+class UpSampling2D[T: ClassTag] (val size: Array[Int], val format: DataFormat = DataFormat.NCHW)
   (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   require(size.length == 2, s"UpSampling2D's size should be an array containing" +
     s" 2 elements, but got $size")

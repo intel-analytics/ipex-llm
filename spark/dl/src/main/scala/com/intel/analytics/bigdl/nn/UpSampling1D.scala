@@ -34,7 +34,7 @@ import scala.reflect.ClassTag
  * @param length integer, upsampling factor.
  * @tparam T The numeric type in this module, usually which are [[Float]] or [[Double]]
  */
-class UpSampling1D[T: ClassTag] (length: Int)
+class UpSampling1D[T: ClassTag] (val length: Int)
   (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   require(length > 0, "UpSampling1D's length should be bigger than 0," +
     s"but got $length")
