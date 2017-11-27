@@ -16,7 +16,6 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
@@ -237,5 +236,6 @@ class BatchNormalizationSpec extends FlatSpec with Matchers {
 
     bn2.gradWeight should be(bn1.gradWeight.mul(0.5))
     bn2.gradBias should be(bn1.gradBias.mul(2))
+
   }
 }

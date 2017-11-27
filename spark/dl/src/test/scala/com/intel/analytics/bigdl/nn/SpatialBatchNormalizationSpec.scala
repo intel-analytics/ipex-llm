@@ -94,8 +94,8 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
     val outputNCHW = bnNCHW.forward(inputNCHW)
     val outputNHWC = bnNHWC.forward(inputNHWC)
 
-    bnNCHW.accGradParameters(inputNCHW, gradientNCHW)
-    bnNHWC.accGradParameters(inputNHWC, gradientNHWC)
+    bnNCHW.backward(inputNCHW, gradientNCHW)
+    bnNHWC.backward(inputNHWC, gradientNHWC)
 
     bnNCHW.gradWeight.almostEqual(bnNHWC.gradWeight, 1e-5)
     bnNCHW.gradBias.almostEqual(bnNHWC.gradBias, 1e-5)

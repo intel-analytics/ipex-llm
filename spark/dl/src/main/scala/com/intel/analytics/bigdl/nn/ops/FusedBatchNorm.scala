@@ -45,7 +45,6 @@ class FusedBatchNorm[T: ClassTag](
     val offset = input[Tensor[Float]](3)
     val mean = input[Tensor[Float]](4)
     val variance = input[Tensor[Float]](5)
-    variance.sqrt().inv()
 
     if (output.length() == 0) {
       output(1) = Tensor[Float]().resizeAs(x) // y
@@ -80,11 +79,11 @@ class FusedBatchNorm[T: ClassTag](
     } else {
       if (dataFormat == DataFormat.NHWC) {
         SpatialBatchNormalization.updateOutputNHWCInferFloat(
-          x, y, mean, variance, scale, offset
+          x, y, mean, variance, scale, offset, epsilon
         )
       } else {
         SpatialBatchNormalization.updateOutputNCHWInferFloat(
-          x, y, mean, variance, scale, offset
+          x, y, mean, variance, scale, offset, epsilon
         )
       }
     }

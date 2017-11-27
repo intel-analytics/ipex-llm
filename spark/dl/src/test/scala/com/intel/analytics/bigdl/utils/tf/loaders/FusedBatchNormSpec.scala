@@ -138,7 +138,7 @@ class FusedBatchNormSpec extends TensorflowSpecHelper {
         .putAttr("is_training", booleanAttr(false))
         .setOp("FusedBatchNorm"),
       Seq(x, scale, offset, mean, variance),
-      0, 1e-4
+      0
     )
   }
 }
