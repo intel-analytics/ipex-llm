@@ -5,7 +5,7 @@ import bigdl.nn.layer as BLayer
 from bigdl.optim.optimizer import L1L2Regularizer as BRegularizer
 import bigdl.optim.optimizer as boptimizer
 import bigdl.nn.criterion as bcriterion
-import bigdl.util.common as bcommon
+from bigdl.util.common import get_activation_by_name
 import keras.optimizers as koptimizers
 from keras.models import model_from_json
 from keras.models import Sequential, Model, Layer
@@ -445,7 +445,7 @@ class LayerConverter:
 
     def create_activation(self, klayer, kclayer):
         config = kclayer["config"]
-        return self.to_bigdl_activation(config["activation"], klayer.name)
+        return get_activation_by_name(config["activation"], klayer.name)
 
     def create_dropout(self, klayer, kclayer):
         return BLayer.Dropout(klayer.p)
@@ -726,7 +726,7 @@ class LayerConverter:
         input_shape = klayer.get_input_shape_at(0)
         config = kclayer["config"]
         self.check_constraint_in_config(config)
-        activation = self.to_bigdl_activation(config["activation"],
+        activation = get_activation_by_name(config["activation"],
                                               "%s_%s" % (config["name"], config["activation"]))
         rnn = BLayer.RnnCell(input_size=int(input_shape[2]),
                              hidden_size=klayer.output_dim,
@@ -743,17 +743,15 @@ class LayerConverter:
         input_shape = klayer.get_input_shape_at(0)
         config = kclayer["config"]
         self.check_constraint_in_config(config)
-        activation = self.to_bigdl_activation(config["activation"],
+        activation = get_activation_by_name(config["activation"],
                                               "%s_%s" % (config["name"], config["activation"]))
-        if not isinstance(activation, BLayer.Tanh):
-            raise Exception("For activation, only tanh is supported for now.")
-        inner_activation = self.to_bigdl_activation(config["inner_activation"],
+        inner_activation = get_activation_by_name(config["inner_activation"],
                                               "%s_%s" % (config["name"], config["inner_activation"]))
-        if not isinstance(inner_activation, BLayer.Sigmoid):
-            raise Exception("For inner_activation, only sigmond is supported for now.")
         lstm = BLayer.LSTM(input_size=int(input_shape[2]),
                            hidden_size=klayer.output_dim,
                            p=0.0,
+                           activation=activation,
+                           inner_activation=inner_activation,
                            wRegularizer=self.to_bigdl_reg(config["W_regularizer"]),
                            uRegularizer=self.to_bigdl_reg(config["U_regularizer"]),
                            bRegularizer=self.to_bigdl_reg(config["b_regularizer"]),
@@ -765,14 +763,10 @@ class LayerConverter:
         input_shape = klayer.get_input_shape_at(0)
         config = kclayer["config"]
         self.check_constraint_in_config(config)
-        activation = self.to_bigdl_activation(config["activation"],
+        activation = get_activation_by_name(config["activation"],
                                               "%s_%s" % (config["name"], config["activation"]))
-        if not isinstance(activation, BLayer.Tanh):
-            raise Exception("For activation, only tanh is supported for now.")
-        inner_activation = self.to_bigdl_activation(config["inner_activation"],
+        inner_activation = get_activation_by_name(config["inner_activation"],
                                                     "%s_%s" % (config["name"], config["inner_activation"]))
-        if not isinstance(inner_activation, BLayer.Sigmoid):
-            raise Exception("For inner_activation, only sigmond is supported for now.")
 
         #TODO: border_mode = 'valid'
         if config["border_mode"] != 'same':
@@ -791,6 +785,8 @@ class LayerConverter:
                                          # NB: ConvLSTM doesn't serialize subsample to json file
                                          stride=klayer.subsample[0],
                                          padding=-1,
+                                         activation=activation,
+                                         inner_activation=inner_activation,
                                          # NB: ConvLSTM doesn't serialize regularizers to json file
                                          # wRegularizer=self.to_bigdl_reg(config["W_regularizer"]),
                                          # uRegularizer=self.to_bigdl_reg(config["U_regularizer"]),
@@ -805,17 +801,15 @@ class LayerConverter:
         input_shape = klayer.get_input_shape_at(0)
         config = kclayer["config"]
         self.check_constraint_in_config(config)
-        activation = self.to_bigdl_activation(config["activation"],
+        activation = get_activation_by_name(config["activation"],
                                               "%s_%s" % (config["name"], config["activation"]))
-        if not isinstance(activation, BLayer.Tanh):
-            raise Exception("For activation, only `tanh` is supported for now.")
-        inner_activation = self.to_bigdl_activation(config["inner_activation"],
+        inner_activation = get_activation_by_name(config["inner_activation"],
                                                     "%s_%s" % (config["name"], config["inner_activation"]))
-        if not isinstance(inner_activation, BLayer.Sigmoid):
-            raise Exception("For inner_activation, only `sigmond` is supported for now.")
         gru = BLayer.GRU(input_size=int(input_shape[2]),
                          hidden_size=klayer.output_dim,
                          p=0.0,
+                         activation=activation,
+                         inner_activation=inner_activation,
                          wRegularizer=self.to_bigdl_reg(config["W_regularizer"]),
                          uRegularizer=self.to_bigdl_reg(config["U_regularizer"]),
                          bRegularizer=self.to_bigdl_reg(config["b_regularizer"]),
@@ -1391,36 +1385,13 @@ class LayerConverter:
         if hasattr(blayer, "set_init_method"):
             blayer.set_init_method(self.to_bigdl_init(config["init"]),
                                    BInit.Zeros())  # Keras always set this to be zeros
-        # "linear" meaning do nothing
+        # "linear" means doing nothing
         if config["activation"] != "linear":
-            activation = self.to_bigdl_activation(config["activation"],
+            activation = get_activation_by_name(config["activation"],
                                                   "%s_%s" % (config["name"], config["activation"]))
             return self.fuse(blayer, activation)
         else:
             return blayer
-
-    def to_bigdl_activation(self, activation_name, activation_id):
-        activation = None
-        if activation_name == "tanh":
-            activation = BLayer.Tanh()
-        elif activation_name == "sigmoid":
-            activation = BLayer.Sigmoid()
-        elif activation_name == "hard_sigmoid":
-            activation = BLayer.HardSigmoid()
-        elif activation_name == "relu":
-            activation = BLayer.ReLU()
-        elif activation_name == "softmax":
-            activation = BLayer.SoftMax()
-        elif activation_name == "softplus":
-            activation = BLayer.SoftPlus(beta=1.0)
-        elif activation_name == "softsign":
-            activation = BLayer.SoftSign()
-        elif activation_name == "linear":
-            activation = BLayer.Identity()
-        else:
-            raise Exception("Unsupported activation type: %s" % activation_name)
-        activation.set_name(activation_id)
-        return activation
 
     def get_value_from_init(self, kinit_method, shape):
         if kinit_method == "zero":
