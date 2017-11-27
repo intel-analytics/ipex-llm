@@ -229,6 +229,31 @@ class BigDLTestCase(TestCase):
                              rtol=rtol,
                              atol=atol)
 
+        # compare gradient input
+        sess = K.get_session()
+        feed_dict = {K.learning_phase(): 1}
+        if isinstance(input_data, list):
+            for i in range(0, len(input_data)):
+                feed_dict[keras_model.input[i]] = input_data[i]
+        else:
+            feed_dict[keras_model.input] = input_data
+        keras_grad_input = sess.run(K.gradients(keras_model.output * keras_output, keras_model.input),
+                                    feed_dict=feed_dict)
+        bigdl_model.training(is_training=True)
+        bigdl_grad_input = bigdl_model.backward(input_data, bigdl_output2)
+        if isinstance(keras_grad_input, list) and isinstance(bigdl_grad_input, list):  # for merge layers
+            for j in range(0, len(keras_grad_input)):
+                self.assert_allclose(bigdl_grad_input[j],
+                                     keras_grad_input[j],
+                                     rtol=rtol,
+                                     atol=atol)
+        else:  # for other layers, keras return a singleton list of ndarray while bigdl returns an ndarray
+            self.assert_allclose(bigdl_grad_input,
+                                 keras_grad_input[0],
+                                 rtol=rtol,
+                                 atol=atol)
+
+
     def modelTestSingleLayerWithOrdersModes(self,
                                             input_data,
                                             output_layer_creator,  # a keras layer

@@ -29,6 +29,41 @@ from test.bigdl.test_utils import BigDLTestCase
 
 class TestLayer(BigDLTestCase):
 
+    def test_relu(self):
+        input_data = np.random.random_sample([2, 3, 5])
+        layer = Activation('relu')
+        self.modelTestSingleLayer(input_data, layer)
+
+    def test_tanh(self):
+        input_data = np.random.random_sample([2, 3, 5])
+        layer = Activation('tanh')
+        self.modelTestSingleLayer(input_data, layer)
+
+    def test_sigmoid(self):
+        input_data = np.random.random_sample([2, 3, 5])
+        layer = Activation('sigmoid')
+        self.modelTestSingleLayer(input_data, layer)
+
+    def test_hard_sigmoid(self):
+        input_data = np.random.random_sample([2, 3, 5])
+        layer = Activation('hard_sigmoid')
+        self.modelTestSingleLayer(input_data, layer)
+
+    def test_softmax(self):
+        input_data = np.random.random_sample([5, 6])
+        layer = Activation('softmax')
+        self.modelTestSingleLayer(input_data, layer)
+
+    def test_softplus(self):
+        input_data = np.random.random_sample([2, 3, 5])
+        layer = Activation('softplus')
+        self.modelTestSingleLayer(input_data, layer)
+
+    def test_softsign(self):
+        input_data = np.random.random_sample([2, 3, 5])
+        layer = Activation('softsign')
+        self.modelTestSingleLayer(input_data, layer)
+
     def test_dense(self):
         input_data = np.random.random_sample([1, 10])
         layer = Dense(2, init='one', activation="relu",
@@ -135,7 +170,7 @@ class TestLayer(BigDLTestCase):
         layer = AtrousConvolution2D(64, 3, 4, atrous_rate=(2, 2), dim_ordering="th",
                                     border_mode="valid", activation='tanh',
                                     input_shape=(3, 128, 128))
-        self.modelTestSingleLayer(input_data, layer, dump_weights=True)
+        self.modelTestSingleLayer(input_data, layer, dump_weights=True, rtol=1e-4, atol=1e-4)
 
     def test_deconvolution2d(self):
         input_data = np.random.random_sample([32, 3, 12, 12])
@@ -150,7 +185,7 @@ class TestLayer(BigDLTestCase):
 
     def test_maxpooling3d(self):
         input_data = np.random.random_sample([1, 3, 20, 15, 35])
-        layer = MaxPooling3D(pool_size=(2, 2, 4), strides=(3, 1, 5), dim_ordering="th",
+        layer = MaxPooling3D(pool_size=(2, 2, 3), strides=(1, 2, 3), dim_ordering="th",
                              border_mode="valid", input_shape=(3, 20, 15, 35))
         self.modelTestSingleLayer(input_data, layer)
 
@@ -191,16 +226,16 @@ class TestLayer(BigDLTestCase):
 
     def test_averagepooling3d(self):
         input_data = np.random.random_sample([2, 6, 20, 15, 35])
-        layer = AveragePooling3D(pool_size=(2, 3, 4), strides=(3, 1, 5), dim_ordering="th",
+        layer = AveragePooling3D(pool_size=(2, 3, 4), strides=(1, 2, 3), dim_ordering="th",
                                  border_mode="valid", input_shape=(3, 20, 15, 35))
         self.modelTestSingleLayer(input_data, layer)
 
     def test_averagepooling2d(self):
         input_data = np.random.random_sample([1, 3, 20, 20])
-        layer = lambda: AveragePooling2D(pool_size=[2, 3], strides=[4, 2],
+        layer = lambda: AveragePooling2D(pool_size=[2, 3], strides=[1, 2],
                                          border_mode="valid", input_shape=(3, 20, 20))
         self.modelTestSingleLayerWithOrdersModes(input_data, layer)
-        layer2 = lambda: AveragePooling2D(pool_size=[1, 1], strides=[2, 2],
+        layer2 = lambda: AveragePooling2D(pool_size=[3, 3], strides=[2, 2],
                                           border_mode="valid", input_shape=(3, 20, 20))
         self.modelTestSingleLayerWithOrdersModes(input_data, layer2)
 
