@@ -2354,7 +2354,7 @@ class UpSampling1D(Layer):
     then the output's size is (batch, steps * length, features)
 
     :param length integer, upsampling factor.
-    >>> upsampled1d = UpSampling2D(2)
+    >>> upsampled1d = UpSampling1D(2)
     creating: createUpSampling1D
     """
     def __init__(self, length, bigdl_type="float"):
