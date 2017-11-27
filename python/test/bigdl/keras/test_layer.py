@@ -514,22 +514,28 @@ class TestLayer(BigDLTestCase):
 
     def test_lstm(self):
         input_data = np.random.random([3, 4, 5])
-        layer = LSTM(5, input_shape=(4, 5), return_sequences=True, inner_activation='sigmoid')
+        layer = LSTM(5, input_shape=(4, 5), return_sequences=True)
         self.modelTestSingleLayer(input_data, layer, dump_weights=True)
-        layer2 = LSTM(3, input_shape=(4, 5), return_sequences=False, inner_activation='sigmoid')
+        layer2 = LSTM(3, input_shape=(4, 5), return_sequences=False,
+                      activation='relu', inner_activation='sigmoid')
         self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
 
     def test_convlstm2d(self):
         input_data = np.random.random_sample([4, 8, 40, 40, 32])
-        layer = ConvLSTM2D(32, 4, 4, input_shape=(8, 40, 40, 32), return_sequences=True,
-                           inner_activation='sigmoid', border_mode='same')
+        layer = ConvLSTM2D(32, 4, 4, input_shape=(8, 40, 40, 32),
+                           return_sequences=True, border_mode='same')
         self.modelTestSingleLayer(input_data, layer, dump_weights=True, random_weights=True)
+        layer2 = ConvLSTM2D(32, 4, 4, input_shape=(8, 40, 40, 32), return_sequences=True,
+                            activation='relu', inner_activation='sigmoid', border_mode='same')
+        self.modelTestSingleLayer(input_data, layer2, dump_weights=True,
+                                  random_weights=True, rtol=1e-5, atol=1e-5)
 
     def test_gru(self):
         input_data = np.random.random([3, 4, 5])
-        layer = GRU(4, input_shape=(4, 5), return_sequences=True, inner_activation='sigmoid')
+        layer = GRU(4, input_shape=(4, 5), return_sequences=True)
         self.modelTestSingleLayer(input_data, layer, dump_weights=True)
-        layer2 = GRU(8, input_shape=(4, 5), return_sequences=False, inner_activation='sigmoid')
+        layer2 = GRU(8, input_shape=(4, 5), return_sequences=False,
+                     activation='relu', inner_activation='sigmoid')
         self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
 
     # TODO: Support share weights training.
@@ -551,6 +557,7 @@ class TestLayer(BigDLTestCase):
             def_path, w_path = self._dump_keras(model2)
             bigdl_model = DefinitionLoader.from_json_path(def_path)
         assert str(excinfo.value) == """Convolution2D doesn't support multiple inputs with shared weights"""  # noqa
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
