@@ -42,6 +42,18 @@ object ModuleLoader {
    */
   def loadFromFile[T: ClassTag](modelPath : String)
     (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
+    loadWithTagFromFile(modelPath).module
+  }
+
+  /**
+   * load module with module tag from `modelPath`
+   * @param modelPath  path where protobuf formatted module is stored
+   * @param ev numeric ops
+   * @tparam T data type
+   * @return loaded BigDL module
+    */
+  def loadWithTagFromFile[T: ClassTag](modelPath : String)
+    (implicit ev: TensorNumeric[T]) : ModuleWithTag[T] = {
     val modelBuilder = BigDLModule.newBuilder
     val inputBytes = File.readBytes(modelPath)
     var cis : CodedInputStream = CodedInputStream.newInstance(new ByteArrayInputStream(inputBytes))
@@ -51,8 +63,16 @@ object ModuleLoader {
     val storages = new mutable.HashMap[Int, Any]()
     val deserializationContext = DeserializeContext(bigDLModel, storages, ProtoStorageType)
     initTensorStorage(deserializationContext)
-    ModuleSerializer.load(DeserializeContext(bigDLModel, storages, ProtoStorageType)).module
+    var moduleTag : ModuleTag = null
+    if (modelBuilder.hasTag) {
+      val tag = modelBuilder.getTag
+      moduleTag = ModuleTag(tag.getPublisher,
+      tag.getName, tag.getDataSet, tag.getVersion)
+    }
+    ModuleWithTag(ModuleSerializer.load(DeserializeContext(bigDLModel,
+      storages, ProtoStorageType)).module, moduleTag)
   }
+
 
   private def initTensorStorage[T: ClassTag](context: DeserializeContext)
                                             (implicit ev: TensorNumeric[T]): Unit = {
@@ -168,12 +188,33 @@ object ModulePersister {
   def saveToFile[T: ClassTag](modelPath: String, module: AbstractModule[Activity, Activity, T],
                               overwrite: Boolean = false)
                              (implicit ev: TensorNumeric[T]): Unit = {
+    saveToFileWithTag(modelPath, module, null, overwrite)
+  }
+  /**
+   * Persist module to specified path
+   * @param modelPath path to persist module to
+   * @param module  module to be persisted
+   * @param moduleTag model tag
+   * @param overwrite if overwrite module file if exists
+   * @param ev  numeric ops
+   * @tparam T data type
+   */
+  def saveToFileWithTag[T: ClassTag](modelPath: String,
+    module: AbstractModule[Activity, Activity, T],
+    moduleTag : ModuleTag, overwrite: Boolean = false)
+    (implicit ev: TensorNumeric[T]): Unit = {
     val bigDLModule = ModuleData(module
       , new ArrayBuffer[String](), new ArrayBuffer[String]())
     val storages = new mutable.HashMap[Int, Any]()
     val context = SerializeContext(bigDLModule, storages, ProtoStorageType)
     val serializeResult = ModuleSerializer.serialize(context)
     setTensorStorage(serializeResult.bigDLModule, serializeResult.storages)
+    if (moduleTag != null) {
+      val attriBulder = AttrValue.newBuilder
+      DataConverter.setAttributeValue(context,
+        attriBulder, moduleTag, scala.reflect.runtime.universe.typeOf[ModuleTag])
+      serializeResult.bigDLModule.setTag(attriBulder.getTagValue)
+    }
     File.saveBytes(serializeResult.bigDLModule.build.toByteArray, modelPath, overwrite)
   }
 

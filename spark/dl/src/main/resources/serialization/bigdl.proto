@@ -15,6 +15,7 @@ message BigDLModule
     bool train = 10; // is module status in train
     string namePostfix = 11; // name post fix
     int32 id = 12; // unique ID of this module , used for shared modules
+    ModuleTag tag = 13;
 }
 enum VarFormat {
     EMPTY_FORMAT = 0;
@@ -108,6 +109,7 @@ enum DataType {
     ARRAY_VALUE = 15;
     DATA_FORMAT = 16;
     CUSTOM = 17;
+    MODULE_TAG = 18;
 }
 
 message AttrValue {
@@ -147,9 +149,17 @@ message AttrValue {
         ArrayValue arrayValue = 15; //array value of any type
         InputDataFormat dataFormatValue = 16; // data format
         google.protobuf.Any customValue = 17; // custom value
+        ModuleTag tagValue = 18; // model tag value
     }
 }
 message NameAttrList {
     string name = 1;
     map<string, AttrValue> attr = 2;
+}
+
+message ModuleTag {
+    string publisher = 1;
+    string name = 2;
+    string dataSet = 3;
+    string version = 4;
 }

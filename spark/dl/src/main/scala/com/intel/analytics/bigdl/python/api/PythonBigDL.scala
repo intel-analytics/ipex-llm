@@ -36,6 +36,7 @@ import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn.tf.{Const, Fill, Shape, SplitAndSelect}
+import com.intel.analytics.bigdl.utils.serializer.ModuleTag
 import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowSaver}
 import com.intel.analytics.bigdl.utils.tf.TensorflowLoader.{buildBigDLModel, buildTFGraph, parse}
 import com.intel.analytics.bigdl.utils.tf._
@@ -1604,6 +1605,12 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Module.loadModule[T](path)
   }
 
+  def loadBigDLModuleWithTag(path: String): Array[_] = {
+    val moduleWithTag = Module.loadModuleWithTag[T](path)
+    val tag = moduleWithTag.moduleTag
+    Array(moduleWithTag.module, tag.publisher, tag.name, tag.dataSet, tag.version)
+  }
+
   def loadTorch(path: String): AbstractModule[Activity, Activity, T] = {
     Module.loadTorch[T](path)
   }
@@ -1720,8 +1727,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def saveBigDLModule(module: AbstractModule[Activity, Activity, T],
-    path: String, overWrite: Boolean): Unit = {
-    module.saveModule(path, overWrite)
+    path: String = null, overWrite: Boolean, publisher: String = null,
+    name : String = null, dataset : String = null, version : String = null): Unit = {
+    if (publisher != null && name != null && dataset != null && version != null) {
+      module.saveModule(path, overWrite, ModuleTag(publisher, name, dataset, version))
+    } else {
+      module.saveModule(path, overWrite)
+    }
   }
 
   def saveCaffe(module: AbstractModule[Activity, Activity, T],
