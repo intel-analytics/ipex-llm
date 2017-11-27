@@ -128,7 +128,7 @@ class SpatialSeperableConvolution[T: ClassTag](
     gradInput
   }
 
-  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
     require(input.nDimension() == 4, "SpatialSeperableConvolution only accept 4D input")
     require(input.isContiguous(), "SpatialSeperableConvolution require contiguous input")
     require(nInputChannel == input.size(channelDim),
