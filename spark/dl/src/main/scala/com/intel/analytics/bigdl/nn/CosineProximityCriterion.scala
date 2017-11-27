@@ -28,6 +28,8 @@ import scala.reflect.ClassTag
  * x'(i) = x(i) / sqrt(max(sum(x(i)^2), 1e-12))
  * y'(i) = y(i) / sqrt(max(sum(x(i)^2), 1e-12))
  * cosine_proximity(x, y) = mean(-1 * x'(i) * y'(i))
+ *
+ * Both batch and un-batched inputs are supported
  */
 class CosineProximityCriterion[@specialized(Float, Double) T: ClassTag]
 (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
