@@ -582,9 +582,9 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     tensor2.resizeAs(tensor1).copy(tensor1)
     val res1 = gd.forward(tensor1)
 
-    ModulePersister.saveToFile("/tmp/dropout.bigdl", gd, true)
+    ModulePersister.saveToFile("/tmp/gaussianDropout.bigdl", gd, true)
     RNG.setSeed(100)
-    val loadedGd = ModuleLoader.loadFromFile("/tmp/dropout.bigdl")
+    val loadedGd = ModuleLoader.loadFromFile("/tmp/gaussianDropout.bigdl")
     val res2 = loadedGd.forward(tensor2)
     res1 should be (res2)
   }
@@ -598,9 +598,9 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     tensor2.resizeAs(tensor1).copy(tensor1)
     val res1 = gn.forward(tensor1)
 
-    ModulePersister.saveToFile("/tmp/dropout.bigdl", gn, true)
+    ModulePersister.saveToFile("/tmp/gaussianNoise.bigdl", gn, true)
     RNG.setSeed(100)
-    val loadedGn = ModuleLoader.loadFromFile("/tmp/dropout.bigdl")
+    val loadedGn = ModuleLoader.loadFromFile("/tmp/gaussianNoise.bigdl")
     val res2 = loadedGn.forward(tensor2)
     res1 should be (res2)
   }
