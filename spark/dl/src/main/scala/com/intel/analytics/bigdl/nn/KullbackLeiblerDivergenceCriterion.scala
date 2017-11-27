@@ -35,12 +35,6 @@ class KullbackLeiblerDivergenceCriterion[T: ClassTag]
   (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
 
   private val epsilon: T = ev.fromType(1e-07)
-  private val maxValue: T = ev.fromType(Double.MaxValue)
-
-  @transient
-  private var buffer1: Tensor[T] = null // first_log
-  @transient
-  private var buffer2: Tensor[T] = null // second_log
 
   override def updateOutput(input: Tensor[T], target : Tensor[T]): T = {
     val buffer1 = Tensor[T]()
@@ -51,19 +45,10 @@ class KullbackLeiblerDivergenceCriterion[T: ClassTag]
     buffer1.apply1(e => ev.clip(e, epsilon, ev.fromType(1.0)))
     buffer2.apply1(e => ev.clip(e, epsilon, ev.fromType(1.0)))
 
-    val mul = buffer1.div(buffer2).log().cmul(buffer1)
-    var loss = ev.fromType[Double](0.0)
-    val func = new TensorFunc2[T] {
-       override def apply(v1: Array[T], v2: Int): Unit = {
-         loss = ev.plus(ev.negative(v1(v2)), loss)
-       }
-    }
-    DenseTensorApply.apply1(mul, func)
-    loss = ev.divide(loss, ev.fromType(mul.nElement()))
-    loss
+    val mul = buffer1.div(buffer2).log().cmul(buffer1).mean()
+    mul
   }
 
-  // log(y_true) - log(y_pred))
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
 
     gradInput.resizeAs(input).copy(input)

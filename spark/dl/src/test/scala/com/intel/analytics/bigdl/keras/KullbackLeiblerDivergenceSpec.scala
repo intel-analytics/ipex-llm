@@ -16,6 +16,7 @@
 package com.intel.analytics.bigdl.keras
 
 import com.intel.analytics.bigdl.nn.KullbackLeiblerDivergenceCriterion
+import com.intel.analytics.bigdl.tensor.Tensor
 
 class KullbackLeiblerDivergenceSpec extends KerasBaseSpec {
 
@@ -44,4 +45,16 @@ class KullbackLeiblerDivergenceSpec extends KerasBaseSpec {
     val criterion = KullbackLeiblerDivergenceCriterion[Float]()
     checkOutputAndGradForLoss(criterion, kerasCode)
   }
+
+  "KullbackLeiblerDivergenceCriterion" should "be ok with 1" in {
+    val criterion = KullbackLeiblerDivergenceCriterion[Float]()
+    val input = Tensor[Float](Array(0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f), Array(2, 3))
+    val target = Tensor[Float](Array(0.2f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f), Array(2, 3))
+    val loss = criterion.forward(input, target)
+    println(loss)
+
+    val gradient = criterion.updateGradInput(input, target)
+    println(gradient)
+  }
+
 }
