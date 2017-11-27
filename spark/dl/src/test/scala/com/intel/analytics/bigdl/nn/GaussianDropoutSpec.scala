@@ -20,17 +20,18 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 
   /**
-  * Unit test for GussianDropout.
+  * Unit test for GaussianDropout.
   */
 @com.intel.analytics.bigdl.tags.Parallel
 class GaussianDropoutSpec extends FlatSpec with Matchers {
-  "GaussianDropout" should "run through without problem" in {
+  "GaussianDropout" should "run through without problem in training mode" in {
     val batchN = 3
     val inputN = 5
     val outputN = inputN
 
     val input = Tensor[Double](batchN, inputN).rand()
     val gradOutput = Tensor[Double](batchN, outputN).rand()
+
 
     val module = new GaussianDropout[Double](0.5)
     // training mode
@@ -41,12 +42,35 @@ class GaussianDropoutSpec extends FlatSpec with Matchers {
 
     val gradInput = module.backward(input, gradOutput)
     assertIntArrayEqual(gradInput.size(), gradOutput.size())
+  }
 
-    // evaluation mode
+  "GaussianDropout" should "run correctly in evaluation mode" in {
+    val batchN = 3
+    val inputN = 5
+    val outputN = inputN
+
+    val input = Tensor[Double](batchN, inputN).rand()
+    val gradOutput = Tensor[Double](batchN, outputN).rand()
+
+    val module = new GaussianDropout[Double](0.5)
     module.evaluate()
     val outputEval = module.forward(input)
     // output should be the same as input
     assert(input equals outputEval)
+    // backward reports error in evaluation mode
+    intercept[IllegalArgumentException] {
+      module.backward(input, gradOutput)
+    }
+
+  }
+
+  "GaussianDropout" should "throw exception for illegal rate argument" in {
+    intercept[IllegalArgumentException] {
+      val module = new GaussianDropout[Double](-0.1)
+    }
+    intercept[IllegalArgumentException] {
+      val module = new GaussianDropout[Double](2)
+    }
 
   }
 

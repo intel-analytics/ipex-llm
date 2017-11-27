@@ -39,8 +39,7 @@ class GaussianDropout[T: ClassTag](
    val rate: Double
   )(implicit ev: TensorNumeric[T]) extends TensorModule[T]{
 
-  var noise = Tensor[T]()
-
+  require(rate < 1 && rate >= 0, s"rate should be in range [0,1)")
   val stddev: Double = Math.sqrt(rate / (1.0-rate))
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
@@ -48,6 +47,9 @@ class GaussianDropout[T: ClassTag](
     this.output.resizeAs(input).copy(input)
 
     if(train) {
+      // generate a new random noise tensor in each forward and backward
+      // following the behavior of tensorflow
+      val noise = Tensor[T]()
       noise.resizeAs(input)
       noise.randn(1.0, stddev)
       this.output.cmul(noise)
@@ -58,8 +60,12 @@ class GaussianDropout[T: ClassTag](
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
 
+    this.gradInput.resizeAs(gradOutput).copy(gradOutput)
+
     if (train) {
-      this.gradInput.resizeAs(gradOutput).copy(gradOutput)
+      val noise = Tensor[T]()
+      noise.resizeAs(gradOutput)
+      noise.randn(1.0, stddev)
       this.gradInput.cmul(noise)
     } else {
       throw new IllegalArgumentException("backprop only defined while training")
@@ -72,11 +78,7 @@ class GaussianDropout[T: ClassTag](
   }
 
 
-  override def clearState(): this.type = {
-    super.clearState()
-    noise.set()
-    this
-  }
+
 }
 
 object GaussianDropout {

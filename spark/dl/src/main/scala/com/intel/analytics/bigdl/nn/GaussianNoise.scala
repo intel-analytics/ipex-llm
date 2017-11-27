@@ -40,13 +40,13 @@ class GaussianNoise[T: ClassTag](
    val stddev: Double
   )(implicit ev: TensorNumeric[T]) extends TensorModule[T]{
 
-  var noise = Tensor[T]()
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
 
     this.output.resizeAs(input).copy(input)
 
     if(train) {
+      val noise = Tensor[T]()
       noise.resizeAs(input)
       noise.randn(0.0, stddev)
       this.output.add(noise)
@@ -70,11 +70,6 @@ class GaussianNoise[T: ClassTag](
   }
 
 
-  override def clearState(): this.type = {
-    super.clearState()
-    noise.set()
-    this
-  }
 }
 
 object GaussianNoise {

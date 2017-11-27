@@ -24,7 +24,7 @@ import org.scalatest.{FlatSpec, Matchers}
   */
 @com.intel.analytics.bigdl.tags.Parallel
 class GaussianNoiseSpec extends FlatSpec with Matchers {
-  "GaussianNoise" should "run through correctly" in {
+  "GaussianNoise" should "run through in training mode" in {
     val batchN = 3
     val inputN = 5
     val outputN = inputN
@@ -42,12 +42,27 @@ class GaussianNoiseSpec extends FlatSpec with Matchers {
     val gradInput = module.backward(input, gradOutput)
     assertIntArrayEqual(gradInput.size(), gradOutput.size())
 
+  }
+
+  "GaussianNoise" should "run correctly in evaluation mode" in {
+    val batchN = 3
+    val inputN = 5
+    val outputN = inputN
+
+    val input = Tensor[Double](batchN, inputN).rand()
+    val gradOutput = Tensor[Double](batchN, outputN).rand()
+
+    val module = new GaussianNoise[Double](0.2)
+
     // evaluation mode
     module.evaluate()
     val outputEval = module.forward(input)
     // output should be the same as input
     assert(input equals outputEval)
 
+    intercept[IllegalArgumentException] {
+      module.backward(input, gradOutput)
+    }
   }
 
   def assertIntArrayEqual(a1: Array[Int], a2: Array[Int]): Unit = {
