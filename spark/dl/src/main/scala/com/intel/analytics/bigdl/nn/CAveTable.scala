@@ -30,7 +30,7 @@ import scala.reflect._
  * @param ev numeric operator
  * @tparam T Numeric type. Only support float/double now
  */
-// TODO: add serialization
+@SerialVersionUID(- 4230815940936944708L)
 class CAveTable[T: ClassTag](val inplace: Boolean = false)(
   implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T] {
 
