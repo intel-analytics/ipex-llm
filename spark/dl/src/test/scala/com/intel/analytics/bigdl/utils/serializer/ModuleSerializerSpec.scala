@@ -2067,7 +2067,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     val res1 = hardSigmoid.forward(input)
 
-    val res2 = hardSigmoid.forward(input)
+    val res2 = loadedModel.forward(input)
 
     res1 should be (res2)
   }
