@@ -45,7 +45,7 @@ import scala.reflect.runtime.universe
  * @param ceilMode Whether the output size is to be ceiled or floored
  * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
  */
-// TODO: add serialization
+@SerialVersionUID(- 7829953407414301872L)
 class VolumetricAveragePooling[T: ClassTag](
   val kT: Int, val kW: Int, val kH: Int,
   val dT: Int, val dW: Int, val dH: Int,
@@ -582,33 +582,7 @@ object VolumetricAveragePooling extends ModuleSerializable {
    padT: Int = 0, padW: Int = 0, padH: Int = 0,
    countIncludePad: Boolean = true, ceilMode: Boolean = false)(implicit ev: TensorNumeric[T])
   : VolumetricAveragePooling[T] =
-    new VolumetricAveragePooling[T](kT, kW, kH, dT, dW, dH, padT, padW, padH, countIncludePad)
+    new VolumetricAveragePooling[T](kT, kW, kH, dT, dW, dH,
+      padT, padW, padH, countIncludePad, ceilMode)
 
-  def apply[@specialized(Float, Double) T: ClassTag]
-  (kT: Int, kW: Int, kH: Int)(implicit ev: TensorNumeric[T])
-  : VolumetricAveragePooling[T] = new VolumetricAveragePooling[T](kT, kW, kH)
-
-  override def doLoadModule[T: ClassTag](context : DeserializeContext)
-  (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
-
-    val averagePooling = super.doLoadModule(context).asInstanceOf[VolumetricAveragePooling[T]]
-    val attrMap = context.bigdlModule.getAttrMap
-    averagePooling.ceilMode = DataConverter.getAttributeValue(context,
-      attrMap.get("ceilMode")).asInstanceOf[Boolean]
-    averagePooling
-  }
-
-  override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
-                                              volumetricAverageBuilder : BigDLModule.Builder)
-                                             (implicit ev: TensorNumeric[T]) : Unit = {
-    val averagePooling = context.moduleData.module.asInstanceOf[VolumetricAveragePooling[T]]
-
-    super.doSerializeModule(context, volumetricAverageBuilder)
-
-    val ceilModeBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(context, ceilModeBuilder,
-      averagePooling.ceilMode, universe.typeOf[Boolean])
-    volumetricAverageBuilder.putAttr("ceilMode", ceilModeBuilder.build)
-
-  }
 }
