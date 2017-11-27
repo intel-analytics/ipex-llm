@@ -1311,7 +1311,7 @@ object SpatialBatchNormalization {
         if (batchVar != null) {
           batchVar.setValue(c + 1, unbiasedVar)
         }
-        stdData(c + stdOffset) = 1.0f / Math.sqrt(s / frameSize + eps).toFloat
+        stdData(c + stdOffset) = 1.0 / Math.sqrt(s / frameSize + eps)
         runningVarData(c + stdOffset) = momentum * unbiasedVar + (1 - momentum) *
           runningVarData(c + runningVarOffset)
       }
