@@ -1747,9 +1747,9 @@ val module = UpSampling2D(size: (Int, Int), format: DataFormat = DataFormat.NCHW
 m = UpSampling2D(size, data_format)
 ```
 Upsampling layer for 2D inputs. 
-Repeats the heights and widths of the data by size._1 and size._2 respectively. 
+Repeats the heights and widths of the data by size[0] and size[1] respectively. 
 
-If input's dataformat is NCHW, then the size of output will be (N, C, H * size._1, W * size._2). 
+If input's dataformat is NCHW, then the size of output will be (N, C, H * size[0], W * size[1]). 
 
 Detailed parameter explanation for the constructor. 
  * `size` tuple of 2 integers. The upsampling factors for heights and widths.
