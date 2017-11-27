@@ -335,20 +335,26 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     inputSize: Int,
     outputSize: Int,
     p: Double = 0,
+    activation: TensorModule[T] = null,
+    innerActivation: TensorModule[T] = null,
     wRegularizer: Regularizer[T] = null,
     uRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null): GRU[T] = {
-    GRU[T](inputSize, outputSize, p, wRegularizer, uRegularizer, bRegularizer)
+    GRU[T](inputSize, outputSize, p, activation, innerActivation,
+      wRegularizer, uRegularizer, bRegularizer)
   }
 
   def createLSTM(
     inputSize: Int,
     hiddenSize: Int,
     p: Double = 0,
+    activation: TensorModule[T] = null,
+    innerActivation: TensorModule[T] = null,
     wRegularizer: Regularizer[T] = null,
     uRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null): LSTM[T] = {
-    LSTM[T](inputSize, hiddenSize, p, wRegularizer, uRegularizer, bRegularizer)
+    LSTM[T](inputSize, hiddenSize, p, activation, innerActivation,
+      wRegularizer, uRegularizer, bRegularizer)
   }
 
   def createLSTMPeephole(
@@ -376,12 +382,15 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     kernelC: Int,
     stride: Int = 1,
     padding: Int = -1,
+    activation: TensorModule[T] = null,
+    innerActivation: TensorModule[T] = null,
     wRegularizer: Regularizer[T] = null,
     uRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
     cRegularizer: Regularizer[T] = null,
     withPeephole: Boolean = true): ConvLSTMPeephole[T] = {
-    ConvLSTMPeephole[T](inputSize, outputSize, kernelI, kernelC, stride, padding,
+    ConvLSTMPeephole[T](inputSize, outputSize, kernelI, kernelC,
+      stride, padding, activation, innerActivation,
       wRegularizer, uRegularizer, bRegularizer, cRegularizer, withPeephole)
   }
 
