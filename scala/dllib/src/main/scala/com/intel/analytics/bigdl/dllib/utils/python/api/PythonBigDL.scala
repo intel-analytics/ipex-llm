@@ -545,6 +545,16 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Dropout[T](initP, inplace, scale)
   }
 
+  def createGaussianDropout(rate: Double)
+  : GaussianDropout[T] = {
+    GaussianDropout[T](rate)
+  }
+
+  def createGaussianNoise(stddev: Double)
+  : GaussianNoise[T] = {
+    GaussianNoise[T](stddev)
+  }
+
   def createView(sizes: JList[Int], num_input_dims: Int = 0): View[T] = {
     View[T](sizes.asScala.toArray).setNumInputDims(num_input_dims)
   }
