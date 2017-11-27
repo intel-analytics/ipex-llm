@@ -604,6 +604,38 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     res1 should be (res2)
   }
 
+  "GaussianDropout serializer" should "work properly" in {
+    RNG.setSeed(100)
+    val gd = GaussianDropout(0.5)
+
+    val tensor1 = Tensor(10).apply1(_ => Random.nextFloat())
+    val tensor2 = Tensor()
+    tensor2.resizeAs(tensor1).copy(tensor1)
+    val res1 = gd.forward(tensor1)
+
+    ModulePersister.saveToFile("/tmp/gaussianDropout.bigdl", gd, true)
+    RNG.setSeed(100)
+    val loadedGd = ModuleLoader.loadFromFile("/tmp/gaussianDropout.bigdl")
+    val res2 = loadedGd.forward(tensor2)
+    res1 should be (res2)
+  }
+
+  "GaussianNoise serializer" should "work properly" in {
+    RNG.setSeed(100)
+    val gn = GaussianNoise(0.5)
+
+    val tensor1 = Tensor(10).apply1(_ => Random.nextFloat())
+    val tensor2 = Tensor()
+    tensor2.resizeAs(tensor1).copy(tensor1)
+    val res1 = gn.forward(tensor1)
+
+    ModulePersister.saveToFile("/tmp/gaussianNoise.bigdl", gn, true)
+    RNG.setSeed(100)
+    val loadedGn = ModuleLoader.loadFromFile("/tmp/gaussianNoise.bigdl")
+    val res2 = loadedGn.forward(tensor2)
+    res1 should be (res2)
+  }
+
   "GradientReversal serializer" should "work properly" in {
     val gradientReversal = GradientReversal()
 
