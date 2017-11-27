@@ -1572,11 +1572,13 @@ array([[[[ 0.1       ,  0.2       ],
 
 **Scala:**
 ```scala
-val layer = Highway(2, activation = "tanh")
+val layer = Highway(size: Int, withBias: Boolean, activation: String,
+                        wRegularizer: Regularizer[T] = null,
+                        bRegularizer: Regularizer[T] = null)
 ```
 **Python:**
 ```python
-layer = Highway(2, activation = "tanh")
+layer = Highway(size, with_bias, activation, wRegularizer, bRegularizer)
 ```
 
 This layer is Densely connected highway network.
