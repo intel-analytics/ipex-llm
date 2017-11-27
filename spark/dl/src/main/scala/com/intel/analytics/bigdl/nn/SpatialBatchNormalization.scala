@@ -53,7 +53,8 @@ class SpatialBatchNormalization[T: ClassTag](
     checkInputDim(input)
     output.resizeAs(input)
 
-    val _input = makeBatch(input)
+    _input.set(input)
+    makeBatch(_input)
     val nInput = _input.size(channelDim)
 
     if (runningMean.nElement == 0 || runningMean.nElement < nInput) {
@@ -67,14 +68,14 @@ class SpatialBatchNormalization[T: ClassTag](
       if (train) {
         if (ev.getType() == FloatType) {
           SpatialBatchNormalization.updateOutputNCHWTrainFloat(
-            input.asInstanceOf[Tensor[Float]], output.asInstanceOf[Tensor[Float]],
+            _input.asInstanceOf[Tensor[Float]], output.asInstanceOf[Tensor[Float]],
             saveMean.asInstanceOf[Tensor[Float]], saveStd.asInstanceOf[Tensor[Float]],
             runningMean.asInstanceOf[Tensor[Float]], runningVar.asInstanceOf[Tensor[Float]],
             weight.asInstanceOf[Tensor[Float]], bias.asInstanceOf[Tensor[Float]],
             eps.toFloat, momentum.toFloat)
         } else {
           SpatialBatchNormalization.updateOutputNCHWTrainDouble(
-            input.asInstanceOf[Tensor[Double]], output.asInstanceOf[Tensor[Double]],
+            _input.asInstanceOf[Tensor[Double]], output.asInstanceOf[Tensor[Double]],
             saveMean.asInstanceOf[Tensor[Double]], saveStd.asInstanceOf[Tensor[Double]],
             runningMean.asInstanceOf[Tensor[Double]], runningVar.asInstanceOf[Tensor[Double]],
             weight.asInstanceOf[Tensor[Double]], bias.asInstanceOf[Tensor[Double]],
@@ -83,12 +84,12 @@ class SpatialBatchNormalization[T: ClassTag](
       } else {
         if (ev.getType() == FloatType) {
           SpatialBatchNormalization.updateOutputNCHWInferFloat(
-            input.asInstanceOf[Tensor[Float]], output.asInstanceOf[Tensor[Float]],
+            _input.asInstanceOf[Tensor[Float]], output.asInstanceOf[Tensor[Float]],
             runningMean.asInstanceOf[Tensor[Float]], runningVar.asInstanceOf[Tensor[Float]],
             weight.asInstanceOf[Tensor[Float]], bias.asInstanceOf[Tensor[Float]])
         } else {
           SpatialBatchNormalization.updateOutputNCHWInferDouble(
-            input.asInstanceOf[Tensor[Double]], output.asInstanceOf[Tensor[Double]],
+            _input.asInstanceOf[Tensor[Double]], output.asInstanceOf[Tensor[Double]],
             runningMean.asInstanceOf[Tensor[Double]], runningVar.asInstanceOf[Tensor[Double]],
             weight.asInstanceOf[Tensor[Double]], bias.asInstanceOf[Tensor[Double]])
         }
@@ -97,14 +98,14 @@ class SpatialBatchNormalization[T: ClassTag](
       if (train) {
         if (ev.getType() == FloatType) {
           SpatialBatchNormalization.updateOutputNHWCTrainFloat(
-            input.asInstanceOf[Tensor[Float]], output.asInstanceOf[Tensor[Float]],
+            _input.asInstanceOf[Tensor[Float]], output.asInstanceOf[Tensor[Float]],
             saveMean.asInstanceOf[Tensor[Float]], saveStd.asInstanceOf[Tensor[Float]],
             runningMean.asInstanceOf[Tensor[Float]], runningVar.asInstanceOf[Tensor[Float]],
             weight.asInstanceOf[Tensor[Float]], bias.asInstanceOf[Tensor[Float]],
             eps.toFloat, momentum.toFloat)
         } else {
           SpatialBatchNormalization.updateOutputNHWCTrainDouble(
-            input.asInstanceOf[Tensor[Double]], output.asInstanceOf[Tensor[Double]],
+            _input.asInstanceOf[Tensor[Double]], output.asInstanceOf[Tensor[Double]],
             saveMean.asInstanceOf[Tensor[Double]], saveStd.asInstanceOf[Tensor[Double]],
             runningMean.asInstanceOf[Tensor[Double]], runningVar.asInstanceOf[Tensor[Double]],
             weight.asInstanceOf[Tensor[Double]], bias.asInstanceOf[Tensor[Double]],
@@ -113,12 +114,12 @@ class SpatialBatchNormalization[T: ClassTag](
       } else {
         if (ev.getType() == FloatType) {
           SpatialBatchNormalization.updateOutputNHWCInferFloat(
-            input.asInstanceOf[Tensor[Float]], output.asInstanceOf[Tensor[Float]],
+            _input.asInstanceOf[Tensor[Float]], output.asInstanceOf[Tensor[Float]],
             runningMean.asInstanceOf[Tensor[Float]], runningVar.asInstanceOf[Tensor[Float]],
             weight.asInstanceOf[Tensor[Float]], bias.asInstanceOf[Tensor[Float]])
         } else {
           SpatialBatchNormalization.updateOutputNHWCInferDouble(
-            input.asInstanceOf[Tensor[Double]], output.asInstanceOf[Tensor[Double]],
+            _input.asInstanceOf[Tensor[Double]], output.asInstanceOf[Tensor[Double]],
             runningMean.asInstanceOf[Tensor[Double]], runningVar.asInstanceOf[Tensor[Double]],
             weight.asInstanceOf[Tensor[Double]], bias.asInstanceOf[Tensor[Double]])
         }
@@ -129,17 +130,19 @@ class SpatialBatchNormalization[T: ClassTag](
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    _gradOutput.set(gradOutput)
+    makeBatch(_gradOutput)
     if (dataFormat == DataFormat.NCHW) {
       if (train) {
         if (ev.getType() == FloatType) {
           SpatialBatchNormalization.updateGradInputNCHWTrainFloat(
-            input.asInstanceOf[Tensor[Float]], gradOutput.asInstanceOf[Tensor[Float]],
+            _input.asInstanceOf[Tensor[Float]], _gradOutput.asInstanceOf[Tensor[Float]],
             gradInput.asInstanceOf[Tensor[Float]], weight.asInstanceOf[Tensor[Float]],
             saveMean.asInstanceOf[Tensor[Float]], saveStd.asInstanceOf[Tensor[Float]],
             gMean.asInstanceOf[Tensor[Float]], gxMean.asInstanceOf[Tensor[Float]])
         } else {
           SpatialBatchNormalization.updateGradInputNCHWTrainDouble(
-            input.asInstanceOf[Tensor[Double]], gradOutput.asInstanceOf[Tensor[Double]],
+            _input.asInstanceOf[Tensor[Double]], _gradOutput.asInstanceOf[Tensor[Double]],
             gradInput.asInstanceOf[Tensor[Double]], weight.asInstanceOf[Tensor[Double]],
             saveMean.asInstanceOf[Tensor[Double]], saveStd.asInstanceOf[Tensor[Double]],
             gMean.asInstanceOf[Tensor[Double]], gxMean.asInstanceOf[Tensor[Double]])
@@ -147,12 +150,12 @@ class SpatialBatchNormalization[T: ClassTag](
       } else {
         if (ev.getType() == FloatType) {
           SpatialBatchNormalization.updateGradInputNCHWInferFloat(
-            gradOutput.asInstanceOf[Tensor[Float]],
+            _gradOutput.asInstanceOf[Tensor[Float]],
             gradInput.asInstanceOf[Tensor[Float]], weight.asInstanceOf[Tensor[Float]],
             bias.asInstanceOf[Tensor[Float]])
         } else {
           SpatialBatchNormalization.updateGradInputNCHWInferDouble(
-            gradOutput.asInstanceOf[Tensor[Double]],
+            _gradOutput.asInstanceOf[Tensor[Double]],
             gradInput.asInstanceOf[Tensor[Double]], weight.asInstanceOf[Tensor[Double]],
             bias.asInstanceOf[Tensor[Double]])
         }
@@ -161,13 +164,13 @@ class SpatialBatchNormalization[T: ClassTag](
       if (train) {
         if (ev.getType() == FloatType) {
           SpatialBatchNormalization.updateGradInputNHWCTrainFloat(
-            input.asInstanceOf[Tensor[Float]], gradOutput.asInstanceOf[Tensor[Float]],
+            _input.asInstanceOf[Tensor[Float]], _gradOutput.asInstanceOf[Tensor[Float]],
             gradInput.asInstanceOf[Tensor[Float]], weight.asInstanceOf[Tensor[Float]],
             saveMean.asInstanceOf[Tensor[Float]], saveStd.asInstanceOf[Tensor[Float]],
             gMean.asInstanceOf[Tensor[Float]], gxMean.asInstanceOf[Tensor[Float]])
         } else {
           SpatialBatchNormalization.updateGradInputNHWCTrainDouble(
-            input.asInstanceOf[Tensor[Double]], gradOutput.asInstanceOf[Tensor[Double]],
+            _input.asInstanceOf[Tensor[Double]], _gradOutput.asInstanceOf[Tensor[Double]],
             gradInput.asInstanceOf[Tensor[Double]], weight.asInstanceOf[Tensor[Double]],
             saveMean.asInstanceOf[Tensor[Double]], saveStd.asInstanceOf[Tensor[Double]],
             gMean.asInstanceOf[Tensor[Double]], gxMean.asInstanceOf[Tensor[Double]])
@@ -175,12 +178,12 @@ class SpatialBatchNormalization[T: ClassTag](
       } else {
         if (ev.getType() == FloatType) {
           SpatialBatchNormalization.updateGradInputNHWCInferFloat(
-            gradOutput.asInstanceOf[Tensor[Float]],
+            _gradOutput.asInstanceOf[Tensor[Float]],
             gradInput.asInstanceOf[Tensor[Float]], weight.asInstanceOf[Tensor[Float]],
             bias.asInstanceOf[Tensor[Float]])
         } else {
           SpatialBatchNormalization.updateGradInputNHWCInferDouble(
-            gradOutput.asInstanceOf[Tensor[Double]],
+            _gradOutput.asInstanceOf[Tensor[Double]],
             gradInput.asInstanceOf[Tensor[Double]], weight.asInstanceOf[Tensor[Double]],
             bias.asInstanceOf[Tensor[Double]])
         }
@@ -190,29 +193,33 @@ class SpatialBatchNormalization[T: ClassTag](
   }
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
+    if (weight == null || scaleW == 0) {
+      return
+    }
+
     if (dataFormat == DataFormat.NCHW) {
       if (ev.getType() == FloatType) {
-        SpatialBatchNormalization.accGradientNCHWFloat(gradOutput.asInstanceOf[Tensor[Float]],
+        SpatialBatchNormalization.accGradientNCHWFloat(_gradOutput.asInstanceOf[Tensor[Float]],
           gradWeight.asInstanceOf[Tensor[Float]], gradBias.asInstanceOf[Tensor[Float]],
-          input.asInstanceOf[Tensor[Float]], saveMean.asInstanceOf[Tensor[Float]],
-          saveStd.asInstanceOf[Tensor[Float]])
+          _input.asInstanceOf[Tensor[Float]], saveMean.asInstanceOf[Tensor[Float]],
+          saveStd.asInstanceOf[Tensor[Float]], scaleW.toFloat, scaleB.toFloat)
       } else {
-        SpatialBatchNormalization.accGradientNCHWDouble(gradOutput.asInstanceOf[Tensor[Double]],
+        SpatialBatchNormalization.accGradientNCHWDouble(_gradOutput.asInstanceOf[Tensor[Double]],
           gradWeight.asInstanceOf[Tensor[Double]], gradBias.asInstanceOf[Tensor[Double]],
-          input.asInstanceOf[Tensor[Double]], saveMean.asInstanceOf[Tensor[Double]],
-          saveStd.asInstanceOf[Tensor[Double]])
+          _input.asInstanceOf[Tensor[Double]], saveMean.asInstanceOf[Tensor[Double]],
+          saveStd.asInstanceOf[Tensor[Double]], scaleW, scaleB)
       }
     } else {
       if (ev.getType() == FloatType) {
-        SpatialBatchNormalization.accGradientNHWCFloat(gradOutput.asInstanceOf[Tensor[Float]],
+        SpatialBatchNormalization.accGradientNHWCFloat(_gradOutput.asInstanceOf[Tensor[Float]],
           gradWeight.asInstanceOf[Tensor[Float]], gradBias.asInstanceOf[Tensor[Float]],
-          input.asInstanceOf[Tensor[Float]], saveMean.asInstanceOf[Tensor[Float]],
-          saveStd.asInstanceOf[Tensor[Float]])
+          _input.asInstanceOf[Tensor[Float]], saveMean.asInstanceOf[Tensor[Float]],
+          saveStd.asInstanceOf[Tensor[Float]], scaleW.toFloat, scaleB.toFloat)
       } else {
-        SpatialBatchNormalization.accGradientNHWCDouble(gradOutput.asInstanceOf[Tensor[Double]],
+        SpatialBatchNormalization.accGradientNHWCDouble(_gradOutput.asInstanceOf[Tensor[Double]],
           gradWeight.asInstanceOf[Tensor[Double]], gradBias.asInstanceOf[Tensor[Double]],
-          input.asInstanceOf[Tensor[Double]], saveMean.asInstanceOf[Tensor[Double]],
-          saveStd.asInstanceOf[Tensor[Double]])
+          _input.asInstanceOf[Tensor[Double]], saveMean.asInstanceOf[Tensor[Double]],
+          saveStd.asInstanceOf[Tensor[Double]], scaleW, scaleB)
       }
     }
   }
@@ -254,20 +261,33 @@ object SpatialBatchNormalization {
     val stdData = std.storage().array()
     val stdOffset = std.storageOffset() - 1
 
-    val scaleData = scale.storage().array()
-    val scaleOffset = scale.storageOffset() - 1
-    val offsetData = offset.storage().array()
-    val offsetOffset = offset.storageOffset() - 1
-    var i = 0
-    while(i < n) {
-      var c = 0
-      while(c < nChannels) {
-        outputData(i + outputOffset + c) = (inputData(i + inputOffset + c) -
-          meanData(c + meanOffset)) * stdData(stdOffset + c) * scaleData(scaleOffset + c) +
-          offsetData(offsetOffset + c)
-        c += 1
+    if (scale != null) {
+      val scaleData = scale.storage().array()
+      val scaleOffset = scale.storageOffset() - 1
+      val offsetData = offset.storage().array()
+      val offsetOffset = offset.storageOffset() - 1
+      var i = 0
+      while (i < n) {
+        var c = 0
+        while (c < nChannels) {
+          outputData(i + outputOffset + c) = (inputData(i + inputOffset + c) -
+            meanData(c + meanOffset)) * stdData(stdOffset + c) * scaleData(scaleOffset + c) +
+            offsetData(offsetOffset + c)
+          c += 1
+        }
+        i += nChannels
       }
-      i += nChannels
+    } else {
+      var i = 0
+      while (i < n) {
+        var c = 0
+        while (c < nChannels) {
+          outputData(i + outputOffset + c) = (inputData(i + inputOffset + c) -
+            meanData(c + meanOffset)) * stdData(stdOffset + c)
+          c += 1
+        }
+        i += nChannels
+      }
     }
   }
 
@@ -287,20 +307,33 @@ object SpatialBatchNormalization {
     val stdData = std.storage().array()
     val stdOffset = std.storageOffset() - 1
 
-    val scaleData = scale.storage().array()
-    val scaleOffset = scale.storageOffset() - 1
-    val offsetData = offset.storage().array()
-    val offsetOffset = offset.storageOffset() - 1
-    var i = 0
-    while(i < n) {
-      var c = 0
-      while(c < nChannels) {
-        outputData(i + outputOffset + c) = (inputData(i + inputOffset + c) -
-          meanData(meanOffset + c)) * stdData(stdOffset + c) * scaleData(scaleOffset + c) +
-          offsetData(offsetOffset + c)
-        c += 1
+    if (scale != null) {
+      val scaleData = scale.storage().array()
+      val scaleOffset = scale.storageOffset() - 1
+      val offsetData = offset.storage().array()
+      val offsetOffset = offset.storageOffset() - 1
+      var i = 0
+      while (i < n) {
+        var c = 0
+        while (c < nChannels) {
+          outputData(i + outputOffset + c) = (inputData(i + inputOffset + c) -
+            meanData(meanOffset + c)) * stdData(stdOffset + c) * scaleData(scaleOffset + c) +
+            offsetData(offsetOffset + c)
+          c += 1
+        }
+        i += nChannels
       }
-      i += nChannels
+    } else {
+      var i = 0
+      while (i < n) {
+        var c = 0
+        while (c < nChannels) {
+          outputData(i + outputOffset + c) = (inputData(i + inputOffset + c) -
+            meanData(meanOffset + c)) * stdData(stdOffset + c)
+          c += 1
+        }
+        i += nChannels
+      }
     }
   }
 
@@ -386,20 +419,33 @@ object SpatialBatchNormalization {
       c += 1
     }
 
-    val scaleData = scale.storage().array()
-    val scaleOffset = scale.storageOffset() - 1
-    val offsetData = offset.storage().array()
-    val offsetOffset = offset.storageOffset() - 1
-    i = 0
-    while(i < n) {
-      var c = 0
-      while(c < nChannels) {
-        outputData(i + outputOffset + c) = (inputData(i + inputOffset + c) -
-          meanData(meanOffset + c)) * stdData(c + stdOffset) *
-          scaleData(scaleOffset + c) + offsetData(offsetOffset + c)
-        c += 1
+    if (scale != null) {
+      val scaleData = scale.storage().array()
+      val scaleOffset = scale.storageOffset() - 1
+      val offsetData = offset.storage().array()
+      val offsetOffset = offset.storageOffset() - 1
+      i = 0
+      while (i < n) {
+        var c = 0
+        while (c < nChannels) {
+          outputData(i + outputOffset + c) = (inputData(i + inputOffset + c) -
+            meanData(meanOffset + c)) * stdData(c + stdOffset) *
+            scaleData(scaleOffset + c) + offsetData(offsetOffset + c)
+          c += 1
+        }
+        i += nChannels
       }
-      i += nChannels
+    } else {
+      i = 0
+      while (i < n) {
+        var c = 0
+        while (c < nChannels) {
+          outputData(i + outputOffset + c) = (inputData(i + inputOffset + c) -
+            meanData(meanOffset + c)) * stdData(c + stdOffset)
+          c += 1
+        }
+        i += nChannels
+      }
     }
   }
 
@@ -485,20 +531,33 @@ object SpatialBatchNormalization {
       c += 1
     }
 
-    val scaleData = scale.storage().array()
-    val scaleOffset = scale.storageOffset() - 1
-    val offsetData = offset.storage().array()
-    val offsetOffset = offset.storageOffset() - 1
-    i = 0
-    while(i < n) {
-      var c = 0
-      while(c < nChannels) {
-        outputData(i + outputOffset + c) = (inputData(i + inputOffset + c) -
-          meanData(c + meanOffset)) * stdData(c + stdOffset) *
-          scaleData(c + scaleOffset) + offsetData(c + offsetOffset)
-        c += 1
+    if (scale != null) {
+      val scaleData = scale.storage().array()
+      val scaleOffset = scale.storageOffset() - 1
+      val offsetData = offset.storage().array()
+      val offsetOffset = offset.storageOffset() - 1
+      i = 0
+      while (i < n) {
+        var c = 0
+        while (c < nChannels) {
+          outputData(i + outputOffset + c) = (inputData(i + inputOffset + c) -
+            meanData(c + meanOffset)) * stdData(c + stdOffset) *
+            scaleData(c + scaleOffset) + offsetData(c + offsetOffset)
+          c += 1
+        }
+        i += nChannels
       }
-      i += nChannels
+    } else {
+      i = 0
+      while (i < n) {
+        var c = 0
+        while (c < nChannels) {
+          outputData(i + outputOffset + c) = (inputData(i + inputOffset + c) -
+            meanData(c + meanOffset)) * stdData(c + stdOffset)
+          c += 1
+        }
+        i += nChannels
+      }
     }
   }
 
@@ -519,26 +578,46 @@ object SpatialBatchNormalization {
     val nBatch = input.size(1)
     val nFrame = input.size(3) * input.size(4)
 
-    val scaleData = scale.storage().array()
-    val scaleOffset = scale.storageOffset() - 1
-    val offsetData = offset.storage().array()
-    val offsetOffset = offset.storageOffset() - 1
-    var i = 0
-    var b = 0
-    while(b < nBatch) {
-      var c = 0
-      while(c < nChannels) {
-        var k = 0
-        while(k < nFrame) {
-          val invStd = 1 / Math.sqrt(varData(varOffset + c)).toFloat
-          outputData(i + outputOffset) = (inputData(i + inputOffset) - meanData(c + meanOffset)) *
-            invStd * scaleData(c + scaleOffset) + offsetData(c + offsetOffset)
-          k += 1
-          i += 1
+    if (scale != null) {
+      val scaleData = scale.storage().array()
+      val scaleOffset = scale.storageOffset() - 1
+      val offsetData = offset.storage().array()
+      val offsetOffset = offset.storageOffset() - 1
+      var i = 0
+      var b = 0
+      while (b < nBatch) {
+        var c = 0
+        while (c < nChannels) {
+          var k = 0
+          while (k < nFrame) {
+            val invStd = 1 / Math.sqrt(varData(varOffset + c)).toFloat
+            outputData(i + outputOffset) = (inputData(i + inputOffset) - meanData(c + meanOffset)) *
+              invStd * scaleData(c + scaleOffset) + offsetData(c + offsetOffset)
+            k += 1
+            i += 1
+          }
+          c += 1
         }
-        c += 1
+        b += 1
       }
-      b += 1
+    } else {
+      var i = 0
+      var b = 0
+      while (b < nBatch) {
+        var c = 0
+        while (c < nChannels) {
+          var k = 0
+          while (k < nFrame) {
+            val invStd = 1 / Math.sqrt(varData(varOffset + c)).toFloat
+            outputData(i + outputOffset) = (inputData(i + inputOffset) - meanData(c + meanOffset)) *
+              invStd
+            k += 1
+            i += 1
+          }
+          c += 1
+        }
+        b += 1
+      }
     }
   }
 
@@ -559,26 +638,46 @@ object SpatialBatchNormalization {
     val nBatch = input.size(1)
     val nFrame = input.size(3) * input.size(4)
 
-    val scaleData = scale.storage().array()
-    val scaleOffset = scale.storageOffset() - 1
-    val offsetData = offset.storage().array()
-    val offsetOffset = offset.storageOffset() - 1
-    var i = 0
-    var b = 0
-    while(b < nBatch) {
-      var c = 0
-      while(c < nChannels) {
-        var k = 0
-        while(k < nFrame) {
-          val invStd = 1 / Math.sqrt(varData(varOffset + c))
-          outputData(i + outputOffset) = (inputData(i + inputOffset) - meanData(c + meanOffset)) *
-            invStd * scaleData(c + scaleOffset) + offsetData(c + offsetOffset)
-          k += 1
-          i += 1
+    if (scale != null) {
+      val scaleData = scale.storage().array()
+      val scaleOffset = scale.storageOffset() - 1
+      val offsetData = offset.storage().array()
+      val offsetOffset = offset.storageOffset() - 1
+      var i = 0
+      var b = 0
+      while (b < nBatch) {
+        var c = 0
+        while (c < nChannels) {
+          var k = 0
+          while (k < nFrame) {
+            val invStd = 1 / Math.sqrt(varData(varOffset + c))
+            outputData(i + outputOffset) = (inputData(i + inputOffset) - meanData(c + meanOffset)) *
+              invStd * scaleData(c + scaleOffset) + offsetData(c + offsetOffset)
+            k += 1
+            i += 1
+          }
+          c += 1
         }
-        c += 1
+        b += 1
       }
-      b += 1
+    } else {
+      var i = 0
+      var b = 0
+      while (b < nBatch) {
+        var c = 0
+        while (c < nChannels) {
+          var k = 0
+          while (k < nFrame) {
+            val invStd = 1 / Math.sqrt(varData(varOffset + c))
+            outputData(i + outputOffset) = (inputData(i + inputOffset) - meanData(c + meanOffset)) *
+              invStd
+            k += 1
+            i += 1
+          }
+          c += 1
+        }
+        b += 1
+      }
     }
   }
 
@@ -613,8 +712,6 @@ object SpatialBatchNormalization {
     val gradOutputOffset = gradOutput.storageOffset() - 1
     val gradInputData = gradInput.storage().array()
     val gradInputOffset = gradInput.storageOffset() - 1
-    val scaleData = scale.storage().array()
-    val scaleOffset = scale.storageOffset() - 1
     val saveMeanData = saveMean.storage().array()
     val saveMeanOffset = saveMean.storageOffset() - 1
     val saveStdData = saveStd.storage().array()
@@ -643,17 +740,35 @@ object SpatialBatchNormalization {
       c += 1
     }
 
-    i = 0
-    while(i < n) {
-      var c = 0
-      while(c < nChannel) {
-        val invStd = saveStdData(saveStdOffset + c)
-        gradInputData(gradInputOffset + i) = scaleData(scaleOffset + c) *
-          invStd * (gradOutputData(gradOutputOffset + i) - gMeanData(c) -
-          gxMeanData(c) * invStd * invStd * (inputData(inputOffset + i) -
-            saveMeanData(saveMeanOffset + c)))
-        c += 1
-        i += 1
+    if (scale != null) {
+      val scaleData = scale.storage().array()
+      val scaleOffset = scale.storageOffset() - 1
+      i = 0
+      while (i < n) {
+        var c = 0
+        while (c < nChannel) {
+          val invStd = saveStdData(saveStdOffset + c)
+          gradInputData(gradInputOffset + i) = scaleData(scaleOffset + c) *
+            invStd * (gradOutputData(gradOutputOffset + i) - gMeanData(c) -
+            gxMeanData(c) * invStd * invStd * (inputData(inputOffset + i) -
+              saveMeanData(saveMeanOffset + c)))
+          c += 1
+          i += 1
+        }
+      }
+    } else {
+      i = 0
+      while (i < n) {
+        var c = 0
+        while (c < nChannel) {
+          val invStd = saveStdData(saveStdOffset + c)
+          gradInputData(gradInputOffset + i) =
+            invStd * (gradOutputData(gradOutputOffset + i) - gMeanData(c) -
+            gxMeanData(c) * invStd * invStd * (inputData(inputOffset + i) -
+              saveMeanData(saveMeanOffset + c)))
+          c += 1
+          i += 1
+        }
       }
     }
   }
@@ -689,8 +804,6 @@ object SpatialBatchNormalization {
     val gradOutputOffset = gradOutput.storageOffset() - 1
     val gradInputData = gradInput.storage().array()
     val gradInputOffset = gradInput.storageOffset() - 1
-    val scaleData = scale.storage().array()
-    val scaleOffset = scale.storageOffset() - 1
     val saveMeanData = saveMean.storage().array()
     val saveMeanOffset = saveMean.storageOffset() - 1
     val saveStdData = saveStd.storage().array()
@@ -719,17 +832,35 @@ object SpatialBatchNormalization {
       c += 1
     }
 
-    i = 0
-    while(i < n) {
-      var c = 0
-      while(c < nChannel) {
-        val invStd = saveStdData(saveStdOffset + c)
-        gradInputData(gradInputOffset + i) = scaleData(scaleOffset + c) *
-          invStd * (gradOutputData(gradOutputOffset + i) - gMeanData(c) -
-          gxMeanData(c) * invStd * invStd * (inputData(inputOffset + i) -
-            saveMeanData(saveMeanOffset + c)))
-        c += 1
-        i += 1
+    if (scale != null) {
+      val scaleData = scale.storage().array()
+      val scaleOffset = scale.storageOffset() - 1
+      i = 0
+      while (i < n) {
+        var c = 0
+        while (c < nChannel) {
+          val invStd = saveStdData(saveStdOffset + c)
+          gradInputData(gradInputOffset + i) = scaleData(scaleOffset + c) *
+            invStd * (gradOutputData(gradOutputOffset + i) - gMeanData(c) -
+            gxMeanData(c) * invStd * invStd * (inputData(inputOffset + i) -
+              saveMeanData(saveMeanOffset + c)))
+          c += 1
+          i += 1
+        }
+      }
+    } else {
+      i = 0
+      while (i < n) {
+        var c = 0
+        while (c < nChannel) {
+          val invStd = saveStdData(saveStdOffset + c)
+          gradInputData(gradInputOffset + i) =
+            invStd * (gradOutputData(gradOutputOffset + i) - gMeanData(c) -
+            gxMeanData(c) * invStd * invStd * (inputData(inputOffset + i) -
+              saveMeanData(saveMeanOffset + c)))
+          c += 1
+          i += 1
+        }
       }
     }
   }
@@ -751,21 +882,36 @@ object SpatialBatchNormalization {
     val gradOutputOffset = gradOutput.storageOffset() - 1
     val gradInputData = gradInput.storage().array()
     val gradInputOffset = gradInput.storageOffset() - 1
-    val scaleData = scale.storage().array()
-    val scaleOffset = scale.storageOffset() - 1
     val saveStdData = saveStd.storage().array()
     val saveStdOffset = saveStd.storageOffset() - 1
 
     val n = gradOutput.nElement()
-    var i = 0
-    while(i < n) {
-      var c = 0
-      while(c < nChannel) {
-        val invStd = saveStdData(saveStdOffset + c)
-        gradInputData(gradInputOffset + i) = scaleData(scaleOffset + c) *
-          invStd * gradOutputData(gradOutputOffset + i)
-        c += 1
-        i += 1
+
+    if (scale != null) {
+      val scaleData = scale.storage().array()
+      val scaleOffset = scale.storageOffset() - 1
+      var i = 0
+      while (i < n) {
+        var c = 0
+        while (c < nChannel) {
+          val invStd = saveStdData(saveStdOffset + c)
+          gradInputData(gradInputOffset + i) = scaleData(scaleOffset + c) *
+            invStd * gradOutputData(gradOutputOffset + i)
+          c += 1
+          i += 1
+        }
+      }
+    } else {
+      var i = 0
+      while (i < n) {
+        var c = 0
+        while (c < nChannel) {
+          val invStd = saveStdData(saveStdOffset + c)
+          gradInputData(gradInputOffset + i) =
+            invStd * gradOutputData(gradOutputOffset + i)
+          c += 1
+          i += 1
+        }
       }
     }
   }
@@ -787,21 +933,35 @@ object SpatialBatchNormalization {
     val gradOutputOffset = gradOutput.storageOffset() - 1
     val gradInputData = gradInput.storage().array()
     val gradInputOffset = gradInput.storageOffset() - 1
-    val scaleData = scale.storage().array()
-    val scaleOffset = scale.storageOffset() - 1
     val saveStdData = saveStd.storage().array()
     val saveStdOffset = saveStd.storageOffset() - 1
 
     val n = gradOutput.nElement()
     var i = 0
-    while(i < n) {
-      var c = 0
-      while(c < nChannel) {
-        val invStd = saveStdData(saveStdOffset + c)
-        gradInputData(gradInputOffset + i) = scaleData(scaleOffset + c) *
-          invStd * gradOutputData(gradOutputOffset + i)
-        c += 1
-        i += 1
+
+    if (scale != null) {
+      val scaleData = scale.storage().array()
+      val scaleOffset = scale.storageOffset() - 1
+      while (i < n) {
+        var c = 0
+        while (c < nChannel) {
+          val invStd = saveStdData(saveStdOffset + c)
+          gradInputData(gradInputOffset + i) = scaleData(scaleOffset + c) *
+            invStd * gradOutputData(gradOutputOffset + i)
+          c += 1
+          i += 1
+        }
+      }
+    } else {
+      while (i < n) {
+        var c = 0
+        while (c < nChannel) {
+          val invStd = saveStdData(saveStdOffset + c)
+          gradInputData(gradInputOffset + i) =
+            invStd * gradOutputData(gradOutputOffset + i)
+          c += 1
+          i += 1
+        }
       }
     }
   }
@@ -837,8 +997,6 @@ object SpatialBatchNormalization {
     val gradOutputOffset = gradOutput.storageOffset() - 1
     val gradInputData = gradInput.storage().array()
     val gradInputOffset = gradInput.storageOffset() - 1
-    val scaleData = scale.storage().array()
-    val scaleOffset = scale.storageOffset() - 1
     val saveMeanData = saveMean.storage().array()
     val saveMeanOffset = saveMean.storageOffset() - 1
     val saveStdData = saveStd.storage().array()
@@ -877,22 +1035,44 @@ object SpatialBatchNormalization {
 
     i = 0
     b = 0
-    while(b < nBatch) {
-      var c = 0
-      while(c < nChannel) {
-        var k = 0
-        while(k < frameSize) {
-          val invStd = saveStdData(saveStdOffset + c)
-          gradInputData(gradInputOffset + i) = scaleData(scaleOffset + c) *
-            invStd * (gradOutputData(gradOutputOffset + i) - gMeanData(c) -
-            gxMeanData(c) * invStd * invStd * (inputData(inputOffset + i) -
-              saveMeanData(saveMeanOffset + c)))
-          k += 1
-          i += 1
+    if (scale != null) {
+      val scaleData = scale.storage().array()
+      val scaleOffset = scale.storageOffset() - 1
+      while (b < nBatch) {
+        var c = 0
+        while (c < nChannel) {
+          var k = 0
+          while (k < frameSize) {
+            val invStd = saveStdData(saveStdOffset + c)
+            gradInputData(gradInputOffset + i) = scaleData(scaleOffset + c) *
+              invStd * (gradOutputData(gradOutputOffset + i) - gMeanData(c) -
+              gxMeanData(c) * invStd * invStd * (inputData(inputOffset + i) -
+                saveMeanData(saveMeanOffset + c)))
+            k += 1
+            i += 1
+          }
+          c += 1
         }
-        c += 1
+        b += 1
       }
-      b += 1
+    } else {
+      while (b < nBatch) {
+        var c = 0
+        while (c < nChannel) {
+          var k = 0
+          while (k < frameSize) {
+            val invStd = saveStdData(saveStdOffset + c)
+            gradInputData(gradInputOffset + i) =
+              invStd * (gradOutputData(gradOutputOffset + i) - gMeanData(c) -
+              gxMeanData(c) * invStd * invStd * (inputData(inputOffset + i) -
+                saveMeanData(saveMeanOffset + c)))
+            k += 1
+            i += 1
+          }
+          c += 1
+        }
+        b += 1
+      }
     }
   }
 
@@ -996,26 +1176,45 @@ object SpatialBatchNormalization {
       c += 1
     }
 
-    val scaleData = scale.storage().array()
-    val scaleOffset = scale.storageOffset() - 1
-    val offsetData = offset.storage().array()
-    val offsetOffset = offset.storageOffset() - 1
-    i = 0
-    b = 0
-    while(b < nBatch) {
-      var c = 0
-      while(c < nChannels) {
-        var k = 0
-        while(k < nFrame) {
-          outputData(i + outputOffset) = (inputData(i + inputOffset) -
-            meanData(c + meanOffset)) * stdData(c + stdOffset) *
-            scaleData(c + scaleOffset) + offsetData(c + offsetOffset)
-          k += 1
-          i += 1
+    if (scale != null) {
+      val scaleData = scale.storage().array()
+      val scaleOffset = scale.storageOffset() - 1
+      val offsetData = offset.storage().array()
+      val offsetOffset = offset.storageOffset() - 1
+      i = 0
+      b = 0
+      while (b < nBatch) {
+        var c = 0
+        while (c < nChannels) {
+          var k = 0
+          while (k < nFrame) {
+            outputData(i + outputOffset) = (inputData(i + inputOffset) -
+              meanData(c + meanOffset)) * stdData(c + stdOffset) *
+              scaleData(c + scaleOffset) + offsetData(c + offsetOffset)
+            k += 1
+            i += 1
+          }
+          c += 1
         }
-        c += 1
+        b += 1
       }
-      b += 1
+    } else {
+      i = 0
+      b = 0
+      while (b < nBatch) {
+        var c = 0
+        while (c < nChannels) {
+          var k = 0
+          while (k < nFrame) {
+            outputData(i + outputOffset) = (inputData(i + inputOffset) -
+              meanData(c + meanOffset)) * stdData(c + stdOffset)
+            k += 1
+            i += 1
+          }
+          c += 1
+        }
+        b += 1
+      }
     }
   }
 
@@ -1119,26 +1318,45 @@ object SpatialBatchNormalization {
       c += 1
     }
 
-    val scaleData = scale.storage().array()
-    val scaleOffset = scale.storageOffset() - 1
-    val offsetData = offset.storage().array()
-    val offsetOffset = offset.storageOffset() - 1
-    i = 0
-    b = 0
-    while(b < nBatch) {
-      var c = 0
-      while(c < nChannels) {
-        var k = 0
-        while(k < nFrame) {
-          outputData(i + outputOffset) = (inputData(i + inputOffset) -
-            meanData(c + meanOffset)) * stdData(c + stdOffset) *
-            scaleData(c + scaleOffset) + offsetData(c + offsetOffset)
-          k += 1
-          i += 1
+    if (scale != null) {
+      val scaleData = scale.storage().array()
+      val scaleOffset = scale.storageOffset() - 1
+      val offsetData = offset.storage().array()
+      val offsetOffset = offset.storageOffset() - 1
+      i = 0
+      b = 0
+      while (b < nBatch) {
+        var c = 0
+        while (c < nChannels) {
+          var k = 0
+          while (k < nFrame) {
+            outputData(i + outputOffset) = (inputData(i + inputOffset) -
+              meanData(c + meanOffset)) * stdData(c + stdOffset) *
+              scaleData(c + scaleOffset) + offsetData(c + offsetOffset)
+            k += 1
+            i += 1
+          }
+          c += 1
         }
-        c += 1
+        b += 1
       }
-      b += 1
+    } else {
+      i = 0
+      b = 0
+      while (b < nBatch) {
+        var c = 0
+        while (c < nChannels) {
+          var k = 0
+          while (k < nFrame) {
+            outputData(i + outputOffset) = (inputData(i + inputOffset) -
+              meanData(c + meanOffset)) * stdData(c + stdOffset)
+            k += 1
+            i += 1
+          }
+          c += 1
+        }
+        b += 1
+      }
     }
   }
 
@@ -1157,14 +1375,13 @@ object SpatialBatchNormalization {
     require(gradOutput.nDimension() == 4, "BN require a 4D gradient")
     require(gradOutput.isContiguous(), "gradient is not contiguous")
     val nChannel = gradOutput.size(2)
-    require(scale.size(1) == nChannel, "scale length is not consist with channel number")
     require(saveMean.size(1) == nChannel, "saveMean length is not consist with channel number")
     require(saveStd.size(1) == nChannel, "saveStd length is not consist with channel number")
 
     gradInput.resizeAs(gradOutput)
     if (gMean.isEmpty) {
-      gMean.resize(scale.size(1))
-      gxMean.resize(scale.size(1))
+      gMean.resize(saveMean.size(1))
+      gxMean.resize(saveMean.size(1))
     }
 
     val inputData = input.storage().array()
@@ -1173,8 +1390,6 @@ object SpatialBatchNormalization {
     val gradOutputOffset = gradOutput.storageOffset() - 1
     val gradInputData = gradInput.storage().array()
     val gradInputOffset = gradInput.storageOffset() - 1
-    val scaleData = scale.storage().array()
-    val scaleOffset = scale.storageOffset() - 1
     val saveMeanData = saveMean.storage().array()
     val saveMeanOffset = saveMean.storageOffset() - 1
     val saveStdData = saveStd.storage().array()
@@ -1213,22 +1428,45 @@ object SpatialBatchNormalization {
 
     i = 0
     b = 0
-    while(b < nBatch) {
-      var c = 0
-      while(c < nChannel) {
-        var k = 0
-        while(k < frameSize) {
-          val invStd = saveStdData(saveStdOffset + c)
-          gradInputData(gradInputOffset + i) = scaleData(scaleOffset + c) *
-            invStd * (gradOutputData(gradOutputOffset + i) - gMeanData(c) -
-            gxMeanData(c) * invStd * invStd * (inputData(inputOffset + i) -
-              saveMeanData(saveMeanOffset + c)))
-          k += 1
-          i += 1
+    if (scale != null) {
+      val scaleData = scale.storage().array()
+      val scaleOffset = scale.storageOffset() - 1
+      require(scale.size(1) == nChannel, "scale length is not consist with channel number")
+      while (b < nBatch) {
+        var c = 0
+        while (c < nChannel) {
+          var k = 0
+          while (k < frameSize) {
+            val invStd = saveStdData(saveStdOffset + c)
+            gradInputData(gradInputOffset + i) = scaleData(scaleOffset + c) *
+              invStd * (gradOutputData(gradOutputOffset + i) - gMeanData(c) -
+              gxMeanData(c) * invStd * invStd * (inputData(inputOffset + i) -
+                saveMeanData(saveMeanOffset + c)))
+            k += 1
+            i += 1
+          }
+          c += 1
         }
-        c += 1
+        b += 1
       }
-      b += 1
+    } else {
+      while (b < nBatch) {
+        var c = 0
+        while (c < nChannel) {
+          var k = 0
+          while (k < frameSize) {
+            val invStd = saveStdData(saveStdOffset + c)
+            gradInputData(gradInputOffset + i) =
+              invStd * (gradOutputData(gradOutputOffset + i) - gMeanData(c) -
+              gxMeanData(c) * invStd * invStd * (inputData(inputOffset + i) -
+                saveMeanData(saveMeanOffset + c)))
+            k += 1
+            i += 1
+          }
+          c += 1
+        }
+        b += 1
+      }
     }
   }
 
@@ -1249,8 +1487,6 @@ object SpatialBatchNormalization {
     val gradOutputOffset = gradOutput.storageOffset() - 1
     val gradInputData = gradInput.storage().array()
     val gradInputOffset = gradInput.storageOffset() - 1
-    val scaleData = scale.storage().array()
-    val scaleOffset = scale.storageOffset() - 1
     val saveStdData = saveStd.storage().array()
     val saveStdOffset = saveStd.storageOffset() - 1
 
@@ -1258,20 +1494,40 @@ object SpatialBatchNormalization {
     val frameSize = gradOutput.size(3) * gradOutput.size(4)
     var b = 0
     var i = 0
-    while(b < nBatch) {
-      var c = 0
-      while(c < nChannel) {
-        var k = 0
-        while(k < frameSize) {
-          val invStd = saveStdData(saveStdOffset + c)
-          gradInputData(gradInputOffset + i) = scaleData(scaleOffset + c) *
-            invStd * gradOutputData(gradOutputOffset + i)
-          k += 1
-          i += 1
+    if (scale != null) {
+      val scaleData = scale.storage().array()
+      val scaleOffset = scale.storageOffset() - 1
+      while (b < nBatch) {
+        var c = 0
+        while (c < nChannel) {
+          var k = 0
+          while (k < frameSize) {
+            val invStd = saveStdData(saveStdOffset + c)
+            gradInputData(gradInputOffset + i) = scaleData(scaleOffset + c) *
+              invStd * gradOutputData(gradOutputOffset + i)
+            k += 1
+            i += 1
+          }
+          c += 1
         }
-        c += 1
+        b += 1
       }
-      b += 1
+    } else {
+      while (b < nBatch) {
+        var c = 0
+        while (c < nChannel) {
+          var k = 0
+          while (k < frameSize) {
+            val invStd = saveStdData(saveStdOffset + c)
+            gradInputData(gradInputOffset + i) =
+              invStd * gradOutputData(gradOutputOffset + i)
+            k += 1
+            i += 1
+          }
+          c += 1
+        }
+        b += 1
+      }
     }
   }
 
@@ -1292,8 +1548,6 @@ object SpatialBatchNormalization {
     val gradOutputOffset = gradOutput.storageOffset() - 1
     val gradInputData = gradInput.storage().array()
     val gradInputOffset = gradInput.storageOffset() - 1
-    val scaleData = scale.storage().array()
-    val scaleOffset = scale.storageOffset() - 1
     val saveStdData = saveStd.storage().array()
     val saveStdOffset = saveStd.storageOffset() - 1
 
@@ -1301,27 +1555,47 @@ object SpatialBatchNormalization {
     val frameSize = gradOutput.size(3) * gradOutput.size(4)
     var b = 0
     var i = 0
-    while(b < nBatch) {
-      var c = 0
-      while(c < nChannel) {
-        var k = 0
-        while(k < frameSize) {
-          val invStd = saveStdData(saveStdOffset + c)
-          gradInputData(gradInputOffset + i) = scaleData(scaleOffset + c) *
-            invStd * gradOutputData(gradOutputOffset + i)
-          k += 1
-          i += 1
+    if (scale != null) {
+      val scaleData = scale.storage().array()
+      val scaleOffset = scale.storageOffset() - 1
+      while (b < nBatch) {
+        var c = 0
+        while (c < nChannel) {
+          var k = 0
+          while (k < frameSize) {
+            val invStd = saveStdData(saveStdOffset + c)
+            gradInputData(gradInputOffset + i) = scaleData(scaleOffset + c) *
+              invStd * gradOutputData(gradOutputOffset + i)
+            k += 1
+            i += 1
+          }
+          c += 1
         }
-        c += 1
+        b += 1
       }
-      b += 1
+    } else {
+      while (b < nBatch) {
+        var c = 0
+        while (c < nChannel) {
+          var k = 0
+          while (k < frameSize) {
+            val invStd = saveStdData(saveStdOffset + c)
+            gradInputData(gradInputOffset + i) =
+              invStd * gradOutputData(gradOutputOffset + i)
+            k += 1
+            i += 1
+          }
+          c += 1
+        }
+        b += 1
+      }
     }
   }
 
   private[bigdl] def accGradientNHWCFloat(gradOutput: Tensor[Float],
     gradWeight: Tensor[Float], gradBias: Tensor[Float],
     input: Tensor[Float], saveMean: Tensor[Float],
-    saveStd: Tensor[Float]): Unit = {
+    saveStd: Tensor[Float], scaleW: Float, scaleB: Float): Unit = {
     require(gradOutput.isContiguous(), "gradOutput must be contiguous")
     require(gradWeight.isContiguous(), "gradWeight must be contiguous")
     require(gradBias.isContiguous(), "gradBias must be contiguous")
@@ -1350,8 +1624,8 @@ object SpatialBatchNormalization {
         val g = gradOutputData(gradOutputOffset + i)
         gradWeightData(c + gradWeightOffset) += g *
           (inputData(inputOffset + i) - saveMeanData(saveMeanOffset + c)) *
-          saveStdData(saveStdOffset + c)
-        gradBiasData(c + gradBiasOffset) += g
+          saveStdData(saveStdOffset + c) * scaleW
+        gradBiasData(c + gradBiasOffset) += g * scaleB
         i += 1
         c += 1
       }
@@ -1361,7 +1635,7 @@ object SpatialBatchNormalization {
   private[bigdl] def accGradientNHWCDouble(gradOutput: Tensor[Double],
     gradWeight: Tensor[Double], gradBias: Tensor[Double],
     input: Tensor[Double], saveMean: Tensor[Double],
-    saveStd: Tensor[Double]): Unit = {
+    saveStd: Tensor[Double], scaleW: Double, scaleB: Double): Unit = {
     require(gradOutput.isContiguous(), "gradOutput must be contiguous")
     require(gradWeight.isContiguous(), "gradWeight must be contiguous")
     require(gradBias.isContiguous(), "gradBias must be contiguous")
@@ -1390,8 +1664,8 @@ object SpatialBatchNormalization {
         val g = gradOutputData(gradOutputOffset + i)
         gradWeightData(c + gradWeightOffset) += g *
           (inputData(inputOffset + i) - saveMeanData(saveMeanOffset + c)) *
-          saveStdData(saveStdOffset + c)
-        gradBiasData(c + gradBiasOffset) += g
+          saveStdData(saveStdOffset + c) * scaleW
+        gradBiasData(c + gradBiasOffset) += g * scaleB
         i += 1
         c += 1
       }
@@ -1401,7 +1675,7 @@ object SpatialBatchNormalization {
   private[bigdl] def accGradientNCHWFloat(gradOutput: Tensor[Float],
     gradWeight: Tensor[Float], gradBias: Tensor[Float],
     input: Tensor[Float], saveMean: Tensor[Float],
-    saveStd: Tensor[Float]): Unit = {
+    saveStd: Tensor[Float], scaleW: Float, scaleB: Float): Unit = {
     require(gradOutput.isContiguous(), "gradOutput must be contiguous")
     require(gradWeight.isContiguous(), "gradWeight must be contiguous")
     require(gradBias.isContiguous(), "gradBias must be contiguous")
@@ -1434,8 +1708,8 @@ object SpatialBatchNormalization {
           val g = gradOutputData(gradOutputOffset + i)
           gradWeightData(c + gradWeightOffset) += g *
             (inputData(inputOffset + i) - saveMeanData(saveMeanOffset + c)) *
-            saveStdData(saveStdOffset + c)
-          gradBiasData(c + gradBiasOffset) += g
+            saveStdData(saveStdOffset + c) * scaleW
+          gradBiasData(c + gradBiasOffset) += g * scaleB
           k += 1
           i += 1
         }
@@ -1448,7 +1722,7 @@ object SpatialBatchNormalization {
   private[bigdl] def accGradientNCHWDouble(gradOutput: Tensor[Double],
     gradWeight: Tensor[Double], gradBias: Tensor[Double],
     input: Tensor[Double], saveMean: Tensor[Double],
-    saveStd: Tensor[Double]): Unit = {
+    saveStd: Tensor[Double], scaleW: Double, scaleB: Double): Unit = {
     require(gradOutput.isContiguous(), "gradOutput must be contiguous")
     require(gradWeight.isContiguous(), "gradWeight must be contiguous")
     require(gradBias.isContiguous(), "gradBias must be contiguous")
@@ -1481,8 +1755,8 @@ object SpatialBatchNormalization {
           val g = gradOutputData(gradOutputOffset + i)
           gradWeightData(c + gradWeightOffset) += g *
             (inputData(inputOffset + i) - saveMeanData(saveMeanOffset + c)) *
-            saveStdData(saveStdOffset + c)
-          gradBiasData(c + gradBiasOffset) += g
+            saveStdData(saveStdOffset + c) * scaleW
+          gradBiasData(c + gradBiasOffset) += g * scaleB
           k += 1
           i += 1
         }

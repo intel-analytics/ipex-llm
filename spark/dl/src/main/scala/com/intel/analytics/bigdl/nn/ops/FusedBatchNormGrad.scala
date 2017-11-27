@@ -60,7 +60,7 @@ class FusedBatchNormGrad[T: ClassTag](
     gradWeight.zero()
     gradBias.zero()
     SpatialBatchNormalization.accGradientNHWCFloat(
-      gradOutput, gradWeight, gradBias, x, saveMean, saveStd)
+      gradOutput, gradWeight, gradBias, x, saveMean, saveStd, 1.0f, 1.0f)
 
     output
   }

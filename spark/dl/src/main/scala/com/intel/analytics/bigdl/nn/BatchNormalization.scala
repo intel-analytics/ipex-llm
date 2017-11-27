@@ -63,7 +63,7 @@ class BatchNormalization[T: ClassTag](
   val nDim = 2
   val channelDim = 2
   var runningMean = if (affine) Tensor[T](nOutput) else Tensor[T]()
-  var runningVar = if (affine) Tensor[T](nOutput).fill(ev.fromType[Int](1)) else Tensor[T]()
+  var runningVar = if (affine) Tensor[T](nOutput).fill(ev.one) else Tensor[T]()
   var saveMean = if (affine) Tensor[T](nOutput) else Tensor[T]()
   var saveStd = if (affine) Tensor[T](nOutput).fill(ev.zero) else Tensor[T]()
 
@@ -131,6 +131,8 @@ class BatchNormalization[T: ClassTag](
 
   protected val gMean = Tensor[T]()
   protected val gxMean = Tensor[T]()
+  protected val _input = Tensor[T]()
+  protected val _gradOutput = Tensor[T]()
 
   override def copyStatus(src: Module[T]): this.type = {
     require(canEqual(src), s"copyStatus: type mismatch, $src is different from $this")
@@ -197,7 +199,8 @@ class BatchNormalization[T: ClassTag](
     checkInputDim(input)
     output.resizeAs(input)
 
-    val _input = makeBatch(input)
+    _input.set(input)
+    makeBatch(_input)
     _input.addSingletonDimension(_input, 3)
     _input.addSingletonDimension(_input, 4)
     val nInput = _input.size(channelDim)
@@ -212,14 +215,14 @@ class BatchNormalization[T: ClassTag](
     if (train) {
       if (ev.getType() == FloatType) {
         SpatialBatchNormalization.updateOutputNCHWTrainFloat(
-          input.asInstanceOf[Tensor[Float]], output.asInstanceOf[Tensor[Float]],
+          _input.asInstanceOf[Tensor[Float]], output.asInstanceOf[Tensor[Float]],
           saveMean.asInstanceOf[Tensor[Float]], saveStd.asInstanceOf[Tensor[Float]],
           runningMean.asInstanceOf[Tensor[Float]], runningVar.asInstanceOf[Tensor[Float]],
           weight.asInstanceOf[Tensor[Float]], bias.asInstanceOf[Tensor[Float]],
           eps.toFloat, momentum.toFloat)
       } else {
         SpatialBatchNormalization.updateOutputNCHWTrainDouble(
-          input.asInstanceOf[Tensor[Double]], output.asInstanceOf[Tensor[Double]],
+          _input.asInstanceOf[Tensor[Double]], output.asInstanceOf[Tensor[Double]],
           saveMean.asInstanceOf[Tensor[Double]], saveStd.asInstanceOf[Tensor[Double]],
           runningMean.asInstanceOf[Tensor[Double]], runningVar.asInstanceOf[Tensor[Double]],
           weight.asInstanceOf[Tensor[Double]], bias.asInstanceOf[Tensor[Double]],
@@ -228,12 +231,12 @@ class BatchNormalization[T: ClassTag](
     } else {
       if (ev.getType() == FloatType) {
         SpatialBatchNormalization.updateOutputNCHWInferFloat(
-          input.asInstanceOf[Tensor[Float]], output.asInstanceOf[Tensor[Float]],
+          _input.asInstanceOf[Tensor[Float]], output.asInstanceOf[Tensor[Float]],
           runningMean.asInstanceOf[Tensor[Float]], runningVar.asInstanceOf[Tensor[Float]],
           weight.asInstanceOf[Tensor[Float]], bias.asInstanceOf[Tensor[Float]])
       } else {
         SpatialBatchNormalization.updateOutputNCHWInferDouble(
-          input.asInstanceOf[Tensor[Double]], output.asInstanceOf[Tensor[Double]],
+          _input.asInstanceOf[Tensor[Double]], output.asInstanceOf[Tensor[Double]],
           runningMean.asInstanceOf[Tensor[Double]], runningVar.asInstanceOf[Tensor[Double]],
           weight.asInstanceOf[Tensor[Double]], bias.asInstanceOf[Tensor[Double]])
       }
@@ -243,16 +246,20 @@ class BatchNormalization[T: ClassTag](
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    _gradOutput.set(gradOutput)
+    makeBatch(_gradOutput)
+    _gradOutput.addSingletonDimension(_gradOutput, 3)
+    _gradOutput.addSingletonDimension(_gradOutput, 4)
     if (train) {
       if (ev.getType() == FloatType) {
         SpatialBatchNormalization.updateGradInputNCHWTrainFloat(
-          input.asInstanceOf[Tensor[Float]], gradOutput.asInstanceOf[Tensor[Float]],
+          _input.asInstanceOf[Tensor[Float]], _gradOutput.asInstanceOf[Tensor[Float]],
           gradInput.asInstanceOf[Tensor[Float]], weight.asInstanceOf[Tensor[Float]],
           saveMean.asInstanceOf[Tensor[Float]], saveStd.asInstanceOf[Tensor[Float]],
           gMean.asInstanceOf[Tensor[Float]], gxMean.asInstanceOf[Tensor[Float]])
       } else {
         SpatialBatchNormalization.updateGradInputNCHWTrainDouble(
-          input.asInstanceOf[Tensor[Double]], gradOutput.asInstanceOf[Tensor[Double]],
+          _input.asInstanceOf[Tensor[Double]], _gradOutput.asInstanceOf[Tensor[Double]],
           gradInput.asInstanceOf[Tensor[Double]], weight.asInstanceOf[Tensor[Double]],
           saveMean.asInstanceOf[Tensor[Double]], saveStd.asInstanceOf[Tensor[Double]],
           gMean.asInstanceOf[Tensor[Double]], gxMean.asInstanceOf[Tensor[Double]])
@@ -260,12 +267,12 @@ class BatchNormalization[T: ClassTag](
     } else {
       if (ev.getType() == FloatType) {
         SpatialBatchNormalization.updateGradInputNCHWInferFloat(
-          gradOutput.asInstanceOf[Tensor[Float]],
+          _gradOutput.asInstanceOf[Tensor[Float]],
           gradInput.asInstanceOf[Tensor[Float]], weight.asInstanceOf[Tensor[Float]],
           bias.asInstanceOf[Tensor[Float]])
       } else {
         SpatialBatchNormalization.updateGradInputNCHWInferDouble(
-          gradOutput.asInstanceOf[Tensor[Double]],
+          _gradOutput.asInstanceOf[Tensor[Double]],
           gradInput.asInstanceOf[Tensor[Double]], weight.asInstanceOf[Tensor[Double]],
           bias.asInstanceOf[Tensor[Double]])
       }
@@ -274,16 +281,20 @@ class BatchNormalization[T: ClassTag](
   }
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
+    if (weight == null || scaleW != 0) {
+      return
+    }
+
     if (ev.getType() == FloatType) {
-      SpatialBatchNormalization.accGradientNCHWFloat(gradOutput.asInstanceOf[Tensor[Float]],
+      SpatialBatchNormalization.accGradientNCHWFloat(_gradOutput.asInstanceOf[Tensor[Float]],
         gradWeight.asInstanceOf[Tensor[Float]], gradBias.asInstanceOf[Tensor[Float]],
-        input.asInstanceOf[Tensor[Float]], saveMean.asInstanceOf[Tensor[Float]],
-        saveStd.asInstanceOf[Tensor[Float]])
+        _input.asInstanceOf[Tensor[Float]], saveMean.asInstanceOf[Tensor[Float]],
+        saveStd.asInstanceOf[Tensor[Float]], scaleW.toFloat, scaleB.toFloat)
     } else {
-      SpatialBatchNormalization.accGradientNCHWDouble(gradOutput.asInstanceOf[Tensor[Double]],
+      SpatialBatchNormalization.accGradientNCHWDouble(_gradOutput.asInstanceOf[Tensor[Double]],
         gradWeight.asInstanceOf[Tensor[Double]], gradBias.asInstanceOf[Tensor[Double]],
-        input.asInstanceOf[Tensor[Double]], saveMean.asInstanceOf[Tensor[Double]],
-        saveStd.asInstanceOf[Tensor[Double]])
+        _input.asInstanceOf[Tensor[Double]], saveMean.asInstanceOf[Tensor[Double]],
+        saveStd.asInstanceOf[Tensor[Double]], scaleW, scaleB)
     }
   }
 }
