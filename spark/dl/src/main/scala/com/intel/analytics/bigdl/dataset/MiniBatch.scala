@@ -413,8 +413,8 @@ object MiniBatch {
     miniBatch
   }
 
-  private[bigdl] def copyWithPadding[T: ClassTag](
-       samples: Seq[TableSample[T]],
+  private[bigdl] def copy[T: ClassTag](
+       samples: Seq[TensorSample[T]],
        miniBatch: TableMiniBatch[T],
        unlabeled: Boolean)(implicit ev: TensorNumeric[T]): MiniBatch[T] = {
     val inputs = miniBatch.inputData
@@ -672,10 +672,10 @@ class SparseMiniBatch[T: ClassTag](
     target
   }
 
-  def init(features: Array[Tensor[T]], labels: Array[Tensor[T]]): Unit = {
+  def init(features: Table, labels: Table): Unit = {
     var i = 0
     while (i < inputData.length) {
-      val featureI = features(i)
+      val featureI = features[Tensor[T]](i + 1)
       inputData(i) = if (featureI.getTensorType == SparseType) {
         Tensor.sparse[T](Array(batchSize) ++ featureI.size())
       } else if (featureI.getTensorType == DenseType) {
@@ -688,7 +688,7 @@ class SparseMiniBatch[T: ClassTag](
     }
     i = 0
     while (i < targetData.length) {
-      val labelI = labels(i)
+      val labelI = labels[Tensor[T]](i + 1)
       targetData(i) = if (labelI.getTensorType == SparseType) {
         Tensor.sparse[T](Array(batchSize) ++ labelI.size())
       } else if (labelI.getTensorType == DenseType) {
@@ -717,14 +717,14 @@ class SparseMiniBatch[T: ClassTag](
 
     var i = 0
     while (i < inputData.length) {
-      SparseMiniBatch.batch(1, features.map(_.apply(i)), inputData(i))
+      SparseMiniBatch.batch(1, features.map(_.apply[Tensor[T]](i + 1)), inputData(i))
       i += 1
     }
 
     if (!unlabeled) {
       var j = 0
       while (j < targetData.length) {
-        SparseMiniBatch.batch(1, labels.map(_.apply(j)), targetData(j))
+        SparseMiniBatch.batch(1, labels.map(_.apply[Tensor[T]](j + 1)), targetData(j))
         j += 1
       }
     }
@@ -840,8 +840,8 @@ class TableMiniBatch[T: ClassTag](
 
   override def set(samples: Seq[Sample[T]])(implicit ev: TensorNumeric[T]): this.type = {
     require(samples.length > 0, "samples is empty")
-    require(samples(0).isInstanceOf[TableSample[T]])
-    val _samples = samples.map(_.asInstanceOf[TableSample[T]])
+    require(samples(0).isInstanceOf[TensorSample[T]])
+    val _samples = samples.map(_.asInstanceOf[TensorSample[T]])
     require(batchSize == 0 || samples.length <= batchSize, "setValue: samples's size doesn't " +
       s"match mini batch size, excepted ${size()} got ${samples.length}")
     if (batchSize == 0) {
@@ -849,7 +849,7 @@ class TableMiniBatch[T: ClassTag](
       unlabeled = samples.head.numLabel() == 0
     }
 
-    MiniBatch.copyWithPadding[T](_samples, this, unlabeled)
+    MiniBatch.copy[T](_samples, this, unlabeled)
     this
   }
 
