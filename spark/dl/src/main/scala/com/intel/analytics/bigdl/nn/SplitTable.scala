@@ -40,7 +40,7 @@ import scala.reflect.ClassTag
  */
 @SerialVersionUID(- 4318640284973082779L)
 class SplitTable[T: ClassTag](
-  var dimension: Int,
+    var dimension: Int,
   var nInputDims: Int = -1)
   (implicit ev: TensorNumeric[T]) extends AbstractModule[Tensor[T], Table, T]{
 
