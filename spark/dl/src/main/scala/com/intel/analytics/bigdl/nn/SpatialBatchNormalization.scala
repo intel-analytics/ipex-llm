@@ -1190,6 +1190,7 @@ object SpatialBatchNormalization {
       while(c < nChannels) {
         meanData(c + meanOffset) = 0
         stdData(c + stdOffset) = 0.0001f
+        c += 1
       }
     }
 
@@ -1339,6 +1340,7 @@ object SpatialBatchNormalization {
       while(c < nChannels) {
         meanData(c + meanOffset) = 0
         stdData(c + stdOffset) = 0.0001
+        c += 1
       }
     }
 
