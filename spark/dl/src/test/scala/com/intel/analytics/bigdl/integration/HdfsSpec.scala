@@ -244,7 +244,7 @@ class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter{
     fs.close()
   }
 
-  "Read/Writer big model" should "work properly" in {
+  "Read/Writer big model from HDFS" should "work properly" in {
     val hdfsDir = hdfs + s"/${ com.google.common.io.Files.createTempDir().getPath() }"
     val linear = Linear[Float](40000, 8000)
     linear.save(hdfsDir + "/linear.bigdl", true)

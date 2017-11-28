@@ -150,12 +150,4 @@ class S3Spec extends FlatSpec with Matchers with BeforeAndAfter{
     val loadedOutput = loadedModel.forward(inputData).toTensor[Float]
     loadedOutput.almostEqual(outputData, 1e-7)
   }
-
-  "Read/Writer big model" should "work properly" in {
-    val s3Dir = s3aPath + s"/${ com.google.common.io.Files.createTempDir().getPath() }"
-    val linear = Linear[Float](40000, 8000)
-    linear.save(s3Dir + "/linear.bigdl", true)
-    val loaded = Module.load[Linear[Float]](s3Dir + "/linear.bigdl").asInstanceOf[Linear[Float]]
-    linear should be (loaded)
-  }
 }
