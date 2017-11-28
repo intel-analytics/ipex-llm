@@ -20,7 +20,7 @@ import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, M
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{Identity => DIdentity, Sample => JSample, _}
-import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.nn.{Cropping2D, Zeros, _}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, _}
 import com.intel.analytics.bigdl.numeric._
 import com.intel.analytics.bigdl.optim.{Optimizer, _}
@@ -28,7 +28,6 @@ import com.intel.analytics.bigdl.tensor.{DenseType, SparseType, Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Table, _}
 import com.intel.analytics.bigdl.visualization.{Summary, TrainSummary, ValidationSummary}
-import com.intel.analytics.bigdl.nn.Zeros
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.rdd.RDD
 import java.lang.{Integer, Boolean => JBoolean}
@@ -2093,6 +2092,21 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def createHardSigmoid : HardSigmoid[T] = {
     HardSigmoid()
+  }
+
+  def createCropping2D(heightCrop: JArrayList[Int],
+                       widthCrop: JArrayList[Int],
+                       dataFormat: String) : Cropping2D[T] = {
+    Cropping2D(heightCrop.asScala.toArray, widthCrop.asScala.toArray, dataFormat)
+  }
+
+  def createCropping3D(depthCrop: JArrayList[Int],
+                       heightCrop: JArrayList[Int],
+                       widthCrop: JArrayList[Int],
+                       dataFormat: String) : Cropping3D[T] = {
+    Cropping3D(depthCrop.asScala.toArray,
+      heightCrop.asScala.toArray,
+      widthCrop.asScala.toArray, dataFormat)
   }
 
   def setInitMethod(layer: Initializable, weightInitMethod: InitializationMethod,

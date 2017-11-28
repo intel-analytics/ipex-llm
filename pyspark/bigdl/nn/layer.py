@@ -4495,6 +4495,184 @@ class HardSigmoid(Layer):
     def __init__(self, bigdl_type="float"):
         super(HardSigmoid, self).__init__(None, bigdl_type)
 
+
+class Cropping2D(Layer):
+    """Cropping layer for 2D input (e.g. picture).
+
+    It crops along spatial dimensions, i.e. width and height.
+
+    # Arguments
+        cropping: int, or tuple of 2 ints, or tuple of 2 tuples of 2 ints.
+            - If int: the same symmetric cropping
+                is applied to width and height.
+            - If tuple of 2 ints:
+                interpreted as two different
+                symmetric cropping values for height and width:
+                `(symmetric_height_crop, symmetric_width_crop)`.
+            - If tuple of 2 tuples of 2 ints:
+                interpreted as
+                `((top_crop, bottom_crop), (left_crop, right_crop))`
+        data_format: A string,
+            one of `channels_last` (default) or `channels_first`.
+            The ordering of the dimensions in the inputs.
+            `channels_last` corresponds to inputs with shape
+            `(batch, height, width, channels)` while `channels_first`
+            corresponds to inputs with shape
+            `(batch, channels, height, width)`.
+            It defaults to the `image_data_format` value found in your
+            Keras config file at `~/.keras/keras.json`.
+            If you never set it, then it will be "channels_last".
+
+    # Input shape
+        4D tensor with shape:
+        - If `data_format` is `"channels_last"`:
+            `(batch, rows, cols, channels)`
+        - If `data_format` is `"channels_first"`:
+            `(batch, channels, rows, cols)`
+
+    # Output shape
+        4D tensor with shape:
+        - If `data_format` is `"channels_last"`:
+            `(batch, cropped_rows, cropped_cols, channels)`
+        - If `data_format` is `"channels_first"`:
+            `(batch, channels, cropped_rows, cropped_cols)`
+
+    # Examples
+
+    ```python
+        # Crop the input 2D images or feature maps
+        model = Sequential()
+        model.add(Cropping2D(cropping=((2, 2), (4, 4)),
+                             input_shape=(28, 28, 3)))
+        # now model.output_shape == (None, 24, 20, 3)
+        model.add(Conv2D(64, (3, 3), padding='same'))
+        model.add(Cropping2D(cropping=((2, 2), (2, 2))))
+        # now model.output_shape == (None, 20, 16. 64)
+    ```
+    >>> crop2D = Cropping2D()
+    creating: Cropping2D
+    """
+    def __init__(self, cropping=((0, 0), (0, 0)),
+                 data_format=None, bigdl_type="float"):
+        if isinstance(cropping, int):
+            height_cropping = [cropping, cropping]
+            width_cropping = [cropping, cropping]
+        elif hasattr(cropping, '__len__'):
+            if len(cropping) != 2:
+                raise ValueError('`cropping` should have two elements. '
+                                 'Found: ' + str(cropping))
+            if hasattr(cropping[0], '__len__'):
+                if len(cropping) != 2:
+                    raise ValueError('`cropping` should have two elements. '
+                                     'Found: ' + str(cropping[0]))
+                height_cropping = [cropping[0][0], cropping[0][1]]
+            else:
+                height_cropping = [cropping[0], cropping[0]]
+            if hasattr(cropping[1], '__len__'):
+                if len(cropping) != 2:
+                    raise ValueError('`cropping` should have two elements. '
+                                     'Found: ' + str(cropping[1]))
+                width_cropping = [cropping[1][0], cropping[1][1]]
+            else:
+                width_cropping = [cropping[1], cropping[1]]
+
+        else:
+            raise ValueError('`cropping` should be either an int, '
+                             'a tuple of 2 ints '
+                             '(symmetric_height_crop, symmetric_width_crop), '
+                             'or a tuple of 2 tuples of 2 ints '
+                             '((top_crop, bottom_crop), (left_crop, right_crop)). '
+                             'Found: ' + str(cropping))
+        super(Cropping2D, self).__init__(None, bigdl_type, height_cropping, width_cropping, data_format)
+
+
+class Cropping3D(Layer):
+    """Cropping layer for 2D input (e.g. picture).
+
+    It crops along spatial dimensions, i.e. width and height.
+
+    # Arguments
+        cropping: int, or tuple of 3 ints, or tuple of 3 tuples of 2 ints.
+            - If int: the same symmetric cropping
+                is applied to depth, height, and width.
+            - If tuple of 3 ints:
+                interpreted as two different
+                symmetric cropping values for depth, height, and width:
+                `(symmetric_dim1_crop, symmetric_dim2_crop, symmetric_dim3_crop)`.
+            - If tuple of 3 tuples of 2 ints:
+                interpreted as
+                `((left_dim1_crop, right_dim1_crop), (left_dim2_crop, right_dim2_crop), (left_dim3_crop, right_dim3_crop))`
+        data_format: A string,
+            one of `channels_last` (default) or `channels_first`.
+            The ordering of the dimensions in the inputs.
+            `channels_last` corresponds to inputs with shape
+            `(batch, spatial_dim1, spatial_dim2, spatial_dim3, channels)`
+            while `channels_first` corresponds to inputs with shape
+            `(batch, channels, spatial_dim1, spatial_dim2, spatial_dim3)`.
+            It defaults to the `image_data_format` value found in your
+            Keras config file at `~/.keras/keras.json`.
+            If you never set it, then it will be "channels_last".
+
+    # Input shape
+        5D tensor with shape:
+        - If `data_format` is `"channels_last"`:
+            `(batch, first_axis_to_crop, second_axis_to_crop, third_axis_to_crop, depth)`
+        - If `data_format` is `"channels_first"`:
+            `(batch, depth, first_axis_to_crop, second_axis_to_crop, third_axis_to_crop)`
+
+    # Output shape
+        5D tensor with shape:
+        - If `data_format` is `"channels_last"`:
+            `(batch, first_cropped_axis, second_cropped_axis, third_cropped_axis, depth)`
+        - If `data_format` is `"channels_first"`:
+            `(batch, depth, first_cropped_axis, second_cropped_axis, third_cropped_axis)`
+
+    ```
+    >>> crop2D = Cropping3D()
+    creating: Cropping3D
+    """
+    def __init__(self, cropping=((1, 1), (1, 1), (1, 1)),
+                 data_format=None, bigdl_type="float"):
+        if isinstance(cropping, int):
+            depth_cropping = [cropping, cropping]
+            height_cropping = [cropping, cropping]
+            width_cropping = [cropping, cropping]
+        elif hasattr(cropping, '__len__'):
+            if len(cropping) != 3:
+                raise ValueError('`cropping` should have three elements. '
+                                 'Found: ' + str(cropping))
+            if hasattr(cropping[0], '__len__'):
+                if len(cropping) != 2:
+                    raise ValueError('`cropping` should have two elements. '
+                                     'Found: ' + str(cropping[0]))
+                depth_cropping = [cropping[0][0], cropping[0][1]]
+            else:
+                depth_cropping = [cropping[0], cropping[0]]
+            if hasattr(cropping[1], '__len__'):
+                if len(cropping) != 2:
+                    raise ValueError('`cropping` should have two elements. '
+                                     'Found: ' + str(cropping[1]))
+                height_cropping = [cropping[1][0], cropping[1][1]]
+            else:
+                height_cropping = [cropping[1], cropping[1]]
+            if hasattr(cropping[2], '__len__'):
+                if len(cropping) != 2:
+                    raise ValueError('`cropping` should have two elements. '
+                                     'Found: ' + str(cropping[2]))
+                width_cropping = [cropping[2][0], cropping[2][1]]
+            else:
+                width_cropping = [cropping[2], cropping[2]]
+
+        else:
+            raise ValueError('`cropping` should be either an int, '
+                             'a tuple of 3 ints '
+                             '(symmetric_dim1_crop, symmetric_dim2_crop, symmetric_dim3_crop), '
+                             'or a tuple of 3 tuples of 2 ints '
+                             '((left_dim1_crop, right_dim1_crop), (left_dim2_crop, right_dim2_crop), (left_dim3_crop, right_dim3_crop)). '
+                             'Found: ' + str(cropping))
+        super(Cropping3D, self).__init__(None, bigdl_type, height_cropping, width_cropping, data_format)
+
+
 def _test():
     import doctest
     from pyspark import SparkContext
@@ -4503,12 +4681,12 @@ def _test():
     from bigdl.util.common import create_spark_conf
     globs = layer.__dict__.copy()
     sc = SparkContext(master="local[4]", appName="test layer",
-                      conf=create_spark_conf())
+                  conf=create_spark_conf())
     globs['sc'] = sc
     init_engine()
 
     (failure_count, test_count) = doctest.testmod(globs=globs,
-                                                  optionflags=doctest.ELLIPSIS)
+                                              optionflags=doctest.ELLIPSIS)
     if failure_count:
         exit(-1)
 
