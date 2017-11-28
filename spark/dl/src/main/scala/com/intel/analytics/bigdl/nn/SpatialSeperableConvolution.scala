@@ -22,13 +22,35 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+/**
+ * Separable convolutions consist in first performing a depthwise spatial convolution (which acts
+ * on each input channel separately) followed by a pointwise convolution which mixes together the
+ * resulting output channels. The  depthMultiplier argument controls how many output channels are
+ * generated per input channel in the depthwise step.
+ *
+ * @param nInputChannel
+ * @param nOutputChannel
+ * @param depthMultiplier
+ * @param kW
+ * @param kH
+ * @param sW
+ * @param sH
+ * @param pW
+ * @param pH
+ * @param hasBias
+ * @param dataFormat
+ * @param wRegularizer
+ * @param bRegularizer
+ * @param pRegularizer
+ * @tparam T Numeric type. Only support float/double now
+ */
 class SpatialSeperableConvolution[T: ClassTag](
   val nInputChannel: Int,
   val nOutputChannel: Int,
   val depthMultiplier: Int,
-  val kW: Int, kH: Int,
-  val sW: Int, sH: Int,
-  val pW: Int, pH: Int,
+  val kW: Int, val kH: Int,
+  val sW: Int, val sH: Int,
+  val pW: Int, val pH: Int,
   val hasBias: Boolean,
   val dataFormat: DataFormat,
   var wRegularizer: Regularizer[T] = null,

@@ -283,6 +283,15 @@ class DistKLDivCriterion(Criterion):
         super(DistKLDivCriterion, self).__init__(None, bigdl_type,
                                                  size_average)
 
+class CategoricalCrossEntropy(Criterion):
+    """
+    This criterion is same with cross entropy criterion, except it takes a one-hot format target
+    tensor
+    >>> cce = CategoricalCrossEntropy()
+    creating: createCategoricalCrossEntropy
+    """
+    def __init__(self, bigdl_type="float"):
+        super(CategoricalCrossEntropy, self).__init__(None, bigdl_type)
 
 class HingeEmbeddingCriterion(Criterion):
 
