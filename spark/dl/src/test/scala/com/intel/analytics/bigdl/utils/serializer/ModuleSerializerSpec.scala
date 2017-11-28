@@ -2121,6 +2121,20 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     loadedModel.isTraining() should be (false)
   }
 
+  "HardSigmoid serialization" should "work properly" in {
+    val hardSigmoid = HardSigmoid()
+    ModulePersister.saveToFile("/tmp/hardSigmoid.bigdl", hardSigmoid, true)
+    val loadedModel = ModuleLoader.loadFromFile("/tmp/hardSigmoid.bigdl")
+
+    val input = Tensor(2, 2).rand()
+
+    val res1 = hardSigmoid.forward(input)
+
+    val res2 = loadedModel.forward(input)
+
+    res1 should be (res2)
+  }
+
 }
 
 class TestModule[T: ClassTag](val custom: CustomData)
