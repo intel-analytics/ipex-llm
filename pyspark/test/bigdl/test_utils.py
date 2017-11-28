@@ -242,7 +242,7 @@ class BigDLTestCase(TestCase):
                                     feed_dict=feed_dict)
         bigdl_model.training(is_training=True)
         bigdl_grad_input = bigdl_model.backward(input_data, bigdl_output2)
-        if isinstance(keras_grad_input, list) and isinstance(bigdl_grad_input, list):  # for merge layers
+        if isinstance(bigdl_grad_input, list):  # for merge layers
             for j in range(0, len(keras_grad_input)):
                 self.assert_allclose(bigdl_grad_input[j],
                                      keras_grad_input[j],
@@ -255,20 +255,22 @@ class BigDLTestCase(TestCase):
                                  atol=atol)
 
         # compare gradient weights
-        keras_grad_weights = weight_converter(sess.run(K.gradients(keras_model.output * keras_output, keras_model.trainable_weights),
-                                              feed_dict=feed_dict))
-        bgrad_weights = bigdl_model.parameters()
-        bigdl_grad_weights = []
-        for layer in bgrad_weights.keys():
-            if 'gradWeight' in bgrad_weights[layer]:
-                bigdl_grad_weights.append(bigdl_grad_weights[layer]['gradWeight'])
-            if 'gradWeight' in bgrad_weights[layer]:
-                bigdl_grad_weights.append(bigdl_grad_weights[layer]['gradBias'])
-        for k in range(0, len(keras_grad_weights)):
-            self.assert_allclose(bigdl_grad_weights[k],
-                                 keras_grad_weights[k],
-                                 rtol=rtol,
-                                 atol=atol)
+        if keras_model.trainable_weights:
+            weight_converter = WeightsConverter.get_converter(keras_model.layers[1].__class__.__name__)
+            keras_grad_weights = weight_converter(sess.run(K.gradients(keras_model.output * keras_output, keras_model.trainable_weights),
+                                                  feed_dict=feed_dict))
+            bgrad_weights = bigdl_model.parameters()
+            bigdl_grad_weights = []
+            for layer in bgrad_weights.keys():
+                if 'gradWeight' in bgrad_weights[layer]:
+                    bigdl_grad_weights.append(bgrad_weights[layer]['gradWeight'])
+                if 'gradBias' in bgrad_weights[layer]:
+                    bigdl_grad_weights.append(bgrad_weights[layer]['gradBias'])
+            for k in range(0, len(keras_grad_weights)):
+                self.assert_allclose(bigdl_grad_weights[k],
+                                     keras_grad_weights[k],
+                                     rtol=rtol,
+                                     atol=atol)
 
 
     def modelTestSingleLayerWithOrdersModes(self,
