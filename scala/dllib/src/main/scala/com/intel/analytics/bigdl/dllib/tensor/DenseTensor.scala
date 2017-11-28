@@ -377,7 +377,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
       this._storage.resize(0)
     }
     this.nDimension = 0
-    this._size = null
+    this._size = Array[Int]()
     this
   }
 
