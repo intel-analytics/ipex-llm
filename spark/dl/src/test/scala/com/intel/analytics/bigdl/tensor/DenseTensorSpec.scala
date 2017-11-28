@@ -1066,4 +1066,12 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     o.mm(x, y)
     o should be(Tensor[Float](T(T(22, 28), T(49, 64))))
   }
+
+  "set" should "work properly" in {
+    val t = Tensor[Float](1, 3)
+    t.set()
+    t.size() should be (Array[Int]())
+    t.nElement() should be (0)
+    t.dim() should be (0)
+  }
 }
