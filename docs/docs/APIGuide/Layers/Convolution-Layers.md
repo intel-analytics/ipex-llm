@@ -1740,7 +1740,7 @@ array([[[  1.,   2.,   3.],
 
 **Scala:**
 ```scala
-val module = UpSampling2D(size: (Int, Int), format: DataFormat = DataFormat.NCHW)
+val module = UpSampling2D(size: Array[Int], format: DataFormat = DataFormat.NCHW)
 ```
 **Python:**
 ```python
