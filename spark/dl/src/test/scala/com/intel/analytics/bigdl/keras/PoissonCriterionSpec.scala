@@ -21,16 +21,16 @@ class PoissonCriterionSpec extends KerasBaseSpec {
 
   "PoissonCriterion" should "be ok" in {
   val kerasCode =
-  """
-    |input_tensor = Input(shape=[3])
-    |target_tensor = Input(shape=[3])
-    |loss = poisson(input_tensor, target_tensor)
-    |input = np.random.uniform(0, 1, [2, 3])
-    |Y = np.random.uniform(0, 1, [2, 3])
-  """.stripMargin
-  val kld = new PoissonCriterion[Float]()
-  checkOutputAndGradForLoss(kld, kerasCode)
-}
+    """
+      |input_tensor = Input(shape=[3])
+      |target_tensor = Input(shape=[3])
+      |loss = poisson(target_tensor, input_tensor)
+      |input = np.random.uniform(0, 1, [2, 3])
+      |Y = np.random.uniform(0, 1, [2, 3])
+    """.stripMargin
+    val kld = new PoissonCriterion[Float]()
+    checkOutputAndGradForLoss(kld, kerasCode)
+  }
 
   "PoissonCriterion" should "be ok with epsilon" in {
   val kerasCode =

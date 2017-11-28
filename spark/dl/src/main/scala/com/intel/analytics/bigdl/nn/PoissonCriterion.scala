@@ -30,12 +30,12 @@ import scala.reflect.ClassTag
 class PoissonCriterion[T: ClassTag]
 (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
 
-  private val epsilon: T = ev.fromType(1e-07)
+  private val epsilon: T = ev.fromType(1e-08)
 
   // K.mean(y_pred - y_true * K.log(y_pred + K.epsilon()), axis=-1)
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     val buffer = Tensor[T]()
-    buffer.resizeAs(target).copy(target)
+    buffer.resizeAs(input).copy(input)
 
     buffer.apply1(e => ev.plus(e, epsilon))
     buffer.log().cmul(target)
@@ -47,10 +47,11 @@ class PoissonCriterion[T: ClassTag]
     require(input.isSameSizeAs(gradOutput),
       "Input should have the same size as gradOutput" +
         s"input size(${input.dim()}) gradOutput size(${gradOutput.dim()})")
-    gradInput.resizeAs(input).copy(input)
 
-    gradInput.div(gradOutput)
+    gradInput.resizeAs(gradOutput).copy(gradOutput)
+    gradInput.div(input)
     gradInput.negative(gradInput).add(ev.fromType[Double](1.0))
+      .div(ev.fromType[Int](input.nElement()))
 
     gradInput
   }
