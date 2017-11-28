@@ -1099,6 +1099,16 @@ object SparseTensor{
     res
   }
 
+  /**
+   * Find index of last occurrence of value in the array from start index to end index.
+   * The array should be ordered ascending.
+   *
+   * @param array the array will be searched.
+   * @param value the element value to search for.
+   * @param start start index
+   * @param end last index
+   * @return index of last occurrence of value
+   */
   private def lastIndexOf[T: ClassTag](
         array: Array[T],
         value: T,
@@ -1118,6 +1128,15 @@ object SparseTensor{
     }
   }
 
+  /**
+   * Find index of first occurrence of value in the array from start index to end index.
+   *
+   * @param array the array will be searched.
+   * @param value the element value to search for.
+   * @param start start index
+   * @param end last index
+   * @return index of first occurrence of value
+   */
   private def firstIndexOf[T: ClassTag](
         array: Array[T],
         value: T,
