@@ -233,7 +233,7 @@ class BigDLTestCase(TestCase):
         # compare gradient input
         sess = K.get_session()
         feed_dict = {K.learning_phase(): 1}
-        if isinstance(input_data, list):
+        if isinstance(input_data, list): # for merge layers
             for i in range(0, len(input_data)):
                 feed_dict[keras_model.input[i]] = input_data[i]
         else:
@@ -254,7 +254,7 @@ class BigDLTestCase(TestCase):
                                  rtol=rtol,
                                  atol=atol)
 
-        # compare gradient weights
+        # compare gradient weights if the layer has weights
         if keras_model.trainable_weights:
             weight_converter = WeightsConverter.get_converter(keras_model.layers[1].__class__.__name__)
             keras_grad_weights = weight_converter(sess.run(K.gradients(keras_model.output * keras_output, keras_model.trainable_weights),
