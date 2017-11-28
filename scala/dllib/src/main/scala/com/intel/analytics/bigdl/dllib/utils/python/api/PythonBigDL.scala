@@ -2160,6 +2160,12 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       alignCorner)
   }
 
+  def createHighway(size: Int, withBias: Boolean, activation: String,
+    wRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null): Graph[T] = {
+    Highway(size, withBias, activation, wRegularizer, bRegularizer)
+  }
+
   def redirectSparkLogs(logPath: String): Unit = {
     LoggerFilter.redirectSparkInfoLogs(logPath)
   }
