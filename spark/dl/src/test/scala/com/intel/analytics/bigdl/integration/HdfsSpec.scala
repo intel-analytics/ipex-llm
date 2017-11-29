@@ -71,15 +71,16 @@ class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter{
     val end = System.currentTimeMillis()
     println(s" total time = ${(end - start)/ 1000} seconds")
     linear should be (loaded)
-
+/*
     // clean up
     val dest = new Path(hdfsDir + "/linear.bigdl")
     val fs = dest.getFileSystem(new Configuration())
     if (fs.exists(dest)) {
       fs.delete(dest, true)
     }
+    */
   }
-
+/*
   "save and load model from hdfs" should "be correct" in {
     val model = LeNet5(10)
     val hdfsPath = hdfs + "/lenet.obj"
@@ -264,5 +265,6 @@ class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter{
     sc.stop()
     fs.close()
   }
+  */
 
 }
