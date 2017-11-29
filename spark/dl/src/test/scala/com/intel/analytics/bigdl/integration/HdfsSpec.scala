@@ -59,6 +59,27 @@ class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter{
     }
   }
 
+  "Read/Writer big model from HDFS" should "work properly" in {
+    // val hdfsDir = hdfs + s"/${ com.google.common.io.Files.createTempDir().getPath() }"
+    val start = System.currentTimeMillis()
+    val  hdfsDir = hdfs + "/tmp"
+    val linear = Linear[Float](40000, 8000)
+    println("starting to save")
+    linear.save(hdfsDir + "/linear.bigdl", true)
+    println("starting to load")
+    val loaded = Module.load[Linear[Float]](hdfsDir + "/linear.bigdl").asInstanceOf[Linear[Float]]
+    val end = System.currentTimeMillis()
+    println(s" total time = ${(end - start)/ 1000} seconds")
+    linear should be (loaded)
+
+    // clean up
+    val dest = new Path(hdfsDir + "/linear.bigdl")
+    val fs = dest.getFileSystem(new Configuration())
+    if (fs.exists(dest)) {
+      fs.delete(dest, true)
+    }
+  }
+
   "save and load model from hdfs" should "be correct" in {
     val model = LeNet5(10)
     val hdfsPath = hdfs + "/lenet.obj"
@@ -244,11 +265,4 @@ class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter{
     fs.close()
   }
 
-  "Read/Writer big model from HDFS" should "work properly" in {
-    val hdfsDir = hdfs + s"/${ com.google.common.io.Files.createTempDir().getPath() }"
-    val linear = Linear[Float](40000, 8000)
-    linear.save(hdfsDir + "/linear.bigdl", true)
-    val loaded = Module.load[Linear[Float]](hdfsDir + "/linear.bigdl").asInstanceOf[Linear[Float]]
-    linear should be (loaded)
-  }
 }
