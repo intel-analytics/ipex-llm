@@ -420,8 +420,8 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
     val newSize = others.length +: others.head.size()
     var i = 0
     while (i < others.length) {
-      require(others(i).size().sameElements(others.head.size()), "The tensors being copied must have" +
-        " the same size")
+      require(others(i).size().sameElements(others.head.size()),
+        "The tensors being copied must have the same size")
       i = i + 1
     }
     resize(newSize)
