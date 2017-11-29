@@ -63,8 +63,8 @@ class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter{
     // val hdfsDir = hdfs + s"/${ com.google.common.io.Files.createTempDir().getPath() }"
     val start = System.currentTimeMillis()
     val  hdfsDir = hdfs + "/tmp"
-    // val linear = Linear[Float](40000, 8000)
-    val linear = Linear[Float](4, 8)
+    val linear = Linear[Float](40000, 8000)
+    // val linear = Linear[Float](4, 8)
     println("starting to save")
     linear.save(hdfsDir + "/linear.bigdl", true)
     println("starting to load")
