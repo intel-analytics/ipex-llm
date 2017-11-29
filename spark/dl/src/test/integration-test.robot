@@ -9,12 +9,12 @@ Test template    BigDL Test
 @{verticals}    ${spark_200_3_vid}    ${spark_210_3_vid}    ${hdfs_264_3_vid}    ${spark_tf_210_3_vid}    ${spark_tf_163_3_vid}
 
 *** Test Cases ***   SuiteName                             VerticalId
-1                    Spark2.0 Test Suite                   ${spark_200_3_vid}
-2                    Spark2.1 Test Suite                   ${spark_210_3_vid}
+#1                    Spark2.0 Test Suite                   ${spark_200_3_vid}
+#2                    Spark2.1 Test Suite                   ${spark_210_3_vid}
 3                    Hdfs Test Suite                       ${hdfs_264_3_vid}
-4                    PySpark2.1 Test Suite                 ${spark_tf_210_3_vid}
-5                    PySpark1.6 Test Suite                 ${spark_tf_163_3_vid}
-6                    Yarn Test Suite                       ${hdfs_264_3_vid}
+#4                    PySpark2.1 Test Suite                 ${spark_tf_210_3_vid}
+#5                    PySpark1.6 Test Suite                 ${spark_tf_163_3_vid}
+36                    Yarn Test Suite                       ${hdfs_264_3_vid}
 
 # predefined service masters:
 # hdfs_264_3_master
