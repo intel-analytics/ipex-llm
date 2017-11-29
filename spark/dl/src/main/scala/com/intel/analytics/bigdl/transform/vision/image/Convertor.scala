@@ -40,7 +40,7 @@ object BytesToMat {
     var mat: OpenCVMat = null
     try {
       require(null != bytes && bytes.length > 0, "image file bytes should not be empty")
-      mat = OpenCVMat.toMat(bytes)
+      mat = OpenCVMat.fromImageBytes(bytes)
       feature(ImageFeature.mat) = mat
       feature(ImageFeature.originalSize) = mat.shape()
     } catch {

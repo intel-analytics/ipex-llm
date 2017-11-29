@@ -72,17 +72,29 @@ class OpenCVMat() extends Mat with Serializable {
 object OpenCVMat {
   OpenCV.isOpenCVLoaded
 
+  /**
+   * read local image path as opencv mat
+   *
+   * @param path local image path
+   * @return mat
+   */
   def read(path: String): OpenCVMat = {
     val bytes = FileUtils.readFileToByteArray(new File(path))
-    toMat(bytes)
+    fromImageBytes(bytes)
   }
 
-  def toMat(bytes: Array[Byte]): OpenCVMat = {
+  /**
+   * convert image file in bytes to opencv mat
+   *
+   * @param fileContent bytes from an image file
+   * @return opencv mat
+   */
+  def fromImageBytes(fileContent: Array[Byte]): OpenCVMat = {
     var mat: Mat = null
     var matOfByte: MatOfByte = null
     var result: OpenCVMat = null
     try {
-      matOfByte = new MatOfByte(bytes: _*)
+      matOfByte = new MatOfByte(fileContent: _*)
       mat = Imgcodecs.imdecode(matOfByte, Imgcodecs.CV_LOAD_IMAGE_COLOR)
       result = new OpenCVMat(mat)
     } catch {
@@ -96,7 +108,14 @@ object OpenCVMat {
     result
   }
 
-  def toBytes(mat: Mat, encoding: String = "png"): Array[Byte] = {
+  /**
+   * convert opencv mat to image bytes
+   *
+   * @param mat opencv mat
+   * @param encoding encoding type
+   * @return bytes that represent an image
+   */
+  def imencode(mat: Mat, encoding: String = "png"): Array[Byte] = {
     val buf = new MatOfByte()
     try {
       Imgcodecs.imencode("." + encoding, mat, buf)
@@ -106,44 +125,56 @@ object OpenCVMat {
     }
   }
 
-  def toBytesBuf(mat: Mat, bytes: Array[Byte]): Array[Byte] = {
-    require(bytes.length == mat.channels() * mat.height() * mat.width())
-    mat.get(0, 0, bytes)
-    bytes
-  }
-
-  def toFloatBuf(input: Mat, floats: Array[Float], buf: Mat = null): Array[Float] = {
-    val bufMat = if (buf == null) new OpenCVMat() else buf
-    val floatMat = if (input.`type`() != CvType.CV_32FC3) {
-      input.convertTo(bufMat, CvType.CV_32FC3)
-      bufMat
-    } else {
-      input
-    }
-    require(floats.length >= input.channels() * input.height() * input.width())
-    floatMat.get(0, 0, floats)
-    if (null == buf) {
-      bufMat.release()
-    }
-    floats
-  }
-
-  def toFloats(input: Mat, floats: Array[Float], buf: Array[Byte] = null): Array[Float] = {
-    val width = input.width()
-    val height = input.height()
-    val bytes = if (null != buf) buf else new Array[Byte](width * height * 3)
-    val rawData = toBytesBuf(input, bytes)
-    var i = 0
-    while (i < width * height * 3) {
-      floats(i) = rawData(i) & 0xff
-      i += 1
-    }
-    floats
-  }
-
-  def floatToMat(floats: Array[Float], height: Int, width: Int): OpenCVMat = {
+  /**
+   * Convert float array(pixels) to OpenCV mat
+   *
+   * @param floats float array that represents pixels
+   * @param height image height
+   * @param width image width
+   * @return image in mat
+   */
+  def fromFloats(floats: Array[Float], height: Int, width: Int): OpenCVMat = {
     val mat = new Mat(height, width, CvType.CV_32FC3)
     mat.put(0, 0, floats)
     new OpenCVMat(mat)
+  }
+
+  /**
+   * convert mat to byte array that represents pixels
+   *
+   * @param input opencv mat
+   * @param buffer
+   * @return
+   */
+  def toBytePixels(input: Mat, buffer: Array[Byte] = null): (Array[Byte], Int, Int) = {
+    var bytes = buffer
+    val length = input.channels() * input.height() * input.width()
+    if (null == buffer || buffer.length < length) {
+      bytes = new Array[Byte](length)
+    }
+    input.get(0, 0, bytes)
+    (bytes, input.height(), input.width())
+  }
+
+
+  /**
+   * convert mat to float array that represents pixels
+   *
+   * @param input mat
+   * @param buffer float array
+   * @return
+   */
+  def toFloatPixels(input: Mat,
+    buffer: Array[Float] = null): (Array[Float], Int, Int) = {
+    var floats = buffer
+    val length = input.channels() * input.height() * input.width()
+    if (null == buffer || buffer.length < length) {
+      floats = new Array[Float](length)
+    }
+    if (input.`type`() != CvType.CV_32FC3) {
+      input.convertTo(input, CvType.CV_32FC3)
+    }
+    input.get(0, 0, floats)
+    (floats, input.height(), input.width())
   }
 }

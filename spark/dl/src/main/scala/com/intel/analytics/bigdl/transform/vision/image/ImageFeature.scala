@@ -191,7 +191,7 @@ class ImageFeature extends Serializable {
         s" are transforming an rdd")
       val mat = opencvMat()
       val floats = new Array[Float](mat.height() * mat.width() * 3)
-      OpenCVMat.toFloatBuf(mat, floats)
+      OpenCVMat.toFloatPixels(mat, floats)
       (floats, Array(mat.height(), mat.width(), 3))
     }
     var image = Tensor(Storage(data)).resize(size)
