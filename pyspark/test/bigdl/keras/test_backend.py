@@ -41,8 +41,8 @@ class TestBackend(BigDLTestCase):
         kmodel, X_train, y_train = TestModels.kmodel_seq_lenet_mnist()
         self.modelTest(X_train, kmodel, dump_weights=True)
         kmodel.compile(loss='categorical_crossentropy',
-                      optimizer='adam',
-                      metrics=['accuracy'])
+                       optimizer='adam',
+                       metrics=['accuracy'])
         model = with_bigdl_backend(kmodel)
 
         model.fit(X_train, y_train,
@@ -50,15 +50,15 @@ class TestBackend(BigDLTestCase):
                   nb_epoch=2)
         model.predict(X_train)
         # TODO: support evaluate for local mode.
-        #model.evaluate(X_train, y_train)
+        # model.evaluate(X_train, y_train)
         print(model)
 
     def test_lenet_distributed_ndarray(self):
         kmodel, X_train, y_train = TestModels.kmodel_seq_lenet_mnist()
         self.modelTest(X_train, kmodel, dump_weights=True)
         kmodel.compile(loss='categorical_crossentropy',
-                      optimizer='adam',
-                      metrics=['accuracy'])
+                       optimizer='adam',
+                       metrics=['accuracy'])
         model = with_bigdl_backend(kmodel)
 
         model.fit(X_train, y_train,
@@ -78,8 +78,8 @@ class TestBackend(BigDLTestCase):
 
         self.modelTest(X_train, kmodel, dump_weights=True)
         kmodel.compile(loss='categorical_crossentropy',
-                      optimizer='adam',
-                      metrics=['accuracy'])
+                       optimizer='adam',
+                       metrics=['accuracy'])
         model = with_bigdl_backend(kmodel)
 
         model.fit(training_rdd,
