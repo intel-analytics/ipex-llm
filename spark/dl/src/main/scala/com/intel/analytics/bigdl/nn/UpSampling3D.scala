@@ -46,21 +46,21 @@ class UpSampling3D[T: ClassTag](val size: Array[Int])
     val inputHeight = input.size(4)
     val inputWidth = input.size(5)
 
-    val outputDepth = inputDepth * size(0)
-    val outputHeight = inputHeight * size(1)
-    val outputWidth = inputWidth * size(2)
-
-    output.resize(input.size(1), input.size(2), outputDepth, outputHeight, outputWidth)
-
     val dT = size(0)
     val dH = size(1)
     val dW = size(2)
 
+    val outputDepth = inputDepth * dT
+    val outputHeight = inputHeight * dH
+    val outputWidth = inputWidth * dW
+
+    output.resize(input.size(1), input.size(2), outputDepth, outputHeight, outputWidth)
+
     // dims
     val idim = input.dim()
-    val xDim = idim - 3
+    val xDim = idim - 1
     val yDim = idim - 2
-    val zDim = idim - 1
+    val zDim = idim - 3
 
     val osz0 = output.size(1)
     val osz1 = output.size(2)
@@ -136,9 +136,9 @@ class UpSampling3D[T: ClassTag](val size: Array[Int])
 
     // dims
     val idim = gradInput.dim()
-    val xDim = idim - 3
+    val xDim = idim - 1
     val yDim = idim - 2
-    val zDim = idim - 1
+    val zDim = idim - 3
 
     val isz0 = gradInput.size(1)
     val isz1 = gradInput.size(2)
