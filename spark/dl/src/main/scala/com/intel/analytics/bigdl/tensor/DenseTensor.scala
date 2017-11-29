@@ -415,6 +415,25 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
     this
   }
 
+  override def batchCopy(others: Array[Tensor[T]]): Tensor[T] = {
+    require(others.length > 0, "The array of tensors being copied must not be empty")
+    val newSize = others.length +: others.head.size()
+    var i = 0
+    while (i < others.length) {
+      require(others(i).size().sameElements(others.head.size()), "The tensors being copied must have" +
+        " the same size")
+      i = i + 1
+    }
+    resize(newSize)
+    var j = 0
+    while (j < others.length) {
+      val slice = apply(j + 1).asInstanceOf[DenseTensor[T]]
+      DenseTensor.copy[T](slice, others(j))
+      j = j + 1
+    }
+    this
+  }
+
   override def narrow(dim: Int, index: Int, size: Int): Tensor[T] = {
     val result = DenseTensor.newWithTensor(this)
     DenseTensor.narrow(result, null, dim - 1, index - 1, size)

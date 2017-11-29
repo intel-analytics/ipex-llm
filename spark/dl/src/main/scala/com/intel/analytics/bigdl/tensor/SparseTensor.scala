@@ -240,7 +240,8 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def resize(sizes: Array[Int], strides: Array[Int]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    require(strides == null, "Do not support stride on sparse tensor")
+    resize(sizes, 0)
   }
 
   override def resize(size1: Int): Tensor[T] = {
@@ -353,7 +354,29 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def copy(other: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    require(other.getTensorType == SparseType, "The tensor being copied should be a Sparse Tensor")
+    require(this.size().sameElements(other.size()), "copy tensors must have the same size")
+    val otherSparseTensor = other.asInstanceOf[SparseTensor[T]]
+    this.resize(this.size(), otherSparseTensor.nElement())
+    val numOfIndices = this.dim()
+    val curLength = otherSparseTensor.nElement()
+    val curTensorOffset = otherSparseTensor.storageOffset() - 1
+    // copy to concat _values
+    ev.arraycopy(otherSparseTensor.storage().array(), curTensorOffset,
+      this.storage().array(), 0, curLength)
+    // make new Indices
+    var indicesIndex = 0
+    while (indicesIndex < numOfIndices) {
+      System.arraycopy(otherSparseTensor._indices(indicesIndex).array(),
+          curTensorOffset, this._indices(indicesIndex).array(),
+          0, curLength)
+      indicesIndex += 1
+    }
+    this
+  }
+
+  override def batchCopy(others: Array[Tensor[T]]): Tensor[T] = {
+    SparseTensor.concat(1, others, this)
   }
 
   override def apply1(func: (T) => T): Tensor[T] = {
@@ -1008,7 +1031,7 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def emptyInstance(): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Tensor.sparse(Array(0), 0)
   }
 
   override def cast[D: ClassTag](

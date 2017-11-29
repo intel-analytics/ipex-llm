@@ -724,7 +724,7 @@ class SampleSpec extends FlatSpec with Matchers {
       Tensor[Double](3).fill(2)), T(Tensor[Int](1).fill(2)))
     samples(2) = Sample[Float](T(Tensor[Float](2, 3).range(13, 18),
       Tensor[Double](3).fill(3)), T(Tensor[Int](1).fill(3)))
-    val result = MiniBatch(T(), T()).set(samples)
+    val result = TableMiniBatch[Float](3, 1).set(samples)
     val exceptedInput = T(Tensor[Float](3, 2, 3).range(1, 18), Tensor[Double](3, 3))
     exceptedInput[Tensor[Double]](2)(1).fill(1)
     exceptedInput[Tensor[Double]](2)(2).fill(2)

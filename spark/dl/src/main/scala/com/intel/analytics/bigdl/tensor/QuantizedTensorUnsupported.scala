@@ -1426,4 +1426,8 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
 
   override def reduce(dim: Int, result: Tensor[T], reducer: (T, T) => T): Tensor[T] =
     throw new UnsupportedOperationException(errorString)
+
+  override def batchCopy(other: Array[Tensor[T]]): Tensor[T] =
+    throw new UnsupportedOperationException(errorString)
+
 }

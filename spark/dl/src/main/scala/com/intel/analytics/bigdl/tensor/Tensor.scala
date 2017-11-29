@@ -500,6 +500,18 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
   def copy(other: Tensor[T]): Tensor[T]
 
   /**
+   * Stack the given array of tensors along the first dimension and
+   * copy the value to the current.
+   *
+   * The given tensors in the array should have the same size.
+   * This tensor should have the size of `others.length +: others.size()`
+   *
+   * @param others source tensor
+   * @return current tensor
+   */
+  def batchCopy(others: Array[Tensor[T]]): Tensor[T]
+
+  /**
    * Apply a function to each element of the tensor `t`
    * and set each value to self
    *

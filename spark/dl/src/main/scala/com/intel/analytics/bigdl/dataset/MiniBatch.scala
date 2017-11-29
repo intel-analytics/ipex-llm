@@ -257,7 +257,7 @@ object MiniBatch {
   }
 
   def apply[T: ClassTag](input: Table, target: Table): MiniBatch[T] = {
-    new TableMiniBatch[T](input, target)
+    TableMiniBatch[T](input, target)
   }
 
   def apply[T: ClassTag](input: Tensor[T]): MiniBatch[T] = {
@@ -269,7 +269,7 @@ object MiniBatch {
   }
 
   def apply[T: ClassTag](input: Table): MiniBatch[T] = {
-    new TableMiniBatch[T](input, T())
+    TableMiniBatch[T](input, T())
   }
 
   private def resizeData[T: ClassTag](
@@ -628,77 +628,52 @@ case class FixedLength(fixedLength: Array[Int]) extends PaddingStrategy {
 }
 
 /**
- * SparseMiniBatch is a MiniBatch type for TensorSample. And SparseMiniBatch could
- * deal with SparseTensors in TensorSample.
+ * TableMiniBatch is a MiniBatch type for TableSample. And TableMiniBatch could
+ * deal with different types of Tensors in TensorSample.
  *
  * @param inputData           a set of input tensor
  * @param targetData          a set of target tensor
- * @param ev$1
- * @param ev
  * @tparam T Numeric type
  */
-class SparseMiniBatch[T: ClassTag](
-      inputData: Array[Tensor[T]],
-      targetData: Array[Tensor[T]])(
-      implicit ev: TensorNumeric[T]) extends ArrayTensorMiniBatch[T](inputData, targetData) {
-  private var input: Activity = null
-  private var target: Activity = null
+class TableMiniBatch[T: ClassTag](
+          private var nInputs: Int, private var nTargets: Int,
+          val inputData: Table, val targetData: Table) extends MiniBatch[T] {
+
+  protected var batchSize = 0
+  protected var unlabeled = false
 
   override def getInput(): Activity = {
-    if (null == input) {
-      require(!inputData.exists(_ == null), "SparseMiniBatch.getInput: " +
-        "data didn't fill in this miniBatch")
-      input = if (inputData.length == 1) {
-        inputData.head
-      } else {
-        T.array(inputData.map(_.asInstanceOf[Any]))
-      }
+    if (inputData.length == 1) {
+      inputData(1)
+    } else {
+      inputData
     }
-
-    input
   }
 
   override def getTarget(): Activity = {
-    if (null == target && targetData.length != 0) {
-      require(!targetData.exists(_ == null), "SparseMiniBatch.getInput: " +
-        "data didn't fill in this miniBatch")
-      target = if (targetData.length == 1) {
-        targetData.head
-      } else {
-        T.array(targetData.map(_.asInstanceOf[Any]))
-      }
+    if (targetData.length() == 1) {
+      targetData(1)
+    } else {
+      targetData
     }
-
-    target
   }
 
   def init(features: Table, labels: Table): Unit = {
-    var i = 0
-    while (i < inputData.length) {
-      val featureI = features[Tensor[T]](i + 1)
-      inputData(i) = if (featureI.getTensorType == SparseType) {
-        Tensor.sparse[T](Array(batchSize) ++ featureI.size())
-      } else if (featureI.getTensorType == DenseType) {
-        Tensor[T](Array(batchSize) ++ featureI.size())
-      } else {
-        throw new IllegalArgumentException(s"MiniBatchWithSparse: unsupported feature type " +
-          s"${featureI.getTensorType}")
+
+    def initData(features: Table, input: Table) = {
+      var i = 0
+      while (i < features.length()) {
+        val featureI = features[Tensor[NumericWildCard]](i + 1)
+        val data = featureI.emptyInstance()
+        data.resize(Array(batchSize) ++ featureI.size())
+        input(i + 1) = data
+        i += 1
       }
-      i += 1
     }
-    i = 0
-    while (i < targetData.length) {
-      val labelI = labels[Tensor[T]](i + 1)
-      targetData(i) = if (labelI.getTensorType == SparseType) {
-        Tensor.sparse[T](Array(batchSize) ++ labelI.size())
-      } else if (labelI.getTensorType == DenseType) {
-        Tensor[T](Array(batchSize) ++ labelI.size())
-      } else {
-        throw new IllegalArgumentException(s"MiniBatchWithSparse: unsupported label type " +
-          s"${labelI.getTensorType}")
-      }
-      i += 1
-    }
+    nInputs = features.length()
+    nTargets = labels.length()
+    initData(features, inputData)
+    initData(labels, targetData)
   }
 
   override def set(samples: Seq[Sample[T]])(implicit ev: TensorNumeric[T]): this.type = {
@@ -715,29 +690,61 @@ class SparseMiniBatch[T: ClassTag](
       init(features.head, labels.head)
     }
 
-    var i = 0
-    while (i < inputData.length) {
-      SparseMiniBatch.batch(1, features.map(_.apply[Tensor[T]](i + 1)), inputData(i))
+    var i = 1
+    while (i <= nInputs) {
+      val result = inputData[Tensor[NumericWildCard]](i)
+      val batches = features.map(_.apply[Tensor[NumericWildCard]](i)).toArray
+      result.batchCopy(batches)
       i += 1
     }
 
     if (!unlabeled) {
-      var j = 0
-      while (j < targetData.length) {
-        SparseMiniBatch.batch(1, labels.map(_.apply[Tensor[T]](j + 1)), targetData(j))
+      var j = 1
+      while (j <= nTargets) {
+        val result = targetData[Tensor[NumericWildCard]](j)
+        val batches = labels.map(_.apply[Tensor[NumericWildCard]](j)).toArray
+        result.batchCopy(batches)
         j += 1
       }
     }
 
     this
   }
+
+  override def size(): Int = batchSize
+
+  override def slice(offset: Int, length: Int): MiniBatch[T] = {
+    val inputs = T()
+    val targets = T()
+    var b = 0
+    while(b < inputData.length()) {
+      inputs(b) = inputData[Tensor[NumericWildCard]](b).narrow(1, offset, length)
+      b += 1
+    }
+    b = 0
+    while(b < targetData.length()) {
+      targets(b) = targetData[Tensor[NumericWildCard]](b).narrow(1, offset, length)
+      b += 1
+    }
+
+    MiniBatch(inputs, targets)
+  }
 }
 
-object SparseMiniBatch{
+object TableMiniBatch {
+
   def apply[T: ClassTag](
-      nInputs: Int,
-      nTargets: Int)(implicit ev: TensorNumeric[T]): MiniBatch[T] = {
-    new SparseMiniBatch[T](new Array[Tensor[T]](nInputs), new Array[Tensor[T]](nTargets))
+                          nInputs: Int,
+                          nTargets: Int): MiniBatch[T] = {
+    new TableMiniBatch[T](nInputs, nTargets, T(), T())
+  }
+
+  def apply[T: ClassTag](
+                          inputData: Table,
+                          targetData: Table): MiniBatch[T] = {
+    val nInputs = inputData.length()
+    val nTargets = targetData.length()
+    new TableMiniBatch[T](nInputs, nTargets, inputData, targetData)
   }
 
   /**
@@ -763,9 +770,9 @@ object SparseMiniBatch{
   }
 
   private def denseBatch[T: ClassTag](
-        dim: Int,
-        tensors: Seq[Tensor[T]],
-        result: Tensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
+      dim: Int,
+      tensors: Seq[Tensor[T]],
+      result: Tensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
     val size = tensors.head.size()
     var i = 1
     while (i < tensors.length) {
@@ -803,72 +810,5 @@ object SparseMiniBatch{
     }
     result
 
-  }
-
-}
-
-/**
- * TableMiniBatch is a MiniBatch type for TableSample. And TableMiniBatch could
- * deal with different types of Tensors in TensorSample.
- *
- * @param inputData           a set of input tensor
- * @param targetData          a set of target tensor
- * @tparam T Numeric type
- */
-class TableMiniBatch[T: ClassTag](
-       val inputData: Table,
-       val targetData: Table) extends MiniBatch[T] {
-
-  protected var batchSize = 0
-  protected var unlabeled = false
-
-  override def getInput(): Activity = {
-    if (inputData.length == 1) {
-      inputData(1)
-    } else {
-      inputData
-    }
-  }
-
-  override def getTarget(): Activity = {
-    if (targetData.length() == 1) {
-      targetData(1)
-    } else {
-      targetData
-    }
-  }
-
-  override def set(samples: Seq[Sample[T]])(implicit ev: TensorNumeric[T]): this.type = {
-    require(samples.length > 0, "samples is empty")
-    require(samples(0).isInstanceOf[TensorSample[T]])
-    val _samples = samples.map(_.asInstanceOf[TensorSample[T]])
-    require(batchSize == 0 || samples.length <= batchSize, "setValue: samples's size doesn't " +
-      s"match mini batch size, excepted ${size()} got ${samples.length}")
-    if (batchSize == 0) {
-      batchSize = samples.length // set a batchSize when set data.
-      unlabeled = samples.head.numLabel() == 0
-    }
-
-    MiniBatch.copy[T](_samples, this, unlabeled)
-    this
-  }
-
-  override def size(): Int = batchSize
-
-  override def slice(offset: Int, length: Int): MiniBatch[T] = {
-    val inputs = T()
-    val targets = T()
-    var b = 0
-    while(b < inputData.length()) {
-      inputs(b) = inputData[Tensor[NumericWildCard]](b).narrow(1, offset, length)
-      b += 1
-    }
-    b = 0
-    while(b < targetData.length()) {
-      targets(b) = targetData[Tensor[NumericWildCard]](b).narrow(1, offset, length)
-      b += 1
-    }
-
-    MiniBatch(inputs, targets)
   }
 }

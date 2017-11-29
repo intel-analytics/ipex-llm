@@ -92,7 +92,7 @@ class MiniBatchSpec extends FlatSpec with Matchers {
     val c2 = Tensor[Float](1).fill(0)
     val sample1 = TensorSample[Float](Array(a1, b1), Array(c1))
     val sample2 = TensorSample[Float](Array(a2, b2), Array(c2))
-    val miniBatch = SparseMiniBatch[Float](2, 1)
+    val miniBatch = TableMiniBatch[Float](2, 1)
     miniBatch.set(Array(sample1, sample2))
 
     val input = miniBatch.getInput()
@@ -101,11 +101,11 @@ class MiniBatchSpec extends FlatSpec with Matchers {
     val expectedInput1 = Tensor.sparse(Array(Array(0, 0, 0, 0, 1, 1, 1, 1),
       Array(0, 1, 2, 3, 0, 1, 2, 3)),
       Array.range(1, 9).map(_.toFloat), Array(2, 4))
-    val expectedInput2 = Tensor[Float].range(1, 10)
+    val expectedInput2 = Tensor[Float].range(1, 10).reshape(Array(2, 5))
     input.toTable[Tensor[Float]](1) should be (expectedInput1)
     input.toTable[Tensor[Float]](2) should be (expectedInput2)
 
-    val expectedTarget = Tensor[Float](T(1.0f, 0.0f))
+    val expectedTarget = Tensor[Float](T(1.0f, 0.0f)).reshape(Array(2, 1))
     target should be (expectedTarget)
   }
 
