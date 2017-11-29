@@ -262,5 +262,6 @@ class HFlip(FeatureTransformer):
     """
     Flip the image horizontally
     """
+
     def __init__(self, bigdl_type="float"):
             super(HFlip, self).__init__(bigdl_type)
