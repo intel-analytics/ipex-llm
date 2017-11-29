@@ -37,7 +37,23 @@ class TestBackend(BigDLTestCase):
 
         self.assert_allclose(keras_output, bigdl_output, rtol=rtol, atol=atol)
 
-    def test_lenet(self):
+    def test_lenet_local(self):
+        kmodel, X_train, y_train = TestModels.kmodel_seq_lenet_mnist()
+        self.modelTest(X_train, kmodel, dump_weights=True)
+        kmodel.compile(loss='categorical_crossentropy',
+                      optimizer='adam',
+                      metrics=['accuracy'])
+        model = with_bigdl_backend(kmodel)
+
+        model.fit(X_train, y_train,
+                  batch_size=4,
+                  nb_epoch=2)
+        model.predict(X_train)
+        # TODO: support evaluate for local mode.
+        #model.evaluate(X_train, y_train)
+        print(model)
+
+    def test_lenet_distributed_ndarray(self):
         kmodel, X_train, y_train = TestModels.kmodel_seq_lenet_mnist()
         self.modelTest(X_train, kmodel, dump_weights=True)
         kmodel.compile(loss='categorical_crossentropy',
@@ -48,9 +64,30 @@ class TestBackend(BigDLTestCase):
         model.fit(X_train, y_train,
                   batch_size=4,
                   nb_epoch=2,
-                  validation_data=(X_train, y_train))
-        model.predict(X_train)
-        model.evaluate(X_train, y_train)
+                  validation_data=(X_train, y_train), is_distributed=True)
+        model.predict(X_train, is_distributed=True).collect()
+        model.evaluate(X_train, y_train, is_distributed=True)
+        print(model)
+
+    def test_lenet_distributed_rdd(self):
+        kmodel, X_train, y_train = TestModels.kmodel_seq_lenet_mnist()
+        sc = get_spark_context()
+        from bigdl.util.common import Sample
+        from bigdl.util.common import to_sample_rdd
+        training_rdd = to_sample_rdd(X_train, y_train)
+
+        self.modelTest(X_train, kmodel, dump_weights=True)
+        kmodel.compile(loss='categorical_crossentropy',
+                      optimizer='adam',
+                      metrics=['accuracy'])
+        model = with_bigdl_backend(kmodel)
+
+        model.fit(training_rdd,
+                  batch_size=4,
+                  nb_epoch=2,
+                  validation_data=training_rdd, is_distributed=True)
+        model.predict(X_train, is_distributed=True).collect()
+        model.evaluate(X_train, y_train, is_distributed=True)
         print(model)
 
     def test_text_classification(self):
