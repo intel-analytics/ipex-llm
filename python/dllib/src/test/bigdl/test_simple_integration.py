@@ -35,9 +35,8 @@ class TestSimple():
         """ setup any state tied to the execution of the given method in a
         class.  setup_method is invoked for every test method of a class.
         """
-        sparkConf = create_spark_conf()
-        self.sc = SparkContext(master="local[4]", appName="test model",
-                               conf=sparkConf)
+        sparkConf = create_spark_conf().setMaster("local[4]").setAppName("test model")
+        self.sc = get_spark_context(sparkConf)
         init_engine()
 
     def teardown_method(self, method):
