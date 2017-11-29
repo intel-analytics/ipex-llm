@@ -687,9 +687,14 @@ object DistriOptimizer {
    */
   private def getModel[T: ClassTag](
       models: RDD[Cache[T]],
-      parameters: AllReduceParameter[T]): Module[T] = {
+      parameters: AllReduceParameter[T],
+      result: Module[T] = null): Module[T] = {
     val partitionNum = models.partitions.length
-    val trainedModel = models.map(_.localModels.head.clearState()).first()
+    val trainedModel = if (result != null) {
+      result
+    } else {
+      models.map(_.localModels.head.clearState()).first()
+    }
     val (weights, gradients) = models.mapPartitions(iter => {
       val cached = iter.next()
       val curPartitionId = TaskContext.getPartitionId()
@@ -854,7 +859,7 @@ class DistriOptimizer[T: ClassTag] (
       }
     }
 
-    val trainedModel = DistriOptimizer.getModel(models, parameters)
+    val trainedModel = DistriOptimizer.getModel(models, parameters, model)
 
     nn.Utils.copyModule(trainedModel, model)
 

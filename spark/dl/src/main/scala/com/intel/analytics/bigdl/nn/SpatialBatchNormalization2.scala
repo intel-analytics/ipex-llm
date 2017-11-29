@@ -613,6 +613,7 @@ object SpatialBatchNormalization2 extends ModuleSerializable {
     val outputOffset = output.storageOffset() - 1
     val outputStride = output.stride(1)
     val onesArray = ones.storage().array()
+    val sumBuffArray = sumBuff.storage().array()
     val saveMeanArray = saveMean.storage.array
     val saveMeanOffset = saveMean.storageOffset - 1
     val saveStdArray = saveStd.storage.array
@@ -626,45 +627,51 @@ object SpatialBatchNormalization2 extends ModuleSerializable {
     val biasArray = bias.storage.array
     val biasOffset = bias.storageOffset - 1
     val frameSize = if (nDim == 2) n else n / spatialBatchSize
+    val numFrames = spatialBatchSize * nInput
+
+    // copy input to output
     System.arraycopy(inputArray, inputOffset, outputArray, outputOffset, n * nInput)
 
     if (train) {
+      MKL.vsgemv('T', frameSize, numFrames, 1,
+        outputArray, outputOffset, frameSize,
+        onesArray, 0, 1,
+        0,
+        sumBuffArray, 0, 1
+      )
       var f = 1
       while (f <= nInput) {
-        var sum = 0.0f
-        var i = 0
-        while (i < spatialBatchSize) {
-          sum += MKL.vsdot(frameSize, inputArray, inputOffset + (f - 1 + i * nInput)
-            * inputStride2, 1, onesArray, 0, 1)
-          i += 1
-        }
+        val sum = MKL.vsdot(spatialBatchSize, sumBuffArray, f - 1, nInput,
+          onesArray, 0, 1)
         val mean = sum / n
         saveMeanArray(f - 1) = mean
 
-        // output has the same elements with input
-        i = 0
+        var i = 0
         while (i < spatialBatchSize) {
-          MKL.vsaxpy(frameSize, -mean, onesArray, 0, 1, outputArray,
-            inputOffset + (f - 1 + i * nInput) * inputStride2, 1)
+          sumBuffArray(f - 1 + i * nInput) = -mean
           i += 1
         }
 
         f += 1
       }
+      // output has the same elements with input
+      MKL.vsger(frameSize, numFrames, 1, onesArray, 0, 1,
+        sumBuffArray, 0, 1, outputArray, outputOffset, frameSize)
 
       MKL.vsPowx(n * nInput, outputArray, outputOffset, 2, outputArray, outputOffset)
+
+      MKL.vsgemv('T', frameSize, numFrames, 1,
+        outputArray, outputOffset, frameSize,
+        onesArray, 0, 1,
+        0,
+        sumBuffArray, 0, 1
+      )
 
       f = 1
       while (f <= nInput) {
         val mean = saveMeanArray(f - 1)
-        var sum = 0.0f
-        var i = 0
-        while (i < spatialBatchSize) {
-          sum +=  MKL.vsdot(frameSize, outputArray,
-            outputOffset + (f - 1 + i * nInput) * inputStride2,
-            1, onesArray, 0, 1)
-          i += 1
-        }
+        val sum = MKL.vsdot(spatialBatchSize, sumBuffArray, f - 1, nInput,
+          onesArray, 0, 1)
 
         saveStdArray(f - 1) = if (sum == 0 && eps == 0.0) {
           0.0f

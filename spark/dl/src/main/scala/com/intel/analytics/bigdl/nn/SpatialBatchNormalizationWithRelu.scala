@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn
 
 import scala.reflect.ClassTag
 import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.mkl.MKL
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, Initializable, TensorModule}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Tensor}
@@ -129,32 +130,32 @@ class SpatialBatchNormalizationWithRelu[T: ClassTag](
       results = new Array[Future[_]](nInput)
     }
     val n = _input.nElement() / nInput
+    val spatialBatchSize = if (nDim == 2) 1 else _input.size(1)
+    val frameSize = if (nDim == 2) n else n / spatialBatchSize
+    if (ones.nElement() != frameSize) {
+      ones.resize(frameSize)
+      ones.fill(ev.one)
+    }
     ev.getType() match {
       case DoubleType =>
         val inputDouble = _input.asInstanceOf[Tensor[Double]]
-        val inputData = inputDouble.storage().array()
-        val inputOffset = inputDouble.storageOffset() - 1
-        val inputStride = _input.stride(1)
-        val inputStride2 = _input.stride(2)
         val outputDouble = output.asInstanceOf[Tensor[Double]]
-        val outputData = outputDouble.storage().array()
-        val outputOffset = outputDouble.storageOffset() - 1
-        val outputStride = output.stride(1)
-        updateOutputDouble(inputData, inputOffset, inputStride, outputData, outputOffset,
-          outputStride, nInput, n, inputStride2)
+        SpatialBatchNormalizationWithRelu.updateOutputDouble(
+          n, nInput, momentum, eps, train,
+          spatialBatchSize, nDim, needFix, inputDouble,
+          outputDouble, ones.toTensor[Double], saveMean.toTensor[Double], saveStd.toTensor[Double],
+          runningMean.toTensor[Double], runningVar.toTensor[Double],
+          weight.toTensor[Double], bias.toTensor[Double])
 
       case FloatType =>
         val inputFloat = _input.asInstanceOf[Tensor[Float]]
-        val inputData = inputFloat.storage().array()
-        val inputOffset = inputFloat.storageOffset() - 1
-        val inputStride = _input.stride(1)
-        val inputStride2 = _input.stride(2)
         val outputFloat = output.asInstanceOf[Tensor[Float]]
-        val outputData = outputFloat.storage().array()
-        val outputOffset = outputFloat.storageOffset() - 1
-        val outputStride = output.stride(1)
-        updateOutputFloat(inputData, inputOffset, inputStride, outputData, outputOffset,
-          outputStride, nInput, n, inputStride2)
+        SpatialBatchNormalizationWithRelu.updateOutputFloat(
+          n, nInput, momentum.toFloat, eps.toFloat, train,
+          spatialBatchSize, nDim, needFix, inputFloat,
+          outputFloat, ones.toTensor[Float], saveMean.toTensor[Float], saveStd.toTensor[Float],
+          runningMean.toTensor[Float], runningVar.toTensor[Float],
+          weight.toTensor[Float], bias.toTensor[Float])
     }
 
     output
@@ -228,6 +229,9 @@ class SpatialBatchNormalizationWithRelu[T: ClassTag](
     }
     Engine.model.sync(results)
   }
+
+  var ones = Tensor()
+
 
   private def updateOutputFloat(input: Array[Float], inputOffset: Int, inputStride: Int,
                                 output: Array[Float], outputOffset: Int, outputStride: Int,
@@ -738,4 +742,250 @@ object SpatialBatchNormalizationWithRelu extends ModuleSerializable {
       nOutput = affine.getOrElse(1), affine = affine.isDefined)
   }
 
+  private[nn] def updateOutputFloat(
+                                     n: Int, nInput: Int,
+                                     momentum: Float, eps: Float,
+                                     train: Boolean, spatialBatchSize: Int,
+                                     nDim: Float, needFix: Boolean,
+                                     input: Tensor[Float], output: Tensor[Float],
+                                     ones: Tensor[Float],
+                                     saveMean: Tensor[Float],
+                                     saveStd: Tensor[Float],
+                                     runningMean: Tensor[Float],
+                                     runningVar: Tensor[Float],
+                                     weight: Tensor[Float],
+                                     bias: Tensor[Float]
+                               ): Unit = {
+    val inputArray = input.storage().array()
+    val inputOffset = input.storageOffset() - 1
+    val inputStride = input.stride(1)
+    val inputStride2 = input.stride(2)
+    val outputArray = output.storage().array()
+    val outputOffset = output.storageOffset() - 1
+    val outputStride = output.stride(1)
+    val onesArray = ones.storage().array()
+    val saveMeanArray = saveMean.storage.array
+    val saveMeanOffset = saveMean.storageOffset - 1
+    val saveStdArray = saveStd.storage.array
+    val saveStdOffset = saveStd.storageOffset - 1
+    val runningMeanArray = runningMean.storage.array
+    val runningMeanOffset = runningMean.storageOffset - 1
+    val runningVarArray = runningVar.storage.array
+    val runningVarOffset = runningVar.storageOffset - 1
+    val weightArray = weight.storage.array
+    val weightOffset = weight.storageOffset - 1
+    val biasArray = bias.storage.array
+    val biasOffset = bias.storageOffset - 1
+    val frameSize = if (nDim == 2) n else n / spatialBatchSize
+
+    if (train) {
+      var f = 1
+      while (f <= nInput) {
+        var sum = 0.0f
+        var i = 0
+        while (i < spatialBatchSize) {
+          sum += MKL.vsdot(frameSize, inputArray, inputOffset + (f - 1 + i * nInput)
+            * inputStride2, inputStride, onesArray, 0, 1)
+          i += 1
+        }
+        val mean = sum / n
+        saveMeanArray(f - 1) = mean
+
+        // output has the same elements with input
+        i = 0
+        while (i < spatialBatchSize) {
+          MKL.vsaxpy(frameSize, -mean, onesArray, 0, 1, outputArray,
+            inputOffset + (f - 1 + i * nInput), inputStride)
+          i += 1
+        }
+
+        f += 1
+      }
+
+      MKL.vsPowx(n * nInput, outputArray, inputOffset, 2, outputArray, inputOffset)
+
+      f = 1
+      while (f <= nInput) {
+        val mean = saveMeanArray(f - 1)
+        var sum = 0.0f
+        var i = 0
+        while (i < spatialBatchSize) {
+          sum +=  MKL.vsdot(frameSize, outputArray,
+            inputOffset + (f - 1 + i * nInput) * inputStride2,
+            inputStride, onesArray, 0, 1)
+          i += 1
+        }
+
+        val invstd = if (sum == 0 && eps == 0.0) {
+          0.0f
+        } else {
+          1.0f / Math.sqrt(sum / n + eps).toFloat
+        }
+        saveStdArray(f - 1) = invstd
+
+        runningMeanArray(f - 1) = momentum * mean  + (1- momentum) * runningMeanArray(f - 1)
+
+        val unbiasedVar = sum / (n - 1)
+        runningVarArray(f - 1) = momentum * unbiasedVar + (1 - momentum) * runningVarArray(f - 1)
+        f += 1
+      }
+      System.arraycopy(inputArray, inputOffset, outputArray, outputOffset, n * nInput)
+    }
+
+    if (needFix) {
+      java.util.Arrays.fill(saveMeanArray,
+        saveMeanOffset, saveMeanOffset + nInput, 0f)
+      java.util.Arrays.fill(saveStdArray,
+        saveStdOffset, saveStdOffset + nInput, 0.0001f)
+    }
+
+    // update output
+    var f = 1
+    while (f <= nInput) {
+      val (mean, invstd) = if (train) {
+        (saveMeanArray(f - 1), saveStdArray(f - 1))
+      } else {
+        (runningMeanArray(f - 1),
+          1f / Math.sqrt(runningVarArray(f - 1) + eps).toFloat)
+      }
+
+      val w = if (null != weightArray) weightArray(f - 1 + weightOffset) else 1.0f
+      val b = if (null != biasArray) biasArray(f - 1 + biasOffset) else 0.0f
+
+      var i = 0
+      while (i < spatialBatchSize) {
+        MKL.vsscal(frameSize, w * invstd, outputArray,
+          inputOffset + (f - 1 + i * nInput) * inputStride2, inputStride)
+        MKL.vsaxpy(frameSize, b - mean * invstd * w, onesArray, 0, 1,
+          outputArray, inputOffset + (f - 1 + i * nInput) * inputStride2, inputStride)
+        i += 1
+      }
+
+      f += 1
+    }
+  }
+
+  private[nn] def updateOutputDouble(
+                                     n: Int, nInput: Int,
+                                     momentum: Double, eps: Double,
+                                     train: Boolean, spatialBatchSize: Int,
+                                     nDim: Double, needFix: Boolean,
+                                     input: Tensor[Double], output: Tensor[Double],
+                                     ones: Tensor[Double],
+                                     saveMean: Tensor[Double],
+                                     saveStd: Tensor[Double],
+                                     runningMean: Tensor[Double],
+                                     runningVar: Tensor[Double],
+                                     weight: Tensor[Double],
+                                     bias: Tensor[Double]
+                                   ): Unit = {
+    val inputArray = input.storage().array()
+    val inputOffset = input.storageOffset() - 1
+    val inputStride = input.stride(1)
+    val inputStride2 = input.stride(2)
+    val outputArray = output.storage().array()
+    val outputOffset = output.storageOffset() - 1
+    val outputStride = output.stride(1)
+    val onesArray = ones.storage().array()
+    val saveMeanArray = saveMean.storage.array
+    val saveMeanOffset = saveMean.storageOffset - 1
+    val saveStdArray = saveStd.storage.array
+    val saveStdOffset = saveStd.storageOffset - 1
+    val runningMeanArray = runningMean.storage.array
+    val runningMeanOffset = runningMean.storageOffset - 1
+    val runningVarArray = runningVar.storage.array
+    val runningVarOffset = runningVar.storageOffset - 1
+    val weightArray = weight.storage.array
+    val weightOffset = weight.storageOffset - 1
+    val biasArray = bias.storage.array
+    val biasOffset = bias.storageOffset - 1
+    val frameSize = if (nDim == 2) n else n / spatialBatchSize
+
+    if (train) {
+      var f = 1
+      while (f <= nInput) {
+        var sum = 0.0
+        var i = 0
+        while (i < spatialBatchSize) {
+          sum += MKL.vddot(frameSize, inputArray, inputOffset + (f - 1 + i * nInput)
+            * inputStride2, 1, onesArray, 0, 1)
+          i += 1
+        }
+        val mean = sum / n
+        saveMeanArray(f - 1) = mean
+
+        // output has the same elements with input
+        i = 0
+        while (i < spatialBatchSize) {
+          MKL.vdaxpy(frameSize, -mean, onesArray, 0, 1, outputArray,
+            inputOffset + (f - 1 + i * nInput), inputStride)
+          i += 1
+        }
+
+        f += 1
+      }
+
+      MKL.vdPowx(n * nInput, outputArray, inputOffset, 2, outputArray, inputOffset)
+
+      f = 1
+      while (f <= nInput) {
+        val mean = saveMeanArray(f - 1)
+        var sum = 0.0
+        var i = 0
+        while (i < spatialBatchSize) {
+          sum +=  MKL.vddot(frameSize, outputArray,
+            inputOffset + (f - 1 + i * nInput) * inputStride2,
+            inputStride, onesArray, 0, 1)
+          i += 1
+        }
+
+        val invstd = if (sum == 0 && eps == 0.0) {
+          0.0
+        } else {
+          1.0 / Math.sqrt(sum / n + eps)
+        }
+        saveStdArray(f - 1) = invstd
+
+        runningMeanArray(f - 1) = momentum * mean  + (1- momentum) * runningMeanArray(f - 1)
+
+        val unbiasedVar = sum / (n - 1)
+        runningVarArray(f - 1) = momentum * unbiasedVar + (1 - momentum) * runningVarArray(f - 1)
+        f += 1
+      }
+      System.arraycopy(inputArray, inputOffset, outputArray, outputOffset, n * nInput)
+    }
+
+    if (needFix) {
+      java.util.Arrays.fill(saveMeanArray,
+        saveMeanOffset, saveMeanOffset + nInput, 0)
+      java.util.Arrays.fill(saveStdArray,
+        saveStdOffset, saveStdOffset + nInput, 0.0001)
+    }
+
+    // update output
+    var f = 1
+    while (f <= nInput) {
+      val (mean, invstd) = if (train) {
+        (saveMeanArray(f - 1), saveStdArray(f - 1))
+      } else {
+        (runningMeanArray(f - 1),
+          1 / Math.sqrt(runningVarArray(f - 1) + eps))
+      }
+
+      val w = if (null != weightArray) weightArray(f - 1 + weightOffset) else 1.0
+      val b = if (null != biasArray) biasArray(f - 1 + biasOffset) else 0.0
+
+      var i = 0
+      while (i < spatialBatchSize) {
+        MKL.vdscal(frameSize, w * invstd, outputArray,
+          inputOffset + (f - 1 + i * nInput) * inputStride2, inputStride)
+        MKL.vdaxpy(frameSize, b - mean * invstd * w, onesArray, 0, 1,
+          outputArray, inputOffset + (f - 1 + i * nInput) * inputStride2, inputStride)
+        i += 1
+      }
+
+
+      f += 1
+    }
+  }
 }

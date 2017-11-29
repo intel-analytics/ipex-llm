@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.optim
 import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.models.utils.ModelBroadcast
-import com.intel.analytics.bigdl.nn.Utils
+import com.intel.analytics.bigdl.nn.{Container, SpatialConvolution, Utils}
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -115,9 +115,10 @@ class LocalOptimizer[T: ClassTag] (
       }
       val dataFetchTime = System.nanoTime()
 
-      val lossSum = Engine.default.invokeAndWait(
+      val results = Engine.default.invokeAndWait(
         (0 until parallelism).map(i =>
           () => {
+            val trainingStart = System.nanoTime()
             val localModel = workingModels(i)
             localModel.zeroGradParameters()
             localModel.training()
@@ -128,9 +129,16 @@ class LocalOptimizer[T: ClassTag] (
             val _loss = ev.toType[Double](localCriterion.forward(output, target))
             val errors = localCriterion.backward(output, target)
             localModel.backward(input, errors)
-            _loss
+            val trainTime = System.nanoTime() - trainingStart
+            (_loss, trainTime)
           })
-      ).sum
+      )
+      val lossSum = results.map(_._1).sum
+      val maxTrainTime = results.map(_._2).max
+      val minTrainTime = results.map(_._2).min
+      val meanTrainTime = results.map(_._2).sum.toDouble / results.length
+
+      val aggGradientStart = System.nanoTime()
 
       // copy multi-model gradient to the buffer
       Engine.default.invokeAndWait(
@@ -151,6 +159,7 @@ class LocalOptimizer[T: ClassTag] (
             }
           })
       )
+      val updateParameter = System.nanoTime()
       val loss = lossSum / parallelism
       grad.div(ev.fromType(parallelism))
 
@@ -162,12 +171,17 @@ class LocalOptimizer[T: ClassTag] (
       count += batch.size()
       val head = header(state[Int]("epoch"), count, numSamples, state[Int]("neval"), wallClockTime)
       logger.info(s"$head " +
-        s"loss is $loss, iteration time is ${(end - start) / 1e9}s " +
+        s"loss is $loss, iteration time is ${(end - start) / 1e9}s, " +
         s"data fetch time is ${(dataFetchTime - start) / 1e9}s, " +
-        s"train time ${(end - dataFetchTime) / 1e9}s. " +
+        s"training time ${(aggGradientStart - dataFetchTime) / 1e9}s, " +
+        s"agg gradient time ${(updateParameter - aggGradientStart) / 1e9}s, " +
+        s"update gradient time ${(end - updateParameter) / 1e9}s. " +
         s"Throughput is ${batch.size().toDouble / (end - start) * 1e9} record / second. " +
         optimMethod.getHyperParameter()
         )
+      logger.info(s"maxTrainTime is ${maxTrainTime / 1e9}, " +
+        s"minTrainTime is ${minTrainTime / 1e9}, " +
+        s"averageTrainTime is ${meanTrainTime / 1e9}")
       state("neval") = state[Int]("neval") + 1
 
       if (count >= numSamples) {
@@ -180,6 +194,22 @@ class LocalOptimizer[T: ClassTag] (
       validate(wallClockTime)
       checkpoint(wallClockTime)
     }
+
+    logger.info(workingModels.head.getTimes()
+      .filter(!_._1.isInstanceOf[Container[Activity, Activity, Float]])
+      .map(v => s"${v._1}, ${v._2}, ${v._3}").mkString("\n"))
+    logger.info("imgToCol&colToImg time is" + workingModels.head.getTimes()
+      .filter(_._1.isInstanceOf[SpatialConvolution[Float]])
+      .map(_._1.asInstanceOf[SpatialConvolution[Float]])
+      .map(v => v.getCol2ImgTime() + v.getIm2ColTime())
+      .sum)
+    logger.info(workingModels.head.getTimes()
+      .filter(!_._1.isInstanceOf[Container[Activity, Activity, Float]])
+      .groupBy(_._1.getClass()).map(v => (v._1, v._2.map(a => a._2).sum,
+      v._2.map(b => b._3).sum, v._2.map(c => c._2 + c._3).sum))
+      .toArray.sortBy(_._2)
+      .map(v => s"${v._1}, ${v._2.toDouble / 1e9}," +
+        s" ${v._3.toDouble / 1e9}, ${v._4.toDouble / 1e9}").mkString("\n"))
 
     // copy running status from workingModels to model
     model.copyStatus(workingModels.head)

@@ -31,7 +31,7 @@ object Inception_Layer_v2 {
       val conv1 = Sequential()
       conv1.add(SpatialConvolution(inputSize, config[Table](1)(1), 1, 1, 1, 1)
         .setName(namePrefix + "1x1"))
-      conv1.add(SpatialBatchNormalization(config[Table](1)(1), 1e-3)
+      conv1.add(SpatialBatchNormalization2(config[Table](1)(1), 1e-3)
         .setName(namePrefix + "1x1/bn"))
       conv1.add(ReLU(true).setName(namePrefix + "1x1/bn/sc/relu"))
       concat.add(conv1)
@@ -40,7 +40,7 @@ object Inception_Layer_v2 {
     val conv3 = Sequential()
     conv3.add(SpatialConvolution(inputSize, config[Table](2)(1), 1, 1, 1, 1)
       .setName(namePrefix + "3x3_reduce"))
-    conv3.add(SpatialBatchNormalization(config[Table](2)(1), 1e-3)
+    conv3.add(SpatialBatchNormalization2(config[Table](2)(1), 1e-3)
       .setName(namePrefix + "3x3_reduce/bn"))
     conv3.add(ReLU(true). setName(namePrefix + "3x3_reduce/bn/sc/relu"))
     if(config[Table](4)[String](1) == "max" && config[Table](4)[Int](2) == 0) {
@@ -50,7 +50,7 @@ object Inception_Layer_v2 {
       conv3.add(SpatialConvolution(config[Table](2)(1),
         config[Table](2)(2), 3, 3, 1, 1, 1, 1).setName(namePrefix + "3x3"))
     }
-    conv3.add(SpatialBatchNormalization(config[Table](2)(2), 1e-3)
+    conv3.add(SpatialBatchNormalization2(config[Table](2)(2), 1e-3)
       .setName(namePrefix + "3x3/bn"))
     conv3.add(ReLU(true).setName(namePrefix + "3x3/bn/sc/relu"))
     concat.add(conv3)
@@ -58,13 +58,13 @@ object Inception_Layer_v2 {
     val conv3xx = Sequential()
     conv3xx.add(SpatialConvolution(inputSize, config[Table](3)(1), 1, 1, 1, 1)
       .setName(namePrefix + "double3x3_reduce"))
-    conv3xx.add(SpatialBatchNormalization(config[Table](3)(1), 1e-3)
+    conv3xx.add(SpatialBatchNormalization2(config[Table](3)(1), 1e-3)
       .setName(namePrefix + "double3x3_reduce/bn"))
     conv3xx.add(ReLU(true).setName(namePrefix + "double3x3_reduce/bn/sc/relu"))
 
     conv3xx.add(SpatialConvolution(config[Table](3)(1),
       config[Table](3)(2), 3, 3, 1, 1, 1, 1).setName(namePrefix + "double3x3a"))
-    conv3xx.add(SpatialBatchNormalization(config[Table](3)(2), 1e-3)
+    conv3xx.add(SpatialBatchNormalization2(config[Table](3)(2), 1e-3)
       .setName(namePrefix + "double3x3a/bn"))
     conv3xx.add(ReLU(true).setName(namePrefix + "double3x3a/bn/sc/relu"))
 
@@ -75,7 +75,7 @@ object Inception_Layer_v2 {
       conv3xx.add(SpatialConvolution(config[Table](3)(2),
         config[Table](3)(2), 3, 3, 1, 1, 1, 1).setName(namePrefix + "double3x3b"))
     }
-    conv3xx.add(SpatialBatchNormalization(config[Table](3)(2), 1e-3)
+    conv3xx.add(SpatialBatchNormalization2(config[Table](3)(2), 1e-3)
       .setName(namePrefix + "double3x3b/bn"))
     conv3xx.add(ReLU(true).setName(namePrefix + "double3x3b/bn/sc/relu"))
     concat.add(conv3xx)
@@ -96,7 +96,7 @@ object Inception_Layer_v2 {
     if (config[Table](4)[Int](2) != 0) {
       pool.add(SpatialConvolution(inputSize, config[Table](4)[Int](2), 1, 1, 1, 1)
         .setName(namePrefix + "pool_proj"))
-      pool.add(SpatialBatchNormalization(config[Table](4)(2), 1e-3)
+      pool.add(SpatialBatchNormalization2(config[Table](4)(2), 1e-3)
         .setName(namePrefix + "pool_proj/bn"))
       pool.add(ReLU(true).setName(namePrefix + "pool_proj/bn/sc/relu"))
     }
@@ -109,7 +109,7 @@ object Inception_Layer_v2 {
     val relu1 = if (config[Table](1)[Int](1) != 0) {
       val conv1 = SpatialConvolution(inputSize, config[Table](1)(1), 1, 1, 1, 1)
         .setName(namePrefix + "1x1").inputs(input)
-      val bn1 = SpatialBatchNormalization(config[Table](1)(1), 1e-3)
+      val bn1 = SpatialBatchNormalization2(config[Table](1)(1), 1e-3)
         .setName(namePrefix + "1x1/bn").inputs(conv1)
       ReLU(true).setName(namePrefix + "1x1/bn/sc/relu").inputs(bn1)
     } else {
@@ -118,7 +118,7 @@ object Inception_Layer_v2 {
 
     val conv2 = SpatialConvolution(inputSize, config[Table](2)(1), 1, 1, 1, 1)
       .setName(namePrefix + "3x3_reduce").inputs(input)
-    val bn2 = SpatialBatchNormalization(config[Table](2)(1), 1e-3)
+    val bn2 = SpatialBatchNormalization2(config[Table](2)(1), 1e-3)
       .setName(namePrefix + "3x3_reduce/bn").inputs(conv2)
     val relu2 = ReLU(true). setName(namePrefix + "3x3_reduce/bn/sc/relu").inputs(bn2)
     val conv3 = if (config[Table](4)[String](1) == "max" && config[Table](4)[Int](2) == 0) {
@@ -128,19 +128,19 @@ object Inception_Layer_v2 {
       SpatialConvolution(config[Table](2)(1),
         config[Table](2)(2), 3, 3, 1, 1, 1, 1).setName(namePrefix + "3x3").inputs(relu2)
     }
-    val bn3 = SpatialBatchNormalization(config[Table](2)(2), 1e-3)
+    val bn3 = SpatialBatchNormalization2(config[Table](2)(2), 1e-3)
       .setName(namePrefix + "3x3/bn").inputs(conv3)
     val relu4 = ReLU(true).setName(namePrefix + "3x3/bn/sc/relu").inputs(bn3)
 
     val conv4 = SpatialConvolution(inputSize, config[Table](3)(1), 1, 1, 1, 1)
       .setName(namePrefix + "double3x3_reduce").inputs(input)
-    val bn4 = SpatialBatchNormalization(config[Table](3)(1), 1e-3)
+    val bn4 = SpatialBatchNormalization2(config[Table](3)(1), 1e-3)
       .setName(namePrefix + "double3x3_reduce/bn").inputs(conv4)
     val relu5 = ReLU(true).setName(namePrefix + "double3x3_reduce/bn/sc/relu").inputs(bn4)
 
     val conv5 = SpatialConvolution(config[Table](3)(1),
       config[Table](3)(2), 3, 3, 1, 1, 1, 1).setName(namePrefix + "double3x3a").inputs(relu5)
-    val bn5 = SpatialBatchNormalization(config[Table](3)(2), 1e-3)
+    val bn5 = SpatialBatchNormalization2(config[Table](3)(2), 1e-3)
       .setName(namePrefix + "double3x3a/bn").inputs(conv5)
     val relu6 = ReLU(true).setName(namePrefix + "double3x3a/bn/sc/relu").inputs(bn5)
     val conv6 = if (config[Table](4)[String](1) == "max" && config[Table](4)[Int](2) == 0) {
@@ -150,7 +150,7 @@ object Inception_Layer_v2 {
       SpatialConvolution(config[Table](3)(2),
         config[Table](3)(2), 3, 3, 1, 1, 1, 1).setName(namePrefix + "double3x3b").inputs(relu6)
     }
-    val bn6 = SpatialBatchNormalization(config[Table](3)(2), 1e-3)
+    val bn6 = SpatialBatchNormalization2(config[Table](3)(2), 1e-3)
       .setName(namePrefix + "double3x3b/bn").inputs(conv6)
     val relu7 = ReLU(true).setName(namePrefix + "double3x3b/bn/sc/relu").inputs(bn6)
 
@@ -168,7 +168,7 @@ object Inception_Layer_v2 {
     val reluPool = if (config[Table](4)[Int](2) != 0) {
       val conv = SpatialConvolution(inputSize, config[Table](4)[Int](2), 1, 1, 1, 1)
         .setName(namePrefix + "pool_proj").inputs(pool)
-      val bn = SpatialBatchNormalization(config[Table](4)(2), 1e-3)
+      val bn = SpatialBatchNormalization2(config[Table](4)(2), 1e-3)
         .setName(namePrefix + "pool_proj/bn").inputs(conv)
       ReLU(true).setName(namePrefix + "pool_proj/bn/sc/relu").inputs(bn)
     } else {
@@ -187,14 +187,14 @@ object Inception_v2_NoAuxClassifier {
     val model = Sequential()
     model.add(SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3, 1, false)
       .setName("conv1/7x7_s2"))
-    model.add(SpatialBatchNormalization(64, 1e-3).setName("conv1/7x7_s2/bn"))
+    model.add(SpatialBatchNormalization2(64, 1e-3).setName("conv1/7x7_s2/bn"))
     model.add(ReLU(true).setName("conv1/7x7_s2/bn/sc/relu"))
     model.add(SpatialMaxPooling(3, 3, 2, 2).ceil().setName("pool1/3x3_s2"))
     model.add(SpatialConvolution(64, 64, 1, 1).setName("conv2/3x3_reduce"))
-    model.add(SpatialBatchNormalization(64, 1e-3).setName("conv2/3x3_reduce/bn"))
+    model.add(SpatialBatchNormalization2(64, 1e-3).setName("conv2/3x3_reduce/bn"))
     model.add(ReLU(true).setName("conv2/3x3_reduce/bn/sc/relu"))
     model.add(SpatialConvolution(64, 192, 3, 3, 1, 1, 1, 1).setName("conv2/3x3"))
-    model.add(SpatialBatchNormalization(192, 1e-3).setName("conv2/3x3/bn"))
+    model.add(SpatialBatchNormalization2(192, 1e-3).setName("conv2/3x3/bn"))
     model.add(ReLU(true).setName("conv2/3x3/bn/sc/relu"))
     model.add(SpatialMaxPooling(3, 3, 2, 2).ceil().setName("pool2/3x3_s2"))
     model.add(Inception_Layer_v2(192, T(T(64), T(64, 64), T(64, 96), T("avg", 32)),
@@ -230,14 +230,14 @@ object Inception_v2_NoAuxClassifier {
     val input = Input()
     val conv1 = SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3, 1, false)
       .setName("conv1/7x7_s2").inputs(input)
-    val bn1 = SpatialBatchNormalization(64, 1e-3).setName("conv1/7x7_s2/bn").inputs(conv1)
+    val bn1 = SpatialBatchNormalization2(64, 1e-3).setName("conv1/7x7_s2/bn").inputs(conv1)
     val relu1 = ReLU(true).setName("conv1/7x7_s2/bn/sc/relu").inputs(bn1)
     val pool1 = SpatialMaxPooling(3, 3, 2, 2).ceil().setName("pool1/3x3_s2").inputs(relu1)
     val conv2 = SpatialConvolution(64, 64, 1, 1).setName("conv2/3x3_reduce").inputs(pool1)
-    val bn2 = SpatialBatchNormalization(64, 1e-3).setName("conv2/3x3_reduce/bn").inputs(conv2)
+    val bn2 = SpatialBatchNormalization2(64, 1e-3).setName("conv2/3x3_reduce/bn").inputs(conv2)
     val relu2 = ReLU(true).setName("conv2/3x3_reduce/bn/sc/relu").inputs(bn2)
     val conv3 = SpatialConvolution(64, 192, 3, 3, 1, 1, 1, 1).setName("conv2/3x3").inputs(relu2)
-    val bn3 = SpatialBatchNormalization(192, 1e-3).setName("conv2/3x3/bn").inputs(conv3)
+    val bn3 = SpatialBatchNormalization2(192, 1e-3).setName("conv2/3x3/bn").inputs(conv3)
     val relu3 = ReLU(true).setName("conv2/3x3/bn/sc/relu").inputs(bn3)
     val pool2 = SpatialMaxPooling(3, 3, 2, 2).ceil().setName("pool2/3x3_s2").inputs(relu3)
     val layer1 = Inception_Layer_v2(pool2, 192, T(T(64), T(64, 64), T(64, 96), T("avg", 32)),
@@ -277,14 +277,14 @@ object Inception_v2 {
     val features1 = Sequential()
     features1.add(SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3, 1, false)
       .setName("conv1/7x7_s2"))
-    features1.add(SpatialBatchNormalization(64, 1e-3).setName("conv1/7x7_s2/bn"))
+    features1.add(SpatialBatchNormalization2(64, 1e-3).setName("conv1/7x7_s2/bn"))
     features1.add(ReLU(true).setName("conv1/7x7_s2/bn/sc/relu"))
     features1.add(SpatialMaxPooling(3, 3, 2, 2).ceil().setName("pool1/3x3_s2"))
     features1.add(SpatialConvolution(64, 64, 1, 1).setName("conv2/3x3_reduce"))
-    features1.add(SpatialBatchNormalization(64, 1e-3).setName("conv2/3x3_reduce/bn"))
+    features1.add(SpatialBatchNormalization2(64, 1e-3).setName("conv2/3x3_reduce/bn"))
     features1.add(ReLU(true).setName("conv2/3x3_reduce/bn/sc/relu"))
     features1.add(SpatialConvolution(64, 192, 3, 3, 1, 1, 1, 1).setName("conv2/3x3"))
-    features1.add(SpatialBatchNormalization(192, 1e-3).setName("conv2/3x3/bn"))
+    features1.add(SpatialBatchNormalization2(192, 1e-3).setName("conv2/3x3/bn"))
     features1.add(ReLU(true).setName("conv2/3x3/bn/sc/relu"))
     features1.add(SpatialMaxPooling(3, 3, 2, 2).ceil().setName("pool2/3x3_s2"))
     features1.add(Inception_Layer_v2(192, T(T(64), T(64, 64), T(64, 96), T("avg", 32)),
@@ -297,7 +297,7 @@ object Inception_v2 {
     val output1 = Sequential()
     output1.add(SpatialAveragePooling(5, 5, 3, 3).ceil().setName("pool3/5x5_s3"))
     output1.add(SpatialConvolution(576, 128, 1, 1, 1, 1).setName("loss1/conv"))
-    output1.add(SpatialBatchNormalization(128, 1e-3).setName("loss1/conv/bn"))
+    output1.add(SpatialBatchNormalization2(128, 1e-3).setName("loss1/conv/bn"))
     output1.add(ReLU(true).setName("loss1/conv/bn/sc/relu"))
     output1.add(View(128 * 4 * 4).setNumInputDims(3))
     output1.add(Linear(128 * 4 * 4, 1024).setName("loss1/fc"))
@@ -322,7 +322,7 @@ object Inception_v2 {
     val output2 = Sequential()
     output2.add(SpatialAveragePooling(5, 5, 3, 3).ceil().setName("pool4/5x5_s3"))
     output2.add(SpatialConvolution(1024, 128, 1, 1, 1, 1).setName("loss2/conv"))
-    output2.add(SpatialBatchNormalization(128, 1e-3).setName("loss2/conv/bn"))
+    output2.add(SpatialBatchNormalization2(128, 1e-3).setName("loss2/conv/bn"))
     output2.add(ReLU(true).setName("loss2/conv/bn/sc/relu"))
     output2.add(View(128 * 2 * 2).setNumInputDims(3))
     output2.add(Linear(128 * 2 * 2, 1024).setName("loss2/fc"))
@@ -365,14 +365,14 @@ object Inception_v2 {
     val input = Input()
     val conv1 = SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3, 1, false)
       .setName("conv1/7x7_s2").inputs(input)
-    val bn1 = SpatialBatchNormalization(64, 1e-3).setName("conv1/7x7_s2/bn").inputs(conv1)
+    val bn1 = SpatialBatchNormalization2(64, 1e-3).setName("conv1/7x7_s2/bn").inputs(conv1)
     val relu1 = ReLU(true).setName("conv1/7x7_s2/bn/sc/relu").inputs(bn1)
     val pool1 = SpatialMaxPooling(3, 3, 2, 2).ceil().setName("pool1/3x3_s2").inputs(relu1)
     val conv2 = SpatialConvolution(64, 64, 1, 1).setName("conv2/3x3_reduce").inputs(pool1)
-    val bn2 = SpatialBatchNormalization(64, 1e-3).setName("conv2/3x3_reduce/bn").inputs(conv2)
+    val bn2 = SpatialBatchNormalization2(64, 1e-3).setName("conv2/3x3_reduce/bn").inputs(conv2)
     val relu2 = ReLU(true).setName("conv2/3x3_reduce/bn/sc/relu").inputs(bn2)
     val conv3 = SpatialConvolution(64, 192, 3, 3, 1, 1, 1, 1).setName("conv2/3x3").inputs(relu2)
-    val bn3 = SpatialBatchNormalization(192, 1e-3).setName("conv2/3x3/bn").inputs(conv3)
+    val bn3 = SpatialBatchNormalization2(192, 1e-3).setName("conv2/3x3/bn").inputs(conv3)
     val relu4 = ReLU(true).setName("conv2/3x3/bn/sc/relu").inputs(bn3)
     val pool2 = SpatialMaxPooling(3, 3, 2, 2).ceil().setName("pool2/3x3_s2").inputs(relu4)
     val layer1 = Inception_Layer_v2(pool2, 192, T(T(64), T(64, 64), T(64, 96), T("avg", 32)),
@@ -384,7 +384,7 @@ object Inception_v2 {
 
     val pool2_1 = SpatialAveragePooling(5, 5, 3, 3).ceil().setName("pool3/5x5_s3").inputs(features1)
     val conv2_1 = SpatialConvolution(576, 128, 1, 1, 1, 1).setName("loss1/conv").inputs(pool2_1)
-    val bn2_1 = SpatialBatchNormalization(128, 1e-3).setName("loss1/conv/bn").inputs(conv2_1)
+    val bn2_1 = SpatialBatchNormalization2(128, 1e-3).setName("loss1/conv/bn").inputs(conv2_1)
     val relu2_1 = ReLU(true).setName("loss1/conv/bn/sc/relu").inputs(bn2_1)
     val view2_1 = View(128 * 4 * 4).setNumInputDims(3).inputs(relu2_1)
     val linear2_1 = Linear(128 * 4 * 4, 1024).setName("loss1/fc").inputs(view2_1)
@@ -405,7 +405,7 @@ object Inception_v2 {
 
     val pool3_1 = SpatialAveragePooling(5, 5, 3, 3).ceil().setName("pool4/5x5_s3").inputs(features2)
     val conv3_1 = SpatialConvolution(1024, 128, 1, 1, 1, 1).setName("loss2/conv").inputs(pool3_1)
-    val bn3_1 = SpatialBatchNormalization(128, 1e-3).setName("loss2/conv/bn").inputs(conv3_1)
+    val bn3_1 = SpatialBatchNormalization2(128, 1e-3).setName("loss2/conv/bn").inputs(conv3_1)
     val relu3_1 = ReLU(true).setName("loss2/conv/bn/sc/relu").inputs(bn3_1)
     val view3_1 = View(128 * 2 * 2).setNumInputDims(3).inputs(relu3_1)
     val linear3_1 = Linear(128 * 2 * 2, 1024).setName("loss2/fc").inputs(view3_1)

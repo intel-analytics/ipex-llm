@@ -223,6 +223,7 @@ class ResNetSpec extends TorchSpec {
     val parameterTorch = TH.map("parameters_initial").asInstanceOf[Tensor[Float]]
     val parameters = model.getParameters()._1
 
+//      parameters.copy(parameterTorch)
     for (i <- 0 until parameters.nElement()) {
       if (abs(parameters.storage().array()(i) - parameterTorch.storage().array()(i)) > 1e-8) {
         println(s"${parameters.storage().array()(i)} ${parameterTorch.storage().array()(i)}")

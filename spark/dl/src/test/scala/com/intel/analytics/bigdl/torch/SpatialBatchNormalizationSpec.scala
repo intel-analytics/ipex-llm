@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.torch
 
 import breeze.numerics.abs
-import com.intel.analytics.bigdl.nn.{GradientChecker, SpatialBatchNormalization}
+import com.intel.analytics.bigdl.nn.{GradientChecker, SpatialBatchNormalization, SpatialBatchNormalization2, SpatialBatchNormalizationWithRelu}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 
@@ -218,6 +218,66 @@ class SpatialBatchNormalizationSpec extends TorchSpec {
 
     val checker = new GradientChecker(1e-4)
     checker.checkWeight[Double](sbn, input, 1e-3) should be(true)
+  }
+
+  "A SpatialBatchNormalization2" should "generate correct output and gradInput" in {
+    torchCheck()
+
+    val seed = 100
+    RNG.setSeed(seed)
+
+    val sbn = SpatialBatchNormalization[Double](3, 1e-3)
+    val sbn2 = SpatialBatchNormalization2[Double](3, 1e-3)
+    sbn.getParameters()._1.copy(sbn2.getParameters()._1)
+
+    val input = Tensor[Double](2, 3, 4, 4)
+    var i = 0
+    input.range(1, 96)
+    //    input.apply1(e => 0.5)
+    val gradOutput = Tensor[Double](2, 3, 4, 4)
+    i = 0
+    gradOutput.apply1(e => {
+      i += 1
+      0.1 * i
+    })
+    val out1 = sbn.forward(input)
+    val out2 = sbn2.forward(input)
+    out1 should be (out2)
+
+    val gradOut1 = sbn.backward(input, gradOutput)
+    val gradOut2 = sbn2.backward(input, gradOutput)
+    gradOut1 should be (gradOut2)
+
+  }
+
+  "A SpatialBatchNormalization2 float" should "generate correct output and gradInput" in {
+    torchCheck()
+
+    val seed = 100
+    RNG.setSeed(seed)
+
+    val sbn = SpatialBatchNormalization[Float](3, 1e-3)
+    val sbn2 = SpatialBatchNormalization2[Float](3, 1e-3)
+    sbn.getParameters()._1.copy(sbn2.getParameters()._1)
+
+    val input = Tensor[Float](2, 3, 4, 4)
+    var i = 0
+    input.range(1, 96)
+    //    input.apply1(e => 0.5)
+    val gradOutput = Tensor[Float](2, 3, 4, 4)
+    i = 0
+    gradOutput.apply1(e => {
+      i += 1
+      0.1f * i
+    })
+    val out1 = sbn.forward(input)
+    val out2 = sbn2.forward(input)
+    out1 should be (out2)
+
+    val gradOut1 = sbn.backward(input, gradOutput)
+    val gradOut2 = sbn2.backward(input, gradOutput)
+    gradOut1 should be (gradOut2)
+
   }
 
 }

@@ -105,4 +105,23 @@ class SparseJoinTableSpec  extends FlatSpec with Matchers {
     Tensor.dense(out1) shouldEqual denseInput
   }
 
+  "Sparse JoinTable on narrowed table" should "return the same result 3" in {
+    val indices1 = Array(0, 1, 2, 3, 3)
+    val indices2 = Array(0, 1, 2, 3, 4)
+    val values1 = Array(1f, 2f, 3f, 4f, 5f)
+    val input1 = Tensor.sparse(Array(indices1, indices2), values1, Array(4, 5))
+      .resize(Array(4, 5), 4)
+    val indices3 = Array(0, 1, 2, 3, 4, 4)
+    val indices4 = Array(0, 1, 2, 3, 3, 4)
+    val values2 = Array(6f, 7f, 8f, 9f, 10f, 11f)
+    val input2 = Tensor.sparse(Array(indices3, indices4), values2, Array(6, 5))
+      .narrow(1, 2, 4)
+    val sparseModel = Sequential().add(ParallelTable().add(Identity()).add(Identity()))
+      .add(SparseJoinTable(2))
+
+    val sparseInput = T(input1, input2)
+    val out1 = sparseModel.forward(sparseInput).toTensor[Float]
+    println(out1)
+  }
+
 }
