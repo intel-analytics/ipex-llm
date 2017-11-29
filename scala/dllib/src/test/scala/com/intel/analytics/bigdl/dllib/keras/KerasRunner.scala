@@ -29,7 +29,7 @@ object KerasRunner {
       |from keras.layers.core import *
       |from keras.layers.convolutional import *
       |from keras.layers import *
-      |from keras.metrics import *
+      |from keras.objectives import *
       |from keras.models import Model
       |import keras.backend as K
       |import numpy as np

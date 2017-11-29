@@ -73,12 +73,11 @@ abstract class KerasBaseSpec extends BigDLSpecHelper {
       KerasRunner.run(kerasCode, is_loss = true)
 
     val boutput = bmodel.forward(input, target)
-    require(output.nElement() == 1, s"output should only contain 1 element, but we got: ${output}")
-    NumericFloat.nearlyEqual(boutput, output.storage.array()(0), precision) should be(true)
-
+    val koutput = output.mean()  // the return value from keras is not always averaged.
+    NumericFloat.nearlyEqual(boutput, koutput, precision) should be(true)
+    val kgradInput = gradInput.div(output.nElement())  // div is an in-place operation.
     val bgradInput = bmodel.backward(input, target.clone())
-    bgradInput.almostEqual(gradInput, precision) should be(true)
-
+    bgradInput.almostEqual(kgradInput, precision) should be(true)
   }
 }
 
