@@ -9,12 +9,12 @@ Test template    BigDL Test
 @{verticals}    ${spark_200_3_vid}    ${spark_210_3_vid}    ${hdfs_264_3_vid}    ${spark_tf_210_3_vid}    ${spark_tf_163_3_vid}
 
 *** Test Cases ***   SuiteName                             VerticalId
-#1                    Spark2.0 Test Suite                   ${spark_200_3_vid}
-#2                    Spark2.1 Test Suite                   ${spark_210_3_vid}
+1                    Spark2.0 Test Suite                   ${spark_200_3_vid}
+2                    Spark2.1 Test Suite                   ${spark_210_3_vid}
 3                    Hdfs Test Suite                       ${hdfs_264_3_vid}
-#4                    PySpark2.1 Test Suite                 ${spark_tf_210_3_vid}
-#5                    PySpark1.6 Test Suite                 ${spark_tf_163_3_vid}
-36                    Yarn Test Suite                       ${hdfs_264_3_vid}
+4                    PySpark2.1 Test Suite                 ${spark_tf_210_3_vid}
+5                    PySpark1.6 Test Suite                 ${spark_tf_163_3_vid}
+6                    Yarn Test Suite                       ${hdfs_264_3_vid}
 
 # predefined service masters:
 # hdfs_264_3_master
@@ -53,8 +53,8 @@ Spark2.1 Test Suite
    Run Shell                        ${submit} --master ${spark_210_3_master} --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --driver-memory 150g --executor-cores 28 --total-executor-cores 84 --class com.intel.analytics.bigdl.models.lenet.Train ${jar_path} -f ${mnist_data_source} -b 336 -e 3
 
 Hdfs Test Suite
-   Run Shell      mvn clean test -Dsuites=com.intel.analytics.bigdl.integration.HdfsSpec -DhdfsMaster=${hdfs_264_3_master} -Dmnist=${mnist_data_source} -P integration-test -DforkMode=never
-   Run Shell      mvn clean test -Dsuites=com.intel.analytics.bigdl.integration.S3Spec -Ds3aPath=${s3a_path} -P integration-test -DforkMode=never
+   Run Shell      mvn clean test -Dsuites=com.intel.analytics.bigdl.integration.HdfsSpec -DhdfsMaster=${hdfs_264_3_master} -Dmnist=${mnist_data_source} -P integration-test
+   Run Shell      mvn clean test -Dsuites=com.intel.analytics.bigdl.integration.S3Spec -Ds3aPath=${s3a_path} -P integration-test
 
 Yarn Test Suite
    Build SparkJar                   spark_2.x 
