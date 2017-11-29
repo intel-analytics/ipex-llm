@@ -21,7 +21,9 @@ from bigdl.keras.optimization import *
 from bigdl.util.common import get_spark_context
 from bigdl.util.common import to_sample_rdd
 
+
 class KerasModelWrapper():
+
     def __init__(self, kmodel):
         self.bmodel = DefinitionLoader.from_kmodel(kmodel)
         WeightLoader.load_weights_from_kmodel(self.bmodel, kmodel)  # share the same weight.
@@ -31,9 +33,10 @@ class KerasModelWrapper():
 
     def evaluate(self, x, y, batch_size=32, sample_weight=None, is_distributed=False):
         """
-        evaluate a model by the given metrics.
-        :param x: ndarray, list of ndarray or RDD[Sample] for distributed mode
-        :param y: ndarray or list of ndarray
+        Evaluate a model by the given metrics.
+        :param x: ndarray or list of ndarray for local mode.
+                  RDD[Sample] for distributed mode
+        :param y: ndarray or list of ndarray for local mode and would be None for cluster mode.
         :param batch_size
         :param is_distributed: run in local mode or distributed mode.
                NB: if is_distributed=true, x should be RDD[Sample] and y should be None
@@ -85,13 +88,12 @@ class KerasModelWrapper():
             class_weight=None, sample_weight=None, initial_epoch=0, is_distributed=False):
         """Optimize the model by the given options
 
-        # Arguments
-            x: the input data, as a Numpy array or list of Numpy array for local mode.
-               as RDD[Sample] for distributed mode
-            y: the target data. it can be ndarray or list of ndarray
+        :param x: ndarray or list of ndarray for local mode.
+                  RDD[Sample] for distributed mode
+        :param y: ndarray or list of ndarray for local mode and would be None for cluster mode.
             is_distributed: used to control run in local or cluster. the default value is False.
             NB: if is_distributed=true, x should be RDD[Sample] and y should be None
-        # Returns
+        :return:
             A Numpy array or RDD[Sample] of predictions.
         """
         if callbacks:

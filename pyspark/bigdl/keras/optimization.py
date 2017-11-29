@@ -33,6 +33,7 @@ class OptimConverter:
                 bmetrics.append(boptimizer.Top1Accuracy())
             else:
                 unsupport_exp(metric)
+        # TODO: add more metrics
         return bmetrics
 
     @staticmethod
@@ -55,7 +56,7 @@ class OptimConverter:
         if isinstance(koptim_method, koptimizers.Adagrad):
             return boptimizer.Adagrad()
         elif isinstance(koptim_method, koptimizers.SGD):
-            return boptimizer.SGD(learningrate=0.01)  # TODO: enrich parameters, sgd.lr return a variable!!!not float
+            return boptimizer.SGD(learningrate=0.01)  # TODO: enrich parameters. ie: lr
         elif isinstance(koptim_method, koptimizers.Adam):
             return boptimizer.Adam()
         else:
