@@ -52,9 +52,9 @@ class UpSampling3D[T: ClassTag](val size: Array[Int])
 
     output.resize(input.size(1), input.size(2), outputDepth, outputHeight, outputWidth)
 
-    val dT = size(2)
+    val dT = size(0)
     val dH = size(1)
-    val dW = size(0)
+    val dW = size(2)
 
     // dims
     val idim = input.dim()
@@ -130,9 +130,9 @@ class UpSampling3D[T: ClassTag](val size: Array[Int])
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     gradInput.resizeAs(input).zero()
-    val dT = size(2)
+    val dT = size(0)
     val dH = size(1)
-    val dW = size(0)
+    val dW = size(2)
 
     // dims
     val idim = gradInput.dim()
@@ -181,10 +181,6 @@ class UpSampling3D[T: ClassTag](val size: Array[Int])
             while (i4 < isz4) {
               iout(4) = i4
               iin(4) = i4
-              // set the indices for the upsampled dimensions
-              iin(xDim) = iout(xDim) / dW
-              iin(yDim) = iout(yDim) / dH
-              iin(zDim) = iout(zDim) / dT
 
               idst = i0 * is(0) + i1 * is(1) + i2 * is(2) + i3 * is(3)
 
