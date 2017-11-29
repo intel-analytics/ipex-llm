@@ -1070,8 +1070,16 @@ class DenseTensorSpec extends FlatSpec with Matchers {
   "set" should "work properly" in {
     val t = Tensor[Float](1, 3)
     t.set()
-    t.size() should be (Array[Int]())
-    t.nElement() should be (0)
-    t.dim() should be (0)
+    t.size() should be(Array[Int]())
+    t.nElement() should be(0)
+    t.dim() should be(0)
+  }
+
+  "batchCopy" should "be correct" in {
+    val o = Tensor[Float]().resize(2, 2)
+    val x = Tensor[Float](T(1, 2, 3))
+    val y = Tensor[Float](T(4, 5, 6))
+    o.batchCopy(Array(x, y))
+    o should be(Tensor[Float](T(T(1, 2, 3), T(4, 5, 6))))
   }
 }

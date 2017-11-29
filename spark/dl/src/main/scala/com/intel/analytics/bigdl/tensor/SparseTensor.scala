@@ -354,25 +354,7 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def copy(other: Tensor[T]): Tensor[T] = {
-    require(other.getTensorType == SparseType, "The tensor being copied should be a Sparse Tensor")
-    require(this.size().sameElements(other.size()), "copy tensors must have the same size")
-    val otherSparseTensor = other.asInstanceOf[SparseTensor[T]]
-    this.resize(this.size(), otherSparseTensor.nElement())
-    val numOfIndices = this.dim()
-    val curLength = otherSparseTensor.nElement()
-    val curTensorOffset = otherSparseTensor.storageOffset() - 1
-    // copy to concat _values
-    ev.arraycopy(otherSparseTensor.storage().array(), curTensorOffset,
-      this.storage().array(), 0, curLength)
-    // make new Indices
-    var indicesIndex = 0
-    while (indicesIndex < numOfIndices) {
-      System.arraycopy(otherSparseTensor._indices(indicesIndex).array(),
-          curTensorOffset, this._indices(indicesIndex).array(),
-          0, curLength)
-      indicesIndex += 1
-    }
-    this
+    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
   }
 
   override def batchCopy(others: Array[Tensor[T]]): Tensor[T] = {

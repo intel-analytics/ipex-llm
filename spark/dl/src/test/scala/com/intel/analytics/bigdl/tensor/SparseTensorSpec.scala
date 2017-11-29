@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.tensor
 
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.numeric.NumericFloat
+import com.intel.analytics.bigdl.utils.T
 
 @com.intel.analytics.bigdl.tags.Parallel
 class SparseTensorSpec  extends FlatSpec with Matchers {
@@ -106,6 +107,14 @@ class SparseTensorSpec  extends FlatSpec with Matchers {
     sTensor.nElement() should be (18)
     sTensor.storage().array.length should be (30)
     sTensor.storageOffset() should be (6)
+  }
+
+  "batchCopy" should "be correct" in {
+    val o = Tensor.sparse(Array(2, 2))
+    val x = Tensor.sparse(Tensor[Float](T(1, 2, 3)))
+    val y = Tensor.sparse(Tensor[Float](T(4, 5, 6)))
+    o.batchCopy(Array(x, y))
+    o should be(Tensor.sparse(Tensor[Float](T(T(1, 2, 3), T(4, 5, 6)))))
   }
 
 }
