@@ -31,7 +31,7 @@ class SegmentSumSpec extends TensorflowSpecHelper {
         .setOp("SegmentSum")
         .putAttr("T", typeAttr(DataType.DT_FLOAT))
         .putAttr("Tindices", typeAttr(DataType.DT_INT32)),
-      Seq(Tensor[Float](10, 20).rand(), Tensor[Int](T(0, 1, 1, 1, 2, 2, 2, 3, 4))),
+      Seq(Tensor[Float](10, 20).rand(), Tensor[Int](T(0, 0, 1, 1, 1, 2, 2, 2, 3, 4))),
       0
     )
   }
