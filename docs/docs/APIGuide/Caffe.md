@@ -30,7 +30,7 @@ model = Model.load_caffe_model("/tmp/deploy.prototxt", "/tmp/caffe.caffemodel")
 **Scala:**
 
 ```scala
-Module.loadCaffe[Float](model, defPath, modelPath, match_all = true)
+Module.loadCaffe(model, defPath, modelPath, match_all = true)
 ```
 **Python:**
 ```python
