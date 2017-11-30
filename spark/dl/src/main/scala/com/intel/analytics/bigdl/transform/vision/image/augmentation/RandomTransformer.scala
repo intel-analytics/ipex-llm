@@ -19,6 +19,11 @@ package com.intel.analytics.bigdl.transform.vision.image.augmentation
 import com.intel.analytics.bigdl.transform.vision.image.{FeatureTransformer, ImageFeature}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 
+/**
+ * It is a wrapper for transformers to control the transform probability
+ * @param transformer transformer to apply randomness
+ * @param maxProb max prob
+ */
 class RandomTransformer(transformer: FeatureTransformer, maxProb: Double)
   extends FeatureTransformer {
   override def transform(prev: ImageFeature): ImageFeature = {

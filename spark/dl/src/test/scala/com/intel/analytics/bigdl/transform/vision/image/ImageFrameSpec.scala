@@ -17,10 +17,11 @@
 package com.intel.analytics.bigdl.transform.vision.image
 
 import com.google.common.io.Files
+import com.intel.analytics.bigdl.transform.vision.image.augmentation.HFlip
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.commons.io.FileUtils
 import org.apache.spark.SparkContext
-import org.apache.spark.sql.{SQLContext}
+import org.apache.spark.sql.SQLContext
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 class ImageFrameSpec extends FlatSpec with Matchers with BeforeAndAfter {
@@ -42,7 +43,6 @@ class ImageFrameSpec extends FlatSpec with Matchers with BeforeAndAfter {
     local.array.length should be(1)
     assert(local.array(0).uri.endsWith("000025.jpg"))
     assert(local.array(0).bytes.length == 95959)
-    local.array(0).opencvMat().shape() should be((375, 500, 3))
   }
 
   "LocalImageFrame toDistributed" should "work properly" in {
@@ -51,7 +51,6 @@ class ImageFrameSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val imageFeature = local.toDistributed(sc).rdd.first()
     assert(imageFeature.uri.endsWith("000025.jpg"))
     assert(imageFeature.bytes.length == 95959)
-    imageFeature.opencvMat().shape() should be((375, 500, 3))
   }
 
   "read DistributedImageFrame" should "work properly" in {
@@ -60,7 +59,6 @@ class ImageFrameSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val imageFeature = distributed.rdd.first()
     assert(imageFeature.uri.endsWith("000025.jpg"))
     assert(imageFeature.bytes.length == 95959)
-    imageFeature.opencvMat().shape() should be((375, 500, 3))
   }
 
   "SequenceFile write and read" should "work properly" in {
@@ -87,5 +85,11 @@ class ImageFrameSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val images4 = ImageFrame.read(resource.getFile + "0000251.jpg").asInstanceOf[LocalImageFrame]
     images4.array.length should be (0)
+  }
+
+  "transform" should "work" in {
+    val transformer = BytesToMat() -> HFlip()
+    val images = ImageFrame.read(resource.getFile)
+    images.transform(transformer)
   }
 }

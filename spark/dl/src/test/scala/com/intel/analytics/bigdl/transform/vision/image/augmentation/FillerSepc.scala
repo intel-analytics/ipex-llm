@@ -16,16 +16,23 @@
 
 package com.intel.analytics.bigdl.transform.vision.image.augmentation
 
-import com.intel.analytics.bigdl.transform.vision.image.{BytesToMat, ImageFrame, LocalImageFrame}
+import com.intel.analytics.bigdl.transform.vision.image.{BytesToMat, ImageFrame, LocalImageFrame, MatToFloats}
 import org.scalatest.{FlatSpec, Matchers}
 
-class HFlipSpec extends FlatSpec with Matchers {
+class FillerSepc extends FlatSpec with Matchers {
   val resource = getClass.getClassLoader.getResource("pascal/")
-  "HFlip" should "work properly" in {
+
+  "Filler all" should "work properly" in {
     val data = ImageFrame.read(resource.getFile) -> BytesToMat()
-    val hFlip = HFlip()
-    val transformed = hFlip(data).asInstanceOf[LocalImageFrame]
-    transformed.array(0).getHeight() should be (transformed.array(0).getOriginalHeight)
-    transformed.array(0).getWidth() should be (transformed.array(0).getOriginalWidth)
+    val transformer = Filler(0, 0, 1, 1, 255) -> MatToFloats()
+    val transformed = transformer(data).asInstanceOf[LocalImageFrame]
+    transformed.array(0).floats().forall(x => x == 255) should be (true)
+  }
+
+  "Filler part" should "work properly" in {
+    val data = ImageFrame.read(resource.getFile) -> BytesToMat()
+    val transformer = Filler(0, 0, 1, 0.5f, 255) -> MatToFloats()
+    val transformed = transformer(data).asInstanceOf[LocalImageFrame]
+    transformed.array(0).floats().slice(0, 3 * 375 * 250).forall(_ == 255) should be (true)
   }
 }

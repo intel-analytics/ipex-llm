@@ -16,16 +16,17 @@
 
 package com.intel.analytics.bigdl.transform.vision.image.augmentation
 
+import com.intel.analytics.bigdl.transform.vision.image.{FeatureTransformer, ImageFeature}
 import org.opencv.core.CvType
 
 /**
- *  Pixel level normalizer, data(i) = data(i) - mean(i)
+ * Pixel level normalizer, data(i) = data(i) - mean(i)
  *
- *  @param means  pixel level mean, following H * W * C order
+ * @param means pixel level mean, following H * W * C order
  */
-class PixelNormalizer(means : Array[Float]) extends FeatureTransformer {
+class PixelNormalizer(means: Array[Float]) extends FeatureTransformer {
 
-  val data = new Array[Float](means.length)
+  private var data: Array[Float] = _
 
   override def transformMat(feature: ImageFeature): Unit = {
     val openCVMat = feature.opencvMat()
@@ -33,6 +34,11 @@ class PixelNormalizer(means : Array[Float]) extends FeatureTransformer {
       openCVMat.convertTo(openCVMat, CvType.CV_32FC3)
     }
 
+    if (data == null) {
+      data = new Array[Float](means.length)
+    }
+    require(data.length == openCVMat.height() * openCVMat.width() * openCVMat.channels(),
+      "the means provided must have the same length as image")
     openCVMat.get(0, 0, data)
 
     require(means.length == data.length, s"Image size expected :" +
@@ -47,10 +53,10 @@ class PixelNormalizer(means : Array[Float]) extends FeatureTransformer {
     }
 
     openCVMat.put(0, 0, data)
-
   }
 
 }
-object PixelNormalizer{
- def apply(means : Array[Float]): PixelNormalizer = new PixelNormalizer(means)
+
+object PixelNormalizer {
+  def apply(means: Array[Float]): PixelNormalizer = new PixelNormalizer(means)
 }

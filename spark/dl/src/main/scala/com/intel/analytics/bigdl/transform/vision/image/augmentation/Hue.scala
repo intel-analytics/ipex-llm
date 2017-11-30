@@ -18,10 +18,17 @@ package com.intel.analytics.bigdl.transform.vision.image.augmentation
 
 import java.util
 
+import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
+import com.intel.analytics.bigdl.transform.vision.image.{FeatureTransformer, ImageFeature}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.opencv.core.{Core, Mat}
 import org.opencv.imgproc.Imgproc
 
+/**
+ * Adjust image hue
+ * @param deltaLow hue parameter: low bound
+ * @param deltaHigh hue parameter: high bound
+ */
 class Hue(deltaLow: Double, deltaHigh: Double)
   extends FeatureTransformer {
   override def transformMat(feature: ImageFeature): Unit = {

@@ -16,9 +16,9 @@
 
 package com.intel.analytics.bigdl.transform.vision.image.label.roi
 
-import com.intel.analytics.bigdl.transform.vision.image.ImageFeature
+import com.intel.analytics.bigdl.transform.vision.image.{FeatureTransformer, ImageFeature}
 import com.intel.analytics.bigdl.transform.vision.image.augmentation.Crop
-import com.intel.analytics.bigdl.transform.vision.image.util.NormalizedBox
+import com.intel.analytics.bigdl.transform.vision.image.util.{BoundingBox}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.opencv.core.Mat
 
@@ -43,7 +43,7 @@ class RandomSampler extends Crop {
 
   def generateRoi(feature: ImageFeature): (Float, Float, Float, Float) = {
     val roiLabel = feature(ImageFeature.label).asInstanceOf[RoiLabel]
-    val boxesBuffer = new ArrayBuffer[NormalizedBox]()
+    val boxesBuffer = new ArrayBuffer[BoundingBox]()
     BatchSampler.generateBatchSamples(roiLabel,
       batchSamplers, boxesBuffer)
 

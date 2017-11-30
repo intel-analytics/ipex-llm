@@ -20,6 +20,11 @@ import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
 import com.intel.analytics.bigdl.transform.vision.image.{FeatureTransformer, ImageFeature}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 
+/**
+ * Adjust the image contrast
+ * @param deltaLow contrast parameter low bound
+ * @param deltaHigh contrast parameter high bound
+ */
 class Contrast(deltaLow: Double, deltaHigh: Double)
   extends FeatureTransformer {
 

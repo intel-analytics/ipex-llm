@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.transform.vision.image.label.roi
 
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.transform.vision.image.util.{BboxUtil, NormalizedBox}
+import com.intel.analytics.bigdl.transform.vision.image.util.{BboxUtil, BoundingBox}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 
 import scala.collection.mutable.ArrayBuffer
@@ -51,7 +51,7 @@ class BatchSampler(maxSample: Int = 1, maxTrials: Int = 50,
     require(minOverlap.get >= 0 && minOverlap.get <= 1, "minOverlap must in [0, 1]")
   }
 
-  def satisfySampleConstraint(sampledBox: NormalizedBox, target: RoiLabel): Boolean = {
+  def satisfySampleConstraint(sampledBox: BoundingBox, target: RoiLabel): Boolean = {
     // By default, the sampled_bbox is "positive" if no constraints are defined.
     if (minOverlap.isEmpty && maxOverlap.isEmpty) return true
     var i = 1
@@ -67,7 +67,7 @@ class BatchSampler(maxSample: Int = 1, maxTrials: Int = 50,
     false
   }
 
-  def sample(sourceBox: NormalizedBox, target: RoiLabel, sampledBoxes: ArrayBuffer[NormalizedBox])
+  def sample(sourceBox: BoundingBox, target: RoiLabel, sampledBoxes: ArrayBuffer[BoundingBox])
   : Unit = {
     var found = 0
     var trial = 0
@@ -88,7 +88,7 @@ class BatchSampler(maxSample: Int = 1, maxTrials: Int = 50,
     }
   }
 
-  private def sampleBox(): NormalizedBox = {
+  private def sampleBox(): BoundingBox = {
     val scale = RNG.uniform(minScale, maxScale)
     var ratio = RNG.uniform(minAspectRatio, maxAspectRatio)
     ratio = Math.max(ratio, scale * scale)
@@ -99,11 +99,11 @@ class BatchSampler(maxSample: Int = 1, maxTrials: Int = 50,
     val y1 = RNG.uniform(0, 1 - height).toFloat
     val x2 = x1 + width.toFloat
     val y2 = y1 + height.toFloat
-    NormalizedBox(x1, y1, x2, y2)
+    BoundingBox(x1, y1, x2, y2)
   }
 
-  def jaccardOverlap(bbox: NormalizedBox, gtBoxes: Tensor[Float], i: Int): Float = {
-    val gtBox = NormalizedBox(gtBoxes.valueAt(i, 1),
+  def jaccardOverlap(bbox: BoundingBox, gtBoxes: Tensor[Float], i: Int): Float = {
+    val gtBox = BoundingBox(gtBoxes.valueAt(i, 1),
       gtBoxes.valueAt(i, 2),
       gtBoxes.valueAt(i, 3),
       gtBoxes.valueAt(i, 4))
@@ -122,10 +122,10 @@ object BatchSampler {
    * @param sampledBoxes
    */
   def generateBatchSamples(label: RoiLabel, batchSamplers: Array[BatchSampler],
-    sampledBoxes: ArrayBuffer[NormalizedBox]): Unit = {
+    sampledBoxes: ArrayBuffer[BoundingBox]): Unit = {
     sampledBoxes.clear()
     var i = 0
-    val unitBox = NormalizedBox(0, 0, 1, 1)
+    val unitBox = BoundingBox(0, 0, 1, 1)
     while (i < batchSamplers.length) {
       batchSamplers(i).sample(unitBox, label, sampledBoxes)
       i += 1

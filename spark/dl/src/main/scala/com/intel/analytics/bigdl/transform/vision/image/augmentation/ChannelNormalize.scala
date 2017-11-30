@@ -24,10 +24,12 @@ import org.opencv.core.{Core, CvType, Mat, Scalar}
 
 /**
  * image channel normalize
- *
- * @param meanR
- * @param meanG
- * @param meanB
+ * @param meanR mean value in R channel
+ * @param meanG mean value in G channel
+ * @param meanB mean value in B channel
+ * @param stdR std value in R channel
+ * @param stdG std value in G channel
+ * @param stdB std value in B channel
  */
 class ChannelNormalize(meanR: Float, meanG: Float, meanB: Float,
                        stdR: Float = 1, stdG: Float = 1, stdB: Float = 1)
@@ -46,7 +48,7 @@ object ChannelNormalize {
 
   def transform(input: OpenCVMat, output: OpenCVMat,
                 meanR: Float, meanG: Float, meanB: Float,
-                stdR: Float = 1, stdG: Float = 1, stdB: Float = 1): Boolean = {
+                stdR: Float = 1, stdG: Float = 1, stdB: Float = 1): Unit = {
     if (input.`type`() != CvType.CV_32FC3) {
       input.convertTo(input, CvType.CV_32FC3)
     }
@@ -72,6 +74,5 @@ object ChannelNormalize {
     if (input != output) {
       (0 until outputChannels.size()).foreach(outputChannels.get(_).release())
     }
-    true
   }
 }

@@ -23,7 +23,8 @@ import com.intel.analytics.bigdl.utils.RandomGenerator._
 /**
  * adjust the image brightness
  *
- * @param deltaLow brightness parameter
+ * @param deltaLow brightness parameter: low bound
+ * @param deltaHigh brightness parameter: high bound
  */
 class Brightness(deltaLow: Double, deltaHigh: Double)
   extends FeatureTransformer {
@@ -40,10 +41,10 @@ object Brightness {
   /**
    * if delta > 0, increase the brightness
    * if delta < 0, decrease the brightness
-   * @param input
-   * @param output
-   * @param delta
-   * @return
+   * @param input input mat
+   * @param output output mat
+   * @param delta brightness parameter
+   * @return output mat
    */
   def transform(input: OpenCVMat, output: OpenCVMat, delta: Double): OpenCVMat = {
     if (delta != 0) {

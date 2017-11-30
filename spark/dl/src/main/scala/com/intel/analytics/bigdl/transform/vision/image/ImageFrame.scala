@@ -97,7 +97,7 @@ object ImageFrame {
       val files = listLocalFiles(path)
       val images = files.map { p =>
         ImageFeature(FileUtils.readFileToByteArray(p), uri = p.getAbsolutePath)
-      }.map(BytesToMat.transform)
+      }
       ImageFrame.array(images)
     }
   }

@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.transform.vision.image.augmentation
 
+import com.intel.analytics.bigdl.transform.vision.image.{FeatureTransformer, ImageFeature}
 import org.opencv.core
 import org.opencv.core.Mat
 

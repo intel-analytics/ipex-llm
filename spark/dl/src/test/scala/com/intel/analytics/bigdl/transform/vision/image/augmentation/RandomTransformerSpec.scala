@@ -19,13 +19,22 @@ package com.intel.analytics.bigdl.transform.vision.image.augmentation
 import com.intel.analytics.bigdl.transform.vision.image.{BytesToMat, ImageFrame, LocalImageFrame}
 import org.scalatest.{FlatSpec, Matchers}
 
-class HFlipSpec extends FlatSpec with Matchers {
+class RandomTransformerSpec extends FlatSpec with Matchers {
   val resource = getClass.getClassLoader.getResource("pascal/")
-  "HFlip" should "work properly" in {
+
+  "RandomTransformer with 0" should "work properly" in {
     val data = ImageFrame.read(resource.getFile) -> BytesToMat()
-    val hFlip = HFlip()
-    val transformed = hFlip(data).asInstanceOf[LocalImageFrame]
-    transformed.array(0).getHeight() should be (transformed.array(0).getOriginalHeight)
-    transformed.array(0).getWidth() should be (transformed.array(0).getOriginalWidth)
+    val transformer = RandomTransformer(FixedCrop(0, 0, 50, 50, false), 0)
+    val transformed = transformer(data).asInstanceOf[LocalImageFrame]
+    transformed.array(0).getHeight() should be(375)
+    transformed.array(0).getWidth() should be(500)
+  }
+
+  "RandomTransformer with 1" should "work properly" in {
+    val data = ImageFrame.read(resource.getFile) -> BytesToMat()
+    val transformer = RandomTransformer(FixedCrop(0, 0, 50, 50, false), 1)
+    val transformed = transformer(data).asInstanceOf[LocalImageFrame]
+    transformed.array(0).getHeight() should be(50)
+    transformed.array(0).getWidth() should be(50)
   }
 }

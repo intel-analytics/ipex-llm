@@ -40,7 +40,7 @@ object BboxUtil {
     classBboxes.select(2, 4).mul(height)
   }
 
-  def locateBBox(srcBox: NormalizedBox, box: NormalizedBox, locBox: NormalizedBox)
+  def locateBBox(srcBox: BoundingBox, box: BoundingBox, locBox: BoundingBox)
   : Unit = {
     val srcW = srcBox.width()
     val srcH = srcBox.height()
@@ -50,7 +50,7 @@ object BboxUtil {
     locBox.y2 = srcBox.y1 + box.y2 * srcH
   }
 
-  def jaccardOverlap(bbox: NormalizedBox, bbox2: NormalizedBox): Float = {
+  def jaccardOverlap(bbox: BoundingBox, bbox2: BoundingBox): Float = {
     val w = math.min(bbox.x2, bbox2.x2) - math.max(bbox.x1, bbox2.x1)
     if (w < 0) return 0
     val h = math.min(bbox.y2, bbox2.y2) - math.max(bbox.y1, bbox2.y1)
@@ -59,7 +59,7 @@ object BboxUtil {
     overlap / ((bbox.area() + bbox2.area()) - overlap)
   }
 
-  def meetEmitCenterConstraint(srcBox: NormalizedBox, bbox: NormalizedBox): Boolean = {
+  def meetEmitCenterConstraint(srcBox: BoundingBox, bbox: BoundingBox): Boolean = {
     val xCenter = bbox.centerX()
     val yCenter = bbox.centerY()
     if (xCenter >= srcBox.x1 && xCenter <= srcBox.x2 &&
@@ -77,8 +77,8 @@ object BboxUtil {
    * @param projBox
    * @return
    */
-  def projectBbox(srcBox: NormalizedBox, bbox: NormalizedBox,
-    projBox: NormalizedBox): Boolean = {
+  def projectBbox(srcBox: BoundingBox, bbox: BoundingBox,
+    projBox: BoundingBox): Boolean = {
     if (bbox.x1 >= srcBox.x2 || bbox.x2 <= srcBox.x1 ||
       bbox.y1 >= srcBox.y2 || bbox.y2 <= srcBox.y1) {
       return false
@@ -94,7 +94,7 @@ object BboxUtil {
     else false
   }
 
-  def clipBox(box: NormalizedBox, clipedBox: NormalizedBox): Unit = {
+  def clipBox(box: BoundingBox, clipedBox: BoundingBox): Unit = {
     clipedBox.x1 = Math.max(Math.min(box.x1, 1f), 0f)
     clipedBox.y1 = Math.max(Math.min(box.y1, 1f), 0f)
     clipedBox.x2 = Math.max(Math.min(box.x2, 1f), 0f)

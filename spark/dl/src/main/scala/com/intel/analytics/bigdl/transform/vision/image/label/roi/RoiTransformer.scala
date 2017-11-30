@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.transform.vision.image.label.roi
 
-import com.intel.analytics.bigdl.transform.vision.image.util.{BboxUtil, NormalizedBox}
+import com.intel.analytics.bigdl.transform.vision.image.util.{BboxUtil, BoundingBox}
 import com.intel.analytics.bigdl.transform.vision.image.{FeatureTransformer, ImageFeature}
 
 import scala.collection.mutable.ArrayBuffer
@@ -38,10 +38,10 @@ case class RoiCrop() extends FeatureTransformer {
     val width = feature.getWidth()
     val bbox = feature(ImageFeature.cropBbox).asInstanceOf[(Float, Float, Float, Float)]
     val target = feature(ImageFeature.label).asInstanceOf[RoiLabel]
-    val transformedAnnot = new ArrayBuffer[NormalizedBox]()
+    val transformedAnnot = new ArrayBuffer[BoundingBox]()
     // Transform the annotation according to crop_bbox.
     AnnotationTransformer.transformAnnotation(width, height,
-      NormalizedBox(bbox), false, target,
+      BoundingBox(bbox), false, target,
       transformedAnnot)
 
     target.bboxes.resize(transformedAnnot.length, 4)
@@ -79,8 +79,8 @@ case class RoiExpand() extends FeatureTransformer {
 
   override def transformMat(feature: ImageFeature): Unit = {
     require(feature.hasLabel())
-    val transformedAnnot = new ArrayBuffer[NormalizedBox]()
-    val expandBbox = feature(ImageFeature.expandBbox).asInstanceOf[NormalizedBox]
+    val transformedAnnot = new ArrayBuffer[BoundingBox]()
+    val expandBbox = feature(ImageFeature.expandBbox).asInstanceOf[BoundingBox]
     val height = feature.getHeight()
     val width = feature.getWidth()
     val target = feature.getLabel[RoiLabel]
@@ -117,17 +117,17 @@ case class RoiResize(normalized: Boolean = false) extends FeatureTransformer {
 }
 
 object AnnotationTransformer {
-  def transformAnnotation(imgWidth: Int, imgHeigth: Int, cropedBox: NormalizedBox,
+  def transformAnnotation(imgWidth: Int, imgHeigth: Int, cropedBox: BoundingBox,
                           doMirror: Boolean, target: RoiLabel,
-                          transformd: ArrayBuffer[NormalizedBox]): Unit = {
+                          transformd: ArrayBuffer[BoundingBox]): Unit = {
     var i = 1
     while (i <= target.size()) {
-      val resizedBox = NormalizedBox(target.bboxes.valueAt(i, 1),
+      val resizedBox = BoundingBox(target.bboxes.valueAt(i, 1),
         target.bboxes.valueAt(i, 2),
         target.bboxes.valueAt(i, 3),
         target.bboxes.valueAt(i, 4))
       if (BboxUtil.meetEmitCenterConstraint(cropedBox, resizedBox)) {
-        val transformedBox = new NormalizedBox()
+        val transformedBox = new BoundingBox()
         if (BboxUtil.projectBbox(cropedBox, resizedBox, transformedBox)) {
           if (doMirror) {
             val temp = transformedBox.x1

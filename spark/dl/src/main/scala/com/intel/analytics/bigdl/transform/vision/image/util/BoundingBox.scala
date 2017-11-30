@@ -16,7 +16,15 @@
 
 package com.intel.analytics.bigdl.transform.vision.image.util
 
-class NormalizedBox(var x1: Float, var y1: Float, var x2: Float, var y2: Float) {
+class BoundingBox(var x1: Float, var y1: Float, var x2: Float, var y2: Float,
+  normalized: Boolean = true) {
+
+  if (normalized) {
+    require(x1 >= 0 && x1 <= 1, s"x1 $x1 is not in range [0, 1]")
+    require(y1 >= 0 && y1 <= 1, s"x1 $y1 is not in range [0, 1]")
+    require(x2 >= 0 && x2 <= 1, s"x1 $x2 is not in range [0, 1]")
+    require(y2 >= 0 && y2 <= 1, s"x1 $y2 is not in range [0, 1]")
+  }
 
   var label: Float = -1
 
@@ -32,7 +40,7 @@ class NormalizedBox(var x1: Float, var y1: Float, var x2: Float, var y2: Float) 
     this
   }
 
-  def this(other: NormalizedBox) {
+  def this(other: BoundingBox) {
     this(other.x1, other.y1, other.x2, other.y2)
   }
 
@@ -54,14 +62,16 @@ class NormalizedBox(var x1: Float, var y1: Float, var x2: Float, var y2: Float) 
 
   def area(): Float = width() * height()
 
-  def clipBox(clipedBox: NormalizedBox): Unit = {
-    clipedBox.x1 = Math.max(Math.min(x1, 1f), 0f)
-    clipedBox.y1 = Math.max(Math.min(y1, 1f), 0f)
-    clipedBox.x2 = Math.max(Math.min(x2, 1f), 0f)
-    clipedBox.y2 = Math.max(Math.min(y2, 1f), 0f)
+  def clipBox(clipedBox: BoundingBox): Unit = {
+    if (normalized) {
+      clipedBox.x1 = Math.max(Math.min(x1, 1f), 0f)
+      clipedBox.y1 = Math.max(Math.min(y1, 1f), 0f)
+      clipedBox.x2 = Math.max(Math.min(x2, 1f), 0f)
+      clipedBox.y2 = Math.max(Math.min(y2, 1f), 0f)
+    }
   }
 
-  def scaleBox(height: Float, width: Float, scaledBox: NormalizedBox): Unit = {
+  def scaleBox(height: Float, width: Float, scaledBox: BoundingBox): Unit = {
     scaledBox.x1 = x1 * width
     scaledBox.y1 = y1 * height
     scaledBox.x2 = x2 * width
@@ -70,7 +80,7 @@ class NormalizedBox(var x1: Float, var y1: Float, var x2: Float, var y2: Float) 
 
   override def equals(obj: Any): Boolean = {
     obj match {
-      case box: NormalizedBox =>
+      case box: BoundingBox =>
         if (box.x1 == x1 && box.x2 == x2 && box.y1 == y1 && box.y2 == y2) true
         else false
       case _ => false
@@ -89,11 +99,11 @@ class NormalizedBox(var x1: Float, var y1: Float, var x2: Float, var y2: Float) 
   }
 }
 
-object NormalizedBox {
-  def apply(x1: Float, y1: Float, x2: Float, y2: Float): NormalizedBox =
-    new NormalizedBox(x1, y1, x2, y2)
+object BoundingBox {
+  def apply(x1: Float, y1: Float, x2: Float, y2: Float): BoundingBox =
+    new BoundingBox(x1, y1, x2, y2)
 
-  def apply(box: (Float, Float, Float, Float)): NormalizedBox = {
-    new NormalizedBox(box._1, box._2, box._3, box._4)
+  def apply(box: (Float, Float, Float, Float)): BoundingBox = {
+    new BoundingBox(box._1, box._2, box._3, box._4)
   }
 }

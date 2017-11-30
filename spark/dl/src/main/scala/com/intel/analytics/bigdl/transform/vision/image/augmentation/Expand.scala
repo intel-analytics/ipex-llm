@@ -20,26 +20,35 @@ import java.util
 
 import com.intel.analytics.bigdl.transform.vision.image.{FeatureTransformer, ImageFeature}
 import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
+import com.intel.analytics.bigdl.transform.vision.image.util.BoundingBox
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.opencv.core.{Core, Mat, Rect, Scalar}
 
-
+/**
+ * expand image, fill the blank part with the meanR, meanG, meanB
+ *
+ * @param meansR means in R channel
+ * @param meansG means in G channel
+ * @param meansB means in B channel
+ * @param minExpandRatio min expand ratio
+ * @param maxExpandRatio max expand ratio
+ */
 class Expand(meansR: Int = 123, meansG: Int = 117, meansB: Int = 104,
-                  maxExpandRatio: Double = 4.0)
+  minExpandRatio: Double = 1, maxExpandRatio: Double = 4.0)
   extends FeatureTransformer {
 
   var expandMat: OpenCVMat = _
 
   def transform(input: OpenCVMat,
-                output: OpenCVMat): NormalizedBox = {
+    output: OpenCVMat): BoundingBox = {
     val imgHeight = input.rows()
     val imgWidth = input.cols()
-    val expandRatio = RNG.uniform(1, maxExpandRatio)
+    val expandRatio = RNG.uniform(minExpandRatio, maxExpandRatio)
     val height = (imgHeight * expandRatio).toInt
     val width = (imgWidth * expandRatio).toInt
     val hOff = RNG.uniform(0, height - imgHeight).floor.toFloat
     val wOff = RNG.uniform(0, width - imgWidth).floor.toFloat
-    val expandBbox = new NormalizedBox()
+    val expandBbox = new BoundingBox()
     expandBbox.x1 = -wOff / imgWidth
     expandBbox.y1 = -hOff / imgHeight
     expandBbox.x2 = (width - wOff) / imgWidth
@@ -78,8 +87,8 @@ class Expand(meansR: Int = 123, meansG: Int = 117, meansB: Int = 104,
 
 object Expand {
   def apply(meansR: Int = 123, meansG: Int = 117, meansB: Int = 104,
-            maxExpandRatio: Double = 4.0): Expand =
-    new Expand(meansR, meansG, meansB, maxExpandRatio)
+    minExpandRatio: Double = 1.0, maxExpandRatio: Double = 4.0): Expand =
+    new Expand(meansR, meansG, meansB, minExpandRatio, maxExpandRatio)
 }
 
 

@@ -17,7 +17,9 @@
 package com.intel.analytics.bigdl.transform.vision.image.augmentation
 
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.transform.vision.image.ImageFeature
+import com.intel.analytics.bigdl.transform.vision.image.{FeatureTransformer, ImageFeature}
+import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
+import com.intel.analytics.bigdl.transform.vision.image.util.BboxUtil
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.opencv.core.Rect
 
@@ -50,7 +52,7 @@ object Crop {
 
   def transform(input: OpenCVMat, output: OpenCVMat,
     wStart: Float, hStart: Float, wEnd: Float, hEnd: Float, normalized: Boolean = true,
-    isClip: Boolean = true): Boolean = {
+    isClip: Boolean = true): Unit = {
     val width = input.width
     val height = input.height
     var (x1, y1, x2, y2) = if (normalized) {
@@ -68,7 +70,6 @@ object Crop {
     }
     val rect = new Rect(x1.toInt, y1.toInt, (x2 - x1).toInt, (y2 - y1).toInt)
     input.submat(rect).copyTo(output)
-    true
   }
 }
 
@@ -119,6 +120,15 @@ object RandomCrop {
     new RandomCrop(cropWidth, cropHeight, isClip)
 }
 
+/**
+ * Crop a fixed area of image
+ *
+ * @param hStart start in height
+ * @param hEnd end in height
+ * @param wStart start in width
+ * @param wEnd end in width
+ * @param normalized whether args are normalized, i.e. in range [0, 1]
+ */
 class FixedCrop(wStart: Float, hStart: Float, wEnd: Float, hEnd: Float, normalized: Boolean,
   isClip: Boolean)
   extends Crop(normalized, isClip) {
@@ -130,15 +140,6 @@ class FixedCrop(wStart: Float, hStart: Float, wEnd: Float, hEnd: Float, normaliz
   }
 }
 
-/**
- * Crop a fixed area of image
- *
- * @param hStart start in height
- * @param hEnd end in height
- * @param wStart start in width
- * @param wEnd end in width
- * @param normalized whether args are normalized, i.e. in range [0, 1]
- */
 object FixedCrop {
   def apply(wStart: Float, hStart: Float, wEnd: Float, hEnd: Float, normalized: Boolean,
     isClip: Boolean = true)
@@ -160,7 +161,7 @@ class DetectionCrop(roiKey: String, normalized: Boolean = true) extends Crop(nor
     if (roi.dim() == 1) {
       roi = BboxUtil.decodeRois(roi)
     }
-    if (roi.nElement() > 0) {
+    if (roi.nElement() >= 6 && roi.dim() == 2) {
       (roi.valueAt(1, 3), roi.valueAt(1, 4), roi.valueAt(1, 5), roi.valueAt(1, 6))
     } else {
       (0, 0, 1, 1)
