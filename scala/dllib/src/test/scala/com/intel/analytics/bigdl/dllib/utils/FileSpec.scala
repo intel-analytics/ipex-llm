@@ -68,4 +68,22 @@ class FileSpec extends FlatSpec with Matchers {
     testModule should be(module)
   }
 
+
+  "save/load big size model" should "work properly" in {
+    val tmpFile = java.io.File.createTempFile("module", "obj")
+    val absolutePath = tmpFile.getAbsolutePath
+
+
+    val module = Linear[Float](40000, 8000)
+
+    File.save(module, absolutePath, true)
+    val testModule: Module[Double] = File.load(absolutePath)
+
+    testModule should be(module)
+
+    if (tmpFile.exists()) {
+      tmpFile.delete()
+    }
+  }
+
 }
