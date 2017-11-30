@@ -33,6 +33,8 @@ In `model.save`, the first parameter is the path where we want to save our model
 
 ## Model Load
 
+### Load BigDL model
+
 Use `Module.load`(in Scala) or `Model.load` (in Python) to load an existing model.  `Module` (Scala) or `Model`(Python) is a utility class provided in BigDL. We just need to specify the model path where we previously saved the model to load it to memory for resume training or prediction purpose.
 
 **Scala example**
@@ -47,6 +49,40 @@ val model = Module.load("s3://...") //load from s3
 model = Model.load("/tmp/model.bigdl") //load from local fs
 model = Model.load("hdfs://...") //load from hdfs
 model = Model.load("s3://...") //load from s3
+```
+
+### Load Tensorflow model
+
+BigDL also provides utilities to load tensorflow model file. You may need to
+first transform your tensorflow model variables to BigDL readable format using
+the `dump_model` function. See [tensorflow support](https://bigdl-project.github.io/master/#ProgrammingGuide/tensorflow-support/)
+for more information.
+
+**Scala example**
+```scala
+val modelPath = "/tmp/model/model.pb"
+val binPath = "/tmp/model/model.bin"
+val inputs = Seq("Placeholder")
+val outputs = Seq("output")
+
+// For tensorflow freezed graph or graph without Variables
+val model = Module.loadTF(modelPath, inputs, outputs, ByteOrder.LITTLE_ENDIAN)
+                            
+// For tensorflow graph with Variables
+val model = Module.loadTF(modelPath, inputs, outputs, ByteOrder.LITTLE_ENDIAN, Some(binPath))
+```
+
+**Python example**
+```python
+model_def = "/tmp/model/model.pb"
+model_variable = "/tmp/model/model.bin"
+inputs = ["Placeholder"]
+outputs = ["output"]
+# For tensorflow freezed graph or graph without Variables
+model = Model.load_tensorflow(model_def, inputs, outputs, byte_order = "little_endian", bigdl_type="float")
+
+# For tensorflow graph with Variables
+model = Model.load_tensorflow(model_def, inputs, outputs, byte_order = "little_endian", bigdl_type="float", bin_file=model_variable)
 ```
 
 ## Model Evaluation
