@@ -33,15 +33,15 @@ class CategoricalCrossEntropy[T: ClassTag]()(implicit ev: TensorNumeric[T])
   import CategoricalCrossEntropy._
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
-    crossEntropy.forward(convertTensor(input), target)
+    crossEntropy.forward(input, convertTensor(target))
   }
 
   override def backward(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
-    crossEntropy.backward(convertTensor(input), target)
+    crossEntropy.backward(input, convertTensor(target))
   }
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
-    crossEntropy.updateGradInput(convertTensor(input), target)
+    crossEntropy.updateGradInput(input, convertTensor(target))
   }
 }
 
