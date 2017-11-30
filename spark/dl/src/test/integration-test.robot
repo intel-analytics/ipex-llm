@@ -53,8 +53,8 @@ Spark2.1 Test Suite
    Run Shell                        ${submit} --master ${spark_210_3_master} --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --driver-memory 150g --executor-cores 28 --total-executor-cores 84 --class com.intel.analytics.bigdl.models.lenet.Train ${jar_path} -f ${mnist_data_source} -b 336 -e 3
 
 Hdfs Test Suite
-   Run Shell      mvn clean test -Dsuites=com.intel.analytics.bigdl.integration.HdfsSpec -DhdfsMaster=${hdfs_264_3_master} -Dmnist=${mnist_data_source} -P integration-test
-   Run Shell      mvn clean test -Dsuites=com.intel.analytics.bigdl.integration.S3Spec -Ds3aPath=${s3a_path} -P integration-test
+   Run Shell      mvn clean test -Dsuites=com.intel.analytics.bigdl.integration.HdfsSpec -DhdfsMaster=${hdfs_264_3_master} -Dmnist=${mnist_data_source} -P integration-test -DforkMode=never
+   Run Shell      mvn clean test -Dsuites=com.intel.analytics.bigdl.integration.S3Spec -Ds3aPath=${s3a_path} -P integration-test -DforkMode=never
 
 Yarn Test Suite
    Build SparkJar                   spark_2.x 
