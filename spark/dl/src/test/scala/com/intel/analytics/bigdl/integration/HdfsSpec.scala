@@ -48,8 +48,8 @@ import scala.util.Random
 @com.intel.analytics.bigdl.tags.Integration
 class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter{
 
-  val hdfs = System.getProperty("hdfsMaster")
-  val mnistFolder = System.getProperty("mnist")
+  val hdfs = System.getenv("hdfsMaster")
+  val mnistFolder = System.getenv("mnist")
 
   private def processPath(path: String): String = {
     if (path.contains(":")) {
