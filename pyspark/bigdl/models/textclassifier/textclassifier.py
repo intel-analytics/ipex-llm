@@ -133,7 +133,7 @@ def train(sc, data_path,
         criterion=ClassNLLCriterion(),
         end_trigger=MaxEpoch(max_epoch),
         batch_size=batch_size,
-        optim_method=Adagrad(learningrate=0.1, learningrate_decay=0.001))
+        optim_method=Adagrad(learningrate=learning_rate, learningrate_decay=0.001))
 
     optimizer.set_validation(
         batch_size=batch_size,
@@ -157,9 +157,10 @@ def train(sc, data_path,
 if __name__ == "__main__":
     parser = OptionParser()
     parser.add_option("-a", "--action", dest="action", default="train")
+    parser.add_option("-l", "--learning_rate", dest="learning_rate", default="0.05")
     parser.add_option("-b", "--batchSize", dest="batchSize", default="128")
-    parser.add_option("-e", "--embedding_dim", dest="embedding_dim", default="100")  # noqa
-    parser.add_option("-m", "--max_epoch", dest="max_epoch", default="15")
+    parser.add_option("-e", "--embedding_dim", dest="embedding_dim", default="300")  # noqa
+    parser.add_option("-m", "--max_epoch", dest="max_epoch", default="30")
     parser.add_option("--model", dest="model_type", default="cnn")
     parser.add_option("-p", "--p", dest="p", default="0.0")
     parser.add_option("-d", "--data_path", dest="data_path", default="/tmp/news20/")
@@ -168,6 +169,7 @@ if __name__ == "__main__":
     if options.action == "train":
         batch_size = int(options.batchSize)
         embedding_dim = int(options.embedding_dim)
+        learning_rate = float(options.learning_rate)
         max_epoch = int(options.max_epoch)
         p = float(options.p)
         model_type = options.model_type
