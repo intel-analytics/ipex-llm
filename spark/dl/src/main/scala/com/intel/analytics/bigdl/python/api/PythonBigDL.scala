@@ -54,11 +54,12 @@ import scala.reflect.ClassTag
 
 
 /**
- * [[com.intel.analytics.bigdl.dataset.Sample]] for python.
- * @param features features
- * @param label labels
- * @param bigdlType bigdl numeric type
- */
+  * [[com.intel.analytics.bigdl.dataset.Sample]] for python.
+  *
+  * @param features  features
+  * @param label     labels
+  * @param bigdlType bigdl numeric type
+  */
 case class Sample(features: JList[JTensor],
                   label: JTensor,
                   bigdlType: String)
@@ -67,11 +68,12 @@ case class JTensor(storage: Array[Float], shape: Array[Int],
                    bigdlType: String, indices: Array[Array[Int]] = null)
 
 /**
- * [[ValidationResult]] for python
- * @param result result
- * @param totalNum total number
- * @param method method name
- */
+  * [[ValidationResult]] for python
+  *
+  * @param result   result
+  * @param totalNum total number
+  * @param method   method name
+  */
 
 case class EvaluatedResult(val result: Float, totalNum: Int, method: String)
 
@@ -83,8 +85,8 @@ object PythonBigDL {
 }
 
 /**
- * Implementation of Python API for BigDL
- */
+  * Implementation of Python API for BigDL
+  */
 class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializable {
 
   private val typeName = {
@@ -220,13 +222,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       require(Xs(0).size()(0) == y.size()(0),
         s"The batch dim should be equal, but we got: ${Xs(0).size()(0)} vs ${y.size()(0)}")
       while (i <= totalNum) {
-        samples(i-1) = JSample(Xs.map{X => X.select(1, i)}.toArray, y.select(1, i))
+        samples(i - 1) = JSample(Xs.map { X => X.select(1, i) }.toArray, y.select(1, i))
         i += 1
       }
     } else {
       val dummyTensor = Tensor[T](1).fill(ev.fromType(1))
       while (i <= totalNum) {
-        samples(i-1) = JSample(Xs.map{X => X.select(1, i)}.toArray, dummyTensor)
+        samples(i - 1) = JSample(Xs.map { X => X.select(1, i) }.toArray, dummyTensor)
         i += 1
       }
     }
@@ -258,27 +260,27 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createLinear(inputSize: Int, outputSize: Int,
-    withBias: Boolean,
-    wRegularizer: Regularizer[T] = null,
-    bRegularizer: Regularizer[T] = null,
-    initWeight: JTensor = null,
-    initBias: JTensor = null,
-    initGradWeight: JTensor = null,
-    initGradBias: JTensor = null): Linear[T] = {
-    Linear[T](inputSize, outputSize, withBias, wRegularizer, bRegularizer,
-      toTensor(initWeight), toTensor(initBias), toTensor(initGradWeight), toTensor(initGradBias))
-  }
-
-  def createSparseLinear(inputSize: Int, outputSize: Int,
                    withBias: Boolean,
-                   backwardStart: Int = -1,
-                   backwardLength: Int = -1,
                    wRegularizer: Regularizer[T] = null,
                    bRegularizer: Regularizer[T] = null,
                    initWeight: JTensor = null,
                    initBias: JTensor = null,
                    initGradWeight: JTensor = null,
-                   initGradBias: JTensor = null): SparseLinear[T] = {
+                   initGradBias: JTensor = null): Linear[T] = {
+    Linear[T](inputSize, outputSize, withBias, wRegularizer, bRegularizer,
+      toTensor(initWeight), toTensor(initBias), toTensor(initGradWeight), toTensor(initGradBias))
+  }
+
+  def createSparseLinear(inputSize: Int, outputSize: Int,
+                         withBias: Boolean,
+                         backwardStart: Int = -1,
+                         backwardLength: Int = -1,
+                         wRegularizer: Regularizer[T] = null,
+                         bRegularizer: Regularizer[T] = null,
+                         initWeight: JTensor = null,
+                         initBias: JTensor = null,
+                         initGradWeight: JTensor = null,
+                         initGradBias: JTensor = null): SparseLinear[T] = {
     SparseLinear[T](inputSize, outputSize, withBias, backwardStart, backwardLength,
       wRegularizer, bRegularizer, toTensor(initWeight), toTensor(initBias),
       toTensor(initGradWeight), toTensor(initGradBias))
@@ -310,13 +312,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createRnnCell(inputSize: Int,
-    hiddenSize: Int,
-    activation: TensorModule[T],
-    isInputWithBias: Boolean = true,
-    isHiddenWithBias: Boolean = true,
-    wRegularizer: Regularizer[T] = null,
-    uRegularizer: Regularizer[T] = null,
-    bRegularizer: Regularizer[T] = null): RnnCell[T] = {
+                    hiddenSize: Int,
+                    activation: TensorModule[T],
+                    isInputWithBias: Boolean = true,
+                    isHiddenWithBias: Boolean = true,
+                    wRegularizer: Regularizer[T] = null,
+                    uRegularizer: Regularizer[T] = null,
+                    bRegularizer: Regularizer[T] = null): RnnCell[T] = {
     RnnCell[T](inputSize,
       hiddenSize,
       activation,
@@ -328,43 +330,43 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createTimeDistributedCriterion(critrn: TensorCriterion[T],
-    sizeAverage: Boolean = false): TimeDistributedCriterion[T] = {
+                                     sizeAverage: Boolean = false): TimeDistributedCriterion[T] = {
     TimeDistributedCriterion[T](critrn, sizeAverage)
   }
 
   def createGRU(
-    inputSize: Int,
-    outputSize: Int,
-    p: Double = 0,
-    activation: TensorModule[T] = null,
-    innerActivation: TensorModule[T] = null,
-    wRegularizer: Regularizer[T] = null,
-    uRegularizer: Regularizer[T] = null,
-    bRegularizer: Regularizer[T] = null): GRU[T] = {
+                 inputSize: Int,
+                 outputSize: Int,
+                 p: Double = 0,
+                 activation: TensorModule[T] = null,
+                 innerActivation: TensorModule[T] = null,
+                 wRegularizer: Regularizer[T] = null,
+                 uRegularizer: Regularizer[T] = null,
+                 bRegularizer: Regularizer[T] = null): GRU[T] = {
     GRU[T](inputSize, outputSize, p, activation, innerActivation,
       wRegularizer, uRegularizer, bRegularizer)
   }
 
   def createLSTM(
-    inputSize: Int,
-    hiddenSize: Int,
-    p: Double = 0,
-    activation: TensorModule[T] = null,
-    innerActivation: TensorModule[T] = null,
-    wRegularizer: Regularizer[T] = null,
-    uRegularizer: Regularizer[T] = null,
-    bRegularizer: Regularizer[T] = null): LSTM[T] = {
+                  inputSize: Int,
+                  hiddenSize: Int,
+                  p: Double = 0,
+                  activation: TensorModule[T] = null,
+                  innerActivation: TensorModule[T] = null,
+                  wRegularizer: Regularizer[T] = null,
+                  uRegularizer: Regularizer[T] = null,
+                  bRegularizer: Regularizer[T] = null): LSTM[T] = {
     LSTM[T](inputSize, hiddenSize, p, activation, innerActivation,
       wRegularizer, uRegularizer, bRegularizer)
   }
 
   def createLSTMPeephole(
-    inputSize: Int,
-    hiddenSize: Int,
-    p: Double = 0,
-    wRegularizer: Regularizer[T] = null,
-    uRegularizer: Regularizer[T] = null,
-    bRegularizer: Regularizer[T] = null): LSTMPeephole[T] = {
+                          inputSize: Int,
+                          hiddenSize: Int,
+                          p: Double = 0,
+                          wRegularizer: Regularizer[T] = null,
+                          uRegularizer: Regularizer[T] = null,
+                          bRegularizer: Regularizer[T] = null): LSTMPeephole[T] = {
     LSTMPeephole[T](inputSize, hiddenSize, p, wRegularizer, uRegularizer, bRegularizer)
   }
 
@@ -377,36 +379,36 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createConvLSTMPeephole(
-    inputSize: Int,
-    outputSize: Int,
-    kernelI: Int,
-    kernelC: Int,
-    stride: Int = 1,
-    padding: Int = -1,
-    activation: TensorModule[T] = null,
-    innerActivation: TensorModule[T] = null,
-    wRegularizer: Regularizer[T] = null,
-    uRegularizer: Regularizer[T] = null,
-    bRegularizer: Regularizer[T] = null,
-    cRegularizer: Regularizer[T] = null,
-    withPeephole: Boolean = true): ConvLSTMPeephole[T] = {
+                              inputSize: Int,
+                              outputSize: Int,
+                              kernelI: Int,
+                              kernelC: Int,
+                              stride: Int = 1,
+                              padding: Int = -1,
+                              activation: TensorModule[T] = null,
+                              innerActivation: TensorModule[T] = null,
+                              wRegularizer: Regularizer[T] = null,
+                              uRegularizer: Regularizer[T] = null,
+                              bRegularizer: Regularizer[T] = null,
+                              cRegularizer: Regularizer[T] = null,
+                              withPeephole: Boolean = true): ConvLSTMPeephole[T] = {
     ConvLSTMPeephole[T](inputSize, outputSize, kernelI, kernelC,
       stride, padding, activation, innerActivation,
       wRegularizer, uRegularizer, bRegularizer, cRegularizer, withPeephole)
   }
 
   def createConvLSTMPeephole3D(
-    inputSize: Int,
-    outputSize: Int,
-    kernelI: Int,
-    kernelC: Int,
-    stride: Int = 1,
-    padding: Int = -1,
-    wRegularizer: Regularizer[T] = null,
-    uRegularizer: Regularizer[T] = null,
-    bRegularizer: Regularizer[T] = null,
-    cRegularizer: Regularizer[T] = null,
-    withPeephole: Boolean = true): ConvLSTMPeephole3D[T] = {
+                                inputSize: Int,
+                                outputSize: Int,
+                                kernelI: Int,
+                                kernelC: Int,
+                                stride: Int = 1,
+                                padding: Int = -1,
+                                wRegularizer: Regularizer[T] = null,
+                                uRegularizer: Regularizer[T] = null,
+                                bRegularizer: Regularizer[T] = null,
+                                cRegularizer: Regularizer[T] = null,
+                                withPeephole: Boolean = true): ConvLSTMPeephole3D[T] = {
     ConvLSTMPeephole3D[T](inputSize, outputSize, kernelI, kernelC, stride, padding,
       wRegularizer, uRegularizer, bRegularizer, cRegularizer, withPeephole)
   }
@@ -420,8 +422,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createTemporalMaxPooling(
-    kW: Int,
-    dW: Int)
+                                kW: Int,
+                                dW: Int)
   : TemporalMaxPooling[T] = {
     TemporalMaxPooling[T](
       kW,
@@ -429,13 +431,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createSpatialMaxPooling(kW: Int,
-    kH: Int,
-    dW: Int,
-    dH: Int,
-    padW: Int = 0,
-    padH: Int = 0,
-    ceilMode: Boolean = false,
-    format: String = "NCHW")
+                              kH: Int,
+                              dW: Int,
+                              dH: Int,
+                              padW: Int = 0,
+                              padH: Int = 0,
+                              ceilMode: Boolean = false,
+                              format: String = "NCHW")
   : SpatialMaxPooling[T] = {
     val maxpooling = SpatialMaxPooling[T](kW,
       kH,
@@ -449,24 +451,24 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createSpatialConvolution(nInputPlane: Int,
-    nOutputPlane: Int,
-    kernelW: Int,
-    kernelH: Int,
-    strideW: Int = 1,
-    strideH: Int = 1,
-    padW: Int = 0,
-    padH: Int = 0,
-    nGroup: Int = 1,
-    propagateBack: Boolean = true,
-    wRegularizer: Regularizer[T] = null,
-    bRegularizer: Regularizer[T] = null,
-    initWeight: JTensor = null,
-    initBias: JTensor = null,
-    initGradWeight: JTensor = null,
-    initGradBias: JTensor = null,
-    withBias: Boolean = true,
-    dataFormat: String = "NCHW"
-  )
+                               nOutputPlane: Int,
+                               kernelW: Int,
+                               kernelH: Int,
+                               strideW: Int = 1,
+                               strideH: Int = 1,
+                               padW: Int = 0,
+                               padH: Int = 0,
+                               nGroup: Int = 1,
+                               propagateBack: Boolean = true,
+                               wRegularizer: Regularizer[T] = null,
+                               bRegularizer: Regularizer[T] = null,
+                               initWeight: JTensor = null,
+                               initBias: JTensor = null,
+                               initGradWeight: JTensor = null,
+                               initGradBias: JTensor = null,
+                               withBias: Boolean = true,
+                               dataFormat: String = "NCHW"
+                              )
   : SpatialConvolution[T] = {
     SpatialConvolution[T](nInputPlane,
       nOutputPlane,
@@ -503,45 +505,45 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createSpatialAveragePooling(kW: Int,
-    kH: Int,
-    dW: Int = 1,
-    dH: Int = 1,
-    padW: Int = 0,
-    padH: Int = 0,
-    globalPooling: Boolean = false,
-    ceilMode: Boolean = false,
-    countIncludePad: Boolean = true,
-    divide: Boolean = true,
-    format: String = "NCHW")
+                                  kH: Int,
+                                  dW: Int = 1,
+                                  dH: Int = 1,
+                                  padW: Int = 0,
+                                  padH: Int = 0,
+                                  globalPooling: Boolean = false,
+                                  ceilMode: Boolean = false,
+                                  countIncludePad: Boolean = true,
+                                  divide: Boolean = true,
+                                  format: String = "NCHW")
   : SpatialAveragePooling[T] = {
     SpatialAveragePooling[T](kW, kH, dW, dH, padW, padH, globalPooling,
       ceilMode, countIncludePad, divide, format = DataFormat(format))
   }
 
   def createSpatialBatchNormalization(nOutput: Int,
-    eps: Double = 1e-5,
-    momentum: Double = 0.1,
-    affine: Boolean = true,
-    initWeight: JTensor = null,
-    initBias: JTensor = null,
-    initGradWeight: JTensor = null,
-    initGradBias: JTensor = null)
+                                      eps: Double = 1e-5,
+                                      momentum: Double = 0.1,
+                                      affine: Boolean = true,
+                                      initWeight: JTensor = null,
+                                      initBias: JTensor = null,
+                                      initGradWeight: JTensor = null,
+                                      initGradBias: JTensor = null)
   : SpatialBatchNormalization[T] = {
     SpatialBatchNormalization[T](nOutput, eps, momentum, affine,
       toTensor(initWeight), toTensor(initBias), toTensor(initGradWeight), toTensor(initBias))
   }
 
   def createSpatialCrossMapLRN(size: Int = 5,
-    alpha: Double = 1.0,
-    beta: Double = 0.75,
-    k: Double = 1.0)
+                               alpha: Double = 1.0,
+                               beta: Double = 0.75,
+                               k: Double = 1.0)
   : SpatialCrossMapLRN[T] = {
     SpatialCrossMapLRN[T](size, alpha, beta, k)
   }
 
   def createDropout(initP: Double = 0.5,
-    inplace: Boolean = false,
-    scale: Boolean = true)
+                    inplace: Boolean = false,
+                    scale: Boolean = true)
   : Dropout[T] = {
     Dropout[T](initP, inplace, scale)
   }
@@ -571,7 +573,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createAddConstant(constant_scalar: Double,
-    inplace: Boolean = false)
+                        inplace: Boolean = false)
   : AddConstant[T] = {
     AddConstant[T](constant_scalar,
       inplace)
@@ -579,13 +581,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
 
   def createBatchNormalization(nOutput: Int,
-    eps: Double = 1e-5,
-    momentum: Double = 0.1,
-    affine: Boolean = true,
-    initWeight: JTensor = null,
-    initBias: JTensor = null,
-    initGradWeight: JTensor = null,
-    initGradBias: JTensor = null)
+                               eps: Double = 1e-5,
+                               momentum: Double = 0.1,
+                               affine: Boolean = true,
+                               initWeight: JTensor = null,
+                               initBias: JTensor = null,
+                               initGradWeight: JTensor = null,
+                               initGradBias: JTensor = null)
   : BatchNormalization[T] = {
     BatchNormalization[T](nOutput,
       eps,
@@ -598,11 +600,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createBilinear(inputSize1: Int,
-    inputSize2: Int,
-    outputSize: Int,
-    biasRes: Boolean = true,
-    wRegularizer: Regularizer[T] = null,
-    bRegularizer: Regularizer[T] = null)
+                     inputSize2: Int,
+                     outputSize: Int,
+                     biasRes: Boolean = true,
+                     wRegularizer: Regularizer[T] = null,
+                     bRegularizer: Regularizer[T] = null)
   : Bilinear[T] = {
     Bilinear[T](inputSize1,
       inputSize2,
@@ -613,8 +615,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createBottle(module: AbstractModule[Activity, Activity, T],
-    nInputDim: Int = 2,
-    nOutputDim1: Int = Int.MaxValue)
+                   nInputDim: Int = 2,
+                   nOutputDim1: Int = Int.MaxValue)
   : Bottle[T] = {
     Bottle[T](module,
       nInputDim,
@@ -622,7 +624,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createCAdd(size: JList[Int],
-    bRegularizer: Regularizer[T] = null)
+                 bRegularizer: Regularizer[T] = null)
   : CAdd[T] = {
     CAdd[T](size.asScala.toArray, bRegularizer)
   }
@@ -653,7 +655,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createCMul(size: JList[Int],
-    wRegularizer: Regularizer[T] = null)
+                 wRegularizer: Regularizer[T] = null)
   : CMul[T] = {
     CMul[T](size.asScala.toArray, wRegularizer)
   }
@@ -669,7 +671,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createClamp(min: Int,
-    max: Int)
+                  max: Int)
   : Clamp[T, T] = {
     Clamp[T, T](min,
       max)
@@ -681,7 +683,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createCosine(inputSize: Int,
-    outputSize: Int)
+                   outputSize: Int)
   : Cosine[T] = {
     Cosine[T](inputSize,
       outputSize)
@@ -698,7 +700,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createDiceCoefficientCriterion(sizeAverage: Boolean = true,
-    epsilon: Float = 1.0f)
+                                     epsilon: Float = 1.0f)
   : DiceCoefficientCriterion[T] = {
     DiceCoefficientCriterion[T](sizeAverage, epsilon)
   }
@@ -709,15 +711,15 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createELU(alpha: Double = 1.0,
-    inplace: Boolean = false)
+                inplace: Boolean = false)
   : ELU[T, T] = {
     ELU[T, T](alpha,
       inplace)
   }
 
   def createEuclidean(inputSize: Int,
-    outputSize: Int,
-    fastBackward: Boolean = true)
+                      outputSize: Int,
+                      fastBackward: Boolean = true)
   : Euclidean[T] = {
     Euclidean[T](inputSize,
       outputSize,
@@ -745,8 +747,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createHardTanh(minValue: Double = -1,
-    maxValue: Double = 1,
-    inplace: Boolean = false)
+                     maxValue: Double = 1,
+                     inplace: Boolean = false)
   : HardTanh[T, T] = {
     HardTanh[T, T](minValue,
       maxValue,
@@ -765,7 +767,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createJoinTable(dimension: Int,
-    nInputDims: Int)
+                      nInputDims: Int)
   : JoinTable[T] = {
     JoinTable[T](dimension,
       nInputDims)
@@ -781,8 +783,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createL1Penalty(l1weight: Int,
-    sizeAverage: Boolean = false,
-    provideOutput: Boolean = true)
+                      sizeAverage: Boolean = false,
+                      provideOutput: Boolean = true)
   : L1Penalty[T] = {
     L1Penalty[T](l1weight,
       sizeAverage,
@@ -790,7 +792,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createLeakyReLU(negval: Double = 0.01,
-    inplace: Boolean = false)
+                      inplace: Boolean = false)
   : LeakyReLU[T] = {
     LeakyReLU[T](negval,
       inplace)
@@ -807,9 +809,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createLookupTable(nIndex: Int, nOutput: Int,
-    paddingValue: Double = 0, maxNorm: Double = Double.MaxValue,
-    normType: Double = 2.0, shouldScaleGradByFreq: Boolean = false,
-    wRegularizer: Regularizer[T] = null)
+                        paddingValue: Double = 0, maxNorm: Double = Double.MaxValue,
+                        normType: Double = 2.0, shouldScaleGradByFreq: Boolean = false,
+                        wRegularizer: Regularizer[T] = null)
   : LookupTable[T] = {
     LookupTable[T](nIndex,
       nOutput,
@@ -821,7 +823,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createMM(transA: Boolean = false,
-    transB: Boolean = false)
+               transB: Boolean = false)
   : MM[T] = {
     MM[T](transA,
       transB)
@@ -843,15 +845,15 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createMax(dim: Int = 1,
-    numInputDims: Int = Int.MinValue)
+                numInputDims: Int = Int.MinValue)
   : Max[T] = {
     Max[T](dim,
       numInputDims)
   }
 
   def createMean(dimension: Int = 1,
-    nInputDims: Int = -1,
-    squeeze: Boolean = true)
+                 nInputDims: Int = -1,
+                 squeeze: Boolean = true)
   : Mean[T, T] = {
     Mean[T](dimension,
       nInputDims,
@@ -859,7 +861,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createMin(dim: Int = 1,
-    numInputDims: Int = Int.MinValue)
+                numInputDims: Int = Int.MinValue)
   : Min[T] = {
     Min[T](dim,
       numInputDims)
@@ -876,15 +878,15 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createMulConstant(scalar: Double,
-    inplace: Boolean = false)
+                        inplace: Boolean = false)
   : MulConstant[T] = {
     MulConstant[T](scalar,
       inplace)
   }
 
   def createNarrow(dimension: Int,
-    offset: Int,
-    length: Int = 1)
+                   offset: Int,
+                   length: Int = 1)
   : Narrow[T] = {
     Narrow[T](dimension,
       offset,
@@ -892,14 +894,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createNarrowTable(offset: Int,
-    length: Int = 1)
+                        length: Int = 1)
   : NarrowTable[T] = {
     NarrowTable[T](offset,
       length)
   }
 
   def createNormalize(p: Double,
-    eps: Double = 1e-10)
+                      eps: Double = 1e-10)
   : Normalize[T] = {
     Normalize[T](p,
       eps)
@@ -911,10 +913,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createPadding(dim: Int,
-    pad: Int,
-    nInputDim: Int,
-    value: Double = 0.0,
-    nIndex: Int = 1)
+                    pad: Int,
+                    nInputDim: Int,
+                    value: Double = 0.0,
+                    nIndex: Int = 1)
   : Padding[T] = {
     Padding[T](dim,
       pad,
@@ -934,8 +936,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createPower(power: Double,
-    scale: Double = 1,
-    shift: Double = 0)
+                  scale: Double = 1,
+                  shift: Double = 0)
   : Power[T, T] = {
     Power[T, T](power,
       scale,
@@ -943,8 +945,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createRReLU(lower: Double = 1.0 / 8,
-    upper: Double = 1.0 / 3,
-    inplace: Boolean = false)
+                  upper: Double = 1.0 / 3,
+                  inplace: Boolean = false)
   : RReLU[T] = {
     RReLU[T](lower,
       upper,
@@ -957,8 +959,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createReplicate(nFeatures: Int,
-    dim: Int = 1,
-    nDim: Int = Int.MaxValue)
+                      dim: Int = 1,
+                      nDim: Int = Int.MaxValue)
   : Replicate[T] = {
     Replicate[T](nFeatures,
       dim,
@@ -978,7 +980,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createSelect(dimension: Int,
-    index: Int)
+                   index: Int)
   : Select[T] = {
     Select[T](dimension,
       index)
@@ -1020,17 +1022,17 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createSpatialDilatedConvolution(nInputPlane: Int,
-    nOutputPlane: Int,
-    kW: Int,
-    kH: Int,
-    dW: Int = 1,
-    dH: Int = 1,
-    padW: Int = 0,
-    padH: Int = 0,
-    dilationW: Int = 1,
-    dilationH: Int = 1,
-    wRegularizer: Regularizer[T] = null,
-    bRegularizer: Regularizer[T] = null)
+                                      nOutputPlane: Int,
+                                      kW: Int,
+                                      kH: Int,
+                                      dW: Int = 1,
+                                      dH: Int = 1,
+                                      padW: Int = 0,
+                                      padH: Int = 0,
+                                      dilationW: Int = 1,
+                                      dilationH: Int = 1,
+                                      wRegularizer: Regularizer[T] = null,
+                                      bRegularizer: Regularizer[T] = null)
   : SpatialDilatedConvolution[T] = {
     SpatialDilatedConvolution[T](nInputPlane,
       nOutputPlane,
@@ -1047,18 +1049,18 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createTemporalConvolution(
-    inputFrameSize: Int,
-    outputFrameSize: Int,
-    kernelW: Int,
-    strideW: Int = 1,
-    propagateBack: Boolean = true,
-    wRegularizer: Regularizer[T] = null,
-    bRegularizer: Regularizer[T] = null,
-    initWeight: JTensor = null,
-    initBias: JTensor = null,
-    initGradWeight: JTensor = null,
-    initGradBias: JTensor = null
-  )
+                                 inputFrameSize: Int,
+                                 outputFrameSize: Int,
+                                 kernelW: Int,
+                                 strideW: Int = 1,
+                                 propagateBack: Boolean = true,
+                                 wRegularizer: Regularizer[T] = null,
+                                 bRegularizer: Regularizer[T] = null,
+                                 initWeight: JTensor = null,
+                                 initBias: JTensor = null,
+                                 initGradWeight: JTensor = null,
+                                 initGradBias: JTensor = null
+                               )
   : TemporalConvolution[T] = {
     TemporalConvolution[T](
       inputFrameSize,
@@ -1075,11 +1077,42 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     )
   }
 
+  def createLocallyConnected1D(
+                                nInputFrame: Int,
+                                inputFrameSize: Int,
+                                outputFrameSize: Int,
+                                kernelW: Int,
+                                strideW: Int = 1,
+                                propagateBack: Boolean = true,
+                                wRegularizer: Regularizer[T] = null,
+                                bRegularizer: Regularizer[T] = null,
+                                initWeight: JTensor = null,
+                                initBias: JTensor = null,
+                                initGradWeight: JTensor = null,
+                                initGradBias: JTensor = null
+                              )
+  : LocallyConnected1D[T] = {
+    LocallyConnected1D[T](
+      nInputFrame,
+      inputFrameSize,
+      outputFrameSize,
+      kernelW,
+      strideW,
+      propagateBack,
+      wRegularizer,
+      bRegularizer,
+      toTensor(initWeight),
+      toTensor(initBias),
+      toTensor(initGradWeight),
+      toTensor(initGradBias)
+    )
+  }
+
   def createBinaryTreeLSTM(
-    inputSize: Int,
-    hiddenSize: Int,
-    gateOutput: Boolean = true,
-    withGraph: Boolean = true)
+                            inputSize: Int,
+                            hiddenSize: Int,
+                            gateOutput: Boolean = true,
+                            withGraph: Boolean = true)
   : BinaryTreeLSTM[T] = {
     BinaryTreeLSTM[T](
       inputSize,
@@ -1089,23 +1122,23 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createVolumetricFullConvolution(nInputPlane: Int,
-    nOutputPlane: Int,
-    kT: Int,
-    kW: Int,
-    kH: Int,
-    dT: Int = 1,
-    dW: Int = 1,
-    dH: Int = 1,
-    padT: Int = 0,
-    padW: Int = 0,
-    padH: Int = 0,
-    adjT: Int = 0,
-    adjW: Int = 0,
-    adjH: Int = 0,
-    nGroup: Int = 1,
-    noBias: Boolean = false,
-    wRegularizer: Regularizer[T] = null,
-    bRegularizer: Regularizer[T] = null)
+                                      nOutputPlane: Int,
+                                      kT: Int,
+                                      kW: Int,
+                                      kH: Int,
+                                      dT: Int = 1,
+                                      dW: Int = 1,
+                                      dH: Int = 1,
+                                      padT: Int = 0,
+                                      padW: Int = 0,
+                                      padH: Int = 0,
+                                      adjT: Int = 0,
+                                      adjW: Int = 0,
+                                      adjH: Int = 0,
+                                      nGroup: Int = 1,
+                                      noBias: Boolean = false,
+                                      wRegularizer: Regularizer[T] = null,
+                                      bRegularizer: Regularizer[T] = null)
   : VolumetricFullConvolution[T] = {
     VolumetricFullConvolution[T](nInputPlane,
       nOutputPlane,
@@ -1128,19 +1161,19 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createSpatialFullConvolution(nInputPlane: Int,
-    nOutputPlane: Int,
-    kW: Int,
-    kH: Int,
-    dW: Int = 1,
-    dH: Int = 1,
-    padW: Int = 0,
-    padH: Int = 0,
-    adjW: Int = 0,
-    adjH: Int = 0,
-    nGroup: Int = 1,
-    noBias: Boolean = false,
-    wRegularizer: Regularizer[T] = null,
-    bRegularizer: Regularizer[T] = null)
+                                   nOutputPlane: Int,
+                                   kW: Int,
+                                   kH: Int,
+                                   dW: Int = 1,
+                                   dH: Int = 1,
+                                   padW: Int = 0,
+                                   padH: Int = 0,
+                                   adjW: Int = 0,
+                                   adjH: Int = 0,
+                                   nGroup: Int = 1,
+                                   noBias: Boolean = false,
+                                   wRegularizer: Regularizer[T] = null,
+                                   bRegularizer: Regularizer[T] = null)
   : SpatialFullConvolution[T] = {
     SpatialFullConvolution[T](nInputPlane,
       nOutputPlane,
@@ -1159,23 +1192,23 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createSpatialShareConvolution(
-    nInputPlane: Int,
-    nOutputPlane: Int,
-    kernelW: Int,
-    kernelH: Int,
-    strideW: Int = 1,
-    strideH: Int = 1,
-    padW: Int = 0,
-    padH: Int = 0,
-    nGroup: Int = 1,
-    propagateBack: Boolean = true,
-    wRegularizer: Regularizer[T] = null,
-    bRegularizer: Regularizer[T] = null,
-    initWeight: JTensor = null,
-    initBias: JTensor = null,
-    initGradWeight: JTensor = null,
-    initGradBias: JTensor = null,
-    withBias: Boolean = true): SpatialShareConvolution[T] = {
+                                     nInputPlane: Int,
+                                     nOutputPlane: Int,
+                                     kernelW: Int,
+                                     kernelH: Int,
+                                     strideW: Int = 1,
+                                     strideH: Int = 1,
+                                     padW: Int = 0,
+                                     padH: Int = 0,
+                                     nGroup: Int = 1,
+                                     propagateBack: Boolean = true,
+                                     wRegularizer: Regularizer[T] = null,
+                                     bRegularizer: Regularizer[T] = null,
+                                     initWeight: JTensor = null,
+                                     initBias: JTensor = null,
+                                     initGradWeight: JTensor = null,
+                                     initGradBias: JTensor = null,
+                                     withBias: Boolean = true): SpatialShareConvolution[T] = {
     SpatialShareConvolution[T](nInputPlane,
       nOutputPlane,
       kernelW,
@@ -1197,9 +1230,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createSpatialZeroPadding(padLeft: Int,
-    padRight: Int,
-    padTop: Int,
-    padBottom: Int)
+                               padRight: Int,
+                               padTop: Int,
+                               padBottom: Int)
   : SpatialZeroPadding[T] = {
     SpatialZeroPadding[T](padLeft,
       padRight,
@@ -1213,7 +1246,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createSplitTable(dimension: Int,
-    nInputDims: Int = -1)
+                       nInputDims: Int = -1)
   : SplitTable[T] = {
     SplitTable[T](dimension,
       nInputDims)
@@ -1230,17 +1263,17 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createSqueeze(dim: Int = Int.MinValue,
-    numInputDims: Int = Int.MinValue)
+                    numInputDims: Int = Int.MinValue)
   : Squeeze[T] = {
     Squeeze[T](dim,
       numInputDims)
   }
 
   def createSum(dimension: Int = 1,
-    nInputDims: Int = -1,
-    sizeAverage: Boolean = false,
-    squeeze: Boolean = true
-  )
+                nInputDims: Int = -1,
+                sizeAverage: Boolean = false,
+                squeeze: Boolean = true
+               )
   : Sum[T, T] = {
     Sum[T, T](dimension,
       nInputDims,
@@ -1255,8 +1288,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createThreshold(th: Double = 1e-6,
-    v: Double = 0.0,
-    ip: Boolean = false)
+                      v: Double = 0.0,
+                      ip: Boolean = false)
   : Threshold[T] = {
     Threshold[T](th,
       v,
@@ -1264,14 +1297,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createUnsqueeze(pos: Int,
-    numInputDims: Int = Int.MinValue)
+                      numInputDims: Int = Int.MinValue)
   : Unsqueeze[T] = {
     Unsqueeze[T](pos,
       numInputDims)
   }
 
   def createBCECriterion(weights: JTensor = null,
-    sizeAverage: Boolean = true)
+                         sizeAverage: Boolean = true)
   : BCECriterion[T] = {
     BCECriterion[T](if (weights == null) null else toTensor(weights),
       sizeAverage)
@@ -1297,16 +1330,16 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createMultiLabelSoftMarginCriterion(weights: JTensor = null,
-    sizeAverage: Boolean = true)
+                                          sizeAverage: Boolean = true)
   : MultiLabelSoftMarginCriterion[T] = {
     MultiLabelSoftMarginCriterion[T](if (weights == null) null else toTensor(weights),
       sizeAverage)
   }
 
   def createMultiMarginCriterion(p: Int = 1,
-    weights: JTensor = null,
-    margin: Double = 1.0,
-    sizeAverage: Boolean = true)
+                                 weights: JTensor = null,
+                                 margin: Double = 1.0,
+                                 sizeAverage: Boolean = true)
   : MultiMarginCriterion[T] = {
     MultiMarginCriterion[T](p,
       if (weights == null) null else toTensor(weights),
@@ -1328,9 +1361,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createSpatialContrastiveNormalization(nInputPlane: Int = 1,
-    kernel: JTensor = null,
-    threshold: Double = 1e-4,
-    thresval: Double = 1e-4)
+                                            kernel: JTensor = null,
+                                            threshold: Double = 1e-4,
+                                            thresval: Double = 1e-4)
   : SpatialContrastiveNormalization[T] = {
     SpatialContrastiveNormalization[T](nInputPlane,
       if (kernel == null) null else toTensor(kernel),
@@ -1339,14 +1372,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createSpatialConvolutionMap(connTable: JTensor,
-    kW: Int,
-    kH: Int,
-    dW: Int = 1,
-    dH: Int = 1,
-    padW: Int = 0,
-    padH: Int = 0,
-    wRegularizer: Regularizer[T] = null,
-    bRegularizer: Regularizer[T] = null)
+                                  kW: Int,
+                                  kH: Int,
+                                  dW: Int = 1,
+                                  dH: Int = 1,
+                                  padW: Int = 0,
+                                  padH: Int = 0,
+                                  wRegularizer: Regularizer[T] = null,
+                                  bRegularizer: Regularizer[T] = null)
   : SpatialConvolutionMap[T] = {
     SpatialConvolutionMap[T](if (connTable == null) null else toTensor(connTable),
       kW,
@@ -1360,19 +1393,19 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createVolumetricConvolution(nInputPlane: Int,
-    nOutputPlane: Int,
-    kT: Int,
-    kW: Int,
-    kH: Int,
-    dT: Int = 1,
-    dW: Int = 1,
-    dH: Int = 1,
-    padT: Int = 0,
-    padW: Int = 0,
-    padH: Int = 0,
-    withBias: Boolean = true,
-    wRegularizer: Regularizer[T] = null,
-    bRegularizer: Regularizer[T] = null)
+                                  nOutputPlane: Int,
+                                  kT: Int,
+                                  kW: Int,
+                                  kH: Int,
+                                  dT: Int = 1,
+                                  dW: Int = 1,
+                                  dH: Int = 1,
+                                  padT: Int = 0,
+                                  padW: Int = 0,
+                                  padH: Int = 0,
+                                  withBias: Boolean = true,
+                                  wRegularizer: Regularizer[T] = null,
+                                  bRegularizer: Regularizer[T] = null)
   : VolumetricConvolution[T] = {
     VolumetricConvolution[T](nInputPlane,
       nOutputPlane,
@@ -1391,18 +1424,6 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createVolumetricMaxPooling(kT: Int,
-    kW: Int,
-    kH: Int,
-    dT: Int,
-    dW: Int,
-    dH: Int,
-    padT: Int = 0,
-    padW: Int = 0,
-    padH: Int = 0): VolumetricMaxPooling[T] = {
-    VolumetricMaxPooling[T](kT, kW, kH, dT, dW, dH, padT, padW, padH)
-  }
-
-  def createVolumetricAveragePooling(kT: Int,
                                  kW: Int,
                                  kH: Int,
                                  dT: Int,
@@ -1410,17 +1431,29 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                                  dH: Int,
                                  padT: Int = 0,
                                  padW: Int = 0,
-                                 padH: Int = 0,
-                                 countIncludePad: Boolean = true,
-                                 ceilMode: Boolean = false):
+                                 padH: Int = 0): VolumetricMaxPooling[T] = {
+    VolumetricMaxPooling[T](kT, kW, kH, dT, dW, dH, padT, padW, padH)
+  }
+
+  def createVolumetricAveragePooling(kT: Int,
+                                     kW: Int,
+                                     kH: Int,
+                                     dT: Int,
+                                     dW: Int,
+                                     dH: Int,
+                                     padT: Int = 0,
+                                     padW: Int = 0,
+                                     padH: Int = 0,
+                                     countIncludePad: Boolean = true,
+                                     ceilMode: Boolean = false):
   VolumetricAveragePooling[T] = {
     VolumetricAveragePooling[T](kT, kW, kH, dT, dW, dH, padT, padW, padH, countIncludePad, ceilMode)
   }
 
   def createSpatialDivisiveNormalization(nInputPlane: Int = 1,
-    kernel: JTensor = null,
-    threshold: Double = 1e-4,
-    thresval: Double = 1e-4)
+                                         kernel: JTensor = null,
+                                         threshold: Double = 1e-4,
+                                         thresval: Double = 1e-4)
   : SpatialDivisiveNormalization[T] = {
     SpatialDivisiveNormalization[T](nInputPlane,
       if (kernel == null) null else toTensor(kernel),
@@ -1429,7 +1462,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createSpatialSubtractiveNormalization(nInputPlane: Int = 1,
-    kernel: JTensor = null)
+                                            kernel: JTensor = null)
   : SpatialSubtractiveNormalization[T] = {
     SpatialSubtractiveNormalization[T](nInputPlane,
       if (kernel == null) null else toTensor(kernel))
@@ -1454,7 +1487,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createExponential(decayStep: Int, decayRate: Double,
-    stairCase: Boolean = false): SGD.Exponential = {
+                        stairCase: Boolean = false): SGD.Exponential = {
     SGD.Exponential(decayStep, decayRate, stairCase)
   }
 
@@ -1463,13 +1496,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createPlateau(monitor: String, factor: Float = 0.1f,
-    patience: Int = 10, mode: String = "min", epsilon: Float = 1e-4f,
-    cooldown: Int = 0, minLr: Float = 0): SGD.Plateau = {
+                    patience: Int = 10, mode: String = "min", epsilon: Float = 1e-4f,
+                    cooldown: Int = 0, minLr: Float = 0): SGD.Plateau = {
     SGD.Plateau(monitor, factor, patience, mode, epsilon, cooldown, minLr)
   }
 
   def createClassNLLCriterion(weights: JTensor = null,
-    sizeAverage: Boolean = true, logProbAsInput: Boolean = true)
+                              sizeAverage: Boolean = true, logProbAsInput: Boolean = true)
   : ClassNLLCriterion[T] = {
     ClassNLLCriterion[T](if (weights == null) null else toTensor(weights),
       sizeAverage, logProbAsInput)
@@ -1490,13 +1523,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createCrossEntropyCriterion(weights: JTensor = null,
-    sizeAverage: Boolean = true): CrossEntropyCriterion[T] = {
+                                  sizeAverage: Boolean = true): CrossEntropyCriterion[T] = {
     new CrossEntropyCriterion[T](if (null == weights) null else toTensor(weights), sizeAverage)
   }
 
 
   def createCosineEmbeddingCriterion(margin: Double = 0.0,
-    sizeAverage: Boolean = true)
+                                     sizeAverage: Boolean = true)
   : CosineEmbeddingCriterion[T] = {
     CosineEmbeddingCriterion[T](margin,
       sizeAverage)
@@ -1508,7 +1541,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createHingeEmbeddingCriterion(margin: Double = 1,
-    sizeAverage: Boolean = true)
+                                    sizeAverage: Boolean = true)
   : HingeEmbeddingCriterion[T] = {
     HingeEmbeddingCriterion[T](margin,
       sizeAverage)
@@ -1520,14 +1553,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createMarginCriterion(margin: Double = 1.0,
-    sizeAverage: Boolean = true, squared: Boolean = false)
+                            sizeAverage: Boolean = true, squared: Boolean = false)
   : MarginCriterion[T] = {
     MarginCriterion[T](margin,
       sizeAverage, squared)
   }
 
   def createMarginRankingCriterion(margin: Double = 1.0,
-    sizeAverage: Boolean = true)
+                                   sizeAverage: Boolean = true)
   : MarginRankingCriterion[T] = {
     MarginRankingCriterion[T](margin,
       sizeAverage)
@@ -1568,7 +1601,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createSoftmaxWithCriterion(ignoreLabel: Integer = null,
-    normalizeMode: String = "VALID")
+                                 normalizeMode: String = "VALID")
   : SoftmaxWithCriterion[T] = {
     val normM = normalizeMode match {
       case "FULL" => NormMode.FULL
@@ -1590,7 +1623,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Pack(dimension)
   }
 
-  def createTile(dim : Int, copies : Int): Tile[T] = {
+  def createTile(dim: Int, copies: Int): Tile[T] = {
     Tile(dim, copies)
   }
 
@@ -1629,9 +1662,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def loadCaffe(model: AbstractModule[Activity, Activity, T],
-    defPath: String,
-    modelPath: String,
-    matchAll: Boolean = true): AbstractModule[Activity, Activity, T] = {
+                defPath: String,
+                modelPath: String,
+                matchAll: Boolean = true): AbstractModule[Activity, Activity, T] = {
     Module.loadCaffe[T](model, defPath, modelPath, matchAll)
   }
 
@@ -1640,7 +1673,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def loadTF(path: String, inputs: JList[String], outputs: JList[String],
-    byteOrder: String, binFile: String = null): AbstractModule[Activity, Activity, T] = {
+             byteOrder: String, binFile: String = null): AbstractModule[Activity, Activity, T] = {
     val order = byteOrder match {
       case "little_endian" => ByteOrder.LITTLE_ENDIAN
       case "big_endian" => ByteOrder.BIG_ENDIAN
@@ -1650,10 +1683,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def saveTF(model: AbstractModule[Activity, Activity, T],
-    inputs: JList[Any],
-    path: String,
-    byteOrder: String,
-    dataFormat: String): Unit = {
+             inputs: JList[Any],
+             path: String,
+             byteOrder: String,
+             dataFormat: String): Unit = {
     val order = byteOrder.toLowerCase match {
       case "little_endian" => ByteOrder.LITTLE_ENDIAN
       case "big_endian" => ByteOrder.BIG_ENDIAN
@@ -1676,15 +1709,15 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def predictLocal(model: AbstractModule[Activity, Activity, T],
                    features: JList[JTensor]): JList[JTensor] = {
-    val sampleArray = toSampleArray(features.asScala.toList.map{f => toTensor(f)})
+    val sampleArray = toSampleArray(features.asScala.toList.map { f => toTensor(f) })
     val localModel = LocalModule(model)
     val result = localModel.predict(sampleArray)
-    result.map{a => toJTensor(a.asInstanceOf[Tensor[T]])}.toList.asJava
+    result.map { a => toJTensor(a.asInstanceOf[Tensor[T]]) }.toList.asJava
   }
 
   def predictLocalClass(model: AbstractModule[Activity, Activity, T],
                         features: JList[JTensor]): JList[Int] = {
-    val sampleArray = toSampleArray(features.asScala.toList.map{f => toTensor(f)})
+    val sampleArray = toSampleArray(features.asScala.toList.map { f => toTensor(f) })
     val localModel = LocalModule(model)
     val result = localModel.predictClass(sampleArray)
     result.toList.asJava
@@ -1708,25 +1741,25 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def modelPredictClass(model: AbstractModule[Activity, Activity, T],
-                      dataRdd: JavaRDD[Sample]): JavaRDD[Int] = {
+                        dataRdd: JavaRDD[Sample]): JavaRDD[Int] = {
     val sampleRdd = toJSample(dataRdd)
     val tensorRDD = model.predictClass(sampleRdd)
     new JavaRDD[Int](tensorRDD)
   }
 
   def modelForward(model: AbstractModule[Activity, Activity, T],
-    input: JList[JTensor],
-    inputIsTable: Boolean): JList[JTensor] = {
+                   input: JList[JTensor],
+                   inputIsTable: Boolean): JList[JTensor] = {
     val inputActivity = jTensorsToActivity(input, inputIsTable)
     val outputActivity = model.forward(inputActivity)
     activityToJTensors(outputActivity)
   }
 
   def modelBackward(model: AbstractModule[Activity, Activity, T],
-    input: JList[JTensor],
-    inputIsTable: Boolean,
-    gradOutput: JList[JTensor],
-    gradOutputIsTable: Boolean): JList[JTensor] = {
+                    input: JList[JTensor],
+                    inputIsTable: Boolean,
+                    gradOutput: JList[JTensor],
+                    gradOutputIsTable: Boolean): JList[JTensor] = {
     val inputActivity = jTensorsToActivity(input, inputIsTable)
     val gradOutputActivity = jTensorsToActivity(gradOutput, gradOutputIsTable)
     val outputActivity = model.backward(inputActivity, gradOutputActivity)
@@ -1735,36 +1768,36 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
 
   def modelSave(module: AbstractModule[Activity, Activity, T],
-    path: String, overWrite: Boolean): Unit = {
+                path: String, overWrite: Boolean): Unit = {
     module.save(path, overWrite)
   }
 
   def saveBigDLModule(module: AbstractModule[Activity, Activity, T],
-    path: String, overWrite: Boolean): Unit = {
+                      path: String, overWrite: Boolean): Unit = {
     module.saveModule(path, overWrite)
   }
 
   def saveCaffe(module: AbstractModule[Activity, Activity, T],
-    prototxtPath: String, modelPath: String,
-    useV2: Boolean = true, overwrite: Boolean = false): Unit = {
+                prototxtPath: String, modelPath: String,
+                useV2: Boolean = true, overwrite: Boolean = false): Unit = {
     module.saveCaffe(prototxtPath, modelPath, useV2, overwrite)
   }
 
   def criterionForward(criterion: AbstractCriterion[Activity, Activity, T],
-    input: JList[JTensor],
-    inputIsTable: Boolean,
-    target: JList[JTensor],
-    targetIsTable: Boolean): T = {
+                       input: JList[JTensor],
+                       inputIsTable: Boolean,
+                       target: JList[JTensor],
+                       targetIsTable: Boolean): T = {
     val inputActivity = jTensorsToActivity(input, inputIsTable)
     val targetActivity = jTensorsToActivity(target, targetIsTable)
     return criterion.forward(inputActivity, targetActivity)
   }
 
   def criterionBackward(criterion: AbstractCriterion[Activity, Activity, T],
-    input: JList[JTensor],
-    inputIsTable: Boolean,
-    target: JList[JTensor],
-    targetIsTable: Boolean): JList[JTensor] = {
+                        input: JList[JTensor],
+                        inputIsTable: Boolean,
+                        target: JList[JTensor],
+                        targetIsTable: Boolean): JList[JTensor] = {
     val inputActivity = jTensorsToActivity(input, inputIsTable)
     val targetActivity = jTensorsToActivity(target, targetIsTable)
     val outputActivity = criterion.backward(inputActivity, targetActivity)
@@ -1830,14 +1863,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createSGD(learningRate: Double = 1e-3,
-    learningRateDecay: Double = 0.0,
-    weightDecay: Double = 0.0,
-    momentum: Double = 0.0,
-    dampening: Double = Double.MaxValue,
-    nesterov: Boolean = false,
-    leaningRateSchedule: SGD.LearningRateSchedule = SGD.Default(),
-    learningRates: JTensor = null,
-    weightDecays: JTensor = null): SGD[T] = {
+                learningRateDecay: Double = 0.0,
+                weightDecay: Double = 0.0,
+                momentum: Double = 0.0,
+                dampening: Double = Double.MaxValue,
+                nesterov: Boolean = false,
+                leaningRateSchedule: SGD.LearningRateSchedule = SGD.Default(),
+                learningRates: JTensor = null,
+                weightDecays: JTensor = null): SGD[T] = {
     val p1 = if (learningRates == null) null else toTensor(learningRates)
     val p2 = if (weightDecays == null) null else toTensor(weightDecays)
     new SGD[T](learningRate, learningRateDecay, weightDecay, momentum, dampening,
@@ -1845,20 +1878,20 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createAdagrad(learningRate: Double = 1e-3,
-    learningRateDecay: Double = 0.0,
-    weightDecay: Double = 0.0): Adagrad[T] = {
+                    learningRateDecay: Double = 0.0,
+                    weightDecay: Double = 0.0): Adagrad[T] = {
     new Adagrad[T](learningRate, learningRateDecay, weightDecay)
   }
 
   def createLBFGS(maxIter: Int = 20,
-    maxEval: Double = Double.MaxValue,
-    tolFun: Double = 1e-5,
-    tolX: Double = 1e-9,
-    nCorrection: Int = 100,
-    learningRate: Double = 1.0,
-    verbose: Boolean = false,
-    lineSearch: LineSearch[T] = null,
-    lineSearchOptions: JMap[Any, Any] = null): LBFGS[T] = {
+                  maxEval: Double = Double.MaxValue,
+                  tolFun: Double = 1e-5,
+                  tolX: Double = 1e-9,
+                  nCorrection: Int = 100,
+                  learningRate: Double = 1.0,
+                  verbose: Boolean = false,
+                  lineSearch: LineSearch[T] = null,
+                  lineSearchOptions: JMap[Any, Any] = null): LBFGS[T] = {
     val p1 = if (lineSearch == null) None else Option(lineSearch)
     val p2 = if (lineSearchOptions == null) None else Option(T(lineSearchOptions))
     new LBFGS[T](maxIter, maxEval, tolFun, tolX, nCorrection, learningRate, verbose, p1, p2)
@@ -1869,27 +1902,27 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createAdam(
-    learningRate: Double = 1e-3,
-    learningRateDecay: Double = 0.0,
-    beta1: Double = 0.9,
-    beta2: Double = 0.999,
-    Epsilon: Double = 1e-8): Adam[T] = {
+                  learningRate: Double = 1e-3,
+                  learningRateDecay: Double = 0.0,
+                  beta1: Double = 0.9,
+                  beta2: Double = 0.999,
+                  Epsilon: Double = 1e-8): Adam[T] = {
     new Adam[T](learningRate, learningRateDecay, beta1, beta2, Epsilon)
   }
 
   def createAdamax(
-    learningRate: Double = 0.002,
-    beta1: Double = 0.9,
-    beta2: Double = 0.999,
-    Epsilon: Double = 1e-38): Adamax[T] = {
+                    learningRate: Double = 0.002,
+                    beta1: Double = 0.9,
+                    beta2: Double = 0.999,
+                    Epsilon: Double = 1e-38): Adamax[T] = {
     new Adamax(learningRate, beta1, beta2, Epsilon)
   }
 
   def createRMSprop(
-    learningRate: Double = 1e-2,
-    learningRateDecay: Double = 0.0,
-    decayRate: Double = 0.99,
-    Epsilon: Double = 1e-8): RMSprop[T] = {
+                     learningRate: Double = 1e-2,
+                     learningRateDecay: Double = 0.0,
+                     decayRate: Double = 0.99,
+                     Epsilon: Double = 1e-8): RMSprop[T] = {
     new RMSprop[T](learningRate, learningRateDecay, decayRate, Epsilon)
   }
 
@@ -1898,13 +1931,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def saveOptimMethod(method: OptimMethod[T], path: String,
-    overWrite: Boolean = false): Unit = {
+                      overWrite: Boolean = false): Unit = {
     method.save(path, overWrite)
   }
 
   /**
-   * Save tensor dictionary to a Java hashmap object file
-   */
+    * Save tensor dictionary to a Java hashmap object file
+    */
   def saveTensorDictionary(tensors: JHashMap[String, JTensor], path: String): Unit = {
     File.save(tensors, path, true)
   }
@@ -1936,7 +1969,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                            endTrigger: Trigger,
                            batchSize: Int,
                            localCores: Int): Optimizer[T, MiniBatch[T]] = {
-    val sampleArray = toSampleArray(features.asScala.toList.map{f => toTensor(f)}, toTensor(y))
+    val sampleArray = toSampleArray(features.asScala.toList.map { f => toTensor(f) }, toTensor(y))
     val optimizer = new LocalOptimizer[T](
       model,
       batching(DataSet.array(sampleArray), batchSize)
@@ -1987,9 +2020,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def setCheckPoint(optimizer: Optimizer[T, MiniBatch[T]],
-    trigger: Trigger,
-    checkPointPath: String,
-    isOverwrite: Boolean): Unit = {
+                    trigger: Trigger,
+                    checkPointPath: String,
+                    isOverwrite: Boolean): Unit = {
     optimizer.setCheckpoint(checkPointPath, trigger)
     if (isOverwrite) {
       optimizer.overWriteCheckpoint()
@@ -2012,20 +2045,20 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def summarySetTrigger(
-    summary: TrainSummary,
-    summaryName: String,
-    trigger: Trigger): TrainSummary = {
+                         summary: TrainSummary,
+                         summaryName: String,
+                         trigger: Trigger): TrainSummary = {
     summary.setSummaryTrigger(summaryName, trigger)
     summary
   }
 
   def createTrainSummary(logDir: String,
-    appName: String): TrainSummary = {
+                         appName: String): TrainSummary = {
     new TrainSummary(logDir, appName)
   }
 
   def createValidationSummary(logDir: String,
-    appName: String): ValidationSummary = {
+                              appName: String): ValidationSummary = {
     new ValidationSummary(logDir, appName)
   }
 
@@ -2034,7 +2067,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createNode(module: AbstractModule[Activity, Activity, T],
-    x: JList[ModuleNode[T]]): ModuleNode[T] = {
+                 x: JList[ModuleNode[T]]): ModuleNode[T] = {
     if (null == x || x.isEmpty) {
       module.inputs()
     } else {
@@ -2111,12 +2144,12 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     BilinearFiller
   }
 
-  def createHardSigmoid : HardSigmoid[T] = {
+  def createHardSigmoid: HardSigmoid[T] = {
     HardSigmoid()
   }
 
   def setInitMethod(layer: Initializable, weightInitMethod: InitializationMethod,
-    biasInitMethod: InitializationMethod): layer.type = {
+                    biasInitMethod: InitializationMethod): layer.type = {
     layer.setInitMethod(weightInitMethod, biasInitMethod)
   }
 
@@ -2126,7 +2159,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def setHiddenStates(rec: Recurrent[T], hiddenStates: JList[JTensor], isTable: Boolean): Unit = {
-      rec.setHiddenState(jTensorsToActivity(hiddenStates, isTable))
+    rec.setHiddenState(jTensorsToActivity(hiddenStates, isTable))
   }
 
   def freeze(model: AbstractModule[Activity, Activity, T], freezeLayers: JList[String])
@@ -2135,7 +2168,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def unFreeze(model: AbstractModule[Activity, Activity, T],
-    names: JList[String]): AbstractModule[Activity, Activity, T] = {
+               names: JList[String]): AbstractModule[Activity, Activity, T] = {
     if (names == null) {
       model.unFreeze()
     } else {
@@ -2152,18 +2185,18 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createResizeBilinear(
-    outputHeight: Int,
-    outputWidth: Int,
-    alignCorner: Boolean
-  ): ResizeBilinear[T] = {
+                            outputHeight: Int,
+                            outputWidth: Int,
+                            alignCorner: Boolean
+                          ): ResizeBilinear[T] = {
     ResizeBilinear[T](outputHeight,
       outputWidth,
       alignCorner)
   }
 
   def createHighway(size: Int, withBias: Boolean, activation: String,
-    wRegularizer: Regularizer[T] = null,
-    bRegularizer: Regularizer[T] = null): Graph[T] = {
+                    wRegularizer: Regularizer[T] = null,
+                    bRegularizer: Regularizer[T] = null): Graph[T] = {
     Highway(size, withBias, activation, wRegularizer, bRegularizer)
   }
 
@@ -2276,8 +2309,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   private def doGetFlattenModules(module: Container[Activity, Activity, T],
-    result: ArrayBuffer[AbstractModule[Activity, Activity, T]]): Unit = {
-    module.modules.foreach {m =>
+                                  result: ArrayBuffer[AbstractModule[Activity, Activity, T]]): Unit = {
+    module.modules.foreach { m =>
       if (m.isInstanceOf[Container[Activity, Activity, T]]) {
         doGetFlattenModules(m.asInstanceOf[Container[Activity, Activity, T]], result)
       } else {
@@ -2314,7 +2347,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
 
   def transformImageFrame(transformer: FeatureTransformer,
-    imageFrame: ImageFrame): ImageFrame = {
+                          imageFrame: ImageFrame): ImageFrame = {
     imageFrame.transform(transformer)
   }
 
@@ -2374,8 +2407,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def imageFeatureToSample(imageFeature: ImageFeature,
-    floatKey: String = ImageFeature.floats, toChw: Boolean = true,
-    withImInfo: Boolean = false): Sample = {
+                           floatKey: String = ImageFeature.floats, toChw: Boolean = true,
+                           withImInfo: Boolean = false): Sample = {
     val imageTensor = imageFeatureToImageTensor(imageFeature, floatKey, toChw)
     val features = new util.ArrayList[JTensor]()
     features.add(imageTensor)
@@ -2392,13 +2425,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def distributedImageFrameToSampleRdd(imageFrame: DistributedImageFrame,
-    floatKey: String = ImageFeature.floats, toChw: Boolean = true, withImInfo: Boolean = false)
+                                       floatKey: String = ImageFeature.floats, toChw: Boolean = true, withImInfo: Boolean = false)
   : JavaRDD[Sample] = {
     imageFrame.rdd.map(imageFeatureToSample(_, floatKey, toChw, withImInfo)).toJavaRDD()
   }
 
   def distributedImageFrameToImageTensorRdd(imageFrame: DistributedImageFrame,
-    floatKey: String = ImageFeature.floats, toChw: Boolean = true): JavaRDD[JTensor] = {
+                                            floatKey: String = ImageFeature.floats, toChw: Boolean = true): JavaRDD[JTensor] = {
     imageFrame.rdd.map(imageFeatureToImageTensor(_, floatKey, toChw)).toJavaRDD()
   }
 
@@ -2407,13 +2440,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def localImageFrameToSample(imageFrame: LocalImageFrame,
-    floatKey: String = ImageFeature.floats, toChw: Boolean = true, withImInfo: Boolean = false)
+                              floatKey: String = ImageFeature.floats, toChw: Boolean = true, withImInfo: Boolean = false)
   : JList[Sample] = {
     imageFrame.array.map(imageFeatureToSample(_, floatKey, toChw, withImInfo)).toList.asJava
   }
 
   def localImageFrameToImageTensor(imageFrame: LocalImageFrame,
-    floatKey: String = ImageFeature.floats, toChw: Boolean = true): JList[JTensor] = {
+                                   floatKey: String = ImageFeature.floats, toChw: Boolean = true): JList[JTensor] = {
     imageFrame.array.map(imageFeatureToImageTensor(_, floatKey, toChw)).toList.asJava
   }
 
@@ -2422,7 +2455,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def imageFeatureToImageTensor(imageFeature: ImageFeature,
-    floatKey: String = ImageFeature.floats, toChw: Boolean = true): JTensor = {
+                                floatKey: String = ImageFeature.floats, toChw: Boolean = true): JTensor = {
     toJTensor(imageFeature.toTensor(floatKey, toChw).asInstanceOf[Tensor[T]])
   }
 
@@ -2450,7 +2483,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
 object PythonBigDLUtils {
   def toTensor[T: ClassTag](jTensor: JTensor, typeName: String)
-    (implicit ev: TensorNumeric[T]): Tensor[T] = {
+                           (implicit ev: TensorNumeric[T]): Tensor[T] = {
     if (jTensor == null) return null
 
     typeName match {
