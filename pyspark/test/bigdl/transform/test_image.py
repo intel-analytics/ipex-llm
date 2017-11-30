@@ -30,7 +30,7 @@ class TestLayer():
         self.sc = get_spark_context(sparkConf)
         init_engine()
         resource_path = os.path.join(os.path.split(__file__)[0], "../resources")
-        self.image_path = os.path.join(resource_path, "image/000025.jpg")
+        self.image_path = os.path.join(resource_path, "pascal/000025.jpg")
 
     def teardown_method(self, method):
         """ teardown any state that was previously setup with a setup_method
