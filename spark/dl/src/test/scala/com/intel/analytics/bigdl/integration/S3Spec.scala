@@ -33,7 +33,7 @@ import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Integration
 class S3Spec extends FlatSpec with Matchers with BeforeAndAfter{
-  val s3aPath = System.getProperty("s3aPath")
+  val s3aPath = System.getenv("s3aPath")
 
   private def processPath(path: String): String = {
     if (path.contains(":")) {
