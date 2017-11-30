@@ -36,41 +36,25 @@ class KullbackLeiblerDivergenceCriterion[T: ClassTag]
 
   private val epsilon: T = ev.fromType(1e-08)
 
+  val bufferInput = Tensor[T]()
+  val bufferTarget = Tensor[T]()
+
   override def updateOutput(input: Tensor[T], target : Tensor[T]): T = {
-    val bufferInput = Tensor[T]()
-    val bufferTarget = Tensor[T]()
+
     bufferInput.resizeAs(input).copy(input)
     bufferTarget.resizeAs(target).copy(target)
-
     bufferInput.apply1(e => ev.clip(e, epsilon, ev.fromType(1.0)))
     bufferTarget.apply1(e => ev.clip(e, epsilon, ev.fromType(1.0)))
 
-    val mul = bufferTarget.div(bufferInput).log().cmul(target).sum()
-    val batchSize = if (input.nDimension() == 1) {
-      1
-    } else {
-      input.size(1)
-    }
-
+    gradInput = bufferTarget.div(bufferInput).clone()
+    val mul = bufferTarget.log().cmul(target).sum()
+    val batchSize = if (input.nDimension() == 1) 1 else input.size(1)
     ev.divide(mul, ev.fromType(batchSize))
   }
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
-
-    gradInput.resizeAs(input).copy(input)
-    val gradArray = gradInput.storage().array()
-    val gradOffset = gradInput.storageOffset() - 1
-    val targetArray: Array[T] = target.storage().array()
-    val targetOffset = target.storageOffset() - 1
-
-    var i = 0
-    while(i < gradInput.nElement()) {
-      val z = gradArray(i + gradOffset)
-      val y = targetArray(i + targetOffset)
-      gradArray(i + gradOffset) = ev.plus(y, ev.negative(z))
-      i += 1
-    }
-    gradInput
+    val batchSize = if (input.nDimension() == 1) 1 else input.size(1)
+    gradInput.div(ev.fromType(-batchSize))
   }
 }
 
