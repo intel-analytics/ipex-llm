@@ -47,7 +47,8 @@ class LookupTable[T: ClassTag]
   val maxNorm: Double = Double.MaxValue,
   val normType: Double = 2.0,
   shouldScaleGradByFreq: Boolean = false,
-  var wRegularizer: Regularizer[T] = null
+  var wRegularizer: Regularizer[T] = null,
+  val wInit: InitializationMethod = RandomNormal(0, 1)
 )
 (implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
@@ -58,10 +59,7 @@ class LookupTable[T: ClassTag]
   private var normBuffer = Tensor[T]()
   private val countBuffer = Tensor[T]()
 
-  {
-    val wInit = RandomNormal(0, 1)
-    setInitMethod(weightInitMethod = wInit)
-  }
+  setInitMethod(weightInitMethod = wInit)
 
   override def reset(): Unit = {
     weightInitMethod.init(weight, VariableFormat.Default)
@@ -306,11 +304,12 @@ object LookupTable {
     nIndex: Int, nOutput: Int,
     paddingValue: Double = 0, maxNorm: Double = Double.MaxValue,
     normType: Double = 2.0, shouldScaleGradByFreq: Boolean = false,
-    wRegularizer: Regularizer[T] = null
+    wRegularizer: Regularizer[T] = null,
+    wInit: InitializationMethod = RandomNormal(0, 1)
   )
    (implicit ev: TensorNumeric[T]): LookupTable[T] =
     new LookupTable[T](nIndex, nOutput, paddingValue,
-      maxNorm, normType, shouldScaleGradByFreq, wRegularizer)
+      maxNorm, normType, shouldScaleGradByFreq, wRegularizer, wInit)
 }
 
 

@@ -44,7 +44,7 @@ import com.intel.analytics.bigdl.utils.Engine
  * Due to the behaviour of the backend code, it is necessary to set sizeAverage to false when
  * calculating losses in non-batch mode.
  *
- * Note that if the target is `-1`, the training process will skip this sample.
+ * Note that if the target is `paddingValue`, the training process will skip this sample.
  * In other words, the forward process will return zero output and the backward process
  * will also return zero `gradInput`.
  *
@@ -58,7 +58,7 @@ import com.intel.analytics.bigdl.utils.Engine
  */
 @SerialVersionUID(- 8696382776046599502L)
 class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
-(weights: Tensor[T] = null, sizeAverage: Boolean = true)
+(weights: Tensor[T] = null, sizeAverage: Boolean = true, paddingValue: Int = -1)
   (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
   private var total_weight = ev.fromType[Int](0)
   if (weights != null) require(weights.dim() == 1,
@@ -69,6 +69,8 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
   private var results: Array[Future[(T, T)]] = null
   @transient
   private var resultsBackward: Array[Future[_]] = null
+  var sparseOutput: Tensor[T] = Tensor()
+  var sparseGradInput: Tensor[T] = Tensor()
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     require(input.dim() == 1 || input.dim() == 2,
@@ -81,11 +83,12 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
         "ClassNLLCriterion: " + ErrorInfo.constrainInputDimSameAsTarget +
           s" Input dimension is: ${ input.dim() } , target dimension is: ${ target.dim() }")
       val curTarget = ev.toType[Int](target.valueAt(1))
-      assert(curTarget >= 1 && curTarget <= nClasses || curTarget == -1,
+      assert(curTarget >= 1 && curTarget <= nClasses || curTarget == paddingValue,
         s"curTarget ${curTarget} is out of range, should be 1 to ${nClasses}")
       total_weight = if (weights != null) weights(Array(curTarget)) else ev.fromType[Int](1)
-      output = if (curTarget == -1) ev.zero
+      output = if (curTarget == paddingValue) ev.zero
       else ev.times(ev.negative(input.valueAt(curTarget)), total_weight)
+      sparseOutput.setValue(output)
     } else if (input.dim() == 2) {
       val batchSize = input.size(1)
       val targetSize = target.size()
@@ -106,9 +109,9 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
         val _i = i
         results(_i - 1) = Engine.model.invoke( () => {
           val curTarget = ev.toType[Int](target.valueAt(_i))
-          assert(curTarget >= 1 && curTarget <= nClasses || curTarget == -1,
+          assert(curTarget >= 1 && curTarget <= nClasses || curTarget == paddingValue,
             s"curTarget ${curTarget} is out of range 1 to ${nClasses}")
-          if (curTarget == -1) (ev.zero, ev.one)
+          if (curTarget == paddingValue) (ev.zero, ev.one)
           else {
             val curWeight = if (weights != null) weights.valueAt(curTarget) else ev.fromType[Int](1)
             (ev.times(input.valueAt(_i, curTarget), curWeight), curWeight)
@@ -116,12 +119,14 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
         })
         i += 1
       }
+      sparseOutput.resizeAs(target)
 
       i = 0
       while (i < batchSize) {
         val (o, w) = Await.result(results(i), Duration.Inf)
         output = ev.minus(output, o)
         total_weight = ev.plus(total_weight, w)
+        sparseOutput.setValue(i + 1, ev.negative(o))
         i += 1
       }
       target.resize(targetSize)
@@ -146,7 +151,7 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
         "ClassNLLCriterion: " + ErrorInfo.constrainInputDimSameAsTarget +
           s" Input dimension is: ${ input.dim() } , target dimension is: ${ target.dim() }")
       val curTarget = ev.toType[Int](target.valueAt(1))
-      if (curTarget == -1) return gradInput
+      if (curTarget == paddingValue) return gradInput
       gradInput.setValue(curTarget, if (weights != null) ev.times(ev.fromType[Int](-1),
         weights.valueAt(curTarget))
       else ev.fromType[Int](-1))
@@ -166,7 +171,7 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
         val _i = i
         resultsBackward(_i - 1) = Engine.model.invoke(() => {
           val curTarget = ev.toType[Int](target.valueAt(_i))
-          if (curTarget != -1) {
+          if (curTarget != paddingValue) {
             gradInput.setValue(_i, curTarget, if (weights != null) ev.times(ev.fromType[Int](-1),
               weights.valueAt(curTarget))
             else ev.fromType[Int](-1))
@@ -191,7 +196,9 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
 object ClassNLLCriterion {
   def apply[@specialized(Float, Double) T: ClassTag](
     weights: Tensor[T] = null,
-    sizeAverage: Boolean = true)(implicit ev: TensorNumeric[T]) : ClassNLLCriterion[T] = {
-    new ClassNLLCriterion[T](weights, sizeAverage)
+    sizeAverage: Boolean = true,
+    paddingValue: Int = -1
+  )(implicit ev: TensorNumeric[T]) : ClassNLLCriterion[T] = {
+    new ClassNLLCriterion[T](weights, sizeAverage, paddingValue)
   }
 }

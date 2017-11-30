@@ -34,23 +34,23 @@ object Utils {
                           saveFolder: String = "./",
                           modelSnapshot: Option[String] = None,
                           stateSnapshot: Option[String] = None,
-                          checkpoint: Option[String] = Some("/tmp/"),
+                          checkpoint: Option[String] = Some("/tmp/chatbot"),
                           batchSize: Int = 32,
                           learningRate: Double = 0.0001,
                           momentum: Double = 0.0,
                           weightDecay: Double = 0.0,
                           dampening: Double = 0.0,
                           hiddenSize: Int = 40,
-                          vocabSize: Int = 4000,
+                          vocabSize: Int = 8000,
                           bptt: Int = 4,
-                          nEpochs: Int = 30,
+                          nEpochs: Int = 50,
                           trainingSplit: Double = 0.8,
-                          embedDim: Int = 200,
+                          embedDim: Int = 1024,
                           sentFile: Option[String] = None,
                           tokenFile: Option[String] = None,
                           overWriteCheckpoint: Boolean = false)
 
-  val trainParser = new OptionParser[TrainParams]("BigDL SimpleRNN Train Example") {
+  val trainParser = new OptionParser[TrainParams]("BigDL chatbot Train Example") {
     opt[String]('f', "dataFolder")
       .text("where you put the text data")
       .action((x, c) => c.copy(dataFolder = x))
@@ -59,7 +59,6 @@ object Utils {
     opt[String]('s', "saveFolder")
       .text("where you save the processed text data")
       .action((x, c) => c.copy(saveFolder = x))
-      .required()
 
     opt[String]("model")
       .text("model snapshot location")

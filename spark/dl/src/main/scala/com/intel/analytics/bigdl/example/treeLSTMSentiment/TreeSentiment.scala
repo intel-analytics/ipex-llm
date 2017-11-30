@@ -28,7 +28,7 @@ object TreeLSTMSentiment {
     word2VecTensor: Tensor[Float],
     hiddenSize: Int,
     classNum: Int,
-    p: Double = 0.5
+    p: Double = 0.2
   ): Module[Float] = {
     val vocabSize = word2VecTensor.size(1)
     val embeddingDim = word2VecTensor.size(2)

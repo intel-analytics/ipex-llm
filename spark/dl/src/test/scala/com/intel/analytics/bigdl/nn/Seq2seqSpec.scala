@@ -201,6 +201,7 @@ class Seq2seqSpec extends FlatSpec with BeforeAndAfter with Matchers {
       .add(VolumetricConvolution[Double](3, 5, 3, 3, 3, 1, 1, 1, 1, 1, 1))
     val model = Seq2seq(encoderRecs, decoderRecs, preDecoder = preDecoder,
       shrinkHiddenStateModules = shirnkStatesModules)
+    model.encoderInput
 
     for (i <- 0 until 3) {
       model.forward(input).toTensor

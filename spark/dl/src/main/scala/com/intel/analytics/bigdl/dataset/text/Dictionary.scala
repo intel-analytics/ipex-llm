@@ -67,7 +67,7 @@ class Dictionary()
    * @param word
    */
   def getIndex(word: String): Int = {
-    _word2index.getOrElse(word, _vocabSize)
+    _word2index.getOrElse(word, getIndex("unk"))
   }
 
   def getWord(index: Float): String = {
@@ -159,6 +159,16 @@ class Dictionary()
     update(freqDict, vocabSize)
   }
 
+  def this(
+    index2word: Map[Int, String],
+    word2index: Map[String, Int]) = {
+    this()
+    _index2word = collection.mutable.Map(index2word.toSeq: _*)
+    _word2index = collection.mutable.Map(word2index.toSeq: _*)
+    _vocabulary = word2index.keySet.toSeq
+    _vocabSize = _vocabulary.length
+  }
+
   def this(words: Array[String],
            vocabSize: Int) = {
     this()
@@ -242,4 +252,9 @@ object Dictionary {
 
   def apply(dataset: RDD[Array[String]], vocabSize: Int = 10000)
   : Dictionary = new Dictionary(dataset, vocabSize)
+
+  def apply(
+    index2word: Map[Int, String],
+    word2index: Map[String, Int])
+  : Dictionary = new Dictionary(index2word, word2index)
 }
