@@ -21,9 +21,9 @@ generate the model definition file (`model.pb`) and variable binary file (`model
 
 **Use Script**
 ```shell
-GRAPH_META_FILE=/tmp/model.ckpt.meta
-CKPT_FILE_PREFIX=/tmp/model.ckpt
-SAVE_PATH=/tmp/bigdl_model/
+GRAPH_META_FILE=/tmp/tensorflow/model.ckpt.meta
+CKPT_FILE_PREFIX=/tmp/tensorflow/model.ckpt
+SAVE_PATH=/tmp/model/
 python export_tf_checkpoint.py $GRAPH_META_FILE $CKPT_FILE_PREFIX $SAVE_PATH
 ```
 
@@ -46,6 +46,10 @@ dump_model_path = "/tmp/model"
 # save the model definition and variable to dump_model_path as BigDL readable format.
 dump_model(path=dump_model_path)
 ```
+
+Optionally, you can also pass in a initialized (either from scratch or from a checkpoint) Session object containing
+all the variables of your model or pass in a pre-trained checkpoint path directly. See the `dump_model` doc in this
+[file](https://github.com/intel-analytics/BigDL/blob/master/pyspark/bigdl/util/tf_utils.py).
 
 ### Load Tensorflow model in BigDL
 

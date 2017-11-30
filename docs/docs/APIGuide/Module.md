@@ -65,9 +65,9 @@ generate the model definition file (`model.pb`) and variable binary file (`model
 
 **Use Script**
 ```shell
-GRAPH_META_FILE=/tmp/model.ckpt.meta
-CKPT_FILE_PREFIX=/tmp/model.ckpt
-SAVE_PATH=/tmp/bigdl_model/
+GRAPH_META_FILE=/tmp/tensorflow/model.ckpt.meta
+CKPT_FILE_PREFIX=/tmp/tensorflow/model.ckpt
+SAVE_PATH=/tmp/model/
 python export_tf_checkpoint.py $GRAPH_META_FILE $CKPT_FILE_PREFIX $SAVE_PATH
 ```
 
