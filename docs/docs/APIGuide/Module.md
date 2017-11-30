@@ -53,8 +53,10 @@ model = Model.load("s3://...") //load from s3
 
 ### Load Tensorflow model
 
-BigDL also provides utilities to load tensorflow model. See [tensorflow support](https://bigdl-project.github.io/master/#ProgrammingGuide/tensorflow-support/)
-for more information.
+BigDL also provides utilities to load tensorflow model. You can use
+the `dump_model` function defined in [here](https://github.com/intel-analytics/BigDL/blob/master/pyspark/bigdl/util/tf_utils.py) to
+ generate the model definition file (`model.pb`) and variable binary file (`model.bin`). See [tensorflow support](https://bigdl-project.github.io/master/#ProgrammingGuide/tensorflow-support/)
+for more information on this.
 
 **Scala example**
 ```scala
