@@ -4607,6 +4607,20 @@ class Highway(Layer):
     def __init__(self, size, with_bias=True, activation = None, wRegularizer=None, bRegularizer=None, bigdl_type="float"):
         super(Highway, self).__init__(None, bigdl_type, size, with_bias, activation, wRegularizer, bRegularizer)
 
+class UpSampling3D(Layer):
+    """
+    Upsampling layer for 3D inputs.
+    Repeats the 1st, 2nd and 3rd dimensions
+    of the data by size[0], size[1] and size[2] respectively.
+    The input data is assumed to be of the form `minibatch x channels x depth x height x width`.
+
+    :param size Repeats the depth, height, width dimensions of the data by
+    >>> upsample3d = UpSampling3D([1, 2, 3])
+    creating: createUpSampling3D
+    """
+    def __init__(self, size, bigdl_type="float"):
+        super(UpSampling3D, self).__init__(None, bigdl_type, size)
+
 def _test():
     import doctest
     from pyspark import SparkContext
