@@ -53,9 +53,7 @@ model = Model.load("s3://...") //load from s3
 
 ### Load Tensorflow model
 
-BigDL also provides utilities to load tensorflow model file. You may need to
-first transform your tensorflow model variables to BigDL readable format using
-the `dump_model` function. See [tensorflow support](https://bigdl-project.github.io/master/#ProgrammingGuide/tensorflow-support/)
+BigDL also provides utilities to load tensorflow model. See [tensorflow support](https://bigdl-project.github.io/master/#ProgrammingGuide/tensorflow-support/)
 for more information.
 
 **Scala example**
