@@ -35,10 +35,12 @@ if sys.version >= '3':
     long = int
     unicode = str
 
+
 class Node(JavaValue):
     """
     Represent a node in a graph. The connections between nodes are directed.
     """
+
     def __init__(self, jvalue, bigdl_type, *args):
         self.value = jvalue if jvalue else callBigDlFunc(
             bigdl_type, JavaValue.jvm_class_constructor(self), *args)
@@ -61,7 +63,7 @@ class Layer(JavaValue):
 
     def __init__(self, jvalue, bigdl_type, *args):
         if (jvalue):
-            assert(type(jvalue) == JavaObject)
+            assert (type(jvalue) == JavaObject)
             self.value = jvalue
         else:
             self.value = callBigDlFunc(
@@ -152,6 +154,7 @@ class Layer(JavaValue):
         :param input: ndarray or list of ndarray or JTensor or list of JTensor.
         :return: (list of JTensor, isTable)
         """
+
         def to_jtensor(i):
             if isinstance(i, np.ndarray):
                 return JTensor.from_ndarray(i)
@@ -159,6 +162,7 @@ class Layer(JavaValue):
                 return i
             else:
                 raise Exception("Error unknown input type %s" % type(i))
+
         if type(input) is list:
             if len(input) == 0:
                 raise Exception('Error when checking: empty input')
@@ -170,7 +174,7 @@ class Layer(JavaValue):
     def convert_output(output):
         if type(output) is JTensor:
             return output.to_ndarray()
-        elif(len(output) == 1):
+        elif (len(output) == 1):
             return output[0].to_ndarray()
         else:
             return [x.to_ndarray() for x in output]
@@ -256,7 +260,7 @@ class Layer(JavaValue):
                         params.items())
 
         return dict((layer_name, to_ndarray(params)) for layer_name, params in
-                name_to_params.items())
+                    name_to_params.items())
 
     def evaluate(self, *args):
         """
@@ -294,7 +298,6 @@ class Layer(JavaValue):
         else:
             raise Exception("Not supported type: %s" % type(x[0]))
 
-
     def predict_local(self, X):
         """
         :param X: X can be a ndarray or list of ndarray if the model has multiple inputs.
@@ -303,11 +306,11 @@ class Layer(JavaValue):
         """
 
         jresults = callBigDlFunc(self.bigdl_type,
-                             "predictLocal",
-                               self.value,
-                               self._to_jtensors(X))
+                                 "predictLocal",
+                                 self.value,
+                                 self._to_jtensors(X))
 
-        return np.stack([j.to_ndarray()for j in jresults])
+        return np.stack([j.to_ndarray() for j in jresults])
 
     def predict_local_class(self, X):
         """
@@ -317,7 +320,7 @@ class Layer(JavaValue):
         :return: a ndarray as the prediction result.
         """
         result = callBigDlFunc(self.bigdl_type,
-                             "predictLocalClass",
+                               "predictLocalClass",
                                self.value,
                                self._to_jtensors(X))
         return np.stack(result)
@@ -332,7 +335,7 @@ class Layer(JavaValue):
         :return: An RDD represent the predict result.
         """
         result = callBigDlFunc(self.bigdl_type,
-                             "modelPredictRDD", self.value, data_rdd)
+                               "modelPredictRDD", self.value, data_rdd)
         return result.map(lambda data: data.to_ndarray())
 
     def predict_class(self, data_rdd):
@@ -398,7 +401,7 @@ class Layer(JavaValue):
         :return: list of numpy arrays which represent weight and bias
         """
         tensorWeights = callBigDlFunc(self.bigdl_type,
-                              "getWeights", self.value)
+                                      "getWeights", self.value)
         if tensorWeights is not None:
             return [tensor.to_ndarray() for tensor in tensorWeights]
         else:
@@ -407,16 +410,17 @@ class Layer(JavaValue):
 
     def is_with_weights(self):
         return callBigDlFunc(self.bigdl_type,
-                  "isWithWeights", self.value)
+                             "isWithWeights", self.value)
 
-    def save(self, path, over_write = False):
+    def save(self, path, over_write=False):
         callBigDlFunc(self.bigdl_type, "modelSave", self.value, path,
                       over_write)
-    def saveModel(self, path, over_write = False):
+
+    def saveModel(self, path, over_write=False):
         callBigDlFunc(self.bigdl_type, "saveBigDLModule", self.value, path,
                       over_write)
 
-    def save_caffe(self, prototxt_path, model_path, use_v2 = True, overwrite = False):
+    def save_caffe(self, prototxt_path, model_path, use_v2=True, overwrite=False):
         callBigDlFunc(self.bigdl_type, "saveCaffe", self.value, prototxt_path,
                       model_path, use_v2, overwrite)
 
@@ -435,7 +439,6 @@ class Layer(JavaValue):
         :param data_format: model data format, should be "nhwc" or "nchw"
         """
         callBigDlFunc(self.bigdl_type, "saveTF", self.value, inputs, path, byte_order, data_format)
-
 
     def setWRegularizer(self, wRegularizer):
         '''
@@ -595,7 +598,7 @@ class Container(Layer):
 
     @property
     def layers(self):
-        jlayers = callBigDlFunc(self.bigdl_type, "getContainerModules" , self)
+        jlayers = callBigDlFunc(self.bigdl_type, "getContainerModules", self)
         layers = [Layer.of(jlayer) for jlayer in jlayers]
         return layers
 
@@ -643,13 +646,12 @@ class Model(Container):
             self.bigdl_type = bigdl_type
         elif model_type == "bigdl":
             super(Model, self).__init__(None, bigdl_type,
-                                    to_list(inputs),
-                                    to_list(outputs))
+                                        to_list(inputs),
+                                        to_list(outputs))
         else:
             from bigdl.util.tf_utils import convert
             model = convert(to_list(inputs), to_list(outputs), byte_order, bigdl_type)
             super(Model, self).__init__(model.value, bigdl_type)
-
 
     @staticmethod
     def from_jvalue(jvalue, bigdl_type="float"):
@@ -742,8 +744,8 @@ class Model(Container):
         return Layer.of(jmodel)
 
     @staticmethod
-    def load_tensorflow(path, inputs, outputs, byte_order = "little_endian",
-                        bin_file = None, bigdl_type="float"):
+    def load_tensorflow(path, inputs, outputs, byte_order="little_endian",
+                        bin_file=None, bigdl_type="float"):
         """
         Load a pre-trained Tensorflow model.
         :param path: The path containing the pre-trained model.
@@ -767,7 +769,8 @@ class Model(Container):
         rdd_train_labels = sc.parallelize(label)
         rdd_train_sample = rdd_train_images.zip(rdd_train_labels).map(lambda input:
                                                                       Sample.from_ndarray(input[0], input[1]))
-        jmodel = callBigDlFunc(bigdl_type, "trainTF", path, output_name, rdd_train_sample, opt_method, criterion, batch_size, end_when)
+        jmodel = callBigDlFunc(bigdl_type, "trainTF", path, output_name, rdd_train_sample, opt_method, criterion,
+                               batch_size, end_when)
         return Model.of(jmodel)
 
     def stop_gradient(self, stop_layers, bigdl_type="float"):
@@ -794,8 +797,8 @@ class Model(Container):
         callBigDlFunc(bigdl_type, "saveGraphTopology", self.value, log_path)
         return self
 
-class Linear(Layer):
 
+class Linear(Layer):
     '''
     The [[Linear]] module applies a linear transformation to the input data,
     i.e. `y = Wx + b`. The input given in `forward(input)` must be either
@@ -838,13 +841,13 @@ class Linear(Layer):
                                      JTensor.from_ndarray(init_grad_weight),
                                      JTensor.from_ndarray(init_grad_bias))
 
-    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+    def set_init_method(self, weight_init_method=None, bias_init_method=None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
-                                   weight_init_method, bias_init_method)
+                      weight_init_method, bias_init_method)
         return self
 
-class SparseLinear(Layer):
 
+class SparseLinear(Layer):
     '''
     SparseLinear is the sparse version of module Linear. SparseLinear has two different from Linear:
     firstly, SparseLinear's input Tensor is a SparseTensor. Secondly, SparseLinear doesn't backward
@@ -895,20 +898,20 @@ class SparseLinear(Layer):
                  wRegularizer=None, bRegularizer=None, init_weight=None, init_bias=None,
                  init_grad_weight=None, init_grad_bias=None, bigdl_type="float"):
         super(SparseLinear, self).__init__(None, bigdl_type, input_size, output_size,
-                                     with_bias, backwardStart, backwardLength,
-                                     wRegularizer, bRegularizer,
-                                     JTensor.from_ndarray(init_weight),
-                                     JTensor.from_ndarray(init_bias),
-                                     JTensor.from_ndarray(init_grad_weight),
-                                     JTensor.from_ndarray(init_grad_bias))
+                                           with_bias, backwardStart, backwardLength,
+                                           wRegularizer, bRegularizer,
+                                           JTensor.from_ndarray(init_weight),
+                                           JTensor.from_ndarray(init_bias),
+                                           JTensor.from_ndarray(init_grad_weight),
+                                           JTensor.from_ndarray(init_grad_bias))
 
-    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+    def set_init_method(self, weight_init_method=None, bias_init_method=None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
         return self
 
-class DenseToSparse(Layer):
 
+class DenseToSparse(Layer):
     '''
     Convert DenseTensor to SparseTensor.
 
@@ -921,8 +924,8 @@ class DenseToSparse(Layer):
                  bigdl_type="float"):
         super(DenseToSparse, self).__init__(None, bigdl_type)
 
-class ReLU(Layer):
 
+class ReLU(Layer):
     '''
     Applies the rectified linear unit (ReLU) function element-wise to the input Tensor,
      thus outputting a Tensor of the same dimension.
@@ -941,7 +944,6 @@ class ReLU(Layer):
 
 
 class Tanh(Layer):
-
     '''
     Applies the Tanh function element-wise to the input Tensor, thus outputting a Tensor of the same
     dimension. Tanh is defined as f(x) = (exp(x)-exp(-x))/(exp(x)+exp(-x)).
@@ -956,7 +958,6 @@ class Tanh(Layer):
 
 
 class Sigmoid(Layer):
-
     '''
     Applies the Sigmoid function element-wise to the input Tensor,
     thus outputting a Tensor of the same dimension.
@@ -971,7 +972,6 @@ class Sigmoid(Layer):
 
 
 class Echo(Layer):
-
     '''
     This module is for debug purpose, which can print activation and gradient in your model
     topology
@@ -986,7 +986,6 @@ class Echo(Layer):
 
 
 class LogSoftMax(Layer):
-
     '''
     Applies the LogSoftMax function to an n-dimensional input Tensor.
     LogSoftmax is defined as: f_i(x) = log(1 / a exp(x_i))
@@ -1002,7 +1001,6 @@ class LogSoftMax(Layer):
 
 
 class Sequential(Container):
-
     '''
     Sequential provides a means to plug layers together
     in a feed-forward fully connected manner.
@@ -1022,8 +1020,8 @@ class Sequential(Container):
     def __init__(self, bigdl_type="float"):
         super(Sequential, self).__init__(None, bigdl_type)
 
-class TemporalConvolution(Layer):
 
+class TemporalConvolution(Layer):
     '''
     Applies a 1D convolution over an input sequence composed of nInputFrame frames..
     The input tensor in `forward(input)` is expected to be a 2D tensor
@@ -1066,21 +1064,90 @@ class TemporalConvolution(Layer):
                  init_grad_bias=None,
                  bigdl_type="float"):
         super(TemporalConvolution, self).__init__(None, bigdl_type,
-                                                 input_frame_size,
-                                                 output_frame_size,
-                                                 kernel_w,
-                                                 stride_w,
-                                                 propagate_back,
-                                                 weight_regularizer,
-                                                 bias_regularizer,
-                                                 JTensor.from_ndarray(init_weight),
-                                                 JTensor.from_ndarray(init_bias),
-                                                 JTensor.from_ndarray(init_grad_weight),
-                                                 JTensor.from_ndarray(init_grad_bias))
-    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+                                                  input_frame_size,
+                                                  output_frame_size,
+                                                  kernel_w,
+                                                  stride_w,
+                                                  propagate_back,
+                                                  weight_regularizer,
+                                                  bias_regularizer,
+                                                  JTensor.from_ndarray(init_weight),
+                                                  JTensor.from_ndarray(init_bias),
+                                                  JTensor.from_ndarray(init_grad_weight),
+                                                  JTensor.from_ndarray(init_grad_bias))
+
+    def set_init_method(self, weight_init_method=None, bias_init_method=None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
         return self
+
+
+class LocallyConnected1D(Layer):
+    '''
+    The `LocallyConnected1D` layer works similarly to
+    the `TemporalConvolution` layer, except that weights are unshared,
+    that is, a different set of filters is applied at each different patch
+    of the input.
+    The input tensor in `forward(input)` is expected to be a 2D tensor
+    (`nInputFrame` x `inputFrameSize`) or a 3D tensor
+    (`nBatchFrame` x `nInputFrame` x `inputFrameSize`).
+
+    :param nInputFrame the input frame channel
+    :param input_frame_size The input frame size expected in sequences given into `forward()`
+    :param output_frame_size The output frame size the convolution layer will produce.
+    :param kernel_w The kernel width of the convolution
+    :param stride_w The step of the convolution in the width dimension.
+    :param propagate_back Whether propagate gradient back, default is true.
+    :param weight_regularizer instance of [[Regularizer]]
+                        (eg. L1 or L2 regularization), applied to the input weights matrices.
+    :param bias_regularizer instance of [[Regularizer]]
+                         applied to the bias.
+    :param init_weight Initial weight
+    :param init_bias Initial bias
+    :param init_grad_weight Initial gradient weight
+    :param init_grad_bias Initial gradient bias
+
+    >>> locallyConnected1D = LocallyConnected1D(10, 6, 12, 5, 5)
+    creating: createTemporalConvolution
+    >>> locallyConnected1D.setWRegularizer(L1Regularizer(0.5))
+    creating: createL1Regularizer
+    >>> locallyConnected1D.setBRegularizer(L1Regularizer(0.5))
+    creating: createL1Regularizer
+    '''
+
+    def __init__(self,
+                 n_input_frame,
+                 input_frame_size,
+                 output_frame_size,
+                 kernel_w,
+                 stride_w=1,
+                 propagate_back=True,
+                 weight_regularizer=None,
+                 bias_regularizer=None,
+                 init_weight=None,
+                 init_bias=None,
+                 init_grad_weight=None,
+                 init_grad_bias=None,
+                 bigdl_type="float"):
+        super(TemporalConvolution, self).__init__(None, bigdl_type,
+                                                  n_input_frame,
+                                                  input_frame_size,
+                                                  output_frame_size,
+                                                  kernel_w,
+                                                  stride_w,
+                                                  propagate_back,
+                                                  weight_regularizer,
+                                                  bias_regularizer,
+                                                  JTensor.from_ndarray(init_weight),
+                                                  JTensor.from_ndarray(init_bias),
+                                                  JTensor.from_ndarray(init_grad_weight),
+                                                  JTensor.from_ndarray(init_grad_bias))
+
+    def set_init_method(self, weight_init_method=None, bias_init_method=None):
+        callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
+                      weight_init_method, bias_init_method)
+        return self
+
 
 class BinaryTreeLSTM(Layer):
     '''
@@ -1106,8 +1173,8 @@ class BinaryTreeLSTM(Layer):
                                              gate_output,
                                              with_graph)
 
-class SpatialConvolution(Layer):
 
+class SpatialConvolution(Layer):
     '''
     Applies a 2D convolution over an input image composed of several input planes.
     The input tensor in forward(input) is expected to be
@@ -1190,14 +1257,14 @@ class SpatialConvolution(Layer):
                                                  JTensor.from_ndarray(init_grad_bias),
                                                  with_bias,
                                                  data_format)
-    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+
+    def set_init_method(self, weight_init_method=None, bias_init_method=None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
-                  weight_init_method, bias_init_method)
+                      weight_init_method, bias_init_method)
         return self
 
 
 class TemporalMaxPooling(Layer):
-
     '''
     Applies 1D max-pooling operation in kW regions by step size dW steps.
     Input sequence composed of nInputFrame frames.
@@ -1221,9 +1288,10 @@ class TemporalMaxPooling(Layer):
                  d_w,
                  bigdl_type="float"):
         super(TemporalMaxPooling, self).__init__(None, bigdl_type, k_w,
-                                                d_w)
-class SpatialMaxPooling(Layer):
+                                                 d_w)
 
+
+class SpatialMaxPooling(Layer):
     '''
     Applies 2D max-pooling operation in kWxkH regions by step size dWxdH steps.
     The number of output features is equal to the number of input planes.
@@ -1259,6 +1327,7 @@ class SpatialMaxPooling(Layer):
     >>> spatialMaxPooling = SpatialMaxPooling(2, 2, 2, 2, -1, -1, True, "NHWC")
     creating: createSpatialMaxPooling
     '''
+
     # to_ceil: call floor() when False; call ceil() when True
 
     def __init__(self, kw,
@@ -1281,7 +1350,6 @@ class SpatialMaxPooling(Layer):
 
 
 class Select(Layer):
-
     '''
     A Simple layer selecting an index of the input tensor in the given dimension
 
@@ -1296,6 +1364,7 @@ class Select(Layer):
 
     def __init__(self, dim, index, bigdl_type="float"):
         super(Select, self).__init__(None, bigdl_type, dim, index)
+
 
 class Recurrent(Container):
     '''
@@ -1329,6 +1398,7 @@ class Recurrent(Container):
         jstate, state_is_table = self.check_input(states)
         callBigDlFunc(self.bigdl_type, "setHiddenState", self.value, jstate, state_is_table)
 
+
 class RecurrentDecoder(Recurrent):
     '''
     RecurrentDecoder module is a container of rnn cells which used to make
@@ -1346,6 +1416,7 @@ class RecurrentDecoder(Recurrent):
 
     def __init__(self, output_length, bigdl_type="float"):
         super(Recurrent, self).__init__(None, bigdl_type, output_length)
+
 
 class LSTM(Layer):
     '''
@@ -1417,8 +1488,10 @@ class LSTMPeephole(Layer):
     creating: createLSTMPeephole
     '''
 
-    def __init__(self, input_size=4, hidden_size=3, p=0.0, wRegularizer=None, uRegularizer=None, bRegularizer=None, bigdl_type="float"):
-        super(LSTMPeephole, self).__init__(None, bigdl_type, input_size, hidden_size, p, wRegularizer, uRegularizer, bRegularizer)
+    def __init__(self, input_size=4, hidden_size=3, p=0.0, wRegularizer=None, uRegularizer=None, bRegularizer=None,
+                 bigdl_type="float"):
+        super(LSTMPeephole, self).__init__(None, bigdl_type, input_size, hidden_size, p, wRegularizer, uRegularizer,
+                                           bRegularizer)
 
 
 class GRU(Layer):
@@ -1454,7 +1527,7 @@ class GRU(Layer):
     creating: createGRU
     '''
 
-    def __init__(self,  input_size, hidden_size, p=0.0, activation=None, inner_activation=None,
+    def __init__(self, input_size, hidden_size, p=0.0, activation=None, inner_activation=None,
                  wRegularizer=None, uRegularizer=None, bRegularizer=None, bigdl_type="float"):
         if not activation:
             activation = Tanh()
@@ -1503,7 +1576,8 @@ class RnnCell(Layer):
                  bigdl_type="float"):
         if isinstance(activation, six.string_types):
             activation = get_activation_by_name(activation)
-        super(RnnCell, self).__init__(None, bigdl_type, input_size, hidden_size, activation, isInputWithBias, isHiddenWithBias, wRegularizer, uRegularizer, bRegularizer)
+        super(RnnCell, self).__init__(None, bigdl_type, input_size, hidden_size, activation, isInputWithBias,
+                                      isHiddenWithBias, wRegularizer, uRegularizer, bRegularizer)
 
 
 class TimeDistributed(Layer):
@@ -1529,7 +1603,6 @@ class TimeDistributed(Layer):
 
 
 class Concat(Container):
-
     '''
     Concat concatenates the output of one layer of "parallel"
     modules along the provided {@code dimension}: they take the
@@ -1559,7 +1632,6 @@ class Concat(Container):
 
 
 class SpatialAveragePooling(Layer):
-
     '''
     Applies 2D average-pooling operation in kWxkH regions by step size dWxdH steps.
     The number of output features is equal to the number of input planes.
@@ -1627,7 +1699,6 @@ class SpatialAveragePooling(Layer):
 
 
 class SpatialBatchNormalization(Layer):
-
     '''
     This file implements Batch Normalization as described in the paper:
     "Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift"
@@ -1677,14 +1748,13 @@ class SpatialBatchNormalization(Layer):
                                                         JTensor.from_ndarray(init_grad_weight),
                                                         JTensor.from_ndarray(init_grad_bias))
 
-    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+    def set_init_method(self, weight_init_method=None, bias_init_method=None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
         return self
 
 
 class SpatialCrossMapLRN(Layer):
-
     '''
     Applies Spatial Local Response Normalization between different feature maps.
     The operation implemented is:
@@ -1722,7 +1792,6 @@ class SpatialCrossMapLRN(Layer):
 
 
 class Dropout(Layer):
-
     '''
     Dropout masks(set to zero) parts of input using a bernoulli distribution.
     Each input element has a probability initP of being dropped. If scale is
@@ -1751,7 +1820,6 @@ class Dropout(Layer):
 
 
 class GaussianDropout(Layer):
-
     '''
     Apply multiplicative 1-centered Gaussian noise.
     The multiplicative noise will have standard deviation `sqrt(rate / (1 - rate)).
@@ -1773,7 +1841,6 @@ class GaussianDropout(Layer):
 
 
 class GaussianNoise(Layer):
-
     '''
     Apply additive zero-centered Gaussian noise.
     This is useful to mitigate overfitting
@@ -1787,14 +1854,15 @@ class GaussianNoise(Layer):
     >>> GaussianNoise = GaussianNoise(0.5)
     creating: createGaussianNoise
     '''
+
     def __init__(self,
                  stddev,
                  bigdl_type="float"):
         super(GaussianNoise, self).__init__(None, bigdl_type,
                                             stddev)
 
-class View(Layer):
 
+class View(Layer):
     '''
     This module creates a new view of the input tensor using the sizes passed to the constructor.
     The method setNumInputDims() allows to specify the expected number of dimensions of the
@@ -1819,7 +1887,6 @@ class View(Layer):
 
 
 class Abs(Layer):
-
     '''
     an element-wise abs operation
 
@@ -1834,7 +1901,6 @@ class Abs(Layer):
 
 
 class Add(Layer):
-
     '''
     adds a bias term to input data ;
 
@@ -1849,14 +1915,14 @@ class Add(Layer):
                  bigdl_type="float"):
         super(Add, self).__init__(None, bigdl_type,
                                   input_size)
-    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+
+    def set_init_method(self, weight_init_method=None, bias_init_method=None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
         return self
 
 
 class AddConstant(Layer):
-
     '''
     adding a constant
 
@@ -1877,8 +1943,8 @@ class AddConstant(Layer):
                                           constant_scalar,
                                           inplace)
 
-class BatchNormalization(Layer):
 
+class BatchNormalization(Layer):
     '''
     This layer implements Batch Normalization as described in the paper:
              "Batch Normalization: Accelerating Deep Network Training by Reducing Internal
@@ -1915,6 +1981,7 @@ class BatchNormalization(Layer):
     >>> batchNormalization = BatchNormalization(2, 1e-5, 1e-5, True, init_weight, init_bias, init_grad_weight, init_grad_bias)
     creating: createBatchNormalization
     '''
+
     def __init__(self,
                  n_output,
                  eps=1e-5,
@@ -1935,7 +2002,7 @@ class BatchNormalization(Layer):
                                                  JTensor.from_ndarray(init_grad_weight),
                                                  JTensor.from_ndarray(init_grad_bias))
 
-    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+    def set_init_method(self, weight_init_method=None, bias_init_method=None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
         return self
@@ -1960,11 +2027,10 @@ class BifurcateSplitTable(Layer):
                  dimension,
                  bigdl_type="float"):
         super(BifurcateSplitTable, self).__init__(None, bigdl_type,
-                                       dimension)
+                                                  dimension)
 
 
 class Bilinear(Layer):
-
     '''
     a bilinear transformation with sparse inputs,
     The input tensor given in forward(input) is a table containing both inputs x_1 and x_2,
@@ -1997,14 +2063,14 @@ class Bilinear(Layer):
                                        bias_res,
                                        wRegularizer,
                                        bRegularizer)
-    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+
+    def set_init_method(self, weight_init_method=None, bias_init_method=None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
         return self
 
 
 class Bottle(Container):
-
     '''
     Bottle allows varying dimensionality input to be forwarded through any module
     that accepts input of nInputDim dimensions, and generates output of nOutputDim dimensions.
@@ -2031,7 +2097,6 @@ class Bottle(Container):
 
 
 class CAdd(Layer):
-
     '''
     This layer has a bias tensor with given size. The bias will be added element wise to the input
     tensor. If the element number of the bias tensor match the input tensor, a simply element wise
@@ -2055,14 +2120,13 @@ class CAdd(Layer):
         super(CAdd, self).__init__(None, bigdl_type,
                                    size, bRegularizer)
 
-    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+    def set_init_method(self, weight_init_method=None, bias_init_method=None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
         return self
 
 
 class CAddTable(Layer):
-
     '''
     Merge the input tensors in the input table by element wise adding them together. The input
     table is actually an array of tensor with same size.
@@ -2081,8 +2145,8 @@ class CAddTable(Layer):
         super(CAddTable, self).__init__(None, bigdl_type,
                                         inplace)
 
-class CAveTable(Layer):
 
+class CAveTable(Layer):
     '''
     Merge the input tensors in the input table by element wise taking the average. The input
     table is actually an array of tensor with same size.
@@ -2103,7 +2167,6 @@ class CAveTable(Layer):
 
 
 class CDivTable(Layer):
-
     '''
     Takes a table with two Tensor and returns the component-wise division between them.
 
@@ -2118,7 +2181,6 @@ class CDivTable(Layer):
 
 
 class CMaxTable(Layer):
-
     '''
     Takes a table of Tensors and outputs the max of all of them.
 
@@ -2133,7 +2195,6 @@ class CMaxTable(Layer):
 
 
 class CMinTable(Layer):
-
     '''
     Takes a table of Tensors and outputs the min of all of them.
 
@@ -2147,7 +2208,6 @@ class CMinTable(Layer):
 
 
 class CMul(Layer):
-
     '''
     Applies a component-wise multiplication to the incoming data
 
@@ -2166,14 +2226,13 @@ class CMul(Layer):
         super(CMul, self).__init__(None, bigdl_type,
                                    size, wRegularizer)
 
-    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+    def set_init_method(self, weight_init_method=None, bias_init_method=None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
         return self
 
 
 class CMulTable(Layer):
-
     '''
     Takes a table of Tensors and outputs the multiplication of all of them.
 
@@ -2188,7 +2247,6 @@ class CMulTable(Layer):
 
 
 class CSubTable(Layer):
-
     '''
     Takes a table with two Tensor and returns the component-wise subtraction between them.
 
@@ -2203,7 +2261,6 @@ class CSubTable(Layer):
 
 
 class Clamp(Layer):
-
     '''
     Clamps all elements into the range [min_value, max_value].
     Output is identical to input in the range,
@@ -2229,7 +2286,6 @@ class Clamp(Layer):
 
 
 class Contiguous(Layer):
-
     '''
     used to make input, grad_output both contiguous
 
@@ -2244,7 +2300,6 @@ class Contiguous(Layer):
 
 
 class Cosine(Layer):
-
     '''
     Cosine calculates the cosine similarity of the input to k mean centers. The input given in
     forward(input) must be either a vector (1D tensor) or matrix (2D tensor). If the input is a
@@ -2268,14 +2323,14 @@ class Cosine(Layer):
         super(Cosine, self).__init__(None, bigdl_type,
                                      input_size,
                                      output_size)
-    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+
+    def set_init_method(self, weight_init_method=None, bias_init_method=None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
         return self
 
 
 class CosineDistance(Layer):
-
     '''
     Outputs the cosine distance between inputs
 
@@ -2288,8 +2343,8 @@ class CosineDistance(Layer):
                  bigdl_type="float"):
         super(CosineDistance, self).__init__(None, bigdl_type)
 
-class Input(Node):
 
+class Input(Node):
     '''
     Input layer do nothing to the input tensors, just passing them through. It is used as input to
     the Graph container (add a link) when the first layer of the graph container accepts multiple
@@ -2311,7 +2366,6 @@ class Input(Node):
 
 
 class DotProduct(Layer):
-
     '''
     This is a simple table layer which takes a table of two tensors as input
     and calculate the dot product between them as outputs
@@ -2327,7 +2381,6 @@ class DotProduct(Layer):
 
 
 class ELU(Layer):
-
     '''
     D-A Clevert, Thomas Unterthiner, Sepp Hochreiter
     Fast and Accurate Deep Network Learning by Exponential Linear Units (ELUs)
@@ -2348,7 +2401,6 @@ class ELU(Layer):
 
 
 class Euclidean(Layer):
-
     '''
     Outputs the Euclidean distance of the input to outputSize centers
 
@@ -2361,8 +2413,6 @@ class Euclidean(Layer):
     creating: createEuclidean
     '''
 
-
-
     def __init__(self,
                  input_size,
                  output_size,
@@ -2373,14 +2423,13 @@ class Euclidean(Layer):
                                         output_size,
                                         fast_backward)
 
-    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+    def set_init_method(self, weight_init_method=None, bias_init_method=None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
         return self
 
 
 class Exp(Layer):
-
     '''
     Applies element-wise exp to input tensor.
 
@@ -2394,7 +2443,6 @@ class Exp(Layer):
 
 
 class FlattenTable(Layer):
-
     '''
     This is a table layer which takes an arbitrarily deep table of Tensors
     (potentially nested) as input and a table of Tensors without any nested
@@ -2411,7 +2459,6 @@ class FlattenTable(Layer):
 
 
 class GradientReversal(Layer):
-
     '''
     It is a simple module preserves the input, but takes the
     gradient from the subsequent layer, multiplies it by -lambda
@@ -2438,7 +2485,6 @@ class GradientReversal(Layer):
 
 
 class HardShrink(Layer):
-
     '''
     This is a transfer layer which applies the hard shrinkage function
     element-wise to the input Tensor. The parameter lambda is set to 0.5
@@ -2464,7 +2510,6 @@ class HardShrink(Layer):
 
 
 class HardTanh(Layer):
-
     '''
     Applies HardTanh to each element of input, HardTanh is defined:
 ```
@@ -2495,7 +2540,6 @@ class HardTanh(Layer):
 
 
 class Index(Layer):
-
     '''
     Applies the Tensor index operation along the given dimension.
 
@@ -2515,7 +2559,6 @@ class Index(Layer):
 
 
 class InferReshape(Layer):
-
     '''
     Reshape the input tensor with automatic size inference support.
     Positive numbers in the `size` argument are used to reshape the input to the
@@ -2554,7 +2597,6 @@ class InferReshape(Layer):
 
 
 class JoinTable(Layer):
-
     '''
     It is a table module which takes a table of Tensors as input and
     outputs a Tensor by joining them together along the dimension `dimension`.
@@ -2582,8 +2624,8 @@ class JoinTable(Layer):
                                         dimension,
                                         n_input_dims)
 
-class SparseJoinTable(Layer):
 
+class SparseJoinTable(Layer):
     '''
     :: Experimental ::
 
@@ -2602,11 +2644,10 @@ class SparseJoinTable(Layer):
                  dimension,
                  bigdl_type="float"):
         super(SparseJoinTable, self).__init__(None, bigdl_type,
-                                        dimension)
+                                              dimension)
 
 
 class L1Penalty(Layer):
-
     '''
     adds an L1 penalty to an input (for sparsity).
     L1Penalty is an inline module that in its forward propagation copies the input Tensor
@@ -2635,7 +2676,6 @@ class L1Penalty(Layer):
 
 
 class LeakyReLU(Layer):
-
     '''
     It is a transfer module that applies LeakyReLU, which parameter negval sets the slope of the
     negative part: LeakyReLU is defined as: f(x) = max(0, x) + negval * min(0, x)
@@ -2659,7 +2699,6 @@ class LeakyReLU(Layer):
 
 
 class Log(Layer):
-
     '''
     Applies the log function element-wise to the input Tensor,
      thus outputting a Tensor of the same dimension.
@@ -2675,7 +2714,6 @@ class Log(Layer):
 
 
 class LogSigmoid(Layer):
-
     '''
     This class is a transform layer corresponding to the sigmoid function:
     f(x) = Log(1 / (1 + e ^^ (-x)))
@@ -2691,7 +2729,6 @@ class LogSigmoid(Layer):
 
 
 class LookupTable(Layer):
-
     '''
     a convolution of width 1, commonly used for word embeddings
 
@@ -2719,14 +2756,14 @@ class LookupTable(Layer):
                                           norm_type,
                                           should_scale_grad_by_freq,
                                           wRegularizer)
-    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+
+    def set_init_method(self, weight_init_method=None, bias_init_method=None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
         return self
 
 
 class MM(Layer):
-
     '''
     Module to perform matrix multiplication on two mini-batch inputs, producing a mini-batch.
 
@@ -2738,6 +2775,7 @@ class MM(Layer):
     >>> mM = MM(True, True)
     creating: createMM
     '''
+
     def __init__(self,
                  trans_a=False,
                  trans_b=False,
@@ -2748,7 +2786,6 @@ class MM(Layer):
 
 
 class MV(Layer):
-
     '''
     It is a module to perform matrix vector multiplication on two mini-batch inputs,
     producing a mini-batch.
@@ -2769,7 +2806,6 @@ class MV(Layer):
 
 
 class MapTable(Container):
-
     '''
     This class is a container for a single module which will be applied
     to all input elements. The member module is cloned as necessary to
@@ -2787,8 +2823,8 @@ class MapTable(Container):
         super(MapTable, self).__init__(None, bigdl_type,
                                        module)
 
-class MaskedSelect(Layer):
 
+class MaskedSelect(Layer):
     '''
     Performs a torch.MaskedSelect on a Tensor. The mask is supplied as a tabular argument with
     the input on the forward and backward passes.
@@ -2803,7 +2839,6 @@ class MaskedSelect(Layer):
 
 
 class Max(Layer):
-
     '''
     Applies a max operation over dimension `dim`
 
@@ -2826,7 +2861,6 @@ class Max(Layer):
 
 
 class Mean(Layer):
-
     '''
     It is a simple layer which applies a mean operation over the given dimension. When nInputDims
     is provided, the input will be considered as batches. Then the mean operation will be applied
@@ -2856,7 +2890,6 @@ class Mean(Layer):
 
 
 class Min(Layer):
-
     '''
     Applies a min operation over dimension `dim`.
 
@@ -2879,7 +2912,6 @@ class Min(Layer):
 
 
 class MixtureTable(Layer):
-
     '''
     Creates a module that takes a table {gater, experts} as input and outputs the mixture of experts
     (a Tensor or table of Tensors) using a gater Tensor. When dim is provided, it specifies the
@@ -2901,7 +2933,6 @@ class MixtureTable(Layer):
 
 
 class Mul(Layer):
-
     '''
     Multiply a single scalar factor to the incoming data
 
@@ -2914,14 +2945,13 @@ class Mul(Layer):
                  bigdl_type="float"):
         super(Mul, self).__init__(None, bigdl_type)
 
-    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+    def set_init_method(self, weight_init_method=None, bias_init_method=None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
         return self
 
 
 class MulConstant(Layer):
-
     '''
     Multiplies input Tensor by a (non-learnable) scalar constant.
     This module is sometimes useful for debugging purposes.
@@ -2945,7 +2975,6 @@ class MulConstant(Layer):
 
 
 class Narrow(Layer):
-
     '''
     Narrow is application of narrow operation in a module.
     The module further supports a negative length in order to handle inputs with an unknown size.
@@ -2966,7 +2995,6 @@ class Narrow(Layer):
 
 
 class NarrowTable(Layer):
-
     '''
     Creates a module that takes a table as input and outputs the subtable starting at index
     offset having length elements (defaults to 1 element). The elements can be either
@@ -2992,7 +3020,6 @@ class NarrowTable(Layer):
 
 
 class Normalize(Layer):
-
     '''
     Normalizes the input Tensor to have unit L_p norm. The smoothing parameter eps prevents
     division by zero when the input contains all zero elements (default = 1e-10).
@@ -3013,7 +3040,6 @@ class Normalize(Layer):
 
 
 class PReLU(Layer):
-
     '''
     Applies parametric ReLU, which parameter varies the slope of the negative part.
 
@@ -3041,14 +3067,13 @@ class PReLU(Layer):
         super(PReLU, self).__init__(None, bigdl_type,
                                     n_output_plane)
 
-    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+    def set_init_method(self, weight_init_method=None, bias_init_method=None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
         return self
 
 
 class Padding(Layer):
-
     '''
     This module adds pad units of padding to dimension dim of the input. If pad is negative,
     padding is added to the left, otherwise, it is added to the right of the dimension.
@@ -3086,7 +3111,6 @@ class Padding(Layer):
 
 
 class PairwiseDistance(Layer):
-
     '''
     It is a module that takes a table of two vectors as input and outputs
     the distance between them using the p-norm.
@@ -3111,7 +3135,6 @@ class PairwiseDistance(Layer):
 
 
 class ParallelTable(Container):
-
     '''
     It is a container module that applies the i-th member module to the i-th
     input, and outputs an output in the form of Table
@@ -3127,7 +3150,6 @@ class ParallelTable(Container):
 
 
 class Power(Layer):
-
     '''
     Apply an element-wise power operation with scale and shift.
     f(x) = (shift + scale * x)^power^
@@ -3153,7 +3175,6 @@ class Power(Layer):
 
 
 class RReLU(Layer):
-
     '''
     Applies the randomized leaky rectified linear unit (RReLU) element-wise to the input Tensor,
     thus outputting a Tensor of the same dimension. Informally the RReLU is also known as
@@ -3194,8 +3215,8 @@ class RReLU(Layer):
     '''
 
     def __init__(self,
-                 lower=1.0/8,
-                 upper=1.0/3,
+                 lower=1.0 / 8,
+                 upper=1.0 / 3,
                  inplace=False,
                  bigdl_type="float"):
         super(RReLU, self).__init__(None, bigdl_type,
@@ -3205,7 +3226,6 @@ class RReLU(Layer):
 
 
 class ReLU6(Layer):
-
     '''
     Same as ReLU except that the rectifying function f(x) saturates at x = 6
 
@@ -3225,7 +3245,6 @@ class ReLU6(Layer):
 
 
 class Replicate(Layer):
-
     '''
     Replicate repeats input `nFeatures` times along its `dim` dimension.
     Notice: No memory copy, it set the stride along the `dim`-th dimension to zero.
@@ -3239,6 +3258,7 @@ class Replicate(Layer):
     >>> replicate = Replicate(2)
     creating: createReplicate
     '''
+
     def __init__(self,
                  n_features,
                  dim=1,
@@ -3251,7 +3271,6 @@ class Replicate(Layer):
 
 
 class RoiPooling(Layer):
-
     '''
     Region of interest pooling
     The RoIPooling uses max pooling to convert the features inside any valid region of interest
@@ -3290,7 +3309,6 @@ class RoiPooling(Layer):
 
 
 class Scale(Layer):
-
     '''
     Scale is the combination of CMul and CAdd
     Computes the elementwise product of input and weight, with the shape of the weight "expand" to
@@ -3313,7 +3331,6 @@ class Scale(Layer):
 
 
 class SelectTable(Layer):
-
     '''
     Creates a module that takes a table as input and outputs the element at index `index`
     (positive or negative). This can be either a table or a Tensor.
@@ -3337,7 +3354,6 @@ class SelectTable(Layer):
 
 
 class SoftMax(Layer):
-
     '''
     Applies the SoftMax function to an n-dimensional input Tensor, rescaling them so that the
     elements of the n-dimensional output Tensor lie in the range (0, 1) and sum to 1.
@@ -3355,7 +3371,6 @@ class SoftMax(Layer):
 
 
 class SoftMin(Layer):
-
     '''
     Applies the SoftMin function to an n-dimensional input Tensor, rescaling them so that the
     elements of the n-dimensional output Tensor lie in the range (0,1) and sum to 1.
@@ -3373,7 +3388,6 @@ class SoftMin(Layer):
 
 
 class SoftPlus(Layer):
-
     '''
     Apply the SoftPlus function to an n-dimensional input tensor.
     SoftPlus function: f_i(x) = 1/beta * log(1 + exp(beta * x_i))
@@ -3394,7 +3408,6 @@ class SoftPlus(Layer):
 
 
 class SoftShrink(Layer):
-
     '''
     Apply the soft shrinkage function element-wise to the input Tensor
 
@@ -3421,7 +3434,6 @@ class SoftShrink(Layer):
 
 
 class SoftSign(Layer):
-
     '''
     Apply SoftSign function to an n-dimensional input Tensor.
 
@@ -3439,7 +3451,6 @@ class SoftSign(Layer):
 
 
 class SpatialDilatedConvolution(Layer):
-
     '''
     Apply a 2D dilated convolution over an input image.
 
@@ -3502,8 +3513,8 @@ class SpatialDilatedConvolution(Layer):
                                                         dilation_h,
                                                         wRegularizer,
                                                         bRegularizer)
-                                                        
-    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+
+    def set_init_method(self, weight_init_method=None, bias_init_method=None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
         return self
@@ -3585,10 +3596,12 @@ class SpatialFullConvolution(Layer):
                                                      no_bias,
                                                      wRegularizer,
                                                      bRegularizer)
-    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+
+    def set_init_method(self, weight_init_method=None, bias_init_method=None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
         return self
+
 
 class VolumetricFullConvolution(Layer):
     '''
@@ -3660,31 +3673,32 @@ class VolumetricFullConvolution(Layer):
                  bRegularizer=None,
                  bigdl_type="float"):
         super(VolumetricFullConvolution, self).__init__(None, bigdl_type,
-                                                     n_input_plane,
-                                                     n_output_plane,
-                                                     kt,
-                                                     kw,
-                                                     kh,
-                                                     dt,
-                                                     dw,
-                                                     dh,
-                                                     pad_t,
-                                                     pad_w,
-                                                     pad_h,
-                                                     adj_t,
-                                                     adj_w,
-                                                     adj_h,
-                                                     n_group,
-                                                     no_bias,
-                                                     wRegularizer,
-                                                     bRegularizer)
-    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+                                                        n_input_plane,
+                                                        n_output_plane,
+                                                        kt,
+                                                        kw,
+                                                        kh,
+                                                        dt,
+                                                        dw,
+                                                        dh,
+                                                        pad_t,
+                                                        pad_w,
+                                                        pad_h,
+                                                        adj_t,
+                                                        adj_w,
+                                                        adj_h,
+                                                        n_group,
+                                                        no_bias,
+                                                        wRegularizer,
+                                                        bRegularizer)
+
+    def set_init_method(self, weight_init_method=None, bias_init_method=None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
         return self
 
-class SpatialShareConvolution(Layer):
 
+class SpatialShareConvolution(Layer):
     '''
 
     >>> spatialShareConvolution = SpatialShareConvolution(1, 1, 1, 1)
@@ -3737,14 +3751,14 @@ class SpatialShareConvolution(Layer):
                                                       JTensor.from_ndarray(init_grad_weight),
                                                       JTensor.from_ndarray(init_grad_bias),
                                                       with_bias)
-    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+
+    def set_init_method(self, weight_init_method=None, bias_init_method=None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
         return self
 
 
 class VolumetricConvolution(Layer):
-
     '''
     Applies a 3D convolution over an input image composed of several input planes. The input tensor
     in forward(input) is expected to be a 4D tensor (nInputPlane x time x height x width).
@@ -3801,14 +3815,13 @@ class VolumetricConvolution(Layer):
                                                     wRegularizer,
                                                     bRegularizer)
 
-    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+    def set_init_method(self, weight_init_method=None, bias_init_method=None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
         return self
 
 
 class VolumetricMaxPooling(Layer):
-
     '''
     Applies 3D max-pooling operation in kTxkWxkH regions by step size dTxdWxdH.
     The number of output features is equal to the number of input planes / dT.
@@ -3842,19 +3855,18 @@ class VolumetricMaxPooling(Layer):
                  pad_h=0,
                  bigdl_type="float"):
         super(VolumetricMaxPooling, self).__init__(None, bigdl_type,
-                                                    k_t,
-                                                    k_w,
-                                                    k_h,
-                                                    d_t,
-                                                    d_w,
-                                                    d_h,
-                                                    pad_t,
-                                                    pad_w,
-                                                    pad_h)
+                                                   k_t,
+                                                   k_w,
+                                                   k_h,
+                                                   d_t,
+                                                   d_w,
+                                                   d_h,
+                                                   pad_t,
+                                                   pad_w,
+                                                   pad_h)
 
 
 class VolumetricAveragePooling(Layer):
-
     '''
     Applies 3D average-pooling operation in kTxkWxkH regions by step size dTxdWxdH.
     The number of output features is equal to the number of input planes / dT.
@@ -3892,20 +3904,20 @@ class VolumetricAveragePooling(Layer):
                  ceil_mode=False,
                  bigdl_type="float"):
         super(VolumetricAveragePooling, self).__init__(None, bigdl_type,
-                                                        k_t,
-                                                        k_w,
-                                                        k_h,
-                                                        d_t,
-                                                        d_w,
-                                                        d_h,
-                                                        pad_t,
-                                                        pad_w,
-                                                        pad_h,
-                                                        count_include_pad,
-                                                        ceil_mode)
+                                                       k_t,
+                                                       k_w,
+                                                       k_h,
+                                                       d_t,
+                                                       d_w,
+                                                       d_h,
+                                                       pad_t,
+                                                       pad_w,
+                                                       pad_h,
+                                                       count_include_pad,
+                                                       ceil_mode)
+
 
 class SpatialZeroPadding(Layer):
-
     '''
     Each feature map of a given input is padded with specified number of zeros.
     If padding values are negative, then input is cropped.
@@ -3934,7 +3946,6 @@ class SpatialZeroPadding(Layer):
 
 
 class SplitTable(Layer):
-
     '''
     Creates a module that takes a Tensor as input and
     outputs several tables, splitting the Tensor along
@@ -3965,7 +3976,6 @@ class SplitTable(Layer):
 
 
 class Sqrt(Layer):
-
     '''
     Apply an element-wise sqrt operation.
 
@@ -3980,7 +3990,6 @@ class Sqrt(Layer):
 
 
 class Square(Layer):
-
     '''
     Apply an element-wise square operation.
 
@@ -3994,7 +4003,6 @@ class Square(Layer):
 
 
 class Squeeze(Layer):
-
     '''
     Delete singleton all dimensions or a specific dim.
 
@@ -4019,7 +4027,6 @@ class Squeeze(Layer):
 
 
 class Sum(Layer):
-
     '''
     It is a simple layer which applies a sum operation over the given dimension.
     When nInputDims is provided, the input will be considered as a batches.
@@ -4054,7 +4061,6 @@ class Sum(Layer):
 
 
 class TanhShrink(Layer):
-
     '''
     A simple layer for each element of the input tensor, do the following operation
     during the forward process:
@@ -4071,7 +4077,6 @@ class TanhShrink(Layer):
 
 
 class Threshold(Layer):
-
     '''
     Threshold input Tensor.
     If values in the Tensor smaller than th, then replace it with v
@@ -4096,8 +4101,8 @@ class Threshold(Layer):
                                         v,
                                         ip)
 
-class Negative(Layer):
 
+class Negative(Layer):
     '''
     Create an Negative layer.  Computing negative value of each element of input tensor
 
@@ -4109,13 +4114,12 @@ class Negative(Layer):
     '''
 
     def __init__(self,
-                 inplace = False,
+                 inplace=False,
                  bigdl_type="float"):
         super(Negative, self).__init__(None, bigdl_type, inplace)
 
 
 class Unsqueeze(Layer):
-
     '''
     Create an Unsqueeze layer.  Insert singleton dim (i.e., dimension 1) at position pos.
     For an input with dim = input.dim(),
@@ -4445,6 +4449,7 @@ class SpatialWithinChannelLRN(Layer):
                                                       alpha,
                                                       beta)
 
+
 class Pack(Layer):
     '''
     Stacks a list of n-dimensional tensors into one (n+1)-dimensional tensor.
@@ -4455,6 +4460,7 @@ class Pack(Layer):
 
     def __init__(self, dimension, bigdl_type="float"):
         super(Pack, self).__init__(None, bigdl_type, dimension)
+
 
 class ConvLSTMPeephole(Layer):
     '''
@@ -4505,6 +4511,7 @@ class ConvLSTMPeephole(Layer):
                                                stride, padding, activation, inner_activation,
                                                wRegularizer, uRegularizer, bRegularizer, cRegularizer, with_peephole)
 
+
 class Tile(Layer):
     '''
     Replicate 'copies' copy along 'dim' dimension
@@ -4512,8 +4519,10 @@ class Tile(Layer):
     >>> layer = Tile(1, 2)
     creating: createTile
     '''
-    def __init__(self, dim = 1, copies = 2, bigdl_type="float"):
+
+    def __init__(self, dim=1, copies=2, bigdl_type="float"):
         super(Tile, self).__init__(None, bigdl_type, dim, copies)
+
 
 class BinaryThreshold(Layer):
     '''
@@ -4521,8 +4530,10 @@ class BinaryThreshold(Layer):
     >>> layer = BinaryThreshold(0.1, False)
     creating: createBinaryThreshold
     '''
-    def __init__(self, th=1e-6, ip = False, bigdl_type="float"):
+
+    def __init__(self, th=1e-6, ip=False, bigdl_type="float"):
         super(BinaryThreshold, self).__init__(None, bigdl_type, th, ip)
+
 
 class ConvLSTMPeephole3D(Layer):
     '''
@@ -4547,10 +4558,13 @@ class ConvLSTMPeephole3D(Layer):
     creating: createConvLSTMPeephole3D
     '''
 
-    def __init__(self, input_size, output_size, kernel_i, kernel_c, stride=1, padding=-1, wRegularizer=None, uRegularizer=None,
+    def __init__(self, input_size, output_size, kernel_i, kernel_c, stride=1, padding=-1, wRegularizer=None,
+                 uRegularizer=None,
                  bRegularizer=None, cRegularizer=None, with_peephole=True, bigdl_type="float"):
         super(ConvLSTMPeephole3D, self).__init__(None, bigdl_type, input_size, output_size, kernel_i, kernel_c, stride,
-                                                 padding, wRegularizer, uRegularizer, bRegularizer, cRegularizer, with_peephole)
+                                                 padding, wRegularizer, uRegularizer, bRegularizer, cRegularizer,
+                                                 with_peephole)
+
 
 class ResizeBilinear(Layer):
     """
@@ -4564,8 +4578,10 @@ class ResizeBilinear(Layer):
     >>> resizeBilinear = ResizeBilinear(10, 20, False)
     creating: createResizeBilinear
     """
+
     def __init__(self, output_height, output_width, align_corner, bigdl_type="float"):
         super(ResizeBilinear, self).__init__(None, bigdl_type, output_height, output_width, align_corner)
+
 
 class GaussianSampler(Layer):
     """
@@ -4573,8 +4589,10 @@ class GaussianSampler(Layer):
     >>> sampler = GaussianSampler()
     creating: createGaussianSampler
     """
+
     def __init__(self, bigdl_type="float"):
         super(GaussianSampler, self).__init__(None, bigdl_type)
+
 
 class HardSigmoid(Layer):
     """
@@ -4587,8 +4605,10 @@ class HardSigmoid(Layer):
     >>> hardSigmoid = HardSigmoid()
     creating: createHardSigmoid
     """
+
     def __init__(self, bigdl_type="float"):
         super(HardSigmoid, self).__init__(None, bigdl_type)
+
 
 class Highway(Layer):
     """
@@ -4604,8 +4624,10 @@ class Highway(Layer):
     >>> highway = Highway(2)
     creating: createHighway
     """
-    def __init__(self, size, with_bias=True, activation = None, wRegularizer=None, bRegularizer=None, bigdl_type="float"):
+
+    def __init__(self, size, with_bias=True, activation=None, wRegularizer=None, bRegularizer=None, bigdl_type="float"):
         super(Highway, self).__init__(None, bigdl_type, size, with_bias, activation, wRegularizer, bRegularizer)
+
 
 class UpSampling3D(Layer):
     """
@@ -4618,8 +4640,10 @@ class UpSampling3D(Layer):
     >>> upsample3d = UpSampling3D([1, 2, 3])
     creating: createUpSampling3D
     """
+
     def __init__(self, size, bigdl_type="float"):
         super(UpSampling3D, self).__init__(None, bigdl_type, size)
+
 
 def _test():
     import doctest
@@ -4637,6 +4661,7 @@ def _test():
                                                   optionflags=doctest.ELLIPSIS)
     if failure_count:
         exit(-1)
+
 
 if __name__ == "__main__":
     _test()
