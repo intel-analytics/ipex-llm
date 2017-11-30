@@ -2166,6 +2166,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Highway(size, withBias, activation, wRegularizer, bRegularizer)
   }
 
+  def createUpSampling3D(size: JList[Int]): UpSampling3D[T] = {
+    UpSampling3D(size.asScala.toArray)
+  }
+
   def redirectSparkLogs(logPath: String): Unit = {
     LoggerFilter.redirectSparkInfoLogs(logPath)
   }
