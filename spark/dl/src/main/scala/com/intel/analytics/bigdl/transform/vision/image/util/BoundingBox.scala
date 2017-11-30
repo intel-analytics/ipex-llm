@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.transform.vision.image.util
 
 class BoundingBox(var x1: Float, var y1: Float, var x2: Float, var y2: Float,
-  normalized: Boolean = true) {
+  var normalized: Boolean = true) {
 
   var label: Float = -1
 

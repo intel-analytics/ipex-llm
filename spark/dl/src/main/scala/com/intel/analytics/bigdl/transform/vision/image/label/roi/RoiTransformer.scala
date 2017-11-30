@@ -75,6 +75,9 @@ case class RoiProject(needMeetCenterConstraint: Boolean = true) extends FeatureT
   val transformedAnnot = new ArrayBuffer[BoundingBox]()
   override def transformMat(feature: ImageFeature): Unit = {
     val imageBoundary = feature[BoundingBox](ImageFeature.boundingBox)
+    if (!imageBoundary.normalized) {
+      imageBoundary.scaleBox(1.0f / feature.getHeight(), 1f / feature.getWidth(), imageBoundary)
+    }
     val target = feature[RoiLabel](ImageFeature.label)
     transformedAnnot.clear()
     // Transform the annotation according to bounding box.
@@ -111,5 +114,3 @@ case class RoiProject(needMeetCenterConstraint: Boolean = true) extends FeatureT
     }
   }
 }
-
-

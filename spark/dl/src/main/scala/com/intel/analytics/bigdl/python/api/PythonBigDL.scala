@@ -2353,8 +2353,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createExpand(meansR: Int = 123, meansG: Int = 117, meansB: Int = 104,
+    minExpandRatio: Double = 1.0,
     maxExpandRatio: Double = 4.0): Expand = {
-    Expand(meansR, meansG, meansB, maxExpandRatio)
+    Expand(meansR, meansG, meansB, minExpandRatio, maxExpandRatio)
+  }
+
+  def createRandomAspectScale(scales: JList[Int], scaleMultipleOf: Int = 1,
+    maxSize: Int = 1000): RandomAspectScale = {
+    RandomAspectScale(scales.asScala.toArray, scaleMultipleOf, maxSize)
   }
 
   def createHue(deltaLow: Double, deltaHigh: Double): Hue = {
@@ -2383,8 +2389,21 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     AspectScale(scale, scaleMultipleOf, maxSize)
   }
 
-  def createRoiProject(): RoiProject = {
-    RoiProject()
+  def createFiller(startX: Float, startY: Float, endX: Float, endY: Float,
+    value: Int = 255): Filler = {
+    Filler(startX, startY, endX, endY, value)
+  }
+
+  def createPixelNormalize(means: JList[Double]): PixelNormalizer = {
+    PixelNormalizer(means.asScala.toArray.map(_.toFloat))
+  }
+
+  def createRoiProject(needMeetCenterConstraint: Boolean): RoiProject = {
+    RoiProject(needMeetCenterConstraint)
+  }
+
+  def createRoiResize(normalized: Boolean): RoiResize = {
+    RoiResize(normalized)
   }
 
   def createRoiHFlip(normalized: Boolean = true): RoiHFlip = {

@@ -79,6 +79,7 @@ object Crop {
  *
  * @param cropWidth width after crop
  * @param cropHeight height after crop
+ * @param isClip whether to clip the roi to image boundaries
  */
 class CenterCrop(cropWidth: Int, cropHeight: Int, isClip: Boolean) extends Crop(false, isClip) {
   override def generateRoi(feature: ImageFeature): BoundingBox = {
@@ -102,6 +103,7 @@ object CenterCrop {
  *
  * @param cropWidth width after crop
  * @param cropHeight height after crop
+ * @param isClip whether to clip the roi to image boundaries
  */
 class RandomCrop(cropWidth: Int, cropHeight: Int, isClip: Boolean) extends Crop(false, isClip) {
 
@@ -123,17 +125,18 @@ object RandomCrop {
 /**
  * Crop a fixed area of image
  *
- * @param hStart start in height
- * @param hEnd end in height
- * @param wStart start in width
- * @param wEnd end in width
+ * @param x1 start in width
+ * @param y1 start in height
+ * @param x2 end in width
+ * @param y2 end in height
  * @param normalized whether args are normalized, i.e. in range [0, 1]
+ * @param isClip whether to clip the roi to image boundaries
  */
-class FixedCrop(wStart: Float, hStart: Float, wEnd: Float, hEnd: Float, normalized: Boolean,
+class FixedCrop(x1: Float, y1: Float, x2: Float, y2: Float, normalized: Boolean,
   isClip: Boolean)
   extends Crop(normalized, isClip) {
 
-  val cropBox = BoundingBox(wStart.toFloat, hStart.toFloat, wEnd.toFloat, hEnd.toFloat)
+  val cropBox = BoundingBox(x1, y1, x2, y2, normalized)
 
   override def generateRoi(feature: ImageFeature): BoundingBox = {
     cropBox
@@ -141,9 +144,9 @@ class FixedCrop(wStart: Float, hStart: Float, wEnd: Float, hEnd: Float, normaliz
 }
 
 object FixedCrop {
-  def apply(wStart: Float, hStart: Float, wEnd: Float, hEnd: Float, normalized: Boolean,
+  def apply(x1: Float, y1: Float, x2: Float, y2: Float, normalized: Boolean,
     isClip: Boolean = true)
-  : FixedCrop = new FixedCrop(wStart, hStart, wEnd, hEnd, normalized, isClip)
+  : FixedCrop = new FixedCrop(x1, y1, x2, y2, normalized, isClip)
 }
 
 /**

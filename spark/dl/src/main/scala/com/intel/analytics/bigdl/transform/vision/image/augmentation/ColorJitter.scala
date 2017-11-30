@@ -34,6 +34,7 @@ import scala.util.Random
  * @param saturationLower saturation lower parameter
  * @param saturationUpper saturation upper parameter
  * @param randomChannelOrderProb random order for different operation
+ * @param shuffle shuffle the transformers
  */
 class ColorJitter(
   brightnessProb: Double, brightnessDelta: Double,
@@ -66,12 +67,11 @@ class ColorJitter(
       }
     } else {
       val order = Random.shuffle(List.range(0, transformers.length))
-      var shuffledTransformer = transformers(order.head).asInstanceOf[FeatureTransformer]
-      (1 until transformers.length).foreach(i => {
-        shuffledTransformer = shuffledTransformer -> transformers(order(i))
-      })
-
-      shuffledTransformer.transform(feature)
+      var i = 0
+      while (i < order.length) {
+        transformers(order(i)).transform(feature)
+        i += 1
+      }
     }
   }
 }

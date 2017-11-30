@@ -25,9 +25,9 @@ import org.opencv.imgproc.Imgproc
 import scala.util.Random
 
 /**
- *
- * @param resizeH
- * @param resizeW
+ * Resize image
+ * @param resizeH height after resize
+ * @param resizeW width after resize
  * @param resizeMode if resizeMode = -1, random select a mode from
  * (Imgproc.INTER_LINEAR, Imgproc.INTER_CUBIC, Imgproc.INTER_AREA,
  *                   Imgproc.INTER_NEAREST, Imgproc.INTER_LANCZOS4)
@@ -124,5 +124,11 @@ case class RandomAspectScale(scales: Array[Int], scaleMultipleOf: Int = 1,
       scaleTo, maxSize, scaleMultipleOf)
     Resize.transform(feature.opencvMat(), feature.opencvMat(), width, height)
   }
+}
+
+object RandomAspectScale {
+  def apply(scales: Array[Int], scaleMultipleOf: Int = 1,
+    maxSize: Int = 1000): RandomAspectScale =
+    new RandomAspectScale(scales, scaleMultipleOf, maxSize)
 }
 

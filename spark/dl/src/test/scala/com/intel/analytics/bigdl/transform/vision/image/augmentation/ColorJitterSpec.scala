@@ -29,9 +29,9 @@ class ColorJitterSpec extends FlatSpec with Matchers {
     transformed.array(0).getWidth() should be (transformed.array(0).getOriginalWidth)
   }
 
-  "ColorJitter no shuffle" should "work properly" in {
+  "ColorJitter shuffle" should "work properly" in {
     val data = ImageFrame.read(resource.getFile) -> BytesToMat()
-    val transformer = ColorJitter(shuffle = false)
+    val transformer = ColorJitter(shuffle = true)
     val transformed = transformer(data).asInstanceOf[LocalImageFrame]
     transformed.array(0).getHeight() should be (transformed.array(0).getOriginalHeight)
     transformed.array(0).getWidth() should be (transformed.array(0).getOriginalWidth)

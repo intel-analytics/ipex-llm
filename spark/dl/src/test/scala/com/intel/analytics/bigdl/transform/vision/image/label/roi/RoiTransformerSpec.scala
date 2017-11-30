@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.transform.vision.image.label.roi
 
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.transform.vision.image.augmentation.Resize
+import com.intel.analytics.bigdl.transform.vision.image.augmentation.{CenterCrop, Resize}
 import com.intel.analytics.bigdl.transform.vision.image.{BytesToMat, ImageFeature, ImageFrame, LocalImageFrame}
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
@@ -148,9 +148,6 @@ class RoiTransformerSpec extends FlatSpec with Matchers {
       0.64000005, 0.058666665, 0.688, 0.25599998,
       0.674, 0.0026666666, 0.78000003, 0.28533334)).resize(11, 4)
     boxes should be(expected)
-//    (1 to boxes.size(1)).foreach{ i =>
-//      println((1 to boxes.size(2)).map(j => boxes.valueAt(i, j)).mkString(", ") + ",")
-//    }
   }
 
   "RoiResize normalized == false" should "work properly" in {
@@ -176,6 +173,28 @@ class RoiTransformerSpec extends FlatSpec with Matchers {
       167.40001, 0.8, 198.6, 68.8,
       192.0, 17.6, 206.40001, 76.8,
       202.20001, 0.8, 234.00002, 85.6)).resize(11, 4)
+    boxes should be(expected)
+  }
+
+  "RoiProject" should "work properly" in {
+    val label = getLables
+    val images = ImageFrame.read(resource.getFile) -> BytesToMat()
+
+    val imageFeature = images.asInstanceOf[LocalImageFrame].array(0)
+    imageFeature(ImageFeature.label) = label
+
+    val transformer = CenterCrop(300, 300) -> RoiNormalize() -> RoiProject()
+    transformer(images)
+
+    val boxes = imageFeature.getLabel[RoiLabel].bboxes
+    val expected = Tensor[Float](T(0.0, 0.25833336, 0.44333336, 0.805,
+      0.0, 0.45166665, 0.9233333, 1.0,
+      0.40333334, 0.0, 0.8033333, 1.0,
+      0.116666675, 0.0, 0.4, 0.36833334,
+      0.0, 0.01833333, 0.1866667, 0.46500003,
+      0.5966667, 0.0, 0.77, 0.16166666,
+      0.73333335, 0.0, 0.8133333, 0.195,
+      0.78999996, 0.0, 0.9666667, 0.23166668)).resize(8, 4)
     boxes should be(expected)
 //    (1 to boxes.size(1)).foreach { i =>
 //      println((1 to boxes.size(2)).map(j => boxes.valueAt(i, j)).mkString(", ") + ",")
