@@ -76,6 +76,7 @@ pages:
   - Triggers: APIGuide/Triggers.md
   - Metrics:  APIGuide/Metrics.md
   - ML Pipeline: APIGuide/MLPipeline/DLEstimator_DLClassifier.md
+  - Caffe: APIGuide/Caffe.md
   - Full API docs:
     - Scala Docs: APIGuide/scaladoc.md
     - Python API Docs: APIGuide/python-api-doc.md
