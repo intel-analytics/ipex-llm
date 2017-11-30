@@ -118,6 +118,13 @@ def get_dtype(bigdl_type):
     # Always return float32 for now
     return "float32"
 
+
+class JActivity(object):
+
+    def __init__(self, value):
+        self.value = value
+
+
 class JTensor(object):
     """
     A wrapper to easy our work when need to pass or return Tensor to/from Scala.
@@ -362,7 +369,8 @@ _picklable_classes = [
     'LabeledPoint',
     'Sample',
     'EvaluatedResult',
-    'JTensor'
+    'JTensor',
+    'JActivity'
 ]
 
 

@@ -59,7 +59,7 @@ class Table private[bigdl](
    */
   override def isTable: Boolean = true
 
-  private[bigdl] def getState(): ImmutableMap[Any, Any] = {
+  def getState(): ImmutableMap[Any, Any] = {
     return state.toMap
   }
   /**
