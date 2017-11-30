@@ -53,10 +53,45 @@ model = Model.load("s3://...") //load from s3
 
 ### Load Tensorflow model
 
-BigDL also provides utilities to load tensorflow model. You can use
-the `dump_model` function defined in [here](https://github.com/intel-analytics/BigDL/blob/master/pyspark/bigdl/util/tf_utils.py) to
- generate the model definition file (`model.pb`) and variable binary file (`model.bin`). See [tensorflow support](https://bigdl-project.github.io/master/#ProgrammingGuide/tensorflow-support/)
-for more information on this.
+BigDL also provides utilities to load tensorflow model. See [tensorflow support](https://bigdl-project.github.io/master/#ProgrammingGuide/tensorflow-support/)
+for more information.
+
+If we already have a freezed graph protobuf file, we can use the `loadTF` api directly to
+load the tensorflow model. 
+
+Otherwise, we should first use the `export_tf_checkpoint.py` script provided by BigDL's distribution
+package, or the `dump_model` function defined in [here](https://github.com/intel-analytics/BigDL/blob/master/pyspark/bigdl/util/tf_utils.py) to
+generate the model definition file (`model.pb`) and variable binary file (`model.bin`). 
+
+**Use Script**
+```shell
+GRAPH_META_FILE=/tmp/model.ckpt.meta
+CKPT_FILE_PREFIX=/tmp/model.ckpt
+SAVE_PATH=/tmp/bigdl_model/
+python export_tf_checkpoint.py $GRAPH_META_FILE $CKPT_FILE_PREFIX $SAVE_PATH
+```
+
+**Use python function**
+```python
+import tensorflow as tf
+
+# This is your model definition.
+xs = tf.placeholder(tf.float32, [None, 1])
+
+W1 = tf.Variable(tf.zeros([1,10])+0.2)
+b1 = tf.Variable(tf.zeros([10])+0.1)
+Wx_plus_b1 = tf.nn.bias_add(tf.matmul(xs,W1), b1)
+output = tf.nn.tanh(Wx_plus_b1, name="output")
+
+# Adding the following lines right after your model definition 
+from bigdl.util.tf_utils import dump_model
+dump_model_path = "/tmp/model"
+# This line of code will create a Session and initialized all the Variable and
+# save the model definition and variable to dump_model_path as BigDL readable format.
+dump_model(path=dump_model_path)
+```
+
+Then we can use the `loadTF` api to load the tensorflow model into BigDL.
 
 **Scala example**
 ```scala

@@ -8,9 +8,26 @@ interesting and sophisticated examples, please checkout [here](https://github.co
 
 BigDL supports loading tensorflow model with only a few lines of code.
 
+If we already have a freezed graph protobuf file, we can use the `loadTF` api directly to
+load the tensorflow model. 
+
+Otherwise, we should first use the `export_tf_checkpoint.py` script provided by BigDL's distribution
+package, or the `dump_model` function defined in [here](https://github.com/intel-analytics/BigDL/blob/master/pyspark/bigdl/util/tf_utils.py) to
+generate the model definition file (`model.pb`) and variable binary file (`model.bin`). 
+
+
 ### Generate model definition file and variable binary file
 
-**Python**
+
+**Use Script**
+```shell
+GRAPH_META_FILE=/tmp/model.ckpt.meta
+CKPT_FILE_PREFIX=/tmp/model.ckpt
+SAVE_PATH=/tmp/bigdl_model/
+python export_tf_checkpoint.py $GRAPH_META_FILE $CKPT_FILE_PREFIX $SAVE_PATH
+```
+
+**Use python function**
 ```python
 import tensorflow as tf
 
@@ -29,10 +46,6 @@ dump_model_path = "/tmp/model"
 # save the model definition and variable to dump_model_path as BigDL readable format.
 dump_model(path=dump_model_path)
 ```
-
-Optionally, you can also pass in a initialized (either from scratch or from a checkpoint) Session object containing
-all the variables of your model or pass in a pre-trained checkpoint path directly. See the `dump_model` doc in this
-[file](https://github.com/intel-analytics/BigDL/blob/master/pyspark/bigdl/util/tf_utils.py).
 
 ### Load Tensorflow model in BigDL
 

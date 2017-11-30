@@ -24,6 +24,7 @@
           <include>run.example.sh</include>
           <include>dump_tf_graph.py</include>
           <include>launch-dataproc.sh</include>
+          <include>export_tf_checkpoint.py</include>
       </includes>
     </fileSet>
     <fileSet>
