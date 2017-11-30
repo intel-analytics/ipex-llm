@@ -80,6 +80,10 @@ class FileSpec extends FlatSpec with Matchers {
     val testModule: Module[Double] = File.load(absolutePath)
 
     testModule should be(module)
+
+    if (tmpFile.exists()) {
+      tmpFile.delete()
+    }
   }
 
 }
